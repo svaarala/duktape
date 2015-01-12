@@ -8,8 +8,6 @@
  *  a debug transport can be concretely implemented.
  */
 
-/* FIXME: reuseaddr */
-
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -21,6 +19,10 @@
 
 #ifndef DUK_DEBUG_PORT
 #define DUK_DEBUG_PORT 9091
+#endif
+
+#if 0
+#define DEBUG_PRINTS
 #endif
 
 static int server_sock = -1;
@@ -117,7 +119,7 @@ duk_size_t duk_debug_trans_socket_read(void *udata, char *buffer, duk_size_t len
 
 	(void) udata;  /* not needed by the example */
 
-#if 0
+#if defined(DEBUG_PRINTS)
 	fprintf(stderr, "duk_debug_trans_socket_read: udata=%p, buffer=%p, length=%ld\n",
 	        (void *) udata, (void *) buffer, (long) length);
 	fflush(stderr);
@@ -128,36 +130,10 @@ duk_size_t duk_debug_trans_socket_read(void *udata, char *buffer, duk_size_t len
 	}
 
 	if (length == 0) {
-		/* Peek request. */
-		struct pollfd fds[1];
-		int poll_rc;
-
-		if (buffer != NULL) {
-			/* This shouldn't happen: Duktape sets buffer == NULL when
-			 * peeking.
-			 */
-			fprintf(stderr, "%s: peek request buffer != NULL, ignoring\n", __FILE__);
-			fflush(stderr);
-		}
-
-		fds[0].fd = client_sock;
-		fds[0].events = POLLIN;
-		fds[0].revents = 0;
-
-		poll_rc = poll(fds, 1, 0);
-		if (poll_rc < 0) {
-			fprintf(stderr, "%s: poll returned < 0, closing connection: %s\n", __FILE__, strerror(errno));
-			fflush(stderr);
-			goto fail;  /* also returns 0, which is correct */
-		} else if (poll_rc > 1) {
-			fprintf(stderr, "%s: poll returned > 1, treating like 1\n", __FILE__);
-			fflush(stderr);
-			return 1;  /* should never happen */
-		} else if (poll_rc == 0) {
-			return 0;  /* nothing to read */
-		} else {
-			return 1;  /* something to read */
-		}
+		/* This shouldn't happen. */
+		fprintf(stderr, "%s: read request length == 0, closing connection\n", __FILE__);
+		fflush(stderr);
+		goto fail;
 	}
 
 	if (buffer == NULL) {
@@ -202,7 +178,7 @@ duk_size_t duk_debug_trans_socket_write(void *udata, const char *buffer, duk_siz
 
 	(void) udata;  /* not needed by the example */
 
-#if 0
+#if defined(DEBUG_PRINTS)
 	fprintf(stderr, "duk_debug_trans_socket_write: udata=%p, buffer=%p, length=%ld\n",
 	        (void *) udata, (void *) buffer, (long) length);
 	fflush(stderr);
@@ -213,21 +189,17 @@ duk_size_t duk_debug_trans_socket_write(void *udata, const char *buffer, duk_siz
 	}
 
 	if (length == 0) {
-		/* Write flush.  If the transport combines multiple writes
-		 * before actually sending, a write flush is an indication
-		 * to write out any pending bytes: Duktape may not be doing
-		 * any more writes on this occasion.
-		 */
+		/* This shouldn't happen. */
+		fprintf(stderr, "%s: write request length == 0, closing connection\n", __FILE__);
+		fflush(stderr);
+		goto fail;
+	}
 
-		if (buffer != NULL) {
-			/* This shouldn't happen. */
-			fprintf(stderr, "%s: write flush with buffer != NULL, closing connection\n", __FILE__);
-			fflush(stderr);
-			goto fail;
-		}
-
-		/* This TCP transport requires no flush handling so ignore. */
-		return 0;
+	if (buffer == NULL) {
+		/* This shouldn't happen. */
+		fprintf(stderr, "%s: write request buffer == NULL, closing connection\n", __FILE__);
+		fflush(stderr);
+		goto fail;
 	}
 
 	/* In a production quality implementation there would be a sanity
@@ -249,4 +221,85 @@ duk_size_t duk_debug_trans_socket_write(void *udata, const char *buffer, duk_siz
 		client_sock = -1;
 	}
 	return 0;
+}
+
+duk_size_t duk_debug_trans_socket_peek(void *udata) {
+	struct pollfd fds[1];
+	int poll_rc;
+
+	(void) udata;  /* not needed by the example */
+
+#if defined(DEBUG_PRINTS)
+	fprintf(stderr, "duk_debug_trans_socket_peek: udata=%p\n", (void *) udata);
+	fflush(stderr);
+#endif
+
+	fds[0].fd = client_sock;
+	fds[0].events = POLLIN;
+	fds[0].revents = 0;
+
+	poll_rc = poll(fds, 1, 0);
+	if (poll_rc < 0) {
+		fprintf(stderr, "%s: poll returned < 0, closing connection: %s\n", __FILE__, strerror(errno));
+		fflush(stderr);
+		goto fail;  /* also returns 0, which is correct */
+	} else if (poll_rc > 1) {
+		fprintf(stderr, "%s: poll returned > 1, treating like 1\n", __FILE__);
+		fflush(stderr);
+		return 1;  /* should never happen */
+	} else if (poll_rc == 0) {
+		return 0;  /* nothing to read */
+	} else {
+		return 1;  /* something to read */
+	}
+
+ fail:
+	if (client_sock >= 0) {
+		(void) close(client_sock);
+		client_sock = -1;
+	}
+	return 0;
+}
+
+void duk_debug_trans_socket_read_flush(void *udata) {
+#if defined(DEBUG_PRINTS)
+	fprintf(stderr, "duk_debug_trans_socket_read_flush: udata=%p\n", (void *) udata);
+	fflush(stderr);
+#endif
+
+	(void) udata;  /* not needed by the example */
+
+	/* Read flush: Duktape may not be making any more read calls at this
+	 * time.  If the transport maintains a receive window, it can use a
+	 * read flush as a signal to update the window status to the remote
+	 * peer.  A read flush is guaranteed to occur before Duktape stops
+	 * reading for a while; it may occur in other situations as well so
+	 * it's not a 100% reliable indication.
+	 */
+
+	/* This TCP transport requires no read flush handling so ignore.
+	 * You can also pass a NULL to duk_debugger_attach() and not
+	 * implement this callback at all.
+	 */
+}
+
+void duk_debug_trans_socket_write_flush(void *udata) {
+#if defined(DEBUG_PRINTS)
+	fprintf(stderr, "duk_debug_trans_socket_write_flush: udata=%p\n", (void *) udata);
+	fflush(stderr);
+#endif
+
+	(void) udata;  /* not needed by the example */
+
+	/* Write flush.  If the transport combines multiple writes
+	 * before actually sending, a write flush is an indication
+	 * to write out any pending bytes: Duktape may not be doing
+	 * any more writes on this occasion.
+	 */
+
+	/* This TCP transport requires no write flush handling so ignore.
+	 * You can also pass a NULL to duk_debugger_attach() and not
+	 * implement this callback at all.
+	 */
+	return;
 }

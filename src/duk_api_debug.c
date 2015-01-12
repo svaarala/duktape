@@ -38,7 +38,14 @@ DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
-DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function read_cb, duk_debug_write_function write_cb, void *udata) {
+DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
+                                      duk_debug_read_function read_cb,
+                                      duk_debug_write_function write_cb,
+                                      duk_debug_peek_function peek_cb,
+                                      duk_debug_read_flush_function read_flush_cb,
+                                      duk_debug_write_flush_function write_flush_cb,
+                                      duk_debug_detached_function detached_cb,
+                                      void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 	const char *str;
@@ -47,16 +54,20 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(read_cb != NULL);
 	DUK_ASSERT(write_cb != NULL);
+	/* Other callbacks are optional */
 
 	heap = thr->heap;
 	heap->dbg_read_cb = read_cb;
 	heap->dbg_write_cb = write_cb;
+	heap->dbg_peek_cb = peek_cb;
+	heap->dbg_read_flush_cb = read_flush_cb;
+	heap->dbg_write_flush_cb = write_flush_cb;
+	heap->dbg_detached_cb = detached_cb;
 	heap->dbg_udata = udata;
 
 	/* Start in paused state. */
 	heap->dbg_paused = 1;
 	heap->dbg_state_dirty = 1;
-	heap->dbg_brkpt_dirty = 1;
 	heap->dbg_step_type = 0;
 	heap->dbg_step_thread = NULL;
 	heap->dbg_step_csindex = 0;
@@ -76,32 +87,38 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function 
 	str = duk_get_lstring(ctx, -1, &len);
 	DUK_ASSERT(str != NULL);
 	duk_debug_write_bytes(thr, (const duk_uint8_t *) str, len);
+	duk_debug_write_flush(thr);
 	duk_pop(ctx);
 }
 
 DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_heap *heap;
+	duk_hthread *thr;
 
+	thr = (duk_hthread *) ctx;
 	DUK_ASSERT(ctx != NULL);
-	heap = thr->heap;
-	heap->dbg_read_cb = NULL;
-	heap->dbg_write_cb = NULL;
-	heap->dbg_udata = NULL;
-	heap->dbg_paused = 0;
-	heap->dbg_state_dirty = 0;
-	heap->dbg_brkpt_dirty = 0;
-	heap->dbg_step_type = 0;
-	heap->dbg_step_thread = NULL;
-	heap->dbg_step_csindex = 0;
-	heap->dbg_step_startline = 0;
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+	/* Can be called muliple times with no harm. */
+	duk_debug_do_detach(thr->heap);
 }
 
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
-DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function read_cb, duk_debug_write_function write_cb, void *udata) {
+DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
+                                      duk_debug_read_function read_cb,
+                                      duk_debug_write_function write_cb,
+                                      duk_debug_peek_function peek_cb,
+                                      duk_debug_read_flush_function read_flush_cb,
+                                      duk_debug_write_flush_function write_flush_cb,
+                                      duk_debug_detached_function detached_cb,
+                                      void *udata) {
 	DUK_UNREF(read_cb);
 	DUK_UNREF(write_cb);
+	DUK_UNREF(peek_cb);
+	DUK_UNREF(read_flush_cb);
+	DUK_UNREF(write_flush_cb);
+	DUK_UNREF(detached_cb);
 	DUK_UNREF(udata);
 	duk_error(ctx, DUK_ERR_API_ERROR, "no debugger support");
 }

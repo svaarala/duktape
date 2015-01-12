@@ -7,16 +7,55 @@
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
 /*
- *  Debug connection helpers
+ *  Helper structs
  */
 
-#define DUK__SET_CONN_BROKEN(heap) do { \
-		duk__debug_set_broken((heap)); \
+typedef union {
+	void *p;
+	duk_uint_t b[1];
+	/* Use b[] to access the size of the union, which is strictly not
+	 * correct.  Can't use fixed size unless there's feature detection
+	 * for pointer byte size.
+	 */
+} duk__ptr_union;
+
+/*
+ *  Detach handling
+ */
+
+#define DUK__SET_CONN_BROKEN(thr) do { \
+		/* For now shared handler is fine. */ \
+		duk_debug_do_detach((thr)->heap); \
 	} while (0)
 
-DUK_LOCAL void duk__debug_set_broken(duk_heap *heap) {
+DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
+	/* Can be called muliple times with no harm. */
+
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;
+	heap->dbg_peek_cb = NULL;
+	heap->dbg_read_flush_cb = NULL;
+	heap->dbg_write_flush_cb = NULL;
+	if (heap->dbg_detached_cb) {
+		heap->dbg_detached_cb(heap->dbg_udata);
+	}
+	heap->dbg_detached_cb = NULL;
+	heap->dbg_udata = NULL;
+	heap->dbg_paused = 0;
+	heap->dbg_state_dirty = 0;
+	heap->dbg_step_type = 0;
+	heap->dbg_step_thread = NULL;
+	heap->dbg_step_csindex = 0;
+	heap->dbg_step_startline = 0;
+
+	/* Ensure there are no stale active breakpoint pointers.
+	 * Breakpoint list is currently kept - we could empty it
+	 * here but we'd need to handle refcounts correctly, and
+	 * we'd need a 'thr' reference for that.
+	 *
+	 * XXX: clear breakpoint on either attach or detach?
+	 */
+	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
 }
 
 /*
@@ -30,11 +69,33 @@ DUK_INTERNAL duk_bool_t duk_debug_read_peek(duk_hthread *thr) {
 	heap = thr->heap;
 
 	if (heap->dbg_read_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to peek in error state, return zero (= no data)"));
+		DUK_D(DUK_DPRINT("attempt to peek in detached state, return zero (= no data)"));
+		return 0;
+	}
+	if (heap->dbg_peek_cb == NULL) {
+		DUK_DD(DUK_DDPRINT("no peek callback, return zero (= no data)"));
 		return 0;
 	}
 
-	return (duk_bool_t) heap->dbg_read_cb(heap->dbg_udata, NULL, 0);
+	return (duk_bool_t) (heap->dbg_peek_cb(heap->dbg_udata) > 0);
+}
+
+DUK_INTERNAL void duk_debug_read_flush(duk_hthread *thr) {
+	duk_heap *heap;
+
+	DUK_ASSERT(thr != NULL);
+	heap = thr->heap;
+
+	if (heap->dbg_read_cb == NULL) {
+		DUK_D(DUK_DPRINT("attempt to read flush in detached state, ignore"));
+		return;
+	}
+	if (heap->dbg_read_flush_cb == NULL) {
+		DUK_DD(DUK_DDPRINT("no read flush callback, ignore"));
+		return;
+	}
+
+	heap->dbg_read_flush_cb(heap->dbg_udata);
 }
 
 DUK_INTERNAL void duk_debug_write_flush(duk_hthread *thr) {
@@ -43,12 +104,16 @@ DUK_INTERNAL void duk_debug_write_flush(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
 
-	if (heap->dbg_write_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to write flush in error state, ignore"));
+	if (heap->dbg_read_cb == NULL) {
+		DUK_D(DUK_DPRINT("attempt to write flush in detached state, ignore"));
+		return;
+	}
+	if (heap->dbg_write_flush_cb == NULL) {
+		DUK_DD(DUK_DDPRINT("no write flush callback, ignore"));
 		return;
 	}
 
-	heap->dbg_write_cb(heap->dbg_udata, (const char *) NULL, (duk_size_t) 0);
+	heap->dbg_write_flush_cb(heap->dbg_udata);
 }
 
 /*
@@ -90,7 +155,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 	heap = thr->heap;
 
 	if (heap->dbg_read_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to read %ld bytes in error state, return zero data", (long) length));
+		DUK_D(DUK_DPRINT("attempt to read %ld bytes in detached state, return zero data", (long) length));
 		goto fail;
 	}
 
@@ -101,10 +166,11 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 			break;
 		}
 		DUK_ASSERT(heap->dbg_read_cb != NULL);
+		DUK_ASSERT(left >= 1);
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
-			DUK__SET_CONN_BROKEN(heap);
+			DUK__SET_CONN_BROKEN(thr);
 			goto fail;
 		}
 		p += got;
@@ -124,7 +190,7 @@ DUK_INTERNAL duk_uint8_t duk_debug_read_byte(duk_hthread *thr) {
 	heap = thr->heap;
 
 	if (heap->dbg_read_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to read 1 bytes in error state, return zero data"));
+		DUK_D(DUK_DPRINT("attempt to read 1 bytes in detached state, return zero data"));
 		return 0;
 	}
 
@@ -133,7 +199,7 @@ DUK_INTERNAL duk_uint8_t duk_debug_read_byte(duk_hthread *thr) {
 	got = heap->dbg_read_cb(heap->dbg_udata, (char *) (&x), 1);
 	if (got != 1) {
 		DUK_D(DUK_DPRINT("connection error during read, return zero data"));
-		DUK__SET_CONN_BROKEN(heap);
+		DUK__SET_CONN_BROKEN(thr);
 		return 0;
 	}
 
@@ -183,11 +249,11 @@ DUK_INTERNAL duk_int32_t duk_debug_read_int(duk_hthread *thr) {
 	}
 
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
-	DUK__SET_CONN_BROKEN(thr->heap);
+	DUK__SET_CONN_BROKEN(thr);
 	return 0;
 }
 
-DUK_INTERNAL duk_hstring *duk__debug_read_hstring_raw(duk_hthread *thr, duk_uint32_t len) {
+DUK_LOCAL duk_hstring *duk__debug_read_hstring_raw(duk_hthread *thr, duk_uint32_t len) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t buf[31];
 	duk_uint8_t *p;
@@ -228,30 +294,51 @@ DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
-	DUK__SET_CONN_BROKEN(thr->heap);
+	DUK__SET_CONN_BROKEN(thr);
 	duk_push_hstring_stridx(thr, DUK_STRIDX_EMPTY_STRING);  /* always push some string */
 	return duk_require_hstring(ctx, -1);
 }
 
-DUK_INTERNAL const void *duk_debug_read_pointer(duk_hthread *thr) {
-	duk_uint8_t buf[2];
-	volatile void *ptr;
+DUK_LOCAL duk_hbuffer *duk__debug_read_hbuffer_raw(duk_hthread *thr, duk_uint32_t len) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_uint8_t *p;
+
+	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+	DUK_ASSERT(p != NULL);
+	duk_debug_read_bytes(thr, p, (duk_size_t) len);
+
+	return duk_require_hbuffer(ctx, -1);
+}
+
+DUK_LOCAL const void *duk__debug_read_pointer_raw(duk_hthread *thr) {
+	duk_small_uint_t x;
+	volatile duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 
-	/* FIXME: endianness */
-	/* FIXME: union */
-	duk_debug_read_bytes(thr, buf, 2);
-	if (buf[0] != 0x1c || buf[1] != sizeof(ptr)) {
+	x = duk_debug_read_byte(thr);
+	if (x != sizeof(pu)) {
 		goto fail;
 	}
-	duk_debug_read_bytes(thr, (duk_uint8_t *) &ptr, sizeof(ptr));
-	return (const void *) ptr;
+	duk_debug_read_bytes(thr, (duk_uint8_t *) &pu.p, sizeof(pu));
+#if defined(DUK_USE_INTEGER_LE)
+	duk_byteswap_bytes((duk_uint8_t *) pu.b, sizeof(pu));
+#endif
+	return (const void *) pu.p;
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode pointer"));
-	DUK__SET_CONN_BROKEN(thr->heap);
+	DUK__SET_CONN_BROKEN(thr);
 	return (const void *) NULL;
+}
+
+DUK_LOCAL duk_double_t duk__debug_read_double_raw(duk_hthread *thr) {
+	duk_double_union du;
+
+	DUK_ASSERT(sizeof(du.uc) == 8);
+	duk_debug_read_bytes(thr, (duk_uint8_t *) du.uc, sizeof(du.uc));
+	DUK_DBLUNION_BSWAP(&du);
+	return du.d;
 }
 
 DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
@@ -287,16 +374,20 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		break;
 	}
 	case 0x11:
-		/* FIXME */
+		len = duk__debug_read_uint32_raw(thr);
+		duk__debug_read_hstring_raw(thr, len);
 		break;
 	case 0x12:
-		/* FIXME */
+		len = duk__debug_read_uint16_raw(thr);
+		duk__debug_read_hstring_raw(thr, len);
 		break;
 	case 0x13:
-		/* FIXME */
+		len = duk__debug_read_uint32_raw(thr);
+		duk__debug_read_hbuffer_raw(thr, len);
 		break;
 	case 0x14:
-		/* FIXME */
+		len = duk__debug_read_uint16_raw(thr);
+		duk__debug_read_hbuffer_raw(thr, len);
 		break;
 	case 0x15:
 		duk_push_unused(ctx);
@@ -313,24 +404,32 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 	case 0x19:
 		duk_push_false(ctx);
 		break;
-	case 0x1a:
-		/* FIXME: number */
-		goto fail;
+	case 0x1a: {
+		duk_double_t d;
+		d = duk__debug_read_double_raw(thr);
+		duk_push_number(ctx, d);
 		break;
+	}
 	case 0x1b:
-		/* FIXME: object */
+		/* XXX: not needed for now, so not implemented */
+		DUK_D(DUK_DPRINT("reading object values unimplemented"));
 		goto fail;
-		break;
 	case 0x1c: {
 		const void *ptr;
-		ptr = duk_debug_read_pointer(thr);
+		ptr = duk__debug_read_pointer_raw(thr);
 		duk_push_pointer(thr, (void *) ptr);
 		break;
 	}
 	case 0x1d:
-		/* FIXME: lightfunc */
+		/* XXX: not needed for now, so not implemented */
+		DUK_D(DUK_DPRINT("reading lightfunc values unimplemented"));
 		goto fail;
+	case 0x1e: {
+		duk_heaphdr *h;
+		h = (duk_heaphdr *) duk__debug_read_pointer_raw(thr);
+		duk_push_heapptr(thr, (void *) h);
 		break;
+	}
 	default:
 		goto fail;
 	}
@@ -339,7 +438,7 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode tval"));
-	DUK__SET_CONN_BROKEN(thr->heap);
+	DUK__SET_CONN_BROKEN(thr);
 }
 
 /*
@@ -358,7 +457,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 	heap = thr->heap;
 
 	if (heap->dbg_write_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to write %ld bytes in error state, ignore", (long) length));
+		DUK_D(DUK_DPRINT("attempt to write %ld bytes in detached state, ignore", (long) length));
 		return;
 	}
 	if (length == 0) {
@@ -376,10 +475,11 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 			break;
 		}
 		DUK_ASSERT(heap->dbg_write_cb != NULL);
+		DUK_ASSERT(left >= 1);
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during write"));
-			DUK__SET_CONN_BROKEN(heap);
+			DUK__SET_CONN_BROKEN(thr);
 			return;
 		}
 		p += got;
@@ -394,7 +494,7 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 	heap = thr->heap;
 
 	if (heap->dbg_write_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to write 1 bytes in error state, ignore"));
+		DUK_D(DUK_DPRINT("attempt to write 1 bytes in detached state, ignore"));
 		return;
 	}
 
@@ -402,13 +502,11 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 	got = heap->dbg_write_cb(heap->dbg_udata, (const char *) (&x), 1);
 	if (got != 1) {
 		DUK_D(DUK_DPRINT("connection error during write"));
-		DUK__SET_CONN_BROKEN(heap);
+		DUK__SET_CONN_BROKEN(thr);
 	}
 }
 
-/* Write signed 32-bit integer.  There's currently no need to support full
- * 32-bit unsigned integer range in practice.
- */
+/* Write signed 32-bit integer. */
 DUK_INTERNAL void duk_debug_write_int(duk_hthread *thr, duk_int32_t x) {
 	duk_uint8_t buf[5];
 	duk_size_t len;
@@ -432,6 +530,15 @@ DUK_INTERNAL void duk_debug_write_int(duk_hthread *thr, duk_int32_t x) {
 		len = 5;
 	}
 	duk_debug_write_bytes(thr, buf, len);
+}
+
+/* Write unsigned 32-bit integer. */
+DUK_INTERNAL void duk_debug_write_uint(duk_hthread *thr, duk_uint32_t x) {
+	/* XXX: there's currently no need to support full 32-bit unsigned
+	 * integer range in practice.  If that becomes necessary, add a new
+	 * dvalue type or encode as an IEEE double.
+	 */
+	duk_debug_write_int(thr, (duk_int32_t) x);
 }
 
 DUK_INTERNAL void duk_debug_write_strbuf(duk_hthread *thr, const char *data, duk_size_t length, duk_uint8_t marker_base) {
@@ -496,48 +603,49 @@ DUK_INTERNAL void duk_debug_write_hbuffer(duk_hthread *thr, duk_hbuffer *h) {
 	                       (h != NULL ? (duk_size_t) DUK_HBUFFER_GET_SIZE(h) : 0));
 }
 
-DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr) {
+DUK_LOCAL void duk__debug_write_pointer_raw(duk_hthread *thr, const void *ptr, duk_uint8_t ibyte) {
 	duk_uint8_t buf[2];
+	volatile duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(sizeof(ptr) >= 1 && sizeof(ptr) <= 16);
+	/* ptr may be NULL */
 
-	/* FIXME: endianness */
-	/* FIXME: union */
-	buf[0] = 0x1c;
-	buf[1] = sizeof(ptr);
+	buf[0] = ibyte;
+	buf[1] = sizeof(pu);
 	duk_debug_write_bytes(thr, buf, 2);
-	duk_debug_write_bytes(thr, (const duk_uint8_t *) &ptr, (duk_size_t) sizeof(ptr));
+	pu.p = (void *) ptr;
+#if defined(DUK_USE_INTEGER_LE)
+	duk_byteswap_bytes((duk_uint8_t *) pu.b, sizeof(pu));
+#endif
+	duk_debug_write_bytes(thr, (const duk_uint8_t *) &pu.p, (duk_size_t) sizeof(pu));
+}
+
+DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr) {
+	duk__debug_write_pointer_raw(thr, ptr, 0x1c);
 }
 
 DUK_INTERNAL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h) {
-	duk_uint8_t buf[2];
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(sizeof(h) >= 1 && sizeof(h) <= 16);
-
-	/* FIXME: endianness */
-	/* FIXME: union */
-	buf[0] = 0x1e;
-	buf[1] = sizeof(h);
-	duk_debug_write_bytes(thr, buf, 2);
-	duk_debug_write_bytes(thr, (const duk_uint8_t *) &h, (duk_size_t) sizeof(h));
+	duk__debug_write_pointer_raw(thr, (const void *) h, 0x1e);
 }
 
 DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint8_t buf[3];
+	volatile duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(sizeof(obj) >= 1 && sizeof(obj) <= 16);
-	/* obj may be NULL */
+	DUK_ASSERT(obj != NULL);
 
-	/* FIXME: endianness */
-	/* FIXME: union */
 	buf[0] = 0x1b;
-	buf[1] = (duk_uint8_t) (obj ? DUK_HOBJECT_GET_CLASS_NUMBER(obj) : 0);
-	buf[2] = sizeof(obj);
+	buf[1] = (duk_uint8_t) DUK_HOBJECT_GET_CLASS_NUMBER(obj);
+	buf[2] = sizeof(pu);
 	duk_debug_write_bytes(thr, buf, 3);
-	duk_debug_write_bytes(thr, (const duk_uint8_t *) &obj, (duk_size_t) sizeof(obj));
+	pu.p = (void *) obj;
+#if defined(DUK_USE_INTEGER_LE)
+	duk_byteswap_bytes((duk_uint8_t *) pu.b, sizeof(pu));
+#endif
+	duk_debug_write_bytes(thr, (const duk_uint8_t *) &pu.p, (duk_size_t) sizeof(pu));
 }
 
 DUK_INTERNAL void duk_debug_write_unused(duk_hthread *thr) {
@@ -548,7 +656,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	duk_c_function lf_func;
 	duk_small_uint_t lf_flags;
 	duk_uint8_t buf[3];
-	duk_double_t d;
+	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv != NULL);
@@ -588,19 +696,12 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		break;
 	default:
 		/* Numbers are normalized to big (network) endian. */
-
-		/* FIXME: implement */
-#if defined(DUK_USE_DOUBLE_LE)
-#elif defined(DUK_USE_DOUBLE_ME)
-#elif defined(DUK_USE_DOUBLE_BE)
-#else
-#error internal error, double endianness insane
-#endif
-
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		d = DUK_TVAL_GET_NUMBER(tv);
+		du.d = DUK_TVAL_GET_NUMBER(tv);
+		DUK_DBLUNION_BSWAP(&du);
+
 		duk_debug_write_byte(thr, 0x1a);
-		duk_debug_write_bytes(thr, (const duk_uint8_t *) &d, sizeof(d));  /* FIXME: dblunion */
+		duk_debug_write_bytes(thr, (const duk_uint8_t *) du.uc, sizeof(du.uc));
 	}
 }
 
@@ -702,8 +803,8 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_safe_to_string(ctx, -1);
 	duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
 	duk_pop_3(ctx);
-	duk_debug_write_int(thr, (duk_int32_t) duk_debug_curr_line(thr));
-	duk_debug_write_int(thr, (duk_int32_t) act->pc);
+	duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
+	duk_debug_write_uint(thr, (duk_uint32_t) act->pc);
 	duk_debug_write_eom(thr);
 }
 
@@ -780,7 +881,7 @@ DUK_LOCAL duk_bool_t duk__debug_skip_dvalue(duk_hthread *thr) {
 	return 0;
 
  fail:
-	DUK__SET_CONN_BROKEN(thr->heap);
+	DUK__SET_CONN_BROKEN(thr);
 	return 1;  /* Pretend like we got EOM */
 }
 
@@ -829,9 +930,7 @@ DUK_LOCAL void duk__debug_handle_trigger_status(duk_hthread *thr, duk_heap *heap
 DUK_LOCAL void duk__debug_handle_pause(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command pause"));
 
-	heap->dbg_paused = 1;
-	DUK_HEAP_CLEAR_STEP_STATE(heap);
-	heap->dbg_state_dirty = 1;
+	DUK_HEAP_SET_PAUSED(heap);
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
@@ -839,9 +938,7 @@ DUK_LOCAL void duk__debug_handle_pause(duk_hthread *thr, duk_heap *heap) {
 DUK_LOCAL void duk__debug_handle_resume(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command resume"));
 
-	heap->dbg_paused = 0;
-	DUK_HEAP_CLEAR_STEP_STATE(heap);
-	heap->dbg_state_dirty = 1;
+	DUK_HEAP_CLEAR_PAUSED(heap);
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
@@ -882,7 +979,7 @@ DUK_LOCAL void duk__debug_handle_list_break(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_write_reply(thr);
 	for (i = 0; i < (duk_small_int_t) heap->dbg_breakpoint_count; i++) {
 		duk_debug_write_hstring(thr, heap->dbg_breakpoints[i].filename);
-		duk_debug_write_int(thr, (duk_int32_t) heap->dbg_breakpoints[i].line);
+		duk_debug_write_uint(thr, (duk_uint32_t) heap->dbg_breakpoints[i].line);
 	}
 	duk_debug_write_eom(thr);
 }
@@ -892,6 +989,8 @@ DUK_LOCAL void duk__debug_handle_add_break(duk_hthread *thr, duk_heap *heap) {
 	duk_hstring *filename;
 	duk_uint32_t linenumber;
 	duk_small_int_t idx;
+
+	DUK_UNREF(heap);
 
 	filename = duk_debug_read_hstring(thr);
 	linenumber = (duk_uint32_t) duk_debug_read_int(thr);
@@ -905,18 +1004,18 @@ DUK_LOCAL void duk__debug_handle_add_break(duk_hthread *thr, duk_heap *heap) {
 		duk_debug_write_error_eom(thr, DUK_DBG_ERR_TOOMANY, "no space for breakpoint");
 	}
 	duk_pop(ctx);
-	heap->dbg_brkpt_dirty = 1;
 }
 
 DUK_LOCAL void duk__debug_handle_del_break(duk_hthread *thr, duk_heap *heap) {
 	duk_small_uint_t idx;
+
+	DUK_UNREF(heap);
 
 	DUK_D(DUK_DPRINT("debug command delbreak"));
 	idx = (duk_small_uint_t) duk_debug_read_int(thr);
 	duk_debug_remove_breakpoint(thr, idx);
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
-	heap->dbg_brkpt_dirty = 1;
 }
 
 DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
@@ -971,8 +1070,10 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 
 	duk_pop_2(ctx);
 
+	/* XXX: Current putvar implementation doesn't have a success flag,
+	 * add one and send to debug client?
+	 */
 	duk_debug_write_reply(thr);
-	/* FIXME: success flag */
 	duk_debug_write_eom(thr);
 }
 
@@ -1003,8 +1104,8 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			duk_safe_to_string(ctx, -1);
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -1));
 			line = duk_hobject_pc2line_query(ctx, -3, curr_act->pc);
-			duk_debug_write_int(thr, (duk_int32_t) line);
-			duk_debug_write_int(thr, (duk_int32_t) curr_act->pc);
+			duk_debug_write_uint(thr, (duk_uint32_t) line);
+			duk_debug_write_uint(thr, (duk_uint32_t) curr_act->pc);
 			duk_pop_3(ctx);
 		}
 		curr_thr = curr_thr->resumer;
@@ -1025,25 +1126,20 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	}
 	curr_act = thr->callstack + thr->callstack_top - 1;
 
-	/* XXX: optimize to use direct reads, i.e. avoid
-	 * value stack operations.
+	/* XXX: several nice-to-have improvements here:
+	 *   - Use direct reads avoiding value stack operations
+	 *   - Avoid triggering getters, indicate getter values to debug client
+	 *   - If side effects are possible, add error catching
 	 */
-	/* FIXME: error handling */
+
 	duk_push_tval(ctx, &curr_act->tv_func);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VARMAP);
 	if (duk_is_object(ctx, -1)) {
 		duk_enum(ctx, -1, 0 /*enum_flags*/);
 		while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
-			/* FIXME: dealing with values properly (avoid getters etc) */
 			varname = duk_get_hstring(ctx, -1);
 			DUK_ASSERT(varname != NULL);
 
-			/* FIXME: the danger here is that we enter a getter
-			 * or cause some other side effect which causes debug
-			 * communication before our message is finished.  A
-			 * getter might, for instance, print() which gets
-			 * forwarded and garbles the debug stream.
-			 */
 			duk_js_getvar_activation(thr, curr_act, varname, 0 /*throw_flag*/);
 			/* [ ... func varmap enum key value this ] */
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -3));
@@ -1062,10 +1158,6 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_context *ctx = (duk_context *) thr;
-
-	/* FIXME: it's probably best to remove dbg_brkpt_dirty and just recheck
-	 * breakpoints whenever any debug commands were executed?
-	 */
 
 	DUK_UNREF(heap);
 
@@ -1118,15 +1210,17 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_pop(ctx);
 
 	DUK_ASSERT(duk_get_top(ctx) == entry_top);
-
-	heap->dbg_brkpt_dirty = 1;  /* FIXME: need to recheck before returning from interrupt? */
 }
 
 DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command detach"));
 
-	duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNSUPPORTED, "detach unimplemented");  /*FIXME*/
+	duk_debug_write_reply(thr);
+	duk_debug_write_eom(thr);
+
+	DUK_D(DUK_DPRINT("debug connection detached, mark broken"));
+	DUK__SET_CONN_BROKEN(thr);
 }
 
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
@@ -1134,10 +1228,10 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	DUK_UNREF(heap);
 
 	duk_debug_write_heapptr(thr, hdr);
-	duk_debug_write_int(thr, (duk_int32_t) DUK_HEAPHDR_GET_TYPE(hdr));
-	duk_debug_write_int(thr, (duk_int32_t) DUK_HEAPHDR_GET_FLAGS_RAW(hdr));
+	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_TYPE(hdr));
+	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_FLAGS_RAW(hdr));
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	duk_debug_write_int(thr, (duk_int32_t) DUK_HEAPHDR_GET_REFCOUNT(hdr));
+	duk_debug_write_uint(thr, (duk_uint32_t) DUK_HEAPHDR_GET_REFCOUNT(hdr));
 #else
 	duk_debug_write_int(thr, (duk_int32_t) -1);
 #endif
@@ -1146,10 +1240,9 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	case DUK_HTYPE_STRING: {
 		duk_hstring *h = (duk_hstring *) hdr;
 
-		/* FIXME: write_uint? */
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HSTRING_GET_BYTELEN(h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HSTRING_GET_CHARLEN(h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HSTRING_GET_HASH(h));
+		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_BYTELEN(h));
+		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_CHARLEN(h));
+		duk_debug_write_uint(thr, (duk_int32_t) DUK_HSTRING_GET_HASH(h));
 		duk_debug_write_hstring(thr, h);
 		break;
 	}
@@ -1158,15 +1251,15 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 		duk_hstring *k;
 		duk_uint_fast32_t i;
 
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_GET_CLASS_NUMBER(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_CLASS_NUMBER(h));
 		duk_debug_write_heapptr(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_GET_ESIZE(h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_GET_ENEXT(h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_GET_ASIZE(h));
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_GET_HSIZE(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ESIZE(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ENEXT(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_ASIZE(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_GET_HSIZE(h));
 
 		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h); i++) {
-			duk_debug_write_int(thr, (duk_int32_t) DUK_HOBJECT_E_GET_FLAGS(heap, h, i));
+			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HOBJECT_E_GET_FLAGS(heap, h, i));
 			k = DUK_HOBJECT_E_GET_KEY(heap, h, i);
 			duk_debug_write_heapptr(thr, (duk_heaphdr *) k);
 			if (k == NULL) {
@@ -1196,11 +1289,11 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 	case DUK_HTYPE_BUFFER: {
 		duk_hbuffer *h = (duk_hbuffer *) hdr;
 
-		duk_debug_write_int(thr, (duk_int32_t) DUK_HBUFFER_GET_SIZE(h));
+		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_GET_SIZE(h));
 		if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
-			duk_debug_write_int(thr, (duk_int32_t) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE((duk_hbuffer_dynamic *) h));
+			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE((duk_hbuffer_dynamic *) h));
 		} else {
-			duk_debug_write_int(thr, (duk_int32_t) DUK_HBUFFER_GET_SIZE(h));
+			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_GET_SIZE(h));
 		}
 		duk_debug_write_buffer(thr, (const char *) DUK_HBUFFER_GET_DATA_PTR(heap, h), (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
 		break;
@@ -1222,12 +1315,47 @@ DUK_LOCAL void duk__debug_dump_heap_allocated(duk_hthread *thr, duk_heap *heap) 
 }
 
 #if defined(DUK_USE_STRTAB_CHAIN)
-#error unimplemented
 DUK_LOCAL void duk__debug_dump_strtab_chain(duk_hthread *thr, duk_heap *heap) {
-	DUK_UNREF(thr);
-	DUK_UNREF(heap);
+	duk_uint_fast32_t i, j;
+	duk_strtab_entry *e;
+#if defined(DUK_USE_HEAPPTR16)
+	duk_uint16_t *lst;
+#else
+	duk_hstring **lst;
+#endif
+	duk_hstring *h;
 
-	/* FIXME */
+	for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
+		e = heap->strtable + i;
+		if (e->listlen > 0) {
+#if defined(DUK_USE_HEAPPTR16)
+			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, e->u.strlist16);
+#else
+			lst = e->u.strlist;
+#endif
+			DUK_ASSERT(lst != NULL);
+
+			for (j = 0; j < e->listlen; j++) {
+#if defined(DUK_USE_HEAPPTR16)
+				h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, lst[j]);
+#else
+				h = lst[j];
+#endif
+				if (h != NULL) {
+					duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
+				}
+			}
+		} else {
+#if defined(DUK_USE_HEAPPTR16)
+			h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, e->u.str16);
+#else
+			h = e->u.str;
+#endif
+			if (h != NULL) {
+				duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
+			}
+		}
+	}
 }
 #endif  /* DUK_USE_STRTAB_CHAIN */
 
@@ -1235,9 +1363,6 @@ DUK_LOCAL void duk__debug_dump_strtab_chain(duk_hthread *thr, duk_heap *heap) {
 DUK_LOCAL void duk__debug_dump_strtab_probe(duk_hthread *thr, duk_heap *heap) {
 	duk_uint32_t i;
 	duk_hstring *h;
-
-	DUK_UNREF(thr);
-	DUK_UNREF(heap);
 
 	for (i = 0; i < heap->st_size; i++) {
 #if defined(DUK_USE_HEAPPTR16)
@@ -1257,20 +1382,14 @@ DUK_LOCAL void duk__debug_dump_strtab_probe(duk_hthread *thr, duk_heap *heap) {
 DUK_LOCAL void duk__debug_handle_dump_heap(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command dumpheap"));
 
-	/* FIXME: finish first iteration of format. */
-
 	duk_debug_write_reply(thr);
-
 	duk__debug_dump_heap_allocated(thr, heap);
-
 #if defined(DUK_USE_STRTAB_CHAIN)
 	duk__debug_dump_strtab_chain(thr, heap);
 #endif
-
 #if defined(DUK_USE_STRTAB_PROBE)
 	duk__debug_dump_strtab_probe(thr, heap);
 #endif
-
 	duk_debug_write_eom(thr);
 }
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
@@ -1384,15 +1503,16 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	return;
 
  fail:
-	DUK__SET_CONN_BROKEN(heap);
+	DUK__SET_CONN_BROKEN(thr);
 	return;
 }
 
-DUK_INTERNAL void duk_debug_process_messages(duk_hthread *thr) {
+DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
 #endif
+	duk_bool_t retval = 0;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_UNREF(ctx);
@@ -1429,7 +1549,13 @@ DUK_INTERNAL void duk_debug_process_messages(duk_hthread *thr) {
 			duk_debug_send_status(thr);
 			thr->heap->dbg_state_dirty = 0;
 		}
+		retval = 1;  /* processed one or more messages */
 	}
+
+	/* As an initial implementation, read flush after exiting the message
+	 * loop.
+	 */
+	duk_debug_read_flush(thr);
 
 	DUK_DD(DUK_DDPRINT("top at exit: %ld", (long) duk_get_top(ctx)));
 
@@ -1437,6 +1563,8 @@ DUK_INTERNAL void duk_debug_process_messages(duk_hthread *thr) {
 	/* Easy to get wrong, so assert for it. */
 	DUK_ASSERT(entry_top == duk_get_top(ctx));
 #endif
+
+	return retval;
 }
 
 /*
@@ -1447,9 +1575,9 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 	duk_heap *heap;
 	duk_breakpoint *b;
 
-	/* FIXME: caller must retrigger recomputation of active breakpoints list.
-	 * Would it be safest to write a NULL (empty list) to it here to ensure
-	 * no invalid pointers are ever used?
+	/* Caller must trigger recomputation of active breakpoint list.  To
+	 * ensure stale values are not used if that doesn't happen, clear the
+	 * active breakpoint list here.
 	 */
 
 	DUK_ASSERT(thr != NULL);
@@ -1461,11 +1589,12 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 		                 (duk_heaphdr *) filename, (long) line));
 		return -1;
 	}
+	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
 	b = heap->dbg_breakpoints + (heap->dbg_breakpoint_count++);
-
 	b->filename = filename;
 	b->line = line;
 	DUK_HSTRING_INCREF(thr, filename);
+
 	return heap->dbg_breakpoint_count - 1;  /* index */
 }
 
@@ -1475,9 +1604,9 @@ DUK_INTERNAL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t
 	duk_breakpoint *b;
 	duk_size_t move_size;
 
-	/* FIXME: caller must retrigger recomputation of active breakpoints list.
-	 * Would it be safest to write a NULL (empty list) to it here to ensure
-	 * no invalid pointers are ever used?
+	/* Caller must trigger recomputation of active breakpoint list.  To
+	 * ensure stale values are not used if that doesn't happen, clear the
+	 * active breakpoint list here.
 	 */
 
 	DUK_ASSERT(thr != NULL);
@@ -1499,6 +1628,7 @@ DUK_INTERNAL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t
 		            move_size);
 	}
 	heap->dbg_breakpoint_count--;
+	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
 
 	DUK_HSTRING_DECREF(thr, h);  /* side effects */
 

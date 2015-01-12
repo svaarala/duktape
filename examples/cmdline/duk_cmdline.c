@@ -446,6 +446,13 @@ static int handle_interactive(duk_context *ctx) {
 }
 #endif  /* NO_READLINE */
 
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+static void debugger_detached(void *udata) {
+	fprintf(stderr, "Debugger detached, udata: %p\n", (void *) udata);
+	fflush(stderr);
+}
+#endif
+
 #define  ALLOC_DEFAULT  0
 #define  ALLOC_LOGGING  1
 #define  ALLOC_TORTURE  2
@@ -542,7 +549,7 @@ int main(int argc, char *argv[]) {
 		ctx = duk_create_heap(duk_alloc_logging,
 		                      duk_realloc_logging,
 		                      duk_free_logging,
-		                      NULL,
+		                      (void *) 0xdeadbeef,
 		                      NULL);
 #else
 		fprintf(stderr, "Warning: option --alloc-logging ignored, no logging allocator support\n");
@@ -554,7 +561,7 @@ int main(int argc, char *argv[]) {
 		ctx = duk_create_heap(duk_alloc_torture,
 		                      duk_realloc_torture,
 		                      duk_free_torture,
-		                      NULL,
+		                      (void *) 0xdeadbeef,
 		                      NULL);
 #else
 		fprintf(stderr, "Warning: option --alloc-torture ignored, no torture allocator support\n");
@@ -627,7 +634,11 @@ int main(int argc, char *argv[]) {
 		duk_debugger_attach(ctx,
 		                    duk_debug_trans_socket_read,
 		                    duk_debug_trans_socket_write,
-		                    NULL);
+		                    duk_debug_trans_socket_peek,
+		                    duk_debug_trans_socket_read_flush,
+		                    duk_debug_trans_socket_write_flush,
+		                    debugger_detached,
+		                    (void *) 0xbeef1234);
 #else
 		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
 		fflush(stderr);

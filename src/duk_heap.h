@@ -291,14 +291,21 @@ struct duk_breakpoint {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 #define DUK_HEAP_IS_DEBUGGER_ATTACHED(heap) ((heap)->dbg_read_cb != NULL)
-#define DUK_HEAP_SET_PAUSED(heap) do { \
-		(heap)->dbg_paused = 1; \
-	} while (0)
 #define DUK_HEAP_CLEAR_STEP_STATE(heap) do { \
 		(heap)->dbg_step_type = DUK_STEP_TYPE_NONE; \
 		(heap)->dbg_step_thread = NULL; \
 		(heap)->dbg_step_csindex = 0; \
 		(heap)->dbg_step_startline = 0; \
+	} while (0)
+#define DUK_HEAP_SET_PAUSED(heap) do { \
+		(heap)->dbg_paused = 1; \
+		(heap)->dbg_state_dirty = 1; \
+		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
+	} while (0)
+#define DUK_HEAP_CLEAR_PAUSED(heap) do { \
+		(heap)->dbg_paused = 0; \
+		(heap)->dbg_state_dirty = 1; \
+		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
 	} while (0)
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
@@ -446,12 +453,18 @@ struct duk_heap {
 	/* debugger */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	duk_debug_read_function dbg_read_cb;    /* stream read/peek callback; != NULL implies debugger attached */
-	duk_debug_write_function dbg_write_cb;  /* stream write callback */
-	void *dbg_udata;                        /* userdata for debug callbacks */
+	/* callbacks and udata; dbg_read_cb != NULL is used to indicate attached state */
+	duk_debug_read_function dbg_read_cb;                /* required, NULL implies detached */
+	duk_debug_write_function dbg_write_cb;              /* required */
+	duk_debug_peek_function dbg_peek_cb;
+	duk_debug_read_flush_function dbg_read_flush_cb;
+	duk_debug_write_flush_function dbg_write_flush_cb;
+	duk_debug_detached_function dbg_detached_cb;
+	void *dbg_udata;
+
+	/* debugger state, only relevant when attached */
 	duk_bool_t dbg_paused;                  /* currently paused: talk with debug client until step/resume */
-	duk_bool_t dbg_state_dirty;		/* resend state next time executor is about to run */
-	duk_bool_t dbg_brkpt_dirty;             /* breakpoints edited, must recheck */
+	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
 	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
 	duk_hthread *dbg_step_thread;           /* borrowed; NULL if no step state (NULLed in unwind) */
 	duk_size_t dbg_step_csindex;            /* callstack index */

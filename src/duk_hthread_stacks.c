@@ -199,9 +199,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 			/* Pause for all step types: step into, step over, step out.
 			 * This is the only place explicitly handling a step out.
 			 */
-			heap->dbg_paused = 1;
-			DUK_HEAP_CLEAR_STEP_STATE(heap);
-			heap->dbg_state_dirty = 1;
+			DUK_HEAP_SET_PAUSED(heap);
 			DUK_ASSERT(heap->dbg_step_thread == NULL);
 		}
 #endif

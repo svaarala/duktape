@@ -2359,8 +2359,13 @@ typedef FILE duk_file;
 #define DUK_USE_DEBUGGER_FWD_LOGGING
 #endif
 
-/* FIXME: large footprint so make optional? */
+/* DumpHeap is optional because it's not always needed and has a relatively
+ * large footprint.
+ */
+#undef DUK_USE_DEBUGGER_DUMPHEAP
+#if defined(DUK_OPT_DEBUGGER_DUMPHEAP)
 #define DUK_USE_DEBUGGER_DUMPHEAP
+#endif
 
 /* For opcodes with indirect indices, check final index against stack size.
  * This should not be necessary because the compiler is trusted, and we don't

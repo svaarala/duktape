@@ -54,6 +54,10 @@ typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t c
 typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
 typedef duk_size_t (*duk_debug_read_function) (void *udata, char *buffer, duk_size_t length);
 typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_peek_function) (void *udata);
+typedef void (*duk_debug_read_flush_function) (void *udata);
+typedef void (*duk_debug_write_flush_function) (void *udata);
+typedef void (*duk_debug_detached_function) (void *udata);
 
 struct duk_memory_functions {
 	duk_alloc_function alloc_func;
@@ -866,7 +870,14 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
  *  Debugger (debug protocol)
  */
 
-DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function read_cb, duk_debug_write_function write_cb, void *udata);
+DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx,
+                                           duk_debug_read_function read_cb,
+                                           duk_debug_write_function write_cb,
+                                           duk_debug_peek_function peek_cb,
+                                           duk_debug_read_flush_function read_flush_cb,
+                                           duk_debug_write_flush_function write_flush_cb,
+                                           duk_debug_detached_function detached_cb,
+                                           void *udata);
 DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 
 /*
