@@ -250,7 +250,7 @@ function prettyUiStringUnquoted(x, cliplen) {
         // Here utf8.decode() is better than decoding using NodeJS buffer
         // operations because we want strict UTF-8 interpretation.
 
-        // FIXME: unprintable characters etc?  In some UI cases we'd want to
+        // XXX: unprintable characters etc?  In some UI cases we'd want to
         // e.g. escape newlines and in others not.
         ret = utf8.decode(x);
     } catch (e) {
@@ -568,8 +568,7 @@ function DebugProtocolParser(inputStream,
         if (protocolVersion == null) {
             if (buf.length > 1024) {
                 _this.emit('transport-error', 'Parse error (version identification too long), dropping connection');
-                inputStream.destroy();
-                _this.closed = true;
+                _this.close();
                 return;
             }
 
@@ -708,14 +707,12 @@ function DebugProtocolParser(inputStream,
                     v = false;
                     consume(1);
                     break;
-                case 0x1a:  // number (IEEE double)
+                case 0x1a:  // number (IEEE double), big endian
                     if (buf.length >= 9) {
                         v = new Buffer(8);
                         buf.copy(v, 0, 1, 9);
-                        v = { NUM: v.toString('hex'), value: v.readDoubleLE(0) };
+                        v = { NUM: v.toString('hex'), value: v.readDoubleBE(0) };
                         consume(9);
-                        // FIXME: endianness decode, need basic info
-                        // FIXME: endianness to version info line?
                     }
                     break;
                 case 0x1b:  // object
@@ -764,8 +761,7 @@ function DebugProtocolParser(inputStream,
                     break;
                 default:
                     _this.emit('transport-error', 'Parse error, dropping connection');
-                    inputStream.destroy();
-                    _this.closed = true;
+                    _this.close();
                 }
             }
 
@@ -851,22 +847,31 @@ function formatDebugValue(v) {
     } else if (typeof v === 'boolean') {
         return new Buffer([ v ? 0x18 : 0x19 ]);
     } else if (typeof v === 'number') {
-        if (Math.floor(v) !== v) {
-            // FIXME: represent non-integers as IEEE double dvalues
-            throw new TypeError('cannot convert to dvalue, number is not an integer: ' + v);
-        }
-        if (v >= 0x00 && v <= 0x3f) {
-            return new Buffer([ 0x80 + v ]);
-        } else if (v >= 0x0000 && v <= 0x3fff) {
-            return new Buffer([ 0xc0 + (v >> 8), v & 0xff ]);
-        } else if (v >= -0x80000000 && v <= 0x7fffffff) {
-            return new Buffer([ 0x10,
-                                (v >> 24) & 0xff,
-                                (v >> 16) & 0xff,
-                                (v >> 8) & 0xff,
-                                (v >> 0) & 0xff ]);
+        if (Math.floor(v) === v &&     /* whole */
+            (v !== 0 || 1 / v > 0) &&  /* not negative zero */
+            v >= -0x80000000 && v <= 0x7fffffff) {
+            // Represented signed 32-bit integers as plain integers.
+            // Debugger code expects this for all fields that are not
+            // duk_tval representations (e.g. command numbers and such).
+            if (v >= 0x00 && v <= 0x3f) {
+                return new Buffer([ 0x80 + v ]);
+            } else if (v >= 0x0000 && v <= 0x3fff) {
+                return new Buffer([ 0xc0 + (v >> 8), v & 0xff ]);
+            } else if (v >= -0x80000000 && v <= 0x7fffffff) {
+                return new Buffer([ 0x10,
+                                    (v >> 24) & 0xff,
+                                    (v >> 16) & 0xff,
+                                    (v >> 8) & 0xff,
+                                    (v >> 0) & 0xff ]);
+            } else {
+                throw new Error('internal error when encoding integer to dvalue: ' + v);
+            }
         } else {
-            throw new TypeError('cannot convert to dvalue, number is not in signed 32-bit range: ' + v);
+            // Represent non-integers as IEEE double dvalues
+            buf = new Buffer(1 + 8);
+            buf[0] = 0x1a;
+            buf.writeDoubleBE(v, 1);
+            return buf;
         }
     } else if (typeof v === 'string') {
         if (v.length < 0 || v.length > 0xffffffff) {
@@ -896,7 +901,9 @@ function formatDebugValue(v) {
             return buf;
         }
     }
-    // FIXME: pointers, buffers, objects, etc
+
+    // XXX: missing support for various types (pointer, object, lightfunc, buffer)
+    // as they're not needed right now.
 
     throw new TypeError('value cannot be converted to dvalue: ' + v);
 }
@@ -1179,6 +1186,15 @@ Debugger.prototype.sendEval = function (evalInput, doneCb) {
         doneCb(msg[1] === 1 /*error*/, msg[2]);
     }, function (err) {
         doneCb(err);
+    });
+};
+
+Debugger.prototype.sendDetachRequest = function () {
+    var _this = this;
+    this.sendRequest([ DVAL_REQ, CMD_DETACH, DVAL_EOM ], function (msg) {
+        // nop
+    }, function (err) {
+        // nop
     });
 };
 
@@ -1719,7 +1735,10 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
     });
 
     socket.on('detach', function (msg) {
-        _this.dbg.disconnectDebugger();
+        _this.dbg.sendDetachRequest();
+        setTimeout(function () {
+            _this.dbg.disconnectDebugger();
+        }, 1000);  // XXX: chain callback but have a timeout if no response
     });
 
     socket.on('stepinto', function (msg) {
@@ -1770,7 +1789,13 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
         // msg.varname and msg.varvalue are proper Unicode strings here, they
         // need to be converted into protocol strings (U+0000...U+00FF).
         var varname = stringToDebugString(msg.varname);
-        var varvalue = stringToDebugString(msg.varvalue);
+        var varvalue = msg.varvalue;
+
+        // varvalue is JSON parsed by the web UI for now, need special string
+        // encoding here.
+        if (typeof varvalue === 'string') {
+            varvalue = stringToDebugString(msg.varvalue);
+        }
 
         _this.dbg.sendPutVarRequest(varname, varvalue, function () {
             console.log('putvar done');  // FIXME: UI? Success?
