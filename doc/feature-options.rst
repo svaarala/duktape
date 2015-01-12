@@ -734,6 +734,13 @@ Define a freeform human readable string to describe the target device (e.g.
 "Arduino Yun").  This string will be sent as part of version/target info in
 the debugger protocol and shows up in the debugger UI.
 
+DUK_OPT_DEBUGGER_DUMPHEAP
+-------------------------
+
+Support the DumpHeap command.  This is optional because the command is not
+always needed.  The command also has a relatively large footprint (about 10%
+of debugger code); in absolute terms it's about 1kB of code footprint.
+
 Debugging options
 =================
 
