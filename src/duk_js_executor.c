@@ -3154,9 +3154,10 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                num_stack_args,
 				                call_flags);
 
-				/* XXX: who should restore? */
-				duk_require_stack_top(ctx, fun->nregs);  /* may have shrunk by inner calls, must recheck */
-				duk_set_top(ctx, fun->nregs);
+				/* duk_js_call.c is required to restore the stack reserve
+				 * so we only need to reset the top.
+				 */
+				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
 				/* No need to reinit setjmp() catchpoint, as call handling
 				 * will store and restore our state.
@@ -3196,8 +3197,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                num_stack_args,
 				                call_flags);
 
-				/* FIXME: duk_js_call.c should handle this now -- replace with assert? */
-				duk_require_stack_top(ctx, (duk_idx_t) fun->nregs);  /* may have shrunk by inner calls, must recheck */
+				/* duk_js_call.c is required to restore the stack reserve
+				 * so we only need to reset the top.
+				 */
 				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
 				/* No need to reinit setjmp() catchpoint, as call handling
