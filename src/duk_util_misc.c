@@ -44,3 +44,22 @@ DUK_INTERNAL duk_int8_t duk_hex_dectab[256] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  /* 0xe0-0xef */
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1   /* 0xf0-0xff */
 };
+
+/*
+ *  Arbitrary byteswap for potentially unaligned values
+ *
+ *  Used to byteswap pointers e.g. in debugger code.
+ */
+
+DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
+	duk_uint8_t tmp;
+	duk_uint8_t *q = p + len - 1;
+
+	while (p - q < 0) {
+		tmp = *p;
+		*p = *q;
+		*q = tmp;
+		p++;
+		q--;
+	}
+}

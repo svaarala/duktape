@@ -2068,6 +2068,23 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Byteswap macros
+ *
+ *  These are here so that inline assembly or other platform functions can be
+ *  used if available.
+ */
+
+#define DUK_BSWAP32(x) \
+	((((duk_uint32_t) (x)) >> 24) | \
+	 ((((duk_uint32_t) (x)) >> 8) & 0xff00UL) | \
+	 ((((duk_uint32_t) (x)) << 8) & 0xff0000UL) | \
+	 (((duk_uint32_t) (x)) << 24))
+
+#define DUK_BSWAP16(x) \
+	((duk_uint16_t) (x) >> 8) | \
+	((duk_uint16_t) (x) << 8)
+
+/*
  *  Architecture string, human readable value exposed in Duktape.env
  */
 

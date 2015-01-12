@@ -67,4 +67,6 @@ DUK_INTERNAL_DECL void duk_be_finish(duk_bitencoder_ctx *ctx);
 DUK_INTERNAL_DECL duk_uint32_t duk_util_tinyrandom_get_bits(duk_hthread *thr, duk_small_int_t n);
 DUK_INTERNAL_DECL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr);
 
+DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
+
 #endif  /* DUK_UTIL_H_INCLUDED */
