@@ -126,6 +126,18 @@ Multi-statement macros should use a ``do-while(0)`` construct::
                   y = y * y; \
           } while (0)
 
+When the body of a macro is sometimes empty, use an empty do-while so that
+the macro still yields a statement::
+
+  #if defined(DUK_USE_FROB)
+  #define  FROBNICATE(x,y)  do { \
+                  x = x * x; \
+                  y = y * y; \
+          } while (0)
+  #else
+  #define  FROBNICATE(x,y)  do { } while (0)
+  #endif
+
 Use parentheses when referring to macro arguments and the final macro
 result to minimize error proneness::
 
