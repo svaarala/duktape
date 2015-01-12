@@ -3139,7 +3139,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
 			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
 			duk_push_tval(ctx, tv_val);
-			data[arr_idx] = (duk_uint8_t) duk_to_uint(ctx, -1);
+			/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
+			 * as input is within duk_int_t range (capped outside it).
+			 */
+			data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
 			pop_count++;
 			duk_pop_n(ctx, pop_count);
 			DUK_DDD(DUK_DDDPRINT("result: success (buffer data write)"));
@@ -3299,7 +3302,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 						DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
 						data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
 						duk_push_tval(ctx, tv_val);
-						data[arr_idx] = (duk_uint8_t) duk_to_uint(ctx, -1);
+						/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
+						 * as input is within duk_int_t range (capped outside it).
+						 */
+						data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
 						duk_pop(ctx);
 						goto success_no_arguments_exotic;
 					}

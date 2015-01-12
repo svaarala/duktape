@@ -794,6 +794,9 @@ Planned
   [65536,262143] VM registers would be compiled into incorrect bytecode
   instead of being rejected with an internal error (see GH-111)
 
+* Fix buffer assignment to allow negative values: buf[3] = -1 now yields 0xFF
+  (in Duktape 1.1 yields 0x00 because negative values are capped to 0)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
