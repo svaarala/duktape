@@ -18,4 +18,4 @@ experimental
 duk_debugger_attach
 
 =introduced
-1.1.0
+1.2.0
