@@ -204,6 +204,10 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_WINDOWS
 #endif
 
+#if defined(__APPLE__)
+#define DUK_F_APPLE
+#endif
+
 /* Atari ST TOS. __TOS__ defined by PureC (which doesn't work as a target now
  * because int is 16-bit, to be fixed).  No platform define in VBCC apparently,
  * so to use with VBCC, user must define '__TOS__' manually.
@@ -400,6 +404,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
+#include <TargetConditionals.h>
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
@@ -2094,6 +2099,17 @@ typedef FILE duk_file;
 
 #if defined(DUK_F_LINUX)
 #define DUK_USE_OS_STRING "linux"
+#elif defined(__APPLE__)
+/* http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor */
+#if TARGET_IPHONE_SIMULATOR
+#define DUK_USE_OS_STRING "iPhone-sim"
+#elif TARGET_OS_IPHONE
+#define DUK_USE_OS_STRING "iPhone"
+#elif TARGET_OS_MAC
+#define DUK_USE_OS_STRING "iOS"
+#else
+#define DUK_USE_OS_STRING "iOS-unknown"
+#endif
 #elif defined(DUK_F_FREEBSD)
 #define DUK_USE_OS_STRING "freebsd"
 #elif defined(DUK_F_OPENBSD)
