@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: change osx/iphone duktape.env capitalization to match others
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2015-01-13 04:18:26.307478 Z
+references: []
+
+id: 95aaca70ed8bbb3887da24bde9bf0c007d947c71
+log_events: 
+- - 2015-01-13 04:18:26.550348 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2015-01-13 12:00:30.977955 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""

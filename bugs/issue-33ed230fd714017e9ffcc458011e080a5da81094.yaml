@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: lexer bug for kanji characters (GH-103)
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2015-01-13 10:44:52.844899 Z
+references: []
+
+id: 33ed230fd714017e9ffcc458011e080a5da81094
+log_events: 
+- - 2015-01-13 10:44:53.025716 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2015-01-13 11:59:32.534445 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
