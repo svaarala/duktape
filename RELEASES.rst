@@ -778,6 +778,9 @@ Planned
 
 * Add iPhone/iOS strings to Duktape.env
 
+* Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
+  not accepted in identifier names (see GH-103)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 

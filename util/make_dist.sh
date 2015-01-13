@@ -504,6 +504,13 @@ python src/genbuiltins.py \
 # match table for "WhiteSpace-Z" is not used, because a custom piece
 # of code handles that particular match.
 #
+# UnicodeData.txt contains ranges expressed like this:
+#
+#   4E00;<CJK Ideograph, First>;Lo;0;L;;;;;N;;;;;
+#   9FCB;<CJK Ideograph, Last>;Lo;0;L;;;;;N;;;;;
+#
+# These are currently decoded into individual characters as a prestep.
+#
 # For IDPART:
 #   UnicodeCombiningMark -> categories Mn, Mc
 #   UnicodeDigit -> categories Nd
@@ -550,9 +557,11 @@ IDPART_MINUS_IDSTART_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
 IDPART_MINUS_IDSTART_NOABMP_INCL=$IDPART_MINUS_IDSTART_NOA_INCL
 IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 
+python src/prepare_unicode_data.py src/UnicodeData.txt $DISTSRCSEP/UnicodeData-expanded.tmp
+
 extract_chars() {
 	python src/extract_chars.py \
-		--unicode-data=src/UnicodeData.txt \
+		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
 		--include-categories="$1" \
 		--exclude-categories="$2" \
 		--out-source=$DISTSRCSEP/duk_unicode_$3.c.tmp \
@@ -563,7 +572,7 @@ extract_chars() {
 
 extract_caseconv() {
 	python src/extract_caseconv.py \
-		--unicode-data=src/UnicodeData.txt \
+		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
 		--special-casing=src/SpecialCasing.txt \
 		--out-source=$DISTSRCSEP/duk_unicode_caseconv.c.tmp \
 		--out-header=$DISTSRCSEP/duk_unicode_caseconv.h.tmp \
