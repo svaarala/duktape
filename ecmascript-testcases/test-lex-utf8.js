@@ -8,6 +8,7 @@
 1 number
 2 number
 3 number
+hello world!
 ===*/
 
 // These chars are in UTF-8 format in the source file
@@ -24,3 +25,7 @@ print(äöå, typeof äöå);
 
 my_变量 = 3;
 print(my_变量, typeof my_变量);
+
+obj = {};
+obj.变量1='hello';
+print(obj.变量1, 'world!');
