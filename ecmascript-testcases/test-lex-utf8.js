@@ -27,5 +27,5 @@ my_变量 = 3;
 print(my_变量, typeof my_变量);
 
 obj = {};
-obj.变量1='hello';
+obj.变量1 = 'hello';
 print(obj.变量1, 'world!');
