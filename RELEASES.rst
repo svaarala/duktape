@@ -776,6 +776,8 @@ Planned
 
 * Debugger support
 
+* Add iPhone/iOS strings to Duktape.env
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
