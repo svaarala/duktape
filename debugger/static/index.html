@@ -28,7 +28,7 @@
 <button id="attach-button">Attach</button>
 <button id="detach-button">Detach</button>
 <button id="about-button">About</button>
-<button id="heap-dump-download"><a id="heap-dump-download" href="/heapDump.json" target="_blank">Dump&#x00a0;heap</a></button>
+<button id="heap-dump-download-button"><a id="heap-dump-download" href="/heapDump.json" target="_blank">Dump&#x00a0;heap</a></button>
 </div>  <!-- #left-area -->
 
 <div id="center-area">
@@ -59,9 +59,9 @@
 <div style="color: #dddddd">(breakpoints)</div>
 </div>
 <div id="eval">
-<input id="eval-input" value="print('hello world'); 1+2" /><button id="eval-button">Eval</button><input id="eval-watch" type="checkbox" />&#xa0;watch (automatic eval on pause)
+<input id="eval-input" value="print('hello world'); 1+2" /><button id="eval-button">Eval</button><input id="eval-watch" type="checkbox" />&#xa0;watch (eval on pause)
 <div id="eval-output"></div>
-<input id="varname-input" value="varname" /><input id="varvalue-input" value="varvalue" /><button id="getvar-button">GetVar</button><button id="putvar-button">PutVar</button>
+<button id="putvar-button">PutVar</button><button id="getvar-button">GetVar</button><input id="varname-input" value="varname" /><input id="varvalue-input" value="varvalue" />
 <div id="var-output"></div>
 </div>
 </div>  <!-- #right-area -->

@@ -20,8 +20,9 @@ var loadedLinePending = null;       // if set, scroll loaded file to requested l
 var highlightLine = null;           // highlight line
 var sourceEditedLines = [];         // line numbers which have been modified
                                     // (added classes etc, tracked for removing)
-var sourceUpdateInterval = null;    // Timer for updating source view
-var sourceFetchXhr = null;          // Current AJAX request for fetching a source file (if any)
+var sourceUpdateInterval = null;    // timer for updating source view
+var sourceFetchXhr = null;          // current AJAX request for fetching a source file (if any)
+var forceButtonUpdate = false;      // hack to reset button states
 
 // Execution state
 var prevState = null;             // previous execution state ('paused', 'running', etc)
@@ -162,7 +163,7 @@ function doUiUpdate() {
     $('#current-state').text(String(currState));
 
     // Update buttons
-    if (currState !== prevState || currAttached !== prevAttached) {
+    if (currState !== prevState || currAttached !== prevAttached || forceButtonUpdate) {
         $('#stepinto-button').prop('disabled', !currAttached || currState !== 'paused');
         $('#stepover-button').prop('disabled', !currAttached || currState !== 'paused');
         $('#stepout-button').prop('disabled', !currAttached || currState !== 'paused');
@@ -175,18 +176,20 @@ function doUiUpdate() {
             $('#attach-button').addClass('enabled');
         }
         $('#detach-button').prop('disabled', !currAttached);
-        $('#eval-button').prop('disabled', !currAttached || currState !== 'paused');
-        if (currAttached) {
-            $('#heap-dump-download').removeClass('disabled');
-        } else {
-            $('#heap-dump-download').addClass('disabled');
-        }
+        $('#eval-button').prop('disabled', !currAttached);
+        $('#add-breakpoint-button').prop('disabled', !currAttached);
+        $('#delete-all-breakpoints-button').prop('disabled', !currAttached);
+        $('.delete-breakpoint-button').prop('disabled', !currAttached);
+        $('#putvar-button').prop('disabled', !currAttached);
+        $('#getvar-button').prop('disabled', !currAttached);
+        $('#heap-dump-download-button').prop('disabled', !currAttached);
     }
-    if (currState !== 'running') {
+    if (currState !== 'running' || forceButtonUpdate) {
         // Remove pending highlight once we're no longer running.
         $('#pause-button').removeClass('pending');
         $('#eval-button').removeClass('pending');
     }
+    forceButtonUpdate = false;
 
     // Make source window grey when running for a longer time, use a small
     // delay to avoid flashing grey when stepping.
@@ -388,7 +391,7 @@ socket.on('breakpoints', function (msg) {
 
     // First line is special
     div = $('<div></div>');
-    sub = $('<button class="delete-all-breakpoints"></button>').text('Delete all breakpoints');
+    sub = $('<button id="delete-all-breakpoints-button"></button>').text('Delete all breakpoints');
     sub.on('click', function () {
         socket.emit('delete-all-breakpoints');
     });
@@ -399,13 +402,15 @@ socket.on('breakpoints', function (msg) {
     div.append(sub);
     sub = $('<input id="add-breakpoint-line"></input>').val('123');
     div.append(sub);
-    sub = $('<button class="add-breakpoint"></button>').text('Add breakpoint');
+    sub = $('<button id="add-breakpoint-button"></button>').text('Add breakpoint');
     sub.on('click', function () {
         socket.emit('add-breakpoint', {
             fileName: $('#add-breakpoint-file').val(),
             lineNumber: Number($('#add-breakpoint-line').val())
         });
     });
+    div.append(sub);
+    sub = $('<span id="breakpoint-hint"></span>').text('or dblclick source');
     div.append(sub);
     elem.append(div);
 
@@ -414,8 +419,8 @@ socket.on('breakpoints', function (msg) {
         var div;
         var sub;
 
-        div = $('<div></div>');
-        sub = $('<button class="delete-breakpoint"></button>').text('Delete');
+        div = $('<div class="breakpoint-line"></div>');
+        sub = $('<button class="delete-breakpoint-button"></button>').text('Delete');
         sub.on('click', function () {
             socket.emit('delete-breakpoint', {
                 fileName: bp.fileName,
@@ -433,6 +438,9 @@ socket.on('breakpoints', function (msg) {
         div.append(sub);
         elem.append(div);
     });
+
+    forceButtonUpdate = true;
+    doUiUpdate();
 });
 
 socket.on('eval-result', function (msg) {
@@ -713,4 +721,7 @@ $(document).ready(function () {
     $('#eval-watch').change(function () {
         // nop
     });
+
+    forceButtonUpdate = true;
+    doUiUpdate();
 });

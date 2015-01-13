@@ -254,7 +254,6 @@
 }
 
 #breakpoints {
-	font: 9pt monospace;
 	color: #000000;
 	margin-top: 10px;
 	border: 2px solid #cccccc;
@@ -273,26 +272,82 @@
 	background: #eeeeee;
 }
 #breakpoints a {
+	font: 9pt monospace;
 	color: #6666ff;
 }
 #breakpoints a:hover {
 	text-decoration: underline;
 	color: #9999ff;
 }
-#breakpoints button {
-	border: 1px solid #888888;
-	font: 8pt sans-serif;
-	background: #ffdddd;
+.breakpoint-line {
+	clear: both;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
-#breakpoints button.delete-all-breakpoints,
-#breakpoints button.delete-breakpoint {
-	float: right;
-}
-#breakpoints #add-breakpoint-file {
+#add-breakpoint-file {
+	font: 10pt monospace;
 	width: 10em;
+	padding: 5px;
 }
-#breakpoints #add-breakpoint-line {
+#add-breakpoint-line {
+	font: 10pt monospace;
 	width: 3em;
+	margin-left: 3px;
+	padding: 5px;
+}
+#delete-all-breakpoints-button {
+	float: right;
+	font: 10pt sans-serif;
+	padding: 5px;
+	border: 1px solid #888888;
+	background: #ddffdd;
+	color: #000000;
+}
+#delete-all-breakpoints-button:hover {
+	background: #f8fff8;
+}
+#delete-all-breakpoints-button:disabled {
+	background: #dddddd;
+	color: #444444;
+}
+#add-breakpoint-button {
+	font: 10pt sans-serif;
+	margin-left: 10px;
+	padding: 5px;
+	border: 1px solid #888888;
+	background: #ddffdd;
+	color: #000000;
+}
+#add-breakpoint-button:hover {
+	background: #f8fff8;
+}
+#add-breakpoint-button:disabled {
+	background: #dddddd;
+	color: #444444;
+}
+#breakpoint-hint {
+	color: #aaaaaa;
+	font-style: italic;
+	margin-left: 10px;
+}
+.delete-breakpoint-button {
+	float: right;
+	display: inline;
+	font: 9pt sans-serif;
+	padding: 3px;
+	border: none;
+	background: none;
+	color: #6666ff;
+}
+.delete-breakpoint-button {
+	font: 9pt sans-serif;
+}
+.delete-breakpoint-button:hover {
+	text-decoration: underline;
+	color: #9999ff;
+}
+.delete-breakpoint-button:disabled {
+	color: #888888;
 }
 
 #about-dialog p {
@@ -300,7 +355,6 @@
 }
 
 #eval {
-	font: 10pt monospace;
 	color: #000000;
 	margin-top: 10px;
 	border: 2px solid #cccccc;
@@ -314,6 +368,7 @@
 }
 #eval-input {
 	display: inline;
+	font: 10pt monospace;
 	width: 20em;
 	padding: 5px;
 }
@@ -323,21 +378,73 @@
 	padding: 5px;
 	border: 1px solid #888888;
 	font: 10pt sans-serif;
-	background: #ffdddd;
+	background: #ddffdd;
+	color: #000000;
 }
 #eval-button {
+}
+#eval-button:hover {
+	background: #f8fff8;
+}
+#eval-button:disabled {
+	background: #dddddd;
+	color: #444444;
 }
 #eval-button.pending {
 	background: #5555ff;
 	animation: pulsate 0.2s cubic-bezier(0.75, 0, 0.75, 1) infinite alternate;
 }
-
+#eval-watch {
+	margin-left: 20px;
+	vertical-align: middle;
+}
 #eval-output {
 	font: 10pt monospace;
 	white-space: pre;
 	padding: 5px;
 	border: 1px solid #888888;
-	min-height: 2ex;
+	min-height: 4ex;
+	margin-top: 5px;
+}
+
+#varname-input {
+	font: 10pt monospace;
+	width: 10em;
+	padding: 5px;
+}
+#varvalue-input {
+	margin-left: 10px;
+	font: 10pt monospace;
+	width: 20em;
+	padding: 5px;
+}
+#getvar-button,
+#putvar-button {
+	display: inline;
+	float: right;
+	margin-left: 10px;
+	padding: 5px;
+	border: 1px solid #888888;
+	font: 10pt sans-serif;
+	background: #ddffdd;
+	color: #000000;
+}
+#getvar-button:hover,
+#putvar-button:hover {
+	background: #f8fff8;
+}
+#getvar-button:disabled,
+#putvar-button:disabled {
+	background: #dddddd;
+	color: #444444;
+}
+#var-output {
+	font: 10pt monospace;
+	white-space: pre;
+	padding: 5px;
+	border: 1px solid #888888;
+	min-height: 4ex;
+	margin-top: 5px;
 }
 
 #source-pre {
