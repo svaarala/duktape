@@ -349,10 +349,13 @@ echo ' */' >> $DIST/AUTHORS.rst.tmp
 # Build duktape.h from parts, with some git-related replacements.
 # The only difference between single and separate file duktape.h
 # is the internal DUK_SINGLE_FILE define.
-
+#
+# Newline after 'i \':
+# http://stackoverflow.com/questions/25631989/sed-insert-line-command-osx
 cat src/duktape.h.in | sed -e '
 /^@DUK_SINGLE_FILE@$/ {
-    i \#define DUK_SINGLE_FILE
+    i \
+#define DUK_SINGLE_FILE
     d
 }
 /^@LICENSE_TXT@$/ {
