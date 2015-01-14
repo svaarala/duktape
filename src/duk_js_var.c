@@ -1671,11 +1671,11 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 
 				tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, holder, e_idx);
 				DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, holder, e_idx, NULL);
-				DUK_HOBJECT_DECREF(thr, tmp);
+				DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 				DUK_UNREF(tmp);
 				tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, holder, e_idx);
 				DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, holder, e_idx, NULL);
-				DUK_HOBJECT_DECREF(thr, tmp);
+				DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 				DUK_UNREF(tmp);
 			} else {
 				duk_tval tv_tmp;

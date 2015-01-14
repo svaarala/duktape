@@ -64,22 +64,22 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		if (!key) {
 			continue;
 		}
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) key);
+		duk_heaphdr_decref(thr, (duk_heaphdr *) key);
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, h, i)) {
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, h, i));
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, h, i));
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, h, i));
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, h, i));
 		} else {
-			duk_heap_tval_decref(thr, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, h, i));
+			duk_tval_decref(thr, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, h, i));
 		}
 	}
 
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
-		duk_heap_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, h, i));
+		duk_tval_decref(thr, DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, h, i));
 	}
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h));
+	duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h));
 
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
@@ -91,18 +91,18 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
 		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
 		while (tv < tv_end) {
-			duk_heap_tval_decref(thr, tv);
+			duk_tval_decref(thr, tv);
 			tv++;
 		}
 
 		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
 		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
 		while (funcs < funcs_end) {
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
+			duk_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
 			funcs++;
 		}
 
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f));
+		duk_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f));
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK_UNREF(f);
@@ -113,17 +113,17 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 		tv = t->valstack;
 		while (tv < t->valstack_end) {
-			duk_heap_tval_decref(thr, tv);
+			duk_tval_decref(thr, tv);
 			tv++;
 		}
 
 		for (i = 0; i < (duk_uint_fast32_t) t->callstack_top; i++) {
 			duk_activation *act = t->callstack + i;
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) DUK_ACT_GET_FUNC(act));
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->var_env);
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->lex_env);
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_ACT_GET_FUNC(act));
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) act->var_env);
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) act->lex_env);
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) act->prev_caller);
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) act->prev_caller);
 #endif
 		}
 
@@ -134,14 +134,14 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 #endif
 
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-			duk_heap_heaphdr_decref(thr, (duk_heaphdr *) t->builtins[i]);
+			duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) t->builtins[i]);
 		}
 
-		duk_heap_heaphdr_decref(thr, (duk_heaphdr *) t->resumer);
+		duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) t->resumer);
 	}
 }
 
-DUK_INTERNAL void duk_heap_refcount_finalize_heaphdr(duk_hthread *thr, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr) {
 	DUK_ASSERT(hdr);
 
 	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
@@ -318,88 +318,11 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
  *
  */
 
-DUK_INTERNAL void duk_heap_tval_incref(duk_tval *tv) {
-#if 0
-	DUK_DDD(DUK_DDDPRINT("tval incref %p (%ld->%ld): %!T",
-	                     (void *) tv,
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount + 1) : (long) 0),
-	                     (duk_tval *) tv));
-#endif
-
-	if (!tv) {
-		return;
-	}
-
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
-		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
-		if (h) {
-			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-			DUK_ASSERT_DISABLE(h->h_refcount >= 0);
-			DUK_HEAPHDR_PREINC_REFCOUNT(h);
-		}
-	}
-}
-
-DUK_INTERNAL void duk_heap_tval_decref(duk_hthread *thr, duk_tval *tv) {
-#if 0
-	DUK_DDD(DUK_DDDPRINT("tval decref %p (%ld->%ld): %!T",
-	                     (void *) tv,
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) DUK_TVAL_GET_HEAPHDR(tv)->h_refcount : (long) 0),
-	                     (tv != NULL && DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? (long) (DUK_TVAL_GET_HEAPHDR(tv)->h_refcount - 1) : (long) 0),
-	                     (duk_tval *) tv));
-#endif
-
-	if (!tv) {
-		return;
-	}
-
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
-		duk_heap_heaphdr_decref(thr, DUK_TVAL_GET_HEAPHDR(tv));
-	}
-}
-
-DUK_INTERNAL void duk_heap_heaphdr_incref(duk_heaphdr *h) {
-#if 0
-	DUK_DDD(DUK_DDDPRINT("heaphdr incref %p (%ld->%ld): %!O",
-	                     (void *) h,
-	                     (h != NULL ? (long) h->h_refcount : (long) 0),
-	                     (h != NULL ? (long) (h->h_refcount + 1) : (long) 0),
-	                     (duk_heaphdr *) h));
-#endif
-
-	if (!h) {
-		return;
-	}
-	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
-
-	DUK_HEAPHDR_PREINC_REFCOUNT(h);
-}
-
-DUK_INTERNAL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
+DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 	duk_heap *heap;
 
-#if 0
-	DUK_DDD(DUK_DDDPRINT("heaphdr decref %p (%ld->%ld): %!O",
-	                     (void *) h,
-	                     (h != NULL ? (long) h->h_refcount : (long) 0),
-	                     (h != NULL ? (long) (h->h_refcount - 1) : (long) 0),
-	                     (duk_heaphdr *) h));
-#endif
-
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->heap != NULL);
-
-	if (!h) {
-		return;
-	}
-	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
-
-	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
-		return;
-	}
+	DUK_ASSERT(h != NULL);
 
 	heap = thr->heap;
 	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, (duk_heaphdr *) h));
@@ -461,6 +384,115 @@ DUK_INTERNAL void duk_heap_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 		DUK_D(DUK_DPRINT("invalid heap type in decref: %ld", (long) DUK_HEAPHDR_GET_TYPE(h)));
 		DUK_UNREACHABLE();
 	}
+}
+
+#if !defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
+DUK_INTERNAL void duk_tval_incref(duk_tval *tv) {
+	DUK_ASSERT(tv != NULL);
+
+	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+		DUK_ASSERT_DISABLE(h->h_refcount >= 0);
+		DUK_HEAPHDR_PREINC_REFCOUNT(h);
+	}
+}
+#endif
+
+#if 0  /* unused */
+DUK_INTERNAL void duk_tval_incref_allownull(duk_tval *tv) {
+	if (tv == NULL) {
+		return;
+	}
+	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+		DUK_ASSERT_DISABLE(h->h_refcount >= 0);
+		DUK_HEAPHDR_PREINC_REFCOUNT(h);
+	}
+}
+#endif
+
+DUK_INTERNAL void duk_tval_decref(duk_hthread *thr, duk_tval *tv) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(tv != NULL);
+
+	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+		duk_heaphdr_decref(thr, h);
+	}
+}
+
+#if 0  /* unused */
+DUK_INTERNAL void duk_tval_decref_allownull(duk_hthread *thr, duk_tval *tv) {
+	DUK_ASSERT(thr != NULL);
+
+	if (tv == NULL) {
+		return;
+	}
+	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+		duk_heaphdr_decref(thr, h);
+	}
+}
+#endif
+
+#if !defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
+DUK_INTERNAL void duk_heaphdr_incref(duk_heaphdr *h) {
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
+
+	DUK_HEAPHDR_PREINC_REFCOUNT(h);
+}
+#endif
+
+#if 0  /* unused */
+DUK_INTERNAL void duk_heaphdr_incref_allownull(duk_heaphdr *h) {
+	if (h == NULL) {
+		return;
+	}
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
+
+	DUK_HEAPHDR_PREINC_REFCOUNT(h);
+}
+#endif
+
+DUK_INTERNAL void duk_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
+
+	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
+		return;
+	}
+	duk_heaphdr_refzero(thr, h);
+}
+
+DUK_INTERNAL void duk_heaphdr_decref_allownull(duk_hthread *thr, duk_heaphdr *h) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+	if (h == NULL) {
+		return;
+	}
+
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
+
+	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
+		return;
+	}
+	duk_heaphdr_refzero(thr, h);
 }
 
 #else

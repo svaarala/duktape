@@ -244,43 +244,138 @@ struct duk_heaphdr_string {
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 
-#define DUK_TVAL_INCREF(thr,tv)                duk_heap_tval_incref((tv))
-#define DUK_TVAL_DECREF(thr,tv)                duk_heap_tval_decref((thr),(tv))
-#define DUK__HEAPHDR_INCREF(thr,h)             duk_heap_heaphdr_incref((h))
-#define DUK__HEAPHDR_DECREF(thr,h)             duk_heap_heaphdr_decref((thr),(h))
-#define DUK_HEAPHDR_INCREF(thr,h)              DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HEAPHDR_DECREF(thr,h)              DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HSTRING_INCREF(thr,h)              DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HSTRING_DECREF(thr,h)              DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HOBJECT_INCREF(thr,h)              DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HOBJECT_DECREF(thr,h)              DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HBUFFER_INCREF(thr,h)              DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HBUFFER_DECREF(thr,h)              DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HCOMPILEDFUNCTION_INCREF(thr,h)    DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HNATIVEFUNCTION_INCREF(thr,h)      DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HNATIVEFUNCTION_DECREF(thr,h)      DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HTHREAD_INCREF(thr,h)              DUK__HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HTHREAD_DECREF(thr,h)              DUK__HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
+/* Fast variants, inline refcount operations except for refzero handling.
+ * Can be used explicitly when speed is always more important than size.
+ * For a good compiler and a single file build, these are basically the
+ * same as a forced inline.
+ */
+#define DUK_TVAL_INCREF_FAST(thr,tv) do { \
+		duk_tval *duk__tv = (tv); \
+		DUK_ASSERT(duk__tv != NULL); \
+		if (DUK_TVAL_IS_HEAP_ALLOCATED(duk__tv)) { \
+			duk_heaphdr *duk__h = DUK_TVAL_GET_HEAPHDR(duk__tv); \
+			DUK_ASSERT(duk__h != NULL); \
+			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
+			DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+		} \
+	} while (0)
+#define DUK_TVAL_DECREF_FAST(thr,tv) do { \
+		duk_tval *duk__tv = (tv); \
+		DUK_ASSERT(duk__tv != NULL); \
+		if (DUK_TVAL_IS_HEAP_ALLOCATED(duk__tv)) { \
+			duk_heaphdr *duk__h = DUK_TVAL_GET_HEAPHDR(duk__tv); \
+			DUK_ASSERT(duk__h != NULL); \
+			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
+			if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
+				duk_heaphdr_refzero(thr, duk__h); \
+			} \
+		} \
+	} while (0)
+#define DUK_HEAPHDR_INCREF_FAST(thr,h) do { \
+		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
+		DUK_ASSERT(duk__h != NULL); \
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
+		DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+	} while (0)
+#define DUK_HEAPHDR_DECREF_FAST(thr,h) do { \
+		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
+		DUK_ASSERT(duk__h != NULL); \
+		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
+		if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
+			duk_heaphdr_refzero(thr, duk__h); \
+		} \
+	} while (0)
+
+/* Slow variants, call to a helper to reduce code size.
+ * Can be used explicitly when size is always more important than speed.
+ */
+#define DUK_TVAL_INCREF_SLOW(thr,tv) do { \
+		duk_tval_incref((tv)); \
+	} while (0)
+#define DUK_TVAL_DECREF_SLOW(thr,tv) do { \
+		duk_tval_decref((thr), (tv)); \
+	} while (0)
+#define DUK_HEAPHDR_INCREF_SLOW(thr,h) do { \
+		duk_heaphdr_incref((duk_heaphdr *) (h)); \
+	} while (0)
+#define DUK_HEAPHDR_DECREF_SLOW(thr,h) do { \
+		duk_heaphdr_decref((thr), (duk_heaphdr *) (h)); \
+	} while (0)
+
+/* Default variants.  Selection depends on speed/size preference.
+ * Concretely: with gcc 4.8.1 -Os x64 the difference in final binary
+ * is about +1kB for _FAST variants.
+ */
+#if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
+#define DUK_TVAL_INCREF(thr,tv)                DUK_TVAL_INCREF_FAST((thr),(tv))
+#define DUK_TVAL_DECREF(thr,tv)                DUK_TVAL_DECREF_FAST((thr),(tv))
+#define DUK_HEAPHDR_INCREF(thr,h)              DUK_HEAPHDR_INCREF_FAST((thr),(h))
+#define DUK_HEAPHDR_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST((thr),(h))
+#else
+#define DUK_TVAL_INCREF(thr,tv)                DUK_TVAL_INCREF_SLOW((thr),(tv))
+#define DUK_TVAL_DECREF(thr,tv)                DUK_TVAL_DECREF_SLOW((thr),(tv))
+#define DUK_HEAPHDR_INCREF(thr,h)              DUK_HEAPHDR_INCREF_SLOW((thr),(h))
+#define DUK_HEAPHDR_DECREF(thr,h)              DUK_HEAPHDR_DECREF_SLOW((thr),(h))
+#endif
+
+/* Casting convenience. */
+#define DUK_HSTRING_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HSTRING_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
+#define DUK_HOBJECT_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HOBJECT_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
+#define DUK_HBUFFER_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HBUFFER_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
+#define DUK_HCOMPILEDFUNCTION_INCREF(thr,h)    DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HNATIVEFUNCTION_INCREF(thr,h)      DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HNATIVEFUNCTION_DECREF(thr,h)      DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HTHREAD_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HTHREAD_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
+
+/* Convenience for some situations; the above macros don't allow NULLs
+ * for performance reasons.
+ */
+#define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HEAPHDR_INCREF((thr), (duk_heaphdr *) (h)); \
+		} \
+	} while (0)
+#define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HEAPHDR_DECREF((thr), (duk_heaphdr *) (h)); \
+		} \
+	} while (0)
 
 #else  /* DUK_USE_REFERENCE_COUNTING */
 
-#define DUK_TVAL_INCREF(thr,v)                 /* nop */
-#define DUK_TVAL_DECREF(thr,v)                 /* nop */
-#define DUK_HEAPHDR_INCREF(thr,h)              /* nop */
-#define DUK_HEAPHDR_DECREF(thr,h)              /* nop */
-#define DUK_HSTRING_INCREF(thr,h)              /* nop */
-#define DUK_HSTRING_DECREF(thr,h)              /* nop */
-#define DUK_HOBJECT_INCREF(thr,h)              /* nop */
-#define DUK_HOBJECT_DECREF(thr,h)              /* nop */
-#define DUK_HBUFFER_INCREF(thr,h)              /* nop */
-#define DUK_HBUFFER_DECREF(thr,h)              /* nop */
-#define DUK_HCOMPILEDFUNCTION_INCREF(thr,h)    /* nop */
-#define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    /* nop */
-#define DUK_HNATIVEFUNCTION_INCREF(thr,h)      /* nop */
-#define DUK_HNATIVEFUNCTION_DECREF(thr,h)      /* nop */
-#define DUK_HTHREAD_INCREF(thr,h)              /* nop */
-#define DUK_HTHREAD_DECREF(thr,h)              /* nop */
+#define DUK_TVAL_INCREF_FAST(thr,v)            do {} while (0) /* nop */
+#define DUK_TVAL_DECREF_FAST(thr,v)            do {} while (0) /* nop */
+#define DUK_TVAL_INCREF_SLOW(thr,v)            do {} while (0) /* nop */
+#define DUK_TVAL_DECREF_SLOW(thr,v)            do {} while (0) /* nop */
+#define DUK_TVAL_INCREF(thr,v)                 do {} while (0) /* nop */
+#define DUK_TVAL_DECREF(thr,v)                 do {} while (0) /* nop */
+#define DUK_HEAPHDR_INCREF_FAST(thr,h)         do {} while (0) /* nop */
+#define DUK_HEAPHDR_DECREF_FAST(thr,h)         do {} while (0) /* nop */
+#define DUK_HEAPHDR_INCREF_SLOW(thr,h)         do {} while (0) /* nop */
+#define DUK_HEAPHDR_DECREF_SLOW(thr,h)         do {} while (0) /* nop */
+#define DUK_HEAPHDR_INCREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HEAPHDR_DECREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HSTRING_INCREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HSTRING_DECREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HOBJECT_INCREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HOBJECT_DECREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HBUFFER_INCREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HBUFFER_DECREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HCOMPILEDFUNCTION_INCREF(thr,h)    do {} while (0) /* nop */
+#define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    do {} while (0) /* nop */
+#define DUK_HNATIVEFUNCTION_INCREF(thr,h)      do {} while (0) /* nop */
+#define DUK_HNATIVEFUNCTION_DECREF(thr,h)      do {} while (0) /* nop */
+#define DUK_HTHREAD_INCREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HTHREAD_DECREF(thr,h)              do {} while (0) /* nop */
+#define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
+#define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 

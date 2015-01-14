@@ -467,8 +467,8 @@ void duk__handle_oldenv_for_call(duk_hthread *thr,
 		act->var_env = act->lex_env;
 	}
 
-	DUK_HOBJECT_INCREF(thr, act->lex_env);
-	DUK_HOBJECT_INCREF(thr, act->var_env);
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, act->lex_env);
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, act->var_env);
 }
 
 /*
@@ -1201,7 +1201,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 * reference reachable through the value stack?  If changed, stack
 	 * unwind code also needs to be fixed to match.
 	 */
-	DUK_HOBJECT_INCREF(thr, func);  /* act->func */
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, func);  /* act->func */
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	if (func) {
