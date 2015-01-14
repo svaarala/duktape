@@ -1753,6 +1753,7 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index) {
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
+	/* FIXME: fastint */
 	d = duk_js_tonumber(thr, tv);
 
 	/* Note: need to re-lookup because ToNumber() may have side effects */
@@ -2714,6 +2715,7 @@ DUK_EXTERNAL void duk_push_number(duk_context *ctx, duk_double_t val) {
 }
 
 DUK_EXTERNAL void duk_push_int(duk_context *ctx, duk_int_t val) {
+	/* FIXME: fast path */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;
@@ -2727,6 +2729,7 @@ DUK_EXTERNAL void duk_push_int(duk_context *ctx, duk_int_t val) {
 }
 
 DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
+	/* FIXME: fast path */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;
@@ -2740,6 +2743,7 @@ DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
 }
 
 DUK_EXTERNAL void duk_push_nan(duk_context *ctx) {
+	/* FIXME: fast path */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;

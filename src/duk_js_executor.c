@@ -67,7 +67,7 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	 */
 
 #if defined(DUK_USE_FASTINT)
-	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x) && DUK_TVAL_IS_NUMBER_FASTINT(tv_y)) {
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
 		duk_int64_t v1, v2, v3;
 		duk_int32_t v3_hi;
 		duk_tval tv_tmp;
@@ -77,26 +77,28 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 		 * reliably from high bits or just a comparison.
 		 */
 
-		v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
-		v2 = DUK_TVAL_GET_NUMBER_FASTINT(tv_y);
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		v2 = DUK_TVAL_GET_FASTINT(tv_y);
 		v3 = v1 + v2;
 		v3_hi = (duk_int32_t) (v3 >> 32);
-		if (DUK_UNLIKELY(v3_hi < -0x8000 || v3_hi > 0x7fff)) {
-			fprintf(stderr, "fastint overflow: %lld + %lld -> %lld\n", v1, v2, v3);
-			goto fastint_overflow;
-		}
+		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
 #if 0
-		fprintf(stderr, "fastint add: %lld + %lld -> %lld\n", v1, v2, v3);
+			fprintf(stderr, "fastint add: %lld + %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
 #endif
-
-		tv_z = &thr->valstack_bottom[idx_z];
-		DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-		DUK_TVAL_SET_NUMBER_FASTINT(tv_z, v3);
-		DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
-		DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
-		return;
+			tv_z = thr->valstack_bottom + idx_z;
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+			DUK_TVAL_SET_FASTINT(tv_z, v3);
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+			return;
+		} else {
+#if 0
+			fprintf(stderr, "fastint overflow: %lld + %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
+#endif
+		}
 	}
- fastint_overflow:
 #endif  /* DUK_USE_FASTINT */
 
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
@@ -176,6 +178,122 @@ DUK_LOCAL void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tva
 	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		duk_int64_t v1, v2, v3;
+		duk_int32_t v3_hi;
+
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		v2 = DUK_TVAL_GET_FASTINT(tv_y);
+
+		switch (opcode) {
+		case DUK_OP_SUB: {
+#if 0
+			fprintf(stderr, "fastint sub (tentative): %lld + %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
+#endif
+			v3 = v1 - v2;
+			break;
+		}
+		case DUK_OP_MUL: {
+			/* Must ensure result is 64-bit (no overflow); a
+			 * simple and sufficient fast path is to allow only
+			 * 32-bit inputs.  Avoid zero inputs to avoid
+			 * negative zero issues (-1 * 0 = -0, for instance).
+			 */
+			if (v1 >= -0x80000000LL && v1 <= 0x7fffffffLL && v1 != 0 &&
+			    v2 >= -0x80000000LL && v2 <= 0x7fffffffLL && v2 != 0) {
+				v3 = v1 * v2;
+#if 0
+				fprintf(stderr, "fastint mul (tentative): %lld + %lld -> %lld\n",
+				        (long long) v1, (long long) v2, (long long) v3);
+#endif
+			} else {
+#if 0
+				fprintf(stderr, "fastint mul skipped, args not 32 bit: %lld, %lld\n",
+				        (long long) v1, (long long) v2);
+#endif
+				goto skip_fastint;
+			}
+			break;
+		}
+		case DUK_OP_DIV: {
+			/* Don't allow a zero divisor.  Fast path check by
+			 * "verifying" with multiplication.  Also avoid zero
+			 * dividend to avoid negative zero issues (0 / -1 = -0
+			 * for instance).
+			 */
+			if (v1 == 0 || v2 == 0) {
+#if 0
+				fprintf(stderr, "fastint div skipped, v1 or v2 zero: %lld, %lld\n",
+				        (long long) v1, (long long) v2);
+#endif
+				goto skip_fastint;
+			}
+			v3 = v1 / v2;
+			if (v3 * v2 != v1) {
+#if 0
+				fprintf(stderr, "fastint div skipped, non-integer result: %lld / %lld -> %lld\n",
+				        (long long) v1, (long long) v2, (long long) v3);
+#endif
+				goto skip_fastint;
+			}
+#if 0
+			fprintf(stderr, "fastint div (tentative): %lld + %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
+#endif
+			break;
+		}
+		case DUK_OP_MOD: {
+			/* Don't allow a zero divisor.  Restrict both v1 and
+			 * v2 to positive values to avoid compiler specific
+			 * behavior.
+			 */
+			if (v1 < 1 || v2 < 1) {
+#if 0
+				fprintf(stderr, "fastint mod skipped, v2 zero or negative: %lld, %lld\n",
+				        (long long) v1, (long long) v2);
+#endif
+				goto skip_fastint;
+			}
+			v3 = v1 % v2;
+#if 0
+			fprintf(stderr, "fastint mod (tentative): %lld + %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
+#endif
+			DUK_ASSERT(v3 >= 0);
+			DUK_ASSERT(v3 < v2);
+			DUK_ASSERT(v1 - (v1 / v2) * v2 == v3);
+			break;
+		}
+		default: {
+			DUK_UNREACHABLE();
+			goto skip_fastint;
+		}
+		}
+
+		v3_hi = (duk_int32_t) (v3 >> 32);
+		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
+#if 0
+			fprintf(stderr, "fastint binary op accepted, in range: %lld, %lld -> %lld\n",
+			        (long long) v1, (long long) v2, (long long) v3);
+#endif
+			tv_z = thr->valstack_bottom + idx_z;
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+			DUK_TVAL_SET_FASTINT(tv_z, v3);
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+			return;
+		}
+#if 0
+		fprintf(stderr, "fastint binary op rejected, out of range: %lld, %lld -> %lld\n",
+		        (long long) v1, (long long) v2, (long long) v3);
+#endif
+		/* fall through if overflow etc */
+	}
+ skip_fastint:
+#endif  /* DUK_USE_FASTINT */
+
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* fast path */
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
@@ -210,6 +328,7 @@ DUK_LOCAL void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tva
 		break;
 	}
 	default: {
+		DUK_UNREACHABLE();
 		du.d = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
@@ -240,8 +359,13 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	duk_int32_t i1, i2;
-	duk_double_t val;
+	duk_int32_t i1, i2, i3;
+	duk_uint32_t u1, u2, u3;
+#if defined(DUK_USE_FASTINT)
+	duk_int64_t fi3;
+#else
+	duk_double_t d3;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -250,23 +374,33 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
-	duk_push_tval(ctx, tv_x);
-	duk_push_tval(ctx, tv_y);
-	i1 = duk_to_int32(ctx, -2);
-	i2 = duk_to_int32(ctx, -1);
-	duk_pop_2(ctx);
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		/* FIXME: macro to get low 32 bits? */
+		i1 = (duk_int32_t) DUK_TVAL_GET_FASTINT(tv_x);
+		i2 = (duk_int32_t) DUK_TVAL_GET_FASTINT(tv_y);
+	}
+	else
+#endif  /* DUK_USE_FASTINT */
+	{
+		duk_push_tval(ctx, tv_x);
+		duk_push_tval(ctx, tv_y);
+		i1 = duk_to_int32(ctx, -2);
+		i2 = duk_to_int32(ctx, -1);
+		duk_pop_2(ctx);
+	}
 
 	switch (opcode) {
 	case DUK_OP_BAND: {
-		val = (duk_double_t) (i1 & i2);
+		i3 = i1 & i2;
 		break;
 	}
 	case DUK_OP_BOR: {
-		val = (duk_double_t) (i1 | i2);
+		i3 = i1 | i2;
 		break;
 	}
 	case DUK_OP_BXOR: {
-		val = (duk_double_t) (i1 ^ i2);
+		i3 = i1 ^ i2;
 		break;
 	}
 	case DUK_OP_BASL: {
@@ -275,54 +409,69 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 		 * must be masked.
 		 */
 
-		duk_uint32_t u2;
-		duk_int32_t i3;
-
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		i3 = i1 << (u2 & 0x1f);                     /* E5 Section 11.7.1, steps 7 and 8 */
+		i3 = i1 << (u2 & 0x1f);                      /* E5 Section 11.7.1, steps 7 and 8 */
 		i3 = i3 & ((duk_int32_t) 0xffffffffUL);      /* Note: left shift, should mask */
-		val = (duk_double_t) i3;
 		break;
 	}
 	case DUK_OP_BASR: {
 		/* signed shift */
 
-		duk_uint32_t u2;
-
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		val = (duk_double_t) (i1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
+		i3 = i1 >> (u2 & 0x1f);                      /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	case DUK_OP_BLSR: {
 		/* unsigned shift */
 
-		duk_uint32_t u1;
-		duk_uint32_t u2;
-
 		u1 = ((duk_uint32_t) i1) & 0xffffffffUL;
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
 
-		val = (duk_double_t) (u1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
-		break;
+		/* special result value handling */
+		u3 = u1 >> (u2 & 0x1f);     /* E5 Section 11.7.2, steps 7 and 8 */
+#if defined(DUK_USE_FASTINT)
+		fi3 = (duk_int64_t) u3;
+		goto fastint_result_set;
+#else
+		d3 = (duk_double_t) u3;
+		goto result_set;
+#endif
 	}
 	default: {
-		val = (duk_double_t) 0;  /* should not happen */
+		DUK_UNREACHABLE();
+		i3 = 0;  /* should not happen */
 		break;
 	}
 	}
 
-	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
+#if defined(DUK_USE_FASTINT)
+	/* Result is always fastint compatible. */
+	/* FIXME: macro to set 32-bit result? .. unsigned vs. signed though */
+	fi3 = (duk_int64_t) i3;
+
+ fastint_result_set:
+	tv_z = thr->valstack_bottom + idx_z;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+	DUK_TVAL_SET_FASTINT(tv_z, fi3);
+	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#else
+	d3 = (duk_double_t) i3;
+
+ result_set:
+	DUK_ASSERT(!DUK_ISNAN(d3));            /* 'd3' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(d3);   /* always normalized */
 
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, d3);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#endif
 }
 
-/* FIXME: reimplement */
-DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+/* In-place unary operation. */
+DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_idx_t idx_x, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -332,77 +481,73 @@ DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_smal
 	 */
 
 	duk_context *ctx = (duk_context *) thr;
-	duk_tval tv_tmp;
-	duk_tval *tv_z;
 	duk_double_t d1;
 	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
-	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
-	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
+	DUK_ASSERT(opcode == DUK_EXTRAOP_UNM || opcode == DUK_EXTRAOP_UNP);
 
-	/* FIXME: reimplement */
-#if defined(DUK_USE_FASTINT) && defined(FIXME)
-	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x)) {
-		/* fast path */
-		duk_int64_t v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
-		if (opcode == DUK_EXTRAOP_INC) {
-			/* FIXME: Just an example for INC.  Fast path should avoid DECREF;
-			 * e.g. if INC source and target regs would be forced to be
-			 * the same, the fast path check above would guarantee a DECREF
-			 * would be unnecessary.
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x)) {
+		duk_int64_t v1, v2;
+
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		if (opcode == DUK_EXTRAOP_UNM) {
+			/* The smallest fastint is no longer 48-bit when
+			 * negated.  Positive zero becames negative zero
+			 * (cannot be represented) when negated.
 			 */
-			v1++;
-			if (v1 < DUK_FASTINT_MAX) {
-				tv_z = &thr->valstack_bottom[idx_z];
-				DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-				DUK_TVAL_SET_NUMBER_FASTINT(tv_z, v1);
-				DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
-				DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+			if (DUK_LIKELY(v1 != DUK_FASTINT_MIN && v1 != 0)) {
+				v2 = -v1;
+				DUK_TVAL_SET_FASTINT(tv_x, v2);  /* no refcount changes */
+#if 0
+				fprintf(stderr, "fastint unm: %lld -> %lld\n",
+				        (long long) v1, (long long) v2);
+#endif
 				return;
 			}
+#if 0
+			fprintf(stderr, "fastint overflow: - %lld -> %lld\n",
+			        (long long) v1, (long long) -v1);
+#endif
+		} else {
+			/* ToNumber() for a fastint is a no-op. */
+			DUK_ASSERT(opcode == DUK_EXTRAOP_UNP);
+			return;
 		}
-
 		/* fall through if overflow etc */
 	}
 #endif  /* DUK_USE_FASTINT */
 
-	if (DUK_TVAL_IS_NUMBER(tv_x)) {
-		/* fast path */
-		d1 = DUK_TVAL_GET_NUMBER(tv_x);
-	} else {
-		duk_push_tval(ctx, tv_x);
-		d1 = duk_to_number(ctx, -1);  /* side effects */
-		DUK_ASSERT(duk_is_number(ctx, -1));
-		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
-		duk_pop(ctx);
+	if (!DUK_TVAL_IS_NUMBER(tv_x)) {
+		duk_to_number(ctx, idx_x);  /* side effects, perform in-place */
+		tv_x = duk_get_tval(ctx, idx_x);
+		DUK_ASSERT(tv_x != NULL);
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 	}
 
-	switch (opcode) {
-	case DUK_EXTRAOP_UNM: {
+	d1 = DUK_TVAL_GET_NUMBER(tv_x);
+	if (opcode == DUK_EXTRAOP_UNM) {
 		du.d = -d1;
-		break;
-	}
-	case DUK_EXTRAOP_UNP: {
+	} else {
+		/* ToNumber() for a double is a no-op. */
+		DUK_ASSERT(opcode == DUK_EXTRAOP_UNP);
 		du.d = d1;
-		break;
 	}
-	default: {
-		du.d = DUK_DOUBLE_NAN;  /* should not happen */
-		break;
-	}
-	}
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);  /* mandatory if du.d is a NaN */
 
-	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
-	tv_z = thr->valstack_bottom + idx_z;
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, du.d);
-	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+	/* FIXME */
+#if defined(DUK_USE_FASTINT)
+	/* Unary plus is used to force a fastint check, so must include
+	 * downgrade check.
+	 */
+	DUK_TVAL_SET_NUMBER_CHKFAST(tv_x, du.d);  /* no refcount changes */
+#else
+	DUK_TVAL_SET_NUMBER(tv_x, du.d);  /* no refcount changes */
+#endif
 }
 
 DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z) {
@@ -414,7 +559,11 @@ DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_u
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
 	duk_int32_t i1, i2;
-	duk_double_t val;
+#if defined(DUK_USE_FASTINT)
+	duk_int64_t fi2;
+#else
+	duk_double_t d2;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -422,21 +571,42 @@ DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_u
 	DUK_ASSERT_DISABLE(idx_z >= 0);
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
-	duk_push_tval(ctx, tv_x);
-	i1 = duk_to_int32(ctx, -1);
-	duk_pop(ctx);
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x)) {
+		/* FIXME: macro to get low 32 bits? */
+		i1 = (duk_int32_t) DUK_TVAL_GET_FASTINT(tv_x);
+	}
+	else
+#endif  /* DUK_USE_FASTINT */
+	{
+		duk_push_tval(ctx, tv_x);
+		i1 = duk_to_int32(ctx, -1);
+		duk_pop(ctx);
+	}
 
 	i2 = ~i1;
-	val = (duk_double_t) i2;
 
-	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
+#if defined(DUK_USE_FASTINT)
+	/* Result is always fastint compatible. */
+	/* FIXME: macro to set 32-bit fastint? */
+	fi2 = (duk_int64_t) i2;
+	tv_z = thr->valstack_bottom + idx_z;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+	DUK_TVAL_SET_FASTINT(tv_z, fi2);
+	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#else
+	d2 = (duk_double_t) i2;
+
+	DUK_ASSERT(!DUK_ISNAN(d2));            /* 'val' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);   /* always normalized */
 
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, d2);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#endif
 }
 
 DUK_LOCAL void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z) {
@@ -2211,16 +2381,25 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_int_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1;
+#if defined(DUK_USE_FASTINT)
 			duk_int64_t val;
+#else
+			duk_double_t val;
+#endif
 
-			/* FIXME: check for DUK_USE_FASTINT, fix duk_tval.h macros,
-			 * don't rely on 64-bit support.
-			 */
+#if defined(DUK_USE_FASTINT)
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); val = (duk_int64_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-			DUK_TVAL_SET_NUMBER_FASTINT(tv1, val);
+			DUK_TVAL_SET_FASTINT(tv1, val);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#else
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); val = (duk_double_t) (bc - DUK_BC_LDINT_BIAS);
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+			DUK_TVAL_SET_NUMBER(tv1, val);
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#endif
 			break;
 		}
 
@@ -2229,13 +2408,22 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_tval *tv1;
 			duk_double_t val;
 
+			/* LDINTX is not necessarily in FASTINT range, so
+			 * no fast path for now.
+			 */
+
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			if (!DUK_TVAL_IS_NUMBER(tv1)) {
 				DUK__INTERNAL_ERROR("LDINTX target not a number");
 			}
 			val = DUK_TVAL_GET_NUMBER(tv1) * ((duk_double_t) (1L << DUK_BC_LDINTX_SHIFT)) +
 			      (duk_double_t) DUK_DEC_BC(ins);
+#if defined(DUK_USE_FASTINT)
+			/* FIXME .. perhaps avoid LDINTX with fastints? */
+			DUK_TVAL_SET_NUMBER_CHKFAST(tv1, val);
+#else
 			DUK_TVAL_SET_NUMBER(tv1, val);
+#endif
 			break;
 		}
 
@@ -3033,6 +3221,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			/* duk_small_uint_fast_t c = DUK_DEC_C(ins); */
+			duk_tval *tv_val;
 
 			/* A -> flags
 			 * B -> return value reg/const
@@ -3065,7 +3254,17 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
 
 			if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
-				duk_push_tval(ctx, DUK__REGCONSTP(b));
+				tv_val = DUK__REGCONSTP(b);
+#if defined(DUK_OPT_FASTINT)
+				/* Explicit check for fastint downgrade.  Do
+				 * it also for consts for now, which is odd
+				 * but harmless.
+				 */
+				/* FIXME: restrict to reg values only? */
+
+				DUK_TVAL_CHKFAST_INPLACE(tv_val);
+#endif
+				duk_push_tval(ctx, tv_val);
 			} else {
 				duk_push_undefined(ctx);
 			}
@@ -3400,7 +3599,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_context *ctx = (duk_context *) thr;
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
-			duk_double_t x, y;
+			duk_tval *tv1, *tv2;
+			duk_tval tv_tmp;
+			duk_double_t x, y, z;
 
 			/* Two lowest bits of opcode are used to distinguish
 			 * variants.  Bit 0 = inc(0)/dec(1), bit 1 = pre(0)/post(1).
@@ -3411,17 +3612,65 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_ASSERT((DUK_OP_POSTDECR & 0x03) == 0x03);
 
 			/* FIXME: improve */
-			x = duk_to_number(ctx, bc);
-			if (ins & DUK_ENC_OP(0x01)) {
-				y = x - 1.0;
+			tv1 = DUK__REGP(bc);
+#if defined(DUK_USE_FASTINT)
+			if (DUK_TVAL_IS_FASTINT(tv1)) {
+				duk_int64_t x_fi, y_fi, z_fi;
+				x_fi = DUK_TVAL_GET_FASTINT(tv1);
+				if (ins & DUK_ENC_OP(0x01)) {
+					if (x_fi == DUK_FASTINT_MIN) {
+						goto skip_fastint;
+					}
+					y_fi = x_fi - 1;
+				} else {
+					if (x_fi == DUK_FASTINT_MAX) {
+						goto skip_fastint;
+					}
+					y_fi = x_fi + 1;
+				}
+
+				DUK_TVAL_SET_FASTINT(tv1, y_fi);  /* no need for refcount update */
+
+				tv2 = DUK__REGP(a);
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
+				z_fi = (ins & DUK_ENC_OP(0x02)) ? x_fi : y_fi;
+				DUK_TVAL_SET_FASTINT(tv2, z_fi);    /* no need for incref */
+				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+				break;
+			}
+		 skip_fastint:
+#endif
+			if (DUK_TVAL_IS_NUMBER(tv1)) {
+				/* Fast path for the case where the register
+				 * is a number (e.g. loop counter).
+				 */
+
+				x = DUK_TVAL_GET_NUMBER(tv1);
+				if (ins & DUK_ENC_OP(0x01)) {
+					y = x - 1.0;
+				} else {
+					y = x + 1.0;
+				}
+
+				DUK_TVAL_SET_NUMBER(tv1, y);  /* no need for refcount update */
 			} else {
-				y = x + 1.0;
+				x = duk_to_number(ctx, bc);
+
+				if (ins & DUK_ENC_OP(0x01)) {
+					y = x - 1.0;
+				} else {
+					y = x + 1.0;
+				}
+
+				duk_push_number(ctx, y);
+				duk_replace(ctx, bc);
 			}
 
-			duk_push_number(ctx, y);
-			duk_replace(ctx, bc);
-			duk_push_number(ctx, (ins & DUK_ENC_OP(0x02)) ? x : y);
-			duk_replace(ctx, a);
+			tv2 = DUK__REGP(a);
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
+			z = (ins & DUK_ENC_OP(0x02)) ? x : y;
+			DUK_TVAL_SET_NUMBER(tv2, z);    /* no need for incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 			break;
 		}
 

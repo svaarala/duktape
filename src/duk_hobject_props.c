@@ -2207,6 +2207,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 *  is important.
 		 */
 
+		/* FIXME: fastint fast path */
+
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
 			DUK_DDD(DUK_DDDPRINT("base object buffer, key is a fast-path number; arr_idx %ld", (long) arr_idx));
@@ -2627,8 +2629,20 @@ DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));  /* array 'length' is always a number, as we coerce it */
 	DUK_ASSERT(DUK_TVAL_GET_NUMBER(tv) >= 0.0);
 	DUK_ASSERT(DUK_TVAL_GET_NUMBER(tv) <= (double) 0xffffffffUL);
+	DUK_ASSERT((duk_double_t) (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv) == DUK_TVAL_GET_NUMBER(tv));
+#if defined(DUK_USE_FASTINT)
+	/* FIXME: Length may not always be a fastint when downgrade checks
+	 * are not done every time.
+	 */
+#if 0  /*FIXME*/
+	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv));
+	/* FIXME: assert for U32 range */
+	res = (duk_uint32_t) DUK_TVAL_GET_FASTINT_U32(tv);
+#endif
 	res = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
-	DUK_ASSERT((duk_double_t) res == DUK_TVAL_GET_NUMBER(tv));
+#else
+	res = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
+#endif  /* DUK_USE_FASTINT */
 
 	return res;
 }
@@ -2642,6 +2656,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	 * to a value outside the 32-bit range.
 	 */
 
+	/* FIXME: fast path */
 	res = ((duk_uint32_t) duk_to_number(ctx, -1)) & 0xffffffffUL;
 	if (res != duk_get_number(ctx, -1)) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_ARRAY_LENGTH);
@@ -2895,7 +2910,12 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, desc.e_idx));
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_len);  /* no decref needed for a number */
+		/* no decref needed for a number */
+#if defined(DUK_USE_FASTINT)
+		DUK_TVAL_SET_FASTINT_U32(tv, new_len);
+#else
+		DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_len);
+#endif
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return 1;
 	}
@@ -2917,7 +2937,12 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, desc.e_idx));
 	tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) result_len);  /* no decref needed for a number */
+	/* no decref needed for a number */
+#if defined(DUK_USE_FASTINT)
+	DUK_TVAL_SET_FASTINT_U32(tv, result_len);
+#else
+	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) result_len);
+#endif
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 
 	/* XXX: shrink array allocation or entries compaction here? */
@@ -3180,6 +3205,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 *  Because buffer values may be looped over and read/written
 		 *  from, an array index fast path is important.
 		 */
+
+		/* FIXME: fastint fast path */
 
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
@@ -3701,7 +3728,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_array_length);  /* no need for decref/incref because value is a number */
+		/* no need for decref/incref because value is a number */
+#if defined(DUK_USE_FASTINT)
+		DUK_TVAL_SET_FASTINT_U32(tv, new_array_length);
+#else
+		DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_array_length);
+#endif
 	}
 
 	/*
@@ -5341,7 +5373,12 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
-			DUK_TVAL_SET_NUMBER(tmp, (duk_double_t) arridx_new_array_length);  /* no need for decref/incref because value is a number */
+			/* no need for decref/incref because value is a number */
+#if defined(DUK_USE_FASTINT)
+			DUK_TVAL_SET_FASTINT_U32(tmp, arridx_new_array_length);
+#else
+			DUK_TVAL_SET_NUMBER(tmp, (duk_double_t) arridx_new_array_length);
+#endif
 		}
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr) && arrlen_new_len < arrlen_old_len) {
 			/*
@@ -5372,7 +5409,12 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
 			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
-			DUK_TVAL_SET_NUMBER(tmp, (duk_double_t) result_len);  /* no decref needed for a number */
+			/* no decref needed for a number */
+#if defined(DUK_USE_FASTINT)
+			DUK_TVAL_SET_FASTINT_U32(tmp, result_len);
+#else
+			DUK_TVAL_SET_NUMBER(tmp, (duk_double_t) result_len);
+#endif
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
 
 			if (pending_write_protect) {

@@ -1856,6 +1856,11 @@ DUK_LOCAL duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 	tv1 = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv1 != NULL);
 
+#if defined(DUK_USE_FASTINT)
+	/* Explicit check for fastint downgrade. */
+	DUK_TVAL_CHKFAST_INPLACE(tv1);
+#endif
+
 	/* Sanity workaround for handling functions with a large number of
 	 * constants at least somewhat reasonably.  Otherwise checking whether
 	 * we already have the constant would grow very slow (as it is O(N^2)).

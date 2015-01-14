@@ -92,12 +92,19 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	}
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
+		if (DUK_TVAL_GET_FASTINT(tv) != 0) {
+			return 1;
+		} else {
+			return 0;
+		}
 #endif
 	default: {
 		/* number */
+		duk_double_t d;
 		int c;
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		c = DUK_FPCLASSIFY(DUK_TVAL_GET_NUMBER(tv));
+		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
+		d = DUK_TVAL_GET_DOUBLE(tv);
+		c = DUK_FPCLASSIFY((double) d);
 		if (c == DUK_FP_ZERO || c == DUK_FP_NAN) {
 			return 0;
 		} else {
@@ -229,11 +236,12 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
+		return (duk_double_t) DUK_TVAL_GET_FASTINT(tv);
 #endif
 	default: {
 		/* number */
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		return DUK_TVAL_GET_NUMBER(tv);
+		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
+		return DUK_TVAL_GET_DOUBLE(tv);
 	}
 	}
 
@@ -266,6 +274,7 @@ DUK_INTERNAL duk_double_t duk_js_tointeger_number(duk_double_t x) {
 }
 
 DUK_INTERNAL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
+	/* FIXME: fastint */
 	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	return duk_js_tointeger_number(d);
 }
@@ -314,6 +323,7 @@ DUK_LOCAL duk_double_t duk__toint32_touint32_helper(duk_double_t x, duk_bool_t i
 }
 
 DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
+	/* FIXME: fastint */
 	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
@@ -324,6 +334,7 @@ DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 
 
 DUK_INTERNAL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
+	/* FIXME: fastint */
 	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
@@ -531,8 +542,18 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 *  representation, need the awkward if + switch.
 	 */
 
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		if (DUK_TVAL_GET_FASTINT(tv_x) == DUK_TVAL_GET_FASTINT(tv_y)) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	else
+#endif
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		/* Catches both double and fastint cases */
+		/* Catches both doubles and cases where only one argument is a fastint */
 		if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
 			/* SameValue */
 			return duk__js_samevalue_number(DUK_TVAL_GET_NUMBER(tv_x),
@@ -791,14 +812,11 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	duk_small_int_t rc;
 	duk_bool_t retval;
 
-	/* Very often compared values are plain integers, so handle that
-	 * case as a fast path without any stack operations and such.
-	 */
-
+	/* Fast path for fastints */
 #if defined(DUK_USE_FASTINT)
-	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x) && DUK_TVAL_IS_NUMBER_FASTINT(tv_y)) {
-		duk_int64_t v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
-		duk_int64_t v2 = DUK_TVAL_GET_NUMBER_FASTINT(tv_y);
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		duk_int64_t v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		duk_int64_t v2 = DUK_TVAL_GET_FASTINT(tv_y);
 		if (v1 < v2) {
 			/* 'lt is true' */
 			retval = 1;
@@ -812,6 +830,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	}
 #endif  /* DUK_USE_FASTINT */
 
+	/* Fast path for numbers (one of which may be a fastint) */
 #if 1  /* XXX: make fast paths optional for size minimization? */
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
