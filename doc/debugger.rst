@@ -50,10 +50,10 @@ Getting started: debugging your target
 
 To integrate debugger support into your target, you need to:
 
-* **Check your feature options**: define ``DUK_OPT_DEBUGGER_SUPPORT`` to
-  enable debugger support in Duktape.  Also consider other debugging related
-  feature options, like forwarding ``print()``/``alert()`` to the debug
-  client.
+* **Check your feature options**: define ``DUK_OPT_DEBUGGER_SUPPORT`` and
+  ``DUK_OPT_INTERRUPT_COUNTER`` to enable debugger support in Duktape.
+  Also consider other debugging related feature options, like forwarding
+  ``print()``/``alert()`` to the debug client.
 
 * **Implement a concrete stream transport mechanism**: needed for both the
   target device and the Duktape debugger.  The best transport depends on the
@@ -72,12 +72,11 @@ To integrate debugger support into your target, you need to:
   etc.  (A detach can also occur if explicitly requested by the debug client
   or if Duktape detects a debug stream error.)
 
-You can also write your own debug client: the debug protocol is the version
-compatible interface to write a debugger against.  The debug client is
-intended to adapt to the target debug protocol version, so your debug client
-may need changes from time to time as the Duktape debug protocol evolves.
-The debug protocol is versioned with the same semantic versioning principles
-as the Duktape API.
+You can also write your own debug client by implementing the client side of
+the debug protocol.  The debug client is intended to adapt to the target
+debug protocol version, so your debug client may need changes from time to
+time as the Duktape debug protocol evolves.  The debug protocol is versioned
+with the same semantic versioning principles as the Duktape API.
 
 Example debug client and server
 -------------------------------
@@ -136,7 +135,7 @@ Performance
 -----------
 
 There should be very minimal performance impact, except when a debugger is
-attached a function has active breakpoints.
+attached and a running function has active breakpoints.
 
 When bytecode executor restarts it quickly determines that a debugger is not
 attached and breakpoints don't need to be processed.  The bytecode executor
@@ -145,7 +144,8 @@ execution.
 
 Duktape enters "checked execution" when a debugger is attached and the current
 function has active breakpoints.  Checked execution (see below for discussion)
-is much slower than normal execution.
+is much slower than normal execution; the interrupt handler is executed after
+every bytecode instruction.
 
 Code footprint
 --------------
@@ -159,17 +159,14 @@ Memory footprint
 If you're using finely tuned memory pools, memory pool sizes may need to
 be retuned.
 
-Otherwise memory footprint should be negligible.  Duktape doesn't need to
-maintain any debug message buffering because all debug data is streamed in
-and out.
-
-Other impacts
--------------
-
 Function instances will always keep their internal ``_Varmap`` property so
 that local variables can always be looked up by name.  Without debugger
 support the ``_Varmap`` is only kept when it might be needed during
 execution (e.g. the function contains an eval call).
+
+Otherwise memory footprint should be negligible.  Duktape doesn't need to
+maintain any debug message buffering because all debug data is streamed in
+and out.
 
 Debug API
 =========
@@ -574,7 +571,7 @@ some cases:
 +-----------------------+-----------+---------------------------------------+
 | 0x05...0x0f           | reserved  |                                       |
 +-----------------------+-----------+---------------------------------------+
-| 0x10 <int32>          | integer   | 4-byte string, signed 32-bit integer  |
+| 0x10 <int32>          | integer   | 4-byte integer, signed 32-bit integer |
 |                       |           | in network order follows initial byte |
 +-----------------------+-----------+---------------------------------------+
 | 0x11 <uint32> <data>  | string    | 4-byte string, unsigned 32-bit string |
@@ -695,6 +692,8 @@ The intent behind the dvalue format is to:
     string data.  This is useful for typical filenames, property and variable
     names, etc.
 
+Notes:
+
 * When not sending a ``duk_tval`` value, integer number values must always be
   encoded as plain integers (not the IEEE double encoding).
 
@@ -803,6 +802,8 @@ Error codes
 +--------+------------------------------------------------------------------+
 | 0x02   | Too many (e.g. too many breakpoints, cannot add new)             |
 +--------+------------------------------------------------------------------+
+| 0x03   | Not found (e.g. invalid breakpoint index)                        |
++--------+------------------------------------------------------------------+
 
 Handling of inbound requests
 ----------------------------
@@ -891,7 +892,8 @@ mapping is also used to represent buffer data.
 JSON representation of dvalues and debug messages
 -------------------------------------------------
 
-**Not currently used.  This is an informative convention only.**
+**Not currently used, might be useful for a debugger JSON proxy for easier
+debug client writing.  This is an informative convention only.**
 
 Debug values and debug messages can also be mapped 1:1 to JSON objects as
 described below.  This might be useful e.g. to provide a JSON debug proxy
@@ -1869,8 +1871,8 @@ Design goals
 This section provides some notes on goals behind the debugger design (this is
 not a comprehensive list).
 
-Quick integration to custom target
-----------------------------------
+Quick integration with a custom target
+--------------------------------------
 
 It should be possible integrate debugging support into a custom target
 very quickly, e.g. in one day.
@@ -2033,15 +2035,9 @@ the launching of the instance is up to the user.  There may also not be
 easy access to source code: the way it is loaded is up to the user, and
 some of the source code is given from C code, perhaps programmatically.
 
-Gaining control for debugging
------------------------------
-
-* Application could start in "debug mode" and wait for a debugger connection
-  before starting the actual application.  This is completely up to the
-  application itself and needs no Duktape support?
-
-* When user code makes a Duktape entry (duk_call() or similar), query an
-  attached debug client for actions?
+It's up to the application to decide when the debugger is attached.  For
+instance, a debugger may attached on startup (some kind of "reboot and
+debug" mode) or only when debugger is attached at runtime.
 
 Packet based protocol
 ---------------------
@@ -2073,7 +2069,7 @@ Stream protocol without request/response framing
 
 The debug protocol could also be a stream protocol with no request/response
 framing.  This works poorly when either party may initiate messages without
-lockstep.  For example, if debug client sends a request and the target sends
+lock step.  For example, if debug client sends a request and the target sends
 a notification, how can the debug client know that the bytes it receives are
 not a response but an unrelated notification?
 
@@ -2311,6 +2307,8 @@ Various triggers for pausing could be added:
 
 * Pause on yield/resume
 
+* Pause on execution timeout
+
 More flexible stepping
 ----------------------
 
@@ -2347,6 +2345,8 @@ Send a notification when interesting internal events occur, like:
 * Thread creation
 
 * Thread destruction
+
+* Execution timeout
 
 These must be implemented very carefully.  For instance, if we're currently
 in the process of responding to some debug command (say, "get locals") and
