@@ -22,7 +22,8 @@ Some prerequisites:
 * You'll need Node.js v0.10.x or newer.  Older Node.js versions don't support
   the required packages.
 
-Compile Duktape command line tool with debugger support:
+Compile Duktape command line tool with debugger support (for further options
+see ``doc/feature-options.rst``):
 
 * ``DUK_OPT_DEBUGGER_SUPPORT``
 
@@ -30,17 +31,28 @@ Compile Duktape command line tool with debugger support:
 
 * ``DUK_CMDLINE_DEBUGGER_SUPPORT``
 
-These options are enabled by default if you build the command line tool
-in the Duktape repo as::
+The source distributable contains a Makefile to build a "duk" command with
+debugger support::
+
+    $ cd <duktape dist directory>
+    $ make -f Makefile.dukdebug
+
+The Duktape Git repo "duk" target has debugger support enabled by default::
 
     $ make clean duk
 
 Start Duktape command line tool so that it waits for a debugger connection::
 
-    # For now we need to be in ecmascript-testcases/ so that the 'fileName'
-    # properties of functions will match that on the debug client.
+    # For now we need to be in the directory containing the source files
+    # executed so that the 'fileName' properties of functions will match
+    # that on the debug client.
 
-    $ cd ecmascript-testcases/
+    # Using source distributable
+    $ cd <duktape dist directory>
+    $ ./duk --debugger mandel.js
+
+    # Using Duktape Git repo
+    $ cd <duktape checkout>/ecmascript-testcases/
     $ ../duk --debugger test-dev-mandel2-func.js
 
 Start the web UI::
@@ -54,6 +66,10 @@ Once the required packages are installed, the NodeJS debug client will be
 up and running.  Open the following in your browser and start debugging:
 
 * http://localhost:9092/
+
+The debug client automatically attaches to the debug target on startup.
+If you start the debug target later, you'll need to click "Attach" in the
+web UI.
 
 Source search path
 ==================
@@ -116,7 +132,7 @@ Architecture
     :     ^          ||     :
     :     |          ||     :   [debug API]
     :     +----------||-------- debug transport callbacks
-    :     |          ||     :   (read, write, and peek)
+    :     |          ||     :   (read, write, peek, read/write flush)
     :     |          ||     :   implemented by application
     :     |          \/     :
     :  +----------------+   :
@@ -145,7 +161,7 @@ Using a custom transport
 
 Quite possibly your target device cannot use the example TCP transport and
 you need to implement your own transport.  You'll need to implement your
-custom transport both on the target device and for the debug client.
+custom transport both for the target device and for the debug client.
 
 Target device
 -------------
@@ -169,7 +185,7 @@ custom transport to talk to the target::
 This is a straightforward option and a proxy can be used with other debug
 clients too (perhaps custom scripts talking to the target etc).
 
-You could even use "netcat" and implement your proxy so that it talks to
+You could also use netcat and implement your proxy so that it talks to
 ``duk_debug.js`` using stdin/stdout.
 
 Debug client alternative 2: NodeJS stream

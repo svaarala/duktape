@@ -9,8 +9,15 @@
  *  limiting mechanisms (token buckets, suppressing identical messages, etc)
  *  are used here now.  Ideally the web UI would pull data on its own terms
  *  which would provide natural rate limiting.
+ *
+ *  Promises are used to structure callback chains.
+ *
+ *  https://github.com/petkaantonov/bluebird
+ *  https://github.com/petkaantonov/bluebird/blob/master/API.md
+ *  https://github.com/petkaantonov/bluebird/wiki/Promise-anti-patterns
  */
 
+var Promise = require('bluebird');
 var events = require('events');
 var stream = require('stream');
 var path = require('path');
@@ -62,6 +69,12 @@ var CMD_GETLOCALS = 0x1d;
 var CMD_EVAL = 0x1e;
 var CMD_DETACH = 0x1f;
 var CMD_DUMPHEAP = 0x20;
+
+// Errors
+var ERR_UNKNOWN = 0x00;
+var ERR_UNSUPPORTED = 0x01;
+var ERR_TOOMANY = 0x02;
+var ERR_NOTFOUND = 0x03;
 
 // Marker objects for special protocol values
 var DVAL_EOM = { EOM: true };
@@ -439,18 +452,22 @@ SourceFileManager.prototype.scan = function () {
 
     this.directories.forEach(function (dir) {
         console.log('Scanning source files: ' + dir);
-        wrench.readdirSyncRecursive(dir).forEach(function (fn) {
-            var absFn = path.normalize(path.join(dir, fn));   // './foo/bar.js' -> 'foo/bar.js'
-            var ent;
+        try {
+            wrench.readdirSyncRecursive(dir).forEach(function (fn) {
+                var absFn = path.normalize(path.join(dir, fn));   // './foo/bar.js' -> 'foo/bar.js'
+                var ent;
 
-            if (fs.existsSync(absFn) &&
-                fs.lstatSync(absFn).isFile() &&
-                _this.extensions[path.extname(fn)]) {
-                // We want the fileMap to contain the filename relative to
-                // the search dir root.
-                fileMap[fn] = true;
-            }
-        });
+                if (fs.existsSync(absFn) &&
+                    fs.lstatSync(absFn).isFile() &&
+                    _this.extensions[path.extname(fn)]) {
+                    // We want the fileMap to contain the filename relative to
+                    // the search dir root.
+                    fileMap[fn] = true;
+                }
+            });
+        } catch (e) {
+            console.log('Failed to scan ' + dir + ': ' + e);
+        }
     });
 
     files = Object.keys(fileMap);
@@ -789,7 +806,7 @@ function DebugProtocolParser(inputStream,
                 }
 
                 _this.emit('debug-message', msg);
-                msg.length = 0;
+                msg = [];  // new object, old may be in circulation for a while
             }
         }
     });
@@ -924,8 +941,6 @@ function formatDebugValue(v) {
  *  abstraction for a debugger session.
  */
 
-// XXX: rework awkward doneCb plumbing with e.g. promises.
-
 function Debugger() {
     events.EventEmitter.call(this);
 
@@ -977,114 +992,94 @@ Debugger.prototype.uiMessage = function (type, val) {
     this.emit('ui-message-update');  // just trigger a sync, gets rate limited
 };
 
-Debugger.prototype.sendRequest = function (msg, successCb, errorCb) {
-    var dvals = [];
-    var dval;
-    var data;
-    var i;
+Debugger.prototype.sendRequest = function (msg) {
+    var _this = this;
+    return new Promise(function (resolve, reject) {
+        var dvals = [];
+        var dval;
+        var data;
+        var i;
 
-    if (!this.attached || !this.handshook || !this.reqQueue || !this.targetStream) {
-        if (errorCb) {
-            errorCb(new Error('invalid state for sendRequest'));
+        if (!_this.attached || !_this.handshook || !_this.reqQueue || !_this.targetStream) {
+            throw new Error('invalid state for sendRequest');
         }
-        return;
-    }
 
-    for (i = 0; i < msg.length; i++) {
-        try {
-            dval = formatDebugValue(msg[i]);
-        } catch (e) {
-            console.log('Failed to format dvalue, dropping connection: ' + e);
-            console.log(e.stack || e);
-            this.targetStream.destroy();
-            return;
+        for (i = 0; i < msg.length; i++) {
+            try {
+                dval = formatDebugValue(msg[i]);
+            } catch (e) {
+                console.log('Failed to format dvalue, dropping connection: ' + e);
+                console.log(e.stack || e);
+                _this.targetStream.destroy();
+                throw new Error('failed to format dvalue');
+            }
+            dvals.push(dval);
         }
-        dvals.push(dval);
-    }
 
-    data = Buffer.concat(dvals);
+        data = Buffer.concat(dvals);
 
-    this.targetStream.write(data);
-    this.outputPassThroughStream.write(data);  // stats and dumping
+        _this.targetStream.write(data);
+        _this.outputPassThroughStream.write(data);  // stats and dumping
 
-    if (optLogMessages) {
-        console.log('Request ' + prettyDebugCommand(msg[1]) + ': ' + prettyDebugMessage(msg));
-    }
+        if (optLogMessages) {
+            console.log('Request ' + prettyDebugCommand(msg[1]) + ': ' + prettyDebugMessage(msg));
+        }
 
-    if (!this.reqQueue) {
-        console.log('no reqQueue, request dropped; call errorCb from timer');
-        setTimeout(function () { errorCb(new Error('no reqQueue')); }, 1);
-        return;
-    }
+        if (!_this.reqQueue) {
+            throw new Error('no reqQueue');
+        }
 
-    this.reqQueue.push({
-        reqMsg: msg,
-        reqCmd: msg[1],
-        successCb: successCb,
-        errorCb: errorCb
+        _this.reqQueue.push({
+            reqMsg: msg,
+            reqCmd: msg[1],
+            resolveCb: resolve,
+            rejectCb: reject
+        });
     });
 };
 
 Debugger.prototype.sendBasicInfoRequest = function () {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_BASICINFO, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_BASICINFO, DVAL_EOM ]).then(function (msg) {
         _this.dukVersion = msg[1];
         _this.dukGitDescribe = msg[2];
         _this.targetInfo = msg[3];
         _this.endianness = { 1: 'little', 2: 'mixed', 3: 'big' }[msg[4]] || 'unknown';
         _this.emit('basic-info-update');
-    }, function (err) {
-        // nop
+        return msg;
     });
 };
 
-Debugger.prototype.sendGetVarRequest = function (varname, doneCb) {
-    // GetVar hack test
-    this.sendRequest([ DVAL_REQ, CMD_GETVAR, varname, DVAL_EOM ], function (msg) {
-        doneCb(msg[1] === 1, msg[2]);
-    }, function (err) {
-        doneCb(0, undefined);  // FIXME
-    });
-};
-
-Debugger.prototype.sendPutVarRequest = function (varname, varvalue, doneCb) {
-    // PutVar hack test
+Debugger.prototype.sendGetVarRequest = function (varname) {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_PUTVAR, varname, varvalue, DVAL_EOM ], function (msg) {
-        doneCb();
-    }, function (err) {
-        doneCb();  // FIXME: error indication.. really need future chaining
+    return this.sendRequest([ DVAL_REQ, CMD_GETVAR, varname, DVAL_EOM ]).then(function (msg) {
+        return { found: msg[1] === 1, value: msg[2] };
     });
+};
+
+Debugger.prototype.sendPutVarRequest = function (varname, varvalue) {
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_PUTVAR, varname, varvalue, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendInvalidCommandTestRequest = function () {
     // Intentional invalid command
     var _this = this;
-    this.sendRequest([ DVAL_REQ, 0xdeadbeef, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    return this.sendRequest([ DVAL_REQ, 0xdeadbeef, DVAL_EOM ]);
 }
 
-Debugger.prototype.sendStatusRequest = function (doneCb) {
+Debugger.prototype.sendStatusRequest = function () {
     // Send a status request to trigger a status notify, result is ignored:
     // target sends a status notify instead of a meaningful reply
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_TRIGGERSTATUS, DVAL_EOM ], function (msg) {
-        if (doneCb) { doneCb(); }
-    }, function (err) {
-        if (doneCb) { doneCb(); }
-    });
+    return this.sendRequest([ DVAL_REQ, CMD_TRIGGERSTATUS, DVAL_EOM ]);
 }
 
-Debugger.prototype.sendBreakpointListRequest = function (doneCb) {
+Debugger.prototype.sendBreakpointListRequest = function () {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_LISTBREAK, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_LISTBREAK, DVAL_EOM ]).then(function (msg) {
         var i, n;
         var breakpts = [];
-
-        if (doneCb) { doneCb(); }
 
         for (i = 1, n = msg.length - 1; i < n; i += 2) {
             breakpts.push({ fileName: msg[i], lineNumber: msg[i + 1] });
@@ -1092,18 +1087,15 @@ Debugger.prototype.sendBreakpointListRequest = function (doneCb) {
 
         _this.breakpoints = breakpts;
         _this.emit('breakpoints-update');
-    }, function (err) {
-        if (doneCb) { doneCb(); }
+        return msg;
     });
 };
 
-Debugger.prototype.sendGetLocalsRequest = function (doneCb) {
+Debugger.prototype.sendGetLocalsRequest = function () {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_GETLOCALS, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETLOCALS, DVAL_EOM ]).then(function (msg) {
         var i;
         var locals = [];
-
-        if (doneCb) { doneCb(); }
 
         for (i = 1; i <= msg.length - 2; i += 2) {
             // XXX: do pretty printing in debug client for now
@@ -1112,18 +1104,15 @@ Debugger.prototype.sendGetLocalsRequest = function (doneCb) {
 
         _this.locals = locals;
         _this.emit('locals-update');
-    }, function (err) {
-        if (doneCb) { doneCb(); }
+        return msg;
     });
 };
 
-Debugger.prototype.sendGetCallStackRequest = function (doneCb) {
+Debugger.prototype.sendGetCallStackRequest = function () {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_GETCALLSTACK, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETCALLSTACK, DVAL_EOM ]).then(function (msg) {
         var i;
         var stack = [];
-
-        if (doneCb) { doneCb(); }
 
         for (i = 1; i + 3 <= msg.length - 1; i += 4) {
             stack.push({
@@ -1136,72 +1125,51 @@ Debugger.prototype.sendGetCallStackRequest = function (doneCb) {
 
         _this.callstack = stack;
         _this.emit('callstack-update');
-    }, function (err) {
-        if (doneCb) { doneCb(); }
+        return msg;
     });
 };
 
 Debugger.prototype.sendStepInto = function () {
-    this.sendRequest([ DVAL_REQ, CMD_STEPINTO, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_STEPINTO, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendStepOver = function () {
-    this.sendRequest([ DVAL_REQ, CMD_STEPOVER, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_STEPOVER, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendStepOut = function () {
-    this.sendRequest([ DVAL_REQ, CMD_STEPOUT, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_STEPOUT, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendPause = function () {
-    this.sendRequest([ DVAL_REQ, CMD_PAUSE, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_PAUSE, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendResume = function () {
-    this.sendRequest([ DVAL_REQ, CMD_RESUME, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_RESUME, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendEval = function (evalInput, doneCb) {
-    this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, DVAL_EOM ], function (msg) {
-        doneCb(msg[1] === 1 /*error*/, msg[2]);
-    }, function (err) {
-        doneCb(err);
+Debugger.prototype.sendEval = function (evalInput) {
+    var _this = this;
+    return this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, DVAL_EOM ]).then(function (msg) {
+        return { error: msg[1] === 1 /*error*/, value: msg[2] };
     });
 };
 
 Debugger.prototype.sendDetachRequest = function () {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_DETACH, DVAL_EOM ], function (msg) {
-        // nop
-    }, function (err) {
-        // nop
-    });
+    return this.sendRequest([ DVAL_REQ, CMD_DETACH, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendDumpHeap = function (doneCb, errCb) {
+Debugger.prototype.sendDumpHeap = function () {
     var _this = this;
 
-    this.sendRequest([ DVAL_REQ, CMD_DUMPHEAP, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_DUMPHEAP, DVAL_EOM ]).then(function (msg) {
         var res = {};
         var objs = [];
         var i, j, n, m, o, prop;
@@ -1237,7 +1205,7 @@ Debugger.prototype.sendDumpHeap = function (doneCb, errCb) {
                     prop = {};
                     prop.flags = msg[i++];
                     prop.key = msg[i++];
-                    prop.accessor = (msg[i++] == 1);  /* FIXME: flags? */
+                    prop.accessor = (msg[i++] == 1);
                     if (prop.accessor) {
                         prop.getter = msg[i++];
                         prop.setter = msg[i++];
@@ -1255,22 +1223,20 @@ Debugger.prototype.sendDumpHeap = function (doneCb, errCb) {
             } else {
                 console.log('invalid htype: ' + o.type + ', disconnect');
                 _this.disconnectDebugger();
-                errCb(new Error('invalid htype'));
+                throw new Error('invalid htype');
                 return;
             }
 
             objs.push(o);
         }
 
-        doneCb(res);
-    }, function (err) {
-        errCb(err);
+        return res;
     });
 };
 
 Debugger.prototype.changeBreakpoint = function (fileName, lineNumber, mode) {
     var _this = this;
-    this.sendRequest([ DVAL_REQ, CMD_LISTBREAK, DVAL_EOM ], function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_LISTBREAK, DVAL_EOM ]).then(function (msg) {
         var i, n;
         var breakpts = [];
         var deleted = false;
@@ -1307,8 +1273,6 @@ Debugger.prototype.changeBreakpoint = function (fileName, lineNumber, mode) {
 
         // Read final, effective breakpoints from the target
         _this.sendBreakpointListRequest();
-    }, function (err) {
-        // nop
     });
 };
 
@@ -1464,8 +1428,8 @@ Debugger.prototype.processDebugMessage = function (msg) {
             console.log('Reply for ' + prettyDebugCommand(req.reqCmd) + ': ' + prettyDebugMessage(msg));
         }
 
-        if (req.successCb) {
-            req.successCb(msg);
+        if (req.resolveCb) {
+            req.resolveCb(msg);
         } else {
             // nop: no callback
         }
@@ -1482,8 +1446,8 @@ Debugger.prototype.processDebugMessage = function (msg) {
             console.log('Error for ' + prettyDebugCommand(req.reqCmd) + ': ' + prettyDebugMessage(msg));
         }
 
-        if (req.errorCb) {
-            req.errorCb(err);
+        if (req.rejectCb) {
+            req.rejectCb(err);
         } else {
             // nop: no callback
         }
@@ -1559,25 +1523,25 @@ Debugger.prototype.run = function () {
         case 0:
             if (!statusPending) {
                 statusPending = true;
-                _this.sendStatusRequest(function () { statusPending = false; });
+                _this.sendStatusRequest().finally(function () { statusPending = false; });
             }
             break;
         case 1:
             if (!bplistPending) {
                 bplistPending = true;
-                _this.sendBreakpointListRequest(function () { bplistPending = false; });
+                _this.sendBreakpointListRequest().finally(function () { bplistPending = false; });
             }
             break;
         case 2:
             if (!localsPending) {
                 localsPending = true;
-                _this.sendGetLocalsRequest(function () { localsPending = false; });
+                _this.sendGetLocalsRequest().finally(function () { localsPending = false; });
             }
             break;
         case 3:
             if (!callStackPending) {
                 callStackPending = true;
-                _this.sendGetCallStackRequest(function () { callStackPending = false; });
+                _this.sendGetCallStackRequest().finally(function () { callStackPending = false; });
             }
             break;
         }
@@ -1628,11 +1592,11 @@ DebugWebServer.prototype.handleSourceListPost = function (req, res) {
 DebugWebServer.prototype.handleHeapDumpGet = function (req, res) {
     console.log('Heap dump get');
 
-    this.dbg.sendDumpHeap(function (val) {
+    this.dbg.sendDumpHeap().then(function (val) {
         res.header('Content-Type', 'application/json');
         //res.status(200).json(val);
         res.status(200).send(JSON.stringify(val, null, 4));
-    }, function (err) {
+    }).catch(function (err) {
         res.status(500).send('Failed to get heap dump: ' + (err.stack || err));
     });
 };
@@ -1735,10 +1699,13 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
     });
 
     socket.on('detach', function (msg) {
-        _this.dbg.sendDetachRequest();
-        setTimeout(function () {
+        // Try to detach cleanly, timeout if no response
+        Promise.any([
+            _this.dbg.sendDetachRequest(),
+            Promise.delay(3000)
+        ]).finally(function () {
             _this.dbg.disconnectDebugger();
-        }, 1000);  // XXX: chain callback but have a timeout if no response
+        });
     });
 
     socket.on('stepinto', function (msg) {
@@ -1765,8 +1732,8 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
         // msg.input is a proper Unicode strings here, and needs to be
         // converted into a protocol string (U+0000...U+00FF).
         var input = stringToDebugString(msg.input);
-        _this.dbg.sendEval(input, function (errFlag, res) {
-            socket.emit('eval-result', { error: errFlag, result: prettyUiDebugValue(res, EVAL_CLIPLEN) });
+        _this.dbg.sendEval(input).then(function (v) {
+            socket.emit('eval-result', { error: v.error, result: prettyUiDebugValue(v.value, EVAL_CLIPLEN) });
         });
 
         // An eval call quite possibly changes the local variables so always
@@ -1780,8 +1747,9 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
         // msg.varname is a proper Unicode strings here, and needs to be
         // converted into a protocol string (U+0000...U+00FF).
         var varname = stringToDebugString(msg.varname);
-        _this.dbg.sendGetVarRequest(varname, function (foundFlag, res) {
-            socket.emit('getvar-result', { found: foundFlag, result: prettyUiDebugValue(res, GETVAR_CLIPLEN) });
+        _this.dbg.sendGetVarRequest(varname)
+        .then(function (v) {
+            socket.emit('getvar-result', { found: v.found, result: prettyUiDebugValue(v.value, GETVAR_CLIPLEN) });
         });
     });
 
@@ -1797,8 +1765,9 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
             varvalue = stringToDebugString(msg.varvalue);
         }
 
-        _this.dbg.sendPutVarRequest(varname, varvalue, function () {
-            console.log('putvar done');  // FIXME: UI? Success?
+        _this.dbg.sendPutVarRequest(varname, varvalue)
+        .then(function (v) {
+            console.log('putvar done');  // XXX: signal success to UI?
         });
 
         // A PutVar call quite possibly changes the local variables so always
@@ -1956,7 +1925,7 @@ function main() {
         optHttpPort = argv['http-port'];
     }
     if (argv['source-dirs']) {
-        optSourceSearchDirs = argv['source-dirs'].split(':');
+        optSourceSearchDirs = argv['source-dirs'].split(path.delimiter);
     }
     if (argv['dump-debug-read']) {
         optDumpDebugRead = argv['dump-debug-read'];

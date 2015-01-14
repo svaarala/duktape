@@ -2,6 +2,8 @@
 #
 #  Convert a HeapDump JSON file into a more useful format.
 #
+#  XXX: right now emits a heap graph.
+#
 
 import os
 import sys
