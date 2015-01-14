@@ -700,6 +700,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	res->dbg_read_cb = NULL;
 	res->dbg_write_cb = NULL;
+	res->dbg_peek_cb = NULL;
+	res->dbg_read_flush_cb = NULL;
+	res->dbg_write_flush_cb = NULL;
+	res->dbg_udata = NULL;
 	res->dbg_step_thread = NULL;
 #endif
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */

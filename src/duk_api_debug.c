@@ -54,7 +54,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(read_cb != NULL);
 	DUK_ASSERT(write_cb != NULL);
-	/* Other callbacks are optional */
+	/* Other callbacks are optional. */
 
 	heap = thr->heap;
 	heap->dbg_read_cb = read_cb;

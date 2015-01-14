@@ -12,6 +12,7 @@
 #define DUK_DBG_ERR_UNKNOWN       0x00
 #define DUK_DBG_ERR_UNSUPPORTED   0x01
 #define DUK_DBG_ERR_TOOMANY       0x02
+#define DUK_DBG_ERR_NOTFOUND      0x03
 
 /* Initiated by Duktape */
 #define DUK_DBG_CMD_STATUS        0x01
@@ -85,7 +86,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr);
 
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstring *filename, duk_uint32_t line);
-DUK_INTERNAL_DECL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index);
+DUK_INTERNAL_DECL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index);
 #endif
 
 #endif  /* DUK_DEBUGGER_H_INCLUDED */

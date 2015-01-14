@@ -1013,9 +1013,12 @@ DUK_LOCAL void duk__debug_handle_del_break(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("debug command delbreak"));
 	idx = (duk_small_uint_t) duk_debug_read_int(thr);
-	duk_debug_remove_breakpoint(thr, idx);
-	duk_debug_write_reply(thr);
-	duk_debug_write_eom(thr);
+	if (duk_debug_remove_breakpoint(thr, idx)) {
+		duk_debug_write_reply(thr);
+		duk_debug_write_eom(thr);
+	} else {
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid breakpoint index");
+	}
 }
 
 DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
@@ -1598,7 +1601,7 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 	return heap->dbg_breakpoint_count - 1;  /* index */
 }
 
-DUK_INTERNAL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index) {
+DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index) {
 	duk_heap *heap = thr->heap;
 	duk_hstring *h;
 	duk_breakpoint *b;
@@ -1614,7 +1617,7 @@ DUK_INTERNAL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t
 
 	if (breakpoint_index >= heap->dbg_breakpoint_count) {
 		DUK_D(DUK_DPRINT("invalid breakpoint index: %ld", (long) breakpoint_index));
-		return;
+		return 0;
 	}
 	b = heap->dbg_breakpoints + breakpoint_index;
 
@@ -1633,6 +1636,8 @@ DUK_INTERNAL void duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t
 	DUK_HSTRING_DECREF(thr, h);  /* side effects */
 
 	/* Breakpoint entries above the used area are left as garbage. */
+
+	return 1;
 }
 
 #undef DUK__SET_CONN_BROKEN
