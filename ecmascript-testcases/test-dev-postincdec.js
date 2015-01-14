@@ -63,6 +63,7 @@ NaN NaN
 NaN NaN
 NaN NaN
 number 124
+number
 ===*/
 
 /* The value is coerced with ToNumber().  Note that the value assigned to
@@ -88,6 +89,7 @@ y = 'foo'; print(y--, y);  // ToNumber('foo') -> NaN
 y = 'foo'; print(y++, y);
 
 y = '123'; print(typeof y++, y);  // ToNumber() is applied to OLD value too
+print(typeof y);
 
 /*===
 1000
@@ -180,3 +182,12 @@ try {
     print(e.name);
 }
 print(z);
+
+/*===
+10 11 12 11 10
+9
+===*/
+
+var x = 10;
+print(x++, x++, x--, x--, x--);
+print(x);
