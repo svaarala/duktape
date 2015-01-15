@@ -88,6 +88,8 @@ the website, run test cases, etc:
     $ make luajstest
     $ make dukwebtest        # then browse to file:///tmp/dukweb-test/dukweb.html
     $ make xmldoctest
+    $ make bluebirdtest
+    # etc
 
 **Note: the repo Makefile is intended for Linux developer use**, it is not a
 multi-platform "end user" Makefile.  In particular, the Makefile is not
