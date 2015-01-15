@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: duk_context * is "void *" which defeats some cast checks, change typing?
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-14 10:46:06.239960 Z
+references: []
+
+id: 94ba4ee0e1b82181b50769cab3f88e11782b466c
+log_events: 
+- - 2015-01-14 10:46:06.399916 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
