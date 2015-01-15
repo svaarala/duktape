@@ -337,6 +337,7 @@ cp extras/README.rst $DIST/extras/
 
 for i in \
 	Makefile.cmdline \
+	Makefile.dukdebug \
 	Makefile.eventloop \
 	Makefile.hello \
 	Makefile.eval \
