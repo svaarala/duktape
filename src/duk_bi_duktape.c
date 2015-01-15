@@ -25,19 +25,21 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 
 	DUK_UNREF(thr);
 
-	tv = duk_get_tval(ctx, 0);
-	DUK_ASSERT(tv != NULL);  /* because arg count is 1 */
-
+	/* result array */
 	duk_push_array(ctx);  /* -> [ val arr ] */
 
 	/* type tag (public) */
 	duk_push_int(ctx, duk_get_type(ctx, 0));
 
 	/* address */
+	tv = duk_get_tval(ctx, 0);
+	DUK_ASSERT(tv != NULL);  /* because arg count is 1 */
 	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
 		h = DUK_TVAL_GET_HEAPHDR(tv);
 		duk_push_pointer(ctx, (void *) h);
 	} else {
+		/* internal type tag */
+		duk_push_int(ctx, (duk_int_t) DUK_TVAL_GET_TAG(tv));
 		goto done;
 	}
 	DUK_ASSERT(h != NULL);
