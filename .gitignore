@@ -24,6 +24,7 @@ compiler.jar
 cloc-1.60.pl
 lua-5.2.3.tar.gz
 luajs.zip
+bluebird.js
 dukvm.js
 jquery-1.11.0.js
 coffee-script

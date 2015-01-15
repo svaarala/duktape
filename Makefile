@@ -302,6 +302,7 @@ clean:
 	@rm -f /tmp/duk-jsint-test*
 	@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	@rm -f /tmp/duk-closure-test*
+	@rm -f /tmp/duk-bluebird-test*
 	@rm -f a.out
 	@rm -rf test262-*
 	@rm -f compiler.jar
@@ -327,6 +328,7 @@ cleanall: clean
 	@rm -f cloc-1.60.pl
 	@rm -f lua-5.2.3.tar.gz
 	@rm -f luajs.zip
+	@rm -f bluebird.js
 	@rm -f jquery-1.11.0.js
 	@rm -rf coffee-script
 	@rm -rf LiveScript
@@ -705,6 +707,18 @@ luajstest: luajs duk
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-test.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
 	./duk /tmp/duk-luajs-test.js
+
+bluebird.js:
+	$(WGET) https://cdn.jsdelivr.net/bluebird/latest/bluebird.js -O $@
+
+.PHONY: bluebirdtest
+bluebirdtest: bluebird.js duk
+	@rm -f /tmp/duk-bluebird-test.js
+	cat util/bluebird-test-shim.js bluebird.js > /tmp/duk-bluebird-test.js
+	echo "var myPromise = new Promise(function(resolve, reject) { setTimeout(function () { resolve('resolved 123') }, 1000); });" >> /tmp/duk-bluebird-test.js
+	echo "myPromise.then(function (v) { print('then:', v); });" >> /tmp/duk-bluebird-test.js
+	echo "fakeEventLoop();" >> /tmp/duk-bluebird-test.js
+	./duk /tmp/duk-bluebird-test.js
 
 # Closure
 compiler-latest.zip:
