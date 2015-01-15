@@ -774,7 +774,11 @@ Planned
 1.2.0 (2015-XX-XX)
 ------------------
 
-* Debugger support
+* Main release goals: debugger support and performance improvements
+
+* Add first iteration of experimental debugger support which is based on a
+  narrow debug API and a standard debug protocol; Duktape also provides an
+  example debug client with a web UI
 
 * Add iPhone/iOS strings to Duktape.env
 
