@@ -781,6 +781,10 @@ Planned
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
+* Fix function parsing bug where the left curly brace opening the function
+  body was not checked and Duktape would accept e.g. "function () [}"
+  (see GH-106)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
