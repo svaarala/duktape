@@ -1597,6 +1597,9 @@ DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 #endif
 		break;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		duk_double_t d;

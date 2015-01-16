@@ -706,6 +706,9 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	case DUK_TAG_BUFFER:
 		duk_debug_write_hbuffer(thr, DUK_TVAL_GET_BUFFER(tv));
 		break;
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* Numbers are normalized to big (network) endian. */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

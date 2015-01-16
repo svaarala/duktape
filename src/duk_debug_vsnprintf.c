@@ -745,6 +745,7 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 		duk_fb_sprintf(fb, ":%04lx", (long) lf_flags);
 		break;
 	}
+	case DUK_TAG_FASTINT:
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

@@ -2260,11 +2260,18 @@ typedef FILE duk_file;
  */
 
 #undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
 
 #if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && !defined(DUK_OPT_NO_PACKED_TVAL)
 #define DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
+#endif
+
+/* Support for 48-bit signed integer duk_tval with transparent semantics. */
+#undef DUK_USE_FASTINT
+#if defined(DUK_OPT_FASTINT)
+#if !defined(DUK_F_HAVE_64BIT)
+#error DUK_OPT_FASTINT requires 64-bit integer type support at the moment
+#endif
+#define DUK_USE_FASTINT
 #endif
 
 /*

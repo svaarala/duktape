@@ -2285,6 +2285,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		goto lookup;  /* avoid double coercion */
 	}
 
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		DUK_DDD(DUK_DDDPRINT("base object is a number, start lookup from number prototype"));
@@ -3250,6 +3253,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		goto lookup;  /* avoid double coercion */
 	}
 
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		DUK_DDD(DUK_DDDPRINT("base object is a number, start lookup from number prototype"));

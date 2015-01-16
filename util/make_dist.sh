@@ -175,6 +175,7 @@ for i in \
 	duk_regexp_compiler.c	\
 	duk_regexp_executor.c	\
 	duk_regexp.h		\
+	duk_tval.c		\
 	duk_tval.h		\
 	duk_unicode.h		\
 	duk_unicode_support.c	\

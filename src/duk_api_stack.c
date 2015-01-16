@@ -1580,6 +1580,9 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
 		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
 		return (duk_size_t) DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2017,6 +2020,9 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 		duk_push_lightfunc_tostring(ctx, tv);
 		break;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2135,6 +2141,9 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
 		 */
 		res = NULL;
 		break;
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* number */
 		res = NULL;
@@ -2244,6 +2253,9 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		DUK_HOBJECT_SET_EXOTIC_DUKFUNC((duk_hobject *) nf);
 		goto replace_value;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER);
@@ -2320,6 +2332,9 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index) {
 		return DUK_TYPE_POINTER;
 	case DUK_TAG_LIGHTFUNC:
 		return DUK_TYPE_LIGHTFUNC;
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -2356,6 +2371,9 @@ DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index) {
 		return DUK_TYPE_MASK_POINTER;
 	case DUK_TAG_LIGHTFUNC:
 		return DUK_TYPE_MASK_LIGHTFUNC;
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

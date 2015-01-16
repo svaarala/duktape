@@ -66,6 +66,39 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	 *  Fast paths
 	 */
 
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x) && DUK_TVAL_IS_NUMBER_FASTINT(tv_y)) {
+		duk_int64_t v1, v2, v3;
+		duk_int32_t v3_hi;
+		duk_tval tv_tmp;
+		duk_tval *tv_z;
+
+		/* Input values are signed 48-bit so we can detect overflow
+		 * reliably from high bits or just a comparison.
+		 */
+
+		v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
+		v2 = DUK_TVAL_GET_NUMBER_FASTINT(tv_y);
+		v3 = v1 + v2;
+		v3_hi = (duk_int32_t) (v3 >> 32);
+		if (DUK_UNLIKELY(v3_hi < -0x8000 || v3_hi > 0x7fff)) {
+			fprintf(stderr, "fastint overflow: %lld + %lld -> %lld\n", v1, v2, v3);
+			goto fastint_overflow;
+		}
+#if 0
+		fprintf(stderr, "fastint add: %lld + %lld -> %lld\n", v1, v2, v3);
+#endif
+
+		tv_z = &thr->valstack_bottom[idx_z];
+		DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+		DUK_TVAL_SET_NUMBER_FASTINT(tv_z, v3);
+		DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+		DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+		return;
+	}
+ fastint_overflow:
+#endif  /* DUK_USE_FASTINT */
+
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		duk_tval tv_tmp;
 		duk_tval *tv_z;
@@ -308,6 +341,31 @@ DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_smal
 	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
 	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x)) {
+		/* fast path */
+		duk_int64_t v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
+		if (opcode == DUK_EXTRAOP_INC) {
+			/* FIXME: Just an example for INC.  Fast path should avoid DECREF;
+			 * e.g. if INC source and target regs would be forced to be
+			 * the same, the fast path check above would guarantee a DECREF
+			 * would be unnecessary.
+			 */
+			v1++;
+			if (v1 < DUK_FASTINT_MAX) {
+				tv_z = &thr->valstack_bottom[idx_z];
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+				DUK_TVAL_SET_NUMBER_FASTINT(tv_z, v1);
+				DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+				DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+				return;
+			}
+		}
+
+		/* fall through if overflow etc */
+	}
+#endif  /* DUK_USE_FASTINT */
 
 	if (DUK_TVAL_IS_NUMBER(tv_x)) {
 		/* fast path */
@@ -2159,12 +2217,15 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_int_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1;
-			duk_double_t val;
+			duk_int64_t val;
 
+			/* FIXME: check for DUK_USE_FASTINT, fix duk_tval.h macros,
+			 * don't rely on 64-bit support.
+			 */
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
-			bc = DUK_DEC_BC(ins); val = (duk_double_t) (bc - DUK_BC_LDINT_BIAS);
+			bc = DUK_DEC_BC(ins); val = (duk_int64_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-			DUK_TVAL_SET_NUMBER(tv1, val);
+			DUK_TVAL_SET_NUMBER_FASTINT(tv1, val);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 			break;
 		}
@@ -3612,10 +3673,19 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			case DUK_EXTRAOP_TONUM: {
 				duk_context *ctx = (duk_context *) thr;
 				duk_small_uint_fast_t b = DUK_DEC_B(ins);
-				duk_small_uint_fast_t c = DUK_DEC_C(ins);
-				duk_dup(ctx, (duk_idx_t) c);
-				duk_to_number(ctx, -1);
-				duk_replace(ctx, (duk_idx_t) b);
+				duk_tval *tv;
+
+				/* FIXME: compiler behaves this way, change op to be inline */
+				DUK_ASSERT(DUK_DEC_B(ins) == DUK_DEC_C(ins));
+
+				tv = DUK__REGP(b);
+				if (DUK_TVAL_IS_NUMBER(tv)) {
+					/* Nop: important special case in e.g. post-inc/dec now. */
+				} else {
+					duk_dup(ctx, (duk_idx_t) b);
+					duk_to_number(ctx, -1);
+					duk_replace(ctx, (duk_idx_t) b);
+				}
 				break;
 			}
 

@@ -90,6 +90,9 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	case DUK_TAG_LIGHTFUNC: {
 		return 1;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		int c;
@@ -224,6 +227,9 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		/* +(function(){}) -> NaN */
 		return DUK_DOUBLE_NAN;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
@@ -526,6 +532,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 */
 
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
+		/* Catches both double and fastint cases */
 		if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
 			/* SameValue */
 			return duk__js_samevalue_number(DUK_TVAL_GET_NUMBER(tv_x),
@@ -591,6 +598,9 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			DUK_TVAL_GET_LIGHTFUNC(tv_y, func_y, lf_flags_y);
 			return ((func_x == func_y) && (lf_flags_x == lf_flags_y)) ? 1 : 0;
 		}
+#if defined(DUK_USE_FASTINT)
+		case DUK_TAG_FASTINT:
+#endif
 		default: {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
@@ -781,9 +791,27 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	duk_small_int_t rc;
 	duk_bool_t retval;
 
-	/* Very often compared values are plain numbers, so handle that case
-	 * as the fast path without any stack operations and such.
+	/* Very often compared values are plain integers, so handle that
+	 * case as a fast path without any stack operations and such.
 	 */
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_NUMBER_FASTINT(tv_x) && DUK_TVAL_IS_NUMBER_FASTINT(tv_y)) {
+		duk_int64_t v1 = DUK_TVAL_GET_NUMBER_FASTINT(tv_x);
+		duk_int64_t v2 = DUK_TVAL_GET_NUMBER_FASTINT(tv_y);
+		if (v1 < v2) {
+			/* 'lt is true' */
+			retval = 1;
+		} else {
+			retval = 0;
+		}
+		if (flags & DUK_COMPARE_FLAG_NEGATE) {
+			retval ^= 1;
+		}
+		return retval;
+	}
+#endif  /* DUK_USE_FASTINT */
+
 #if 1  /* XXX: make fast paths optional for size minimization? */
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
@@ -809,6 +837,8 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 		}
 	}
 #endif
+
+	/* Slow path */
 
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
@@ -1179,6 +1209,9 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 		stridx = DUK_STRIDX_LC_FUNCTION;
 		break;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* number */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));

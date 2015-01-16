@@ -1993,6 +1993,9 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			DUK_UNREACHABLE();
 			break;
 		}
+#if defined(DUK_USE_FASTINT)
+		case DUK_TAG_FASTINT:
+#endif
 		default: {
 			/* number */
 			duk_reg_t dest;

@@ -44,42 +44,32 @@ typedef union duk_double_union duk_tval;
 /* tags */
 #define DUK_TAG_NORMALIZED_NAN    0x7ff8UL   /* the NaN variant we use */
 /* avoid tag 0xfff0, no risk of confusion with negative infinity */
-#define DUK_TAG_UNDEFINED         0xfff1UL   /* embed: 0 or 1 (normal or unused) */
-#define DUK_TAG_NULL              0xfff2UL   /* embed: nothing */
-#define DUK_TAG_BOOLEAN           0xfff3UL   /* embed: 0 or 1 (false or true) */
+#if defined(DUK_USE_FASTINT)
+#define DUK_TAG_FASTINT           0xfff1UL   /* embed: integer value */
+#endif
+#define DUK_TAG_UNDEFINED         0xfff2UL   /* embed: 0 or 1 (normal or unused) */
+#define DUK_TAG_NULL              0xfff3UL   /* embed: nothing */
+#define DUK_TAG_BOOLEAN           0xfff4UL   /* embed: 0 or 1 (false or true) */
 /* DUK_TAG_NUMBER would logically go here, but it has multiple 'tags' */
-#define DUK_TAG_POINTER           0xfff4UL   /* embed: void ptr */
-#define DUK_TAG_LIGHTFUNC         0xfff5UL   /* embed: func ptr */
-#define DUK_TAG_STRING            0xfff6UL   /* embed: duk_hstring ptr */
-#define DUK_TAG_OBJECT            0xfff7UL   /* embed: duk_hobject ptr */
-#define DUK_TAG_BUFFER            0xfff8UL   /* embed: duk_hbuffer ptr */
+#define DUK_TAG_POINTER           0xfff5UL   /* embed: void ptr */
+#define DUK_TAG_LIGHTFUNC         0xfff6UL   /* embed: func ptr */
+#define DUK_TAG_STRING            0xfff7UL   /* embed: duk_hstring ptr */
+#define DUK_TAG_OBJECT            0xfff8UL   /* embed: duk_hobject ptr */
+#define DUK_TAG_BUFFER            0xfff9UL   /* embed: duk_hbuffer ptr */
 
 /* for convenience */
-#define DUK_XTAG_UNDEFINED_ACTUAL 0xfff10000UL
-#define DUK_XTAG_UNDEFINED_UNUSED 0xfff10001UL
-#define DUK_XTAG_NULL             0xfff20000UL
-#define DUK_XTAG_BOOLEAN_FALSE    0xfff30000UL
-#define DUK_XTAG_BOOLEAN_TRUE     0xfff30001UL
+#define DUK_XTAG_UNDEFINED_ACTUAL 0xfff20000UL
+#define DUK_XTAG_UNDEFINED_UNUSED 0xfff20001UL
+#define DUK_XTAG_NULL             0xfff30000UL
+#define DUK_XTAG_BOOLEAN_FALSE    0xfff40000UL
+#define DUK_XTAG_BOOLEAN_TRUE     0xfff40001UL
 
-#define DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL(v)      DUK_DBLUNION_SET_HIGH32_ZERO_LOW32((v), DUK_XTAG_UNDEFINED_ACTUAL)
-#define DUK__TVAL_SET_UNDEFINED_ACTUAL_NOTFULL(v)   DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
-#define DUK__TVAL_SET_UNDEFINED_UNUSED_FULL(v)      DUK_DBLUNION_SET_HIGH32_ZERO_LOW32((v), DUK_XTAG_UNDEFINED_UNUSED)
-#define DUK__TVAL_SET_UNDEFINED_UNUSED_NOTFULL(v)   DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_UNUSED)
-
-/* Note: 16-bit initializer suffices (unlike for undefined/boolean) */
-#define DUK__TVAL_SET_NULL_FULL(v)     DUK_DBLUNION_SET_HIGH32_ZERO_LOW32((v), DUK_XTAG_NULL)
-#define DUK__TVAL_SET_NULL_NOTFULL(v)  do { \
-		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_NULL; \
-	} while (0)
-
-#define DUK__TVAL_SET_BOOLEAN_FULL(v,val)    DUK_DBLUNION_SET_HIGH32_ZERO_LOW32((v), (((duk_uint32_t) DUK_TAG_BOOLEAN) << 16) | ((duk_uint32_t) val))
-#define DUK__TVAL_SET_BOOLEAN_NOTFULL(v,val) DUK_DBLUNION_SET_HIGH32((v), (((duk_uint32_t) DUK_TAG_BOOLEAN) << 16) | ((duk_uint32_t) (val)))
-
-/* assumes that caller has normalized a possible NaN value of 'val', otherwise trouble ahead;
- * no notfull variant
- */
-#define DUK__TVAL_SET_NUMBER_FULL(v,val)     DUK_DBLUNION_SET_DOUBLE((v), (val))
-#define DUK__TVAL_SET_NUMBER_NOTFULL(v,val)  DUK_DBLUNION_SET_DOUBLE((v), (val))
+/* fastint constants */
+#if defined(DUK_USE_FASTINT)
+#define DUK_FASTINT_MIN           (-0x800000000000LL)
+#define DUK_FASTINT_MAX           0x7fffffffffffLL
+#define DUK_FASTINT_BITS          48
+#endif
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
 #ifdef DUK_USE_64BIT_OPS
@@ -121,21 +111,47 @@ typedef union duk_double_union duk_tval;
 	} while (0)
 #endif  /* DUK_USE_64BIT_OPS */
 
-/* select actual setters */
-#ifdef DUK_USE_FULL_TVAL
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK__TVAL_SET_UNDEFINED_ACTUAL_FULL((v))
-#define DUK_TVAL_SET_UNDEFINED_UNUSED(v)    DUK__TVAL_SET_UNDEFINED_UNUSED_FULL((v))
-#define DUK_TVAL_SET_NULL(v)                DUK__TVAL_SET_NULL_FULL((v))
-#define DUK_TVAL_SET_BOOLEAN(v,i)           DUK__TVAL_SET_BOOLEAN_FULL((v),(i))
-#define DUK_TVAL_SET_NUMBER(v,d)            DUK__TVAL_SET_NUMBER_FULL((v),(d))
-#define DUK_TVAL_SET_NAN(v)                 DUK__TVAL_SET_NAN_FULL((v))
+#if defined(DUK_USE_FASTINT)
+/* FIXME: 64-bit required */
+/* Note: masking is done for 'i' to deal with negative numbers correctly */
+#ifdef DUK_USE_DOUBLE_ME
+#define DUK__TVAL_SET_FASTINT(v,i)  do { \
+		(v)->ui[DUK_DBL_IDX_UI0] = ((duk_uint32_t) DUK_TAG_FASTINT) << 16 | (((duk_uint32_t) ((i) >> 32)) & 0x0000ffffUL); \
+		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (i); \
+	} while (0)
 #else
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK__TVAL_SET_UNDEFINED_ACTUAL_NOTFULL((v))
-#define DUK_TVAL_SET_UNDEFINED_UNUSED(v)    DUK__TVAL_SET_UNDEFINED_UNUSED_NOTFULL((v))
-#define DUK_TVAL_SET_NULL(v)                DUK__TVAL_SET_NULL_NOTFULL((v))
-#define DUK_TVAL_SET_BOOLEAN(v,i)           DUK__TVAL_SET_BOOLEAN_NOTFULL((v),(i))
-#define DUK_TVAL_SET_NUMBER(v,d)            DUK__TVAL_SET_NUMBER_NOTFULL((v),(d))
-#define DUK_TVAL_SET_NAN(v)                 DUK__TVAL_SET_NAN_NOTFULL((v))
+#define DUK__TVAL_SET_FASTINT(v,i)  do { \
+		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_FASTINT) << 48) | (((duk_uint64_t) (i)) & 0x0000ffffffffffffULL); \
+	} while (0)
+#endif
+
+/* XXX: clumsy sign extend and masking of 16 topmost bits */
+#ifdef DUK_USE_DOUBLE_ME
+#define DUK__TVAL_GET_FASTINT(v)      (((duk_int64_t) ((((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI0]) << 32) | ((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI1]))) << 16 >> 16)
+#else
+#define DUK__TVAL_GET_FASTINT(v)      ((((duk_int64_t) (v)->ull[DUK_DBL_IDX_ULL0]) << 16) >> 16)
+#endif
+#endif  /* DUK_USE_FASTINT */
+
+#define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
+#define DUK_TVAL_SET_UNDEFINED_UNUSED(v)    DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_UNUSED)
+
+/* Note: 16-bit initializer suffices (unlike for undefined/boolean) */
+#define DUK_TVAL_SET_NULL(v)  do { \
+		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_NULL; \
+	} while (0)
+
+#define DUK_TVAL_SET_BOOLEAN(v,val)         DUK_DBLUNION_SET_HIGH32((v), (((duk_uint32_t) DUK_TAG_BOOLEAN) << 16) | ((duk_uint32_t) (val)))
+
+#define DUK_TVAL_SET_NAN(v)                 DUK_DBLUNION_SET_NAN_FULL((v))
+
+/* Assumes that caller has normalized NaNs, otherwise trouble ahead. */
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_SET_NUMBER_DOUBLE(v,d)     DUK_DBLUNION_SET_DOUBLE((v), (d))
+#define DUK_TVAL_SET_NUMBER_FASTINT(v,i)    DUK__TVAL_SET_FASTINT((v),(i))
+#define DUK_TVAL_SET_NUMBER(v,d)            duk_tval_set_number_double((v),(d))
+#else
+#define DUK_TVAL_SET_NUMBER(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
 #endif
 
 #define DUK_TVAL_SET_LIGHTFUNC(v,fp,flags)  DUK__TVAL_SET_LIGHTFUNC((v),(fp),(flags))
@@ -148,7 +164,15 @@ typedef union duk_double_union duk_tval;
 
 /* getters */
 #define DUK_TVAL_GET_BOOLEAN(v)             ((int) (v)->us[DUK_DBL_IDX_US1])
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_GET_NUMBER_DOUBLE(v)       ((v)->d)
+#define DUK_TVAL_GET_NUMBER_FASTINT(v)      DUK__TVAL_GET_FASTINT((v))
+#define DUK_TVAL_GET_NUMBER(v)              (DUK_TVAL_IS_NUMBER_FASTINT(v) ? \
+                                                (duk_double_t) DUK_TVAL_GET_NUMBER_FASTINT(v) : \
+                                                DUK_TVAL_GET_NUMBER_DOUBLE(v))
+#else
 #define DUK_TVAL_GET_NUMBER(v)              ((v)->d)
+#endif
 #define DUK_TVAL_GET_LIGHTFUNC(v,out_fp,out_flags)  do { \
 		(out_flags) = (v)->ui[DUK_DBL_IDX_UI0] & 0xffffUL; \
 		(out_fp) = (duk_c_function) (v)->ui[DUK_DBL_IDX_UI1]; \
@@ -177,9 +201,19 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_IS_BUFFER(v)               (DUK_TVAL_GET_TAG((v)) == DUK_TAG_BUFFER)
 #define DUK_TVAL_IS_POINTER(v)              (DUK_TVAL_GET_TAG((v)) == DUK_TAG_POINTER)
 /* 0xfff0 is -Infinity */
+#define DUK_TVAL_IS_NUMBER_DOUBLE(v)        (DUK_TVAL_GET_TAG((v)) <= 0xfff0UL)
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_IS_NUMBER_FASTINT(v)       (DUK_TVAL_GET_TAG((v)) == DUK_TAG_FASTINT)
+#define DUK_TVAL_IS_NUMBER(v)               (DUK_TVAL_GET_TAG((v)) <= 0xfff1UL)
+#else
 #define DUK_TVAL_IS_NUMBER(v)               (DUK_TVAL_GET_TAG((v)) <= 0xfff0UL)
+#endif
 
 #define DUK_TVAL_IS_HEAP_ALLOCATED(v)       (DUK_TVAL_GET_TAG((v)) >= DUK_TAG_STRING)
+
+#if defined(DUK_USE_FASTINT)
+DUK_INTERNAL_DECL void duk_tval_set_number_double(duk_tval *tv, duk_double_t x);
+#endif
 
 #else  /* DUK_USE_PACKED_TVAL */
 /* ======================================================================== */
@@ -195,10 +229,6 @@ typedef union duk_double_union duk_tval;
  * 'data' area as is, including any uninitialized bytes, which causes a
  * valgrind warning.
  */
-
-#ifdef DUK_USE_FULL_TVAL
-#error no 'full' tagged values in 12-byte representation
-#endif
 
 typedef struct duk_tval_struct duk_tval;
 
@@ -221,14 +251,17 @@ struct duk_tval_struct {
 };
 
 #define DUK__TAG_NUMBER               0  /* not exposed */
-#define DUK_TAG_UNDEFINED             1
-#define DUK_TAG_NULL                  2
-#define DUK_TAG_BOOLEAN               3
-#define DUK_TAG_POINTER               4
-#define DUK_TAG_LIGHTFUNC             5
-#define DUK_TAG_STRING                6
-#define DUK_TAG_OBJECT                7
-#define DUK_TAG_BUFFER                8
+#if defined(DUK_USE_FASTINT)
+#define DUK_TAG_FASTINT               1
+#endif
+#define DUK_TAG_UNDEFINED             2
+#define DUK_TAG_NULL                  3
+#define DUK_TAG_BOOLEAN               4
+#define DUK_TAG_POINTER               5
+#define DUK_TAG_LIGHTFUNC             6
+#define DUK_TAG_STRING                7
+#define DUK_TAG_OBJECT                8
+#define DUK_TAG_BUFFER                9
 
 /* DUK__TAG_NUMBER is intentionally first, as it is the default clause in code
  * to support the 8-byte representation.  Further, it is a non-heap-allocated
