@@ -207,7 +207,7 @@ DUK_LOCAL_DECL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res,
 DUK_LOCAL_DECL duk_int_t duk__stmt_label_site(duk_compiler_ctx *comp_ctx, duk_int_t label_id);
 DUK_LOCAL_DECL void duk__parse_stmts(duk_compiler_ctx *comp_ctx, duk_bool_t allow_source_elem, duk_bool_t expect_eof);
 
-DUK_LOCAL_DECL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expect_eof, duk_bool_t implicit_return_value);
+DUK_LOCAL_DECL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expect_eof, duk_bool_t implicit_return_value, duk_small_int_t expect_token);
 DUK_LOCAL_DECL void duk__parse_func_formals(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t is_decl, duk_bool_t is_setget);
 DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bool_t is_decl, duk_bool_t is_setget);
@@ -6721,7 +6721,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
  *  token (EOF or closing brace).
  */
 
-DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expect_eof, duk_bool_t implicit_return_value) {
+DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expect_eof, duk_bool_t implicit_return_value, duk_small_int_t expect_token) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -6780,11 +6780,20 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	func->id_access_slow = 0;
 	func->reg_stmt_value = reg_stmt_value;
 
-	/* Need to set curr_token.t because lexing regexp mode depends on current
-	 * token type.  Zero value causes "allow regexp" mode.
-	 */
-	comp_ctx->curr_token.t = 0;
-	duk__advance(comp_ctx);  /* duk__parse_stmts() expects curr_tok to be set; parse in "allow regexp literal" mode with current strictness */
+	/* duk__parse_stmts() expects curr_tok to be set; parse in "allow regexp literal" mode with current strictness */
+	if (expect_token >= 0) {
+		/* Eating a left curly; regexp mode is allowed by left curly
+		 * based on duk__token_lbp[] automatically.
+		 */
+		DUK_ASSERT(expect_token == DUK_TOK_LCURLY);
+		duk__advance_expect(comp_ctx, expect_token);
+	} else {
+		/* Need to set curr_token.t because lexing regexp mode depends on current
+		 * token type.  Zero value causes "allow regexp" mode.
+		 */
+		comp_ctx->curr_token.t = 0;
+		duk__advance(comp_ctx);
+	}
 
 	DUK_DDD(DUK_DDDPRINT("begin 1st pass"));
 	duk__parse_stmts(comp_ctx,
@@ -7075,7 +7084,8 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 
 	duk__parse_func_body(comp_ctx,
 	                     0,   /* expect_eof */
-	                     0);  /* implicit_return_value */
+	                     0,   /* implicit_return_value */
+	                     DUK_TOK_LCURLY);  /* expect_token */
 
 	/*
 	 *  Convert duk_compiler_func to a function template and add it
@@ -7339,7 +7349,8 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 
 		duk__parse_func_body(comp_ctx,
 		                     1,             /* expect_eof */
-		                     1);            /* implicit_return_value */
+		                     1,             /* implicit_return_value */
+		                     -1);           /* expect_token */
 	}
 
 	/*
