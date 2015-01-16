@@ -2297,15 +2297,15 @@ typedef FILE duk_file;
  *  Execution and debugger options
  */
 
-/* Executor interrupt disabled for 1.0 release: there is no API to use it */
-#if 0
-#define DUK_USE_INTERRUPT_COUNTER
-#if defined(DUK_OPT_NO_INTERRUPT_COUNTER)
 #undef DUK_USE_INTERRUPT_COUNTER
-#endif
+#if defined(DUK_OPT_INTERRUPT_COUNTER)
+#define DUK_USE_INTERRUPT_COUNTER
 #endif
 
-#undef DUK_USE_INTERRUPT_COUNTER
+#undef DUK_USE_EXEC_TIMEOUT_CHECK
+#if defined(DUK_OPT_EXEC_TIMEOUT_CHECK)
+#define DUK_USE_EXEC_TIMEOUT_CHECK(udata)  DUK_OPT_EXEC_TIMEOUT_CHECK((udata))
+#endif
 
 /* For opcodes with indirect indices, check final index against stack size.
  * This should not be necessary because the compiler is trusted, and we don't

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "ajs.h"
 #include "ajs_heap.h"
 
@@ -68,7 +69,7 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 256,    16,   AJS_POOL_BORROW,  0 },
 	{ 512,    16,   AJS_POOL_BORROW,  0 },
 	{ 1024,   6,    AJS_POOL_BORROW,  0 },
-	{ 1352,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression */
+	{ 1360,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression */
 	{ 2048,   5,    AJS_POOL_BORROW,  0 },
 	{ 4096,   3,    0,                0 },
 	{ 8192,   3,    0,                0 },
@@ -768,6 +769,46 @@ void ajsheap_extstr_free_3(const void *ptr) {
 	printf("\n");
 #endif
 	free((void *) ptr);
+}
+
+/*
+ *  Execution timeout example
+ */
+
+#define  AJSHEAP_EXEC_TIMEOUT  5  /* seconds */
+
+static time_t curr_pcall_start = 0;
+static long exec_timeout_check_counter = 0;
+
+void ajsheap_start_exec_timeout(void) {
+	curr_pcall_start = time(NULL);
+}
+
+void ajsheap_clear_exec_timeout(void) {
+	curr_pcall_start = 0;
+}
+
+duk_bool_t ajsheap_exec_timeout_check(void *udata) {
+	time_t now = time(NULL);
+	time_t diff = now - curr_pcall_start;
+
+	(void) udata;  /* not needed */
+
+	exec_timeout_check_counter++;
+#if 0
+	printf("exec timeout check %ld: now=%ld, start=%ld, diff=%ld\n",
+	       (long) exec_timeout_check_counter, (long) now, (long) curr_pcall_start, (long) diff);
+	fflush(stdout);
+#endif
+
+	if (curr_pcall_start == 0) {
+		/* protected call not yet running */
+		return 0;
+	}
+	if (diff > AJSHEAP_EXEC_TIMEOUT) {
+		return 1;
+	}
+	return 0;
 }
 
 #else  /* DUK_CMDLINE_AJSHEAP */

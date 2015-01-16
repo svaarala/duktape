@@ -491,6 +491,9 @@ DUK_OPT_NO_STRICT_DECL
 Disable support for ``"use strict"`` declaration so that Ecmascript code is
 always executed in non-strict mode.  Duktape/C functions remain strict.
 
+.. note:: This mechanism is EXPERIMENTAL and the details may change
+          between releases.
+
 DUK_OPT_NO_REGEXP_SUPPORT
 -------------------------
 
@@ -660,6 +663,45 @@ Force built-in functions to be lightweight functions.  This reduces
 memory footprint by around 14 kB at the cost of some non-compliant
 behavior.
 
+Execution and debugger options
+==============================
+
+DUK_OPT_INTERRUPT_COUNTER
+-------------------------
+
+Enable the internal bytecode executor periodic interrupt counter.
+The mechanism is used to implement e.g. execution step limit, custom
+profiling, and debugger interaction.  Enabling the interrupt counter
+has a small impact on execution performance.
+
+DUK_OPT_EXEC_TIMEOUT_CHECK
+--------------------------
+
+**Experimental.**
+
+Provide a hook to check for bytecode execution timeout.  The macro gets
+a ``void *`` userdata argument (the userdata given to ``duk_heap_create()``)
+and must evaluate to a ``duk_bool_t``.  Duktape calls it as::
+
+    if (DUK_OPT_EXEC_TIMEOUT_CHECK(udata)) { ... }
+
+The macro is called occasionally by the Duktape bytecode executor (i.e. when
+executing Ecmascript code), typically from a few times per second to a hundred
+times per second, but the interval varies a great deal depending on what kind
+of code is being executed.
+
+To indicate an execution timeout, the macro must return a non-zero value.
+When that happens, Duktape starts to bubble a ``RangeError`` outwards
+until control has been returned to the original protected call made by
+the application.  Until that happens, the exec timeout macro must always
+return non-zero to indicate an execution timeout is still in progress.
+
+This mechanism and its limitations is described in more detail in
+``doc/sandboxing.rst``.
+
+.. note:: This mechanism is EXPERIMENTAL and the details may change
+          between releases.
+
 Debugging options
 =================
 
@@ -719,17 +761,6 @@ be an issue in constrained environments.  You can set the buffer size
 manually with this option.  Example::
 
     -DDUK_OPT_DEBUG_BUFSIZE=2048
-
-DUK_OPT_NO_INTERRUPT_COUNTER
-----------------------------
-
-Disable the internal bytecode executor periodic interrupt counter.
-The mechanism is used to implement e.g. execution step limit, custom
-profiling, and debugger interaction.  Disabling the interrupt counter
-improves bytecode execution performance very slightly but disables all
-features depending on it.
-
-.. note:: Disabled for the 1.0 release because there is no API to use it.
 
 DUK_OPT_NO_ZERO_BUFFER_DATA
 ---------------------------

@@ -25,10 +25,9 @@ carefully written with these sandboxing goals in mind.
 
 This document describes best practices for Duktape sandboxing.
 
-.. note:: This document is in a rough draft state.  Duktape 1.0 does not yet
-          have full support for sandboxing, e.g. there is no bytecode
-          execution timeout yet.  Sandboxing shortcomings will be fixed in
-          later versions.
+.. note:: This document is in a rough draft state and describes the current
+          sandboxing status (which is not complete).  Sandboxing shortcomings
+          will be fixed piece by piece in later versions.
 
 Suggested measures
 ==================
@@ -278,22 +277,10 @@ sufficient (though cryptic).**
 Use the bytecode execution timeout mechanism
 --------------------------------------------
 
-**XXX: Bytecode execution timeout not yet implemented in Duktape 1.0.**
+Duktape 1.1 added a simple bytecode execution timeout mechanism, see
+``DUK_OPT_EXEC_TIMEOUT_CHECK`` in ``doc/feature-options.rst``.
 
-The bytecode execution timeout mechanism allows a user callback to interact
-with the bytecode executor to forcibly abort execution if a script has been
-running for too long.  The mechanism relies on Duktape/C functions always
-returning to the bytecode executor within a reasonable time so that the
-execution timeout check can be done from time to time.  (Because there is only
-one execution thread, the executor cannot interrupt on-going Duktape/C calls
-otherwise.)
-
-Duktape tries to place execution time and recursion depth limits on risky
-internal operations.  For instance, there is a sanity limit on the number of
-operations executed during regexp matching.  When these internal limits are
-hit, a ``RangeError`` is thrown.  User code can catch such an error and
-continue execution.  However, the error will return control to the bytecode
-executor so that the execution timeout mechanism can kick in if necessary.
+The mechanism and its limitations is described in a separate section below.
 
 Use a fixed size memory pool for the sandbox
 --------------------------------------------
@@ -344,3 +331,167 @@ Particular issues to look out for:
   higher level.  For instance, an API call must not allow sandboxed code
   to perform unauthenticated database writes or breach memory safety
   through file I/O on a Unix device file.
+
+Bytecode execution timeout details
+==================================
+
+This section describes the bytecode execution timeout mechanism in detail,
+and illustrates the limitations in the current Duktape 1.1 version of the
+mechanism.
+
+The current mechanism provides some protection against accidental errors
+like infinite loops, but is not a reliable mechanism against deliberately
+malicious code.
+
+Current implementation
+----------------------
+
+* The bytecode executor calls the user callback whenever it goes into the
+  bytecode executor interrupt handler.  The interval between interrupts
+  varies from one bytecode instruction (e.g. when debugging) to several
+  hundred thousand bytecode instructions (e.g. when running normally).
+
+* When the user callback indicates a timeout the bytecode executor throws
+  a ``RangeError``.  This error is propagated like any other error.
+
+* Ecmascript code (try-catch-finally) may catch the error, but before a
+  catch/finally clause actually executes, another ``RangeError`` is thrown
+  by the bytecode executor.  The executor makes sure an execution interrupt
+  happens before the catch/finally (or any other Ecmascript code) executes.
+  For this approach to work, it's important that the user callback keeps
+  indicating a timeout until the ``RangeError`` has fully bubbled through
+  to the original protected call.
+
+* Duktape/C functions can catch the error by using a protected call.
+  They have a chance to clean up any native resources, with the limitation
+  that if they make any Ecmascript calls, they will immediatelly throw
+  a new ``RangeError``.  When a Duktape/C function returns control to Duktape,
+  a ``RangeError`` is thrown as soon as Ecmascript code would be executed.
+
+* Ecmascript finalizers are triggered but will always immediately throw a
+  ``RangeError`` so they cannot be reliably used in case of execution timeouts.
+  Duktape/C finalizers work normally; however, if they invoke the bytecode
+  executor by running Ecmascript code, a ``RangeError`` is immediately thrown.
+
+Using the mechanism from application code
+-----------------------------------------
+
+The concrete application code to use this mechanism can be e.g. as follows:
+
+* Before entering untrusted code, record a start timestamp.  Then call the
+  untrusted code using e.g. ``duk_pcall()``.
+
+* On each execution timeout macro call, check if too much time has elapsed
+  since the start timestamp.  If so, return 1.  Keep returning 1 until the
+  original protected call exits.
+
+* Once the protected call has exited, clear the execution timeout state.
+
+The ``duk`` command line tool illustrates this approach.
+
+Limitation: C code must not block during cleanup
+------------------------------------------------
+
+The timeout mechanism allows C code to clean up resources, e.g.::
+
+    FILE *f = fopen("file.txt", "rb");
+
+    ret = duk_pcall(ctx, 0 /*nargs*);
+    /* ... */
+
+    if (f) {
+        fclose(f);
+    }
+
+This is a useful feature to allow C code to reliably free non-memory resources
+not tracked by finalizers.  Finalizers can only be used, but are only executed
+if they're Duktape/C functions: Ecmascript finalizers will immediately throw a
+``RangeError`` because of the execution timeout.
+
+C code must be careful to avoid entering an infinite loop (or blocking for an
+unreasonable amount of time) to avoid subverting the timeout mechanism::
+
+    ret = duk_pcall(ctx, 0 /*nargs*);
+    /* ... */
+
+    /* Infinite loop, prevents propagating RangeError outwards. */
+    for(;;) {}
+
+This limitation is not easy to fix because allowing C code to clean up is a
+basic guarantee offered at the moment.
+
+Limitation: timeout checks are only made when executing Ecmascript code
+-----------------------------------------------------------------------
+
+Execution timeout checks are only made by the bytecode executor, i.e. when
+executing Ecmascript code.  No timeout checks are made when executing C code.
+Any C code that goes into an infinite loop or blocks for an unreasonable
+amount of time will essentially subvert the timeout mechanism.
+
+Relevant C code includes:
+
+* Application Duktape/C functions.
+
+* Duktape internals, such as built-in functions, regexp compiler and executor,
+  etc.
+
+As an example, the following Ecmascript code would cause a Duktape internal
+to run for a very long time::
+
+    var a = []; a[1e9] = 'x';
+
+    // Results in a huge string: [ null, null, ..., null, "x" ]
+    var tmp = JSON.stringify();
+
+Duktape places on internal sanity limit for some operations, such as regexp
+execution taking too many steps.  When that happens a ``RangeError`` is
+thrown.  Although user code can catch such an error, it returns control to
+the executor so that the bytecode execution timeout can kick in if necessary.
+
+However, not all internal algorithms are currently protected like this.
+For instance, many Array built-ins can be abused to execute for a very
+long time.
+
+To fix this limitation quite a lot of work is needed.  Every built-in must
+be made to cooperate with the execution timeout mechanism, either by applying
+its own sanity timeout or by calling the user execution timeout callback to
+see if it's time to abort.
+
+Limitation: timeout check is made only every Nth bytecode instruction
+---------------------------------------------------------------------
+
+Execution timeout is only checked after every Nth bytecode instruction.
+Technically, it is only checked when a Duktape executor interrupt happens,
+which usually happens e.g. very few hundred thousand opcodes.  In special
+cases like when a debugger is attached the interval can be much higher.
+
+When doing heavy operations like matching regexps or some Array operations,
+it may take very long (measured in wall clock time) for the opcode interval
+to be triggered and a timeout be noticed.
+
+Future work
+-----------
+
+* Add an API call for execution timeout instead of a macro.  The API timeout
+  can be applied to the entire heap, or perhaps just a single call.
+
+* Allow stacking of timeouts, so that some internal operation may apply a
+  local timeout.
+
+* Allow Ecmascript code to execute a function with a timeout.
+
+* Better finalizer support, e.g. execute finalizers normally or avoid
+  executing finalizers at all until the timeout error has been handled.
+  This requires the ability to postpone finalizer execution, which is also
+  a useful feature for timing sensitive environments.
+
+* Improve built-ins so that they can cooperate with the timeout mechanism
+  for operations that take a very long time (like regexp execution, some
+  Array algorithms, etc).
+
+* Allow user Duktape/C code to cooperate with the timeout mechanism in a
+  similar fashion.
+
+* Make timeout callback handling a bit more intelligent so that the callback
+  is called e.g. when returning from a risky built-in (or perhaps any function
+  call).

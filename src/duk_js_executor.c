@@ -1356,6 +1356,24 @@ DUK_LOCAL void duk__executor_interrupt(duk_hthread *thr) {
 
 	ctr = DUK_HEAP_INTCTR_DEFAULT;
 
+#if defined(DUK_USE_EXEC_TIMEOUT_CHECK)
+	if (DUK_USE_EXEC_TIMEOUT_CHECK(thr->heap->heap_udata)) {
+		/* Keep throwing an error whenever we get here.  The unusual values
+		 * are set this way because no instruction is ever executed, we just
+		 * throw an error until all try/catch/finally and other catchpoints
+		 * have been exhausted.  Duktape/C code gets control at each protected
+		 * call but whenever it enters back into Duktape the RangeError gets
+		 * raised.  User exec timeout check must consistently indicate a timeout
+		 * until we've fully bubbled out of Duktape.
+		 */
+		DUK_D(DUK_DPRINT("execution timeout, throwing a RangeError"));
+		thr->heap->interrupt_init = 0;
+		thr->heap->interrupt_counter = 0;
+		thr->interrupt_counter = 0;
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "execution timeout");
+	}
+#endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
+
 #if 0
 	/* XXX: cumulative instruction count example */
 	static int step_count = 0;
@@ -1615,8 +1633,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
 	bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun);
 
-	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= fun->nregs);
-	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);  /* XXX: correct? */
+	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
 
 	/*
 	 *  Bytecode interpreter.
