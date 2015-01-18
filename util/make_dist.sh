@@ -220,6 +220,7 @@ for i in \
 	object-prototype-definesetter.js \
 	object-assign.js \
 	performance-now.js \
+	duktape-isfastint.js \
 	; do
 	cp polyfills/$i $DIST/polyfills/
 done
