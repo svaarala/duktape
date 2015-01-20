@@ -1,0 +1,31 @@
+{
+    "_comment_heap_index": "'heap_index' is AllJoyn.js specific and is carried through as is",
+    "_comment_ignored": "unknown fields are passed through in general without modification (e.g. 'custom_ignored' below)",
+
+    "pools": [
+        { "size": 8, "count": 10, "borrow": true, "heap_index": 0 },
+        { "size": 12, "count": 10, "borrow": true, "custom_ignored": "foo" },
+        { "size": 16, "count": 200, "borrow": true },
+        { "size": 20, "count": 400, "borrow": true },
+        { "size": 24, "count": 400, "borrow": true },
+        { "size": 28, "count": 200, "borrow": true },
+        { "size": 32, "count": 200, "borrow": true },
+        { "size": 40, "count": 200, "borrow": true },
+        { "size": 48, "count": 50, "borrow": true },
+        { "size": 52, "count": 50, "borrow": true },
+        { "size": 56, "count": 50, "borrow": true },
+        { "size": 60, "count": 50, "borrow": true },
+        { "size": 64, "count": 50, "borrow": true },
+        { "size": 128, "count": 80, "borrow": true },
+        { "size": 256, "count": 16, "borrow": true },
+        { "size": 512, "count": 16, "borrow": true },
+        { "size": 1024, "count": 6, "borrow": true },
+        { "size": 1360, "count": 1, "borrow": true },
+        { "size": 2048, "count": 5, "borrow": true },
+        { "size": 4096, "count": 3, "borrow": false },
+        { "size": 8192, "count": 3, "borrow": false },
+        { "size": 16384, "count": 1, "borrow": false, "heap_index": 1 },
+        { "size": 32768, "count": 1, "borrow": false, "heap_index": 1 },
+        { "size": 262144, "count": 0, "borrow": false, "heap_index": 1 }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "pools": [
+        { "size": 4, "count": 100, "borrow": true },
+        { "size": 8, "count": 100, "borrow": true },
+        { "size": 12, "count": 100, "borrow": true },
+        { "size": 16, "count": 200, "borrow": true },
+        { "size": 20, "count": 400, "borrow": true },
+        { "size": 24, "count": 400, "borrow": true },
+        { "size": 28, "count": 200, "borrow": true },
+        { "size": 32, "count": 200, "borrow": true },
+        { "size": 40, "count": 200, "borrow": true },
+        { "size": 48, "count": 50, "borrow": true },
+        { "size": 52, "count": 50, "borrow": true },
+        { "size": 56, "count": 50, "borrow": true },
+        { "size": 60, "count": 50, "borrow": true },
+        { "size": 64, "count": 50, "borrow": true },
+        { "size": 128, "count": 80, "borrow": true },
+        { "size": 256, "count": 16, "borrow": true },
+        { "size": 512, "count": 16, "borrow": true },
+        { "size": 1024, "count": 6, "borrow": true },
+        { "size": 1360, "count": 1, "borrow": true },
+        { "size": 2048, "count": 5, "borrow": true },
+        { "size": 4096, "count": 3, "borrow": false },
+        { "size": 8192, "count": 3, "borrow": false },
+        { "size": 16384, "count": 1, "borrow": false },
+        { "size": 32768, "count": 1, "borrow": false }
+    ]
+}
