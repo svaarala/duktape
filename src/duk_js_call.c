@@ -685,6 +685,65 @@ duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 }
 
 /*
+ *  Value stack resize and stack top adjustment helper
+ *
+ *  XXX: This should all be merged to duk_valstack_resize_raw().
+ */
+
+DUK_LOCAL
+void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, duk_idx_t idx_args, duk_idx_t nregs, duk_idx_t nargs, duk_hobject *func) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_size_t vs_min_size;
+	duk_bool_t adjusted_top = 0;
+
+	vs_min_size = (thr->valstack_bottom - thr->valstack) +         /* bottom of current func */
+	              idx_args;                                        /* bottom of new func */
+
+	if (nregs >= 0) {
+		DUK_ASSERT(nargs >= 0);
+		DUK_ASSERT(nregs >= nargs);
+		vs_min_size += nregs;
+	} else {
+		/* 'func' wants stack "as is" */
+		vs_min_size += num_stack_args;  /* num entries of new func at entry */
+	}
+	if (func == NULL || DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
+		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;         /* Duktape/C API guaranteed entries (on top of args) */
+	}
+	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA;                    /* + spare */
+
+	/* XXX: Awkward fix for GH-107: we can't resize the value stack to
+	 * a size smaller than the current top, so the order of the resize
+	 * and adjusting the stack top depends on the current vs. final size
+	 * of the value stack.  Ideally duk_valstack_resize_raw() would have
+	 * a combined algorithm to avoid this.
+	 */
+
+	if (vs_min_size < (duk_size_t) (thr->valstack_top  - thr->valstack)) {
+		DUK_DDD(DUK_DDDPRINT(("final size smaller, set top before resize")));
+
+		DUK_ASSERT(nregs >= 0);  /* can't happen when keeping current stack size */
+		duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
+		duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
+		adjusted_top = 1;
+	}
+
+	(void) duk_valstack_resize_raw((duk_context *) thr,
+	                               vs_min_size,
+	                               DUK_VSRESIZE_FLAG_SHRINK |      /* flags */
+	                               0 /* no compact */ |
+	                               DUK_VSRESIZE_FLAG_THROW);
+
+	if (!adjusted_top) {
+		if (nregs >= 0) {
+			DUK_ASSERT(nregs >= nargs);
+			duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
+			duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
+		}
+	}
+}
+
+/*
  *  Helper for making various kinds of calls.
  *
  *  Call flags:
@@ -744,7 +803,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_idx_t idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
 	duk_idx_t nargs;            /* # argument registers target function wants (< 0 => "as is") */
 	duk_idx_t nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
-	duk_size_t vs_min_size;
 	duk_hobject *func;          /* 'func' on stack (borrowed reference) */
 	duk_tval *tv_func;          /* duk_tval ptr for 'func' on stack (borrowed reference) or tv_func_copy */
 	duk_tval tv_func_copy;      /* to avoid relookups */
@@ -1069,58 +1127,27 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	/* [ ... func this arg1 ... argN ] */
 
 	/*
-	 *  Check stack sizes and resize if necessary.
-	 *
-	 *  Call stack is grown by one, catch stack doesn't grow here.
-	 *  Value stack may either grow or shrink, depending on the number
-	 *  of func registers and the number of actual arguments.
-	 */
-
-	duk_hthread_callstack_grow(thr);
-
-	/* if nregs >= 0, func wants args clamped to 'nargs'; else it wants
-	 * all args (= 'num_stack_args')
-	 */
-
-	vs_min_size = (thr->valstack_bottom - thr->valstack) +         /* bottom of current func */
-	              idx_args;                                        /* bottom of new func */
-	vs_min_size += (nregs >= 0 ? nregs : num_stack_args);          /* num entries of new func at entry */
-	if (func == NULL || DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
-		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;         /* Duktape/C API guaranteed entries (on top of args) */
-	}
-	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA,                    /* + spare */
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               vs_min_size,
-	                               DUK_VSRESIZE_FLAG_SHRINK |      /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
-
-	/*
-	 *  Update idx_retval of current activation.
-	 *
-	 *  Although it might seem this is not necessary (bytecode executor
-	 *  does this for Ecmascript-to-Ecmascript calls; other calls are
-	 *  handled here), this turns out to be necessary for handling yield
-	 *  and resume.  For them, an Ecmascript-to-native call happens, and
-	 *  the Ecmascript call's idx_retval must be set for things to work.
-	 */
-
-	if (thr->callstack_top > 0) {
-		/* now set unconditionally, regardless of whether current activation
-		 * is native or not.
-		 */
-		(thr->callstack + thr->callstack_top - 1)->idx_retval = entry_valstack_bottom_index + idx_func;
-	}
-
-	/*
 	 *  Setup a preliminary activation.
 	 *
 	 *  Don't touch valstack_bottom or valstack_top yet so that Duktape API
 	 *  calls work normally.
 	 */
 
-	/* [ ... func this arg1 ... argN ] */
+	duk_hthread_callstack_grow(thr);
+
+	if (thr->callstack_top > 0) {
+		/*
+		 *  Update idx_retval of current activation.
+		 *
+		 *  Although it might seem this is not necessary (bytecode executor
+		 *  does this for Ecmascript-to-Ecmascript calls; other calls are
+		 *  handled here), this turns out to be necessary for handling yield
+		 *  and resume.  For them, an Ecmascript-to-native call happens, and
+		 *  the Ecmascript call's idx_retval must be set for things to work.
+		 */
+
+		(thr->callstack + thr->callstack_top - 1)->idx_retval = entry_valstack_bottom_index + idx_func;
+	}
 
 	DUK_ASSERT(thr->callstack_top < thr->callstack_size);
 	act = thr->callstack + thr->callstack_top;
@@ -1245,17 +1272,19 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/*
 	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs'
+	 *
+	 *  Value stack may either grow or shrink, depending on the
+	 *  number of func registers and the number of actual arguments.
+	 *  If nregs >= 0, func wants args clamped to 'nargs'; else it
+	 *  wants all args (= 'num_stack_args').
 	 */
 
-	/* XXX: replace with a single operation */
-
-	if (nregs >= 0) {
-		DUK_ASSERT(nargs >= 0);
-		duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
-		duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
-	} else {
-		/* 'func' wants stack "as is" */
-	}
+	duk__adjust_valstack_and_top(thr,
+	                             num_stack_args,
+	                             idx_args,
+	                             nregs,
+	                             nargs,
+	                             func);
 
 	/*
 	 *  Determine call type; then setup activation and call
@@ -2189,33 +2218,11 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		idx_args = 0;
 
 		/* [ ... this_new | arg1 ... argN ] */
-
-		/* now we can also do the valstack resize check */
-
-		(void) duk_valstack_resize_raw((duk_context *) thr,
-		                               (thr->valstack_bottom - thr->valstack) +     /* bottom of current func */
-		                                   idx_args +                               /* bottom of new func (always 0 here) */
-		                                   nregs +                                  /* num entries of new func at entry */
-		                                   DUK_VALSTACK_INTERNAL_EXTRA,             /* + spare => min_new_size */
-		                               DUK_VSRESIZE_FLAG_SHRINK |                   /* flags */
-		                               0 /* no compact */ |
-		                               DUK_VSRESIZE_FLAG_THROW);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("not a tailcall, pushing a new activation to callstack, to index %ld",
 		                     (long) (thr->callstack_top)));
 
 		duk_hthread_callstack_grow(thr);
-
-		/* func wants args clamped to 'nargs' */
-
-		(void) duk_valstack_resize_raw((duk_context *) thr,
-		                               (thr->valstack_bottom - thr->valstack) +     /* bottom of current func */
-		                                   idx_args +                               /* bottom of new func */
-		                                   nregs +                                  /* num entries of new func at entry */
-		                                   DUK_VALSTACK_INTERNAL_EXTRA,             /* + spare => min_new_size */
-		                               DUK_VSRESIZE_FLAG_SHRINK |                   /* flags */
-		                               0 /* no compact */ |
-		                               DUK_VSRESIZE_FLAG_THROW);
 
 		if (call_flags & DUK_CALL_FLAG_IS_RESUME) {
 			DUK_DDD(DUK_DDDPRINT("is resume -> no update to current activation (may not even exist)"));
@@ -2310,6 +2317,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* [... arg1 ... argN envobj] */
 
+	/* original input stack before nargs/nregs handling must be
+	 * intact for 'arguments' object
+	 */
 	DUK_ASSERT(DUK_HOBJECT_HAS_CREATEARGS(func));
 	duk__handle_createargs_for_call(thr, func, env, num_stack_args);
 
@@ -2328,11 +2338,12 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs'
 	 */
 
-	/* XXX: replace with a single operation */
-
-	DUK_ASSERT(nregs >= 0);
-	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
-	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
+	duk__adjust_valstack_and_top(thr,
+	                             num_stack_args,
+	                             idx_args,
+	                             nregs,
+	                             nargs,
+	                             func);
 
 	/*
 	 *  Shift to new valstack_bottom.
