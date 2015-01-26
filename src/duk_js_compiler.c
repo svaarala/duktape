@@ -1087,6 +1087,30 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
 }
 
+/* Update function min/max line from current token.  Needed to improve
+ * function line range information for debugging, so that e.g. opening
+ * curly brace is covered by line range even when no opcodes are emitted
+ * for the line containing the brace.
+ */
+DUK_LOCAL void duk__update_lineinfo_currtoken(duk_compiler_ctx *comp_ctx) {
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_int_t line;
+
+	line = comp_ctx->curr_token.start_line;
+	if (line == 0) {
+		return;
+	}
+	if (line < comp_ctx->curr_func.min_line) {
+		comp_ctx->curr_func.min_line = line;
+	}
+	if (line > comp_ctx->curr_func.max_line) {
+		comp_ctx->curr_func.max_line = line;
+	}
+#else
+	DUK_UNREF(comp_ctx);
+#endif
+}
+
 #if 0 /* unused */
 DUK_LOCAL void duk__emit_op_only(duk_compiler_ctx *comp_ctx, duk_small_uint_t op) {
 	duk__emit(comp_ctx, DUK_ENC_OP_ABC(op, 0));
@@ -6828,6 +6852,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 		 * based on duk__token_lbp[] automatically.
 		 */
 		DUK_ASSERT(expect_token == DUK_TOK_LCURLY);
+		duk__update_lineinfo_currtoken(comp_ctx);
 		duk__advance_expect(comp_ctx, expect_token);
 	} else {
 		/* Need to set curr_token.t because lexing regexp mode depends on current
@@ -6933,6 +6958,8 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	                 1,             /* allow source elements */
 	                 expect_eof);   /* expect EOF instead of } */
 	DUK_DDD(DUK_DDDPRINT("end 2nd pass"));
+
+	duk__update_lineinfo_currtoken(comp_ctx);
 
 	/*
 	 *  Emit a final RETURN.
@@ -7056,6 +7083,8 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_setget == is_setget);
 	DUK_ASSERT(comp_ctx->curr_func.is_decl == is_decl);
+
+	duk__update_lineinfo_currtoken(comp_ctx);
 
 	/*
 	 *  Function name (if any)
