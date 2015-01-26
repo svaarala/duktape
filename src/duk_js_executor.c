@@ -1400,7 +1400,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 					break;
 				}
 				DUK_ASSERT(bp->filename != NULL);
-				if (act->prev_line != 0 && act->prev_line < bp->line && line >= bp->line) {
+				if (act->prev_line < bp->line && line >= bp->line) {
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
 					                 (duk_heaphdr *) bp->filename, (long) bp->line));
 
