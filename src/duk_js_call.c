@@ -1156,6 +1156,9 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	act->prev_caller = NULL;
 #endif
 	act->pc = 0;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	act->prev_line = 0;
+#endif
 	act->idx_bottom = entry_valstack_bottom_index + idx_args;
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
 	act->idx_retval = 0;
@@ -2119,6 +2122,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->prev_caller = NULL;
 #endif
 		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		act->prev_line = 0;
+#endif
 		DUK_TVAL_SET_OBJECT(&act->tv_func, func);  /* borrowed, no refcount */
 #ifdef DUK_USE_REFERENCE_COUNTING
 		DUK_HOBJECT_INCREF(thr, func);
@@ -2242,6 +2248,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->prev_caller = NULL;
 #endif
 		act->pc = 0;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		act->prev_line = 0;
+#endif
 		act->idx_bottom = entry_valstack_bottom_index + idx_args;
 		DUK_ASSERT(nregs >= 0);
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
