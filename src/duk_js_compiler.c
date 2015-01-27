@@ -38,10 +38,12 @@
 /* XXX: hack, remove when const lookup is not O(n) */
 #define DUK__GETCONST_MAX_CONSTS_CHECK    256
 
-/* these limits are based on bytecode limits */
-#define DUK__MAX_CONSTS                   (DUK_BC_BC_MAX + 1)
-#define DUK__MAX_FUNCS                    (DUK_BC_BC_MAX + 1)
-#define DUK__MAX_TEMPS                    (DUK_BC_BC_MAX + 1)
+/* These limits are based on bytecode limits.  Max temps is limited
+ * by duk_hcompiledfunction nargs/nregs fields being 16 bits.
+ */
+#define DUK__MAX_CONSTS                   DUK_BC_BC_MAX
+#define DUK__MAX_FUNCS                    DUK_BC_BC_MAX
+#define DUK__MAX_TEMPS                    0xffffL
 
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
@@ -1735,7 +1737,7 @@ DUK_LOCAL duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 		}
 	}
 
-	if (n >= DUK__MAX_CONSTS) {
+	if (n > DUK__MAX_CONSTS) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_CONST_LIMIT);
 	}
 
@@ -7185,7 +7187,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bo
 	DUK_ASSERT(duk_get_length(ctx, old_func.funcs_idx) == (duk_size_t) (old_func.fnum_next * 3));
 	fnum = old_func.fnum_next++;
 
-	if (fnum >= DUK__MAX_FUNCS) {
+	if (fnum > DUK__MAX_FUNCS) {
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_FUNC_LIMIT);
 	}
 
