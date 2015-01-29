@@ -70,6 +70,10 @@ This distributable contains:
 * ``polyfills/``: a few replacement suggestions for non-standard Javascript
   functions provided by other implementations.
 
+* ``debugger/``: a debugger with a web UI, see ``debugger/README.rst`` and
+  https://github.com/svaarala/duktape/blob/master/doc/debugger.rst for
+  details on Duktape debugger support.
+
 * ``licenses/``: licensing information.
 
 You can find release notes at:

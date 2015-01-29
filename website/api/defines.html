@@ -22,6 +22,11 @@ but for snapshot builds it provides useful version information (e.g.
 "v1.0.0-155-g5b7ef1f-dirty").  There is no equivalent of this define in the
 Ecmascript environment.</p>
 
+<h2>Debug protocol version</h2>
+
+<p>The version number of the debug protocol (a single integer) is available as
+the define <code>DUK_DEBUG_PROTOCOL_VERSION</code>.</p>
+
 <h2>Structs and typedefs</h2>
 <pre class="c-code">
 typedef void duk_context;
@@ -34,6 +39,12 @@ typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code, const 
 typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
+typedef duk_size_t (*duk_debug_read_function) (void *udata, char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_peek_function) (void *udata);
+typedef void (*duk_debug_read_flush_function) (void *udata);
+typedef void (*duk_debug_write_flush_function) (void *udata);
+typedef void (*duk_debug_detached_function) (void *udata);
 
 struct duk_memory_functions {
         duk_alloc_function alloc_func;

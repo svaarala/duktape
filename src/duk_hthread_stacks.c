@@ -133,6 +133,9 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 #ifdef DUK_USE_REFERENCE_COUNTING
 		duk_hobject *tmp;
 #endif
+#ifdef DUK_USE_DEBUGGER_SUPPORT
+		duk_heap *heap;
+#endif
 
 		idx--;
 		DUK_ASSERT_DISABLE(idx >= 0);  /* unsigned */
@@ -181,6 +184,23 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 			}
 			act = thr->callstack + idx;  /* avoid side effects */
 			DUK_ASSERT(act->prev_caller == NULL);
+		}
+#endif
+
+		/*
+		 *  Unwind debugger state.  If we unwind while stepping
+		 *  (either step over or step into), pause execution.
+		 */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		heap = thr->heap;
+		if (heap->dbg_step_thread == thr &&
+		    heap->dbg_step_csindex == idx) {
+			/* Pause for all step types: step into, step over, step out.
+			 * This is the only place explicitly handling a step out.
+			 */
+			DUK_HEAP_SET_PAUSED(heap);
+			DUK_ASSERT(heap->dbg_step_thread == NULL);
 		}
 #endif
 

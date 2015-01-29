@@ -150,6 +150,10 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	fun_clos->nregs = fun_temp->nregs;
 	fun_clos->nargs = fun_temp->nargs;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	fun_clos->start_line = fun_temp->start_line;
+	fun_clos->end_line = fun_temp->end_line;
+#endif
 
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_clos) != NULL);
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_clos) != NULL);

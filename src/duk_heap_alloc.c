@@ -225,6 +225,13 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk_heap_dump_strtab(heap);
 #endif
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* Detach a debugger if attached (can be called multiple times)
+	 * safely.
+	 */
+	duk_debug_do_detach(heap);
+#endif
+
 	/* Execute finalizers before freeing the heap, even for reachable
 	 * objects, and regardless of whether or not mark-and-sweep is
 	 * enabled.  This gives finalizers the chance to free any native
@@ -690,6 +697,15 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 			res->strs[i] = NULL;
 	        }
 	}
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	res->dbg_read_cb = NULL;
+	res->dbg_write_cb = NULL;
+	res->dbg_peek_cb = NULL;
+	res->dbg_read_flush_cb = NULL;
+	res->dbg_write_flush_cb = NULL;
+	res->dbg_udata = NULL;
+	res->dbg_step_thread = NULL;
+#endif
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */
 
 	res->alloc_func = alloc_func;

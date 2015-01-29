@@ -436,6 +436,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	duk_small_uint_t enum_flags;
 
 	DUK_ASSERT_TOP(ctx, 1);
+	DUK_UNREF(thr);
 
 	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
 	DUK_ASSERT(obj != NULL);

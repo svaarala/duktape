@@ -769,6 +769,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	}
 	/* Note: 'q_instr' is still used below */
 
+	DUK_ASSERT((duk_uint8_t *) (p_instr + code_count) == DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data) + data_size);
+
 	duk_pop(ctx);  /* 'data' (and everything in it) is reachable through h_res now */
 
 	/*
@@ -784,11 +786,16 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 	/* _Varmap: omitted if function is guaranteed not to do slow path identifier
 	 * accesses or if it would turn out to be empty of actual register mappings
-	 * after a cleanup.
+	 * after a cleanup.  When debugging is enabled, we always need the varmap to
+	 * be able to lookup variables at any point.
 	 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (1) {
+#else
 	if (func->id_access_slow ||     /* directly uses slow accesses */
 	    func->may_direct_eval ||    /* may indirectly slow access through a direct eval */
 	    funcs_count > 0) {          /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
+#endif
 		duk_int_t num_used;
 		duk_dup(ctx, func->varmap_idx);
 		num_used = duk__cleanup_varmap(comp_ctx);
@@ -909,6 +916,10 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	h_res->nregs = func->temp_max;
 	h_res->nargs = duk_hobject_get_length(thr, func->h_argnames);
 	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	h_res->start_line = (duk_uint32_t) func->min_line;
+	h_res->end_line = (duk_uint32_t) func->max_line;
+#endif
 
 	DUK_DD(DUK_DDPRINT("converted function: %!ixT",
 	                   (duk_tval *) duk_get_tval(ctx, -1)));
@@ -1030,12 +1041,32 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 
 	h = comp_ctx->curr_func.h_code;
 #if defined(DUK_USE_PC2LINE)
-	line = comp_ctx->curr_token.start_line;  /* approximation, close enough */
+	/* The line number tracking is a bit inconsistent right now, which
+	 * affects debugger accuracy.  Mostly call sites emit opcodes when
+	 * they have parsed a token (say a terminating semicolon) and called
+	 * duk__advance().  In this case the line number of the previous
+	 * token is the most accurate one (except in prologue where
+	 * prev_token.start_line is 0).  This is probably not 100% correct
+	 * right now.
+	 */
+	/* approximation, close enough */
+	line = comp_ctx->prev_token.start_line;
+	if (line == 0) {
+		line = comp_ctx->curr_token.start_line;
+	}
 #endif
 
 	instr.ins = ins;
 #if defined(DUK_USE_PC2LINE)
 	instr.line = line;
+#endif
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (line < comp_ctx->curr_func.min_line) {
+		comp_ctx->curr_func.min_line = line;
+	}
+	if (line > comp_ctx->curr_func.max_line) {
+		comp_ctx->curr_func.max_line = line;
+	}
 #endif
 
 	/* Limit checks for bytecode byte size and line number. */
@@ -1054,6 +1085,30 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 #endif
 
 	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
+}
+
+/* Update function min/max line from current token.  Needed to improve
+ * function line range information for debugging, so that e.g. opening
+ * curly brace is covered by line range even when no opcodes are emitted
+ * for the line containing the brace.
+ */
+DUK_LOCAL void duk__update_lineinfo_currtoken(duk_compiler_ctx *comp_ctx) {
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_int_t line;
+
+	line = comp_ctx->curr_token.start_line;
+	if (line == 0) {
+		return;
+	}
+	if (line < comp_ctx->curr_func.min_line) {
+		comp_ctx->curr_func.min_line = line;
+	}
+	if (line > comp_ctx->curr_func.max_line) {
+		comp_ctx->curr_func.max_line = line;
+	}
+#else
+	DUK_UNREF(comp_ctx);
+#endif
 }
 
 #if 0 /* unused */
@@ -6064,7 +6119,12 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		break;
 	}
 	case DUK_TOK_DEBUGGER: {
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		DUK_DDD(DUK_DDDPRINT("debugger statement: debugging enabled, emit debugger opcode"));
+		duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_DEBUGGER);
+#else
 		DUK_DDD(DUK_DDDPRINT("debugger statement: ignored"));
+#endif
 		duk__advance(comp_ctx);
 		stmt_flags = DUK__HAS_TERM;
 		break;
@@ -6781,6 +6841,10 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	func->id_access_arguments = 0;
 	func->id_access_slow = 0;
 	func->reg_stmt_value = reg_stmt_value;
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	func->min_line = DUK_INT_MAX;
+	func->max_line = 0;
+#endif
 
 	/* duk__parse_stmts() expects curr_tok to be set; parse in "allow regexp literal" mode with current strictness */
 	if (expect_token >= 0) {
@@ -6788,6 +6852,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 		 * based on duk__token_lbp[] automatically.
 		 */
 		DUK_ASSERT(expect_token == DUK_TOK_LCURLY);
+		duk__update_lineinfo_currtoken(comp_ctx);
 		duk__advance_expect(comp_ctx, expect_token);
 	} else {
 		/* Need to set curr_token.t because lexing regexp mode depends on current
@@ -6816,6 +6881,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	DUK_DDD(DUK_DDDPRINT("rewind lexer"));
 	DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
 	comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
+	comp_ctx->curr_token.start_line = 0;  /* needed for line number tracking (becomes prev_token.start_line) */
 	duk__advance(comp_ctx);
 
 	/*
@@ -6892,6 +6958,8 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	                 1,             /* allow source elements */
 	                 expect_eof);   /* expect EOF instead of } */
 	DUK_DDD(DUK_DDDPRINT("end 2nd pass"));
+
+	duk__update_lineinfo_currtoken(comp_ctx);
 
 	/*
 	 *  Emit a final RETURN.
@@ -7016,6 +7084,8 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 	DUK_ASSERT(comp_ctx->curr_func.is_setget == is_setget);
 	DUK_ASSERT(comp_ctx->curr_func.is_decl == is_decl);
 
+	duk__update_lineinfo_currtoken(comp_ctx);
+
 	/*
 	 *  Function name (if any)
 	 *
@@ -7138,6 +7208,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bo
 
 		DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
 		comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
+		comp_ctx->curr_token.start_line = 0;  /* needed for line number tracking (becomes prev_token.start_line) */
 		duk__advance(comp_ctx);
 		duk__advance_expect(comp_ctx, DUK_TOK_RCURLY);
 
@@ -7305,6 +7376,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	lex_pt->offset = 0;
 	lex_pt->line = 1;
 	DUK_LEXER_SETPOINT(&comp_ctx->lex, lex_pt);    /* fills window */
+	comp_ctx->curr_token.start_line = 0;  /* needed for line number tracking (becomes prev_token.start_line) */
 
 	/*
 	 *  Initialize function state for a zero-argument function

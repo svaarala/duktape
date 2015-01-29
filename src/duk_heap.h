@@ -18,6 +18,7 @@
 #define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1 << 1)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
 #define DUK_HEAP_FLAG_REFZERO_FREE_RUNNING                     (1 << 2)  /* refcount code is processing refzero list */
 #define DUK_HEAP_FLAG_ERRHANDLER_RUNNING                       (1 << 3)  /* an error handler (user callback to augment/replace error) is running */
+#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 4)  /* executor interrupt running (used to avoid nested interrupts) */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -31,16 +32,19 @@
 #define DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_HAS_ERRHANDLER_RUNNING(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
+#define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 
 #define DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_SET_ERRHANDLER_RUNNING(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
+#define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
+#define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)             DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 
 /*
  *  Longjmp types, also double as identifying continuation type for a rethrow (in 'finally')
@@ -256,6 +260,56 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
                                                               */
 
 /*
+ *  Debugger support
+ */
+
+/* Maximum number of breakpoints.  Only breakpoints that are set are
+ * consulted so increasing this has no performance impact.
+ */
+#define DUK_HEAP_MAX_BREAKPOINTS          16
+
+/* Opcode interval for a Date-based status/peek rate limit check.  Only
+ * relevant when debugger is attached.  Requesting a timestamp may be a
+ * slow operation on some platforms so this shouldn't be too low.  On the
+ * other hand a high value makes Duktape react to a pause request slowly.
+ */
+#define DUK_HEAP_DBG_RATELIMIT_OPCODES    4000
+
+/* Milliseconds between status notify and transport peeks. */
+#define DUK_HEAP_DBG_RATELIMIT_MILLISECS  200
+
+/* Step types */
+#define DUK_STEP_TYPE_NONE  0
+#define DUK_STEP_TYPE_INTO  1
+#define DUK_STEP_TYPE_OVER  2
+#define DUK_STEP_TYPE_OUT   3
+
+struct duk_breakpoint {
+	duk_hstring *filename;
+	duk_uint32_t line;
+};
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+#define DUK_HEAP_IS_DEBUGGER_ATTACHED(heap) ((heap)->dbg_read_cb != NULL)
+#define DUK_HEAP_CLEAR_STEP_STATE(heap) do { \
+		(heap)->dbg_step_type = DUK_STEP_TYPE_NONE; \
+		(heap)->dbg_step_thread = NULL; \
+		(heap)->dbg_step_csindex = 0; \
+		(heap)->dbg_step_startline = 0; \
+	} while (0)
+#define DUK_HEAP_SET_PAUSED(heap) do { \
+		(heap)->dbg_paused = 1; \
+		(heap)->dbg_state_dirty = 1; \
+		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
+	} while (0)
+#define DUK_HEAP_CLEAR_PAUSED(heap) do { \
+		(heap)->dbg_paused = 0; \
+		(heap)->dbg_state_dirty = 1; \
+		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
+	} while (0)
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
+/*
  *  String cache should ideally be at duk_hthread level, but that would
  *  cause string finalization to slow down relative to the number of
  *  threads; string finalization must check the string cache for "weak"
@@ -392,8 +446,38 @@ struct duk_heap {
 
 	/* interrupt counter */
 #if defined(DUK_USE_INTERRUPT_COUNTER)
-	duk_int_t interrupt_init;     /* start value for current countdown */
-	duk_int_t interrupt_counter;  /* countdown state (mirrored in current thread state) */
+	duk_int_t interrupt_init;       /* start value for current countdown */
+	duk_int_t interrupt_counter;    /* countdown state (mirrored in current thread state) */
+#endif
+
+	/* debugger */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	/* callbacks and udata; dbg_read_cb != NULL is used to indicate attached state */
+	duk_debug_read_function dbg_read_cb;                /* required, NULL implies detached */
+	duk_debug_write_function dbg_write_cb;              /* required */
+	duk_debug_peek_function dbg_peek_cb;
+	duk_debug_read_flush_function dbg_read_flush_cb;
+	duk_debug_write_flush_function dbg_write_flush_cb;
+	duk_debug_detached_function dbg_detached_cb;
+	void *dbg_udata;
+
+	/* debugger state, only relevant when attached */
+	duk_bool_t dbg_paused;                  /* currently paused: talk with debug client until step/resume */
+	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
+	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
+	duk_hthread *dbg_step_thread;           /* borrowed; NULL if no step state (NULLed in unwind) */
+	duk_size_t dbg_step_csindex;            /* callstack index */
+	duk_uint32_t dbg_step_startline;        /* starting line number */
+	duk_breakpoint dbg_breakpoints[DUK_HEAP_MAX_BREAKPOINTS];  /* breakpoints: [0,breakpoint_count[ gc reachable */
+	duk_small_uint_t dbg_breakpoint_count;
+	duk_breakpoint *dbg_breakpoints_active[DUK_HEAP_MAX_BREAKPOINTS + 1];  /* currently active breakpoints: NULL term, borrowed pointers */
+	/* XXX: make active breakpoints actual copies instead of pointers? */
+
+	/* These are for rate limiting Status notifications and transport peeking. */
+	duk_uint32_t dbg_exec_counter;          /* cumulative opcode execution count (overflows are OK) */
+	duk_uint32_t dbg_last_counter;          /* value of dbg_exec_counter when we last did a Date-based check */
+	duk_double_t dbg_last_time;             /* time when status/peek was last done (Date-based rate limit) */
 #endif
 
 	/* string intern table (weak refs) */

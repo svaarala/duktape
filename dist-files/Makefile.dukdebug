@@ -1,0 +1,23 @@
+#
+#  Duktape command line tool with debugger support.
+#
+
+DUKTAPE_SOURCES = src/duktape.c
+
+DUKTAPE_CMDLINE_SOURCES = \
+	examples/cmdline/duk_cmdline.c \
+	examples/debug-trans-socket/duk_debug_trans_socket.c
+
+CC	= gcc
+CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+CCOPTS += -I./src -I./examples/debug-trans-socket
+CCOPTS += -DDUK_CMDLINE_DEBUGGER_SUPPORT     # enable --debugger in ./duk
+CCOPTS += -DDUK_OPT_DEBUGGER_SUPPORT         # enable debugger support in Duktape
+CCOPTS += -DDUK_OPT_INTERRUPT_COUNTER        # prerequisite for debugging
+CCOPTS += -DDUK_OPT_DEBUGGER_FWD_PRINTALERT  # optional debugger features
+CCOPTS += -DDUK_OPT_DEBUGGER_FWD_LOGGING
+CCOPTS += -DDUK_OPT_DEBUGGER_DUMPHEAP
+CCLIBS	= -lm
+
+duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
+	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)

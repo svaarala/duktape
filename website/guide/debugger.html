@@ -1,0 +1,60 @@
+<h1 id="debugger">Debugger</h1>
+
+<div class="note">
+<b>The debugger feature is experimental at present, which means that it may
+be unstable and change in an incompatible fashion even in a minor release.</b>
+</div>
+
+<p>Duktape has built-in debugger support as an option you can enable during
+compilation.  Debugger support adds about 10kB of code footprint and has
+very minimal memory footprint.</p>
+
+<p>The debugger is based on the following main concepts:</p>
+<ul>
+<li>Duktape provides a built-in <b>debug protocol</b> which is the same for all
+    applications.  The application doesn't need to parse or understand the
+    debug protocol.</li>
+<li>The debug protocol runs over a reliable, stream-based <b>debug transport</b>.
+    To maximize portability, the concrete transport is provided by application
+    code as a set of callbacks implementing a stream interface.  A streamed
+    transport allows unbuffered streaming of debug messages, which keeps memory
+    usage very low.</li>
+<li>A <b>debug client</b> terminates the transport connection and uses the Duktape
+    debug protocol to interact with Duktape internals: pause/resume, stepping,
+    breakpoints, eval, etc.</li>
+<li>A very narrow <b>debug API</b> is used by the application code to attach and
+    detach a debugger, and to provide the callbacks needed to implement the
+    debug transport.  All other debug activity happens through the debug
+    protocol which is implemented by Duktape directly with no application
+    involvement.</li>
+</ul>
+
+<p>The most appropriate debug transport varies a lot between debug targets;
+it can be Wi-Fi, Bluetooth, a serial line, a stream embedded into a custom
+management protocol, etc.  Although there is no "standard" transport, a TCP
+connection is a useful default.  The Duktape distributable includes all the
+pieces you need to get started with debugging using a TCP transport:</p>
+
+<ul>
+<li>An example implementation of the callbacks needed for a TCP transport:
+    <a href="https://github.com/svaarala/duktape/blob/master/examples/debug-trans-socket/">duk_debug_trans_socket.c</a></li>
+<li>Debugger support for the Duktape command line tool (<code>duk</code>) using
+    the TCP transport: <code>--debugger</code> option</li>
+<li>A debugger web UI based on
+    <a href="http://nodejs.org/">Node.js</a>,
+    <a href="http://expressjs.com/">Express</a>, and
+    <a href="http://socket.io/">socket.io</a>:
+    <a href="https://github.com/svaarala/duktape/blob/master/debugger/">duk_debug.js</a></li>
+</ul>
+
+<p>The Node.js based debugger web UI can connect to the Duktape command line,
+but can also talk directly with any other target implementing a TCP transport.
+You can also customize it to use a different transport or use a proxy which
+converts between TCP and your custom transport.  It's also possible to write
+your own debug client from scratch and e.g. integrate it to a custom IDE.</p>
+
+<p>For more details on the implementation and how to get started, see:</p>
+<ul>
+<li><a href="https://github.com/svaarala/duktape/blob/master/debugger/README.rst">debugger/README.rst</a></li>
+<li><a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a></li>
+</ul>

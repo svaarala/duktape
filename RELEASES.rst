@@ -774,7 +774,11 @@ Planned
 1.2.0 (2015-XX-XX)
 ------------------
 
-* Debugger support
+* Main release goals: debugger support and performance improvements
+
+* Add first iteration of experimental debugger support which is based on a
+  narrow debug API and a standard debug protocol; Duktape also provides an
+  example debug client with a web UI
 
 * Add iPhone/iOS strings to Duktape.env
 
@@ -793,6 +797,9 @@ Planned
 * Fix compiler register limit bug where an Ecmascript function with
   [65536,262143] VM registers would be compiled into incorrect bytecode
   instead of being rejected with an internal error (see GH-111)
+
+* Fix buffer assignment to allow negative values: buf[3] = -1 now yields 0xFF
+  (in Duktape 1.1 yields 0x00 because negative values are capped to 0)
 
 2.0.0 (XXXX-XX-XX)
 ------------------

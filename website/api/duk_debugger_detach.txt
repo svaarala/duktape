@@ -1,0 +1,21 @@
+=proto
+void duk_debugger_detach(duk_context *ctx);
+
+=summary
+<p>Detach a debugger from the Duktape heap.  If debugger support is not
+compiled into Duktape, throws an error.  See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
+for more information.</p>
+
+=example
+duk_debugger_detach(ctx);
+
+=tags
+debug
+experimental
+
+=seealso
+duk_debugger_attach
+
+=introduced
+1.2.0

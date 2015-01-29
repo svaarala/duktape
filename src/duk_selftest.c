@@ -135,6 +135,55 @@ DUK_LOCAL void duk__selftest_byte_order(void) {
 }
 
 /*
+ *  DUK_BSWAP macros
+ */
+
+DUK_LOCAL void duk__selftest_bswap_macros(void) {
+	duk_uint32_t x32;
+	duk_uint16_t x16;
+	duk_double_union du;
+	duk_double_t du_diff;
+
+	x16 = 0xbeefUL;
+	x16 = DUK_BSWAP16(x16);
+	if (x16 != (duk_uint16_t) 0xefbeUL) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_BSWAP16");
+	}
+
+	x32 = 0xdeadbeefUL;
+	x32 = DUK_BSWAP32(x32);
+	if (x32 != (duk_uint32_t) 0xefbeaddeUL) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_BSWAP32");
+	}
+
+	/* >>> struct.unpack('>d', '4000112233445566'.decode('hex'))
+	 * (2.008366013071895,)
+	 */
+
+	du.uc[0] = 0x40; du.uc[1] = 0x00; du.uc[2] = 0x11; du.uc[3] = 0x22;
+	du.uc[4] = 0x33; du.uc[5] = 0x44; du.uc[6] = 0x55; du.uc[7] = 0x66;
+	DUK_DBLUNION_BSWAP(&du);
+	du_diff = du.d - 2.008366013071895;
+#if 0
+	DUK_FPRINTF(DUK_STDERR, "du_diff: %lg\n", (double) du_diff);
+#endif
+	if (du_diff > 1e-15) {
+		/* Allow very small lenience because some compilers won't parse
+		 * exact IEEE double constants (happened in matrix testing with
+		 * Linux gcc-4.8 -m32 at least).
+		 */
+#if 0
+		DUK_FPRINTF(DUK_STDERR, "Result of DUK_DBLUNION_BSWAP: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+		            (unsigned int) du.uc[0], (unsigned int) du.uc[1],
+		            (unsigned int) du.uc[2], (unsigned int) du.uc[3],
+		            (unsigned int) du.uc[4], (unsigned int) du.uc[5],
+		            (unsigned int) du.uc[6], (unsigned int) du.uc[7]);
+#endif
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_DBLUNION_BSWAP");
+	}
+}
+
+/*
  *  Basic double / byte union memory layout.
  */
 
@@ -227,6 +276,7 @@ DUK_INTERNAL void duk_selftest_run_tests(void) {
 	duk__selftest_packed_tval();
 	duk__selftest_twos_complement();
 	duk__selftest_byte_order();
+	duk__selftest_bswap_macros();
 	duk__selftest_double_union_size();
 	duk__selftest_double_aliasing();
 	duk__selftest_double_zero_sign();

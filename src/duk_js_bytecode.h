@@ -167,6 +167,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_EXTRAOP_UNP             24
 #define DUK_EXTRAOP_INC             25
 #define DUK_EXTRAOP_DEC             26
+#define DUK_EXTRAOP_DEBUGGER        27
 
 /* DUK_OP_EXTRA for debugging */
 #define DUK_EXTRAOP_DUMPREG         128

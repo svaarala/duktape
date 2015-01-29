@@ -141,6 +141,10 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) buf));
 	DUK_UNREF(thr);
 
+	/*
+	 *  Use the index in the header to find the right starting point
+	 */
+
 	hdr_index = pc / DUK_PC2LINE_SKIP;
 	pc_base = hdr_index * DUK_PC2LINE_SKIP;
 	n = pc - pc_base;
@@ -166,6 +170,10 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 		                   (long) start_offset, (long) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
 		goto error;
 	}
+
+	/*
+	 *  Iterate the bitstream (line diffs) until PC is reached
+	 */
 
 	DUK_MEMZERO(bd_ctx, sizeof(*bd_ctx));
 	bd_ctx->data = ((duk_uint8_t *) hdr) + start_offset;
@@ -220,6 +228,12 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_i
 	duk_hbuffer_fixed *pc2line;
 	duk_uint_fast32_t line;
 
+	/* XXX: now that pc2line is used by the debugger quite heavily in
+	 * checked execution, this should be optimized to avoid value stack
+	 * and perhaps also implement some form of pc2line caching (see
+	 * future work in debugger.rst).
+	 */
+
 	duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_PC2LINE);
 	pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	if (pc2line != NULL) {
@@ -232,4 +246,5 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_i
 
 	return line;
 }
+
 #endif  /* DUK_USE_PC2LINE */

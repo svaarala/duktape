@@ -1023,7 +1023,6 @@ DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
 	duk_hstring *h;
 
 	for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
-
 		e = heap->strtable + i;
 		if (e->listlen > 0) {
 #if defined(DUK_USE_HEAPPTR16)

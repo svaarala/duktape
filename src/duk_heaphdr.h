@@ -158,6 +158,8 @@ struct duk_heaphdr_string {
  *  involved in the macros below.
  */
 
+#define DUK_HEAPHDR_GET_FLAGS_RAW(h)  ((h)->h_flags)
+
 #define DUK_HEAPHDR_GET_FLAGS(h)      ((h)->h_flags & DUK_HEAPHDR_FLAGS_FLAG_MASK)
 #define DUK_HEAPHDR_SET_FLAGS(h,val)  do { \
 		(h)->h_flags = ((h)->h_flags & ~(DUK_HEAPHDR_FLAGS_FLAG_MASK)) | (val); \

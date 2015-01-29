@@ -525,6 +525,12 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(NULL, f));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		DUK__COMMA(); duk_fb_sprintf(fb, "__start_line:%ld", (long) f->start_line);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__end_line:%ld", (long) f->end_line);
+#endif
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(NULL, f));
 	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__func:");

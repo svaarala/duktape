@@ -92,6 +92,8 @@ true 69
 7 0 0
 8 73 73
 9 65 65
+10 0 0
+11 255 255
 n/a true [object Object] marker
 ===*/
 
@@ -137,13 +139,13 @@ function writeTestNonStrict() {
     // Values written are coerced with ToNumber, coerced to integer,
     // then bit masked with 0xff from their 2's complement representation.
 
-    buf_plain = Duktape.dec('hex', '4142434445464748494a');  // ABCDEFGHIJ
-    buf_object = new Duktape.Buffer(Duktape.dec('hex', '4142434445464748494a'));
+    buf_plain = Duktape.dec('hex', '4142434445464748494a4b4c');  // ABCDEFGHIJKL
+    buf_object = new Duktape.Buffer(Duktape.dec('hex', '4142434445464748494a4b4c'));
 
     buf_plain[0] = -2;     // -> 0xfe
     buf_plain[1] = 0x145;  // 0x45 -> E
     buf_plain[2] = 66.7;   // 66.7 -> 66 = 0x42 = B
-    buf_plain[3] = -3.9;   // -3.9 -> -3 -> 0xfd
+    buf_plain[3] = -259.9; // -259.9 -> -259 -> 0xfffffefd -> 0xfd
     buf_plain[4] = 'x';    // Intuitively this would be codepoint of 'x',
                            // but currently coerces with ToNumber('x'} -> 0
     buf_plain[5] = '0x67'; // number parsing, part of ToNumber()
@@ -153,6 +155,8 @@ function writeTestNonStrict() {
     buf_plain[{ valueOf: function() { return 8; } }] = { valueOf: function() { return 0x41; } };
     // here index works
     buf_plain[{ toString: function() { return '9'; } }] = { valueOf: function() { return 0x41; } };
+    buf_plain[10] = -1/0;  // negative infinity, currently capped to 0x80...0000 -> 0x00
+    buf_plain[11] = 1/0;   // positive infinity, currently capped to 0x7f...ffff -> 0xff
 
     buf_object[0] = -2;
     buf_object[1] = 0x145;
@@ -167,6 +171,8 @@ function writeTestNonStrict() {
     buf_object[{ valueOf: function() { return 8; } }] = { valueOf: function() { return 0x41; }, marker: 'marker' };
     // here index works
     buf_object[{ toString: function() { return '9'; } }] = { valueOf: function() { return 0x41; } };
+    buf_object[10] = -1/0;
+    buf_object[11] = 1/0;
 
     for (i = 0; i < buf_plain.length; i++) {
         print(i, buf_plain[i], buf_object[i]);

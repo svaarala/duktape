@@ -63,6 +63,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_hthread.h"
 #include "duk_hbuffer.h"
 #include "duk_heap.h"
+#include "duk_debugger.h"
 #include "duk_debug.h"
 #include "duk_error.h"
 #include "duk_util.h"

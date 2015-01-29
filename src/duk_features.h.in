@@ -2068,6 +2068,23 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Byteswap macros
+ *
+ *  These are here so that inline assembly or other platform functions can be
+ *  used if available.
+ */
+
+#define DUK_BSWAP32(x) \
+	((((duk_uint32_t) (x)) >> 24) | \
+	 ((((duk_uint32_t) (x)) >> 8) & 0xff00UL) | \
+	 ((((duk_uint32_t) (x)) << 8) & 0xff0000UL) | \
+	 (((duk_uint32_t) (x)) << 24))
+
+#define DUK_BSWAP16(x) \
+	((duk_uint16_t) (x) >> 8) | \
+	((duk_uint16_t) (x) << 8)
+
+/*
  *  Architecture string, human readable value exposed in Duktape.env
  */
 
@@ -2191,6 +2208,26 @@ typedef FILE duk_file;
 #endif
 
 /*
+ *  Target info string
+ */
+
+#if defined(DUK_OPT_TARGET_INFO)
+#define DUK_USE_TARGET_INFO DUK_OPT_TARGET_INFO
+#else
+#define DUK_USE_TARGET_INFO "unknown"
+#endif
+
+/*
+ *  General prefer speed/size flag
+ *
+ *  Catch-all flag which can be used to choose between variant algorithms
+ *  where a speed-size tradeoff exists (e.g. lookup tables).  When it really
+ *  matters, specific use flags may be appropriate.
+ */
+
+#define DUK_USE_PREFER_SIZE
+
+/*
  *  Tagged type representation (duk_tval)
  */
 
@@ -2305,6 +2342,29 @@ typedef FILE duk_file;
 #undef DUK_USE_EXEC_TIMEOUT_CHECK
 #if defined(DUK_OPT_EXEC_TIMEOUT_CHECK)
 #define DUK_USE_EXEC_TIMEOUT_CHECK(udata)  DUK_OPT_EXEC_TIMEOUT_CHECK((udata))
+#endif
+
+#undef DUK_USE_DEBUGGER_SUPPORT
+#if defined(DUK_OPT_DEBUGGER_SUPPORT)
+#define DUK_USE_DEBUGGER_SUPPORT
+#endif
+
+#undef DUK_USE_DEBUGGER_FWD_PRINTALERT
+#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_PRINTALERT)
+#define DUK_USE_DEBUGGER_FWD_PRINTALERT
+#endif
+
+#undef DUK_USE_DEBUGGER_FWD_LOGGING
+#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_LOGGING)
+#define DUK_USE_DEBUGGER_FWD_LOGGING
+#endif
+
+/* DumpHeap is optional because it's not always needed and has a relatively
+ * large footprint.
+ */
+#undef DUK_USE_DEBUGGER_DUMPHEAP
+#if defined(DUK_OPT_DEBUGGER_DUMPHEAP)
+#define DUK_USE_DEBUGGER_DUMPHEAP
 #endif
 
 /* For opcodes with indirect indices, check final index against stack size.

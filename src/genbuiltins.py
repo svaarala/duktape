@@ -264,8 +264,8 @@ bi_global = {
 		#   print:  common even outside browsers (smjs: length = 0)
 		#   alert:  common in browsers (Chromium: length = 0)
 
-		{ 'name': 'print',			'native': 'duk_bi_global_object_print',			'length': 0,	'varargs': True,	'browser': True },
-		{ 'name': 'alert',			'native': 'duk_bi_global_object_alert',			'length': 0,	'varargs': True,	'browser': True },
+		{ 'name': 'print',			'native': 'duk_bi_global_object_print_helper',		'length': 0,	'varargs': True,	'browser': True,	'magic': { 'type': 'plain', 'value': 0 } },
+		{ 'name': 'alert',			'native': 'duk_bi_global_object_print_helper',		'length': 0,	'varargs': True,	'browser': True,	'magic': { 'type': 'plain', 'value': 1 } },
 
 		# CommonJS module loading
 		#

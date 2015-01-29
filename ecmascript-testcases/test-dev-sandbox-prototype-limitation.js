@@ -1,7 +1,7 @@
 /*
  *  There is currently (Duktape 1.0) no way to prevent user code from
  *  accessing built-in prototype objects through plain values.  For
- *  example, a plain string implicitly inherites from the original
+ *  example, a plain string implicitly inherits from the original
  *  String.prototype.
  */
 
