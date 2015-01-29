@@ -22,6 +22,8 @@ Duktape provides the following basic debugging features:
 * Eval in the context of the current activation when paused (can be used
   to implement basic watch expressions)
 
+* Get/put variable
+
 * Forwarding of print(), alert(), and logger writes
 
 * Full heap dump (debugger web UI converts to JSON)
@@ -267,7 +269,8 @@ Read callback semantics
 
 * Duktape is requesting that at least one and at most "length" bytes are
   read.  Partial reads are OK but at least one byte must be read.  If user
-  code cannot read at least one byte, it MUST block until it can.
+  code cannot read at least one byte, it MUST block until it can.  If one
+  or more bytes are available, user code MUST NOT block.
 
 * Return value in the range [1,length] indicates how many bytes were
   read into the given buffer.
@@ -489,7 +492,7 @@ Version identification
 When the debug transport is attached, Duktape writes a version identification
 as an UTF-8 encoded line of the form::
 
-    <protocolversion> <SP (0x20)> <additional text> <LF (0x0a)>
+    <protocolversion> <SP (0x20)> <additional text, no LF> <LF (0x0a)>
 
 The current protocol version is "1" and the identification line currently
 has the form::
@@ -816,7 +819,7 @@ unexpected errors, and is appropriate behavior e.g. when:
 * Invalid or insane dvalue formats are encountered.  There's often no way to
   continue reliably in these cases.
 
-* A parse error when a support command is being handled.  Such a situation
+* A parse error when a supported command is being handled.  Such a situation
   would indicate that the peer is buggy or in an inconsistent state.
 
 The exact error handling rules are not specified in great detail here, but
@@ -1279,7 +1282,12 @@ Example::
     REQ 29 EOM
     REP "x" "1" "y" "3.1415" "foo" "bar" EOM
 
-List local variable names from current function (the internal ``_varmap``).
+List local variable names from current function (the internal ``_Varmap``).
+
+.. note:: The local variable list doesn't currently include dynamically
+   declared variables introduced by e.g. eval(), or variables with a
+   dynamic scope like the catch variable in try-catch.  This will be fixed
+   in future versions.
 
 Eval request (0x1e)
 -------------------
@@ -1371,6 +1379,10 @@ somewhat complicated; see ``duk_debugger.c`` for the format.
 This is used to implement a debugger UI feature where you can download a JSON
 dump of the heap state for analysis.
 
+.. note:: This command is somewhat incomplete at the moment.  It will be useful
+   to implement a heap browser, and will probably be completed together with
+   some kind of UI.
+
 "debugger" statement
 ====================
 
@@ -1443,7 +1455,7 @@ Coalescing writes example
 * For each Duktape transport write call:
 
   - If the write data fits into BUF, append it.  If not, append as many bytes
-    as fit in the remaining BUF space.
+    as fit in the remaining BUF space (partial write).
 
   - If the buffer is now full (N bytes), send and empty the buffer.
 
@@ -1463,9 +1475,9 @@ Coalescing writes example
 One-way flow control example
 ----------------------------
 
-A simple one-way flow control mechanism to ensure a debug client (typically
-a desktop program) can work with a fixed inbound buffer of MAXBUF bytes
-(MAXBUF could be e.g. 256):
+A simple one-way flow control mechanism to ensure a debug target can be
+implemented with a fixed inbound buffer of MAXBUF bytes (MAXBUF is something
+small like 256):
 
 * The debug client maintains two byte counts:
 
@@ -1473,9 +1485,10 @@ a desktop program) can work with a fixed inbound buffer of MAXBUF bytes
      the debug connection.
 
   2. ACKED indicates how many bytes the debug target has confirmed to have
-     consumed.
+     consumed.  SENT - ACKED is the number of bytes potentially in the target
+     input buffer.
 
-* The debug client then knows that the target can buffer up to
+* The debug client then knows that the target can buffer at least
   MAXBUF - (SENT - ACKED) bytes, so that it's free to send that amount.
 
 * When the debug target receives data chunks from the debug client, it:
@@ -1568,10 +1581,10 @@ execution:
   debug client messages (this allows an out-of-the-blue pause for instance),
   execution timeout etc.
 
-* **Checked**: bytecode executor executes opcodes one at a time, calling into the
-  executor interrupt after every one.  The interrupt detects line transitions,
-  checks if any breakpoints or stepping related conditions are triggered, and
-  peeks (but doesn't block waiting) for debug client messages.
+* **Checked**: bytecode executor executes opcodes one at a time, calling into
+  the executor interrupt before every instruction.  The interrupt detects line
+  transitions, checks if any breakpoints or stepping related conditions are
+  triggered, and peeks (but doesn't block waiting) for debug client messages.
 
 * **Paused**: bytecode executor calls into executor interrupt, and the executor
   interrupt processes debug client messages until the debug client issues some
@@ -1601,6 +1614,9 @@ control point.  It is called whenever the bytecode executor is about to
 start executing a new activation, but can also be called explicitly e.g.
 when debug commands have adjusted breakpoint state.  The "restart execution"
 operation does a lot of important things:
+
+* It checks for debugger attached/detached state.  If detached, all other
+  debugger related checks are skipped.
 
 * It checks for active breakpoints in the current function, and writes out
   the active breakpoint list to make breakpoint trigger checks faster in
@@ -2317,6 +2333,32 @@ Additional stepping parameters could be implemented:
 * Step for N bytecode instructions
 
 * Step for roughly N milliseconds
+
+Dynamically declared variables in local variable list
+-----------------------------------------------------
+
+The local variable list returned by GetLocals does not include dynamically
+declared variables, or variables with a scope smaller than the entire
+function::
+
+  function test() {
+      var foo = 123;   // 'foo' is included
+
+      eval('var bar = 321');  // 'bar' is not included
+
+      try {
+          throw 'foo';
+      } catch (e) {
+          // 'e' is not included
+      }
+  }
+
+This should be fixed so that the locals include dynamic variables too.
+This is especially important for try-catch.
+
+The Eval command can read/write dynamic variables too, so the current
+workaround is to use Eval.  For instance, in the catch clause, Eval
+``"e"`` to read the error caught.
 
 Expression dependent breakpoints
 --------------------------------
