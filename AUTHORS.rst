@@ -22,6 +22,7 @@ their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
 * Niki Dobrev
 * Andreas Öman <andreas@lonelycoder.com>
 * László Langó <llango.u-szeged@partner.samsung.com>
+* Legimet <legimet.calc@gmail.com>
 
 Other contributions
 ===================
