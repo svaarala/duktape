@@ -550,6 +550,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
+	duk_context *ctx = (duk_context *) thr;
 
 	/* XXX: reset buffers while keeping existing spare */
 
@@ -561,6 +562,12 @@ DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	duk_hobject_set_length_zero(thr, func->h_labelnames);
 	duk_hbuffer_reset(thr, func->h_labelinfos);
 	/* keep func->h_argnames; it is fixed for all passes */
+
+	/* truncated in case pass 3 needed */
+	duk_push_object_internal(ctx);
+	duk_replace(ctx, func->varmap_idx);
+	func->h_varmap = duk_get_hobject(ctx, func->varmap_idx);
+	DUK_ASSERT(func->h_varmap != NULL);
 }
 
 /* cleanup varmap from any null entries, compact it, etc; returns number
@@ -6790,6 +6797,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	duk_reg_t reg_stmt_value = -1;
 	duk_lexer_point lex_pt;
 	duk_reg_t temp_first;
+	duk_small_int_t compile_round = 1;
 
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(func != NULL);
@@ -6832,7 +6840,10 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	}
 
 	/*
-	 *  First pass parsing.
+	 *  First pass.
+	 *
+	 *  Gather variable/function declarations needed for second pass.
+	 *  Code generated is dummy and discarded.
 	 */
 
 	func->in_directive_prologue = 1;
@@ -6869,97 +6880,124 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	DUK_DDD(DUK_DDDPRINT("end 1st pass"));
 
 	/*
-	 *  Rewind lexer.
+	 *  Second (and possibly third) pass.
 	 *
-	 *  duk__parse_stmts() expects curr_tok to be set; parse in "allow regexp
-	 *  literal" mode with current strictness.
-	 *
-	 *  curr_token line number info should be initialized for pass 2 before
-	 *  generating prologue, to ensure prologue bytecode gets nice line numbers.
+	 *  Generate actual code.  In most cases the need for shuffle
+	 *  registers is detected during pass 1, but in some corner cases
+	 *  we'll only detect it during pass 2 and a third pass is then
+	 *  needed (see GH-115).
 	 */
 
-	DUK_DDD(DUK_DDDPRINT("rewind lexer"));
-	DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
-	comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
-	comp_ctx->curr_token.start_line = 0;  /* needed for line number tracking (becomes prev_token.start_line) */
-	duk__advance(comp_ctx);
+	for (;;) {
+		duk_bool_t needs_shuffle_before = comp_ctx->curr_func.needs_shuffle;
+		compile_round++;
 
-	/*
-	 *  Reset function state and perform register allocation, which creates
-	 *  'varmap' for second pass.  Function prologue for variable declarations,
-	 *  binding value initializations etc is emitted as a by-product.
-	 *
-	 *  Strict mode restrictions for duplicate and invalid argument
-	 *  names are checked here now that we know whether the function
-	 *  is actually strict.  See: test-dev-strict-mode-boundary.js.
-	 */
+		/*
+		 *  Rewind lexer.
+		 *
+		 *  duk__parse_stmts() expects curr_tok to be set; parse in "allow regexp
+		 *  literal" mode with current strictness.
+		 *
+		 *  curr_token line number info should be initialized for pass 2 before
+		 *  generating prologue, to ensure prologue bytecode gets nice line numbers.
+		 */
 
-	duk__reset_func_for_pass2(comp_ctx);
-	func->in_directive_prologue = 1;
-	func->in_scanning = 0;
+		DUK_DDD(DUK_DDDPRINT("rewind lexer"));
+		DUK_LEXER_SETPOINT(&comp_ctx->lex, &lex_pt);
+		comp_ctx->curr_token.t = 0;  /* this is needed for regexp mode */
+		comp_ctx->curr_token.start_line = 0;  /* needed for line number tracking (becomes prev_token.start_line) */
+		duk__advance(comp_ctx);
 
-	/* must be able to emit code, alloc consts, etc. */
+		/*
+		 *  Reset function state and perform register allocation, which creates
+		 *  'varmap' for second pass.  Function prologue for variable declarations,
+		 *  binding value initializations etc is emitted as a by-product.
+		 *
+		 *  Strict mode restrictions for duplicate and invalid argument
+		 *  names are checked here now that we know whether the function
+		 *  is actually strict.  See: test-dev-strict-mode-boundary.js.
+		 *
+		 *  Inner functions are compiled during pass 1 and are not reset.
+		 */
 
-	duk__init_varmap_and_prologue_for_pass2(comp_ctx,
-	                                        (implicit_return_value ? &reg_stmt_value : NULL));
-	func->reg_stmt_value = reg_stmt_value;
+		duk__reset_func_for_pass2(comp_ctx);
+		func->in_directive_prologue = 1;
+		func->in_scanning = 0;
 
-	temp_first = DUK__GETTEMP(comp_ctx);
+		/* must be able to emit code, alloc consts, etc. */
 
-	func->temp_first = temp_first;
-	func->temp_next = temp_first;
-	func->stmt_next = 0;
-	func->label_next = 0;
+		duk__init_varmap_and_prologue_for_pass2(comp_ctx,
+		                                        (implicit_return_value ? &reg_stmt_value : NULL));
+		func->reg_stmt_value = reg_stmt_value;
 
-	/* XXX: init or assert catch depth etc -- all values */
-	func->id_access_arguments = 0;
-	func->id_access_slow = 0;
+		temp_first = DUK__GETTEMP(comp_ctx);
 
-	/*
-	 *  Check function name validity now that we know strictness.
-	 *  This only applies to function declarations and expressions,
-	 *  not setter/getter name.
-	 *
-	 *  See: test-dev-strict-mode-boundary.js
-	 */
+		func->temp_first = temp_first;
+		func->temp_next = temp_first;
+		func->stmt_next = 0;
+		func->label_next = 0;
 
-	if (func->is_function && !func->is_setget && func->h_name != NULL) {
-		if (func->is_strict) {
-			if (duk__hstring_is_eval_or_arguments(comp_ctx, func->h_name)) {
-				DUK_DDD(DUK_DDDPRINT("func name is 'eval' or 'arguments' in strict mode"));
-				goto error_funcname;
-			}
-			if (DUK_HSTRING_HAS_STRICT_RESERVED_WORD(func->h_name)) {
-				DUK_DDD(DUK_DDDPRINT("func name is a reserved word in strict mode"));
-				goto error_funcname;
-			}
-		} else {
-			if (DUK_HSTRING_HAS_RESERVED_WORD(func->h_name) &&
-			    !DUK_HSTRING_HAS_STRICT_RESERVED_WORD(func->h_name)) {
-				DUK_DDD(DUK_DDDPRINT("func name is a reserved word in non-strict mode"));
-				goto error_funcname;
+		/* XXX: init or assert catch depth etc -- all values */
+		func->id_access_arguments = 0;
+		func->id_access_slow = 0;
+
+		/*
+		 *  Check function name validity now that we know strictness.
+		 *  This only applies to function declarations and expressions,
+		 *  not setter/getter name.
+		 *
+		 *  See: test-dev-strict-mode-boundary.js
+		 */
+
+		if (func->is_function && !func->is_setget && func->h_name != NULL) {
+			if (func->is_strict) {
+				if (duk__hstring_is_eval_or_arguments(comp_ctx, func->h_name)) {
+					DUK_DDD(DUK_DDDPRINT("func name is 'eval' or 'arguments' in strict mode"));
+					goto error_funcname;
+				}
+				if (DUK_HSTRING_HAS_STRICT_RESERVED_WORD(func->h_name)) {
+					DUK_DDD(DUK_DDDPRINT("func name is a reserved word in strict mode"));
+					goto error_funcname;
+				}
+			} else {
+				if (DUK_HSTRING_HAS_RESERVED_WORD(func->h_name) &&
+				    !DUK_HSTRING_HAS_STRICT_RESERVED_WORD(func->h_name)) {
+					DUK_DDD(DUK_DDDPRINT("func name is a reserved word in non-strict mode"));
+					goto error_funcname;
+				}
 			}
 		}
+
+		/*
+		 *  Second pass parsing.
+		 */
+
+		if (implicit_return_value) {
+			/* Default implicit return value. */
+			duk__emit_extraop_bc(comp_ctx,
+			                     DUK_EXTRAOP_LDUNDEF,
+			                     0);
+		}
+
+		DUK_DDD(DUK_DDDPRINT("begin 2nd pass"));
+		duk__parse_stmts(comp_ctx,
+		                 1,             /* allow source elements */
+		                 expect_eof);   /* expect EOF instead of } */
+		DUK_DDD(DUK_DDDPRINT("end 2nd pass"));
+
+		duk__update_lineinfo_currtoken(comp_ctx);
+
+		if (needs_shuffle_before == comp_ctx->curr_func.needs_shuffle) {
+			/* Shuffle decision not changed. */
+			break;
+		}
+		if (compile_round >= 3) {
+			/* Should never happen but avoid infinite loop just in case. */
+			DUK_D(DUK_DPRINT("more than 3 compile passes needed, should never happen"));
+			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+		}
+		DUK_D(DUK_DPRINT("need additional round to compile function, round now %d", (int) compile_round));
 	}
-
-	/*
-	 *  Second pass parsing.
-	 */
-
-	if (implicit_return_value) {
-		/* Default implicit return value. */
-		duk__emit_extraop_bc(comp_ctx,
-		                     DUK_EXTRAOP_LDUNDEF,
-		                     0);
-	}
-
-	DUK_DDD(DUK_DDDPRINT("begin 2nd pass"));
-	duk__parse_stmts(comp_ctx,
-	                 1,             /* allow source elements */
-	                 expect_eof);   /* expect EOF instead of } */
-	DUK_DDD(DUK_DDDPRINT("end 2nd pass"));
-
-	duk__update_lineinfo_currtoken(comp_ctx);
 
 	/*
 	 *  Emit a final RETURN.
