@@ -27,7 +27,6 @@
         def(D, name, value);
     }
 
-
     // Compatibility for 'console.log'.
     if (false) {
         console = {
