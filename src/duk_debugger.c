@@ -1162,14 +1162,14 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_context *ctx = (duk_context *) thr;
 
-	DUK_UNREF(heap);
-
 	duk_small_uint_t call_flags;
 	duk_int_t call_ret;
 	duk_small_int_t eval_err;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
 #endif
+
+	DUK_UNREF(heap);
 
 	DUK_D(DUK_DPRINT("debug command eval"));
 
