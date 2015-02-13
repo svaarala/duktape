@@ -801,6 +801,9 @@ Planned
 * Fix buffer assignment to allow negative values: buf[3] = -1 now yields 0xFF
   (in Duktape 1.1 yields 0x00 because negative values are capped to 0)
 
+* Fix compiler shuffle register handling by doing a pass 3 compile if
+  necessary, fixing "CSPROPI target is not a number" error (GH-115)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
