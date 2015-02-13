@@ -857,6 +857,16 @@ def generateDownloadPage(releases_filename):
 		# massage the rst2html generated HTML to be more suitable
 		for elem in released.select('h1'):
 			elem.extract()
+
+		# Extract and reinsert release versions to reverse their order
+		# (newest release first).
+		rel_list = released.select('.section')
+		for rel in rel_list:
+			rel.extract()
+		rel_list.reverse()
+		for rel in rel_list:
+			released.append(rel)
+
 		releaselog_elem = down_soup.select('#releaselog')[0]
 		releaselog_elem.insert_after(released)
 	else:
