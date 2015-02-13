@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: return value for duk_error() so that one can 'return duk_error(...)'
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-23 11:07:50.741809 Z
+references: []
+
+id: 89077107c878811ad0f8f7a4cdbc0925843d216f
+log_events: 
+- - 2015-01-23 11:07:50.869721 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

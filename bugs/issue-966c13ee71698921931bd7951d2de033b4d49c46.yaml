@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: debugger regression test
+desc: Needs a scriptable debug client, and ability to compare for expected output.
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-26 21:42:35.871394 Z
+references: []
+
+id: 966c13ee71698921931bd7951d2de033b4d49c46
+log_events: 
+- - 2015-01-26 21:42:36.052179 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

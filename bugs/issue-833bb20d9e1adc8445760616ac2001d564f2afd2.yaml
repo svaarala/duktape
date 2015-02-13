@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: fix heap->heap_thread asserts in duk_heap_alloc.c (for init errors)
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-20 21:49:14.064073 Z
+references: []
+
+id: 833bb20d9e1adc8445760616ac2001d564f2afd2
+log_events: 
+- - 2015-01-20 21:49:14.228846 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

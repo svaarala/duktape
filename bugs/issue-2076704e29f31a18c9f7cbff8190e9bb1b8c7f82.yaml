@@ -1,5 +1,5 @@
 --- !ditz.rubyforge.org,2008-03-06/issue 
-title: invert release list order in download page
+title: ti nspire release note
 desc: ""
 type: :task
 component: duk
@@ -7,16 +7,16 @@ release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :closed
 disposition: :fixed
-creation_time: 2015-01-13 02:26:05.992324 Z
+creation_time: 2015-02-01 23:10:48.330380 Z
 references: []
 
-id: 0d0b85f1324d7c1710da2c82ffb2f36c5f3c97bc
+id: 2076704e29f31a18c9f7cbff8190e9bb1b8c7f82
 log_events: 
-- - 2015-01-13 02:26:06.157087 Z
+- - 2015-02-01 23:10:48.482306 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
   - ""
-- - 2015-02-13 22:18:41.509294 Z
+- - 2015-02-01 23:46:16.474769 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - closed with disposition fixed
   - ""

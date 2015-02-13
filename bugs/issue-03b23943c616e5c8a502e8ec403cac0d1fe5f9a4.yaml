@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: add pool alloc example
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-01-29 14:39:07.304302 Z
+references: []
+
+id: 03b23943c616e5c8a502e8ec403cac0d1fe5f9a4
+log_events: 
+- - 2015-01-29 14:39:07.479689 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
