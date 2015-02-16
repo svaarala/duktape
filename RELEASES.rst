@@ -768,7 +768,7 @@ Released
 
 * Fix various warnings and errors detected in option matrix testing
 
-1.1.1 (2015-02-16)
+1.1.1 (2015-02-17)
 ------------------
 
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
