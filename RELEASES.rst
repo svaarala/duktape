@@ -768,6 +768,26 @@ Released
 
 * Fix various warnings and errors detected in option matrix testing
 
+1.1.1 (2015-02-16)
+------------------
+
+* Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
+  not accepted in identifier names (see GH-103)
+
+* Fix function parsing bug where the left curly brace opening the function
+  body was not checked and Duktape would accept e.g. "function () [}"
+  (see GH-106)
+
+* Fix compiler register limit bug where an Ecmascript function with
+  [65536,262143] VM registers would be compiled into incorrect bytecode
+  instead of being rejected with an internal error (see GH-111)
+
+* Fix compiler shuffle register handling by doing a pass 3 compile if
+  necessary, fixing "CSPROPI target is not a number" error (GH-115)
+
+* Fix value stack setup bug which caused a segfault with large number of
+  arguments (GH-107)
+
 Planned
 =======
 
@@ -803,6 +823,9 @@ Planned
 
 * Fix compiler shuffle register handling by doing a pass 3 compile if
   necessary, fixing "CSPROPI target is not a number" error (GH-115)
+
+* Fix value stack setup bug which caused a segfault with large number of
+  arguments (GH-107)
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
