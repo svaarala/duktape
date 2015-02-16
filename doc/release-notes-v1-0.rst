@@ -8,6 +8,9 @@ Release overview
 First release with a stable API.  This release will get bug fixes at least
 until 1.1.0 is released (and probably some time beyond that).
 
+**This release is now obsolete, please upgrade to Duktape 1.1.x which has
+several critical fixes not present in 1.0.x.**
+
 Known issues
 ============
 
