@@ -9,7 +9,7 @@
 ---*/
 
 /*===
-65534
+65531
 Error
 Error
 Error
@@ -34,25 +34,25 @@ function test(n) {
 }
 
 try {
-    print(test(65535));  // should work
+    print(test(65535 - 3));  // should work, -3 for shuffle regs
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print(test(65536));  // should be rejected with internal error now
+    print(test(65536 - 3));  // should be rejected with internal error now
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print(test(262143));  // should be rejected with internal error now
+    print(test(262143 - 3));  // should be rejected with internal error now
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print(test(262144));  // should be rejected with internal error now
+    print(test(262144 - 3));  // should be rejected with internal error now
 } catch (e) {
     print(e.name);
 }
