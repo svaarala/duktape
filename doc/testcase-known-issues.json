@@ -30,8 +30,6 @@
   { "test": "test-regexp-invalid-charclass.js", "knownissue": "some invalid character classes are accepted (e.g. '[\\d-z]' and '[z-x]')" },
   { "test": "test-regexp-nonstandard-patternchar.js", "knownissue": "other engines allow an unescaped brace to appear literally (e.g. /{/), Duktape does not (which seems correct but is against real world behavior)" },
   { "test": "test-stmt-for-in-lhs.js", "knownissue": "for-in allows some invalid left-hand-side expressions which cause a runtime ReferenceError instead of a compile-time SyntaxError (e.g. 'for (a+b in [0,1]) {...}')" },
-  { "test": "test-dev-assign-eval-order.js", "knownissue": "assignment left-hand-side and right-hand-side are evaluated in incorrect order which affects expressions like 'b[i] = a[i++]'" },
-
 
   { "comment": "Ecmascript testcases that need special options or environment to work" },
 
