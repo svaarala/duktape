@@ -3639,6 +3639,10 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	/* PRIMARY EXPRESSIONS */
 
 	case DUK_TOK_PERIOD: {
+		/* Property access expressions are critical for correct LHS ordering,
+		 * see comments in duk__expr()!
+		 */
+
 		/* XXX: this now coerces an identifier into a GETVAR to a temp, which
 		 * causes an extra LDREG in call setup.  It's sufficient to coerce to a
 		 * unary ivalue?
@@ -3664,19 +3668,21 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		return;
 	}
 	case DUK_TOK_LBRACKET: {
+		/* Property access expressions are critical for correct LHS ordering,
+		 * see comments in duk__expr()!
+		 */
+
 		/* XXX: optimize temp reg use */
 		/* XXX: similar coercion issue as in DUK_TOK_PERIOD */
-
-		duk__ivalue_toplain(comp_ctx, left);
-
-		duk__expr_toplain(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);  /* Expression, ']' terminates */
-
-		duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
 
 		/* XXX: coerce to regs? it might be better for enumeration use, where the
 		 * same PROP ivalue is used multiple times.  Or perhaps coerce PROP further
 		 * there?
 		 */
+
+		duk__ivalue_toplain(comp_ctx, left);
+		duk__expr_toplain(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);  /* Expression, ']' terminates */
+		duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
 
 		res->t = DUK_IVAL_PROP;
 		duk__copy_ispec(comp_ctx, &res->x1, &res->x2);   /* res.x1 -> res.x2 */
@@ -4225,15 +4231,30 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			duk_regconst_t rc_res;
 			duk_reg_t reg_temp;
 
-			duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
-			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
-
-			/* Don't allow a constant for the object (even for a number etc), as
-			 * it goes into the 'A' field of the opcode.
+			/* Property access expressions ('a[b]') are critical to correct
+			 * LHS evaluation ordering, see test-dev-assign-eval-order*.js.
+			 * We must make sure that the LHS target slot (base object and
+			 * key) don't change during RHS evaluation.  The only concrete
+			 * problem is a register reference to a variable-bound register
+			 * (i.e., non-temp).  Require temp regs for both key and base.
+			 *
+			 * Don't allow a constant for the object (even for a number
+			 * etc), as it goes into the 'A' field of the opcode.
 			 */
 
-			reg_obj = duk__ispec_toregconst_raw(comp_ctx, &left->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
-			rc_key = duk__ispec_toregconst_raw(comp_ctx, &left->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
+			reg_obj = duk__ispec_toregconst_raw(comp_ctx,
+			                                    &left->x1,
+			                                    -1 /*forced_reg*/,
+			                                    DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
+
+			rc_key = duk__ispec_toregconst_raw(comp_ctx,
+			                                   &left->x2,
+			                                   -1 /*forced_reg*/,
+			                                   DUK__IVAL_FLAG_REQUIRE_TEMP | DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
+
+			/* Evaluate RHS only when LHS is safe. */
+			duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
+			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 
 			if (args_op == DUK_OP_INVALID) {
 				rc_res = res->x1.regconst;
