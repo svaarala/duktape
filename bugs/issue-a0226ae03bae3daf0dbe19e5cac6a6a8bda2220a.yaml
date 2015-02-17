@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: better fix for gh107, refactor value stack resize for calls
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-02-16 16:57:45.626008 Z
+references: []
+
+id: a0226ae03bae3daf0dbe19e5cac6a6a8bda2220a
+log_events: 
+- - 2015-02-16 16:57:45.790881 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
