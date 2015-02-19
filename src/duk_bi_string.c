@@ -63,8 +63,18 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx
 	h = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 
 	for (i = 0; i < n; i++) {
-		cp = duk_to_uint16(ctx, i);
+#if defined(DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT)
+		/* ToUint16() coercion is mandatory in the E5.1 specification, but
+		 * this non-compliant behavior makes more sense because we support
+		 * non-BMP codepoints.  Don't use CESU-8 because that'd create
+		 * surrogate pairs.
+		 */
+		cp = (duk_ucodepoint_t) duk_to_uint32(ctx, i);
+		duk_hbuffer_append_xutf8(thr, h, cp);
+#else
+		cp = (duk_ucodepoint_t) duk_to_uint16(ctx, i);
 		duk_hbuffer_append_cesu8(thr, h, cp);
+#endif
 	}
 
 	duk_to_string(ctx, -1);
