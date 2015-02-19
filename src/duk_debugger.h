@@ -59,6 +59,8 @@ DUK_INTERNAL_DECL void duk_debug_read_tval(duk_hthread *thr);
 
 DUK_INTERNAL_DECL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *data, duk_size_t length);
 DUK_INTERNAL_DECL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x);
+DUK_INTERNAL_DECL void duk_debug_write_unused(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_debug_write_undefined(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_debug_write_int(duk_hthread *thr, duk_int32_t x);
 DUK_INTERNAL_DECL void duk_debug_write_uint(duk_hthread *thr, duk_uint32_t x);
 DUK_INTERNAL_DECL void duk_debug_write_string(duk_hthread *thr, const char *data, duk_size_t length);
@@ -69,7 +71,6 @@ DUK_INTERNAL_DECL void duk_debug_write_hbuffer(duk_hthread *thr, duk_hbuffer *h)
 DUK_INTERNAL_DECL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr);
 DUK_INTERNAL_DECL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h);
 DUK_INTERNAL_DECL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj);
-DUK_INTERNAL_DECL void duk_debug_write_unused(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv);
 
 #if 0  /* unused */
@@ -83,7 +84,7 @@ DUK_INTERNAL_DECL void duk_debug_write_eom(duk_hthread *thr);
 DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr);
 DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr);
 
-DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block);
 
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstring *filename, duk_uint32_t line);
 DUK_INTERNAL_DECL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index);

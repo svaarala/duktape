@@ -66,6 +66,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	heap->dbg_udata = udata;
 
 	/* Start in paused state. */
+	heap->dbg_processing = 0;
 	heap->dbg_paused = 1;
 	heap->dbg_state_dirty = 1;
 	heap->dbg_step_type = 0;
@@ -103,6 +104,32 @@ DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	duk_debug_do_detach(thr->heap);
 }
 
+DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
+	duk_hthread *thr;
+	duk_bool_t processed_messages;
+
+	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+	if (!DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		return;
+	}
+	if (thr->callstack_top > 0 || thr->heap->dbg_processing) {
+		/* Calling duk_debugger_cooperate() while Duktape is being
+		 * called into is not supported.  This is not a 100% check
+		 * but prevents any damage in most cases.
+		 */
+		return;
+	}
+
+	thr->heap->dbg_processing = 1;
+	processed_messages = duk_debug_process_messages(thr, 1 /*no_block*/);
+	thr->heap->dbg_processing = 0;
+	DUK_UNREF(processed_messages);
+}
+
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
 DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
@@ -125,6 +152,11 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 
 DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	duk_error(ctx, DUK_ERR_API_ERROR, "no debugger support");
+}
+
+DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
+	/* nop */
+	DUK_UNREF(ctx);
 }
 
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */

@@ -463,6 +463,7 @@ struct duk_heap {
 	void *dbg_udata;
 
 	/* debugger state, only relevant when attached */
+	duk_bool_t dbg_processing;              /* currently processing messages or breakpoints: don't enter message processing recursively (e.g. no breakpoints when processing debugger eval) */
 	duk_bool_t dbg_paused;                  /* currently paused: talk with debug client until step/resume */
 	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
 	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
