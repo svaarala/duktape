@@ -16,6 +16,7 @@ experimental
 
 =seealso
 duk_debugger_attach
+duk_debugger_cooperate
 
 =introduced
 1.2.0
