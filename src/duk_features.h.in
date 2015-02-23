@@ -2241,6 +2241,14 @@ typedef FILE duk_file;
  */
 #define DUK_USE_FAST_REFCOUNT_DEFAULT
 
+/* Assert for valstack space but don't check for it in non-assert build.
+ * Valstack overruns (writing beyond checked space) is memory unsafe and
+ * potentially a segfault.  Produces a smaller and faster binary.
+ * (In practice the speed difference is small with -O3 so default to
+ * safer behavior for now.)
+ */
+#undef DUK_USE_VALSTACK_UNSAFE
+
 /* Catch-all flag which can be used to choose between variant algorithms
  * where a speed-size tradeoff exists (e.g. lookup tables).  When it really
  * matters, specific use flags may be appropriate.
