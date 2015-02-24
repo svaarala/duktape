@@ -829,6 +829,9 @@ Planned
 * Accept 32-bit codepoints in String.fromCharCode() to better support non-BMP
   strings (GH-120)
 
+* Internal performance improvement: direct refcount manipulation from macros
+  instead of doing a helper function call
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
