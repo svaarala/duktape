@@ -14,7 +14,7 @@ If the value stack is empty, throws an error.</p>
 =example
 duk_push_int(ctx, 123);  /* -> [ ... 123 ] */
 duk_push_int(ctx, 234);  /* -> [ ... 123 234 ] */
-duk_dup_top(ctx, -2);    /* -> [ ... 123 234 234 ] */
+duk_dup_top(ctx);        /* -> [ ... 123 234 234 ] */
 
 =tags
 stack
