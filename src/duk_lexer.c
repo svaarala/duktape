@@ -1807,7 +1807,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				ch = -1;
 			} else if (DUK__ISDIGIT(x)) {
 				/* DecimalEscape, only \0 is allowed, no leading zeroes are allowed */
-				if (x == 0 && !DUK__ISDIGIT(DUK__L0())) {
+				if (x == '0' && !DUK__ISDIGIT(DUK__L0())) {
 					ch = 0x0000;
 				} else {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
