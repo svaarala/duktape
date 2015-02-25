@@ -43,9 +43,11 @@ DUK_INTERNAL_DECL duk_hobject *duk_push_this_coercible_to_object(duk_context *ct
 /* duk_push_this() + CheckObjectCoercible() + duk_to_string() */
 DUK_INTERNAL_DECL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);
 
-/* duk_push_uint() is guaranteed to support at least unsigned 32-bit range */
+/* duk_push_(u)int() is guaranteed to support at least (un)signed 32-bit range */
 #define duk_push_u32(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
+#define duk_push_i32(ctx,val) \
+	duk_push_int((ctx), (duk_int_t) (val))
 
 /* sometimes stack and array indices need to go on the stack */
 #define duk_push_idx(ctx,val) \

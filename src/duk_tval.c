@@ -16,24 +16,25 @@
  *  integer value from an IEEE double for setting the tagged fastint.  For
  *  other platforms a more naive approach might be better.
  *
- *  See doc/FIXME for details.
+ *  See doc/fastint.rst for details.
  */
 
 DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast(duk_tval *tv, duk_double_t x) {
 	duk_double_union du;
 	duk_int64_t i;
-	duk_small_int_t exp;
+	duk_small_int_t expt;
 	duk_small_int_t shift;
 
-	/* FIXME: optimize for packed duk_tval directly? */
+	/* XXX: optimize for packed duk_tval directly? */
 
 	du.d = x;
 	i = (duk_int64_t) DUK_DBLUNION_GET_INT64(&du);
-	exp = (duk_small_int_t) ((i >> 52) & 0x07ff);
-	shift = exp - 1023;
+	expt = (duk_small_int_t) ((i >> 52) & 0x07ff);
+	shift = expt - 1023;
 
 	if (shift >= 0 && shift <= 46) {  /* exponents 1023 to 1069 */
 		duk_int64_t t;
+
 		if (((0x000fffffffffffffLL >> shift) & i) == 0) {
 			t = i | 0x0010000000000000LL;  /* implicit leading one */
 			t = t & 0x001fffffffffffffLL;
@@ -85,6 +86,50 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_packed(duk_tval 
 		return du.d - 4503599627370496.0;  /* 1 << 52 */
 	} else {
 		return 0.0;  /* zero */
+	}
+}
+#endif  /* DUK_USE_FASTINT && DUK_USE_PACKED_TVAL */
+
+#if 0  /* unused */
+#if defined(DUK_USE_FASTINT) && !defined(DUK_USE_PACKED_TVAL)
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked(duk_tval *tv) {
+	duk_double_union du;
+	duk_uint64_t t;
+
+	DUK_ASSERT(tv->t == DUK__TAG_NUMBER || tv->t == DUK_TAG_FASTINT);
+
+	if (tv->t == DUK_TAG_FASTINT) {
+		if (tv->v.fi >= 0) {
+			t = 0x4330000000000000ULL | (duk_uint64_t) tv->v.fi;
+			DUK_DBLUNION_SET_UINT64(&du, t);
+			return du.d - 4503599627370496.0;  /* 1 << 52 */
+		} else {
+			t = 0xc330000000000000ULL | (duk_uint64_t) (-tv->v.fi);
+			DUK_DBLUNION_SET_UINT64(&du, t);
+			return du.d + 4503599627370496.0;  /* 1 << 52 */
+		}
+	} else {
+		return tv->v.d;
+	}
+}
+#endif  /* DUK_USE_FASTINT && DUK_USE_PACKED_TVAL */
+#endif  /* 0 */
+
+#if defined(DUK_USE_FASTINT) && !defined(DUK_USE_PACKED_TVAL)
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv) {
+	duk_double_union du;
+	duk_uint64_t t;
+
+	DUK_ASSERT(tv->t == DUK_TAG_FASTINT);
+
+	if (tv->v.fi >= 0) {
+		t = 0x4330000000000000ULL | (duk_uint64_t) tv->v.fi;
+		DUK_DBLUNION_SET_UINT64(&du, t);
+		return du.d - 4503599627370496.0;  /* 1 << 52 */
+	} else {
+		t = 0xc330000000000000ULL | (duk_uint64_t) (-tv->v.fi);
+		DUK_DBLUNION_SET_UINT64(&du, t);
+		return du.d + 4503599627370496.0;  /* 1 << 52 */
 	}
 }
 #endif  /* DUK_USE_FASTINT && DUK_USE_PACKED_TVAL */

@@ -191,7 +191,7 @@ typedef union duk_double_union duk_double_union;
 	} while (0)
 #define DUK_DBLUNION_GET_UINT64(u)  ((u)->ull[DUK_DBL_IDX_ULL0])
 #endif
-#define DUK_DBLUNION_SET_INT64(u,v) ((duk_int64_t) DUK_DBLUNION_SET_UINT64((u), (v)))
+#define DUK_DBLUNION_SET_INT64(u,v) DUK_DBLUNION_SET_UINT64((u), (duk_uint64_t) (v))
 #define DUK_DBLUNION_GET_INT64(u)   ((duk_int64_t) DUK_DBLUNION_GET_UINT64((u)))
 #endif  /* DUK_USE_64BIT_OPS */
 

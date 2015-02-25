@@ -95,6 +95,9 @@ DUK_LOCAL_DECL duk_bool_t duk__get_own_property_desc(duk_hthread *thr, duk_hobje
  * DUK__NO_ARRAY_INDEX if the number is not whole or not a valid array
  * index.
  */
+/* XXX: for fastints, could use a variant which assumes a double duk_tval
+ * (and doesn't need to check for fastint again).
+ */
 DUK_LOCAL duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
 	duk_double_t dbl;
 	duk_uint32_t idx;
@@ -112,6 +115,27 @@ DUK_LOCAL duk_uint32_t duk__tval_number_to_arr_idx(duk_tval *tv) {
 	}
 	return DUK__NO_ARRAY_INDEX;
 }
+
+#if defined(DUK_USE_FASTINT)
+/* Convert a duk_tval fastint (caller checks) to a 32-bit index. */
+DUK_LOCAL duk_uint32_t duk__tval_fastint_to_arr_idx(duk_tval *tv) {
+	duk_int64_t t;
+
+	DUK_ASSERT(tv != NULL);
+	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv));
+
+	t = DUK_TVAL_GET_FASTINT(tv);
+	if ((t & ~0xffffffffULL) != 0) {
+		/* Catches >0x100000000 and negative values. */
+		return DUK__NO_ARRAY_INDEX;
+	}
+
+	/* If the value happens to be 0xFFFFFFFF, it's not a valid array index
+	 * but will then match DUK__NO_ARRAY_INDEX.
+	 */
+	return (duk_uint32_t) t;
+}
+#endif  /* DUK_USE_FASTINT */
 
 /* Push an arbitrary duk_tval to the stack, coerce it to string, and return
  * both a duk_hstring pointer and an array index (or DUK__NO_ARRAY_INDEX).
@@ -1942,51 +1966,70 @@ DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk
 
 DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *key_tv) {
 	duk_tval *tv;
+	duk_uint32_t idx;
 
 	DUK_UNREF(thr);
 
-	if (DUK_TVAL_IS_NUMBER(key_tv) &&
-	    (!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
-	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
-	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
-	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
-	    (DUK_HOBJECT_HAS_ARRAY_PART(obj))) {
-		duk_uint32_t idx;
-
-		DUK_DDD(DUK_DDDPRINT("fast path attempt (key is a number, no exotic string/arguments/buffer "
-		                     "behavior, object has array part)"));
-
-		idx = duk__tval_number_to_arr_idx(key_tv);
-
-		if (idx != DUK__NO_ARRAY_INDEX) {
-			/* Note: idx is not necessarily a valid array index (0xffffffffUL is not valid) */
-			DUK_ASSERT_DISABLE(idx >= 0);  /* disabled because idx is duk_uint32_t so always true */
-			DUK_ASSERT_DISABLE(idx <= 0xffffffffUL);  /* same */
-
-			if (idx < DUK_HOBJECT_GET_ASIZE(obj)) {
-				/* technically required to check, but obj->a_size check covers this */
-				DUK_ASSERT(idx != 0xffffffffUL);
-
-				DUK_DDD(DUK_DDDPRINT("key is a valid array index and inside array part"));
-				tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, idx);
-				if (!DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
-					DUK_DDD(DUK_DDDPRINT("-> fast path successful"));
-					return tv;
-				}
-			} else {
-				DUK_DDD(DUK_DDDPRINT("key is outside array part"));
-			}
-		} else {
-			DUK_DDD(DUK_DDDPRINT("key is not a valid array index"));
-		}
-
-		/*
-		 *  Not found in array part, use slow path.
+	if (!(DUK_HOBJECT_HAS_ARRAY_PART(obj) &&
+	     !DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
+	     !DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) &&
+	     !DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) &&
+	     !DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+		/* Must have array part and no conflicting exotic behaviors.
+		 * Doesn't need to have array special behavior, e.g. Arguments
+		 * object has array part.
 		 */
-
-		DUK_DDD(DUK_DDDPRINT("fast path attempt failed, fall back to slow path"));
+		return NULL;
 	}
 
+	/* Arrays never have other exotic behaviors. */
+
+	DUK_DDD(DUK_DDDPRINT("fast path attempt (no exotic string/arguments/buffer "
+	                     "behavior, object has array part)"));
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(key_tv)) {
+		idx = duk__tval_fastint_to_arr_idx(key_tv);
+	} else
+#endif
+	if (DUK_TVAL_IS_NUMBER(key_tv)) {
+		idx = duk__tval_number_to_arr_idx(key_tv);
+	} else {
+		DUK_DDD(DUK_DDDPRINT("key is not a number"));
+		return NULL;
+	}
+
+	if (idx != DUK__NO_ARRAY_INDEX) {
+		/* Note: idx is not necessarily a valid array index (0xffffffffUL is not valid) */
+		DUK_ASSERT_DISABLE(idx >= 0);  /* disabled because idx is duk_uint32_t so always true */
+		DUK_ASSERT_DISABLE(idx <= 0xffffffffUL);  /* same */
+
+		if (idx < DUK_HOBJECT_GET_ASIZE(obj)) {
+			/* technically required to check, but obj->a_size check covers this */
+			DUK_ASSERT(idx != 0xffffffffUL);
+
+			/* XXX: for array instances we could take a shortcut here and assume
+			 * Array.prototype doesn't contain an array index property.
+			 */
+
+			DUK_DDD(DUK_DDDPRINT("key is a valid array index and inside array part"));
+			tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, idx);
+			if (!DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
+				DUK_DDD(DUK_DDDPRINT("-> fast path successful"));
+				return tv;
+			}
+		} else {
+			DUK_DDD(DUK_DDDPRINT("key is outside array part"));
+		}
+	} else {
+		DUK_DDD(DUK_DDDPRINT("key is not a valid array index"));
+	}
+
+	/*
+	 *  Not found in array part, use slow path.
+	 */
+
+	DUK_DDD(DUK_DDDPRINT("fast path attempt failed, fall back to slow path"));
 	return NULL;
 }
 
@@ -2053,6 +2096,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		duk_int_t pop_count;
 
+#if defined(DUK_USE_FASTINT)
+		if (DUK_TVAL_IS_FASTINT(tv_key)) {
+			arr_idx = duk__tval_fastint_to_arr_idx(tv_key);
+			DUK_DDD(DUK_DDDPRINT("base object string, key is a fast-path fastint; arr_idx %ld", (long) arr_idx));
+			pop_count = 0;
+		} else
+#endif
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
 			DUK_DDD(DUK_DDDPRINT("base object string, key is a fast-path number; arr_idx %ld", (long) arr_idx));
@@ -2207,8 +2257,14 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 *  is important.
 		 */
 
-		/* FIXME: fastint fast path */
-
+#if defined(DUK_USE_FASTINT)
+		if (DUK_TVAL_IS_FASTINT(tv_key)) {
+			arr_idx = duk__tval_fastint_to_arr_idx(tv_key);
+			DUK_DDD(DUK_DDDPRINT("base object buffer, key is a fast-path fastint; arr_idx %ld", (long) arr_idx));
+			pop_count = 0;
+		}
+		else
+#endif
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
 			DUK_DDD(DUK_DDDPRINT("base object buffer, key is a fast-path number; arr_idx %ld", (long) arr_idx));
@@ -2631,15 +2687,16 @@ DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *
 	DUK_ASSERT(DUK_TVAL_GET_NUMBER(tv) <= (double) 0xffffffffUL);
 	DUK_ASSERT((duk_double_t) (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv) == DUK_TVAL_GET_NUMBER(tv));
 #if defined(DUK_USE_FASTINT)
-	/* FIXME: Length may not always be a fastint when downgrade checks
-	 * are not done every time.
+	/* Downgrade checks are not made everywhere, so 'length' is not always
+	 * a fastint (it is a number though).  This can be removed once length
+	 * is always guaranteed to be a fastint.
 	 */
-#if 0  /*FIXME*/
-	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv));
-	/* FIXME: assert for U32 range */
-	res = (duk_uint32_t) DUK_TVAL_GET_FASTINT_U32(tv);
-#endif
-	res = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
+	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv) || DUK_TVAL_IS_DOUBLE(tv));
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		res = (duk_uint32_t) DUK_TVAL_GET_FASTINT_U32(tv);
+	} else {
+		res = (duk_uint32_t) DUK_TVAL_GET_DOUBLE(tv);
+	}
 #else
 	res = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
 #endif  /* DUK_USE_FASTINT */
@@ -2650,17 +2707,21 @@ DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *
 DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint32_t res;
+	duk_double_t d;
 
 	/* Input value should be on stack top and will be coerced and
-	 * left on stack top.  Refuse to update an Array's 'length'
-	 * to a value outside the 32-bit range.
+	 * popped.  Refuse to update an Array's 'length' to a value
+	 * outside the 32-bit range.  Negative zero is accepted as zero.
 	 */
 
-	/* FIXME: fast path */
-	res = ((duk_uint32_t) duk_to_number(ctx, -1)) & 0xffffffffUL;
-	if (res != duk_get_number(ctx, -1)) {
+	/* XXX: fastint */
+
+	d = duk_to_number(ctx, -1);
+	res = (duk_uint32_t) d;
+	if ((duk_double_t) res != d) {
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_ARRAY_LENGTH);
 	}
+	duk_pop(ctx);
 	return res;
 }
 
@@ -2885,8 +2946,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 
 	old_len = duk__get_old_array_length(thr, obj, &desc);
 	duk_dup(ctx, -1);  /* [in_val in_val] */
-	new_len = duk__to_new_array_length_checked(thr);
-	duk_pop(ctx);  /* [in_val in_val] -> [in_val] */
+	new_len = duk__to_new_array_length_checked(thr);  /* -> [in_val] */
 	DUK_DDD(DUK_DDDPRINT("old_len=%ld, new_len=%ld", (long) old_len, (long) new_len));
 
 	/*
@@ -3116,8 +3176,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 					/* No resize has occurred so desc.e_idx is still OK */
 					tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
 					DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-					/* FIXME: fastint */
+#if defined(DUK_USE_FASTINT)
+					DUK_TVAL_SET_FASTINT_U32(tv, new_len);  /* no need for decref/incref because value is a number */
+#else
 					DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_len);  /* no need for decref/incref because value is a number */
+#endif
 				} else {
 					;
 				}
@@ -3206,8 +3269,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 *  from, an array index fast path is important.
 		 */
 
-		/* FIXME: fastint fast path */
-
+#if defined(DUK_USE_FASTINT)
+		if (DUK_TVAL_IS_FASTINT(tv_key)) {
+			arr_idx = duk__tval_fastint_to_arr_idx(tv_key);
+			DUK_DDD(DUK_DDDPRINT("base object buffer, key is a fast-path fastint; arr_idx %ld", (long) arr_idx));
+			pop_count = 0;
+		} else
+#endif
 		if (DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
 			DUK_DDD(DUK_DDDPRINT("base object buffer, key is a fast-path number; arr_idx %ld", (long) arr_idx));
@@ -3226,12 +3294,23 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_uint8_t *data;
 			DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
 			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
-			duk_push_tval(ctx, tv_val);
+
 			/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
 			 * as input is within duk_int_t range (capped outside it).
 			 */
-			data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
-			pop_count++;
+#if defined(DUK_USE_FASTINT)
+			/* Buffer writes are often integers. */
+			if (DUK_TVAL_IS_FASTINT(tv_val)) {
+				data[arr_idx] = (duk_uint8_t) DUK_TVAL_GET_FASTINT_U32(tv_val);
+			}
+			else
+#endif
+			{
+				duk_push_tval(ctx, tv_val);
+				data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
+				pop_count++;
+			}
+
 			duk_pop_n(ctx, pop_count);
 			DUK_DDD(DUK_DDDPRINT("result: success (buffer data write)"));
 			return 1;
@@ -4791,6 +4870,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 		duk_dup(ctx, idx_value);
 		arrlen_new_len = duk__to_new_array_length_checked(thr);
+		duk_push_u32(ctx, arrlen_new_len);
 		duk_replace(ctx, idx_value);  /* step 3.e: replace 'Desc.[[Value]]' */
 
 		DUK_DDD(DUK_DDDPRINT("old_len=%ld, new_len=%ld", (long) arrlen_old_len, (long) arrlen_new_len));

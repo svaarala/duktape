@@ -1008,7 +1008,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 #define DUK__EMIT_FLAG_A_IS_SOURCE       (1 << 11)  /* slot A is a source (default: target) */
 #define DUK__EMIT_FLAG_B_IS_TARGET       (1 << 12)  /* slot B is a target (default: source) */
 #define DUK__EMIT_FLAG_C_IS_TARGET       (1 << 13)  /* slot C is a target (default: source) */
-#define DUK__EMIT_FLAG_RESERVE_JUMPSLOT  (1 << 14)  /* reserve a jumpslot after instr before target spilling, used for NEXTENUM */
+#define DUK__EMIT_FLAG_B_IS_TARGETSOURCE (1 << 14)  /* slot B is both a target and a source (used by extraops like DUK_EXTRAOP_INSTOF */
+#define DUK__EMIT_FLAG_RESERVE_JUMPSLOT  (1 << 15)  /* reserve a jumpslot after instr before target spilling, used for NEXTENUM */
 
 /* XXX: clarify on when and where DUK__CONST_MARKER is allowed */
 /* XXX: opcode specific assertions on when consts are allowed */
@@ -1234,7 +1235,8 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 			if (op_flags & DUK__EMIT_FLAG_B_IS_TARGET) {
 				/* Output shuffle needed after main operation */
 				b_out = b;
-			} else {
+			}
+			if (!(op_flags & DUK__EMIT_FLAG_B_IS_TARGET) || (op_flags & DUK__EMIT_FLAG_B_IS_TARGETSOURCE)) {
 				duk_small_int_t op = op_flags & 0xff;
 				if (op == DUK_OP_CALL || op == DUK_OP_NEW ||
 				    op == DUK_OP_MPUTOBJ || op == DUK_OP_MPUTARR) {
@@ -2203,9 +2205,15 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				}
 			}
 
+			/* Note: special DUK__EMIT_FLAG_B_IS_TARGETSOURCE
+			 * used to indicate that B is both a source and a
+			 * target register.  When shuffled, it needs to be
+			 * both input and output shuffled.
+			 */
 			DUK_ASSERT(DUK__ISREG(comp_ctx, dest));
 			duk__emit_extraop_b_c(comp_ctx,
-			                      x->op | DUK__EMIT_FLAG_B_IS_TARGET,
+			                      x->op | DUK__EMIT_FLAG_B_IS_TARGET |
+			                              DUK__EMIT_FLAG_B_IS_TARGETSOURCE,
 			                      (duk_regconst_t) dest,
 			                      (duk_regconst_t) arg2);
 

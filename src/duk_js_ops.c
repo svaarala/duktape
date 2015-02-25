@@ -274,7 +274,7 @@ DUK_INTERNAL duk_double_t duk_js_tointeger_number(duk_double_t x) {
 }
 
 DUK_INTERNAL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
-	/* FIXME: fastint */
+	/* XXX: fastint */
 	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	return duk_js_tointeger_number(d);
 }
@@ -323,8 +323,15 @@ DUK_LOCAL duk_double_t duk__toint32_touint32_helper(duk_double_t x, duk_bool_t i
 }
 
 DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
-	/* FIXME: fastint */
-	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
+	duk_double_t d;
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		return DUK_TVAL_GET_FASTINT_I32(tv);
+	}
+#endif
+
+	d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 1);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= -2147483648.0 && d <= 2147483647.0);  /* [-0x80000000,0x7fffffff] */
@@ -334,8 +341,15 @@ DUK_INTERNAL duk_int32_t duk_js_toint32(duk_hthread *thr, duk_tval *tv) {
 
 
 DUK_INTERNAL duk_uint32_t duk_js_touint32(duk_hthread *thr, duk_tval *tv) {
-	/* FIXME: fastint */
-	duk_double_t d = duk_js_tonumber(thr, tv);  /* invalidates tv */
+	duk_double_t d;
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		return DUK_TVAL_GET_FASTINT_U32(tv);
+	}
+#endif
+
+	d = duk_js_tonumber(thr, tv);  /* invalidates tv */
 	d = duk__toint32_touint32_helper(d, 0);
 	DUK_ASSERT(DUK_FPCLASSIFY(d) == DUK_FP_ZERO || DUK_FPCLASSIFY(d) == DUK_FP_NORMAL);
 	DUK_ASSERT(d >= 0.0 && d <= 4294967295.0);  /* [0x00000000, 0xffffffff] */

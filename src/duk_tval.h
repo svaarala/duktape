@@ -124,6 +124,11 @@ typedef union duk_double_union duk_tval;
 	} while (0)
 #endif
 
+#define DUK__TVAL_SET_FASTINT_I32(v,i)  do { \
+		duk_int64_t duk__tmp = (duk_int64_t) (i); \
+		DUK_TVAL_SET_FASTINT((v), duk__tmp); \
+	} while (0)
+
 /* XXX: clumsy sign extend and masking of 16 topmost bits */
 #ifdef DUK_USE_DOUBLE_ME
 #define DUK__TVAL_GET_FASTINT(v)      (((duk_int64_t) ((((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI0]) << 32) | ((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI1]))) << 16 >> 16)
@@ -131,6 +136,7 @@ typedef union duk_double_union duk_tval;
 #define DUK__TVAL_GET_FASTINT(v)      ((((duk_int64_t) (v)->ull[DUK_DBL_IDX_ULL0]) << 16) >> 16)
 #endif
 #define DUK__TVAL_GET_FASTINT_U32(v)  ((v)->ui[DUK_DBL_IDX_UI1])
+#define DUK__TVAL_GET_FASTINT_I32(v)  ((duk_int32_t) (v)->ui[DUK_DBL_IDX_UI1])
 #endif  /* DUK_USE_FASTINT */
 
 #define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
@@ -149,11 +155,11 @@ typedef union duk_double_union duk_tval;
 #if defined(DUK_USE_FASTINT)
 #define DUK_TVAL_SET_DOUBLE(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
 #define DUK_TVAL_SET_FASTINT(v,i)           DUK__TVAL_SET_FASTINT((v), (i))
+#define DUK_TVAL_SET_FASTINT_I32(v,i)       DUK__TVAL_SET_FASTINT_I32((v), (i))
 #define DUK_TVAL_SET_FASTINT_U32(v,i)       DUK__TVAL_SET_FASTINT_U32((v), (i))
 #define DUK_TVAL_SET_NUMBER_CHKFAST(v,d)    duk_tval_set_number_chkfast((v), (d))
 #define DUK_TVAL_SET_NUMBER(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { \
-		/* FIXME: optimize */ \
 		duk_tval *duk__tv; \
 		duk_double_t duk__d; \
 		duk__tv = (v); \
@@ -183,6 +189,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_GET_DOUBLE(v)              ((v)->d)
 #define DUK_TVAL_GET_FASTINT(v)             DUK__TVAL_GET_FASTINT((v))
 #define DUK_TVAL_GET_FASTINT_U32(v)         DUK__TVAL_GET_FASTINT_U32((v))
+#define DUK_TVAL_GET_FASTINT_I32(v)         DUK__TVAL_GET_FASTINT_I32((v))
 #define DUK_TVAL_GET_NUMBER(v)              duk_tval_get_number_packed((v))
 #else
 #define DUK_TVAL_GET_NUMBER(v)              ((v)->d)
@@ -322,12 +329,15 @@ struct duk_tval_struct {
 		(tv)->t = DUK_TAG_FASTINT; \
 		(tv)->v.fi = (duk_int64_t) (val); \
 	} while (0)
-#define DUK_TVAL_SET_NUMBER_CHKFAST(v,d) \
-	duk_tval_set_number_chkfast((v), (d))
+#define DUK_TVAL_SET_FASTINT_I32(tv,val)  do { \
+		(tv)->t = DUK_TAG_FASTINT; \
+		(tv)->v.fi = (duk_int64_t) (val); \
+	} while (0)
+#define DUK_TVAL_SET_NUMBER_CHKFAST(tv,d) \
+	duk_tval_set_number_chkfast((tv), (d))
 #define DUK_TVAL_SET_NUMBER(tv,val) \
 	DUK_TVAL_SET_DOUBLE((tv), (val))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { \
-		/* FIXME: optimize */ \
 		duk_tval *duk__tv; \
 		duk_double_t duk__d; \
 		duk__tv = (v); \
@@ -388,10 +398,18 @@ struct duk_tval_struct {
 #define DUK_TVAL_GET_DOUBLE(tv)            ((tv)->v.d)
 #define DUK_TVAL_GET_FASTINT(tv)           ((tv)->v.fi)
 #define DUK_TVAL_GET_FASTINT_U32(tv)       ((duk_uint32_t) ((tv)->v.fi))
-/* FIXME: optimize */
-#define DUK_TVAL_GET_NUMBER(tv)            (DUK_TVAL_IS_FASTINT(tv) ? \
-                                               (duk_double_t) DUK_TVAL_GET_FASTINT(tv) : \
-                                               DUK_TVAL_GET_DOUBLE(tv))
+#define DUK_TVAL_GET_FASTINT_I32(tv)       ((duk_int32_t) ((tv)->v.fi))
+#if 0
+#define DUK_TVAL_GET_NUMBER(tv)            (DUK_TVAL_IS_FASTINT((tv)) ? \
+                                               (duk_double_t) DUK_TVAL_GET_FASTINT((tv)) : \
+                                               DUK_TVAL_GET_DOUBLE((tv)))
+#define DUK_TVAL_GET_NUMBER(tv)            duk_tval_get_number_unpacked((tv))
+#else
+/* This seems reasonable overall. */
+#define DUK_TVAL_GET_NUMBER(tv)            (DUK_TVAL_IS_FASTINT((tv)) ? \
+                                               duk_tval_get_number_unpacked_fastint((tv)) : \
+                                               DUK_TVAL_GET_DOUBLE((tv)))
+#endif
 #else
 #define DUK_TVAL_GET_NUMBER(tv)            ((tv)->v.d)
 #define DUK_TVAL_GET_DOUBLE(tv)            ((tv)->v.d)
@@ -433,6 +451,14 @@ struct duk_tval_struct {
 #define DUK_TVAL_IS_BUFFER(tv)             ((tv)->t == DUK_TAG_BUFFER)
 
 #define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t >= DUK_TAG_STRING)
+
+#if defined(DUK_USE_FASTINT)
+/* Inlining is only effective in a single file build. */
+#if 0
+DUK_INTERNAL_DECL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked(duk_tval *tv);
+#endif
+DUK_INTERNAL_DECL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv);
+#endif
 
 #endif  /* DUK_USE_PACKED_TVAL */
 

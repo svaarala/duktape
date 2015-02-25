@@ -44,8 +44,18 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
 	} while (0)
 #endif
 
-DUK_LOCAL duk_int_t duk__api_coerce_d2i(duk_double_t d) {
+DUK_LOCAL duk_int_t duk__api_coerce_d2i(duk_context *ctx, duk_idx_t index, duk_bool_t require) {
+	duk_hthread *thr;
+	duk_tval *tv;
 	duk_small_int_t c;
+	duk_double_t d;
+
+	thr = (duk_hthread *) ctx;
+
+	tv = duk_get_tval(ctx, index);
+	if (tv == NULL) {
+		goto error_notnumber;
+	}
 
 	/*
 	 *  Special cases like NaN and +/- Infinity are handled explicitly
@@ -60,38 +70,101 @@ DUK_LOCAL duk_int_t duk__api_coerce_d2i(duk_double_t d) {
 	 *  on platforms with a 64-bit int type, the full range is allowed.
 	 */
 
-	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
-	if (c == DUK_FP_NAN) {
-		return 0;
-	} else if (d < (duk_double_t) DUK_INT_MIN) {
-		/* covers -Infinity */
-		return DUK_INT_MIN;
-	} else if (d > (duk_double_t) DUK_INT_MAX) {
-		/* covers +Infinity */
-		return DUK_INT_MAX;
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		duk_int64_t t = DUK_TVAL_GET_FASTINT(tv);
+#if (DUK_INT_MAX <= 0x7fffffffL)
+		/* Clamping only necessary for 32-bit ints. */
+		if (t < DUK_INT_MIN) {
+			t = DUK_INT_MIN;
+		} else if (t > DUK_INT_MAX) {
+			t = DUK_INT_MAX;
+		}
+#endif
+		return t;
+	}
+#endif
+
+	if (DUK_TVAL_IS_NUMBER(tv)) {
+		d = DUK_TVAL_GET_NUMBER(tv);
+		c = (duk_small_int_t) DUK_FPCLASSIFY(d);
+		if (c == DUK_FP_NAN) {
+			return 0;
+		} else if (d < (duk_double_t) DUK_INT_MIN) {
+			/* covers -Infinity */
+			return DUK_INT_MIN;
+		} else if (d > (duk_double_t) DUK_INT_MAX) {
+			/* covers +Infinity */
+			return DUK_INT_MAX;
+		} else {
+			/* coerce towards zero */
+			return (duk_int_t) d;
+		}
+	}
+
+ error_notnumber:
+
+	if (require) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_NUMBER);
 	} else {
-		/* coerce towards zero */
-		return (duk_int_t) d;
+		return 0;
 	}
 }
 
-DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_double_t d) {
+DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_context *ctx, duk_idx_t index, duk_bool_t require) {
+	duk_hthread *thr;
+	duk_tval *tv;
 	duk_small_int_t c;
+	duk_double_t d;
 
 	/* Same as above but for unsigned int range. */
 
-	c = (duk_small_int_t) DUK_FPCLASSIFY(d);
-	if (c == DUK_FP_NAN) {
-		return 0;
-	} else if (d < 0.0) {
-		/* covers -Infinity */
-		return (duk_uint_t) 0;
-	} else if (d > (duk_double_t) DUK_UINT_MAX) {
-		/* covers +Infinity */
-		return (duk_uint_t) DUK_UINT_MAX;
+	thr = (duk_hthread *) ctx;
+
+	tv = duk_get_tval(ctx, index);
+	if (tv == NULL) {
+		goto error_notnumber;
+	}
+
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		duk_int64_t t = DUK_TVAL_GET_FASTINT(tv);
+		if (t < 0) {
+			t = 0;
+		}
+#if (DUK_UINT_MAX <= 0xffffffffUL)
+		/* Clamping only necessary for 32-bit ints. */
+		else if (t > DUK_UINT_MAX) {
+			t = DUK_UINT_MAX;
+		}
+#endif
+		return t;
+	}
+#endif
+
+	if (DUK_TVAL_IS_NUMBER(tv)) {
+		d = DUK_TVAL_GET_NUMBER(tv);
+		c = (duk_small_int_t) DUK_FPCLASSIFY(d);
+		if (c == DUK_FP_NAN) {
+			return 0;
+		} else if (d < 0.0) {
+			/* covers -Infinity */
+			return (duk_uint_t) 0;
+		} else if (d > (duk_double_t) DUK_UINT_MAX) {
+			/* covers +Infinity */
+			return (duk_uint_t) DUK_UINT_MAX;
+		} else {
+			/* coerce towards zero */
+			return (duk_uint_t) d;
+		}
+	}
+
+ error_notnumber:
+
+	if (require) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_NUMBER);
 	} else {
-		/* coerce towards zero */
-		return (duk_uint_t) d;
+		return 0;
 	}
 }
 
@@ -1085,22 +1158,22 @@ DUK_EXTERNAL duk_double_t duk_require_number(duk_context *ctx, duk_idx_t index) 
 
 DUK_EXTERNAL duk_int_t duk_get_int(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return (duk_int_t) duk__api_coerce_d2i(duk_get_number(ctx, index));
+	return (duk_int_t) duk__api_coerce_d2i(ctx, index, 0 /*require*/);
 }
 
 DUK_EXTERNAL duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return (duk_uint_t) duk__api_coerce_d2ui(duk_get_number(ctx, index));
+	return (duk_uint_t) duk__api_coerce_d2ui(ctx, index, 0 /*require*/);
 }
 
 DUK_EXTERNAL duk_int_t duk_require_int(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return (duk_int_t) duk__api_coerce_d2i(duk_require_number(ctx, index));
+	return (duk_int_t) duk__api_coerce_d2i(ctx, index, 1 /*require*/);
 }
 
 DUK_EXTERNAL duk_uint_t duk_require_uint(duk_context *ctx, duk_idx_t index) {
 	/* Custom coercion for API */
-	return (duk_uint_t) duk__api_coerce_d2ui(duk_require_number(ctx, index));
+	return (duk_uint_t) duk__api_coerce_d2ui(ctx, index, 1 /*require*/);
 }
 
 DUK_EXTERNAL const char *duk_get_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len) {
@@ -1753,7 +1826,7 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index) {
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	/* FIXME: fastint */
+	/* XXX: fastint? */
 	d = duk_js_tonumber(thr, tv);
 
 	/* Note: need to re-lookup because ToNumber() may have side effects */
@@ -1782,6 +1855,8 @@ DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index
 	DUK_ASSERT(tv != NULL);
 	d = coerce_func(thr, tv);
 
+	/* XXX: fastint? */
+
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
@@ -1794,14 +1869,16 @@ DUK_EXTERNAL duk_int_t duk_to_int(duk_context *ctx, duk_idx_t index) {
 	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
 	 * API return value coercion: custom
 	 */
-	return (duk_int_t) duk__api_coerce_d2i(duk__to_int_uint_helper(ctx, index, duk_js_tointeger));
+	(void) duk__to_int_uint_helper(ctx, index, duk_js_tointeger);
+	return (duk_int_t) duk__api_coerce_d2i(ctx, index, 0 /*require*/);
 }
 
 DUK_EXTERNAL duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t index) {
 	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
 	 * API return value coercion: custom
 	 */
-	return (duk_uint_t) duk__api_coerce_d2ui(duk__to_int_uint_helper(ctx, index, duk_js_tointeger));
+	(void) duk__to_int_uint_helper(ctx, index, duk_js_tointeger);
+	return (duk_uint_t) duk__api_coerce_d2ui(ctx, index, 0 /*require*/);
 }
 
 DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
@@ -1816,13 +1893,19 @@ DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(tv != NULL);
 	ret = duk_js_toint32(thr, tv);
 
-	/* XXX: avoid double coercion with fastints */
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
+#if defined(DUK_USE_FASTINT)
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+	DUK_TVAL_SET_FASTINT_I32(tv, ret);  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	return ret;
+#else
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 	return ret;
+#endif
 }
 
 DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
@@ -1837,12 +1920,18 @@ DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(tv != NULL);
 	ret = duk_js_touint32(thr, tv);
 
-	/* XXX: avoid double coercion with fastints */
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
+#if defined(DUK_USE_FASTINT)
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+	DUK_TVAL_SET_FASTINT_U32(tv, ret);  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	return ret;
+#else
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#endif
 	return ret;
 }
 
@@ -1858,12 +1947,18 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(tv != NULL);
 	ret = duk_js_touint16(thr, tv);
 
-	/* XXX: avoid double coercion with fastints */
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
+#if defined(DUK_USE_FASTINT)
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+	DUK_TVAL_SET_FASTINT_U32(tv, ret);  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	return ret;
+#else
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#endif
 	return ret;
 }
 
@@ -1911,7 +2006,8 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index,
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_tval tv_tmp;
-	duk_double_t d;
+	duk_double_t d, dmin, dmax;
+	duk_int_t res;
 	duk_bool_t clamped = 0;
 
 	DUK_ASSERT(ctx != NULL);
@@ -1920,18 +2016,39 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index,
 	DUK_ASSERT(tv != NULL);
 	d = duk_js_tointeger(thr, tv);  /* E5 Section 9.4, ToInteger() */
 
-	if (d < (duk_double_t) minval) {
-		clamped = 1;
-		d = (duk_double_t) minval;
-	} else if (d > (duk_double_t) maxval) {
-		clamped = 1;
-		d = (duk_double_t) maxval;
-	}
+	dmin = (duk_double_t) minval;
+	dmax = (duk_double_t) maxval;
 
-	/* relookup in case duk_js_tointeger() ends up e.g. coercing an object */
+	if (d < dmin) {
+		clamped = 1;
+		res = minval;
+		d = dmin;
+	} else if (d > dmax) {
+		clamped = 1;
+		res = maxval;
+		d = dmax;
+	} else {
+		res = (duk_int_t) d;
+	}
+	/* 'd' and 'res' agree here */
+
+	/* Relookup in case duk_js_tointeger() ends up e.g. coercing an object. */
 	tv = duk_require_tval(ctx, index);
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+#if defined(DUK_USE_FASTINT)
+#if (DUK_INT_MAX <= 0x7fffffffL)
+	DUK_TVAL_SET_FASTINT_I32(tv, res);
+#else
+	/* Clamping needed if duk_int_t is 64 bits. */
+	if (res >= DUK_FASTINT_MIN && res <= DUK_FASTINT_MAX) {
+		DUK_TVAL_SET_FASTINT(tv, res);
+	} else {
+		DUK_TVAL_SET_NUMBER(tv, d);
+	}
+#endif
+#else
 	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
+#endif
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
 	if (out_clamped) {
@@ -1943,7 +2060,7 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index,
 		}
 	}
 
-	return (duk_int_t) d;
+	return res;
 }
 
 DUK_INTERNAL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t index, duk_idx_t minval, duk_idx_t maxval) {
@@ -2715,7 +2832,25 @@ DUK_EXTERNAL void duk_push_number(duk_context *ctx, duk_double_t val) {
 }
 
 DUK_EXTERNAL void duk_push_int(duk_context *ctx, duk_int_t val) {
-	/* FIXME: fast path */
+#if defined(DUK_USE_FASTINT)
+	duk_hthread *thr;
+	duk_tval *tv_slot;
+
+	DUK_ASSERT(ctx != NULL);
+	thr = (duk_hthread *) ctx;
+	DUK__CHECK_SPACE();
+	tv_slot = thr->valstack_top++;
+#if DUK_INT_MAX <= 0x7fffffffL
+	DUK_TVAL_SET_FASTINT_I32(tv_slot, (duk_int32_t) val);
+#else
+	if (val >= DUK_FASTINT_MIN && val <= DUK_FASTINT_MAX) {
+		DUK_TVAL_SET_FASTINT(tv_slot, (duk_int64_t) val);
+	} else {
+		duk_double_t = (duk_double_t) val;
+		DUK_TVAL_SET_NUMBER(tv_slot, d);
+	}
+#endif
+#else  /* DUK_USE_FASTINT */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;
@@ -2726,10 +2861,30 @@ DUK_EXTERNAL void duk_push_int(duk_context *ctx, duk_int_t val) {
 	d = (duk_double_t) val;
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_NUMBER(tv_slot, d);
+#endif  /* DUK_USE_FASTINT */
 }
 
 DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
-	/* FIXME: fast path */
+#if defined(DUK_USE_FASTINT)
+	duk_hthread *thr;
+	duk_tval *tv_slot;
+
+	DUK_ASSERT(ctx != NULL);
+	thr = (duk_hthread *) ctx;
+	DUK__CHECK_SPACE();
+	tv_slot = thr->valstack_top++;
+#if DUK_UINT_MAX <= 0xffffffffUL
+	DUK_TVAL_SET_FASTINT_U32(tv_slot, (duk_uint32_t) val);
+#else
+	if (val <= DUK_FASTINT_MAX) {  /* val is unsigned so >= 0 */
+		/* XXX: take advantage of val being unsigned, no need to mask */
+		DUK_TVAL_SET_FASTINT(tv_slot, (duk_int64_t) val);
+	} else {
+		duk_double_t = (duk_double_t) val;
+		DUK_TVAL_SET_NUMBER(tv_slot, d);
+	}
+#endif
+#else  /* DUK_USE_FASTINT */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;
@@ -2740,10 +2895,10 @@ DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
 	d = (duk_double_t) val;
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_NUMBER(tv_slot, d);
+#endif  /* DUK_USE_FASTINT */
 }
 
 DUK_EXTERNAL void duk_push_nan(duk_context *ctx) {
-	/* FIXME: fast path */
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_double_t d;
@@ -3203,9 +3358,16 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
 	 *  An array must have a 'length' property (E5 Section 15.4.5.2).
 	 *  The special array behavior flag must only be enabled once the
 	 *  length property has been added.
+	 *
+	 *  The internal property must be a number (and preferably a
+	 *  fastint if fastint support is enabled).
 	 */
 
-	duk_push_number(ctx, 0.0);
+	duk_push_int(ctx, 0);
+#if defined(DUK_USE_FASTINT)
+	DUK_ASSERT(DUK_TVAL_IS_FASTINT(duk_require_tval(ctx, -1)));
+#endif
+
 	duk_hobject_define_property_internal(thr,
 	                                     obj,
 	                                     DUK_HTHREAD_STRING_LENGTH(thr),
