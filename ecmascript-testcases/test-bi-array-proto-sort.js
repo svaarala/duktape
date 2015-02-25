@@ -2710,9 +2710,17 @@ print('protected');
 function protectedTest() {
     var obj;
 
+    /* NOTE: this test fails with the Array write fast path.  Workaround by
+     * forcing the array to be sparse.
+     */
+
+    function mkSparseArray() {
+        var a = []; a[1000] = 1; a.length = 0; return a;
+    }
+
     // index '2' missing and should not be created
 
-    obj = [];
+    obj = mkSparseArray();
     obj[0] = 4;
     obj[1] = 1;
     obj[3] = 2;
