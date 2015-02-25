@@ -807,6 +807,9 @@ Planned
   protects against accidental errors but is not (yet) intended to protect
   against deliberately malicious code
 
+* Accept 32-bit codepoints in String.fromCharCode() to better support non-BMP
+  strings (GH-120)
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
