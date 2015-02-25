@@ -618,6 +618,14 @@ output valid when embedded in a web page or parsed with ``eval()``.  This
 feature option enables the compliant behavior, i.e. no escaping for U+2028
 and U+2029.
 
+DUK_OPT_NO_NONSTD_STRING_FROMCHARCODE_32BIT
+-------------------------------------------
+
+By default Duktape String.fromCharCode() allows 32-bit codepoints which is
+non-compliant (the E5.1 specification has a ToUint16() coercion for the
+codepoints) but useful because Duktape supports non-BMP strings.  This
+feature option restores the compliant behavior.
+
 DUK_OPT_NO_COMMONJS_MODULES
 ---------------------------
 
