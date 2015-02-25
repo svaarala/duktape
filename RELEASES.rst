@@ -829,6 +829,9 @@ Planned
 
 * Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
 
+* Fix assignment evaluation order issue which affected expressions like
+  "a[i] = b[i++]" (GH-118)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
