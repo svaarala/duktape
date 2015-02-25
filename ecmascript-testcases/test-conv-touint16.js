@@ -1,14 +1,24 @@
 /*
  *  ToUint16() (E5 Section 9.7).
  *
- *  Indirect testing using String.fromCharCode() (which seems to be the
- *  only caller for this internal coercion!).  ToUint16() first coerces
- *  with ToNumber(), so that is noted in the cases.
+ *  ToUint16() only appears in String.fromCharCode().  ToUint16() first
+ *  coerces with ToNumber(), so that is noted in the cases.
+ *
+ *  NOTE: Duktape String.fromCharCode() was changed to use ToUint32() to
+ *  better support non-BMP characters so we no longer have any direct
+ *  access to ToUint16().  Masking with & 0xffff was added to work around
+ *  this, but this makes the test case a bit pointless.
  */
 
 function touint16(x) {
     var str = String.fromCharCode(x);  // Coerce with ToUint16 (E5 Section 15.5.3.2)
-    return str.charCodeAt(0);  // Read back
+    var cp = str.charCodeAt(0);  // Read back
+
+    // Workaround for Duktape String.fromCharCode() using ToUint32() by
+    // default.  Makes the testcase a bit pointless unfortunately.
+    cp = cp & 0xffff;
+
+    return cp;
 }
 
 function zeroSign(x) {
