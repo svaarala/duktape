@@ -5,9 +5,15 @@
 
 var text;
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 65
-65
+65601
 0
 0
 1
@@ -23,7 +29,11 @@ var text;
  */
 
 print(String.fromCharCode(65).charCodeAt(0));
+
+// This is now coerced with ToUint32() by default to better support non-BMP
+// strings.  The expected output is non-compliant so testcase is marked custom.
 print(String.fromCharCode(65536 + 65).charCodeAt(0));
+
 print(String.fromCharCode(undefined).charCodeAt(0));
 print(String.fromCharCode(null).charCodeAt(0));
 print(String.fromCharCode(true).charCodeAt(0));
