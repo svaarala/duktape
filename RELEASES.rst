@@ -827,6 +827,8 @@ Planned
 * Fix value stack setup bug which caused a segfault with large number of
   arguments (GH-107)
 
+* Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
