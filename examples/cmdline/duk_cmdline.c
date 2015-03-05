@@ -645,6 +645,17 @@ int main(int argc, char *argv[]) {
 #endif
 	}
 
+#if 0
+	/* Manual test for duk_debugger_cooperate() */
+	{
+		for (i = 0; i < 60; i++) {
+			printf("cooperate: %d\n", i);
+			usleep(1000000);
+			duk_debugger_cooperate(ctx);
+		}
+	}
+#endif
+
 	/*
 	 *  Execute any argument file(s)
 	 */
