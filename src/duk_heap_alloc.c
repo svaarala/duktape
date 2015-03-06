@@ -591,6 +591,34 @@ DUK_LOCAL void duk__dump_type_limits(void) {
 #undef DUK__DUMPLM_UNSIGNED_RAW
 #undef DUK__DUMPLM_SIGNED
 #undef DUK__DUMPLM_UNSIGNED
+
+DUK_LOCAL void duk__dump_misc_options(void) {
+	DUK_D(DUK_DPRINT("DUK_VERSION: %ld", (long) DUK_VERSION));
+	DUK_D(DUK_DPRINT("DUK_GIT_DESCRIBE: %s", DUK_GIT_DESCRIBE));
+#if defined(DUK_USE_PACKED_TVAL)
+	DUK_D(DUK_DPRINT("DUK_USE_PACKED_TVAL: yes"));
+#else
+	DUK_D(DUK_DPRINT("DUK_USE_PACKED_TVAL: no"));
+#endif
+#if defined(DUK_USE_INTEGER_LE)
+	DUK_D(DUK_DPRINT("Integer endianness: little"));
+#elif defined(DUK_USE_INTEGER_ME)
+	DUK_D(DUK_DPRINT("Integer endianness: mixed"));
+#elif defined(DUK_USE_INTEGER_BE)
+	DUK_D(DUK_DPRINT("Integer endianness: big"));
+#else
+	DUK_D(DUK_DPRINT("Integer endianness: ???"));
+#endif
+#if defined(DUK_USE_DOUBLE_LE)
+	DUK_D(DUK_DPRINT("IEEE double endianness: little"));
+#elif defined(DUK_USE_DOUBLE_ME)
+	DUK_D(DUK_DPRINT("IEEE double endianness: mixed"));
+#elif defined(DUK_USE_DOUBLE_BE)
+	DUK_D(DUK_DPRINT("IEEE double endianness: big"));
+#else
+	DUK_D(DUK_DPRINT("IEEE double endianness: ???"));
+#endif
+}
 #endif  /* DUK_USE_DEBUG */
 
 DUK_INTERNAL
@@ -608,6 +636,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 #ifdef DUK_USE_DEBUG
+	duk__dump_misc_options();
 	duk__dump_type_sizes();
 	duk__dump_type_limits();
 #endif
