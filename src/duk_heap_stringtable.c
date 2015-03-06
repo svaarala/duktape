@@ -799,6 +799,7 @@ DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
 #else
 	DUK_ASSERT(heap->strtable != NULL);
 #endif
+	DUK_UNREF(h);
 
 	for (i = 0; i < heap->st_size; i++) {
 #if defined(DUK_USE_HEAPPTR16)
