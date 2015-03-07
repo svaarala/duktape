@@ -51,6 +51,7 @@ DUK_INTERNAL duk_int8_t duk_hex_dectab[256] = {
  *  Used to byteswap pointers e.g. in debugger code.
  */
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)  /* For now only needed by the debugger. */
 DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 	duk_uint8_t tmp;
 	duk_uint8_t *q = p + len - 1;
@@ -63,3 +64,4 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 		q--;
 	}
 }
+#endif

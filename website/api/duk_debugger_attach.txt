@@ -28,6 +28,7 @@ experimental
 
 =seealso
 duk_debugger_detach
+duk_debugger_cooperate
 
 =introduced
 1.2.0

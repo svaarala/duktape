@@ -879,6 +879,7 @@ DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx,
                                            duk_debug_detached_function detached_cb,
                                            void *udata);
 DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_debugger_cooperate(duk_context *ctx);
 
 /*
  *  C++ name mangling

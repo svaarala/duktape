@@ -74,6 +74,10 @@ To integrate debugger support into your target, you need to:
   etc.  (A detach can also occur if explicitly requested by the debug client
   or if Duktape detects a debug stream error.)
 
+* **If you have an eventloop**: optionally call ``duk_debugger_cooperate()``
+  once in a while when no call to Duktape is in progress.  This allows debug
+  commands to be executed outside of any Duktape calls.
+
 You can also write your own debug client by implementing the client side of
 the debug protocol.  The debug client is intended to adapt to the target
 debug protocol version, so your debug client may need changes from time to
@@ -212,6 +216,62 @@ When the debugger is detached, Duktape resumes normal execution.  Any
 remaining debug state (like breakpoints) is ignored.
 
 If Duktape debugger support is not enabled, an error is thrown.
+
+duk_debugger_cooperate()
+------------------------
+
+Optional call to process inbound debug commands when no call into Duktape
+is active::
+
+    duk_debugger_cooperate(ctx);
+
+Pending debug commands are executed within the context of the ``ctx`` thread.
+All debug commands that can be executed without blocking are executed during
+the call.  Because the call doesn't block, it is safe to embed in an event
+loop.  The call is a no-op when debugging is not supported or active, so it
+can be called without a debug state check.
+
+Note that:
+
+* The caller is responsible for **not** calling this API function when any
+  call to Duktape is active (for any context).
+
+* The interval between duk_debugger_cooperate() calls affects Duktape's
+  reaction time to pending debug commands.
+
+This API call is needed by some applications to allow debug commands such
+as Eval to be executed when no call into Duktape is active.  For example::
+
+    for (;;) {
+        /* Wait for events or a timeout. */
+        wait_for_events_or_timeout();
+
+        /* Process events. */
+        if (event1) {
+            ...
+        }
+        /*...*/
+
+        /* Cooperate with Duktape debugger. */
+        duk_debugger_cooperate(ctx);
+    }
+
+Because the API call processes all pending inbound messages (available without
+blocking), you can also use it like this::
+
+    for (;;) {
+        /* Wait for events or a timeout. */
+        wait_for_events_or_timeout();
+
+        /* Process events. */
+        if (got_inbound_debugger_data) {
+            /* Cooperate with Duktape debugger: process all pending messages
+             * until new inbound data arrives.
+             */
+            duk_debugger_cooperate(ctx);
+        }
+        /*...*/
+    }
 
 Debug transport
 ===============
@@ -992,6 +1052,10 @@ Example::
 
     NFY 1 0 "foo.js" "frobValues" 101 679 EOM
 
+When nothing is executing (happens e.g. when duk_debug_cooperate() is called
+from outside of any Duktape activation) filename and funcname are undefined
+(the "undefined" dvalue is used) and pc/line are zero.
+
 State is one of:
 
 * 0x00: running
@@ -1336,6 +1400,11 @@ so that the Eval statement would:
 
 * The final result of the eval would be the string ``"quux"``, which would then
   be shown in the debug client UI.
+
+When Eval is requested from outside any Duktape activation, e.g. while doing
+a duk_debugger_cooperate() call, there is no active Ecmascript activation so
+that a "direct" Eval is not possible.  Eval will then be executed as an
+indirect Eval instead.
 
 Current limitations:
 

@@ -1481,7 +1481,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 */
 
 	if (process_messages) {
-		processed_messages = duk_debug_process_messages(thr);
+		processed_messages = duk_debug_process_messages(thr, 0 /*no_block*/);
 	}
 
 	/* XXX: any case here where we need to re-send status? */
@@ -1958,8 +1958,10 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun);
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
+		thr->heap->dbg_processing = 1;
 		duk__executor_handle_debugger(thr, act, fun);
+		thr->heap->dbg_processing = 0;
 	}
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 

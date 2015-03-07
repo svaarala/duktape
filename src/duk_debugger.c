@@ -41,6 +41,7 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	}
 	heap->dbg_detached_cb = NULL;
 	heap->dbg_udata = NULL;
+	heap->dbg_processing = 0;
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
 	heap->dbg_step_type = 0;
@@ -506,6 +507,14 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 	}
 }
 
+DUK_INTERNAL void duk_debug_write_unused(duk_hthread *thr) {
+	duk_debug_write_byte(thr, 0x15);
+}
+
+DUK_INTERNAL void duk_debug_write_undefined(duk_hthread *thr) {
+	duk_debug_write_byte(thr, 0x16);
+}
+
 /* Write signed 32-bit integer. */
 DUK_INTERNAL void duk_debug_write_int(duk_hthread *thr, duk_int32_t x) {
 	duk_uint8_t buf[5];
@@ -648,10 +657,6 @@ DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	duk_debug_write_bytes(thr, (const duk_uint8_t *) &pu.p, (duk_size_t) sizeof(pu));
 }
 
-DUK_INTERNAL void duk_debug_write_unused(duk_hthread *thr) {
-	duk_debug_write_byte(thr, 0x15);
-}
-
 DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	duk_c_function lf_func;
 	duk_small_uint_t lf_flags;
@@ -791,20 +796,29 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 
-	act = thr->callstack + thr->callstack_top - 1;
-
 	duk_debug_write_notify(thr, DUK_DBG_CMD_STATUS);
 	duk_debug_write_int(thr, thr->heap->dbg_paused);
-	duk_push_hobject(ctx, act->func);
-	duk_get_prop_string(ctx, -1, "fileName");
-	duk_safe_to_string(ctx, -1);
-	duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
-	duk_get_prop_string(ctx, -2, "name");
-	duk_safe_to_string(ctx, -1);
-	duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
-	duk_pop_3(ctx);
-	duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
-	duk_debug_write_uint(thr, (duk_uint32_t) act->pc);
+
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* unsigned */
+	if (thr->callstack_top == 0) {
+		duk_debug_write_undefined(thr);
+		duk_debug_write_undefined(thr);
+		duk_debug_write_int(thr, 0);
+		duk_debug_write_int(thr, 0);
+	} else {
+		act = thr->callstack + thr->callstack_top - 1;
+		duk_push_hobject(ctx, act->func);
+		duk_get_prop_string(ctx, -1, "fileName");
+		duk_safe_to_string(ctx, -1);
+		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
+		duk_get_prop_string(ctx, -2, "name");
+		duk_safe_to_string(ctx, -1);
+		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
+		duk_pop_3(ctx);
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
+		duk_debug_write_uint(thr, (duk_uint32_t) act->pc);
+	}
+
 	duk_debug_write_eom(thr);
 }
 
@@ -1032,10 +1046,19 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
 
-	rc = duk_js_getvar_activation(thr,
-	                              thr->callstack + thr->callstack_top - 1,
-	                              str,
-	                              0);
+	if (thr->callstack_top > 0) {
+		rc = duk_js_getvar_activation(thr,
+		                              thr->callstack + thr->callstack_top - 1,
+		                              str,
+		                              0);
+	} else {
+		/* No activation, no variable access.  Could also pretend
+		 * we're in the global program context and read stuff off
+		 * the global object.
+		 */
+		DUK_D(DUK_DPRINT("callstack empty, no activation -> ignore getvar"));
+		rc = 0;
+	}
 
 	duk_debug_write_reply(thr);
 	if (rc) {
@@ -1044,9 +1067,7 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 		duk_pop_2(ctx);
 	} else {
 		duk_debug_write_int(thr, 0);
-		duk_push_unused(thr);
-		duk_debug_write_tval(thr, duk_require_tval(ctx, -1));
-		duk_pop(ctx);
+		duk_debug_write_unused(thr);
 	}
 	duk_pop(ctx);
 	duk_debug_write_eom(thr);
@@ -1065,12 +1086,15 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_read_tval(thr);           /* push to stack */
 	tv = duk_require_tval(ctx, -1);
 
-	duk_js_putvar_activation(thr,
-	                         thr->callstack + thr->callstack_top - 1,
-	                         str,
-	                         tv,
-	                         0);
-
+	if (thr->callstack_top > 0) {
+		duk_js_putvar_activation(thr,
+		                         thr->callstack + thr->callstack_top - 1,
+		                         str,
+		                         tv,
+		                         0);
+	} else {
+		DUK_D(DUK_DPRINT("callstack empty, no activation -> ignore putvar"));
+	}
 	duk_pop_2(ctx);
 
 	/* XXX: Current putvar implementation doesn't have a success flag,
@@ -1188,7 +1212,22 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 	/* [ ... eval "eval" eval_input ] */
 
-	call_flags = DUK_CALL_FLAG_DIRECT_EVAL | DUK_CALL_FLAG_PROTECTED;
+	call_flags = DUK_CALL_FLAG_PROTECTED;
+	if (thr->callstack_top >= 1) {
+		duk_activation *act;
+		duk_hobject *fun;
+
+		act = thr->callstack + thr->callstack_top - 1;
+		fun = DUK_ACT_GET_FUNC(act);
+		if (fun && DUK_HOBJECT_IS_COMPILEDFUNCTION(fun)) {
+			/* Direct eval requires that there's a current
+			 * activation and it is an Ecmascript function.
+			 * When Eval is executed from e.g. cooperate API
+			 * call we'll need to an indirect eval instead.
+			 */
+			call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
+		}
+	}
 
 	call_ret = duk_handle_call(thr, 1 /*num_stack_args*/, call_flags);
 
@@ -1497,7 +1536,7 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 		break;
 	}
 	default: {
-		DUK_D(DUK_DPRINT("invalid initial byte, drop connection"));
+		DUK_D(DUK_DPRINT("invalid initial byte, drop connection: %d", (int) x));
 		goto fail;
 	}
 	}  /* switch initial byte */
@@ -1510,7 +1549,7 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	return;
 }
 
-DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr) {
+DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block) {
 	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
@@ -1534,12 +1573,12 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr) {
 		if (thr->heap->dbg_read_cb == NULL) {
 			DUK_D(DUK_DPRINT("debug connection broken, stop processing messages"));
 			break;
-		} else if (!thr->heap->dbg_paused) {
+		} else if (!thr->heap->dbg_paused || no_block) {
 			if (!duk_debug_read_peek(thr)) {
-				DUK_D(DUK_DPRINT("processing debug message, not paused and peek indicated no data, stop processing"));
+				DUK_D(DUK_DPRINT("processing debug message, peek indicated no data, stop processing"));
 				break;
 			}
-			DUK_D(DUK_DPRINT("processing debug message, not paused and peek indicated there is data, handle it"));
+			DUK_D(DUK_DPRINT("processing debug message, peek indicated there is data, handle it"));
 		} else {
 			DUK_D(DUK_DPRINT("paused, process debug message, blocking if necessary"));
 		}
