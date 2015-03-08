@@ -856,15 +856,7 @@ void duk__realloc_props(duk_hthread *thr,
 		 *  so it would be nice to free it forcibly even with only
 		 *  mark-and-sweep enabled.  Not a big issue though.
 		 */
-		duk_hbuffer_dynamic *buf;
-		DUK_ASSERT(new_alloc_size > 0);
-		DUK_ASSERT(duk_is_buffer(ctx, -1));
-		buf = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, -1);
-		DUK_ASSERT(buf != NULL);
-		DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
-		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(thr->heap, buf);
-		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, 0);  /* these size resets are not strictly necessary, but nice for consistency */
-		DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(buf, 0);
+		(void) duk_steal_buffer(ctx, -1, NULL);
 		duk_pop(ctx);
 	} else {
 		DUK_ASSERT(new_alloc_size == 0);

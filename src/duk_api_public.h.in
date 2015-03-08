@@ -595,6 +595,7 @@ DUK_EXTERNAL_DECL void duk_json_decode(duk_context *ctx, duk_idx_t index);
  */
 
 DUK_EXTERNAL_DECL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size);
+DUK_EXTERNAL_DECL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 
 /*
  *  Property access
