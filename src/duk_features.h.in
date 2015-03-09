@@ -1,6 +1,6 @@
 /*
  *  Determine platform features, select feature selection defines
- *  (e.g. _XOPEN_SOURCE), include system headers, and define DUK_USE_XXX
+ *  (e.g. _XOPEN_SOURCE), include system headers, and define DUK_USE_xxx
  *  defines which are (only) checked in Duktape internal code for
  *  activated features.  Duktape feature selection is based on automatic
  *  feature detection, user supplied DUK_OPT_xxx defines, and optionally
@@ -24,7 +24,7 @@
  *    - Duktape Date provider settings
  *    - Final sanity checks
  *
- *  DUK_F_XXX are internal feature detection macros which should not be
+ *  DUK_F_xxx are internal feature detection macros which should not be
  *  used outside this header.
  *
  *  Useful resources:
@@ -2966,7 +2966,7 @@ typedef FILE duk_file;
  *  Alternative customization header
  *
  *  If you want to modify the final DUK_USE_xxx flags directly (without
- *  using the available DUK_OPT_Xxx flags), define DUK_OPT_HAVE_CUSTOM_H
+ *  using the available DUK_OPT_xxx flags), define DUK_OPT_HAVE_CUSTOM_H
  *  and tweak the final flags there.
  */
 

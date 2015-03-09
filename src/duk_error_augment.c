@@ -149,7 +149,7 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 
 	/* [ ... errval ] */
 }
-#endif  /* DUK_USE_ERRTHROW || DUK_USE_ERRHANDLE */
+#endif  /* DUK_USE_ERRTHROW || DUK_USE_ERRCREATE */
 
 /*
  *  Add tracedata to an error on the stack top.
