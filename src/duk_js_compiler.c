@@ -5460,8 +5460,23 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		rc_val = duk__exprtop_toregconst(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
-		/* Tail call check: if last opcode emitted was CALL, and
-		 * the context allows it, change the CALL to a tailcall.
+		/* Tail call check: if last opcode emitted was CALL(I), and
+		 * the context allows it, change the CALL(I) to a tailcall.
+		 * (This doesn't guarantee that a tailcall will work at runtime,
+		 * so the RETURN must still be emitted.)
+		 *
+		 * In addition we need to be sure that 'rc_val' is the result
+		 * register of the CALL(I).  For instance, for the expression
+		 * 'return 0, (function () { return 1; }), 2' the last opcode
+		 * emitted is CALL (no bytecode is emitted for '2') but 'rc_val'
+		 * indicates constant '2'.  It would be best to check that the
+		 * CALL target register matches 'rc_val' but that's not easy
+		 * for an indirect call.  However, it should suffice to check
+		 * that 'rc_val' is a register result (not a constant), which
+		 * is done below.
+		 *
+		 * See: test-bug-comma-expr-gh131.js.
+		 *
 		 * The non-standard 'caller' property disables tail calls
 		 * because they pose some special cases which haven't been
 		 * fixed yet.
@@ -5477,7 +5492,8 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 			DUK_ASSERT(instr != NULL);
 
 			op = (duk_small_uint_t) DUK_DEC_OP(instr->ins);
-			if (op == DUK_OP_CALL || op == DUK_OP_CALLI) {
+			if ((op == DUK_OP_CALL || op == DUK_OP_CALLI) &&
+			    DUK__ISREG(comp_ctx, rc_val) /* see above */) {
 				DUK_DDD(DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				                     "and last instruction is a CALL "
@@ -6183,7 +6199,6 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		    comp_ctx->prev_token.t == DUK_TOK_STRING) {
 			/*
 			 *  Detected a directive
-
 			 */
 			duk_hstring *h_dir;
 
@@ -6193,6 +6208,8 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 			DUK_ASSERT(DUK_TVAL_IS_STRING(duk_get_tval(ctx, res->x1.valstack_idx)));
 			h_dir = comp_ctx->prev_token.str1;
 			DUK_ASSERT(h_dir != NULL);
+
+			DUK_DDD(DUK_DDDPRINT("potential directive: %!O", h_dir));
 
 			stmt_flags |= DUK__STILL_PROLOGUE;
 
