@@ -53,6 +53,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * https://github.com/yushli
 * Seo Sanghyeon (https://github.com/sanxiyn)
 * Han ChoongWoo (https://github.com/tunz)
+* Joshua Peek (https://github.com/josh)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
