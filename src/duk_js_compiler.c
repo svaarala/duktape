@@ -5017,7 +5017,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 		pc_l2 = duk__get_current_pc(comp_ctx);
 		reg_target = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);  /* Expression */
 		duk__emit_extraop_b_c(comp_ctx,
-		                      DUK_EXTRAOP_INITENUM,
+		                      DUK_EXTRAOP_INITENUM | DUK__EMIT_FLAG_B_IS_TARGET,
 		                      (duk_regconst_t) (reg_temps + 1),
 		                      (duk_regconst_t) reg_target);
 		pc_jumpto_l4 = duk__emit_jump_empty(comp_ctx);
@@ -5031,7 +5031,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 
 		pc_l4 = duk__get_current_pc(comp_ctx);
 		duk__emit_extraop_b_c(comp_ctx,
-		                      DUK_EXTRAOP_NEXTENUM,
+		                      DUK_EXTRAOP_NEXTENUM | DUK__EMIT_FLAG_B_IS_TARGET,
 		                      (duk_regconst_t) (reg_temps + 0),
 		                      (duk_regconst_t) (reg_temps + 1));
 		pc_jumpto_l5 = duk__emit_jump_empty(comp_ctx);  /* NEXTENUM jump slot: executed when enum finished */
