@@ -990,12 +990,13 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 /* Code emission flags, passed in the 'opcode' field.  Opcode + flags
  * fit into 16 bits for now, so use duk_small_uint.t.
  */
-#define DUK__EMIT_FLAG_NO_SHUFFLE_A  (1 << 8)
-#define DUK__EMIT_FLAG_NO_SHUFFLE_B  (1 << 9)
-#define DUK__EMIT_FLAG_NO_SHUFFLE_C  (1 << 10)
-#define DUK__EMIT_FLAG_A_IS_SOURCE   (1 << 11)  /* slot A is a source (default: target) */
-#define DUK__EMIT_FLAG_B_IS_TARGET   (1 << 12)  /* slot B is a target (default: source) */
-#define DUK__EMIT_FLAG_C_IS_TARGET   (1 << 13)  /* slot C is a target (default: source) */
+#define DUK__EMIT_FLAG_NO_SHUFFLE_A      (1 << 8)
+#define DUK__EMIT_FLAG_NO_SHUFFLE_B      (1 << 9)
+#define DUK__EMIT_FLAG_NO_SHUFFLE_C      (1 << 10)
+#define DUK__EMIT_FLAG_A_IS_SOURCE       (1 << 11)  /* slot A is a source (default: target) */
+#define DUK__EMIT_FLAG_B_IS_TARGET       (1 << 12)  /* slot B is a target (default: source) */
+#define DUK__EMIT_FLAG_C_IS_TARGET       (1 << 13)  /* slot C is a target (default: source) */
+#define DUK__EMIT_FLAG_RESERVE_JUMPSLOT  (1 << 14)  /* reserve a jumpslot after instr before target spilling, used for NEXTENUM */
 
 /* XXX: clarify on when and where DUK__CONST_MARKER is allowed */
 /* XXX: opcode specific assertions on when consts are allowed */
@@ -1259,6 +1260,16 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 
 	ins |= DUK_ENC_OP_A_B_C(op_flags & 0xff, a, b, c);
 	duk__emit(comp_ctx, ins);
+
+	/* NEXTENUM needs a jump slot right after the main instruction.
+	 * When the JUMP is taken, output spilling is not needed so this
+	 * workaround is possible.  The jump slot PC is exceptionally
+	 * plumbed through comp_ctx to minimize call sites.
+	 */
+	if (op_flags & DUK__EMIT_FLAG_RESERVE_JUMPSLOT) {
+		comp_ctx->emit_jumpslot_pc = duk__get_current_pc(comp_ctx);
+		duk__emit_abc(comp_ctx, DUK_OP_JUMP, 0);
+	}
 
 	/* Output shuffling: only one output register is realistically possible.
 	 * Zero is OK to check against: if the target register was zero, it is
@@ -5029,12 +5040,18 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 		duk__parse_stmt(comp_ctx, res, 0 /*allow_source_elem*/);
 		/* temp reset is not necessary after duk__parse_stmt(), which already does it */
 
+		/* NEXTENUM needs a jump slot right after the main opcode.
+		 * We need the code emitter to reserve the slot: if there's
+		 * target shuffling, the target shuffle opcodes must happen
+		 * after the jump slot (for NEXTENUM the shuffle opcodes are
+		 * not needed if the enum is finished).
+		 */
 		pc_l4 = duk__get_current_pc(comp_ctx);
 		duk__emit_extraop_b_c(comp_ctx,
-		                      DUK_EXTRAOP_NEXTENUM | DUK__EMIT_FLAG_B_IS_TARGET,
+		                      DUK_EXTRAOP_NEXTENUM | DUK__EMIT_FLAG_B_IS_TARGET | DUK__EMIT_FLAG_RESERVE_JUMPSLOT,
 		                      (duk_regconst_t) (reg_temps + 0),
 		                      (duk_regconst_t) (reg_temps + 1));
-		pc_jumpto_l5 = duk__emit_jump_empty(comp_ctx);  /* NEXTENUM jump slot: executed when enum finished */
+		pc_jumpto_l5 = comp_ctx->emit_jumpslot_pc;  /* NEXTENUM jump slot: executed when enum finished */
 		duk__emit_jump(comp_ctx, pc_l1);  /* jump to next loop, using reg_v34_iter as iterated value */
 
 		pc_l5 = duk__get_current_pc(comp_ctx);
