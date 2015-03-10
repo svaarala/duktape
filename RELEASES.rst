@@ -840,6 +840,9 @@ Planned
   bound variable, e.g. 'return 0, (function { return 1; })(), 2;' would
   return 1 instead of 2 (GH-131)
 
+* Fix for-in statement shuffle bug which caused enumeration to fail
+  in large functions which enable register shuffling (GH-132)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
