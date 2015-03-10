@@ -209,6 +209,9 @@ struct duk_compiler_ctx {
 	duk_int_t recursion_depth;
 	duk_int_t recursion_limit;
 
+	/* code emission temporary */
+	duk_int_t emit_jumpslot_pc;
+
 	/* current function being compiled (embedded instead of pointer for more compact access) */
 	duk_compiler_func curr_func;
 };
