@@ -2063,13 +2063,30 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		DUK_ASSERT(bcode + act->pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun));
 		DUK_ASSERT(bcode + act->pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, fun));
 
-		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%ld ins=0x%08lx, op=%ld, valstack_top=%ld/%ld  -->  %!I",
+		DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%ld ins=0x%08lx, op=%ld, valstack_top=%ld/%ld, nregs=%ld  -->  %!I",
 		                     (long) act->pc,
 		                     (unsigned long) bcode[act->pc],
 		                     (long) DUK_DEC_OP(bcode[act->pc]),
 		                     (long) (thr->valstack_top - thr->valstack),
 		                     (long) (thr->valstack_end - thr->valstack),
+		                     (long) (fun ? fun->nregs : -1),
 		                     (duk_instr_t) bcode[act->pc]));
+
+#if defined(DUK_USE_ASSERTIONS)
+		/* Quite heavy assert: check that valstack is in correctly
+		 * initialized state.  Improper shuffle instructions can
+		 * write beyond valstack_end so this check catches them in
+		 * the act.
+		 */
+		{
+			duk_tval *tv;
+			tv = thr->valstack_top;
+			while (tv != thr->valstack_end) {
+				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(tv));
+				tv++;
+			}
+		}
+#endif
 
 		ins = bcode[act->pc++];
 
