@@ -825,6 +825,13 @@ DUK_OPT_NO_ZERO_BUFFER_DATA
 By default Duktape zeroes data allocated for buffer values.  Define
 this to disable the zeroing (perhaps for performance reasons).
 
+DUK_OPT_SHUFFLE_TORTURE
+-----------------------
+
+Development time option: force compiler to shuffle every possible opcode
+to stress shuffle behavior which is otherwise difficult to test for
+comprehensively.
+
 Using DUK_OPT_HAVE_CUSTOM_H and duk_custom.h
 ============================================
 
