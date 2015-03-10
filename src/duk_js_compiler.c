@@ -108,6 +108,7 @@ DUK_LOCAL_DECL void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, duk_small_ui
 DUK_LOCAL_DECL void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop, duk_regconst_t bc);
 DUK_LOCAL_DECL void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags);
 DUK_LOCAL_DECL void duk__emit_load_int32(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val);
+DUK_LOCAL_DECL void duk__emit_load_int32_noshuffle(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val);
 DUK_LOCAL_DECL void duk__emit_jump(duk_compiler_ctx *comp_ctx, duk_int_t target_pc);
 DUK_LOCAL_DECL duk_int_t duk__emit_jump_empty(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, duk_int_t jump_pc);
@@ -1073,9 +1074,9 @@ DUK_LOCAL void duk__emit_op_only(duk_compiler_ctx *comp_ctx, duk_small_uint_t op
 /* Important main primitive. */
 DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a, duk_regconst_t b, duk_regconst_t c) {
 	duk_instr_t ins = 0;
-	duk_int_t a_out = 0;
-	duk_int_t b_out = 0;
-	duk_int_t c_out = 0;
+	duk_int_t a_out = -1;
+	duk_int_t b_out = -1;
+	duk_int_t c_out = -1;
 	duk_int_t tmp;
 
 	DUK_DDD(DUK_DDDPRINT("emit: op_flags=%04lx, a=%ld, b=%ld, c=%ld",
@@ -1099,7 +1100,11 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 
 	/* Slot A */
 
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+	if (a <= DUK_BC_A_MAX && (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A)) {
+#else
 	if (a <= DUK_BC_A_MAX) {
+#endif
 		;
 	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
 		DUK_D(DUK_DPRINT("out of regs: 'a' (reg) needs shuffling but shuffle prohibited, a: %ld", (long) a));
@@ -1116,7 +1121,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 				 * is expressed indirectly, but there is no output shuffling.
 				 */
 				DUK_ASSERT((op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) == 0);
-				duk__emit_load_int32(comp_ctx, tmp, a);
+				duk__emit_load_int32_noshuffle(comp_ctx, tmp, a);
 				DUK_ASSERT(DUK_OP_CSVARI == DUK_OP_CSVAR + 1);
 				DUK_ASSERT(DUK_OP_CSREGI == DUK_OP_CSREG + 1);
 				DUK_ASSERT(DUK_OP_CSPROPI == DUK_OP_CSPROP + 1);
@@ -1140,7 +1145,11 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 		DUK_ASSERT((op_flags & 0xff) != DUK_OP_CALL);
 		DUK_ASSERT((op_flags & 0xff) != DUK_OP_NEW);
 		b = b & ~DUK__CONST_MARKER;
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+		if (0) {
+#else
 		if (b <= 0xff) {
+#endif
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0x100, 0);  /* const flag for B */
 		} else if (b <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
@@ -1152,7 +1161,11 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 			goto error_outofregs;
 		}
 	} else {
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+		if (b <= 0xff && (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B)) {
+#else
 		if (b <= 0xff) {
+#endif
 			;
 		} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) {
 			if (b > DUK_BC_B_MAX) {
@@ -1176,7 +1189,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 					 * an indirect version of the opcode is used.
 					 */
 					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
-					duk__emit_load_int32(comp_ctx, tmp, b);
+					duk__emit_load_int32_noshuffle(comp_ctx, tmp, b);
 					DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
 					DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
 					DUK_ASSERT(DUK_OP_MPUTOBJI == DUK_OP_MPUTOBJ + 1);
@@ -1199,7 +1212,11 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) == 0);
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_C_IS_TARGET) == 0);
 		c = c & ~DUK__CONST_MARKER;
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+		if (0) {
+#else
 		if (c <= 0xff) {
+#endif
 			ins |= DUK_ENC_OP_A_B_C(0, 0, 0, 0x100);  /* const flag for C */
 		} else if (c <= DUK_BC_BC_MAX) {
 			comp_ctx->curr_func.needs_shuffle = 1;
@@ -1211,7 +1228,11 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 			goto error_outofregs;
 		}
 	} else {
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+		if (c <= 0xff && (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C)) {
+#else
 		if (c <= 0xff) {
+#endif
 			;
 		} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_C) {
 			if (c > DUK_BC_C_MAX) {
@@ -1234,7 +1255,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 					 * normally.  Use an indirect variant instead.
 					 */
 					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_C_IS_TARGET) == 0);
-					duk__emit_load_int32(comp_ctx, tmp, c);
+					duk__emit_load_int32_noshuffle(comp_ctx, tmp, c);
 					DUK_ASSERT(DUK_EXTRAOP_INITGETI == DUK_EXTRAOP_INITGET + 1);
 					DUK_ASSERT(DUK_EXTRAOP_INITSETI == DUK_EXTRAOP_INITSET + 1);
 					a++;  /* indirect opcode follows direct */
@@ -1272,21 +1293,23 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 	}
 
 	/* Output shuffling: only one output register is realistically possible.
-	 * Zero is OK to check against: if the target register was zero, it is
-	 * never shuffled.
+	 *
+	 * (Zero would normally be an OK marker value: if the target register
+	 * was zero, it would never be shuffled.  But with DUK_USE_SHUFFLE_TORTURE
+	 * this is no longer true, so use -1 as a marker instead.)
 	 */
 
-	if (a_out != 0) {
-		DUK_ASSERT(b_out == 0);
-		DUK_ASSERT(c_out == 0);
+	if (a_out >= 0) {
+		DUK_ASSERT(b_out < 0);
+		DUK_ASSERT(c_out < 0);
 		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, a, a_out));
-	} else if (b_out != 0) {
-		DUK_ASSERT(a_out == 0);
-		DUK_ASSERT(c_out == 0);
+	} else if (b_out >= 0) {
+		DUK_ASSERT(a_out < 0);
+		DUK_ASSERT(c_out < 0);
 		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, b, b_out));
-	} else if (c_out != 0) {
-		DUK_ASSERT(b_out == 0);
-		DUK_ASSERT(c_out == 0);
+	} else if (c_out >= 0) {
+		DUK_ASSERT(b_out < 0);
+		DUK_ASSERT(c_out < 0);
 		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, c, c_out));
 	}
 
@@ -1297,12 +1320,12 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 }
 
 DUK_LOCAL void duk__emit_a_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a, duk_regconst_t b) {
-	duk__emit_a_b_c(comp_ctx, op_flags, a, b, 0);
+	duk__emit_a_b_c(comp_ctx, op_flags | DUK__EMIT_FLAG_NO_SHUFFLE_C, a, b, 0);
 }
 
 #if 0  /* unused */
 DUK_LOCAL void duk__emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a) {
-	duk__emit_a_b_c(comp_ctx, op_flags, a, 0, 0);
+	duk__emit_a_b_c(comp_ctx, op_flags | DUK__EMIT_FLAG_NO_SHUFFLE_B | DUK__EMIT_FLAG_NO_SHUFFLE_C, a, 0, 0);
 }
 #endif
 
@@ -1326,7 +1349,11 @@ DUK_LOCAL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_fl
 		goto error_outofregs;
 	}
 
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+	if (a <= DUK_BC_A_MAX && (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A)) {
+#else
 	if (a <= DUK_BC_A_MAX) {
+#endif
 		ins = DUK_ENC_OP_A_BC(op_flags & 0xff, a, bc);
 		duk__emit(comp_ctx, ins);
 	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
@@ -1380,9 +1407,11 @@ DUK_LOCAL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, du
 DUK_LOCAL void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags, duk_regconst_t b, duk_regconst_t c) {
 	DUK_ASSERT_DISABLE((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN);  /* unsigned */
 	DUK_ASSERT((extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
-	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	/* Setting "no shuffle A" is covered by the assert, but it's needed
+	 * with DUK_USE_SHUFFLE_TORTURE.
+	 */
 	duk__emit_a_b_c(comp_ctx,
-	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                DUK_OP_EXTRA | DUK__EMIT_FLAG_NO_SHUFFLE_A | (extraop_flags & ~0xff),  /* transfer flags */
 	                extraop_flags & 0xff,
 	                b,
 	                c);
@@ -1391,9 +1420,11 @@ DUK_LOCAL void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_
 DUK_LOCAL void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags, duk_regconst_t b) {
 	DUK_ASSERT_DISABLE((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN);  /* unsigned */
 	DUK_ASSERT((extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
-	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	/* Setting "no shuffle A" is covered by the assert, but it's needed
+	 * with DUK_USE_SHUFFLE_TORTURE.
+	 */
 	duk__emit_a_b_c(comp_ctx,
-	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                DUK_OP_EXTRA | DUK__EMIT_FLAG_NO_SHUFFLE_A | (extraop_flags & ~0xff),  /* transfer flags */
 	                extraop_flags & 0xff,
 	                b,
 	                0);
@@ -1402,9 +1433,11 @@ DUK_LOCAL void duk__emit_extraop_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t 
 DUK_LOCAL void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop, duk_regconst_t bc) {
 	DUK_ASSERT_DISABLE(extraop >= DUK_BC_EXTRAOP_MIN);  /* unsigned */
 	DUK_ASSERT(extraop <= DUK_BC_EXTRAOP_MAX);
-	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	/* Setting "no shuffle A" is covered by the assert, but it's needed
+	 * with DUK_USE_SHUFFLE_TORTURE.
+	 */
 	duk__emit_a_bc(comp_ctx,
-	               DUK_OP_EXTRA,
+	               DUK_OP_EXTRA | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 	               extraop,
 	               bc);
 }
@@ -1412,15 +1445,18 @@ DUK_LOCAL void duk__emit_extraop_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t
 DUK_LOCAL void duk__emit_extraop_only(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags) {
 	DUK_ASSERT_DISABLE((extraop_flags & 0xff) >= DUK_BC_EXTRAOP_MIN);  /* unsigned */
 	DUK_ASSERT((extraop_flags & 0xff) <= DUK_BC_EXTRAOP_MAX);
-	/* Setting "no shuffle A" would be prudent but not necessary, assert covers it. */
+	/* Setting "no shuffle A" is covered by the assert, but it's needed
+	 * with DUK_USE_SHUFFLE_TORTURE.
+	 */
 	duk__emit_a_b_c(comp_ctx,
-	                DUK_OP_EXTRA | (extraop_flags & ~0xff),  /* transfer flags */
+	                DUK_OP_EXTRA | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_B |
+	                    DUK__EMIT_FLAG_NO_SHUFFLE_C | (extraop_flags & ~0xff),  /* transfer flags */
 	                extraop_flags & 0xff,
 	                0,
 	                0);
 }
 
-DUK_LOCAL void duk__emit_load_int32(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val) {
+DUK_LOCAL void duk__emit_load_int32_raw(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val, duk_small_uint_t op_flags) {
 	/* XXX: Shuffling support could be implemented here so that LDINT+LDINTX
 	 * would only shuffle once (instead of twice).  The current code works
 	 * though, and has a smaller compiler footprint.
@@ -1429,17 +1465,38 @@ DUK_LOCAL void duk__emit_load_int32(duk_compiler_ctx *comp_ctx, duk_reg_t reg, d
 	if ((val >= (duk_int32_t) DUK_BC_BC_MIN - (duk_int32_t) DUK_BC_LDINT_BIAS) &&
 	    (val <= (duk_int32_t) DUK_BC_BC_MAX - (duk_int32_t) DUK_BC_LDINT_BIAS)) {
 		DUK_DDD(DUK_DDDPRINT("emit LDINT to reg %ld for %ld", (long) reg, (long) val));
-		duk__emit_a_bc(comp_ctx, DUK_OP_LDINT, reg, (duk_regconst_t) (val + (duk_int32_t) DUK_BC_LDINT_BIAS));
+		duk__emit_a_bc(comp_ctx, DUK_OP_LDINT | op_flags, reg, (duk_regconst_t) (val + (duk_int32_t) DUK_BC_LDINT_BIAS));
 	} else {
 		duk_int32_t hi = val >> DUK_BC_LDINTX_SHIFT;
 		duk_int32_t lo = val & ((((duk_int32_t) 1) << DUK_BC_LDINTX_SHIFT) - 1);
 		DUK_ASSERT(lo >= 0);
 		DUK_DDD(DUK_DDDPRINT("emit LDINT+LDINTX to reg %ld for %ld -> hi %ld, lo %ld",
 		                     (long) reg, (long) val, (long) hi, (long) lo));
-		duk__emit_a_bc(comp_ctx, DUK_OP_LDINT, reg, (duk_regconst_t) (hi + (duk_int32_t) DUK_BC_LDINT_BIAS));
-		duk__emit_a_bc(comp_ctx, DUK_OP_LDINTX, reg, (duk_regconst_t) lo);
+		duk__emit_a_bc(comp_ctx, DUK_OP_LDINT | op_flags, reg, (duk_regconst_t) (hi + (duk_int32_t) DUK_BC_LDINT_BIAS));
+		duk__emit_a_bc(comp_ctx, DUK_OP_LDINTX | op_flags, reg, (duk_regconst_t) lo);
 	}
 }
+
+DUK_LOCAL void duk__emit_load_int32(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val) {
+	duk__emit_load_int32_raw(comp_ctx, reg, val, 0 /*op_flags*/);
+}
+
+#if defined(DUK_USE_SHUFFLE_TORTURE)
+/* Used by duk__emit*() calls so that we don't shuffle the loadints that
+ * are needed to handle indirect opcodes.
+ */
+DUK_LOCAL void duk__emit_load_int32_noshuffle(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val) {
+	duk__emit_load_int32_raw(comp_ctx, reg, val, DUK__EMIT_FLAG_NO_SHUFFLE_A /*op_flags*/);
+}
+#else
+DUK_LOCAL void duk__emit_load_int32_noshuffle(duk_compiler_ctx *comp_ctx, duk_reg_t reg, duk_int32_t val) {
+	/* When torture not enabled, can just use the same helper because
+	 * 'reg' won't get spilled.
+	 */
+	DUK_ASSERT(reg <= DUK_BC_A_MAX);
+	duk__emit_load_int32(comp_ctx, reg, val);
+}
+#endif
 
 DUK_LOCAL void duk__emit_jump(duk_compiler_ctx *comp_ctx, duk_int_t target_pc) {
 	duk_hbuffer_dynamic *h;
@@ -1547,11 +1604,19 @@ DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t trycatc
 }
 
 DUK_LOCAL void duk__emit_if_false_skip(duk_compiler_ctx *comp_ctx, duk_regconst_t regconst) {
-	duk__emit_a_b_c(comp_ctx, DUK_OP_IF, 0 /*false*/, regconst, 0);
+	duk__emit_a_b_c(comp_ctx,
+	                DUK_OP_IF | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+	                0 /*false*/,
+	                regconst,
+	                0 /*unused*/);
 }
 
 DUK_LOCAL void duk__emit_if_true_skip(duk_compiler_ctx *comp_ctx, duk_regconst_t regconst) {
-	duk__emit_a_b_c(comp_ctx, DUK_OP_IF, 1 /*true*/, regconst, 0);
+	duk__emit_a_b_c(comp_ctx,
+	                DUK_OP_IF | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+	                1 /*true*/,
+	                regconst,
+	                0 /*unused*/);
 }
 
 DUK_LOCAL void duk__emit_invalid(duk_compiler_ctx *comp_ctx) {
@@ -3526,7 +3591,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			                      (duk_regconst_t) reg_res,
 			                      (duk_regconst_t) reg_res);
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_PUTPROP,
+			                DUK_OP_PUTPROP | DUK__EMIT_FLAG_A_IS_SOURCE,
 			                (duk_regconst_t) reg_obj,
 			                rc_key,
 			                (duk_regconst_t) reg_res);
@@ -4064,7 +4129,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 		duk__ivalue_toforcedreg(comp_ctx, left, reg_temp);
 		duk__emit_a_b(comp_ctx,
-		              DUK_OP_IF,
+		              DUK_OP_IF | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 		              (duk_regconst_t) args_truthval,
 		              (duk_regconst_t) reg_temp);  /* skip jump conditionally */
 		pc_jump = duk__emit_jump_empty(comp_ctx);
@@ -4230,7 +4295,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			}
 
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_PUTPROP,
+			                DUK_OP_PUTPROP | DUK__EMIT_FLAG_A_IS_SOURCE,
 			                (duk_regconst_t) reg_obj,
 			                rc_key,
 			                rc_res);
@@ -4359,7 +4424,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			                      (duk_regconst_t) reg_temp,
 			                      (duk_regconst_t) reg_res);
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_PUTPROP,
+			                DUK_OP_PUTPROP | DUK__EMIT_FLAG_A_IS_SOURCE,
 			                (duk_regconst_t) reg_obj,
 			                rc_key,
 			                (duk_regconst_t) reg_temp);
@@ -4871,7 +4936,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 				reg_obj = duk__ispec_toregconst_raw(comp_ctx, &res->x1, -1 /*forced_reg*/, 0 /*flags*/);  /* don't allow const */
 				rc_key = duk__ispec_toregconst_raw(comp_ctx, &res->x2, -1 /*forced_reg*/, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
 				duk__emit_a_b_c(comp_ctx,
-				                DUK_OP_PUTPROP,
+				                DUK_OP_PUTPROP | DUK__EMIT_FLAG_A_IS_SOURCE,
 				                (duk_regconst_t) reg_obj,
 				                rc_key,
 				                (duk_regconst_t) (reg_temps + 0));
@@ -5553,7 +5618,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 #endif
 
 	duk__emit_a_b(comp_ctx,
-	              DUK_OP_RETURN,
+	              DUK_OP_RETURN | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 	              (duk_regconst_t) ret_flags /*flags*/,
 	              rc_val /*reg*/);
 }
@@ -6635,7 +6700,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 			}
 
 			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_DECLVAR,
+			                DUK_OP_DECLVAR | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 			                (duk_regconst_t) declvar_flags /*flags*/,
 			                rc_name /*name*/,
 			                (duk_regconst_t) reg_temp /*value*/);
@@ -6720,7 +6785,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 				}
 
 				duk__emit_a_b_c(comp_ctx,
-				                DUK_OP_DECLVAR,
+				                DUK_OP_DECLVAR | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 				                (duk_regconst_t) declvar_flags /*flags*/,
 				                rc_name /*name*/,
 				                (duk_regconst_t) 0 /*value*/);
@@ -7006,12 +7071,12 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	DUK_ASSERT(comp_ctx->curr_func.catch_depth == 0);  /* fast returns are always OK here */
 	if (reg_stmt_value >= 0) {
 		duk__emit_a_b(comp_ctx,
-		              DUK_OP_RETURN,
+		              DUK_OP_RETURN | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 		              (duk_regconst_t) (DUK_BC_RETURN_FLAG_HAVE_RETVAL | DUK_BC_RETURN_FLAG_FAST) /*flags*/,
 		              (duk_regconst_t) reg_stmt_value /*reg*/);
 	} else {
 		duk__emit_a_b(comp_ctx,
-		              DUK_OP_RETURN,
+		              DUK_OP_RETURN | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 		              (duk_regconst_t) DUK_BC_RETURN_FLAG_FAST /*flags*/,
 		              (duk_regconst_t) 0 /*reg(ignored)*/);
 	}

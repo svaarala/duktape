@@ -2551,6 +2551,11 @@ typedef FILE duk_file;
 #define DUK_USE_ESBC_MAX_LINENUMBER  0x7fff0000L
 #define DUK_USE_ESBC_MAX_BYTES       0x7fff0000L
 
+#undef DUK_USE_SHUFFLE_TORTURE
+#if defined(DUK_OPT_SHUFFLE_TORTURE)
+#define DUK_USE_SHUFFLE_TORTURE
+#endif
+
 /*
  *  User panic handler, panic exit behavior for default panic handler
  */
