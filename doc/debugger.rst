@@ -1452,6 +1452,27 @@ dump of the heap state for analysis.
    to implement a heap browser, and will probably be completed together with
    some kind of UI.
 
+GetBytecode request (0x21)
+--------------------------
+
+Format::
+
+    REQ <int: 0x21> EOM
+    REP <int: numconsts> (<tval: const>){numconsts}
+        <int: numfuncs> (<tval: func>){numfuncs}
+        <str: bytecode> EOM
+
+Example::
+
+    REQ 33 EOM
+    REP 2 "foo" "bar" 0  "...bytecode..." EOM
+
+Bytecode endianness is target specific so the debug client needs to get
+target endianness and interpret the bytecode based on that.
+
+.. note:: This command is somewhat incomplete at the moment and may be modified
+   once the best way to do this in the debugger UI has been figured out.
+
 "debugger" statement
 ====================
 
