@@ -354,6 +354,14 @@
 	margin: 10px 0 10px 0;
 }
 
+#bytecode-dialog p {
+	margin: 10px 0 10px 0;
+}
+#bytecode-dialog pre {
+	font: 14pt monospace;
+	color: #000000;
+}
+
 #eval {
 	color: #000000;
 	margin-top: 10px;

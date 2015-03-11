@@ -28,6 +28,7 @@ var readline = require('readline');
 var sprintf = require('sprintf').sprintf;
 var utf8 = require('utf8');
 var wrench = require('wrench');  // https://github.com/ryanmcgrath/wrench-js
+var yaml = require('yamljs');
 
 // Command line options (defaults here, overwritten if necessary)
 var optTargetHost = '127.0.0.1';
@@ -69,6 +70,7 @@ var CMD_GETLOCALS = 0x1d;
 var CMD_EVAL = 0x1e;
 var CMD_DETACH = 0x1f;
 var CMD_DUMPHEAP = 0x20;
+var CMD_GETBYTECODE = 0x21;
 
 // Errors
 var ERR_UNKNOWN = 0x00;
@@ -137,6 +139,9 @@ var dukClassNames = [
     'Pointer',
     'Thread'
 ];
+
+// Bytecode opcode/extraop metadata
+var dukOpcodes = yaml.load('duk_opcodes.yaml')
 
 /*
  *  Miscellaneous helpers
@@ -976,6 +981,97 @@ function Debugger() {
 }
 Debugger.prototype = events.EventEmitter.prototype;
 
+Debugger.prototype.decodeBytecodeFromBuffer = function (buf, consts, funcs) {
+    var i, j, n, m, ins, pc;
+    var res = [];
+    var op, str, args, comments;
+
+    // XXX: add constants inline to preformatted output (e.g. for strings,
+    // add a short escaped snippet as a comment on the line after the
+    // compact argument list).
+
+    for (i = 0, n = buf.length; i < n; i += 4) {
+        pc = i / 4;
+
+        // shift forces unsigned
+        if (this.endianness === 'little') {
+            ins = buf.readInt32LE(i) >>> 0;
+        } else {
+            ins = buf.readInt32BE(i) >>> 0;
+        }
+
+        op = dukOpcodes.opcodes[ins & 0x3f];
+        if (op.extra) {
+            op = dukOpcodes.extra[(ins >> 6) & 0xff];
+        }
+
+        args = [];
+        comments = [];
+        if (op.args) {
+            for (j = 0, m = op.args.length; j < m; j++) {
+                switch(op.args[j]) {
+                case 'A_R':   args.push('r' + ((ins >>> 6) & 0xff)); break;
+                case 'A_RI':  args.push('r' + ((ins >>> 6) & 0xff) + '(indirect)'); break;
+                case 'A_C':   args.push('c' + ((ins >>> 6) & 0xff)); break;
+                case 'A_H':   args.push('0x' + ((ins >>> 6) & 0xff).toString(16)); break;
+                case 'A_I':   args.push(((ins >>> 6) & 0xff).toString(10)); break;
+                case 'A_B':   args.push(((ins >>> 6) & 0xff) ? 'true' : 'false'); break;
+                case 'B_RC':  args.push((ins & (1 << 22) ? 'c' : 'r') + ((ins >>> 14) & 0x0ff)); break;
+                case 'B_R':   args.push('r' + ((ins >>> 14) & 0x1ff)); break;
+                case 'B_RI':  args.push('r' + ((ins >>> 14) & 0x1ff) + '(indirect)'); break;
+                case 'B_C':   args.push('c' + ((ins >>> 14) & 0x1ff)); break;
+                case 'B_H':   args.push('0x' + ((ins >>> 14) & 0x1ff).toString(16)); break;
+                case 'B_I':   args.push(((ins >>> 14) & 0x1ff).toString(10)); break;
+                case 'C_RC':  args.push((ins & (1 << 31) ? 'c' : 'r') + ((ins >>> 23) & 0x0ff)); break;
+                case 'C_R':   args.push('r' + ((ins >>> 23) & 0x1ff)); break;
+                case 'C_RI':  args.push('r' + ((ins >>> 23) & 0x1ff) + '(indirect)'); break;
+                case 'C_C':   args.push('c' + ((ins >>> 23) & 0x1ff)); break;
+                case 'C_H':   args.push('0x' + ((ins >>> 23) & 0x1ff).toString(16)); break;
+                case 'C_I':   args.push(((ins >>> 23) & 0x1ff).toString(10)); break;
+                case 'BC_R':  args.push('r' + ((ins >>> 14) & 0x3ffff)); break;
+                case 'BC_C':  args.push('c' + ((ins >>> 14) & 0x3ffff)); break;
+                case 'BC_H':  args.push('0x' + ((ins >>> 14) & 0x3ffff).toString(16)); break;
+                case 'BC_I':  args.push(((ins >>> 14) & 0x3ffff).toString(10)); break;
+                case 'ABC_H': args.push(((ins >>> 6) & 0x03ffffff).toString(16)); break;
+                case 'ABC_I': args.push(((ins >>> 6) & 0x03ffffff).toString(10)); break;
+                case 'BC_LDINT': args.push(((ins >>> 14) & 0x3ffff) - (1 << 17)); break;
+                case 'BC_LDINTX': args.push(((ins >>> 14) & 0x3ffff) - 0); break;  // no bias in LDINTX
+                case 'ABC_JUMP': {
+                    var pc_add = ((ins >>> 6) & 0x03ffffff) - (1 << 25) + 1;  // pc is preincremented before adding
+                    var pc_dst = pc + pc_add;
+                    args.push(pc_dst + ' (' + (pc_add >= 0 ? '+' : '') + pc_add + ')');
+                    break;
+                }
+                default:      args.push('?'); break;
+                }
+            }
+        }
+        if (op.flags) {
+            for (j = 0, m = op.flags.length; j < m; j++) {
+                if (ins & op.flags[j].mask) {
+                    comments.push(op.flags[j].name);
+                }
+            }
+        }
+
+        if (args.length > 0) {
+            str = sprintf('%05d %08x %-10s %s', pc, ins, op.name, args.join(', '));
+        } else {
+            str = sprintf('%05d %08x %-10s', pc, ins, op.name);
+        }
+        if (comments.length > 0) {
+            str = sprintf('%-40s ; %s', str, comments.join(', '));
+        }
+
+        res.push({
+            str: str,
+            ins: ins
+        });
+    }
+
+    return res;
+};
+
 Debugger.prototype.uiMessage = function (type, val) {
     var msg;
     if (typeof type === 'object') {
@@ -1129,32 +1225,32 @@ Debugger.prototype.sendGetCallStackRequest = function () {
     });
 };
 
-Debugger.prototype.sendStepInto = function () {
+Debugger.prototype.sendStepIntoRequest = function () {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_STEPINTO, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendStepOver = function () {
+Debugger.prototype.sendStepOverRequest = function () {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_STEPOVER, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendStepOut = function () {
+Debugger.prototype.sendStepOutRequest = function () {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_STEPOUT, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendPause = function () {
+Debugger.prototype.sendPauseRequest = function () {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_PAUSE, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendResume = function () {
+Debugger.prototype.sendResumeRequest = function () {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_RESUME, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendEval = function (evalInput) {
+Debugger.prototype.sendEvalRequest = function (evalInput) {
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, DVAL_EOM ]).then(function (msg) {
         return { error: msg[1] === 1 /*error*/, value: msg[2] };
@@ -1166,7 +1262,7 @@ Debugger.prototype.sendDetachRequest = function () {
     return this.sendRequest([ DVAL_REQ, CMD_DETACH, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendDumpHeap = function () {
+Debugger.prototype.sendDumpHeapRequest = function () {
     var _this = this;
 
     return this.sendRequest([ DVAL_REQ, CMD_DUMPHEAP, DVAL_EOM ]).then(function (msg) {
@@ -1234,8 +1330,69 @@ Debugger.prototype.sendDumpHeap = function () {
     });
 };
 
+Debugger.prototype.sendGetBytecodeRequest = function () {
+    var _this = this;
+
+    return this.sendRequest([ DVAL_REQ, CMD_GETBYTECODE, DVAL_EOM ]).then(function (msg) {
+        var idx = 1;
+        var nconst;
+        var nfunc;
+        var val;
+        var buf;
+        var i, n;
+        var consts = [];
+        var funcs = [];
+        var bcode;
+        var preformatted;
+        var ret;
+
+        //console.log(JSON.stringify(msg));
+
+        nconst = msg[idx++];
+        for (i = 0; i < nconst; i++) {
+            val = msg[idx++];
+            consts.push(val);
+        }
+
+        nfunc = msg[idx++];
+        for (i = 0; i < nfunc; i++) {
+            val = msg[idx++];
+            funcs.push(val);
+        }
+        val = msg[idx++];
+
+        // Right now bytecode is a string containing a direct dump of the
+        // bytecode in target endianness.  Decode here so that the web UI
+        // doesn't need to.
+
+        buf = new Buffer(val.length);
+        writeDebugStringToBuffer(val, buf, 0);
+        bcode = _this.decodeBytecodeFromBuffer(buf, consts, funcs);
+
+        preformatted = [];
+        consts.forEach(function (v, i) {
+            preformatted.push('; c' + i + ' ' + JSON.stringify(v));
+        });
+        preformatted.push('');
+        bcode.forEach(function (v) {
+            preformatted.push(v.str);
+        });
+        preformatted = preformatted.join('\n') + '\n';
+
+        ret = {
+            "constants": consts,
+            "functions": funcs,
+            "bytecode": bcode,
+            "preformatted": preformatted
+        };
+
+        return ret;
+    });
+};
+
 Debugger.prototype.changeBreakpoint = function (fileName, lineNumber, mode) {
     var _this = this;
+
     return this.sendRequest([ DVAL_REQ, CMD_LISTBREAK, DVAL_EOM ]).then(function (msg) {
         var i, n;
         var breakpts = [];
@@ -1592,7 +1749,7 @@ DebugWebServer.prototype.handleSourceListPost = function (req, res) {
 DebugWebServer.prototype.handleHeapDumpGet = function (req, res) {
     console.log('Heap dump get');
 
-    this.dbg.sendDumpHeap().then(function (val) {
+    this.dbg.sendDumpHeapRequest().then(function (val) {
         res.header('Content-Type', 'application/json');
         //res.status(200).json(val);
         res.status(200).send(JSON.stringify(val, null, 4));
@@ -1709,30 +1866,30 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
     });
 
     socket.on('stepinto', function (msg) {
-        _this.dbg.sendStepInto();
+        _this.dbg.sendStepIntoRequest();
     });
 
     socket.on('stepover', function (msg) {
-        _this.dbg.sendStepOver();
+        _this.dbg.sendStepOverRequest();
     });
 
     socket.on('stepout', function (msg) {
-        _this.dbg.sendStepOut();
+        _this.dbg.sendStepOutRequest();
     });
 
     socket.on('pause', function (msg) {
-        _this.dbg.sendPause();
+        _this.dbg.sendPauseRequest();
     });
 
     socket.on('resume', function (msg) {
-        _this.dbg.sendResume();
+        _this.dbg.sendResumeRequest();
     });
 
     socket.on('eval', function (msg) {
         // msg.input is a proper Unicode strings here, and needs to be
         // converted into a protocol string (U+0000...U+00FF).
         var input = stringToDebugString(msg.input);
-        _this.dbg.sendEval(input).then(function (v) {
+        _this.dbg.sendEvalRequest(input).then(function (v) {
             socket.emit('eval-result', { error: v.error, result: prettyUiDebugValue(v.value, EVAL_CLIPLEN) });
         });
 
@@ -1791,6 +1948,12 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
 
     socket.on('delete-all-breakpoints', function (msg) {
         _this.dbg.changeBreakpoint(null, null, 'deleteall');
+    });
+
+    socket.on('get-bytecode', function (msg) {
+        _this.dbg.sendGetBytecodeRequest().then(function (res) {
+            socket.emit('bytecode', res);
+        });
     });
 
     // Resend all debugger state for new client

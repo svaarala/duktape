@@ -19,7 +19,8 @@
     "stream": "0.0.2",
     "readline": "0.0.5",
     "util": "~0.10.3",
-    "http": "0.0.0"
+    "http": "0.0.0",
+    "yamljs": "~0.2.1"
   },
   "main": "duk_debug.js"
 }
