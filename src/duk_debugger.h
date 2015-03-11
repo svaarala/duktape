@@ -38,6 +38,7 @@
 #define DUK_DBG_CMD_EVAL          0x1e
 #define DUK_DBG_CMD_DETACH        0x1f
 #define DUK_DBG_CMD_DUMPHEAP      0x20
+#define DUK_DBG_CMD_GETBYTECODE   0x21
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL void duk_debug_do_detach(duk_heap *heap);
