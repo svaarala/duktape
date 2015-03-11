@@ -5462,18 +5462,31 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 
 		/* Tail call check: if last opcode emitted was CALL(I), and
 		 * the context allows it, change the CALL(I) to a tailcall.
-		 * (This doesn't guarantee that a tailcall will work at runtime,
-		 * so the RETURN must still be emitted.)
+		 * This doesn't guarantee that a tailcall will be allowed at
+		 * runtime, so the RETURN must still be emitted.  (Duktape
+		 * 0.10.0 avoided this and simulated a RETURN if a tailcall
+		 * couldn't be used at runtime; but this didn't work
+		 * correctly with a thread yield/resume, see
+		 * test-bug-tailcall-thread-yield-resume.js for discussion.)
 		 *
-		 * In addition we need to be sure that 'rc_val' is the result
-		 * register of the CALL(I).  For instance, for the expression
-		 * 'return 0, (function () { return 1; }), 2' the last opcode
-		 * emitted is CALL (no bytecode is emitted for '2') but 'rc_val'
-		 * indicates constant '2'.  It would be best to check that the
-		 * CALL target register matches 'rc_val' but that's not easy
-		 * for an indirect call.  However, it should suffice to check
-		 * that 'rc_val' is a register result (not a constant), which
-		 * is done below.
+		 * In addition to the last opcode being CALL, we also need to
+		 * be sure that 'rc_val' is the result register of the CALL(I).
+		 * For instance, for the expression 'return 0, (function ()
+		 * { return 1; }), 2' the last opcode emitted is CALL (no
+		 * bytecode is emitted for '2') but 'rc_val' indicates
+		 * constant '2'.  Similarly if '2' is replaced by a register
+		 * bound variable, no opcodes are emitted but tailcall would
+		 * be incorrect.
+		 *
+		 * This is tricky and easy to get wrong.  It would be best to
+		 * track enough expression metadata to check that 'rc_val' came
+		 * from that last CALL instruction.  We don't have that metadata
+		 * now, so we check that 'rc_val' is a temporary register result
+		 * (not a constant or a register bound variable).  There should
+		 * be no way currently for 'rc_val' to be a temporary for an
+		 * expression following the CALL instruction without emitting
+		 * some opcodes following the CALL.  This proxy check is used
+		 * below.
 		 *
 		 * See: test-bug-comma-expr-gh131.js.
 		 *
@@ -5493,24 +5506,13 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 
 			op = (duk_small_uint_t) DUK_DEC_OP(instr->ins);
 			if ((op == DUK_OP_CALL || op == DUK_OP_CALLI) &&
-			    DUK__ISREG(comp_ctx, rc_val) /* see above */) {
+			    DUK__ISTEMP(comp_ctx, rc_val) /* see above */) {
 				DUK_DDD(DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				                     "and last instruction is a CALL "
 				                     "-> set TAILCALL flag"));
 				/* Just flip the single bit. */
 				instr->ins |= DUK_ENC_OP_A_B_C(0, DUK_BC_CALL_FLAG_TAILCALL, 0, 0);
-
-				/* In Duktape 0.10.0 no RETURN was emitted; the executor would
-				 * simulate a RETURN if a tailcall could not actually be performed
-				 * (e.g. if the target was a native function).  This would break
-				 * during execution if the target function turned out to be
-				 * thread yield/resume.  So now we just emit the RETURN which
-				 * also obviates the need for a simulated return in the executor
-				 * when a tailcall cannot be actually done as requested.
-				 *
-				 * See test-bug-tailcall-thread-yield-resume.js for discussion.
-				 */
 			}
 		}
 #endif  /* DUK_USE_TAILCALL */
