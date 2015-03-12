@@ -836,9 +836,9 @@ Planned
   "a[i] = b[i++]" (GH-118)
 
 * Fix tailcall issue in return comma expression when a function call
-  in the comma expression was followed by only constant values, e.g.
-  'return 0, (function { return 1; })(), 2;' would return 1 instead
-  of 2 (GH-131)
+  in the comma expression was followed by a constant value or a register
+  bound variable, e.g. 'return 0, (function { return 1; })(), 2;' would
+  return 1 instead of 2 (GH-131)
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
