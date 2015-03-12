@@ -136,8 +136,8 @@ problems = []
 
 re_repl_c_comments = re.compile(r'/\*.*?\*/', re.DOTALL)
 re_repl_cpp_comments = re.compile(r'//.*?\n', re.DOTALL)
-re_repl_string_literals_dquot = re.compile(r'''\"(?:\\\"|[^\"])+\"''')
-re_repl_string_literals_squot = re.compile(r'''\'(?:\\\'|[^\'])+\'''')
+re_repl_string_literals_dquot = re.compile(r'''\"(?:\\\"|[^\"])*\"''')
+re_repl_string_literals_squot = re.compile(r'''\'(?:\\\'|[^\'])*\'''')
 re_repl_expect_strings = re.compile(r'/\*===.*?===*?\*/', re.DOTALL)
 re_not_newline = re.compile(r'[^\n]+', re.DOTALL)
 
