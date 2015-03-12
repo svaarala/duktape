@@ -3092,9 +3092,9 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	case DUK_TOK_THIS: {
 		duk_reg_t reg_temp;
 		reg_temp = DUK__ALLOCTEMP(comp_ctx);
-		duk__emit_extraop_b(comp_ctx,
-		                    DUK_EXTRAOP_LDTHIS | DUK__EMIT_FLAG_B_IS_TARGET,
-		                    (duk_regconst_t) reg_temp);
+		duk__emit_extraop_bc(comp_ctx,
+		                     DUK_EXTRAOP_LDTHIS,
+		                     (duk_regconst_t) reg_temp);
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_REGCONST;
 		res->x1.regconst = (duk_regconst_t) reg_temp;
@@ -5606,10 +5606,9 @@ DUK_LOCAL void duk__parse_throw_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res
 	}
 
 	reg_val = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
-	duk__emit_extraop_b_c(comp_ctx,
-	                      DUK_EXTRAOP_THROW,
-	                      (duk_regconst_t) reg_val,
-	                      (duk_regconst_t) 0);
+	duk__emit_extraop_bc(comp_ctx,
+	                     DUK_EXTRAOP_THROW,
+	                     (duk_regconst_t) reg_val);
 }
 
 DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {

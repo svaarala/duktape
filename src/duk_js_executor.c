@@ -3461,15 +3461,15 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			case DUK_EXTRAOP_LDTHIS: {
 				/* Note: 'this' may be bound to any value, not just an object */
-				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1, *tv2;
 
-				tv1 = DUK__REGP(b);
+				tv1 = DUK__REGP(bc);
 				tv2 = thr->valstack_bottom - 1;  /* 'this binding' is just under bottom */
 				DUK_ASSERT(tv2 >= thr->valstack);
 
-				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%ld", (duk_tval *) tv2, (long) b));
+				DUK_DDD(DUK_DDDPRINT("LDTHIS: %!T to r%ld", (duk_tval *) tv2, (long) bc));
 
 				DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 				DUK_TVAL_SET_TVAL(tv1, tv2);
@@ -3892,14 +3892,14 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			case DUK_EXTRAOP_THROW: {
 				duk_context *ctx = (duk_context *) thr;
-				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
 
 				/* Note: errors are augmented when they are created, not
 				 * when they are thrown.  So, don't augment here, it would
 				 * break re-throwing for instance.
 				 */
 
-				duk_dup(ctx, (duk_idx_t) b);
+				duk_dup(ctx, (duk_idx_t) bc);
 				DUK_DDD(DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (before throw augment)",
 				                     (duk_tval *) duk_get_tval(ctx, -1)));
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
