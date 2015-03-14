@@ -516,6 +516,14 @@ Implementing on top of a packet-based transport
 
 This topic is covered in a separate section.
 
+Development time transport torture option
+-----------------------------------------
+
+The feature option DUK_OPT_DEBUGGER_TRANSPORT_TORTURE causes Duktape to do
+all debug transport read/write operations in 1-byte steps, which is useful
+to catch any incorrect assumptions about reading or writing chunks of a
+certain size.
+
 Debug stream format
 ===================
 
