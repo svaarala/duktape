@@ -16,6 +16,10 @@ all: run
 run: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
 	$(NODE) duk_debug.js --source-dirs=$(SOURCEDIRS)
 
+.PHONY: runproxy
+runproxy: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
+	$(NODE) duk_debug.js --json-proxy
+
 .PHONY: clean
 clean:
 	@rm -f static/socket.io-1.2.0.js
