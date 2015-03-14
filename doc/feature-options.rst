@@ -749,6 +749,13 @@ Support the DumpHeap command.  This is optional because the command is not
 always needed.  The command also has a relatively large footprint (about 10%
 of debugger code); in absolute terms it's about 1kB of code footprint.
 
+DUK_OPT_DEBUGGER_TRANSPORT_TORTURE
+----------------------------------
+
+Development time option: force debugger transport torture.  Concretely this
+now causes Duktape to read/write debug protocol data in 1-byte increments,
+which stresses message parsing and transport code.
+
 Debugging options
 =================
 
