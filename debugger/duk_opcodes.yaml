@@ -1,0 +1,631 @@
+# Duktape opcode metadata for debugger.
+# - See duk_debug.js for the argument formats (A_R etc).
+# - Flag bits are for the whole instruction as a 32-bit integer,
+#   they are not field shifted
+
+# XXX: Need to rework after performance optimization merges which
+# reworked several opcodes.
+
+opcodes:
+  - name: LDREG
+    args:
+      - A_R
+      - BC_R
+  - name: STREG
+    args:
+      - A_R
+      - BC_R
+  - name: LDCONST
+    args:
+      - A_R
+      - BC_C
+  - name: LDINT
+    args:
+      - A_R
+      - BC_LDINT
+  - name: LDINTX
+    args:
+      - A_R
+      - BC_LDINTX
+  - name: MPUTOBJ
+    args:
+      - A_R
+      - B_R
+      - C_I
+  - name: MPUTOBJI
+    args:
+      - A_R
+      - B_RI
+      - C_I
+  - name: MPUTARR
+    args:
+      - A_R
+      - B_R
+      - C_I
+  - name: MPUTARRI
+    args:
+      - A_R
+      - B_RI
+      - C_I
+  - name: NEW
+    args:
+      - B_R
+      - C_I
+  - name: NEWI
+    args:
+      - B_RI
+      - C_I
+  - name: REGEXP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: CSREG
+    args:
+      - A_R
+      - B_R
+  - name: CSREGI
+    args:
+      - A_RI
+      - B_R
+  - name: GETVAR
+    args:
+      - A_R
+      - BC_C
+  - name: PUTVAR
+    args:
+      - A_R
+      - BC_C
+  - name: DECLVAR
+    args:
+      - A_H
+      - B_RC
+      - C_RC
+    flags:
+      - mask: 0x40
+        name: writable
+      - mask: 0x80
+        name: enumerable
+      - mask: 0x100
+        name: configurable
+      - mask: 0x200
+        name: accessor
+      - mask: 0x400
+        name: undef_value
+      - mask: 0x800
+        name: func_decl
+  - name: DELVAR
+    args:
+      - A_R
+      - B_RC
+  - name: CSVAR
+    args:
+      - A_R
+      - B_RC
+  - name: CSVARI
+    args:
+      - A_RI
+      - B_RC
+  - name: CLOSURE
+    args:
+      - A_R
+      - BC_I
+  - name: GETPROP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: PUTPROP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: DELPROP
+    args:
+      - A_R
+      - B_R
+      - C_RC
+  - name: CSPROP
+    args:
+      - A_R
+      - B_R
+      - C_RC
+  - name: CSPROPI
+    args:
+      - A_RI
+      - B_R
+      - C_RC
+  - name: ADD
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: SUB
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: MUL
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: DIV
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: MOD
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BAND
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BOR
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BXOR
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BASL
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BLSR
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BASR
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: BNOT
+    args:
+      - A_R
+      - B_RC
+  - name: LNOT
+    args:
+      - A_R
+      - B_RC
+  - name: EQ
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: NEQ
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: SEQ
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: SNEQ
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: GT
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: GE
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: LT
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: LE
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: IF
+    args:
+      - A_B
+      - B_RC
+  - name: INSTOF
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: IN
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: JUMP
+    args:
+      - ABC_JUMP
+  - name: RETURN
+    args:
+      - A_H
+      - B_RC
+    flags:
+      - mask: 0x40
+        name: fast_return
+      - mask: 0x80
+        name: have_retval
+  - name: CALL
+    args:
+      - A_H
+      - B_R
+      - C_I
+    flags:
+      - mask: 0x40
+        name: tailcall
+      - mask: 0x80
+        name: evalcall
+  - name: CALLI
+    args:
+      - A_H
+      - B_RI
+      - C_I
+  - name: LABEL
+    args:
+      - ABC_I
+  - name: ENDLABEL
+    args:
+      - ABC_I
+  - name: BREAK
+    args:
+      - ABC_I
+  - name: CONTINUE
+    args:
+      - ABC_I
+  - name: TRYCATCH
+    args:
+      - A_H
+      - B_R
+      - C_I  # semantics depend on flags, so dump as integer
+    flags:
+      - mask: 0x40
+        name: have_catch
+      - mask: 0x80
+        name: have_finally
+      - mask: 0x100
+        name: catch_binding
+      - mask: 0x200
+        name: with_binding
+  - name: UNUSED59
+  - name: UNUSED60
+  - name: UNUSED61
+  - name: EXTRA
+    extra: true
+  - name: INVALID
+    args:
+      - ABC_I
+
+extra:
+  - name: 'NOP'
+  - name: 'LDTHIS'
+    args:
+      - BC_R
+  - name: 'LDUNDEF'
+    args:
+      - BC_R
+  - name: 'LDNULL'
+    args:
+      - BC_R
+  - name: 'LDTRUE'
+    args:
+      - BC_R
+  - name: 'LDFALSE'
+    args:
+      - BC_R
+  - name: 'NEWOBJ'
+    args:
+      - BC_R
+  - name: 'NEWARR'
+    args:
+      - BC_R
+  - name: 'SETALEN'
+    args:
+      - B_R
+      - C_R
+  - name: 'TYPEOF'
+    args:
+      - B_R
+      - C_RC
+  - name: 'TYPEOFID'
+    args:
+      - B_R
+      - C_RC  # maybe changed to C_C later
+  - name: 'TONUM'
+    args:
+      - B_R
+      - C_R
+  - name: 'INITENUM'
+    args:
+      - B_R
+      - C_R
+  - name: 'NEXTENUM'
+    args:
+      - B_R
+      - C_R
+  - name: 'INITSET'
+    args:
+      - B_R
+      - C_R
+  - name: 'INITSETI'
+    args:
+      - B_R
+      - C_RI
+  - name: 'INITGET'
+    args:
+      - B_R
+      - C_RI
+  - name: 'INITGETI'
+    args:
+      - B_R
+      - C_RI
+  - name: 'ENDTRY'
+  - name: 'ENDCATCH'
+  - name: 'ENDFIN'
+  - name: 'THROW'
+    args:
+      - B_R
+  - name: 'INVLHS'
+  - name: 'UNM'
+    args:
+      - B_R
+      - C_RC
+  - name: 'UNP'
+    args:
+      - B_R
+      - C_RC
+  - name: 'INC'
+    args:
+      - B_R
+      - C_RC
+  - name: 'DEC'
+    args:
+      - B_R
+      - C_RC
+  - name: 'DEBUGGER'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'
+  - name: 'UNKNOWN'

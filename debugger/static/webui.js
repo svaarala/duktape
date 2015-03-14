@@ -454,6 +454,11 @@ socket.on('getvar-result', function (msg) {
     $('#var-output').text(msg.found ? msg.result : 'NOTFOUND');
 });
 
+socket.on('bytecode', function (msg) {
+    $('#bytecode-preformatted').text(msg.preformatted);
+    $('#bytecode-dialog').dialog('open');
+});
+
 $('#stepinto-button').click(function () {
     socket.emit('stepinto', {});
 });
@@ -487,6 +492,10 @@ $('#detach-button').click(function () {
 
 $('#about-button').click(function () {
     $('#about-dialog').dialog('open');
+});
+
+$('#show-bytecode-button').click(function () {
+    socket.emit('get-bytecode', {});
 });
 
 function submitEval() {
@@ -686,6 +695,15 @@ $(document).ready(function () {
         show: 'fade',  // slide, puff
         width: 500,
         height: 300
+    });
+
+    // Bytecode dialog
+    $('#bytecode-dialog').dialog({
+        autoOpen: false,
+        hide: 'fade',  // puff
+        show: 'fade',  // slide, puff
+        width: 1000,
+        height: 800
     });
 
     // http://diveintohtml5.info/storage.html

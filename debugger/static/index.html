@@ -29,6 +29,7 @@
 <button id="detach-button">Detach</button>
 <button id="about-button">About</button>
 <button id="heap-dump-download-button"><a id="heap-dump-download" href="/heapDump.json" target="_blank">Dump&#x00a0;heap</a></button>
+<button id="show-bytecode-button">Show bytecode</button>
 </div>  <!-- #left-area -->
 
 <div id="center-area">
@@ -83,6 +84,10 @@ The debug server talks to the target device using the Duktape debug protocol
 (see <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst" target="_blank">debugger.rst</a>).</p>
 <p>Duktape debugger is currently <span style="font-weight: bold">experimental</span>.</p>
 </div>  <!-- #about-dialog -->
+
+<div id="bytecode-dialog" title="Bytecode for current function">
+<pre id="bytecode-preformatted"></pre>
+</div>
 
 <script src="jquery-1.11.1.min.js" type="text/javascript"></script>
 <script src="jquery-ui.min.js" type="text/javascript"></script>

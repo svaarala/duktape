@@ -1436,6 +1436,57 @@ DUK_LOCAL void duk__debug_handle_dump_heap(duk_hthread *thr, duk_heap *heap) {
 }
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 
+DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) {
+	duk_activation *act;
+	duk_hcompiledfunction *fun;
+	duk_size_t i, n;
+	duk_tval *tv;
+	duk_hobject **fn;
+
+	DUK_UNREF(heap);
+
+	DUK_D(DUK_DPRINT("debug command getbytecode"));
+
+	duk_debug_write_reply(thr);
+	if (thr->callstack_top == 0) {
+		fun = NULL;
+	} else {
+		act = thr->callstack + thr->callstack_top - 1;
+		fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
+		if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun)) {
+			fun = NULL;
+		}
+	}
+	DUK_ASSERT(fun == NULL || DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun));
+
+	if (fun) {
+		n = DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(heap, fun);
+		duk_debug_write_int(thr, (int) n);
+		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, fun);
+		for (i = 0; i < n; i++) {
+			duk_debug_write_tval(thr, tv);
+			tv++;
+		}
+
+		n = DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(heap, fun);
+		duk_debug_write_int(thr, (int) n);
+		fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, fun);
+		for (i = 0; i < n; i++) {
+			duk_debug_write_hobject(thr, *fn);
+			fn++;
+		}
+
+		duk_debug_write_string(thr,
+		                       (const char *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(heap, fun),
+		                       (duk_size_t) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(heap, fun));
+	} else {
+		duk_debug_write_int(thr, 0);
+		duk_debug_write_int(thr, 0);
+		duk_debug_write_cstring(thr, "");
+	}
+	duk_debug_write_eom(thr);
+}
+
 DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_heap *heap;
@@ -1516,6 +1567,10 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 			break;
 		}
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
+		case DUK_DBG_CMD_GETBYTECODE: {
+			duk__debug_handle_get_bytecode(thr, heap);
+			break;
+		}
 		default: {
 			DUK_D(DUK_DPRINT("debug command unsupported: %d", (int) cmd));
 			duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNSUPPORTED, "unsupported command");
