@@ -666,7 +666,7 @@ DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	duk_c_function lf_func;
 	duk_small_uint_t lf_flags;
-	duk_uint8_t buf[3];
+	duk_uint8_t buf[4];
 	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
@@ -693,7 +693,8 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		buf[0] = 0x1d;
 		buf[1] = (duk_uint8_t) (lf_flags >> 8);
 		buf[2] = (duk_uint8_t) (lf_flags & 0xff);
-		duk_debug_write_bytes(thr, buf, 3);
+		buf[3] = sizeof(lf_func);
+		duk_debug_write_bytes(thr, buf, 4);
 		duk_debug_write_bytes(thr, (const duk_uint8_t *) &lf_func, sizeof(lf_func));
 		break;
 	case DUK_TAG_STRING:
