@@ -1055,9 +1055,9 @@ Debugger.prototype.decodeBytecodeFromBuffer = function (buf, consts, funcs) {
         }
 
         if (args.length > 0) {
-            str = sprintf('%05d %08x %-10s %s', pc, ins, op.name, args.join(', '));
+            str = sprintf('%05d %08x   %-10s %s', pc, ins, op.name, args.join(', '));
         } else {
-            str = sprintf('%05d %08x %-10s', pc, ins, op.name);
+            str = sprintf('%05d %08x   %-10s', pc, ins, op.name);
         }
         if (comments.length > 0) {
             str = sprintf('%-40s ; %s', str, comments.join(', '));
