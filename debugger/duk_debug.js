@@ -1060,7 +1060,7 @@ Debugger.prototype.decodeBytecodeFromBuffer = function (buf, consts, funcs) {
             str = sprintf('%05d %08x   %-10s', pc, ins, op.name);
         }
         if (comments.length > 0) {
-            str = sprintf('%-40s ; %s', str, comments.join(', '));
+            str = sprintf('%-44s ; %s', str, comments.join(', '));
         }
 
         res.push({
