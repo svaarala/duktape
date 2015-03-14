@@ -168,6 +168,9 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 		}
 		DUK_ASSERT(heap->dbg_read_cb != NULL);
 		DUK_ASSERT(left >= 1);
+#if defined(DUK_USE_DEBUGGER_TRANSPORT_TORTURE)
+		left = 1;
+#endif
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
@@ -477,6 +480,9 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 		}
 		DUK_ASSERT(heap->dbg_write_cb != NULL);
 		DUK_ASSERT(left >= 1);
+#if defined(DUK_USE_DEBUGGER_TRANSPORT_TORTURE)
+		left = 1;
+#endif
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during write"));

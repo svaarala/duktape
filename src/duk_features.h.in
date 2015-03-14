@@ -2262,7 +2262,6 @@ typedef FILE duk_file;
 #define DUK_USE_DOUBLE_LINKED_HEAP
 #define DUK_USE_MARK_AND_SWEEP
 #define DUK_USE_MS_STRINGTABLE_RESIZE
-#undef DUK_USE_GC_TORTURE
 
 #if defined(DUK_OPT_NO_REFERENCE_COUNTING)
 #undef DUK_USE_REFERENCE_COUNTING
@@ -2291,6 +2290,7 @@ typedef FILE duk_file;
 #undef DUK_USE_MS_STRINGTABLE_RESIZE
 #endif
 
+#undef DUK_USE_GC_TORTURE
 #if defined(DUK_OPT_GC_TORTURE)
 #define DUK_USE_GC_TORTURE
 #endif
@@ -2380,6 +2380,12 @@ typedef FILE duk_file;
 #undef DUK_USE_DEBUGGER_DUMPHEAP
 #if defined(DUK_OPT_DEBUGGER_DUMPHEAP)
 #define DUK_USE_DEBUGGER_DUMPHEAP
+#endif
+
+/* Debugger transport read/write torture. */
+#undef DUK_USE_DEBUGGER_TRANSPORT_TORTURE
+#if defined(DUK_OPT_DEBUGGER_TRANSPORT_TORTURE)
+#define DUK_USE_DEBUGGER_TRANSPORT_TORTURE
 #endif
 
 /* For opcodes with indirect indices, check final index against stack size.
