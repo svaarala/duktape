@@ -262,11 +262,17 @@ def processApiDoc(doc, testrefs, used_tags):
 	res.append('<h1 id="%s" class="apih1">' % doc['name'])
 	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (doc['name'], doc['name']))
 	if floating_list_tags and len(doc['tags']) > 0:
-		p = sorted(doc['tags'], reverse=True)  # reversed because floated to right (which reverses DOM order)
+		# Sort, reverse order because tags are floated to right
+		# (visual order is reverse of DOM order).  Sort version
+		# number tags last.
 
-		# For now, add the introduced version as a tag
-		if doc.has_key('introduced'):
-			p = [ doc['introduced'] ] + p
+		def mycmp(a,b):
+			return cmp( (a[0].isdigit(), a), (b[0].isdigit(), b) )
+		p = sorted(doc['tags'], reverse=True, cmp=mycmp)
+
+		# 'introduced' is automatically added as a tag now
+		#if doc.has_key('introduced'):
+		#	p = [ doc['introduced'] ] + p
 		if doc.has_key('deprecated'):
 			# XXX: must mark deprecation
 			pass
@@ -745,6 +751,10 @@ def generateApiDoc(apidocdir, apitestdir):
 			if not apidoc.has_key('tags'):
 				apidoc['tags'] = []  # ensures tags is present
 			apidoc['name'] = funcname  # add funcname automatically
+
+			# add 'introduced' version to tag list automatically
+			if apidoc.has_key('introduced'):
+				apidoc['tags'].insert(0, apidoc['introduced'])
 
 			if 'omit' in apidoc['tags']:
 				print 'Omit API doc: ' + str(funcname)
