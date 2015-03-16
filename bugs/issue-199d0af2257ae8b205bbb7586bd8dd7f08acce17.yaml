@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: update main feature list in README.md
+desc: ""
+type: :task
+component: duk
+release: v1.2
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-03-15 13:04:06.558741 Z
+references: []
+
+id: 199d0af2257ae8b205bbb7586bd8dd7f08acce17
+log_events: 
+- - 2015-03-15 13:04:07.066865 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

@@ -5,8 +5,8 @@ type: :bugfix
 component: duk
 release: v1.2
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2015-02-17 18:39:16.909988 Z
 references: []
 
@@ -31,3 +31,7 @@ log_events:
     
     If the trivial fix is left in, ensure GETPROP etc at least benefit from
     knowing that both values are in registers (and not regconst).
+- - 2015-03-16 21:53:59.478993 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
