@@ -1,0 +1,38 @@
+name: duk_to_pointer
+
+proto: |
+  void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ] -> [ ... pointer(val)! ... ]
+
+summary: |
+  <p>Replaces the value at <code>index</code> with a pointer-coerced value.  Returns
+  the resulting <code>void *</code> value.  If <code>index</code> is invalid, throws an
+  error.</p>
+
+  <p>Coercion rules:</p>
+  <ul>
+  <li>Pointer: coerces to itself, no change</li>
+  <li>All heap allocated objects (string, object, buffer): coerce to a pointer
+      which points to the Duktape internal heap header (use for debugging only,
+      do not read/write)</li>
+  <li>Other types: coerce to NULL</li>
+  </ul>
+
+  <div class="note">
+  This API call is really only useful for debugging.  Note in particular that
+  the pointer returned must not be accessed, as it points to an internal heap
+  header.  This is the case even for string/buffer values: the returned pointer
+  differs from the one returned by <code>duk_get_string()</code> and
+  <code>duk_get_buffer()</code>.
+  </div>
+
+example: |
+  /* Don't dereference the pointer. */
+  printf("coerced pointer: %p\n", duk_to_pointer(ctx, -3));
+
+tags:
+  - stack
+
+introduced: 1.0.0

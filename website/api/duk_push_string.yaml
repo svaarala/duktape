@@ -1,0 +1,35 @@
+name: duk_push_string
+
+proto: |
+  const char *duk_push_string(duk_context *ctx, const char *str);
+
+stack: |
+  [ ... ] -> [ ... str! ] (if str != NULL)
+  [ ... ] -> [ ... null! ] (if str == NULL)
+
+summary: |
+  <p>Push a C string into the stack.  String length is automatically detected
+  with a <code>strlen()</code> equivalent (i.e. looking for the first NUL character).
+  A pointer to the interned string data is returned.  If the operation fails,
+  throws an error.</p>
+
+  <p>If <code>str</code> is <code>NULL</code>, an Ecmascript <code>null</code> is pushed
+  to the stack and <code>NULL</code> is returned.  This behavior differs from
+  <code><a href="#duk_push_lstring">duk_push_lstring</a></code> on purpose.</p>
+
+  <p>C code should normally only push valid CESU-8 strings to the stack.</p>
+
+  <p>If input string might contain internal NUL characters, use
+  <code><a href="#duk_push_lstring">duk_push_lstring()</a></code> instead.</p>
+
+example: |
+  duk_push_string(ctx, "foo");
+  duk_push_string(ctx, "foo\0bar");  /* push "foo", not "foo\0bar" */
+  duk_push_string(ctx, "");          /* push empty string */
+  duk_push_string(ctx, NULL);        /* push 'null' */
+
+tags:
+  - stack
+  - string
+
+introduced: 1.0.0

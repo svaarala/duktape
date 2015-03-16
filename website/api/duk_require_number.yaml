@@ -1,0 +1,20 @@
+name: duk_require_number
+
+proto: |
+  duk_double_t duk_require_number(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_number">duk_get_number()</a></code>,
+  but throws an error if the value at <code>index</code> is not a number
+  or if the index is invalid.</p>
+
+example: |
+  printf("value: %lf\n", (double) duk_require_number(ctx, -3));
+
+tags:
+  - stack
+
+introduced: 1.0.0

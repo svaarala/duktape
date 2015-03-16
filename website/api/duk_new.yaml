@@ -1,0 +1,44 @@
+name: duk_new
+
+proto: |
+  void duk_new(duk_context *ctx, duk_idx_t nargs);
+
+stack: |
+  [ ... constructor! arg1! ...! argN! ] -> [ ... retval! ]
+
+summary: |
+  <p>Call a constructor function with <code>nargs</code> arguments
+  (not counting the function itself).  The function and its arguments
+  are replaced by a single return value.  An error thrown during the
+  constructor call is not automatically caught.</p>
+
+  <p>The target function <code>this</code> binding is set to a freshly
+  created empty object.  If <code>constructor.prototype</code> is an
+  object, the internal prototype of the new object is set to that
+  value; otherwise the standard built-in <code>Object</code> prototype
+  is used as the internal prototype.  The return value of the target
+  function determines what the result of the constructor call is.
+  If the constructor returns an object, it replaces the fresh empty object;
+  otherwise the fresh empty object (possibly modified by the constructor)
+  is returned.
+  See <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-13.2.2">[[Construct]]</a>.
+  </p>
+
+example: |
+  /* Assume target function is already on stack at func_idx.
+   * Equivalent to Ecmascript 'new func("foo", 123)'.
+   */
+  duk_idx_t func_idx = /* ... */;
+
+  duk_dup(ctx, func_idx);
+  duk_push_string(ctx, "foo");
+  duk_push_int(ctx, 123);
+  duk_new(ctx, 2);  /* [ ... func "foo" 123 ] -> [ ... res ] */
+  printf("result is object: %d\n", (int) duk_is_object(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - object
+  - call
+
+introduced: 1.0.0

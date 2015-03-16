@@ -1,0 +1,32 @@
+name: duk_to_defaultvalue
+
+proto: |
+  void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int_t hint);
+
+stack: |
+  [ ... val! ... ] -> [ ... DefaultValue(val)! ... ]
+
+summary: |
+  <p>Replace the object at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.8">[[DefaultValue]]</a>
+  coerced value.  The <code>hint</code> argument indicates preference for a string
+  (<code>DUK_HINT_STRING</code>), a number (<code>DUK_HINT_NUMBER</code>), or neither
+  (<code>DUK_HINT_NONE</code>).  <code>DUK_HINT_NONE</code> causes a preference to a number, unless
+  the input value is a <code>Date</code> instance, in which case a string is preferred
+  (the exact coercion behavior is described in the Ecmascript specification).
+  If the value is not an object or <code>index</code> is invalid, throws an error.</p>
+
+  <div include="ref-custom-type-coercion.html" />
+
+  <div class="note">
+  <code>[[DefaultValue]]</code> is a rather technical coercion, not usually needed by
+  calling code.
+  </div>
+
+example: |
+  duk_to_defaultvalue(ctx, -3, DUK_HINT_NUMBER);
+
+tags:
+  - stack
+
+introduced: 1.0.0

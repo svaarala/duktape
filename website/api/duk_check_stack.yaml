@@ -1,0 +1,60 @@
+name: duk_check_stack
+
+proto: |
+  duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra);
+
+summary: |
+  <p>Ensure that the value stack has at least <code>extra</code> reserved
+  (allocated) elements for caller's use, relative to the current stack top.
+  Returns 1 if successful, 0 otherwise.  If the call is successful, the caller
+  is guaranteed that <code>extra</code> elements can be pushed to the value
+  stack without a value stack related error (other errors like out-of-memory
+  can still occur).  The caller MUST NOT rely on being able to push more than
+  <code>extra</code> values; although this is possible, such elements are
+  reserved for Duktape's internal use.</p>
+
+  <p>Upon entry to a Duktape/C function and when outside any call
+  there is an automatic reserve (of <code>DUK_API_ENTRY_STACK</code> elements)
+  allocated for the caller in addition to call arguments on the value stack.
+  If more value stack space is needed, the caller must reserve more space
+  explicitly either in the beginning of the function (e.g. if the number of
+  elements required is known or can be computed based on arguments) or
+  dynamically (e.g. inside a loop).  Note that an attempt to push a value
+  beyond the currently allocated value stack causes an error: it does not cause
+  the value stack to be automatically extended.  This simplifies the internal
+  implementation.</p>
+
+  <p>In addition to user reserved elements, Duktape keeps an automatic
+  internal value stack reserve to ensure all API calls have enough
+  value stack space to work without further allocations.  The value stack
+  is also extended in somewhat large steps to minimize memory reallocation
+  activity.  As a result the internal number of value stack elements
+  available beyond the caller specified <code>extra</code> varies considerably.
+  The caller does not need to take this into account and should never
+  rely on any additional elements being available.</p>
+
+  <p>As a general rule
+  <code><a href="#duk_require_stack">duk_require_stack()</a></code> should be
+  used instead of this function to reserve more stack space.  If value stack
+  cannot be extended, there is almost never a useful recovery strategy except
+  to throw an error and unwind.</p>
+
+example: |
+  duk_idx_t nargs = duk_get_top(ctx);  /* number or arguments */
+
+  /* reserve space for one temporary for each input argument */
+  if (!duk_check_stack(ctx, nargs * 2)) {
+      /* return 'undefined' if cannot allocate space */
+      printf("failed to reserve enough stack space\n");
+      return 0;
+  }
+
+  /* ... */
+
+tags:
+  - stack
+
+seealso:
+  - duk_require_stack
+
+introduced: 1.0.0

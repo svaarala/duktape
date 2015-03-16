@@ -1,0 +1,47 @@
+name: duk_push_vsprintf
+
+proto: |
+  const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
+
+stack: |
+  [ ... ] -> [ ... str! ]
+
+summary: |
+  <p>Format a string like <code>vsprintf()</code> (but safely) and push the result
+  value to the value stack.  Returns a non-<code>NULL</code> pointer to the
+  resulting string.</p>
+
+  <p>If <code>fmt</code> is <code>NULL</code>, an empty string is pushed to the stack
+  and a non-<code>NULL</code> pointer to an empty string is returned (this
+  behavior mimics what <code>vsprintf()</code> does for a <code>NULL</code> format
+  string, at least on Linux).  The returned pointer can be dereferenced and a
+  NUL terminator character is guaranteed.</p>
+
+  <p>Unlike <code>vsprintf()</code> the string formatting is safe.  Concretely,
+  the implementation will try increasing temporary buffer sizes until a
+  large enough buffer is found for the temporary formatted value.</p>
+
+  <div class="note">
+  <p>The <code>ap</code> argument cannot be safely reused for multiple calls.
+  This is a limitation of the vararg mechanism.</p>
+  </div>
+
+example: |
+  void test_vsprintf(duk_context *ctx, ...) {
+      va_list ap;
+
+      va_start(ap, ctx);
+      duk_push_vsprintf(ctx, "test: %d+%d=%d", ap);
+      va_end(ap);
+  }
+
+  void test(duk_context *ctx) {
+      test_vsprintf(ctx, 2, 3, 5);
+  }
+
+tags:
+  - stack
+  - string
+  - vararg
+
+introduced: 1.0.0

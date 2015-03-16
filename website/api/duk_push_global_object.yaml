@@ -1,0 +1,19 @@
+name: duk_push_global_object
+
+proto: |
+  void duk_push_global_object(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... global! ]
+
+summary: |
+  <p>Push the global object to the stack.</p>
+
+example: |
+  duk_push_global_object(ctx);
+
+tags:
+  - stack
+  - object
+
+introduced: 1.0.0

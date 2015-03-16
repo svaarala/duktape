@@ -1,0 +1,23 @@
+name: duk_require_c_function
+
+proto: |
+  duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_c_function">duk_get_c_function()</a></code>, but
+  throws an error if the value at <code>index</code> is not an Ecmascript function
+  associated with a Duktape/C function or if the index is invalid.</p>
+
+example: |
+  duk_c_function funcptr;
+
+  funcptr = duk_require_c_function(ctx, -3);
+
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

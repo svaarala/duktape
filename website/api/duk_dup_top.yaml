@@ -1,0 +1,24 @@
+name: duk_dup_top
+
+proto: |
+  void duk_dup_top(duk_context *ctx);
+
+stack: |
+  [ ... val! ] -> [ ... val! val! ]
+
+summary: |
+  <p>Push a duplicate of the value at stack top to the stack.
+  If the value stack is empty, throws an error.</p>
+
+  <p>Equivalent to calling
+  <code><a href="#duk_dup">duk_dup(ctx, -1)</a></code>.</p>
+
+example: |
+  duk_push_int(ctx, 123);  /* -> [ ... 123 ] */
+  duk_push_int(ctx, 234);  /* -> [ ... 123 234 ] */
+  duk_dup_top(ctx);        /* -> [ ... 123 234 234 ] */
+
+tags:
+  - stack
+
+introduced: 1.0.0

@@ -1,0 +1,19 @@
+name: duk_push_true
+
+proto: |
+  void duk_push_true(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... true! ]
+
+summary: |
+  <p>Push <code>true</code> to stack.  Equivalent to calling
+  <code><a href="#duk_push_boolean">duk_push_boolean(ctx, 1)</a></code>.</p>
+
+example: |
+  duk_push_true(ctx);
+
+tags:
+  - stack
+
+introduced: 1.0.0

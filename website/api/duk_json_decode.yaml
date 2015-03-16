@@ -1,0 +1,30 @@
+name: duk_json_decode
+
+proto: |
+  void duk_json_decode(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... json_val! ... ] -> [ ... val! ... ]
+
+summary: |
+  <p>Decodes an arbitrary JSON value as an in-place operation.
+  If the input is invalid, throws an error.</p>
+
+example: |
+  duk_push_string(ctx, "{\"meaningOfLife\":42}");
+  duk_json_decode(ctx, -1);
+  duk_get_prop_string(ctx, -1, "meaningOfLife");
+  printf("JSON decoded meaningOfLife is: %s\n", duk_to_string(ctx, -1));
+  duk_pop_2(ctx);
+
+  /* Output:
+   * JSON decoded meaningOfLife is: 42
+   */
+
+tags:
+  - codec
+
+seealso:
+  - duk_json_encode
+
+introduced: 1.0.0

@@ -1,0 +1,21 @@
+name: duk_push_pointer
+
+proto: |
+  void duk_push_pointer(duk_context *ctx, void *p);
+
+stack: |
+  [ ... ] -> [ ... ptr! ]
+
+summary: |
+  <p>Push <code>p</code> into the stack as a pointer value.  Duktape won't
+  interpret the pointer in any manner.</p>
+
+example: |
+  struct mystruct *p = /* ... */;
+
+  duk_push_pointer(ctx, (void *) p);
+
+tags:
+  - stack
+
+introduced: 1.0.0

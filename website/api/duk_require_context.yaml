@@ -1,0 +1,24 @@
+name: duk_require_context
+
+proto: |
+  duk_context *duk_require_context(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_context">duk_get_context()</a></code>,
+  but throws an error if the value at <code>index</code> is not a Duktape
+  thread or if the index is invalid.</p>
+
+example: |
+  duk_context *new_ctx;
+
+  (void) duk_push_thread(ctx);
+  new_ctx = duk_require_context(ctx, -1);
+
+tags:
+  - stack
+  - borrowed
+
+introduced: 1.0.0

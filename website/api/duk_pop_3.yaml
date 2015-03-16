@@ -1,0 +1,19 @@
+name: duk_pop_3
+
+proto: |
+  void duk_pop_3(duk_context *ctx);
+
+stack: |
+  [ ... val1! val2! val3! ] -> [ ... ]
+
+summary: |
+  <p>Pop three elements off the stack.  If the stack has fewer than three elements,
+  throws an error.</p>
+
+example: |
+  duk_pop_3(ctx);
+
+tags:
+  - stack
+
+introduced: 1.0.0

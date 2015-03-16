@@ -1,0 +1,36 @@
+name: duk_alloc
+
+proto: |
+  void *duk_alloc(duk_context *ctx, duk_size_t size);
+
+summary: |
+  <p>Like <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code> but may trigger
+  a garbage collection to satisfy the request.  However, the allocated memory
+  itself is not automatically garbage collected.  The allocation request may
+  fail even after garbage collection, in which case a <code>NULL</code> is returned.
+  The allocated memory is not automatically zeroed, and may contain arbitrary garbage.</p>
+
+  <p>Memory allocated with <code>duk_alloc()</code> can be freed with either
+  <code><a href="#duk_free">duk_free()</a></code> or
+  <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
+
+example: |
+  /* Although duk_alloc() triggers a GC if necessary, it can still fail to
+   * allocate the desired amount of memory.  Caller must check for NULL
+   * (however, if allocation size is 0, a NULL may be returned even in
+   * a success case).
+   */
+  void *buf = duk_alloc(ctx, 1024);
+  if (buf) {
+      printf("allocation successful: %p\n", buf);
+  } else {
+      printf("allocation failed\n");
+  }
+
+tags:
+  - memory
+
+seealso:
+  - duk_alloc_raw
+
+introduced: 1.0.0

@@ -1,0 +1,23 @@
+name: duk_check_type_mask
+
+proto: |
+  duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, duk_uint_t mask);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Matches the type of the value at <code>index</code> against the type
+  mask bits given in <code>mask</code>.  Returns 1 if the value type matches
+  one of the type mask bits and zero otherwise.</p>
+
+example: |
+  if (duk_check_type_mask(ctx, -3, DUK_TYPE_MASK_STRING |
+                                   DUK_TYPE_MASK_NUMBER)) {
+      printf("value is a string or a number\n");
+  }
+
+tags:
+  - stack
+
+introduced: 1.0.0

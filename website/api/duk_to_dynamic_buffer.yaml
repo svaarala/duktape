@@ -1,0 +1,22 @@
+name: duk_to_dynamic_buffer
+
+proto: |
+  void *duk_to_dynamic_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but the
+  result is always a dynamic buffer (unless an error is thrown).  If the value
+  is a fixed buffer, convert it to a dynamic buffer.</p>
+
+example: |
+  duk_size_t sz;
+  void *buf = duk_to_dynamic_buffer(ctx, -3, &sz);
+
+tags:
+  - stack
+  - buffer
+
+introduced: 1.0.0

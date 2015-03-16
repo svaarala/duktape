@@ -1,0 +1,24 @@
+name: duk_to_undefined
+
+proto: |
+  void duk_to_undefined(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ] -> [ ... undefined! ... ]
+
+summary: |
+  <p>Replace the value at <code>index</code> with <code>undefined</code>, regardless
+  of the previous value.  Throws an error if index is invalid.</p>
+
+  <div class="note">
+  Equivalent to <code>duk_push_undefined()</code> followed by <code>duk_replace()</code>
+  to target index.
+  </div>
+
+example: |
+  duk_to_undefined(ctx, -3);
+
+tags:
+  - stack
+
+introduced: 1.0.0

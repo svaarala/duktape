@@ -1,0 +1,28 @@
+name: duk_free_raw
+
+proto: |
+  void duk_free_raw(duk_context *ctx, void *ptr);
+
+summary: |
+  <p>Free memory allocated with the allocation function registered to the
+  context.  The operation cannot fail.  If <code>ptr</code> is <code>NULL</code>,
+  the call is a no-op.</p>
+
+  <p><code>duk_free_raw()</code> can be used to free memory allocated with either
+  <code><a href="#duk_alloc">duk_alloc()</a></code> or
+  <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>
+  and their reallocation variants.</p>
+
+example: |
+  void *buf = duk_alloc_raw(ctx, 1024);
+  /* ... */
+
+  duk_free_raw(ctx, buf);  /* safe even if 'buf' is NULL */
+
+tags:
+  - memory
+
+seealso:
+  - duk_free
+
+introduced: 1.0.0

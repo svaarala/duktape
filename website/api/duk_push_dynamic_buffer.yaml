@@ -1,0 +1,24 @@
+name: duk_push_dynamic_buffer
+
+proto: |
+  void *duk_push_dynamic_buffer(duk_context *ctx, duk_size_t size);
+
+stack: |
+  [ ... ] -> [ ... buf! ]
+
+summary: |
+  <p>Allocate a dynamic (resizable) buffer and push it to the value stack.
+  Shortcut for <code><a href="#duk_push_buffer">duk_push_buffer()</a></code>
+  with <code>dynamic = 1</code>.</p>
+
+example: |
+  void *p;
+
+  p = duk_push_dynamic_buffer(ctx, 1024);
+  printf("allocated buffer, data area: %p\n", p);
+
+tags:
+  - stack
+  - buffer
+
+introduced: 1.0.0

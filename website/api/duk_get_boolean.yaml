@@ -1,0 +1,26 @@
+name: duk_get_boolean
+
+proto: |
+  duk_bool_t duk_get_boolean(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the boolean value at <code>index</code> without modifying or coercing
+  the value.  Returns 1 if the value is <code>true</code>, 0 if the value is
+  <code>false</code>, not a boolean, or the index is invalid.</p>
+
+  <p>Note that the value is not coerced, so even a "truthy" Ecmascript value
+  (like a non-empty string) will be treated as false.  If you want to coerce
+  the value, use <code><a href="#duk_to_boolean">duk_to_boolean()</a></code>.</p>
+
+example: |
+  if (duk_get_boolean(ctx, -3)) {
+      printf("value is true\n");
+  }
+
+tags:
+  - stack
+
+introduced: 1.0.0

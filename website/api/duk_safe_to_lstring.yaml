@@ -1,0 +1,44 @@
+name: duk_safe_to_lstring
+
+proto: |
+  const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+
+stack: |
+  [ ... val! ... ] -> [ ... ToString(val)! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_to_lstring">duk_to_lstring()</a></code> but if
+  the initial string coercion fails, the error value is coerced to a string.
+  If that also fails, a fixed error string is returned.</p>
+
+  <p>The caller can safely use this function to coerce a value to a string,
+  which is useful in C code to print out a return value safely with
+  <code>printf()</code>.  The only uncaught errors possible are out-of-memory
+  and other internal errors which trigger fatal error handling anyway.</p>
+
+example: |
+  const char *ptr;
+  duk_size_t sz;
+
+  /* Coercion causes error. */
+  duk_eval_string(ctx, "({ toString: function () { throw new Error('toString error'); } })");
+  ptr = duk_safe_to_lstring(ctx, -1, &sz);
+  printf("coerced string: %s (length %lu)\n", ptr, (unsigned long) sz);  /* -> "Error: toString error" */
+  duk_pop(ctx);
+
+  /* Coercion causes error, and the error itself cannot be string coerced. */
+  duk_eval_string(ctx, "({ toString: function () { var e = new Error('cannot string coerce me');"
+                       "                           e.toString = function () { throw new Error('coercion error'); };"
+                       "                           throw e; } })");
+  ptr = duk_safe_to_lstring(ctx, -1, &sz);
+  printf("coerced string: %s (length %lu)\n", ptr, (unsigned long) sz);  /* -> "Error" */
+  duk_pop(ctx);
+
+tags:
+  - stack
+  - string
+
+seealso:
+  - duk_to_lstring
+
+introduced: 1.0.0

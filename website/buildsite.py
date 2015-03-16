@@ -5,6 +5,7 @@
 
 import os
 import sys
+import traceback
 import time
 import datetime
 import shutil
@@ -12,6 +13,8 @@ import re
 import tempfile
 import atexit
 import md5
+import json
+import yaml
 from bs4 import BeautifulSoup, Tag
 
 colorize = True
@@ -91,6 +94,13 @@ def stripNewline(x):
 	if len(x) > 0 and x[-1] == '\n':
 		return x[:-1]
 	return x
+
+def splitNewlineNoLastEmpty(x):
+	assert(x is not None)
+	res = x.split('\n')
+	if len(res) > 0 and res[-1] == '':
+		res = res[:-1]
+	return res
 
 def validateAndParseHtml(data):
 	# first parse as xml to get errors out
@@ -186,36 +196,6 @@ def renderFancyStack(inp_line):
 
 	return ' '.join(res) + '\n'  # stack is a one-liner; spaces are for text browser rendering
 
-def parseApiDoc(filename):
-	f = open(filename, 'rb')
-	parts = {}
-	state = None
-	for line in f.readlines():
-		line = stripNewline(line)
-		if line.startswith('='):
-			state = line[1:]
-		elif state is not None:
-			if not parts.has_key(state):
-				parts[state] = []
-			parts[state].append(line)
-		else:
-			if line != '':
-				raise Exception('unparsed non-empty line: %r' % line)
-			else:
-				# ignore
-				pass
-	f.close()
-
-	# remove leading and trailing empty lines
-	for k in parts:
-		p = parts[k]
-		while len(p) > 0 and p[0] == '':
-			p.pop(0)
-		while len(p) > 0 and p[-1] == '':
-			p.pop()
-
-	return parts
-
 # C99: these are used if available
 type_repl_c99_32bit = [
 	['duk_int_t', 'int' ],
@@ -275,22 +255,22 @@ def substitutePrototypeTypes(line, repl):
 		line = line.replace(t[0], t[1])
 	return line
 
-def processApiDoc(parts, funcname, testrefs, used_tags):
+def processApiDoc(doc, testrefs, used_tags):
 	res = []
 
 	# the 'hidechar' span is to allow browser search without showing the char
-	res.append('<h1 id="%s" class="apih1">' % funcname)
-	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (funcname, funcname))
-	if floating_list_tags and parts.has_key('tags'):
-		p = sorted(parts['tags'], reverse=True)  # reversed because floated to right (which reverses DOM order)
+	res.append('<h1 id="%s" class="apih1">' % doc['name'])
+	res.append('<a href="#%s"><span class="hidechar">.</span>%s()</a>' % (doc['name'], doc['name']))
+	if floating_list_tags and len(doc['tags']) > 0:
+		p = sorted(doc['tags'], reverse=True)  # reversed because floated to right (which reverses DOM order)
 
 		# For now, add the introduced version as a tag
-		if parts.has_key('introduced'):
-			p = [ parts['introduced'][0] ] + p
-		if parts.has_key('deprecated'):
+		if doc.has_key('introduced'):
+			p = [ doc['introduced'] ] + p
+		if doc.has_key('deprecated'):
 			# XXX: must mark deprecation
 			pass
-		if parts.has_key('removed'):
+		if doc.has_key('removed'):
 			# XXX: must mark removal
 			pass
 
@@ -306,8 +286,8 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 
 	res.append('<div class="api-call">')
 
-	if parts.has_key('proto'):
-		p = parts['proto']
+	if doc.has_key('proto'):
+		p = splitNewlineNoLastEmpty(doc['proto'])
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-proto">Prototype</h2>')
 		alt_typing_c99 = []
@@ -334,10 +314,11 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	else:
 		pass
 
-	if parts.has_key('stack'):
-		p = parts['stack']
+	if doc.has_key('stack'):
+		p = splitNewlineNoLastEmpty(doc['stack'])
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-stack">Stack</h2>')
+		assert(len(p) > 0)
 		for line in p:
 			res.append('<pre class="stack">' + \
 			           '%s' % htmlEscape(line) + \
@@ -351,8 +332,8 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')  # api-part
 		res.append('')
 
-	if parts.has_key('summary'):
-		p = parts['summary']
+	if doc.has_key('summary'):
+		p = splitNewlineNoLastEmpty(doc['summary'])
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-summary">Summary</h2>')
 
@@ -376,8 +357,8 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')  # api-part
 		res.append('')
 
-	if parts.has_key('example'):
-		p = parts['example']
+	if doc.has_key('example'):
+		p = splitNewlineNoLastEmpty(doc['example'])
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-example">Example</h2>')
 		res.append('<pre class="c-code">')
@@ -387,8 +368,8 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')  # api-part
 		res.append('')
 
-	if parts.has_key('seealso'):
-		p = parts['seealso']
+	if doc.has_key('seealso'):
+		p = doc['seealso']
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-seealso">See also</h2>')
 		res.append('<ul>')
@@ -401,9 +382,9 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 	if testcase_refs:
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-testcases">Related test cases</h2>')
-		if testrefs.has_key(funcname):
+		if testrefs.has_key(doc['name']):
 			res.append('<ul>')
-			for i in testrefs[funcname]:
+			for i in testrefs[doc['name']]:
 				res.append('<li>%s</li>' % htmlEscape(i))
 			res.append('</ul>')
 		else:
@@ -411,15 +392,15 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')  # api-part
 		res.append('')
 
-	if not testrefs.has_key(funcname):
+	if not testrefs.has_key(doc['name']):
 		res.append('<div class="fixme">This API call has no test cases.</div>')
 		
-	if list_tags and parts.has_key('tags'):
+	if list_tags and len(doc['tags']) > 0:
 		# FIXME: placeholder
 		res.append('<div class="api-part">')
 		res.append('<h2 class="api-tags">Tags</h2>')
 		res.append('<p>')
-		p = parts['tags']
+		p = doc['tags']
 		for idx, val in enumerate(p):
 			if idx > 0:
 				res.append(' ')
@@ -428,8 +409,8 @@ def processApiDoc(parts, funcname, testrefs, used_tags):
 		res.append('</div>')  # api-part
 		res.append('')
 
-	if parts.has_key('fixme'):
-		p = parts['fixme']
+	if doc.has_key('fixme'):
+		p = splitNewlineNoLastEmpty(doc['fixme'])
 		res.append('<div class="fixme">')
 		for i in p:
 			res.append(htmlEscape(i))
@@ -704,9 +685,7 @@ def createTagIndex(api_docs, used_tags):
 		res.append('<h2 id="taglist-' + htmlEscape(tag) + '">' + htmlEscape(tag) + '</h2>')
 		res.append('<ul class="taglist">')
 		for doc in api_docs:
-			if not doc['parts'].has_key('tags'):
-				continue
-			for i in doc['parts']['tags']:
+			for i in doc['tags']:
 				if i != tag:
 					continue
 				res.append('<li><a href="#%s">%s</a></li>' % (htmlEscape(doc['name']), htmlEscape(doc['name'])))
@@ -723,7 +702,7 @@ def generateApiDoc(apidocdir, apitestdir):
 	tmpfiles = os.listdir(apidocdir)
 	apifiles = []
 	for filename in tmpfiles:
-		if os.path.splitext(filename)[1] == '.txt':
+		if os.path.splitext(filename)[1] == '.yaml':
 			apifiles.append(filename)
 	apifiles.sort()
 	#print(apifiles)
@@ -743,19 +722,40 @@ def generateApiDoc(apidocdir, apitestdir):
 	# scan api doc files
 
 	used_tags = []
-	api_docs = []   # [ { 'parts': xxx, 'name': xxx } ]
+	api_docs = []   # structure from YAML file directly
 
 	for filename in apifiles:
-		parts = parseApiDoc(os.path.join(apidocdir, filename))
+		apidoc = None
+		try:
+			with open(os.path.join(apidocdir, filename), 'rb') as f:
+				apidoc = yaml.safe_load(f)
+			if isinstance(apidoc, (str, unicode)):
+				apidoc = None
+				raise Exception('parsed as string')
+		except:
+			print 'WARNING: FAILED TO PARSE API DOC: ' + str(filename)
+			print traceback.format_exc()
+			pass
+
 		funcname = os.path.splitext(os.path.basename(filename))[0]
-		if parts.has_key('tags') and 'omit' in parts['tags']:
-			print 'Omit API doc: ' + str(funcname)
-			continue
-		if parts.has_key('tags'):
-			for i in parts['tags']:
+
+		#print(json.dumps(apidoc, indent=4))
+
+		if apidoc is not None:
+			if not apidoc.has_key('tags'):
+				apidoc['tags'] = []  # ensures tags is present
+			apidoc['name'] = funcname  # add funcname automatically
+
+			if 'omit' in apidoc['tags']:
+				print 'Omit API doc: ' + str(funcname)
+				continue
+
+			for i in apidoc['tags']:
+				assert(i is not None)
 				if i not in used_tags:
 					used_tags.append(i)
-		api_docs.append({ 'parts': parts, 'name': funcname })
+
+			api_docs.append(apidoc)
 
 	used_tags.sort()
 
@@ -805,11 +805,11 @@ def generateApiDoc(apidocdir, apitestdir):
 
 		data = None
 		try:
-			data = processApiDoc(doc['parts'], doc['name'], testrefs, used_tags)
+			data = processApiDoc(doc, testrefs, used_tags)
 			res += data
 		except:
 			print repr(data)
-			print 'FAIL: ' + repr(filename)
+			print 'FAIL: ' + repr(doc['name'])
 			raise
 
 	print('used tags: ' + repr(used_tags))

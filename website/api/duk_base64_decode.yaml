@@ -1,0 +1,29 @@
+name: duk_base64_decode
+
+proto: |
+  void duk_base64_decode(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... base64_val! ... ] -> [ ... val! ... ]
+
+summary: |
+  <p>Decodes a base-64 encoded value into a buffer as an in-place operation.
+  If the input is invalid, throws an error.</p>
+
+example: |
+  duk_push_string(ctx, "Zm9v");
+  duk_base64_decode(ctx, -1);  /* buffer */
+  printf("base-64 decoded: %s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
+
+  /* Output:
+   * base-64 decoded: foo
+   */
+
+tags:
+  - codec
+
+seealso:
+  - duk_base64_encode
+
+introduced: 1.0.0

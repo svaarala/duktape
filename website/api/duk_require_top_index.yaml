@@ -1,0 +1,23 @@
+name: duk_require_top_index
+
+proto: |
+  duk_idx_t duk_require_top_index(duk_context *ctx);
+
+summary: |
+  <p>Get the absolute index (>= 0) of the topmost value on the stack.
+  If the stack is empty, throws an error.</p>
+
+example: |
+  duk_idx_t idx_top;
+
+  /* throws error if stack is empty */
+  idx_top = duk_require_top_index(ctx);
+  printf("index of top element: %ld\n", (long) idx_top);
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_top_index
+
+introduced: 1.0.0

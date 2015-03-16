@@ -1,0 +1,62 @@
+name: duk_realloc_raw
+
+proto: |
+  void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size);
+
+summary: |
+  <p>Resize a previous allocation made with the allocation functions
+  registered to the context.  The <code>ptr</code> argument points to the
+  previous allocation while <code>size</code> is the new allocation size.
+  The call returns a pointer to the new allocation which may have a
+  different pointer than the previous one.  If the reallocation fails,
+  a <code>NULL</code> is returned and the previous allocation is still valid.
+  Reallocation failure should only be possible when the new size is larger
+  than the previous size (i.e. caller tries to grow the allocation).
+  The attempt to reallocate cannot trigger a garbage collection,
+  and the allocated memory is not automatically garbage collected.
+  If allocated size is extended from previous allocation, the newly allocated
+  bytes are not automatically zeroed and may contain arbitrary garbage.
+  </p>
+
+  <p>The exact behavior depends on the <code>ptr</code> and <code>size</code>
+  arguments as follows:</p>
+
+  <ul>
+  <li>If <code>ptr</code> is non-<code>NULL</code> and <code>size</code> is greater
+      than zero, previous allocation is resized.</li>
+  <li>If <code>ptr</code> is non-<code>NULL</code> and <code>size</code> is zero,
+      the call is equivalent to a
+      <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</li>
+  <li>If <code>ptr</code> is <code>NULL</code>, and <code>size</code> is greater than
+      zero, the call is equivalent to a
+      <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>.</li>
+  <li>If <code>ptr</code> is <code>NULL</code>, and <code>size</code> is zero, the
+      call is equivalent to a
+      <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code> with a zero
+      size argument; the call may return <code>NULL</code> or some other value
+      which is safe to give to
+      <code><a href="#duk_free_raw()">duk_free_raw()</a></code>.</li>
+  </ul>
+
+  <p>Memory reallocated with <code>duk_realloc_raw()</code> can be freed with either
+  <code><a href="#duk_free">duk_free()</a></code> or
+  <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</p>
+
+example: |
+  void *buf = duk_alloc_raw(ctx, 1024);
+  if (buf) {
+      void *buf2 = duk_realloc_raw(ctx, 2048);
+      if (!buf2) {
+          printf("failed to reallocate, 'buf' still valid\n");
+      } else {
+          printf("reallocate successful, 'buf2' now valid\n");
+      }
+  }
+
+tags:
+  - memory
+
+seealso:
+  - duk_realloc
+
+introduced: 1.0.0

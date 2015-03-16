@@ -1,0 +1,21 @@
+name: duk_push_uint
+
+proto: |
+  void duk_push_uint(duk_context *ctx, duk_uint_t val);
+
+stack: |
+  [ ... ] -> [ ... val! ]
+
+summary: |
+  <p>Convert <code>val</code> to an IEEE double and push it to the stack.</p>
+
+  <p>This is a shorthand for calling
+  <code><a href="#duk_push_number">duk_push_number(ctx, (duk_double_t) val)</a></code>.</p>
+
+example: |
+  duk_push_uint(ctx, 123);
+
+tags:
+  - stack
+
+introduced: 1.0.0

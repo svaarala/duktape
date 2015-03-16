@@ -1,0 +1,21 @@
+name: duk_push_number
+
+proto: |
+  void duk_push_number(duk_context *ctx, duk_double_t val);
+
+stack: |
+  [ ... ] -> [ ... val! ]
+
+summary: |
+  <p>Push number (IEEE double) <code>val</code> to the stack.</p>
+
+  <p>If <code>val</code> is a <code>NaN</code> it may be normalized into another
+  <code>NaN</code> form.</p>
+
+example: |
+  duk_push_number(ctx, 123.0);
+
+tags:
+  - stack
+
+introduced: 1.0.0

@@ -1,0 +1,34 @@
+name: duk_hex_encode
+
+proto: |
+  const char *duk_hex_encode(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ] -> [ ... hex_val! ... ]
+
+summary: |
+  <p>Coerces an arbitrary value into a buffer and then encodes the result
+  into hex as an in-place operation.  Returns pointer to the resulting
+  string for convenience.</p>
+
+  <div class="note">
+  Coercing to a buffer first coerces a non-buffer value into a string, and
+  then coerces the string into a buffer.  The resulting buffer contains the
+  string in CESU-8 encoding.
+  </div>
+
+example: |
+  duk_push_string(ctx, "foo");
+  printf("hex encoded: %s\n", duk_hex_encode(ctx, -1));
+
+  /* Output:
+   * hex encoded: 666f6f
+   */
+
+tags:
+  - codec
+
+seealso:
+  - duk_hex_decode
+
+introduced: 1.0.0

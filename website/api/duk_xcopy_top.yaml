@@ -1,0 +1,30 @@
+name: duk_xcopy_top
+
+proto: |
+  void duk_xcopy_top(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count);
+
+stack: |
+  [ ... val1! ...! valN! ] -> [ ... val1! ...! valN! ] (on source stack, from_ctx)
+  [ ... ] -> [ ... val1! ...! valN! ]  (on target stack, to_ctx)
+
+summary: |
+  <p>Like <code><a href="#duk_xmove_top">duk_xmove_top()</a></code> but the elements being
+  copied are not popped of the source stack.
+  <b>Both source and target stack must reside in the same Duktape heap</b>.</p>
+
+  <div class="note">
+  The order of from/to stack is reversed as compared to Lua's
+  <a href="http://pgl.yoyo.org/luai/i/lua_xmove">lua_xmove()</a>.
+  </div>
+
+example: |
+  duk_xcopy_top(new_ctx, ctx, 7);
+
+tags:
+  - stack
+  - slice
+
+seealso:
+  - duk_xmove_top
+
+introduced: 1.0.0

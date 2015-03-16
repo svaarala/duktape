@@ -1,0 +1,71 @@
+name: duk_enum
+
+proto: |
+  void duk_enum(duk_context *ctx, duk_idx_t obj_index, duk_uint_t enum_flags);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... enum! ]
+
+summary: |
+  <p>Create an enumerator for object at <code>obj_index</code>.  Enumeration
+  details can be controlled with <code>enum_flags</code>.  If the target value
+  is not an object, throws an error.</p>
+
+  <p>Enumeration flags:</p>
+  <ul>
+  <li><code>DUK_ENUM_INCLUDE_NONENUMERABLE</code>: enumerate also non-enumerable
+      properties (by default only enumerable properties are enumerated)</li>
+  <li><code>DUK_ENUM_INCLUDE_INTERNAL</code>: enumerate also internal properties
+      (by default internal properties are not enumerated)</li>
+  <li><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code>: enumerate only an object's "own"
+      properties (by default also inherited properties are enumerated) </li>
+  <li><code>DUK_ENUM_ARRAY_INDICES_ONLY</code>: enumerate only array indices,
+      i.e. property names of the form "0", "1", "2", etc.</li>
+  <li><code>DUK_ENUM_SORT_ARRAY_INDICES</code>: guarantee that array indices are
+      sorted by their numeric value, only use with <code>DUK_ENUM_ARRAY_INDICES_ONLY</code>;
+      this is quite slow</li>
+  </ul>
+
+  <p>Without any flags, enumeration follows the Ecmascript default enumeration
+  semantics, as in the expression:</p>
+  <pre class="ecmascript-code">
+  for (key in obj) {
+      print(key, obj[i]);
+  }
+  </pre>
+
+  <p>Once the enumerator has been created, use
+  <code><a href="#duk_next">duk_next()</a></code> to extract keys (or key/value
+  pairs) from the enumerator.</p>
+
+  <div class="note">
+  Array indices are usually enumerated in a sorted order even without the
+  <code>DUK_ENUM_SORT_ARRAY_INDICES</code> flag.  This is not the case
+  for "sparse arrays" which contain a lot of gaps (unused indices).
+  Duktape represents such arrays internally using a key-value representation
+  instead of a plain array, which affects key enumeration order.
+  The criteria for switching from a dense to a sparse array are internal details
+  and potentially version dependent.  With the <code>DUK_ENUM_SORT_ARRAY_INDICES</code>
+  flag the array indices will be sorted even for sparse arrays, at the
+  cost of an explicit key sorting pass.
+  </div>
+
+example: |
+  duk_enum(ctx, -3, DUK_ENUM_INCLUDE_NONENUMERABLE);
+
+  while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
+      /* [ ... enum key ] */
+      printf("-> key %s\n", duk_get_string(ctx, -1));
+      duk_pop(ctx);  /* pop_key */
+  }
+
+  duk_pop(ctx);  /* pop enum object */
+
+tags:
+  - object
+  - property
+
+seealso:
+  - duk_next
+
+introduced: 1.0.0

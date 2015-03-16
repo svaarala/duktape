@@ -1,0 +1,37 @@
+name: duk_equals
+
+proto: |
+  duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+
+stack: |
+  [ ... val1! ... val2! ... ]
+
+summary: |
+  <p>Compare values at <code>index1</code> and <code>index2</code> for equality.
+  Returns 1 if values are considered equal using Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.1">Equals</a>
+  operator (<code>==</code>) semantics, otherwise returns 0.  Also returns 0 if either
+  index is invalid.</p>
+
+  <p>Because
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3">The Abstract Equality Comparison Algorithm</a>
+  used by the Equals operator performs value coercion (<code>ToNumber()</code> and <code>ToPrimitive()</code>),
+  the comparison may have side effects and may throw an error.  The strict equality comparison,
+  available through <code><a href="#duk_strict_equals">duk_strict_equals()</a></code>, has no
+  side effects.</p>
+
+  <p>Comparison algorithm for Duktape custom types is described in
+  <a href="http://duktape.org/guide.html#non-strict-equality-algorithm">Equality (non-strict)</a>.</p>
+
+example: |
+  if (duk_equals(ctx, -3, -7)) {
+      printf("values at indices -3 and -7 are equal\n");
+  }
+
+tags:
+  - compare
+
+seealso:
+  - duk_strict_equals
+
+introduced: 1.0.0

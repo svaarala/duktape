@@ -1,0 +1,49 @@
+name: duk_call_method
+
+proto: |
+  void duk_call_method(duk_context *ctx, duk_idx_t nargs);
+
+stack: |
+  [ ... func! this! arg! ...! argN! ] -> [ ... retval! ]
+
+summary: |
+  <p>Call target function <code>func</code> with an explicit <code>this</code>
+  binding and <code>nargs</code> arguments (not counting the function and
+  the <code>this</code> binding value).  The function object, the <code>this</code>
+  binding value, and the function arguments are replaced by a single
+  return value.  An error thrown during the function call is not
+  automatically caught.</p>
+
+  <p>If the target function is not strict, the binding value seen by the
+  target function may be modified by processing specified in
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">Entering Function Code</a>.
+  </p>
+
+  <p>This API call is equivalent to:</p>
+  <pre class="ecmascript-code">
+  var retval = func.call(this_binding, arg1, ..., argN);
+  </pre>
+
+example: |
+  /* The target function here prints:
+   *
+   *    this: 123
+   *    2 3
+   *
+   * and returns 5.
+   */
+
+  duk_push_string(ctx, "function(x,y) { print('this:', this); "
+                       "print(x,y); return x+y; }");
+  duk_eval(ctx);  /* -> [ ... func ] */
+  duk_push_int(ctx, 123);
+  duk_push_int(ctx, 2);
+  duk_push_int(ctx, 3);
+  duk_call_method(ctx, 2);  /* [ ... func 123 2 3 ] -> [ 5 ] */
+  printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));  /* prints 5 */
+  duk_pop(ctx);
+
+tags:
+  - call
+
+introduced: 1.0.0

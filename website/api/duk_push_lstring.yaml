@@ -1,0 +1,36 @@
+name: duk_push_lstring
+
+proto: |
+  const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
+
+stack: |
+  [ ... ] -> [ ... str! ]
+
+summary: |
+  <p>Push a string of explicit length to the stack.  The string may contain
+  arbitrary data, including internal NUL characters.  A pointer to the interned
+  string data is returned.  If the operation fails, throws an error.</p>
+
+  <p>If <code>str</code> is <code>NULL</code>, an empty string is pushed to the stack
+  (regardless of what <code>len</code> is) and a non-<code>NULL</code> pointer to an
+  empty string is returned.  The returned pointer can be dereferenced and
+  a NUL terminator character is guaranteed.  This behavior differs from
+  <code><a href="#duk_push_string">duk_push_string</a></code> on purpose.</p>
+
+  <p>C code should normally only push valid CESU-8 strings to the stack.</p>
+
+example: |
+  const char tmp1[5] = { 'f', '\0', '\0', 'x', 'y' };
+  const char tmp2[1] = { '\0' };
+
+  duk_push_lstring(ctx, tmp1, 5);   /* push the string "f\x00\x00xy" */
+  duk_push_lstring(ctx, tmp2, 1);   /* push the string "\x00" */
+  duk_push_lstring(ctx, tmp2, 0);   /* push empty string */
+  duk_push_lstring(ctx, NULL, 0);   /* push empty string */
+  duk_push_lstring(ctx, NULL, 10);  /* push empty string */
+
+tags:
+  - stack
+  - string
+
+introduced: 1.0.0

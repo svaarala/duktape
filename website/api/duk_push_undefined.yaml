@@ -1,0 +1,18 @@
+name: duk_push_undefined
+
+proto: |
+  void duk_push_undefined(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... undefined! ]
+
+summary: |
+  <p>Push <code>undefined</code> to the stack.</p>
+
+example: |
+  duk_push_undefined(ctx);
+
+tags:
+  - stack
+
+introduced: 1.0.0

@@ -1,0 +1,30 @@
+name: duk_has_var
+
+proto: |
+  duk_bool_t duk_has_var(duk_context *ctx);
+
+stack: |
+  [ ... varname! ] -> [ ... ]
+
+summary: |
+  XXX
+
+  <p>The identifier existence check does not have a direct Ecmascript equivalent.
+  The closest equivalent is:</p>
+  <pre class="ecmascript-code">
+  typeof varname !== 'undefined'
+  </pre>
+
+  <p>However, if the identifier is defined but has the value <code>undefined</code>,
+  the above check gives a different result than this API call.  Note that the
+  value of the identifier is not looked up and there can thus be no side effects
+  from e.g. getter calls.</p>
+
+example: |
+  XXX
+
+tags:
+  - variable
+  - omit
+
+introduced: 1.0.0

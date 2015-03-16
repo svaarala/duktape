@@ -1,0 +1,23 @@
+name: duk_is_constructor_call
+
+proto: |
+  duk_bool_t duk_is_constructor_call(duk_context *ctx);
+
+summary: |
+  <p>Return non-zero if current function was called as a constructor
+  (<code>new Foo()</code> instead of <code>Foo()</code>); otherwise returns 0.</p>
+
+  <p>This call allows a C function to have different behavior for normal
+  and constructor calls (as is the case for many built-in functions).</p>
+
+example: |
+  if (duk_is_constructor_call(ctx)) {
+      printf("called as a constructor\n");
+  } else {
+      printf("called as a normal function\n");
+  }
+
+tags:
+  - stack
+
+introduced: 1.0.0

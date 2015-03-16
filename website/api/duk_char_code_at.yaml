@@ -1,0 +1,21 @@
+name: duk_char_code_at
+
+proto: |
+  duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset);
+
+stack: |
+  [ ... str! ... ]
+
+summary: |
+  <p>Get the codepoint of a character at character offset <code>char_offset</code>
+  of a string at <code>index</code>.  If the value at <code>index</code> is not
+  a string, an error is thrown.  If <code>char_offset</code> is invalid (outside
+  the string) a zero is returned.</p>
+
+example: |
+  printf("char code at char index 12: %ld\n", (long) duk_char_code_at(ctx, -3, 12));
+
+tags:
+  - string
+
+introduced: 1.0.0

@@ -1,0 +1,26 @@
+name: duk_is_ecmascript_function
+
+proto: |
+  duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Returns 1 if value at <code>index</code> is a Function object which has
+  been compiled from Ecmascript source code, otherwise returns 0.
+  If <code>index</code> is invalid, also returns 0.</p>
+
+  <p>Internally Ecmascript functions are compiled into bytecode and executed
+  with the Ecmascript bytecode interpreter.</p>
+
+example: |
+  if (duk_is_ecmascript_function(ctx, -3)) {
+      /* ... */
+  }
+
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

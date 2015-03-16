@@ -1,0 +1,20 @@
+name: duk_push_this
+
+proto: |
+  void duk_push_this(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... this! ]
+
+summary: |
+  <p>Push the <code>this</code> binding of the currently running C function to
+  the stack.</p>
+
+example: |
+  duk_push_this(ctx);
+
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

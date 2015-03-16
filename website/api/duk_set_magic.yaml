@@ -1,0 +1,25 @@
+name: duk_set_magic
+
+proto: |
+  void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Set the 16-bit signed "magic" value associated with the Duktape/C function
+  at <code>index</code>.  If the value is not a Duktape/C function, an error is
+  thrown.</p>
+
+example: |
+  duk_set_magic(ctx, -3, 0x1234);
+
+tags:
+  - function
+  - magic
+
+seealso:
+  - duk_get_current_magic
+  - duk_get_magic
+
+introduced: 1.0.0

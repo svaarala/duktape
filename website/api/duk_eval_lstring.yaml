@@ -1,0 +1,32 @@
+name: duk_eval_lstring
+
+proto: |
+  void duk_eval_lstring(duk_context *ctx, const char *src, duk_size_t len);
+
+stack: |
+  [ ... ] -> [ ... result! ]
+
+summary: |
+  <p>Like
+  <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
+  is given as a C string with explicit length.  The filename associated with the
+  temporary is automatically provided from the <code>__FILE__</code> preprocessor
+  define of the caller.</p>
+
+  <div include="no-string-intern.html" />
+
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
+
+  duk_eval_lstring(ctx, src, len);
+  printf("result is: %s\n", duk_get_string(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - compile
+
+seealso:
+  - duk_eval_lstring_noresult
+
+introduced: 1.0.0

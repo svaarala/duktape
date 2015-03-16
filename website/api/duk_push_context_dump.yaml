@@ -1,0 +1,39 @@
+name: duk_push_context_dump
+
+proto: |
+  void duk_push_context_dump(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... str! ]
+
+summary: |
+  <p>Push a one-line string summarizing the state of the current activation of
+  context <code>ctx</code>.  This is useful for debugging Duktape/C code and is
+  not intended for production use.</p>
+
+  <p>The exact dump contents are version specific.  The current format includes
+  the stack top (i.e. number of elements on the stack) and prints out the current
+  elements as an array of JX-formatted (Duktape's custom extended JSON format)
+  values.  The example below would print something like:</p>
+  <pre>
+  ctx: top=2, stack=[123,"foo"]
+  </pre>
+
+  <div include="no-production-dump-calls.html" />
+
+example: |
+  duk_push_int(ctx, 123);
+  duk_push_string(ctx, "foo");
+  duk_push_context_dump(ctx);
+  printf("%s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - stack
+  - debug
+
+seealso:
+  - duk_dump_context_stdout
+  - duk_dump_context_stderr
+
+introduced: 1.0.0

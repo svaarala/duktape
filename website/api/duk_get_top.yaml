@@ -1,0 +1,16 @@
+name: duk_get_top
+
+proto: |
+  duk_idx_t duk_get_top(duk_context *ctx);
+
+summary: |
+  <p>Get current stack top (>= 0), indicating the number of values currently on
+  the value stack (of the current activation).</p>
+
+example: |
+  printf("stack top is %ld\n", (long) duk_get_top(ctx));
+
+tags:
+  - stack
+
+introduced: 1.0.0

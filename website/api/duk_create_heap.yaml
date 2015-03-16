@@ -1,0 +1,74 @@
+name: duk_create_heap
+
+proto: |
+  duk_context *duk_create_heap(duk_alloc_function alloc_func,
+                               duk_realloc_function realloc_func,
+                               duk_free_function free_func,
+                               void *heap_udata,
+                               duk_fatal_function fatal_handler);
+
+summary: |
+  <p>Create a new Duktape heap and return an initial context (thread).
+  If heap initialization fails, a <code>NULL</code> is returned.  There is
+  currently no way to obtain more detailed error information.</p>
+
+  <p>The caller may provide custom memory management functions in
+  <code>alloc_func</code>, <code>realloc_func</code>, and <code>free_func</code>;
+  the pointers must either all be <code>NULL</code> or all be
+  non-<code>NULL</code>.  If the pointers are <code>NULL</code>, default
+  memory management functions (ANSI C <code>malloc()</code>, <code>realloc()</code>
+  , and <code>free()</code>) are used.  The memory management functions
+  share the same opaque userdata pointer, <code>heap_udata</code>.  This
+  userdata pointer is also used for other Duktape features (like low memory
+  pointer compression macros).</p>
+
+  <p>A fatal error handler is provided in <code>fatal_handler</code>.  This
+  handler is called in unrecoverable error situations such as uncaught
+  errors, out-of-memory errors not resolved by garbage collection, etc.
+  A caller SHOULD implement a fatal error handler in most applications.
+  If not given, a default fatal error handler is used.  The default
+  handler ultimately calls ANSI C <code>abort()</code>, which may not always
+  be the preferred action.</p>
+
+  <p>To create a Duktape heap with default settings, use
+  <code><a href="#duk_create_heap_default">duk_create_heap_default()</a></code>.</p>
+
+  <p>New contexts linked to the same heap can be created with
+  <code><a href="#duk_push_thread">duk_push_thread()</a></code> and
+  <code><a href="#duk_push_thread_new_globalenv">duk_push_thread_new_globalenv()</a></code>.</p>
+
+example: |
+  /*
+   *  Simple case: use default allocation functions and fatal error handler
+   */
+
+  duk_context *ctx = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
+  if (ctx) {
+      /* success */
+  } else {
+      /* error */
+  }
+
+  /*
+   *  Customized handlers
+   */
+
+  duk_context *ctx = duk_create_heap(my_alloc, my_realloc, my_free,
+                                     (void *) 0xdeadbeef, my_fatal);
+  if (ctx) {
+      /* success */
+
+      /* ... after heap is no longer needed: */
+      duk_destroy_heap(ctx);
+  } else {
+      /* error */
+  }
+
+tags:
+  - heap
+
+seealso:
+  - duk_create_heap_default
+  - duk_destroy_heap
+
+introduced: 1.0.0

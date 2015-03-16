@@ -1,0 +1,30 @@
+name: duk_peval_lstring_noresult
+
+proto: |
+  duk_int_t duk_peval_lstring_noresult(duk_context *ctx, const char *src, duk_size_t len);
+
+stack: |
+  [ ... ] -> [ ... ]
+
+summary: |
+  <p>Like
+  <code><a href="#duk_peval_lstring">duk_peval_lstring()</a></code>, but leaves
+  no result on the value stack.</p>
+
+  <div include="no-string-intern.html" />
+
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
+
+  if (duk_peval_lstring_noresult(ctx, src, len) != 0) {
+      printf("eval failed\n");
+  } else {
+      printf("eval successful\n");
+  }
+
+tags:
+  - compile
+  - protected
+
+introduced: 1.0.0

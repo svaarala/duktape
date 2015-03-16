@@ -1,0 +1,35 @@
+name: duk_set_finalizer
+
+proto: |
+  void duk_set_finalizer(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... finalizer! ] -> [ ... val! ... ]
+
+summary: |
+  <p>Set the finalizer of the value at <code>index</code> to the value at
+  stack top.  If the target value is not an object an error is thrown.  The
+  finalizer value can be an arbitrary one; non-function values are treated
+  as if no finalizer was set.  To delete a finalizer from an object, set it
+  to <code>undefined</code>.</p>
+
+example: |
+  duk_ret_t my_finalizer(duk_context *ctx) {
+      /* Object being finalized is at stack index 0. */
+      printf("object being finalized\n");
+      return 0;
+  }
+
+  /* Create an object whose finalizer is my_finalizer(). */
+  duk_push_object(ctx);
+  duk_push_c_function(ctx, my_finalizer, 1 /*nargs*/);
+  duk_set_finalizer(ctx, -2);
+
+tags:
+  - object
+  - finalizer
+
+seealso:
+  - duk_get_finalizer
+
+introduced: 1.0.0

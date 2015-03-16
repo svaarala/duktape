@@ -1,0 +1,26 @@
+name: duk_eval_noresult
+
+proto: |
+  void duk_eval_noresult(duk_context *ctx);
+
+stack: |
+  [ ... source! ] -> [ ... ]
+
+summary: |
+  <p>Like
+  <code><a href="#duk_eval">duk_eval()</a></code>, but leaves no result on
+  the value stack.</p>
+
+example: |
+  duk_push_string(ctx, "print('Hello world!');");
+  duk_eval_noresult(ctx);
+
+tags:
+  - compile
+
+seealso:
+  - duk_eval_string_noresult
+  - duk_eval_lstring_noresult
+  - duk_eval_file_noresult
+
+introduced: 1.0.0

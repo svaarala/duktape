@@ -1,0 +1,21 @@
+name: duk_log
+
+proto: |
+  void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...);
+
+summary: |
+  <p>Write a formatted log entry with the specified log level (one of
+  <code>DUK_LOG_xxx</code>).  The log write goes through the Duktape
+  built-in logging facility, see
+  <a href="guide.html#logging">Logging</a> for details.</p>
+
+example: |
+  duk_log(ctx, DUK_LOG_INFO, "received message, type: %d", (int) msg_type);
+
+tags:
+  - log
+
+seealso:
+  - duk_log_va
+
+introduced: 1.0.0

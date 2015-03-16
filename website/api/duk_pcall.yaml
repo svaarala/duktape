@@ -1,0 +1,67 @@
+name: duk_pcall
+
+proto: |
+  duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs);
+
+stack: |
+  [ ... func! arg1! ...! argN! ] -> [ ... retval! ]  (if success, return value == 0)
+  [ ... func! arg1! ...! argN! ] -> [ ... err! ]  (if failure, return value != 0)
+
+summary: |
+  <p>Call target function <code>func</code> with <code>nargs</code> arguments
+  (not counting the function itself).  The function and its arguments
+  are replaced by a single return value or a single error value.
+  An error thrown during the function call is caught.</p>
+
+  <p>The return value is:</p>
+  <ul>
+  <li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
+      with a single return value.  (This return code constant is guaranteed to be zero, so
+      that one can check for success with a "zero or non-zero" check.)</li>
+  <li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with a
+      single error value.  (In exceptional cases, e.g. when there are too few
+      arguments on the value stack, the call returns non-zero but may leave the stack
+      in an inconsistent state.)</li>
+  </ul>
+
+  <div class="note">
+  Unlike most Duktape API calls, this call returns zero on success.  This allows
+  multiple error codes to be defined later.
+  </div>
+
+  <p>The target function <code>this</code> binding is initially set to
+  <code>undefined</code>.  If the target function is not strict, the binding
+  is replaced by the global object before the function is invoked; see
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4.3">Entering Function Code</a>.
+  If you want to control the <code>this</code> binding, you can use
+  <code><a href="#duk_pcall_method">duk_pcall_method()</a></code> or
+  <code><a href="#duk_pcall_prop">duk_pcall_prop()</a></code> instead.</p>
+
+example: |
+  /* Assume target function is already on stack at func_idx; the target
+   * function adds arguments and returns the result.
+   */
+
+  duk_idx_t func_idx;
+  duk_int_t rc;
+
+  duk_dup(ctx, func_idx);
+  duk_push_int(ctx, 2);
+  duk_push_int(ctx, 3);
+  rc = duk_pcall(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
+  if (rc == DUK_EXEC_SUCCESS) {
+      printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
+  } else {
+      printf("error: %s\n", duk_to_string(ctx, -1));
+  }
+  duk_pop(ctx);
+
+tags:
+  - call
+  - protected
+
+seealso:
+  - duk_pcall_method
+  - duk_pcall_prop
+
+introduced: 1.0.0

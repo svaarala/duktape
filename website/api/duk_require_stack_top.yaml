@@ -1,0 +1,25 @@
+name: duk_require_stack_top
+
+proto: |
+  void duk_require_stack_top(duk_context *ctx, duk_idx_t top);
+
+summary: |
+  <p>Like <code><a href="#duk_check_stack_top">duk_check_stack_top()</a></code>
+  but an error is thrown if the value stack needs to be reallocated and that
+  reallocation fails.</p>
+
+  <p>As a general rule, callers should use this function to reserve more
+  stack space.  If value stack cannot be extended, there is almost never a
+  useful recovery strategy except to throw an error and unwind.</p>
+
+example: |
+  duk_require_stack_top(ctx, 100);
+  printf("value stack guaranteed up to index 99\n");
+
+tags:
+  - stack
+
+seealso:
+  - duk_check_stack_top
+
+introduced: 1.0.0

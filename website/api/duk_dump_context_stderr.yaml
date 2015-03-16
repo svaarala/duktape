@@ -1,0 +1,28 @@
+name: duk_dump_context_stderr
+
+proto: |
+  void duk_dump_context_stderr(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_push_context_dump">duk_push_context_dump()</a></code> but
+  the context dump is written to <code>stderr</code> and nothing is left on
+  the value stack.</p>
+
+  <p>If file I/O has been disabled, this call is a NOP.</p>
+
+  <div include="no-production-dump-calls.html" />
+
+example: |
+  duk_push_int(ctx, 123);
+  duk_push_string(ctx, "foo");
+  duk_dump_context_stderr(ctx);
+
+tags:
+  - stack
+  - debug
+  - nonportable
+
+introduced: 1.0.0

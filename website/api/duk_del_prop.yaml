@@ -1,0 +1,72 @@
+name: duk_del_prop
+
+proto: |
+  duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_index);
+
+stack: |
+  [ ... obj! ... key! ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Delete the property <code>key</code> of a value at <code>obj_index</code>.
+  <code>key</code> is removed from the stack.  Return code and error throwing
+  behavior:</p>
+  <ul>
+  <li>If property exists and is configurable (deletable), deletes the
+      property and returns <code>1</code>.</li>
+  <li>If property exists but is not configurable, throws an error
+      (strict mode semantics).</li>
+  <li>If property does not exist, returns <code>1</code> (<i>not</i> 0).</li>
+  <li>If the value at <code>obj_index</code> is not
+      <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
+      throws an error.</li>
+  <li>If <code>obj_index</code> is invalid, throws an error.</li>
+  </ul>
+
+  <p>The property deletion is equivalent to the Ecmascript expression:</p>
+  <pre class="ecmascript-code">
+  delete obj[key]
+  </pre>
+
+  <p>For semantics, see
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.4.1">The delete operator</a>
+  and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.7">[[Delete]] (P, Throw)</a>.
+  The return value and error throwing behavior mirrors the Ecmascript
+  <code>delete</code> operator behavior.
+  Both the target value and the <code>key</code> are coerced:</p>
+  <ul>
+  <li>The target value is automatically coerced to an object.  However, this
+      object is a temporary one, so deleting its properties is not very useful.</li>
+  <li>The <code>key</code> argument is internally coerced to a string.  There is
+      an internal fast path for arrays and numeric indices which avoids an
+      explicit string coercion, so use a numeric <code>key</code> when applicable.</p>
+  </ul>
+
+  <div class="note">
+  This API call returns <code>1</code> when the target property does not exist.
+  This is not very intuitive, but follows Ecmascript semantics:
+  <code>delete obj.nonexistent</code> also evaluates to <code>true</code>.
+  </div>
+
+  <p>If the key is a fixed string you can avoid one API call and use the
+  <code><a href="#duk_del_prop_string">duk_del_prop_string()</a></code> variant.
+  Similarly, if the key is an array index, you can use the
+  <code><a href="#duk_del_prop_index">duk_del_prop_index()</a></code> variant.</p>
+
+  <div include="object-can-be-any-value.html" />
+
+example: |
+  duk_bool_t rc;
+
+  duk_push_string(ctx, "myProperty");
+  rc = duk_del_prop(ctx, -3);
+  printf("delete obj.myProperty -> rc=%d\n", (int) rc);
+
+tags:
+  - property
+
+seealso:
+  - duk_del_prop_string
+  - duk_del_prop_index
+
+introduced: 1.0.0

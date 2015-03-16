@@ -1,0 +1,25 @@
+name: duk_to_boolean
+
+proto: |
+  duk_bool_t duk_to_boolean(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ] -> [ ... ToBoolean(val)! ... ]
+
+summary: |
+  <p>Replace the value at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.2">ToBoolean()</a>
+  coerced value.  Returns 1 if the result of the coercion <code>true</code>, 0 otherwise.
+  If <code>index</code> is invalid, throws an error.</p>
+
+  <div include="ref-custom-type-coercion.html" />
+
+example: |
+  if (duk_to_boolean(ctx, -3)) {
+      printf("coerced value is true\n");
+  }
+
+tags:
+  - stack
+
+introduced: 1.0.0

@@ -1,0 +1,27 @@
+name: duk_peval_string_noresult
+
+proto: |
+  duk_int_t duk_peval_string_noresult(duk_context *ctx, const char *src);
+
+stack: |
+  [ ... ] -> [ ... ]
+
+summary: |
+  <p>Like
+  <code><a href="#duk_peval_string">duk_peval_string()</a></code>, but leaves
+  no result on the value stack.</p>
+
+  <div include="no-string-intern.html" />
+
+example: |
+  if (duk_peval_string_noresult(ctx, "print('testString'.toUpperCase());") != 0) {
+      printf("eval failed\n");
+  } else {
+      printf("eval successful\n");
+  }
+
+tags:
+  - compile
+  - protected
+
+introduced: 1.0.0

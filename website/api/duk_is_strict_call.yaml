@@ -1,0 +1,22 @@
+name: duk_is_strict_call
+
+proto: |
+  duk_bool_t duk_is_strict_call(duk_context *ctx);
+
+summary: |
+  <p>Check whether the current (Duktape/C) function call is strict or not.
+  Returns 1 if the current function call is strict, 0 otherwise.  As of
+  Duktape 0.12.0, this function always returns 1 when called from user code
+  (even if the call stack is empty).</p>
+
+example: |
+  if (duk_is_strict_call(ctx)) {
+      printf("strict call\n");
+  } else {
+      printf("non-strict call\n");
+  }
+
+tags:
+  - function
+
+introduced: 1.0.0

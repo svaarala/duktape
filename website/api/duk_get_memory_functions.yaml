@@ -1,0 +1,25 @@
+name: duk_get_memory_functions
+
+proto: |
+  void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
+
+summary: |
+  <p>Get the memory management functions used by the context.</p>
+
+  <p>Normally there is no reason to call this function: you can use the
+  memory management primitives through wrapped memory management functions
+  such as
+  <code><a href="#duk_alloc">duk_alloc()</a></code>,
+  <code><a href="#duk_realloc">duk_realloc()</a></code>, and
+  <code><a href="#duk_free">duk_free()</a></code>.</p>
+
+example: |
+  duk_memory_functions funcs;
+
+  duk_get_memory_functions(ctx, &funcs);
+
+tags:
+  - memory
+  - heap
+
+introduced: 1.0.0

@@ -1,0 +1,25 @@
+name: duk_eval_lstring_noresult
+
+proto: |
+  void duk_eval_lstring_noresult(duk_context *ctx, const char *src, duk_size_t len);
+
+stack: |
+  [ ... ] -> [ ... ]
+
+summary: |
+  <p>Like
+  <code><a href="#duk_eval_lstring">duk_eval_lstring()</a></code>, but leaves no
+  result on the value stack.</p>
+
+  <div include="no-string-intern.html" />
+
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
+
+  duk_eval_lstring_noresult(ctx, src, len);
+
+tags:
+  - compile
+
+introduced: 1.0.0
