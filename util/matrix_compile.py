@@ -278,12 +278,13 @@ def create_matrix(fn_duk):
 		'-Os'
 	])
 
-	# Feature options in suitable chunks that can be subsetted arbitrarilt.
+	# Feature options in suitable chunks that can be subsetted arbitrarily.
 
 	duktape_options = Subset([
 		Select([ '-DDUK_OPT_NO_REFERENCE_COUNTING',
 		         '-DDUK_OPT_NO_MARK_AND_SWEEP',
 		         '-DDUK_OPT_GC_TORTURE' ]),
+		'-DDUK_OPT_SHUFFLE_TORTURE',
 		'-DDUK_OPT_NO_VOLUNTARY_GC',
 		'-DDUK_OPT_SEGFAULT_ON_PANIC',
 		'-DDUK_OPT_DPRINT_COLORS',
