@@ -142,7 +142,8 @@ static __inline__ unsigned long long duk_rdtsc(void) {
     defined(_MIPS_ISA_MIPS3) || defined(_MIPS_ISA_MIPS4) || \
     defined(__mips) || defined(__MIPS__)
 #define DUK_F_MIPS
-#if defined(__LP64__)
+#if defined(__LP64__) || defined(__mips64) || defined(__mips64__) || \
+    defined(__mips_n64)
 #define DUK_F_MIPS64
 #else
 #define DUK_F_MIPS32
