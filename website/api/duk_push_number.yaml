@@ -1,20 +1,21 @@
-=proto
-void duk_push_number(duk_context *ctx, duk_double_t val);
+name: duk_push_number
 
-=stack
-[ ... ] -> [ ... val! ]
+proto: |
+  void duk_push_number(duk_context *ctx, duk_double_t val);
 
-=summary
-<p>Push number (IEEE double) <code>val</code> to the stack.</p>
+stack: |
+  [ ... ] -> [ ... val! ]
 
-<p>If <code>val</code> is a <code>NaN</code> it may be normalized into another
-<code>NaN</code> form.</p>
+summary: |
+  <p>Push number (IEEE double) <code>val</code> to the stack.</p>
 
-=example
-duk_push_number(ctx, 123.0);
+  <p>If <code>val</code> is a <code>NaN</code> it may be normalized into another
+  <code>NaN</code> form.</p>
 
-=tags
-stack
+example: |
+  duk_push_number(ctx, 123.0);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

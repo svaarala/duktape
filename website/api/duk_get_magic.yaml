@@ -1,29 +1,30 @@
-=proto
-duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index);
+name: duk_get_magic
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get the 16-bit signed "magic" value associated with the Duktape/C function
-at <code>index</code>.  If the value is not a Duktape/C function, an error is
-thrown.</p>
+stack: |
+  [ ... val! ... ]
 
-<div class="note">
-Lightweight functions have space for only <b>8</b> magic value bits which is
-interpreted as a signed integer (-128 to 127).
-</div>
+summary: |
+  <p>Get the 16-bit signed "magic" value associated with the Duktape/C function
+  at <code>index</code>.  If the value is not a Duktape/C function, an error is
+  thrown.</p>
 
-=example
-duk_int_t my_flags = duk_get_magic(ctx, -3);
+  <div class="note">
+  Lightweight functions have space for only <b>8</b> magic value bits which is
+  interpreted as a signed integer (-128 to 127).
+  </div>
 
-=tags
-function
-magic
+example: |
+  duk_int_t my_flags = duk_get_magic(ctx, -3);
 
-=seealso
-duk_get_current_magic
-duk_set_magic
+tags:
+  - function
+  - magic
 
-=introduced
-1.0.0
+seealso:
+  - duk_get_current_magic
+  - duk_set_magic
+
+introduced: 1.0.0

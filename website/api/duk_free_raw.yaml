@@ -1,27 +1,28 @@
-=proto
-void duk_free_raw(duk_context *ctx, void *ptr);
+name: duk_free_raw
 
-=summary
-<p>Free memory allocated with the allocation function registered to the
-context.  The operation cannot fail.  If <code>ptr</code> is <code>NULL</code>,
-the call is a no-op.</p>
+proto: |
+  void duk_free_raw(duk_context *ctx, void *ptr);
 
-<p><code>duk_free_raw()</code> can be used to free memory allocated with either
-<code><a href="#duk_alloc">duk_alloc()</a></code> or
-<code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>
-and their reallocation variants.</p>
+summary: |
+  <p>Free memory allocated with the allocation function registered to the
+  context.  The operation cannot fail.  If <code>ptr</code> is <code>NULL</code>,
+  the call is a no-op.</p>
 
-=example
-void *buf = duk_alloc_raw(ctx, 1024);
-/* ... */
+  <p><code>duk_free_raw()</code> can be used to free memory allocated with either
+  <code><a href="#duk_alloc">duk_alloc()</a></code> or
+  <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>
+  and their reallocation variants.</p>
 
-duk_free_raw(ctx, buf);  /* safe even if 'buf' is NULL */
+example: |
+  void *buf = duk_alloc_raw(ctx, 1024);
+  /* ... */
 
-=tags
-memory
+  duk_free_raw(ctx, buf);  /* safe even if 'buf' is NULL */
 
-=seealso
-duk_free
+tags:
+  - memory
 
-=introduced
-1.0.0
+seealso:
+  - duk_free
+
+introduced: 1.0.0

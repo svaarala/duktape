@@ -1,23 +1,24 @@
-=proto
-duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index);
+name: duk_is_callable
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Return 1 if value at <code>index</code> is callable, otherwise returns 0.
-Also returns 0 if <code>index</code> is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>Currently this is the same as
-<code><a href="#duk_is_function">duk_is_function()</a></code>.</p>
+summary: |
+  <p>Return 1 if value at <code>index</code> is callable, otherwise returns 0.
+  Also returns 0 if <code>index</code> is invalid.</p>
 
-=example
-if (duk_is_callable(ctx, -3)) {
-    /* ... */
-}
+  <p>Currently this is the same as
+  <code><a href="#duk_is_function">duk_is_function()</a></code>.</p>
 
-=tags
-stack
+example: |
+  if (duk_is_callable(ctx, -3)) {
+      /* ... */
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

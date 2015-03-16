@@ -1,28 +1,29 @@
-=proto
-void duk_eval_file(duk_context *ctx, const char *path);
+name: duk_eval_file
 
-=stack
-[ ... ] -> [ ... result! ]
+proto: |
+  void duk_eval_file(duk_context *ctx, const char *path);
 
-=summary
-<p>Like
-<code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
-is given as a filename.  The filename associated with the temporary
-function created for the eval code is <code>path</code> as is.</p>
+stack: |
+  [ ... ] -> [ ... result! ]
 
-<div include="path-encoding.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
+  is given as a filename.  The filename associated with the temporary
+  function created for the eval code is <code>path</code> as is.</p>
 
-=example
-duk_eval_file(ctx, "test.js");
-printf("result is: %s\n", duk_safe_to_string(ctx, -1));
-duk_pop(ctx);
+  <div include="path-encoding.html" />
 
-=tags
-compile
-nonportable
+example: |
+  duk_eval_file(ctx, "test.js");
+  printf("result is: %s\n", duk_safe_to_string(ctx, -1));
+  duk_pop(ctx);
 
-=seealso
-duk_eval_file_noresult
+tags:
+  - compile
+  - nonportable
 
-=introduced
-1.0.0
+seealso:
+  - duk_eval_file_noresult
+
+introduced: 1.0.0

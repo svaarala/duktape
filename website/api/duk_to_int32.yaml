@@ -1,22 +1,23 @@
-=proto
-duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index);
+name: duk_to_int32
 
-=stack
-[ ... val! ... ] -> [ ... ToInt32(val)! ... ]
+proto: |
+  duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Replace the value at <code>index</code> with an Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.5">ToInt32()</a>
-coerced value.  Returns the coerced value.  If <code>index</code> is invalid, throws
-an error.</p>
+stack: |
+  [ ... val! ... ] -> [ ... ToInt32(val)! ... ]
 
-<div include="ref-custom-type-coercion.html" />
+summary: |
+  <p>Replace the value at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.5">ToInt32()</a>
+  coerced value.  Returns the coerced value.  If <code>index</code> is invalid, throws
+  an error.</p>
 
-=example
-printf("ToInt32(): %ld\n", (long) duk_to_int32(ctx, -3));
+  <div include="ref-custom-type-coercion.html" />
 
-=tags
-stack
+example: |
+  printf("ToInt32(): %ld\n", (long) duk_to_int32(ctx, -3));
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

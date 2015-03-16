@@ -1,22 +1,23 @@
-=proto
-void duk_debugger_detach(duk_context *ctx);
+name: duk_debugger_detach
 
-=summary
-<p>Detach a debugger from the Duktape heap.  If debugger support is not
-compiled into Duktape, throws an error.  See
-<a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
-for more information.</p>
+proto: |
+  void duk_debugger_detach(duk_context *ctx);
 
-=example
-duk_debugger_detach(ctx);
+summary: |
+  <p>Detach a debugger from the Duktape heap.  If debugger support is not
+  compiled into Duktape, throws an error.  See
+  <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
+  for more information.</p>
 
-=tags
-debug
-experimental
+example: |
+  duk_debugger_detach(ctx);
 
-=seealso
-duk_debugger_attach
-duk_debugger_cooperate
+tags:
+  - debug
+  - experimental
 
-=introduced
-1.2.0
+seealso:
+  - duk_debugger_attach
+  - duk_debugger_cooperate
+
+introduced: 1.2.0

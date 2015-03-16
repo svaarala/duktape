@@ -1,24 +1,25 @@
-=proto
-void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
+name: duk_get_finalizer
 
-=stack
-[ ... val! ... ] -> [ ... val! ... finalizer! ]
+proto: |
+  void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get the finalizer associated with a value at <code>index</code>.  If the
-value is not an object or it is an object without a finalizer,
-<code>undefined</code> is pushed to the stack instead.</p>
+stack: |
+  [ ... val! ... ] -> [ ... val! ... finalizer! ]
 
-=example
-/* Get the finalizer of an object at index -3. */
-duk_get_finalizer(ctx, -3);
+summary: |
+  <p>Get the finalizer associated with a value at <code>index</code>.  If the
+  value is not an object or it is an object without a finalizer,
+  <code>undefined</code> is pushed to the stack instead.</p>
 
-=tags
-object
-finalizer
+example: |
+  /* Get the finalizer of an object at index -3. */
+  duk_get_finalizer(ctx, -3);
 
-=seealso
-duk_set_finalizer
+tags:
+  - object
+  - finalizer
 
-=introduced
-1.0.0
+seealso:
+  - duk_set_finalizer
+
+introduced: 1.0.0

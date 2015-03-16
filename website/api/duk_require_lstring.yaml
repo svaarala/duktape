@@ -1,24 +1,25 @@
-=proto
-const char *duk_require_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+name: duk_require_lstring
 
-=stack
-[ ... val! ... ]
+proto: |
+  const char *duk_require_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 
-=summary
-<p>Like <code><a href="#duk_get_lstring">duk_get_lstring()</a></code>,
-but throws an error if the value at <code>index</code> is not a string
-or if the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-const char *buf;
-duk_size_t len;
+summary: |
+  <p>Like <code><a href="#duk_get_lstring">duk_get_lstring()</a></code>,
+  but throws an error if the value at <code>index</code> is not a string
+  or if the index is invalid.</p>
 
-buf = duk_require_lstring(ctx, -3, &len);
-printf("value is a string, %lu bytes\n", (unsigned long) len);
+example: |
+  const char *buf;
+  duk_size_t len;
 
-=tags
-stack
-string
+  buf = duk_require_lstring(ctx, -3, &len);
+  printf("value is a string, %lu bytes\n", (unsigned long) len);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - string
+
+introduced: 1.0.0

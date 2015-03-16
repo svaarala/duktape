@@ -1,30 +1,31 @@
-=proto
-duk_context *duk_create_heap_default(void);
+name: duk_create_heap_default
 
-=summary
-<p>Create a new Duktape heap and return an initial context (thread).
-If heap initialization fails, a <code>NULL</code> is returned.  There is
-currently no way to obtain more detailed error information.</p>
+proto: |
+  duk_context *duk_create_heap_default(void);
 
-<p>The created heap will use default memory management and fatal error
-handler functions.  This API call is equivalent to:</p>
-<pre class="c-code">
-ctx = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
-</pre>
+summary: |
+  <p>Create a new Duktape heap and return an initial context (thread).
+  If heap initialization fails, a <code>NULL</code> is returned.  There is
+  currently no way to obtain more detailed error information.</p>
 
-=example
-duk_context *ctx = duk_create_heap_default();
-if (ctx) {
-    /* success */
+  <p>The created heap will use default memory management and fatal error
+  handler functions.  This API call is equivalent to:</p>
+  <pre class="c-code">
+  ctx = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
+  </pre>
 
-    /* ... after heap is no longer needed: */
-    duk_destroy_heap(ctx);
-} else {
-    /* error */
-}
+example: |
+  duk_context *ctx = duk_create_heap_default();
+  if (ctx) {
+      /* success */
 
-=tags
-heap
+      /* ... after heap is no longer needed: */
+      duk_destroy_heap(ctx);
+  } else {
+      /* error */
+  }
 
-=introduced
-1.0.0
+tags:
+  - heap
+
+introduced: 1.0.0

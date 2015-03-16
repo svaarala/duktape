@@ -1,20 +1,21 @@
-=proto
-void duk_push_pointer(duk_context *ctx, void *p);
+name: duk_push_pointer
 
-=stack
-[ ... ] -> [ ... ptr! ]
+proto: |
+  void duk_push_pointer(duk_context *ctx, void *p);
 
-=summary
-<p>Push <code>p</code> into the stack as a pointer value.  Duktape won't
-interpret the pointer in any manner.</p>
+stack: |
+  [ ... ] -> [ ... ptr! ]
 
-=example
-struct mystruct *p = /* ... */;
+summary: |
+  <p>Push <code>p</code> into the stack as a pointer value.  Duktape won't
+  interpret the pointer in any manner.</p>
 
-duk_push_pointer(ctx, (void *) p);
+example: |
+  struct mystruct *p = /* ... */;
 
-=tags
-stack
+  duk_push_pointer(ctx, (void *) p);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

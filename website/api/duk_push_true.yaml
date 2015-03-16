@@ -1,19 +1,19 @@
-=proto
-void duk_push_true(duk_context *ctx);
+name: duk_push_true
 
-=stack
-[ ... ] -> [ ... true! ]
+proto: |
+  void duk_push_true(duk_context *ctx);
 
-=summary
-<p>Push <code>true</code> to stack.  Equivalent to calling
-<code><a href="#duk_push_boolean">duk_push_boolean(ctx, 1)</a></code>.</p>
+stack: |
+  [ ... ] -> [ ... true! ]
 
-=example
-duk_push_true(ctx);
+summary: |
+  <p>Push <code>true</code> to stack.  Equivalent to calling
+  <code><a href="#duk_push_boolean">duk_push_boolean(ctx, 1)</a></code>.</p>
 
-=tags
-stack
+example: |
+  duk_push_true(ctx);
 
+tags:
+  - stack
 
-=introduced
-1.0.0
+introduced: 1.0.0

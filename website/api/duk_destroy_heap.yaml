@@ -1,19 +1,20 @@
-=proto
-void duk_destroy_heap(duk_context *ctx);
+name: duk_destroy_heap
 
-=summary
-<p>Destroy a Duktape heap.  The argument context can be any context linked
-to the heap.  All resources related to the heap are freed and must not be
-referenced after the call completes.  These resources include all contexts
-linked to the heap, and also all string and buffer pointers within the heap.</p>
+proto: |
+  void duk_destroy_heap(duk_context *ctx);
 
-<p>If <code>ctx</code> is <code>NULL</code>, the call is a no-op.</p>
+summary: |
+  <p>Destroy a Duktape heap.  The argument context can be any context linked
+  to the heap.  All resources related to the heap are freed and must not be
+  referenced after the call completes.  These resources include all contexts
+  linked to the heap, and also all string and buffer pointers within the heap.</p>
 
-=example
-duk_destroy_heap(ctx);
+  <p>If <code>ctx</code> is <code>NULL</code>, the call is a no-op.</p>
 
-=tags
-heap
+example: |
+  duk_destroy_heap(ctx);
 
-=introduced
-1.0.0
+tags:
+  - heap
+
+introduced: 1.0.0

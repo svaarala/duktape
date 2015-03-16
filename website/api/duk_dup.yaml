@@ -1,23 +1,24 @@
-=proto
-void duk_dup(duk_context *ctx, duk_idx_t from_index);
+name: duk_dup
 
-=stack
-[ ... val! ... ] -> [ ... val! ... val! ]
+proto: |
+  void duk_dup(duk_context *ctx, duk_idx_t from_index);
 
-=summary
-<p>Push a duplicate of value at <code>from_index</code> to the stack.
-If <code>from_index</code> is invalid, throws an error.</p>
+stack: |
+  [ ... val! ... ] -> [ ... val! ... val! ]
 
-=example
-duk_push_int(ctx, 123);  /* -> [ ... 123 ] */
-duk_push_int(ctx, 234);  /* -> [ ... 123 234 ] */
-duk_dup(ctx, -2);        /* -> [ ... 123 234 123 ] */
+summary: |
+  <p>Push a duplicate of value at <code>from_index</code> to the stack.
+  If <code>from_index</code> is invalid, throws an error.</p>
 
-=tags
-stack
+example: |
+  duk_push_int(ctx, 123);  /* -> [ ... 123 ] */
+  duk_push_int(ctx, 234);  /* -> [ ... 123 234 ] */
+  duk_dup(ctx, -2);        /* -> [ ... 123 234 123 ] */
 
-=seealso
-duk_dup_top
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_dup_top
+
+introduced: 1.0.0

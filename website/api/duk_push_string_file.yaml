@@ -1,26 +1,27 @@
-=proto
-const char *duk_push_string_file(duk_context *ctx, const char *path);
+name: duk_push_string_file
 
-=stack
-[ ... ] -> [ ... data! ]
+proto: |
+  const char *duk_push_string_file(duk_context *ctx, const char *path);
 
-=summary
-<p>Push the contents of a file <code>path</code> into the stack as string data.
-The file should be CESU-8 formatted if Ecmascript string compatibility is
-necessary.  A pointer to the interned string data is returned.  If the
-operation fails, throws an error.</p>
+stack: |
+  [ ... ] -> [ ... data! ]
 
-<p>If <code>path</code> is NULL, throws an error.</p>
+summary: |
+  <p>Push the contents of a file <code>path</code> into the stack as string data.
+  The file should be CESU-8 formatted if Ecmascript string compatibility is
+  necessary.  A pointer to the interned string data is returned.  If the
+  operation fails, throws an error.</p>
 
-<div include="path-encoding.html" />
+  <p>If <code>path</code> is NULL, throws an error.</p>
 
-=example
-duk_push_string_file(ctx, "test.js");
+  <div include="path-encoding.html" />
 
-=tags
-stack
-string
-nonportable
+example: |
+  duk_push_string_file(ctx, "test.js");
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - string
+  - nonportable
+
+introduced: 1.0.0

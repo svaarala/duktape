@@ -1,31 +1,32 @@
-=proto
-duk_idx_t duk_push_array(duk_context *ctx);
+name: duk_push_array
 
-=stack
-[ ... ] -> [ ... arr! ]
+proto: |
+  duk_idx_t duk_push_array(duk_context *ctx);
 
-=summary
-<p>Push an empty array to the stack.  Returns non-negative index (relative to stack bottom)
-of the pushed array.</p>
+stack: |
+  [ ... ] -> [ ... arr! ]
 
-=example
-duk_idx_t arr_idx;
+summary: |
+  <p>Push an empty array to the stack.  Returns non-negative index (relative to stack bottom)
+  of the pushed array.</p>
 
-arr_idx = duk_push_array(ctx);
-duk_push_string(ctx, "foo");
-duk_put_prop_index(ctx, arr_idx, 0);
-duk_push_string(ctx, "bar");
-duk_put_prop_index(ctx, arr_idx, 1);
+example: |
+  duk_idx_t arr_idx;
 
-/* array is now: [ "foo", "bar" ], and array.length is 2 (automatically
- * updated for Ecmascript arrays).
- */
+  arr_idx = duk_push_array(ctx);
+  duk_push_string(ctx, "foo");
+  duk_put_prop_index(ctx, arr_idx, 0);
+  duk_push_string(ctx, "bar");
+  duk_put_prop_index(ctx, arr_idx, 1);
 
-duk_pop(ctx);  /* pop array */
+  /* array is now: [ "foo", "bar" ], and array.length is 2 (automatically
+   * updated for Ecmascript arrays).
+   */
 
-=tags
-stack
-object
+  duk_pop(ctx);  /* pop array */
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - object
+
+introduced: 1.0.0

@@ -1,30 +1,31 @@
-=proto
-duk_int_t duk_pcompile_string_filename(duk_context *ctx, duk_uint_t flags, const char *src);
+name: duk_pcompile_string_filename
 
-=stack
-[ ... filename! ] -> [ ... function! ]  (if success, return value == 0)
-[ ... filename! ] -> [ ... err! ]  (if failure, return value != 0)
+proto: |
+  duk_int_t duk_pcompile_string_filename(duk_context *ctx, duk_uint_t flags, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_pcompile">duk_pcompile()</a></code>, but the compile input
-is given as a C string.</p>
+stack: |
+  [ ... filename! ] -> [ ... function! ]  (if success, return value == 0)
+  [ ... filename! ] -> [ ... err! ]  (if failure, return value != 0)
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_pcompile">duk_pcompile()</a></code>, but the compile input
+  is given as a C string.</p>
 
-=example
-duk_push_string(ctx, "myFile.js");
-if (duk_pcompile_string_filename(ctx, 0, "print('program code'); syntax error here=") != 0) {
-    printf("compile failed: %s\n", duk_safe_to_string(ctx, -1));
-} else {
-    duk_call(ctx, 0);      /* [ func ] -> [ result ] */
-    printf("program result: %s\n", duk_safe_to_string(ctx, -1));
-}
-duk_pop(ctx);
+  <div include="no-string-intern.html" />
 
-=tags
-compile
-protected
+example: |
+  duk_push_string(ctx, "myFile.js");
+  if (duk_pcompile_string_filename(ctx, 0, "print('program code'); syntax error here=") != 0) {
+      printf("compile failed: %s\n", duk_safe_to_string(ctx, -1));
+  } else {
+      duk_call(ctx, 0);      /* [ func ] -> [ result ] */
+      printf("program result: %s\n", duk_safe_to_string(ctx, -1));
+  }
+  duk_pop(ctx);
 
-=introduced
-1.0.0
+tags:
+  - compile
+  - protected
+
+introduced: 1.0.0

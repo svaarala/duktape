@@ -1,25 +1,26 @@
-=proto
-duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t index);
+name: duk_is_ecmascript_function
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Returns 1 if value at <code>index</code> is a Function object which has
-been compiled from Ecmascript source code, otherwise returns 0.
-If <code>index</code> is invalid, also returns 0.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>Internally Ecmascript functions are compiled into bytecode and executed
-with the Ecmascript bytecode interpreter.</p>
+summary: |
+  <p>Returns 1 if value at <code>index</code> is a Function object which has
+  been compiled from Ecmascript source code, otherwise returns 0.
+  If <code>index</code> is invalid, also returns 0.</p>
 
-=example
-if (duk_is_ecmascript_function(ctx, -3)) {
-    /* ... */
-}
+  <p>Internally Ecmascript functions are compiled into bytecode and executed
+  with the Ecmascript bytecode interpreter.</p>
 
-=tags
-stack
-function
+example: |
+  if (duk_is_ecmascript_function(ctx, -3)) {
+      /* ... */
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

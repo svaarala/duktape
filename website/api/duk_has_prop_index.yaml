@@ -1,30 +1,31 @@
-=proto
-duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index);
+name: duk_has_prop_index
 
-=stack
-[ ... obj! ... ] -> [ ... obj! ... ]
+proto: |
+  duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index);
 
-=summary
-<p>Like <code><a href="#duk_has_prop">duk_has_prop()</a></code>,
-but the property name is given as an unsigned integer
-<code>arr_index</code>.  This is especially useful for checking
-existence of array elements (but is not limited to that).</p>
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
 
-<p>Conceptually the number is coerced to a string for property
-existence check, e.g. <code>123</code> would be equivalent to a property
-name <code>"123"</code>.  Duktape avoids an explicit coercion whenever
-possible.</p>
+summary: |
+  <p>Like <code><a href="#duk_has_prop">duk_has_prop()</a></code>,
+  but the property name is given as an unsigned integer
+  <code>arr_index</code>.  This is especially useful for checking
+  existence of array elements (but is not limited to that).</p>
 
-=example
-if (duk_has_prop_index(ctx, -3, 123)) {
-    printf("obj has index 123\n");
-} else {
-    printf("obj does not have index 123\n");
-}
+  <p>Conceptually the number is coerced to a string for property
+  existence check, e.g. <code>123</code> would be equivalent to a property
+  name <code>"123"</code>.  Duktape avoids an explicit coercion whenever
+  possible.</p>
 
-=tags
-property
-stack
+example: |
+  if (duk_has_prop_index(ctx, -3, 123)) {
+      printf("obj has index 123\n");
+  } else {
+      printf("obj does not have index 123\n");
+  }
 
-=introduced
-1.0.0
+tags:
+  - property
+  - stack
+
+introduced: 1.0.0

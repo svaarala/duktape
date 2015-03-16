@@ -1,21 +1,22 @@
-=proto
-void duk_eval_string_noresult(duk_context *ctx, const char *src);
+name: duk_eval_string_noresult
 
-=stack
-[ ... ] -> [ ... ]
+proto: |
+  void duk_eval_string_noresult(duk_context *ctx, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_eval_string">duk_eval_string()</a></code>, but leaves no
-result on the value stack.</p>
+stack: |
+  [ ... ] -> [ ... ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_eval_string">duk_eval_string()</a></code>, but leaves no
+  result on the value stack.</p>
 
-=example
-duk_eval_string_noresult(ctx, "print('testString'.toUpperCase())");
+  <div include="no-string-intern.html" />
 
-=tags
-compile
+example: |
+  duk_eval_string_noresult(ctx, "print('testString'.toUpperCase())");
 
-=introduced
-1.0.0
+tags:
+  - compile
+
+introduced: 1.0.0

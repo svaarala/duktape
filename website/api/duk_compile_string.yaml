@@ -1,23 +1,24 @@
-=proto
-void duk_compile_string(duk_context *ctx, duk_uint_t flags, const char *src);
+name: duk_compile_string
 
-=stack
-[ ... ] -> [ ... function! ]
+proto: |
+  void duk_compile_string(duk_context *ctx, duk_uint_t flags, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
-is given as a C string.  The filename associated with the function is
-automatically provided from the <code>__FILE__</code> preprocessor define of
-the caller.</p>
+stack: |
+  [ ... ] -> [ ... function! ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+  is given as a C string.  The filename associated with the function is
+  automatically provided from the <code>__FILE__</code> preprocessor define of
+  the caller.</p>
 
-=example
-duk_compile_string(ctx, 0, "print('program code');");
+  <div include="no-string-intern.html" />
 
-=tags
-compile
+example: |
+  duk_compile_string(ctx, 0, "print('program code');");
 
-=introduced
-1.0.0
+tags:
+  - compile
+
+introduced: 1.0.0

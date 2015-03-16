@@ -1,35 +1,36 @@
-=proto
-duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs);
+name: duk_pcall_prop
 
-=stack
-[ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... retval! ]  (if success, return value == 0)
-[ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... err! ]  (if failure, return value != 0)
+proto: |
+  duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs);
 
-=summary
-<p>Like <code><a href="#duk_pcall">duk_pcall()</a></code>, but the target function
-is looked up from <code>obj.key</code> and <code>obj</code> is used as the function's
-<code>this</code> binding.</p>
+stack: |
+  [ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... retval! ]  (if success, return value == 0)
+  [ ... obj! ... key! arg1! ...! argN! ] -> [ ... obj! ... err! ]  (if failure, return value != 0)
 
-=example
-/* obj.myAdderMethod(2,3) -> 5 */
-duk_idx_t obj_idx;
-duk_int_t rc;
+summary: |
+  <p>Like <code><a href="#duk_pcall">duk_pcall()</a></code>, but the target function
+  is looked up from <code>obj.key</code> and <code>obj</code> is used as the function's
+  <code>this</code> binding.</p>
 
-duk_push_string(ctx, "myAdderMethod");
-duk_push_int(ctx, 2);
-duk_push_int(ctx, 3);
-rc = duk_pcall_prop(ctx, obj_idx, 2);  /* [ ... "myAdderMethod" 2 3 ] -> [ ... 5 ] */
-if (rc == DUK_EXEC_SUCCESS) {
-    printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
-} else {
-    printf("error: %s\n", duk_to_string(ctx, -1));
-}
-duk_pop(ctx);
+example: |
+  /* obj.myAdderMethod(2,3) -> 5 */
+  duk_idx_t obj_idx;
+  duk_int_t rc;
 
-=tags
-property
-call
-protected
+  duk_push_string(ctx, "myAdderMethod");
+  duk_push_int(ctx, 2);
+  duk_push_int(ctx, 3);
+  rc = duk_pcall_prop(ctx, obj_idx, 2);  /* [ ... "myAdderMethod" 2 3 ] -> [ ... 5 ] */
+  if (rc == DUK_EXEC_SUCCESS) {
+      printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
+  } else {
+      printf("error: %s\n", duk_to_string(ctx, -1));
+  }
+  duk_pop(ctx);
 
-=introduced
-1.0.0
+tags:
+  - property
+  - call
+  - protected
+
+introduced: 1.0.0

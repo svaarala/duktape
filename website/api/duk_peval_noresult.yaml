@@ -1,29 +1,30 @@
-=proto
-duk_int_t duk_peval_noresult(duk_context *ctx);
+name: duk_peval_noresult
 
-=stack
-[ ... source! ] -> [ ... ]
+proto: |
+  duk_int_t duk_peval_noresult(duk_context *ctx);
 
-=summary
-<p>Like <code><a href="#duk_peval">duk_peval()</a></code> but leaves no result
-on the value stack.</p>
+stack: |
+  [ ... source! ] -> [ ... ]
 
-=example
-duk_push_string(ctx, "print('Hello world!'); syntax error here=");
-if (duk_peval_noresult(ctx) != 0) {
-    printf("eval failed\n");
-} else {
-    printf("eval successful\n");
-}
+summary: |
+  <p>Like <code><a href="#duk_peval">duk_peval()</a></code> but leaves no result
+  on the value stack.</p>
 
-=tags
-compile
-protected
+example: |
+  duk_push_string(ctx, "print('Hello world!'); syntax error here=");
+  if (duk_peval_noresult(ctx) != 0) {
+      printf("eval failed\n");
+  } else {
+      printf("eval successful\n");
+  }
 
-=seealso
-duk_peval_string_noresult
-duk_peval_lstring_noresult
-duk_peval_file_noresult
+tags:
+  - compile
+  - protected
 
-=introduced
-1.0.0
+seealso:
+  - duk_peval_string_noresult
+  - duk_peval_lstring_noresult
+  - duk_peval_file_noresult
+
+introduced: 1.0.0

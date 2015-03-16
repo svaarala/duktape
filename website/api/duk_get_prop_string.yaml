@@ -1,22 +1,23 @@
-=proto
-duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+name: duk_get_prop_string
 
-=stack
-[ ... obj! ... ] -> [ ... obj! ... val! ]  (if key exists)
-[ ... obj! ... ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
+proto: |
+  duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
 
-=summary
-<p>Like <code><a href="#duk_get_prop">duk_get_prop()</a></code>,
-but the property name is given as a NUL-terminated C string
-<code>key</code>.</p>
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... val! ]  (if key exists)
+  [ ... obj! ... ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
 
-=example
-duk_get_prop_string(ctx, -3, "propertyName");
-printf("obj.propertyName = %s\n", duk_to_string(ctx, -1));
-duk_pop(ctx);
+summary: |
+  <p>Like <code><a href="#duk_get_prop">duk_get_prop()</a></code>,
+  but the property name is given as a NUL-terminated C string
+  <code>key</code>.</p>
 
-=tags
-property
+example: |
+  duk_get_prop_string(ctx, -3, "propertyName");
+  printf("obj.propertyName = %s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
 
-=introduced
-1.0.0
+tags:
+  - property
+
+introduced: 1.0.0

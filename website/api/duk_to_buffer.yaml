@@ -1,38 +1,39 @@
-=proto
-void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+name: duk_to_buffer
 
-=stack
-[ ... val! ... ] -> [ ... buffer(val)! ... ]
+proto: |
+  void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 
-=summary
-<p>Replace the value at <code>index</code> with a buffer-coerced value.  Returns
-a pointer to the buffer data (may be <code>NULL</code> for a zero-size buffer),
-and writes the size of the buffer into <code>*out_size</code> (if <code>out_size</code>
-is non-<code>NULL</code>).  If <code>index</code> is invalid, throws an error.</p>
+stack: |
+  [ ... val! ... ] -> [ ... buffer(val)! ... ]
 
-<p>Coercion rules:</p>
-<ul>
-<li>Buffer: no change, dynamic/fixed nature not changed</li>
-<li>String: coerces into a fixed size buffer, byte-for-byte</li>
-<li>Other types: first apply Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>,
-then coerce into a fixed size buffer, byte-for-byte</li>
-</ul>
+summary: |
+  <p>Replace the value at <code>index</code> with a buffer-coerced value.  Returns
+  a pointer to the buffer data (may be <code>NULL</code> for a zero-size buffer),
+  and writes the size of the buffer into <code>*out_size</code> (if <code>out_size</code>
+  is non-<code>NULL</code>).  If <code>index</code> is invalid, throws an error.</p>
 
-=example
-void *ptr;
-duk_size_t sz;
+  <p>Coercion rules:</p>
+  <ul>
+  <li>Buffer: no change, dynamic/fixed nature not changed</li>
+  <li>String: coerces into a fixed size buffer, byte-for-byte</li>
+  <li>Other types: first apply Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>,
+  then coerce into a fixed size buffer, byte-for-byte</li>
+  </ul>
 
-ptr = duk_to_buffer(ctx, -3, &sz);
-printf("coerced data at %p, size %lu\n", ptr, (unsigned long) sz);
+example: |
+  void *ptr;
+  duk_size_t sz;
 
-=tags
-stack
-buffer
+  ptr = duk_to_buffer(ctx, -3, &sz);
+  printf("coerced data at %p, size %lu\n", ptr, (unsigned long) sz);
 
-=seealso
-duk_to_fixed_buffer
-duk_to_dynamic_buffer
+tags:
+  - stack
+  - buffer
 
-=introduced
-1.0.0
+seealso:
+  - duk_to_fixed_buffer
+  - duk_to_dynamic_buffer
+
+introduced: 1.0.0

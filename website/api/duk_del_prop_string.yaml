@@ -1,22 +1,23 @@
-=proto
-duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+name: duk_del_prop_string
 
-=stack
-[ ... obj! ... ] -> [ ... obj! ... ]
+proto: |
+  duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
 
-=summary
-<p>Like <code><a href="#duk_del_prop">duk_del_prop()</a></code>,
-but the property name is given as a NUL-terminated C string
-<code>key</code>.</p>
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
 
-=example
-duk_bool_t rc;
+summary: |
+  <p>Like <code><a href="#duk_del_prop">duk_del_prop()</a></code>,
+  but the property name is given as a NUL-terminated C string
+  <code>key</code>.</p>
 
-rc = duk_del_prop_string(ctx, -3, "propertyName");
-printf("delete obj.propertyName -> rc=%d\n", (int) rc);
+example: |
+  duk_bool_t rc;
 
-=tags
-property
+  rc = duk_del_prop_string(ctx, -3, "propertyName");
+  printf("delete obj.propertyName -> rc=%d\n", (int) rc);
 
-=introduced
-1.0.0
+tags:
+  - property
+
+introduced: 1.0.0

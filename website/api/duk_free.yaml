@@ -1,33 +1,33 @@
-=proto
-void duk_free(duk_context *ctx, void *ptr);
+name: duk_free
 
-=summary
-<p>Like <code><a href="#duk_free_raw">duk_free_raw()</a></code> but may involve
-garbage collection steps.  The garbage collection interaction cannot cause
-the operation to fail.</p>
+proto: |
+  void duk_free(duk_context *ctx, void *ptr);
 
-<p><code>duk_free()</code> can be used to free memory allocated with either
-<code><a href="#duk_alloc">duk_alloc()</a></code> or
-<code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>
-and their reallocation variants.</p>
+summary: |
+  <p>Like <code><a href="#duk_free_raw">duk_free_raw()</a></code> but may involve
+  garbage collection steps.  The garbage collection interaction cannot cause
+  the operation to fail.</p>
 
-<div class="note">
-Currently a <code>duk_free()</code> cannot cause a garbage collection
-pass but does update internal GC trigger counters.
-</div>
+  <p><code>duk_free()</code> can be used to free memory allocated with either
+  <code><a href="#duk_alloc">duk_alloc()</a></code> or
+  <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code>
+  and their reallocation variants.</p>
 
-=example
-void *buf = duk_alloc(ctx, 1024);
-/* ... */
+  <div class="note">
+  Currently a <code>duk_free()</code> cannot cause a garbage collection
+  pass but does update internal GC trigger counters.
+  </div>
 
-duk_free(ctx, buf);  /* safe even if 'buf' is NULL */
+example: |
+  void *buf = duk_alloc(ctx, 1024);
+  /* ... */
 
-=tags
-memory
+  duk_free(ctx, buf);  /* safe even if 'buf' is NULL */
 
-=seealso
-duk_free_raw
+tags:
+  - memory
 
+seealso:
+  - duk_free_raw
 
-=introduced
-1.0.0
+introduced: 1.0.0

@@ -1,30 +1,31 @@
-=proto
-void duk_error_va(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap);
+name: duk_error_va
 
-=stack
-[ ... ] -> [ ... err! ]
+proto: |
+  void duk_error_va(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap);
 
-=summary
-<p>Vararg variant of
-<code><a href="#duk_error">duk_error()</a></code>.</p>
+stack: |
+  [ ... ] -> [ ... err! ]
 
-=example
-void my_range_error(duk_context *ctx, const char *fmt, ...) {
-    va_list ap;
+summary: |
+  <p>Vararg variant of
+  <code><a href="#duk_error">duk_error()</a></code>.</p>
 
-    va_start(ap, fmt);
-    duk_error_va(ctx, DUK_ERR_RANGE_ERROR, fmt, ap);
-    va_end(ap);
-}
+example: |
+  void my_range_error(duk_context *ctx, const char *fmt, ...) {
+      va_list ap;
 
-=tags
-error
-vararg
+      va_start(ap, fmt);
+      duk_error_va(ctx, DUK_ERR_RANGE_ERROR, fmt, ap);
+      va_end(ap);
+  }
 
-=seealso
-duk_error
-duk_throw
-duk_push_error_object
+tags:
+  - error
+  - vararg
 
-=introduced
-1.1.0
+seealso:
+  - duk_error
+  - duk_throw
+  - duk_push_error_object
+
+introduced: 1.1.0

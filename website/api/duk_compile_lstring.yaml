@@ -1,26 +1,27 @@
-=proto
-void duk_compile_lstring(duk_context *ctx, duk_uint_t flags, const char *src, duk_size_t len);
+name: duk_compile_lstring
 
-=stack
-[ ... ] -> [ ... function! ]
+proto: |
+  void duk_compile_lstring(duk_context *ctx, duk_uint_t flags, const char *src, duk_size_t len);
 
-=summary
-<p>Like
-<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
-is given as a C string with explicit length.  The filename associated with the
-function is automatically provided from the <code>__FILE__</code> preprocessor
-define of the caller.</p>
+stack: |
+  [ ... ] -> [ ... function! ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+  is given as a C string with explicit length.  The filename associated with the
+  function is automatically provided from the <code>__FILE__</code> preprocessor
+  define of the caller.</p>
 
-=example
-const char *src = /* ... */;
-duk_size_t len = /* ... */;
+  <div include="no-string-intern.html" />
 
-duk_compile_lstring(ctx, 0, src, len);
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
 
-=tags
-compile
+  duk_compile_lstring(ctx, 0, src, len);
 
-=introduced
-1.0.0
+tags:
+  - compile
+
+introduced: 1.0.0

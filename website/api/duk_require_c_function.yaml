@@ -1,22 +1,23 @@
-=proto
-duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index);
+name: duk_require_c_function
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Like <code><a href="#duk_get_c_function">duk_get_c_function()</a></code>, but
-throws an error if the value at <code>index</code> is not an Ecmascript function
-associated with a Duktape/C function or if the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-duk_c_function funcptr;
+summary: |
+  <p>Like <code><a href="#duk_get_c_function">duk_get_c_function()</a></code>, but
+  throws an error if the value at <code>index</code> is not an Ecmascript function
+  associated with a Duktape/C function or if the index is invalid.</p>
 
-funcptr = duk_require_c_function(ctx, -3);
+example: |
+  duk_c_function funcptr;
 
-=tags
-stack
-function
+  funcptr = duk_require_c_function(ctx, -3);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

@@ -1,33 +1,34 @@
-=proto
-duk_idx_t duk_push_error_object_va(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap);
+name: duk_push_error_object_va
 
-=stack
-[ ... ] -> [ ... err! ]
+proto: |
+  duk_idx_t duk_push_error_object_va(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap);
 
-=summary
-<p>Vararg variant of
-<code><a href="#duk_push_error_object">duk_push_error_object()</a></code>.</p>
+stack: |
+  [ ... ] -> [ ... err! ]
 
-=example
-duk_idx_t my_type_error(duk_context *ctx, const char *fmt, ...) {
-    va_list ap;
-    duk_idx_t err_idx;
+summary: |
+  <p>Vararg variant of
+  <code><a href="#duk_push_error_object">duk_push_error_object()</a></code>.</p>
 
-    va_start(ap, fmt);
-    err_idx = duk_push_error_object_va(ctx, fmt, ap);
-    va_end(ap);
+example: |
+  duk_idx_t my_type_error(duk_context *ctx, const char *fmt, ...) {
+      va_list ap;
+      duk_idx_t err_idx;
 
-    return err_idx;
-}
+      va_start(ap, fmt);
+      err_idx = duk_push_error_object_va(ctx, fmt, ap);
+      va_end(ap);
 
-=tags
-stack
-object
-error
-vararg
+      return err_idx;
+  }
 
-=seealso
-duk_push_error_object
+tags:
+  - stack
+  - object
+  - error
+  - vararg
 
-=introduced
-1.1.0
+seealso:
+  - duk_push_error_object
+
+introduced: 1.1.0

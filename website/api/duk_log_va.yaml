@@ -1,25 +1,26 @@
-=proto
-void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap);
+name: duk_log_va
 
-=summary
-<p>Vararg variant of
-<code><a href="#duk_log">duk_log()</a></code>.</p>
+proto: |
+  void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap);
 
-=example
-void my_log_info(duk_context *ctx, const char *fmt, ...) {
-    va_list ap;
+summary: |
+  <p>Vararg variant of
+  <code><a href="#duk_log">duk_log()</a></code>.</p>
 
-    va_start(ap, fmt);
-    duk_log_va(ctx, DUK_LOG_INFO, fmt, ap);
-    va_end(ap);
-}
+example: |
+  void my_log_info(duk_context *ctx, const char *fmt, ...) {
+      va_list ap;
 
-=tags
-log
-vararg
+      va_start(ap, fmt);
+      duk_log_va(ctx, DUK_LOG_INFO, fmt, ap);
+      va_end(ap);
+  }
 
-=seealso
-duk_log
+tags:
+  - log
+  - vararg
 
-=introduced
-1.1.0
+seealso:
+  - duk_log
+
+introduced: 1.1.0

@@ -1,17 +1,18 @@
-=proto
-void duk_push_undefined(duk_context *ctx);
+name: duk_push_undefined
 
-=stack
-[ ... ] -> [ ... undefined! ]
+proto: |
+  void duk_push_undefined(duk_context *ctx);
 
-=summary
-<p>Push <code>undefined</code> to the stack.</p>
+stack: |
+  [ ... ] -> [ ... undefined! ]
 
-=example
-duk_push_undefined(ctx);
+summary: |
+  <p>Push <code>undefined</code> to the stack.</p>
 
-=tags
-stack
+example: |
+  duk_push_undefined(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

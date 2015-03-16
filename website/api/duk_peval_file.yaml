@@ -1,33 +1,34 @@
-=proto
-duk_int_t duk_peval_file(duk_context *ctx, const char *path);
+name: duk_peval_file
 
-=stack
-[ ... ] -> [ ... result! ]  (if success, return value == 0)
-[ ... ] -> [ ... err! ]  (if failure, return value != 0)
+proto: |
+  duk_int_t duk_peval_file(duk_context *ctx, const char *path);
 
-=summary
-<p>Like
-<code><a href="#duk_peval">duk_peval()</a></code>, but the eval input
-is given as a filename.  The filename associated with the temporary
-function created for the eval code is <code>path</code> as is.</p>
+stack: |
+  [ ... ] -> [ ... result! ]  (if success, return value == 0)
+  [ ... ] -> [ ... err! ]  (if failure, return value != 0)
 
-<div include="path-encoding.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_peval">duk_peval()</a></code>, but the eval input
+  is given as a filename.  The filename associated with the temporary
+  function created for the eval code is <code>path</code> as is.</p>
 
-=example
-if (duk_peval_file(ctx, "test.js") != 0) {
-    printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
-} else {
-    printf("result is: %s\n", duk_safe_to_string(ctx, -1));
-}
-duk_pop(ctx);
+  <div include="path-encoding.html" />
 
-=tags
-compile
-protected
-nonportable
+example: |
+  if (duk_peval_file(ctx, "test.js") != 0) {
+      printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
+  } else {
+      printf("result is: %s\n", duk_safe_to_string(ctx, -1));
+  }
+  duk_pop(ctx);
 
-=seealso
-duk_peval_file_noresult
+tags:
+  - compile
+  - protected
+  - nonportable
 
-=introduced
-1.0.0
+seealso:
+  - duk_peval_file_noresult
+
+introduced: 1.0.0

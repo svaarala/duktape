@@ -1,28 +1,29 @@
-=proto
-void duk_hex_decode(duk_context *ctx, duk_idx_t index);
+name: duk_hex_decode
 
-=stack
-[ ... hex_val! ... ] -> [ ... val! ... ]
+proto: |
+  void duk_hex_decode(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Decodes a hex encoded value into a buffer as an in-place operation.
-If the input is invalid, throws an error.</p>
+stack: |
+  [ ... hex_val! ... ] -> [ ... val! ... ]
 
-=example
-duk_push_string(ctx, "7465737420737472696e67");
-duk_hex_decode(ctx, -1);  /* buffer */
-printf("hex decoded: %s\n", duk_to_string(ctx, -1));
-duk_pop(ctx);
+summary: |
+  <p>Decodes a hex encoded value into a buffer as an in-place operation.
+  If the input is invalid, throws an error.</p>
 
-/* Output:
- * hex decoded: test string
- */
+example: |
+  duk_push_string(ctx, "7465737420737472696e67");
+  duk_hex_decode(ctx, -1);  /* buffer */
+  printf("hex decoded: %s\n", duk_to_string(ctx, -1));
+  duk_pop(ctx);
 
-=tags
-codec
+  /* Output:
+   * hex decoded: test string
+   */
 
-=seealso
-duk_hex_encode
+tags:
+  - codec
 
-=introduced
-1.0.0
+seealso:
+  - duk_hex_encode
+
+introduced: 1.0.0

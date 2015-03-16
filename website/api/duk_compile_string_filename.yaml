@@ -1,22 +1,23 @@
-=proto
-void duk_compile_string_filename(duk_context *ctx, duk_uint_t flags, const char *src);
+name: duk_compile_string_filename
 
-=stack
-[ ... filename! ] -> [ ... function! ]
+proto: |
+  void duk_compile_string_filename(duk_context *ctx, duk_uint_t flags, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
-is given as a C string.</p>
+stack: |
+  [ ... filename! ] -> [ ... function! ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+  is given as a C string.</p>
 
-=example
-duk_push_string(ctx, "myFile.js");
-duk_compile_string_filename(ctx, 0, "print('program code');");
+  <div include="no-string-intern.html" />
 
-=tags
-compile
+example: |
+  duk_push_string(ctx, "myFile.js");
+  duk_compile_string_filename(ctx, 0, "print('program code');");
 
-=introduced
-1.0.0
+tags:
+  - compile
+
+introduced: 1.0.0

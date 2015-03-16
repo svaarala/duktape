@@ -1,27 +1,28 @@
-=proto
-void duk_throw(duk_context *ctx);
+name: duk_throw
 
-=stack
-[ ... val! ]
+proto: |
+  void duk_throw(duk_context *ctx);
 
-=summary
-<p>Throw the value on top of the stack.  This call never returns.</p>
+stack: |
+  [ ... val! ]
 
-=example
-/* Throw a string value; equivalent to the Ecmascript code:
- *
- *   throw "this string is thrown";
- */
+summary: |
+  <p>Throw the value on top of the stack.  This call never returns.</p>
 
-duk_push_string(ctx, "this string is thrown");
-duk_throw(ctx);
+example: |
+  /* Throw a string value; equivalent to the Ecmascript code:
+   *
+   *   throw "this string is thrown";
+   */
 
-=tags
-error
+  duk_push_string(ctx, "this string is thrown");
+  duk_throw(ctx);
 
-=seealso
-duk_error
-duk_push_error_object
+tags:
+  - error
 
-=introduced
-1.0.0
+seealso:
+  - duk_error
+  - duk_push_error_object
+
+introduced: 1.0.0

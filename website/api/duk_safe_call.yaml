@@ -1,114 +1,115 @@
-=proto
-duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_idx_t nargs, duk_idx_t nrets);
+name: duk_safe_call
 
-=stack
-[ ... arg1! ...! argN! ] -> [ ... ret1! ...! retN! ]
+proto: |
+  duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_idx_t nargs, duk_idx_t nrets);
 
-=summary
-<p>Perform a protected pure C function call inside the current value stack frame
-(the call is not visible on the call stack).  <code>nargs</code> topmost values in the
-current value stack frame are identified as call arguments, and <code>nrets</code>
-return values are provided after the call returns.</p>
+stack: |
+  [ ... arg1! ...! argN! ] -> [ ... ret1! ...! retN! ]
 
-<p>The return value is:</p>
-<ul>
-<li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
-    with <code>nrets</code> return values.  (This return code constant is guaranteed to be
-    zero, so that one can check for success with a "zero or non-zero" check.)</li>
-<li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with
-    <code>nrets</code> values, first of which is an error value and the rest are <code>undefined</code>.
-    (In exceptional cases, e.g. when there are too few arguments on the value stack, the call
-    returns non-zero but may leave the stack in an inconsistent state.)</li>
-</ul>
+summary: |
+  <p>Perform a protected pure C function call inside the current value stack frame
+  (the call is not visible on the call stack).  <code>nargs</code> topmost values in the
+  current value stack frame are identified as call arguments, and <code>nrets</code>
+  return values are provided after the call returns.</p>
 
-<div class="note">
-Unlike most Duktape API calls, this call returns zero on success.  This allows
-multiple error codes to be defined later.
-</div>
+  <p>The return value is:</p>
+  <ul>
+  <li><code>DUK_EXEC_SUCCESS</code> (0): call succeeded, <code>nargs</code> arguments are replaced
+      with <code>nrets</code> return values.  (This return code constant is guaranteed to be
+      zero, so that one can check for success with a "zero or non-zero" check.)</li>
+  <li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with
+      <code>nrets</code> values, first of which is an error value and the rest are <code>undefined</code>.
+      (In exceptional cases, e.g. when there are too few arguments on the value stack, the call
+      returns non-zero but may leave the stack in an inconsistent state.)</li>
+  </ul>
 
-<p>Because this call operates on the current value stack frame, stack behavior
-differs a bit from other call types.  Although the target function signature
-matches Duktape/C functions, value stack and return code policies are different.</p>
+  <div class="note">
+  Unlike most Duktape API calls, this call returns zero on success.  This allows
+  multiple error codes to be defined later.
+  </div>
 
-<p>The top <code>nargs</code> elements of the stack top are identified as arguments to
-<code>func</code> establishing a "base index" for the return stack as:</p>
-<pre>
-(duk_get_top() - nargs)
-</pre>
+  <p>Because this call operates on the current value stack frame, stack behavior
+  differs a bit from other call types.  Although the target function signature
+  matches Duktape/C functions, value stack and return code policies are different.</p>
 
-<p>When <code>func</code> returns, it indicates with its return value the number of
-return values it has pushed on top of the stack; multiple or zero return
-values possible.  The stack is then manipulated so that there are exactly
-<code>nrets</code> values starting at the "base index" established before the call.</p>
+  <p>The top <code>nargs</code> elements of the stack top are identified as arguments to
+  <code>func</code> establishing a "base index" for the return stack as:</p>
+  <pre>
+  (duk_get_top() - nargs)
+  </pre>
 
-<p>Note that since <code>func</code> has full access to the value stack, it may modify
-the stack below the indended arguments and even pop elements below the "base index"
-off the stack.  Such elements are restored with <code>undefined</code> values before
-returning, to ensure that the stack is always in a consistent state upon returning.</p>
+  <p>When <code>func</code> returns, it indicates with its return value the number of
+  return values it has pushed on top of the stack; multiple or zero return
+  values possible.  The stack is then manipulated so that there are exactly
+  <code>nrets</code> values starting at the "base index" established before the call.</p>
 
-<p>If an error occurs, the stack will still have <code>nrets</code> values at "base index";
-the first of such values is the error, and the remaining values are <code>undefined</code>.
-If <code>nrets</code> is zero, the error will not be present on the stack (the return stack
-top will equal the "base index"), so calling this function with <code>nrets</code> as 0
-is not very useful.</p>
+  <p>Note that since <code>func</code> has full access to the value stack, it may modify
+  the stack below the indended arguments and even pop elements below the "base index"
+  off the stack.  Such elements are restored with <code>undefined</code> values before
+  returning, to ensure that the stack is always in a consistent state upon returning.</p>
 
-<p>Example with <code>nargs = 3</code>, <code>nrets = 2</code>, <code>func</code> returns 4.
-Pipe chars indicate logical boundaries:</p>
+  <p>If an error occurs, the stack will still have <code>nrets</code> values at "base index";
+  the first of such values is the error, and the remaining values are <code>undefined</code>.
+  If <code>nrets</code> is zero, the error will not be present on the stack (the return stack
+  top will equal the "base index"), so calling this function with <code>nrets</code> as 0
+  is not very useful.</p>
 
-<pre>
-      .--- frame bottom
-      |
-      |     .--- "base index"
-      v     v
-[ ... | ... | a b c ]            stack before calling 'func'
+  <p>Example with <code>nargs = 3</code>, <code>nrets = 2</code>, <code>func</code> returns 4.
+  Pipe chars indicate logical boundaries:</p>
 
-[ ... | ... | a b | x y z w ]    stack after calling 'func', which has
-                                 popped one argument and written four
-                                 return values (and returned 4)
+  <pre>
+        .--- frame bottom
+        |
+        |     .--- "base index"
+        v     v
+  [ ... | ... | a b c ]            stack before calling 'func'
 
-[ ... | ... | x y ]              stack after duk_safe_call() returns,
-                                 2 (= nrets) first 'func' return values
-                                 are left at "base index"
-</pre>
+  [ ... | ... | a b | x y z w ]    stack after calling 'func', which has
+                                   popped one argument and written four
+                                   return values (and returned 4)
 
-<div class="note">
-Note that <code>func</code> uses caller stack frame, so bottom-based references
-are dangerous within 'func'.
-</div>
+  [ ... | ... | x y ]              stack after duk_safe_call() returns,
+                                   2 (= nrets) first 'func' return values
+                                   are left at "base index"
+  </pre>
 
-=example
-duk_ret_t my_func(duk_context *ctx) {
-    double a, b, c;
+  <div class="note">
+  Note that <code>func</code> uses caller stack frame, so bottom-based references
+  are dangerous within 'func'.
+  </div>
 
-    a = duk_get_number(ctx, -3);
-    b = duk_get_number(ctx, -2);
-    c = duk_get_number(ctx, -1);  /* ignored on purpose */
-    duk_push_number(ctx, a + b);
+example: |
+  duk_ret_t my_func(duk_context *ctx) {
+      double a, b, c;
 
-    /* Indicates that there is only one return value.  Because the caller
-     * requested two (nrets == 2), Duktape will automatically add an
-     * additional "undefined" result value.
-     */
-    return 1;
-}
+      a = duk_get_number(ctx, -3);
+      b = duk_get_number(ctx, -2);
+      c = duk_get_number(ctx, -1);  /* ignored on purpose */
+      duk_push_number(ctx, a + b);
 
-duk_int_t rc;
+      /* Indicates that there is only one return value.  Because the caller
+       * requested two (nrets == 2), Duktape will automatically add an
+       * additional "undefined" result value.
+       */
+      return 1;
+  }
 
-duk_push_int(ctx, 10);
-duk_push_int(ctx, 11);
-duk_push_int(ctx, 12);
-rc = duk_safe_call(ctx, my_func, 3 /*nargs*/, 2 /*nrets*/);
-if (rc == DUK_EXEC_SUCCESS) {
-    printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
-    printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
-} else {
-    printf("error value: %s\n", duk_to_string(ctx, -2));
-}
-duk_pop_2(ctx);
+  duk_int_t rc;
 
-=tags
-call
-protected
+  duk_push_int(ctx, 10);
+  duk_push_int(ctx, 11);
+  duk_push_int(ctx, 12);
+  rc = duk_safe_call(ctx, my_func, 3 /*nargs*/, 2 /*nrets*/);
+  if (rc == DUK_EXEC_SUCCESS) {
+      printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
+      printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
+  } else {
+      printf("error value: %s\n", duk_to_string(ctx, -2));
+  }
+  duk_pop_2(ctx);
 
-=introduced
-1.0.0
+tags:
+  - call
+  - protected
+
+introduced: 1.0.0

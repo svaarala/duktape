@@ -1,26 +1,27 @@
-=proto
-duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t index);
+name: duk_is_array
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Returns 1 if value at <code>index</code> is an object and is an Ecmascript array
-(has the internal class <code>Array</code>), otherwise returns 0.  If <code>index</code>
-is invalid, also returns 0.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>This function returns 1 when the following Ecmascript expression is true:</p>
-<pre class="ecmascript-code">
-Object.prototype.toString.call(val) === '[object Array]'
-</pre>
+summary: |
+  <p>Returns 1 if value at <code>index</code> is an object and is an Ecmascript array
+  (has the internal class <code>Array</code>), otherwise returns 0.  If <code>index</code>
+  is invalid, also returns 0.</p>
 
-=example
-if (duk_is_array(ctx, -3)) {
-    /* ... */
-}
+  <p>This function returns 1 when the following Ecmascript expression is true:</p>
+  <pre class="ecmascript-code">
+  Object.prototype.toString.call(val) === '[object Array]'
+  </pre>
 
-=tags
-stack
+example: |
+  if (duk_is_array(ctx, -3)) {
+      /* ... */
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

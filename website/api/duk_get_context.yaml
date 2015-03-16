@@ -1,46 +1,47 @@
-=proto
-duk_context *duk_get_context(duk_context *ctx, duk_idx_t index);
+name: duk_get_context
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_context *duk_get_context(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get a context pointer for a Duktape thread at <code>index</code>.  If the
-value at <code>index</code> is not a Duktape thread or the index is invalid,
-returns <code>NULL</code>.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>The returned context pointer is only valid while the Duktape thread
-is reachable from a garbage collection point of view.</p>
+summary: |
+  <p>Get a context pointer for a Duktape thread at <code>index</code>.  If the
+  value at <code>index</code> is not a Duktape thread or the index is invalid,
+  returns <code>NULL</code>.</p>
 
-<p>If you prefer an error to be thrown for an invalid value or index,
-use <code><a href="#duk_require_context">duk_require_context()</a></code>.</p>
+  <p>The returned context pointer is only valid while the Duktape thread
+  is reachable from a garbage collection point of view.</p>
 
-=example
-duk_context *new_ctx;
+  <p>If you prefer an error to be thrown for an invalid value or index,
+  use <code><a href="#duk_require_context">duk_require_context()</a></code>.</p>
 
-/* Create a new thread and get a context pointer. */
+example: |
+  duk_context *new_ctx;
 
-(void) duk_push_thread(ctx);
-new_ctx = duk_get_context(ctx, -1);
+  /* Create a new thread and get a context pointer. */
 
-/* You can use new_ctx as long as the related thread is reachable
- * from a garbage collection point of view.
- */
+  (void) duk_push_thread(ctx);
+  new_ctx = duk_get_context(ctx, -1);
 
-duk_push_string(new_ctx, "foo");
+  /* You can use new_ctx as long as the related thread is reachable
+   * from a garbage collection point of view.
+   */
 
-/* This duk_pop() makes the new thread unreachable (assuming there
- * is no other reference to it), so new_ctx is no longer valid
- * afterwards.
- */
+  duk_push_string(new_ctx, "foo");
 
-duk_pop(ctx);
+  /* This duk_pop() makes the new thread unreachable (assuming there
+   * is no other reference to it), so new_ctx is no longer valid
+   * afterwards.
+   */
 
-/* Using new_ctx here may cause a crash. */
+  duk_pop(ctx);
 
-=tags
-stack
-borrowed
+  /* Using new_ctx here may cause a crash. */
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - borrowed
+
+introduced: 1.0.0

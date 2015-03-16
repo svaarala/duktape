@@ -1,42 +1,43 @@
-=proto
-duk_int_t duk_get_int(duk_context *ctx, duk_idx_t index);
+name: duk_get_int
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_int_t duk_get_int(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get the number at <code>index</code> and convert it to a C <code>duk_int_t</code>
-by first clamping the value between [DUK_INT_MIN, DUK_INT_MAX] and then
-truncating towards zero.  The value on the stack is not modified.
-If the value is a NaN, is not a number, or the index is invalid,
-returns 0.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>Conversion examples:</p>
-<table>
-<tr><th>Input</th><th>Output</th></tr>
-<tr><td>-Infinity</td><td>DUK_INT_MIN</td></tr>
-<tr><td>DUK_INT_MIN - 1</td><td>DUK_INT_MIN</td></tr>
-<tr><td>-3.9</td><td>-3</td></tr>
-<tr><td>3.9</td><td>3</td></tr>
-<tr><td>DUK_INT_MAX + 1</td><td>DUK_INT_MAX</td></tr>
-<tr><td>+Infinity</td><td>DUK_INT_MAX</td></tr>
-<tr><td>NaN</td><td>0</td></tr>
-<tr><td>"123"</td><td>0 (non-number)</td></tr>
-</table>
+summary: |
+  <p>Get the number at <code>index</code> and convert it to a C <code>duk_int_t</code>
+  by first clamping the value between [DUK_INT_MIN, DUK_INT_MAX] and then
+  truncating towards zero.  The value on the stack is not modified.
+  If the value is a NaN, is not a number, or the index is invalid,
+  returns 0.</p>
 
-<div class="note">
-The coercion is different from a basic C cast from <code>double</code> to
-integer, which may have counterintuitive (and non-portable) behavior like coercing
-NaN to <code>DUK_INT_MIN</code>.  The coercion is also different from Ecmascript
-<code>ToInt32()</code> coercion because the full range of the native
-<code>duk_int_t</code> is allowed (which may be more than 32 bits).
-</div>
+  <p>Conversion examples:</p>
+  <table>
+  <tr><th>Input</th><th>Output</th></tr>
+  <tr><td>-Infinity</td><td>DUK_INT_MIN</td></tr>
+  <tr><td>DUK_INT_MIN - 1</td><td>DUK_INT_MIN</td></tr>
+  <tr><td>-3.9</td><td>-3</td></tr>
+  <tr><td>3.9</td><td>3</td></tr>
+  <tr><td>DUK_INT_MAX + 1</td><td>DUK_INT_MAX</td></tr>
+  <tr><td>+Infinity</td><td>DUK_INT_MAX</td></tr>
+  <tr><td>NaN</td><td>0</td></tr>
+  <tr><td>"123"</td><td>0 (non-number)</td></tr>
+  </table>
 
-=example
-printf("int value: %ld\n", (long) duk_get_int(ctx, -3));
+  <div class="note">
+  The coercion is different from a basic C cast from <code>double</code> to
+  integer, which may have counterintuitive (and non-portable) behavior like coercing
+  NaN to <code>DUK_INT_MIN</code>.  The coercion is also different from Ecmascript
+  <code>ToInt32()</code> coercion because the full range of the native
+  <code>duk_int_t</code> is allowed (which may be more than 32 bits).
+  </div>
 
-=tags
-stack
+example: |
+  printf("int value: %ld\n", (long) duk_get_int(ctx, -3));
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

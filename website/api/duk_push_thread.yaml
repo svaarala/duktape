@@ -1,34 +1,35 @@
-=proto
-duk_idx_t duk_push_thread(duk_context *ctx);
+name: duk_push_thread
 
-=stack
-[ ... ] -> [ ... thr! ]
+proto: |
+  duk_idx_t duk_push_thread(duk_context *ctx);
 
-=summary
-<p>Push a new Duktape thread (context, coroutine) to the stack.  Returns
-non-negative index (relative to stack bottom) of the pushed thread.
-The new thread will be associated with the same Duktape heap as the
-argument <code>ctx</code>, and will share the same global object
-environment.</p>
+stack: |
+  [ ... ] -> [ ... thr! ]
 
-<p>To interact with the new thread with the Duktape API, use
-<code><a href="#duk_get_context">duk_get_context()</a></code> to get
-a context pointer for API calls.</p>
+summary: |
+  <p>Push a new Duktape thread (context, coroutine) to the stack.  Returns
+  non-negative index (relative to stack bottom) of the pushed thread.
+  The new thread will be associated with the same Duktape heap as the
+  argument <code>ctx</code>, and will share the same global object
+  environment.</p>
 
-=example
-duk_idx_t thr_idx;
-duk_context *new_ctx;
+  <p>To interact with the new thread with the Duktape API, use
+  <code><a href="#duk_get_context">duk_get_context()</a></code> to get
+  a context pointer for API calls.</p>
 
-thr_idx = duk_push_thread(ctx);
-new_ctx = duk_get_context(ctx, thr_idx);
+example: |
+  duk_idx_t thr_idx;
+  duk_context *new_ctx;
 
-=tags
-stack
-thread
-borrowed
+  thr_idx = duk_push_thread(ctx);
+  new_ctx = duk_get_context(ctx, thr_idx);
 
-=seealso
-duk_push_thread_new_globalenv
+tags:
+  - stack
+  - thread
+  - borrowed
 
-=introduced
-1.0.0
+seealso:
+  - duk_push_thread_new_globalenv
+
+introduced: 1.0.0

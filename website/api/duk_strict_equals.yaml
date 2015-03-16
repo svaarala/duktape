@@ -1,34 +1,35 @@
-=proto
-duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+name: duk_strict_equals
 
-=stack
-[ ... val1! ... val2! ... ]
+proto: |
+  duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
 
-=summary
-<p>Compare values at <code>index1</code> and <code>index2</code> for equality.
-Returns 1 if values are considered equal using Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4">Strict Equals</a>
-operator (<code>===</code>) semantics, otherwise returns 0.  Also returns 0 if either index
-is invalid.</p>
+stack: |
+  [ ... val1! ... val2! ... ]
 
-<p>Because
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.6">The Strict Equality Comparison Algorithm</a>
-used by the Strict Equals operator performs no value coercion, the comparison cannot have
-side effects and cannot throw an error.</p>
+summary: |
+  <p>Compare values at <code>index1</code> and <code>index2</code> for equality.
+  Returns 1 if values are considered equal using Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.4">Strict Equals</a>
+  operator (<code>===</code>) semantics, otherwise returns 0.  Also returns 0 if either index
+  is invalid.</p>
 
-<p>Comparison algorithm for Duktape custom types is described in
-<a href="http://duktape.org/guide.html#strict-equality-algorithm">Strict equality</a>.</p>
+  <p>Because
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.6">The Strict Equality Comparison Algorithm</a>
+  used by the Strict Equals operator performs no value coercion, the comparison cannot have
+  side effects and cannot throw an error.</p>
 
-=example
-if (duk_strict_equals(ctx, -3, -7)) {
-    printf("values at indices -3 and -7 are strictly equal\n");
-}
+  <p>Comparison algorithm for Duktape custom types is described in
+  <a href="http://duktape.org/guide.html#strict-equality-algorithm">Strict equality</a>.</p>
 
-=tags
-compare
+example: |
+  if (duk_strict_equals(ctx, -3, -7)) {
+      printf("values at indices -3 and -7 are strictly equal\n");
+  }
 
-=seealso
-duk_equals
+tags:
+  - compare
 
-=introduced
-1.0.0
+seealso:
+  - duk_equals
+
+introduced: 1.0.0

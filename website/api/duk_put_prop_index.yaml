@@ -1,27 +1,28 @@
-=proto
-duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index);
+name: duk_put_prop_index
 
-=stack
-[ ... obj! ... val! ] -> [ ... obj! ... ]
+proto: |
+  duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index, duk_uarridx_t arr_index);
 
-=summary
-<p>Like <code><a href="#duk_put_prop">duk_put_prop()</a></code>,
-but the property name is given as an unsigned integer
-<code>arr_index</code>.  This is especially useful for writing to
-array elements (but is not limited to that).</p>
+stack: |
+  [ ... obj! ... val! ] -> [ ... obj! ... ]
 
-<p>Conceptually the number is coerced to a string for the property
-write, e.g. <code>123</code> would be equivalent to a property
-name <code>"123"</code>.  Duktape avoids an explicit coercion whenever
-possible.</p>
+summary: |
+  <p>Like <code><a href="#duk_put_prop">duk_put_prop()</a></code>,
+  but the property name is given as an unsigned integer
+  <code>arr_index</code>.  This is especially useful for writing to
+  array elements (but is not limited to that).</p>
 
-=example
-duk_push_string(ctx, "value");
-rc = duk_put_prop_index(ctx, -3, 123);  /* write to obj[123] */
-printf("rc=%d\n", (int) rc);
+  <p>Conceptually the number is coerced to a string for the property
+  write, e.g. <code>123</code> would be equivalent to a property
+  name <code>"123"</code>.  Duktape avoids an explicit coercion whenever
+  possible.</p>
 
-=tags
-property
+example: |
+  duk_push_string(ctx, "value");
+  rc = duk_put_prop_index(ctx, -3, 123);  /* write to obj[123] */
+  printf("rc=%d\n", (int) rc);
 
-=introduced
-1.0.0
+tags:
+  - property
+
+introduced: 1.0.0

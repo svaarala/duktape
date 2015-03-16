@@ -1,27 +1,28 @@
-=proto
-void duk_dump_context_stdout(duk_context *ctx);
+name: duk_dump_context_stdout
 
-=stack
-[ ... ] -> [ ... ]
+proto: |
+  void duk_dump_context_stdout(duk_context *ctx);
 
-=summary
-<p>Like <code><a href="#duk_push_context_dump">duk_push_context_dump()</a></code> but
-the context dump is written to <code>stdout</code> and nothing is left on
-the value stack.</p>
+stack: |
+  [ ... ] -> [ ... ]
 
-<p>If file I/O has been disabled, this call is a NOP.</p>
+summary: |
+  <p>Like <code><a href="#duk_push_context_dump">duk_push_context_dump()</a></code> but
+  the context dump is written to <code>stdout</code> and nothing is left on
+  the value stack.</p>
 
-<div include="no-production-dump-calls.html" />
+  <p>If file I/O has been disabled, this call is a NOP.</p>
 
-=example
-duk_push_int(ctx, 123);
-duk_push_string(ctx, "foo");
-duk_dump_context_stdout(ctx);
+  <div include="no-production-dump-calls.html" />
 
-=tags
-stack
-debug
-nonportable
+example: |
+  duk_push_int(ctx, 123);
+  duk_push_string(ctx, "foo");
+  duk_dump_context_stdout(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - debug
+  - nonportable
+
+introduced: 1.0.0

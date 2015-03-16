@@ -1,30 +1,31 @@
-=proto
-duk_idx_t duk_push_object(duk_context *ctx);
+name: duk_push_object
 
-=stack
-[ ... ] -> [ ... obj! ]
+proto: |
+  duk_idx_t duk_push_object(duk_context *ctx);
 
-=summary
-<p>Push an empty object to the stack.  Returns non-negative index (relative
-to stack bottom) of the pushed object.</p>
+stack: |
+  [ ... ] -> [ ... obj! ]
 
-<p>The internal prototype of the created object is <code>Object.prototype</code>.
-Use <code><a href="#duk_set_prototype">duk_set_prototype()</a></code> to change it.</p>
+summary: |
+  <p>Push an empty object to the stack.  Returns non-negative index (relative
+  to stack bottom) of the pushed object.</p>
 
-=example
-duk_idx_t obj_idx;
+  <p>The internal prototype of the created object is <code>Object.prototype</code>.
+  Use <code><a href="#duk_set_prototype">duk_set_prototype()</a></code> to change it.</p>
 
-obj_idx = duk_push_object(ctx);
-duk_push_int(ctx, 42);
-duk_put_prop_string(ctx, obj_idx, "meaningOfLife");
+example: |
+  duk_idx_t obj_idx;
 
-/* object is now: { "meaningOfLife": 42 } */
+  obj_idx = duk_push_object(ctx);
+  duk_push_int(ctx, 42);
+  duk_put_prop_string(ctx, obj_idx, "meaningOfLife");
 
-duk_pop(ctx);  /* pop object */
+  /* object is now: { "meaningOfLife": 42 } */
 
-=tags
-stack
-object
+  duk_pop(ctx);  /* pop object */
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - object
+
+introduced: 1.0.0

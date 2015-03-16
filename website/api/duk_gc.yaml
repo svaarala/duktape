@@ -1,23 +1,24 @@
-=proto
-void duk_gc(duk_context *ctx, duk_uint_t flags);
+name: duk_gc
 
-=summary
-<p>Force a mark-and-sweep garbage collection round.  If mark-and-sweep is
-disabled in the Duktape build, the call is a no-op.  The flags field is a
-placeholder; no flags are defined at the moment.</p>
+proto: |
+  void duk_gc(duk_context *ctx, duk_uint_t flags);
 
-<p>You may want to call this function twice to ensure even objects with
-finalizers are collected.  Currently it takes two mark-and-sweep rounds
-to collect such objects.  First round marks the object as finalizable and
-runs the finalizer.   Second round ensures the object is still
-unreachable after finalization and then frees the object.</p>
+summary: |
+  <p>Force a mark-and-sweep garbage collection round.  If mark-and-sweep is
+  disabled in the Duktape build, the call is a no-op.  The flags field is a
+  placeholder; no flags are defined at the moment.</p>
 
-=example
-duk_gc(ctx, 0);
+  <p>You may want to call this function twice to ensure even objects with
+  finalizers are collected.  Currently it takes two mark-and-sweep rounds
+  to collect such objects.  First round marks the object as finalizable and
+  runs the finalizer.   Second round ensures the object is still
+  unreachable after finalization and then frees the object.</p>
 
-=tags
-memory
-heap
+example: |
+  duk_gc(ctx, 0);
 
-=introduced
-1.0.0
+tags:
+  - memory
+  - heap
+
+introduced: 1.0.0

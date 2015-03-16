@@ -1,32 +1,33 @@
-=proto
-void duk_insert(duk_context *ctx, duk_idx_t to_index);
+name: duk_insert
 
-=stack
-[ ... old(to_index)! ... val! ] -> [ ... val(to_index)! old! ... ]
+proto: |
+  void duk_insert(duk_context *ctx, duk_idx_t to_index);
 
-=summary
-<p>Insert a value at <code>to_index</code> with a value popped from the
-stack top.  The previous value at <code>to_index</code> and any values
-above it are moved up the stack by a step.  If <code>to_index</code> is
-an invalid index, throws an error.</p>
+stack: |
+  [ ... old(to_index)! ... val! ] -> [ ... val(to_index)! old! ... ]
 
-<div class="note">
-Negative indices are evaluated prior to popping the value at the stack
-top.  This is also illustrated by the example.
-</div>
+summary: |
+  <p>Insert a value at <code>to_index</code> with a value popped from the
+  stack top.  The previous value at <code>to_index</code> and any values
+  above it are moved up the stack by a step.  If <code>to_index</code> is
+  an invalid index, throws an error.</p>
 
-=example
-duk_push_int(ctx, 123);
-duk_push_int(ctx, 234);
-duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
-duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
-duk_insert(ctx, -3);          /* -> [ 123 "foo" 234 345 ] */
+  <div class="note">
+  Negative indices are evaluated prior to popping the value at the stack
+  top.  This is also illustrated by the example.
+  </div>
 
-=tags
-stack
+example: |
+  duk_push_int(ctx, 123);
+  duk_push_int(ctx, 234);
+  duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
+  duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
+  duk_insert(ctx, -3);          /* -> [ 123 "foo" 234 345 ] */
 
-=seealso
-duk_replace
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_replace
+
+introduced: 1.0.0

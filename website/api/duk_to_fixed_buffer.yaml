@@ -1,21 +1,22 @@
-=proto
-void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+name: duk_to_fixed_buffer
 
-=stack
-[ ... val! ... ]
+proto: |
+  void *duk_to_fixed_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
 
-=summary
-<p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but if
-the value is a dynamic buffer, convert it to a fixed buffer.  The result
-is thus always a fixed buffer (unless an error is thrown).</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-duk_size_t sz;
-void *buf = duk_to_fixed_buffer(ctx, -3, &sz);
+summary: |
+  <p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but if
+  the value is a dynamic buffer, convert it to a fixed buffer.  The result
+  is thus always a fixed buffer (unless an error is thrown).</p>
 
-=tags
-stack
-buffer
+example: |
+  duk_size_t sz;
+  void *buf = duk_to_fixed_buffer(ctx, -3, &sz);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - buffer
+
+introduced: 1.0.0

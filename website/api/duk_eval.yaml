@@ -1,55 +1,56 @@
-=proto
-void duk_eval(duk_context *ctx);
+name: duk_eval
 
-=stack
-[ ... source! ] -> [ ... result! ]
+proto: |
+  void duk_eval(duk_context *ctx);
 
-=summary
-<p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
-return value on top of the stack.  May throw an error, errors are not caught
-automatically.  The filename associated with the temporary eval function is
-automatically provided from the <code>__FILE__</code> preprocessor define
-of the caller.</p>
+stack: |
+  [ ... source! ] -> [ ... result! ]
 
-<p>This is essentially a shortcut for:</p>
-<pre class="c-code">
-duk_push_string(ctx, __FILE__);
-duk_compile(ctx, DUK_COMPILE_EVAL);  /* [ ... source filename ] -> [ function ] */
-duk_call(ctx, 0);
-</pre>
+summary: |
+  <p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
+  return value on top of the stack.  May throw an error, errors are not caught
+  automatically.  The filename associated with the temporary eval function is
+  automatically provided from the <code>__FILE__</code> preprocessor define
+  of the caller.</p>
 
-<p>The source code is evaluated in non-strict mode unless it contains an
-explicit <code>"use strict"</code> directive.  In particular, strictness
-of the current context is not transferred into the eval code.  This avoids
-confusing behavior where eval strictness would depend on whether eval is
-used inside a Duktape/C function call (strict mode) or outside of one
-(non-strict mode).</p>
+  <p>This is essentially a shortcut for:</p>
+  <pre class="c-code">
+  duk_push_string(ctx, __FILE__);
+  duk_compile(ctx, DUK_COMPILE_EVAL);  /* [ ... source filename ] -> [ function ] */
+  duk_call(ctx, 0);
+  </pre>
 
-<p>If the eval input is a fixed string, you can also use
-<code><a href="#duk_eval_string">duk_eval_string()</a></code>.</p>
+  <p>The source code is evaluated in non-strict mode unless it contains an
+  explicit <code>"use strict"</code> directive.  In particular, strictness
+  of the current context is not transferred into the eval code.  This avoids
+  confusing behavior where eval strictness would depend on whether eval is
+  used inside a Duktape/C function call (strict mode) or outside of one
+  (non-strict mode).</p>
 
-=example
-/* Eval result in Ecmascript is the last non-empty statement; here, the
- * result of the eval is the number 123.
- */
+  <p>If the eval input is a fixed string, you can also use
+  <code><a href="#duk_eval_string">duk_eval_string()</a></code>.</p>
 
-duk_push_string(ctx, "print('Hello world!'); 123;");
-duk_eval(ctx);
-printf("return value is: %lf\n", (double) duk_get_number(ctx, -1));
-duk_pop(ctx);
+example: |
+  /* Eval result in Ecmascript is the last non-empty statement; here, the
+   * result of the eval is the number 123.
+   */
 
-=tags
-compile
+  duk_push_string(ctx, "print('Hello world!'); 123;");
+  duk_eval(ctx);
+  printf("return value is: %lf\n", (double) duk_get_number(ctx, -1));
+  duk_pop(ctx);
 
-=seealso
-duk_peval
-duk_eval_noresult
-duk_eval_string
-duk_eval_string_noresult
-duk_eval_lstring
-duk_eval_lstring_noresult
-duk_eval_file
-duk_eval_file_noresult
+tags:
+  - compile
 
-=introduced
-1.0.0
+seealso:
+  - duk_peval
+  - duk_eval_noresult
+  - duk_eval_string
+  - duk_eval_string_noresult
+  - duk_eval_lstring
+  - duk_eval_lstring_noresult
+  - duk_eval_file
+  - duk_eval_file_noresult
+
+introduced: 1.0.0

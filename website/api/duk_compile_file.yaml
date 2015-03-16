@@ -1,23 +1,24 @@
-=proto
-void duk_compile_file(duk_context *ctx, duk_uint_t flags, const char *path);
+name: duk_compile_file
 
-=stack
-[ ... ] -> [ ... function! ]
+proto: |
+  void duk_compile_file(duk_context *ctx, duk_uint_t flags, const char *path);
 
-=summary
-<p>Like
-<code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
-is given as a filename.  The filename associated with the result function
-is <code>path</code> as is.</p>
+stack: |
+  [ ... ] -> [ ... function! ]
 
-<div include="path-encoding.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_compile">duk_compile()</a></code>, but the compile input
+  is given as a filename.  The filename associated with the result function
+  is <code>path</code> as is.</p>
 
-=example
-duk_compile_file(ctx, 0, "test.js");
+  <div include="path-encoding.html" />
 
-=tags
-compile
-nonportable
+example: |
+  duk_compile_file(ctx, 0, "test.js");
 
-=introduced
-1.0.0
+tags:
+  - compile
+  - nonportable
+
+introduced: 1.0.0

@@ -1,19 +1,20 @@
-=proto
-void duk_push_nan(duk_context *ctx);
+name: duk_push_nan
 
-=stack
-[ ... ] -> [ ... NaN! ]
+proto: |
+  void duk_push_nan(duk_context *ctx);
 
-=summary
-Pushes a <code>NaN</code> (not-a-number) to the stack.
+stack: |
+  [ ... ] -> [ ... NaN! ]
 
-=example
-duk_push_nan(ctx);
+summary: |
+  Pushes a <code>NaN</code> (not-a-number) to the stack.
 
-printf("NaN is number: %d\n", (int) duk_is_number(ctx, -1));
+example: |
+  duk_push_nan(ctx);
 
-=tags
-stack
+  printf("NaN is number: %d\n", (int) duk_is_number(ctx, -1));
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

@@ -1,33 +1,34 @@
-=proto
-void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx) {
+name: duk_push_thread_stash
 
-=stack
-[ ... ] -> [ ... stash! ]
+proto: |
+  void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx) {
 
-=summary
-<p>Push the stash object related to <code>target_ctx</code> to the stack (the
-<code>ctx</code> and <code>target_ctx</code> arguments may refer to the same
-thread).  The thread stash is an internal object which can be used to store
-key/value pairs from C code so that they are reachable for garbage collection,
-but are not accessible from Ecmascript code.  The stash is only accessible
-from C code with a matching <code>target_ctx</code> argument.</p>
+stack: |
+  [ ... ] -> [ ... stash! ]
 
-<p>If <code>target_ctx</code> is <code>NULL</code>, throws an error.</p>
+summary: |
+  <p>Push the stash object related to <code>target_ctx</code> to the stack (the
+  <code>ctx</code> and <code>target_ctx</code> arguments may refer to the same
+  thread).  The thread stash is an internal object which can be used to store
+  key/value pairs from C code so that they are reachable for garbage collection,
+  but are not accessible from Ecmascript code.  The stash is only accessible
+  from C code with a matching <code>target_ctx</code> argument.</p>
 
-=example
-duk_push_thread_stash(ctx, ctx2);
+  <p>If <code>target_ctx</code> is <code>NULL</code>, throws an error.</p>
 
-=tags
-stack
-stash
-object
-module
-thread
-sandbox
+example: |
+  duk_push_thread_stash(ctx, ctx2);
 
-=seealso
-duk_push_heap_stash
-duk_push_global_stash
+tags:
+  - stack
+  - stash
+  - object
+  - module
+  - thread
+  - sandbox
 
-=introduced
-1.0.0
+seealso:
+  - duk_push_heap_stash
+  - duk_push_global_stash
+
+introduced: 1.0.0

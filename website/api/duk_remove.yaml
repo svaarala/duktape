@@ -1,22 +1,23 @@
-=proto
-void duk_remove(duk_context *ctx, duk_idx_t index);
+name: duk_remove
 
-=stack
-[ ... val(index)! ... ] -> [ ... ... ]
+proto: |
+  void duk_remove(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Remove value at <code>index</code>.  Elements above <code>index</code>
-are shifted down the stack by a step.  If <code>to_index</code> is
-an invalid index, throws an error.</p>
+stack: |
+  [ ... val(index)! ... ] -> [ ... ... ]
 
-=example
-duk_push_int(ctx, 123);
-duk_push_int(ctx, 234);
-duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
-duk_remove(ctx, -2);          /* -> [ 123 345 ] */
+summary: |
+  <p>Remove value at <code>index</code>.  Elements above <code>index</code>
+  are shifted down the stack by a step.  If <code>to_index</code> is
+  an invalid index, throws an error.</p>
 
-=tags
-stack
+example: |
+  duk_push_int(ctx, 123);
+  duk_push_int(ctx, 234);
+  duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
+  duk_remove(ctx, -2);          /* -> [ 123 345 ] */
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

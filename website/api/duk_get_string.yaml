@@ -1,35 +1,36 @@
-=proto
-const char *duk_get_string(duk_context *ctx, duk_idx_t index);
+name: duk_get_string
 
-=stack
-[ ... val! ... ]
+proto: |
+  const char *duk_get_string(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get character data pointer for a string at <code>index</code> without
-modifying or coercing the value.  Returns a non-<code>NULL</code> pointer to
-the read-only, NUL-terminated string data.  Returns <code>NULL</code> if the
-value is not a string or the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>To get the string byte length explicitly (which is useful if the string
-contains embedded NUL characters), use
-<code><a href="#duk_get_lstring">duk_get_lstring()</a></code>.</p>
+summary: |
+  <p>Get character data pointer for a string at <code>index</code> without
+  modifying or coercing the value.  Returns a non-<code>NULL</code> pointer to
+  the read-only, NUL-terminated string data.  Returns <code>NULL</code> if the
+  value is not a string or the index is invalid.</p>
 
-<div class="note">
-A non-<code>NULL</code> return value is guaranteed even for zero length strings;
-this differs from how buffer data pointers are handled (for technical reasons).
-</div>
+  <p>To get the string byte length explicitly (which is useful if the string
+  contains embedded NUL characters), use
+  <code><a href="#duk_get_lstring">duk_get_lstring()</a></code>.</p>
 
-=example
-const char *buf;
+  <div class="note">
+  A non-<code>NULL</code> return value is guaranteed even for zero length strings;
+  this differs from how buffer data pointers are handled (for technical reasons).
+  </div>
 
-buf = duk_get_string(ctx, -3);
-if (buf) {
-    printf("value is a string: %s\n", buf);
-}
+example: |
+  const char *buf;
 
-=tags
-stack
-string
+  buf = duk_get_string(ctx, -3);
+  if (buf) {
+      printf("value is a string: %s\n", buf);
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - string
+
+introduced: 1.0.0

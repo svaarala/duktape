@@ -1,33 +1,34 @@
-=proto
-void duk_trim(duk_context *ctx, duk_idx_t index);
+name: duk_trim
 
-=stack
-[ ... str! ... ] -> [ ... trimmed_str! ... ]
+proto: |
+  void duk_trim(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Trim string at <code>index</code>.  If the value at <code>index</code> is not a
-string or the index is invalid, throws an error.</p>
+stack: |
+  [ ... str! ... ] -> [ ... trimmed_str! ... ]
 
-<p>Trimming removes white space characters from the beginning and
-end the end of the string.  The result is an empty string if the string
-consists entirely of white space characters.
-The set of characters considered to be white space is defined by the
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.3.1">StrWhiteSpace</a>
-production, which contains both
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-7.2">WhiteSpace</a> and
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-7.3">LineTerminator</a> characters.
-The trimming behavior matches those of
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.5.4.20">String.prototype.trim()</a>,
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.2">parseInt()</a>, and
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.3">parseFloat()</a>.
-</p>
+summary: |
+  <p>Trim string at <code>index</code>.  If the value at <code>index</code> is not a
+  string or the index is invalid, throws an error.</p>
 
-=example
-duk_trim(ctx, -3);
+  <p>Trimming removes white space characters from the beginning and
+  end the end of the string.  The result is an empty string if the string
+  consists entirely of white space characters.
+  The set of characters considered to be white space is defined by the
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.3.1">StrWhiteSpace</a>
+  production, which contains both
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-7.2">WhiteSpace</a> and
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-7.3">LineTerminator</a> characters.
+  The trimming behavior matches those of
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.5.4.20">String.prototype.trim()</a>,
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.2">parseInt()</a>, and
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.1.2.3">parseFloat()</a>.
+  </p>
 
-=tags
-stack
-string
+example: |
+  duk_trim(ctx, -3);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - string
+
+introduced: 1.0.0

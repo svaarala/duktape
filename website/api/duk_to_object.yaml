@@ -1,29 +1,30 @@
-=proto
-void duk_to_object(duk_context *ctx, duk_idx_t index);
+name: duk_to_object
 
-=stack
-[ ... val! ... ] -> [ ... ToObject(val)! ... ]
+proto: |
+  void duk_to_object(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Replace the value at <code>index</code> with an Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.9">ToObject()</a>
-coerced value.  There is no return value.  Throws an error if value at
-<code>index</code> is not
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
-or if <code>index</code> is invalid.</p>
+stack: |
+  [ ... val! ... ] -> [ ... ToObject(val)! ... ]
 
-<p>The following types are not object coercible:</p>
-<ul>
-<li><code>undefined</code></li>
-<li><code>null</code></li>
-</ul>
+summary: |
+  <p>Replace the value at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.9">ToObject()</a>
+  coerced value.  There is no return value.  Throws an error if value at
+  <code>index</code> is not
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
+  or if <code>index</code> is invalid.</p>
 
-=example
-duk_to_object(ctx, -3);
+  <p>The following types are not object coercible:</p>
+  <ul>
+  <li><code>undefined</code></li>
+  <li><code>null</code></li>
+  </ul>
 
-=tags
-stack
-object
+example: |
+  duk_to_object(ctx, -3);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - object
+
+introduced: 1.0.0

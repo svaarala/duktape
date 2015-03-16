@@ -1,19 +1,20 @@
-=proto
-void duk_push_this(duk_context *ctx);
+name: duk_push_this
 
-=stack
-[ ... ] -> [ ... this! ]
+proto: |
+  void duk_push_this(duk_context *ctx);
 
-=summary
-<p>Push the <code>this</code> binding of the currently running C function to
-the stack.</p>
+stack: |
+  [ ... ] -> [ ... this! ]
 
-=example
-duk_push_this(ctx);
+summary: |
+  <p>Push the <code>this</code> binding of the currently running C function to
+  the stack.</p>
 
-=tags
-stack
-function
+example: |
+  duk_push_this(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

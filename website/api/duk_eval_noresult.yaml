@@ -1,25 +1,26 @@
-=proto
-void duk_eval_noresult(duk_context *ctx);
+name: duk_eval_noresult
 
-=stack
-[ ... source! ] -> [ ... ]
+proto: |
+  void duk_eval_noresult(duk_context *ctx);
 
-=summary
-<p>Like
-<code><a href="#duk_eval">duk_eval()</a></code>, but leaves no result on
-the value stack.</p>
+stack: |
+  [ ... source! ] -> [ ... ]
 
-=example
-duk_push_string(ctx, "print('Hello world!');");
-duk_eval_noresult(ctx);
+summary: |
+  <p>Like
+  <code><a href="#duk_eval">duk_eval()</a></code>, but leaves no result on
+  the value stack.</p>
 
-=tags
-compile
+example: |
+  duk_push_string(ctx, "print('Hello world!');");
+  duk_eval_noresult(ctx);
 
-=seealso
-duk_eval_string_noresult
-duk_eval_lstring_noresult
-duk_eval_file_noresult
+tags:
+  - compile
 
-=introduced
-1.0.0
+seealso:
+  - duk_eval_string_noresult
+  - duk_eval_lstring_noresult
+  - duk_eval_file_noresult
+
+introduced: 1.0.0

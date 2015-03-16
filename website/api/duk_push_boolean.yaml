@@ -1,21 +1,21 @@
-=proto
-void duk_push_boolean(duk_context *ctx, duk_bool_t val);
+name: duk_push_boolean
 
-=stack
-[ ... ] -> [ ... true! ] (if val != 0)
-[ ... ] -> [ ... false! ] (if val == 0)
+proto: |
+  void duk_push_boolean(duk_context *ctx, duk_bool_t val);
 
-=summary
-<p>Push <code>true</code> (if val != 0) or <code>false</code> (if val == 0) to the stack.</p>
+stack: |
+  [ ... ] -> [ ... true! ] (if val != 0)
+  [ ... ] -> [ ... false! ] (if val == 0)
 
-=example
-duk_push_boolean(ctx, 0);  /* -> [ ... false ] */
-duk_push_boolean(ctx, 1);  /* -> [ ... false true ] */
-duk_push_boolean(ctx, -3);  /* -> [ ... false true true ] */
+summary: |
+  <p>Push <code>true</code> (if val != 0) or <code>false</code> (if val == 0) to the stack.</p>
 
-=tags
-stack
+example: |
+  duk_push_boolean(ctx, 0);  /* -> [ ... false ] */
+  duk_push_boolean(ctx, 1);  /* -> [ ... false true ] */
+  duk_push_boolean(ctx, -3);  /* -> [ ... false true true ] */
 
+tags:
+  - stack
 
-=introduced
-1.0.0
+introduced: 1.0.0

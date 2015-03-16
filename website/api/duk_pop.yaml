@@ -1,27 +1,28 @@
-=proto
-void duk_pop(duk_context *ctx);
+name: duk_pop
 
-=stack
-[ ... val! ] -> [ ... ]
+proto: |
+  void duk_pop(duk_context *ctx);
 
-=summary
-<p>Pop one element off the stack.  If the stack is empty, throws an error.</p>
+stack: |
+  [ ... val! ] -> [ ... ]
 
-<p>To pop multiple elements, use
-<code><a href="#duk_pop_n">duk_pop_n()</a></code> or the shortcuts for common cases:
-<code><a href="#duk_pop_2">duk_pop_2()</a></code> and
-<code><a href="#duk_pop_3">duk_pop_3()</a></code>.</p>
+summary: |
+  <p>Pop one element off the stack.  If the stack is empty, throws an error.</p>
 
-=example
-duk_pop(ctx);
+  <p>To pop multiple elements, use
+  <code><a href="#duk_pop_n">duk_pop_n()</a></code> or the shortcuts for common cases:
+  <code><a href="#duk_pop_2">duk_pop_2()</a></code> and
+  <code><a href="#duk_pop_3">duk_pop_3()</a></code>.</p>
 
-=tags
-stack
+example: |
+  duk_pop(ctx);
 
-=seealso
-duk_pop_2
-duk_pop_3
-duk_pop_n
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_pop_2
+  - duk_pop_3
+  - duk_pop_n
+
+introduced: 1.0.0

@@ -1,25 +1,26 @@
-=proto
-duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index);
+name: duk_normalize_index
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Normalize argument index relative to the bottom of the current frame.
-The resulting index will be 0 or greater and will be independent of
-later stack modifications.  If the input index is invalid, returns
-<code>DUK_INVALID_INDEX</code>.  If you prefer that an error be thrown for
-an invalid index, use
-<code><a href="#duk_require_normalize_index">duk_require_normalize_index()</a></code>.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-duk_idx_t idx = duk_normalize_index(-3);
+summary: |
+  <p>Normalize argument index relative to the bottom of the current frame.
+  The resulting index will be 0 or greater and will be independent of
+  later stack modifications.  If the input index is invalid, returns
+  <code>DUK_INVALID_INDEX</code>.  If you prefer that an error be thrown for
+  an invalid index, use
+  <code><a href="#duk_require_normalize_index">duk_require_normalize_index()</a></code>.</p>
 
-=tags
-stack
+example: |
+  duk_idx_t idx = duk_normalize_index(-3);
 
-=seealso
-duk_require_normalize_index
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_require_normalize_index
+
+introduced: 1.0.0

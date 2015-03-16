@@ -1,30 +1,31 @@
-=proto
-duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t index);
+name: duk_is_c_function
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Returns 1 if value at <code>index</code> is a Function object and is
-assocated with a C function, otherwise returns 0.
-If <code>index</code> is invalid, also returns 0.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>An example of an underlying C function observing the Duktape/C API
-calling convention:</p>
-<pre class="c-code">
-int my_func(duk_context *ctx) {
-    /* ... */
-}
-</pre>
+summary: |
+  <p>Returns 1 if value at <code>index</code> is a Function object and is
+  assocated with a C function, otherwise returns 0.
+  If <code>index</code> is invalid, also returns 0.</p>
 
-=example
-if (duk_is_c_function(ctx, -3)) {
-    /* ... */
-}
+  <p>An example of an underlying C function observing the Duktape/C API
+  calling convention:</p>
+  <pre class="c-code">
+  int my_func(duk_context *ctx) {
+      /* ... */
+  }
+  </pre>
 
-=tags
-stack
-function
+example: |
+  if (duk_is_c_function(ctx, -3)) {
+      /* ... */
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

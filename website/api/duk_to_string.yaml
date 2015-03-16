@@ -1,26 +1,27 @@
-=proto
-const char *duk_to_string(duk_context *ctx, duk_idx_t index);
+name: duk_to_string
 
-=stack
-[ ... val! ... ] -> [ ... ToString(val)! ... ]
+proto: |
+  const char *duk_to_string(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Replace the value at <code>index</code> with an Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
-coerced value.  Returns a non-<code>NULL</code> pointer to the read-only,
-NUL-terminated string data.  If <code>index</code> is invalid, throws an error.</p>
+stack: |
+  [ ... val! ... ] -> [ ... ToString(val)! ... ]
 
-<div include="ref-custom-type-coercion.html" />
+summary: |
+  <p>Replace the value at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
+  coerced value.  Returns a non-<code>NULL</code> pointer to the read-only,
+  NUL-terminated string data.  If <code>index</code> is invalid, throws an error.</p>
 
-=example
-printf("coerced string: %s\n", duk_to_string(ctx, -3));
+  <div include="ref-custom-type-coercion.html" />
 
-=tags
-stack
-string
+example: |
+  printf("coerced string: %s\n", duk_to_string(ctx, -3));
 
-=seealso
-duk_safe_to_string
+tags:
+  - stack
+  - string
 
-=introduced
-1.0.0
+seealso:
+  - duk_safe_to_string
+
+introduced: 1.0.0

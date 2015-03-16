@@ -1,24 +1,25 @@
-=proto
-void duk_debugger_cooperate(duk_context *ctx);
+name: duk_debugger_cooperate
 
-=summary
-<p>Check for and execute inbound debug commands without blocking.  Debug
-commands are executed in the context of the <code>ctx</code> argument.
-May only be called when no calls into Duktape are in progress (from any
-context).  See
-<a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
-for more information.</p>
+proto: |
+  void duk_debugger_cooperate(duk_context *ctx);
 
-=example
-duk_debugger_cooperate(ctx);
+summary: |
+  <p>Check for and execute inbound debug commands without blocking.  Debug
+  commands are executed in the context of the <code>ctx</code> argument.
+  May only be called when no calls into Duktape are in progress (from any
+  context).  See
+  <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
+  for more information.</p>
 
-=tags
-debug
-experimental
+example: |
+  duk_debugger_cooperate(ctx);
 
-=seealso
-duk_debugger_attach
-duk_debugger_detach
+tags:
+  - debug
+  - experimental
 
-=introduced
-1.2.0
+seealso:
+  - duk_debugger_attach
+  - duk_debugger_detach
+
+introduced: 1.2.0

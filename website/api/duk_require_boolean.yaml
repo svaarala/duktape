@@ -1,21 +1,22 @@
-=proto
-duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t index);
+name: duk_require_boolean
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Like <code><a href="#duk_get_boolean">duk_get_boolean()</a></code>,
-but throws an error if the value at <code>index</code> is not a boolean
-or if the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-if (duk_require_boolean(ctx, -3)) {
-    printf("value is true\n");
-}
+summary: |
+  <p>Like <code><a href="#duk_get_boolean">duk_get_boolean()</a></code>,
+  but throws an error if the value at <code>index</code> is not a boolean
+  or if the index is invalid.</p>
 
-=tags
-stack
+example: |
+  if (duk_require_boolean(ctx, -3)) {
+      printf("value is true\n");
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

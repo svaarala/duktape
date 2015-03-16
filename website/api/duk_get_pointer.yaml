@@ -1,22 +1,23 @@
-=proto
-void *duk_get_pointer(duk_context *ctx, duk_idx_t index);
+name: duk_get_pointer
 
-=stack
-[ ... val! ... ]
+proto: |
+  void *duk_get_pointer(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Get the pointer value at <code>index</code> as <code>void *</code> without
-modifying or coercing the value.  Returns <code>NULL</code> if the value is
-not a pointer or the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-void *ptr;
+summary: |
+  <p>Get the pointer value at <code>index</code> as <code>void *</code> without
+  modifying or coercing the value.  Returns <code>NULL</code> if the value is
+  not a pointer or the index is invalid.</p>
 
-ptr = duk_get_pointer(ctx, -3);
-printf("my pointer is: %p\n", ptr);
+example: |
+  void *ptr;
 
-=tags
-stack
+  ptr = duk_get_pointer(ctx, -3);
+  printf("my pointer is: %p\n", ptr);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

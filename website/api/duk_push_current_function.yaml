@@ -1,26 +1,27 @@
-=proto
-void duk_push_current_function(duk_context *ctx);
+name: duk_push_current_function
 
-=stack
-[ ... ] -> [ ... func! ]  (if current function exists)
-[ ... ] -> [ ... undefined! ]  (if no current function)
+proto: |
+  void duk_push_current_function(duk_context *ctx);
 
-=summary
-<p>Push the currently running function to the stack.  The value pushed is
-an Ecmascript Function object.  If there is no current function,
-<code>undefined</code> is pushed instead.</p>
+stack: |
+  [ ... ] -> [ ... func! ]  (if current function exists)
+  [ ... ] -> [ ... undefined! ]  (if no current function)
 
-<p>This function allows a C function to gain access to its function object.
-Since multiple function objects can internally point to the same C function,
-a function object is a convenient place for function parameterization and
-can also act as an internal state stash.</p>
+summary: |
+  <p>Push the currently running function to the stack.  The value pushed is
+  an Ecmascript Function object.  If there is no current function,
+  <code>undefined</code> is pushed instead.</p>
 
-=example
-duk_push_current_function(ctx);
+  <p>This function allows a C function to gain access to its function object.
+  Since multiple function objects can internally point to the same C function,
+  a function object is a convenient place for function parameterization and
+  can also act as an internal state stash.</p>
 
-=tags
-stack
-function
+example: |
+  duk_push_current_function(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+
+introduced: 1.0.0

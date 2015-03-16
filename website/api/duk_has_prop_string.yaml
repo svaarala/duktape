@@ -1,24 +1,25 @@
-=proto
-duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
+name: duk_has_prop_string
 
-=stack
-[ ... obj! ... ] -> [ ... obj! ... ]
+proto: |
+  duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_index, const char *key);
 
-=summary
-<p>Like <code><a href="#duk_has_prop">duk_has_prop()</a></code>,
-but the property name is given as a NUL-terminated C string
-<code>key</code>.</p>
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
 
-=example
-if (duk_has_prop(ctx, -3, "myProperty")) {
-    printf("obj has 'myProperty'\n");
-} else {
-    printf("obj does not have 'myProperty'\n");
-}
+summary: |
+  <p>Like <code><a href="#duk_has_prop">duk_has_prop()</a></code>,
+  but the property name is given as a NUL-terminated C string
+  <code>key</code>.</p>
 
-=tags
-property
-stack
+example: |
+  if (duk_has_prop(ctx, -3, "myProperty")) {
+      printf("obj has 'myProperty'\n");
+  } else {
+      printf("obj does not have 'myProperty'\n");
+  }
 
-=introduced
-1.0.0
+tags:
+  - property
+  - stack
+
+introduced: 1.0.0

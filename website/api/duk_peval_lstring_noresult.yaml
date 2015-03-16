@@ -1,29 +1,30 @@
-=proto
-duk_int_t duk_peval_lstring_noresult(duk_context *ctx, const char *src, duk_size_t len);
+name: duk_peval_lstring_noresult
 
-=stack
-[ ... ] -> [ ... ]
+proto: |
+  duk_int_t duk_peval_lstring_noresult(duk_context *ctx, const char *src, duk_size_t len);
 
-=summary
-<p>Like
-<code><a href="#duk_peval_lstring">duk_peval_lstring()</a></code>, but leaves
-no result on the value stack.</p>
+stack: |
+  [ ... ] -> [ ... ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_peval_lstring">duk_peval_lstring()</a></code>, but leaves
+  no result on the value stack.</p>
 
-=example
-const char *src = /* ... */;
-duk_size_t len = /* ... */;
+  <div include="no-string-intern.html" />
 
-if (duk_peval_lstring_noresult(ctx, src, len) != 0) {
-    printf("eval failed\n");
-} else {
-    printf("eval successful\n");
-}
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
 
-=tags
-compile
-protected
+  if (duk_peval_lstring_noresult(ctx, src, len) != 0) {
+      printf("eval failed\n");
+  } else {
+      printf("eval successful\n");
+  }
 
-=introduced
-1.0.0
+tags:
+  - compile
+  - protected
+
+introduced: 1.0.0

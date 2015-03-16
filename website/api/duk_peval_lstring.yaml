@@ -1,36 +1,37 @@
-=proto
-duk_int_t duk_peval_lstring(duk_context *ctx, const char *src, duk_size_t len);
+name: duk_peval_lstring
 
-=stack
-[ ... ] -> [ ... result! ]  (if success, return value == 0)
-[ ... ] -> [ ... err! ]  (if failure, return value != 0)
+proto: |
+  duk_int_t duk_peval_lstring(duk_context *ctx, const char *src, duk_size_t len);
 
-=summary
-<p>Like
-<code><a href="#duk_peval">duk_peval()</a></code>, but the eval input
-is given as a C string with explicit length.  The filename associated with the
-temporary is automatically provided from the <code>__FILE__</code> preprocessor
-define of the caller.</p>
+stack: |
+  [ ... ] -> [ ... result! ]  (if success, return value == 0)
+  [ ... ] -> [ ... err! ]  (if failure, return value != 0)
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_peval">duk_peval()</a></code>, but the eval input
+  is given as a C string with explicit length.  The filename associated with the
+  temporary is automatically provided from the <code>__FILE__</code> preprocessor
+  define of the caller.</p>
 
-=example
-const char *src = /* ... */;
-duk_size_t len = /* ... */;
+  <div include="no-string-intern.html" />
 
-if (duk_peval_lstring(ctx, src, len) != 0) {
-    printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
-} else {
-    printf("result is: %s\n", duk_get_string(ctx, -1));
-}
-duk_pop(ctx);
+example: |
+  const char *src = /* ... */;
+  duk_size_t len = /* ... */;
 
-=tags
-compile
-protected
+  if (duk_peval_lstring(ctx, src, len) != 0) {
+      printf("eval failed: %s\n", duk_safe_to_string(ctx, -1));
+  } else {
+      printf("result is: %s\n", duk_get_string(ctx, -1));
+  }
+  duk_pop(ctx);
 
-=seealso
-duk_peval_lstring_noresult
+tags:
+  - compile
+  - protected
 
-=introduced
-1.0.0
+seealso:
+  - duk_peval_lstring_noresult
+
+introduced: 1.0.0

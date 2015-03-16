@@ -1,23 +1,24 @@
-=proto
-void duk_require_undefined(duk_context *ctx, duk_idx_t index);
+name: duk_require_undefined
 
-=stack
-[ ... val! ... ]
+proto: |
+  void duk_require_undefined(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Throw an error if the value at <code>index</code> is not <code>undefined</code>
-or if the index is invalid.</p>
+stack: |
+  [ ... val! ... ]
 
-<div class="note">
-There is no "get" primitive (<code>duk_get_undefined()</code>) because such a
-function would be a no-op.
-</div>
+summary: |
+  <p>Throw an error if the value at <code>index</code> is not <code>undefined</code>
+  or if the index is invalid.</p>
 
-=example
-duk_require_undefined(ctx, -3);
+  <div class="note">
+  There is no "get" primitive (<code>duk_get_undefined()</code>) because such a
+  function would be a no-op.
+  </div>
 
-=tags
-stack
+example: |
+  duk_require_undefined(ctx, -3);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

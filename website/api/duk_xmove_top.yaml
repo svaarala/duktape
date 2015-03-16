@@ -1,61 +1,62 @@
-=proto
-void duk_xmove_top(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count);
+name: duk_xmove_top
 
-=stack
-[ ... val1! ...! valN! ] -> [ ... ]  (on source stack, from_ctx)
-[ ... ] -> [ ... val1! ...! valN! ]  (on target stack, to_ctx)
+proto: |
+  void duk_xmove_top(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count);
 
-=summary
-<p>Remove <code>count</code> arguments from the top of the source stack and push
-them onto the target stack.  The caller must ensure that the target stack has
-enough allocated space with e.g.
-<code><a href="#duk_require_stack">duk_require_stack()</a></code>.  <b>Both source
-and target stack must reside in the same Duktape heap</b>.</p>
+stack: |
+  [ ... val1! ...! valN! ] -> [ ... ]  (on source stack, from_ctx)
+  [ ... ] -> [ ... val1! ...! valN! ]  (on target stack, to_ctx)
 
-<p>If the source and target stacks are the same, an error is currently thrown.</p>
+summary: |
+  <p>Remove <code>count</code> arguments from the top of the source stack and push
+  them onto the target stack.  The caller must ensure that the target stack has
+  enough allocated space with e.g.
+  <code><a href="#duk_require_stack">duk_require_stack()</a></code>.  <b>Both source
+  and target stack must reside in the same Duktape heap</b>.</p>
 
-<div class="note">
-The order of from/to stack is reversed as compared to Lua's
-<a href="http://pgl.yoyo.org/luai/i/lua_xmove">lua_xmove()</a>.
-</div>
+  <p>If the source and target stacks are the same, an error is currently thrown.</p>
 
-=example
-/* A Duktape/C function which executes a given function in a new thread.
- */
-static duk_ret_t call_in_thread(duk_context *ctx) {
-    duk_idx_t nargs;
-    duk_context *new_ctx;
+  <div class="note">
+  The order of from/to stack is reversed as compared to Lua's
+  <a href="http://pgl.yoyo.org/luai/i/lua_xmove">lua_xmove()</a>.
+  </div>
 
-    /* Arguments: func, arg1, ... argN. */
-    nargs = duk_get_top(ctx);
-    if (nargs < 1) {
-        return DUK_RET_TYPE_ERROR;  /* missing func argument */
-    }
+example: |
+  /* A Duktape/C function which executes a given function in a new thread.
+   */
+  static duk_ret_t call_in_thread(duk_context *ctx) {
+      duk_idx_t nargs;
+      duk_context *new_ctx;
 
-    /* Create a new context. */
-    duk_push_thread();
-    new_ctx = duk_require_context(ctx, -1);
+      /* Arguments: func, arg1, ... argN. */
+      nargs = duk_get_top(ctx);
+      if (nargs < 1) {
+          return DUK_RET_TYPE_ERROR;  /* missing func argument */
+      }
 
-    /* Move arguments to the new context.  Note that we need to extend
-     * the target stack allocation explicitly.
-     */
-    duk_require_stack(new_ctx, nargs);
-    duk_xmove_top(ctx, new_ctx, nargs);
+      /* Create a new context. */
+      duk_push_thread();
+      new_ctx = duk_require_context(ctx, -1);
 
-    /* Call the function; new_ctx is now: [ func arg1 ... argN ]. */
-    duk_call(new_ctx, nargs - 1);
+      /* Move arguments to the new context.  Note that we need to extend
+       * the target stack allocation explicitly.
+       */
+      duk_require_stack(new_ctx, nargs);
+      duk_xmove_top(ctx, new_ctx, nargs);
 
-    /* Return the function call result by copying it to the original stack. */
-    duk_xmove_top(new_ctx, ctx, 1);
-    return 1;
-}
+      /* Call the function; new_ctx is now: [ func arg1 ... argN ]. */
+      duk_call(new_ctx, nargs - 1);
 
-=tags
-stack
-slice
+      /* Return the function call result by copying it to the original stack. */
+      duk_xmove_top(new_ctx, ctx, 1);
+      return 1;
+  }
 
-=seealso
-duk_xcopy_top
+tags:
+  - stack
+  - slice
 
-=introduced
-1.0.0
+seealso:
+  - duk_xcopy_top
+
+introduced: 1.0.0

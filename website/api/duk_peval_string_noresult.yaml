@@ -1,26 +1,27 @@
-=proto
-duk_int_t duk_peval_string_noresult(duk_context *ctx, const char *src);
+name: duk_peval_string_noresult
 
-=stack
-[ ... ] -> [ ... ]
+proto: |
+  duk_int_t duk_peval_string_noresult(duk_context *ctx, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_peval_string">duk_peval_string()</a></code>, but leaves
-no result on the value stack.</p>
+stack: |
+  [ ... ] -> [ ... ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_peval_string">duk_peval_string()</a></code>, but leaves
+  no result on the value stack.</p>
 
-=example
-if (duk_peval_string_noresult(ctx, "print('testString'.toUpperCase());") != 0) {
-    printf("eval failed\n");
-} else {
-    printf("eval successful\n");
-}
+  <div include="no-string-intern.html" />
 
-=tags
-compile
-protected
+example: |
+  if (duk_peval_string_noresult(ctx, "print('testString'.toUpperCase());") != 0) {
+      printf("eval failed\n");
+  } else {
+      printf("eval successful\n");
+  }
 
-=introduced
-1.0.0
+tags:
+  - compile
+  - protected
+
+introduced: 1.0.0

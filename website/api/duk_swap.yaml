@@ -1,22 +1,23 @@
-=proto
-void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+name: duk_swap
 
-=stack
-[ ... val1! ... val2! ... ] -> [ ... val2! ... val1! ... ]
+proto: |
+  void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
 
-=summary
-<p>Swap values at indices <code>index1</code> and <code>index2</code>.  If the
-indices are the same, the call is a no-op.  If either index is invalid,
-throws an error.</p>
+stack: |
+  [ ... val1! ... val2! ... ] -> [ ... val2! ... val1! ... ]
 
-=tags
-stack
+summary: |
+  <p>Swap values at indices <code>index1</code> and <code>index2</code>.  If the
+  indices are the same, the call is a no-op.  If either index is invalid,
+  throws an error.</p>
 
-=example
-duk_swap(ctx, -5, -1);
+example: |
+  duk_swap(ctx, -5, -1);
 
-=seealso
-duk_swap_top
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_swap_top
+
+introduced: 1.0.0

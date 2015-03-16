@@ -1,25 +1,26 @@
-=proto
-duk_bool_t duk_is_nan(duk_context *ctx, duk_idx_t index);
+name: duk_is_nan
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_nan(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Returns 1 if value at <code>index</code> is a <code>NaN</code> (a special
-number value), otherwise returns 0.  If <code>index</code> is invalid,
-also returns 0.</p>
+stack: |
+  [ ... val! ... ]
 
-<p>IEEE has a large number of different <code>NaN</code> values.  Duktape
-normalizes <code>NaN</code> values internally.  This function returns 1
-for any kind of a <code>NaN</code>.</p>
+summary: |
+  <p>Returns 1 if value at <code>index</code> is a <code>NaN</code> (a special
+  number value), otherwise returns 0.  If <code>index</code> is invalid,
+  also returns 0.</p>
 
-=example
-if (duk_is_nan(ctx, -3)) {
-    /* ... */
-}
+  <p>IEEE has a large number of different <code>NaN</code> values.  Duktape
+  normalizes <code>NaN</code> values internally.  This function returns 1
+  for any kind of a <code>NaN</code>.</p>
 
-=tags
-stack
+example: |
+  if (duk_is_nan(ctx, -3)) {
+      /* ... */
+  }
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

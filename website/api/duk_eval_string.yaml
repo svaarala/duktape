@@ -1,28 +1,29 @@
-=proto
-void duk_eval_string(duk_context *ctx, const char *src);
+name: duk_eval_string
 
-=stack
-[ ... ] -> [ ... result! ]
+proto: |
+  void duk_eval_string(duk_context *ctx, const char *src);
 
-=summary
-<p>Like
-<code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
-is given as a C string.  The filename associated with the temporary
-is automatically provided from the <code>__FILE__</code> preprocessor define
-of the caller.</p>
+stack: |
+  [ ... ] -> [ ... result! ]
 
-<div include="no-string-intern.html" />
+summary: |
+  <p>Like
+  <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
+  is given as a C string.  The filename associated with the temporary
+  is automatically provided from the <code>__FILE__</code> preprocessor define
+  of the caller.</p>
 
-=example
-duk_eval_string(ctx, "'testString'.toUpperCase()");
-printf("result is: %s\n", duk_get_string(ctx, -1));
-duk_pop(ctx);
+  <div include="no-string-intern.html" />
 
-=tags
-compile
+example: |
+  duk_eval_string(ctx, "'testString'.toUpperCase()");
+  printf("result is: %s\n", duk_get_string(ctx, -1));
+  duk_pop(ctx);
 
-=seealso
-duk_eval_string_noresult
+tags:
+  - compile
 
-=introduced
-1.0.0
+seealso:
+  - duk_eval_string_noresult
+
+introduced: 1.0.0

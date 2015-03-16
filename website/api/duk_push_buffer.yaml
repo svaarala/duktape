@@ -1,54 +1,55 @@
-=proto
-void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
+name: duk_push_buffer
 
-=stack
-[ ... ] -> [ ... buf! ]
+proto: |
+  void *duk_push_buffer(duk_context *ctx, duk_size_t size, duk_bool_t dynamic);
 
-=summary
-<p>Allocate a new buffer of <code>size</code> bytes and push it to the value stack.
-Returns a non-<code>NULL</code> pointer to the buffer data area; for a zero-size buffer,
-may return either <code>NULL</code> or <code>non-NULL</code>.  The buffer data area is
-automatically zeroed.  If <code>dynamic</code> is non-zero, the buffer will be resizable,
-otherwise the buffer will have a fixed size.  Throws an error if allocation fails.</p>
+stack: |
+  [ ... ] -> [ ... buf! ]
 
-<p>There are also shortcut variants
-<code><a href="#duk_push_fixed_buffer">duk_push_fixed_buffer()</a></code> and
-<code><a href="#duk_push_dynamic_buffer">duk_push_dynamic_buffer()</a></code>.</p>
+summary: |
+  <p>Allocate a new buffer of <code>size</code> bytes and push it to the value stack.
+  Returns a non-<code>NULL</code> pointer to the buffer data area; for a zero-size buffer,
+  may return either <code>NULL</code> or <code>non-NULL</code>.  The buffer data area is
+  automatically zeroed.  If <code>dynamic</code> is non-zero, the buffer will be resizable,
+  otherwise the buffer will have a fixed size.  Throws an error if allocation fails.</p>
 
-<div class="note">
-A dynamic buffer requires two memory allocations internally: one for the buffer
-header and another for the currently allocated data area.  A fixed buffer only
-requires a single allocation: the data area follows the buffer header.
-</div>
+  <p>There are also shortcut variants
+  <code><a href="#duk_push_fixed_buffer">duk_push_fixed_buffer()</a></code> and
+  <code><a href="#duk_push_dynamic_buffer">duk_push_dynamic_buffer()</a></code>.</p>
 
-<div class="note">
-Be careful when requesting a zero length dynamic buffer: a <code>NULL</code>
-data pointer is not an error and should not confuse calling code.
-</div>
+  <div class="note">
+  A dynamic buffer requires two memory allocations internally: one for the buffer
+  header and another for the currently allocated data area.  A fixed buffer only
+  requires a single allocation: the data area follows the buffer header.
+  </div>
 
-<div class="note">
-Duktape can be compiled with a feature option which disables automatic zeroing
-of allocated buffer data.  If this is the case, you need to zero the buffer
-manually if necessary.
-</div>
+  <div class="note">
+  Be careful when requesting a zero length dynamic buffer: a <code>NULL</code>
+  data pointer is not an error and should not confuse calling code.
+  </div>
 
-=example
-/* Allocate a fixed buffer of 1024 bytes.  There is no need to check for
- * the return value: an error is thrown if allocation fails.
- */
+  <div class="note">
+  Duktape can be compiled with a feature option which disables automatic zeroing
+  of allocated buffer data.  If this is the case, you need to zero the buffer
+  manually if necessary.
+  </div>
 
-void *p;
+example: |
+  /* Allocate a fixed buffer of 1024 bytes.  There is no need to check for
+   * the return value: an error is thrown if allocation fails.
+   */
 
-p = duk_push_buffer(ctx, 1024, 0);
-printf("allocated buffer, data area: %p\n", p);
+  void *p;
 
-=tags
-stack
-buffer
+  p = duk_push_buffer(ctx, 1024, 0);
+  printf("allocated buffer, data area: %p\n", p);
 
-=seealso
-duk_push_fixed_buffer
-duk_push_dynamic_buffer
+tags:
+  - stack
+  - buffer
 
-=introduced
-1.0.0
+seealso:
+  - duk_push_fixed_buffer
+  - duk_push_dynamic_buffer
+
+introduced: 1.0.0

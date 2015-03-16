@@ -1,24 +1,25 @@
-=proto
-duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
+name: duk_is_valid_index
 
-=stack
-[ ... val! ... ]
+proto: |
+  duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Validate argument index, return 1 if index is valid, 0 otherwise.</p>
+stack: |
+  [ ... val! ... ]
 
-=example
-if (duk_is_valid_index(ctx, -3)) {
-    printf("index -3 is valid\n");
-} else {
-    printf("index -3 is not valid\n");
-}
+summary: |
+  <p>Validate argument index, return 1 if index is valid, 0 otherwise.</p>
 
-=tags
-stack
+example: |
+  if (duk_is_valid_index(ctx, -3)) {
+      printf("index -3 is valid\n");
+  } else {
+      printf("index -3 is not valid\n");
+  }
 
-=seealso
-duk_require_valid_index
+tags:
+  - stack
 
-=introduced
-1.0.0
+seealso:
+  - duk_require_valid_index
+
+introduced: 1.0.0

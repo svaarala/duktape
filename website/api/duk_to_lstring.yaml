@@ -1,32 +1,33 @@
-=proto
-const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+name: duk_to_lstring
 
-=stack
-[ ... val! ... ] -> [ ... ToString(val)! ... ]
+proto: |
+  const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
 
-=summary
-<p>Replace the value at <code>index</code> with an Ecmascript
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
-coerced value.  Returns a non-<code>NULL</code> pointer to the read-only,
-NUL-terminated string data, and writes the string byte length to <code>*out_len</code>
-(if <code>out_len</code> is non-<code>NULL</code>).  If <code>index</code> is invalid, throws
-an error.</p>
+stack: |
+  [ ... val! ... ] -> [ ... ToString(val)! ... ]
 
-<div include="ref-custom-type-coercion.html" />
+summary: |
+  <p>Replace the value at <code>index</code> with an Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>
+  coerced value.  Returns a non-<code>NULL</code> pointer to the read-only,
+  NUL-terminated string data, and writes the string byte length to <code>*out_len</code>
+  (if <code>out_len</code> is non-<code>NULL</code>).  If <code>index</code> is invalid, throws
+  an error.</p>
 
-=example
-const char *ptr;
-duk_size_t sz;
+  <div include="ref-custom-type-coercion.html" />
 
-ptr = duk_to_lstring(ctx, -3, &sz);
-printf("coerced string: %s (length %lu)\n", ptr, (unsigned long) sz);
+example: |
+  const char *ptr;
+  duk_size_t sz;
 
-=tags
-stack
-string
+  ptr = duk_to_lstring(ctx, -3, &sz);
+  printf("coerced string: %s (length %lu)\n", ptr, (unsigned long) sz);
 
-=seealso
-duk_safe_to_lstring
+tags:
+  - stack
+  - string
 
-=introduced
-1.0.0
+seealso:
+  - duk_safe_to_lstring
+
+introduced: 1.0.0

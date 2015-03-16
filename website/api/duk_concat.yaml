@@ -1,31 +1,32 @@
-=proto
-void duk_concat(duk_context *ctx, duk_idx_t count);
+name: duk_concat
 
-=stack
-[ ... val1! ...! valN! ] -> [ ... result! ]
+proto: |
+  void duk_concat(duk_context *ctx, duk_idx_t count);
 
-=summary
-<p>Concatenate zero or more values into a result string.  The input values
-are automatically coerced with
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
+stack: |
+  [ ... val1! ...! valN! ] -> [ ... result! ]
 
-<p>This primitive minimizes the number of intermediate string interning
-operations and is better than concatenating strings manually.</p>
+summary: |
+  <p>Concatenate zero or more values into a result string.  The input values
+  are automatically coerced with
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
 
-=example
-duk_push_string(ctx, "foo");
-duk_push_int(ctx, 123);
-duk_push_true(ctx);
-duk_concat(ctx, 3);
+  <p>This primitive minimizes the number of intermediate string interning
+  operations and is better than concatenating strings manually.</p>
 
-printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo123true" */
-duk_pop(ctx);
+example: |
+  duk_push_string(ctx, "foo");
+  duk_push_int(ctx, 123);
+  duk_push_true(ctx);
+  duk_concat(ctx, 3);
 
-=tags
-string
+  printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo123true" */
+  duk_pop(ctx);
 
-=seealso
-duk_join
+tags:
+  - string
 
-=introduced
-1.0.0
+seealso:
+  - duk_join
+
+introduced: 1.0.0

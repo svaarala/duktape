@@ -1,23 +1,24 @@
-=proto
-void duk_to_null(duk_context *ctx, duk_idx_t index);
+name: duk_to_null
 
-=stack
-[ ... val! ... ] -> [ ... null! ... ]
+proto: |
+  void duk_to_null(duk_context *ctx, duk_idx_t index);
 
-=summary
-<p>Replace the value at <code>index</code> with <code>null</code>, regardless
-of the previous value.  Throws an error if index is invalid.</p>
+stack: |
+  [ ... val! ... ] -> [ ... null! ... ]
 
-<div class="note">
-Equivalent to <code>duk_push_null()</code> followed by <code>duk_replace()</code>
-to target index.
-</div>
+summary: |
+  <p>Replace the value at <code>index</code> with <code>null</code>, regardless
+  of the previous value.  Throws an error if index is invalid.</p>
 
-=example
-duk_to_null(ctx, -3);
+  <div class="note">
+  Equivalent to <code>duk_push_null()</code> followed by <code>duk_replace()</code>
+  to target index.
+  </div>
 
-=tags
-stack
+example: |
+  duk_to_null(ctx, -3);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

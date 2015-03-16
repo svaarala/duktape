@@ -1,29 +1,30 @@
-=proto
-void duk_push_current_thread(duk_context *ctx);
+name: duk_push_current_thread
 
-=stack
-[ ... ] -> [ ... thread! ]  (if current thread exists)
-[ ... ] -> [ ... undefined! ]  (if no current thread)
+proto: |
+  void duk_push_current_thread(duk_context *ctx);
 
-=summary
-<p>Push the currently running Duktape thread to the stack.  The value pushed
-is a thread object which is also an Ecmascript object.  If there is no current
-thread, <code>undefined</code> is pushed instead.</p>
+stack: |
+  [ ... ] -> [ ... thread! ]  (if current thread exists)
+  [ ... ] -> [ ... undefined! ]  (if no current thread)
 
-<p>The current thread is (almost always) the thread represented by the
-<code>ctx</code> pointer.</p>
+summary: |
+  <p>Push the currently running Duktape thread to the stack.  The value pushed
+  is a thread object which is also an Ecmascript object.  If there is no current
+  thread, <code>undefined</code> is pushed instead.</p>
 
-<p>To get the <code>duk_context *</code> associated with the thread, use
-<code><a href="#duk_get_context">duk_get_context()</a></code>.</p>
+  <p>The current thread is (almost always) the thread represented by the
+  <code>ctx</code> pointer.</p>
 
-=example
-duk_push_thread(ctx);
+  <p>To get the <code>duk_context *</code> associated with the thread, use
+  <code><a href="#duk_get_context">duk_get_context()</a></code>.</p>
 
-=tags
-stack
-function
-thread
-borrowed
+example: |
+  duk_push_thread(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - function
+  - thread
+  - borrowed
+
+introduced: 1.0.0

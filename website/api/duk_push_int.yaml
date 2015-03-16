@@ -1,20 +1,21 @@
-=proto
-void duk_push_int(duk_context *ctx, duk_int_t val);
+name: duk_push_int
 
-=stack
-[ ... ] -> [ ... val! ]
+proto: |
+  void duk_push_int(duk_context *ctx, duk_int_t val);
 
-=summary
-<p>Convert <code>val</code> to an IEEE double and push it to the stack.</p>
+stack: |
+  [ ... ] -> [ ... val! ]
 
-<p>This is a shorthand for calling
-<code><a href="#duk_push_number">duk_push_number(ctx, (duk_double_t) val)</a></code>.</p>
+summary: |
+  <p>Convert <code>val</code> to an IEEE double and push it to the stack.</p>
 
-=example
-duk_push_int(ctx, 123);
+  <p>This is a shorthand for calling
+  <code><a href="#duk_push_number">duk_push_number(ctx, (duk_double_t) val)</a></code>.</p>
 
-=tags
-stack
+example: |
+  duk_push_int(ctx, 123);
 
-=introduced
-1.0.0
+tags:
+  - stack
+
+introduced: 1.0.0

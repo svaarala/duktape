@@ -1,33 +1,34 @@
-=proto
-duk_bool_t duk_put_global_string(duk_context *ctx, const char *key);
+name: duk_put_global_string
 
-=stack
-[ ... val! ] -> [ ... ]
+proto: |
+  duk_bool_t duk_put_global_string(duk_context *ctx, const char *key);
 
-=summary
-<p>Put property named <code>key</code> to the global object.
-Return value behaves similarly to
-<code><a href="#duk_put_prop">duk_put_prop()</a></code>.
-This is a convenience function which does the equivalent of:</p>
-<pre class="c-code">
-duk_bool_t ret;
+stack: |
+  [ ... val! ] -> [ ... ]
 
-duk_push_global_object(ctx);
-duk_insert(ctx, -2);
-ret = duk_put_prop_string(ctx, -2, key);
-duk_pop(ctx);
-/* 'ret' would be the return value from duk_put_global_string() */
-</pre>
+summary: |
+  <p>Put property named <code>key</code> to the global object.
+  Return value behaves similarly to
+  <code><a href="#duk_put_prop">duk_put_prop()</a></code>.
+  This is a convenience function which does the equivalent of:</p>
+  <pre class="c-code">
+  duk_bool_t ret;
 
-=example
-duk_push_string(ctx, "1.2.3");
-(void) duk_put_global_string(ctx, "my_app_version");
+  duk_push_global_object(ctx);
+  duk_insert(ctx, -2);
+  ret = duk_put_prop_string(ctx, -2, key);
+  duk_pop(ctx);
+  /* 'ret' would be the return value from duk_put_global_string() */
+  </pre>
 
-=tags
-property
+example: |
+  duk_push_string(ctx, "1.2.3");
+  (void) duk_put_global_string(ctx, "my_app_version");
 
-=seealso
-duk_get_global_string
+tags:
+  - property
 
-=introduced
-1.0.0
+seealso:
+  - duk_get_global_string
+
+introduced: 1.0.0

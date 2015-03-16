@@ -1,33 +1,34 @@
-=proto
-void duk_join(duk_context *ctx, duk_idx_t count);
+name: duk_join
 
-=stack
-[ ... sep! val1! ...! valN! ] -> [ ... result! ]
+proto: |
+  void duk_join(duk_context *ctx, duk_idx_t count);
 
-=summary
-<p>Join zero or more values into a result string with a separator between
-each value.  The separator and the input values are automatically coerced
-with
-<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
+stack: |
+  [ ... sep! val1! ...! valN! ] -> [ ... result! ]
 
-<p>This primitive minimizes the number of intermediate string interning
-operations and is better than joining strings manually.</p>
+summary: |
+  <p>Join zero or more values into a result string with a separator between
+  each value.  The separator and the input values are automatically coerced
+  with
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.8">ToString()</a>.</p>
 
-=example
-duk_push_string(ctx, "; ");
-duk_push_string(ctx, "foo");
-duk_push_int(ctx, 123);
-duk_push_true(ctx);
-duk_join(ctx, 3);
+  <p>This primitive minimizes the number of intermediate string interning
+  operations and is better than joining strings manually.</p>
 
-printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo; 123; true" */
-duk_pop(ctx);
+example: |
+  duk_push_string(ctx, "; ");
+  duk_push_string(ctx, "foo");
+  duk_push_int(ctx, 123);
+  duk_push_true(ctx);
+  duk_join(ctx, 3);
 
-=tags
-string
+  printf("result: %s\n", duk_get_string(ctx, -1));  /* "foo; 123; true" */
+  duk_pop(ctx);
 
-=seealso
-duk_concat
+tags:
+  - string
 
-=introduced
-1.0.0
+seealso:
+  - duk_concat
+
+introduced: 1.0.0

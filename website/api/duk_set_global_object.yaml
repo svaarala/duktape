@@ -1,43 +1,44 @@
-=proto
-void duk_set_global_object(duk_context *ctx);
+name: duk_set_global_object
 
-=stack
-[ ... new_global! ] -> [ ... ]
+proto: |
+  void duk_set_global_object(duk_context *ctx);
 
-=summary
-<p>Replace the current context's global object with the object on top of the
-value stack.  If the value is not an object, an error is thrown.</p>
+stack: |
+  [ ... new_global! ] -> [ ... ]
 
-<p>Note that this operation <b>does not</b> affect the global object of other
-contexts, even those that have up to this point shared the same global
-environment.  To inherit the change to other contexts, replace the global
-object first before calling <code>duk_push_thread()</code>.</p>
+summary: |
+  <p>Replace the current context's global object with the object on top of the
+  value stack.  If the value is not an object, an error is thrown.</p>
 
-<p>See the test case
-<a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.c">test-set-global-object.c</a>
-for discussion of detailed behavior after the change.</p>
+  <p>Note that this operation <b>does not</b> affect the global object of other
+  contexts, even those that have up to this point shared the same global
+  environment.  To inherit the change to other contexts, replace the global
+  object first before calling <code>duk_push_thread()</code>.</p>
 
-<div class="note">
-This API call is experimental at present, and some of the semantics may
-change when other sandboxing features are implemented.
-</div>
+  <p>See the test case
+  <a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-set-global-object.c">test-set-global-object.c</a>
+  for discussion of detailed behavior after the change.</p>
 
-=example
-/* Build a global object with a subset of bindings. */
-duk_eval_string(ctx,
-    "({\n"
-    "    print: this.print,\n"
-    "    JSON: this.JSON\n"
-    "})\n");
+  <div class="note">
+  This API call is experimental at present, and some of the semantics may
+  change when other sandboxing features are implemented.
+  </div>
 
-/* Replace global object. */
-duk_set_global_object(ctx);
+example: |
+  /* Build a global object with a subset of bindings. */
+  duk_eval_string(ctx,
+      "({\n"
+      "    print: this.print,\n"
+      "    JSON: this.JSON\n"
+      "})\n");
 
-=tags
-stack
-thread
-sandbox
-experimental
+  /* Replace global object. */
+  duk_set_global_object(ctx);
 
-=introduced
-1.0.0
+tags:
+  - stack
+  - thread
+  - sandbox
+  - experimental
+
+introduced: 1.0.0
