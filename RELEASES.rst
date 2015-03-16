@@ -843,6 +843,9 @@ Planned
 * Fix for-in statement shuffle bug which caused enumeration to fail
   in large functions which enable register shuffling (GH-132)
 
+* Fix shuffle handling issue for PUTPROP opcode, discovered by shuffle
+  torture tests (GH-135)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)

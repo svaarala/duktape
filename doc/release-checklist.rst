@@ -121,6 +121,12 @@ Checklist for ordinary releases
 
   - Run with assertions enabled at least on x86-64
 
+* Run testcases with torture options
+
+  - DUK_OPT_GC_TORTURE
+
+  - DUK_OPT_SHUFFLE_TORTURE
+
 * Memory usage testing
 
   - Leaks are mostly detected by Valgrind, but bugs in valstack or object
