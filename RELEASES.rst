@@ -788,6 +788,25 @@ Released
 * Fix value stack setup bug which caused a segfault with large number of
   arguments (GH-107)
 
+1.1.2 (2015-03-17)
+------------------
+
+* Fix assignment evaluation order issue which affected expressions like
+  "a[i] = b[i++]" (GH-118)
+
+* Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
+
+* Fix tailcall issue in return comma expression when a function call
+  in the comma expression was followed by a constant value or a register
+  bound variable, e.g. 'return 0, (function { return 1; })(), 2;' would
+  return 1 instead of 2 (GH-131)
+
+* Fix for-in statement shuffle bug which caused enumeration to fail
+  in large functions which enable register shuffling (GH-132)
+
+* Fix shuffle handling issue for PUTPROP opcode, discovered by shuffle
+  torture tests (GH-135)
+
 Planned
 =======
 
