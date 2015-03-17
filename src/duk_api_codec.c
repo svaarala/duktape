@@ -164,6 +164,19 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, const duk
 	return 0;
 }
 
+/* Shared handling for encode/decode argument.  Fast path handling for
+ * buffer and string values because they're the most common.  In particular,
+ * avoid creating a temporary string or buffer when possible.
+ */
+DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t index, duk_size_t *out_len) {
+	DUK_ASSERT(duk_is_valid_index(ctx, index));  /* checked by caller */
+	if (duk_is_buffer(ctx, index)) {
+		return (const duk_uint8_t *) duk_get_buffer(ctx, index, out_len);
+	} else {
+		return (const duk_uint8_t *) duk_to_lstring(ctx, index, out_len);
+	}
+}
+
 DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_uint8_t *src;
@@ -247,28 +260,34 @@ DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 }
 
 DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
-	duk_uint8_t *data;
+	const duk_uint8_t *inp;
 	duk_size_t len;
 	duk_size_t i;
-	duk_uint_fast8_t t;
+	duk_small_uint_t t;
 	duk_uint8_t *buf;
 	const char *ret;
 
-	/* XXX: special case for input string, no need to coerce to buffer */
-
 	index = duk_require_normalize_index(ctx, index);
-	data = (duk_uint8_t *) duk_to_buffer(ctx, index, &len);
-	DUK_ASSERT(data != NULL);
+	inp = duk__prep_codec_arg(ctx, index, &len);
+	DUK_ASSERT(inp != NULL || len == 0);
 
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len * 2);
+	/* Fixed buffer, no zeroing because we'll fill all the data. */
+	buf = (duk_uint8_t *) duk_push_buffer_raw(ctx, len * 2, DUK_BUF_FLAG_NOZERO /*flags*/);
 	DUK_ASSERT(buf != NULL);
-	/* buf is always zeroed */
 
 	for (i = 0; i < len; i++) {
-		t = (duk_uint_fast8_t) data[i];
+		/* XXX: by using two 256-entry tables could avoid shifting and masking. */
+		t = (duk_small_uint_t) inp[i];
 		buf[i*2 + 0] = duk_lc_digits[t >> 4];
 		buf[i*2 + 1] = duk_lc_digits[t & 0x0f];
 	}
+
+	/* XXX: Using a string return value forces a string intern which is
+	 * not always necessary.  As a rough performance measure, hex encode
+	 * time for perf-testcases/test-hex-encode.js dropped from ~35s to
+	 * ~15s without string coercion.  Change to returning a buffer and
+	 * let the caller coerce to string if necessary?
+	 */
 
 	ret = duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
@@ -277,41 +296,35 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 
 DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	const duk_uint8_t *str;
+	const duk_uint8_t *inp;
 	duk_size_t len;
 	duk_size_t i;
 	duk_small_int_t t;
 	duk_uint8_t *buf;
 
-	/* XXX: optimize for buffer inputs: no need to coerce to a string
-	 * which causes an unnecessary interning.
-	 */
-
 	index = duk_require_normalize_index(ctx, index);
-	str = (const duk_uint8_t *) duk_to_lstring(ctx, index, &len);
-	DUK_ASSERT(str != NULL);
+	inp = duk__prep_codec_arg(ctx, index, &len);
+	DUK_ASSERT(inp != NULL || len == 0);
 
 	if (len & 0x01) {
 		goto type_error;
 	}
 
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len / 2);
+	/* Fixed buffer, no zeroing because we'll fill all the data. */
+	buf = (duk_uint8_t *) duk_push_buffer_raw(ctx, len / 2, DUK_BUF_FLAG_NOZERO /*flags*/);
 	DUK_ASSERT(buf != NULL);
-	/* buf is always zeroed */
 
-	for (i = 0; i < len; i++) {
-		t = str[i];
-		DUK_ASSERT(t >= 0 && t <= 0xff);
-		t = duk_hex_dectab[t];
+	for (i = 0; i < len; i += 2) {
+		/* For invalid characters the value -1 gets extended to
+		 * at least 16 bits.  If either nybble is invalid, the
+		 * resulting 't' will be < 0.
+		 */
+		t = (((duk_small_int_t) duk_hex_dectab[inp[i]]) << 4) |
+		    ((duk_small_int_t) duk_hex_dectab[inp[i + 1]]);
 		if (DUK_UNLIKELY(t < 0)) {
 			goto type_error;
 		}
-
-		if (i & 0x01) {
-			buf[i >> 1] += (duk_uint8_t) t;
-		} else {
-			buf[i >> 1] = (duk_uint8_t) (t << 4);
-		}
+		buf[i >> 1] = (duk_uint8_t) t;
 	}
 
 	duk_replace(ctx, index);
