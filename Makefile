@@ -1033,11 +1033,11 @@ perftest: duk
 	for i in perf-testcases/*.js; do echo \
 		"`basename $$i`:" \
 		"duk `time -f %U -o /tmp/time --quiet ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"rhino `time -f %U -o /tmp/time --quiet rhino $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"lua `time -f %U -o /tmp/time --quiet lua $${i%%.js}.lua >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"python `time -f %U -o /tmp/time --quiet python $${i%%.js}.py >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"perl `time -f %U -o /tmp/time --quiet perl $${i%%.js}.pl >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"ruby `time -f %U -o /tmp/time --quiet ruby $${i%%.js}.rb >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		"rhino `time -f %U -o /tmp/time --quiet rhino $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
+		"lua `time -f %U -o /tmp/time --quiet lua $${i%%.js}.lua >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
+		"python `time -f %U -o /tmp/time --quiet python $${i%%.js}.py >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
+		"perl `time -f %U -o /tmp/time --quiet perl $${i%%.js}.pl >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
+		"ruby `time -f %U -o /tmp/time --quiet ruby $${i%%.js}.rb >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
 	done
 perftestduk: duk
 	for i in perf-testcases/*.js; do echo \
