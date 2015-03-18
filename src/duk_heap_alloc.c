@@ -898,7 +898,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_DD(DUK_DDPRINT("HEAP: INIT LOG BUFFER"));
 	res->log_buffer = (duk_hbuffer_dynamic *) duk_hbuffer_alloc(res,
 	                                                            DUK_BI_LOGGER_SHORT_MSG_LIMIT,
-	                                                            1 /*dynamic*/);
+	                                                            DUK_BUF_FLAG_DYNAMIC /*flags*/);
 	if (!res->log_buffer) {
 		goto error;
 	}
