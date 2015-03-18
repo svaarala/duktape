@@ -55,10 +55,14 @@ DUK_INTERNAL void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
 
 #else  /* DUK_USE_VARIADIC_MACROS */
 DUK_INTERNAL void duk_err_handle_error_nonverbose1(duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+	DUK_UNREF(fmt);
 	duk_err_create_and_throw(thr, code);
 }
 
 DUK_INTERNAL void duk_err_handle_error_nonverbose2(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
+	DUK_UNREF(filename);
+	DUK_UNREF(line);
+	DUK_UNREF(fmt);
 	duk_err_create_and_throw(thr, code);
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */
