@@ -1032,27 +1032,31 @@ massif-arcfour: massif-test-dev-arcfour
 # - Ruby and Lua are interpreted but don't use reference counting
 # - Rhino compiles to Java bytecode and is ultimately JITed
 perftest: duk
-	for i in perf-testcases/*.js; do printf \
-		'%-30s: duk %5s rhino %5s lua %5s python %5s perl %5s ruby %5s\n' \
-		"`basename $$i`" \
-		"`time -f %U -o /tmp/time --quiet ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time --quiet rhino $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time --quiet lua $${i%%.js}.lua >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time --quiet python $${i%%.js}.py >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time --quiet perl $${i%%.js}.pl >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time --quiet ruby $${i%%.js}.rb >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+	for i in perf-testcases/*.js; do \
+		printf '%-30s:' "`basename $$i`"; \
+		printf ' duk %5s' "`time -f %U -o /tmp/time --quiet ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' duk.112 %5s' "`time -f %U -o /tmp/time --quiet ./duk.112 $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' rhino %5s' "`time -f %U -o /tmp/time --quiet rhino $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' mujs %5s' "`time -f %U -o /tmp/time --quiet mujs $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' lua %5s' "`time -f %U -o /tmp/time --quiet lua $${i%%.js}.lua >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' python %5s' "`time -f %U -o /tmp/time --quiet python $${i%%.js}.py >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' perl %5s' "`time -f %U -o /tmp/time --quiet perl $${i%%.js}.pl >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' ruby %5s' "`time -f %U -o /tmp/time --quiet ruby $${i%%.js}.rb >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf '\n'; \
 	done
 perftestduk: duk
-	for i in perf-testcases/*.js; do printf \
-		'%-30s: duk %5s\n' \
-		"`basename $$i`" \
-		"`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+	for i in perf-testcases/*.js; do \
+		printf '%-30s:' "`basename $$i`"; \
+		printf ' duk %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' duk.112 %5s' "`time -f %U -o /tmp/time ./duk.112 $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf '\n'; \
 	done
 perftestduk3: duk
-	for i in perf-testcases/*.js; do printf \
-		'%-30s: duk %5s %5s %5s\n' \
-		"`basename $$i`" \
-		"`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`" \
-		"`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+	for i in perf-testcases/*.js; do \
+		printf '%-30s:' "`basename $$i`"; \
+		printf ' duk'; \
+		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf '\n'; \
 	done
