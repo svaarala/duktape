@@ -3410,7 +3410,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
-DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bool_t dynamic) {
+DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_small_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hbuffer *h;
@@ -3427,7 +3427,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_bo
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_BUFFER_TOO_LONG);
 	}
 
-	h = duk_hbuffer_alloc(thr->heap, size, dynamic);
+	h = duk_hbuffer_alloc(thr->heap, size, flags);
 	if (!h) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_BUFFER_ALLOC_FAILED);
 	}

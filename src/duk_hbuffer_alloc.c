@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_bool_t dynamic) {
+DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags) {
 	duk_hbuffer *res = NULL;
 	duk_size_t alloc_size;
 
@@ -20,29 +20,32 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 		return NULL;
 	}
 
-	if (dynamic) {
+	if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		alloc_size = sizeof(duk_hbuffer_dynamic);
 	} else {
 		alloc_size = sizeof(duk_hbuffer_fixed) + size;
 		DUK_ASSERT(alloc_size >= sizeof(duk_hbuffer_fixed));  /* no wrapping */
 	}
 
-#ifdef DUK_USE_ZERO_BUFFER_DATA
-	/* zero everything */
-	res = (duk_hbuffer *) DUK_ALLOC_ZEROED(heap, alloc_size);
-#else
 	res = (duk_hbuffer *) DUK_ALLOC(heap, alloc_size);
-#endif
 	if (!res) {
 		goto error;
 	}
 
-#ifndef DUK_USE_ZERO_BUFFER_DATA
-	/* if no buffer zeroing, zero the header anyway */
-	DUK_MEMZERO((void *) res, dynamic ? sizeof(duk_hbuffer_dynamic) : sizeof(duk_hbuffer_fixed));
+	/* zero everything unless requested not to do so */
+#if defined(DUK_USE_ZERO_BUFFER_DATA)
+	DUK_MEMZERO((void *) res,
+	            (flags & DUK_BUF_FLAG_NOZERO) ?
+	                ((flags & DUK_BUF_FLAG_DYNAMIC) ?
+	                     sizeof(duk_hbuffer_dynamic) :
+	                     sizeof(duk_hbuffer_fixed)) :
+	                alloc_size);
+#else
+	DUK_MEMZERO((void *) res,
+	            (flags & DUK_BUF_FLAG_DYNAMIC) ? sizeof(duk_hbuffer_dynamic) : sizeof(duk_hbuffer_fixed));
 #endif
 
-	if (dynamic) {
+	if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
 		void *ptr;
 		if (size > 0) {
@@ -70,7 +73,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	DUK_HBUFFER_SET_SIZE(res, size);
 
 	DUK_HEAPHDR_SET_TYPE(&res->hdr, DUK_HTYPE_BUFFER);
-	if (dynamic) {
+	if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		DUK_HBUFFER_SET_DYNAMIC(res);
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
