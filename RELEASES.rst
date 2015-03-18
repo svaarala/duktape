@@ -834,6 +834,9 @@ Planned
 
 * Internal performance improvement: hex encode/decode optimizations
 
+* Internal performance improvement: shorter internal chain for API push
+  functions like duk_push_undefined()
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
