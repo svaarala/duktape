@@ -832,6 +832,8 @@ Planned
 * Internal performance improvement: direct refcount manipulation from macros
   instead of doing a helper function call
 
+* Internal performance improvement: hex encode/decode optimizations
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 
