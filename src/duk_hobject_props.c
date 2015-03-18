@@ -3828,12 +3828,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, desc.e_idx, NULL);
 			DUK_UNREF(tmp);
-			DUK_HOBJECT_DECREF(thr, tmp);
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 
 			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, desc.e_idx, NULL);
 			DUK_UNREF(tmp);
-			DUK_HOBJECT_DECREF(thr, tmp);
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		} else {
 			tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
@@ -4316,8 +4316,8 @@ DUK_INTERNAL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hob
 	DUK_HOBJECT_E_SLOT_SET_ACCESSOR(thr->heap, obj, e_idx);
 	DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, e_idx, getter);
 	DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, e_idx, setter);
-	DUK_HOBJECT_INCREF(thr, getter);
-	DUK_HOBJECT_INCREF(thr, setter);
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, getter);
+	DUK_HOBJECT_INCREF_ALLOWNULL(thr, setter);
 }
 
 /*
@@ -4810,8 +4810,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, e_idx, get);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, e_idx, set);
-			DUK_HOBJECT_INCREF(thr, get);
-			DUK_HOBJECT_INCREF(thr, set);
+			DUK_HOBJECT_INCREF_ALLOWNULL(thr, get);
+			DUK_HOBJECT_INCREF_ALLOWNULL(thr, set);
 
 			DUK_HOBJECT_E_SET_FLAGS(thr->heap, obj, e_idx, new_flags);
 			goto success_exotics;
@@ -5073,11 +5073,11 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, curr.e_idx);
 			DUK_UNREF(tmp);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, curr.e_idx, NULL);
-			DUK_HOBJECT_DECREF(thr, tmp);
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, curr.e_idx);
 			DUK_UNREF(tmp);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, curr.e_idx, NULL);
-			DUK_HOBJECT_DECREF(thr, tmp);
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 
 			DUK_TVAL_SET_UNDEFINED_ACTUAL(DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx));
 			DUK_HOBJECT_E_SLOT_CLEAR_WRITABLE(thr->heap, obj, curr.e_idx);
@@ -5208,8 +5208,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, curr.e_idx);
 		DUK_UNREF(tmp);
 		DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, curr.e_idx, set);
-		DUK_HOBJECT_INCREF(thr, set);
-		DUK_HOBJECT_DECREF(thr, tmp);
+		DUK_HOBJECT_INCREF_ALLOWNULL(thr, set);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 	}
 	if (has_get) {
 		duk_hobject *tmp;
@@ -5220,8 +5220,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, curr.e_idx);
 		DUK_UNREF(tmp);
 		DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, curr.e_idx, get);
-		DUK_HOBJECT_INCREF(thr, get);
-		DUK_HOBJECT_DECREF(thr, tmp);
+		DUK_HOBJECT_INCREF_ALLOWNULL(thr, get);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 	}
 	if (has_value) {
 		duk_tval *tv1, *tv2;

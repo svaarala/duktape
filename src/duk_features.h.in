@@ -2233,13 +2233,18 @@ typedef FILE duk_file;
 #endif
 
 /*
- *  General prefer speed/size flag
- *
- *  Catch-all flag which can be used to choose between variant algorithms
- *  where a speed-size tradeoff exists (e.g. lookup tables).  When it really
- *  matters, specific use flags may be appropriate.
+ *  Speed/size and other performance options
  */
 
+/* Use fast ("inline") refcount operations instead of calling out to helpers
+ * by default.  The difference in binary size is small (~1kB on x64).
+ */
+#define DUK_USE_FAST_REFCOUNT_DEFAULT
+
+/* Catch-all flag which can be used to choose between variant algorithms
+ * where a speed-size tradeoff exists (e.g. lookup tables).  When it really
+ * matters, specific use flags may be appropriate.
+ */
 #define DUK_USE_PREFER_SIZE
 
 /*

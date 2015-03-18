@@ -730,14 +730,14 @@ Macros:
 
 * ``DUK_HEAPHDR_DECREF``
 
-* and a bunch of heap element type specific INCREF/DECREF macros,
-  defined in ``heaphdr.h``
+* and a bunch of heap element type specific INCREF/DECREF macros and
+  helpers, defined in ``heaphdr.h``
 
 Notes on macro semantics:
 
-* The macros tolerate ``NULL`` pointers, which are simply ignored.  This
-  reduces caller code size but requires a pointer check which is unnecessary
-  in the vast majority of cases.
+* The macros are optimized for performance and don't tolerate a ``NULL``
+  pointer by default.  There are ``_ALLOWNULL`` variants for cases where
+  NULLs may actually occur.
 
 * An ``INCREF`` is guaranteed not to have any side effects.
 

@@ -84,7 +84,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	h_prev_glob = thr->builtins[DUK_BIDX_GLOBAL];
 	thr->builtins[DUK_BIDX_GLOBAL] = h_glob;
 	DUK_HOBJECT_INCREF(thr, h_glob);
-	DUK_HOBJECT_DECREF(thr, h_prev_glob);  /* side effects, in theory (referenced by global env) */
+	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_glob);  /* side effects, in theory (referenced by global env) */
 
 	/*
 	 *  Replace lexical environment for global scope
@@ -116,7 +116,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	h_prev_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_env;
 	DUK_HOBJECT_INCREF(thr, h_env);
-	DUK_HOBJECT_DECREF(thr, h_prev_env);  /* side effects */
+	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_env);  /* side effects */
 	DUK_UNREF(h_env);  /* without refcounts */
 	DUK_UNREF(h_prev_env);
 

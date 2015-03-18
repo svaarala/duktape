@@ -666,6 +666,6 @@ DUK_INTERNAL void duk_hthread_copy_builtin_objects(duk_hthread *thr_from, duk_ht
 
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		thr_to->builtins[i] = thr_from->builtins[i];
-		DUK_HOBJECT_INCREF(thr_to, thr_to->builtins[i]);  /* side effect free */
+		DUK_HOBJECT_INCREF_ALLOWNULL(thr_to, thr_to->builtins[i]);  /* side effect free */
 	}
 }

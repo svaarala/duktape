@@ -282,7 +282,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 #endif
 		act->var_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
-		DUK_HOBJECT_DECREF(thr, tmp);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
@@ -291,7 +291,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 #endif
 		act->lex_env = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
-		DUK_HOBJECT_DECREF(thr, tmp);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
@@ -303,7 +303,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 #endif
 		act->func = NULL;
 #ifdef DUK_USE_REFERENCE_COUNTING
-		DUK_HOBJECT_DECREF(thr, tmp);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 		DUK_UNREF(act);
 #endif

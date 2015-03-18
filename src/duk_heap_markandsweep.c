@@ -453,7 +453,7 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("unreachable object, refcount finalize before sweeping: %p", (void *) hdr));
-			duk_heap_refcount_finalize_heaphdr(thr, hdr);
+			duk_heaphdr_refcount_finalize(thr, hdr);
 		}
 
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
