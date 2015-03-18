@@ -2620,6 +2620,15 @@ typedef FILE duk_file;
 #undef DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT
 #endif
 
+/* Non-standard array fast path write behavior: when writing to numeric
+ * indexes of an Array instance, assume Array.prototype doesn't have
+ * conflicting properties (e.g. a non-writable property "7").
+ */
+#define DUK_USE_NONSTD_ARRAY_WRITE
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_WRITE)
+#undef DUK_USE_NONSTD_ARRAY_WRITE
+#endif
+
 /*
  *  Tailcalls
  */

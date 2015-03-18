@@ -3043,9 +3043,67 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 
 	case DUK_TAG_OBJECT: {
-		/* Note: no fast paths for property put now */
 		orig = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(orig != NULL);
+
+		/* The fast path for array property put is not fully compliant:
+		 * If one places conflicting number-indexed properties into
+		 * Array.prototype (for example, a non-writable Array.prototype[7])
+		 * the fast path will incorrectly ignore them.
+		 *
+		 * This fast path could be made compliant by falling through
+		 * to the slow path if the previous value was UNDEFINED_UNUSED.
+		 * This would also remove the need to check for extensibility.
+		 * Right now a non-extensible array is slower than an extensible
+		 * one as far as writes are concerned.
+		 *
+		 * The fast path behavior is documented in more detail here:
+		 * ecmascript-testcases/test-misc-array-fast-write.js
+		 */
+
+		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig) &&
+		    DUK_HOBJECT_HAS_ARRAY_PART(orig) &&
+		    DUK_HOBJECT_HAS_EXTENSIBLE(orig) &&
+		    DUK_TVAL_IS_NUMBER(tv_key)) {
+			arr_idx = duk__tval_number_to_arr_idx(tv_key);
+			if (arr_idx != DUK__NO_ARRAY_INDEX &&
+			    arr_idx < orig->a_size) {  /* for resizing of array part, use slow path */
+				duk_tval tv_tmp;
+				duk_uint32_t old_len, new_len;
+
+				DUK_ASSERT(arr_idx < orig->a_size);
+
+				old_len = duk__get_old_array_length(thr, orig, &desc);
+
+				if (arr_idx >= old_len) {
+					DUK_DDD(DUK_DDDPRINT("write new array entry requires length update "
+					                     "(arr_idx=%ld, old_len=%ld)",
+					                     (long) arr_idx, (long) old_len));
+					if (!(desc.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
+						DUK_DD(DUK_DDPRINT("attempt to extend array, but array 'length' is not writable"));
+						goto fail_not_writable;
+					}
+					new_len = arr_idx + 1;
+
+					/* No resize has occurred so desc.e_idx is still OK */
+					tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
+					DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+					/* FIXME: fastint */
+					DUK_TVAL_SET_NUMBER(tv, (duk_double_t) new_len);  /* no need for decref/incref because value is a number */
+				} else {
+					;
+				}
+
+				tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, orig, arr_idx);
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+				DUK_TVAL_SET_TVAL(tv, tv_val);
+				DUK_TVAL_INCREF(thr, tv);
+				DUK_TVAL_DECREF(thr, &tv_tmp);  /* note: may trigger gc and props compaction, must be last */
+
+				DUK_DDD(DUK_DDDPRINT("array fast path success for index %ld", (long) arr_idx));
+				return 1;
+			}
+		}
 
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(orig))) {

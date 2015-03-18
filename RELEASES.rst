@@ -837,6 +837,9 @@ Planned
 * Internal performance improvement: shorter internal chain for API push
   functions like duk_push_undefined()
 
+* Performance improvement: array write fast path when writing to "dense"
+  Array instances using a numeric index
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
 

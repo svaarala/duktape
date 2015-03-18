@@ -626,6 +626,19 @@ non-compliant (the E5.1 specification has a ToUint16() coercion for the
 codepoints) but useful because Duktape supports non-BMP strings.  This
 feature option restores the compliant behavior.
 
+DUK_OPT_NO_NONSTD_ARRAY_WRITE
+-----------------------------
+
+By default Duktape uses a fast path for handling some property writes to
+Array instances.  The fast path improves performance for common array writes
+but is technically non-compliant.  There's a detectable outside difference
+only when Array.prototype has conflicting numeric properties (which is very
+rare in practice).  See
+`ecmascript-testcases/test-misc-array-fast-write.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/ecmascript-testcases/test-misc-array-fast-write.js>`_
+for details on the fast path conditions and behavior.
+
+This feature option enables the compliant (but slower) behavior.
+
 DUK_OPT_NO_COMMONJS_MODULES
 ---------------------------
 
