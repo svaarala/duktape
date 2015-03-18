@@ -4,10 +4,10 @@ import random
 def test():
 	tmp1 = []
 	tmp2 = []
-	
+
 	print('build')
 	for i in xrange(1024):
-		tmp1.append('%x' % math.floor(random.random() * 16))
+		tmp1.append(chr(int(math.floor(random.random() * 256))))
 	tmp1 = ''.join(tmp1)
 	for i in xrange(1024):
 		tmp2.append(tmp1)
@@ -16,6 +16,6 @@ def test():
 	print(len(tmp2))
 	print('run')
 	for i in xrange(10000):
-		ign = tmp2.decode('hex')
+		ign = tmp2.encode('hex')
 
 test()
