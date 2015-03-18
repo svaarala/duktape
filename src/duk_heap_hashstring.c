@@ -4,6 +4,7 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_STRHASH_DENSE)
 /* constants for duk_hashstring() */
 #define DUK__STRHASH_SHORTSTRING   4096L
 #define DUK__STRHASH_MEDIUMSTRING  (256L * 1024L)
@@ -68,3 +69,297 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t 
 #endif
 	return hash;
 }
+#else  /* DUK_USE_STRHASH_DENSE */
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_lua1(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* String algorithm based on Lua 5.1.5 with small modifications.
+	 * See lstring.c:luaS_newlstr().
+	 *
+	 * This is basically "Shift-add-XOR hash" with skipping and reverse
+	 * direction:
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 */
+
+	hash = heap->hash_seed ^ ((duk_uint32_t) len);
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = hash ^ ((hash << 5) + (hash >> 2) + str[off - 1]);
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_lua2(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* Forward stepping variant of Lua 5.1.5. */
+	hash = heap->hash_seed ^ ((duk_uint32_t) len);
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	off = (len + step - 1) % step;
+	for (; off < len; off += step) {
+		hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_lua3(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_stop;
+
+	/* Forward stepping variant of Lua 5.1.5 using pointers. */
+	hash = heap->hash_seed ^ ((duk_uint32_t) len);
+	if (len > 0) {
+		step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+		p = str + ((len - 1) % step);
+		p_stop = str + len - 1;
+		DUK_ASSERT(((duk_size_t) (p_stop - p) % step) == 0);  /* p eventually hits p_stop */
+		while (p != p_stop) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + *p);
+			p += step;
+		}
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_hybrid1(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* Hybrid with a different algorithm for short and long strings. */
+	hash = heap->hash_seed ^ ((duk_uint32_t) len);
+	if (DUK_LIKELY(len <= 32)) {
+		for (off = 0; off < len; off++) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+	} else {
+		step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+		for (off = 0; off < len; off += step) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+		DUK_ASSERT(len >= 1);
+		hash = hash ^ ((hash << 5) + (hash >> 2) + str[len - 1]);
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_hybrid2(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+	duk_size_t limit;
+
+	/* Hybrid with a different algorithm for short and long strings.
+	 * For long strings, include first and last 8 bytes entirely, and
+	 * use sparse skipping for the middle.
+	 */
+	hash = heap->hash_seed ^ ((duk_uint32_t) len);
+	if (DUK_LIKELY(len <= 32)) {
+		for (off = 0; off < len; off++) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+	} else {
+		for (off = 0; off < 8; off++) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+		for (off = len - 8; off < len; off++) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+		step = (len >> 4);
+		limit = len - 8;
+		off = 8 + (hash & 0x07);  /* vary offset a bit */
+		for (; off < limit; off += step) {
+			hash = hash ^ ((hash << 5) + (hash >> 2) + str[off]);
+		}
+		hash = hash ^ ((hash << 5) + (hash >> 2) + str[len - 1]);
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_bernstein1a(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "Bernstein hash" from:
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = (hash * 33) + str[off - 1];
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_bernstein1b(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "Bernstein hash" from:
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = ((hash << 5) + hash) + str[off - 1];
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_bernstein2a(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "Modified Bernstein" from:
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = (hash * 33) ^ str[off - 1];
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_bernstein2b(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "Modified Bernstein" from:
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = ((hash << 5) + hash) ^ str[off - 1];
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_fnv1(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "FNV hash" from
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash = (hash * 16777619L) ^ str[off - 1];
+	}
+
+	return hash;
+}
+#endif
+
+#if 1
+DUK_LOCAL duk_uint32_t duk__hashstring_oaat1(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+	duk_size_t step;
+	duk_size_t off;
+
+	/* "One-at-a-Time hash" from
+	 * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+	 * but with string skipping and reverse direction (ensures
+	 * last byte is included).
+	 */
+	hash = heap->hash_seed;
+	step = (len >> DUK_USE_STRHASH_SKIP_SHIFT) + 1;
+	for (off = len; off >= step; off -= step) {
+		DUK_ASSERT(off >= 1);  /* off >= step, and step >= 1 */
+		hash += str[off - 1];
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+
+	return hash;
+}
+#endif
+
+DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len) {
+	duk_uint32_t hash;
+
+#if 0
+	hash = duk__hashstring_lua1(heap, str, len);
+	hash = duk__hashstring_lua2(heap, str, len);
+	hash = duk__hashstring_lua3(heap, str, len);
+	hash = duk__hashstring_hybrid1(heap, str, len);
+	hash = duk__hashstring_hybrid2(heap, str, len);
+	hash = duk__hashstring_bernstein1a(heap, str, len);
+	hash = duk__hashstring_bernstein1b(heap, str, len);
+	hash = duk__hashstring_bernstein2a(heap, str, len);
+	hash = duk__hashstring_bernstein2b(heap, str, len);
+	hash = duk__hashstring_fnv1(heap, str, len);
+	hash = duk__hashstring_oaat1(heap, str, len);
+#endif
+
+	hash = duk__hashstring_bernstein2b(heap, str, len);
+
+#if defined(DUK_USE_STRHASH16)
+	/* Truncate to 16 bits here, so that a computed hash can be compared
+	 * against a hash stored in a 16-bit field.
+	 */
+	hash &= 0x0000ffffUL;
+#endif
+	return hash;
+}
+#endif  /* DUK_USE_STRHASH_DENSE */

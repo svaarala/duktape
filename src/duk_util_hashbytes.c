@@ -9,6 +9,7 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_STRHASH_DENSE)
 /* 'magic' constants for Murmurhash2 */
 #define DUK__MAGIC_M  ((duk_uint32_t) 0x5bd1e995UL)
 #define DUK__MAGIC_R  24
@@ -53,3 +54,4 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 
 	return h;
 }
+#endif  /* DUK_USE_STRHASH_DENSE */
