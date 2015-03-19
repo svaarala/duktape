@@ -36,6 +36,10 @@ DUK_INTERNAL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h
 
 /*
  *  String scanning helpers
+ *
+ *  All bytes other than UTF-8 continuation bytes ([0x80,0xbf]) are
+ *  considered to contribute a character.  This must match how string
+ *  character length is computed.
  */
 
 DUK_LOCAL duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {

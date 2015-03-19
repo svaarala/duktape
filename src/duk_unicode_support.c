@@ -254,17 +254,72 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 	return 0;
 }
 
-/* (extended) utf-8 length without codepoint encoding validation, used
- * for string interning (should probably be inlined).
+/* Compute (extended) utf-8 length without codepoint encoding validation,
+ * used for string interning.
+ *
+ * NOTE: This algorithm is performance critical (more so than string hashing
+ * in some cases): it is needed when interning a string and it needs to scan
+ * every byte of the string with no skipping.  Having an ASCII fast path
+ * would be useful (if possible in the algorithm).  Several variants are
+ * left below, commented out; the active algorithm was chosen on x64 based
+ * on gcc -O2 testing.
  */
-DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
-	const duk_uint8_t *p = data;
-	const duk_uint8_t *p_end = data + blen;
-	duk_size_t clen = 0;
 
-	while (p < p_end) {
+const duk_uint8_t duk__ncont_incr[256] = {
+	/* 10xxxxxx = continuation chars (0x80...0xbf), above
+	 * and below that initial bytes.
+	 */
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+const duk_uint8_t duk__nchar_incr[256] = {
+	/* 10xxxxxx = continuation chars (0x80...0xbf), above
+	 * and below that initial bytes.
+	 */
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+};
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_simple1(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t clen;
+
+	p = data;
+	p_end = data + blen;
+	clen = 0;
+	while (p != p_end) {
 		duk_uint8_t x = *p++;
-		if (x < 0x80 || x >= 0xc0) {
+		if (DUK_LIKELY(x < 0x80 || x >= 0xc0)) {
 			/* 10xxxxxx = continuation chars (0x80...0xbf), above
 			 * and below that initial bytes.
 			 */
@@ -272,6 +327,447 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 		}
 	}
 
+	return clen;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_simple2(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont;
+
+	p = data;
+	p_end = data + blen;
+	ncont = 0;
+	while (p != p_end) {
+		duk_uint8_t x = *p++;
+		if (DUK_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+			ncont++;
+		}
+	}
+
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_simple3(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont;
+
+	p = data;
+	p_end = data + blen;
+	ncont = 0;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		ncont += ((x & 0xc0) == 0x80) ? 1 : 0;
+	}
+
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_simple4(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont;
+
+	p = data;
+	p_end = data + blen;
+	ncont = 0;
+	while (p != p_end) {
+		/* Bit trick:
+		 *     10xxxxxx ^ 01000000 =   11xxxxxx (and other bit patterns are 10xxxxxx or less)
+		 *              + 01000000 = 1 00xxxxxx (and other bit patterns won't overflow to 9 bits)
+		 *              >>> 8      = 1
+		 */
+		duk_small_uint_t x;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+	}
+
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_lookup1(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t clen;
+
+	p = data;
+	p_end = data + blen;
+	clen = 0;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		clen += duk__nchar_incr[x];
+	}
+
+	return clen;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_lookup2(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont;
+
+	p = data;
+	p_end = data + blen;
+	ncont = 0;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+	}
+
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll1(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+	const duk_uint32_t *p32;
+
+	if (blen < 16) {
+		goto skip_fastpath;
+	}
+	/* Align 'p' to 4. */
+	while (((duk_small_uint_t) (duk_uintptr_t) (void *) p) & 0x03) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+	/* Full, aligned 4-byte reads. */
+	p_end = data + blen;
+	p_end = p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03));
+	p32 = (const duk_uint32_t *) p;
+	while (p32 != (const duk_uint32_t *) p_end) {
+		duk_uint32_t x;
+		x = *p32++;
+		if ((x & 0x80808080UL) == 0) {
+			;  /* ASCII fast path */
+		} else {
+			if ((x & 0xc0000000UL) == 0x80000000UL) {
+				ncont++;
+			}
+			if ((x & 0x00c00000UL) == 0x00800000UL) {
+				ncont++;
+			}
+			if ((x & 0x0000c000UL) == 0x00008000UL) {
+				ncont++;
+			}
+			if ((x & 0x000000c0UL) == 0x00000080UL) {
+				ncont++;
+			}
+		}
+	}
+	p = (const duk_uint8_t *) p32;
+	/* Fall through to handle the rest. */
+ skip_fastpath:
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll2(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+	const duk_uint32_t *p32;
+
+	if (blen < 16) {
+		goto skip_fastpath;
+	}
+	/* Align 'p' to 4. */
+	while (((duk_small_uint_t) (duk_uintptr_t) (void *) p) & 0x03) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+	/* Full, aligned 4-byte reads. */
+	p_end = data + blen;
+	p_end = p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03));
+	p32 = (const duk_uint32_t *) p;
+	while (p32 != (const duk_uint32_t *) p_end) {
+		duk_uint32_t x;
+		x = *p32++;
+		if ((x & 0x80808080UL) == 0) {
+			;  /* ASCII fast path */
+		} else {
+			/* Flip highest bit of each byte which changes
+			 * the bit pattern 10xxxxxx into 00xxxxxx which
+			 * allows an easy bit mask test.
+			 */
+			x ^= 0x80808080UL;
+			if (!(x & 0xc0000000UL)) {
+				ncont++;
+			}
+			if (!(x & 0x00c00000UL)) {
+				ncont++;
+			}
+			if (!(x & 0x0000c000UL)) {
+				ncont++;
+			}
+			if (!(x & 0x000000c0UL)) {
+				ncont++;
+			}
+		}
+	}
+	p = (const duk_uint8_t *) p32;
+	/* Fall through to handle the rest. */
+ skip_fastpath:
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll3(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+	const duk_uint32_t *p32;
+
+	if (blen < 16) {
+		goto skip_fastpath;
+	}
+	/* Align 'p' to 4. */
+	while (((duk_small_uint_t) (duk_uintptr_t) (void *) p) & 0x03) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+	/* Full, aligned 4-byte reads. */
+	p_end = data + blen;
+	p_end = p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03));
+	p32 = (const duk_uint32_t *) p;
+	while (p32 != (const duk_uint32_t *) p_end) {
+		/* Bit tricks to work 4 bytes at a time, similar to the bit trick below.
+		 *
+		 *                 10xxxxxx 10xxxxxx 10xxxxxxx 10xxxxxx
+		 *  ^ 0x40404040   11xxxxxx 11xxxxxx 11xxxxxxx 11xxxxxx
+		 *  >> 6           00000011 00000011 000000011 00000011
+		 *  + 0x01010101   00000100 00000100 000000100 00000100
+		 *                      ^        ^         ^        ^
+		 *                      `--------+---------+--------+---- carry if cont byte [+]
+		 */
+		duk_uint32_t x;
+		x = *p32++;
+		x = ((x ^ 0x40404040UL) >> 6) + 0x01010101UL;
+		x &= 0x04040404UL;
+		x = (x & 0xffffUL) + (x >> 16);  /* two step sum of carries */
+		x = (x & 0xffUL) + (x >> 8);
+		ncont += x >> 2;
+	}
+	/* Fall through to handle the rest. */
+ skip_fastpath:
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll4(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+
+	p_end = data + (blen & ((duk_size_t) (~0x03)));
+	while (p < p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+	p_end = data + blen;
+	while (p < p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (x < 0x80 || x >= 0xc0) {
+			;
+		} else {
+			ncont++;
+		}
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll5(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+
+	p_end = data + (blen & ((duk_size_t) (~0x03)));
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+	}
+
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		ncont += duk__ncont_incr[x];
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll6(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+
+	p_end = data + (blen & ((duk_size_t) (~0x03)));
+	while (p != p_end) {
+		duk_small_uint_t x;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+	}
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_small_uint_t x;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_LOCAL duk_size_t duk__unicode_utf8clen_unroll7(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p = data;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+
+	p_end = data + (blen & ((duk_size_t) (~0x03)));
+	while (p != p_end) {
+		/* Similar bit trick as above, but postpone the shift.
+		 * This means we need to avoid overflows from the lower
+		 * bits and need the "x & 0xc0".
+		 */
+		duk_small_uint_t x;
+		duk_small_uint_t tmp = 0;
+		x = *p++;
+		tmp += ((x & 0xc0) ^ 0x40) + 0x40;
+		x = *p++;
+		tmp += ((x & 0xc0) ^ 0x40) + 0x40;
+		x = *p++;
+		tmp += ((x & 0xc0) ^ 0x40) + 0x40;
+		x = *p++;
+		tmp += ((x & 0xc0) ^ 0x40) + 0x40;
+		ncont += tmp;
+	}
+	p_end = data + blen;
+	while (p != p_end) {
+		duk_small_uint_t x;
+		x = *p++;
+		ncont += ((x ^ 0x40) + 0x40) >> 8;
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	return blen - ncont;
+}
+
+DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
+	duk_size_t clen;
+
+#if 0
+	clen = duk__unicode_utf8clen_simple1(data, blen);
+	clen = duk__unicode_utf8clen_simple2(data, blen);
+	clen = duk__unicode_utf8clen_simple3(data, blen);
+	clen = duk__unicode_utf8clen_simple4(data, blen);
+
+	clen = duk__unicode_utf8clen_lookup1(data, blen);
+	clen = duk__unicode_utf8clen_lookup2(data, blen);
+
+	clen = duk__unicode_utf8clen_unroll1(data, blen);
+	clen = duk__unicode_utf8clen_unroll2(data, blen);
+	clen = duk__unicode_utf8clen_unroll3(data, blen);
+	clen = duk__unicode_utf8clen_unroll4(data, blen);
+	clen = duk__unicode_utf8clen_unroll5(data, blen);
+	clen = duk__unicode_utf8clen_unroll6(data, blen);
+	clen = duk__unicode_utf8clen_unroll7(data, blen);
+#endif
+
+	clen = duk__unicode_utf8clen_unroll1(data, blen);
+	DUK_ASSERT(clen <= blen);
 	return clen;
 }
 
