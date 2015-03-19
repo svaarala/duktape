@@ -1485,6 +1485,16 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	goto shrink_and_finished;
 
  shrink_and_finished:
+#if defined(DUK_OPT_FASTINT)
+	/* Explicit check for fastint downgrade. */
+	{
+		duk_tval *tv_fi;
+		tv_fi = duk_get_tval(ctx, -1);
+		DUK_ASSERT(tv_fi != NULL);
+		DUK_TVAL_CHKFAST_INPLACE(tv_fi);
+	}
+#endif
+
 	/* these are "soft" shrink checks, whose failures are ignored */
 	/* XXX: would be nice if fast path was inlined */
 	duk_hthread_catchstack_shrink_check(thr);

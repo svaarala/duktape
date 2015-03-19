@@ -268,6 +268,29 @@ DUK_LOCAL void duk__selftest_struct_align(void) {
 }
 
 /*
+ *  64-bit arithmetic
+ *
+ *  There are some platforms/compilers where 64-bit types are available
+ *  but don't work correctly.  Test for known cases.
+ */
+
+DUK_LOCAL void duk__selftest_64bit_arithmetic(void) {
+#if defined(DUK_USE_64BIT_OPS)
+	volatile duk_int64_t i;
+	volatile duk_double_t d;
+
+	/* Catch a double-to-int64 cast issue encountered in practice. */
+	d = 2147483648.0;
+	i = (duk_int64_t) d;
+	if (i != 0x80000000LL) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: casting 2147483648.0 to duk_int64_t failed");
+	}
+#else
+	/* nop */
+#endif
+}
+
+/*
  *  Self test main
  */
 
@@ -281,6 +304,7 @@ DUK_INTERNAL void duk_selftest_run_tests(void) {
 	duk__selftest_double_aliasing();
 	duk__selftest_double_zero_sign();
 	duk__selftest_struct_align();
+	duk__selftest_64bit_arithmetic();
 }
 
 #undef DUK__DBLUNION_CMP_TRUE

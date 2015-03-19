@@ -547,6 +547,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #else
 	                "u"
 #endif
+#if defined(DUK_USE_FASTINT)
+			"f"
+#endif
 			" "
 			/* Low memory options */
 #if defined(DUK_USE_STRTAB_CHAIN)

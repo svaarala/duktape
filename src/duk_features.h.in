@@ -843,7 +843,7 @@ typedef signed long long duk_int64_t;
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
 #endif
-#if !defined(DUK_F_HAVE64BIT)
+#if !defined(DUK_F_HAVE_64BIT)
 /* cannot detect 64-bit type, not always needed so don't error */
 #endif
 
@@ -1968,19 +1968,29 @@ typedef FILE duk_file;
 #endif
 
 /*
- *  DUK_NOINLINE: macro to avoid inlining a function.
+ *  Function inlining control
+ *
+ *  DUK_NOINLINE: avoid inlining a function.
+ *  DUK_INLINE: suggest inlining a function.
+ *  DUK_ALWAYS_INLINE: force inlining for critical functions.
  */
 
 #if defined(DUK_F_CLANG)
-#define DUK_NOINLINE __attribute__ ((noinline))
+#define DUK_NOINLINE        __attribute__((noinline))
+#define DUK_INLINE          inline
+#define DUK_ALWAYS_INLINE   inline __attribute__((always_inline))
 #elif defined(DUK_F_GCC) && defined(DUK_F_GCC_VERSION)
 #if (DUK_F_GCC_VERSION >= 30101)
-#define DUK_NOINLINE __attribute__ ((noinline))
+#define DUK_NOINLINE        __attribute__((noinline))
+#define DUK_INLINE          inline
+#define DUK_ALWAYS_INLINE   inline __attribute__((always_inline))
 #endif
 #endif
 
 #if !defined(DUK_NOINLINE)
-#define DUK_NOINLINE /*nop*/
+#define DUK_NOINLINE       /*nop*/
+#define DUK_INLINE         /*nop*/
+#define DUK_ALWAYS_INLINE  /*nop*/
 #endif
 
 /*
@@ -2260,11 +2270,18 @@ typedef FILE duk_file;
  */
 
 #undef DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
 
 #if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && !defined(DUK_OPT_NO_PACKED_TVAL)
 #define DUK_USE_PACKED_TVAL
-#undef DUK_USE_FULL_TVAL
+#endif
+
+/* Support for 48-bit signed integer duk_tval with transparent semantics. */
+#undef DUK_USE_FASTINT
+#if defined(DUK_OPT_FASTINT)
+#if !defined(DUK_F_HAVE_64BIT)
+#error DUK_OPT_FASTINT requires 64-bit integer type support at the moment
+#endif
+#define DUK_USE_FASTINT
 #endif
 
 /*

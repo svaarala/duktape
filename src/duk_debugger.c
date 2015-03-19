@@ -374,7 +374,7 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 	switch (x) {
 	case 0x10: {
 		duk_int32_t i = duk__debug_read_int32_raw(thr);
-		duk_push_number(ctx, (duk_double_t) i);
+		duk_push_i32(ctx, i);
 		break;
 	}
 	case 0x11:
@@ -706,6 +706,9 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	case DUK_TAG_BUFFER:
 		duk_debug_write_hbuffer(thr, DUK_TVAL_GET_BUFFER(tv));
 		break;
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default:
 		/* Numbers are normalized to big (network) endian. */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

@@ -48,7 +48,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_index
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_number(ctx, (double) arr_index);
+	duk_push_uarridx(ctx, arr_index);
 	return duk_get_prop(ctx, obj_index);
 }
 
@@ -122,7 +122,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_index
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_number(ctx, (double) arr_index);
+	duk_push_uarridx(ctx, arr_index);
 	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
 	return duk_put_prop(ctx, obj_index);
 }
@@ -177,7 +177,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_index
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_number(ctx, (double) arr_index);
+	duk_push_uarridx(ctx, arr_index);
 	return duk_del_prop(ctx, obj_index);
 }
 
@@ -228,7 +228,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_index
 	DUK_ASSERT(ctx != NULL);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
-	duk_push_number(ctx, (double) arr_index);
+	duk_push_uarridx(ctx, arr_index);
 	return duk_has_prop(ctx, obj_index);
 }
 

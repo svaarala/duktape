@@ -176,6 +176,25 @@ typedef union duk_double_union duk_double_union;
 #define DUK_DBLUNION_GET_HIGH32(u)  ((u)->ui[DUK_DBL_IDX_UI0])
 #define DUK_DBLUNION_GET_LOW32(u)   ((u)->ui[DUK_DBL_IDX_UI1])
 
+#ifdef DUK_USE_64BIT_OPS
+#ifdef DUK_USE_DOUBLE_ME
+#define DUK_DBLUNION_SET_UINT64(u,v)  do { \
+	(u)->ui[DUK_DBL_IDX_UI0] = (duk_uint32_t) ((v) >> 32); \
+	(u)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (v); \
+	} while (0)
+#define DUK_DBLUNION_GET_UINT64(u) \
+	((((duk_uint64_t) (u)->ui[DUK_DBL_IDX_UI0]) << 32) | \
+	 ((duk_uint64_t) (u)->ui[DUK_DBL_IDX_UI1]))
+#else
+#define DUK_DBLUNION_SET_UINT64(u,v)  do { \
+	(u)->ull[DUK_DBL_IDX_ULL0] = (duk_uint64_t) (v); \
+	} while (0)
+#define DUK_DBLUNION_GET_UINT64(u)  ((u)->ull[DUK_DBL_IDX_ULL0])
+#endif
+#define DUK_DBLUNION_SET_INT64(u,v) DUK_DBLUNION_SET_UINT64((u), (duk_uint64_t) (v))
+#define DUK_DBLUNION_GET_INT64(u)   ((duk_int64_t) DUK_DBLUNION_GET_UINT64((u)))
+#endif  /* DUK_USE_64BIT_OPS */
+
 /*
  *  Double NaN manipulation macros related to NaN normalization needed when
  *  using the packed duk_tval representation.  NaN normalization is necessary

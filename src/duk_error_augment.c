@@ -346,7 +346,7 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 				duk_uint32_t ecma_line;
 #if 0
-				duk_push_number(ctx, pc);
+				duk_push_u32(ctx, pc);
 				duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PC, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAGS_NO_OVERWRITE);
 #endif
 				ecma_line = duk_hobject_pc2line_query(ctx, -1, (duk_uint_fast32_t) pc);

@@ -73,27 +73,21 @@
 #define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-DUK_LOCAL const char *duk__bc_optab[] = {
+DUK_LOCAL const char *duk__bc_optab[64] = {
 	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTOBJI", "MPUTARR",  "MPUTARRI", "NEW",
 	"NEWI",     "REGEXP",   "CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",
 	"CLOSURE",  "GETPROP",  "PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",
-	"MOD",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "BNOT",     "LNOT",     "EQ",
-	"NEQ",      "SEQ",      "SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",       "INSTOF",   "IN",
-	"JUMP",     "RETURN",   "CALL",     "CALLI",    "LABEL",    "ENDLABEL", "BREAK",    "CONTINUE", "TRYCATCH", "UNUSED59",
-	"UNUSED60", "EXTRA",    "DEBUG",    "INVALID",
+	"MOD",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "EQ",       "NEQ",      "SEQ",
+	"SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",       "JUMP",     "RETURN",   "CALL",     "CALLI",
+	"TRYCATCH", "EXTRA",    "PREINCR",  "PREDECR",  "POSTINCR", "POSTDECR", "PREINCV",  "PREDECV",  "POSTINCV", "POSTDECV",
+	"PREINCP",  "PREDECP",  "POSTINCP", "POSTDECP"
 };
 
-DUK_LOCAL const char *duk__bc_extraoptab[] = {
-	"NOP", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN", "TYPEOF",
-	"TYPEOFID", "TONUM", "INITENUM", "NEXTENUM", "INITSET", "INITSETI", "INITGET", "INITGETI", "ENDTRY", "ENDCATCH",
-	"ENDFIN", "THROW", "INVLHS", "UNM", "UNP", "INC", "DEC", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+DUK_LOCAL const char *duk__bc_extraoptab[256] = {
+	"NOP", "INVALID", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN",
+	"TYPEOF", "TYPEOFID", "INITENUM", "NEXTENUM", "INITSET", "INITSETI", "INITGET", "INITGETI", "ENDTRY", "ENDCATCH",
+	"ENDFIN", "THROW", "INVLHS", "UNM", "UNP", "DEBUGGER", "BREAK", "CONTINUE", "BNOT", "LNOT",
+	"INSTOF", "IN", "LABEL", "ENDLABEL", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
@@ -114,7 +108,13 @@ DUK_LOCAL const char *duk__bc_extraoptab[] = {
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+
+	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX"
 };
 
 typedef struct duk__dprint_state duk__dprint_state;
@@ -745,6 +745,9 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 		duk_fb_sprintf(fb, ":%04lx", (long) lf_flags);
 		break;
 	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+#endif
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));

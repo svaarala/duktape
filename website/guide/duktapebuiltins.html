@@ -249,6 +249,8 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
     zero if not present.  Typical small objects don't have a hash part.</li>
 <li>Function data contains bytecode instructions, constants, etc.  It is
     shared between all instances (closures) of a certain function template.</li>
+<li>Internal type tag values may change between versions and are also
+    dependent on the memory layout used for tagged values internally.</li>
 </ul>
 
 <div class="table-wrap">
@@ -260,7 +262,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>undefined</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -273,7 +275,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>null</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -286,7 +288,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>boolean</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -299,7 +301,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>number</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -315,7 +317,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <td>heap ptr</td>
 <td>refcount</td>
 <td>heap hdr size</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -403,7 +405,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>pointer</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>
@@ -416,7 +418,7 @@ debugging and diagnosis, e.g. when estimating rough memory usage of objects.</p>
 <tr>
 <td>lightfunc</td>
 <td>type tag</td>
-<td>-</td>
+<td>internal type tag</td>
 <td>-</td>
 <td>-</td>
 <td>-</td>

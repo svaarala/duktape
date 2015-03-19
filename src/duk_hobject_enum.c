@@ -523,7 +523,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 
 	DUK_DDD(DUK_DDDPRINT("enumeration: updating next index to %ld", (long) idx));
 
-	duk_push_number(ctx, (double) idx);
+	duk_push_u32(ctx, (duk_uint32_t) idx);
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
 
 	/* [... enum] */

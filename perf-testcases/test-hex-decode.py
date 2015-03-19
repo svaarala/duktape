@@ -4,7 +4,7 @@ import random
 def test():
 	tmp1 = []
 	tmp2 = []
-	
+
 	print('build')
 	for i in xrange(1024):
 		tmp1.append('%x' % math.floor(random.random() * 16))

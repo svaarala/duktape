@@ -175,6 +175,7 @@ for i in \
 	duk_regexp_compiler.c	\
 	duk_regexp_executor.c	\
 	duk_regexp.h		\
+	duk_tval.c		\
 	duk_tval.h		\
 	duk_unicode.h		\
 	duk_unicode_support.c	\
@@ -219,6 +220,7 @@ for i in \
 	object-prototype-definesetter.js \
 	object-assign.js \
 	performance-now.js \
+	duktape-isfastint.js \
 	; do
 	cp polyfills/$i $DIST/polyfills/
 done

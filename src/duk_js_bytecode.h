@@ -38,6 +38,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_DEC_BC(x)               (((x) >> 14) & 0x3ffffUL)
 #define DUK_DEC_ABC(x)              (((x) >> 6) & 0x3ffffffUL)
 
+#define DUK_ENC_OP(op)              ((duk_instr_t) (op))
 #define DUK_ENC_OP_ABC(op,abc)      ((duk_instr_t) ( \
                                         (((duk_instr_t) (abc)) << 6) | \
                                         ((duk_instr_t) (op)) \
@@ -111,47 +112,48 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_BASL                 34
 #define DUK_OP_BLSR                 35
 #define DUK_OP_BASR                 36
-#define DUK_OP_BNOT                 37
-#define DUK_OP_LNOT                 38
-#define DUK_OP_EQ                   39
-#define DUK_OP_NEQ                  40
-#define DUK_OP_SEQ                  41
-#define DUK_OP_SNEQ                 42
-#define DUK_OP_GT                   43
-#define DUK_OP_GE                   44
-#define DUK_OP_LT                   45
-#define DUK_OP_LE                   46
-#define DUK_OP_IF                   47
-#define DUK_OP_INSTOF               48
-#define DUK_OP_IN                   49
-#define DUK_OP_JUMP                 50
-#define DUK_OP_RETURN               51
-#define DUK_OP_CALL                 52
-#define DUK_OP_CALLI                53
-#define DUK_OP_LABEL                54
-#define DUK_OP_ENDLABEL             55
-#define DUK_OP_BREAK                56
-#define DUK_OP_CONTINUE             57
-#define DUK_OP_TRYCATCH             58
-#define DUK_OP_UNUSED59             59
-#define DUK_OP_UNUSED60             60
-#define DUK_OP_UNUSED61             61
-#define DUK_OP_EXTRA                62
-#define DUK_OP_INVALID              63
+#define DUK_OP_EQ                   37
+#define DUK_OP_NEQ                  38
+#define DUK_OP_SEQ                  39
+#define DUK_OP_SNEQ                 40
+#define DUK_OP_GT                   41
+#define DUK_OP_GE                   42
+#define DUK_OP_LT                   43
+#define DUK_OP_LE                   44
+#define DUK_OP_IF                   45
+#define DUK_OP_JUMP                 46
+#define DUK_OP_RETURN               47
+#define DUK_OP_CALL                 48
+#define DUK_OP_CALLI                49
+#define DUK_OP_TRYCATCH             50
+#define DUK_OP_EXTRA                51
+#define DUK_OP_PREINCR              52  /* pre/post opcode values have constraints, */
+#define DUK_OP_PREDECR              53  /* see duk_js_executor.c */
+#define DUK_OP_POSTINCR             54
+#define DUK_OP_POSTDECR             55
+#define DUK_OP_PREINCV              56
+#define DUK_OP_PREDECV              57
+#define DUK_OP_POSTINCV             58
+#define DUK_OP_POSTDECV             59
+#define DUK_OP_PREINCP              60
+#define DUK_OP_PREDECP              61
+#define DUK_OP_POSTINCP             62
+#define DUK_OP_POSTDECP             63
+#define DUK_OP_NONE                 64  /* dummy value used as marker */
 
 /* DUK_OP_EXTRA, sub-operation in A */
 #define DUK_EXTRAOP_NOP             0
-#define DUK_EXTRAOP_LDTHIS          1
-#define DUK_EXTRAOP_LDUNDEF         2
-#define DUK_EXTRAOP_LDNULL          3
-#define DUK_EXTRAOP_LDTRUE          4
-#define DUK_EXTRAOP_LDFALSE         5
-#define DUK_EXTRAOP_NEWOBJ          6
-#define DUK_EXTRAOP_NEWARR          7
-#define DUK_EXTRAOP_SETALEN         8
-#define DUK_EXTRAOP_TYPEOF          9
-#define DUK_EXTRAOP_TYPEOFID        10
-#define DUK_EXTRAOP_TONUM           11
+#define DUK_EXTRAOP_INVALID         1
+#define DUK_EXTRAOP_LDTHIS          2
+#define DUK_EXTRAOP_LDUNDEF         3
+#define DUK_EXTRAOP_LDNULL          4
+#define DUK_EXTRAOP_LDTRUE          5
+#define DUK_EXTRAOP_LDFALSE         6
+#define DUK_EXTRAOP_NEWOBJ          7
+#define DUK_EXTRAOP_NEWARR          8
+#define DUK_EXTRAOP_SETALEN         9
+#define DUK_EXTRAOP_TYPEOF          10
+#define DUK_EXTRAOP_TYPEOFID        11
 #define DUK_EXTRAOP_INITENUM        12
 #define DUK_EXTRAOP_NEXTENUM        13
 #define DUK_EXTRAOP_INITSET         14
@@ -165,9 +167,15 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_EXTRAOP_INVLHS          22
 #define DUK_EXTRAOP_UNM             23
 #define DUK_EXTRAOP_UNP             24
-#define DUK_EXTRAOP_INC             25
-#define DUK_EXTRAOP_DEC             26
-#define DUK_EXTRAOP_DEBUGGER        27
+#define DUK_EXTRAOP_DEBUGGER        25
+#define DUK_EXTRAOP_BREAK           26
+#define DUK_EXTRAOP_CONTINUE        27
+#define DUK_EXTRAOP_BNOT            28
+#define DUK_EXTRAOP_LNOT            29
+#define DUK_EXTRAOP_INSTOF          30
+#define DUK_EXTRAOP_IN              31
+#define DUK_EXTRAOP_LABEL           32
+#define DUK_EXTRAOP_ENDLABEL        33
 
 /* DUK_OP_EXTRA for debugging */
 #define DUK_EXTRAOP_DUMPREG         128

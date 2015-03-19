@@ -66,6 +66,35 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	 *  Fast paths
 	 */
 
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		duk_int64_t v1, v2, v3;
+		duk_int32_t v3_hi;
+		duk_tval tv_tmp;
+		duk_tval *tv_z;
+
+		/* Input values are signed 48-bit so we can detect overflow
+		 * reliably from high bits or just a comparison.
+		 */
+
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		v2 = DUK_TVAL_GET_FASTINT(tv_y);
+		v3 = v1 + v2;
+		v3_hi = (duk_int32_t) (v3 >> 32);
+		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
+			tv_z = thr->valstack_bottom + idx_z;
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+			DUK_TVAL_SET_FASTINT(tv_z, v3);
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+			return;
+		} else {
+			/* overflow, fall through */
+			;
+		}
+	}
+#endif  /* DUK_USE_FASTINT */
+
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		duk_tval tv_tmp;
 		duk_tval *tv_z;
@@ -143,6 +172,82 @@ DUK_LOCAL void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tva
 	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		duk_int64_t v1, v2, v3;
+		duk_int32_t v3_hi;
+
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		v2 = DUK_TVAL_GET_FASTINT(tv_y);
+
+		switch (opcode) {
+		case DUK_OP_SUB: {
+			v3 = v1 - v2;
+			break;
+		}
+		case DUK_OP_MUL: {
+			/* Must ensure result is 64-bit (no overflow); a
+			 * simple and sufficient fast path is to allow only
+			 * 32-bit inputs.  Avoid zero inputs to avoid
+			 * negative zero issues (-1 * 0 = -0, for instance).
+			 */
+			if (v1 >= -0x80000000LL && v1 <= 0x7fffffffLL && v1 != 0 &&
+			    v2 >= -0x80000000LL && v2 <= 0x7fffffffLL && v2 != 0) {
+				v3 = v1 * v2;
+			} else {
+				goto skip_fastint;
+			}
+			break;
+		}
+		case DUK_OP_DIV: {
+			/* Don't allow a zero divisor.  Fast path check by
+			 * "verifying" with multiplication.  Also avoid zero
+			 * dividend to avoid negative zero issues (0 / -1 = -0
+			 * for instance).
+			 */
+			if (v1 == 0 || v2 == 0) {
+				goto skip_fastint;
+			}
+			v3 = v1 / v2;
+			if (v3 * v2 != v1) {
+				goto skip_fastint;
+			}
+			break;
+		}
+		case DUK_OP_MOD: {
+			/* Don't allow a zero divisor.  Restrict both v1 and
+			 * v2 to positive values to avoid compiler specific
+			 * behavior.
+			 */
+			if (v1 < 1 || v2 < 1) {
+				goto skip_fastint;
+			}
+			v3 = v1 % v2;
+			DUK_ASSERT(v3 >= 0);
+			DUK_ASSERT(v3 < v2);
+			DUK_ASSERT(v1 - (v1 / v2) * v2 == v3);
+			break;
+		}
+		default: {
+			DUK_UNREACHABLE();
+			goto skip_fastint;
+		}
+		}
+
+		v3_hi = (duk_int32_t) (v3 >> 32);
+		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
+			tv_z = thr->valstack_bottom + idx_z;
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+			DUK_TVAL_SET_FASTINT(tv_z, v3);
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+			return;
+		}
+		/* fall through if overflow etc */
+	}
+ skip_fastint:
+#endif  /* DUK_USE_FASTINT */
+
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* fast path */
 		d1 = DUK_TVAL_GET_NUMBER(tv_x);
@@ -177,6 +282,7 @@ DUK_LOCAL void duk__vm_arith_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_tva
 		break;
 	}
 	default: {
+		DUK_UNREACHABLE();
 		du.d = DUK_DOUBLE_NAN;  /* should not happen */
 		break;
 	}
@@ -207,8 +313,13 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
-	duk_int32_t i1, i2;
-	duk_double_t val;
+	duk_int32_t i1, i2, i3;
+	duk_uint32_t u1, u2, u3;
+#if defined(DUK_USE_FASTINT)
+	duk_int64_t fi3;
+#else
+	duk_double_t d3;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -217,23 +328,32 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
-	duk_push_tval(ctx, tv_x);
-	duk_push_tval(ctx, tv_y);
-	i1 = duk_to_int32(ctx, -2);
-	i2 = duk_to_int32(ctx, -1);
-	duk_pop_2(ctx);
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+		i1 = (duk_int32_t) DUK_TVAL_GET_FASTINT_I32(tv_x);
+		i2 = (duk_int32_t) DUK_TVAL_GET_FASTINT_I32(tv_y);
+	}
+	else
+#endif  /* DUK_USE_FASTINT */
+	{
+		duk_push_tval(ctx, tv_x);
+		duk_push_tval(ctx, tv_y);
+		i1 = duk_to_int32(ctx, -2);
+		i2 = duk_to_int32(ctx, -1);
+		duk_pop_2(ctx);
+	}
 
 	switch (opcode) {
 	case DUK_OP_BAND: {
-		val = (duk_double_t) (i1 & i2);
+		i3 = i1 & i2;
 		break;
 	}
 	case DUK_OP_BOR: {
-		val = (duk_double_t) (i1 | i2);
+		i3 = i1 | i2;
 		break;
 	}
 	case DUK_OP_BXOR: {
-		val = (duk_double_t) (i1 ^ i2);
+		i3 = i1 ^ i2;
 		break;
 	}
 	case DUK_OP_BASL: {
@@ -242,53 +362,69 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 		 * must be masked.
 		 */
 
-		duk_uint32_t u2;
-		duk_int32_t i3;
-
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		i3 = i1 << (u2 & 0x1f);                     /* E5 Section 11.7.1, steps 7 and 8 */
+		i3 = i1 << (u2 & 0x1f);                      /* E5 Section 11.7.1, steps 7 and 8 */
 		i3 = i3 & ((duk_int32_t) 0xffffffffUL);      /* Note: left shift, should mask */
-		val = (duk_double_t) i3;
 		break;
 	}
 	case DUK_OP_BASR: {
 		/* signed shift */
 
-		duk_uint32_t u2;
-
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		val = (duk_double_t) (i1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
+		i3 = i1 >> (u2 & 0x1f);                      /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	case DUK_OP_BLSR: {
 		/* unsigned shift */
 
-		duk_uint32_t u1;
-		duk_uint32_t u2;
-
 		u1 = ((duk_uint32_t) i1) & 0xffffffffUL;
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
 
-		val = (duk_double_t) (u1 >> (u2 & 0x1f));     /* E5 Section 11.7.2, steps 7 and 8 */
-		break;
+		/* special result value handling */
+		u3 = u1 >> (u2 & 0x1f);     /* E5 Section 11.7.2, steps 7 and 8 */
+#if defined(DUK_USE_FASTINT)
+		fi3 = (duk_int64_t) u3;
+		goto fastint_result_set;
+#else
+		d3 = (duk_double_t) u3;
+		goto result_set;
+#endif
 	}
 	default: {
-		val = (duk_double_t) 0;  /* should not happen */
+		DUK_UNREACHABLE();
+		i3 = 0;  /* should not happen */
 		break;
 	}
 	}
 
-	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
+#if defined(DUK_USE_FASTINT)
+	/* Result is always fastint compatible. */
+	/* XXX: set 32-bit result (but must handle signed and unsigned) */
+	fi3 = (duk_int64_t) i3;
+
+ fastint_result_set:
+	tv_z = thr->valstack_bottom + idx_z;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+	DUK_TVAL_SET_FASTINT(tv_z, fi3);
+	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#else
+	d3 = (duk_double_t) i3;
+
+ result_set:
+	DUK_ASSERT(!DUK_ISNAN(d3));            /* 'd3' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(d3);   /* always normalized */
 
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, d3);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#endif
 }
 
-DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z, duk_small_uint_fast_t opcode) {
+/* In-place unary operation. */
+DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_idx_t idx_x, duk_small_uint_fast_t opcode) {
 	/*
 	 *  Arithmetic operations other than '+' have number-only semantics
 	 *  and are implemented here.  The separate switch-case here means a
@@ -298,59 +434,64 @@ DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_smal
 	 */
 
 	duk_context *ctx = (duk_context *) thr;
-	duk_tval tv_tmp;
-	duk_tval *tv_z;
 	duk_double_t d1;
 	duk_double_union du;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(tv_x != NULL);  /* may be reg or const */
-	DUK_ASSERT_DISABLE(idx_z >= 0);  /* unsigned */
-	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
+	DUK_ASSERT(opcode == DUK_EXTRAOP_UNM || opcode == DUK_EXTRAOP_UNP);
 
-	if (DUK_TVAL_IS_NUMBER(tv_x)) {
-		/* fast path */
-		d1 = DUK_TVAL_GET_NUMBER(tv_x);
-	} else {
-		duk_push_tval(ctx, tv_x);
-		d1 = duk_to_number(ctx, -1);  /* side effects */
-		DUK_ASSERT(duk_is_number(ctx, -1));
-		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
-		duk_pop(ctx);
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x)) {
+		duk_int64_t v1, v2;
+
+		v1 = DUK_TVAL_GET_FASTINT(tv_x);
+		if (opcode == DUK_EXTRAOP_UNM) {
+			/* The smallest fastint is no longer 48-bit when
+			 * negated.  Positive zero becames negative zero
+			 * (cannot be represented) when negated.
+			 */
+			if (DUK_LIKELY(v1 != DUK_FASTINT_MIN && v1 != 0)) {
+				v2 = -v1;
+				DUK_TVAL_SET_FASTINT(tv_x, v2);  /* no refcount changes */
+				return;
+			}
+		} else {
+			/* ToNumber() for a fastint is a no-op. */
+			DUK_ASSERT(opcode == DUK_EXTRAOP_UNP);
+			return;
+		}
+		/* fall through if overflow etc */
+	}
+#endif  /* DUK_USE_FASTINT */
+
+	if (!DUK_TVAL_IS_NUMBER(tv_x)) {
+		duk_to_number(ctx, idx_x);  /* side effects, perform in-place */
+		tv_x = duk_get_tval(ctx, idx_x);
+		DUK_ASSERT(tv_x != NULL);
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 	}
 
-	switch (opcode) {
-	case DUK_EXTRAOP_UNM: {
+	d1 = DUK_TVAL_GET_NUMBER(tv_x);
+	if (opcode == DUK_EXTRAOP_UNM) {
 		du.d = -d1;
-		break;
-	}
-	case DUK_EXTRAOP_UNP: {
+	} else {
+		/* ToNumber() for a double is a no-op. */
+		DUK_ASSERT(opcode == DUK_EXTRAOP_UNP);
 		du.d = d1;
-		break;
 	}
-	case DUK_EXTRAOP_INC: {
-		du.d = d1 + 1.0;
-		break;
-	}
-	case DUK_EXTRAOP_DEC: {
-		du.d = d1 - 1.0;
-		break;
-	}
-	default: {
-		du.d = DUK_DOUBLE_NAN;  /* should not happen */
-		break;
-	}
-	}
+	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);  /* mandatory if du.d is a NaN */
 
-	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
-	tv_z = thr->valstack_bottom + idx_z;
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, du.d);
-	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#if defined(DUK_USE_FASTINT)
+	/* Unary plus is used to force a fastint check, so must include
+	 * downgrade check.
+	 */
+	DUK_TVAL_SET_NUMBER_CHKFAST(tv_x, du.d);  /* no refcount changes */
+#else
+	DUK_TVAL_SET_NUMBER(tv_x, du.d);  /* no refcount changes */
+#endif
 }
 
 DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_uint_fast_t idx_z) {
@@ -362,7 +503,9 @@ DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_u
 	duk_tval tv_tmp;
 	duk_tval *tv_z;
 	duk_int32_t i1, i2;
-	duk_double_t val;
+#if !defined(DUK_USE_FASTINT)
+	duk_double_t d2;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -370,21 +513,39 @@ DUK_LOCAL void duk__vm_bitwise_not(duk_hthread *thr, duk_tval *tv_x, duk_small_u
 	DUK_ASSERT_DISABLE(idx_z >= 0);
 	DUK_ASSERT((duk_uint_t) idx_z < (duk_uint_t) duk_get_top(ctx));
 
-	duk_push_tval(ctx, tv_x);
-	i1 = duk_to_int32(ctx, -1);
-	duk_pop(ctx);
+#if defined(DUK_USE_FASTINT)
+	if (DUK_TVAL_IS_FASTINT(tv_x)) {
+		i1 = (duk_int32_t) DUK_TVAL_GET_FASTINT_I32(tv_x);
+	}
+	else
+#endif  /* DUK_USE_FASTINT */
+	{
+		duk_push_tval(ctx, tv_x);
+		i1 = duk_to_int32(ctx, -1);
+		duk_pop(ctx);
+	}
 
 	i2 = ~i1;
-	val = (duk_double_t) i2;
 
-	DUK_ASSERT(!DUK_ISNAN(val));            /* 'val' is never NaN, so no need to normalize */
-	DUK_ASSERT_DOUBLE_IS_NORMALIZED(val);   /* always normalized */
+#if defined(DUK_USE_FASTINT)
+	/* Result is always fastint compatible. */
+	tv_z = thr->valstack_bottom + idx_z;
+	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
+	DUK_TVAL_SET_FASTINT_I32(tv_z, i2);
+	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
+	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#else
+	d2 = (duk_double_t) i2;
+
+	DUK_ASSERT(!DUK_ISNAN(d2));            /* 'val' is never NaN, so no need to normalize */
+	DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);   /* always normalized */
 
 	tv_z = thr->valstack_bottom + idx_z;
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv_z);
-	DUK_TVAL_SET_NUMBER(tv_z, val);
+	DUK_TVAL_SET_NUMBER(tv_z, d2);
 	DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_z));  /* no need to incref */
 	DUK_TVAL_DECREF(thr, &tv_tmp);   /* side effects */
+#endif
 }
 
 DUK_LOCAL void duk__vm_logical_not(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_z) {
@@ -2159,13 +2320,25 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_int_fast_t bc;
 			duk_tval tv_tmp;
 			duk_tval *tv1;
+#if defined(DUK_USE_FASTINT)
+			duk_int32_t val;
+#else
 			duk_double_t val;
+#endif
 
+#if defined(DUK_USE_FASTINT)
+			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			bc = DUK_DEC_BC(ins); val = (duk_int32_t) (bc - DUK_BC_LDINT_BIAS);
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+			DUK_TVAL_SET_FASTINT_I32(tv1, val);
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#else
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); val = (duk_double_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 			DUK_TVAL_SET_NUMBER(tv1, val);
 			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+#endif
 			break;
 		}
 
@@ -2174,13 +2347,20 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_tval *tv1;
 			duk_double_t val;
 
+			/* LDINTX is not necessarily in FASTINT range, so
+			 * no fast path for now.
+			 */
+
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
-			if (!DUK_TVAL_IS_NUMBER(tv1)) {
-				DUK__INTERNAL_ERROR("LDINTX target not a number");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 			val = DUK_TVAL_GET_NUMBER(tv1) * ((duk_double_t) (1L << DUK_BC_LDINTX_SHIFT)) +
 			      (duk_double_t) DUK_DEC_BC(ins);
+#if defined(DUK_USE_FASTINT)
+			/* XXX: perhaps avoid LDINTX with fastints? */
+			DUK_TVAL_SET_NUMBER_CHKFAST(tv1, val);
+#else
 			DUK_TVAL_SET_NUMBER(tv1, val);
+#endif
 			break;
 		}
 
@@ -2199,17 +2379,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 */
 
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
-			if (!DUK_TVAL_IS_OBJECT(tv1)) {
-				DUK__INTERNAL_ERROR("MPUTOBJ target not an object");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTOBJI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("MPUTOBJI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2229,9 +2405,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				/* XXX: faster initialization (direct access or better primitives) */
 
 				duk_push_tval(ctx, DUK__REGP(idx));
-				if (!duk_is_string(ctx, -1)) {
-					DUK__INTERNAL_ERROR("MPUTOBJ key not a string");
-				}
+				DUK_ASSERT(duk_is_string(ctx, -1));
 				duk_push_tval(ctx, DUK__REGP(idx + 1));  /* -> [... obj key value] */
 				duk_xdef_prop_wec(ctx, -3);              /* -> [... obj] */
 
@@ -2259,17 +2433,14 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 */
 
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
-			if (!DUK_TVAL_IS_OBJECT(tv1)) {
-				DUK__INTERNAL_ERROR("MPUTARR target not an object");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 			obj = DUK_TVAL_GET_OBJECT(tv1);
+			DUK_ASSERT(obj != NULL);
 
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTARRI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("MPUTARRI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2284,9 +2455,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 #endif
 
 			tv1 = DUK__REGP(idx);
-			if (!DUK_TVAL_IS_NUMBER(tv1)) {
-				DUK__INTERNAL_ERROR("MPUTARR start index not a number");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 			arr_idx = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 			idx++;
 
@@ -2349,9 +2518,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_NEWI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("NEWI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2427,9 +2594,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSREGI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("CSREGI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2456,11 +2621,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_hstring *name;
 
 			tv1 = DUK__CONSTP(bc);
-			if (!DUK_TVAL_IS_STRING(tv1)) {
-				DUK_DDD(DUK_DDDPRINT("GETVAR not a string: %!T", (duk_tval *) tv1));
-				DUK__INTERNAL_ERROR("GETVAR name not a string");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
 			DUK_DDD(DUK_DDDPRINT("GETVAR: '%!O'", (duk_heaphdr *) name));
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
 
@@ -2476,10 +2639,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_hstring *name;
 
 			tv1 = DUK__CONSTP(bc);
-			if (!DUK_TVAL_IS_STRING(tv1)) {
-				DUK__INTERNAL_ERROR("PUTVAR name not a string");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
 
 			/* XXX: putvar takes a duk_tval pointer, which is awkward and
 			 * should be reworked.
@@ -2502,10 +2664,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_bool_t is_undef_value;
 
 			tv1 = DUK__REGCONSTP(b);
-			if (!DUK_TVAL_IS_STRING(tv1)) {
-				DUK__INTERNAL_ERROR("DECLVAR name not a string");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
 
 			is_undef_value = ((a & DUK_BC_DECLVAR_FLAG_UNDEF_VALUE) != 0);
 			is_func_decl = ((a & DUK_BC_DECLVAR_FLAG_FUNC_DECL) != 0);
@@ -2545,10 +2706,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_bool_t rc;
 
 			tv1 = DUK__REGCONSTP(b);
-			if (!DUK_TVAL_IS_STRING(tv1)) {
-				DUK__INTERNAL_ERROR("DELVAR name not a string");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
 			DUK_DDD(DUK_DDDPRINT("DELVAR '%!O'", (duk_heaphdr *) name));
 			rc = duk_js_delvar_activation(thr, act, name);
 
@@ -2575,10 +2735,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_hstring *name;
 
 			tv1 = DUK__REGCONSTP(b);
-			if (!DUK_TVAL_IS_STRING(tv1)) {
-				DUK__INTERNAL_ERROR("CSVAR name not a string");
-			}
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
 
 			/* Note: target registers a and a+1 may overlap with DUK__REGCONSTP(b)
@@ -2588,9 +2747,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSVARI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("CSVARI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2774,9 +2931,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CSPROPI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("CSPROPI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -2828,22 +2983,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
 
 			duk__vm_bitwise_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
-			break;
-		}
-
-		case DUK_OP_BNOT: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-
-			duk__vm_bitwise_not(thr, DUK__REGCONSTP(b), a);
-			break;
-		}
-
-		case DUK_OP_LNOT: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-
-			duk__vm_logical_not(thr, DUK__REGCONSTP(b), DUK__REGP(a));
 			break;
 		}
 
@@ -2981,32 +3120,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			break;
 		}
 
-		case DUK_OP_INSTOF: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-			duk_bool_t tmp;
-
-			tmp = duk_js_instanceof(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
-			break;
-		}
-
-		case DUK_OP_IN: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-			duk_bool_t tmp;
-
-			tmp = duk_js_in(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
-			break;
-		}
-
 		case DUK_OP_JUMP: {
 			duk_int_fast_t abc = DUK_DEC_ABC(ins);
 
@@ -3019,6 +3132,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			/* duk_small_uint_fast_t c = DUK_DEC_C(ins); */
+			duk_tval *tv_val;
 
 			/* A -> flags
 			 * B -> return value reg/const
@@ -3051,7 +3165,17 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
 
 			if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
-				duk_push_tval(ctx, DUK__REGCONSTP(b));
+				tv_val = DUK__REGCONSTP(b);
+#if defined(DUK_OPT_FASTINT)
+				/* Explicit check for fastint downgrade.  Do
+				 * it also for consts for now, which is odd
+				 * but harmless.
+				 */
+				/* XXX: restrict to reg values only? */
+
+				DUK_TVAL_CHKFAST_INPLACE(tv_val);
+#endif
+				duk_push_tval(ctx, tv_val);
 			} else {
 				duk_push_undefined(ctx);
 			}
@@ -3091,9 +3215,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_CALLI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
-				if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-					DUK__INTERNAL_ERROR("CALLI target is not a number");
-				}
+				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 			}
 
@@ -3232,92 +3354,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 */
 			goto restart_execution;
 #endif
-			break;
-		}
-
-		case DUK_OP_LABEL: {
-			duk_catcher *cat;
-			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
-
-			/* allocate catcher and populate it (should be atomic) */
-
-			duk_hthread_catchstack_grow(thr);
-			cat = thr->catchstack + thr->catchstack_top;
-			thr->catchstack_top++;
-
-			cat->flags = DUK_CAT_TYPE_LABEL | (abc << DUK_CAT_LABEL_SHIFT);
-			cat->callstack_index = thr->callstack_top - 1;
-			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
-			cat->idx_base = 0;  /* unused for label */
-			cat->h_varname = NULL;
-
-			DUK_DDD(DUK_DDDPRINT("LABEL catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
-			                     "idx_base=%ld, h_varname=%!O, label_id=%ld",
-			                     (long) cat->flags, (long) cat->callstack_index, (long) cat->pc_base,
-			                     (long) cat->idx_base, (duk_heaphdr *) cat->h_varname, (long) DUK_CAT_GET_LABEL(cat)));
-
-			act->pc += 2;  /* skip jump slots */
-			break;
-		}
-
-		case DUK_OP_ENDLABEL: {
-			duk_catcher *cat;
-#if defined(DUK_USE_DDDPRINT) || defined(DUK_USE_ASSERTIONS)
-			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
-#endif
-#if defined(DUK_USE_DDDPRINT)
-			DUK_DDD(DUK_DDDPRINT("ENDLABEL %ld", (long) abc));
-#endif
-
-			DUK_ASSERT(thr->catchstack_top >= 1);
-
-			cat = thr->catchstack + thr->catchstack_top - 1;
-			DUK_UNREF(cat);
-			DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
-			DUK_ASSERT((duk_uint_fast_t) DUK_CAT_GET_LABEL(cat) == abc);
-
-			duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
-			/* no need to unwind callstack */
-			break;
-		}
-
-		case DUK_OP_BREAK: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
-
-			/* always the "slow break" variant (longjmp'ing); a "fast break" is
-			 * simply an DUK_OP_JUMP.
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("BREAK: %ld", (long) abc));
-
-			duk_push_uint(ctx, (duk_uint_t) abc);
-			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_BREAK);
-
-			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
-			duk_err_longjmp(thr);
-
-			DUK_UNREACHABLE();
-			break;
-		}
-
-		case DUK_OP_CONTINUE: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_uint_fast_t abc = DUK_DEC_ABC(ins);
-
-			/* always the "slow continue" variant (longjmp'ing); a "fast continue" is
-			 * simply an DUK_OP_JUMP.
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("CONTINUE: %ld", (long) abc));
-
-			duk_push_uint(ctx, (duk_uint_t) abc);
-			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_CONTINUE);
-
-			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
-			duk_err_longjmp(thr);
-
-			DUK_UNREACHABLE();
 			break;
 		}
 
@@ -3464,12 +3500,205 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			break;
 		}
 
+		/* Pre/post inc/dec for register variables, important for loops. */
+		case DUK_OP_PREINCR:
+		case DUK_OP_PREDECR:
+		case DUK_OP_POSTINCR:
+		case DUK_OP_POSTDECR: {
+			duk_context *ctx = (duk_context *) thr;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
+			duk_tval *tv1, *tv2;
+			duk_tval tv_tmp;
+			duk_double_t x, y, z;
+
+			/* Two lowest bits of opcode are used to distinguish
+			 * variants.  Bit 0 = inc(0)/dec(1), bit 1 = pre(0)/post(1).
+			 */
+			DUK_ASSERT((DUK_OP_PREINCR & 0x03) == 0x00);
+			DUK_ASSERT((DUK_OP_PREDECR & 0x03) == 0x01);
+			DUK_ASSERT((DUK_OP_POSTINCR & 0x03) == 0x02);
+			DUK_ASSERT((DUK_OP_POSTDECR & 0x03) == 0x03);
+
+			tv1 = DUK__REGP(bc);
+#if defined(DUK_USE_FASTINT)
+			if (DUK_TVAL_IS_FASTINT(tv1)) {
+				duk_int64_t x_fi, y_fi, z_fi;
+				x_fi = DUK_TVAL_GET_FASTINT(tv1);
+				if (ins & DUK_ENC_OP(0x01)) {
+					if (x_fi == DUK_FASTINT_MIN) {
+						goto skip_fastint;
+					}
+					y_fi = x_fi - 1;
+				} else {
+					if (x_fi == DUK_FASTINT_MAX) {
+						goto skip_fastint;
+					}
+					y_fi = x_fi + 1;
+				}
+
+				DUK_TVAL_SET_FASTINT(tv1, y_fi);  /* no need for refcount update */
+
+				tv2 = DUK__REGP(a);
+				DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
+				z_fi = (ins & DUK_ENC_OP(0x02)) ? x_fi : y_fi;
+				DUK_TVAL_SET_FASTINT(tv2, z_fi);    /* no need for incref */
+				DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+				break;
+			}
+		 skip_fastint:
+#endif
+			if (DUK_TVAL_IS_NUMBER(tv1)) {
+				/* Fast path for the case where the register
+				 * is a number (e.g. loop counter).
+				 */
+
+				x = DUK_TVAL_GET_NUMBER(tv1);
+				if (ins & DUK_ENC_OP(0x01)) {
+					y = x - 1.0;
+				} else {
+					y = x + 1.0;
+				}
+
+				DUK_TVAL_SET_NUMBER(tv1, y);  /* no need for refcount update */
+			} else {
+				x = duk_to_number(ctx, bc);
+
+				if (ins & DUK_ENC_OP(0x01)) {
+					y = x - 1.0;
+				} else {
+					y = x + 1.0;
+				}
+
+				duk_push_number(ctx, y);
+				duk_replace(ctx, bc);
+			}
+
+			tv2 = DUK__REGP(a);
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
+			z = (ins & DUK_ENC_OP(0x02)) ? x : y;
+			DUK_TVAL_SET_NUMBER(tv2, z);    /* no need for incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+			break;
+		}
+
+		/* Preinc/predec for var-by-name, slow path. */
+		case DUK_OP_PREINCV:
+		case DUK_OP_PREDECV:
+		case DUK_OP_POSTINCV:
+		case DUK_OP_POSTDECV: {
+			duk_context *ctx = (duk_context *) thr;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
+			duk_double_t x, y;
+			duk_tval *tv1;
+			duk_hstring *name;
+
+			/* Two lowest bits of opcode are used to distinguish
+			 * variants.  Bit 0 = inc(0)/dec(1), bit 1 = pre(0)/post(1).
+			 */
+			DUK_ASSERT((DUK_OP_PREINCV & 0x03) == 0x00);
+			DUK_ASSERT((DUK_OP_PREDECV & 0x03) == 0x01);
+			DUK_ASSERT((DUK_OP_POSTINCV & 0x03) == 0x02);
+			DUK_ASSERT((DUK_OP_POSTDECV & 0x03) == 0x03);
+
+			tv1 = DUK__CONSTP(bc);
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
+			name = DUK_TVAL_GET_STRING(tv1);
+			DUK_ASSERT(name != NULL);
+			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
+
+			/* XXX: fastint fast path would be very useful here */
+
+			x = duk_to_number(ctx, -2);
+			duk_pop_2(ctx);
+			if (ins & DUK_ENC_OP(0x01)) {
+				y = x - 1.0;
+			} else {
+				y = x + 1.0;
+			}
+
+			duk_push_number(ctx, y);
+			tv1 = duk_get_tval(ctx, -1);
+			DUK_ASSERT(tv1 != NULL);
+			duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
+			duk_pop(ctx);
+
+			duk_push_number(ctx, (ins & DUK_ENC_OP(0x02)) ? x : y);
+			duk_replace(ctx, (duk_idx_t) a);
+			break;
+		}
+
+		/* Preinc/predec for object properties. */
+		case DUK_OP_PREINCP:
+		case DUK_OP_PREDECP:
+		case DUK_OP_POSTINCP:
+		case DUK_OP_POSTDECP: {
+			duk_context *ctx = (duk_context *) thr;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_tval *tv_obj;
+			duk_tval *tv_key;
+			duk_tval *tv_val;
+			duk_bool_t rc;
+			duk_double_t x, y;
+
+			/* A -> target reg
+			 * B -> object reg/const (may be const e.g. in "'foo'[1]")
+			 * C -> key reg/const
+			 */
+
+			/* Two lowest bits of opcode are used to distinguish
+			 * variants.  Bit 0 = inc(0)/dec(1), bit 1 = pre(0)/post(1).
+			 */
+			DUK_ASSERT((DUK_OP_PREINCP & 0x03) == 0x00);
+			DUK_ASSERT((DUK_OP_PREDECP & 0x03) == 0x01);
+			DUK_ASSERT((DUK_OP_POSTINCP & 0x03) == 0x02);
+			DUK_ASSERT((DUK_OP_POSTDECP & 0x03) == 0x03);
+
+			tv_obj = DUK__REGCONSTP(b);
+			tv_key = DUK__REGCONSTP(c);
+			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
+			DUK_UNREF(rc);  /* ignore */
+			tv_obj = NULL;  /* invalidated */
+			tv_key = NULL;  /* invalidated */
+
+			x = duk_to_number(ctx, -1);
+			duk_pop(ctx);
+			if (ins & DUK_ENC_OP(0x01)) {
+				y = x - 1.0;
+			} else {
+				y = x + 1.0;
+			}
+
+			duk_push_number(ctx, y);
+			tv_val = duk_get_tval(ctx, -1);
+			DUK_ASSERT(tv_val != NULL);
+			tv_obj = DUK__REGCONSTP(b);
+			tv_key = DUK__REGCONSTP(c);
+			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, DUK__STRICT());
+			DUK_UNREF(rc);  /* ignore */
+			tv_obj = NULL;  /* invalidated */
+			tv_key = NULL;  /* invalidated */
+			duk_pop(ctx);
+
+			duk_push_number(ctx, (ins & DUK_ENC_OP(0x02)) ? x : y);
+			duk_replace(ctx, (duk_idx_t) a);
+			break;
+		}
+
 		case DUK_OP_EXTRA: {
 			/* XXX: shared decoding of 'b' and 'c'? */
 
 			duk_small_uint_fast_t extraop = DUK_DEC_A(ins);
 			switch ((int) extraop) {
 			/* XXX: switch cast? */
+
+			case DUK_EXTRAOP_INVALID: {
+				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_ABC(ins));
+				break;
+			}
 
 			case DUK_EXTRAOP_NOP: {
 				/* nop */
@@ -3573,10 +3802,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			case DUK_EXTRAOP_TYPEOF: {
 				duk_context *ctx = (duk_context *) thr;
-				duk_small_uint_fast_t b = DUK_DEC_B(ins);
-				duk_small_uint_fast_t c = DUK_DEC_C(ins);
-				duk_push_hstring(ctx, duk_js_typeof(thr, DUK__REGCONSTP(c)));
-				duk_replace(ctx, (duk_idx_t) b);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk_push_hstring(ctx, duk_js_typeof(thr, DUK__REGP(bc)));
+				duk_replace(ctx, (duk_idx_t) bc);
 				break;
 			}
 
@@ -3606,16 +3834,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					duk_replace(ctx, (duk_idx_t) b);
 				}
 
-				break;
-			}
-
-			case DUK_EXTRAOP_TONUM: {
-				duk_context *ctx = (duk_context *) thr;
-				duk_small_uint_fast_t b = DUK_DEC_B(ins);
-				duk_small_uint_fast_t c = DUK_DEC_C(ins);
-				duk_dup(ctx, (duk_idx_t) c);
-				duk_to_number(ctx, -1);
-				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
@@ -3712,9 +3930,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				idx = (duk_uint_fast_t) DUK_DEC_C(ins);
 				if (extraop == DUK_EXTRAOP_INITSETI || extraop == DUK_EXTRAOP_INITGETI) {
 					duk_tval *tv_ind = DUK__REGP(idx);
-					if (!DUK_TVAL_IS_NUMBER(tv_ind)) {
-						DUK__INTERNAL_ERROR("DUK_EXTRAOP_INITSETI/DUK_EXTRAOP_INITGETI target is not a number");
-					}
+					DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
 					idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
 				}
 
@@ -3942,13 +4158,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			}
 
 			case DUK_EXTRAOP_UNM:
-			case DUK_EXTRAOP_UNP:
-			case DUK_EXTRAOP_INC:
-			case DUK_EXTRAOP_DEC: {
-				duk_small_uint_fast_t b = DUK_DEC_B(ins);
-				duk_small_uint_fast_t c = DUK_DEC_C(ins);
-
-				duk__vm_arith_unary_op(thr, DUK__REGCONSTP(c), b, extraop);
+			case DUK_EXTRAOP_UNP: {
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk__vm_arith_unary_op(thr, DUK__REGP(bc), bc, extraop);
 				break;
 			}
 
@@ -3967,6 +4179,132 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 #else
 				DUK_D(DUK_DPRINT("DEBUGGER statement ignored, no debugger support"));
 #endif
+				break;
+			}
+
+			case DUK_EXTRAOP_BREAK: {
+				duk_context *ctx = (duk_context *) thr;
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+
+				/* always the "slow break" variant (longjmp'ing); a "fast break" is
+				 * simply an DUK_OP_JUMP.
+				 */
+
+				DUK_DDD(DUK_DDDPRINT("BREAK: %ld", (long) bc));
+
+				duk_push_uint(ctx, (duk_uint_t) bc);
+				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_BREAK);
+
+				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+				duk_err_longjmp(thr);
+
+				DUK_UNREACHABLE();
+				break;
+			}
+
+			case DUK_EXTRAOP_CONTINUE: {
+				duk_context *ctx = (duk_context *) thr;
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+
+				/* always the "slow continue" variant (longjmp'ing); a "fast continue" is
+				 * simply an DUK_OP_JUMP.
+				 */
+
+				DUK_DDD(DUK_DDDPRINT("CONTINUE: %ld", (long) bc));
+
+				duk_push_uint(ctx, (duk_uint_t) bc);
+				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_CONTINUE);
+
+				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+				duk_err_longjmp(thr);
+
+				DUK_UNREACHABLE();
+				break;
+			}
+
+			case DUK_EXTRAOP_BNOT: {
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+
+				duk__vm_bitwise_not(thr, DUK__REGP(bc), bc);
+				break;
+			}
+
+			case DUK_EXTRAOP_LNOT: {
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk_tval *tv1;
+
+				tv1 = DUK__REGP(bc);
+				duk__vm_logical_not(thr, tv1, tv1);
+				break;
+			}
+
+			case DUK_EXTRAOP_INSTOF: {
+				duk_context *ctx = (duk_context *) thr;
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
+				duk_bool_t tmp;
+
+				tmp = duk_js_instanceof(thr, DUK__REGP(b), DUK__REGCONSTP(c));
+				duk_push_boolean(ctx, tmp);
+				duk_replace(ctx, (duk_idx_t) b);
+				break;
+			}
+
+			case DUK_EXTRAOP_IN: {
+				duk_context *ctx = (duk_context *) thr;
+				duk_small_uint_fast_t b = DUK_DEC_B(ins);
+				duk_small_uint_fast_t c = DUK_DEC_C(ins);
+				duk_bool_t tmp;
+
+				tmp = duk_js_in(thr, DUK__REGP(b), DUK__REGCONSTP(c));
+				duk_push_boolean(ctx, tmp);
+				duk_replace(ctx, (duk_idx_t) b);
+				break;
+			}
+
+			case DUK_EXTRAOP_LABEL: {
+				duk_catcher *cat;
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+
+				/* allocate catcher and populate it (should be atomic) */
+
+				duk_hthread_catchstack_grow(thr);
+				cat = thr->catchstack + thr->catchstack_top;
+				thr->catchstack_top++;
+
+				cat->flags = DUK_CAT_TYPE_LABEL | (bc << DUK_CAT_LABEL_SHIFT);
+				cat->callstack_index = thr->callstack_top - 1;
+				cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
+				cat->idx_base = 0;  /* unused for label */
+				cat->h_varname = NULL;
+
+				DUK_DDD(DUK_DDDPRINT("LABEL catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
+				                     "idx_base=%ld, h_varname=%!O, label_id=%ld",
+				                     (long) cat->flags, (long) cat->callstack_index, (long) cat->pc_base,
+				                     (long) cat->idx_base, (duk_heaphdr *) cat->h_varname, (long) DUK_CAT_GET_LABEL(cat)));
+
+				act->pc += 2;  /* skip jump slots */
+				break;
+			}
+
+			case DUK_EXTRAOP_ENDLABEL: {
+				duk_catcher *cat;
+#if defined(DUK_USE_DDDPRINT) || defined(DUK_USE_ASSERTIONS)
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+#endif
+#if defined(DUK_USE_DDDPRINT)
+				DUK_DDD(DUK_DDDPRINT("ENDLABEL %ld", (long) bc));
+#endif
+
+				DUK_ASSERT(thr->catchstack_top >= 1);
+
+				cat = thr->catchstack + thr->catchstack_top - 1;
+				DUK_UNREF(cat);
+				DUK_ASSERT(DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_LABEL);
+				DUK_ASSERT((duk_uint_fast_t) DUK_CAT_GET_LABEL(cat) == bc);
+
+				duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+				/* no need to unwind callstack */
 				break;
 			}
 
@@ -4002,11 +4340,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			}  /* end switch */
 
-			break;
-		}
-
-		case DUK_OP_INVALID: {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_ABC(ins));
 			break;
 		}
 

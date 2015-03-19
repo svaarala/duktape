@@ -819,6 +819,10 @@ Planned
   narrow debug API and a standard debug protocol; Duktape also provides an
   example debug client with a web UI
 
+* Add support "fastints", i.e. for using integer arithmetic when possible
+  in a transparent manner (improves performance for some workloads on soft
+  float and some hard float platforms)
+
 * Add iPhone/iOS strings to Duktape.env
 
 * Add DUK_OPT_EXEC_TIMEOUT_CHECK(), an experimental bytecode execution timeout
@@ -839,6 +843,9 @@ Planned
 
 * Performance improvement: array write fast path when writing to "dense"
   Array instances using a numeric index
+
+* Add internal type tag to Duktape.info() result for non-heap-allocated types
+  (useful for some testing)
 
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (see GH-103)
@@ -875,6 +882,9 @@ Planned
 
 * Fix shuffle handling issue for PUTPROP opcode, discovered by shuffle
   torture tests (GH-135)
+
+* Fix a potential crash risk in Duktape.info() caused by a live pointer being
+  used across a possible realloc
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 

@@ -8,6 +8,28 @@ Overview
 This document describes suggested feature options for optimizing Duktape
 performance for performance sensitive environments.
 
+Compiler optimization level
+===========================
+
+Size optimization using ``-Os`` is a good default when performance is
+not critical.  However, it's not ideal when performance matters for
+several reasons:
+
+* Although ``-Os`` optimized code performs reasonably well, even
+  ``-O2`` will yield significantly better results.
+
+* Code performance with ``-Os`` can vary a great deal even when source
+  code changes are innocent.  It's not uncommon for some performance
+  test result to change +/- 10-30% with unrelated changes.  Presumably
+  this is caused by changes in code alignment etc.
+
+  Because of this, ``-Os`` is definitely a bad idea for measuring
+  performance.
+
+* Overall suggestion is to use ``-O2`` and try ``-O3`` if the end result
+  is better.  Note that ``-O3`` is not always better because the code is
+  larger and may not fit in caches as well as with ``-O2``.
+
 Suggested feature options
 =========================
 
@@ -22,3 +44,23 @@ Suggested feature options
 
   - On some platforms (e.g. OSX/iPhone) Duktape will automatically use
     a faster alternative.
+
+* Consider enabling "fastints":
+
+  - ``DUK_OPT_FASTINT``
+
+  Fastints are often useful on platforms with soft floats, but they can also
+  speed up execution on some hard float platforms (even on x64).  The benefit
+  (or penalty) depends on the kind of Ecmascript code executed, e.g. code
+  heavy on integer loops benefits.
+
+* If you don't need debugging support or execution timeout support, ensure
+  the following are **not enabled**:
+
+  - ``DUK_OPT_INTERRUPT_COUNTER``
+
+  - ``DUK_OPT_DEBUGGER_SUPPORT``
+
+  Especially interrupt counter option will have a measurable performance
+  impact because it includes code executed for every bytecode instruction
+  dispatch.
