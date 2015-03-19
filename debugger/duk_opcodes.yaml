@@ -3,9 +3,6 @@
 # - Flag bits are for the whole instruction as a 32-bit integer,
 #   they are not field shifted
 
-# XXX: Need to rework after performance optimization merges which
-# reworked several opcodes.
-
 opcodes:
   - name: LDREG
     args:
@@ -190,14 +187,6 @@ opcodes:
       - A_R
       - B_RC
       - C_RC
-  - name: BNOT
-    args:
-      - A_R
-      - B_RC
-  - name: LNOT
-    args:
-      - A_R
-      - B_RC
   - name: EQ
     args:
       - A_R
@@ -242,16 +231,6 @@ opcodes:
     args:
       - A_B
       - B_RC
-  - name: INSTOF
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: IN
-    args:
-      - A_R
-      - B_RC
-      - C_RC
   - name: JUMP
     args:
       - ABC_JUMP
@@ -279,18 +258,6 @@ opcodes:
       - A_H
       - B_RI
       - C_I
-  - name: LABEL
-    args:
-      - ABC_I
-  - name: ENDLABEL
-    args:
-      - ABC_I
-  - name: BREAK
-    args:
-      - ABC_I
-  - name: CONTINUE
-    args:
-      - ABC_I
   - name: TRYCATCH
     args:
       - A_H
@@ -305,327 +272,381 @@ opcodes:
         name: catch_binding
       - mask: 0x200
         name: with_binding
-  - name: UNUSED59
-  - name: UNUSED60
-  - name: UNUSED61
   - name: EXTRA
     extra: true
-  - name: INVALID
+  - name: PREINCR
     args:
-      - ABC_I
+      - A_R
+      - BC_R
+  - name: PREDECR
+    args:
+      - A_R
+      - BC_R
+  - name: POSTINCR
+    args:
+      - A_R
+      - BC_R
+  - name: POSTDECR
+    args:
+      - A_R
+      - BC_R
+  - name: PREINCV
+    args:
+      - A_R
+      - BC_C
+  - name: PREDECV
+    args:
+      - A_R
+      - BC_C
+  - name: POSTINCV
+    args:
+      - A_R
+      - BC_C
+  - name: POSTDECV
+    args:
+      - A_R
+      - BC_C
+  - name: PREINCP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: PREDECP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: POSTINCP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
+  - name: POSTDECP
+    args:
+      - A_R
+      - B_RC
+      - C_RC
 
 extra:
-  - name: 'NOP'
-  - name: 'LDTHIS'
+  - name: NOP
+  - name: INVALID
+    args:
+      - BC_I
+  - name: LDTHIS
     args:
       - BC_R
-  - name: 'LDUNDEF'
+  - name: LDUNDEF
     args:
       - BC_R
-  - name: 'LDNULL'
+  - name: LDNULL
     args:
       - BC_R
-  - name: 'LDTRUE'
+  - name: LDTRUE
     args:
       - BC_R
-  - name: 'LDFALSE'
+  - name: LDFALSE
     args:
       - BC_R
-  - name: 'NEWOBJ'
+  - name: NEWOBJ
     args:
-      - BC_R
-  - name: 'NEWARR'
+      - B_R   # XXX: extend to BC?
+  - name: NEWARR
     args:
-      - BC_R
-  - name: 'SETALEN'
+      - B_R   # XXX: extend to BC?
+  - name: SETALEN
     args:
       - B_R
       - C_R
-  - name: 'TYPEOF'
+  - name: TYPEOF
     args:
-      - B_R
-      - C_RC
-  - name: 'TYPEOFID'
+      - BC_R
+  - name: TYPEOFID
     args:
       - B_R
       - C_RC  # maybe changed to C_C later
-  - name: 'TONUM'
+  - name: INITENUM
     args:
       - B_R
       - C_R
-  - name: 'INITENUM'
+  - name: NEXTENUM
     args:
       - B_R
       - C_R
-  - name: 'NEXTENUM'
+  - name: INITSET
     args:
       - B_R
       - C_R
-  - name: 'INITSET'
-    args:
-      - B_R
-      - C_R
-  - name: 'INITSETI'
+  - name: INITSETI
     args:
       - B_R
       - C_RI
-  - name: 'INITGET'
+  - name: INITGET
     args:
       - B_R
       - C_RI
-  - name: 'INITGETI'
+  - name: INITGETI
     args:
       - B_R
       - C_RI
-  - name: 'ENDTRY'
-  - name: 'ENDCATCH'
-  - name: 'ENDFIN'
-  - name: 'THROW'
+  - name: ENDTRY
+  - name: ENDCATCH
+  - name: ENDFIN
+  - name: THROW
     args:
-      - B_R
-  - name: 'INVLHS'
-  - name: 'UNM'
+      - BC_R
+  - name: INVLHS
+  - name: UNM
+    args:
+      - BC_R
+  - name: UNP
+    args:
+      - BC_R
+  - name: DEBUGGER
+  - name: BREAK
+    args:
+      - BC_I
+  - name: CONTINUE
+    args:
+      - BC_I
+  - name: BNOT
+    args:
+      - BC_R
+  - name: LNOT
+    args:
+      - BC_R
+  - name: INSTOF
     args:
       - B_R
       - C_RC
-  - name: 'UNP'
+  - name: IN
     args:
       - B_R
       - C_RC
-  - name: 'INC'
+  - name: LABEL
     args:
-      - B_R
-      - C_RC
-  - name: 'DEC'
+      - BC_I
+  - name: ENDLABEL
     args:
-      - B_R
-      - C_RC
-  - name: 'DEBUGGER'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
-  - name: 'UNKNOWN'
+      - BC_I
+  - name: EXTRA34
+  - name: EXTRA35
+  - name: EXTRA36
+  - name: EXTRA37
+  - name: EXTRA38
+  - name: EXTRA39
+  - name: EXTRA40
+  - name: EXTRA41
+  - name: EXTRA42
+  - name: EXTRA43
+  - name: EXTRA44
+  - name: EXTRA45
+  - name: EXTRA46
+  - name: EXTRA47
+  - name: EXTRA48
+  - name: EXTRA49
+  - name: EXTRA50
+  - name: EXTRA51
+  - name: EXTRA52
+  - name: EXTRA53
+  - name: EXTRA54
+  - name: EXTRA55
+  - name: EXTRA56
+  - name: EXTRA57
+  - name: EXTRA58
+  - name: EXTRA59
+  - name: EXTRA60
+  - name: EXTRA61
+  - name: EXTRA62
+  - name: EXTRA63
+  - name: EXTRA64
+  - name: EXTRA65
+  - name: EXTRA66
+  - name: EXTRA67
+  - name: EXTRA68
+  - name: EXTRA69
+  - name: EXTRA70
+  - name: EXTRA71
+  - name: EXTRA72
+  - name: EXTRA73
+  - name: EXTRA74
+  - name: EXTRA75
+  - name: EXTRA76
+  - name: EXTRA77
+  - name: EXTRA78
+  - name: EXTRA79
+  - name: EXTRA80
+  - name: EXTRA81
+  - name: EXTRA82
+  - name: EXTRA83
+  - name: EXTRA84
+  - name: EXTRA85
+  - name: EXTRA86
+  - name: EXTRA87
+  - name: EXTRA88
+  - name: EXTRA89
+  - name: EXTRA90
+  - name: EXTRA91
+  - name: EXTRA92
+  - name: EXTRA93
+  - name: EXTRA94
+  - name: EXTRA95
+  - name: EXTRA96
+  - name: EXTRA97
+  - name: EXTRA98
+  - name: EXTRA99
+  - name: EXTRA100
+  - name: EXTRA101
+  - name: EXTRA102
+  - name: EXTRA103
+  - name: EXTRA104
+  - name: EXTRA105
+  - name: EXTRA106
+  - name: EXTRA107
+  - name: EXTRA108
+  - name: EXTRA109
+  - name: EXTRA110
+  - name: EXTRA111
+  - name: EXTRA112
+  - name: EXTRA113
+  - name: EXTRA114
+  - name: EXTRA115
+  - name: EXTRA116
+  - name: EXTRA117
+  - name: EXTRA118
+  - name: EXTRA119
+  - name: EXTRA120
+  - name: EXTRA121
+  - name: EXTRA122
+  - name: EXTRA123
+  - name: EXTRA124
+  - name: EXTRA125
+  - name: EXTRA126
+  - name: EXTRA127
+  - name: EXTRA128
+  - name: EXTRA129
+  - name: EXTRA130
+  - name: EXTRA131
+  - name: EXTRA132
+  - name: EXTRA133
+  - name: EXTRA134
+  - name: EXTRA135
+  - name: EXTRA136
+  - name: EXTRA137
+  - name: EXTRA138
+  - name: EXTRA139
+  - name: EXTRA140
+  - name: EXTRA141
+  - name: EXTRA142
+  - name: EXTRA143
+  - name: EXTRA144
+  - name: EXTRA145
+  - name: EXTRA146
+  - name: EXTRA147
+  - name: EXTRA148
+  - name: EXTRA149
+  - name: EXTRA150
+  - name: EXTRA151
+  - name: EXTRA152
+  - name: EXTRA153
+  - name: EXTRA154
+  - name: EXTRA155
+  - name: EXTRA156
+  - name: EXTRA157
+  - name: EXTRA158
+  - name: EXTRA159
+  - name: EXTRA160
+  - name: EXTRA161
+  - name: EXTRA162
+  - name: EXTRA163
+  - name: EXTRA164
+  - name: EXTRA165
+  - name: EXTRA166
+  - name: EXTRA167
+  - name: EXTRA168
+  - name: EXTRA169
+  - name: EXTRA170
+  - name: EXTRA171
+  - name: EXTRA172
+  - name: EXTRA173
+  - name: EXTRA174
+  - name: EXTRA175
+  - name: EXTRA176
+  - name: EXTRA177
+  - name: EXTRA178
+  - name: EXTRA179
+  - name: EXTRA180
+  - name: EXTRA181
+  - name: EXTRA182
+  - name: EXTRA183
+  - name: EXTRA184
+  - name: EXTRA185
+  - name: EXTRA186
+  - name: EXTRA187
+  - name: EXTRA188
+  - name: EXTRA189
+  - name: EXTRA190
+  - name: EXTRA191
+  - name: EXTRA192
+  - name: EXTRA193
+  - name: EXTRA194
+  - name: EXTRA195
+  - name: EXTRA196
+  - name: EXTRA197
+  - name: EXTRA198
+  - name: EXTRA199
+  - name: EXTRA200
+  - name: EXTRA201
+  - name: EXTRA202
+  - name: EXTRA203
+  - name: EXTRA204
+  - name: EXTRA205
+  - name: EXTRA206
+  - name: EXTRA207
+  - name: EXTRA208
+  - name: EXTRA209
+  - name: EXTRA210
+  - name: EXTRA211
+  - name: EXTRA212
+  - name: EXTRA213
+  - name: EXTRA214
+  - name: EXTRA215
+  - name: EXTRA216
+  - name: EXTRA217
+  - name: EXTRA218
+  - name: EXTRA219
+  - name: EXTRA220
+  - name: EXTRA221
+  - name: EXTRA222
+  - name: EXTRA223
+  - name: EXTRA224
+  - name: EXTRA225
+  - name: EXTRA226
+  - name: EXTRA227
+  - name: EXTRA228
+  - name: EXTRA229
+  - name: EXTRA230
+  - name: EXTRA231
+  - name: EXTRA232
+  - name: EXTRA233
+  - name: EXTRA234
+  - name: EXTRA235
+  - name: EXTRA236
+  - name: EXTRA237
+  - name: EXTRA238
+  - name: EXTRA239
+  - name: EXTRA240
+  - name: EXTRA241
+  - name: EXTRA242
+  - name: EXTRA243
+  - name: EXTRA244
+  - name: EXTRA245
+  - name: EXTRA246
+  - name: EXTRA247
+  - name: EXTRA248
+  - name: EXTRA249
+  - name: EXTRA250
+  - name: EXTRA251
+  - name: EXTRA252
+  - name: EXTRA253
+  - name: EXTRA254
+  - name: EXTRA255

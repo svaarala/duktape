@@ -3695,13 +3695,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			switch ((int) extraop) {
 			/* XXX: switch cast? */
 
-			case DUK_EXTRAOP_INVALID: {
-				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_ABC(ins));
+			case DUK_EXTRAOP_NOP: {
+				/* nop */
 				break;
 			}
 
-			case DUK_EXTRAOP_NOP: {
-				/* nop */
+			case DUK_EXTRAOP_INVALID: {
+				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_BC(ins));
 				break;
 			}
 
@@ -3791,7 +3791,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 				h = DUK_TVAL_GET_OBJECT(tv1);
 
-				c= DUK_DEC_C(ins); tv1 = DUK__REGP(c);
+				c = DUK_DEC_C(ins); tv1 = DUK__REGP(c);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 				len = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv1);
 
@@ -3850,7 +3850,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				 */
 
 				/* B -> register for writing enumerator object
-				 * C -> value to be enumerated (expect a register)
+				 * C -> value to be enumerated (register)
 				 */
 
 				if (duk_is_null_or_undefined(ctx, (duk_idx_t) c)) {

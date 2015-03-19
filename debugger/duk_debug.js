@@ -142,6 +142,12 @@ var dukClassNames = [
 
 // Bytecode opcode/extraop metadata
 var dukOpcodes = yaml.load('duk_opcodes.yaml')
+if (dukOpcodes.opcodes.length != 64) {
+    throw new Error('opcode metadata length incorrect');
+}
+if (dukOpcodes.extra.length != 256) {
+    throw new Error('extraop metadata length incorrect');
+}
 
 /*
  *  Miscellaneous helpers
