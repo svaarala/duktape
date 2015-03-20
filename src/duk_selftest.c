@@ -291,6 +291,40 @@ DUK_LOCAL void duk__selftest_64bit_arithmetic(void) {
 }
 
 /*
+ *  Casting
+ */
+
+DUK_LOCAL void duk__selftest_cast_double_to_uint(void) {
+	/*
+	 *  https://github.com/svaarala/duktape/issues/127#issuecomment-77863473
+	 */
+
+	duk_double_t d1, d2;
+	duk_small_uint_t u;
+
+	duk_double_t d1v, d2v;
+	duk_small_uint_t uv;
+
+	d1 = 1.0;
+	u = (duk_small_uint_t) d1;
+	d2 = (duk_double_t) u;
+
+	if (!(d1 == 1.0 && u == 1 && d2 == 1.0 && d1 == d2)) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to uint cast failed");
+	}
+
+	/* Same test with volatiles */
+
+	d1v = 1.0;
+	uv = (duk_small_uint_t) d1v;
+	d2v = (duk_double_t) uv;
+
+	if (!(d1v == 1.0 && uv == 1 && d2v == 1.0 && d1v == d2v)) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to uint cast failed");
+	}
+}
+
+/*
  *  Self test main
  */
 
@@ -305,6 +339,7 @@ DUK_INTERNAL void duk_selftest_run_tests(void) {
 	duk__selftest_double_zero_sign();
 	duk__selftest_struct_align();
 	duk__selftest_64bit_arithmetic();
+	duk__selftest_cast_double_to_uint();
 }
 
 #undef DUK__DBLUNION_CMP_TRUE
