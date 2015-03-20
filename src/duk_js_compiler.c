@@ -7613,6 +7613,8 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk__compiler_stkstate comp_stk;
+	duk_compiler_ctx *prev_ctx;
+	duk_ret_t safe_rc;
 
 	/* XXX: this illustrates that a C catchpoint implemented using duk_safe_call()
 	 * is a bit heavy at the moment.  The wrapper compiles to ~180 bytes on x64.
@@ -7633,15 +7635,30 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 
 	/* [ ... filename &comp_stk ] */
 
-	if (duk_safe_call(ctx, duk__js_compile_raw, 2 /*nargs*/, 1 /*nret*/) != DUK_EXEC_SUCCESS) {
-		/* This now adds a line number to -any- error thrown during compilation.
-		 * Usually compilation errors are SyntaxErrors but they could also be
-		 * out-of-memory errors and the like.
+	prev_ctx = thr->compile_ctx;
+	thr->compile_ctx = &comp_stk.comp_ctx_alloc;  /* for duk_error_augment.c */
+	safe_rc = duk_safe_call(ctx, duk__js_compile_raw, 2 /*nargs*/, 1 /*nret*/);
+	thr->compile_ctx = prev_ctx;
+
+	if (safe_rc != DUK_EXEC_SUCCESS) {
+		/* Append a "(line NNN)" to the "message" property of any
+		 * error thrown during compilation.  Usually compilation
+		 * errors are SyntaxErrors but they can also be out-of-memory
+		 * errors and the like.
+		 *
+		 * Source file/line are added to tracedata directly by
+		 * duk_error_augment.c based on thr->compile_ctx.
 		 */
+
+		/* [ ... error ] */
 
 		DUK_DDD(DUK_DDDPRINT("compile error, before adding line info: %!T",
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 		if (duk_is_object(ctx, -1)) {
+			/* XXX: Now that fileName and lineNumber are set, this is
+			 * unnecessary.  Remove in Duktape 1.3.0?
+			 */
+
 			if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_MESSAGE)) {
 				duk_push_sprintf(ctx, " (line %ld)", (long) comp_stk.comp_ctx_alloc.curr_token.start_line);
 				duk_concat(ctx, 2);
