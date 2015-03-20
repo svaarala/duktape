@@ -23,6 +23,7 @@ example: |
 
 tags:
   - codec
+  - json
 
 seealso:
   - duk_json_encode
