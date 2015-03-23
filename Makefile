@@ -254,11 +254,13 @@ CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
 
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
-CCOPTS_NONDEBUG += -Os -fomit-frame-pointer -g -ggdb
+CCOPTS_NONDEBUG += -Os -fomit-frame-pointer
+CCOPTS_NONDEBUG += -g -ggdb
 #CCOPTS_NONDEBUG += -DDUK_OPT_ASSERTIONS
 
 CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
-CCOPTS_DEBUG += -O0 -g -ggdb
+CCOPTS_DEBUG += -O0
+CCOPTS_DEBUG += -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
 CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 #CCOPTS_DEBUG += -DDUK_OPT_DDPRINT
@@ -294,7 +296,7 @@ checksetup:
 clean:
 	@rm -rf dist/
 	@rm -rf site/
-	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd
+	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd duk.O2 duk.O3 duk.O4
 	@rm -f duk-g++ dukd-g++
 	@rm -f ajduk ajdukd
 	@rm -f libduktape*.so*
@@ -371,6 +373,18 @@ libduktaped.so.1.0.0: dist
 
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+
+duk.O2: dist
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O2 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+
+duk.O3: dist
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O3 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+
+duk.O4: dist
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O4 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
 
 # Test target for g++ compile
@@ -1026,37 +1040,47 @@ massif-helloworld: massif-test-dev-hello-world
 massif-deepmerge: massif-test-dev-deepmerge
 massif-arcfour: massif-test-dev-arcfour
 
-# Perf test placeholder, quite inaccurate, simply based on "time".
+# Simple performance test, minimum time for N runs
 # - Duktape is interpreted and uses reference counting
 # - Python and Perl are interpreted and also use reference counting
 # - Ruby and Lua are interpreted but don't use reference counting
+# - Mujs is interpreted but doesn't use reference counting
 # - Rhino compiles to Java bytecode and is ultimately JITed
-perftest: duk
+
+#TIME=python util/time_multi.py 1 # Run just once
+#TIME=python util/time_multi.py 3 # Take minimum time of N
+TIME=python util/time_multi.py 5 # Take minimum time of N
+
+perftest: duk duk.O2 duk.O3 duk.O4
 	for i in perf-testcases/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk %5s' "`time -f %U -o /tmp/time --quiet ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
-		printf ' duk.112 %5s' "`time -f %U -o /tmp/time --quiet ./duk.112 $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
-		printf ' rhino %5s' "`time -f %U -o /tmp/time --quiet rhino $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
-		printf ' mujs %5s' "`time -f %U -o /tmp/time --quiet mujs $$i >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
-		printf ' lua %5s' "`time -f %U -o /tmp/time --quiet lua $${i%%.js}.lua >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
-		printf ' python %5s' "`time -f %U -o /tmp/time --quiet python $${i%%.js}.py >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
-		printf ' perl %5s' "`time -f %U -o /tmp/time --quiet perl $${i%%.js}.pl >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
-		printf ' ruby %5s' "`time -f %U -o /tmp/time --quiet ruby $${i%%.js}.rb >/dev/null 2>&1; if [ $$? -eq 0 ]; then cat /tmp/time; else echo -n n/a; fi; rm /tmp/time`"; \
+		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
+		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' duk-O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
+		printf ' duk-O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
+		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
+		printf ' rhino %5s' "`$(TIME) rhino $$i`"; \
+		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
+		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
+		printf ' python %5s' "`$(TIME) python $${i%%.js}.py`"; \
+		printf ' perl %5s' "`$(TIME) perl $${i%%.js}.pl`"; \
+		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
 		printf '\n'; \
 	done
 perftestduk: duk
 	for i in perf-testcases/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
-		printf ' duk.112 %5s' "`time -f %U -o /tmp/time ./duk.112 $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
+		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
 		printf '\n'; \
 	done
 perftestduk3: duk
 	for i in perf-testcases/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk'; \
-		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
-		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
-		printf ' %5s' "`time -f %U -o /tmp/time ./duk $$i >/dev/null 2>&1; cat /tmp/time; rm /tmp/time`"; \
+		printf ' duk-O2'; \
+		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf '\n'; \
 	done
