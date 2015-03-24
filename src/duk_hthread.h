@@ -188,11 +188,11 @@ struct duk_activation {
 	duk_hobject *prev_caller;
 #endif
 
-	duk_small_uint_t flags;
-	duk_uint32_t pc;        /* next instruction to execute */
+	duk_instr_t *curr_pc;   /* next instruction to execute (points to 'func' bytecode, stable pointer), NULL for native calls */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	duk_uint32_t prev_line; /* needed for stepping */
 #endif
+	duk_small_uint_t flags;
 
 	/* idx_bottom and idx_retval are only used for book-keeping of
 	 * Ecmascript-initiated calls, to allow returning to an Ecmascript
@@ -231,15 +231,22 @@ struct duk_activation {
 struct duk_catcher {
 	duk_hstring *h_varname;         /* borrowed reference to catch variable name (or NULL if none) */
 	                                /* (reference is valid as long activation exists) */
+	duk_instr_t *pc_base;           /* resume execution from pc_base or pc_base+1 (points to 'func' bytecode, stable pointer) */
 	duk_size_t callstack_index;     /* callstack index of related activation */
 	duk_size_t idx_base;            /* idx_base and idx_base+1 get completion value and type */
-	duk_uint32_t pc_base;           /* resume execution from pc_base or pc_base+1 */
 	duk_uint32_t flags;             /* type and control flags, label number */
 };
 
 struct duk_hthread {
-	/* shared object part */
+	/* Shared object part */
 	duk_hobject obj;
+
+	/* Next opcode to execute.  Conceptually this matches curr_pc of the
+	 * topmost activation, but having it here is important for opcode
+	 * dispatch performance.  The downside is that whenever the activation
+	 * changes this field and activation curr_pc must be carefully managed.
+	 */
+	duk_instr_t *curr_pc;
 
 	/* backpointers */
 	duk_heap *heap;
@@ -332,5 +339,11 @@ DUK_INTERNAL_DECL duk_activation *duk_hthread_get_current_activation(duk_hthread
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk_activation *act);
+#endif
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk_activation *act);
+DUK_INTERNAL_DECL void duk_hthread_sync_currpc(duk_hthread *thr);
 
 #endif  /* DUK_HTHREAD_H_INCLUDED */

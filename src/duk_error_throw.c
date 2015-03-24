@@ -41,6 +41,8 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 
 	thr->heap->handling_error = 1;
 
+	duk_hthread_sync_currpc(thr);  /* ensure PC is consistent for traceback */
+
 	/*
 	 *  Create and push an error object onto the top of stack.
 	 *  If a "double error" occurs, use a fixed error instance

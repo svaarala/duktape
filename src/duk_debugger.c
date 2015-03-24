@@ -804,7 +804,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
 	 * has already been executed.)
 	 */
 
-	pc = (duk_uint_fast32_t) act->pc;
+	pc = duk_hthread_get_act_curr_pc(thr, act);
 
 	/* XXX: this should be optimized to be a raw query and avoid valstack
 	 * operations if possible.
@@ -840,7 +840,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_pop_3(ctx);
 		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
-		duk_debug_write_uint(thr, (duk_uint32_t) act->pc);
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hthread_get_act_curr_pc(thr, act));
 	}
 
 	duk_debug_write_eom(thr);
@@ -1165,7 +1165,7 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
 			duk_safe_to_string(ctx, -1);
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -1));
-			pc = curr_act->pc;
+			pc = duk_hthread_get_act_curr_pc(thr, curr_act);
 			if (i != curr_thr->callstack_top - 1 && pc > 0) {
 				pc--;
 			}

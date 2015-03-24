@@ -832,6 +832,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
+	duk_instr_t *entry_thr_curr_pc;
 	volatile duk_bool_t need_setjmp;
 	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
 	duk_idx_t idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
@@ -873,6 +874,10 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
+	entry_thr_curr_pc = NULL;  /* not actually needed, avoid warning */
+	if (entry_curr_thread) {
+		entry_thr_curr_pc = entry_curr_thread->curr_pc;
+	}
 	idx_func = duk_normalize_index(ctx, -num_stack_args - 2);  /* idx_func must be valid, note: non-throwing! */
 	idx_args = idx_func + 2;                                   /* idx_args is not necessarily valid if num_stack_args == 0 (idx_args then equals top) */
 
@@ -965,6 +970,11 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	DUK_ASSERT(thr->heap->lj.type == DUK_LJ_TYPE_THROW);
 	DUK_ASSERT(thr->callstack_top >= entry_callstack_top);
 	DUK_ASSERT(thr->catchstack_top >= entry_catchstack_top);
+
+	/* We don't need to sync back thr->curr_pc here because the
+	 * bytecode executor always has a setjmp catchpoint which
+	 * does that before errors propagate to here.
+	 */
 
 	/*
 	 *  Restore previous setjmp catchpoint
@@ -1217,7 +1227,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 	act->prev_caller = NULL;
 #endif
-	act->pc = 0;
+	act->curr_pc = NULL;
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	act->prev_line = 0;
 #endif
@@ -1360,6 +1370,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 *  other  invalid
 	 */
 
+	thr->curr_pc = NULL;
+
 	if (func) {
 		rc = ((duk_hnativefunction *) func)->func((duk_context *) thr);
 	} else {
@@ -1445,6 +1457,10 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	/*
 	 *  Shift to new valstack_bottom.
 	 */
+
+	DUK_ASSERT(func != NULL);
+	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+	act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
 
 	thr->valstack_bottom = thr->valstack_bottom + idx_args;
 	/* keep current valstack_top */
@@ -1564,6 +1580,13 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		DUK_TVAL_DECREF(thr, &tv_tmp);
 
 		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
+	}
+
+	/* Restore entry thread curr_pc (could just reset from topmost
+	 * activation too).
+	 */
+	if (entry_curr_thread) {
+		entry_curr_thread->curr_pc = entry_thr_curr_pc;
 	}
 
 	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
@@ -2020,6 +2043,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING &&
 	            thr->heap->curr_thread == thr));
 
+	/* store current pc if there's a running ecmascript function */
+	duk_hthread_sync_currpc(thr);
+
 	/* if a tail call:
 	 *   - an Ecmascript activation must be on top of the callstack
 	 *   - there cannot be any active catchstack entries
@@ -2203,7 +2229,10 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		act->prev_caller = NULL;
 #endif
-		act->pc = 0;       /* don't want an intermediate exposed state with invalid pc */
+		DUK_ASSERT(func != NULL);
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		/* don't want an intermediate exposed state with invalid pc */
+		act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		act->prev_line = 0;
 #endif
@@ -2232,7 +2261,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(DUK_ACT_GET_FUNC(act) == func);      /* already updated */
 		DUK_ASSERT(act->var_env == NULL);   /* already NULLed (by unwind) */
 		DUK_ASSERT(act->lex_env == NULL);   /* already NULLed (by unwind) */
-		DUK_ASSERT(act->pc == 0);           /* already zeroed */
 		act->idx_bottom = entry_valstack_bottom_index;  /* tail call -> reuse current "frame" */
 		DUK_ASSERT(nregs >= 0);
 #if 0  /* topmost activation idx_retval is considered garbage, no need to init */
@@ -2307,7 +2335,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		act->prev_caller = NULL;
 #endif
-		act->pc = 0;
+		DUK_ASSERT(func != NULL);
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		act->prev_line = 0;
 #endif

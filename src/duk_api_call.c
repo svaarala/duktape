@@ -395,6 +395,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	 */
 
 #ifdef DUK_USE_AUGMENT_ERROR_CREATE
+	duk_hthread_sync_currpc(thr);
 	duk_err_augment_error_create(thr, thr, NULL, 0, 1 /*noblame_fileline*/);
 #endif
 
