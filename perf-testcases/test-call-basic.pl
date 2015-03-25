@@ -1,12 +1,12 @@
 sub test {
-  my $i;
+    my $i;
 
-  sub f { return; }
+    sub f { return; }
 
-  $i = 0;
-  for ($i = 0; $i < 1e8; $i++) {
-    f();
-  }
+    $i = 0;
+    for ($i = 0; $i < 1e8; $i++) {
+        f();
+    }
 }
 
 test();
