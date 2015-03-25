@@ -844,7 +844,6 @@ DUK_EXTERNAL void duk_dup_top(duk_context *ctx) {
 	DUK_ASSERT(tv_to != NULL);
 	DUK_TVAL_SET_TVAL(tv_to, tv_from);
 	DUK_TVAL_INCREF(thr, tv_to);  /* no side effects */
-	DUK_ASSERT(ctx != NULL);
 }
 
 DUK_EXTERNAL void duk_insert(duk_context *ctx, duk_idx_t to_index) {
