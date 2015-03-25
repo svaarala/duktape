@@ -184,26 +184,62 @@ def create_matrix(fn_duk):
 	# The set of compilers tested is distribution specific and not ery
 	# stable, so you may need to edit the compilers manually.
 
-	gcc_gxx_arch_options = Select([
-		'-m64',
-		'-m32',
-		'-mx32'
-	])
 	gcc_cmd_dialect_options = Select([
+		# Some dialects and architectures are only available for newer g++ versions
 		Combine([
-			Select([ 'gcc', 'gcc-4.6', 'gcc-4.7', 'gcc-4.8', 'llvm-gcc', 'llvm-gcc-4.7' ]),
+			# -m32 with older llvm causes self test failure (double union)
+			Select([ 'llvm-gcc', 'llvm-gcc-4.7', 'llvm-gcc' ]),
+			Select([ '-m64' ]),
 			Select([
 				'',
 				'-std=c89',
 				'-std=c99',
 				[ '-std=c99', '-pedantic' ]
 			])
-		])
+		]),
+		Combine([
+			Select([ 'gcc', 'gcc-4.6' ]),
+			Select([ '-m64', '-m32' ]),
+			Select([
+				'',
+				'-std=c89',
+				'-std=c99',
+				[ '-std=c99', '-pedantic' ]
+			])
+		]),
+		Combine([
+			Select([ 'gcc-4.7', 'gcc-4.8' ]),
+			Select([ '-m64', '-m32', '-mx32' ]),
+			Select([
+				'',
+				'-std=c89',
+				'-std=c99',
+				[ '-std=c99', '-pedantic' ]
+			])
+		]),
 	])
 	gxx_cmd_dialect_options = Select([
-		# Some dialects are only available for newer g++ versions
+		# Some dialects and architectures are only available for newer g++ versions
 		Combine([
-			Select([ 'g++', 'g++-4.6', 'g++-4.7', 'g++-4.8', 'llvm-g++', 'llvm-g++-4.7' ]),
+			Select([ 'llvm-g++-4.7', 'llvm-g++-4.7' ]),
+			Select([ '-m64' ]),
+			Select([
+				'',
+				'-std=c++98',
+				[ '-std=c++11', '-pedantic' ]
+			])
+		]),
+		Combine([
+			Select([ 'g++', 'g++-4.6' ]),
+			Select([ '-m64', '-m32' ]),
+			Select([
+				'',
+				'-std=c++98',
+			])
+		]),
+		Combine([
+			Select([ 'g++-4.7', 'g++-4.8' ]),
+			Select([ '-m64', '-m32', '-mx32' ]),
 			Select([
 				'',
 				'-std=c++98',
@@ -212,6 +248,7 @@ def create_matrix(fn_duk):
 		]),
 		Combine([
 			Select([ 'g++', 'g++-4.8' ]),
+			Select([ '-m64', '-m32', '-mx32' ]),
 			Select([
 				'-std=c++1y',
 				'-std=gnu++1y'
@@ -244,14 +281,10 @@ def create_matrix(fn_duk):
 
 		'-Os'
 	])
-	clang_arch_options = Select([
-		'-m64',
-		'-m32',
-		'-mx32'
-	])
 	clang_cmd_dialect_options = Select([
 		Combine([
 			'clang',
+			Select([ '-m64', '-m32', '-mx32' ]),
 			Select([
 				'',
 				'-std=c89',
@@ -342,7 +375,6 @@ def create_matrix(fn_duk):
 
 	gcc_cmd_matrix = Combine([
 		gcc_cmd_dialect_options,
-		gcc_gxx_arch_options,
 		gcc_gxx_debug_options,
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
@@ -352,7 +384,6 @@ def create_matrix(fn_duk):
 
 	gxx_cmd_matrix = Combine([
 		gxx_cmd_dialect_options,
-		gcc_gxx_arch_options,
 		gcc_gxx_debug_options,
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
@@ -362,7 +393,6 @@ def create_matrix(fn_duk):
 
 	clang_cmd_matrix = Combine([
 		clang_cmd_dialect_options,
-		clang_arch_options,
 		clang_debug_options,
 		clang_warning_options,
 		clang_optimization_options,
