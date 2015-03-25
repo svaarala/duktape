@@ -135,13 +135,19 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #endif
 
 /* MIPS */
-/* XXX: 32-bit vs. 64-bit MIPS */
+/* Related defines: __MIPSEB__, __MIPSEL__, __mips_isa_rev, __LP64__ */
 #if defined(__mips__) || defined(mips) || defined(_MIPS_ISA) || \
     defined(_R3000) || defined(_R4000) || defined(_R5900) || \
     defined(_MIPS_ISA_MIPS1) || defined(_MIPS_ISA_MIPS2) || \
     defined(_MIPS_ISA_MIPS3) || defined(_MIPS_ISA_MIPS4) || \
     defined(__mips) || defined(__MIPS__)
 #define DUK_F_MIPS
+#if defined(__LP64__) || defined(__mips64) || defined(__mips64__) || \
+    defined(__mips_n64)
+#define DUK_F_MIPS64
+#else
+#define DUK_F_MIPS32
+#endif
 #endif
 
 /* SuperH */
@@ -1161,11 +1167,17 @@ typedef double duk_double_t;
 #define DUK_USE_ALIGN_8
 #elif defined(DUK_F_ARM)
 #define DUK_USE_ALIGN_4
-#elif defined(DUK_F_MIPS)
+#elif defined(DUK_F_MIPS32)
 /* Based on 'make checkalign' there are no alignment requirements on
- * Linux MIPS except for doubles, which need align by 4.
+ * Linux MIPS except for doubles, which need align by 4.  Alignment
+ * requirements vary based on target though.
  */
 #define DUK_USE_ALIGN_4
+#elif defined(DUK_F_MIPS64)
+/* Good default is a bit arbitrary because alignment requirements
+ * depend on target.  See https://github.com/svaarala/duktape/issues/102.
+ */
+#define DUK_USE_ALIGN_8
 #elif defined(DUK_F_SUPERH)
 /* Based on 'make checkalign' there are no alignment requirements on
  * Linux SH4, but align by 4 is probably a good basic default.
@@ -2121,8 +2133,10 @@ typedef FILE duk_file;
 #define DUK_USE_ARCH_STRING "x64"
 #elif defined(DUK_F_ARM)
 #define DUK_USE_ARCH_STRING "arm"
-#elif defined(DUK_F_MIPS)
-#define DUK_USE_ARCH_STRING "mips"
+#elif defined(DUK_F_MIPS32)
+#define DUK_USE_ARCH_STRING "mips32"
+#elif defined(DUK_F_MIPS64)
+#define DUK_USE_ARCH_STRING "mips64"
 #elif defined(DUK_F_SUPERH)
 #define DUK_USE_ARCH_STRING "sh"
 #elif defined(DUK_F_M68K)
