@@ -268,7 +268,7 @@ struct duk_heaphdr_string {
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
 			if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
-				duk_heaphdr_refzero(thr, duk__h); \
+				duk_heaphdr_refzero((thr), duk__h); \
 			} \
 		} \
 	} while (0)
@@ -284,7 +284,7 @@ struct duk_heaphdr_string {
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
 		if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
-			duk_heaphdr_refzero(thr, duk__h); \
+			duk_heaphdr_refzero((thr), duk__h); \
 		} \
 	} while (0)
 

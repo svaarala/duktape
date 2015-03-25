@@ -2349,6 +2349,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			/* LDINTX is not necessarily in FASTINT range, so
 			 * no fast path for now.
+			 *
+			 * XXX: perhaps restrict LDINTX to fastint range, wider
+			 * range very rarely needed.
 			 */
 
 			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
@@ -2356,7 +2359,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			val = DUK_TVAL_GET_NUMBER(tv1) * ((duk_double_t) (1L << DUK_BC_LDINTX_SHIFT)) +
 			      (duk_double_t) DUK_DEC_BC(ins);
 #if defined(DUK_USE_FASTINT)
-			/* XXX: perhaps avoid LDINTX with fastints? */
 			DUK_TVAL_SET_NUMBER_CHKFAST(tv1, val);
 #else
 			DUK_TVAL_SET_NUMBER(tv1, val);
