@@ -3709,7 +3709,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			case DUK_EXTRAOP_LDTHIS: {
 				/* Note: 'this' may be bound to any value, not just an object */
-				duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 				duk_tval tv_tmp;
 				duk_tval *tv1, *tv2;
 
@@ -4127,7 +4127,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			case DUK_EXTRAOP_THROW: {
 				duk_context *ctx = (duk_context *) thr;
-				duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 
 				/* Note: errors are augmented when they are created, not
 				 * when they are thrown.  So, don't augment here, it would

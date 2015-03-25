@@ -1077,7 +1077,9 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	duk_hthread *thr;
 	duk_size_t count_keep_obj;
 	duk_size_t count_keep_str;
+#ifdef DUK_USE_VOLUNTARY_GC
 	duk_size_t tmp;
+#endif
 
 	/* XXX: thread selection for mark-and-sweep is currently a hack.
 	 * If we don't have a thread, the entire mark-and-sweep is now

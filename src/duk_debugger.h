@@ -70,7 +70,9 @@ DUK_INTERNAL_DECL void duk_debug_write_hstring(duk_hthread *thr, duk_hstring *h)
 DUK_INTERNAL_DECL void duk_debug_write_buffer(duk_hthread *thr, const char *data, duk_size_t length);
 DUK_INTERNAL_DECL void duk_debug_write_hbuffer(duk_hthread *thr, duk_hbuffer *h);
 DUK_INTERNAL_DECL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr);
+#if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 DUK_INTERNAL_DECL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h);
+#endif
 DUK_INTERNAL_DECL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj);
 DUK_INTERNAL_DECL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv);
 

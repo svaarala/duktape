@@ -640,9 +640,11 @@ DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr) {
 	duk__debug_write_pointer_raw(thr, ptr, 0x1c);
 }
 
+#if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 DUK_INTERNAL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h) {
 	duk__debug_write_pointer_raw(thr, (const void *) h, 0x1e);
 }
+#endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 
 DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint8_t buf[3];
@@ -720,6 +722,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 	}
 }
 
+#if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 /* Variant for writing duk_tvals so that any heap allocated values are
  * written out as tagged heap pointers.
  */
@@ -731,6 +734,7 @@ DUK_LOCAL void duk__debug_write_tval_heapptr(duk_hthread *thr, duk_tval *tv) {
 		duk_debug_write_tval(thr, tv);
 	}
 }
+#endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 
 /*
  *  Debug connection message write helpers
