@@ -131,7 +131,7 @@ tips for using fastints:
   will be represented as a double instead of a fastint::
 
       t1 = 123;            // fastint
-      t2 = 0.1;            // double
+      t2 = 0.5;            // double
       t3 = t1 + t2;        // <fastint> + <double> -> <double>
       t4 = t3 - t2;        // <double> - <double> -> <double>
       t5 = +t4;            // restore into fastint representation
