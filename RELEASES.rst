@@ -886,6 +886,9 @@ Planned
 * Fix a potential crash risk in Duktape.info() caused by a live pointer being
   used across a possible realloc
 
+* Fix Duktape.act() lineNumber bug, PC used for lineNumber was off-by-one
+  which sometimes resulted in incorrect linenumbers (GH-143)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)

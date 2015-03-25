@@ -1045,9 +1045,12 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 #endif
 	duk_compiler_instr instr;
 
-	DUK_DDD(DUK_DDDPRINT("duk__emit: 0x%08lx line=%ld pc=%ld --> %!I",
-	                     (unsigned long) ins, (long) comp_ctx->curr_token.start_line,
-	                     (long) duk__get_current_pc(comp_ctx), (duk_instr_t) ins));
+	DUK_DDD(DUK_DDDPRINT("duk__emit: 0x%08lx curr_token.start_line=%ld prev_token.start_line=%ld pc=%ld --> %!I",
+	                     (unsigned long) ins,
+	                     (long) comp_ctx->curr_token.start_line,
+	                     (long) comp_ctx->prev_token.start_line,
+	                     (long) duk__get_current_pc(comp_ctx),
+	                     (duk_instr_t) ins));
 
 	h = comp_ctx->curr_func.h_code;
 #if defined(DUK_USE_PC2LINE)
