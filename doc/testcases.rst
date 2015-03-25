@@ -124,9 +124,9 @@ There are several testcases that won't pass at a given time but with the
 bugs considered known issues (perhaps even permanently).  Earlier these
 were part of the testcase metadata, but since the known issues status is
 not really testcase related, it is now stored in a separate testcase status
-file, ``doc/testcase-known-issues.json``.
+file, ``doc/testcase-known-issues.yaml``.
 
-The JSON file is a list of items with the keys:
+The YAML file is a list of items with the keys:
 
 * ``test``: testcase name, e.g. ``test-dev-mandel2-func.js``.
 
@@ -240,7 +240,7 @@ Known issues
 ------------
 
 As for Ecmascript testcases, known issue status is stored in
-``doc/testcase-known-issues.json``.
+``doc/testcase-known-issues.yaml``.
 
 Test runner
 ===========

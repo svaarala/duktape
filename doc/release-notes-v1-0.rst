@@ -117,7 +117,7 @@ Ecmascript tests
 test262
 -------
 
-See ``test262-status.rst`` and ``test262-known-issues.json``.  With Ecmascript 6 and Intl module tests removed::
+See ``test262-status.rst`` and ``test262-known-issues.yaml``.  With Ecmascript 6 and Intl module tests removed::
 
     annexB/B.RegExp.prototype.compile in non-strict mode   // KNOWN: RegExp.prototype.compile() not part of E5.1
     ch07/7.8/7.8.5/S7.8.5_A1.4_T1 in non-strict mode   // KNOWN: uses invalid RegExp formats, e.g. '/\1/' and '/\a/'
