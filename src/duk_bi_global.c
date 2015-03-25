@@ -702,6 +702,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_print_helper(duk_context *ctx) {
 #endif
 
 	magic = duk_get_current_magic(ctx);
+	DUK_UNREF(magic);
+
 	nargs = duk_get_top(ctx);
 
 	/* If argument count is 1 and first argument is a buffer, write the buffer
