@@ -22,6 +22,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
+	DUK_ASSERT(!DUK_HBUFFER_HAS_EXTERNAL(buf));
 
 	/*
 	 *  Maximum size check
@@ -77,6 +78,7 @@ DUK_INTERNAL void duk_hbuffer_reset(duk_hthread *thr, duk_hbuffer_dynamic *buf) 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(buf != NULL);
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(buf));
+	DUK_ASSERT(!DUK_HBUFFER_HAS_EXTERNAL(buf));
 
 	duk_hbuffer_resize(thr, buf, 0);
 }

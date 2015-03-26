@@ -529,7 +529,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->labelinfos_idx = entry_top + 5;
 	func->h_labelinfos = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 5);
 	DUK_ASSERT(func->h_labelinfos != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_labelinfos));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_labelinfos) && !DUK_HBUFFER_HAS_EXTERNAL(func->h_labelinfos));
 
 	duk_push_array(ctx);
 	func->argnames_idx = entry_top + 6;
@@ -7552,7 +7552,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	comp_ctx->lex.buf_idx = entry_top + 0;
 	comp_ctx->lex.buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
 	DUK_ASSERT(comp_ctx->lex.buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(comp_ctx->lex.buf) && !DUK_HBUFFER_HAS_EXTERNAL(comp_ctx->lex.buf));
 	comp_ctx->lex.token_limit = DUK_COMPILER_TOKEN_LIMIT;
 
 	lex_pt->offset = 0;

@@ -98,12 +98,15 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	case DUK_HTYPE_BUFFER: {
 		duk_hbuffer *h_buf = (duk_hbuffer *) h;
 		if (DUK_HBUFFER_HAS_DYNAMIC(h_buf)) {
-			/* XXX: when alloc_size == 0, dynamic buf ptr may now be NULL, in which case
-			 * the second allocation does not exist.
-			 */
-			duk_hbuffer_dynamic *h_dyn = (duk_hbuffer_dynamic *) h;
-			duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_dynamic)));
-			duk_push_uint(ctx, (duk_uint_t) (DUK_HBUFFER_DYNAMIC_GET_SIZE(h_dyn)));
+			if (DUK_HBUFFER_HAS_EXTERNAL(h_buf)) {
+				duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_external)));
+			} else {
+				/* When alloc_size == 0 the second allocation may not
+				 * actually exist.
+				 */
+				duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_dynamic)));
+			}
+			duk_push_uint(ctx, (duk_uint_t) (DUK_HBUFFER_GET_SIZE(h_buf)));
 		} else {
 			duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf) + 1));
 		}
