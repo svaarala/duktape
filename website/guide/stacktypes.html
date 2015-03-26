@@ -69,6 +69,9 @@ sure that the buffer hadn't been resized).  The data area of an external
 buffer also has a potentially changing pointer, but the pointer is only
 changed by an explicit user API call.</p>
 
+<p>For external buffers the stability of the data pointer is up to the user
+code which sets and updates the pointer.</p>
+
 <h2 id="type-masks">Type masks</h2>
 
 <p>Type masks allows calling code to easily check whether a type belongs to
@@ -252,20 +255,37 @@ and an arbitrary value (including <b>undefined</b>).</p>
 
 <h2 id="type-buffer">Buffer</h2>
 
-<p>The <b>buffer</b> type is a raw buffer for user data of either fixed or dynamic
-size.  The size of a fixed buffer is given at its creation, and fixed buffers
-have an unchanging (stable) data pointer.  Dynamic buffers may change during their
-life time at the cost of having a (potentially) changing data pointer.  Dynamic
-buffers also need two memory allocations internally, while fixed buffers only
-need one.  The data pointer of a zero-size dynamic buffer may (or may not) be
-<code>NULL</code> which must be handled by calling code properly (i.e. a <code>NULL</code>
-data pointer only indicates an error if the requested size is non-zero).
-Unlike strings, buffer data areas are not automatically NUL terminated and calling
-code must not access the bytes following the allocated buffer size.</p>
+<p>The <b>buffer</b> type is a raw buffer for user data.  There are three
+kinds of buffer values:</p>
+<ul>
+<li>Fixed buffer: buffer size is fixed at creation, memory is managed
+    automatically by Duktape.  Fixed buffers have an unchanging (stable)
+    data pointer.</li>
+<li>Dynamic buffer: buffer size can be changed after creation, memory is
+    managed automatically by Duktape.  The cost of being resizable is
+    having a potentially changing data pointer, and needing two memory
+    allocations internally.</li>
+<li>External buffer: buffer data is externally allocated, and is not memory
+    managed (freed or resized) by Duktape.  User code sets external pointer
+    and length explicitly.  External buffers are useful to allow a buffer
+    to point to data structures allocated outside Duktape, e.g. a frame
+    buffer allocated by a graphics library.</li>
+</ul>
 
-<p>Buffers are automatically garbage collected.  This also means that C code
-must not hold onto a buffer data pointer unless the buffer is reachable to
-Duktape, e.g. resides in an active value stack.</p>
+<p>The data pointer of a zero-size dynamic buffer may (or may not) be
+<code>NULL</code> which must be handled by calling code properly: a
+<code>NULL</code> data pointer only indicates an error if the requested
+size is non-zero.  Unlike strings, buffer data areas are not automatically
+NUL terminated and calling code must not access the bytes following the
+allocated buffer size.</p>
+
+<p>Fixed and dynamic buffers are automatically garbage collected.  This
+also means that C code must not hold onto a buffer data pointer unless the
+buffer is reachable to Duktape, e.g. resides in an active value stack.
+The data area of an external buffer is not automatically garbage collected
+so user code is responsible for managing its life cycle.  User code must also
+make sure that no external buffer value is accessed when the external buffer
+is no longer (or not yet) valid.</p>
 
 <p>Like strings, buffer values have a <code>length</code> property and
 array index properties for reading and writing individual bytes in the buffer.
