@@ -1,5 +1,5 @@
 /*===
-*** test1 (duk_safe_call)
+*** test_1 (duk_safe_call)
 inherited value
 top at end: 0
 ==> rc=0, result='undefined'
@@ -9,7 +9,7 @@ static duk_ret_t my_constructor(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	duk_push_c_function(ctx, my_constructor, 0);   /* constructor (function) */
 	duk_push_object(ctx);                          /* prototype object -> [ global cons proto ] */
@@ -27,5 +27,5 @@ static duk_ret_t test1(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	TEST_SAFE_CALL(test1);
+	TEST_SAFE_CALL(test_1);
 }

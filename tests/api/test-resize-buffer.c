@@ -14,7 +14,7 @@ final top: 1
 alloc (fixed) to 16
 16 bytes: 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2
 resize (fixed) to 64
-==> rc=1, result='TypeError: buffer is not dynamic'
+==> rc=1, result='TypeError: wrong buffer type'
 *** test_3 (duk_safe_call)
 non-buffer
 resize (non-buffer) to 64
