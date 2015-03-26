@@ -3,11 +3,11 @@
 import os
 import sys
 import json
+import yaml
 
 def main():
-	f = open(sys.argv[1], 'rb')
-	known_issues = json.loads(f.read())
-	f.close()
+	with open(sys.argv[1], 'rb') as f:
+		known_issues = yaml.load(f.read())
 
 	skipstrings = [
 		'passed in strict mode',

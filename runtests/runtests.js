@@ -12,7 +12,8 @@ var fs = require('fs'),
     child_process = require('child_process'),
     async = require('async'),
     xml2js = require('xml2js'),
-    md5 = require('MD5');
+    md5 = require('MD5'),
+    yaml = require('yamljs');
 
 var TIMEOUT_SLOW_VALGRIND = 4 * 3600 * 1000;
 var TIMEOUT_SLOW = 3600 * 1000;
@@ -484,7 +485,7 @@ function testRunnerMain() {
         .describe('minify-closure', 'path for closure compiler.jar')
         .describe('minify-uglifyjs', 'path for UglifyJS executable')
         .describe('minify-uglifyjs2', 'path for UglifyJS2 executable')
-        .describe('known-issues', 'known issues json file')
+        .describe('known-issues', 'known issues yaml file')
         .demand('prep-test-path')
         .demand('util-include-path')
         .demand(1)   // at least 1 non-arg
@@ -749,7 +750,7 @@ function testRunnerMain() {
     }
 
     if (argv['known-issues']) {
-        knownIssues = JSON.parse(fs.readFileSync(argv['known-issues'], 'utf-8'));
+        knownIssues = yaml.load(argv['known-issues']);
     }
 
     engines = [];

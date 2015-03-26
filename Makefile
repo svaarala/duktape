@@ -462,7 +462,7 @@ dukdscanbuild: dist
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest emscriptentest test262test
 
-RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.json
+RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.yaml
 
 .PHONY:	ecmatest
 ecmatest: runtestsdeps duk
@@ -593,7 +593,7 @@ test262test: test262-es5-tests duk
 	# http://wiki.ecmascript.org/doku.php?id=test262:command
 	rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
 	-cd $<; $(PYTHON) tools/packaging/test262.py --command "../duk {{path}}" --summary >/tmp/duk-test262.log
-	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.json > /tmp/duk-test262-filtered.log
+	cat /tmp/duk-test262.log | $(PYTHON) util/filter_test262_log.py doc/test262-known-issues.yaml > /tmp/duk-test262-filtered.log
 	cat /tmp/duk-test262-filtered.log
 
 # Unholy helper to write out a testcase, the unholiness is that it reads

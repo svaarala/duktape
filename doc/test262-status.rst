@@ -16,7 +16,7 @@ The test run was executed against::
 
 A full list of known bugs is documented in::
 
-  test262-known-issues.json
+  test262-known-issues.yaml
 
 This file describes a subset of test cases whose reasons for failure require
 a longer explanation.
