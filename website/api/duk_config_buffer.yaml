@@ -1,0 +1,27 @@
+name: duk_config_buffer
+
+proto: |
+  void duk_config_buffer(duk_context *ctx, duk_idx_t index, void *ptr, duk_size_t len);
+
+stack: |
+  [ ... buf! ... ] -> [ ... buf! ... ]
+
+summary: |
+  <p>Set the external buffer pointer and length of an external buffer value.</p>
+
+example: |
+  /* Create an external buffer and point it to my_buffer containing
+   * my_length bytes.
+   */
+  duk_push_external_buffer(ctx);
+  duk_config_buffer(ctx, -1, my_buffer, my_length);
+
+tags:
+  - stack
+  - buffer
+  - experimental
+
+seealso:
+  - duk_push_external_buffer
+
+introduced: 1.3.0

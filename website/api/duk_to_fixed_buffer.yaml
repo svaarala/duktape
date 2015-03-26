@@ -8,8 +8,8 @@ stack: |
 
 summary: |
   <p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but if
-  the value is a dynamic buffer, convert it to a fixed buffer.  The result
-  is thus always a fixed buffer (unless an error is thrown).</p>
+  the value is a dynamic or an external buffer, convert it to a fixed buffer.
+  The result is thus always a fixed buffer (unless an error is thrown).</p>
 
 example: |
   duk_size_t sz;

@@ -9,7 +9,7 @@ stack: |
 summary: |
   <p>Like <code><a href="#duk_to_buffer">duk_to_buffer()</a></code> but the
   result is always a dynamic buffer (unless an error is thrown).  If the value
-  is a fixed buffer, convert it to a dynamic buffer.</p>
+  is a fixed or an external buffer, convert it to a dynamic buffer.</p>
 
 example: |
   duk_size_t sz;
