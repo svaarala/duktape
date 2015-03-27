@@ -12,6 +12,9 @@
 buffer
 TypeError
 length number 3
+byteLength number 3
+byteOffset number 0
+BYTES_PER_ELEMENT number 1
 0 number 111
 1 number 102
 2 number 102
@@ -21,7 +24,13 @@ string 0 number 111
 string 1 number 102
 string 2 number 102
 string length number 3
+string byteLength number 3
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
 length number 3
+byteLength number 3
+byteOffset number 0
+BYTES_PER_ELEMENT number 1
 0 number 111
 1 number 255
 2 number 102
@@ -29,19 +38,31 @@ string 0 number 111
 string 1 number 255
 string 2 number 102
 string length number 3
+string byteLength number 3
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
 buffer
 length number 3
+byteLength number 3
+byteOffset number 0
+BYTES_PER_ELEMENT number 1
 0 number 98
 1 number 97
 2 number 114
 false
 true
 length number 4
+byteLength number 4
+byteOffset number 0
+BYTES_PER_ELEMENT number 1
 0 number 113
 1 number 117
 2 number 255
 3 number 120
 length number 4
+byteLength number 4
+byteOffset number 0
+BYTES_PER_ELEMENT number 1
 0 number 113
 1 number 117
 2 number 117
@@ -52,6 +73,9 @@ function dump(x) {
     if (typeof x === 'buffer') {
         // Object.getOwnPropertyNames() throws for a plain buffer
         print('length', typeof x.length, x.length);
+        print('byteLength', typeof x.byteLength, x.byteLength);
+        print('byteOffset', typeof x.byteOffset, x.byteOffset);
+        print('BYTES_PER_ELEMENT', typeof x.BYTES_PER_ELEMENT, x.BYTES_PER_ELEMENT);
         for (i = 0; i < x.length; i++) {
             print(i, typeof x[i], x[i]);
         }
