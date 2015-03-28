@@ -13,7 +13,10 @@ very minimal memory footprint.</p>
 <ul>
 <li>Duktape provides a built-in <b>debug protocol</b> which is the same for all
     applications.  The application doesn't need to parse or understand the
-    debug protocol.</li>
+    debug protocol.  The debug protocol is a compact binary protocol so that
+    it works well on low memory targets with low speed connectivity.  There
+    is a <b>JSON mapping</b> for the debug protocol and a JSON debug proxy to
+    make it easier to integrate a debug client.</li>
 <li>The debug protocol runs over a reliable, stream-based <b>debug transport</b>.
     To maximize portability, the concrete transport is provided by application
     code as a set of callbacks implementing a stream interface.  A streamed
@@ -21,7 +24,8 @@ very minimal memory footprint.</p>
     usage very low.</li>
 <li>A <b>debug client</b> terminates the transport connection and uses the Duktape
     debug protocol to interact with Duktape internals: pause/resume, stepping,
-    breakpoints, eval, etc.</li>
+    breakpoints, eval, etc.  You can also use the JSON debug proxy for easier
+    integration.</li>
 <li>A very narrow <b>debug API</b> is used by the application code to attach and
     detach a debugger, and to provide the callbacks needed to implement the
     debug transport.  All other debug activity happens through the debug
@@ -47,11 +51,14 @@ pieces you need to get started with debugging using a TCP transport:</p>
     <a href="https://github.com/svaarala/duktape/blob/master/debugger/">duk_debug.js</a></li>
 </ul>
 
-<p>The Node.js based debugger web UI can connect to the Duktape command line,
-but can also talk directly with any other target implementing a TCP transport.
-You can also customize it to use a different transport or use a proxy which
-converts between TCP and your custom transport.  It's also possible to write
-your own debug client from scratch and e.g. integrate it to a custom IDE.</p>
+<p>The Node.js based debugger web UI (<code>duk_debug.js</code>) can connect
+to the Duktape command line, but can also talk directly with any other target
+implementing a TCP transport.  You can also customize it to use a different
+transport or use a proxy which converts between TCP and your custom transport.
+It's also possible to write your own debug client from scratch and e.g.
+integrate it to a custom IDE.  You can integrate directly with a debug target
+using the binary debug protocol, or use the JSON proxy provided by
+<code>duk_debug.js</code>.</p>
 
 <p>For more details on the implementation and how to get started, see:</p>
 <ul>
