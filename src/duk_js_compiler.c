@@ -5250,6 +5250,15 @@ DUK_LOCAL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 			duk__advance(comp_ctx);
 			duk__advance_expect(comp_ctx, DUK_TOK_COLON);
 
+			/* Fix for https://github.com/svaarala/duktape/issues/155:
+			 * If 'default' is first clause (detected by pc_prevcase < 0)
+			 * we need to ensure we stay in the matching chain.
+			 */
+			if (pc_prevcase < 0) {
+				DUK_DD(DUK_DDPRINT("default clause is first, emit prevcase jump"));
+				pc_prevcase = duk__emit_jump_empty(comp_ctx);
+			}
+
 			/* default clause matches next statement list (if any) */
 			pc_default = -2;
 		} else {
