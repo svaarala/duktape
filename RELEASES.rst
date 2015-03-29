@@ -892,6 +892,9 @@ Planned
 * Fix Duktape.act() lineNumber bug, PC used for lineNumber was off-by-one
   which sometimes resulted in incorrect linenumbers (GH-143)
 
+* Fix incorrect switch-case matching when default clause is the first clause
+  in a switch statement (GH-155)
+
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
