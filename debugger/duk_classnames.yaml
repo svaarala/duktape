@@ -1,0 +1,20 @@
+# Must match C header
+- unused
+- Arguments
+- Array
+- Boolean
+- Date
+- Error
+- Function
+- JSON
+- Math
+- Number
+- Object
+- RegExp
+- String
+- global
+- ObjEnv
+- DecEnv
+- Buffer
+- Pointer
+- Thread

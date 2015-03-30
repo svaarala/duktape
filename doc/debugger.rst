@@ -36,7 +36,11 @@ Duktape debugging architecture is based on the following major pieces:
 
 * A **debug API** to attach/detach a debugger to a Duktape heap.
 
-* A **debug client**, running off target, which provides a user interface.
+* A **debug client**, running off target, which implements the other
+  debug protocol endpoint and provides a user interface.
+
+* An optional **JSON debug protocol proxy** which provides an easier
+  JSON-based interface for talking to the debug target.
 
 This document describes these pieces in detail.
 
@@ -83,6 +87,12 @@ the debug protocol.  The debug client is intended to adapt to the target
 debug protocol version, so your debug client may need changes from time to
 time as the Duktape debug protocol evolves.  The debug protocol is versioned
 with the same semantic versioning principles as the Duktape API.
+
+You can implement the binary debug protocol directly in your debug client,
+but an easier option is to use the JSON mapping of the debug protocol which
+is much more user friendly.  Duktape includes a proxy server which converts
+between the JSON mapping and the binary debug protocol (which actually runs
+on the target).
 
 Example debug client and server
 -------------------------------
@@ -657,7 +667,7 @@ some cases:
 |                       |           | length in network order and buffer    |
 |                       |           | data follows initial byte             |
 +-----------------------+-----------+---------------------------------------+
-| 0x14 <uint16> <data>  | buffer    | 2-byte string, unsigned 16-bit buffer |
+| 0x14 <uint16> <data>  | buffer    | 2-byte buffer, unsigned 16-bit buffer |
 |                       |           | length in network order and buffer    |
 |                       |           | data follows initial byte             |
 +-----------------------+-----------+---------------------------------------+
@@ -919,7 +929,8 @@ gracefully in a few common cases (but certainly not all).
 Text representation of dvalues and debug messages
 -------------------------------------------------
 
-**This is an informative convention only.**
+**This is an informative convention only used in this document and in
+duk_debug.js dumps.**
 
 The Duktape debug client uses the following convention for representing
 dvalues as text:
@@ -934,8 +945,7 @@ dvalues as text:
   of the codepoints U+0080...U+00FF which unfortunately looks funny (ASCII
   only serialization would be preferable).
 
-* Other types are JSON encoded from their internal representation, see
-  ``duk_debug.js`` for details.
+* Other types are JSON encoded like in the JSON mapping, see below.
 
 Debug messages are then simply represented as one-liners containing all the
 related dvalues (including message type marker and EOM) separate by spaces.
@@ -960,34 +970,107 @@ string inside Duktape.  Note that some Duktape strings are intentionally
 invalid UTF-8 so mapping to Unicode is not always an option.  This string
 mapping is also used to represent buffer data.
 
-JSON representation of dvalues and debug messages
--------------------------------------------------
+JSON mapping for debug protocol
+===============================
 
-**Not currently used, might be useful for a debugger JSON proxy for easier
-debug client writing.  This is an informative convention only.**
+The mapping described in this section is used to map debug dvalues and
+messages into JSON values.  The mapping is used to implement a JSON
+debug proxy which allows a debug client to interact with a debug target
+using clean JSON messages alone without implementing the binary protocol
+at all.
 
-Debug values and debug messages can also be mapped 1:1 to JSON objects as
-described below.  This might be useful e.g. to provide a JSON debug proxy
-which would make it easier to write a custom debugger UI.
+JSON representation of dvalues
+------------------------------
 
-Dvalues:
+* Unused::
 
-* All integers map directly to JSON number type.
+      { "type": "unused" }
+
+* Undefined::
+
+      { "type": "undefined" }
+
+* Null, true, and false map directly to JSON::
+
+      null
+      true
+      false
+
+* Integers map directly to JSON number type::
+
+      1234
+
+* Any numbers that can't be represented without loss as JSON numbers
+  (e.g. infinity, NaN, negative zero) are expressed as::
+
+      // data contains IEEE double in big endian hex encoded bytes
+      // (here Math.PI)
+      { "type": "number", "data": "400921fb54442d18" }
 
 * Strings are mapped like in the text representation, i.e. bytes 0x00...0xff
-  map to Unicode codepoints U+0000...U+00FF, to maintain byte exactness and
-  to represent non-UTF-8 strings correctly.  Buffers are expressed as strings.
+  map to Unicode codepoints U+0000...U+00FF::
 
-* **XXX: pointers, buffers, etc**
+      // the 4-byte string 0xde 0xad 0xbe 0xef
+      "\u00de\00ad\00be\00ef"
+
+  This representation is used because it is byte exact, represents non-UTF-8
+  strings correctly, but is still human readable for most practical (ASCII)
+  strings.
+
+* Buffer data is represented in hex encoded form wrapped in an object::
+
+      { "type": "buffer", "data": "deadbeef" }
+
+* The message framing dvalues (EOM, REQ, REP, NFY, ERR) are not visible in
+  the JSON protocol.  They are used by ``duk_debug.js`` internally with the
+  format::
+
+      { "type": "eom" }
+      { "type": "req" }
+      { "type": "rep" }
+      { "type": "err" }
+      { "type": "nfy" }
+
+* Object::
+
+      // class is a number, pointer is hex-encoded
+      { "type": "object", "class": 10, "pointer": "deadbeef" }
+
+* Pointer::
+
+      // pointer is hex-encoded
+      { "type": "pointer", "pointer": "deadbeef" }
+
+* Lightfunc::
+
+      // flags is a 16-bit integer represented as a JSON number,
+      // pointer is hex-encoded
+      { "type": "lightfunc", "flags": 1234, "pointer": "deadbeef" }
+
+* Heap pointer::
+
+      // pointer is hex-encoded
+      { "type": "heapptr", "pointer": "deadbeef" }
+
+JSON representation of debug messages
+-------------------------------------
 
 Messages are represented as JSON objects, with the message type marker and the
 EOM marker removed, as follows.
 
-Request messages have a 'request' key which contains the command number, and
-'args' which contains remaining dvalues (EOM omitted)::
+Request messages have a 'request' key which contains the command name (if
+known) or "true" (if not known), a 'command' key which contains the command
+number, and 'args' which contains remaining dvalues (EOM omitted)::
 
     {
-        "request": 24,
+        "request": "AddBreak",
+        "command": 24,
+        "args": [ "foo.js", 123 ]
+    }
+
+    {
+        "request": true,
+        "command": 24,
         "args": [ "foo.js", 123 ]
     }
 
@@ -1008,13 +1091,75 @@ contain the error arguments (EOM omitted)::
         "args": [ 2, "no space for breakpoint" ]
     }
 
-Notify messages have a 'notify' key with the notify command number, and an
-'args' for arguments (EOM omitted)::
+Notify messages have a 'notify' key with the notify command name (if known)
+or "true" (if not known), a 'command' key which contains the command number,
+and an 'args' for arguments (EOM omitted)::
 
     {
-        "notify": 1,
-        "args": [ 0, "foo.js", "frob", 123, 808 ] 
+        "notify": "Status",
+        "command": 1,
+        "args": [ 0, "foo.js", "frob", 123, 808 ]
     }
+
+    {
+        "notify": true,
+        "command": 1,
+        "args": [ 0, "foo.js", "frob", 123, 808 ]
+    }
+
+If an argument list is empty, 'args' can be omitted from any message.
+
+The request and notify message contain both a request/notify command name and
+a number.  The intent is to allow debug clients to use command names (rather
+than numbers).  The command name/number is resolved as follows:
+
+* If command name is present, look up the command name from command metadata.
+  If the command is known, use the command number in the command metadata and
+  ignore a possible 'command' key.
+
+* If command number is present, use it verbatim if the name lookup failed.
+
+* If no command number is present, fail.
+
+Other JSON messages
+-------------------
+
+In addition to the core message formats above, there are a few custom messages
+for debug protocol version info and transport events.  These are expressed as
+"notify" messages with a special command name beginning with an underscore, and
+no command number.
+
+When connecting to a debug target, a version identification line is received.
+This line doesn't follow the dvalue format, so it is transmitted specially::
+
+    {
+        "notify": "_Connected",
+        "args": [ "1 10199 v1.1.0-173-gecd806e-dirty duk command built from Duktape repo" ]
+    }
+
+When a transport error occurs (not necessarily a terminal error)::
+
+    {
+        "notify": "_Error",
+        "args": [ "some kind of error" ]
+    }
+
+When the JSON connection is just about to be disconnected::
+
+    {
+        "notify": "_Disconnecting"
+    }
+
+JSON protocol line formatting
+-----------------------------
+
+JSON messages are sent by encoding them in compact one-liner form and
+terminating a message with a newline (single LF character, 0x0a).
+(Note that the examples above are formatted in multiline format which
+is **not** allowed; this is simply for clarity.)
+
+This convention makes is easy to read and write messages.  Messages can
+be easily cut-pasted, and message logs can be grepped effectively.
 
 Extending the protocol and version compatibility
 ================================================
@@ -2617,10 +2762,3 @@ Currently the list of breakpoints is not cleared by attach or detach, so if
 you detach and then re-attach, old breakpoints are still set.  The debug
 client can just delete all breakpoints on attach, but it'd be cleaner to
 remove the breakpoints on either attach or detach.
-
-Complete the JSON format and add a JSON proxy
----------------------------------------------
-
-A JSON proxy would make it much easier to implement a debug client, as debug
-messages can be read and written as simple JSON messages with existing JSON
-libraries.
