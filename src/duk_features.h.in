@@ -497,7 +497,7 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #include <sys/param.h>
 #include <sys/time.h>
 #include <time.h>
-#elif defined(_TINSPIRE)
+#elif defined(DUK_F_TINSPIRE)
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
@@ -2184,6 +2184,8 @@ typedef FILE duk_file;
 #define DUK_USE_OS_STRING "amigaos"
 #elif defined(DUK_F_QNX)
 #define DUK_USE_OS_STRING "qnx"
+#elif defined(DUK_F_TINSPIRE)
+#define DUK_USE_OS_STRING "tinspire"
 #else
 #define DUK_USE_OS_STRING "unknown"
 #endif
