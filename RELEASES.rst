@@ -817,7 +817,7 @@ Planned
 
 * Add first iteration of experimental debugger support which is based on a
   narrow debug API and a standard debug protocol; Duktape also provides an
-  example debug client with a web UI
+  example debug client with a web UI, and a JSON debug proxy
 
 * Add support "fastints", i.e. for using integer arithmetic when possible
   in a transparent manner (improves performance for some workloads on soft
