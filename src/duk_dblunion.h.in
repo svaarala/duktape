@@ -57,6 +57,7 @@
 
 union duk_double_union {
 	double d;
+	float f[2];
 #ifdef DUK_USE_64BIT_OPS
 	duk_uint64_t ull[1];
 #endif

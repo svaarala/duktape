@@ -1102,7 +1102,8 @@ typedef duk_uint_t duk_ucodepoint_t;
 #define DUK_UCODEPOINT_MIN        DUK_UINT_MIN
 #define DUK_UCODEPOINT_MAX        DUK_UINT_MAX
 
-/* IEEE double typedef. */
+/* IEEE float/double typedef. */
+typedef float duk_float_t;
 typedef double duk_double_t;
 
 /* We're generally assuming that we're working on a platform with a 32-bit
