@@ -8,9 +8,13 @@ if (typeof console === 'undefined') {
     });
 }
 if (typeof console.log === 'undefined') {
-    Object.defineProperty(this.console, 'log', {
-        value: function () {
-            print(Array.prototype.join.call(arguments, ' '));
-        }, writable: true, enumerable: false, configurable: true
-    });
+    (function () {
+        var origPrint = print;  // capture in closure in case changed later
+        Object.defineProperty(this.console, 'log', {
+            value: function () {
+                var strArgs = Array.prototype.map.call(arguments, function (v) { return String(v); });
+                origPrint(Array.prototype.join.call(strArgs, ' '));
+            }, writable: true, enumerable: false, configurable: true
+        });
+    })();
 }
