@@ -108,6 +108,25 @@ DUK_INTERNAL duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_
 	return res;
 }
 
+DUK_INTERNAL duk_hbufferobject *duk_hbufferobject_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+	duk_hbufferobject *res;
+
+	res = (duk_hbufferobject *) DUK_ALLOC(heap, sizeof(duk_hbufferobject));
+	if (!res) {
+		return NULL;
+	}
+	DUK_MEMZERO(res, sizeof(duk_hbufferobject));
+
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
+
+#ifdef DUK_USE_EXPLICIT_NULL_INIT
+	res->buf = NULL;
+#endif
+
+	DUK_ASSERT_HBUFFEROBJECT_VALID(res);
+	return res;
+}
+
 /*
  *  Allocate a new thread.
  *

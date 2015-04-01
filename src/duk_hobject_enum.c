@@ -24,6 +24,13 @@
 /* must match exactly the number of internal properties inserted to enumerator */
 #define DUK__ENUM_START_INDEX  2
 
+DUK_LOCAL const duk_uint16_t duk__bufferobject_virtual_props[] = {
+	DUK_STRIDX_LENGTH,
+	DUK_STRIDX_BYTE_LENGTH,
+	DUK_STRIDX_BYTE_OFFSET,
+	DUK_STRIDX_BYTES_PER_ELEMENT
+};
+
 /*
  *  Helper to sort array index keys.  The keys are in the enumeration object
  *  entry part, starting from DUK__ENUM_START_INDEX, and the entry part is dense.
@@ -288,7 +295,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		 */
 
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr) ||
-		    DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr)) {
+		    DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
 			/* String and buffer enumeration behavior is identical now,
 			 * so use shared handler.
 			 */
@@ -298,11 +305,20 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
 				len = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_val);
 			} else {
-				duk_hbuffer *h_val;
-				DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr));
-				h_val = duk_hobject_get_internal_value_buffer(thr->heap, curr);
-				DUK_ASSERT(h_val != NULL);  /* buffer objects must not created without internal value */
-				len = (duk_uint_fast32_t) DUK_HBUFFER_GET_SIZE(h_val);
+				duk_hbufferobject *h_bufobj;
+				DUK_ASSERT(DUK_HOBJECT_IS_BUFFEROBJECT(curr));
+				h_bufobj = (duk_hbufferobject *) curr;
+				if (h_bufobj == NULL) {
+					/* Neutered buffer, zero length seems
+					 * like good behavior here.
+					 */
+					len = 0;
+				} else {
+					/* There's intentionally no check for
+					 * current underlying buffer length.
+					 */
+					len = (duk_uint_fast32_t) (h_bufobj->length >> h_bufobj->shift);
+				}
 			}
 
 			for (i = 0; i < len; i++) {
@@ -319,14 +335,18 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				/* [enum_target res] */
 			}
 
-			/* 'length' property is not enumerable, but is included if
-			 * non-enumerable properties are requested.
+			/* 'length' and other virtual properties are not
+			 * enumerable, but are included if non-enumerable
+			 * properties are requested.
 			 */
 
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
-				duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
-				duk_push_true(ctx);
-				duk_put_prop(ctx, -3);
+				for (i = 0; i < sizeof(duk__bufferobject_virtual_props) / sizeof(duk_uint16_t); i++) {
+					duk_push_hstring_stridx(ctx, duk__bufferobject_virtual_props[i]);
+					duk_push_true(ctx);
+					duk_put_prop(ctx, -3);
+				}
+
 			}
 		} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(curr)) {
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {

@@ -422,6 +422,90 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 #endif  /* DUK_USE_ES6_PROXY */
 
 /*
+ *  Buffers and views
+ */
+
+/* FIXME: relocate to duk_bi_buffer.c? */
+DUK_INTERNAL void duk_bufobj_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
+	duk_double_union du;
+
+	DUK_MEMCPY((void *) du.uc, (const void *) p, elem_size);
+
+	switch (h_bufobj->elem_type) {
+	case DUK_HBUFFEROBJECT_ELEM_UINT8:
+	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
+		duk_push_uint(ctx, (duk_uint_t) du.uc[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT8:
+		duk_push_int(ctx, (duk_int_t) (duk_int8_t) du.uc[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT16:
+		duk_push_uint(ctx, (duk_uint_t) du.us[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT16:
+		duk_push_int(ctx, (duk_int_t) (duk_int16_t) du.us[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT32:
+		duk_push_uint(ctx, (duk_uint_t) du.ui[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT32:
+		duk_push_int(ctx, (duk_int_t) (duk_int32_t) du.ui[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT32:
+		duk_push_number(ctx, (duk_double_t) du.f[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
+		duk_push_number(ctx, (duk_double_t) du.d);
+		break;
+	default:
+		DUK_UNREACHABLE();
+	}
+}
+
+DUK_INTERNAL void duk_bufobj_validated_write(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
+	duk_double_union du;
+
+	/* FIXME: this is strictly incorrect now - ToUint32() etc coercions
+	 * may have side effects which may validate the pointer.
+	 */
+
+	switch (h_bufobj->elem_type) {
+	case DUK_HBUFFEROBJECT_ELEM_UINT8:
+		du.uc[0] = (duk_uint8_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
+		/* FIXME: close but not correct, rounding behavior is incorrect */
+		du.uc[0] = (duk_uint8_t) duk_to_int_clamped(ctx, -1, 0, 255);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT8:
+		du.uc[0] = (duk_uint8_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT16:
+		du.us[0] = (duk_uint16_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT16:
+		du.us[0] = (duk_uint16_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT32:
+		du.ui[0] = (duk_uint32_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT32:
+		du.ui[0] = (duk_uint32_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT32:
+		du.f[0] = (duk_float_t) duk_to_number(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
+		du.d = (duk_double_t) duk_to_number(ctx, -1);
+		break;
+	default:
+		DUK_UNREACHABLE();
+	}
+
+	DUK_MEMCPY((void *) p, (const void *) du.uc, elem_size);
+}
+
+/*
  *  Reallocate property allocation, moving properties to the new allocation.
  *
  *  Includes key compaction, rehashing, and can also optionally abandoning
@@ -1337,22 +1421,6 @@ DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, 
 	return NULL;
 }
 
-DUK_INTERNAL duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj) {
-	duk_tval tv;
-
-	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(obj != NULL);
-
-	if (duk_hobject_get_internal_value(heap, obj, &tv)) {
-		duk_hbuffer *h;
-		DUK_ASSERT(DUK_TVAL_IS_BUFFER(&tv));
-		h = DUK_TVAL_GET_BUFFER(&tv);
-		return h;
-	}
-
-	return NULL;
-}
-
 /*
  *  Arguments handling helpers (argument map mainly).
  *
@@ -1700,26 +1768,32 @@ DUK_LOCAL duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobjec
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) {
-		DUK_DDD(DUK_DDDPRINT("buffer object exotic property get for key: %!O, arr_idx: %ld",
+	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(obj)) {
+		duk_hbufferobject *h_bufobj;
+		duk_uint32_t byte_off;
+		duk_small_uint_t elem_size;
+
+		h_bufobj = (duk_hbufferobject *) obj;
+		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+		DUK_DDD(DUK_DDDPRINT("bufferobject property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
 		if (arr_idx != DUK__NO_ARRAY_INDEX) {
-			duk_hbuffer *h_val;
-
 			DUK_DDD(DUK_DDDPRINT("array index exists"));
 
-			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
-			DUK_ASSERT(h_val);
-			/* SCANBUILD: h_val is known to be non-NULL but scan-build cannot
-			 * know it, so it produces NULL pointer dereference warnings for
-			 * 'h_val'.
-			 */
-
-			if (arr_idx < DUK_HBUFFER_GET_SIZE(h_val)) {
-				DUK_DDD(DUK_DDDPRINT("-> found, array index inside buffer"));
+			byte_off = arr_idx << h_bufobj->shift;  /* FIXME: wrap handling; comparing index to downshifted length would be correct */
+			elem_size = 1 << h_bufobj->shift;
+			if (byte_off < h_bufobj->length) {
 				if (flags & DUK__DESC_FLAG_PUSH_VALUE) {
-					duk_push_int(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_val))[arr_idx]);
+					duk_uint8_t *data;
+
+					if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+						data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
+						duk_bufobj_push_validated_read(ctx, h_bufobj, data, elem_size);
+					} else {
+						DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (read zero)"));
+						duk_push_uint(ctx, 0);
+					}
 				}
 				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
 				                  DUK_PROPDESC_FLAG_ENUMERABLE |
@@ -1732,23 +1806,35 @@ DUK_LOCAL duk_bool_t duk__get_own_property_desc_raw(duk_hthread *thr, duk_hobjec
 				DUK_DDD(DUK_DDDPRINT("array index outside buffer -> normal property"));
 			}
 		} else if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
-			duk_hbuffer *h_val;
-
 			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
-			/* XXX: buffer length should be writable and have exotic behavior
-			 * like arrays.  For now, make it read-only and use explicit methods
-			 * to operate on buffer length.
-			 */
-
-			h_val = duk_hobject_get_internal_value_buffer(thr->heap, obj);
-			DUK_ASSERT(h_val != NULL);
 			if (flags & DUK__DESC_FLAG_PUSH_VALUE) {
-				duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_val));
+				/* Length in elements: take into account shift, but
+				 * intentionally don't check the underlying buffer here.
+				 */
+				duk_push_uint(ctx, h_bufobj->length >> h_bufobj->shift);
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments exotic */
+		} else if (key == DUK_HTHREAD_STRING_BYTE_LENGTH(thr)) {
+			/* If neutered must return 0; length is zeroed during
+			 * neutering.
+			 */
+			duk_push_uint(ctx, h_bufobj->length);
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
+			return 1;  /* cannot be arguments exotic */
+		} else if (key == DUK_HTHREAD_STRING_BYTE_OFFSET(thr)) {
+			/* If neutered must return 0; offset is zeroed during
+			 * neutering.
+			 */
+			duk_push_uint(ctx, h_bufobj->offset);
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
+			return 1;  /* cannot be arguments exotic */
+		} else if (key == DUK_HTHREAD_STRING_BYTES_PER_ELEMENT(thr)) {
+			duk_push_uint(ctx, 1 << h_bufobj->shift);
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 			return 1;  /* cannot be arguments exotic */
 		}
 	} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj)) {
@@ -1931,7 +2017,7 @@ DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_u32(duk_hobject *obj, duk
 
 	if ((!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) &&
-	    (!DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj)) &&
+	    (!DUK_HOBJECT_IS_BUFFEROBJECT(obj)) &&
 	    (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) &&
 	    (DUK_HOBJECT_HAS_ARRAY_PART(obj)) &&
 	    (key_idx < obj->a_size)) {
@@ -1973,7 +2059,7 @@ DUK_LOCAL duk_tval *duk__shallow_fast_path_array_check_tval(duk_hthread *thr, du
 	if (!(DUK_HOBJECT_HAS_ARRAY_PART(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) &&
-	     !DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(obj) &&
+	     !DUK_HOBJECT_IS_BUFFEROBJECT(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
 		/* Must have array part and no conflicting exotic behaviors.
 		 * Doesn't need to have array special behavior, e.g. Arguments
@@ -2281,7 +2367,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		if (arr_idx != DUK__NO_ARRAY_INDEX &&
 		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
 			duk_pop_n(ctx, pop_count);
-			duk_push_int(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h))[arr_idx]);
+			duk_push_uint(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h))[arr_idx]);
 
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is an index inside buffer length "
 			                     "after coercion -> return byte as number)",
@@ -2300,12 +2386,29 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			                     (duk_tval *) duk_get_tval(ctx, -1), (long) arr_idx));
 		}
 
-		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
+		    key == DUK_HTHREAD_STRING_BYTE_LENGTH(thr)) {
 			duk_pop(ctx);  /* [key] -> [] */
 			duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h));  /* [] -> [res] */
 
-			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is 'length' after coercion -> "
-			                     "return buffer length)",
+			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is 'length' or 'byteLength' "
+			                     "after coercion -> return buffer length)",
+			                     (duk_tval *) duk_get_tval(ctx, -1)));
+			return 1;
+		} else if (key == DUK_HTHREAD_STRING_BYTE_OFFSET(thr)) {
+			duk_pop(ctx);  /* [key] -> [] */
+			duk_push_uint(ctx, 0);  /* [] -> [res] */
+
+			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is 'byteOffset' after coercion -> "
+			                     "return 0 for consistency with Buffer objects)",
+			                     (duk_tval *) duk_get_tval(ctx, -1)));
+			return 1;
+		} else if (key == DUK_HTHREAD_STRING_BYTES_PER_ELEMENT(thr)) {
+			duk_pop(ctx);  /* [key] -> [] */
+			duk_push_uint(ctx, 1);  /* [] -> [res] */
+
+			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is 'BYTES_PER_ELEMENT' after coercion -> "
+			                     "return 1 for consistency with Buffer objects)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			return 1;
 		}
@@ -3307,7 +3410,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 #endif
 			{
 				duk_push_tval(ctx, tv_val);
-				data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
+				data[arr_idx] = (duk_uint8_t) duk_to_uint32(ctx, -1);
 				pop_count++;
 			}
 
@@ -3327,7 +3430,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			                     (duk_tval *) duk_get_tval(ctx, -1), (long) arr_idx));
 		}
 
-		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
+		    key == DUK_HTHREAD_STRING_BYTE_LENGTH(thr) ||
+		    key == DUK_HTHREAD_STRING_BYTE_OFFSET(thr) ||
+		    key == DUK_HTHREAD_STRING_BYTES_PER_ELEMENT(thr)) {
 			goto fail_not_writable;
 		}
 
@@ -3459,23 +3565,31 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			}
 			if (desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
 				DUK_DD(DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable"));
-				if (DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(curr)) {
-					duk_hbuffer *h;
+				if (DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
+					duk_hbufferobject *h_bufobj;
+					duk_uint_t byte_off;
+					duk_small_uint_t elem_size;
+
+					h_bufobj = (duk_hbufferobject *) curr;
+					DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 
 					DUK_DD(DUK_DDPRINT("writable virtual property is in buffer object"));
-					h = duk_hobject_get_internal_value_buffer(thr->heap, curr);
-					DUK_ASSERT(h != NULL);
+
+					byte_off = arr_idx << h_bufobj->shift;  /* FIXME: wrap handling, comparing index to downshifted length would be correct */
+					elem_size = 1 << h_bufobj->shift;
 
 					if (arr_idx != DUK__NO_ARRAY_INDEX &&
-					    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+					    byte_off < h_bufobj->length) {
 						duk_uint8_t *data;
 						DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
-						data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
+
 						duk_push_tval(ctx, tv_val);
-						/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
-						 * as input is within duk_int_t range (capped outside it).
-						 */
-						data[arr_idx] = (duk_uint8_t) duk_to_int(ctx, -1);
+						if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+							data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
+							duk_bufobj_validated_write(ctx, h_bufobj, data, elem_size);
+						} else {
+							DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (write skipped)"));
+						}
 						duk_pop(ctx);
 						goto success_no_arguments_exotic;
 					}

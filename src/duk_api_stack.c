@@ -2329,11 +2329,35 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		        DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ |
-		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER);
-		proto = DUK_BIDX_BUFFER_PROTOTYPE;
-		goto create_object;
+		/* A plain buffer coerces to a Duktape.Buffer because it's the
+		 * object counterpart of the plain buffer value.  But it might
+		 * still make more sense to produce an ArrayBuffer here?
+		 */
+
+		duk_hbufferobject *h_bufobj;
+		duk_hbuffer *h_val;
+
+		h_val = DUK_TVAL_GET_BUFFER(tv);
+		DUK_ASSERT(h_val != NULL);
+
+		h_bufobj = duk_push_bufferobject(ctx,
+		                                 DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                                 DUK_HOBJECT_FLAG_BUFFEROBJECT |
+		                                 DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
+		                                 DUK_BIDX_BUFFER_PROTOTYPE);
+		DUK_ASSERT(h_bufobj != NULL);
+		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE((duk_hobject *) h_bufobj));
+		DUK_ASSERT(DUK_HOBJECT_IS_BUFFEROBJECT((duk_hobject *) h_bufobj));
+
+		h_bufobj->buf = h_val;
+		DUK_HBUFFER_INCREF(thr, h_val);
+		DUK_ASSERT(h_bufobj->offset == 0);
+		h_bufobj->length = DUK_HBUFFER_GET_SIZE(h_val);
+		DUK_ASSERT(h_bufobj->shift == 0);
+		DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFFEROBJECT_ELEM_UINT8);
+
+		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+		goto replace_value;
 	}
 	case DUK_TAG_POINTER: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -3164,6 +3188,19 @@ DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 	return h;
 }
 
+DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx) {
+	duk_hthread *thr;
+
+	DUK_ASSERT(ctx != NULL);
+	thr = (duk_hthread *) ctx;
+
+	DUK_ASSERT(thr->callstack_top > 0);  /* caller required to know */
+	DUK_ASSERT(thr->valstack_bottom > thr->valstack);  /* consequence of above */
+	DUK_ASSERT(thr->valstack_bottom - 1 >= thr->valstack);  /* 'this' binding exists */
+
+	return thr->valstack_bottom - 1;
+}
+
 DUK_EXTERNAL void duk_push_current_function(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
@@ -3355,7 +3392,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 
 	h = duk_hobject_alloc(thr->heap, hobject_flags_and_class);
 	if (!h) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_OBJECT_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08lx", (unsigned long) h->hdr.h_flags));
@@ -3458,7 +3495,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_THREAD_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 #if defined(DUK_USE_HEAPPTR16)
@@ -3477,7 +3514,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	/* important to do this *after* pushing, to make the thread reachable for gc */
 	if (!duk_hthread_init_stacks(thr->heap, obj)) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_THREAD_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 
 	/* initialize built-ins - either by copying or creating new ones */
@@ -3522,7 +3559,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	                                  DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
 	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_FUNC_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created compiled function object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
@@ -3565,7 +3602,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 
 	obj = duk_hnativefunction_alloc(thr->heap, flags);
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_FUNC_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 
 	obj->func = func;
@@ -3675,6 +3712,35 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 	return 0;  /* not reached */
 }
 
+DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hbufferobject *obj;
+	duk_tval *tv_slot;
+
+	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(prototype_bidx >= 0);
+
+	/* check stack first */
+	if (thr->valstack_top >= thr->valstack_end) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+	}
+
+	obj = duk_hbufferobject_alloc(thr->heap, hobject_flags_and_class);
+	if (!obj) {
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+	}
+
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
+	DUK_ASSERT_HBUFFEROBJECT_VALID(obj);
+
+	tv_slot = thr->valstack_top;
+	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
+	DUK_HOBJECT_INCREF(thr, obj);
+	thr->valstack_top++;
+
+	return obj;
+}
+
 DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
@@ -3780,7 +3846,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 
 	h = duk_hbuffer_alloc(thr->heap, size, flags);
 	if (!h) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_BUFFER_ALLOC_FAILED);
+		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 
 	tv_slot = thr->valstack_top;

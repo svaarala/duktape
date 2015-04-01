@@ -32,8 +32,8 @@
 
 /* Impose a maximum buffer length for now.  Restricted artificially to
  * ensure resize computations or adding a heap header length won't
- * overflow size_t.  The limit should be synchronized with
- * DUK_HSTRING_MAX_BYTELEN.
+ * overflow size_t and that a signed duk_int_t can hold a buffer
+ * length.  The limit should be synchronized with DUK_HSTRING_MAX_BYTELEN.
  */
 
 #if defined(DUK_USE_BUFLEN16)

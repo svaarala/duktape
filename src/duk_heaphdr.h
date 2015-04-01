@@ -331,6 +331,8 @@ struct duk_heaphdr_string {
 #define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
 #define DUK_HNATIVEFUNCTION_INCREF(thr,h)      DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
 #define DUK_HNATIVEFUNCTION_DECREF(thr,h)      DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HBUFFEROBJECT_INCREF(thr,h)        DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HBUFFEROBJECT_DECREF(thr,h)        DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
 #define DUK_HTHREAD_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
 #define DUK_HTHREAD_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
 
@@ -372,6 +374,8 @@ struct duk_heaphdr_string {
 #define DUK_HCOMPILEDFUNCTION_DECREF(thr,h)    do {} while (0) /* nop */
 #define DUK_HNATIVEFUNCTION_INCREF(thr,h)      do {} while (0) /* nop */
 #define DUK_HNATIVEFUNCTION_DECREF(thr,h)      do {} while (0) /* nop */
+#define DUK_HBUFFEROBJECT_INCREF(thr,h)        do {} while (0) /* nop */
+#define DUK_HBUFFEROBJECT_DECREF(thr,h)        do {} while (0) /* nop */
 #define DUK_HTHREAD_INCREF(thr,h)              do {} while (0) /* nop */
 #define DUK_HTHREAD_DECREF(thr,h)              do {} while (0) /* nop */
 #define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */

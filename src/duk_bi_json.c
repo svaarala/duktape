@@ -1327,6 +1327,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
  */
 DUK_LOCAL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 	duk_tval *tv;
 	duk_small_int_t c;
@@ -1334,6 +1335,8 @@ DUK_LOCAL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hol
 	DUK_DDD(DUK_DDDPRINT("duk__enc_value1: idx_holder=%ld, holder=%!T, key=%!T",
 	                     (long) idx_holder, (duk_tval *) duk_get_tval(ctx, idx_holder),
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
+
+	DUK_UNREF(thr);
 
 	duk_dup_top(ctx);               /* -> [ ... key key ] */
 	duk_get_prop(ctx, idx_holder);  /* -> [ ... key val ] */
@@ -1381,25 +1384,52 @@ DUK_LOCAL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hol
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
-		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
-		switch ((int) c) {
-		case DUK_HOBJECT_CLASS_NUMBER:
-			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
-			duk_to_number(ctx, -1);
-			break;
-		case DUK_HOBJECT_CLASS_STRING:
-			DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
-			duk_to_string(ctx, -1);
-			break;
-#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-		case DUK_HOBJECT_CLASS_BUFFER:
-		case DUK_HOBJECT_CLASS_POINTER:
-#endif
-		case DUK_HOBJECT_CLASS_BOOLEAN:
-			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+			duk_hbufferobject *h_bufobj;
+			h_bufobj = (duk_hbufferobject *) h;
+			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+			if (h_bufobj->buf == NULL || !DUK_HBUFFEROBJECT_VALID_SLICE(h_bufobj)) {
+				duk_push_null(ctx);
+			} else if (DUK_HBUFFEROBJECT_FULL_SLICE(h_bufobj)) {
+				duk_push_hbuffer(ctx, h_bufobj->buf);
+			} else {
+				/* This is not very good because we're making a copy
+				 * for serialization, but only for proper views.
+				 * Better support would be to serialize slices
+				 * directly but since we only push a raw buffer
+				 * here we can't convey the slice offset/length.
+				 */
+				duk_uint8_t *p_buf;
+
+				p_buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, h_bufobj->length);
+				DUK_MEMCPY((void *) p_buf,
+				           (const void *) (DUK_HBUFFEROBJECT_GET_SLICE_BASE(thr->heap, h_bufobj)),
+				           h_bufobj->length);
+			}
 			duk_remove(ctx, -2);
-			break;
+		} else {
+			c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
+			switch ((int) c) {
+			case DUK_HOBJECT_CLASS_NUMBER: {
+				DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
+				duk_to_number(ctx, -1);
+				break;
+			}
+			case DUK_HOBJECT_CLASS_STRING: {
+				DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
+				duk_to_string(ctx, -1);
+				break;
+			}
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+			case DUK_HOBJECT_CLASS_POINTER:
+#endif
+			case DUK_HOBJECT_CLASS_BOOLEAN: {
+				DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
+				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+				duk_remove(ctx, -2);
+				break;
+			}
+			}  /* end switch */
 		}
 	}
 

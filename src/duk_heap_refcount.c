@@ -107,6 +107,11 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK_UNREF(f);
 		/* nothing to finalize */
+	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+		duk_hbufferobject *b = (duk_hbufferobject *) h;
+		if (b->buf) {
+			duk_heaphdr_decref(thr, (duk_heaphdr *) b->buf);
+		}
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;

@@ -4,7 +4,6 @@
 
 #include "duk_internal.h"
 
-/* Maybe better to check these elsewhere */
 #if (DUK_STRIDX_UC_ARGUMENTS > 255)
 #error constant too large
 #endif
@@ -44,6 +43,54 @@
 #if (DUK_STRIDX_GLOBAL > 255)
 #error constant too large
 #endif
+#if (DUK_STRIDX_OBJ_ENV > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_DEC_ENV > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UC_BUFFER > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UC_POINTER > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UC_THREAD > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_ARRAY_BUFFER > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_DATA_VIEW > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_INT8_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UINT8_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UINT8_CLAMPED_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_INT16_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UINT16_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_INT32_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_UINT32_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_FLOAT32_ARRAY > 255)
+#error constant too large
+#endif
+#if (DUK_STRIDX_FLOAT64_ARRAY > 255)
+#error constant too large
+#endif
 #if (DUK_STRIDX_EMPTY_STRING > 255)
 #error constant too large
 #endif
@@ -68,18 +115,18 @@ DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_DEC_ENV,
 	DUK_STRIDX_UC_BUFFER,
 	DUK_STRIDX_UC_POINTER,
-	DUK_STRIDX_UC_THREAD,     /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
+	DUK_STRIDX_UC_THREAD,
+	DUK_STRIDX_ARRAY_BUFFER,
+	DUK_STRIDX_DATA_VIEW,
+	DUK_STRIDX_INT8_ARRAY,
+	DUK_STRIDX_UINT8_ARRAY,
+	DUK_STRIDX_UINT8_CLAMPED_ARRAY,
+	DUK_STRIDX_INT16_ARRAY,
+	DUK_STRIDX_UINT16_ARRAY,
+	DUK_STRIDX_INT32_ARRAY,
+	DUK_STRIDX_UINT32_ARRAY,
+	DUK_STRIDX_FLOAT32_ARRAY,
+	DUK_STRIDX_FLOAT64_ARRAY,
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 };

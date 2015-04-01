@@ -135,16 +135,32 @@
 	} \
 	} while (0)
 
+/* Assertion compatible inside a comma expression, evaluates to void.
+ * Currently not compatible with DUK_OPT_PANIC_HANDLER() which may have
+ * a statement block.
+ */
+#if defined(DUK_USE_PANIC_HANDLER)
+/* XXX: resolve macro definition issue or call through a helper function? */
+#define DUK_ASSERT_EXPR(x)  ((void) 0)
+#else
+#define DUK_ASSERT_EXPR(x) \
+	((void) ((x) ? 0 : (DUK_PANIC(DUK_ERR_ASSERTION_ERROR, \
+				"assertion failed: " #x \
+				" (" DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO) ")"), 0)))
+#endif
+
 #else  /* DUK_USE_ASSERTIONS */
 
-#define DUK_ASSERT(x)  do { /* assertion omitted */ } while(0)
+#define DUK_ASSERT(x)  do { /* assertion omitted */ } while (0)
+
+#define DUK_ASSERT_EXPR(x)  ((void) 0)
 
 #endif  /* DUK_USE_ASSERTIONS */
 
 /* this variant is used when an assert would generate a compile warning by
  * being always true (e.g. >= 0 comparison for an unsigned value
  */
-#define DUK_ASSERT_DISABLE(x)  do { /* assertion disabled */ } while(0)
+#define DUK_ASSERT_DISABLE(x)  do { /* assertion disabled */ } while (0)
 
 /*
  *  Assertion helpers

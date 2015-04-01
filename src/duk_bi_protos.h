@@ -44,8 +44,33 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ct
 DUK_INTERNAL_DECL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx);
 
+DUK_INTERNAL_DECL void duk_bufobj_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
+DUK_INTERNAL_DECL void duk_bufobj_validated_write(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
+
+/* XXX: naming is inconsistent with other builtins, "prototype" not used as
+ * part of function name.
+ */
 DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_typedarray_set(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx);
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_constructor_parse(duk_context *ctx);

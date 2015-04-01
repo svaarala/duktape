@@ -38,21 +38,20 @@
 #define DUK_HOBJECT_FLAG_BOUND                 DUK_HEAPHDR_USER_FLAG(2)   /* object established using Function.prototype.bind() */
 #define DUK_HOBJECT_FLAG_COMPILEDFUNCTION      DUK_HEAPHDR_USER_FLAG(4)   /* object is a compiled function (duk_hcompiledfunction) */
 #define DUK_HOBJECT_FLAG_NATIVEFUNCTION        DUK_HEAPHDR_USER_FLAG(5)   /* object is a native function (duk_hnativefunction) */
-#define DUK_HOBJECT_FLAG_THREAD                DUK_HEAPHDR_USER_FLAG(6)   /* object is a thread (duk_hthread) */
-#define DUK_HOBJECT_FLAG_ARRAY_PART            DUK_HEAPHDR_USER_FLAG(7)   /* object has an array part (a_size may still be 0) */
-#define DUK_HOBJECT_FLAG_STRICT                DUK_HEAPHDR_USER_FLAG(8)   /* function: function object is strict */
-#define DUK_HOBJECT_FLAG_NOTAIL                DUK_HEAPHDR_USER_FLAG(9)   /* function: function must not be tailcalled */
-#define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(10)  /* function: create new environment when called (see duk_hcompiledfunction) */
-#define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(11)  /* function: create binding for func name (function templates only, used for named function expressions) */
-#define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(12)  /* function: create an arguments object on function call */
-#define DUK_HOBJECT_FLAG_ENVRECCLOSED          DUK_HEAPHDR_USER_FLAG(13)  /* envrec: (declarative) record is closed */
-#define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(14)  /* 'Array' object, array length and index exotic behavior */
-#define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(15)  /* 'String' object, array index exotic behavior */
-#define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(16)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
-#define DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC        DUK_HEAPHDR_USER_FLAG(17)  /* Duktape/C (nativefunction) object, exotic 'length' */
-#define DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ      DUK_HEAPHDR_USER_FLAG(18)  /* 'Buffer' object, array index exotic behavior, virtual 'length' */
+#define DUK_HOBJECT_FLAG_BUFFEROBJECT          DUK_HEAPHDR_USER_FLAG(6)   /* object is a buffer object (duk_hbufferobject) (always exotic) */
+#define DUK_HOBJECT_FLAG_THREAD                DUK_HEAPHDR_USER_FLAG(7)   /* object is a thread (duk_hthread) */
+#define DUK_HOBJECT_FLAG_ARRAY_PART            DUK_HEAPHDR_USER_FLAG(8)   /* object has an array part (a_size may still be 0) */
+#define DUK_HOBJECT_FLAG_STRICT                DUK_HEAPHDR_USER_FLAG(9)   /* function: function object is strict */
+#define DUK_HOBJECT_FLAG_NOTAIL                DUK_HEAPHDR_USER_FLAG(10)  /* function: function must not be tailcalled */
+#define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(11)  /* function: create new environment when called (see duk_hcompiledfunction) */
+#define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(12)  /* function: create binding for func name (function templates only, used for named function expressions) */
+#define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(13)  /* function: create an arguments object on function call */
+#define DUK_HOBJECT_FLAG_ENVRECCLOSED          DUK_HEAPHDR_USER_FLAG(14)  /* envrec: (declarative) record is closed */
+#define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(15)  /* 'Array' object, array length and index exotic behavior */
+#define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(16)  /* 'String' object, array index exotic behavior */
+#define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(17)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
+#define DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC        DUK_HEAPHDR_USER_FLAG(18)  /* Duktape/C (nativefunction) object, exotic 'length' */
 #define DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ       DUK_HEAPHDR_USER_FLAG(19)  /* 'Proxy' object */
-/* bit 20 unused */
 
 #define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(21)
 #define DUK_HOBJECT_FLAG_CLASS_BITS            5
@@ -86,9 +85,20 @@
 #define DUK_HOBJECT_CLASS_GLOBAL               13
 #define DUK_HOBJECT_CLASS_OBJENV               14  /* custom */
 #define DUK_HOBJECT_CLASS_DECENV               15  /* custom */
-#define DUK_HOBJECT_CLASS_BUFFER               16  /* custom */
+#define DUK_HOBJECT_CLASS_BUFFER               16  /* custom; implies DUK_HOBJECT_IS_BUFFEROBJECT */
 #define DUK_HOBJECT_CLASS_POINTER              17  /* custom */
-#define DUK_HOBJECT_CLASS_THREAD               18  /* custom */
+#define DUK_HOBJECT_CLASS_THREAD               18  /* custom; implies DUK_HOBJECT_IS_THREAD */
+#define DUK_HOBJECT_CLASS_ARRAYBUFFER          19  /* implies DUK_HOBJECT_IS_BUFFEROBJECT */
+#define DUK_HOBJECT_CLASS_DATAVIEW             20
+#define DUK_HOBJECT_CLASS_INT8ARRAY            21
+#define DUK_HOBJECT_CLASS_UINT8ARRAY           22
+#define DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY    23
+#define DUK_HOBJECT_CLASS_INT16ARRAY           24
+#define DUK_HOBJECT_CLASS_UINT16ARRAY          25
+#define DUK_HOBJECT_CLASS_INT32ARRAY           26
+#define DUK_HOBJECT_CLASS_UINT32ARRAY          27
+#define DUK_HOBJECT_CLASS_FLOAT32ARRAY         28
+#define DUK_HOBJECT_CLASS_FLOAT64ARRAY         29
 
 #define DUK_HOBJECT_IS_OBJENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_OBJENV)
 #define DUK_HOBJECT_IS_DECENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DECENV)
@@ -96,6 +106,7 @@
 #define DUK_HOBJECT_IS_ARRAY(h)                (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAY)
 #define DUK_HOBJECT_IS_COMPILEDFUNCTION(h)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_COMPILEDFUNCTION)
 #define DUK_HOBJECT_IS_NATIVEFUNCTION(h)       DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NATIVEFUNCTION)
+#define DUK_HOBJECT_IS_BUFFEROBJECT(h)         DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BUFFEROBJECT)
 #define DUK_HOBJECT_IS_THREAD(h)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 
 #define DUK_HOBJECT_IS_NONBOUND_FUNCTION(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, \
@@ -117,7 +128,7 @@
                                                 DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC | \
-                                                DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ | \
+                                                DUK_HOBJECT_FLAG_BUFFEROBJECT | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
 #define DUK_HOBJECT_HAS_EXOTIC_BEHAVIOR(h)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_EXOTIC_BEHAVIOR_FLAGS)
@@ -127,6 +138,7 @@
 #define DUK_HOBJECT_HAS_BOUND(h)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BOUND)
 #define DUK_HOBJECT_HAS_COMPILEDFUNCTION(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_COMPILEDFUNCTION)
 #define DUK_HOBJECT_HAS_NATIVEFUNCTION(h)      DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NATIVEFUNCTION)
+#define DUK_HOBJECT_HAS_BUFFEROBJECT(h)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BUFFEROBJECT)
 #define DUK_HOBJECT_HAS_THREAD(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_HAS_ARRAY_PART(h)          DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_HAS_STRICT(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
@@ -139,7 +151,6 @@
 #define DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
 #define DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(h)      DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC)
-#define DUK_HOBJECT_HAS_EXOTIC_BUFFEROBJ(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ)
 #define DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
 #define DUK_HOBJECT_SET_EXTENSIBLE(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXTENSIBLE)
@@ -147,6 +158,7 @@
 #define DUK_HOBJECT_SET_BOUND(h)               DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BOUND)
 #define DUK_HOBJECT_SET_COMPILEDFUNCTION(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_COMPILEDFUNCTION)
 #define DUK_HOBJECT_SET_NATIVEFUNCTION(h)      DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NATIVEFUNCTION)
+#define DUK_HOBJECT_SET_BUFFEROBJECT(h)        DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BUFFEROBJECT)
 #define DUK_HOBJECT_SET_THREAD(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_SET_ARRAY_PART(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_SET_STRICT(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
@@ -159,7 +171,6 @@
 #define DUK_HOBJECT_SET_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_SET_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
 #define DUK_HOBJECT_SET_EXOTIC_DUKFUNC(h)      DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC)
-#define DUK_HOBJECT_SET_EXOTIC_BUFFEROBJ(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ)
 #define DUK_HOBJECT_SET_EXOTIC_PROXYOBJ(h)     DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
 #define DUK_HOBJECT_CLEAR_EXTENSIBLE(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXTENSIBLE)
@@ -167,6 +178,7 @@
 #define DUK_HOBJECT_CLEAR_BOUND(h)             DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BOUND)
 #define DUK_HOBJECT_CLEAR_COMPILEDFUNCTION(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_COMPILEDFUNCTION)
 #define DUK_HOBJECT_CLEAR_NATIVEFUNCTION(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NATIVEFUNCTION)
+#define DUK_HOBJECT_CLEAR_BUFFEROBJECT(h)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BUFFEROBJECT)
 #define DUK_HOBJECT_CLEAR_THREAD(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_THREAD)
 #define DUK_HOBJECT_CLEAR_ARRAY_PART(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ARRAY_PART)
 #define DUK_HOBJECT_CLEAR_STRICT(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_STRICT)
@@ -179,7 +191,6 @@
 #define DUK_HOBJECT_CLEAR_EXOTIC_STRINGOBJ(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_CLEAR_EXOTIC_ARGUMENTS(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
 #define DUK_HOBJECT_CLEAR_EXOTIC_DUKFUNC(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC)
-#define DUK_HOBJECT_CLEAR_EXOTIC_BUFFEROBJ(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_BUFFEROBJ)
 #define DUK_HOBJECT_CLEAR_EXOTIC_PROXYOBJ(h)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
 /* flags used for property attributes in duk_propdesc and packed flags */
@@ -736,6 +747,7 @@ DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_u
 #endif
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hnativefunction *duk_hnativefunction_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL duk_hbufferobject *duk_hbufferobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 
 /* low-level property functions */
@@ -788,7 +800,6 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx,
 /* internal properties */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
 DUK_INTERNAL_DECL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, duk_hobject *obj);
-DUK_INTERNAL_DECL duk_hbuffer *duk_hobject_get_internal_value_buffer(duk_heap *heap, duk_hobject *obj);
 
 /* hobject management functions */
 DUK_INTERNAL_DECL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
