@@ -3,7 +3,7 @@ title: improve SyntaxError fileName/lineNumber
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: v1.3.0
 reporter: .
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2015-03-20 08:06:53.464331 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2015-04-03 17:21:16.713511 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
   - ""

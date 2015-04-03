@@ -3,7 +3,7 @@ title: ".prototype property of Duktape/C functions: document constructor use"
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -33,4 +33,8 @@ log_events:
 - - 2014-12-22 16:20:06.983971 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:02:00.473245 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

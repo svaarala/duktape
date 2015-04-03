@@ -3,7 +3,7 @@ title: remove experimental tag from duk_def_prop() once settled
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: v1.3.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-12-30 23:00:36.619336 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2015-04-03 17:17:12.004376 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
   - ""

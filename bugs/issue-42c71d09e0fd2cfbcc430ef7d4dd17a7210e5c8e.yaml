@@ -3,7 +3,7 @@ title: document macro policy in public API - multiple steps in parens, retval
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,12 @@ log_events:
 - - 2014-12-22 16:20:17.200767 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:08:43.265630 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
+  - ""
+- - 2015-04-03 17:11:08.910327 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.3.0
   - ""

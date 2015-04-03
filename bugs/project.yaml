@@ -231,3 +231,51 @@ releases:
     - Sami Vaarala <sami.vaarala@iki.fi>
     - released
     - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v1.1.3
+  status: :released
+  release_time: 2015-04-03 17:35:31.106262 Z
+  log_events: 
+  - - 2015-04-03 16:55:01.947347 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - created
+    - ""
+  - - 2015-04-03 17:35:31.106268 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - released
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v1.3.0
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2015-04-03 16:55:27.641806 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - created
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v1.1.2
+  status: :released
+  release_time: 2015-04-03 17:35:42.918835 Z
+  log_events: 
+  - - 2015-04-03 17:35:39.958749 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - created
+    - ""
+  - - 2015-04-03 17:35:42.918855 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - released
+    - ""
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v1.1.1
+  status: :released
+  release_time: 2015-04-03 17:35:56.260482 Z
+  log_events: 
+  - - 2015-04-03 17:35:53.638446 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - created
+    - ""
+  - - 2015-04-03 17:35:56.260503 Z
+    - Sami Vaarala <sami.vaarala@iki.fi>
+    - released
+    - ""

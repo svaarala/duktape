@@ -3,7 +3,7 @@ title: combine bytecode and pc2line data to reduce memory churn?
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -27,4 +27,8 @@ log_events:
 - - 2014-12-22 16:20:09.359685 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:10:32.405285 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

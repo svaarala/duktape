@@ -3,7 +3,7 @@ title: "api: convenience function for pushing buffer with data"
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2014-11-06 00:49:28.013574 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2015-04-03 17:22:08.030491 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

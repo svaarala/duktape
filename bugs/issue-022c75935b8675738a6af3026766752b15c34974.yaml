@@ -3,7 +3,7 @@ title: update testing document with matrix testing
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: v1.3.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2015-01-06 00:35:12.974638 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:09:28.940873 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
   - ""

@@ -5,7 +5,7 @@ desc: |-
   it is only needed by the random seed setup in duk_heap_alloc.c.
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -29,4 +29,8 @@ log_events:
 - - 2014-12-22 16:20:11.097235 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:10:40.645426 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

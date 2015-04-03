@@ -6,7 +6,7 @@ desc: |-
   Prevent constructor calls for other Duktape/C functions (incompatible change)?
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -30,4 +30,8 @@ log_events:
 - - 2014-11-13 06:59:28.446098 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:02:01.273726 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

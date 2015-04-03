@@ -3,7 +3,7 @@ title: dynamic buffer size/spare control in API
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -31,4 +31,8 @@ log_events:
 - - 2014-11-02 00:09:24.587518 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:01:48.055140 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

@@ -3,7 +3,7 @@ title: fix heap->heap_thread asserts in duk_heap_alloc.c (for init errors)
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: v1.3.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2015-01-20 21:49:14.228846 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2015-04-03 17:19:13.063728 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
   - ""

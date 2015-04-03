@@ -3,7 +3,7 @@ title: some mechanisms based on the executor interrupt - step limit (+ API), use
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: sva <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -35,4 +35,8 @@ log_events:
 - - 2014-11-02 00:09:25.634545 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:01:51.125952 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

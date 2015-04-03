@@ -3,7 +3,7 @@ title: clarify debugger protocol logical types vs. representations
 desc: ""
 type: :task
 component: duk
-release: v1.2
+release: v1.3.0
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2015-03-16 21:06:41.745112 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - created
+  - ""
+- - 2015-04-03 17:20:48.295510 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - assigned to release v1.3.0 from v1.2
   - ""

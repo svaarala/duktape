@@ -41,7 +41,7 @@ desc: |-
     the Duktape config header define whatever macros are appropriate
 type: :task
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -57,4 +57,8 @@ log_events:
 - - 2014-11-15 19:10:52.249026 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v1.1
+  - ""
+- - 2015-04-03 17:11:10.859739 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""

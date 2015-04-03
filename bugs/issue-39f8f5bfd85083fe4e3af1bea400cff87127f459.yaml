@@ -19,7 +19,7 @@ desc: |-
   is needed because it affects the duk_hbuffer alloc size.
 type: :feature
 component: duk
-release: v1.2
+release: 
 reporter: Sami Vaarala <sami.vaarala@iki.fi>
 status: :unstarted
 disposition: 
@@ -39,4 +39,8 @@ log_events:
 - - 2014-11-02 00:17:56.839095 Z
   - Sami Vaarala <sami.vaarala@iki.fi>
   - assigned to release v1.2 from v2.0
+  - ""
+- - 2015-04-03 17:11:06.368164 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - unassigned from release v1.2
   - ""
