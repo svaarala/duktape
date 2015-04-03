@@ -807,6 +807,17 @@ Released
 * Fix shuffle handling issue for PUTPROP opcode, discovered by shuffle
   torture tests (GH-135)
 
+1.1.3 (2015-04-03)
+------------------
+
+* Fix Duktape.act() lineNumber bug, PC used for lineNumber was off-by-one
+  which sometimes resulted in incorrect linenumbers (GH-143)
+
+* Fix incorrect switch-case matching when default clause is the first clause
+  in a switch statement (GH-155)
+
+* Fix a few compiler warnings (GH-141)
+
 Planned
 =======
 
@@ -894,6 +905,8 @@ Planned
 
 * Fix incorrect switch-case matching when default clause is the first clause
   in a switch statement (GH-155)
+
+* Fix a few compiler warnings (GH-141)
 
 * Add support for TI-Nspire (using Ndless, see GH-113)
 
