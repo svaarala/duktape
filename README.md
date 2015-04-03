@@ -15,10 +15,14 @@ Main features:
 
 * Embeddable, portable, compact
 * Ecmascript E5/E5.1 compliant
+* Built-in debugger
 * Built-in regular expression engine
 * Built-in Unicode support
 * Minimal platform dependencies
 * Combined reference counting and mark-and-sweep garbage collection with finalization
+* Custom features like co-routines, built-in logging framework, and built-in
+  CommonJS-based module loading framework
+* Property virtualization using a subset of Ecmascript E6 Proxy object
 * Liberal license
 
 See [duktape.org](http://duktape.org/) for packaged end-user downloads
