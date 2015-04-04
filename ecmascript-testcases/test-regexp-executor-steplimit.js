@@ -13,7 +13,7 @@
 success for: 1
 success for: 10
 failure for: 100 -> RangeError true
-failure for: 1000 -> RangeError false
+failure for: 1000 -> RangeError true
 ===*/
 
 function createRegexp(n) {
@@ -57,7 +57,7 @@ function test() {
     wrappedTest(1);
     wrappedTest(10);
     wrappedTest(100);   // Causes a step limit RangeError
-    wrappedTest(1000);  // Causes a recursion limit RangeError
+    wrappedTest(1000);  // Causes a step limit RangeError
 }
 
 try {
