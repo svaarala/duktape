@@ -583,7 +583,7 @@ Released
 * Fix duk_dump_context_stderr() which incorrectly dumped to stdout
 
 * Fix require() resolution of relative module identifiers, which was off by
-  one component (see GH-48)
+  one component (GH-48)
 
 * Fix DUK_INVALID_INDEX define value, it used INT_MIN directly
 
@@ -609,7 +609,7 @@ Released
 
 * Fix fileName for functions defined in a module loaded using require(),
   previously fileName would always be duk_bi_global.c which is misleading
-  (see GH-58)
+  (GH-58)
 
 1.0.2 (2014-11-08)
 ------------------
@@ -690,7 +690,7 @@ Released
 
 * Change JSON.stringify() to escape U+2028 and U+2029 by default to make
   the output a valid Javascript string, so that it can be embedded in a
-  web page or parsed with eval (see GH-68)
+  web page or parsed with eval (GH-68)
 
 * Change JSON.parse() to include a byte offset with a syntax error to help
   pinpoint JSON errors
@@ -703,7 +703,7 @@ Released
   a practical impact only when using 16-bit buffer size field
 
 * Use deep C stack for dukweb.js to remove some compiler recursion limit
-  limitations (see GH-67)
+  limitations (GH-67)
 
 * Add an example allocator with alloc/realloc/free logging, which is
   useful when optimizing e.g. pool sizes for low memory targets
@@ -721,7 +721,7 @@ Released
 * Add an SPDX 1.2 license into the distributable
 
 * Fix INVALID opcode error for some labelled non-iteration statements
-  (see GH-85)
+  (GH-85)
 
 * Fix a few missing "volatile" attributes in the bytecode executor which
   affected setjmp handling in clang (especially for _setjmp and sigsetjmp),
@@ -731,7 +731,7 @@ Released
 
 * Better fix for C++ compilation issue caused by Duktape using both
   static declaration and a static define which is not allowed in C++
-  (see GH-63)
+  (GH-63)
 
 * Fix compiler specific behavior when assigning a string to a buffer index
   (e.g. buf[3] = 'x'), now NaN coerces consistently to zero (this was the
@@ -739,7 +739,7 @@ Released
 
 * Fix fileName for functions defined in a module loaded using require(),
   previously fileName would always be duk_bi_global.c which is misleading
-  (see GH-58)
+  (GH-58)
 
 * Fix object literal getter/setter definition to avoid creating a binding
   for the function (property) name, so that a setter/getter can access an
@@ -772,15 +772,15 @@ Released
 ------------------
 
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
-  not accepted in identifier names (see GH-103)
+  not accepted in identifier names (GH-103)
 
 * Fix function parsing bug where the left curly brace opening the function
   body was not checked and Duktape would accept e.g. "function () [}"
-  (see GH-106)
+  (GH-106)
 
 * Fix compiler register limit bug where an Ecmascript function with
   [65536,262143] VM registers would be compiled into incorrect bytecode
-  instead of being rejected with an internal error (see GH-111)
+  instead of being rejected with an internal error (GH-111)
 
 * Fix compiler shuffle register handling by doing a pass 3 compile if
   necessary, fixing "CSPROPI target is not a number" error (GH-115)
@@ -861,16 +861,19 @@ Planned
 * Improve MIPS32/MIPS64 detection, architecture strings in Duktape.env
   also updated ("mips32" or "mips64") (GH-102)
 
+* Make RegExp compiler/executor C stack limit higher on mainstream platforms
+  (GH-157)
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
-  not accepted in identifier names (see GH-103)
+  not accepted in identifier names (GH-103)
 
 * Fix function parsing bug where the left curly brace opening the function
   body was not checked and Duktape would accept e.g. "function () [}"
-  (see GH-106)
+  (GH-106)
 
 * Fix compiler register limit bug where an Ecmascript function with
   [65536,262143] VM registers would be compiled into incorrect bytecode
-  instead of being rejected with an internal error (see GH-111)
+  instead of being rejected with an internal error (GH-111)
 
 * Fix buffer assignment to allow negative values: buf[3] = -1 now yields 0xFF
   (in Duktape 1.1 yields 0x00 because negative values are capped to 0)
