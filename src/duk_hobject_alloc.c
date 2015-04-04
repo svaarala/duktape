@@ -136,6 +136,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_f
 	res->callstack = NULL;
 	res->catchstack = NULL;
 	res->resumer = NULL;
+	res->compile_ctx = NULL,
 	res->strs = NULL;
 	{
 		int i;

@@ -183,6 +183,19 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
 	arr_idx = 0;
 
+	/* compiler SyntaxErrors (and other errors) come first; blame the source
+	 * code file/line primarily.
+	 */
+	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
+		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
+		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
+		arr_idx++;
+
+		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);  /* (flags<<32) + (line), flags = 0 */
+		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
+		arr_idx++;
+	}
+
 	/* filename/line from C macros (__FILE__, __LINE__) are added as an
 	 * entry with a special format: (string, number).  The number contains
 	 * the line and flags.
@@ -306,7 +319,13 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 	 *  overwritten in case they already exist.
 	 */
 
-	if (c_filename && !noblame_fileline) {
+	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
+		/* Compiler SyntaxError (or other error) gets the primary blame. */
+		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+	} else if (c_filename && !noblame_fileline) {
 		/* XXX: file/line is disabled in minimal builds, so disable this too
 		 * when appropriate.
 		 */

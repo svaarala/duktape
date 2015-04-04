@@ -3615,6 +3615,8 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
+	DUK_UNREF(filename);
+	DUK_UNREF(line);
 
 	/* Error code also packs a tracedata related flag. */
 #ifdef DUK_USE_AUGMENT_ERROR_CREATE
