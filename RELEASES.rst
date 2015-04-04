@@ -864,6 +864,11 @@ Planned
 * Make RegExp compiler/executor C stack limit higher on mainstream platforms
   (GH-157)
 
+* Add support for TI-Nspire (using Ndless, see GH-113)
+
+* Add source code fileName/lineNumber to errors thrown during compilation
+  (GH-140)
+
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (GH-103)
 
@@ -910,8 +915,6 @@ Planned
   in a switch statement (GH-155)
 
 * Fix a few compiler warnings (GH-141)
-
-* Add support for TI-Nspire (using Ndless, see GH-113)
 
 2.0.0 (XXXX-XX-XX)
 ------------------
