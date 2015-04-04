@@ -10,7 +10,7 @@
 
 /* regexp compilation limits */
 #if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_RE_COMPILE_RECURSION_LIMIT     1000
+#define DUK_RE_COMPILE_RECURSION_LIMIT     10000
 #else
 #define DUK_RE_COMPILE_RECURSION_LIMIT     100
 #endif
@@ -18,7 +18,7 @@
 
 /* regexp execution limits */
 #if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_RE_EXECUTE_RECURSION_LIMIT     1000
+#define DUK_RE_EXECUTE_RECURSION_LIMIT     10000
 #else
 #define DUK_RE_EXECUTE_RECURSION_LIMIT     100
 #endif
