@@ -280,6 +280,8 @@ Checklist for ordinary releases
 
   - Check duk command line version number in Guide "Getting started"
 
+  - Diff website HTML against current website
+
 * Ditz release
 
   - ``ditz release vN.N``
