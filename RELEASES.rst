@@ -818,10 +818,7 @@ Released
 
 * Fix a few compiler warnings (GH-141)
 
-Planned
-=======
-
-1.2.0 (2015-XX-XX)
+1.2.0 (2015-04-05)
 ------------------
 
 * Main release goals: debugger support and performance improvements
@@ -834,15 +831,10 @@ Planned
   in a transparent manner (improves performance for some workloads on soft
   float and some hard float platforms)
 
-* Add iPhone/iOS strings to Duktape.env
-
 * Add DUK_OPT_EXEC_TIMEOUT_CHECK(), an experimental bytecode execution timeout
   mechanism to safely bail out if script execution takes too long; this
   protects against accidental errors but is not (yet) intended to protect
   against deliberately malicious code
-
-* Accept 32-bit codepoints in String.fromCharCode() to better support non-BMP
-  strings (GH-120)
 
 * Internal performance improvement: direct refcount manipulation from macros
   instead of doing a helper function call
@@ -858,16 +850,21 @@ Planned
 * Add internal type tag to Duktape.info() result for non-heap-allocated types
   (useful for some testing)
 
-* Improve MIPS32/MIPS64 detection, architecture strings in Duktape.env
-  also updated ("mips32" or "mips64") (GH-102)
+* Accept 32-bit codepoints in String.fromCharCode() to better support non-BMP
+  strings (GH-120)
 
 * Make RegExp compiler/executor C stack limit higher on mainstream platforms
   (GH-157)
 
-* Add support for TI-Nspire (using Ndless, see GH-113)
-
 * Add source code fileName/lineNumber to errors thrown during compilation
   (GH-140)
+
+* Improve MIPS32/MIPS64 detection, architecture strings in Duktape.env
+  also updated ("mips32" or "mips64") (GH-102)
+
+* Add iPhone/iOS strings to Duktape.env
+
+* Add support for TI-Nspire (using Ndless, see GH-113)
 
 * Fix Unicode handling of CJK ideographs and Hangul which were incorrectly
   not accepted in identifier names (GH-103)
@@ -915,6 +912,12 @@ Planned
   in a switch statement (GH-155)
 
 * Fix a few compiler warnings (GH-141)
+
+Planned
+=======
+
+1.3.0 (2015-XX-XX)
+------------------
 
 2.0.0 (XXXX-XX-XX)
 ------------------
