@@ -7,7 +7,7 @@
   regexp_leniency: true
 -
   test: "ch07/7.8/7.8.5/S7.8.5_A1.4_T2"
-  knownissue": "uses invalid RegExp format '/\\1/' (#0031)"
+  knownissue: "uses invalid RegExp format '/\\1/' (#0031)"
   regexp_leniency: true
 -
   test: "ch07/7.8/7.8.5/S7.8.5_A2.4_T1"
@@ -18,8 +18,32 @@
   knownissue: "uses invalid RegExp format '/\\1/' (#0031)"
   regexp_leniency: true
 -
+  test: "ch09/9.7/S9.7_A2.1"
+  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
+-
+  test: "ch09/9.7/S9.7_A2.2"
+  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
+-
+  test: "ch09/9.7/S9.7_A3.1_T2"
+  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
+-
+  test: "ch09/9.7/S9.7_A3.1_T3"
+  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
+-
+  test: "ch09/9.7/S9.7_A3.2_T1"
+  knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
+-
   test: "ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1"
   knownissue: "octal input to parseInt() accepted by Duktape"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A3"
+  knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A4_T2"
+  knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A4_T3"
+  knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
 -
   test: "ch15/15.10/15.10.2/S15.10.2_A1_T1"
   knownissue: "XML Shallow Parsing with Regular Expression: [^]]*]([^]]+])*]+.  The intent of [^]] is probably [^\\]].  An unescaped ']' is not allowed in a character class, so the expression is parsed as [^] (empty inverted class) followed by a literal ']', which is a SyntaxError.  There are two other literal ']' issues.  The RegExp can be fixed to: /[^\\]]*\\]([^\\]]+\\])*\\]+/."
