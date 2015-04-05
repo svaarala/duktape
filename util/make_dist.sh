@@ -202,6 +202,9 @@ for i in \
 	Makefile \
 	package.json \
 	duk_debug.js \
+	duk_classnames.yaml \
+	duk_debugcommands.yaml \
+	duk_opcodes.yaml \
 	; do
 	cp debugger/$i $DIST/debugger/
 done
