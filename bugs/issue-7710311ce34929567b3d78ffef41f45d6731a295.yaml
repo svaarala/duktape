@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: remove "(line NNN)" from compile errors now that there's fileName/lineNumber
+desc: ""
+type: :task
+component: duk
+release: v1.3.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-04-04 22:36:07.328348 Z
+references: []
+
+id: 7710311ce34929567b3d78ffef41f45d6731a295
+log_events: 
+- - 2015-04-04 22:36:07.512274 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

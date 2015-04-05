@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: remove support for built-in duk_config.h
+desc: ""
+type: :task
+component: duk
+release: v2.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-04-03 18:33:39.543422 Z
+references: []
+
+id: 8016e9503a87ab53fb0c7b907d002881ede064a9
+log_events: 
+- - 2015-04-03 18:33:39.728350 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
