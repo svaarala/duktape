@@ -1569,7 +1569,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 				}
 			}
 		} else {
-			DUK_D(DUK_DPRINT("PC=%ld line=%ld", (long) act->pc, (long) line));
+			DUK_DDD(DUK_DDDPRINT("PC=%ld line=%ld", (long) act->pc, (long) line));
 		}
 
 		act->prev_line = line;
