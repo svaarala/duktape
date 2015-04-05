@@ -56,7 +56,7 @@ GIT_DESCRIBE:=$(shell git describe --always --dirty)
 BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
 
 # Ditz release (next release name)
-DITZ_RELEASE=v1.2
+DITZ_RELEASE=v1.3.0
 
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
