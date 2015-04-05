@@ -65,7 +65,7 @@ def main():
 					known_errors.append(line + '   // KNOWN: ' + kn['knownissue'])
 				else:
 					tofix_count += 1
-					unknown_errors.append(line + '   // ??? (rule matches))')
+					unknown_errors.append(line + '   // ??? (rule matches)')
 				kn['used'] = True  # mark rule used
 				matched = True
 				break

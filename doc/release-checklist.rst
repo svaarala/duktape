@@ -135,6 +135,11 @@ Checklist for ordinary releases
 
   - XXX: establish some baseline test
 
+* Performance testing
+
+  - Check for unexpected performance regressions by compiling previous release
+    and candidate release with ``-O2`` and running "make perftest" for them.
+
 * API testcases
 
   - On x86-64:
@@ -185,6 +190,13 @@ Checklist for ordinary releases
 
     - make luajstest
 
+* Release notes (``doc/release-notes-*.rst``)
+
+  - Write new release notes for release; needs known issues output from at
+    least API, Ecmascript, and test262 test runs
+
+  - Ensure instructions for upgrading from last release are correct
+
 * Git release and tag
 
   - Tagging should be done before creating the candidate tar files so that
@@ -195,6 +207,9 @@ Checklist for ordinary releases
 
   - There can be commits to the repo after tagging but nothing that will
     affect "make dist" output.
+
+  - Make sure the tag is in the master commit chain, so that git describe will
+    provide a useful output for dist packages built after the release
 
   - ``git tag -l -n1`` to list current tags
 

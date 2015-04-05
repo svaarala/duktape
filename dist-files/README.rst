@@ -12,7 +12,7 @@ Proxy objects).  Duktape also provides a number of custom features such as
 error tracebacks, additional data types for better C integration, combined
 reference counting and mark-and sweep garbage collector, object finalizers,
 co-operative threads a.k.a. coroutines, tail calls, built-in logging and
-module frameworks, and so on.
+module frameworks, a built-in debugger protocol, and so on.
 
 You can browse Duktape programmer's API and other documentation at:
 
