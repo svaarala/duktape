@@ -240,6 +240,9 @@ Checklist for ordinary releases
   - Trivial compile test for separate sources (important because
     it's easy to forget to add files in make_dist.sh)
 
+  - Test Makefile.dukdebug + debugger/duk_debug.js to ensure all files
+    are included (easy to forget e.g. YAML metadata files)
+
 * Store binaries to duktape-releases repo
 
   - Add the tar.xz to the master branch
