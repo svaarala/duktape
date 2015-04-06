@@ -566,12 +566,15 @@ constructor.  Otherwise the behavior is the same:</p>
     <code>Duktape.Buffer.prototype</code> object.</li>
 </ul>
 
+<p>If the argument is a Node.js Buffer, ArrayBuffer, DataView, or a TypedArray,
+the call behaves as if the argument was a Duktape.Buffer, i.e. the underlying
+plain buffer is returned or promoted to a Duktape.Buffer.  However, any slice
+byte offset/length information is ignored, so that the full underlying buffer
+is always returned.</p>
+
 <div class="note">
-There is currently (in Duktape 0.10.0) no way direct way to create a copy of
-a buffer (i.e. a new buffer with the same contents but a separate underlying
-buffer).  This will be added in Duktape 0.11.0; for now you can make a copy
-inefficiently e.g. as <code>Duktape.Buffer(String(orig_buf))</code>.  Buffers
-are currently mostly intended to be operated with from C code.
+Duktape.Buffer doesn't provide a way to make a copy of a buffer, but you can
+use the TypedArray bindings to do that: <code>copy = Duktape.Buffer(new Uint8Array(new Duktape.Buffer(input)))</code>.
 </div>
 
 <h2>Duktape.Buffer.prototype</h2>

@@ -31,7 +31,9 @@
     the object is large enough, a hash table to speed up lookups.</li>
 <li>Buffer: for fixed buffers a single allocation contains a combined heap
     and buffer header, followed by the mutable fixed-size buffer.  For
-    dynamic buffers the current buffer is allocated separately.</li>
+    dynamic buffers the current buffer is allocated separately.  For
+    external buffers a single heap object is allocated and points to
+    a user buffer.</li>
 </ul>
  
 <p>Note that while strings are considered a primitive (pass-by-value)
@@ -240,10 +242,10 @@ encoding, and is used to implement <a href="#internalproperties">internal proper
 
 <h2 id="type-object">Object</h2>
 
-<p>The <b>object</b> type includes Ecmascript objects and arrays, functions, and
-threads (coroutines).  In other words, anything with properties is an object.
-Properties are key-value pairs with a string key and an arbitrary value
-(including <b>undefined</b>).</p>
+<p>The <b>object</b> type includes Ecmascript objects and arrays, functions,
+threads (coroutines), and buffer objects.  In other words, anything with
+properties is an object.  Properties are key-value pairs with a string key
+and an arbitrary value (including <b>undefined</b>).</p>
 
 <p>Objects may participate in garbage collection finalization.</p>
 
@@ -264,21 +266,25 @@ code must not access the bytes following the allocated buffer size.</p>
 must not hold onto a buffer data pointer unless the buffer is reachable to
 Duktape, e.g. resides in an active value stack.</p>
 
-<p>The buffer type is not standard Ecmascript.  There are a few
-different Ecmascript typed array specifications, though, see e.g.
-<a href="http://www.khronos.org/registry/typedarray/specs/latest/">Typed Array Specification</a>.
-These will be implemented on top of raw arrays, most likely.
-</p>
-
 <p>Like strings, buffer values have a <code>length</code> property and
 array index properties for reading and writing individual bytes in the buffer.
 The value of a indexed byte (<code>buf[123]</code>) is a number in the
 range 0...255 which represents a byte value (written values are coerced to
 integer modulo 256).  This differs from string behavior where the indexed
 values are one-character strings (much more expensive).  The <code>length</code>
-property is read-only at the moment (so you can't resize a string by assigning
-to the length property).  These properties are available for both plain buffer
-values and buffer object values.</p>
+property is read-only so you can't resize a string by assigning to the length
+property.  These properties are available for both plain buffer values and
+buffer object values.</p>
+
+<p>The plain buffer type is not standard Ecmascript.  Duktape provides several
+Object frontends for the plain buffer type: <code>Duktape.Buffer</code>, a
+<a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js compatible Buffer</a>,
+and Khronos/ES6
+<a href="http://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>.
+These are all implemented on top of plain buffer values, but provide additional
+functionality like view/slice support, typed accessors, methods to manipulate
+data in different endianness, etc; see
+<a href="#bufferobjects">Buffer objects</a>.</p>
 
 <p>A few notes:</p>
 <ul>
@@ -288,9 +294,8 @@ a one-character value does not work as often expected.  For instance,
 ToNumber('x') = 0.  For clarity, you should only assign number values,
 e.g. <code>buf[123] = 0x78</code>.</li>
 <li>There is a fast path for reading and writing numeric indices of plain buffer
-values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  This
-fast path is not active when the base value is a Buffer object (the indexes are
-readable but go through slower processing).</li>
+values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  A similar
+fast path exists for the different buffer object values.</li>
 <li>Buffer virtual properties are not currently implemented in
 <code>defineProperty()</code>, so you can't write to buffer indices or
 buffer <code>length</code> with <code>defineProperty()</code> now (attempt

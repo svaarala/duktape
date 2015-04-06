@@ -96,13 +96,13 @@ conversion, regexp matching, etc.</p>
 
 <h3>Buffer accesses</h3>
 
-<p>
-There is a fast path for reading and writing numeric indices of plain buffer
+<p>There is a fast path for reading and writing numeric indices of plain buffer
 values, e.g. <code>x = buf[123]</code> or <code>buf[123] = x</code>.  The
 fast path avoids coercing the index to a string (here <code>"123"</code>)
 before attempting a lookup.</p>
 
-<p>This fast path is not active when the base value is a Buffer object.</p>
+<p>There's a similar fast path for buffer objects (Duktape.Buffer, Node.js
+Buffer, ArrayBuffer, and TypedArray views), but it is about 20% slower.</p>
 
 <h3>Object/array storage</h3>
 

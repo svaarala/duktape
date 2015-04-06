@@ -49,11 +49,26 @@ language implemented by Duktape.</p>
 <li><a href="http://wiki.ecmascript.org/doku.php?id=harmony:specification_drafts">Draft Specification for ES.next (Ecma-262 Edition 6)</a></li>
 </ul>
 
+<p>TypedArray support is based on Khronos TypedArray specification with some
+ambiguous semantics resolved based on ES6 TypedArray (and comparison to other
+engines):</p>
+<ul>
+<li><a href="https://www.khronos.org/registry/typedarray/specs/latest/">Typed Array Specification (Editor's Draft 18 July 2013</a> (Note: link is to latest)</li>
+<li><code>svn co -r 30720 https://cvs.khronos.org/svn/repos/registry/trunk/public/typedarray</code></li>
+</ul>
+
+<p>Node.js Buffer support is based on:</p>
+<ul>
+<li> <a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Buffer Node.js v0.12.1</a></li>
+</ul>
+
 <h2>Features</h2>
 
 <p>Besides standard Ecmascript features, Duktape has the following additional
 features (some are visible to applications, while others are internal):</p>
 <ul>
+<li>Khronos/ES6 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
+    and <a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js Buffer</a> bindings</li>
 <li>Borrowed from ES6: <code>setPrototypeOf</code>/<code>__proto__</code>
     and a subset of <code>Proxy</code> objects</li>
 <li>Borrowed from browsers: <code>print()</code> and <code>alert()</code></li>
@@ -138,6 +153,7 @@ wrappers are discussed in detail.</p>
 <a href="#custombehavior">Custom behavior</a> (behavior differing from standard),
 <a href="#customjson">Custom JSON formats</a>,
 <a href="#customdirectives">Custom directives</a>,
+<a href="#bufferobjects">Buffer objects</a>,
 <a href="#errorobjects">Error objects</a> (properties and traceback support),
 <a href="#functionobjects">Function objects</a> (properties),
 <a href="#debugger">Debugger</a>,
