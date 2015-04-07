@@ -2900,14 +2900,15 @@ DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
 DUK_EXTERNAL void duk_push_nan(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv_slot;
-	duk_double_t d;
+	duk_double_union du;
 
 	DUK_ASSERT(ctx != NULL);
 	thr = (duk_hthread *) ctx;
 	DUK__CHECK_SPACE();
-	d = DUK_DOUBLE_NAN;
+	DUK_DBLUNION_SET_NAN(&du);
+	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 	tv_slot = thr->valstack_top++;
-	DUK_TVAL_SET_NUMBER(tv_slot, d);
+	DUK_TVAL_SET_NUMBER(tv_slot, du.d);
 }
 
 DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len) {
