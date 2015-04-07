@@ -913,6 +913,12 @@ Released
 
 * Fix a few compiler warnings (GH-141)
 
+1.2.1 (2015-04-08)
+------------------
+
+* Fix duk_push_nan() NaN normalization bug which caused segfaults when using
+  MSVC on x86 and potentially on other 32-bit platforms (GH-168)
+
 Planned
 =======
 
