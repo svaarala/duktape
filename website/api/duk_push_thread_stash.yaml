@@ -1,7 +1,7 @@
 name: duk_push_thread_stash
 
 proto: |
-  void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx) {
+  void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
 stack: |
   [ ... ] -> [ ... stash! ]
