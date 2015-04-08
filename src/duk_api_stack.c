@@ -81,7 +81,7 @@ DUK_LOCAL duk_int_t duk__api_coerce_d2i(duk_context *ctx, duk_idx_t index, duk_b
 			t = DUK_INT_MAX;
 		}
 #endif
-		return t;
+		return (duk_int_t) t;
 	}
 #endif
 
@@ -138,7 +138,7 @@ DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_context *ctx, duk_idx_t index, duk
 			t = DUK_UINT_MAX;
 		}
 #endif
-		return t;
+		return (duk_uint_t) t;
 	}
 #endif
 
