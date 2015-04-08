@@ -75,7 +75,8 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_packed(duk_tval 
 	if ((t >> 48) != DUK_TAG_FASTINT) {
 		return tv->d;
 	} else if (t & 0x0000800000000000ULL) {
-		t = (-t) & 0x0000ffffffffffffULL;  /* negative */
+		t = (duk_uint64_t) (-((duk_int64_t) t));  /* avoid unary minus on unsigned */
+		t = t & 0x0000ffffffffffffULL;  /* negative */
 		t |= 0xc330000000000000ULL;
 		DUK_DBLUNION_SET_UINT64(&du, t);
 		return du.d + 4503599627370496.0;  /* 1 << 52 */
