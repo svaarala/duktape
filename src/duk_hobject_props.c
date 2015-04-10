@@ -3155,11 +3155,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		    DUK_TVAL_IS_NUMBER(tv_key)) {
 			arr_idx = duk__tval_number_to_arr_idx(tv_key);
 			if (arr_idx != DUK__NO_ARRAY_INDEX &&
-			    arr_idx < orig->a_size) {  /* for resizing of array part, use slow path */
+			    arr_idx < DUK_HOBJECT_GET_ASIZE(orig)) {  /* for resizing of array part, use slow path */
 				duk_tval tv_tmp;
 				duk_uint32_t old_len, new_len;
 
-				DUK_ASSERT(arr_idx < orig->a_size);
+				DUK_ASSERT(arr_idx < DUK_HOBJECT_GET_ASIZE(orig));
 
 				old_len = duk__get_old_array_length(thr, orig, &desc);
 
