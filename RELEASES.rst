@@ -928,6 +928,9 @@ Planned
 * Fix duk_push_nan() NaN normalization bug which caused segfaults when using
   MSVC on x86 and potentially on other 32-bit platforms (GH-168)
 
+* Fix compile error from array fast path when using low memory options
+  (GH-174)
+
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 
 2.0.0 (XXXX-XX-XX)
