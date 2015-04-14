@@ -88,6 +88,8 @@ the website, run test cases, etc:
     $ make underscoretest    # see doc/underscore-status.txt
     $ make test262test       # see doc/test262-status.txt
     $ make emscriptentest    # see doc/emscripten-status.txt
+    $ make emscriptenmandelbrottest  # run Emscripten-compiled mandelbrot.c with Duktape
+    $ make emscripteninceptiontest   # run Emscripten-compiled Duktape with Duktape
     $ make jsinterpretertest
     $ make luajstest
     $ make dukwebtest        # then browse to file:///tmp/dukweb-test/dukweb.html
