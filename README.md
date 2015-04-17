@@ -15,6 +15,7 @@ Main features:
 
 * Embeddable, portable, compact
 * Ecmascript E5/E5.1 compliant
+* Khronos/ES6 TypedArray and Node.js Buffer bindings
 * Built-in debugger
 * Built-in regular expression engine
 * Built-in Unicode support
