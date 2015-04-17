@@ -711,6 +711,10 @@ some cases:
 |                       |           | ((IB - 0xc0) << 8) + followup_byte    |
 +-----------------------+-----------+---------------------------------------+
 
+All "integer" representations are semantically the same, i.e. they can all
+be used wherever an integer is expected.  Same applies to "string" and
+"buffer" representations.
+
 The dvalue typing is sufficient to represent ``duk_tval`` values so that
 typing can be preserved (e.g. strings and buffers have separate types).
 
@@ -782,6 +786,14 @@ Notes:
   values must be accepted.  The plain integers map uniquely to IEEE doubles
   so there's no loss of information.  Note that a negative zero must be
   represented as an IEEE double to preserve the sign.
+
+* Fast integers (fastint) are not distinguish from ordinary numbers in the
+  debugger protocol.
+
+* Plain buffer values are represented explicitly, but buffer objects
+  (Duktape.Buffer, Node.js Buffer, ArrayBuffer, DataView, and TypedArray
+  views) are represented as objects.  This means that their contents are
+  not transmitted, only their heap pointer and a class number.
 
 Endianness
 ----------
@@ -2762,3 +2774,17 @@ Currently the list of breakpoints is not cleared by attach or detach, so if
 you detach and then re-attach, old breakpoints are still set.  The debug
 client can just delete all breakpoints on attach, but it'd be cleaner to
 remove the breakpoints on either attach or detach.
+
+Indicate fastint status
+-----------------------
+
+When debugging code that is intended to operate with fastints, it would be
+useful to see when a value is internally represented as a fastint vs. a full
+IEEE double.  Currently this information is not conveyed by the protocol, and
+all fastints appear like any other number values.
+
+Buffer object support
+---------------------
+
+Make it easier to see buffer object contents (like for plain buffers), either
+by serializing them differently, or through heap walking.
