@@ -34,7 +34,7 @@ DUK_INTERNAL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t 
 	 */
 
 	/* note: mixing len into seed improves hashing when skipping */
-	duk_uint32_t str_seed = heap->hash_seed ^ len;
+	duk_uint32_t str_seed = heap->hash_seed ^ ((duk_uint32_t) len);
 
 	if (len <= DUK__STRHASH_SHORTSTRING) {
 		hash = duk_util_hashbytes(str, len, str_seed);
