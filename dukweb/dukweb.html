@@ -14,7 +14,8 @@
 <p id="dukweb-intro">Works in Chrome/Chromium/Firefox.  There is much to
 improve in the Duktape/browser bindings and errors are not handled nicely
 yet, so keep your Javascript Console open.  Also note that this page takes
-a few seconds to (re)load.</p>
+a few seconds to (re)load.  You can embed code in the Dukweb link as a
+fragment identifier: <a href="http://duktape.org/dukweb.html#print('Hello%20world!')%3B">http://duktape.org/dukweb.html#print('Hello%20world!')%3B</a>.</p>
 
 <div id="dukweb-input-wrapper">
 <textarea id="dukweb-input">
@@ -51,6 +52,13 @@ Dukweb.eval('alert("your browser userAgent is: " + navigator.userAgent.toString(
 <script type="text/javascript">
 //<![CDATA[
 
+function checkUriCode() {
+    if (location && location.hash && location.hash[0] === '#') {
+        $('#dukweb-input').val(decodeURIComponent(location.hash.substring(1)));
+    }
+}
+checkUriCode();
+
 function dukwebSetup() {
     if (typeof Duktape !== 'object') {
         throw new Error('initialization failed (Duktape is undefined)');
@@ -78,14 +86,20 @@ function dukwebSetup() {
         $('#dukweb-output').text('');
         dukwebOutput = [];
         var code = $('#dukweb-input').val();
-        try {
-            var res = Duktape.eval(code);
-            dukwebAppendOutput('==> ' + res + '\n');
-        } catch (e) {
-            dukwebAppendOutput('==> ' + (e.stack || e) + '\n');
+        if (code.length < 65536 && location) {
+            location.hash = encodeURIComponent(code);
         }
+        setTimeout(function () {
+            try {
+                var res = Duktape.eval(code);
+                dukwebAppendOutput('==> ' + res + '\n');
+            } catch (e) {
+                dukwebAppendOutput('==> ' + (e.stack || e) + '\n');
+            }
+        }, 1);  // sleep to allow hash to update immediately
     });
 }
+
 try {
     dukwebSetup();
 } catch (e) {
