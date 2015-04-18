@@ -982,8 +982,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 		 found:
 			matched = 1;
 			match_start_boff = (duk_uint32_t) (p - p_start);
-			match_end_coff = match_start_coff + q_clen;
-			match_end_boff = match_start_boff + q_blen;
+			match_end_coff = (duk_uint32_t) (match_start_coff + q_clen);  /* constrained by string length */
+			match_end_boff = (duk_uint32_t) (match_start_boff + q_blen);  /* ditto */
 
 			/* empty match (may happen with empty separator) -> bump and continue */
 			if (prev_match_end_boff == match_end_boff) {
