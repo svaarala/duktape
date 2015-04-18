@@ -39,7 +39,7 @@ struct duk_memory_functions;
 struct duk_function_list_entry;
 struct duk_number_list_entry;
 
-typedef void duk_context;
+typedef struct duk_hthread duk_context;
 typedef struct duk_memory_functions duk_memory_functions;
 typedef struct duk_function_list_entry duk_function_list_entry;
 typedef struct duk_number_list_entry duk_number_list_entry;
