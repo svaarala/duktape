@@ -10,6 +10,8 @@
  * May currently throw an error e.g. when getting the property.
  */
 DUK_LOCAL void duk__call_prop_prep_stack(duk_context *ctx, duk_idx_t normalized_obj_index, duk_idx_t nargs) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	DUK_DDD(DUK_DDDPRINT("duk__call_prop_prep_stack, normalized_obj_index=%ld, nargs=%ld, stacktop=%ld",
 	                     (long) normalized_obj_index, (long) nargs, (long) duk_get_top(ctx)));
 
@@ -39,7 +41,7 @@ DUK_EXTERNAL void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 1;
@@ -68,7 +70,7 @@ DUK_EXTERNAL void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
@@ -93,6 +95,8 @@ DUK_EXTERNAL void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t
 	 *  is now done "in-place", so this is not a trivial change.
 	 */
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
 
 	duk__call_prop_prep_stack(ctx, obj_index, nargs);
@@ -106,7 +110,7 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
@@ -144,7 +148,7 @@ DUK_EXTERNAL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_idx_t idx_func;
 	duk_int_t rc;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
@@ -171,6 +175,8 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_context *ctx) {
 	 * index so the stack must have the same top when we use it.
 	 */
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	obj_index = (duk_idx_t) duk_get_int(ctx, -2);
 	nargs = (duk_idx_t) duk_get_int(ctx, -1);
 	duk_pop_2(ctx);
@@ -187,6 +193,8 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk
 	 *  and property lookup, not just the call itself.
 	 */
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	duk_push_idx(ctx, obj_index);
 	duk_push_idx(ctx, nargs);
 
@@ -201,7 +209,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t rc;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
 	if (duk_get_top(ctx) < nargs || nrets < 0) {
@@ -264,6 +272,8 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	duk_idx_t idx_cons;
 	duk_small_uint_t call_flags;
 	duk_int_t rc;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	/* [... constructor arg1 ... argN] */
 
@@ -400,7 +410,7 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
@@ -422,7 +432,7 @@ DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	 * the internal call sites.
 	 */
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
@@ -443,7 +453,7 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 	duk_activation *act;
 	duk_hobject *func;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
@@ -471,7 +481,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 	duk_hobject *h;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	tv = duk_require_tval(ctx, index);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -495,7 +505,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic) {
 	duk_hnativefunction *nf;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	nf = duk_require_hnativefunction(ctx, index);
 	DUK_ASSERT(nf != NULL);

@@ -7,7 +7,7 @@
 DUK_EXTERNAL void *duk_alloc_raw(duk_context *ctx, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	return DUK_ALLOC_RAW(thr->heap, size);
 }
@@ -15,7 +15,7 @@ DUK_EXTERNAL void *duk_alloc_raw(duk_context *ctx, duk_size_t size) {
 DUK_EXTERNAL void duk_free_raw(duk_context *ctx, void *ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	DUK_FREE_RAW(thr->heap, ptr);
 }
@@ -23,7 +23,7 @@ DUK_EXTERNAL void duk_free_raw(duk_context *ctx, void *ptr) {
 DUK_EXTERNAL void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	return DUK_REALLOC_RAW(thr->heap, ptr, size);
 }
@@ -31,7 +31,7 @@ DUK_EXTERNAL void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size)
 DUK_EXTERNAL void *duk_alloc(duk_context *ctx, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	return DUK_ALLOC(thr->heap, size);
 }
@@ -39,7 +39,7 @@ DUK_EXTERNAL void *duk_alloc(duk_context *ctx, duk_size_t size) {
 DUK_EXTERNAL void duk_free(duk_context *ctx, void *ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	DUK_FREE(thr->heap, ptr);
 }
@@ -47,7 +47,7 @@ DUK_EXTERNAL void duk_free(duk_context *ctx, void *ptr) {
 DUK_EXTERNAL void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	/*
 	 *  Note: since this is an exposed API call, there should be
@@ -66,7 +66,7 @@ DUK_EXTERNAL void duk_get_memory_functions(duk_context *ctx, duk_memory_function
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(out_funcs != NULL);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -85,9 +85,11 @@ DUK_EXTERNAL void duk_gc(duk_context *ctx, duk_uint_t flags) {
 
 	DUK_UNREF(flags);
 
+	/* NULL accepted */
 	if (!ctx) {
 		return;
 	}
+	DUK_ASSERT_CTX_VALID(ctx);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 

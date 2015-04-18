@@ -185,6 +185,8 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk_uint8_t *dst;
 	const char *ret;
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	/* XXX: optimize for string inputs: no need to coerce to a buffer
 	 * which makes a copy of the input.
 	 */
@@ -224,6 +226,8 @@ DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	duk_uint8_t *dst;
 	duk_uint8_t *dst_final;
 	duk_bool_t retval;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
@@ -267,6 +271,8 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	duk_uint8_t *buf;
 	const char *ret;
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	index = duk_require_normalize_index(ctx, index);
 	inp = duk__prep_codec_arg(ctx, index, &len);
 	DUK_ASSERT(inp != NULL || len == 0);
@@ -302,6 +308,8 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	duk_small_int_t t;
 	duk_uint8_t *buf;
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	index = duk_require_normalize_index(ctx, index);
 	inp = duk__prep_codec_arg(ctx, index, &len);
 	DUK_ASSERT(inp != NULL || len == 0);
@@ -336,9 +344,14 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 
 DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
-	duk_idx_t top_at_entry = duk_get_top(ctx);
+	duk_idx_t top_at_entry;
 #endif
 	const char *ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+#ifdef DUK_USE_ASSERTIONS
+	top_at_entry = duk_get_top(ctx);
+#endif
 
 	index = duk_require_normalize_index(ctx, index);
 	duk_bi_json_stringify_helper(ctx,
@@ -357,7 +370,12 @@ DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 
 DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 #ifdef DUK_USE_ASSERTIONS
-	duk_idx_t top_at_entry = duk_get_top(ctx);
+	duk_idx_t top_at_entry;
+#endif
+
+	DUK_ASSERT_CTX_VALID(ctx);
+#ifdef DUK_USE_ASSERTIONS
+	top_at_entry = duk_get_top(ctx);
 #endif
 
 	index = duk_require_normalize_index(ctx, index);
