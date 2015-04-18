@@ -925,6 +925,8 @@ Planned
 1.3.0 (2015-XX-XX)
 ------------------
 
+* Add duk_instanceof() API call (GH-148)
+
 * Change typing of "duk_context" from "void" to "struct duk_hthread" which
   should improve compiler warnings/errors when accidentally passing an invalid
   "ctx" pointer to a Duktape API call (GH-178)
