@@ -6,7 +6,7 @@ top at end: 0
 ===*/
 
 static duk_ret_t my_constructor(duk_context *ctx) {
-	return 1;
+	return 0;
 }
 
 static duk_ret_t test1(duk_context *ctx) {
