@@ -925,6 +925,13 @@ Planned
 1.3.0 (2015-XX-XX)
 ------------------
 
+* Change typing of "duk_context" from "void" to "struct duk_hthread" which
+  should improve compiler warnings/errors when accidentally passing an invalid
+  "ctx" pointer to a Duktape API call (GH-178)
+
+* Add internal assertions for validating the "ctx" pointer beyond just a NULL
+  check (GH-178)
+
 * Fix duk_push_nan() NaN normalization bug which caused segfaults when using
   MSVC on x86 and potentially on other 32-bit platforms (GH-168)
 
