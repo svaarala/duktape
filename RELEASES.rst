@@ -933,6 +933,8 @@ Planned
 
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 
+* Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
