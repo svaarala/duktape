@@ -139,6 +139,26 @@
 #define DUK_HTHREAD_STATE_TERMINATED   5   /* thread has terminated */
 
 /*
+ *  Assert context is valid: non-NULL pointer, fields look sane.
+ *
+ *  This is used by public API call entrypoints to catch invalid 'ctx' pointers
+ *  as early as possible; invalid 'ctx' pointers cause very odd and difficult to
+ *  diagnose behavior so it's worth checking even when the check is not 100%.
+ */
+
+#define DUK_ASSERT_CTX_VALID(ctx) do { \
+		DUK_ASSERT((ctx) != NULL); \
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) (ctx)) == DUK_HTYPE_OBJECT); \
+		DUK_ASSERT(DUK_HOBJECT_IS_THREAD((duk_hobject *) (ctx))); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->unused1 == 0); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->unused2 == 0); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->valstack != NULL); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack_bottom); \
+	} while (0)
+
+/*
  *  Struct defines
  */
 
