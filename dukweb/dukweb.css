@@ -25,6 +25,19 @@ h1 {
 	padding: 0;
 }
 
+#dukweb-intro a {
+	color: #aaaaff;
+	font-style: italic;
+}
+#dukweb-intro a:visited {
+	color: #aaaaff;
+	font-style: italic;
+}
+#dukweb-intro a:hover {
+	color: #8888ff;
+	font-style: italic;
+}
+
 #dukweb-input-wrapper {
 	height: 20em;
 	border: 2px solid #cccccc;
