@@ -80,6 +80,8 @@ function dukwebSetup() {
         dukwebOutput = [];
         var code = $('#dukweb-input').val();
         if (code.length < 65536 && location) {
+            // Although Firefox automatically decodes location.hash, this
+            // still seems to work.
             location.hash = encodeURIComponent(code);
         }
         setTimeout(function () {
@@ -95,9 +97,18 @@ function dukwebSetup() {
 
 $(document).ready(function () {
     function checkUriCode() {
+        // In some browsers location.hash is automatically decoded and in
+        // others it is not.  This is more portable:
+        // http://stackoverflow.com/questions/4835784/firefox-automatically-decoding-encoded-parameter-in-url-does-not-happen-in-ie
+        if (location && location.href && location.href.indexOf('#') >= 0) {
+            var code = location.href.substring(location.href.indexOf('#') + 1);
+            $('#dukweb-input').val(decodeURIComponent(code));
+        }
+/*
         if (location && location.hash && location.hash[0] === '#') {
             $('#dukweb-input').val(decodeURIComponent(location.hash.substring(1)));
         }
+*/
     }
     try {
         checkUriCode();
