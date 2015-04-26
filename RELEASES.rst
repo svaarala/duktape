@@ -1213,6 +1213,11 @@ Planned
 * Internal performance improvement: faster computation of string UTF-8
   character length in string interning (GH-422)
 
+* Internal performance improvement: change default internal string hash
+  algorithm to a faster algorithm adapted from Lua/djb2 hash, with the
+  previous algorithm (based on Murmurhash2) available using a config
+  option (GH-139, GH-432)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
