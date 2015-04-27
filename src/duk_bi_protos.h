@@ -44,9 +44,6 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ct
 DUK_INTERNAL_DECL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx);
 
-DUK_INTERNAL_DECL void duk_bufobj_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
-DUK_INTERNAL_DECL void duk_bufobj_validated_write(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
-
 /* XXX: naming is inconsistent with other builtins, "prototype" not used as
  * part of function name.
  */

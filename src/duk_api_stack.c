@@ -1974,6 +1974,41 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	return ret;
 }
 
+/* Special coercion for Uint8ClampedArray. */
+DUK_INTERNAL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t index) {
+	duk_double_t d;
+	duk_double_t t;
+	duk_uint8_t ret;
+
+	/* XXX: Simplify this algorithm, should be possible to come up with
+	 * a shorter and faster algorithm by inspecting IEEE representation
+	 * directly.
+	 */
+
+	d = duk_to_number(ctx, index);
+	if (d <= 0.0) {
+		return 0;
+	} else if (d >= 255) {
+		return 255;
+	} else if (DUK_ISNAN(d)) {
+		/* Avoid NaN-to-integer coercion as it is compiler specific. */
+		return 0;
+	}
+
+	t = d - DUK_FLOOR(d);
+	if (t == 0.5) {
+		/* Exact halfway, round to even. */
+		ret = (duk_uint8_t) d;
+		ret = (ret + 1) & 0xfe;  /* Example: d=3.5, t=0.5 -> ret = (3 + 1) & 0xfe = 4 & 0xfe = 4
+		                          * Example: d=4.5, t=0.5 -> ret = (4 + 1) & 0xfe = 5 & 0xfe = 4
+		                          */
+	} else {
+		/* Not halfway, round to nearest. */
+		ret = (duk_uint8_t) (d + 0.5);
+	}
+	return ret;
+}
+
 DUK_EXTERNAL const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len) {
 	DUK_ASSERT_CTX_VALID(ctx);
 

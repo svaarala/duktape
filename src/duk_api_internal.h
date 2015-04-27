@@ -49,6 +49,12 @@ DUK_INTERNAL_DECL duk_hstring *duk_push_this_coercible_to_string(duk_context *ct
  */
 DUK_INTERNAL_DECL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx);
 
+/* XXX: add fastint support? */
+#define duk_push_u64(ctx,val) \
+	duk_push_number((ctx), (duk_double_t) (val))
+#define duk_push_i64(ctx,val) \
+	duk_push_number((ctx), (duk_double_t) (val))
+
 /* duk_push_(u)int() is guaranteed to support at least (un)signed 32-bit range */
 #define duk_push_u32(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
@@ -95,6 +101,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index)
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);
 DUK_INTERNAL_DECL duk_int_t duk_to_int_check_range(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);
+DUK_INTERNAL_DECL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t index);
 
 DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index);

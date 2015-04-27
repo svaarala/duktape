@@ -329,9 +329,24 @@ typedef union duk_double_union duk_double_union;
 	} while (0)
 #endif  /* DUK_USE_PACKED_TVAL */
 
-/* Byteswap an (aligned) duk_double_union. */
+/* XXX: native 64-bit byteswaps when available */
+
+/* 64-bit byteswap, same operation independent of target endianness. */
+#define DUK_DBLUNION_BSWAP64(u) do { \
+		duk_uint32_t duk__bswaptmp1, duk__bswaptmp2; \
+		duk__bswaptmp1 = (u)->ui[0]; \
+		duk__bswaptmp2 = (u)->ui[1]; \
+		duk__bswaptmp1 = DUK_BSWAP32(duk__bswaptmp1); \
+		duk__bswaptmp2 = DUK_BSWAP32(duk__bswaptmp2); \
+		(u)->ui[0] = duk__bswaptmp2; \
+		(u)->ui[1] = duk__bswaptmp1; \
+	} while (0)
+
+/* Byteswap an IEEE double in the duk_double_union from host to network
+ * order.  For a big endian target this is a no-op.
+ */
 #if defined(DUK_USE_DOUBLE_LE)
-#define DUK_DBLUNION_BSWAP(u) do { \
+#define DUK_DBLUNION_DOUBLE_HTON(u) do { \
 		duk_uint32_t duk__bswaptmp1, duk__bswaptmp2; \
 		duk__bswaptmp1 = (u)->ui[0]; \
 		duk__bswaptmp2 = (u)->ui[1]; \
@@ -341,7 +356,7 @@ typedef union duk_double_union duk_double_union;
 		(u)->ui[1] = duk__bswaptmp1; \
 	} while (0)
 #elif defined(DUK_USE_DOUBLE_ME)
-#define DUK_DBLUNION_BSWAP(u) do { \
+#define DUK_DBLUNION_DOUBLE_HTON(u) do { \
 		duk_uint32_t duk__bswaptmp1, duk__bswaptmp2; \
 		duk__bswaptmp1 = (u)->ui[0]; \
 		duk__bswaptmp2 = (u)->ui[1]; \
@@ -351,9 +366,12 @@ typedef union duk_double_union duk_double_union;
 		(u)->ui[1] = duk__bswaptmp2; \
 	} while (0)
 #elif defined(DUK_USE_DOUBLE_BE)
-#define DUK_DBLUNION_BSWAP(u) do { } while (0)
+#define DUK_DBLUNION_DOUBLE_HTON(u) do { } while (0)
 #else
 #error internal error, double endianness insane
 #endif
+
+/* Reverse operation is the same. */
+#define DUK_DBLUNION_DOUBLE_NTOH(u) DUK_DBLUNION_DOUBLE_HTON((u))
 
 #endif  /* DUK_DBLUNION_H_INCLUDED */

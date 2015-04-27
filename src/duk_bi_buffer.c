@@ -38,6 +38,17 @@ static const duk_uint16_t duk__buffer_proto_from_elemtype[9] = {
 	DUK_BIDX_FLOAT64ARRAY_PROTOTYPE
 };
 
+/* Map DUK_HBUFFEROBJECT_ELEM_xxx to byte size.
+ */
+static const duk_uint8_t duk__buffer_nbytes_from_fldtype[6] = {
+	1,  /* DUK__FLD_8BIT */
+	2,  /* DUK__FLD_16BIT */
+	4,  /* DUK__FLD_32BIT */
+	4,  /* DUK__FLD_FLOAT */
+	8,  /* DUK__FLD_DOUBLE */
+	0   /* DUK__FLD_VARINT; not relevant here */
+};
+
 /* Bitfield for each DUK_HBUFFEROBJECT_ELEM_xxx indicating which element types
  * are compatible with a blind byte copy for the TypedArray set() method (also
  * used for TypedArray constructor).  Array index is target buffer elem type,
@@ -249,6 +260,194 @@ DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
 	duk_error(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_CALL_ARGS);
 }
 
+/* Shared lenient buffer length clamping helper.  No negative indices, no
+ * element/byte shifting.
+ */
+DUK_LOCAL void duk__clamp_startend_nonegidx_noshift(duk_context *ctx,
+                                                    duk_hbufferobject *h_bufobj,
+                                                    duk_idx_t idx_start,
+                                                    duk_idx_t idx_end,
+                                                    duk_int_t *out_start_offset,
+                                                    duk_int_t *out_end_offset) {
+	duk_int_t buffer_length;
+	duk_int_t start_offset;
+	duk_int_t end_offset;
+
+	DUK_ASSERT(out_start_offset != NULL);
+	DUK_ASSERT(out_end_offset != NULL);
+
+	buffer_length = (duk_int_t) h_bufobj->length;
+
+	/* undefined coerces to zero which is correct */
+	start_offset = duk_to_int_clamped(ctx, idx_start, 0, buffer_length);
+	if (duk_is_undefined(ctx, idx_end)) {
+		end_offset = buffer_length;
+	} else {
+		end_offset = duk_to_int_clamped(ctx, idx_end, start_offset, buffer_length);
+	}
+
+	DUK_ASSERT(start_offset >= 0);
+	DUK_ASSERT(start_offset <= buffer_length);
+	DUK_ASSERT(end_offset >= 0);
+	DUK_ASSERT(end_offset <= buffer_length);
+	DUK_ASSERT(start_offset <= end_offset);
+
+	*out_start_offset = start_offset;
+	*out_end_offset = end_offset;
+}
+
+/* Shared lenient buffer length clamping helper.  Indices are treated as
+ * element indices (though output values are byte offsets) which only
+ * really matters for TypedArray views as other buffer object have a zero
+ * shift.  Negative indices are counted from end of input slice; crossed
+ * indices are clamped to zero length; and final indices are clamped
+ * against input slice.  Used for e.g. ArrayBuffer slice().
+ */
+DUK_LOCAL void duk__clamp_startend_negidx_shifted(duk_context *ctx,
+                                                  duk_hbufferobject *h_bufobj,
+                                                  duk_idx_t idx_start,
+                                                  duk_idx_t idx_end,
+                                                  duk_int_t *out_start_offset,
+                                                  duk_int_t *out_end_offset) {
+	duk_int_t buffer_length;
+	duk_int_t start_offset;
+	duk_int_t end_offset;
+
+	DUK_ASSERT(out_start_offset != NULL);
+	DUK_ASSERT(out_end_offset != NULL);
+
+	buffer_length = (duk_int_t) h_bufobj->length;
+	buffer_length >>= h_bufobj->shift;  /* as elements */
+
+	/* Resolve start/end offset as element indices first; arguments
+	 * at idx_start/idx_end are element offsets.  Working with element
+	 * indices first also avoids potential for wrapping.
+	 */
+
+	start_offset = duk_to_int(ctx, idx_start);
+	if (start_offset < 0) {
+		start_offset = buffer_length + start_offset;
+	}
+	if (duk_is_undefined(ctx, idx_end)) {
+		end_offset = buffer_length;
+	} else {
+		end_offset = duk_to_int(ctx, idx_end);
+		if (end_offset < 0) {
+			end_offset = buffer_length + end_offset;
+		}
+	}
+	/* Note: start_offset/end_offset can still be < 0 here. */
+
+	if (start_offset < 0) {
+		start_offset = 0;
+	} else if (start_offset > buffer_length) {
+		start_offset = buffer_length;
+	}
+	if (end_offset < start_offset) {
+		end_offset = start_offset;
+	} else if (end_offset > buffer_length) {
+		end_offset = buffer_length;
+	}
+	DUK_ASSERT(start_offset >= 0);
+	DUK_ASSERT(start_offset <= buffer_length);
+	DUK_ASSERT(end_offset >= 0);
+	DUK_ASSERT(end_offset <= buffer_length);
+	DUK_ASSERT(start_offset <= end_offset);
+
+	/* Convert indices to byte offsets. */
+	start_offset <<= h_bufobj->shift;
+	end_offset <<= h_bufobj->shift;
+
+	*out_start_offset = start_offset;
+	*out_end_offset = end_offset;
+}
+
+/*
+ *  Indexed read/write helpers (also used from outside this file)
+ */
+
+DUK_INTERNAL void duk_hbufferobject_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
+	duk_double_union du;
+
+	DUK_MEMCPY((void *) du.uc, (const void *) p, elem_size);
+
+	switch (h_bufobj->elem_type) {
+	case DUK_HBUFFEROBJECT_ELEM_UINT8:
+	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
+		duk_push_uint(ctx, (duk_uint_t) du.uc[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT8:
+		duk_push_int(ctx, (duk_int_t) (duk_int8_t) du.uc[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT16:
+		duk_push_uint(ctx, (duk_uint_t) du.us[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT16:
+		duk_push_int(ctx, (duk_int_t) (duk_int16_t) du.us[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT32:
+		duk_push_uint(ctx, (duk_uint_t) du.ui[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT32:
+		duk_push_int(ctx, (duk_int_t) (duk_int32_t) du.ui[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT32:
+		duk_push_number(ctx, (duk_double_t) du.f[0]);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
+		duk_push_number(ctx, (duk_double_t) du.d);
+		break;
+	default:
+		DUK_UNREACHABLE();
+	}
+}
+
+DUK_INTERNAL void duk_hbufferobject_validated_write(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
+	duk_double_union du;
+
+	/* NOTE! Caller must ensure that any side effects from the
+	 * coercions below are safe.  If that cannot be guaranteed
+	 * (which is normally the case), caller must coerce the
+	 * argument using duk_to_number() before any pointer
+	 * validations; the result of duk_to_number() always coerces
+	 * without side effects here.
+	 */
+
+	switch (h_bufobj->elem_type) {
+	case DUK_HBUFFEROBJECT_ELEM_UINT8:
+		du.uc[0] = (duk_uint8_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
+		du.uc[0] = (duk_uint8_t) duk_to_uint8clamped(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT8:
+		du.uc[0] = (duk_uint8_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT16:
+		du.us[0] = (duk_uint16_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT16:
+		du.us[0] = (duk_uint16_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_UINT32:
+		du.ui[0] = (duk_uint32_t) duk_to_uint32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_INT32:
+		du.ui[0] = (duk_uint32_t) duk_to_int32(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT32:
+		du.f[0] = (duk_float_t) duk_to_number(ctx, -1);
+		break;
+	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
+		du.d = (duk_double_t) duk_to_number(ctx, -1);
+		break;
+	default:
+		DUK_UNREACHABLE();
+	}
+
+	DUK_MEMCPY((void *) p, (const void *) du.uc, elem_size);
+}
+
 /*
  *  Duktape.Buffer: constructor
  */
@@ -385,7 +584,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 		duk_pop(ctx);
 		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
 		for (i = 0; i < len; i++) {
-			/* FIXME: fast path for array arguments? */
+			/* XXX: fast path for array arguments? */
 			duk_get_prop_index(ctx, 0, (duk_uarridx_t) i);
 			buf[i] = (duk_uint8_t) (duk_to_uint32(ctx, -1) & 0xffU);
 			duk_pop(ctx);
@@ -432,7 +631,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 	duk_hbufferobject *h_bufobj;
 	duk_hbuffer *h_val;
 
-	/* FIXME: function flag to make this automatic? */
+	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
 		return DUK_RET_TYPE_ERROR;
 	}
@@ -444,6 +643,8 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 
 		h_val = duk_get_hbuffer(ctx, 0);
 		DUK_ASSERT(h_val != NULL);
+
+		/* XXX: accept any duk_hbufferobject type as an input also? */
 	} else {
 		duk_int_t len;
 		len = duk_to_int(ctx, 0);
@@ -499,7 +700,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 
-	/* FIXME: function flag to make this automatic? */
+	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
 		return DUK_RET_TYPE_ERROR;
 	}
@@ -572,7 +773,12 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 					goto fail_arguments;
 				}
 				elem_length = (duk_uint_t) elem_length_signed;
-				byte_length = elem_length << shift;  /* FIXME: overflow */
+				byte_length = elem_length << shift;
+				if ((byte_length >> shift) != elem_length) {
+					/* Byte length would overflow. */
+					/* XXX: easier check with less code? */
+					goto fail_arguments;
+				}
 				DUK_ASSERT(h_bufarg->length >= byte_offset);
 				if (byte_length > h_bufarg->length - byte_offset) {
 					/* Not enough data. */
@@ -664,7 +870,11 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	}
 	elem_length = (duk_uint_t) elem_length_signed;
 	byte_length = (duk_uint_t) (elem_length << shift);
-	/* FIXME: overflow check? */
+	if ((byte_length >> shift) != elem_length) {
+		/* Byte length would overflow. */
+		/* XXX: easier check with less code? */
+		goto fail_arguments;
+	}
 
 	DUK_DDD(DUK_DDDPRINT("elem_length=%ld, byte_length=%ld",
 	                     (long) elem_length, (long) byte_length));
@@ -762,8 +972,11 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("fast path per element copy loop: "
 			                     "p_src=%p, p_src_end=%p, p_dst=%p",
 			                     (void *) p_src, (void *) p_src_end, (void *) p_dst));
-			duk_bufobj_push_validated_read(ctx, h_bufarg, p_src, src_elem_size);
-			duk_bufobj_validated_write(ctx, h_bufobj, p_dst, dst_elem_size);
+			/* A validated read() is always a number, so it's write coercion
+			 * is always side effect free an won't invalidate pointers etc.
+			 */
+			duk_hbufferobject_push_validated_read(ctx, h_bufarg, p_src, src_elem_size);
+			duk_hbufferobject_validated_write(ctx, h_bufobj, p_dst, dst_elem_size);
 			duk_pop(ctx);
 			p_src += src_elem_size;
 			p_dst += dst_elem_size;
@@ -809,7 +1022,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	duk_uint_t offset;
 	duk_uint_t length;
 
-	/* FIXME: function flag to make this automatic? */
+	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
 		return DUK_RET_TYPE_ERROR;
 	}
@@ -839,12 +1052,15 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFFEROBJECT_ELEM_UINT8);
 	h_bufobj->is_view = 1;
 
-	/* FIXME: we don't require the argument to be an ArrayBuffer.
-	 * That's OK as such, but setting .buffer to a non-ArrayBuffer
-	 * is confusing.  Change so that .buffer is only set if arg is
-	 * an ArrayBuffer?  Or so that .buffer is set an ArrayBuffer
-	 * argument, and the .buffer property of the argument if it
-	 * exists (which allows view arguments)?
+	/* The DataView .buffer property is ordinarily set to the argument
+	 * which is an ArrayBuffer.  We accept any duk_hbufferobject as
+	 * an argument and .buffer will be set to the argument regardless
+	 * of what it is.  This may be a bit confusing if the argument
+	 * is e.g. a DataView or another TypedArray view.
+	 *
+	 * XXX: Copy .buffer property from a DataView/TypedArray argument?
+	 * Create a fresh ArrayBuffer for Duktape.Buffer and Node.js Buffer
+	 * arguments?  See: test-bug-dataview-buffer-prop.js.
 	 */
 
 	duk_dup(ctx, 0);
@@ -879,7 +1095,6 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
 	duk_int_t start_offset, end_offset;
-	duk_int_t buffer_length;
 	duk_uint8_t *buf_slice;
 	duk_size_t slice_length;
 
@@ -892,23 +1107,11 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 		duk_push_string(ctx, "[object Object]");
 		return 1;
 	}
-
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_this);
-	buffer_length = h_this->length;
 
 	/* ignore encoding for now */
 
-	start_offset = duk_to_int_clamped(ctx, 1, 0, buffer_length);
-	if (duk_is_undefined(ctx, 2)) {
-		end_offset = buffer_length;
-	} else {
-		end_offset = duk_to_int_clamped(ctx, 2, start_offset, buffer_length);
-	}
-	DUK_ASSERT(start_offset >= 0);
-	DUK_ASSERT(start_offset <= buffer_length);
-	DUK_ASSERT(end_offset >= 0);
-	DUK_ASSERT(end_offset <= buffer_length);
-	DUK_ASSERT(start_offset <= end_offset);
+	duk__clamp_startend_nonegidx_noshift(ctx, h_this, 1 /*idx_start*/, 2 /*idx_end*/, &start_offset, &end_offset);
 
 	slice_length = (duk_size_t) (end_offset - start_offset);
 	buf_slice = (duk_uint8_t *) duk_push_fixed_buffer(ctx, slice_length);
@@ -1122,19 +1325,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 
 	/* Fill offset handling is more lenient than in Node.js. */
 
-	/* FIXME: extract shared helper for offset handling, share e.g. with toString. */
-
-	fill_offset = duk_to_int_clamped(ctx, 1, 0, h_this->length);  /* undefined coerces to zero which is correct */
-	if (duk_is_undefined(ctx, 2)) {
-		fill_end = h_this->length;
-	} else {
-		fill_end = duk_to_int_clamped(ctx, 2, fill_offset, h_this->length);
-	}
-	DUK_ASSERT(fill_offset >= 0);
-	DUK_ASSERT(fill_offset <= (duk_int_t) h_this->length);
-	DUK_ASSERT(fill_end >= 0);
-	DUK_ASSERT(fill_end <= (duk_int_t) h_this->length);
-	DUK_ASSERT(fill_offset <= fill_end);
+	duk__clamp_startend_nonegidx_noshift(ctx, h_this, 1 /*idx_start*/, 2 /*idx_end*/, &fill_offset, &fill_end);
 
 	DUK_DDD(DUK_DDDPRINT("fill: fill_value=%02x, fill_offset=%ld, fill_end=%ld, view length=%ld",
 	                     (unsigned int) fill_value, (long) fill_offset, (long) fill_end, (long) h_this->length));
@@ -1270,8 +1461,15 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
 	}
 	copy_size = source_uend - source_ustart;
 	if (target_ustart + copy_size > (duk_uint_t) target_length) {
-		/* FIXME: ensure no overflow possibility */
-		/* Clamp to target's end if too long. */
+		/* Clamp to target's end if too long.
+		 *
+		 * NOTE: there's no overflow possibility in the comparison;
+		 * both target_ustart and copy_size are >= 0 and based on
+		 * values in duk_int_t range.  Adding them as duk_uint_t
+		 * values is then guaranteed not to overflow.
+		 */
+		DUK_ASSERT(target_ustart + copy_size >= target_ustart);  /* no overflow */
+		DUK_ASSERT(target_ustart + copy_size >= copy_size);  /* no overflow */
 		copy_size = (duk_uint_t) target_length - target_ustart;
 	}
 
@@ -1382,7 +1580,19 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	}
 	offset_elems = (duk_uint_t) offset_signed;
 	offset_bytes = offset_elems << h_this->shift;
-	/* FIXME: overflow check */
+	if ((offset_bytes >> h_this->shift) != offset_elems) {
+		/* Byte length would overflow. */
+		/* XXX: easier check with less code? */
+		return DUK_RET_RANGE_ERROR;
+	}
+	if (offset_bytes > h_this->length) {
+		/* Equality may be OK but >length not.  Checking
+		 * this explicitly avoids some overflow cases
+		 * below.
+		 */
+		return DUK_RET_RANGE_ERROR;
+	}
+	DUK_ASSERT(offset_bytes <= h_this->length);
 
 	/* Fast path: source is a TypedArray (or any bufferobject). */
 
@@ -1392,6 +1602,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 		duk_small_int_t no_overlap = 0;
 		duk_uint_t src_length;
 		duk_uint_t dst_length;
+		duk_uint_t dst_length_elems;
 		duk_uint8_t *p_src_base;
 		duk_uint8_t *p_src_end;
 		duk_uint8_t *p_src;
@@ -1408,14 +1619,22 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 			return 0;
 		}
 
-		/* FIXME: overflow checks */
-
 		/* Nominal size check. */
 		src_length = h_bufarg->length;  /* bytes in source */
-		dst_length = (src_length >> h_bufarg->shift) << h_this->shift;  /* bytes in dest */
+		dst_length_elems = (src_length >> h_bufarg->shift);  /* elems in source and dest */
+		dst_length = dst_length_elems << h_this->shift;  /* bytes in dest */
+		if ((dst_length >> h_this->shift) != dst_length_elems) {
+			/* Byte length would overflow. */
+			/* XXX: easier check with less code? */
+			return DUK_RET_RANGE_ERROR;
+		}
 		DUK_DDD(DUK_DDDPRINT("nominal size check: src_length=%ld, dst_length=%ld",
 		                     (long) src_length, (long) dst_length));
-		if (offset_bytes + dst_length > h_this->length) {
+		DUK_ASSERT(offset_bytes <= h_this->length);
+		if (dst_length > h_this->length - offset_bytes) {
+			/* Overflow not an issue because subtraction is used on the right
+			 * side and guaranteed to be >= 0.
+			 */
 			DUK_DDD(DUK_DDDPRINT("copy exceeds target buffer nominal length"));
 			return DUK_RET_RANGE_ERROR;
 		}
@@ -1530,8 +1749,11 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("fast path per element copy loop: "
 			                     "p_src=%p, p_src_end=%p, p_dst=%p",
 			                     (void *) p_src, (void *) p_src_end, (void *) p_dst));
-			duk_bufobj_push_validated_read(ctx, h_bufarg, p_src, src_elem_size);
-			duk_bufobj_validated_write(ctx, h_this, p_dst, dst_elem_size);
+			/* A validated read() is always a number, so it's write coercion
+			 * is always side effect free an won't invalidate pointers etc.
+			 */
+			duk_hbufferobject_push_validated_read(ctx, h_bufarg, p_src, src_elem_size);
+			duk_hbufferobject_validated_write(ctx, h_this, p_dst, dst_elem_size);
 			duk_pop(ctx);
 			p_src += src_elem_size;
 			p_dst += dst_elem_size;
@@ -1549,7 +1771,11 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 		 */
 
 		n = (duk_uarridx_t) duk_get_length(ctx, 0);
-		if (offset_bytes + (n << h_this->shift) > h_this->length) {
+		DUK_ASSERT(offset_bytes <= h_this->length);
+		if ((n << h_this->shift) > h_this->length - offset_bytes) {
+			/* Overflow not an issue because subtraction is used on the right
+			 * side and guaranteed to be >= 0.
+			 */
 			DUK_DDD(DUK_DDDPRINT("copy exceeds target buffer nominal length"));
 			return DUK_RET_RANGE_ERROR;
 		}
@@ -1599,7 +1825,6 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	duk_hbufferobject *h_this;
 	duk_hbufferobject *h_bufobj;
 	duk_hbuffer *h_val;
-	duk_int_t buffer_length;
 	duk_int_t start_offset, end_offset;
 	duk_uint_t slice_length;
 
@@ -1610,52 +1835,18 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 
 	magic = duk_get_current_magic(ctx);
 	h_this = duk__require_bufobj_this(ctx);
-	buffer_length = (duk_int_t) h_this->length;
 
-	/* Slice offsets are interpreted as element offsets (not byte
-	 * offsets).  This only really matters for TypedArray views,
-	 * Node.js Buffer and ArrayBuffer have shift == 0 so byte and
-	 * element offsets are the same.
-	 *
-	 * Slice byte range is clamped against current slice/length.
+	/* Slice offsets are element (not byte) offsets, which only matters
+	 * for TypedArray views, Node.js Buffer and ArrayBuffer have shift
+	 * zero so byte and element offsets are the same.  Negative indices
+	 * are counted from end of slice, crossed indices are allowed (and
+	 * result in zero length result), and final values are clamped
+	 * against the current slice.  There's intentionally no check
+	 * against the underlying buffer here.
 	 */
 
-	start_offset = duk_to_int(ctx, 0) << h_this->shift;
-	if (start_offset < 0) {
-		start_offset = buffer_length + start_offset;
-	}
-	if (duk_is_undefined(ctx, 1)) {
-		end_offset = buffer_length;
-	} else {
-		end_offset = duk_to_int(ctx, 1) << h_this->shift;
-		if (end_offset < 0) {
-			end_offset = buffer_length + end_offset;
-		}
-	}
-	/* Note: start_offset/end_offset can still be < 0 here. */
-
-	/* Start and end offset are clamped and no errors are thrown for
-	 * invalid or crossed indices.
-	 *
-	 * We -don't- need to check for the size of the underlying buffer
-	 * when creating a slice.  If there's a mismatch, it will be
-	 * handled when the slice is ultimately accessed.
-	 */
-	if (start_offset < 0) {
-		start_offset = 0;
-	} else if (start_offset > buffer_length) {
-		start_offset = buffer_length;
-	}
-	if (end_offset < start_offset) {
-		end_offset = start_offset;
-	} else if (end_offset > buffer_length) {
-		end_offset = buffer_length;
-	}
-	DUK_ASSERT(start_offset >= 0);
-	DUK_ASSERT(start_offset <= buffer_length);
-	DUK_ASSERT(end_offset >= 0);
-	DUK_ASSERT(end_offset <= buffer_length);
-	DUK_ASSERT(start_offset <= end_offset);
+	duk__clamp_startend_negidx_shifted(ctx, h_this, 0 /*idx_start*/, 1 /*idx_end*/, &start_offset, &end_offset);
+	DUK_ASSERT(end_offset >= start_offset);
 	slice_length = (duk_uint_t) (end_offset - start_offset);
 
 	/* The resulting buffer object gets the same class and prototype as
@@ -1720,7 +1911,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 		h_bufobj->offset = (duk_uint_t) (h_this->offset + start_offset);
 
 		/* Copy the .buffer property, needed for TypedArray.prototype.subarray().
-		 * FIXME: copy only for TypedArray classes specifically?
+		 *
+		 * XXX: limit copy only for TypedArray classes specifically?
 		 */
 
 		duk_push_this(ctx);
@@ -1768,8 +1960,6 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 	DUK_ASSERT(duk_get_top(ctx) >= 1);  /* nargs */
 	tv = duk_get_tval(ctx, 0);
 	DUK_ASSERT(tv != NULL);
-
-	/* FIXME: this will now incorrectly accept Buffer.prototype as a buffer. */
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		h = DUK_TVAL_GET_OBJECT(tv);
@@ -1839,7 +2029,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 		 * zero 'length' so we'll effectively skip them.
 		 */
 		DUK_ASSERT_TOP(ctx, 2);  /* [ array totalLength ] */
-		duk_get_prop_index(ctx, 0, (duk_uarridx_t) i);  /* -> [ array totalLength buf ] */
+		duk_get_prop_index(ctx, 0, (duk_uarridx_t) i);  /* -> [ array totalLength buf ] */
 		h_bufobj = duk__require_bufobj_value(ctx, 2);
 		DUK_ASSERT(h_bufobj != NULL);
 		total_length += h_bufobj->length;
@@ -1942,6 +2132,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 #define  DUK__FLD_SIGNED       (1 << 4)
 #define  DUK__FLD_TYPEDARRAY   (1 << 5)
 
+/* XXX: split into separate functions for each field type? */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_small_int_t magic = (duk_small_int_t) duk_get_current_magic(ctx);
@@ -1952,9 +2143,10 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	duk_small_int_t endswap;
 	duk_hbufferobject *h_this;
 	duk_bool_t no_assert;
-	duk_int_t offset;
-	duk_int_t buffer_length;
-	duk_int_t check_length;
+	duk_int_t offset_signed;
+	duk_uint_t offset;
+	duk_uint_t buffer_length;
+	duk_uint_t check_length;
 	duk_uint8_t *buf;
 	duk_double_union du;
 
@@ -1968,7 +2160,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 
 	h_this = duk__require_bufobj_this(ctx);
 	DUK_ASSERT(h_this != NULL);
-	buffer_length = (duk_int_t) h_this->length;
+	buffer_length = h_this->length;
 
 	/* [ offset noAssert                 ], when ftype != DUK__FLD_VARINT */
 	/* [ offset fieldByteLength noAssert ], when ftype == DUK__FLD_VARINT */
@@ -1991,7 +2183,15 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 #endif
 	}
 
-	offset = duk_to_int(ctx, 0);
+	/* Offset is coerced first to signed integer range and then to unsigned.
+	 * This ensures we can add a small byte length (1-8) to the offset in
+	 * bound checks and not wrap.
+	 */
+	offset_signed = duk_to_int(ctx, 0);
+	offset = (duk_uint_t) offset_signed;
+	if (offset_signed < 0) {
+		goto fail_bounds;
+	}
 
 	DUK_DDD(DUK_DDDPRINT("readfield, buffer_length=%ld, offset=%ld, no_assert=%d, "
 	                     "magic=%04x, magic_fieldtype=%d, magic_bigendian=%d, magic_signed=%d, "
@@ -1999,14 +2199,6 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	                     (long) buffer_length, (long) offset, (int) no_assert,
 	                     (unsigned int) magic, (int) magic_ftype, (int) (magic_bigendian >> 3),
 	                     (int) (magic_signed >> 4), (int) endswap));
-
-	if (offset < 0) {
-		goto fail_bounds;
-	}
-
-	/* FIXME: any real benefit here over having multiple functions
-	 * with no magic (except perhaps for endswap/signed)?
-	 */
 
 	/* Update 'buffer_length' to be the effective, safe limit which
 	 * takes into account the underlying buffer.  This value will be
@@ -2025,9 +2217,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	}
 
 	switch (magic_ftype) {
-	case 0: {
+	case DUK__FLD_8BIT: {
 		duk_uint8_t tmp;
-		if (offset + 1 > check_length) {
+		if (offset + 1U > check_length) {
 			goto fail_bounds;
 		}
 		tmp = buf[offset];
@@ -2038,9 +2230,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 		}
 		break;
 	}
-	case 1: {
+	case DUK__FLD_16BIT: {
 		duk_uint16_t tmp;
-		if (offset + 2 > check_length) {
+		if (offset + 2U > check_length) {
 			goto fail_bounds;
 		}
 		DUK_MEMCPY((void *) du.uc, (const void *) (buf + offset), 2);
@@ -2055,9 +2247,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 		}
 		break;
 	}
-	case 2: {
+	case DUK__FLD_32BIT: {
 		duk_uint32_t tmp;
-		if (offset + 4 > check_length) {
+		if (offset + 4U > check_length) {
 			goto fail_bounds;
 		}
 		DUK_MEMCPY((void *) du.uc, (const void *) (buf + offset), 4);
@@ -2072,9 +2264,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 		}
 		break;
 	}
-	case 3: {
+	case DUK__FLD_FLOAT: {
 		duk_uint32_t tmp;
-		if (offset + 4 > check_length) {
+		if (offset + 4U > check_length) {
 			goto fail_bounds;
 		}
 		DUK_MEMCPY((void *) du.uc, (const void *) (buf + offset), 4);
@@ -2086,76 +2278,92 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 		duk_push_number(ctx, (duk_double_t) du.f[0]);
 		break;
 	}
-	case 4: {
-		duk_uint32_t tmp1, tmp2;
-		if (offset + 8 > check_length) {
+	case DUK__FLD_DOUBLE: {
+		if (offset + 8U > check_length) {
 			goto fail_bounds;
 		}
 		DUK_MEMCPY((void *) du.uc, (const void *) (buf + offset), 8);
 		if (endswap) {
-			/* FIXME: BSWAP64 */
-			tmp1 = du.ui[0];
-			tmp1 = DUK_BSWAP32(tmp1);
-			tmp2 = du.ui[1];
-			tmp2 = DUK_BSWAP32(tmp2);
-			du.ui[0] = tmp2;
-			du.ui[1] = tmp1;
+			DUK_DBLUNION_BSWAP64(&du);
 		}
 		duk_push_number(ctx, (duk_double_t) du.d);
 		break;
 	}
-	case 5: {
-		/* Node.js Buffer variable width integer field */
+	case DUK__FLD_VARINT: {
+		/* Node.js Buffer variable width integer field.  We don't really
+		 * care about speed here, so aim for shortest algorithm.
+		 */
 		duk_int_t field_bytelen;
-		duk_int_t i;
+		duk_int_t i, i_step, i_end;
+#if defined(DUK_USE_64BIT_OPS)
+		duk_int64_t tmp;
+		duk_small_uint_t shift_tmp;
+#else
 		duk_double_t tmp;
 		duk_small_int_t highbyte;
+#endif
+		const duk_uint8_t *p;
 
 		field_bytelen = duk_get_int(ctx, 1);  /* avoid side effects! */
 		if (field_bytelen < 1 || field_bytelen > 6) {
 			goto fail_field_length;
 		}
-		if (offset + field_bytelen > check_length) {
+		if (offset + (duk_uint_t) field_bytelen > check_length) {
 			goto fail_bounds;
 		}
-		/* FIXME: unnecessary, use buffer directly */
-		DUK_MEMCPY((void *) du.uc, (const void *) (buf + offset), (size_t) field_bytelen);
+		p = (const duk_uint8_t *) (buf + offset);
 
-		/* Slow gathering of value, avoids 64-bit arithmetic.
-		 *
-		 * Handling of negative numbers is a bit hard to read.
+		/* Slow gathering of value using either 64-bit arithmetic
+		 * or IEEE doubles if 64-bit types not available.  Handling
+		 * of negative numbers is a bit non-obvious in both cases.
 		 */
-		/* FIXME: 64-bit fast path if 64-bit types available. */
-		/* FIXME: rework to shorter algorithm */
 
-		tmp = 0.0;
 		if (magic_bigendian) {
 			/* Gather in big endian */
-			highbyte = du.uc[0];
-			if (magic_signed && (highbyte & 0x80) != 0) {
-				/* 0xff => 255 - 256 = -1; 0x80 => 128 - 256 = -128 */
-				tmp = (duk_double_t) (highbyte - 256);
-			} else {
-				tmp = (duk_double_t) highbyte;
-			}
-			for (i = 1; i < field_bytelen; i++) {
-				tmp = (tmp * 256.0) + (duk_double_t) du.uc[i];
-			}
+			i = 0;
+			i_step = 1;
+			i_end = field_bytelen;  /* one i_step over */
 		} else {
 			/* Gather in little endian */
-			highbyte = du.uc[field_bytelen - 1];
-			if (magic_signed && (highbyte & 0x80) != 0) {
-				/* 0xff => 255 - 256 = -1; 0x80 => 128 - 256 = -128 */
-				tmp = (duk_double_t) (highbyte - 256);
-			} else {
-				tmp = (duk_double_t) highbyte;
+			i = field_bytelen - 1;
+			i_step = -1;
+			i_end = -1;  /* one i_step over */
+		}
+
+#if defined(DUK_USE_64BIT_OPS)
+		tmp = 0;
+		do {
+			DUK_ASSERT(i >= 0 && i < field_bytelen);
+			tmp = (tmp << 8) + (duk_int64_t) p[i];
+			i += i_step;
+		} while (i != i_end);
+
+		if (magic_signed) {
+			/* Shift to sign extend. */
+			shift_tmp = 64 - (field_bytelen * 8);
+			tmp = (tmp << shift_tmp) >> shift_tmp;
+		}
+
+		duk_push_i64(ctx, tmp);
+#else
+		highbyte = p[i];
+		if (magic_signed && (highbyte & 0x80) != 0) {
+			/* 0xff => 255 - 256 = -1; 0x80 => 128 - 256 = -128 */
+			tmp = (duk_double_t) (highbyte - 256);
+		} else {
+			tmp = (duk_double_t) highbyte;
+		}
+		for (;;) {
+			i += i_step;
+			if (i == i_end) {
+				break;
 			}
-			for (i = field_bytelen - 2; i >= 0; i--) {
-				tmp = (tmp * 256.0) + (duk_double_t) du.uc[i];
-			}
+			DUK_ASSERT(i >= 0 && i < field_bytelen);
+			tmp = (tmp * 256.0) + (duk_double_t) p[i];
 		}
 
 		duk_push_number(ctx, tmp);
+#endif
 		break;
 	}
 	default: {  /* should never happen but default here */
@@ -2178,6 +2386,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	return DUK_RET_RANGE_ERROR;
 }
 
+/* XXX: split into separate functions for each field type? */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_small_int_t magic = (duk_small_int_t) duk_get_current_magic(ctx);
@@ -2188,12 +2397,13 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	duk_small_int_t endswap;
 	duk_hbufferobject *h_this;
 	duk_bool_t no_assert;
-	duk_int_t offset;
-	duk_int_t buffer_length;
-	duk_int_t check_length;
+	duk_int_t offset_signed;
+	duk_uint_t offset;
+	duk_uint_t buffer_length;
+	duk_uint_t check_length;
 	duk_uint8_t *buf;
 	duk_double_union du;
-	duk_small_uint_t nbytes = 0;
+	duk_int_t nbytes = 0;
 
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
@@ -2206,7 +2416,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 
 	h_this = duk__require_bufobj_this(ctx);
 	DUK_ASSERT(h_this != NULL);
-	buffer_length = (duk_int_t) h_this->length;
+	buffer_length = h_this->length;
 
 	/* [ value  offset noAssert                 ], when ftype != DUK__FLD_VARINT */
 	/* [ value  offset fieldByteLength noAssert ], when ftype == DUK__FLD_VARINT */
@@ -2230,7 +2440,31 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 #endif
 	}
 
-	offset = duk_to_int(ctx, 1);
+	/* Offset is coerced first to signed integer range and then to unsigned.
+	 * This ensures we can add a small byte length (1-8) to the offset in
+	 * bound checks and not wrap.
+	 */
+	offset_signed = duk_to_int(ctx, 1);
+	offset = (duk_uint_t) offset_signed;
+
+	/* We need 'nbytes' even for a failed offset; return value must be
+	 * (offset + nbytes) even when write fails due to invalid offset.
+	 */
+	if (magic_ftype != DUK__FLD_VARINT) {
+		DUK_ASSERT(magic_ftype >= 0 && magic_ftype < (duk_small_int_t) (sizeof(duk__buffer_nbytes_from_fldtype) / sizeof(duk_uint8_t)));
+		nbytes = duk__buffer_nbytes_from_fldtype[magic_ftype];
+	} else {
+		nbytes = duk_get_int(ctx, 2);
+		if (nbytes < 1 || nbytes > 6) {
+			goto fail_field_length;
+		}
+	}
+	DUK_ASSERT(nbytes >= 1 && nbytes <= 8);
+
+	/* Now we can check offset validity. */
+	if (offset_signed < 0) {
+		goto fail_bounds;
+	}
 
 	DUK_DDD(DUK_DDDPRINT("writefield, value=%!T, buffer_length=%ld, offset=%ld, no_assert=%d, "
 	                     "magic=%04x, magic_fieldtype=%d, magic_bigendian=%d, magic_signed=%d, "
@@ -2239,13 +2473,11 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	                     (unsigned int) magic, (int) magic_ftype, (int) (magic_bigendian >> 3),
 	                     (int) (magic_signed >> 4), (int) endswap));
 
-	/* FIXME: any real benefit here over having multiple functions
-	 * with no magic (except perhaps for endswap/signed)?
+	/* Coerce value to a number before computing check_length, so that
+	 * the field type specific coercion below can't have side effects
+	 * that would invalidate check_length.
 	 */
-
-	/* FIXME: the duk_to_uint32() etc value coercions below will
-	 * potentially invalidate check_length - avoid active coercions?
-	 */
+	duk_to_number(ctx, 0);
 
 	/* Update 'buffer_length' to be the effective, safe limit which
 	 * takes into account the underlying buffer.  This value will be
@@ -2264,19 +2496,17 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	}
 
 	switch (magic_ftype) {
-	case 0: {
-		nbytes = 1;
-		if (offset < 0 || offset + 1 > check_length) {
+	case DUK__FLD_8BIT: {
+		if (offset + 1U > check_length) {
 			goto fail_bounds;
 		}
 		/* sign doesn't matter when writing */
 		buf[offset] = (duk_uint8_t) duk_to_uint32(ctx, 0);
 		break;
 	}
-	case 1: {
+	case DUK__FLD_16BIT: {
 		duk_uint16_t tmp;
-		nbytes = 2;
-		if (offset < 0 || offset + 2 > check_length) {
+		if (offset + 2U > check_length) {
 			goto fail_bounds;
 		}
 		tmp = (duk_uint16_t) duk_to_uint32(ctx, 0);
@@ -2288,10 +2518,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 		DUK_MEMCPY((void *) (buf + offset), (const void *) du.uc, 2);
 		break;
 	}
-	case 2: {
+	case DUK__FLD_32BIT: {
 		duk_uint32_t tmp;
-		nbytes = 4;
-		if (offset < 0 || offset + 4 > check_length) {
+		if (offset + 4U > check_length) {
 			goto fail_bounds;
 		}
 		tmp = (duk_uint32_t) duk_to_uint32(ctx, 0);
@@ -2303,10 +2532,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 		DUK_MEMCPY((void *) (buf + offset), (const void *) du.uc, 4);
 		break;
 	}
-	case 3: {
+	case DUK__FLD_FLOAT: {
 		duk_uint32_t tmp;
-		nbytes = 4;
-		if (offset < 0 || offset + 4 > check_length) {
+		if (offset + 4U > check_length) {
 			goto fail_bounds;
 		}
 		du.f[0] = (duk_float_t) duk_to_number(ctx, 0);
@@ -2319,63 +2547,79 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 		DUK_MEMCPY((void *) (buf + offset), (const void *) du.uc, 4);
 		break;
 	}
-	case 4: {
-		duk_uint32_t tmp1, tmp2;
-		nbytes = 8;
-		if (offset < 0 || offset + 8 > check_length) {
+	case DUK__FLD_DOUBLE: {
+		if (offset + 8U > check_length) {
 			goto fail_bounds;
 		}
 		du.d = (duk_double_t) duk_to_number(ctx, 0);
 		if (endswap) {
-			/* FIXME: BSWAP64 */
-			tmp1 = du.ui[0];
-			tmp1 = DUK_BSWAP32(tmp1);
-			tmp2 = du.ui[1];
-			tmp2 = DUK_BSWAP32(tmp2);
-			du.ui[0] = tmp2;
-			du.ui[1] = tmp1;
+			DUK_DBLUNION_BSWAP64(&du);
 		}
 		/* sign doesn't matter when writing */
 		DUK_MEMCPY((void *) (buf + offset), (const void *) du.uc, 8);
 		break;
 	}
-	case 5: {
-		/* Node.js Buffer variable width integer field */
+	case DUK__FLD_VARINT: {
+		/* Node.js Buffer variable width integer field.  We don't really
+		 * care about speed here, so aim for shortest algorithm.
+		 */
 		duk_int_t field_bytelen;
-		duk_int_t i;
+		duk_int_t i, i_step, i_end;
+#if defined(DUK_USE_64BIT_OPS)
+		duk_int64_t tmp;
+#else
 		duk_double_t tmp;
+#endif
+		duk_uint8_t *p;
 
-		field_bytelen = duk_get_int(ctx, 2);  /* avoid side effects! */
-		nbytes = (duk_small_uint_t) field_bytelen;
-		if (field_bytelen < 1 || field_bytelen > 6) {
-			goto fail_field_length;
-		}
-		if (offset < 0 || offset + field_bytelen > check_length) {
+		field_bytelen = (duk_int_t) nbytes;
+		if (offset + (duk_uint_t) field_bytelen > check_length) {
 			goto fail_bounds;
 		}
 
-		/* Slow writing of value, avoids 64-bit arithmetic.
+		/* Slow writing of value using either 64-bit arithmetic
+		 * or IEEE doubles if 64-bit types not available.  There's
+		 * no special sign handling when writing varints.
 		 */
-		/* FIXME: 64-bit fast path if 64-bit types available. */
 
-		tmp = duk_to_number(ctx, 0);
-		tmp = DUK_FLOOR(tmp);
 		if (magic_bigendian) {
 			/* Write in big endian */
-			for (i = field_bytelen - 1; i >= 0; i--) {
-				du.uc[i] = (duk_uint8_t) (DUK_FMOD(tmp, 256.0));
-				tmp = DUK_FLOOR(tmp / 256.0);  /* FIXME: extra div+floor for last byte */
-			}
+			i = field_bytelen;  /* one i_step added at top of loop */
+			i_step = -1;
+			i_end = 0;
 		} else {
 			/* Write in little endian */
-			for (i = 0; i < field_bytelen; i++) {
-				du.uc[i] = (duk_uint8_t) (DUK_FMOD(tmp, 256.0));
-				tmp = DUK_FLOOR(tmp / 256.0);  /* FIXME: extra div+floor for last byte */
-			}
+			i = -1;  /* one i_step added at top of loop */
+			i_step = 1;
+			i_end = field_bytelen - 1;
 		}
 
-		/* FIXME: unnecessary, use buffer directly */
-		DUK_MEMCPY((void *) (buf + offset), (const void *) du.uc, (size_t) field_bytelen);
+		/* XXX: The duk_to_number() cast followed by integer coercion
+		 * is platform specific so NaN, +/- Infinity, and out-of-bounds
+		 * values result in platform specific output now.
+		 * See: test-bi-nodejs-buffer-proto-varint-special.js
+		 */
+
+#if defined(DUK_USE_64BIT_OPS)
+		tmp = (duk_int64_t) duk_to_number(ctx, 0);
+		p = (duk_uint8_t *) (buf + offset);
+		do {
+			i += i_step;
+			DUK_ASSERT(i >= 0 && i < field_bytelen);
+			p[i] = (duk_uint8_t) (tmp & 0xff);
+			tmp = tmp >> 8;  /* unnecessary shift for last byte */
+		} while (i != i_end);
+#else
+		tmp = duk_to_number(ctx, 0);
+		p = (duk_uint8_t *) (buf + offset);
+		do {
+			i += i_step;
+			tmp = DUK_FLOOR(tmp);
+			DUK_ASSERT(i >= 0 && i < field_bytelen);
+			p[i] = (duk_uint8_t) (DUK_FMOD(tmp, 256.0));
+			tmp = tmp / 256.0;  /* unnecessary div for last byte */
+		} while (i != i_end);
+#endif
 		break;
 	}
 	default: {  /* should never happen but default here */
@@ -2400,6 +2644,9 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	if (no_assert) {
 		/* Node.js return value for failed writes is offset + #bytes
 		 * that would have been written.
+		 */
+		/* XXX: for negative input offsets, 'offset' will be a large
+		 * positive value so the result here is confusing.
 		 */
 		if (magic_typedarray) {
 			return 0;

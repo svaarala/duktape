@@ -341,7 +341,17 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			 */
 
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
-				for (i = 0; i < sizeof(duk__bufferobject_virtual_props) / sizeof(duk_uint16_t); i++) {
+				duk_uint_fast32_t n;
+
+				if (DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
+					n = sizeof(duk__bufferobject_virtual_props) / sizeof(duk_uint16_t);
+				} else {
+					DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr));
+					DUK_ASSERT(duk__bufferobject_virtual_props[0] == DUK_STRIDX_LENGTH);
+					n = 1;  /* only 'length' */
+				}
+
+				for (i = 0; i < n; i++) {
 					duk_push_hstring_stridx(ctx, duk__bufferobject_virtual_props[i]);
 					duk_push_true(ctx);
 					duk_put_prop(ctx, -3);
