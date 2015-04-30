@@ -93,6 +93,9 @@
 -
   test: "test-bi-array-push-maxlen.js"
   knownissue: "array length above 2^32-1 not supported"
+-
+  test: "test-bug-dataview-buffer-prop.js"
+  knownissue: "DataView .buffer property misleading when DataView argument is not an ArrayBuffer (custom behavior)"
 
 # Ecmascript testcases that need special options or environment to work
 
