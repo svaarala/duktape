@@ -186,13 +186,13 @@ int uart_close(int fd)
 {
 	_disable_raw_mode(fd, &options);
 	close(fd);
+	return 0;
 }
 
 int uart_open(char *filename)
 {
 
-	int fd, res;
-	char buf[256];
+	int fd;
 
 	printf("Start...\n");
 	fd = open(filename, O_RDWR);
@@ -211,9 +211,11 @@ int uart_open(char *filename)
 	_enable_raw_mode(fd, &options);
 #define test_uart 0
 #if test_uart
+	int res;
 	printf("Reading...\n");
 	while(1) {
 		res = uart_read(fd, buf, 255);
+		char buf[256];
 
 		uart_write(fd, buf, res);
 		if(res==0)

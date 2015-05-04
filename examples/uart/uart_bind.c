@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015 Nanchao Inc. All rights reserved.
- * Written by Shanjin Yang <sjyang@credosemi.com>
+ * Written by Shanjin Yang <sjyangv0@qq.com>
  */
 
 #include "duktape.h"
