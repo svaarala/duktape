@@ -10,22 +10,28 @@ static int uart_fd;
 static int ruff_uart_open(duk_context *ctx)
 {
 	char filename[32];
-	void *uart_name;
-	duk_size_t size;
+	char *uart_name;
 
-	uart_name = duk_to_buffer(ctx, -3, &size);
+	uart_name = (char *)duk_to_string(ctx, -1);
 
 	int uart_fd = uart_open(uart_name);
+	fprintf(stderr, "uart %s fd %d open...\n", uart_name, uart_fd);
+	
 	if (uart_fd < 0) {
 		return DUK_RET_API_ERROR;
 	} else {
 		duk_push_string(ctx, filename);
 		return 0;
 	}
+	duk_push_int(ctx, uart_fd);
+	return uart_fd;
 }
 
 static int ruff_uart_close(duk_context *ctx)
 {
+	//uart_fd = duk_to_int(ctx, 0);
+
+	fprintf(stderr, "uart fd %d close...\n", uart_fd);
 	uart_close(uart_fd);
 	return 0;
 }
@@ -45,12 +51,12 @@ static int ruff_uart_read(duk_context *ctx)
 
 static int ruff_uart_write(duk_context *ctx)
 {
-	void *p;
-	duk_size_t size;
-
-	p = duk_to_buffer(ctx, -3, &size);
+	uart_fd = duk_to_int(ctx, 0);
+	char *write_buf;
+	write_buf = (char *)duk_to_string(ctx, 1);
+	fprintf(stderr, "uart %d ready write: %s\n", uart_fd, write_buf);
 	/*TODO*/
-	uart_write(uart_fd, p, size);
+	uart_write(uart_fd, write_buf, strlen(write_buf));
 	return 0;
 }
 
@@ -62,15 +68,32 @@ static struct duk_function_list_entry uart_func[] = {
 	{ NULL, NULL, 0 }
 };
 
+duk_ret_t dukopen_my_module(duk_context *ctx) {
+    duk_push_object(ctx);
+    duk_put_function_list(ctx, -1, uart_func);
+
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
 	duk_context *ctx;
 	ctx = duk_create_heap_default();
+	if (!ctx) {
+		/*TODO*/
+	}
 
-	duk_push_object(ctx);
-	duk_put_function_list(ctx, -1, uart_func);
-	duk_put_prop_string(ctx, -2, "UART");
-	duk_pop(ctx);
+	/* Module loading happens with a Duktape/C call wrapper. */
+	duk_push_c_function(ctx, dukopen_my_module, 0 /*nargs*/);
+	duk_call(ctx, 0);
+	duk_put_global_string(ctx, "uart");
+
+	/* my_module is now registered in the global object. */
+	//duk_eval_string(ctx, "uart.open('/dev/ttyUSB0')");
+	duk_eval_file_noresult(ctx, "uart.js");
+	//duk_eval_string(ctx, "uart.write('hello world\n')");
+
+	/* ... */
 
 	duk_destroy_heap(ctx);
 

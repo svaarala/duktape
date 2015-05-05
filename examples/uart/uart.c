@@ -194,7 +194,6 @@ int uart_open(char *filename)
 
 	int fd;
 
-	printf("Start...\n");
 	fd = open(filename, O_RDWR);
 
 	if (fd < 0) {
@@ -202,7 +201,6 @@ int uart_open(char *filename)
 		exit(1);
 	}
 
-	printf("Open...\n");
 	set_speed(fd,115200);
 	if (set_parity(fd,8,1,'N') == FALSE)  {
 		printf("Set Parity Error\n");
@@ -234,5 +232,5 @@ int uart_open(char *filename)
 	printf("Close...\n");
 	close(fd);
 #endif
-	return 0;
+	return fd;
 }
