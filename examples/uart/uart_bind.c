@@ -41,9 +41,14 @@ static int ruff_uart_read(duk_context *ctx)
 	void *p;
 	int size = 1024;
 	char buf[size];
+	uart_fd = duk_to_int(ctx, 0);
+	fprintf(stderr, "uart %d read...\n", uart_fd);
 	/*TODO*/
-	uart_read(uart_fd, buf, size);
-
+	int i = 10;
+	while (i--) {
+		uart_read(uart_fd, buf, size);
+		fprintf(stderr, "uart %d read: %c\n", uart_fd, (char)buf[0]);
+	}
 	p = duk_push_buffer(ctx, size, 0);
 	//fprintf(stderr, "%c", (char *)p);
 	return 0;
@@ -54,7 +59,7 @@ static int ruff_uart_write(duk_context *ctx)
 	uart_fd = duk_to_int(ctx, 0);
 	char *write_buf;
 	write_buf = (char *)duk_to_string(ctx, 1);
-	fprintf(stderr, "uart %d ready write: %s\n", uart_fd, write_buf);
+	fprintf(stderr, "uart %d ready write: %s", uart_fd, write_buf);
 	/*TODO*/
 	uart_write(uart_fd, write_buf, strlen(write_buf));
 	return 0;

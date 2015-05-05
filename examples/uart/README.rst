@@ -2,4 +2,7 @@
 uart
 =====================
 
-- `Compile`: gcc uart_bind.c uart.c duktape.c -o uart -lm
+uart.js control the uart.
+
+- `Compile`: scons
+- `run`: sudo ./uart
