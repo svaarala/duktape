@@ -1,7 +1,9 @@
 function test() {
-	uart.open('/dev/ttyUSB0');
-	uart.write(3, 'hello world\n');
-	uart.read(3);
-	uart.close(3);
+	var fd = uart.open('/dev/ttyUSB0');
+	fd = 3;
+	//print('received message, type: %d', (int) fd);
+	uart.write(fd, 'hello world\n');
+	uart.read(fd);
+	uart.close(fd);
 }
 test();

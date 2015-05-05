@@ -1,12 +1,10 @@
 /*
  * Copyright (c) 2015 Nanchao Inc. All rights reserved.
- * Written by Shanjin Yang <sjyangv0@qq.com>
  */
 
 #include "duktape.h"
 #include "uart.h"
 
-static int uart_fd;
 static int ruff_uart_open(duk_context *ctx)
 {
 	char filename[32];
@@ -24,15 +22,17 @@ static int ruff_uart_open(duk_context *ctx)
 		return 0;
 	}
 	duk_push_int(ctx, uart_fd);
+
 	return uart_fd;
 }
 
 static int ruff_uart_close(duk_context *ctx)
 {
-	//uart_fd = duk_to_int(ctx, 0);
+	int uart_fd = duk_to_int(ctx, -1);
 
 	fprintf(stderr, "uart fd %d close...\n", uart_fd);
 	uart_close(uart_fd);
+
 	return 0;
 }
 
@@ -41,7 +41,7 @@ static int ruff_uart_read(duk_context *ctx)
 	void *p;
 	int size = 1024;
 	char buf[size];
-	uart_fd = duk_to_int(ctx, 0);
+	int uart_fd = duk_to_int(ctx, 0);
 	fprintf(stderr, "uart %d read...\n", uart_fd);
 	/*TODO*/
 	int i = 10;
@@ -56,10 +56,10 @@ static int ruff_uart_read(duk_context *ctx)
 
 static int ruff_uart_write(duk_context *ctx)
 {
-	uart_fd = duk_to_int(ctx, 0);
+	int uart_fd = duk_to_int(ctx, 0);
 	char *write_buf;
 	write_buf = (char *)duk_to_string(ctx, 1);
-	fprintf(stderr, "uart %d ready write: %s", uart_fd, write_buf);
+	fprintf(stderr, "uart %d write: %s", uart_fd, write_buf);
 	/*TODO*/
 	uart_write(uart_fd, write_buf, strlen(write_buf));
 	return 0;
@@ -67,8 +67,8 @@ static int ruff_uart_write(duk_context *ctx)
 
 static struct duk_function_list_entry uart_func[] = {
 	{ "open", ruff_uart_open, 1 },
-	{ "close", ruff_uart_close, 0 },
-	{ "read", ruff_uart_read, 2},
+	{ "close", ruff_uart_close, 1 },
+	{ "read", ruff_uart_read, 1},
 	{ "write", ruff_uart_write, 2},
 	{ NULL, NULL, 0 }
 };
