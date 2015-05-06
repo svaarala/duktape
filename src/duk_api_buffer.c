@@ -8,7 +8,7 @@ DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, index);
 	DUK_ASSERT(h != NULL);

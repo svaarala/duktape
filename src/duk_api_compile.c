@@ -16,6 +16,8 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 	duk_uint_t comp_flags;
 	duk_int_t rc;
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	/* Note: strictness is *not* inherited from the current Duktape/C.
 	 * This would be confusing because the current strictness state
 	 * depends on whether we're running inside a Duktape/C activation
@@ -60,6 +62,8 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_uint_t flags;
 	duk_small_uint_t comp_flags;
 	duk_hcompiledfunction *h_templ;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	/* Note: strictness is not inherited from the current Duktape/C
 	 * context.  Otherwise it would not be possible to compile
@@ -137,6 +141,8 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 DUK_EXTERNAL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	if ((flags & DUK_COMPILE_STRLEN) && (src_buffer != NULL)) {
 		/* String length is computed here to avoid multiple evaluation

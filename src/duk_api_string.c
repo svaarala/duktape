@@ -13,7 +13,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 	duk_hstring *h;
 	duk_uint8_t *buf;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	if (DUK_UNLIKELY(count_in <= 0)) {
 		if (count_in < 0) {
@@ -107,10 +107,14 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 }
 
 DUK_EXTERNAL void duk_concat(duk_context *ctx, duk_idx_t count) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	duk__concat_and_join_helper(ctx, count, 0 /*is_join*/);
 }
 
 DUK_EXTERNAL void duk_join(duk_context *ctx, duk_idx_t count) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	duk__concat_and_join_helper(ctx, count, 1 /*is_join*/);
 }
 
@@ -123,6 +127,8 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decod
 	duk_hstring *h_input;
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	h_input = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h_input != NULL);
@@ -146,6 +152,8 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 	duk_hbuffer_dynamic *h_buf;
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	index = duk_normalize_index(ctx, index);
 
@@ -182,7 +190,7 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t st
 	duk_size_t start_byte_offset;
 	duk_size_t end_byte_offset;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	index = duk_require_normalize_index(ctx, index);
 	h = duk_require_hstring(ctx, index);
@@ -228,6 +236,8 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 	const duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
 	const duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
 	duk_codepoint_t cp;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	index = duk_require_normalize_index(ctx, index);
 	h = duk_require_hstring(ctx, index);
@@ -299,6 +309,8 @@ DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index,
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_ucodepoint_t cp;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	h = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h != NULL);

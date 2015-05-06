@@ -15,6 +15,8 @@ DUK_EXTERNAL void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt,
 		DUK_STRIDX_LC_WARN, DUK_STRIDX_LC_ERROR, DUK_STRIDX_LC_FATAL
 	};
 
+	DUK_ASSERT_CTX_VALID(ctx);
+
 	if (level < 0) {
 		level = 0;
 	} else if (level > (int) (sizeof(stridx_logfunc) / sizeof(duk_uint16_t)) - 1) {
@@ -41,6 +43,8 @@ DUK_EXTERNAL void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt,
 
 DUK_EXTERNAL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
 	va_list ap;
+
+	DUK_ASSERT_CTX_VALID(ctx);
 
 	va_start(ap, fmt);
 	duk_log_va(ctx, level, fmt, ap);
