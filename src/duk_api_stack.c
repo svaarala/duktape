@@ -4045,11 +4045,8 @@ DUK_EXTERNAL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	tv1 = duk_get_tval(ctx, index1);
-	if (!tv1) {
-		return 0;
-	}
 	tv2 = duk_get_tval(ctx, index2);
-	if (!tv2) {
+	if ((tv1 == NULL) || (tv2 == NULL)) {
 		return 0;
 	}
 
@@ -4065,16 +4062,36 @@ DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, du
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	tv1 = duk_get_tval(ctx, index1);
-	if (!tv1) {
-		return 0;
-	}
 	tv2 = duk_get_tval(ctx, index2);
-	if (!tv2) {
+	if ((tv1 == NULL) || (tv2 == NULL)) {
 		return 0;
 	}
 
 	/* No coercions or other side effects, so safe */
 	return duk_js_strict_equals(tv1, tv2);
+}
+
+/*
+ *  instanceof
+ */
+
+DUK_EXTERNAL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
+	duk_tval *tv1, *tv2;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* Index validation is strict, which differs from duk_equals().
+	 * The strict behavior mimics how instanceof itself works, e.g.
+	 * it is a TypeError if rval is not a -callable- object.  It would
+	 * be somewhat inconsistent if rval would be allowed to be
+	 * non-existent without a TypeError.
+	 */
+	tv1 = duk_require_tval(ctx, index1);
+	DUK_ASSERT(tv1 != NULL);
+	tv2 = duk_require_tval(ctx, index2);
+	DUK_ASSERT(tv2 != NULL);
+
+	return duk_js_instanceof((duk_hthread *) ctx, tv1, tv2);
 }
 
 /*

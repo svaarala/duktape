@@ -1,0 +1,36 @@
+name: duk_instanceof
+
+proto: |
+  duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t index1, duk_idx_t index2);
+
+stack: |
+  [ ... val1! ... val2! ... ]
+
+summary: |
+  <p>Compare values at <code>index1</code> and <code>index2</code> using the
+  Ecmascript <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.6">instanceof</a>
+  operator.  Returns 1 if <code>val1 instanceof val2</code>, 0 if not.  Throws an error
+  if either index is invalid; <code>instanceof</code> itself also throws errors for
+  invalid argument types.</p>
+
+  <div class="note">
+  The error throwing behavior for invalid indices differs from the behavior of
+  e.g. <code>duk_equals()</code>, and matches the strictness of <code>instanceof</code>.
+  For example, if rval (index2) is not a callable object <code>instanceof</code>
+  throws a TypeError.  Throwing an error for an invalid index is consistent with
+  instanceof strictness.
+  </div>
+
+example: |
+  duk_idx_t idx_val;
+
+  duk_get_global_string(ctx, "Error");
+
+  if (duk_instanceof(ctx, idx_val, -1)) {
+      printf("value at idx_val is an instanceof Error\n");
+  }
+
+tags:
+  - compare
+
+introduced: 1.3.0
