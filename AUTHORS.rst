@@ -47,7 +47,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Josh Engebretson (https://github.com/JoshEngebretson)
 * Remo Eichenberger (https://github.com/remoe)
 * Mamod Mehyar (https://github.com/mamod)
-* David Demelier (https://github.com/hftmarkand)
+* David Demelier (https://github.com/markand)
 * Tim Caswell (https://github.com/creationix)
 * Mitchell Blank Jr (https://github.com/mitchblank)
 * https://github.com/yushli
