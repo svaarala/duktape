@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /*
  *  Minimal debug web console for Duktape command line tool
  *
