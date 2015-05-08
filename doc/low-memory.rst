@@ -185,44 +185,6 @@ system RAM):
 
   - ``-fpack-struct=1`` or ``-fpack-struct=2``
 
-Tuning pool sizes for a pool-based memory allocator
-===================================================
-
-The memory allocations used by Duktape depend on the architecture and
-especially the low memory options used.  So, the safest approach is to
-select the options you want to use and then measure actual allocation
-patterns of various programs.
-
-The memory allocations needed by Duktape fall into two basic categories:
-
-* A lot of small allocations (roughly between 16 and 128 bytes) are needed
-  for strings, buffers, objects, object property tables, etc.  These
-  allocation sizes constitute most of the allocation activity, i.e. allocs,
-  reallocs, and frees.  There's a lot churn (memory being allocated and
-  freed) even when memory usage is nearly constant.
-
-* Much fewer larger allocations with much less activity are needed for
-  Ecmascript function bytecode, large strings and buffers, value stacks,
-  the global string table, and the Duktape heap object.
-
-The ``examples/alloc-logging`` memory allocator can be used to write out
-an allocation log file.  The log file contains every alloc, realloc, and
-free, and will record both new and old sizes for realloc.  This allows you
-to replay the allocation sequence so that you can simulate the behavior of
-pool sizes offline.
-
-You can also get a dump of Duktape's internal struct sizes by enabling
-``DUK_OPT_DPRINT``; Duktape will debug print struct sizes when a heap is
-created.  The struct sizes will give away the minimum size needed by strings,
-buffers, objects, etc.  They will also give you ``sizeof(duk_heap)`` which
-is a large allocation that you should handle explicitly in pool tuning.
-
-Finally, you can look at existing projects and what kind of pool tuning
-they do.  AllJoyn.js has a manually tuned pool allocator which may be a
-useful starting point:
-
-* https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
-
 Notes on pointer compression
 ============================
 
@@ -277,6 +239,398 @@ scraping strings from C and Ecmascript code using regexps:
 There are concrete examples for some external string strategies in:
 
 * ``dist/examples/cmdline/duk_cmdline_ajduk.c``
+
+Tuning pool sizes for a pool-based memory allocator
+===================================================
+
+The memory allocations used by Duktape depend on the architecture and
+especially the low memory options used.  So, the safest approach is to
+select the options you want to use and then measure actual allocation
+patterns of various programs.
+
+The memory allocations needed by Duktape fall into two basic categories:
+
+* A lot of small allocations (roughly between 16 and 128 bytes) are needed
+  for strings, buffers, objects, object property tables, etc.  These
+  allocation sizes constitute most of the allocation activity, i.e. allocs,
+  reallocs, and frees.  There's a lot churn (memory being allocated and
+  freed) even when memory usage is nearly constant.
+
+* Much fewer larger allocations with much less activity are needed for
+  Ecmascript function bytecode, large strings and buffers, value stacks,
+  the global string table, and the Duktape heap object.
+
+The ``examples/alloc-logging`` memory allocator can be used to write out
+an allocation log file.  The log file contains every alloc, realloc, and
+free, and will record both new and old sizes for realloc.  This allows you
+to replay the allocation sequence so that you can simulate the behavior of
+pool sizes offline.
+
+The ``examples/allog-logging/pool_simulator.py`` simulates pool allocator
+behavior for a given allocation log, and provides a lot of detailed graphs
+of pool usage, allocated bytes, waste bytes, etc.  It also provides some
+tools to optimize pool counts for one or multiple application "profiles".
+See detailed description below.
+
+You can also get a dump of Duktape's internal struct sizes by enabling
+``DUK_OPT_DPRINT``; Duktape will debug print struct sizes when a heap is
+created.  The struct sizes will give away the minimum size needed by strings,
+buffers, objects, etc.  They will also give you ``sizeof(duk_heap)`` which
+is a large allocation that you should handle explicitly in pool tuning.
+
+Finally, you can look at existing projects and what kind of pool tuning
+they do.  AllJoyn.js has a manually tuned pool allocator which may be a
+useful starting point:
+
+* https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
+
+Tuning pool sizes using pool_simulator.py
+=========================================
+
+Overview
+--------
+
+The pool simulator replays allocation logs, simulates the behavior of a
+pool-based memory allocator, and provides several useful commands:
+
+* Replay an allocation log and provide statistics and graphs for the pool
+  performance: used bytes, wasted bytes, by-pool breakdowns, etc.
+
+* Optimize pool counts based on a high-water-mark measurement, when given
+  pool byte sizes (a base pool configuration) and an allocation log.
+
+* Optimize pool counts based on a more complex algorithm which takes pool
+  borrowing into account (see discussion below).
+
+* Generate a pool configuration for a given total memory target, given the
+  tight pool configuration for Duktape and a set of representative
+  applications.
+
+These operations are discussed in more detail below.
+
+Important notes
+---------------
+
+* Before optimizing pools, you should select Duktape feature options
+  (especially low memory options) carefully.
+
+* It may be useful to use DUK_OPT_GC_TORTURE to ensure that there is no
+  slack in memory allocations; reference counting frees unreachable values
+  but does not handle loops.  When GC torture is enabled, Duktape will run
+  a mark-and-sweep for every memory allocation.  High-water-mark values
+  will then reflect the memory usage achievable in an emergency garbage
+  collect.
+
+* The pool simulator provides pool allocator behavior matching AllJoyn.js's
+  ajs_heap.c allocator.  If your pool allocator has different basic features
+  (for example, splitting and merging of chunks) you'll need to tweak the
+  pool simulator to get useful results.
+
+Basics
+------
+
+The Duktape command line tool writes out an allocation log when requested::
+
+  # Log written to /tmp/duk-alloc-log.txt
+  $ make clean duk
+  $ ./duk --alloc-logging ecmascript-testcases/test-dev-mandel2-func.js
+
+The "ajduk" command line tool is a variant with AllJoyn.js pool allocator,
+and a host of low memory optimizations.  It represents a low memory target
+quite well and it can also be requested to write out an allocation log::
+
+  # Log written to /tmp/ajduk-alloc-log.txt
+  $ make clean ajduk
+  $ ./ajduk --ajsheap-log ecmascript-testcases/test-dev-mandel2-func.js
+
+Allocation logs are represented in examples/alloc-logging format::
+
+  ...
+  A 0xf7541c38 16
+  R 0xf754128c -1 0xf754125c 6
+  A 0xf7541c24 16
+  ...
+
+The pool simulator doesn't need to know the "previous size" for a realloc
+entry, so it can be written out as -1 (like ajduk does).
+
+Pool configurations are expressed in JSON::
+
+  {
+    "pools": [
+      { "size": 8, "count": 10, "borrow": true },
+      { "size": 12, "count": 10, "borrow": true },
+      { "size": 16, "count": 200, "borrow": true },
+      ...
+    ]
+  }
+
+The "size" (entry size, byte size) of a pool is the byte-size of individual
+chunks in that pool.  The "count" (entry count) is the number of chunks
+preallocated for that pool.  Above, the second pool has entry size of 12
+bytes and a count of 10, for a total of 120 bytes.
+
+The pool simulator matches AllJoyn.js ajs_heap.c behavior:
+
+* Allocations are taken from smallest matching pool.  Borrowing is enabled
+  or disabled for each pool individually.
+
+* Reallocation tries to shrink the allocation to a previous pool size if
+  possible.
+
+"High-water-mark" (hwm) over an entire allocation log means simulating the
+allocation log against a certain pool configuration, and recording the
+highest number of used entries for each pool.  There are two variants for
+this measurement:
+
+* Without borrowing: ignore the "count" for each pool in the configuration
+  and autoextend the pool as needed.  This provides a high-water-mark
+  without a need to borrow from larger pools.
+
+* With borrowing: respect the "count" in the pool configuration and borrow
+  as needed.
+
+Tight pool counts using high water mark (hwm)
+---------------------------------------------
+
+To find out the high water mark for each pool size without borrowing::
+
+  $ rm -rf /tmp/out; mkdir /tmp/out
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-dir /tmp/out \
+      --alloc-log /tmp/duk-alloc-log.txt \
+      --pool-config examples/alloc-logging/pool_config_1.json \
+      --out-pool-config /tmp/tight_noborrow.json \
+      tight_counts_noborrow
+
+The hwm records the maximum count for each pool size::
+
+  ^ pool entry count
+  |
+  |   ##
+  |  #####
+  | ######
+  | ######
+  | ########
+  +---------> pool entry size
+
+As described above, this command ignores the pool counts in the pool config
+and autoextends each pool to find its hwm.  The resulting pool configuration
+with updated counts is written out.
+
+Tight pool counts taking borrowing into account
+-----------------------------------------------
+
+The high water marks for each pool entry size don't necessarily happen
+at the same time.  Let's use the example above::
+
+  ^ pool entry count
+  |
+  |   ##
+  |  #####
+  | ######
+  | ######
+  | ########
+  +---------> pool entry size
+
+As an example, when the hwm for the third pool size (highlighted below)
+happens, the allocation state might be::
+
+  ^ pool entry count
+  |
+  |   #
+  |  :#
+  | ::#::
+  | ::#:::
+  | ::#:::::
+  +---------> pool entry size
+
+This means that we can often reduce the hwm-based pool counts and still
+allow the application to run; the application will be able to borrow
+allocations from larger pool entry sizes.
+
+As an extreme example, if Duktape were to allocate and free one entry
+from each pool entry size (but so that only one allocation would be
+active at a time), the hwm counts would look like::
+
+  ^ pool entry count
+  |
+  |
+  |
+  |
+  |
+  | ########
+  +---------> pool entry size
+
+However, the allocations can all be satisfied by having just one pool
+entry of the largest allocated size: all other allocation requests
+will just borrow from that (assuming borrowing is allowed)::
+
+  ^ pool entry count
+  |
+  |
+  |
+  |
+  |
+  |        #
+  +---------> pool entry size
+
+The pool simulator optimizes for tight pool counts with borrowing effects
+taken into account using a pretty simple brute force algorithm:
+
+* Get the basic hwm profile with no borrowing.
+
+* Start from the largest pool entry size and loop downwards:
+
+  - Reduce pool entry count for that pool entry size in question and rerun
+    the allocation log.
+
+  - If allocation requests can be still satisfied through borrowing, continue
+    to reduce the allocation.
+
+  - When the pool entry count can no longer be reduced, move on to the next
+    pool size.
+
+The basic observation in the algorithm is as follows:
+
+* The pool entry counts above the current one are optimal: they can't be
+  reduced further.
+
+* The pool entry counts below the current one never borrow from any of the
+  higher pool counts (yet) because they were optimized for their hwm.
+
+* We reduce the current pool entry count, hoping that some of the allocations
+  needed for its hwm can be borrowed from the larger pool entry sizes.  This
+  is possible if the hwm of the current pool entry size doesn't coincide with
+  the hwm of the larger pool entry sizes.
+
+This algorithm leads to reasonable pool entry counts, but:
+
+* The counts may not be an optimal balance for other applications.
+
+* The pool entry sizes are assumed to be given and are not optimized for
+  automatically.
+
+Use the following command to run the optimization::
+
+  $ rm -rf /tmp/out; mkdir /tmp/out
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-dir /tmp/out \
+      --alloc-log /tmp/duk-alloc-log.txt \
+      --pool-config examples/alloc-logging/pool_config_1.json \
+      --out-pool-config /tmp/tight_borrow.json \
+      tight_counts_borrow
+
+This may take a lot of time, so be patient.
+
+As a concrete example, for test-dev-mandel2-func.js on x86 with low memory
+optimizations, the tight pool configuration based on hwm is::
+
+  total 31564:
+  8=91 12=25 16=373 20=56 24=2 28=58 32=1 40=32 48=4 52=27 56=1 60=5 64=0
+  128=20 256=9 512=8 1024=4 1360=1 2048=2 4096=0 8192=0 16384=0 32768=0
+
+and after borrow optimization::
+
+  total 28532:
+  8=91 12=20 16=370 20=53 24=2 28=58 32=0 40=10 48=3 52=26 56=1 60=4 64=0
+  128=16 256=8 512=8 1024=3 1360=1 2048=2 4096=0 8192=0 16384=0 32768=0
+
+The more dynamic an application's memory usage is, the more potential there
+is for borrowing.
+
+Optimizing for multiple application profiles
+--------------------------------------------
+
+Run hello world with alloc logging for Duktape baseline::
+
+  # Using "duk", writes log to /tmp/duk-alloc-log.txt
+  $ ./duk --alloc-logging ecmascript-testcase/test-dev-hello-world.js
+
+  # Using "ajduk", writes log to /tmp/ajduk-alloc-log.txt
+  $ ./ajduk --ajsheap-log ecmascript-testcase/test-dev-hello-world.js
+
+Extract a "tight" pool configuration for the hello world baseline,
+pool entry sizes (but not counts) need to be known in advance::
+
+  $ rm -rf /tmp/out; mkdir /tmp/out
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-dir /tmp/out \
+      --alloc-log /tmp/duk-alloc-log.txt \
+      --pool-config examples/alloc-logging/pool_config1.json \
+      --out-pool-config /tmp/config_tight_duktape.json \
+      tight_counts_borrow
+
+Run multiple test applications and extract tight pool configurations for
+each (includes Duktape baseline but that is subtracted later) using the
+same method::
+
+  $ ./duk --alloc-logging ecmascript-testcase/test-dev-mandel2-func.js
+  $ rm -rf /tmp/out; mkdir /tmp/out
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-dir /tmp/out \
+      --alloc-log /tmp/duk-alloc-log.txt \
+      --pool-config examples/alloc-logging/pool_config1.json \
+      --out-pool-config /tmp/config_tight_app1.json \
+      tight_counts_borrow
+
+  $ ./duk --alloc-logging ecmascript-testcase/test-bi-array-proto-push.js
+  $ rm -rf /tmp/out; mkdir /tmp/out
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-dir /tmp/out \
+      --alloc-log /tmp/duk-alloc-log.txt \
+      --pool-config examples/alloc-logging/pool_config1.json \
+      --out-pool-config /tmp/config_tight_app2.json \
+      tight_counts_borrow
+
+  # ...
+
+Select a target memory amount (here 200kB) and optimize pool entry
+counts for that amount::
+
+  $ python examples/alloc-logging/pool_simulator.py \
+      --out-pool-config /tmp/config_200kb.json \
+      --out-ajsheap-config /tmp/ajsheap_200kb.c \
+      pool_counts_for_memory \
+      204800 \
+      /tmp/config_tight_duktape.json \
+      /tmp/config_tight_app1.json \
+      /tmp/config_tight_app2.json \
+      ... \
+      /tmp/config_tight_appN.json
+
+  # /tmp/config_200kb.json is the pool config in JSON
+
+  # /tmp/ajsheap_200kb.c is the pool config as an ajs_heap.c initializer
+
+The optimization algorithm is based on the following basic idea:
+
+* Pool entry byte sizes are kept fixed throughout the process.
+
+* Application pool counts are normalized by subtracting Duktape baseline
+  pool counts, yielding application memory usage on top of Duktape.  These
+  pool counts can be scaled meaningfully to estimate memory demand if the
+  "application size" (function count, statement count, etc) were to grow
+  or shrink.
+
+* The resulting pool count profiles are normalized to a fixed total memory
+  usage (any value will do, 1MB is used now).  The resulting pool counts
+  are fractional.
+
+* A pool count profile representing all the applications is computed as
+  follows.  For each pool entry size, take the maximum of the normalized,
+  scaled pool counts over the application profiles.  This profile represents
+  the the memory usage of a mix of applications.
+
+* Allocate pool counts for Duktape baseline.  This allocation is independent
+  of application code and doesn't grow in relation to application memory
+  usage.
+
+* Scale the representative pool count profile to fit the remaining memory,
+  using fractional counts.
+
+* Round pool counts into integers, ensuring the total memory usage is as
+  close to the target (without exceeding it).
 
 Summary of potential measures
 =============================

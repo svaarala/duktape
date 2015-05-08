@@ -140,6 +140,80 @@ void ajsheap_register(duk_context *ctx) {
 }
 
 /*
+ *  Wrapped ajs_heap.c alloc functions
+ *
+ *  Used to write an alloc log.
+ */
+
+static FILE *ajsheap_alloc_log = NULL;
+
+static void ajsheap_write_alloc_log(const char *fmt, ...) {
+	va_list ap;
+	char buf[256];
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	buf[sizeof(buf) - 1] = (char) 0;
+	va_end(ap);
+
+	if (ajsheap_alloc_log == NULL) {
+		ajsheap_alloc_log = fopen("/tmp/ajduk-alloc-log.txt", "wb");
+		if (ajsheap_alloc_log == NULL) {
+			fprintf(stderr, "WARNING: failed to write alloc log, ignoring\n");
+			fflush(stderr);
+			return;
+		}
+	}
+
+	(void) fwrite((const void *) buf, 1, strlen(buf), ajsheap_alloc_log);
+	(void) fflush(ajsheap_alloc_log);
+}
+
+void *ajsheap_alloc_wrapped(void *udata, duk_size_t size) {
+	void *ret = AJS_Alloc(udata, size);
+	if (size > 0 && ret == NULL) {
+		ajsheap_write_alloc_log("A FAIL %ld\n", (long) size);
+	} else if (ret == NULL) {
+		ajsheap_write_alloc_log("A NULL %ld\n", (long) size);
+	} else {
+		ajsheap_write_alloc_log("A %p %ld\n", ret, (long) size);
+	}
+	return ret;
+}
+
+void *ajsheap_realloc_wrapped(void *udata, void *ptr, duk_size_t size) {
+	void *ret = AJS_Realloc(udata, ptr, size);
+	if (size > 0 && ret == NULL) {
+		if (ptr == NULL) {
+			ajsheap_write_alloc_log("R NULL -1 FAIL %ld\n", (long) size);
+		} else {
+			ajsheap_write_alloc_log("R %p -1 FAIL %ld\n", ptr, (long) size);
+		}
+	} else if (ret == NULL) {
+		if (ptr == NULL) {
+			ajsheap_write_alloc_log("R NULL -1 NULL %ld\n", (long) size);
+		} else {
+			ajsheap_write_alloc_log("R %p -1 NULL %ld\n", ptr, (long) size);
+		}
+	} else {
+		if (ptr == NULL) {
+			ajsheap_write_alloc_log("R NULL -1 %p %ld\n", ret, (long) size);
+		} else {
+			ajsheap_write_alloc_log("R %p -1 %p %ld\n", ptr, ret, (long) size);
+		}
+	}
+	return ret;
+}
+
+void ajsheap_free_wrapped(void *udata, void *ptr) {
+	AJS_Free(udata, ptr);
+	if (ptr == NULL) {
+	} else {
+		ajsheap_write_alloc_log("F %p -1\n", ptr);
+	}
+}
+
+/*
  *  Example pointer compression functions.
  *
  *  'base' is chosen so that no non-NULL pointer results in a zero result

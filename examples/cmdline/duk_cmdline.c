@@ -50,6 +50,9 @@ void ajsheap_dump(void);
 void ajsheap_register(duk_context *ctx);
 void ajsheap_start_exec_timeout(void);
 void ajsheap_clear_exec_timeout(void);
+void *ajsheap_alloc_wrapped(void *udata, duk_size_t size);
+void *ajsheap_realloc_wrapped(void *udata, void *ptr, duk_size_t size);
+void ajsheap_free_wrapped(void *udata, void *ptr);
 void *AJS_Alloc(void *udata, duk_size_t size);
 void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
 void AJS_Free(void *udata, void *ptr);
@@ -467,12 +470,14 @@ int main(int argc, char *argv[]) {
 	int interactive = 0;
 	int memlimit_high = 1;
 	int alloc_provider = ALLOC_DEFAULT;
+	int ajsheap_log = 0;
 	int debugger = 0;
 	int i;
 
 #ifdef DUK_CMDLINE_AJSHEAP
 	alloc_provider = ALLOC_AJSHEAP;
 #endif
+	(void) ajsheap_log;
 
 	/*
 	 *  Signal handling setup
@@ -514,6 +519,8 @@ int main(int argc, char *argv[]) {
 			alloc_provider = ALLOC_HYBRID;
 		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
 			alloc_provider = ALLOC_AJSHEAP;
+		} else if (strcmp(arg, "--ajsheap-log") == 0) {
+			ajsheap_log = 1;
 		} else if (strcmp(arg, "--debugger") == 0) {
 			debugger = 1;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
@@ -590,11 +597,13 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_AJSHEAP
 		ajsheap_init();
 
-		ctx = duk_create_heap(AJS_Alloc,
-		                      AJS_Realloc,
-		                      AJS_Free,
-		                      (void *) 0xdeadbeef,  /* heap_udata: ignored by AjsHeap, use as marker */
-		                      NULL);                /* fatal_handler */
+		ctx = duk_create_heap(
+			ajsheap_log ? ajsheap_alloc_wrapped : AJS_Alloc,
+			ajsheap_log ? ajsheap_realloc_wrapped : AJS_Realloc,
+			ajsheap_log ? ajsheap_free_wrapped : AJS_Free,
+			(void *) 0xdeadbeef,  /* heap_udata: ignored by AjsHeap, use as marker */
+			NULL
+		);                /* fatal_handler */
 #else
 		fprintf(stderr, "Warning: option --alloc-ajsheap ignored, no ajsheap allocator support\n");
 		fflush(stderr);
@@ -754,6 +763,7 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef DUK_CMDLINE_AJSHEAP
 	                "   --alloc-ajsheap    use ajsheap allocator (enabled by default with 'ajduk')\n"
+	                "   --ajsheap-log      write alloc log to /tmp/ajduk-alloc-log.txt\n"
 #endif
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
 			"   --debugger         start example debugger\n"
