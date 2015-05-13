@@ -1,0 +1,66 @@
+name: duk_get_buffer_data
+
+proto: |
+  void *duk_get_buffer_data(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the data pointer for a plain buffer or a Buffer object (Duktape.Buffer,
+  Node.js Buffer, ArrayBuffer, DataView, or TypedArray view) value at
+  <code>index</code> without modifying or coercing the value.  Return a
+  non-<code>NULL</code> pointer if the value is a valid buffer with a non-zero
+  size.  For a zero-size buffer, may return a <code>NULL</code> or a
+  non-<code>NULL</code> pointer.  Returns <code>NULL</code> if the value is
+  not a buffer or the index is invalid.  If <code>out_size</code> is
+  non-<code>NULL</code>, the size of the buffer is written to <code>*out_size</code>;
+  0 is written if the return value is <code>NULL</code>.</p>
+
+  <p>The data area indicated by the return pointer and length is the full
+  buffer for a plain buffer value, and the active "slice" for a buffer object.
+  The length returned is expressed in bytes (instead of elements), so that you
+  can always access <code>ptr[0]</code> to <code>ptr[len - 1]</code>.
+  For example:</p>
+
+  <ul>
+  <li>For <code>new Uint8Array(16)</code> the return pointer would point to
+      start of the array and length would be 16.</li>
+  <li>For <code>new Uint32Array(16)</code> the return pointer would point to
+      start of the array and length would be 64.</li>
+  <li>For <code>new Uint32Array(16).subarray(2, 6)</code> the return pointer
+      would point to the start of the subarray (2 x 4 = 8 bytes from the start
+      of the Uint32Array) and length would be 16 ((6-2) x 4).</li>
+  </ul>
+
+  <p>If the target value or the underlying buffer value of a buffer object is a
+  fixed buffer, the returned pointer is stable and won't change during the
+  lifetime of the buffer.  For dynamic and external buffers the pointer may
+  change as the buffer is resized or reconfigured; the caller is responsible for
+  ensuring pointer values returned from this API call are not used after the
+  buffer is resized/reconfigured.  Buffers created from Ecmascript code directly
+  e.g. as <code>new Buffer(8)</code> are backed by an automatic fixed buffer, so
+  their pointers are always stable.</p>
+
+  <div include="buffer-null-pointer-ambiguity.html" />
+
+example: |
+  void *ptr;
+  duk_size_t sz;
+
+  duk_eval_string(ctx, "new Uint16Array(16)");
+  ptr = duk_get_buffer_data(ctx, -1, &sz);
+
+  /* Here 'ptr' would be non-NULL and sz would be 32 (bytes). */
+
+tags:
+  - stack
+  - buffer
+  - bufferobject
+
+seealso:
+  - duk_require_buffer_data
+  - duk_get_buffer
+  - duk_require_buffer
+
+introduced: 1.3.0

@@ -7,20 +7,21 @@ stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get the data pointer for a buffer value at <code>index</code> without modifying
-  or coercing the value.  Returns a non-<code>NULL</code> pointer if the value is a
-  valid buffer (fixed or dynamic) with a non-zero size.  For a zero-size buffer,
-  may return a <code>NULL</code> or a <code>non-NULL</code> pointer.  Returns <code>NULL</code>
+  <p>Get the data pointer for a (plain) buffer value at <code>index</code> without
+  modifying or coercing the value.  Returns a non-<code>NULL</code> pointer if the value
+  is a valid buffer with a non-zero size.  For a zero-size buffer, may return a
+  <code>NULL</code> or a non-<code>NULL</code> pointer.  Returns <code>NULL</code>
   if the value is not a buffer or the index is invalid.  If <code>out_size</code> is
   non-<code>NULL</code>, the size of the buffer is written to <code>*out_size</code>; 0
   is written if the return value is <code>NULL</code>.</p>
 
-  <div class="note">
-  There is no reliable way to distinguish a zero-size buffer from a non-buffer
-  based on the return values.  A <code>NULL</code> with zero size is returned for
-  a non-buffer.  The same values may be returned for a zero-size buffer (although
-  it is also possible that a non-<code>NULL</code> pointer is returned).
-  </div>
+  <p>If the target value is a fixed buffer, the returned pointer is stable and
+  won't change during the lifetime of the buffer.  For dynamic and external
+  buffers the pointer may change as the buffer is resized or reconfigured;
+  the caller is responsible for ensuring pointer values returned from this API
+  call are not used after the buffer is resized/reconfigured.</p>
+
+  <div include="buffer-null-pointer-ambiguity.html" />
 
 example: |
   void *ptr;
@@ -32,5 +33,10 @@ example: |
 tags:
   - stack
   - buffer
+
+seealso:
+  - duk_require_buffer
+  - duk_get_buffer_data
+  - duk_require_buffer_data
 
 introduced: 1.0.0
