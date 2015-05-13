@@ -1290,7 +1290,7 @@ DUK_INTERNAL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index) {
 }
 #endif
 
-DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+DUK_LOCAL void *duk__get_buffer_helper(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_bool_t throw_flag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
@@ -1311,35 +1311,80 @@ DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t 
 		return (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);  /* may be NULL (but only if size is 0) */
 	}
 
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
+	}
 	return NULL;
 }
 
+DUK_EXTERNAL void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__get_buffer_helper(ctx, index, out_size, 0 /*throw_flag*/);
+}
+
 DUK_EXTERNAL void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__get_buffer_helper(ctx, index, out_size, 1 /*throw_flag*/);
+}
+
+DUK_LOCAL void *duk__get_buffer_data_helper(duk_context *ctx, duk_idx_t index, duk_size_t *out_size, duk_bool_t throw_flag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_UNREF(thr);
 
 	if (out_size != NULL) {
 		*out_size = 0;
 	}
 
-	/* Note: here we must be wary of the fact that a data pointer may
-	 * be a NULL for a zero-size buffer.
-	 */
-
 	tv = duk_get_tval(ctx, index);
-	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
+	if (tv == NULL) {
+		goto fail;
+	}
+
+	if (DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
 		if (out_size) {
 			*out_size = DUK_HBUFFER_GET_SIZE(h);
 		}
 		return (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);  /* may be NULL (but only if size is 0) */
+	} else if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+			/* XXX: this is probably a useful shared helper: for a
+			 * duk_hbufferobject, get a validated buffer pointer/length.
+			 */
+			duk_hbufferobject *h_bufobj = (duk_hbufferobject *) h;
+			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+
+			if (h_bufobj->buf != NULL &&
+			    DUK_HBUFFEROBJECT_VALID_SLICE(h_bufobj)) {
+				duk_uint8_t *p;
+
+				p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf);
+				if (out_size != NULL) {
+					*out_size = (duk_size_t) h_bufobj->length;
+				}
+				return (void *) (p + h_bufobj->offset);
+			}
+			/* if slice not fully valid, treat as error */
+		}
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
-	return NULL;  /* not reachable */
+ fail:
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
+	}
+	return NULL;
+}
+
+DUK_EXTERNAL void *duk_get_buffer_data(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__get_buffer_data_helper(ctx, index, out_size, 0 /*throw_flag*/);
+}
+
+DUK_EXTERNAL void *duk_require_buffer_data(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+	return duk__get_buffer_data_helper(ctx, index, out_size, 1 /*throw_flag*/);
 }
 
 /* Raw helper for getting a value from the stack, checking its tag, and possible its object class.
