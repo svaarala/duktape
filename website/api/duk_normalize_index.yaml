@@ -15,7 +15,7 @@ summary: |
   <code><a href="#duk_require_normalize_index">duk_require_normalize_index()</a></code>.</p>
 
 example: |
-  duk_idx_t idx = duk_normalize_index(-3);
+  duk_idx_t idx = duk_normalize_index(ctx, -3);
 
 tags:
   - stack
