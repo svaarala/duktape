@@ -14,6 +14,7 @@ UglifyJS2/
 closure-compiler/
 emscripten/
 underscore/
+lodash/
 test262-d067d2f0ca30/
 runtests/node_modules/
 d067d2f0ca30.tar.bz2
