@@ -75,6 +75,7 @@ mkdir $DIST/examples/alloc-logging
 mkdir $DIST/examples/alloc-torture
 mkdir $DIST/examples/alloc-hybrid
 mkdir $DIST/examples/debug-trans-socket
+mkdir $DIST/examples/codepage-conv
 
 # Copy most files directly
 
@@ -337,6 +338,15 @@ for i in \
 	cp examples/debug-trans-socket/$i $DIST/examples/debug-trans-socket/
 done
 
+for i in \
+	README.rst \
+	duk_codepage_conv.c \
+	duk_codepage_conv.h \
+	test.c \
+	; do
+	cp examples/codepage-conv/$i $DIST/examples/codepage-conv/
+done
+
 cp extras/README.rst $DIST/extras/
 # XXX: copy extras
 
@@ -349,6 +359,7 @@ for i in \
 	Makefile.coffee \
 	Makefile.jxpretty \
 	Makefile.sandbox \
+	Makefile.codepage \
 	mandel.js \
 	; do
 	cp dist-files/$i $DIST/
