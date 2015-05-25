@@ -2282,6 +2282,9 @@ typedef FILE duk_file;
  */
 #define DUK_USE_PREFER_SIZE
 
+/* Use a sliding window for lexer; slightly larger footprint, slightly faster. */
+#define DUK_USE_LEXER_SLIDING_WINDOW
+
 /*
  *  Tagged type representation (duk_tval)
  */
