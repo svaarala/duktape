@@ -116,8 +116,10 @@ struct duk_compiler_func {
 	 * platforms (e.g. if int is 32 bits and pointers are 64 bits).
 	 */
 
+	duk_bufwriter_ctx bw_code;          /* bufwriter for code */
+
 	duk_hstring *h_name;                /* function name (borrowed reference), ends up in _name */
-	duk_hbuffer_dynamic *h_code;        /* C array of duk_compiler_instr */
+	/* h_code: held in bw_code */
 	duk_hobject *h_consts;              /* array */
 	duk_hobject *h_funcs;               /* array of function templates: [func1, offset1, line1, func2, offset2, line2]
 	                                     * offset/line points to closing brace to allow skipping on pass 2
@@ -132,7 +134,7 @@ struct duk_compiler_func {
 	duk_hobject *h_varmap;              /* variable map for pass 2 (identifier -> register number or null (unmapped)) */
 
 	/* value stack indices for tracking objects */
-	duk_idx_t code_idx;
+	/* code_idx: not needed */
 	duk_idx_t consts_idx;
 	duk_idx_t funcs_idx;
 	duk_idx_t decls_idx;
