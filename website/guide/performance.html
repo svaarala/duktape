@@ -263,9 +263,10 @@ range matching.</p>
 
 <h2>Iterate over plain buffer values, not Buffer objects</h2>
 
-<p>Plain buffer values have a fast path when buffer contents are accessed
-with numeric indices.  When dealing with a value which is potentially a
-Buffer object (not a plain buffer), get the plain buffer before iteration:</p>
+<p>Both buffer objects and plain buffer values have a fast path when buffer
+contents are accessed with numeric indices.  The fast path for plain buffer
+values is a bit faster, so your code will run faster if you get the plain
+buffer before iteration:</p>
 
 <pre class="ecmascript-code">
 var b, i, n;
@@ -280,7 +281,7 @@ print(typeof b);  // always 'buffer'
 
 n = b.length;
 for (i = 0; i &lt; n; i++) {
-    print(i, b[i]);  // fast path buffer access
+    print(i, b[i]);  // fast path for plain buffer access
 }
 </pre>
 

@@ -10,9 +10,9 @@
 <tr><td><a href="#type-null">null</a></td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><code>null</code></td></tr>
 <tr><td><a href="#type-boolean">boolean</a></td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><code>true</code> and <code>false</code></td></tr>
 <tr><td><a href="#type-number">number</a></td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
-<tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable string</td></tr>
+<tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string</td></tr>
 <tr><td><a href="#type-object">object</a></td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
-<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable byte buffer, fixed/dynamic</td></tr>
+<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic</td></tr>
 <tr><td><a href="#type-pointer">pointer</a></td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
 <tr><td><a href="#type-lightfunc">lightfunc</a></td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C pointer (non-object)</td></tr>
 </table>
@@ -36,9 +36,8 @@
     a user buffer.</li>
 </ul>
  
-<p>Note that while strings are considered a primitive (pass-by-value)
-type in Ecmascript, they are a heap allocated type from a memory allocation
-viewpoint.</p>
+<p>Note that while strings and buffers are considered a primitive (pass-by-value)
+types, they are a heap allocated type from a memory allocation viewpoint.</p>
 
 <h2 id="type-pointer-stability">Pointer stability</h2>
 
@@ -66,7 +65,9 @@ buffer is allocated separately and potentially relocated when the buffer
 is resized.  It is thus unsafe to hold a pointer to a dynamic buffer's data
 area across a buffer resize, and it's probably best not to hold a pointer
 after a Duktape/C function returns (as there would be no easy way of being
-sure that the buffer hadn't been resized).</p>
+sure that the buffer hadn't been resized).  The data area of an external
+buffer also has a potentially changing pointer, but the pointer is only
+changed by an explicit user API call.</p>
 
 <h2 id="type-masks">Type masks</h2>
 

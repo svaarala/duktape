@@ -145,9 +145,9 @@ together in the call stack.</p>
 
 <p>The value stack of a context is an array of tagged type values related
 to the current execution state of a coroutine.  The tagged types used are:
-<code>undefined</code>, <code>null</code>, boolean, number, string, object, buffer,
-and pointer.  For a detailed discussion of the available tagged types, see
-<a href="#stacktypes">Types</a>.</p>
+<code>undefined</code>, <code>null</code>, boolean, number, string, object,
+buffer, pointer, and lightfunc.  For a detailed discussion of the available
+tagged types, see <a href="#stacktypes">Types</a>.</p>
 
 <p>The value stack is divided between the currently active function calls
 (activations) on the coroutine's call stack.  At any time, there is an active

@@ -191,8 +191,8 @@ There are some differences to Khronos/ES6, including:</p>
     allowed.</li>
 <li>Small differences in argument coercion e.g. for offset and length
     values.</li>
-<li>ArrayBuffer has numeric indices (uint8), and additional
-    <code>length</code> (matching <code>byteLength</code>),
+<li>ArrayBuffer has numeric indices (behaving like Uint8Array), and
+    additional <code>length</code> (matching <code>byteLength</code>),
     <code>byteOffset</code> (= 0), and <code>BYTES_PER_ELEMENT</code> (= 1)
     properties.</li>
 <li>TypedArray <code>subarray()</code> returns a typed array object whose
