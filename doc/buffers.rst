@@ -1054,11 +1054,19 @@ Testcase coverage improvements
 
 * Node.js Buffer slice() coverage, argument coercion, etc.
 
+Low memory support
+------------------
+
+Implement low-memory support (16-bit fields, pointer compression, etc) for
+Buffer objects.  Currently buffer objects will have "long" fields.
+
+Improve fastint support
+-----------------------
+
+Improve fastint handling for buffer indices, lengths, values, etc.
+
 Unsorted future work
 --------------------
-
-* Implement low-memory support (16-bit fields, pointer compression, etc) for
-  Buffer objects.
 
 * Clean up ``duk_hbufferobject`` ``buf == NULL`` handling.  Perhaps don't
   allow ``NULL`` at all; this depends on the neutering / detached buffer
@@ -1117,3 +1125,8 @@ Unsorted future work
 
 * Explicit maximum element and byte size checks for all operations that
   create new bufferobjects.
+
+* Change the TypedArray subarray() implementation to avoid copying the
+  argument internal prototype and use a "default" prototype instead
+  (e.g. Uint8Array.prototype instead of copying the argument internal
+  prototype which may be different).
