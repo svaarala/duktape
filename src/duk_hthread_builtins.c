@@ -11,7 +11,7 @@
  */
 
 #define DUK__CLASS_BITS                  5
-#define DUK__BIDX_BITS                   6
+#define DUK__BIDX_BITS                   7
 #define DUK__STRIDX_BITS                 9  /* XXX: try to optimize to 8 */
 #define DUK__NATIDX_BITS                 8
 #define DUK__NUM_NORMAL_PROPS_BITS       6
@@ -26,7 +26,7 @@
 
 #define DUK__NARGS_VARARGS_MARKER        0x07
 #define DUK__NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */
-#define DUK__NO_BIDX_MARKER              0x3f
+#define DUK__NO_BIDX_MARKER              0x7f
 #define DUK__NO_STRIDX_MARKER            0xff
 
 #define DUK__PROP_TYPE_DOUBLE            0

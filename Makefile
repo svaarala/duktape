@@ -104,6 +104,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_hobject_misc.c \
 	$(DISTSRCSEP)/duk_hbuffer_alloc.c \
 	$(DISTSRCSEP)/duk_hbuffer_ops.c \
+	$(DISTSRCSEP)/duk_hbufferobject_misc.c \
 	$(DISTSRCSEP)/duk_unicode_tables.c \
 	$(DISTSRCSEP)/duk_unicode_support.c \
 	$(DISTSRCSEP)/duk_debugger.c \
@@ -462,7 +463,7 @@ dukdscanbuild: dist
 	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 
 .PHONY: test
-test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest test262test
+test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest emscripteninceptiontest test262test
 
 RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.yaml
 
@@ -626,35 +627,48 @@ emscripten:
 
 # Reducing the TOTAL_MEMORY and TOTAL_STACK values is useful if you run
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
-# Recent Emscripten will assume typed array support unless EMCC_FAST_COMPILER=0
-# is given through the environment:
-# https://github.com/kripken/emscripten/wiki/LLVM-Backend
-#EMCCOPTS=-s USE_TYPED_ARRAYS=0 -s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
-EMCCOPTS=-s USE_TYPED_ARRAYS=0 --memory-init-file 0
+#EMCCOPTS=-s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
+EMCCOPTS=-O2 -std=c99 -Wall --memory-init-file 0
 
 .PHONY: emscriptentest
 emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	@rm -f /tmp/duk-emcc-test*
-	@echo "NOTE: this emscripten test is incomplete (compiles hello_world.cpp and tries to run it, no checks yet)"
-	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) emscripten/tests/hello_world.cpp -o /tmp/duk-emcc-test.js
+	@echo "NOTE: this emscripten test is incomplete (compiles helloworld.c and tries to run it, no checks yet)"
+	emscripten/emcc $(EMCCOPTS) emscripten-testcases/helloworld.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	./duk /tmp/duk-emcc-test-fixed.js
 	#./duk /tmp/duk-emcc-test.js
 
-# Compile Duktape with Emscripten and execute it with NodeJS.
-# Current status: requires Duktape alignment fixes (alignment by 8).
-# With manual alignment hacks the result works.  Emscripten options
-# need to be chosen carefully:
-#   - Without DUK_OPT_NO_PACKED_TVAL some asserts fail, at least when
-#     -O2 (with asm.js) is used
-#   - -O1 and above triggers asm.js use, which has at least the following
-#     problem:
-#     "too many setjmps in a function call, build with a higher value for MAX_SETJMPS"
-#   - Using -O2 without asm.js for now.
+.PHONY: emscriptenmandeltest
+emscriptenmandeltest: emscripten duk
+	@echo "### emscriptenmandeltest"
+	@rm -f /tmp/duk-emcc-test*
+	@echo "NOTE: this emscripten test is incomplete (compiles mandelbrot.c and tries to run it, no checks yet)"
+	emscripten/emcc $(EMCCOPTS) emscripten-testcases/mandelbrot.c -o /tmp/duk-emcc-test.js
+	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	@ls -l /tmp/duk-emcc-test*
+	./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js
+
+# Compile Duktape and hello.c using Emscripten and execute the result with
+# Duktape.
+.PHONY: emscripteninceptiontest
+emscripteninceptiontest: emscripten dist duk
+	@echo "### emscripteniceptiontest"
+	@rm -f /tmp/duk-emcc-test*
+	@echo "NOTE: this emscripten test is incomplete (compiles Duktape and hello.c and tries to run it, no checks yet)"
+	emscripten/emcc $(EMCCOPTS) -Idist/src dist/src/duktape.c dist/examples/hello/hello.c -o /tmp/duk-emcc-test.js
+	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
+	@ls -l /tmp/duk-emcc-test*
+	./duk /tmp/duk-emcc-test-fixed.js
+	#./duk /tmp/duk-emcc-test.js
+
+# Compile Duktape with Emscripten and execute it with NodeJS:
 #   - --memory-init-file 0 to avoid a separate memory init file (this is
 #     not mandatory but keeps the result in a single file)
+#   - -DEMSCRIPTEN needed by Duktape for feature detection
 # https://github.com/kripken/emscripten/wiki/Optimizing-Code
 # http://mozakai.blogspot.fi/2013/08/outlining-workaround-for-jits-and-big.html
 EMCCOPTS_DUKVM=-O2 -std=c99 -Wall --memory-init-file 0 -DEMSCRIPTEN
@@ -678,7 +692,6 @@ emscriptenduktest: emscripten dist
 EMCCOPTS_DUKWEB_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
 EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_OPT_DEEP_C_STACK '-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}' 
 
-# FIXME: need to be able to declare dukweb_panic_handler to avoid warnings
 dukweb.js: emscripten dist
 	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) $(EMCCOPTS_DUKWEB_DEFINES) \
 		-Idist/src/ dist/src/duktape.c dukweb/dukweb.c -o dukweb.js
@@ -708,14 +721,12 @@ LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	lparser.c lstate.c lstring.c lstrlib.c ltable.c ltablib.c ltm.c \
 	lua.c lundump.c lvm.c lzio.c
 
-# This doesn't currently work: -s USE_TYPED_ARRAYS=0 causes compilation to
-# fail.  Duktape also used to run out of registers trying to run the result,
-# but this should no longer be the case.
+# Compile Lua 5.2.3 with Emscripten and run it with Duktape.
 .PHONY: emscriptenluatest
 emscriptenluatest: emscripten duk lua-5.2.3
 	@echo "### emscriptenluatest"
 	@rm -f /tmp/duk-emcc-luatest*
-	EMCC_FAST_COMPILER=0 emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
+	emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	./duk /tmp/duk-emcc-luatest-fixed.js

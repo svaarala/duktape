@@ -48,6 +48,8 @@ class BuiltinString:
 	section_b = None
 	browser_like = None
 	es6 = None
+	typedarray = None
+	nodejs_buffer = None
 	custom = None
 	internal = None
 	reserved_word = None
@@ -66,6 +68,8 @@ def mkstr(x,
           section_b=False,
           browser_like=False,
           es6=False,
+          typedarray=False,
+          nodejs_buffer=False,
           commonjs=False,
           custom=False,
           internal=False,
@@ -93,6 +97,8 @@ def mkstr(x,
 	ret.section_b = section_b
 	ret.browser_like = browser_like
 	ret.es6 = es6
+	ret.typedarray = typedarray
+	ret.nodejs_buffer = nodejs_buffer
 	ret.commonjs = commonjs
 	ret.custom = custom
 	ret.internal = internal
@@ -507,6 +513,117 @@ commonjs_string_list = [
 	mkstr("id", commonjs=True),
 ]
 
+# Node.js Buffer / TypedArray related strings
+buffer_string_list = [
+	# Node.js class
+	mkstr("Buffer", class_name=True, nodejs_buffer=True),
+
+	# Node.js Buffer constructor
+	mkstr("concat", nodejs_buffer=True),
+	mkstr("isEncoding", nodejs_buffer=True),
+	mkstr("isBuffer", nodejs_buffer=True),
+	mkstr("byteLength", nodejs_buffer=True),
+	mkstr("compare", nodejs_buffer=True),
+
+	# Node.js Buffer prototype
+	mkstr("toString", nodejs_buffer=True),
+	mkstr("toJSON", nodejs_buffer=True),
+	mkstr("write", nodejs_buffer=True),
+	mkstr("fill", nodejs_buffer=True),
+	mkstr("equals", nodejs_buffer=True),
+	mkstr("compare", nodejs_buffer=True),
+	mkstr("copy", nodejs_buffer=True),
+	mkstr("slice", nodejs_buffer=True),
+	mkstr("readUInt8", nodejs_buffer=True),
+	mkstr("readInt8", nodejs_buffer=True),
+	mkstr("readUInt16LE", nodejs_buffer=True),
+	mkstr("readUInt16BE", nodejs_buffer=True),
+	mkstr("readInt16LE", nodejs_buffer=True),
+	mkstr("readInt16BE", nodejs_buffer=True),
+	mkstr("readUInt32LE", nodejs_buffer=True),
+	mkstr("readUInt32BE", nodejs_buffer=True),
+	mkstr("readInt32LE", nodejs_buffer=True),
+	mkstr("readInt32BE", nodejs_buffer=True),
+	mkstr("readFloatLE", nodejs_buffer=True),
+	mkstr("readFloatBE", nodejs_buffer=True),
+	mkstr("readDoubleLE", nodejs_buffer=True),
+	mkstr("readDoubleBE", nodejs_buffer=True),
+	mkstr("readUIntLE", nodejs_buffer=True),
+	mkstr("readUIntBE", nodejs_buffer=True),
+	mkstr("readIntLE", nodejs_buffer=True),
+	mkstr("readIntBE", nodejs_buffer=True),
+	mkstr("writeUInt8", nodejs_buffer=True),
+	mkstr("writeInt8", nodejs_buffer=True),
+	mkstr("writeUInt16LE", nodejs_buffer=True),
+	mkstr("writeUInt16BE", nodejs_buffer=True),
+	mkstr("writeInt16LE", nodejs_buffer=True),
+	mkstr("writeInt16BE", nodejs_buffer=True),
+	mkstr("writeUInt32LE", nodejs_buffer=True),
+	mkstr("writeUInt32BE", nodejs_buffer=True),
+	mkstr("writeInt32LE", nodejs_buffer=True),
+	mkstr("writeInt32BE", nodejs_buffer=True),
+	mkstr("writeFloatLE", nodejs_buffer=True),
+	mkstr("writeFloatBE", nodejs_buffer=True),
+	mkstr("writeDoubleLE", nodejs_buffer=True),
+	mkstr("writeDoubleBE", nodejs_buffer=True),
+	mkstr("writeUIntLE", nodejs_buffer=True),
+	mkstr("writeUIntBE", nodejs_buffer=True),
+	mkstr("writeIntLE", nodejs_buffer=True),
+	mkstr("writeIntBE", nodejs_buffer=True),
+
+	# Node.js toJSON()
+	mkstr("type", nodejs_buffer=True),
+	mkstr("data", nodejs_buffer=True),
+
+	# TypedArray classes
+	mkstr("ArrayBuffer", class_name=True, typedarray=True),
+	mkstr("DataView", class_name=True, typedarray=True),
+	mkstr("Int8Array", class_name=True, typedarray=True),
+	mkstr("Uint8Array", class_name=True, typedarray=True),
+	mkstr("Uint8ClampedArray", class_name=True, typedarray=True),
+	mkstr("Int16Array", class_name=True, typedarray=True),
+	mkstr("Uint16Array", class_name=True, typedarray=True),
+	mkstr("Int32Array", class_name=True, typedarray=True),
+	mkstr("Uint32Array", class_name=True, typedarray=True),
+	mkstr("Float32Array", class_name=True, typedarray=True),
+	mkstr("Float64Array", class_name=True, typedarray=True),
+
+	# TypedArray ArrayBuffer constructor
+	mkstr("isView", typedarray=True),
+
+	# TypedArray ArrayBuffer instance
+	mkstr("slice", typedarray=True),
+
+	# TypedArray ArrayBufferView shared
+	mkstr("buffer", typedarray=True),
+	mkstr("length", typedarray=True),
+	mkstr("byteLength", typedarray=True),
+	mkstr("byteOffset", typedarray=True),
+	mkstr("BYTES_PER_ELEMENT", typedarray=True),
+
+	# TypedArray TypedArray (e.g. Uint8Array)
+	mkstr("set", typedarray=True),
+	mkstr("subarray", typedarray=True),
+
+	# TypedArray DataView
+	mkstr("getInt8", typedarray=True),
+	mkstr("getUint8", typedarray=True),
+	mkstr("getInt16", typedarray=True),
+	mkstr("getUint16", typedarray=True),
+	mkstr("getInt32", typedarray=True),
+	mkstr("getUint32", typedarray=True),
+	mkstr("getFloat32", typedarray=True),
+	mkstr("getFloat64", typedarray=True),
+	mkstr("setInt8", typedarray=True),
+	mkstr("setUint8", typedarray=True),
+	mkstr("setInt16", typedarray=True),
+	mkstr("setUint16", typedarray=True),
+	mkstr("setInt32", typedarray=True),
+	mkstr("setUint32", typedarray=True),
+	mkstr("setFloat32", typedarray=True),
+	mkstr("setFloat64", typedarray=True),
+]
+
 # Duktape specific strings
 duk_string_list = [
 	# non-standard global properties
@@ -831,6 +948,8 @@ special_define_names = {
 	'{"_ninf":true}': 'JSON_EXT_NEGINF',
 	'{"_func":true}': 'JSON_EXT_FUNCTION1',
 	'{_func:true}': 'JSON_EXT_FUNCTION2',
+
+	'BYTES_PER_ELEMENT': 'BYTES_PER_ELEMENT',
 }
 
 #
@@ -1029,6 +1148,7 @@ def gen_string_list():
 	              standard_other_string_list,
 	              es6_string_list,
 	              commonjs_string_list,
+	              buffer_string_list,
 	              duk_string_list ]
 
 	for lst in str_lists:

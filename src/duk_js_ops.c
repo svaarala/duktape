@@ -764,6 +764,43 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
  * needs to push stuff on the stack anyway...
  */
 
+DUK_INTERNAL duk_small_int_t duk_js_data_compare(const duk_uint8_t *buf1, const duk_uint8_t *buf2, duk_size_t len1, duk_size_t len2) {
+	duk_size_t prefix_len;
+	duk_small_int_t rc;
+
+	prefix_len = (len1 <= len2 ? len1 : len2);
+
+	/* XXX: this special case can now be removed with DUK_MEMCMP */
+	/* memcmp() should return zero (equal) for zero length, but avoid
+	 * it because there are some platform specific bugs.  Don't use
+	 * strncmp() because it stops comparing at a NUL.
+	 */
+
+	if (prefix_len == 0) {
+		rc = 0;
+	} else {
+		rc = DUK_MEMCMP((const char *) buf1,
+		                (const char *) buf2,
+		                prefix_len);
+	}
+
+	if (rc < 0) {
+		return -1;
+	} else if (rc > 0) {
+		return 1;
+	}
+
+	/* prefix matches, lengths matter now */
+	if (len1 < len2) {
+		/* e.g. "x" < "xx" */
+		return -1;
+	} else if (len1 > len2) {
+		return 1;
+	}
+
+	return 0;
+}
+
 DUK_INTERNAL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2) {
 	/*
 	 *  String comparison (E5 Section 11.8.5, step 4), which
@@ -778,45 +815,29 @@ DUK_INTERNAL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring 
 	 *  is not an issue for compliance.
 	 */
 
-	duk_size_t h1_len, h2_len, prefix_len;
-	duk_small_int_t rc;
+	DUK_ASSERT(h1 != NULL);
+	DUK_ASSERT(h2 != NULL);
+
+	return duk_js_data_compare((const duk_uint8_t *) DUK_HSTRING_GET_DATA(h1),
+	                           (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h2),
+	                           (duk_size_t) DUK_HSTRING_GET_BYTELEN(h1),
+	                           (duk_size_t) DUK_HSTRING_GET_BYTELEN(h2));
+}
+
+#if 0  /* unused */
+DUK_INTERNAL duk_small_int_t duk_js_buffer_compare(duk_heap *heap, duk_hbuffer *h1, duk_hbuffer *h2) {
+	/* Similar to String comparison. */
 
 	DUK_ASSERT(h1 != NULL);
 	DUK_ASSERT(h2 != NULL);
-	h1_len = DUK_HSTRING_GET_BYTELEN(h1);
-	h2_len = DUK_HSTRING_GET_BYTELEN(h2);
-	prefix_len = (h1_len <= h2_len ? h1_len : h2_len);
+	DUK_UNREF(heap);
 
-	/* XXX: this special case can now be removed with DUK_MEMCMP */
-	/* memcmp() should return zero (equal) for zero length, but avoid
-	 * it because there are some platform specific bugs.  Don't use
-	 * strncmp() because it stops comparing at a NUL.
-	 */
-
-	if (prefix_len == 0) {
-		rc = 0;
-	} else {
-		rc = DUK_MEMCMP((const char *) DUK_HSTRING_GET_DATA(h1),
-		                (const char *) DUK_HSTRING_GET_DATA(h2),
-		                prefix_len);
-	}
-
-	if (rc < 0) {
-		return -1;
-	} else if (rc > 0) {
-		return 1;
-	}
-
-	/* prefix matches, lengths matter now */
-	if (h1_len < h2_len) {
-		/* e.g. "x" < "xx" */
-		return -1;
-	} else if (h1_len > h2_len) {
-		return 1;
-	}
-
-	return 0;
+	return duk_js_data_compare((const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(heap, h1),
+	                           (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(heap, h2),
+	                           (duk_size_t) DUK_HBUFFER_GET_SIZE(h1),
+	                           (duk_size_t) DUK_HBUFFER_GET_SIZE(h2));
 }
+#endif
 
 DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;

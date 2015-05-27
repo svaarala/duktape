@@ -64,10 +64,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_STRING_TOO_LONG duk_str_string_too_long
 #define DUK_STR_BUFFER_TOO_LONG duk_str_buffer_too_long
 #define DUK_STR_SPRINTF_TOO_LONG duk_str_sprintf_too_long
-#define DUK_STR_OBJECT_ALLOC_FAILED duk_str_object_alloc_failed
-#define DUK_STR_THREAD_ALLOC_FAILED duk_str_thread_alloc_failed
-#define DUK_STR_FUNC_ALLOC_FAILED duk_str_func_alloc_failed
-#define DUK_STR_BUFFER_ALLOC_FAILED duk_str_buffer_alloc_failed
+#define DUK_STR_ALLOC_FAILED duk_str_alloc_failed
 #define DUK_STR_POP_TOO_MANY duk_str_pop_too_many
 #define DUK_STR_BUFFER_NOT_DYNAMIC duk_str_buffer_not_dynamic
 #define DUK_STR_FAILED_TO_EXTEND_VALSTACK duk_str_failed_to_extend_valstack
@@ -103,10 +100,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_object_coercible;
 DUK_INTERNAL_DECL const char *duk_str_string_too_long;
 DUK_INTERNAL_DECL const char *duk_str_buffer_too_long;
 DUK_INTERNAL_DECL const char *duk_str_sprintf_too_long;
-DUK_INTERNAL_DECL const char *duk_str_object_alloc_failed;
-DUK_INTERNAL_DECL const char *duk_str_thread_alloc_failed;
-DUK_INTERNAL_DECL const char *duk_str_func_alloc_failed;
-DUK_INTERNAL_DECL const char *duk_str_buffer_alloc_failed;
+DUK_INTERNAL_DECL const char *duk_str_alloc_failed;
 DUK_INTERNAL_DECL const char *duk_str_pop_too_many;
 DUK_INTERNAL_DECL const char *duk_str_buffer_not_dynamic;
 DUK_INTERNAL_DECL const char *duk_str_failed_to_extend_valstack;

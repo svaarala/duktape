@@ -86,22 +86,23 @@ support yet, no "heap object" can be provided.</p>
 
 <p><a href="https://github.com/kripken/emscripten">Emscripten</a> compiles
 C/C++ into Javascript.  Duktape is currently Emscripten compatible except
-for:</p>
-<ul>
-<li>Duktape doesn't yet have typed arrays, so give <code>emcc</code> the
-    option <code>-s USE_TYPED_ARRAYS=0</code> to disable their use.</li>
-</ul>
+for a few RegExp issues, see:
+<a href="https://github.com/svaarala/duktape/blob/master/util/fix_emscripten.py">fix_emscripten.py</a>.
+</p>
 
-<p>Performance is somewhat limited as Duktape is an interpreted engine.
-Lack of typed array support also forces Emscripten to use a much slower model
-for emulating application memory.  Large programs may fail due to Duktape
-compiler running out of virtual registers.  See 
+<p>As of Duktape 1.3 there is support for Khronos/ES6 TypedArray which improves
+Emscripten performance over Duktape 1.2 and allows the Emscripten fastcomp
+to be used.  Duktape can now also execute larger Emscripten-compiled programs
+and can e.g. run both Emscripten-compiled Lua and Duktape.  Large programs may
+still fail due to Duktape compiler running out of virtual registers, and
+performance is somewhat limited as Duktape is an interpreted engine.  See
 <a href="https://github.com/svaarala/duktape/blob/master/doc/emscripten-status.rst">emscripten-status.rst</a>
 for current compatibility status.</p>
 
-<p>Duktape itself compiles with Emscripten, and it is possible to run Duktape inside
-a web page for instance, see
-<a href="dukweb.html">Dukweb REPL</a>.</p>
+<p>Because Duktape itself compiles with Emscripten, it is possible to run
+Duktape inside a web page for instance, see
+<a href="dukweb.html">Dukweb REPL</a>.
+</p>
 
 <h2 id="compatibility-luajs">Lua.js</h2>
 

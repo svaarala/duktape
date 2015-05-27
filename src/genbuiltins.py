@@ -97,7 +97,7 @@ DEFAULT_PROPERTY_ATTRIBUTES = "wc"
 
 # encoding constants (must match duk_hthread_builtins.c)
 CLASS_BITS = 5
-BIDX_BITS = 6
+BIDX_BITS = 7
 STRIDX_BITS = 9   # would be nice to optimize to 8
 NATIDX_BITS = 8
 NUM_NORMAL_PROPS_BITS = 6
@@ -112,7 +112,7 @@ MAGIC_BITS = 16
 
 NARGS_VARARGS_MARKER = 0x07
 NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_UNUSED 
-NO_BIDX_MARKER = 0x3f
+NO_BIDX_MARKER = 0x7f
 NO_STRIDX_MARKER = 0xff
 
 PROP_TYPE_DOUBLE = 0
@@ -190,7 +190,7 @@ def internal(x):
 	return '\x00' + x
 
 #
-#  Built-in object descriptions
+#  Standard built-ins
 #
 
 bi_global = {
@@ -234,11 +234,27 @@ bi_global = {
 		{ 'name': 'Math',			'value': { 'type': 'builtin', 'id': 'bi_math' } },
 		{ 'name': 'JSON',			'value': { 'type': 'builtin', 'id': 'bi_json' } },
 
+		# Duktape specific
+		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
+
 		# ES6 (draft)
 		{ 'name': 'Proxy',			'value': { 'type': 'builtin', 'id': 'bi_proxy_constructor' } },
 
-		# Duktape specific
-		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
+		# Node.js Buffer
+		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_nodejs_buffer_constructor' } },
+
+		# TypedArray
+		{ 'name': 'ArrayBuffer',		'value': { 'type': 'builtin', 'id': 'bi_arraybuffer_constructor' } },
+		{ 'name': 'DataView',			'value': { 'type': 'builtin', 'id': 'bi_dataview_constructor' } },
+		{ 'name': 'Int8Array',			'value': { 'type': 'builtin', 'id': 'bi_int8array_constructor' } },
+		{ 'name': 'Uint8Array',			'value': { 'type': 'builtin', 'id': 'bi_uint8array_constructor' } },
+		{ 'name': 'Uint8ClampedArray',		'value': { 'type': 'builtin', 'id': 'bi_uint8clampedarray_constructor' } },
+		{ 'name': 'Int16Array',			'value': { 'type': 'builtin', 'id': 'bi_int16array_constructor' } },
+		{ 'name': 'Uint16Array',		'value': { 'type': 'builtin', 'id': 'bi_uint16array_constructor' } },
+		{ 'name': 'Int32Array',			'value': { 'type': 'builtin', 'id': 'bi_int32array_constructor' } },
+		{ 'name': 'Uint32Array',		'value': { 'type': 'builtin', 'id': 'bi_uint32array_constructor' } },
+		{ 'name': 'Float32Array',		'value': { 'type': 'builtin', 'id': 'bi_float32array_constructor' } },
+		{ 'name': 'Float64Array',		'value': { 'type': 'builtin', 'id': 'bi_float64array_constructor' } },
 	],
 	'functions': [
 		{ 'name': 'eval',			'native': 'duk_bi_global_object_eval', 			'length': 1 },
@@ -1090,24 +1106,9 @@ bi_type_error_thrower = {
 	'functions': [],
 }
 
-# ES6 (draft)
-bi_proxy_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	# no external prototype
-	'class': 'Function',
-	'name': 'Proxy',
-
-	'length': 2,
-	'native': 'duk_bi_proxy_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-#		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
-	],
-}
-
+#
+#  Duktape-specific built-ins
+#
 
 bi_duktape = {
 	'internal_prototype': 'bi_object_prototype',
@@ -1273,7 +1274,6 @@ bi_logger_prototype = {
 	],
 }
 
-
 # This is an Error *instance* used to avoid allocation when a "double error" occurs.
 # The object is "frozen and sealed" to avoid code accidentally modifying the instance.
 # This is important because the error is rethrown as is.
@@ -1292,6 +1292,503 @@ bi_double_error = {
 	],
 	'functions': [
 	],
+}
+
+#
+#  ES6 (draft)
+#
+
+bi_proxy_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	# no external prototype
+	'class': 'Function',
+	'name': 'Proxy',
+
+	'length': 2,
+	'native': 'duk_bi_proxy_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+#		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
+	],
+}
+
+#
+#  TypedArray
+#
+
+def magic_readfield(elem, signed=None, bigendian=None, typedarray=None):
+	# Must match duk__FLD_xxx in duk_bi_buffer.c
+	elemnum = {
+		'8bit': 0,
+		'16bit': 1,
+		'32bit': 2,
+		'float': 3,
+		'double': 4,
+		'varint': 5
+	}[elem]
+	if signed == True:
+		signednum = 1
+	elif signed == False:
+		signednum = 0
+	else:
+		raise Exception('missing "signed"')
+	if bigendian == True:
+		bigendiannum = 1
+	elif bigendian == False:
+		bigendiannum = 0
+	else:
+		raise Exception('missing "bigendian"')
+	if typedarray == True:
+		typedarraynum = 1
+	elif typedarray == False:
+		typedarraynum = 0
+	else:
+		raise Exception('missing "typedarray"')
+	return elemnum + (signednum << 4) + (bigendiannum << 3) + (typedarraynum << 5)
+
+def magic_writefield(elem, signed=None, bigendian=None, typedarray=None):
+	return magic_readfield(elem, signed=signed, bigendian=bigendian, typedarray=typedarray)
+
+def magic_typedarray_constructor(elem, shift):
+	# Must match duk_hbufferobject.h header
+	elemnum = {
+		'uint8': 0,
+		'uint8clamped': 1,
+		'int8': 2,
+		'uint16': 3,
+		'int16': 4,
+		'uint32': 5,
+		'int32': 6,
+		'float32': 7,
+		'float64': 8
+	}[elem]
+	return (elemnum << 2) + shift
+
+bi_arraybuffer_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_arraybuffer_prototype',
+	'class': 'Function',
+	'name': 'ArrayBuffer',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 1,
+	'varargs': False,
+	'native': 'duk_bi_arraybuffer_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+		{ 'name': 'isView',			'native': 'duk_bi_arraybuffer_isview',			'length': 1,	'varargs': False },
+	]
+}
+
+bi_arraybuffer_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_arraybuffer_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': [
+		{ 'name': 'slice',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x02 } },  # magic: 0x01=isView, 0x02=create copy
+	]
+}
+
+bi_dataview_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_dataview_prototype',
+	'class': 'Function',
+	'name': 'DataView',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_dataview_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': []
+}
+
+bi_dataview_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_dataview_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': [
+		# Int8/Uint8 get/set calls don't have a little endian argument
+		# but length/nargs must provide it for the shared helper anyway.
+
+		{ 'name': 'getInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'getUint8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'getInt16',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'getUint16',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'getInt32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'getUint32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'getFloat32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'getFloat64',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'setInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'setUint8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'setInt16',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'setUint16',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'setInt32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=False, typedarray=True) } },
+		{ 'name': 'setUint32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'setFloat32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=False, typedarray=True) } },
+		{ 'name': 'setFloat64',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=False, typedarray=True) } },
+	]
+}
+
+# Custom prototype object providing properties shared by all TypedArray
+# instances (reduces built-in object count).  The view specific prototypes
+# (such as Uint8Array.prototype) are still needed so that e.g. instanceof
+# will work properly.
+
+bi_typedarray_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	# no external_constructor (specific views provide it)
+	'class': 'Object',
+
+	'values': [],
+	'functions': [
+	{ 'name': 'set',			'native': 'duk_bi_typedarray_set',				'length': 2,	'varargs': False },
+	{ 'name': 'subarray',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x01 } },  # magic: 0x01=isView, 0x02=create copy
+	]
+}
+
+bi_int8array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_int8array_prototype',
+	'class': 'Function',
+	'name': 'Int8Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int8', 0) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_int8array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_int8array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_uint8array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_uint8array_prototype',
+	'class': 'Function',
+	'name': 'Uint8Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint8', 0) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_uint8array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_uint8array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_uint8clampedarray_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_uint8clampedarray_prototype',
+	'class': 'Function',
+	'name': 'Uint8ClampedArray',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint8clamped', 0) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_uint8clampedarray_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_uint8clampedarray_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_int16array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_int16array_prototype',
+	'class': 'Function',
+	'name': 'Int16Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int16', 1) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 2,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_int16array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_int16array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_uint16array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_uint16array_prototype',
+	'class': 'Function',
+	'name': 'Uint16Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint16', 1) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 2,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_uint16array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_uint16array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_int32array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_int32array_prototype',
+	'class': 'Function',
+	'name': 'Int32Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int32', 2) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_int32array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_int32array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_uint32array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_uint32array_prototype',
+	'class': 'Function',
+	'name': 'Uint32Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint32', 2) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_uint32array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_uint32array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_float32array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_float32array_prototype',
+	'class': 'Function',
+	'name': 'Float32Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('float32', 2) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_float32array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_float32array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+bi_float64array_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_float64array_prototype',
+	'class': 'Function',
+	'name': 'Float64Array',  # matches V8, not specified explicitly in Khronos spec
+
+	'length': 3,
+	'varargs': False,
+	'native': 'duk_bi_typedarray_constructor',
+	'callable': True,
+	'constructable': True,
+	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('float64', 3) },
+
+	'values': [
+		{ 'name': 'BYTES_PER_ELEMENT',		'value': 8,		'attributes': '' },
+	],
+	'functions': []
+}
+
+bi_float64array_prototype = {
+	'internal_prototype': 'bi_typedarray_prototype',
+	'external_constructor': 'bi_float64array_constructor',
+	'class': 'Object',
+
+	'values': [],
+	'functions': []
+}
+
+#
+#  Node.js Buffer
+#
+
+bi_nodejs_buffer_constructor = {
+	'internal_prototype': 'bi_function_prototype',
+	'external_prototype': 'bi_nodejs_buffer_prototype',
+	'class': 'Function',
+	'name': 'Buffer',
+
+	'length': 2,
+	'varargs': False,
+	'native': 'duk_bi_nodejs_buffer_constructor',
+	'callable': True,
+	'constructable': True,
+
+	'values': [],
+	'functions': [
+		{ 'name': 'concat',			'native': 'duk_bi_nodejs_buffer_concat',		'length': 2,	'varargs': False },
+		{ 'name': 'isEncoding',			'native': 'duk_bi_nodejs_buffer_is_encoding',		'length': 1,	'varargs': False },
+		{ 'name': 'isBuffer',			'native': 'duk_bi_nodejs_buffer_is_buffer',		'length': 1,	'varargs': False },
+		{ 'name': 'byteLength',			'native': 'duk_bi_nodejs_buffer_byte_length',		'length': 2,	'varargs': False },
+		{ 'name': 'compare',			'native': 'duk_bi_buffer_compare_shared',		'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x02 + 0x01 } },  # magic: 0x02=static call, 0x01=compare
+	]
+}
+
+bi_nodejs_buffer_prototype = {
+	'internal_prototype': 'bi_object_prototype',
+	'external_constructor': 'bi_nodejs_buffer_constructor',
+	'class': 'Object',
+
+	'values': [
+	],
+	'functions': [
+		{ 'name': 'readUInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'readUInt16LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readUInt16BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'readInt16LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'readInt16BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'readUInt32LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readUInt32BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'readInt32LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'readInt32BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'readFloatLE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readFloatBE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'readDoubleLE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readDoubleBE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'readUIntLE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'readUIntBE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'readIntLE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'readIntBE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeUInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeUInt16LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeUInt16BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeInt16LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeInt16BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeUInt32LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeUInt32BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeInt32LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeInt32BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeFloatLE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeFloatBE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeDoubleLE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeDoubleBE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeUIntLE',		'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=False, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeUIntBE',		'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=False, bigendian=True, typedarray=False) } },
+		{ 'name': 'writeIntLE',			'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=True, bigendian=False, typedarray=False) } },
+		{ 'name': 'writeIntBE',			'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=True, bigendian=True, typedarray=False) } },
+		{ 'name': 'toString',			'native': 'duk_bi_nodejs_buffer_tostring',		'length': 3,	'varargs': False },
+		{ 'name': 'toJSON',			'native': 'duk_bi_nodejs_buffer_tojson',		'length': 0,	'varargs': False },
+		{ 'name': 'fill',			'native': 'duk_bi_nodejs_buffer_fill',			'length': 3,	'varargs': False },
+		{ 'name': 'equals',			'native': 'duk_bi_buffer_compare_shared',		'length': 1,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0: equals
+		{ 'name': 'compare',			'native': 'duk_bi_buffer_compare_shared',		'length': 1,	'varargs': False,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1: compare
+		{ 'name': 'copy',			'native': 'duk_bi_nodejs_buffer_copy',			'length': 4,	'varargs': False },
+		{ 'name': 'slice',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0 } },  # magic: 0x01=isView, 0x02=create copy
+		{ 'name': 'write',			'native': 'duk_bi_nodejs_buffer_write',			'length': 4,	'varargs': False },
+	]
 }
 
 #
@@ -1336,19 +1833,48 @@ builtins_orig = [
 	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
 
 	# es6
-	{ 'id': 'bi_proxy_constructor',			'info': bi_proxy_constructor },
+	{ 'id': 'bi_proxy_constructor',			'info': bi_proxy_constructor,			'es6': True },
 
 	# custom
-	{ 'id': 'bi_duktape',				'info': bi_duktape },
-	{ 'id': 'bi_thread_constructor',		'info': bi_thread_constructor },
-	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype },
-	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor },
-	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype },
-	{ 'id': 'bi_pointer_constructor',		'info': bi_pointer_constructor },
-	{ 'id': 'bi_pointer_prototype',			'info': bi_pointer_prototype },
-	{ 'id': 'bi_logger_constructor',		'info': bi_logger_constructor },
-	{ 'id': 'bi_logger_prototype',			'info': bi_logger_prototype },
-	{ 'id': 'bi_double_error',                      'info': bi_double_error },
+	{ 'id': 'bi_duktape',				'info': bi_duktape,				'custom': True },
+	{ 'id': 'bi_thread_constructor',		'info': bi_thread_constructor,			'custom': True },
+	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype,			'custom': True },
+	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor,			'custom': True },
+	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype,			'custom': True },
+	{ 'id': 'bi_pointer_constructor',		'info': bi_pointer_constructor,			'custom': True },
+	{ 'id': 'bi_pointer_prototype',			'info': bi_pointer_prototype,			'custom': True },
+	{ 'id': 'bi_logger_constructor',		'info': bi_logger_constructor,			'custom': True },
+	{ 'id': 'bi_logger_prototype',			'info': bi_logger_prototype,			'custom': True },
+	{ 'id': 'bi_double_error',                      'info': bi_double_error,			'custom': True },
+
+	# TypedArray
+	{ 'id': 'bi_arraybuffer_constructor',		'info': bi_arraybuffer_constructor,		'typedarray': True },
+	{ 'id': 'bi_arraybuffer_prototype',		'info': bi_arraybuffer_prototype,		'typedarray': True },
+	{ 'id': 'bi_dataview_constructor',		'info': bi_dataview_constructor,		'typedarray': True },
+	{ 'id': 'bi_dataview_prototype',		'info': bi_dataview_prototype,			'typedarray': True },
+	{ 'id': 'bi_typedarray_prototype',		'info': bi_typedarray_prototype,		'typedarray': True },
+	{ 'id': 'bi_int8array_constructor',		'info': bi_int8array_constructor,		'typedarray': True },
+	{ 'id': 'bi_int8array_prototype',		'info': bi_int8array_prototype,			'typedarray': True },
+	{ 'id': 'bi_uint8array_constructor',		'info': bi_uint8array_constructor,		'typedarray': True },
+	{ 'id': 'bi_uint8array_prototype',		'info': bi_uint8array_prototype,		'typedarray': True },
+	{ 'id': 'bi_uint8clampedarray_constructor',	'info': bi_uint8clampedarray_constructor,	'typedarray': True },
+	{ 'id': 'bi_uint8clampedarray_prototype',	'info': bi_uint8clampedarray_prototype,		'typedarray': True },
+	{ 'id': 'bi_int16array_constructor',		'info': bi_int16array_constructor,		'typedarray': True },
+	{ 'id': 'bi_int16array_prototype',		'info': bi_int16array_prototype,		'typedarray': True },
+	{ 'id': 'bi_uint16array_constructor',		'info': bi_uint16array_constructor,		'typedarray': True },
+	{ 'id': 'bi_uint16array_prototype',		'info': bi_uint16array_prototype,		'typedarray': True },
+	{ 'id': 'bi_int32array_constructor',		'info': bi_int32array_constructor,		'typedarray': True },
+	{ 'id': 'bi_int32array_prototype',		'info': bi_int32array_prototype,		'typedarray': True },
+	{ 'id': 'bi_uint32array_constructor',		'info': bi_uint32array_constructor,		'typedarray': True },
+	{ 'id': 'bi_uint32array_prototype',		'info': bi_uint32array_prototype,		'typedarray': True },
+	{ 'id': 'bi_float32array_constructor',		'info': bi_float32array_constructor,		'typedarray': True },
+	{ 'id': 'bi_float32array_prototype',		'info': bi_float32array_prototype,		'typedarray': True },
+	{ 'id': 'bi_float64array_constructor',		'info': bi_float64array_constructor,		'typedarray': True },
+	{ 'id': 'bi_float64array_prototype',		'info': bi_float64array_prototype,		'typedarray': True },
+
+	# Node.js Buffer
+	{ 'id': 'bi_nodejs_buffer_constructor',		'info': bi_nodejs_buffer_constructor,		'nodejs_buffer': True },
+	{ 'id': 'bi_nodejs_buffer_prototype',		'info': bi_nodejs_buffer_prototype,		'nodejs_buffer': True },
 ]
 
 #

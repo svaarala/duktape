@@ -30,6 +30,11 @@ are also discussed.</p>
 </tbody>
 </table>
 
+<p>Note that Boolean objects, String objects, Number objects, and buffer objects
+compare as any other objects instead of being automatically unboxed.  For example,
+non-strict equality compares plain buffer values with a byte-by-byte comparison,
+but buffer objects are compared by object reference (like any other objects).</p>
+
 <h2 id="non-strict-equality-algorithm">Equality (non-strict)</h2>
 
 <p>Non-strict equality comparison is specified in

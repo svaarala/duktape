@@ -43,6 +43,18 @@ DUK_INTERNAL_DECL duk_hobject *duk_push_this_coercible_to_object(duk_context *ct
 /* duk_push_this() + CheckObjectCoercible() + duk_to_string() */
 DUK_INTERNAL_DECL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);
 
+/* Get a borrowed duk_tval pointer to the current 'this' binding.  Caller must
+ * make sure there's an active callstack entry.  Note that the returned pointer
+ * is unstable with regards to side effects.
+ */
+DUK_INTERNAL_DECL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx);
+
+/* XXX: add fastint support? */
+#define duk_push_u64(ctx,val) \
+	duk_push_number((ctx), (duk_double_t) (val))
+#define duk_push_i64(ctx,val) \
+	duk_push_number((ctx), (duk_double_t) (val))
+
 /* duk_push_(u)int() is guaranteed to support at least (un)signed 32-bit range */
 #define duk_push_u32(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))
@@ -89,6 +101,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index)
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);
 DUK_INTERNAL_DECL duk_int_t duk_to_int_check_range(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);
+DUK_INTERNAL_DECL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t index);
 
 DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index);
@@ -131,6 +144,7 @@ DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
+DUK_INTERNAL_DECL duk_hbufferobject *duk_push_bufferobject(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
 
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [] -> [val] */
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [val] -> [] */

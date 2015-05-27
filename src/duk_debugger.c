@@ -341,7 +341,7 @@ DUK_LOCAL duk_double_t duk__debug_read_double_raw(duk_hthread *thr) {
 
 	DUK_ASSERT(sizeof(du.uc) == 8);
 	duk_debug_read_bytes(thr, (duk_uint8_t *) du.uc, sizeof(du.uc));
-	DUK_DBLUNION_BSWAP(&du);
+	DUK_DBLUNION_DOUBLE_NTOH(&du);
 	return du.d;
 }
 
@@ -715,7 +715,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		/* Numbers are normalized to big (network) endian. */
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		du.d = DUK_TVAL_GET_NUMBER(tv);
-		DUK_DBLUNION_BSWAP(&du);
+		DUK_DBLUNION_DOUBLE_HTON(&du);
 
 		duk_debug_write_byte(thr, 0x1a);
 		duk_debug_write_bytes(thr, (const duk_uint8_t *) du.uc, sizeof(du.uc));

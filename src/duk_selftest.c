@@ -162,7 +162,7 @@ DUK_LOCAL void duk__selftest_bswap_macros(void) {
 
 	du.uc[0] = 0x40; du.uc[1] = 0x00; du.uc[2] = 0x11; du.uc[3] = 0x22;
 	du.uc[4] = 0x33; du.uc[5] = 0x44; du.uc[6] = 0x55; du.uc[7] = 0x66;
-	DUK_DBLUNION_BSWAP(&du);
+	DUK_DBLUNION_DOUBLE_NTOH(&du);
 	du_diff = du.d - 2.008366013071895;
 #if 0
 	DUK_FPRINTF(DUK_STDERR, "du_diff: %lg\n", (double) du_diff);
@@ -173,13 +173,13 @@ DUK_LOCAL void duk__selftest_bswap_macros(void) {
 		 * Linux gcc-4.8 -m32 at least).
 		 */
 #if 0
-		DUK_FPRINTF(DUK_STDERR, "Result of DUK_DBLUNION_BSWAP: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+		DUK_FPRINTF(DUK_STDERR, "Result of DUK_DBLUNION_DOUBLE_NTOH: %02x %02x %02x %02x %02x %02x %02x %02x\n",
 		            (unsigned int) du.uc[0], (unsigned int) du.uc[1],
 		            (unsigned int) du.uc[2], (unsigned int) du.uc[3],
 		            (unsigned int) du.uc[4], (unsigned int) du.uc[5],
 		            (unsigned int) du.uc[6], (unsigned int) du.uc[7]);
 #endif
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_DBLUNION_BSWAP");
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_DBLUNION_DOUBLE_NTOH");
 	}
 }
 

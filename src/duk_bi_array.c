@@ -1440,3 +1440,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
+
+#undef DUK__ARRAY_MID_JOIN_LIMIT
+
+#undef DUK__ITER_EVERY
+#undef DUK__ITER_SOME
+#undef DUK__ITER_FOREACH
+#undef DUK__ITER_MAP
+#undef DUK__ITER_FILTER

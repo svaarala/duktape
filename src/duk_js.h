@@ -32,7 +32,11 @@ DUK_INTERNAL_DECL duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv);
 DUK_INTERNAL_DECL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx);
 DUK_INTERNAL_DECL duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h);
 DUK_INTERNAL_DECL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
+DUK_INTERNAL_DECL duk_small_int_t duk_js_data_compare(const duk_uint8_t *buf1, const duk_uint8_t *buf2, duk_size_t len1, duk_size_t len2);
 DUK_INTERNAL_DECL duk_small_int_t duk_js_string_compare(duk_hstring *h1, duk_hstring *h2);
+#if 0  /* unused */
+DUK_INTERNAL_DECL duk_small_int_t duk_js_buffer_compare(duk_heap *heap, duk_hbuffer *h1, duk_hbuffer *h2);
+#endif
 DUK_INTERNAL_DECL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags);
 DUK_INTERNAL_DECL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);
 DUK_INTERNAL_DECL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y);

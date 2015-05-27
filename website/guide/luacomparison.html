@@ -39,13 +39,13 @@ type, with the following differences:</p>
 the same.</p>
 
 <p>If you need to associate properties with a Duktape buffer, you can use
-an actual object and have the buffer as its property.  You can then add a
-finalizer to the object to free any resources related to the buffer.  This
-works reasonably well as long as nothing else holds a reference to the buffer.
-If this were the case, the buffer could get used after the object had already
-been finalized.  To safeguard against this, the native C structure should
-have a flag indicating whether the data structure is open or closed.  This
-is good practice anyway for robust native code.</p>
+a buffer object instead (or create your own object and store the plain buffer
+as its property).  You can then add a finalizer to the object to free any
+resources related to the buffer.  This works reasonably well as long as nothing
+else holds a reference to the buffer.  If this were the case, the buffer could
+get used after the object had already been finalized.  To safeguard against this,
+the native C structure should have a flag indicating whether the data structure
+is open or closed.  This is good practice anyway for robust native code.</p>
 
 <h2>Garbage collection</h2>
 

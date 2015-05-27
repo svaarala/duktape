@@ -93,7 +93,7 @@ true 69
 8 73 73
 9 65 65
 10 0 0
-11 255 255
+11 0 0
 n/a true [object Object] marker
 ===*/
 
@@ -155,8 +155,8 @@ function writeTestNonStrict() {
     buf_plain[{ valueOf: function() { return 8; } }] = { valueOf: function() { return 0x41; } };
     // here index works
     buf_plain[{ toString: function() { return '9'; } }] = { valueOf: function() { return 0x41; } };
-    buf_plain[10] = -1/0;  // negative infinity, currently capped to 0x80...0000 -> 0x00
-    buf_plain[11] = 1/0;   // positive infinity, currently capped to 0x7f...ffff -> 0xff
+    buf_plain[10] = -1/0;  // negative infinity, coerces to 0x00
+    buf_plain[11] = 1/0;   // positive infinity, coerces to 0x00
 
     buf_object[0] = -2;
     buf_object[1] = 0x145;

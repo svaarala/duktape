@@ -925,6 +925,18 @@ Planned
 1.3.0 (2015-XX-XX)
 ------------------
 
+* Add support for Node.js Buffer API (GH-152)
+
+* Add support for Khronos/ES6 TypedArray API (subset of ES6 API) (GH-151)
+
+* Improve Emscripten compatibility as a result of TypedArray support:
+  Emscripten fastcomp can now be used and Duktape can run more complex
+  Emscripten-compiled programs (e.g. Lua or Duktape itself)
+
+* Minor change to plain buffer and Duktape.Buffer write coercion for
+  consistency with Node.js Buffer and TypeArray, e.g. -Infinity now
+  coerces to 0x00 rather than 0xFF
+
 * Add duk_instanceof() API call (GH-148)
 
 * Change typing of "duk_context" from "void" to "struct duk_hthread" which

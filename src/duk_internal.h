@@ -60,6 +60,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_hobject.h"
 #include "duk_hcompiledfunction.h"
 #include "duk_hnativefunction.h"
+#include "duk_hbufferobject.h"
 #include "duk_hthread.h"
 #include "duk_hbuffer.h"
 #include "duk_heap.h"

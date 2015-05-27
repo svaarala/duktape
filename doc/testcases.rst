@@ -110,6 +110,10 @@ metadata keys:
   but matches real world expectations (different from a purely Duktape
   specific features).
 
+* ``endianness``: if set, indicates that testcase requires a specific
+  endianness.  Needed for e.g. some TypedArray testcases.  Values:
+  "little", "big", "mixed".
+
 * ``comment``: optional string to comment on testcase very shortly.
 
 Testcases used to be executable directly prior to Duktape 1.1.  With the

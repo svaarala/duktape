@@ -97,6 +97,9 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;
 		DUK_UNREF(f);
 		/* nothing to mark */
+	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+		duk_hbufferobject *b = (duk_hbufferobject *) h;
+		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;
