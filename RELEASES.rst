@@ -952,6 +952,9 @@ Planned
 * Add internal assertions for validating the "ctx" pointer beyond just a NULL
   check (GH-178)
 
+* Fix potential NULL pointer dereference in duk_is_dynamic_buffer() and
+  duk_is_fixed_buffer() when index is outside of value stack (GH-206)
+
 * Fix duk_push_nan() NaN normalization bug which caused segfaults when using
   MSVC on x86 and potentially on other 32-bit platforms (GH-168)
 
