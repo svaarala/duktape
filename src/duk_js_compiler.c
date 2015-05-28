@@ -657,6 +657,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 	(void) duk_push_compiledfunction(ctx);
 	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* XXX: specific getter */
+	DUK_ASSERT(h_res != NULL);
 
 	if (func->is_function) {
 		DUK_DDD(DUK_DDDPRINT("function -> set NEWENV"));
@@ -6921,15 +6922,21 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
  */
 
 DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expect_eof, duk_bool_t implicit_return_value, duk_small_int_t expect_token) {
-	duk_compiler_func *func = &comp_ctx->curr_func;
-	duk_hthread *thr = comp_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
+	duk_compiler_func *func;
+	duk_hthread *thr;
+	duk_context *ctx;
 	duk_reg_t reg_stmt_value = -1;
 	duk_lexer_point lex_pt;
 	duk_reg_t temp_first;
 	duk_small_int_t compile_round = 1;
 
 	DUK_ASSERT(comp_ctx != NULL);
+
+	thr = comp_ctx->thr;
+	ctx = (duk_context *) thr;
+	DUK_ASSERT(thr != NULL);
+
+	func = &comp_ctx->curr_func;
 	DUK_ASSERT(func != NULL);
 
 	DUK__RECURSION_INCREASE(comp_ctx, thr);

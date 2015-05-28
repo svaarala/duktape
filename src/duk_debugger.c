@@ -68,6 +68,7 @@ DUK_INTERNAL duk_bool_t duk_debug_read_peek(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to peek in detached state, return zero (= no data)"));
@@ -86,6 +87,7 @@ DUK_INTERNAL void duk_debug_read_flush(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to read flush in detached state, ignore"));
@@ -104,6 +106,7 @@ DUK_INTERNAL void duk_debug_write_flush(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to write flush in detached state, ignore"));
@@ -154,6 +157,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to read %ld bytes in detached state, return zero data", (long) length));
@@ -192,6 +196,7 @@ DUK_INTERNAL duk_uint8_t duk_debug_read_byte(duk_hthread *thr) {
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_read_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to read 1 bytes in detached state, return zero data"));
@@ -459,6 +464,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(length == 0 || data != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_write_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to write %ld bytes in detached state, ignore", (long) length));
@@ -499,6 +505,7 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 
 	if (heap->dbg_write_cb == NULL) {
 		DUK_D(DUK_DPRINT("attempt to write 1 bytes in detached state, ignore"));
@@ -1693,8 +1700,9 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(filename != NULL);
-
 	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
+
 	if (heap->dbg_breakpoint_count >= DUK_HEAP_MAX_BREAKPOINTS) {
 		DUK_D(DUK_DPRINT("failed to add breakpoint for %O:%ld, all breakpoint slots used",
 		                 (duk_heaphdr *) filename, (long) line));
@@ -1710,7 +1718,7 @@ DUK_INTERNAL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstr
 }
 
 DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index) {
-	duk_heap *heap = thr->heap;
+	duk_heap *heap;
 	duk_hstring *h;
 	duk_breakpoint *b;
 	duk_size_t move_size;
@@ -1721,6 +1729,8 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	 */
 
 	DUK_ASSERT(thr != NULL);
+	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT_DISABLE(breakpoint_index >= 0);  /* unsigned */
 
 	if (breakpoint_index >= heap->dbg_breakpoint_count) {
