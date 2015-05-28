@@ -114,7 +114,7 @@ DUK_LOCAL_DECL duk_int_t duk__emit_jump_empty(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, duk_int_t jump_pc);
 DUK_LOCAL_DECL void duk__patch_jump(duk_compiler_ctx *comp_ctx, duk_int_t jump_pc, duk_int_t target_pc);
 DUK_LOCAL_DECL void duk__patch_jump_here(duk_compiler_ctx *comp_ctx, duk_int_t jump_pc);
-DUK_LOCAL_DECL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t trycatch_pc, duk_regconst_t reg_catch, duk_regconst_t const_varname, duk_small_uint_t flags);
+DUK_LOCAL_DECL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t ldconst_pc, duk_int_t trycatch_pc, duk_regconst_t reg_catch, duk_regconst_t const_varname, duk_small_uint_t flags);
 DUK_LOCAL_DECL void duk__emit_if_false_skip(duk_compiler_ctx *comp_ctx, duk_regconst_t regconst);
 DUK_LOCAL_DECL void duk__emit_if_true_skip(duk_compiler_ctx *comp_ctx, duk_regconst_t regconst);
 DUK_LOCAL_DECL void duk__emit_invalid(duk_compiler_ctx *comp_ctx);
@@ -180,8 +180,8 @@ DUK_LOCAL_DECL void duk__expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_iva
 DUK_LOCAL_DECL duk_reg_t duk__exprtop_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #if 0  /* unused */
 DUK_LOCAL_DECL duk_reg_t duk__exprtop_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
-DUK_LOCAL_DECL void duk__exprtop_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags, duk_reg_t forced_reg);
 #endif
+DUK_LOCAL_DECL void duk__exprtop_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags, duk_reg_t forced_reg);
 DUK_LOCAL_DECL duk_regconst_t duk__exprtop_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #if 0  /* unused */
 DUK_LOCAL_DECL void duk__exprtop_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
@@ -1635,18 +1635,13 @@ DUK_LOCAL void duk__patch_jump_here(duk_compiler_ctx *comp_ctx, duk_int_t jump_p
 	duk__patch_jump(comp_ctx, jump_pc, duk__get_current_pc(comp_ctx));
 }
 
-DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t trycatch_pc, duk_regconst_t reg_catch, duk_regconst_t const_varname, duk_small_uint_t flags) {
+DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t ldconst_pc, duk_int_t trycatch_pc, duk_regconst_t reg_catch, duk_regconst_t const_varname, duk_small_uint_t flags) {
 	duk_compiler_instr *instr;
-
-	instr = duk__get_instr_ptr(comp_ctx, trycatch_pc);
-	DUK_ASSERT(instr != NULL);
-
-	DUK_ASSERT_DISABLE(flags >= DUK_BC_A_MIN);
-	DUK_ASSERT(flags <= DUK_BC_A_MAX);
 
 	DUK_ASSERT((reg_catch & DUK__CONST_MARKER) == 0);
 	const_varname = const_varname & (~DUK__CONST_MARKER);
-	if (reg_catch > DUK_BC_B_MAX || const_varname > DUK_BC_C_MAX) {
+
+	if (reg_catch > DUK_BC_BC_MAX || const_varname > DUK_BC_BC_MAX) {
 		/* Catch attempts to use out-of-range reg/const.  Without this
 		 * check Duktape 0.12.0 could generate invalid code which caused
 		 * an assert failure on execution.  This error is triggered e.g.
@@ -1659,7 +1654,16 @@ DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t trycatc
 		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REG_LIMIT);
 	}
 
-	instr->ins = DUK_ENC_OP_A_B_C(DUK_OP_TRYCATCH, flags, reg_catch, const_varname);
+	instr = duk__get_instr_ptr(comp_ctx, ldconst_pc);
+	DUK_ASSERT(DUK_DEC_OP(instr->ins) == DUK_OP_LDCONST);
+	DUK_ASSERT(instr != NULL);
+	instr->ins |= DUK_ENC_OP_A_BC(0, 0, const_varname);
+
+	instr = duk__get_instr_ptr(comp_ctx, trycatch_pc);
+	DUK_ASSERT(instr != NULL);
+	DUK_ASSERT_DISABLE(flags >= DUK_BC_A_MIN);
+	DUK_ASSERT(flags <= DUK_BC_A_MAX);
+	instr->ins = DUK_ENC_OP_A_BC(DUK_OP_TRYCATCH, flags, reg_catch);
 }
 
 DUK_LOCAL void duk__emit_if_false_skip(duk_compiler_ctx *comp_ctx, duk_regconst_t regconst) {
@@ -4685,13 +4689,11 @@ DUK_LOCAL duk_reg_t duk__exprtop_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalu
 }
 #endif
 
-#if 0  /* unused */
 DUK_LOCAL void duk__exprtop_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags, duk_reg_t forced_reg) {
 	DUK_ASSERT(forced_reg >= 0);
 	duk__exprtop(comp_ctx, res, rbp_flags);
 	duk__ivalue_toforcedreg(comp_ctx, res, forced_reg);
 }
-#endif
 
 DUK_LOCAL duk_regconst_t duk__exprtop_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
 	duk__exprtop(comp_ctx, res, rbp_flags);
@@ -5707,6 +5709,7 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	duk_reg_t reg_catch;      /* reg_catch+0 and reg_catch+1 are reserved for TRYCATCH */
 	duk_regconst_t rc_varname = 0;
 	duk_small_uint_t trycatch_flags = 0;
+	duk_int_t pc_ldconst = -1;
 	duk_int_t pc_trycatch = -1;
 	duk_int_t pc_catch = -1;
 	duk_int_t pc_finally = -1;
@@ -5733,6 +5736,13 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	duk__advance(comp_ctx);  /* eat 'try' */
 
 	reg_catch = DUK__ALLOCTEMPS(comp_ctx, 2);
+
+	/* The target for this LDCONST may need output shuffling, but we assume
+	 * that 'pc_ldconst' will be the LDCONST that we can patch later.  This
+	 * should be the case because there's no input shuffling.
+	 */
+	pc_ldconst = duk__get_current_pc(comp_ctx);
+	duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, reg_catch, 0 /*patched later*/);
 
 	pc_trycatch = duk__get_current_pc(comp_ctx);
 	duk__emit_invalid(comp_ctx);  /* TRYCATCH, cannot emit now (not enough info) */
@@ -5896,6 +5906,7 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	}
 
 	duk__patch_trycatch(comp_ctx,
+	                    pc_ldconst,
 	                    pc_trycatch,
 	                    reg_catch,
 	                    rc_varname,
@@ -5925,7 +5936,6 @@ DUK_LOCAL void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	duk_int_t pc_trycatch;
 	duk_int_t pc_finished;
 	duk_reg_t reg_catch;
-	duk_regconst_t rc_target;
 	duk_small_uint_t trycatch_flags;
 
 	if (comp_ctx->curr_func.is_strict) {
@@ -5939,23 +5949,15 @@ DUK_LOCAL void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	reg_catch = DUK__ALLOCTEMPS(comp_ctx, 2);
 
 	duk__advance_expect(comp_ctx, DUK_TOK_LPAREN);
-	rc_target = duk__exprtop_toregconst(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
+	duk__exprtop_toforcedreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/, reg_catch);
 	duk__advance_expect(comp_ctx, DUK_TOK_RPAREN);
-
-	/* XXX: the trycatch shuffle flags are now very limiting and a fix
-	 * is needed to allow trycatch to work in functions with a very large
-	 * number of temporaries or constants.
-	 */
 
 	pc_trycatch = duk__get_current_pc(comp_ctx);
 	trycatch_flags = DUK_BC_TRYCATCH_FLAG_WITH_BINDING;
-	duk__emit_a_b_c(comp_ctx,
-	                DUK_OP_TRYCATCH | DUK__EMIT_FLAG_NO_SHUFFLE_A
-	                                | DUK__EMIT_FLAG_NO_SHUFFLE_B
-	                                | DUK__EMIT_FLAG_NO_SHUFFLE_C,
+	duk__emit_a_bc(comp_ctx,
+	                DUK_OP_TRYCATCH | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 	                (duk_regconst_t) trycatch_flags /*a*/,
-	                (duk_regconst_t) reg_catch /*b*/,
-	                rc_target /*c*/);
+	                (duk_regconst_t) reg_catch /*bc*/);
 	duk__emit_invalid(comp_ctx);  /* catch jump */
 	duk__emit_invalid(comp_ctx);  /* finished jump */
 
