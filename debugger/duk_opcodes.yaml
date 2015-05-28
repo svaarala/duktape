@@ -261,8 +261,9 @@ opcodes:
   - name: TRYCATCH
     args:
       - A_H
-      - B_R
-      - C_I  # semantics depend on flags, so dump as integer
+      - BC_R  # base register for two consecutive regs (base_reg + 0, base_reg + 1) used for two things:
+              # - input: either 'with' target register or catch varname constant (base_reg + 0), depending on flags
+              # - output: when caught, catch value (base_reg + 0) and type (base_reg + 1)
     flags:
       - mask: 0x40
         name: have_catch
