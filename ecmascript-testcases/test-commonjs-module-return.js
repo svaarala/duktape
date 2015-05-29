@@ -11,8 +11,8 @@ Duktape.modSearch bar
 bar.name: bar
 Duktape.modSearch quux
 Error: aiee
-quux.name: quux
-quux.exported: exportedValue
+Duktape.modSearch quux
+Error: aiee
 ===*/
 
 function moduleReturnValueTest() {
@@ -50,13 +50,18 @@ function moduleReturnValueTest() {
         print(e);
     }
 
-    /* The second time 'quux' is required, it has already been registered
-     * and any partial exports are visible.
+    /* CommonJS doesn't really specify what to do with a cached module if
+     * module loading fails.  In Duktape 1.2 the modLoaded[] cache entry
+     * would be kept; Duktape 1.3 removes the cache entry so that a module
+     * can be reloaded (this matches Node.js behavior).
      */
 
-    mod = require('quux');
-    print('quux.name:', mod.name);
-    print('quux.exported:', mod.exported);
+    try {
+        mod = require('quux');
+        print('quux.name:', mod.name);  // never here
+    } catch (e) {
+        print(e);
+    }
 }
 
 try {
