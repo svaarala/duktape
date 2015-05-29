@@ -3,7 +3,8 @@
 <h2>Overview</h2>
 
 <p>Duktape has a built-in minimal module loading framework based on
-<a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>.
+<a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>,
+with additional support for <code>module.exports</code>.
 The internals are documented in
 <a href="https://github.com/svaarala/duktape/blob/master/doc/modules.rst">modules.rst</a>.
 A recommended (but not mandatory) C module convention is described in
@@ -32,6 +33,17 @@ var quux = require('./quux');  // loads foo/quux
 exports.hello = function () {
     print(text);
 };
+</pre>
+
+<p>Duktape supports <code>module.exports</code> (as of Duktape 1.3) so that
+you can write modules like:</p>
+<pre class="ecmascript-code">
+// foo/bar.js
+module.exports = function adder(x, y) { return x + y; };
+
+// main.js
+var adder = require('foo/bar');
+print('2 + 3 = ' + adder(2, 3));
 </pre>
 
 <p>Because Duktape is embeddable and portable to different environments there
@@ -284,9 +296,6 @@ the module loader would call the init function (e.g. located from a DLL).</p>
 <h2>Limitations</h2>
 
 <ul>
-<li>Duktape does not support <code>module.exports</code>.  This also means that
-    the return value from <code>require()</code> is always an object, and cannot
-    be e.g. a constructor function.</li>
 <li>When implementing native modules in the module search function, circular
     module references are not supported because the module's <code>exports</code>
     table is not registered by Duktape as a "module being loaded" before the
