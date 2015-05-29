@@ -958,6 +958,7 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	const char *str_req_id;  /* requested identifier */
 	const char *str_mod_id;  /* require.id of current module */
+	duk_int_t pcall_rc;
 
 	/* NOTE: we try to minimize code size by avoiding unnecessary pops,
 	 * so the stack looks a bit cluttered in this function.  DUK_ASSERT_TOP()
@@ -1041,15 +1042,17 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 3);
 	duk_xdef_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
 
-	/* Exports table. */
-	duk_push_object(ctx);
-
-	/* Module table: module.id is non-writable and non-configurable, as
-	 * the CommonJS spec suggests this if possible.
+	/* Module table:
+	 * - module.exports: initial exports table (may be replaced by user)
+	 * - module.id is non-writable and non-configurable, as the CommonJS
+	 *   spec suggests this if possible.
 	 */
-	duk_push_object(ctx);
+	duk_push_object(ctx);  /* exports */
+	duk_push_object(ctx);  /* module */
+	duk_dup(ctx, -2);
+	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS, DUK_PROPDESC_FLAGS_WC);  /* module.exports = exports */
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
-	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);  /* module.id = resolved_id */
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 10);
@@ -1084,21 +1087,25 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_call(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
 	DUK_ASSERT_TOP(ctx, 12);
 
-	/* Because user callback did not throw an error, remember exports table. */
-	duk_dup(ctx, 3);
-	duk_dup(ctx, 8);
-	duk_xdef_prop(ctx, 5, DUK_PROPDESC_FLAGS_EC);  /* Duktape.modLoaded[resolved_id] = exports */
-
 	/* If user callback did not return source code, module loading
 	 * is finished (user callback initialized exports table directly).
 	 */
 	if (!duk_is_string(ctx, 11)) {
-		/* User callback did not return source code, so
-		 * module loading is finished.
+		/* User callback did not return source code, so module loading
+		 * is finished: just update modLoaded with final module.exports
+		 * and we're done.
 		 */
-		duk_dup(ctx, 8);
-		return 1;
+		goto finish;
 	}
+
+	/* Because user callback did not throw an error, remember (current)
+	 * exports table in case the module self-references, or loads another
+	 * module that references us etc.  After the module function has
+	 * returned, we'll need to update this value to support module.exports.
+	 */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 8);
+	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = exports */
 
 	/* Finish the wrapped module source.  Force resolved module ID as the
 	 * fileName so it gets set for functions defined within a module.  This
@@ -1122,6 +1129,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	/*
 	 *  Call the wrapped module function.
+	 *
+	 *  Use a protected call so that we can update Duktape.modLoaded[resolved_id]
+	 *  even if the module throws an error.
 	 */
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
@@ -1129,19 +1139,36 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
 	duk_dup(ctx, 8);  /* exports (this binding) */
 	duk_dup(ctx, 7);  /* fresh require (argument) */
-	duk_dup(ctx, 8);  /* exports (argument) */
+	duk_get_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS);  /* relookup exports from module.exports in case it was changed by modSearch */
 	duk_dup(ctx, 9);  /* module (argument) */
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 15);
 
-	duk_call_method(ctx, 3 /*nargs*/);
+	pcall_rc = duk_pcall_method(ctx, 3 /*nargs*/);
+	if (pcall_rc != DUK_EXEC_SUCCESS) {
+		/* Module loading failed.  Node.js will forget the module
+		 * registration so that another require() will try to load
+		 * the module again.  Mimic that behavior.
+		 */
+
+		duk_dup(ctx, 3);
+		duk_del_prop(ctx, 5);  /* delete Duktape.modLoaded[resolved_id] */
+		duk_throw(ctx);  /* rethrow original error */
+	}
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
-	duk_pop_2(ctx);
-	return 1;  /* return exports */
+	/* Update modLoaded registry with final exports value. */
+
+ finish:
+	duk_get_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS);
+	duk_dup(ctx, 3);
+	duk_dup(ctx, -2);
+	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = module.exports */
+
+	return 1;  /* return module.exports */
 }
 #else
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {

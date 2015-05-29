@@ -511,6 +511,7 @@ es6_string_list = [
 commonjs_string_list = [
 	mkstr("require", commonjs=True),
 	mkstr("id", commonjs=True),
+	mkstr("exports", commonjs=True),
 ]
 
 # Node.js Buffer / TypedArray related strings
