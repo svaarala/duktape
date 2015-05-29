@@ -929,6 +929,12 @@ Planned
 
 * Add support for Khronos/ES6 TypedArray API (subset of ES6 API) (GH-151)
 
+* Add support for module.exports in the module loader framework (GH-201)
+
+* Change Duktape.modLoaded[] module cache to track the "module" object
+  instead of the "exports" value to better support module.exports and
+  circular dependencies
+
 * Improve Emscripten compatibility as a result of TypedArray support:
   Emscripten fastcomp can now be used and Duktape can run more complex
   Emscripten-compiled programs (e.g. Lua or Duktape itself)
