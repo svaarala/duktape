@@ -1012,6 +1012,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
 		DUK_DD(DUK_DDPRINT("module already loaded: %!T",
 		                   (duk_tval *) duk_get_tval(ctx, 3)));
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_EXPORTS);  /* return module.exports */
 		return 1;
 	}
 
@@ -1053,9 +1054,18 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS, DUK_PROPDESC_FLAGS_WC);  /* module.exports = exports */
 	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
 	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);  /* module.id = resolved_id */
+	duk_compact(ctx, 9);  /* module table remains registered to modLoaded, minimize its size */
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 	DUK_ASSERT_TOP(ctx, 10);
+
+	/* Register the module table early to modLoaded[] so that we can
+	 * support circular references even in modSearch().  If an error
+	 * is thrown, we'll delete the reference.
+	 */
+	duk_dup(ctx, 3);
+	duk_dup(ctx, 9);
+	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = module */
 
 	/*
 	 *  Call user provided module search function and build the wrapped
@@ -1069,11 +1079,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  is returned the module is assumed to be a pure C one).  If a module
 	 *  cannot be found, an error must be thrown by the user callback.
 	 *
-	 *  NOTE: the current arrangement allows C modules to be implemented
-	 *  but since the exports table is registered to Duktape.modLoaded only
-	 *  after the search function returns, circular requires / partially
-	 *  loaded modules don't work for C modules.  This is rarely an issue,
-	 *  as C modules usually simply expose a set of helper functions.
+	 *  Because Duktape.modLoaded[] already contains the module being
+	 *  loaded, circular references for C modules should also work
+	 *  (although expected to be quite rare).
 	 */
 
 	duk_push_string(ctx, "(function(require,exports,module){");
@@ -1084,8 +1092,13 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_dup(ctx, 7);
 	duk_dup(ctx, 8);
 	duk_dup(ctx, 9);  /* [ ... Duktape.modSearch resolved_id fresh_require exports module ] */
-	duk_call(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
+	pcall_rc = duk_pcall(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
 	DUK_ASSERT_TOP(ctx, 12);
+
+	if (pcall_rc != DUK_EXEC_SUCCESS) {
+		/* Delete entry in Duktape.modLoaded[] and rethrow. */
+		goto delete_rethrow;
+	}
 
 	/* If user callback did not return source code, module loading
 	 * is finished (user callback initialized exports table directly).
@@ -1095,17 +1108,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		 * is finished: just update modLoaded with final module.exports
 		 * and we're done.
 		 */
-		goto finish;
+		goto return_exports;
 	}
-
-	/* Because user callback did not throw an error, remember (current)
-	 * exports table in case the module self-references, or loads another
-	 * module that references us etc.  After the module function has
-	 * returned, we'll need to update this value to support module.exports.
-	 */
-	duk_dup(ctx, 3);
-	duk_dup(ctx, 8);
-	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = exports */
 
 	/* Finish the wrapped module source.  Force resolved module ID as the
 	 * fileName so it gets set for functions defined within a module.  This
@@ -1151,24 +1155,23 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		 * registration so that another require() will try to load
 		 * the module again.  Mimic that behavior.
 		 */
-
-		duk_dup(ctx, 3);
-		duk_del_prop(ctx, 5);  /* delete Duktape.modLoaded[resolved_id] */
-		duk_throw(ctx);  /* rethrow original error */
+		goto delete_rethrow;
 	}
 
 	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
 	DUK_ASSERT_TOP(ctx, 11);
 
-	/* Update modLoaded registry with final exports value. */
+	/* fall through */
 
- finish:
+ return_exports:
 	duk_get_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS);
-	duk_dup(ctx, 3);
-	duk_dup(ctx, -2);
-	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = module.exports */
-
 	return 1;  /* return module.exports */
+
+ delete_rethrow:
+	duk_dup(ctx, 3);
+	duk_del_prop(ctx, 5);  /* delete Duktape.modLoaded[resolved_id] */
+	duk_throw(ctx);  /* rethrow original error */
+	return 0;  /* not reachable */
 }
 #else
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
