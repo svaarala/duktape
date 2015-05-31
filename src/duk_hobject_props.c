@@ -602,7 +602,7 @@ void duk__realloc_props(duk_hthread *thr,
 #ifdef DUK_USE_MARK_AND_SWEEP
 	prev_mark_and_sweep_base_flags = thr->heap->mark_and_sweep_base_flags;
 	thr->heap->mark_and_sweep_base_flags |=
-                DUK_MS_FLAG_NO_FINALIZERS |         /* avoid attempts to add/remove object keys */
+	        DUK_MS_FLAG_NO_FINALIZERS |         /* avoid attempts to add/remove object keys */
 	        DUK_MS_FLAG_NO_OBJECT_COMPACTION;   /* avoid attempt to compact the current object */
 #endif
 

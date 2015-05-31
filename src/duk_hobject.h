@@ -61,6 +61,9 @@
 #define DUK_HOBJECT_SET_CLASS_NUMBER(h,v)      \
 	DUK_HEAPHDR_SET_FLAG_RANGE(&(h)->hdr, DUK_HOBJECT_FLAG_CLASS_BASE, DUK_HOBJECT_FLAG_CLASS_BITS, (v))
 
+#define DUK_HOBJECT_GET_CLASS_MASK(h)          \
+	(1UL << DUK_HEAPHDR_GET_FLAG_RANGE(&(h)->hdr, DUK_HOBJECT_FLAG_CLASS_BASE, DUK_HOBJECT_FLAG_CLASS_BITS))
+
 /* Macro for creating flag initializer from a class number.
  * Unsigned type cast is needed to avoid warnings about coercing
  * a signed integer to an unsigned one; the largest class values
@@ -99,6 +102,54 @@
 #define DUK_HOBJECT_CLASS_UINT32ARRAY          27
 #define DUK_HOBJECT_CLASS_FLOAT32ARRAY         28
 #define DUK_HOBJECT_CLASS_FLOAT64ARRAY         29
+#define DUK_HOBJECT_CLASS_MAX                  29
+
+/* class masks */
+#define DUK_HOBJECT_CMASK_ALL                  ((1UL << (DUK_HOBJECT_CLASS_MAX + 1)) - 1UL)
+#define DUK_HOBJECT_CMASK_UNUSED               (1UL << DUK_HOBJECT_CLASS_UNUSED)
+#define DUK_HOBJECT_CMASK_ARGUMENTS            (1UL << DUK_HOBJECT_CLASS_ARGUMENTS)
+#define DUK_HOBJECT_CMASK_ARRAY                (1UL << DUK_HOBJECT_CLASS_ARRAY)
+#define DUK_HOBJECT_CMASK_BOOLEAN              (1UL << DUK_HOBJECT_CLASS_BOOLEAN)
+#define DUK_HOBJECT_CMASK_DATE                 (1UL << DUK_HOBJECT_CLASS_DATE)
+#define DUK_HOBJECT_CMASK_ERROR                (1UL << DUK_HOBJECT_CLASS_ERROR)
+#define DUK_HOBJECT_CMASK_FUNCTION             (1UL << DUK_HOBJECT_CLASS_FUNCTION)
+#define DUK_HOBJECT_CMASK_JSON                 (1UL << DUK_HOBJECT_CLASS_JSON)
+#define DUK_HOBJECT_CMASK_MATH                 (1UL << DUK_HOBJECT_CLASS_MATH)
+#define DUK_HOBJECT_CMASK_NUMBER               (1UL << DUK_HOBJECT_CLASS_NUMBER)
+#define DUK_HOBJECT_CMASK_OBJECT               (1UL << DUK_HOBJECT_CLASS_OBJECT)
+#define DUK_HOBJECT_CMASK_REGEXP               (1UL << DUK_HOBJECT_CLASS_REGEXP)
+#define DUK_HOBJECT_CMASK_STRING               (1UL << DUK_HOBJECT_CLASS_STRING)
+#define DUK_HOBJECT_CMASK_GLOBAL               (1UL << DUK_HOBJECT_CLASS_GLOBAL)
+#define DUK_HOBJECT_CMASK_OBJENV               (1UL << DUK_HOBJECT_CLASS_OBJENV)
+#define DUK_HOBJECT_CMASK_DECENV               (1UL << DUK_HOBJECT_CLASS_DECENV)
+#define DUK_HOBJECT_CMASK_BUFFER               (1UL << DUK_HOBJECT_CLASS_BUFFER)
+#define DUK_HOBJECT_CMASK_POINTER              (1UL << DUK_HOBJECT_CLASS_POINTER)
+#define DUK_HOBJECT_CMASK_THREAD               (1UL << DUK_HOBJECT_CLASS_THREAD)
+#define DUK_HOBJECT_CMASK_ARRAYBUFFER          (1UL << DUK_HOBJECT_CLASS_ARRAYBUFFER)
+#define DUK_HOBJECT_CMASK_DATAVIEW             (1UL << DUK_HOBJECT_CLASS_DATAVIEW)
+#define DUK_HOBJECT_CMASK_INT8ARRAY            (1UL << DUK_HOBJECT_CLASS_INT8ARRAY)
+#define DUK_HOBJECT_CMASK_UINT8ARRAY           (1UL << DUK_HOBJECT_CLASS_UINT8ARRAY)
+#define DUK_HOBJECT_CMASK_UINT8CLAMPEDARRAY    (1UL << DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY)
+#define DUK_HOBJECT_CMASK_INT16ARRAY           (1UL << DUK_HOBJECT_CLASS_INT16ARRAY)
+#define DUK_HOBJECT_CMASK_UINT16ARRAY          (1UL << DUK_HOBJECT_CLASS_UINT16ARRAY)
+#define DUK_HOBJECT_CMASK_INT32ARRAY           (1UL << DUK_HOBJECT_CLASS_INT32ARRAY)
+#define DUK_HOBJECT_CMASK_UINT32ARRAY          (1UL << DUK_HOBJECT_CLASS_UINT32ARRAY)
+#define DUK_HOBJECT_CMASK_FLOAT32ARRAY         (1UL << DUK_HOBJECT_CLASS_FLOAT32ARRAY)
+#define DUK_HOBJECT_CMASK_FLOAT64ARRAY         (1UL << DUK_HOBJECT_CLASS_FLOAT64ARRAY)
+
+#define DUK_HOBJECT_CMASK_ALL_BUFFEROBJECTS \
+	(DUK_HOBJECT_CMASK_BUFFER | \
+	 DUK_HOBJECT_CMASK_ARRAYBUFFER | \
+	 DUK_HOBJECT_CMASK_DATAVIEW | \
+	 DUK_HOBJECT_CMASK_INT8ARRAY | \
+	 DUK_HOBJECT_CMASK_UINT8ARRAY | \
+	 DUK_HOBJECT_CMASK_UINT8CLAMPEDARRAY | \
+	 DUK_HOBJECT_CMASK_INT16ARRAY | \
+	 DUK_HOBJECT_CMASK_UINT16ARRAY | \
+	 DUK_HOBJECT_CMASK_INT32ARRAY | \
+	 DUK_HOBJECT_CMASK_UINT32ARRAY | \
+	 DUK_HOBJECT_CMASK_FLOAT32ARRAY | \
+	 DUK_HOBJECT_CMASK_FLOAT64ARRAY)
 
 #define DUK_HOBJECT_IS_OBJENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_OBJENV)
 #define DUK_HOBJECT_IS_DECENV(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DECENV)
@@ -222,6 +273,31 @@
 #define DUK_PROPDESC_FLAGS_WEC                  (DUK_PROPDESC_FLAG_WRITABLE | \
                                                  DUK_PROPDESC_FLAG_ENUMERABLE | \
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE)
+
+/*
+ *  Macro for object validity check
+ *
+ *  Assert for currently guaranteed relations between flags, for instance.
+ */
+
+#define DUK_ASSERT_HOBJECT_VALID(h) do { \
+		DUK_ASSERT((h) != NULL); \
+		DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE((h)) || \
+		           DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FUNCTION); \
+		DUK_ASSERT(!DUK_HOBJECT_IS_BUFFEROBJECT((h)) || \
+		           (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_BUFFER || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAYBUFFER || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DATAVIEW || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT8ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT8ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT16ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT16ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT32ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT32ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FLOAT32ARRAY || \
+		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FLOAT64ARRAY)); \
+	} while (0)
 
 /*
  *  Macros to access the 'props' allocation.
@@ -759,6 +835,12 @@ DUK_INTERNAL_DECL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobje
 DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *out_attrs);
 DUK_INTERNAL_DECL duk_tval *duk_hobject_find_existing_array_entry_tval_ptr(duk_heap *heap, duk_hobject *obj, duk_uarridx_t i);
+
+/* XXX: when optimizing for guaranteed property slots, use a guaranteed
+ * slot for internal value; this call can then access it directly.
+ */
+#define duk_hobject_get_internal_value_tval_ptr(heap,obj) \
+	duk_hobject_find_existing_entry_tval_ptr((heap), (obj), DUK_HEAP_STRING_INT_VALUE((heap)))
 
 /* core property functions */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);

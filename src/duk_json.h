@@ -15,16 +15,21 @@
 #endif
 
 /* Encoding/decoding flags */
-#define DUK_JSON_FLAG_ASCII_ONLY          (1 << 0)  /* escape any non-ASCII characters */
-#define DUK_JSON_FLAG_AVOID_KEY_QUOTES    (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
-#define DUK_JSON_FLAG_EXT_CUSTOM          (1 << 2)  /* extended types: custom encoding */
-#define DUK_JSON_FLAG_EXT_COMPATIBLE      (1 << 3)  /* extended types: compatible encoding */
+#define DUK_JSON_FLAG_ASCII_ONLY              (1 << 0)  /* escape any non-ASCII characters */
+#define DUK_JSON_FLAG_AVOID_KEY_QUOTES        (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
+#define DUK_JSON_FLAG_EXT_CUSTOM              (1 << 2)  /* extended types: custom encoding */
+#define DUK_JSON_FLAG_EXT_COMPATIBLE          (1 << 3)  /* extended types: compatible encoding */
 
 /* How much stack to require on entry to object/array encode */
 #define DUK_JSON_ENC_REQSTACK                 32
 
 /* How much stack to require on entry to object/array decode */
 #define DUK_JSON_DEC_REQSTACK                 32
+
+/* How large a loop detection stack to use for fast path */
+#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
+#define DUK_JSON_ENC_LOOPARRAY                32
+#endif
 
 /* Encoding state.  Heap object references are all borrowed. */
 typedef struct {
@@ -51,6 +56,9 @@ typedef struct {
 	duk_small_uint_t stridx_custom_neginf;
 	duk_small_uint_t stridx_custom_posinf;
 	duk_small_uint_t stridx_custom_function;
+#endif
+#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
+	duk_hobject *visiting[DUK_JSON_ENC_LOOPARRAY];  /* indexed by recursion_depth */
 #endif
 } duk_json_enc_ctx;
 
