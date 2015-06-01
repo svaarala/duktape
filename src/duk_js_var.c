@@ -130,8 +130,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
 	fun_clos = (duk_hcompiledfunction *) duk_get_hcompiledfunction(ctx, -2);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun_clos));
 	DUK_ASSERT(fun_clos != NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun_clos));
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_clos) == NULL);
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_clos) == NULL);
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_clos) == NULL);

@@ -2758,7 +2758,7 @@ DUK_EXTERNAL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index)
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	tv = duk_get_tval(ctx, index);
-	if (DUK_TVAL_IS_BUFFER(tv)) {
+	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
 		return (DUK_HBUFFER_HAS_DYNAMIC(h) ? 1 : 0);
@@ -2772,7 +2772,7 @@ DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	tv = duk_get_tval(ctx, index);
-	if (DUK_TVAL_IS_BUFFER(tv)) {
+	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
 		return (DUK_HBUFFER_HAS_DYNAMIC(h) ? 0 : 1);
