@@ -1,0 +1,65 @@
+name: duk_steal_buffer
+
+proto: |
+  void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Steal the current allocation of the dynamic buffer at <code>index</code>.
+  In concrete terms, Duktape forgets the previous allocation and resets the
+  buffer to zero size (and NULL data pointer).  Pointer to the previous
+  allocation is returned and previous allocation length is written to
+  <code>out_size</code> if non-NULL.  The dynamic buffer itself remains on the
+  value stack and can be reused.  The caller becomes responsible for freeing the
+  previous allocation using <code><a href="#duk_free">duk_free()</a></code>,
+  otherwise a memory leak happens.  Duktape won't free the previous allocation
+  through garbage collection or even when the Duktape heap is destroyed.</p>
+
+  <p>This API call is useful when a dynamic buffer is used as a safe temporary
+  in a buffer manipulation algorithm (it's automatically memory managed in case
+  an error occurs).  At the end of such an algorithm, the caller may want to
+  steal the buffer so that it won't be freed by Duktape garbage collection even
+  when the dynamic buffer itself is freed.</p>
+
+example: |
+  duk_size_t sz;
+  void *ptr;
+
+  ptr = duk_push_dynamic_buffer(ctx, 256);  /* initial size */
+  for (;;) {
+      /* Error prone algorithm, resizes and appends to buffer.  If an error
+       * occurs, the dynamic buffer is automatically freed.
+       */
+
+      /* ... */
+      duk_resize_buffer(ctx, -1, new_size);
+  }
+
+  /* Algorithm is done, we want to own the buffer.  The duk_steal_buffer()
+   * API call returns the final data pointer (in case it has been changed
+   * by resizes etc).
+   */
+  ptr = duk_steal_buffer(ctx, -1, &sz);
+
+  /* At this point the dynamic buffer is still on the value stack.
+   * Its size is zero and the current allocation is empty.  Here we
+   * just pop it as unneeded.
+   */
+  duk_pop(ctx);
+
+  /* ... */
+
+  /* Eventually, when done with the buffer, you must free it yourself,
+   * otherwise memory will be leaked.  Duktape won't free the allocation
+   * automatically, even at Duktape heap destruction.
+   */
+  duk_free(ctx, ptr);
+
+tags:
+  - stack
+  - buffer
+  - experimental
+
+introduced: 1.3.0

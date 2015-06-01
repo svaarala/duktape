@@ -945,6 +945,10 @@ Planned
 
 * Add duk_instanceof() API call (GH-148)
 
+* Add duk_steal_buffer() API call which allows user code to steal the current
+  allocation of a dynamic buffer which is useful for some buffer manipulation
+  algorithms (GH-129)
+
 * Change typing of "duk_context" from "void" to "struct duk_hthread" which
   should improve compiler warnings/errors when accidentally passing an invalid
   "ctx" pointer to a Duktape API call (GH-178)
