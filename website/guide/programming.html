@@ -247,8 +247,11 @@ functions don't need to extend the value stack.  Only functions that need
 more space or perhaps need an input-dependent amount of space need to grow
 the value stack.</p>
 
-<p>You can extend the stack allocation explicitly with <code>duk_check_stack()</code>
-or (usually more preferably) <code>duk_require_stack()</code>.  Once successfully
+<p>You can extend the stack allocation explicitly with
+<code><a href="api.html#duk_check_stack">duk_check_stack()</a></code>
+or (usually more preferably)
+<code><a href="api.html#duk_require_stack">duk_require_stack()</a></code>.
+Once successfully
 extended, you are again guaranteed that the specified number of elements can
 be pushed to the stack.  There is no way to shrink the allocation except by
 returning from a Duktape/C function.</p>
@@ -340,13 +343,18 @@ duk_ret_t my_func(duk_context *ctx) {
 </pre>
 
 <p>The function gets Ecmascript call argument in the value stack of
-<code>ctx</code>, with <code>duk_get_top(ctx)</code> indicating the number of
-arguments present on the value stack.  When creating an Ecmascript function
-object associated with a Duktape/C function, one can select the desired
-number of arguments.  Extra arguments are dropped and missing arguments
-are replaced with <code>undefined</code>.  A function can also be registered
-as a vararg function (by giving <code>DUK_VARARGS</code> as the argument count)
-in which case call arguments are not modified prior to C function entry.</p>
+<code>ctx</code>, with
+<code><a href="api.html#duk_get_top">duk_get_top()</a></code>
+indicating the number of
+arguments present on the value stack.  The <code>this</code> binding is not
+automatically pushed to the value stack; use
+<code><a href="api.html#duk_push_this">duk_push_this()</a></code>
+to access it.  When creating an Ecmascript function object associated with a
+Duktape/C function, one can select the desired number of arguments.  Extra
+arguments are dropped and missing arguments are replaced with
+<code>undefined</code>.  A function can also be registered as a vararg
+function (by giving <code>DUK_VARARGS</code> as the argument count) in
+which case call arguments are not modified prior to C function entry.</p>
 
 <p>The function can return one of the following:</p>
 <ul>
@@ -383,7 +391,8 @@ duk_ret_t my_func(duk_context *ctx) {
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.2.2">Ecmascript sense</a>.
 Duktape API calls always obey Ecmascript strict mode semantics, even when the API calls
 are made outside of any Duktape/C function, i.e. with an empty call stack.
-For instance, attempt to delete a non-configurable property using <code>duk_del_prop()</code>
+For instance, attempt to delete a non-configurable property using
+<code><a href="api.html#duk_del_prop">duk_del_prop()</a></code>
 will cause an error to be thrown.  This is the case with a strict Ecmascript function too:</p>
 
 <pre class="ecmascript-code">
@@ -430,6 +439,13 @@ and construct one manually within the Duktape/C call: as with Ecmascript
 functions, if a constructor returns an object value, that value replaces the
 default object instance and becomes the value of the <code>new</code>
 expression.</p>
+
+<div class="note">
+The <code>this</code> binding is not automatically pushed to the value stack;
+use
+<code><a href="api.html#duk_push_this">duk_push_this()</a></code>
+to access it.
+</div>
 
 <h2>Storing state for a Duktape/C function</h2>
 
@@ -514,20 +530,23 @@ more stable alternative.
 <p>The heap stash is an object visible only from C code.  It is associated
 with the Duktape heap, and allows Duktape/C code to store "under the hood"
 state data which is not exposed to Ecmascript code.  It is accessed with the
-<code>duk_push_heap_stash()</code> API call.</p>
+<code><a href="api.html#duk_push_heap_stash">duk_push_heap_stash()</a></code>
+API call.</p>
 
 <h3>Global stash</h3>
 
 <p>The global stash is like the heap stash, but is associated with a global
-object.  It is accessed with the <code>duk_push_global_stash()</code> API
-call.  There can be several environments with different global objects
+object.  It is accessed with the
+<code><a href="api.html#duk_push_global_stash">duk_push_global_stash()</a></code>
+API call.  There can be several environments with different global objects
 within the same heap.</p>
 
 <h3>Thread stash</h3>
 
 <p>The thread stash is like the heap stash, but is associated with a Duktape
 thread (i.e. a <code>ctx</code> pointer).  It is accessible with the
-<code>duk_push_thread_stash()</code> API call.</p>
+<code><a href="api.html#duk_push_thread_stash">duk_push_thread_stash()</a></code>
+API call.</p>
 
 <h2>Duktape version specific code</h2>
 
@@ -666,16 +685,19 @@ e.g. write fatal error information to <code>stderr</code> before process exit.</
 
 <h2 id="error-fatal-panic">Error, fatal, and panic</h2>
 
-<p>An <b>ordinary error</b> is caused by a <code>throw</code> statement,
-a <code>duk_throw()</code> API call (or similar), or by an internal,
+<p>An <b>ordinary error</b> is caused by a <code>throw</code> statement, a
+<code><a href="api.html#duk_throw">duk_throw()</a></code>
+API call (or similar), or by an internal,
 recoverable Duktape error.  Ordinary errors can be caught with a
-<code>try-catch</code> in Ecmascript code or e.g. <code>duk_pcall()</code>
+<code>try-catch</code> in Ecmascript code or e.g.
+<code><a href="api.html#duk_pcall">duk_pcall()</a></code>
 (see API calls tagged
 <code><a href="api.html#taglist-protected">protected</a></code>)
 in C code.</p>
 
-<p>An uncaught error or an explicit call to <code>duk_fatal()</code> causes
-a <b>fatal error</b> handler to be called.  A fatal error handler is
+<p>An uncaught error or an explicit call to
+<code><a href="api.html#duk_fatal">duk_fatal()</a></code>
+causes a <b>fatal error</b> handler to be called.  A fatal error handler is
 associated with every Duktape heap upon creation.  There is no reasonable way
 to resume execution after a fatal error, so the fatal error handler must not
 return.  The default fatal error handler writes an error message to <code>stderr</code>
