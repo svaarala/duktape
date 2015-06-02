@@ -622,6 +622,9 @@ test262cat: test262-es5-tests
 emscripten:
 	# https://github.com/kripken/emscripten
 	# Master is OK because not a critical dependency
+	# Setup is complicated because needs matching fastcomp which
+	# you must provide yourself and add to ~/.emscripten:
+	# http://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
 	$(GIT) clone --depth 1 https://github.com/kripken/emscripten.git
 	cd emscripten; ./emconfigure
 
