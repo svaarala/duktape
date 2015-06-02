@@ -210,7 +210,7 @@ static int wrapped_compile_execute(duk_context *ctx) {
 static int handle_fh(duk_context *ctx, FILE *f, const char *filename) {
 	char *buf = NULL;
 	int len;
-	int got;
+	size_t got;
 	int rc;
 	int retval = -1;
 
