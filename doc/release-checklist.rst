@@ -229,6 +229,9 @@ Checklist for ordinary releases
   - Check git describe output from dist ``README.rst``, ``src/duktape.h``,
     and ``src/duktape.c``.  It should show the release tag.
 
+  - This should be done in a fresh checkout to minimize chance of any
+    uncommitted files, directories, etc affecting the build
+
 * Check source dist contents
 
   - Check file list
