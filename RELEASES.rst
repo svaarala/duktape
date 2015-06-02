@@ -919,6 +919,19 @@ Released
 * Fix duk_push_nan() NaN normalization bug which caused segfaults when using
   MSVC on x86 and potentially on other 32-bit platforms (GH-168)
 
+1.2.2 (2015-06-02)
+------------------
+
+* Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
+
+* Fix compile error from array fast path when using low memory options
+  (GH-174)
+
+* Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
+
+* Fix potential NULL pointer dereference in duk_is_dynamic_buffer() and
+  duk_is_fixed_buffer() when index is outside of value stack (GH-206)
+
 Planned
 =======
 
