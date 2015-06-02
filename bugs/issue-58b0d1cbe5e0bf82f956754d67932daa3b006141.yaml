@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: make testcase metadata yaml for easier editing
+desc: ""
+type: :task
+component: duk
+release: v1.3.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :unstarted
+disposition: 
+creation_time: 2015-04-26 19:13:57.125575 Z
+references: []
+
+id: 58b0d1cbe5e0bf82f956754d67932daa3b006141
+log_events: 
+- - 2015-04-26 19:13:57.294159 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""

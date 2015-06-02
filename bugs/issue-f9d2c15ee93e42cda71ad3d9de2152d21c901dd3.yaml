@@ -1,0 +1,22 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: "add #code URI support to Dukweb"
+desc: ""
+type: :task
+component: duk
+release: v1.3.0
+reporter: Sami Vaarala <sami.vaarala@iki.fi>
+status: :closed
+disposition: :fixed
+creation_time: 2015-04-18 20:28:54.663216 Z
+references: []
+
+id: f9d2c15ee93e42cda71ad3d9de2152d21c901dd3
+log_events: 
+- - 2015-04-18 20:28:54.823141 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - created
+  - ""
+- - 2015-04-19 16:02:03.145993 Z
+  - Sami Vaarala <sami.vaarala@iki.fi>
+  - closed with disposition fixed
+  - ""
