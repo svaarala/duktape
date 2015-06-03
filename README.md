@@ -82,6 +82,10 @@ the website, run test cases, etc:
     $ cd duktape
     $ make
 
+    # If you want to build dukweb.js or run Emscripten targets, you need
+    # to setup Emscripten fastcomp manually, see doc/emscripten-status.rst
+    # for step-by-step instructions.
+
     # Run Ecmascript and API testcases, and some other tests
     $ make ecmatest
     $ make apitest
