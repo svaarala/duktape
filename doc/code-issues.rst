@@ -107,7 +107,12 @@ Space after ``if``, ``switch``, etc::
   switch(x) { ... }   /* incorrect */
 
 Use of goto for error cleanup and shared error handling is not only
-allowed but encouraged.
+allowed but encouraged.  Some goto notes:
+
+* Avoid goto to an inner block as that might have portability impact.
+
+* Jumping to skip blocks should be used only when it saves considerable
+  indentation.
 
 No naked statements in e.g. ``if-then-else``, always use a block.
 This is more macro compatible.  Example::
