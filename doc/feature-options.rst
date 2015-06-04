@@ -721,6 +721,14 @@ Force built-in functions to be lightweight functions.  This reduces
 memory footprint by around 14 kB at the cost of some non-compliant
 behavior.
 
+C API options
+=============
+
+DUK_OPT_NO_BYTECODE_DUMP_SUPPORT
+--------------------------------
+
+Disable support for bytecode dump/load in C API, reduces code footprint.
+
 Execution and debugger options
 ==============================
 
