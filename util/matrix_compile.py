@@ -370,6 +370,8 @@ def create_matrix(fn_duk):
 		# XXX: 16-bit options
 	])
 
+	# FIXME: DUK_USE_LEXER_SLIDING_WINDOW
+
 	# The final command is compiler specific because e.g. include path
 	# and link option syntax could (in principle) differ between compilers.
 
