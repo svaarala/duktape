@@ -67,11 +67,11 @@ not visible on the call stack all.</p>
 
 <p><code>lua_cpcall()</code> creates a new stack frame.</p>
 
-<h2>Bytecode use</h2>
+<h2>Bytecode dump/load</h2>
 
-<p>Duktape Ecmascript function bytecode is currently a purely internal
-matter.  Code cannot currently be loaded from an external pre-compiled
-bytecode file.  Similarly, there is no equivalent to e.g. <code>lua_dump()</code>.</p>
+<p>Starting from Duktape 1.3 Duktape has a bytecode dump/load mechanism
+similar to Lua <code>lua_dump()</code>. See
+<a href="#bytecodedumpload">Bytecode dump/load</a>.</p>
 
 <h2>Metatables</h2>
 

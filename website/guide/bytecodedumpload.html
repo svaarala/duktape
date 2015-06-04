@@ -1,0 +1,29 @@
+<h1 id="bytecodedumpload">Bytecode dump/load</h1>
+
+<p>The API calls
+<code><a href="api.html#duk_dump_function">duk_dump_function()</a></code> and
+<code><a href="api.html#duk_load_function">duk_load_function()</a></code> allow
+calling C code to (1) serialize an Ecmascript function into a portable
+bytecode and then (2) load the bytecode to reconstitute the function.</p>
+
+<p>The bytecode format is Duktape version specific and it's unsafe to
+load bytecode from a different Duktape minor version (patch version
+doesn't affect bytecode compatibility).  Duktape configuration options
+may also affect bytecode compatibility, so dump/load source and target
+must be compiled with the same options.  The bytecode format is platform
+neutral so that you can compile bytecode on one platform and then load it
+on another, which is useful for cross-platform builds.  Duktape does not
+validate loaded bytecode so calling code must ensure bytecode is intact
+and valid for the running Duktape version.</p>
+
+<div class="note">
+Calling code must ensure that bytecode being loaded is intact and valid
+for the running Duktape version (i.e. it has been compiled with the same
+version of Duktape and hasn't been modified since).  Loading invalid
+bytecode may lead to memory unsafe behavior; loading maliciously crafted
+bytecode may even lead to exploitable vulnerabilities.
+</div>
+
+<p>See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode.rst</a>
+for more details.</p>
