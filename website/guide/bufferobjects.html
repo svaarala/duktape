@@ -25,7 +25,19 @@ for detailed discussion.</p>
 
 <h2>Buffers in C code</h2>
 
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/buffers.rst">buffers.rst</a>.</p>
+<p>Duktape API calls prior to 1.3 deal with plain buffer values only.
+To avoid incompatible changes in Duktape 1.3, separate API calls have
+been added to deal with any buffer-like values, including both plain
+buffers and buffer objects.  API calls dealing with buffer objects have
+been tagged <code>bufferobject</code> in the API documentation:</p>
+<ul>
+<li><code><a href="api.html#taglist-bufferobject">bufferobject</a></code> API calls</li>
+</ul>
+
+<p>The following test case illustrates basic buffer object use from C code:</p>
+<ul>
+<li><a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-bufferobject-example-1.c">test-bufferobject-example-1.c</a></li>
+</ul>
 
 <h2>Current limitations</h2>
 
