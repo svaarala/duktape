@@ -962,6 +962,9 @@ Planned
   allocation of a dynamic buffer which is useful for some buffer manipulation
   algorithms (GH-129)
 
+* Add duk_get_buffer_data() and duk_require_buffer_data() API calls which
+  accept both plain buffer and buffer object values (GH-190)
+
 * Change typing of "duk_context" from "void" to "struct duk_hthread" which
   should improve compiler warnings/errors when accidentally passing an invalid
   "ctx" pointer to a Duktape API call (GH-178)

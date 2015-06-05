@@ -8,8 +8,8 @@ stack: |
 
 summary: |
   <p>Like <code><a href="#duk_get_buffer">duk_get_buffer()</a></code>,
-  but throws an error if the value at <code>index</code> is not a buffer
-  or if the index is invalid.</p>
+  but throws an error if the value at <code>index</code> is not a (plain)
+  buffer or if the index is invalid.</p>
 
 example: |
   void *ptr;
@@ -21,5 +21,10 @@ example: |
 tags:
   - stack
   - buffer
+
+seealso:
+  - duk_get_buffer
+  - duk_require_buffer_data
+  - duk_get_buffer_data
 
 introduced: 1.0.0
