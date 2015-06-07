@@ -263,8 +263,6 @@ DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, d
 
 DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_EOF),                                 /* DUK_TOK_EOF */
-	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_LINETERM */
-	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_COMMENT */
 	DUK__MK_LBP_FLAGS(DUK__BP_INVALID, DUK__TOKEN_LBP_FLAG_NO_REGEXP),  /* DUK_TOK_IDENTIFIER */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_BREAK */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_CASE */

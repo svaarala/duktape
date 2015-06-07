@@ -15,7 +15,7 @@
  *  checks (such as access outside the end of the input), which keeps the
  *  tokenization code small at the cost of performance.
  *
- *  Character data in tokens (such as identifier names and string literals)
+ *  Character data in tokens, such as identifier names and string literals,
  *  is encoded into CESU-8 format on-the-fly while parsing the token in
  *  question.  The string data is made reachable to garbage collection by
  *  placing the token-related values in value stack entries allocated for
@@ -41,12 +41,7 @@
  *
  *  Future work:
  *
- *    * Make the input window a circular array to avoid copying.  This would
- *      not necessarily complicate the tokenizer much, although it would make
- *      the window fetches more expensive (one AND).
- *
- *    * Make line number tracking optional, as it consumes space.  Also, is
- *      tracking end line really useful for tokens?
+ *    * Make line number tracking optional, as it consumes space.
  *
  *    * Add a feature flag for disabling UTF-8 decoding of input, as most
  *      source code is ASCII.  Because of Unicode escapes written in ASCII,
@@ -71,7 +66,8 @@
  *      not after tokens have been formed (as is done now).  However, the fix
  *      is not trivial because two characters are decoded from one codepoint.
  *
- *    * Optimize for speed as well as size.  Large if-else ladders are slow.
+ *    * Optimize for speed as well as size.  Large if-else ladders are (at
+ *      least potentially) slow.
  */
 
 #include "duk_internal.h"
@@ -83,17 +79,19 @@
 #define DUK__MAX_RE_DECESC_DIGITS     9
 #define DUK__MAX_RE_QUANT_DIGITS      9   /* Does not allow e.g. 2**31-1, but one more would allow overflows of u32. */
 
-#define DUK__LOOKUP(lex_ctx,index)    ((lex_ctx)->window[(index)])
-#define DUK__ADVANCE(lex_ctx,count)   duk__advance_chars((lex_ctx), (count))
-#define DUK__INITBUFFER(lex_ctx)      duk__initbuffer((lex_ctx))
-#define DUK__APPENDBUFFER(lex_ctx,x)  duk__appendbuffer((lex_ctx), (duk_codepoint_t) (x))
-
 /* whether to use macros or helper function depends on call count */
 #define DUK__ISDIGIT(x)          ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_9)
 #define DUK__ISHEXDIGIT(x)       duk__is_hex_digit((x))
 #define DUK__ISOCTDIGIT(x)       ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_7)
 #define DUK__ISDIGIT03(x)        ((x) >= DUK_ASC_0 && (x) <= DUK_ASC_3)
 #define DUK__ISDIGIT47(x)        ((x) >= DUK_ASC_4 && (x) <= DUK_ASC_7)
+
+/* lexer character window helpers */
+#define DUK__LOOKUP(lex_ctx,index)        ((lex_ctx)->window[(index)].codepoint)
+#define DUK__ADVANCECHARS(lex_ctx,count)  duk__advance_bytes((lex_ctx), (count) * sizeof(duk_lexer_codepoint))
+#define DUK__ADVANCEBYTES(lex_ctx,count)  duk__advance_bytes((lex_ctx), (count))
+#define DUK__INITBUFFER(lex_ctx)          duk__initbuffer((lex_ctx))
+#define DUK__APPENDBUFFER(lex_ctx,x)      duk__appendbuffer((lex_ctx), (duk_codepoint_t) (x))
 
 /* lookup shorthands (note: assume context variable is named 'lex_ctx') */
 #define DUK__L0()  DUK__LOOKUP(lex_ctx, 0)
@@ -104,10 +102,23 @@
 #define DUK__L5()  DUK__LOOKUP(lex_ctx, 5)
 
 /* packed advance/token number macro used by multiple functions */
-#define DUK__ADVTOK(adv,tok)  (((adv) << 8) + (tok))
+#define DUK__ADVTOK(advbytes,tok)  ((((advbytes) * sizeof(duk_lexer_codepoint)) << 8) + (tok))
 
 /*
- *  Read a character from the window leading edge and update the line counter.
+ *  Advance lookup window by N characters, filling in new characters as
+ *  necessary.  After returning caller is guaranteed a character window of
+ *  at least DUK_LEXER_WINDOW_SIZE characters.
+ *
+ *  The main function duk__advance_bytes() is called at least once per every
+ *  token so it has a major lexer/compiler performance impact.  There are two
+ *  variants for the main duk__advance_bytes() algorithm: a sliding window
+ *  approach which is slightly faster at the cost of larger code footprint,
+ *  and a simple copying one.
+ *
+ *  Decoding directly from the source string would be another lexing option.
+ *  But the lookup window based approach has the advantage of hiding the
+ *  source string and its encoding effectively which gives more flexibility
+ *  going forward to e.g. support chunked streaming of source from flash.
  *
  *  Decodes UTF-8/CESU-8 leniently with support for code points from U+0000 to
  *  U+10FFFF, causing an error if the input is unparseable.  Leniency means:
@@ -157,16 +168,192 @@
  *
  *    * Is checking against maximum 0x10ffff really useful?  4-byte encoding
  *      imposes a certain limit anyway.
+ *
+ *    * Support chunked streaming of source code.  Can be implemented either
+ *      by streaming chunks of bytes or chunks of codepoints.
  */
 
+#if defined(DUK_USE_LEXER_SLIDING_WINDOW)
+DUK_LOCAL void duk__fill_lexer_buffer(duk_lexer_ctx *lex_ctx, duk_small_uint_t start_offset_bytes) {
+	duk_lexer_codepoint *cp, *cp_end;
+	duk_ucodepoint_t x;
+	duk_small_uint_t contlen;
+	const duk_uint8_t *p, *p_end;
+#ifdef DUK_USE_STRICT_UTF8_SOURCE
+	duk_ucodepoint_t mincp;
+#endif
+	duk_int_t input_line;
+
+	/* Use temporaries and update lex_ctx only when finished. */
+	input_line = lex_ctx->input_line;
+	p = lex_ctx->input + lex_ctx->input_offset;
+	p_end = lex_ctx->input + lex_ctx->input_length;
+
+	cp = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->buffer + start_offset_bytes);
+	cp_end = lex_ctx->buffer + DUK_LEXER_BUFFER_SIZE;
+
+	for (; cp != cp_end; cp++) {
+		cp->offset = (duk_size_t) (p - lex_ctx->input);
+		cp->line = input_line;
+
+		/* XXX: potential issue with signed pointers, p_end < p. */
+		if (DUK_UNLIKELY(p >= p_end)) {
+			/* If input_offset were assigned a negative value, it would
+			 * result in a large positive value.  Most likely it would be
+			 * larger than input_length and be caught here.  In any case
+			 * no memory unsafe behavior would happen.
+			 */
+			cp->codepoint = -1;
+			continue;
+		}
+
+		x = (duk_ucodepoint_t) (*p++);
+
+		/* Fast path. */
+
+		if (DUK_LIKELY(x < 0x80UL)) {
+			DUK_ASSERT(x != 0x2028UL && x != 0x2029UL);  /* not LS/PS */
+			if (DUK_UNLIKELY(x <= 0x000dUL)) {
+				if ((x == 0x000aUL) ||
+				    ((x == 0x000dUL) && (p >= p_end || *p != 0x000aUL))) {
+					/* lookup for 0x000a above assumes shortest encoding now */
+
+					/* E5 Section 7.3, treat the following as newlines:
+					 *   LF
+					 *   CR [not followed by LF]
+					 *   LS
+					 *   PS
+					 *
+					 * For CR LF, CR is ignored if it is followed by LF, and the LF will bump
+					 * the line number.
+					 */
+					input_line++;
+				}
+			}
+
+			cp->codepoint = (duk_codepoint_t) x;
+			continue;
+		}
+
+		/* Slow path. */
+
+		if (x < 0xc0UL) {
+			/* 10xx xxxx -> invalid */
+			goto error_encoding;
+		} else if (x < 0xe0UL) {
+			/* 110x xxxx   10xx xxxx  */
+			contlen = 1;
+#ifdef DUK_USE_STRICT_UTF8_SOURCE
+			mincp = 0x80UL;
+#endif
+			x = x & 0x1fUL;
+		} else if (x < 0xf0UL) {
+			/* 1110 xxxx   10xx xxxx   10xx xxxx */
+			contlen = 2;
+#ifdef DUK_USE_STRICT_UTF8_SOURCE
+			mincp = 0x800UL;
+#endif
+			x = x & 0x0fUL;
+		} else if (x < 0xf8UL) {
+			/* 1111 0xxx   10xx xxxx   10xx xxxx   10xx xxxx */
+			contlen = 3;
+#ifdef DUK_USE_STRICT_UTF8_SOURCE
+			mincp = 0x10000UL;
+#endif
+			x = x & 0x07UL;
+		} else {
+			/* no point in supporting encodings of 5 or more bytes */
+			goto error_encoding;
+		}
+
+		DUK_ASSERT(p_end >= p);
+		if ((duk_size_t) contlen > (duk_size_t) (p_end - p)) {
+			goto error_clipped;
+		}
+
+		while (contlen > 0) {
+			duk_small_uint_t y;
+			y = *p++;
+			if ((y & 0xc0U) != 0x80U) {
+				/* check that byte has the form 10xx xxxx */
+				goto error_encoding;
+			}
+			x = x << 6;
+			x += y & 0x3fUL;
+			contlen--;
+		}
+
+		/* check final character validity */
+
+		if (x > 0x10ffffUL) {
+			goto error_encoding;
+		}
+#ifdef DUK_USE_STRICT_UTF8_SOURCE
+		if (x < mincp || (x >= 0xd800UL && x <= 0xdfffUL) || x == 0xfffeUL) {
+			goto error_encoding;
+		}
+#endif
+
+		DUK_ASSERT(x != 0x000aUL && x != 0x000dUL);
+		if ((x == 0x2028UL) || (x == 0x2029UL)) {
+			input_line++;
+		}
+
+		cp->codepoint = (duk_codepoint_t) x;
+	}
+
+	lex_ctx->input_offset = (duk_size_t) (p - lex_ctx->input);
+	lex_ctx->input_line = input_line;
+	return;
+
+ error_clipped:   /* clipped codepoint */
+ error_encoding:  /* invalid codepoint encoding or codepoint */
+	lex_ctx->input_offset = (duk_size_t) (p - lex_ctx->input);
+	lex_ctx->input_line = input_line;
+
+	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "char decode failed");
+}
+
+DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
+	duk_small_uint_t used_bytes, avail_bytes;
+
+	DUK_ASSERT_DISABLE(count_bytes >= 0);  /* unsigned */
+	DUK_ASSERT(count_bytes <= (duk_small_uint_t) (DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint)));
+	DUK_ASSERT(lex_ctx->window >= lex_ctx->buffer);
+	DUK_ASSERT(lex_ctx->window < lex_ctx->buffer + DUK_LEXER_BUFFER_SIZE);
+	DUK_ASSERT((duk_uint8_t *) lex_ctx->window + count_bytes <= (duk_uint8_t *) lex_ctx->buffer + DUK_LEXER_BUFFER_SIZE * sizeof(duk_lexer_codepoint));
+
+	/* Zero 'count' is also allowed to make call sites easier.
+	 * Arithmetic in bytes generates better code in GCC.
+	 */
+
+	lex_ctx->window = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->window + count_bytes);  /* avoid multiply */
+	used_bytes = (duk_small_uint_t) ((duk_uint8_t *) lex_ctx->window - (duk_uint8_t *) lex_ctx->buffer);
+	avail_bytes = DUK_LEXER_BUFFER_SIZE * sizeof(duk_lexer_codepoint) - used_bytes;
+	if (avail_bytes < (duk_small_uint_t) (DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint))) {
+		/* Not enough data to provide a full window, so "scroll" window to
+		 * start of buffer and fill up the rest.
+		 */
+		DUK_MEMMOVE((void *) lex_ctx->buffer,
+		            (const void *) lex_ctx->window,
+		            (size_t) avail_bytes);
+		lex_ctx->window = lex_ctx->buffer;
+		duk__fill_lexer_buffer(lex_ctx, avail_bytes);
+	}
+}
+
+DUK_LOCAL void duk__init_lexer_window(duk_lexer_ctx *lex_ctx) {
+	lex_ctx->window = lex_ctx->buffer;
+	duk__fill_lexer_buffer(lex_ctx, 0);
+}
+#else  /* DUK_USE_LEXER_SLIDING_WINDOW */
 DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
-	/* attempting to reduce size of 'len' and/or 'i' resulted in larger code */
-	duk_codepoint_t x;
-	duk_small_int_t len;
-	duk_small_int_t i;
+	duk_ucodepoint_t x;
+	duk_small_uint_t len;
+	duk_small_uint_t i;
 	const duk_uint8_t *p;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-	duk_codepoint_t mincp;
+	duk_ucodepoint_t mincp;
 #endif
 	duk_size_t input_offset;
 
@@ -181,36 +368,63 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 	}
 
 	p = lex_ctx->input + input_offset;
-	x = (int) *p++;
+	x = (duk_ucodepoint_t) (*p);
 
-	if (x < 0x80L) {
+	if (DUK_LIKELY(x < 0x80UL)) {
 		/* 0xxx xxxx -> fast path */
-		len = 1;
-		goto fastpath;
-	} else if (x < 0xc0L) {
+
+		/* input offset tracking */
+		lex_ctx->input_offset++;
+
+		DUK_ASSERT(x != 0x2028UL && x != 0x2029UL);  /* not LS/PS */
+		if (DUK_UNLIKELY(x <= 0x000dUL)) {
+			if ((x == 0x000aUL) ||
+			    ((x == 0x000dUL) && (lex_ctx->input_offset >= lex_ctx->input_length ||
+			                         lex_ctx->input[lex_ctx->input_offset] != 0x000aUL))) {
+				/* lookup for 0x000a above assumes shortest encoding now */
+
+				/* E5 Section 7.3, treat the following as newlines:
+				 *   LF
+				 *   CR [not followed by LF]
+				 *   LS
+				 *   PS
+				 *
+				 * For CR LF, CR is ignored if it is followed by LF, and the LF will bump
+				 * the line number.
+				 */
+				lex_ctx->input_line++;
+			}
+		}
+
+		return (duk_codepoint_t) x;
+	}
+
+	/* Slow path. */
+
+	if (x < 0xc0UL) {
 		/* 10xx xxxx -> invalid */
 		goto error_encoding;
-	} else if (x < 0xe0L) {
+	} else if (x < 0xe0UL) {
 		/* 110x xxxx   10xx xxxx  */
 		len = 2;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x80L;
+		mincp = 0x80UL;
 #endif
-		x = x & 0x1fL;
-	} else if (x < 0xf0L) {
+		x = x & 0x1fUL;
+	} else if (x < 0xf0UL) {
 		/* 1110 xxxx   10xx xxxx   10xx xxxx */
 		len = 3;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x800L;
+		mincp = 0x800UL;
 #endif
-		x = x & 0x0fL;
-	} else if (x < 0xf8L) {
+		x = x & 0x0fUL;
+	} else if (x < 0xf8UL) {
 		/* 1111 0xxx   10xx xxxx   10xx xxxx   10xx xxxx */
 		len = 4;
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-		mincp = 0x10000L;
+		mincp = 0x10000UL;
 #endif
-		x = x & 0x07;
+		x = x & 0x07UL;
 	} else {
 		/* no point in supporting encodings of 5 or more bytes */
 		goto error_encoding;
@@ -221,54 +435,39 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 		goto error_clipped;
 	}
 
+	p++;
 	for (i = 1; i < len; i++) {
-		duk_small_int_t y = *p++;
-		if ((y & 0xc0) != 0x80) {
+		duk_small_uint_t y;
+		y = *p++;
+		if ((y & 0xc0U) != 0x80U) {
 			/* check that byte has the form 10xx xxxx */
 			goto error_encoding;
 		}
 		x = x << 6;
-		x += y & 0x3f;
+		x += y & 0x3fUL;
 	}
 
 	/* check final character validity */
 
-	if (x > 0x10ffffL) {
+	if (x > 0x10ffffUL) {
 		goto error_encoding;
 	}
 #ifdef DUK_USE_STRICT_UTF8_SOURCE
-	if (x < mincp || (x >= 0xd800L && x <= 0xdfffL) || x == 0xfffeL) {
+	if (x < mincp || (x >= 0xd800UL && x <= 0xdfffUL) || x == 0xfffeUL) {
 		goto error_encoding;
 	}
 #endif
 
-	/* fall through */
-
- fastpath:
 	/* input offset tracking */
 	lex_ctx->input_offset += len;
 
 	/* line tracking */
-	if ((x == 0x000aL) ||
-	    ((x == 0x000dL) && (lex_ctx->input_offset >= lex_ctx->input_length ||
-	                        lex_ctx->input[lex_ctx->input_offset] != 0x000aL)) ||
-	    (x == 0x2028L) ||
-	    (x == 0x2029L)) {
-		/* lookup for 0x000a above assumes shortest encoding now */
-
-		/* E5 Section 7.3, treat the following as newlines:
-		 *   LF
-		 *   CR [not followed by LF]
-		 *   LS
-		 *   PS
-		 *
-		 * For CR LF, CR is ignored if it is followed by LF, and the LF will bump
-		 * the line number.
-		 */
+	DUK_ASSERT(x != 0x000aUL && x != 0x000dUL);
+	if ((x == 0x2028UL) || (x == 0x2029UL)) {
 		lex_ctx->input_line++;
 	}
 
-	return x;
+	return (duk_codepoint_t) x;
 
  error_clipped:   /* clipped codepoint */
  error_encoding:  /* invalid codepoint encoding or codepoint */
@@ -276,53 +475,34 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 	return 0;
 }
 
-/*
- *  Advance lookup window by N characters.  Also used to fill the window
- *  after position is changed (call with count == DUK_LEXER_WINDOW_SIZE).
- *
- *  XXX: A lot of copying now, perhaps change to circular array or at
- *  least use memcpy().  For memcpy(), putting all elements of the
- *  window (code point, offset, line) into a struct would allow one
- *  memcpy() to slide the window, instead of three separate copys.
- */
+DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
+	duk_small_uint_t keep_bytes;
+	duk_lexer_codepoint *cp, *cp_end;
 
-DUK_LOCAL void duk__advance_chars(duk_lexer_ctx *lex_ctx, duk_small_int_t count) {
-	duk_small_int_t i, n;
+	DUK_ASSERT_DISABLE(count_bytes >= 0);  /* unsigned */
+	DUK_ASSERT(count_bytes <= (duk_small_uint_t) (DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint)));
 
-	DUK_ASSERT(count >= 0 && count <= DUK_LEXER_WINDOW_SIZE);
+	/* Zero 'count' is also allowed to make call sites easier. */
 
-	/* Without this check, gcc -O4 will complain the following for the
-	 * first for-loop below:
-	 *
-	 *   duk_lexer.c:301:19: error: array subscript is above array bounds [-Werror=array-bounds]
-	 *
-	 * Check for range explicitly; this also protects against legitimate
-	 * internal errors and avoids memory unsafe behavior in such cases.
-	 */
-	if (DUK_UNLIKELY(!(count >= 0 && count <= DUK_LEXER_WINDOW_SIZE))) {
-		DUK_D(DUK_DPRINT("invalid count: %ld, should not happen", (long) count));
-		DUK_ERROR(lex_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
-		return;  /* never here */
-	}
+	keep_bytes = DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint) - count_bytes;
+	DUK_MEMMOVE((void *) lex_ctx->window,
+	            (const void *) ((duk_uint8_t *) lex_ctx->window + count_bytes),
+	            (duk_size_t) keep_bytes);
 
-	if (count == 0) {
-		/* allowing zero count makes some special caller flows easier */
-		return;
-	}
-
-	n = DUK_LEXER_WINDOW_SIZE - count;
-	for (i = 0; i < n; i++) {
-		lex_ctx->offsets[i] = lex_ctx->offsets[i + count];
-		lex_ctx->lines[i] = lex_ctx->lines[i + count];
-		lex_ctx->window[i] = lex_ctx->window[i + count];
-	}
-
-	for (; i < DUK_LEXER_WINDOW_SIZE; i++) {
-		lex_ctx->offsets[i] = lex_ctx->input_offset;
-		lex_ctx->lines[i] = lex_ctx->input_line;
-		lex_ctx->window[i] = duk__read_char(lex_ctx);
+	cp = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->window + keep_bytes);
+	cp_end = lex_ctx->window + DUK_LEXER_WINDOW_SIZE;
+	for (; cp != cp_end; cp++) {
+		cp->offset = lex_ctx->input_offset;
+		cp->line = lex_ctx->input_line;
+		cp->codepoint = duk__read_char(lex_ctx);
 	}
 }
+
+DUK_LOCAL void duk__init_lexer_window(duk_lexer_ctx *lex_ctx) {
+	/* Call with count == DUK_LEXER_WINDOW_SIZE to fill buffer initially. */
+	duk__advance_bytes(lex_ctx, DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint));  /* fill window */
+}
+#endif  /* DUK_USE_LEXER_SLIDING_WINDOW */
 
 /*
  *  (Re)initialize the temporary byte buffer.  May be called extra times
@@ -384,6 +564,9 @@ DUK_INTERNAL void duk_lexer_initctx(duk_lexer_ctx *lex_ctx) {
 
 	DUK_MEMZERO(lex_ctx, sizeof(*lex_ctx));
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_LEXER_SLIDING_WINDOW)
+	lex_ctx->window = NULL;
+#endif
 	lex_ctx->thr = NULL;
 	lex_ctx->input = NULL;
 	lex_ctx->buf = NULL;
@@ -401,7 +584,7 @@ DUK_INTERNAL void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt
 	DUK_ASSERT(pt->line >= 1);
 	lex_ctx->input_offset = pt->offset;
 	lex_ctx->input_line = pt->line;
-	duk__advance_chars(lex_ctx, DUK_LEXER_WINDOW_SIZE);  /* fill window */
+	duk__init_lexer_window(lex_ctx);
 }
 
 /*
@@ -437,43 +620,33 @@ DUK_LOCAL duk_bool_t duk__is_hex_digit(duk_codepoint_t x) {
 
 DUK_LOCAL duk_codepoint_t duk__decode_hexesc_from_window(duk_lexer_ctx *lex_ctx, duk_small_int_t lookup_offset) {
 	/* validation performed by duk__hexval */
-	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset]) << 4) |
-	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1]));
+	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset].codepoint) << 4) |
+	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1].codepoint));
 }
 
 DUK_LOCAL duk_codepoint_t duk__decode_uniesc_from_window(duk_lexer_ctx *lex_ctx, duk_small_int_t lookup_offset) {
 	/* validation performed by duk__hexval */
-	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset]) << 12) |
-	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1]) << 8) |
-	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 2]) << 4) |
-	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 3]));
-}
-
-/*
- *  Eat input characters until first character of window is not
- *  a white space (may be -1 if EOF encountered).
- */
-DUK_LOCAL void duk__eat_whitespace(duk_lexer_ctx *lex_ctx) {
-	/* guaranteed to finish, as EOF (-1) is not a whitespace */
-	while (duk_unicode_is_whitespace(DUK__LOOKUP(lex_ctx, 0))) {
-		DUK__ADVANCE(lex_ctx, 1);
-	}
+	return (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset].codepoint) << 12) |
+	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 1].codepoint) << 8) |
+	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 2].codepoint) << 4) |
+	       (duk__hexval(lex_ctx, lex_ctx->window[lookup_offset + 3].codepoint));
 }
 
 /*
  *  Parse Ecmascript source InputElementDiv or InputElementRegExp
- *  (E5 Section 7).
+ *  (E5 Section 7), skipping whitespace, comments, and line terminators.
  *
  *  Possible results are:
  *    (1) a token
- *    (2) a line terminator
- *    (3) a comment
+ *    (2) a line terminator (skipped)
+ *    (3) a comment (skipped)
  *    (4) EOF
  *
  *  White space is automatically skipped from the current position (but
  *  not after the input element).  If input has already ended, returns
  *  DUK_TOK_EOF indefinitely.  If a parse error occurs, uses an DUK_ERROR()
  *  macro call (and hence a longjmp through current heap longjmp context).
+ *  Comments and line terminator tokens are automatically skipped.
  *
  *  The input element being matched is determined by regexp_mode; if set,
  *  parses a InputElementRegExp, otherwise a InputElementDiv.  The
@@ -518,43 +691,46 @@ DUK_LOCAL void duk__eat_whitespace(duk_lexer_ctx *lex_ctx) {
  *      number of escapes.  Directive detection can then check that the
  *      number of escapes is zero.
  *
- *    * Comments are expressed as DUK_TOK_COMMENT tokens, with the type
- *      (single- or multi-line) and contents of the comments lost.
- *      Furthermore, multi-line comments with one or more internal
- *      LineTerminator are treated as DUK_TOK_LINETERM to comply with
- *      automatic semicolon insertion and to avoid complicating the
- *      tokenization process.  See E5 Section 7.4.
+ *    * Multi-line comments with one or more internal LineTerminator are
+ *      treated like a line terminator to comply with automatic semicolon
+ *      insertion.
  */
 
 DUK_LOCAL
-void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
-                                  duk_token *out_token,
-                                  duk_bool_t strict_mode,
-                                  duk_bool_t regexp_mode) {
-	duk_codepoint_t x, y;        /* temporaries, must be signed and 32-bit to hold Unicode code points */
+void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
+                                      duk_token *out_token,
+                                      duk_bool_t strict_mode,
+                                      duk_bool_t regexp_mode) {
+	duk_codepoint_t x;           /* temporary, must be signed and 32-bit to hold Unicode code points */
 	duk_small_uint_t advtok = 0; /* (advance << 8) + token_type, updated at function end,
 	                              * init is unnecessary but suppresses "may be used uninitialized" warnings.
 	                              */
+	duk_bool_t got_lineterm = 0;  /* got lineterm preceding non-whitespace, non-lineterm token */
 
 	if (++lex_ctx->token_count >= lex_ctx->token_limit) {
 		DUK_ERROR(lex_ctx->thr, DUK_ERR_RANGE_ERROR, "token limit");
 		return;  /* unreachable */
 	}
 
-	duk__eat_whitespace(lex_ctx);
-
 	out_token->t = DUK_TOK_EOF;
 	out_token->t_nores = -1;  /* marker: copy t if not changed */
+#if 0  /* not necessary to init, disabled for faster parsing */
 	out_token->num = DUK_DOUBLE_NAN;
 	out_token->str1 = NULL;
 	out_token->str2 = NULL;
+#endif
 	out_token->num_escapes = 0;
-	out_token->start_line = lex_ctx->lines[0];
-	out_token->start_offset = lex_ctx->offsets[0];
 	/* out_token->lineterm set by caller */
 
+	/* This would be nice, but parsing is faster without resetting the
+	 * value slots.  The only side effect is that references to temporary
+	 * string values may linger until lexing is finished; they're then
+	 * freed normally.
+	 */
+#if 0
 	duk_to_undefined((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 	duk_to_undefined((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
+#endif
 
 	/* 'advtok' indicates how much to advance and which token id to assign
 	 * at the end.  This shared functionality minimizes code size.  All
@@ -576,57 +752,66 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 	 *  The order does not matter as long as the longest match is
 	 *  always correctly identified.  There are order dependencies
 	 *  in the clauses, so it's not trivial to convert to a switch.
-	 *
-	 *  XXX: This is quite inefficient.  Maybe change to a switch
-	 *  statement which handles all single character cases and then
-	 *  use a followup if-else chain?  Switch matches need to use
-	 *  goto to bypass the if-else chain.
 	 */
 
-	x = DUK__L0();
-	y = DUK__L1();
+ restart_lineupdate:
+	out_token->start_line = lex_ctx->window[0].line;
 
-	if (x == '/') {
-		if (y == '/') {
+ restart:
+	out_token->start_offset = lex_ctx->window[0].offset;
+
+	x = DUK__L0();
+
+	switch (x) {
+	case DUK_ASC_SPACE:
+	case DUK_ASC_HT:  /* fast paths for space and tab */
+		DUK__ADVANCECHARS(lex_ctx, 1);
+		goto restart;
+	case DUK_ASC_LF:  /* LF line terminator; CR LF and Unicode lineterms are handled in slow path */
+		DUK__ADVANCECHARS(lex_ctx, 1);
+		got_lineterm = 1;
+		goto restart_lineupdate;
+	case DUK_ASC_SLASH:  /* '/' */
+		if (DUK__L1() == '/') {
 			/*
 			 *  E5 Section 7.4, allow SourceCharacter (which is any 16-bit
 			 *  code point).
 			 */
 
-			/* DUK__ADVANCE(lex_ctx, 2) would be correct here, but it unnecessary */
+			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but it unnecessary */
 			for (;;) {
 				x = DUK__L0();
 				if (x < 0 || duk_unicode_is_line_terminator(x)) {
 					break;
 				}
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 			}
-			advtok = DUK__ADVTOK(0, DUK_TOK_COMMENT);
-		} else if (y == '*') {
+			goto restart;  /* line terminator will be handled on next round */
+		} else if (DUK__L1() == '*') {
 			/*
 			 *  E5 Section 7.4.  If the multi-line comment contains a newline,
-			 *  it is treated like a single DUK_TOK_LINETERM to facilitate
-			 *  automatic semicolon insertion.
+			 *  it is treated like a single line terminator for automatic
+			 *  semicolon insertion.
 			 */
 
 			duk_bool_t last_asterisk = 0;
-			advtok = DUK__ADVTOK(0, DUK_TOK_COMMENT);
-			DUK__ADVANCE(lex_ctx, 2);
+			DUK__ADVANCECHARS(lex_ctx, 2);
 			for (;;) {
 				x = DUK__L0();
 				if (x < 0) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "eof while parsing multiline comment");
 				}
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 				if (last_asterisk && x == '/') {
 					break;
 				}
 				if (duk_unicode_is_line_terminator(x)) {
-					advtok = DUK__ADVTOK(0, DUK_TOK_LINETERM);
+					got_lineterm = 1;
 				}
 				last_asterisk = (x == '*');
 			}
+			goto restart_lineupdate;
 		} else if (regexp_mode) {
 #ifdef DUK_USE_REGEXP_SUPPORT
 			/*
@@ -690,7 +875,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 			DUK__INITBUFFER(lex_ctx);
 			for (;;) {
-				DUK__ADVANCE(lex_ctx, 1);  /* skip opening slash on first loop */
+				DUK__ADVANCECHARS(lex_ctx, 1);  /* skip opening slash on first loop */
 				x = DUK__L0();
 				if (x < 0 || duk_unicode_is_line_terminator(x)) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -699,7 +884,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				x = DUK__L0();  /* re-read to avoid spill / fetch */
 				if (state == 0) {
 					if (x == '/') {
-						DUK__ADVANCE(lex_ctx, 1);  /* eat closing slash */
+						DUK__ADVANCECHARS(lex_ctx, 1);  /* eat closing slash */
 						break;
 					} else if (x == '\\') {
 						state = 1;
@@ -732,7 +917,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				}
 				x = DUK__L0();  /* re-read to avoid spill / fetch */
 				DUK__APPENDBUFFER(lex_ctx, x);
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 			}
 			duk__internbuffer(lex_ctx, lex_ctx->slot2_idx);
 			out_token->str2 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
@@ -745,139 +930,325 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 #else
 			DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "regexp support disabled");
 #endif
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			/* "/=" and not in regexp mode */
 			advtok = DUK__ADVTOK(2, DUK_TOK_DIV_EQ);
 		} else {
 			/* "/" and not in regexp mode */
 			advtok = DUK__ADVTOK(1, DUK_TOK_DIV);
 		}
-	} else if (x == '{') {
+		break;
+	case DUK_ASC_LCURLY:  /* '{' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_LCURLY);
-	} else if (x == '}') {
+		break;
+	case DUK_ASC_RCURLY:  /* '}' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_RCURLY);
-	} else if (x == '(') {
+		break;
+	case DUK_ASC_LPAREN:  /* '(' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_LPAREN);
-	} else if (x == ')') {
+		break;
+	case DUK_ASC_RPAREN:  /* ')' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_RPAREN);
-	} else if (x == '[') {
+		break;
+	case DUK_ASC_LBRACKET:  /* '[' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_LBRACKET);
-	} else if (x == ']') {
+		break;
+	case DUK_ASC_RBRACKET:  /* ']' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_RBRACKET);
-	} else if (x == '.' && !DUK__ISDIGIT(y)) {
-		/* Note: period followed by a digit can only start DecimalLiteral (captured below) */
+		break;
+	case DUK_ASC_PERIOD:  /* '.' */
+		if (DUK__ISDIGIT(DUK__L1())) {
+			/* Period followed by a digit can only start DecimalLiteral
+			 * (handled in slow path).  We could jump straight into the
+			 * DecimalLiteral handling but should avoid goto to inside
+			 * a block.
+			 */
+			goto slow_path;
+		}
 		advtok = DUK__ADVTOK(1, DUK_TOK_PERIOD);
-	} else if (x == ';') {
+		break;
+	case DUK_ASC_SEMICOLON:  /* ';' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_SEMICOLON);
-	} else if (x == ',') {
+		break;
+	case DUK_ASC_COMMA:  /* ',' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_COMMA);
-	} else if (x == '<') {
-		if (y == '<' && DUK__L2() == '=') {
+		break;
+	case DUK_ASC_LANGLE:  /* '<' */
+		if (DUK__L1() == '<' && DUK__L2() == '=') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ALSHIFT_EQ);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_LE);
-		} else if (y == '<') {
+		} else if (DUK__L1() == '<') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_ALSHIFT);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_LT);
 		}
-	} else if (x == '>') {
-		if (y == '>' && DUK__L2() == '>' && DUK__L3() == '=') {
+		break;
+	case DUK_ASC_RANGLE:  /* '>' */
+		if (DUK__L1() == '>' && DUK__L2() == '>' && DUK__L3() == '=') {
 			advtok = DUK__ADVTOK(4, DUK_TOK_RSHIFT_EQ);
-		} else if (y == '>' && DUK__L2() == '>') {
+		} else if (DUK__L1() == '>' && DUK__L2() == '>') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_RSHIFT);
-		} else if (y == '>' && DUK__L2() == '=') {
+		} else if (DUK__L1() == '>' && DUK__L2() == '=') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ARSHIFT_EQ);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_GE);
-		} else if (y == '>') {
+		} else if (DUK__L1() == '>') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_ARSHIFT);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_GT);
 		}
-	} else if (x == '=') {
-		if (y == '=' && DUK__L2() == '=') {
+		break;
+	case DUK_ASC_EQUALS:  /* '=' */
+		if (DUK__L1() == '=' && DUK__L2() == '=') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_SEQ);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_EQUALSIGN);
 		}
-	} else if (x == '!') {
-		if (y == '=' && DUK__L2() == '=') {
+		break;
+	case DUK_ASC_EXCLAMATION:  /* '!' */
+		if (DUK__L1() == '=' && DUK__L2() == '=') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_SNEQ);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_NEQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_LNOT);
 		}
-	} else if (x == '+') {
-		if (y == '+') {
+		break;
+	case DUK_ASC_PLUS:  /* '+' */
+		if (DUK__L1() == '+') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_INCREMENT);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_ADD_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_ADD);
 		}
-	} else if (x == '-') {
-		if (y == '-') {
+		break;
+	case DUK_ASC_MINUS:  /* '-' */
+		if (DUK__L1() == '-') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_DECREMENT);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_SUB_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_SUB);
 		}
-	} else if (x == '*') {
-		if (y == '=') {
+		break;
+	case DUK_ASC_STAR:  /* '*' */
+		if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_MUL_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_MUL);
 		}
-	} else if (x == '%') {
-		if (y == '=') {
+		break;
+	case DUK_ASC_PERCENT:  /* '%' */
+		if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_MOD_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_MOD);
 		}
-	} else if (x == '&') {
-		if (y == '&') {
+		break;
+	case DUK_ASC_AMP:  /* '&' */
+		if (DUK__L1() == '&') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_LAND);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_BAND_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_BAND);
 		}
-	} else if (x == '|') {
-		if (y == '|') {
+		break;
+	case DUK_ASC_PIPE:  /* '|' */
+		if (DUK__L1() == '|') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_LOR);
-		} else if (y == '=') {
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_BOR_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_BOR);
 		}
-	} else if (x == '^') {
-		if (y == '=') {
+		break;
+	case DUK_ASC_CARET:  /* '^' */
+		if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_BXOR_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_BXOR);
 		}
-	} else if (x == '~') {
+		break;
+	case DUK_ASC_TILDE:  /* '~' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_BNOT);
-	} else if (x == '?') {
+		break;
+	case DUK_ASC_QUESTION:  /* '?' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_QUESTION);
-	} else if (x == ':') {
+		break;
+	case DUK_ASC_COLON:  /* ':' */
 		advtok = DUK__ADVTOK(1, DUK_TOK_COLON);
-	} else if (duk_unicode_is_line_terminator(x)) {
-		if (x == 0x000d && y == 0x000a) {
+		break;
+	case DUK_ASC_DOUBLEQUOTE:    /* '"' */
+	case DUK_ASC_SINGLEQUOTE: {  /* '\'' */
+		duk_small_int_t quote = x;  /* Note: duk_uint8_t type yields larger code */
+		duk_small_int_t adv;
+
+		DUK__INITBUFFER(lex_ctx);
+		for (;;) {
+			DUK__ADVANCECHARS(lex_ctx, 1);  /* eat opening quote on first loop */
+			x = DUK__L0();
+			if (x < 0 || duk_unicode_is_line_terminator(x)) {
+				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
+				          "eof or line terminator while parsing string literal");
+			}
+			if (x == quote) {
+				DUK__ADVANCECHARS(lex_ctx, 1);  /* eat closing quote */
+				break;
+			}
+			if (x == '\\') {
+				/* DUK__L0        -> '\' char
+				 * DUK__L1 ... DUK__L5 -> more lookup
+				 */
+
+				x = DUK__L1();
+
+				/* How much to advance before next loop; note that next loop
+				 * will advance by 1 anyway, so -1 from the total escape
+				 * length (e.g. len('\uXXXX') - 1 = 6 - 1).  As a default,
+				 * 1 is good.
+				 */
+				adv = 2 - 1;  /* note: long live range */
+
+				if (x < 0) {
+					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
+					          "eof while parsing string literal");
+				}
+				if (duk_unicode_is_line_terminator(x)) {
+					/* line continuation */
+					if (x == 0x000d && DUK__L2() == 0x000a) {
+						/* CR LF again a special case */
+						adv = 3 - 1;
+					}
+				} else if (x == '\'') {
+					DUK__APPENDBUFFER(lex_ctx, 0x0027);
+				} else if (x == '"') {
+					DUK__APPENDBUFFER(lex_ctx, 0x0022);
+				} else if (x == '\\') {
+					DUK__APPENDBUFFER(lex_ctx, 0x005c);
+				} else if (x == 'b') {
+					DUK__APPENDBUFFER(lex_ctx, 0x0008);
+				} else if (x == 'f') {
+					DUK__APPENDBUFFER(lex_ctx, 0x000c);
+				} else if (x == 'n') {
+					DUK__APPENDBUFFER(lex_ctx, 0x000a);
+				} else if (x == 'r') {
+					DUK__APPENDBUFFER(lex_ctx, 0x000d);
+				} else if (x == 't') {
+					DUK__APPENDBUFFER(lex_ctx, 0x0009);
+				} else if (x == 'v') {
+					DUK__APPENDBUFFER(lex_ctx, 0x000b);
+				} else if (x == 'x') {
+					adv = 4 - 1;
+					DUK__APPENDBUFFER(lex_ctx, duk__decode_hexesc_from_window(lex_ctx, 2));
+				} else if (x == 'u') {
+					adv = 6 - 1;
+					DUK__APPENDBUFFER(lex_ctx, duk__decode_uniesc_from_window(lex_ctx, 2));
+				} else if (DUK__ISDIGIT(x)) {
+					duk_codepoint_t ch = 0;  /* initialized to avoid warnings of unused var */
+
+					/*
+					 *  Octal escape or zero escape:
+					 *    \0                                     (lookahead not DecimalDigit)
+					 *    \1 ... \7                              (lookahead not DecimalDigit)
+					 *    \ZeroToThree OctalDigit                (lookahead not DecimalDigit)
+					 *    \FourToSeven OctalDigit                (no lookahead restrictions)
+					 *    \ZeroToThree OctalDigit OctalDigit     (no lookahead restrictions)
+					 *
+					 *  Zero escape is part of the standard syntax.  Octal escapes are
+					 *  defined in E5 Section B.1.2, and are only allowed in non-strict mode.
+					 *  Any other productions starting with a decimal digit are invalid.
+					 */
+
+					if (x == '0' && !DUK__ISDIGIT(DUK__L2())) {
+						/* Zero escape (also allowed in non-strict mode) */
+						ch = 0;
+						/* adv = 2 - 1 default OK */
+#ifdef DUK_USE_OCTAL_SUPPORT
+					} else if (strict_mode) {
+						/* No other escape beginning with a digit in strict mode */
+						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
+						          "invalid escape while parsing string literal");
+					} else if (DUK__ISDIGIT03(x) && DUK__ISOCTDIGIT(DUK__L2()) && DUK__ISOCTDIGIT(DUK__L3())) {
+						/* Three digit octal escape, digits validated. */
+						adv = 4 - 1;
+						ch = (duk__hexval(lex_ctx, x) << 6) +
+						     (duk__hexval(lex_ctx, DUK__L2()) << 3) +
+						     duk__hexval(lex_ctx, DUK__L3());
+					} else if (((DUK__ISDIGIT03(x) && !DUK__ISDIGIT(DUK__L3())) || DUK__ISDIGIT47(x)) &&
+					           DUK__ISOCTDIGIT(DUK__L2())) {
+						/* Two digit octal escape, digits validated.
+						 *
+						 * The if-condition is a bit tricky.  We could catch e.g.
+						 * '\039' in the three-digit escape and fail it there (by
+					         * validating the digits), but we want to avoid extra
+						 * additional validation code.
+						 */
+						adv = 3 - 1;
+						ch = (duk__hexval(lex_ctx, x) << 3) +
+						     duk__hexval(lex_ctx, DUK__L2());
+					} else if (DUK__ISDIGIT(x) && !DUK__ISDIGIT(DUK__L2())) {
+						/* One digit octal escape, digit validated. */
+						/* adv = 2 default OK */
+						ch = duk__hexval(lex_ctx, x);
+#else
+					/* fall through to error */
+#endif
+					} else {
+						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
+						          "invalid escape while parsing string literal");
+					}
+
+					DUK__APPENDBUFFER(lex_ctx, ch);
+				} else {
+					/* escaped NonEscapeCharacter */
+					DUK__APPENDBUFFER(lex_ctx, x);
+				}
+				DUK__ADVANCECHARS(lex_ctx, adv);
+
+				/* Track number of escapes; count not really needed but directive
+				 * prologues need to detect whether there were any escapes or line
+				 * continuations or not.
+				 */
+				out_token->num_escapes++;
+			} else {
+				/* part of string */
+				DUK__APPENDBUFFER(lex_ctx, x);
+			}
+		}
+
+		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
+		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+
+		DUK__INITBUFFER(lex_ctx);  /* free some memory */
+
+		advtok = DUK__ADVTOK(0, DUK_TOK_STRING);
+		break;
+	}
+	default:
+		goto slow_path;
+	}  /* switch */
+
+	goto skip_slow_path;
+
+ slow_path:
+	if (duk_unicode_is_line_terminator(x)) {
+		if (x == 0x000d && DUK__L1() == 0x000a) {
 			/*
 			 *  E5 Section 7.3: CR LF is detected as a single line terminator for
 			 *  line numbers.  Here we also detect it as a single line terminator
 			 *  token.
 			 */
-			advtok = DUK__ADVTOK(2, DUK_TOK_LINETERM);
+			DUK__ADVANCECHARS(lex_ctx, 2);
 		} else {
-			advtok = DUK__ADVTOK(1, DUK_TOK_LINETERM);
+			DUK__ADVANCECHARS(lex_ctx, 1);
 		}
+		got_lineterm = 1;
+		goto restart_lineupdate;
 	} else if (duk_unicode_is_identifier_start(x) || x == '\\') {
 		/*
 		 *  Parse an identifier and then check whether it is:
@@ -934,7 +1305,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 					          "invalid unicode escaped character while parsing identifier");
 				}
 				DUK__APPENDBUFFER(lex_ctx, ch);
-				DUK__ADVANCE(lex_ctx, 6);
+				DUK__ADVANCECHARS(lex_ctx, 6);
 
 				/* Track number of escapes: necessary for proper keyword
 				 * detection.
@@ -950,7 +1321,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 					break;
 				}
 				DUK__APPENDBUFFER(lex_ctx, DUK__L0());
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 			}
 			first = 0;
 		}
@@ -1029,12 +1400,14 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 		                         * 3=after exp and exp sign
 		                         */
 		duk_small_uint_t s2n_flags;
+		duk_codepoint_t y;
 
 		DUK__INITBUFFER(lex_ctx);
+		y = DUK__L1();
 		if (x == '0' && (y == 'x' || y == 'X')) {
 			DUK__APPENDBUFFER(lex_ctx, x);
 			DUK__APPENDBUFFER(lex_ctx, y);
-			DUK__ADVANCE(lex_ctx, 2);
+			DUK__ADVANCECHARS(lex_ctx, 2);
 			int_only = 1;
 			allow_hex = 1;
 #ifdef DUK_USE_OCTAL_SUPPORT
@@ -1047,7 +1420,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 			 */
 
 			DUK__APPENDBUFFER(lex_ctx, x);
-			DUK__ADVANCE(lex_ctx, 1);
+			DUK__ADVANCECHARS(lex_ctx, 1);
 			int_only = 1;
 #endif
 		}
@@ -1087,7 +1460,7 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 				break;
 			}
 			DUK__APPENDBUFFER(lex_ctx, x);
-			DUK__ADVANCE(lex_ctx, 1);
+			DUK__ADVANCECHARS(lex_ctx, 1);
 		}
 
 		/* XXX: better coercion */
@@ -1122,215 +1495,32 @@ void duk__parse_input_element_raw(duk_lexer_ctx *lex_ctx,
 
 		out_token->num = val;
 		advtok = DUK__ADVTOK(0, DUK_TOK_NUMBER);
-	} else if (x == '"' || x == '\'') {
-		duk_small_int_t quote = x;  /* Note: duk_uint8_t type yields larger code */
-		duk_small_int_t adv;
-
-		DUK__INITBUFFER(lex_ctx);
-		for (;;) {
-			DUK__ADVANCE(lex_ctx, 1);  /* eat opening quote on first loop */
-			x = DUK__L0();
-			if (x < 0 || duk_unicode_is_line_terminator(x)) {
-				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "eof or line terminator while parsing string literal");
-			}
-			if (x == quote) {
-				DUK__ADVANCE(lex_ctx, 1);  /* eat closing quote */
-				break;
-			}
-			if (x == '\\') {
-				/* DUK__L0        -> '\' char
-				 * DUK__L1 ... DUK__L5 -> more lookup
-				 */
-
-				x = DUK__L1();
-				y = DUK__L2();
-
-				/* How much to advance before next loop; note that next loop
-				 * will advance by 1 anyway, so -1 from the total escape
-				 * length (e.g. len('\uXXXX') - 1 = 6 - 1).  As a default,
-				 * 1 is good.
-				 */
-				adv = 2 - 1;  /* note: long live range */
-
-				if (x < 0) {
-					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-					          "eof while parsing string literal");
-				}
-				if (duk_unicode_is_line_terminator(x)) {
-					/* line continuation */
-					if (x == 0x000d && y == 0x000a) {
-						/* CR LF again a special case */
-						adv = 3 - 1;
-					}
-				} else if (x == '\'') {
-					DUK__APPENDBUFFER(lex_ctx, 0x0027);
-				} else if (x == '"') {
-					DUK__APPENDBUFFER(lex_ctx, 0x0022);
-				} else if (x == '\\') {
-					DUK__APPENDBUFFER(lex_ctx, 0x005c);
-				} else if (x == 'b') {
-					DUK__APPENDBUFFER(lex_ctx, 0x0008);
-				} else if (x == 'f') {
-					DUK__APPENDBUFFER(lex_ctx, 0x000c);
-				} else if (x == 'n') {
-					DUK__APPENDBUFFER(lex_ctx, 0x000a);
-				} else if (x == 'r') {
-					DUK__APPENDBUFFER(lex_ctx, 0x000d);
-				} else if (x == 't') {
-					DUK__APPENDBUFFER(lex_ctx, 0x0009);
-				} else if (x == 'v') {
-					DUK__APPENDBUFFER(lex_ctx, 0x000b);
-				} else if (x == 'x') {
-					adv = 4 - 1;
-					DUK__APPENDBUFFER(lex_ctx, duk__decode_hexesc_from_window(lex_ctx, 2));
-				} else if (x == 'u') {
-					adv = 6 - 1;
-					DUK__APPENDBUFFER(lex_ctx, duk__decode_uniesc_from_window(lex_ctx, 2));
-				} else if (DUK__ISDIGIT(x)) {
-					duk_codepoint_t ch = 0;  /* initialized to avoid warnings of unused var */
-
-					/*
-					 *  Octal escape or zero escape:
-					 *    \0                                     (lookahead not DecimalDigit)
-					 *    \1 ... \7                              (lookahead not DecimalDigit)
-					 *    \ZeroToThree OctalDigit                (lookahead not DecimalDigit)
-					 *    \FourToSeven OctalDigit                (no lookahead restrictions)
-					 *    \ZeroToThree OctalDigit OctalDigit     (no lookahead restrictions)
-					 *
-					 *  Zero escape is part of the standard syntax.  Octal escapes are
-					 *  defined in E5 Section B.1.2, and are only allowed in non-strict mode.
-					 *  Any other productions starting with a decimal digit are invalid.
-					 */
-
-					if (x == '0' && !DUK__ISDIGIT(y)) {
-						/* Zero escape (also allowed in non-strict mode) */
-						ch = 0;
-						/* adv = 2 - 1 default OK */
-#ifdef DUK_USE_OCTAL_SUPPORT
-					} else if (strict_mode) {
-						/* No other escape beginning with a digit in strict mode */
-						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-						          "invalid escape while parsing string literal");
-					} else if (DUK__ISDIGIT03(x) && DUK__ISOCTDIGIT(y) && DUK__ISOCTDIGIT(DUK__L3())) {
-						/* Three digit octal escape, digits validated. */
-						adv = 4 - 1;
-						ch = (duk__hexval(lex_ctx, x) << 6) +
-						     (duk__hexval(lex_ctx, y) << 3) +
-						     duk__hexval(lex_ctx, DUK__L3());
-					} else if (((DUK__ISDIGIT03(x) && !DUK__ISDIGIT(DUK__L3())) || DUK__ISDIGIT47(x)) &&
-					           DUK__ISOCTDIGIT(y)) {
-						/* Two digit octal escape, digits validated.
-						 *
-						 * The if-condition is a bit tricky.  We could catch e.g.
-						 * '\039' in the three-digit escape and fail it there (by
-					         * validating the digits), but we want to avoid extra
-						 * additional validation code.
-						 */
-						adv = 3 - 1;
-						ch = (duk__hexval(lex_ctx, x) << 3) +
-						     duk__hexval(lex_ctx, y);
-					} else if (DUK__ISDIGIT(x) && !DUK__ISDIGIT(y)) {
-						/* One digit octal escape, digit validated. */
-						/* adv = 2 default OK */
-						ch = duk__hexval(lex_ctx, x);
-#else
-					/* fall through to error */
-#endif
-					} else {
-						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-						          "invalid escape while parsing string literal");
-					}
-
-					DUK__APPENDBUFFER(lex_ctx, ch);
-				} else {
-					/* escaped NonEscapeCharacter */
-					DUK__APPENDBUFFER(lex_ctx, x);
-				}
-				DUK__ADVANCE(lex_ctx, adv);
-
-				/* Track number of escapes; count not really needed but directive
-				 * prologues need to detect whether there were any escapes or line
-				 * continuations or not.
-				 */
-				out_token->num_escapes++;
-			} else {
-				/* part of string */
-				DUK__APPENDBUFFER(lex_ctx, x);
-			}
-		}
-
-		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
-
-		DUK__INITBUFFER(lex_ctx);  /* free some memory */
-
-		advtok = DUK__ADVTOK(0, DUK_TOK_STRING);
+	} else if (duk_unicode_is_whitespace(DUK__LOOKUP(lex_ctx, 0))) {
+		DUK__ADVANCECHARS(lex_ctx, 1);
+		goto restart;
 	} else if (x < 0) {
 		advtok = DUK__ADVTOK(0, DUK_TOK_EOF);
 	} else {
 		DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "error parsing token");
 	}
+ skip_slow_path:
 
 	/*
 	 *  Shared exit path
 	 */
 
-	DUK__ADVANCE(lex_ctx, advtok >> 8);
+	DUK__ADVANCEBYTES(lex_ctx, advtok >> 8);
 	out_token->t = advtok & 0xff;
 	if (out_token->t_nores < 0) {
 		out_token->t_nores = out_token->t;
 	}
-}
-
-/*
- *  Tokenize input until a non-whitespace, non-lineterm token is found.
- *  Note in the output token whether a lineterm token preceded the starting
- *  point (inclusive) and the result token.  This information is needed for
- *  automatic semicolon insertion.
- *
- *  Future work:
- *
- *    * Merge with duk__parse_input_element_raw() because only this function is
- *      called in practice.
- */
-
-/* XXX: change mode flags into one flags argument? */
-
-DUK_INTERNAL
-void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
-                                      duk_token *out_token,
-                                      duk_bool_t strict_mode,
-                                      duk_bool_t regexp_mode) {
-	duk_small_int_t tok;
-	duk_bool_t got_lineterm = 0;  /* got lineterm preceding non-whitespace, non-lineterm token */
-
-	for (;;) {
-		duk__parse_input_element_raw(lex_ctx, out_token, strict_mode, regexp_mode);
-		tok = out_token->t;
-
-		DUK_DDD(DUK_DDDPRINT("RAWTOKEN: %ld (line %ld)",
-		                     (long) tok, (long) out_token->start_line));
-
-		if (tok == DUK_TOK_COMMENT) {
-			/* single-line comment or multi-line comment without an internal lineterm */
-			continue;
-		} else if (tok == DUK_TOK_LINETERM) {
-			/* lineterm or multi-line comment with an internal lineterm */
-			got_lineterm = 1;
-			continue;
-		} else {
-			break;
-		}
-	}
-
 	out_token->lineterm = got_lineterm;
 
 	/* Automatic semicolon insertion is allowed if a token is preceded
 	 * by line terminator(s), or terminates a statement list (right curly
 	 * or EOF).
 	 */
-	if (got_lineterm || tok == DUK_TOK_RCURLY || tok == DUK_TOK_EOF) {
+	if (got_lineterm || out_token->t == DUK_TOK_RCURLY || out_token->t == DUK_TOK_EOF) {
 		out_token->allow_auto_semi = 1;
 	} else {
 		out_token->allow_auto_semi = 0;
@@ -1419,7 +1609,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
 		for (;;) {
-			DUK__ADVANCE(lex_ctx, 1);  /* eat '{' on entry */
+			DUK__ADVANCECHARS(lex_ctx, 1);  /* eat '{' on entry */
 			x = DUK__L0();
 			if (DUK__ISDIGIT(x)) {
 				if (digits >= DUK__MAX_RE_QUANT_DIGITS) {
@@ -1441,7 +1631,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 					}
 					out_token->qmin = val1;
 					out_token->qmax = DUK_RE_QUANTIFIER_INFINITE;
-					DUK__ADVANCE(lex_ctx, 2);
+					DUK__ADVANCECHARS(lex_ctx, 2);
 					break;
 				}
 				val2 = val1;
@@ -1461,7 +1651,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 					out_token->qmin = val1;
 					out_token->qmax = val1;
 				}
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 				break;
 			} else {
 				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
@@ -1470,7 +1660,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		}
 		if (DUK__L0() == '?') {
 			out_token->greedy = 0;
-			DUK__ADVANCE(lex_ctx, 1);
+			DUK__ADVANCECHARS(lex_ctx, 1);
 		} else {
 			out_token->greedy = 1;
 		}
@@ -1551,7 +1741,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 						          "invalid regexp escape (decimal escape too long)");
 					}
-					DUK__ADVANCE(lex_ctx, 1);  /* eat backslash on entry */
+					DUK__ADVANCECHARS(lex_ctx, 1);  /* eat backslash on entry */
 					x = DUK__L0();
 					if (!DUK__ISDIGIT(x)) {
 						break;
@@ -1641,7 +1831,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 	 *  Shared exit path
 	 */
 
-	DUK__ADVANCE(lex_ctx, advtok >> 8);
+	DUK__ADVANCEBYTES(lex_ctx, advtok >> 8);
 	out_token->t = advtok & 0xff;
 }
 
@@ -1693,7 +1883,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 
 	for (;;) {
 		x = DUK__L0();
-		DUK__ADVANCE(lex_ctx, 1);
+		DUK__ADVANCECHARS(lex_ctx, 1);
 
 		ch = -1;  /* not strictly necessary, but avoids "uninitialized variable" warnings */
 		DUK_UNREF(ch);
@@ -1726,7 +1916,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 			 */
 
 			x = DUK__L0();
-			DUK__ADVANCE(lex_ctx, 1);
+			DUK__ADVANCECHARS(lex_ctx, 1);
 
 			if (x == 'b') {
 				/* Note: '\b' in char class is different than outside (assertion),
@@ -1746,7 +1936,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				ch = 0x000b;
 			} else if (x == 'c') {
 				x = DUK__L0();
-				DUK__ADVANCE(lex_ctx, 1);
+				DUK__ADVANCECHARS(lex_ctx, 1);
 				if ((x >= 'a' && x <= 'z') ||
 				    (x >= 'A' && x <= 'Z')) {
 					ch = (x % 32);
@@ -1759,10 +1949,10 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				}
 			} else if (x == 'x') {
 				ch = duk__decode_hexesc_from_window(lex_ctx, 0);
-				DUK__ADVANCE(lex_ctx, 2);
+				DUK__ADVANCECHARS(lex_ctx, 2);
 			} else if (x == 'u') {
 				ch = duk__decode_uniesc_from_window(lex_ctx, 0);
-				DUK__ADVANCE(lex_ctx, 4);
+				DUK__ADVANCECHARS(lex_ctx, 4);
 			} else if (x == 'd') {
 				duk__emit_u16_direct_ranges(lex_ctx,
 				                            gen_range,

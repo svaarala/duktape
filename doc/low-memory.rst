@@ -75,6 +75,11 @@ Suggested feature options
 
   - ``DUK_OPT_NO_PC2LINE``
 
+* Disable lexer sliding window algorithm which has a larger footprint
+  and uses (slightly) more memory:
+
+  - ``#undef DUK_USE_LEXER_SLIDING_WINDOW``
+
 * If you don't need the Duktape-specific additional JX/JC formats, use:
 
   - ``DUK_OPT_NO_JX``
