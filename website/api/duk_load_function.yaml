@@ -1,0 +1,36 @@
+name: duk_load_function
+
+proto: |
+  void duk_load_function(duk_context *ctx);
+
+stack: |
+  [ ... bytecode! ] -> [ ... function! ]
+
+summary: |
+  <p>Load a buffer containing
+  <a href="https://github.com/svaarala/duktape/blob/master/doc/bytecode.rst">bytecode</a>,
+  recreating the original Ecmascript function (with some limitations).  You <b>must</b>
+  ensure that the bytecode has been dumped with a compatible Duktape version and that the
+  bytecode has not been modified since.  <b>Loading bytecode from an untrusted source is
+  memory unsafe and may load to exploitable vulnerabilities.</b></p>
+
+  <p include="bytecode-moreinfo.html" />
+
+example: |
+  duk_eval_string(ctx, "(function helloWorld() { print('hello world'); })");
+  duk_dump_function(ctx);
+  /* stack top now contains a buffer containing helloWorld bytecode */
+
+  duk_load_function(ctx);  /* [ ... bytecode ] -> [ ... function ] */
+  duk_call(ctx, 0);
+  duk_pop(ctx);
+
+tags:
+  - stack
+  - bytecode
+  - experimental
+
+seealso:
+  - duk_dump_function
+
+introduced: 1.3.0
