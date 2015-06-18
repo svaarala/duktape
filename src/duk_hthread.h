@@ -138,6 +138,15 @@
 #define DUK_HTHREAD_STATE_YIELDED      4   /* thread has yielded */
 #define DUK_HTHREAD_STATE_TERMINATED   5   /* thread has terminated */
 
+/* Executor interrupt default interval when nothing else requires a
+ * smaller value.  The default interval must be small enough to allow
+ * for reasonable execution timeout checking but large enough to keep
+ * impact on execution performance low.
+ */
+#if defined(DUK_USE_INTERRUPT_COUNTER)
+#define DUK_HTHREAD_INTCTR_DEFAULT     (256L * 1024L)
+#endif
+
 /*
  *  Assert context is valid: non-NULL pointer, fields look sane.
  *
@@ -274,15 +283,16 @@ struct duk_hthread {
 	/* current compiler state (if any), used for augmenting SyntaxErrors */
 	duk_compiler_ctx *compile_ctx;
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 	/* Interrupt counter for triggering a slow path check for execution
-	 * timeout, debugger interaction such as breakpoints, etc.  This is
-	 * actually a value copied from the heap structure into the current
-	 * thread to be more convenient for the bytecode executor inner loop.
-	 * The final value is copied back to the heap structure on a thread
-	 * switch by DUK_HEAP_SWITCH_THREAD().
+	 * timeout, debugger interaction such as breakpoints, etc.  The value
+	 * is valid for the current running thread, and both the init and
+	 * counter values are copied whenever a thread switch occurs.  It's
+	 * important for the counter to be conveniently accessible for the
+	 * bytecode executor inner loop for performance reasons.
 	 */
-	duk_int_t interrupt_counter;
+	duk_int_t interrupt_counter;    /* countdown state */
+	duk_int_t interrupt_init;       /* start value for current countdown */
 #endif
 
 	/* Builtin-objects; may or may not be shared with other threads,

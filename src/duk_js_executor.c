@@ -5,7 +5,7 @@
 #include "duk_internal.h"
 
 /*
- *  Local forward declarations
+ *  Local declarations
  */
 
 DUK_LOCAL_DECL void duk__reconfig_valstack(duk_hthread *thr, duk_size_t act_idx, duk_small_uint_t retval_count);
@@ -1500,7 +1500,7 @@ duk_bool_t duk__handle_fast_return(duk_hthread *thr,
  *  work accurately even when single stepping.
  */
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 
 #define DUK__INT_NOACTION    0    /* no specific action, resume normal execution */
 #define DUK__INT_RESTART     1    /* must "goto restart_execution", e.g. breakpoints changed */
@@ -1599,7 +1599,8 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		process_messages = 0;
 	}
 
-	thr->heap->dbg_exec_counter += thr->heap->interrupt_init;
+	/* XXX: remove heap->dbg_exec_counter, use heap->inst_count_interrupt instead? */
+	thr->heap->dbg_exec_counter += thr->interrupt_init;
 	if (thr->heap->dbg_exec_counter - thr->heap->dbg_last_counter >= DUK_HEAP_DBG_RATELIMIT_OPCODES) {
 		/* Overflow of the execution counter is fine and doesn't break
 		 * anything here.
@@ -1687,11 +1688,20 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	duk_small_uint_t retval;
 
 	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(thr->callstack != NULL);
 	DUK_ASSERT(thr->callstack_top > 0);
 
+#if defined(DUK_USE_DEBUG)
+	thr->heap->inst_count_interrupt += thr->interrupt_init;
+	DUK_DD(DUK_DDPRINT("execution interrupt, counter=%ld, init=%ld, "
+	                   "instruction counts: executor=%ld, interrupt=%ld",
+	                   (long) thr->interrupt_counter, (long) thr->interrupt_init,
+	                   (long) thr->heap->inst_count_exec, (long) thr->heap->inst_count_interrupt));
+#endif
+
 	retval = DUK__INT_NOACTION;
-	ctr = DUK_HEAP_INTCTR_DEFAULT;
+	ctr = DUK_HTHREAD_INTCTR_DEFAULT;
 
 	/*
 	 *  Avoid nested calls.  Concretely this happens during debugging, e.g.
@@ -1704,8 +1714,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		/* Set a high interrupt counter; the original executor
 		 * interrupt invocation will rewrite before exiting.
 		 */
-		thr->heap->interrupt_init = ctr;
-		thr->heap->interrupt_counter = ctr - 1;
+		thr->interrupt_init = ctr;
 		thr->interrupt_counter = ctr - 1;
 		return DUK__INT_NOACTION;
 	}
@@ -1731,8 +1740,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		 * until we've fully bubbled out of Duktape.
 		 */
 		DUK_D(DUK_DPRINT("execution timeout, throwing a RangeError"));
-		thr->heap->interrupt_init = 0;
-		thr->heap->interrupt_counter = 0;
+		thr->interrupt_init = 0;
 		thr->interrupt_counter = 0;
 		DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "execution timeout");
@@ -1760,10 +1768,10 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 
 	/* The counter value is one less than the init value: init value should
 	 * indicate how many instructions are executed before interrupt.  To
-	 * execute 1 instruction, counter must be 0.
+	 * execute 1 instruction (after interrupt handler return), counter must
+	 * be 0.
 	 */
-	thr->heap->interrupt_init = ctr;
-	thr->heap->interrupt_counter = ctr - 1;
+	thr->interrupt_init = ctr;
 	thr->interrupt_counter = ctr - 1;
 	DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
 
@@ -1894,6 +1902,13 @@ DUK_LOCAL void duk__executor_handle_debugger(duk_hthread *thr, duk_activation *a
 	    thr->heap->dbg_paused ||
 	    (thr->heap->dbg_step_type != DUK_STEP_TYPE_OUT &&
 	     thr->heap->dbg_step_csindex == thr->callstack_top - 1)) {
+		/* We'll need to interrupt early so recompute the init
+		 * counter to reflect the number of bytecode instructions
+		 * executed so that step counts for e.g. debugger rate
+		 * limiting are accurate.
+		 */
+		DUK_ASSERT(thr->interrupt_counter <= thr->interrupt_init);
+		thr->interrupt_init = thr->interrupt_init - thr->interrupt_counter;
 		thr->interrupt_counter = 0;
 	}
 }
@@ -2108,9 +2123,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
-	thr->interrupt_counter = thr->heap->interrupt_counter;
-#endif
+	/* Assume interrupt init/counter are properly initialized here. */
 
 	/* assume that thr->valstack_bottom has been set-up before getting here */
 	act = thr->callstack + thr->callstack_top - 1;
@@ -2206,6 +2219,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				goto restart_execution;
 			}
 		}
+#endif
+#if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
+		thr->heap->inst_count_exec++;
 #endif
 
 		/* Because ANY DECREF potentially invalidates 'act' now (through
