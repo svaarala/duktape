@@ -935,6 +935,9 @@ Released
 Planned
 =======
 
+1.2.3 (2015-XX-XX)
+------------------
+
 1.3.0 (2015-XX-XX)
 ------------------
 
@@ -973,6 +976,9 @@ Planned
   check (GH-178)
 
 * Internal performance improvement: improve lexer tokenization (GH-207)
+
+* Fix bytecode execution timeout regression which caused timeouts to fail
+  after the first execution timeout had been triggered (GH-212)
 
 * Fix potential NULL pointer dereference in duk_is_dynamic_buffer() and
   duk_is_fixed_buffer() when index is outside of value stack (GH-206)
