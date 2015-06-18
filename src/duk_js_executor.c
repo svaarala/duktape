@@ -1734,6 +1734,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		thr->heap->interrupt_init = 0;
 		thr->heap->interrupt_counter = 0;
 		thr->interrupt_counter = 0;
+		DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, "execution timeout");
 	}
 #endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
