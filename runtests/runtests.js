@@ -516,6 +516,12 @@ function testRunnerMain() {
         testcases.forEach(function test(fullPath) {
             var filename = path.basename(fullPath);
             var testcase = parseTestCaseSync(fullPath);
+
+            if (testcase.meta.skip) {
+                // console.log('skip testcase: ' + testcase.name);
+                return;
+            }
+
             addKnownIssueMetadata(testcase);
 
             results[testcase.name] = {};  // create in test case order
@@ -690,7 +696,7 @@ function testRunnerMain() {
 
         console.log('');
         console.log('SUMMARY: ' + countPass + ' pass, ' + countFail +
-                    ' fail, ' + countSkip + ' skip');
+                    ' fail');  // countSkip is no longer correct
     }
 
     function createLogFile(logFile) {
