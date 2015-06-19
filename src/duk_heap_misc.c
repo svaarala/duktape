@@ -40,14 +40,35 @@ DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphd
 
 #ifdef DUK_USE_INTERRUPT_COUNTER
 DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
-	/* Copy currently active interrupt counter from the active thread
-	 * back to the heap structure.  It doesn't need to be copied to
-	 * the target thread, as the bytecode executor does that when it
-	 * resumes execution for a new thread.
-	 */
-	if (heap->curr_thread != NULL) {
-		heap->interrupt_counter = heap->curr_thread->interrupt_counter;
+	duk_hthread *curr_thr;
+
+	DUK_ASSERT(heap != NULL);
+
+	if (new_thr != NULL) {
+		curr_thr = heap->curr_thread;
+		if (curr_thr == NULL) {
+			/* For initial entry use default value; zero forces an
+			 * interrupt before executing the first insturction.
+			 */
+			DUK_DD(DUK_DDPRINT("switch thread, initial entry, init default interrupt counter"));
+			new_thr->interrupt_counter = 0;
+			new_thr->interrupt_init = 0;
+		} else {
+			/* Copy interrupt counter/init value state to new thread (if any).
+			 * It's OK for new_thr to be the same as curr_thr.
+			 */
+#if defined(DUK_USE_DEBUG)
+			if (new_thr != curr_thr) {
+				DUK_DD(DUK_DDPRINT("switch thread, not initial entry, copy interrupt counter"));
+			}
+#endif
+			new_thr->interrupt_counter = curr_thr->interrupt_counter;
+			new_thr->interrupt_init = curr_thr->interrupt_init;
+		}
+	} else {
+		DUK_DD(DUK_DDPRINT("switch thread, new thread is NULL, no interrupt counter changes"));
 	}
+
 	heap->curr_thread = new_thr;  /* may be NULL */
 }
 #endif  /* DUK_USE_INTERRUPT_COUNTER */

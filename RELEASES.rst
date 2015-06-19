@@ -980,6 +980,9 @@ Planned
 * Fix bytecode execution timeout regression which caused timeouts to fail
   after the first execution timeout had been triggered (GH-212)
 
+* Fix some corner cases in execution timeout handling which caused some
+  timeouts to be missed (GH-214)
+
 * Fix potential NULL pointer dereference in duk_is_dynamic_buffer() and
   duk_is_fixed_buffer() when index is outside of value stack (GH-206)
 

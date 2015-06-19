@@ -148,14 +148,6 @@
 /* helper to insert a (non-string) heap object into heap allocated list */
 #define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap,hdr)     duk_heap_insert_into_heap_allocated((heap),(hdr))
 
-/* Executor interrupt default interval when nothing else requires a
- * smaller value.  The default interval must be small enough to allow
- * for reasonable execution timeout checking.
- */
-#if defined(DUK_USE_INTERRUPT_COUNTER)
-#define DUK_HEAP_INTCTR_DEFAULT                           (256L * 1024L)
-#endif
-
 /*
  *  Stringtable
  */
@@ -444,10 +436,13 @@ struct duk_heap {
 	/* rnd_state for duk_util_tinyrandom.c */
 	duk_uint32_t rnd_state;
 
-	/* interrupt counter */
-#if defined(DUK_USE_INTERRUPT_COUNTER)
-	duk_int_t interrupt_init;       /* start value for current countdown */
-	duk_int_t interrupt_counter;    /* countdown state (mirrored in current thread state) */
+	/* For manual debugging: instruction count based on executor and
+	 * interrupt counter book-keeping.  Inspect debug logs to see how
+	 * they match up.
+	 */
+#if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
+	duk_int_t inst_count_exec;
+	duk_int_t inst_count_interrupt;
 #endif
 
 	/* debugger */

@@ -11,6 +11,41 @@
 #include "duk_internal.h"
 
 /*
+ *  Misc
+ */
+
+#if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
+DUK_LOCAL void duk__interrupt_fixup(duk_hthread *thr, duk_hthread *entry_curr_thread) {
+	/* XXX: Currently the bytecode executor and executor interrupt
+	 * instruction counts are off because we don't execute the
+	 * interrupt handler when we're about to exit from the initial
+	 * user call into Duktape.
+	 *
+	 * If we were to execute the interrupt handler here, the counts
+	 * would match.  You can enable this block manually to check
+	 * that this is the case.
+	 */
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+#if 0
+	if (entry_curr_thread == NULL) {
+		thr->interrupt_init = thr->interrupt_init - thr->interrupt_counter;
+		thr->heap->inst_count_interrupt += thr->interrupt_init;
+		DUK_DD(DUK_DDPRINT("debug test: updated interrupt count on exit to "
+		                   "user code, instruction counts: executor=%ld, interrupt=%ld",
+		                   (long) thr->heap->inst_count_exec, (long) thr->heap->inst_count_interrupt));
+		DUK_ASSERT(thr->heap->inst_count_exec == thr->heap->inst_count_interrupt);
+	}
+#else
+	DUK_UNREF(thr);
+	DUK_UNREF(entry_curr_thread);
+#endif
+}
+#endif
+
+/*
  *  Arguments object creation.
  *
  *  Creating arguments objects is a bit finicky, see E5 Section 10.6 for the
@@ -1540,6 +1575,10 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	thr->heap->call_recursion_depth = entry_call_recursion_depth;
 
+#if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
+	duk__interrupt_fixup(thr, entry_curr_thread);
+#endif
+
 	return retval;
 
  thread_state_error:
@@ -1912,6 +1951,10 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 	/* stack discipline consistency check */
 	DUK_ASSERT(duk_get_top(ctx) == idx_retbase + num_stack_rets);
+
+#if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
+	duk__interrupt_fixup(thr, entry_curr_thread);
+#endif
 
 	return retval;
 
