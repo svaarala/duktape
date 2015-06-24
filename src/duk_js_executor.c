@@ -3381,34 +3381,40 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_catcher *cat;
 			duk_tval *tv1;
 			duk_small_uint_fast_t a;
-			duk_small_uint_fast_t b;
-			duk_small_uint_fast_t c;
+			duk_uint_fast_t bc;
 
 			/* A -> flags
-			 * B -> reg_catch; base register for 2 regs
-			 * C -> semantics depend on flags: var_name or with_target
+			 * BC -> reg_catch; base register for two registers used both during
+			 *       trycatch setup and when catch is triggered
 			 *
 			 *      If DUK_BC_TRYCATCH_FLAG_CATCH_BINDING set:
-			 *          C is constant index for catch binding variable name.
+			 *          reg_catch + 0: catch binding variable name (string).
 			 *          Automatic declarative environment is established for
 			 *          the duration of the 'catch' clause.
 			 *
 			 *      If DUK_BC_TRYCATCH_FLAG_WITH_BINDING set:
-			 *          C is reg/const index for with 'target value', which
-			 *          is coerced to an object and then used as a binding
-			 *          object for an environment record.  The binding is
-			 *          initialized here, for the 'try' clause.
+			 *          reg_catch + 0: with 'target value', which is coerced to
+			 *          an object and then used as a bindind object for an
+			 *          environment record.  The binding is initialized here, for
+			 *          the 'try' clause.
 			 *
 			 * Note that a TRYCATCH generated for a 'with' statement has no
 			 * catch or finally parts.
 			 */
 
+			/* XXX: TRYCATCH handling should be reworked to avoid creating
+			 * an explicit scope unless it is actually needed (e.g. function
+			 * instances or eval is executed inside the catch block).  This
+			 * rework is not trivial because the compiler doesn't have an
+			 * intermediate representation.  When the rework is done, the
+			 * opcode format can also be made more straightforward.
+			 */
+
 			/* XXX: side effect handling is quite awkward here */
 
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%ld, var_name/with_target=%ld, have_catch=%ld, "
+			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%ld, have_catch=%ld, "
 			                     "have_finally=%ld, catch_binding=%ld, with_binding=%ld (flags=0x%02lx)",
-			                     (long) DUK_DEC_B(ins),
-			                     (long) DUK_DEC_C(ins),
+			                     (long) DUK_DEC_BC(ins),
 			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
 			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
 			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
@@ -3416,8 +3422,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			                     (unsigned long) DUK_DEC_A(ins)));
 
 			a = DUK_DEC_A(ins);
-			b = DUK_DEC_B(ins);
-			c = DUK_DEC_C(ins);
+			bc = DUK_DEC_BC(ins);
 
 			DUK_ASSERT(thr->callstack_top >= 1);
 
@@ -3443,7 +3448,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
 				                              -1);  /* no prototype, updated below */
 
-				duk_push_tval(ctx, DUK__REGCONSTP(c));
+				duk_push_tval(ctx, DUK__REGP(bc));
 				duk_to_object(ctx, -1);
 				duk_dup(ctx, -1);
 
@@ -3478,8 +3483,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
 				DUK_DDD(DUK_DDDPRINT("catch binding flag set to catcher"));
 				cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
-				tv1 = DUK__CONSTP(c);
+				tv1 = DUK__REGP(bc);
 				DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
+
+				/* borrowed reference; although 'tv1' comes from a register,
+				 * its value was loaded using LDCONST so the constant will
+				 * also exist and be reachable.
+				 */
 				cat->h_varname = DUK_TVAL_GET_STRING(tv1);
 			} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
 				/* env created above to stack top */
@@ -3508,7 +3518,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
 			cat->callstack_index = thr->callstack_top - 1;
 			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
-			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + b;
+			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + bc;
 
 			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
 			                     "idx_base=%ld, h_varname=%!O",
