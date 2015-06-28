@@ -255,7 +255,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		 *
 		 * For keys, we simply skip non-string keys which seems to be
 		 * consistent with how e.g. Object.keys() will process proxy trap
-		 * results (ES6 draft, Section 19.1.2.14).
+		 * results (ES6, Section 19.1.2.14).
 		 */
 		if (duk_get_prop_index(ctx, -1, i) && duk_is_string(ctx, -1)) {
 			/* [ ... enum_target res trap_result val ] */

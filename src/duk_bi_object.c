@@ -40,7 +40,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 /* Shared helper to implement Object.getPrototypeOf and the ES6
  * Object.prototype.__proto__ getter.
  *
- * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
+ * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-get-object.prototype.__proto__
  */
 DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -80,8 +80,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 /* Shared helper to implement ES6 Object.setPrototypeOf and
  * Object.prototype.__proto__ setter.
  *
- * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-get-object.prototype.__proto__
- * https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof
+ * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-get-object.prototype.__proto__
+ * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.setprototypeof
  */
 DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -124,7 +124,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	DUK_ASSERT(h_obj != NULL);
 
 	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2 */
-	/* NOTE: steps 7-8 seem to be a cut-paste bug in the E6 draft */
 	/* TODO: implement Proxy object support here */
 
 	if (h_new_proto == DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_obj)) {

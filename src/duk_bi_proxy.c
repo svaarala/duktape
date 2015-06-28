@@ -1,5 +1,5 @@
 /*
- *  Proxy built-in (ES6 draft)
+ *  Proxy built-in (ES6)
  */
 
 #include "duk_internal.h"
@@ -31,7 +31,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 		return DUK_RET_TYPE_ERROR;
 	}
 
-	/* XXX: the returned value is exotic in ES6 (draft), but we use a
+	/* XXX: the returned value is exotic in ES6, but we use a
 	 * simple object here with no prototype.  Without a prototype,
 	 * [[DefaultValue]] coercion fails which is abit confusing.
 	 * No callable check/handling in the current Proxy subset.

@@ -237,7 +237,7 @@ bi_global = {
 		# Duktape specific
 		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
 
-		# ES6 (draft)
+		# ES6
 		{ 'name': 'Proxy',			'value': { 'type': 'builtin', 'id': 'bi_proxy_constructor' } },
 
 		# Node.js Buffer
@@ -1295,7 +1295,7 @@ bi_double_error = {
 }
 
 #
-#  ES6 (draft)
+#  ES6
 #
 
 bi_proxy_constructor = {
