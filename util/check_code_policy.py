@@ -276,6 +276,12 @@ def checkNonAscii(lines, idx, filename):
 
 def checkNoSymbolVisibility(lines, idx, filename):
 	line = lines[idx]
+
+	# Workaround for DUK_ALWAYS_INLINE preceding a declaration
+	# (e.g. "DUK_ALWAYS_INLINE DUK_LOCAL ...")
+	if line.startswith('DUK_ALWAYS_INLINE '):
+		line = line[18:]
+
 	m = re_func_decl_or_def.match(line)
 	if m is None:
 		return
