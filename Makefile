@@ -55,9 +55,6 @@ DUK_VERSION_FORMATTED:=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
 GIT_DESCRIBE:=$(shell git describe --always --dirty)
 BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
 
-# Ditz release (next release name)
-DITZ_RELEASE=v1.3.0
-
 DISTSRCSEP = dist/src-separate
 DISTSRCCOM = dist/src
 DISTCMD = dist/examples/cmdline
@@ -452,11 +449,6 @@ issuecount:
 	@echo "TODO:      `grep TODO: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
 	@echo "NOTE:      `grep NOTE: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
 	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
-	@echo "Ditz ($(DITZ_RELEASE)): `ditz todo $(DITZ_RELEASE) | wc -l | tr -d ' '`"
-
-.PHONY: issues
-issues:
-	ditz todo $(DITZ_RELEASE)
 
 .PHONY: dukscanbuild
 dukscanbuild: dist

@@ -387,8 +387,7 @@ try {
  * index semantics. Modified algorithm steps 3 and 5 such that they do not enforce array index requirement.
  *
  * (This change matters only for strings longer than 4G characters which Duktape
- * doesn't support at the moment anyway, so there is no way to test.  Added a Ditz
- * issue for tracking that a fix is done if it becomes relevant.)
+ * doesn't support at the moment anyway, so there is no way to test.)
  */
 
 /*===
