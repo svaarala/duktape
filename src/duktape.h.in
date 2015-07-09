@@ -22,11 +22,13 @@
 
 @DUK_SINGLE_FILE@
 
-@DUK_FEATURES_H@
+/* External duk_config.h provides platform/compiler/OS dependent
+ * typedefs and macros, and DUK_USE_xxx config options so that
+ * the rest of Duktape doesn't need to do any feature detection.
+ */
+#include "duk_config.h"
 
 @DUK_API_PUBLIC_H@
-
-@DUK_FEATURES_SANITY_H@
 
 @DUK_DBLUNION_H@
 

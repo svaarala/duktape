@@ -174,7 +174,7 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	}
 	/* log level could be popped but that's not necessary */
 
-	now = duk_bi_date_get_now(ctx);
+	now = DUK_USE_DATE_GET_NOW(ctx);
 	duk_bi_date_format_timeval(now, date_buf);
 	date_len = DUK_STRLEN((const char *) date_buf);
 
