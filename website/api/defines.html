@@ -29,7 +29,7 @@ the define <code>DUK_DEBUG_PROTOCOL_VERSION</code>.</p>
 
 <h2>Structs and typedefs</h2>
 <pre class="c-code">
-typedef void duk_context;
+typedef struct duk_hthread duk_context;
 
 typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);

@@ -21,10 +21,11 @@ platforms and toolchains.  For example, you can:</p>
 
 <p>There are two alternative distribution formats for the Duktape source:
 a single source file and separate source files.  The single source file
-version consists of <code>duktape.h</code> and <code>duktape.c</code>.
-The separate source files version consists of <code>duktape.h</code> and
-a set of separate source files.   The single source file version is preferred,
-but separate files work better with some toolchains.</p>
+version consists of <code>duktape.c</code>, <code>duktape.h</code>, and
+<code>duk_config.h</code>.  The separate source files version consists of
+<code>duktape.h</code>, <code>duk_config.h</code> and a set of separate
+source files.   The single source file version is preferred, but separate
+files work better with some toolchains.</p>
 
 <p>All Duktape API functions are potentially macros, and the implementation
 of a certain API primitive may change between a macro and an actual function
@@ -291,6 +292,15 @@ You can break this loop manually if you wish.  For internal technical reasons,
 named function expressions are also in a reference loop; this loop cannot be
 broken from user code and only mark-and-sweep can collect such functions.
 See <a href="#limitations">Limitations</a>.</p>
+
+<h2 id="duktape-date-provider">Using an external Date provider</h2>
+
+<p>When porting to new or exotic platforms the Duktape built-in Date support
+may not work on the platform.  In such a case you can implement an external
+"Date provider" which allows you to provide the necessary date/time primitives
+without Duktape changes. See
+<a href="https://github.com/svaarala/duktape/blob/master/doc/datetime.rst">datetime.rst</a>.
+</p>
 
 <h2 id="duktape-cplusplus">Using a C++ compiler</h2>
 

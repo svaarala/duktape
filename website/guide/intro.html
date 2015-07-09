@@ -103,8 +103,9 @@ specification to minimize Duktape custom features.</p>
 so Duktape depends on very few system libraries.  For example, number
 formatting and parsing, regular expressions, and Unicode are all implemented
 internally by Duktape.  One of the few dependencies that cannot be fully
-eliminated is system date/time integration.  This is confined to the
-implementation of the <code>Date</code> built-in.</p>
+eliminated is system date/time integration in the <code>Date</code> built-in.
+Duktape supports major platforms directly but you can also use an external
+Date provider on exotic platforms.</p>
 
 <p><b>Easy C interface</b>.  The interface between Duktape and C programs
 should be natural and error-tolerant.  As a particular issue, string
