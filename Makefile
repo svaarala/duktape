@@ -137,6 +137,8 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_bi_array.c \
 	$(DISTSRCSEP)/duk_bi_boolean.c \
 	$(DISTSRCSEP)/duk_bi_date.c \
+	$(DISTSRCSEP)/duk_bi_date_unix.c \
+	$(DISTSRCSEP)/duk_bi_date_windows.c \
 	$(DISTSRCSEP)/duk_bi_error.c \
 	$(DISTSRCSEP)/duk_bi_function.c \
 	$(DISTSRCSEP)/duk_bi_global.c \
@@ -183,6 +185,7 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
 CCOPTS_FEATURES += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 CCOPTS_FEATURES += -DDUK_OPT_DPRINT_COLORS
+CCOPTS_FEATURES += -DDUK_OPT_DPRINT_RDTSC
 #CCOPTS_FEATURES += -DDUK_OPT_NO_FILE_IO
 #CCOPTS_FEATURES += '-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
 CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS

@@ -136,9 +136,10 @@ def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe,
 
 	emit_state = [ None, None ]  # curr_filename, curr_lineno
 
-	# Because duktape.c/duktape.h are often distributed or included in project
-	# sources as is, add a license reminder and Duktape version information
-	# to the duktape.c header (duktape.h already contains them).
+	# Because duktape.c/duktape.h/duk_config.h are often distributed or
+	# included in project sources as is, add a license reminder and
+	# Duktape version information to the duktape.c header (duktape.h
+	# already contains them).
 
 	duk_major = duk_version / 10000
 	duk_minor = duk_version / 100 % 100

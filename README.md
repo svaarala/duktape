@@ -7,9 +7,9 @@ Introduction
 [Duktape](http://duktape.org/) is an **embeddable Javascript** engine,
 with a focus on **portability** and **compact** footprint.
 
-Duktape is easy to integrate into a C/C++ project: add `duktape.c` and
-`duktape.h` to your build, and use the Duktape API to call Ecmascript
-functions from C code and vice versa.
+Duktape is easy to integrate into a C/C++ project: add `duktape.c`,
+`duktape.h`, and `duk_config.h` to your build, and use the Duktape API
+to call Ecmascript functions from C code and vice versa.
 
 Main features:
 
@@ -75,7 +75,8 @@ the website, run test cases, etc:
 
     # Install required packages (exact packages depend on distribution)
     $ sudo apt-get install nodejs nodejs-legacy npm perl ant openjdk-7-jdk \
-          libreadline6-dev libncurses-dev python-rdflib python-bs4 clang llvm
+          libreadline6-dev libncurses-dev python-rdflib python-bs4 python-yaml \
+          clang llvm
 
     # Compile the command line tool ('duk')
     $ git clone https://github.com/svaarala/duktape.git

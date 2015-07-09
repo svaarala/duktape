@@ -33,7 +33,7 @@ re_identifier = re.compile(r'[A-Za-z0-9_]+')
 re_nonascii = re.compile(r'^.*?[\x80-\xff].*?$')
 re_func_decl_or_def = re.compile(r'^(\w+)\s+(?:\w+\s+)*(\w+)\(.*?.*?$')  # may not finish on same line
 
-# These identifiers are wrapped in duk_features.h.in, and should only be used
+# These identifiers are wrapped in duk_config.h, and should only be used
 # through the wrappers elsewhere.
 rejected_plain_identifiers_list = [
 	# math classification
@@ -254,8 +254,7 @@ def checkIdentifiers(lines, idx, filename):
 	line = lines[idx]
 	# XXX: this now executes for every line which is pointless
 	bn = os.path.basename(filename)
-	excludePlain = (bn == 'duk_features.h.in' or \
-	                bn[0:5] == 'test-')
+	excludePlain = (bn[0:5] == 'test-')
 
 	for m in re.finditer(re_identifier, line):
 		if rejected_plain_identifiers.has_key(m.group(0)):
@@ -296,9 +295,7 @@ def checkNoSymbolVisibility(lines, idx, filename):
 		return
 
 	# Special exceptions
-	if bn == 'duk_features.h.in' and 'static __inline__' in line:
-		# duk_rdtsc(), gcc specific
-		return
+	# (None now)
 
 	raise Exception('missing symbol visibility macro')
 

@@ -10,7 +10,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
-CCOPTS += -I./src
+CCOPTS += -I./src   # duktape.h and duk_config.h must be in include path
 CCLIBS	= -lm
 
 # If you have readline, you may want to enable these.  On some platforms
