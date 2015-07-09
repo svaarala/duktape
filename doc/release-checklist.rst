@@ -227,7 +227,8 @@ Checklist for ordinary releases
     values are known.
 
   - Check git describe output from dist ``README.rst``, ``src/duktape.h``,
-    and ``src/duktape.c``.  It should show the release tag.
+    ``src/duktape.c``, and ``src/duk_config.h``.  It should show the release
+    tag.
 
   - This should be done in a fresh checkout to minimize chance of any
     uncommitted files, directories, etc affecting the build

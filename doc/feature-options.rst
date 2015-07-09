@@ -5,20 +5,36 @@ Duktape feature options
 Overview
 ========
 
-The effective set of Duktape features is resolved in three steps:
+The effective set of Duktape features is resolved in three steps in Duktape 1.x
+(this process will change in Duktape 2.x):
 
 * User defines ``DUK_OPT_xxx`` feature options.  These are essentially
-  requests to enable/disable some feature.
+  requests to enable/disable some feature.  (These will be removed in
+  Duktape 2.x and ``DUK_USE_xxx`` flags will be used directly.)
 
-* Duktape feature resolution in ``duk_features.h.in`` takes into account
-  the requested features, the platform, the compiler, the operating system
+* Duktape feature resolution in the default "auto-detecting" ``duk_config.h``
+  (previously internal ``duk_features.h.in``) takes into account the
+  requested features, the platform, the compiler, the operating system
   etc, and defines ``DUK_USE_xxx`` internal use flags.  Other parts of
   Duktape only listen to these "use flags", so that feature resolution is
   strictly contained.
 
-* User may optionally have a ``duk_custom.h`` header which can further
-  tweak the effective ``DUK_USE_xxx`` defines.  This is a last resort and
-  is somewhat fragile.  See ``DUK_OPT_HAVE_CUSTOM_H`` for more discussion.
+* The final ``DUK_USE_xxx`` flags can be tweaked in several ways:
+
+  - The generated ``duk_config.h`` header can be edited directly (manually,
+    through scripting, etc).
+
+  - The ``genconfig`` utility can be used to generate a ``duk_config.h``
+    header with user-supplied option overrides given either as YAML config
+    file(s) or C header snippets included in the config header.
+
+  - User may optionally have a ``duk_custom.h`` header which can tweak the
+    defines (see ``DUK_OPT_HAVE_CUSTOM_H`` for more discussion; this feature
+    option will be removed in Duktape 2.x.)
+
+Starting from Duktape 1.3 an external ``duk_config.h`` is required; it may
+be a prebuilt multi-platform header or a user-modified one.  Duktape 2.x
+will remove support for ``DUK_OPT_xxx`` feature options entirely.
 
 This document describes all the supported Duktape feature options and should
 be kept up-to-date with new features.  The feature option list in the guide
@@ -30,7 +46,8 @@ See also:
 
 - ``timing-sensitive.rst``: suggested options for timing sensitive environments
 
-- ``src/duk_features.h.in``: resolution of feature options to use flags
+- ``src/duk_config.h`` (in the distributable): resolution of feature options
+  to use flags
 
 Feature option naming
 =====================
@@ -974,22 +991,26 @@ Development notes
 This section only applies if you customize Duktape internals and wish to
 submit a patch to be included in the mainline distribution.
 
-Adding new feature options
---------------------------
+Adding new config options
+-------------------------
 
-* Add a descriptive ``DUK_OPT_xxx`` for the custom feature.  The custom
-  feature should only be enabled if the feature option is explicitly given.
+* Add a descriptive ``DUK_USE_xxx`` for the custom feature.  Use only this
+  define inside Duktape source code (never add any compiler/platform #ifdefs
+  inside Duktape).
 
-* Modify ``duk_features.h.in`` to detect your custom feature option and define
-  appropriate internal ``DUK_USE_xxx`` define(s).  Conflicts with other
-  features should be detected.  Code outside ``duk_features.h.in`` should only
-  listen to ``DUK_USE_xxx`` defines so that the resolution process is fully
-  contained in ``duk_features.h.in``.
+* Add config option metadata for genconfig; see existing metadata files in
+  ``config/config-options/``.  Remember to add a useful default value and
+  a good description for the new option.  Ensure config option documentation
+  still builds and your option looks good in the documentation.
 
-Removing feature options
-------------------------
+Removing config options
+-----------------------
 
-* If the feature option has been a part of a stable release, add a check
-  for it in ``duk_feature_sanity.h.in``.  If the option is present, the
-  build should error out with a deprecation notice.  This is preferable to
-  silently removing an option a user may be depending on.
+* If the feature option has been a part of a stable release, the first step
+  is to mark the option deprecated in the option metadata.  An option should
+  be deprecated for one minor release before being removed.
+
+* The next step is to mark the option removed in the option metadata.  The
+  option is never completely removed from the metadata, so that it is possible
+  to autogenerate checks for removed options.  This is useful so that users can
+  be warned that options they're using are no longer available.

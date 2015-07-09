@@ -454,9 +454,9 @@ All Duktape symbols are declared with one of the following prefix macros:
 * ``DUK_LOCAL_DECL`` and ``DUK_LOCAL``: symbol is file local.  This maps to
   ``static`` and currently requires no compiler specific treatment.
 
-As usual, ``duk_features.h.in`` defines these visibility symbols as
-appropriate, taking into account both the compiler and whether Duktape
-is being compiled from a single or multiple files.
+As usual, ``duk_config.h`` defines these visibility symbols as appropriate,
+taking into account both the compiler and whether Duktape is being compiled
+from a single or multiple files.
 
 Missing a visibility macro is not critical on GCC: it will just pollute
 the symbol table.  On MSVC it can make break a DLL build of Duktape.
@@ -481,6 +481,10 @@ The ``DUK_INTERNAL_DECL`` idiom is::
   #if !defined(DUK_SINGLE_FILE)
   DUK_INTERNAL_DECL const char *duk_str_not_object;
   #endif  /* !DUK_SINGLE_FILE */
+
+For this to work in the single file case, ``util/combine_src.py`` must
+ensure that the symbol definition appears before its use.  This is currently
+handled via manual file reordering.
 
 Concrete example
 ----------------
