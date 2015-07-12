@@ -14,19 +14,17 @@
 #include "duk_internal.h"
 
 /*
- *  Other file level defines
+ *  Forward declarations
  */
 
-/* Forward declarations. */
 DUK_LOCAL_DECL duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk_small_uint_t flags, duk_int_t *out_tzoffset);
 DUK_LOCAL_DECL duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_uint_t flags);
-DUK_LOCAL_DECL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
-DUK_LOCAL_DECL duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
 DUK_LOCAL_DECL void duk__twodigit_year_fixup(duk_context *ctx, duk_idx_t idx_val);
-DUK_LOCAL_DECL duk_bool_t duk__is_leap_year(duk_int_t year);
-DUK_LOCAL_DECL duk_bool_t duk__timeval_in_valid_range(duk_double_t x);
-DUK_LOCAL_DECL duk_bool_t duk__timeval_in_leeway_range(duk_double_t x);
-DUK_LOCAL_DECL duk_bool_t duk__year_in_valid_range(duk_double_t year);
+DUK_LOCAL_DECL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_t *dparts, duk_small_uint_t flags);
+
+/*
+ *  Other file level defines
+ */
 
 /* Debug macro to print all parts and dparts (used manually because of debug level). */
 #define  DUK__DPRINT_PARTS_AND_DPARTS(parts,dparts)  do { \
@@ -351,7 +349,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const ch
 	/* Use double parts, they tolerate unnormalized time.
 	 *
 	 * Note: DUK_DATE_IDX_WEEKDAY is initialized with a bogus value (DUK__PI_TZHOUR)
-	 * on purpose.  It won't be actually used by duk__get_timeval_from_dparts(),
+	 * on purpose.  It won't be actually used by duk_bi_date_get_timeval_from_dparts(),
 	 * but will make the value initialized just in case, and avoid any
 	 * potential for Valgrind issues.
 	 */
@@ -360,7 +358,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const ch
 		dparts[i] = parts[i];
 	}
 
-	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
+	d = duk_bi_date_get_timeval_from_dparts(dparts, 0 /*flags*/);
 	duk_push_number(ctx, d);
 	return 1;
 }
@@ -442,7 +440,7 @@ DUK_LOCAL duk_uint8_t duk__days_in_month[12] = {
  */
 #define DUK__WEEKDAY_MOD_ADDER  (20000000 * 7)  /* 0x08583b00 */
 
-DUK_LOCAL duk_bool_t duk__is_leap_year(duk_int_t year) {
+DUK_INTERNAL duk_bool_t duk_bi_date_is_leap_year(duk_int_t year) {
 	if ((year % 4) != 0) {
 		return 0;
 	}
@@ -455,15 +453,15 @@ DUK_LOCAL duk_bool_t duk__is_leap_year(duk_int_t year) {
 	return 1;
 }
 
-DUK_LOCAL duk_bool_t duk__timeval_in_valid_range(duk_double_t x) {
+DUK_INTERNAL duk_bool_t duk_bi_date_timeval_in_valid_range(duk_double_t x) {
 	return (x >= -DUK_DATE_MSEC_100M_DAYS && x <= DUK_DATE_MSEC_100M_DAYS);
 }
 
-DUK_LOCAL duk_bool_t duk__timeval_in_leeway_range(duk_double_t x) {
+DUK_INTERNAL duk_bool_t duk_bi_date_timeval_in_leeway_range(duk_double_t x) {
 	return (x >= -DUK_DATE_MSEC_100M_DAYS_LEEWAY && x <= DUK_DATE_MSEC_100M_DAYS_LEEWAY);
 }
 
-DUK_LOCAL duk_bool_t duk__year_in_valid_range(duk_double_t x) {
+DUK_INTERNAL duk_bool_t duk_bi_date_year_in_valid_range(duk_double_t x) {
 	return (x >= DUK_DATE_MIN_ECMA_YEAR && x <= DUK_DATE_MAX_ECMA_YEAR);
 }
 
@@ -472,7 +470,7 @@ DUK_LOCAL duk_double_t duk__timeclip(duk_double_t x) {
 		return DUK_DOUBLE_NAN;
 	}
 
-	if (!duk__timeval_in_valid_range(x)) {
+	if (!duk_bi_date_timeval_in_valid_range(x)) {
 		return DUK_DOUBLE_NAN;
 	}
 
@@ -531,7 +529,7 @@ DUK_LOCAL duk_int_t duk__year_from_day(duk_int_t day, duk_small_int_t *out_day_w
 			DUK_DDD(DUK_DDDPRINT("--> year=%ld, day-within-year=%ld",
 			                     (long) year, (long) *out_day_within_year));
 			DUK_ASSERT(*out_day_within_year >= 0);
-			DUK_ASSERT(*out_day_within_year < (duk__is_leap_year(year) ? 366 : 365));
+			DUK_ASSERT(*out_day_within_year < (duk_bi_date_is_leap_year(year) ? 366 : 365));
 			return year;
 		}
 
@@ -584,12 +582,12 @@ DUK_LOCAL duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_
 	 * This fixes test-bug-setyear-overflow.js.
 	 */
 
-	if (!duk__year_in_valid_range(year)) {
+	if (!duk_bi_date_year_in_valid_range(year)) {
 		DUK_DD(DUK_DDPRINT("year not in ecmascript valid range, avoid integer overflow: %lf", (double) year));
 		return DUK_DOUBLE_NAN;
 	}
 	day_num = duk__day_from_year((duk_int_t) year);
-	is_leap = duk__is_leap_year((duk_int_t) year);
+	is_leap = duk_bi_date_is_leap_year((duk_int_t) year);
 
 	n = (duk_small_int_t) month;
 	for (i = 0; i < n; i++) {
@@ -607,7 +605,7 @@ DUK_LOCAL duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_
  * one, i.e. finite, no fractions.  Possible local time adjustment has already
  * been applied when reading the time value.
  */
-DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
+DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
 	duk_double_t d1, d2;
 	duk_int_t t1, t2;
 	duk_int_t day_since_epoch;
@@ -631,8 +629,8 @@ DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_doubl
 	 * the value.  In other words, although the UTC time is within the
 	 * Ecmascript range, the local part values can be just outside of it.
 	 */
-	DUK_UNREF(duk__timeval_in_leeway_range);
-	DUK_ASSERT(duk__timeval_in_leeway_range(d));
+	DUK_UNREF(duk_bi_date_timeval_in_leeway_range);
+	DUK_ASSERT(duk_bi_date_timeval_in_leeway_range(d));
 
 	/* these computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
@@ -680,7 +678,7 @@ DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_doubl
 
 	year = duk__year_from_day(t2, &day_in_year);
 	day = day_in_year;
-	is_leap = duk__is_leap_year(year);
+	is_leap = duk_bi_date_is_leap_year(year);
 	for (month = 0; month < 12; month++) {
 		dim = duk__days_in_month[month];
 		if (month == 1 && is_leap) {
@@ -752,7 +750,7 @@ DUK_LOCAL void duk__timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_doubl
  * wildly out of range (but may cancel each other and still come out in
  * the valid Date range).
  */
-DUK_LOCAL duk_double_t duk__get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags) {
 #if defined(DUK_USE_PARANOID_DATE_COMPUTATION)
 	/* See comments below on MakeTime why these are volatile. */
 	volatile duk_double_t tmp_time;
@@ -945,7 +943,7 @@ DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_doub
 
 	/* [ ... this ] */
 
-	d = duk__get_timeval_from_dparts(dparts, flags);
+	d = duk_bi_date_get_timeval_from_dparts(dparts, flags);
 	duk_push_number(ctx, d);  /* -> [ ... this timeval_new ] */
 	duk_dup_top(ctx);         /* -> [ ... this timeval_new timeval_new ] */
 	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE);
@@ -1032,7 +1030,7 @@ DUK_LOCAL duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t fla
 	DUK_ASSERT(DUK_ISFINITE(d));
 
 	/* formatters always get one-based month/day-of-month */
-	duk__timeval_to_parts(d, parts, NULL, DUK_DATE_FLAG_ONEBASED);
+	duk_bi_date_timeval_to_parts(d, parts, NULL, DUK_DATE_FLAG_ONEBASED);
 	DUK_ASSERT(parts[DUK_DATE_IDX_MONTH] >= 1 && parts[DUK_DATE_IDX_MONTH] <= 12);
 	DUK_ASSERT(parts[DUK_DATE_IDX_DAY] >= 1 && parts[DUK_DATE_IDX_DAY] <= 31);
 
@@ -1086,7 +1084,7 @@ DUK_LOCAL duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flag
 	}
 	DUK_ASSERT(DUK_ISFINITE(d));
 
-	duk__timeval_to_parts(d, parts, NULL, flags_and_idx);  /* no need to mask idx portion */
+	duk_bi_date_timeval_to_parts(d, parts, NULL, flags_and_idx);  /* no need to mask idx portion */
 
 	/* Setter APIs detect special year numbers (0...99) and apply a +1900
 	 * only in certain cases.  The legacy getYear() getter applies -1900
@@ -1117,7 +1115,7 @@ DUK_LOCAL duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flag
 	DUK_ASSERT(DUK_ISFINITE(d) || DUK_ISNAN(d));
 
 	if (DUK_ISFINITE(d)) {
-		duk__timeval_to_parts(d, parts, dparts, flags_and_maxnargs);
+		duk_bi_date_timeval_to_parts(d, parts, dparts, flags_and_maxnargs);
 	} else {
 		/* NaN timevalue: we need to coerce the arguments, but
 		 * the resulting internal timestamp needs to remain NaN.
@@ -1278,10 +1276,10 @@ DUK_LOCAL void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, 
 DUK_INTERNAL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
 	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
 
-	duk__timeval_to_parts(timeval,
-	                      parts,
-	                      NULL,
-	                      DUK_DATE_FLAG_ONEBASED);
+	duk_bi_date_timeval_to_parts(timeval,
+	                             parts,
+	                             NULL,
+	                             DUK_DATE_FLAG_ONEBASED);
 
 	duk__format_parts_iso8601(parts,
 	                          0 /*tzoffset*/,
@@ -1498,7 +1496,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor_utc(duk_context *ctx) {
 		duk_push_nan(ctx);
 	} else {
 		duk__set_parts_from_args(ctx, dparts, nargs);
-		d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
+		d = duk_bi_date_get_timeval_from_dparts(dparts, 0 /*flags*/);
 		duk_push_number(ctx, d);
 	}
 	return 1;

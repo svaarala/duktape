@@ -235,8 +235,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_IS_HEAP_ALLOCATED(v)       (DUK_TVAL_GET_TAG((v)) >= DUK_TAG_STRING)
 
 #if defined(DUK_USE_FASTINT)
-/* Inlining is only effective in a single file build. */
-DUK_INTERNAL_DECL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_packed(duk_tval *tv);
+DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_packed(duk_tval *tv);
 #endif
 
 #else  /* DUK_USE_PACKED_TVAL */
@@ -453,11 +452,10 @@ struct duk_tval_struct {
 #define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t >= DUK_TAG_STRING)
 
 #if defined(DUK_USE_FASTINT)
-/* Inlining is only effective in a single file build. */
 #if 0
-DUK_INTERNAL_DECL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked(duk_tval *tv);
+DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_unpacked(duk_tval *tv);
 #endif
-DUK_INTERNAL_DECL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv);
+DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv);
 #endif
 
 #endif  /* DUK_USE_PACKED_TVAL */

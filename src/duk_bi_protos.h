@@ -81,7 +81,13 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_get_timezone_offset(duk_contex
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_set_shared(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx);
 /* Helpers exposed for internal use */
+DUK_INTERNAL_DECL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_is_leap_year(duk_int_t year);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_valid_range(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_year_in_valid_range(duk_double_t year);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_leeway_range(duk_double_t x);
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx);

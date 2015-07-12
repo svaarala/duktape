@@ -63,7 +63,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	 * a +/- 24h leeway in this range check to avoid a test262 corner
 	 * case documented in test-bug-date-timeval-edges.js.
 	 */
-	if (!duk__timeval_in_leeway_range(d)) {
+	if (!duk_bi_date_timeval_in_leeway_range(d)) {
 		DUK_DD(DUK_DDPRINT("timeval not within valid range, skip tzoffset computation to avoid integer overflows"));
 		return 0;
 	}
@@ -118,10 +118,10 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	 *    https://bugzilla.mozilla.org/show_bug.cgi?id=351066
 	 */
 
-	duk__timeval_to_parts(d, parts, dparts, DUK_DATE_FLAG_EQUIVYEAR /*flags*/);
+	duk_bi_date_timeval_to_parts(d, parts, dparts, DUK_DATE_FLAG_EQUIVYEAR /*flags*/);
 	DUK_ASSERT(parts[DUK_DATE_IDX_YEAR] >= 1970 && parts[DUK_DATE_IDX_YEAR] <= 2038);
 
-	d = duk__get_timeval_from_dparts(dparts, 0 /*flags*/);
+	d = duk_bi_date_get_timeval_from_dparts(dparts, 0 /*flags*/);
 	DUK_ASSERT(d >= 0 && d < 2147483648.0 * 1000.0);  /* unsigned 31-bit range */
 	t = (time_t) (d / 1000.0);
 	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %ld", (double) d, (long) t));
