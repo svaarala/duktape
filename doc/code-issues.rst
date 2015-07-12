@@ -378,6 +378,26 @@ The argument to these macros must be an integer::
       /* ... */
   }
 
+Inlining control
+----------------
+
+For the vast majority of functions it's unnecessary to force a specific
+inlining behavior (which is compiler specific).  There are a few inlining
+control macros that can be applied when necessary for performance or code
+size.
+
+Inline control macros are applied to function definition, not declaration::
+
+    /* Declaration */
+    DUK_INTERNAL_DECL duk_foo(...);
+
+    /* Definition */
+    DUK_INTERNAL DUK_ALWAYS_INLINE duk_foo(...) {
+        ...
+    }
+
+Applying inline control in the declaration causes issues with e.g. gcc.
+
 C++ compatibility
 -----------------
 
