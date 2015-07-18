@@ -57,6 +57,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Bruce E. Pascoe (https://github.com/fatcerberus)
 * https://github.com/Kelledin
 * https://github.com/sstruchtrup
+* Michael Drake (https://github.com/tlsa)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
