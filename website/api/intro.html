@@ -62,7 +62,7 @@ for more discussion.</p>
 #include "duktape.h"
 
 int main(int argc, char *argv[]) {
-    duk_context *ctx = duk_create_heap_default(ctx);
+    duk_context *ctx = duk_create_heap_default();
     if (ctx) {
         duk_eval_string(ctx, "print('Hello world from Javascript!');");
         duk_destroy_heap(ctx);

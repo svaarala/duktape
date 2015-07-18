@@ -270,7 +270,7 @@ of CommonJS module loading) will then simply:</p>
 int main(int argc, char *argv[]) {
     duk_context *ctx;
 
-    ctx = duk_create_heap_default(ctx);
+    ctx = duk_create_heap_default();
     if (!ctx) {
         /* ... */
     }
