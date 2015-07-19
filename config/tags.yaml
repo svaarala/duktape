@@ -1,0 +1,63 @@
+# Properties for each tag:
+#
+# - title: title to use in header files
+#
+
+ecmascript:
+  title: Ecmascript feature options
+
+ecmascript6:
+  title: Ecmascript Edition 6 (ES6) feature options
+
+debugger:
+  title: Debugger options
+
+debug:
+  title: Debug options
+
+execution:
+  title: Execution options
+
+sandbox:
+  title: Sandboxing options
+
+performance:
+  title: Performance options
+
+portability:
+  title: Platform and portability options
+
+memory:
+  title: Memory management options
+
+lowmemory:
+  title: Low memory options
+
+gc:
+  title: Garbage collection options
+
+misc:
+  title: Miscellaneous options
+
+io:
+  title: I/O options
+
+development:
+  title: Developer-only options
+  description: >
+    Developer options which are not intended for end users and are not
+    part of semantic versioning guarantees (e.g. torture options).
+
+legacy:
+  title: Backwards compatibility options
+  description: >
+    Options for providing backwards compatible behavior.
+
+date:
+  title: Date handling options
+
+experimental:
+  title: Experimental options
+
+api:
+  title: API options

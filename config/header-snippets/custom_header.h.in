@@ -1,0 +1,11 @@
+/*
+ *  Alternative customization header
+ *
+ *  If you want to modify the final DUK_USE_xxx flags directly (without
+ *  using the available DUK_OPT_xxx flags), define DUK_OPT_HAVE_CUSTOM_H
+ *  and tweak the final flags there.
+ */
+
+#if defined(DUK_OPT_HAVE_CUSTOM_H)
+#include "duk_custom.h"
+#endif

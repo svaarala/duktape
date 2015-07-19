@@ -1,0 +1,7 @@
+define: DUK_USE_BROWSER_LIKE
+introduced: 1.0.0
+default: true
+tags:
+  - ecmascript
+description: >
+  Provide browser-like bindings: currently print() and alert().

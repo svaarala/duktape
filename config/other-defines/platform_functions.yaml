@@ -1,0 +1,73 @@
+# Math replacements
+- define: DUK_FPCLASSIFY
+- define: DUK_SIGNBIT
+- define: DUK_ISFINITE
+- define: DUK_ISNAN
+- define: DUK_ISINF
+- define: DUK_FABS
+- define: DUK_FMIN
+- define: DUK_FMAX
+- define: DUK_FLOOR
+- define: DUK_CEIL
+- define: DUK_FMOD
+- define: DUK_POW
+- define: DUK_ACOS
+- define: DUK_ASIN
+- define: DUK_ATAN
+- define: DUK_ATAN2
+- define: DUK_SIN
+- define: DUK_COS
+- define: DUK_TAN
+- define: DUK_EXP
+- define: DUK_LOG
+- define: DUK_SQRT
+
+# Memory allocation
+- define: DUK_ANSI_MALLOC
+- define: DUK_ANSI_REALLOC
+- define: DUK_ANSI_CALLOC
+- define: DUK_ANSI_FREE
+
+# Memory manipulation
+- define: DUK_MEMCPY
+- define: DUK_MEMMOVE
+- define: DUK_MEMCMP
+- define: DUK_MEMSET
+- define: DUK_MEMZERO
+
+# String manipulation
+- define: DUK_STRLEN
+- define: DUK_STRCMP
+- define: DUK_STRNCMP
+
+# String printing and parsing
+- define: DUK_PRINTF
+- define: DUK_FPRINTF
+- define: DUK_SPRINTF
+- define: DUK_SNPRINTF
+- define: DUK_VSNPRINT
+- define: DUK_SSCANF
+- define: DUK_VSSCANF
+
+# File I/O
+- define: DUK_FOPEN
+- define: DUK_FCLOSE
+- define: DUK_FREAD
+- define: DUK_FWRITE
+- define: DUK_FSEEK
+- define: DUK_FTELL
+- define: DUK_FFLUSH
+- define: DUK_FPUTC
+
+# I/O streams
+- define: DUK_STDOUT
+- define: DUK_STDERR
+- define: DUK_STDIN
+
+# Abort and exit
+- define: DUK_ABORT
+- define: DUK_EXIT
+
+# FIXME: these should really be DUK_USE_SETJMP(), DUK_USE_LONGJMP()
+- define: DUK_SETJMP
+- define: DUK_LONGJMP

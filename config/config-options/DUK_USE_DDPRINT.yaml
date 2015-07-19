@@ -1,0 +1,7 @@
+define: DUK_USE_DDPRINT
+introduced: 1.0.0
+default: false
+tags:
+  - debug
+description: >
+  Enable more debug printouts.

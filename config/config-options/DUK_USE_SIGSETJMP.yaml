@@ -1,0 +1,11 @@
+define: DUK_USE_SIGSETJMP
+introduced: 1.1.0
+default: false
+tags:
+  - portability
+description: >
+  Use sigsetjmp/siglongjmp with savesigs == 0 for long control
+  transfers (i.e. signal mask not saved/restored).  See comments in
+  DUK_USE_SETJMP.
+
+# FIXME: to be removed, DUK_SETJMP() is used instead?
