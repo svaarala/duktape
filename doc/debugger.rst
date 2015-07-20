@@ -1504,7 +1504,7 @@ GetLocals request (0x1d)
 Format::
 
     REQ <int: 0x1d> EOM
-    REP [ <str: varName> <str: varValue> ]* EOM
+    REP [ <str: varName> <tval: varValue> ]* EOM
 
 Example::
 
@@ -1512,6 +1512,10 @@ Example::
     REP "x" "1" "y" "3.1415" "foo" "bar" EOM
 
 List local variable names from current function (the internal ``_Varmap``).
+
+The result includes only local variables declared with ``var`` and locally
+declared functions.  Variables outside the current function scope, including
+outer functions and global variables, are not included.
 
 .. note:: The local variable list doesn't currently include dynamically
    declared variables introduced by e.g. eval(), or variables with a
