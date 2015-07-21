@@ -720,12 +720,16 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->strtable = (duk_hstring **) NULL;
 #endif
 #endif
+#if defined(DUK_USE_HEAPPTR16)
+/* res->strs16[] is zeroed and zero decodes to NULL, so no NULL inits. */
+#else
 	{
 		duk_small_uint_t i;
 	        for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 			res->strs[i] = NULL;
 	        }
 	}
+#endif
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	res->dbg_read_cb = NULL;
 	res->dbg_write_cb = NULL;

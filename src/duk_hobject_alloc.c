@@ -78,7 +78,7 @@ DUK_INTERNAL duk_hcompiledfunction *duk_hcompiledfunction_alloc(duk_heap *heap, 
 	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
-#ifdef DUK_HEAPPTR16
+#ifdef DUK_USE_HEAPPTR16
 	/* NULL pointer is required to encode to zero, so memset is enough. */
 #else
 	res->data = NULL;
@@ -137,7 +137,11 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_f
 	res->catchstack = NULL;
 	res->resumer = NULL;
 	res->compile_ctx = NULL,
+#ifdef DUK_USE_HEAPPTR16
+	res->strs16 = NULL;
+#else
 	res->strs = NULL;
+#endif
 	{
 		int i;
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
