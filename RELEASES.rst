@@ -987,6 +987,8 @@ Planned
 * Increase try-catch register limit (from 511 to 262143) to fix try-catch
   out-of-register issues for most code (GH-145)
 
+* Use deep C stack by default also for OSX/iPhone (GH-226)
+
 * Fix bytecode execution timeout regression which caused timeouts to fail
   after the first execution timeout had been triggered (GH-212)
 
