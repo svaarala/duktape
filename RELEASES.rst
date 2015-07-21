@@ -995,6 +995,8 @@ Planned
 * Fix compile error from array fast path when using low memory options
   (GH-174)
 
+* Fix a few pointer compression issues (DUK_USE_HEAPPTR16) on 64-bit platforms
+
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 
 * Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
