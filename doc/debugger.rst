@@ -59,7 +59,8 @@ To integrate debugger support into your target, you need to:
 * **Check your feature options**: define ``DUK_OPT_DEBUGGER_SUPPORT`` and
   ``DUK_OPT_INTERRUPT_COUNTER`` to enable debugger support in Duktape.
   Also consider other debugging related feature options, like forwarding
-  ``print()``/``alert()`` to the debug client.
+  built-in ``print()``/``alert()`` calls (``DUK_OPT_DEBUGGER_FWD_PRINTALERT``)
+  and logging (``DUK_OPT_DEBUGGER_FWD_LOGGING``) to the debug client.
 
 * **Implement a concrete stream transport mechanism**: needed for both the
   target device and the Duktape debugger.  The best transport depends on the
