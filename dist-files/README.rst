@@ -52,10 +52,13 @@ To build an example command line tool, use the following::
 
 This distributable contains:
 
-* ``src/``: main Duktape library in a "single file" format (duktape.c and
-  duktape.h)
+* ``src/``: main Duktape library in a "single file" format (duktape.c,
+  duktape.h, and duk_config.h).
 
 * ``src-separate/``: main Duktape library in multiple files format.
+
+* ``config/``: genconfig utility for creating duk_config.h configuration
+  files for non-mainline platforms, and some prebuilt config headers.
 
 * ``examples/``: further examples for using Duktape.  Although Duktape
   itself is widely portable, some of the examples are Linux only.

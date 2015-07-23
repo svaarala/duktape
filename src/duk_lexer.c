@@ -696,7 +696,7 @@ DUK_LOCAL duk_codepoint_t duk__decode_uniesc_from_window(duk_lexer_ctx *lex_ctx,
  *      insertion.
  */
 
-DUK_LOCAL
+DUK_INTERNAL
 void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
                                       duk_bool_t strict_mode,

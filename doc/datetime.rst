@@ -4,8 +4,13 @@ Date and time handling
 
 This document describes the Duktape ``Date`` built-in implementation.
 
-Overview
-========
+Date/time handling is a major portability concern.  This document describes
+how to implement an external Date provider and configure Duktape to use it
+through the ``duk_config.h`` header.  An external Date provider allows Duktape
+to be compiled on exotic platforms without change to Duktape internals.
+
+Overview of Ecmascript date/time concepts
+=========================================
 
 Ecmascript time value
 ---------------------
@@ -71,6 +76,60 @@ To simplify, the parsing/formatting requirements are:
   technically required if milliseconds is zero).  This is the platform neutral
   string format which is guaranteed to work even across implementations.
 
+External Date providers
+=======================
+
+External date provider vs. direct support
+-----------------------------------------
+
+Duktape provides built-in support for Unix/Windows date/time APIs and
+should work out-of-the-box on these common platforms.  On more exotic
+platforms you may need to either:
+
+a. Implement an external "Date provider" and configure Duktape to use
+   it through ``duk_config.h``.  You don't need to modify Duktape source.
+
+b. Modify Duktape internals to support the new platform directly, which
+   requires changes to Duktape source/headers.
+
+Using an external Date provider is a good default to start with.  If the
+target platform might interest other users, you can contribute both an
+external Date provider (it can be packaged into Duktape examples/ directory)
+and Duktape changes to support the target directly.
+
+Implementing an external Date provider
+--------------------------------------
+
+To implement an external Date provider you must use the ``duk_config.h``
+configuration model and provide the following config options:
+
+* ``DUK_USE_DATE_GET_NOW``: mandatory, provides current Ecmascript time.
+
+* ``DUK_USE_DATE_GET_LOCAL_TZOFFSET``: mandatory, provides offset between
+  UTC and local time for a given timestamp.  Can always map to zero, i.e.
+  pretend that local time matches UTC time.
+
+* ``DUK_USE_DATE_PARSE_STRING``: optional, parse a platform specific string
+  into Ecmascript time.
+
+* ``DUK_USE_DATE_FORMAT_STRING``: optional, format Ecmascript time into a
+  platform specific string.
+
+You also need to make sure ``duk_config.h`` won't use any of the Duktape
+built-in Date provider functions:
+
+* Ensure ``DUK_USE_DATE_{NOW,TZO,PRS,FMT}_*`` defines are unset.
+
+There's an example dummy provider in:
+
+* ``examples/dummy-date-provider/``
+
+You can also look into the Unix/Windows Date providers built into Duktape:
+
+* ``src/duk_bi_date_unix.c``
+
+* ``src/duk_bi_date_windows.c``
+
 Platform dependencies
 =====================
 
@@ -102,10 +161,13 @@ The following is thus very nice:
   (DaylightSavingTA(t)).  The Ecmascript conversion semantics, especially
   with respect to handling of daylight savings, must be followed.
 
-Finally, these are nice-to-have:
+Finally, these are nice-to-have to provide support for Date string formats
+other than ISO 8601 (which is always supported):
 
-* Functions to format and parse Date values in a platform dependent manner
-  (in addition to the ISO 8601 format of the specification).
+* A function to format a Date value in a platform dependent manner.
+
+* A function to parse a Date value from a string in a platform dependent
+  manner.
 
 Platform specific formatting and parsing
 ----------------------------------------
@@ -303,8 +365,8 @@ Misc notes
 * The internal time value always exists for a Date instance, and is
   always a number.  The number value is either NaN, or a finite number
   in the valid E5 range, with no millisecond fractions.  The internal
-  component representation uses zero-based day and month, while the
-  Ecmascript uses one-based day and zero-based month.
+  component representation uses zero-based day and month, while Ecmascript
+  API uses one-based day and zero-based month.
 
 * When the internal time value is broken into components, each
   component will be normalized, and will fit into a 32-bit signed
@@ -319,4 +381,3 @@ Misc notes
   set of flags and arguments to keep each getter and setter itself very small.
   This makes them a bit cryptic; see e.g. handling of setters with optional
   parameters.
-

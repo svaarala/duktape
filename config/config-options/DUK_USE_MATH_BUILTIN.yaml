@@ -1,0 +1,12 @@
+define: DUK_USE_MATH_BUILTIN
+introduced: 1.0.0
+default: true
+tags:
+  - ecmascript
+description: >
+  Provide a Math built-in.
+
+  When disabled, Math functions will be stubbed out; this improves portability
+  to some very exotic platforms but is not recommended.
+
+# FIXME: document as experimental / obscure?

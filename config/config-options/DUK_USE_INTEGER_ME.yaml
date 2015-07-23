@@ -1,0 +1,15 @@
+define: DUK_USE_INTEGER_ME
+introduced: 1.0.0
+default: false
+conflicts:
+  - DUK_USE_INTEGER_LE
+  - DUK_USE_INTEGER_BE
+tags:
+  - portability
+description: >
+  Integer memory representation is mixed endian on the target platform.
+
+  This option is unused (and unsupported) because no target platform currently
+  needs this.
+
+# FIXME: remove as unused? mark as unsupported?

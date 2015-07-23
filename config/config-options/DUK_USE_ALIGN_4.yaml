@@ -1,0 +1,7 @@
+define: DUK_USE_ALIGN_4
+introduced: 1.0.0
+default: false
+tags:
+  - portability
+description: >
+  Use 4-byte alignment for 64-bit integers and IEEE doubles.

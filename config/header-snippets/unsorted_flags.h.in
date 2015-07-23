@@ -1,0 +1,713 @@
+/*
+ *  Speed/size and other performance options
+ */
+
+/* Use fast ("inline") refcount operations instead of calling out to helpers
+ * by default.  The difference in binary size is small (~1kB on x64).
+ */
+#define DUK_USE_FAST_REFCOUNT_DEFAULT
+
+/* Assert for valstack space but don't check for it in non-assert build.
+ * Valstack overruns (writing beyond checked space) is memory unsafe and
+ * potentially a segfault.  Produces a smaller and faster binary.
+ * (In practice the speed difference is small with -O3 so default to
+ * safer behavior for now.)
+ */
+#undef DUK_USE_VALSTACK_UNSAFE
+
+/* Catch-all flag which can be used to choose between variant algorithms
+ * where a speed-size tradeoff exists (e.g. lookup tables).  When it really
+ * matters, specific use flags may be appropriate.
+ */
+#define DUK_USE_PREFER_SIZE
+
+/* Use a sliding window for lexer; slightly larger footprint, slightly faster. */
+#define DUK_USE_LEXER_SLIDING_WINDOW
+
+/*
+ *  Tagged type representation (duk_tval)
+ */
+
+#undef DUK_USE_PACKED_TVAL
+#undef DUK_USE_FULL_TVAL
+
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && !defined(DUK_OPT_NO_PACKED_TVAL)
+#define DUK_USE_PACKED_TVAL
+#endif
+
+/* Support for 48-bit signed integer duk_tval with transparent semantics. */
+#undef DUK_USE_FASTINT
+#if defined(DUK_OPT_FASTINT)
+#if !defined(DUK_F_HAVE_64BIT)
+#error DUK_OPT_FASTINT requires 64-bit integer type support at the moment
+#endif
+#define DUK_USE_FASTINT
+#endif
+
+/*
+ *  Memory management options
+ */
+
+#define DUK_USE_REFERENCE_COUNTING
+#define DUK_USE_DOUBLE_LINKED_HEAP
+#define DUK_USE_MARK_AND_SWEEP
+#define DUK_USE_MS_STRINGTABLE_RESIZE
+
+#if defined(DUK_OPT_NO_REFERENCE_COUNTING)
+#undef DUK_USE_REFERENCE_COUNTING
+#undef DUK_USE_DOUBLE_LINKED_HEAP
+/* XXX: undef DUK_USE_MS_STRINGTABLE_RESIZE as it is more expensive
+ * with more frequent mark-and-sweeps?
+ */
+#endif
+
+#if defined(DUK_OPT_NO_MARK_AND_SWEEP)
+#undef DUK_USE_MARK_AND_SWEEP
+#endif
+
+#if defined(DUK_USE_MARK_AND_SWEEP)
+#define DUK_USE_VOLUNTARY_GC
+#if defined(DUK_OPT_NO_VOLUNTARY_GC)
+#undef DUK_USE_VOLUNTARY_GC
+#endif
+#endif
+
+#if !defined(DUK_USE_MARK_AND_SWEEP) && !defined(DUK_USE_REFERENCE_COUNTING)
+#error must have either mark-and-sweep or reference counting enabled
+#endif
+
+#if defined(DUK_OPT_NO_MS_STRINGTABLE_RESIZE)
+#undef DUK_USE_MS_STRINGTABLE_RESIZE
+#endif
+
+#undef DUK_USE_GC_TORTURE
+#if defined(DUK_OPT_GC_TORTURE)
+#define DUK_USE_GC_TORTURE
+#endif
+
+/*
+ *  String table options
+ */
+
+#if defined(DUK_OPT_STRTAB_CHAIN) && defined(DUK_OPT_STRTAB_CHAIN_SIZE)
+/* Low memory algorithm: separate chaining using arrays, fixed size hash */
+#define DUK_USE_STRTAB_CHAIN
+#define DUK_USE_STRTAB_CHAIN_SIZE  DUK_OPT_STRTAB_CHAIN_SIZE
+#else
+/* Default algorithm: open addressing (probing) */
+#define DUK_USE_STRTAB_PROBE
+#endif
+
+/*
+ *  Error handling options
+ */
+
+#define DUK_USE_AUGMENT_ERROR_CREATE
+#define DUK_USE_AUGMENT_ERROR_THROW
+#define DUK_USE_TRACEBACKS
+#define DUK_USE_ERRCREATE
+#define DUK_USE_ERRTHROW
+
+#define DUK_USE_VERBOSE_ERRORS
+
+#if defined(DUK_OPT_NO_AUGMENT_ERRORS)
+#undef DUK_USE_AUGMENT_ERROR_CREATE
+#undef DUK_USE_AUGMENT_ERROR_THROW
+#undef DUK_USE_TRACEBACKS
+#undef DUK_USE_ERRCREATE
+#undef DUK_USE_ERRTHROW
+#elif defined(DUK_OPT_NO_TRACEBACKS)
+#undef DUK_USE_TRACEBACKS
+#endif
+
+#if defined(DUK_OPT_NO_VERBOSE_ERRORS)
+#undef DUK_USE_VERBOSE_ERRORS
+#endif
+
+#if defined(DUK_USE_TRACEBACKS)
+#if defined(DUK_OPT_TRACEBACK_DEPTH)
+#define DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
+#else
+#define DUK_USE_TRACEBACK_DEPTH  10
+#endif
+#endif
+
+/* Include messages in executor internal errors. */
+#define DUK_USE_VERBOSE_EXECUTOR_ERRORS
+
+/*
+ *  Execution and debugger options
+ */
+
+#undef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_OPT_INTERRUPT_COUNTER)
+#define DUK_USE_INTERRUPT_COUNTER
+#endif
+
+#undef DUK_USE_EXEC_TIMEOUT_CHECK
+#if defined(DUK_OPT_EXEC_TIMEOUT_CHECK)
+#define DUK_USE_EXEC_TIMEOUT_CHECK(udata)  DUK_OPT_EXEC_TIMEOUT_CHECK((udata))
+#endif
+
+#undef DUK_USE_DEBUGGER_SUPPORT
+#if defined(DUK_OPT_DEBUGGER_SUPPORT)
+#define DUK_USE_DEBUGGER_SUPPORT
+#endif
+
+#undef DUK_USE_DEBUGGER_FWD_PRINTALERT
+#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_PRINTALERT)
+#define DUK_USE_DEBUGGER_FWD_PRINTALERT
+#endif
+
+#undef DUK_USE_DEBUGGER_FWD_LOGGING
+#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_LOGGING)
+#define DUK_USE_DEBUGGER_FWD_LOGGING
+#endif
+
+/* DumpHeap is optional because it's not always needed and has a relatively
+ * large footprint.
+ */
+#undef DUK_USE_DEBUGGER_DUMPHEAP
+#if defined(DUK_OPT_DEBUGGER_DUMPHEAP)
+#define DUK_USE_DEBUGGER_DUMPHEAP
+#endif
+
+/* Debugger transport read/write torture. */
+#undef DUK_USE_DEBUGGER_TRANSPORT_TORTURE
+#if defined(DUK_OPT_DEBUGGER_TRANSPORT_TORTURE)
+#define DUK_USE_DEBUGGER_TRANSPORT_TORTURE
+#endif
+
+/* For opcodes with indirect indices, check final index against stack size.
+ * This should not be necessary because the compiler is trusted, and we don't
+ * bound check non-indirect indices either.
+ */
+#undef DUK_USE_EXEC_INDIRECT_BOUND_CHECK
+#if defined(DUK_OPT_DEBUG) || defined(DUK_OPT_ASSERTIONS)
+/* Enabled with debug/assertions just so that any issues can be caught. */
+#define DUK_USE_EXEC_INDIRECT_BOUND_CHECK
+#endif
+
+/*
+ *  Debug printing and assertion options
+ */
+
+#undef DUK_USE_DEBUG
+#undef DUK_USE_DPRINT
+#undef DUK_USE_DDPRINT
+#undef DUK_USE_DDDPRINT
+#undef DUK_USE_DPRINT_RDTSC
+#undef DUK_USE_ASSERTIONS
+
+/* Global debug enable.  Compile must be clean on C99 regardless of whether or
+ * not debugging is enabled.  On non-C99 platforms compile should be clean with
+ * debugging disabled but may produce warnings with debugging enabled (related
+ * to debug macro hackery and such).
+ */
+#if defined(DUK_OPT_DEBUG)
+#define DUK_USE_DEBUG
+#endif
+
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DPRINT)
+#define DUK_USE_DPRINT
+#endif
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DDPRINT)
+#define DUK_USE_DDPRINT
+#endif
+#if defined(DUK_OPT_DEBUG) && defined(DUK_OPT_DDDPRINT)
+#define DUK_USE_DDDPRINT
+#endif
+
+#undef DUK_USE_DPRINT_COLORS
+#if defined(DUK_OPT_DPRINT_COLORS)
+#define DUK_USE_DPRINT_COLORS
+#endif
+
+#if defined(DUK_USE_RDTSC) && defined(DUK_OPT_DPRINT_RDTSC)
+#define DUK_USE_DPRINT_RDTSC
+#else
+#undef DUK_USE_DPRINT_RDTSC
+#endif
+
+#if defined(DUK_OPT_ASSERTIONS)
+#define DUK_USE_ASSERTIONS
+#endif
+
+/* The static buffer for debug printing is quite large by default, so there
+ * is an option to shrink it manually for constrained builds.
+ */
+#if defined(DUK_OPT_DEBUG_BUFSIZE)
+#define DUK_USE_DEBUG_BUFSIZE  DUK_OPT_DEBUG_BUFSIZE
+#else
+#define DUK_USE_DEBUG_BUFSIZE  65536L
+#endif
+
+/*
+ *  Ecmascript features / compliance options
+ */
+
+#if defined(DUK_F_BCC)
+/* Math built-in is stubbed out on BCC to allow compiler torture testing. */
+#else
+#define DUK_USE_MATH_BUILTIN
+#endif
+
+#define DUK_USE_STRICT_DECL
+#if defined(DUK_OPT_NO_STRICT_DECL)
+#undef DUK_USE_STRICT_DECL
+#endif
+
+#define DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_OPT_NO_REGEXP_SUPPORT)
+#undef DUK_USE_REGEXP_SUPPORT
+#endif
+
+#undef DUK_USE_STRICT_UTF8_SOURCE
+#if defined(DUK_OPT_STRICT_UTF8_SOURCE)
+#define DUK_USE_STRICT_UTF8_SOURCE
+#endif
+
+#define DUK_USE_OCTAL_SUPPORT
+#if defined(DUK_OPT_NO_OCTAL_SUPPORT)
+#undef DUK_USE_OCTAL_SUPPORT
+#endif
+
+#define DUK_USE_SOURCE_NONBMP
+#if defined(DUK_OPT_NO_SOURCE_NONBMP)
+#undef DUK_USE_SOURCE_NONBMP
+#endif
+
+#define DUK_USE_BROWSER_LIKE
+#if defined(DUK_OPT_NO_BROWSER_LIKE)
+#undef DUK_USE_BROWSER_LIKE
+#endif
+
+/* E5/E5.1 Section B features. */
+#define DUK_USE_SECTION_B
+#if defined(DUK_OPT_NO_SECTION_B)
+#undef DUK_USE_SECTION_B
+#endif
+
+/* Non-standard regexp parsing features. */
+#define DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE
+
+/* Treat function statements (function declarations outside top level of
+ * Program or FunctionBody) same as normal function declarations.  This is
+ * also V8 behavior.  See test-dev-func-decl-outside-top.js.
+ */
+#define DUK_USE_NONSTD_FUNC_STMT
+#if defined(DUK_OPT_NO_NONSTD_FUNC_STMT)
+#undef DUK_USE_NONSTD_FUNC_STMT
+#endif
+
+/* Array.prototype.splice() non-standard but real world compatible behavior
+ * when deleteCount is omitted.
+ */
+#define DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT)
+#undef DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT
+#endif
+
+/* Array.prototype.concat() non-standard but real world compatible behavior
+ * for non-existent trailing elements.
+ */
+#define DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER)
+#undef DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+#endif
+
+/* Array.prototype.map() non-standard but real world compatible behavior
+ * for non-existent trailing elements.
+ */
+#define DUK_USE_NONSTD_ARRAY_MAP_TRAILER
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER)
+#undef DUK_USE_NONSTD_ARRAY_MAP_TRAILER
+#endif
+
+/* Non-standard 'caller' property for function instances, see
+ * test-bi-function-nonstd-caller-prop.js.
+ */
+#undef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY)
+#define DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#endif
+
+/* Non-standard Object.prototype.__proto__ (ES6), see
+ * test-bi-object-proto-__proto__.js.
+ */
+#define DUK_USE_ES6_OBJECT_PROTO_PROPERTY
+#if defined(DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY)
+#undef DUK_USE_ES6_OBJECT_PROTO_PROPERTY
+#endif
+
+/* Non-standard Object.setPrototypeOf (ES6), see
+ * test-bi-object-setprototypeof.js.
+ */
+#define DUK_USE_ES6_OBJECT_SETPROTOTYPEOF
+#if defined(DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF)
+#undef DUK_USE_ES6_OBJECT_SETPROTOTYPEOF
+#endif
+
+/* ES6 Proxy object (subset for now). */
+#define DUK_USE_ES6_PROXY
+#if defined(DUK_OPT_NO_ES6_PROXY)
+#undef DUK_USE_ES6_PROXY
+#endif
+
+/* Record pc-to-line information. */
+#define DUK_USE_PC2LINE
+#if defined(DUK_OPT_NO_PC2LINE)
+#undef DUK_USE_PC2LINE
+#endif
+
+/* Non-standard function 'source' property. */
+#undef DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
+#if defined(DUK_OPT_NONSTD_FUNC_SOURCE_PROPERTY)
+#define DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
+#endif
+
+/* CommonJS modules */
+#define DUK_USE_COMMONJS_MODULES
+#if defined(DUK_OPT_NO_COMMONJS_MODULES)
+#undef DUK_USE_COMMONJS_MODULES
+#endif
+
+/* Additional key argument to setter/getter calls when triggered by property
+ * accesses.
+ */
+
+#define DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+#define DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+#if defined(DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT)
+#undef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+#undef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+#endif
+
+/* JSON escaping of U+2028 and U+2029.
+ */
+
+#define DUK_USE_NONSTD_JSON_ESC_U2028_U2029
+#if defined(DUK_OPT_NO_NONSTD_JSON_ESC_U2028_U2029)
+#undef DUK_USE_NONSTD_JSON_ESC_U2028_U2029
+#endif
+
+/* Allow 32-bit codepoints in String.fromCharCode. */
+#define DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT
+#if defined(DUK_OPT_NO_NONSTD_STRING_FROMCHARCODE_32BIT)
+#undef DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT
+#endif
+
+/* Non-standard array fast path write behavior: when writing to numeric
+ * indexes of an Array instance, assume Array.prototype doesn't have
+ * conflicting properties (e.g. a non-writable property "7").
+ */
+#define DUK_USE_NONSTD_ARRAY_WRITE
+#if defined(DUK_OPT_NO_NONSTD_ARRAY_WRITE)
+#undef DUK_USE_NONSTD_ARRAY_WRITE
+#endif
+
+/*
+ *  Optional C API options
+ */
+
+#define DUK_USE_BYTECODE_DUMP_SUPPORT
+#if defined(DUK_OPT_NO_BYTECODE_DUMP_SUPPORT)
+#undef DUK_USE_BYTECODE_DUMP_SUPPORT
+#endif
+
+/*
+ *  Tailcalls
+ */
+
+/* Tailcalls are enabled by default.  The non-standard function 'caller'
+ * property feature conflicts with tailcalls quite severely so tailcalls
+ * are disabled if the 'caller' property is enabled.
+ */
+#define DUK_USE_TAILCALL
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
+#undef DUK_USE_TAILCALL
+#endif
+
+/*
+ *  Deep vs. shallow stack.
+ *
+ *  Some embedded platforms have very shallow stack (e.g. 64kB); default to
+ *  a shallow stack on unknown platforms or known embedded platforms.
+ */
+
+#if defined(DUK_F_LINUX) || defined(DUK_F_BSD) || defined(DUK_F_WINDOWS) || \
+    defined(DUK_OPT_DEEP_C_STACK)
+#define DUK_USE_DEEP_C_STACK
+#else
+#undef DUK_USE_DEEP_C_STACK
+#endif
+
+/*
+ *  Ecmascript compiler
+ */
+
+/* Ensure final bytecode never exceeds a certain byte size and never uses
+ * line numbers above a certain limit.  This ensures that there is no need
+ * to deal with unbounded ranges in e.g. pc2line data structures.  For now,
+ * limits are set so that signed 32-bit values can represent line number
+ * and byte offset with room to spare.
+ */
+#define DUK_USE_ESBC_LIMITS
+#define DUK_USE_ESBC_MAX_LINENUMBER  0x7fff0000L
+#define DUK_USE_ESBC_MAX_BYTES       0x7fff0000L
+
+#undef DUK_USE_SHUFFLE_TORTURE
+#if defined(DUK_OPT_SHUFFLE_TORTURE)
+#define DUK_USE_SHUFFLE_TORTURE
+#endif
+
+/*
+ *  User panic handler, panic exit behavior for default panic handler
+ */
+
+#undef DUK_USE_PANIC_HANDLER
+#if defined(DUK_OPT_PANIC_HANDLER)
+#define DUK_USE_PANIC_HANDLER(code,msg) DUK_OPT_PANIC_HANDLER((code),(msg))
+#endif
+
+#undef DUK_USE_PANIC_ABORT
+#undef DUK_USE_PANIC_EXIT
+#undef DUK_USE_PANIC_SEGFAULT
+
+#if defined(DUK_OPT_SEGFAULT_ON_PANIC)
+#define DUK_USE_PANIC_SEGFAULT
+#else
+#define DUK_USE_PANIC_ABORT
+#endif
+
+/*
+ *  File I/O support.  This is now used in a few API calls to e.g. push
+ *  a string from file contents or eval a file.  For portability it must
+ *  be possible to disable I/O altogether.
+ */
+
+#undef DUK_USE_FILE_IO
+#if !defined(DUK_OPT_NO_FILE_IO)
+#define DUK_USE_FILE_IO
+#endif
+
+/*
+ *  Optional run-time self tests executed when a heap is created.  Some
+ *  platform/compiler issues cannot be determined at compile time.  One
+ *  particular example is the bug described in misc/clang_aliasing.c.
+ */
+
+#undef DUK_USE_SELF_TESTS
+#if defined(DUK_OPT_SELF_TESTS)
+#define DUK_USE_SELF_TESTS
+#endif
+
+/* Double aliasing testcase fails when Emscripten-generated code is run
+ * on Firefox.  This is not fatal because it only affects packed duk_tval
+ * which we avoid with Emscripten.
+ */
+#undef DUK_USE_NO_DOUBLE_ALIASING_SELFTEST
+#if defined(DUK_F_EMSCRIPTEN)
+#define DUK_USE_NO_DOUBLE_ALIASING_SELFTEST
+#endif
+
+/*
+ *  Codecs
+ */
+
+#define DUK_USE_JX
+#if defined(DUK_OPT_NO_JX)
+#undef DUK_USE_JX
+#endif
+
+#define DUK_USE_JC
+#if defined(DUK_OPT_NO_JC)
+#undef DUK_USE_JC
+#endif
+
+/*
+ *  InitJS code
+ */
+
+/* Always use the built-in InitJS code for now. */
+#define DUK_USE_BUILTIN_INITJS
+
+/* User provided InitJS. */
+#undef DUK_USE_USER_INITJS
+#if defined(DUK_OPT_USER_INITJS)
+#define DUK_USE_USER_INITJS (DUK_OPT_USER_INITJS)
+#endif
+
+/*
+ *  External string data support
+ *
+ *  Allow duk_hstrings to store data also behind an external pointer (see
+ *  duk_hstring_external).  This increases code size slightly but is useful
+ *  in low memory environments where memory is more limited than flash.
+ */
+
+#undef DUK_USE_HSTRING_EXTDATA
+#if defined(DUK_OPT_EXTERNAL_STRINGS)
+#define DUK_USE_HSTRING_EXTDATA
+#endif
+
+#undef DUK_USE_EXTSTR_INTERN_CHECK
+#if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_INTERN_CHECK)
+#define DUK_USE_EXTSTR_INTERN_CHECK(udata,ptr,len) DUK_OPT_EXTSTR_INTERN_CHECK((udata), (ptr), (len))
+#endif
+
+#undef DUK_USE_EXTSTR_FREE
+#if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_FREE)
+#define DUK_USE_EXTSTR_FREE(udata,ptr) DUK_OPT_EXTSTR_FREE((udata), (ptr))
+#endif
+
+/*
+ *  Lightweight functions
+ */
+
+/* Force built-ins to use lightfunc function pointers when possible.  This
+ * makes the built-in functions non-compliant with respect to their property
+ * values and such, but is very useful in low memory environments (can save
+ * around 14kB of initial RAM footprint).
+ */
+#undef DUK_USE_LIGHTFUNC_BUILTINS
+#if defined(DUK_OPT_LIGHTFUNC_BUILTINS)
+#define DUK_USE_LIGHTFUNC_BUILTINS
+#endif
+
+/*
+ *  Pointer compression and 16-bit header fields for low memory environments
+ */
+
+#undef DUK_USE_HEAPPTR16
+#undef DUK_USE_HEAPPTR_ENC16
+#undef DUK_USE_HEAPPTR_DEC16
+#if defined(DUK_OPT_HEAPPTR16) && defined(DUK_OPT_HEAPPTR_ENC16) && defined(DUK_OPT_HEAPPTR_DEC16)
+#define DUK_USE_HEAPPTR16
+#define DUK_USE_HEAPPTR_ENC16(udata,ptr) DUK_OPT_HEAPPTR_ENC16((udata),(ptr))
+#define DUK_USE_HEAPPTR_DEC16(udata,ptr) DUK_OPT_HEAPPTR_DEC16((udata),(ptr))
+#endif
+
+#undef DUK_USE_DATAPTR16
+#undef DUK_USE_DATAPTR_ENC16
+#undef DUK_USE_DATAPTR_DEC16
+#if defined(DUK_OPT_DATAPTR16) && defined(DUK_OPT_DATAPTR_ENC16) && defined(DUK_OPT_DATAPTR_DEC16)
+#define DUK_USE_DATAPTR16
+#define DUK_USE_DATAPTR_ENC16(udata,ptr) DUK_OPT_DATAPTR_ENC16((udata),(ptr))
+#define DUK_USE_DATAPTR_DEC16(udata,ptr) DUK_OPT_DATAPTR_DEC16((udata),(ptr))
+#endif
+
+#undef DUK_USE_FUNCPTR16
+#undef DUK_USE_FUNCPTR_ENC16
+#undef DUK_USE_FUNCPTR_DEC16
+#if defined(DUK_OPT_FUNCPTR16) && defined(DUK_OPT_FUNCPTR_ENC16) && defined(DUK_OPT_FUNCPTR_DEC16)
+#define DUK_USE_FUNCPTR16
+#define DUK_USE_FUNCPTR_ENC16(udata,ptr) DUK_OPT_FUNCPTR_ENC16((udata),(ptr))
+#define DUK_USE_FUNCPTR_DEC16(udata,ptr) DUK_OPT_FUNCPTR_DEC16((udata),(ptr))
+#endif
+
+#undef DUK_USE_REFCOUNT16
+#if defined(DUK_OPT_REFCOUNT16)
+#define DUK_USE_REFCOUNT16
+#endif
+
+#undef DUK_USE_STRHASH16
+#if defined(DUK_OPT_STRHASH16)
+#define DUK_USE_STRHASH16
+#endif
+
+#undef DUK_USE_STRLEN16
+#if defined(DUK_OPT_STRLEN16)
+#define DUK_USE_STRLEN16
+#endif
+
+#undef DUK_USE_BUFLEN16
+#if defined(DUK_OPT_BUFLEN16)
+#define DUK_USE_BUFLEN16
+#endif
+
+#undef DUK_USE_OBJSIZES16
+#if defined(DUK_OPT_OBJSIZES16)
+#define DUK_USE_OBJSIZES16
+#endif
+
+/* For now, hash part is dropped if and only if 16-bit object fields are used. */
+#define DUK_USE_HOBJECT_HASH_PART
+#if defined(DUK_USE_OBJSIZES16)
+#undef DUK_USE_HOBJECT_HASH_PART
+#endif
+
+/*
+ *  Miscellaneous
+ */
+
+/* Convenience define: 32-bit pointers.  32-bit platforms are an important
+ * footprint optimization target, and this define allows e.g. struct sizes
+ * to be organized for compactness.
+ */
+#undef DUK_USE_32BIT_PTRS
+#if defined(DUK_UINTPTR_MAX) && !defined(DUK_UINTPTR_MAX_COMPUTED)
+#if DUK_UINTPTR_MAX <= 0xffffffffUL
+#define DUK_USE_32BIT_PTRS
+#endif
+#endif
+
+#define DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
+#undef DUK_USE_EXPLICIT_NULL_INIT
+
+#if !defined(DUK_USE_PACKED_TVAL)
+#define DUK_USE_EXPLICIT_NULL_INIT
+#endif
+
+#define DUK_USE_ZERO_BUFFER_DATA
+#if defined(DUK_OPT_NO_ZERO_BUFFER_DATA)
+#undef DUK_USE_ZERO_BUFFER_DATA
+#endif
+
+#undef DUK_USE_VARIADIC_MACROS
+#if defined(DUK_F_C99) || (defined(DUK_F_CPP11) && defined(__GNUC__))
+#define DUK_USE_VARIADIC_MACROS
+#endif
+#if defined(_MSC_VER) && !defined(DUK_USE_VARIADIC_MACROS)
+#if (_MSC_VER >= 1400)
+/* VS2005+ should have variadic macros even when they're not C99. */
+#define DUK_USE_VARIADIC_MACROS
+#endif
+#endif
+
+/*
+ *  Variable size array initialization.
+ *
+ *  Variable size array at the end of a structure is nonportable.
+ *  There are three alternatives:
+ *
+ *    1) C99 (flexible array member): char buf[]
+ *    2) Compiler specific (e.g. GCC): char buf[0]
+ *    3) Portable but wastes memory / complicates allocation: char buf[1]
+ */
+
+/* XXX: Currently unused, only hbuffer.h needed this at some point. */
+#undef DUK_USE_FLEX_C99
+#undef DUK_USE_FLEX_ZEROSIZE
+#undef DUK_USE_FLEX_ONESIZE
+#if defined(DUK_F_C99)
+#define DUK_USE_FLEX_C99
+#elif defined(__GNUC__)
+#define DUK_USE_FLEX_ZEROSIZE
+#else
+#define DUK_USE_FLEX_ONESIZE
+#endif
+
+/*
+ *  GCC pragmas
+ */
+
+/* XXX: GCC pragma inside a function fails in some earlier GCC versions (e.g. gcc 4.5).
+ * This is very approximate but allows clean builds for development right now.
+ */
+/* http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)
+#define DUK_USE_GCC_PRAGMAS
+#else
+#undef DUK_USE_GCC_PRAGMAS
+#endif

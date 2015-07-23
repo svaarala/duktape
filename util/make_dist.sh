@@ -31,6 +31,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
+ENTRYPWD=`pwd`
 DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
@@ -56,6 +57,7 @@ rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
 mkdir $DIST/src
+mkdir $DIST/config
 mkdir $DIST/extras
 mkdir $DIST/polyfills
 #mkdir $DIST/doc
@@ -76,6 +78,7 @@ mkdir $DIST/examples/alloc-torture
 mkdir $DIST/examples/alloc-hybrid
 mkdir $DIST/examples/debug-trans-socket
 mkdir $DIST/examples/codepage-conv
+mkdir $DIST/examples/dummy-date-provider
 
 # Copy most files directly
 
@@ -98,6 +101,8 @@ for i in \
 	duk_bi_boolean.c	\
 	duk_bi_buffer.c		\
 	duk_bi_date.c		\
+	duk_bi_date_unix.c	\
+	duk_bi_date_windows.c	\
 	duk_bi_duktape.c	\
 	duk_bi_error.c		\
 	duk_bi_function.c	\
@@ -198,6 +203,21 @@ for i in \
 	duk_replacements.h      \
 	; do
 	cp src/$i $DISTSRCSEP/
+done
+
+cd $ENTRYPWD/config
+tar cfz $DIST/config/genconfig_metadata.tar.gz \
+	tags.yaml \
+	feature-options \
+	config-options \
+	header-snippets \
+	other-defines
+cd $ENTRYPWD
+for i in \
+	README.rst \
+	genconfig.py \
+	; do
+	cp config/$i $DIST/config/
 done
 
 for i in \
@@ -349,6 +369,13 @@ for i in \
 	cp examples/codepage-conv/$i $DIST/examples/codepage-conv/
 done
 
+for i in \
+	README.rst \
+	dummy_date_provider.c \
+	; do
+	cp examples/dummy-date-provider/$i $DIST/examples/dummy-date-provider/
+done
+
 cp extras/README.rst $DIST/extras/
 # XXX: copy extras
 
@@ -395,6 +422,23 @@ echo '/*' > $DIST/AUTHORS.rst.tmp
 cat AUTHORS.rst | python util/make_ascii.py | sed -e 's/^/ \*  /' >> $DIST/AUTHORS.rst.tmp
 echo ' */' >> $DIST/AUTHORS.rst.tmp
 
+# Build duk_config.h from snippets using genconfig.
+python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
+	generate-autodetect-header
+cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
+cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
+cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
+
+# Generate a few barebones config examples
+python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
+	--output $DIST/config/duk_config.h-linux-gcc-x64 \
+	--platform linux --compiler gcc --architecture x64 \
+	generate-barebones-header
+python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
+	--output $DIST/config/duk_config.h-linux-gcc-x86 \
+	--platform linux --compiler gcc --architecture x86 \
+	generate-barebones-header
+
 # Build duktape.h from parts, with some git-related replacements.
 # The only difference between single and separate file duktape.h
 # is the internal DUK_SINGLE_FILE define.
@@ -415,16 +459,8 @@ cat src/duktape.h.in | sed -e '
     r dist/AUTHORS.rst.tmp
     d
 }
-/^@DUK_FEATURES_H@$/ {
-    r src/duk_features.h.in
-    d
-}
 /^@DUK_API_PUBLIC_H@$/ {
     r src/duk_api_public.h.in
-    d
-}
-/^@DUK_FEATURES_SANITY_H@$/ {
-    r src/duk_features_sanity.h.in
     d
 }
 /^@DUK_DBLUNION_H@$/ {
@@ -737,13 +773,13 @@ done
 rm $DISTSRCSEP/caseconv.txt
 
 # Create a combined source file, duktape.c, into a separate combined source
-# directory.  This allows user to just include "duktape.c" and "duktape.h"
-# into a project and maximizes inlining and size optimization opportunities
-# even with older compilers.  Because some projects include these files into
-# their repository, the result should be deterministic and diffable.  Also,
-# it must retain __FILE__/__LINE__ behavior through preprocessor directives.
-# Whitespace and comments can be stripped as long as the other requirements
-# are met.
+# directory.  This allows user to just include "duktape.c", "duktape.h", and
+# "duk_config.h" into a project and maximizes inlining and size optimization
+# opportunities even with older compilers.  Because some projects include
+# these files into their repository, the result should be deterministic and
+# diffable.  Also, it must retain __FILE__/__LINE__ behavior through
+# preprocessor directives.  Whitespace and comments can be stripped as long
+# as the other requirements are met.
 
 python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" \

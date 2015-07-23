@@ -93,7 +93,7 @@ DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%ld (%s):%s %s%s\n",
 	            (const char *) duk__get_term_1(level),
 	            (const char *) duk__get_level_string(level),
-	            (unsigned long long) duk_rdtsc(),  /* match the inline asm in duk_features.h */
+	            (unsigned long long) DUK_USE_RDTSC(),  /* match the inline asm in duk_features.h */
 	            (const char *) file,
 	            (long) line,
 	            (const char *) func,
@@ -136,7 +136,7 @@ DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
 	            (const char *) duk__get_term_1(level),
 	            (const char *) duk__get_level_string(duk_debug_level_stash),
-	            (unsigned long long) duk_rdtsc(),  /* match duk_features.h */
+	            (unsigned long long) DUK_USE_RDTSC(),  /* match duk_features.h */
 	            (const char *) duk_debug_file_stash,
 	            (const char *) duk_debug_line_stash,
 	            (const char *) duk_debug_func_stash,

@@ -1,0 +1,7 @@
+define: DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+introduced: 1.0.0
+default: false
+tags:
+  - portability
+description: >
+  Allow unaligned 32-bit unsigned integer access in hashbytes algorithm.

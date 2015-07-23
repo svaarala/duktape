@@ -941,6 +941,10 @@ Planned
 1.3.0 (2015-XX-XX)
 ------------------
 
+* Introduce an external duk_config.h header which provides all platform and
+  configuration specific defines; this makes it easier to adapt Duktape to
+  custom platforms (GH-64)
+
 * Add support for Node.js Buffer API (GH-152)
 
 * Add support for Khronos/ES6 TypedArray API (subset of ES6 API) (GH-151)
@@ -958,6 +962,9 @@ Planned
 * Minor change to plain buffer and Duktape.Buffer write coercion for
   consistency with Node.js Buffer and TypeArray, e.g. -Infinity now
   coerces to 0x00 rather than 0xFF
+
+* Add support for an external date/time provider to make porting the Date
+  built-in to exotic platforms easier
 
 * Add duk_instanceof() API call (GH-148)
 
@@ -996,6 +1003,7 @@ Planned
   (GH-174)
 
 * Fix a few pointer compression issues (DUK_USE_HEAPPTR16) on 64-bit platforms
+  (GH-228)
 
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 

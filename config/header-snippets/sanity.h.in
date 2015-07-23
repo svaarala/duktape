@@ -1,10 +1,7 @@
 /*
- *  Sanity check for the final effective internal defines.  This file also
+ *  Sanity check for the final effective internal defines.  Also
  *  double checks user tweaks made by an optional duk_custom.h header.
  */
-
-#ifndef DUK_FEATURES_SANITY_H_INCLUDED
-#define DUK_FEATURES_SANITY_H_INCLUDED
 
 /*
  *  Deprecated feature options.
@@ -106,5 +103,3 @@
 #if !defined(DUK_USE_STRTAB_CHAIN) && !defined(DUK_USE_STRTAB_PROBE)
 #error neither DUK_USE_STRTAB_CHAIN nor DUK_USE_STRTAB_PROBE is defined
 #endif
-
-#endif  /* DUK_FEATURES_SANITY_H_INCLUDED */

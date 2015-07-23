@@ -1,0 +1,9 @@
+define: DUK_USE_AVOID_PLATFORM_FUNCPTRS
+introduced: 1.0.0
+default: true
+tags:
+  - portability
+description: >
+  Don't assume that platform functions (e.g. math functions) are actual
+  functions.  This option is needed if platform functions may be defined
+  as macros.

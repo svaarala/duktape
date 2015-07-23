@@ -1,0 +1,9 @@
+define: DUK_USE_TRACEBACK_DEPTH
+introduced: 1.0.0
+default: 10
+tags:
+  - ecmascript
+description: >
+  Define traceback collection depth.  A large number causes tracedata to be
+  larger, taking more time to create and consuming more memory.  A small
+  number makes tracebacks less useful.

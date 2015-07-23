@@ -1,0 +1,13 @@
+define: DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+introduced: 1.0.0
+default: true
+tags:
+  - ecmascript
+description: >
+  For better compatibility with existing code, enable non-standard
+  Array.prototype.concat() behavior for trailing non-existent elements of
+  the concat result, see
+  https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-concat-nonstd-trailing.js.
+
+  If this option is disabled, concat() will behave in a strictly conforming
+  fashion, ignoring non-existent trailing elements in the result length.
