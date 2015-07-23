@@ -1,0 +1,19 @@
+define: DUK_USE_STACK_CHECK
+introduced: 1.3.0
+default:
+  verbatim: "#define DUK_USE_STACK_CHECK() 0"
+tags:
+  - portability
+  - sandbox
+description: >
+  Provide a stack check macro which Duktape calls in code paths where
+  arbitrary recursion is possible.  The macro should return zero if there's
+  enough stack space to proceed until the next stack check, and non-zero if
+  there isn't.
+
+  There's no exact guarantee how much stack is used between stack checks;
+  that depends on the size of stack frames used by the compiler, and the
+  placement of stack check calls in Duktape internals.
+
+  A good guideline is to return zero if there's at least 2kB usable stack
+  space left.
