@@ -221,7 +221,7 @@ def create_matrix(fn_duk):
 	gxx_cmd_dialect_options = Select([
 		# Some dialects and architectures are only available for newer g++ versions
 		Combine([
-			Select([ 'llvm-g++-4.7', 'llvm-g++-4.7' ]),
+			Select([ 'llvm-g++' ]),
 			Select([ '-m64' ]),
 			Select([
 				'',
@@ -284,7 +284,7 @@ def create_matrix(fn_duk):
 	clang_cmd_dialect_options = Select([
 		Combine([
 			'clang',
-			Select([ '-m64', '-m32', '-mx32' ]),
+			Select([ '-m64', '-m32' ]),
 			Select([
 				'',
 				'-std=c89',
@@ -303,7 +303,7 @@ def create_matrix(fn_duk):
 		#[ '-Wall', '-Wextra', '-Werror' ]
 	])
 	clang_optimization_options = Select([
-		'-O0'
+		'-O0',
 		'-O1',
 		'-O2',
 		'-O3',
