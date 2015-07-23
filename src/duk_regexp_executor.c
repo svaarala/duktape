@@ -141,10 +141,9 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_prev_cp(duk_re_matcher_ctx *re_ctx, const
  */
 
 DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t *pc, const duk_uint8_t *sp) {
-	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
-		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT);
+	if (DUK_USE_STACK_CHECK() != 0) {
+		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 	}
-	re_ctx->recursion_depth++;
 
 	for (;;) {
 		duk_small_int_t op;
@@ -156,8 +155,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 
 		op = (duk_small_int_t) duk__bc_get_u32(re_ctx, &pc);
 
-		DUK_DDD(DUK_DDDPRINT("match: rec=%ld, steps=%ld, pc (after op)=%ld, sp=%ld, op=%ld",
-		                     (long) re_ctx->recursion_depth,
+		DUK_DDD(DUK_DDDPRINT("match: steps=%ld, pc (after op)=%ld, sp=%ld, op=%ld",
 		                     (long) re_ctx->steps_count,
 		                     (long) (pc - re_ctx->bytecode),
 		                     (long) (sp - re_ctx->input),
@@ -633,11 +631,9 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 	}
 
  match:
-	re_ctx->recursion_depth--;
 	return sp;
 
  fail:
-	re_ctx->recursion_depth--;
 	return NULL;
 
  internal_error:
@@ -718,7 +714,6 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	re_ctx.bytecode = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
 	re_ctx.bytecode_end = re_ctx.bytecode + DUK_HSTRING_GET_BYTELEN(h_bytecode);
 	re_ctx.saved = NULL;
-	re_ctx.recursion_limit = DUK_RE_EXECUTE_RECURSION_LIMIT;
 	re_ctx.steps_limit = DUK_RE_EXECUTE_STEPS_LIMIT;
 
 	/* read header */
@@ -746,8 +741,8 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	}
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("regexp ctx initialized, flags=0x%08lx, nsaved=%ld, recursion_limit=%ld, steps_limit=%ld",
-	                     (unsigned long) re_ctx.re_flags, (long) re_ctx.nsaved, (long) re_ctx.recursion_limit,
+	DUK_DDD(DUK_DDDPRINT("regexp ctx initialized, flags=0x%08lx, nsaved=%ld, steps_limit=%ld",
+	                     (unsigned long) re_ctx.re_flags, (long) re_ctx.nsaved,
 	                     (long) re_ctx.steps_limit));
 
 	/*
@@ -809,7 +804,6 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		DUK_ASSERT(char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
 
 		/* Note: ctx.steps is intentionally not reset, it applies to the entire unanchored match */
-		DUK_ASSERT(re_ctx.recursion_depth == 0);
 
 		DUK_DDD(DUK_DDDPRINT("attempt match at char offset %ld; %p [%p,%p]",
 		                     (long) char_offset, (void *) sp, (void *) re_ctx.input,

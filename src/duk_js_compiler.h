@@ -206,10 +206,6 @@ struct duk_compiler_ctx {
 	duk_idx_t tok21_idx;                /* prev_token slot1 */
 	duk_idx_t tok22_idx;                /* prev_token slot2 */
 
-	/* recursion limit */
-	duk_int_t recursion_depth;
-	duk_int_t recursion_limit;
-
 	/* code emission temporary */
 	duk_int_t emit_jumpslot_pc;
 

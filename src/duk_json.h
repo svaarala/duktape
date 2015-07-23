@@ -5,15 +5,6 @@
 #ifndef DUK_JSON_H_INCLUDED
 #define DUK_JSON_H_INCLUDED
 
-/* Object/array recursion limit (to protect C stack) */
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_JSON_ENC_RECURSION_LIMIT          1000
-#define DUK_JSON_DEC_RECURSION_LIMIT          1000
-#else
-#define DUK_JSON_ENC_RECURSION_LIMIT          100
-#define DUK_JSON_DEC_RECURSION_LIMIT          100
-#endif
-
 /* Encoding/decoding flags */
 #define DUK_JSON_FLAG_ASCII_ONLY          (1 << 0)  /* escape any non-ASCII characters */
 #define DUK_JSON_FLAG_AVOID_KEY_QUOTES    (1 << 1)  /* avoid key quotes when key is an ASCII Identifier */
@@ -42,8 +33,6 @@ typedef struct {
 	duk_small_uint_t flag_ext_custom;
 	duk_small_uint_t flag_ext_compatible;
 #endif
-	duk_int_t recursion_depth;
-	duk_int_t recursion_limit;
 	duk_uint_t mask_for_undefined;      /* type bit mask: types which certainly produce 'undefined' */
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	duk_small_uint_t stridx_custom_undefined;
@@ -65,8 +54,6 @@ typedef struct {
 	duk_small_uint_t flag_ext_custom;
 	duk_small_uint_t flag_ext_compatible;
 #endif
-	duk_int_t recursion_depth;
-	duk_int_t recursion_limit;
 } duk_json_dec_ctx;
 
 #endif  /* DUK_JSON_H_INCLUDED */

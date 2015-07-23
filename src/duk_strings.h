@@ -239,39 +239,33 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_advance_failed;
 DUK_INTERNAL_DECL const char *duk_str_regexp_internal_error;
 #endif  /* !DUK_SINGLE_FILE */
 
+#define DUK_STR_NATIVE_STACK_LIMIT duk_str_native_stack_limit
 #define DUK_STR_VALSTACK_LIMIT duk_str_valstack_limit
 #define DUK_STR_CALLSTACK_LIMIT duk_str_callstack_limit
 #define DUK_STR_CATCHSTACK_LIMIT duk_str_catchstack_limit
 #define DUK_STR_OBJECT_PROPERTY_LIMIT duk_str_object_property_limit
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT duk_str_prototype_chain_limit
 #define DUK_STR_BOUND_CHAIN_LIMIT duk_str_bound_chain_limit
-#define DUK_STR_C_CALLSTACK_LIMIT duk_str_c_callstack_limit
-#define DUK_STR_COMPILER_RECURSION_LIMIT duk_str_compiler_recursion_limit
 #define DUK_STR_BYTECODE_LIMIT duk_str_bytecode_limit
 #define DUK_STR_REG_LIMIT duk_str_reg_limit
 #define DUK_STR_TEMP_LIMIT duk_str_temp_limit
 #define DUK_STR_CONST_LIMIT duk_str_const_limit
 #define DUK_STR_FUNC_LIMIT duk_str_func_limit
-#define DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT duk_str_regexp_compiler_recursion_limit
-#define DUK_STR_REGEXP_EXECUTOR_RECURSION_LIMIT duk_str_regexp_executor_recursion_limit
 #define DUK_STR_REGEXP_EXECUTOR_STEP_LIMIT duk_str_regexp_executor_step_limit
 
 #if !defined(DUK_SINGLE_FILE)
+DUK_INTERNAL_DECL const char *duk_str_native_stack_limit;
 DUK_INTERNAL_DECL const char *duk_str_valstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_callstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_catchstack_limit;
 DUK_INTERNAL_DECL const char *duk_str_object_property_limit;
 DUK_INTERNAL_DECL const char *duk_str_prototype_chain_limit;
 DUK_INTERNAL_DECL const char *duk_str_bound_chain_limit;
-DUK_INTERNAL_DECL const char *duk_str_c_callstack_limit;
-DUK_INTERNAL_DECL const char *duk_str_compiler_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_bytecode_limit;
 DUK_INTERNAL_DECL const char *duk_str_reg_limit;
 DUK_INTERNAL_DECL const char *duk_str_temp_limit;
 DUK_INTERNAL_DECL const char *duk_str_const_limit;
 DUK_INTERNAL_DECL const char *duk_str_func_limit;
-DUK_INTERNAL_DECL const char *duk_str_regexp_compiler_recursion_limit;
-DUK_INTERNAL_DECL const char *duk_str_regexp_executor_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_executor_step_limit;
 #endif  /* !DUK_SINGLE_FILE */
 

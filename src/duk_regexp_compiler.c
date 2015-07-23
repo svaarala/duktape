@@ -285,11 +285,9 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 
 	DUK_ASSERT(out_atom_info != NULL);
 
-	if (re_ctx->recursion_depth >= re_ctx->recursion_limit) {
-		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR,
-		          DUK_STR_REGEXP_COMPILER_RECURSION_LIMIT);
+	if (DUK_USE_STACK_CHECK() != 0) {
+		DUK_ERROR(re_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 	}
-	re_ctx->recursion_depth++;
 
 #if 0
 	out_atom_info->start_captures = re_ctx->captures;
@@ -753,8 +751,6 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 	out_atom_info->charlen = res_charlen;
 	DUK_DDD(DUK_DDDPRINT("parse disjunction finished: charlen=%ld",
 	                     (long) out_atom_info->charlen));
-
-	re_ctx->recursion_depth--;
 }
 
 /*
@@ -933,11 +929,10 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	re_ctx.lex.input_length = DUK_HSTRING_GET_BYTELEN(h_pattern);
 	re_ctx.lex.token_limit = DUK_RE_COMPILE_TOKEN_LIMIT;
 	re_ctx.buf = h_buffer;
-	re_ctx.recursion_limit = DUK_RE_COMPILE_RECURSION_LIMIT;
 	re_ctx.re_flags = duk__parse_regexp_flags(thr, h_flags);
 
-	DUK_DD(DUK_DDPRINT("regexp compiler ctx initialized, flags=0x%08lx, recursion_limit=%ld",
-	                   (unsigned long) re_ctx.re_flags, (long) re_ctx.recursion_limit));
+	DUK_DD(DUK_DDPRINT("regexp compiler ctx initialized, flags=0x%08lx",
+	                   (unsigned long) re_ctx.re_flags));
 
 	/*
 	 *  Init lexer

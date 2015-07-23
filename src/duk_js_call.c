@@ -829,7 +829,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_size_t entry_valstack_end;
 	duk_size_t entry_callstack_top;
 	duk_size_t entry_catchstack_top;
-	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
 	volatile duk_bool_t need_setjmp;
@@ -870,7 +869,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	entry_valstack_end = (duk_size_t) (thr->valstack_end - thr->valstack);
 	entry_callstack_top = thr->callstack_top;
 	entry_catchstack_top = thr->catchstack_top;
-	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
 	idx_func = duk_normalize_index(ctx, -num_stack_args - 2);  /* idx_func must be valid, note: non-throwing! */
@@ -883,9 +881,9 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	DUK_DD(DUK_DDPRINT("duk_handle_call: thr=%p, num_stack_args=%ld, "
 	                   "call_flags=0x%08lx (protected=%ld, ignorerec=%ld, constructor=%ld), need_setjmp=%ld, "
-	                   "valstack_top=%ld, idx_func=%ld, idx_args=%ld, rec_depth=%ld/%ld, "
+	                   "valstack_top=%ld, idx_func=%ld, idx_args=%ld, "
 	                   "entry_valstack_bottom_index=%ld, entry_callstack_top=%ld, entry_catchstack_top=%ld, "
-	                   "entry_call_recursion_depth=%ld, entry_curr_thread=%p, entry_thread_state=%ld",
+	                   "entry_curr_thread=%p, entry_thread_state=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
 	                   (unsigned long) call_flags,
@@ -896,12 +894,9 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	                   (long) duk_get_top(ctx),
 	                   (long) idx_func,
 	                   (long) idx_args,
-	                   (long) thr->heap->call_recursion_depth,
-	                   (long) thr->heap->call_recursion_limit,
 	                   (long) entry_valstack_bottom_index,
 	                   (long) entry_callstack_top,
 	                   (long) entry_catchstack_top,
-	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
 
@@ -1003,7 +998,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		           (thr->state == DUK_HTHREAD_STATE_RUNNING && thr->heap->curr_thread == thr));     /* current thread */
 
 		/* XXX: should setjmp catcher be responsible for this instead? */
-		thr->heap->call_recursion_depth = entry_call_recursion_depth;
 		duk_err_longjmp(thr);
 		DUK_UNREACHABLE();
 	}
@@ -1075,25 +1069,16 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 
 	/*
-	 *  C call recursion depth check, which provides a reasonable upper
-	 *  bound on maximum C stack size (arbitrary C stack growth is only
-	 *  possible by recursive handle_call / handle_safe_call calls).
+	 *  C stack check
 	 */
 
-	DUK_ASSERT(thr->heap->call_recursion_depth >= 0);
-	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
-
+	/* FIXME: rename RECLIMIT flag */
 	if (call_flags & DUK_CALL_FLAG_IGNORE_RECLIMIT) {
 		DUK_DD(DUK_DDPRINT("ignoring reclimit for this call (probably an errhandler call)"));
 	} else {
-		if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-			/* XXX: error message is a bit misleading: we reached a recursion
-			 * limit which is also essentially the same as a C callstack limit
-			 * (except perhaps with some relaxed threading assumptions).
-			 */
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
+		if (DUK_USE_STACK_CHECK() != 0) {
+			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 		}
-		thr->heap->call_recursion_depth++;
 	}
 
 	/*
@@ -1573,8 +1558,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	           (thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread != NULL) ||  /* other call */
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING && thr->heap->curr_thread == thr));     /* current thread */
 
-	thr->heap->call_recursion_depth = entry_call_recursion_depth;
-
 #if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
 	duk__interrupt_fixup(thr, entry_curr_thread);
 #endif
@@ -1695,7 +1678,6 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	duk_size_t entry_valstack_bottom_index;
 	duk_size_t entry_callstack_top;
 	duk_size_t entry_catchstack_top;
-	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
@@ -1712,27 +1694,23 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	entry_valstack_bottom_index = (duk_size_t) (thr->valstack_bottom - thr->valstack);
 	entry_callstack_top = thr->callstack_top;
 	entry_catchstack_top = thr->catchstack_top;
-	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
 	idx_retbase = duk_get_top(ctx) - num_stack_args;  /* Note: not a valid stack index if num_stack_args == 0 */
 
 	/* Note: cannot portably debug print a function pointer, hence 'func' not printed! */
 	DUK_DD(DUK_DDPRINT("duk_handle_safe_call: thr=%p, num_stack_args=%ld, num_stack_rets=%ld, "
-	                   "valstack_top=%ld, idx_retbase=%ld, rec_depth=%ld/%ld, "
+	                   "valstack_top=%ld, idx_retbase=%ld, "
 	                   "entry_valstack_bottom_index=%ld, entry_callstack_top=%ld, entry_catchstack_top=%ld, "
-	                   "entry_call_recursion_depth=%ld, entry_curr_thread=%p, entry_thread_state=%ld",
+	                   "entry_curr_thread=%p, entry_thread_state=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
 	                   (long) num_stack_rets,
 	                   (long) duk_get_top(ctx),
 	                   (long) idx_retbase,
-	                   (long) thr->heap->call_recursion_depth,
-	                   (long) thr->heap->call_recursion_limit,
 	                   (long) entry_valstack_bottom_index,
 	                   (long) entry_callstack_top,
 	                   (long) entry_catchstack_top,
-	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
 
@@ -1846,22 +1824,15 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 
 	/*
-	 *  Recursion limit check.
+	 *  C stack check
 	 *
 	 *  Note: there is no need for an "ignore recursion limit" flag
-	 *  for duk_handle_safe_call now.
+	 *  for duk_handle_safe_call now.   FIXME: reword
 	 */
 
-	DUK_ASSERT(thr->heap->call_recursion_depth >= 0);
-	DUK_ASSERT(thr->heap->call_recursion_depth <= thr->heap->call_recursion_limit);
-	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit) {
-		/* XXX: error message is a bit misleading: we reached a recursion
-		 * limit which is also essentially the same as a C callstack limit
-		 * (except perhaps with some relaxed threading assumptions).
-		 */
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
+	if (DUK_USE_STACK_CHECK() != 0) {
+		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 	}
-	thr->heap->call_recursion_depth++;
 
 	/*
 	 *  Valstack spare check
@@ -1946,8 +1917,6 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT((thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread == NULL) ||  /* first call */
 	           (thr->state == DUK_HTHREAD_STATE_INACTIVE && thr->heap->curr_thread != NULL) ||  /* other call */
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING && thr->heap->curr_thread == thr));     /* current thread */
-
-	thr->heap->call_recursion_depth = entry_call_recursion_depth;
 
 	/* stack discipline consistency check */
 	DUK_ASSERT(duk_get_top(ctx) == idx_retbase + num_stack_rets);

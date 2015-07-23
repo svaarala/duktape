@@ -8,20 +8,9 @@
 /* maximum bytecode copies for {n,m} quantifiers */
 #define DUK_RE_MAX_ATOM_COPIES             1000
 
-/* regexp compilation limits */
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_RE_COMPILE_RECURSION_LIMIT     10000
-#else
-#define DUK_RE_COMPILE_RECURSION_LIMIT     100
-#endif
 #define DUK_RE_COMPILE_TOKEN_LIMIT         100000000L   /* 1e8 */
 
 /* regexp execution limits */
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_RE_EXECUTE_RECURSION_LIMIT     10000
-#else
-#define DUK_RE_EXECUTE_RECURSION_LIMIT     100
-#endif
 #define DUK_RE_EXECUTE_STEPS_LIMIT         1000000000L  /* 1e9 */
 
 /* regexp opcodes */
@@ -60,8 +49,6 @@ struct duk_re_matcher_ctx {
 	const duk_uint8_t *bytecode_end;
 	const duk_uint8_t **saved;  /* allocated from valstack (fixed buffer) */
 	duk_uint32_t nsaved;
-	duk_uint32_t recursion_depth;
-	duk_uint32_t recursion_limit;
 	duk_uint32_t steps_count;
 	duk_uint32_t steps_limit;
 };
@@ -75,8 +62,6 @@ struct duk_re_compiler_ctx {
 	duk_hbuffer_dynamic *buf;
 	duk_uint32_t captures;  /* highest capture number emitted so far (used as: ++captures) */
 	duk_uint32_t highest_backref;
-	duk_uint32_t recursion_depth;
-	duk_uint32_t recursion_limit;
 	duk_uint32_t nranges;  /* internal temporary value, used for char classes */
 };
 

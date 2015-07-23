@@ -755,9 +755,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
 
-	res->call_recursion_depth = 0;
-	res->call_recursion_limit = DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT;
-
 	/* XXX: use the pointer as a seed for now: mix in time at least */
 
 	/* The casts through duk_intr_pt is to avoid the following GCC warning:

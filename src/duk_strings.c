@@ -55,8 +55,6 @@ DUK_INTERNAL const char *duk_str_array_length_over_2g = "array length over 2G";
 /* JSON */
 DUK_INTERNAL const char *duk_str_fmt_ptr = "%p";
 DUK_INTERNAL const char *duk_str_fmt_invalid_json = "invalid json (at offset %ld)";
-DUK_INTERNAL const char *duk_str_jsondec_reclimit = "json decode recursion limit";
-DUK_INTERNAL const char *duk_str_jsonenc_reclimit = "json encode recursion limit";
 DUK_INTERNAL const char *duk_str_cyclic_input = "cyclic input";
 
 /* Object property access */
@@ -116,21 +114,18 @@ DUK_INTERNAL const char *duk_str_regexp_advance_failed = "regexp advance failed"
 DUK_INTERNAL const char *duk_str_regexp_internal_error = "regexp internal error";
 
 /* Limits */
+DUK_INTERNAL const char *duk_str_native_stack_limit = "native stack limit";
 DUK_INTERNAL const char *duk_str_valstack_limit = "valstack limit";
 DUK_INTERNAL const char *duk_str_callstack_limit = "callstack limit";
 DUK_INTERNAL const char *duk_str_catchstack_limit = "catchstack limit";
 DUK_INTERNAL const char *duk_str_object_property_limit = "object property limit";
 DUK_INTERNAL const char *duk_str_prototype_chain_limit = "prototype chain limit";
 DUK_INTERNAL const char *duk_str_bound_chain_limit = "function call bound chain limit";
-DUK_INTERNAL const char *duk_str_c_callstack_limit = "C call stack depth limit";
-DUK_INTERNAL const char *duk_str_compiler_recursion_limit = "compiler recursion limit";
 DUK_INTERNAL const char *duk_str_bytecode_limit = "bytecode limit";
 DUK_INTERNAL const char *duk_str_reg_limit = "register limit";
 DUK_INTERNAL const char *duk_str_temp_limit = "temp limit";
 DUK_INTERNAL const char *duk_str_const_limit = "const limit";
 DUK_INTERNAL const char *duk_str_func_limit = "function limit";
-DUK_INTERNAL const char *duk_str_regexp_compiler_recursion_limit = "regexp compiler recursion limit";
-DUK_INTERNAL const char *duk_str_regexp_executor_recursion_limit = "regexp executor recursion limit";
 DUK_INTERNAL const char *duk_str_regexp_executor_step_limit = "regexp step limit";
 
 /* Misc */

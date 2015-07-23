@@ -45,14 +45,10 @@
 #define DUK__MAX_FUNCS                    DUK_BC_BC_MAX
 #define DUK__MAX_TEMPS                    0xffffL
 
-#define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
-		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
-		duk__recursion_increase((comp_ctx)); \
-	} while (0)
-
-#define DUK__RECURSION_DECREASE(comp_ctx,thr)  do { \
-		DUK_DDD(DUK_DDDPRINT("RECURSION DECREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
-		duk__recursion_decrease((comp_ctx)); \
+#define DUK__STACK_CHECK(comp_ctx)  do { \
+		if (DUK_USE_STACK_CHECK() != 0) { \
+			duk__compiler_out_of_stack((comp_ctx)); \
+		} \
 	} while (0)
 
 /* Value stack slot limits: these are quite approximate right now, and
@@ -368,19 +364,9 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
  *  Misc helpers
  */
 
-DUK_LOCAL void duk__recursion_increase(duk_compiler_ctx *comp_ctx) {
+DUK_LOCAL void duk__compiler_out_of_stack(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
-	DUK_ASSERT(comp_ctx->recursion_depth >= 0);
-	if (comp_ctx->recursion_depth >= comp_ctx->recursion_limit) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_COMPILER_RECURSION_LIMIT);
-	}
-	comp_ctx->recursion_depth++;
-}
-
-DUK_LOCAL void duk__recursion_decrease(duk_compiler_ctx *comp_ctx) {
-	DUK_ASSERT(comp_ctx != NULL);
-	DUK_ASSERT(comp_ctx->recursion_depth > 0);
-	comp_ctx->recursion_depth--;
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 }
 
 DUK_LOCAL duk_bool_t duk__hstring_is_eval_or_arguments(duk_compiler_ctx *comp_ctx, duk_hstring *h) {
@@ -4564,7 +4550,7 @@ DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_
 	duk_ivalue *tmp = &tmp_alloc;
 	duk_small_uint_t rbp;
 
-	DUK__RECURSION_INCREASE(comp_ctx, thr);
+	DUK__STACK_CHECK(comp_ctx);
 
 	duk_require_stack(ctx, DUK__PARSE_EXPR_SLOTS);
 
@@ -4615,8 +4601,6 @@ DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_
 	/* final result is already in 'res' */
 
 	duk_pop_2(ctx);
-
-	DUK__RECURSION_DECREASE(comp_ctx, thr);
 }
 
 DUK_LOCAL void duk__exprtop(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
@@ -6007,7 +5991,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 	duk_int_t label_id = -1;
 	duk_small_uint_t tok;
 
-	DUK__RECURSION_INCREASE(comp_ctx, thr);
+	DUK__STACK_CHECK(comp_ctx);
 
 	temp_at_entry = DUK__GETTEMP(comp_ctx);
 	pc_at_entry = duk__get_current_pc(comp_ctx);
@@ -6486,8 +6470,6 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 	duk__reset_labels_to_length(comp_ctx, labels_len_at_entry);
 
 	/* XXX: return indication of "terminalness" (e.g. a 'throw' is terminal) */
-
-	DUK__RECURSION_DECREASE(comp_ctx, thr);
 }
 
 #undef DUK__HAS_VAL
@@ -6939,7 +6921,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	func = &comp_ctx->curr_func;
 	DUK_ASSERT(func != NULL);
 
-	DUK__RECURSION_INCREASE(comp_ctx, thr);
+	DUK__STACK_CHECK(comp_ctx);
 
 	duk_require_stack(ctx, DUK__FUNCTION_BODY_REQUIRE_SLOTS);
 
@@ -7175,7 +7157,6 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	 *  function template.
 	 */
 
-	DUK__RECURSION_DECREASE(comp_ctx, thr);
 	return;
 
  error_funcname:
@@ -7533,7 +7514,6 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	comp_ctx->tok12_idx = entry_top + 2;
 	comp_ctx->tok21_idx = entry_top + 3;
 	comp_ctx->tok22_idx = entry_top + 4;
-	comp_ctx->recursion_limit = DUK_COMPILER_RECURSION_LIMIT;
 
 	/* comp_ctx->lex has been pre-initialized by caller: it has been
 	 * zeroed and input/input_length has been set.

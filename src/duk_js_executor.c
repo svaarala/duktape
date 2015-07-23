@@ -1966,7 +1966,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 */
 	duk_hthread * volatile entry_thread;   /* volatile copy of exec_thr */
 	volatile duk_size_t entry_callstack_top;
-	volatile duk_int_t entry_call_recursion_depth;
 	duk_jmpbuf * volatile entry_jmpbuf_ptr;
 
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
@@ -2010,7 +2009,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	entry_thread = exec_thr;  /* volatile copy */
 	thr = (duk_hthread *) entry_thread;
 	entry_callstack_top = thr->callstack_top;
-	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_jmpbuf_ptr = thr->heap->lj.jmpbuf_ptr;
 
 	/*
@@ -2052,9 +2050,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		thr = entry_thread->heap->curr_thread;
 
 		/* XXX: signalling the need to shrink check (only if unwound) */
-
-		/* Must be restored here to handle e.g. yields properly. */
-		thr->heap->call_recursion_depth = entry_call_recursion_depth;
 
 		/* Switch to caller's setjmp() catcher so that if an error occurs
 		 * during error handling, it is always propagated outwards instead

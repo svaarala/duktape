@@ -471,22 +471,16 @@ DUK_LOCAL void duk__dec_objarr_entry(duk_json_dec_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_require_stack(ctx, DUK_JSON_DEC_REQSTACK);
 
-	/* c recursion check */
+	/* c stack check */
 
-	DUK_ASSERT(js_ctx->recursion_depth >= 0);
-	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
-	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, DUK_STR_JSONDEC_RECLIMIT);
+	if (DUK_USE_STACK_CHECK() != 0) {
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 	}
-	js_ctx->recursion_depth++;
 }
 
 DUK_LOCAL void duk__dec_objarr_exit(duk_json_dec_ctx *js_ctx) {
-	/* c recursion check */
-
-	DUK_ASSERT(js_ctx->recursion_depth > 0);
-	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
-	js_ctx->recursion_depth--;
+	/* FIXME: nothing left here; remove? */
+	DUK_UNREF(js_ctx);
 }
 
 DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
@@ -1063,14 +1057,11 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_s
 	duk_push_true(ctx);  /* -> [ ... voidp true ] */
 	duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
 
-	/* c recursion check */
+	/* c stack check */
 
-	DUK_ASSERT(js_ctx->recursion_depth >= 0);
-	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
-	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, DUK_STR_JSONENC_RECLIMIT);
+	if (DUK_USE_STACK_CHECK() != 0) {
+		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_RANGE_ERROR, DUK_STR_NATIVE_STACK_LIMIT);
 	}
-	js_ctx->recursion_depth++;
 
 	/* figure out indent and stepback */
 
@@ -1120,12 +1111,6 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_st
 		DUK_ASSERT(*h_stepback == NULL);
 		DUK_ASSERT(*h_indent == NULL);
 	}
-
-	/* c recursion check */
-
-	DUK_ASSERT(js_ctx->recursion_depth > 0);
-	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
-	js_ctx->recursion_depth--;
 
 	/* loop check */
 
@@ -1744,7 +1729,6 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	/* nothing now */
 #endif
-	js_ctx->recursion_limit = DUK_JSON_DEC_RECURSION_LIMIT;
 
 	/* Flag handling currently assumes that flags are consistent.  This is OK
 	 * because the call sites are now strictly controlled.
@@ -1850,7 +1834,6 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	js_ctx->h_indent = NULL;
 #endif
 	js_ctx->idx_proplist = -1;
-	js_ctx->recursion_limit = DUK_JSON_ENC_RECURSION_LIMIT;
 
 	/* Flag handling currently assumes that flags are consistent.  This is OK
 	 * because the call sites are now strictly controlled.

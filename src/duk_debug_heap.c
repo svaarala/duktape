@@ -220,9 +220,6 @@ DUK_INTERNAL void duk_debug_dump_heap(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("  curr_thread: %!@O", (duk_heaphdr *) heap->curr_thread));
 	DUK_D(DUK_DPRINT("  heap_object: %!@O", (duk_heaphdr *) heap->heap_object));
 
-	DUK_D(DUK_DPRINT("  call_recursion_depth: %ld", (long) heap->call_recursion_depth));
-	DUK_D(DUK_DPRINT("  call_recursion_limit: %ld", (long) heap->call_recursion_limit));
-
 	DUK_D(DUK_DPRINT("  hash_seed: 0x%08lx", (unsigned long) heap->hash_seed));
 	DUK_D(DUK_DPRINT("  rnd_state: 0x%08lx", (unsigned long) heap->rnd_state));
 

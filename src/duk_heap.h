@@ -92,17 +92,7 @@
  *  Other heap related defines
  */
 
-/* Maximum duk_handle_call / duk_handle_safe_call depth.  Note that this
- * does not limit bytecode executor internal call depth at all (e.g.
- * for Ecmascript-to-Ecmascript calls, thread yields/resumes, etc).
- * There is a separate callstack depth limit for threads.
- */
-
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             1000  /* assuming 0.5 kB between calls, about 500kB of stack */
-#else
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */
-#endif
+/* FIXME: remove this limit? */
 
 /* Mark-and-sweep C recursion depth for marking phase; if reached,
  * mark object as a TEMPROOT and use multi-pass marking.
@@ -399,7 +389,7 @@ struct duk_heap {
 #if defined(DUK_USE_VOLUNTARY_GC)
 	duk_int_t mark_and_sweep_trigger_counter;
 #endif
-	duk_int_t mark_and_sweep_recursion_depth;
+	duk_int_t mark_and_sweep_recursion_depth;  /* FIXME: remove? */
 
 	/* mark-and-sweep flags automatically active (used for critical sections) */
 	duk_small_uint_t mark_and_sweep_base_flags;
@@ -425,10 +415,6 @@ struct duk_heap {
 
 	/* heap level temporary log formatting buffer */
 	duk_hbuffer_dynamic *log_buffer;
-
-	/* duk_handle_call / duk_handle_safe_call recursion depth limiting */
-	duk_int_t call_recursion_depth;
-	duk_int_t call_recursion_limit;
 
 	/* mix-in value for computing string hashes; should be reasonably unpredictable */
 	duk_uint32_t hash_seed;
