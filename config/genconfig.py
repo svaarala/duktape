@@ -855,8 +855,7 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	ret.empty()
 
 	# DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-	# DUK_USE_ALIGN_4
-	# DUK_USE_ALIGN_8
+	# DUK_USE_ALIGN_BY
 	# DUK_USE_PACK_MSVC_PRAGMA
 	# DUK_USE_PACK_GCC_ATTR
 	# DUK_USE_PACK_CLANG_ATTR
@@ -868,7 +867,7 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	# DUK_USE_HOBJECT_LAYOUT_1
 	# DUK_USE_HOBJECT_LAYOUT_2
 	# DUK_USE_HOBJECT_LAYOUT_3
-	# FIXME: depend on DUK_USE_UNALIGNED_ACCESSES_POSSIBLE, DUK_USE_ALIGN_4, DUK_USE_ALIGN_8
+	# FIXME: depend on DUK_USE_UNALIGNED_ACCESSES_POSSIBLE, DUK_USE_ALIGN_BY
 	ret.file_relative('object_layout.h.in')
 	ret.empty()
 

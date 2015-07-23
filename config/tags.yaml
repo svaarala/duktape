@@ -61,3 +61,6 @@ experimental:
 
 api:
   title: API options
+
+fastpath:
+  title: Fast path performance options

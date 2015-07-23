@@ -282,12 +282,14 @@
 	} while (0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
 /* LAYOUT 2 */
-#if defined(DUK_USE_ALIGN_4)
+#if (DUK_USE_ALIGN_BY == 4)
 #define DUK_HOBJECT_E_FLAG_PADDING(e_sz) ((4 - (e_sz)) & 0x03)
-#elif defined(DUK_USE_ALIGN_8)
+#elif (DUK_USE_ALIGN_BY == 8)
 #define DUK_HOBJECT_E_FLAG_PADDING(e_sz) ((8 - (e_sz)) & 0x07)
-#else
+#elif (DUK_USE_ALIGN_BY == 1)
 #define DUK_HOBJECT_E_FLAG_PADDING(e_sz) 0
+#else
+#error invalid DUK_USE_ALIGN_BY
 #endif
 #define DUK_HOBJECT_E_GET_KEY_BASE(heap,h) \
 	((duk_hstring **) ( \
@@ -568,12 +570,14 @@
 #define DUK_HOBJECT_A_ABANDON_LIMIT      2  /* 25%, i.e. less than 25% used -> abandon */
 
 /* internal align target for props allocation, must be 2*n for some n */
-#if defined(DUK_USE_ALIGN_4)
+#if (DUK_USE_ALIGN_BY == 4)
 #define DUK_HOBJECT_ALIGN_TARGET         4
-#elif defined(DUK_USE_ALIGN_8)
+#elif (DUK_USE_ALIGN_BY == 8)
 #define DUK_HOBJECT_ALIGN_TARGET         8
-#else
+#elif (DUK_USE_ALIGN_BY == 1)
 #define DUK_HOBJECT_ALIGN_TARGET         1
+#else
+#error invalid DUK_USE_ALIGN_BY
 #endif
 
 /* controls for minimum entry part growth */

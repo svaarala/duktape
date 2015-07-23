@@ -309,8 +309,7 @@ section below for a detailed discussion of the format).  For example,
 ``my_config.yaml`` could contain::
 
     DUK_USE_OS_STRING: "\"hack-os\""  # force os name for Duktape.env
-    DUK_USE_ALIGN_4: false
-    DUK_USE_ALIGN_8: true   # force align-by-8
+    DUK_USE_ALIGN_BY: 8  # force align-by-8
     DUK_USE_FASTINT: true
     DUK_UNREF:
       verbatim: "#define DUK_UNREF(x) do { (void) (x); } while (0)"
