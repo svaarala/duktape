@@ -1,7 +1,7 @@
 /*
  *  RegExp.prototype.compile() polyfill, described in E6 Annex B:
  *
- *    https://people.mozilla.org/~jorendorff/es6-draft.html#sec-regexp.prototype.compile
+ *    http://www.ecma-international.org/ecma-262/6.0/index.html#sec-regexp.prototype.compile
  *
  *  See also:
  *
