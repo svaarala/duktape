@@ -5,7 +5,7 @@
  *
  *  - svn co -r 30720 https://cvs.khronos.org/svn/repos/registry/trunk/public/typedarray
  *
- *  - ES6 draft
+ *  - http://www.ecma-international.org/ecma-262/6.0/
  *
  *  TypedArray views have platform specific endianness behavior which must
  *  be taken into account in testcases.

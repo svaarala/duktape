@@ -40,7 +40,7 @@ function arrayBufferSliceBasicTest() {
     // Negative argument is interpreted from end of buffer.  This is not
     // clearly specified in Khronos specification (it talks about clamping)
     // but ES6 clarifies handling for negative indices:
-    // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-%typedarray%.prototype.slice
+    // http://www.ecma-international.org/ecma-262/6.0/index.html#sec-%typedarray%.prototype.slice
 
     b = buf.slice(-1);
     print(b === buf, b.byteLength, printableTypedArray(b));

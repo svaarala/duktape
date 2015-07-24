@@ -62,7 +62,7 @@ function test() {
     print('after:', Object.getPrototypeOf(a) === null, a.foo, a.bar, typeof a.toString);
 
     // Attempt to set prototype to something else than null/object
-    // ES6 draft: TypeError when using setPrototypeOf, ignored when using __proto__ (!)
+    // ES6: TypeError when using setPrototypeOf, ignored when using __proto__ (!)
     [ undefined, true, false, 123, 'foo' ].forEach(function (x) {
         try {
             a = { foo: 123 };
@@ -76,7 +76,7 @@ function test() {
     });
 
     // Attempt to set prototype of something other than an object
-    // ES6 draft: TypeError for undefined and null (not object coercible), value is returned as is
+    // ES6: TypeError for undefined and null (not object coercible), value is returned as is
     a = { foo: 123 };
     [ undefined, null, true, false, 123, 'foo', a ].forEach(function (x) {
         try {

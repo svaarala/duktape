@@ -2378,8 +2378,8 @@ function coercionTest() {
     ];
 
     // ES6 coercion:
-    //    - http://people.mozilla.org/~jorendorff/es6-draft.html#table-49
-    //    - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-touint8clamp (Uint8ClampedArray)
+    //    - http://www.ecma-international.org/ecma-262/6.0/index.html#table-49
+    //    - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-touint8clamp (Uint8ClampedArray)
 
     objs.forEach(function (b, i) {
         print(Object.prototype.toString.call(b));

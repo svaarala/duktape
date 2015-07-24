@@ -39,7 +39,7 @@ function test() {
 
     // Rhino and V8 print true above (Object.prototype.__proto__ exists) but
     // the descriptor here will be undefined for some reason!
-    // ES6 draft requires that the property be configurable but not enumerable.
+    // ES6 requires that the property be configurable but not enumerable.
     pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
     if (pd) {
         print('__proto__ property descriptor:', 'enumerable:', pd.enumerable,
@@ -80,7 +80,7 @@ function test() {
     // Setting a prototype to null.
     // NOTE: evaluating a.__proto__ afterwards yields undefined (instead of null):
     // 'a' no longer inherits from Object.prototype and thus has no __proto__
-    // accessor property.  This is the ES6 draft behavior right now, but e.g. Rhino
+    // accessor property.  This is the ES6 behavior right now, but e.g. Rhino
     // disagrees.
     a = { foo: 123 };
     print('before:', a.__proto__ === Object.prototype, a.foo, a.bar, typeof a.toString);
@@ -89,7 +89,7 @@ function test() {
     print('__proto__ in a:', '__proto__' in a);  // false in Duktape/ES6, true in Rhino/V8
 
     // Attempt to set prototype to something else than null/object:
-    // ES6 draft: ignore silently
+    // ES6: ignore silently
     [ undefined, true, false, 123, 'foo' ].forEach(function (x) {
         try {
             a = { foo: 123 };
@@ -103,7 +103,7 @@ function test() {
     });
 
     // Attempt to set prototype with 'this' binding not an object (call setter directly):
-    // ES6 draft: TypeError for undefined and null (not object coercible), ignore for others
+    // ES6: TypeError for undefined and null (not object coercible), ignore for others
     pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
     setter = pd ? pd.set : null;
     if (setter) {

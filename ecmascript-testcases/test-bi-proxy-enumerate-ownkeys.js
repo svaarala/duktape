@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6 draft) 'enumerate' and 'ownKeys'.
+ *  Proxy (ES6) 'enumerate' and 'ownKeys'.
  */
 
 function objDump(obj) {
@@ -123,13 +123,12 @@ function basicEnumerationTest() {
     // (and only sees enumerable properties).  Object.keys() and
     // Object.getOwnPropertyNames() use the 'ownKeys' trap.
     //
-    // NOTE: ES6 draft algorithm for Object.keys() is that the trap
-    // result list is processed to check whether or not each key is
-    // enumerable (the check uses [[GetOwnProperty]]).  Duktape omits
-    // this step now, so Object.keys() and Object.getOwnPropertyNames()
-    // returns the same result for now.  However, the trap result will
-    // still be cleaned up so that non-string keys, gaps, etc will be
-    // eliminated.
+    // NOTE: ES6 algorithm for Object.keys() is that the trap result list is
+    // processed to check whether or not each key is enumerable (the check
+    // uses [[GetOwnProperty]]).  Duktape omits this step now, so
+    // Object.keys() and Object.getOwnPropertyNames() return the same result
+    // for now.  However, the trap result will still be cleaned up so that
+    // non-string keys, gaps, etc will be eliminated.
 
     target = { foo: 1, bar: 2, quux: [ 1, 2, 3 ] };
     Object.defineProperties(target, {
