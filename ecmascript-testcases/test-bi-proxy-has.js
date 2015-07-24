@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6 draft) 'has'.
+ *  Proxy (ES6) 'has'.
  */
 
 function propDump(obj, prop) {

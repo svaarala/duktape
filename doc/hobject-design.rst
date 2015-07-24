@@ -2150,10 +2150,9 @@ ES6 Proxy objects or Lua-like metatables
 It would be nice to have a Lua metatable like mechanism for creating
 custom object behavior extensions and full object virtualization,
 see http://www.lua.org/pil/13.html for a description of Lua metatables.
-There is a similar mechanism in the Ecmascript 6 draft called "Proxy
-object":
+There is a similar mechanism in Ecmascript 6 called "Proxy object":
 
-* https://people.mozilla.org/~jorendorff/es6-draft.html#sec-proxy-object-internal-methods-and-internal-slots
+* http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-object-internal-methods-and-internal-slots
 
 The ES6 Proxy object is of course a natural target for implementation,
 but it's not clear what the underlying mechanism should be: should the
@@ -2202,7 +2201,7 @@ There are many ES6 features which may need changes to the basic object model.
 
 For instance, there are keyed collections:
 
-* https://people.mozilla.org/~jorendorff/es6-draft.html#sec-keyed-collection
+* http://www.ecma-international.org/ecma-262/6.0/index.html#sec-keyed-collection
 
 The ``Map`` object provides an arbitrary collection of key/value pairs,
 where keys and values can be arbitrary Ecmascript objects.  This is very

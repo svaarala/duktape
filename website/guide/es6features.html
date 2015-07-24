@@ -1,20 +1,20 @@
 <h1 id="es6features">Ecmascript E6 features</h1>
 
-<p>This section describes the small set of features Duktape borrows from the
-<a href="https://people.mozilla.org/~jorendorff/es6-draft.html">current ES6 draft</a>
-("Version: Rev 24, April 27, 2014 Draft").  These features are not fully compliant;
-the intent is to minimize custom features and to align with the coming ES6 specification.</p>
+<p>This section describes the small set of features Duktape borrows from
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript E6</a>.
+These features are not fully compliant; the intent is to minimize custom features
+and to align with the ES6 specification when possible.</p>
 
 <h2 id="es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</h2>
 
-<p><a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.setprototypeof">Object.setPrototypeOf</a>
+<p><a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.setprototypeof">Object.setPrototypeOf</a>
 allows user to set the internal prototype of an object which is not supported in
-Ecmascript E5.  The Ecmascript E6 draft also provides
-<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.prototype.__proto__">Object.prototype.__proto__</a>,
+Ecmascript E5.  Ecmascript E6 also provides
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.prototype.__proto__">Object.prototype.__proto__</a>,
 an accessor property (setter/getter) which provides the same functionality
 but is compatible with existing code base which has relied on a non-standard
 <code>__proto__</code> property for a while.  Duktape does not support the
-<a href="https://people.mozilla.org/~jorendorff/es6-draft.html#sec-__proto___-property-names-in-object-initializers">__proto__ property name in an object initializer</a>.</p>
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-__proto__-property-names-in-object-initializers">__proto__ property name in an object initializer</a>.</p>
 
 <p>These custom features can be disabled with the feature options
 <code>DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</code> and
@@ -24,8 +24,8 @@ but is compatible with existing code base which has relied on a non-standard
 
 <p>The Ecmascript E6 <code>Proxy</code> object allows property virtualization
 and fine-grained access control for accessing an underlying plain object.
-Duktape implements a strict subset of the <code>Proxy</code> object from the
-ES6 draft (Rev 24).  The following traps are implemented:</p>
+Duktape implements a strict subset of the <code>Proxy</code> object from
+ES6.  The following traps are implemented:</p>
 
 <table>
 <thead>
@@ -58,12 +58,10 @@ ES6 draft (Rev 24).  The following traps are implemented:</p>
     by the trap are enumerable.  <code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>
     thus currently return the same value for a proxy object implementing the <code>ownKeys</code>
     trap.</li>
-<li>Proxy revocation feature of ES6 draft is not supported.</li>
+<li>Proxy revocation feature of ES6 is not supported.</li>
 <li>The target and handler objects given to <code>new Proxy()</code> cannot
     be proxy objects themselves.  ES6 poses no such limitation, but Duktape
     enforces it to simplify the internal implementation.</li>
-<li>As ES6 is still in a draft phase so the subset implemented by Duktape
-    may not be forwards compatible.</li>
 </ul>
 
 <p>This custom feature can be disabled with the feature option

@@ -685,19 +685,19 @@ error.
 DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY
 ------------------------------------
 
-Disable the non-standard (ES6 draft) ``Object.prototype.__proto__``
+Disable the non-standard (ES6) ``Object.prototype.__proto__``
 property which is enabled by default.
 
 DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF
 ------------------------------------
 
-Disable the non-standard (ES6 draft) ``Object.setPrototypeOf`` method
+Disable the non-standard (ES6) ``Object.setPrototypeOf`` method
 which is enabled by default.
 
 DUK_OPT_NO_ES6_PROXY
 --------------------
 
-Disable the non-standard (ES6 draft) ``Proxy`` object which is enabled
+Disable the non-standard (ES6) ``Proxy`` object which is enabled
 by default.
 
 DUK_OPT_NO_JX

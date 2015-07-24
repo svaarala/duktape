@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6 draft) 'get', 'set', and 'deleteProperty' traps
+ *  Proxy (ES6) 'get', 'set', and 'deleteProperty' traps
  */
 
 /*===

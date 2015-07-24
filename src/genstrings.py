@@ -490,7 +490,7 @@ standard_other_string_list = [
 	mkstr("set"),
 ]
 
-# ES6 (draft) specific strings
+# ES6 specific strings
 es6_string_list = [
 	mkstr("Proxy", es6=True),
 	#mkstr("revocable", es6=True),

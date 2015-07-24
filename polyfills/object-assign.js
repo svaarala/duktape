@@ -1,7 +1,7 @@
 /*
  *  Object.assign(), described in E6 Section 19.1.2.1
  *
- *  https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
+ *  http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.assign
  */
 
 if (typeof Object.assign === 'undefined') {

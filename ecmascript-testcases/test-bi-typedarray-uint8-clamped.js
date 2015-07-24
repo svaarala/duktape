@@ -76,7 +76,7 @@ function uint8ClampedArrayCoercionTest() {
     var v1 = new Uint8ClampedArray(b);
     var i;
 
-    // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-touint8clamp
+    // http://www.ecma-international.org/ecma-262/6.0/index.html#sec-touint8clamp
     // https://www.khronos.org/registry/typedarray/specs/latest/#7.1
     // https://www.khronos.org/registry/typedarray/specs/latest/#3
 
