@@ -213,7 +213,8 @@ tar cfz $DIST/config/genconfig_metadata.tar.gz \
 	feature-options \
 	config-options \
 	header-snippets \
-	other-defines
+	other-defines \
+	examples
 cd $ENTRYPWD
 for i in \
 	README.rst \

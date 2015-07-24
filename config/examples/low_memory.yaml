@@ -1,0 +1,32 @@
+# Base configuration for low memory environments, see
+# doc/low-memory.rst:
+#
+#   - Strips verbose errors etc
+#   - Strips some Duktape custom feature like JX/JC; keeps e.g. RegExp
+#     and other standard parts
+#   - Strips some commonly unnecessary API calls like bytecode dump/load
+#   - Does not enable pointer compression or external strings: these
+#     need target specific support code
+#
+
+DUK_USE_AUGMENT_ERROR_CREATE: false
+DUK_USE_AUGMENT_ERROR_THROW: false
+DUK_USE_TRACEBACKS: false
+DUK_USE_ERRCREATE: false
+DUK_USE_ERRTHROW: false
+DUK_USE_VERBOSE_ERRORS: false
+DUK_USE_DEBUGGER_SUPPORT: false  # must be disabled if DUK_USE_PC2LINE is disabled
+DUK_USE_PC2LINE: false
+DUK_USE_LEXER_SLIDING_WINDOW: false
+DUK_USE_JSON_STRINGIFY_FASTPATH: false
+DUK_USE_JSON_QUOTESTRING_FASTPATH: false
+DUK_USE_JSON_DECSTRING_FASTPATH: false
+DUK_USE_BYTECODE_DUMP_SUPPORT: false
+DUK_USE_JX: false
+DUK_USE_JC: false
+#DUK_USE_REGEXP_SUPPORT: false
+DUK_USE_DEBUG_BUFSIZE: 2048
+DUK_USE_LIGHTFUNC_BUILTINS: true
+DUK_USE_STRTAB_CHAIN: true
+DUK_USE_STRTAB_PROBE: false
+DUK_USE_STRTAB_CHAIN_SIZE: 128
