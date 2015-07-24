@@ -336,7 +336,7 @@ Module loading APIs or "formats":
 
 * ES6:
 
-  - https://people.mozilla.org/~jorendorff/es6-draft.html#sec-modules
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-modules
 
 AMD is optimized for the web client side, and requires callback based
 asynchronous module loading.  This model is not very convenient for

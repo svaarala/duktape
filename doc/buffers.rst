@@ -20,28 +20,28 @@ type so various approaches are used:
 
 * ES6 has adopted the Khronos specification, with more specific semantics:
 
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-arraybuffer-constructor
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-typedarray-constructors
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-arraybuffer-objects
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-dataview-objects
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-arraybuffer-constructor
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-typedarray-constructors
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-arraybuffer-objects
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-dataview-objects
 
   These section links point to specific built-ins but link to the above:
 
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-constructor-properties-of-the-global-object-arraybuffer
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-constructor-properties-of-the-global-object-dataview
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-uint8array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-uint8clampedarray
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-uint16array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-uint32array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-int8array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-int16array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-int32array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-float32array
-  - http://people.mozilla.org/~jorendorff/es6-draft.html#sec-float64array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-constructor-properties-of-the-global-object-arraybuffer
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-constructor-properties-of-the-global-object-dataview
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-uint8array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-uint8clampedarray
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-uint16array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-uint32array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-int8array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-int16array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-int32array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-float32array
+  - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-float64array
 
-  ES6 draft spec:
+  ES6 spec:
 
-  - http://people.mozilla.org/~jorendorff/es6-draft.html
+  - http:/www.ecma-international.org/ecma-262/6.0/index.html/
 
 * Node.js Buffer:
 
@@ -539,8 +539,8 @@ Khronos typed array notes
 The Khronos typed array specification is related to HTML canvas and WebGL
 programming.  Some of the design choices are affected by this, e.g. the
 endianness handling and clamped byte write support.  The Khronos specification
-has been refined and merged into the ES6 draft so this specification has an
-official status now.
+has been refined and merged into ES6 so this specification has an official
+status now.
 
 Specification notes
 -------------------
@@ -980,7 +980,7 @@ In ES6 neutering seems to be covered under the name "detached buffer" and
 many operations on detached buffers (like reads and writes) throw a TypeError
 which is close to what current code is doing:
 
-- See e.g. Step 9 of https://people.mozilla.org/~jorendorff/es6-draft.html#sec-setviewvalue
+- See e.g. Step 9 of http://www.ecma-international.org/ecma-262/6.0/index.html#sec-setviewvalue
 
 Configurable endianness for TypedArray views
 --------------------------------------------
