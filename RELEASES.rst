@@ -989,6 +989,9 @@ Planned
 
 * Use deep C stack by default also for OSX/iPhone (GH-226)
 
+* Make Proxy internal _Target and _Handler properties immutable (non-writable
+  and non-configurable) (GH-237)
+
 * Fix bytecode execution timeout regression which caused timeouts to fail
   after the first execution timeout had been triggered (GH-212)
 
