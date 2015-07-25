@@ -43,13 +43,18 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	                                    NULL);
 	DUK_ASSERT_TOP(ctx, 3);
 
+	/* Make _Target and _Handler non-configurable and non-writable.
+	 * They can still be forcibly changed by C code (both user and
+	 * Duktape internal), but not by Ecmascript code.
+	 */
+
 	/* Proxy target */
 	duk_dup(ctx, 0);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
 	/* Proxy handler */
 	duk_dup(ctx, 1);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_NONE);
 
 	return 1;  /* replacement handler */
 }
