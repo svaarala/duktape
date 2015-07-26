@@ -55,8 +55,8 @@ Start Duktape command line tool so that it waits for a debugger connection::
     $ ./duk --debugger mandel.js
 
     # Using Duktape Git repo
-    $ cd <duktape checkout>/ecmascript-testcases/
-    $ ../duk --debugger test-dev-mandel2-func.js
+    $ cd <duktape checkout>/tests/ecmascript/
+    $ ../../duk --debugger test-dev-mandel2-func.js
 
 Start the web UI::
 
@@ -84,8 +84,8 @@ A JSON debug proxy is also provided by ``duk_debug.js``::
 
 Start Duktape command line (or whatever your target is)::
 
-    $ cd <duktape checkout>/ecmascript-testcases/
-    $ ../duk --debugger test-dev-mandel2-func.js
+    $ cd <duktape checkout>/tests/ecmascript/
+    $ ../../duk --debugger test-dev-mandel2-func.js
 
 You can then connect to localhost:9093 and interact with the proxy.
 Here's an example session using telnet and manually typed in commands
@@ -130,17 +130,17 @@ are targeted based on the 'fileName' property of Function objects.
 
 The search path can be set using the ``--source-dirs`` option given to
 ``duk_debug.js``, with the default search paths including only
-``../ecmascript-testcases``.
+``../tests/ecmascript/``.
 
 The default search path means that if a function on the target has fileName
 ``foo/bar.js`` it would be loaded from (relative to the duk_debug.js working
 directory, ``debugger/``)::
 
-    ../ecmascript-testcases/foo/bar.js
+    ../tests/ecmascript/foo/bar.js
 
 Similarly, if the filesystem contained::
 
-    ../ecmascript-testcases/baz/quux.js
+    ../tests/ecmascript/baz/quux.js
 
 the web UI dropdown would show ``baz/quux.js``.  If you selected that file
 and added a breakpoint, the breakpoint fileName sent to the debug target

@@ -1,4 +1,4 @@
--- Translated from ecmascript-testcases/test-dev-mandel2-func.js.
+-- Translated from tests/ecmascript/test-dev-mandel2-func.js.
 
 function mandel()
     local w = 80

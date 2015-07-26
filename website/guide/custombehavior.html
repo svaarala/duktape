@@ -116,7 +116,7 @@ be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT
 elements, the standard behavior is to ignore them so that they are not reflected in
 the result <code>length</code>.  Real world behavior is to include them in the result
 value <code>length</code>.  See
-<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-concat-nonstd-trailing.js">test-bi-array-proto-concat-nonstd-trailing.js</a>.</p>
+<a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-concat-nonstd-trailing.js">test-bi-array-proto-concat-nonstd-trailing.js</a>.</p>
 
 <p>The real world behavior seems consistent in other engines (V8, Rhino, Spidermonkey
 at least), so Duktape uses the real world behavior by default.  The strict standards compliant
@@ -125,7 +125,7 @@ behavior can be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_CO
 <h2>Array.prototype.map() trailing non-existent elements</h2>
 
 <p>Similar issue as with <code>Array.prototype.concat()</code>, see
-<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-map-nonstd-trailing.js">test-bi-array-proto-map-nonstd-trailing.js</a>.  The strict standards compliant behavior can be
+<a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-map-nonstd-trailing.js">test-bi-array-proto-map-nonstd-trailing.js</a>.  The strict standards compliant behavior can be
 enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER</code>.</p>
 
 <h2>Setter/getter key argument</h2>
@@ -137,7 +137,7 @@ for each property which is sometimes inconvenient and wastes memory.</p>
 
 <p>Duktape provides the property key name as a non-standard additional
 argument to setter and getter functions.  See
-<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-nonstd-setget-key-argument.js">test-dev-nonstd-setget-key-argument.js</a>
+<a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-nonstd-setget-key-argument.js">test-dev-nonstd-setget-key-argument.js</a>
 and <a href="#propertyvirtualization">Property virtualization</a>
 for more discussion.  The strict standards compliant behavior can be enabled
 with the feature option <code>DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT</code>.</p>
@@ -178,7 +178,7 @@ non-compliant, but there's no outward difference unless Array.prototype has
 properties with numeric keys.  You can turn on the compliant behavior with
 the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_WRITE</code>.  See the
 following for more details on the fast path behavior:
-<a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-misc-array-fast-write.js">test-misc-array-fast-write.js</a>.</p>
+<a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-misc-array-fast-write.js">test-misc-array-fast-write.js</a>.</p>
 
 <h2 id="typedarray-custombehavior">TypedArray binding</h2>
 

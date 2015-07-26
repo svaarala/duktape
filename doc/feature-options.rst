@@ -621,7 +621,7 @@ For better compatibility with existing code, ``Array.prototype.splice()``
 has non-standard behavior by default when the second argument (deleteCount)
 is not given: the splice operation is extended to the end of the array,
 see
-`test-bi-array-proto-splice-no-delcount.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-splice-no-delcount.js>`_.
+`test-bi-array-proto-splice-no-delcount.js <https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-splice-no-delcount.js>`_.
 If this option is given, ``splice()`` will behave in a strictly
 conforming fashion, treating a missing deleteCount the same as an undefined
 (or 0) value.
@@ -632,7 +632,7 @@ DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER
 For better compatibility with existing code, ``Array.prototype.concat()``
 has non-standard behavior by default for trailing non-existent elements of
 the concat result, see
-`test-bi-array-proto-concat-nonstd-trailing.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-concat-nonstd-trailing.js>`_.
+`test-bi-array-proto-concat-nonstd-trailing.js <https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-concat-nonstd-trailing.js>`_.
 If this option is given, ``concat()`` will behave in a strictly conforming
 fashion, ignoring non-existent trailing elements in the result ``length``.
 
@@ -642,7 +642,7 @@ DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER
 For better compatibility with existing code, ``Array.prototype.map()``
 has non-standard behavior by default for trailing non-existent elements
 of the map result, see
-`test-bi-array-proto-map-nonstd-trailing.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-bi-array-proto-map-nonstd-trailing.js>`_.
+`test-bi-array-proto-map-nonstd-trailing.js <https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-map-nonstd-trailing.js>`_.
 If this option is given, ``map()`` will behave in a strictly conforming
 fashion, ignoring non-existent trailing elements in the result ``length``.
 
@@ -671,7 +671,7 @@ Array instances.  The fast path improves performance for common array writes
 but is technically non-compliant.  There's a detectable outside difference
 only when Array.prototype has conflicting numeric properties (which is very
 rare in practice).  See
-`ecmascript-testcases/test-misc-array-fast-write.js <https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/ecmascript-testcases/test-misc-array-fast-write.js>`_
+`tests/ecmascript/test-misc-array-fast-write.js <https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-misc-array-fast-write.js>`_
 for details on the fast path conditions and behavior.
 
 This feature option enables the compliant (but slower) behavior.

@@ -481,7 +481,7 @@ function testRunnerMain() {
         .describe('report-diff-to-other', 'report diff to other engines')
         .describe('valgrind', 'run duktape testcase with valgrind (no effect on other engines)')
         .describe('prep-test-path', 'path for test_prep.py')
-        .describe('util-include-path', 'path for util-*.js files (ecmascript-testcases usually)')
+        .describe('util-include-path', 'path for util-*.js files (tests/ecmascript usually)')
         .describe('minify-closure', 'path for closure compiler.jar')
         .describe('minify-uglifyjs', 'path for UglifyJS executable')
         .describe('minify-uglifyjs2', 'path for UglifyJS2 executable')
