@@ -9,10 +9,6 @@ The main development repository is hosted on Github:
 
 * https://github.com/svaarala/duktape
 
-The repo includes Ditz issues which are used for low level task tracking.
-Because Ditz is no longer well supported (and doesn't work with newer Ruby
-versions), Ditz issues will be migrated to some other file-based tracker.
-
 The duktape.org website is also part of the repository.  Up to Duktape 0.12.0
 also the release binaries were stored in the Duktape repo.  For Duktape 1.0.0
 and after the convention is changed to use external binaries, see releases
@@ -25,6 +21,11 @@ available but don't bloat the main repository:
 * https://github.com/svaarala/duktape-releases
 
 This repo also provides unpacked release files as tags for convenience.
+
+Issue tracking
+==============
+
+Issues are tracked in GitHub, i.e. outside the repository itself.
 
 Releases
 ========
@@ -102,9 +103,7 @@ Merging
 =======
 
 All features and fixes should be developed in separate branches and merged
-to master.  The only exceptions at the moment are:
-
-* Ditz issue commits
+to master.
 
 Before merging:
 
@@ -165,22 +164,3 @@ Commit messages should follow these guidelines:
 
   - https://github.com/blog/926-shiny-new-commit-styles
   - http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-
-Ditz
-====
-
-Bugs, features, and tasks are tracked with Ditz, which keeps all issues
-as individual YAML files in the ``bugs/`` directory.
-
-Each Ditz issue has a UUID identifier.  The Ditz command line tool also
-provides short identifiers for referring to issues on the command line
-(e.g. ``ditz close duk-123``).  Note, however, that these identifiers are
-**not stable**; Ditz numbers them on-the-fly.  The numbering may change
-if you e.g. delete an issue manually or change an issue's component.
-
-Conventions:
-
-* Don't refer to issues with their short identifiers (``duk-123``) in
-  documentation or code: these identifiers are not stable.  Issues can
-  be referred to with their long identifiers.  Refer to issues using their
-  full hash.

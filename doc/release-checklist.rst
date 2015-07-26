@@ -25,10 +25,6 @@ Checklist for ordinary releases
 
   - git gc --aggressive
 
-* Ditz maintenance
-
-  - Ensure Ditz issues for the new release are all closed
-
 * Finalize DUK_VERSION
 
   - Change previous development version (with patch level 99) to release
@@ -46,8 +42,6 @@ Checklist for ordinary releases
   build because dist package contains RELEASES.rst)
 
   - New release is in place
-
-  - Release log entries match ditz issues
 
   - Release date is in place
 
@@ -286,12 +280,6 @@ Checklist for ordinary releases
 
   - Diff website HTML against current website
 
-* Ditz release
-
-  - ``ditz release vN.N``
-
-  - git add and commit ditz issues
-
 * Upload website and test
 
 * Final Git stuff
@@ -315,11 +303,6 @@ Checklist for ordinary releases
     version number easy to distinguish as an unofficial release.
 
   - ``src/duk_api_public.h.in``
-
-* Update ``DITZ_RELEASE`` in ``Makefile``
-
-  - It should point to the next expected release so that ``make issuecount``
-    and ``make issues`` provide useful output
 
 Checklist for maintenance releases
 ==================================

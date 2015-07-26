@@ -34,16 +34,14 @@
             // right now.  The properties we'd need to modify are non-writable
             // and non-configurable:
             //
-            //     \xffbytecode
+            //     \xffBytecode
             //     source
             //     global
             //     ignoreCase
             //     multiline
             //
-            // The property attributes can be relaxed, or the properties can
-            // be made accessors backing to the regexp bytecode, see Ditz
-            // issues: 0f2c246cadbb3b3913b75dc7e890ee4e7d336a1a and
-            // f8396fbcc36db4610fec5ad5a7d7a8f471d084a4.
+            // The property attributes can be relaxed, or the properties
+            // can be made accessors backing to the regexp bytecode.
 
             if (typeof pattern === 'object' && (propBytecode in pattern)) {
                 this[propBytecode] = pattern[propBytecode];
