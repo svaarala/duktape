@@ -8,9 +8,9 @@ hex decode: test string
 top after: 2
 ==> rc=0, result='undefined'
 *** test_decode_odd_length (duk_safe_call)
-==> rc=1, result='TypeError: hex decode failed'
+==> rc=1, result='TypeError: decode failed'
 *** test_decode_invalid_char (duk_safe_call)
-==> rc=1, result='TypeError: hex decode failed'
+==> rc=1, result='TypeError: decode failed'
 ===*/
 
 static duk_ret_t test_encode(duk_context *ctx) {
