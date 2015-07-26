@@ -364,6 +364,7 @@ cleanall: clean
 	@rm -rf 3883a2e9063b0a5f2705bdac3263577a03913c94.zip
 	@rm -rf es5-tests.zip
 	@rm -rf alljoyn-js ajtcl
+	@rm -f v1.3.5.tar.gz
 
 libduktape.so.1.0.0: dist
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
