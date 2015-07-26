@@ -1,4 +1,4 @@
-# Ecmascript testcase (ecmascript-testcases/) known issues
+# Ecmascript testcase (tests/ecmascript/) known issues
 
 -
   test: "test-bi-date-tzoffset-brute-fi.js"
@@ -130,7 +130,7 @@
   test: "test-dev-nonstd-setget-key-argument.js"
   specialoptions: "should work with default options, but will break with DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT"
 
-# API testcase known issues
+# API testcase (tests/api/) known issues
 
 -
   test: "test-to-number.c"

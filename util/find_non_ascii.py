@@ -2,7 +2,7 @@
 #
 #  Example:
 #
-#    $ for i in ecmascript-testcases/*.js; do python util/find_non_ascii.py $i; done
+#    $ for i in tests/ecmascript/*.js; do python util/find_non_ascii.py $i; done
 #
 
 import os, sys

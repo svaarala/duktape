@@ -1093,7 +1093,7 @@ def scrapeDuktapeVersion():
 def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
-	apitestdir = '../api-testcases'
+	apitestdir = '../tests/api'
 	guideincdirs = [ './guide', '../examples/guide' ]
 	apiincdirs = [ './api', '../examples/api' ]
 	out_charset = 'utf-8'

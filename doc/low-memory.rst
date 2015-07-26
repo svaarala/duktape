@@ -341,7 +341,7 @@ The Duktape command line tool writes out an allocation log when requested::
 
   # Log written to /tmp/duk-alloc-log.txt
   $ make clean duk
-  $ ./duk --alloc-logging ecmascript-testcases/test-dev-mandel2-func.js
+  $ ./duk --alloc-logging tests/ecmascript/test-dev-mandel2-func.js
 
 The "ajduk" command line tool is a variant with AllJoyn.js pool allocator,
 and a host of low memory optimizations.  It represents a low memory target
@@ -349,7 +349,7 @@ quite well and it can also be requested to write out an allocation log::
 
   # Log written to /tmp/ajduk-alloc-log.txt
   $ make clean ajduk
-  $ ./ajduk --ajsheap-log ecmascript-testcases/test-dev-mandel2-func.js
+  $ ./ajduk --ajsheap-log tests/ecmascript/test-dev-mandel2-func.js
 
 Allocation logs are represented in examples/alloc-logging format::
 
@@ -553,10 +553,10 @@ Optimizing for multiple application profiles
 Run hello world with alloc logging for Duktape baseline::
 
   # Using "duk", writes log to /tmp/duk-alloc-log.txt
-  $ ./duk --alloc-logging ecmascript-testcase/test-dev-hello-world.js
+  $ ./duk --alloc-logging tests/ecmascript/test-dev-hello-world.js
 
   # Using "ajduk", writes log to /tmp/ajduk-alloc-log.txt
-  $ ./ajduk --ajsheap-log ecmascript-testcase/test-dev-hello-world.js
+  $ ./ajduk --ajsheap-log tests/ecmascript/test-dev-hello-world.js
 
 Extract a "tight" pool configuration for the hello world baseline,
 pool entry sizes (but not counts) need to be known in advance::
@@ -573,7 +573,7 @@ Run multiple test applications and extract tight pool configurations for
 each (includes Duktape baseline but that is subtracted later) using the
 same method::
 
-  $ ./duk --alloc-logging ecmascript-testcase/test-dev-mandel2-func.js
+  $ ./duk --alloc-logging tests/ecmascript/test-dev-mandel2-func.js
   $ rm -rf /tmp/out; mkdir /tmp/out
   $ python examples/alloc-logging/pool_simulator.py \
       --out-dir /tmp/out \
@@ -582,7 +582,7 @@ same method::
       --out-pool-config /tmp/config_tight_app1.json \
       tight_counts_borrow
 
-  $ ./duk --alloc-logging ecmascript-testcase/test-bi-array-proto-push.js
+  $ ./duk --alloc-logging tests/ecmascript/test-bi-array-proto-push.js
   $ rm -rf /tmp/out; mkdir /tmp/out
   $ python examples/alloc-logging/pool_simulator.py \
       --out-dir /tmp/out \

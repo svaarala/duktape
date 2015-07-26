@@ -3311,7 +3311,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * one as far as writes are concerned.
 		 *
 		 * The fast path behavior is documented in more detail here:
-		 * ecmascript-testcases/test-misc-array-fast-write.js
+		 * tests/ecmascript/test-misc-array-fast-write.js
 		 */
 
 		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val, &desc) != 0) {

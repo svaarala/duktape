@@ -22,7 +22,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 	 * This would be confusing because the current strictness state
 	 * depends on whether we're running inside a Duktape/C activation
 	 * (= strict mode) or outside of any activation (= non-strict mode).
-	 * See api-testcases/test-eval-strictness.c for more discussion.
+	 * See tests/api/test-eval-strictness.c for more discussion.
 	 */
 
 	/* [ ... source? filename ] (depends on flags) */
@@ -68,7 +68,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	/* Note: strictness is not inherited from the current Duktape/C
 	 * context.  Otherwise it would not be possible to compile
 	 * non-strict code inside a Duktape/C activation (which is
-	 * always strict now).  See api-testcases/test-eval-strictness.c
+	 * always strict now).  See tests/api/test-eval-strictness.c
 	 * for discussion.
 	 */
 

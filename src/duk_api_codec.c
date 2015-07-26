@@ -290,9 +290,9 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 
 	/* XXX: Using a string return value forces a string intern which is
 	 * not always necessary.  As a rough performance measure, hex encode
-	 * time for perf-testcases/test-hex-encode.js dropped from ~35s to
-	 * ~15s without string coercion.  Change to returning a buffer and
-	 * let the caller coerce to string if necessary?
+	 * time for tests/perf/test-hex-encode.js dropped from ~35s to ~15s
+	 * without string coercion.  Change to returning a buffer and let the
+	 * caller coerce to string if necessary?
 	 */
 
 	ret = duk_to_string(ctx, -1);

@@ -75,7 +75,7 @@ You shouldn't access the traceback data directly.</p>
 You shouldn't rely on an exact traceback format as it may change between
 versions.  As an example of the current traceback format, the program:</p>
 <pre class="ecmascript-code">
-// shortened from ecmascript-testcases/test-dev-traceback-example.js
+// shortened from tests/ecmascript/test-dev-traceback-example.js
 try {
     decodeURIComponent('%e1%a9%01');  // invalid utf-8
 } catch (e) {
@@ -88,7 +88,7 @@ try {
 URIError: invalid input
         duk_bi_global.c:316
         decodeURIComponent  native strict preventsyield
-        global ecmascript-testcases/test-dev-traceback-example.js:3 preventsyield
+        global tests/ecmascript/test-dev-traceback-example.js:3 preventsyield
 </pre>
 
 <p>In builds where tracebacks are disabled, the <code>stack</code> accessor

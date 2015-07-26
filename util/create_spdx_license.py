@@ -128,7 +128,7 @@ def getDuktapeVersion():
 def main():
 	outfile = sys.argv[1]
 
-	if not os.path.exists('CONTRIBUTING.md') and os.path.exists('ecmascript-testcases'):
+	if not os.path.exists('CONTRIBUTING.md') and os.path.exists('tests/ecmascript'):
 		sys.stderr.write('Invalid CWD, must be in Duktape root with dist/ built')
 		sys.exit(1)
 	os.chdir('dist')

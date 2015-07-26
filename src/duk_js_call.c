@@ -408,7 +408,7 @@ void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		/* [ ... func this arg1 ... argN ] */
 
 		if (is_constructor_call) {
-			/* See: ecmascript-testcases/test-spec-bound-constructor.js */
+			/* See: tests/ecmascript/test-spec-bound-constructor.js */
 			DUK_DDD(DUK_DDDPRINT("constructor call: don't update this binding"));
 		} else {
 			duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);

@@ -314,7 +314,7 @@ clean:
 	@rm -rf callgrind.out.*
 	@rm -rf oprofile_data/
 	@rm -f /tmp/duk_sizes.html
-	@rm -f /tmp/duk-test-eval-file-temp.js  # used by api-testcase/test-eval-file.js
+	@rm -f /tmp/duk-test-eval-file-temp.js  # used by tests/api/test-eval-file.js
 	@rm -rf /tmp/duktape-regfuzz/
 	@rm -f /tmp/duk-test.log /tmp/duk-api-test.log
 	@rm -f /tmp/duk-test262.log /tmp/duk-test262-filtered.log
@@ -468,46 +468,46 @@ dukdscanbuild: dist
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest emscripteninceptiontest test262test
 
-RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path ecmascript-testcases --known-issues doc/testcase-known-issues.yaml
+RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin/uglifyjs --util-include-path tests/ecmascript --known-issues doc/testcase-known-issues.yaml
 
 .PHONY:	ecmatest
 ecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	ecmatestd
 ecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatestd"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatest
 qecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatestd
 qecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatestd"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log ecmascript-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 # Separate target because it's also convenient to run manually.
@@ -518,10 +518,10 @@ apiprep: runtestsdeps libduktape.so.1.0.0
 apitest: apiprep
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### apitest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log tests/api/
 else
 	@echo "### apitest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log api-testcases/
+	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
 endif
 
 .PHONY: matrix10
@@ -583,7 +583,7 @@ lodash:
 # expect string etc.
 .PHONY: lodashtest
 lodashtest: lodash duk
-	./duk lodash/lodash.js lodash-testcases/basic.js
+	./duk lodash/lodash.js tests/lodash/basic.js
 
 3883a2e9063b0a5f2705bdac3263577a03913c94.zip:
 	# http://test262.ecmascript.org/
@@ -641,7 +641,7 @@ emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles helloworld.c and tries to run it, no checks yet)"
-	emscripten/emcc $(EMCCOPTS) emscripten-testcases/helloworld.c -o /tmp/duk-emcc-test.js
+	emscripten/emcc $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	./duk /tmp/duk-emcc-test-fixed.js
@@ -652,7 +652,7 @@ emscriptenmandeltest: emscripten duk
 	@echo "### emscriptenmandeltest"
 	@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles mandelbrot.c and tries to run it, no checks yet)"
-	emscripten/emcc $(EMCCOPTS) emscripten-testcases/mandelbrot.c -o /tmp/duk-emcc-test.js
+	emscripten/emcc $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	./duk /tmp/duk-emcc-test-fixed.js
@@ -748,7 +748,7 @@ jsinterpretertest: JS-Interpreter duk
 	@rm -f /tmp/duk-jsint-test*
 	echo "window = {};" > /tmp/duk-jsint-test.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-test.js
-	cat jsinterpreter-testcases/addition.js >> /tmp/duk-jsint-test.js
+	cat tests/jsinterpreter/addition.js >> /tmp/duk-jsint-test.js
 	./duk /tmp/duk-jsint-test.js
 
 luajs.zip:
@@ -763,7 +763,7 @@ luajs: luajs.zip
 .PHONY: luajstest
 luajstest: luajs duk
 	@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
-	luajs/lua2js luajs-testcases/mandel.lua /tmp/duk-luajs-mandel.js
+	luajs/lua2js tests/luajs/mandel.lua /tmp/duk-luajs-mandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-test.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
 	./duk /tmp/duk-luajs-test.js
@@ -807,7 +807,7 @@ compiler.jar: closure-compiler/build/compiler.jar
 closuretest: compiler.jar duk
 	@echo "### closuretest"
 	@rm -f /tmp/duk-closure-test*
-	$(JAVA) -jar compiler.jar ecmascript-testcases/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
+	$(JAVA) -jar compiler.jar tests/ecmascript/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
 	./duk /tmp/duk-closure-test.js
 
 UglifyJS:
@@ -872,7 +872,7 @@ xmldoctest: sax-js xmldoc duk
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat xmldoc/lib/xmldoc.js >> /tmp/duk-xmldoc-test.js
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
-	cat xmldoc-testcases/basic.js >> /tmp/duk-xmldoc-test.js
+	cat tests/xmldoc/basic.js >> /tmp/duk-xmldoc-test.js
 	./duk /tmp/duk-xmldoc-test.js
 
 FlameGraph:
@@ -1033,11 +1033,11 @@ dist-site:	tidy-site site
 
 .PHONY: codepolicycheck
 codepolicycheck:
-	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in api-testcases/*.c
+	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in tests/api/*.c
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:
-	-python util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in api-testcases/*.c
+	-python util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in tests/api/*.c
 
 .PHONY: big-git-files
 big-git-files:
@@ -1057,7 +1057,7 @@ checkalign:
 # satisfied and can be executed multiple times without cleaning.
 # Grep/sed hacks from:
 # http://stackoverflow.com/questions/774556/peak-memory-usage-of-a-linux-unix-process
-massif-%: ecmascript-testcases/%.js duk
+massif-%: tests/ecmascript/%.js duk
 	@rm -f $(@).out
 	valgrind --tool=massif --peak-inaccuracy=0.0 --massif-out-file=$(@).out ./duk $< >/dev/null 2>/dev/null
 	@ms_print $(@).out | head -35
@@ -1083,7 +1083,7 @@ massif-arcfour: massif-test-dev-arcfour
 TIME=python util/time_multi.py 5 # Take minimum time of N
 
 perftest: duk duk.O2 duk.O3 duk.O4
-	for i in perf-testcases/*.js; do \
+	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
 		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
@@ -1099,7 +1099,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf '\n'; \
 	done
 perftestduk: duk
-	for i in perf-testcases/*.js; do \
+	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
 		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
@@ -1107,7 +1107,7 @@ perftestduk: duk
 		printf '\n'; \
 	done
 perftestduk3: duk
-	for i in perf-testcases/*.js; do \
+	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-O2'; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
