@@ -4,6 +4,7 @@
 *.strip
 build/
 dist/
+site/
 stuff/
 autotest/
 duktape-releases/
@@ -16,6 +17,7 @@ emscripten/
 underscore/
 lodash/
 test262-d067d2f0ca30/
+JS-Interpreter/
 runtests/node_modules/
 d067d2f0ca30.tar.bz2
 595a36b252ee97110724e6fa89fc92c9aa9a206a.zip
@@ -40,3 +42,13 @@ massif-*.out
 ms_print.*
 alljoyn-js
 ajtcl
+dukweb.js
+debugger/jquery-ui-1.11.2.zip
+debugger/jquery-ui-1.11.2/
+debugger/node_modules/
+debugger/static/images/
+debugger/static/jquery-1.11.1.min.js
+debugger/static/jquery-ui.min.css
+debugger/static/jquery-ui.min.js
+debugger/static/reset.css
+debugger/static/socket.io-1.2.0.js
