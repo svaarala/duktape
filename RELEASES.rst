@@ -968,6 +968,9 @@ Planned
 
 * Add duk_instanceof() API call (GH-148)
 
+* Add Proxy object support to 'instanceof' operator (without support for
+  'getPrototypeOf' trap) (GH-182)
+
 * Add duk_steal_buffer() API call which allows user code to steal the current
   allocation of a dynamic buffer which is useful for some buffer manipulation
   algorithms (GH-129)
