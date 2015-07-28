@@ -127,6 +127,7 @@ DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t r
 	/* XXX: this generates quite large code - perhaps select the error
 	 * class based on the code and then just use the error 'name'?
 	 */
+	/* XXX: shared strings */
 
 	code = -rc;
 

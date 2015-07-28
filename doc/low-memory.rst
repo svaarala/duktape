@@ -101,6 +101,12 @@ Suggested feature options
 
   - ``DUK_OPT_NO_REGEXP_SUPPORT``
 
+* Disable unnecessary parts of the C API:
+
+  - ``DUK_OPT_NO_BYTECODE_DUMP_SUPPORT``
+
+  - ``#undef DUK_USE_BYTECODE_DUMP_SUPPORT``
+
 * Duktape debug code uses a large, static temporary buffer for formatting
   debug log lines.  If you're running with debugging enabled, use e.g.
   the following to reduce this overhead:

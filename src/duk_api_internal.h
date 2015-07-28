@@ -107,9 +107,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t i
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hbuffer *duk_require_hbuffer(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t index);
-#if 0  /*unused */
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index);
-#endif
 DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index);
 
 #define duk_require_hobject_with_class(ctx,index,classnum) \

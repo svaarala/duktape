@@ -15,7 +15,7 @@
     <code>experimental</code>.  API calls implemented as macros are part of
     the public API, but any internal calls the macros make are not.  Changing
     an API call from a function call to a macro (or vice versa) is considered
-    a compatible change.</li>
+    a compatible change (but is not done in patch releases).</li>
 <li>The global environment visible to Ecmascript code, including the <code>Duktape</code>
     object and other Ecmascript extensions, as documented on duktape.org.</li>
 </ul>
@@ -29,6 +29,14 @@
     a compile error when a no-longer-supported feature option is used so that any
     incorrect assumptions can be fixed.</li>
 <li>Extras distributed with Duktape (<code>extras/</code> directory).</li>
+</ul>
+
+<p>When a patch version is released, the following things are guaranteed:</p>
+<ul>
+<li>API binary compatibility is maintained: constant values don't change, function
+    typing doesn't change, API call function/macro status doesn't change.</li>
+<li>Bytecode dump/load format doesn't change so that you can load bytecode
+    dumped from an older version which only differs in patch version.</li>
 </ul>
 
 <h2 id="experimental-features">Experimental features</h2>

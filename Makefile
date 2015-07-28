@@ -68,6 +68,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_util_bitdecoder.c \
 	$(DISTSRCSEP)/duk_util_bitencoder.c \
 	$(DISTSRCSEP)/duk_util_tinyrandom.c \
+	$(DISTSRCSEP)/duk_util_bufwriter.c \
 	$(DISTSRCSEP)/duk_util_misc.c \
 	$(DISTSRCSEP)/duk_alloc_default.c \
 	$(DISTSRCSEP)/duk_debug_macros.c \
@@ -113,6 +114,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_api_heap.c \
 	$(DISTSRCSEP)/duk_api_call.c \
 	$(DISTSRCSEP)/duk_api_compile.c \
+	$(DISTSRCSEP)/duk_api_bytecode.c \
 	$(DISTSRCSEP)/duk_api_codec.c \
 	$(DISTSRCSEP)/duk_api_memory.c \
 	$(DISTSRCSEP)/duk_api_string.c \

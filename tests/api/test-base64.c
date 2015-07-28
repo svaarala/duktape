@@ -8,7 +8,7 @@ base64 decode: test string
 top after: 2
 ==> rc=0, result='undefined'
 *** test_decode_invalid_char (duk_safe_call)
-==> rc=1, result='TypeError: base64 decode failed'
+==> rc=1, result='TypeError: decode failed'
 ===*/
 
 static duk_ret_t test_encode(duk_context *ctx) {

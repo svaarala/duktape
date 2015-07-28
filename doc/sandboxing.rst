@@ -332,6 +332,37 @@ Particular issues to look out for:
   to perform unauthenticated database writes or breach memory safety
   through file I/O on a Unix device file.
 
+Use bytecode dump/load carefully
+--------------------------------
+
+Because Duktape doesn't validate bytecode being loaded, loading invalid
+bytecode may lead to memory unsafe behavior -- even exploitable
+vulnerabilities.  To avoid such issues:
+
+* Use bytecode dump/load only when it is really necessary e.g. for
+  performance.  An alternative to bytecode dump/load is to compile
+  on-the-fly which is usually not a performance bottleneck.  You can
+  use e.g. minification to obfuscate code.
+
+* Ensure bytecode being loaded has been compiled with the same Duktape
+  version and same Duktape configuration options.  Major and minor versions
+  must match; patch version may vary as bytecode format doesn't change in
+  patch versions.
+
+* Ensure integrity of bytecode being loaded e.g. by checksumming.
+
+* If bytecode is transported over the network or other unsafe media,
+  use cryptographic means (keyed hashing, signatures, or similar) to
+  ensure an attacker cannot cause crafted bytecode to be loaded.
+
+Bytecode dump/load is only available through the C API, so there are
+no direct sandboxing considerations for executing Ecmascript code.
+However, if a Duktape/C function uses bytecode dump/load, ensure that
+it doesn't accidentally expose the facility to Ecmascript code.
+
+See ``bytecode.rst`` for more discussion on bytecode limitations and
+best practices.
+
 Bytecode execution timeout details
 ==================================
 

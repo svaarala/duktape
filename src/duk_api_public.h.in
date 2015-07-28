@@ -843,6 +843,13 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
 	 duk_compile_raw((ctx), NULL, 0, (flags) | DUK_COMPILE_SAFE))
 
 /*
+ *  Bytecode load/dump
+ */
+
+DUK_EXTERNAL_DECL void duk_dump_function(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_load_function(duk_context *ctx);
+
+/*
  *  Logging
  */
 
