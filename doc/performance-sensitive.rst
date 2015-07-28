@@ -8,6 +8,9 @@ Overview
 This document describes suggested feature options for optimizing Duktape
 performance for performance sensitive environments.
 
+The following genconfig option file template enables most performance
+related options: ``config/examples/performance_sensitive.yaml``.
+
 Compiler optimization level
 ===========================
 
@@ -54,6 +57,18 @@ Suggested feature options
   (or penalty) depends on the kind of Ecmascript code executed, e.g. code
   heavy on integer loops benefits.
 
+* Enable specific fast paths:
+
+  - ``#define DUK_USE_JSON_STRINGIFY_FASTPATH``
+
+  - ``#define DUK_USE_JSON_QUOTESTRING_FASTPATH``
+
+  - ``#define DUK_USE_JSON_DECSTRING_FASTPATH``
+
+  - ``#define DUK_USE_JSON_DECNUMBER_FASTPATH``
+
+  - ``#define DUK_USE_JSON_EATWHITE_FASTPATH``
+
 * If you don't need debugging support or execution timeout support, ensure
   the following are **not enabled**:
 
@@ -64,3 +79,9 @@ Suggested feature options
   Especially interrupt counter option will have a measurable performance
   impact because it includes code executed for every bytecode instruction
   dispatch.
+
+* Disable safety check for value stack resizing so that if calling code
+  fails to ``duk_check_stack()`` value stack, the result is memory unsafe
+  behavior rather than an explicit error, but stack operations are faster:
+
+  - ``#undef DUK_USE_VALSTACK_UNSAFE``
