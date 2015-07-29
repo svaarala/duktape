@@ -65,4 +65,5 @@ try {
     test();
 } catch (e) {
     print(e.stack || e);
+    throw e;
 }

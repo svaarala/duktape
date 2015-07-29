@@ -20,8 +20,9 @@ function test() {
     }
 }
 
-if (typeof Duktape === 'object') {
+try {
     test();
-} else {
-    // Ignore on e.g. Rhino
+} catch (e) {
+    print(e.stack || e);
+    throw e;
 }
