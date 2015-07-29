@@ -149,7 +149,8 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decod
 DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
-	duk_hbuffer_dynamic *h_buf;
+	duk_bufwriter_ctx bw_alloc;
+	duk_bufwriter_ctx *bw;
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
 
@@ -160,26 +161,29 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 	h_input = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h_input != NULL);
 
-	/* XXX: should init with a spare of at least h_input->blen? */
-	duk_push_dynamic_buffer(ctx, 0);
-	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
+	bw = &bw_alloc;
+	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));  /* reasonable output estimate */
 
 	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
 	for (;;) {
+		/* XXX: could write output in chunks with fewer ensure calls,
+		 * but relative benefit would be small here.
+		 */
+
 		if (p >= p_end) {
 			break;
 		}
 		cp = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 		cp = callback(udata, cp);
-		duk_hbuffer_append_xutf8(thr, h_buf, cp);
+
+		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
 	}
 
-	duk_to_string(ctx, -1);  /* invalidates h_buf pointer */
+	DUK_BW_COMPACT(thr, bw);
+	duk_to_string(ctx, -1);
 	duk_replace(ctx, index);
 }
 
