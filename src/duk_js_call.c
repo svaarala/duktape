@@ -1520,7 +1520,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	goto shrink_and_finished;
 
  shrink_and_finished:
-#if defined(DUK_OPT_FASTINT)
+#if defined(DUK_USE_FASTINT)
 	/* Explicit check for fastint downgrade. */
 	{
 		duk_tval *tv_fi;

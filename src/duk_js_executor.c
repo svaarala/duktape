@@ -3185,7 +3185,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
 				tv_val = DUK__REGCONSTP(b);
-#if defined(DUK_OPT_FASTINT)
+#if defined(DUK_USE_FASTINT)
 				/* Explicit check for fastint downgrade.  Do
 				 * it also for consts for now, which is odd
 				 * but harmless.
