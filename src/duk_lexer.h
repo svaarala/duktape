@@ -341,8 +341,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_RETOK_ATOM_START_CHARCLASS_INVERTED    21
 #define DUK_RETOK_ATOM_END_GROUP                   22
 
-/* constants for duk_lexer_ctx.buf */
-#define DUK_LEXER_TEMP_BUF_INITIAL                 64
+/* Constants for duk_lexer_ctx.buf. */
 #define DUK_LEXER_TEMP_BUF_LIMIT                   256
 
 /* A token value.  Can be memcpy()'d, but note that slot1/slot2 values are on the valstack.
@@ -405,7 +404,8 @@ struct duk_lexer_ctx {
 	duk_idx_t slot1_idx;                           /* valstack slot for 1st token value */
 	duk_idx_t slot2_idx;                           /* valstack slot for 2nd token value */
 	duk_idx_t buf_idx;                             /* valstack slot for temp buffer */
-	duk_hbuffer_dynamic *buf;                      /* temp accumulation buffer (on valstack) */
+	duk_hbuffer_dynamic *buf;                      /* temp accumulation buffer */
+	duk_bufwriter_ctx bw;                          /* bufwriter for temp accumulation */
 
 	duk_int_t token_count;                         /* number of tokens parsed */
 	duk_int_t token_limit;                         /* maximum token count before error (sanity backstop) */

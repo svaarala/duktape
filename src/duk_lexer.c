@@ -510,12 +510,14 @@ DUK_LOCAL void duk__init_lexer_window(duk_lexer_ctx *lex_ctx) {
  */
 
 DUK_LOCAL void duk__initbuffer(duk_lexer_ctx *lex_ctx) {
-	if (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(lex_ctx->buf) < DUK_LEXER_TEMP_BUF_LIMIT) {
-		/* Resize (zero) without realloc. */
-		DUK_HBUFFER_DYNAMIC_SET_SIZE(lex_ctx->buf, 0);
+	/* Reuse buffer as is unless buffer has grown large. */
+	if (DUK_HBUFFER_DYNAMIC_GET_SIZE(lex_ctx->buf) < DUK_LEXER_TEMP_BUF_LIMIT) {
+		/* Keep current size */
 	} else {
-		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, 0, DUK_LEXER_TEMP_BUF_LIMIT);
+		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, DUK_LEXER_TEMP_BUF_LIMIT, DUK_LEXER_TEMP_BUF_LIMIT);
 	}
+
+	DUK_BW_INIT_WITHBUF(lex_ctx->thr, &lex_ctx->bw, lex_ctx->buf);
 }
 
 /*
@@ -537,7 +539,7 @@ DUK_LOCAL void duk__appendbuffer(duk_lexer_ctx *lex_ctx, duk_codepoint_t x) {
 
 	DUK_ASSERT(x >= 0 && x <= 0x10ffff);
 
-	duk_hbuffer_append_cesu8(lex_ctx->thr, lex_ctx->buf, (duk_ucodepoint_t) x);
+	DUK_BW_WRITE_ENSURE_CESU8(lex_ctx->thr, &lex_ctx->bw, (duk_ucodepoint_t) x);
 }
 
 /*
@@ -550,8 +552,7 @@ DUK_LOCAL void duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx)
 
 	DUK_ASSERT(valstack_idx == lex_ctx->slot1_idx || valstack_idx == lex_ctx->slot2_idx);
 
-	duk_dup(ctx, lex_ctx->buf_idx);
-	duk_to_string(ctx, -1);
+	DUK_BW_PUSH_AS_STRING(lex_ctx->thr, &lex_ctx->bw);
 	duk_replace(ctx, valstack_idx);
 }
 
