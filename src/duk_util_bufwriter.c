@@ -8,85 +8,263 @@
  *  Macro support functions (use only macros in calling code)
  */
 
+DUK_LOCAL void duk__bw_update_ptrs(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t curr_offset, duk_size_t new_length) {
+	duk_uint8_t *p;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw_ctx != NULL);
+	DUK_UNREF(thr);
+
+	p = DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf);
+	DUK_ASSERT(p != NULL || (DUK_HBUFFER_DYNAMIC_GET_SIZE(bw_ctx->buf) == 0 && curr_offset == 0 && new_length == 0));
+	bw_ctx->p = p + curr_offset;
+	bw_ctx->p_base = p;
+	bw_ctx->p_limit = p + new_length;
+}
+
 DUK_INTERNAL void duk_bw_init(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_hbuffer_dynamic *h_buf) {
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_ASSERT(h_buf != NULL);
 	DUK_UNREF(thr);
 
-	bw_ctx->offset = 0;
-	bw_ctx->length = DUK_HBUFFER_DYNAMIC_GET_SIZE(h_buf);
-	bw_ctx->limit = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf) + bw_ctx->length;
 	bw_ctx->buf = h_buf;
+	duk__bw_update_ptrs(thr, bw_ctx, 0, DUK_HBUFFER_DYNAMIC_GET_SIZE(h_buf));
 }
 
-/* Get current write pointer.  After this you must call duk_bufwriter_ensure()
- * to start writing.
- */
-DUK_INTERNAL duk_uint8_t *duk_bw_getptr(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx) {
+DUK_INTERNAL void duk_bw_init_pushbuf(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t buf_size) {
+	duk_context *ctx;
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
-	DUK_UNREF(thr);
+	ctx = (duk_context *) thr;
 
-	return (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf) + bw_ctx->offset;
+	(void) duk_push_dynamic_buffer(ctx, buf_size);
+	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
+	duk__bw_update_ptrs(thr, bw_ctx, 0, buf_size);
 }
 
 /* Resize target buffer for requested size.  Called by the macro only when the
  * fast path test (= there is space) fails.
  */
-DUK_INTERNAL duk_uint8_t *duk_bw_resize(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t sz, duk_uint8_t *ptr) {
-	duk_size_t offset;
+DUK_INTERNAL duk_uint8_t *duk_bw_resize(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t sz) {
+	duk_size_t curr_off;
 	duk_size_t add_sz;
 	duk_size_t new_sz;
-	duk_uint8_t *base;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
-	DUK_ASSERT(ptr != NULL);
 
-	/* 'offset' intentionally not updated to bw_ctx->offset until finish. */
+	/* We could do this operation without caller updating bw_ctx->ptr,
+	 * but by writing it back here we can share code better.
+	 */
 
-	offset = (duk_size_t) (ptr - (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf));
-	add_sz = (offset >> DUK_BW_SPARE_SHIFT) + DUK_BW_SPARE_ADD;
-	new_sz = offset + sz + add_sz;
-	if (new_sz < offset) {
+	curr_off = (duk_size_t) (bw_ctx->p - bw_ctx->p_base);
+	add_sz = (curr_off >> DUK_BW_SPARE_SHIFT) + DUK_BW_SPARE_ADD;
+	new_sz = curr_off + sz + add_sz;
+	if (new_sz < curr_off) {
+		/* overflow */
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_BUFFER_TOO_LONG);
 		return NULL;  /* not reachable */
 	}
 #if 0  /* for manual torture testing: tight allocation, useful with valgrind */
-	new_sz = offset + sz;
+	new_sz = curr_off + sz;
 #endif
 
-	DUK_DD(DUK_DDPRINT("resize bufferwriter from %ld to %ld (add_sz=%ld)", (long) offset, (long) new_sz, (long) add_sz));
+	/* This is important to ensure dynamic buffer data pointer is not
+	 * NULL (which is possible if buffer size is zero), which in turn
+	 * causes portability issues with e.g. memmove() and memcpy().
+	 */
+	DUK_ASSERT(new_sz >= 1);
 
-	/* XXX: simplify resize call when spare removed */
-	duk_hbuffer_resize(thr, bw_ctx->buf, new_sz, new_sz);
-	bw_ctx->length = new_sz;
-	base = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf);
-	bw_ctx->limit = base + bw_ctx->length;
-	return base + offset;
+	DUK_DD(DUK_DDPRINT("resize bufferwriter from %ld to %ld (add_sz=%ld)", (long) curr_off, (long) new_sz, (long) add_sz));
+
+	duk_hbuffer_resize(thr, bw_ctx->buf, new_sz);
+	duk__bw_update_ptrs(thr, bw_ctx, curr_off, new_sz);
+	return bw_ctx->p;
 }
 
-/* Finish writing for now, updates bw_ctx->offset. */
-DUK_INTERNAL void duk_bw_finish(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_uint8_t *ptr) {
-	duk_size_t offset;
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(bw_ctx != NULL);
-	DUK_ASSERT(ptr != NULL);
-	DUK_UNREF(thr);
-
-	offset = (duk_size_t) (ptr - (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf));
-	bw_ctx->offset = offset;
-}
-
-/* Make buffer compact; caller must call duk_bw_finish() first to update bw_ctx->offset. */
+/* Make buffer compact, matching current written size. */
 DUK_INTERNAL void duk_bw_compact(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx) {
+	duk_size_t len;
+
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_UNREF(thr);
 
-	duk_hbuffer_resize(thr, bw_ctx->buf, bw_ctx->offset, bw_ctx->offset);
+	len = (duk_size_t) (bw_ctx->p - bw_ctx->p_base);
+	duk_hbuffer_resize(thr, bw_ctx->buf, len);
+	duk__bw_update_ptrs(thr, bw_ctx, len, len);
+}
+
+DUK_INTERNAL void duk_bw_write_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t src_off, duk_size_t len) {
+	duk_uint8_t *p_base;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	p_base = bw->p_base;
+	DUK_MEMCPY((void *) bw->p,
+	           (const void *) (p_base + src_off),
+	           (duk_size_t) len);
+	bw->p += len;
+}
+
+DUK_INTERNAL void duk_bw_write_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t src_off, duk_size_t len) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	DUK_BW_ENSURE(thr, bw, len);
+	duk_bw_write_raw_slice(thr, bw, src_off, len);
+}
+
+DUK_INTERNAL void duk_bw_insert_raw_bytes(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, const duk_uint8_t *buf, duk_size_t len) {
+	duk_uint8_t *p_base;
+	duk_size_t buf_sz, move_sz;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(buf != NULL);
+	DUK_UNREF(thr);
+
+	p_base = bw->p_base;
+	buf_sz = bw->p - p_base;
+	move_sz = buf_sz - dst_off;
+
+	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
+	DUK_MEMMOVE((void *) (p_base + dst_off + len),
+	            (const void *) (p_base + dst_off),
+	            (duk_size_t) move_sz);
+	DUK_MEMCPY((void *) (p_base + dst_off),
+	           (const void *) buf,
+	           (duk_size_t) len);
+	bw->p += len;
+}
+
+DUK_INTERNAL void duk_bw_insert_ensure_bytes(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, const duk_uint8_t *buf, duk_size_t len) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(buf != NULL);
+	DUK_UNREF(thr);
+
+	DUK_BW_ENSURE(thr, bw, len);
+	duk_bw_insert_raw_bytes(thr, bw, dst_off, buf, len);
+}
+
+DUK_INTERNAL void duk_bw_insert_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, duk_size_t src_off, duk_size_t len) {
+	duk_uint8_t *p_base;
+	duk_size_t buf_sz, move_sz;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	p_base = bw->p_base;
+
+	/* Don't support "straddled" source now. */
+	DUK_ASSERT(dst_off <= src_off || dst_off >= src_off + len);
+
+	if (dst_off <= src_off) {
+		/* Target is before source.  Source offset is expressed as
+		 * a "before change" offset.  Account for the memmove.
+		 */
+		src_off += len;
+	}
+
+	buf_sz = bw->p - p_base;
+	move_sz = buf_sz - dst_off;
+
+	DUK_ASSERT(p_base != NULL);  /* buffer size is >= 1 */
+	DUK_MEMMOVE((void *) (p_base + dst_off + len),
+	            (const void *) (p_base + dst_off),
+	            (duk_size_t) move_sz);
+	DUK_MEMCPY((void *) (p_base + dst_off),
+	           (const void *) (p_base + src_off),
+	           (duk_size_t) len);
+	bw->p += len;
+}
+
+DUK_INTERNAL void duk_bw_insert_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t dst_off, duk_size_t src_off, duk_size_t len) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	/* Don't support "straddled" source now. */
+	DUK_ASSERT(dst_off <= src_off || dst_off >= src_off + len);
+
+	DUK_BW_ENSURE(thr, bw, len);
+	duk_bw_insert_raw_slice(thr, bw, dst_off, src_off, len);
+}
+
+DUK_INTERNAL duk_uint8_t *duk_bw_insert_raw_area(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t off, duk_size_t len) {
+	duk_uint8_t *p_base, *p_dst, *p_src;
+	duk_size_t buf_sz, move_sz;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	p_base = bw->p_base;
+	buf_sz = bw->p - p_base;
+	move_sz = buf_sz - off;
+	p_dst = p_base + off + len;
+	p_src = p_base + off;
+	DUK_MEMMOVE((void *) p_dst, (const void *) p_src, move_sz);
+	return p_src;  /* point to start of 'reserved area' */
+}
+
+DUK_INTERNAL duk_uint8_t *duk_bw_insert_ensure_area(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t off, duk_size_t len) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	DUK_BW_ENSURE(thr, bw, len);
+	return duk_bw_insert_raw_area(thr, bw, off, len);
+}
+
+DUK_INTERNAL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t off, duk_size_t len) {
+	duk_size_t move_sz;
+
+	duk_uint8_t *p_base;
+	duk_uint8_t *p_src;
+	duk_uint8_t *p_dst;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(bw != NULL);
+	DUK_ASSERT(off <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_ASSERT(off + len <= DUK_BW_GET_SIZE(thr, bw));
+	DUK_UNREF(thr);
+
+	p_base = bw->p_base;
+	p_dst = p_base + off;
+	p_src = p_dst + len;
+	move_sz = (duk_size_t) (bw->p - p_src);
+	DUK_MEMMOVE((void *) p_dst,
+	            (const void *) p_src,
+	            move_sz);
+	bw->p -= len;
 }
 
 /*
