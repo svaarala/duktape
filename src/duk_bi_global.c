@@ -8,6 +8,11 @@
  *  Encoding/decoding helpers
  */
 
+/* XXX: Could add fast path (for each transform callback) with direct byte
+ * lookups (no shifting) and no explicit check for x < 0x80 before table
+ * lookup.
+ */
+
 /* Macros for creating and checking bitmasks for character encoding.
  * Bit number is a bit counterintuitive, but minimizes code size.
  */
@@ -79,10 +84,12 @@ DUK_LOCAL const duk_uint8_t duk__escape_unescaped_table[16] = {
 };
 #endif  /* DUK_USE_SECTION_B */
 
+#undef DUK__MKBITS
+
 typedef struct {
 	duk_hthread *thr;
 	duk_hstring *h_str;
-	duk_hbuffer_dynamic *h_buf;
+	duk_bufwriter_ctx bw;
 	const duk_uint8_t *p;
 	const duk_uint8_t *p_start;
 	const duk_uint8_t *p_end;
@@ -119,10 +126,7 @@ DUK_LOCAL int duk__transform_helper(duk_context *ctx, duk__transform_callback ca
 	tfm_ctx->h_str = duk_to_hstring(ctx, 0);
 	DUK_ASSERT(tfm_ctx->h_str != NULL);
 
-	(void) duk_push_dynamic_buffer(ctx, 0);
-	tfm_ctx->h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(tfm_ctx->h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(tfm_ctx->h_buf));
+	DUK_BW_INIT_PUSHBUF(thr, &tfm_ctx->bw, DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str));  /* initial size guess */
 
 	tfm_ctx->p_start = DUK_HSTRING_GET_DATA(tfm_ctx->h_str);
 	tfm_ctx->p_end = tfm_ctx->p_start + DUK_HSTRING_GET_BYTELEN(tfm_ctx->h_str);
@@ -133,22 +137,29 @@ DUK_LOCAL int duk__transform_helper(duk_context *ctx, duk__transform_callback ca
 		callback(tfm_ctx, udata, cp);
 	}
 
+	DUK_BW_COMPACT(thr, &tfm_ctx->bw);
+
 	duk_to_string(ctx, -1);
 	return 1;
 }
 
 DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
 	duk_uint8_t xutf8_buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
-	duk_uint8_t buf[3];
 	duk_small_int_t len;
 	duk_codepoint_t cp1, cp2;
 	duk_small_int_t i, t;
 	const duk_uint8_t *unescaped_table = (duk_uint8_t *) udata;
 
+	/* UTF-8 encoded bytes escaped as %xx%xx%xx... -> 3 * nbytes.
+	 * Codepoint range is restricted so this is a slightly too large
+	 * but doesn't matter.
+	 */
+	DUK_BW_ENSURE(tfm_ctx->thr, &tfm_ctx->bw, 3 * DUK_UNICODE_MAX_XUTF8_LENGTH);
+
 	if (cp < 0) {
 		goto uri_error;
 	} else if ((cp < 0x80L) && DUK__CHECK_BITMASK(unescaped_table, cp)) {
-		duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) cp);
+		DUK_BW_WRITE_RAW_U8(tfm_ctx->thr, &tfm_ctx->bw, (duk_uint8_t) cp);
 		return;
 	} else if (cp >= 0xdc00L && cp <= 0xdfffL) {
 		goto uri_error;
@@ -172,19 +183,22 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 		goto uri_error;
 	} else {
 		/* Non-BMP characters within valid UTF-8 range: encode as is.
-		 * They'll decode back into surrogate pairs.
+		 * They'll decode back into surrogate pairs if the escaped
+		 * output is decoded.
 		 */
 		;
 	}
 
 	len = duk_unicode_encode_xutf8((duk_ucodepoint_t) cp, xutf8_buf);
-	buf[0] = (duk_uint8_t) '%';
 	for (i = 0; i < len; i++) {
 		t = (int) xutf8_buf[i];
-		buf[1] = (duk_uint8_t) duk_uc_nybbles[t >> 4];
-		buf[2] = (duk_uint8_t) duk_uc_nybbles[t & 0x0f];
-		duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, buf, 3);
+		DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr,
+		                      &tfm_ctx->bw,
+		                      DUK_ASC_PERCENT,
+		                      (duk_uint8_t) duk_uc_nybbles[t >> 4],
+                                      (duk_uint8_t) duk_uc_nybbles[t & 0x0f]);
 	}
+
 	return;
 
  uri_error:
@@ -197,6 +211,14 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	duk_codepoint_t min_cp;
 	duk_small_int_t t;  /* must be signed */
 	duk_small_uint_t i;
+
+	/* Maximum write size: XUTF8 path writes max DUK_UNICODE_MAX_XUTF8_LENGTH,
+	 * percent escape path writes max two times CESU-8 encoded BMP length.
+	 */
+	DUK_BW_ENSURE(tfm_ctx->thr,
+	              &tfm_ctx->bw,
+	              (DUK_UNICODE_MAX_XUTF8_LENGTH >= 2 * DUK_UNICODE_MAX_CESU8_BMP_LENGTH ?
+	              DUK_UNICODE_MAX_XUTF8_LENGTH : DUK_UNICODE_MAX_CESU8_BMP_LENGTH));
 
 	if (cp == (duk_codepoint_t) '%') {
 		const duk_uint8_t *p = tfm_ctx->p;
@@ -218,9 +240,13 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 			if (DUK__CHECK_BITMASK(reserved_table, t)) {
 				/* decode '%xx' to '%xx' if decoded char in reserved set */
 				DUK_ASSERT(tfm_ctx->p - 1 >= tfm_ctx->p_start);
-				duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t *) (p - 1), 3);
+				DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr,
+				                      &tfm_ctx->bw,
+				                      DUK_ASC_PERCENT,
+				                      p[0],
+				                      p[1]);
 			} else {
-				duk_hbuffer_append_byte(tfm_ctx->thr, tfm_ctx->h_buf, (duk_uint8_t) t);
+				DUK_BW_WRITE_RAW_U8(tfm_ctx->thr, &tfm_ctx->bw, (duk_uint8_t) t);
 			}
 			tfm_ctx->p += 2;
 			return;
@@ -302,13 +328,14 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 		if (cp >= 0x10000L) {
 			cp -= 0x10000L;
 			DUK_ASSERT(cp < 0x100000L);
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp >> 10) + 0xd800L));
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) ((cp & 0x03ffUL) + 0xdc00L));
+
+			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, ((cp >> 10) + 0xd800L));
+			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, ((cp & 0x03ffUL) + 0xdc00L));
 		} else {
-			duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) cp);
+			DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, cp);
 		}
 	} else {
-		duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, (duk_ucodepoint_t) cp);
+		DUK_BW_WRITE_RAW_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, cp);
 	}
 	return;
 
@@ -318,29 +345,29 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 
 #ifdef DUK_USE_SECTION_B
 DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, void *udata, duk_codepoint_t cp) {
-	duk_uint8_t buf[6];
-	duk_small_int_t len;
-
 	DUK_UNREF(udata);
+
+	DUK_BW_ENSURE(tfm_ctx->thr, &tfm_ctx->bw, 6);
 
 	if (cp < 0) {
 		goto esc_error;
 	} else if ((cp < 0x80L) && DUK__CHECK_BITMASK(duk__escape_unescaped_table, cp)) {
-		buf[0] = (duk_uint8_t) cp;
-		len = 1;
+		DUK_BW_WRITE_RAW_U8(tfm_ctx->thr, &tfm_ctx->bw, (duk_uint8_t) cp);
 	} else if (cp < 0x100L) {
-		buf[0] = (duk_uint8_t) '%';
-		buf[1] = (duk_uint8_t) duk_uc_nybbles[cp >> 4];
-		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
-		len = 3;
+		DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr,
+		                      &tfm_ctx->bw,
+		                      (duk_uint8_t) DUK_ASC_PERCENT,
+		                      (duk_uint8_t) duk_uc_nybbles[cp >> 4],
+		                      (duk_uint8_t) duk_uc_nybbles[cp & 0x0f]);
 	} else if (cp < 0x10000L) {
-		buf[0] = (duk_uint8_t) '%';
-		buf[1] = (duk_uint8_t) 'u';
-		buf[2] = (duk_uint8_t) duk_uc_nybbles[cp >> 12];
-		buf[3] = (duk_uint8_t) duk_uc_nybbles[(cp >> 8) & 0x0f];
-		buf[4] = (duk_uint8_t) duk_uc_nybbles[(cp >> 4) & 0x0f];
-		buf[5] = (duk_uint8_t) duk_uc_nybbles[cp & 0x0f];
-		len = 6;
+		DUK_BW_WRITE_RAW_U8_6(tfm_ctx->thr,
+		                      &tfm_ctx->bw,
+		                      (duk_uint8_t) DUK_ASC_PERCENT,
+		                      (duk_uint8_t) DUK_ASC_LC_U,
+		                      (duk_uint8_t) duk_uc_nybbles[cp >> 12],
+		                      (duk_uint8_t) duk_uc_nybbles[(cp >> 8) & 0x0f],
+		                      (duk_uint8_t) duk_uc_nybbles[(cp >> 4) & 0x0f],
+		                      (duk_uint8_t) duk_uc_nybbles[cp & 0x0f]);
 	} else {
 		/* Characters outside BMP cannot be escape()'d.  We could
 		 * encode them as surrogate pairs (for codepoints inside
@@ -350,7 +377,6 @@ DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, v
 		goto esc_error;
 	}
 
-	duk_hbuffer_append_bytes(tfm_ctx->thr, tfm_ctx->h_buf, buf, len);
 	return;
 
  esc_error:
@@ -377,7 +403,7 @@ DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx,
 		}
 	}
 
-	duk_hbuffer_append_xutf8(tfm_ctx->thr, tfm_ctx->h_buf, cp);
+	DUK_BW_WRITE_ENSURE_XUTF8(tfm_ctx->thr, &tfm_ctx->bw, cp);
 }
 #endif  /* DUK_USE_SECTION_B */
 
