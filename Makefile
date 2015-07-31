@@ -893,6 +893,8 @@ ajtcl:
 	# https://git.allseenalliance.org/cgit/core/ajtcl.git/
 	# no --depth 1 ("dumb http transport does not support --depth")
 	$(GIT) clone https://git.allseenalliance.org/gerrit/core/ajtcl.git/
+	ln -s . ajtcl/inc/ajtcl  # workaround for #include <ajtcl/xxx.h>
+	ln -s . ajtcl/src/target/linux/ajtcl
 
 CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
@@ -928,23 +930,23 @@ CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint1
 # us to use barebones cmdline too.
 ajduk: alljoyn-js ajtcl dist
 	$(CC) -o $@ \
-		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
+		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ \
 		$(CCOPTS_NONDEBUG) \
 		$(CCOPTS_AJDUK) \
 		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
 		dist/examples/cmdline/duk_cmdline_ajduk.c \
-		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
+		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l ajduk
 ajdukd: alljoyn-js ajtcl dist
 	$(CC) -o $@ \
-		-Ialljoyn-js/ -Iajtcl/inc/ -Iajtcl/target/linux/ \
+		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ \
 		$(CCOPTS_DEBUG) \
 		$(CCOPTS_AJDUK) \
 		$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) \
 		dist/examples/cmdline/duk_cmdline_ajduk.c \
-		alljoyn-js/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/target/linux/aj_target_util.c \
+		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l ajdukd
