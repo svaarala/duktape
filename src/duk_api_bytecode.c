@@ -85,7 +85,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 	duk_hstring *h_str;
 	duk_tval *tv;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, thr->strs[stridx]);
+	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
 	if (tv != NULL && DUK_TVAL_IS_STRING(tv)) {
 		h_str = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h_str != NULL);
@@ -102,7 +102,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 DUK_LOCAL duk_uint8_t *duk__dump_buffer_prop(duk_hthread *thr, duk_uint8_t *p, duk_bufwriter_ctx *bw_ctx, duk_hobject *func, duk_small_uint_t stridx) {
 	duk_tval *tv;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, thr->strs[stridx]);
+	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
 	if (tv != NULL && DUK_TVAL_IS_BUFFER(tv)) {
 		duk_hbuffer *h_buf;
 		h_buf = DUK_TVAL_GET_BUFFER(tv);
@@ -121,7 +121,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_uint32_prop(duk_hthread *thr, duk_uint8_t *p, d
 	duk_tval *tv;
 	duk_uint32_t val;
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, thr->strs[stridx]);
+	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_GET_STRING(thr, stridx));
 	if (tv != NULL && DUK_TVAL_IS_NUMBER(tv)) {
 		val = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
 	} else {
