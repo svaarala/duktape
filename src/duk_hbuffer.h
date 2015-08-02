@@ -39,7 +39,10 @@
 #if defined(DUK_USE_BUFLEN16)
 #define DUK_HBUFFER_MAX_BYTELEN                   (0x0000ffffUL)
 #else
-#define DUK_HBUFFER_MAX_BYTELEN                   (0x7fffffffUL)
+/* Intentionally not 0x7fffffffUL; at least JSON code expects that
+ * 2*len + 2 fits in 32 bits.
+ */
+#define DUK_HBUFFER_MAX_BYTELEN                   (0x7ffffffeUL)
 #endif
 
 /*
