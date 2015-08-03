@@ -2518,7 +2518,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	(void) duk_put_prop_index(ctx, comp_ctx->curr_func.labelnames_idx, (duk_uarridx_t) n);
 
 	new_size = (n + 1) * sizeof(duk_labelinfo);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
 	/* XXX: spare handling, slow now */
 
 	/* relookup after possible realloc */
@@ -2670,7 +2670,7 @@ DUK_LOCAL void duk__reset_labels_to_length(duk_compiler_ctx *comp_ctx, duk_int_t
 	new_size = sizeof(duk_labelinfo) * (duk_size_t) len;
 	duk_push_int(ctx, len);
 	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_STRIDX_LENGTH);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);  /* XXX: spare handling */
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
 }
 
 /*

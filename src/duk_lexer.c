@@ -514,7 +514,7 @@ DUK_LOCAL void duk__initbuffer(duk_lexer_ctx *lex_ctx) {
 	if (DUK_HBUFFER_DYNAMIC_GET_SIZE(lex_ctx->buf) < DUK_LEXER_TEMP_BUF_LIMIT) {
 		/* Keep current size */
 	} else {
-		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, DUK_LEXER_TEMP_BUF_LIMIT, DUK_LEXER_TEMP_BUF_LIMIT);
+		duk_hbuffer_resize(lex_ctx->thr, lex_ctx->buf, DUK_LEXER_TEMP_BUF_LIMIT);
 	}
 
 	DUK_BW_INIT_WITHBUF(lex_ctx->thr, &lex_ctx->bw, lex_ctx->buf);

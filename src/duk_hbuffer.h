@@ -85,37 +85,14 @@
 #define DUK_HBUFFER_DYNAMIC_ADD_SIZE(x,dv)  DUK_HBUFFER_ADD_SIZE((duk_hbuffer *) (x), (dv))
 #define DUK_HBUFFER_DYNAMIC_SUB_SIZE(x,dv)  DUK_HBUFFER_SUB_SIZE((duk_hbuffer *) (x), (dv))
 
-#if defined(DUK_USE_BUFLEN16) && defined(DUK_USE_HEAPPTR16)
-/* alloc_size16 stored in duk_heaphdr h_extra16, available with pointer compression. */
-#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)    ((duk_size_t) ((x)->hdr.h_extra16))
-#define DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(x,v)  do { \
-		(x)->hdr.h_extra16 = (duk_uint16_t) (v); \
-	} while (0)
-#elif defined(DUK_USE_BUFLEN16)
-/* alloc_size16 stored in an explicit 16-bit fields. */
-#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)    ((duk_size_t) ((x)->alloc_size16))
-#define DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(x,v)  do { \
-		(x)->alloc_size16 = (duk_uint16_t) (v); \
-	} while (0)
-#else
-/* normal case */
-#define DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(x)    ((x)->alloc_size)
-#define DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(x,v)  do { \
-		(x)->alloc_size = (v); \
-	} while (0)
-#endif
-
-#define DUK_HBUFFER_DYNAMIC_GET_SPARE_SIZE(x) \
-	(duk_size_t) (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE((x)) - DUK_HBUFFER_DYNAMIC_GET_SIZE((x)))
-
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x) \
-	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (x)->curr_alloc16))
+	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (x))->h_extra16))
 #define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
-		(x)->curr_alloc16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
+		((duk_heaphdr *) (x))->h_extra16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
 #define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
-		(x)->curr_alloc16 = 0;  /* assume 0 <=> NULL */ \
+		((duk_heaphdr *) (x))->h_extra16 = 0;  /* assume 0 <=> NULL */ \
 	} while (0)
 #else
 #define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x)       ((x)->curr_alloc)
@@ -135,10 +112,6 @@
 		DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) : \
 		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (x)) \
 	)
-
-/* Growth parameters for dynamic buffers. */
-#define DUK_HBUFFER_SPARE_ADD      16
-#define DUK_HBUFFER_SPARE_DIVISOR  16   /* 2^4 -> 1/16 = 6.25% spare */
 
 /*
  *  Structs
@@ -241,16 +214,8 @@ struct duk_hbuffer_dynamic {
 	duk_size_t size;
 #endif
 
-#if defined(DUK_USE_BUFLEN16) && defined(DUK_USE_HEAPPTR16)
-	/* Stored in duk_heaphdr h_extra16. */
-#elif defined(DUK_USE_BUFLEN16)
-	duk_uint16_t alloc_size16;
-#else
-	duk_size_t alloc_size;
-#endif
-
 #if defined(DUK_USE_HEAPPTR16)
-	duk_uint16_t curr_alloc16;
+	/* Stored in duk_heaphdr h_extra16. */
 #else
 	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
 #endif
@@ -273,36 +238,7 @@ DUK_INTERNAL_DECL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size
 DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 /* dynamic buffer ops */
-DUK_INTERNAL_DECL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size, duk_size_t new_alloc_size);
+DUK_INTERNAL_DECL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t new_size);
 DUK_INTERNAL_DECL void duk_hbuffer_reset(duk_hthread *thr, duk_hbuffer_dynamic *buf);
-#if 0  /*unused*/
-DUK_INTERNAL_DECL void duk_hbuffer_compact(duk_hthread *thr, duk_hbuffer_dynamic *buf);
-#endif
-DUK_INTERNAL_DECL void duk_hbuffer_append_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, const duk_uint8_t *data, duk_size_t length);
-DUK_INTERNAL_DECL void duk_hbuffer_append_byte(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint8_t byte);
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_cstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, const char *str);
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_hstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_hstring *str);
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint);
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_append_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_ucodepoint_t codepoint);
-#if 0
-DUK_INTERNAL_DECL void duk_hbuffer_append_native_u32(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_uint32_t val);
-#endif
-DUK_INTERNAL_DECL void duk_hbuffer_insert_bytes(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, const duk_uint8_t *data, duk_size_t length);
-#if 0  /*unused*/
-DUK_INTERNAL_DECL void duk_hbuffer_insert_byte(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_uint8_t byte);
-#endif
-#if 0  /*unused*/
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_insert_cstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, const char *str);
-#endif
-#if 0  /*unused*/
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_insert_hstring(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_hstring *str);
-#endif
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_insert_xutf8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_ucodepoint_t codepoint);
-#if 0  /*unused*/
-DUK_INTERNAL_DECL duk_size_t duk_hbuffer_insert_cesu8(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_ucodepoint_t codepoint);
-#endif
-DUK_INTERNAL_DECL void duk_hbuffer_remove_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t offset, duk_size_t length);
-DUK_INTERNAL_DECL void duk_hbuffer_insert_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t dst_offset, duk_size_t src_offset, duk_size_t length);
-DUK_INTERNAL_DECL void duk_hbuffer_append_slice(duk_hthread *thr, duk_hbuffer_dynamic *buf, duk_size_t src_offset, duk_size_t length);
 
 #endif  /* DUK_HBUFFER_H_INCLUDED */

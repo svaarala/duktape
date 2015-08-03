@@ -18,7 +18,7 @@ DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size
 	}
 
 	/* maximum size check is handled by callee */
-	duk_hbuffer_resize(thr, h, new_size, new_size);  /* snug */
+	duk_hbuffer_resize(thr, h, new_size);
 
 	return DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h);
 }
@@ -50,7 +50,6 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_
 	}
 	DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(thr->heap, h);
 	DUK_HBUFFER_DYNAMIC_SET_SIZE(h, 0);
-	DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(h, 0);
 
 	return ptr;
 }

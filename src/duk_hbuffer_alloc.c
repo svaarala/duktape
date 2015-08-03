@@ -61,7 +61,6 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 			}
 
 			DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap, h, ptr);
-			DUK_HBUFFER_DYNAMIC_SET_ALLOC_SIZE(h, size);  /* snug */
 		} else {
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 #if defined(DUK_USE_HEAPPTR16)
@@ -71,7 +70,6 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 #endif
 #endif
 			DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, h) == NULL);
-			DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(h) == 0);
 		}
 	}
 
