@@ -1,0 +1,21 @@
+# Compiler metadata
+
+required_defines:
+  # FIXME
+  - DUK_USE_COMPILER_STRING
+
+# FIXME
+autodetect:
+  -
+    name: gcc
+    check: DUK_F_GCC
+    include: compiler_gcc.h.in
+# FIXME
+#  -
+#    name: clang
+#    check: DUK_F_CLANG
+#    include: compiler_clang.h.in
+  -
+    name: generic
+    check: null
+    include: compiler_generic.h.in

@@ -1,4 +1,5 @@
 define: DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
+feature_enables: DUK_OPT_NONSTD_FUNC_SOURCE_PROPERTY
 introduced: 1.0.0
 default: false
 tags:
@@ -8,4 +9,4 @@ description: >
   function toString() to print out the actual function source.  The property
   is disabled by default because it increases memory footprint.
 
-  NOTE: Unimplemented as of Duktape 1.2.0.
+  NOTE: Unimplemented as of Duktape 1.3.0.

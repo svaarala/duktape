@@ -1,4 +1,5 @@
 define: DUK_USE_ES6_OBJECT_PROTO_PROPERTY
+feature_enables: DUK_OPT_ES6_OBJECT_PROTO_PROPERTY
 introduced: 1.0.0
 default: true
 tags:

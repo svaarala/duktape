@@ -1,4 +1,10 @@
 define: DUK_USE_TRACEBACK_DEPTH
+feature_snippet: |
+  #if defined(DUK_OPT_TRACEBACK_DEPTH)
+  #define DUK_USE_TRACEBACK_DEPTH  DUK_OPT_TRACEBACK_DEPTH
+  #else
+  #define DUK_USE_TRACEBACK_DEPTH  10
+  #endif
 introduced: 1.0.0
 default: 10
 tags:

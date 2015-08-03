@@ -1,0 +1,16 @@
+/* Shared includes */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>  /* varargs */
+#include <setjmp.h>
+#include <stddef.h>  /* e.g. ptrdiff_t */
+#if defined(DUK_F_NO_STDINT_H)
+/* stdint.h not available */
+#else
+/* Technically C99 (C++11) but found in many systems.  Note the workaround
+ * above for some C++ compilers (__STDC_LIMIT_MACROS etc).
+ */
+#include <stdint.h>
+#endif
+#include <math.h>

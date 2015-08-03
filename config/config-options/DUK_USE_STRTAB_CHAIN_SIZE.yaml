@@ -1,4 +1,10 @@
 define: DUK_USE_STRTAB_CHAIN_SIZE
+feature_snippet: |
+  #undef DUK_USE_STRTAB_CHAIN_SIZE
+  #if defined(DUK_OPT_STRTAB_CHAIN) && defined(DUK_OPT_STRTAB_CHAIN_SIZE)
+  /* Low memory algorithm: separate chaining using arrays, fixed size hash */
+  #define DUK_USE_STRTAB_CHAIN_SIZE  DUK_OPT_STRTAB_CHAIN_SIZE
+  #endif
 introduced: 1.1.0
 requires:
   - DUK_USE_STRTAB_CHAIN

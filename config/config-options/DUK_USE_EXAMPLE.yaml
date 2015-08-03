@@ -13,6 +13,23 @@ define: DUK_USE_OBJSIZES16
 related_feature_defines:
   - DUK_OPT_OBJSIZES16
 
+# Feature define (DUK_OPT_xxx) enables config define (DUK_USE_xxx), and
+# negative feature define (DUK_OPT_NO_xxx) disables config define.  If
+# neither present, use default.
+#feature_enables: DUK_OPT_OBJSIZES16
+
+# Feature define disables config define, and vice versa.
+#feature_disables: DUK_OPT_OBJSIZES16
+
+# Feature detection snippet given explicitly.
+#feature_snippet: |
+#   #if defined(DUK_OPT_OBJSIZES16)
+#   #define DUK_USE_OBJSIZES16
+#   #if defined(XYZ)
+#   #error DUK_OPT_OBJSIZES16 conflicts with XYZ
+#   #endif
+#   #endif
+
 # Duktape version number where this option was first introduced.
 introduced: 1.1.0
 

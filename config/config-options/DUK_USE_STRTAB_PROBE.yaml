@@ -1,4 +1,9 @@
 define: DUK_USE_STRTAB_PROBE
+feature_snippet: |
+  #undef DUK_USE_STRTAB_PROBE
+  #if !(defined(DUK_OPT_STRTAB_CHAIN) && defined(DUK_OPT_STRTAB_CHAIN_SIZE))
+  #define DUK_USE_STRTAB_PROBE
+  #endif
 introduced: 1.1.0
 default: true
 tags:

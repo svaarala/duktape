@@ -9,4 +9,4 @@ description: >
   only be necessary when a NULL pointer is not represented by zero bytes in
   memory.
 
-# FIXME: condition in Duktape 1.2 seems wrong, and is linked to packed tval?
+  # NOTE: Condition in Duktape 1.2 seems wrong, and is linked to packed tval.

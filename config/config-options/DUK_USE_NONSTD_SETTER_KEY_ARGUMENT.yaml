@@ -1,4 +1,5 @@
 define: DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+feature_enables: DUK_OPT_NONSTD_ACCESSOR_KEY_ARGUMENT
 introduced: 1.0.0
 default: true
 tags:
