@@ -45,10 +45,19 @@ def strip_comments_from_lines(lines):
 	# Not exact but close enough.  Doesn't handle string literals etc,
 	# but these are not a concrete issue for scanning preprocessor
 	# #define references.
+	#
+	# Comment contents are stripped of any DUK_ prefixed text to avoid
+	# incorrect requires/provides detection.  Other comment text is kept;
+	# in particular a "/* redefine */" comment must remain intact here.
+	#
 	# Avoid Python 2.6 vs. Python 2.7 argument differences.
+
+	def censor(x):
+		return re.sub(re.compile('DUK_\w+', re.MULTILINE), 'xxx', x.group(0))
+
 	tmp = '\n'.join(lines)
-	tmp = re.sub(re.compile('/\*.*?\*/', re.MULTILINE | re.DOTALL), '/* ... */', tmp)
-	tmp = re.sub(re.compile('//.*?$', re.MULTILINE), '// removed', tmp)
+	tmp = re.sub(re.compile('/\*.*?\*/', re.MULTILINE | re.DOTALL), censor, tmp)
+	tmp = re.sub(re.compile('//.*?$', re.MULTILINE), censor, tmp)
 	return tmp.split('\n')
 
 # Header snippet representation: lines, provides defines, requires defines.
@@ -133,10 +142,12 @@ class Snippet:
 class FileBuilder:
 	lines = None
 	base_dir = None
+	use_cpp_warning = False
 
-	def __init__(self, base_dir=None):
+	def __init__(self, base_dir=None, use_cpp_warning=False):
 		self.lines = []
 		self.base_dir = base_dir
+		self.use_cpp_warning = use_cpp_warning
 
 	def line(self, line):
 		self.lines.append(line)
@@ -176,10 +187,14 @@ class FileBuilder:
 		# XXX: assume no newlines etc
 		self.lines.append('#error %s' % msg)
 
-	def cpp_warning(msg):
+	def cpp_warning(self, msg):
 		# XXX: assume no newlines etc
 		# XXX: support compiler specific warning mechanisms
-		self.lines.append('/* WARNING: %s */' % msg)
+		if self.use_cpp_warning:
+			# C preprocessor '#warning' is often supported
+			self.lines.append('#warning %s' % msg)
+		else:
+			self.lines.append('/* WARNING: %s */' % msg)
 
 	def cpp_warning_or_error(self, msg, is_error=True):
 		if is_error:
@@ -231,6 +246,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 	# graph[A] = [ B, ... ] <-> B, ... provide something A requires.
 	graph = {}
 	snlist = []
+	resolved = []   # for printing only
 
 	def add(sn):
 		if sn in snlist:
@@ -252,7 +268,8 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 					found = True  # at least one other node provides 'k'
 
 			if not found:
-				print 'Resolving %r' % k
+				#print 'Resolving %r' % k
+				resolved.append(k)
 
 				# Find a header snippet which provides the missing define.
 				# Some DUK_F_xxx files provide multiple defines, so we don't
@@ -317,6 +334,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 
 #	print(repr(graph))
 #	print(repr(snlist))
+	print 'Resolved helper defines: %r' % resolved
 
 def serialize_snippet_list(snippets):
 	ret = []
@@ -521,6 +539,7 @@ def get_tag_list_with_preferred_order(preferred):
 		if tag not in tags:
 			tags.append(tag)
 
+	#print('Effective tag order: %r' % tags)
 	return tags
 
 def rst_format(text):
@@ -574,11 +593,10 @@ def cstr_encode(x):
 
 # Shared helper to generate DUK_OPT_xxx and DUK_USE_xxx documentation.
 # FIXME: unfinished placeholder
-def generate_option_documentation(opt_list=None, rst_title=None, include_default=False):
-	ret = FileBuilder()
+def generate_option_documentation(opts, opt_list=None, rst_title=None, include_default=False):
+	ret = FileBuilder(use_cpp_warning=opts.use_cpp_warning)
 
 	tags = get_tag_list_with_preferred_order(doc_tag_order)
-	print('Effective tag order: %r' % tags)
 
 	title = rst_title
 	ret.rst_heading(title, '=', doubled=True)
@@ -613,7 +631,7 @@ def generate_option_documentation(opt_list=None, rst_title=None, include_default
 
 			if include_default:
 				ret.empty()
-				ret.line('Default: ' + str(doc['default']))  # FIXME: rst format
+				ret.line('Default: ``' + str(doc['default']) + '``')  # FIXME: rst format
 
 	for doc in opt_list:
 		dname = doc['define']
@@ -623,33 +641,78 @@ def generate_option_documentation(opt_list=None, rst_title=None, include_default
 	ret.empty()
 	return ret.join()
 
-def generate_feature_option_documentation():
-	return generate_option_documentation(opt_list=opt_defs_list, rst_title='Duktape feature options', include_default=False)
+def generate_feature_option_documentation(opts):
+	return generate_option_documentation(opts, opt_list=opt_defs_list, rst_title='Duktape feature options', include_default=False)
 
-def generate_config_option_documentation():
-	return generate_option_documentation(opt_list=use_defs_list, rst_title='Duktape config options', include_default=True)
+def generate_config_option_documentation(opts):
+	return generate_option_documentation(opts, opt_list=use_defs_list, rst_title='Duktape config options', include_default=True)
+
+def get_forced_options(opts):
+	# Forced options, last occurrence wins (allows a base config file to be
+	# overridden by a more specific one).
+	forced_opts = {}
+	for val in opts.force_options_yaml:
+		doc = yaml.load(StringIO.StringIO(val))
+		for k in doc.keys():
+			if use_defs.has_key(k):
+				pass  # key is known
+			else:
+				print 'WARNING: option override key %s not defined in metadata, ignoring' % k
+			forced_opts[k] = doc[k]  # shallow copy
+
+	print 'Overrides: %s' % json.dumps(forced_opts)
+
+	return forced_opts
+
+# Emit a default #define / #undef for an option based on
+# a config option metadata node (parsed YAML doc).
+# FIXME: argument names
+def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
+	defname = doc['define']
+	defval = forced_opts.get(defname, doc['default'])
+
+	if defval == True:
+		ret.line('#define ' + defname)
+	elif defval  == False:
+		if not undef_done:
+			ret.line('#undef ' + defname)
+	elif isinstance(defval, (int, long)):
+		# integer value
+		ret.line('#define ' + defname + ' ' + cint_encode(defval))
+	elif isinstance(defval, (str, unicode)):
+		# verbatim value
+		ret.line('#define ' + defname + ' ' + defval)
+	elif isinstance(defval, dict):
+		if defval.has_key('verbatim'):
+			# verbatim text for the entire line
+			ret.line(defval['verbatim'])
+		elif defval.has_key('string'):
+			# C string value
+			ret.line('#define ' + defname + ' ' + cstr_encode(defval['string']))
+		else:
+			raise Exception('unsupported value for option %s: %r' % (defname, defval))
+	else:
+		raise Exception('unsupported value for option %s: %r' % (defname, defval))
 
 # Add a header snippet for detecting presence of DUK_OPT_xxx feature
 # options which will be removed in Duktape 2.x.
-def add_legacy_feature_option_checks(ret):
+def add_legacy_feature_option_checks(opts, ret):
 	ret.empty()
 	ret.line('/*')
 	ret.line(' *  Checks for legacy feature options (DUK_OPT_xxx)')
 	ret.line(' */')
 
-	opts = []
+	defs = []
 	for doc in opt_defs_list:
-		if doc['define'] not in opts:
-			opts.append(doc['define'])
+		if doc['define'] not in defs:
+			defs.append(doc['define'])
 	for doc in use_defs_list:
 		for dname in doc.get('related_feature_defines', []):
-			if dname not in opts:
-				opts.append(dname)
-	opts.sort()
+			if dname not in defs:
+				defs.append(dname)
+	defs.sort()
 
-	# XXX: options to control error/warning, now always an #error
-
-	for optname in opts:
+	for optname in defs:
 		suggested = []
 		for doc in use_defs_list:
 			if optname in doc.get('related_feature_defines', []):
@@ -657,57 +720,68 @@ def add_legacy_feature_option_checks(ret):
 		ret.empty()
 		ret.line('#if defined(%s)' % optname)
 		if len(suggested) > 0:
-			ret.cpp_warning_or_error('unsupported legacy feature option %s used, consider options: %s' % (optname, ', '.join(suggested)), True)
+			ret.cpp_warning_or_error('unsupported legacy feature option %s used, consider options: %s' % (optname, ', '.join(suggested)), opts.sanity_strict)
 		else:
-			ret.cpp_warning_or_error('unsupported legacy feature option %s used' % optname, True)
+			ret.cpp_warning_or_error('unsupported legacy feature option %s used' % optname, opts.sanity_strict)
 		ret.line('#endif')
 
 	ret.empty()
 
 # Add a header snippet for checking consistency of DUK_USE_xxx config
 # options, e.g. inconsistent options, invalid option values.
-def add_config_option_checks(ret):
+def add_config_option_checks(opts, ret):
 	ret.empty()
 	ret.line('/*')
 	ret.line(' *  Checks for config option consistency (DUK_USE_xxx)')
 	ret.line(' */')
 
-	opts = []
+	defs = []
 	for doc in use_defs_list:
-		if doc['define'] not in opts:
-			opts.append(doc['define'])
-	opts.sort()
+		if doc['define'] not in defs:
+			defs.append(doc['define'])
+	defs.sort()
 
-	for optname in opts:
+	for optname in defs:
 		doc = use_defs[optname]
 		dname = doc['define']
 
 		# XXX: more checks
-		# XXX: options to control error/warning, now always an #error
 
 		if doc.get('removed', None) is not None:
 			ret.empty()
 			ret.line('#if defined(%s)' % dname)
-			ret.cpp_warning_or_error('unsupported config option used (option has been removed): %s' % dname, True)
+			ret.cpp_warning_or_error('unsupported config option used (option has been removed): %s' % dname, opts.sanity_strict)
 			ret.line('#endif')
 		elif doc.get('deprecated', None) is not None:
 			ret.empty()
 			ret.line('#if defined(%s)' % dname)
-			ret.cpp_warning_or_error('unsupported config option used (option has been deprecated): %s' % dname, True)
+			ret.cpp_warning_or_error('unsupported config option used (option has been deprecated): %s' % dname, opts.sanity_strict)
 			ret.line('#endif')
 
 		for req in doc.get('requires', []):
 			ret.empty()
 			ret.line('#if defined(%s) && !defined(%s)' % (dname, req))
-			ret.cpp_warning_or_error('config option %s requires option %s (which is missing)' % (dname, req), True)
+			ret.cpp_warning_or_error('config option %s requires option %s (which is missing)' % (dname, req), opts.sanity_strict)
 			ret.line('#endif')
 
 		for req in doc.get('conflicts', []):
 			ret.empty()
 			ret.line('#if defined(%s) && defined(%s)' % (dname, req))
-			ret.cpp_warning_or_error('config option %s conflicts with option %s (which is also defined)' % (dname, req), True)
+			ret.cpp_warning_or_error('config option %s conflicts with option %s (which is also defined)' % (dname, req), opts.sanity_strict)
 			ret.line('#endif')
 
+	ret.empty()
+
+# Add a header snippet for providing a __OVERRIDE_DEFINES__ section.
+def add_override_defines_section(opts, ret):
+	ret.empty()
+	ret.line('/*')
+	ret.line(' *  You may add overriding #define/#undef directives below for')
+	ret.line(' *  customization.  You of course cannot un-#include or un-typedef')
+	ret.line(' *  anything; these require direct changes above.')
+	ret.line(' */')
+	ret.empty()
+	ret.line('/* __OVERRIDE_DEFINES__ */')
 	ret.empty()
 
 # Generate the default duk_config.h which provides automatic detection
@@ -717,7 +791,10 @@ def add_config_option_checks(ret):
 # and users can just override DUK_USE_xxx flags by modifying the header
 # or generating a new one using genconfig.
 def generate_autodetect_duk_config_header(opts, meta_dir):
-	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'))
+	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
+	                  use_cpp_warning=opts.use_cpp_warning)
+
+	forced_opts = get_forced_options(opts)
 
 	# XXX: initial version is Duktape 1.2 duk_features.h.in built
 	# from pieces; rework later
@@ -778,8 +855,7 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	ret.empty()
 
 	# DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-	# DUK_USE_ALIGN_4
-	# DUK_USE_ALIGN_8
+	# DUK_USE_ALIGN_BY
 	# DUK_USE_PACK_MSVC_PRAGMA
 	# DUK_USE_PACK_GCC_ATTR
 	# DUK_USE_PACK_CLANG_ATTR
@@ -791,7 +867,7 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	# DUK_USE_HOBJECT_LAYOUT_1
 	# DUK_USE_HOBJECT_LAYOUT_2
 	# DUK_USE_HOBJECT_LAYOUT_3
-	# FIXME: depend on DUK_USE_UNALIGNED_ACCESSES_POSSIBLE, DUK_USE_ALIGN_4, DUK_USE_ALIGN_8
+	# FIXME: depend on DUK_USE_UNALIGNED_ACCESSES_POSSIBLE, DUK_USE_ALIGN_BY
 	ret.file_relative('object_layout.h.in')
 	ret.empty()
 
@@ -883,20 +959,99 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	ret.file_relative('user_declare.h.in')
 	ret.empty()
 
+	# Emit forced options.  If a corresponding option is already defined
+	# by a snippet above, #undef it first.
+
+	tmp = Snippet(ret.join().split('\n'))
+	first_forced = True
+	for doc in use_defs_list:
+		defname = doc['define']
+
+		if doc.get('removed', None) is not None and opts.omit_removed_config_options:
+			continue
+		if doc.get('deprecated', None) is not None and opts.omit_deprecated_config_options:
+			continue
+		if doc.get('unused', False) == True and opts.omit_unused_config_options:
+			continue
+		if not forced_opts.has_key(defname):
+			continue
+
+		if not doc.has_key('default'):
+			raise Exception('config option %s is missing default value' % defname)
+
+		if first_forced:
+			ret.line('/*')
+			ret.line(' *  Forced options')
+			ret.line(' */')
+			ret.empty()
+			first_forced = False
+
+		undef_done = False
+		if tmp.provides.has_key(defname):
+			ret.line('#undef ' + defname)
+			undef_done = True
+
+		emit_default_from_config_meta(ret, doc, forced_opts, True)
+
+	ret.empty()
+
+	# If manually-edited snippets don't #define or #undef a certain
+	# config option, emit a default value here with a warning.  It's
+	# easy to forget adding a manual snippet when adding a new config
+	# metadata file.
+
+	# FIXME:
+	# NEED: DUK_USE_DATE_PRS_GETDATE
+	# NEED: DUK_USE_INTEGER_ME
+	# NEED: DUK_USE_JSON_STRINGIFY_FASTPATH
+
+	tmp = Snippet(ret.join().split('\n'))
+	need = {}
+	for doc in use_defs_list:
+		if doc.get('removed', None) is not None:
+			continue
+		need[doc['define']] = True
+	for k in tmp.provides.keys():
+		if need.has_key(k):
+			del need[k]
+	need_keys = sorted(need.keys())
+
+	if len(need_keys) > 0:
+		ret.line('/*')
+		ret.line(' *  Autogenerated defaults')
+		ret.line(' */')
+		ret.empty()
+
+		for k in need_keys:
+			print('WARNING: config option %s not covered by manual snippets, emitting default automatically' % k)
+			emit_default_from_config_meta(ret, use_defs[k], {}, False)
+
+		ret.empty()
+
 	ret.file_relative('custom_header.h.in')
 	ret.empty()
 
-	if len(opts.fixup_header_files) > 0:
+	if len(opts.fixup_header_lines) > 0:
 		ret.line('/*')
 		ret.line(' *  Fixups')
 		ret.line(' */')
 		ret.empty()
-		for fn in opts.fixup_header_files:
-			ret.file_relative_noresolve(fn)
+		for line in opts.fixup_header_lines:
+			ret.line(line)
 		ret.empty()
+
+	add_override_defines_section(opts, ret)
+
+	# FIXME: use autogenerated sanity instead of sanity.h.in
 
 	ret.file_relative('sanity.h.in')
 	ret.empty()
+
+	if opts.emit_legacy_feature_check:
+		# FIXME: this doesn't really make sense for the autodetect header yet
+		add_legacy_feature_option_checks(opts, ret)
+	if opts.emit_config_sanity_check:
+		add_config_option_checks(opts, ret)
 
 	ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
 	ret.empty()  # for trailing newline
@@ -908,25 +1063,14 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 # Users can then modify this barebones header for very exotic platforms and manage
 # the needed changes either as a YAML file or by appending a fixup header snippet.
 def generate_barebones_duk_config_header(opts, meta_dir):
-	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'))
+	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
+	                  use_cpp_warning=opts.use_cpp_warning)
 
 	# XXX: add place for Git describe like in duktape.c and duktape.h
 	# XXX: provide more defines from YAML config files so that such defines
 	#      can be overridden more conveniently
 
-	# Forced options, last occurrence wins (allows a base config file to be
-	# overridden by a more specific one).
-	forced_opts = {}
-	for val in opts.force_options_yaml:
-		doc = yaml.load(StringIO.StringIO(val))
-		for k in doc.keys():
-			if use_defs.has_key(k):
-				pass  # key is known
-			else:
-				print 'WARNING: option override key %s not defined in metadata, ignoring' % k
-			forced_opts[k] = doc[k]  # shallow copy
-
-	print 'Overrides: %s' % json.dumps(forced_opts)
+	forced_opts = get_forced_options(opts)
 
 	ret.line('/*')
 	ret.line(' *  duk_config.h generated by genconfig.py for:')
@@ -1012,7 +1156,6 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 	# ordering based on tags; empty lines in-between
 
 	tags = get_tag_list_with_preferred_order(header_tag_order)
-	print('Effective tag order: %r' % tags)
 
 	handled = {}
 
@@ -1029,6 +1172,8 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 		ret.line('/* ' + get_tag_title(tag) + ' */')
 
 		for doc in use_defs_list:
+			defname = doc['define']
+
 			if doc.get('removed', None) is not None and opts.omit_removed_config_options:
 				continue
 			if doc.get('deprecated', None) is not None and opts.omit_deprecated_config_options:
@@ -1039,7 +1184,6 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 			if tag != doc['tags'][0]:  # sort under primary tag
 				continue
 
-			defname = doc['define']
 			if not doc.has_key('default'):
 				raise Exception('config option %s is missing default value' % defname)
 
@@ -1062,29 +1206,7 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 			#        vs. DUK_USE_USER_DECLARE(x,y)
 
 			handled[defname] = True
-			defval = forced_opts.get(defname, doc['default'])
-			if defval == True:
-				ret.line('#define ' + defname)
-			elif defval  == False:
-				if not undef_done:
-					ret.line('#undef ' + defname)
-			elif isinstance(defval, (int, long)):
-				# integer value
-				ret.line('#define ' + defname + ' ' + cint_encode(defval))
-			elif isinstance(defval, (str, unicode)):
-				# verbatim value
-				ret.line('#define ' + defname + ' ' + defval)
-			elif isinstance(defval, dict):
-				if defval.has_key('verbatim'):
-					# verbatim text for the entire line
-					ret.line(defval['verbatim'])
-				elif defval.has_key('string'):
-					# C string value
-					ret.line('#define ' + defname + ' ' + cstr_encode(defval['string']))
-				else:
-					raise Exception('unsupported value for option %s: %r' % (defname, defval))
-			else:
-				raise Exception('unsupported value for option %s: %r' % (defname, defval))
+			emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
 
 		ret.empty()
 
@@ -1098,24 +1220,16 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 	# boilerplate here.
 	ret.snippet_relative('date_provider.h.in')
 
-	if len(opts.fixup_header_files) > 0:
+	if len(opts.fixup_header_lines) > 0:
 		ret.empty()
 		ret.line('/*')
 		ret.line(' *  Fixups')
 		ret.line(' */')
 		ret.empty()
-		for fn in opts.fixup_header_files:
-			ret.snippet_absolute(fn)
+		for line in opts.fixup_header_lines:
+			ret.line(line)
 
-	ret.empty()
-	ret.line('/*')
-	ret.line(' *  You may add overriding #define/#undef directives below for')
-	ret.line(' *  customization.  You of course cannot un-#include or un-typedef')
-	ret.line(' *  anything; these require direct changes above.')
-	ret.line(' */')
-	ret.empty()
-	ret.line('/* __OVERRIDE_DEFINES__ */')
-	ret.empty()
+	add_override_defines_section(opts, ret)
 
 	ret.upgrade_to_snippets()
 	ret.fill_dependencies_for_snippets(idx_deps)
@@ -1130,9 +1244,9 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 	# duk_config.h.
 
 	if opts.emit_legacy_feature_check:
-		add_legacy_feature_option_checks(ret)
+		add_legacy_feature_option_checks(opts, ret)
 	if opts.emit_config_sanity_check:
-		add_config_option_checks(ret)
+		add_config_option_checks(opts, ret)
 
 	ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
 	ret.empty()  # for trailing newline
@@ -1147,17 +1261,42 @@ def main():
 	def add_force_option_yaml(option, opt, value, parser):
 		# XXX: check that YAML parses
 		force_options_yaml.append(value)
-
 	def add_force_option_file(option, opt, value, parser):
 		# XXX: check that YAML parses
 		with open(value, 'rb') as f:
 			force_options_yaml.append(f.read())
+	def add_force_option_define(option, opt, value, parser):
+		tmp = value.split('=')
+		if len(tmp) == 1:
+			doc = { tmp[0]: True }
+		elif len(tmp) == 2:
+			doc = { tmp[0]: tmp[1] }
+		else:
+			raise Exception('invalid option value: %r' % value)
+		force_options_yaml.append(yaml.safe_dump(doc))
+	def add_force_option_undefine(option, opt, value, parser):
+		tmp = value.split('=')
+		if len(tmp) == 1:
+			doc = { tmp[0]: False }
+		else:
+			raise Exception('invalid option value: %r' % value)
+		force_options_yaml.append(yaml.safe_dump(doc))
+
+	fixup_header_lines = []
+	def add_fixup_header_line(option, opt, value, parser):
+		fixup_header_lines.append(value)
+	def add_fixup_header_file(option, opt, value, parser):
+		with open(value, 'rb') as f:
+			for line in f:
+				if line[-1] == '\n':
+					line = line[:-1]
+				fixup_header_lines.append(line)
 
 	commands = [
-		'generate-autodetect-header',
-		'generate-barebones-header',
-		'generate-feature-documentation',
-		'generate-option-documentation'
+		'autodetect-header',
+		'barebones-header',
+		'feature-documentation',
+		'config-documentation'
 	]
 	parser = optparse.OptionParser(
 		usage='Usage: %prog [options] COMMAND',
@@ -1166,18 +1305,25 @@ def main():
 	)
 	parser.add_option('--metadata', dest='metadata', default=None, help='metadata directory or metadata tar.gz file')
 	parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
-	parser.add_option('--platform', dest='platform', default=None, help='platform (for "generate-barebones-header" command)')
-	parser.add_option('--compiler', dest='compiler', default=None, help='compiler (for "generate-barebones-header" command)')
-	parser.add_option('--architecture', dest='architecture', default=None, help='architecture (for "generate-barebones-header" command)')
+	parser.add_option('--platform', dest='platform', default=None, help='platform (for "barebones-header" command)')
+	parser.add_option('--compiler', dest='compiler', default=None, help='compiler (for "barebones-header" command)')
+	parser.add_option('--architecture', dest='architecture', default=None, help='architecture (for "barebones-header" command)')
 	parser.add_option('--dll', dest='dll', action='store_true', default=False, help='dll build of Duktape, affects symbol visibility macros especially on Windows')  # FIXME: unimplemented
 	parser.add_option('--emit-legacy-feature-check', dest='emit_legacy_feature_check', action='store_true', default=False, help='emit preprocessor checks to reject legacy feature options (DUK_OPT_xxx)')
 	parser.add_option('--emit-config-sanity-check', dest='emit_config_sanity_check', action='store_true', default=False, help='emit preprocessor checks for config option consistency (DUK_OPT_xxx)')
 	parser.add_option('--omit-removed-config-options', dest='omit_removed_config_options', action='store_true', default=False, help='omit removed config options from generated headers')
 	parser.add_option('--omit-deprecated-config-options', dest='omit_deprecated_config_options', action='store_true', default=False, help='omit deprecated config options from generated headers')
 	parser.add_option('--omit-unused-config-options', dest='omit_unused_config_options', action='store_true', default=False, help='omit unused config options from generated headers')
-	parser.add_option('--force-option-yaml', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_yaml, default=force_options_yaml, help='force option(s) using inline YAML (e.g. --force-option "DUK_USE_DEEP_C_STACK: true" )')
-	parser.add_option('--force-option-file', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_file, default=force_options_yaml, help='YAML file(s) providing config option overrides (for "generate-barebones-header" command)')
-	parser.add_option('--fixup-header-file', dest='fixup_header_files', action='append', default=[], help='C header snippet file(s) to be appended to generated header, useful for manual option fixups (for both "generate-autodetect-header" and "generate-barebones-header" commands)')
+	parser.add_option('--define', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='force #define option using a C compiler like syntax, e.g. "--define DUK_USE_DEEP_C_STACK" or "--define DUK_USE_TRACEBACK_DEPTH=10"')
+	parser.add_option('-D', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='synonym for --define, e.g. "-DDUK_USE_DEEP_C_STACK" or "-DDUK_USE_TRACEBACK_DEPTH=10"')
+	parser.add_option('--undefine', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='force #undef option using a C compiler like syntax, e.g. "--undefine DUK_USE_DEEP_C_STACK"')
+	parser.add_option('-U', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='synonym for --undefine, e.g. "-UDUK_USE_DEEP_C_STACK"')
+	parser.add_option('--option-yaml', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_yaml, default=force_options_yaml, help='force option(s) using inline YAML (e.g. --option-yaml "DUK_USE_DEEP_C_STACK: true")')
+	parser.add_option('--option-file', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_file, default=force_options_yaml, help='YAML file(s) providing config option overrides')
+	parser.add_option('--fixup-file', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_file, default=fixup_header_lines, help='C header snippet file(s) to be appended to generated header, useful for manual option fixups')
+	parser.add_option('--fixup-line', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_line, default=fixup_header_lines, help='C header fixup line to be appended to generated header (e.g. --fixup-line "#define DUK_USE_FASTINT")')
+	parser.add_option('--sanity-warning', dest='sanity_strict', action='store_false', default=True, help='emit a warning instead of #error for option sanity check issues')
+	parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
 	(opts, args) = parser.parse_args()
 
 	meta_dir = opts.metadata
@@ -1205,29 +1351,29 @@ def main():
 	scan_tags_meta(os.path.join(meta_dir, 'tags.yaml'))
 	print('Scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
 		(len(opt_defs.keys()), len(use_defs.keys()), len(helper_snippets)))
-	print('Tags: %r' % use_tags_list)
+	#print('Tags: %r' % use_tags_list)
 
 	if len(args) == 0:
 		raise Exception('missing command')
 	cmd = args[0]
 
-	if cmd == 'generate-autodetect-header':
+	if cmd == 'autodetect-header':
 		# Generate a duk_config.h similar to Duktape 1.2 feature detection.
 		result = generate_autodetect_duk_config_header(opts, meta_dir)
 		with open(opts.output, 'wb') as f:
 			f.write(result)
-	elif cmd == 'generate-barebones-header':
+	elif cmd == 'barebones-header':
 		# Generate a duk_config.h with default options for a specific platform,
 		# compiler, and architecture.
 		result = generate_barebones_duk_config_header(opts, meta_dir)
 		with open(opts.output, 'wb') as f:
 			f.write(result)
-	elif cmd == 'generate-feature-documentation':
-		result = generate_feature_option_documentation()
+	elif cmd == 'feature-documentation':
+		result = generate_feature_option_documentation(opts)
 		with open(opts.output, 'wb') as f:
 			f.write(result)
-	elif cmd == 'generate-config-documentation':
-		result = generate_config_option_documentation()
+	elif cmd == 'config-documentation':
+		result = generate_config_option_documentation(opts)
 		with open(opts.output, 'wb') as f:
 			f.write(result)
 	else:

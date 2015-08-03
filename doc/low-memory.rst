@@ -58,6 +58,10 @@ There are four basic goals for low memory optimization:
    allocator, especially a pool-based memory allocator.  Concretely, prefer
    small chunks over large contiguous allocations.
 
+The following genconfig option file template enables most low memory related
+option: ``config/examples/low_memory.yaml``.  It doesn't enable pointer
+compression because that always requires some application specific code.
+
 Suggested feature options
 =========================
 

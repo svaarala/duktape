@@ -5,6 +5,7 @@ introduced: 1.2.0
 default: false
 tags:
   - performance
+  - fastpath
 description: >
   Enable support for 48-bit signed "fastint" integer values.  Fastints are
   transparent to user code (both C and Ecmascript) but may be faster than

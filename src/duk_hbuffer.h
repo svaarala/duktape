@@ -176,7 +176,7 @@ struct duk_hbuffer {
 	 */
 };
 
-#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
 #pragma pack(push, 8)
 #endif
 struct duk_hbuffer_fixed {
@@ -195,12 +195,14 @@ struct duk_hbuffer_fixed {
 			duk_size_t size;
 #endif
 		} s;
-#if defined(DUK_USE_ALIGN_4)
+#if (DUK_USE_ALIGN_BY == 4)
 		duk_uint32_t dummy_for_align4;
-#elif defined(DUK_USE_ALIGN_8)
+#elif (DUK_USE_ALIGN_BY == 8)
 		duk_double_t dummy_for_align8;
-#else
+#elif (DUK_USE_ALIGN_BY == 1)
 		/* no extra padding */
+#else
+#error invalid DUK_USE_ALIGN_BY
 #endif
 	} u;
 
@@ -217,13 +219,13 @@ struct duk_hbuffer_fixed {
 	 *  dynamic buffer).
 	 */
 }
-#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_GCC_ATTR)
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_GCC_ATTR)
 __attribute__ ((aligned (8)))
-#elif defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_CLANG_ATTR)
+#elif (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_CLANG_ATTR)
 __attribute__ ((aligned (8)))
 #endif
 ;
-#if defined(DUK_USE_ALIGN_8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
+#if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
 #pragma pack(pop)
 #endif
 

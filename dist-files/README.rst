@@ -7,13 +7,14 @@ intended to be easily embeddable into C programs, with a C API similar in
 spirit to Lua's.
 
 Duktape supports the full E5/E5.1 feature set including errors, Unicode
-strings, and regular expressions, as well as a subset of E6 features (e.g.
-Proxy objects).  Duktape also provides a number of custom features such as
-error tracebacks, additional data types for better C integration, combined
-reference counting and mark-and sweep garbage collector, object finalizers,
-co-operative threads a.k.a. coroutines, tail calls, built-in logging and
-module frameworks, a built-in debugger protocol, function bytecode dump/load,
-and so on.
+strings, and regular expressions, a subset of E6 features (e.g. Proxy
+objects), Khronos/ES6 ArrayBuffer/TypedView, and Node.js Buffer bindings.
+
+Duktape also provides a number of custom features such as error tracebacks,
+additional data types for better C integration, combined reference counting
+and mark-and sweep garbage collector, object finalizers, co-operative
+threads a.k.a. coroutines, tail calls, built-in logging and module frameworks,
+a built-in debugger protocol, function bytecode dump/load, and so on.
 
 You can browse Duktape programmer's API and other documentation at:
 
@@ -53,7 +54,7 @@ To build an example command line tool, use the following::
 
 This distributable contains:
 
-* ``src/``: main Duktape library in a "single file" format (duktape.c,
+* ``src/``: main Duktape library in a "single source file" format (duktape.c,
   duktape.h, and duk_config.h).
 
 * ``src-separate/``: main Duktape library in multiple files format.

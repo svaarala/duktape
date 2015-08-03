@@ -213,7 +213,8 @@ tar cfz $DIST/config/genconfig_metadata.tar.gz \
 	feature-options \
 	config-options \
 	header-snippets \
-	other-defines
+	other-defines \
+	examples
 cd $ENTRYPWD
 for i in \
 	README.rst \
@@ -426,7 +427,7 @@ echo ' */' >> $DIST/AUTHORS.rst.tmp
 
 # Build duk_config.h from snippets using genconfig.
 python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
-	generate-autodetect-header
+	autodetect-header
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
 cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
@@ -435,11 +436,11 @@ cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
 python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
 	--output $DIST/config/duk_config.h-linux-gcc-x64 \
 	--platform linux --compiler gcc --architecture x64 \
-	generate-barebones-header
+	barebones-header
 python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
 	--output $DIST/config/duk_config.h-linux-gcc-x86 \
 	--platform linux --compiler gcc --architecture x86 \
-	generate-barebones-header
+	barebones-header
 
 # Build duktape.h from parts, with some git-related replacements.
 # The only difference between single and separate file duktape.h

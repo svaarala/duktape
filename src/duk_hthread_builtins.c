@@ -602,12 +602,14 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 			" "
 			/* Alignment guarantee */
-#if defined(DUK_USE_ALIGN_4)
+#if (DUK_USE_ALIGN_BY == 4)
 			"a4"
-#elif defined(DUK_USE_ALIGN_8)
+#elif (DUK_USE_ALIGN_BY == 8)
 			"a8"
-#else
+#elif (DUK_USE_ALIGN_BY == 1)
 			"a1"
+#else
+#error invalid DUK_USE_ALIGN_BY
 #endif
 			" "
 			/* Architecture, OS, and compiler strings */

@@ -3,6 +3,7 @@ introduced: 1.2.0
 default: true
 tags:
   - performance
+  - fastpath
   - experimental
 description: >
   When enabled, plain refcount macros (e.g. DUK_TVAL_INCREF) default to

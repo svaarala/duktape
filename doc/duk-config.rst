@@ -39,58 +39,341 @@ platforms you don't usually need to do much while for more exotic platforms
 more manual work may be needed.  There's no "right way", but the more manual
 modifications are made, the more effort is needed to deal with Duktape updates.
 
-Default duk_config.h with platform autodetection
-------------------------------------------------
+The basic options are:
 
-Duktape distributable includes a default duk_config.h that is compatible
-with Duktape 1.2: it autodetects the platform, compiler, and architecture,
-and resolves active config options through feature options (DUK_OPT_xxx).
+* **Use default duk_config.h in distribution**:
+  Duktape distributable includes a default duk_config.h which is compatible
+  with Duktape 1.2: it autodetects the platform, compiler, and architecture,
+  and resolves active config options through feature options (DUK_OPT_xxx).
+  This header should work "out of the box" for Linux, OS X, and Windows and
+  is a drop-in replacement for Duktape 1.2 behavior.  If you're using one of
+  these platforms, this should be your default choice.
 
-This header should work "out of the box" for Linux, OS X, and Windows and
-is a drop-in replacement for Duktape 1.2 behavior.  If you're using one of
-these platforms, this should be your default choice.
+* **Use default duk_config.h with manual modifications**:
+  You can modify the default duk_config.h directly if only a small change
+  is needed.  Such changes can be manual, or scripted using e.g. ``sed``.
+  Using scripting is less error prone when Duktape is upgraded and the
+  source duk_config.h changes (which is usual for new versions).  See separate
+  section below on how to tweak a header using a script.
 
-In future Duktape versions the ``DUK_OPT_xxx`` feature options will be
-removed altogether so that config options are only controlled through
+* **Use genconfig.py to create an autodetect duk_config.h**:
+  You can use ``genconfig.py`` to create a custom autodetecting duk_config.h
+  and specify config option overrides on genconfig command line.  See separate
+  section below on how to use genconfig.
+
+* **Use genconfig.py to create a barebones duk_config.h**:
+  While the autodetect duk_config.h is convenient, it won't work on exotic
+  platforms.  To support exotic platforms, ``genconfig.py`` can generate a
+  template duk_config.h for a range of platforms.  You can generate a header
+  most closely matching your target, and then modify it manually or via
+  scripting.
+
+* **Write a duk_config.h from scratch**:
+  You could also write a duk_config.h from scratch, but because there are
+  quite many typedefs, macros, and config options, it's probably easiest
+  to modify the default or genconfig-generated duk_config.h.
+
+NOTE: In future Duktape versions the ``DUK_OPT_xxx`` feature options will
+be removed altogether so that config options are only controlled through
 ``DUK_USE_xxx`` options, avoiding the two-level structure which is no
 longer well justified if ``DUK_USE_xxx`` options are configured directly
 in the config header.
 
-Modifying the default duk_config.h manually
--------------------------------------------
+Using genconfig
+===============
 
-You can modify the default duk_config.h directly if only a small change
-is needed.  Such changes can be manual, or scripted using e.g. ``sed``.
-Using scripting is less error prone when Duktape is upgraded and the
-source duk_config.h changes (which is usual for new versions).
+Overview of genconfig
+---------------------
 
-See separate section below on how to tweak a header using a script.
+Genconfig (``config/genconfig.py``) is a helper script which provides
+several commands related to config handling:
 
-Using genconfig.py to create a barebones duk_config.h
------------------------------------------------------
+* Generate the default, autodetecting ``duk_config.h``.
 
-To support exotic platforms, Duktape distributable also includes a
-``genconfig.py`` script which can generate a template duk_config.h for
-a range of platforms.  You can generate a header most closely matching
-your target, and then modify it manually or via scripting.
+* Generate a barebones ``duk_config.h`` for a specific platform, compiler,
+  and architecture, with possible config option overrides.
 
-See separate section below on using genconfig.
+* Generate documentation for feature and config options.
 
-Writing a duk_config.h from scratch
+Config headers are generated based on config option and target metadata
+files, and manually edited header snippets which are combined to create
+a final header.  Documentation is generated based on config option metadata.
+Metadata is expressed as YAML files for easy editing and good diff/merge
+behavior.
+
+Generating an autodetect duk_config.h
+-------------------------------------
+
+To generate an autodetect header suitable for major platforms (essentially
+Linux, OSX, and Windows)::
+
+    $ cd duktape/config
+    $ python genconfig.py \
+        --metadata config/ \
+        --output /tmp/duk_config.h \
+        barebones-header
+
+The resulting header in ``/tmp/duk_config.h`` can then either be used as is
+or edited manually or through scripting.
+
+You can override individual defines using in several ways (see "Option
+overrides" section below for more details): C compiler format (-D and -U
+options), YAML config through a file or inline, or verbatim fixup header
+through a file or inline.
+
+Some changes such as reworking ``#include`` statements cannot be represented
+as override files; you'll need to edit the resulting config header manually
+or using some scripting approach.
+
+Generating a barebones duk_config.h
 -----------------------------------
 
-You could also write a duk_config.h from scratch, but because there are
-quite many typedefs, macros, and config options, it's probably easiest
-to modify the default or genconfig-generated duk_config.h.
+To generate a barebones header you need to specify a platform, compiler, and
+architecture for genconfig::
 
-Modifying a duk_config.h using scripting
-========================================
+    $ cd duktape/config
+    $ python genconfig.py \
+        --metadata config/ \
+        --platform linux \
+        --compiler gcc \
+        --architecture x64 \
+        --output /tmp/duk_config.h \
+        barebones-header
+
+The barebones header in ``/tmp/duk_config.h`` can then either be used as is
+or edited manually or through scripting.
+
+The platform, compiler, and architecture names map to genconfig header snippet
+files.  Duktape config options will be assigned their default values specified
+in config option metadata files in ``config/config-options/``.
+
+You can override individual defines using in several ways (see "Option
+overrides" section below for more details): C compiler format (-D and -U
+options), YAML config through a file or inline, or verbatim fixup header
+through a file or inline.
+
+Some changes such as reworking ``#include`` statements cannot be represented
+as override files; you'll need to edit the resulting config header manually
+or using some scripting approach.
+
+Genconfig option overrides
+==========================
+
+Genconfig provides multiple ways of overriding config options when generating
+an autodetect or barebones ``duk_config.h`` header:
+
+* C compiler format::
+
+      -DDUK_USE_TRACEBACK_DEPTH=100
+      -DDUK_USE_JX
+      -UDUK_USE_JC
+
+* YAML config read from a file or given inline on the command line::
+
+      --option-file my_config.yaml
+      --option-yaml 'DUK_USE_DEEP_C_STACK: false'
+
+* Verbatim fixup header lines read from a file or given inline on the command
+  line::
+
+      --fixup-file my_custom.h
+      --fixup-line '#undef DUK_USE_JX'
+
+These option formats can be mixed which allows you to specify an option
+baseline (say ``--option-file low_memory.yaml``) and then apply
+further overrides in various ways.  All forced options in C compiler
+format and YAML format are processed first, with the last override
+winning.  Fixup headers are then emitted in order.
+
+C compiler format
+-----------------
+
+The usual C compiler like format is supported because it's quite familiar.
+In this example a low memory base configuration is read from a YAML config
+file, and a few options are then tweaked using the C compiler format.  An
+autodetect header is then generated::
+
+    $ cd duktape/config
+    $ python genconfig.py \
+        --metadata config/ \
+        --option-file low_memory.yaml \
+        -DDUK_USE_TRACEBACK_DEPTH=100 \
+        -UDUK_USE_DEEP_C_STACK \
+        --output /tmp/duk_config.h \
+        autodetect-header
+
+YAML config
+-----------
+
+A YAML config file allows options to be specified in a structured,
+programmatic manner.  An example YAML config file, ``my_config.yaml``
+could contain::
+
+    DUK_USE_OS_STRING: "\"hack-os\""  # force os name for Duktape.env
+    DUK_USE_ALIGN_BY: 8  # force align-by-8
+    DUK_USE_FASTINT: true
+    DUK_UNREF:
+      verbatim: "#define DUK_UNREF(x) do { (void) (x); } while (0)"
+
+This file, another override file, and a few inline YAML forced options
+could be used as follows to generate a barebones header::
+
+    $ cd duktape/config
+    $ python genconfig.py \
+        --metadata config/ \
+        --platform linux \
+        --compiler gcc \
+        --architecture x64 \
+        --option-file my_config.yaml \
+        --option-file more_overrides.yaml \
+        --option-yaml 'DUK_USE_DEEP_C_STACK: false' \
+        --option-yaml 'DUK_USE_JX: false' \
+        --option-yaml 'DUK_USE_JC: false' \
+        --output /tmp/duk_config.h \
+        barebones-header
+
+For inline YAML, multiple forced options can be given either by using a YAML
+value with multiple keys, or by using multiple options::
+
+    # Multiple values for one option
+    --option-yaml '{ DUK_USE_DEEP_C_STACK: false, DUK_USE_DEBUG: true }'
+
+    # Multiple options
+    --option-yaml 'DUK_USE_DEEP_C_STACK: false' \
+    --option-yaml 'DUK_USE_DEBUG: true'
+
+The YAML format for specifying options is simple: the top level value must be
+an object whose keys are define names to override.  Values are as follows:
+
+* ``false``: ``#undef`` option::
+
+      # Produces: #undef DUK_USE_DEBUG
+      DUK_USE_DEBUG: false
+
+* ``true``: ``#define`` option::
+
+      # Produces: #define DUK_USE_DEBUG
+      DUK_USE_DEBUG: true
+
+* number: decimal value for define::
+
+      # Produces: #define DUK_USE_TRACEBACK_DEPTH 10
+      DUK_USE_TRACEBACK_DEPTH: 10
+
+      # Produces: #define DUK_USE_TRACEBACK_DEPTH 100000L
+      # (a long constant is used automatically if necessary)
+      DUK_USE_TRACEBACK_DEPTH: 100000
+
+* string: verbatim string used as the define value::
+
+      # Produces: #define DUK_USE_TRACEBACK_DEPTH (10 + 7)
+      DUK_USE_TRACEBACK_DEPTH: "(10 + 7)"
+
+      # Produces: #define DUK_USE_OS_STRING "linux"
+      DUK_USE_OS_STRING: "\"linux\""
+
+* C string for value::
+
+      # Produces: #define DUK_USE_OS_STRING "linux"
+      DUK_USE_OS_STRING:
+        string: "linux"
+
+* verbatim text for entire define::
+
+      # Produces: #define DUK_UNREF(x) do {} while (0)
+      DUK_UNREF:
+        verbatim: "#define DUK_UNREF(x) do {} while (0)"
+
+Fixup header
+------------
+
+In addition to YAML-based option overrides, genconfig has an option for
+appending direct "fixup headers" to deal with situations which cannot be
+handled with individual option overrides.  For example, you may want to
+inject specific environment sanity checks, or set config option values
+based on environment #ifdefs.  This mechanism is similar to Duktape 1.2.x
+``duk_custom.h`` header, and you can in fact use ``duk_custom.h`` headers
+directly as inputs.
+
+Fixup headers are emitted after all individual option overrides (in either
+C compiler or YAML format) have been resolved, but before emitting option
+sanity checks (if enabled).
+
+For example, to generate a barebones header with two fixup headers::
+
+    $ python genconfig.py \
+        --metadata config/ \
+        --platform linux \
+        --compiler gcc \
+        --architecture x64 \
+        --fixup-file my_env_strings.h \
+        --fixup-file my_no_json_fastpath.h \
+        --output /tmp/duk_config.h \
+        barebones-header
+
+The ``my_env_strings.h`` fixup header could be::
+
+    /* Force OS string. */
+    #undef DUK_USE_OS_STRING
+    #if !defined(__WIN32__)
+    #error this header is Windows only
+    #endif
+
+    /* Force arch string. */
+    #undef DUK_USE_ARCH_STRING
+    #if !defined(__amd64__)
+    #error this header is x64 only
+    #endif
+    #define DUK_USE_ARCH_STRING "x64"
+
+    /* Force compiler string. */
+    #undef DUK_USE_COMPILER_STRING
+    #if !defined(__GNUC__)
+    #error this header is gcc only
+    #endif
+    #if defined(__cplusplus__)
+    #define DUK_USE_COMPILER_STRING "g++"
+    #else
+    #define DUK_USE_COMPILER_STRING "gcc"
+    #endif
+
+The example fixup header uses dynamic detection and other environment checks
+which cannot be easily expressed using individual option overrides.
+
+The ``my_no_json_fastpath.h`` fixup header could be::
+
+    /* Disable JSON fastpath for reduced footprint. */
+    #undef DUK_USE_JSON_STRINGIFY_FASTPATH
+
+This could have also been expressed using a simple override, e.g. as
+``-UDUK_USE_JSON_STRINGIFY_FASTPATH``.
+
+Fixup headers are appended verbatim so they must be valid C header files,
+contain appropriate newlines, and must ``#undef`` any defines before
+redefining them if necessary.  Fixup headers can only be used to tweak C
+preprocessor defines, they naturally cannot un-include headers or un-typedef
+types.
+
+There's also a command line option to append a single fixup line for
+convenience::
+
+    # Append two lines to forcibly enable fastints
+    --fixup-line '#undef DUK_USE_FASTINT' \
+    --fixup-line '#define DUK_USE_FASTINT'
+
+These can be mixed with ``--fixup-file`` options and are processed
+in sequence.
+
+Modifying a duk_config.h manually or using scripting
+====================================================
 
 The basic approach when using scripted modifications is to take a base header
-(either the autodetecting Duktape default header or a genconfig-generated
-header) and then make specific changes using a script.  The advantage of doing
-so is that if the base header is updated, the script may often still be valid
-without any manual changes.
+(either an autodetect or barebones header) and then make specific changes
+using a script.  The advantage of doing so is that if the base header is
+updated, the script may often still be valid without any manual changes.
+
+Scripting provides much more flexibility than tweaking individual options in
+genconfig, but the cost is more complicated maintenance over time.
 
 Using diff/patch
 ----------------
@@ -109,8 +392,8 @@ Using diff/patch
 * If the patch fails (e.g. there is too much offset), you need to
   rebuild the diff file manually.
 
-Using sed to modify an option in-place
---------------------------------------
+Using sed (or awk, etc) to modify an option in-place
+----------------------------------------------------
 
 If an option is defined on a single line in the base header (this is true
 for Duktape config options in the genconfig "barebones" header for example),
@@ -141,14 +424,11 @@ is easier to read especially if there are multiple changes::
 This approach won't work if the defined option is defined/undefined
 multiple times or if the define has a multiline value.
 
-Using awk or other script language
-----------------------------------
-
 For more stateful changes you can use ``awk`` or other scripting languages
 (Python, Perl, etc).
 
-Modifying defines at the end of the file
-----------------------------------------
+Modifying defines at __OVERRIDE_DEFINES__
+-----------------------------------------
 
 Instead of modifying options in-place as in the sed example above, you can
 simply append additional preprocessor directives to undefine/redefine options
@@ -161,7 +441,7 @@ header::
     # my_custom.h is applied after generated header; functionally similar
     # to Duktape 1.2.x duk_custom.h
 
-    $ python genconfig.py [...] --fixup-header-file my_custom.h [...]
+    $ python genconfig.py [...] --fixup-file my_custom.h [...]
 
 A genconfig-generated barebones header also has the following line near the end
 for detecting where to add override defines; this is easy to detect reliably::
@@ -170,7 +450,28 @@ for detecting where to add override defines; this is easy to detect reliably::
 
 The ``__OVERRIDE_DEFINES__`` line is near the end of the file, before any
 automatically generated option sanity checks (which are optional) so that the
-sanity checks will be applied after your tweaks have been done.
+sanity checks will be applied after your tweaks have been done::
+
+    #!/bin/bash
+
+    CONFIG_IN=duk_config.h.base
+    CONFIG_OUT=duk_config.h.new
+
+    cat $CONFIG_IN | sed -e '
+    /^\/\* __OVERRIDE_DEFINES__ \*\/$/ {
+        r my_overrides.h
+        d
+    }' > $CONFIG_OUT
+
+Modifying defines near the end of the file is relatively easy but has a few
+limitations:
+
+* You can't change typedefs this way because there's no way to un-typedef.
+
+* You can't undo any ``#include`` directives executed.
+
+Modifying defines at the end of the file
+----------------------------------------
 
 Another simple approach is to simply assume that an ``#endif`` line (include
 guard) is the last line in the file, i.e. there are no trailing empty lines.
@@ -207,13 +508,6 @@ Changes will then be applied after option sanity checks which is not ideal::
     echo "Wrote new config to $CONFIG_OUT, diff -u:"
     diff -u $CONFIG_IN $CONFIG_OUT
 
-Modifying defines at the end of the file is relatively easy but has a few
-limitations:
-
-* You can't change typedefs this way because there's no way to un-typedef.
-
-* You can't undo any ``#include`` directives executed.
-
 Dealing with #include files
 ---------------------------
 
@@ -234,7 +528,7 @@ In such cases you may need to replace all the ``#include`` statements of a
 base header file and provide alternate include files or manual declarations.
 
 Keeping a manually created duk_config.h up-to-date
-==================================================
+--------------------------------------------------
 
 When new Duktape versions are released, the set of config options and
 other macros required of the ``duk_config.h`` config header may change.
@@ -257,175 +551,6 @@ created the config header:
   diff between the previous and new default config header to see what
   defines have changed, and then implement matching changes in your
   updated header.
-
-Using genconfig
-===============
-
-Overview of genconfig
----------------------
-
-Genconfig (``config/genconfig.py``) is a helper script which provides
-several commands related to config handling:
-
-* Generate the default, autodetecting ``duk_config.h``.
-
-* Generate a barebones ``duk_config.h`` for a specific platform, compiler,
-  and architecture, with possible config option overrides.
-
-* Generate documentation for feature and config options.
-
-Config headers are generated based on config option and target metadata
-files, and manually edited header snippets which are combined to create
-a final header.  Documentation is generated based on config option metadata.
-Metadata is expressed as YAML files for easy editing and good diff/merge
-behavior.
-
-Generating a barebones duk_config.h
------------------------------------
-
-**FIXME: this now works for linux-gcc-x64 example but there are no other
-platform/compiler/architecture files yet.**
-
-To generate a barebones header you need to specify a platform, compiler, and
-architecture for genconfig::
-
-    $ cd duktape/config
-    $ python genconfig.py \
-        --platform linux \
-        --compiler gcc \
-        --architecture x64 \
-        --output /tmp/duk_config.h \
-        generate-barebones-header
-
-The barebones header in ``/tmp/duk_config.h`` can then either be used as is
-or edited manually or through scripting.
-
-The platform, compiler, and architecture names map to genconfig header snippet
-files.  Duktape config options will be assigned their default values specified
-in config option metadata files in ``config/config-options/``.
-
-You can override individual defines using a config file in YAML format (see
-section below for a detailed discussion of the format).  For example,
-``my_config.yaml`` could contain::
-
-    DUK_USE_OS_STRING: "\"hack-os\""  # force os name for Duktape.env
-    DUK_USE_ALIGN_4: false
-    DUK_USE_ALIGN_8: true   # force align-by-8
-    DUK_USE_FASTINT: true
-    DUK_UNREF:
-      verbatim: "#define DUK_UNREF(x) do { (void) (x); } while (0)"
-
-You can give one or more such files to genconfig (last override wins)::
-
-    $ cd duktape/config
-    $ python genconfig.py \
-        --platform linux \
-        --compiler gcc \
-        --architecture x64 \
-        --force-option-file my_config.yaml \
-        --force-option-file more_overrides.yaml \
-        --output /tmp/duk_config.h \
-        generate-barebones-header
-
-You can also give forced options directly on the command line in YAML format::
-
-    $ cd duktape/config
-    $ python genconfig.py \
-        --platform linux \
-        --compiler gcc \
-        --architecture x64 \
-        --force-option-file my_config.yaml \
-        --force-option-file more_overrides.yaml \
-        --force-option-yaml 'DUK_USE_DEEP_C_STACK: false' \
-        --output /tmp/duk_config.h \
-        generate-barebones-header
-
-Multiple forced options can be given either by using a YAML value with
-multiple keys, or by using multiple options::
-
-    # Multiple values for one option
-    --force-option-yaml '{ DUK_USE_DEEP_C_STACK: false, DUK_USE_DEBUG: true }'
-
-    # Multiple options
-    --force-option-yaml 'DUK_USE_DEEP_C_STACK: false' \
-    --force-option-yaml 'DUK_USE_DEBUG: true'
-
-Some changes such as reworking ``#include`` statements cannot be represented
-as override files; you'll need to edit the resulting config header manually
-or using some scripting approach.
-
-In addition to YAML-based option overrides, genconfig has an option for
-appending direct "fixup headers" (similar to Duktape 1.2.x ``duk_custom.h``)::
-
-    $ python genconfig.py \
-        --platform linux \
-        --compiler gcc \
-        --architecture x64 \
-        --fixup-header-file my_arch_string.h \
-        --fixup-header-file my_no_json_fastpath.h \
-        --output /tmp/duk_config.h \
-        generate-barebones-header
-
-In this example ``my_arch_string.h`` could be::
-
-    /* Force arch string. */
-    #undef DUK_USE_ARCH_STRING
-    #define DUK_USE_ARCH_STRING "myarch"
-
-and ``my_no_json_fastpath.h`` could be::
-
-    /* Disable JSON fastpath for reduced footprint. */
-    #undef DUK_USE_JSON_STRINGIFY_FASTPATH
-
-Fixup headers are appended verbatim so they must be valid C header files,
-contain appropriate newlines, and must ``#undef`` any defines before
-redefining them if necessary.  Fixup headers can only be used to tweak C
-preprocessor defines, they naturally cannot un-include headers or un-typedef
-types.
-
-Format for option overrides
----------------------------
-
-The override file keys are define names, and values can be:
-
-* ``false``: ``#undef`` option::
-
-      # Produces: #undef DUK_USE_DEBUG
-      DUK_USE_DEBUG: false
-
-* ``true``: ``#define`` option::
-
-      # Produces: #define DUK_USE_DEBUG
-      DUK_USE_DEBUG: true
-
-* number: decimal value for define::
-
-      # Produces: DUK_USE_TRACEBACK_DEPTH: 10
-      DUK_USE_TRACEBACK_DEPTH: 10
-
-      # Produces: DUK_USE_TRACEBACK_DEPTH: 100000L
-      # (a long constant is used automatically if necessary)
-      DUK_USE_TRACEBACK_DEPTH: 100000
-
-* string: verbatim string used as the define value::
-
-      # Produces: #define DUK_USE_TRACEBACK_DEPTH (10 + 7)
-      DUK_USE_TRACEBACK_DEPTH: "(10 + 7)"
-
-      # Produces: #define DUK_USE_OS_STRING "linux"
-      DUK_USE_OS_STRING: "\"linux\""
-
-* C string for value::
-
-      # Produces: #define DUK_USE_OS_STRING "linux"
-      DUK_USE_OS_STRING:
-        string: "linux"
-
-* verbatim text for entire define::
-
-      # Produces: #define DUK_UNREF(x) do {} while (0)
-      DUK_UNREF:
-        verbatim: "#define DUK_UNREF(x) do {} while (0)"
 
 Defines provided by duk_config.h
 ================================
@@ -534,7 +659,7 @@ Duktape 1.2 feature option problems
     options: how would custom options be passed to applications?
 
 Nice-to-have features
-=====================
+---------------------
 
 Should use a configuration header (duk_config.h):
 
