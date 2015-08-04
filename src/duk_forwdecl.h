@@ -44,6 +44,7 @@ struct duk_fixedbuffer;
 
 struct duk_bitdecoder_ctx;
 struct duk_bitencoder_ctx;
+struct duk_bufwriter_ctx;
 
 struct duk_token;
 struct duk_re_token;
@@ -93,6 +94,7 @@ typedef struct duk_fixedbuffer duk_fixedbuffer;
 
 typedef struct duk_bitdecoder_ctx duk_bitdecoder_ctx;
 typedef struct duk_bitencoder_ctx duk_bitencoder_ctx;
+typedef struct duk_bufwriter_ctx duk_bufwriter_ctx;
 
 typedef struct duk_token duk_token;
 typedef struct duk_re_token duk_re_token;

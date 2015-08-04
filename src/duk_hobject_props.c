@@ -357,7 +357,37 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *o
 
 	return 1;
 }
-#endif
+#endif  /* DUK_USE_ES6_PROXY */
+
+/* Get Proxy target object.  If the argument is not a Proxy, return it as is.
+ * If a Proxy is revoked, an error is thrown.
+ */
+#if defined(DUK_USE_ES6_PROXY)
+DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hthread *thr, duk_hobject *obj) {
+	duk_hobject *h_target;
+	duk_hobject *h_handler;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	/* Resolve Proxy targets until Proxy chain ends.  No explicit check for
+	 * a Proxy loop: user code cannot create such a loop without tweaking
+	 * internal properties directly.
+	 */
+
+	while (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+		if (duk_hobject_proxy_check(thr, obj, &h_target, &h_handler)) {
+			DUK_ASSERT(h_target != NULL);
+			obj = h_target;
+		} else {
+			break;
+		}
+	}
+
+	DUK_ASSERT(obj != NULL);
+	return obj;
+}
+#endif  /* DUK_USE_ES6_PROXY */
 
 #if defined(DUK_USE_ES6_PROXY)
 DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, duk_small_uint_t stridx_trap, duk_tval *tv_key, duk_hobject **out_target) {
@@ -3311,7 +3341,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * one as far as writes are concerned.
 		 *
 		 * The fast path behavior is documented in more detail here:
-		 * ecmascript-testcases/test-misc-array-fast-write.js
+		 * tests/ecmascript/test-misc-array-fast-write.js
 		 */
 
 		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val, &desc) != 0) {

@@ -3,10 +3,10 @@ NODE:=$(shell which nodejs node | head -1)
 # Try to get a useful default --source-dirs which works both in the Duktape
 # repo and in the distributable.  We don't want to add '..' because it would
 # scan a lot of undesired files in the Duktape repo (e.g. test262 testcases).
-ifeq ($(wildcard ../ecmascript-testcases/*.js),)
+ifeq ($(wildcard ../tests/ecmascript/*.js),)
 SOURCEDIRS:=../
 else
-SOURCEDIRS:=../ecmascript-testcases
+SOURCEDIRS:=../tests/ecmascript
 endif
 
 .PHONY: all

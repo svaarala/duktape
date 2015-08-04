@@ -60,7 +60,7 @@ summary: |
   </ul>
 
   <p>See API testcase
-  <a href="https://github.com/svaarala/duktape/blob/master/api-testcases/test-def-prop.c">test-def-prop.c</a>
+  <a href="https://github.com/svaarala/duktape/blob/master/tests/api/test-def-prop.c">test-def-prop.c</a>
   for more examples.</p>
 
 example: |

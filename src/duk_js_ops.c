@@ -1028,6 +1028,9 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
  *      E5 Section 15.3.4.5.3
  *
  *  For other objects, a TypeError is thrown.
+ *
+ *  Limited Proxy support: don't support 'getPrototypeOf' trap but
+ *  continue lookup in Proxy target if the value is a Proxy.
  */
 
 DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
@@ -1117,6 +1120,13 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	proto = duk_require_hobject(ctx, -1);
 	duk_pop(ctx);  /* -> [ ... lval rval ] */
 
+	DUK_ASSERT(val != NULL);
+
+#if defined(DUK_USE_ES6_PROXY)
+	val = duk_hobject_resolve_proxy_target(thr, val);
+	DUK_ASSERT(val != NULL);
+#endif
+
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
 		/*
@@ -1137,11 +1147,19 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 *  also the built-in Function prototype, the result is true.
 		 */
 
+		DUK_ASSERT(val != NULL);
 		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
 
 		if (!val) {
 			goto pop_and_false;
-		} else if (val == proto) {
+		}
+
+		DUK_ASSERT(val != NULL);
+#if defined(DUK_USE_ES6_PROXY)
+		val = duk_hobject_resolve_proxy_target(thr, val);
+#endif
+
+		if (val == proto) {
 			goto pop_and_true;
 		}
 

@@ -14,10 +14,10 @@ function mandel() {
     for (i = 0; i < h; i++) {
         y0 = (i / h) * 2.5 - 1.25;
 
-        for (j = 0, line = []; j < w; j ++) {
+        for (j = 0, line = []; j < w; j++) {
             x0 = (j / w) * 3.0 - 2.0;
 
-            for (k = 0, xx = 0, yy = 0, c = '#'; k < iter; k ++) {
+            for (k = 0, xx = 0, yy = 0, c = '#'; k < iter; k++) {
                 /* z -> z^2 + c
                  *   -> (xx+i*yy)^2 + (x0+i*y0)
                  *   -> xx*xx+i*2*xx*yy-yy*yy + x0 + i*y0

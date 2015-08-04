@@ -629,6 +629,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          duk_fatal_function fatal_func) {
 	duk_heap *res = NULL;
 
+	/* Silence a few global unused warnings here. */
+	DUK_UNREF(duk_str_unsupported);
+
 	DUK_D(DUK_DPRINT("allocate heap"));
 
 	/*

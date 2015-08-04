@@ -254,16 +254,18 @@ DUK_LOCAL void duk__selftest_double_zero_sign(void) {
  */
 
 DUK_LOCAL void duk__selftest_struct_align(void) {
-#if defined(DUK_USE_ALIGN_4)
+#if (DUK_USE_ALIGN_BY == 4)
 	if ((sizeof(duk_hbuffer_fixed) % 4) != 0) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 4");
 	}
-#elif defined(DUK_USE_ALIGN_8)
+#elif (DUK_USE_ALIGN_BY == 8)
 	if ((sizeof(duk_hbuffer_fixed) % 8) != 0) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 8");
 	}
-#else
+#elif (DUK_USE_ALIGN_BY == 1)
 	/* no check */
+#else
+#error invalid DUK_USE_ALIGN_BY
 #endif
 }
 

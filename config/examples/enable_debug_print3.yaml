@@ -1,0 +1,5 @@
+# Enable debug level 3.
+DUK_USE_DEBUG: true
+DUK_USE_DPRINT: true
+DUK_USE_DDPRINT: true
+DUK_USE_DDDPRINT: true

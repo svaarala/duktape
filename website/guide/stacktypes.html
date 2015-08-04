@@ -335,11 +335,11 @@ compared to ordinary Function objects, the most important being:</p>
     construct and return an instance explicitly in the constructor.</li>
 <li>Lightfuncs can be used as accessor properties (getters/setters), but they
     get converted to actual functions; see
-    <a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-lightfunc-accessor.js">test-dev-lightfunc-accessor.js</a>.</li>
+    <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-lightfunc-accessor.js">test-dev-lightfunc-accessor.js</a>.</li>
 <li>Lightfuncs cannot have a finalizer as they are a primitive type and
     don't have a reference count field or otherwise participate in garbage
     collection; see
-    <a href="https://github.com/svaarala/duktape/blob/master/ecmascript-testcases/test-dev-lightfunc-finalizer.js">test-dev-lightfunc-finalizer.js</a>.</li>
+    <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-lightfunc-finalizer.js">test-dev-lightfunc-finalizer.js</a>.</li>
 </ul>
 
 <p>Lightfuncs are useful for very low memory environments where the memory

@@ -186,7 +186,13 @@ void duk_js_push_closure(duk_hthread *thr,
 		DUK_HOBJECT_SET_NOTAIL(&fun_clos->obj);
 	}
 	/* DUK_HOBJECT_FLAG_NEWENV: handled below */
-	DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(&fun_clos->obj));
+	if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
+		/* Although NAMEBINDING is not directly needed for using
+		 * function instances, it's needed by bytecode dump/load
+		 * so copy it too.
+		 */
+		DUK_HOBJECT_SET_NAMEBINDING(&fun_clos->obj);
+	}
 	if (DUK_HOBJECT_HAS_CREATEARGS(&fun_temp->obj)) {
 		DUK_HOBJECT_SET_CREATEARGS(&fun_clos->obj);
 	}

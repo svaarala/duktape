@@ -943,6 +943,7 @@ def generateGuide():
 	navlinks.append(['#coroutines', 'Coroutines'])
 	navlinks.append(['#virtualproperties', 'Virtual properties'])
 	navlinks.append(['#internalproperties', 'Internal properties'])
+	navlinks.append(['#bytecodedumpload', 'Bytecode dump/load'])
 	navlinks.append(['#threading', 'Threading'])
 	navlinks.append(['#sandboxing', 'Sandboxing'])
 	navlinks.append(['#performance', 'Performance'])
@@ -990,6 +991,7 @@ def generateGuide():
 	res += processRawDoc('guide/coroutines.html')
 	res += processRawDoc('guide/virtualproperties.html')
 	res += processRawDoc('guide/internalproperties.html')
+	res += processRawDoc('guide/bytecodedumpload.html')
 	res += processRawDoc('guide/threading.html')
 	res += processRawDoc('guide/sandboxing.html')
 	res += processRawDoc('guide/performance.html')
@@ -1093,7 +1095,7 @@ def scrapeDuktapeVersion():
 def main():
 	outdir = sys.argv[1]; assert(outdir)
 	apidocdir = 'api'
-	apitestdir = '../api-testcases'
+	apitestdir = '../tests/api'
 	guideincdirs = [ './guide', '../examples/guide' ]
 	apiincdirs = [ './api', '../examples/api' ]
 	out_charset = 'utf-8'

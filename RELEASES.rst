@@ -966,7 +966,13 @@ Planned
 * Add support for an external date/time provider to make porting the Date
   built-in to exotic platforms easier
 
+* Add duk_dump_function() and duk_load_function() API calls which provide
+  bytecode dump/load support (GH-27)
+
 * Add duk_instanceof() API call (GH-148)
+
+* Add Proxy object support to 'instanceof' operator (without support for
+  'getPrototypeOf' trap) (GH-182)
 
 * Add duk_steal_buffer() API call which allows user code to steal the current
   allocation of a dynamic buffer which is useful for some buffer manipulation
@@ -1007,8 +1013,8 @@ Planned
 * Fix compile error from array fast path when using low memory options
   (GH-174)
 
-* Fix a few pointer compression issues (DUK_USE_HEAPPTR16) on 64-bit platforms
-  (GH-228)
+* Fix a few pointer compression issues (DUK_OPT_HEAPPTR16 / DUK_USE_HEAPPTR16)
+  on 64-bit platforms (GH-228)
 
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 
@@ -1021,4 +1027,3 @@ Planned
 
 * Ecmascript 6 features will be implemented in v2.x.x at the earliest
   (some individual features may be cherry picked into v1.x.x)
-

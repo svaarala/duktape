@@ -12,6 +12,9 @@ also a potential issue.
 This document describes suggested feature options for reducing Duktape
 latency in timing sensitive environments.
 
+The following genconfig option file template enables most timing
+sensitivity related options: ``config/examples/timing_sensitive.yaml``.
+
 Suggested feature options
 =========================
 

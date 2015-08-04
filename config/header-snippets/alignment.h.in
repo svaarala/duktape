@@ -7,52 +7,51 @@
  */
 
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#undef DUK_USE_ALIGN_4
-#undef DUK_USE_ALIGN_8
+#undef DUK_USE_ALIGN_BY
 
 #if defined(DUK_F_EMSCRIPTEN)
 /* Required on at least some targets, so use whenever Emscripten used,
  * regardless of compilation target.
  */
-#define DUK_USE_ALIGN_8
+#define DUK_USE_ALIGN_BY 8
 #elif defined(DUK_F_ARM)
-#define DUK_USE_ALIGN_4
+#define DUK_USE_ALIGN_BY 4
 #elif defined(DUK_F_MIPS32)
 /* Based on 'make checkalign' there are no alignment requirements on
  * Linux MIPS except for doubles, which need align by 4.  Alignment
  * requirements vary based on target though.
  */
-#define DUK_USE_ALIGN_4
+#define DUK_USE_ALIGN_BY 4
 #elif defined(DUK_F_MIPS64)
 /* Good default is a bit arbitrary because alignment requirements
  * depend on target.  See https://github.com/svaarala/duktape/issues/102.
  */
-#define DUK_USE_ALIGN_8
+#define DUK_USE_ALIGN_BY 8
 #elif defined(DUK_F_SUPERH)
 /* Based on 'make checkalign' there are no alignment requirements on
  * Linux SH4, but align by 4 is probably a good basic default.
  */
-#define DUK_USE_ALIGN_4
+#define DUK_USE_ALIGN_BY 4
 #elif defined(DUK_F_X86) || defined(DUK_F_X32) || defined(DUK_F_X64) || \
       defined(DUK_F_BCC)
 /* XXX: This is technically not guaranteed because it's possible to configure
  * an x86 to require aligned accesses with Alignment Check (AC) flag.
  */
+#define DUK_USE_ALIGN_BY 1
 #define DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
 #else
 /* Unknown, use safe default */
-#define DUK_USE_ALIGN_8
+#define DUK_USE_ALIGN_BY 8
 #endif
 
 /* User forced alignment to 4 or 8. */
 #if defined(DUK_OPT_FORCE_ALIGN)
+#undef DUK_USE_ALIGN_BY
 #undef DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
-#undef DUK_USE_ALIGN_4
-#undef DUK_USE_ALIGN_8
 #if (DUK_OPT_FORCE_ALIGN == 4)
-#define DUK_USE_ALIGN_4
+#define DUK_USE_ALIGN_BY 4
 #elif (DUK_OPT_FORCE_ALIGN == 8)
-#define DUK_USE_ALIGN_8
+#define DUK_USE_ALIGN_BY 8
 #else
 #error invalid DUK_OPT_FORCE_ALIGN value
 #endif

@@ -72,7 +72,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
 		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
 		duk_tval *tv, *tv_end;
-		duk_hobject **funcs, **funcs_end;
+		duk_hobject **fn, **fn_end;
 
 		/* 'data' is reachable through every compiled function which
 		 * contains a reference.
@@ -87,11 +87,11 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			tv++;
 		}
 
-		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
-		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
-		while (funcs < funcs_end) {
-			duk__mark_heaphdr(heap, (duk_heaphdr *) *funcs);
-			funcs++;
+		fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
+		fn_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
+		while (fn < fn_end) {
+			duk__mark_heaphdr(heap, (duk_heaphdr *) *fn);
+			fn++;
 		}
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;

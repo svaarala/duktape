@@ -98,7 +98,7 @@
  *  Panic error
  *
  *  Panic errors are not relative to either a heap or a thread, and cause
- *  DUK_PANIC() macro to be invoked.  Unlesa a user provides DUK_OPT_PANIC_HANDLER,
+ *  DUK_PANIC() macro to be invoked.  Unless a user provides DUK_USE_PANIC_HANDLER,
  *  DUK_PANIC() calls a helper which prints out the error and causes a process
  *  exit.
  *
@@ -136,7 +136,7 @@
 	} while (0)
 
 /* Assertion compatible inside a comma expression, evaluates to void.
- * Currently not compatible with DUK_OPT_PANIC_HANDLER() which may have
+ * Currently not compatible with DUK_USE_PANIC_HANDLER() which may have
  * a statement block.
  */
 #if defined(DUK_USE_PANIC_HANDLER)
