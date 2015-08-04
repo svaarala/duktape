@@ -3345,7 +3345,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 */
 
 		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val, &desc) != 0) {
-			DUK_DDD(DUK_DDDPRINT("array fast path success for index %ld", (long) arr_idx));
+			DUK_DDD(DUK_DDDPRINT("array fast path success"));
 			return 1;
 		}
 
