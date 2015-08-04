@@ -862,7 +862,7 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 		duk__dec_string(js_ctx);
 	} else if ((x >= DUK_ASC_0 && x <= DUK_ASC_9) || (x == DUK_ASC_MINUS)) {
 #ifdef DUK_USE_JX
-		if (js_ctx->flag_ext_custom && duk__dec_peek(js_ctx) == DUK_ASC_UC_I) {
+		if (js_ctx->flag_ext_custom && x == DUK_ASC_MINUS && duk__dec_peek(js_ctx) == DUK_ASC_UC_I) {
 			duk__dec_req_stridx(js_ctx, DUK_STRIDX_MINUS_INFINITY);  /* "-Infinity", '-' has been eaten */
 			duk_push_number(ctx, -DUK_DOUBLE_INFINITY);
 		} else {
