@@ -77,6 +77,7 @@ mkdir $DIST/examples/alloc-logging
 mkdir $DIST/examples/alloc-torture
 mkdir $DIST/examples/alloc-hybrid
 mkdir $DIST/examples/debug-trans-socket
+mkdir $DIST/examples/debug-trans-dvalue
 mkdir $DIST/examples/codepage-conv
 mkdir $DIST/examples/dummy-date-provider
 
@@ -357,10 +358,20 @@ done
 
 for i in \
 	README.rst \
-	duk_debug_trans_socket.c \
-	duk_debug_trans_socket.h \
+	duk_trans_socket.c \
+	duk_trans_socket.h \
 	; do
 	cp examples/debug-trans-socket/$i $DIST/examples/debug-trans-socket/
+done
+
+for i in \
+	README.rst \
+	duk_trans_dvalue.c \
+	duk_trans_dvalue.h \
+	test.c \
+	Makefile \
+	; do
+	cp examples/debug-trans-dvalue/$i $DIST/examples/debug-trans-dvalue/
 done
 
 for i in \
