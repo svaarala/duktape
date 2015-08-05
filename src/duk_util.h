@@ -177,7 +177,7 @@ struct duk_bufwriter_ctx {
 #define DUK_BW_GET_SIZE(thr,bw_ctx) \
 	((duk_size_t) ((bw_ctx)->p - (bw_ctx)->p_base))
 #define DUK_BW_SET_SIZE(thr,bw_ctx,sz) do { \
-		DUK_ASSERT((duk_size_t) (sz) <= (duk_size_t) ((bw_ctx)->p - (bw_ctx->p_base))); \
+		DUK_ASSERT((duk_size_t) (sz) <= (duk_size_t) ((bw_ctx)->p - (bw_ctx)->p_base)); \
 		(bw_ctx)->p = (bw_ctx)->p_base + (sz); \
 	} while (0)
 #define DUK_BW_RESET_SIZE(thr,bw_ctx) do { \
