@@ -15,7 +15,7 @@ DUK_LOCAL void duk__bw_update_ptrs(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, 
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_UNREF(thr);
 
-	p = DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf);
+	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, bw_ctx->buf);
 	DUK_ASSERT(p != NULL || (DUK_HBUFFER_DYNAMIC_GET_SIZE(bw_ctx->buf) == 0 && curr_offset == 0 && new_length == 0));
 	bw_ctx->p = p + curr_offset;
 	bw_ctx->p_base = p;
