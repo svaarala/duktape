@@ -10,3 +10,6 @@ description: >
   when there is no "replacer" or indent; in practice, when JSON.stringify() is
   called with only a value argument.  The fast path increases code footprint by
   roughly 1.5 kB but is up to 4-5x faster than the slow path.
+
+  Current limitation: assumes "long long" type exists (and covers duk_int64_t
+  range) and that sprintf() format string "%lld" works for "long long".
