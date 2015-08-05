@@ -10,7 +10,7 @@ ABCD
 
 function basicTest() {
     print('AbCd'.toUpperCase());
-    print('\u00e4'.toUpperCase().charCodeAt(0));  // U+00E4 (a with dots) -> U+00E4 (A with dots) = 196
+    print('\u00e4'.toUpperCase().charCodeAt(0));  // U+00E4 (a with dots) -> U+00C4 (A with dots) = 196
 }
 
 try {

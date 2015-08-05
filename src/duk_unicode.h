@@ -9,8 +9,10 @@
  *  UTF-8 / XUTF-8 / CESU-8 constants
  */
 
-#define DUK_UNICODE_MAX_XUTF8_LENGTH   7   /* up to 36 bit codepoints */
-#define DUK_UNICODE_MAX_CESU8_LENGTH   6   /* all codepoints up to U+10FFFF */
+#define DUK_UNICODE_MAX_XUTF8_LENGTH      7   /* up to 36 bit codepoints */
+#define DUK_UNICODE_MAX_XUTF8_BMP_LENGTH  3   /* all codepoints up to U+FFFF */
+#define DUK_UNICODE_MAX_CESU8_LENGTH      6   /* all codepoints up to U+10FFFF */
+#define DUK_UNICODE_MAX_CESU8_BMP_LENGTH  3   /* all codepoints up to U+FFFF */
 
 /*
  *  Useful Unicode codepoints
@@ -207,6 +209,9 @@ DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
  */
 
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp);
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL duk_small_int_t duk_unicode_get_cesu8_length(duk_ucodepoint_t cp);
+#endif
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_uint8_t *out);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_encode_cesu8(duk_ucodepoint_t cp, duk_uint8_t *out);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_ucodepoint_t *out_cp);

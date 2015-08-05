@@ -10,4 +10,5 @@ try {
     print(fib(35));
 } catch (e) {
     print(e.stack || e);
+    throw e;
 }

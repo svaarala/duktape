@@ -1345,7 +1345,6 @@ Debugger.prototype.sendDumpHeapRequest = function () {
                 o.data = msg[i++];
             } else if (o.type === DUK_HTYPE_BUFFER) {
                 o.len = msg[i++];
-                o.alloc = msg[i++];
                 o.data = msg[i++];
             } else if (o.type === DUK_HTYPE_OBJECT) {
                 o['class'] = msg[i++];

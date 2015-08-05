@@ -34,7 +34,7 @@ number 0 object 0 0 0 1
 number 1 object 1 1 0 1
 number 100 object 100 100 0 1
 number 1000000 object 1000000 1000000 0 1
-number Infinity Error
+number Infinity RangeError
 number NaN object 0 0 0 1
 ===*/
 
@@ -194,7 +194,7 @@ false 0
 NaN 0
 268435456 268435456
 1073741824 1073741824
-4294967296 Error
+4294967296 RangeError
 [object Object] 17
 ===*/
 

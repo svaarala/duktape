@@ -25,9 +25,12 @@ def main():
 		retval = p.wait()
 		#print(i, retval, stdout, stderr)
 
-		if retval != 0:
+		if retval == 139:
+			print 'segv'
+			sys.exit(1)
+		elif retval != 0:
 			print 'n/a'
-			return
+			sys.exit(1)
 
 		time = float(stderr)
 		#print(i, time)
@@ -39,6 +42,7 @@ def main():
 
 	# /usr/bin/time has only two digits of resolution
 	print('%.02f' % time_min)
+	sys.exit(0)
 
 if __name__ == '__main__':
 	main()

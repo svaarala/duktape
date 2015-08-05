@@ -83,9 +83,17 @@ Suggested feature options
 
   - ``#undef DUK_USE_LEXER_SLIDING_WINDOW``
 
-* Disable ``JSON.stringify()`` fast path (saves on code footprint):
+* Disable JSON fast paths (saves on code footprint):
 
   - ``#undef DUK_USE_JSON_STRINGIFY_FASTPATH``
+
+  - ``#undef DUK_USE_JSON_QUOTESTRING_FASTPATH``
+
+  - ``#undef DUK_USE_JSON_DECSTRING_FASTPATH``
+
+  - ``#undef DUK_USE_JSON_DECNUMBER_FASTPATH``
+
+  - ``#undef DUK_USE_JSON_EATWHITE_FASTPATH``
 
 * If you don't need the Duktape-specific additional JX/JC formats, use:
 

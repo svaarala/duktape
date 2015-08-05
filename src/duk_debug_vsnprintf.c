@@ -628,10 +628,9 @@ DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 
 	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
-		duk_fb_sprintf(fb, "buffer:dynamic:%p:%ld:%ld",
+		duk_fb_sprintf(fb, "buffer:dynamic:%p:%ld",
 		               (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(NULL, g),
-		               (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(g),
-		               (long) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(g));
+		               (long) DUK_HBUFFER_DYNAMIC_GET_SIZE(g));
 	} else {
 		duk_fb_sprintf(fb, "buffer:fixed:%ld", (long) DUK_HBUFFER_GET_SIZE(h));
 	}

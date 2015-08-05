@@ -990,6 +990,19 @@ Planned
 
 * Internal performance improvement: improve lexer tokenization (GH-207)
 
+* Internal performance improvement: add several fast paths to JSON parse
+  and stringify; remove explicit end-of-input check from JSON parsing
+  relying on (guaranteed) NUL termination instead (GH-139, GH-209)
+
+* Internal performance improvements from removing dynamic buffer spare:
+  small improvements to lexer, compiler bytecode emission, JSON parse() and
+  stringify(), duk_map_string(), global object escape(), unescape() and
+  variants, regexp compilation, string case conversion, and a few other
+  places (GH-209)
+
+* Sizeof(duk_hbuffer_dynamic) reduced from 16 to 12 bytes for low memory
+  builds using heap compression (GH-209)
+
 * Increase try-catch register limit (from 511 to 262143) to fix try-catch
   out-of-register issues for most code (GH-145)
 
@@ -997,6 +1010,14 @@ Planned
 
 * Make Proxy internal _Target and _Handler properties immutable (non-writable
   and non-configurable) (GH-237)
+
+* Remove internal support for dynamic buffer spare; improves performance a
+  bit, reduces duk_hbuffer_dynamic footprint for both normal and low memory
+  header (GH-209)
+
+* Incompatible change to debugger DumpHeap command format: dynamic buffer
+  alloc size is no long sent because it was removed from the internal data
+  structure (GH-209)
 
 * Fix bytecode execution timeout regression which caused timeouts to fail
   after the first execution timeout had been triggered (GH-212)
@@ -1009,6 +1030,9 @@ Planned
 
 * Fix duk_push_nan() NaN normalization bug which caused segfaults when using
   MSVC on x86 and potentially on other 32-bit platforms (GH-168)
+
+* Fix JX parsing bug which caused strings like "1Infinity" to be parsed as
+  negative infinity instead of causing a SyntaxError (GH-247)
 
 * Fix compile error from array fast path when using low memory options
   (GH-174)

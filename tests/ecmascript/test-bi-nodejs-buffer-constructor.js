@@ -41,14 +41,14 @@ size: NaN
 0 bytes: 
 [object Buffer] -> Buffer.prototype -> Object.prototype
 size: 1e+50
-Error
-Error
+RangeError
+RangeError
 size: 4294967296
-Error
-Error
+RangeError
+RangeError
 size: 4294967295
-Error
-Error
+RangeError
+RangeError
 size: 1073741824
 1073741824 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
 [object Buffer] -> Buffer.prototype -> Object.prototype

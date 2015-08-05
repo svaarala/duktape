@@ -250,8 +250,8 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 #endif
 	duk__free_run_finalizers(heap);
 
-	/* Note: heap->heap_thread, heap->curr_thread, heap->heap_object,
-	 * and heap->log_buffer are on the heap allocated list.
+	/* Note: heap->heap_thread, heap->curr_thread, and heap->heap_object
+	 * are on the heap allocated list.
 	 */
 
 	DUK_D(DUK_DPRINT("freeing heap objects of heap: %p", (void *) heap));
@@ -713,7 +713,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
-	res->log_buffer = NULL;
 #if defined(DUK_USE_STRTAB_CHAIN)
 	/* nothing to NULL */
 #elif defined(DUK_USE_STRTAB_PROBE)
@@ -891,19 +890,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		goto error;
 	}
 	DUK_HOBJECT_INCREF(res->heap_thread, res->heap_object);
-
-	/*
-	 *  Init log buffer
-	 */
-
-	DUK_DD(DUK_DDPRINT("HEAP: INIT LOG BUFFER"));
-	res->log_buffer = (duk_hbuffer_dynamic *) duk_hbuffer_alloc(res,
-	                                                            DUK_BI_LOGGER_SHORT_MSG_LIMIT,
-	                                                            DUK_BUF_FLAG_DYNAMIC /*flags*/);
-	if (!res->log_buffer) {
-		goto error;
-	}
-	DUK_HBUFFER_INCREF(res->heap_thread, res->log_buffer);
 
 	/*
 	 *  All done

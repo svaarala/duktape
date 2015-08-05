@@ -94,7 +94,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_string_prop(duk_hthread *thr, duk_uint8_t *p, d
 		DUK_ASSERT(h_str != NULL);
 	}
 	DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-	p = DUK_BW_ENSURE(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(h_str), p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(h_str), p);
 	p = duk__dump_hstring_raw(p, h_str);
 	return p;
 }
@@ -108,10 +108,10 @@ DUK_LOCAL duk_uint8_t *duk__dump_buffer_prop(duk_hthread *thr, duk_uint8_t *p, d
 		h_buf = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h_buf != NULL);
 		DUK_ASSERT(DUK_HBUFFER_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-		p = DUK_BW_ENSURE(thr, bw_ctx, 4 + DUK_HBUFFER_GET_SIZE(h_buf), p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HBUFFER_GET_SIZE(h_buf), p);
 		p = duk__dump_hbuffer_raw(thr, p, h_buf);
 	} else {
-		p = DUK_BW_ENSURE(thr, bw_ctx, 4, p);
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
 		DUK_RAW_WRITE_U32_BE(p, 0);
 	}
 	return p;
@@ -127,7 +127,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_uint32_prop(duk_hthread *thr, duk_uint8_t *p, d
 	} else {
 		val = def_value;
 	}
-	p = DUK_BW_ENSURE(thr, bw_ctx, 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
 	DUK_RAW_WRITE_U32_BE(p, val);
 	return p;
 }
@@ -168,12 +168,12 @@ DUK_LOCAL duk_uint8_t *duk__dump_varmap(duk_hthread *thr, duk_uint8_t *p, duk_bu
 #endif
 
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(key) + 4, p);
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(key) + 4, p);
 			p = duk__dump_hstring_raw(p, key);
 			DUK_RAW_WRITE_U32_BE(p, val);
 		}
 	}
-	p = DUK_BW_ENSURE(thr, bw_ctx, 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
 	DUK_RAW_WRITE_U32_BE(p, 0);  /* end of _Varmap */
 	return p;
 }
@@ -207,12 +207,12 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 				DUK_ASSERT(varname != NULL);
 
 				DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-				p = DUK_BW_ENSURE(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
+				p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
 				p = duk__dump_hstring_raw(p, varname);
 			}
 		}
 	}
-	p = DUK_BW_ENSURE(thr, bw_ctx, 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
 	DUK_RAW_WRITE_U32_BE(p, 0);  /* end of _Formals */
 	return p;
 }
@@ -253,7 +253,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 
 	DUK_ASSERT(DUK_USE_ESBC_MAX_BYTES <= 0x7fffffffUL);  /* ensures no overflow */
 	count_instr = (duk_uint32_t) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(thr->heap, func);
-	p = DUK_BW_ENSURE(thr, bw_ctx, 3 * 4 + 2 * 2 + 3 * 4 + count_instr * 4, p);
+	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 3 * 4 + 2 * 2 + 3 * 4 + count_instr * 4, p);
 
 	/* Fixed header info. */
 	tmp32 = count_instr;
@@ -307,12 +307,12 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 			h_str = DUK_TVAL_GET_STRING(tv);
 			DUK_ASSERT(h_str != NULL);
 			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-			p = DUK_BW_ENSURE(thr, bw_ctx, 1 + 4 + DUK_HSTRING_GET_BYTELEN(h_str), p),
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1 + 4 + DUK_HSTRING_GET_BYTELEN(h_str), p),
 			*p++ = DUK__SER_STRING;
 			p = duk__dump_hstring_raw(p, h_str);
 		} else {
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-			p = DUK_BW_ENSURE(thr, bw_ctx, 1 + 8, p);
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 1 + 8, p);
 			*p++ = DUK__SER_NUMBER;
 			d = DUK_TVAL_GET_NUMBER(tv);
 			DUK_RAW_WRITE_DOUBLE_BE(p, d);
@@ -632,7 +632,6 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hcompiledfunction *func;
-	duk_hbuffer_dynamic *h_buf;
 	duk_bufwriter_ctx bw_ctx_alloc;
 	duk_bufwriter_ctx *bw_ctx = &bw_ctx_alloc;
 	duk_uint8_t *p;
@@ -651,15 +650,12 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	/* Estimating the result size beforehand would be costly, so
 	 * start with a reasonable size and extend as needed.
 	 */
-	(void) duk_push_dynamic_buffer(ctx, DUK__BYTECODE_INITIAL_ALLOC);
-	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_buf != NULL);
-	DUK_BW_INIT(thr, bw_ctx, h_buf);
-	p = DUK_BW_GETPTR(thr, bw_ctx);
+	DUK_BW_INIT_PUSHBUF(thr, bw_ctx, DUK__BYTECODE_INITIAL_ALLOC);
+	p = DUK_BW_GET_PTR(thr, bw_ctx);
 	*p++ = DUK__SER_MARKER;
 	*p++ = DUK__SER_VERSION;
 	p = duk__dump_func(ctx, func, bw_ctx, p);
-	DUK_BW_FINISH(thr, bw_ctx, p);
+	DUK_BW_SET_PTR(thr, bw_ctx, p);
 	DUK_BW_COMPACT(thr, bw_ctx);
 
 	DUK_DD(DUK_DDPRINT("serialized result: %!T", duk_get_tval(ctx, -1)));

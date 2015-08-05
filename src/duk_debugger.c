@@ -1353,11 +1353,6 @@ DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_hea
 		duk_hbuffer *h = (duk_hbuffer *) hdr;
 
 		duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_GET_SIZE(h));
-		if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
-			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE((duk_hbuffer_dynamic *) h));
-		} else {
-			duk_debug_write_uint(thr, (duk_uint32_t) DUK_HBUFFER_GET_SIZE(h));
-		}
 		duk_debug_write_buffer(thr, (const char *) DUK_HBUFFER_GET_DATA_PTR(heap, h), (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
 		break;
 	}

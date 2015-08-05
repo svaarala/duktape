@@ -35,6 +35,28 @@ DUK_INTERNAL duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp) {
 	}
 }
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL duk_small_int_t duk_unicode_get_cesu8_length(duk_ucodepoint_t cp) {
+	duk_uint_fast32_t x = (duk_uint_fast32_t) cp;
+	if (x < 0x80UL) {
+		/* 7 bits */
+		return 1;
+	} else if (x < 0x800UL) {
+		/* 11 bits */
+		return 2;
+	} else if (x < 0x10000UL) {
+		/* 16 bits */
+		return 3;
+	} else {
+		/* Encoded as surrogate pair, each encoding to 3 bytes for
+		 * 6 bytes total.  Codepoints above U+10FFFF encode as 6 bytes
+		 * too, see duk_unicode_encode_cesu8().
+		  */
+		return 3 + 3;
+	}
+}
+#endif  /* DUK_USE_ASSERTIONS */
+
 DUK_INTERNAL duk_uint8_t duk_unicode_xutf8_markers[7] = {
 	0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
 };
@@ -662,7 +684,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 
 DUK_LOCAL
 duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
-                                          duk_hbuffer_dynamic *buf,
+                                          duk_bufwriter_ctx *bw,
                                           duk_codepoint_t cp,
                                           duk_bitdecoder_ctx *bd_ctx) {
 	duk_small_int_t skip = 0;
@@ -672,6 +694,9 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	duk_codepoint_t tmp_cp;
 	duk_codepoint_t start_i;
 	duk_codepoint_t start_o;
+
+	DUK_UNREF(thr);
+	DUK_ASSERT(bd_ctx != NULL);
 
 	DUK_DDD(DUK_DDDPRINT("slow case conversion for codepoint: %ld", (long) cp));
 
@@ -728,11 +753,10 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("1:n conversion %ld -> %ld chars", (long) start_i, (long) t));
 		if (cp == start_i) {
 			DUK_DDD(DUK_DDDPRINT("1:n matches input codepoint"));
-			if (buf) {
+			if (bw != NULL) {
 				while (t--) {
 					tmp_cp = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
-					DUK_ASSERT(buf != NULL);
-					duk_hbuffer_append_xutf8(thr, buf, (duk_ucodepoint_t) tmp_cp);
+					DUK_BW_WRITE_RAW_XUTF8(thr, bw, (duk_ucodepoint_t) tmp_cp);
 				}
 			}
 			return -1;
@@ -748,8 +772,8 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	/* fall through */
 
  single:
-	if (buf) {
-		duk_hbuffer_append_xutf8(thr, buf, cp);
+	if (bw != NULL) {
+		DUK_BW_WRITE_RAW_XUTF8(thr, bw, (duk_ucodepoint_t) cp);
 	}
 	return cp;
 }
@@ -766,7 +790,7 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
  */
 DUK_LOCAL
 duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
-                                           duk_hbuffer_dynamic *buf,
+                                           duk_bufwriter_ctx *bw,
                                            duk_codepoint_t cp,
                                            duk_codepoint_t prev,
                                            duk_codepoint_t next,
@@ -790,7 +814,11 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 				cp = cp - 'A' + 'a';
 			}
 		}
-		goto singlechar;
+
+		if (bw != NULL) {
+			DUK_BW_WRITE_RAW_U8(thr, bw, (duk_uint8_t) cp);
+		}
+		return cp;
 	}
 
 	/* context and locale specific rules which cannot currently be represented
@@ -831,11 +859,11 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_lc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_lc);
 	}
-	return duk__slow_case_conversion(thr, buf, cp, &bd_ctx);
+	return duk__slow_case_conversion(thr, bw, cp, &bd_ctx);
 
  singlechar:
-	if (buf) {
-		duk_hbuffer_append_xutf8(thr, buf, cp);
+	if (bw != NULL) {
+		DUK_BW_WRITE_RAW_XUTF8(thr, bw, (duk_ucodepoint_t) cp);
 	}
 	return cp;
 
@@ -853,20 +881,16 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_int_t uppercase) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h_input;
-	duk_hbuffer_dynamic *h_buf;
+	duk_bufwriter_ctx bw_alloc;
+	duk_bufwriter_ctx *bw;
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t prev, curr, next;
 
 	h_input = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	/* XXX: should init the buffer with a spare of at least h_input->blen
-	 * to avoid unnecessary growth steps.
-	 */
-	duk_push_dynamic_buffer(ctx, 0);
-	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
+	bw = &bw_alloc;
+	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));
 
 	/* [ ... input buffer ] */
 
@@ -892,9 +916,15 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 
 		/* on first round, skip */
 		if (curr >= 0) {
-			/* may generate any number of output codepoints */
+			/* XXX: could add a fast path to process chunks of input codepoints,
+			 * but relative benefit would be quite small.
+			 */
+
+			/* Ensure space for maximum multi-character result; estimate is overkill. */
+			DUK_BW_ENSURE(thr, bw, 8 * DUK_UNICODE_MAX_XUTF8_LENGTH);
+
 			duk__case_transform_helper(thr,
-			                           h_buf,
+			                           bw,
 			                           (duk_codepoint_t) curr,
 			                           prev,
 			                           next,
@@ -902,6 +932,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 		}
 	}
 
+	DUK_BW_COMPACT(thr, bw);
 	duk_to_string(ctx, -1);  /* invalidates h_buf pointer */
 	duk_remove(ctx, -2);
 }
@@ -919,7 +950,7 @@ DUK_INTERNAL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, 
 	duk_codepoint_t y;
 
 	y = duk__case_transform_helper(thr,
-	                               NULL,    /* buf */
+	                               NULL,    /* NULL is allowed, no output */
 	                               cp,      /* curr char */
 	                               -1,      /* prev char */
 	                               -1,      /* next char */

@@ -103,7 +103,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 			 */
 			duk_hbuffer_dynamic *h_dyn = (duk_hbuffer_dynamic *) h;
 			duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_dynamic)));
-			duk_push_uint(ctx, (duk_uint_t) (DUK_HBUFFER_DYNAMIC_GET_ALLOC_SIZE(h_dyn)));
+			duk_push_uint(ctx, (duk_uint_t) (DUK_HBUFFER_DYNAMIC_GET_SIZE(h_dyn)));
 		} else {
 			duk_push_uint(ctx, (duk_uint_t) (sizeof(duk_hbuffer_fixed) + DUK_HBUFFER_GET_SIZE(h_buf) + 1));
 		}

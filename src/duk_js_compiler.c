@@ -45,6 +45,9 @@
 #define DUK__MAX_FUNCS                    DUK_BC_BC_MAX
 #define DUK__MAX_TEMPS                    0xffffL
 
+/* Initial bytecode size allocation. */
+#define DUK__BC_INITIAL_INSTS 256
+
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
 		duk__recursion_increase((comp_ctx)); \
@@ -487,7 +490,6 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	DUK_MEMZERO(func, sizeof(*func));  /* intentional overlap with earlier memzero */
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	func->h_name = NULL;
-	func->h_code = NULL;
 	func->h_consts = NULL;
 	func->h_funcs = NULL;
 	func->h_decls = NULL;
@@ -499,13 +501,8 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	duk_require_stack(ctx, DUK__FUNCTION_INIT_REQUIRE_SLOTS);
 
-	/* XXX: getter for dynamic buffer */
-
-	duk_push_dynamic_buffer(ctx, 0);
-	func->code_idx = entry_top + 0;
-	func->h_code = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, entry_top + 0);
-	DUK_ASSERT(func->h_code != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
+	DUK_BW_INIT_PUSHBUF(thr, &func->bw_code, DUK__BC_INITIAL_INSTS * sizeof(duk_compiler_instr));
+	/* code_idx = entry_top + 0 */
 
 	duk_push_array(ctx);
 	func->consts_idx = entry_top + 1;
@@ -551,9 +548,11 @@ DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 
-	/* XXX: reset buffers while keeping existing spare */
+	/* reset bytecode buffer but keep current size; pass 2 will
+	 * require same amount or more.
+	 */
+	DUK_BW_RESET_SIZE(thr, &func->bw_code);
 
-	duk_hbuffer_reset(thr, func->h_code);
 	duk_hobject_set_length_zero(thr, func->h_consts);
 	/* keep func->h_funcs; inner functions are not reparsed to avoid O(depth^2) parsing */
 	func->fnum_next = 0;
@@ -642,10 +641,6 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	duk_tval *tv;
 
 	DUK_DDD(DUK_DDDPRINT("converting duk_compiler_func to function/template"));
-	DUK_DD(DUK_DDPRINT("code=%!xO consts=%!O funcs=%!O",
-	                   (duk_heaphdr *) func->h_code,
-	                   (duk_heaphdr *) func->h_consts,
-	                   (duk_heaphdr *) func->h_funcs));
 
 	/*
 	 *  Push result object and init its flags
@@ -712,9 +707,9 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	 *  so the building process is atomic.
 	 */
 
-	consts_count = duk_hobject_get_length(comp_ctx->thr, func->h_consts);
-	funcs_count = duk_hobject_get_length(comp_ctx->thr, func->h_funcs) / 3;
-	code_count = DUK_HBUFFER_GET_SIZE(func->h_code) / sizeof(duk_compiler_instr);
+	consts_count = duk_hobject_get_length(thr, func->h_consts);
+	funcs_count = duk_hobject_get_length(thr, func->h_funcs) / 3;
+	code_count = DUK_BW_GET_SIZE(thr, &func->bw_code) / sizeof(duk_compiler_instr);
 	code_size = code_count * sizeof(duk_instr_t);
 
 	data_size = consts_count * sizeof(duk_tval) +
@@ -769,8 +764,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_res, p_instr);
 
 	/* copy bytecode instructions one at a time */
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(func->h_code));
-	q_instr = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, func->h_code);
+	q_instr = (duk_compiler_instr *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
 	for (i = 0; i < code_count; i++) {
 		p_instr[i] = q_instr[i].ins;
 	}
@@ -1015,34 +1009,25 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 /* XXX: macro smaller than call? */
 DUK_LOCAL duk_int_t duk__get_current_pc(duk_compiler_ctx *comp_ctx) {
-	return (duk_int_t) (DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_code) / sizeof(duk_compiler_instr));
+	duk_compiler_func *func;
+	func = &comp_ctx->curr_func;
+	return (duk_int_t) (DUK_BW_GET_SIZE(comp_ctx->thr, &func->bw_code) / sizeof(duk_compiler_instr));
 }
 
 DUK_LOCAL duk_compiler_instr *duk__get_instr_ptr(duk_compiler_ctx *comp_ctx, duk_int_t pc) {
-	duk_compiler_func *f = &comp_ctx->curr_func;
-	duk_uint8_t *p;
-	duk_compiler_instr *code_begin, *code_end;
-
-	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->thr->heap, f->h_code);
-	code_begin = (duk_compiler_instr *) p;
-	code_end = (duk_compiler_instr *) (p + DUK_HBUFFER_GET_SIZE(f->h_code));
-	DUK_UNREF(code_end);
-
 	DUK_ASSERT(pc >= 0);
-	DUK_ASSERT((duk_size_t) pc < (duk_size_t) (code_end - code_begin));
-
-	return code_begin + pc;
+	DUK_ASSERT((duk_size_t) pc < (duk_size_t) (DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) / sizeof(duk_compiler_instr)));
+	return ((duk_compiler_instr *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code)) + pc;
 }
 
 /* emit instruction; could return PC but that's not needed in the majority
  * of cases.
  */
 DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
-	duk_hbuffer_dynamic *h;
 #if defined(DUK_USE_PC2LINE)
 	duk_int_t line;
 #endif
-	duk_compiler_instr instr;
+	duk_compiler_instr *instr;
 
 	DUK_DDD(DUK_DDDPRINT("duk__emit: 0x%08lx curr_token.start_line=%ld prev_token.start_line=%ld pc=%ld --> %!I",
 	                     (unsigned long) ins,
@@ -1051,7 +1036,9 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 	                     (long) duk__get_current_pc(comp_ctx),
 	                     (duk_instr_t) ins));
 
-	h = comp_ctx->curr_func.h_code;
+	instr = (duk_compiler_instr *) DUK_BW_ENSURE_GETPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
+	DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
+
 #if defined(DUK_USE_PC2LINE)
 	/* The line number tracking is a bit inconsistent right now, which
 	 * affects debugger accuracy.  Mostly call sites emit opcodes when
@@ -1068,9 +1055,9 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 	}
 #endif
 
-	instr.ins = ins;
+	instr->ins = ins;
 #if defined(DUK_USE_PC2LINE)
-	instr.line = line;
+	instr->line = line;
 #endif
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	if (line < comp_ctx->curr_func.min_line) {
@@ -1082,21 +1069,26 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 #endif
 
 	/* Limit checks for bytecode byte size and line number. */
+	if (DUK_UNLIKELY(DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) > DUK_USE_ESBC_MAX_BYTES)) {
+		goto fail_bc_limit;
+	}
 #if defined(DUK_USE_PC2LINE) && defined(DUK_USE_ESBC_LIMITS)
 #if defined(DUK_USE_BUFLEN16)
 	/* Buffer length is bounded to 0xffff automatically, avoid compile warning. */
 	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER)) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
+		goto fail_bc_limit;
 	}
 #else
-	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER ||
-	                 DUK_HBUFFER_GET_SIZE((duk_hbuffer *) h) > DUK_USE_ESBC_MAX_BYTES)) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
+	if (DUK_UNLIKELY(line > DUK_USE_ESBC_MAX_LINENUMBER)) {
+		goto fail_bc_limit;
 	}
 #endif
 #endif
 
-	duk_hbuffer_append_bytes(comp_ctx->thr, h, (duk_uint8_t *) &instr, sizeof(instr));
+	return;
+
+  fail_bc_limit:
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
 }
 
 /* Update function min/max line from current token.  Needed to improve
@@ -1558,12 +1550,10 @@ DUK_LOCAL void duk__emit_load_int32_noshuffle(duk_compiler_ctx *comp_ctx, duk_re
 #endif
 
 DUK_LOCAL void duk__emit_jump(duk_compiler_ctx *comp_ctx, duk_int_t target_pc) {
-	duk_hbuffer_dynamic *h;
 	duk_int_t curr_pc;
 	duk_int_t offset;
 
-	h = comp_ctx->curr_func.h_code;
-	curr_pc = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr));
+	curr_pc = (duk_int_t) (DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) / sizeof(duk_compiler_instr));
 	offset = (duk_int_t) target_pc - (duk_int_t) curr_pc - 1;
 	DUK_ASSERT(offset + DUK_BC_JUMP_BIAS >= DUK_BC_ABC_MIN);
 	DUK_ASSERT(offset + DUK_BC_JUMP_BIAS <= DUK_BC_ABC_MAX);
@@ -1582,26 +1572,35 @@ DUK_LOCAL duk_int_t duk__emit_jump_empty(duk_compiler_ctx *comp_ctx) {
  * currently needed for compiling for-in.
  */
 DUK_LOCAL void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, duk_int_t jump_pc) {
-	duk_hbuffer_dynamic *h;
 #if defined(DUK_USE_PC2LINE)
 	duk_int_t line;
 #endif
-	duk_compiler_instr instr;
+	duk_compiler_instr *instr;
 	duk_size_t offset;
 
-	h = comp_ctx->curr_func.h_code;
+	offset = jump_pc * sizeof(duk_compiler_instr),
+	instr = (duk_compiler_instr *)
+	        DUK_BW_INSERT_ENSURE_AREA(comp_ctx->thr,
+	                                  &comp_ctx->curr_func.bw_code,
+	                                  offset,
+	                                  sizeof(duk_compiler_instr));
+
 #if defined(DUK_USE_PC2LINE)
 	line = comp_ctx->curr_token.start_line;  /* approximation, close enough */
 #endif
-
-	instr.ins = DUK_ENC_OP_ABC(DUK_OP_JUMP, 0);
+	instr->ins = DUK_ENC_OP_ABC(DUK_OP_JUMP, 0);
 #if defined(DUK_USE_PC2LINE)
-	instr.line = line;
+	instr->line = line;
 #endif
 
-	offset = jump_pc * sizeof(duk_compiler_instr);
+	DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
+	if (DUK_UNLIKELY(DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) > DUK_USE_ESBC_MAX_BYTES)) {
+		goto fail_bc_limit;
+	}
+	return;
 
-	duk_hbuffer_insert_bytes(comp_ctx->thr, h, offset, (duk_uint8_t *) &instr, sizeof(instr));
+  fail_bc_limit:
+	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
 }
 
 /* Does not assume that jump_pc contains a DUK_OP_JUMP previously; this is intentional
@@ -1694,23 +1693,18 @@ DUK_LOCAL void duk__emit_invalid(duk_compiler_ctx *comp_ctx) {
  */
 
 DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
-	duk_hbuffer_dynamic *h;
 	duk_compiler_instr *bc;
 	duk_small_uint_t iter;
 	duk_int_t i, n;
 	duk_int_t count_opt;
 
-	h = comp_ctx->curr_func.h_code;
-	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
-
-	bc = (duk_compiler_instr *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->thr->heap, h);
+	bc = (duk_compiler_instr *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code);
 #if defined(DUK_USE_BUFLEN16)
 	/* No need to assert, buffer size maximum is 0xffff. */
 #else
-	DUK_ASSERT(DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr) <= DUK_INT_MAX);  /* bytecode limits */
+	DUK_ASSERT((duk_size_t) DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) / sizeof(duk_compiler_instr) <= (duk_size_t) DUK_INT_MAX);  /* bytecode limits */
 #endif
-	n = (duk_int_t) (DUK_HBUFFER_GET_SIZE(h) / sizeof(duk_compiler_instr));
+	n = (duk_int_t) (DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) / sizeof(duk_compiler_instr));
 
 	for (iter = 0; iter < DUK_COMPILER_PEEPHOLE_MAXITER; iter++) {
 		count_opt = 0;
@@ -2524,7 +2518,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	(void) duk_put_prop_index(ctx, comp_ctx->curr_func.labelnames_idx, (duk_uarridx_t) n);
 
 	new_size = (n + 1) * sizeof(duk_labelinfo);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
 	/* XXX: spare handling, slow now */
 
 	/* relookup after possible realloc */
@@ -2676,7 +2670,7 @@ DUK_LOCAL void duk__reset_labels_to_length(duk_compiler_ctx *comp_ctx, duk_int_t
 	new_size = sizeof(duk_labelinfo) * (duk_size_t) len;
 	duk_push_int(ctx, len);
 	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_STRIDX_LENGTH);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size, new_size);  /* XXX: spare handling */
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
 }
 
 /*

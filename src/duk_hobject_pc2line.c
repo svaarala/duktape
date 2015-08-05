@@ -46,7 +46,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 	curr_pc = 0U;
 	while (curr_pc < length) {
 		new_size = (duk_size_t) (curr_offset + DUK_PC2LINE_MAX_DIFF_LENGTH);
-		duk_hbuffer_resize(thr, h_buf, new_size, new_size);
+		duk_hbuffer_resize(thr, h_buf, new_size);
 
 		hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf);
 		DUK_ASSERT(hdr != NULL);
@@ -113,7 +113,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 
 	/* compact */
 	new_size = (duk_size_t) curr_offset;
-	duk_hbuffer_resize(thr, h_buf, new_size, new_size);
+	duk_hbuffer_resize(thr, h_buf, new_size);
 
 	(void) duk_to_fixed_buffer(ctx, -1, NULL);
 
