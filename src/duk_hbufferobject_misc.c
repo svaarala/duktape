@@ -7,7 +7,7 @@ DUK_INTERNAL duk_uint_t duk_hbufferobject_clamp_bytelength(duk_hbufferobject *h_
 	DUK_ASSERT(h_bufobj != NULL);
 	DUK_ASSERT(h_bufobj->buf != NULL);
 
-	buf_size = DUK_HBUFFER_GET_SIZE(h_bufobj->buf);
+	buf_size = (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_bufobj->buf);
 	if (h_bufobj->offset > buf_size) {
 		/* Slice starting point is beyond current length. */
 		return 0;

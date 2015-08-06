@@ -172,7 +172,7 @@ DUK_LOCAL void duk__set_bufobj_buffer(duk_context *ctx, duk_hbufferobject *h_buf
 
 	h_bufobj->buf = h_val;
 	DUK_HBUFFER_INCREF(thr, h_val);
-	h_bufobj->length = DUK_HBUFFER_GET_SIZE(h_val);
+	h_bufobj->length = (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_val);
 	DUK_ASSERT(h_bufobj->shift == 0);
 	DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFFEROBJECT_ELEM_UINT8);
 
@@ -1386,7 +1386,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
 	/* XXX: encoding is ignored now. */
 
 	if (length > str_len) {
-		length = str_len;
+		length = (duk_uint_t) str_len;
 	}
 
 	if (DUK_HBUFFEROBJECT_VALID_SLICE(h_this)) {
