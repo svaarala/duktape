@@ -1023,6 +1023,11 @@ Planned
   alloc size is no long sent because it was removed from the internal data
   structure (GH-209)
 
+* Fix accidental ToString(this) coercion in Error.prototype.fileName and
+  Error.prototype.lineNumber which was an issue if you replaced
+  Error.prototype.toString with a function that accessed the 'lineNumber'
+  or 'fileName' property of the error (GH-254)
+
 * Fix bytecode execution timeout regression which caused timeouts to fail
   after the first execution timeout had been triggered (GH-212)
 
