@@ -12,6 +12,12 @@
 #define NO_SIGNAL
 #endif
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
+    defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+/* Suppress warnings about plain fopen() etc. */
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #define  GREET_CODE(variant)  \
 	"print('((o) Duktape" variant " ' + " \
 	"Math.floor(Duktape.version / 10000) + '.' + " \
