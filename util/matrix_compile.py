@@ -188,7 +188,7 @@ def create_matrix(fn_duk):
 		# Some dialects and architectures are only available for newer g++ versions
 		Combine([
 			# -m32 with older llvm causes self test failure (double union)
-			Select([ 'llvm-gcc', 'llvm-gcc-4.7', 'llvm-gcc' ]),
+			Select([ 'llvm-gcc' ]),
 			Select([ '-m64' ]),
 			Select([
 				'',
@@ -485,6 +485,7 @@ try { fibthrow(9); } catch (e) { print(e); }
 			print(' '.join(compile_command))
 
 		check_unlink(fn_duk)
+		#print(repr(compile_command))
 		compile_p = subprocess.Popen(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		compile_stdout, compile_stderr = compile_p.communicate()
 		compile_exitcode = compile_p.returncode

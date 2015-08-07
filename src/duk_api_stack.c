@@ -2430,7 +2430,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
 		DUK_ASSERT(h_bufobj->offset == 0);
-		h_bufobj->length = DUK_HBUFFER_GET_SIZE(h_val);
+		h_bufobj->length = (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_val);
 		DUK_ASSERT(h_bufobj->shift == 0);
 		DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFFEROBJECT_ELEM_UINT8);
 
