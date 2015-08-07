@@ -134,9 +134,8 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_NEWLINE_TAB);
 	duk_push_this(ctx);
-	duk_to_string(ctx, -1);
 
-	/* [ ... this tracedata sep ToString(this) ] */
+	/* [ ... this tracedata sep this ] */
 
 	/* XXX: skip null filename? */
 
@@ -264,11 +263,15 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 		}
 	}
 
-	/* [ ... this tracedata sep ToString(this) str1 ... strN ] */
+	/* [ ... this tracedata sep this str1 ... strN ] */
 
 	if (output_type != DUK__OUTPUT_TYPE_TRACEBACK) {
 		return 0;
 	} else {
+		/* The 'this' after 'sep' will get ToString() coerced by
+		 * duk_join() automatically.  We don't want to do that
+		 * coercion when providing .fileName or .lineNumber (GH-254).
+		 */
 		duk_join(ctx, duk_get_top(ctx) - (idx_td + 2) /*count, not including sep*/);
 		return 1;
 	}
