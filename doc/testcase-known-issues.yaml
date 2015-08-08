@@ -49,9 +49,6 @@
   test: "test-bug-tonumber-u0000.js"
   knownissue: "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string"
 -
-  test: "test-conv-number-tostring-tonumber-roundtrip.js"
-  knownissue: "rounding corner cases"
--
   test: "test-dev-bound-thread-start-func.js"
   knownissue: "initial function of a new coroutine cannot be bound"
 -
