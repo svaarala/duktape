@@ -65,7 +65,7 @@ void AJS_Free(void *udata, void *ptr);
 #endif
 
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
-#include "duk_debug_trans_socket.h"
+#include "duk_trans_socket.h"
 #endif
 
 #define  MEM_LIMIT_NORMAL   (128*1024*1024)   /* 128 MB */
@@ -690,16 +690,16 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
 		fprintf(stderr, "Debugger enabled, create socket and wait for connection\n");
 		fflush(stderr);
-		duk_debug_trans_socket_init();
-		duk_debug_trans_socket_waitconn();
+		duk_trans_socket_init();
+		duk_trans_socket_waitconn();
 		fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
 		fflush(stderr);
 		duk_debugger_attach(ctx,
-		                    duk_debug_trans_socket_read,
-		                    duk_debug_trans_socket_write,
-		                    duk_debug_trans_socket_peek,
-		                    duk_debug_trans_socket_read_flush,
-		                    duk_debug_trans_socket_write_flush,
+		                    duk_trans_socket_read_cb,
+		                    duk_trans_socket_write_cb,
+		                    duk_trans_socket_peek_cb,
+		                    duk_trans_socket_read_flush_cb,
+		                    duk_trans_socket_write_flush_cb,
 		                    debugger_detached,
 		                    (void *) 0xbeef1234);
 #else

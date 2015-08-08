@@ -28,7 +28,11 @@
 static int server_sock = -1;
 static int client_sock = -1;
 
-void duk_debug_trans_socket_init(void) {
+/*
+ *  Transport init
+ */
+
+void duk_trans_socket_init(void) {
 	struct sockaddr_in addr;
 	int on;
 
@@ -67,7 +71,7 @@ void duk_debug_trans_socket_init(void) {
 	}
 }
 
-void duk_debug_trans_socket_waitconn(void) {
+void duk_trans_socket_waitconn(void) {
 	struct sockaddr_in addr;
 	socklen_t sz;
 
@@ -113,15 +117,19 @@ void duk_debug_trans_socket_waitconn(void) {
 	}
 }
 
+/*
+ *  Duktape callbacks
+ */
+
 /* Duktape debug transport callback: partial read */
-duk_size_t duk_debug_trans_socket_read(void *udata, char *buffer, duk_size_t length) {
+duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length) {
 	ssize_t ret;
 
 	(void) udata;  /* not needed by the example */
 
 #if defined(DEBUG_PRINTS)
-	fprintf(stderr, "duk_debug_trans_socket_read: udata=%p, buffer=%p, length=%ld\n",
-	        (void *) udata, (void *) buffer, (long) length);
+	fprintf(stderr, "%s: udata=%p, buffer=%p, length=%ld\n",
+	        __func__, (void *) udata, (void *) buffer, (long) length);
 	fflush(stderr);
 #endif
 
@@ -173,14 +181,14 @@ duk_size_t duk_debug_trans_socket_read(void *udata, char *buffer, duk_size_t len
 }
 
 /* Duktape debug transport callback: partial write */
-duk_size_t duk_debug_trans_socket_write(void *udata, const char *buffer, duk_size_t length) {
+duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t length) {
 	ssize_t ret;
 
 	(void) udata;  /* not needed by the example */
 
 #if defined(DEBUG_PRINTS)
-	fprintf(stderr, "duk_debug_trans_socket_write: udata=%p, buffer=%p, length=%ld\n",
-	        (void *) udata, (void *) buffer, (long) length);
+	fprintf(stderr, "%s: udata=%p, buffer=%p, length=%ld\n",
+	        __func__, (void *) udata, (void *) buffer, (long) length);
 	fflush(stderr);
 #endif
 
@@ -223,14 +231,14 @@ duk_size_t duk_debug_trans_socket_write(void *udata, const char *buffer, duk_siz
 	return 0;
 }
 
-duk_size_t duk_debug_trans_socket_peek(void *udata) {
+duk_size_t duk_trans_socket_peek_cb(void *udata) {
 	struct pollfd fds[1];
 	int poll_rc;
 
 	(void) udata;  /* not needed by the example */
 
 #if defined(DEBUG_PRINTS)
-	fprintf(stderr, "duk_debug_trans_socket_peek: udata=%p\n", (void *) udata);
+	fprintf(stderr, "%s: udata=%p\n", __func__, (void *) udata);
 	fflush(stderr);
 #endif
 
@@ -261,9 +269,9 @@ duk_size_t duk_debug_trans_socket_peek(void *udata) {
 	return 0;
 }
 
-void duk_debug_trans_socket_read_flush(void *udata) {
+void duk_trans_socket_read_flush_cb(void *udata) {
 #if defined(DEBUG_PRINTS)
-	fprintf(stderr, "duk_debug_trans_socket_read_flush: udata=%p\n", (void *) udata);
+	fprintf(stderr, "%s: udata=%p\n", __func__, (void *) udata);
 	fflush(stderr);
 #endif
 
@@ -283,9 +291,9 @@ void duk_debug_trans_socket_read_flush(void *udata) {
 	 */
 }
 
-void duk_debug_trans_socket_write_flush(void *udata) {
+void duk_trans_socket_write_flush_cb(void *udata) {
 #if defined(DEBUG_PRINTS)
-	fprintf(stderr, "duk_debug_trans_socket_write_flush: udata=%p\n", (void *) udata);
+	fprintf(stderr, "%s: udata=%p\n", __func__, (void *) udata);
 	fflush(stderr);
 #endif
 
