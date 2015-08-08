@@ -31,9 +31,6 @@
   test: "test-bug-enum-shadow-nonenumerable.js"
   knownissue: "corner case enumeration semantics, not sure what correct behavior is (test262 ch12/12.6/12.6.4/12.6.4-2)"
 -
-  test: "test-bug-error-linenumber-2.js"
-  knownissue: "in corner cases (related to automatic semicolon insertion) throw statement error linenumber can be unexpected"
--
   test: "test-bug-invalid-oct-as-dec.js"
   knownissue: "V8/Rhino parse invalid octal constants as decimal values, Duktape doesn't at the moment"
 -
