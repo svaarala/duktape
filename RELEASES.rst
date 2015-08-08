@@ -1023,6 +1023,9 @@ Planned
   alloc size is no long sent because it was removed from the internal data
   structure (GH-209)
 
+* Add example debug transport with local dvalue encoding and decoding, also
+  provides a C example for encoding and decoding dvalues
+
 * Fix accidental ToString(this) coercion in Error.prototype.fileName and
   Error.prototype.lineNumber which was an issue if you replaced
   Error.prototype.toString with a function that accessed the 'lineNumber'
