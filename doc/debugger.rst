@@ -66,7 +66,7 @@ To integrate debugger support into your target, you need to:
   target device and the Duktape debugger.  The best transport depends on the
   target, e.g. a TCP socket, a serial link, or embedding debug data in an
   existing custom protocol.  An example TCP debug transport is given in
-  ``examples/debug-trans-socket/duk_debug_trans_socket.c``.
+  ``examples/debug-trans-socket/duk_trans_socket.c``.
 
 * **Add code to attach a debugger**: call ``duk_debugger_attach()`` when it is
   time to start debugging.  Duktape will pause execution and process debug
@@ -117,6 +117,22 @@ The example debugger stuff includes:
 
 **While TCP is a good example transport, it is not a "standard" transport:
 the transport is always ultimately up to the user code.**
+
+Example local debugger
+----------------------
+
+While a remote debug client is usually preferable, in some cases it may be
+useful to terminate the debug connection in the same process as where Duktape
+is running.  From Duktape perspective a "local" debugger is just like a remote
+one: a debug transport implementation hides the difference from Duktape.
+There's an example debug transport with a local dvalue encoder/decoder:
+
+* ``examples/debug-trans-dvalue/``
+
+The example transport hides the details of encoding and decoding dvalues, and
+makes it easier to write a local debug client.  The transport also serves as
+an example for dealing with dvalues in C (the Node.js debugger has a similar
+example for Javascript).
 
 What Duktape doesn't provide
 ----------------------------
@@ -695,8 +711,9 @@ some cases:
 | 0x1d <uint16> <uint8> | lightfunc | Lightfunc flags, pointer length,      |
 | <data>                |           | pointer data (network endian)         |
 +-----------------------+-----------+---------------------------------------+
-| 0x1e <uint8> <data>   | heapptr   | Pointer to a heap object (used by     |
-|                       |           | DumpHeap, network endian)             |
+| 0x1e <uint8> <data>   | heapptr   | Pointer length, pointer data (network |
+|                       |           | endian); pointer to heap object, used |
+|                       |           | by DumpHeap                           |
 +-----------------------+-----------+---------------------------------------+
 | 0x1f                  | reserved  |                                       |
 +-----------------------+-----------+---------------------------------------+
@@ -2460,7 +2477,7 @@ You may get the following when doing a DumpHeap::
 
     ==17318== Syscall param write(buf) points to uninitialised byte(s)
     ==17318==    at 0x5466700: __write_nocancel (syscall-template.S:81)
-    ==17318==    by 0x427ADA: duk_debug_trans_socket_write (duk_debug_trans_socket.c:237)
+    ==17318==    by 0x427ADA: duk_trans_socket_write_cb (duk_trans_socket.c:237)
     ==17318==    by 0x403538: duk_debug_write_bytes.isra.11 (duk_debugger.c:379)
     ==17318==    by 0x4036AC: duk_debug_write_strbuf (duk_debugger.c:463)
     [...]
