@@ -1013,7 +1013,7 @@ DUK_LOCAL void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 			tc1 = (duk__bi_compare(&nc_ctx->r, &nc_ctx->mm) <= (nc_ctx->low_ok ? 0 : -1));
 
 			duk__bi_add(&nc_ctx->t1, &nc_ctx->r, &nc_ctx->mp);  /* t1 <- (+ r m+) */
-			tc2 = (duk__bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (&nc_ctx->high_ok ? 0 : 1));
+			tc2 = (duk__bi_compare(&nc_ctx->t1, &nc_ctx->s) >= (nc_ctx->high_ok ? 0 : 1));
 
 			DUK_DDD(DUK_DDDPRINT("tc1=%ld, tc2=%ld", (long) tc1, (long) tc2));
 		} else {
