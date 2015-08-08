@@ -31,9 +31,6 @@
   test: "test-bug-enum-shadow-nonenumerable.js"
   knownissue: "corner case enumeration semantics, not sure what correct behavior is (test262 ch12/12.6/12.6.4/12.6.4-2)"
 -
-  test: "test-bug-error-linenumber-2.js"
-  knownissue: "in corner cases (related to automatic semicolon insertion) throw statement error linenumber can be unexpected"
--
   test: "test-bug-invalid-oct-as-dec.js"
   knownissue: "V8/Rhino parse invalid octal constants as decimal values, Duktape doesn't at the moment"
 -
@@ -48,9 +45,6 @@
 -
   test: "test-bug-tonumber-u0000.js"
   knownissue: "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string"
--
-  test: "test-conv-number-tostring-tonumber-roundtrip.js"
-  knownissue: "rounding corner cases"
 -
   test: "test-dev-bound-thread-start-func.js"
   knownissue: "initial function of a new coroutine cannot be bound"
