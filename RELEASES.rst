@@ -932,11 +932,25 @@ Released
 * Fix potential NULL pointer dereference in duk_is_dynamic_buffer() and
   duk_is_fixed_buffer() when index is outside of value stack (GH-206)
 
+1.2.3 (2015-08-09)
+------------------
+
+* Fix bytecode execution timeout regression which caused timeouts to fail
+  after the first execution timeout had been triggered (GH-212)
+
+* Fix a few pointer compression issues (DUK_OPT_HEAPPTR16 / DUK_USE_HEAPPTR16)
+  on 64-bit platforms (GH-228)
+
+* Fix JX parsing bug which caused strings like "1Infinity" to be parsed as
+  negative infinity instead of causing a SyntaxError (GH-247)
+
+* Fix accidental ToString(this) coercion in Error.prototype.fileName and
+  Error.prototype.lineNumber which was an issue if you replaced
+  Error.prototype.toString with a function that accessed the 'lineNumber'
+  or 'fileName' property of the error (GH-254)
+
 Planned
 =======
-
-1.2.3 (2015-XX-XX)
-------------------
 
 1.3.0 (2015-XX-XX)
 ------------------
