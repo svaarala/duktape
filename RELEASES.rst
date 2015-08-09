@@ -1006,6 +1006,8 @@ Planned
 * Add internal assertions for validating the "ctx" pointer beyond just a NULL
   check (GH-178)
 
+* Add platform detection support for AmigaOS on PowerPC (GH-269)
+
 * Internal performance improvement: improve lexer tokenization (GH-207)
 
 * Internal performance improvement: add several fast paths to JSON parse
