@@ -28,7 +28,7 @@
 
 /* How large a loop detection stack to use for fast path */
 #if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
-#define DUK_JSON_ENC_LOOPARRAY                32
+#define DUK_JSON_ENC_LOOPARRAY                64
 #endif
 
 /* Encoding state.  Heap object references are all borrowed. */
