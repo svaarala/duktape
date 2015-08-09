@@ -73,6 +73,11 @@
 #define DUK_F_M68K
 #endif
 
+/* PowerPC */
+#if defined(__powerpc) || defined(__powerpc__) || defined(__PPC__)
+#define DUK_F_PPC
+#endif
+
 /* Linux */
 #if defined(__linux) || defined(__linux__) || defined(linux)
 #define DUK_F_LINUX

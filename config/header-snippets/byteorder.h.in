@@ -131,9 +131,9 @@
 #define DUK_F_BYTEORDER 3
 #endif
 
-/* AmigaOS on M68k */
+/* AmigaOS on M68K or PPC */
 #if !defined(DUK_F_BYTEORDER) && defined(DUK_F_AMIGAOS)
-#if defined(DUK_F_M68K)
+#if defined(DUK_F_M68K) || defined(DUK_F_PPC)
 #define DUK_F_BYTEORDER 3
 #endif
 #endif

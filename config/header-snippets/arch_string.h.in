@@ -16,6 +16,8 @@
 #define DUK_USE_ARCH_STRING "mips64"
 #elif defined(DUK_F_SUPERH)
 #define DUK_USE_ARCH_STRING "sh"
+#elif defined(DUK_F_PPC)
+#define DUK_USE_ARCH_STRING "ppc"
 #elif defined(DUK_F_M68K)
 #define DUK_USE_ARCH_STRING "m68k"
 #elif defined(DUK_F_FLASHPLAYER)

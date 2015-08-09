@@ -34,6 +34,11 @@
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
+/* PPC: packed always possible */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_PPC)
+#define DUK_USE_PACKED_TVAL_POSSIBLE
+#endif
+
 /* With Emscripten, force unpacked duk_tval just to be safe, as it seems to
  * break at least on Firefox (probably IEEE double arithmetic is not 100%
  * supported, especially for NaNs).
