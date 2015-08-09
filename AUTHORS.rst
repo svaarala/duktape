@@ -59,6 +59,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * https://github.com/Kelledin
 * https://github.com/sstruchtrup
 * Michael Drake (https://github.com/tlsa)
+* https://github.com/chris-y
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
