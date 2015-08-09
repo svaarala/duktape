@@ -1638,25 +1638,32 @@ DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t ldconst
 	duk_compiler_instr *instr;
 
 	DUK_ASSERT((reg_catch & DUK__CONST_MARKER) == 0);
-	const_varname = const_varname & (~DUK__CONST_MARKER);
-
-	if (reg_catch > DUK_BC_BC_MAX || const_varname > DUK_BC_BC_MAX) {
-		/* Catch attempts to use out-of-range reg/const.  Without this
-		 * check Duktape 0.12.0 could generate invalid code which caused
-		 * an assert failure on execution.  This error is triggered e.g.
-		 * for functions with a lot of constants and a try-catch statement.
-		 * Shuffling or opcode semantics change is needed to fix the issue.
-		 * See: test-bug-trycatch-many-constants.js.
-		 */
-		DUK_D(DUK_DPRINT("failed to patch trycatch: flags=%ld, reg_catch=%ld, const_varname=%ld (0x%08lx)",
-		                 (long) flags, (long) reg_catch, (long) const_varname, (long) const_varname));
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REG_LIMIT);
-	}
 
 	instr = duk__get_instr_ptr(comp_ctx, ldconst_pc);
 	DUK_ASSERT(DUK_DEC_OP(instr->ins) == DUK_OP_LDCONST);
 	DUK_ASSERT(instr != NULL);
-	instr->ins |= DUK_ENC_OP_A_BC(0, 0, const_varname);
+	if (const_varname & DUK__CONST_MARKER) {
+		/* Have a catch variable. */
+		const_varname = const_varname & (~DUK__CONST_MARKER);
+		if (reg_catch > DUK_BC_BC_MAX || const_varname > DUK_BC_BC_MAX) {
+			/* Catch attempts to use out-of-range reg/const.  Without this
+			 * check Duktape 0.12.0 could generate invalid code which caused
+			 * an assert failure on execution.  This error is triggered e.g.
+			 * for functions with a lot of constants and a try-catch statement.
+			 * Shuffling or opcode semantics change is needed to fix the issue.
+			 * See: test-bug-trycatch-many-constants.js.
+			 */
+			DUK_D(DUK_DPRINT("failed to patch trycatch: flags=%ld, reg_catch=%ld, const_varname=%ld (0x%08lx)",
+			                 (long) flags, (long) reg_catch, (long) const_varname, (long) const_varname));
+			DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REG_LIMIT);
+		}
+		instr->ins |= DUK_ENC_OP_A_BC(0, 0, const_varname);
+	} else {
+		/* No catch variable, e.g. a try-finally; replace LDCONST with
+		 * NOP to avoid a bogus LDCONST.
+		 */
+		instr->ins = DUK_ENC_OP_A(DUK_OP_EXTRA, DUK_EXTRAOP_NOP);
+	}
 
 	instr = duk__get_instr_ptr(comp_ctx, trycatch_pc);
 	DUK_ASSERT(instr != NULL);
@@ -5733,7 +5740,8 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 	/* The target for this LDCONST may need output shuffling, but we assume
 	 * that 'pc_ldconst' will be the LDCONST that we can patch later.  This
-	 * should be the case because there's no input shuffling.
+	 * should be the case because there's no input shuffling.  (If there's
+	 * no catch clause, this LDCONST will be replaced with a NOP.)
 	 */
 	pc_ldconst = duk__get_current_pc(comp_ctx);
 	duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, reg_catch, 0 /*patched later*/);
@@ -5898,6 +5906,11 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		/* must have catch and/or finally */
 		goto syntax_error;
 	}
+
+	/* If there's no catch block, rc_varname will be 0 and duk__patch_trycatch()
+	 * will replace the LDCONST with a NOP.  For any actual constant (including
+	 * constant 0) the DUK__CONST_MARKER flag will be set in rc_varname.
+	 */
 
 	duk__patch_trycatch(comp_ctx,
 	                    pc_ldconst,
