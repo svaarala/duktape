@@ -1227,9 +1227,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 2);
 
 	len = duk__push_this_obj_len_u32(ctx);
-	if (!duk_is_callable(ctx, 0)) {
-		goto type_error;
-	}
+	duk_require_callable(ctx, 0);
 	/* if thisArg not supplied, behave as if undefined was supplied */
 
 	if (iter_type == DUK__ITER_MAP || iter_type == DUK__ITER_FILTER) {
@@ -1344,9 +1342,6 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 	}
 
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 /*

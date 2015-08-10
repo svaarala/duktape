@@ -74,8 +74,6 @@ DUK_INTERNAL_DECL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx);
 #define  DUK_GETTAGGED_FLAG_CHECK_CLASS (1L << 25)
 #define  DUK_GETTAGGED_CLASS_SHIFT      16
 
-DUK_INTERNAL_DECL duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, duk_idx_t index, duk_uint_t flags_and_tag);
-
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hbuffer *duk_get_hbuffer(duk_context *ctx, duk_idx_t index);
@@ -83,10 +81,30 @@ DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t index
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index);
 
+DUK_INTERNAL_DECL duk_heaphdr *duk_get_tagged_heaphdr_raw(duk_context *ctx, duk_idx_t index, duk_uint_t flags_and_tag, const char *error_format_string);
+
+/* FIXME: "%s required..." and convert tag into a name? */
+#if defined(DUK_USE_VERBOSE_ERRORS)
+#if defined(DUK_USE_PARANOID_ERRORS)
+#define DUK_GET_TAGGED_HEAPHDR_RAW(ctx,index,flags_and_tag,expectname,lowmemstr) \
+	duk_get_tagged_heaphdr_raw((ctx), (index), (flags_and_tag), \
+		expectname " required (stack index %ld)")
+#else
+#define DUK_GET_TAGGED_HEAPHDR_RAW(ctx,index,flags_and_tag,expectname,lowmemstr) \
+	duk_get_tagged_heaphdr_raw((ctx), (index), (flags_and_tag), \
+		expectname " required, found %s (stack index %ld)")
+#endif
+#else
+#define DUK_GET_TAGGED_HEAPHDR_RAW(ctx,index,flags_and_tag,expectname,lowmemstr) \
+	duk_get_tagged_heaphdr_raw((ctx), (index), (flags_and_tag), (lowmemstr))
+#endif
+
+/* FIXME: unnecessary arguments, we allow NULL here so error is never thrown. */
 #define duk_get_hobject_with_class(ctx,index,classnum) \
-	((duk_hobject *) duk_get_tagged_heaphdr_raw((ctx), (index), \
+	((duk_hobject *) DUK_GET_TAGGED_HEAPHDR_RAW((ctx), (index), \
 		DUK_TAG_OBJECT | DUK_GETTAGGED_FLAG_ALLOW_NULL | \
-		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
+		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT), \
+		"object", DUK_STR_NOT_OBJECT))
 
 #if 0  /* This would be pointless: unexpected type and lightfunc would both return NULL */
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t index);
@@ -118,10 +136,11 @@ DUK_INTERNAL_DECL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t i
 DUK_INTERNAL_DECL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index);
 
-#define duk_require_hobject_with_class(ctx,index,classnum) \
-	((duk_hobject *) duk_get_tagged_heaphdr_raw((ctx), (index), \
+#define duk_require_hobject_with_class(ctx,index,classnum,expectname,lowmemstr) \
+	((duk_hobject *) DUK_GET_TAGGED_HEAPHDR_RAW((ctx), (index), \
 		DUK_TAG_OBJECT | \
-		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT)))
+		DUK_GETTAGGED_FLAG_CHECK_CLASS | ((classnum) << DUK_GETTAGGED_CLASS_SHIFT), \
+		expectname, (lowmemstr)))
 
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index);
