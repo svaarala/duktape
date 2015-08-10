@@ -653,6 +653,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_D(DUK_DPRINT("self tests passed"));
 #endif
 
+	/*
+	 *  Computed values (e.g. INFINITY)
+	 */
+
 #ifdef DUK_USE_COMPUTED_NAN
 	do {
 		/* Workaround for some exotic platforms where NAN is missing
@@ -668,10 +672,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		duk_computed_nan = dbl1 / dbl2;
 	} while (0);
 #endif
-
-	/*
-	 *  Computed values (e.g. INFINITY)
-	 */
 
 #ifdef DUK_USE_COMPUTED_INFINITY
 	do {
