@@ -554,8 +554,8 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 #endif
 	thr->valstack = new_valstack;
 	thr->valstack_end = new_valstack + new_size;
-	thr->valstack_bottom = (duk_tval *) ((duk_uint8_t *) new_valstack + old_bottom_offset);
-	thr->valstack_top = (duk_tval *) ((duk_uint8_t *) new_valstack + old_top_offset);
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_bottom_offset);
+	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_top_offset);
 
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
@@ -585,7 +585,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	                   (void *) thr->valstack_bottom, (void *) thr->valstack_top));
 
 	/* init newly allocated slots (only) */
-	p = (duk_tval *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
+	p = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
 	while (p < thr->valstack_end) {
 		/* never executed if new size is smaller */
 		DUK_TVAL_SET_UNDEFINED_UNUSED(p);
@@ -1024,7 +1024,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	DUK_MEMCPY((void *) to_thr->valstack_top, src, nbytes);
 
 	p = to_thr->valstack_top;
-	to_thr->valstack_top = (duk_tval *) (((duk_uint8_t *) p) + nbytes);
+	to_thr->valstack_top = (duk_tval *) (void *) (((duk_uint8_t *) p) + nbytes);
 
 	if (is_copy) {
 		/* incref copies, keep originals */
@@ -1036,7 +1036,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	} else {
 		/* no net refcount change */
 		p = from_thr->valstack_top;
-		q = (duk_tval *) (((duk_uint8_t *) p) - nbytes);
+		q = (duk_tval *) (void *) (((duk_uint8_t *) p) - nbytes);
 		from_thr->valstack_top = q;
 
 		/* elements above stack top are kept UNUSED */

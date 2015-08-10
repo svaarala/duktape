@@ -189,7 +189,7 @@ DUK_LOCAL void duk__fill_lexer_buffer(duk_lexer_ctx *lex_ctx, duk_small_uint_t s
 	p = lex_ctx->input + lex_ctx->input_offset;
 	p_end = lex_ctx->input + lex_ctx->input_length;
 
-	cp = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->buffer + start_offset_bytes);
+	cp = (duk_lexer_codepoint *) (void *) ((duk_uint8_t *) lex_ctx->buffer + start_offset_bytes);
 	cp_end = lex_ctx->buffer + DUK_LEXER_BUFFER_SIZE;
 
 	for (; cp != cp_end; cp++) {
@@ -327,7 +327,7 @@ DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count
 	 * Arithmetic in bytes generates better code in GCC.
 	 */
 
-	lex_ctx->window = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->window + count_bytes);  /* avoid multiply */
+	lex_ctx->window = (duk_lexer_codepoint *) (void *) ((duk_uint8_t *) lex_ctx->window + count_bytes);  /* avoid multiply */
 	used_bytes = (duk_small_uint_t) ((duk_uint8_t *) lex_ctx->window - (duk_uint8_t *) lex_ctx->buffer);
 	avail_bytes = DUK_LEXER_BUFFER_SIZE * sizeof(duk_lexer_codepoint) - used_bytes;
 	if (avail_bytes < (duk_small_uint_t) (DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint))) {

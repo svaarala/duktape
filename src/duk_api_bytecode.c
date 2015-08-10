@@ -466,7 +466,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 #else
 	q = fun_data + sizeof(duk_tval) * count_const + sizeof(duk_hobject *) * count_funcs;
 	for (n = count_instr; n > 0; n--) {
-		*((duk_instr_t *) q) = DUK_RAW_READ_U32_BE(p);
+		*((duk_instr_t *) (void *) q) = DUK_RAW_READ_U32_BE(p);
 		q += sizeof(duk_instr_t);
 	}
 #endif
@@ -524,13 +524,13 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		/* Explicit zero size check to avoid NULL 'tv'. */
 		DUK_MEMCPY((void *) q, (const void *) tv, sizeof(duk_tval) * count_const);
 		for (n = count_const; n > 0; n--) {
-			DUK_TVAL_INCREF_FAST(thr, (duk_tval *) q);  /* no side effects */
+			DUK_TVAL_INCREF_FAST(thr, (duk_tval *) (void *) q);  /* no side effects */
 			q += sizeof(duk_tval);
 		}
 		tv += count_const;
 	}
 
-	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) q);
+	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) (void *) q);
 	for (n = count_funcs; n > 0; n--) {
 		duk_hobject *h_obj;
 
@@ -540,11 +540,11 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		tv++;
 		DUK_HOBJECT_INCREF(thr, h_obj);
 
-		*((duk_hobject **) q) = h_obj;
+		*((duk_hobject **) (void *) q) = h_obj;
 		q += sizeof(duk_hobject *);
 	}
 
-	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_fun, (duk_instr_t *) q);
+	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_fun, (duk_instr_t *) (void *) q);
 
 	/* The function object is now reachable and refcounts are fine,
 	 * so we can pop off all the temporaries.
