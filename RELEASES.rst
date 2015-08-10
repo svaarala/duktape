@@ -987,6 +987,8 @@ Planned
 * Add duk_dump_function() and duk_load_function() API calls which provide
   bytecode dump/load support (GH-27)
 
+* Add duk_pnew() API call (GH-124)
+
 * Add duk_instanceof() API call (GH-148)
 
 * Add Proxy object support to 'instanceof' operator (without support for
