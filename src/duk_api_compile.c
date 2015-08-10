@@ -38,10 +38,12 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 		goto got_rc;
 	}
 
+	duk_push_global_object(ctx);  /* explicit 'this' binding, see GH-164 */
+
 	if (flags & DUK_COMPILE_SAFE) {
-		rc = duk_pcall(ctx, 0);
+		rc = duk_pcall_method(ctx, 0);
 	} else {
-		duk_call(ctx, 0);
+		duk_call_method(ctx, 0);
 		rc = DUK_EXEC_SUCCESS;
 	}
 
