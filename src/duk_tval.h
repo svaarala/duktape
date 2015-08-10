@@ -153,12 +153,17 @@ typedef union duk_double_union duk_tval;
 
 /* Assumes that caller has normalized NaNs, otherwise trouble ahead. */
 #if defined(DUK_USE_FASTINT)
-#define DUK_TVAL_SET_DOUBLE(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
+#define DUK_TVAL_SET_DOUBLE(v,d)  do { \
+		duk_double_t duk__dblval; \
+		duk__dblval = (d); \
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(duk__dblval); \
+		DUK_DBLUNION_SET_DOUBLE((v), duk__dblval); \
+	} while (0)
 #define DUK_TVAL_SET_FASTINT(v,i)           DUK__TVAL_SET_FASTINT((v), (i))
 #define DUK_TVAL_SET_FASTINT_I32(v,i)       DUK__TVAL_SET_FASTINT_I32((v), (i))
 #define DUK_TVAL_SET_FASTINT_U32(v,i)       DUK__TVAL_SET_FASTINT_U32((v), (i))
 #define DUK_TVAL_SET_NUMBER_CHKFAST(v,d)    duk_tval_set_number_chkfast((v), (d))
-#define DUK_TVAL_SET_NUMBER(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
+#define DUK_TVAL_SET_NUMBER(v,d)            DUK_TVAL_SET_DOUBLE((v), (d))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { \
 		duk_tval *duk__tv; \
 		duk_double_t duk__d; \
@@ -169,9 +174,14 @@ typedef union duk_double_union duk_tval;
 		} \
 	} while (0)
 #else
-#define DUK_TVAL_SET_NUMBER(v,d)            DUK_DBLUNION_SET_DOUBLE((v), (d))
-#define DUK_TVAL_SET_NUMBER_CHKFAST(v,d)    DUK_TVAL_SET_NUMBER((v), (d))
-#define DUK_TVAL_SET_DOUBLE(v,d)            DUK_TVAL_SET_NUMBER((v), (d))
+#define DUK_TVAL_SET_DOUBLE(v,d)  do { \
+		duk_double_t duk__dblval; \
+		duk__dblval = (d); \
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(duk__dblval); \
+		DUK_DBLUNION_SET_DOUBLE((v), duk__dblval); \
+	} while (0)
+#define DUK_TVAL_SET_NUMBER_CHKFAST(v,d)    DUK_TVAL_SET_DOUBLE((v), (d))
+#define DUK_TVAL_SET_NUMBER(v,d)            DUK_TVAL_SET_DOUBLE((v), (d))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { } while (0)
 #endif
 
