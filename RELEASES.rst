@@ -999,6 +999,9 @@ Planned
 * Add duk_get_buffer_data() and duk_require_buffer_data() API calls which
   accept both plain buffer and buffer object values (GH-190)
 
+* Add explicit 'this' binding for C eval calls so that strict eval code also
+  gets 'this' bound to the global object (GH-164)
+
 * Change typing of "duk_context" from "void" to "struct duk_hthread" which
   should improve compiler warnings/errors when accidentally passing an invalid
   "ctx" pointer to a Duktape API call (GH-178)
