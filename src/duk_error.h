@@ -184,9 +184,9 @@
 
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_PACKED_TVAL)
 #define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  do { \
-		duk_double_union assert_tmp_du; \
-		assert_tmp_du.d = (dval); \
-		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&assert_tmp_du)); \
+		duk_double_union duk__assert_tmp_du; \
+		duk__assert_tmp_du.d = (dval); \
+		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&duk__assert_tmp_du)); \
 	} while (0)
 #else
 #define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  /* nop */
