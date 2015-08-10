@@ -24,7 +24,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	 */
 	duk_eval_string(ctx,
 		"print('non-strict eval from C');\n"
-		"try { dummy1 = 1; print('not an error in non-strict mode'); } catch (e) { print(e.name); }\n"
+		"try { dummy1 = 1; print('not an error in non-strict mode'); } catch (e) { print(e.name); }\n"
 		"print(typeof this);\n"
 		"print(typeof (this || {}).Math);\n"
 	);
@@ -39,7 +39,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	duk_eval_string_noresult(ctx,
 		"'use strict'\n"
 		"print('strict eval from C');\n"
-		"try { dummy2 = 1; print('error in strict mode'); } catch (e) { print(e.name); }\n"
+		"try { dummy2 = 1; print('error in strict mode'); } catch (e) { print(e.name); }\n"
 		"print(typeof this);\n"
 		"print(typeof (this || {}).Math);\n"
 	);
