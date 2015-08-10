@@ -1,0 +1,39 @@
+name: duk_pnew
+
+proto: |
+  duk_ret_t duk_pnew(duk_context *ctx, duk_idx_t nargs);
+
+stack: |
+  [ ... constructor! arg1! ...! argN! ] -> [ ... retval! ]  (if success, return value == 0)
+  [ ... constructor! arg1! ...! argN! ] -> [ ... err! ]  (if failure, return value != 0)
+
+summary: |
+  <p>Like <code><a href="#duk_new">duk_new()</a></code> but catches errors.
+  A zero return value indicates success and the constructor result is left on
+  the stack top.  A non-zero return value indicates an error, and the error
+  is left on the stack top.</p>
+
+example: |
+  duk_ret_t rc;
+
+  /* Protected call to: new MyConstructor("foo", 123) */
+  duk_eval_string(ctx, "MyConstructor");
+  duk_push_string(ctx, "foo");
+  duk_push_int(ctx, 123);
+  rc = duk_pnew(ctx, 2);  /* [ ... func "foo" 123 ] -> [ ... res ] */
+  if (rc != 0) {
+      printf("failed: %s\n", duk_safe_to_string(ctx, -1));
+  } else {
+      printf("success\n");
+  }
+  duk_pop(ctx);
+
+tags:
+  - object
+  - call
+  - protected
+
+seealso:
+  - duk_new
+
+introduced: 1.3.0

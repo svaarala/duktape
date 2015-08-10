@@ -406,6 +406,34 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONSTRUCTABLE);
 }
 
+DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx) {
+	duk_uint_t nargs;
+
+	nargs = duk_to_uint(ctx, -1);
+	duk_pop(ctx);
+
+	duk_new(ctx, nargs);
+	return 1;
+}
+
+DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
+	duk_int_t rc;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* For now, just use duk_safe_call() to wrap duk_new().  We can't
+	 * simply use a protected duk_handle_call() because there's post
+	 * processing which might throw.  It should be possible to ensure
+	 * the post processing never throws (except in internal errors and
+	 * out of memory etc which are always allowed) and then remove this
+	 * wrapper.
+	 */
+
+	duk_push_uint(ctx, nargs);
+	rc = duk_safe_call(ctx, duk__pnew_helper, nargs + 2 /*nargs*/, 1 /*nrets*/);
+	return rc;
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
