@@ -262,7 +262,8 @@ def create_matrix(fn_duk):
 	gcc_gxx_warning_options = Select([
 		'',
 		#'-Wall',
-		[ '-Wall', '-Wextra' ]  # FIXME
+		[ '-Wall', '-Wextra' ]
+		#XXX: -Wfloat-equal
 		# [ '-Wall', '-Wextra', '-Werror' ]
 	])
 	gcc_gxx_optimization_options = Select([
@@ -299,7 +300,9 @@ def create_matrix(fn_duk):
 	])
 	clang_warning_options = Select([
 		'',
-		[ '-Wall', '-Wextra' ]  # FIXME
+		[ '-Wall', '-Wextra' ],
+		[ '-Wall', '-Wextra', '-Wcast-align' ]
+		#XXX: -Wfloat-equal
 		#[ '-Wall', '-Wextra', '-Werror' ]
 	])
 	clang_optimization_options = Select([
