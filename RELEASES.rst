@@ -1051,6 +1051,10 @@ Planned
 * Add example debug transport with local dvalue encoding and decoding, also
   provides a C example for encoding and decoding dvalues
 
+* Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
+  DUK_USE_xxx config options for native recursion limits; C stacks are assumed
+  to be deep by default for all targets (GH-165)
+
 * Fix accidental ToString(this) coercion in Error.prototype.fileName and
   Error.prototype.lineNumber which was an issue if you replaced
   Error.prototype.toString with a function that accessed the 'lineNumber'
