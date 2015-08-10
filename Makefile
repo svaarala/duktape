@@ -302,6 +302,7 @@ clean:
 	@rm -rf site/
 	@rm -f duk.raw dukd.raw duk.vg dukd.vg duk dukd duk.O2 duk.O3 duk.O4
 	@rm -f duk-g++ dukd-g++
+	@rm -f duk-clang
 	@rm -f ajduk ajdukd
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
@@ -379,6 +380,11 @@ libduktaped.so.1.0.0: dist
 
 duk.raw: dist
 	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	-@size $@
+
+duk-clang: dist
+	# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
+	clang -o $@ -Wcast-align $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
 
 duk.O2: dist
