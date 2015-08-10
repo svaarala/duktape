@@ -1550,9 +1550,16 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 			}
 
 			/* Check for breakpoints only on line transition.
-			 * Breakpoint is triggered when we enter or cross
-			 * the target line, and the previous line was within
-			 * the same function.
+			 * Breakpoint is triggered when we enter the target
+			 * line from a different line, and the previous line
+			 * was within the same function.
+			 *
+			 * This condition is tricky: the condition used to be
+			 * that transition to -or across- the breakpoint line
+			 * triggered the breakpoint.  This seems intuitively
+			 * better because it handles breakpoints on lines with
+			 * no emitted opcodes; but this leads to the issue
+			 * described in: https://github.com/svaarala/duktape/issues/263.
 			 */
 			bp_active = thr->heap->dbg_breakpoints_active;
 			for (;;) {
@@ -1561,7 +1568,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 					break;
 				}
 				DUK_ASSERT(bp->filename != NULL);
-				if (act->prev_line < bp->line && line >= bp->line) {
+				if (act->prev_line != bp->line && line == bp->line) {
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
 					                 (duk_heaphdr *) bp->filename, (long) bp->line));
 
