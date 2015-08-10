@@ -171,6 +171,7 @@ DUK_LOCAL duk_hbufferobject *duk__require_bufobj_value(duk_context *ctx, duk_idx
 	}
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
+	return NULL;  /* not reachable */
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
