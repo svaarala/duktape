@@ -127,16 +127,16 @@ void *duk_alloc_hybrid_init(void) {
 
 		hdr->alloc_start = p;
 		hdr->alloc_end = p + pool_sizes[i].size * pool_sizes[i].count;
-		hdr->free = (pool_free_entry *) p;
+		hdr->free = (pool_free_entry *) (void *) p;
 		hdr->size = pool_sizes[i].size;
 		hdr->count = pool_sizes[i].count;
 
 		for (j = 0; j < pool_sizes[i].count; j++) {
-			pool_free_entry *ent = (pool_free_entry *) p;
+			pool_free_entry *ent = (pool_free_entry *) (void *) p;
 			if (j == pool_sizes[i].count - 1) {
 				ent->next = (pool_free_entry *) NULL;
 			} else {
-				ent->next = (pool_free_entry *) (p + pool_sizes[i].size);
+				ent->next = (pool_free_entry *) (void *) (p + pool_sizes[i].size);
 			}
 			p += pool_sizes[i].size;
 		}

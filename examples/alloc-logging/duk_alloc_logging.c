@@ -86,7 +86,7 @@ void *duk_realloc_logging(void *udata, void *ptr, duk_size_t size) {
 	 */
 
 	if (ptr) {
-		hdr = (alloc_hdr *) ((unsigned char *) ptr - sizeof(alloc_hdr));
+		hdr = (alloc_hdr *) (void *) ((unsigned char *) ptr - sizeof(alloc_hdr));
 		old_size = hdr->u.sz;
 
 		if (size == 0) {
@@ -132,7 +132,7 @@ void duk_free_logging(void *udata, void *ptr) {
 		write_log("F NULL 0\n");
 		return;
 	}
-	hdr = (alloc_hdr *) ((unsigned char *) ptr - sizeof(alloc_hdr));
+	hdr = (alloc_hdr *) (void *) ((unsigned char *) ptr - sizeof(alloc_hdr));
 	write_log("F %p %ld\n", ptr, (long) hdr->u.sz);
 	free((void *) hdr);
 }
