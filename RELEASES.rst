@@ -969,6 +969,10 @@ Planned
   instead of the "exports" value to better support module.exports and
   circular dependencies
 
+* Change debugger breakpoint behavior to trigger only if the exact breakpoint
+  line is reached to avoid unintuitive breakpoint behavior when breakpoints
+  are in conditional blocks which are skipped entirely (GH-263)
+
 * Improve Emscripten compatibility as a result of TypedArray support:
   Emscripten fastcomp can now be used and Duktape can run more complex
   Emscripten-compiled programs (e.g. Lua or Duktape itself)
