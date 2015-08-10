@@ -41,4 +41,7 @@ tags:
   - object
   - call
 
+seealso:
+  - duk_pnew
+
 introduced: 1.0.0
