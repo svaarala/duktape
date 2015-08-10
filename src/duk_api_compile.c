@@ -85,7 +85,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 
 		h_sourcecode = duk_get_hstring(ctx, -2);
 		if ((flags & DUK_COMPILE_NOSOURCE) ||  /* args incorrect */
-		    (h_sourcecode == NULL)) {          /* e.g. duk_push_file_string_raw() pushed undefined */
+		    (h_sourcecode == NULL)) {          /* e.g. duk_push_string_file_raw() pushed undefined */
 			/* XXX: when this error is caused by a nonexistent
 			 * file given to duk_peval_file() or similar, the
 			 * error message is not the best possible.
