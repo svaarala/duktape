@@ -6,11 +6,6 @@
 #define DUK_JS_COMPILER_H_INCLUDED
 
 /* ecmascript compiler limits */
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_COMPILER_RECURSION_LIMIT       2500L
-#else
-#define DUK_COMPILER_RECURSION_LIMIT       50L
-#endif
 #define DUK_COMPILER_TOKEN_LIMIT           100000000L  /* 1e8: protects against deeply nested inner functions */
 
 /* maximum loopcount for peephole optimization */

@@ -92,31 +92,6 @@
  *  Other heap related defines
  */
 
-/* Maximum duk_handle_call / duk_handle_safe_call depth.  Note that this
- * does not limit bytecode executor internal call depth at all (e.g.
- * for Ecmascript-to-Ecmascript calls, thread yields/resumes, etc).
- * There is a separate callstack depth limit for threads.
- */
-
-#if defined(DUK_USE_DEEP_C_STACK)
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             1000  /* assuming 0.5 kB between calls, about 500kB of stack */
-#else
-#define DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT             60    /* assuming 0.5 kB between calls, about 30kB of stack */
-#endif
-
-/* Mark-and-sweep C recursion depth for marking phase; if reached,
- * mark object as a TEMPROOT and use multi-pass marking.
- */
-#if defined(DUK_USE_MARK_AND_SWEEP)
-#if defined(DUK_USE_GC_TORTURE)
-#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   3
-#elif defined(DUK_USE_DEEP_C_STACK)
-#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   256
-#else
-#define DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT   32
-#endif
-#endif
-
 /* Mark-and-sweep interval is relative to combined count of objects and
  * strings kept in the heap during the latest mark-and-sweep pass.
  * Fixed point .8 multiplier and .0 adder.  Trigger count (interval) is

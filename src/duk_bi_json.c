@@ -2436,7 +2436,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	/* nothing now */
 #endif
-	js_ctx->recursion_limit = DUK_JSON_DEC_RECURSION_LIMIT;
+	js_ctx->recursion_limit = DUK_USE_JSON_DEC_RECLIMIT;
 	DUK_ASSERT(js_ctx->recursion_depth == 0);
 
 	/* Flag handling currently assumes that flags are consistent.  This is OK
@@ -2745,7 +2745,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		 * slow path has a much larger recursion limit which we'll use if
 		 * necessary.
 		 */
-		DUK_ASSERT(DUK_JSON_ENC_RECURSION_LIMIT >= DUK_JSON_ENC_LOOPARRAY);
+		DUK_ASSERT(DUK_USE_JSON_ENC_RECLIMIT >= DUK_JSON_ENC_LOOPARRAY);
 		js_ctx->recursion_limit = DUK_JSON_ENC_LOOPARRAY;
 		DUK_ASSERT(js_ctx->recursion_depth == 0);
 
@@ -2812,7 +2812,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	/* [ ... buf loop (proplist) (gap) holder "" ] */
 
-	js_ctx->recursion_limit = DUK_JSON_ENC_RECURSION_LIMIT;
+	js_ctx->recursion_limit = DUK_USE_JSON_ENC_RECLIMIT;
 	DUK_ASSERT(js_ctx->recursion_depth == 0);
 	undef = duk__enc_value1(js_ctx, idx_holder);  /* [ ... holder key ] -> [ ... holder key val ] */
 

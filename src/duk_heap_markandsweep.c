@@ -150,7 +150,7 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 	}
 	DUK_HEAPHDR_SET_REACHABLE(h);
 
-	if (heap->mark_and_sweep_recursion_depth >= DUK_HEAP_MARK_AND_SWEEP_RECURSION_LIMIT) {
+	if (heap->mark_and_sweep_recursion_depth >= DUK_USE_MARK_AND_SWEEP_RECLIMIT) {
 		/* log this with a normal debug level because this should be relatively rare */
 		DUK_D(DUK_DPRINT("mark-and-sweep recursion limit reached, marking as temproot: %p", (void *) h));
 		DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap);
