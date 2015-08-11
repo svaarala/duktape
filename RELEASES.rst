@@ -1055,6 +1055,10 @@ Planned
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
   to be deep by default for all targets (GH-165)
 
+* Fix object environment handling to allow Proxy object as a binding
+  target, so that a Proxy can be used in a with statement or as the
+  duk_set_global_object() argument (GH-221)
+
 * Fix accidental ToString(this) coercion in Error.prototype.fileName and
   Error.prototype.lineNumber which was an issue if you replaced
   Error.prototype.toString with a function that accessed the 'lineNumber'
