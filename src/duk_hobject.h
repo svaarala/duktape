@@ -313,32 +313,32 @@
 #define DUK_HOBJECT_GET_PROPS(heap,h) \
 	((h)->props)
 #define DUK_HOBJECT_SET_PROPS(heap,h,x) do { \
-		(h)->props = (x); \
+		(h)->props = (duk_uint8_t *) (x); \
 	} while (0)
 #endif
 
 #if defined(DUK_USE_HOBJECT_LAYOUT_1)
 /* LAYOUT 1 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(heap,h) \
-	((duk_hstring **) ( \
+	((duk_hstring **) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(heap,h) \
-	((duk_propvalue *) ( \
+	((duk_propvalue *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_hstring *) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(heap,h) \
-	((duk_uint8_t *) ( \
+	((duk_uint8_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(heap,h) \
-	((duk_tval *) ( \
+	((duk_tval *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(heap,h) \
-	((duk_uint32_t *) ( \
+	((duk_uint32_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
@@ -350,11 +350,11 @@
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
 #define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
-		(set_e_k) = (duk_hstring **) (p_base); \
-		(set_e_pv) = (duk_propvalue *) ((set_e_k) + (n_ent)); \
-		(set_e_f) = (duk_uint8_t *) ((set_e_pv) + (n_ent)); \
-		(set_a) = (duk_tval *) ((set_e_f) + (n_ent)); \
-		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
+		(set_e_k) = (duk_hstring **) (void *) (p_base); \
+		(set_e_pv) = (duk_propvalue *) (void *) ((set_e_k) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) (void *) ((set_e_pv) + (n_ent)); \
+		(set_a) = (duk_tval *) (void *) ((set_e_f) + (n_ent)); \
+		(set_h) = (duk_uint32_t *) (void *) ((set_a) + (n_arr)); \
 	} while (0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_2)
 /* LAYOUT 2 */
@@ -368,26 +368,26 @@
 #error invalid DUK_USE_ALIGN_BY
 #endif
 #define DUK_HOBJECT_E_GET_KEY_BASE(heap,h) \
-	((duk_hstring **) ( \
+	((duk_hstring **) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(heap,h) \
-	((duk_propvalue *) ( \
+	((duk_propvalue *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(heap,h) \
-	((duk_uint8_t *) ( \
+	((duk_uint8_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue)) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(heap,h) \
-	((duk_tval *) ( \
+	((duk_tval *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			DUK_HOBJECT_E_FLAG_PADDING(DUK_HOBJECT_GET_ESIZE((h))) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(heap,h) \
-	((duk_uint32_t *) ( \
+	((duk_uint32_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_hstring *) + sizeof(duk_propvalue) + sizeof(duk_uint8_t)) + \
 			DUK_HOBJECT_E_FLAG_PADDING(DUK_HOBJECT_GET_ESIZE((h))) + \
@@ -401,40 +401,40 @@
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
 #define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
-		(set_e_pv) = (duk_propvalue *) (p_base); \
-		(set_e_k) = (duk_hstring **) ((set_e_pv) + (n_ent)); \
-		(set_e_f) = (duk_uint8_t *) ((set_e_k) + (n_ent)); \
-		(set_a) = (duk_tval *) (((duk_uint8_t *) (set_e_f)) + \
-		                        sizeof(duk_uint8_t) * (n_ent) + \
-		                        DUK_HOBJECT_E_FLAG_PADDING((n_ent))); \
-		(set_h) = (duk_uint32_t *) ((set_a) + (n_arr)); \
+		(set_e_pv) = (duk_propvalue *) (void *) (p_base); \
+		(set_e_k) = (duk_hstring **) (void *) ((set_e_pv) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) (void *) ((set_e_k) + (n_ent)); \
+		(set_a) = (duk_tval *) (void *) (((duk_uint8_t *) (set_e_f)) + \
+		                                 sizeof(duk_uint8_t) * (n_ent) + \
+		                                 DUK_HOBJECT_E_FLAG_PADDING((n_ent))); \
+		(set_h) = (duk_uint32_t *) (void *) ((set_a) + (n_arr)); \
 	} while (0)
 #elif defined(DUK_USE_HOBJECT_LAYOUT_3)
 /* LAYOUT 3 */
 #define DUK_HOBJECT_E_GET_KEY_BASE(heap,h) \
-	((duk_hstring **) ( \
+	((duk_hstring **) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) + \
 			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
 	))
 #define DUK_HOBJECT_E_GET_VALUE_BASE(heap,h) \
-	((duk_propvalue *) ( \
+	((duk_propvalue *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) \
 	))
 #define DUK_HOBJECT_E_GET_FLAGS_BASE(heap,h) \
-	((duk_uint8_t *) ( \
+	((duk_uint8_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
 			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) + \
 			DUK_HOBJECT_GET_HSIZE((h)) * sizeof(duk_uint32_t) \
 	))
 #define DUK_HOBJECT_A_GET_BASE(heap,h) \
-	((duk_tval *) ( \
+	((duk_tval *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * sizeof(duk_propvalue) \
 	))
 #define DUK_HOBJECT_H_GET_BASE(heap,h) \
-	((duk_uint32_t *) ( \
+	((duk_uint32_t *) (void *) ( \
 		DUK_HOBJECT_GET_PROPS((heap), (h)) + \
 			DUK_HOBJECT_GET_ESIZE((h)) * (sizeof(duk_propvalue) + sizeof(duk_hstring *)) + \
 			DUK_HOBJECT_GET_ASIZE((h)) * sizeof(duk_tval) \
@@ -446,11 +446,11 @@
 		(n_hash) * sizeof(duk_uint32_t) \
 	)
 #define DUK_HOBJECT_P_SET_REALLOC_PTRS(p_base,set_e_k,set_e_pv,set_e_f,set_a,set_h,n_ent,n_arr,n_hash)  do { \
-		(set_e_pv) = (duk_propvalue *) (p_base); \
-		(set_a) = (duk_tval *) ((set_e_pv) + (n_ent)); \
-		(set_e_k) = (duk_hstring **) ((set_a) + (n_arr)); \
-		(set_h) = (duk_uint32_t *) ((set_e_k) + (n_ent)); \
-		(set_e_f) = (duk_uint8_t *) ((set_h) + (n_hash)); \
+		(set_e_pv) = (duk_propvalue *) (void *) (p_base); \
+		(set_a) = (duk_tval *) (void *) ((set_e_pv) + (n_ent)); \
+		(set_e_k) = (duk_hstring **) (void *) ((set_a) + (n_arr)); \
+		(set_h) = (duk_uint32_t *) (void *) ((set_e_k) + (n_ent)); \
+		(set_e_f) = (duk_uint8_t *) (void *) ((set_h) + (n_hash)); \
 	} while (0)
 #else
 #error invalid hobject layout defines

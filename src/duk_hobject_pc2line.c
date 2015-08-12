@@ -154,7 +154,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 		goto error;
 	}
 
-	hdr = (duk_uint32_t *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, buf);
+	hdr = (duk_uint32_t *) (void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, buf);
 	pc_limit = hdr[0];
 	if (pc >= pc_limit) {
 		/* Note: pc is unsigned and cannot be negative */

@@ -23,7 +23,7 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 		 * OK as long as it is consistent for a build.
 		 */
 #ifdef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
-		duk_uint32_t k = *((duk_uint32_t *) data);
+		duk_uint32_t k = *((duk_uint32_t *) (void *) data);
 #else
 		duk_uint32_t k = ((duk_uint32_t) data[0]) |
 		                 (((duk_uint32_t) data[1]) << 8) |

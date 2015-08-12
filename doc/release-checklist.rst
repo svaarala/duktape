@@ -89,6 +89,8 @@ Checklist for ordinary releases
 
     + Linux SH4 gcc
 
+  - Check ``make duk-clang``, covers ``-Wcast-align``
+
 * Compile command line tool as a Windows DLL, checks Windows symbol visibility
   macros::
 

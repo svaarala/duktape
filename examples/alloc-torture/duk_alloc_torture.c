@@ -84,7 +84,7 @@ void *duk_alloc_torture(void *udata, duk_size_t size) {
 		return NULL;
 	}
 
-	((alloc_hdr *) p)->u.sz = size;
+	((alloc_hdr *) (void *) p)->u.sz = size;
 	p += sizeof(alloc_hdr);
 	memset((void *) p, RED_ZONE_BYTE, RED_ZONE_SIZE);
 	p += RED_ZONE_SIZE;
@@ -108,8 +108,8 @@ void *duk_realloc_torture(void *udata, void *ptr, duk_size_t size) {
 
 	if (ptr) {
 		old_p = (unsigned char *) ptr - sizeof(alloc_hdr) - RED_ZONE_SIZE;
-		old_size = ((alloc_hdr *) old_p)->u.sz;
-		check_red_zone((alloc_hdr *) old_p);
+		old_size = ((alloc_hdr *) (void *) old_p)->u.sz;
+		check_red_zone((alloc_hdr *) (void *) old_p);
 
 		if (size == 0) {
 			memset((void *) old_p, WIPE_BYTE, old_size + sizeof(alloc_hdr) + 2 * RED_ZONE_SIZE);
@@ -122,7 +122,7 @@ void *duk_realloc_torture(void *udata, void *ptr, duk_size_t size) {
 				return NULL;
 			}
 
-			((alloc_hdr *) p)->u.sz = size;
+			((alloc_hdr *) (void *) p)->u.sz = size;
 			p += sizeof(alloc_hdr);
 			memset((void *) p, RED_ZONE_BYTE, RED_ZONE_SIZE);
 			p += RED_ZONE_SIZE;
@@ -150,7 +150,7 @@ void *duk_realloc_torture(void *udata, void *ptr, duk_size_t size) {
 				return NULL;
 			}
 
-			((alloc_hdr *) p)->u.sz = size;
+			((alloc_hdr *) (void *) p)->u.sz = size;
 			p += sizeof(alloc_hdr);
 			memset((void *) p, RED_ZONE_BYTE, RED_ZONE_SIZE);
 			p += RED_ZONE_SIZE;
@@ -174,9 +174,9 @@ void duk_free_torture(void *udata, void *ptr) {
 	}
 
 	p = (unsigned char *) ptr - sizeof(alloc_hdr) - RED_ZONE_SIZE;
-	old_size = ((alloc_hdr *) p)->u.sz;
+	old_size = ((alloc_hdr *) (void *) p)->u.sz;
 
-	check_red_zone((alloc_hdr *) p);
+	check_red_zone((alloc_hdr *) (void *) p);
 	memset((void *) p, WIPE_BYTE, old_size + sizeof(alloc_hdr) + 2 * RED_ZONE_SIZE);
 	free((void *) p);
 }

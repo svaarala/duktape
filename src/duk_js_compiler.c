@@ -730,7 +730,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	DUK_HCOMPILEDFUNCTION_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
 	DUK_HEAPHDR_INCREF(thr, h_data);
 
-	p_const = (duk_tval *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data);
+	p_const = (duk_tval *) (void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data);
 	for (i = 0; i < consts_count; i++) {
 		DUK_ASSERT(i <= DUK_UARRIDX_MAX);  /* const limits */
 		tv = duk_hobject_find_existing_array_entry_tval_ptr(thr->heap, func->h_consts, (duk_uarridx_t) i);
@@ -764,7 +764,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_res, p_instr);
 
 	/* copy bytecode instructions one at a time */
-	q_instr = (duk_compiler_instr *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
+	q_instr = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
 	for (i = 0; i < code_count; i++) {
 		p_instr[i] = q_instr[i].ins;
 	}
@@ -1017,7 +1017,7 @@ DUK_LOCAL duk_int_t duk__get_current_pc(duk_compiler_ctx *comp_ctx) {
 DUK_LOCAL duk_compiler_instr *duk__get_instr_ptr(duk_compiler_ctx *comp_ctx, duk_int_t pc) {
 	DUK_ASSERT(pc >= 0);
 	DUK_ASSERT((duk_size_t) pc < (duk_size_t) (DUK_BW_GET_SIZE(comp_ctx->thr, &comp_ctx->curr_func.bw_code) / sizeof(duk_compiler_instr)));
-	return ((duk_compiler_instr *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code)) + pc;
+	return ((duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code)) + pc;
 }
 
 /* emit instruction; could return PC but that's not needed in the majority
@@ -1036,7 +1036,7 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 	                     (long) duk__get_current_pc(comp_ctx),
 	                     (duk_instr_t) ins));
 
-	instr = (duk_compiler_instr *) DUK_BW_ENSURE_GETPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
+	instr = (duk_compiler_instr *) (void *) DUK_BW_ENSURE_GETPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
 	DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, sizeof(duk_compiler_instr));
 
 #if defined(DUK_USE_PC2LINE)
@@ -1579,7 +1579,7 @@ DUK_LOCAL void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, duk_int_t jump
 	duk_size_t offset;
 
 	offset = jump_pc * sizeof(duk_compiler_instr),
-	instr = (duk_compiler_instr *)
+	instr = (duk_compiler_instr *) (void *)
 	        DUK_BW_INSERT_ENSURE_AREA(comp_ctx->thr,
 	                                  &comp_ctx->curr_func.bw_code,
 	                                  offset,
@@ -1705,7 +1705,7 @@ DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
 	duk_int_t i, n;
 	duk_int_t count_opt;
 
-	bc = (duk_compiler_instr *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code);
+	bc = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code);
 #if defined(DUK_USE_BUFLEN16)
 	/* No need to assert, buffer size maximum is 0xffff. */
 #else
@@ -2508,8 +2508,8 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 	 */
 
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, comp_ctx->curr_func.h_labelinfos);
-	li_start = (duk_labelinfo *) p;
-	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
+	li_start = (duk_labelinfo *) (void *) p;
+	li = (duk_labelinfo *) (void *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	n = (duk_size_t) (li - li_start);
 
 	while (li > li_start) {
@@ -2530,9 +2530,9 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 
 	/* relookup after possible realloc */
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, comp_ctx->curr_func.h_labelinfos);
-	li_start = (duk_labelinfo *) p;
+	li_start = (duk_labelinfo *) (void *) p;
 	DUK_UNREF(li_start);  /* silence scan-build warning */
-	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
+	li = (duk_labelinfo *) (void *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li--;
 
 	/* Labels can be used for iteration statements but also for other statements,
@@ -2559,8 +2559,8 @@ DUK_LOCAL void duk__update_label_flags(duk_compiler_ctx *comp_ctx, duk_int_t lab
 	duk_labelinfo *li_start, *li;
 
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(comp_ctx->thr->heap, comp_ctx->curr_func.h_labelinfos);
-	li_start = (duk_labelinfo *) p;
-	li = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
+	li_start = (duk_labelinfo *) (void *) p;
+	li = (duk_labelinfo *) (void *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 
 	/* Match labels starting from latest; once label_id no longer matches, we can
 	 * safely exit without checking the rest of the labels (only the topmost labels
@@ -2608,8 +2608,8 @@ DUK_LOCAL void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring 
 	DUK_UNREF(ctx);
 
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, comp_ctx->curr_func.h_labelinfos);
-	li_start = (duk_labelinfo *) p;
-	li_end = (duk_labelinfo *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
+	li_start = (duk_labelinfo *) (void *) p;
+	li_end = (duk_labelinfo *) (void *) (p + DUK_HBUFFER_GET_SIZE(comp_ctx->curr_func.h_labelinfos));
 	li = li_end;
 
 	/* Match labels starting from latest label because there can be duplicate empty
