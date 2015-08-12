@@ -1214,12 +1214,6 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 
 		ret.empty()
 
-	ret.empty()
-	ret.line('/*')
-	ret.line(' *  Date provider')
-	ret.line(' */')
-	ret.empty()
-
 	if len(opts.fixup_header_lines) > 0:
 		ret.empty()
 		ret.line('/*')
