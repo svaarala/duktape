@@ -1,5 +1,5 @@
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/src")
-	file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/src")
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/src")
+	file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/src")
 endif()
 
 
@@ -9,26 +9,26 @@ find_package(PythonInterp REQUIRED)
 if(GIT_FOUND)
 	execute_process(
 		COMMAND ${GIT_EXECUTABLE} log -n 1 --format=%h 
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE GIT_COMMIT_SHORT
 		)
 	string(STRIP "${GIT_COMMIT_SHORT}" GIT_COMMIT_SHORT)
 	execute_process(
 		COMMAND ${GIT_EXECUTABLE} log -n 1 --format=%H
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE GIT_COMMIT
 		)
 	string(STRIP "${GIT_COMMIT}" GIT_COMMIT)
 	execute_process(
 		COMMAND ${GIT_EXECUTABLE} describe --always --dirty
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE GIT_DESCRIBE
 		)
 	string(STRIP "${GIT_DESCRIBE}" GIT_DESCRIBE)
 	set(GIT_DESCRIBE_CSTRING "\"${GIT_DESCRIBE}\"")
 	execute_process(
 		COMMAND ${GIT_EXECUTABLE} describe --always --dirty --abbrev=0
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE DUK_VERSION
 		)
 	string(STRIP "${DUK_VERSION}" DUK_VERSION)
@@ -48,29 +48,29 @@ if(GIT_FOUND)
 endif()
 
 
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/src/duk_unicode_ids_noa.c")
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/src/duk_unicode_ids_noa.c")
 	message(STATUS "Preparing Unicode Data:")
 	EXECUTE_PROCESS(COMMAND
-		${PYTHON_EXECUTABLE} "src/prepare_unicode_data.py" "src/UnicodeData.txt" "${PROJECT_BINARY_DIR}/UnicodeData-expanded.tmp"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		${PYTHON_EXECUTABLE} "src/prepare_unicode_data.py" "src/UnicodeData.txt" "${CMAKE_BINARY_DIR}/UnicodeData-expanded.tmp"
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE EXTRACT_UNICODE_DATA)
 	message(STATUS "Extracting Case Conventions:")
 	EXECUTE_PROCESS(COMMAND
-		${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/src/extract_caseconv.py"
+		${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/extract_caseconv.py"
 			"--unicode-data=UnicodeData-expanded.tmp"
-			"--special-casing=${PROJECT_SOURCE_DIR}/src/SpecialCasing.txt"
+			"--special-casing=${CMAKE_SOURCE_DIR}/src/SpecialCasing.txt"
 			"--out-source=src/duk_unicode_caseconv.c"
 			"--out-header=src/duk_unicode_caseconv.h"
 			"--table-name-lc=duk_unicode_caseconv_lc"
 			"--table-name-uc=duk_unicode_caseconv_uc"
-			WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 			OUTPUT_VARIABLE EXTRACT_CASECONV
 		)
 	message(STATUS "Extracting Character Maps:")
 	function(duktape_extract_chars include_cat exclude_cat out_desc)
 		message( STATUS "Generating Unicode Table: duk_unicode_${out_desc}")
 		EXECUTE_PROCESS(COMMAND
-		${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/src/extract_chars.py"
+		${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/src/extract_chars.py"
 				"--unicode-data=UnicodeData-expanded.tmp"
 				"--include-categories=\"${include_cat}\""
 				"--exclude-categories=\"${exclude_cat}\""
@@ -78,7 +78,7 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/src/duk_unicode_ids_noa.c")
 				"--out-header=src/duk_unicode_${out_desc}.h"
 				"--table-name=duk_unicode_${out_desc}"
 		
-		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		OUTPUT_VARIABLE EXTRACT_CHARS_${out_desc})
 	endfunction(duktape_extract_chars)
 	#Prepare Unicode Data Extraction
@@ -140,21 +140,21 @@ endif()
 
 
 
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/duk_config.h" AND NOT EXISTS "${PROJECT_BINARY_DIR}/src/duk_config.h")
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/duk_config.h" AND NOT EXISTS "${CMAKE_BINARY_DIR}/src/duk_config.h")
 	#TODO: Check for PyYAML
 	message(STATUS "Generating Config Parameters:")
 	EXECUTE_PROCESS(COMMAND
 		${PYTHON_EXECUTABLE} "config/genconfig.py"
 		"--metadata=config"
-		"--output=${PROJECT_BINARY_DIR}/src/duk_config.h"
+		"--output=${CMAKE_BINARY_DIR}/src/duk_config.h"
 		"autodetect-header"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_FILE genconfig.txt
 		OUTPUT_VARIABLE GEN_BUILD_PARAMS_DATA
 	)
 endif()	
 
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/buildparams.json")
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/buildparams.json")
 	message(STATUS "Generating Build Parameters:")
 	EXECUTE_PROCESS(COMMAND
 		${PYTHON_EXECUTABLE} "src/genbuildparams.py"
@@ -162,12 +162,12 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/buildparams.json")
 		"--git-describe=${GIT_DESCRIBE}"
 		"--out-json=buildparams.json"
 		"--out-header=src/duk_buildparams.h"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_FILE genbuildparms.txt
 		OUTPUT_VARIABLE GEN_BUILD_PARAMS_DATA
 	)
 endif()
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/duk_builtins.c")
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/duk_builtins.c")
 	message(STATUS "Generating Built-ins:")		
 	EXECUTE_PROCESS(COMMAND
 		${PYTHON_EXECUTABLE} "src/genbuiltins.py"
@@ -176,7 +176,7 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/duk_builtins.c")
 		"--out-header=src/duk_builtins.h"
 		"--out-source=src/duk_builtins.c"
 		"--out-metadata-json=duk_build_meta.json"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		OUTPUT_FILE genbuiltins.txt
 		OUTPUT_VARIABLE GEN_BUILD_PARAMS_DATA
 		)	
@@ -186,28 +186,31 @@ endif()
 # Prepare License.txt for inclusion.
 EXECUTE_PROCESS(COMMAND
 	${PYTHON_EXECUTABLE} "util/make_ascii.py"
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE LICENSE_TXT_FILE
     INPUT_FILE "license.txt"
 )
 
 string(REGEX REPLACE "\n" "\n *  " LICENSE_TXT ${LICENSE_TXT_FILE})
 set(LICENSE_TXT "/*\n *  ${LICENSE_TXT} */\n")
+file(WRITE "LICENSE.txt.tmp" ${LICENSE_TXT})
+
 
 # Prepare AUTHORS.rst for inclusion.
 EXECUTE_PROCESS(COMMAND
 	${PYTHON_EXECUTABLE} "util/make_ascii.py"
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE AUTHORS_RST_FILE
     INPUT_FILE "AUTHORS.rst"
 )
+
 string(REGEX REPLACE "\n" "\n *  " AUTHORS_RST ${AUTHORS_RST_FILE})
 set(AUTHORS_RST "/*\n *  ${AUTHORS_RST}\n */\n")
-
+file(WRITE "AUTHORS.rst.tmp" ${AUTHORS_RST})
 
 configure_file(src/duk_api_public.h.in duk_api_public.h)
 configure_file(src/duk_dblunion.h.in duk_dblunion.h)
-file(READ "${PROJECT_BINARY_DIR}/duk_api_public.h" DUK_API_PUBLIC_H)
-file(READ "${PROJECT_BINARY_DIR}/duk_dblunion.h" DUK_DBLUNION_H)
+file(READ "${CMAKE_BINARY_DIR}/duk_api_public.h" DUK_API_PUBLIC_H)
+file(READ "${CMAKE_BINARY_DIR}/duk_dblunion.h" DUK_DBLUNION_H)
 #configure_file(src/duk_config.h.cmake.in src/duk_config.h)
 configure_file(src/duktape.h.in src/duktape.h)

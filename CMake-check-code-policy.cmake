@@ -6,7 +6,7 @@ add_custom_target(autofix_whitespace
 	${PYTHON_EXECUTABLE}
 		"util/autofix_whitespace.py"
 		"-d" "src" "-d" "tests" "--ext" ".c" "--ext"  ".h" "--ext" ".h.in"
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}		
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}		
 	COMMENT "Verifying Code Policy")
 
 	
@@ -14,8 +14,8 @@ add_custom_target(autofix_whitespace
 add_custom_target(codepolicycheck
 	${PYTHON_EXECUTABLE}
 		"util/check_code_policy.py"
-		"-d" "src" "-d" "tests" "--ext" ".c" "--ext"  ".h" "--ext" ".h.in"
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		"-d" "src" "--ext" ".c" "--ext"  ".h" "--ext" ".h.in"
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	DEPENDS autofix_whitespace_issues
 	COMMENT "Verifying Code Policy")
 
@@ -24,8 +24,8 @@ if(NOT WIN32)
 		${PYTHON_EXECUTABLE}
 			"util/check_code_policy.py"
 			"--dump-vim-commands"
-			"-d" "src" "-d" "tests" "--ext" ".c" "--ext"  ".h" "--ext" ".h.in"
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+			"-d" "src" "--ext" ".c" "--ext"  ".h" "--ext" ".h.in"
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 		DEPENDS autofix_whitespace_issues
 		COMMENT "Verifying Code Policy")
 endif()
