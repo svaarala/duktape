@@ -26,10 +26,6 @@ else()
 	MESSAGE(FATAL_ERROR "This CMake File is meant to be ran from the Duktape Git Master only.")
 endif()
 
-if(DUKTAPE_DEBUGGER_JQUERY)
-	include(CMake-build-debugger.cmake)
-endif()
-
 if(DUKTAPE_ENABLE_CODE_POLICY_CHECK)
 	include(CMake-check-code-policy.cmake)
 endif()
@@ -86,5 +82,5 @@ if(DUKTAPE_BUILD_EXAMPLES)
 endif()
 
 if(DUKTAPE_DEBUGGER_SUPPORT AND DUKTAPE_DEBUGGER_JQUERY)
-	add_subdirectory(debugger)
+	include(CMake-build-debugger.cmake)
 endif()
