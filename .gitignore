@@ -61,3 +61,5 @@ debugger/static/socket.io-1.2.0.js
 src/duk_buildparams.h
 src/duk_builtins.c
 src/duk_builtins.h
+/AUTHORS.rst.tmp
+/LICENSE.txt.tmp
