@@ -10,13 +10,13 @@ SET( DUK_CMDLINE_SRC
 	"alloc-logging/duk_alloc_logging.c"
 	"alloc-torture/duk_alloc_torture.c"
 	"alloc-hybrid/duk_alloc_hybrid.c"
-	"debug-trans-socket/duk_debug_trans_socket.c"
+	"debug-trans-socket/duk_trans_socket.c"
 	)
 SET( DUK_CMDLINE_HDRS
 	"alloc-logging/duk_alloc_logging.h"
 	"alloc-torture/duk_alloc_torture.h"
 	"alloc-hybrid/duk_alloc_hybrid.h"
-	"debug-trans-socket/duk_debug_trans_socket.h"
+	"debug-trans-socket/duk_trans_socket.h"
 	)
 
 if(MSVC)

@@ -146,7 +146,7 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/src/duk_config.h" AND NOT EXISTS "${PROJECT
 		${PYTHON_EXECUTABLE} "config/genconfig.py"
 		"--metadata=config"
 		"--output=${PROJECT_BINARY_DIR}/src/duk_config.h"
-		"generate-autodetect-header"
+		"autodetect-header"
 		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 		OUTPUT_FILE genconfig.txt
 		OUTPUT_VARIABLE GEN_BUILD_PARAMS_DATA
