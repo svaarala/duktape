@@ -2,20 +2,10 @@
 cmake_minimum_required(VERSION 2.8.10)
  
 project (duktape)
-set(DUKTAPE_MAJOR_VERSION 1)
-set(DUKTAPE_MINOR_VERSION 2)
-set(DUKTAPE_PATCH_VERSION 3)
-MATH( EXPR DUKTAPE_COMPACT_VERSION "
-		10000 * ${DUKTAPE_MAJOR_VERSION} +
-		100 * ${DUKTAPE_MINOR_VERSION}   +
-		${DUKTAPE_PATCH_VERSION}"
-		)
-
-		# Convert the DukTape Version to Follow Semantics
 option(DUKTAPE_BUILD_EXAMPLES "Build Example Code" ON)
 option(DUKTAPE_BUILD_SHARED "Build duktape as a Shared library" OFF)
-option(DUKTAPE_DEBUGGER_SUPPORT "Build duktape with Debugger Support." ON)
-option(DUKTAPE_DEBUGGER_JQUERY  "Build duktape with Debugger Support." ON)
+option(DUKTAPE_DEBUGGER_SUPPORT "Build duktape with Debugger Support." OFF)
+option(DUKTAPE_DEBUGGER_JQUERY  "Build duktape with Debugger Support." OFF)
 option(DUKTAPE_ENABLE_DEBUG_PRINT
 	"Build duktape library with dubug prining enabled." ON)
 option(DUKTAPE_ENABLE_CODE_POLICY_CHECK "Add Code Policy Target to Build" ON)

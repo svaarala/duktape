@@ -2,7 +2,9 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/src")
 	file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/src")
 endif()
 
-find_package(Git)
+
+find_package(Git REQUIRED)
+find_package(PythonInterp REQUIRED)
 
 if(GIT_FOUND)
 	execute_process(
@@ -45,7 +47,6 @@ if(GIT_FOUND)
 	
 endif()
 
-find_package(PythonInterp REQUIRED)
 
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/src/duk_unicode_ids_noa.c")
 	message(STATUS "Preparing Unicode Data:")
@@ -185,24 +186,23 @@ endif()
 # Prepare License.txt for inclusion.
 EXECUTE_PROCESS(COMMAND
 	${PYTHON_EXECUTABLE} "util/make_ascii.py"
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	OUTPUT_VARIABLE LICENSE_TXT_FILE
     INPUT_FILE "license.txt"
 )
-foreach(LICENSE ${LICENSE_TXT_FILE})
-	SET(LICENSE_TXT "${LICENSE_TXT} * ${LICENSE}\n")
-endforeach()
-set(LICENSE_TXT "/*\n${LICENSE_TXT} */\n")
+
+string(REGEX REPLACE "\n" "\n *  " LICENSE_TXT ${LICENSE_TXT_FILE})
+set(LICENSE_TXT "/*\n *  ${LICENSE_TXT} */\n")
 
 # Prepare AUTHORS.rst for inclusion.
 EXECUTE_PROCESS(COMMAND
 	${PYTHON_EXECUTABLE} "util/make_ascii.py"
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	OUTPUT_VARIABLE AUTHORS_RST_FILE
     INPUT_FILE "AUTHORS.rst"
 )
-foreach(AUTHOR ${AUTHORS_RST_FILE})
-	SET(AUTHORS_RST "${AUTHORS_RST} * ${AUTHOR}\n")
-endforeach()
-set(AUTHORS_RST "/*\n${AUTHORS_RST} */\n")
+string(REGEX REPLACE "\n" "\n *  " AUTHORS_RST ${AUTHORS_RST_FILE})
+set(AUTHORS_RST "/*\n *  ${AUTHORS_RST}\n */\n")
 
 
 configure_file(src/duk_api_public.h.in duk_api_public.h)
