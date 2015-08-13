@@ -1,3 +1,11 @@
+#!/usr/bin/python
+#
+#  Check various C source code policy rules and issue warnings for offenders
+#
+#  Usage:
+#
+#    $ python dist_pack.py -z --input-path Dist-files -o TargetFile --out-prefix myProject
+#
 import os
 import sys
 import re
@@ -29,6 +37,19 @@ def write_tar_bz2(src, dst, prefix = ''):
 	print "wrote %s" % (out_file)
 	tar_file.close()
 
+def write_tar_xz(src, dst, prefix = ''):
+	out_file = "%s.tar.xz" % (dst)
+	tar_file = tarfile.open(out_file, "w:xz")
+	abs_src = os.path.abspath(src)
+	for dirname, subdirs, files in os.walk(src):
+		for filename in files:
+			absname = os.path.abspath(os.path.join(dirname, filename))
+			arcname = os.path.join(prefix,absname[len(abs_src) + 1:])
+			tar_file.add(absname, arcname)
+	print "wrote %s" % (out_file)
+	tar_file.close()
+	
+	
 def zip(src, dst, prefix = ''):
 	zipPath = "%s.zip" % (dst)
 	zf = zipfile.ZipFile("%s.zip" % (dst), "w", zipfile.ZIP_DEFLATED)
@@ -46,6 +67,7 @@ def main():
 	parser = optparse.OptionParser()
 	parser.add_option('--tbz2', dest='bz2',action='store_true', default=False, help='Create tar.bz2 archive.')
 	parser.add_option('--tgz', dest='gz',action='store_true', default=False, help='Create tar.gz archive.')
+	parser.add_option('--txz', dest='xz',action='store_true', default=False, help='Create tar.xz archive. (Requires Python 3.3+)')
 	parser.add_option('-z', dest='zip',action='store_true', default=False, help='Create a zip archive.')
 	parser.add_option('--input-path', dest='in_path', default='', type='string', 
 		action='store', help='specify the Folder to Compress.')
@@ -59,7 +81,12 @@ def main():
 	if(len(opts.in_path) < 1 or len(opts.out_file) < 1):
 		print "dist_pack.py: invalid Arguments. Please re-run with -h and try again.";
 		exit(-1);
-	if(not opts.zip and not opts.bz2 and not opts.gz):
+	# Make Sure Python 3.3 is running this script before attempting to run the xz generator.
+	if(opts.xz and sys.version_info[:2] < (3, 3)):
+		print "dist_pack.py: tar.xz archive format is not available on Python version under v3.3.";
+		exit(-1);
+
+	if(not ( opts.zip or opts.bz2 or opts.gz or opts.xz)):
 		print "dist_pack.py: no archive type specified. Please re-run with -h and try again.";
 		exit(-1);
 	prefix = '';
@@ -85,8 +112,8 @@ def main():
 		write_tar_bz2(opts.in_path,outfile,prefix)
 	if(opts.gz):
 		write_tar_gz(opts.in_path,outfile,prefix)
-	
-# zip("src", "dst")	
+	if(opts.xz):
+		write_tar_xz(opts.in_path,outfile,prefix)
 
 if __name__ == '__main__':
 	main()
