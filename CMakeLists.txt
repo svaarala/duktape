@@ -9,7 +9,7 @@ option(DUKTAPE_DEBUGGER_JQUERY  "Build duktape with Debugger Support." OFF)
 option(DUKTAPE_ENABLE_DEBUG_PRINT
 	"Build duktape library with dubug prining enabled." ON)
 option(DUKTAPE_ENABLE_CODE_POLICY_CHECK "Add Code Policy Target to Build" ON)
-
+option(DUKTAPE_GENERATE_DIST "Generate Dist release" ON)
 if(EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	include(CMake-build-git.cmake)
 else()
@@ -73,4 +73,8 @@ endif()
 
 if(DUKTAPE_DEBUGGER_SUPPORT AND DUKTAPE_DEBUGGER_JQUERY)
 	include(CMake-build-debugger.cmake)
+endif()
+
+if(DUKTAPE_GENERATE_DIST)
+	include(CMake-generate-dist.cmake)
 endif()
