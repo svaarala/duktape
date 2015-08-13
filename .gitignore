@@ -43,6 +43,12 @@ ms_print.*
 alljoyn-js
 ajtcl
 dukweb.js
+genbuiltins.txt
+genconfig.txt
+buildparams.json
+duk_build_meta.json
+genbuildparms.txt
+debugger/node.exe
 debugger/jquery-ui-1.11.2.zip
 debugger/jquery-ui-1.11.2/
 debugger/node_modules/
@@ -52,3 +58,6 @@ debugger/static/jquery-ui.min.css
 debugger/static/jquery-ui.min.js
 debugger/static/reset.css
 debugger/static/socket.io-1.2.0.js
+src/duk_buildparams.h
+src/duk_builtins.c
+src/duk_builtins.h
