@@ -5,6 +5,8 @@ endif()
 
 find_package(Git REQUIRED)
 find_package(PythonInterp REQUIRED)
+# Require PyYAML v3.10 or newer
+find_package(PyYAML 3.10 REQUIRED)
 
 if(GIT_FOUND)
 	execute_process(
@@ -141,7 +143,6 @@ endif()
 
 
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/duk_config.h" AND NOT EXISTS "${CMAKE_BINARY_DIR}/src/duk_config.h")
-	#TODO: Check for PyYAML
 	message(STATUS "Generating Config Parameters:")
 	EXECUTE_PROCESS(COMMAND
 		${PYTHON_EXECUTABLE} "config/genconfig.py"

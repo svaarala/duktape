@@ -1,4 +1,6 @@
 # Duktape CMake Build file for Git Master
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/util/cmake/Modules")
 cmake_minimum_required(VERSION 2.8.10)
  
 project (duktape)
