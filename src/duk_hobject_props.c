@@ -2,8 +2,8 @@
  *  Hobject property set/get functionality.
  *
  *  This is very central functionality for size, performance, and compliance.
- *  It is also rather intricate; see hobject-algorithms.txt for discussion on
- *  the algorithms and memory-management.txt for discussion on refcounts and
+ *  It is also rather intricate; see hobject-algorithms.rst for discussion on
+ *  the algorithms and memory-management.rst for discussion on refcounts and
  *  side effect issues.
  *
  *  Notes:

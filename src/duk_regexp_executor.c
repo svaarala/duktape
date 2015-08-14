@@ -179,7 +179,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			 *
 			 *  There is no opcode for matching multiple characters.  The
 			 *  regexp compiler has trouble joining strings efficiently
-			 *  during compilation.  See doc/regexp.txt for more discussion.
+			 *  during compilation.  See doc/regexp.rst for more discussion.
 			 */
 			duk_codepoint_t c1, c2;
 

@@ -2174,7 +2174,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 *    - the value stack (registers) of the current thread
 	 *    - the catch stack of the current thread
 	 *
-	 *  See execution.txt for discussion.
+	 *  See execution.rst for discussion.
 	 */
 
 	DUK_ASSERT(thr != NULL);

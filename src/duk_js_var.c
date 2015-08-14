@@ -13,8 +13,8 @@
  *  convenient field).  The prototype chain is not followed in the ordinary
  *  sense for variable lookups.
  *
- *  See identifier-handling.txt for more details on the identifier algorithms
- *  and the internal representation.  See function-objects.txt for details on
+ *  See identifier-handling.rst for more details on the identifier algorithms
+ *  and the internal representation.  See function-objects.rst for details on
  *  what function templates and instances are expected to look like.
  *
  *  Care must be taken to avoid duk_tval pointer invalidation caused by
@@ -55,7 +55,7 @@ typedef struct {
  *
  *  See E5 Section 13.2 for detailed requirements on the function objects;
  *  there are no similar requirements for function "templates" which are an
- *  implementation dependent internal feature.  Also see function-objects.txt
+ *  implementation dependent internal feature.  Also see function-objects.rst
  *  for a discussion on the function instance properties provided by this
  *  implementation.
  *
@@ -213,7 +213,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  _Lexenv is always set; _Varenv defaults to _Lexenv if missing,
 	 *  so _Varenv is only set if _Lexenv != _Varenv.
 	 *
-	 *  This is relatively complex, see doc/identifier-handling.txt.
+	 *  This is relatively complex, see doc/identifier-handling.rst.
 	 */
 
 	if (DUK_HOBJECT_HAS_NEWENV(&fun_temp->obj)) {

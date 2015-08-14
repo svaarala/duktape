@@ -804,7 +804,7 @@ void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, du
  *  indices) cause an error to propagate out of this function.  If there is
  *  no catchpoint for this error, the fatal error handler is called.
  *
- *  See 'execution.txt'.
+ *  See 'execution.rst'.
  *
  *  The allowed thread states for making a call are:
  *    - thr matches heap->curr_thread, and thr is already RUNNING
@@ -816,7 +816,7 @@ void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, du
  *  avoiding a dozen helpers with awkward plumbing.
  *
  *  Note: setjmp() and local variables have a nasty interaction,
- *  see execution.txt; non-volatile locals modified after setjmp()
+ *  see execution.rst; non-volatile locals modified after setjmp()
  *  call are not guaranteed to keep their value.
  */
 

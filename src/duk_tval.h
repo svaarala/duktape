@@ -11,7 +11,7 @@
  *
  *  Selecting the tagged type format involves many trade-offs (memory
  *  use, size and performance of generated code, portability, etc),
- *  see doc/types.txt for a detailed discussion (especially of how the
+ *  see doc/types.rst for a detailed discussion (especially of how the
  *  IEEE double format is used to pack tagged values).
  *
  *  NB: because macro arguments are often expressions, macros should

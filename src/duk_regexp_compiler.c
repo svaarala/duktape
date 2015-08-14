@@ -1,7 +1,7 @@
 /*
  *  Regexp compilation.
  *
- *  See doc/regexp.txt for a discussion of the compilation approach and
+ *  See doc/regexp.rst for a discussion of the compilation approach and
  *  current limitations.
  *
  *  Regexp bytecode assumes jumps can be expressed with signed 32-bit
@@ -142,7 +142,7 @@ DUK_LOCAL void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t data_
  *
  *  Computing the final (adjusted) skip value, which is relative to the
  *  first byte of the next instruction, is a bit tricky because of the
- *  variable length UTF-8 encoding.  See doc/regexp.txt for discussion.
+ *  variable length UTF-8 encoding.  See doc/regexp.rst for discussion.
  */
 DUK_LOCAL duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
 	duk_small_int_t len;
@@ -175,7 +175,7 @@ DUK_LOCAL duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_
  *  continuous range is not necessarily continuous (e.g. [x-{] is
  *  continuous but [X-{] is not).  The current algorithm creates the
  *  canonicalized range(s) space efficiently at the cost of compile
- *  time execution time (see doc/regexp.txt for discussion).
+ *  time execution time (see doc/regexp.rst for discussion).
  *
  *  Note that the ctx->nranges is a context-wide temporary value
  *  (this is OK because there cannot be multiple character classes
@@ -241,7 +241,7 @@ DUK_LOCAL void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_code
  *  lookaheads, capturing parentheses, and non-capturing parentheses.
  *
  *  The function determines whether the entire disjunction is a 'simple atom'
- *  (see doc/regexp.txt discussion on 'simple quantifiers') and if so,
+ *  (see doc/regexp.rst discussion on 'simple quantifiers') and if so,
  *  returns the atom character length which is needed by the caller to keep
  *  track of its own atom character length.  A disjunction with more than one
  *  alternative is never considered a simple atom (although in some cases
