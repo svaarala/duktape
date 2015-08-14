@@ -1082,9 +1082,9 @@ massif-arcfour: massif-test-dev-arcfour
 # - Mujs is interpreted but doesn't use reference counting
 # - Rhino compiles to Java bytecode and is ultimately JITed
 
-#TIME=python util/time_multi.py 1 # Run just once
-#TIME=python util/time_multi.py 3 # Take minimum time of N
-TIME=python util/time_multi.py 5 # Take minimum time of N
+#TIME=python util/time_multi.py --count 1 --mode min # Run just once
+#TIME=python util/time_multi.py --count 3 --mode min # Take minimum time of N
+TIME=python util/time_multi.py --count 5 --mode min # Take minimum time of N
 
 perftest: duk duk.O2 duk.O3 duk.O4
 	for i in tests/perf/*.js; do \

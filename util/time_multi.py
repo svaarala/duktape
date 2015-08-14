@@ -5,20 +5,31 @@
 
 import os
 import sys
+import time
+import optparse
 import subprocess
 
 def main():
-	count = int(sys.argv[1])
+	parser = optparse.OptionParser()
+	parser.add_option('--count', type='int', dest='count', default=3)
+	parser.add_option('--mode', dest='mode', default='min')
+	parser.add_option('--sleep', type='float', dest='sleep', default=0.0)
+	(opts, args) = parser.parse_args()
 
 	time_min = None
-	for i in xrange(count):
+	time_max = None
+	time_sum = 0.0
+	time_list = []
+
+	for i in xrange(opts.count):
+		time.sleep(opts.sleep)
+
 		cmd = [
 			'time',
 			'-f', '%U',
-			'--quiet',
-			sys.argv[2],   # cmd
-			sys.argv[3]    # testcase
+			'--quiet'
 		]
+		cmd = cmd + args
 		#print(repr(cmd))
 		p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = p.communicate()
@@ -32,16 +43,36 @@ def main():
 			print 'n/a'
 			sys.exit(1)
 
-		time = float(stderr)
-		#print(i, time)
+		time_this = float(stderr)
+		#print(i, time_this)
 
 		if time_min is None:
-			time_min = time
+			time_min = time_this
 		else:
-			time_min = min(time_min, time)
+			time_min = min(time_min, time_this)
+		if time_max is None:
+			time_max = time_this
+		else:
+			time_max = max(time_max, time_this)
+		time_sum += time_this
+
+		time_list.append(time_this)
+
+	time_avg = time_sum / float(opts.count)
 
 	# /usr/bin/time has only two digits of resolution
-	print('%.02f' % time_min)
+	if opts.mode == 'min':
+		print('%.02f' % time_min)
+	elif opts.mode == 'max':
+		print('%.02f' % time_max)
+	elif opts.mode == 'avg':
+		print('%.02f' % time_avg)
+	elif opts.mode == 'all':
+		print('min=%.02f, max=%.02f, avg=%0.2f, count=%d: %r' % \
+		      (time_min, time_max, time_avg, opts.count, time_list))
+	else:
+		print('invalid mode: %r' % opts.mode)
+
 	sys.exit(0)
 
 if __name__ == '__main__':
