@@ -292,7 +292,7 @@ Regexp compiler
 
 C recursion depth limit
   The compiler imposes an artificial limit on C recursion depth
-  (``DUK_RE_COMPILE_RECURSION_LIMIT`` by default).  If the recursion limit
+  (``DUK_USE_REGEXP_COMPILER_RECLIMIT``).  If the recursion limit
   is reached, regexp compilation fails with an (internal) error.
 
   The following constructs increase C recursion depth:
@@ -323,7 +323,7 @@ Regexp executor
 
 C recursion depth limit
   The executor imposes an artificial limit on C recursion depth
-  (``DUK_RE_EXECUTE_RECURSION_LIMIT`` by default).  If the recursion limit
+  (``DUK_USE_REGEXP_EXECUTOR_RECLIMIT``).  If the recursion limit
   is reached, regexp matching fails with an (internal) error.
   The following constructs increase C recursion depth:
 

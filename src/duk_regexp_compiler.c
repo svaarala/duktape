@@ -942,7 +942,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	re_ctx.lex.input = DUK_HSTRING_GET_DATA(h_pattern);
 	re_ctx.lex.input_length = DUK_HSTRING_GET_BYTELEN(h_pattern);
 	re_ctx.lex.token_limit = DUK_RE_COMPILE_TOKEN_LIMIT;
-	re_ctx.recursion_limit = DUK_RE_COMPILE_RECURSION_LIMIT;
+	re_ctx.recursion_limit = DUK_USE_REGEXP_COMPILER_RECLIMIT;
 	re_ctx.re_flags = duk__parse_regexp_flags(thr, h_flags);
 
 	DUK_BW_INIT_PUSHBUF(thr, &re_ctx.bw, DUK__RE_INITIAL_BUFSIZE);

@@ -7540,7 +7540,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	comp_ctx->tok12_idx = entry_top + 2;
 	comp_ctx->tok21_idx = entry_top + 3;
 	comp_ctx->tok22_idx = entry_top + 4;
-	comp_ctx->recursion_limit = DUK_COMPILER_RECURSION_LIMIT;
+	comp_ctx->recursion_limit = DUK_USE_COMPILER_RECLIMIT;
 
 	/* comp_ctx->lex has been pre-initialized by caller: it has been
 	 * zeroed and input/input_length has been set.

@@ -718,7 +718,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	re_ctx.bytecode = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
 	re_ctx.bytecode_end = re_ctx.bytecode + DUK_HSTRING_GET_BYTELEN(h_bytecode);
 	re_ctx.saved = NULL;
-	re_ctx.recursion_limit = DUK_RE_EXECUTE_RECURSION_LIMIT;
+	re_ctx.recursion_limit = DUK_USE_REGEXP_EXECUTOR_RECLIMIT;
 	re_ctx.steps_limit = DUK_RE_EXECUTE_STEPS_LIMIT;
 
 	/* read header */

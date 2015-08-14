@@ -758,7 +758,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
 
 	res->call_recursion_depth = 0;
-	res->call_recursion_limit = DUK_HEAP_DEFAULT_CALL_RECURSION_LIMIT;
+	res->call_recursion_limit = DUK_USE_NATIVE_CALL_RECLIMIT;
 
 	/* XXX: use the pointer as a seed for now: mix in time at least */
 

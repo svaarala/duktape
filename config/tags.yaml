@@ -64,3 +64,6 @@ api:
 
 fastpath:
   title: Fast path performance options
+
+cstackdepth:
+  title: C stack depth
