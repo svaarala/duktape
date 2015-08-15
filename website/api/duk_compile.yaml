@@ -27,7 +27,7 @@ summary: |
   <p>The source code being compiled may be:</p>
 
   <ul>
-  <li>Program code: compiles into a function with zero arguments, which
+  <li>Global code: compiles into a function with zero arguments, which
       executes like a top level Ecmascript program (default)</li>
   <li>Eval code: compiles into a function with zero arguments, which
       executes like an Ecmascript <code>eval</code> call
@@ -39,14 +39,14 @@ summary: |
   <p>All of these have slightly different semantics in Ecmascript.  See
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-10.4">Establishing an Execution Context</a>
   for a detailed discussion.
-  One major difference is that program and eval contexts have an implicit
+  One major difference is that global and eval contexts have an implicit
   return value: the last <i>non-empty</i> statement value is an automatic
   return value for the program or eval code, whereas functions don't have
   an automatic return value.
   </p>
 
-  <p>Program and eval code don't have an explicit <code>function</code> syntax.
-  For instance, the following can be compiled both as a program and as an
+  <p>Global and eval code don't have an explicit <code>function</code> syntax.
+  For instance, the following can be compiled both as a global and as an
   eval expression:</p>
   <pre class="ecmascript-code">
   print("Hello world!");
@@ -71,14 +71,14 @@ summary: |
   })
   </pre>
 
-  <p>The bytecode generated for program and eval code is currently slower
+  <p>The bytecode generated for global and eval code is currently slower
   than that generated for functions: a "slow path" is used for all variable
   accesses in program and eval code, and the implicit return value handling
   of program and eval code generates some unnecessary bytecode.  From a
   performance point of view (both memory and execution performance) it is
   thus preferable to have as much code inside functions as possible.</p>
 
-  <p>When compiling eval and program expressions, be careful to avoid the
+  <p>When compiling eval and global expressions, be careful to avoid the
   usual Ecmascript gotchas, such as:</p>
   <pre class="ecmascript-code">
   /* Function at top level is a function declaration which registers a global
@@ -101,12 +101,12 @@ summary: |
   </pre>
 
 example: |
-  /* Program code.  Note that the hello() function is a function
+  /* Global code.  Note that the hello() function is a function
    * declaration which gets registered into the global object when
    * executed.  Implicit return value is 123.
    */
 
-  duk_push_string(ctx, "print('program');\n"
+  duk_push_string(ctx, "print('global');\n"
                        "function hello() { print('Hello world!'); }\n"
                        "123;");
   duk_push_string(ctx, "hello");
