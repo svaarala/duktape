@@ -5607,10 +5607,10 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
 		/* Tail call check: if last opcode emitted was CALL(I), and
-		 * the context allows it, change the CALL(I) to a tailcall.
-		 * This doesn't guarantee that a tailcall will be allowed at
+		 * the context allows it, change the CALL(I) to a tail call.
+		 * This doesn't guarantee that a tail call will be allowed at
 		 * runtime, so the RETURN must still be emitted.  (Duktape
-		 * 0.10.0 avoided this and simulated a RETURN if a tailcall
+		 * 0.10.0 avoided this and simulated a RETURN if a tail call
 		 * couldn't be used at runtime; but this didn't work
 		 * correctly with a thread yield/resume, see
 		 * test-bug-tailcall-thread-yield-resume.js for discussion.)
@@ -5621,7 +5621,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		 * { return 1; }), 2' the last opcode emitted is CALL (no
 		 * bytecode is emitted for '2') but 'rc_val' indicates
 		 * constant '2'.  Similarly if '2' is replaced by a register
-		 * bound variable, no opcodes are emitted but tailcall would
+		 * bound variable, no opcodes are emitted but tail call would
 		 * be incorrect.
 		 *
 		 * This is tricky and easy to get wrong.  It would be best to

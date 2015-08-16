@@ -982,7 +982,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 			/* resumee: [... initial_func undefined(= this) resume_value ] */
 
-			call_flags = DUK_CALL_FLAG_IS_RESUME;  /* is resume, not a tailcall */
+			call_flags = DUK_CALL_FLAG_IS_RESUME;  /* is resume, not a tail call */
 
 			setup_rc = duk_handle_ecma_call_setup(resumee,
 			                                      1,              /* num_stack_args */
@@ -3277,8 +3277,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			call_flags = 0;
 			if (flag_tailcall) {
-				/* We request a tailcall, but in some corner cases
-				 * call handling can decide that a tailcall is
+				/* We request a tail call, but in some corner cases
+				 * call handling can decide that a tail call is
 				 * actually not possible.
 				 * See: test-bug-tailcall-preventyield-assert.c.
 				 */
@@ -3295,7 +3295,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			                                      call_flags);
 
 			if (setup_rc) {
-				/* Ecma-to-ecma call possible, may or may not be a tailcall.
+				/* Ecma-to-ecma call possible, may or may not be a tail call.
 				 * Avoid C recursion by being clever.
 				 */
 				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
@@ -3339,9 +3339,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				/*
 				 *  Other cases, use C recursion.
 				 *
-				 *  If a tailcall was requested we ignore it and execute a normal call.
+				 *  If a tail call was requested we ignore it and execute a normal call.
 				 *  Since Duktape 0.11.0 the compiler emits a RETURN opcode even after
-				 *  a tailcall to avoid test-bug-tailcall-thread-yield-resume.js.
+				 *  a tail call to avoid test-bug-tailcall-thread-yield-resume.js.
 				 *
 				 *  Direct eval call: (1) call target (before following bound function
 				 *  chain) is the built-in eval() function, and (2) call was made with
