@@ -3,13 +3,13 @@
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/util/cmake/Modules")
 cmake_minimum_required(VERSION 2.8.10)
  
-project (duktape)
+project (Duktape)
 option(DUKTAPE_BUILD_EXAMPLES "Build Example Code" ON)
 option(DUKTAPE_BUILD_SHARED "Build duktape as a Shared library" OFF)
 option(DUKTAPE_DEBUGGER_SUPPORT "Build duktape with Debugger Support." OFF)
 option(DUKTAPE_DEBUGGER_JQUERY  "Build duktape with Debugger Support." OFF)
 option(DUKTAPE_ENABLE_DEBUG_PRINT
-	"Build duktape library with dubug prining enabled." ON)
+	"Build duktape library with dubug prining enabled." OFF)
 option(DUKTAPE_ENABLE_CODE_POLICY_CHECK "Add Code Policy Target to Build" ON)
 option(DUKTAPE_GENERATE_DIST "Generate Dist release" ON)
 if(EXISTS "${PROJECT_SOURCE_DIR}/.git")
