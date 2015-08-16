@@ -46,3 +46,11 @@ SET( DUK_DEBUG_TRANS_DVALUE_HDRS
 	
 add_executable (duk-test "debug-trans-dvalue/test.c" ${DUK_DEBUG_TRANS_DVALUE_SRC} ${DUK_DEBUG_TRANS_DVALUE_HDRS})	
 target_link_libraries(duk-test duktape)
+
+add_executable (duk-example-objects
+	"custom-c-object/custom-object-main.c"
+	"custom-c-object/custom-object-shape.c"
+	"custom-c-object/custom-object-vector2d.c"
+	"custom-c-object/custom-object.h"
+	)	
+target_link_libraries(duk-example-objects duktape)
