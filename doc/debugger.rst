@@ -2120,6 +2120,35 @@ then determine active breakpoints for a function FUNC as follows:
 
 * Accept breakpoint as active for FUNC execution.
 
+PC and line number handling
+---------------------------
+
+In internal book-keeping the PC field of a ``duk_activation`` refers to the
+next instruction to execute.  This PC is not always the correct one to report.
+Conceptually the previous instruction (PC-1) is sometimes still being executed
+while sometimes we're in the middle of two opcodes, having finished execution
+of PC-1.
+
+The correct PC to use depends on context.  For example:
+
+* In stack traces PC-1 is used for all callstack levels.  For activations
+  below the callstack top PC-1 is the instruction still being executed (it
+  is the call instruction).  For callstack top PC-1 is the "offending"
+  instruction.
+
+* For debugger Status notification PC is used because we've conceptually
+  completed PC-1 and are about to execute PC.  Breakpoints also trigger
+  at PC *before* the opcode at PC is executed.  In a debugger UI this means
+  that the line highlighted is the next line to execute, and hasn't been
+  executed yet.
+
+* For debugger GetCallStack PC-1 is used for all callstack levels below
+  the callstack top: as for stack traces, these call instructions are still
+  being executed.  However, for callstack top PC is used to match Status,
+  so that the line reported indicates what line will be executed next.
+
+See: https://github.com/svaarala/duktape/issues/281.
+
 Avoid nested message writing
 ----------------------------
 

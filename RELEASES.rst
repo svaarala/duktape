@@ -1055,6 +1055,9 @@ Planned
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
   to be deep by default for all targets (GH-165)
 
+* Fix debugger GetCallStack line number handling for callstack entries below
+  the callstack top (GH-281)
+
 * Fix object environment handling to allow Proxy object as a binding
   target, so that a Proxy can be used in a with statement or as the
   duk_set_global_object() argument (GH-221)
