@@ -14,12 +14,17 @@ def main():
 	parser.add_option('--count', type='int', dest='count', default=3)
 	parser.add_option('--mode', dest='mode', default='min')
 	parser.add_option('--sleep', type='float', dest='sleep', default=0.0)
+	parser.add_option('--verbose', action='store_true', dest='verbose', default=False)
 	(opts, args) = parser.parse_args()
 
 	time_min = None
 	time_max = None
 	time_sum = 0.0
 	time_list = []
+
+	if opts.verbose:
+		sys.stderr.write('Running:')
+		sys.stderr.flush()
 
 	for i in xrange(opts.count):
 		time.sleep(opts.sleep)
@@ -56,7 +61,15 @@ def main():
 			time_max = max(time_max, time_this)
 		time_sum += time_this
 
+		if opts.verbose:
+			sys.stderr.write(' %f' % time_this)
+			sys.stderr.flush()
+
 		time_list.append(time_this)
+
+	if opts.verbose:
+		sys.stderr.write('\n')
+		sys.stderr.flush()
 
 	time_avg = time_sum / float(opts.count)
 
