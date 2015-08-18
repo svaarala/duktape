@@ -31,7 +31,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 		h = duk_to_hstring(ctx, -((duk_idx_t) count) - 1);
 		DUK_ASSERT(h != NULL);
 
-		/* A bit tricky overflow test, see doc/code-issues.txt. */
+		/* A bit tricky overflow test, see doc/code-issues.rst. */
 		t1 = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 		t2 = (duk_size_t) (count - 1);
 		limit = (duk_size_t) DUK_HSTRING_MAX_BYTELEN;

@@ -4,7 +4,7 @@
  *
  *  The run-time pc2line data is bit-packed, and documented in:
  *
- *    doc/function-objects.txt
+ *    doc/function-objects.rst
  */
 
 #include "duk_internal.h"

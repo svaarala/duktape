@@ -17,7 +17,7 @@
  *  Recursion limits are in key functions to prevent arbitrary C recursion:
  *  function body parsing, statement parsing, and expression parsing.
  *
- *  See doc/compiler.txt for discussion on the design.
+ *  See doc/compiler.rst for discussion on the design.
  *
  *  A few typing notes:
  *
@@ -232,7 +232,7 @@ DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, d
 
 /* XXX: actually single step levels would work just fine, clean up */
 
-/* binding power "levels" (see doc/compiler.txt) */
+/* binding power "levels" (see doc/compiler.rst) */
 #define DUK__BP_INVALID                0             /* always terminates led() */
 #define DUK__BP_EOF                    2
 #define DUK__BP_CLOSING                4             /* token closes expression, e.g. ')', ']' */
@@ -419,7 +419,7 @@ DUK_LOCAL void duk__advance_helper(duk_compiler_ctx *comp_ctx, duk_small_int_t e
 	 *  We can use either 't' or 't_nores'; the latter would not
 	 *  recognize keywords.  Some keywords can be followed by a
 	 *  RegExp (e.g. "return"), so using 't' is better.  This is
-	 *  not trivial, see doc/compiler.txt.
+	 *  not trivial, see doc/compiler.rst.
 	 */
 
 	regexp = 1;
@@ -3344,7 +3344,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 *  such that parsing ends at an LPAREN (CallExpression) but not at
 		 *  a PERIOD or LBRACKET (MemberExpression).
 		 *
-		 *  See doc/compiler.txt for discussion on the parsing approach,
+		 *  See doc/compiler.rst for discussion on the parsing approach,
 		 *  and testcases/test-dev-new.js for a bunch of documented tests.
 		 */
 
@@ -4193,7 +4193,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	 *  Truthval determines when to skip right-hand-side.
 	 *  For logical AND truthval=1, for logical OR truthval=0.
 	 *
-	 *  See doc/compiler.txt for discussion on compiling logical
+	 *  See doc/compiler.rst for discussion on compiling logical
 	 *  AND and OR expressions.  The approach here is very simplistic,
 	 *  generating extra jumps and multiple evaluations of truth values,
 	 *  but generates code on-the-fly with only local back-patching.
@@ -4853,7 +4853,7 @@ DUK_LOCAL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_int_t pc_label_site) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_int_t pc_v34_lhs;    /* start variant 3/4 left-hand-side code (L1 in doc/compiler.txt example) */
+	duk_int_t pc_v34_lhs;    /* start variant 3/4 left-hand-side code (L1 in doc/compiler.rst example) */
 	duk_reg_t temp_reset;    /* knock back "next temp" to this whenever possible */
 	duk_reg_t reg_temps;     /* preallocated temporaries (2) for variants 3 and 4 */
 
@@ -4880,7 +4880,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	 *  Parsing these without arbitrary lookahead or backtracking is relatively
 	 *  tricky but we manage to do so for now.
 	 *
-	 *  See doc/compiler.txt for a detailed discussion of control flow
+	 *  See doc/compiler.rst for a detailed discussion of control flow
 	 *  issues, evaluation order issues, etc.
 	 */
 
@@ -5107,7 +5107,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	 *
 	 *  Variables set before entering here:
 	 *
-	 *    pc_v34_lhs:    insert a "JUMP L2" here (see doc/compiler.txt example).
+	 *    pc_v34_lhs:    insert a "JUMP L2" here (see doc/compiler.rst example).
 	 *    reg_temps + 0: iteration target value (written to LHS)
 	 *    reg_temps + 1: enumerator object
 	 */
@@ -5122,7 +5122,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 
 		/* First we need to insert a jump in the middle of previously
 		 * emitted code to get the control flow right.  No jumps can
-		 * cross the position where the jump is inserted.  See doc/compiler.txt
+		 * cross the position where the jump is inserted.  See doc/compiler.rst
 		 * for discussion on the intricacies of control flow and side effects
 		 * for variants 3 and 4.
 		 */
@@ -5237,7 +5237,7 @@ DUK_LOCAL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	 *      only process the first match before switching to a "propagation" mode
 	 *      where case values are no longer evaluated
 	 *
-	 *  See E5 Section 12.11.  Also see doc/compiler.txt for compilation
+	 *  See E5 Section 12.11.  Also see doc/compiler.rst for compilation
 	 *  discussion.
 	 */
 
@@ -5607,10 +5607,10 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
 		/* Tail call check: if last opcode emitted was CALL(I), and
-		 * the context allows it, change the CALL(I) to a tailcall.
-		 * This doesn't guarantee that a tailcall will be allowed at
+		 * the context allows it, change the CALL(I) to a tail call.
+		 * This doesn't guarantee that a tail call will be allowed at
 		 * runtime, so the RETURN must still be emitted.  (Duktape
-		 * 0.10.0 avoided this and simulated a RETURN if a tailcall
+		 * 0.10.0 avoided this and simulated a RETURN if a tail call
 		 * couldn't be used at runtime; but this didn't work
 		 * correctly with a thread yield/resume, see
 		 * test-bug-tailcall-thread-yield-resume.js for discussion.)
@@ -5621,7 +5621,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		 * { return 1; }), 2' the last opcode emitted is CALL (no
 		 * bytecode is emitted for '2') but 'rc_val' indicates
 		 * constant '2'.  Similarly if '2' is replaced by a register
-		 * bound variable, no opcodes are emitted but tailcall would
+		 * bound variable, no opcodes are emitted but tail call would
 		 * be incorrect.
 		 *
 		 * This is tricky and easy to get wrong.  It would be best to
@@ -5720,7 +5720,7 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	/*
 	 *  See the following documentation for discussion:
 	 *
-	 *    doc/execution.txt: control flow details
+	 *    doc/execution.rst: control flow details
 	 *
 	 *  Try, catch, and finally "parts" are Blocks, not Statements, so
 	 *  they must always be delimited by curly braces.  This is unlike e.g.
@@ -6172,7 +6172,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		 *
 		 *    https://bugs.ecmascript.org/show_bug.cgi?id=8
 		 *
-		 *  See doc/compiler.txt for details.
+		 *  See doc/compiler.rst for details.
 		 */
 		DUK_DDD(DUK_DDDPRINT("do statement"));
 		DUK_ASSERT(label_id >= 0);

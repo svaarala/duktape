@@ -553,7 +553,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx
 		return DUK_RET_TYPE_ERROR;
 	}
 	duk_dup(ctx, 0);  /* -> [ O toString O ] */
-	duk_call_method(ctx, 0);  /* XXX: call method tailcall? */
+	duk_call_method(ctx, 0);  /* XXX: call method tail call? */
 	return 1;
 }
 

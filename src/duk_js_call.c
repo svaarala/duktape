@@ -804,7 +804,7 @@ void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, du
  *  indices) cause an error to propagate out of this function.  If there is
  *  no catchpoint for this error, the fatal error handler is called.
  *
- *  See 'execution.txt'.
+ *  See 'execution.rst'.
  *
  *  The allowed thread states for making a call are:
  *    - thr matches heap->curr_thread, and thr is already RUNNING
@@ -816,7 +816,7 @@ void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, du
  *  avoiding a dozen helpers with awkward plumbing.
  *
  *  Note: setjmp() and local variables have a nasty interaction,
- *  see execution.txt; non-volatile locals modified after setjmp()
+ *  see execution.rst; non-volatile locals modified after setjmp()
  *  call are not guaranteed to keep their value.
  */
 
@@ -2020,7 +2020,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING &&
 	            thr->heap->curr_thread == thr));
 
-	/* if a tailcall:
+	/* if a tail call:
 	 *   - an Ecmascript activation must be on top of the callstack
 	 *   - there cannot be any active catchstack entries
 	 */
@@ -2111,7 +2111,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	/*
 	 *  Preliminary activation record and valstack manipulation.
 	 *  The concrete actions depend on whether the we're dealing
-	 *  with a tailcall (reuse an existing activation), a resume,
+	 *  with a tail call (reuse an existing activation), a resume,
 	 *  or a normal call.
 	 *
 	 *  The basic actions, in varying order, are:
@@ -2142,10 +2142,10 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act = thr->callstack + thr->callstack_top - 1;
 		if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 			/* See: test-bug-tailcall-preventyield-assert.c. */
-			DUK_DDD(DUK_DDDPRINT("tailcall prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
+			DUK_DDD(DUK_DDDPRINT("tail call prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
 			use_tailcall = 0;
 		} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
-			DUK_D(DUK_DPRINT("tailcall prevented by function having a notail flag"));
+			DUK_D(DUK_DPRINT("tail call prevented by function having a notail flag"));
 			use_tailcall = 0;
 		}
 	}
@@ -2164,10 +2164,10 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		 *  the current activation (or simulate an unwind).  In particular, the
 		 *  current activation must be closed, otherwise something like
 		 *  test-bug-reduce-judofyr.js results.  Also catchstack needs be unwound
-		 *  because there may be non-error-catching label entries in valid tailcalls.
+		 *  because there may be non-error-catching label entries in valid tail calls.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("is tailcall, reusing activation at callstack top, at index %ld",
+		DUK_DDD(DUK_DDDPRINT("is tail call, reusing activation at callstack top, at index %ld",
 		                     (long) (thr->callstack_top - 1)));
 
 		/* 'act' already set above */
@@ -2215,7 +2215,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 #ifdef DUK_USE_TAILCALL
-#error incorrect options: tailcalls enabled with function caller property
+#error incorrect options: tail calls enabled with function caller property
 #endif
 		/* XXX: this doesn't actually work properly for tail calls, so
 		 * tail calls are disabled when DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
@@ -2247,7 +2247,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		 *       [ ... this_old | (crud) func this_new arg1 ... argN ]
 		 *  -->  [ ... this_new | arg1 ... argN ]
 		 *
-		 *  For tailcalling to work properly, the valstack bottom must not grow
+		 *  For tail calling to work properly, the valstack bottom must not grow
 		 *  here; otherwise crud would accumulate on the valstack.
 		 */
 
@@ -2272,7 +2272,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		/* [ ... this_new | arg1 ... argN ] */
 	} else {
-		DUK_DDD(DUK_DDDPRINT("not a tailcall, pushing a new activation to callstack, to index %ld",
+		DUK_DDD(DUK_DDDPRINT("not a tail call, pushing a new activation to callstack, to index %ld",
 		                     (long) (thr->callstack_top)));
 
 		duk_hthread_callstack_grow(thr);

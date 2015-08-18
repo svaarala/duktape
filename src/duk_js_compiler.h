@@ -175,7 +175,7 @@ struct duk_compiler_func {
 	duk_bool_t is_setget;               /* is a setter/getter */
 	duk_bool_t is_decl;                 /* is a function declaration (as opposed to function expression) */
 	duk_bool_t is_strict;               /* function is strict */
-	duk_bool_t is_notail;               /* function must not be tailcalled */
+	duk_bool_t is_notail;               /* function must not be tail called */
 	duk_bool_t in_directive_prologue;   /* parsing in "directive prologue", recognize directives */
 	duk_bool_t in_scanning;             /* parsing in "scanning" phase (first pass) */
 	duk_bool_t may_direct_eval;         /* function may call direct eval */
@@ -218,7 +218,7 @@ struct duk_compiler_ctx {
  *  Prototypes
  */
 
-#define DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not program) */
+#define DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not global) */
 #define DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
 #define DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
 
