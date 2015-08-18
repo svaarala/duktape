@@ -1102,7 +1102,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
 		printf '\n'; \
 	done
-perftestduk: duk
+perftestduk: duk duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
@@ -1110,7 +1110,7 @@ perftestduk: duk
 		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
 		printf '\n'; \
 	done
-perftestduk3: duk
+perftestduk3: duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-O2'; \
