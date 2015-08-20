@@ -157,7 +157,7 @@ slower.</p>
 <p>To keep identifier accesses in the fast path:</p>
 <ul>
 <li>Execute (almost all) inside Ecmascript functions, not in the top-level
-    program or eval code: global/eval code never uses fast path identifier
+    global or eval code: global/eval code never uses fast path identifier
     accesses (however, function code inside global/eval does)</li>
 <li>Store frequently accessed values in local variables instead of looking
     them up from the global object or other objects</li>

@@ -120,6 +120,9 @@ Reporting bugs
 
 See [CONTRIBUTING.md](https://github.com/svaarala/duktape/blob/master/CONTRIBUTING.md).
 
+Security critical Github issues (for example anything leading to a segfault)
+are tagged `security`.
+
 Contributing
 ------------
 

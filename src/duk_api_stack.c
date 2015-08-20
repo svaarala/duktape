@@ -512,7 +512,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	 *
 	 * Note: cannot use a plain DUK_REALLOC() because a mark-and-sweep may
 	 * invalidate the original thr->valstack base pointer inside the realloc
-	 * process.  See doc/memory-management.txt.
+	 * process.  See doc/memory-management.rst.
 	 */
 
 	new_alloc_size = sizeof(duk_tval) * new_size;

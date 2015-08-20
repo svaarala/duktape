@@ -49,7 +49,7 @@
  */
 
 #define DUK_ACT_FLAG_STRICT             (1 << 0)  /* function executes in strict mode */
-#define DUK_ACT_FLAG_TAILCALLED         (1 << 1)  /* activation has tailcalled one or more times */
+#define DUK_ACT_FLAG_TAILCALLED         (1 << 1)  /* activation has tail called one or more times */
 #define DUK_ACT_FLAG_CONSTRUCT          (1 << 2)  /* function executes as a constructor (called via "new") */
 #define DUK_ACT_FLAG_PREVENT_YIELD      (1 << 3)  /* activation prevents yield (native call or "new") */
 #define DUK_ACT_FLAG_DIRECT_EVAL        (1 << 4)  /* activation is a direct eval call */

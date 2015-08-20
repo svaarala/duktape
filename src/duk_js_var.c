@@ -13,8 +13,8 @@
  *  convenient field).  The prototype chain is not followed in the ordinary
  *  sense for variable lookups.
  *
- *  See identifier-handling.txt for more details on the identifier algorithms
- *  and the internal representation.  See function-objects.txt for details on
+ *  See identifier-handling.rst for more details on the identifier algorithms
+ *  and the internal representation.  See function-objects.rst for details on
  *  what function templates and instances are expected to look like.
  *
  *  Care must be taken to avoid duk_tval pointer invalidation caused by
@@ -55,7 +55,7 @@ typedef struct {
  *
  *  See E5 Section 13.2 for detailed requirements on the function objects;
  *  there are no similar requirements for function "templates" which are an
- *  implementation dependent internal feature.  Also see function-objects.txt
+ *  implementation dependent internal feature.  Also see function-objects.rst
  *  for a discussion on the function instance properties provided by this
  *  implementation.
  *
@@ -213,7 +213,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  _Lexenv is always set; _Varenv defaults to _Lexenv if missing,
 	 *  so _Varenv is only set if _Lexenv != _Varenv.
 	 *
-	 *  This is relatively complex, see doc/identifier-handling.txt.
+	 *  This is relatively complex, see doc/identifier-handling.rst.
 	 */
 
 	if (DUK_HOBJECT_HAS_NEWENV(&fun_temp->obj)) {
@@ -886,6 +886,8 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
                                          duk_bool_t parents,
                                          duk__id_lookup_result *out) {
 	duk_tval *tv;
+	duk_tval *tv_target;
+	duk_tval tv_name;
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
@@ -1047,7 +1049,8 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			 *
 			 *  Binding (target) object is an external, uncontrolled object.
 			 *  Identifier may be bound in an ancestor property, and may be
-			 *  an accessor.
+			 *  an accessor.  Target can also be a Proxy which we must support
+			 *  here.
 			 */
 
 			/* XXX: we could save space by using _Target OR _This.  If _Target, assume
@@ -1056,24 +1059,38 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			 */
 
 			duk_hobject *target;
+			duk_bool_t found;
 
 			DUK_ASSERT(cl == DUK_HOBJECT_CLASS_OBJENV);
 
-			tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, env, DUK_HTHREAD_STRING_INT_TARGET(thr));
-			DUK_ASSERT(tv != NULL);
-			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-			target = DUK_TVAL_GET_OBJECT(tv);
+			tv_target = duk_hobject_find_existing_entry_tval_ptr(thr->heap, env, DUK_HTHREAD_STRING_INT_TARGET(thr));
+			DUK_ASSERT(tv_target != NULL);
+			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
+			target = DUK_TVAL_GET_OBJECT(tv_target);
 			DUK_ASSERT(target != NULL);
 
-			/* Note: we must traverse the prototype chain, so use an actual
-			 * hasprop call here.  The property may also be an accessor, so
-			 * we can't get an duk_tval pointer here.
+			/* Target may be a Proxy or property may be an accessor, so we must
+			 * use an actual, Proxy-aware hasprop check here.
 			 *
 			 * out->holder is NOT set to the actual duk_hobject where the
-			 * property is found, but rather the target object.
+			 * property is found, but rather the object binding target object.
 			 */
 
-			if (duk_hobject_hasprop_raw(thr, target, name)) {
+			if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(target)) {
+				DUK_ASSERT(name != NULL);
+				DUK_TVAL_SET_STRING(&tv_name, name);
+
+				found = duk_hobject_hasprop(thr, tv_target, &tv_name);
+			} else {
+				/* XXX: duk_hobject_hasprop() would be correct for
+				 * non-Proxy objects too, but it is about ~20-25%
+				 * slower at present so separate code paths for
+				 * Proxy and non-Proxy now.
+				 */
+				found = duk_hobject_hasprop_raw(thr, target, name);
+			}
+
+			if (found) {
 				out->value = NULL;  /* can't get value, may be accessor */
 				out->attrs = 0;     /* irrelevant when out->value == NULL */
 				tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, env, DUK_HTHREAD_STRING_INT_THIS(thr));

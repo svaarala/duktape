@@ -48,7 +48,7 @@
  *  The user error handler is stored in 'Duktape.errCreate' or
  *  'Duktape.errThrow' depending on whether we're augmenting the error at
  *  creation or throw time.  There are several alternatives to this approach,
- *  see doc/error-objects.txt for discussion.
+ *  see doc/error-objects.rst for discussion.
  *
  *  Note: since further longjmp()s may occur while calling the error handler
  *  (for many reasons, e.g. a labeled 'break' inside the handler), the
@@ -174,7 +174,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	 *  and cheap to create.  It may change arbitrarily from version to version.
 	 *  It should be decoded/accessed through version specific accessors only.
 	 *
-	 *  See doc/error-objects.txt.
+	 *  See doc/error-objects.rst.
 	 */
 
 	DUK_DDD(DUK_DDDPRINT("adding traceback to object: %!T",

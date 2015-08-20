@@ -231,6 +231,9 @@ use a deep C stack which relaxes e.g. recursion limits.  Automatic feature
 detection enables deep C stacks on some platforms known to have them (e.g.
 Linux, BSD, Windows).
 
+Removed in Duktape 1.3.0, use explicit config options for shallow stack
+targets.
+
 DUK_OPT_NO_REFERENCE_COUNTING
 -----------------------------
 

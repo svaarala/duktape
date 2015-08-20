@@ -69,6 +69,11 @@ Suggested feature options
   increases heap header size, it also reduces memory usage fluctuation
   which is often more important than absolute footprint.
 
+* If the target has a shallow C stack, you may want to limit C stack
+  recursion, see:
+
+  - ``config/examples/shallow_c_stack.yaml``
+
 * Reduce error handling footprint with one or more of:
 
   - ``DUK_OPT_NO_AUGMENT_ERRORS``

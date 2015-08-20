@@ -148,7 +148,7 @@ Released
   occasional segfaults when an uncaught error terminated a thread with
   a catch point active
 
-* Fixed a tailcall bug: the current activation was not closed which
+* Fixed a tail call bug: the current activation was not closed which
   caused variable lookups to fail if an inner function accessed
   variables in the surrounding activation
 
@@ -284,7 +284,7 @@ Released
 * Fix a regexp bug: capture groups were not reset to 'undefined' when
   a quantified with capture groups was re-matched by a quantifier
 
-* Fix a tailcall bug which caused assertion failures when a tailcall was
+* Fix a tail call bug which caused assertion failures when a tail call was
   made from inside a switch-case
 
 * Fix a with statement bug which caused assertion failures when a break or
@@ -796,7 +796,7 @@ Released
 
 * Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
 
-* Fix tailcall issue in return comma expression when a function call
+* Fix tail call issue in return comma expression when a function call
   in the comma expression was followed by a constant value or a register
   bound variable, e.g. 'return 0, (function { return 1; })(), 2;' would
   return 1 instead of 2 (GH-131)
@@ -891,7 +891,7 @@ Released
 * Fix assignment evaluation order issue which affected expressions like
   "a[i] = b[i++]" (GH-118)
 
-* Fix tailcall issue in return comma expression when a function call
+* Fix tail call issue in return comma expression when a function call
   in the comma expression was followed by a constant value or a register
   bound variable, e.g. 'return 0, (function { return 1; })(), 2;' would
   return 1 instead of 2 (GH-131)
@@ -1050,6 +1050,17 @@ Planned
 
 * Add example debug transport with local dvalue encoding and decoding, also
   provides a C example for encoding and decoding dvalues
+
+* Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
+  DUK_USE_xxx config options for native recursion limits; C stacks are assumed
+  to be deep by default for all targets (GH-165)
+
+* Fix debugger GetCallStack line number handling for callstack entries below
+  the callstack top (GH-281)
+
+* Fix object environment handling to allow Proxy object as a binding
+  target, so that a Proxy can be used in a with statement or as the
+  duk_set_global_object() argument (GH-221)
 
 * Fix accidental ToString(this) coercion in Error.prototype.fileName and
   Error.prototype.lineNumber which was an issue if you replaced

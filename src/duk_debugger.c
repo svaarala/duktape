@@ -797,9 +797,11 @@ DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
 	}
 	act = thr->callstack + thr->callstack_top - 1;
 
-	/* act->pc indicates the next instruction about to be executed.  This
-	 * is usually correct, but for the 'debugger' statement it will be the
-	 * instruction after that.
+	/* We're conceptually between two opcodes; act->pc indicates the next
+	 * instruction to be executed.  This is usually the correct pc/line to
+	 * indicate in Status.  (For the 'debugger' statement this now reports
+	 * the pc/line after the debugger statement because the debugger opcode
+	 * has already been executed.)
 	 */
 
 	pc = (duk_uint_fast32_t) act->pc;
@@ -836,6 +838,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_safe_to_string(ctx, -1);
 		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
 		duk_pop_3(ctx);
+		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
 		duk_debug_write_uint(thr, (duk_uint32_t) act->pc);
 	}
@@ -1129,6 +1132,7 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 	duk_context *ctx = (duk_context *) thr;
 	duk_hthread *curr_thr = thr;
 	duk_activation *curr_act;
+	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 	duk_size_t i;
 
@@ -1141,8 +1145,18 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			i--;
 			curr_act = curr_thr->callstack + i;
 
-			/* XXX: optimize to use direct reads,
-			 * i.e. avoid value stack operations.
+			/* PC/line semantics here are:
+			 *   - For callstack top we're conceptually between two
+			 *     opcodes and current PC indicates next line to
+			 *     execute, so report that (matches Status).
+			 *   - For other activations we're conceptually still
+			 *     executing the instruction at PC-1, so report that
+			 *     (matches error stacktrace behavior).
+			 *   - See: https://github.com/svaarala/duktape/issues/281
+			 */
+
+			/* XXX: optimize to use direct reads, i.e. avoid
+			 * value stack operations.
 			 */
 			duk_push_tval(ctx, &curr_act->tv_func);
 			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
@@ -1151,9 +1165,13 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
 			duk_safe_to_string(ctx, -1);
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -1));
-			line = duk_hobject_pc2line_query(ctx, -3, curr_act->pc);
+			pc = curr_act->pc;
+			if (i != curr_thr->callstack_top && pc > 0) {
+				pc--;
+			}
+			line = duk_hobject_pc2line_query(ctx, -3, pc);
 			duk_debug_write_uint(thr, (duk_uint32_t) line);
-			duk_debug_write_uint(thr, (duk_uint32_t) curr_act->pc);
+			duk_debug_write_uint(thr, (duk_uint32_t) pc);
 			duk_pop_3(ctx);
 		}
 		curr_thr = curr_thr->resumer;

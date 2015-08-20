@@ -467,7 +467,7 @@ After that, for each call stack element, the array entries appended to
   For C functions, the program counter value is zero.  Activation flag
   values are defined in ``duk_hthread.h``.  The PC value can be converted
   to a line number with debug information in the function object.  The
-  flags allow e.g. tailcalls to be noted in the traceback.
+  flags allow e.g. tail calls to be noted in the traceback.
 
 The default ``Error.prototype.stack`` accessor knows how to convert this
 internal format into a human readable, printable traceback string.  It is

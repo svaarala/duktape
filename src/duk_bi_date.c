@@ -375,7 +375,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const ch
  *  Note in particular that we must parse whatever toString(), toUTCString(),
  *  and toISOString() can produce; see E5.1 Section 15.9.4.2.
  *
- *  Returns 1 to allow tailcalling.
+ *  Returns 1 to allow tail calling.
  *
  *  There is much room for improvement here with respect to supporting
  *  alternative datetime formats.  For instance, V8 parses '2012-01-01' as
@@ -935,7 +935,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval(duk_context *ctx, duk_small_ui
 }
 
 /* Set timeval to 'this' from dparts, push the new time value onto the
- * value stack and return 1 (caller can then tailcall us).  Expects
+ * value stack and return 1 (caller can then tail call us).  Expects
  * the value stack to contain 'this' on the stack top.
  */
 DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_double_t *dparts, duk_small_uint_t flags) {
@@ -948,7 +948,7 @@ DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_doub
 	duk_dup_top(ctx);         /* -> [ ... this timeval_new timeval_new ] */
 	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE);
 
-	/* stack top: new time value, return 1 to allow tailcalls */
+	/* stack top: new time value, return 1 to allow tail calls */
 	return 1;
 }
 
@@ -1067,7 +1067,7 @@ DUK_LOCAL duk_ret_t duk__to_string_helper(duk_context *ctx, duk_small_uint_t fla
 /* Helper for component getter calls: check 'this' binding, get the
  * internal time value, split it into parts (either as UTC time or
  * local time), push a specified component as a return value to the
- * value stack and return 1 (caller can then tailcall us).
+ * value stack and return 1 (caller can then tail call us).
  */
 DUK_LOCAL duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flags_and_idx) {
 	duk_double_t d;
@@ -1099,7 +1099,7 @@ DUK_LOCAL duk_ret_t duk__get_part_helper(duk_context *ctx, duk_small_uint_t flag
  * local time), modify one or more components as specified, recompute
  * the time value, set it as the internal value.  Finally, push the
  * new time value as a return value to the value stack and return 1
- * (caller can then tailcall us).
+ * (caller can then tail call us).
  */
 DUK_LOCAL duk_ret_t duk__set_part_helper(duk_context *ctx, duk_small_uint_t flags_and_maxnargs) {
 	duk_double_t d;

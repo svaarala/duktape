@@ -178,7 +178,6 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_FORCE_BYTEORDER=1      # little
 #CCOPTS_FEATURES += -DDUK_OPT_FORCE_BYTEORDER=2      # middle
 #CCOPTS_FEATURES += -DDUK_OPT_FORCE_BYTEORDER=3      # big
-#CCOPTS_FEATURES += -DDUK_OPT_DEEP_C_STACK
 #CCOPTS_FEATURES += -DDUK_OPT_NO_REFERENCE_COUNTING
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MARK_AND_SWEEP
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
@@ -697,7 +696,7 @@ emscriptenduktest: emscripten dist
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
 EMCCOPTS_DUKWEB_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
-EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_OPT_DEEP_C_STACK '-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}' 
+EMCCOPTS_DUKWEB_DEFINES=-DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS '-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}' 
 
 dukweb.js: emscripten dist
 	emscripten/emcc $(EMCCOPTS_DUKVM) $(EMCCOPTS_DUKWEB_EXPORT) $(EMCCOPTS_DUKWEB_DEFINES) \
@@ -1083,9 +1082,9 @@ massif-arcfour: massif-test-dev-arcfour
 # - Mujs is interpreted but doesn't use reference counting
 # - Rhino compiles to Java bytecode and is ultimately JITed
 
-#TIME=python util/time_multi.py 1 # Run just once
-#TIME=python util/time_multi.py 3 # Take minimum time of N
-TIME=python util/time_multi.py 5 # Take minimum time of N
+#TIME=python util/time_multi.py --count 1 --mode min # Run just once
+#TIME=python util/time_multi.py --count 3 --mode min # Take minimum time of N
+TIME=python util/time_multi.py --count 5 --mode min # Take minimum time of N
 
 perftest: duk duk.O2 duk.O3 duk.O4
 	for i in tests/perf/*.js; do \
@@ -1103,7 +1102,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
 		printf '\n'; \
 	done
-perftestduk: duk
+perftestduk: duk duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
@@ -1111,7 +1110,7 @@ perftestduk: duk
 		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
 		printf '\n'; \
 	done
-perftestduk3: duk
+perftestduk3: duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
 		printf ' duk-O2'; \
