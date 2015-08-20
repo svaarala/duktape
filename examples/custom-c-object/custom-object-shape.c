@@ -58,9 +58,7 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 		/* This is the Wrong place to put a Finalizer.*/
 		duk_push_c_function(ctx, duk_class_shape_finalizer, 1);
 		duk_set_finalizer(ctx, obj_idx);
-	}
-	duk_dump_context_stdout(ctx);
-
+	} 
 
 	duk_push_c_function(ctx, duk_class_shape_func_move, 2 /*nargs*/);
 	duk_put_prop_string(ctx, obj_idx, "move");
@@ -69,8 +67,6 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 	duk_push_string(ctx, "duk_class_shape_toString"); /* This does not Really matter */
 	duk_compile(ctx, DUK_COMPILE_FUNCTION);
 	duk_put_prop_string(ctx, obj_idx, "toString");
-
-
 
 	/* add Properties*/
 	duk_push_int(ctx, id);
@@ -102,26 +98,29 @@ duk_ret_t duk_class_shape_staticFunc(duk_context *ctx)
 	return 0;
 }
 
-
 duk_ret_t duk_class_shape_func_move(duk_context *ctx)
 {
 	duk_idx_t idx = 0, object_id;
 	/* Replace the Old Values to "Move " to a new location */
 	duk_push_this(ctx);
 	object_id = duk_require_normalize_index(ctx, -1);
-	duk_dump_context_stdout(ctx);
+
+	/* Update X cordinate */
 	duk_get_prop_string(ctx, -1, "x");
 	idx = duk_require_normalize_index(ctx, -1);
 	duk_dup(ctx, 0);
 	duk_replace(ctx, idx);
+	duk_put_prop_string(ctx, object_id, "x");
+
+	/* Update Y cordinate */
 	duk_get_prop_string(ctx, -1, "y");
 	idx = duk_require_normalize_index(ctx, -1);
 	duk_dup(ctx, 1);
 	duk_replace(ctx, idx);
-	duk_dump_context_stdout(ctx);
+	duk_put_prop_string(ctx, object_id, "y");
+
 	return 0;
 }
-
 
 duk_ret_t duk_class_shape_func_toString(duk_context *ctx)
 {
@@ -130,13 +129,12 @@ duk_ret_t duk_class_shape_func_toString(duk_context *ctx)
 	duk_push_string(ctx, "function () { return \"Shape (\" + this.id + \") located at (\"+ this.x +\",\"+this.y+\")\"; }");
 	duk_push_string(ctx, "duk_class_shape_toString"); /* This does not Really matter */
 	duk_compile(ctx, DUK_COMPILE_FUNCTION);
-	duk_dump_context_stdout(ctx);
 	duk_put_prop_string(ctx, -2, "toString");
 	duk_get_prop_string(ctx, 0, "toString");
 	duk_push_this(ctx);
 	duk_push_this(ctx);
 	duk_call(ctx, 1);
-	duk_dump_context_stdout(ctx);
+
 	return 1; /* Do nothing.*/
 }
 
