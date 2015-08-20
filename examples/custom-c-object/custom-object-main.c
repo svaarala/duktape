@@ -85,17 +85,24 @@ const char *ShapeExamplePartB[] = {
 	  "} else {\n"
 	  "print(\"myShape is not an instance of Shape\");\n"
 	  "}\n" },
-	{ "try {\n"
-	  "var myShapeB = Shape(1,2,3); print(myShapeB);\n"
-	  "if (myShapeB instanceof vector2D) {\n"
-	  "\tprint(\"myShapeB is an Instance of vector2D\");"
-	  "} else {\n"
-	  "\tprint(\"myShapeB is not an instance of vector2D\");\n"
-	  "}\n"
-	  "if (myShapeB instanceof Shape) {\n"
-	  "\tprint(\"myShapeB is an Instance of Shape\");"
-	  "} else {\n"
-	  "\t print(\"myShapeB is not an instance of Shape\");\n}\n"
+	  {
+		  "if (isVector2D(myShape)) {\n"
+		  "\tprint(\"myShape is 2D Vector.\");"
+		  "} else {\n"
+		  "\t print(\"myShape is not a 2D Vector.\");\n}\n"
+	  },
+	  {
+		  "if (isShape(myShape)) {\n"
+		  "\tprint(\"myShape is Shape.\");"
+		  "} else {\n"
+		  "\t print(\"myShape is not a Shape.\");\n}\n"
+	  },
+	  { "try {\n"
+	  "\tvar myShapeB = Shape(1,2,3); print(myShapeB);\n"
+	  "\tif (isShape(myShapeB)) {\n"
+	  "\t\tprint(\"myShapeB is a Shape\");\n"
+	  "\t} else {\n"
+	  "\t\t print(\"myShapeB is not a Shape\");\n\t}\n"
 	  "} catch (e) {\n"
 	  "\tprint(\"Failed to Create myShapeOneArg: \" + e);\n"
 	  "}\n" },
@@ -137,12 +144,36 @@ const char * VectorExample[] = {
 	"myVectorT = new vector2D(1.0, 2.0);\n",
 	"myVectorTX = new vector2D(myVectorT);\n",
 	"print(myVectorT);\n",
-	"print(myVectorTX);\n",
-	{ "try {\n"
-	  "var myBadVector = vector2D(1.0, 2.0);\n"
+	{ "\ntry {\n"
+	  "\tvar myBadVector = vector2D(1.0, 2.0);\n"
 	  "} catch (e) {\n"
 	  "\tprint(\"Error creating myBadVector: \" + e);\n"
-	  "}\n" },	
+	  "}\n" },
+	  {
+		  "if (myVectorT instanceof vector2D) {\n"
+		  "\tprint(\"myVectorT is an Instance of vector2D\");\n"
+		  "} else {\n"
+		  "\tprint(\"myVectorT is not an instance of vector2D\");\n"
+		  "}\n"
+	  },
+	  {
+		  "if (isShape(myVectorTX)) {\n"
+		  "\tprint(\"myVectorTX is a Shape\");\n"
+		  "} else {\n"
+		  "\t print(\"myVectorTX is not a Shape\");\n}\n"
+	  },
+	  {
+		  "if (isVector2D(myVectorTX)) {\n"
+		  "\tprint(\"myVectorTX is 2D Vector.\");\n"
+		  "} else {\n"
+		  "\t print(\"myVectorTX is not a 2D Vector.\");\n}\n"
+	  },
+	/* Force the Vector Finalizer to run */
+	"delete myVectorT;\n",
+	"myVectorT = null;\n",
+	"print(myVectorT);\n",
+	/* myVectorTX still exists. */
+	"print(myVectorTX);\n",
 	NULL};
 	
 void run_Vector_example()
