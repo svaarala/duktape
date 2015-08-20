@@ -35,12 +35,17 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 	if (!calledByConstructor)
 	{
 		/* Not Called my new operator
-		 * TODO: Figure out how to fix instanceof.
 		 */
-		obj_idx = duk_push_object(ctx);
-		/* This is the Wrong place to put a Finalizer.*/
-		duk_push_c_function(ctx, duk_class_shape_finalizer, 1);
-		duk_set_finalizer(ctx, obj_idx);
+
+		/* Create a new instance by duplicating args and calling again */
+		duk_push_global_object(ctx);
+		duk_get_prop_string(ctx, -1, "Shape");
+		duk_dup(ctx, -1);
+		duk_dup(ctx, 0);
+		duk_dup(ctx, 1);
+		duk_dup(ctx, 2);
+		duk_new(ctx, 3);  /* generate Object */
+		return 1;
 	}
 	else {
 		duk_push_this(ctx); /* Object Already Created by new operator.*/
