@@ -11,9 +11,7 @@ duk_ret_t duk_vector2d_get_x(duk_context* ctx);
 duk_ret_t duk_vector2d_set_y(duk_context* ctx);
 duk_ret_t duk_vector2d_set_x(duk_context* ctx);
 duk_ret_t duk_vector2d_object_builder(duk_context* ctx, duk_idx_t myThis, float x, float y, int myValue);
-
-
-duk_ret_t duk_vector2d_add(duk_context* ctx);
+duk_ret_t  duk_isVector2D(duk_context *ctx);
 
 duk_ret_t duk_vector2d_finalizer(duk_context *ctx)
 {
@@ -120,6 +118,10 @@ duk_ret_t duk_register_Vector2D(duk_context *ctx) {
 	obj_index = duk_push_object(ctx);			
 	duk_put_prop_string(ctx, -2, "prototype"); 
 	duk_put_prop_string(ctx, -2, "vector2D");
+
+	/* Add isVector2D global function.*/
+	duk_push_c_function(ctx, duk_isVector2D, 1);
+	duk_put_prop_string(ctx, -2, "isVector2D");
 	duk_pop(ctx);
 
 	return 0;
@@ -245,5 +247,28 @@ duk_ret_t duk_vector2d_object_builder(duk_context* ctx, duk_idx_t myThis, float 
 	duk_def_prop(ctx, myThis, DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_HAVE_SETTER);
 
 	
+	return 1;
+}
+
+duk_ret_t  duk_isVector2D(duk_context *ctx)
+{
+	//duk_require_object_coercible(ctx, 0);
+	duk_push_global_object(ctx);
+	duk_get_prop_string(ctx, -1, "vector2D");
+	if (duk_is_object(ctx, 0)) {
+		if (duk_instanceof(ctx, 0, -1)) {
+			/* Argument is a Shape.*/
+			duk_push_true(ctx);
+		}
+		else{
+			/* Argument is not a Shape */
+			duk_push_false(ctx);
+		}
+	}
+	else {
+		/* default to False.*/
+		duk_push_false(ctx);
+	}
+
 	return 1;
 }

@@ -8,6 +8,7 @@ duk_ret_t duk_class_shape_finalizer(duk_context *ctx);
 duk_ret_t duk_class_shape_func_move(duk_context *ctx);
 duk_ret_t duk_class_shape_func_toString(duk_context *ctx);
 duk_ret_t duk_class_shape_staticFunc(duk_context *ctx);
+duk_ret_t  duk_isShape(duk_context *ctx);
 
 duk_ret_t  duk_register_shape(duk_context *ctx)
 {
@@ -21,7 +22,11 @@ duk_ret_t  duk_register_shape(duk_context *ctx)
 	/* move Function  - C Function */
 	duk_put_prop_string(ctx, -2, "prototype"); 
 	duk_put_prop_string(ctx, -2, "Shape");
-	duk_pop(ctx);
+
+	/* Add isShape global function */
+	duk_push_c_function(ctx, duk_isShape, 3);
+	duk_put_prop_string(ctx, -2, "isShape");
+	duk_pop(ctx);	
 	return 0;
 }
 
@@ -133,4 +138,25 @@ duk_ret_t duk_class_shape_func_toString(duk_context *ctx)
 	duk_call(ctx, 1);
 	duk_dump_context_stdout(ctx);
 	return 1; /* Do nothing.*/
+}
+
+duk_ret_t  duk_isShape(duk_context *ctx)
+{
+	//duk_require_object_coercible(ctx, 0);
+	duk_push_global_object(ctx);
+	duk_get_prop_string(ctx, -1, "Shape");
+	if (duk_is_object(ctx, 0)) {
+		if (duk_instanceof(ctx, 0, -1)) {
+			/* Argument is a Shape.*/
+			duk_push_true(ctx);
+		} else{
+			/* Argument is not a Shape */
+			duk_push_false(ctx);
+		}
+	} else {
+		/* default to False.*/
+		duk_push_false(ctx);
+	}
+
+	return 1;
 }
