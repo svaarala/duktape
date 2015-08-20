@@ -58,17 +58,24 @@ duk_ret_t duk_vector2d_constructor(duk_context* ctx)
 	case 1:
 	{
 		if (duk_is_object(ctx, 0)) {
-			/* Get the User Data of the Object to be Cloned.*/
-			vector2D* ptr = NULL;
-			duk_get_prop_string(ctx, 0, MY_USER_DATA_PROP);
-			ptr = duk_get_pointer(ctx, -1);
-			duk_pop(ctx);
-			if (ptr) {
-				duk_vector2d_object_builder(ctx, myThis, ptr->x, ptr->y, 54321);
-				return 0;	
+			duk_push_global_object(ctx);
+			duk_get_prop_string(ctx, -1, "vector2D");
+			if (duk_instanceof(ctx, 0, -1)) {
+				/* We have ourselves a vector2D object.*/
+
+				/* Get the User Data of the Object to be Cloned.*/
+				vector2D* ptr = NULL;
+				duk_get_prop_string(ctx, 0, MY_USER_DATA_PROP);
+				ptr = duk_get_pointer(ctx, -1);
+				duk_pop(ctx);
+				if (ptr) {
+					duk_vector2d_object_builder(ctx, myThis, ptr->x, ptr->y, 54321);
+					return 0;
+				}
+			} else{
+				duk_push_string(ctx, "vector2D: Argument must be an vector2D object.");
+				duk_throw(ctx);
 			}
-			duk_push_string(ctx, "vector2D: Argument must be an vector2D object.");
-			duk_throw(ctx);
 			return 0;
 		} else {
 			duk_push_string(ctx, "vector2D: Argument must be an object.");
