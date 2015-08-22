@@ -29,7 +29,8 @@ Main features:
 See [duktape.org](http://duktape.org/) for packaged end-user downloads
 and documentation.  The end user downloads are also available from the
 [duktape-releases](https://github.com/svaarala/duktape-releases) repo
-as both binaries and in unpacked form as git tags.
+as both binaries and in unpacked form as git tags.  Snapshot builds from
+master are available in [duktape.org/snapshots](http://duktape.org/snapshots).
 
 Have fun!
 
