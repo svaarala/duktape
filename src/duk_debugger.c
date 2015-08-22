@@ -1166,7 +1166,7 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			duk_safe_to_string(ctx, -1);
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -1));
 			pc = curr_act->pc;
-			if (i != curr_thr->callstack_top && pc > 0) {
+			if (i != curr_thr->callstack_top - 1 && pc > 0) {
 				pc--;
 			}
 			line = duk_hobject_pc2line_query(ctx, -3, pc);
