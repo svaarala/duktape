@@ -147,19 +147,83 @@ function:
 Returns, coroutine yields, and throws may propagate out of the initial bytecode
 executor entry and outwards to whatever code called into the executor.
 
-Managing current PC
--------------------
+Opcode dispatch loop and executor interrupt
+-------------------------------------------
 
-Managing the current bytecode pointer is critical for opcode dispatch
-performance.  The current solution in Duktape 1.3 is to keep a direct
-bytecode pointer in each activation (the pointer is stable) and keep a
-cached copy of the topmost activation's bytecode pointer in
-``thr->curr_pc`` which can be accessed quickly because ``thr`` is a
-"hot" variable compared to the current activation.
+The opcode dispatch loop is a central performance critical part of the
+executor.  The dispatch loop:
+
+* Checks for an executor interrupt.  An interrupt can be taken for every
+  opcode or for every N instructions; the interrupt handler provides e.g.
+  script timeout and debugger integration.  This is performance critical
+  because the check occurs for every opcode dispatch.  See separate section
+  below on interrupt counter handling.
+
+* Fetches an instruction from the topmost activation's "current PC",
+  and increments the PC.  Managing the "current PC" is performance critical.
+  See separate section below on current PC handling.
+
+* Decodes and executes the opcode using a large switch-case.  The most
+  important opcodes are in the main opcode space (64 opcodes); more rarely
+  used opcodes are "extra" opcodes and need a double dispatch.
+
+* Usually loops back to execute further opcodes.  May also (1) call another
+  Duktape/C or Ecmascript function, (2) cause a longjmp, or (3) use
+  ``goto restart_execution`` to restart the executor e.g. after call stack
+  has been changed.
+
+Debugger support
+----------------
+
+Debugger support relies on:
+
+* Executor interrupt mechanism is needed to support debugging.
+
+* A precheck in ``restart_execution`` where debugging status and breakpoints
+  are checked.  Executor then either proceeds in "normal" or "checked"
+  execution.  Checked execution means running one opcode at a time, and
+  calling into the interrupt handler before each to see e.g. if a breakpoint
+  has been triggered.
+
+* There's some additional support outside the executor, e.g. call stack
+  unwinding code handles the "step out" logic.
+
+See ``debugger.rst`` for details.
+
+Managing executor interrupt
+===========================
+
+The executor interrupt counter is currently tracked in
+``thr->interrupt_counter``.  This seems to work well because ``thr`` is a
+"hot" variable.
+
+Another alternative would be to track the counter in an executor local
+variable.  Error handling and other code paths jumping out of the executor
+need to work similarly to how stack local ``curr_pc`` is handled.
+
+Managing current PC
+===================
+
+Current approach
+----------------
+
+The current solution in Duktape 1.3 is to maintain a direct bytecode pointer
+in each activation, and to keep a "cached copy" of the topmost activation's
+bytecode pointer in a bytecode executor local variable ``curr_pc``.  A pointer
+to the ``curr_pc`` in the stack frame (whose type is ``duk_instr_t **``) is
+stored in ``thr->ptr_curr_pc`` so that when control exits the opcode dispatch
+loop (e.g. when an error is thrown) the value in the stack frame can be read
+and synced back into the topmost activation's ``act->curr_pc``.
+
+Consistency depends on the compiler doing correct aliasing analysis, and
+writing back the ``curr_pc`` value to the stack frame before any operation
+that may potentially read it through ``thr->ptr_curr_pc``.  Using ``volatile``
+would be safer but in practical testing it eliminates the performance benefit
+entirely.
 
 For the most part the bytecode executor can keep on dispatching opcodes
-using ``thr->curr_pc`` without copying the pointer back to the topmost
-activation.  However, the pointer needs to be synced (copied back) when:
+using ``curr_pc`` without copying the pointer back to the topmost activation.
+However, the pointer needs to be synced (copied back) when:
 
 * The current activation changes, i.e. a new function call is made.
 
@@ -174,64 +238,96 @@ activation.  However, the pointer needs to be synced (copied back) when:
 
 Syncing the pointer back unnecessarily or multiple times is safe, however.
 
+Function bytecode is behind a stable pointer, so there are no realloc or
+other side effect concerns with using direct bytecode pointers.  Because
+the function being executed is always reachable, a borrowed pointer can
+be used.
+
 This is a bit error prone, but it is worth the performance difference
-of the alternatives (this method of dispatch improves dispatch performance
-by about 20% over Duktape 1.2).
+of the alternatives.  This method of dispatch improves dispatch performance
+by about 20-25% over Duktape 1.2.
 
-See separate section below on PC handling alternatives.
+Some alternatives
+-----------------
 
-Alternatives for managing current PC
-====================================
-
-Various alternatives
---------------------
-
-* Duktape 1.3: maintain a direct bytecode pointer in each activation, and
-  a "cached" copy of the topmost activation's bytecode pointer in
-  ``thr->curr_pc``.
+* Duktape 1.3: maintain a direct bytecode pointer in each activation, and a
+  "cached" copy of the topmost activation's bytecode pointer in a local
+  variable of the executor.  Whenever something that might throw an error
+  is executed, write the pointer back to the current activation using
+  ``thr->ptr_curr_pc`` which points to the stack frame location containing
+  ``curr_pc``.
 
 * Duktape 1.2: maintain all PC values as numeric indices (not pointers and
   not pre-multiplied by bytecode opcode size).  The current PC is always
   looked up from the current activation.
 
+* Same as Duktape 1.3 behavior but maintain a cached copy of the topmost
+  activation's bytecode pointer in ``thr->curr_pc``.  The copy back operation
+  is needed but doesn't need to peek into the bytecode executor stack frame.
+  This works quite well because ``thr`` is a "hot" variable.  However, the
+  stack local ``curr_pc`` used in Duktape 1.3 is faster.
+
 * Use direct bytecode pointers in activations, keep a pointer to the current
-  activation in the executor, and use ``act->curr_pc`` for dispatch.  This
-  is faster than the Duktape 1.2 approach, but significantly slower than
-  the Duktape 1.3 approach (part of that is probably because there's more
-  register pressure).
+  activation in the executor, and use ``act->curr_pc`` for dispatch.  There's
+  no need for a copy back operation because activation states are always in
+  sync.  This is faster than the Duktape 1.2 approach, but significantly
+  slower than the ``thr->curr_pc`` or the Duktape 1.3 approach (part of that
+  is probably because there's more register pressure).
 
-* Track the current bytecode pointer as a local variable in the executor.
-  Whenever something that might throw an error is executed, write the pointer
-  back to the current activation.  This is similar to the Duktape 1.3 approach
-  but the current bytecode pointer is in the C stack frame rather than
-  ``thr->curr_pc`` so its address needs to be stored to e.g. ``thr`` so that
-  it can be "plucked out" from the stack frame when needed.
-
-Comparison between Duktape 1.2, Duktape 1.3, and act->curr_pc
--------------------------------------------------------------
+Comparison between curr_pc alternatives
+---------------------------------------
 
 The current Duktape 1.3 approach is a bit error prone because of the need to
-sync the ``thr->curr_pc`` back to ``act->curr_pc`` in multiple code paths.
-Another alternative would be to dispatch using ``act->curr_pc`` directly.
-While that is faster than Duktape 1.3, it is significantly slower than
-dispatching using ``thr->curr_pc``.
+sync the executor local ``curr_pc`` back to ``act->curr_pc`` in multiple code
+paths.  Another alternative would be to dispatch using ``act->curr_pc``
+directly.  While that is faster than Duktape 1.2, it is significantly slower
+than dispatching using executor local ``curr_pc`` (or ``thr->curr_pc``).
 
 The measurements below are using ``gcc -O2`` on x64::
 
+    # Duktape 1.3, dispatch using executor local variable curr_pc
+    $ sudo nice -20 python util/time_multi.py --count 10 --mode all --verbose ./duk.O2.local_pc tests/perf/test-empty-loop.js
+    Running: 2.180000 2.170000 2.180000 2.290000 2.180000 2.200000 2.190000 2.190000 2.220000 2.200000
+    min=2.17, max=2.29, avg=2.20, count=10: [2.18, 2.17, 2.18, 2.29, 2.18, 2.2, 2.19, 2.19, 2.22, 2.2]
+
     # Duktape 1.2, dispatch using a numeric PC index
-    $ sudo nice -20 python util/time_multi.py --count 10 --mode all --verbose ./duk.O2.master tests/perf/test-empty-loop.js
+    $ sudo nice -20 python util/time_multi.py --count 10 --mode all --verbose ./duk.O2.123 tests/perf/test-empty-loop.js
     Running: 3.100000 3.100000 3.120000 3.120000 3.160000 3.300000 3.370000 3.410000 3.370000 3.390000
     min=3.10, max=3.41, avg=3.24, count=10: [3.1, 3.1, 3.12, 3.12, 3.16, 3.3, 3.37, 3.41, 3.37, 3.39]
 
-    # Duktape 1.3, dispatch using thr->curr_pc
+    # Alternative; dispatch using thr->curr_pc
     $ sudo nice -20 python util/time_multi.py --count 10 --mode all --verbose ./duk.O2.thr_pc tests/perf/test-empty-loop.js
     Running: 2.310000 2.330000 2.310000 2.300000 2.400000 2.290000 2.310000 2.290000 2.300000 2.300000
     min=2.29, max=2.40, avg=2.31, count=10: [2.31, 2.33, 2.31, 2.3, 2.4, 2.29, 2.31, 2.29, 2.3, 2.3]
 
-    # Alternative; dispatch using act->curr_pc (no thr->curr_pc at all)
+    # Alternative; dispatch using act->curr_pc
     $ sudo nice -20 python util/time_multi.py --count 10 --mode all --verbose ./duk.O2.act_pc tests/perf/test-empty-loop.js
     Running: 2.590000 2.580000 2.600000 2.600000 2.600000 2.660000 2.600000 2.640000 2.860000 2.860000
     min=2.58, max=2.86, avg=2.66, count=10: [2.59, 2.58, 2.6, 2.6, 2.6, 2.66, 2.6, 2.64, 2.86, 2.86]
 
-Because the difference is rather large, the ``thr->curr_pc`` dispatch is
-used in Duktape 1.3.
+Accessing constants
+===================
+
+The executor stores a copy of the ``duk_hcompiledfunction`` constant table
+base address into a local variable ``consts``.  This reduces code footprint
+and performs better compared to reading the consts base address on-the-fly
+through the function reference.  Because the constants table has a stable
+base address, this is easy and safe.
+
+Accessing registers
+===================
+
+The executor currently accesses the stack frame base address (needed to read
+registers) through ``thr`` as ``thr->valstack_bottom``.  This is reasonably
+OK because ``thr`` is a "hot" variable.
+
+The register base address could also be copied to a local variable as is done
+for constants.  However, ``thr->valstack_bottom`` is not a stable address and
+may be changed by any side effect (because any side effect can cause a value
+stack resize, e.g. if a finalizer is invoked).
+
+If a local variable were to be used, it would need to be updated when the
+value stack is resized.  It's not certain if overall performance would be
+improved.  This was postponed to Duktape 1.4:
+
+* https://github.com/svaarala/duktape/issues/298
