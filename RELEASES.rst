@@ -1017,6 +1017,9 @@ Planned
 
 * Add platform detection support for AmigaOS on PowerPC (GH-269)
 
+* Internal performance improvement: improve bytecode opcode dispatch
+  performance (GH-265)
+
 * Internal performance improvement: improve lexer tokenization (GH-207)
 
 * Internal performance improvement: add several fast paths to JSON parse
