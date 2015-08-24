@@ -1018,7 +1018,7 @@ Planned
 * Add platform detection support for AmigaOS on PowerPC (GH-269)
 
 * Internal performance improvement: improve bytecode opcode dispatch
-  performance (GH-265)
+  performance (GH-265, GH-294)
 
 * Internal performance improvement: improve bytecode executor constant
   lookups (GH-295)
