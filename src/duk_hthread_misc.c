@@ -79,19 +79,16 @@ DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk
 	return 0;
 }
 
-/* Write thr->curr_pc back to topmost activation (if any). */
+/* Write bytecode executor's curr_pc back to topmost activation (if any). */
 DUK_INTERNAL void duk_hthread_sync_currpc(duk_hthread *thr) {
 	duk_activation *act;
 
 	DUK_ASSERT(thr != NULL);
 
-	if (thr->callstack_top > 0) {
-		/* For native calls the assignment is OK as long as thr->curr_pc
-		 * is NULL for the duration of a native call.
-		 */
+	if (thr->ptr_curr_pc != NULL) {
+		/* ptr_curr_pc != NULL only when bytecode executor is active. */
+		DUK_ASSERT(thr->callstack_top > 0);
 		act = thr->callstack + thr->callstack_top - 1;
-		DUK_ASSERT(((act->func == NULL || DUK_HOBJECT_HAS_COMPILEDFUNCTION(act->func)) && thr->curr_pc != NULL) || \
-		           ((act->func != NULL && DUK_HOBJECT_HAS_NATIVEFUNCTION(act->func)) && thr->curr_pc == NULL));
-		act->curr_pc = thr->curr_pc;
+		act->curr_pc = (duk_instr_t *) *thr->ptr_curr_pc;
 	}
 }
