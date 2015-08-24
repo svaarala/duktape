@@ -1943,10 +1943,10 @@ DUK_LOCAL void duk__executor_handle_debugger(duk_hthread *thr, duk_activation *a
  */
 
 #define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT(&(fun)->obj))
-#define DUK__REG(x)         (thr->valstack_bottom[(x)])
-#define DUK__REGP(x)        (&thr->valstack_bottom[(x)])
-#define DUK__CONST(x)       (DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun)[(x)])
-#define DUK__CONSTP(x)      (&DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun)[(x)])
+#define DUK__REG(x)         (*(thr->valstack_bottom + (x)))
+#define DUK__REGP(x)        (thr->valstack_bottom + (x))
+#define DUK__CONST(x)       (*(consts + (x)))
+#define DUK__CONSTP(x)      (consts + (x))
 #define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
 #define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
 
@@ -1973,7 +1973,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
 	duk_hthread *thr;             /* stable */
 	duk_hcompiledfunction *fun;   /* stable */
-	/* 'consts' is computed on-the-fly */
+	duk_tval *consts;             /* stable */
 	/* 'funcs' is quite rarely used, so no local for it */
 
 	/* "hot" temps for interpretation -- not volatile, value not guaranteed in setjmp error handling */
@@ -2138,6 +2138,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
 		DUK_ASSERT(fun != NULL);
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
+		consts = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun);
+		DUK_ASSERT(consts != NULL);
 	}
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
