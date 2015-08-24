@@ -115,7 +115,7 @@ def main():
 	# Download and install the Node.js Package Manager.
 	if (os.name == 'nt') and not simple_resolve_file_path("npm_v2.13.4.zip"):
 		simple_download_file("npm_v2.13.4.zip",
-			"http://github.com/npm/npm/archive/v2.13.4.zip", "http://github.com")
+			"https://github.com/npm/npm/archive/v2.13.4.zip", "https://github.com/npm/npm/releases/tag/v2.13.4")
 	if (simple_resolve_file_path("npm_v2.13.4.zip") and
 		 not simple_resolve_file_path("bin/npm-cli.js")):
 		fh = open("npm_v2.13.4.zip", "rb")
