@@ -42,3 +42,56 @@ DUK_INTERNAL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr
 		return NULL;
 	}
 }
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk_activation *act) {
+	duk_instr_t *bcode;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(act != NULL);
+	DUK_UNREF(thr);
+
+	/* XXX: store 'bcode' pointer to activation for faster lookup? */
+	if (act->func && DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
+		bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) (act->func));
+		return (duk_uint_fast32_t) (act->curr_pc - bcode);
+	}
+	return 0;
+}
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
+DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk_activation *act) {
+	duk_instr_t *bcode;
+	duk_uint_fast32_t ret;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(act != NULL);
+	DUK_UNREF(thr);
+
+	if (act->func && DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
+		bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) (act->func));
+		ret = (duk_uint_fast32_t) (act->curr_pc - bcode);
+		if (ret > 0) {
+			ret--;
+		}
+		return ret;
+	}
+	return 0;
+}
+
+/* Write thr->curr_pc back to topmost activation (if any). */
+DUK_INTERNAL void duk_hthread_sync_currpc(duk_hthread *thr) {
+	duk_activation *act;
+
+	DUK_ASSERT(thr != NULL);
+
+	if (thr->callstack_top > 0) {
+		/* For native calls the assignment is OK as long as thr->curr_pc
+		 * is NULL for the duration of a native call.
+		 */
+		act = thr->callstack + thr->callstack_top - 1;
+		DUK_ASSERT(((act->func == NULL || DUK_HOBJECT_HAS_COMPILEDFUNCTION(act->func)) && thr->curr_pc != NULL) || \
+		           ((act->func != NULL && DUK_HOBJECT_HAS_NATIVEFUNCTION(act->func)) && thr->curr_pc == NULL));
+		act->curr_pc = thr->curr_pc;
+	}
+}
