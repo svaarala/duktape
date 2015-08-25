@@ -39,9 +39,7 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 	duk_bool_t calledByConstructor = duk_is_constructor_call(ctx);
 	if (!calledByConstructor)
 	{
-		/* Not Called my new operator
-		 */
-
+		/* Not Called my new operator */
 		/* Create a new instance by duplicating args and calling again */
 		duk_push_global_object(ctx);
 		duk_get_prop_string(ctx, -1, "Shape");
@@ -50,7 +48,7 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 		duk_dup(ctx, 1);
 		duk_dup(ctx, 2);
 		duk_new(ctx, 3);  /* generate Object */
-		return 1;
+		return 1;  /* Object created by this function */
 	}
 	else {
 		duk_push_this(ctx); /* Object Already Created by new operator.*/
@@ -75,12 +73,7 @@ duk_ret_t duk_class_shape_constructor(duk_context *ctx)
 	duk_put_prop_string(ctx, obj_idx, "x");
 	duk_push_int(ctx, y);
 	duk_put_prop_string(ctx, obj_idx, "y");
-	if (calledByConstructor)
-	{
-		return 0; // Object already exists.
-	} else {
-		return 1; // Object created by this function.
-	}
+	return 0; /* Object already exists */
 }
 duk_ret_t duk_class_shape_finalizer(duk_context *ctx)
 {
@@ -140,7 +133,6 @@ duk_ret_t duk_class_shape_func_toString(duk_context *ctx)
 
 duk_ret_t  duk_isShape(duk_context *ctx)
 {
-	//duk_require_object_coercible(ctx, 0);
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "Shape");
 	if (duk_is_object(ctx, 0)) {

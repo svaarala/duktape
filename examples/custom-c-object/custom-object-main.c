@@ -53,7 +53,6 @@ void run_peval_file(const char* file)
 		printf("\n\nduk_peval_file_noresult Test on %s \n",file);
 		if (duk_peval_file_noresult(ctx, file) != 0) {
 			printf("duk_peval_file_noresult: eval failed\n");
-			// This should not happen, but it does.
 		}
 		else {
 			printf("duk_peval_file_noresult: eval successful\n");

@@ -1,7 +1,8 @@
 #include "custom-object.h"
 #include <string.h>
 #include <stdio.h>
-// Enable User Data pointer in the object.
+
+/* Define the Property name used for User Data. */
 #define MY_USER_DATA_PROP  "\xff""vecData"
 
 /* Custom Functions */
@@ -15,9 +16,7 @@ duk_ret_t  duk_isVector2D(duk_context *ctx);
 
 duk_ret_t duk_vector2d_finalizer(duk_context *ctx)
 {
-	// TODO: Is this really working.
 	vector2D* ptr = NULL;
-	//duk_push_this(ctx);
 	printf("finalizer begin: Vec2D\n");
 	duk_get_prop_string(ctx, 0, MY_USER_DATA_PROP);
 	ptr = duk_get_pointer(ctx, -1);
@@ -113,7 +112,7 @@ duk_ret_t duk_register_Vector2D(duk_context *ctx) {
 	duk_push_global_object(ctx);
 	printf("Registering: Vector2D\n");
 	/* Register vector2D object Constructor(s).*/
-	// NOTE: if you want multiple constructors, this is the only way to go.
+	/* NOTE: if you want multiple constructors, this is the only way. */
 	duk_push_c_function(ctx, duk_vector2d_constructor, DUK_VARARGS);
 	obj_index = duk_push_object(ctx);			
 	duk_put_prop_string(ctx, -2, "prototype"); 
@@ -133,7 +132,7 @@ duk_ret_t duk_register_Vector2D(duk_context *ctx) {
 
 duk_ret_t duk_vector2d_toString(duk_context* ctx) {
   vector2D* ptr = NULL;
-   // The only print out on this functions hould never exceed 64 characters.
+   /* The only print out on this functions hould never exceed 64 characters. */
   char outputBuffer[64];
   duk_push_this(ctx);
   duk_get_prop_string(ctx, -1, MY_USER_DATA_PROP);
@@ -154,7 +153,6 @@ duk_ret_t duk_vector2d_get_x(duk_context* ctx) {
   vector2D* ptr = duk_get_pointer(ctx, -1);
   duk_pop_2(ctx);
   if (ptr) {
-	  // do stuff with ptr
 	  duk_push_number(ctx, ptr->x);
   }  else {
 	  printf("duk_vector2d_get_x\n");
@@ -168,9 +166,7 @@ duk_ret_t duk_vector2d_get_y(duk_context* ctx) {
   duk_get_prop_string(ctx, -1, MY_USER_DATA_PROP);
   vector2D* ptr = duk_get_pointer(ctx, -1);
   duk_pop_2(ctx);
-  // do stuff with ptr
   if (ptr) {
-	  // do stuff with ptr
 	  duk_push_number(ctx, ptr->y);
   }  else {
 	  printf("duk_vector2d_get_y\n");
@@ -184,12 +180,10 @@ duk_ret_t duk_vector2d_set_x(duk_context* ctx) {
   vector2D* ptr = duk_get_pointer(ctx, -1);
   duk_pop_2(ctx);
   if (ptr) {
-	  // Value Set.
 	  ptr->x = (float)duk_to_number(ctx, 0);
   } else { 
 	  printf("duk_vector2d_set_x\n");
   }
-  // do stuff with ptr
   return 0;  /* one return value */
 }
 
@@ -198,9 +192,7 @@ duk_ret_t duk_vector2d_set_y(duk_context* ctx) {
   duk_get_prop_string(ctx, -1, MY_USER_DATA_PROP);
   vector2D* ptr = duk_get_pointer(ctx, -1);
   duk_pop_2(ctx);
-  // do stuff with ptr
   if (ptr) {
-	  // Value Set.
 	  ptr->y = (float)duk_to_number(ctx, 0);
   }  else {
 	  printf("duk_vector2d_set_y\n");
@@ -212,7 +204,7 @@ duk_ret_t duk_vector2d_set_y(duk_context* ctx) {
 duk_ret_t duk_vector2d_object_builder(duk_context* ctx, duk_idx_t myThis, float x, float y, int myValue)
 {
 	vector2D* ptr = NULL;
-	//duk_pop(ctx);
+
 	/* Set the Finalizer First */
 	duk_push_c_function(ctx, duk_vector2d_finalizer, 1 /*nargs*/);
 	duk_set_finalizer(ctx, myThis);
@@ -252,7 +244,7 @@ duk_ret_t duk_vector2d_object_builder(duk_context* ctx, duk_idx_t myThis, float 
 
 duk_ret_t  duk_isVector2D(duk_context *ctx)
 {
-	//duk_require_object_coercible(ctx, 0);
+
 	duk_push_global_object(ctx);
 	duk_get_prop_string(ctx, -1, "vector2D");
 	if (duk_is_object(ctx, 0)) {
