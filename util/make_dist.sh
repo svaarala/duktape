@@ -798,8 +798,6 @@ rm $DISTSRCSEP/caseconv.txt
 python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" \
 	$DIST/LICENSE.txt.tmp $DIST/AUTHORS.rst.tmp
-echo "CLOC report on combined duktape.c source file"
-perl cloc-1.60.pl --quiet $DISTSRCCOM/duktape.c
 
 # Clean up temp files
 rm $DIST/*.tmp
