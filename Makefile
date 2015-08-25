@@ -977,10 +977,14 @@ doc:	$(patsubst %.txt,%.html,$(wildcard doc/*.txt))
 doc/%.html: doc/%.txt
 	rst2html $< $@
 
+cloc:	dist cloc-1.60.pl
+	@echo "CLOC report on combined duktape.c source file"
+	@perl cloc-1.60.pl --quiet dist/src/duktape.c
+
 # Source distributable for end users
 # XXX: want to run codepolicycheck when dist gets built, but don't want to depend on it.
 # XXX: make prints a harmless warning related to the sub-make.
-dist:	compiler.jar cloc-1.60.pl
+dist:	compiler.jar
 	@make codepolicycheck
 	sh util/make_dist.sh --minify closure
 
