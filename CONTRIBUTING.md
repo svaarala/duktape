@@ -25,7 +25,9 @@ To make a code contribution to Duktape
 * Ensure your code follows the style guidelines in `code-issues.rst`.
   Not everything is spelled out explicitly, so try to follow the general
   style in the code base.  Check that your diff looks as clean and minimal
-  as possible.
+  as possible.  Rebase your pull request if necessary so that commits are
+  logical and clean.  If the branch includes a fix that might be cherry
+  picked into a maintenance release, ensure that fix is in a separate commit.
 
 * Add yourself to the end of the author list in `AUTHORS.rst` if you're
   not already on the list.  By doing this you confirm that:
