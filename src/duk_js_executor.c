@@ -1971,12 +1971,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	duk_jmpbuf * volatile entry_jmpbuf_ptr;
 
 	/* current PC, volatile because it is accessed by other functions
-	 * through thr->ptr_to_curr_pc.  Critical for performance.
-	 *
-	 * cdecl> explain int * volatile curr_pc
-	 * declare curr_pc as volatile pointer to int
+	 * through thr->ptr_to_curr_pc.  Critical for performance.  It would
+	 * be safest to make this volatile, but that eliminates performance
+	 * benefits.  Aliasing guarantees should be enough though.
 	 */
-	duk_instr_t * volatile curr_pc;  /* stable */
+	duk_instr_t *curr_pc;  /* stable */
 
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
 	duk_hthread *thr;             /* stable */
@@ -2136,7 +2135,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
 
-	thr->ptr_curr_pc = (duk_instr_t * volatile * volatile) &curr_pc;
+	thr->ptr_curr_pc = &curr_pc;
 
 	/* Assume interrupt init/counter are properly initialized here. */
 

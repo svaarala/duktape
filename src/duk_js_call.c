@@ -832,7 +832,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
-	duk_instr_t * volatile * volatile entry_ptr_curr_pc;
+	duk_instr_t **entry_ptr_curr_pc;
 	volatile duk_bool_t need_setjmp;
 	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
 	duk_idx_t idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
@@ -1720,7 +1720,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
-	duk_instr_t * volatile * volatile entry_ptr_curr_pc;
+	duk_instr_t **entry_ptr_curr_pc;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
 	duk_jmpbuf our_jmpbuf;
 	duk_tval tv_tmp;

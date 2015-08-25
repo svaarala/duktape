@@ -245,12 +245,8 @@ struct duk_hthread {
 	 * the current PC back into the topmost activation when activation
 	 * state is about to change (or "syncing" is otherwise needed).  This
 	 * is rather awkward but important for performance, see execution.rst.
-	 *
-	 * The pointer here is volatile, and the target pointer is volatile:
-	 * cdecl> explain int * volatile * volatile curr_pc
-	 * declare curr_pc as volatile pointer to volatile pointer to int
 	 */
-	duk_instr_t * volatile * volatile ptr_curr_pc;
+	duk_instr_t **ptr_curr_pc;
 
 	/* backpointers */
 	duk_heap *heap;

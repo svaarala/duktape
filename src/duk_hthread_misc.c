@@ -89,6 +89,6 @@ DUK_INTERNAL void duk_hthread_sync_currpc(duk_hthread *thr) {
 		/* ptr_curr_pc != NULL only when bytecode executor is active. */
 		DUK_ASSERT(thr->callstack_top > 0);
 		act = thr->callstack + thr->callstack_top - 1;
-		act->curr_pc = (duk_instr_t *) *thr->ptr_curr_pc;
+		act->curr_pc = *thr->ptr_curr_pc;
 	}
 }
