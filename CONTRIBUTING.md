@@ -22,7 +22,7 @@ To make a code contribution to Duktape
   cases as part of the commit.  If you add new functionality, you should add
   test case(s) to illustrate the changes and desired behavior.
 
-* Ensure your code follows the style guidelines in `code-issues.txt`.
+* Ensure your code follows the style guidelines in `code-issues.rst`.
   Not everything is spelled out explicitly, so try to follow the general
   style in the code base.  Check that your diff looks as clean and minimal
   as possible.
