@@ -92,9 +92,9 @@ the website, run test cases, etc:
     $ make ecmatest
     $ make apitest
     $ make regfuzztest
-    $ make underscoretest    # see doc/underscore-status.txt
-    $ make test262test       # see doc/test262-status.txt
-    $ make emscriptentest    # see doc/emscripten-status.txt
+    $ make underscoretest    # see doc/underscore-status.rst
+    $ make test262test       # see doc/test262-status.rst
+    $ make emscriptentest    # see doc/emscripten-status.rst
     $ make emscriptenmandelbrottest  # run Emscripten-compiled mandelbrot.c with Duktape
     $ make emscripteninceptiontest   # run Emscripten-compiled Duktape with Duktape
     $ make jsinterpretertest
