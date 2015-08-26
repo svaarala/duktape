@@ -908,6 +908,11 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
 
+	/* Sync curr_pc (if any) to act->pc if there's a running Ecmascript
+	 * function.
+	 */
+	duk_hthread_sync_currpc(thr);
+
 	/* XXX: Multiple tv_func lookups are now avoided by making a local
 	 * copy of tv_func.  Another approach would be to compute an offset
 	 * for tv_func from valstack bottom and recomputing the tv_func
@@ -2047,7 +2052,9 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING &&
 	            thr->heap->curr_thread == thr));
 
-	/* store current pc if there's a running ecmascript function */
+	/* Sync curr_pc (if any) to act->pc if there's a running Ecmascript
+	 * function.
+	 */
 	duk_hthread_sync_currpc(thr);
 
 	/* if a tail call:
