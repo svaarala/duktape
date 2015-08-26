@@ -144,6 +144,16 @@ system RAM):
 
   - ``DUK_OPT_LIGHTFUNC_BUILTINS``
 
+* If code footprint is a significant issue, disabling reference counting
+  reduces code footprint by several kilobytes at the cost of more RAM
+  fluctuation:
+
+  - ``DUK_OPT_NO_REFERENCE_COUNTING``
+
+  - ``#undef DUK_USE_REFERENCE_COUNTING``
+
+  - ``#undef DUK_USE_DOUBLE_LINKED_LIST``
+
 * Enable other 16-bit fields to reduce header size; these are typically
   used together (all or none):
 
