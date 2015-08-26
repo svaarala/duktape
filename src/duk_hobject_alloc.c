@@ -147,6 +147,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_f
 	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
+	res->ptr_curr_pc = NULL;
 	res->heap = NULL;
 	res->valstack = NULL;
 	res->valstack_end = NULL;

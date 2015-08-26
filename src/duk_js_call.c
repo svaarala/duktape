@@ -788,11 +788,11 @@ void duk__adjust_valstack_and_top(duk_hthread *thr, duk_idx_t num_stack_args, du
  *                                         for errhandler calls
  *    DUK_CALL_FLAG_CONSTRUCTOR_CALL <-->  for 'new Foo()' calls
  *
- *  Input stack:
+ *  Input stack (thr):
  *
  *    [ func this arg1 ... argN ]
  *
- *  Output stack:
+ *  Output stack (thr):
  *
  *    [ retval ]         (DUK_EXEC_SUCCESS)
  *    [ errobj ]         (DUK_EXEC_ERROR (normal error), protected call)
@@ -832,7 +832,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
-	duk_instr_t *entry_thr_curr_pc;
+	duk_instr_t **entry_ptr_curr_pc;
 	volatile duk_bool_t need_setjmp;
 	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
 	duk_idx_t idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
@@ -874,10 +874,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
-	entry_thr_curr_pc = NULL;  /* not actually needed, avoid warning */
-	if (entry_curr_thread) {
-		entry_thr_curr_pc = entry_curr_thread->curr_pc;
-	}
+	entry_ptr_curr_pc = thr->ptr_curr_pc;  /* may be NULL */
+
 	idx_func = duk_normalize_index(ctx, -num_stack_args - 2);  /* idx_func must be valid, note: non-throwing! */
 	idx_args = idx_func + 2;                                   /* idx_args is not necessarily valid if num_stack_args == 0 (idx_args then equals top) */
 
@@ -1005,6 +1003,9 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 */
 
 		DUK_DDD(DUK_DDDPRINT("call is not protected -> clean up and rethrow"));
+
+		/* Restore entry thread executor curr_pc stack frame pointer. */
+		thr->ptr_curr_pc = entry_ptr_curr_pc;
 
 		DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 		thr->state = entry_thread_state;
@@ -1370,7 +1371,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 *  other  invalid
 	 */
 
-	thr->curr_pc = NULL;
+	/* For native calls must be NULL so we don't sync back */
+	thr->ptr_curr_pc = NULL;
 
 	if (func) {
 		rc = ((duk_hnativefunction *) func)->func((duk_context *) thr);
@@ -1483,6 +1485,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 *
 	 */
 
+	/* thr->ptr_curr_pc is set by bytecode executor early on entry */
 	DUK_DDD(DUK_DDDPRINT("entering bytecode execution"));
 	duk_js_execute_bytecode(thr);
 	DUK_DDD(DUK_DDDPRINT("returned from bytecode execution"));
@@ -1582,12 +1585,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 	}
 
-	/* Restore entry thread curr_pc (could just reset from topmost
-	 * activation too).
-	 */
-	if (entry_curr_thread) {
-		entry_curr_thread->curr_pc = entry_thr_curr_pc;
-	}
+	/* Restore entry thread executor curr_pc stack frame pointer. */
+	thr->ptr_curr_pc = entry_ptr_curr_pc;
 
 	DUK_HEAP_SWITCH_THREAD(thr->heap, entry_curr_thread);  /* may be NULL */
 	thr->state = (duk_uint8_t) entry_thread_state;
@@ -1721,6 +1720,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
+	duk_instr_t **entry_ptr_curr_pc;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
 	duk_jmpbuf our_jmpbuf;
 	duk_tval tv_tmp;
@@ -1738,6 +1738,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
+	entry_ptr_curr_pc = thr->ptr_curr_pc;  /* may be NULL */
 	idx_retbase = duk_get_top(ctx) - num_stack_args;  /* Note: not a valid stack index if num_stack_args == 0 */
 
 	/* Note: cannot portably debug print a function pointer, hence 'func' not printed! */
@@ -1956,6 +1957,9 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_TVAL_DECREF(thr, &tv_tmp);
 
 	DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
+
+	/* Restore entry thread executor curr_pc stack frame pointer. */
+	thr->ptr_curr_pc = entry_ptr_curr_pc;
 
 	/* XXX: because we unwind stacks above, thr->heap->curr_thread is at
 	 * risk of pointing to an already freed thread.  This was indeed the

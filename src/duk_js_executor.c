@@ -1970,6 +1970,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	volatile duk_int_t entry_call_recursion_depth;
 	duk_jmpbuf * volatile entry_jmpbuf_ptr;
 
+	/* current PC, volatile because it is accessed by other functions
+	 * through thr->ptr_to_curr_pc.  Critical for performance.  It would
+	 * be safest to make this volatile, but that eliminates performance
+	 * benefits.  Aliasing guarantees should be enough though.
+	 */
+	duk_instr_t *curr_pc;  /* stable */
+
 	/* "hot" variables for interpretation -- not volatile, value not guaranteed in setjmp error handling */
 	duk_hthread *thr;             /* stable */
 	duk_hcompiledfunction *fun;   /* stable */
@@ -2112,8 +2119,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 *  memory anyway.
 	 *
 	 *  Any 'goto restart_execution;' code path in opcode dispatch must
-	 *  ensure thr->curr_pc is synced back to act->curr_pc before the
-	 *  goto takes place.
+	 *  ensure 'curr_pc' is synced back to act->curr_pc before the goto
+	 *  takes place.
 	 */
 
  restart_execution:
@@ -2127,6 +2134,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	DUK_ASSERT(thr->callstack_top >= 1);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)));
+
+	thr->ptr_curr_pc = &curr_pc;
 
 	/* Assume interrupt init/counter are properly initialized here. */
 
@@ -2204,11 +2213,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	valstack_top_base = (duk_size_t) (thr->valstack_top - thr->valstack);
 #endif
 
-	/* Set up thr->curr_pc for opcode dispatch. */
+	/* Set up curr_pc for opcode dispatch. */
 	{
 		duk_activation *act;
 		act = thr->callstack + thr->callstack_top - 1;
-		thr->curr_pc = act->curr_pc;
+		curr_pc = act->curr_pc;
 	}
 
 	for (;;) {
@@ -2235,12 +2244,12 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			{
 				duk_activation *act;
 				act = thr->callstack + thr->callstack_top - 1;
-				act->curr_pc = thr->curr_pc;
+				act->curr_pc = (duk_instr_t *) curr_pc;
 			}
 
 			exec_int_ret = duk__executor_interrupt(thr);
 			if (exec_int_ret == DUK__INT_RESTART) {
-				/* thr->curr_pc synced back above */
+				/* curr_pc synced back above */
 				goto restart_execution;
 			}
 		}
@@ -2253,18 +2262,18 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		{
 			duk_activation *act;
 			act = thr->callstack + thr->callstack_top - 1;
-			DUK_ASSERT(thr->curr_pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun));
-			DUK_ASSERT(thr->curr_pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, fun));
+			DUK_ASSERT(curr_pc >= DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun));
+			DUK_ASSERT(curr_pc < DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, fun));
 			DUK_UNREF(act);  /* if debugging disabled */
 
 			DUK_DDD(DUK_DDDPRINT("executing bytecode: pc=%ld, ins=0x%08lx, op=%ld, valstack_top=%ld/%ld, nregs=%ld  -->  %!I",
-			                     (long) (thr->curr_pc - DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun)),
-			                     (unsigned long) *thr->curr_pc,
-			                     (long) DUK_DEC_OP(*thr->curr_pc),
+			                     (long) (curr_pc - DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun)),
+			                     (unsigned long) *curr_pc,
+			                     (long) DUK_DEC_OP(*curr_pc),
 			                     (long) (thr->valstack_top - thr->valstack),
 			                     (long) (thr->valstack_end - thr->valstack),
 			                     (long) (fun ? fun->nregs : -1),
-			                     (duk_instr_t) *thr->curr_pc));
+			                     (duk_instr_t) *curr_pc));
 		}
 #endif
 
@@ -2284,7 +2293,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		}
 #endif
 
-		ins = *thr->curr_pc++;
+		ins = *curr_pc++;
 
 		/* Typing: use duk_small_(u)int_fast_t when decoding small
 		 * opcode fields (op, A, B, C) and duk_(u)int_fast_t when
@@ -2548,7 +2557,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 * even if the constructor is an Ecmascript function.
 			 */
 
-			/* Don't need to sync thr->curr_pc here; duk_new() will do that
+			/* Don't need to sync curr_pc here; duk_new() will do that
 			 * when it augments the created error.
 			 */
 
@@ -3166,7 +3175,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			tmp = duk_js_toboolean(DUK__REGCONSTP(b));
 			if (tmp == (duk_bool_t) a) {
 				/* if boolean matches A, skip next inst */
-				thr->curr_pc++;
+				curr_pc++;
 			} else {
 				;
 			}
@@ -3176,7 +3185,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		case DUK_OP_JUMP: {
 			duk_int_fast_t abc = DUK_DEC_ABC(ins);
 
-			thr->curr_pc += abc - DUK_BC_JUMP_BIAS;
+			curr_pc += abc - DUK_BC_JUMP_BIAS;
 			break;
 		}
 
@@ -3327,7 +3336,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				 * Avoid C recursion by being clever.
 				 */
 				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
-				/* thr->curr_pc synced by duk_handle_ecma_call_setup() */
+				/* curr_pc synced by duk_handle_ecma_call_setup() */
 				goto restart_execution;
 			}
 
@@ -3407,7 +3416,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			/* When debugger is enabled, we need to recheck the activation
 			 * status after returning.
 			 */
-			/* call handling has synced thr->curr_pc */
+			/* call handling has synced curr_pc */
 			goto restart_execution;
 #endif
 			break;
@@ -3556,7 +3565,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
 			cat->callstack_index = thr->callstack_top - 1;
-			cat->pc_base = thr->curr_pc;  /* pre-incremented, points to first jump slot */
+			cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
 			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + bc;
 
 			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
@@ -3564,7 +3573,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			                     (unsigned long) cat->flags, (long) cat->callstack_index,
 			                     (long) cat->pc_base, (long) cat->idx_base, (duk_heaphdr *) cat->h_varname));
 
-			thr->curr_pc += 2;  /* skip jump slots */
+			curr_pc += 2;  /* skip jump slots */
 			break;
 		}
 
@@ -3964,7 +3973,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 						/* [ ... enum ] -> [ ... next_key ] */
 						DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ",
 						                     (duk_tval *) duk_get_tval(ctx, -1)));
-						thr->curr_pc++;
+						curr_pc++;
 					} else {
 						/* [ ... enum ] -> [ ... ] */
 						DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
@@ -4084,7 +4093,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					/* no need to unwind callstack */
 				}
 
-				thr->curr_pc = cat->pc_base + 1;
+				curr_pc = cat->pc_base + 1;
 				break;
 			}
 
@@ -4143,7 +4152,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					/* no need to unwind callstack */
 				}
 
-				thr->curr_pc = cat->pc_base + 1;
+				curr_pc = cat->pc_base + 1;
 				break;
 			}
 
@@ -4356,7 +4365,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 				cat->flags = DUK_CAT_TYPE_LABEL | (bc << DUK_CAT_LABEL_SHIFT);
 				cat->callstack_index = thr->callstack_top - 1;
-				cat->pc_base = thr->curr_pc;  /* pre-incremented, points to first jump slot */
+				cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
 				cat->idx_base = 0;  /* unused for label */
 				cat->h_varname = NULL;
 
@@ -4365,7 +4374,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                     (long) cat->flags, (long) cat->callstack_index, (long) cat->pc_base,
 				                     (long) cat->idx_base, (duk_heaphdr *) cat->h_varname, (long) DUK_CAT_GET_LABEL(cat)));
 
-				thr->curr_pc += 2;  /* skip jump slots */
+				curr_pc += 2;  /* skip jump slots */
 				break;
 			}
 
