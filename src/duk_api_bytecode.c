@@ -481,10 +481,15 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 			break;
 		}
 		case DUK__SER_NUMBER: {
+			/* Important to do a fastint check so that constants are
+			 * properly read back as fastints.
+			 */
+			duk_tval tv_tmp;
 			duk_double_t val;
 			DUK__ASSERT_LEFT(8);
 			val = DUK_RAW_READ_DOUBLE_BE(p);
-			duk_push_number(ctx, val);
+			DUK_TVAL_SET_NUMBER_CHKFAST(&tv_tmp, val);
+			duk_push_tval(ctx, &tv_tmp);
 			break;
 		}
 		default: {
