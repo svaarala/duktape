@@ -2057,8 +2057,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		DUK_ASSERT(entry_thread != NULL);
 		thr = entry_thread->heap->curr_thread;
 
-		DUK_ASSERT(thr->callstack_top > 0);  /* we were executing bytecode */
-		duk_hthread_sync_currpc(thr);
+		/* Don't sync curr_pc when unwinding: with recursive executor
+		 * calls thr->ptr_curr_pc may be dangling.
+		 */
 
 		/* XXX: signalling the need to shrink check (only if unwound) */
 
