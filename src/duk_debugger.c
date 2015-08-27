@@ -44,6 +44,7 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	heap->dbg_processing = 0;
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
+	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = 0;
 	heap->dbg_step_thread = NULL;
 	heap->dbg_step_csindex = 0;

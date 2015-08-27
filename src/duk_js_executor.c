@@ -1564,6 +1564,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 				if (bp == NULL) {
 					break;
 				}
+
 				DUK_ASSERT(bp->filename != NULL);
 				if (act->prev_line != bp->line && line == bp->line) {
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
@@ -2259,6 +2260,19 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				act = thr->callstack + thr->callstack_top - 1;
 				act->curr_pc = (duk_instr_t *) curr_pc;
 			}
+
+			/* Force restart caused by a function return; must recheck
+			 * debugger breakpoints before checking line transitions,
+			 * see GH-303.  Restart and then handle interrupt_counter
+			 * zero again.
+			 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+			if (thr->heap->dbg_force_restart) {
+				DUK_DD(DUK_DDPRINT("dbg_force_restart flag forced restart execution"));  /* GH-303 */
+				thr->heap->dbg_force_restart = 0;
+				goto restart_execution;
+			}
+#endif
 
 			exec_int_ret = duk__executor_interrupt(thr);
 			if (exec_int_ret == DUK__INT_RESTART) {

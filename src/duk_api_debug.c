@@ -71,6 +71,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	heap->dbg_processing = 0;
 	heap->dbg_paused = 1;
 	heap->dbg_state_dirty = 1;
+	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = 0;
 	heap->dbg_step_thread = NULL;
 	heap->dbg_step_csindex = 0;

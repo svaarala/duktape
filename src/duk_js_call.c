@@ -1605,6 +1605,24 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	thr->heap->call_recursion_depth = entry_call_recursion_depth;
 
+	/* If the debugger is active we need to force an interrupt so that
+	 * debugger breakpoints are rechecked.  This is important for function
+	 * calls caused by side effects (e.g. when doing a DUK_OP_GETPROP), see
+	 * GH-303.  Only needed for success path, error path always causes a
+	 * breakpoint recheck in the executor.  It would be enough to set this
+	 * only when returning to an Ecmascript activation, but setting the flag
+	 * on every return should have no ill effect.
+	 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		DUK_DD(DUK_DDPRINT("returning to ecmascript activation with debugger enabled, force interrupt"));
+		DUK_ASSERT(thr->interrupt_counter <= thr->interrupt_init);
+		thr->interrupt_init -= thr->interrupt_counter;
+		thr->interrupt_counter = 0;
+		thr->heap->dbg_force_restart = 1;
+	}
+#endif
+
 #if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
 	duk__interrupt_fixup(thr, entry_curr_thread);
 #endif
@@ -1986,6 +2004,10 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 	/* stack discipline consistency check */
 	DUK_ASSERT(duk_get_top(ctx) == idx_retbase + num_stack_rets);
+
+	/* A debugger forced interrupt check is not needed here, as
+	 * problematic safe calls are not caused by side effects.
+	 */
 
 #if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
 	duk__interrupt_fixup(thr, entry_curr_thread);

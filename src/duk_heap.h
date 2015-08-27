@@ -433,6 +433,7 @@ struct duk_heap {
 	duk_bool_t dbg_processing;              /* currently processing messages or breakpoints: don't enter message processing recursively (e.g. no breakpoints when processing debugger eval) */
 	duk_bool_t dbg_paused;                  /* currently paused: talk with debug client until step/resume */
 	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
+	duk_bool_t dbg_force_restart;           /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
 	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
 	duk_hthread *dbg_step_thread;           /* borrowed; NULL if no step state (NULLed in unwind) */
 	duk_size_t dbg_step_csindex;            /* callstack index */
