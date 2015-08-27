@@ -228,13 +228,30 @@ However, the pointer needs to be synced (copied back) when:
 * The current activation changes, i.e. a new function call is made.
 
 * When an error is about to be thrown, to ensure any longjmp handlers
-  will see correct PC values.
+  will see correct PC values in activations.
 
 * When the executor interrupt is entered; in particular, the debugger
-  must see an up-to-date state.
+  must see an up-to-date state in activations.
 
 * When a ``goto restart_execution;`` occurs in bytecode dispatch, which
   happens for multiple opcodes.
+
+Care must be taken *not* to sync when ``thr->ptr_curr_pc`` is no longer
+pointing to the topmost activation and/or when the C stack frame pointed
+to may no longer exist.  The current policy is to:
+
+* Sync PC on function calls, also backup/restore ``thr->ptr_curr_pc`` on
+  calls.
+
+* Sync PC before a longjmp, often a bit earlier to ensure stacktraces
+  come out right.
+
+* Never sync or otherwise access ``thr->ptr_curr_pc`` in the setjmp
+  catcher and unwind code paths.  This is to ensure we never dereference
+  a ``thr->ptr_curr_pc`` no longer related to the topmost activation or
+  pointing to an unwound C stack frame.  (The ``thr->ptr_curr_pc`` is
+  not currently NULLed so it's intentionally dangling and must not be
+  dereferenced incorrectly.)
 
 Syncing the pointer back unnecessarily or multiple times is safe, however.
 
