@@ -1960,6 +1960,18 @@ DUK_LOCAL void duk__executor_handle_debugger(duk_hthread *thr, duk_activation *a
 	} while (0)
 #endif
 
+#define DUK__SYNC_CURR_PC()  do { \
+		duk_activation *act; \
+		act = thr->callstack + thr->callstack_top - 1; \
+		act->curr_pc = curr_pc; \
+	} while (0)
+#define DUK__SYNC_AND_NULL_CURR_PC()  do { \
+		duk_activation *act; \
+		act = thr->callstack + thr->callstack_top - 1; \
+		act->curr_pc = curr_pc; \
+		thr->ptr_curr_pc = NULL; \
+	} while (0)
+
 DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	/* Entry level info.  Although these are assigned to before setjmp()
 	 * a 'volatile' seems to be needed.  Note placement of "volatile" for
@@ -3226,7 +3238,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                            entry_thread,
 				                            entry_callstack_top)) {
 					DUK_DDD(DUK_DDDPRINT("FASTRETURN success a=%ld b=%ld", (long) a, (long) b));
-					duk_hthread_sync_currpc(thr);  /* must sync explicitly */
+					DUK__SYNC_CURR_PC();
 					goto restart_execution;
 				}
 			}
@@ -3254,6 +3266,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
+			DUK__SYNC_AND_NULL_CURR_PC();
 			duk_err_longjmp(thr);
 			DUK_UNREACHABLE();
 			break;
@@ -4207,6 +4220,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 					duk_err_setup_heap_ljstate(thr, (duk_small_int_t) cont_type);
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+					DUK__SYNC_AND_NULL_CURR_PC();
 					duk_err_longjmp(thr);
 					DUK_UNREACHABLE();
 				}
@@ -4224,11 +4238,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				 * break re-throwing for instance.
 				 */
 
-				/* Sync needed before Duktape.errThrow augmentation, not
-				 * strictly needed otherwise: bytecode longjmp handler
-				 * syncs at the latest.
+				/* Sync so that augmentation sees up-to-date activations, NULL
+				 * thr->ptr_curr_pc so that it's not used if side effects occur
+				 * in augmentation or longjmp handling.
 				 */
-				duk_hthread_sync_currpc(thr);
+				DUK__SYNC_AND_NULL_CURR_PC();
 
 				duk_dup(ctx, (duk_idx_t) bc);
 				DUK_DDD(DUK_DDDPRINT("THROW ERROR (BYTECODE): %!dT (before throw augment)",
@@ -4243,7 +4257,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 				duk_err_longjmp(thr);
-
 				DUK_UNREACHABLE();
 				break;
 			}
@@ -4272,7 +4285,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				DUK_D(DUK_DPRINT("DEBUGGER statement encountered, halt execution"));
 				if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
 					DUK_HEAP_SET_PAUSED(thr->heap);
-					duk_hthread_sync_currpc(thr);  /* must sync explicitly */
+					DUK__SYNC_CURR_PC();
 					goto restart_execution;
 				}
 #else
@@ -4295,8 +4308,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_BREAK);
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+				DUK__SYNC_AND_NULL_CURR_PC();
 				duk_err_longjmp(thr);
-
 				DUK_UNREACHABLE();
 				break;
 			}
@@ -4315,8 +4328,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_CONTINUE);
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+				DUK__SYNC_AND_NULL_CURR_PC();
 				duk_err_longjmp(thr);
-
 				DUK_UNREACHABLE();
 				break;
 			}
@@ -4435,3 +4448,5 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 }
 
 #undef DUK__INTERNAL_ERROR
+#undef DUK__SYNC_CURR_PC
+#undef DUK__SYNC_AND_NULL_CURR_PC

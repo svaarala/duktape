@@ -41,7 +41,11 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 
 	thr->heap->handling_error = 1;
 
-	duk_hthread_sync_currpc(thr);  /* ensure PC is consistent for traceback */
+	/* Sync so that augmentation sees up-to-date activations, NULL
+	 * thr->ptr_curr_pc so that it's not used if side effects occur
+	 * in augmentation or longjmp handling.
+	 */
+	duk_hthread_sync_and_null_currpc(thr);
 
 	/*
 	 *  Create and push an error object onto the top of stack.
