@@ -3489,6 +3489,21 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				;
 			}
 
+			/* Registers 'bc' and 'bc + 1' are written in longjmp handling
+			 * and if their previous values (which are temporaries) become
+			 * unreachable -and- have a finalizer, there'll be a function
+			 * call during error handling which is not supported now (GH-287).
+			 * Ensure that both 'bc' and 'bc + 1' have primitive values to
+			 * guarantee no finalizer calls in error handling.  Scrubbing also
+			 * ensures finalizers for the previous values run here rather than
+			 * later.  Error handling related values are also written to 'bc'
+			 * and 'bc + 1' but those values never become unreachable during
+			 * error handling, so there's no side effect problem even if the
+			 * error value has a finalizer.
+			 */
+			duk_to_undefined(ctx, b);
+			duk_to_undefined(ctx, b + 1);
+
 			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
 			cat->callstack_index = thr->callstack_top - 1;
 			cat->pc_base = act->pc;  /* pre-incremented, points to first jump slot */
