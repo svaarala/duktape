@@ -1070,6 +1070,9 @@ Planned
 * Fix debugger GetCallStack line number handling for callstack entries below
   the callstack top (GH-281)
 
+* Fix debugger breakpoint/pause check when a function call is caused by a side
+  effect like a property getter call (GH-303)
+
 * Fix object environment handling to allow Proxy object as a binding
   target, so that a Proxy can be used in a with statement or as the
   duk_set_global_object() argument (GH-221)
