@@ -3360,6 +3360,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				/* curr_pc synced by duk_handle_ecma_call_setup() */
 				goto restart_execution;
 			}
+			DUK_ASSERT(thr->ptr_curr_pc != NULL);  /* restored if ecma-to-ecma setup fails */
 
 			DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call not possible, target is native (may be lightfunc)"));
 
