@@ -2589,6 +2589,13 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_new(ctx, (duk_idx_t) c);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDD(DUK_DDDPRINT("NEW -> %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 			duk_replace(ctx, (duk_idx_t) idx);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+			/* When debugger is enabled, we need to recheck the activation
+			 * status after returning.
+			 */
+			/* call handling (in duk_new) has synced curr_pc */
+			goto restart_execution;
+#endif
 			break;
 		}
 
