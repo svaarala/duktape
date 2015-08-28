@@ -1313,6 +1313,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 
 	/* [... func this arg1 ... argN envobj] */
 
+	act = thr->callstack + thr->callstack_top - 1;
 	act->lex_env = env;
 	act->var_env = env;
 	DUK_HOBJECT_INCREF(thr, env);
@@ -2426,6 +2427,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* [... arg1 ... argN envobj] */
 
+	act = thr->callstack + thr->callstack_top - 1;
 	act->lex_env = env;
 	act->var_env = env;
 	DUK_HOBJECT_INCREF(thr, act->lex_env);
