@@ -163,6 +163,51 @@ DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *h
 	}
 }
 
+#if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
+DUK_LOCAL duk_ret_t duk__refcount_fake_finalizer(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	DUK_D(DUK_DPRINT("fake torture finalizer executed"));
+#if 0
+	DUK_DD(DUK_DDPRINT("fake torture finalizer for: %!T", duk_get_tval(ctx, 0)));
+#endif
+	/* Require a lot of stack to force a value stack grow/shrink. */
+	duk_require_stack(ctx, 100000);
+
+	/* XXX: do something to force a callstack grow/shrink, perhaps
+	 * just a manual forced resize?
+	 */
+	return 0;
+}
+
+DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject *obj) {
+	duk_context *ctx;
+	duk_int_t rc;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+	ctx = (duk_context *) thr;
+
+	/* Avoid fake finalization for the duk__refcount_fake_finalizer function
+	 * itself, otherwise we're in infinite recursion.
+	 */
+	if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
+		if (((duk_hnativefunction *) obj)->func == duk__refcount_fake_finalizer) {
+			DUK_DD(DUK_DDPRINT("avoid fake torture finalizer for duk__refcount_fake_finalizer itself"));
+			return;
+		}
+	}
+
+	/* Run fake finalizer.  Avoid creating new refzero queue entries
+	 * so that we are not forced into a forever loop.
+	 */
+	duk_push_c_function(ctx, duk__refcount_fake_finalizer, 1 /*nargs*/);
+	duk_push_hobject(ctx, obj);
+	rc = duk_pcall(ctx, 1);
+	DUK_UNREF(rc);  /* ignored */
+	duk_pop(ctx);
+}
+#endif  /* DUK_USE_REFZERO_FINALIZER_TORTURE */
+
 /*
  *  Refcount memory freeing loop.
  *
@@ -211,6 +256,20 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, (duk_heaphdr *) h1));
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
+
+#if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
+		/* Torture option to shake out finalizer side effect issues:
+		 * make a bogus function call for every finalizable object,
+		 * essentially simulating the case where everything has a
+		 * finalizer.
+		 */
+		DUK_DD(DUK_DDPRINT("refzero torture enabled, fake finalizer"));
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
+		DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
+		duk__refcount_run_torture_finalizer(thr, obj);  /* must never longjmp */
+		DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
+		DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
+#endif
 
 		/*
 		 *  Finalizer check.
