@@ -1061,6 +1061,9 @@ Planned
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
   to be deep by default for all targets (GH-165)
 
+* Fix missing activation lookup from call handling after an Arguments object
+  was created, this could in theory lead to memory unsafe behavior (GH-305)
+
 * Fix debugger GetCallStack line number handling for callstack entries below
   the callstack top (GH-281)
 
