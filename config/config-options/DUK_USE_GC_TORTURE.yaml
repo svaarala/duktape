@@ -5,6 +5,7 @@ tags:
   - gc
   - memory
   - development
+  - torture
 description: >
   Development time option: force full mark-and-sweep on every allocation to
   stress test memory management.
