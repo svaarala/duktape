@@ -6,6 +6,7 @@ default: false
 tags:
   - debugger
   - development
+  - torture
 description: >
   Development time option: force debugger transport torture.  Concretely this
   now causes Duktape to read/write debug protocol data in 1-byte increments,

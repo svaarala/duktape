@@ -67,3 +67,9 @@ fastpath:
 
 cstackdepth:
   title: C stack depth
+
+torture:
+  title: Development time torture options
+  description: >
+    Development time options to stress test corner case handling by e.g.
+    causing a garbage collection on every allocation.
