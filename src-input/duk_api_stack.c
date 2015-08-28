@@ -414,15 +414,19 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t idx) {
 		/* Stack size decreases. */
 #if defined(DUK_USE_REFERENCE_COUNTING)
 		duk_uidx_t count;
+		duk_tval *tv_end;
 
 		count = vs_size - uidx;
 		DUK_ASSERT(count > 0);
-		while (count > 0) {
-			count--;
-			tv = --thr->valstack_top;  /* tv -> value just before prev top value; must relookup */
+		tv_end = thr->valstack_top - count;
+		tv = thr->valstack_top;
+		do {
+			tv--;
 			DUK_ASSERT(tv >= thr->valstack_bottom);
-			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
-		}
+			DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ(thr, tv);
+		} while (tv != tv_end);
+		thr->valstack_top = tv_end;
+		DUK_REFZERO_CHECK(thr);
 #else  /* DUK_USE_REFERENCE_COUNTING */
 		duk_uidx_t count;
 		duk_tval *tv_end;
