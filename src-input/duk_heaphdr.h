@@ -240,6 +240,17 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_STRING_INIT_NULLS(h)  /* currently nop */
 
 /*
+ *  Type tests
+ */
+
+#define DUK_HEAPHDR_IS_OBJECT(h) \
+	(DUK_HEAPHDR_GET_TYPE((h)) == DUK_HTYPE_OBJECT)
+#define DUK_HEAPHDR_IS_STRING(h) \
+	(DUK_HEAPHDR_GET_TYPE((h)) == DUK_HTYPE_STRING)
+#define DUK_HEAPHDR_IS_BUFFER(h) \
+	(DUK_HEAPHDR_GET_TYPE((h)) == DUK_HTYPE_BUFFER)
+
+/*
  *  Assert helpers
  */
 
@@ -336,26 +347,21 @@ struct duk_heaphdr_string {
 			DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
 		} \
 	} while (0)
-#define DUK_HEAPHDR_DECREF_FAST(thr,h) do { \
+#define DUK_HEAPHDR_DECREF_FAST_RAW(thr,h,rzcall,rzcast) do { \
 		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
 		DUK_ASSERT(duk__h != NULL); \
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
 		if (DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(duk__h)) { \
 			if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
-				duk_heaphdr_refzero((thr), duk__h); \
+				(rzcall)((thr), (rzcast) duk__h); \
 			} \
 		} \
 	} while (0)
-#define DUK_HEAPHDR_DECREF_NORZ_FAST(thr,h) do { \
-		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
-		DUK_ASSERT(duk__h != NULL); \
-		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
-		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
-		if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
-			duk_heaphdr_refzero_norz((thr), duk__h); \
-		} \
-	} while (0)
+#define DUK_HEAPHDR_DECREF_FAST(thr,h) \
+	DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_heaphdr_refzero,duk_heaphdr *)
+#define DUK_HEAPHDR_DECREF_NORZ_FAST(thr,h) \
+	DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_heaphdr_refzero_norz,duk_heaphdr *)
 
 /* Slow variants, call to a helper to reduce code size.
  * Can be used explicitly when size is always more important than speed.
@@ -372,10 +378,22 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_INCREF_SLOW(thr,h) do { \
 		duk_heaphdr_incref((duk_heaphdr *) (h)); \
 	} while (0)
-#define DUK_HEAPHDR_DECREF_SLOW(thr,h) do { \
+#define DUK_HSTRING_DECREF_SLOW(thr,h) do { \
 		duk_heaphdr_decref((thr), (duk_heaphdr *) (h)); \
 	} while (0)
-#define DUK_HEAPHDR_DECREF_NORZ_SLOW(thr,h) do { \
+#define DUK_HSTRING_DECREF_NORZ_SLOW(thr,h) do { \
+		duk_heaphdr_decref_norz((thr), (duk_heaphdr *) (h)); \
+	} while (0)
+#define DUK_HBUFFER_DECREF_SLOW(thr,h) do { \
+		duk_heaphdr_decref((thr), (duk_heaphdr *) (h)); \
+	} while (0)
+#define DUK_HBUFFER_DECREF_NORZ_SLOW(thr,h) do { \
+		duk_heaphdr_decref_norz((thr), (duk_heaphdr *) (h)); \
+	} while (0)
+#define DUK_HOBJECT_DECREF_SLOW(thr,h) do { \
+		duk_heaphdr_decref((thr), (duk_heaphdr *) (h)); \
+	} while (0)
+#define DUK_HOBJECT_DECREF_NORZ_SLOW(thr,h) do { \
 		duk_heaphdr_decref_norz((thr), (duk_heaphdr *) (h)); \
 	} while (0)
 
@@ -384,60 +402,116 @@ struct duk_heaphdr_string {
  * is about +1kB for _FAST variants.
  */
 #if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
+/* XXX: It would be nice to specialize for specific duk_hobject subtypes
+ * but current refzero queue handling prevents that.
+ */
 #define DUK_TVAL_INCREF(thr,tv)                DUK_TVAL_INCREF_FAST((thr),(tv))
 #define DUK_TVAL_DECREF(thr,tv)                DUK_TVAL_DECREF_FAST((thr),(tv))
 #define DUK_TVAL_DECREF_NORZ(thr,tv)           DUK_TVAL_DECREF_NORZ_FAST((thr),(tv))
 #define DUK_HEAPHDR_INCREF(thr,h)              DUK_HEAPHDR_INCREF_FAST((thr),(h))
-#define DUK_HEAPHDR_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST((thr),(h))
-#define DUK_HEAPHDR_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ_FAST((thr),(h))
+#if 0  /* DUK_HEAPHDR_INCREF() is needed (it's generic) but generic DECREF is not. */
+#define DUK_HEAPHDR_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_heaphdr_refzero,duk_heaphdr *)
+#define DUK_HEAPHDR_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_heaphdr_refzero_norz,duk_heaphdr *)
+#endif
+#define DUK_HSTRING_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HSTRING_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hstring_refzero,duk_hstring *)
+#define DUK_HSTRING_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hstring_refzero,duk_hstring *)  /* no 'norz' variant */
+#define DUK_HOBJECT_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HOBJECT_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero,duk_hobject *)
+#define DUK_HOBJECT_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero_norz,duk_hobject *)
+#define DUK_HBUFFER_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
+#define DUK_HBUFFER_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hbuffer_refzero,duk_hbuffer *)
+#define DUK_HBUFFER_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hbuffer_refzero,duk_hbuffer *)  /* no 'norz' variant */
+#define DUK_HCOMPFUNC_INCREF(thr,h)            DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HCOMPFUNC_DECREF(thr,h)            DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero,duk_hobject *)
+#define DUK_HCOMPFUNC_DECREF_NORZ(thr,h)       DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero_norz,duk_hobject *)
+#define DUK_HNATFUNC_INCREF(thr,h)             DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HNATFUNC_DECREF(thr,h)             DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero,duk_hobject *)
+#define DUK_HNATFUNC_DECREF_NORZ(thr,h)        DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero_norz,duk_hobject *)
+#define DUK_HBUFOBJ_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HBUFOBJ_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero,duk_hobject *)
+#define DUK_HBUFOBJ_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero_norz,duk_hobject *)
+#define DUK_HTHREAD_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HTHREAD_DECREF(thr,h)              DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero,duk_hobject *)
+#define DUK_HTHREAD_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_FAST_RAW((thr),(h),duk_hobject_refzero_norz,duk_hobject *)
 #else
 #define DUK_TVAL_INCREF(thr,tv)                DUK_TVAL_INCREF_SLOW((thr),(tv))
 #define DUK_TVAL_DECREF(thr,tv)                DUK_TVAL_DECREF_SLOW((thr),(tv))
 #define DUK_TVAL_DECREF_NORZ(thr,tv)           DUK_TVAL_DECREF_NORZ_SLOW((thr),(tv))
 #define DUK_HEAPHDR_INCREF(thr,h)              DUK_HEAPHDR_INCREF_SLOW((thr),(h))
+#if 0
 #define DUK_HEAPHDR_DECREF(thr,h)              DUK_HEAPHDR_DECREF_SLOW((thr),(h))
 #define DUK_HEAPHDR_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ_SLOW((thr),(h))
 #endif
-
-/* Casting convenience. */
 #define DUK_HSTRING_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HSTRING_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HSTRING_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) (h))
+#define DUK_HSTRING_DECREF(thr,h)              DUK_HSTRING_DECREF_SLOW((thr),(h))
+#define DUK_HSTRING_DECREF_NORZ(thr,h)         DUK_HSTRING_DECREF_NORZ_SLOW((thr),(h))
 #define DUK_HOBJECT_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HOBJECT_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HOBJECT_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) (h))
+#define DUK_HOBJECT_DECREF(thr,h)              DUK_HOBJECT_DECREF_SLOW((thr),(h))
+#define DUK_HOBJECT_DECREF_NORZ(thr,h)         DUK_HOBJECT_DECREF_NORZ_SLOW((thr),(h))
 #define DUK_HBUFFER_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) (h))
-#define DUK_HBUFFER_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) (h))
-#define DUK_HBUFFER_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) (h))
+#define DUK_HBUFFER_DECREF(thr,h)              DUK_HBUFFER_DECREF_SLOW((thr),(h))
+#define DUK_HBUFFER_DECREF_NORZ(thr,h)         DUK_HBUFFER_DECREF_NORZ_SLOW((thr),(h))
 #define DUK_HCOMPFUNC_INCREF(thr,h)            DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HCOMPFUNC_DECREF(thr,h)            DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HCOMPFUNC_DECREF_NORZ(thr,h)       DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HCOMPFUNC_DECREF(thr,h)            DUK_HOBJECT_DECREF_SLOW((thr),(duk_hobject *) &(h)->obj)
+#define DUK_HCOMPFUNC_DECREF_NORZ(thr,h)       DUK_HOBJECT_DECREF_NORZ_SLOW((thr),(duk_hobject *) &(h)->obj)
 #define DUK_HNATFUNC_INCREF(thr,h)             DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HNATFUNC_DECREF(thr,h)             DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HNATFUNC_DECREF_NORZ(thr,h)        DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HNATFUNC_DECREF(thr,h)             DUK_HOBJECT_DECREF_SLOW((thr),(duk_hobject *) &(h)->obj)
+#define DUK_HNATFUNC_DECREF_NORZ(thr,h)        DUK_HOBJECT_DECREF_NORZ_SLOW((thr),(duk_hobject *) &(h)->obj)
 #define DUK_HBUFOBJ_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HBUFOBJ_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HBUFOB_DECREF_NORZ(thr,h)          DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HBUFOBJ_DECREF(thr,h)              DUK_HOBJECT_DECREF_SLOW((thr),(duk_hobject *) &(h)->obj)
+#define DUK_HBUFOB_DECREF_NORZ(thr,h)          DUK_HOBJECT_DECREF_NORZ_SLOW((thr),(duk_hobject *) &(h)->obj)
 #define DUK_HTHREAD_INCREF(thr,h)              DUK_HEAPHDR_INCREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HTHREAD_DECREF(thr,h)              DUK_HEAPHDR_DECREF((thr),(duk_heaphdr *) &(h)->obj)
-#define DUK_HTHREAD_DECREF_NORZ(thr,h)         DUK_HEAPHDR_DECREF_NORZ((thr),(duk_heaphdr *) &(h)->obj)
+#define DUK_HTHREAD_DECREF(thr,h)              DUK_HOBJECT_DECREF_SLOW((thr),(duk_hobject *) &(h)->obj)
+#define DUK_HTHREAD_DECREF_NORZ(thr,h)         DUK_HOBJECT_DECREF_NORZ_SLOW((thr),(duk_hobject *) &(h)->obj)
+#endif
 
 /* Convenience for some situations; the above macros don't allow NULLs
- * for performance reasons.
+ * for performance reasons.  Macros cover only actually needed cases.
  */
-#define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h) do { \
+#define DUK_HEAPHDR_INCREF_ALLOWNULL(thr,h) do { \
 		if ((h) != NULL) { \
 			DUK_HEAPHDR_INCREF((thr), (duk_heaphdr *) (h)); \
 		} \
 	} while (0)
-#define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h) do { \
+#define DUK_HEAPHDR_DECREF_ALLOWNULL(thr,h) do { \
 		if ((h) != NULL) { \
 			DUK_HEAPHDR_DECREF((thr), (duk_heaphdr *) (h)); \
 		} \
 	} while (0)
-#define DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr,h) do { \
+#define DUK_HEAPHDR_DECREF_NORZ_ALLOWNULL(thr,h) do { \
 		if ((h) != NULL) { \
 			DUK_HEAPHDR_DECREF_NORZ((thr), (duk_heaphdr *) (h)); \
+		} \
+	} while (0)
+#define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HOBJECT_INCREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HOBJECT_DECREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HOBJECT_DECREF_NORZ((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HTHREAD_INCREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HTHREAD_INCREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HTHREAD_DECREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HTHREAD_DECREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HTHREAD_DECREF_NORZ((thr), (h)); \
 		} \
 	} while (0)
 

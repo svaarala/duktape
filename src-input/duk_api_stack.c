@@ -418,8 +418,9 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t idx) {
 
 		count = vs_size - uidx;
 		DUK_ASSERT(count > 0);
-		tv_end = thr->valstack_top - count;
 		tv = thr->valstack_top;
+		tv_end = tv - count;
+		DUK_ASSERT(tv > tv_end);  /* Because count > 0. */
 		do {
 			tv--;
 			DUK_ASSERT(tv >= thr->valstack_bottom);
@@ -4287,6 +4288,9 @@ DUK_INTERNAL void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builti
 DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	duk_tval *tv_end;
+#endif
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -4313,12 +4317,15 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	/* XXX: optimize loops */
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	while (count > 0) {
-		count--;
-		tv = --thr->valstack_top;  /* tv points to element just below prev top */
+	tv = thr->valstack_top;
+	tv_end = tv - count;
+	while (tv != tv_end) {
+		tv--;
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ(thr, tv);
 	}
+	thr->valstack_top = tv;
+	DUK_REFZERO_CHECK(thr);
 #else
 	tv = thr->valstack_top;
 	while (count > 0) {

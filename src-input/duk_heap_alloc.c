@@ -26,7 +26,7 @@
  *  been already dealt with.
  */
 
-DUK_INTERNAL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h) {
+DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -55,9 +55,10 @@ DUK_INTERNAL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 		 * functions in the callstack.
 		 */
 	}
+	DUK_FREE(heap, (void *) h);
 }
 
-DUK_INTERNAL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
+DUK_INTERNAL void duk_free_hbuffer(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -66,9 +67,10 @@ DUK_INTERNAL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g)));
 		DUK_FREE(heap, DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g));
 	}
+	DUK_FREE(heap, (void *) h);
 }
 
-DUK_INTERNAL void duk_free_hstring_inner(duk_heap *heap, duk_hstring *h) {
+DUK_INTERNAL void duk_free_hstring(duk_heap *heap, duk_hstring *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
@@ -82,6 +84,7 @@ DUK_INTERNAL void duk_free_hstring_inner(duk_heap *heap, duk_hstring *h) {
 		DUK_USE_EXTSTR_FREE(heap->heap_udata, (const void *) DUK_HSTRING_GET_EXTDATA((duk_hstring_external *) h));
 	}
 #endif
+	DUK_FREE(heap, (void *) h);
 }
 
 DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
@@ -92,19 +95,18 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 
 	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
-		duk_free_hstring_inner(heap, (duk_hstring *) hdr);
+		duk_free_hstring(heap, (duk_hstring *) hdr);
 		break;
 	case DUK_HTYPE_OBJECT:
-		duk_free_hobject_inner(heap, (duk_hobject *) hdr);
+		duk_free_hobject(heap, (duk_hobject *) hdr);
 		break;
 	case DUK_HTYPE_BUFFER:
-		duk_free_hbuffer_inner(heap, (duk_hbuffer *) hdr);
+		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
 		break;
 	default:
 		DUK_UNREACHABLE();
 	}
 
-	DUK_FREE(heap, hdr);
 }
 
 /*
