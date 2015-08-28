@@ -4103,11 +4103,11 @@ DUK_EXTERNAL void duk_throw(duk_context *ctx) {
 	 * just before an error is thrown.
 	 */
 
-	/* Sync needed before Duktape.errThrow augmentation, not strictly
-	 * needed otherwise: bytecode longjmp handler syncs at the latest
-	 * if we were executing bytecode.
+	/* Sync so that augmentation sees up-to-date activations, NULL
+	 * thr->ptr_curr_pc so that it's not used if side effects occur
+	 * in augmentation or longjmp handling.
 	 */
-	duk_hthread_sync_currpc(thr);
+	duk_hthread_sync_and_null_currpc(thr);
 
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (before throw augment)", (duk_tval *) duk_get_tval(ctx, -1)));

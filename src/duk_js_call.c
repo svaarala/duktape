@@ -908,10 +908,11 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
 
-	/* Sync curr_pc (if any) to act->pc if there's a running Ecmascript
-	 * function.
+	/* If thr->ptr_curr_pc is set, sync curr_pc to act->pc.  Then NULL
+	 * thr->ptr_curr_pc so that it's not accidentally used with an incorrect
+	 * activation when side effects occur.
 	 */
-	duk_hthread_sync_currpc(thr);
+	duk_hthread_sync_and_null_currpc(thr);
 
 	/* XXX: Multiple tv_func lookups are now avoided by making a local
 	 * copy of tv_func.  Another approach would be to compute an offset
@@ -1377,7 +1378,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	/* For native calls must be NULL so we don't sync back */
-	thr->ptr_curr_pc = NULL;
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);
 
 	if (func) {
 		rc = ((duk_hnativefunction *) func)->func((duk_context *) thr);
@@ -1491,6 +1492,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	/* thr->ptr_curr_pc is set by bytecode executor early on entry */
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);
 	DUK_DDD(DUK_DDDPRINT("entering bytecode execution"));
 	duk_js_execute_bytecode(thr);
 	DUK_DDD(DUK_DDDPRINT("returned from bytecode execution"));
@@ -2037,6 +2039,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_activation *act;
 	duk_hobject *env;
 	duk_bool_t use_tailcall;
+	duk_instr_t **entry_ptr_curr_pc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
@@ -2052,10 +2055,13 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	           (thr->state == DUK_HTHREAD_STATE_RUNNING &&
 	            thr->heap->curr_thread == thr));
 
-	/* Sync curr_pc (if any) to act->pc if there's a running Ecmascript
-	 * function.
+	/* If thr->ptr_curr_pc is set, sync curr_pc to act->pc.  Then NULL
+	 * thr->ptr_curr_pc so that it's not accidentally used with an incorrect
+	 * activation when side effects occur.  If we end up not making the
+	 * call we must restore the value.
 	 */
-	duk_hthread_sync_currpc(thr);
+	entry_ptr_curr_pc = thr->ptr_curr_pc;
+	duk_hthread_sync_and_null_currpc(thr);
 
 	/* if a tail call:
 	 *   - an Ecmascript activation must be on top of the callstack
@@ -2127,6 +2133,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
 	if (func == NULL || !DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
 		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc/nativefunc, cannot do ecma-to-ecma call"));
+		thr->ptr_curr_pc = entry_ptr_curr_pc;
 		return 0;
 	}
 	/* XXX: tv_func is not actually needed */

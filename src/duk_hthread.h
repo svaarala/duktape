@@ -345,5 +345,6 @@ DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr
 #endif
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk_activation *act);
 DUK_INTERNAL_DECL void duk_hthread_sync_currpc(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_sync_and_null_currpc(duk_hthread *thr);
 
 #endif  /* DUK_HTHREAD_H_INCLUDED */

@@ -14,8 +14,8 @@ The discussion is limited to a single Duktape heap as each Duktape heap is
 independent of other Duktape heaps.  At any time, only one native thread may
 be actively calling into a specific Duktape heap.
 
-Execution states
-================
+Execution states and state overview
+===================================
 
 There are three conceptual execution states for a Duktape heap:
 
@@ -27,6 +27,19 @@ There are three conceptual execution states for a Duktape heap:
 
 This conceptual model ignores details like heap initialization and
 transitions from one state to another by "call handling".
+
+Execution state is contained mostly in three stacks:
+
+* Call stack: used to track function calls
+
+* Catch stack: used to track try-catch-finally and other catchpoints specific
+  to the bytecode executor
+
+* Value stack: contains the tagged values manipulated through the Duktape API
+  and in the bytecode executor
+
+In addition to these there are execution control variables in ``duk_hthread``
+and ``duk_heap``.
 
 Typical control flow
 ====================
@@ -223,46 +236,55 @@ entirely.
 
 For the most part the bytecode executor can keep on dispatching opcodes
 using ``curr_pc`` without copying the pointer back to the topmost activation.
-However, the pointer needs to be synced (copied back) when:
+Careful management of ``curr_pc`` and ``thr->ptr_curr_pc`` are needed in the
+following situations:
 
-* The current activation changes, i.e. a new function call is made.
+* Call handling must (1) store/restore the current ``thr->ptr_curr_pc`` value,
+  (2) sync the ``curr_pc`` if ``thr->ptr_curr_pc`` is non-NULL, (3) set the
+  ``thr->ptr_curr_pc`` to NULL to avoid any code using it with an incorrect
+  activation (not matching what ``curr_pc`` was initialized from).  This
+  ensures that any side effects in the executor, such as DECREF causing a
+  finalizer call or a property read causing a getter call, are handled
+  correctly without the executor syncing the ``curr_pc`` at every turn.  This
+  is quite important because there are a lot of potential side effects in the
+  executor opcode loop.
 
-* When an error is about to be thrown, to ensure any longjmp handlers
-  will see correct PC values in activations.
+* If any code depends on ``duk_activation`` structs (``act->curr_pc`` in
+  particular) being correct, ``curr_pc`` must be synced back.  For example:
+  executor interrupt, debugger handling, and error augmentation need to see
+  synced state.
 
-* When the executor interrupt is entered; in particular, the debugger
-  must see an up-to-date state in activations.
+* The ``curr_pc`` must be synced back **and** ``thr->ptr_curr_pc`` must be
+  NULLed before a longjmp that (potentially) causes a call stack unwind.
+  The NULLing is important because **any** call stack unwind may have side
+  effects due to e.g. finalizers for values in the unwound call stack being
+  called.  If ``thr->ptr_curr_pc`` was still set at that time, call handling
+  would sync ``curr_pc`` to the topmost activation, which wouldn't be the
+  same activation as intended.
 
-* When a ``goto restart_execution;`` occurs in bytecode dispatch, which
-  happens for multiple opcodes.
+* NULLing of ``thr->ptr_curr_pc`` is also required for longjmps which are
+  purely internal to the bytecode executor.  This is important because the
+  seemingly internal longjmps may propagate outwards, may cause side effects,
+  etc, all of which demand that ``thr->ptr_curr_pc`` be NULL at the time.
+  Once the longjmp has been handled, the executor should reinitialize
+  ``thr->ptr_curr_pc`` if bytecode execution resumes.
 
-Care must be taken *not* to sync when ``thr->ptr_curr_pc`` is no longer
-pointing to the topmost activation and/or when the C stack frame pointed
-to may no longer exist.  The current policy is to:
+* Whenever the bytecode executor does a ``goto restart_execution;`` the
+  ``curr_pc`` must be synced back even if the activation hasn't changed:
+  the restart code will look up the topmost activation's ``act->curr_pc``
+  which must be up to date.
 
-* Sync PC on function calls, also backup/restore ``thr->ptr_curr_pc`` on
-  calls.
-
-* Sync PC before a longjmp, often a bit earlier to ensure stacktraces
-  come out right.
-
-* Never sync or otherwise access ``thr->ptr_curr_pc`` in the setjmp
-  catcher and unwind code paths.  This is to ensure we never dereference
-  a ``thr->ptr_curr_pc`` no longer related to the topmost activation or
-  pointing to an unwound C stack frame.  (The ``thr->ptr_curr_pc`` is
-  not currently NULLed so it's intentionally dangling and must not be
-  dereferenced incorrectly.)
-
-Syncing the pointer back unnecessarily or multiple times is safe, however.
+Syncing the pointer back unnecessarily or multiple times is safe in general,
+so there's no need to ensure there's exactly one sync for a certain code path.
 
 Function bytecode is behind a stable pointer, so there are no realloc or
 other side effect concerns with using direct bytecode pointers.  Because
 the function being executed is always reachable, a borrowed pointer can
 be used.
 
-This is a bit error prone, but it is worth the performance difference
-of the alternatives.  This method of dispatch improves dispatch performance
-by about 20-25% over Duktape 1.2.
+This approach is error prone, but it is worth the performance difference of
+the alternatives.  This method of dispatch improves dispatch performance by
+about 20-25% over Duktape 1.2.
 
 Some alternatives
 -----------------
