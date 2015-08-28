@@ -452,8 +452,16 @@ Full value serialization
 ------------------------
 
 Bytecode dump/load is restricted to a subset of function values.  It would be
-more elegant to support generic value dump/load.  However, that would mean
-supporting e.g. arbitrary object graphs which is quite challenging.
+more elegant to support generic value dump/load.  However, there are several
+practical issues:
+
+* Arbitrary object graphs would need to be supported, which is quite
+  challenging.
+
+* There'd have to be some mechanism to "revive" any native values on
+  load.  For example, for a native object representing an open file,
+  the revive operation would reopen the file and perhaps seek the file
+  to the correct offset.
 
 Support bound functions
 -----------------------
