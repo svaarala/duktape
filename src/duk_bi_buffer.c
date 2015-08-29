@@ -1704,7 +1704,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 		                     (void *) p_dst_base, (long) dst_length));
 
 		if (p_src_base >= p_dst_base + dst_length ||  /* source starts after dest ends */
-		    p_src_base + src_length < p_dst_base) {   /* source ends before dest starts */
+		    p_src_base + src_length <= p_dst_base) {   /* source ends before dest starts */
 			no_overlap = 1;
 		}
 
