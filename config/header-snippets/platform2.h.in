@@ -168,7 +168,9 @@
  * there is no platform specific date parsing/formatting but there is still
  * the ISO 8601 standard format.
  */
+#if defined(DUK_COMPILING_DUKTAPE)
 #include <windows.h>
+#endif
 #include <limits.h>
 #elif defined(DUK_F_FLASHPLAYER)
 /* Crossbridge */
