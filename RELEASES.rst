@@ -1061,6 +1061,9 @@ Planned
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
   to be deep by default for all targets (GH-165)
 
+* Fix a try-finally finalizer side effect issue by scrubbing TRYCATCH catch
+  registers before executing the try code block (GH-287)
+
 * Fix missing activation lookup from call handling after an Arguments object
   was created, this could in theory lead to memory unsafe behavior (GH-305)
 
