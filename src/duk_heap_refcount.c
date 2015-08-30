@@ -166,7 +166,7 @@ DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *h
 #if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
 DUK_LOCAL duk_ret_t duk__refcount_fake_finalizer(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	DUK_D(DUK_DPRINT("fake torture finalizer executed"));
+	DUK_D(DUK_DPRINT("fake refcount torture finalizer executed"));
 #if 0
 	DUK_DD(DUK_DDPRINT("fake torture finalizer for: %!T", duk_get_tval(ctx, 0)));
 #endif
@@ -195,6 +195,15 @@ DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject
 			DUK_DD(DUK_DDPRINT("avoid fake torture finalizer for duk__refcount_fake_finalizer itself"));
 			return;
 		}
+	}
+	/* Avoid fake finalization when callstack limit has been reached.
+	 * Otherwise a callstack limit error will be created, then refzero'ed,
+	 * and we're in an infinite loop.
+	 */
+	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit ||
+	    thr->callstack_size + 2 * DUK_CALLSTACK_GROW_STEP >= thr->callstack_max /*approximate*/) {
+		DUK_D(DUK_DPRINT("call recursion depth reached, avoid fake torture finalizer"));
+		return;
 	}
 
 	/* Run fake finalizer.  Avoid creating new refzero queue entries
