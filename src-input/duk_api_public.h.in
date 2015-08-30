@@ -34,9 +34,10 @@ extern "C" {
 
 struct duk_thread_state;
 struct duk_memory_functions;
-struct duk_function_list_entry;
-struct duk_number_list_entry;
+struct duk_function_list_entry;  /* to be removed */
+struct duk_number_list_entry;    /* to be removed */
 struct duk_time_components;
+struct duk_prop_list_entry;
 
 /* duk_context is now defined in duk_config.h because it may also be
  * referenced there by prototypes.
@@ -46,6 +47,7 @@ typedef struct duk_memory_functions duk_memory_functions;
 typedef struct duk_function_list_entry duk_function_list_entry;
 typedef struct duk_number_list_entry duk_number_list_entry;
 typedef struct duk_time_components duk_time_components;
+typedef struct duk_prop_list_entry duk_prop_list_entry;
 
 typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
@@ -100,6 +102,68 @@ struct duk_time_components {
 	duk_double_t millisecond;   /* may contain sub-millisecond fractions */
 };
 
+/* This structure is INTERNAL, you should never create instances of the
+ * struct using anything other than the DUK_PROP_xxx() initializer macros
+ * (which are part of the public API).  This is necessary to make it easy
+ * to extend the internal structure with new types and fields without
+ * breaking compatibility, and to support both compilers with and without
+ * union initializers.
+ */
+/* FIXME: key and value struct may need to be separated if arrays are supported */
+struct duk_prop_list_entry {
+	/* FIXME: padding impact */
+	duk_uint16_t etype;  /* entry type and flags (avoid name 'type') */
+	duk_uint16_t eattr;  /* entry attributes (match duk_def_prop() directly) */
+	const char *key;
+#if defined(DUK_USE_UNION_INITIALIZERS)
+	/* Ideal case: compiler supports designated union initializers
+	 * so the union can be clean and space efficient.
+	 */
+	union {
+		duk_bool_t bval;  /* avoid name 'bool' */
+		duk_double_t num;
+		struct {
+			const char *str;
+			duk_size_t len;
+		} str;
+		struct {
+			const void *buf;
+			duk_size_t len;
+		} buf;
+		void *ptr;
+		struct {
+			duk_c_function func;
+			duk_idx_t nargs;
+			duk_idx_t length;
+			duk_int_t magic;
+		} func;
+		struct {
+			duk_c_function getter;
+			duk_c_function setter;
+		} accessor;
+		duk_prop_list_entry *props;
+	} u;
+#else  /* DUK_USE_UNION_INITIALIZERS */
+	/* Portable case: compiler doesn't support designed union
+	 * initializers.  Use a struct and a minimal sequence of reused
+	 * fields for the initializer values.
+	 */
+
+	/* FIXME: lstring needs a duk_size_t field which would be nice to avoid.
+	 * If there's a guarantee that sizeof(duk_size_t) >= sizeof(duk_idx_t),
+	 * 'idx' could be changed to duk_size_t.
+	 */
+	struct {
+		duk_double_t num;      /* double, func length */
+		const void *ptr;       /* string or pointer */
+		duk_c_function func1;  /* func or getter */
+		duk_c_function func2;  /* setter */
+		duk_idx_t idx;         /* func nargs */
+		duk_int_t ival;        /* bool, func magic */
+	} s;
+#endif  /* DUK_USE_UNION_INITIALIZERS */
+};
+
 /*
  *  Constants
  */
@@ -149,9 +213,9 @@ struct duk_time_components {
 #define DUK_TYPE_NUMBER                   4    /* Ecmascript number: double */
 #define DUK_TYPE_STRING                   5    /* Ecmascript string: CESU-8 / extended UTF-8 encoded */
 #define DUK_TYPE_OBJECT                   6    /* Ecmascript object: includes objects, arrays, functions, threads */
-#define DUK_TYPE_BUFFER                   7    /* fixed or dynamic, garbage collected byte buffer */
-#define DUK_TYPE_POINTER                  8    /* raw void pointer */
-#define DUK_TYPE_LIGHTFUNC                9    /* lightweight function pointer */
+#define DUK_TYPE_BUFFER                   7    /* Duktape plain buffer: fixed or dynamic, garbage collected byte buffer */
+#define DUK_TYPE_POINTER                  8    /* Duktape plain pointer: raw void pointer */
+#define DUK_TYPE_LIGHTFUNC                9    /* Duktape lightweight function pointer */
 #define DUK_TYPE_MAX                      9
 
 /* Value mask types, used by e.g. duk_get_type_mask() */
@@ -811,8 +875,153 @@ DUK_EXTERNAL_DECL duk_int_t duk_get_current_magic(duk_context *ctx);
  *  Module helpers: put multiple function or constant properties
  */
 
-DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs);
-DUK_EXTERNAL_DECL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_idx, const duk_number_list_entry *numbers);
+/* FIXME: macro for declaring the property list?
+ * #define DUK_PROP_LIST_TYPE duk_prop_list_entry
+ */
+
+#define DUK_PROPINIT_END         0
+#define DUK_PROPINIT_UNDEFINED   1
+#define DUK_PROPINIT_NULL        2
+#define DUK_PROPINIT_BOOLEAN     3
+#define DUK_PROPINIT_NUMBER      4
+#define DUK_PROPINIT_STRING      5
+#define DUK_PROPINIT_LSTRING     6
+#define DUK_PROPINIT_OBJECT      7
+#define DUK_PROPINIT_ARRAY       8
+#define DUK_PROPINIT_BUFFER      9
+#define DUK_PROPINIT_POINTER     10
+#define DUK_PROPINIT_FUNCTION    11
+#define DUK_PROPINIT_LIGHTFUNC   12
+#define DUK_PROPINIT_ACCESSOR    13
+#define DUK_PROPINIT_PROPLIST    14
+#define DUK_PROPINIT_STACK       15
+
+/* These are to be removed, in favor of the more flexible duk_def_prop_list() */
+DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_index, const duk_function_list_entry *funcs);
+DUK_EXTERNAL_DECL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number_list_entry *numbers);
+
+DUK_EXTERNAL_DECL void duk_def_prop_list(duk_context *ctx, duk_idx_t obj_index, const duk_prop_list_entry *props);
+
+/* Property list initializers are union initializers when possible; when not,
+ * use struct initializers as a workaround.  The form of initialization must
+ * work correctly for global read-only initializers (so that the initializers
+ * can be placed into ROM).
+ */
+/* These defines and initializers are private, don't use directly. */
+#define DUK_PROPATTR_PLAIN (DUK_DEFPROP_HAVE_VALUE | \
+                            DUK_DEFPROP_SET_WRITABLE | \
+                            DUK_DEFPROP_SET_ENUMERABLE | \
+                            DUK_DEFPROP_SET_CONFIGURABLE)
+#define DUK_PROPATTR_ACCESSOR (DUK_DEFPROP_HAVE_GETTER | \
+                               DUK_DEFPROP_HAVE_SETTER | \
+                               DUK_DEFPROP_SET_ENUMERABLE | \
+                               DUK_DEFPROP_SET_CONFIGURABLE)
+/* FIXME: should HAVE_GETTER and HAVE_SETTER be NULL sensitive? */
+
+#if defined(DUK_USE_UNION_INITIALIZERS)
+#define DUK_PROP_END() \
+	{ DUK_PROPINIT_END, DUK_PROPATTR_PLAIN, NULL, { .bval = 0 } }
+#define DUK_PROP_UNDEFINED(keyval) \
+	{ DUK_PROPINIT_UNDEFINED, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .bval = 0 } }
+#define DUK_PROP_NULL(keyval) \
+	{ DUK_PROPINIT_NULL, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .bval = 0 } }
+#define DUK_PROP_BOOLEAN(keyval,boolval) \
+	{ DUK_PROPINIT_BOOLEAN, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .bval = (boolval) } }
+#define DUK_PROP_NUMBER(keyval,numval) \
+	{ DUK_PROPINIT_NUMBER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .num = (numval) } }
+#define DUK_PROP_STRING(keyval,strval) \
+	{ DUK_PROPINIT_STRING, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .str = { (strval), 0 } } }
+#define DUK_PROP_LSTRING(keyval,strval,lenval) \
+	{ DUK_PROPINIT_LSTRING, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .str = { (strval), (lenval) } } }
+#define DUK_PROP_OBJECT(keyval) \
+	error__unimplemented_FIXME
+#define DUK_PROP_BUFFER(keyval,bufval,lenval) \
+	{ DUK_PROPINIT_BUFFER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .buf = { (bufval), (lenval) } } }
+#define DUK_PROP_POINTER(keyval,ptrval) \
+	{ DUK_PROPINIT_POINTER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .ptr = (ptrval) } }
+#define DUK_PROP_FUNCTION(keyval,funcval,nargsval) \
+	{ DUK_PROPINIT_FUNCTION, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .func = { (funcval), (nargsval), 0, 0 } } }  /* FIXME: magic? or separate initializer? */
+#define DUK_PROP_LIGHTFUNC(keyval,funcval,nargsval) \
+	{ DUK_PROPINIT_LIGHTFUNC, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .func = { (funcval), (nargsval), (nargsval), 0 } } }  /* FIXME: repeated nargs! */
+#define DUK_PROP_LIGHTFUNC_LENGTH_MAGIC(keyval,funcval,nargsval,lengthval,magicval) \
+	{ DUK_PROPINIT_LIGHTFUNC, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .func = { (funcval), (nargsval), (lengthval), (magicval) } } }
+#define DUK_PROP_ACCESSOR(keyval,getterval,setterval) \
+	{ DUK_PROPINIT_ACCESSOR, DUK_PROPATTR_ACCESSOR, (keyval), \
+	  { .accessor = { (getterval), (setterval) } } }
+#define DUK_PROP_PROPLIST(keyval,plistval) \
+	{ DUK_PROPINIT_PROPLIST, DUK_PROPATTR_PLAIN, (keyval), \
+	  { .props = (plistval) } }
+/* FIXME: stack? */
+#else  /* DUK_USE_UNION_INITIALIZERS */
+#define DUK_PROP_END() \
+	{ DUK_PROPINIT_END, DUK_PROPATTR_PLAIN, NULL, \
+	  { 0.0, NULL, NULL, NULL, 0, 0 } }
+#define DUK_PROP_UNDEFINED(keyval) \
+	{ DUK_PROPINIT_UNDEFINED, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, NULL, NULL, NULL, 0, 0 } }
+#define DUK_PROP_NULL(keyval) \
+	{ DUK_PROPINIT_NULL, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, NULL, NULL, NULL, 0, 0 } }
+#define DUK_PROP_BOOLEAN(keyval,boolval) \
+	{ DUK_PROPINIT_BOOLEAN, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, NULL, NULL, NULL, 0, (boolval) } }
+#define DUK_PROP_NUMBER(keyval,numval) \
+	{ DUK_PROPINIT_NUMBER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { (numval), NULL, NULL, NULL, 0, 0 } }
+#define DUK_PROP_STRING(keyval,strval) \
+	{ DUK_PROPINIT_STRING, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, (const void *) (strval), NULL, NULL, 0, 0 } }
+#define DUK_PROP_LSTRING(keyval,strval,lenval) \
+	{ DUK_PROPINIT_LSTRING, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, (const void *) (strval), NULL, NULL, (lenval), 0 } }  /* FIXME: string length */
+#define DUK_PROP_OBJECT(keyval) \
+	error__unimplemented_FIXME
+#define DUK_PROP_BUFFER(keyval,bufval,lenval) \
+	{ DUK_PROPINIT_BUFFER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, (const void *) (bufval), NULL, NULL, (lenval), 0 } }   /* FIXME: length type */
+#define DUK_PROP_POINTER(keyval,ptrval) \
+	{ DUK_PROPINIT_POINTER, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, (const void *) (ptrval), NULL, NULL, 0, 0 } }
+#define DUK_PROP_FUNCTION(keyval,funcval,nargsval) \
+	{ DUK_PROPINIT_FUNCTION, DUK_PROPATTR_PLAIN, (keyval), \
+	  { (duk_double_t) 0, NULL, (funcval), NULL, (nargsval), 0 } }
+#define DUK_PROP_LIGHTFUNC(keyval,funcval,nargsval) \
+	{ DUK_PROPINIT_LIGHTFUNC, DUK_PROPATTR_PLAIN, (keyval), \
+	  { (duk_double_t) (nargsval), NULL, (funcval), NULL, (nargsval), 0 } }  /* FIXME: repated nargs */
+#define DUK_PROP_LIGHTFUNC_LENGTH_MAGIC(keyval,funcval,nargsval,lengthval,magicval) \
+	{ DUK_PROPINIT_LIGHTFUNC, DUK_PROPATTR_PLAIN, (keyval), \
+	  { (duk_double_t) (lengthval), NULL, (funcval), NULL, (nargsval), (magicval) } }
+#define DUK_PROP_ACCESSOR(keyval,getterval,setterval) \
+	{ DUK_PROPINIT_ACCESSOR, DUK_PROPATTR_ACCESSOR, (keyval), \
+	  { 0.0, NULL, (getterval), (setterval), 0, 0 } }
+#define DUK_PROP_PROPLIST(keyval,plistval) \
+	{ DUK_PROPINIT_PROPLIST, DUK_PROPATTR_PLAIN, (keyval), \
+	  { 0.0, (const void *) (plistval), NULL, NULL, 0, 0 } }
+/* FIXME: stack? */
+#endif  /* DUK_USE_UNION_INITIALIZERS */
+
+/*
+ *  Variable access
+ */
+
+/* XXX: These calls are incomplete and not usable now.  They are not (yet)
+ * part of the public API.
+ */
+DUK_EXTERNAL_DECL void duk_get_var(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_put_var(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_bool_t duk_del_var(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_bool_t duk_has_var(duk_context *ctx);
 
 /*
  *  Object operations
