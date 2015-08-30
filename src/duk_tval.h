@@ -360,7 +360,7 @@ struct duk_tval_struct {
 		(tv)->t = DUK__TAG_NUMBER; \
 		(tv)->v.d = (val); \
 	} while (0)
-#define DUK_TVAL_SET_NUMBER_CHKFAST(v,d) \
+#define DUK_TVAL_SET_NUMBER_CHKFAST(tv,d) \
 	DUK_TVAL_SET_NUMBER((tv), (d))
 #define DUK_TVAL_SET_DOUBLE(v,d) \
 	DUK_TVAL_SET_NUMBER((tv), (d))

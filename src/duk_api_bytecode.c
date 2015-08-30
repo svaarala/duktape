@@ -380,7 +380,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_uint8_t *fun_data;
 	duk_uint8_t *q;
 	duk_idx_t idx_base;
-	duk_tval *tv;
+	duk_tval *tv1;
 	duk_uarridx_t arr_idx;
 
 	/* XXX: There's some overlap with duk_js_closure() here, but
@@ -521,28 +521,28 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	DUK_HCOMPILEDFUNCTION_SET_DATA(thr->heap, h_fun, h_data);
 	DUK_HBUFFER_INCREF(thr, h_data);
 
-	tv = duk_get_tval(ctx, idx_base + 2);  /* may be NULL if no constants or inner funcs */
-	DUK_ASSERT((count_const == 0 && count_funcs == 0) || tv != NULL);
+	tv1 = duk_get_tval(ctx, idx_base + 2);  /* may be NULL if no constants or inner funcs */
+	DUK_ASSERT((count_const == 0 && count_funcs == 0) || tv1 != NULL);
 
 	q = fun_data;
 	if (count_const > 0) {
-		/* Explicit zero size check to avoid NULL 'tv'. */
-		DUK_MEMCPY((void *) q, (const void *) tv, sizeof(duk_tval) * count_const);
+		/* Explicit zero size check to avoid NULL 'tv1'. */
+		DUK_MEMCPY((void *) q, (const void *) tv1, sizeof(duk_tval) * count_const);
 		for (n = count_const; n > 0; n--) {
 			DUK_TVAL_INCREF_FAST(thr, (duk_tval *) (void *) q);  /* no side effects */
 			q += sizeof(duk_tval);
 		}
-		tv += count_const;
+		tv1 += count_const;
 	}
 
 	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) (void *) q);
 	for (n = count_funcs; n > 0; n--) {
 		duk_hobject *h_obj;
 
-		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-		h_obj = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
+		h_obj = DUK_TVAL_GET_OBJECT(tv1);
 		DUK_ASSERT(h_obj != NULL);
-		tv++;
+		tv1++;
 		DUK_HOBJECT_INCREF(thr, h_obj);
 
 		*((duk_hobject **) (void *) q) = h_obj;
