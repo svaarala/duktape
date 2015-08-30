@@ -799,6 +799,11 @@ python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" \
 	$DIST/LICENSE.txt.tmp $DIST/AUTHORS.rst.tmp
 
+# Stripped version of the single source file, around 20% smaller which may
+# matter when editing/viewing using an IDE.
+
+python util/strip_c_comments.py $DISTSRCCOM/duktape.c $DISTSRCCOM/duktape_stripped.c
+
 # Clean up temp files
 rm $DIST/*.tmp
 
