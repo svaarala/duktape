@@ -1067,6 +1067,52 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
 #endif  /* DUK_USE_ASSERTIONS */
 
 /*
+ *  Finalizer torture.  Do one fake finalizer call which causes side effects
+ *  similar to one or more finalizers on actual objects.
+ */
+
+#if defined(DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE)
+DUK_LOCAL duk_ret_t duk__markandsweep_fake_finalizer(duk_context *ctx) {
+	DUK_D(DUK_DPRINT("fake mark-and-sweep torture finalizer executed"));
+
+	/* Require a lot of stack to force a value stack grow/shrink.
+	 * Recursive mark-and-sweep is prevented by allocation macros
+	 * so this won't trigger another mark-and-sweep.
+	 */
+	duk_require_stack(ctx, 100000);
+
+	/* XXX: do something to force a callstack grow/shrink, perhaps
+	 * just a manual forced resize or a forced relocating realloc?
+	 */
+
+	return 0;
+}
+
+DUK_LOCAL void duk__markandsweep_torture_finalizer(duk_hthread *thr) {
+	duk_context *ctx;
+	duk_int_t rc;
+
+	DUK_ASSERT(thr != NULL);
+	ctx = (duk_context *) thr;
+
+	/* Avoid fake finalization when callstack limit has been reached.
+	 * Otherwise a callstack limit error will be created, then refzero'ed.
+	 */
+	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit ||
+	    thr->callstack_size + 2 * DUK_CALLSTACK_GROW_STEP >= thr->callstack_max /*approximate*/) {
+		DUK_D(DUK_DPRINT("call recursion depth reached, avoid fake mark-and-sweep torture finalizer"));
+		return;
+	}
+
+	/* Run fake finalizer.  Avoid creating unnecessary garbage. */
+	duk_push_c_function(ctx, duk__markandsweep_fake_finalizer, 0 /*nargs*/);
+	rc = duk_pcall(ctx, 0 /*nargs*/);
+	DUK_UNREF(rc);  /* ignored */
+	duk_pop(ctx);
+}
+#endif  /* DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE */
+
+/*
  *  Main mark-and-sweep function.
  *
  *  'flags' represents the features requested by the caller.  The current
@@ -1086,6 +1132,9 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	/* XXX: thread selection for mark-and-sweep is currently a hack.
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
+	 */
+	/* XXX: if thr != NULL, the thr may still be in the middle of
+	 * initialization; improve the thread viability test.
 	 */
 	thr = duk__get_temp_hthread(heap);
 	if (thr == NULL) {
@@ -1253,10 +1302,26 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  already happened, this is probably good enough for now.
 	 */
 
-	if (!(flags & DUK_MS_FLAG_NO_FINALIZERS)) {
-		duk__run_object_finalizers(heap);
+#if defined(DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE)
+	/* Cannot simulate individual finalizers because finalize_list only
+	 * contains objects with actual finalizers.  But simulate side effects
+	 * from finalization by doing a bogus function call and resizing the
+	 * stacks.
+	 */
+	if (flags & DUK_MS_FLAG_NO_FINALIZERS) {
+		DUK_D(DUK_DPRINT("skip mark-and-sweep torture finalizer, DUK_MS_FLAG_NO_FINALIZERS is set"));
+	} else if (!(thr->valstack != NULL && thr->callstack != NULL && thr->catchstack != NULL)) {
+		DUK_D(DUK_DPRINT("skip mark-and-sweep torture finalizer, thread not yet viable"));
 	} else {
+		DUK_D(DUK_DPRINT("run mark-and-sweep torture finalizer"));
+		duk__markandsweep_torture_finalizer(thr);
+	}
+#endif  /* DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE */
+
+	if (flags & DUK_MS_FLAG_NO_FINALIZERS) {
 		DUK_D(DUK_DPRINT("finalizer run skipped because DUK_MS_FLAG_NO_FINALIZERS is set"));
+	} else {
+		duk__run_object_finalizers(heap);
 	}
 
 	/*
