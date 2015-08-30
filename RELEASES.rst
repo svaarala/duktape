@@ -1107,6 +1107,8 @@ Planned
 
 * Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
 
+* Avoid including <windows.h> for application build (GH-312)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
