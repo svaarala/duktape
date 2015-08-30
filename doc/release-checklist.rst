@@ -48,8 +48,8 @@ Checklist for ordinary releases
 * Compilation tests:
 
   - Clean compile for command line tool with (a) no options and (b) common
-    debug options (DUK_OPT_DEBUG, DUK_OPT_DPRINT, DUK_OPT_SELF_TESTS,
-    DUK_OPT_ASSERTIONS)
+    debug options (DUK_USE_DEBUG, DUK_USE_DPRINT, DUK_USE_SELF_TESTS,
+    DUK_USE_ASSERTIONS)
 
   - Compile both from ``src`` and ``src-separate``.
 
@@ -119,9 +119,13 @@ Checklist for ordinary releases
 
 * Run testcases with torture options
 
-  - DUK_OPT_GC_TORTURE
+  - DUK_USE_GC_TORTURE
 
-  - DUK_OPT_SHUFFLE_TORTURE
+  - DUK_USE_SHUFFLE_TORTURE
+
+  - DUK_USE_REFZERO_FINALIZER_TORTURE
+
+  - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE
 
 * Memory usage testing
 
@@ -150,7 +154,7 @@ Checklist for ordinary releases
 
 * Regfuzz
 
-  - On x86-64, with DUK_OPT_ASSERTIONS
+  - On x86-64, with DUK_USE_ASSERTIONS
 
     - make regfuzztest
 
