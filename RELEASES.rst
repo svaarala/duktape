@@ -1061,6 +1061,9 @@ Planned
   DUK_USE_xxx config options for native recursion limits; C stacks are assumed
   to be deep by default for all targets (GH-165)
 
+* Provide at least 10 callstack entries for error handling (Duktape.errCreate)
+  when callstack limit is reached (GH-191)
+
 * Fix a try-finally finalizer side effect issue by scrubbing TRYCATCH catch
   registers before executing the try code block (GH-287)
 
