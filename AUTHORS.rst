@@ -24,6 +24,7 @@ their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
 * László Langó <llango.u-szeged@partner.samsung.com>
 * Legimet <legimet.calc@gmail.com>
 * Karl Skomski <karl@skomski.com>
+* Bruce Pascoe <fatcerberus1@gmail.com>
 
 Other contributions
 ===================

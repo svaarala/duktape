@@ -41,6 +41,17 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 
 	thr->heap->handling_error = 1;
 
+	if (!double_error) {
+		/* Allow headroom for calls during error handling (see GH-191).
+		 * We allow space for 10 additional recursions, with one extra
+		 * for, e.g. a print() call at the deepest level.
+		 */
+		DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX);
+		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11;
+	}
+
+	DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11);  /* just making sure */
+
 	/* Sync so that augmentation sees up-to-date activations, NULL
 	 * thr->ptr_curr_pc so that it's not used if side effects occur
 	 * in augmentation or longjmp handling.
@@ -107,9 +118,10 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	 *  Finally, longjmp
 	 */
 
-	thr->heap->handling_error = 0;
-
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
+
+	thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;  /* reset callstack limit */
+	thr->heap->handling_error = 0;
 
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
 	                     (duk_tval *) &thr->heap->lj.value1, (duk_tval *) &thr->heap->lj.value2));
