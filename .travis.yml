@@ -1,0 +1,10 @@
+language: c
+sudo: required
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install bc
+#compiler:
+#  - clang
+#  - gcc
+script:
+  - make codepolicycheck
