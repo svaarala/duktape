@@ -573,6 +573,10 @@ case "$INITJS_MINIFY" in
 	*)
 		minify_none
 		echo "Using un-minified version"
+		echo ""
+		echo "*** This should not happen for an official build!"
+		echo ""
+		sleep 2
 		cp $DISTSRCSEP/duk_initjs_none.js.tmp $DISTSRCSEP/duk_initjs_min.js
 		;;
 esac
