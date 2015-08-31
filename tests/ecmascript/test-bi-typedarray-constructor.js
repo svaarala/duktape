@@ -1333,7 +1333,7 @@ function onlyConstructorCallTest() {
         printProps(v);   // never here
     } catch (e) {
         print(e.name);
-    }
+    }
 }
 
 try {

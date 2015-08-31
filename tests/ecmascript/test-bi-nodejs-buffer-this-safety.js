@@ -104,7 +104,7 @@ function nodejsBufferThisSanityTest() {
                 totalCount++;
                 try {
                     funcVal.apply(thisVal, args);
-                } catch (e) {
+                } catch (e) {
                     //print(e);
                     errorCount++;
                 }
