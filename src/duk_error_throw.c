@@ -47,10 +47,10 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		 * for, e.g. a print() call at the deepest level.
 		 */
 		DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX);
-		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX + 11;
+		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11;
 	}
 
-	DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX + 11);  /* just making sure */
+	DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11);  /* just making sure */
 
 	/* Sync so that augmentation sees up-to-date activations, NULL
 	 * thr->ptr_curr_pc so that it's not used if side effects occur
