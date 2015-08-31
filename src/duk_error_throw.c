@@ -120,7 +120,7 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
-	thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;  /* reset reclimit */
+	thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;  /* reset callstack limit */
 	thr->heap->handling_error = 0;
 
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
