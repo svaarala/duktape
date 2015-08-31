@@ -52,3 +52,15 @@ set_property(TARGET duk-trans-dvalue-test APPEND PROPERTY COMPILE_DEFINITIONS
 	$<$<CONFIG:Debug>:DUK_OPT_DEBUG>
 	$<$<CONFIG:RelWithDebInfo>:DUK_OPT_DEBUG>
 )
+
+add_executable (duk-example-objects
+	"custom-c-object/custom-object-main.c"
+	"custom-c-object/custom-object-shape.c"
+	"custom-c-object/custom-object-vector2d.c"
+	"custom-c-object/custom-object.h"
+	)	
+target_link_libraries(duk-example-objects duktape)
+set_property(TARGET duk-example-objects APPEND PROPERTY COMPILE_DEFINITIONS
+	$<$<CONFIG:Debug>:DUK_OPT_DEBUG>
+	$<$<CONFIG:RelWithDebInfo>:DUK_OPT_DEBUG>
+)
