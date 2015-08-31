@@ -1,0 +1,10 @@
+*.c		eol=lf
+*.h		eol=lf
+*.h.in		eol=lf
+*.js		eol=lf
+*.sh		eol=lf
+*.md		eol=lf
+*.rst		eol=lf
+*.txt		eol=lf
+*.yaml		eol=lf
+*.json		eol=lf
