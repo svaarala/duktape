@@ -18,6 +18,12 @@
 #define DUK_INLINE          inline
 #define DUK_ALWAYS_INLINE   inline __attribute__((always_inline))
 #endif
+#elif defined(DUK_F_MSVC)
+#if defined(DUK_F_MSVC_FULL_VER)
+#define DUK_NOINLINE        __declspec(noinline)
+#define DUK_INLINE          __inline
+#define DUK_ALWAYS_INLINE   __forceinline
+#endif
 #endif
 
 #if !defined(DUK_NOINLINE)

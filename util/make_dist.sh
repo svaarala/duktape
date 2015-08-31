@@ -258,6 +258,12 @@ done
 cp examples/README.rst $DIST/examples/
 for i in \
 	README.rst \
+	CMakeLists.txt \
+	; do
+	cp examples/$i $DIST/examples/
+done
+for i in \
+	README.rst \
 	duk_cmdline.c \
 	duk_cmdline_ajduk.c \
 	; do
@@ -404,6 +410,7 @@ for i in \
 	Makefile.sandbox \
 	Makefile.codepage \
 	mandel.js \
+	CMakeLists.txt \
 	; do
 	cp dist-files/$i $DIST/
 done
