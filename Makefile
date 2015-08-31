@@ -1041,7 +1041,39 @@ dist-site:	tidy-site site
 
 .PHONY: codepolicycheck
 codepolicycheck:
-	-python util/check_code_policy.py src/*.c src/*.h src/*.h.in tests/api/*.c
+	python util/check_code_policy.py \
+		--check-debug-log-calls \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-no-symbol-visibility \
+		--check-rejected-identifiers \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		src/*.c src/*.h src/*.h.in tests/api/*.c
+	# Ecmascript tests Not yet FIXME pure; non-ASCII in some tests
+	python util/check_code_policy.py \
+		--check-debug-log-calls \
+		--check-carriage-returns \
+		--check-no-symbol-visibility \
+		--check-rejected-identifiers \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		tests/ecmascript/*.js
+	# Examples may contain plain identifiers
+	python util/check_code_policy.py \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		src/*.c src/*.h src/*.h.in tests/api/*.c
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:

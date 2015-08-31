@@ -72,13 +72,13 @@ function test() {
             print('json', v, JSON.parse(v));
         } catch (e) {
             print('json', v, e.name);
-        }
+        }
 
         try {
             print('eval', v, eval(v));
         } catch (e) {
             print('eval', v, e.name);
-        }
+        }
     });
 }
 
