@@ -1564,6 +1564,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 				if (bp == NULL) {
 					break;
 				}
+
 				DUK_ASSERT(bp->filename != NULL);
 				if (act->prev_line != bp->line && line == bp->line) {
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
@@ -2260,6 +2261,19 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				act->curr_pc = (duk_instr_t *) curr_pc;
 			}
 
+			/* Force restart caused by a function return; must recheck
+			 * debugger breakpoints before checking line transitions,
+			 * see GH-303.  Restart and then handle interrupt_counter
+			 * zero again.
+			 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+			if (thr->heap->dbg_force_restart) {
+				DUK_DD(DUK_DDPRINT("dbg_force_restart flag forced restart execution"));  /* GH-303 */
+				thr->heap->dbg_force_restart = 0;
+				goto restart_execution;
+			}
+#endif
+
 			exec_int_ret = duk__executor_interrupt(thr);
 			if (exec_int_ret == DUK__INT_RESTART) {
 				/* curr_pc synced back above */
@@ -2601,13 +2615,11 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_new(ctx, (duk_idx_t) c);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDD(DUK_DDDPRINT("NEW -> %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 			duk_replace(ctx, (duk_idx_t) idx);
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
+
 			/* When debugger is enabled, we need to recheck the activation
-			 * status after returning.
+			 * status after returning.  This is now handled by call handling
+			 * and heap->dbg_force_restart.
 			 */
-			/* call handling (in duk_new) has synced curr_pc */
-			goto restart_execution;
-#endif
 			break;
 		}
 
@@ -3434,13 +3446,10 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				 */
 			}
 
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
 			/* When debugger is enabled, we need to recheck the activation
-			 * status after returning.
+			 * status after returning.  This is now handled by call handling
+			 * and heap->dbg_force_restart.
 			 */
-			/* call handling has synced curr_pc */
-			goto restart_execution;
-#endif
 			break;
 		}
 
