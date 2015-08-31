@@ -984,9 +984,9 @@ cloc:	dist cloc-1.60.pl
 # Source distributable for end users
 # XXX: want to run codepolicycheck when dist gets built, but don't want to depend on it.
 # XXX: make prints a harmless warning related to the sub-make.
-dist:	compiler.jar
+dist:
 	@make codepolicycheck
-	sh util/make_dist.sh --minify closure
+	if [ -f compiler.jar ]; then sh util/make_dist.sh --minify closure; else sh util/make_dist.sh --minify none; fi
 
 .PHONY:	dist-src
 dist-src:	dist
@@ -1000,6 +1000,10 @@ dist-src:	dist
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
+
+# Require closure compiler for official build
+.PHONY: dist-src-official
+dist-src-official:	compiler.jar dist-src
 
 # ISO target is useful with some system emulators with no network access
 .PHONY: dist-iso
