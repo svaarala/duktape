@@ -570,7 +570,7 @@ static int listen_fd(duk_context *ctx) {
 	fprintf(stderr, "listen_fd: fd not found on list, add new entry\n");
 	fflush(stderr);
 #endif
-	
+
 	if (poll_count >= MAX_FDS) {
 		duk_error(ctx, DUK_ERR_ERROR, "out of fd slots");
 	}
