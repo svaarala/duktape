@@ -255,7 +255,13 @@ for i in \
 	cp polyfills/$i $DIST/polyfills/
 done
 
-cp examples/README.rst $DIST/examples/
+for i in \
+	README.rst \
+	CMakeLists.txt \
+	; do
+	cp examples/$i $DIST/examples/
+done
+
 for i in \
 	README.rst \
 	duk_cmdline.c \
@@ -394,6 +400,7 @@ cp extras/README.rst $DIST/extras/
 # XXX: copy extras
 
 for i in \
+	CMakeLists.txt \
 	Makefile.cmdline \
 	Makefile.dukdebug \
 	Makefile.eventloop \

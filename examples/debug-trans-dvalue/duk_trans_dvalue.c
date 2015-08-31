@@ -34,6 +34,14 @@
 #include "duktape.h"
 #include "duk_trans_dvalue.h"
 
+#if !defined(__func__)
+#if defined ( __FUNCTION__ ) 
+#define __func__ __FUNCTION__
+#else
+#error "Error: C99 macro "__func__" is undefined."
+#endif
+#endif
+
 /* Define to enable debug prints to stderr. */
 #if 0
 #define DEBUG_PRINTS
