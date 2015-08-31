@@ -3,8 +3,12 @@ sudo: required
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install bc
+  - sudo apt-get install ant openjdk-7-jdk
+  - sudo apt-get install python-rdflib python-yaml
 #compiler:
 #  - clang
 #  - gcc
 script:
   - make codepolicycheck
+  - make apitest
+  - make qecmatest
