@@ -1051,6 +1051,7 @@ codepolicycheck:
 		--check-trailing-whitespace \
 		--check-mixed-indent \
 		--check-nonleading-tab \
+		--check-cpp-comment \
 		--dump-vim-commands \
 		src/*.c src/*.h src/*.h.in tests/api/*.c
 	# Ecmascript tests Not yet FIXME pure; non-ASCII in some tests
@@ -1072,8 +1073,9 @@ codepolicycheck:
 		--check-trailing-whitespace \
 		--check-mixed-indent \
 		--check-nonleading-tab \
+		--check-cpp-comment \
 		--dump-vim-commands \
-		src/*.c src/*.h src/*.h.in tests/api/*.c
+		examples/*/*.c examples/*/*.h
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:

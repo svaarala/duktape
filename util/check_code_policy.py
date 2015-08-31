@@ -32,6 +32,7 @@ re_nonleading_tab = re.compile(r'^.*?[^\t]\t.*?$')  # tabs are only used for ind
 re_identifier = re.compile(r'[A-Za-z0-9_]+')
 re_nonascii = re.compile(r'^.*?[\x80-\xff].*?$')
 re_func_decl_or_def = re.compile(r'^(\w+)\s+(?:\w+\s+)*(\w+)\(.*?.*?$')  # may not finish on same line
+re_cpp_comment = re.compile(r'^.*?//.*?$')
 
 # These identifiers are wrapped in duk_config.h, and should only be used
 # through the wrappers elsewhere.
@@ -141,19 +142,30 @@ re_repl_string_literals_squot = re.compile(r'''\'(?:\\\'|[^\'])*\'''')
 re_repl_expect_strings = re.compile(r'/\*===.*?===*?\*/', re.DOTALL)
 re_not_newline = re.compile(r'[^\n]+', re.DOTALL)
 
-def removeCommentsAndLiterals(data):
-	def repl_c(m):
-		tmp = re.sub(re_not_newline, '', m.group(0))
-		if tmp == '':
-			tmp = ' '  # avoid /**/
-		return '/*' + tmp + '*/'
-	def repl_cpp(m):
-		return '// removed\n'
-	def repl_dquot(m):
-		return '"' + ('.' * (len(m.group(0)) - 2)) + '"'
-	def repl_squot(m):
-		return "'" + ('.' * (len(m.group(0)) - 2)) + "'"
+def repl_c(m):
+	tmp = re.sub(re_not_newline, '', m.group(0))
+	if tmp == '':
+		tmp = ' '  # avoid /**/
+	return '/*' + tmp + '*/'
+def repl_cpp(m):
+	return '// removed\n'
+def repl_dquot(m):
+	return '"' + ('.' * (len(m.group(0)) - 2)) + '"'
+def repl_squot(m):
+	return "'" + ('.' * (len(m.group(0)) - 2)) + "'"
 
+def removeLiterals(data):
+	data = re.sub(re_repl_string_literals_dquot, repl_dquot, data)
+	data = re.sub(re_repl_string_literals_squot, repl_squot, data)
+	return data
+
+def removeCCommentsAndLiterals(data):
+	data = re.sub(re_repl_c_comments, repl_c, data)
+	data = re.sub(re_repl_string_literals_dquot, repl_dquot, data)
+	data = re.sub(re_repl_string_literals_squot, repl_squot, data)
+	return data
+
+def removeAnyCommentsAndLiterals(data):
 	data = re.sub(re_repl_c_comments, repl_c, data)
 	data = re.sub(re_repl_cpp_comments, repl_cpp, data)
 	data = re.sub(re_repl_string_literals_dquot, repl_dquot, data)
@@ -305,16 +317,26 @@ def checkNoSymbolVisibility(lines, idx, filename):
 
 	raise Exception('missing symbol visibility macro')
 
-def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings):
+def checkCppComment(lines, idx, filename):
+	line = lines[idx]
+	m = re_cpp_comment.match(line)
+	if m is None:
+		return
+
+	raise Exception('c++ comment')
+
+def processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings):
 	f = open(filename, 'rb')
 	dataRaw = f.read()
 	f.close()
 
-	dataNoComments = removeCommentsAndLiterals(dataRaw)   # no c/javascript comments, literals removed
-	dataNoExpectStrings = removeExpectStrings(dataRaw)    # no testcase expect strings
+	dataNoCommentsOrLiterals = removeAnyCommentsAndLiterals(dataRaw)   # no C/javascript comments, literals removed
+	dataNoCCommentsOrLiterals = removeCCommentsAndLiterals(dataRaw)    # no C comments, literals removed
+	dataNoExpectStrings = removeExpectStrings(dataRaw)                 # no testcase expect strings
 
 	linesRaw = dataRaw.split('\n')
-	linesNoComments = dataNoComments.split('\n')
+	linesNoCommentsOrLiterals = dataNoCommentsOrLiterals.split('\n')
+	linesNoCCommentsOrLiterals = dataNoCCommentsOrLiterals.split('\n')
 	linesNoExpectStrings = dataNoExpectStrings.split('\n')
 
 	def f(lines, checkers):
@@ -326,7 +348,8 @@ def processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrin
 					problems.append(Problem(filename, linenumber + 1, lines[linenumber], str(e)))
 
 	f(linesRaw, checkersRaw)
-	f(linesNoComments, checkersNoComments)
+	f(linesNoCommentsOrLiterals, checkersNoCommentsOrLiterals)
+	f(linesNoCCommentsOrLiterals, checkersNoCCommentsOrLiterals)
 	f(linesNoExpectStrings, checkersNoExpectStrings)
 
 	# Last line should have a newline, and there should not be an empty line.
@@ -359,6 +382,7 @@ def main():
 	parser.add_option('--check-trailing-whitespace', dest='check_trailing_whitespace', default=False, help='Check for trailing whitespace')
 	parser.add_option('--check-mixed-indent', dest='check_mixed_indent', default=False, help='Check for mixed indent (space and tabs)')
 	parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', default=False, help='Check for non-leading tab characters')
+	parser.add_option('--check-cpp-comment', dest='check_cpp_comment', default=False, help='Check for c++ comments ("// ...")')
 
 	(opts, args) = parser.parse_args()
 
@@ -374,9 +398,13 @@ def main():
 	if opts.check_no_symbol_visibility:
 		checkersRaw.append(checkNoSymbolVisibility)
 
-	checkersNoComments = []
+	checkersNoCCommentsOrLiterals = []
+	if opts.check_cpp_comment:
+		checkersNoCCommentsOrLiterals.append(checkCppComment)
+
+	checkersNoCommentsOrLiterals = []
 	if opts.check_rejected_identifiers:
-		checkersNoComments.append(checkIdentifiers)
+		checkersNoCommentsOrLiterals.append(checkIdentifiers)
 
 	checkersNoExpectStrings = []
 	if opts.check_trailing_whitespace:
@@ -387,7 +415,7 @@ def main():
 		checkersNoExpectStrings.append(checkNonLeadingTab)
 
 	for filename in args:
-		processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings)
+		processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
 
 	if len(problems) > 0:
 		for i in problems:
