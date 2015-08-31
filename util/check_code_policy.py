@@ -350,22 +350,41 @@ def asciiOnly(x):
 def main():
 	parser = optparse.OptionParser()
 	parser.add_option('--dump-vim-commands', dest='dump_vim_commands', default=False, help='Dump oneline vim command')
+	parser.add_option('--check-debug-log-calls', dest='check_debug_log_calls', default=False, help='Check debug log call consistency')
+	parser.add_option('--check-carriage-returns', dest='check_carriage_returns', default=False, help='Check carriage returns')
+	parser.add_option('--check-fixme', dest='check_fixme', default=False, help='Check FIXME tags')
+	parser.add_option('--check-non-ascii', dest='check_non_ascii', default=False, help='Check non-ASCII characters')
+	parser.add_option('--check-no-symbol-visibility', dest='check_no_symbol_visibility', default=False, help='Check for missing symbol visibility macros')
+	parser.add_option('--check-rejected-identifiers', dest='check_rejected_identifiers', default=False, help='Check for rejected identifiers like plain "printf()" calls')
+	parser.add_option('--check-trailing-whitespace', dest='check_trailing_whitespace', default=False, help='Check for trailing whitespace')
+	parser.add_option('--check-mixed-indent', dest='check_mixed_indent', default=False, help='Check for mixed indent (space and tabs)')
+	parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', default=False, help='Check for non-leading tab characters')
+
 	(opts, args) = parser.parse_args()
 
 	checkersRaw = []
-	checkersRaw.append(checkDebugLogCalls)
-	checkersRaw.append(checkCarriageReturns)
-	checkersRaw.append(checkFixme)
-	checkersRaw.append(checkNonAscii)
-	checkersRaw.append(checkNoSymbolVisibility)
+	if opts.check_debug_log_calls:
+		checkersRaw.append(checkDebugLogCalls)
+	if opts.check_carriage_returns:
+		checkersRaw.append(checkCarriageReturns)
+	if opts.check_fixme:
+		checkersRaw.append(checkFixme)
+	if opts.check_non_ascii:
+		checkersRaw.append(checkNonAscii)
+	if opts.check_no_symbol_visibility:
+		checkersRaw.append(checkNoSymbolVisibility)
 
 	checkersNoComments = []
-	checkersNoComments.append(checkIdentifiers)
+	if opts.check_rejected_identifiers:
+		checkersNoComments.append(checkIdentifiers)
 
 	checkersNoExpectStrings = []
-	checkersNoExpectStrings.append(checkTrailingWhitespace)
-	checkersNoExpectStrings.append(checkMixedIndent)
-	checkersNoExpectStrings.append(checkNonLeadingTab)
+	if opts.check_trailing_whitespace:
+		checkersNoExpectStrings.append(checkTrailingWhitespace)
+	if opts.check_mixed_indent:
+		checkersNoExpectStrings.append(checkMixedIndent)
+	if opts.check_nonleading_tab:
+		checkersNoExpectStrings.append(checkNonLeadingTab)
 
 	for filename in args:
 		processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings)
