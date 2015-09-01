@@ -1,5 +1,5 @@
-/* FIXME: case clauses after default */
-/* FIXME: multiple fall through cases */
+/* XXX: case clauses after default */
+/* XXX: multiple fall through cases */
 
 /*===
 third case matches

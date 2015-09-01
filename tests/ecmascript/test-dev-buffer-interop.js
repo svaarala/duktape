@@ -49,7 +49,7 @@ function plainBufferTest() {
     // ArrayBuffer constructor doesn't accept another buffer so there's
     // no buffer copy/embed behavior to test at the moment.
 
-    // FIXME: buffer coercion / interoperability is under development so
+    // XXX: buffer coercion / interoperability is under development so
     // this test will need to be updated.
 }
 

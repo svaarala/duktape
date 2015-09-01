@@ -3,16 +3,12 @@
  *  ancestor after deletion.  Should it be enumerated or not?
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
 /*===
 bar skip
 foo inherited
 ===*/
+
+// Duktape and V8 enumerate 'foo', Rhino does not.
 
 function F() {};
 F.prototype = { "foo": "inherited" };

@@ -2,14 +2,6 @@
  *  Parsing of identifier names (E5 Section 7.6).
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
-/* FIXME: more complex cases */
-
 /*
  *  Some specific identifier names
  */
@@ -79,5 +71,7 @@ try {
     eval('x\\x30 = "val";');   /* identifier 'x0' */
     print('4');
 } catch (e) {
-    print(e);
+    print(e.name);
 }
+
+/* XXX: add more cases */

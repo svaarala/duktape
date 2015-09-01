@@ -91,8 +91,8 @@ function expOverflowUnderflowTest() {
         t = [];
         for (i = -2000; i <= 2000; i++) {
             str = buildNumber(i);
-            // FIXME: no standard way to parse fractions in other radix values,
-            // add a custom API to test these properly
+            // XXX: no standard way to parse fractions in other radix values,
+            // add a custom API to test these properly?
             if (i < 0) {
                 if (radix != 10) { continue; }
                 val = parseFloat(str);

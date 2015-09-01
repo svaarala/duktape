@@ -8,8 +8,8 @@
 }
 ---*/
 
-/*FIXME*/
-/*FIXME: explicit check for behavior with switch (which does not respect continue)*/
-
 /*===
 ===*/
+
+/* XXX: to be implemented */
+/* XXX: explicit check for behavior with switch (which does not respect continue) */

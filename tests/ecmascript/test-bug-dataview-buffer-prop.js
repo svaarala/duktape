@@ -53,7 +53,7 @@ function dataViewTest() {
     // Duktape.Buffer argument: non-standard, best behavior probably not to
     // set a .buffer argument?  Or to create a fresh ArrayBuffer for the
     // .buffer property?
-    // FIXME: to be decided
+    // XXX: to be decided
     v = new DataView(new Duktape.Buffer('dummy'));
     print(Object.prototype.toString.call(v.buffer));
     print(v.buffer === buf);
@@ -61,7 +61,7 @@ function dataViewTest() {
     // Node.js Buffer argument: non-standard, best behavior probably not to
     // set a .buffer argument?  Or to create a fresh ArrayBuffer for the
     // .buffer property?
-    // FIXME: to be decided
+    // XXX: to be decided
     v = new DataView(new Buffer('foobar'));
     print(Object.prototype.toString.call(v.buffer));
     print(v.buffer === buf);

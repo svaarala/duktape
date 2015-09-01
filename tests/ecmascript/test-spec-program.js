@@ -8,7 +8,4 @@
 }
 ---*/
 
-/*FIXME*/
-
-/*===
-===*/
+/* XXX: What to test which is not covered by other tests? */

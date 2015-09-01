@@ -2,7 +2,7 @@
  *  Very basic relational tests
  */
 
-/* FIXME: add associativity tests */
+/* XXX: add associativity tests */
 
 /*===
 true false false

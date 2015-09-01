@@ -1,4 +1,4 @@
-/* FIXME: missing a lot of coercion tests */
+/* XXX: missing a lot of coercion tests */
 
 /*===
 true

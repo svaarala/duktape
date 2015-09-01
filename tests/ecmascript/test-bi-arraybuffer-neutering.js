@@ -14,7 +14,7 @@
  */
 
 function neuter(b) {
-    // FIXME: need an API to do this
+    // XXX: need an API to do this
 }
 
 function neuteredTest() {
@@ -44,9 +44,9 @@ function neuteredTest() {
     print(v.byteOffset);
     print(v.byteLength);
 
-    // FIXME: behavior for DataView and TypedArray constructors?
+    // XXX: behavior for DataView and TypedArray constructors?
 
-    // FIXME: behavior when used as method arguments (e.g. .set(), .subarray())?
+    // XXX: behavior when used as method arguments (e.g. .set(), .subarray())?
 }
 
 try {

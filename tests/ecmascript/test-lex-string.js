@@ -8,4 +8,4 @@
 }
 ---*/
 
-/* FIXME */
+/* XXX: These are covered by other tests, but add some basic tests. */

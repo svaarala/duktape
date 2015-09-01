@@ -55,7 +55,6 @@ print(t, t.length);
 t = [,,1,,2,3,,,];
 print(t, t.length);
 
-
 /*** VERY SPARSE ARRAYS ***/
 
 /*===
@@ -89,5 +88,3 @@ t = [
 
 print(t);
 print(t.length);
-
-/* FIXME */

@@ -83,9 +83,40 @@ try {
 }
 
 /*===
+broke out
+broke out
 ===*/
 
-/* FIXME: same tests for 'with' */
+/* slow break across a with boundary, handled with BREAK */
+
+try {
+    do {
+        with ({ foo: 123 }) {
+            break;
+        }
+    } while(true);
+    print("broke out");
+} catch (e) {
+    print(e.name);
+}
+
+/* slow continue across a try-catch boundary, handled with CONTINUE */
+
+try {
+    done = 0;
+    do {
+        if (done) {
+            break;
+        }
+        with ({ foo: 234 }) {
+            done = 1;
+            continue;
+        }
+    } while(true);
+    print("broke out");
+} catch (e) {
+    print(e.name);
+}
 
 /*===
 3

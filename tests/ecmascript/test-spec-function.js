@@ -4,16 +4,6 @@
  *  There is a separate test for tail recursion, arguments object.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
-/* FIXME:
- *  - shadowing
- */
-
 /*** DUPLICATE ARGUMENT NAMES ***/
 
 /*===
@@ -138,3 +128,5 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/* XXX: add test for shadowing */

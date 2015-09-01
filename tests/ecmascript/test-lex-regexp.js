@@ -6,8 +6,8 @@
  * simple first pass.
  */
 
-/* FIXME: still, a few more useful tests here */
-/* FIXME: division vs. regexp ambiguity tests here */
+/* XXX: a few more useful tests here */
+/* XXX: division vs. regexp ambiguity tests here */
 
 /*===
 foofoobar,foo

@@ -8,9 +8,9 @@
 }
 ---*/
 
-/* FIXME */
-
 /*===
 ===*/
 
 /* Parenthesized expression */
+
+/* XXX: to be implemented */

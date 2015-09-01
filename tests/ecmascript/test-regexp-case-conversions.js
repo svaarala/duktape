@@ -3,14 +3,6 @@
  *  comments in E5 Section 15.10.2.8.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
-/*FIXME*/
-
 var r, t;
 
 /*===
@@ -27,3 +19,5 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/* XXX: add more cases */

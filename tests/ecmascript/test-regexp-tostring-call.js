@@ -74,7 +74,7 @@ try {
 }
 
 try {
-    /* FIXME: much to expand here */
+    /* XXX: much to expand here */
     r = /[abc-d][^abc-d]/;
     print(r.toString());
 } catch (e) {

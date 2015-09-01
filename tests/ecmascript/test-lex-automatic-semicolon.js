@@ -5,8 +5,6 @@
  *  or insertion must be tested in all possible syntactic constructs.
  */
 
-/*FIXME*/
-
 /*===
 10
 14
@@ -220,3 +218,5 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/* XXX: check for completeness */

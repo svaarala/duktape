@@ -35,4 +35,4 @@ try {
     print(e.name);
 }
 
-/* FIXME: more tests to be added */
+/* XXX: add more tests */

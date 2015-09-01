@@ -25,7 +25,7 @@ function instanceofWithoutTrapTest() {
     MyError.prototype = new Proxy(Error.prototype, {});
     var c = new Proxy(new MyError('bar'), {});
 
-    // FIXME: test for:
+    // XXX: test for:
     //     var d = new Proxy(b), {})
     // once Proxy of a Proxy is supported
 
@@ -40,6 +40,6 @@ try {
     print(e.stack || e);
 }
 
-// FIXME: add test for instanceof with a getPrototypeOf trap
+// XXX: add test for instanceof with a getPrototypeOf trap
 
-// FIXME: Proxy of a Proxy
+// XXX: Proxy of a Proxy

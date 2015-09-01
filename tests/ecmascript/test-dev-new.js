@@ -1,5 +1,3 @@
-/* FIXME: bound function cases */
-
 /*
  *  Parsing tests for 'new' expressions.  These are rather detailed because
  *  the grammar for the following productions is a bit awkward:
@@ -558,6 +556,28 @@ try {
     t = new Cons2();
     print(t.foo, t.bar, t.quux, t.baz);
     print(Object.getPrototypeOf(t) === Object.prototype);
+} catch (e) {
+    print(e.name);
+}
+
+/*===
+object bound-this 123 234
+object [object Object] 123 234
+bar
+===*/
+
+function TargetCons(x, y) {
+    print(typeof this, this, x, y);
+}
+TargetCons.prototype = { foo: 'bar' };
+var BoundCons = TargetCons.bind('bound-this', 123, 234);
+try {
+    // For a normal call the 'bound-this' binding is in force.
+    t = BoundCons();
+
+    // For a constructor call the 'bound-this' binding is ignored.
+    t = new BoundCons();
+    print(t.foo);
 } catch (e) {
     print(e.name);
 }
