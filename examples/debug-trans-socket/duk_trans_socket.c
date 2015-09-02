@@ -73,7 +73,7 @@ int duk_open_socket(int af, int type, int proto)
 void duk_close_socket(int socket)
 {
 #ifdef WIN32
-	closesocket(socket);
+	closesocket((SOCKET)socket);
 #else
 	(void)close(socket);
 #endif
@@ -82,7 +82,7 @@ void duk_close_socket(int socket)
 int duk_accept_socket(int socket, struct sockaddr * addr, int* addrlen)
 {
 #ifdef _WIN32
-	SOCKET return_value = accept(socket, addr, addrlen);
+	SOCKET return_value = accept((SOCKET)socket, addr, addrlen);
 	if (return_value == INVALID_SOCKET) {
 		fprintf(stderr, "socket failed with error: %ld\n", WSAGetLastError());
 		WSACleanup();
@@ -146,20 +146,20 @@ win32RePoll:
 #endif
 }
 
-int duk_write_socket(SOCKET socket, const void* buffer, int length)
+int duk_write_socket(int socket, const void* buffer, int length)
 {
 #ifdef _WIN32
-	return send(socket, (char*)buffer, length, 0);
+	return send((SOCKET)socket, (char*)buffer, length, 0);
 #else
 	return write(client_sock, buffer, (size_t)length);
 #endif
 }
 
-SSIZE_T duk_read_socket(int socket, void *buf, size_t nbyte)
+ssize_t duk_read_socket(int socket, void *buf, size_t nbyte)
 {
 #ifdef _WIN32
-	int result = recv(socket, (char*)buf, (int)nbyte, 0);
-	return (SSIZE_T)result;
+	int result = recv((SOCKET)socket, (char*)buf, (int)nbyte, 0);
+	return (ssize_t)result;
 #else
 	return read(socket, (void *)buffer, (size_t)length);
 #endif
