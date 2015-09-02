@@ -772,6 +772,11 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Cleaning up...\n");
 		fflush(stderr);
 	}
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+	if (debugger) {
+		duk_trans_socket_finish();
+	}
+#endif
 
 #ifdef DUK_CMDLINE_AJSHEAP
 	if (alloc_provider == ALLOC_AJSHEAP) {
