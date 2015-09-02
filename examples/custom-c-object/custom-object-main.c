@@ -243,8 +243,8 @@ int main(int argc, char *argv[]) {
 	return 0;
  usage:
 	fprintf(stderr, "Usage: duk [options] [<filenames>]\n"
-	                "\n"
-	                "   --shapeExample    Run built in shape example script.\n"
+					"\n"
+					"   --shapeExample    Run built in shape example script.\n"
 					"   --vectorExample   Run built in vector example script.\n"
 					);
 	fflush(stderr);
