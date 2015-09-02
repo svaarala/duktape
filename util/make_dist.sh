@@ -22,9 +22,11 @@
 set -e  # exit on errors
 
 INITJS_MINIFY=closure
+CREATE_SPDX=0
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--minify) INITJS_MINIFY="$2"; shift;;
+		--create-spdx) CREATE_SPDX=1; break;;
 		--) shift; break;;
 		*) break;;
 	esac
@@ -826,4 +828,8 @@ python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
 rm $DIST/*.tmp
 
 # Create SPDX license once all other files are in place (and cleaned)
-python util/create_spdx_license.py `pwd`/dist/license.spdx
+if [ x"$CREATE_SPDX" = "x1" ]; then
+	python util/create_spdx_license.py `pwd`/dist/license.spdx
+else
+	echo "Skip SPDX license creation"
+fi
