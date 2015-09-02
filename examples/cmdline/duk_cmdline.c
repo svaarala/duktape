@@ -15,7 +15,9 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
     defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
 /* Suppress warnings about plain fopen() etc. */
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 #endif
 
 #define  GREET_CODE(variant)  \
