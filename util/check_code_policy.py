@@ -428,7 +428,7 @@ def main():
 					filename = os.path.join(root, file)
 					for Ext in opts.file_extensions:
 						if file.endswith(Ext):
-							processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings)
+							processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
 							if len(problems) > 0:
 								totalProblems += len(problems)
 								if opts.verbose:
@@ -456,7 +456,7 @@ def main():
 		sys.exit(0)
 	else:
 		for filename in args:
-			processFile(filename, checkersRaw, checkersNoComments, checkersNoExpectStrings)
+			processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
 
 		if len(problems) > 0:
 			for i in problems:
