@@ -1,7 +1,5 @@
 <h1 id="coroutines">Coroutines</h1>
 
-<h2>Overview of coroutines</h2>
-
 <p>Duktape has a support for simple coroutines.  Execution is strictly nesting:
 coroutine A resumes or initiates coroutine B, coroutine B runs until it yields
 or finishes (either successfully or through an uncaught error), after which
@@ -48,49 +46,5 @@ they are present anywhere in the yielding coroutine's call stack:</p>
 <li>a finalizer call</li>
 </ul>
 
-<h2>Example</h2>
-
-<p>A simple example of the basic mechanics of spawning, resuming, and yielding:</p>
-<pre class="ecmascript-code">
-// coroutine.js
-function yielder(x) {
-    var yield = Duktape.Thread.yield;
-
-    print('yielder starting');
-    print('yielder arg:', x);
-
-    print('resumed with', yield(1));
-    print('resumed with', yield(2));
-    print('resumed with', yield(3));
-
-    print('yielder ending');
-    return 123;
-}
-
-var t = new Duktape.Thread(yielder);
-
-print('resume test');
-print('yielded with', Duktape.Thread.resume(t, 'foo'));
-print('yielded with', Duktape.Thread.resume(t, 'bar'));
-print('yielded with', Duktape.Thread.resume(t, 'quux'));
-print('yielded with', Duktape.Thread.resume(t, 'baz'));
-print('finished');
-</pre>
-
-<p>When executed with the <code>duk</code> command line tool, this prints:</p>
-<pre>
-$ duk coroutine.js
-resume test
-yielder starting
-yielder arg: foo
-yielded with 1
-resumed with bar
-yielded with 2
-resumed with quux
-yielded with 3
-resumed with baz
-yielder ending
-yielded with 123
-finished
-</pre>
-
+<p>See <a href="http://wiki.duktape.org/HowtoCoroutines.html">How to use coroutines</a>
+for examples.</p>
