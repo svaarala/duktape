@@ -136,3 +136,6 @@ Copyright and license
 
 See [AUTHORS.rst](https://github.com/svaarala/duktape/blob/master/AUTHORS.rst)
 and [LICENSE.txt](https://github.com/svaarala/duktape/blob/master/LICENSE.txt).
+
+[Duktape Wiki](https://github.com/svaarala/duktape-wiki/) is part of Duktape
+documentation and under the same copyright and license.
