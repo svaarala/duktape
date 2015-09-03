@@ -326,6 +326,7 @@ def checkCppComment(lines, idx, filename):
 	raise Exception('c++ comment')
 
 def processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings):
+	global problems
 	f = open(filename, 'rb')
 	dataRaw = f.read()
 	f.close()
@@ -371,6 +372,7 @@ def asciiOnly(x):
 	return re.sub(r'[\x80-\xff]', '#', x)
 
 def main():
+	global problems
 	parser = optparse.OptionParser()
 	parser.add_option('--dump-vim-commands', dest='dump_vim_commands', default=False, help='Dump oneline vim command')
 	parser.add_option('--check-debug-log-calls', dest='check_debug_log_calls', default=False, help='Check debug log call consistency')
@@ -384,6 +386,10 @@ def main():
 	parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', default=False, help='Check for non-leading tab characters')
 	parser.add_option('--check-cpp-comment', dest='check_cpp_comment', default=False, help='Check for c++ comments ("// ...")')
 
+	parser.add_option("-v", dest='verbose', action='store_true', default=False, help='Enable Verbose Output.')
+	parser.add_option('-d',  default=[], action='append', dest='file_path', type='string', help='Specify Folder to Test Files')
+	parser.add_option('--dir',  default=[], action='append', dest='file_path', type='string', help='Specify Folder to Test Files')
+	parser.add_option('--ext',  default=[], action='append', dest='file_extensions', type='string', help='Specify File Extensions')
 	(opts, args) = parser.parse_args()
 
 	checkersRaw = []
@@ -413,31 +419,66 @@ def main():
 		checkersNoExpectStrings.append(checkMixedIndent)
 	if opts.check_nonleading_tab:
 		checkersNoExpectStrings.append(checkNonLeadingTab)
+	if(0 != len(opts.file_path) and 0 != len(opts.file_extensions) ):
+		totalProblems = 0;
+		for filepath in opts.file_path:
+			mFilePath = os.path.join('', filepath)
+			for root, dirs, files in os.walk(filepath):
+				for file in files:
+					filename = os.path.join(root, file)
+					for Ext in opts.file_extensions:
+						if file.endswith(Ext):
+							processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
+							if len(problems) > 0:
+								totalProblems += len(problems)
+								if opts.verbose:
+									for i in problems:
+										tmp = 'vim +' + str(i.linenumber)
+										while len(tmp) < 10:
+											tmp = tmp + ' '
+										tmp += ' ' + str(i.filename) + ' : ' + str(i.reason)
+										while len(tmp) < 80:
+											tmp = tmp + ' '
+										tmp += ' - ' + asciiOnly(i.line.strip())
+										print(tmp)
+								print '*** Total: %d problems for \"%s\"' % (len(problems),filename)
+								if opts.dump_vim_commands and opts.verbose:
+									cmds = []
+									for i in problems:
+										cmds.append('vim +' + str(i.linenumber) + ' "' + i.filename + '"')
+									print ''
+									print('; '.join(cmds))
+								del problems[:] # Empty out the problems Array
+								problems = []
+		if(totalProblems):
+			print '*** Total: %d problems' % totalProblems
+			sys.exit(1)
+		sys.exit(0)
+	else:
+		for filename in args:
+			processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
 
-	for filename in args:
-		processFile(filename, checkersRaw, checkersNoCommentsOrLiterals, checkersNoCCommentsOrLiterals, checkersNoExpectStrings)
-
-	if len(problems) > 0:
-		for i in problems:
-			tmp = 'vim +' + str(i.linenumber)
-			while len(tmp) < 10:
-				tmp = tmp + ' '
-			tmp += ' ' + str(i.filename) + ' : ' + str(i.reason)
-			while len(tmp) < 80:
-				tmp = tmp + ' '
-			tmp += ' - ' + asciiOnly(i.line.strip())
-			print(tmp)
-
-		print '*** Total: %d problems' % len(problems)
-
-		if opts.dump_vim_commands:
-			cmds = []
+		if len(problems) > 0:
 			for i in problems:
-				cmds.append('vim +' + str(i.linenumber) + ' "' + i.filename + '"')
-			print ''
-			print('; '.join(cmds))
+				tmp = 'vim +' + str(i.linenumber)
+				while len(tmp) < 10:
+					tmp = tmp + ' '
+				tmp += ' ' + str(i.filename) + ' : ' + str(i.reason)
+				while len(tmp) < 80:
+					tmp = tmp + ' '
+				tmp += ' - ' + asciiOnly(i.line.strip())
+				print(tmp)
 
-		sys.exit(1)
+			print '*** Total: %d problems' % len(problems)
+
+			if opts.dump_vim_commands:
+				cmds = []
+				for i in problems:
+					cmds.append('vim +' + str(i.linenumber) + ' "' + i.filename + '"')
+				print ''
+				print('; '.join(cmds))
+
+			sys.exit(1)
 
 	sys.exit(0)
 
