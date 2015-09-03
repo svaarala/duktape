@@ -931,7 +931,7 @@ def generate_autodetect_duk_config_header(opts, meta_dir):
 	ret.empty()
 	ret.file_relative('likely.h.in')
 	ret.empty()
-	ret.file_relative('noinline.h.in')
+	ret.file_relative('inline.h.in')
 	ret.empty()
 	ret.file_relative('visibility.h.in')
 	ret.empty()
