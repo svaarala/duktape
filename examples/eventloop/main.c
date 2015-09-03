@@ -26,7 +26,7 @@ static int c_evloop = 0;
 #ifndef NO_SIGNAL
 static void my_sighandler(int x) {
 	fprintf(stderr, "Got signal %d\n", x);
-	
+	fflush(stderr);
 }
 static void set_sigint_handler(void) {
 	(void) signal(SIGINT, my_sighandler);

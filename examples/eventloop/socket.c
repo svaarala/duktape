@@ -167,7 +167,7 @@ static int socket_accept(duk_context *ctx) {
 
 		return 1;
 	}
-	
+
 	return 0;
 }
 
