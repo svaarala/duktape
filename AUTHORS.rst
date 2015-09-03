@@ -15,8 +15,9 @@ Authors
 Please include an e-mail address, a link to your GitHub profile, or something
 similar to allow your contribution to be identified accurately.
 
-The following people have contributed code and agreed to irrevocably license
-their contributions under the Duktape ``LICENSE.txt`` (in order of appearance):
+The following people have contributed code, website contents, or Wiki contents,
+and agreed to irrevocably license their contributions under the Duktape
+``LICENSE.txt`` (in order of appearance):
 
 * Sami Vaarala <sami.vaarala@iki.fi>
 * Niki Dobrev
