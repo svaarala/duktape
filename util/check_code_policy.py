@@ -383,6 +383,7 @@ def main():
 	parser.add_option('--check-mixed-indent', dest='check_mixed_indent', default=False, help='Check for mixed indent (space and tabs)')
 	parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', default=False, help='Check for non-leading tab characters')
 	parser.add_option('--check-cpp-comment', dest='check_cpp_comment', default=False, help='Check for c++ comments ("// ...")')
+	parser.add_option('--fail-on-errors', dest='fail_on_errors', default=False, help='Fail on errors (exit code != 0)')
 
 	(opts, args) = parser.parse_args()
 
@@ -437,7 +438,8 @@ def main():
 			print ''
 			print('; '.join(cmds))
 
-		sys.exit(1)
+		if opts.fail_on_errors:
+			sys.exit(1)
 
 	sys.exit(0)
 

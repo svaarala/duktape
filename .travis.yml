@@ -7,6 +7,9 @@ before_install:
 #compiler:
 #  - clang
 #  - gcc
+env:
+  global:
+    - TRAVIS: 1  # affects e.g. codepolicycheck
 script:
   - make codepolicycheck
   - make apitest
