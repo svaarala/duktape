@@ -1044,9 +1044,16 @@ dist-site:	tidy-site site
 	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 
+ifeq ($(TRAVIS),1)
+CODEPOLICYOPTS=--fail-on-errors
+else
+CODEPOLICYOPTS=
+endif
+
 .PHONY: codepolicycheck
 codepolicycheck:
 	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1059,8 +1066,9 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		src/*.c src/*.h src/*.h.in tests/api/*.c
-	# Ecmascript tests Not yet FIXME pure; non-ASCII in some tests
+	# Ecmascript tests: not yet FIXME pure; non-ASCII in some tests
 	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
 		--check-no-symbol-visibility \
@@ -1072,6 +1080,7 @@ codepolicycheck:
 		tests/ecmascript/*.js
 	# Examples may contain plain identifiers
 	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
 		--check-non-ascii \
@@ -1081,6 +1090,16 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h
+	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		website/api/*.yaml website/api/*.html
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:
