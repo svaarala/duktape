@@ -108,7 +108,7 @@ static void set_resource_limits(rlim_t mem_limit_value) {
 #ifndef NO_SIGNAL
 static void my_sighandler(int x) {
 	fprintf(stderr, "Got signal %d\n", x);
-	
+	fflush(stderr);
 }
 static void set_sigint_handler(void) {
 	(void) signal(SIGINT, my_sighandler);
