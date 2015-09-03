@@ -7,10 +7,9 @@ before_install:
 #compiler:
 #  - clang
 #  - gcc
-env:
-  global:
-    - TRAVIS: 1  # affects e.g. codepolicycheck
 script:
-  - make codepolicycheck
+  # Apply TRAVIS=1 to codepolicycheck to make it error out on failures;
+  # don't prevent apitest/qecmatest which also do a policy check.
+  - TRAVIS=1 make codepolicycheck
   - make apitest
   - make qecmatest
