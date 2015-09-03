@@ -98,10 +98,14 @@ minimize garbage collection pauses.</p>
 
 <p>If you wish to modify the defaults, you can provide feature options in the
 form of <code>DUK_OPT_xxx</code> compiler defines.  These will be taken into
-account by the internal <code>duk_features.h</code> file, which resolves the
+account by the default <code>duk_config.h</code> file, which resolves the
 final internal features based on feature requests, compiler features, and
-platform features.  The full list of feature options is described in
-<a href="https://github.com/svaarala/duktape/blob/master/doc/feature-options.rst">feature-options.rst</a>.</p>
+platform features.</p>
+
+<p>The full list of feature options is described in
+<a href="http://wiki.duktape.org/FeatureOptions.html">Duktape feature options</a>
+(if you're modifying <code>duk_config.h</code> directly, see
+<a href="http://wiki.duktape.org/ConfigOptions.html">Duktape config options</a>).</p>
 
 <div class="note">
 If you use Duktape feature options, you must define the feature options both
