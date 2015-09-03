@@ -50,7 +50,7 @@ Suggested feature options
 
 * Consider enabling "fastints":
 
-  - ``DUK_OPT_FASTINT``
+  - ``DUK_OPT_FASTINT`` (``#define DUK_USE_FASTINT``)
 
   Fastints are often useful on platforms with soft floats, but they can also
   speed up execution on some hard float platforms (even on x64).  The benefit
@@ -59,7 +59,7 @@ Suggested feature options
 
 * Enable specific fast paths:
 
-  - ``#define DUK_USE_JSON_STRINGIFY_FASTPATH``
+  - ``DUK_OPT_JSON_STRINGIFY_FASTPATH`` (``#define DUK_USE_JSON_STRINGIFY_FASTPATH``)
 
   - ``#define DUK_USE_JSON_QUOTESTRING_FASTPATH``
 
@@ -72,9 +72,9 @@ Suggested feature options
 * If you don't need debugging support or execution timeout support, ensure
   the following are **not enabled**:
 
-  - ``DUK_OPT_INTERRUPT_COUNTER``
+  - ``DUK_OPT_INTERRUPT_COUNTER`` (``#define DUK_USE_INTERRUPT_COUNTER``)
 
-  - ``DUK_OPT_DEBUGGER_SUPPORT``
+  - ``DUK_OPT_DEBUGGER_SUPPORT`` (``#define DUK_USE_DEBUGGER_SUPPORT``)
 
   Especially interrupt counter option will have a measurable performance
   impact because it includes code executed for every bytecode instruction
