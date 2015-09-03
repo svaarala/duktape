@@ -2058,6 +2058,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		 */
 
 		duk_small_uint_t lj_ret;
+		duk_hthread *tmp_entry_thread;
+		duk_size_t tmp_entry_callstack_top;
 
 		DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
 
@@ -2089,7 +2091,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		                     (void *) entry_jmpbuf_ptr));
 		thr->heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
 
-		lj_ret = duk__handle_longjmp(thr, (duk_hthread *) entry_thread, (duk_size_t) entry_callstack_top);
+		tmp_entry_thread = (duk_hthread *) entry_thread;  /* use temps to avoid GH-318 */
+		tmp_entry_callstack_top = (duk_size_t) entry_callstack_top;
+		lj_ret = duk__handle_longjmp(thr, tmp_entry_thread, tmp_entry_callstack_top);
 
 		if (lj_ret == DUK__LONGJMP_RESTART) {
 			/*
