@@ -506,12 +506,12 @@ DUK_INTERNAL_DECL duk_uint8_t *duk_bw_insert_ensure_area(duk_hthread *thr, duk_b
 DUK_INTERNAL_DECL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *bw, duk_size_t off, duk_size_t len);
 /* No duk_bw_remove_ensure_slice(), functionality would be identical. */
 
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p);
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p);
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL duk_double_t duk_raw_read_double_be(duk_uint8_t **p);
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL void duk_raw_write_u16_be(duk_uint8_t **p, duk_uint16_t val);
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL void duk_raw_write_u32_be(duk_uint8_t **p, duk_uint32_t val);
-DUK_ALWAYS_INLINE DUK_INTERNAL_DECL void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val);
+DUK_INTERNAL_DECL duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p);
+DUK_INTERNAL_DECL duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p);
+DUK_INTERNAL_DECL duk_double_t duk_raw_read_double_be(duk_uint8_t **p);
+DUK_INTERNAL_DECL void duk_raw_write_u16_be(duk_uint8_t **p, duk_uint16_t val);
+DUK_INTERNAL_DECL void duk_raw_write_u32_be(duk_uint8_t **p, duk_uint32_t val);
+DUK_INTERNAL_DECL void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val);
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* For now only needed by the debugger. */
 DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
