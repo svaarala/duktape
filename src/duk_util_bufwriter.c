@@ -278,8 +278,7 @@ DUK_INTERNAL void duk_bw_remove_raw_slice(duk_hthread *thr, duk_bufwriter_ctx *b
  *  Not really bufwriter related, but currently used together.
  */
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p) {
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p) {
 	union {
 		duk_uint8_t b[2];
 		duk_uint16_t x;
@@ -291,8 +290,7 @@ DUK_INTERNAL duk_uint16_t duk_raw_read_u16_be(duk_uint8_t **p) {
 	return u.x;
 }
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p) {
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p) {
 	union {
 		duk_uint8_t b[4];
 		duk_uint32_t x;
@@ -304,8 +302,7 @@ DUK_INTERNAL duk_uint32_t duk_raw_read_u32_be(duk_uint8_t **p) {
 	return u.x;
 }
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL duk_double_t duk_raw_read_double_be(duk_uint8_t **p) {
+DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_raw_read_double_be(duk_uint8_t **p) {
 	duk_double_union du;
 	union {
 		duk_uint8_t b[4];
@@ -323,8 +320,7 @@ DUK_INTERNAL duk_double_t duk_raw_read_double_be(duk_uint8_t **p) {
 	return du.d;
 }
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL void duk_raw_write_u16_be(duk_uint8_t **p, duk_uint16_t val) {
+DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_u16_be(duk_uint8_t **p, duk_uint16_t val) {
 	union {
 		duk_uint8_t b[2];
 		duk_uint16_t x;
@@ -335,8 +331,7 @@ DUK_INTERNAL void duk_raw_write_u16_be(duk_uint8_t **p, duk_uint16_t val) {
 	*p += 2;
 }
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL void duk_raw_write_u32_be(duk_uint8_t **p, duk_uint32_t val) {
+DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_u32_be(duk_uint8_t **p, duk_uint32_t val) {
 	union {
 		duk_uint8_t b[4];
 		duk_uint32_t x;
@@ -347,8 +342,7 @@ DUK_INTERNAL void duk_raw_write_u32_be(duk_uint8_t **p, duk_uint32_t val) {
 	*p += 4;
 }
 
-DUK_ALWAYS_INLINE
-DUK_INTERNAL void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val) {
+DUK_INTERNAL DUK_ALWAYS_INLINE void duk_raw_write_double_be(duk_uint8_t **p, duk_double_t val) {
 	duk_double_union du;
 	union {
 		duk_uint8_t b[4];
