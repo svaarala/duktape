@@ -64,7 +64,7 @@ DUK_INTERNAL_DECL const char *duk_str_not_configurable;
 #define DUK_STR_SPRINTF_TOO_LONG duk_str_sprintf_too_long
 #define DUK_STR_ALLOC_FAILED duk_str_alloc_failed
 #define DUK_STR_POP_TOO_MANY duk_str_pop_too_many
-#define DUK_STR_BUFFER_NOT_DYNAMIC duk_str_buffer_not_dynamic
+#define DUK_STR_WRONG_BUFFER_TYPE duk_str_wrong_buffer_type
 #define DUK_STR_FAILED_TO_EXTEND_VALSTACK duk_str_failed_to_extend_valstack
 #define DUK_STR_ENCODE_FAILED duk_str_encode_failed
 #define DUK_STR_DECODE_FAILED duk_str_decode_failed
@@ -98,7 +98,7 @@ DUK_INTERNAL_DECL const char *duk_str_buffer_too_long;
 DUK_INTERNAL_DECL const char *duk_str_sprintf_too_long;
 DUK_INTERNAL_DECL const char *duk_str_alloc_failed;
 DUK_INTERNAL_DECL const char *duk_str_pop_too_many;
-DUK_INTERNAL_DECL const char *duk_str_buffer_not_dynamic;
+DUK_INTERNAL_DECL const char *duk_str_wrong_buffer_type;
 DUK_INTERNAL_DECL const char *duk_str_failed_to_extend_valstack;
 DUK_INTERNAL_DECL const char *duk_str_encode_failed;
 DUK_INTERNAL_DECL const char *duk_str_decode_failed;

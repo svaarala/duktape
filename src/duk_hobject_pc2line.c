@@ -37,7 +37,7 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 	duk_push_dynamic_buffer(ctx, (duk_size_t) curr_offset);
 	h_buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_buf != NULL);
-	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf));
+	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h_buf) && !DUK_HBUFFER_HAS_EXTERNAL(h_buf));
 
 	hdr = (duk_uint32_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h_buf);
 	DUK_ASSERT(hdr != NULL);
@@ -138,7 +138,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	duk_uint_fast32_t curr_line;
 
 	DUK_ASSERT(buf != NULL);
-	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) buf));
+	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) buf) && !DUK_HBUFFER_HAS_EXTERNAL((duk_hbuffer *) buf));
 	DUK_UNREF(thr);
 
 	/*
@@ -237,7 +237,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_i
 	duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_PC2LINE);
 	pc2line = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	if (pc2line != NULL) {
-		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line));
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) pc2line) && !DUK_HBUFFER_HAS_EXTERNAL((duk_hbuffer *) pc2line));
 		line = duk__hobject_pc2line_query_raw((duk_hthread *) ctx, pc2line, (duk_uint_fast32_t) pc);
 	} else {
 		line = 0;

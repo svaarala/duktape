@@ -51,5 +51,6 @@ tags:
 seealso:
   - duk_push_fixed_buffer
   - duk_push_dynamic_buffer
+  - duk_push_external_buffer
 
 introduced: 1.0.0

@@ -1,0 +1,53 @@
+name: duk_push_external_buffer
+
+proto: |
+  void duk_push_external_buffer(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... buf! ]
+
+summary: |
+  <p>Allocate an external buffer and push it to the value stack.  An external
+  buffer refers to a user allocated external buffer which is not memory
+  managed by Duktape.  The initial external buffer pointer is NULL and size
+  is zero.  You can use
+  <code><a href="#duk_config_buffer">duk_config_buffer()</a></code>
+  to update the external buffer pointer and size.</p>
+
+  <p>External buffers are useful to allow Ecmascript code access externally
+  allocated data structures.  You can use it to e.g. write bytes to an
+  externally allocated frame buffer.  The external buffer has no alignment
+  requirements (Duktape makes no alignment assumptions when accessing it).</p>
+
+example: |
+  void *p;
+  duk_size_t len;
+
+  /* Allocate a frame buffer from a hypothetical graphics library.
+   * The frame buffer is allocated outside of Duktape.
+   */
+  p = allocate_frame_buffer(1920 /*width*/, 1080 /*height*/);
+  len = 1920 * 1080 * 4;
+
+  /* Create an external buffer pointing to the frame buffer. */
+  duk_push_external_buffer(ctx);
+  duk_config_buffer(ctx, -1, p, len);
+
+  /* Ecmascript code with access to the buffer object could now do
+   * something like:
+   *
+   *    buf[100] = 123;
+   *
+   * Calling code must make sure Ecmascript never reads/writes an
+   * external buffer whose backing buffer is no longer valid.
+   */
+
+tags:
+  - stack
+  - buffer
+  - experimental
+
+seealso:
+  - duk_config_buffer
+
+introduced: 1.3.0

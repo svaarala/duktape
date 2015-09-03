@@ -2279,7 +2279,9 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 	h_buf = duk_get_hbuffer(ctx, index);
 	if (h_buf != NULL) {
 		/* Buffer is kept as is, with the fixed/dynamic nature of the
-		 * buffer only changed if requested.
+		 * buffer only changed if requested.  An external buffer
+		 * is converted into a non-external dynamic buffer in a
+		 * duk_to_dynamic_buffer() call.
 		 */
 		duk_uint_t tmp;
 
@@ -2287,7 +2289,8 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
 
 		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? DUK_BUF_MODE_DYNAMIC : DUK_BUF_MODE_FIXED);
-		if (tmp == mode || mode == DUK_BUF_MODE_DONTCARE) {
+		if ((tmp == mode && !DUK_HBUFFER_HAS_EXTERNAL(h_buf)) ||
+		    mode == DUK_BUF_MODE_DONTCARE) {
 			/* Note: src_data may be NULL if input is a zero-size
 			 * dynamic buffer.
 			 */
@@ -2795,20 +2798,6 @@ DUK_EXTERNAL duk_bool_t duk_is_callable(duk_context *ctx, duk_idx_t index) {
 	return duk_is_function(ctx, index);
 }
 
-DUK_EXTERNAL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
-	duk_tval *tv;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	tv = duk_get_tval(ctx, index);
-	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
-		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
-		DUK_ASSERT(h != NULL);
-		return (DUK_HBUFFER_HAS_DYNAMIC(h) ? 1 : 0);
-	}
-	return 0;
-}
-
 DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
@@ -2819,6 +2808,34 @@ DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h != NULL);
 		return (DUK_HBUFFER_HAS_DYNAMIC(h) ? 0 : 1);
+	}
+	return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t index) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval(ctx, index);
+	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
+		DUK_ASSERT(h != NULL);
+		return (DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h) ? 1 : 0);
+	}
+	return 0;
+}
+
+DUK_EXTERNAL duk_bool_t duk_is_external_buffer(duk_context *ctx, duk_idx_t index) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval(ctx, index);
+	if (tv && DUK_TVAL_IS_BUFFER(tv)) {
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
+		DUK_ASSERT(h != NULL);
+		return (DUK_HBUFFER_HAS_DYNAMIC(h) && DUK_HBUFFER_HAS_EXTERNAL(h) ? 1 : 0);
 	}
 	return 0;
 }
@@ -3909,6 +3926,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hbuffer *h;
+	void *buf_data;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -3922,7 +3940,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_BUFFER_TOO_LONG);
 	}
 
-	h = duk_hbuffer_alloc(thr->heap, size, flags);
+	h = duk_hbuffer_alloc(thr->heap, size, flags, &buf_data);
 	if (!h) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
@@ -3932,7 +3950,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 	DUK_HBUFFER_INCREF(thr, h);
 	thr->valstack_top++;
 
-	return DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
+	return (void *) buf_data;
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {

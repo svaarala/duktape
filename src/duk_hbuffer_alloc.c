@@ -4,9 +4,17 @@
 
 #include "duk_internal.h"
 
-DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags) {
+/* Allocate a new duk_hbuffer of a certain type and return a pointer to it
+ * (NULL on error).  Write buffer data pointer to 'out_bufdata' (only if
+ * allocation successful).
+ */
+DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags, void **out_bufdata) {
 	duk_hbuffer *res = NULL;
+	duk_size_t header_size;
 	duk_size_t alloc_size;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(out_bufdata != NULL);
 
 	DUK_DDD(DUK_DDDPRINT("allocate hbuffer"));
 
@@ -17,12 +25,17 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	 */
 	if (size > DUK_HBUFFER_MAX_BYTELEN) {
 		DUK_D(DUK_DPRINT("hbuffer alloc failed: size too large: %ld", (long) size));
-		return NULL;
+		return NULL;  /* no need to write 'out_bufdata' */
 	}
 
-	if (flags & DUK_BUF_FLAG_DYNAMIC) {
+	if (flags & DUK_BUF_FLAG_EXTERNAL) {
+		header_size = sizeof(duk_hbuffer_external);
+		alloc_size = sizeof(duk_hbuffer_external);
+	} if (flags & DUK_BUF_FLAG_DYNAMIC) {
+		header_size = sizeof(duk_hbuffer_dynamic);
 		alloc_size = sizeof(duk_hbuffer_dynamic);
 	} else {
+		header_size = sizeof(duk_hbuffer_fixed);
 		alloc_size = sizeof(duk_hbuffer_fixed) + size;
 		DUK_ASSERT(alloc_size >= sizeof(duk_hbuffer_fixed));  /* no wrapping */
 	}
@@ -35,20 +48,28 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	/* zero everything unless requested not to do so */
 #if defined(DUK_USE_ZERO_BUFFER_DATA)
 	DUK_MEMZERO((void *) res,
-	            (flags & DUK_BUF_FLAG_NOZERO) ?
-	                ((flags & DUK_BUF_FLAG_DYNAMIC) ?
-	                     sizeof(duk_hbuffer_dynamic) :
-	                     sizeof(duk_hbuffer_fixed)) :
-	                alloc_size);
+	            (flags & DUK_BUF_FLAG_NOZERO) ? header_size : alloc_size);
 #else
-	DUK_MEMZERO((void *) res,
-	            (flags & DUK_BUF_FLAG_DYNAMIC) ? sizeof(duk_hbuffer_dynamic) : sizeof(duk_hbuffer_fixed));
+	DUK_MEMZERO((void *) res, header_size);
 #endif
 
-	if (flags & DUK_BUF_FLAG_DYNAMIC) {
+	if (flags & DUK_BUF_FLAG_EXTERNAL) {
+		duk_hbuffer_external *h = (duk_hbuffer_external *) res;
+		*out_bufdata = NULL;
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
+#if defined(DUK_USE_HEAPPTR16)
+/* the compressed pointer is zeroed which maps to NULL, so nothing to do. */
+#else
+		DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap, h, NULL);
+#endif
+#endif
+		DUK_ASSERT(DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap, h) == NULL);
+	} else if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		duk_hbuffer_dynamic *h = (duk_hbuffer_dynamic *) res;
 		void *ptr;
+
 		if (size > 0) {
+			DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));  /* alloc external with size zero */
 			DUK_DDD(DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer"));
 #ifdef DUK_USE_ZERO_BUFFER_DATA
 			ptr = DUK_ALLOC_ZEROED(heap, size);
@@ -59,9 +80,11 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 				/* Because size > 0, NULL check is correct */
 				goto error;
 			}
+			*out_bufdata = ptr;
 
 			DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap, h, ptr);
 		} else {
+			*out_bufdata = NULL;
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 #if defined(DUK_USE_HEAPPTR16)
 /* the compressed pointer is zeroed which maps to NULL, so nothing to do. */
@@ -71,6 +94,8 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 #endif
 			DUK_ASSERT(DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, h) == NULL);
 		}
+	} else {
+		*out_bufdata = (void *) ((duk_hbuffer_fixed *) res + 1);
 	}
 
 	DUK_HBUFFER_SET_SIZE(res, size);
@@ -78,6 +103,11 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	DUK_HEAPHDR_SET_TYPE(&res->hdr, DUK_HTYPE_BUFFER);
 	if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		DUK_HBUFFER_SET_DYNAMIC(res);
+		if (flags & DUK_BUF_FLAG_EXTERNAL) {
+			DUK_HBUFFER_SET_EXTERNAL(res);
+		}
+	} else {
+		DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));
 	}
         DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, &res->hdr);
 
@@ -88,7 +118,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	DUK_DD(DUK_DDPRINT("hbuffer allocation failed"));
 
 	DUK_FREE(heap, res);
-	return NULL;
+	return NULL;  /* no need to write 'out_bufdata' */
 }
 
 /* For indirect allocs. */

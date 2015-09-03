@@ -14,17 +14,23 @@
 
 /*
  *  Flags
+ *
+ *  Fixed buffer:     0
+ *  Dynamic buffer:   DUK_HBUFFER_FLAG_DYNAMIC
+ *  External buffer:  DUK_HBUFFER_FLAG_DYNAMIC | DUK_HBUFFER_FLAG_EXTERNAL
  */
 
-#define DUK_HBUFFER_FLAG_DYNAMIC                  DUK_HEAPHDR_USER_FLAG(0)  /* buffer is resizable */
+#define DUK_HBUFFER_FLAG_DYNAMIC                  DUK_HEAPHDR_USER_FLAG(0)    /* buffer is behind a pointer, dynamic or external */
+#define DUK_HBUFFER_FLAG_EXTERNAL                 DUK_HEAPHDR_USER_FLAG(1)    /* buffer pointer is to an externally allocated buffer */
 
 #define DUK_HBUFFER_HAS_DYNAMIC(x)                DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_HAS_EXTERNAL(x)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
 #define DUK_HBUFFER_SET_DYNAMIC(x)                DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
+#define DUK_HBUFFER_SET_EXTERNAL(x)               DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
 #define DUK_HBUFFER_CLEAR_DYNAMIC(x)              DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_DYNAMIC)
-
-#define DUK_HBUFFER_FIXED_GET_DATA_PTR(heap,x)    ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
+#define DUK_HBUFFER_CLEAR_EXTERNAL(x)             DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HBUFFER_FLAG_EXTERNAL)
 
 /*
  *  Misc defines
@@ -85,6 +91,11 @@
 #define DUK_HBUFFER_DYNAMIC_ADD_SIZE(x,dv)  DUK_HBUFFER_ADD_SIZE((duk_hbuffer *) (x), (dv))
 #define DUK_HBUFFER_DYNAMIC_SUB_SIZE(x,dv)  DUK_HBUFFER_SUB_SIZE((duk_hbuffer *) (x), (dv))
 
+#define DUK_HBUFFER_EXTERNAL_GET_SIZE(x)    DUK_HBUFFER_GET_SIZE((duk_hbuffer *) (x))
+#define DUK_HBUFFER_EXTERNAL_SET_SIZE(x,v)  DUK_HBUFFER_SET_SIZE((duk_hbuffer *) (x), (v))
+
+#define DUK_HBUFFER_FIXED_GET_DATA_PTR(heap,x)    ((duk_uint8_t *) (((duk_hbuffer_fixed *) (x)) + 1))
+
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x) \
 	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (x))->h_extra16))
@@ -104,19 +115,58 @@
 	} while (0)
 #endif
 
-/* Gets the actual buffer contents which matches the current allocation size
- * (may be NULL for zero size dynamic buffer).
+/* No pointer compression because pointer is potentially outside of
+ * Duktape heap.
+ */
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
+	((void *) (x)->curr_alloc)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
+		(x)->curr_alloc = (void *) (v); \
+	} while (0)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
+		(x)->curr_alloc = (void *) NULL; \
+	} while (0)
+#else
+#define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
+	((void *) (x)->curr_alloc)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
+		(x)->curr_alloc = (void *) (v); \
+	} while (0)
+#define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
+		(x)->curr_alloc = (void *) NULL; \
+	} while (0)
+#endif
+
+/* Get a pointer to the current buffer contents (matching current allocation
+ * size).  May be NULL for zero size dynamic/external buffer.
+ */
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HBUFFER_GET_DATA_PTR(heap,x)  ( \
+	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
+		( \
+			DUK_HBUFFER_HAS_EXTERNAL((x)) ? \
+				DUK_HBUFFER_EXTERNAL_GET_DATA_PTR((heap), (duk_hbuffer_external *) (x)) : \
+				DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) \
+		) : \
+		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (x)) \
+	)
+#else
+/* Without heap pointer compression duk_hbuffer_dynamic and duk_hbuffer_external
+ * have the same layout so checking for fixed vs. dynamic (or external) is enough.
  */
 #define DUK_HBUFFER_GET_DATA_PTR(heap,x)  ( \
 	DUK_HBUFFER_HAS_DYNAMIC((x)) ? \
 		DUK_HBUFFER_DYNAMIC_GET_DATA_PTR((heap), (duk_hbuffer_dynamic *) (x)) : \
 		DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), (duk_hbuffer_fixed *) (x)) \
 	)
+#endif
 
 /*
  *  Structs
  */
 
+/* Shared prefix for all buffer types. */
 struct duk_hbuffer {
 	duk_heaphdr hdr;
 
@@ -144,6 +194,11 @@ struct duk_hbuffer {
 	 *    - a "void *" pointing to the current allocation
 	 *    - a duk_size_t indicating the full allocated size (always >= 'size')
 	 *
+	 *  If DUK_HBUFFER_FLAG_EXTERNAL is set, the buffer has been allocated
+	 *  by user code, so that Duktape won't be able to resize it and won't
+	 *  free it.  This allows buffers to point to e.g. an externally
+	 *  allocated structure such as a frame buffer.
+	 *
 	 *  Unlike strings, no terminator byte (NUL) is guaranteed after the
 	 *  data.  This would be convenient, but would pad aligned user buffers
 	 *  unnecessarily upwards in size.  For instance, if user code requested
@@ -152,6 +207,9 @@ struct duk_hbuffer {
 	 */
 };
 
+/* Fixed buffer; data follows struct, with proper alignment guaranteed by
+ * struct size.
+ */
 #if (DUK_USE_ALIGN_BY == 8) && defined(DUK_USE_PACK_MSVC_PRAGMA)
 #pragma pack(push, 8)
 #endif
@@ -205,6 +263,10 @@ __attribute__ ((aligned (8)))
 #pragma pack(pop)
 #endif
 
+/* Dynamic buffer with 'curr_alloc' pointing to a dynamic area allocated using
+ * heap allocation primitives.  Also used for external buffers when low memory
+ * options are not used.
+ */
 struct duk_hbuffer_dynamic {
 	duk_heaphdr hdr;
 
@@ -230,11 +292,30 @@ struct duk_hbuffer_dynamic {
 	 */
 };
 
+/* External buffer with 'curr_alloc' managed by user code and pointing to an
+ * arbitrary address.  When heap pointer compression is not used, this struct
+ * has the same layout as duk_hbuffer_dynamic.
+ */
+struct duk_hbuffer_external {
+	duk_heaphdr hdr;
+
+#if defined(DUK_USE_BUFLEN16)
+	/* Stored in duk_heaphdr unused flags. */
+#else
+	duk_size_t size;
+#endif
+
+	/* Cannot be compressed as a heap pointer because may point to
+	 * an arbitrary address.
+	 */
+	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
+};
+
 /*
  *  Prototypes
  */
 
-DUK_INTERNAL_DECL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags);
+DUK_INTERNAL_DECL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk_small_uint_t flags, void **out_bufdata);
 DUK_INTERNAL_DECL void *duk_hbuffer_get_dynalloc_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 /* dynamic buffer ops */

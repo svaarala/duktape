@@ -963,6 +963,11 @@ Planned
 
 * Add support for Khronos/ES6 TypedArray API (subset of ES6 API) (GH-151)
 
+* Add duk_push_external_buffer(), duk_is_external_buffer(), and
+  duk_config_buffer() which provide support for external buffers, i.e. buffer
+  values which point to a user memory area allocated outside of Duktape heap
+  (for example, an externally allocated frame buffer) (GH-153)
+
 * Add support for module.exports in the module loader framework (GH-201)
 
 * Change Duktape.modLoaded[] module cache to track the "module" object

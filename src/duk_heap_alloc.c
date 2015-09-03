@@ -56,7 +56,7 @@ DUK_INTERNAL void duk_free_hbuffer_inner(duk_heap *heap, duk_hbuffer *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
-	if (DUK_HBUFFER_HAS_DYNAMIC(h)) {
+	if (DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h)) {
 		duk_hbuffer_dynamic *g = (duk_hbuffer_dynamic *) h;
 		DUK_DDD(DUK_DDDPRINT("free dynamic buffer %p", (void *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g)));
 		DUK_FREE(heap, DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap, g));
@@ -517,6 +517,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_hbuffer);
 	DUK__DUMPSZ(duk_hbuffer_fixed);
 	DUK__DUMPSZ(duk_hbuffer_dynamic);
+	DUK__DUMPSZ(duk_hbuffer_external);
 	DUK__DUMPSZ(duk_propaccessor);
 	DUK__DUMPSZ(duk_propvalue);
 	DUK__DUMPSZ(duk_propdesc);
