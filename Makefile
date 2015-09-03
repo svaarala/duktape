@@ -1137,6 +1137,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' duk-O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
 		printf ' duk-O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
 		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
+		printf ' duk.123 %5s' "`$(TIME) ./duk.123 $$i`"; \
 		printf ' rhino %5s' "`$(TIME) rhino $$i`"; \
 		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
 		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
