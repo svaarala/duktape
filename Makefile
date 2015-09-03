@@ -1072,7 +1072,6 @@ codepolicycheck:
 		--check-debug-log-calls \
 		--check-carriage-returns \
 		--check-no-symbol-visibility \
-		--check-rejected-identifiers \
 		--check-trailing-whitespace \
 		--check-mixed-indent \
 		--check-nonleading-tab \
