@@ -1109,6 +1109,9 @@ Planned
 * Fix a bug in number conversion resolving a few (but not all) corner case
   rounding issues (GH-264)
 
+* Fix IAR Compiler compilation error caused by volatiles in argument list
+  (GH-318)
+
 * Fix harmless MSVC warnings when using DUK_OPT_FASTINT on x86 (GH-172)
 
 * Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
