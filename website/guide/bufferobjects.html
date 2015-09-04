@@ -4,40 +4,65 @@
 
 <p>Duktape provides the following buffer and buffer-related types:</p>
 
-<ul>
-<li>Plain buffer value</li>
-<li>Duktape.Buffer object</li>
-<li>Node.js Buffer object</li>
-<li>ArrayBuffer object</li>
-<li>DataView and TypedArray views</li>
-</ul>
+<table>
+<tr>
+<th>Type</th>
+<th>Standard</th>
+<th>Duktape version</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>Plain buffer</td>
+<td>No<br />Duktape&nbsp;specific</td>
+<td>1.0</td>
+<td>Plain, primitive buffer value (not an object), similar to how a plain string relates to a String object</td>
+</tr>
+<tr>
+<td>Duktape.Buffer object</td>
+<td>No<br />Duktape&nbsp;specific</td>
+<td>1.0</td>
+<td>Object wrapped plain buffer, similar to how a String object relates to a plain string</td>
+</tr>
+<tr>
+<td>Node.js Buffer object</td>
+<td>No<br />Node.js-like</td>
+<td>1.3</td>
+<td>Object with <a href="https://nodejs.org/api/buffer.html">Node.js Buffer API</a></td>
+</tr>
+<tr>
+<td>ArrayBuffer object</td>
+<td>Yes<br />Khronos/ES6</td>
+<td>1.3</td>
+<td>Standard object type for representing a byte array</td>
+</tr>
+<tr>
+<td>DataView, typed array objects</td>
+<td>Yes<br />Khronos/ES6</td>
+<td>1.3</td>
+<td>View objects to access an underlying ArrayBuffer</td>
+</tr>
+</table>
 
 <p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/buffers.rst">buffers.rst</a>
-for detailed discussion.</p>
+for a detailed discussion, including a
+<a href="https://github.com/svaarala/duktape/blob/master/doc/buffers.rst#summary-of-buffer-related-values">detailed table of buffer types and their properties</a>.</p>
 
-<h2>Property summary</h2>
+<h2>Working with buffers</h2>
 
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/buffers.rst">buffers.rst</a>.</p>
+<p>Buffer values work in both C and Ecmascript code:</p>
 
-<h2>Buffers in Ecmascript code</h2>
-
-<p>See <a href="https://github.com/svaarala/duktape/blob/master/doc/buffers.rst">buffers.rst</a>.</p>
-
-<h2>Buffers in C code</h2>
-
-<p>Duktape API calls prior to 1.3 deal with plain buffer values only.
-To avoid incompatible changes in Duktape 1.3, separate API calls have
-been added to deal with any buffer-like values, including both plain
-buffers and buffer objects.  API calls dealing with buffer objects have
-been tagged <code>bufferobject</code> in the API documentation:</p>
 <ul>
-<li><code><a href="api.html#taglist-bufferobject">bufferobject</a></code> API calls</li>
+<li>For Ecmascript code most of the behavior is defined in the relevant API
+    standards, with exceptions for Duktape-specific features like mixing
+    different buffer types.</li>
+<li>For C code there are API calls to work with
+    <a href="api.html#taglist-buffer">plain buffers</a> and
+    <a href="api.html#taglist-bufferobject">buffer objects</a>.</li>
 </ul>
 
-<p>The following test case illustrates basic buffer object use from C code:</p>
-<ul>
-<li><a href="https://github.com/svaarala/duktape/blob/master/tests/api/test-bufferobject-example-1.c">test-bufferobject-example-1.c</a></li>
-</ul>
+<p>See
+<a href="http://wiki.duktape.org/HowtoBuffers.html">How to work with buffers</a>
+for examples.</p>
 
 <h2>Current limitations</h2>
 
