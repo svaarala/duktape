@@ -264,3 +264,44 @@ try {
 } catch (e) {
     print(e.stack || e);
 }
+
+/*===
+proxy test
+["begin",{"foo":123},{"foo":345},{"foo":456},{"foo":567},"end"]
+===*/
+
+/* A Proxy object causes side effects and should cause abandonment of the
+ * fast path.
+ */
+
+function jsonStringifyFastPathProxyTest() {
+    var myValue;
+    var target = { foo: 'bar' };
+
+    // side effects chosen so that a restart will generate the same
+    // result value sequence
+    var p1 = new Proxy(target, {
+        get: function() { myValue = 234; return 123; }
+    });
+    var p2 = new Proxy(target, {
+        get: function() { var ret = myValue; myValue = 345; return ret; }
+    });
+    var p3 = new Proxy(target, {
+        get: function() { var ret = myValue; myValue = 456; return ret; }
+    });
+    var p4 = new Proxy(target, {
+        get: function() { var ret = myValue; myValue = 567; return ret; }
+    });
+
+    var obj = [ 'begin', p1, p2, p3, p4, 'end' ];
+
+    myValue = 100;
+    print(JSON.stringify(obj));
+}
+
+try {
+    print('proxy test');
+    jsonStringifyFastPathProxyTest();
+} catch (e) {
+    print(e.name);
+}
