@@ -8,8 +8,7 @@
 }
 ---*/
 
-/*FIXME*/
-/*FIXME: associativity etc; look at dev tests*/
-
 /*===
 ===*/
+
+/* XXX: to be implemented; associativity etc: look at dev tests */

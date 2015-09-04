@@ -65,8 +65,6 @@ print(count);
 RangeError
 ===*/
 
-/* FIXME: Change limit errors to RangeError? */
-
 /* Since both tail calls and eval calls are handled by control flags of the
  * CALL instruction, it's worth testing that if both happen at the same time,
  * things work as expected.

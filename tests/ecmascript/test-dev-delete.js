@@ -1,5 +1,3 @@
-/* FIXME: deletion tests for unconfigurable bindings etc */
-
 /*===
 1 2
 undefined 2
@@ -130,17 +128,20 @@ try {
 1
 true
 true
+false
 undefined
 ===*/
 
 /* Parenthesis must not affect behavior */
 
 obj = {foo:1};
+Object.defineProperty(obj, 'bar', { value: 123, writable: false, enumerable: false, configurable: false });
 
 try {
     print(obj.foo);
     print(delete ((obj['foo'])));
-    print(delete ((obj['bar'])));  // undefined property -> 'true'
+    print(delete ((obj['nonexistent'])));  // undefined property -> 'true'
+    print(delete ((obj['bar'])));  // non-conigurable -> 'false'
     print(obj.foo);
 } catch (e) {
     print(e.name);

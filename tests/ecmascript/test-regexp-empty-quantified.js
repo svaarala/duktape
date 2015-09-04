@@ -30,8 +30,6 @@ xxx xxx
 t = /(x*)*/.exec('xxx');
 print(t[0], t[1]);
 
-/* FIXME: check behavior below against E5 specification, both Rhino and Smjs fail */
-
 /* here x* should match zero times, leaving (x*) capture the empty string */
 t = /(x*)*/.exec('y');
 print(t[0], typeof t[0]);
@@ -68,3 +66,5 @@ print(t[0], typeof t[0]);
 
 t = /(?:(?=x))+xyz/.exec('xy');
 print(t, typeof t);
+
+/* XXX: check behavior against E5 specification, both Rhino and Smjs fail */

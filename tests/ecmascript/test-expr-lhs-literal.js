@@ -8,6 +8,10 @@ ReferenceError
 ReferenceError
 ReferenceError
 ReferenceError
+ReferenceError
+ReferenceError
+ReferenceError
+ReferenceError
 ===*/
 
 try {
@@ -35,4 +39,34 @@ try {
     print(e.name);
 }
 
-/* FIXME: inside function */
+function test() {
+    try {
+        1 = 2;
+    } catch(e) {
+        print(e.name);
+    }
+
+    try {
+        "foo" = 3;
+    } catch(e) {
+        print(e.name);
+    }
+
+    try {
+        ({ foo:4 }) = 5;
+    } catch(e) {
+        print(e.name);
+    }
+
+    try {
+        [6,7] = 8;
+    } catch(e) {
+        print(e.name);
+    }
+}
+
+try {
+    test();
+} catch (e) {
+    print(e.stack || e);
+}

@@ -5,6 +5,7 @@
 
 /*===
 ReferenceError
+ReferenceError
 ===*/
 
 try {
@@ -13,4 +14,16 @@ try {
     print(e.name);
 }
 
-/* FIXME: inside function */
+function test() {
+    try {
+        new Object() = 1;
+    } catch (e) {
+        print(e.name);
+    }
+}
+
+try {
+    test();
+} catch (e) {
+    print(e.stack || e);
+}

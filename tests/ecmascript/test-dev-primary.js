@@ -2,10 +2,8 @@
  *  PrimaryExpression
  */
 
-/* FIXME: needs more tests */
-/* FIXME: comprehensive tests here or specific test files?
- *   - regexp tests
- *   - number literal tests
+/* XXX: add more tests; comprehensive tests in separate files for
+ * e.g. regexps and number literals
  */
 
 function printThisProperty(propName) {

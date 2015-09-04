@@ -49,5 +49,5 @@ for (i = 0; i < 25000; i++) {
 
 x = null;  /* refcount to zero in the whole chain */
 
-/* FIXME: some gc stats thing here? */
+/* XXX: some gc stats thing here? */
 print("still here");

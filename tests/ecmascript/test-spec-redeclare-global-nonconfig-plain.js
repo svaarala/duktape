@@ -2,15 +2,16 @@
  *  Redeclare a global non-configurable plain (data) property, E5.1 change.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
+/* Empty output is intentional: Program-wide TypeError happens after
+ * compilation when function declarations are initialized in the
+ * function prologue.  Nothing gets output before that finishes.
+ */
 
-/* Empty output is intentional: Program-wide TypeError. */
+/* XXX: how to better test this so that the TypeError could be
+ * actually checked for?
+ */
 
-/* FIXME */
+print('never here');
 
 /*===
 ===*/

@@ -1066,11 +1066,11 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		src/*.c src/*.h src/*.h.in tests/api/*.c
-	# Ecmascript tests: not yet FIXME pure; non-ASCII in some tests
 	python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
+		--check-fixme \
 		--check-no-symbol-visibility \
 		--check-trailing-whitespace \
 		--check-mixed-indent \

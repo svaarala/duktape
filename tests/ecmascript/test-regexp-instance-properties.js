@@ -6,13 +6,8 @@
  *  Tests are for the source form that we want.
  */
 
-/*
- *  FIXME: when does '\' in source need to be escaped?
- */
-
-/*
- *  FIXME: add property attribute checks
- */
+/* XXX: when does '\' in source need to be escaped? */
+/* XXX: add property attribute checks */
 
 function getflags(r) {
     var res = ''

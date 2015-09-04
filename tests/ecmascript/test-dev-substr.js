@@ -63,4 +63,4 @@ print(str.substring(6, 9));
 t = str.substring(4, 6);  // U+4000 U+FFFF
 print(t.charCodeAt(0), t.charCodeAt(1));
 
-/* FIXME: more tests needed */
+/* XXX: more tests */

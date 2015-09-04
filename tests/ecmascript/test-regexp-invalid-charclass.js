@@ -16,7 +16,7 @@ try {
 
     /* Note: Rhino and V8 both accept this. */
 
-    /* FIXME: there is a bug which causes us to accept this as well */
+    /* XXX: there is a bug which causes us to accept this as well */
 
     eval('t = /[\\d-z]/;');
     print("no error");

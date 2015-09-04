@@ -8,9 +8,9 @@
 }
 ---*/
 
-/* FIXME */
-
 /*===
 ===*/
 
 /* ObjectLiteral */
+
+/* XXX: to be implemented */

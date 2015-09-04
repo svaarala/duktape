@@ -4,4 +4,4 @@
 }
 ---*/
 
-/* FIXME: locale specific canonicalization in regexps */
+/* XXX: locale specific canonicalization in regexps */

@@ -6,6 +6,8 @@
 /*===
 1
 3
+234
+345
 ===*/
 
 x = 1;
@@ -15,5 +17,20 @@ x = 2;
 (((x))) = 3;
 print(x);
 
-/* FIXME: inside function */
-/* FIXME: more tests */
+// inside function
+function test() {
+    var x = 123;
+
+    x = 234;
+    print(x);
+    (((x))) = 345;
+    print(x);
+}
+
+try {
+    test();
+} catch (e) {
+    print(e.stack || e);
+}
+
+/* XXX: more tests */

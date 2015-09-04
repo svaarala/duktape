@@ -101,7 +101,7 @@ print(text.charAt(Number.NEGATIVE_INFINITY));  // out of bounds
 print(typeof text.charAt(-1));
 print(typeof text.charAt(3));
 
-/* FIXME: object coercion */
+/* XXX: object coercion */
 
 /*===
 98
@@ -137,7 +137,7 @@ print(text.charCodeAt(NaN));
 print(text.charCodeAt(Number.POSITIVE_INFINITY));  // out of bounds
 print(text.charCodeAt(Number.NEGATIVE_INFINITY));  // out of bounds
 
-/* FIXME: object coercion */
+/* XXX: object coercion */
 
 /*===
 0

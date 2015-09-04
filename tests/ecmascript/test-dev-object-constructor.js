@@ -8,4 +8,4 @@
 }
 ---*/
 
-/* FIXME */
+/* XXX: to be implemented */

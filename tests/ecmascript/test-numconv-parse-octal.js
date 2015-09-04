@@ -23,7 +23,7 @@ NaN
 NaN
 ===*/
 
-/* FIXME: what's the expected output?  Currently SyntaxError for invalid octal
+/* XXX: what's the expected output?  Currently SyntaxError for invalid octal
  * in eval().
  */
 

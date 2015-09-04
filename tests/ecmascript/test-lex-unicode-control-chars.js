@@ -14,4 +14,4 @@
 }
 ---*/
 
-/* FIXME */
+/* XXX: add tests */

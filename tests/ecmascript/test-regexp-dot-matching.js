@@ -2,14 +2,6 @@
  *  Dot matching, should not match line terminators; multiline mode etc.
  */
 
-/*---
-{
-    "skip": true
-}
----*/
-
-/*FIXME*/
-
 var r, t;
 
 /*===
@@ -26,3 +18,5 @@ try {
 } catch (e) {
     print(e.name);
 }
+
+/* XXX: add more cases */

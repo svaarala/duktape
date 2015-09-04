@@ -11,8 +11,6 @@
 }
 ---*/
 
-/* FIXME: this now tests V8/Rhino behavior, is this desired? */
-
 /*===
 4
 ===*/

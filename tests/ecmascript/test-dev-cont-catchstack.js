@@ -2,9 +2,16 @@
  *  Test that we can continue after a catchstack limit error.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
-RangeError
+RangeError: catchstack limit
 true
+still here
 ===*/
 
 /* The current limits for callstack and catchstack are the same
@@ -34,12 +41,14 @@ function f1() {
 try {
     f1();
 } catch (e) {
-    print(e.name);
+    print(e.name + ': ' + e.message);
 
     // ensure that it is indeed the catchstack which failed; Rhino and V8
     // will fail this test of course
     print(/catch/i.test(e.message));
 }
+
+print('still here');
 
 /*===
 6765

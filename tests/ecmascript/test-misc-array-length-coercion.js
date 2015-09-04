@@ -126,4 +126,4 @@ try {
     print(e.name);
 }
 
-/* FIXME: strings and objects */
+/* XXX: strings and objects */

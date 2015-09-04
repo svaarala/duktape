@@ -15,10 +15,6 @@ var t;
 var allowed;
 
 /*
- *  FIXME: add some more canonicalization tests.
- */
-
-/*
  *  Test the property of built-in character ranges mentioned in
  *  doc/regular-expressions.txt: if a character x is contained
  *  in the range, its normalized counterpart is also contained
@@ -68,3 +64,5 @@ for (i = 0; i < 65536; i++) {
         print('match: ' + i);
     }
 }
+
+/* XXX: add more canonicalization tests */

@@ -6,6 +6,8 @@
 /*===
 1
 2
+123
+234
 ===*/
 
 x = {};
@@ -16,4 +18,20 @@ print(x.foo);
 x['bar'] = 2;
 print(x.bar);
 
-/* FIXME: more tests */
+function test() {
+    var x = {};
+
+    x.foo = 123;
+    print(x.foo);
+
+    x['bar'] = 234;
+    print(x.bar);
+}
+
+try {
+    test();
+} catch (e) {
+    print(e.stack || e);
+}
+
+/* XXX: more tests */
