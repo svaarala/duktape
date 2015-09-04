@@ -34,8 +34,8 @@
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
-/* PPC: packed always possible */
-#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_PPC)
+/* PPC32: packed always possible */
+#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE) && defined(DUK_F_PPC32)
 #define DUK_USE_PACKED_TVAL_POSSIBLE
 #endif
 
