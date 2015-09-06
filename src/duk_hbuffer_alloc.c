@@ -54,7 +54,9 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 #endif
 
 	if (flags & DUK_BUF_FLAG_EXTERNAL) {
-		duk_hbuffer_external *h = (duk_hbuffer_external *) res;
+		duk_hbuffer_external *h;
+		h = (duk_hbuffer_external *) res;
+		DUK_UNREF(h);
 		*out_bufdata = NULL;
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 #if defined(DUK_USE_HEAPPTR16)
