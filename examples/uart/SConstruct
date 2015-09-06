@@ -1,0 +1,8 @@
+src = Glob('*.c');
+Program('uart',
+		src,
+		LIBS = 'm',
+        	LIBPATH = ['.'], 
+        	CCFLAGS = '-DHELLOSCONS',
+		CFLAGS = ['-g', '-fcolor-diagnostics', '-Os', '-Wall'],
+		CC = 'clang')
