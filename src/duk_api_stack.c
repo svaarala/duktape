@@ -3858,7 +3858,7 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 };
 #undef DUK__PACK_ARGS
 
-DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags) {
+DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_bufobj;
 	duk_hbuffer *h_val;
@@ -3866,16 +3866,33 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	duk_uint_t classnum;
 	duk_uint_t protobidx;
 	duk_uint_t lookupidx;
+	duk_uint_t uint_offset, uint_length, uint_added;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 
+	/* The underlying types for offset/length in duk_hbufferobject is
+	 * duk_uint_t; make sure argument values fit and that offset + length
+	 * does not wrap.
+	 */
+	uint_offset = (duk_uint_t) byte_offset;
+	uint_length = (duk_uint_t) byte_length;
+	if (sizeof(duk_size_t) != sizeof(duk_uint_t)) {
+		if ((duk_size_t) uint_offset != byte_offset || (duk_size_t) uint_length != byte_length) {
+			goto range_error;
+		}
+	}
+	uint_added = uint_offset + uint_length;
+	if (uint_added < uint_offset) {
+		goto range_error;
+	}
+	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
+
 	DUK_ASSERT_DISABLE(flags >= 0);  /* flags is unsigned */
 	lookupidx = flags & 0x0f;  /* 4 low bits */
 	if (lookupidx >= sizeof(duk__bufobj_flags_lookup) / sizeof(duk_uint32_t)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_CALL_ARGS);
-		return;  /* not reached */
+		goto arg_error;
 	}
 	tmp = duk__bufobj_flags_lookup[lookupidx];
 	classnum = tmp >> 24;
@@ -3893,11 +3910,12 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 
 	h_bufobj->buf = h_val;
 	DUK_HBUFFER_INCREF(thr, h_val);
-	h_bufobj->offset = byte_offset;
-	h_bufobj->length = byte_length;
+	h_bufobj->offset = uint_offset;
+	h_bufobj->length = uint_length;
 	h_bufobj->shift = (tmp >> 4) & 0x0f;
 	h_bufobj->elem_type = (tmp >> 8) & 0xff;
 	h_bufobj->is_view = tmp & 0x0f;
+	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  Just create a new
@@ -3914,16 +3932,25 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
-		h_bufobj->offset = byte_offset;
-		h_bufobj->length = byte_length;
+		h_bufobj->offset = uint_offset;
+		h_bufobj->length = uint_length;
 		DUK_ASSERT(h_bufobj->shift == 0);
 		h_bufobj->elem_type = DUK_HBUFFEROBJECT_ELEM_UINT8;
 		DUK_ASSERT(h_bufobj->is_view == 0);
+		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 		duk_compact(ctx, -1);
 	}
+	return;
 
+ range_error:
+	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	return;  /* not reached */
+
+ arg_error:
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	return;  /* not reached */
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {

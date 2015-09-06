@@ -38,8 +38,9 @@
 		} else { \
 			/* No assertions for offset or length; in particular, \
 			 * it's OK for length to be longer than underlying \
-			 * buffer. \
+			 * buffer.  Just ensure they don't wrap when added. \
 			 */ \
+			DUK_ASSERT((h)->offset + (h)->length >= (h)->offset); \
 		} \
 	} while (0)
 
