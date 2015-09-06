@@ -949,6 +949,17 @@ Released
   Error.prototype.toString with a function that accessed the 'lineNumber'
   or 'fileName' property of the error (GH-254)
 
+1.2.4 (2015-09-06)
+------------------
+
+* Fix a try-finally finalizer side effect issue by scrubbing TRYCATCH catch
+  registers before executing the try code block (GH-287)
+
+* Fix missing activation lookup from call handling after an Arguments object
+  was created, this could in theory lead to memory unsafe behavior (GH-305)
+
+* Avoid including <windows.h> for application build (GH-312)
+
 Planned
 =======
 
