@@ -1,7 +1,7 @@
 name: duk_push_buffer
 
 proto: |
-  void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
+  void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags);
 
 stack: |
   [ ... buffer! ... ] -> [ ... buffer! ... bufobj! ]
@@ -31,13 +31,18 @@ summary: |
   <tr><td>DUK_BUFOBJ_FLOAT64ARRAY</td><td>Float64Array</td></tr>
   </table>
 
-  <p>The underlying plain buffer should cover the range indicated by the
-  <code>byte_offset</code> and <code>byte_length</code> arguments.  Even
-  if that is not the case, memory safety is guaranteed; e.g. attempt to
-  read values outside the underlying buffer will return zero.  The underlying
-  buffer size is intentionally not checked when creating a buffer object:
-  even if the buffer fully covered the byte range during creation, it might
-  be resized later.</p>
+  <p>When <code>DataView</code> or any of the typed array views
+  (<code>Uint8Array</code>, etc) is pushed, an <code>ArrayBuffer</code>
+  backing the view is automatically created.  It is accessible through
+  the <code>buffer</code> property of the view object.</p>
+
+  <p>The underlying plain buffer should normally cover the range indicated by
+  the <code>byte_offset</code> and <code>byte_length</code> arguments, but
+  memory safety is guaranteed even if that is not the case.  For example, an
+  attempt to read values outside the underlying buffer will return zero.  The
+  underlying buffer size is intentionally not checked when creating a buffer
+  object: even if the buffer fully covered the byte range during creation, it
+  might be resized later.</p>
 
 example: |
   /* Map byte range [100,150[ of plain buffer at idx_plain_buf into a
