@@ -398,6 +398,68 @@ static duk_ret_t test_invalid_flags3(duk_context *ctx) {
 	return 0;
 }
 
+/*===
+*** test_invalid_offlen_wrap1 (duk_safe_call)
+==> rc=1, result='RangeError: invalid call args'
+*** test_invalid_offlen_wrap2 (duk_safe_call)
+==> rc=1, result='RangeError: invalid call args'
+===*/
+
+/* Byte offset + byte length wrap. */
+static duk_ret_t test_invalid_offlen_wrap1(duk_context *ctx) {
+	duk_push_fixed_buffer(ctx, 256);
+	duk_push_buffer_object(ctx,
+	                       -1,
+	                       (duk_size_t) (duk_uint_t) -100,
+	                       1000,
+                               DUK_BUFOBJ_UINT8ARRAY);
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* Byte offset + byte length wrap, just barely */
+static duk_ret_t test_invalid_offlen_wrap2(duk_context *ctx) {
+	duk_push_fixed_buffer(ctx, 256);
+	duk_push_buffer_object(ctx,
+	                       -1,
+	                       (duk_size_t) (duk_uint_t) -100,
+	                       100,
+                               DUK_BUFOBJ_UINT8ARRAY);
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/*===
+*** test_allowed_offlen_nowrap1 (duk_safe_call)
+object [object Uint8Array] 99 4294967196 99 1 object
+false false false false false true false false false false false false false -> Uint8Array
+false false false false false true false false false false false false false -> Uint8Array.prototype
+final top: 1
+==> rc=0, result='undefined'
+===*/
+
+/* Byte offset + byte length are just within limits of duk_uint_t and don't
+ * wrap.  This works and doesn't cause a ~4G allocation because the conceptual
+ * size (~4G) is unrelated to the underlying buffer size (256 bytes here).
+ */
+static duk_ret_t test_allowed_offlen_nowrap1(duk_context *ctx) {
+	duk_push_fixed_buffer(ctx, 256);
+	duk_push_buffer_object(ctx,
+	                       -1,
+	                       (duk_size_t) (duk_uint_t) -100,
+	                       99,
+                               DUK_BUFOBJ_UINT8ARRAY);
+	duk_eval_string(ctx, "dumpBufferInfo");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 /*
  *  Main
  */
@@ -418,5 +480,11 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_invalid_flags1);
 	TEST_SAFE_CALL(test_invalid_flags2);
 	TEST_SAFE_CALL(test_invalid_flags3);
-	/* XXX: could test for more errors */
+	TEST_SAFE_CALL(test_invalid_offlen_wrap1);
+	TEST_SAFE_CALL(test_invalid_offlen_wrap2);
+	TEST_SAFE_CALL(test_allowed_offlen_nowrap1);
+
+	/* XXX: testing for duk_size_t wrapping a duk_uint_t is only possible
+	 * if duk_size_t is a larger type.
+	 */
 }
