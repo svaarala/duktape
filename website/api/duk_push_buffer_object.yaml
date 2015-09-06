@@ -1,0 +1,65 @@
+name: duk_push_buffer
+
+proto: |
+  void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_uint_t byte_offset, duk_uint_t byte_length, duk_uint_t flags);
+
+stack: |
+  [ ... buffer! ... ] -> [ ... buffer! ... bufobj! ]
+
+summary: |
+  <p>Push a new buffer object or a buffer view object.  An underlying plain
+  buffer is provided at index <code>idx_buffer</code>.  The type of the buffer
+  or view is given in <code>flags</code> (e.g. <code>DUK_BUFOBJ_UINT16ARRAY</code>).
+  The active range or "slice" used from the underlying buffer is indicated by
+  <code>byte_offset</code> and <code>byte_length</code>.</p>
+
+  <p>The available buffer types are:</p>
+  <table>
+  <tr><th>Define</th><th>Buffer/view type</th></tr>
+  <tr><td>DUK_BUFOBJ_DUKTAPE_BUFFER</td><td>Duktape.Buffer</td></tr>
+  <tr><td>DUK_BUFOBJ_NODEJS_BUFFER</td><td>Buffer (Node.js)</td></tr>
+  <tr><td>DUK_BUFOBJ_ARRAYBUFFER</td><td>ArrayBuffer</td></tr>
+  <tr><td>DUK_BUFOBJ_DATAVIEW</td><td>DataView</td></tr>
+  <tr><td>DUK_BUFOBJ_INT8ARRAY</td><td>Int8Array</td></tr>
+  <tr><td>DUK_BUFOBJ_UINT8ARRAY</td><td>Uint8Array</td></tr>
+  <tr><td>DUK_BUFOBJ_UINT8CLAMPEDARRAY</td><td>Uint8ClampedArray</td></tr>
+  <tr><td>DUK_BUFOBJ_INT16ARRAY</td><td>Int16Array</td></tr>
+  <tr><td>DUK_BUFOBJ_UINT16ARRAY</td><td>Uint16Array</td></tr>
+  <tr><td>DUK_BUFOBJ_INT32ARRAY</td><td>Int32Array</td></tr>
+  <tr><td>DUK_BUFOBJ_UINT32ARRAY</td><td>Uint32Array</td></tr>
+  <tr><td>DUK_BUFOBJ_FLOAT32ARRAY</td><td>Float32Array</td></tr>
+  <tr><td>DUK_BUFOBJ_FLOAT64ARRAY</td><td>Float64Array</td></tr>
+  </table>
+
+  <p>The underlying plain buffer should cover the range indicated by the
+  <code>byte_offset</code> and <code>byte_length</code> arguments.  Even
+  if that is not the case, memory safety is guaranteed; e.g. attempt to
+  read values outside the underlying buffer will return zero.  The underlying
+  buffer size is intentionally not checked when creating a buffer object:
+  even if the buffer fully covered the byte range during creation, it might
+  be resized later.</p>
+
+example: |
+  /* Map byte range [100,150[ of plain buffer at idx_plain_buf into a
+   * Uint16Array object which will have the following properties:
+   *
+   *   - length: 25             (length in Uint16 elements)
+   *   - byteLength: 50         (length in bytes)
+   *   - byteOffset: 100        (byte offset to start of slice)
+   *   - BYTES_PER_ELEMENT: 2   (Uint16)
+   */
+
+  duk_push_buffer_object(ctx, idx_plain_buf, 100, 50, DUK_BUFOBJ_UINT16ARRAY);
+
+tags:
+  - stack
+  - bufferobject
+  - experimental
+
+seealso:
+  - duk_push_buffer
+  - duk_push_fixed_buffer
+  - duk_push_dynamic_buffer
+  - duk_push_external_buffer
+
+introduced: 1.3.0

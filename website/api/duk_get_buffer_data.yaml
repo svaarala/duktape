@@ -57,6 +57,7 @@ tags:
   - stack
   - buffer
   - bufferobject
+  - experimental
 
 seealso:
   - duk_require_buffer_data

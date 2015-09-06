@@ -142,7 +142,7 @@ DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
-DUK_INTERNAL_DECL duk_hbufferobject *duk_push_bufferobject(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
+DUK_INTERNAL_DECL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
 
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [] -> [val] */
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_index, duk_small_int_t stridx);     /* [val] -> [] */
