@@ -351,6 +351,7 @@ As a general rule:
   Buffer() accepts a Duktape.Buffer as an input.
 
 * A plain Duktape buffer is accepted as if it was coerced to a Duktape.Buffer.
+  (This is not always the case now, e.g. for typed array constructors.)
 
 This general rules is complicated by a few practical issues:
 
@@ -362,15 +363,17 @@ This general rules is complicated by a few practical issues:
   coerced to a plain buffer value without copying, as the extra offset
   and length information is not supported for plain buffer values.
 
-**FIXME: elaborate behavior a bit more here, and provide references to
-testcases providing concrete examples.**
+The current mixing behavior is described in Duktape Wiki:
+
+* http://wiki.duktape.org/HowtoBuffers.html
 
 Buffer values in the Duktape C API
 ----------------------------------
 
-**FIXME: discuss how plain buffers and buffer objects work in the C API.
-This is important for practical C code which should be able to consume
-different buffer values more or less transparently.**
+The C API for plain buffer and buffer object handling is described in
+Duktape Wiki:
+
+* http://wiki.duktape.org/HowtoBuffers.html
 
 Node.js Buffer notes
 ====================
