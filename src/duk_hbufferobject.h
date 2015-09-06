@@ -124,7 +124,9 @@ struct duk_hbufferobject {
 	duk_uint8_t is_view;
 };
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_uint_t duk_hbufferobject_clamp_bytelength(duk_hbufferobject *h_bufobj, duk_uint_t len);
+#endif
 DUK_INTERNAL_DECL void duk_hbufferobject_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
 DUK_INTERNAL_DECL void duk_hbufferobject_validated_write(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
 

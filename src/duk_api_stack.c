@@ -2017,6 +2017,7 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	return ret;
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Special coercion for Uint8ClampedArray. */
 DUK_INTERNAL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t index) {
 	duk_double_t d;
@@ -2051,6 +2052,7 @@ DUK_INTERNAL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t index) 
 	}
 	return ret;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_EXTERNAL const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len) {
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -3841,6 +3843,8 @@ DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_
  */
 #define DUK__PACK_ARGS(classnum,protobidx,elemtype,elemshift,isview) \
 	(((classnum) << 24) | ((protobidx) << 16) | ((elemtype) << 8) | ((elemshift) << 4) | (isview))
+
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_DUKTAPE_BUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
@@ -3854,8 +3858,14 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT32ARRAY,        DUK_BIDX_INT32ARRAY_PROTOTYPE,        DUK_HBUFFEROBJECT_ELEM_INT32,        2, 1),  /* DUK_BUFOBJ_INT32ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT32ARRAY,       DUK_BIDX_UINT32ARRAY_PROTOTYPE,       DUK_HBUFFEROBJECT_ELEM_UINT32,       2, 1),  /* DUK_BUFOBJ_UINT32ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT32ARRAY,      DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,      DUK_HBUFFEROBJECT_ELEM_FLOAT32,      2, 1),  /* DUK_BUFOBJ_FLOAT32ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFFEROBJECT_ELEM_FLOAT64,      3, 1),  /* DUK_BUFOBJ_FLOAT64ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFFEROBJECT_ELEM_FLOAT64,      3, 1)   /* DUK_BUFOBJ_FLOAT64ARRAY */
 };
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+/* Only allow Duktape.Buffer when support disabled. */
+static const duk_uint32_t duk__bufobj_flags_lookup[] = {
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0)   /* DUK_BUFOBJ_DUKTAPE_BUFFER */
+};
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 #undef DUK__PACK_ARGS
 
 DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
@@ -3917,6 +3927,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_bufobj->is_view = tmp & 0x0f;
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  Just create a new
 	 * ArrayBuffer sharing the same underlying buffer.
@@ -3942,6 +3953,8 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 		duk_compact(ctx, -1);
 	}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
 	return;
 
  range_error:
