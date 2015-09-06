@@ -1077,7 +1077,6 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		tests/ecmascript/*.js
-	# Examples may contain plain identifiers
 	python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
@@ -1089,6 +1088,26 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h
+	# XXX: not yet FIXME pure
+	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		config/config-options/*.yaml config/feature-options/*.yaml config/*.yaml
+	python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		debugger/*.yaml
 	python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \

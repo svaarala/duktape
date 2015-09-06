@@ -1,5 +1,6 @@
 #include "duk_internal.h"
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_uint_t duk_hbufferobject_clamp_bytelength(duk_hbufferobject *h_bufobj, duk_uint_t len) {
 	duk_uint_t buf_size;
 	duk_uint_t buf_avail;
@@ -16,3 +17,4 @@ DUK_INTERNAL duk_uint_t duk_hbufferobject_clamp_bytelength(duk_hbufferobject *h_
 
 	return buf_avail >= len ? len : buf_avail;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */

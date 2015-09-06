@@ -8,6 +8,7 @@
  *  Misc helpers
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Map DUK_HBUFFEROBJECT_ELEM_xxx to duk_hobject class number.
  * Sync with duk_hbufferobject.h and duk_hobject.h.
  */
@@ -22,7 +23,9 @@ static const duk_uint8_t duk__buffer_class_from_elemtype[9] = {
 	DUK_HOBJECT_CLASS_FLOAT32ARRAY,
 	DUK_HOBJECT_CLASS_FLOAT64ARRAY
 };
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Map DUK_HBUFFEROBJECT_ELEM_xxx to prototype object built-in index.
  * Sync with duk_hbufferobject.h.
  */
@@ -37,7 +40,9 @@ static const duk_uint8_t duk__buffer_proto_from_elemtype[9] = {
 	DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,
 	DUK_BIDX_FLOAT64ARRAY_PROTOTYPE
 };
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Map DUK__FLX_xxx to byte size.
  */
 static const duk_uint8_t duk__buffer_nbytes_from_fldtype[6] = {
@@ -48,7 +53,9 @@ static const duk_uint8_t duk__buffer_nbytes_from_fldtype[6] = {
 	8,  /* DUK__FLD_DOUBLE */
 	0   /* DUK__FLD_VARINT; not relevant here */
 };
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Bitfield for each DUK_HBUFFEROBJECT_ELEM_xxx indicating which element types
  * are compatible with a blind byte copy for the TypedArray set() method (also
  * used for TypedArray constructor).  Array index is target buffer elem type,
@@ -94,7 +101,9 @@ static duk_uint16_t duk__buffer_elemtype_copy_compatible[9] = {
 	/* xxx -> DUK_HBUFFEROBJECT_ELEM_FLOAT64 */
 	(1U << DUK_HBUFFEROBJECT_ELEM_FLOAT64)
 };
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Shared helper. */
 DUK_LOCAL duk_hbufferobject *duk__getrequire_bufobj_this(duk_context *ctx, duk_bool_t throw_flag) {
 	duk_hthread *thr;
@@ -120,19 +129,25 @@ DUK_LOCAL duk_hbufferobject *duk__getrequire_bufobj_this(duk_context *ctx, duk_b
 	}
 	return NULL;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Check that 'this' is a duk_hbufferobject and return a pointer to it. */
 DUK_LOCAL duk_hbufferobject *duk__get_bufobj_this(duk_context *ctx) {
 	return duk__getrequire_bufobj_this(ctx, 0);
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Check that 'this' is a duk_hbufferobject and return a pointer to it
  * (NULL if not).
  */
 DUK_LOCAL duk_hbufferobject *duk__require_bufobj_this(duk_context *ctx) {
 	return duk__getrequire_bufobj_this(ctx, 1);
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Check that value is a duk_hbufferobject and return a pointer to it. */
 DUK_LOCAL duk_hbufferobject *duk__require_bufobj_value(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr;
@@ -157,6 +172,7 @@ DUK_LOCAL duk_hbufferobject *duk__require_bufobj_value(duk_context *ctx, duk_idx
 
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_LOCAL void duk__set_bufobj_buffer(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_hbuffer *h_val) {
 	duk_hthread *thr;
@@ -179,6 +195,7 @@ DUK_LOCAL void duk__set_bufobj_buffer(duk_context *ctx, duk_hbufferobject *h_buf
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_hbufferobject *duk__push_arraybuffer_with_length(duk_context *ctx, duk_uint_t len) {
 	duk_hbuffer *h_val;
 	duk_hbufferobject *h_bufobj;
@@ -199,7 +216,9 @@ DUK_LOCAL duk_hbufferobject *duk__push_arraybuffer_with_length(duk_context *ctx,
 
 	return h_bufobj;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Shared offset/length coercion helper. */
 DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
                                               duk_hbufferobject *h_bufarg,
@@ -259,7 +278,9 @@ DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
  fail_range:
 	duk_error(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_CALL_ARGS);
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Shared lenient buffer length clamping helper.  No negative indices, no
  * element/byte shifting.
  */
@@ -295,7 +316,9 @@ DUK_LOCAL void duk__clamp_startend_nonegidx_noshift(duk_context *ctx,
 	*out_start_offset = start_offset;
 	*out_end_offset = end_offset;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Shared lenient buffer length clamping helper.  Indices are treated as
  * element indices (though output values are byte offsets) which only
  * really matters for TypedArray views as other buffer object have a zero
@@ -361,6 +384,7 @@ DUK_LOCAL void duk__clamp_startend_negidx_shifted(duk_context *ctx,
 	*out_start_offset = start_offset;
 	*out_end_offset = end_offset;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Indexed read/write helpers (also used from outside this file)
@@ -373,9 +397,13 @@ DUK_INTERNAL void duk_hbufferobject_push_validated_read(duk_context *ctx, duk_hb
 
 	switch (h_bufobj->elem_type) {
 	case DUK_HBUFFEROBJECT_ELEM_UINT8:
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
+#endif
 		duk_push_uint(ctx, (duk_uint_t) du.uc[0]);
 		break;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	/* These are not needed when only Duktape.Buffer is supported. */
 	case DUK_HBUFFEROBJECT_ELEM_INT8:
 		duk_push_int(ctx, (duk_int_t) (duk_int8_t) du.uc[0]);
 		break;
@@ -397,6 +425,7 @@ DUK_INTERNAL void duk_hbufferobject_push_validated_read(duk_context *ctx, duk_hb
 	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
 		duk_push_number(ctx, (duk_double_t) du.d);
 		break;
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		DUK_UNREACHABLE();
 	}
@@ -417,6 +446,8 @@ DUK_INTERNAL void duk_hbufferobject_validated_write(duk_context *ctx, duk_hbuffe
 	case DUK_HBUFFEROBJECT_ELEM_UINT8:
 		du.uc[0] = (duk_uint8_t) duk_to_uint32(ctx, -1);
 		break;
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	/* These are not needed when only Duktape.Buffer is supported. */
 	case DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED:
 		du.uc[0] = (duk_uint8_t) duk_to_uint8clamped(ctx, -1);
 		break;
@@ -441,6 +472,7 @@ DUK_INTERNAL void duk_hbufferobject_validated_write(duk_context *ctx, duk_hbuffe
 	case DUK_HBUFFEROBJECT_ELEM_FLOAT64:
 		du.d = (duk_double_t) duk_to_number(ctx, -1);
 		break;
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	default:
 		DUK_UNREACHABLE();
 	}
@@ -554,6 +586,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_constructor(duk_context *ctx) {
  *  Node.js Buffer: constructor
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 	/* Internal class is Object: Object.prototype.toString.call(new Buffer(0))
 	 * prints "[object Object]".
@@ -622,11 +655,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  ArrayBuffer, DataView, and TypedArray constructors
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 	duk_hbufferobject *h_bufobj;
 	duk_hbuffer *h_val;
@@ -671,12 +711,20 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
  fail_length:
 	return DUK_RET_RANGE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
 
 /* Format of magic, bits:
  *   0...1: elem size shift (0-3)
  *   2...5: elem type (DUK_HBUFFEROBJECT_ELEM_xxx)
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv;
@@ -1014,7 +1062,14 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
  fail_arguments:
 	return DUK_RET_RANGE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	duk_hbufferobject *h_bufarg;
 	duk_hbufferobject *h_bufobj;
@@ -1070,11 +1125,18 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  ArrayBuffer.isView()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 	duk_hobject *h_obj;
 	duk_bool_t ret = 0;
@@ -1086,11 +1148,18 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 	duk_push_boolean(ctx, ret);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer: toString([encoding], [start], [end])
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1136,11 +1205,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Duktape.Buffer: toString(), valueOf()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv;
@@ -1190,11 +1266,18 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx)
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype: toJSON()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1232,6 +1315,12 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype.equals()
@@ -1239,6 +1328,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
  *  Node.js Buffer.compare()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_small_uint_t magic;
@@ -1287,11 +1377,18 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
 
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype.fill()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1357,11 +1454,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 	duk_push_this(ctx);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype.write(string, [offset], [length], [encoding])
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1401,11 +1505,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
 	duk_push_uint(ctx, length);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype.copy()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1509,6 +1620,12 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
  fail_bounds:
 	return DUK_RET_RANGE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  TypedArray.prototype.set()
@@ -1546,6 +1663,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
  *  See test-bi-typedarray-proto-set.js.
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_this;
@@ -1798,6 +1916,12 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 
 	return 0;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.prototype.slice([start], [end])
@@ -1817,6 +1941,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
  *    - TypedArray .subarray() arguments are element indices, not byte offsets
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_small_int_t magic;
@@ -1928,11 +2053,18 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.isEncoding()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
 	const char *encoding;
 
@@ -1943,11 +2075,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
 	duk_push_boolean(ctx, DUK_STRCMP(encoding, "utf8") == 0);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.isBuffer()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv;
@@ -1977,11 +2116,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 	duk_push_boolean(ctx, ret);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.byteLength()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx) {
 	const char *str;
 	duk_size_t len;
@@ -1996,11 +2142,18 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx) {
 	duk_push_size_t(ctx, len);
 	return 1;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Node.js Buffer.concat()
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hobject *h_arg;
@@ -2108,6 +2261,12 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 
 	return 1;  /* return h_bufres */
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Shared readfield and writefield methods
@@ -2116,6 +2275,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
  *  types.  All offsets are byte based so no offset shifting is needed.
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Format of magic, bits:
  *   0...1: field type; 0=uint8, 1=uint16, 2=uint32, 3=float, 4=double, 5=unused, 6=unused, 7=unused
  *       3: endianness: 0=little, 1=big
@@ -2385,7 +2545,14 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 
 	return DUK_RET_RANGE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* XXX: split into separate functions for each field type? */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	duk_hthread *thr;
@@ -2656,6 +2823,12 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	}
 	return DUK_RET_RANGE_ERROR;
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_UNSUPPORTED_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 #undef  DUK__FLD_8BIT
 #undef  DUK__FLD_16BIT
