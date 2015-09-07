@@ -53,7 +53,7 @@ DUK_LOCAL_DECL void duk__emit_2(duk_json_enc_ctx *js_ctx, duk_uint_fast8_t ch1, 
 DUK_LOCAL_DECL void duk__unemit_1(duk_json_enc_ctx *js_ctx);
 #endif
 DUK_LOCAL_DECL void duk__emit_hstring(duk_json_enc_ctx *js_ctx, duk_hstring *h);
-#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+#if defined(DUK_USE_FASTINT)
 DUK_LOCAL_DECL void duk__emit_cstring(duk_json_enc_ctx *js_ctx, const char *p);
 #endif
 DUK_LOCAL_DECL void duk__emit_stridx(duk_json_enc_ctx *js_ctx, duk_small_uint_t stridx);
@@ -1023,7 +1023,7 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 #define DUK__EMIT_1(js_ctx,ch)          duk__emit_1((js_ctx), (duk_uint_fast8_t) (ch))
 #define DUK__EMIT_2(js_ctx,ch1,ch2)     duk__emit_2((js_ctx), (duk_uint_fast8_t) (ch1), (duk_uint_fast8_t) (ch2))
 #define DUK__EMIT_HSTR(js_ctx,h)        duk__emit_hstring((js_ctx), (h))
-#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+#if defined(DUK_USE_FASTINT) || defined(DUK_USE_JX) || defined(DUK_USE_JC)
 #define DUK__EMIT_CSTR(js_ctx,p)        duk__emit_cstring((js_ctx), (p))
 #endif
 #define DUK__EMIT_STRIDX(js_ctx,i)      duk__emit_stridx((js_ctx), (i))
@@ -1043,7 +1043,7 @@ DUK_LOCAL void duk__emit_hstring(duk_json_enc_ctx *js_ctx, duk_hstring *h) {
 	DUK_BW_WRITE_ENSURE_HSTRING(js_ctx->thr, &js_ctx->bw, h);
 }
 
-#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+#if defined(DUK_USE_FASTINT) || defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__emit_cstring(duk_json_enc_ctx *js_ctx, const char *str) {
 	DUK_BW_WRITE_ENSURE_CSTRING(js_ctx->thr, &js_ctx->bw, str);
 }
