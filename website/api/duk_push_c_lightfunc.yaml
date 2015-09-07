@@ -54,7 +54,6 @@ tags:
   - stack
   - function
   - lightfunc
-  - experimental
 
 seealso:
   - duk_push_c_function
