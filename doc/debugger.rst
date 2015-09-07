@@ -2,9 +2,6 @@
 Duktape debugger
 ================
 
-**The debugger support is currently experimental, i.e. may change in an
-incompatible way even in a minor release.**
-
 Introduction
 ============
 
