@@ -509,100 +509,8 @@ static void debugger_detached(void *udata) {
 #define  ALLOC_HYBRID   3
 #define  ALLOC_AJSHEAP  4
 
-int main(int argc, char *argv[]) {
-	duk_context *ctx = NULL;
-	int retval = 0;
-	int have_files = 0;
-	int have_eval = 0;
-	int interactive = 0;
-	int memlimit_high = 1;
-	int alloc_provider = ALLOC_DEFAULT;
-	int ajsheap_log = 0;
-	int debugger = 0;
-	const char *compile_filename = NULL;
-	int i;
-
-#ifdef DUK_CMDLINE_AJSHEAP
-	alloc_provider = ALLOC_AJSHEAP;
-#endif
-	(void) ajsheap_log;
-
-	/*
-	 *  Signal handling setup
-	 */
-
-#ifndef NO_SIGNAL
-	set_sigint_handler();
-
-	/* This is useful at the global level; libraries should avoid SIGPIPE though */
-	/*signal(SIGPIPE, SIG_IGN);*/
-#endif
-
-	/*
-	 *  Parse options
-	 */
-
-	for (i = 1; i < argc; i++) {
-		char *arg = argv[i];
-		if (!arg) {
-			goto usage;
-		}
-		if (strcmp(arg, "--restrict-memory") == 0) {
-			memlimit_high = 0;
-		} else if (strcmp(arg, "-i") == 0) {
-			interactive = 1;
-		} else if (strcmp(arg, "-c") == 0) {
-			if (i == argc - 1) {
-				goto usage;
-			}
-			i++;
-			compile_filename = argv[i];
-		} else if (strcmp(arg, "-e") == 0) {
-			have_eval = 1;
-			if (i == argc - 1) {
-				goto usage;
-			}
-			i++;  /* skip code */
-		} else if (strcmp(arg, "--alloc-default") == 0) {
-			alloc_provider = ALLOC_DEFAULT;
-		} else if (strcmp(arg, "--alloc-logging") == 0) {
-			alloc_provider = ALLOC_LOGGING;
-		} else if (strcmp(arg, "--alloc-torture") == 0) {
-			alloc_provider = ALLOC_TORTURE;
-		} else if (strcmp(arg, "--alloc-hybrid") == 0) {
-			alloc_provider = ALLOC_HYBRID;
-		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
-			alloc_provider = ALLOC_AJSHEAP;
-		} else if (strcmp(arg, "--ajsheap-log") == 0) {
-			ajsheap_log = 1;
-		} else if (strcmp(arg, "--debugger") == 0) {
-			debugger = 1;
-		} else if (strlen(arg) >= 1 && arg[0] == '-') {
-			goto usage;
-		} else {
-			have_files = 1;
-		}
-	}
-	if (!have_files && !have_eval) {
-		interactive = 1;
-	}
-
-	/*
-	 *  Memory limit
-	 */
-
-#ifndef NO_RLIMIT
-	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
-#else
-	if (memlimit_high == 0) {
-		fprintf(stderr, "Warning: option --restrict-memory ignored, no rlimit support\n");
-		fflush(stderr);
-	}
-#endif
-
-	/*
-	 *  Create context
-	 */
+static duk_context *create_duktape_heap(int alloc_provider, int debugger) {
+	duk_context *ctx;
 
 	ctx = NULL;
 	if (!ctx && alloc_provider == ALLOC_LOGGING) {
@@ -719,6 +627,139 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	return ctx;
+}
+
+static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
+	(void) alloc_provider;
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
+		ajsheap_dump();
+
+		duk_gc(ctx, 0);
+
+		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
+		ajsheap_dump();
+	}
+#endif
+
+	if (ctx) {
+		duk_destroy_heap(ctx);
+	}
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	if (alloc_provider == ALLOC_AJSHEAP) {
+		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
+		ajsheap_dump();
+	}
+#endif
+}
+
+int main(int argc, char *argv[]) {
+	duk_context *ctx = NULL;
+	int retval = 0;
+	int have_files = 0;
+	int have_eval = 0;
+	int interactive = 0;
+	int memlimit_high = 1;
+	int alloc_provider = ALLOC_DEFAULT;
+	int ajsheap_log = 0;
+	int debugger = 0;
+	int recreate_heap = 0;
+	int verbose = 0;
+	const char *compile_filename = NULL;
+	int i;
+
+#ifdef DUK_CMDLINE_AJSHEAP
+	alloc_provider = ALLOC_AJSHEAP;
+#endif
+	(void) ajsheap_log;
+
+	/*
+	 *  Signal handling setup
+	 */
+
+#ifndef NO_SIGNAL
+	set_sigint_handler();
+
+	/* This is useful at the global level; libraries should avoid SIGPIPE though */
+	/*signal(SIGPIPE, SIG_IGN);*/
+#endif
+
+	/*
+	 *  Parse options
+	 */
+
+	for (i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (!arg) {
+			goto usage;
+		}
+		if (strcmp(arg, "--restrict-memory") == 0) {
+			memlimit_high = 0;
+		} else if (strcmp(arg, "-i") == 0) {
+			interactive = 1;
+		} else if (strcmp(arg, "-c") == 0) {
+			if (i == argc - 1) {
+				goto usage;
+			}
+			i++;
+			compile_filename = argv[i];
+		} else if (strcmp(arg, "-e") == 0) {
+			have_eval = 1;
+			if (i == argc - 1) {
+				goto usage;
+			}
+			i++;  /* skip code */
+		} else if (strcmp(arg, "--alloc-default") == 0) {
+			alloc_provider = ALLOC_DEFAULT;
+		} else if (strcmp(arg, "--alloc-logging") == 0) {
+			alloc_provider = ALLOC_LOGGING;
+		} else if (strcmp(arg, "--alloc-torture") == 0) {
+			alloc_provider = ALLOC_TORTURE;
+		} else if (strcmp(arg, "--alloc-hybrid") == 0) {
+			alloc_provider = ALLOC_HYBRID;
+		} else if (strcmp(arg, "--alloc-ajsheap") == 0) {
+			alloc_provider = ALLOC_AJSHEAP;
+		} else if (strcmp(arg, "--ajsheap-log") == 0) {
+			ajsheap_log = 1;
+		} else if (strcmp(arg, "--debugger") == 0) {
+			debugger = 1;
+		} else if (strcmp(arg, "--recreate-heap") == 0) {
+			recreate_heap = 1;
+		} else if (strcmp(arg, "--verbose") == 0) {
+			verbose = 1;
+		} else if (strlen(arg) >= 1 && arg[0] == '-') {
+			goto usage;
+		} else {
+			have_files = 1;
+		}
+	}
+	if (!have_files && !have_eval) {
+		interactive = 1;
+	}
+
+	/*
+	 *  Memory limit
+	 */
+
+#ifndef NO_RLIMIT
+	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
+#else
+	if (memlimit_high == 0) {
+		fprintf(stderr, "Warning: option --restrict-memory ignored, no rlimit support\n");
+		fflush(stderr);
+	}
+#endif
+
+	/*
+	 *  Create heap
+	 */
+
+	ctx = create_duktape_heap(alloc_provider, debugger);
+
 	/*
 	 *  Execute any argument file(s)
 	 */
@@ -746,9 +787,24 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
+		if (verbose) {
+			fprintf(stderr, "*** Executing file: %s\n", arg);
+			fflush(stderr);
+		}
+
 		if (handle_file(ctx, arg, compile_filename) != 0) {
 			retval = 1;
 			goto cleanup;
+		}
+
+		if (recreate_heap) {
+			if (verbose) {
+				fprintf(stderr, "*** Recreating heap...\n");
+				fflush(stderr);
+			}
+
+			destroy_duktape_heap(ctx, alloc_provider);
+			ctx = create_duktape_heap(alloc_provider, debugger);
 		}
 	}
 
@@ -773,28 +829,10 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 	}
 
-#ifdef DUK_CMDLINE_AJSHEAP
-	if (alloc_provider == ALLOC_AJSHEAP) {
-		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
-		ajsheap_dump();
-
-		duk_gc(ctx, 0);
-
-		fprintf(stdout, "Pool dump before duk_destroy_heap(), after forced gc\n");
-		ajsheap_dump();
-	}
-#endif
-
 	if (ctx) {
-		duk_destroy_heap(ctx);
+		destroy_duktape_heap(ctx, alloc_provider);
 	}
-
-#ifdef DUK_CMDLINE_AJSHEAP
-	if (alloc_provider == ALLOC_AJSHEAP) {
-		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
-		ajsheap_dump();
-	}
-#endif
+	ctx = NULL;
 
 	return retval;
 
@@ -808,6 +846,7 @@ int main(int argc, char *argv[]) {
 	                "   -i                 enter interactive mode after executing argument file(s) / eval code\n"
 	                "   -e CODE            evaluate code\n"
 			"   -c FILE            compile into bytecode (use with only one file argument)\n"
+			"   --verbose          verbose messages to stderr\n"
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-default    use Duktape default allocator\n"
 #ifdef DUK_CMDLINE_ALLOC_LOGGING
@@ -826,6 +865,7 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
 			"   --debugger         start example debugger\n"
 #endif
+			"   --recreate-heap      recreate heap after every file\n"
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);
