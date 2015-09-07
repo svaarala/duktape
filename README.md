@@ -26,6 +26,7 @@ Main features:
 * Custom features like co-routines, built-in logging framework, and built-in
   CommonJS-based module loading framework
 * Property virtualization using a subset of Ecmascript E6 Proxy object
+* Bytecode dump/load for caching compiled functions
 * Liberal license
 
 See [duktape.org](http://duktape.org/) for packaged end-user downloads
