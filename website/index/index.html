@@ -12,14 +12,7 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
-    <ul>
-    <li>200kB code</li>
-    <li>46kB startup RAM (x86, default options)</li>
-    <li>22kB startup RAM (x86, <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">lowmem options</a>)</li>
-    <li>50k<a href="http://cloc.sourceforge.net/">LoC</a> source (excluding comments etc)</li>
-    <li>Can run on platforms with 256kB flash and 96kB system RAM</li>
-    </ul>
-</li>
+    can run on platforms with 256kB flash and 96kB system RAM</li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">Ecmascript E5/E5.1</a>
     compliant, some features borrowed from
     <a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript E6</a></li>
@@ -37,6 +30,16 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <li>Bytecode dump/load for caching compiled functions</li>
 <li>Liberal license (MIT)</li>
 </ul>
+
+<h1>Code and RAM footprint</h1>
+<table>
+<tr><td>&nbsp;</td><td>x86 default</td><td>x86 lowmem</td><td>x86 full lowmem</td></tr>
+<tr><td>Code</td><td>225kB</td><td>205kB</td><td>234kB</td></tr>
+<tr><td>Startup RAM</td><td>70kB</td><td>45kB</td><td>27kB</td></tr>
+</table>
+
+<p>Full  <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">lowmem</a>
+uses "pointer compression", Node.js Buffer and typed array support enabled.</p>
 
 <h1>Current status</h1>
 <ul>

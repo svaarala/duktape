@@ -5,8 +5,6 @@ Duktape debug client and JSON debug proxy
 Overview
 ========
 
-**Highly experimental!**
-
 Debugger web UI which connects to the Duktape command line tool or any other
 target supporting the example TCP transport (``examples/debug-trans-socket``).
 

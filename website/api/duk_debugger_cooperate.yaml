@@ -16,7 +16,6 @@ example: |
 
 tags:
   - debug
-  - experimental
 
 seealso:
   - duk_debugger_attach

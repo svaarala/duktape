@@ -136,6 +136,5 @@ example: |
 tags:
   - property
   - sandbox
-  - experimental
 
 introduced: 1.1.0
