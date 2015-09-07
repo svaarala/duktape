@@ -327,7 +327,6 @@ clean:
 	@rm -f /tmp/duk-bluebird-test*
 	@rm -f a.out
 	@rm -rf test262-*
-	@rm -f compiler.jar
 	@rm -rf lua-5.2.3
 	@rm -rf luajs
 	@rm -f dukweb.js
@@ -348,6 +347,7 @@ cleanall: clean
 	@rm -rf emscripten
 	@rm -rf JS-Interpreter
 	@rm -f compiler-latest.zip
+	@rm -f compiler.jar
 	@rm -f cloc-1.60.pl
 	@rm -f lua-5.2.3.tar.gz
 	@rm -f luajs.zip
