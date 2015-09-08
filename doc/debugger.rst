@@ -2834,6 +2834,71 @@ directly with dvalues, so that when C code does a::
 an arbitrarily complex object value (perhaps even an arbitrary object graph)
 can be decoded and pushed to the value stack.
 
+Heap walking support
+--------------------
+
+One option for structured value support is to add support for walking of
+heap objects: the debug client could read heap objects directly, get their
+type and properties, read off further object references, etc.
+
+The basic problem with this approach is pointer safety: if any values
+referenced by the client have already been freed, memory unsafe behavior
+results.  This is quite easy to trigger for e.g. Eval results (which
+become unreachable right after Eval is complete).
+
+Some solutions:
+
+* Prevent mark-and-sweep and refzero queue processing while the debugger
+  message loop is active (or perhaps only when the debugger is paused).
+  This makes heap walking automatically safe while the target is paused,
+  even for objects with a zero refcount, and would be quite intuitive for
+  the debug client because no commands are needed to ensure safety.  One
+  downside is that one might run out of memory doing e.g. a lot of Evals
+  in the paused state.  A few options with this approach:
+
+  - Add an explicit command which allows the debug client to indicate it's
+    safe to run GC on pending objects (while remaining paused).  This would
+    allow the debug client to free resources in certain states (for example,
+    after every heap viewer UI update) so that memory usage wouldn't grow
+    without bound when e.g. also doing a lot of Evals.
+
+  - Add an explicit command to keep the GC freeze active even after resuming
+    the program.  The freeze would be lifted if the debug transport were
+    dropped.  It might also make sense for the freeze to be lifted on the
+    next resume unless the client requests for the freeze to be kept again;
+    this would ensure the freeze wouldn't accidentally be left active
+    indefinitely.
+
+* Add explicit "start walking" and "stop walking" commands to the debug
+  protocol which similarly freeze garbage collection.  This allows the debug
+  client to "lock the heap" for inspection and later on release it.  There
+  would also need to be a mechanism to automatically release the lock if the
+  debug transport was severed (walking state could be kept after a resume, if
+  that was useful for the debug client).  To ensure the debug client behaves
+  correctly, heap walk commands could be rejected when the walking state is
+  not active; this would prevent accidental pointer lookups using unsafe
+  pointers.  The downside of this approach is that pointer walking is either
+  unsafe or causes explicit errors, unless explicit start/stop walk commands
+  are issued by the debug client.
+
+* Use object pinning: debug client would explicitly pin an object it is
+  watching.  That pinning would make the object behave like a reachability
+  root so that anything else that object references would be considered
+  reachable.  There would have to be an automatic mechanism to recover from
+  broken transports etc, so that pinned objects would be automatically
+  unpinned in certain situations.  While pinning is a little awkward for the
+  debug client, it's more accurate than freezing the whole heap for inspection
+  and can be more easily used for a longer time on a running program.
+
+* A variant of object pinning: instead of using heap object flags for
+  pinning, simply add a reachable array e.g. into the heap stash for
+  debugger use.  The debugger could then push objects into the array to
+  effectively pin them (as they'd be reachable through the stash).  When
+  the debugger detaches, that array could be deleted.  This would be quite
+  simple to implement and have a logical automatic unpin mechanism.
+
+See discussion: https://github.com/svaarala/duktape/issues/358.
+
 Heap dump viewer
 ----------------
 
