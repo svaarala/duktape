@@ -60,7 +60,7 @@ DUK_LOCAL_DECL void duk__emit_stridx(duk_json_enc_ctx *js_ctx, duk_small_uint_t 
 DUK_LOCAL_DECL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uint_fast32_t cp, duk_uint8_t *q);
 DUK_LOCAL_DECL duk_bool_t duk__enc_key_quotes_needed(duk_hstring *h_key);
 DUK_LOCAL_DECL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str);
-DUK_LOCAL_DECL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top);
+DUK_LOCAL_DECL duk_bool_t duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top);
 DUK_LOCAL_DECL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top);
 DUK_LOCAL_DECL void duk__enc_object(duk_json_enc_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__enc_array(duk_json_enc_ctx *js_ctx);
@@ -1402,7 +1402,7 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 /* Shared entry handling for object/array serialization: indent/stepback,
  * loop detection.
  */
-DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top) {
+DUK_LOCAL duk_bool_t duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
 
@@ -1422,6 +1422,16 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_s
 	duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
 	duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
 	if (duk_has_prop(ctx, js_ctx->idx_loop)) {
+#if defined(DUK_USE_JX)
+		/* FIXME: hack for testing GH-331; would need to be conditional to
+		 * serialization mode.
+		 */
+		if (1) {
+			DUK_D(DUK_DPRINT("loop detected"));
+			duk_pop(ctx);
+			return 1;
+		}
+#endif
 		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
 	}
 	duk_push_true(ctx);  /* -> [ ... voidp true ] */
@@ -1460,6 +1470,8 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_s
 
 	DUK_DDD(DUK_DDDPRINT("shared entry finished: top=%ld, loop=%!T",
 	                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop)));
+
+	return 0;
 }
 
 /* Shared exit handling for object/array serialization. */
@@ -1525,7 +1537,11 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_object: obj=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top);
+	if (duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top)) {
+		/* Loop detected.  FIXME: JX specific test */
+		DUK__EMIT_CSTR(js_ctx, "{_loop:true}");
+		return;
+	}
 
 	idx_obj = entry_top - 1;
 
@@ -1631,7 +1647,11 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 	DUK_DDD(DUK_DDDPRINT("duk__enc_array: array=%!T",
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top);
+	if (duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top)) {
+		/* Loop detected.  FIXME: JX specific test */
+		DUK__EMIT_CSTR(js_ctx, "{_loop:true}");
+		return;
+	}
 
 	idx_arr = entry_top - 1;
 
@@ -2130,6 +2150,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 		for (i = 0, n = (duk_uint_fast32_t) js_ctx->recursion_depth; i < n; i++) {
 			if (js_ctx->visiting[i] == obj) {
+				/* FIXME: JX specific hack */
 				DUK_DD(DUK_DDPRINT("fast path loop detect"));
 				DUK_ERROR(js_ctx->thr, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
 			}
