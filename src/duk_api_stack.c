@@ -106,9 +106,9 @@ DUK_LOCAL duk_int_t duk__api_coerce_d2i(duk_context *ctx, duk_idx_t index, duk_b
 
 	if (require) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_NUMBER);
-	} else {
-		return 0;
+		/* not reachable */
 	}
+	return 0;
 }
 
 DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_context *ctx, duk_idx_t index, duk_bool_t require) {
@@ -163,9 +163,9 @@ DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_context *ctx, duk_idx_t index, duk
 
 	if (require) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_NUMBER);
-	} else {
-		return 0;
+		/* not reachable */
 	}
+	return 0;
 }
 
 /*
