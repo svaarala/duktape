@@ -1423,11 +1423,8 @@ DUK_LOCAL duk_bool_t duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring
 	duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
 	if (duk_has_prop(ctx, js_ctx->idx_loop)) {
 #if defined(DUK_USE_JX)
-		/* FIXME: hack for testing GH-331; would need to be conditional to
-		 * serialization mode.
-		 */
-		if (1) {
-			DUK_D(DUK_DPRINT("loop detected"));
+		if (js_ctx->flag_ext_custom) {
+			DUK_D(DUK_DPRINT("loop detected in jx mode"));
 			duk_pop(ctx);
 			return 1;
 		}
@@ -1538,9 +1535,12 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	DUK_DDD(DUK_DDDPRINT("duk__enc_object: obj=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	if (duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top)) {
-		/* Loop detected.  FIXME: JX specific test */
+#if defined(DUK_USE_JX)
 		DUK__EMIT_CSTR(js_ctx, "{_loop:true}");
 		return;
+#else
+		DUK_D(DUK_DPRINT("should never come here without jx"));
+#endif
 	}
 
 	idx_obj = entry_top - 1;
@@ -1648,9 +1648,12 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	if (duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top)) {
-		/* Loop detected.  FIXME: JX specific test */
+#if defined(DUK_USE_JX)
 		DUK__EMIT_CSTR(js_ctx, "{_loop:true}");
 		return;
+#else
+		DUK_D(DUK_DPRINT("should never come here without jx"));
+#endif
 	}
 
 	idx_arr = entry_top - 1;
@@ -2150,7 +2153,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 		for (i = 0, n = (duk_uint_fast32_t) js_ctx->recursion_depth; i < n; i++) {
 			if (js_ctx->visiting[i] == obj) {
-				/* FIXME: JX specific hack */
+				/* FIXME: when JX fast path support is added,
+				 * need to support loop handling here (GH-331).
+				 */
 				DUK_DD(DUK_DDPRINT("fast path loop detect"));
 				DUK_ERROR(js_ctx->thr, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
 			}
