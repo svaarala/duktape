@@ -1,4 +1,5 @@
 define: DUK_USE_SIGSETJMP
+feature_enables: DUK_OPT_SIGSETJMP
 introduced: 1.1.0
 default: false
 tags:

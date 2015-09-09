@@ -1,4 +1,9 @@
 define: DUK_USE_PANIC_ABORT
+feature_snippet: |
+  #undef DUK_USE_PANIC_ABORT
+  #if !defined(DUK_OPT_SEGFAULT_ON_PANIC)
+  #define DUK_USE_PANIC_ABORT
+  #endif
 introduced: 1.0.0
 default: true
 tags:

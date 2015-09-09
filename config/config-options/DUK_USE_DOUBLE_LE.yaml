@@ -1,4 +1,18 @@
 define: DUK_USE_DOUBLE_LE
+feature_snippet: |
+  #if defined(DUK_OPT_FORCE_BYTEORDER)
+  #if (DUK_OPT_FORCE_BYTEORDER == 1)
+  #define DUK_USE_DOUBLE_LE
+  #elif (DUK_OPT_FORCE_BYTEORDER == 2)
+  #undef DUK_USE_DOUBLE_LE
+  #elif (DUK_OPT_FORCE_BYTEORDER == 3)
+  #undef DUK_USE_DOUBLE_LE
+  #else
+  #error invalid DUK_OPT_FORCE_BYTEORDER
+  #endif
+  #else
+  #define DUK_USE_DOUBLE_LE
+  #endif
 introduced: 1.0.0
 default: true
 conflicts:

@@ -1,0 +1,34 @@
+# Architecture metadata
+
+required_defines:
+  - DUK_USE_ARCH_STRING
+#  - DUK_USE_INTEGER_LE
+#  - DUK_USE_DOUBLE_LE
+  - DUK_USE_ALIGN_BY
+  - DUK_USE_UNALIGNED_ACCESSES_POSSIBLE
+  - DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+  - DUK_USE_PACKED_TVAL
+  - DUK_USE_PACKED_TVAL_POSSIBLE  # FIXME
+
+autodetect:
+  -
+    name: x86
+    check: DUK_F_X86
+    include: architecture_x86.h.in
+  -
+    name: x64
+    check: DUK_F_X64
+    include: architecture_x64.h.in
+# FIXME
+#  -
+#    name: x32
+#    check: DUK_F_X32
+#    include: architecture_x32.h.in
+#  -
+#    name: arm
+#    check: DUK_F_ARM
+#    include: architecture_arm.h.in
+  -
+    name: generic
+    check: null
+    include: architecture_generic.h.in

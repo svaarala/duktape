@@ -1,4 +1,5 @@
 define: DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER
+feature_enables: DUK_OPT_NONSTD_ARRAY_CONCAT_TRAILER
 introduced: 1.0.0
 default: true
 tags:

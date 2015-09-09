@@ -1,4 +1,9 @@
 define: DUK_USE_PACKED_TVAL
+feature_enables: DUK_OPT_PACKED_TVAL
+# FIXME: current snippet is actually:
+#if defined(DUK_USE_PACKED_TVAL_POSSIBLE) && !defined(DUK_OPT_NO_PACKED_TVAL)
+#define DUK_USE_PACKED_TVAL
+#endif
 introduced: 1.0.0
 default: false
 tags:

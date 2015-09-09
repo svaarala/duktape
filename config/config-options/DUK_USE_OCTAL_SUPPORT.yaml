@@ -1,4 +1,5 @@
 define: DUK_USE_OCTAL_SUPPORT
+feature_enables: DUK_OPT_OCTAL_SUPPORT
 introduced: 1.0.0
 default: true
 tags:

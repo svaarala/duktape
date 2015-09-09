@@ -1,4 +1,5 @@
 define: DUK_USE_SHUFFLE_TORTURE
+feature_enables: DUK_OPT_SHUFFLE_TORTURE
 introduced: 1.2.0
 default: false
 tags:

@@ -1,4 +1,5 @@
 define: DUK_USE_DDDPRINT
+feature_enables: DUK_OPT_DDDPRINT
 introduced: 1.0.0
 default: false
 tags:

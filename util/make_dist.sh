@@ -211,6 +211,9 @@ done
 cd $ENTRYPWD/config
 tar cfz $DIST/config/genconfig_metadata.tar.gz \
 	tags.yaml \
+	platforms.yaml \
+	architectures.yaml \
+	compilers.yaml \
 	feature-options \
 	config-options \
 	header-snippets \
@@ -438,20 +441,28 @@ echo ' */' >> $DIST/AUTHORS.rst.tmp
 
 # Build duk_config.h from snippets using genconfig.
 python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
-	autodetect-header
+	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+	autodetect-header-legacy
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
 cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
 
+# Modular duk_config.h (to replace the previous monolithic one)
+#python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	autodetect-header-modular
+
 # Generate a few barebones config examples
-python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
-	--output $DIST/config/duk_config.h-linux-gcc-x64 \
-	--platform linux --compiler gcc --architecture x64 \
-	barebones-header
-python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
-	--output $DIST/config/duk_config.h-linux-gcc-x86 \
-	--platform linux --compiler gcc --architecture x86 \
-	barebones-header
+#python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	--output $DIST/config/duk_config.h-linux-gcc-x64 \
+#	--platform linux --compiler gcc --architecture x64 \
+#	barebones-header
+#python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	--output $DIST/config/duk_config.h-linux-gcc-x86 \
+#	--platform linux --compiler gcc --architecture x86 \
+#	barebones-header
 
 # Build duktape.h from parts, with some git-related replacements.
 # The only difference between single and separate file duktape.h

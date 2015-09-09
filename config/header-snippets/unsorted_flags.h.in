@@ -412,6 +412,12 @@
 #undef DUK_USE_NONSTD_ARRAY_WRITE
 #endif
 
+/* Node.js Buffer and Khronos/ES6 typed array support. */
+#define DUK_USE_BUFFEROBJECT_SUPPORT
+#if defined(DUK_OPT_NO_BUFFEROBJECT_SUPPORT)
+#undef DUK_USE_BUFFEROBJECT_SUPPORT
+#endif
+
 /*
  *  Optional C API options
  */
@@ -646,10 +652,6 @@
 
 #define DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS
 #undef DUK_USE_EXPLICIT_NULL_INIT
-
-#if !defined(DUK_USE_PACKED_TVAL)
-#define DUK_USE_EXPLICIT_NULL_INIT
-#endif
 
 #define DUK_USE_ZERO_BUFFER_DATA
 #if defined(DUK_OPT_NO_ZERO_BUFFER_DATA)

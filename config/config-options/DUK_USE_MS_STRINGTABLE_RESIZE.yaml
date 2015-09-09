@@ -1,4 +1,5 @@
 define: DUK_USE_MS_STRINGTABLE_RESIZE
+feature_enables: DUK_OPT_MS_STRINGTABLE_RESIZE
 introduced: 1.0.0
 default: true
 tags:

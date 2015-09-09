@@ -1,4 +1,9 @@
 define: DUK_USE_STRTAB_CHAIN
+feature_snippet: |
+  #undef DUK_USE_STRTAB_CHAIN
+  #if defined(DUK_OPT_STRTAB_CHAIN) && defined(DUK_OPT_STRTAB_CHAIN_SIZE)
+  #define DUK_USE_STRTAB_CHAIN
+  #endif
 introduced: 1.1.0
 related:
   - DUK_USE_STRTAB_CHAIN_SIZE

@@ -27,6 +27,10 @@ a bit more thought especially when adapting Duktape to an exotic environment.
 This document describes various approaches on creating a config header and
 updating it when a new Duktape release is taken into use.
 
+**NOTE: Genconfig is still a work in progress in Duktape 1.3, and only the
+default autodetect header is supported.  Other functionality is experimental
+and incomplete.**
+
 Coming up with a duk_config.h
 =============================
 
@@ -68,6 +72,8 @@ The basic options are:
   most closely matching your target, and then modify it manually or via
   scripting.
 
+  **EXPERIMENTAL in Duktape 1.3.**
+
 * **Write a duk_config.h from scratch**:
   You could also write a duk_config.h from scratch, but because there are
   quite many typedefs, macros, and config options, it's probably easiest
@@ -104,14 +110,14 @@ behavior.
 Generating an autodetect duk_config.h
 -------------------------------------
 
-To generate an autodetect header suitable for major platforms (essentially
-Linux, OSX, and Windows)::
+To generate an autodetect header suitable for directly supported platforms
+(matches Duktape 1.2 platform support)::
 
     $ cd duktape/config
     $ python genconfig.py \
         --metadata config/ \
         --output /tmp/duk_config.h \
-        barebones-header
+        autodetect-header
 
 The resulting header in ``/tmp/duk_config.h`` can then either be used as is
 or edited manually or through scripting.
@@ -127,6 +133,8 @@ or using some scripting approach.
 
 Generating a barebones duk_config.h
 -----------------------------------
+
+**EXPERIMENTAL in Duktape 1.3: generated headers haven't been tested.**
 
 To generate a barebones header you need to specify a platform, compiler, and
 architecture for genconfig::
@@ -671,7 +679,7 @@ Should provide a default configuration header which works out of the box:
 
 * Platform support for automatic detection can be narrowed from Duktape 1.2
 
-Default configuration header should be 1.2 backwards compatible:
+Default configuration header should be 1.2 backwards compatible (initially):
 
 * In other words, current DUK_OPT_xxx feature options should be supported
 

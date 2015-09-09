@@ -1,4 +1,5 @@
 define: DUK_USE_SOURCE_NONBMP
+feature_enables: DUK_OPT_SOURCE_NONBMP
 introduced: 1.0.0
 default: true
 tags:

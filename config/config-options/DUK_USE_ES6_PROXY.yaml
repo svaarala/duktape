@@ -1,4 +1,5 @@
 define: DUK_USE_ES6_PROXY
+feature_enables: DUK_OPT_ES6_PROXY
 introduced: 1.0.0
 default: true
 tags:
