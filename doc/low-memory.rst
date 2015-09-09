@@ -100,6 +100,12 @@ Suggested feature options
 
   - ``#undef DUK_USE_JSON_EATWHITE_FASTPATH``
 
+* If you don't need Node.js Buffer and Khronos/ES6 typed array support, use:
+
+  - ``DUK_OPT_NO_BUFFEROBJECT_SUPPORT``
+
+  - ``#undef DUK_USE_BUFFEROBJECT_SUPPORT``
+
 * If you don't need the Duktape-specific additional JX/JC formats, use:
 
   - ``DUK_OPT_NO_JX``

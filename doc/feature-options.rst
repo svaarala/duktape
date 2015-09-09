@@ -202,6 +202,15 @@ deal on platforms with soft float arithmetic.  If a platform has hard floats,
 this option may reduce overall performance because of the additional costs of
 checking for integer/double conversion, etc.
 
+Performance options
+===================
+
+DUK_OPT_JSON_STRINGIFY_FASTPATH
+-------------------------------
+
+Enable JSON.stringify() fast path.  The fast path is not fully portable in
+Duktape 1.3, so it is not enabled by default.
+
 Memory management options
 =========================
 
@@ -283,9 +292,6 @@ These options are low memory features for systems with 96-256 kB of RAM.
 Unless you have very little RAM, these options are probably not relevant
 to you.  They involve some compromises in e.g. performance or compliance
 to reduce memory usage.
-
-**The low memory feature options are experimental in Duktape 1.1, i.e. they
-may change in an incompatible manner in Duktape 1.2.**
 
 DUK_OPT_REFCOUNT16
 ------------------
@@ -615,7 +621,7 @@ Add a non-standard ``source`` property to function instances.  This allows
 function ``toString()`` to print out the actual function source.  The
 property is disabled by default because it increases memory footprint.
 
-.. note:: Unimplemented as of Duktape 0.12.0.
+.. note:: Unimplemented as of Duktape 1.3.0.
 
 DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT
 ---------------------------------------
@@ -723,6 +729,13 @@ DUK_OPT_LIGHTFUNC_BUILTINS
 Force built-in functions to be lightweight functions.  This reduces
 memory footprint by around 14 kB at the cost of some non-compliant
 behavior.
+
+DUK_OPT_NO_BUFFEROBJECT_SUPPORT
+-------------------------------
+
+Disable support for Node.js Buffer and Khronos/ES6 typed arrays, plain
+buffers and Duktape.Buffer will still be supported.  Saves some code
+footprint and may be useful for low memory targets.
 
 C API options
 =============
