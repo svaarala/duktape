@@ -184,6 +184,8 @@ class Snippet:
 
 	def __init__(self, lines, provides=None, requires=None, autoscan_requires=True, autoscan_provides=True):
 		self.lines = []
+		if not isinstance(lines, list):
+			raise Exception('Snippet constructor must be a list (not e.g. a string): %s' % repr(lines))
 		for line in lines:
 			if isinstance(line, str):
 				self.lines.append(line)
@@ -307,16 +309,16 @@ class FileBuilder:
 
 	def cpp_error(self, msg):
 		# XXX: assume no newlines etc
-		self.vals.append(Snippet('#error %s' % msg))
+		self.vals.append(Snippet([ '#error %s' % msg ]))
 
 	def cpp_warning(self, msg):
 		# XXX: assume no newlines etc
 		# XXX: support compiler specific warning mechanisms
 		if self.use_cpp_warning:
 			# C preprocessor '#warning' is often supported
-			self.vals.append(Snippet('#warning %s' % msg))
+			self.vals.append(Snippet([ '#warning %s' % msg ]))
 		else:
-			self.vals.append(Snippet('/* WARNING: %s */' % msg))
+			self.vals.append(Snippet([ '/* WARNING: %s */' % msg ]))
 
 	def cpp_warning_or_error(self, msg, is_error=True):
 		if is_error:
