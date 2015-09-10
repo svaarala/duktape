@@ -60,7 +60,7 @@ This distributable contains:
 * ``src-separate/``: main Duktape library in multiple files format.
 
 * ``config/``: genconfig utility for creating duk_config.h configuration
-  files for non-mainline platforms, and some prebuilt config headers.
+  files, see: http://wiki.duktape.org/Configuring.html.
 
 * ``examples/``: further examples for using Duktape.  Although Duktape
   itself is widely portable, some of the examples are Linux only.
