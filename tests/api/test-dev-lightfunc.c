@@ -978,6 +978,59 @@ static duk_ret_t test_to_pointer(duk_context *ctx) {
 }
 
 /*===
+*** test_is_primitive (duk_safe_call)
+is_primitive: 1
+final top: 1
+==> rc=0, result='undefined'
+===*/
+
+/* Because lightfuncs have their own type tag in the C API, they're considered
+ * a primitive type like plain buffers and pointers.  This is also sensible
+ * because duk_is_object() is 0 for lightfuncs.
+ */
+
+static duk_ret_t test_is_primitive(duk_context *ctx) {
+	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
+	printf("is_primitive: %ld\n", (long) duk_is_primitive(ctx, -1));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/*===
+*** test_is_object (duk_safe_call)
+is_object: 0
+final top: 1
+==> rc=0, result='undefined'
+===*/
+
+/* Lightfuncs are not objects (they're primitive). */
+
+static duk_ret_t test_is_object(duk_context *ctx) {
+	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
+	printf("is_object: %ld\n", (long) duk_is_object(ctx, -1));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+/*===
+*** test_is_object_coercible (duk_safe_call)
+is_object_coercible: 1
+final top: 1
+==> rc=0, result='undefined'
+===*/
+
+/* Lightfuncs are object coercible. */
+
+static duk_ret_t test_is_object_coercible(duk_context *ctx) {
+	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
+	printf("is_object_coercible: %ld\n", (long) duk_is_object_coercible(ctx, -1));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/*===
 still here
 ===*/
 
@@ -995,6 +1048,9 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_to_object);
 	TEST_SAFE_CALL(test_to_buffer);
 	TEST_SAFE_CALL(test_to_pointer);
+	TEST_SAFE_CALL(test_is_primitive);
+	TEST_SAFE_CALL(test_is_object);
+	TEST_SAFE_CALL(test_is_object_coercible);
 
 	printf("still here\n");
 	fflush(stdout);
