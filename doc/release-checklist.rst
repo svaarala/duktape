@@ -45,6 +45,10 @@ Checklist for ordinary releases
 
   - Release date is in place
 
+* Ensure tests/api/test-all-public-symbols.c is up-to-date
+
+  - Must add all new API calls
+
 * Compilation tests:
 
   - Clean compile for command line tool with (a) no options and (b) common
@@ -95,9 +99,9 @@ Checklist for ordinary releases
   macros::
 
     > cd dist
-    > cl /O2 /DDUK_OPT_DLL_BUILD /Isrc /LD src\duktape.c
-    > cl /O2 /DDUK_OPT_DLL_BUILD /Isrc examples\cmdline\duk_cmdline.c duktape.lib
-    > duk_cmdline.exe
+    > cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Isrc /LD src\duktape.c
+    > cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Isrc /Feduk.exe examples\cmdline\duk_cmdline.c duktape.lib
+    > duk.exe
 
 * Ecmascript testcases
 
