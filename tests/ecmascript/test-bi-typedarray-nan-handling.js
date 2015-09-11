@@ -50,6 +50,9 @@ function nanHandlingTest() {
     sign = expt >>> 15;
     expt = (expt >> 4) & 0x7ff;
 
+    // Note: NaN normalization is allowed, and NaN sign is also platform
+    // dependent.
+
     print('sign: ' + sign);
     print('expt: ' + expt);
 
