@@ -296,7 +296,7 @@ DUK_LOCAL void duk__selftest_64bit_arithmetic(void) {
  *  Casting
  */
 
-DUK_LOCAL void duk__selftest_cast_double_to_uint(void) {
+DUK_LOCAL void duk__selftest_cast_double_to_small_uint(void) {
 	/*
 	 *  https://github.com/svaarala/duktape/issues/127#issuecomment-77863473
 	 */
@@ -307,12 +307,14 @@ DUK_LOCAL void duk__selftest_cast_double_to_uint(void) {
 	duk_double_t d1v, d2v;
 	duk_small_uint_t uv;
 
+	/* Test without volatiles */
+
 	d1 = 1.0;
 	u = (duk_small_uint_t) d1;
 	d2 = (duk_double_t) u;
 
 	if (!(d1 == 1.0 && u == 1 && d2 == 1.0 && d1 == d2)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to uint cast failed");
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_small_uint_t cast failed");
 	}
 
 	/* Same test with volatiles */
@@ -322,7 +324,26 @@ DUK_LOCAL void duk__selftest_cast_double_to_uint(void) {
 	d2v = (duk_double_t) uv;
 
 	if (!(d1v == 1.0 && uv == 1 && d2v == 1.0 && d1v == d2v)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to uint cast failed");
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_small_uint_t cast failed");
+	}
+}
+
+DUK_LOCAL void duk__selftest_cast_double_to_uint32(void) {
+	/*
+	 *  This test fails on an exotic ARM target; double-to-uint
+	 *  cast is incorrectly clamped to -signed- int highest value.
+	 *
+	 *  https://github.com/svaarala/duktape/issues/336
+	 */
+
+	duk_double_t dv;
+	duk_uint32_t uv;
+
+	dv = 3735928559.0;  /* 0xdeadbeef in decimal */
+	uv = (duk_uint32_t) dv;
+
+	if (uv != 0xdeadbeefUL) {
+		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_uint32_t cast failed");
 	}
 }
 
@@ -341,7 +362,8 @@ DUK_INTERNAL void duk_selftest_run_tests(void) {
 	duk__selftest_double_zero_sign();
 	duk__selftest_struct_align();
 	duk__selftest_64bit_arithmetic();
-	duk__selftest_cast_double_to_uint();
+	duk__selftest_cast_double_to_small_uint();
+	duk__selftest_cast_double_to_uint32();
 }
 
 #undef DUK__DBLUNION_CMP_TRUE
