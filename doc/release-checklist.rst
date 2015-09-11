@@ -129,7 +129,7 @@ Checklist for ordinary releases
 
   - DUK_USE_REFZERO_FINALIZER_TORTURE
 
-  - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE
+  - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE + DUK_OPT_GC_TORTURE
 
 * Memory usage testing
 
@@ -181,6 +181,12 @@ Checklist for ordinary releases
   - on x86-64
 
     - make emscriptenduktest
+
+* emscripten (compile Duktape with emscripten, run with Duktape)
+
+  - on x86-64
+
+    - make emscripteninceptiontest
 
 * JS-Interpreter
 
