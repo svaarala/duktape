@@ -865,7 +865,7 @@ int main(int argc, char *argv[]) {
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
 			"   --debugger         start example debugger\n"
 #endif
-			"   --recreate-heap      recreate heap after every file\n"
+			"   --recreate-heap    recreate heap after every file\n"
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);
