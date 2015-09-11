@@ -21,8 +21,8 @@ static duk_ret_t test_func(duk_context *ctx) {
 		return 0;
 	}
 
-	/* Up-to-date for Duktape 0.12.0, alphabetical order:
-	 * $ cd website/api; ls *.txt
+	/* Up-to-date for Duktape 1.3.0, alphabetical order:
+	 * $ cd website/api; ls *.yaml
 	 */
 
 	(void) duk_alloc_raw(ctx, 0);
@@ -45,10 +45,15 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_compile_string(ctx, 0, "dummy");
 	(void) duk_compile(ctx, 0);
 	(void) duk_concat(ctx, 0);
+	(void) duk_config_buffer(ctx, 0, NULL, 0);
 	(void) duk_copy(ctx, 0, 0);
 	(void) duk_create_heap_default();
 	(void) duk_create_heap(NULL, NULL, NULL, NULL, NULL);
+	(void) duk_debugger_attach(ctx, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+	(void) duk_debugger_cooperate(ctx);
+	(void) duk_debugger_detach(ctx);
 	(void) duk_decode_string(ctx, 0, NULL, NULL);
+	(void) duk_def_prop(ctx, 0, 0);
 	(void) duk_del_prop_index(ctx, 0, 0);
 	(void) duk_del_prop_string(ctx, 0, "dummy");
 	(void) duk_del_prop(ctx, 0);
@@ -56,10 +61,12 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_destroy_heap(ctx);
 	(void) duk_dump_context_stderr(ctx);
 	(void) duk_dump_context_stdout(ctx);
+	(void) duk_dump_function(ctx);
 	(void) duk_dup_top(ctx);
 	(void) duk_dup(ctx, 0);
 	(void) duk_enum(ctx, 0, 0);
 	(void) duk_equals(ctx, 0, 0);
+	duk_error_va(ctx, 0, NULL, NULL);
 	duk_error(ctx, 0, "dummy");  /* (void) cast won't work without variadic macros */
 	(void) duk_eval_file_noresult(ctx, "dummy");
 	(void) duk_eval_file(ctx, "dummy");
@@ -74,12 +81,15 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_free(ctx, NULL);
 	(void) duk_gc(ctx, 0);
 	(void) duk_get_boolean(ctx, 0);
+	(void) duk_get_buffer_data(ctx, 0, NULL);
 	(void) duk_get_buffer(ctx, 0, NULL);
 	(void) duk_get_c_function(ctx, 0);
 	(void) duk_get_context(ctx, 0);
 	(void) duk_get_current_magic(ctx);
+	(void) duk_get_error_code(ctx, 0);
 	(void) duk_get_finalizer(ctx, 0);
 	(void) duk_get_global_string(ctx, 0);
+	(void) duk_get_heapptr(ctx, 0);
 	(void) duk_get_int(ctx, 0);
 	(void) duk_get_length(ctx, 0);
 	(void) duk_get_lstring(ctx, 0, NULL);
@@ -105,6 +115,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_hex_decode(ctx, 0);
 	(void) duk_hex_encode(ctx, 0);
 	(void) duk_insert(ctx, 0);
+	(void) duk_instanceof(ctx, 0, 0);
 	(void) duk_is_array(ctx, 0);
 	(void) duk_is_boolean(ctx, 0);
 	(void) duk_is_bound_function(ctx, 0);
@@ -114,8 +125,10 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_is_constructor_call(ctx);
 	(void) duk_is_dynamic_buffer(ctx, 0);
 	(void) duk_is_ecmascript_function(ctx, 0);
+	(void) duk_is_error(ctx, 0);
 	(void) duk_is_fixed_buffer(ctx, 0);
 	(void) duk_is_function(ctx, 0);
+	(void) duk_is_lightfunc(ctx, 0);
 	(void) duk_is_nan(ctx, 0);
 	(void) duk_is_null_or_undefined(ctx, 0);
 	(void) duk_is_null(ctx, 0);
@@ -132,6 +145,9 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_join(ctx, 0);
 	(void) duk_json_decode(ctx, 0);
 	(void) duk_json_encode(ctx, 0);
+	(void) duk_load_function(ctx);
+	(void) duk_log_va(ctx, 0, NULL, NULL);
+	(void) duk_log(ctx, 0, NULL);
 	(void) duk_map_string(ctx, 0, NULL, NULL);
 	(void) duk_new(ctx, 0);
 	(void) duk_next(ctx, 0, 0);
@@ -153,24 +169,30 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_peval_string_noresult(ctx, "dummy");
 	(void) duk_peval_string(ctx, "dummy");
 	(void) duk_peval(ctx);
+	(void) duk_pnew(ctx, 0);
 	(void) duk_pop_2(ctx);
 	(void) duk_pop_3(ctx);
 	(void) duk_pop_n(ctx, 0);
 	(void) duk_pop(ctx);
 	(void) duk_push_array(ctx);
 	(void) duk_push_boolean(ctx, 0);
+	(void) duk_push_buffer_object(ctx, 0, 0, 0, 0);
 	(void) duk_push_buffer(ctx, 0, 0);
 	(void) duk_push_c_function(ctx, NULL, 0);
+	(void) duk_push_c_lightfunc(ctx, NULL, 0, 0, 0);
 	(void) duk_push_context_dump(ctx);
 	(void) duk_push_current_function(ctx);
 	(void) duk_push_current_thread(ctx);
 	(void) duk_push_dynamic_buffer(ctx, 0);
+	(void) duk_push_error_object_va(ctx, 0, NULL, NULL);
 	(void) duk_push_error_object(ctx, 0, "dummy");
+	(void) duk_push_external_buffer(ctx);
 	(void) duk_push_false(ctx);
 	(void) duk_push_fixed_buffer(ctx, 0);
 	(void) duk_push_global_object(ctx);
 	(void) duk_push_global_stash(ctx);
 	(void) duk_push_heap_stash(ctx);
+	(void) duk_push_heapptr(ctx, NULL);
 	(void) duk_push_int(ctx, 0);
 	(void) duk_push_lstring(ctx, "dummy", 0);
 	(void) duk_push_nan(ctx);
@@ -190,6 +212,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_push_undefined(ctx);
 	(void) duk_push_vsprintf(ctx, "dummy", NULL);
 	(void) duk_put_function_list(ctx, 0, NULL);
+	(void) duk_put_global_string(ctx, NULL);
 	(void) duk_put_number_list(ctx, 0, NULL);
 	(void) duk_put_prop_index(ctx, 0, 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");
@@ -200,9 +223,11 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_remove(ctx, 0);
 	(void) duk_replace(ctx, 0);
 	(void) duk_require_boolean(ctx, 0);
+	(void) duk_require_buffer_data(ctx, 0, NULL);
 	(void) duk_require_buffer(ctx, 0, NULL);
 	(void) duk_require_c_function(ctx, 0);
 	(void) duk_require_context(ctx, 0);
+	(void) duk_require_heapptr(ctx, 0);
 	(void) duk_require_int(ctx, 0);
 	(void) duk_require_lstring(ctx, 0, NULL);
 	(void) duk_require_normalize_index(ctx, 0);
@@ -227,6 +252,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_set_magic(ctx, 0, 0);
 	(void) duk_set_prototype(ctx, 0);
 	(void) duk_set_top(ctx, 0);
+	(void) duk_steal_buffer(ctx, 0, NULL);
 	(void) duk_strict_equals(ctx, 0, 0);
 	(void) duk_substring(ctx, 0, 0, 0);
 	(void) duk_swap_top(ctx, 0);
