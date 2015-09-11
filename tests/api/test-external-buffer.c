@@ -17,9 +17,9 @@ final top: 1
 *** test_3 (duk_safe_call)
 ==> rc=1, result='TypeError: unexpected type'
 *** test_4 (duk_safe_call)
-["censoredtag","censoredpointer",5,"censoredheapsize"]
-["censoredtag","censoredpointer",5,"censoredheapsize",256]
-["censoredtag","censoredpointer",5,"censoredheapsize",16]
+["censoredtag","censoredpointer","censoredrefcount","censoredheapsize"]
+["censoredtag","censoredpointer","censoredrefcount","censoredheapsize",256]
+["censoredtag","censoredpointer","censoredrefcount","censoredheapsize",16]
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -111,12 +111,16 @@ static duk_ret_t test_3(duk_context *ctx) {
 static duk_ret_t test_4(duk_context *ctx) {
 	unsigned char buf[16];
 
+	/* Censor refcount too because e.g. in shuffle torture test the
+	 * refcount will be different than otherwise.
+	 */
 	duk_eval_string(ctx,
 		"(function (b1, b2, b3) {\n"
 		"    [ b1, b2, b3 ].forEach(function (b) {\n"
 		"        var t = Duktape.info(b);\n"
 		"        t[0] = 'censoredtag';\n"
 		"        t[1] = 'censoredpointer';\n"
+		"        t[2] = 'censoredrefcount';\n"
 		"        t[3] = 'censoredheapsize';\n"
 		"        print(Duktape.enc('jx', t));\n"
 		"    });\n"
