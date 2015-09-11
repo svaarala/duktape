@@ -52,6 +52,10 @@ from Duktape v1.2.x.  Note the following:
   only triggered when execution enters the exact breakpoint line.  Breakpoints
   on lines without any executable code are ignored.
 
+* Some example files have been renamed.  For example,
+  ``examples/debug-trans-socket/duk_debug_trans_socket.*`` have been renamed
+  to ``examples/debug-trans-socket/duk_trans_socket.*``.
+
 There are bug fixes and other minor behavioral changes which may affect some
 applications, see ``RELEASES.rst`` for details.
 
