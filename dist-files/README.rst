@@ -24,6 +24,10 @@ In particular, you should read the getting started section:
 
 * http://duktape.org/guide.html#gettingstarted
 
+More examples and how-to articles are in the Duktape Wiki:
+
+* http://wiki.duktape.org/
+
 Building and integrating Duktape into your project is very straightforward:
 
 * http://duktape.org/guide.html#compiling
