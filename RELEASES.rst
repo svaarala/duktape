@@ -1119,6 +1119,9 @@ Planned
 * Fix JX parsing bug which caused strings like "1Infinity" to be parsed as
   negative infinity instead of causing a SyntaxError (GH-247)
 
+* Fix duk_is_primitive() return value for invalid index, was incorrectly 1
+  (GH-337)
+
 * Fix compile error from array fast path when using low memory options
   (GH-174)
 

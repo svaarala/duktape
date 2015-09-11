@@ -1,26 +1,27 @@
 /*===
 *** test_1 (duk_safe_call)
-00:  und=1 null=0 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=0
-01:  und=0 null=1 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=0
-02:  und=0 null=0 noru=0 bool=1 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-03:  und=0 null=0 noru=0 bool=1 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-04:  und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-05:  und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-06:  und=0 null=0 noru=0 bool=0 num=1 nan=1 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-07:  und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-08:  und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-09:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-10:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-11:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-12:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=1 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-13:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=1 efun=0 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-14:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=1 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-15:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=1 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-16:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=1 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
-17:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=1 ext=0 ptr=0 prim=1 objcoerc=1
-18:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=1 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
-19:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=0 ext=1 ptr=0 prim=1 objcoerc=1
-20:  und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=1 prim=1 objcoerc=1
+00: valididx=1 und=1 null=0 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=0
+01: valididx=1 und=0 null=1 noru=1 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=0
+02: valididx=1 und=0 null=0 noru=0 bool=1 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+03: valididx=1 und=0 null=0 noru=0 bool=1 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+04: valididx=1 und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+05: valididx=1 und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+06: valididx=1 und=0 null=0 noru=0 bool=0 num=1 nan=1 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+07: valididx=1 und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+08: valididx=1 und=0 null=0 noru=0 bool=0 num=1 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+09: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+10: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=1 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+11: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+12: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=1 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+13: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=1 efun=0 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+14: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=1 bfun=0 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+15: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=1 call=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+16: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=1 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+17: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=1 ext=0 ptr=0 prim=1 objcoerc=1
+18: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=1 fix=0 ext=0 ptr=0 prim=1 objcoerc=1
+19: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=1 dyn=0 fix=0 ext=1 ptr=0 prim=1 objcoerc=1
+20: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=1 prim=1 objcoerc=1
+21: valididx=0 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=0
 ==> rc=0, result='undefined'
 ===*/
 
@@ -104,11 +105,15 @@ static duk_ret_t test_1(duk_context *ctx) {
 
 	/*
 	 *  call checkers for each
+	 *
+	 *  intentionally overstep by one to see what each returns for an
+	 *  invalid index
 	 */
 
 	n = duk_get_top(ctx);
-	for (i = 0; i < n; i++) {
-		printf("%02ld: ", (long) i);
+	for (i = 0; i <= n; i++) {
+		printf("%02ld:", (long) i);
+		printf(" valididx=%d", (int) duk_is_valid_index(ctx, i));
 		printf(" und=%d", (int) duk_is_undefined(ctx, i));
 		printf(" null=%d", (int) duk_is_null(ctx, i));
 		printf(" noru=%d", (int) duk_is_null_or_undefined(ctx, i));
