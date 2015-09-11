@@ -2842,13 +2842,6 @@ DUK_EXTERNAL duk_bool_t duk_is_external_buffer(duk_context *ctx, duk_idx_t index
 	return 0;
 }
 
-/* XXX: make macro in API */
-DUK_EXTERNAL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index) {
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	return !duk_is_object(ctx, index);
-}
-
 DUK_EXTERNAL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
