@@ -960,10 +960,7 @@ Released
 
 * Avoid including <windows.h> for application build (GH-312)
 
-Planned
-=======
-
-1.3.0 (2015-XX-XX)
+1.3.0 (2015-09-12)
 ------------------
 
 * Introduce an external duk_config.h header which provides all platform and
@@ -978,6 +975,16 @@ Planned
   duk_config_buffer() which provide support for external buffers, i.e. buffer
   values which point to a user memory area allocated outside of Duktape heap
   (for example, an externally allocated frame buffer) (GH-153)
+
+* Add duk_push_buffer_object() which allows pushing of all buffer object and
+  buffer view types (GH-190)
+
+* Add duk_get_buffer_data() and duk_require_buffer_data() API calls which
+  accept both plain buffer and buffer object values (GH-190)
+
+* Add duk_steal_buffer() API call which allows user code to steal the current
+  allocation of a dynamic buffer which is useful for some buffer manipulation
+  algorithms (GH-129)
 
 * Add support for module.exports in the module loader framework (GH-201)
 
@@ -1014,16 +1021,6 @@ Planned
 * Add Proxy object support to 'instanceof' operator (without support for
   'getPrototypeOf' trap) (GH-182)
 
-* Add duk_steal_buffer() API call which allows user code to steal the current
-  allocation of a dynamic buffer which is useful for some buffer manipulation
-  algorithms (GH-129)
-
-* Add duk_get_buffer_data() and duk_require_buffer_data() API calls which
-  accept both plain buffer and buffer object values (GH-190)
-
-* Add duk_push_buffer_object() which allows pushing of all buffer object and
-  buffer view types (GH-190)
-
 * Add explicit 'this' binding for C eval calls so that strict eval code also
   gets 'this' bound to the global object (GH-164)
 
@@ -1055,12 +1052,14 @@ Planned
   places (GH-209)
 
 * Sizeof(duk_hbuffer_dynamic) reduced from 16 to 12 bytes for low memory
-  builds using heap compression (GH-209)
+  builds which employ heap compression (GH-209)
 
 * Increase try-catch register limit (from 511 to 262143) to fix try-catch
   out-of-register issues for most code (GH-145)
 
-* Use deep C stack by default also for OSX/iPhone (GH-226)
+* Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
+  DUK_USE_xxx config options for native recursion limits; C stacks are assumed
+  to be deep by default for all targets including OSX/iPhone (GH-165, GH-226)
 
 * Make Proxy internal _Target and _Handler properties immutable (non-writable
   and non-configurable) (GH-237)
@@ -1074,11 +1073,7 @@ Planned
   structure (GH-209)
 
 * Add example debug transport with local dvalue encoding and decoding, also
-  provides a C example for encoding and decoding dvalues
-
-* Remove DUK_OPT_DEEP_C_STACK (and DUK_USE_DEEP_C_STACK) in favor of explicit
-  DUK_USE_xxx config options for native recursion limits; C stacks are assumed
-  to be deep by default for all targets (GH-165)
+  provides a C example for encoding and decoding dvalues (GH-251)
 
 * Provide at least 10 callstack entries for error handling (Duktape.errCreate)
   when callstack limit is reached (GH-191)
@@ -1139,6 +1134,14 @@ Planned
 * Fix harmless MSVC warnings for size_t casts on x64 (GH-177)
 
 * Avoid including <windows.h> for application build (GH-312)
+
+Planned
+=======
+
+1.4.0 (XXXX-XX-XX)
+------------------
+
+* TBD
 
 2.0.0 (XXXX-XX-XX)
 ------------------
