@@ -1292,6 +1292,31 @@ Example::
 
 Logger output redirected from Duktape logger calls.
 
+Throw notification (0x05)
+-------------------------
+
+Format::
+
+    NFY <int: 5> <int: fatal> <str: msg> <str: filename> <int: linenumber> EOM
+
+Example::
+
+    NFY 5 1 "ReferenceError: identifier not defined" "pig.js" 812 EOM
+
+Fatal is one of:
+
+* 0x00: caught
+* 0x01: fatal (uncaught)
+
+Duktape sends a Throw notification whenever an error is thrown, either by
+Duktape due to a runtime error or directly by Ecmascript code.
+
+msg is the string-coerced value being thrown. Filename and line number are
+taken directly from the thrown object if it is an Error instance (after
+augmentation), otherwise these values are calculated from the bytecode
+executor state.
+
+
 Commands sent by debug client
 =============================
 
