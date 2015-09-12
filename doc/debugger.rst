@@ -1316,7 +1316,6 @@ taken directly from the thrown object if it is an Error instance (after
 augmentation), otherwise these values are calculated from the bytecode
 executor state.
 
-
 Commands sent by debug client
 =============================
 

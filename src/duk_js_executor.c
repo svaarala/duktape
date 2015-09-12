@@ -1726,8 +1726,10 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	DUK_HEAP_SET_INTERRUPT_RUNNING(thr->heap);
 
 	act = thr->callstack + thr->callstack_top - 1;
+
 	fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION((duk_hobject *) fun));
+
 	DUK_UNREF(fun);
 
 #if defined(DUK_USE_EXEC_TIMEOUT_CHECK)
@@ -2250,6 +2252,17 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		 * whenever a thread switch occurs by the DUK_HEAP_SWITCH_THREAD() macro.
 		 */
 #ifdef DUK_USE_INTERRUPT_COUNTER
+
+		if (thr->heap->dbg_processing) {
+			/* Don't interrupt if we're currently doing debug processing as
+			 * this may cause the debugger to be called recursively. Check required
+			 * for correct operation of throw intercept and other "exotic" halting
+			 * scenarios.
+			 */
+
+			goto skip_interrupt;
+		}
+
 		int_ctr = thr->interrupt_counter;
 		if (DUK_LIKELY(int_ctr > 0)) {
 			thr->interrupt_counter = int_ctr - 1;
@@ -2284,6 +2297,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				goto restart_execution;
 			}
 		}
+
+skip_interrupt:
+
 #endif
 #if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
 		thr->heap->inst_count_exec++;

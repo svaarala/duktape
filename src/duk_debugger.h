@@ -19,6 +19,7 @@
 #define DUK_DBG_CMD_PRINT         0x02
 #define DUK_DBG_CMD_ALERT         0x03
 #define DUK_DBG_CMD_LOG           0x04
+#define DUK_DBG_CMD_THROW         0x05
 
 /* Initiated by debug client */
 #define DUK_DBG_CMD_BASICINFO     0x10
@@ -86,7 +87,9 @@ DUK_INTERNAL_DECL void duk_debug_write_eom(duk_hthread *thr);
 
 DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr);
 DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal);
 
+DUK_INTERNAL_DECL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev_pc);
 DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block);
 
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstring *filename, duk_uint32_t line);
