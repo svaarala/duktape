@@ -445,7 +445,7 @@ python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
 	autodetect-header-legacy
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
-cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
+#cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
 
 # Modular duk_config.h (to replace the previous monolithic one)
 #python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular \

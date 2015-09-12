@@ -6,7 +6,7 @@ DUKTAPE_SOURCES = src/duktape.c
 
 DUKTAPE_CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
-	examples/debug-trans-socket/duk_debug_trans_socket.c
+	examples/debug-trans-socket/duk_trans_socket.c
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
