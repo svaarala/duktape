@@ -1025,8 +1025,6 @@ duktape-releases:
 site: duktape-releases dukweb.js jquery-1.11.0.js
 	rm -rf site
 	mkdir site
-	python config/genconfig.py --metadata config --output site/config.rst config-documentation
-	rst2html site/config.rst > site/config.html
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
 	cd website/; $(PYTHON) buildsite.py ../site/
 	@rm -rf /tmp/site/
