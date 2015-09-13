@@ -255,28 +255,94 @@ static int wrapped_compile_execute(duk_context *ctx) {
 
 static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char *bytecode_filename) {
 	char *buf = NULL;
-	int len;
+	size_t bufsz;
+	size_t bufoff;
 	size_t got;
 	int rc;
 	int retval = -1;
 
-	if (fseek(f, 0, SEEK_END) < 0) {
-		goto error;
-	}
-	len = (int) ftell(f);
-	if (fseek(f, 0, SEEK_SET) < 0) {
-		goto error;
-	}
-	buf = (char *) malloc(len);
+	buf = malloc(1024);
 	if (!buf) {
 		goto error;
 	}
+	bufsz = 1024;
+	bufoff = 0;
 
-	got = fread((void *) buf, (size_t) 1, (size_t) len, f);
+	/* Read until EOF, avoid fseek/stat because it won't work with stdin. */
+	for (;;) {
+		size_t avail;
+
+		avail = bufsz - bufoff;
+		if (avail < 1024) {
+			size_t newsz;
+#if 0
+			fprintf(stderr, "resizing read buffer: %ld -> %ld\n", (long) bufsz, (long) (bufsz * 2));
+#endif
+			newsz = bufsz + (bufsz >> 2) + 1024;  /* +25% and some extra */
+			buf = realloc(buf, newsz);
+			if (!buf) {
+				goto error;
+			}
+			bufsz = newsz;
+		}
+
+		avail = bufsz - bufoff;
+#if 0
+		fprintf(stderr, "reading input: buf=%p bufsz=%ld bufoff=%ld avail=%ld\n",
+		        (void *) buf, (long) bufsz, (long) bufoff, (long) avail);
+#endif
+
+		got = fread((void *) (buf + bufoff), (size_t) 1, avail, f);
+#if 0
+		fprintf(stderr, "got=%ld\n", (long) got);
+#endif
+		if (got == 0) {
+			break;
+		}
+		bufoff += got;
+
+		/* Emscripten specific: stdin EOF doesn't work as expected.
+		 * Instead, when 'emduk' is executed using Node.js, a file
+		 * piped to stdin repeats (!).  Detect that repeat and cut off
+		 * the stdin read.  Ensure the loop repeats enough times to
+		 * avoid detecting spurious loops.
+		 *
+		 * This only seems to work for inputs up to 256 bytes long.
+		 */
+#if defined(EMSCRIPTEN)
+		if (bufoff >= 16384) {
+			size_t i, j, nloops;
+			int looped = 0;
+
+			for (i = 16; i < bufoff / 8; i++) {
+				int ok;
+
+				nloops = bufoff / i;
+				ok = 1;
+				for (j = 1; j < nloops; j++) {
+					if (memcmp((void *) buf, (void *) (buf + i * j), i) != 0) {
+						ok = 0;
+						break;
+					}
+				}
+				if (ok) {
+					fprintf(stderr, "emscripten workaround: detect looping at index %ld, verified with %ld loops\n", (long) i, (long) (nloops - 1));
+					bufoff = i;
+					looped = 1;
+					break;
+				}
+			}
+
+			if (looped) {
+				break;
+			}
+		}
+#endif
+	}
 
 	duk_push_string(ctx, bytecode_filename);
 	duk_push_pointer(ctx, (void *) buf);
-	duk_push_uint(ctx, (duk_uint_t) got);
+	duk_push_uint(ctx, (duk_uint_t) bufoff);
 	duk_push_string(ctx, filename);
 
 	interactive_mode = 0;  /* global */
@@ -669,6 +735,7 @@ int main(int argc, char *argv[]) {
 	int debugger = 0;
 	int recreate_heap = 0;
 	int verbose = 0;
+	int run_stdin = 0;
 	const char *compile_filename = NULL;
 	int i;
 
@@ -731,13 +798,15 @@ int main(int argc, char *argv[]) {
 			recreate_heap = 1;
 		} else if (strcmp(arg, "--verbose") == 0) {
 			verbose = 1;
+		} else if (strcmp(arg, "--run-stdin") == 0) {
+			run_stdin = 1;
 		} else if (strlen(arg) >= 1 && arg[0] == '-') {
 			goto usage;
 		} else {
 			have_files = 1;
 		}
 	}
-	if (!have_files && !have_eval) {
+	if (!have_files && !have_eval && !run_stdin) {
 		interactive = 1;
 	}
 
@@ -808,6 +877,27 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	if (run_stdin) {
+		/* Running stdin like a full file (reading all lines before
+		 * compiling) is useful with emduk:
+		 * cat test.js | ./emduk --run-stdin
+		 */
+		if (handle_fh(ctx, stdin, "stdin", compile_filename) != 0) {
+			retval = 1;
+			goto cleanup;
+		}
+
+		if (recreate_heap) {
+			if (verbose) {
+				fprintf(stderr, "*** Recreating heap...\n");
+				fflush(stderr);
+			}
+
+			destroy_duktape_heap(ctx, alloc_provider);
+			ctx = create_duktape_heap(alloc_provider, debugger);
+		}
+	}
+
 	/*
 	 *  Enter interactive mode if options indicate it
 	 */
@@ -846,6 +936,7 @@ int main(int argc, char *argv[]) {
 	                "   -i                 enter interactive mode after executing argument file(s) / eval code\n"
 	                "   -e CODE            evaluate code\n"
 			"   -c FILE            compile into bytecode (use with only one file argument)\n"
+			"   --run-stdin        treat stdin like a file, i.e. compile full input (not line by line)\n"
 			"   --verbose          verbose messages to stderr\n"
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-default    use Duktape default allocator\n"
