@@ -6,6 +6,7 @@
  *  internal and related to platform/compiler/feature detection.
  *
  *  Git commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
+ *  Git branch @GIT_BRANCH@.
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
  *  licensing information.
