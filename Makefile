@@ -306,6 +306,7 @@ clean:
 	@rm -f duk-g++ dukd-g++
 	@rm -f duk-clang
 	@rm -f ajduk ajdukd
+	@rm -f emduk emduk.js
 	@rm -f libduktape*.so*
 	@rm -f duktape-*.tar.*
 	@rm -f duktape-*.iso
@@ -638,6 +639,22 @@ emscripten:
 # Duktape cmdline with resource limits (i.e. "duk -r test.js").
 #EMCCOPTS=-s TOTAL_MEMORY=2097152 -s TOTAL_STACK=524288 --memory-init-file 0
 EMCCOPTS=-O2 -std=c99 -Wall --memory-init-file 0
+
+EMDUKOPTS=-s TOTAL_MEMORY=268435456 -DDUK_OPT_NO_FASTINT -DDUK_OPT_NO_PACKED_TVAL
+EMDUKOPTS+=-DEMSCRIPTEN  # enable stdin workaround in duk_cmdline.c
+emduk: emduk.js
+	cat util/emduk_wrapper.sh | sed "s|WORKDIR|$(shell pwd)|" > $@
+	chmod ugo+x $@
+
+# util/fix_emscripten.py is used so that emduk.js can also be executed using
+# Duktape itself (though you can't currently pass arguments/files to it).
+emduk.js: dist emscripten
+	emscripten/emcc $(EMCCOPTS) -Idist/src -Idist/examples/cmdline \
+		$(EMDUKOPTS) \
+		dist/src/duktape.c dist/examples/cmdline/duk_cmdline.c \
+		-o /tmp/duk-emduk.js
+	cat /tmp/duk-emduk.js | $(PYTHON) util/fix_emscripten.py > $@
+	@ls -l $@
 
 .PHONY: emscriptentest
 emscriptentest: emscripten duk
