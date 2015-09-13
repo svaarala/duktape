@@ -45,10 +45,12 @@ DUK_PATCH=`echo "$DUK_VERSION % 100" | bc`
 DUK_VERSION_FORMATTED=$DUK_MAJOR.$DUK_MINOR.$DUK_PATCH
 GIT_COMMIT=`git rev-parse HEAD`
 GIT_DESCRIBE=`git describe --always --dirty`
+GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
 echo "DUK_VERSION: $DUK_VERSION"
 echo "GIT_COMMIT: $GIT_COMMIT"
 echo "GIT_DESCRIBE: $GIT_DESCRIBE"
+echo "GIT_BRANCH: $GIT_BRANCH"
 echo "Creating distributable sources to: $DIST"
 
 # Create dist directory structure
@@ -415,6 +417,7 @@ cat dist-files/README.rst | sed \
 	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
 	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
 	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
+	-e "s/@GIT_BRANCH@/$GIT_BRANCH/" \
 	> $DIST/README.rst
 cp LICENSE.txt $DIST/LICENSE.txt  # not strict RST so keep .txt suffix
 cp AUTHORS.rst $DIST/AUTHORS.rst
@@ -441,7 +444,7 @@ echo ' */' >> $DIST/AUTHORS.rst.tmp
 
 # Build duk_config.h from snippets using genconfig.
 python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
-	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 	autodetect-header-legacy
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
@@ -449,17 +452,17 @@ cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
 
 # Modular duk_config.h (to replace the previous monolithic one)
 #python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular \
-#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 #	autodetect-header-modular
 
 # Generate a few barebones config examples
 #python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
-#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 #	--output $DIST/config/duk_config.h-linux-gcc-x64 \
 #	--platform linux --compiler gcc --architecture x64 \
 #	barebones-header
 #python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
-#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" \
+#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 #	--output $DIST/config/duk_config.h-linux-gcc-x86 \
 #	--platform linux --compiler gcc --architecture x86 \
 #	barebones-header
@@ -494,8 +497,11 @@ cat src/duktape.h.in | sed -e '
 }' | sed \
 	-e "s/@DUK_VERSION_FORMATTED@/$DUK_VERSION_FORMATTED/" \
 	-e "s/@GIT_COMMIT@/$GIT_COMMIT/" \
+	-e "s/@GIT_COMMIT_CSTRING@/\"$GIT_COMMIT\"/" \
 	-e "s/@GIT_DESCRIBE@/$GIT_DESCRIBE/" \
 	-e "s/@GIT_DESCRIBE_CSTRING@/\"$GIT_DESCRIBE\"/" \
+	-e "s/@GIT_BRANCH@/$GIT_BRANCH/" \
+	-e "s/@GIT_BRANCH_CSTRING@/\"$GIT_BRANCH\"/" \
 	> $DISTSRCCOM/duktape.h
 
 # keep the line so line numbers match between the two variant headers
@@ -601,7 +607,9 @@ echo "Minified initjs size: original=$WC_INITJS_ORIG, UglifyJS=$WC_INITJS_UGLIFY
 
 python src/genbuildparams.py \
 	--version=$DUK_VERSION \
+	"--git-commit=$GIT_COMMIT" \
 	"--git-describe=$GIT_DESCRIBE" \
+	"--git-branch=$GIT_BRANCH" \
 	--out-json=$DISTSRCSEP/buildparams.json.tmp \
 	--out-header=$DISTSRCSEP/duk_buildparams.h.tmp
 
@@ -811,7 +819,7 @@ rm $DISTSRCSEP/caseconv.txt
 # as the other requirements are met.
 
 python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
-	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" \
+	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" "$GIT_BRANCH" \
 	$DIST/LICENSE.txt.tmp $DIST/AUTHORS.rst.tmp
 
 # Clean up temp files

@@ -52,7 +52,13 @@ DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
 DUK_VERSION_FORMATTED:=$(DUK_MAJOR).$(DUK_MINOR).$(DUK_PATCH)
+GIT_BRANCH:=$(shell git rev-parse --abbrev-ref HEAD)
 GIT_DESCRIBE:=$(shell git describe --always --dirty)
+ifeq ($(GIT_BRANCH),master)
+GIT_INFO:=$(GIT_DESCRIBE)
+else
+GIT_INFO:=$(GIT_DESCRIBE)-$(GIT_BRANCH)
+endif
 BUILD_DATETIME:=$(shell date +%Y%m%d%H%M%S)
 
 DISTSRCSEP = dist/src-separate
@@ -1019,8 +1025,8 @@ dist-src:	dist
 	tar cvfz duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)/
 	tar cvf duktape-$(DUK_VERSION_FORMATTED).tar duktape-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-$(DUK_VERSION_FORMATTED).tar
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
-	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
+	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
 
 # Require closure compiler for official build
@@ -1030,7 +1036,7 @@ dist-src-official:	compiler.jar dist-src
 # ISO target is useful with some system emulators with no network access
 .PHONY: dist-iso
 dist-iso:	dist-src
-	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.gz
+	mkisofs -input-charset utf-8 -o duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).iso duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
 
 .PHONY: tidy-site
 tidy-site:
@@ -1060,7 +1066,7 @@ dist-site:	tidy-site site
 	cp -r site/* duktape-site-$(DUK_VERSION_FORMATTED)/
 	tar cvf duktape-site-$(DUK_VERSION_FORMATTED).tar duktape-site-$(DUK_VERSION_FORMATTED)/
 	xz -z -e -9 duktape-site-$(DUK_VERSION_FORMATTED).tar
-	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_DESCRIBE).tar.xz
+	cp duktape-site-$(DUK_VERSION_FORMATTED).tar.xz duktape-site-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
 	rm -rf duktape-site-$(DUK_VERSION_FORMATTED)
 
 ifeq ($(TRAVIS),1)
