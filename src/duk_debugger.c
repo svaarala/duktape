@@ -880,7 +880,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		 * location directly from the current activation.
 		 */
 		act = thr->callstack + thr->callstack_top - 1;
-		duk_push_hobject(ctx, act->func);
+		duk_push_tval(ctx, &act->tv_func);
 		duk_get_prop_string(ctx, -1, "fileName");
 		duk_safe_to_string(ctx, -1);
 		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
