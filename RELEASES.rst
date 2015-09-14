@@ -1141,7 +1141,11 @@ Planned
 1.4.0 (XXXX-XX-XX)
 ------------------
 
-* TBD
+* Add a debugger Throw notify for errors about to be thrown, and an option
+  to automatically pause before an uncaught error is thrown (GH-286, GH-347)
+
+* Fix "debugger" statement line number off-by-one so that the debugger now
+  correctly pauses on the debugger statement rather than after it (GH-347)
 
 2.0.0 (XXXX-XX-XX)
 ------------------
