@@ -51,13 +51,13 @@
  */
 
 #define DUK_LJ_TYPE_UNKNOWN      0    /* unused */
-#define DUK_LJ_TYPE_RETURN       1    /* value1 -> return value */
-#define DUK_LJ_TYPE_THROW        2    /* value1 -> error object */
-#define DUK_LJ_TYPE_BREAK        3    /* value1 -> label number */
-#define DUK_LJ_TYPE_CONTINUE     4    /* value1 -> label number */
-#define DUK_LJ_TYPE_YIELD        5    /* value1 -> yield value, iserror -> error / normal */
-#define DUK_LJ_TYPE_RESUME       6    /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
-#define DUK_LJ_TYPE_NORMAL       7    /* pseudo-type to indicate a normal continuation (for 'finally' rethrowing) */
+#define DUK_LJ_TYPE_THROW        1    /* value1 -> error object */
+#define DUK_LJ_TYPE_BREAK        2    /* value1 -> label number */
+#define DUK_LJ_TYPE_CONTINUE     3    /* value1 -> label number */
+#define DUK_LJ_TYPE_YIELD        4    /* value1 -> yield value, iserror -> error / normal */
+#define DUK_LJ_TYPE_RESUME       5    /* value1 -> resume value, value2 -> resumee thread, iserror -> error/normal */
+#define DUK_LJ_TYPE_NORMAL       6    /* pseudo-type to indicate a normal continuation (for 'finally') */
+#define DUK_LJ_TYPE_RETURN       7    /* pseudo-type to indicate a return continuation (for 'finally') */
 
 /*
  *  Mark-and-sweep flags

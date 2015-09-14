@@ -5580,12 +5580,6 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_RETURN);
 	}
 
-	/* Use a fast return when possible.  A fast return does not cause a longjmp()
-	 * unnecessarily.  A fast return can be done when no TCF catchers are active
-	 * (this includes 'try' and 'with' statements).  Active label catches do not
-	 * prevent a fast return; they're unwound on return automatically.
-	 */
-
 	ret_flags = 0;
 
 	if (comp_ctx->curr_token.t == DUK_TOK_SEMICOLON ||  /* explicit semi follows */
@@ -5664,13 +5658,6 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 #endif  /* DUK_USE_TAILCALL */
 
 		ret_flags = DUK_BC_RETURN_FLAG_HAVE_RETVAL;
-	}
-
-	if (comp_ctx->curr_func.catch_depth == 0) {
-		DUK_DDD(DUK_DDDPRINT("fast return allowed -> use fast return"));
-		ret_flags |= DUK_BC_RETURN_FLAG_FAST;
-	} else {
-		DUK_DDD(DUK_DDDPRINT("fast return not allowed -> use slow return"));
 	}
 
 	duk__emit_a_b(comp_ctx,
@@ -7143,8 +7130,6 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	 *  detected; even if the previous instruction is an unconditional jump,
 	 *  there may be a previous jump which jumps to current PC (which is the
 	 *  case for iteration and conditional statements, for instance).
-	 *
-	 *  A final return is always a fast return: there can be no active catchers.
 	 */
 
 	/* XXX: request a "last statement is terminal" from duk__parse_stmt() and duk__parse_stmts();
@@ -7152,16 +7137,16 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	 * (directly or via a jump)
 	 */
 
-	DUK_ASSERT(comp_ctx->curr_func.catch_depth == 0);  /* fast returns are always OK here */
+	DUK_ASSERT(comp_ctx->curr_func.catch_depth == 0);
 	if (reg_stmt_value >= 0) {
 		duk__emit_a_b(comp_ctx,
 		              DUK_OP_RETURN | DUK__EMIT_FLAG_NO_SHUFFLE_A,
-		              (duk_regconst_t) (DUK_BC_RETURN_FLAG_HAVE_RETVAL | DUK_BC_RETURN_FLAG_FAST) /*flags*/,
+		              (duk_regconst_t) DUK_BC_RETURN_FLAG_HAVE_RETVAL /*flags*/,
 		              (duk_regconst_t) reg_stmt_value /*reg*/);
 	} else {
 		duk__emit_a_b(comp_ctx,
 		              DUK_OP_RETURN | DUK__EMIT_FLAG_NO_SHUFFLE_A,
-		              (duk_regconst_t) DUK_BC_RETURN_FLAG_FAST /*flags*/,
+		              (duk_regconst_t) 0 /*flags*/,
 		              (duk_regconst_t) 0 /*reg(ignored)*/);
 	}
 
