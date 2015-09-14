@@ -243,8 +243,6 @@ opcodes:
       - B_RC
     flags:
       - mask: 0x40
-        name: fast_return
-      - mask: 0x80
         name: have_retval
   - name: CALL
     args:
