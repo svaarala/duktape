@@ -810,7 +810,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
 	/* XXX: this should be optimized to be a raw query and avoid valstack
 	 * operations if possible.
 	 */
-	duk_push_hobject(ctx, act->func);
+	duk_push_tval(ctx, &act->tv_func);
 	line = duk_hobject_pc2line_query(ctx, -1, pc);
 	duk_pop(ctx);
 	return line;
@@ -831,7 +831,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_debug_write_int(thr, 0);
 	} else {
 		act = thr->callstack + thr->callstack_top - 1;
-		duk_push_hobject(ctx, act->func);
+		duk_push_tval(ctx, &act->tv_func);
 		duk_get_prop_string(ctx, -1, "fileName");
 		duk_safe_to_string(ctx, -1);
 		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
@@ -849,10 +849,10 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 
 DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	/*
-	 * NFY <int: 5> <int: fatal> <str: msg> <str: filename> <int: linenumber> EOM
+	 *  NFY <int: 5> <int: fatal> <str: msg> <str: filename> <int: linenumber> EOM
 	 */
 
-	duk_context *ctx = (duk_context *)thr;
+	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 	duk_uint32_t pc;
 
@@ -1685,24 +1685,25 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 }
 
 /* Halt execution and enter a debugger message loop until execution is resumed
- * by the client. PC for the current activation may be temporarily decremented
- * so that the "current" instruction will be shown by the client.
+ * by the client.  PC for the current activation may be temporarily decremented
+ * so that the "current" instruction will be shown by the client.  This helper
+ * is callable from anywhere, also outside bytecode executor.
  */
 
 DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev_pc) {
 	duk_activation *act;
 	duk_hcompiledfunction *fun;
-	duk_instr_t *old_pc;
+	duk_instr_t *old_pc = NULL;
 
 	DUK_HEAP_SET_PAUSED(thr->heap);
 
 	act = duk_hthread_get_current_activation(thr);
 
-	/* NOTE: act may be NULL if an error is thrown outside of any activation, which may
-	 * happen in the case of, e.g. syntax errors.
+	/* NOTE: act may be NULL if an error is thrown outside of any activation,
+	 * which may happen in the case of, e.g. syntax errors.
 	 */
 
-	/* Decrement PC if that was requested, this requires a PC sync */
+	/* Decrement PC if that was requested, this requires a PC sync. */
 	if (act != NULL) {
 		duk_hthread_sync_currpc(thr);
 		old_pc = act->curr_pc;
@@ -1724,7 +1725,7 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 	duk_debug_send_status(thr);
 	while (thr->heap->dbg_paused) {
 		DUK_ASSERT(thr->heap->dbg_processing);
-		duk_debug_process_messages(thr, 0 /* no_block */);
+		duk_debug_process_messages(thr, 0 /*no_block*/);
 	}
 	thr->heap->dbg_processing = 0;
 
