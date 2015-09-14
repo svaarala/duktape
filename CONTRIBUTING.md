@@ -51,6 +51,10 @@ To make a code contribution to Duktape
   - If test case status changes (tests are broken / fixed, test cases
     themselves needed fixing, test cases were added, etc), mention that.
 
+* A pull request can be created before you think your changes are finished.
+  When the changes are finished, add the tag `mergeready` to the pull
+  request to indicate you're no longer making any changes.
+
 To report bugs or request features
 ----------------------------------
 
