@@ -1417,25 +1417,21 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	return retval;
 }
 
-/* XXX: Disabled for 1.0 release.  This needs to handle unwinding for label
- * sites (which are created for explicit labels but also for control statements
- * like for-loops).  At that point it's quite close to the "slow return" handler
- * except for longjmp().  Perhaps all returns could initially be handled as fast
- * returns and only converted to longjmp()s when basic handling won't do?
- */
-#if 0
 /* Try a fast return.  Return false if fails, so that a slow return can be done
  * instead.
  */
-DUK_LOCAL
-duk_bool_t duk__handle_fast_return(duk_hthread *thr,
-                                   duk_tval *tv_retval,
-                                   duk_hthread *entry_thread,
-                                   duk_size_t entry_callstack_top) {
+DUK_LOCAL DUK_NOINLINE duk_bool_t duk__handle_fast_return(duk_hthread *thr,
+                                                          duk_tval *tv_retval,
+                                                          duk_hthread *entry_thread,
+                                                          duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
+	duk_catcher *cat;
+	duk_size_t orig_callstack_index;
 
-	/* retval == NULL indicates 'undefined' return value */
+	/* tv_retval == NULL indicates 'undefined' return value */
+
+	/* XXX: assert: no finally/TCF catchers */
 
 	if (thr == entry_thread && thr->callstack_top == entry_callstack_top) {
 		DUK_DDD(DUK_DDDPRINT("reject fast return: return would exit bytecode executor to caller"));
@@ -1444,6 +1440,22 @@ duk_bool_t duk__handle_fast_return(duk_hthread *thr,
 	if (thr->callstack_top <= 1) {
 		DUK_DDD(DUK_DDDPRINT("reject fast return: there is no caller in this callstack (thread yield)"));
 		return 0;
+	}
+
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);  /* caller ensures */
+
+	/* XXX: it'd be more efficient if the returning 'act' indicated the
+	 * proper catchstack level it is using
+	 */
+	/* Catchstack */
+	cat = thr->catchstack + thr->catchstack_top - 1;  /* may be < thr->catchstack initially */
+	DUK_ASSERT(thr->callstack_top > 0);  /* ensures callstack_top - 1 >= 0 */
+	orig_callstack_index = thr->callstack_top - 1;
+	while (cat >= thr->catchstack) {
+		if (cat->callstack_index != orig_callstack_index) {
+			break;
+		}
+		cat--;
 	}
 
 	/* There is a caller, and it must be an Ecmascript caller (otherwise
@@ -1456,6 +1468,7 @@ duk_bool_t duk__handle_fast_return(duk_hthread *thr,
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
 	if (tv_retval) {
 		DUK_TVAL_SET_TVAL(tv1, tv_retval);
+		DUK_TVAL_CHKFAST_INPLACE(tv1);
 		DUK_TVAL_INCREF(thr, tv1);
 	} else {
 		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
@@ -1463,17 +1476,13 @@ duk_bool_t duk__handle_fast_return(duk_hthread *thr,
 	}
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
-	/* No catchstack to unwind. */
-#if 0
 	duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
-#endif
 	duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
 	duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
 
 	DUK_DDD(DUK_DDDPRINT("fast return accepted"));
 	return 1;
 }
-#endif
 
 /*
  *  Executor interrupt handling
@@ -3237,15 +3246,17 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			 * C -> currently unused
 			 */
 
+			/* Sync and NULL early, so that both fast/slow return code paths
+			 * share this.  Syncing is not that important for RETURN, but
+			 * NULLing is.
+			 */
+			DUK__SYNC_AND_NULL_CURR_PC();
+
 			/* A fast return avoids full longjmp handling for a set of
 			 * scenarios which hopefully represents the common cases.
 			 * The compiler is responsible for emitting fast returns
-			 * only when they are safe.  Currently this means that there
-			 * is nothing on the catch stack (not even label catchers).
-			 * The speed advantage of fast returns (avoiding longjmp) is
-			 * not very high, around 10-15%.
+			 * only when they are safe.
 			 */
-#if 0  /* XXX: Disabled for 1.0 release */
 			if (a & DUK_BC_RETURN_FLAG_FAST) {
 				DUK_DDD(DUK_DDDPRINT("FASTRETURN attempt a=%ld b=%ld", (long) a, (long) b));
 
@@ -3254,11 +3265,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				                            entry_thread,
 				                            entry_callstack_top)) {
 					DUK_DDD(DUK_DDDPRINT("FASTRETURN success a=%ld b=%ld", (long) a, (long) b));
-					DUK__SYNC_CURR_PC();
 					goto restart_execution;
 				}
 			}
-#endif
 
 			/* No fast return, slow path. */
 			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
@@ -3282,7 +3291,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
-			DUK__SYNC_AND_NULL_CURR_PC();
+			DUK_ASSERT(thr->ptr_curr_pc == NULL);  /* done above */
 			duk_err_longjmp(thr);
 			DUK_UNREACHABLE();
 			break;
