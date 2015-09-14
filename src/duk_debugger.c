@@ -847,6 +847,51 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_debug_write_eom(thr);
 }
 
+DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
+	/*
+	 * NFY <int: 5> <int: fatal> <str: msg> <str: filename> <int: linenumber> EOM
+	 */
+
+	duk_context *ctx = (duk_context *)thr;
+	duk_activation *act;
+	duk_uint32_t pc;
+
+	DUK_ASSERT(thr->valstack_top > thr->valstack);  /* ... [err] */
+
+	duk_debug_write_notify(thr, DUK_DBG_CMD_THROW);
+	duk_debug_write_int(thr, fatal);
+
+	/* Report thrown value to client coerced to string */
+	duk_dup(ctx, -1);
+	duk_safe_to_string(ctx, -1);
+	duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
+	duk_pop(ctx);
+
+	if (duk_is_error(ctx, -1)) {
+		/* Error instance, use augmented error data directly */
+		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
+		duk_safe_to_string(ctx, -1);
+		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
+		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER);
+		duk_debug_write_uint(thr, duk_get_uint(ctx, -1));
+		duk_pop_2(ctx);
+	} else {
+		/* For anything other than an Error instance, we calculate the error
+		 * location directly from the current activation.
+		 */
+		act = thr->callstack + thr->callstack_top - 1;
+		duk_push_tval(ctx, &act->tv_func);
+		duk_get_prop_string(ctx, -1, "fileName");
+		duk_safe_to_string(ctx, -1);
+		duk_debug_write_hstring(thr, duk_require_hstring(ctx, -1));
+		pc = duk_hthread_get_act_prev_pc(thr, act);
+		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
+		duk_pop_2(ctx);
+	}
+
+	duk_debug_write_eom(thr);
+}
+
 /*
  *  Debug message processing
  */
@@ -1637,6 +1682,55 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
  fail:
 	DUK__SET_CONN_BROKEN(thr);
 	return;
+}
+
+/* Halt execution and enter a debugger message loop until execution is resumed
+ * by the client. PC for the current activation may be temporarily decremented
+ * so that the "current" instruction will be shown by the client.
+ */
+
+DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev_pc) {
+	duk_activation *act;
+	duk_hcompiledfunction *fun;
+	duk_instr_t *old_pc;
+
+	DUK_HEAP_SET_PAUSED(thr->heap);
+
+	act = duk_hthread_get_current_activation(thr);
+
+	/* NOTE: act may be NULL if an error is thrown outside of any activation, which may
+	 * happen in the case of, e.g. syntax errors.
+	 */
+
+	/* Decrement PC if that was requested, this requires a PC sync */
+	if (act != NULL) {
+		duk_hthread_sync_currpc(thr);
+		old_pc = act->curr_pc;
+		fun = (duk_hcompiledfunction *)DUK_ACT_GET_FUNC(act);
+		if (use_prev_pc && act->curr_pc != NULL &&
+			act->curr_pc > DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun)) {
+			act->curr_pc--;
+		}
+	}
+
+	/* Process debug messages until we are no longer paused. */
+
+	/* NOTE: This is a bit fragile. It's important to ensure that neither
+	 * duk_debug_send_status() or duk_debug_process_messages() throws an error
+	 * or act->curr_pc will never be reset.
+	 */
+
+	thr->heap->dbg_processing = 1;
+	duk_debug_send_status(thr);
+	while (thr->heap->dbg_paused) {
+		DUK_ASSERT(thr->heap->dbg_processing);
+		duk_debug_process_messages(thr, 0 /* no_block */);
+	}
+	thr->heap->dbg_processing = 0;
+
+	if (act != NULL) {
+		act->curr_pc = old_pc;  /* restore PC */
+	}
 }
 
 DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block) {
