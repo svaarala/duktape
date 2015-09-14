@@ -1,17 +1,5 @@
 /*
- *  Exercise various code paths related to fast return handling.
- *
- *  Duktape executor supports two kinds of return:
- *
- *    - A slow return is implemented using longjmp() and handles all cases
- *      like label catchers, try-catch-finally blocks, etc.
- *
- *    - A fast return avoids the longjmp() but is limited to common cases
- *      only.
- *
- *  Longjmp has a moderate performance impact on normal platforms.  However
- *  it has a much larger relative impact when Duktape is compiled with
- *  Emscripten.
+ *  Exercise various code paths related to return handling.
  */
 
 /*===
@@ -39,26 +27,27 @@ testTryFinally4
 Error: canceled return
 still here
 returned 432
+testTryFinally5
+finally
+returned 123
 ===*/
 
-/* Basic case: fast return allowed. */
+/* Basic case. */
 function testReturn1() {
     return 123;
 }
 
-/* Basic case, implicit return value (undefined).  Fast return allowed. */
+/* Basic case, implicit return value (undefined). */
 function testReturn2() {
     return;
 }
 
 /* Basic case, implicit return value with no explicit return statement.
- * Fast return allowed.
  */
 function testReturn3() {
 }
 
-/* Return from inside a label site (created by for-loop).  Fast return
- * is allowed for label catchers.
+/* Return from inside a label site (created by for-loop).
  */
 function testForLoop1() {
     for (;;) {
@@ -66,9 +55,7 @@ function testForLoop1() {
     }
 }
 
-/* Return from inside the try block of a try-catch is currently not a
- * fast return.
- * XXX: could allow if there's no finally clause?
+/* Return from inside the try block of a try-catch.
  */
 function testTryCatch1() {
     try {
@@ -77,9 +64,7 @@ function testTryCatch1() {
     }
 }
 
-/* Return from inside the catch block of a try-catch is currently not a
- * fast return.
- * XXX: could allow if there's no finally clause?
+/* Return from inside the catch block of a try-catch.
  */
 function testTryCatch2() {
     try {
@@ -89,9 +74,7 @@ function testTryCatch2() {
     }
 }
 
-/* Return from inside the try block of a try-finally is not a fast
- * return because the finally block intercepts the return (and can
- * even cancel it).
+/* Return from inside the try block of a try-finally.
  */
 function testTryFinally1() {
     try {
@@ -110,10 +93,7 @@ function testTryFinally2() {
     }
 }
 
-/* Return from inside the finally block of a try-finally is not a fast
- * return.
- * XXX: it could be, because there's no longer a chance of anyone
- * catching the return.
+/* Return from inside the finally block of a try-finally.
  */
 function testTryFinally3() {
     try {
@@ -139,6 +119,18 @@ function testTryFinally4() {
 
     print('still here');
     return 432;
+}
+
+function testTryFinally5() {
+    // Here 'finally' captures the return which then proceeds.
+    // This triggers the internal case where ENDFIN does RETURN handling
+    // which results in an executor restart.
+    try {
+        return 123;
+    } finally {
+        print('finally');
+    }
+    print('never here');
 }
 
 try {
@@ -171,6 +163,9 @@ try {
 
     print('testTryFinally4');
     print('returned', testTryFinally4());
+
+    print('testTryFinally5');
+    print('returned', testTryFinally5());
 } catch (e) {
     print(e);
 }

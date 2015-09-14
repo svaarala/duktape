@@ -1,7 +1,5 @@
 /*
  *  Basic function call performance.
- *
- *  Focuses on the cases where "fast returns" are possible.
  */
 
 function test() {
