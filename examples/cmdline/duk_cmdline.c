@@ -261,7 +261,7 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 	int rc;
 	int retval = -1;
 
-	buf = malloc(1024);
+	buf = (char *) malloc(1024);
 	if (!buf) {
 		goto error;
 	}
@@ -279,7 +279,7 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 			fprintf(stderr, "resizing read buffer: %ld -> %ld\n", (long) bufsz, (long) (bufsz * 2));
 #endif
 			newsz = bufsz + (bufsz >> 2) + 1024;  /* +25% and some extra */
-			buf = realloc(buf, newsz);
+			buf = (char *) realloc(buf, newsz);
 			if (!buf) {
 				goto error;
 			}
