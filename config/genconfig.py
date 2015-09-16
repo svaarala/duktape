@@ -1224,6 +1224,7 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 	ret.line(' *')
 	ret.line(' *  Git commit: %s' % opts.git_commit or 'n/a')
 	ret.line(' *  Git describe: %s' % opts.git_describe or 'n/a')
+	ret.line(' *  Git branch: %s' % opts.git_branch or 'n/a')
 	ret.line(' *')
 	if opts.platform is not None:
 		ret.line(' *  Platform: ' + opts.platform)
@@ -1581,6 +1582,7 @@ def generate_barebones_duk_config_header(opts, meta_dir):
 	ret.line(' *')
 	ret.line(' *  Git commit: %s' % opts.git_commit or 'n/a')
 	ret.line(' *  Git describe: %s' % opts.git_describe or 'n/a')
+	ret.line(' *  Git branch: %s' % opts.git_branch or 'n/a')
 	ret.line(' */')
 	ret.empty()
 	ret.line('#ifndef DUK_CONFIG_H_INCLUDED')
@@ -1800,6 +1802,7 @@ def main():
 	parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
 	parser.add_option('--git-commit', dest='git_commit', default=None, help='git commit hash to be included in header comments')
 	parser.add_option('--git-describe', dest='git_describe', default=None, help='git describe string to be included in header comments')
+	parser.add_option('--git-branch', dest='git_branch', default=None, help='git branch string to be included in header comments')
 	(opts, args) = parser.parse_args()
 
 	meta_dir = opts.metadata

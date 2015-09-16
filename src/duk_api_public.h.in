@@ -88,11 +88,14 @@ struct duk_number_list_entry {
  */
 #define DUK_VERSION                       10399L
 
-/* Git describe for Duktape build.  Useful for non-official snapshot builds
- * so that application code can easily log which Duktape snapshot was used.
- * Not available in the Ecmascript environment.
+/* Git commit, describe, and branch for Duktape build.  Useful for
+ * non-official snapshot builds so that application code can easily log
+ * which Duktape snapshot was used.  Not available in the Ecmascript
+ * environment.
  */
+#define DUK_GIT_COMMIT                    @GIT_COMMIT_CSTRING@
 #define DUK_GIT_DESCRIBE                  @GIT_DESCRIBE_CSTRING@
+#define DUK_GIT_BRANCH                    @GIT_BRANCH_CSTRING@
 
 /* Duktape debug protocol version used by this build. */
 #define DUK_DEBUG_PROTOCOL_VERSION        1
