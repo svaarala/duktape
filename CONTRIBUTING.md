@@ -11,23 +11,44 @@ for details.
 To make a code contribution to Duktape
 --------------------------------------
 
-* Fork the Duktape Github repository and make your changes.  Use a well named
-  topic branch for the changes, preferably with lowercase and dashes, e.g.
-  `xyz-compiler-fixes`.  Fork off the `master` branch.  Avoid forking from
-  Duktape repository work branches as they may get rebased.
+* Fork the Duktape Github repository and make your changes:
 
-* Test your changes as thoroughly as possible.  At the very minimum, the number
-  of failed test cases with `make qecmatest` and `make apitest` should not
-  increase.  If some test cases are invalidated by the changes, fix the test
-  cases as part of the commit.  If you add new functionality, you should add
-  test case(s) to illustrate the changes and desired behavior.
+  - Use a well named topic branch for the changes, with lowercase and dashes,
+    e.g. `xyz-compiler-fixes`.
+
+  - Fork off the `master` branch.  Avoid forking from Duktape repository work
+    branches as they are frequently rebased.
+
+  - Your branch should have a consistent logical scope.  If the branch does
+    several independent things (like adding a feature and fixing some unrelated
+    repo scripts), use separate branches.
+
+* Test your changes as thoroughly as possible.  At the very minimum:
+
+  - Travis test run must pass, which covers both a code policy check, and
+    runs basic API and Ecmascript test case set.
+
+  - If some test cases are invalidated by the changes, fix the test cases as
+    part of the branch.  If you add new functionality, you should add test
+    case(s) to illustrate the changes and desired behavior.
+
+  - Fix any code policy violations or let me know if the policy check is
+    broken.  Consistent code is easier to read.
 
 * Ensure your code follows the style guidelines in `code-issues.rst`.
   Not everything is spelled out explicitly, so try to follow the general
-  style in the code base.  Check that your diff looks as clean and minimal
-  as possible.  Rebase your pull request if necessary so that commits are
-  logical and clean.  If the branch includes a fix that might be cherry
-  picked into a maintenance release, ensure that fix is in a separate commit.
+  style in the code base.
+
+* Clean up your commits so that they are logical and well scoped:
+
+  - Rebase your pull request if necessary so that commits are logical and
+    clean.  A smaller number of larger, logical commits are preferred over
+    small commits and "fixups".
+
+  - Keep commits to source separate from commits to documentation.
+
+  - If the branch includes a fix that might be cherry picked into a
+    maintenance release, ensure that fix is in a separate commit.
 
 * Add yourself to the end of the author list in `AUTHORS.rst` if you're
   not already on the list.  By doing this you confirm that:
@@ -51,9 +72,15 @@ To make a code contribution to Duktape
   - If test case status changes (tests are broken / fixed, test cases
     themselves needed fixing, test cases were added, etc), mention that.
 
-* A pull request can be created before you think your changes are finished.
-  When the changes are finished, add the tag `mergeready` to the pull
-  request to indicate you're no longer making any changes.
+  - A pull request can be created before you think your changes are finished.
+    It's OK to work on a feature in the pull request: this facilitates
+    discussion in the pull request comments.
+
+* When the changes are finished, add the `mergeready` label to the pull
+  request to indicate you're no longer making any changes and would like
+  the branch to be merged.  If there is feedback needing fixes, remove the
+  label and add it back when the fixes are finished.  This ensures merges
+  are not done too early.
 
 To report bugs or request features
 ----------------------------------
