@@ -26,6 +26,7 @@ var optMinifyClosure;
 var optMinifyUglifyJS;
 var optMinifyUglifyJS2;
 var optUtilIncludePath;
+var optEmdukTrailingLineHack;
 var knownIssues;
 
 /*
@@ -143,6 +144,14 @@ function executeTest(options, callback) {
     // testcase execution done
     function execDone(error, stdout, stderr) {
         var res;
+
+        // Emduk outputs an extra '\x20\0a' to end of stdout, strip it
+        if (optEmdukTrailingLineHack &&
+            typeof stdout === 'string' &&
+            stdout.length >= 2 &&
+            stdout.substring(stdout.length - 2) === ' \n') {
+            stdout = stdout.substring(0, stdout.length - 2);
+        }
 
         res = {
             testcase: options.testcase,
@@ -467,6 +476,7 @@ function testRunnerMain() {
         .boolean('verbose')
         .boolean('report-diff-to-other')
         .boolean('valgrind')
+        .boolean('emduk-trailing-line-hack')
         .describe('num-threads', 'number of threads to use for testcase execution')
         .describe('test-sleep', 'sleep time (milliseconds) between testcases, avoid overheating :)')
         .describe('run-duk', 'run testcase with Duktape')
@@ -486,6 +496,7 @@ function testRunnerMain() {
         .describe('minify-uglifyjs', 'path for UglifyJS executable')
         .describe('minify-uglifyjs2', 'path for UglifyJS2 executable')
         .describe('known-issues', 'known issues yaml file')
+        .describe('emduk-trailing-line-hack', 'strip bogus newline from end of emduk stdout')
         .demand('prep-test-path')
         .demand('util-include-path')
         .demand(1)   // at least 1 non-arg
@@ -757,6 +768,10 @@ function testRunnerMain() {
 
     if (argv['known-issues']) {
         knownIssues = yaml.load(argv['known-issues']);
+    }
+
+    if (argv['emduk-trailing-line-hack']) {
+        optEmdukTrailingLineHack = true;
     }
 
     engines = [];
