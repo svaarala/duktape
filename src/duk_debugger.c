@@ -29,16 +29,19 @@ typedef union {
 	} while (0)
 
 DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
-	/* Can be called muliple times with no harm. */
+	duk_debug_detached_function detach_cb;
+	void *detach_udata;
+
+	/* Can be called multiple times with no harm. */
+
+	detach_cb = heap->dbg_detached_cb;
+	detach_udata = heap->dbg_udata;
 
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;
 	heap->dbg_peek_cb = NULL;
 	heap->dbg_read_flush_cb = NULL;
 	heap->dbg_write_flush_cb = NULL;
-	if (heap->dbg_detached_cb) {
-		heap->dbg_detached_cb(heap->dbg_udata);
-	}
 	heap->dbg_detached_cb = NULL;
 	heap->dbg_udata = NULL;
 	heap->dbg_processing = 0;
@@ -59,6 +62,14 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	 * XXX: clear breakpoint on either attach or detach?
 	 */
 	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
+
+	/* Call the detached callback last, so that if it immediately
+	 * reattaches, the debugger state will be correct.  The udata
+	 * pointer used must be prior to NULLing heap->dbg_udata.
+	 */
+	if (detach_cb) {
+		detach_cb(detach_udata);
+	}
 }
 
 /*
@@ -1416,7 +1427,7 @@ DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_write_eom(thr);
 
 	DUK_D(DUK_DPRINT("debug connection detached, mark broken"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr);  /* calls detached callback */
 }
 
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
@@ -1714,8 +1725,15 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 			break;
 		}
 		case DUK_DBG_CMD_DETACH: {
+			/* Important: when the detach handler returns,
+			 * user code may have re-attached so we must not
+			 * skip to EOM because it would happen in the new
+			 * connection.  Instead, return to message loop
+			 * and start parsing messages.
+			 */
 			duk__debug_handle_detach(thr, heap);
-			break;
+			DUK_D(DUK_DPRINT("returning to message loop after detach, don't skip to EOM"));
+			return;
 		}
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 		case DUK_DBG_CMD_DUMPHEAP: {
