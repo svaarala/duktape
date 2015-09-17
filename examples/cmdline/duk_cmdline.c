@@ -38,6 +38,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
+#if defined(EMSCRIPTEN)
+#include <emscripten.h>
+#endif
 #ifdef DUK_CMDLINE_ALLOC_LOGGING
 #include "duk_alloc_logging.h"
 #endif
@@ -183,11 +186,25 @@ static int wrapped_compile_execute(duk_context *ctx) {
 		void *bc_ptr;
 		duk_size_t bc_len;
 		size_t wrote;
+		char fnbuf[256];
+		const char *filename;
 
 		duk_dup_top(ctx);
 		duk_dump_function(ctx);
 		bc_ptr = duk_require_buffer(ctx, -1, &bc_len);
-		f = fopen(duk_require_string(ctx, -5), "wb");
+		filename = duk_require_string(ctx, -5);
+#if defined(EMSCRIPTEN)
+		if (filename[0] == '/') {
+			snprintf(fnbuf, sizeof(fnbuf), "%s", filename);
+		} else {
+			snprintf(fnbuf, sizeof(fnbuf), "/working/%s", filename);
+		}
+#else
+		snprintf(fnbuf, sizeof(fnbuf), "%s", filename);
+#endif
+		fnbuf[sizeof(fnbuf) - 1] = (char) 0;
+
+		f = fopen(fnbuf, "wb");
 		if (!f) {
 			duk_error(ctx, DUK_ERR_ERROR, "failed to open bytecode output file");
 		}
@@ -380,8 +397,20 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 static int handle_file(duk_context *ctx, const char *filename, const char *bytecode_filename) {
 	FILE *f = NULL;
 	int retval;
+	char fnbuf[256];
 
-	f = fopen(filename, "rb");
+#if defined(EMSCRIPTEN)
+	if (filename[0] == '/') {
+		snprintf(fnbuf, sizeof(fnbuf), "%s", filename);
+	} else {
+		snprintf(fnbuf, sizeof(fnbuf), "/working/%s", filename);
+	}
+#else
+	snprintf(fnbuf, sizeof(fnbuf), "%s", filename);
+#endif
+	fnbuf[sizeof(fnbuf) - 1] = (char) 0;
+
+	f = fopen(fnbuf, "rb");
 	if (!f) {
 		fprintf(stderr, "failed to open source file: %s\n", filename);
 		fflush(stderr);
@@ -738,6 +767,53 @@ int main(int argc, char *argv[]) {
 	int run_stdin = 0;
 	const char *compile_filename = NULL;
 	int i;
+
+#if defined(EMSCRIPTEN)
+	/* Try to use NODEFS to provide access to local files.  Mount the
+	 * CWD as /working, and then prepend "/working/" to relative native
+	 * paths in file calls to get something that works reasonably for
+	 * relative paths.  Emscripten doesn't support replacing virtual
+	 * "/" with host "/" (the default MEMFS at "/" can't be unmounted)
+	 * but we can mount "/tmp" as host "/tmp" to allow testcase runs.
+	 *
+	 * https://kripken.github.io/emscripten-site/docs/api_reference/Filesystem-API.html#filesystem-api-nodefs
+	 * https://github.com/kripken/emscripten/blob/master/tests/fs/test_nodefs_rw.c
+	 */
+	EM_ASM(
+		/* At the moment it's not possible to replace the default MEMFS mounted at '/':
+		 * https://github.com/kripken/emscripten/issues/2040
+		 * https://github.com/kripken/emscripten/blob/incoming/src/library_fs.js#L1341-L1358
+		 */
+		/*
+		try {
+			FS.unmount("/");
+		} catch (e) {
+			console.log("Failed to unmount default '/' MEMFS mount: " + e);
+		}
+		*/
+		try {
+			FS.mkdir("/working");
+			FS.mount(NODEFS, { root: "." }, "/working");
+		} catch (e) {
+			console.log("Failed to mount NODEFS /working: " + e);
+		}
+		/* A virtual '/tmp' exists by default:
+		 * https://gist.github.com/evanw/e6be28094f34451bd5bd#file-temp-js-L3806-L3809
+		 */
+		/*
+		try {
+			FS.mkdir("/tmp");
+		} catch (e) {
+			console.log("Failed to create virtual /tmp: " + e);
+		}
+		*/
+		try {
+			FS.mount(NODEFS, { root: "/tmp" }, "/tmp");
+		} catch (e) {
+			console.log("Failed to mount NODEFS /tmp: " + e);
+		}
+	);
+#endif  /* EMSCRIPTEN */
 
 #ifdef DUK_CMDLINE_AJSHEAP
 	alloc_provider = ALLOC_AJSHEAP;
