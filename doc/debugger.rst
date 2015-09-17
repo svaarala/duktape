@@ -2597,14 +2597,6 @@ There are several ways to make this faster:
   impact, even when a debugger is not attached, so this approach is also not
   very desirable.
 
-Fix debugger statement line handling
-------------------------------------
-
-When executing a "debugger;" statement, the debugger currently pauses after PC
-has already been incremented.  In other words, the debugger is paused "after"
-the statement has been executed.  In the debugger UI this looks like execution
-had paused on the line following the debugger statement.
-
 Improve compiler line number accuracy
 -------------------------------------
 

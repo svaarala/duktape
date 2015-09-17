@@ -98,6 +98,8 @@ DUK_INTERNAL_DECL void *duk_get_voidptr(duk_context *ctx, duk_idx_t index);
 #endif
 
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t index);
+DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index);
+
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);
 DUK_INTERNAL_DECL duk_int_t duk_to_int_check_range(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval);

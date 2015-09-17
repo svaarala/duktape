@@ -6253,13 +6253,13 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		break;
 	}
 	case DUK_TOK_DEBUGGER: {
+		duk__advance(comp_ctx);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		DUK_DDD(DUK_DDDPRINT("debugger statement: debugging enabled, emit debugger opcode"));
 		duk__emit_extraop_only(comp_ctx, DUK_EXTRAOP_DEBUGGER);
 #else
 		DUK_DDD(DUK_DDDPRINT("debugger statement: ignored"));
 #endif
-		duk__advance(comp_ctx);
 		stmt_flags = DUK__HAS_TERM;
 		break;
 	}

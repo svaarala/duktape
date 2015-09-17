@@ -53,6 +53,7 @@ var CMD_STATUS = 0x01;
 var CMD_PRINT = 0x02;
 var CMD_ALERT = 0x03;
 var CMD_LOG = 0x04;
+var CMD_THROW = 0x05;
 
 // Commands initiated by the debug client (= us)
 var CMD_BASICINFO = 0x10;
@@ -1696,9 +1697,13 @@ Debugger.prototype.processDebugMessage = function (msg) {
             this.uiMessage('alert', prettyUiStringUnquoted(msg[2], UI_MESSAGE_CLIPLEN));
         } else if (msg[1] === CMD_LOG) {
             this.uiMessage({ type: 'log', level: msg[2], message: prettyUiStringUnquoted(msg[3], UI_MESSAGE_CLIPLEN) });
+        } else if (msg[1] === CMD_THROW) {
+            this.uiMessage({ type: 'throw', fatal: msg[2], message: (msg[2] ? 'UNCAUGHT: ' : 'THROW: ') + prettyUiStringUnquoted(msg[3], UI_MESSAGE_CLIPLEN), fileName: msg[4], lineNumber: msg[5] });
         } else {
-            console.log('Unknown notify, dropping connection: ' + prettyDebugMessage(msg));
-            this.targetStream.destroy();
+            // Ignore unknown notify messages
+            console.log('Unknown notify, ignoring: ' + prettyDebugMessage(msg));
+
+            //this.targetStream.destroy();
         }
     } else {
         console.log('Invalid initial dvalue, dropping connection: ' + prettyDebugMessage(msg));

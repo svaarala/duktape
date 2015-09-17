@@ -2094,9 +2094,17 @@ DUK_EXTERNAL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, 
 		;
 	}
 	DUK_ASSERT(duk_is_string(ctx, -1));
+	DUK_ASSERT(duk_get_string(ctx, -1) != NULL);
 
 	duk_replace(ctx, index);
-	return duk_require_lstring(ctx, index, out_len);
+	return duk_get_lstring(ctx, index, out_len);
+}
+
+DUK_EXTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index) {
+	(void) duk_safe_to_string(ctx, index);
+	DUK_ASSERT(duk_is_string(ctx, index));
+	DUK_ASSERT(duk_get_hstring(ctx, index) != NULL);
+	return duk_get_hstring(ctx, index);
 }
 
 /* XXX: other variants like uint, u32 etc */

@@ -2260,8 +2260,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		 * as fast as possible.  The counter is copied back to the heap struct
 		 * whenever a thread switch occurs by the DUK_HEAP_SWITCH_THREAD() macro.
 		 */
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 		if (thr->heap->dbg_processing) {
 			/* Don't interrupt if we're currently doing debug processing as
 			 * this may cause the debugger to be called recursively. Check required
@@ -2271,6 +2272,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 			goto skip_interrupt;
 		}
+#endif
 
 		int_ctr = thr->interrupt_counter;
 		if (DUK_LIKELY(int_ctr > 0)) {
@@ -4336,11 +4338,14 @@ skip_interrupt:
 				 * from precompiled bytecode.
 				 */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-				DUK_D(DUK_DPRINT("DEBUGGER statement encountered, halt execution"));
 				if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
-					DUK_HEAP_SET_PAUSED(thr->heap);
-					DUK__SYNC_CURR_PC();
+					DUK_D(DUK_DPRINT("DEBUGGER statement encountered, halt execution"));
+					DUK__SYNC_AND_NULL_CURR_PC();
+					duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
+					DUK_D(DUK_DPRINT("DEBUGGER statement finished, resume execution"));
 					goto restart_execution;
+				} else {
+					DUK_D(DUK_DPRINT("DEBUGGER statement ignored, debugger not attached"));
 				}
 #else
 				DUK_D(DUK_DPRINT("DEBUGGER statement ignored, no debugger support"));
