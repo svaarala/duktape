@@ -72,13 +72,13 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_TOK_TRY                               22
 #define DUK_TOK_TYPEOF                            23
 #define DUK_TOK_VAR                               24
-#define DUK_TOK_VOID                              25
-#define DUK_TOK_WHILE                             26
-#define DUK_TOK_WITH                              27
+#define DUK_TOK_CONST                             25
+#define DUK_TOK_VOID                              26
+#define DUK_TOK_WHILE                             27
+#define DUK_TOK_WITH                              28
 
 /* reserved words: future reserved words */
-#define DUK_TOK_CLASS                             28
-#define DUK_TOK_CONST                             29
+#define DUK_TOK_CLASS                             29
 #define DUK_TOK_ENUM                              30
 #define DUK_TOK_EXPORT                            31
 #define DUK_TOK_EXTENDS                           32
