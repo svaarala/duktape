@@ -1141,6 +1141,10 @@ Planned
 1.4.0 (XXXX-XX-XX)
 ------------------
 
+* Add minimal support for "const" declarations with non-standard semantics,
+  intended mainly for minimal compatibility with existing code using "const"
+  (GH-360)
+
 * Add a debugger Throw notify for errors about to be thrown, and an option
   to automatically pause before an uncaught error is thrown (GH-286, GH-347)
 
