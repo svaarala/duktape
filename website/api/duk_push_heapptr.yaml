@@ -10,7 +10,7 @@ summary: |
   <p>Push a Duktape heap allocated object into the value stack based on a borrowed
   void pointer reference.
   The argument <code>ptr</code> must be obtained using
-  <code><a href="duk_get_heapptr">duk_get_heapptr()</a></code> (or its variants)
+  <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code> (or its variants)
   and must have been reachable for Duktape garbage collection up to this call.
   If <code>ptr</code> is <code>NULL</code>, <code>undefined</code> is pushed.</p>
 
