@@ -37,7 +37,7 @@ var knownIssues;
 // deleted explicitly.  See: https://www.npmjs.com/package/tmp
 function mkTempName(ext) {
     var fn = tmp.tmpNameSync({ keep: false, prefix: 'tmp-runtests-', postfix: (typeof ext === 'undefined' ? '' : '' + ext) });
-    console.log('mkTempName -> ' + fn);
+    //console.log('mkTempName -> ' + fn);
     return fn;
 }
 
