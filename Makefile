@@ -486,40 +486,40 @@ RUNTESTSOPTS=--prep-test-path util/prep_test.py --minify-uglifyjs2 UglifyJS2/bin
 ecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	ecmatestd
 ecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### ecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatestd"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatest
 qecmatest: runtestsdeps duk
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatestd
 qecmatestd: runtestsdeps dukd
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### qecmatestd (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatestd"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 # Separate target because it's also convenient to run manually.
@@ -530,10 +530,10 @@ apiprep: runtestsdeps libduktape.so.1.0.0
 apitest: apiprep
 ifeq ($(VALGRIND_WRAP),1)
 	@echo "### apitest (valgrind)"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log tests/api/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --valgrind --log-file=/tmp/duk-api-test.log tests/api/
 else
 	@echo "### apitest"
-	$(NODE) runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
 endif
 
 .PHONY: matrix10
@@ -714,11 +714,11 @@ emscriptenduktest: emscripten dist
 	@echo "### emscriptenduktest"
 	@rm -f /tmp/duk-emcc-duktest.js
 	emscripten/emcc $(EMCCOPTS_DUKVM) -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -Idist/src/ dist/src/duktape.c dist/examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
-	$(NODE) /tmp/duk-emcc-duktest.js \
+	"$(NODE)" /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
-	$(NODE) /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
+	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(''+Duktape.dec('base64', '$(MAND_BASE64)'))"
 
 # This is a prototype of running Duktape in a web environment with Emscripten,
 # and providing an eval() facility from both sides.  This is a placeholder now
