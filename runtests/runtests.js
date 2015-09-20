@@ -36,7 +36,7 @@ var knownIssues;
 // Generate temporary filename, file will be autodeleted on exit unless
 // deleted explicitly.  See: https://www.npmjs.com/package/tmp
 function mkTempName(ext) {
-    var fn = tmp.tmpNameSync({ keep: false, prefix: 'tmp-runtests-' });
+    var fn = tmp.tmpNameSync({ keep: false, prefix: 'tmp-runtests-', postfix: (typeof ext === 'undefined' ? '' : '' + ext) });
     console.log('mkTempName -> ' + fn);
     return fn;
 }
