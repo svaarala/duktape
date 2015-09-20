@@ -8,7 +8,7 @@
 
 var fs = require('fs'),
     path = require('path'),
-//    temp = require('temp'),
+    tmp = require('tmp'),
     child_process = require('child_process'),
     async = require('async'),
     xml2js = require('xml2js'),
@@ -33,12 +33,12 @@ var knownIssues;
  *  Utils.
  */
 
-// FIXME: placeholder; for some reason 'temp' didn't work
-var tmpCount = 0;
-var tmpUniq = process.pid || Math.floor(Math.random() * 1e6);
-
+// Generate temporary filename, file will be autodeleted on exit unless
+// deleted explicitly.  See: https://www.npmjs.com/package/tmp
 function mkTempName(ext) {
-    return '/tmp/runtests-' + tmpUniq + '-' + (++tmpCount) + (ext !== undefined ? ext : '');
+    var fn = tmp.tmpNameSync({ keep: false, prefix: 'tmp-runtests-' });
+    console.log('mkTempName -> ' + fn);
+    return fn;
 }
 
 function safeUnlinkSync(filePath) {
