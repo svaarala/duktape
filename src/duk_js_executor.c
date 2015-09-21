@@ -798,14 +798,14 @@ DUK_LOCAL void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx) {
 #endif
 }
 
-/* Note: called for DUK_LJ_TYPE_YIELD and for DUK_LJ_TYPE_RETURN, when a
- * return terminates a thread and yields to the resumer.
+/* Note: called for DUK_LJ_TYPE_YIELD and in RETURN handling when a return
+ * terminates a thread and yields to the resumer.
  */
 DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t act_idx) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
 
-	/* this may also be called for DUK_LJ_TYPE_RETURN; this is OK as long as
+	/* This may also be called in RETURN opcode handling; this is OK as long as
 	 * lj.value1 is correct.
 	 */
 
@@ -1076,138 +1076,6 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		break;  /* never here */
 	}
 
-	case DUK_LJ_TYPE_RETURN: {
-		/*
-		 *  Four possible outcomes:
-		 *    * A 'finally' in the same function catches the 'return'.
-		 *      (or)
-		 *    * The return happens at the entry level of the bytecode
-		 *      executor, so return from the executor (in C stack).
-		 *      (or)
-		 *    * There is a calling (Ecmascript) activation in the call
-		 *      stack => return to it.
-		 *      (or)
-		 *    * There is no calling activation, and the thread is
-		 *      terminated.  There is always a resumer in this case,
-		 *      which gets the return value similarly to a 'yield'
-		 *      (except that the current thread can no longer be
-		 *      resumed).
-		 */
-
-		duk_tval *tv1;
-		duk_hthread *resumer;
-		duk_catcher *cat;
-		duk_size_t orig_callstack_index;
-
-		DUK_ASSERT(thr != NULL);
-		DUK_ASSERT(thr->callstack_top >= 1);
-		DUK_ASSERT(thr->catchstack != NULL);
-
-		/* XXX: does not work if thr->catchstack is NULL */
-		/* XXX: does not work if thr->catchstack is allocated but lowest pointer */
-
-		cat = thr->catchstack + thr->catchstack_top - 1;  /* may be < thr->catchstack initially */
-		DUK_ASSERT(thr->callstack_top > 0);  /* ensures callstack_top - 1 >= 0 */
-		orig_callstack_index = thr->callstack_top - 1;
-
-		while (cat >= thr->catchstack) {
-			if (cat->callstack_index != orig_callstack_index) {
-				break;
-			}
-			if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF &&
-			    DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
-				/* 'finally' catches */
-				duk__handle_catch_or_finally(thr,
-				                             cat - thr->catchstack,
-				                             1); /* is_finally */
-
-				DUK_DD(DUK_DDPRINT("-> return caught by a finally (in the same function), restart execution"));
-				retval = DUK__LONGJMP_RESTART;
-				goto wipe_and_return;
-			}
-			cat--;
-		}
-		/* if out of catchstack, cat = thr->catchstack - 1 */
-
-		DUK_DD(DUK_DDPRINT("no catcher in catch stack, return to calling activation / yield"));
-
-		/* return to calling activation (if any) */
-
-		if (thr == entry_thread &&
-		    thr->callstack_top == entry_callstack_top) {
-			/* return to the bytecode executor caller */
-
-			duk_push_tval((duk_context *) thr, &thr->heap->lj.value1);
-
-			/* [ ... retval ] */
-
-			DUK_DD(DUK_DDPRINT("-> return propagated up to entry level, exit bytecode executor"));
-			retval = DUK__LONGJMP_FINISHED;
-			goto wipe_and_return;
-		}
-
-		if (thr->callstack_top >= 2) {
-			/* there is a caller; it MUST be an Ecmascript caller (otherwise it would
-			 * match entry level check)
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("slow return to Ecmascript caller, idx_retval=%ld, lj_value1=%!T",
-			                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval,
-			                     (duk_tval *) &thr->heap->lj.value1));
-
-			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2)));   /* must be ecmascript */
-
-			tv1 = thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval;
-			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-			DUK_TVAL_SET_TVAL(tv1, &thr->heap->lj.value1);
-			DUK_TVAL_INCREF(thr, tv1);
-			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
-
-			DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%ld is %!T",
-			                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval,
-			                     (duk_tval *) (thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval)));
-
-			duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
-			duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
-			duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
-
-			DUK_DD(DUK_DDPRINT("-> return not caught, restart execution in caller"));
-			retval = DUK__LONGJMP_RESTART;
-			goto wipe_and_return;
-		}
-
-		DUK_DD(DUK_DDPRINT("no calling activation, thread finishes (similar to yield)"));
-
-		DUK_ASSERT(thr->resumer != NULL);
-		DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + Duktape.Thread.resume() activation */
-		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1) != NULL &&
-		           DUK_HOBJECT_IS_NATIVEFUNCTION(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1)) &&
-		           ((duk_hnativefunction *) DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1))->func == duk_bi_thread_resume);  /* Duktape.Thread.resume() */
-		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 2) != NULL &&
-		           DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 2)));  /* an Ecmascript function */
-		DUK_ASSERT_DISABLE((thr->resumer->callstack + thr->resumer->callstack_top - 2)->idx_retval >= 0);                /* unsigned */
-		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
-		DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
-
-		resumer = thr->resumer;
-
-		duk__handle_yield(thr, resumer, resumer->callstack_top - 2);
-
-		duk_hthread_terminate(thr);  /* updates thread state, minimizes its allocations */
-		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
-
-		thr->resumer = NULL;
-		resumer->state = DUK_HTHREAD_STATE_RUNNING;
-		DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
-#if 0
-		thr = resumer;  /* not needed */
-#endif
-
-		DUK_DD(DUK_DDPRINT("-> return not caught, thread terminated; handle like yield, restart execution in resumer"));
-		retval = DUK__LONGJMP_RESTART;
-		goto wipe_and_return;
-	}
-
 	case DUK_LJ_TYPE_BREAK:
 	case DUK_LJ_TYPE_CONTINUE: {
 		/*
@@ -1377,11 +1245,8 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		goto check_longjmp;
 	}
 
-	case DUK_LJ_TYPE_NORMAL: {
-		DUK_D(DUK_DPRINT("caught DUK_LJ_TYPE_NORMAL, should never happen, treat as internal error"));
-		goto convert_to_internal_error;
-	}
-
+	case DUK_LJ_TYPE_NORMAL:  /* pseudotypes */
+	case DUK_LJ_TYPE_RETURN:
 	default: {
 		/* should never happen, but be robust */
 		DUK_D(DUK_DPRINT("caught unknown longjmp type %ld, treat as internal error", (long) thr->heap->lj.type));
@@ -1417,71 +1282,202 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	return retval;
 }
 
-/* Try a fast return.  Return false if fails, so that a slow return can be done
- * instead.
+/*
+ *  RETURN handling
  */
-DUK_LOCAL DUK_NOINLINE duk_bool_t duk__handle_fast_return(duk_hthread *thr,
-                                                          duk_tval *tv_retval,
-                                                          duk_hthread *entry_thread,
-                                                          duk_size_t entry_callstack_top) {
+
+#define DUK__RETHAND_RESTART   0
+#define DUK__RETHAND_FINISHED  1
+
+/* Handle a RETURN opcode.  Avoid using longjmp() for return handling because
+ * it has a measurable performance impact in ordinary environments and an extreme
+ * impact in Emscripten (GH-342).  Return value is on value stack top.
+ */
+DUK_LOCAL DUK_NOINLINE duk_small_uint_t duk__handle_return(duk_hthread *thr,
+                                                           duk_hthread *entry_thread,
+                                                           duk_size_t entry_callstack_top) {
 	duk_tval tv_tmp;
 	duk_tval *tv1;
+	duk_tval *tv2;
+	duk_hthread *resumer;
 	duk_catcher *cat;
+	duk_size_t new_cat_top;
 	duk_size_t orig_callstack_index;
+	duk_small_uint_t retval = DUK__RETHAND_RESTART;
 
-	/* tv_retval == NULL indicates 'undefined' return value */
+	/* We can directly access value stack here. */
 
-	/* XXX: assert: no finally/TCF catchers */
+	DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
+	tv1 = thr->valstack_top - 1;
+	DUK_TVAL_CHKFAST_INPLACE(tv1);  /* fastint downgrade check for return values */
 
-	if (thr == entry_thread && thr->callstack_top == entry_callstack_top) {
-		DUK_DDD(DUK_DDDPRINT("reject fast return: return would exit bytecode executor to caller"));
-		return 0;
-	}
-	if (thr->callstack_top <= 1) {
-		DUK_DDD(DUK_DDDPRINT("reject fast return: there is no caller in this callstack (thread yield)"));
-		return 0;
-	}
-
-	DUK_ASSERT(thr->ptr_curr_pc == NULL);  /* caller ensures */
-
-	/* XXX: it'd be more efficient if the returning 'act' indicated the
-	 * proper catchstack level it is using
+	/*
+	 *  Four possible outcomes:
+	 *
+	 *    1. A 'finally' in the same function catches the 'return'.
+	 *       It may continue to propagate when 'finally' is finished,
+	 *       or it may be neutralized by 'finally' (both handled by
+	 *       ENDFIN).
+	 *
+	 *    2. The return happens at the entry level of the bytecode
+	 *       executor, so return from the executor (in C stack).
+	 *
+	 *    3. There is a calling (Ecmascript) activation in the call
+	 *       stack => return to it, in the same executor instance.
+	 *
+	 *    4. There is no calling activation, and the thread is
+	 *       terminated.  There is always a resumer in this case,
+	 *       which gets the return value similarly to a 'yield'
+	 *       (except that the current thread can no longer be
+	 *       resumed).
 	 */
-	/* Catchstack */
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->callstack_top >= 1);
+	DUK_ASSERT(thr->catchstack != NULL);
+
+	/* XXX: does not work if thr->catchstack is NULL */
+	/* XXX: does not work if thr->catchstack is allocated but lowest pointer */
+
 	cat = thr->catchstack + thr->catchstack_top - 1;  /* may be < thr->catchstack initially */
 	DUK_ASSERT(thr->callstack_top > 0);  /* ensures callstack_top - 1 >= 0 */
 	orig_callstack_index = thr->callstack_top - 1;
+
 	while (cat >= thr->catchstack) {
 		if (cat->callstack_index != orig_callstack_index) {
 			break;
 		}
+		if (DUK_CAT_GET_TYPE(cat) == DUK_CAT_TYPE_TCF &&
+		    DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
+			duk_size_t cat_idx;
+
+			/* Handle 'finally' by tweaking longjmp state for now. */
+			DUK_DDD(DUK_DDDPRINT("finally catches"));
+
+			cat_idx = (duk_size_t) (cat - thr->catchstack);  /* get before side effects */
+
+			thr->heap->lj.type = DUK_LJ_TYPE_RETURN;
+			DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
+			tv2 = thr->valstack_top - 1;
+			DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
+			DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, tv2);
+			DUK_TVAL_INCREF(thr, tv2);  /* == thr->heap->lj.value1 */
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+			duk__handle_catch_or_finally(thr, cat_idx, 1 /*is_finally*/);
+			DUK_ASSERT(retval == DUK__RETHAND_RESTART);
+			goto wipe_and_return;
+		}
 		cat--;
 	}
-
-	/* There is a caller, and it must be an Ecmascript caller (otherwise
-	 * it would have matched the entry level check).
+	/* If out of catchstack, cat = thr->catchstack - 1;
+	 * new_cat_top will be 0 in that case.
 	 */
-	DUK_ASSERT(thr->callstack_top >= 2);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2)));   /* must be ecmascript */
+	new_cat_top = (duk_size_t) ((cat + 1) - thr->catchstack);
+	cat = NULL;  /* avoid referencing, invalidated */
 
-	tv1 = thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval;
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-	if (tv_retval) {
-		DUK_TVAL_SET_TVAL(tv1, tv_retval);
-		DUK_TVAL_CHKFAST_INPLACE(tv1);
-		DUK_TVAL_INCREF(thr, tv1);
-	} else {
-		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
-		/* no need to incref */
+	DUK_DDD(DUK_DDDPRINT("no catcher in catch stack, return to calling activation / yield"));
+
+	/* return to calling activation (if any) */
+
+	if (thr == entry_thread &&
+	    thr->callstack_top == entry_callstack_top) {
+		/* Return to the bytecode executor caller; caller will unwind stacks.
+		 * Return value is already on the stack top: [ ... retval ].
+		 */
+
+		DUK_DDD(DUK_DDDPRINT("-> return propagated up to entry level, exit bytecode executor"));
+		retval = DUK__RETHAND_FINISHED;
+		goto wipe_and_return;
 	}
+
+	if (thr->callstack_top >= 2) {
+		/* there is a caller; it MUST be an Ecmascript caller (otherwise it would
+		 * match entry level check)
+		 */
+
+		DUK_DDD(DUK_DDDPRINT("return to Ecmascript caller, idx_retval=%ld, lj_value1=%!T",
+		                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval,
+		                     (duk_tval *) &thr->heap->lj.value1));
+
+		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2)));   /* must be ecmascript */
+
+		tv1 = thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval;
+		DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
+		tv2 = thr->valstack_top - 1;
+		DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+		DUK_TVAL_SET_TVAL(tv1, tv2);
+		DUK_TVAL_INCREF(thr, tv2);  /* == tv1 */
+		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+		DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%ld is %!T",
+		                     (long) (thr->callstack + thr->callstack_top - 2)->idx_retval,
+		                     (duk_tval *) (thr->valstack + (thr->callstack + thr->callstack_top - 2)->idx_retval)));
+
+		duk_hthread_catchstack_unwind(thr, new_cat_top);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
+		duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
+		duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
+
+		DUK_DD(DUK_DDPRINT("-> return not intercepted, restart execution in caller"));
+		DUK_ASSERT(retval == DUK__RETHAND_RESTART);
+		goto wipe_and_return;
+	}
+
+	DUK_DD(DUK_DDPRINT("no calling activation, thread finishes (similar to yield)"));
+
+	/* Share yield longjmp handler. */
+
+	thr->heap->lj.type = DUK_LJ_TYPE_NORMAL;
+	DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
+	tv2 = thr->valstack_top - 1;
+	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
+	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, tv2);
+	DUK_TVAL_INCREF(thr, tv2);  /* == &thr->heap->lj.value1 */
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
-	duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
-	duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
-	duk__reconfig_valstack(thr, thr->callstack_top - 1, 1);    /* new top, i.e. callee */
+	DUK_ASSERT(thr->resumer != NULL);
+	DUK_ASSERT(thr->resumer->callstack_top >= 2);  /* Ecmascript activation + Duktape.Thread.resume() activation */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1) != NULL &&
+	           DUK_HOBJECT_IS_NATIVEFUNCTION(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1)) &&
+	           ((duk_hnativefunction *) DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 1))->func == duk_bi_thread_resume);  /* Duktape.Thread.resume() */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 2) != NULL &&
+	           DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->resumer->callstack + thr->resumer->callstack_top - 2)));  /* an Ecmascript function */
+	DUK_ASSERT_DISABLE((thr->resumer->callstack + thr->resumer->callstack_top - 2)->idx_retval >= 0);                /* unsigned */
+	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
+	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
-	DUK_DDD(DUK_DDDPRINT("fast return accepted"));
-	return 1;
+	resumer = thr->resumer;
+
+	duk__handle_yield(thr, resumer, resumer->callstack_top - 2);
+
+	duk_hthread_terminate(thr);  /* updates thread state, minimizes its allocations */
+	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
+
+	thr->resumer = NULL;
+	resumer->state = DUK_HTHREAD_STATE_RUNNING;
+	DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
+#if 0
+	thr = resumer;  /* not needed */
+#endif
+
+	DUK_DD(DUK_DDPRINT("-> return not caught, thread terminated; handle like yield, restart execution in resumer"));
+	DUK_ASSERT(retval == DUK__RETHAND_RESTART);
+	goto wipe_and_return;
+
+ wipe_and_return:
+	/* this is not strictly necessary, but helps debugging */
+	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
+	thr->heap->lj.iserror = 0;
+
+	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
+	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value1);
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value2);
+	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value2);
+	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+
+	return retval;
 }
 
 /*
@@ -3257,62 +3253,39 @@ skip_interrupt:
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			/* duk_small_uint_fast_t c = DUK_DEC_C(ins); */
-			duk_tval *tv_val;
+			duk_small_uint_t ret_result;
 
 			/* A -> flags
 			 * B -> return value reg/const
 			 * C -> currently unused
 			 */
 
-			/* Sync and NULL early, so that both fast/slow return code paths
-			 * share this.  Syncing is not that important for RETURN, but
-			 * NULLing is.
-			 */
 			DUK__SYNC_AND_NULL_CURR_PC();
 
-			/* A fast return avoids full longjmp handling for a set of
-			 * scenarios which hopefully represents the common cases.
-			 * The compiler is responsible for emitting fast returns
-			 * only when they are safe.
+			/* duk__handle_return() is guaranteed never to throw, except
+			 * for potential out-of-memory situations which will then
+			 * propagate out of the executor longjmp handler.
 			 */
-			if (a & DUK_BC_RETURN_FLAG_FAST) {
-				DUK_DDD(DUK_DDDPRINT("FASTRETURN attempt a=%ld b=%ld", (long) a, (long) b));
-
-				if (duk__handle_fast_return(thr,
-				                            (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) ? DUK__REGCONSTP(b) : NULL,
-				                            entry_thread,
-				                            entry_callstack_top)) {
-					DUK_DDD(DUK_DDDPRINT("FASTRETURN success a=%ld b=%ld", (long) a, (long) b));
-					goto restart_execution;
-				}
-			}
-
-			/* No fast return, slow path. */
-			DUK_DDD(DUK_DDDPRINT("SLOWRETURN a=%ld b=%ld", (long) a, (long) b));
 
 			if (a & DUK_BC_RETURN_FLAG_HAVE_RETVAL) {
-				tv_val = DUK__REGCONSTP(b);
-#if defined(DUK_USE_FASTINT)
-				/* Explicit check for fastint downgrade.  Do
-				 * it also for consts for now, which is odd
-				 * but harmless.
-				 */
-				/* XXX: restrict to reg values only? */
-
-				DUK_TVAL_CHKFAST_INPLACE(tv_val);
-#endif
-				duk_push_tval(ctx, tv_val);
+				duk_push_tval(ctx, DUK__REGCONSTP(b));
 			} else {
 				duk_push_undefined(ctx);
 			}
+			ret_result = duk__handle_return(thr,
+				                        entry_thread,
+				                        entry_callstack_top);
+			if (ret_result == DUK__RETHAND_RESTART) {
+				goto restart_execution;
+			}
+			DUK_ASSERT(ret_result == DUK__RETHAND_FINISHED);
 
-			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_RETURN);
-
-			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* in bytecode executor, should always be set */
-			DUK_ASSERT(thr->ptr_curr_pc == NULL);  /* done above */
-			duk_err_longjmp(thr);
-			DUK_UNREACHABLE();
-			break;
+			DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
+			                     (void *) ((thr && thr->heap) ? thr->heap->lj.jmpbuf_ptr : NULL),
+			                     (void *) entry_jmpbuf_ptr));
+			thr->heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
+			DUK_DDD(DUK_DDDPRINT("exiting executor after RETURN handling"));
+			return;
 		}
 
 		case DUK_OP_CALL:
@@ -4237,7 +4210,11 @@ skip_interrupt:
 				duk_context *ctx = (duk_context *) thr;
 				duk_catcher *cat;
 				duk_tval *tv1;
-				duk_small_uint_fast_t cont_type;
+				duk_small_uint_t cont_type;
+				duk_small_uint_t ret_result;
+
+				/* Sync and NULL early. */
+				DUK__SYNC_AND_NULL_CURR_PC();
 
 				DUK_ASSERT(thr->catchstack_top >= 1);
 				DUK_ASSERT(thr->callstack_top >= 1);
@@ -4258,13 +4235,41 @@ skip_interrupt:
 
 				tv1 = thr->valstack + cat->idx_base + 1;  /* type */
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
-				cont_type = (duk_small_uint_fast_t) DUK_TVAL_GET_NUMBER(tv1);
+				cont_type = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
 
 				if (cont_type == DUK_LJ_TYPE_NORMAL) {
 					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'normal' (non-abrupt) completion -> "
 					                     "dismantle catcher, resume execution after ENDFIN"));
 					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
 					/* no need to unwind callstack */
+				} else if (cont_type == DUK_LJ_TYPE_RETURN) {
+					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'return' complation -> dismantle "
+					                     "catcher, handle return, lj.value1=%!T", thr->valstack + cat->idx_base));
+
+					/* Not necessary to unwind catchstack: return handling will
+					 * do it.  The finally flag of 'cat' is no longer set.  The
+					 * catch flag may be set, but it's not checked by return handling.
+					 */
+					DUK_ASSERT(!DUK_CAT_HAS_FINALLY_ENABLED(cat));  /* cleared before entering finally */
+#if 0
+					duk_hthread_catchstack_unwind(thr, thr->catchstack_top - 1);
+#endif
+
+					duk_push_tval(ctx, thr->valstack + cat->idx_base);
+					ret_result = duk__handle_return(thr,
+						                        entry_thread,
+						                        entry_callstack_top);
+					if (ret_result == DUK__RETHAND_RESTART) {
+						goto restart_execution;
+					}
+					DUK_ASSERT(ret_result == DUK__RETHAND_FINISHED);
+
+					DUK_DDD(DUK_DDDPRINT("restore jmpbuf_ptr: %p -> %p",
+					                     (void *) ((thr && thr->heap) ? thr->heap->lj.jmpbuf_ptr : NULL),
+					                     (void *) entry_jmpbuf_ptr));
+					thr->heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
+					DUK_DDD(DUK_DDDPRINT("exiting executor after ENDFIN and RETURN (pseudo) longjmp type"));
+					return;
 				} else {
 					DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%ld -> "
 					                     "dismantle catcher, re-throw error",
@@ -4276,7 +4281,6 @@ skip_interrupt:
 					duk_err_setup_heap_ljstate(thr, (duk_small_int_t) cont_type);
 
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
-					DUK__SYNC_AND_NULL_CURR_PC();
 					duk_err_longjmp(thr);
 					DUK_UNREACHABLE();
 				}
@@ -4505,6 +4509,13 @@ skip_interrupt:
 	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "internal error in bytecode executor");
 #endif
 }
+
+#undef DUK__LONGJMP_RESTART
+#undef DUK__LONGJMP_FINISHED
+#undef DUK__LONGJMP_RETHROW
+
+#undef DUK__RETHAND_RESTART
+#undef DUK__RETHAND_FINISHED
 
 #undef DUK__INTERNAL_ERROR
 #undef DUK__SYNC_CURR_PC

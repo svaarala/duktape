@@ -1147,6 +1147,10 @@ Planned
 * Fix "debugger" statement line number off-by-one so that the debugger now
   correctly pauses on the debugger statement rather than after it (GH-347)
 
+* Internal performance improvement: rework RETURN opcode handling to avoid
+  longjmp() calls, improving performance slightly on ordinary platforms and
+  significantly on Emscripten (GH-342, GH-345)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
