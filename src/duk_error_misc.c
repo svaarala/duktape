@@ -74,8 +74,9 @@ DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t l
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	/* If something is thrown with the debugger attached and nobody will
 	 * catch it, execution is paused before the longjmp, turning over
-	 * control to the debug client. This allows local state to be examined
-	 * before the stack is unwound.
+	 * control to the debug client.  This allows local state to be examined
+	 * before the stack is unwound.  Errors are not intercepted when debug
+	 * message loop is active (e.g. for Eval).
 	 */
 
 	/* XXX: Allow customizing the pause and notify behavior at runtime
@@ -83,7 +84,9 @@ DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t l
 	 * config options.
 	 */
 #if defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && lj_type == DUK_LJ_TYPE_THROW) {
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) &&
+	    !thr->heap->dbg_processing &&
+	    lj_type == DUK_LJ_TYPE_THROW) {
 		duk_context *ctx = (duk_context *) thr;
 		duk_bool_t fatal;
 		duk_hobject *h_obj;
