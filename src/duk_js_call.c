@@ -29,7 +29,7 @@ DUK_LOCAL void duk__interrupt_fixup(duk_hthread *thr, duk_hthread *entry_curr_th
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-#if 0
+#if defined(DUK_USE_INTERRUPT_DEBUG_FIXUP)
 	if (entry_curr_thread == NULL) {
 		thr->interrupt_init = thr->interrupt_init - thr->interrupt_counter;
 		thr->heap->inst_count_interrupt += thr->interrupt_init;

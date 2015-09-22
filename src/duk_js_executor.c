@@ -1730,9 +1730,19 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	/*
 	 *  Avoid nested calls.  Concretely this happens during debugging, e.g.
 	 *  when we eval() an expression.
+	 *
+	 *  Also don't interrupt if we're currently doing debug processing
+	 *  (which can be initiated outside the bytecode executor) as this
+	 *  may cause the debugger to be called recursively.  Check required
+	 *  for correct operation of throw intercept and other "exotic" halting
+	 * scenarios.
 	 */
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (DUK_HEAP_HAS_INTERRUPT_RUNNING(thr->heap) || thr->heap->dbg_processing) {
+#else
 	if (DUK_HEAP_HAS_INTERRUPT_RUNNING(thr->heap)) {
+#endif
 		DUK_DD(DUK_DDPRINT("nested executor interrupt, ignoring"));
 
 		/* Set a high interrupt counter; the original executor
@@ -2271,19 +2281,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		 * whenever a thread switch occurs by the DUK_HEAP_SWITCH_THREAD() macro.
 		 */
 #if defined(DUK_USE_INTERRUPT_COUNTER)
-
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
-		if (thr->heap->dbg_processing) {
-			/* Don't interrupt if we're currently doing debug processing as
-			 * this may cause the debugger to be called recursively. Check required
-			 * for correct operation of throw intercept and other "exotic" halting
-			 * scenarios.
-			 */
-
-			goto skip_interrupt;
-		}
-#endif
-
 		int_ctr = thr->interrupt_counter;
 		if (DUK_LIKELY(int_ctr > 0)) {
 			thr->interrupt_counter = int_ctr - 1;
@@ -2318,10 +2315,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				goto restart_execution;
 			}
 		}
-
-skip_interrupt:
-
-#endif
+#endif  /* DUK_USE_INTERRUPT_COUNTER */
 #if defined(DUK_USE_INTERRUPT_COUNTER) && defined(DUK_USE_DEBUG)
 		thr->heap->inst_count_exec++;
 #endif
