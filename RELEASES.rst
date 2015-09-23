@@ -1151,6 +1151,10 @@ Planned
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
 
+* Internal performance improvement: rework BREAK and CONTINUE opcode handling
+  to avoid longjmp() calls, improving performance slightly on ordinary
+  platforms and significantly on Emscripten (GH-348)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
