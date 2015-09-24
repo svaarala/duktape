@@ -3,7 +3,7 @@ function test() {
     for (var i = 0; i < 1e3; i++) {
         arr[i] = i;
     }
-    for (var i = 0; i < 3e4; i++) {
+    for (var i = 0; i < 1e5; i++) {
         // Each .forEach() call is a native call so that return 123 causes a
         // return-to-native situation which was previously a longjmp.
 
