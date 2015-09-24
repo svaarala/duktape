@@ -2657,8 +2657,6 @@ Various triggers for pausing could be added:
 
 * Pause on next statement
 
-* Pause on error about the be thrown
-
 * Pause on yield/resume
 
 * Pause on execution timeout
