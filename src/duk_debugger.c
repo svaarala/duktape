@@ -1700,6 +1700,7 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
+	DUK_ASSERT(thr->heap->dbg_processing == 0);
 
 	DUK_HEAP_SET_PAUSED(thr->heap);
 
