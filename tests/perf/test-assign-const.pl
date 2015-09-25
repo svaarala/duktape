@@ -1,5 +1,6 @@
 sub test {
     my $i;
+    my $t;
 
     $i = 0;
     for ($i = 0; $i < 1e7; $i++) {
