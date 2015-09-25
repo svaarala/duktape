@@ -1777,7 +1777,7 @@ DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  * code (it is checked as it is used).
  */
 #define DUK__IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
-#define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
+#define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result (or a const if allowed) */
 #define DUK__IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
 
 /* XXX: some code might benefit from DUK__SETTEMP_IFTEMP(ctx,x) */
@@ -2048,26 +2048,36 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 		}  /* end switch */
 	}
 	case DUK_ISPEC_REGCONST: {
-		if ((x->regconst & DUK__CONST_MARKER) && !(flags & DUK__IVAL_FLAG_ALLOW_CONST)) {
-			duk_reg_t dest = (forced_reg >= 0 ? forced_reg : DUK__ALLOCTEMP(comp_ctx));
-			duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, (duk_regconst_t) dest, x->regconst);
-			return (duk_regconst_t) dest;
-		} else {
-			if (forced_reg >= 0) {
-				if (x->regconst != (duk_regconst_t) forced_reg) {
-					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, forced_reg, x->regconst);
-				}
-				return (duk_regconst_t) forced_reg;
+		if (forced_reg >= 0) {
+			if (x->regconst & DUK__CONST_MARKER) {
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, forced_reg, x->regconst);
+			} else if (x->regconst != (duk_regconst_t) forced_reg) {
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, forced_reg, x->regconst);
 			} else {
-				if ((flags & DUK__IVAL_FLAG_REQUIRE_TEMP) && !DUK__ISTEMP(comp_ctx, x->regconst)) {
-					duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
-					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, (duk_regconst_t) dest, x->regconst);
-					return (duk_regconst_t) dest;
-				} else {
-					return x->regconst;
-				}
+				; /* already in correct reg */
+			}
+			return (duk_regconst_t) forced_reg;
+		}
+
+		DUK_ASSERT(forced_reg < 0);
+		if (x->regconst & DUK__CONST_MARKER) {
+			if (!(flags & DUK__IVAL_FLAG_ALLOW_CONST)) {
+				duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, (duk_regconst_t) dest, x->regconst);
+				return (duk_regconst_t) dest;
+			} else {
+				return x->regconst;
 			}
 		}
+
+		DUK_ASSERT(forced_reg < 0 && !(x->regconst & DUK__CONST_MARKER));
+		if ((flags & DUK__IVAL_FLAG_REQUIRE_TEMP) && !DUK__ISTEMP(comp_ctx, x->regconst)) {
+			duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
+			duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, (duk_regconst_t) dest, x->regconst);
+			return (duk_regconst_t) dest;
+		}
+
+		return x->regconst;
 	}
 	default: {
 		break;
