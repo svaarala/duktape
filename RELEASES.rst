@@ -1147,6 +1147,10 @@ Planned
 * Fix "debugger" statement line number off-by-one so that the debugger now
   correctly pauses on the debugger statement rather than after it (GH-347)
 
+* Fix assignment expression handling of the right-hand-side value when that
+  value is a register-bound variable which is used and mutated in the rest
+  of the expression (GH-381)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)

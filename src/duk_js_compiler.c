@@ -146,10 +146,11 @@ duk_regconst_t duk__ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
                                           duk_small_uint_t flags);
 DUK_LOCAL_DECL duk_reg_t duk__ivalue_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
 #if 0  /* unused */
-DUK_LOCAL_DECL duk_reg_t duk__ivalue_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
+DUK_LOCAL_DECL duk_reg_t duk__ivalue_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
 #endif
 DUK_LOCAL_DECL void duk__ivalue_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x, duk_int_t forced_reg);
 DUK_LOCAL_DECL duk_regconst_t duk__ivalue_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
+DUK_LOCAL_DECL duk_regconst_t duk__ivalue_totempconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
 
 /* identifier handling */
 DUK_LOCAL_DECL duk_reg_t duk__lookup_active_register_binding(duk_compiler_ctx *comp_ctx);
@@ -172,17 +173,20 @@ DUK_LOCAL_DECL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_s
 DUK_LOCAL_DECL void duk__exprtop(duk_compiler_ctx *ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 
 /* convenience helpers */
-DUK_LOCAL_DECL duk_reg_t duk__expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #if 0  /* unused */
-DUK_LOCAL_DECL duk_reg_t duk__expr_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
+DUK_LOCAL_DECL duk_reg_t duk__expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
+#endif
+#if 0  /* unused */
+DUK_LOCAL_DECL duk_reg_t duk__expr_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #endif
 DUK_LOCAL_DECL void duk__expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags, duk_reg_t forced_reg);
 DUK_LOCAL_DECL duk_regconst_t duk__expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
+DUK_LOCAL_DECL duk_regconst_t duk__expr_totempconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 DUK_LOCAL_DECL void duk__expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 DUK_LOCAL_DECL void duk__expr_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 DUK_LOCAL_DECL duk_reg_t duk__exprtop_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #if 0  /* unused */
-DUK_LOCAL_DECL duk_reg_t duk__exprtop_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
+DUK_LOCAL_DECL duk_reg_t duk__exprtop_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
 #endif
 DUK_LOCAL_DECL void duk__exprtop_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags, duk_reg_t forced_reg);
 DUK_LOCAL_DECL duk_regconst_t duk__exprtop_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags);
@@ -1777,7 +1781,7 @@ DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  * code (it is checked as it is used).
  */
 #define DUK__IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
-#define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result */
+#define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result (or a const if allowed) */
 #define DUK__IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
 
 /* XXX: some code might benefit from DUK__SETTEMP_IFTEMP(ctx,x) */
@@ -2048,26 +2052,34 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 		}  /* end switch */
 	}
 	case DUK_ISPEC_REGCONST: {
-		if ((x->regconst & DUK__CONST_MARKER) && !(flags & DUK__IVAL_FLAG_ALLOW_CONST)) {
-			duk_reg_t dest = (forced_reg >= 0 ? forced_reg : DUK__ALLOCTEMP(comp_ctx));
-			duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, (duk_regconst_t) dest, x->regconst);
-			return (duk_regconst_t) dest;
-		} else {
-			if (forced_reg >= 0) {
-				if (x->regconst != (duk_regconst_t) forced_reg) {
-					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, forced_reg, x->regconst);
-				}
-				return (duk_regconst_t) forced_reg;
+		if (forced_reg >= 0) {
+			if (x->regconst & DUK__CONST_MARKER) {
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, forced_reg, x->regconst);
+			} else if (x->regconst != (duk_regconst_t) forced_reg) {
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, forced_reg, x->regconst);
 			} else {
-				if ((flags & DUK__IVAL_FLAG_REQUIRE_TEMP) && !DUK__ISTEMP(comp_ctx, x->regconst)) {
-					duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
-					duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, (duk_regconst_t) dest, x->regconst);
-					return (duk_regconst_t) dest;
-				} else {
-					return x->regconst;
-				}
+				; /* already in correct reg */
 			}
+			return (duk_regconst_t) forced_reg;
 		}
+
+		DUK_ASSERT(forced_reg < 0);
+		if (x->regconst & DUK__CONST_MARKER) {
+			if (!(flags & DUK__IVAL_FLAG_ALLOW_CONST)) {
+				duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
+				duk__emit_a_bc(comp_ctx, DUK_OP_LDCONST, (duk_regconst_t) dest, x->regconst);
+				return (duk_regconst_t) dest;
+			}
+			return x->regconst;
+		}
+
+		DUK_ASSERT(forced_reg < 0 && !(x->regconst & DUK__CONST_MARKER));
+		if ((flags & DUK__IVAL_FLAG_REQUIRE_TEMP) && !DUK__ISTEMP(comp_ctx, x->regconst)) {
+			duk_reg_t dest = DUK__ALLOCTEMP(comp_ctx);
+			duk__emit_a_bc(comp_ctx, DUK_OP_LDREG, (duk_regconst_t) dest, x->regconst);
+			return (duk_regconst_t) dest;
+		}
+		return x->regconst;
 	}
 	default: {
 		break;
@@ -2366,7 +2378,7 @@ DUK_LOCAL duk_reg_t duk__ivalue_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x)
 }
 
 #if 0  /* unused */
-DUK_LOCAL duk_reg_t duk__ivalue_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
+DUK_LOCAL duk_reg_t duk__ivalue_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
 	return duk__ivalue_toregconst_raw(comp_ctx, x, -1, DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 }
 #endif
@@ -2378,6 +2390,10 @@ DUK_LOCAL void duk__ivalue_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 
 DUK_LOCAL duk_regconst_t duk__ivalue_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
 	return duk__ivalue_toregconst_raw(comp_ctx, x, -1, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
+}
+
+DUK_LOCAL duk_regconst_t duk__ivalue_totempconst(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
+	return duk__ivalue_toregconst_raw(comp_ctx, x, -1, DUK__IVAL_FLAG_ALLOW_CONST | DUK__IVAL_FLAG_REQUIRE_TEMP /*flags*/);
 }
 
 /* The issues below can be solved with better flags */
@@ -4258,10 +4274,16 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			duk_regconst_t rc_res;
 			duk_reg_t reg_temp;
 
-			/* already in fluly evaluated form */
-			DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE);
+			/* The value that becomes the expression value must be either
+			 * a constant or a fresh temporary (which won't change value
+			 * later).  A register-bound (non-temp) register is not always
+			 * acceptable because it may change during evaluation of other
+			 * parts of the expression, see e.g. test-dev-assign-expr.js
+			 * and test-bug-assign-mutate-gh381.js.
+			 */
 
-			duk__expr_toreg(comp_ctx, res, args_rbp /*rbp_flags*/);
+			DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE);
+			duk__expr_totempconst(comp_ctx, res, args_rbp /*rbp_flags*/);
 			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 
 			h_varname = duk_get_hstring(ctx, left->x1.valstack_idx);
@@ -4303,10 +4325,17 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			}
 
 			if (reg_varbind >= 0) {
-				duk__emit_a_bc(comp_ctx,
-				               DUK_OP_LDREG,
-				               (duk_regconst_t) reg_varbind,
-				               rc_res);
+				if (DUK__ISCONST(comp_ctx, rc_res)) {
+					duk__emit_a_bc(comp_ctx,
+					               DUK_OP_LDCONST,
+					               (duk_regconst_t) reg_varbind,
+					               rc_res);
+				} else {
+					duk__emit_a_bc(comp_ctx,
+					               DUK_OP_LDREG,
+					               (duk_regconst_t) reg_varbind,
+					               rc_res);
+				}
 			} else {
 				/* Only a reg fits into 'A' and reg_res may be a const in
 				 * straight assignment.
@@ -4645,15 +4674,17 @@ DUK_LOCAL void duk__exprtop(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_sma
  * Each helper needs at least 2-3 calls to make it worth while to wrap.
  */
 
+#if 0  /* unused */
 DUK_LOCAL duk_reg_t duk__expr_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
 	duk__expr(comp_ctx, res, rbp_flags);
 	return duk__ivalue_toreg(comp_ctx, res);
 }
+#endif
 
 #if 0  /* unused */
-DUK_LOCAL duk_reg_t duk__expr_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
+DUK_LOCAL duk_reg_t duk__expr_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
 	duk__expr(comp_ctx, res, rbp_flags);
-	return duk__ivalue_totempreg(comp_ctx, res);
+	return duk__ivalue_totemp(comp_ctx, res);
 }
 #endif
 
@@ -4666,6 +4697,11 @@ DUK_LOCAL void duk__expr_toforcedreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res
 DUK_LOCAL duk_regconst_t duk__expr_toregconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
 	duk__expr(comp_ctx, res, rbp_flags);
 	return duk__ivalue_toregconst(comp_ctx, res);
+}
+
+DUK_LOCAL duk_regconst_t duk__expr_totempconst(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
+	duk__expr(comp_ctx, res, rbp_flags);
+	return duk__ivalue_totempconst(comp_ctx, res);
 }
 
 DUK_LOCAL void duk__expr_toplain(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
@@ -4684,9 +4720,9 @@ DUK_LOCAL duk_reg_t duk__exprtop_toreg(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 }
 
 #if 0  /* unused */
-DUK_LOCAL duk_reg_t duk__exprtop_totempreg(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
+DUK_LOCAL duk_reg_t duk__exprtop_totemp(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
 	duk__exprtop(comp_ctx, res, rbp_flags);
-	return duk__ivalue_totempreg(comp_ctx, res);
+	return duk__ivalue_totemp(comp_ctx, res);
 }
 #endif
 
