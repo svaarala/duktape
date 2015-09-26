@@ -3,6 +3,8 @@
  *  a dispatch and a tval copy for a heap-allocated tval.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var a, b, c, d;
     var i;

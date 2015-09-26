@@ -2,6 +2,8 @@
  *  Test JSON number parsing (decode loop) for fast path integers.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var arr = [];
     var i;

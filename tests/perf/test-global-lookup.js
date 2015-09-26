@@ -3,6 +3,8 @@
  *  "print('hello');" go through a slow path GETVAR lookup.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i;
 

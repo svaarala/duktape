@@ -2,6 +2,8 @@
  *  Basic property write performance
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var obj = { xxx1: 1, xxx2: 2, xxx3: 3, xxx4: 4, foo: 123 };
     var i;

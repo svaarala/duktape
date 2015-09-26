@@ -1,3 +1,5 @@
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var b = new Buffer(4096);
     var i;

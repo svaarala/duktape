@@ -2,6 +2,8 @@
  *  Loading integer constant to register.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i;
     var t;
