@@ -2100,12 +2100,14 @@ DUK_EXTERNAL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, 
 	return duk_get_lstring(ctx, index, out_len);
 }
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_EXTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index) {
 	(void) duk_safe_to_string(ctx, index);
 	DUK_ASSERT(duk_is_string(ctx, index));
 	DUK_ASSERT(duk_get_hstring(ctx, index) != NULL);
 	return duk_get_hstring(ctx, index);
 }
+#endif
 
 /* XXX: other variants like uint, u32 etc */
 DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped) {
