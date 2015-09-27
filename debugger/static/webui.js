@@ -23,21 +23,24 @@ var sourceEditedLines = [];         // line numbers which have been modified
 var sourceUpdateInterval = null;    // timer for updating source view
 var sourceFetchXhr = null;          // current AJAX request for fetching a source file (if any)
 var forceButtonUpdate = false;      // hack to reset button states
+var bytecodeDialogOpen = false;     // bytecode dialog active
+var bytecodeIdxHighlight = null;    // index of currently highlighted line (or null)
+var bytecodeIdxInstr = 0;           // index to first line of bytecode instructions
 
 // Execution state
-var prevState = null;             // previous execution state ('paused', 'running', etc)
-var prevAttached = null;          // previous debugger attached state (true, false, null)
-var currFileName = null;          // current filename being executed
-var currFuncName = null;          // current function name being executed
-var currLine = 0;                 // current line being executed
-var currPc = 0;                   // current bytecode PC being executed
-var currState = 0;                // current execution state ('paused', 'running', 'detached', etc)
-var currAttached = false;         // current debugger attached state (true or false)
-var currLocals = [];              // current local variables
-var currCallstack = [];           // current callstack (from top to bottom)
-var currBreakpoints = [];         // current breakpoints
-var startedRunning = 0;           // timestamp when last started running (if running)
-                                  // (used to grey out the source file if running for long enough)
+var prevState = null;               // previous execution state ('paused', 'running', etc)
+var prevAttached = null;            // previous debugger attached state (true, false, null)
+var currFileName = null;            // current filename being executed
+var currFuncName = null;            // current function name being executed
+var currLine = 0;                   // current line being executed
+var currPc = 0;                     // current bytecode PC being executed
+var currState = 0;                  // current execution state ('paused', 'running', 'detached', etc)
+var currAttached = false;           // current debugger attached state (true or false)
+var currLocals = [];                // current local variables
+var currCallstack = [];             // current callstack (from top to bottom)
+var currBreakpoints = [];           // current breakpoints
+var startedRunning = 0;             // timestamp when last started running (if running)
+                                    // (used to grey out the source file if running for long enough)
 
 /*
  *  Helpers
@@ -97,6 +100,15 @@ function doSourceUpdate() {
             sourceEditedLines.push(highlightLine);
             elem.classList.add('highlight');
         }
+    }
+
+    // Bytecode dialog highlight
+    if (loadedFileExecuting && bytecodeDialogOpen && bytecodeIdxHighlight !== bytecodeIdxInstr + currPc) {
+        if (typeof bytecodeIdxHighlight === 'number') {
+            $('#bytecode-preformatted div')[bytecodeIdxHighlight].classList.remove('highlight');
+        }
+        bytecodeIdxHighlight = bytecodeIdxInstr + currPc;
+        $('#bytecode-preformatted div')[bytecodeIdxHighlight].classList.add('highlight');
     }
 
     // If no-one requested us to scroll to a specific line, finish.
@@ -280,6 +292,11 @@ socket.on('basic-info', function (msg) {
 });
 
 socket.on('exec-status', function (msg) {
+    // Not 100% reliable if callstack has several functions of the same name
+    if (bytecodeDialogOpen && (currFileName != msg.fileName || currFuncName != msg.funcName)) {
+        socket.emit('get-bytecode', {});
+    }
+
     currFileName = msg.fileName;
     currFuncName = msg.funcName;
     currLine = msg.line;
@@ -455,8 +472,20 @@ socket.on('getvar-result', function (msg) {
 });
 
 socket.on('bytecode', function (msg) {
-    $('#bytecode-preformatted').text(msg.preformatted);
-    $('#bytecode-dialog').dialog('open');
+    var elem, div;
+    var div;
+
+    elem = $('#bytecode-preformatted');
+    elem.empty();
+
+    msg.preformatted.split('\n').forEach(function (line, idx) {
+        div = $('<div></div>');
+        div.text(line);
+        elem.append(div);
+    });
+
+    bytecodeIdxHighlight = null;
+    bytecodeIdxInstr = msg.idxPreformattedInstructions;
 });
 
 $('#stepinto-button').click(function () {
@@ -495,6 +524,12 @@ $('#about-button').click(function () {
 });
 
 $('#show-bytecode-button').click(function () {
+    bytecodeDialogOpen = true;
+    $('#bytecode-dialog').dialog('open');
+
+    elem = $('#bytecode-preformatted');
+    elem.empty().text('Loading bytecode...');
+
     socket.emit('get-bytecode', {});
 });
 
@@ -702,8 +737,13 @@ $(document).ready(function () {
         autoOpen: false,
         hide: 'fade',  // puff
         show: 'fade',  // slide, puff
-        width: 1000,
-        height: 800
+        width: 700,
+        height: 600,
+        close: function () {
+            bytecodeDialogOpen = false;
+            bytecodeIdxHighlight = null;
+            bytecodeIdxInstr = 0;
+        }
     });
 
     // http://diveintohtml5.info/storage.html

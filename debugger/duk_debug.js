@@ -1403,6 +1403,7 @@ Debugger.prototype.sendGetBytecodeRequest = function () {
         var bcode;
         var preformatted;
         var ret;
+        var idxPreformattedInstructions;
 
         //console.log(JSON.stringify(msg));
 
@@ -1432,6 +1433,7 @@ Debugger.prototype.sendGetBytecodeRequest = function () {
             preformatted.push('; c' + i + ' ' + JSON.stringify(v));
         });
         preformatted.push('');
+        idxPreformattedInstructions = preformatted.length;
         bcode.forEach(function (v) {
             preformatted.push(v.str);
         });
@@ -1441,7 +1443,8 @@ Debugger.prototype.sendGetBytecodeRequest = function () {
             constants: consts,
             functions: funcs,
             bytecode: bcode,
-            preformatted: preformatted
+            preformatted: preformatted,
+            idxPreformattedInstructions: idxPreformattedInstructions
         };
 
         return ret;
