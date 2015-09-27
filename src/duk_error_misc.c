@@ -5,10 +5,11 @@
 #include "duk_internal.h"
 
 /*
- * Helper to walk the thread chain and see if there is an active error
- * catcher. Protected calls aren't considered.
+ *  Helper to walk the thread chain and see if there is an active error
+ *  catcher.  Protected calls or finally blocks aren't considered catching.
  */
 
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	/*
 	 * XXX: As noted above, a protected API call won't be counted as a
@@ -32,6 +33,7 @@ DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	}
 	return 0;
 }
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
  *  Get prototype object for an integer error code.

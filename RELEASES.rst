@@ -1159,6 +1159,10 @@ Planned
   to avoid longjmp() calls, improving performance slightly on ordinary
   platforms and significantly on Emscripten (GH-348)
 
+* Internal performance improvement: improve bytecode emitted when compiling
+  assignment statements with an identifier left-hand-side value, especially
+  when the assignment is a top level expression like "x = y + z;" (GH-380)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
