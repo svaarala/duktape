@@ -15,7 +15,16 @@ function test() {
     var regexpdata = '/' + txt + '/';   // periods will be wildcards
     print(regexpdata.length);
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 100; i++) {
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
+        void new RegExp(regexpdata);
         void new RegExp(regexpdata);
     }
 }

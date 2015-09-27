@@ -7,7 +7,16 @@ function test() {
     var i;
     var ign;
 
-    for (i = 0; i < 1e8; i++) {
+    for (i = 0; i < 1e7; i++) {
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
+        ign = arr[7];
         ign = arr[7];
     }
 }

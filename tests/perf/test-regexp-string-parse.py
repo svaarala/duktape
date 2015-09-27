@@ -9,7 +9,16 @@ def test():
 	regexpdata = '/' + txt + '/'
 	print(len(regexpdata))
 
-	for i in xrange(1000):
+	for i in xrange(100):
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
+		ign = re.compile(regexpdata)
 		ign = re.compile(regexpdata)
 
 test()

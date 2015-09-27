@@ -3,7 +3,16 @@ function test()
         return
     end
 
-    for i=1,1e8 do
+    for i=1,1e7 do
+        f()
+        f()
+        f()
+        f()
+        f()
+        f()
+        f()
+        f()
+        f()
         f()
     end
 end
