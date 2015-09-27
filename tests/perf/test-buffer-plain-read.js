@@ -4,7 +4,16 @@ function test() {
 
     print(typeof b);
 
-    for (i = 0; i < 1e8; i++) {
+    for (i = 0; i < 1e7; i++) {
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
+        void b[100];
         void b[100];
     }
 }
