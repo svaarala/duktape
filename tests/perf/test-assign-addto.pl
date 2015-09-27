@@ -1,6 +1,6 @@
 sub test {
     my $i;
-    my $t;
+    my $t = 0;
     my $a = 10;
     my $b = 20;
 
