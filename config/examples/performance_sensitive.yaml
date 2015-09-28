@@ -3,6 +3,7 @@
 
 # You should choose the fastest setjmp/longjmp for your platform.
 
+DUK_USE_PACKED_TVAL: false  # packed duk_tval slower in most cases
 DUK_USE_FASTINT: true
 DUK_USE_VALSTACK_UNSAFE: true
 DUK_USE_FAST_REFCOUNT_DEFAULT: true
@@ -13,3 +14,4 @@ DUK_USE_JSON_DECNUMBER_FASTPATH: true
 DUK_USE_JSON_EATWHITE_FASTPATH: true
 DUK_USE_INTERRUPT_COUNTER: false
 DUK_USE_DEBUGGER_SUPPORT: false
+#DUK_USE_EXEC_FUN_LOCAL: test both values, marginal benefit
