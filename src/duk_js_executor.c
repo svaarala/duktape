@@ -2261,16 +2261,15 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 #endif
 
 #if defined(DUK_USE_ASSERTIONS)
-		/* Quite heavy assert: check that valstack is in correctly
-		 * initialized state.  Improper shuffle instructions can
-		 * write beyond valstack_end so this check catches them in
-		 * the act.
+		/* Quite heavy assert: check valstack policy.  Improper
+		 * shuffle instructions can write beyond valstack_top/end
+		 * so this check catches them in the act.
 		 */
 		{
 			duk_tval *tv;
 			tv = thr->valstack_top;
 			while (tv != thr->valstack_end) {
-				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(tv));
+				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(tv));
 				tv++;
 			}
 		}

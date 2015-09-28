@@ -459,6 +459,7 @@ struct duk_tval_struct {
 #define DUK_TVAL_IS_OBJECT(tv)             ((tv)->t == DUK_TAG_OBJECT)
 #define DUK_TVAL_IS_BUFFER(tv)             ((tv)->t == DUK_TAG_BUFFER)
 
+/* XXX: rework to make this into a bit test? Matters to refcount code. */
 #define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t >= DUK_TAG_STRING)
 
 #if defined(DUK_USE_FASTINT)

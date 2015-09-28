@@ -117,7 +117,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_tval *tv;
 
 		tv = t->valstack;
-		while (tv < t->valstack_end) {
+		while (tv < t->valstack_top) {
 			duk_tval_decref(thr, tv);
 			tv++;
 		}

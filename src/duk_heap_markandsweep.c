@@ -105,7 +105,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_tval *tv;
 
 		tv = t->valstack;
-		while (tv < t->valstack_end) {
+		while (tv < t->valstack_top) {
 			duk__mark_tval(heap, tv);
 			tv++;
 		}

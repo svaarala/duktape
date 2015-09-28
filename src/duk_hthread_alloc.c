@@ -31,6 +31,9 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	}
 	DUK_MEMZERO(thr->valstack, alloc_size);
 	thr->valstack_end = thr->valstack + DUK_VALSTACK_INITIAL_SIZE;
+#if !defined(DUK_USE_PREFER_SIZE)
+	thr->valstack_size = DUK_VALSTACK_INITIAL_SIZE;
+#endif
 	thr->valstack_bottom = thr->valstack;
 	thr->valstack_top = thr->valstack;
 
