@@ -63,6 +63,11 @@ typedef duk_int_t duk_idx_t;
 #define DUK_IDX_MIN               DUK_INT_MIN
 #define DUK_IDX_MAX               DUK_INT_MAX
 
+/* Unsigned index variant. */
+typedef duk_uint_t duk_uidx_t;
+#define DUK_UIDX_MIN              DUK_UINT_MIN
+#define DUK_UIDX_MAX              DUK_UINT_MAX
+
 /* Array index values, could be exact 32 bits.
  * Currently no need for signed duk_arridx_t.
  */

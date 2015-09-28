@@ -40,3 +40,7 @@ DUK_USE_STRTAB_CHAIN_SIZE: 128
 # Consider to reduce code footprint at the expense of more erratic RAM usage
 #DUK_USE_REFERENCE_COUNTING: false
 #DUK_USE_DOUBLE_LINKED_HEAP: false
+
+# Consider to reduce code footprint at the expense of less safeguards against
+# bugs in calling C code
+#DUK_USE_VALSTACK_UNSAFE: true
