@@ -358,8 +358,12 @@
 	margin: 10px 0 10px 0;
 }
 #bytecode-dialog pre {
-	font: 14pt monospace;
+	font: 10pt monospace;
 	color: #000000;
+}
+#bytecode-dialog div.highlight {
+	background: #888888;
+	color: #ffffff;
 }
 
 #eval {
