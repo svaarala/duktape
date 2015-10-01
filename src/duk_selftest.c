@@ -208,15 +208,12 @@ DUK_LOCAL void duk__selftest_double_aliasing(void) {
 	 * It's not an issue because the failure should only affect packed
 	 * duk_tval representation, which is not used with Emscripten.
 	 */
-#if defined(DUK_USE_NO_DOUBLE_ALIASING_SELFTEST)
-#if defined(DUK_USE_PACKED_TVAL)
-#error inconsistent defines: skipping double aliasing selftest when using packed duk_tval
-#endif
+#if !defined(DUK_USE_PACKED_TVAL)
+	DUK_D(DUK_DPRINT("skip double aliasing self test when duk_tval is not packed"));
 	return;
 #endif
 
-	/* Test signaling NaN and alias assignment in all
-	 * endianness combinations.
+	/* Test signaling NaN and alias assignment in all endianness combinations.
 	 */
 
 	/* little endian */

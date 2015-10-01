@@ -89,18 +89,6 @@ DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int
 	DUK_MEMZERO((void *) duk__debug_buf, (size_t) DUK__DEBUG_BUFSIZE);
 	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
-#ifdef DUK_USE_DPRINT_RDTSC
-	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%ld (%s):%s %s%s\n",
-	            (const char *) duk__get_term_1(level),
-	            (const char *) duk__get_level_string(level),
-	            (unsigned long long) DUK_USE_RDTSC(),  /* match the inline asm in duk_features.h */
-	            (const char *) file,
-	            (long) line,
-	            (const char *) func,
-	            (const char *) duk__get_term_2(level),
-	            (const char *) duk__debug_buf,
-	            (const char *) duk__get_term_3(level));
-#else
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%ld (%s):%s %s%s\n",
 	            (const char *) duk__get_term_1(level),
 	            (const char *) duk__get_level_string(level),
@@ -110,7 +98,6 @@ DUK_INTERNAL void duk_debug_log(duk_small_int_t level, const char *file, duk_int
 	            (const char *) duk__get_term_2(level),
 	            (const char *) duk__debug_buf,
 	            (const char *) duk__get_term_3(level));
-#endif
 	DUK_FFLUSH(DUK_STDERR);
 
 	va_end(ap);
@@ -132,18 +119,6 @@ DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 	DUK_MEMZERO((void *) duk__debug_buf, (size_t) DUK__DEBUG_BUFSIZE);
 	duk_debug_vsnprintf(duk__debug_buf, DUK__DEBUG_BUFSIZE - 1, fmt, ap);
 
-#ifdef DUK_USE_DPRINT_RDTSC
-	DUK_FPRINTF(DUK_STDERR, "%s[%s] <%llu> %s:%s (%s):%s %s%s\n",
-	            (const char *) duk__get_term_1(level),
-	            (const char *) duk__get_level_string(duk_debug_level_stash),
-	            (unsigned long long) DUK_USE_RDTSC(),  /* match duk_features.h */
-	            (const char *) duk_debug_file_stash,
-	            (const char *) duk_debug_line_stash,
-	            (const char *) duk_debug_func_stash,
-	            (const char *) duk__get_term_2(level),
-	            (const char *) duk__debug_buf,
-	            (const char *) duk__get_term_3(level));
-#else
 	DUK_FPRINTF(DUK_STDERR, "%s[%s] %s:%s (%s):%s %s%s\n",
 	            (const char *) duk__get_term_1(level),
 	            (const char *) duk__get_level_string(duk_debug_level_stash),
@@ -153,7 +128,6 @@ DUK_INTERNAL void duk_debug_log(const char *fmt, ...) {
 	            (const char *) duk__get_term_2(level),
 	            (const char *) duk__debug_buf,
 	            (const char *) duk__get_term_3(level));
-#endif
 	DUK_FFLUSH(DUK_STDERR);
 
 	va_end(ap);

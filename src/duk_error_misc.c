@@ -9,7 +9,8 @@
  *  catcher.  Protected calls or finally blocks aren't considered catching.
  */
 
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
+#if defined(DUK_USE_DEBUGGER_SUPPORT) && \
+    (defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT))
 DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	/*
 	 * XXX: As noted above, a protected API call won't be counted as a
@@ -33,7 +34,7 @@ DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	}
 	return 0;
 }
-#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#endif  /* DUK_USE_DEBUGGER_SUPPORT && (DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT) */
 
 /*
  *  Get prototype object for an integer error code.

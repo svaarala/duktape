@@ -925,7 +925,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 		 */
 		duk_hbuffer *h_srcbuf;
 		h_srcbuf = DUK_TVAL_GET_BUFFER(tv);
-		elem_length_signed = DUK_HBUFFER_GET_SIZE(h_srcbuf);
+		elem_length_signed = (duk_int_t) DUK_HBUFFER_GET_SIZE(h_srcbuf);
 		copy_mode = 2;  /* XXX: could add fast path for u8 compatible views */
 	} else {
 		/* Non-object argument is simply int coerced, matches

@@ -36,7 +36,10 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx) {
 #if defined(DUK_USE_DATE_NOW_TIME)
 /* Not a very good provider: only full seconds are available. */
 DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(duk_context *ctx) {
-	time_t t = time(NULL);
+	time_t t;
+
+	DUK_UNREF(ctx);
+	t = time(NULL);
 	return ((duk_double_t) t) * 1000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */

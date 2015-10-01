@@ -200,6 +200,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap);
 
+	curr_limit = 0;  /* suppress warning, not used */
 	for (round_no = 0; ; round_no++) {
 		curr = heap->heap_allocated;
 		count_all = 0;
@@ -482,18 +483,18 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 		DUK_D(DUK_DPRINT(t "=[%ld,%ld]=[%lf,%lf]", \
 		                 (long) (a), (long) (b), \
 		                 (double) (a), (double) (b))); \
-	} while(0)
+	} while (0)
 #define DUK__DUMPLM_UNSIGNED_RAW(t,a,b)  do { \
 		DUK_D(DUK_DPRINT(t "=[%lu,%lu]=[%lf,%lf]", \
 		                 (unsigned long) (a), (unsigned long) (b), \
 		                 (double) (a), (double) (b))); \
-	} while(0)
+	} while (0)
 #define DUK__DUMPLM_SIGNED(t)  do { \
 		DUK__DUMPLM_SIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
-	} while(0)
+	} while (0)
 #define DUK__DUMPLM_UNSIGNED(t)  do { \
 		DUK__DUMPLM_UNSIGNED_RAW("DUK_" #t "_{MIN,MAX}", DUK_##t##_MIN, DUK_##t##_MAX); \
-	} while(0)
+	} while (0)
 
 DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK_D(DUK_DPRINT("sizeof()"));
@@ -655,19 +656,27 @@ DUK_LOCAL void duk__dump_type_limits(void) {
 DUK_LOCAL void duk__dump_misc_options(void) {
 	DUK_D(DUK_DPRINT("DUK_VERSION: %ld", (long) DUK_VERSION));
 	DUK_D(DUK_DPRINT("DUK_GIT_DESCRIBE: %s", DUK_GIT_DESCRIBE));
+	DUK_D(DUK_DPRINT("OS string: %s", DUK_USE_OS_STRING));
+	DUK_D(DUK_DPRINT("architecture string: %s", DUK_USE_ARCH_STRING));
+	DUK_D(DUK_DPRINT("compiler string: %s", DUK_USE_COMPILER_STRING));
 #if defined(DUK_USE_PACKED_TVAL)
 	DUK_D(DUK_DPRINT("DUK_USE_PACKED_TVAL: yes"));
 #else
 	DUK_D(DUK_DPRINT("DUK_USE_PACKED_TVAL: no"));
 #endif
-#if defined(DUK_USE_INTEGER_LE)
-	DUK_D(DUK_DPRINT("Integer endianness: little"));
-#elif defined(DUK_USE_INTEGER_ME)
-	DUK_D(DUK_DPRINT("Integer endianness: mixed"));
-#elif defined(DUK_USE_INTEGER_BE)
-	DUK_D(DUK_DPRINT("Integer endianness: big"));
+#if defined(DUK_USE_VARIADIC_MACROS)
+	DUK_D(DUK_DPRINT("DUK_USE_VARIADIC_MACROS: yes"));
 #else
-	DUK_D(DUK_DPRINT("Integer endianness: ???"));
+	DUK_D(DUK_DPRINT("DUK_USE_VARIADIC_MACROS: no"));
+#endif
+#if defined(DUK_USE_INTEGER_LE)
+	DUK_D(DUK_DPRINT("integer endianness: little"));
+#elif defined(DUK_USE_INTEGER_ME)
+	DUK_D(DUK_DPRINT("integer endianness: mixed"));
+#elif defined(DUK_USE_INTEGER_BE)
+	DUK_D(DUK_DPRINT("integer endianness: big"));
+#else
+	DUK_D(DUK_DPRINT("integer endianness: ???"));
 #endif
 #if defined(DUK_USE_DOUBLE_LE)
 	DUK_D(DUK_DPRINT("IEEE double endianness: little"));

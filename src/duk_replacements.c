@@ -8,15 +8,15 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_COMPUTED_NAN
+#if defined(DUK_USE_COMPUTED_NAN)
 DUK_INTERNAL double duk_computed_nan;
 #endif
 
-#ifdef DUK_USE_COMPUTED_INFINITY
+#if defined(DUK_USE_COMPUTED_INFINITY)
 DUK_INTERNAL double duk_computed_infinity;
 #endif
 
-#ifdef DUK_USE_REPL_FPCLASSIFY
+#if defined(DUK_USE_REPL_FPCLASSIFY)
 DUK_INTERNAL int duk_repl_fpclassify(double x) {
 	duk_double_union u;
 	duk_uint_fast16_t expt;
@@ -48,7 +48,7 @@ DUK_INTERNAL int duk_repl_fpclassify(double x) {
 }
 #endif
 
-#ifdef DUK_USE_REPL_SIGNBIT
+#if defined(DUK_USE_REPL_SIGNBIT)
 DUK_INTERNAL int duk_repl_signbit(double x) {
 	duk_double_union u;
 	u.d = x;
@@ -56,7 +56,7 @@ DUK_INTERNAL int duk_repl_signbit(double x) {
 }
 #endif
 
-#ifdef DUK_USE_REPL_ISFINITE
+#if defined(DUK_USE_REPL_ISFINITE)
 DUK_INTERNAL int duk_repl_isfinite(double x) {
 	int c = DUK_FPCLASSIFY(x);
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE) {
@@ -67,14 +67,14 @@ DUK_INTERNAL int duk_repl_isfinite(double x) {
 }
 #endif
 
-#ifdef DUK_USE_REPL_ISNAN
+#if defined(DUK_USE_REPL_ISNAN)
 DUK_INTERNAL int duk_repl_isnan(double x) {
 	int c = DUK_FPCLASSIFY(x);
 	return (c == DUK_FP_NAN);
 }
 #endif
 
-#ifdef DUK_USE_REPL_ISINF
+#if defined(DUK_USE_REPL_ISINF)
 DUK_INTERNAL int duk_repl_isinf(double x) {
 	int c = DUK_FPCLASSIFY(x);
 	return (c == DUK_FP_INFINITE);

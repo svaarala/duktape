@@ -1607,7 +1607,7 @@ duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t index) {
  * to an object).  Return value is NULL if value is neither an object nor a
  * lightfunc.
  */
-duk_hobject *duk_get_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hobject *duk_get_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4152,7 +4152,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 		goto push_undefined;
 	}
 
-	switch (DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
+	switch ((int) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
 	case DUK_HTYPE_STRING:
 		duk_push_hstring(ctx, (duk_hstring *) ptr);
 		break;

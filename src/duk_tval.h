@@ -33,11 +33,6 @@
  *  Packed 8-byte representation
  */
 
-/* sanity */
-#if !defined(DUK_USE_PACKED_TVAL_POSSIBLE)
-#error packed representation not supported
-#endif
-
 /* use duk_double_union as duk_tval directly */
 typedef union duk_double_union duk_tval;
 
