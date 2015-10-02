@@ -1167,8 +1167,25 @@ Optimizations may also cause odd situations, see e.g.:
 
 * http://blog.sam.liddicott.com/2013/09/why-are-setjmp-volatile-hacks-still.html
 
+With Emscripten a function containing ``setjmp()`` executes much more slowly
+than a function without it.  For example, for the bytecode executor the speed
+improvement of refactoring ``setjmp()`` out of the main executor function was
+around 25%:
+
+* https://github.com/svaarala/duktape/pull/370
+
+Some compilers generate incorrect code with setjmp.  Some workarounds may be
+needed (e.g. optimizations may need to be disabled completely) for functions
+containing a setjmp:
+
+* https://github.com/svaarala/duktape/issues/369
+
 To minimize the chances of the compiler handling setjmp/longjmp incorrectly,
 the cleanest approach would probable be to:
+
+* Minimize the size of functions containing a ``setjmp()``; use a wrapper
+  with just the ``setjmp()`` and an inner function with the rest of the
+  function when that's possible.
 
 * Declare all variables used in the ``setjmp()`` non-zero return case (when
   called through ``longjmp()``) as volatile, so that we don't ever rely on
@@ -1195,7 +1212,7 @@ variables, e.g.::
 
   /* ... */
 
-(As of Duktape 1.1 this has not yet been done for all setjmp/longjmp
+(As of Duktape 1.3 this has not yet been done for all setjmp/longjmp
 functions.  Rather, volatile declarations have been added where they
 seem to be needed in practice.)
 
@@ -1604,7 +1621,8 @@ arguments".  The fix is to remove the comment from inside the macro::
 Character values in char literals and strings, EBCDIC
 =====================================================
 
-**FIXME: under work**
+**FIXME: under work, while some other projects do support EBCDIC,
+EBCDIC may not be a useful portability target for Duktape.**
 
 Overview
 --------

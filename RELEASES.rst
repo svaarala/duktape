@@ -1163,6 +1163,10 @@ Planned
   assignment statements with an identifier left-hand-side value, especially
   when the assignment is a top level expression like "x = y + z;" (GH-380)
 
+* Internal performance improvement: split bytecode executor into an inner and
+  outer function, with the outer function containing a setjmp/longjmp catch
+  point and the inner function free of setjmp/longjmp (GH-369, GH-370)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
