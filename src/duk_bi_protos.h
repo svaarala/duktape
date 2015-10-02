@@ -97,7 +97,9 @@ DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_stack_getter(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_filename_getter(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx);
-DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_nop_setter(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_stack_setter(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_filename_setter(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_error_prototype_linenumber_setter(duk_context *ctx);
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_function_constructor(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_function_prototype(duk_context *ctx);

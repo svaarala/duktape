@@ -852,13 +852,13 @@ bi_error_prototype = {
 
 		{ 'name': 'stack',
 		  'getter': 'duk_bi_error_prototype_stack_getter',
-		  'setter': 'duk_bi_error_prototype_nop_setter' },
+		  'setter': 'duk_bi_error_prototype_stack_setter' },
 		{ 'name': 'fileName',
 		  'getter': 'duk_bi_error_prototype_filename_getter',
-		  'setter': 'duk_bi_error_prototype_nop_setter' },
+		  'setter': 'duk_bi_error_prototype_filename_setter' },
 		{ 'name': 'lineNumber',
 		  'getter': 'duk_bi_error_prototype_linenumber_getter',
-		  'setter': 'duk_bi_error_prototype_nop_setter' },
+		  'setter': 'duk_bi_error_prototype_linenumber_setter' },
 	],
 	'functions': [
 		{ 'name': 'toString',			'native': 'duk_bi_error_prototype_to_string',		'length': 0 },
@@ -2008,6 +2008,11 @@ class GenBuiltins:
 					#print(v, '->', i)
 					return i
 			raise Exception('invalid builtin index for magic: ' % repr(v))
+		elif elem['type'] == 'stridx':
+			v = self.gs.stringToIndex(valspec['name'])
+			if not (v >= -0x8000 and v <= 0x7fff):
+				raise Exception('invalid stridx value for magic: %s' % repr(v))
+			return v & 0xffff
 		elif elem['type'] == 'plain':
 			v = elem['value']
 			if not (v >= -0x8000 and v <= 0x7fff):
