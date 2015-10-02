@@ -1167,6 +1167,10 @@ Planned
   outer function, with the outer function containing a setjmp/longjmp catch
   point and the inner function free of setjmp/longjmp (GH-369, GH-370)
 
+* Internal performance improvement: change value stack initialization policy
+  so that values above current value stack top are set to "undefined" instead
+  of "unused" to improve call performance (GH-389)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
