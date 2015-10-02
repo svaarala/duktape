@@ -3,6 +3,8 @@
  *  intermediate step is string interned.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i, j;
     var t;

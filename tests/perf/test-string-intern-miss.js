@@ -4,6 +4,8 @@
  *  hashing and memory churn.
  */
 
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var buf = Duktape.Buffer(2048);
     var i;

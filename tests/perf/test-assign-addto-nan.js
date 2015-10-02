@@ -12,6 +12,9 @@
  *  the difference is not caused by packed duk_tval and NaN normalization
  *  involved in that.
  */
+
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i;
 

@@ -1188,40 +1188,55 @@ massif-arcfour: massif-test-dev-arcfour
 # - Ruby and Lua are interpreted but don't use reference counting
 # - Mujs is interpreted but doesn't use reference counting
 # - Rhino compiles to Java bytecode and is ultimately JITed
+# - Node.js (V8) is JITed
+# - Luajit is JITed
 
 #TIME=python util/time_multi.py --count 1 --mode min # Run just once
-#TIME=python util/time_multi.py --count 3 --mode min # Take minimum time of N
-TIME=python util/time_multi.py --count 5 --mode min # Take minimum time of N
+#TIME=python util/time_multi.py --count 3 --sleep 10 --mode min # Take minimum time of N
+TIME=python util/time_multi.py --count 5 --sleep 10 --mode min # Take minimum time of N
 
+# Blocks: optimization variants, previous versions, other interpreting engines,
+# other JIT engines.
 perftest: duk duk.O2 duk.O3 duk.O4
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
-		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
-		printf ' duk-O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
-		printf ' duk-O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
-		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
-		printf ' duk.123 %5s' "`$(TIME) ./duk.123 $$i`"; \
-		printf ' rhino %5s' "`$(TIME) rhino $$i`"; \
+		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
+		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' duk.O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
+		printf ' duk.O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
+		printf ' |'; \
+		printf ' duk.O2.130 %5s' "`$(TIME) ./duk.O2.130 $$i`"; \
+		printf ' duk.O2.124 %5s' "`$(TIME) ./duk.O2.124 $$i`"; \
+		printf ' duk.O2.113 %5s' "`$(TIME) ./duk.O2.113 $$i`"; \
+		printf ' duk.O2.102 %5s' "`$(TIME) ./duk.O2.102 $$i`"; \
+		printf ' |'; \
 		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
 		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
 		printf ' python %5s' "`$(TIME) python $${i%%.js}.py`"; \
 		printf ' perl %5s' "`$(TIME) perl $${i%%.js}.pl`"; \
 		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
+		printf ' |'; \
+		printf ' rhino %5s' "`$(TIME) rhino $$i`"; \
+		printf ' node %5s' "`$(TIME) node $$i`"; \
+		printf ' luajit %5s' "`$(TIME) luajit $${i%%.js}.lua`"; \
 		printf '\n'; \
 	done
 perftestduk: duk duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk-Os %5s' "`$(TIME) ./duk $$i`"; \
-		printf ' duk-O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
-		printf ' duk.112 %5s' "`$(TIME) ./duk.112 $$i`"; \
+		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
+		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
+		printf ' |'; \
+		printf ' duk.O2.130 %5s' "`$(TIME) ./duk.O2.130 $$i`"; \
+		printf ' duk.O2.124 %5s' "`$(TIME) ./duk.O2.124 $$i`"; \
+		printf ' duk.O2.113 %5s' "`$(TIME) ./duk.O2.113 $$i`"; \
+		printf ' duk.O2.102 %5s' "`$(TIME) ./duk.O2.102 $$i`"; \
 		printf '\n'; \
 	done
 perftestduk3: duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-30s:' "`basename $$i`"; \
-		printf ' duk-O2'; \
+		printf ' duk.O2'; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \

@@ -1,6 +1,9 @@
 /*
  *  Test addition when it involves a NaN, which matters on x86.
  */
+
+if (typeof print !== 'function') { print = console.log; }
+
 function test() {
     var i;
     var x = 0 / 0;

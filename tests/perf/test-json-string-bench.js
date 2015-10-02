@@ -1,3 +1,5 @@
+if (typeof print !== 'function') { print = console.log; }
+
 function rndAscii(len) {
     var res = [];
     var i;
