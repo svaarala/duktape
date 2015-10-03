@@ -1397,7 +1397,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 	/* [ ... eval "eval" eval_input level ] */
 
-	call_flags = DUK_CALL_FLAG_PROTECTED;
+	call_flags = 0;
 	if (thr->callstack_top >= (duk_size_t) -level) {
 		duk_activation *act;
 		duk_hobject *fun;
@@ -1414,7 +1414,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		}
 	}
 
-	call_ret = duk_handle_call(thr, 2 /*num_stack_args*/, call_flags);
+	call_ret = duk_handle_call_protected(thr, 2 /*num_stack_args*/, call_flags);
 
 	if (call_ret == DUK_EXEC_SUCCESS) {
 		eval_err = 0;
