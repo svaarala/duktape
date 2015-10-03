@@ -845,7 +845,6 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_activation *act;
 	duk_hobject *env;
 	duk_jmpbuf our_jmpbuf;
-	duk_tval tv_tmp;
 	duk_int_t retval = DUK_EXEC_ERROR;
 	duk_ret_t rc;
 
@@ -1582,13 +1581,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 * runs etc capture even out-of-memory errors so nothing should
 		 * throw here.
 		 */
-		DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
-		DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value1);
-		DUK_TVAL_DECREF(thr, &tv_tmp);
-
-		DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value2);
-		DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value2);
-		DUK_TVAL_DECREF(thr, &tv_tmp);
+		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
 		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 	}
@@ -1749,7 +1743,6 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	duk_instr_t **entry_ptr_curr_pc;
 	duk_jmpbuf *old_jmpbuf_ptr = NULL;
 	duk_jmpbuf our_jmpbuf;
-	duk_tval tv_tmp;
 	duk_idx_t idx_retbase;
 	duk_int_t retval;
 	duk_ret_t rc;
@@ -1974,13 +1967,8 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	 * runs etc capture even out-of-memory errors so nothing should
 	 * throw here.
 	 */
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
-	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value1);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
-
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value2);
-	DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->heap->lj.value2);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
+	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
 	DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 
@@ -2219,7 +2207,6 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (use_tailcall) {
 		duk_tval *tv1, *tv2;
-		duk_tval tv_tmp;
 		duk_size_t cs_index;
 		duk_int_t i_stk;  /* must be signed for loop structure */
 		duk_idx_t i_arg;
@@ -2324,10 +2311,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		tv2 = thr->valstack_bottom + idx_func + 1;
 		DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);  /* tv1 is -below- valstack_bottom */
 		DUK_ASSERT(tv2 >= thr->valstack_bottom && tv2 < thr->valstack_top);
-		DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
-		DUK_TVAL_SET_TVAL(tv1, tv2);
-		DUK_TVAL_INCREF(thr, tv1);
-		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+		DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv2);  /* side effects */
 
 		for (i_arg = 0; i_arg < idx_args; i_arg++) {
 			/* XXX: block removal API primitive */

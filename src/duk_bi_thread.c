@@ -50,7 +50,6 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *thr_resume;
-	duk_tval tv_tmp;
 	duk_tval *tv;
 	duk_hobject *func;
 	duk_hobject *caller_func;
@@ -165,17 +164,11 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	/* lj value2: thread */
 	DUK_ASSERT(thr->valstack_bottom < thr->valstack_top);
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value2);
-	DUK_TVAL_SET_TVAL(&thr->heap->lj.value2, &thr->valstack_bottom[0]);
-	DUK_TVAL_INCREF(thr, &thr->heap->lj.value2);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value2, &thr->valstack_bottom[0]);  /* side effects */
 
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom + 1 < thr->valstack_top);
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
-	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, &thr->valstack_bottom[1]);
-	DUK_TVAL_INCREF(thr, &thr->heap->lj.value1);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[1]);  /* side effects */
 
 	thr->heap->lj.iserror = is_error;
 
@@ -209,7 +202,6 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_tval tv_tmp;
 	duk_hobject *caller_func;
 	duk_small_int_t is_error;
 
@@ -292,10 +284,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom < thr->valstack_top);
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
-	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, &thr->valstack_bottom[0]);
-	DUK_TVAL_INCREF(thr, &thr->heap->lj.value1);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[0]);  /* side effects */
 
 	thr->heap->lj.iserror = is_error;
 

@@ -71,8 +71,6 @@ DUK_INTERNAL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_er
  */
 
 DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type) {
-	duk_tval tv_tmp;
-
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	/* If something is thrown with the debugger attached and nobody will
 	 * catch it, execution is paused before the longjmp, turning over
@@ -127,10 +125,7 @@ DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t l
 	thr->heap->lj.type = lj_type;
 
 	DUK_ASSERT(thr->valstack_top > thr->valstack);
-	DUK_TVAL_SET_TVAL(&tv_tmp, &thr->heap->lj.value1);
-	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, thr->valstack_top - 1);
-	DUK_TVAL_INCREF(thr, &thr->heap->lj.value1);
-	DUK_TVAL_DECREF(thr, &tv_tmp);
+	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, thr->valstack_top - 1);  /* side effects */
 
 	duk_pop((duk_context *) thr);
 }

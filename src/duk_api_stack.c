@@ -344,7 +344,6 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 	duk_idx_t vs_size;
 	duk_idx_t vs_limit;
 	duk_idx_t count;
-	duk_tval tv_tmp;
 	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -411,12 +410,8 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 			count--;
 			tv = --thr->valstack_top;  /* tv -> value just before prev top value */
 			DUK_ASSERT(tv >= thr->valstack_bottom);
-			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-			DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
-			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
-
+			DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);  /* side effects */
 			/* XXX: fast primitive to set a bunch of values to UNDEFINED_UNUSED */
-
 		}
 	}
 	return;
@@ -904,7 +899,6 @@ DUK_EXTERNAL void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	/* For tv1 == tv2, both pointing to stack top, the end result
 	 * is same as duk_pop(ctx).
 	 */
-
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 	DUK_TVAL_SET_TVAL(tv2, tv1);
 	DUK_TVAL_SET_UNDEFINED_UNUSED(tv1);
@@ -916,7 +910,6 @@ DUK_EXTERNAL void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1;
 	duk_tval *tv2;
-	duk_tval tv_tmp;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(thr);  /* w/o refcounting */
@@ -927,11 +920,7 @@ DUK_EXTERNAL void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_
 	DUK_ASSERT(tv2 != NULL);
 
 	/* For tv1 == tv2, this is a no-op (no explicit check needed). */
-
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
-	DUK_TVAL_SET_TVAL(tv2, tv1);
-	DUK_TVAL_INCREF(thr, tv2);  /* no side effects */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_TVAL_UPDREF(thr, tv2, tv1);  /* side effects */
 }
 
 DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t index) {
@@ -1801,31 +1790,25 @@ DUK_EXTERNAL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int
 DUK_EXTERNAL void duk_to_undefined(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(thr);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
 }
 
 DUK_EXTERNAL void duk_to_null(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(thr);
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NULL(tv);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NULL_UPDREF(thr, tv);  /* side effects */
 }
 
 /* E5 Section 9.1 */
@@ -1847,7 +1830,6 @@ DUK_EXTERNAL void duk_to_primitive(duk_context *ctx, duk_idx_t index, duk_int_t 
 DUK_EXTERNAL duk_bool_t duk_to_boolean(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_bool_t val;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -1863,16 +1845,13 @@ DUK_EXTERNAL duk_bool_t duk_to_boolean(duk_context *ctx, duk_idx_t index) {
 
 	/* Note: no need to re-lookup tv, conversion is side effect free */
 	DUK_ASSERT(tv != NULL);
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_BOOLEAN(tv, val);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv, val);  /* side effects */
 	return val;
 }
 
 DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_double_t d;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -1884,9 +1863,7 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t index) {
 
 	/* Note: need to re-lookup because ToNumber() may have side effects */
 	tv = duk_require_tval(ctx, index);
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, d);  /* side effects */
 	return d;
 }
 
@@ -1899,7 +1876,6 @@ typedef duk_double_t (*duk__toint_coercer)(duk_hthread *thr, duk_tval *tv);
 DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index, duk__toint_coercer coerce_func) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_double_t d;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -1912,9 +1888,7 @@ DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t index
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NUMBER(tv, d);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, d);  /* side effects */
 	return d;
 }
 
@@ -1939,7 +1913,6 @@ DUK_EXTERNAL duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_int32_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -1951,14 +1924,10 @@ DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 #if defined(DUK_USE_FASTINT)
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_FASTINT_I32(tv, ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_FASTINT_I32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 #else
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
 	return ret;
 #endif
 }
@@ -1966,7 +1935,6 @@ DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_uint32_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -1978,14 +1946,10 @@ DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 #if defined(DUK_USE_FASTINT)
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_FASTINT_U32(tv, ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 #else
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
 #endif
 	return ret;
 }
@@ -1993,7 +1957,6 @@ DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_tval tv_tmp;
 	duk_uint16_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -2005,14 +1968,10 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
 #if defined(DUK_USE_FASTINT)
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_FASTINT_U32(tv, ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 #else
-	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-	DUK_TVAL_SET_NUMBER(tv, (duk_double_t) ret);  /* no need to incref */
-	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
 #endif
 	return ret;
 }
@@ -4195,14 +4154,11 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	while (count > 0) {
-		duk_tval tv_tmp;
 		duk_tval *tv;
 
 		tv = --thr->valstack_top;  /* tv points to element just below prev top */
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-		DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
-		DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);  /* side effects */
 		count--;
 	}
 #else
