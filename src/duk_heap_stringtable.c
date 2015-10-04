@@ -974,6 +974,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, d
 }
 
 /* find and remove string from stringtable; caller must free the string itself */
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_INTERNAL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 	DUK_DDD(DUK_DDDPRINT("remove string from stringtable: %!O", (duk_heaphdr *) h));
 
@@ -992,6 +993,7 @@ DUK_INTERNAL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 #error internal error, invalid strtab options
 #endif
 }
+#endif
 
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 DUK_INTERNAL void duk_heap_force_strtab_resize(duk_heap *heap) {

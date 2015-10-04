@@ -1348,17 +1348,13 @@ void duk__putvar_helper(duk_hthread *thr,
 			 * (immutable binding), use duk_hobject_putprop() which
 			 * will respect mutability.
 			 */
-			duk_tval tv_tmp;
 			duk_tval *tv_val;
 
 			DUK_ASSERT(ref.this_binding == NULL);  /* always for register bindings */
 
 			tv_val = ref.value;
 			DUK_ASSERT(tv_val != NULL);
-			DUK_TVAL_SET_TVAL(&tv_tmp, tv_val);
-			DUK_TVAL_SET_TVAL(tv_val, val);
-			DUK_TVAL_INCREF(thr, val);
-			DUK_TVAL_DECREF(thr, &tv_tmp);  /* must be last */
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_val, val);  /* side effects */
 
 			/* ref.value and ref.this_binding invalidated here */
 		} else {
@@ -1701,12 +1697,8 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 				DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 				DUK_UNREF(tmp);
 			} else {
-				duk_tval tv_tmp;
-
 				tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, holder, e_idx);
-				DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-				DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
-				DUK_TVAL_DECREF(thr, &tv_tmp);
+				DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);
 			}
 
 			/* Here val would be potentially invalid if we didn't make

@@ -137,7 +137,9 @@ Checklist for ordinary releases
     resize algorithms (or similar) can lead to unbounded or suboptimal
     memory usage
 
-  - XXX: establish some baseline test
+  - Minimal manual refcount leak test:
+
+    - test-dev-refcount-leak-basic.js
 
 * Performance testing
 

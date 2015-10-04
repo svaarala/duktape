@@ -82,6 +82,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	 */
 
 	h_prev_glob = thr->builtins[DUK_BIDX_GLOBAL];
+	DUK_UNREF(h_prev_glob);
 	thr->builtins[DUK_BIDX_GLOBAL] = h_glob;
 	DUK_HOBJECT_INCREF(thr, h_glob);
 	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_glob);  /* side effects, in theory (referenced by global env) */

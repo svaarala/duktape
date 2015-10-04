@@ -763,6 +763,7 @@ int main(int argc, char *argv[]) {
 	int ajsheap_log = 0;
 	int debugger = 0;
 	int recreate_heap = 0;
+	int no_heap_destroy = 0;
 	int verbose = 0;
 	int run_stdin = 0;
 	const char *compile_filename = NULL;
@@ -872,6 +873,8 @@ int main(int argc, char *argv[]) {
 			debugger = 1;
 		} else if (strcmp(arg, "--recreate-heap") == 0) {
 			recreate_heap = 1;
+		} else if (strcmp(arg, "--no-heap-destroy") == 0) {
+			no_heap_destroy = 1;
 		} else if (strcmp(arg, "--verbose") == 0) {
 			verbose = 1;
 		} else if (strcmp(arg, "--run-stdin") == 0) {
@@ -995,7 +998,10 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 	}
 
-	if (ctx) {
+	if (ctx && no_heap_destroy) {
+		duk_gc(ctx, 0);
+	}
+	if (ctx && !no_heap_destroy) {
 		destroy_duktape_heap(ctx, alloc_provider);
 	}
 	ctx = NULL;
@@ -1033,6 +1039,7 @@ int main(int argc, char *argv[]) {
 			"   --debugger         start example debugger\n"
 #endif
 			"   --recreate-heap    recreate heap after every file\n"
+			"   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
 	                "\n"
 	                "If <filename> is omitted, interactive mode is started automatically.\n");
 	fflush(stderr);

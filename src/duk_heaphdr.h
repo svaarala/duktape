@@ -350,6 +350,250 @@ struct duk_heaphdr_string {
 		} \
 	} while (0)
 
+/*
+ *  Macros to set a duk_tval and update refcount of the target (decref the
+ *  old value and incref the new value if necessary).  This is both performance
+ *  and footprint critical; any changes made should be measured for size/speed.
+ */
+
+#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv__dst); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_UNDEFINED_UNUSED(tv__dst); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_NULL_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_NULL(tv__dst); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_BOOLEAN(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_NUMBER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_NUMBER(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_NUMBER_CHKFAST(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#define DUK_TVAL_SET_DOUBLE_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_DOUBLE(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#define DUK_TVAL_SET_NAN_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_NAN(tv__dst); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_SET_FASTINT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_FASTINT(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_FASTINT_I32(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+#endif  /* DUK_USE_FASTINT */
+
+#define DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0(thr,tvptr_dst,lf_v,lf_fp,lf_flags) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_LIGHTFUNC(tv__dst, (lf_v), (lf_fp), (lf_flags)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_STRING_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_STRING(tv__dst, (newval)); \
+		DUK_HSTRING_INCREF((thr), (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_OBJECT_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_OBJECT(tv__dst, (newval)); \
+		DUK_HOBJECT_INCREF((thr), (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_BUFFER_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_BUFFER(tv__dst, (newval)); \
+		DUK_HBUFFER_INCREF((thr), (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#define DUK_TVAL_SET_POINTER_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_POINTER(tv__dst, (newval)); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+/* DUK_TVAL_SET_TVAL_UPDREF() is used a lot in executor, property lookups,
+ * etc, so it's very important for performance.
+ *
+ * NOTE: the source and destination duk_tval pointers may be the same, and
+ * the macros MUST deal with that correctly.
+ */
+
+/* Original idiom used. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT0(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_tval tv__tmp; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+		DUK_TVAL_INCREF((thr), tv__src); \
+		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+#if 0  /* XXX: to optimize and measure */
+/* Original idiom but with forced fast refcount macros. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT0F(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_tval tv__tmp; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
+		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+		DUK_TVAL_INCREF_FAST((thr), tv__src); \
+		DUK_TVAL_DECREF_FAST((thr), &tv__tmp);  /* side effects */ \
+	} while (0)
+
+/* Use 'h__obj' temporary to avoid a full duk_tval copy. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT1(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst)) { \
+			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
+			DUK_ASSERT(h__obj != NULL); \
+		} else { \
+			h__obj = NULL; \
+		} \
+		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+		DUK_TVAL_INCREF((thr), tv__src); \
+		if (h__obj != NULL) { \
+			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
+		} \
+	} while (0)
+
+/* Use 'h__obj' temporary to avoid a full duk_tval copy. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT1A(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		if (DUK_UNLIKELY(DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst))) { \
+			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
+			DUK_ASSERT(h__obj != NULL); \
+		} else { \
+			h__obj = NULL; \
+		} \
+		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+		DUK_TVAL_INCREF_FAST((thr), tv__src); \
+		if (DUK_UNLIKELY(h__obj != NULL)) { \
+			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
+		} \
+	} while (0)
+
+/* Avoid rechecking 'h__obj'. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT2(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst)) { \
+			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
+			DUK_ASSERT(h__obj != NULL); \
+			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+			DUK_TVAL_INCREF((thr), tv__src); \
+			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
+		} else { \
+			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+			DUK_TVAL_INCREF((thr), tv__src); \
+		} \
+	} while (0)
+
+/* Avoid rechecking 'h__obj'. */
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT3(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		if (DUK_UNLIKELY(DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst))) { \
+			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
+			DUK_ASSERT(h__obj != NULL); \
+			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+			DUK_TVAL_INCREF_FAST((thr), tv__src); \
+			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
+		} else { \
+			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+			DUK_TVAL_INCREF_FAST((thr), tv__src); \
+		} \
+	} while (0)
+#endif
+
+/* XXX: no optimized variants yet */
+#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF  DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0
+#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF  DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0
+#define DUK_TVAL_SET_NULL_UPDREF              DUK_TVAL_SET_NULL_UPDREF_ALT0
+#define DUK_TVAL_SET_BOOLEAN_UPDREF           DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0
+#define DUK_TVAL_SET_NUMBER_UPDREF            DUK_TVAL_SET_NUMBER_UPDREF_ALT0
+#define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF    DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0
+#define DUK_TVAL_SET_DOUBLE_UPDREF            DUK_TVAL_SET_DOUBLE_UPDREF_ALT0
+#define DUK_TVAL_SET_NAN_UPDREF               DUK_TVAL_SET_NAN_UPDREF_ALT0
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#endif  /* DUK_USE_FASTINT */
+#define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
+#define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0
+#define DUK_TVAL_SET_OBJECT_UPDREF            DUK_TVAL_SET_OBJECT_UPDREF_ALT0
+#define DUK_TVAL_SET_BUFFER_UPDREF            DUK_TVAL_SET_BUFFER_UPDREF_ALT0
+#define DUK_TVAL_SET_POINTER_UPDREF           DUK_TVAL_SET_POINTER_UPDREF_ALT0
+
+#if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
+/* Optimized for speed. */
+#define DUK_TVAL_SET_TVAL_UPDREF              DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_FAST         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_SLOW         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#else
+/* Optimized for size. */
+#define DUK_TVAL_SET_TVAL_UPDREF              DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_FAST         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_SLOW         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#endif
+
 #else  /* DUK_USE_REFERENCE_COUNTING */
 
 #define DUK_TVAL_INCREF_FAST(thr,v)            do {} while (0) /* nop */
@@ -380,6 +624,128 @@ struct duk_heaphdr_string {
 #define DUK_HTHREAD_DECREF(thr,h)              do {} while (0) /* nop */
 #define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
+
+#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv__dst); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_UNDEFINED_UNUSED(tv__dst); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_NULL_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_NULL(tv__dst); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_BOOLEAN(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_NUMBER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_NUMBER(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_NUMBER_CHKFAST(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#define DUK_TVAL_SET_DOUBLE_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_DOUBLE(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#define DUK_TVAL_SET_NAN_UPDREF_ALT0(thr,tvptr_dst) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_NAN(tv__dst); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_SET_FASTINT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_FASTINT(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_FASTINT_I32(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+#endif  /* DUK_USE_FASTINT */
+
+#define DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0(thr,tvptr_dst,lf_v,lf_fp,lf_flags) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_LIGHTFUNC(tv__dst, (lf_v), (lf_fp), (lf_flags)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_STRING_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_STRING(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_OBJECT_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_OBJECT(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_BUFFER_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_BUFFER(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_POINTER_ALT0(thr,tvptr_dst,newval) do { \
+		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
+		DUK_TVAL_SET_POINTER(tv__dst, (newval)); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_TVAL_UPDREF_ALT0(thr,tvptr_dst,tvptr_src) do { \
+		duk_tval *tv__dst, *tv__src; \
+		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
+		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
+		DUK_UNREF((thr)); \
+	} while (0)
+
+#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF  DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0
+#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF  DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0
+#define DUK_TVAL_SET_NULL_UPDREF              DUK_TVAL_SET_NULL_UPDREF_ALT0
+#define DUK_TVAL_SET_BOOLEAN_UPDREF           DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0
+#define DUK_TVAL_SET_NUMBER_UPDREF            DUK_TVAL_SET_NUMBER_UPDREF_ALT0
+#define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF    DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0
+#define DUK_TVAL_SET_DOUBLE_UPDREF            DUK_TVAL_SET_DOUBLE_UPDREF_ALT0
+#define DUK_TVAL_SET_NAN_UPDREF               DUK_TVAL_SET_NAN_UPDREF_ALT0
+#if defined(DUK_USE_FASTINT)
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#endif  /* DUK_USE_FASTINT */
+#define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
+#define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0
+#define DUK_TVAL_SET_OBJECT_UPDREF            DUK_TVAL_SET_OBJECT_UPDREF_ALT0
+#define DUK_TVAL_SET_BUFFER_UPDREF            DUK_TVAL_SET_BUFFER_UPDREF_ALT0
+#define DUK_TVAL_SET_POINTER_UPDREF           DUK_TVAL_SET_POINTER_UPDREF_ALT0
+
+#define DUK_TVAL_SET_TVAL_UPDREF              DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_FAST         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF_SLOW         DUK_TVAL_SET_TVAL_UPDREF_ALT0
 
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 

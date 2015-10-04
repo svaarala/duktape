@@ -1885,6 +1885,7 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
 
 	DUK_HSTRING_DECREF(thr, h);  /* side effects */
+	DUK_UNREF(h);  /* w/o refcounting */
 
 	/* Breakpoint entries above the used area are left as garbage. */
 

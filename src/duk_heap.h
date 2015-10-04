@@ -514,7 +514,9 @@ DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_ui
 #endif
 DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
 DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_INTERNAL_DECL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
+#endif
 #if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 DUK_INTERNAL_DECL void duk_heap_force_strtab_resize(duk_heap *heap);
 #endif
