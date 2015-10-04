@@ -4173,8 +4173,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 			tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 			DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);  /* side effects */
 		}
-#if 1  /* XXX: remove */
-		/* this is not strictly necessary because if key == NULL, value MUST be ignored */
+#if 0
+		/* These are not strictly necessary because if key == NULL, value
+		 * (including flags) MUST be ignored.
+		 */
 		DUK_HOBJECT_E_SET_FLAGS(thr->heap, obj, desc.e_idx, 0);
 		DUK_TVAL_SET_UNDEFINED_UNUSED(DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx));
 #endif
