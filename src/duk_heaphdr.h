@@ -468,13 +468,13 @@ struct duk_heaphdr_string {
 	} while (0)
 
 /* DUK_TVAL_SET_TVAL_UPDREF() is used a lot in executor, property lookups,
- * etc, so it's very important for performance.
+ * etc, so it's very important for performance.  Measure when changing.
  *
  * NOTE: the source and destination duk_tval pointers may be the same, and
  * the macros MUST deal with that correctly.
  */
 
-/* Original idiom used. */
+/* Original idiom used, minimal code size. */
 #define DUK_TVAL_SET_TVAL_UPDREF_ALT0(thr,tvptr_dst,tvptr_src) do { \
 		duk_tval *tv__dst, *tv__src; duk_tval tv__tmp; \
 		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
@@ -484,83 +484,22 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#if 0  /* XXX: to optimize and measure */
-/* Original idiom but with forced fast refcount macros. */
-#define DUK_TVAL_SET_TVAL_UPDREF_ALT0F(thr,tvptr_dst,tvptr_src) do { \
-		duk_tval *tv__dst, *tv__src; duk_tval tv__tmp; \
-		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
-		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-		DUK_TVAL_INCREF_FAST((thr), tv__src); \
-		DUK_TVAL_DECREF_FAST((thr), &tv__tmp);  /* side effects */ \
-	} while (0)
-
-/* Use 'h__obj' temporary to avoid a full duk_tval copy. */
+/* Faster alternative: avoid making a temporary copy of tvptr_dst and use
+ * fast incref/decref macros.
+ */
 #define DUK_TVAL_SET_TVAL_UPDREF_ALT1(thr,tvptr_dst,tvptr_src) do { \
 		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
 		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
-		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst)) { \
-			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
-			DUK_ASSERT(h__obj != NULL); \
-		} else { \
-			h__obj = NULL; \
-		} \
-		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-		DUK_TVAL_INCREF((thr), tv__src); \
-		if (h__obj != NULL) { \
-			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
-		} \
-	} while (0)
-
-/* Use 'h__obj' temporary to avoid a full duk_tval copy. */
-#define DUK_TVAL_SET_TVAL_UPDREF_ALT1A(thr,tvptr_dst,tvptr_src) do { \
-		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
-		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
-		if (DUK_UNLIKELY(DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst))) { \
-			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
-			DUK_ASSERT(h__obj != NULL); \
-		} else { \
-			h__obj = NULL; \
-		} \
-		DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
 		DUK_TVAL_INCREF_FAST((thr), tv__src); \
-		if (DUK_UNLIKELY(h__obj != NULL)) { \
-			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
-		} \
-	} while (0)
-
-/* Avoid rechecking 'h__obj'. */
-#define DUK_TVAL_SET_TVAL_UPDREF_ALT2(thr,tvptr_dst,tvptr_src) do { \
-		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
-		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
 		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst)) { \
 			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
 			DUK_ASSERT(h__obj != NULL); \
 			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-			DUK_TVAL_INCREF((thr), tv__src); \
 			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
 		} else { \
 			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-			DUK_TVAL_INCREF((thr), tv__src); \
 		} \
 	} while (0)
-
-/* Avoid rechecking 'h__obj'. */
-#define DUK_TVAL_SET_TVAL_UPDREF_ALT3(thr,tvptr_dst,tvptr_src) do { \
-		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
-		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
-		if (DUK_UNLIKELY(DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst))) { \
-			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
-			DUK_ASSERT(h__obj != NULL); \
-			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-			DUK_TVAL_INCREF_FAST((thr), tv__src); \
-			DUK_HEAPHDR_DECREF_FAST((thr), h__obj);  /* side effects */ \
-		} else { \
-			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \
-			DUK_TVAL_INCREF_FAST((thr), tv__src); \
-		} \
-	} while (0)
-#endif
 
 /* XXX: no optimized variants yet */
 #define DUK_TVAL_SET_UNDEFINED_UPDREF         DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0
@@ -584,8 +523,8 @@ struct duk_heaphdr_string {
 
 #if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
 /* Optimized for speed. */
-#define DUK_TVAL_SET_TVAL_UPDREF              DUK_TVAL_SET_TVAL_UPDREF_ALT0
-#define DUK_TVAL_SET_TVAL_UPDREF_FAST         DUK_TVAL_SET_TVAL_UPDREF_ALT0
+#define DUK_TVAL_SET_TVAL_UPDREF              DUK_TVAL_SET_TVAL_UPDREF_ALT1
+#define DUK_TVAL_SET_TVAL_UPDREF_FAST         DUK_TVAL_SET_TVAL_UPDREF_ALT1
 #define DUK_TVAL_SET_TVAL_UPDREF_SLOW         DUK_TVAL_SET_TVAL_UPDREF_ALT0
 #else
 /* Optimized for size. */
