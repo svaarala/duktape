@@ -1,0 +1,10 @@
+define: DUK_USE_VALSTACK_GARBAGE
+introduced: 1.4.0
+default: false
+tags:
+  - performance
+description: >
+  When enabled, value stack policy is for elements above current top element
+  to be garbage.  When disabled the values above current top are 'undefined'.
+
+  This option will be removed once it is clear which option is faster.
