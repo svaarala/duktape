@@ -781,7 +781,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_print_helper(duk_context *ctx) {
 			p += sz_str;
 			*p++ = (duk_uint8_t) (i == nargs - 1 ? DUK_ASC_LF : DUK_ASC_SPACE);
 		}
-		DUK_ASSERT((const duk_uint8_t *) p == buf + sz_total);
+		DUK_ASSERT((const duk_uint8_t *) p == buf + sz_buf);
 #endif  /* DUK_USE_PREFER_SIZE */
 	} else {
 		buf = (const duk_uint8_t *) &nl;
