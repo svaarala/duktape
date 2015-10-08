@@ -156,10 +156,10 @@
  */
 
 #if defined(DUK_USE_PREFER_SIZE)
-#define DUK__ASSERT_CTX_VSSIZE(ctx)  /*nop*/
+#define DUK_ASSERT_CTX_VSSIZE(ctx)  /*nop*/
 #else
-#define DUK__ASSERT_CTX_VSSIZE(ctx) \
-	DUK_ASSERT((duk_size_t) (((duk_hthread *) (ctx))->valstack_top - ((duk_hthread *) (ctx))->valstack) == \
+#define DUK_ASSERT_CTX_VSSIZE(ctx) \
+	DUK_ASSERT((duk_size_t) (((duk_hthread *) (ctx))->valstack_end - ((duk_hthread *) (ctx))->valstack) == \
 		((duk_hthread *) (ctx))->valstack_size)
 #endif
 #define DUK_ASSERT_CTX_VALID(ctx) do { \
@@ -173,7 +173,7 @@
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack_bottom); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack_top); \
-		DUK__ASSERT_CTX_VSSIZE((ctx)); \
+		DUK_ASSERT_CTX_VSSIZE((ctx)); \
 	} while (0)
 
 /*
@@ -280,7 +280,7 @@ struct duk_hthread {
 
 	/* Value stack: these are expressed as pointers for faster stack manipulation.
 	 * [valstack,valstack_top[ is GC-reachable, [valstack_top,valstack_end[ is
-	 * uninitialized garbage.
+	 * not GC-reachable but kept initialized as 'undefined'.
 	 */
 	duk_tval *valstack;                     /* start of valstack allocation */
 	duk_tval *valstack_end;                 /* end of valstack allocation (exclusive) */

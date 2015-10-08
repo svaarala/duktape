@@ -38,7 +38,7 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	thr->valstack_top = thr->valstack;
 
 	for (i = 0; i < DUK_VALSTACK_INITIAL_SIZE; i++) {
-		DUK_TVAL_SET_UNDEFINED_UNUSED(&thr->valstack[i]);
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(&thr->valstack[i]);
 	}
 
 	/* callstack */

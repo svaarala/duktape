@@ -727,6 +727,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_print_helper(duk_context *ctx) {
 	duk_file *f_out;
 #endif
 
+	DUK_UNREF(thr);
+
 	magic = duk_get_current_magic(ctx);
 	DUK_UNREF(magic);
 
