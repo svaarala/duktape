@@ -155,6 +155,13 @@
  *  diagnose behavior so it's worth checking even when the check is not 100%.
  */
 
+#if defined(DUK_USE_PREFER_SIZE)
+#define DUK_ASSERT_CTX_VSSIZE(ctx)  /*nop*/
+#else
+#define DUK_ASSERT_CTX_VSSIZE(ctx) \
+	DUK_ASSERT((duk_size_t) (((duk_hthread *) (ctx))->valstack_end - ((duk_hthread *) (ctx))->valstack) == \
+		((duk_hthread *) (ctx))->valstack_size)
+#endif
 #define DUK_ASSERT_CTX_VALID(ctx) do { \
 		DUK_ASSERT((ctx) != NULL); \
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) (ctx)) == DUK_HTYPE_OBJECT); \
@@ -165,6 +172,8 @@
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack_bottom); \
+		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack_top); \
+		DUK_ASSERT_CTX_VSSIZE((ctx)); \
 	} while (0)
 
 /*
@@ -248,46 +257,54 @@ struct duk_hthread {
 	 */
 	duk_instr_t **ptr_curr_pc;
 
-	/* backpointers */
+	/* Backpointers. */
 	duk_heap *heap;
 
-	/* current strictness flag: affects API calls */
+	/* Current strictness flag: affects API calls. */
 	duk_uint8_t strict;
+
+	/* Thread state. */
 	duk_uint8_t state;
 	duk_uint8_t unused1;
 	duk_uint8_t unused2;
 
-	/* sanity limits */
+	/* Sanity limits for stack sizes. */
 	duk_size_t valstack_max;
 	duk_size_t callstack_max;
 	duk_size_t catchstack_max;
 
-	/* XXX: valstack, callstack, and catchstack are currently assumed
+	/* XXX: Valstack, callstack, and catchstack are currently assumed
 	 * to have non-NULL pointers.  Relaxing this would not lead to big
 	 * benefits (except perhaps for terminated threads).
 	 */
 
-	/* value stack: these are expressed as pointers for faster stack manipulation */
+	/* Value stack: these are expressed as pointers for faster stack manipulation.
+	 * [valstack,valstack_top[ is GC-reachable, [valstack_top,valstack_end[ is
+	 * not GC-reachable but kept initialized as 'undefined'.
+	 */
 	duk_tval *valstack;                     /* start of valstack allocation */
 	duk_tval *valstack_end;                 /* end of valstack allocation (exclusive) */
 	duk_tval *valstack_bottom;              /* bottom of current frame */
 	duk_tval *valstack_top;                 /* top of current frame (exclusive) */
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_size_t valstack_size;               /* cached: valstack_end - valstack (in entries, not bytes) */
+#endif
 
-	/* call stack */
+	/* Call stack.  [0,callstack_top[ is GC reachable. */
 	duk_activation *callstack;
 	duk_size_t callstack_size;              /* allocation size */
 	duk_size_t callstack_top;               /* next to use, highest used is top - 1 */
 	duk_size_t callstack_preventcount;      /* number of activation records in callstack preventing a yield */
 
-	/* catch stack */
+	/* Catch stack.  [0,catchstack_top[ is GC reachable. */
 	duk_catcher *catchstack;
 	duk_size_t catchstack_size;             /* allocation size */
 	duk_size_t catchstack_top;              /* next to use, highest used is top - 1 */
 
-	/* yield/resume book-keeping */
+	/* Yield/resume book-keeping. */
 	duk_hthread *resumer;                   /* who resumed us (if any) */
 
-	/* current compiler state (if any), used for augmenting SyntaxErrors */
+	/* Current compiler state (if any), used for augmenting SyntaxErrors. */
 	duk_compiler_ctx *compile_ctx;
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
@@ -311,7 +328,7 @@ struct duk_hthread {
 	 */
 	duk_hobject *builtins[DUK_NUM_BUILTINS];
 
-	/* convenience copies from heap/vm for faster access */
+	/* Convenience copies from heap/vm for faster access. */
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t *strs16;
 #else

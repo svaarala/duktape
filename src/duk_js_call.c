@@ -867,7 +867,12 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	 */
 
 	entry_valstack_bottom_index = (duk_size_t) (thr->valstack_bottom - thr->valstack);
+#if defined(DUK_USE_PREFER_SIZE)
 	entry_valstack_end = (duk_size_t) (thr->valstack_end - thr->valstack);
+#else
+	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
+	entry_valstack_end = thr->valstack_size;
+#endif
 	entry_callstack_top = thr->callstack_top;
 	entry_catchstack_top = thr->catchstack_top;
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;

@@ -179,7 +179,8 @@ DUK_LOCAL duk_uint_t duk__api_coerce_d2ui(duk_context *ctx, duk_idx_t index, duk
 
 DUK_EXTERNAL duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t vs_size;
+	duk_uidx_t vs_size;
+	duk_uidx_t uindex;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
@@ -191,117 +192,110 @@ DUK_EXTERNAL duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t index) {
 	 */
 
 	/* Assume value stack sizes (in elements) fits into duk_idx_t. */
-	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	DUK_ASSERT(vs_size >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	vs_size = (duk_uidx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT_DISABLE(vs_size >= 0);  /* unsigned */
 
 	if (index < 0) {
-		index = vs_size + index;
-		if (DUK_UNLIKELY(index < 0)) {
-			/* Also catches index == DUK_INVALID_INDEX: vs_size >= 0
-			 * so that vs_size + DUK_INVALID_INDEX cannot underflow
-			 * and will always be negative.
-			 */
-			return DUK_INVALID_INDEX;
-		}
+		uindex = vs_size + (duk_uidx_t) index;
 	} else {
 		/* since index non-negative */
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
-
-		if (DUK_UNLIKELY(index >= vs_size)) {
-			return DUK_INVALID_INDEX;
-		}
+		uindex = (duk_uidx_t) index;
 	}
 
-	DUK_ASSERT(index >= 0);
-	DUK_ASSERT(index < vs_size);
-	return index;
+	/* DUK_INVALID_INDEX won't be accepted as a valid index. */
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_size);
+
+	if (DUK_LIKELY(uindex < vs_size)) {
+		return (duk_idx_t) uindex;
+	}
+	return DUK_INVALID_INDEX;
 }
 
 DUK_EXTERNAL duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t vs_size;
+	duk_uidx_t vs_size;
+	duk_uidx_t uindex;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	DUK_ASSERT(vs_size >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	vs_size = (duk_uidx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT_DISABLE(vs_size >= 0);  /* unsigned */
 
 	if (index < 0) {
-		index = vs_size + index;
-		if (DUK_UNLIKELY(index < 0)) {
-			goto invalid_index;
-		}
+		uindex = vs_size + (duk_uidx_t) index;
 	} else {
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
-		if (DUK_UNLIKELY(index >= vs_size)) {
-			goto invalid_index;
-		}
+		uindex = (duk_uidx_t) index;
 	}
 
-	DUK_ASSERT(index >= 0);
-	DUK_ASSERT(index < vs_size);
-	return index;
+	/* DUK_INVALID_INDEX won't be accepted as a valid index. */
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_size);
 
- invalid_index:
+	if (DUK_LIKELY(uindex < vs_size)) {
+		return (duk_idx_t) uindex;
+	}
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
 	return 0;  /* unreachable */
 }
 
 DUK_INTERNAL duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t vs_size;
+	duk_uidx_t vs_size;
+	duk_uidx_t uindex;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	DUK_ASSERT(vs_size >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	vs_size = (duk_uidx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT_DISABLE(vs_size >= 0);  /* unsigned */
 
 	if (index < 0) {
-		index = vs_size + index;
-		if (DUK_UNLIKELY(index < 0)) {
-			return NULL;
-		}
+		uindex = vs_size + (duk_uidx_t) index;
 	} else {
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
-		if (DUK_UNLIKELY(index >= vs_size)) {
-			return NULL;
-		}
+		uindex = (duk_uidx_t) index;
 	}
 
-	DUK_ASSERT(index >= 0);
-	DUK_ASSERT(index < vs_size);
-	return thr->valstack_bottom + index;
+	/* DUK_INVALID_INDEX won't be accepted as a valid index. */
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_size);
+
+	if (DUK_LIKELY(uindex < vs_size)) {
+		return thr->valstack_bottom + uindex;
+	}
+	return NULL;
 }
 
 DUK_INTERNAL duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t vs_size;
+	duk_uidx_t vs_size;
+	duk_uidx_t uindex;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	DUK_ASSERT(vs_size >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	vs_size = (duk_uidx_t) (thr->valstack_top - thr->valstack_bottom);
+	DUK_ASSERT_DISABLE(vs_size >= 0);  /* unsigned */
 
+	/* Use unsigned arithmetic to optimize comparison. */
 	if (index < 0) {
-		index = vs_size + index;
-		if (DUK_UNLIKELY(index < 0)) {
-			goto invalid_index;
-		}
+		uindex = vs_size + (duk_uidx_t) index;
 	} else {
 		DUK_ASSERT(index != DUK_INVALID_INDEX);
-		if (DUK_UNLIKELY(index >= vs_size)) {
-			goto invalid_index;
-		}
+		uindex = (duk_uidx_t) index;
 	}
 
-	DUK_ASSERT(index >= 0);
-	DUK_ASSERT(index < vs_size);
-	return thr->valstack_bottom + index;
+	/* DUK_INVALID_INDEX won't be accepted as a valid index. */
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_size);
 
- invalid_index:
+	if (DUK_LIKELY(uindex < vs_size)) {
+		return thr->valstack_bottom + uindex;
+	}
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
 	return NULL;
 }
@@ -338,86 +332,98 @@ DUK_EXTERNAL duk_idx_t duk_get_top(duk_context *ctx) {
 	return (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 }
 
-/* set stack top within currently allocated range, but don't reallocate */
+/* Set stack top within currently allocated range, but don't reallocate.
+ * This is performance critical especially for call handling, so whenever
+ * changing, profile and look at generated code.
+ */
 DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t vs_size;
-	duk_idx_t vs_limit;
-	duk_idx_t count;
+	duk_uidx_t vs_size;
+	duk_uidx_t vs_limit;
+	duk_uidx_t uindex;
 	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
-	vs_size = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	vs_limit = (duk_idx_t) (thr->valstack_end - thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_end >= thr->valstack_bottom);
+	vs_size = (duk_uidx_t) (thr->valstack_top - thr->valstack_bottom);
+	vs_limit = (duk_uidx_t) (thr->valstack_end - thr->valstack_bottom);
 
 	if (index < 0) {
 		/* Negative indices are always within allocated stack but
 		 * must not go below zero index.
 		 */
-		index = vs_size + index;
-		if (index < 0) {
-			/* Also catches index == DUK_INVALID_INDEX. */
-			goto invalid_index;
-		}
+		uindex = vs_size + (duk_uidx_t) index;
 	} else {
 		/* Positive index can be higher than valstack top but must
 		 * not go above allocated stack (equality is OK).
 		 */
-		if (index > vs_limit) {
-			goto invalid_index;
-		}
+		uindex = (duk_uidx_t) index;
 	}
-	DUK_ASSERT(index >= 0);
-	DUK_ASSERT(index <= vs_limit);
 
-	if (index >= vs_size) {
-		/* Stack size increases or stays the same.  Fill the new
-		 * entries (if any) with undefined.  No pointer stability
-		 * issues here so we can use a running pointer.
-		 */
+	/* DUK_INVALID_INDEX won't be accepted as a valid index. */
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_size);
+	DUK_ASSERT(vs_size + (duk_uidx_t) DUK_INVALID_INDEX >= vs_limit);
 
-		tv = thr->valstack_top;
-		count = index - vs_size;
-		DUK_ASSERT(count >= 0);
-		while (count > 0) {
-			/* no need to decref previous or new value */
+#if defined(DUK_USE_VALSTACK_UNSAFE)
+	DUK_ASSERT(uindex <= vs_limit);
+#else
+	if (DUK_UNLIKELY(uindex > vs_limit)) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
+		return;
+	}
+#endif
+	DUK_ASSERT(uindex <= vs_limit);
+
+	/* Handle change in value stack top.  Respect value stack
+	 * initialization policy: 'undefined' above top.  Note that
+	 * DECREF may cause a side effect that reallocates valstack,
+	 * so must relookup after DECREF.
+	 */
+
+	if (uindex >= vs_size) {
+		/* Stack size increases or stays the same. */
+#if defined(DUK_USE_ASSERTIONS)
+		duk_uidx_t count;
+
+		count = uindex - vs_size;
+		while (count != 0) {
 			count--;
-			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(tv));
-			DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
-			tv++;
+			tv = thr->valstack_top + count;
+			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(tv));
 		}
-		thr->valstack_top = tv;
+#endif
+		thr->valstack_top = thr->valstack_bottom + uindex;
 	} else {
-		/* Stack size decreases, DECREF entries which are above the
-		 * new top.  Each DECREF potentially invalidates valstack
-		 * pointers, so don't hold on to pointers.  The valstack top
-		 * must also be updated on every loop in case a GC is triggered.
-		 */
+		/* Stack size decreases. */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+		duk_uidx_t count;
 
-		/* XXX: Here it would be useful to have a DECREF macro which
-		 * doesn't need a NULL check, and does refzero queueing without
-		 * running the refzero algorithm.  There would be no pointer
-		 * instability in this case, and code could be inlined.  After
-		 * the loop, one call to refzero would be needed.
-		 */
-
-		count = vs_size - index;
+		count = vs_size - uindex;
 		DUK_ASSERT(count > 0);
-
 		while (count > 0) {
 			count--;
-			tv = --thr->valstack_top;  /* tv -> value just before prev top value */
+			tv = --thr->valstack_top;  /* tv -> value just before prev top value; must relookup */
 			DUK_ASSERT(tv >= thr->valstack_bottom);
-			DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);  /* side effects */
-			/* XXX: fast primitive to set a bunch of values to UNDEFINED_UNUSED */
+			DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
 		}
-	}
-	return;
+#else  /* DUK_USE_REFERENCE_COUNTING */
+		duk_uidx_t count;
+		duk_tval *tv_end;
 
- invalid_index:
-	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
+		count = vs_size - uindex;
+		tv = thr->valstack_top;
+		tv_end = tv - count;
+		DUK_ASSERT(tv > tv_end);
+		do {
+			tv--;
+			DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+		} while (tv != tv_end);
+		thr->valstack_top = tv_end;
+#endif  /* DUK_USE_REFERENCE_COUNTING */
+	}
 }
 
 DUK_EXTERNAL duk_idx_t duk_get_top_index(duk_context *ctx) {
@@ -483,8 +489,8 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	duk_tval *old_valstack_post;
 #endif
 	duk_tval *new_valstack;
-	duk_tval *p;
 	duk_size_t new_alloc_size;
+	duk_tval *p;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -549,6 +555,9 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 #endif
 	thr->valstack = new_valstack;
 	thr->valstack_end = new_valstack + new_size;
+#if !defined(DUK_USE_PREFER_SIZE)
+	thr->valstack_size = new_size;
+#endif
 	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_bottom_offset);
 	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_top_offset);
 
@@ -579,23 +588,23 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	                   (void *) thr->valstack, (void *) thr->valstack_end,
 	                   (void *) thr->valstack_bottom, (void *) thr->valstack_top));
 
-	/* init newly allocated slots (only) */
+	/* Init newly allocated slots (only). */
 	p = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
 	while (p < thr->valstack_end) {
-		/* never executed if new size is smaller */
-		DUK_TVAL_SET_UNDEFINED_UNUSED(p);
+		/* Never executed if new size is smaller. */
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(p);
 		p++;
 	}
 
-	/* assertion check: we maintain elements above top in known state */
-#ifdef DUK_USE_ASSERTIONS
+	/* Assert for value stack initialization policy. */
+#if defined(DUK_USE_ASSERTIONS)
 	p = thr->valstack_top;
 	while (p < thr->valstack_end) {
-		/* everything above old valstack top should be preinitialized now */
-		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_UNUSED(p));
+		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(p));
 		p++;
 	}
 #endif
+
 	return 1;
 }
 
@@ -625,7 +634,12 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
+#if defined(DUK_USE_PREFER_SIZE)
 	old_size = (duk_size_t) (thr->valstack_end - thr->valstack);
+#else
+	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
+	old_size = thr->valstack_size;
+#endif
 
 	if (min_new_size <= old_size) {
 		is_shrink = 1;
@@ -901,7 +915,7 @@ DUK_EXTERNAL void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	 */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 	DUK_TVAL_SET_TVAL(tv2, tv1);
-	DUK_TVAL_SET_UNDEFINED_UNUSED(tv1);
+	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
 	thr->valstack_top--;
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 }
@@ -955,7 +969,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t index) {
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 	DUK_MEMMOVE(p, p + 1, nbytes);  /* zero size not an issue: pointers are valid */
 
-	DUK_TVAL_SET_UNDEFINED_UNUSED(q);
+	DUK_TVAL_SET_UNDEFINED_ACTUAL(q);
 	thr->valstack_top--;
 
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -1016,24 +1030,22 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	to_thr->valstack_top = (duk_tval *) (void *) (((duk_uint8_t *) p) + nbytes);
 
 	if (is_copy) {
-		/* incref copies, keep originals */
+		/* Incref copies, keep originals. */
 		q = to_thr->valstack_top;
 		while (p < q) {
 			DUK_TVAL_INCREF(to_thr, p);  /* no side effects */
 			p++;
 		}
 	} else {
-		/* no net refcount change */
+		/* No net refcount change. */
 		p = from_thr->valstack_top;
 		q = (duk_tval *) (void *) (((duk_uint8_t *) p) - nbytes);
 		from_thr->valstack_top = q;
 
-		/* elements above stack top are kept UNUSED */
 		while (p > q) {
 			p--;
-			DUK_TVAL_SET_UNDEFINED_UNUSED(p);
-
-			/* XXX: fast primitive to set a bunch of values to UNDEFINED_UNUSED */
+			DUK_TVAL_SET_UNDEFINED_ACTUAL(p);
+			/* XXX: fast primitive to set a bunch of values to UNDEFINED */
 		}
 	}
 }
@@ -2886,13 +2898,16 @@ DUK_INTERNAL void duk_push_unused(duk_context *ctx) {
 
 DUK_EXTERNAL void duk_push_undefined(duk_context *ctx) {
 	duk_hthread *thr;
-	duk_tval *tv_slot;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK__CHECK_SPACE();
-	tv_slot = thr->valstack_top++;
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv_slot);
+
+	/* Because value stack init policy is 'undefined above top',
+	 * we don't need to write, just assert.
+	 */
+	thr->valstack_top++;
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(thr->valstack_top - 1));
 }
 
 DUK_EXTERNAL void duk_push_null(duk_context *ctx) {
@@ -4129,16 +4144,17 @@ DUK_INTERNAL void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builti
 
 DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	if (count < 0) {
+	if (DUK_UNLIKELY(count < 0)) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_COUNT);
 		return;
 	}
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-	if ((duk_size_t) (thr->valstack_top - thr->valstack_bottom) < (duk_size_t) count) {
+	if (DUK_UNLIKELY((duk_size_t) (thr->valstack_top - thr->valstack_bottom) < (duk_size_t) count)) {
 		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_POP_TOO_MANY);
 	}
 
@@ -4152,33 +4168,58 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	 * instability), inline code.
 	 */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
-	while (count > 0) {
-		duk_tval *tv;
+	/* XXX: optimize loops */
 
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	while (count > 0) {
+		count--;
 		tv = --thr->valstack_top;  /* tv points to element just below prev top */
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);  /* side effects */
-		count--;
+		DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
 	}
 #else
+	tv = thr->valstack_top;
 	while (count > 0) {
-		duk_tval *tv;
-
-		tv = --thr->valstack_top;
-		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
 		count--;
+		tv--;
+		DUK_ASSERT(tv >= thr->valstack_bottom);
+		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
 	}
+	thr->valstack_top = tv;
 #endif
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 }
 
+/* Popping one element is called so often that when footprint is not an issue,
+ * compile a specialized function for it.
+ */
+#if defined(DUK_USE_PREFER_SIZE)
 DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	duk_pop_n(ctx, 1);
 }
+#else
+DUK_EXTERNAL void duk_pop(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	if (DUK_UNLIKELY(thr->valstack_top == thr->valstack_bottom)) {
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_POP_TOO_MANY);
+	}
+
+	tv = --thr->valstack_top;  /* tv points to element just below prev top */
+	DUK_ASSERT(tv >= thr->valstack_bottom);
+#ifdef DUK_USE_REFERENCE_COUNTING
+	DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
+#else
+	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+#endif
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+}
+#endif  /* !DUK_USE_PREFER_SIZE */
 
 DUK_EXTERNAL void duk_pop_2(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);

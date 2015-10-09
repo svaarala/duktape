@@ -1,6 +1,6 @@
 define: DUK_USE_PREFER_SIZE
 introduced: 1.2.0
-default: true
+default: false
 tags:
   - lowmemory
 description: >
