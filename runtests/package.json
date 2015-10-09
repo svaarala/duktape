@@ -7,12 +7,12 @@
         "email": "sami.vaarala@iki.fi"
     },
     "dependencies": {
-        "optimist": "~0.3.5",
-        "async": "~0.2.4",
-        "xml2js": "~0.2.4",
         "MD5": "~1.0.0",
+        "async": "~0.2.4",
+        "optimist": "~0.3.5",
+        "tmp": "0.0.27",
+        "xml2js": "~0.2.4",
         "yamljs": "~0.2.1"
     },
     "main": "runtests.js"
 }
-
