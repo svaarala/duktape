@@ -685,9 +685,10 @@ some cases:
 |                       |           | length in network order and buffer    |
 |                       |           | data follows initial byte             |
 +-----------------------+-----------+---------------------------------------+
-| 0x15                  | unused    | Represents the internal "undefined    |
-|                       |           | unused" type which used to e.g. mark  |
-|                       |           | unused (unmapped) array entries       |
+| 0x15                  | unused    | Represents an unused/none value, used |
+|                       |           | internally to mark unmapped array     |
+|                       |           | entries and in the debugger protocol  |
+|                       |           | to indicate a "none" result           |
 +-----------------------+-----------+---------------------------------------+
 | 0x16                  | undefined | Ecmascript "undefined"                |
 +-----------------------+-----------+---------------------------------------+
@@ -809,6 +810,14 @@ Notes:
   (Duktape.Buffer, Node.js Buffer, ArrayBuffer, DataView, and TypedArray
   views) are represented as objects.  This means that their contents are
   not transmitted, only their heap pointer and a class number.
+
+* The "unused" value is special: it's used internally by Duktape to mark
+  unmapped array entries, but is not intended to be used for actual values
+  (entries on the value stack, property values, etc).  The "unused" value
+  is used in the debugger protocol to denote a missing/none value in some
+  command replies.  It's not used in requests, so the debug client should
+  never send an "unused" dvalue in a request (e.g. PutVar); Duktape will
+  reject such a request as having a format error.
 
 Endianness
 ----------

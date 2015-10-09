@@ -179,8 +179,8 @@ necessary information (in a highly fragile manner though).  For instance,
 you can use something like::
 
   /* Fastint tag depends on duk_tval packing */
-  var fastintTag = (Duktape.info(true)[1] === 0xfff4 ?
-                   0xfff1 /* tag for packed duk_tval) :
+  var fastintTag = (Duktape.info(true)[1] === 0xfff5 ?
+                   0xfff2 /* tag for packed duk_tval) :
                    1 /* tag for unpacked duk_tval */ );
 
   function isFastint(x) {
