@@ -1171,6 +1171,9 @@ Planned
   so that values above current value stack top are set to "undefined" instead
   of "unused" to improve call performance (GH-389)
 
+* Internal performance improvement: use a separate 'unused' tag instead of a
+  sub-type of 'undefined' to e.g. mark gaps in arrays (GH-396)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
