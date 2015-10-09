@@ -1201,8 +1201,8 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
 	thr->heap->lj.iserror = 0;
 
-	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
-	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
  just_return:
 	return retval;
@@ -2269,7 +2269,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_tval *tv;
 			tv = thr->valstack_top;
 			while (tv != thr->valstack_end) {
-				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(tv));
+				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv));
 				tv++;
 			}
 		}
@@ -3769,7 +3769,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				duk_tval *tv1;
 
 				tv1 = DUK__REGP(bc);
-				DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv1);  /* side effects */
+				DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
 				break;
 			}
 
@@ -4025,7 +4025,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-					DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv1);  /* side effects */
+					DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
 					tv1 = NULL;
 
 					tv1 = thr->valstack + cat->idx_base + 1;
@@ -4083,7 +4083,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 					tv1 = thr->valstack + cat->idx_base;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-					DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv1);  /* side effects */
+					DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
 					tv1 = NULL;
 
 					tv1 = thr->valstack + cat->idx_base + 1;

@@ -1586,8 +1586,8 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 * runs etc capture even out-of-memory errors so nothing should
 		 * throw here.
 		 */
-		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
-		DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
 		DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 	}
@@ -1972,8 +1972,8 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	 * runs etc capture even out-of-memory errors so nothing should
 	 * throw here.
 	 */
-	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
-	DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
 	DUK_DDD(DUK_DDDPRINT("setjmp catchpoint torn down"));
 

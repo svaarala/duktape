@@ -388,7 +388,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			/* leave out trailing 'unused' elements */
 			while (a_limit > 0) {
 				tv = DUK_HOBJECT_A_GET_VALUE_PTR(NULL, h, a_limit - 1);
-				if (!DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
+				if (!DUK_TVAL_IS_UNUSED(tv)) {
 					break;
 				}
 				a_limit--;
@@ -717,11 +717,11 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	}
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED: {
-		if (DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
-			duk_fb_put_cstring(fb, "unused");
-		} else {
-			duk_fb_put_cstring(fb, "undefined");
-		}
+		duk_fb_put_cstring(fb, "undefined");
+		break;
+	}
+	case DUK_TAG_UNUSED: {
+		duk_fb_put_cstring(fb, "unused");
 		break;
 	}
 	case DUK_TAG_NULL: {
@@ -764,6 +764,7 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 #endif
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		duk_fb_sprintf(fb, "%.18g", (double) DUK_TVAL_GET_NUMBER(tv));
 		break;

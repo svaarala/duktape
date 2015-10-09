@@ -1698,7 +1698,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 				DUK_UNREF(tmp);
 			} else {
 				tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, holder, e_idx);
-				DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF(thr, tv);
+				DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);
 			}
 
 			/* Here val would be potentially invalid if we didn't make

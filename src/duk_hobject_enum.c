@@ -379,7 +379,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			duk_tval *tv;
 
 			tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, curr, i);
-			if (DUK_TVAL_IS_UNDEFINED_UNUSED(tv)) {
+			if (DUK_TVAL_IS_UNUSED(tv)) {
 				continue;
 			}
 			k = duk_heap_string_intern_u32_checked(thr, i);
@@ -419,7 +419,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			}
 
 			DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, curr, i) ||
-			           !DUK_TVAL_IS_UNDEFINED_UNUSED(&DUK_HOBJECT_E_GET_VALUE_PTR(thr->heap, curr, i)->v));
+			           !DUK_TVAL_IS_UNUSED(&DUK_HOBJECT_E_GET_VALUE_PTR(thr->heap, curr, i)->v));
 
 			duk_push_hstring(ctx, k);
 			duk_push_true(ctx);
@@ -536,7 +536,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 		k = DUK_HOBJECT_E_GET_KEY(thr->heap, e, idx);
 		DUK_ASSERT(k != NULL);
 		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, e, idx));
-		DUK_ASSERT(!DUK_TVAL_IS_UNDEFINED_UNUSED(&DUK_HOBJECT_E_GET_VALUE(thr->heap, e, idx).v));
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(&DUK_HOBJECT_E_GET_VALUE(thr->heap, e, idx).v));
 
 		idx++;
 
