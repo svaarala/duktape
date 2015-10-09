@@ -604,8 +604,10 @@ static void debugger_detached(void *udata) {
 #define  ALLOC_HYBRID   3
 #define  ALLOC_AJSHEAP  4
 
-static duk_context *create_duktape_heap(int alloc_provider, int debugger) {
+static duk_context *create_duktape_heap(int alloc_provider, int debugger, int ajsheap_log) {
 	duk_context *ctx;
+
+	(void) ajsheap_log;  /* suppress warning */
 
 	ctx = NULL;
 	if (!ctx && alloc_provider == ALLOC_LOGGING) {
@@ -906,7 +908,7 @@ int main(int argc, char *argv[]) {
 	 *  Create heap
 	 */
 
-	ctx = create_duktape_heap(alloc_provider, debugger);
+	ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
 
 	/*
 	 *  Execute any argument file(s)
@@ -952,7 +954,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			destroy_duktape_heap(ctx, alloc_provider);
-			ctx = create_duktape_heap(alloc_provider, debugger);
+			ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
 		}
 	}
 
@@ -973,7 +975,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			destroy_duktape_heap(ctx, alloc_provider);
-			ctx = create_duktape_heap(alloc_provider, debugger);
+			ctx = create_duktape_heap(alloc_provider, debugger, ajsheap_log);
 		}
 	}
 
