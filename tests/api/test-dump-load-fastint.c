@@ -23,7 +23,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 	duk_eval_string_noresult(ctx,
 		"Object.defineProperty(Duktape, 'fastintTag', {\n"
 		"    /* Tag number depends on duk_tval packing. */\n"
-		"    value: (Duktape.info(true)[1] === 0xfff4) ?\n"
+		"    value: (Duktape.info(true)[1] >= 0xfff0) ?\n"
 		"            0xfff1 /* tag for packed duk_tval */ :\n"
 		"            1 /* tag for unpacked duk_tval */,\n"
 		"    writable: false,\n"
