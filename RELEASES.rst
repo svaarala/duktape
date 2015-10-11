@@ -1174,6 +1174,9 @@ Planned
 * Internal performance improvement: use a separate 'unused' tag instead of a
   sub-type of 'undefined' to e.g. mark gaps in arrays (GH-396)
 
+* Internal performance improvement: rework "effective this" handling for
+  better call performance (GH-397)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 

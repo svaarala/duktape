@@ -617,44 +617,45 @@ void duk__coerce_effective_this_binding(duk_hthread *thr,
                                         duk_hobject *func,
                                         duk_idx_t idx_this) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_small_int_t strict;
+	duk_tval *tv_this;
+	duk_hobject *obj_global;
 
-	if (func) {
-		strict = DUK_HOBJECT_HAS_STRICT(func);
-	} else {
+	if (func == NULL || DUK_HOBJECT_HAS_STRICT(func)) {
 		/* Lightfuncs are always considered strict. */
-		strict = 1;
+		DUK_DDD(DUK_DDDPRINT("this binding: strict -> use directly"));
+		return;
 	}
 
-	if (strict) {
-		DUK_DDD(DUK_DDDPRINT("this binding: strict -> use directly"));
-	} else {
-		duk_tval *tv_this = duk_require_tval(ctx, idx_this);
-		duk_hobject *obj_global;
-
-		if (DUK_TVAL_IS_OBJECT(tv_this)) {
-			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, object -> use directly"));
-		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_this)) {
-			/* Lightfuncs are treated like objects and not coerced. */
-			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, lightfunc -> use directly"));
-		} else if (DUK_TVAL_IS_UNDEFINED(tv_this) || DUK_TVAL_IS_NULL(tv_this)) {
-			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, undefined/null -> use global object"));
-			obj_global = thr->builtins[DUK_BIDX_GLOBAL];
-			if (obj_global) {
-				duk_push_hobject(ctx, obj_global);
-			} else {
-				/*
-				 *  This may only happen if built-ins are being "torn down".
-				 *  This behavior is out of specification scope.
-				 */
-				DUK_D(DUK_DPRINT("this binding: wanted to use global object, but it is NULL -> using undefined instead"));
-				duk_push_undefined(ctx);
-			}
-			duk_replace(ctx, idx_this);
+	/* XXX: byte offset */
+	tv_this = thr->valstack_bottom + idx_this;
+	switch (DUK_TVAL_GET_TAG(tv_this)) {
+	case DUK_TAG_OBJECT:
+	case DUK_TAG_LIGHTFUNC:  /* lightfuncs are treated like objects and not coerced */
+		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, object -> use directly"));
+		break;
+	case DUK_TAG_UNDEFINED:
+	case DUK_TAG_NULL:
+		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, undefined/null -> use global object"));
+		obj_global = thr->builtins[DUK_BIDX_GLOBAL];
+		/* XXX: avoid this check somehow */
+		if (DUK_LIKELY(obj_global != NULL)) {
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_this));  /* no need to decref previous value */
+			DUK_TVAL_SET_OBJECT(tv_this, obj_global);
+			DUK_HOBJECT_INCREF(thr, obj_global);
 		} else {
-			DUK_DDD(DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)"));
-			duk_to_object(ctx, idx_this);  /* may have side effects */
+			/* This may only happen if built-ins are being "torn down".
+			 * This behavior is out of specification scope.
+			 */
+			DUK_D(DUK_DPRINT("this binding: wanted to use global object, but it is NULL -> using undefined instead"));
+			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv_this));  /* no need to decref previous value */
+			DUK_TVAL_SET_UNDEFINED(tv_this);  /* nothing to incref */
 		}
+		break;
+	default:
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_this));
+		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)"));
+		duk_to_object(ctx, idx_this);  /* may have side effects */
+		break;
 	}
 }
 

@@ -436,7 +436,7 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#define DUK_TVAL_SET_STRING_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_STRING_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
 		DUK_TVAL_SET_STRING(tv__dst, (newval)); \
@@ -444,7 +444,7 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#define DUK_TVAL_SET_OBJECT_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_OBJECT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
 		DUK_TVAL_SET_OBJECT(tv__dst, (newval)); \
@@ -452,7 +452,7 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#define DUK_TVAL_SET_BUFFER_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_BUFFER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
 		DUK_TVAL_SET_BUFFER(tv__dst, (newval)); \
@@ -460,7 +460,7 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#define DUK_TVAL_SET_POINTER_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_POINTER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
 		DUK_TVAL_SET_POINTER(tv__dst, (newval)); \
@@ -693,25 +693,25 @@ struct duk_heaphdr_string {
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_STRING_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_STRING_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_STRING(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_OBJECT_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_OBJECT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_OBJECT(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_BUFFER_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_BUFFER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_BUFFER(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_POINTER_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_POINTER_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_POINTER(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
