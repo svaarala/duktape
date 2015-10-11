@@ -356,17 +356,17 @@ struct duk_heaphdr_string {
  *  and footprint critical; any changes made should be measured for size/speed.
  */
 
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0(thr,tvptr_dst) do { \
+#define DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0(thr,tvptr_dst) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv__dst); \
+		DUK_TVAL_SET_UNDEFINED(tv__dst); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
-#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
+#define DUK_TVAL_SET_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_UNDEFINED_UNUSED(tv__dst); \
+		DUK_TVAL_SET_UNUSED(tv__dst); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 
@@ -563,8 +563,8 @@ struct duk_heaphdr_string {
 #endif
 
 /* XXX: no optimized variants yet */
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF  DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0
-#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF  DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0
+#define DUK_TVAL_SET_UNDEFINED_UPDREF         DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0
+#define DUK_TVAL_SET_UNUSED_UPDREF            DUK_TVAL_SET_UNUSED_UPDREF_ALT0
 #define DUK_TVAL_SET_NULL_UPDREF              DUK_TVAL_SET_NULL_UPDREF_ALT0
 #define DUK_TVAL_SET_BOOLEAN_UPDREF           DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0
 #define DUK_TVAL_SET_NUMBER_UPDREF            DUK_TVAL_SET_NUMBER_UPDREF_ALT0
@@ -625,15 +625,15 @@ struct duk_heaphdr_string {
 #define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0(thr,tvptr_dst) do { \
+#define DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0(thr,tvptr_dst) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv__dst); \
+		DUK_TVAL_SET_UNDEFINED(tv__dst); \
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
+#define DUK_TVAL_SET_UNUSED_UPDREF_ALT0(thr,tvptr_dst) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_UNDEFINED_UNUSED(tv__dst); \
+		DUK_TVAL_SET_UNUSED(tv__dst); \
 		DUK_UNREF((thr)); \
 	} while (0)
 
@@ -724,8 +724,8 @@ struct duk_heaphdr_string {
 		DUK_UNREF((thr)); \
 	} while (0)
 
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF  DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF_ALT0
-#define DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF  DUK_TVAL_SET_UNDEFINED_UNUSED_UPDREF_ALT0
+#define DUK_TVAL_SET_UNDEFINED_UPDREF         DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0
+#define DUK_TVAL_SET_UNUSED_UPDREF            DUK_TVAL_SET_UNUSED_UPDREF_ALT0
 #define DUK_TVAL_SET_NULL_UPDREF              DUK_TVAL_SET_NULL_UPDREF_ALT0
 #define DUK_TVAL_SET_BOOLEAN_UPDREF           DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0
 #define DUK_TVAL_SET_NUMBER_UPDREF            DUK_TVAL_SET_NUMBER_UPDREF_ALT0

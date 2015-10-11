@@ -102,6 +102,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 		/* number */
 		duk_double_t d;
 		int c;
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 		d = DUK_TVAL_GET_DOUBLE(tv);
 		c = DUK_FPCLASSIFY((double) d);
@@ -240,6 +241,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 #endif
 	default: {
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 		return DUK_TVAL_GET_DOUBLE(tv);
 	}
@@ -637,6 +639,8 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		case DUK_TAG_FASTINT:
 #endif
 		default: {
+			DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_x));
+			DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_y));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
 			DUK_UNREACHABLE();
@@ -1286,6 +1290,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 #endif
 	default: {
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_x));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 		stridx = DUK_STRIDX_LC_NUMBER;
 		break;

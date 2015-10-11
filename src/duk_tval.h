@@ -47,22 +47,20 @@ typedef union duk_double_union duk_tval;
 #if defined(DUK_USE_FASTINT)
 #define DUK_TAG_FASTINT           0xfff1UL   /* embed: integer value */
 #endif
-#define DUK_TAG_UNDEFINED         0xfff2UL   /* embed: 0 or 1 (normal or unused) */
-#define DUK_TAG_NULL              0xfff3UL   /* embed: nothing */
-#define DUK_TAG_BOOLEAN           0xfff4UL   /* embed: 0 or 1 (false or true) */
+#define DUK_TAG_UNUSED            0xfff2UL   /* marker; not actual tagged value */
+#define DUK_TAG_UNDEFINED         0xfff3UL   /* embed: nothing */
+#define DUK_TAG_NULL              0xfff4UL   /* embed: nothing */
+#define DUK_TAG_BOOLEAN           0xfff5UL   /* embed: 0 or 1 (false or true) */
 /* DUK_TAG_NUMBER would logically go here, but it has multiple 'tags' */
-#define DUK_TAG_POINTER           0xfff5UL   /* embed: void ptr */
-#define DUK_TAG_LIGHTFUNC         0xfff6UL   /* embed: func ptr */
-#define DUK_TAG_STRING            0xfff7UL   /* embed: duk_hstring ptr */
-#define DUK_TAG_OBJECT            0xfff8UL   /* embed: duk_hobject ptr */
-#define DUK_TAG_BUFFER            0xfff9UL   /* embed: duk_hbuffer ptr */
+#define DUK_TAG_POINTER           0xfff6UL   /* embed: void ptr */
+#define DUK_TAG_LIGHTFUNC         0xfff7UL   /* embed: func ptr */
+#define DUK_TAG_STRING            0xfff8UL   /* embed: duk_hstring ptr */
+#define DUK_TAG_OBJECT            0xfff9UL   /* embed: duk_hobject ptr */
+#define DUK_TAG_BUFFER            0xfffaUL   /* embed: duk_hbuffer ptr */
 
 /* for convenience */
-#define DUK_XTAG_UNDEFINED_ACTUAL 0xfff20000UL
-#define DUK_XTAG_UNDEFINED_UNUSED 0xfff20001UL
-#define DUK_XTAG_NULL             0xfff30000UL
-#define DUK_XTAG_BOOLEAN_FALSE    0xfff40000UL
-#define DUK_XTAG_BOOLEAN_TRUE     0xfff40001UL
+#define DUK_XTAG_BOOLEAN_FALSE    0xfff50000UL
+#define DUK_XTAG_BOOLEAN_TRUE     0xfff50001UL
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
 #ifdef DUK_USE_64BIT_OPS
@@ -139,10 +137,12 @@ typedef union duk_double_union duk_tval;
 #define DUK__TVAL_GET_FASTINT_I32(v)  ((duk_int32_t) (v)->ui[DUK_DBL_IDX_UI1])
 #endif  /* DUK_USE_FASTINT */
 
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL(v)    DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_ACTUAL)
-#define DUK_TVAL_SET_UNDEFINED_UNUSED(v)    DUK_DBLUNION_SET_HIGH32((v), DUK_XTAG_UNDEFINED_UNUSED)
-
-/* Note: 16-bit initializer suffices (unlike for undefined/boolean) */
+#define DUK_TVAL_SET_UNDEFINED(v)  do { \
+		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_UNDEFINED; \
+	} while (0)
+#define DUK_TVAL_SET_UNUSED(v)  do { \
+		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_UNUSED; \
+	} while (0)
 #define DUK_TVAL_SET_NULL(v)  do { \
 		(v)->us[DUK_DBL_IDX_US0] = (duk_uint16_t) DUK_TAG_NULL; \
 	} while (0)
@@ -221,8 +221,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_GET_TAG(v)                 ((duk_small_uint_t) (v)->us[DUK_DBL_IDX_US0])
 
 #define DUK_TVAL_IS_UNDEFINED(v)            (DUK_TVAL_GET_TAG((v)) == DUK_TAG_UNDEFINED)
-#define DUK_TVAL_IS_UNDEFINED_ACTUAL(v)     ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_UNDEFINED_ACTUAL)
-#define DUK_TVAL_IS_UNDEFINED_UNUSED(v)     ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_UNDEFINED_UNUSED)
+#define DUK_TVAL_IS_UNUSED(v)               (DUK_TVAL_GET_TAG((v)) == DUK_TAG_UNUSED)
 #define DUK_TVAL_IS_NULL(v)                 (DUK_TVAL_GET_TAG((v)) == DUK_TAG_NULL)
 #define DUK_TVAL_IS_BOOLEAN(v)              (DUK_TVAL_GET_TAG((v)) == DUK_TAG_BOOLEAN)
 #define DUK_TVAL_IS_BOOLEAN_TRUE(v)         ((v)->ui[DUK_DBL_IDX_UI0] == DUK_XTAG_BOOLEAN_TRUE)
@@ -242,6 +241,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_IS_DOUBLE(v)               DUK_TVAL_IS_NUMBER((v))
 #endif
 
+/* This is performance critical because it appears in every DECREF. */
 #define DUK_TVAL_IS_HEAP_ALLOCATED(v)       (DUK_TVAL_GET_TAG((v)) >= DUK_TAG_STRING)
 
 #if defined(DUK_USE_FASTINT)
@@ -295,9 +295,10 @@ struct duk_tval_struct {
 #define DUK_TAG_BOOLEAN               4
 #define DUK_TAG_POINTER               5
 #define DUK_TAG_LIGHTFUNC             6
-#define DUK_TAG_STRING                7
-#define DUK_TAG_OBJECT                8
-#define DUK_TAG_BUFFER                9
+#define DUK_TAG_UNUSED                7  /* marker; not actual tagged type */
+#define DUK_TAG_STRING                8  /* first heap allocated, match bit boundary */
+#define DUK_TAG_OBJECT                9
+#define DUK_TAG_BUFFER                10
 
 /* DUK__TAG_NUMBER is intentionally first, as it is the default clause in code
  * to support the 8-byte representation.  Further, it is a non-heap-allocated
@@ -306,14 +307,12 @@ struct duk_tval_struct {
  */
 
 /* setters */
-#define DUK_TVAL_SET_UNDEFINED_ACTUAL(tv)  do { \
+#define DUK_TVAL_SET_UNDEFINED(tv)  do { \
 		(tv)->t = DUK_TAG_UNDEFINED; \
-		(tv)->v.i = 0; \
 	} while (0)
 
-#define DUK_TVAL_SET_UNDEFINED_UNUSED(tv)  do { \
-		(tv)->t = DUK_TAG_UNDEFINED; \
-		(tv)->v.i = 1; \
+#define DUK_TVAL_SET_UNUSED(tv)  do { \
+		(tv)->t = DUK_TAG_UNUSED; \
 	} while (0)
 
 #define DUK_TVAL_SET_NULL(tv)  do { \
@@ -438,8 +437,7 @@ struct duk_tval_struct {
 /* decoding */
 #define DUK_TVAL_GET_TAG(tv)               ((tv)->t)
 #define DUK_TVAL_IS_UNDEFINED(tv)          ((tv)->t == DUK_TAG_UNDEFINED)
-#define DUK_TVAL_IS_UNDEFINED_ACTUAL(tv)   (((tv)->t == DUK_TAG_UNDEFINED) && ((tv)->v.i == 0))
-#define DUK_TVAL_IS_UNDEFINED_UNUSED(tv)   (((tv)->t == DUK_TAG_UNDEFINED) && ((tv)->v.i != 0))
+#define DUK_TVAL_IS_UNUSED(tv)             ((tv)->t == DUK_TAG_UNUSED)
 #define DUK_TVAL_IS_NULL(tv)               ((tv)->t == DUK_TAG_NULL)
 #define DUK_TVAL_IS_BOOLEAN(tv)            ((tv)->t == DUK_TAG_BOOLEAN)
 #define DUK_TVAL_IS_BOOLEAN_TRUE(tv)       (((tv)->t == DUK_TAG_BOOLEAN) && ((tv)->v.i != 0))
@@ -459,8 +457,15 @@ struct duk_tval_struct {
 #define DUK_TVAL_IS_OBJECT(tv)             ((tv)->t == DUK_TAG_OBJECT)
 #define DUK_TVAL_IS_BUFFER(tv)             ((tv)->t == DUK_TAG_BUFFER)
 
-/* XXX: rework to make this into a bit test? Matters to refcount code. */
+/* This is performance critical because it's needed for every DECREF.
+ * Take advantage of the fact that the first heap allocated tag is 8,
+ * so that bit 3 is set for all heap allocated tags (and never set for
+ * non-heap-allocated tags).
+ */
+#if 0
 #define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t >= DUK_TAG_STRING)
+#endif
+#define DUK_TVAL_IS_HEAP_ALLOCATED(tv)     ((tv)->t & 0x08)
 
 #if defined(DUK_USE_FASTINT)
 #if 0

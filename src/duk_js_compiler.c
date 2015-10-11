@@ -611,9 +611,9 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, h_varmap, i);
 		if (!DUK_TVAL_IS_NUMBER(tv)) {
 			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv));
-			DUK_TVAL_SET_UNDEFINED_UNUSED(tv);
 			DUK_HOBJECT_E_SET_KEY(thr->heap, h_varmap, i, NULL);
 			DUK_HSTRING_DECREF(thr, h_key);
+			/* when key is NULL, value is garbage so no need to set */
 		} else {
 			ret++;
 		}
@@ -2047,6 +2047,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 			duk_double_t dval;
 			duk_int32_t ival;
 
+			DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 			dval = DUK_TVAL_GET_NUMBER(tv);
 

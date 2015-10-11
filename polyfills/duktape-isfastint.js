@@ -16,7 +16,7 @@ if (typeof Duktape === 'object') {
     if (typeof Duktape.fastintTag === 'undefined') {
         Object.defineProperty(Duktape, 'fastintTag', {
             /* Tag number depends on duk_tval packing. */
-            value: (Duktape.info(true)[1] === 0xfff4) ?
+            value: (Duktape.info(true)[1] >= 0xfff0) ?
                     0xfff1 /* tag for packed duk_tval */ :
                     1 /* tag for unpacked duk_tval */,
             writable: false,

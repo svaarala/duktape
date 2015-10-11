@@ -2012,6 +2012,8 @@ DUK_LOCAL void duk__enc_value2(duk_json_enc_ctx *js_ctx) {
 #endif
 	default: {
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		/* XXX: A fast path for usual integers would be useful when
 		 * fastint support is not enabled.
 		 */
@@ -2258,7 +2260,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 				tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(js_ctx->thr->heap, obj, i);
 
-				if (DUK_UNLIKELY(DUK_TVAL_IS_UNDEFINED_UNUSED(tv_val))) {
+				if (DUK_UNLIKELY(DUK_TVAL_IS_UNUSED(tv_val))) {
 					/* Gap in array; check for inherited property,
 					 * bail out if one exists.  This should be enough
 					 * to support gappy arrays for all practical code.
@@ -2360,6 +2362,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		/* XXX: A fast path for usual integers would be useful when
 		 * fastint support is not enabled.
 		 */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+
 		/* XXX: Stack discipline is annoying, could be changed in numconv. */
 		duk_push_tval((duk_context *) js_ctx->thr, tv);
 		duk__enc_double(js_ctx);

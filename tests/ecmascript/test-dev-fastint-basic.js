@@ -90,7 +90,7 @@ function printFastint(v) {
 
     if (typeof Duktape !== 'object') {
         isfast = ' NOT-DUKTAPE';
-    } else if (Duktape.info(true)[1] === 0xfff4) {
+    } else if (Duktape.info(true)[1] >= 0xfff0) {
         // packed duk_tval
         if (Duktape.info(v)[1] === 0xfff1) {
             isfast = ' fastint';

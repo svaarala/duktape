@@ -399,9 +399,6 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		len = duk__debug_read_uint16_raw(thr);
 		duk__debug_read_hbuffer_raw(thr, len);
 		break;
-	case 0x15:
-		duk_push_unused(ctx);
-		break;
 	case 0x16:
 		duk_push_undefined(ctx);
 		break;
@@ -440,6 +437,7 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		duk_push_heapptr(thr, (void *) h);
 		break;
 	}
+	case 0x15:  /* unused: not accepted in inbound messages */
 	default:
 		goto fail;
 	}
@@ -689,8 +687,10 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
-		duk_debug_write_byte(thr,
-		                     DUK_TVAL_IS_UNDEFINED_UNUSED(tv) ? 0x15 : 0x16);
+		duk_debug_write_byte(thr, 0x16);
+		break;
+	case DUK_TAG_UNUSED:
+		duk_debug_write_byte(thr, 0x15);
 		break;
 	case DUK_TAG_NULL:
 		duk_debug_write_byte(thr, 0x17);
@@ -726,6 +726,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 #endif
 	default:
 		/* Numbers are normalized to big (network) endian. */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		du.d = DUK_TVAL_GET_NUMBER(tv);
 		DUK_DBLUNION_DOUBLE_HTON(&du);

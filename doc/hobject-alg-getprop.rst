@@ -489,10 +489,10 @@ Some notes:
 
 * A certain key in the array can be defined even if the value is ``undefined``.
   The check is whether the key has been defined, i.e. ``[[HasProperty]]``
-  would be true.  Internally, the value "undefined unused" is used to denote
-  unused entries with unused keys, while the value "undefined actual"
-  represents an undefined value with a defined key.  For instance, the
-  following defines an array key::
+  would be true.  Internally, the value "unused" is used to denote unused
+  entries with unused keys, while the value "undefined" represents an
+  undefined value with a defined key.  For instance, the following defines
+  an array key::
 
     var a = [];
     a[10] = undefined;  // "10" will now enumerate

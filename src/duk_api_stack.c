@@ -392,7 +392,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 		while (count != 0) {
 			count--;
 			tv = thr->valstack_top + count;
-			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(tv));
+			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv));
 		}
 #endif
 		thr->valstack_top = thr->valstack_bottom + uindex;
@@ -407,7 +407,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 			count--;
 			tv = --thr->valstack_top;  /* tv -> value just before prev top value; must relookup */
 			DUK_ASSERT(tv >= thr->valstack_bottom);
-			DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
+			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 		}
 #else  /* DUK_USE_REFERENCE_COUNTING */
 		duk_uidx_t count;
@@ -419,7 +419,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 		DUK_ASSERT(tv > tv_end);
 		do {
 			tv--;
-			DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+			DUK_TVAL_SET_UNDEFINED(tv);
 		} while (tv != tv_end);
 		thr->valstack_top = tv_end;
 #endif  /* DUK_USE_REFERENCE_COUNTING */
@@ -541,7 +541,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	 *     because mark-and-sweep must adhere to a strict stack policy.
 	 *     In other words, logical bottom and top MUST NOT have changed.
 	 *   - All values above the top are unreachable but are initialized
-	 *     to UNDEFINED_UNUSED, up to the post-realloc valstack_end.
+	 *     to UNDEFINED, up to the post-realloc valstack_end.
 	 *   - 'old_end_offset' must be computed after realloc to be correct.
 	 */
 
@@ -592,7 +592,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	p = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
 	while (p < thr->valstack_end) {
 		/* Never executed if new size is smaller. */
-		DUK_TVAL_SET_UNDEFINED_ACTUAL(p);
+		DUK_TVAL_SET_UNDEFINED(p);
 		p++;
 	}
 
@@ -600,7 +600,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 #if defined(DUK_USE_ASSERTIONS)
 	p = thr->valstack_top;
 	while (p < thr->valstack_end) {
-		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(p));
+		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(p));
 		p++;
 	}
 #endif
@@ -915,7 +915,7 @@ DUK_EXTERNAL void duk_replace(duk_context *ctx, duk_idx_t to_index) {
 	 */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv2);
 	DUK_TVAL_SET_TVAL(tv2, tv1);
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv1);
+	DUK_TVAL_SET_UNDEFINED(tv1);
 	thr->valstack_top--;
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 }
@@ -969,7 +969,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t index) {
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
 	DUK_MEMMOVE(p, p + 1, nbytes);  /* zero size not an issue: pointers are valid */
 
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(q);
+	DUK_TVAL_SET_UNDEFINED(q);
 	thr->valstack_top--;
 
 #ifdef DUK_USE_REFERENCE_COUNTING
@@ -1044,7 +1044,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 
 		while (p > q) {
 			p--;
-			DUK_TVAL_SET_UNDEFINED_ACTUAL(p);
+			DUK_TVAL_SET_UNDEFINED(p);
 			/* XXX: fast primitive to set a bunch of values to UNDEFINED */
 		}
 	}
@@ -1712,6 +1712,7 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t index) {
 #endif
 	default:
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return 0;
 	}
@@ -1808,7 +1809,7 @@ DUK_EXTERNAL void duk_to_undefined(duk_context *ctx, duk_idx_t index) {
 
 	tv = duk_require_tval(ctx, index);
 	DUK_ASSERT(tv != NULL);
-	DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 }
 
 DUK_EXTERNAL void duk_to_null(duk_context *ctx, duk_idx_t index) {
@@ -2222,6 +2223,7 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t index) {
 #endif
 	default: {
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		duk_push_tval(ctx, tv);
 		duk_numconv_stringify(ctx,
@@ -2347,6 +2349,8 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t index) {
 #endif
 	default:
 		/* number */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		res = NULL;
 		break;
 	}
@@ -2482,6 +2486,8 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	case DUK_TAG_FASTINT:
 #endif
 	default: {
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER);
 		proto = DUK_BIDX_NUMBER_PROTOTYPE;
@@ -2564,6 +2570,7 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t index) {
 #endif
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_NUMBER;
 	}
@@ -2607,6 +2614,7 @@ DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t index) {
 #endif
 	default:
 		/* Note: number has no explicit tag (in 8-byte representation) */
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_MASK_NUMBER;
 	}
@@ -2882,20 +2890,6 @@ DUK_INTERNAL void duk_push_tval(duk_context *ctx, duk_tval *tv) {
 	DUK_TVAL_INCREF(thr, tv);  /* no side effects */
 }
 
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
-/* Right now only needed by the debugger. */
-DUK_INTERNAL void duk_push_unused(duk_context *ctx) {
-	duk_hthread *thr;
-	duk_tval *tv_slot;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-	thr = (duk_hthread *) ctx;
-	DUK__CHECK_SPACE();
-	tv_slot = thr->valstack_top++;
-	DUK_TVAL_SET_UNDEFINED_UNUSED(tv_slot);
-}
-#endif
-
 DUK_EXTERNAL void duk_push_undefined(duk_context *ctx) {
 	duk_hthread *thr;
 
@@ -2907,7 +2901,7 @@ DUK_EXTERNAL void duk_push_undefined(duk_context *ctx) {
 	 * we don't need to write, just assert.
 	 */
 	thr->valstack_top++;
-	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED_ACTUAL(thr->valstack_top - 1));
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top - 1));
 }
 
 DUK_EXTERNAL void duk_push_null(duk_context *ctx) {
@@ -4175,7 +4169,7 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 		count--;
 		tv = --thr->valstack_top;  /* tv points to element just below prev top */
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
+		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 	}
 #else
 	tv = thr->valstack_top;
@@ -4183,7 +4177,7 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 		count--;
 		tv--;
 		DUK_ASSERT(tv >= thr->valstack_bottom);
-		DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+		DUK_TVAL_SET_UNDEFINED(tv);
 	}
 	thr->valstack_top = tv;
 #endif
@@ -4213,9 +4207,9 @@ DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 	tv = --thr->valstack_top;  /* tv points to element just below prev top */
 	DUK_ASSERT(tv >= thr->valstack_bottom);
 #ifdef DUK_USE_REFERENCE_COUNTING
-	DUK_TVAL_SET_UNDEFINED_ACTUAL_UPDREF(thr, tv);  /* side effects */
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 #else
-	DUK_TVAL_SET_UNDEFINED_ACTUAL(tv);
+	DUK_TVAL_SET_UNDEFINED(tv);
 #endif
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 }

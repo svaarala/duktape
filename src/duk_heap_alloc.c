@@ -777,8 +777,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 	DUK_ASSERT(res->lj.type == DUK_LJ_TYPE_UNKNOWN);  /* zero */
 
-	DUK_TVAL_SET_UNDEFINED_UNUSED(&res->lj.value1);
-	DUK_TVAL_SET_UNDEFINED_UNUSED(&res->lj.value2);
+	DUK_TVAL_SET_UNDEFINED(&res->lj.value1);
+	DUK_TVAL_SET_UNDEFINED(&res->lj.value2);
 
 #if (DUK_STRTAB_INITIAL_SIZE < DUK_UTIL_MIN_HASH_PRIME)
 #error initial heap stringtable size is defined incorrectly
