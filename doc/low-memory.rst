@@ -39,20 +39,32 @@ realistic memory targets are roughly:
 
   - http://pt.slideshare.net/seoyounghwang77/js-onmicrocontrollers
 
+* 256kB flash memory (code) and 64kB system RAM
+
+  - Requires a bare metal system, possibly a custom C library, etc.
+
+  - Requires use of ROM strings and objects to reduce Duktape startup
+    RAM usage (which drops to around 3-4kB with ROM strings/objects).
+
 There are four basic goals for low memory optimization:
 
 1. Reduce Duktape code (flash) footprint.  This is currently a low priority
    item because flash size doesn't seem to be a bottleneck for most users.
+   Techniques includes dropping optional Duktape functionality and compiler
+   options.
 
 2. Reduce initial memory usage of a Duktape heap.  This provides a baseline
    for memory usage which won't be available for user code (technically some
    memory can be reclaimed by deleting some built-ins after heap creation).
+   Techniques include pointer compression, external strings, ROM-based
+   strings and objects, and reducing built-in object and property count.
 
 3. Minimize the growth of the Duktape heap relative to the scope and
    complexity of user code, so that as large programs as possible can be
    compiled and executed in a given space.  Important contributing factors
    include the footprint of user-defined Ecmascript and Duktape/C functions,
-   the size of compiled bytecode, etc.
+   the size of compiled bytecode, etc.  Techniques include reducing object
+   and property count for e.g. function objects.
 
 4. Make remaining memory allocations as friendly as possible for the memory
    allocator, especially a pool-based memory allocator.  Concretely, prefer
@@ -139,10 +151,7 @@ Suggested feature options
 More aggressive options
 =======================
 
-**These options are experimental in Duktape 1.1, i.e. the may change
-in an incompatible manner in Duktape 1.2.**
-
-The following may be needed for very low memory environments (e.g. 128kB
+The following may be needed for very low memory environments (e.g. 96-128kB
 system RAM):
 
 * Consider using lightweight functions for your Duktape/C bindings and to
@@ -227,10 +236,61 @@ system RAM):
 
   - ``DUK_OPT_EXTSTR_FREE(udata,ptr)``
 
+  - As of Duktape 1.5 an alternative to external strings is to move strings
+    (including the string heap header) to ROM, see below.
+
 * Enable struct packing in compiler options if your platform doesn't have
   strict alignment requirements, e.g. on gcc/x86 you can:
 
   - ``-fpack-struct=1`` or ``-fpack-struct=2``
+
+The following may be appropriate when even less memory is available
+(e.g. 64kB system RAM):
+
+* Consider moving built-in strings and objects into ROM (a read-only data
+  section):
+
+  - ``DUK_USE_ROM_STRINGS`` and ``DUK_USE_ROM_OBJECTS`` (define both).
+    See: ``config/examples/rom_builtins.yaml``.
+
+  - ``DUK_USE_ROM_GLOBAL_CLONE`` or ``DUK_USE_ROM_GLOBAL_INHERIT`` if
+    a writable global object is needed.  ``DUK_USE_ROM_GLOBAL_INHERIT``
+    is more memory efficient: it creates a writable (empty) global object
+    which inherits from the ROM global object.
+
+  - Rerun ``make_dist.py`` with ``--rom-support`` to create a distributable
+    with support for ROM builtins.  ROM builtin support is not enabled by
+    default because it increases the size of ``duktape.c`` considerably.
+    (See ``util/example_rombuild.sh`` for some very simple examples.)
+
+  - Moving built-ins into ROM makes them read-only which has some side
+    effects.  Some side effects are technical compliance issues while
+    others have practical impact and may prevent running some existing
+    scripts.  The following testcases illustrate some of the issues:
+
+    + ``tests/ecmascript/test-dev-rom-builtins-1.js``
+
+    + ``tests/api/test-dev-rom-builtins-1.c``
+
+  - When using pointer compression you need to add support for compressing
+    ROM strings, see ``doc/objects-in-code-section.rst`` and a concrete
+    example in ``examples/cmdline/duk_cmdline_ajduk.c``.
+
+  - See ``doc/objects-in-code-section.rst`` for technical details and
+    current limitations.
+
+* Consider also moving your own built-in objects and strings into ROM:
+
+  - There is no direct support for this at present, but you can manually
+    modify ``src/strings.yaml`` and ``src/builtins.yaml`` to include your
+    own bindings.  Then rerun ``make_dist.py`` with ``--rom-support``
+    option.
+
+  - As a future work ``make_dist.py`` (``genbuiltins.py`` internally)
+    will accept external YAML config files to add custom strings and
+    objects (and modify existing objects) without editing Duktape's
+    ``strings.yaml`` and ``builtins.yaml``.  This is logically equivalent
+    to making direct edits but easier to manage in the build process.
 
 Notes on pointer compression
 ============================
@@ -250,6 +310,13 @@ pointer types:
 Pointer compression can be quite slow because often memory mappings are not
 linear, so the required operations are not trivial.  NULL also needs specific
 handling.
+
+When ROM object/string support is enabled, pointer compression and
+decompression must support ROM pointer compression.  This is done by
+reserving a range of 16-bit compressed pointer values to represent
+ROM pointers, and to use a ROM pointer table to compress/decompress
+ROM pointers.  See ``examples/cmdline/duk_cmdline_ajduk.c`` for an
+example.
 
 External string strategies (DUK_OPT_EXTSTR_INTERN_CHECK)
 ========================================================
