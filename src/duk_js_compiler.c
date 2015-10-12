@@ -2323,8 +2323,24 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 			x->x1.t = DUK_ISPEC_REGCONST;
 			x->x1.regconst = (duk_regconst_t) reg_varbind;
 		} else {
+			/* Not register bound.  Check for function self reference (which
+			 * is important for self-recursive functions) before falling back
+			 * to slow path GETVAR.  Careful about constructs that may capture
+			 * access to function name (with statement, catch clause).
+			 */
+
 			dest = (forced_reg >= 0 ? forced_reg : DUK__ALLOCTEMP(comp_ctx));
-			duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, (duk_regconst_t) dest, rc_varname);
+
+			if (comp_ctx->curr_func.with_depth == 0 &&
+			    comp_ctx->curr_func.catch_depth == 0 &&
+			    comp_ctx->curr_func.h_name != NULL &&
+			    comp_ctx->curr_func.h_name == duk_get_hstring(ctx, x->x1.valstack_idx)) {
+				/* FIXME: check semantics; test cases to ensure them */
+				DUK_D(DUK_DPRINT("function self reference"));
+				duk__emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDCURRFN, (duk_regconst_t) dest);
+			} else {
+				duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, (duk_regconst_t) dest, rc_varname);
+			}
 			x->t = DUK_IVAL_PLAIN;
 			x->x1.t = DUK_ISPEC_REGCONST;
 			x->x1.regconst = (duk_regconst_t) dest;
@@ -3892,10 +3908,24 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 				              (duk_regconst_t) (reg_cs + 0),
 				              (duk_regconst_t) reg_varbind);
 			} else {
-				duk__emit_a_b(comp_ctx,
-				              DUK_OP_CSVAR,
-				              (duk_regconst_t) (reg_cs + 0),
-				              rc_varname);
+				/* FIXME: call setup for curr func */
+				if (comp_ctx->curr_func.with_depth == 0 &&
+				    comp_ctx->curr_func.catch_depth == 0 &&
+				    comp_ctx->curr_func.h_name != NULL &&
+				    comp_ctx->curr_func.h_name == duk_get_hstring(ctx, left->x1.valstack_idx)) {
+					/* FIXME: check semantics; test cases to ensure them */
+					/* FIXME: shared code, grep for LDCURRFUN; integrate to lookup_lhs so that < 0 = not reg bound, marker values? */
+					duk__emit_extraop_bc(comp_ctx, DUK_EXTRAOP_LDCURRFN, (duk_regconst_t) reg_cs + 0);
+					duk__emit_a_b(comp_ctx,
+					              DUK_OP_CSREG,
+					              (duk_regconst_t) (reg_cs + 0),
+					              (duk_regconst_t) (reg_cs + 0));
+				} else {
+					duk__emit_a_b(comp_ctx,
+					              DUK_OP_CSVAR,
+					              (duk_regconst_t) (reg_cs + 0),
+					              rc_varname);
+				}
 			}
 		} else if (left->t == DUK_IVAL_PROP) {
 			DUK_DDD(DUK_DDDPRINT("function call with property base"));

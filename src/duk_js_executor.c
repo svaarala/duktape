@@ -4390,6 +4390,16 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				break;
 			}
 
+			case DUK_EXTRAOP_LDCURRFN: {
+				duk_uint_fast_t bc = DUK_DEC_BC(ins);
+				duk_tval *tv1;
+
+				tv1 = DUK__REGP(bc);
+				DUK_ASSERT(DUK__FUN() != NULL);
+				DUK_TVAL_SET_OBJECT_UPDREF(thr, tv1, (duk_hobject *) DUK__FUN());
+				break;
+			}
+
 			default: {
 				DUK__INTERNAL_ERROR("invalid extra opcode");
 			}
