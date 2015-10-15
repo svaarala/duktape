@@ -1177,6 +1177,9 @@ Planned
 * Internal performance improvement: rework "effective this" handling for
   better call performance (GH-397)
 
+* Internal performance improvement: improve duk_push_this() performance by
+  direct value stack access (GH-403)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 

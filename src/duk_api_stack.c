@@ -31,6 +31,7 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
  *  Helpers
  */
 
+/* Check that there's room to push one value. */
 #if defined(DUK_USE_VALSTACK_UNSAFE)
 /* Faster but value stack overruns are memory unsafe. */
 #define  DUK__CHECK_SPACE() do { \
@@ -3174,46 +3175,39 @@ DUK_EXTERNAL void duk_push_pointer(duk_context *ctx, void *val) {
 	DUK_TVAL_SET_POINTER(tv_slot, val);
 }
 
-#define DUK__PUSH_THIS_FLAG_CHECK_COERC  (1 << 0)
-#define DUK__PUSH_THIS_FLAG_TO_OBJECT    (1 << 1)
-#define DUK__PUSH_THIS_FLAG_TO_STRING    (1 << 2)
+DUK_LOCAL void duk__push_this_helper(duk_context *ctx, duk_small_uint_t check_object_coercible) {
+	duk_hthread *thr;
+	duk_tval *tv_slot;
 
-DUK_LOCAL void duk__push_this_helper(duk_context *ctx, duk_small_uint_t flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-
-	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
+	thr = (duk_hthread *) ctx;
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
+	DUK__CHECK_SPACE();
 
-	if (thr->callstack_top == 0) {
-		if (flags & DUK__PUSH_THIS_FLAG_CHECK_COERC) {
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));  /* because of valstack init policy */
+	tv_slot = thr->valstack_top++;
+
+	if (DUK_UNLIKELY(thr->callstack_top == 0)) {
+		if (check_object_coercible) {
 			goto type_error;
 		}
-		duk_push_undefined(ctx);
+		/* 'undefined' already on stack top */
 	} else {
-		duk_tval tv_tmp;
 		duk_tval *tv;
 
 		/* 'this' binding is just before current activation's bottom */
 		DUK_ASSERT(thr->valstack_bottom > thr->valstack);
 		tv = thr->valstack_bottom - 1;
-		if (flags & DUK__PUSH_THIS_FLAG_CHECK_COERC) {
-			if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
-				goto type_error;
-			}
+		if (check_object_coercible &&
+		    (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv))) {
+			/* XXX: better macro for DUK_TVAL_IS_UNDEFINED_OR_NULL(tv) */
+			goto type_error;
 		}
 
-		DUK_TVAL_SET_TVAL(&tv_tmp, tv);
-		duk_push_tval(ctx, &tv_tmp);
+		DUK_TVAL_SET_TVAL(tv_slot, tv);
+		DUK_TVAL_INCREF(thr, tv);
 	}
-
-	if (flags & DUK__PUSH_THIS_FLAG_TO_OBJECT) {
-		duk_to_object(ctx, -1);
-	} else if (flags & DUK__PUSH_THIS_FLAG_TO_STRING) {
-		duk_to_string(ctx, -1);
-	}
-
 	return;
 
  type_error:
@@ -3223,13 +3217,13 @@ DUK_LOCAL void duk__push_this_helper(duk_context *ctx, duk_small_uint_t flags) {
 DUK_EXTERNAL void duk_push_this(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	duk__push_this_helper(ctx, 0 /*flags*/);
+	duk__push_this_helper(ctx, 0 /*check_object_coercible*/);
 }
 
 DUK_INTERNAL void duk_push_this_check_object_coercible(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	duk__push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC /*flags*/);
+	duk__push_this_helper(ctx, 1 /*check_object_coercible*/);
 }
 
 DUK_INTERNAL duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
@@ -3237,8 +3231,8 @@ DUK_INTERNAL duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	duk__push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC |
-	                           DUK__PUSH_THIS_FLAG_TO_OBJECT /*flags*/);
+	duk__push_this_helper(ctx, 1 /*check_object_coercible*/);
+	duk_to_object(ctx, -1);
 	h = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	return h;
@@ -3249,8 +3243,8 @@ DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	duk__push_this_helper(ctx, DUK__PUSH_THIS_FLAG_CHECK_COERC |
-	                           DUK__PUSH_THIS_FLAG_TO_STRING /*flags*/);
+	duk__push_this_helper(ctx, 1 /*check_object_coercible*/);
+	duk_to_string(ctx, -1);
 	h = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	return h;
