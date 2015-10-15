@@ -121,6 +121,10 @@
  *  Thread defines
  */
 
+#if defined(DUK_USE_ROM_STRINGS)
+#define DUK_HTHREAD_GET_STRING(thr,idx) \
+	((duk_hstring *) duk_rom_strings_stridx[(idx)])
+#else  /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
 	((duk_hstring *) DUK_USE_HEAPPTR_DEC16((thr)->heap->heap_udata, (thr)->strs16[(idx)]))
@@ -128,6 +132,7 @@
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
 	((thr)->strs[(idx)])
 #endif
+#endif  /* DUK_USE_ROM_STRINGS */
 
 #define DUK_HTHREAD_GET_CURRENT_ACTIVATION(thr)  (&(thr)->callstack[(thr)->callstack_top - 1])
 
@@ -325,14 +330,22 @@ struct duk_hthread {
 	 * is no intermediate structure for a thread group / compartment.
 	 * This takes quite a lot of space, currently 43x4 = 172 bytes on
 	 * 32-bit platforms.
+	 *
+	 * In some cases the builtins array could be ROM based, but it's
+	 * sometimes edited (e.g. for sandboxing) so it's better to keep
+	 * this array in RAM.
 	 */
 	duk_hobject *builtins[DUK_NUM_BUILTINS];
 
 	/* Convenience copies from heap/vm for faster access. */
+#if defined(DUK_USE_ROM_STRINGS)
+	/* No field needed when strings are in ROM. */
+#else
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t *strs16;
 #else
 	duk_hstring **strs;
+#endif
 #endif
 };
 

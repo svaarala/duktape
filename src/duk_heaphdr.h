@@ -86,8 +86,8 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_FLAGS_FLAG_MASK      (~DUK_HEAPHDR_FLAGS_TYPE_MASK)
 
                                              /* 2 bits for heap type */
-#define DUK_HEAPHDR_FLAGS_HEAP_START     2   /* 4 heap flags */
-#define DUK_HEAPHDR_FLAGS_USER_START     6   /* 26 user flags */
+#define DUK_HEAPHDR_FLAGS_HEAP_START     2   /* 5 heap flags */
+#define DUK_HEAPHDR_FLAGS_USER_START     7   /* 25 user flags */
 
 #define DUK_HEAPHDR_HEAP_FLAG_NUMBER(n)  (DUK_HEAPHDR_FLAGS_HEAP_START + (n))
 #define DUK_HEAPHDR_USER_FLAG_NUMBER(n)  (DUK_HEAPHDR_FLAGS_USER_START + (n))
@@ -98,6 +98,7 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_FLAG_TEMPROOT        DUK_HEAPHDR_HEAP_FLAG(1)  /* mark-and-sweep: children not processed */
 #define DUK_HEAPHDR_FLAG_FINALIZABLE     DUK_HEAPHDR_HEAP_FLAG(2)  /* mark-and-sweep: finalizable (on current pass) */
 #define DUK_HEAPHDR_FLAG_FINALIZED       DUK_HEAPHDR_HEAP_FLAG(3)  /* mark-and-sweep: finalized (on previous pass) */
+#define DUK_HEAPHDR_FLAG_READONLY        DUK_HEAPHDR_HEAP_FLAG(4)  /* read-only object, in code section */
 
 #define DUK_HTYPE_MIN                    1
 #define DUK_HTYPE_STRING                 1
@@ -208,6 +209,10 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_CLEAR_FINALIZED(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS((h),DUK_HEAPHDR_FLAG_FINALIZED)
 #define DUK_HEAPHDR_HAS_FINALIZED(h)      DUK_HEAPHDR_CHECK_FLAG_BITS((h),DUK_HEAPHDR_FLAG_FINALIZED)
 
+#define DUK_HEAPHDR_SET_READONLY(h)       DUK_HEAPHDR_SET_FLAG_BITS((h),DUK_HEAPHDR_FLAG_READONLY)
+#define DUK_HEAPHDR_CLEAR_READONLY(h)     DUK_HEAPHDR_CLEAR_FLAG_BITS((h),DUK_HEAPHDR_FLAG_READONLY)
+#define DUK_HEAPHDR_HAS_READONLY(h)       DUK_HEAPHDR_CHECK_FLAG_BITS((h),DUK_HEAPHDR_FLAG_READONLY)
+
 /* get or set a range of flags; m=first bit number, n=number of bits */
 #define DUK_HEAPHDR_GET_FLAG_RANGE(h,m,n)  (((h)->h_flags >> (m)) & ((1UL << (n)) - 1UL))
 
@@ -265,6 +270,20 @@ struct duk_heaphdr_string {
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 
+#if defined(DUK_USE_ROM_OBJECTS)
+/* With ROM objects "needs refcount update" is true when the value is
+ * heap allocated and is not a ROM object.
+ */
+/* XXX: double evaluation for 'tv' argument. */
+#define DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv) \
+	(DUK_TVAL_IS_HEAP_ALLOCATED((tv)) && !DUK_HEAPHDR_HAS_READONLY(DUK_TVAL_GET_HEAPHDR((tv))))
+#define DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(h)  (!DUK_HEAPHDR_HAS_READONLY((h)))
+#else  /* DUK_USE_ROM_OBJECTS */
+/* Without ROM objects "needs refcount update" == is heap allocated. */
+#define DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)    DUK_TVAL_IS_HEAP_ALLOCATED((tv))
+#define DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(h)  1
+#endif  /* DUK_USE_ROM_OBJECTS */
+
 /* Fast variants, inline refcount operations except for refzero handling.
  * Can be used explicitly when speed is always more important than size.
  * For a good compiler and a single file build, these are basically the
@@ -273,7 +292,7 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_INCREF_FAST(thr,tv) do { \
 		duk_tval *duk__tv = (tv); \
 		DUK_ASSERT(duk__tv != NULL); \
-		if (DUK_TVAL_IS_HEAP_ALLOCATED(duk__tv)) { \
+		if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk__tv)) { \
 			duk_heaphdr *duk__h = DUK_TVAL_GET_HEAPHDR(duk__tv); \
 			DUK_ASSERT(duk__h != NULL); \
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
@@ -283,7 +302,7 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_DECREF_FAST(thr,tv) do { \
 		duk_tval *duk__tv = (tv); \
 		DUK_ASSERT(duk__tv != NULL); \
-		if (DUK_TVAL_IS_HEAP_ALLOCATED(duk__tv)) { \
+		if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk__tv)) { \
 			duk_heaphdr *duk__h = DUK_TVAL_GET_HEAPHDR(duk__tv); \
 			DUK_ASSERT(duk__h != NULL); \
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
@@ -297,15 +316,19 @@ struct duk_heaphdr_string {
 		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
 		DUK_ASSERT(duk__h != NULL); \
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
-		DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+		if (DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(duk__h)) { \
+			DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+		} \
 	} while (0)
 #define DUK_HEAPHDR_DECREF_FAST(thr,h) do { \
 		duk_heaphdr *duk__h = (duk_heaphdr *) (h); \
 		DUK_ASSERT(duk__h != NULL); \
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) > 0); \
-		if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
-			duk_heaphdr_refzero((thr), duk__h); \
+		if (DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(duk__h)) { \
+			if (DUK_HEAPHDR_PREDEC_REFCOUNT(duk__h) == 0) { \
+				duk_heaphdr_refzero((thr), duk__h); \
+			} \
 		} \
 	} while (0)
 
@@ -512,7 +535,7 @@ struct duk_heaphdr_string {
 		duk_tval *tv__dst, *tv__src; duk_heaphdr *h__obj; \
 		tv__dst = (tvptr_dst); tv__src = (tvptr_src); \
 		DUK_TVAL_INCREF_FAST((thr), tv__src); \
-		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv__dst)) { \
+		if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv__dst)) { \
 			h__obj = DUK_TVAL_GET_HEAPHDR(tv__dst); \
 			DUK_ASSERT(h__obj != NULL); \
 			DUK_TVAL_SET_TVAL(tv__dst, tv__src); \

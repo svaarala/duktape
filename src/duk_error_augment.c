@@ -336,6 +336,7 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 			duk_hobject *func;
 			duk_uint32_t pc;
 
+			DUK_UNREF(pc);
 			act = thr_callstack->callstack + i;
 			DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
 

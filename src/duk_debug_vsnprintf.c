@@ -489,32 +489,32 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_array:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_array:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_stringobj:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_stringobj:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_arguments:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_arguments:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_dukfunc:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_dukfunc:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_bufferobj:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_bufferobj:true");
 		} else {
 			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__special_proxyobj:true");
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_proxyobj:true");
 		} else {
 			;
 		}

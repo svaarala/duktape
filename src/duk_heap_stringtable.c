@@ -95,8 +95,8 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	                     (unsigned long) DUK_HSTRING_GET_HASH(res),
 	                     (long) DUK_HSTRING_GET_BYTELEN(res),
 	                     (long) DUK_HSTRING_GET_CHARLEN(res),
-	                     (long) DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0,
-	                     (long) DUK_HSTRING_HAS_EXTDATA(res) ? 1 : 0));
+	                     (long) (DUK_HSTRING_HAS_ARRIDX(res) ? 1 : 0),
+	                     (long) (DUK_HSTRING_HAS_EXTDATA(res) ? 1 : 0)));
 
 	return res;
 
@@ -891,6 +891,27 @@ DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, const duk_uint8_t *str, du
 	DUK_ASSERT(out_strhash);
 
 	*out_strhash = duk_heap_hashstring(heap, str, (duk_size_t) blen);
+
+#if defined(DUK_USE_ROM_STRINGS)
+	{
+		duk_small_uint_t i;
+		/* XXX: This is VERY inefficient now, and should be e.g. a
+		 * binary search or perfect hash, to be fixed.
+		 */
+		for (i = 0; i < (duk_small_uint_t) (sizeof(duk_rom_strings) / sizeof(duk_hstring *)); i++) {
+			duk_hstring *romstr;
+			romstr = (duk_hstring *) duk_rom_strings[i];
+			if (blen == DUK_HSTRING_GET_BYTELEN(romstr) &&
+			    DUK_MEMCMP(str, (void *) DUK_HSTRING_GET_DATA(romstr), blen) == 0) {
+				DUK_DD(DUK_DDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
+				                   romstr, (unsigned long) *out_strhash, (unsigned long) DUK_HSTRING_GET_HASH(romstr)));
+				DUK_ASSERT(*out_strhash == DUK_HSTRING_GET_HASH(romstr));
+				*out_strhash = DUK_HSTRING_GET_HASH(romstr);
+				return romstr;
+			}
+		}
+	}
+#endif  /* DUK_USE_ROM_STRINGS */
 
 #if defined(DUK_USE_STRTAB_CHAIN)
 	res = duk__find_matching_string_chain(heap, str, blen, *out_strhash);

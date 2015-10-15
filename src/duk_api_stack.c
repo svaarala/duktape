@@ -2117,6 +2117,7 @@ DUK_INTERNAL void duk_to_object_class_string_top(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
 
 	typemask = duk_get_type_mask(ctx, -1);
 	if (typemask & DUK_TYPE_MASK_UNDEFINED) {
@@ -2146,6 +2147,7 @@ DUK_INTERNAL void duk_push_hobject_class_string(duk_context *ctx, duk_hobject *h
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(h != NULL);
 	thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
 
 	h_strclass = DUK_HOBJECT_GET_CLASS_STRING(thr->heap, h);
 	DUK_ASSERT(h_strclass != NULL);
@@ -3652,10 +3654,14 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
+#if defined(DUK_USE_ROM_STRINGS)
+	/* Nothing to initialize, strs[] is in ROM. */
+#else
 #if defined(DUK_USE_HEAPPTR16)
 	obj->strs16 = thr->strs16;
 #else
 	obj->strs = thr->strs;
+#endif
 #endif
 	DUK_DDD(DUK_DDDPRINT("created thread object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
 
@@ -4189,6 +4195,7 @@ DUK_INTERNAL void duk_push_hstring(duk_context *ctx, duk_hstring *h) {
 
 DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 }
