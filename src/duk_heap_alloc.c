@@ -4,13 +4,18 @@
 
 #include "duk_internal.h"
 
-/* constants for built-in string data depacking */
+/* Constants for built-in string data depacking. */
 #define DUK__BITPACK_LETTER_LIMIT  26
 #define DUK__BITPACK_UNDERSCORE    26
 #define DUK__BITPACK_FF            27
 #define DUK__BITPACK_SWITCH1       29
 #define DUK__BITPACK_SWITCH        30
 #define DUK__BITPACK_SEVENBIT      31
+
+#if defined(DUK_USE_ROM_STRINGS)
+/* Fixed seed value used with ROM strings. */
+#define DUK__FIXED_HASH_SEED       0xabcd1234
+#endif
 
 /*
  *  Free a heap object.
@@ -337,10 +342,35 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 /*
  *  Allocate a heap.
  *
- *  String table is initialized with built-in strings from genstrings.py.
+ *  String table is initialized with built-in strings from genbuiltins.py,
+ *  either by dynamically creating the strings or by referring to ROM strings.
  */
 
-/* intern built-in strings from precooked data (genstrings.py) */
+#if defined(DUK_USE_ROM_STRINGS)
+DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
+#if defined(DUK_USE_ASSERTIONS)
+	duk_small_uint_t i;
+#endif
+
+	/* With ROM-based strings, heap->strs[] and thr->strs[] are omitted
+	 * so nothing to initialize for strs[].
+	 */
+
+#if defined(DUK_USE_ASSERTIONS)
+	for (i = 0; i < sizeof(duk_rom_strings) / sizeof(const duk_hstring *); i++) {
+		duk_uint32_t hash;
+		const duk_hstring *h;
+		h = duk_rom_strings[i];
+		DUK_ASSERT(h != NULL);
+		hash = duk_heap_hashstring(heap, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+		DUK_DD(DUK_DDPRINT("duk_rom_strings[%d] -> hash 0x%08lx, computed 0x%08lx",
+		                   (int) i, (unsigned long) DUK_HSTRING_GET_HASH(h), (unsigned long) hash));
+		DUK_ASSERT(hash == (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
+	}
+#endif
+	return 1;
+}
+#else  /* DUK_USE_ROM_STRINGS */
 DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
@@ -396,6 +426,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		if (!h) {
 			goto error;
 		}
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h));
 
 		/* Special flags checks.  Since these strings are always
 		 * reachable and a string cannot appear twice in the string
@@ -431,6 +462,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
  error:
 	return 0;
 }
+#endif  /* DUK_USE_ROM_STRINGS */
 
 DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
@@ -445,11 +477,15 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 		return 0;
 	}
 	thr->state = DUK_HTHREAD_STATE_INACTIVE;
+#if defined(DUK_USE_ROM_STRINGS)
+	/* No strs[] pointer. */
+#else  /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
 	thr->strs16 = heap->strs16;
 #else
 	thr->strs = heap->strs;
 #endif
+#endif  /* DUK_USE_ROM_STRINGS */
 
 	heap->heap_thread = thr;
 	DUK_HTHREAD_INCREF(thr, thr);  /* Note: first argument not really used */
@@ -793,8 +829,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->strtable = (duk_hstring **) NULL;
 #endif
 #endif
+#if defined(DUK_USE_ROM_STRINGS)
+	/* no res->strs[] */
+#else  /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
-/* res->strs16[] is zeroed and zero decodes to NULL, so no NULL inits. */
+	/* res->strs16[] is zeroed and zero decodes to NULL, so no NULL inits. */
 #else
 	{
 		duk_small_uint_t i;
@@ -803,6 +842,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	        }
 	}
 #endif
+#endif  /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	res->dbg_read_cb = NULL;
 	res->dbg_write_cb = NULL;
@@ -839,11 +879,17 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *
 	 * This still generates a /Wp64 warning on VS2010 when compiling for x86.
 	 */
+#if defined(DUK_USE_ROM_STRINGS)
+	/* XXX: make a common DUK_USE_ option, and allow custom fixed seed? */
+	DUK_D(DUK_DPRINT("using rom strings, force heap hash_seed to fixed value 0x%08lx", (long) DUK__FIXED_HASH_SEED));
+	res->hash_seed = (duk_uint32_t) DUK__FIXED_HASH_SEED;
+#else  /* DUK_USE_ROM_STRINGS */
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
 	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 #if !defined(DUK_USE_STRHASH_DENSE)
 	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
 #endif
+#endif  /* DUK_USE_ROM_STRINGS */
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	res->lj.jmpbuf_ptr = NULL;
@@ -986,3 +1032,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	return NULL;
 }
+
+#undef DUK__BITPACK_LETTER_LIMIT
+#undef DUK__BITPACK_UNDERSCORE
+#undef DUK__BITPACK_FF
+#undef DUK__BITPACK_SWITCH1
+#undef DUK__BITPACK_SWITCH
+#undef DUK__BITPACK_SEVENBIT
+#undef DUK__FIXED_HASH_SEED

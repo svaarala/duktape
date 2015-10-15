@@ -8,6 +8,10 @@
 DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
+	DUK_DD(DUK_DDPRINT("longjmp error: type=%d iserror=%d value1=%!T value2=%!T",
+	                   (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
+	                   &thr->heap->lj.value1, &thr->heap->lj.value2));
+
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 	/* XXX: detecting uncaught exception case for C++ case; perhaps need
 	 * some marker in heap->lj state that a try-catch is active.  For now,

@@ -12,11 +12,15 @@
  *  hash tables work reasonably well (i.e., there aren't too many collisions
  *  with real world inputs).  Unless the hash is cryptographic, it's always
  *  possible to craft inputs with maximal hash collisions.
+ *
+ *  NOTE: The hash algorithms must match src/dukutil.py:duk_heap_hashstring()
+ *  for ROM string support!
  */
 
 #include "duk_internal.h"
 
 #if defined(DUK_USE_STRHASH_DENSE)
+/* Constants for duk_hashstring(). */
 #define DUK__STRHASH_SHORTSTRING   4096L
 #define DUK__STRHASH_MEDIUMSTRING  (256L * 1024L)
 #define DUK__STRHASH_BLOCKSIZE     256L

@@ -75,6 +75,7 @@ DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) 
 	 *  may trigger an error (getter may throw one, for instance).
 	 */
 
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 	if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) obj)) {
 		DUK_D(DUK_DPRINT("object already finalized, avoid running finalizer twice: %!O", obj));
 		return;

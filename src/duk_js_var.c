@@ -125,6 +125,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_temp) != NULL);
 	DUK_ASSERT(outer_var_env != NULL);
 	DUK_ASSERT(outer_lex_env != NULL);
+	DUK_UNREF(len_value);
 
 	duk_push_compiledfunction(ctx);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */

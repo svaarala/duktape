@@ -62,7 +62,10 @@
 /* size stored in duk_heaphdr unused flag bits */
 #define DUK_HBUFFER_GET_SIZE(x)     ((x)->hdr.h_flags >> 16)
 #define DUK_HBUFFER_SET_SIZE(x,v)   do { \
-		(x)->hdr.h_flags = ((x)->hdr.h_flags & 0x0000ffffUL) | ((v) << 16); \
+		duk_size_t duk__v; \
+		duk__v = (v); \
+		DUK_ASSERT(duk__v <= 0xffffUL); \
+		(x)->hdr.h_flags = ((x)->hdr.h_flags & 0x0000ffffUL) | (((duk_uint32_t) duk__v) << 16); \
 	} while (0)
 #define DUK_HBUFFER_ADD_SIZE(x,dv)  do { \
 		(x)->hdr.h_flags += ((dv) << 16); \
