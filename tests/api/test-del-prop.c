@@ -30,9 +30,9 @@ final top: 3
 *** test_1f (duk_pcall)
 ==> rc=1, result='Error: invalid index'
 *** test_1g (duk_safe_call)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_1g (duk_pcall)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_2a (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
@@ -64,9 +64,9 @@ final top: 3
 *** test_2f (duk_pcall)
 ==> rc=1, result='Error: invalid index'
 *** test_2g (duk_safe_call)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_2g (duk_pcall)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_3a (duk_safe_call)
 delete obj[31337] -> rc=1
 delete obj[123] -> rc=1
