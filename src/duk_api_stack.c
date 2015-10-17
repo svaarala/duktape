@@ -2082,6 +2082,48 @@ DUK_EXTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index)
 }
 #endif
 
+/* Coerce top into Object.prototype.toString() output. */
+DUK_INTERNAL void duk_to_object_class_string_top(duk_context *ctx) {
+	duk_hthread *thr;
+	duk_uint_t typemask;
+	duk_hstring *h_strclass;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+
+	typemask = duk_get_type_mask(ctx, -1);
+	if (typemask & DUK_TYPE_MASK_UNDEFINED) {
+		h_strclass = DUK_HTHREAD_STRING_UC_UNDEFINED(thr);
+	} else if (typemask & DUK_TYPE_MASK_NULL) {
+		h_strclass = DUK_HTHREAD_STRING_UC_NULL(thr);
+	} else {
+		duk_hobject *h_obj;
+
+		duk_to_object(ctx, -1);
+		h_obj = duk_get_hobject(ctx, -1);
+		DUK_ASSERT(h_obj != NULL);
+
+		h_strclass = DUK_HOBJECT_GET_CLASS_STRING(thr->heap, h_obj);
+	}
+	DUK_ASSERT(h_strclass != NULL);
+
+	duk_pop(ctx);
+	duk_push_sprintf(ctx, "[object %s]", (const char *) DUK_HSTRING_GET_DATA(h_strclass));
+}
+
+DUK_INTERNAL void duk_push_hobject_class_string(duk_context *ctx, duk_hobject *h) {
+	duk_hthread *thr;
+	duk_hstring *h_strclass;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(h != NULL);
+	thr = (duk_hthread *) ctx;
+
+	h_strclass = DUK_HOBJECT_GET_CLASS_STRING(thr->heap, h);
+	DUK_ASSERT(h_strclass != NULL);
+	duk_push_sprintf(ctx, "[object %s]", (const char *) DUK_HSTRING_GET_DATA(h_strclass));
+}
+
 /* XXX: other variants like uint, u32 etc */
 DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped) {
 	duk_hthread *thr = (duk_hthread *) ctx;
@@ -4451,4 +4493,213 @@ DUK_INTERNAL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, du
 	duk_push_lstring(ctx, (const char *) buf, sz * 2);
 }
 
+/*
+ *  Push readable string summarizing duk_tval.  The operation is side effect
+ *  free and will only throw from internal errors (e.g. out of memory).
+ *  This is used by e.g. property access code to summarize a key/base safely,
+ *  and is not intended to be fast (but small and safe).
+ */
+
+#define DUK__READABLE_STRING_MAXCHARS 32
+
+/* String sanitizer which escapes ASCII control characters and a few other
+ * ASCII characters, passes Unicode as is, and replaces invalid UTF-8 with
+ * question marks.  No errors are thrown for any input string, except in out
+ * of memory situations.
+ */
+#if 1
+DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring *h_input) {
+	duk_hthread *thr;
+	const duk_uint8_t *p, *p_start, *p_end;
+	duk_uint8_t buf[DUK_UNICODE_MAX_XUTF8_LENGTH * DUK__READABLE_STRING_MAXCHARS +
+	                2 /*quotes*/ + 3 /*periods*/];
+	duk_uint8_t *q;
+	duk_ucodepoint_t cp;
+	duk_small_uint_t nchars;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(h_input != NULL);
+	thr = (duk_hthread *) ctx;
+
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p = p_start;
+	q = buf;
+
+	nchars = 0;
+	*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+	for (;;) {
+		if (p >= p_end) {
+			break;
+		}
+		if (nchars == DUK__READABLE_STRING_MAXCHARS) {
+			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
+			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
+			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
+			break;
+		}
+		if (duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp)) {
+			if (cp < 0x20 || cp == 0x7f || cp == DUK_ASC_SINGLEQUOTE || cp == DUK_ASC_BACKSLASH) {
+				DUK_ASSERT(DUK_UNICODE_MAX_XUTF8_LENGTH >= 4);  /* estimate is valid */
+				DUK_ASSERT((cp >> 4) <= 0x0f);
+				*q++ = (duk_uint8_t) DUK_ASC_BACKSLASH;
+				*q++ = (duk_uint8_t) DUK_ASC_LC_X;
+				*q++ = (duk_uint8_t) duk_lc_digits[cp >> 4];
+				*q++ = (duk_uint8_t) duk_lc_digits[cp & 0x0f];
+			} else {
+				q += duk_unicode_encode_xutf8(cp, q);
+			}
+		} else {
+			p++;  /* advance manually */
+			*q++ = (duk_uint8_t) DUK_ASC_QUESTION;
+		}
+		nchars++;
+	}
+	*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+
+	duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (q - buf));
+}
+#endif
+
+#if 0
+DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring *h_input) {
+	duk_hthread *thr;
+	duk_bufwriter_ctx bw_alloc;
+	duk_bufwriter_ctx *bw;
+	const duk_uint8_t *p, *p_start, *p_end;
+	duk_ucodepoint_t cp;
+	duk_small_uint_t nchars;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(h_input != NULL);
+	thr = (duk_hthread *) ctx;
+
+	bw = &bw_alloc;
+	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_UNICODE_MAX_XUTF8_LENGTH * DUK__READABLE_STRING_MAXCHARS +
+	                             (2 /*quotes*/ + 3 /*periods*/));  /* maximum output size */
+
+	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
+	p = p_start;
+
+	nchars = 0;
+	DUK_BW_WRITE_RAW_U8(thr, bw, DUK_ASC_SINGLEQUOTE);
+	for (;;) {
+		if (p >= p_end) {
+			break;
+		}
+		if (nchars == DUK__READABLE_STRING_MAXCHARS) {
+			DUK_BW_WRITE_RAW_U8_3(thr, bw, DUK_ASC_PERIOD, DUK_ASC_PERIOD, DUK_ASC_PERIOD);
+			break;
+		}
+		if (duk_unicode_decode_xutf8(thr, &p, p_start, p_end, &cp)) {
+			if (cp < 0x20 || cp == 0x7f || cp == DUK_ASC_SINGLEQUOTE || cp == DUK_ASC_BACKSLASH) {
+				DUK_ASSERT(DUK_UNICODE_MAX_XUTF8_LENGTH >= 4);  /* estimate is valid */
+				DUK_ASSERT((cp >> 4) <= 0x0f);
+				DUK_BW_WRITE_RAW_U8_4(thr, bw, DUK_ASC_BACKSLASH,
+				                               DUK_ASC_LC_X,
+				                               duk_lc_digits[cp >> 4],
+				                               duk_lc_digits[cp & 0x0f]);
+			} else {
+				DUK_BW_WRITE_RAW_XUTF8(thr, bw, cp);
+			}
+		} else {
+			p++;  /* advance manually */
+			DUK_BW_WRITE_RAW_U8(thr, bw, DUK_ASC_QUESTION);
+		}
+		nchars++;
+	}
+	DUK_BW_WRITE_RAW_U8(thr, bw, DUK_ASC_SINGLEQUOTE);
+
+	DUK_BW_COMPACT(thr, bw);
+	duk_to_string(ctx, -1);
+}
+#endif
+
+#if 0
+/* String sanitizer which produces pure ASCII. */
+DUK_LOCAL void duk__push_hstring_readable_ascii(duk_context *ctx, duk_hstring *h_input) {
+	duk_uint8_t buf[128 + 5];  /* ensures 32 chars can be escaped and clipped */
+	const duk_uint8_t *p;
+	duk_uint8_t *q;
+	duk_size_t blen;
+	duk_small_uint_t n;
+	duk_small_uint_t c;
+	duk_bool_t clipped = 0;
+
+	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_input);
+	q = buf;
+	n = (sizeof(buf) - 5 /*quotes+periods*/) / 4 /*max expansion*/;  /* = safe max length */
+	if (n > blen) {
+		n = (duk_small_uint_t) blen;
+	}
+	if (n < blen) {
+		clipped = 1;
+	}
+
+	*q++ = DUK_ASC_SINGLEQUOTE;
+	DUK_ASSERT(n >= 1);  /* we'll loop at least once */
+	c = 0;
+	while (n-- > 0) {
+		c = (duk_small_uint_t) *p++;
+		if (c < 0x20 || c >= 0x7e ||
+		    c == DUK_ASC_SINGLEQUOTE || c == DUK_ASC_BACKSLASH) {
+			*q++ = DUK_ASC_BACKSLASH;
+			*q++ = DUK_ASC_LC_X;
+			*q++ = duk_lc_digits[c >> 4];
+			*q++ = duk_lc_digits[c & 0x0f];
+		} else {
+			*q++ = (duk_uint8_t) c;
+		}
+	}
+	if (clipped) {
+		*q++ = DUK_ASC_PERIOD;
+		*q++ = DUK_ASC_PERIOD;
+		*q++ = DUK_ASC_PERIOD;
+	}
+	*q++ = DUK_ASC_SINGLEQUOTE;
+
+	duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (q - buf));
+}
+#endif
+
+DUK_INTERNAL const char *duk_push_string_tval_readable(duk_context *ctx, duk_tval *tv) {
+	duk_hthread *thr;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
+
+	switch (DUK_TVAL_GET_TAG(tv)) {
+	case DUK_TAG_STRING: {
+		duk__push_hstring_readable_unicode(ctx, DUK_TVAL_GET_STRING(tv));
+#if 0
+		duk__push_hstring_readable_ascii(ctx, DUK_TVAL_GET_STRING(tv));
+#endif
+		break;
+	}
+	case DUK_TAG_OBJECT: {
+		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		duk_push_hobject_class_string(ctx, h);
+		break;
+	}
+	case DUK_TAG_BUFFER: {
+		/* XXX: Hex encoded, length limited buffer summary here? */
+		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
+		DUK_ASSERT(h != NULL);
+		duk_push_sprintf(ctx, "[buffer:%ld]", (long) DUK_HBUFFER_GET_SIZE(h));
+		break;
+	}
+	default: {
+		duk_push_tval(ctx, tv);
+		break;
+	}
+	}
+
+	return duk_to_string(ctx, -1);
+}
+
 #undef DUK__CHECK_SPACE
+#undef DUK__READABLE_STRING_MAXCHARS
