@@ -79,6 +79,20 @@ Pros and cons of using a Duktape thread for sandboxing:
 These two approaches can of course be mixed: you can have multiple heaps,
 each with one or more sandboxed threads.
 
+Disable verbose errors
+----------------------
+
+Verbose error messages may cause sandboxing security issues:
+
+* When DUK_USE_VERBOSE_PROP_ERRORS is set, offending object/key is summarized
+  in an error message of some rejected property operations.  If object keys
+  contain potentially sensitive information, you should disable this option.
+
+* When stack traces are enabled an attacker may gain useful information from
+  the stack traces.  Further, access to the internal ``_Tracedata`` property
+  provides access to call chain functions even when references to them are not
+  available directly.
+
 Replace the global object
 -------------------------
 
