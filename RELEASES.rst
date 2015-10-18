@@ -1151,6 +1151,9 @@ Planned
   value is a register-bound variable which is used and mutated in the rest
   of the expression (GH-381)
 
+* Fix Unix local time offset handling which caused issues at least on RISC
+  OS (GH-406, GH-407)
+
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
 
