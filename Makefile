@@ -253,6 +253,8 @@ CCOPTS_FEATURES += -DDUK_OPT_FASTINT
 #CCOPTS_FEATURES += '-DDUK_OPT_HEAPPTR_DEC16(ud,x)=XXX'
 #CCOPTS_FEATURES += '-DDUK_OPT_DECLARE=XXX'
 #CCOPTS_FEATURES += -DDUK_OPT_REGEXP_CANON_WORKAROUND
+#CCOPTS_FEATURES += -DDUK_OPT_ROM_STRINGS
+#CCOPTS_FEATURES += -DDUK_OPT_ROM_OBJECTS
 CCOPTS_FEATURES += -DDUK_OPT_JSON_STRINGIFY_FASTPATH
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
@@ -963,6 +965,7 @@ CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_FREE(ud,ptr)=ajsheap_extstr_free_2((ptr))'
 #CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_FREE(ud,ptr)=ajsheap_extstr_free_3((ptr))'
 CCOPTS_AJDUK += '-DDUK_OPT_EXEC_TIMEOUT_CHECK(udata)=ajsheap_exec_timeout_check(udata)'
 CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *ud, void *p); extern void *ajsheap_dec16(void *ud, duk_uint16_t x); extern const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len); extern const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len); extern const void *ajsheap_extstr_check_3(const void *ptr, duk_size_t len); extern void ajsheap_extstr_free_1(const void *ptr); extern void ajsheap_extstr_free_2(const void *ptr); extern void ajsheap_extstr_free_3(const void *ptr); extern duk_bool_t ajsheap_exec_timeout_check(void *udata);'
+#CCOPTS_AJDUK += -DDUK_OPT_ROM_STRINGS -DDUK_OPT_ROM_OBJECTS -DDUK_OPT_ROM_GLOBAL_INHERIT
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT
 #CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
