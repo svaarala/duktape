@@ -36,7 +36,7 @@ function fromCharCodeTest() {
         var tmp = [];
         tmp.push(typeof x);
         tmp.push(x.length);
-        for (i = 0; i < x.length; i++) {
+        for (var i = 0; i < x.length; i++) {
             tmp.push(x.charCodeAt(i));
         }
         print(tmp.join(' '));
@@ -45,7 +45,7 @@ function fromCharCodeTest() {
     function mkObj(name, strval, numval) {
         return {
             toString: function() { print('toString() for ' + name); return strval; },
-            valueOf: function() { print('valueOf() for ' + name); return numval }
+            valueOf: function() { print('valueOf() for ' + name); return numval; }
         };
     }
 
