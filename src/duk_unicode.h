@@ -189,6 +189,10 @@
 
 #include "duk_unicode_caseconv.h"
 
+#if defined(DUK_USE_REGEXP_CANON_WORKAROUND)
+#include "duk_unicode_re_canon_lookup.h"
+#endif
+
 /*
  *  Extern
  */
