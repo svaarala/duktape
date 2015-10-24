@@ -558,43 +558,38 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
-	duk_bool_t strip_prefix;
 	duk_int32_t radix;
 	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 2);
 	duk_to_string(ctx, 0);
 
-	strip_prefix = 1;
 	radix = duk_to_int32(ctx, 1);
-	if (radix != 0) {
-		if (radix < 2 || radix > 36) {
-			goto ret_nan;
-		}
-		/* For octal, setting strip_prefix=0 is not necessary, as zero
-		 * is tolerated anyway:
-		 *
-		 *   parseInt('123', 8) === parseInt('0123', 8)     with or without strip_prefix
-		 *   parseInt('123', 16) === parseInt('0x123', 16)  requires strip_prefix = 1
-		 */
-		if (radix != 16) {
-			strip_prefix = 0;
-		}
-	} else {
-		radix = 10;
-	}
 
 	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
 	            DUK_S2N_FLAG_ALLOW_GARBAGE |
 	            DUK_S2N_FLAG_ALLOW_PLUS |
 	            DUK_S2N_FLAG_ALLOW_MINUS |
 	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
-#ifdef DUK_USE_OCTAL_SUPPORT
-	            (strip_prefix ? (DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT | DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT) : 0)
-#else
-	            (strip_prefix ? DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT : 0)
-#endif
-	            ;
+	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+
+	/* Specification stripPrefix maps to DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT.
+	 *
+	 * Don't autodetect octals (from leading zeroes), require user code to
+	 * provide an explicit radix 8 for parsing octal.  See write-up from Mozilla:
+	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt#ECMAScript_5_Removes_Octal_Interpretation
+	 */
+
+	if (radix != 0) {
+		if (radix < 2 || radix > 36) {
+			goto ret_nan;
+		}
+		if (radix != 16) {
+			s2n_flags &= ~DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+		}
+	} else {
+		radix = 10;
+	}
 
 	duk_dup(ctx, 0);
 	duk_numconv_parse(ctx, radix, s2n_flags);
