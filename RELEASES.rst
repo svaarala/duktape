@@ -1151,6 +1151,9 @@ Planned
   value is a register-bound variable which is used and mutated in the rest
   of the expression (GH-381)
 
+* Remove octal autodetection in parseInt(), also fixes incorrect octal
+  autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
