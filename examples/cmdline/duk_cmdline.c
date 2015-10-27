@@ -593,8 +593,26 @@ static int handle_interactive(duk_context *ctx) {
 
 #ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
 static void debugger_detached(void *udata) {
+	duk_context *ctx = (duk_context *) udata;
+	(void) ctx;
 	fprintf(stderr, "Debugger detached, udata: %p\n", (void *) udata);
 	fflush(stderr);
+
+#if 0  /* For manual auto-reattach test */
+	duk_trans_socket_finish();
+	duk_trans_socket_init();
+	duk_trans_socket_waitconn();
+	fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
+	fflush(stderr);
+	duk_debugger_attach(ctx,
+	                    duk_trans_socket_read_cb,
+	                    duk_trans_socket_write_cb,
+	                    duk_trans_socket_peek_cb,
+	                    duk_trans_socket_read_flush_cb,
+	                    duk_trans_socket_write_flush_cb,
+	                    debugger_detached,
+	                    (void *) ctx);
+#endif
 }
 #endif
 
@@ -706,7 +724,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		                    duk_trans_socket_read_flush_cb,
 		                    duk_trans_socket_write_flush_cb,
 		                    debugger_detached,
-		                    (void *) 0xbeef1234);
+		                    (void *) ctx);
 #else
 		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
 		fflush(stderr);
