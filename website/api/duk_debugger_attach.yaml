@@ -21,6 +21,14 @@ summary: |
   <code>read_flush_cb</code> and <code>write_flush_cb</code> callbacks are
   optional.  Unimplemented callbacks are indicated using a <code>NULL</code>.</p>
 
+  <div class="note">
+  Since Duktape 1.4.0 the debugger detached callback is allowed to call
+  <code><a href="#duk_debugger_attach">duk_debugger_attach()</a></code>
+  to immediately reattach the debugger.  In Duktape 1.3.0 and before the
+  immediate reattach potentially caused
+  <a href="https://github.com/svaarala/duktape/pull/399">some issues</a>.
+  </div>
+
 example: |
   duk_debugger_attach(ctx,
                       my_read_cb,
