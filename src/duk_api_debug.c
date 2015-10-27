@@ -53,6 +53,10 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	const char *str;
 	duk_size_t len;
 
+	/* XXX: should there be an error or an automatic detach if
+	 * already attached?
+	 */
+
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(read_cb != NULL);
 	DUK_ASSERT(write_cb != NULL);
@@ -104,7 +108,7 @@ DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	/* Can be called muliple times with no harm. */
+	/* Can be called multiple times with no harm. */
 	duk_debug_do_detach(thr->heap);
 }
 
