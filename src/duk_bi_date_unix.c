@@ -152,6 +152,13 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	                     (long) tms[1].tm_mday, (long) tms[1].tm_mon, (long) tms[1].tm_year,
 	                     (long) tms[1].tm_wday, (long) tms[1].tm_yday, (long) tms[1].tm_isdst));
 
+	/* tm_isdst is both an input and an output to mktime(), use 0 to
+	 * avoid DST handling in mktime():
+	 * - https://github.com/svaarala/duktape/issues/406
+	 * - http://stackoverflow.com/questions/8558919/mktime-and-tm-isdst
+	 */
+	tms[0].tm_isdst = 0;
+	tms[1].tm_isdst = 0;
 	t1 = mktime(&tms[0]);  /* UTC */
 	t2 = mktime(&tms[1]);  /* local */
 	if (t1 == (time_t) -1 || t2 == (time_t) -1) {
@@ -161,11 +168,6 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 		 * http://pubs.opengroup.org/onlinepubs/009695299/functions/mktime.html
 		 */
 		goto error;
-	}
-	if (tms[1].tm_isdst > 0) {
-		t2 += 3600;
-	} else if (tms[1].tm_isdst < 0) {
-		DUK_D(DUK_DPRINT("tm_isdst is negative: %d", (int) tms[1].tm_isdst));
 	}
 	DUK_DDD(DUK_DDDPRINT("t1=%ld (utc), t2=%ld (local)", (long) t1, (long) t2));
 
