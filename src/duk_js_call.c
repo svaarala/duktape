@@ -715,7 +715,12 @@ duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 	return func;
 
  not_callable_error:
+	DUK_ASSERT(tv_func != NULL);
+#if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
+#else
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
+#endif
 	DUK_UNREACHABLE();
 	return NULL;  /* never executed */
 }
