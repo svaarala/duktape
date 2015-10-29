@@ -1,8 +1,8 @@
 /*===
 *** test_put (duk_safe_call)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot write property 'foo' of 0'
 *** test_put (duk_pcall)
-==> rc=1, result='TypeError: invalid base value'
+==> rc=1, result='TypeError: cannot write property 'foo' of 0'
 ===*/
 
 duk_ret_t test_put(duk_context *ctx) {

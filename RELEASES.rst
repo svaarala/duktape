@@ -1144,6 +1144,10 @@ Planned
 * Add a debugger Throw notify for errors about to be thrown, and an option
   to automatically pause before an uncaught error is thrown (GH-286, GH-347)
 
+* Add a human readable summary of object/key for rejected property operations
+  to make error messages more useful for operations like "null.foo = 123;"
+  (GH-210, GH-405)
+
 * Fix "debugger" statement line number off-by-one so that the debugger now
   correctly pauses on the debugger statement rather than after it (GH-347)
 

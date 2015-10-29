@@ -2247,7 +2247,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	case DUK_TAG_NULL: {
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is undefined or null -> reject"));
+#if defined(DUK_USE_VERBOSE_PROP_ERRORS)
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot read property %s of %s",
+		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+#else
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+#endif
 		return 0;
 	}
 
@@ -3282,7 +3287,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is undefined or null -> reject (object=%!iT)",
 		                     (duk_tval *) tv_obj));
+#if defined(DUK_USE_VERBOSE_PROP_ERRORS)
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
+		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+#else
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+#endif
 		return 0;
 	}
 
@@ -4039,7 +4049,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_base_primitive:
 	DUK_DDD(DUK_DDDPRINT("result: error, base primitive"));
 	if (throw_flag) {
+#if defined(DUK_USE_VERBOSE_PROP_ERRORS)
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
+		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+#else
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+#endif
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4401,7 +4416,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_invalid_base_uncond:
 	/* Note: unconditional throw */
 	DUK_ASSERT(duk_get_top(ctx) == entry_top);
+#if defined(DUK_USE_VERBOSE_PROP_ERRORS)
+	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot delete property %s of %s",
+	          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+#else
 	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+#endif
 	return 0;
 
  fail_proxy_rejected:
