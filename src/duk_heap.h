@@ -447,6 +447,10 @@ struct duk_heap {
 	duk_uint32_t dbg_exec_counter;          /* cumulative opcode execution count (overflows are OK) */
 	duk_uint32_t dbg_last_counter;          /* value of dbg_exec_counter when we last did a Date-based check */
 	duk_double_t dbg_last_time;             /* time when status/peek was last done (Date-based rate limit) */
+
+	/* Used to support single-byte stream lookahead. */
+	duk_bool_t dbg_have_next_byte;
+	duk_uint8_t dbg_next_byte;
 #endif
 
 	/* string intern table (weak refs) */

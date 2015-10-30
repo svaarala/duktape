@@ -66,6 +66,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	heap->dbg_write_flush_cb = write_flush_cb;
 	heap->dbg_detached_cb = detached_cb;
 	heap->dbg_udata = udata;
+	heap->dbg_have_next_byte = 0;
 
 	/* Start in paused state. */
 	heap->dbg_processing = 0;
