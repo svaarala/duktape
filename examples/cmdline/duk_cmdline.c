@@ -15,7 +15,9 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
     defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
 /* Suppress warnings about plain fopen() etc. */
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 #endif
 
 #define  GREET_CODE(variant)  \
@@ -999,6 +1001,11 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Cleaning up...\n");
 		fflush(stderr);
 	}
+#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+	if (debugger) {
+		duk_trans_socket_finish();
+	}
+#endif
 
 	if (ctx && no_heap_destroy) {
 		duk_gc(ctx, 0);
