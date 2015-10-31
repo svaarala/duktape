@@ -52,6 +52,13 @@ summary: |
       new property value as a stack argument.</li>
   </ul>
 
+  <p>In Duktape 1.4.0 convenience flags for setting/clearing attributes were added:</p>
+  <ul>
+  <li><code>DUK_DEFPROP_SET_WRITABLE</code> / <code>DUK_DEFPROP_CLEAR_WRITABLE</code></li>
+  <li><code>DUK_DEFPROP_SET_ENUMERABLE</code> / <code>DUK_DEFPROP_CLEAR_ENUMERABLE</code></li>
+  <li><code>DUK_DEFPROP_SET_CONFIGURABLE</code> / <code>DUK_DEFPROP_CLEAR_CONFIGURABLE</code></li>
+  </ul>
+
   <p>This API call is useful for various things:</p>
   <ul>
   <li>To create properties with non-default attributes directly from C code.</li>
@@ -78,6 +85,19 @@ example: |
                DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE |
                DUK_DEFPROP_HAVE_ENUMERABLE | 0 |
                DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE);
+
+  /* In Duktape 1.4.0 there are convenience defines to make the above
+   * more readable.
+   */
+
+  duk_push_string(ctx, "my_prop_1");
+  duk_push_int(ctx, 123);  /* prop value */
+  duk_def_prop(ctx,
+               obj_idx,
+               DUK_DEFPROP_HAVE_VALUE |
+               DUK_DEFPROP_SET_WRITABLE |
+               DUK_DEFPROP_CLEAR_ENUMERABLE |
+               DUK_DEFPROP_SET_CONFIGURABLE);
 
   /* Change the property value and make it non-writable.  Don't touch other
    * attributes.
