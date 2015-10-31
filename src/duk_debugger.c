@@ -982,6 +982,10 @@ DUK_LOCAL void duk__debug_skip_to_eom(duk_hthread *thr) {
 
 /*
  *  Process incoming debug requests
+ *
+ *  Individual request handlers can push temporaries on the value stack and
+ *  rely on duk__debug_process_message() to restore the value stack top
+ *  automatically.
  */
 
 DUK_LOCAL void duk__debug_handle_basic_info(duk_hthread *thr, duk_heap *heap) {
@@ -1071,7 +1075,6 @@ DUK_LOCAL void duk__debug_handle_list_break(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_add_break(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *filename;
 	duk_uint32_t linenumber;
 	duk_small_int_t idx;
@@ -1089,7 +1092,6 @@ DUK_LOCAL void duk__debug_handle_add_break(duk_hthread *thr, duk_heap *heap) {
 	} else {
 		duk_debug_write_error_eom(thr, DUK_DBG_ERR_TOOMANY, "no space for breakpoint");
 	}
-	duk_pop(ctx);
 }
 
 DUK_LOCAL void duk__debug_handle_del_break(duk_hthread *thr, duk_heap *heap) {
@@ -1137,12 +1139,10 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 		duk_debug_write_int(thr, 1);
 		DUK_ASSERT(duk_get_tval(ctx, -2) != NULL);
 		duk_debug_write_tval(thr, duk_get_tval(ctx, -2));
-		duk_pop_2(ctx);
 	} else {
 		duk_debug_write_int(thr, 0);
 		duk_debug_write_unused(thr);
 	}
-	duk_pop(ctx);
 	duk_debug_write_eom(thr);
 }
 
@@ -1169,7 +1169,6 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 	} else {
 		DUK_D(DUK_DPRINT("callstack empty, no activation -> ignore putvar"));
 	}
-	duk_pop_2(ctx);
 
 	/* XXX: Current putvar implementation doesn't have a success flag,
 	 * add one and send to debug client?
@@ -1260,11 +1259,9 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 			duk_debug_write_tval(thr, duk_get_tval(ctx, -2));
 			duk_pop_3(ctx);  /* -> [ ... func varmap enum ] */
 		}
-		duk_pop(ctx);
 	} else {
 		DUK_D(DUK_DPRINT("varmap is not an object in GetLocals, ignore"));
 	}
-	duk_pop_2(ctx);
 
  callstack_empty:
 	duk_debug_write_eom(thr);
@@ -1272,13 +1269,9 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_context *ctx = (duk_context *) thr;
-
 	duk_small_uint_t call_flags;
 	duk_int_t call_ret;
 	duk_small_int_t eval_err;
-#if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top;
-#endif
 
 	DUK_UNREF(heap);
 
@@ -1288,10 +1281,6 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	 * activation.  For now, use global object eval() function, with
 	 * the eval considered a 'direct call to eval'.
 	 */
-
-#if defined(DUK_USE_ASSERTIONS)
-	entry_top = duk_get_top(ctx);
-#endif
 
 	duk_push_c_function(ctx, duk_bi_global_object_eval, 1 /*nargs*/);
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
@@ -1337,9 +1326,6 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	DUK_ASSERT(duk_get_tval(ctx, -1) != NULL);
 	duk_debug_write_tval(thr, duk_get_tval(ctx, -1));
 	duk_debug_write_eom(thr);
-	duk_pop(ctx);
-
-	DUK_ASSERT(duk_get_top(ctx) == entry_top);
 }
 
 DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
@@ -1570,16 +1556,23 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 	duk_debug_write_eom(thr);
 }
 
+/* Process one debug message.  Automatically restore value stack top to its
+ * entry value, so that individual message handlers don't need exact value
+ * stack handling which is convenient.
+ */
 DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_heap *heap;
 	duk_uint8_t x;
 	duk_int32_t cmd;
+	duk_idx_t entry_top;
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 	DUK_UNREF(ctx);
+
+	entry_top = duk_get_top(ctx);
 
 	x = duk_debug_read_byte(thr);
 	switch (x) {
@@ -1679,10 +1672,14 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	}
 	}  /* switch initial byte */
 
+	DUK_ASSERT(duk_get_top(ctx) >= entry_top);
+	duk_set_top(ctx, entry_top);
 	duk__debug_skip_to_eom(thr);
 	return;
 
  fail:
+	DUK_ASSERT(duk_get_top(ctx) >= entry_top);
+	duk_set_top(ctx, entry_top);
 	DUK__SET_CONN_BROKEN(thr);
 	return;
 }
