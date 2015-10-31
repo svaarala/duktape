@@ -76,10 +76,9 @@ To make a code contribution to Duktape
     It's OK to work on a feature in the pull request: this facilitates
     discussion in the pull request comments.
 
-* When the changes are finished, add the `mergeready` label to the pull
-  request to indicate you're no longer making any changes and would like
-  the branch to be merged.  If there is feedback needing fixes, remove the
-  label and add it back when the fixes are finished.  This ensures merges
+* When the changes are finished, comment on the pull that you're no longer
+  making any changes and would like the branch to be merged.  If there is
+  feedback needing fixes, comment when you're done.  This ensures merges
   are not done too early.
 
 To report bugs or request features
