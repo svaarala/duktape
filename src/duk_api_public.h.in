@@ -176,6 +176,12 @@ struct duk_number_list_entry {
 #define DUK_DEFPROP_HAVE_GETTER           (1 << 7)    /* set getter (given on value stack) */
 #define DUK_DEFPROP_HAVE_SETTER           (1 << 8)    /* set setter (given on value stack) */
 #define DUK_DEFPROP_FORCE                 (1 << 9)    /* force change if possible, may still fail for e.g. virtual properties */
+#define DUK_DEFPROP_SET_WRITABLE          (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)
+#define DUK_DEFPROP_CLEAR_WRITABLE        DUK_DEFPROP_HAVE_WRITABLE
+#define DUK_DEFPROP_SET_ENUMERABLE        (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)
+#define DUK_DEFPROP_CLEAR_ENUMERABLE      DUK_DEFPROP_HAVE_ENUMERABLE
+#define DUK_DEFPROP_SET_CONFIGURABLE      (DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)
+#define DUK_DEFPROP_CLEAR_CONFIGURABLE    DUK_DEFPROP_HAVE_CONFIGURABLE
 
 /* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 << 0)    /* create a new global environment */
