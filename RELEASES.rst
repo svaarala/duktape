@@ -1155,6 +1155,9 @@ Planned
 * Allow debugger detached callback to call duk_debugger_attach(), previously
   this clobbered some internal state (GH-399)
 
+* Add defines DUK_DEFPROP_{SET,CLEAR}_{WRITABLE,ENUMERABLE,CONFIGURABLE} for
+  duk_def_prop() to improve call site readability (GH-421)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
