@@ -5,6 +5,23 @@
 These features are not fully compliant; the intent is to minimize custom features
 and to align with the ES6 specification when possible.</p>
 
+<h2 id="es6-const">Const variables</h2>
+
+<p>Duktape has minimal support for
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-let-and-const-declarations">const</a>
+declarations to allow existing code using <code>const</code> to run.  However,
+<code>const</code> is mostly just an alias for <code>var</code> and currently has
+the following non-standard semantics:</p>
+<ul>
+<li>Unlike <code>var</code> declarations, <code>const</code> declarations are
+    required to have an initializer.</li>
+<li>Const variables are writable.  In ES6 <code>const</code> variables are
+    not writable.</li>
+<li>Const variables are function scoped and "hoisted" to the top of the
+    function like <code>var</code> declarations.  In ES6 <code>const</code>
+    has block scoping like <code>let</code>.
+</ul>
+
 <h2 id="es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</h2>
 
 <p><a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.setprototypeof">Object.setPrototypeOf</a>

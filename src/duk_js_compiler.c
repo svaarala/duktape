@@ -204,7 +204,7 @@ DUK_LOCAL_DECL duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *co
 
 /* statement parsing */
 DUK_LOCAL_DECL void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t expr_flags, duk_reg_t *out_reg_varbind, duk_regconst_t *out_rc_varname);
-DUK_LOCAL_DECL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res);
+DUK_LOCAL_DECL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t expr_flags);
 DUK_LOCAL_DECL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_int_t pc_label_site);
 DUK_LOCAL_DECL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_int_t pc_label_site);
 DUK_LOCAL_DECL void duk__parse_if_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res);
@@ -296,11 +296,11 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_TRY */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_TYPEOF */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_VAR */
+	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_CONST */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_VOID */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_WHILE */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_WITH */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_CLASS */
-	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_CONST */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_ENUM */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_EXPORT */
 	DUK__MK_LBP(DUK__BP_INVALID),                             /* DUK_TOK_EXTENDS */
@@ -4669,8 +4669,9 @@ DUK_LOCAL duk_small_uint_t duk__expr_lbp(duk_compiler_ctx *comp_ctx) {
  */
 
 #define DUK__EXPR_RBP_MASK           0xff
-#define DUK__EXPR_FLAG_REJECT_IN     (1 << 8)
-#define DUK__EXPR_FLAG_ALLOW_EMPTY   (1 << 9)
+#define DUK__EXPR_FLAG_REJECT_IN     (1 << 8)   /* reject 'in' token (used for for-in) */
+#define DUK__EXPR_FLAG_ALLOW_EMPTY   (1 << 9)   /* allow empty expression */
+#define DUK__EXPR_FLAG_REQUIRE_INIT  (1 << 10)  /* require initializer for var/const */
 
 /* main expression parser function */
 DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t rbp_flags) {
@@ -4944,6 +4945,11 @@ DUK_LOCAL void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 			               (duk_regconst_t) reg_val,
 			               rc_varname);
 		}
+	} else {
+		if (expr_flags & DUK__EXPR_FLAG_REQUIRE_INIT) {
+			/* Used for minimal 'const': initializer required. */
+			goto syntax_error;
+		}
 	}
 
 	duk_pop(ctx);  /* pop varname */
@@ -4957,7 +4963,7 @@ DUK_LOCAL void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_VAR_DECLARATION);
 }
 
-DUK_LOCAL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
+DUK_LOCAL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t expr_flags) {
 	duk_reg_t reg_varbind;
 	duk_regconst_t rc_varname;
 
@@ -4965,7 +4971,7 @@ DUK_LOCAL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 
 	for (;;) {
 		/* rc_varname and reg_varbind are ignored here */
-		duk__parse_var_decl(comp_ctx, res, 0, &reg_varbind, &rc_varname);
+		duk__parse_var_decl(comp_ctx, res, 0 | expr_flags, &reg_varbind, &rc_varname);
 
 		if (comp_ctx->curr_token.t != DUK_TOK_COMMA) {
 			break;
@@ -6246,9 +6252,15 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		stmt_flags = 0;
 		break;
 	}
+	case DUK_TOK_CONST: {
+		DUK_DDD(DUK_DDDPRINT("constant declaration statement"));
+		duk__parse_var_stmt(comp_ctx, res, DUK__EXPR_FLAG_REQUIRE_INIT /*expr_flags*/);
+		stmt_flags = DUK__HAS_TERM;
+		break;
+	}
 	case DUK_TOK_VAR: {
 		DUK_DDD(DUK_DDDPRINT("variable declaration statement"));
-		duk__parse_var_stmt(comp_ctx, res);
+		duk__parse_var_stmt(comp_ctx, res, 0 /*expr_flags*/);
 		stmt_flags = DUK__HAS_TERM;
 		break;
 	}

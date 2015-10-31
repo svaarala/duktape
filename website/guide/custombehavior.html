@@ -22,6 +22,12 @@ use invalid UTF-8 (<code>0xFF</code> prefix byte).</p>
 <p>The <a href="#use-duk-notail">"use duk notail"</a> directive is non-standard.
 It prevents a function from being tail called.</p>
 
+<h2>"const" treated mostly like "var"</h2>
+
+<p>The <code>const</code> keyword is supported with minimal non-standard
+semantics (officially defined in Ecmascript 6).  See
+<a href="#es6-const">Const variables</a> for more detail.</p>
+
 <h2>The global require() function for module loading</h2>
 
 <p>The <code>require()</code> built-in is non-standard, and provided for
