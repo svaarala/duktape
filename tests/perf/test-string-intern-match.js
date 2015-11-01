@@ -8,11 +8,13 @@ if (typeof print !== 'function') { print = console.log; }
 
 function test() {
     var buf = Duktape.Buffer(2048);
+    var ref;
     var i;
 
     for (i = 0; i < buf.length; i++) {
         buf[i] = i;
     }
+    ref = String(buf);
 
     for (i = 0; i < 1e6; i++) {
         void String(buf);
