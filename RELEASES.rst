@@ -1194,6 +1194,9 @@ Planned
 * Internal performance improvement: improve duk_push_this() performance by
   direct value stack access (GH-403)
 
+* Internal performance improvement: faster computation of string UTF-8
+  character length in string interning (GH-422)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
