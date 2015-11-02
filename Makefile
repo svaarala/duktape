@@ -263,6 +263,9 @@ CCOPTS_SHARED =
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wall -Wextra -Wunused-result
+CCOPTS_SHARED += -Wcast-qual
+# -Wfloat-equal is too picky, there's no apparent way to compare floats
+# (even when you know it's safe) without triggering warnings
 CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/examples/debug-trans-socket
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
