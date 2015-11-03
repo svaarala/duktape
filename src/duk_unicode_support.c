@@ -254,26 +254,117 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 	return 0;
 }
 
-/* (extended) utf-8 length without codepoint encoding validation, used
- * for string interning (should probably be inlined).
+/* Compute (extended) utf-8 length without codepoint encoding validation,
+ * used for string interning.
+ *
+ * NOTE: This algorithm is performance critical, more so than string hashing
+ * in some cases.  It is needed when interning a string and needs to scan
+ * every byte of the string with no skipping.  Having an ASCII fast path
+ * is useful if possible in the algorithm.  The current algorithms were
+ * chosen from several variants, based on x64 gcc -O2 testing.  See:
+ * https://github.com/svaarala/duktape/pull/422
  */
-DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
-	const duk_uint8_t *p = data;
-	const duk_uint8_t *p_end = data + blen;
-	duk_size_t clen = 0;
 
-	while (p < p_end) {
-		duk_uint8_t x = *p++;
-		if (x < 0x80 || x >= 0xc0) {
-			/* 10xxxxxx = continuation chars (0x80...0xbf), above
-			 * and below that initial bytes.
-			 */
-			clen++;
+#if defined(DUK_USE_PREFER_SIZE)
+/* Small variant; roughly 150 bytes smaller than the fast variant. */
+DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_size_t ncont;
+	duk_size_t clen;
+
+	p = data;
+	p_end = data + blen;
+	ncont = 0;
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (DUK_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+			ncont++;
 		}
 	}
 
+	DUK_ASSERT(ncont <= blen);
+	clen = blen - ncont;
+	DUK_ASSERT(clen <= blen);
 	return clen;
 }
+#else  /* DUK_USE_PREFER_SIZE */
+/* This seems like a good overall approach.  Fast path for ASCII in 4 byte
+ * blocks.
+ */
+DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *data, duk_size_t blen) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	const duk_uint32_t *p32_end;
+	const duk_uint32_t *p32;
+	duk_size_t ncont;
+	duk_size_t clen;
+
+	ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+	p = data;
+	p_end = data + blen;
+	if (blen < 16) {
+		goto skip_fastpath;
+	}
+
+	/* Align 'p' to 4; the input data may have arbitrary alignment.
+	 * End of string check not needed because blen >= 16.
+	 */
+	while (((duk_small_uint_t) (duk_uintptr_t) (const void *) p) & 0x03) {
+		duk_uint8_t x;
+		x = *p++;
+		if (DUK_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+			ncont++;
+		}
+	}
+
+	/* Full, aligned 4-byte reads. */
+	p32_end = (const duk_uint32_t *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03)));
+	p32 = (const duk_uint32_t *) p;
+	while (p32 != (const duk_uint32_t *) p32_end) {
+		duk_uint32_t x;
+		x = *p32++;
+		if (DUK_LIKELY((x & 0x80808080UL) == 0)) {
+			;  /* ASCII fast path */
+		} else {
+			/* Flip highest bit of each byte which changes
+			 * the bit pattern 10xxxxxx into 00xxxxxx which
+			 * allows an easy bit mask test.
+			 */
+			x ^= 0x80808080UL;
+			if (DUK_UNLIKELY(!(x & 0xc0000000UL))) {
+				ncont++;
+			}
+			if (DUK_UNLIKELY(!(x & 0x00c00000UL))) {
+				ncont++;
+			}
+			if (DUK_UNLIKELY(!(x & 0x0000c000UL))) {
+				ncont++;
+			}
+			if (DUK_UNLIKELY(!(x & 0x000000c0UL))) {
+				ncont++;
+			}
+		}
+	}
+	p = (const duk_uint8_t *) p32;
+	/* Fall through to handle the rest. */
+
+ skip_fastpath:
+	while (p != p_end) {
+		duk_uint8_t x;
+		x = *p++;
+		if (DUK_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+			ncont++;
+		}
+	}
+
+	DUK_ASSERT(ncont <= blen);
+	clen = blen - ncont;
+	DUK_ASSERT(clen <= blen);
+	return clen;
+}
+#endif  /* DUK_USE_PREFER_SIZE */
 
 /*
  *  Unicode range matcher
