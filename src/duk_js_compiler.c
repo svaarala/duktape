@@ -3765,9 +3765,17 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	case DUK_TOK_PERIOD: {
 		/* Property access expressions are critical for correct LHS ordering,
 		 * see comments in duk__expr()!
+		 *
+		 * A conservative approach would be to use duk__ivalue_totempconst()
+		 * for 'left'.  However, allowing a reg-bound variable seems safe here
+		 * and is nice because "foo.bar" is a common expression.  If the ivalue
+		 * is used in an expression a GETPROP will occur before any changes to
+		 * the base value can occur.  If the ivalue is used as an assignment
+		 * LHS, the assignment code will ensure the base value is safe from
+		 * RHS mutation.
 		 */
 
-		/* XXX: this now coerces an identifier into a GETVAR to a temp, which
+		/* XXX: This now coerces an identifier into a GETVAR to a temp, which
 		 * causes an extra LDREG in call setup.  It's sufficient to coerce to a
 		 * unary ivalue?
 		 */
@@ -3798,13 +3806,22 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 		/* XXX: optimize temp reg use */
 		/* XXX: similar coercion issue as in DUK_TOK_PERIOD */
-
 		/* XXX: coerce to regs? it might be better for enumeration use, where the
 		 * same PROP ivalue is used multiple times.  Or perhaps coerce PROP further
 		 * there?
 		 */
+		/* XXX: for simple cases like x['y'] an unnecessary LDREG is
+		 * emitted for the base value; could avoid it if we knew that
+		 * the key expression is safe (e.g. just a single literal).
+		 */
 
-		duk__ivalue_toplain(comp_ctx, left);
+		/* The 'left' value must not be a register bound variable
+		 * because it may be mutated during the rest of the expression
+		 * and E5.1 Section 11.2.1 specifies the order of evaluation
+		 * so that the base value is evaluated first.
+		 * See: test-bug-nested-prop-mutate.js.
+		 */
+		duk__ivalue_totempconst(comp_ctx, left);
 		duk__expr_toplain(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);  /* Expression, ']' terminates */
 		duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
 
