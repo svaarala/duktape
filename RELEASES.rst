@@ -1218,6 +1218,10 @@ Planned
 
 * Fix nested property assignment handling (GH-427, GH-428)
 
+* Fix property access expression handling when a variable holding the base
+  value is mutated by other parts of the expression, in both LHS and RHS
+  positions (GH-429)
+
 * Fix Unix local time offset handling which caused issues at least on RISC
   OS (GH-406, GH-407)
 
