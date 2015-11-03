@@ -29,7 +29,7 @@ static int server_sock = -1;
 static int client_sock = -1;
 
 /*
- *  Transport init
+ *  Transport init and finish
  */
 
 void duk_trans_socket_init(void) {
@@ -65,6 +65,17 @@ void duk_trans_socket_init(void) {
 	return;
 
  fail:
+	if (server_sock >= 0) {
+		(void) close(server_sock);
+		server_sock = -1;
+	}
+}
+
+void duk_trans_socket_finish(void) {
+	if (client_sock >= 0) {
+		(void) close(client_sock);
+		client_sock = -1;
+	}
 	if (server_sock >= 0) {
 		(void) close(server_sock);
 		server_sock = -1;

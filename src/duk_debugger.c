@@ -25,22 +25,27 @@ typedef union {
 
 #define DUK__SET_CONN_BROKEN(thr) do { \
 		/* For now shared handler is fine. */ \
-		duk_debug_do_detach((thr)->heap); \
+		duk__debug_do_detach1((thr)->heap); \
 	} while (0)
 
-DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
-	/* Can be called muliple times with no harm. */
+DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap) {
+	/* Can be called multiple times with no harm.  Mark the transport
+	 * bad (dbg_read_cb == NULL) and clear state except for the detached
+	 * callback and the udata field.  The detached callback is delayed
+	 * to the message loop so that it can be called between messages;
+	 * this avoids corner cases related to immediate debugger reattach
+	 * inside the detached callback.
+	 */
+
+	DUK_D(DUK_DPRINT("debugger transport detaching, marking transport broken"));
 
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;
 	heap->dbg_peek_cb = NULL;
 	heap->dbg_read_flush_cb = NULL;
 	heap->dbg_write_flush_cb = NULL;
-	if (heap->dbg_detached_cb) {
-		heap->dbg_detached_cb(heap->dbg_udata);
-	}
-	heap->dbg_detached_cb = NULL;
-	heap->dbg_udata = NULL;
+	/* heap->dbg_detached_cb: keep */
+	/* heap->dbg_udata: keep */
 	heap->dbg_processing = 0;
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
@@ -59,6 +64,32 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	 * XXX: clear breakpoint on either attach or detach?
 	 */
 	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;
+}
+
+DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
+	duk_debug_detached_function detached_cb;
+	void *detached_udata;
+
+	/* Safe to call multiple times. */
+
+	detached_cb = heap->dbg_detached_cb;
+	detached_udata = heap->dbg_udata;
+	heap->dbg_detached_cb = NULL;
+	heap->dbg_udata = NULL;
+
+	if (detached_cb) {
+		/* Careful here: state must be wiped before the call
+		 * so that we can cleanly handle a re-attach from
+		 * inside the callback.
+		 */
+		DUK_D(DUK_DPRINT("detached during message loop, delayed call to detached_cb"));
+		detached_cb(detached_udata);
+	}
+}
+
+DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
+	duk__debug_do_detach1(heap);
+	duk__debug_do_detach2(heap);
 }
 
 /*
@@ -1714,6 +1745,10 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 			break;
 		}
 		case DUK_DBG_CMD_DETACH: {
+			/* The actual detached_cb call is postponed to message loop so
+			 * we don't need any special precautions here (just skip to EOM
+			 * on the already closed connection).
+			 */
 			duk__debug_handle_detach(thr, heap);
 			break;
 		}
@@ -1870,6 +1905,17 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 		}
 
 		duk__debug_process_message(thr);
+
+		if (thr->heap->dbg_read_cb == NULL) {
+			/* Became detached during message handling (perhaps because
+			 * of an error or by an explicit Detach).  Call detached
+			 * callback here, between messages, to avoid confusing the
+			 * broken connection and a possible replacement (which may
+			 * be provided by an instant reattach inside the detached
+			 * callback).
+			 */
+			duk__debug_do_detach2(thr->heap);
+		}
 		if (thr->heap->dbg_state_dirty) {
 			/* Executed something that may have affected status,
 			 * resend.
