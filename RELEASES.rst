@@ -1159,6 +1159,8 @@ Planned
   value is a register-bound variable which is used and mutated in the rest
   of the expression (GH-381)
 
+* Fix nested property assignment handling (GH-427, GH-428)
+
 * Fix Unix local time offset handling which caused issues at least on RISC
   OS (GH-406, GH-407)
 
