@@ -1146,7 +1146,7 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
-	if (duk_debug_peek_byte(thr) != 0x00) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for GetVar"));
@@ -1197,7 +1197,7 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_read_tval(thr);           /* push to stack */
 	tv = duk_get_tval(ctx, -1);
 	DUK_ASSERT(tv != NULL);
-	if (duk_debug_peek_byte(thr) != 0x00) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for PutVar"));
@@ -1282,7 +1282,7 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_UNREF(heap);
 
-	if (duk_debug_peek_byte(thr) != 0x00) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for GetLocals"));
@@ -1339,9 +1339,12 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_D(DUK_DPRINT("debug command Eval"));
 
-	/* The eval code must be executed within the specified activation.
-	 * For now, use global object eval() function, with the eval considered
-	 * a 'direct call to eval'.
+	/* The eval code is executed within the lexical environment of a specified
+	 * activation. For now, use global object eval() function, with the eval
+	 * considered a 'direct call to eval'.
+	 *
+	 * Callstack level for debug commands only affects scope--the callstack as
+	 * seen by, e.g. Duktape.act() will be the same regardless.
 	 */
 
 	/* nargs == 2 so we can pass a callstack level to eval(). */
@@ -1349,7 +1352,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
 
 	(void) duk_debug_read_hstring(thr);
-	if (duk_debug_peek_byte(thr) != 0x00) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t)thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for Eval"));

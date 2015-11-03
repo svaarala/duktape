@@ -450,11 +450,10 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	}
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	/*  XXX: level is used only by the debugger and should never be present
-	 *  for eval() called from Ecmascript code. is there a way to assert for
-	 *  this?
+	/*  NOTE: level is used only by the debugger and should never be present
+	 *  for an Ecmascript eval().
 	 */
-	level = -2;
+	level = -2;  /* by default, use caller's environment */
 	if (duk_get_top(ctx) >= 2 && duk_is_number(ctx, 1)) {
 		level = duk_get_int(ctx, 1);
 	}
