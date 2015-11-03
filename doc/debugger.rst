@@ -16,10 +16,10 @@ Duktape provides the following basic debugging features:
 
 * Breakpoints: file/line pair targeted breakpoint list, "debugger" statement
 
-* Eval in the context of the current activation when paused (can be used
-  to implement basic watch expressions)
+* Eval in the context of any activation on the callstack when paused (can be
+  used to implement basic watch expressions)
 
-* Get/put variable
+* Get/put variable at any callstack level
 
 * Forwarding of print(), alert(), and logger writes
 
@@ -1512,7 +1512,7 @@ GetVar request (0x1a)
 
 Format::
 
-    REQ <int: 0x1a> <str: varname> EOM
+    REQ <int: 0x1a> <str: varname> [<int: level>] EOM
     REP <int: 0/1, found> <tval: value> EOM
 
 Example::
@@ -1520,18 +1520,26 @@ Example::
     REQ 26 "testVar" EOM
     REP 1 "myValue" EOM
 
+Level specifies the callstack depth, where -1 is the topmost (current) function,
+-2 is the calling function, etc. If not provided, the topmost function will be
+used.
+
 PutVar request (0x1b)
 ---------------------
 
 Format::
 
-    REQ <int: 0x1b> <str: varname> <tval: value> EOM
+    REQ <int: 0x1b> <str: varname> <tval: value> [<int: level>] EOM
     REP EOM
 
 Example::
 
     REQ 27 "testVar" "newValue" EOM
     REP EOM
+
+Level specifies the callstack depth, where -1 is the topmost (current) function,
+-2 is the calling function, etc. If not provided, the topmost function will be
+used.
 
 GetCallStack request (0x1c)
 ---------------------------
@@ -1551,7 +1559,7 @@ GetLocals request (0x1d)
 
 Format::
 
-    REQ <int: 0x1d> EOM
+    REQ <int: 0x1d> [<int: level>] EOM
     REP [ <str: varName> <tval: varValue> ]* EOM
 
 Example::
@@ -1559,7 +1567,10 @@ Example::
     REQ 29 EOM
     REP "x" "1" "y" "3.1415" "foo" "bar" EOM
 
-List local variable names from current function (the internal ``_Varmap``).
+List local variable names from specified activation (the internal ``_Varmap``).
+Level specifies the callstack depth, where -1 is the topmost (current) function,
+-2 is the calling function, etc. If not provided, the topmost function will be
+used.
 
 The result includes only local variables declared with ``var`` and locally
 declared functions.  Variables outside the current function scope, including
@@ -1575,7 +1586,7 @@ Eval request (0x1e)
 
 Format::
 
-    REQ <int: 0x1e> <str: expression> EOM
+    REQ <int: 0x1e> <str: expression> [<int: level>] EOM
     REP <int: 0=success, 1=error> <tval: value> EOM
 
 Example::
@@ -1583,10 +1594,18 @@ Example::
     REQ 30 "1+2" EOM
     REP 0 3 EOM
 
+Level specifies the callstack depth, where -1 is the topmost (current) function,
+-2 is the calling function, etc. If not provided, the topmost function will be
+used (as with a real ``eval()``).
+
+Note that the full callstack will be visible to, e.g. ``Duktape.act()`` called
+from the Eval'd code, regardless of the callstack index provided.
+
 The eval expression is evaluated as if a "direct call" to eval was executed
-in the position where execution has paused.  A direct eval call shares the
-same lexical scope as the function it is called from (an indirect eval call
-does not).  For instance, suppose we're executing::
+in the position where execution has paused, in the lexical scope specified by
+the provided callstack index.  A direct eval call shares the same lexical scope
+as the function it is called from (an indirect eval call does not).  For
+instance, suppose we're executing::
 
     function foo(x, y) {
         print(x);  // (A)
@@ -2753,10 +2772,6 @@ so that it doesn't necessarily have to be in the debug protocol.
 
 Possible new commands or command improvements
 ---------------------------------------------
-
-* Add callstack index to variable read/write
-
-* Add callstack index to Eval
 
 * More comprehensive callstack inspection, at least on par with what a stack
   trace provides
