@@ -18,6 +18,15 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#if defined(_MSC_VER)
+/* Workaround for snprintf() missing in older MSVC versions.
+ * Note that _snprintf() may not NUL terminate the string, but
+ * this difference does not matter here as a NUL terminator is
+ * always explicitly added.
+ */
+#define snprintf _snprintf
+#endif
+
 #define  GREET_CODE(variant)  \
 	"print('((o) Duktape" variant " ' + " \
 	"Math.floor(Duktape.version / 10000) + '.' + " \
