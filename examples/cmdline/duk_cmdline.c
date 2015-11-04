@@ -6,7 +6,7 @@
  *  support for example allocators, grep for DUK_CMDLINE_*.
  */
 
-#ifndef DUK_CMDLINE_FANCY
+#if !defined(DUK_CMDLINE_FANCY)
 #define NO_READLINE
 #define NO_RLIMIT
 #define NO_SIGNAL
@@ -28,31 +28,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 #include <signal.h>
 #endif
-#ifndef NO_RLIMIT
+#if !defined(NO_RLIMIT)
 #include <sys/resource.h>
 #endif
-#ifndef NO_READLINE
+#if !defined(NO_READLINE)
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
 #if defined(EMSCRIPTEN)
 #include <emscripten.h>
 #endif
-#ifdef DUK_CMDLINE_ALLOC_LOGGING
+#if defined(DUK_CMDLINE_ALLOC_LOGGING)
 #include "duk_alloc_logging.h"
 #endif
-#ifdef DUK_CMDLINE_ALLOC_TORTURE
+#if defined(DUK_CMDLINE_ALLOC_TORTURE)
 #include "duk_alloc_torture.h"
 #endif
-#ifdef DUK_CMDLINE_ALLOC_HYBRID
+#if defined(DUK_CMDLINE_ALLOC_HYBRID)
 #include "duk_alloc_hybrid.h"
 #endif
 #include "duktape.h"
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 /* Defined in duk_cmdline_ajduk.c or alljoyn.js headers. */
 void ajsheap_init(void);
 void ajsheap_dump(void);
@@ -67,7 +67,7 @@ void *AJS_Realloc(void *udata, void *ptr, duk_size_t size);
 void AJS_Free(void *udata, void *ptr);
 #endif
 
-#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 #include "duk_trans_socket.h"
 #endif
 
@@ -77,7 +77,7 @@ void AJS_Free(void *udata, void *ptr);
 
 static int interactive_mode = 0;
 
-#ifndef NO_RLIMIT
+#if !defined(NO_RLIMIT)
 static void set_resource_limits(rlim_t mem_limit_value) {
 	int rc;
 	struct rlimit lim;
@@ -108,7 +108,7 @@ static void set_resource_limits(rlim_t mem_limit_value) {
 }
 #endif  /* NO_RLIMIT */
 
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 static void my_sighandler(int x) {
 	fprintf(stderr, "Got signal %d\n", x);
 	fflush(stderr);
@@ -452,7 +452,7 @@ static int handle_eval(duk_context *ctx, const char *code) {
 	return retval;
 }
 
-#ifdef NO_READLINE
+#if defined(NO_READLINE)
 static int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
 	char *buffer = NULL;
@@ -591,7 +591,7 @@ static int handle_interactive(duk_context *ctx) {
 }
 #endif  /* NO_READLINE */
 
-#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 static void debugger_detached(void *udata) {
 	duk_context *ctx = (duk_context *) udata;
 	(void) ctx;
@@ -629,7 +629,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 
 	ctx = NULL;
 	if (!ctx && alloc_provider == ALLOC_LOGGING) {
-#ifdef DUK_CMDLINE_ALLOC_LOGGING
+#if defined(DUK_CMDLINE_ALLOC_LOGGING)
 		ctx = duk_create_heap(duk_alloc_logging,
 		                      duk_realloc_logging,
 		                      duk_free_logging,
@@ -641,7 +641,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 #endif
 	}
 	if (!ctx && alloc_provider == ALLOC_TORTURE) {
-#ifdef DUK_CMDLINE_ALLOC_TORTURE
+#if defined(DUK_CMDLINE_ALLOC_TORTURE)
 		ctx = duk_create_heap(duk_alloc_torture,
 		                      duk_realloc_torture,
 		                      duk_free_torture,
@@ -653,7 +653,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 #endif
 	}
 	if (!ctx && alloc_provider == ALLOC_HYBRID) {
-#ifdef DUK_CMDLINE_ALLOC_HYBRID
+#if defined(DUK_CMDLINE_ALLOC_HYBRID)
 		void *udata = duk_alloc_hybrid_init();
 		if (!udata) {
 			fprintf(stderr, "Failed to init hybrid allocator\n");
@@ -671,7 +671,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 #endif
 	}
 	if (!ctx && alloc_provider == ALLOC_AJSHEAP) {
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 		ajsheap_init();
 
 		ctx = duk_create_heap(
@@ -696,21 +696,21 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		exit(-1);
 	}
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump after heap creation\n");
 		ajsheap_dump();
 	}
 #endif
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		ajsheap_register(ctx);
 	}
 #endif
 
 	if (debugger) {
-#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 		fprintf(stderr, "Debugger enabled, create socket and wait for connection\n");
 		fflush(stderr);
 		duk_trans_socket_init();
@@ -748,7 +748,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 	(void) alloc_provider;
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump before duk_destroy_heap(), before forced gc\n");
 		ajsheap_dump();
@@ -764,7 +764,7 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 		duk_destroy_heap(ctx);
 	}
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	if (alloc_provider == ALLOC_AJSHEAP) {
 		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
 		ajsheap_dump();
@@ -836,7 +836,7 @@ int main(int argc, char *argv[]) {
 	);
 #endif  /* EMSCRIPTEN */
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	alloc_provider = ALLOC_AJSHEAP;
 #endif
 	(void) ajsheap_log;
@@ -845,7 +845,7 @@ int main(int argc, char *argv[]) {
 	 *  Signal handling setup
 	 */
 
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 	set_sigint_handler();
 
 	/* This is useful at the global level; libraries should avoid SIGPIPE though */
@@ -913,7 +913,7 @@ int main(int argc, char *argv[]) {
 	 *  Memory limit
 	 */
 
-#ifndef NO_RLIMIT
+#if !defined(NO_RLIMIT)
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
 #else
 	if (memlimit_high == 0) {
@@ -1042,20 +1042,20 @@ int main(int argc, char *argv[]) {
 			"   --verbose          verbose messages to stderr\n"
 	                "   --restrict-memory  use lower memory limit (used by test runner)\n"
 	                "   --alloc-default    use Duktape default allocator\n"
-#ifdef DUK_CMDLINE_ALLOC_LOGGING
+#if defined(DUK_CMDLINE_ALLOC_LOGGING)
 	                "   --alloc-logging    use logging allocator (writes to /tmp)\n"
 #endif
-#ifdef DUK_CMDLINE_ALLOC_TORTURE
+#if defined(DUK_CMDLINE_ALLOC_TORTURE)
 	                "   --alloc-torture    use torture allocator\n"
 #endif
-#ifdef DUK_CMDLINE_ALLOC_HYBRID
+#if defined(DUK_CMDLINE_ALLOC_HYBRID)
 	                "   --alloc-hybrid     use hybrid allocator\n"
 #endif
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 	                "   --alloc-ajsheap    use ajsheap allocator (enabled by default with 'ajduk')\n"
 	                "   --ajsheap-log      write alloc log to /tmp/ajduk-alloc-log.txt\n"
 #endif
-#ifdef DUK_CMDLINE_DEBUGGER_SUPPORT
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 			"   --debugger         start example debugger\n"
 #endif
 			"   --recreate-heap    recreate heap after every file\n"
