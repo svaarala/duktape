@@ -450,14 +450,14 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	}
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	/*  NOTE: level is used only by the debugger and should never be present
-	 *  for an Ecmascript eval().
+	/* NOTE: level is used only by the debugger and should never be present
+	 * for an Ecmascript eval().
 	 */
-	level = -2;  /* by default, use caller's environment */
+	DUK_ASSERT(level == -2);  /* by default, use caller's environment */
 	if (duk_get_top(ctx) >= 2 && duk_is_number(ctx, 1)) {
 		level = duk_get_int(ctx, 1);
 	}
-	DUK_ASSERT(level <= -2);
+	DUK_ASSERT(level <= -2);  /* This is guaranteed by debugger code. */
 #endif
 
 	/* [ source ] */

@@ -173,7 +173,7 @@ DUK_INTERNAL_DECL duk_small_int_t duk_debug_level_stash;
 DUK_INTERNAL_DECL void duk_debug_log(const char *fmt, ...);
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
-DUK_INTERNAL_DECL void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length);
+DUK_INTERNAL_DECL void duk_fb_put_bytes(duk_fixedbuffer *fb, const duk_uint8_t *buffer, duk_size_t length);
 DUK_INTERNAL_DECL void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x);
 DUK_INTERNAL_DECL void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x);
 DUK_INTERNAL_DECL void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...);

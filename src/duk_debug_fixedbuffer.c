@@ -7,7 +7,7 @@
 
 #ifdef DUK_USE_DEBUG
 
-DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk_size_t length) {
+DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, const duk_uint8_t *buffer, duk_size_t length) {
 	duk_size_t avail;
 	duk_size_t copylen;
 
@@ -23,11 +23,11 @@ DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, duk_uint8_t *buffer, duk
 }
 
 DUK_INTERNAL void duk_fb_put_byte(duk_fixedbuffer *fb, duk_uint8_t x) {
-	duk_fb_put_bytes(fb, &x, 1);
+	duk_fb_put_bytes(fb, (const duk_uint8_t *) &x, 1);
 }
 
 DUK_INTERNAL void duk_fb_put_cstring(duk_fixedbuffer *fb, const char *x) {
-	duk_fb_put_bytes(fb, (duk_uint8_t *) x, (duk_size_t) DUK_STRLEN(x));
+	duk_fb_put_bytes(fb, (const duk_uint8_t *) x, (duk_size_t) DUK_STRLEN(x));
 }
 
 DUK_INTERNAL void duk_fb_sprintf(duk_fixedbuffer *fb, const char *fmt, ...) {
