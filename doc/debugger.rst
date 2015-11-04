@@ -10,7 +10,7 @@ Overview
 
 Duktape provides the following basic debugging features:
 
-* Execution status: running/paused at file/line, call stack, local variables
+* Execution status: running/paused at file/line, callstack, local variables
 
 * Execution control: pause, resume, step over, step into, step out
 
@@ -1320,7 +1320,7 @@ Fatal is one of:
 Duktape sends a Throw notification whenever an error is thrown, either by
 Duktape due to a runtime error or directly by Ecmascript code.
 
-msg is the string-coerced value being thrown. Filename and line number are
+msg is the string-coerced value being thrown.  Filename and line number are
 taken directly from the thrown object if it is an Error instance (after
 augmentation), otherwise these values are calculated from the bytecode
 executor state.
@@ -1342,12 +1342,12 @@ Reason is one of:
 
 * 0x01: detaching due to stream error
 
-Duktape sends a Detaching notification when the debugger is detaching. If the
+Duktape sends a Detaching notification when the debugger is detaching.  If the
 target drops the transport without the client seeing this notification, it can
 assume the connection was lost and react accordingly (for example by trying to
 reestablish the link).
 
-``msg`` is an optional string elaborating on the reason for the detach. It may
+``msg`` is an optional string elaborating on the reason for the detach.  It may
 or may not be present depending on the nature of detachment.
 
 Commands sent by debug client
@@ -1546,7 +1546,7 @@ Example::
     REP 1 "myValue" EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
--2 is the calling function, etc. If not provided, the topmost function will be
+-2 is the calling function, etc.  If not provided, the topmost function will be
 used.
 
 PutVar request (0x1b)
@@ -1563,7 +1563,7 @@ Example::
     REP EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
--2 is the calling function, etc. If not provided, the topmost function will be
+-2 is the calling function, etc.  If not provided, the topmost function will be
 used.
 
 GetCallStack request (0x1c)
@@ -1578,6 +1578,8 @@ Example::
 
     REQ 28 EOM
     REP "foo.js" "doStuff" 100 317 "bar.js" "doOtherStuff" 210 880 EOM
+
+List callstack entries from top to bottom.
 
 GetLocals request (0x1d)
 ------------------------
@@ -1594,7 +1596,7 @@ Example::
 
 List local variable names from specified activation (the internal ``_Varmap``).
 Level specifies the callstack depth, where -1 is the topmost (current) function,
--2 is the calling function, etc. If not provided, the topmost function will be
+-2 is the calling function, etc.  If not provided, the topmost function will be
 used.
 
 The result includes only local variables declared with ``var`` and locally
@@ -1620,11 +1622,10 @@ Example::
     REP 0 3 EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
--2 is the calling function, etc. If not provided, the topmost function will be
-used (as with a real ``eval()``).
-
-Note that the full callstack will be visible to, e.g. ``Duktape.act()`` called
-from the Eval'd code, regardless of the callstack index provided.
+-2 is the calling function, etc.  If not provided, the topmost function will be
+used (as with a real ``eval()``).  The level affects only the lexical scope of
+the code evaluated.  The callstack will be intact, and will be visible in e.g.
+stack traces and ``Duktape.act()``.
 
 The eval expression is evaluated as if a "direct call" to eval was executed
 in the position where execution has paused, in the lexical scope specified by
@@ -1746,7 +1747,7 @@ Ecmascript has a debugger statement::
 The E5 specification states that:
 
     Evaluating the DebuggerStatement production may allow an implementation
-    to cause a breakpoint when run under a debugger. If a debugger is not
+    to cause a breakpoint when run under a debugger.  If a debugger is not
     present or active this statement has no observable effect.
 
 Other Ecmascript engines typically treat a debugger statement as a breakpoint:
@@ -2024,7 +2025,7 @@ The step state is rather tricky:
   not matter).  Execute in normal mode (unless there are breakpoints, of course).
   If the activation is unwound for any reason, enter paused mode.  This means
   that if an error is thrown, we resume execution in the catcher.  Step out
-  handling is concretely implemented as part of call stack unwinding, which
+  handling is concretely implemented as part of callstack unwinding, which
   differs completely from how other step commands are implemented.
 
   A coroutine yield does not trigger a "step out" because the callstack is not
