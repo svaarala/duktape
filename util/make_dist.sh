@@ -37,6 +37,8 @@ ENTRYPWD=`pwd`
 DIST=`pwd`/dist
 DISTSRCSEP=$DIST/src-separate
 DISTSRCCOM=$DIST/src
+DISTSRCNOL=$DIST/src-noline  # src-noline/duktape.c is same as src/duktape.c but without line directives
+                             # https://github.com/svaarala/duktape/pull/363
 
 # DUK_VERSION is grepped from duk_api_public.h.in: it is needed for the
 # public API and we want to avoid defining it in two places.
@@ -61,6 +63,7 @@ rm -rf $DIST
 mkdir $DIST
 mkdir $DIST/src-separate
 mkdir $DIST/src
+mkdir $DIST/src-noline
 mkdir $DIST/config
 mkdir $DIST/extras
 mkdir $DIST/polyfills
@@ -449,6 +452,7 @@ python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
 	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 	autodetect-header-legacy
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
+cp $DIST/duk_config.h.tmp $DISTSRCNOL/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
 #cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
 
@@ -509,6 +513,7 @@ cat src/duktape.h.in | sed -e '
 # keep the line so line numbers match between the two variant headers
 cat $DISTSRCCOM/duktape.h | sed -e 's/^#define DUK_SINGLE_FILE$//' \
 	> $DISTSRCSEP/duktape.h
+cp $DISTSRCSEP/duktape.h $DISTSRCNOL/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  There are multiple minifiers, closure
@@ -818,11 +823,32 @@ rm $DISTSRCSEP/caseconv.txt
 # these files into their repository, the result should be deterministic and
 # diffable.  Also, it must retain __FILE__/__LINE__ behavior through
 # preprocessor directives.  Whitespace and comments can be stripped as long
-# as the other requirements are met.
+# as the other requirements are met.  For some users it's preferable *not*
+# to use #line directives in the combined source, so a separate variant is
+# created for that, see: https://github.com/svaarala/duktape/pull/363.
 
-python util/combine_src.py $DISTSRCSEP $DISTSRCCOM/duktape.c \
-	"$DUK_VERSION" "$GIT_COMMIT" "$GIT_DESCRIBE" "$GIT_BRANCH" \
-	$DIST/LICENSE.txt.tmp $DIST/AUTHORS.rst.tmp
+python util/combine_src.py \
+	--source-dir $DISTSRCSEP \
+	--output-source $DISTSRCCOM/duktape.c \
+	--output-metadata $DISTSRCCOM/metadata.json \
+	--duk-version "$DUK_VERSION" \
+	--git-commit "$GIT_COMMIT" \
+	--git-describe "$GIT_DESCRIBE" \
+	--git-branch "$GIT_BRANCH" \
+	--license-file $DIST/LICENSE.txt.tmp \
+	--authors-file $DIST/AUTHORS.rst.tmp \
+	--line-directives
+
+python util/combine_src.py \
+	--source-dir $DISTSRCSEP \
+	--output-source $DISTSRCNOL/duktape.c \
+	--output-metadata $DISTSRCNOL/metadata.json \
+	--duk-version "$DUK_VERSION" \
+	--git-commit "$GIT_COMMIT" \
+	--git-describe "$GIT_DESCRIBE" \
+	--git-branch "$GIT_BRANCH" \
+	--license-file $DIST/LICENSE.txt.tmp \
+	--authors-file $DIST/AUTHORS.rst.tmp
 
 # Clean up temp files
 rm $DIST/*.tmp

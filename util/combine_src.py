@@ -47,6 +47,8 @@
 import os
 import sys
 import re
+import json
+import optparse
 
 re_extinc = re.compile(r'^#include <(.*?)>.*$')
 re_intinc = re.compile(r'^#include \"(duk.*?)\".*$')  # accept duktape.h too
@@ -131,8 +133,13 @@ def processDeclarations(f):
 		elif line.data.startswith('extern int') or line.data.startswith('extern void '):
 			line.data = 'static ' + line.data[7:]  # replace extern with static
 
-def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, git_branch, license_file, authors_file):
+def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, git_branch, license_file, authors_file, line_directives):
 	res = []
+	line_map = []   # indicate combined source lines where uncombined file/line would change
+	metadata = {
+		'line_map': line_map
+	}
+
 
 	emit_state = [ None, None ]  # curr_filename, curr_lineno
 
@@ -175,7 +182,11 @@ def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe,
 			emit_state[1] += 1
 		else:
 			if line.filename != emit_state[0] or line.lineno != emit_state[1]:
-				res.append('#line %d "%s"' % (line.lineno, line.filename))
+				line_map.append({ 'original_file': line.filename,
+				                  'original_line': line.lineno,
+				                  'combined_line': len(res) + 1 })
+				if line_directives:
+					res.append('#line %d "%s"' % (line.lineno, line.filename))
 			res.append(line.data)
 			emit_state[0] = line.filename
 			emit_state[1] = line.lineno + 1
@@ -233,25 +244,38 @@ def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe,
 				incname = m.group(1)
 				emit('/* include removed: %s */' % incname)
 
-	return '\n'.join(res) + '\n'
+	return '\n'.join(res) + '\n', metadata
 
 def main():
+	parser = optparse.OptionParser()
+	parser.add_option('--source-dir', dest='source_dir', help='Source directory')
+	parser.add_option('--output-source', dest='output_source', help='Output source filename')
+	parser.add_option('--output-metadata', dest='output_metadata', help='Output metadata filename')
+	parser.add_option('--duk-version', type='int', dest='duk_version', help='Duktape version integer (e.g. 10203 for 1.2.3)')
+	parser.add_option('--git-commit', dest='git_commit', help='Git commit hash')
+	parser.add_option('--git-describe', dest='git_describe', help='Git describe')
+	parser.add_option('--git-branch', dest='git_branch', help='Git branch')
+	parser.add_option('--license-file', dest='license_file', help='License file to embed')
+	parser.add_option('--authors-file', dest='authors_file', help='Authors file to embed')
+	parser.add_option('--line-directives', dest='line_directives', action='store_true', default=False, help='Use #line directives in combined source')
+	(opts, args) = parser.parse_args()
+
+	assert(opts.source_dir)
+	assert(opts.output_source)
+	assert(opts.output_metadata)
+	assert(opts.duk_version)
+	assert(opts.git_commit)
+	assert(opts.git_describe)
+	assert(opts.git_branch)
+	assert(opts.license_file)
+	assert(opts.authors_file)
+
 	if not os.path.exists('LICENSE.txt'):
 		raise Exception('CWD must be Duktape checkout top')
 
-	outname = sys.argv[2]
-	assert(outname)
-
-	duk_version = int(sys.argv[3])
-	git_commit = sys.argv[4]
-	git_describe = sys.argv[5]
-	git_branch = sys.argv[6]
-	license_file = sys.argv[7]
-	authors_file = sys.argv[8]
-
 	print 'Read input files'
 	files = []
-	filelist = os.listdir(sys.argv[1])
+	filelist = os.listdir(opts.source_dir)
 	filelist.sort()  # for consistency
 	handpick = [ 'duk_strings.c',
 	             'duk_debug_macros.c',
@@ -273,7 +297,7 @@ def main():
 	for fn in filelist:
 		if os.path.splitext(fn)[1] not in [ '.c', '.h' ]:
 			continue
-		res = read(os.path.join(sys.argv[1], fn))
+		res = read(os.path.join(opts.source_dir, fn))
 		files.append(res)
 	print '%d files read' % len(files)
 
@@ -300,12 +324,17 @@ def main():
 		pass
 
 	print 'Output final file'
-	final = createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, git_branch, license_file, authors_file)
-	f = open(outname, 'wb')
-	f.write(final)
-	f.close()
+	combined_source, metadata = \
+	    createCombined(files, extinc, intinc, opts.duk_version,
+	                   opts.git_commit, opts.git_describe, opts.git_branch,
+	                   opts.license_file, opts.authors_file,
+	                   opts.line_directives)
+	with open(opts.output_source, 'wb') as f:
+		f.write(combined_source)
+	with open(opts.output_metadata, 'wb') as f:
+		f.write(json.dumps(metadata, indent=4))
 
-	print 'Wrote %d bytes to %s' % (len(final), outname)
+	print 'Wrote %d bytes to %s' % (len(combined_source), opts.output_source)
 
 if __name__ == '__main__':
 	main()

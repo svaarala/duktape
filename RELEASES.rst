@@ -1155,6 +1155,9 @@ Planned
 * Allow debugger detached callback to call duk_debugger_attach(), previously
   this clobbered some internal state (GH-399)
 
+* Add a combined duktape.c without #line directives into the dist package,
+  as it is a useful alternative in some environments (GH-363)
+
 * Fix "debugger" statement line number off-by-one so that the debugger now
   correctly pauses on the debugger statement rather than after it (GH-347)
 

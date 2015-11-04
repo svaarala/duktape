@@ -61,6 +61,10 @@ This distributable contains:
 * ``src/``: main Duktape library in a "single source file" format (duktape.c,
   duktape.h, and duk_config.h).
 
+* ``src-noline/``: contains a variant of ``src/duktape.c`` with no ``#line``
+  directives which is preferable for some users.  See discussion in
+  https://github.com/svaarala/duktape/pull/363.
+
 * ``src-separate/``: main Duktape library in multiple files format.
 
 * ``config/``: genconfig utility for creating duk_config.h configuration
