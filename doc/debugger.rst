@@ -1325,6 +1325,31 @@ taken directly from the thrown object if it is an Error instance (after
 augmentation), otherwise these values are calculated from the bytecode
 executor state.
 
+Detaching notification (0x06)
+-----------------------------
+
+Format::
+
+    NFY <int: 6> <int: reason> [<str: msg>] EOM
+
+Example::
+
+    NFY 6 1 "error parsing dvalue" EOM
+
+Reason is one of:
+
+* 0x00: normal detach
+
+* 0x01: detaching due to stream error
+
+Duktape sends a Detaching notification when the debugger is detaching. If the
+target drops the transport without the client seeing this notification, it can
+assume the connection was lost and react accordingly (for example by trying to
+reestablish the link).
+
+``msg`` is an optional string elaborating on the reason for the detach. It may
+or may not be present depending on the nature of detachment.
+
 Commands sent by debug client
 =============================
 
