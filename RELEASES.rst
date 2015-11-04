@@ -1161,6 +1161,8 @@ Planned
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
+* Fix compile warnings for gcc/clang -Wcast-qual (GH-426)
+
 * Fix "debugger" statement line number off-by-one so that the debugger now
   correctly pauses on the debugger statement rather than after it (GH-347)
 
