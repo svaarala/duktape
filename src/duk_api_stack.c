@@ -889,7 +889,7 @@ DUK_EXTERNAL void duk_insert(duk_context *ctx, duk_idx_t to_index) {
 	if (nbytes > 0) {
 		DUK_TVAL_SET_TVAL(&tv_tmp, q);
 		DUK_ASSERT(nbytes > 0);
-		DUK_MEMMOVE((void *) (p + 1), (void *) p, nbytes);
+		DUK_MEMMOVE((void *) (p + 1), (const void *) p, (size_t) nbytes);
 		DUK_TVAL_SET_TVAL(p, &tv_tmp);
 	} else {
 		/* nop: insert top to top */
@@ -968,7 +968,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t index) {
 #endif
 
 	nbytes = (duk_size_t) (((duk_uint8_t *) q) - ((duk_uint8_t *) p));  /* Note: 'q' is top-1 */
-	DUK_MEMMOVE(p, p + 1, nbytes);  /* zero size not an issue: pointers are valid */
+	DUK_MEMMOVE((void *) p, (const void *) (p + 1), (size_t) nbytes);  /* zero size not an issue: pointers are valid */
 
 	DUK_TVAL_SET_UNDEFINED(q);
 	thr->valstack_top--;
@@ -1025,7 +1025,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	 * allowed now anyway)
 	 */
 	DUK_ASSERT(nbytes > 0);
-	DUK_MEMCPY((void *) to_thr->valstack_top, src, nbytes);
+	DUK_MEMCPY((void *) to_thr->valstack_top, (const void *) src, (size_t) nbytes);
 
 	p = to_thr->valstack_top;
 	to_thr->valstack_top = (duk_tval *) (void *) (((duk_uint8_t *) p) + nbytes);
@@ -2312,8 +2312,10 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 		 * duk_to_dynamic_buffer() call.
 		 */
 		duk_uint_t tmp;
+		duk_uint8_t *tmp_ptr;
 
-		src_data = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_buf);
+		tmp_ptr = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_buf);
+		src_data = (const duk_uint8_t *) tmp_ptr;
 		src_size = DUK_HBUFFER_GET_SIZE(h_buf);
 
 		tmp = (DUK_HBUFFER_HAS_DYNAMIC(h_buf) ? DUK_BUF_MODE_DYNAMIC : DUK_BUF_MODE_FIXED);
@@ -2322,7 +2324,7 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 			/* Note: src_data may be NULL if input is a zero-size
 			 * dynamic buffer.
 			 */
-			dst_data = (duk_uint8_t *) src_data;
+			dst_data = tmp_ptr;
 			goto skip_copy;
 		}
 	} else {
@@ -2341,7 +2343,7 @@ DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t index, duk_size
 		 * target buffer is dynamic).  Avoid zero-size memcpy()
 		 * with an invalid pointer.
 		 */
-		DUK_MEMCPY(dst_data, src_data, src_size);
+		DUK_MEMCPY((void *) dst_data, (const void *) src_data, (size_t) src_size);
 	}
 	duk_replace(ctx, index);
  skip_copy:
@@ -3115,7 +3117,7 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk
 		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_STRING_TOO_LONG);
 	}
 
-	h = duk_heap_string_intern_checked(thr, (duk_uint8_t *) str, (duk_uint32_t) len);
+	h = duk_heap_string_intern_checked(thr, (const duk_uint8_t *) str, (duk_uint32_t) len);
 	DUK_ASSERT(h != NULL);
 
 	tv_slot = thr->valstack_top++;
@@ -4520,7 +4522,7 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring 
 	DUK_ASSERT(h_input != NULL);
 	thr = (duk_hthread *) ctx;
 
-	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 	q = buf;

@@ -243,18 +243,18 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 	DUK_ASSERT(buf != NULL);
 	p = buf;
 
-	DUK_MEMCPY((void *) p, (void *) date_buf, date_len);
+	DUK_MEMCPY((void *) p, (const void *) date_buf, (size_t) date_len);
 	p += date_len;
 	*p++ = (duk_uint8_t) DUK_ASC_SPACE;
 
 	q = duk__log_level_strings + (entry_lev * 3);
-	DUK_MEMCPY((void *) p, (void *) q, (duk_size_t) 3);
+	DUK_MEMCPY((void *) p, (const void *) q, (size_t) 3);
 	p += 3;
 
 	*p++ = (duk_uint8_t) DUK_ASC_SPACE;
 
 	arg_str = (const duk_uint8_t *) duk_get_lstring(ctx, -2, &arg_len);
-	DUK_MEMCPY((void *) p, (const void *) arg_str, arg_len);
+	DUK_MEMCPY((void *) p, (const void *) arg_str, (size_t) arg_len);
 	p += arg_len;
 
 	*p++ = (duk_uint8_t) DUK_ASC_COLON;
@@ -264,7 +264,7 @@ DUK_INTERNAL duk_ret_t duk_bi_logger_prototype_log_shared(duk_context *ctx) {
 
 		arg_str = (const duk_uint8_t *) duk_get_lstring(ctx, i, &arg_len);
 		DUK_ASSERT(arg_str != NULL);
-		DUK_MEMCPY((void *) p, (const void *) arg_str, arg_len);
+		DUK_MEMCPY((void *) p, (const void *) arg_str, (size_t) arg_len);
 		p += arg_len;
 	}
 	DUK_ASSERT(buf + tot_len == p);

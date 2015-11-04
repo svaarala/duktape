@@ -713,9 +713,9 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_MEMZERO(&re_ctx, sizeof(re_ctx));
 
 	re_ctx.thr = thr;
-	re_ctx.input = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	re_ctx.input = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	re_ctx.input_end = re_ctx.input + DUK_HSTRING_GET_BYTELEN(h_input);
-	re_ctx.bytecode = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
+	re_ctx.bytecode = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_bytecode);
 	re_ctx.bytecode_end = re_ctx.bytecode + DUK_HSTRING_GET_BYTELEN(h_bytecode);
 	re_ctx.saved = NULL;
 	re_ctx.recursion_limit = DUK_USE_REGEXP_EXECUTOR_RECLIMIT;
@@ -920,7 +920,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 				duk_hstring *h_saved;
 
 				duk_push_lstring(ctx,
-				                 (char *) re_ctx.saved[i],
+				                 (const char *) re_ctx.saved[i],
 				                 (duk_size_t) (re_ctx.saved[i+1] - re_ctx.saved[i]));
 				h_saved = duk_get_hstring(ctx, -1);
 				DUK_ASSERT(h_saved != NULL);

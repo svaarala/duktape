@@ -17,13 +17,13 @@ typedef union {
 } duk__test_double_union;
 
 #define DUK__DBLUNION_CMP_TRUE(a,b)  do { \
-		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk__test_double_union)) != 0) { \
+		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) != 0) { \
 			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares false (expected true)"); \
 		} \
 	} while (0)
 
 #define DUK__DBLUNION_CMP_FALSE(a,b)  do { \
-		if (DUK_MEMCMP((void *) (a), (void *) (b), sizeof(duk__test_double_union)) == 0) { \
+		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) == 0) { \
 			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares true (expected false)"); \
 		} \
 	} while (0)
@@ -83,7 +83,11 @@ DUK_LOCAL void duk__selftest_packed_tval(void) {
 DUK_LOCAL void duk__selftest_twos_complement(void) {
 	volatile int test;
 	test = -1;
-	if (((duk_uint8_t *) &test)[0] != (duk_uint8_t) 0xff) {
+
+	/* Note that byte order doesn't affect this test: all bytes in
+	 * 'test' will be 0xFF for two's complement.
+	 */
+	if (((volatile duk_uint8_t *) &test)[0] != (duk_uint8_t) 0xff) {
 		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: two's complement arithmetic");
 	}
 }
@@ -239,7 +243,7 @@ DUK_LOCAL void duk__selftest_double_aliasing(void) {
  */
 
 DUK_LOCAL void duk__selftest_double_zero_sign(void) {
-	volatile duk__test_double_union a, b;
+	duk__test_double_union a, b;
 
 	a.d = 0.0;
 	b.d = -a.d;

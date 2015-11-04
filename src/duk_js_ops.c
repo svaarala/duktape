@@ -619,7 +619,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 				DUK_ASSERT(len_x == len_y);
 				DUK_ASSERT(len_x == 0 || buf_x != NULL);
 				DUK_ASSERT(len_y == 0 || buf_y != NULL);
-				return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
+				return (DUK_MEMCMP((const void *) buf_x, (const void *) buf_y, (size_t) len_x) == 0) ? 1 : 0;
 			}
 		}
 		case DUK_TAG_LIGHTFUNC: {
@@ -698,20 +698,20 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
 		duk_size_t len_x = DUK_HSTRING_GET_BYTELEN(h_x);
 		duk_size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
-		void *buf_x;
-		void *buf_y;
+		const void *buf_x;
+		const void *buf_y;
 		if (len_x != len_y) {
 			return 0;
 		}
-		buf_x = (void *) DUK_HSTRING_GET_DATA(h_x);
-		buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
+		buf_x = (const void *) DUK_HSTRING_GET_DATA(h_x);
+		buf_y = (const void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
 		/* if len_x == len_y == 0, buf_x and/or buf_y may
 		 * be NULL, but that's OK.
 		 */
 		DUK_ASSERT(len_x == len_y);
 		DUK_ASSERT(len_x == 0 || buf_x != NULL);
 		DUK_ASSERT(len_y == 0 || buf_y != NULL);
-		return (DUK_MEMCMP(buf_x, buf_y, len_x) == 0) ? 1 : 0;
+		return (DUK_MEMCMP((const void *) buf_x, (const void *) buf_y, (size_t) len_x) == 0) ? 1 : 0;
 	}
 
 	/* Boolean/any -> coerce boolean to number and try again.  If boolean is
@@ -774,19 +774,12 @@ DUK_INTERNAL duk_small_int_t duk_js_data_compare(const duk_uint8_t *buf1, const 
 
 	prefix_len = (len1 <= len2 ? len1 : len2);
 
-	/* XXX: this special case can now be removed with DUK_MEMCMP */
-	/* memcmp() should return zero (equal) for zero length, but avoid
-	 * it because there are some platform specific bugs.  Don't use
-	 * strncmp() because it stops comparing at a NUL.
+	/* DUK_MEMCMP() is guaranteed to return zero (equal) for zero length
+	 * inputs so no zero length check is needed.
 	 */
-
-	if (prefix_len == 0) {
-		rc = 0;
-	} else {
-		rc = DUK_MEMCMP((const char *) buf1,
-		                (const char *) buf2,
-		                prefix_len);
-	}
+	rc = DUK_MEMCMP((const void *) buf1,
+	                (const void *) buf2,
+	                (size_t) prefix_len);
 
 	if (rc < 0) {
 		return -1;

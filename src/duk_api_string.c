@@ -133,7 +133,7 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decod
 	h_input = duk_require_hstring(ctx, index);
 	DUK_ASSERT(h_input != NULL);
 
-	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
@@ -164,7 +164,7 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 	bw = &bw_alloc;
 	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));  /* reasonable output estimate */
 
-	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 
