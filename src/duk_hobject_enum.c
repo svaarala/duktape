@@ -139,7 +139,7 @@ DUK_LOCAL void duk__sort_array_indices(duk_hthread *thr, duk_hobject *h_obj) {
 		                     (long) (p_curr - p_insert), (void *) h_curr));
 
 		DUK_MEMMOVE((void *) (p_insert + 1),
-		            (void *) p_insert,
+		            (const void *) p_insert,
 		            (size_t) ((p_curr - p_insert) * sizeof(duk_hstring *)));
 		*p_insert = h_curr;
 		/* keep val_highest */

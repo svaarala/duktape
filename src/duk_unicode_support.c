@@ -311,7 +311,7 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	/* Align 'p' to 4; the input data may have arbitrary alignment.
 	 * End of string check not needed because blen >= 16.
 	 */
-	while (((duk_small_uint_t) (duk_uintptr_t) (const void *) p) & 0x03) {
+	while (((duk_uintptr_t) (const void *) p) & 0x03) {
 		duk_uint8_t x;
 		x = *p++;
 		if (DUK_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
@@ -320,8 +320,8 @@ DUK_INTERNAL duk_size_t duk_unicode_unvalidated_utf8_length(const duk_uint8_t *d
 	}
 
 	/* Full, aligned 4-byte reads. */
-	p32_end = (const duk_uint32_t *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03)));
-	p32 = (const duk_uint32_t *) p;
+	p32_end = (const duk_uint32_t *) (const void *) (p + ((duk_size_t) (p_end - p) & (duk_size_t) (~0x03)));
+	p32 = (const duk_uint32_t *) (const void *) p;
 	while (p32 != (const duk_uint32_t *) p32_end) {
 		duk_uint32_t x;
 		x = *p32++;
@@ -399,7 +399,7 @@ DUK_LOCAL duk_small_int_t duk__uni_range_match(const duk_uint8_t *unitab, duk_si
 	duk_codepoint_t prev_re;
 
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
-	bd_ctx.data = (duk_uint8_t *) unitab;
+	bd_ctx.data = (const duk_uint8_t *) unitab;
 	bd_ctx.length = (duk_size_t) unilen;
 
 	prev_re = 0;
@@ -944,10 +944,10 @@ duk_codepoint_t duk__case_transform_helper(duk_hthread *thr,
 	/* 1:1 or special conversions, but not locale/context specific: script generated rules */
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	if (uppercase) {
-		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_uc;
+		bd_ctx.data = (const duk_uint8_t *) duk_unicode_caseconv_uc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_uc);
 	} else {
-		bd_ctx.data = (duk_uint8_t *) duk_unicode_caseconv_lc;
+		bd_ctx.data = (const duk_uint8_t *) duk_unicode_caseconv_lc;
 		bd_ctx.length = (duk_size_t) sizeof(duk_unicode_caseconv_lc);
 	}
 	return duk__slow_case_conversion(thr, bw, cp, &bd_ctx);
@@ -985,7 +985,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 
 	/* [ ... input buffer ] */
 
-	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 	p = p_start;
 

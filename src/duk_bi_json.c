@@ -285,7 +285,7 @@ DUK_LOCAL duk_uint_fast32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx,
 
 DUK_LOCAL void duk__dec_req_stridx(duk_json_dec_ctx *js_ctx, duk_small_uint_t stridx) {
 	duk_hstring *h;
-	duk_uint8_t *p;
+	const duk_uint8_t *p;
 	duk_uint8_t x, y;
 
 	/* First character has already been eaten and checked by the caller.
@@ -298,7 +298,7 @@ DUK_LOCAL void duk__dec_req_stridx(duk_json_dec_ctx *js_ctx, duk_small_uint_t st
 	h = DUK_HTHREAD_GET_STRING(js_ctx->thr, stridx);
 	DUK_ASSERT(h != NULL);
 
-	p = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h) + 1;
+	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h) + 1;
 	DUK_ASSERT(*(js_ctx->p - 1) == *(p - 1));  /* first character has been matched */
 
 	for (;;) {
@@ -2467,9 +2467,9 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	 * valid and points to the string NUL terminator (which is always
 	 * guaranteed for duk_hstrings.
 	 */
-	js_ctx->p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
+	js_ctx->p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text);
 	js_ctx->p = js_ctx->p_start;
-	js_ctx->p_end = ((duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text)) +
+	js_ctx->p_end = ((const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_text)) +
 	                DUK_HSTRING_GET_BYTELEN(h_text);
 	DUK_ASSERT(*(js_ctx->p_end) == 0x00);
 

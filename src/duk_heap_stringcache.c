@@ -42,7 +42,7 @@ DUK_INTERNAL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h
  *  character length is computed.
  */
 
-DUK_LOCAL duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
+DUK_LOCAL const duk_uint8_t *duk__scan_forwards(const duk_uint8_t *p, const duk_uint8_t *q, duk_uint_fast32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p++;
@@ -58,7 +58,7 @@ DUK_LOCAL duk_uint8_t *duk__scan_forwards(duk_uint8_t *p, duk_uint8_t *q, duk_ui
 	return p;
 }
 
-DUK_LOCAL duk_uint8_t *duk__scan_backwards(duk_uint8_t *p, duk_uint8_t *q, duk_uint_fast32_t n) {
+DUK_LOCAL const duk_uint8_t *duk__scan_backwards(const duk_uint8_t *p, const duk_uint8_t *q, duk_uint_fast32_t n) {
 	while (n > 0) {
 		for (;;) {
 			p--;
@@ -93,9 +93,9 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	duk_small_int_t i;
 	duk_bool_t use_cache;
 	duk_uint_fast32_t dist_start, dist_end, dist_sce;
-	duk_uint8_t *p_start;
-	duk_uint8_t *p_end;
-	duk_uint8_t *p_found;
+	const duk_uint8_t *p_start;
+	const duk_uint8_t *p_end;
+	const duk_uint8_t *p_found;
 
 	if (char_offset > DUK_HSTRING_GET_CHARLEN(h)) {
 		goto error;
@@ -162,8 +162,8 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	dist_end = DUK_HSTRING_GET_CHARLEN(h) - char_offset;
 	dist_sce = 0; DUK_UNREF(dist_sce);  /* initialize for debug prints, needed if sce==NULL */
 
-	p_start = (duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
-	p_end = (duk_uint8_t *) (p_start + DUK_HSTRING_GET_BYTELEN(h));
+	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	p_end = (const duk_uint8_t *) (p_start + DUK_HSTRING_GET_BYTELEN(h));
 	p_found = NULL;
 
 	if (sce) {
@@ -274,7 +274,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 
 			tmp = *sce;
 			DUK_MEMMOVE((void *) (&heap->strcache[1]),
-			            (void *) (&heap->strcache[0]),
+			            (const void *) (&heap->strcache[0]),
 			            (size_t) (((char *) sce) - ((char *) &heap->strcache[0])));
 			heap->strcache[0] = tmp;
 

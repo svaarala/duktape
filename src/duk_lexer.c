@@ -487,7 +487,7 @@ DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count
 	keep_bytes = DUK_LEXER_WINDOW_SIZE * sizeof(duk_lexer_codepoint) - count_bytes;
 	DUK_MEMMOVE((void *) lex_ctx->window,
 	            (const void *) ((duk_uint8_t *) lex_ctx->window + count_bytes),
-	            (duk_size_t) keep_bytes);
+	            (size_t) keep_bytes);
 
 	cp = (duk_lexer_codepoint *) ((duk_uint8_t *) lex_ctx->window + keep_bytes);
 	cp_end = lex_ctx->window + DUK_LEXER_WINDOW_SIZE;

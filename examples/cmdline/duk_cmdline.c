@@ -435,7 +435,7 @@ static int handle_file(duk_context *ctx, const char *filename, const char *bytec
 	return -1;
 }
 
-static int handle_eval(duk_context *ctx, const char *code) {
+static int handle_eval(duk_context *ctx, char *code) {
 	int rc;
 	int retval = -1;
 

@@ -377,9 +377,9 @@ DUK_LOCAL duk_hbuffer *duk__debug_read_hbuffer_raw(duk_hthread *thr, duk_uint32_
 	return duk_require_hbuffer(ctx, -1);
 }
 
-DUK_LOCAL const void *duk__debug_read_pointer_raw(duk_hthread *thr) {
+DUK_LOCAL void *duk__debug_read_pointer_raw(duk_hthread *thr) {
 	duk_small_uint_t x;
-	volatile duk__ptr_union pu;
+	duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 
@@ -391,12 +391,12 @@ DUK_LOCAL const void *duk__debug_read_pointer_raw(duk_hthread *thr) {
 #if defined(DUK_USE_INTEGER_LE)
 	duk_byteswap_bytes((duk_uint8_t *) pu.b, sizeof(pu));
 #endif
-	return (const void *) pu.p;
+	return (void *) pu.p;
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode pointer"));
 	DUK__SET_CONN_BROKEN(thr);
-	return (const void *) NULL;
+	return (void *) NULL;
 }
 
 DUK_LOCAL duk_double_t duk__debug_read_double_raw(duk_hthread *thr) {
@@ -479,9 +479,9 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		DUK_D(DUK_DPRINT("reading object values unimplemented"));
 		goto fail;
 	case 0x1c: {
-		const void *ptr;
+		void *ptr;
 		ptr = duk__debug_read_pointer_raw(thr);
-		duk_push_pointer(thr, (void *) ptr);
+		duk_push_pointer(thr, ptr);
 		break;
 	}
 	case 0x1d:
@@ -686,9 +686,9 @@ DUK_INTERNAL void duk_debug_write_hbuffer(duk_hthread *thr, duk_hbuffer *h) {
 	                       (h != NULL ? (duk_size_t) DUK_HBUFFER_GET_SIZE(h) : 0));
 }
 
-DUK_LOCAL void duk__debug_write_pointer_raw(duk_hthread *thr, const void *ptr, duk_uint8_t ibyte) {
+DUK_LOCAL void duk__debug_write_pointer_raw(duk_hthread *thr, void *ptr, duk_uint8_t ibyte) {
 	duk_uint8_t buf[2];
-	volatile duk__ptr_union pu;
+	duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(sizeof(ptr) >= 1 && sizeof(ptr) <= 16);
@@ -704,19 +704,19 @@ DUK_LOCAL void duk__debug_write_pointer_raw(duk_hthread *thr, const void *ptr, d
 	duk_debug_write_bytes(thr, (const duk_uint8_t *) &pu.p, (duk_size_t) sizeof(pu));
 }
 
-DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, const void *ptr) {
+DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, void *ptr) {
 	duk__debug_write_pointer_raw(thr, ptr, 0x1c);
 }
 
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 DUK_INTERNAL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h) {
-	duk__debug_write_pointer_raw(thr, (const void *) h, 0x1e);
+	duk__debug_write_pointer_raw(thr, (void *) h, 0x1e);
 }
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 
 DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	duk_uint8_t buf[3];
-	volatile duk__ptr_union pu;
+	duk__ptr_union pu;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(sizeof(obj) >= 1 && sizeof(obj) <= 16);
@@ -758,7 +758,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		duk_debug_write_byte(thr, DUK_TVAL_GET_BOOLEAN(tv) ? 0x18 : 0x19);
 		break;
 	case DUK_TAG_POINTER:
-		duk_debug_write_pointer(thr, (const void *) DUK_TVAL_GET_POINTER(tv));
+		duk_debug_write_pointer(thr, (void *) DUK_TVAL_GET_POINTER(tv));
 		break;
 	case DUK_TAG_LIGHTFUNC:
 		DUK_TVAL_GET_LIGHTFUNC(tv, lf_func, lf_flags);
@@ -2002,8 +2002,8 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	move_size = sizeof(duk_breakpoint) * (heap->dbg_breakpoint_count - breakpoint_index - 1);
 	if (move_size > 0) {
 		DUK_MEMMOVE((void *) b,
-		            (void *) (b + 1),
-		            move_size);
+		            (const void *) (b + 1),
+		            (size_t) move_size);
 	}
 	heap->dbg_breakpoint_count--;
 	heap->dbg_breakpoints_active[0] = (duk_breakpoint *) NULL;

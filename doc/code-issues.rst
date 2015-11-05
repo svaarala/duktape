@@ -434,15 +434,15 @@ If the log writes are not omitted, the workaround for lack of variadic
 macros causes a lot of warnings with some compilers.  With this wrapping,
 at least the non-debug build will be clean on non-C99 compilers.
 
-Clang -Wcast-align
-------------------
+Gcc/clang -Wcast-align
+----------------------
 
 When casting from e.g. a ``duk_uint8_t *`` to a struct pointer clang will
 emit a warning when ``-Wcast-align`` is used; see ``misc/clang_cast_align.c``
 and https://github.com/svaarala/duktape/issues/270.
 
-One fix is to change the original pointer being casted into a ``void *``
-from a char/byte-based pointer (e.g. ``duk_uint8_t *``)::
+One fix is to change the original pointer being cast into a ``void *`` from
+a char/byte-based pointer (e.g. ``duk_uint8_t *``)::
 
   void *p = DUK_FICTIONAL_GET_BUFFER_BASE(...);
   struct dummy *dummy = (struct dummy *) p;
@@ -458,6 +458,67 @@ In such situations casting through a ``void *`` avoids the warning::
 
 Code doing casts like this must of course be aware of actual target
 alignment requirements and respect them properly.
+
+Gcc/clang -Wcast-qual
+---------------------
+
+As a general rule casting from e.g. ``const char *`` to ``char *``
+should be avoided by reworking code structure.  Sometimes this can't
+be avoided though; for example, ``duk_push_pointer()`` takes a ``void *``
+argument and if the source pointer is ``const char *`` a cast may be
+necessary.
+
+There doesn't seem to be a nice portable approach:
+
+* Casting through a ``void *`` is not enough to silence the warning.
+
+* Casting through an integer (e.g. ``(void *) (duk_uintptr_t) const_ptr``)
+  works but assumes that pointers can be safely cast through an integer.
+  This is not necessarily portable to platforms with segmented pointers.
+
+If a const-losing cast is required internally, the following macro is used
+to cast an arbitrary const pointer into a ``void *``::
+
+  const my_type *src;
+
+  dst = (char *) DUK_LOSE_CONST(src);
+
+It is defined in ``duk_config.h`` so that it can be hacked if necessary.
+If nothing else, it signals the intent of the call site.
+
+A similar issue exists for volatile pointers.  Technically casting from a
+volatile pointer to a non-volatile pointer and then using the non-volatile
+pointer has "undefined behavior".  In practice the compiler may generate code
+which conflicts with assumed behavior, e.g. not reading or writing the value
+behind the pointer every time.  Rework the code to avoid the cast.  For
+example::
+
+  void write_something(int *target);
+
+  void test(void) {
+      volatile int x = 123;
+
+      write_something((int *) &x);
+  }
+
+can be reworked to::
+
+  void write_something(int *target);
+
+  void test(void) {
+      volatile int x = 123;
+      int tmp;
+
+      write_something(&tmp);
+      x = tmp;
+  }
+
+For volatile byte arrays a workaround is awkward because you can't use a
+non-volatile temporary and then ``memcpy()`` from the temporary into the
+volatile buffer: a volatile-to-non-volatile cast would happen for the
+``memcpy()`` call.  You'd need to copy the bytes one by one manually or
+use an external helper which accepts a volatile source and a non-volatile
+destination.
 
 Gcc/clang -Wfloat-equal
 -----------------------

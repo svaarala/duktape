@@ -394,7 +394,7 @@ DUK_LOCAL void duk__clamp_startend_negidx_shifted(duk_context *ctx,
 DUK_INTERNAL void duk_hbufferobject_push_validated_read(duk_context *ctx, duk_hbufferobject *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size) {
 	duk_double_union du;
 
-	DUK_MEMCPY((void *) du.uc, (const void *) p, elem_size);
+	DUK_MEMCPY((void *) du.uc, (const void *) p, (size_t) elem_size);
 
 	switch (h_bufobj->elem_type) {
 	case DUK_HBUFFEROBJECT_ELEM_UINT8:
@@ -478,7 +478,7 @@ DUK_INTERNAL void duk_hbufferobject_validated_write(duk_context *ctx, duk_hbuffe
 		DUK_UNREACHABLE();
 	}
 
-	DUK_MEMCPY((void *) p, (const void *) du.uc, elem_size);
+	DUK_MEMCPY((void *) p, (const void *) du.uc, (size_t) elem_size);
 }
 
 /*
@@ -1194,7 +1194,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	if (DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length)) {
 		DUK_MEMCPY((void *) buf_slice,
 		           (const void *) (DUK_HBUFFEROBJECT_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
-		           slice_length);
+		           (size_t) slice_length);
 	} else {
 		/* not covered, return all zeroes */
 		;
