@@ -4,35 +4,35 @@
 
 /*===
 *** test_basic (duk_safe_call)
-index 0: type=1 errcode=0 is_error=0
-index 1: type=2 errcode=0 is_error=0
-index 2: type=3 errcode=0 is_error=0
-index 3: type=3 errcode=0 is_error=0
-index 4: type=4 errcode=0 is_error=0
-index 5: type=4 errcode=0 is_error=0
-index 6: type=4 errcode=0 is_error=0
-index 7: type=4 errcode=0 is_error=0
-index 8: type=5 errcode=0 is_error=0
-index 9: type=5 errcode=0 is_error=0
-index 10: type=6 errcode=0 is_error=0
-index 11: type=6 errcode=0 is_error=0
-index 12: type=7 errcode=0 is_error=0
-index 13: type=7 errcode=0 is_error=0
-index 14: type=7 errcode=0 is_error=0
-index 15: type=7 errcode=0 is_error=0
-index 16: type=8 errcode=0 is_error=0
-index 17: type=8 errcode=0 is_error=0
-index 18: type=6 errcode=100 is_error=1
-index 19: type=6 errcode=101 is_error=1
-index 20: type=6 errcode=102 is_error=1
-index 21: type=6 errcode=103 is_error=1
-index 22: type=6 errcode=104 is_error=1
-index 23: type=6 errcode=105 is_error=1
-index 24: type=6 errcode=106 is_error=1
-index 25: type=6 errcode=106 is_error=1
-index 26: type=6 errcode=100 is_error=1
-index 27: type=6 errcode=100 is_error=1
-index 28: type=6 errcode=100 is_error=1
+index 0: type=1 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 1: type=2 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 2: type=3 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 3: type=3 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 4: type=4 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 5: type=4 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 6: type=4 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 7: type=4 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 8: type=5 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 9: type=5 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 10: type=6 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 11: type=6 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 12: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 13: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 14: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 15: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 16: type=8 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 17: type=8 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 18: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 19: type=6 errcode=101 is_error=1 eval=1 range=0 reference=0 syntax=0 type=0 uri=0
+index 20: type=6 errcode=102 is_error=1 eval=0 range=1 reference=0 syntax=0 type=0 uri=0
+index 21: type=6 errcode=103 is_error=1 eval=0 range=0 reference=1 syntax=0 type=0 uri=0
+index 22: type=6 errcode=104 is_error=1 eval=0 range=0 reference=0 syntax=1 type=0 uri=0
+index 23: type=6 errcode=105 is_error=1 eval=0 range=0 reference=0 syntax=0 type=1 uri=0
+index 24: type=6 errcode=106 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
+index 25: type=6 errcode=106 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
+index 26: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 27: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 28: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
 final top: 29
 ==> rc=0, result='undefined'
 *** test_protoloop_code (duk_safe_call)
@@ -95,9 +95,17 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	duk_pcall(ctx, 0);
 
 	for (n = duk_get_top(ctx), i = 0; i < n; i++) {
-		printf("index %ld: type=%ld errcode=%ld is_error=%ld\n",
-		       (long) i, (long) duk_get_type(ctx, i),
-		       (long) duk_get_error_code(ctx, i), (long) duk_is_error(ctx, i));
+		printf("index %ld: type=%ld errcode=%ld is_error=%ld eval=%ld range=%ld reference=%ld syntax=%ld type=%ld uri=%ld\n",
+		       (long) i,
+		       (long) duk_get_type(ctx, i),
+		       (long) duk_get_error_code(ctx, i),
+		       (long) duk_is_error(ctx, i),
+		       (long) duk_is_eval_error(ctx, i),
+		       (long) duk_is_range_error(ctx, i),
+		       (long) duk_is_reference_error(ctx, i),
+		       (long) duk_is_syntax_error(ctx, i),
+		       (long) duk_is_type_error(ctx, i),
+		       (long) duk_is_uri_error(ctx, i));
 	}
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
