@@ -1158,6 +1158,9 @@ Planned
 * Add defines DUK_DEFPROP_{SET,CLEAR}_{WRITABLE,ENUMERABLE,CONFIGURABLE} for
   duk_def_prop() to improve call site readability (GH-421)
 
+* Add convenience API calls to detect specific error subtypes, e.g.
+  duk_is_eval_error() (GH-340, GH-433)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
