@@ -1206,16 +1206,16 @@ Debugger.prototype.sendBasicInfoRequest = function () {
     });
 };
 
-Debugger.prototype.sendGetVarRequest = function (varname) {
+Debugger.prototype.sendGetVarRequest = function (varname, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_GETVAR, varname, DVAL_EOM ]).then(function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETVAR, varname, (typeof level === 'number' ? level : -1), DVAL_EOM ]).then(function (msg) {
         return { found: msg[1] === 1, value: msg[2] };
     });
 };
 
-Debugger.prototype.sendPutVarRequest = function (varname, varvalue) {
+Debugger.prototype.sendPutVarRequest = function (varname, varvalue, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_PUTVAR, varname, varvalue, DVAL_EOM ]);
+    return this.sendRequest([ DVAL_REQ, CMD_PUTVAR, varname, varvalue, (typeof level === 'number' ? level : -1), DVAL_EOM ]);
 };
 
 Debugger.prototype.sendInvalidCommandTestRequest = function () {
@@ -1247,9 +1247,9 @@ Debugger.prototype.sendBreakpointListRequest = function () {
     });
 };
 
-Debugger.prototype.sendGetLocalsRequest = function () {
+Debugger.prototype.sendGetLocalsRequest = function (level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_GETLOCALS, DVAL_EOM ]).then(function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETLOCALS, (typeof level === 'number' ? level : -1), DVAL_EOM ]).then(function (msg) {
         var i;
         var locals = [];
 
@@ -1310,9 +1310,9 @@ Debugger.prototype.sendResumeRequest = function () {
     return this.sendRequest([ DVAL_REQ, CMD_RESUME, DVAL_EOM ]);
 };
 
-Debugger.prototype.sendEvalRequest = function (evalInput) {
+Debugger.prototype.sendEvalRequest = function (evalInput, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, DVAL_EOM ]).then(function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, (typeof level === 'number' ? level : -1), DVAL_EOM ]).then(function (msg) {
         return { error: msg[1] === 1 /*error*/, value: msg[2] };
     });
 };
@@ -1957,14 +1957,18 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
         // msg.input is a proper Unicode strings here, and needs to be
         // converted into a protocol string (U+0000...U+00FF).
         var input = stringToDebugString(msg.input);
-        _this.dbg.sendEvalRequest(input).then(function (v) {
+        _this.dbg.sendEvalRequest(input, msg.level).then(function (v) {
             socket.emit('eval-result', { error: v.error, result: prettyUiDebugValue(v.value, EVAL_CLIPLEN) });
         });
 
         // An eval call quite possibly changes the local variables so always
-        // re-read locals afterwards.  We don't need to wait for eval() to
+        // re-read locals afterwards.  We don't need to wait for Eval to
         // complete here; the requests will pipeline automatically and be
         // executed in order.
+
+        // XXX: move this to the web UI so that the UI can control what
+        // locals are listed (or perhaps show locals for all levels with
+        // an expandable tree view).
         _this.dbg.sendGetLocalsRequest();
     });
 
@@ -1972,7 +1976,7 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
         // msg.varname is a proper Unicode strings here, and needs to be
         // converted into a protocol string (U+0000...U+00FF).
         var varname = stringToDebugString(msg.varname);
-        _this.dbg.sendGetVarRequest(varname)
+        _this.dbg.sendGetVarRequest(varname, msg.level)
         .then(function (v) {
             socket.emit('getvar-result', { found: v.found, result: prettyUiDebugValue(v.value, GETVAR_CLIPLEN) });
         });
@@ -1990,15 +1994,17 @@ DebugWebServer.prototype.handleNewSocketIoConnection = function (socket) {
             varvalue = stringToDebugString(msg.varvalue);
         }
 
-        _this.dbg.sendPutVarRequest(varname, varvalue)
+        _this.dbg.sendPutVarRequest(varname, varvalue, msg.level)
         .then(function (v) {
             console.log('putvar done');  // XXX: signal success to UI?
         });
 
         // A PutVar call quite possibly changes the local variables so always
-        // re-read locals afterwards.  We don't need to wait for eval() to
+        // re-read locals afterwards.  We don't need to wait for PutVar to
         // complete here; the requests will pipeline automatically and be
         // executed in order.
+
+        // XXX: make the client do this?
         _this.dbg.sendGetLocalsRequest();
     });
 
