@@ -1,0 +1,24 @@
+name: duk_is_uri_error
+
+proto: |
+  duk_bool_t duk_is_uri_error(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Returns 1 if value at <code>index</code> inherits from <code>URIError</code>,
+  otherwise returns 0.  If <code>index</code> is invalid, also returns 0.  This is
+  a convenience call for using
+  <code><a href="#duk_get_error_code">duk_get_error_code()</a> == DUK_ERR_URI_ERROR</code>.</p>
+
+example: |
+  if (duk_is_uri_error(ctx, -3)) {
+      /* ... */
+  }
+
+tags:
+  - stack
+  - error
+
+introduced: 1.4.0

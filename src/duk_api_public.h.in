@@ -523,6 +523,18 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_external_buffer(duk_context *ctx, duk_idx_t 
 DUK_EXTERNAL_DECL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index);
 #define duk_is_error(ctx,index) \
 	(duk_get_error_code((ctx), (index)) != 0)
+#define duk_is_eval_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_EVAL_ERROR)
+#define duk_is_range_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_RANGE_ERROR)
+#define duk_is_reference_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_REFERENCE_ERROR)
+#define duk_is_syntax_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_SYNTAX_ERROR)
+#define duk_is_type_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_TYPE_ERROR)
+#define duk_is_uri_error(ctx,index) \
+	(duk_get_error_code((ctx), (index)) == DUK_ERR_URI_ERROR)
 
 /*
  *  Get operations: no coercion, returns default value for invalid
