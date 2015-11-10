@@ -81,7 +81,7 @@ the website, run test cases, etc:
     # Install required packages (exact packages depend on distribution)
     $ sudo apt-get install nodejs nodejs-legacy npm perl ant openjdk-7-jdk \
           libreadline6-dev libncurses-dev python-rdflib python-bs4 python-yaml \
-          clang llvm
+          clang llvm bc
 
     # Compile the command line tool ('duk')
     $ git clone https://github.com/svaarala/duktape.git
