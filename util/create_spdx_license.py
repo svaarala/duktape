@@ -169,8 +169,9 @@ def main():
 	# SPDX.checksum: omitted because license is inside the package
 	g.add((pkg_node, SPDX.sourceInfo, Literal('Official duktape.org release built from GitHub repo https://github.com/svaarala/duktape.')))
 
-	# NOTE: MIT license alone is sufficient fornow, because Duktape, MurmurHash2 and
-	# CommonJS (though probably not even relevant for licensing) are all MIT.
+	# NOTE: MIT license alone is sufficient for now, because Duktape, Lua,
+	# Murmurhash2, and CommonJS (though probably not even relevant for
+	# licensing) are all MIT.
 	g.add((pkg_node, SPDX.licenseConcluded, mit_license))
 	g.add((pkg_node, SPDX.licenseInfoFromFiles, mit_license))
 	g.add((pkg_node, SPDX.licenseDeclared, mit_license))
