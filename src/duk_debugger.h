@@ -20,6 +20,7 @@
 #define DUK_DBG_CMD_ALERT         0x03
 #define DUK_DBG_CMD_LOG           0x04
 #define DUK_DBG_CMD_THROW         0x05
+#define DUK_DBG_CMD_DETACHING     0x06
 
 /* Initiated by debug client */
 #define DUK_DBG_CMD_BASICINFO     0x10

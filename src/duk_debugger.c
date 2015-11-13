@@ -23,12 +23,12 @@ typedef union {
  *  Detach handling
  */
 
-#define DUK__SET_CONN_BROKEN(thr) do { \
+#define DUK__SET_CONN_BROKEN(thr, is_err) do { \
 		/* For now shared handler is fine. */ \
-		duk__debug_do_detach1((thr)->heap); \
+		duk__debug_do_detach1((thr)->heap, (is_err)); \
 	} while (0)
 
-DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap) {
+DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_bool_t is_err) {
 	/* Can be called multiple times with no harm.  Mark the transport
 	 * bad (dbg_read_cb == NULL) and clear state except for the detached
 	 * callback and the udata field.  The detached callback is delayed
@@ -37,7 +37,25 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap) {
 	 * inside the detached callback.
 	 */
 
+	if (heap->dbg_detaching) {
+		return;
+	}
+
 	DUK_D(DUK_DPRINT("debugger transport detaching, marking transport broken"));
+
+	heap->dbg_detaching = 1;
+
+	/* avoid sending multiple Detaching notifys */
+	if (heap->dbg_write_cb != NULL) {
+		duk_hthread *thr;
+
+		thr = heap->heap_thread;
+		DUK_ASSERT(thr != NULL);
+
+		duk_debug_write_notify(thr, DUK_DBG_CMD_DETACHING);
+		duk_debug_write_int(thr, is_err);
+		duk_debug_write_eom(thr);
+	}
 
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;
@@ -85,10 +103,12 @@ DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 		DUK_D(DUK_DPRINT("detached during message loop, delayed call to detached_cb"));
 		detached_cb(detached_udata);
 	}
+
+	heap->dbg_detaching = 0;
 }
 
 DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
-	duk__debug_do_detach1(heap);
+	duk__debug_do_detach1(heap, 0);
 	duk__debug_do_detach2(heap);
 }
 
@@ -230,8 +250,9 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 #endif
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
+			heap->dbg_write_cb = NULL;  /* squelch further writes */
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
-			DUK__SET_CONN_BROKEN(thr);
+			DUK__SET_CONN_BROKEN(thr, 1);
 			goto fail;
 		}
 		p += got;
@@ -243,33 +264,10 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 }
 
 DUK_INTERNAL duk_uint8_t duk_debug_read_byte(duk_hthread *thr) {
-	duk_heap *heap;
-	duk_size_t got;
 	duk_uint8_t x;
 
-	DUK_ASSERT(thr != NULL);
-	heap = thr->heap;
-	DUK_ASSERT(heap != NULL);
-
-	if (heap->dbg_read_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to read 1 bytes in detached state, return zero data"));
-		return 0;
-	}
-
-	if (heap->dbg_have_next_byte) {
-		heap->dbg_have_next_byte = 0;
-		return heap->dbg_next_byte;
-	}
-
 	x = 0;  /* just in case callback is broken and won't write 'x' */
-	DUK_ASSERT(heap->dbg_read_cb != NULL);
-	got = heap->dbg_read_cb(heap->dbg_udata, (char *) (&x), 1);
-	if (got != 1) {
-		DUK_D(DUK_DPRINT("connection error during read, return zero data"));
-		DUK__SET_CONN_BROKEN(thr);
-		return 0;
-	}
-
+	duk_debug_read_bytes(thr, &x, 1);
 	return x;
 }
 
@@ -316,7 +314,7 @@ DUK_INTERNAL duk_int32_t duk_debug_read_int(duk_hthread *thr) {
 	}
 
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 	return 0;
 }
 
@@ -361,7 +359,7 @@ DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 	duk_push_hstring_stridx(thr, DUK_STRIDX_EMPTY_STRING);  /* always push some string */
 	return duk_require_hstring(ctx, -1);
 }
@@ -395,7 +393,7 @@ DUK_LOCAL void *duk__debug_read_pointer_raw(duk_hthread *thr) {
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode pointer"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 	return (void *) NULL;
 }
 
@@ -503,7 +501,7 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode tval"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 }
 
 /*
@@ -547,8 +545,9 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 #endif
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
+			heap->dbg_write_cb = NULL;  /* squelch further writes */
 			DUK_D(DUK_DPRINT("connection error during write"));
-			DUK__SET_CONN_BROKEN(thr);
+			DUK__SET_CONN_BROKEN(thr, 1);
 			return;
 		}
 		p += got;
@@ -572,7 +571,7 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 	got = heap->dbg_write_cb(heap->dbg_udata, (const char *) (&x), 1);
 	if (got != 1) {
 		DUK_D(DUK_DPRINT("connection error during write"));
-		DUK__SET_CONN_BROKEN(thr);
+		DUK__SET_CONN_BROKEN(thr, 1);
 	}
 }
 
@@ -1024,7 +1023,7 @@ DUK_LOCAL duk_bool_t duk__debug_skip_dvalue(duk_hthread *thr) {
 	return 0;
 
  fail:
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 	return 1;  /* Pretend like we got EOM */
 }
 
@@ -1447,7 +1446,7 @@ DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_write_eom(thr);
 
 	DUK_D(DUK_DPRINT("debug connection detached, mark broken"));
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 0);  /* not an error */
 }
 
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
@@ -1795,7 +1794,7 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
  fail:
 	DUK_ASSERT(duk_get_top(ctx) >= entry_top);
 	duk_set_top(ctx, entry_top);
-	DUK__SET_CONN_BROKEN(thr);
+	DUK__SET_CONN_BROKEN(thr, 1);
 	return;
 }
 
