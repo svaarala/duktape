@@ -1152,6 +1152,9 @@ Planned
 * Add a debugger Throw notify for errors about to be thrown, and an option
   to automatically pause before an uncaught error is thrown (GH-286, GH-347)
 
+* Add a debugger Detaching notify which informs a debug client of an orderly
+  (or non-orderly) pending detach (GH-423, GH-430, GH-434)
+
 * Allow debugger detached callback to call duk_debugger_attach(), previously
   this clobbered some internal state (GH-399)
 
