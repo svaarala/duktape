@@ -771,6 +771,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
 	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
+#if !defined(DUK_USE_STRHASH_DENSE)
+	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
+#endif
 
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	res->lj.jmpbuf_ptr = NULL;

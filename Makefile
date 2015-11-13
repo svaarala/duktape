@@ -1195,15 +1195,15 @@ massif-arcfour: massif-test-dev-arcfour
 # - Node.js (V8) is JITed
 # - Luajit is JITed
 
-#TIME=python util/time_multi.py --count 1 --mode min # Run just once
-#TIME=python util/time_multi.py --count 3 --sleep 10 --mode min # Take minimum time of N
-TIME=python util/time_multi.py --count 5 --sleep 10 --mode min # Take minimum time of N
+#TIME=python util/time_multi.py --count 1 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+#TIME=python util/time_multi.py --count 3 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+TIME=python util/time_multi.py --count 5 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
 
 # Blocks: optimization variants, previous versions, other interpreting engines,
 # other JIT engines.
 perftest: duk duk.O2 duk.O3 duk.O4
 	for i in tests/perf/*.js; do \
-		printf '%-32s:' "`basename $$i`"; \
+		printf '%-36s:' "`basename $$i`"; \
 		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
 		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' duk.O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
@@ -1227,7 +1227,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 	done
 perftestduk: duk duk.O2
 	for i in tests/perf/*.js; do \
-		printf '%-32s:' "`basename $$i`"; \
+		printf '%-36s:' "`basename $$i`"; \
 		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
 		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' |'; \
@@ -1239,7 +1239,7 @@ perftestduk: duk duk.O2
 	done
 perftestduk3: duk.O2
 	for i in tests/perf/*.js; do \
-		printf '%-32s:' "`basename $$i`"; \
+		printf '%-36s:' "`basename $$i`"; \
 		printf ' duk.O2'; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' %5s' "`$(TIME) ./duk.O2 $$i`"; \

@@ -10,4 +10,8 @@ DUK_USE_VERBOSE_PROP_ERRORS: false
 # code).
 DUK_USE_TRACEBACKS: false
 
+# Dense string hashing may be useful against accidental string hash collisions.
+# This won't prevent an attacker from finding intentional collisions.
+DUK_USE_STRHASH_DENSE: true
+
 # TBD

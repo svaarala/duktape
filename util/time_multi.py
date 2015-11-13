@@ -14,6 +14,7 @@ def main():
 	parser.add_option('--count', type='int', dest='count', default=3)
 	parser.add_option('--mode', dest='mode', default='min')
 	parser.add_option('--sleep', type='float', dest='sleep', default=0.0)
+	parser.add_option('--sleep-factor', type='float', dest='sleep_factor', default=0.0)
 	parser.add_option('--verbose', action='store_true', dest='verbose', default=False)
 	(opts, args) = parser.parse_args()
 
@@ -66,6 +67,9 @@ def main():
 			sys.stderr.flush()
 
 		time_list.append(time_this)
+
+		# Sleep time dependent on test time is useful for thermal throttling.
+		time.sleep(opts.sleep_factor * time_this)
 
 	if opts.verbose:
 		sys.stderr.write('\n')

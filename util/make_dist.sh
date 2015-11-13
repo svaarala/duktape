@@ -431,6 +431,7 @@ cp AUTHORS.rst $DIST/AUTHORS.rst
 
 for i in \
 	murmurhash2.txt \
+	lua.txt \
 	commonjs.txt \
 	; do
 	cp licenses/$i $DIST/licenses/
