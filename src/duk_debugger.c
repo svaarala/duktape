@@ -23,12 +23,12 @@ typedef union {
  *  Detach handling
  */
 
-#define DUK__SET_CONN_BROKEN(thr, is_err) do { \
+#define DUK__SET_CONN_BROKEN(thr,reason) do { \
 		/* For now shared handler is fine. */ \
-		duk__debug_do_detach1((thr)->heap, (is_err)); \
+		duk__debug_do_detach1((thr)->heap, (reason)); \
 	} while (0)
 
-DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_bool_t is_err) {
+DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	/* Can be called multiple times with no harm.  Mark the transport
 	 * bad (dbg_read_cb == NULL) and clear state except for the detached
 	 * callback and the udata field.  The detached callback is delayed
@@ -43,9 +43,8 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_bool_t is_err) {
 
 	DUK_D(DUK_DPRINT("debugger transport detaching, marking transport broken"));
 
-	heap->dbg_detaching = 1;
+	heap->dbg_detaching = 1;  /* prevent multiple in-progress detaches */
 
-	/* avoid sending multiple Detaching notifys */
 	if (heap->dbg_write_cb != NULL) {
 		duk_hthread *thr;
 
@@ -53,7 +52,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_bool_t is_err) {
 		DUK_ASSERT(thr != NULL);
 
 		duk_debug_write_notify(thr, DUK_DBG_CMD_DETACHING);
-		duk_debug_write_int(thr, is_err);
+		duk_debug_write_int(thr, reason);
 		duk_debug_write_eom(thr);
 	}
 
@@ -1370,11 +1369,11 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command Eval"));
 
 	/* The eval code is executed within the lexical environment of a specified
-	 * activation. For now, use global object eval() function, with the eval
+	 * activation.  For now, use global object eval() function, with the eval
 	 * considered a 'direct call to eval'.
 	 *
-	 * Callstack level for debug commands only affects scope--the callstack as
-	 * seen by, e.g. Duktape.act() will be the same regardless.
+	 * Callstack level for debug commands only affects scope -- the callstack
+	 * as seen by, e.g. Duktape.act() will be the same regardless.
 	 */
 
 	/* nargs == 2 so we can pass a callstack level to eval(). */
@@ -1384,7 +1383,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	(void) duk_debug_read_hstring(thr);
 	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
-		if (level >= 0 || -level > (duk_int32_t)thr->callstack_top) {
+		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for Eval"));
 			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
 			return;
@@ -1409,7 +1408,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 			/* Direct eval requires that there's a current
 			 * activation and it is an Ecmascript function.
 			 * When Eval is executed from e.g. cooperate API
-			 * call we'll need to an indirect eval instead.
+			 * call we'll need to do an indirect eval instead.
 			 */
 			call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
 		}
