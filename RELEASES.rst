@@ -1218,6 +1218,9 @@ Planned
   previous algorithm (based on Murmurhash2) available using a config
   option (GH-139, GH-432)
 
+* Internal performance improvement: optimize internal refcount handling
+  macros (GH-394)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
