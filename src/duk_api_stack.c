@@ -2683,7 +2683,14 @@ DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t index) {
 /* XXX: make macro in API */
 DUK_EXTERNAL duk_bool_t duk_is_primitive(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(ctx != NULL);
-	return !duk_is_object(ctx, index);
+	return duk_check_type_mask((ctx), (index), DUK_TYPE_MASK_UNDEFINED | \
+	                                           DUK_TYPE_MASK_NULL | \
+	                                           DUK_TYPE_MASK_BOOLEAN | \
+	                                           DUK_TYPE_MASK_NUMBER | \
+	                                           DUK_TYPE_MASK_STRING | \
+	                                           DUK_TYPE_MASK_BUFFER | \
+	                                           DUK_TYPE_MASK_POINTER | \
+	                                           DUK_TYPE_MASK_LIGHTFUNC);
 }
 
 DUK_EXTERNAL duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index) {
