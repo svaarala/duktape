@@ -9,6 +9,31 @@ with a focus on <b>portability</b> and compact <b>footprint</b>.</p>
 <code>duktape.h</code>, and <code>duk_config.h</code> to your build, and use the
 Duktape API to call Ecmascript functions from C code and vice versa.</p>
 
+<script>
+// <![CDATA[
++function duktapeTest() {
+    var _isDuktape = false;
+    try {
+        noSuchVariable.foo = 123;
+    } catch (e) {
+        if (typeof e.stack === 'string' && (e.stack.indexOf('duk_js_var') >= 0 || e.stack.indexOf('dukky') >= 0)) {
+            _isDuktape = true;
+        }
+    }
+    try {
+        var _isNetSurf = (typeof navigator === 'object' &&
+                          typeof navigator.userAgent === 'string' &&
+                          navigator.userAgent.indexOf('NetSurf') >= 0);
+        if (_isNetSurf && _isDuktape) {
+            document.write('<p><b>Congratulations, you\'re using Duktape on NetSurf!</b></p>');
+        }
+    } catch (e) {
+        //alert(e);
+    }
+}();
+// ]]>
+</script>
+
 <h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
@@ -81,8 +106,8 @@ issue to be added to the list.</p>
 
 <h1><span class="step">1</span> Add to build</h1>
 
-(See <a href="guide.html#gettingstarted">Getting started</a> for a more
-detailed introduction.)
+<p>(See <a href="guide.html#gettingstarted">Getting started</a> for a more
+detailed introduction.)</p>
 
 <p>Add Duktape C source and header to your build.  Any build system can
 be used.  The distributable contains an example Makefile for reference.
