@@ -2230,8 +2230,14 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				tv_val = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(js_ctx->thr->heap, obj, i);
 
 				prev_size = DUK_BW_GET_SIZE(js_ctx->thr, &js_ctx->bw);
-				duk__enc_quote_string(js_ctx, k);
-				DUK__EMIT_1(js_ctx, DUK_ASC_COLON);
+				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+					duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth);
+					duk__enc_quote_string(js_ctx, k);
+					DUK__EMIT_2(js_ctx, DUK_ASC_COLON, DUK_ASC_SPACE);
+				} else {
+					duk__enc_quote_string(js_ctx, k);
+					DUK__EMIT_1(js_ctx, DUK_ASC_COLON);
+				}
 				if (duk__json_stringify_fast_value(js_ctx, tv_val) == 0) {
 					DUK_DD(DUK_DDPRINT("prop value not supported, rewind key and colon"));
 					DUK_BW_SET_SIZE(js_ctx->thr, &js_ctx->bw, prev_size);
@@ -2247,7 +2253,12 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			 */
 
 			if (emitted) {
+				/* FIXME: assert for comma */
 				DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
+				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+					DUK_ASSERT(js_ctx->recursion_depth >= 1);
+					duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+				}
 			}
 			DUK__EMIT_1(js_ctx, DUK_ASC_RCURLY);
 		} else if (c_bit & c_array) {
@@ -2278,6 +2289,10 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				DUK_ASSERT(i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj));
 
 				tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(js_ctx->thr->heap, obj, i);
+
+				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+					duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth);
+				}
 
 				if (DUK_UNLIKELY(DUK_TVAL_IS_UNUSED(tv_val))) {
 					/* Gap in array; check for inherited property,
@@ -2314,7 +2329,12 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			}
 
 			if (emitted) {
+				/* FIXME: assert for comma */
 				DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
+				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+					DUK_ASSERT(js_ctx->recursion_depth >= 1);
+					duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
+				}
 			}
 			DUK__EMIT_1(js_ctx, DUK_ASC_RBRACKET);
 		} else if (c_bit & c_unbox) {
@@ -2744,15 +2764,18 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 *  directly; bail out if that assumption doesn't hold.
 	 */
 
+	/* FIXME: support for JX */
+	/* FIXME: support for JC */
+	/* FIXME: support for 'ascii only' */
+	/* FIXME: support for 'avoid key quotes' */
+
 #if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
-	/* For now fast path is limited to plain JSON (no JX/JC).  This would
-	 * be easy to fix but must go through value type handling in the fast
-	 * path.
-	 */
-	if (flags == 0 &&
+#if 0
+	if ((flags & (DUK_JSON_FLAG_EXT_COMPATIBLE)) == 0 &&  /* unsupported flags */
+#endif
+	if (flags == 0 &&  /* FIXME: for now */
 	    js_ctx->h_replacer == NULL &&
-	    js_ctx->idx_proplist == -1 &&
-	    js_ctx->h_gap == NULL) {
+	    js_ctx->idx_proplist == -1) {
 		duk_int_t pcall_rc;
 #ifdef DUK_USE_MARK_AND_SWEEP
 		duk_small_uint_t prev_mark_and_sweep_base_flags;
@@ -2845,18 +2868,11 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	                     (duk_tval *) duk_get_tval(ctx, -3)));
 
 	if (undef) {
-		/*
-		 *  Result is undefined
-		 */
-
+		/* Result is undefined. */
 		duk_push_undefined(ctx);
 	} else {
-		/*
-		 *  Finish and convert buffer to result string
-		 */
-
+		/* Finish and convert buffer to result string. */
 		duk__enc_value2(js_ctx);  /* [ ... key val ] -> [ ... ] */
-
 		DUK_BW_PUSH_AS_STRING(thr, &js_ctx->bw);
 	}
 
