@@ -75,10 +75,10 @@
 /* must match bytecode defines now; build autogenerate? */
 DUK_LOCAL const char *duk__bc_optab[64] = {
 	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTOBJI", "MPUTARR",  "MPUTARRI", "NEW",
-	"NEWI",     "REGEXP",   "CSREG",    "CSREGI",   "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "CSVARI",
-	"CLOSURE",  "GETPROP",  "PUTPROP",  "DELPROP",  "CSPROP",   "CSPROPI",  "ADD",      "SUB",      "MUL",      "DIV",
+	"UNUSED10", "REGEXP",   "CSREG",    "UNUSED13", "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "UNUSED19",
+	"CLOSURE",  "GETPROP",  "PUTPROP",  "DELPROP",  "UNUSED24", "EVALCALL", "ADD",      "SUB",      "MUL",      "DIV",
 	"MOD",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "EQ",       "NEQ",      "SEQ",
-	"SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",       "JUMP",     "RETURN",   "CALL",     "CALLI",
+	"SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",       "JUMP",     "RETURN",   "CALL",     "TAILCALL",
 	"TRYCATCH", "EXTRA",    "PREINCR",  "PREDECR",  "POSTINCR", "POSTDECR", "PREINCV",  "PREDECV",  "POSTINCV", "POSTDECV",
 	"PREINCP",  "PREDECP",  "POSTINCP", "POSTDECP"
 };

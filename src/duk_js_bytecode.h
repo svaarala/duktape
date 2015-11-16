@@ -35,12 +35,19 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_BC_SHIFT_A              6
 #define DUK_BC_SHIFT_B              14
 #define DUK_BC_SHIFT_C              23
+#define DUK_BC_SHIFT_BC             DUK_BC_SHIFT_B
 
 #define DUK_BC_UNSHIFTED_MASK_OP    0x3fUL
 #define DUK_BC_UNSHIFTED_MASK_A     0xffUL
 #define DUK_BC_UNSHIFTED_MASK_B     0x1ffUL
 #define DUK_BC_UNSHIFTED_MASK_C     0x1ffUL
 #define DUK_BC_UNSHIFTED_MASK_BC    0x3ffffUL
+
+#define DUK_BC_SHIFTED_MASK_OP      (DUK_BC_UNSHIFTED_MASK_OP << DUK_BC_SHIFT_OP)
+#define DUK_BC_SHIFTED_MASK_A       (DUK_BC_UNSHIFTED_MASK_A << DUK_BC_SHIFT_A)
+#define DUK_BC_SHIFTED_MASK_B       (DUK_BC_UNSHIFTED_MASK_B << DUK_BC_SHIFT_B)
+#define DUK_BC_SHIFTED_MASK_C       (DUK_BC_UNSHIFTED_MASK_C << DUK_BC_SHIFT_C)
+#define DUK_BC_SHIFTED_MASK_BC      (DUK_BC_UNSHIFTED_MASK_BC << DUK_BC_SHIFT_BC)
 
 #define DUK_DEC_OP(x)               ((x) & 0x3fUL)
 #define DUK_DEC_A(x)                (((x) >> 6) & 0xffUL)
@@ -96,22 +103,22 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_MPUTARR              7
 #define DUK_OP_MPUTARRI             8
 #define DUK_OP_NEW                  9
-#define DUK_OP_NEWI                 10
+#define DUK_OP_UNUSED10             10  /*XXX:reorg*/
 #define DUK_OP_REGEXP               11
 #define DUK_OP_CSREG                12
-#define DUK_OP_CSREGI               13
+#define DUK_OP_UNUSED13             13  /*XXX:reorg*/
 #define DUK_OP_GETVAR               14
 #define DUK_OP_PUTVAR               15
 #define DUK_OP_DECLVAR              16
 #define DUK_OP_DELVAR               17
 #define DUK_OP_CSVAR                18
-#define DUK_OP_CSVARI               19
+#define DUK_OP_UNUSED19             19  /*XXX:reorg*/
 #define DUK_OP_CLOSURE              20
 #define DUK_OP_GETPROP              21
 #define DUK_OP_PUTPROP              22
 #define DUK_OP_DELPROP              23
-#define DUK_OP_CSPROP               24
-#define DUK_OP_CSPROPI              25
+#define DUK_OP_UNUSED24             24  /*XXX:reorg*/
+#define DUK_OP_EVALCALL             25  /*XXX:reorg*/
 #define DUK_OP_ADD                  26
 #define DUK_OP_SUB                  27
 #define DUK_OP_MUL                  28
@@ -134,8 +141,8 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_IF                   45
 #define DUK_OP_JUMP                 46
 #define DUK_OP_RETURN               47
-#define DUK_OP_CALL                 48
-#define DUK_OP_CALLI                49
+#define DUK_OP_CALL                 48  /* must be even */
+#define DUK_OP_TAILCALL             49  /* must be odd */
 #define DUK_OP_TRYCATCH             50
 #define DUK_OP_EXTRA                51
 #define DUK_OP_PREINCR              52  /* pre/post opcode values have constraints, */
@@ -150,7 +157,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_PREDECP              61
 #define DUK_OP_POSTINCP             62
 #define DUK_OP_POSTDECP             63
-#define DUK_OP_NONE                 64  /* dummy value used as marker */
+#define DUK_OP_NONE                 64  /* dummy value used as marker (doesn't fit in 6-bit field) */
 
 /* DUK_OP_EXTRA, sub-operation in A */
 #define DUK_EXTRAOP_NOP             0
@@ -187,10 +194,6 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_EXTRAOP_IN              31
 #define DUK_EXTRAOP_LABEL           32
 #define DUK_EXTRAOP_ENDLABEL        33
-
-/* DUK_OP_CALL flags in A */
-#define DUK_BC_CALL_FLAG_TAILCALL           (1 << 0)
-#define DUK_BC_CALL_FLAG_EVALCALL           (1 << 1)
 
 /* DUK_OP_TRYCATCH flags in A */
 #define DUK_BC_TRYCATCH_FLAG_HAVE_CATCH     (1 << 0)

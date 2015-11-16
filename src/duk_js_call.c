@@ -1380,16 +1380,16 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			nargs = ((duk_hcompfunc *) func)->nargs;
 			nregs = ((duk_hcompfunc *) func)->nregs;
 			DUK_ASSERT(nregs >= nargs);
-		} else if (DUK_HOBJECT_IS_NATFUNC(func)) {
+		} else {
+			/* True because of call target lookup checks. */
+			DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
+
 			/* Note: nargs (and nregs) may be negative for a native,
 			 * function, which indicates that the function wants the
 			 * input stack "as is" (i.e. handles "vararg" arguments).
 			 */
 			nargs = ((duk_hnatfunc *) func)->nargs;
 			nregs = nargs;
-		} else {
-			/* XXX: this should be an assert */
-			DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
 		}
 	} else {
 		duk_small_uint_t lf_flags;

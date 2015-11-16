@@ -11,6 +11,28 @@
 DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, duk_size_t entry_callstack_top);
 
 /*
+ *  Misc helpers.
+ */
+
+/* XXX: candidate of being an internal shared API call */
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, duk_small_uint_fast_t count) {
+	duk_tval *tv_dst;
+	duk_size_t copy_size;
+	duk_size_t i;
+
+	tv_dst = thr->valstack_top;
+	copy_size = sizeof(duk_tval) * count;
+	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, copy_size);
+	for (i = 0; i < count; i++) {
+		DUK_TVAL_INCREF(thr, tv_dst);
+		tv_dst++;
+	}
+	thr->valstack_top = tv_dst;
+}
+#endif
+
+/*
  *  Arithmetic, binary, and logical helpers.
  *
  *  Note: there is no opcode for logical AND or logical OR; this is on
@@ -2619,17 +2641,19 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			break;
 		}
 
-		case DUK_OP_NEW:
-		case DUK_OP_NEWI: {
+		case DUK_OP_NEW: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-			duk_uint_fast_t idx;
-			duk_small_uint_fast_t i;
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
+#if defined(DUK_USE_PREFER_SIZE)
+			duk_hcompfunc *fun;
+#else
+			duk_small_uint_fast_t count;
+			duk_tval *tv_src;
+#endif
 
-			/* A -> unused (reserved for flags, for consistency with DUK_OP_CALL)
-			 * B -> target register and start reg: constructor, arg1, ..., argN
-			 *      (for DUK_OP_NEWI, 'b' is indirect)
-			 * C -> num args (N)
+			/* A -> num args (N)
+			 * BC -> target register and start reg: constructor, arg1, ..., argN
 			 */
 
 			/* duk_new() will call the constuctor using duk_handle_call().
@@ -2641,34 +2665,33 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * when it augments the created error.
 			 */
 
-			/* XXX: unnecessary copying of values?  Just set 'top' to
-			 * b + c, and let the return handling fix up the stack frame?
+#if defined(DUK_USE_PREFER_SIZE)
+			/* This alternative relies on our being allowed to trash anything
+			 * above 'bc' so we can just reuse the argument registers which
+			 * means smaller value stack use.  Footprint is a bit smaller.
 			 */
-
-			if (DUK_DEC_OP(ins) == DUK_OP_NEWI) {
-				duk_tval *tv_ind = DUK__REGP_B(ins);
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
-				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
-			} else {
-				idx = (duk_uint_fast_t) DUK_DEC_B(ins);
-			}
-
-#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
-			if (idx + c + 1 > (duk_uint_fast_t) duk_get_top(ctx)) {
-				/* XXX: use duk_is_valid_index() instead? */
-				/* XXX: improve check; check against nregs, not against top */
-				DUK__INTERNAL_ERROR("NEW out of bounds");
-			}
-#endif
-
-			duk_require_stack(ctx, (duk_idx_t) c);
-			duk_push_tval(ctx, DUK__REGP(idx));
-			for (i = 0; i < c; i++) {
-				duk_push_tval(ctx, DUK__REGP(idx + i + 1));
-			}
-			duk_new(ctx, (duk_idx_t) c);  /* [... constructor arg1 ... argN] -> [retval] */
+			duk_set_top(ctx, (duk_idx_t) (bc + a + 1));
+			duk_new(ctx, (duk_idx_t) a);  /* [... constructor arg1 ... argN] -> [retval] */
 			DUK_DDD(DUK_DDDPRINT("NEW -> %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
-			duk_replace(ctx, (duk_idx_t) idx);
+
+			/* The return value is already in its correct place at the stack,
+			 * i.e. it has replaced the 'constructor' at index bc.  Just reset
+			 * top and we're done.
+			 */
+			fun = DUK__FUN();
+			duk_set_top(ctx, (duk_idx_t) fun->nregs);
+#else
+			/* Faster alternative is to duplicate the values to avoid a resize.
+			 * This depends on the relative size between the value stack and
+			 * the argument count, though.
+			 */
+			count = a + 1;
+			duk_require_stack(ctx, count);
+			tv_src = DUK_GET_TVAL_POSIDX(ctx, bc);
+			duk__push_tvals_incref_only(thr, tv_src, count);
+			duk_new(ctx, (duk_idx_t) a);  /* [... constructor arg1 ... argN] -> [retval] */
+			duk_replace(ctx, bc);
+#endif
 
 			/* When debugger is enabled, we need to recheck the activation
 			 * status after returning.  This is now handled by call handling
@@ -2702,49 +2725,43 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			break;
 		}
 
-		case DUK_OP_CSREG:
-		case DUK_OP_CSREGI: {
+		case DUK_OP_CSREG: {
 			/*
 			 *  Assuming a register binds to a variable declared within this
 			 *  function (a declarative binding), the 'this' for the call
 			 *  setup is always 'undefined'.  E5 Section 10.2.1.1.6.
 			 */
 
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_uint_fast_t bc = DUK_DEC_BC(ins);
+
+			/* A -> register containing target function (not type checked here)
+			 * BC -> target registers (BC, BC + 1) for call setup
+			 */
+
+#if defined(DUK_USE_PREFER_SIZE)
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);  /* restricted to regs */
-			duk_uint_fast_t idx;
+			duk_dup(ctx, a);
+			duk_replace(ctx, bc);
+			duk_to_undefined(ctx, bc + 1);
+#else
+			duk_tval *tv1;
+			duk_tval *tv2;
+			duk_tval *tv3;
+			duk_tval tv_tmp1;
+			duk_tval tv_tmp2;
 
-			/* A -> target register (A, A+1) for call setup
-			 *      (for DUK_OP_CSREGI, 'a' is indirect)
-			 * B -> register containing target function (not type checked here)
-			 */
-
-			/* XXX: direct manipulation, or duk_replace_tval() */
-
-			/* Note: target registers a and a+1 may overlap with DUK__REGP(b).
-			 * Careful here.
-			 */
-
-			if (DUK_DEC_OP(ins) == DUK_OP_CSREGI) {
-				duk_tval *tv_ind = DUK__REGP_A(ins);
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
-				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
-			} else {
-				idx = (duk_uint_fast_t) DUK_DEC_A(ins);
-			}
-
-#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
-			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
-				/* XXX: use duk_is_valid_index() instead? */
-				/* XXX: improve check; check against nregs, not against top */
-				DUK__INTERNAL_ERROR("CSREG out of bounds");
-			}
+			tv1 = DUK__REGP(bc);
+			tv2 = tv1 + 1;
+			DUK_TVAL_SET_TVAL(&tv_tmp1, tv1);
+			DUK_TVAL_SET_TVAL(&tv_tmp2, tv2);
+			tv3 = DUK__REGP(a);
+			DUK_TVAL_SET_TVAL(tv1, tv3);
+			DUK_TVAL_INCREF(thr, tv1);  /* no side effects */
+			DUK_TVAL_SET_UNDEFINED(tv2);  /* no need for incref */
+			DUK_TVAL_DECREF(thr, &tv_tmp1);
+			DUK_TVAL_DECREF(thr, &tv_tmp2);
 #endif
-
-			duk_push_tval(ctx, DUK__REGP(b));
-			duk_replace(ctx, (duk_idx_t) idx);
-			duk_push_undefined(ctx);
-			duk_replace(ctx, (duk_idx_t) (idx + 1));
 			break;
 		}
 
@@ -2856,15 +2873,13 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			break;
 		}
 
-		case DUK_OP_CSVAR:
-		case DUK_OP_CSVARI: {
-			/* 'this' value:
-			 * E5 Section 6.b.i
+		case DUK_OP_CSVAR: {
+			/* The speciality of calling through a variable binding is that the
+			 * 'this' value may be provided by the variable lookup: E5 Section 6.b.i.
 			 *
 			 * The only (standard) case where the 'this' binding is non-null is when
 			 *   (1) the variable is found in an object environment record, and
 			 *   (2) that object environment record is a 'with' block.
-			 *
 			 */
 
 			duk_context *ctx = (duk_context *) thr;
@@ -2873,6 +2888,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_uint_fast_t idx;
 			duk_tval *tv1;
 			duk_hstring *name;
+
+			/* A -> target registers (A, A + 1) for call setup
+			 * B -> identifier name, usually constant but can be a register due to shuffling
+			 */
 
 			tv1 = DUK__REGCONSTP(b);
 			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
@@ -2886,20 +2905,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 */
 
 			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
-			if (DUK_DEC_OP(ins) == DUK_OP_CSVARI) {
-				duk_tval *tv_ind = DUK__REGP(idx);
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
-				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
-			}
 
-#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
-			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
-				/* XXX: use duk_is_valid_index() instead? */
-				/* XXX: improve check; check against nregs, not against top */
-				DUK__INTERNAL_ERROR("CSVAR out of bounds");
-			}
-#endif
-
+			/* Could add direct value stack handling. */
 			duk_replace(ctx, (duk_idx_t) (idx + 1));  /* 'this' binding */
 			duk_replace(ctx, (duk_idx_t) idx);        /* variable value (function, we hope, not checked here) */
 			break;
@@ -3043,56 +3050,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			duk_push_boolean(ctx, rc);
 			duk_replace(ctx, (duk_idx_t) a);    /* result */
-			break;
-		}
-
-		case DUK_OP_CSPROP:
-		case DUK_OP_CSPROPI: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-			duk_uint_fast_t idx;
-			duk_tval *tv_obj;
-			duk_tval *tv_key;
-			duk_bool_t rc;
-
-			/* E5 Section 11.2.3, step 6.a.i */
-			/* E5 Section 10.4.3 */
-
-			/* XXX: allow object to be a const, e.g. in 'foo'.toString()?
-			 * On the other hand, DUK_REGCONSTP() is slower and generates
-			 * more code.
-			 */
-
-			tv_obj = DUK__REGP(b);
-			tv_key = DUK__REGCONSTP(c);
-			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
-			DUK_UNREF(rc);  /* unused */
-			tv_obj = NULL;  /* invalidated */
-			tv_key = NULL;  /* invalidated */
-
-			/* Note: target registers a and a+1 may overlap with DUK__REGP(b)
-			 * and DUK__REGCONSTP(c).  Careful here.
-			 */
-
-			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
-			if (DUK_DEC_OP(ins) == DUK_OP_CSPROPI) {
-				duk_tval *tv_ind = DUK__REGP(idx);
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
-				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
-			}
-
-#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
-			if (idx + 2 > (duk_uint_fast_t) duk_get_top(ctx)) {
-				/* XXX: use duk_is_valid_index() instead? */
-				/* XXX: improve check; check against nregs, not against top */
-				DUK__INTERNAL_ERROR("CSPROP out of bounds");
-			}
-#endif
-
-			duk_push_tval(ctx, DUK__REGP(b));         /* [ ... val obj ] */
-			duk_replace(ctx, (duk_idx_t) (idx + 1));  /* 'this' binding */
-			duk_replace(ctx, (duk_idx_t) idx);        /* val */
 			break;
 		}
 
@@ -3313,89 +3270,62 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 		case DUK_OP_CALL:
-		case DUK_OP_CALLI: {
+		case DUK_OP_TAILCALL: {
+			/* DUK_OP_CALL: plain call, not tailcall compatible.
+			 *
+			 * DUK_OP_TAILCALL: plain call which is tailcall
+			 * compatible.  Tail call may not be possible due
+			 * to e.g. target not being an Ecmascript function.
+			 *
+			 * Not a direct eval call.  Indirect eval calls don't
+			 * need special handling here.
+			 */
+
+			/* To determine whether to use an optimized Ecmascript-to-Ecmascript
+			 * call, we need to know whether the final, non-bound function is an
+			 * Ecmascript function.  Current implementation is to first try an
+			 * Ecma-to-Ecma call setup which also resolves the bound function
+			 * chain.  The setup attempt overwrites call target at DUK__REGP(idx)
+			 * and may also fudge the argument list.  However, it won't resolve
+			 * the effective 'this' binding if the setup fails.  This is somewhat
+			 * awkward, and the two call setup code paths should be merged.
+			 *
+			 * If an Ecma-to-Ecma call is not possible, the actual call handling
+			 * will do another (unnecessary) attempt to resolve the bound function.
+			 */
+
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+			duk_small_uint_fast_t nargs;
 			duk_uint_fast_t idx;
-			duk_small_uint_t call_flags;
-			duk_small_uint_t flag_tailcall;
-			duk_small_uint_t flag_evalcall;
-			duk_tval *tv_func;
-			duk_hobject *obj_func;
-			duk_bool_t setup_rc;
 			duk_idx_t num_stack_args;
+			duk_small_uint_t call_flags;
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			duk_hcompfunc *fun;
 #endif
 
-			/* A -> flags
-			 * B -> base register for call (base -> func, base+1 -> this, base+2 -> arg1 ... base+2+N-1 -> argN)
-			 *      (for DUK_OP_CALLI, 'b' is indirect)
-			 * C -> nargs
+			/* A -> nargs
+			 * BC -> base register for call (base -> func, base+1 -> this, base+2 -> arg1 ... base+2+N-1 -> argN)
 			 */
 
-			/* these are not necessarily 0 or 1 (may be other non-zero), that's ok */
-			flag_tailcall = (a & DUK_BC_CALL_FLAG_TAILCALL);
-			flag_evalcall = (a & DUK_BC_CALL_FLAG_EVALCALL);
-
-			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
-			if (DUK_DEC_OP(ins) == DUK_OP_CALLI) {
-				duk_tval *tv_ind = DUK__REGP(idx);
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
-				idx = (duk_uint_fast_t) DUK_TVAL_GET_NUMBER(tv_ind);
-			}
-
-#if defined(DUK_USE_EXEC_INDIRECT_BOUND_CHECK)
-			if (!duk_is_valid_index(ctx, (duk_idx_t) idx)) {
-				/* XXX: improve check; check against nregs, not against top */
-				DUK__INTERNAL_ERROR("CALL out of bounds");
-			}
-#endif
-
-			/*
-			 *  To determine whether to use an optimized Ecmascript-to-Ecmascript
-			 *  call, we need to know whether the final, non-bound function is an
-			 *  Ecmascript function.
-			 *
-			 *  This is now implemented so that we start to do an ecma-to-ecma call
-			 *  setup which will resolve the bound chain as the first thing.  If the
-			 *  final function is not eligible, the return value indicates that the
-			 *  ecma-to-ecma call is not possible.  The setup will overwrite the call
-			 *  target at DUK__REGP(idx) with the final, non-bound function (which
-			 *  may be a lightfunc), and fudge arguments if necessary.
-			 *
-			 *  XXX: If an ecma-to-ecma call is not possible, this initial call
-			 *  setup will do bound function chain resolution but won't do the
-			 *  "effective this binding" resolution which is quite confusing.
-			 *  Perhaps add a helper for doing bound function and effective this
-			 *  binding resolution - and call that explicitly?  Ecma-to-ecma call
-			 *  setup and normal function handling can then assume this prestep has
-			 *  been done by the caller.
+			/* XXX: in some cases it's faster NOT to reuse the value
+			 * stack but rather copy the arguments on top of the stack
+			 * (mainly when the calling value stack is large and the value
+			 * stack resize would be large).  See DUK_OP_NEW.
 			 */
 
-			duk_set_top(ctx, (duk_idx_t) (idx + c + 2));   /* [ ... func this arg1 ... argN ] */
+			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
+			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
+			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
 
-			call_flags = 0;
-			if (flag_tailcall) {
-				/* We request a tail call, but in some corner cases
-				 * call handling can decide that a tail call is
-				 * actually not possible.
-				 * See: test-bug-tailcall-preventyield-assert.c.
-				 */
-				call_flags |= DUK_CALL_FLAG_IS_TAILCALL;
-			}
-
-			/* Compared to duk_handle_call():
-			 *   - protected call: never
-			 *   - ignore recursion limit: never
+			/* DUK_OP_CALL and DUK_OP_TAILCALL are consecutive
+			 * which allows a simple bit test.
 			 */
-			num_stack_args = c;
-			setup_rc = duk_handle_ecma_call_setup(thr,
-			                                      num_stack_args,
-			                                      call_flags);
+			DUK_ASSERT((DUK_OP_CALL & 0x01) == 0);
+			DUK_ASSERT((DUK_OP_TAILCALL & 0x01) == 1);
+			call_flags = (ins & (1UL << DUK_BC_SHIFT_OP)) ? DUK_CALL_FLAG_IS_TAILCALL : 0;
 
-			if (setup_rc) {
+			num_stack_args = nargs;
+			if (duk_handle_ecma_call_setup(thr, num_stack_args, call_flags)) {
 				/* Ecma-to-ecma call possible, may or may not be a tail call.
 				 * Avoid C recursion by being clever.
 				 */
@@ -3403,91 +3333,82 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				/* curr_pc synced by duk_handle_ecma_call_setup() */
 				goto restart_execution;
 			}
-			DUK_ASSERT(thr->ptr_curr_pc != NULL);  /* restored if ecma-to-ecma setup fails */
-
-			DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call not possible, target is native (may be lightfunc)"));
 
 			/* Recompute argument count: bound function handling may have shifted. */
 			num_stack_args = duk_get_top(ctx) - (idx + 2);
 			DUK_DDD(DUK_DDDPRINT("recomputed arg count: %ld\n", (long) num_stack_args));
 
-			tv_func = DUK__REGP(idx);  /* Relookup if relocated */
-			if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
+			/* Target is either a lightfunc or a function object.
+			 * We don't need to check for eval handling here: the
+			 * call may be an indirect eval ('myEval("something")')
+			 * but that requires no special handling.
+			 */
 
-				call_flags = 0;  /* not protected, respect reclimit, not constructor */
+			duk_handle_call_unprotected(thr, num_stack_args, 0 /*call_flags*/);
 
-				/* There is no eval() special handling here: eval() is never
-				 * automatically converted to a lightfunc.
-				 */
-				DUK_ASSERT(DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func) != duk_bi_global_object_eval);
-
-				duk_handle_call_unprotected(thr,
-				                            num_stack_args,
-				                            call_flags);
-
-				/* duk_js_call.c is required to restore the stack reserve
-				 * so we only need to reset the top.
-				 */
+			/* duk_js_call.c is required to restore the stack reserve
+			 * so we only need to reset the top.
+			 */
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
-				fun = DUK__FUN();
+			fun = DUK__FUN();
+			duk_set_top(ctx, (duk_idx_t) fun->nregs);
 #endif
-				duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
-				/* No need to reinit setjmp() catchpoint, as call handling
-				 * will store and restore our state.
-				 */
-			} else {
-				/* Call setup checks callability. */
-				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_func));
-				obj_func = DUK_TVAL_GET_OBJECT(tv_func);
-				DUK_ASSERT(obj_func != NULL);
-				DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(obj_func));
-
-				/*
-				 *  Other cases, use C recursion.
-				 *
-				 *  If a tail call was requested we ignore it and execute a normal call.
-				 *  Since Duktape 0.11.0 the compiler emits a RETURN opcode even after
-				 *  a tail call to avoid test-bug-tailcall-thread-yield-resume.js.
-				 *
-				 *  Direct eval call: (1) call target (before following bound function
-				 *  chain) is the built-in eval() function, and (2) call was made with
-				 *  the identifier 'eval'.
-				 */
-
-				call_flags = 0;  /* not protected, respect reclimit, not constructor */
-
-				if (DUK_HOBJECT_IS_NATFUNC(obj_func) &&
-				    ((duk_hnatfunc *) obj_func)->func == duk_bi_global_object_eval) {
-					if (flag_evalcall) {
-						DUK_DDD(DUK_DDDPRINT("call target is eval, call identifier was 'eval' -> direct eval"));
-						call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
-					} else {
-						DUK_DDD(DUK_DDDPRINT("call target is eval, call identifier was not 'eval' -> indirect eval"));
-					}
-				}
-
-				duk_handle_call_unprotected(thr,
-				                            num_stack_args,
-				                            call_flags);
-
-				/* duk_js_call.c is required to restore the stack reserve
-				 * so we only need to reset the top.
-				 */
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-				fun = DUK__FUN();
-#endif
-				duk_set_top(ctx, (duk_idx_t) fun->nregs);
-
-				/* No need to reinit setjmp() catchpoint, as call handling
-				 * will store and restore our state.
-				 */
-			}
+			/* No need to reinit setjmp() catchpoint, as call handling
+			 * will store and restore our state.
+			 */
 
 			/* When debugger is enabled, we need to recheck the activation
 			 * status after returning.  This is now handled by call handling
 			 * and heap->dbg_force_restart.
 			 */
+			break;
+		}
+
+		case DUK_OP_EVALCALL: {
+			/* Eval call or a normal call made using the identifier 'eval'.
+			 * Eval calls are never handled as tail calls for simplicity.
+			 */
+			duk_context *ctx = (duk_context *) thr;
+			duk_small_uint_fast_t nargs;
+			duk_uint_fast_t idx;
+			duk_idx_t num_stack_args;
+			duk_small_uint_t call_flags;
+			duk_tval *tv_func;
+			duk_hobject *obj_func;
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			duk_hcompfunc *fun;
+#endif
+
+			/* Technically we should also check for the possibility of
+			 * a pure Ecmascript-to-Ecmascript call: while built-in eval()
+			 * is native, it's possible for the 'eval' identifier to be
+			 * shadowed.  In practice that would be rare and optimizing the
+			 * C call stack for that case is a bit pointless.
+			 */
+
+			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
+			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
+			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
+
+			call_flags = 0;
+			tv_func = DUK_GET_TVAL_POSIDX(ctx, idx);
+			if (DUK_TVAL_IS_OBJECT(tv_func)) {
+				obj_func = DUK_TVAL_GET_OBJECT(tv_func);
+				DUK_ASSERT(obj_func != NULL);
+				if (DUK_HOBJECT_IS_NATFUNC(obj_func) &&
+				    ((duk_hnatfunc *) obj_func)->func == duk_bi_global_object_eval) {
+					DUK_DDD(DUK_DDDPRINT("call target is eval, call identifier was 'eval' -> direct eval"));
+					call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
+				}
+			}
+			num_stack_args = nargs;
+			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
+
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			fun = DUK__FUN();
+			duk_set_top(ctx, (duk_idx_t) fun->nregs);
+#endif
 			break;
 		}
 
@@ -4505,9 +4426,14 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			break;
 		}
 
+		case DUK_OP_UNUSED10:
+		case DUK_OP_UNUSED13:
+		case DUK_OP_UNUSED19:
+		case DUK_OP_UNUSED24:
+			/* fall through */
 		default: {
-			/* this should never be possible, because the switch-case is
-			 * comprehensive
+			/* Default case should never be possible, because the switch-case
+			 * is comprehensive.
 			 */
 			DUK__INTERNAL_ERROR("invalid opcode");
 			break;
