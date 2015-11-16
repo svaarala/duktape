@@ -84,9 +84,9 @@ Disable verbose errors
 
 Verbose error messages may cause sandboxing security issues:
 
-* When DUK_USE_VERBOSE_PROP_ERRORS is set, offending object/key is summarized
+* When DUK_USE_PARANOID_ERRORS is not set, offending object/key is summarized
   in an error message of some rejected property operations.  If object keys
-  contain potentially sensitive information, you should disable this option.
+  contain potentially sensitive information, you should enable this option.
 
 * When stack traces are enabled an attacker may gain useful information from
   the stack traces.  Further, access to the internal ``_Tracedata`` property
