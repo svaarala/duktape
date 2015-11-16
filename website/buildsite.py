@@ -855,6 +855,16 @@ def generateDownloadPage(releases_filename):
 	down_soup = validateAndParseHtml(readFile('download/download.html'))
 	setNavSelected(templ_soup, 'Download')
 
+	# Flip download list, preferred by most users
+	tbody = down_soup.select('#releases tbody')[0]
+	assert(tbody is not None)
+	dl_list = tbody.select('tr')
+	for dl in dl_list:
+		dl.extract()
+	dl_list.reverse()
+	for dl in dl_list:
+		tbody.append(dl)
+
 	title_elem = templ_soup.select('#template-title')[0]
 	del title_elem['id']
 	title_elem.string = 'Downloads'
