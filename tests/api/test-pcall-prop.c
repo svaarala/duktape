@@ -24,7 +24,7 @@ rc=1, result='RangeError: getter error'
 rc=1, result='Error: invalid index'
 ==> rc=0, result='undefined'
 *** test_8 (duk_safe_call)
-rc=1, result='TypeError: not callable'
+rc=1, result='TypeError: undefined not callable'
 ==> rc=0, result='undefined'
 *** test_9 (duk_safe_call)
 ==> rc=1, result='Error: invalid call args'
