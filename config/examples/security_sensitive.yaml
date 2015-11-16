@@ -1,8 +1,8 @@
 # Base configuration for security sensitive environments.
 
-# Disable summary of object/key for rejected property operations.  May be
+# Avoid summary of object/key for rejected property operations.  May be
 # relevant if keys contain potentially sensitive information.
-DUK_USE_VERBOSE_PROP_ERRORS: false
+DUK_USE_PARANOID_ERRORS: true
 
 # Disable tracebacks, minimizes attacker knowledge of call chains.  Access
 # to the internal error _Tracedata property provides access to all functions
