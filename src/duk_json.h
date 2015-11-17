@@ -28,7 +28,6 @@ typedef struct {
 	duk_bufwriter_ctx bw;        /* output bufwriter */
 	duk_hobject *h_replacer;     /* replacer function */
 	duk_hstring *h_gap;          /* gap (if empty string, NULL) */
-	duk_hstring *h_indent;       /* current indent (if gap is NULL, this is NULL) */
 	duk_idx_t idx_proplist;      /* explicit PropertyList */
 	duk_idx_t idx_loop;          /* valstack index of loop detection object */
 	duk_small_uint_t flags;
