@@ -1227,6 +1227,10 @@ Planned
 * Internal performance improvement: improve JSON.stringify() default slow
   path indent handling (GH-444)
 
+* Internal performance improvement: improve JSON.stringify() fast path
+  by allowing indent value or gap string and by supporting JX/JC in the
+  fast path (GH-445)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
