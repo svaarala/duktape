@@ -1403,29 +1403,68 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 /* Indent helper.  Calling code relies on js_ctx->recursion_depth also being
  * directly related to indent depth.
  */
-/* FIXME: size optimized version: loop DUK__EMIT_HSTR(). */
+#if defined(DUK_USE_PREFER_SIZE)
 DUK_LOCAL void duk__enc_emit_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth) {
-	const duk_uint8_t *data;
-	duk_size_t len;
+	DUK_ASSERT(js_ctx->h_gap != NULL);
+	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) > 0);  /* caller guarantees */
+
+	DUK__EMIT_1(js_ctx, 0x0a);
+	while (depth-- > 0) {
+		DUK__EMIT_HSTR(js_ctx, js_ctx->h_gap);
+	}
+}
+#else  /* DUK_USE_PREFER_SIZE */
+DUK_LOCAL void duk__enc_emit_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth) {
+	const duk_uint8_t *gap_data;
+	duk_size_t gap_len;
+	duk_size_t avail_bytes;   /* bytes of indent available for copying */
+	duk_size_t need_bytes;    /* bytes of indent still needed */
+	duk_uint8_t *p_start;
 	duk_uint8_t *p;
 
 	DUK_ASSERT(js_ctx->h_gap != NULL);
+	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) > 0);  /* caller guarantees */
 
 	DUK__EMIT_1(js_ctx, 0x0a);
-	data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(js_ctx->h_gap);
-	len = (duk_size_t) DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap);
-
-	DUK_ASSERT(len > 0);
-	p = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, depth * len);
-
-	while (depth > 0) {
-		depth--;
-		DUK_MEMCPY((void *) p, (const void *) data, (size_t) len);
-		p += len;
+	if (DUK_UNLIKELY(depth == 0)) {
+		return;
 	}
+
+	/* To handle deeper indents efficiently, make use of copies we've
+	 * already emitted.  In effect we can emit a sequence of 1, 2, 4,
+	 * 8, etc copies, and then finish the last run.  Byte counters
+	 * avoid multiply with gap_len on every loop.
+	 */
+
+	gap_data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(js_ctx->h_gap);
+	gap_len = (duk_size_t) DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap);
+	DUK_ASSERT(gap_len > 0);
+
+	need_bytes = gap_len * depth;
+	p = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, need_bytes);
+	p_start = p;
+
+	DUK_MEMCPY((void *) p, (const void *) gap_data, (size_t) gap_len);
+	p += gap_len;
+	avail_bytes = gap_len;
+	DUK_ASSERT(need_bytes >= gap_len);
+	need_bytes -= gap_len;
+
+	while (need_bytes >= avail_bytes) {
+		DUK_MEMCPY((void *) p, (const void *) p_start, (size_t) avail_bytes);
+		p += avail_bytes;
+		need_bytes -= avail_bytes;
+		avail_bytes <<= 1;
+	}
+
+	DUK_ASSERT(need_bytes < avail_bytes);  /* need_bytes may be zero */
+	DUK_MEMCPY((void *) p, (const void *) p_start, (size_t) need_bytes);
+	p += need_bytes;
+	/*avail_bytes += need_bytes*/
 
 	DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, p);
 }
+#endif  /* DUK_USE_PREFER_SIZE */
 
 /* Shared entry handling for object/array serialization. */
 DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
