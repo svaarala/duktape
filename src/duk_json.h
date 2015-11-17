@@ -36,6 +36,7 @@ typedef struct {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	duk_small_uint_t flag_ext_custom;
 	duk_small_uint_t flag_ext_compatible;
+	duk_small_uint_t flag_ext_custom_or_compatible;
 #endif
 	duk_int_t recursion_depth;
 	duk_int_t recursion_limit;
@@ -62,6 +63,7 @@ typedef struct {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	duk_small_uint_t flag_ext_custom;
 	duk_small_uint_t flag_ext_compatible;
+	duk_small_uint_t flag_ext_custom_or_compatible;
 #endif
 	duk_int_t recursion_depth;
 	duk_int_t recursion_limit;
