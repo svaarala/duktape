@@ -15,7 +15,7 @@ function test() {
     var jsondata = JSON.stringify(txt);
     print(jsondata.length);
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 10000; i++) {
         void JSON.parse(jsondata);
     }
 }

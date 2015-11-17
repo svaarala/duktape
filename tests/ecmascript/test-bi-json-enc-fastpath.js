@@ -270,8 +270,8 @@ proxy test
 ["begin",{"foo":123},{"foo":345},{"foo":456},{"foo":567},"end"]
 ===*/
 
-/* A Proxy object causes side effects and should cause abandonment of the
- * fast path.
+/* A Proxy object causes potential side effects and should cause abandonment
+ * of the fast path.
  */
 
 function jsonStringifyFastPathProxyTest() {
@@ -304,4 +304,329 @@ try {
     jsonStringifyFastPathProxyTest();
 } catch (e) {
     print(e.name);
+}
+
+/*===
+jx/jc test
+false
+true
+{"null":null,"true":true,"trueBoxed":true,"false":false,"falseBoxed":false,"number":123,"numberBoxed":123,"posZero":0,"negZero":0,"posInf":null,"negInf":null,"nan":null,"123mustquote":"must quote, non-identifier first char","mustquote\u0000":"must quote, NUL","mustquote<4660>":"must quote, non-ASCII","must_allow_unquoted123":"all chars ok","nonAsciiString":"nonascii: \u0000\u001e<127><4660><51966>","stringBoxed":"boxed string"}
+{
+    "null": null,
+    "true": true,
+    "trueBoxed": true,
+    "false": false,
+    "falseBoxed": false,
+    "number": 123,
+    "numberBoxed": 123,
+    "posZero": 0,
+    "negZero": 0,
+    "posInf": null,
+    "negInf": null,
+    "nan": null,
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\u0000": "must quote, NUL",
+    "mustquote<4660>": "must quote, non-ASCII",
+    "must_allow_unquoted123": "all chars ok",
+    "nonAsciiString": "nonascii: \u0000\u001e<127><4660><51966>",
+    "stringBoxed": "boxed string"
+}
+{
+    "null": null,
+    "true": true,
+    "trueBoxed": true,
+    "false": false,
+    "falseBoxed": false,
+    "number": 123,
+    "numberBoxed": 123,
+    "posZero": 0,
+    "negZero": 0,
+    "posInf": null,
+    "negInf": null,
+    "nan": null,
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\u0000": "must quote, NUL",
+    "mustquote<4660>": "must quote, non-ASCII",
+    "must_allow_unquoted123": "all chars ok",
+    "nonAsciiString": "nonascii: \u0000\u001e<127><4660><51966>",
+    "stringBoxed": "boxed string"
+}
+true
+{undefined:undefined,null:null,true:true,trueBoxed:true,false:false,falseBoxed:false,number:123,numberBoxed:123,posZero:0,negZero:-0,posInf:Infinity,negInf:-Infinity,nan:NaN,"123mustquote":"must quote, non-identifier first char","mustquote\x00":"must quote, NUL","mustquote\u1234":"must quote, non-ASCII",must_allow_unquoted123:"all chars ok",nonAsciiString:"nonascii: \x00\x1e\x7f\u1234\ucafe",stringBoxed:"boxed string",buffer:|deadbeef|,bufferBoxed:|deadbeef|,pointer:(<PTR>),pointerBoxed:(<PTR>),duktapeBuffer:|00000000000000|,nodejsBuffer:|4142434445464748494a4b4c|,nodejsBufferView:|44454647|,arrayBuffer:|6162636465666768|,dataView:|6162636465666768|,int8Array:|6162636465666768|,uint8Array:|6162636465666768|,uint8ArrayView:|62636465|,uint8ClampedArray:|6162636465666768|,int16Array:|6162636465666768|,int16ArrayView:|65666768|,uint16Array:|6162636465666768|,int32Array:|6162636465666768|,uint32Array:|6162636465666768|,float32Array:|6162636465666768|,float64Array:|6162636465666768|,function:{_func:true}}
+{
+    undefined: undefined,
+    null: null,
+    true: true,
+    trueBoxed: true,
+    false: false,
+    falseBoxed: false,
+    number: 123,
+    numberBoxed: 123,
+    posZero: 0,
+    negZero: -0,
+    posInf: Infinity,
+    negInf: -Infinity,
+    nan: NaN,
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\x00": "must quote, NUL",
+    "mustquote\u1234": "must quote, non-ASCII",
+    must_allow_unquoted123: "all chars ok",
+    nonAsciiString: "nonascii: \x00\x1e\x7f\u1234\ucafe",
+    stringBoxed: "boxed string",
+    buffer: |deadbeef|,
+    bufferBoxed: |deadbeef|,
+    pointer: (<PTR>),
+    pointerBoxed: (<PTR>),
+    duktapeBuffer: |00000000000000|,
+    nodejsBuffer: |4142434445464748494a4b4c|,
+    nodejsBufferView: |44454647|,
+    arrayBuffer: |6162636465666768|,
+    dataView: |6162636465666768|,
+    int8Array: |6162636465666768|,
+    uint8Array: |6162636465666768|,
+    uint8ArrayView: |62636465|,
+    uint8ClampedArray: |6162636465666768|,
+    int16Array: |6162636465666768|,
+    int16ArrayView: |65666768|,
+    uint16Array: |6162636465666768|,
+    int32Array: |6162636465666768|,
+    uint32Array: |6162636465666768|,
+    float32Array: |6162636465666768|,
+    float64Array: |6162636465666768|,
+    function: {_func:true}
+}
+{
+    undefined: undefined,
+    null: null,
+    true: true,
+    trueBoxed: true,
+    false: false,
+    falseBoxed: false,
+    number: 123,
+    numberBoxed: 123,
+    posZero: 0,
+    negZero: -0,
+    posInf: Infinity,
+    negInf: -Infinity,
+    nan: NaN,
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\x00": "must quote, NUL",
+    "mustquote\u1234": "must quote, non-ASCII",
+    must_allow_unquoted123: "all chars ok",
+    nonAsciiString: "nonascii: \x00\x1e\x7f\u1234\ucafe",
+    stringBoxed: "boxed string",
+    buffer: |deadbeef|,
+    bufferBoxed: |deadbeef|,
+    pointer: (<PTR>),
+    pointerBoxed: (<PTR>),
+    duktapeBuffer: |00000000000000|,
+    nodejsBuffer: |4142434445464748494a4b4c|,
+    nodejsBufferView: |44454647|,
+    arrayBuffer: |6162636465666768|,
+    dataView: |6162636465666768|,
+    int8Array: |6162636465666768|,
+    uint8Array: |6162636465666768|,
+    uint8ArrayView: |62636465|,
+    uint8ClampedArray: |6162636465666768|,
+    int16Array: |6162636465666768|,
+    int16ArrayView: |65666768|,
+    uint16Array: |6162636465666768|,
+    int32Array: |6162636465666768|,
+    uint32Array: |6162636465666768|,
+    float32Array: |6162636465666768|,
+    float64Array: |6162636465666768|,
+    function: {_func:true}
+}
+true
+{"undefined":{"_undef":true},"null":null,"true":true,"trueBoxed":true,"false":false,"falseBoxed":false,"number":123,"numberBoxed":123,"posZero":0,"negZero":-0,"posInf":{"_inf":true},"negInf":{"_ninf":true},"nan":{"_nan":true},"123mustquote":"must quote, non-identifier first char","mustquote\u0000":"must quote, NUL","mustquote\u1234":"must quote, non-ASCII","must_allow_unquoted123":"all chars ok","nonAsciiString":"nonascii: \u0000\u001e\u007f\u1234\ucafe","stringBoxed":"boxed string","buffer":{"_buf":"deadbeef"},"bufferBoxed":{"_buf":"deadbeef"},"pointer":{"_ptr":"<PTR>"},"pointerBoxed":{"_ptr":"<PTR>"},"duktapeBuffer":{"_buf":"00000000000000"},"nodejsBuffer":{"_buf":"4142434445464748494a4b4c"},"nodejsBufferView":{"_buf":"44454647"},"arrayBuffer":{"_buf":"6162636465666768"},"dataView":{"_buf":"6162636465666768"},"int8Array":{"_buf":"6162636465666768"},"uint8Array":{"_buf":"6162636465666768"},"uint8ArrayView":{"_buf":"62636465"},"uint8ClampedArray":{"_buf":"6162636465666768"},"int16Array":{"_buf":"6162636465666768"},"int16ArrayView":{"_buf":"65666768"},"uint16Array":{"_buf":"6162636465666768"},"int32Array":{"_buf":"6162636465666768"},"uint32Array":{"_buf":"6162636465666768"},"float32Array":{"_buf":"6162636465666768"},"float64Array":{"_buf":"6162636465666768"},"function":{"_func":true}}
+{
+    "undefined": {"_undef":true},
+    "null": null,
+    "true": true,
+    "trueBoxed": true,
+    "false": false,
+    "falseBoxed": false,
+    "number": 123,
+    "numberBoxed": 123,
+    "posZero": 0,
+    "negZero": -0,
+    "posInf": {"_inf":true},
+    "negInf": {"_ninf":true},
+    "nan": {"_nan":true},
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\u0000": "must quote, NUL",
+    "mustquote\u1234": "must quote, non-ASCII",
+    "must_allow_unquoted123": "all chars ok",
+    "nonAsciiString": "nonascii: \u0000\u001e\u007f\u1234\ucafe",
+    "stringBoxed": "boxed string",
+    "buffer": {"_buf":"deadbeef"},
+    "bufferBoxed": {"_buf":"deadbeef"},
+    "pointer": {"_ptr":"<PTR>"},
+    "pointerBoxed": {"_ptr":"<PTR>"},
+    "duktapeBuffer": {"_buf":"00000000000000"},
+    "nodejsBuffer": {"_buf":"4142434445464748494a4b4c"},
+    "nodejsBufferView": {"_buf":"44454647"},
+    "arrayBuffer": {"_buf":"6162636465666768"},
+    "dataView": {"_buf":"6162636465666768"},
+    "int8Array": {"_buf":"6162636465666768"},
+    "uint8Array": {"_buf":"6162636465666768"},
+    "uint8ArrayView": {"_buf":"62636465"},
+    "uint8ClampedArray": {"_buf":"6162636465666768"},
+    "int16Array": {"_buf":"6162636465666768"},
+    "int16ArrayView": {"_buf":"65666768"},
+    "uint16Array": {"_buf":"6162636465666768"},
+    "int32Array": {"_buf":"6162636465666768"},
+    "uint32Array": {"_buf":"6162636465666768"},
+    "float32Array": {"_buf":"6162636465666768"},
+    "float64Array": {"_buf":"6162636465666768"},
+    "function": {"_func":true}
+}
+{
+    "undefined": {"_undef":true},
+    "null": null,
+    "true": true,
+    "trueBoxed": true,
+    "false": false,
+    "falseBoxed": false,
+    "number": 123,
+    "numberBoxed": 123,
+    "posZero": 0,
+    "negZero": -0,
+    "posInf": {"_inf":true},
+    "negInf": {"_ninf":true},
+    "nan": {"_nan":true},
+    "123mustquote": "must quote, non-identifier first char",
+    "mustquote\u0000": "must quote, NUL",
+    "mustquote\u1234": "must quote, non-ASCII",
+    "must_allow_unquoted123": "all chars ok",
+    "nonAsciiString": "nonascii: \u0000\u001e\u007f\u1234\ucafe",
+    "stringBoxed": "boxed string",
+    "buffer": {"_buf":"deadbeef"},
+    "bufferBoxed": {"_buf":"deadbeef"},
+    "pointer": {"_ptr":"<PTR>"},
+    "pointerBoxed": {"_ptr":"<PTR>"},
+    "duktapeBuffer": {"_buf":"00000000000000"},
+    "nodejsBuffer": {"_buf":"4142434445464748494a4b4c"},
+    "nodejsBufferView": {"_buf":"44454647"},
+    "arrayBuffer": {"_buf":"6162636465666768"},
+    "dataView": {"_buf":"6162636465666768"},
+    "int8Array": {"_buf":"6162636465666768"},
+    "uint8Array": {"_buf":"6162636465666768"},
+    "uint8ArrayView": {"_buf":"62636465"},
+    "uint8ClampedArray": {"_buf":"6162636465666768"},
+    "int16Array": {"_buf":"6162636465666768"},
+    "int16ArrayView": {"_buf":"65666768"},
+    "uint16Array": {"_buf":"6162636465666768"},
+    "int32Array": {"_buf":"6162636465666768"},
+    "uint32Array": {"_buf":"6162636465666768"},
+    "float32Array": {"_buf":"6162636465666768"},
+    "float64Array": {"_buf":"6162636465666768"},
+    "function": {"_func":true}
+}
+===*/
+
+/* Fast path for JX/JC. */
+
+function jxJcFastPathTest() {
+    var val;
+
+    function id(k,v) { return v; }
+
+    function cleanPrint(x) {
+        x = x.replace(/[^\u0020-\u007e\u000a]/g, function (x) { return '<' + x.charCodeAt(0) + '>'; });
+        x = x.replace(/0x[0-9a-fA-F]+/g, function (x) { return '<PTR>'; });
+        print(x);
+    }
+
+    var arrayBuffer = new ArrayBuffer(8);
+    arrayBuffer[0] = 0x61;
+    arrayBuffer[1] = 0x62;
+    arrayBuffer[2] = 0x63;
+    arrayBuffer[3] = 0x64;
+    arrayBuffer[4] = 0x65;
+    arrayBuffer[5] = 0x66;
+    arrayBuffer[6] = 0x67;
+    arrayBuffer[7] = 0x68;
+
+    // Remove Node.js buffer .toJSON() method here, because its presence
+    // would cause a fastpath abort.
+    delete Buffer.prototype.toJSON;
+    print('toJSON' in Buffer.prototype);
+
+    val = {
+        undefined: void 0,
+        null: null,
+        true: true,
+        trueBoxed: new Boolean(true),
+        false: false,
+        falseBoxed: new Boolean(false),
+        number: 123,
+        numberBoxed: new Number(123),
+        posZero: +0,
+        negZero: -0,
+        posInf: 1/0,
+        negInf: -1/0,
+        nan: 0/0,
+        '123mustquote': 'must quote, non-identifier first char',
+        'mustquote\u0000': 'must quote, NUL',
+        'mustquote\u1234': 'must quote, non-ASCII',
+        'must_allow_unquoted123': 'all chars ok',
+        nonAsciiString: 'nonascii: \u0000\u001e\u007f\u1234\ucafe',
+        stringBoxed: new String('boxed string'),
+        buffer: Duktape.dec('hex', 'deadbeef'),
+        bufferBoxed: new Duktape.Buffer(Duktape.dec('hex', 'deadbeef')),
+        pointer: Duktape.Pointer('dummy'),
+        pointerBoxed: new Duktape.Pointer(Duktape.Pointer('dummy')),
+        duktapeBuffer: new Duktape.Buffer(7),
+        nodejsBuffer: new Buffer('ABCDEFGHIJKL'),
+        nodejsBufferView: new Buffer('ABCDEFGHIJKL').slice(3, 7),
+        arrayBuffer: arrayBuffer,
+        dataView: new DataView(arrayBuffer),
+        int8Array: new Int8Array(arrayBuffer),
+        uint8Array: new Uint8Array(arrayBuffer),
+        uint8ArrayView: new Uint8Array(arrayBuffer).subarray(1, 5),
+        uint8ClampedArray: new Uint8ClampedArray(arrayBuffer),
+        int16Array: new Int16Array(arrayBuffer),
+        int16ArrayView: new Int16Array(arrayBuffer).subarray(2, 4),
+        uint16Array: new Uint16Array(arrayBuffer),
+        int32Array: new Int32Array(arrayBuffer),
+        uint32Array: new Uint32Array(arrayBuffer),
+        float32Array: new Float32Array(arrayBuffer),
+        float64Array: new Float64Array(arrayBuffer),
+        function: function test() {}
+    };
+
+    var json1 = JSON.stringify(val);
+    var json2 = JSON.stringify(val, null, 4);
+    var json3 = JSON.stringify(val, id, 4);  // replacer forces out of fast path
+
+    print(json2 === json3);
+    cleanPrint(json1);
+    cleanPrint(json2);
+    cleanPrint(json3);
+
+    var jx1 = Duktape.enc('jx', val);
+    var jx2 = Duktape.enc('jx', val, null, 4);
+    var jx3 = Duktape.enc('jx', val, id, 4);
+
+    print(jx2 === jx3);
+    cleanPrint(jx1);
+    cleanPrint(jx2);
+    cleanPrint(jx3);
+
+    var jc1 = Duktape.enc('jc', val);
+    var jc2 = Duktape.enc('jc', val, null, 4);
+    var jc3 = Duktape.enc('jc', val, id, 4);
+
+    print(jc2 === jc3);
+    cleanPrint(jc1);
+    cleanPrint(jc2);
+    cleanPrint(jc3);
+}
+
+try {
+    print('jx/jc test');
+    jxJcFastPathTest();
+} catch (e) {
+    print(e.stack || e);
 }
