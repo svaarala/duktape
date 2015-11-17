@@ -60,8 +60,8 @@ DUK_LOCAL_DECL void duk__emit_stridx(duk_json_enc_ctx *js_ctx, duk_small_uint_t 
 DUK_LOCAL_DECL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uint_fast32_t cp, duk_uint8_t *q);
 DUK_LOCAL_DECL duk_bool_t duk__enc_key_quotes_needed(duk_hstring *h_key);
 DUK_LOCAL_DECL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_str);
-DUK_LOCAL_DECL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top);
-DUK_LOCAL_DECL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top);
+DUK_LOCAL_DECL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top);
+DUK_LOCAL_DECL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top);
 DUK_LOCAL_DECL void duk__enc_object(duk_json_enc_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__enc_array(duk_json_enc_ctx *js_ctx);
 DUK_LOCAL_DECL duk_bool_t duk__enc_value1(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder);
@@ -71,6 +71,7 @@ DUK_LOCAL_DECL void duk__enc_double(duk_json_enc_ctx *js_ctx);
 #if defined(DUK_USE_FASTINT)
 DUK_LOCAL_DECL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv);
 #endif
+DUK_LOCAL_DECL void duk__enc_emit_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth);
 
 /*
  *  Helper tables
@@ -1399,10 +1400,35 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 }
 #endif
 
-/* Shared entry handling for object/array serialization: indent/stepback,
- * loop detection.
+/* Indent helper.  Calling code relies on js_ctx->recursion_depth also being
+ * directly related to indent depth.
  */
-DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top) {
+/* FIXME: size optimized version: loop DUK__EMIT_HSTR(). */
+DUK_LOCAL void duk__enc_emit_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth) {
+	const duk_uint8_t *data;
+	duk_size_t len;
+	duk_uint8_t *p;
+
+	DUK_ASSERT(js_ctx->h_gap != NULL);
+
+	DUK__EMIT_1(js_ctx, 0x0a);
+	data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(js_ctx->h_gap);
+	len = (duk_size_t) DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap);
+
+	DUK_ASSERT(len > 0);
+	p = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, depth * len);
+
+	while (depth > 0) {
+		depth--;
+		DUK_MEMCPY((void *) p, (const void *) data, (size_t) len);
+		p += len;
+	}
+
+	DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, p);
+}
+
+/* Shared entry handling for object/array serialization. */
+DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
 
@@ -1436,54 +1462,14 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_hstring **h_s
 	}
 	js_ctx->recursion_depth++;
 
-	/* figure out indent and stepback */
-
-	*h_indent = NULL;
-	*h_stepback = NULL;
-	if (js_ctx->h_gap != NULL) {
-		DUK_ASSERT(js_ctx->h_indent != NULL);
-
-		*h_stepback = js_ctx->h_indent;
-		duk_push_hstring(ctx, js_ctx->h_indent);
-		duk_push_hstring(ctx, js_ctx->h_gap);
-		duk_concat(ctx, 2);
-		js_ctx->h_indent = duk_get_hstring(ctx, -1);
-		*h_indent = js_ctx->h_indent;
-		DUK_ASSERT(js_ctx->h_indent != NULL);
-
-		/* The new indent string is left at value stack top, and will
-		 * be popped by the shared exit handler.
-		 */
-	} else {
-		DUK_ASSERT(js_ctx->h_indent == NULL);
-	}
-
 	DUK_DDD(DUK_DDDPRINT("shared entry finished: top=%ld, loop=%!T",
 	                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop)));
 }
 
 /* Shared exit handling for object/array serialization. */
-DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_stepback, duk_hstring **h_indent, duk_idx_t *entry_top) {
+DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
-
-	DUK_UNREF(h_indent);
-
-	if (js_ctx->h_gap != NULL) {
-		DUK_ASSERT(js_ctx->h_indent != NULL);
-		DUK_ASSERT(*h_stepback != NULL);
-		DUK_ASSERT(*h_indent != NULL);
-
-		js_ctx->h_indent = *h_stepback;  /* previous js_ctx->h_indent */
-
-		/* Note: we don't need to pop anything because the duk_set_top()
-		 * at the end will take care of it.
-		 */
-	} else {
-		DUK_ASSERT(js_ctx->h_indent == NULL);
-		DUK_ASSERT(*h_stepback == NULL);
-		DUK_ASSERT(*h_indent == NULL);
-	}
 
 	/* c recursion check */
 
@@ -1513,8 +1499,6 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_hstring **h_st
  */
 DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_hstring *h_stepback;
-	duk_hstring *h_indent;
 	duk_hstring *h_key;
 	duk_idx_t entry_top;
 	duk_idx_t idx_obj;
@@ -1525,7 +1509,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_object: obj=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top);
+	duk__enc_objarr_entry(js_ctx, &entry_top);
 
 	idx_obj = entry_top - 1;
 
@@ -1576,9 +1560,9 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 		} else {
 			DUK__EMIT_1(js_ctx, DUK_ASC_COMMA);
 		}
-		if (h_indent != NULL) {
-			DUK__EMIT_1(js_ctx, 0x0a);
-			DUK__EMIT_HSTR(js_ctx, h_indent);
+		if (js_ctx->h_gap != NULL) {
+			DUK_ASSERT(js_ctx->recursion_depth >= 1);
+			duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth);
 		}
 
 		h_key = duk_get_hstring(ctx, -2);
@@ -1590,7 +1574,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 			duk__enc_quote_string(js_ctx, h_key);
 		}
 
-		if (h_indent != NULL) {
+		if (js_ctx->h_gap != NULL) {
 			DUK__EMIT_2(js_ctx, DUK_ASC_COLON, DUK_ASC_SPACE);
 		} else {
 			DUK__EMIT_1(js_ctx, DUK_ASC_COLON);
@@ -1602,15 +1586,14 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	}
 
 	if (!first) {
-		if (h_stepback != NULL) {
-			DUK_ASSERT(h_indent != NULL);
-			DUK__EMIT_1(js_ctx, 0x0a);
-			DUK__EMIT_HSTR(js_ctx, h_stepback);
+		if (js_ctx->h_gap != NULL) {
+			DUK_ASSERT(js_ctx->recursion_depth >= 1);
+			duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
 		}
 	}
 	DUK__EMIT_1(js_ctx, DUK_ASC_RCURLY);
 
-	duk__enc_objarr_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
+	duk__enc_objarr_exit(js_ctx, &entry_top);
 
 	DUK_ASSERT_TOP(ctx, entry_top);
 }
@@ -1621,8 +1604,6 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
  */
 DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_hstring *h_stepback;
-	duk_hstring *h_indent;
 	duk_idx_t entry_top;
 	duk_idx_t idx_arr;
 	duk_bool_t undef;
@@ -1631,7 +1612,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 	DUK_DDD(DUK_DDDPRINT("duk__enc_array: array=%!T",
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk__enc_objarr_entry(js_ctx, &h_stepback, &h_indent, &entry_top);
+	duk__enc_objarr_entry(js_ctx, &entry_top);
 
 	idx_arr = entry_top - 1;
 
@@ -1641,16 +1622,16 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 
 	arr_len = (duk_uarridx_t) duk_get_length(ctx, idx_arr);
 	for (i = 0; i < arr_len; i++) {
-		DUK_DDD(DUK_DDDPRINT("array entry loop: array=%!T, h_indent=%!O, h_stepback=%!O, index=%ld, arr_len=%ld",
-		                     (duk_tval *) duk_get_tval(ctx, idx_arr), (duk_heaphdr *) h_indent,
-		                     (duk_heaphdr *) h_stepback, (long) i, (long) arr_len));
+		DUK_DDD(DUK_DDDPRINT("array entry loop: array=%!T, index=%ld, arr_len=%ld",
+		                     (duk_tval *) duk_get_tval(ctx, idx_arr),
+		                     (long) i, (long) arr_len));
 
 		if (i > 0) {
 			DUK__EMIT_1(js_ctx, DUK_ASC_COMMA);
 		}
-		if (h_indent != NULL) {
-			DUK__EMIT_1(js_ctx, 0x0a);
-			DUK__EMIT_HSTR(js_ctx, h_indent);
+		if (js_ctx->h_gap != NULL) {
+			DUK_ASSERT(js_ctx->recursion_depth >= 1);
+			duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth);
 		}
 
 		/* XXX: duk_push_uint_string() */
@@ -1667,15 +1648,14 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 	}
 
 	if (arr_len > 0) {
-		if (h_stepback != NULL) {
-			DUK_ASSERT(h_indent != NULL);
-			DUK__EMIT_1(js_ctx, 0x0a);
-			DUK__EMIT_HSTR(js_ctx, h_stepback);
+		if (js_ctx->h_gap != NULL) {
+			DUK_ASSERT(js_ctx->recursion_depth >= 1);
+			duk__enc_emit_newline_indent(js_ctx, js_ctx->recursion_depth - 1);
 		}
 	}
 	DUK__EMIT_1(js_ctx, DUK_ASC_RBRACKET);
 
-	duk__enc_objarr_exit(js_ctx, &h_stepback, &h_indent, &entry_top);
+	duk__enc_objarr_exit(js_ctx, &entry_top);
 
 	DUK_ASSERT_TOP(ctx, entry_top);
 }
@@ -2554,7 +2534,6 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
 	js_ctx->h_replacer = NULL;
 	js_ctx->h_gap = NULL;
-	js_ctx->h_indent = NULL;
 #endif
 	js_ctx->idx_proplist = -1;
 
@@ -2716,14 +2695,8 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		/* if gap is empty, behave as if not given at all */
 		if (DUK_HSTRING_GET_CHARLEN(js_ctx->h_gap) == 0) {
 			js_ctx->h_gap = NULL;
-		} else {
-			/* set 'indent' only if it will actually increase */
-			js_ctx->h_indent = DUK_HTHREAD_STRING_EMPTY_STRING(thr);
 		}
 	}
-
-	DUK_ASSERT((js_ctx->h_gap == NULL && js_ctx->h_indent == NULL) ||
-	           (js_ctx->h_gap != NULL && js_ctx->h_indent != NULL));
 
 	/* [ ... buf loop (proplist) (gap) ] */
 
@@ -2740,8 +2713,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	if (flags == 0 &&
 	    js_ctx->h_replacer == NULL &&
 	    js_ctx->idx_proplist == -1 &&
-	    js_ctx->h_gap == NULL &&
-	    js_ctx->h_indent == NULL) {
+	    js_ctx->h_gap == NULL) {
 		duk_int_t pcall_rc;
 #ifdef DUK_USE_MARK_AND_SWEEP
 		duk_small_uint_t prev_mark_and_sweep_base_flags;
@@ -2806,13 +2778,12 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 
 	DUK_DDD(DUK_DDDPRINT("before: flags=0x%08lx, loop=%!T, replacer=%!O, "
-	                     "proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
+	                     "proplist=%!T, gap=%!O, holder=%!T",
 	                     (unsigned long) js_ctx->flags,
 	                     (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop),
 	                     (duk_heaphdr *) js_ctx->h_replacer,
 	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL),
 	                     (duk_heaphdr *) js_ctx->h_gap,
-	                     (duk_heaphdr *) js_ctx->h_indent,
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 	/* serialize the wrapper with empty string key */
@@ -2826,13 +2797,12 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	undef = duk__enc_value1(js_ctx, idx_holder);  /* [ ... holder key ] -> [ ... holder key val ] */
 
 	DUK_DDD(DUK_DDDPRINT("after: flags=0x%08lx, loop=%!T, replacer=%!O, "
-	                     "proplist=%!T, gap=%!O, indent=%!O, holder=%!T",
+	                     "proplist=%!T, gap=%!O, holder=%!T",
 	                     (unsigned long) js_ctx->flags,
 	                     (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop),
 	                     (duk_heaphdr *) js_ctx->h_replacer,
 	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL),
 	                     (duk_heaphdr *) js_ctx->h_gap,
-	                     (duk_heaphdr *) js_ctx->h_indent,
 	                     (duk_tval *) duk_get_tval(ctx, -3)));
 
 	if (undef) {
