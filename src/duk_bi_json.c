@@ -1618,29 +1618,42 @@ DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth
 DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
+	duk_uint_fast32_t i, n;
 
 	*entry_top = duk_get_top(ctx);
 
 	duk_require_stack(ctx, DUK_JSON_ENC_REQSTACK);
 
-	/* loop check */
+	/* Loop check using a hybrid approach: a fixed-size visited[] array
+	 * with overflow in a loop check object.
+	 */
 
 	h_target = duk_get_hobject(ctx, -1);  /* object or array */
 	DUK_ASSERT(h_target != NULL);
 
-	/* XXX: this check is very expensive, perhaps use a small
-	 * array to make it faster for at least reasonably shallow
-	 * objects?
-	 */
-	duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
-	duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
-	if (duk_has_prop(ctx, js_ctx->idx_loop)) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
+	n = js_ctx->recursion_depth;
+	if (DUK_UNLIKELY(n > DUK_JSON_ENC_LOOPARRAY)) {
+		n = DUK_JSON_ENC_LOOPARRAY;
 	}
-	duk_push_true(ctx);  /* -> [ ... voidp true ] */
-	duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+	for (i = 0; i < n; i++) {
+		if (DUK_UNLIKELY(js_ctx->visiting[i] == h_target)) {
+			DUK_DD(DUK_DDPRINT("slow path loop detect"));
+			DUK_ERROR(js_ctx->thr, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
+		}
+	}
+	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
+		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
+	} else {
+		duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
+		if (duk_has_prop(ctx, js_ctx->idx_loop)) {
+			DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, DUK_STR_CYCLIC_INPUT);
+		}
+		duk_push_true(ctx);  /* -> [ ... voidp true ] */
+		duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+	}
 
-	/* c recursion check */
+	/* C recursion check. */
 
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
@@ -1658,22 +1671,25 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hobject *h_target;
 
-	/* c recursion check */
+	/* C recursion check. */
 
 	DUK_ASSERT(js_ctx->recursion_depth > 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	js_ctx->recursion_depth--;
 
-	/* loop check */
+	/* Loop check. */
 
 	h_target = duk_get_hobject(ctx, *entry_top - 1);  /* original target at entry_top - 1 */
 	DUK_ASSERT(h_target != NULL);
 
-	/* XXX: this check is very expensive */
-	duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
-	duk_del_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
+		/* Previous entry was inside visited[], nothing to do. */
+	} else {
+		duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_del_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+	}
 
-	/* restore stack top after unbalanced code paths */
+	/* Restore stack top after unbalanced code paths. */
 	duk_set_top(ctx, *entry_top);
 
 	DUK_DDD(DUK_DDDPRINT("shared entry finished: top=%ld, loop=%!T",
