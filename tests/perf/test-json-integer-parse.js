@@ -16,7 +16,7 @@ function test() {
     print(jsondata.length);
     //print(jsondata);
 
-    for (i = 0; i < 100; i++) {
+    for (i = 0; i < 1000; i++) {
         void JSON.parse(jsondata);
     }
 }

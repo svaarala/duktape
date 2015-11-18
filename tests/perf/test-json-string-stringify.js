@@ -14,7 +14,7 @@ function test() {
 
     print(txt.length);
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < 5000; i++) {
         void JSON.stringify(txt);
     }
 }

@@ -4,13 +4,14 @@ function build() {
     var obj = {};
 
     // "fast" leaf values only, this test is just for indentation handling
-    obj.key1 = 'foo';
-    obj.key2 = 'bar';
-    obj.key3 = 'quux';
-    obj.key4 = 'baz';
-    obj.key5 = 'quuux';
-    obj.key6 = [ 'foo', 'bar', 'quux', 'baz', 'quuux' ];
-    obj.key7 = [ undefined, null, true, 123, {}, {}, {} ];
+    obj.key1 = void 0;
+    obj.key2 = 1/0;
+    obj.key3 = -1/0;
+    obj.key4 = 0/0;
+    obj.key5 = Duktape.dec('hex', 'deadbeef12345678');
+    obj.key6 = Duktape.Pointer('dummy');
+    obj.key7 = [ 'foo', 'bar', 'quux', 'baz', 'quuux' ];
+    obj.key8 = [ undefined, null, true, 123, {}, {}, {} ];
 
     return {
         foo: [
@@ -33,8 +34,8 @@ function test() {
     var ignore;
 
     obj = build();
-    for (i = 0; i < 1e6; i++) {
-        ignore = JSON.stringify(obj, null, 4);
+    for (i = 0; i < 5e5; i++) {
+        ignore = Duktape.enc('jc', obj);
     }
     //print(ignore);
 }
