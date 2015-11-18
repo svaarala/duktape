@@ -1882,9 +1882,9 @@ DUK_LOCAL
 void duk__emit_u16_direct_ranges(duk_lexer_ctx *lex_ctx,
                                  duk_re_range_callback gen_range,
                                  void *userdata,
-                                 duk_uint16_t *ranges,
+                                 const duk_uint16_t *ranges,
                                  duk_small_int_t num) {
-	duk_uint16_t *ranges_end;
+	const duk_uint16_t *ranges_end;
 
 	DUK_UNREF(lex_ctx);
 
