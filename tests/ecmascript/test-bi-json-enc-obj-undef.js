@@ -19,7 +19,7 @@ function objectUndefinedTest() {
 
     // all values become undefined after the replacer
     obj = { foo: 1, bar: 2, quux: 3, baz: 4 };
-    print(JSON.stringify(obj, function repl(k,v) { if (k !== '') { return; } else { return v;} }));
+    print(JSON.stringify(obj, function repl(k,v) { if (k !== '') { return; } else { return v; } }));
 
 }
 
