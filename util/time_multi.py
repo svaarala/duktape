@@ -15,6 +15,7 @@ def main():
 	parser.add_option('--mode', dest='mode', default='min')
 	parser.add_option('--sleep', type='float', dest='sleep', default=0.0)
 	parser.add_option('--sleep-factor', type='float', dest='sleep_factor', default=0.0)
+	parser.add_option('--rerun-limit', type='int', dest='rerun_limit', default=30)
 	parser.add_option('--verbose', action='store_true', dest='verbose', default=False)
 	(opts, args) = parser.parse_args()
 
@@ -71,11 +72,16 @@ def main():
 		# Sleep time dependent on test time is useful for thermal throttling.
 		time.sleep(opts.sleep_factor * time_this)
 
+		# If run takes too long, there's no point in trying to get an accurate
+		# estimate.
+		if time_this >= opts.rerun_limit:
+			break
+
 	if opts.verbose:
 		sys.stderr.write('\n')
 		sys.stderr.flush()
 
-	time_avg = time_sum / float(opts.count)
+	time_avg = time_sum / float(len(time_list))
 
 	# /usr/bin/time has only two digits of resolution
 	if opts.mode == 'min':
@@ -86,7 +92,7 @@ def main():
 		print('%.02f' % time_avg)
 	elif opts.mode == 'all':
 		print('min=%.02f, max=%.02f, avg=%0.2f, count=%d: %r' % \
-		      (time_min, time_max, time_avg, opts.count, time_list))
+		      (time_min, time_max, time_avg, len(time_list), time_list))
 	else:
 		print('invalid mode: %r' % opts.mode)
 

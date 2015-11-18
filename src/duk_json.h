@@ -17,10 +17,8 @@
 /* How much stack to require on entry to object/array decode */
 #define DUK_JSON_DEC_REQSTACK                 32
 
-/* How large a loop detection stack to use for fast path */
-#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
+/* How large a loop detection stack to use */
 #define DUK_JSON_ENC_LOOPARRAY                64
-#endif
 
 /* Encoding state.  Heap object references are all borrowed. */
 typedef struct {
@@ -48,9 +46,7 @@ typedef struct {
 	duk_small_uint_t stridx_custom_posinf;
 	duk_small_uint_t stridx_custom_function;
 #endif
-#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
 	duk_hobject *visiting[DUK_JSON_ENC_LOOPARRAY];  /* indexed by recursion_depth */
-#endif
 } duk_json_enc_ctx;
 
 typedef struct {

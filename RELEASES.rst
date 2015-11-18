@@ -1224,8 +1224,8 @@ Planned
 * Internal performance improvement: optimize internal refcount handling
   macros (GH-394)
 
-* Internal performance improvement: improve JSON.stringify() default slow
-  path indent handling (GH-444)
+* Internal performance improvement: improve JSON.stringify() slow path
+  indentation and loop detection performance (GH-444, GH-446)
 
 * Internal performance improvement: improve JSON.stringify() fast path
   by allowing indent value or gap string and by supporting JX/JC in the
