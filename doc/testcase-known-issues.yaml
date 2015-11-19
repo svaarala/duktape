@@ -87,6 +87,9 @@
 -
   test: "test-bug-dataview-buffer-prop.js"
   knownissue: "DataView .buffer property misleading when DataView argument is not an ArrayBuffer (custom behavior)"
+-
+  test: "test-bi-json-enc-proxy.js"
+  knownissue: "JSON enumeration behavior for Proxy targets is incomplete and uses 'enumerate' trap instead of 'ownKeys' trap"
 
 # Ecmascript testcases that need special options or environment to work
 

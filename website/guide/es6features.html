@@ -19,7 +19,7 @@ the following non-standard semantics:</p>
     not writable.</li>
 <li>Const variables are function scoped and "hoisted" to the top of the
     function like <code>var</code> declarations.  In ES6 <code>const</code>
-    has block scoping like <code>let</code>.
+    has block scoping like <code>let</code>.</li>
 </ul>
 
 <h2 id="es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</h2>
@@ -60,7 +60,7 @@ ES6.  The following traps are implemented:</p>
 <tr><td class="propname">set</td><td>yes</td><td></td></tr>
 <tr><td class="propname">deleteProperty</td><td>yes</td><td></td></tr>
 <tr><td class="propname">enumerate</td><td>yes</td><td></td></tr>
-<tr><td class="propname">ownKeys</td><td>yes</td><td><code>Object.keys()</code> enumerability check limitation</td></tr>
+<tr><td class="propname">ownKeys</td><td>yes</td><td><code>Object.keys()</code> enumerability check limitation, trap result validation (non-configurable properties, non-extensible target) not done</td></tr>
 <tr><td class="propname">apply</td><td>no</td><td></td></tr>
 <tr><td class="propname">construct</td><td>no</td><td></td></tr>
 </tbody>
@@ -75,6 +75,10 @@ ES6.  The following traps are implemented:</p>
     by the trap are enumerable.  <code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>
     thus currently return the same value for a proxy object implementing the <code>ownKeys</code>
     trap.</li>
+<li>Proxy trap results are not validated, e.g. <code>ownKeys</code> trap result validation
+    steps described in <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots-ownpropertykeys">[[OwnPropertyKeys]] ()</a>
+    for non-configurable target properties and/or non-extensible target object are not
+    yet implemented.</li>
 <li>Proxy revocation feature of ES6 is not supported.</li>
 <li>The target and handler objects given to <code>new Proxy()</code> cannot
     be proxy objects themselves.  ES6 poses no such limitation, but Duktape
