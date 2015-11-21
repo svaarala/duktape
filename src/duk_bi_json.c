@@ -1489,7 +1489,7 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 
 DUK_LOCAL void duk__enc_buffer(duk_json_enc_ctx *js_ctx, duk_hbuffer *h) {
 	duk__enc_buffer_data(js_ctx,
-	                     (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h),
+	                     (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(js_ctx->thr->heap, h),
 	                     (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
