@@ -261,6 +261,8 @@ for i in \
 	object-assign.js \
 	performance-now.js \
 	duktape-isfastint.js \
+	duktape-error-setter-writable.js \
+	duktape-error-setter-nonwritable.js \
 	; do
 	cp polyfills/$i $DIST/polyfills/
 done
