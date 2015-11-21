@@ -1185,6 +1185,10 @@ Planned
 * Add convenience API calls to detect specific error subtypes, e.g.
   duk_is_eval_error() (GH-340, GH-433)
 
+* Make Error instance .filename, .lineNumber, and .stack directly writable
+  to match V8 and Spidermonkey behavior; the previous behavior is provided
+  by polyfills/duktape-error-setter-nonwritable.js (GH-390)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
