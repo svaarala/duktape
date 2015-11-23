@@ -960,6 +960,27 @@ Released
 
 * Avoid including <windows.h> for application build (GH-312)
 
+1.2.5 (2015-11-23)
+------------------
+
+* Fix duk_is_primitive() return value for invalid index, was incorrectly 1
+  (GH-337)
+
+* Fix assignment expression handling of the right-hand-side value when that
+  value is a register-bound variable which is used and mutated in the rest
+  of the expression (GH-381)
+
+* Remove octal autodetection in parseInt(), also fixes incorrect octal
+  autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
+
+* Fix a bug in number conversion resolving a few (but not all) corner case
+  rounding issues (GH-264)
+
+* Fix a segfault (and assertion error) caused by compiler intermediate value
+  handling bug; the bug was triggered when a temporary register was required
+  by the compiler, but an existing "intermediate value" referred to a const
+  instead of a register value (GH-449)
+
 1.3.0 (2015-09-12)
 ------------------
 
