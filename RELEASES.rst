@@ -1188,6 +1188,11 @@ Planned
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
+* Fix a segfault (and assertion error) caused by compiler intermediate value
+  handling bug; the bug was triggered when a temporary register was required
+  by the compiler, but an existing "intermediate value" referred to a const
+  instead of a register value (GH-449)
+
 * Fix compile warnings for gcc/clang -Wcast-qual (GH-426)
 
 * Fix "debugger" statement line number off-by-one so that the debugger now
