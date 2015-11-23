@@ -6,11 +6,11 @@ string: (0)
 string:
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: not string'
+==> rc=1, result='TypeError: string required, found null (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: not string'
+==> rc=1, result='TypeError: string required, found none (stack index 0)'
 *** test_4 (duk_safe_call)
-==> rc=1, result='TypeError: not string'
+==> rc=1, result='TypeError: string required, found none (stack index -2147483648)'
 ===*/
 
 static void dump_string(const char *p) {

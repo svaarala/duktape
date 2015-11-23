@@ -18,15 +18,15 @@ resize (fixed) to 64
 *** test_3 (duk_safe_call)
 non-buffer
 resize (non-buffer) to 64
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found 'foo' (stack index -1)'
 *** test_4 (duk_safe_call)
 non-buffer
 resize (invalid index) to 64
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found none (stack index 3)'
 *** test_5 (duk_safe_call)
 non-buffer
 resize (DUK_INVALID_INDEX) to 64
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found none (stack index -2147483648)'
 ===*/
 
 static void dump_buffer(duk_context *ctx) {

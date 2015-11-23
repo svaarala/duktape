@@ -578,12 +578,11 @@ static duk_ret_t test_name_binding_funcdecl(duk_context *ctx) {
 /*===
 *** test_bound_rejected (duk_safe_call)
 dummythis x-arg y-arg
-==> rc=1, result='TypeError: not compiledfunction'
+==> rc=1, result='TypeError: compiledfunction required, found [object Function] (stack index -1)'
 ===*/
 
 /* Bound functions are rejected with TypeError. */
 static duk_ret_t test_bound_rejected(duk_context *ctx) {
-	/* XXX: TypeError message is not very good. */
 	/* XXX: Perhaps rework bound function support so that the final non-bound
 	 * function is serialized instead?
 	 */

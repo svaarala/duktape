@@ -10,13 +10,13 @@ buffer: ptr-is-NULL=-1, sz=0
 buffer
 ==> rc=0, result='undefined'
 *** test_invalid_type (duk_safe_call)
-==> rc=1, result='TypeError: not buffer'
+==> rc=1, result='TypeError: buffer required, found null (stack index 0)'
 *** test_invalid_index1 (duk_safe_call)
-==> rc=1, result='TypeError: not buffer'
+==> rc=1, result='TypeError: buffer required, found none (stack index 0)'
 *** test_invalid_index2 (duk_safe_call)
-==> rc=1, result='TypeError: not buffer'
+==> rc=1, result='TypeError: buffer required, found none (stack index -2147483648)'
 *** test_buffer_object (duk_safe_call)
-==> rc=1, result='TypeError: not buffer'
+==> rc=1, result='TypeError: buffer required, found [object ArrayBuffer] (stack index -1)'
 ===*/
 
 static duk_ret_t test_basic(duk_context *ctx) {

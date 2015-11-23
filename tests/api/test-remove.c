@@ -6,13 +6,13 @@
 *** test_2 (duk_safe_call)
 remove at 2 ok
 remove at -1 ok
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 1'
 *** test_3 (duk_safe_call)
 remove at 0 ok
 remove at -2 ok
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {

@@ -4,11 +4,11 @@ concat: foobarquux
 still here
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: thread required, found 123 (stack index -1)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: thread required, found none (stack index 123)'
 *** test_4 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: thread required, found none (stack index -2147483648)'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

@@ -17,9 +17,9 @@
 
 /*===
 *** test_invalid_index (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: object required, found none (stack index -1)'
 *** test_invalid_target (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: object required, found 123 (stack index -1)'
 *** test_basic (duk_safe_call)
 build replacement global object
 top before: 1

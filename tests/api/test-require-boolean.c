@@ -4,11 +4,11 @@ boolean: 1
 boolean: 0
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: not boolean'
+==> rc=1, result='TypeError: boolean required, found null (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: not boolean'
+==> rc=1, result='TypeError: boolean required, found none (stack index 0)'
 *** test_4 (duk_safe_call)
-==> rc=1, result='TypeError: not boolean'
+==> rc=1, result='TypeError: boolean required, found none (stack index -2147483648)'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

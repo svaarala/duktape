@@ -1,10 +1,10 @@
 /*===
 *** test_1 (duk_safe_call)
 top=0
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 536870912'
 *** test_2 (duk_safe_call)
 top=0
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 357913942'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

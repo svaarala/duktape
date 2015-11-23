@@ -21,7 +21,7 @@ i=17, n=19, charcode=0
 i=18, n=19, charcode=0
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 ===*/
 
 static int test_1(duk_context *ctx) {

@@ -23,7 +23,7 @@ final top: 2
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: not nativefunction'
+==> rc=1, result='TypeError: nativefunction required, found [object Function] (stack index -1)'
 *** test_4 (duk_safe_call)
 INFO: log line<LF>
 WARN: log line<LF>
