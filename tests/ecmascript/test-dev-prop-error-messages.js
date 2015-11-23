@@ -36,7 +36,7 @@ TypeError: cannot delete property 'foo' of null
 "TypeError: cannot write property [object Array] of null"
 "TypeError: cannot write property [object Object] of null"
 "TypeError: cannot write property [object Function] of null"
-"TypeError: cannot write property PTR of null"
+"TypeError: cannot write property (PTR) of null"
 "TypeError: cannot write property [object Pointer] of null"
 "TypeError: cannot write property [buffer:5] of null"
 "TypeError: cannot write property [object Buffer] of null"
@@ -91,7 +91,7 @@ function test() {
             null[v] = 123;
         } catch (e) {
             tmp = Duktape.enc('jx', String(e));  // JX encode to get ASCII
-            tmp = tmp.replace(/\s0x[0-9a-fA-F]+\s/, ' PTR ');  // replace pointer for expect string
+            tmp = tmp.replace(/\(0x[0-9a-fA-F]+\)/, '(PTR)');  // replace pointer for expect string
             print(tmp);
         }
     });
