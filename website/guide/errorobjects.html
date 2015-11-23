@@ -26,10 +26,14 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <p>If Duktape is compiled with traceback support:</p>
 
 <ul>
-<li><code>stack</code>, <code>fileName</code>, and <code>lineNumber</code> are accessor
-    properties inherited from <code>Error.prototype</code>.</li>
+<li><code>stack</code>, <code>fileName</code>, and <code>lineNumber</code> are
+    accessor properties inherited from <code>Error.prototype</code>.  You can
+    override the properties by simply assigning over them: an inherited setter
+    will capture the write but will create an own property as if a normal
+    assignment was done.  This behavior was changed in Duktape 1.4.0 to better
+    match other engines.</li>
 <li>The raw traceback data needed by the accessor properties is stored in an internal
-    property (<code>\xFFtracedata</code>) which is not normally accessible from
+    property (<code>\xFFTracedata</code>) which is not normally accessible from
     Ecmascript code.</li>
 </ul>
 
@@ -37,9 +41,9 @@ of error objects is minimized to keep error objects as small as possible.</p>
 <ul>
 <li>The <code>stack</code> accessor will be equivalent to
     <code>Error.prototype.toString()</code>, so that printing the stacktrace
-    always produces a useful result.</li>
-<li><code>fileName</code> and <code>lineNumber</code> will be own properties of the
-    Error object.</li>
+    always produces a useful, human readable result.</li>
+<li><code>fileName</code> and <code>lineNumber</code> will be own properties
+    of the Error object.  You can override the properties using assignment.</li>
 </ul>
 
 <p>When error objects are created using the Duktape API from C code and the
@@ -66,7 +70,7 @@ Traceback data is automatically collected and added to an object:</p>
 </ul>
 
 <p>The data used to create the traceback is stored in an internal property
-(<code>\xFFtracedata</code>), in an internal and version-dependent format
+(<code>\xFFTracedata</code>), in an internal and version-dependent format
 described
 <a href="https://github.com/svaarala/duktape/blob/master/doc/error-objects.rst">error-objects.rst</a>.
 You shouldn't access the traceback data directly.</p>

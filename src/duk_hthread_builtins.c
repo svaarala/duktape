@@ -330,9 +330,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_c_function c_func_getter;
 				duk_c_function c_func_setter;
 
-				/* XXX: this is a bit awkward because there is no exposed helper
-				 * in the API style, only this internal helper.
-				 */
 				DUK_DDD(DUK_DDDPRINT("built-in accessor property: objidx=%ld, stridx=%ld, getteridx=%ld, setteridx=%ld, flags=0x%04lx",
 				                     (long) i, (long) stridx, (long) natidx_getter, (long) natidx_setter, (unsigned long) prop_flags));
 
@@ -341,7 +338,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
 				duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
 
-				/* XXX: magic for getter/setter? */
+				/* XXX: magic for getter/setter? use duk_def_prop()? */
 
 				prop_flags |= DUK_PROPDESC_FLAG_ACCESSOR;  /* accessor flag not encoded explicitly */
 				duk_hobject_define_accessor_internal(thr,

@@ -93,7 +93,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	return 1;
 }
 
-#ifdef DUK_USE_TRACEBACKS
+#if defined(DUK_USE_TRACEBACKS)
 
 /*
  *  Traceback handling
@@ -114,7 +114,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 #define DUK__OUTPUT_TYPE_FILENAME    0
 #define DUK__OUTPUT_TYPE_LINENUMBER  1
 
-DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int_t output_type) {
+DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t output_type) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t idx_td;
 	duk_small_int_t i;  /* traceback depth fits into 16 bits */
@@ -277,20 +277,20 @@ DUK_LOCAL duk_ret_t duk__traceback_getter_helper(duk_context *ctx, duk_small_int
 	}
 }
 
-/* XXX: output type could be encoded into native function 'magic' value to
- * save space.
+/* XXX: Output type could be encoded into native function 'magic' value to
+ * save space.  For setters the stridx could be encoded into 'magic'.
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_error_prototype_stack_getter(duk_context *ctx) {
-	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
+	return duk__error_getter_helper(ctx, DUK__OUTPUT_TYPE_TRACEBACK);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_error_prototype_filename_getter(duk_context *ctx) {
-	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
+	return duk__error_getter_helper(ctx, DUK__OUTPUT_TYPE_FILENAME);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx) {
-	return duk__traceback_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
+	return duk__error_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
 #undef DUK__OUTPUT_TYPE_TRACEBACK
@@ -330,11 +330,40 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx
 
 #endif  /* DUK_USE_TRACEBACKS */
 
-DUK_INTERNAL duk_ret_t duk_bi_error_prototype_nop_setter(duk_context *ctx) {
-	/* Attempt to write 'stack', 'fileName', 'lineNumber' is a silent no-op.
-	 * User can use Object.defineProperty() to override this behavior.
+DUK_LOCAL duk_ret_t duk__error_setter_helper(duk_context *ctx, duk_small_uint_t stridx_key) {
+	/* Attempt to write 'stack', 'fileName', 'lineNumber' works as if
+	 * user code called Object.defineProperty() to create an overriding
+	 * own property.  This allows user code to overwrite .fileName etc
+	 * intuitively as e.g. "err.fileName = 'dummy'" as one might expect.
+	 * See https://github.com/svaarala/duktape/issues/387.
 	 */
-	DUK_ASSERT_TOP(ctx, 1);  /* fixed arg count */
-	DUK_UNREF(ctx);
+
+	DUK_ASSERT_TOP(ctx, 1);  /* fixed arg count: value */
+
+	duk_push_this(ctx);
+	duk_push_hstring_stridx(ctx, (duk_small_int_t) stridx_key);
+	duk_dup(ctx, 0);
+
+	/* [ ... obj key value ] */
+
+	DUK_DD(DUK_DDPRINT("error setter: %!T %!T %!T",
+	                   duk_get_tval(ctx, -3), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1)));
+
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE |
+	                      DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE |
+	                      DUK_DEFPROP_HAVE_ENUMERABLE | /*not enumerable*/
+	                      DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE);
 	return 0;
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_error_prototype_stack_setter(duk_context *ctx) {
+	return duk__error_setter_helper(ctx, DUK_STRIDX_STACK);
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_error_prototype_filename_setter(duk_context *ctx) {
+	return duk__error_setter_helper(ctx, DUK_STRIDX_FILE_NAME);
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_error_prototype_linenumber_setter(duk_context *ctx) {
+	return duk__error_setter_helper(ctx, DUK_STRIDX_LINE_NUMBER);
 }
