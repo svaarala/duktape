@@ -10,7 +10,7 @@ DUK_LOCAL void duk__get_this_regexp(duk_context *ctx) {
 	duk_hobject *h;
 
 	duk_push_this(ctx);
-	h = duk_require_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_REGEXP, "regexp", DUK_STR_NOT_REGEXP);
+	h = duk_require_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_ASSERT(h != NULL);
 	DUK_UNREF(h);
 	duk_insert(ctx, 0);  /* prepend regexp to valstack 0 index */

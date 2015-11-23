@@ -685,7 +685,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	 */
 
 	/* TypeError if wrong; class check, see E5 Section 15.10.6 */
-	h_regexp = duk_require_hobject_with_class(ctx, -2, DUK_HOBJECT_CLASS_REGEXP, "regexp", DUK_STR_NOT_REGEXP);
+	h_regexp = duk_require_hobject_with_class(ctx, -2, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_ASSERT(h_regexp != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_regexp) == DUK_HOBJECT_CLASS_REGEXP);
 	DUK_UNREF(h_regexp);
