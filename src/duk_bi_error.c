@@ -179,11 +179,16 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				/* [ ... v1 v2 name filename ] */
 
-				if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
-					return 1;
-				} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
-					duk_push_int(ctx, line);
-					return 1;
+				/* When looking for .fileName/.lineNumber, blame first
+				 * function which has a .fileName.
+				 */
+				if (duk_is_string(ctx, -1)) {
+					if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
+						return 1;
+					} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
+						duk_push_int(ctx, line);
+						return 1;
+					}
 				}
 
 				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
@@ -233,6 +238,9 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				/* [ ... v1(filename) v2(line+flags) ] */
 
+				/* When looking for .fileName/.lineNumber, blame compilation
+				 * or C call site unless flagged not to do so.
+				 */
 				if (!(flags & DUK_TB_FLAG_NOBLAME_FILELINE)) {
 					if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
 						duk_pop(ctx);
