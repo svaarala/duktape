@@ -1194,6 +1194,11 @@ Planned
 * Improve error message verbosity for API index check calls, duk_require_xxx()
   calls, and Array iterator calls (GH-441)
 
+* Improve error object .fileName and .lineNumber attribution: if a callstack
+  function is missing a .fileName property, scan the callstack until a
+  function with a .fileName is found which improves error reporting for e.g.
+  "[1,2,3].forEach(null)" (GH-455)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
@@ -1215,6 +1220,11 @@ Planned
 
 * Fix Unix local time offset handling which caused issues at least on RISC
   OS (GH-406, GH-407)
+
+* Fix a bug in stack trace ellipsis ("[...]") handling: previously the
+  ellipsis might be emitted up to 2 callstack levels too early because
+  the presence of a compilation error and/or a C call site was not taken
+  into account in stack trace creation (GH-455)
 
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
