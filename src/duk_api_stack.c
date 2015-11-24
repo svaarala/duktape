@@ -28,7 +28,55 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
 #endif
 
 /*
- *  Helpers
+ *  Error throwing helpers
+ *
+ *  Goal is to provide verbose errors with small call sites.
+ */
+
+#if defined(DUK_USE_VERBOSE_ERRORS)
+#if defined(DUK_USE_PARANOID_ERRORS)
+DUK_LOCAL duk__require_error_helper(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index, const char *expect_name) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
+	              expect_name, duk_get_type_name((duk_context *) thr, index), (long) index);
+}
+#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (index), (expectname)); \
+	} while (0)
+#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (index), (expectname)); \
+	} while (0)
+#else
+DUK_LOCAL duk__require_error_helper(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index, const char *expect_name) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
+	              expect_name, duk_push_string_readable((duk_context *) thr, index), (long) index);
+}
+#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (index), (expectname)); \
+	} while (0)
+#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (index), (expectname)); \
+	} while (0)
+#endif
+#define DUK__INDEX_ERROR(thr,index) do { \
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (index)); \
+	} while (0)
+#else
+DUK_LOCAL duk__require_error_helper(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *error_msg) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, error_msg);
+}
+#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (lowmemstr)); \
+	} while (0)
+#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
+		duk__require_error_helper(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (lowmemstr)); \
+	} while (0)
+#define DUK__INDEX_ERROR(thr,index) do { \
+		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX); \
+	} while (0)
+#endif
+
+/*
+ *  Misc helpers
  */
 
 /* Check that there's room to push one value. */
@@ -42,49 +90,6 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
 		if (DUK_UNLIKELY(thr->valstack_top >= thr->valstack_end)) { \
 			DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK); \
 		} \
-	} while (0)
-#endif
-
-#if defined(DUK_USE_VERBOSE_ERRORS)
-#if defined(DUK_USE_PARANOID_ERRORS)
-#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
-		duk_hthread *duk__thr; duk_idx_t duk__index; \
-		duk__thr = (thr); duk__index = (index); \
-		DUK_ERROR(duk__thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)", \
-			(expectname), duk_get_type_name((duk_context *) duk__thr, duk__index), (long) duk__index); \
-	} while (0)
-#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
-		duk_hthread *duk__thr; duk_idx_t duk__index; \
-		duk__thr = (thr); duk__index = (index); \
-		DUK_ERROR(duk__thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)", \
-			(expectname), duk_get_type_name((duk_context *) duk__thr, duk__index), (long) duk__index); \
-	} while (0)
-#else
-#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
-		duk_hthread *duk__thr; duk_idx_t duk__index; duk_tval *duk__tvptr; \
-		duk__thr = (thr); duk__index = (index); duk__tvptr = (tvptr); \
-		DUK_ERROR(duk__thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)", \
-			(expectname), duk_push_string_tval_readable((duk_context *) duk__thr, duk__tvptr), (long) duk__index); \
-	} while (0)
-#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
-		duk_hthread *duk__thr; duk_idx_t duk__index; \
-		duk__thr = (thr); duk__index = (index); \
-		DUK_ERROR(duk__thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)", \
-			(expectname), duk_push_string_readable((duk_context *) duk__thr, duk__index), (long) duk__index); \
-	} while (0)
-#endif
-#define DUK__INDEX_ERROR(thr,index) do { \
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (index)); \
-	} while (0)
-#else
-#define DUK__REQUIRE_ERROR_TVAL(thr,index,tvptr,expectname,lowmemstr) do { \
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, (lowmemstr)); \
-	} while (0)
-#define DUK__REQUIRE_ERROR_INDEX(thr,index,expectname,lowmemstr) do { \
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, (lowmemstr)); \
-	} while (0)
-#define DUK__INDEX_ERROR(thr,index) do { \
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX); \
 	} while (0)
 #endif
 
