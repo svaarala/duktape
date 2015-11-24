@@ -88,12 +88,21 @@ DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t lin
 DUK_INTERNAL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index) {
 	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (index));
 }
+DUK_INTERNAL void duk_err_api(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *message) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_API_ERROR, message);
+}
 #else
-DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *error_msg) {
-	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, error_msg);
+DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *message) {
+	DUK_UNREF(filename); DUK_UNREF(linenumber); DUK_UNREF(message);
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, message);
 }
 DUK_INTERNAL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr) {
+	DUK_UNREF(filename); DUK_UNREF(linenumber);
 	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
+}
+DUK_INTERNAL void duk_err_api(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *message) {
+	DUK_UNREF(filename); DUK_UNREF(linenumber); DUK_UNREF(message);
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_API_ERROR, message);
 }
 #endif
 

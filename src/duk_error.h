@@ -238,6 +238,9 @@
 #define DUK_ERROR_API_INDEX(thr,index) do { \
 		duk_err_api_index(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (index)); \
 	} while (0)
+#define DUK_ERROR_API(thr,msg) do { \
+		duk_err_api(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (msg)); \
+	} while (0)
 #else
 /* Non-verbose errors for low memory targets. */
 
@@ -245,7 +248,10 @@
 		duk_err_require_type_index(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (lowmemstr)); \
 	} while (0)
 #define DUK_ERROR_API_INDEX(thr,index) do { \
-		duk_err_api_index(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+		duk_err_api_index(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr)); \
+	} while (0)
+#define DUK_ERROR_API(thr,msg) do { \
+		duk_err_api(DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (thr), (msg)); \
 	} while (0)
 #endif
 
@@ -295,9 +301,11 @@ DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(const char *filen
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index, const char *expect_name));
 #endif
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *message));
 #else
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *error_msg));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *message));
 #endif
 
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_longjmp(duk_hthread *thr));

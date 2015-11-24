@@ -937,7 +937,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		 *  call the fatal error handler.
 		 */
 
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/*
@@ -1402,7 +1402,7 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 		duk_error_throw_from_negative_rc(thr, rc);
 		DUK_UNREACHABLE();
 	} else if (rc > 1) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "c function returned invalid rc");
+		DUK_ERROR_API(thr, "c function returned invalid rc");
 	}
 	DUK_ASSERT(rc == 0 || rc == 1);
 
@@ -1797,7 +1797,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		 *  call the fatal error handler.
 		 */
 
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/* setjmp catchpoint setup */
@@ -1949,7 +1949,7 @@ duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(rc >= 0);
 
 	if (duk_get_top(ctx) < rc) {
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, "not enough stack values for safe_call rc");
+		DUK_ERROR_API(thr, "not enough stack values for safe_call rc");
 	}
 
 	duk__safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, rc);
@@ -2132,7 +2132,7 @@ duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (idx_func < 0 || idx_args < 0) {
 		/* XXX: assert? compiler is responsible for this never happening */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/*
