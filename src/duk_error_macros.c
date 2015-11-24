@@ -6,9 +6,9 @@
 
 #define DUK__ERRFMT_BUFSIZE  256  /* size for formatting buffers */
 
-#ifdef DUK_USE_VERBOSE_ERRORS
+#if defined(DUK_USE_VERBOSE_ERRORS)
 
-#ifdef DUK_USE_VARIADIC_MACROS
+#if defined(DUK_USE_VARIADIC_MACROS)
 DUK_INTERNAL void duk_err_handle_error(const char *filename, duk_int_t line, duk_hthread *thr, duk_errcode_t code, const char *fmt, ...) {
 	va_list ap;
 	char msg[DUK__ERRFMT_BUFSIZE];
@@ -48,7 +48,7 @@ DUK_INTERNAL void duk_err_handle_error_stash(duk_hthread *thr, duk_errcode_t cod
 
 #else  /* DUK_USE_VERBOSE_ERRORS */
 
-#ifdef DUK_USE_VARIADIC_MACROS
+#if defined(DUK_USE_VARIADIC_MACROS)
 DUK_INTERNAL void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
 	duk_err_create_and_throw(thr, code);
 }
@@ -70,12 +70,40 @@ DUK_INTERNAL void duk_err_handle_error_nonverbose2(const char *filename, duk_int
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 /*
+ *  Error throwing helpers
+ */
+
+#if defined(DUK_USE_VERBOSE_ERRORS)
+#if defined(DUK_USE_PARANOID_ERRORS)
+DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index, const char *expect_name) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
+	              expect_name, duk_get_type_name((duk_context *) thr, index), (long) index);
+}
+#else
+DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index, const char *expect_name) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
+	              expect_name, duk_push_string_readable((duk_context *) thr, index), (long) index);
+}
+#endif
+DUK_INTERNAL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, duk_idx_t index) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (index));
+}
+#else
+DUK_INTERNAL void duk_err_require_type_index(const char *filename, duk_int_t linenumber, duk_hthread *thr, const char *error_msg) {
+	DUK_ERROR_RAW(filename, linenumber, thr, DUK_ERR_TYPE_ERROR, error_msg);
+}
+DUK_INTERNAL void duk_err_api_index(const char *filename, duk_int_t linenumber, duk_hthread *thr) {
+	DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_INDEX);
+}
+#endif
+
+/*
  *  Default fatal error handler
  */
 
 DUK_INTERNAL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
 	DUK_UNREF(ctx);
-#ifdef DUK_USE_FILE_IO
+#if defined(DUK_USE_FILE_IO)
 	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, (const char *) (msg ? msg : "null"));
 	DUK_FFLUSH(DUK_STDERR);
 #else
@@ -92,7 +120,7 @@ DUK_INTERNAL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code
 
 #if !defined(DUK_USE_PANIC_HANDLER)
 DUK_INTERNAL void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
-#ifdef DUK_USE_FILE_IO
+#if defined(DUK_USE_FILE_IO)
 	DUK_FPRINTF(DUK_STDERR, "PANIC %ld: %s ("
 #if defined(DUK_USE_PANIC_ABORT)
 	            "calling abort"
