@@ -2,17 +2,19 @@
 Error objects
 =============
 
-Ecmascript allows throwing of arbitrary values, although most user code
-throws objects inheriting from the ``Error`` constructor.  Ecmascript
-``Error`` instances are quite barebones: they only contain a ``name``
-and a ``message``.  Most Ecmascript implementations provide additional
-error properties like file name, line number, and traceback.
+Standard Ecmascript ``Error`` instances are quite barebones: they only contain
+a ``name`` and a ``message``.  Most Ecmascript implementations, including
+Duktape, provide additional error properties like file name, line number, and
+traceback.  Ecmascript allows throwing of arbitrary values, although most user
+code throws objects inheriting from the ``Error`` constructor.
 
 This document describes how Duktape creates and throws ``Error`` objects,
 what properties such objects have, and what error message verbosity levels
 are available.  The internal traceback data format and the mechanism for
-providing human readable tracebacks is also covered.  Also see the user
-documentation which covers the exposed features in a more approachable way.
+providing human readable tracebacks is also covered.
+
+Also see the user documentation which covers the exposed features in a more
+approachable way.
 
 Error message verbosity levels
 ==============================
@@ -28,7 +30,7 @@ defines:
 |                        |                         | default behavior.                                               |
 +------------------------+-------------------------+-----------------------------------------------------------------+
 | set                    | set                     | Verbose messages with offending keys/values not included, e.g.  |
-|                        |                         | ``number required, found string (index -3)``.  Useful for       |
+|                        |                         | ``number required, found string (index -3)``.  Useful when      |
 |                        |                         | keys/values in error messages are considered a potential        |
 |                        |                         | security issue.                                                 |
 +------------------------+-------------------------+-----------------------------------------------------------------+
@@ -39,10 +41,11 @@ defines:
 
 Future work:
 
-* Low memory error messages where error objects have error messages but
-  the number of different messages is low.  For example, all errors from
-  ``duk_require_xxx()`` type mismatches could result in ``"unexpected type"``
-  and all stack index errors could result in ``"invalid argument"``.
+* It would be useful to have low memory error messages where error message
+  strings were present, but there would be a minimal number of different
+  message strings.  For example, all errors from ``duk_require_xxx()`` type
+  mismatches could result in ``"unexpected type"`` and all stack index
+  errors could result in ``"invalid argument"``.
 
 Error augmentation overview
 ===========================
@@ -56,11 +59,11 @@ creation too, see below for details).
 
 When an instance of ``Error`` is created:
 
-* Duktape first adds traceback or file/line information (depending on
-  activated features) to the error object.
+* Duktape first adds traceback or file/line information (depending on active
+  config options) to the error object.
 
 * Then, if ``Duktape.errCreate`` is set, it is called to augment the error
-  further (or replace it completely).  The callback is called an **error
+  further or replace it completely.  The callback is called an **error
   handler** inside the implementation.   The user can set an error handler
   if desired, by default it is not set.
 
@@ -71,8 +74,8 @@ only gets called with ``Error`` instances.
 When **any value** is thrown (or re-thrown):
 
 * If ``Duktape.errThrow`` is set, it is called to augment or replace the
-  value thrown.  The user can set an error handler, by default it is not
-  set.
+  value thrown.  The user can set an error handler if desired, by default
+  it is not set.
 
 Note that all values are given to ``Duktape.errThrow`` to process, not just
 ``Error`` instances, so the user error handler must be careful to handle all
@@ -104,12 +107,15 @@ Errors can be created in multiple ways:
 * From inside the Duktape implementation, usually with the ``DUK_ERROR()``
   macro, e.g.::
 
-    DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid argument");
+    DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid argument: %d", argvalue);
 
-  In this case the Duktape internal file and line is useful and must be
-  captured.  However, it is not "blamed" as the source of the error as far
-  as filename and line number of the error are concerned (after all, the
-  user doesn't usually care about the internal line numbers).
+  In these cases the ``__FILE__`` and ``__LINE__`` of the throw site are
+  included in the stack trace, but are not "blamed" as the source of the
+  error for the Error object's ``.fileName`` and ``.lineNumber``: the
+  file/line is Duktape internal and not the most useful for user code.
+
+  There are several helper macros for specific errors which work similarly
+  to the basic ``DUK_ERROR()`` macro.
 
 When errors are thrown using the Duktape API or from inside the Duktape
 implementation, the value thrown is always an instance of ``Error`` and
@@ -122,7 +128,7 @@ and error throwing from each other::
 
   var err = new Error('value too large');
   if (arg >= 100) {
-    throw err;
+      throw err;
   }
 
 In fact, the user may never intend to throw the error but may still want
@@ -161,11 +167,11 @@ field, it won't get overwritten by the augmentation process.  (User error
 handler has no such restrictions, and it may replace the error value entirely.)
 
 Although a particular object is never as such constructed twice, the current
-approach may lead to an error object being augmented twice during its creation.
-This can be achieved e.g. as follows::
+approach may lead to an error object being augmented twice during its creation
+in special cases.  This can be achieved e.g. as follows::
 
   function Constructor() {
-    return new Error('my error');
+      return new Error('my error');
   }
 
   var e = new Constructor();
@@ -270,6 +276,9 @@ first throw::
 Specifying error handlers
 =========================
 
+Current approach
+----------------
+
 The current create/throw error handlers are stored in ``Duktape.errCreate``
 and ``Duktape.errThrow``.  This has several advantages:
 
@@ -285,8 +294,11 @@ and ``Duktape.errThrow``.  This has several advantages:
   that the error handlers are automatically effective in resumed threads,
   for instance, which is probably a good default behavior.
 
-There are several approaches to the current approach, though.  One could store
-the error handler(s) in:
+Design alternatives
+-------------------
+
+There are several alternatives to the current approach, though.  One could
+store the error handler(s) in:
 
 * Internal data structures, e.g. ``thr->errcreate`` and ``thr->errthrow``.
   This would be stronger from a sandboxing point-of-view, but would require
@@ -305,7 +317,8 @@ the error handler(s) in:
   handler(s) to a resumed thread (as that seems like a good default behavior).
 
 * Global stash.  Good for sandboxing, but would only be accessible from C code
-  by default.
+  by default.  This seems like one of the best alternatives for the current
+  behavior.
 
 * Thread stash.  Good for sandboxing, error handler "inherit" issue.
 
@@ -313,43 +326,44 @@ Error object properties
 =======================
 
 The following table summarizes properties of ``Error`` objects constructed
-within the control of the implementation:
+within the control of the implementation, with default Duktape config options
+(in particular, tracebacks enabled):
 
-+-----------------+----------+--------------------------------------------+
-| Property        | Standard | Description                                |
-+=================+==========+============================================+
-| name            | yes      | e.g. ``TypeError`` for a TypeError         |
-|                 |          | (usually inherited)                        |
-+-----------------+----------+--------------------------------------------+
-| message         | yes      | message given when constructing (or empty) |
-|                 |          | (own property)                             |
-+-----------------+----------+--------------------------------------------+
-| fileName        | no       | name of the file where constructed         |
-|                 |          | (inherited accessor)                       |
-+-----------------+----------+--------------------------------------------+
-| lineNumber      | no       | line of the file where constructed         |
-|                 |          | (inherited accessor)                       |
-+-----------------+----------+--------------------------------------------+
-| stack           | no       | printable stack traceback string           |
-|                 |          | (inherited accessor)                       |
-+-----------------+----------+--------------------------------------------+
-| _Tracedata      | no       | stack traceback data, internal raw format  |
-|                 |          | (own, internal property)                   |
-+-----------------+----------+--------------------------------------------+
++-----------------+----------+-----------+--------------------------------------------+
+| Property        | Standard | Inherited | Description                                |
++=================+==========+===========+============================================+
+| name            | yes      | yes       | e.g. ``TypeError`` for a TypeError         |
+|                 |          |           | (usually inherited)                        |
++-----------------+----------+-----------+--------------------------------------------+
+| message         | yes      | no        | message given when constructing (or empty) |
+|                 |          |           | (own property)                             |
++-----------------+----------+-----------+--------------------------------------------+
+| fileName        | no       | yes       | name of the file where constructed         |
+|                 |          |           | (inherited accessor)                       |
++-----------------+----------+-----------+--------------------------------------------+
+| lineNumber      | no       | yes       | line of the file where constructed         |
+|                 |          |           | (inherited accessor)                       |
++-----------------+----------+-----------+--------------------------------------------+
+| stack           | no       | yes       | printable stack traceback string           |
+|                 |          |           | (inherited accessor)                       |
++-----------------+----------+-----------+--------------------------------------------+
+| _Tracedata      | no       | no        | stack traceback data, internal raw format  |
+|                 |          |           | (own, internal property)                   |
++-----------------+----------+-----------+--------------------------------------------+
 
 The ``Error.prototype`` contains the following non-standard properties:
 
 +-----------------+----------+--------------------------------------------+
 | Property        | Standard | Description                                |
 +=================+==========+============================================+
-| stack           | no       | Accessor property for getting a printable  |
-|                 |          | traceback based on _Tracedata.             |
+| stack           | no       | accessor property for getting a printable  |
+|                 |          | traceback based on _Tracedata              |
 +-----------------+----------+--------------------------------------------+
-| fileName        | no       | Accessor property for getting a filename   |
-|                 |          | based on _Tracedata.                       |
+| fileName        | no       | accessor property for getting a filename   |
+|                 |          | based on _Tracedata                        |
 +-----------------+----------+--------------------------------------------+
-| lineNumber      | no       | Accessor property for getting a linenumber |
-|                 |          | based on _Tracedata.                       |
+| lineNumber      | no       | accessor property for getting a linenumber |
+|                 |          | based on _Tracedata                        |
 +-----------------+----------+--------------------------------------------+
 
 All of the accessors are in the prototype in case the object instance does
@@ -368,12 +382,21 @@ Notes:
 
 * The ``fileName`` and ``lineNumber`` property names are from Rhino.
 
+* In Duktape 1.3.0 and prior user code couldn't directly write ``.fileName``,
+  ``.lineNumber``, or ``.stack`` because the inherited setter would capture
+  and ignore such writes.  User code could use ``Object.defineProperty()`` or
+  ``duk_def_prop()`` to create overriding properties.  In Duktape 1.4.0 the
+  setter was changed to make writes work transparently: they're still captured
+  by the setter, but the setter automatically creates the own property.
+
 * The ``_Tracedata`` has an internal format which may change from version
   to version (even build to build).  It should never be serialized or
   used outside the life cycle of a Duktape heap.
 
 * In size-optimized builds traceback information may be omitted.  In such
-  cases ``fileName`` and ``lineNumber`` are concrete own properties.
+  cases ``fileName`` and ``lineNumber`` are concrete own properties, and
+  ``.stack`` is an inherited property which returns a ``ToString()``
+  coerced error string, e.g. ``TypeError: my error message``.
 
 * In size-optimized builds errors created by the Duktape implementation
   will not have a useful ``message`` field.  Instead, ``message`` is set
@@ -381,8 +404,241 @@ Notes:
   from user code will carry ``message`` normally.
 
 * The ``_Tracedata`` property contains function references to functions in
-  the current call stack.  Because such references are a potential sandboxing
+  the current callstack.  Because such references are a potential sandboxing
   concern, the tracedata is stored in an internal property.
+
+Choosing .fileName and .lineNumber to blame for an error
+========================================================
+
+Overview of the issue
+---------------------
+
+When an error is created/thrown, it's not always clear which file/line to
+"blame" as the source of the error: the ``.fileName`` and ``.lineNumber``
+properties of the Error object should be useful for the application programmer
+to pinpoint the most likely cause of the error.
+
+The relevant file/line pairs are:
+
+* **The __FILE__ and __LINE__ of the C call site**.  While these often refer
+  to a line in a Duktape/C function, it's possible for the Duktape/C function
+  to call into a helper in a different file which throws the error.  The C
+  call site may also be inside Duktape, e.g.  if user code calls
+  ``duk_require_xxx()`` which then throws using the internal ``DUK_ERROR()``
+  macro.  Finally, it's also possible to throw an error when no callstack
+  entries are present; the C call site information will still be available.
+
+* **The file/line of a source text being compiled**.  This is only relevant
+  for errors thrown during compilation (typically SyntaxErrors but may be
+  other errors too).
+
+* **Actual callstack entries (activations) leading up to the error**.  These
+  may be Duktape/C and Ecmascript functions.  The functions have a varying set
+  of properties: for example, Ecmascript functions have both a ``.name`` and a
+  ``.fileName`` property by default, while Duktape/C functions don't.  It's
+  possible to add and remove properties after function creation.
+
+The following SyntaxError illustrates all the relevant file/line sources::
+
+    duk> try { eval('\n\nfoo='); } catch (e) { print(e.stack); print(e.fileName, e.lineNumber); }
+    SyntaxError: parse error (line 3)
+            input:3                                        <-- file/line of source text (SyntaxError)
+            duk_js_compiler.c:3612                         <-- __FILE__ / __LINE__ of DUK_ERROR() call site
+            eval  native strict directeval preventsyield   <-- innermost activation, eval() function
+            global input:1 preventsyield                   <-- second innermost activation, caller of eval()
+    input 3   <-- .fileName and .lineNumber blames source text for SyntaxError
+
+From the application point of view the most relevant file/line is usually the
+closest "user function", as opposed to "infrastructure function", in the
+callstack.  The following are often not useful for blaming:
+
+* Any Duktape/C or Ecmascript functions which are considered infrastructure
+  functions, such as errors checkers, one-to-one system call wrappers, etc.
+
+* C call sites inside Duktape; these are essentially always infrastructure
+  functions.
+
+* Any Duktape/C or Ecmascript functions missing a ``.fileName`` property.
+  Such functions should be ignored even if they're user functions because
+  the resulting file/line information would be pointless.
+
+For this ideal outcome to be possible, Duktape needs to be able to determine
+whether or not a function should be ignored for blaming.  This is not yet
+possible; subsections below describe the current behavior.
+
+Note that while file/line information is important for good error reporting,
+all the relevant information is always available in the stack trace anyway.
+Incorrect file/line blaming is annoying but usually not a critical issue.
+
+Duktape 1.3 behavior
+--------------------
+
+The rules for blaming a certain file/line for an error are relatively simple
+in Duktape 1.3:
+
+* For error thrown during compilation the source text file/line is always
+  blamed.  The compilation errors are typically SyntaxErrors, but may also
+  be e.g. out-of-memory internal errors.
+
+* For errors thrown from Duktape internals (including Duktape API functions
+  like ``duk_require_xxx()``) the C call site is ignored, and the innermost
+  activation is used for file/line information.  This is the case even when
+  the innermost activation's function has no ``.fileName`` property so that
+  the error ``.fileName`` becomes ``undefined``.
+
+* For errors created/thrown using the Duktape API (``duk_push_error_object()``,
+  ``duk_error()``, etc) the C call site is always blamed, so that the error's
+  file/line information matches the C call site's ``__FILE__``/``__LINE__``.
+  This behavior is hardcoded; user code may override the behavior by
+  defining ``.fileName`` and ``.lineNumber`` on the error object.
+
+These rules have a few shortcomings.
+
+First, the C call site is blamed for all user-thrown errors which is often
+not the best behavior.  For example::
+
+    /* foo/bar/quux.c */
+
+    static duk_ret_t my_argument_validator(duk_context *ctx) {
+            /* ... */
+
+            /* The duk_error() call site's __FILE__ and __LINE__ will be
+             * recorded into _Tracedata and will be provided when reading
+             * .fileName and .lineNumber of the error, e.g.:
+             *
+             *     err.fileName   --> "foo/bar/quux.c"
+             *     err.lineNumber --> 1234
+             *
+             * If this an "infrastructure function", e.g. a validator for
+             * an argument value, the file/line blamed is not very useful.
+             */
+
+            duk_error(ctx, DUK_ERR_RANGE_ERROR, "argument out of range");
+
+            /* ... */
+    }
+
+Second, when the C call site is not blamed and the innermost activation
+does not have a ``.fileName`` property (which is the default for Duktape/C
+functions) the error's ``.fileName`` will be ``undefined``.  For example::
+
+    ((o) Duktape 1.3.0 (v1.3.0)
+    duk> try { [1,2,3].forEach(123); } catch (e) { err = e; }
+    = TypeError: type error (rc -105)
+    duk> err.fileName
+    = undefined
+    duk> err.lineNumber
+    = 0
+    duk> err.stack
+    = TypeError: type error (rc -105)
+            forEach  native strict preventsyield
+            global input:1 preventsyield
+    duk> Array.prototype.forEach.name
+    = forEach
+    duk> Array.prototype.forEach.fileName
+    = undefined
+
+While ``forEach()`` has a ``.name`` property, it doesn't have a ``.fileName``
+that ``err.fileName`` becomes ``undefined``.  This is obviously not very
+useful; it'd be more useful to blame the error on ``input``, which is the
+closest call site with a filename.
+
+Duktape 1.4.0 behavior
+----------------------
+
+Duktape 1.4.0 improves the blaming behavior slightly when the C call site
+information is not blamed: instead of taking file/line information from the
+innermost activation, it is taken from the closest activation which has a
+``.fileName`` property.
+
+This improves file/line blaming for the ``forEach()`` example above::
+
+    ((o) Duktape 1.3.99 (v1.3.0-294-g386260d-dirty)
+    duk> try { [1,2,3].forEach(123); } catch (e) { err = e; }
+    = TypeError: function required, found 123 (stack index 0)
+    duk> err.fileName
+    = input
+    duk> err.lineNumber
+    = 1
+
+If ``forEach()`` is assigned a filename, it will get blamed instead::
+
+    ((o) Duktape 1.3.99 (v1.3.0-294-g386260d-dirty)
+    duk> Array.prototype.forEach.fileName = 'dummyFilename.c';
+    = dummyFilename.c
+    duk> try { [1,2,3].forEach(123); } catch (e) { err = e; }
+    = TypeError: function required, found 123 (stack index 0)
+    duk> err.fileName
+    = dummyFilename.c
+    duk> err.lineNumber
+    = 0
+
+There's no change in behavior for errors thrown during compilation (typically
+SyntaxErrors).
+
+There's also no change for the case where the C call site is blamed, e.g. for
+errors thrown explicitly using ``duk_error()``.  Because such error throws are
+possible from both infrastructure code and application code, there's not yet
+enough information to select the ideal file/line for such an error.
+
+Replacing the .fileName and .lineNumber accessors
+-------------------------------------------------
+
+If the user application needs more control of file/line blaming, it's
+possible to replace the inherited ``Error.prototype.fileName`` and
+``Error.prototype.lineNumber`` accessors and implement whatever logic suits
+the application best.  For example, the application could filter functions
+based on a filename whitelist/blacklist or filename patterns.
+
+The downside of this is that the application needs to decode ``_Tracedata``
+whose format is version dependent.
+
+Future improvements
+-------------------
+
+Control blaming of C call site
+::::::::::::::::::::::::::::::
+
+Allow C code to indicate whether the C call site of an error create/throw
+should be considered relevant for file/line blaming.  This change would allow
+user code to control the blaming on a per-error basis.
+
+Duktape already does this internally by using a flag
+(``DUK_ERRCODE_FLAG_NOBLAME_FILELINE``) ORed with an error code to convey the
+intent.  The flag could simply be exposed in the API, but there are other API
+design options too.
+
+Control error blaming of compilation errors
+:::::::::::::::::::::::::::::::::::::::::::
+
+At the moment source text file/line is always blamed for errors thrown during
+compilation (typically SyntaxErrors).
+
+Technically there might be compilation errors inside "infrastructure code" so
+that it may not always be correct to blame them.  This could be easily fixed
+by adding a flag to the compilation API calls.
+
+Control error blaming of functions
+::::::::::::::::::::::::::::::::::
+
+Allow Duktape/C and Ecmascript functions to provide a flag indicating if
+the function should be considered relevant for file/line blaming.
+
+For Duktape 1.4.0 the ``.fileName`` property of a function serves this
+purpose to some extent: if a function is missing ``.fileName`` it is ignored
+for file/line blaming, i.e. treated as an infrastructure function.  However,
+there may be infrastructure functions which have a ``.fileName`` or
+non-infrastructure functions which don't have a ``.fileName``, so being able
+to control the blaming behavior explicitly would be useful.
+
+The control flag could be implemented either as a ``duk_hobject`` flag or
+an (internal or external) property.
+
+Handling of lightfuncs
+::::::::::::::::::::::
+
+Should lightfuncs be blamed or not?  Currently they are never blamed for
+file/line.
 
 Cause chains
 ============
@@ -398,11 +654,11 @@ A custom mechanism for setting an error cause would need to be used.
 A very non-invasive approach would be something like::
 
   try {
-    f();
+      f();
   } catch (e) {
-    var e2 = new Error("something went wrong");  // line N
-    e2.cause = e;                                // line N+1
-    throw e2;                                    // line N+2
+      var e2 = new Error("something went wrong");  // line N
+      e2.cause = e;                                // line N+1
+      throw e2;                                    // line N+2
   }
 
 This is quite awkward and error line information is easily distorted.
@@ -410,9 +666,9 @@ The line number issue can be mitigated by putting the error creation
 on a single line, at the cost of readability::
 
   try {
-    f();
+      f();
   } catch (e) {
-    var e2 = new Error("something went wrong"); e2.cause = e; throw e2;
+      var e2 = new Error("something went wrong"); e2.cause = e; throw e2;
   }
 
 One could also extend the error constructor to allow a cause to be specified
@@ -420,9 +676,9 @@ in a constructor call.  This would mimic how Java works and would be nice to
 use, but would have more potential to interfere with standard semantics::
 
   try {
-    f();
+      f();
   } catch (e) {
-    throw new Error("something went wrong", e);
+      throw new Error("something went wrong", e);
   }
 
 Using a setter method inherited from ``Error.prototype`` would be a very bad
@@ -430,11 +686,11 @@ idea as any such calls would be non-portable and cause errors to be thrown
 when used in other Ecmascript engines::
 
   try {
-    f();
+      f();
   } catch (e) {
-    var e2 = new Error("something went wrong", e);
-    e2.setCause(e);  // throws error if setCause is undefined!
-    throw e2;
+      var e2 = new Error("something went wrong", e);
+      e2.setCause(e);  // throws error if setCause is undefined!
+      throw e2;
   }
 
 Since errors are also created (and thrown) from C code using the Duktape
@@ -454,23 +710,78 @@ would need to tolerate e.g.::
 Traceback format (_Tracedata)
 =============================
 
-The purpose of the ``_Tracedata`` value is to capture the relevant call stack
-information very quickly before the call stack is unwound by error handling.
+Overview
+--------
+
+The purpose of the ``_Tracedata`` value is to capture the relevant callstack
+information very quickly before the callstack is unwound by error handling.
 In many cases the traceback information is not used at all, so it should be
 recorded in a compact and cheap manner.
 
 To fulfill these requirements, the current format, described below, is a bit
 arcane.  The format is version dependent, and is not intended to be accessed
-directly by user code.  The implementation should provide stable helpers for
-getting e.g. readable tracebacks or inspecting the traceback entries.
+directly by user code.
 
-The ``_Tracedata`` value is a flat array, populated with values describing
-the contents of the call stack, starting from the call stack top and working
-downwards until either the call stack bottom or the maximum traceback depth
+The ``_Tracedata`` value is a flat array, populated with values describing:
+(1) a possible compilation error site, (2) a possible C call site, and (3) the
+contents of the callstack, starting from the callstack top and working
+downwards until either the callstack bottom or the maximum traceback depth
 is reached.
 
-If a call has a related C ``__FILE__`` and ``__LINE__`` those are first
-pushed to ``_Tracedata``:
+The tracedata is processed only by Duktape internal functions:
+
+* The ``Error.prototype.stack`` accessor converts tracedata into a human
+  readable, printable traceback string.
+
+* The ``Error.prototype.fileName`` and ``Error.prototype.lineNumber``
+  accessors provide a file/line "blaming" for the error based on the
+  tracedata.
+
+* Currently (as of Duktape 1.4) there are no exposed helpers to decode
+  tracedata in a user application.  However, user code can inspect the
+  current callstack using ``Duktape.act()`` in the ``errCreate`` and
+  ``errThrow`` hooks.
+
+Example of the concrete tracedata in Duktape 1.4.0::
+
+    ((o) Duktape 1.3.99 (v1.3.0-294-g72447fe)
+    duk> try { eval('\n\nfoo='); } catch (e) { err = e; }
+    = SyntaxError: parse error (line 3)
+    duk> err.stack
+    = SyntaxError: parse error (line 3)
+            input:3
+            duk_js_compiler.c:3655
+            eval  native strict directeval preventsyield
+            global input:1 preventsyield
+    duk> Duktape.enc('jx', err[Duktape.dec('hex', 'ff') + 'Tracedata'], null, 4)
+    = [
+        "input",                \  compilation error site
+        3,                      /
+        "duk_js_compiler.c",    \  C call site
+        4294970951,             /
+        {_func:true},           \
+        107374182400,           |  callstack entries
+        {_func:true},           |
+        34359738375             /
+    ]
+
+Tracedata parts
+---------------
+
+Compilation error
+:::::::::::::::::
+
+If the error is thrown during compilation (typically a SyntaxError) the
+file/line in the source text is pushed to ``_Tracedata``:
+
+* The source filename as a string.
+
+* The offending linenumber as a number (double).
+
+C call site
+:::::::::::
+
+If a call has a related C call site, the call site is pushed to ``_Tracedata``:
 
 * The ``__FILE__`` value as a string.
 
@@ -482,7 +793,10 @@ pushed to ``_Tracedata``:
   ``__LINE__`` pair should be "blamed" as the error location when the user
   requests for a ``fileName`` or ``lineNumber`` related to the error.
 
-After that, for each call stack element, the array entries appended to
+Callstack entries
+:::::::::::::::::
+
+After that, for each callstack element, the array entries appended to
 ``_Tracedata`` are pairs consisting of:
 
 * The function object of the activation.  The function object contains the
@@ -499,13 +813,8 @@ After that, for each call stack element, the array entries appended to
   to a line number with debug information in the function object.  The
   flags allow e.g. tail calls to be noted in the traceback.
 
-The default ``Error.prototype.stack`` accessor knows how to convert this
-internal format into a human readable, printable traceback string.  It is
-currently the only function processing the tracedata, although it would be
-useful to provide user functions to access or decode elements of the
-traceback individually.
-
-Notes:
+Notes
+-----
 
 * An IEEE double can hold a 53-bit integer accurately so there is space
   for plenty of flags in the current representation.  Flags must be in
@@ -519,7 +828,7 @@ Notes:
 * The ``this`` binding, if any, is not currently recorded.
 
 * The variable values of activation records are not recorded.  They would
-  actually be available because the call stack can be inspected and register
+  actually be available because the callstack can be inspected and register
   maps (if defined) would provide a way to map identifier names to registers.
   This is definitely future work and may be needed for better debugging
   support.
@@ -528,4 +837,3 @@ Notes:
   into an internal type of its own right to optimize memory usage and
   performance.  The internal type would then basically be a typed buffer
   which garbage collection would know how to visit.
-
