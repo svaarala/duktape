@@ -8,11 +8,41 @@ throws objects inheriting from the ``Error`` constructor.  Ecmascript
 and a ``message``.  Most Ecmascript implementations provide additional
 error properties like file name, line number, and traceback.
 
-This document describes how Duktape creates and throws ``Error`` objects
-and what properties such objects have.  The internal traceback data format
-and the mechanism for providing human readable tracebacks is also covered.
-Also see the user documentation which covers the exposed features in a
-more approachable way.
+This document describes how Duktape creates and throws ``Error`` objects,
+what properties such objects have, and what error message verbosity levels
+are available.  The internal traceback data format and the mechanism for
+providing human readable tracebacks is also covered.  Also see the user
+documentation which covers the exposed features in a more approachable way.
+
+Error message verbosity levels
+==============================
+
+There are three levels of error message verbosity, controlled by indicated
+defines:
+
++------------------------+-------------------------+-----------------------------------------------------------------+
+| DUK_USE_VERBOSE_ERRORS | DUK_USE_PARANOID_ERRORS | Description                                                     |
++========================+=========================+=================================================================+
+| set                    | not set                 | Verbose messages with offending keys/values included, e.g.      |
+|                        |                         | ``number required, found 'xyzzy' (index -3)``.  This is the     |
+|                        |                         | default behavior.                                               |
++------------------------+-------------------------+-----------------------------------------------------------------+
+| set                    | set                     | Verbose messages with offending keys/values not included, e.g.  |
+|                        |                         | ``number required, found string (index -3)``.  Useful for       |
+|                        |                         | keys/values in error messages are considered a potential        |
+|                        |                         | security issue.                                                 |
++------------------------+-------------------------+-----------------------------------------------------------------+
+| not set                | ignored                 | Error objects won't have actual error messages; error code      |
+|                        |                         | converted to a string is provided in ``.message``.  Useful for  |
+|                        |                         | very low memory targets.                                        |
++------------------------+-------------------------+-----------------------------------------------------------------+
+
+Future work:
+
+* Low memory error messages where error objects have error messages but
+  the number of different messages is low.  For example, all errors from
+  ``duk_require_xxx()`` type mismatches could result in ``"unexpected type"``
+  and all stack index errors could result in ``"invalid argument"``.
 
 Error augmentation overview
 ===========================

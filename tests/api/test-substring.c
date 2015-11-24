@@ -7,11 +7,11 @@ blen=0, clen=0, str=""
 final top: 1
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123456 (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 ===*/
 
 static void dump_string(duk_context *ctx) {

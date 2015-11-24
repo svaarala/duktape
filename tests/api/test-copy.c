@@ -12,19 +12,19 @@
 3: foo
 ==> rc=0, result='undefined'
 *** test_3a (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -5'
 *** test_3b (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 5'
 *** test_3c (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_3d (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -5'
 *** test_3e (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 5'
 *** test_3f (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_3g (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 10'
 ===*/
 
 static void prep(duk_context *ctx) {

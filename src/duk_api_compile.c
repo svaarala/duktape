@@ -92,7 +92,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 			 * file given to duk_peval_file() or similar, the
 			 * error message is not the best possible.
 			 */
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_NO_SOURCECODE);
+			DUK_ERROR_API(thr, DUK_STR_NO_SOURCECODE);
 		}
 		DUK_ASSERT(h_sourcecode != NULL);
 		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);

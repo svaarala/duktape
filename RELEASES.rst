@@ -1189,6 +1189,11 @@ Planned
   to match V8 and Spidermonkey behavior; the previous behavior is provided
   by polyfills/duktape-error-setter-nonwritable.js (GH-390)
 
+* Add duk_require_function() and duk_require_callable() (GH-441)
+
+* Improve error message verbosity for API index check calls, duk_require_xxx()
+  calls, and Array iterator calls (GH-441)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 

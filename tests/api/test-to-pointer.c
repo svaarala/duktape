@@ -23,9 +23,9 @@ index 17, ptr-is-NULL: 0, type: 8 -> 8
 pointer: 0xdeadbeef
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 3'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

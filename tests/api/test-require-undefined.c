@@ -2,11 +2,11 @@
 *** test_1 (duk_safe_call)
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: not undefined'
+==> rc=1, result='TypeError: undefined required, found null (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: not undefined'
+==> rc=1, result='TypeError: undefined required, found none (stack index 0)'
 *** test_4 (duk_safe_call)
-==> rc=1, result='TypeError: not undefined'
+==> rc=1, result='TypeError: undefined required, found none (stack index -2147483648)'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

@@ -15,7 +15,7 @@ final top: 1
 *** test_2b (duk_safe_call)
 ==> rc=1, result='TypeError: wrong buffer type'
 *** test_3 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found [object Object] (stack index -1)'
 *** test_4 (duk_safe_call)
 ["censoredtag","censoredpointer","censoredrefcount","censoredheapsize"]
 ["censoredtag","censoredpointer","censoredrefcount","censoredheapsize",256]

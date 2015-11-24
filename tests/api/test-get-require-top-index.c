@@ -12,7 +12,7 @@ top: 3, top index: 2
 final top: 3
 ==> rc=0, result='undefined'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -1'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {

@@ -17,16 +17,16 @@ strict: 1
 ==> rc=1, result='ReferenceError: identifier 'no-such-property' undefined'
 *** test_3 (duk_safe_call)
 strict: 1
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 *** test_3 (duk_pcall)
 strict: 1
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 *** test_4 (duk_safe_call)
 strict: 1
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 *** test_4 (duk_pcall)
 strict: 1
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 ===*/
 
 /* Existing property */

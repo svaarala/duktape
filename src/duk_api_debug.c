@@ -156,12 +156,12 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	DUK_UNREF(write_flush_cb);
 	DUK_UNREF(detached_cb);
 	DUK_UNREF(udata);
-	duk_error(ctx, DUK_ERR_API_ERROR, "no debugger support");
+	DUK_ERROR_API((duk_hthread *) ctx, "no debugger support");
 }
 
 DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	duk_error(ctx, DUK_ERR_API_ERROR, "no debugger support");
+	DUK_ERROR_API((duk_hthread *) ctx, "no debugger support");
 }
 
 DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {

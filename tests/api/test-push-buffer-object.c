@@ -310,9 +310,9 @@ static duk_ret_t test_uncovered(duk_context *ctx) {
 
 /*===
 *** test_invalid_index1 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found none (stack index -2)'
 *** test_invalid_index2 (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found none (stack index -2147483648)'
 ===*/
 
 static duk_ret_t test_invalid_index1(duk_context *ctx) {
@@ -331,11 +331,11 @@ static duk_ret_t test_invalid_index2(duk_context *ctx) {
 
 /*===
 *** test_invalid_bufferobject (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found [object Uint16Array] (stack index -1)'
 *** test_invalid_string (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found 'foobar' (stack index -1)'
 *** test_invalid_null (duk_safe_call)
-==> rc=1, result='TypeError: unexpected type'
+==> rc=1, result='TypeError: buffer required, found null (stack index -1)'
 ===*/
 
 /* A bufferobject is -not- accepted as the underlying buffer.  This also

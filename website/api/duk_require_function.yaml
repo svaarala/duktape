@@ -1,0 +1,24 @@
+name: duk_require_function
+
+proto: |
+  void duk_require_function(duk_context *ctx, duk_idx_t index);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Throw an error if the value at <code>index</code> is not a function
+  or if the index is invalid.</p>
+
+  <div class="note">
+  There is no "get" primitive (<code>duk_get_function()</code>) because there's
+  no useful C return value for an arbitrary function.
+  </div>
+
+example: |
+  duk_require_function(ctx, -3);
+
+tags:
+  - stack
+
+introduced: 1.4.0

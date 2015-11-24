@@ -7,13 +7,13 @@
 final top: 4
 ==> rc=0, result='undefined'
 *** test_2a (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -3'
 *** test_2b (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index 2'
 *** test_2c (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_3a (duk_safe_call)
-==> rc=1, result='Error: invalid index'
+==> rc=1, result='Error: invalid stack index -1'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx) {
