@@ -1349,6 +1349,11 @@ DUK_INTERNAL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *heap, 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(obj != NULL);
 
+	/* This is not strictly necessary, but avoids compiler warnings; e.g.
+	 * gcc won't reliably detect that no uninitialized data is read below.
+	 */
+	DUK_MEMZERO((void *) &tv, sizeof(duk_tval));
+
 	if (duk_hobject_get_internal_value(heap, obj, &tv)) {
 		duk_hstring *h;
 		DUK_ASSERT(DUK_TVAL_IS_STRING(&tv));
