@@ -60,10 +60,10 @@ interest only can have a local name or have a double underscore after "DUK"::
   /* select DUK_FOO provider */
   #define DUK_FOO  DUK_FOO_ALT2
 
-There is only one space after a ``#define``, ``#ifdef``, etc, but there
-may be multiple spaces between the a macro name and its definition.  There
-is no strict rule on the alignment of a macro value; successive definitions
-usually keep values in the same column.
+There is only one space after a ``#define``, ``#if``, etc, but there may be
+multiple spaces between the a macro name and its definition.  There is no
+strict rule on the alignment of a macro value; successive definitions usually
+keep values in the same column.
 
 Comments are always traditional C comments, never ``//``, as they are not
 portable to older compilers::
@@ -126,7 +126,7 @@ This is more macro compatible.  Example::
 
 Multi-statement macros should use a ``do-while(0)`` construct::
 
-  #define  FROBNICATE(x,y)  do { \
+  #define FROBNICATE(x,y)  do { \
                   x = x * x; \
                   y = y * y; \
           } while (0)
@@ -135,18 +135,18 @@ When the body of a macro is sometimes empty, use an empty do-while so that
 the macro still yields a statement::
 
   #if defined(DUK_USE_FROB)
-  #define  FROBNICATE(x,y)  do { \
+  #define FROBNICATE(x,y)  do { \
                   x = x * x; \
                   y = y * y; \
           } while (0)
   #else
-  #define  FROBNICATE(x,y)  do { } while (0)
+  #define FROBNICATE(x,y)  do { } while (0)
   #endif
 
 Use parentheses when referring to macro arguments and the final macro
 result to minimize error proneness::
 
-  #define  MULTIPLY(a,b)  ((a) * (b))
+  #define MULTIPLY(a,b)  ((a) * (b))
 
   /* Now MULTIPLY(1 + 2, 3) expands to ((1 + 2) * (3)) == 9, not
    * 1 + 2 * 3 == 7.  Parentheses are used around macro result for
@@ -284,6 +284,66 @@ See:
 * http://en.wikipedia.org/wiki/Include_guard
 
 ``#pragma once`` is not portable, and is not used.
+
+Preprocessor value comparisons with empty arguments must be avoided
+-------------------------------------------------------------------
+
+This will cause a compile error even with newer compilers::
+
+  /* FOO and BAR are defined, BAR is defined with an empty value. */
+  #define FOO 123
+  #define BAR
+
+  #if defined(FOO) && defined(BAR) && (FOO == BAR)
+  /* ... */
+  #endif
+
+It doesn't help to guard the comparison because the root cause is the
+comparison having an empty argument::
+
+  #define FOO 123
+  #define BAR
+
+  #if defined(FOO) && defined(BAR)  /* will match */
+  #if (FOO == BAR)  /* still fails */
+  /* ... */
+  #endif
+  #endif
+
+The "guarded" form above is still preferred because it works also with
+compilers which fail a comparison with an undefined value.
+
+Explicitly detecting an empty value seems difficult to do properly, so
+there doesn't seem to be an easy way to avoid this:
+
+* http://stackoverflow.com/questions/3781520/how-to-test-if-preprocessor-symbol-is-defined-but-has-no-value
+
+The comparison is not an issue in Duktape internals when comparing against
+**required config options**.  This is safe, for example::
+
+  #if (DUK_USE_ALIGN_BY == 8)
+  /* ... */
+  #endif
+
+The comparison is a concrete issue in ``duk_config.h`` where the defines
+provided by the environment vary a great deal.  See for example:
+
+* https://github.com/judofyr/duktape.rb/pull/33#issuecomment-159488580
+
+Preprocessor ifdef vs. if defined
+---------------------------------
+
+This form is preferred::
+
+  #if defined(FROB)
+  ...
+  #endif
+
+instead of::
+
+  #ifdef FROB
+  ...
+  #endif
 
 FIXME, TODO, XXX, NOTE, etc markers
 -----------------------------------
@@ -900,7 +960,7 @@ There is an interesting corner case when trying to define minimum signed
 integer value constants.  For instance, trying to define a constant for
 the minimum 32-bit signed integer as follows is non-portable::
 
-  #define  MIN_VALUE  (-0x80000000L)
+  #define MIN_VALUE  (-0x80000000L)
 
 Apparently the compiler will first evaluate "0x80000000L" and, despite being
 a signed constant, determine that it won't fit into a signed integer so it

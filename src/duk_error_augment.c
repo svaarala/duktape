@@ -155,7 +155,7 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
  *  Add tracedata to an error on the stack top.
  */
 
-#ifdef DUK_USE_TRACEBACKS
+#if defined(DUK_USE_TRACEBACKS)
 DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t depth;
@@ -183,8 +183,8 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
 	arr_idx = 0;
 
-	/* compiler SyntaxErrors (and other errors) come first; blame the source
-	 * code file/line primarily.
+	/* Compiler SyntaxErrors (and other errors) come first, and are
+	 * blamed by default (not flagged "noblame").
 	 */
 	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
 		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
@@ -196,7 +196,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		arr_idx++;
 	}
 
-	/* filename/line from C macros (__FILE__, __LINE__) are added as an
+	/* Filename/line from C macros (__FILE__, __LINE__) are added as an
 	 * entry with a special format: (string, number).  The number contains
 	 * the line and flags.
 	 */
@@ -209,7 +209,9 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* XXX: using duk_put_prop_index() would cause obscure error cases when Array.prototype
 	 * has write-protected array index named properties.  This was seen as DoubleErrors
 	 * in e.g. some test262 test cases.  Using duk_xdef_prop_index() is better but heavier.
-	 * The best fix is to fill in the tracedata directly into the array part.
+	 * The best fix is to fill in the tracedata directly into the array part.  There are
+	 * no side effect concerns if the array part is allocated directly and only INCREFs
+	 * happen after that.
 	 */
 
 	/* [ ... error arr ] */
@@ -283,11 +285,11 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_int_t entry_top;
 #endif
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
 	DUK_ASSERT(obj != NULL);
@@ -295,7 +297,7 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 	DUK_UNREF(obj);  /* unreferenced w/o tracebacks */
 	DUK_UNREF(ctx);  /* unreferenced w/ tracebacks */
 
-#ifdef DUK_USE_TRACEBACKS
+#if defined(DUK_USE_TRACEBACKS)
 	/*
 	 *  If tracebacks are enabled, the '_Tracedata' property is the only
 	 *  thing we need: 'fileName' and 'lineNumber' are virtual properties
@@ -317,33 +319,51 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 	 */
 
 	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
-		/* Compiler SyntaxError (or other error) gets the primary blame. */
-		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
-		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
-	} else if (c_filename && !noblame_fileline) {
-		/* XXX: file/line is disabled in minimal builds, so disable this too
-		 * when appropriate.
+		/* Compiler SyntaxError (or other error) gets the primary blame.
+		 * Currently no flag to prevent blaming.
 		 */
-		duk_push_string(ctx, c_filename);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);
+		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
+		goto define_props;
+	} else if (c_filename && !noblame_fileline) {
+		/* C call site gets blamed next, unless flagged not to do so.
+		 * XXX: file/line is disabled in minimal builds, so disable this
+		 * too when appropriate.
+		 */
 		duk_push_int(ctx, c_line);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+		duk_push_string(ctx, c_filename);
+		goto define_props;
 	} else if (thr_callstack->callstack_top > 0) {
-		duk_activation *act;
-		duk_hobject *func;
+		/* Finally, blame the innermost callstack entry which has a
+		 * .fileName property.
+		 */
+		duk_small_uint_t depth;
+		duk_int_t i, i_min;
+		duk_uint32_t ecma_line;
 
-		act = thr_callstack->callstack + thr_callstack->callstack_top - 1;
-		DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
-		func = DUK_ACT_GET_FUNC(act);
-		if (func) {
+		depth = DUK_USE_TRACEBACK_DEPTH;
+		i_min = (thr_callstack->callstack_top > (duk_size_t) depth ? (duk_int_t) (thr_callstack->callstack_top - depth) : 0);
+		DUK_ASSERT(i_min >= 0);
+
+		DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
+		for (i = (duk_int_t) (thr_callstack->callstack_top - 1); i >= i_min; i--) {
+			duk_activation *act;
+			duk_hobject *func;
 			duk_uint32_t pc;
 
-			/* PC points to next instruction, find offending PC.  Note that
+			act = thr_callstack->callstack + i;
+			DUK_ASSERT(act >= thr_callstack->callstack && act < thr_callstack->callstack + thr_callstack->callstack_size);
+
+			func = DUK_ACT_GET_FUNC(act);
+			if (func == NULL) {
+				/* Lightfunc, not blamed now. */
+				continue;
+			}
+
+			/* PC points to next instruction, find offending PC,
 			 * PC == 0 for native code.
 			 */
-			pc = duk_hthread_get_act_prev_pc(thr, act);
+			pc = duk_hthread_get_act_prev_pc(thr, act);  /* thr argument only used for thr->heap, so specific thread doesn't matter */
 			DUK_ASSERT_DISABLE(pc >= 0);  /* unsigned */
 			DUK_ASSERT((duk_double_t) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 			act = NULL;  /* invalidated by pushes, so get out of the way */
@@ -353,31 +373,49 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 			/* [ ... error func ] */
 
 			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
-			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+			if (!duk_is_string(ctx, -1)) {
+				duk_pop_2(ctx);
+				continue;
+			}
 
+			/* [ ... error func fileName ] */
+
+			ecma_line = 0;
 #if defined(DUK_USE_PC2LINE)
 			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
-				duk_uint32_t ecma_line;
-#if 0
-				duk_push_u32(ctx, pc);
-				duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PC, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAGS_NO_OVERWRITE);
-#endif
-				ecma_line = duk_hobject_pc2line_query(ctx, -1, (duk_uint_fast32_t) pc);
-				if (ecma_line > 0) {
-					duk_push_u32(ctx, (duk_uint32_t) ecma_line); /* -> [ ... error func line ] */
-					duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
-				}
+				ecma_line = duk_hobject_pc2line_query(ctx, -2, (duk_uint_fast32_t) pc);
 			} else {
 				/* Native function, no relevant lineNumber. */
 			}
 #endif  /* DUK_USE_PC2LINE */
+			duk_push_u32(ctx, ecma_line);
 
-			duk_pop(ctx);
+			/* [ ... error func fileName lineNumber ] */
+
+			duk_replace(ctx, -3);
+
+			/* [ ... error lineNumber fileName ] */
+			goto define_props;
 		}
 	}
+
+	/* No rule/activation matches, use undefined for both .fileName
+	 * and .lineNumber (matches what we do with a _Tracedata based
+	 * no-match lookup.
+	 */
+	duk_push_undefined(ctx);
+	duk_push_undefined(ctx);
+
+ define_props:
+	/* [ ... error lineNumber fileName ] */
+#if defined(DUK_USE_ASSERTIONS)
+	DUK_ASSERT(duk_get_top(ctx) == entry_top + 2);
+#endif
+	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 #endif  /* DUK_USE_TRACEBACKS */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	DUK_ASSERT(duk_get_top(ctx) == entry_top);
 #endif
 }
