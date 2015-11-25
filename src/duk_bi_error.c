@@ -119,6 +119,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 	duk_idx_t idx_td;
 	duk_small_int_t i;  /* traceback depth fits into 16 bits */
 	duk_small_int_t t;  /* stack type fits into 16 bits */
+	duk_small_int_t count_func = 0;  /* traceback depth ensures fits into 16 bits */
 	const char *str_tailcalled = " tailcalled";
 	const char *str_strict = " strict";
 	const char *str_construct = " construct";
@@ -163,6 +164,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 				/*
 				 *  Ecmascript/native function call or lightfunc call
 				 */
+
+				count_func++;
 
 				/* [ ... v1(func) v2(pc+flags) ] */
 
@@ -262,7 +265,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 			}
 		}
 
-		if (i >= DUK_USE_TRACEBACK_DEPTH * 2) {
+		if (count_func >= DUK_USE_TRACEBACK_DEPTH) {
 			/* Possibly truncated; there is no explicit truncation
 			 * marker so this is the best we can do.
 			 */
