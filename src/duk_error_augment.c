@@ -152,7 +152,7 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 #endif  /* DUK_USE_ERRTHROW || DUK_USE_ERRCREATE */
 
 /*
- *  Add tracedata to an error on the stack top.
+ *  Add ._Tracedata to an error on the stack top.
  */
 
 #if defined(DUK_USE_TRACEBACKS)
@@ -282,34 +282,22 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 }
 #endif  /* DUK_USE_TRACEBACKS */
 
-#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
-	duk_context *ctx = (duk_context *) thr;
+/*
+ *  Add .fileName and .lineNumber to an error on the stack top.
+ */
+
+#if !defined(DUK_USE_TRACEBACKS)
+DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
+	duk_context *ctx;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_int_t entry_top;
 #endif
 
+	ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
-	DUK_ASSERT(obj != NULL);
 
-	DUK_UNREF(obj);  /* unreferenced w/o tracebacks */
-	DUK_UNREF(ctx);  /* unreferenced w/ tracebacks */
-
-#if defined(DUK_USE_TRACEBACKS)
-	/*
-	 *  If tracebacks are enabled, the '_Tracedata' property is the only
-	 *  thing we need: 'fileName' and 'lineNumber' are virtual properties
-	 *  which use '_Tracedata'.
-	 */
-
-	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_TRACEDATA(thr))) {
-		DUK_DDD(DUK_DDDPRINT("error value already has a '_Tracedata' property, not modifying it"));
-	} else {
-		duk__add_traceback(thr, thr_callstack, c_filename, c_line, noblame_fileline);
-	}
-#else
 	/*
 	 *  If tracebacks are disabled, 'fileName' and 'lineNumber' are added
 	 *  as plain own properties.  Since Error.prototype has accessors of
@@ -324,7 +312,6 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 		 */
 		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);
 		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
-		goto define_props;
 	} else if (c_filename && !noblame_fileline) {
 		/* C call site gets blamed next, unless flagged not to do so.
 		 * XXX: file/line is disabled in minimal builds, so disable this
@@ -332,8 +319,7 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 		 */
 		duk_push_int(ctx, c_line);
 		duk_push_string(ctx, c_filename);
-		goto define_props;
-	} else if (thr_callstack->callstack_top > 0) {
+	} else {
 		/* Finally, blame the innermost callstack entry which has a
 		 * .fileName property.
 		 */
@@ -397,14 +383,14 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 			/* [ ... error lineNumber fileName ] */
 			goto define_props;
 		}
-	}
 
-	/* No rule/activation matches, use undefined for both .fileName
-	 * and .lineNumber (matches what we do with a _Tracedata based
-	 * no-match lookup.
-	 */
-	duk_push_undefined(ctx);
-	duk_push_undefined(ctx);
+		/* No activation matches, use undefined for both .fileName and
+		 * .lineNumber (matches what we do with a _Tracedata based
+		 * no-match lookup.
+		 */
+		duk_push_undefined(ctx);
+		duk_push_undefined(ctx);
+	}
 
  define_props:
 	/* [ ... error lineNumber fileName ] */
@@ -413,7 +399,46 @@ DUK_LOCAL void duk__err_augment_builtin_throw(duk_hthread *thr, duk_hthread *thr
 #endif
 	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
-#endif  /* DUK_USE_TRACEBACKS */
+}
+#endif  /* !DUK_USE_TRACEBACKS */
+
+/*
+ *  Augment an error being created using Duktape specific properties
+ *  like _Tracedata or .fileName/.lineNumber.
+ */
+
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
+DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
+	duk_context *ctx = (duk_context *) thr;
+#if defined(DUK_USE_ASSERTIONS)
+	duk_int_t entry_top;
+#endif
+
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(ctx);
+#endif
+	DUK_ASSERT(obj != NULL);
+
+	DUK_UNREF(obj);  /* unreferenced w/o tracebacks */
+	DUK_UNREF(ctx);  /* unreferenced w/ asserts */
+
+#if defined(DUK_USE_TRACEBACKS)
+	/* If tracebacks are enabled, the '_Tracedata' property is the only
+	 * thing we need: 'fileName' and 'lineNumber' are virtual properties
+	 * which use '_Tracedata'.
+	 */
+
+	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_TRACEDATA(thr))) {
+		DUK_DDD(DUK_DDDPRINT("error value already has a '_Tracedata' property, not modifying it"));
+	} else {
+		duk__add_traceback(thr, thr_callstack, c_filename, c_line, noblame_fileline);
+	}
+#else
+	/* Without tracebacks the concrete .fileName and .lineNumber need
+	 * to be added directly.
+	 */
+	duk__add_fileline(thr, thr_callstack, c_filename, c_line, noblame_fileline);
+#endif
 
 #if defined(DUK_USE_ASSERTIONS)
 	DUK_ASSERT(duk_get_top(ctx) == entry_top);
@@ -476,7 +501,7 @@ DUK_INTERNAL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *th
 	}
 	if (DUK_HOBJECT_HAS_EXTENSIBLE(obj)) {
 		DUK_DDD(DUK_DDDPRINT("error meets criteria, built-in augment"));
-		duk__err_augment_builtin_throw(thr, thr_callstack, c_filename, c_line, noblame_fileline, obj);
+		duk__err_augment_builtin_create(thr, thr_callstack, c_filename, c_line, noblame_fileline, obj);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("error does not meet criteria, no built-in augment"));
 	}
