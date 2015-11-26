@@ -1,5 +1,5 @@
 /*
- *  Loading constant to register.
+ *  Loading register to register.
  */
 
 if (typeof print !== 'function') { print = console.log; }
