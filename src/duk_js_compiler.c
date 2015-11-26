@@ -7767,37 +7767,9 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	prev_ctx = thr->compile_ctx;
 	thr->compile_ctx = &comp_stk.comp_ctx_alloc;  /* for duk_error_augment.c */
 	safe_rc = duk_safe_call(ctx, duk__js_compile_raw, 2 /*nargs*/, 1 /*nret*/);
-	thr->compile_ctx = prev_ctx;
+	thr->compile_ctx = prev_ctx;  /* must restore reliably before returning */
 
 	if (safe_rc != DUK_EXEC_SUCCESS) {
-		/* Append a "(line NNN)" to the "message" property of any
-		 * error thrown during compilation.  Usually compilation
-		 * errors are SyntaxErrors but they can also be out-of-memory
-		 * errors and the like.
-		 *
-		 * Source file/line are added to tracedata directly by
-		 * duk_error_augment.c based on thr->compile_ctx.
-		 */
-
-		/* [ ... error ] */
-
-		DUK_DDD(DUK_DDDPRINT("compile error, before adding line info: %!T",
-		                     (duk_tval *) duk_get_tval(ctx, -1)));
-		if (duk_is_object(ctx, -1)) {
-			/* XXX: Now that fileName and lineNumber are set, this is
-			 * unnecessary.  Remove in Duktape 1.3.0?
-			 */
-
-			if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_MESSAGE)) {
-				duk_push_sprintf(ctx, " (line %ld)", (long) comp_stk.comp_ctx_alloc.curr_token.start_line);
-				duk_concat(ctx, 2);
-				duk_put_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE);
-			} else {
-				duk_pop(ctx);
-			}
-		}
-		DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T",
-		                     (duk_tval *) duk_get_tval(ctx, -1)));
 		duk_throw(ctx);
 	}
 
