@@ -33,9 +33,6 @@
   test: "ch09/9.7/S9.7_A3.2_T1"
   knownissue: "Duktape String.fromCharCode() intentionally accepts non-BMP codepoints"
 -
-  test: "ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A5.1_T1"
-  knownissue: "octal input to parseInt() accepted by Duktape"
--
   test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A3"
   knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
 -
