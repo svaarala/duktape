@@ -434,7 +434,9 @@ extra:
   - name: ENDLABEL
     args:
       - BC_I
-  - name: EXTRA34
+  - name: LDCURRFN
+    args:
+      - BC_R
   - name: EXTRA35
   - name: EXTRA36
   - name: EXTRA37

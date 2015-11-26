@@ -1301,6 +1301,12 @@ Planned
   by allowing indent value or gap string and by supporting JX/JC in the
   fast path (GH-445)
 
+1.5.0 (XXXX-XX-XX)
+------------------
+
+* Internal performance improvement: handle function self-reference specially
+  to avoid a slow path identifier lookup for self-recursive functions (GH-401)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 

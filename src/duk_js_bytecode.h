@@ -176,6 +176,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_EXTRAOP_IN              31
 #define DUK_EXTRAOP_LABEL           32
 #define DUK_EXTRAOP_ENDLABEL        33
+#define DUK_EXTRAOP_LDCURRFN        34
 
 /* DUK_OP_CALL flags in A */
 #define DUK_BC_CALL_FLAG_TAILCALL           (1 << 0)
