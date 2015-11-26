@@ -1156,6 +1156,27 @@ Released
 
 * Avoid including <windows.h> for application build (GH-312)
 
+1.3.1 (2015-11-27)
+------------------
+
+* Fix assignment expression handling of the right-hand-side value when that
+  value is a register-bound variable which is used and mutated in the rest
+  of the expression (GH-381)
+
+* Fix nested property assignment handling (GH-427, GH-428)
+
+* Fix property access expression handling when a variable holding the base
+  value is mutated by other parts of the expression, in both LHS and RHS
+  positions (GH-429)
+
+* Remove octal autodetection in parseInt(), also fixes incorrect octal
+  autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
+
+* Fix a segfault (and assertion error) caused by compiler intermediate value
+  handling bug; the bug was triggered when a temporary register was required
+  by the compiler, but an existing "intermediate value" referred to a const
+  instead of a register value (GH-449)
+
 Planned
 =======
 
