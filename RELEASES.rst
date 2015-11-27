@@ -1301,6 +1301,9 @@ Planned
   by allowing indent value or gap string and by supporting JX/JC in the
   fast path (GH-445)
 
+* Internal performance improvement: add fast path for base64 encoding
+  and decoding (GH-465)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
