@@ -1254,6 +1254,9 @@ Planned
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
 
+* Fix base64 decode reject for whitespace between padding characters
+  (e.g. "Zm= =") (GH-465)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
