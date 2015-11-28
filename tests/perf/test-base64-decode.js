@@ -14,12 +14,13 @@ function test() {
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }
-    tmp2 = Duktape.Buffer(tmp2.join(''));
+    tmp2 = tmp2.join('');
+    tmp2 = Duktape.enc('base64', tmp2);
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 10000; i++) {
-        Duktape.enc('hex', tmp2);
+    for (i = 0; i < 1000; i++) {
+        Duktape.dec('base64', tmp2);
     }
 }
 

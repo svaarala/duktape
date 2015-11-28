@@ -1254,6 +1254,9 @@ Planned
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
 
+* Fix base64 decode reject for whitespace between padding characters
+  (e.g. "Zm= =") (GH-465)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
@@ -1300,6 +1303,9 @@ Planned
 * Internal performance improvement: improve JSON.stringify() fast path
   by allowing indent value or gap string and by supporting JX/JC in the
   fast path (GH-445)
+
+* Internal performance improvement: add fast path for base64 encoding
+  and decoding (GH-465)
 
 2.0.0 (XXXX-XX-XX)
 ------------------

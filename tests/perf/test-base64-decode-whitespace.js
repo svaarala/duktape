@@ -3,6 +3,7 @@ if (typeof print !== 'function') { print = console.log; }
 function test() {
     var tmp1 = [];
     var tmp2 = [];
+    var tmp3 = [];
     var i, n, buf;
 
     print('build');
@@ -14,12 +15,19 @@ function test() {
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }
-    tmp2 = Duktape.Buffer(tmp2.join(''));
+    tmp2 = tmp2.join('');
+    tmp2 = Duktape.enc('base64', tmp2);
+
+    // add newlines, intentionally not a multiple of 4
+    for (i = 0; i < tmp2.length; i += 77) {
+       tmp3.push(tmp2.substring(i, i + 77));
+    }
+    tmp2 = tmp3.join('\n') + '\n';
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 10000; i++) {
-        Duktape.enc('hex', tmp2);
+    for (i = 0; i < 1000; i++) {
+        Duktape.dec('base64', tmp2);
     }
 }
 

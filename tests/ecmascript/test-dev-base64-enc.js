@@ -84,6 +84,24 @@ print(t);
 print('' + Duktape.dec('base64', t));
 
 /*===
+Zm9vYmFycXV1eA==
+foobarquux
+foobarquux
+foobarquux
+===*/
+
+/* The current decoder allows ASCII whitespace (CR, LF, TAB, SPACE) at
+ * any position.
+ */
+
+t = Duktape.enc('base64', 'foobarquux');
+print(t);
+print('' + Duktape.dec('base64', t));
+
+print('' + Duktape.dec('base64', 'Zm9vYmFycXV1eA==\n'));
+print('' + Duktape.dec('base64', 'Z m\t9\rv\nY  \r\n\t m  \n\n FycX \r\r\nV1eA =\t\t=\n'));
+
+/*===
 f
 f
 fo

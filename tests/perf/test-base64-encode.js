@@ -18,8 +18,8 @@ function test() {
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 10000; i++) {
-        Duktape.enc('hex', tmp2);
+    for (i = 0; i < 1000; i++) {
+        Duktape.enc('base64', tmp2);
     }
 }
 
