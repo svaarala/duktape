@@ -18,7 +18,7 @@ function test() {
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 10000; i++) {
+    for (i = 0; i < 5000; i++) {
         Duktape.enc('hex', tmp2);
     }
 }
