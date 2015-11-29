@@ -18,7 +18,9 @@ function test() {
     print(tmp2.length);
     print('run');
     for (i = 0; i < 10000; i++) {
-        Duktape.dec('hex', tmp2);
+        // Assigning to 'res' avoids garbage collection of result; this is
+        // intentional to avoid mixing string intern performance to the test.
+        var res = Duktape.dec('hex', tmp2);
     }
 }
 
