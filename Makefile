@@ -493,7 +493,7 @@ ifeq ($(VALGRIND_WRAP),1)
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	ecmatestd
@@ -503,7 +503,7 @@ ifeq ($(VALGRIND_WRAP),1)
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --report-diff-to-other --valgrind --run-nodejs --run-rhino --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### ecmatestd"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 8 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatest
@@ -513,7 +513,7 @@ ifeq ($(VALGRIND_WRAP),1)
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 4  --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 .PHONY:	qecmatestd
@@ -523,7 +523,7 @@ ifeq ($(VALGRIND_WRAP),1)
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd.raw --valgrind --num-threads 1 --log-file=/tmp/duk-test.log tests/ecmascript/
 else
 	@echo "### qecmatestd"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 16 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 endif
 
 # Separate target because it's also convenient to run manually.
