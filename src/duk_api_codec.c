@@ -137,21 +137,17 @@ DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t ind
 #if defined(DUK_USE_BASE64_FASTPATH)
 DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, duk_size_t srclen, duk_uint8_t *dst) {
 	duk_uint_fast32_t t;
-	duk_size_t n_full, n_final;
+	duk_size_t n_full, n_full3, n_final;
+	const duk_uint8_t *src_end_fast;
 
 	n_full = srclen / 3;  /* full 3-byte -> 4-char conversions */
-	n_final = srclen - n_full * 3;
+	n_full3 = n_full * 3;
+	n_final = srclen - n_full3;
 	DUK_ASSERT_DISABLE(n_final >= 0);
 	DUK_ASSERT(n_final <= 2);
 
-	/* XXX: might be faster to avoid building 't' value explicitly,
-	 * and index the lookup directly with expressions involving
-	 * masked/shifted 'src' reads.
-	 */
-
-	while (n_full > 0) {
-		n_full--;
-
+	src_end_fast = src + n_full3;
+	while (DUK_UNLIKELY(src != src_end_fast)) {
 		t = (duk_uint_fast32_t) (*src++);
 		t = (t << 8) + (duk_uint_fast32_t) (*src++);
 		t = (t << 8) + (duk_uint_fast32_t) (*src++);
@@ -160,6 +156,15 @@ DUK_LOCAL void duk__base64_encode_helper(const duk_uint8_t *src, duk_size_t srcl
 		*dst++ = duk__base64_enc_lookup[(t >> 12) & 0x3f];
 		*dst++ = duk__base64_enc_lookup[(t >> 6) & 0x3f];
 		*dst++ = duk__base64_enc_lookup[t & 0x3f];
+
+#if 0  /* Tested: not faster on x64 */
+		/* aaaaaabb bbbbcccc ccdddddd */
+		dst[0] = duk__base64_enc_lookup[(src[0] >> 2) & 0x3f];
+		dst[1] = duk__base64_enc_lookup[((src[0] << 4) & 0x30) | ((src[1] >> 4) & 0x0f)];
+		dst[2] = duk__base64_enc_lookup[((src[1] << 2) & 0x3f) | ((src[2] >> 6) & 0x03)];
+		dst[3] = duk__base64_enc_lookup[src[2] & 0x3f];
+		src += 3; dst += 4;
+#endif
 	}
 
 	switch (n_final) {
