@@ -16,6 +16,6 @@ def test():
 	print(len(tmp2))
 	print('run')
 	for i in xrange(10000):
-		ign = tmp2.decode('hex')
+		res = tmp2.decode('hex')
 
 test()

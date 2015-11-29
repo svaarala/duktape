@@ -19,8 +19,10 @@ function test() {
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 1000; i++) {
-        Duktape.dec('base64', tmp2);
+    for (i = 0; i < 2000; i++) {
+        // Assigning to 'res' avoids garbage collection of result; this is
+        // intentional to avoid mixing string intern performance to the test.
+        var res = Duktape.dec('base64', tmp2);
     }
 }
 

@@ -16,7 +16,7 @@ def test():
 
 	print(len(tmp2))
 	print('run')
-	for i in xrange(1000):
-		ign = tmp2.decode('base64')
+	for i in xrange(2000):
+		res = tmp2.decode('base64')
 
 test()
