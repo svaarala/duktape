@@ -19,4 +19,5 @@ DUK_USE_INTERRUPT_COUNTER: false
 DUK_USE_DEBUGGER_SUPPORT: false
 DUK_USE_STRHASH_DENSE: false
 DUK_USE_STRHASH_SKIP_SHIFT: 5  # may be able to reduce
-#DUK_USE_EXEC_FUN_LOCAL: test both values, marginal benefit
+#DUK_USE_EXEC_FUN_LOCAL: false  # test both values, marginal benefit
+DUK_USE_REGEXP_CANON_WORKAROUND: true  # high footprint impact (128kB), enabled until a better solution

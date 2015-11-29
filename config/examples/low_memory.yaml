@@ -48,3 +48,6 @@ DUK_USE_STRTAB_CHAIN_SIZE: 128
 # Consider to reduce code footprint at the expense of less safeguards against
 # bugs in calling C code
 #DUK_USE_VALSTACK_UNSAFE: true
+
+# Short term workaround with large footprint, disable.
+DUK_USE_REGEXP_CANON_WORKAROUND: false
