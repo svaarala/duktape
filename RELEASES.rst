@@ -1223,6 +1223,12 @@ Planned
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
+* Add a short term workaround for case sensitive RegExp performance using a
+  128kB canonicalization lookup table; the workaround is disabled by default
+  because of the relatively large code footprint, enable using
+  DUK_OPT_REGEXP_CANON_WORKAROUND or DUK_USE_REGEXP_CANON_WORKAROUND if
+  editing duk_config.h directly (GH-411)
+
 * Fix a segfault (and assertion error) caused by compiler intermediate value
   handling bug; the bug was triggered when a temporary register was required
   by the compiler, but an existing "intermediate value" referred to a const
