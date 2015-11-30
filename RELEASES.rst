@@ -1220,6 +1220,20 @@ Planned
   function with a .fileName is found which improves error reporting for e.g.
   "[1,2,3].forEach(null)" (GH-455)
 
+* Provide a stronger finalizer re-entry guarantee than before: a finalizer
+  is called exactly once (at the latest in heap destruction) unless the
+  target object is rescued, in which case the finalizer is called once per
+  "rescue cycle" (GH-473)
+
+* Better finalizer behavior for heap destruction: finalized objects may
+  create new finalizable objects whose finalizers will also be called
+  (GH-473)
+
+* Add a second argument to finalizer calls, a boolean value which is true
+  when the finalizer is called during heap destruction as part of forced
+  finalization; the finalized object cannot be rescued by the finalizer
+  in such cases (GH-473)
+
 * Add a combined duktape.c without #line directives into the dist package,
   as it is a useful alternative in some environments (GH-363)
 
