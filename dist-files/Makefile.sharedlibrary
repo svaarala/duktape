@@ -1,0 +1,71 @@
+#
+#  Example of how to build and install locally as a shared library
+#
+#  Usage:
+#
+#    $ make -f Makefile.sharedlibrary
+#    $ sudo make -f Makefile.sharedlibrary install
+#    $ make -f Makefile.sharedlibrary duk  # --> example 'duk' linked to shared libduktape
+#
+#    $ ls -l duk
+#    -rwxrwxr-x 1 duktape duktape 19407 Nov 30 15:48 duk
+#
+#    $ ldd ./duk
+#            linux-vdso.so.1 =>  (0x00007ffd5ed3c000)
+#            libduktape.so.104 => /usr/local/lib/libduktape.so.104 (0x00007fb2f9753000)
+#            libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fb2f944d000)
+#            libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fb2f9088000)
+#            /lib64/ld-linux-x86-64.so.2 (0x00007fb2f9991000)
+#
+#  Based on: http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
+
+# Soname version must be bumped whenever a binary compatibility change occurs
+# (and should not be bumped when the library is compatible).  A simple Duktape
+# convention is to set soname version to (100*MAJOR + MINOR), e.g. 104 for
+# Duktape 1.4.x, so that it gets automatically bumped for major and minor
+# releases (potentially binary incompatible), but not for patch releases.
+DUK_VERSION=10400
+SONAME_VERSION=104
+REAL_VERSION=$(SONAME_VERSION).$(DUK_VERSION)
+
+# Change to actual path for actual distribution packaging.
+INSTALL_PREFIX=/usr/local
+
+# The 'noline' variant may be more appropriate for some distributions; it
+# doesn't have #line directives in the combined source.
+DUKTAPE_SRCDIR=./src
+#DUKTAPE_SRCDIR=./src-noline
+
+.PHONY: all
+all: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
+
+# If the default duk_config.h is not suitable for the distribution, modify it
+# before compiling the shared library and copy the same, edited duk_config.h
+# to $INSTALL_PREFIX/include on installation.
+
+libduktape.so.$(REAL_VERSION):
+	gcc -shared -fPIC -Wall -Wextra -Os -Wl,-soname,libduktape.so.$(SONAME_VERSION) \
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+
+libduktaped.so.$(REAL_VERSION):
+	gcc -shared -fPIC -g -Wall -Wextra -Os -Wl,-soname,libduktaped.so.$(SONAME_VERSION) \
+		-o $@ $(DUKTAPE_SRCDIR)/duktape.c
+
+# Symlinks depend on platform conventions.
+.PHONY: install
+install: libduktape.so.$(REAL_VERSION) libduktaped.so.$(REAL_VERSION)
+	cp $+ $(INSTALL_PREFIX)/lib/
+	rm -f $(INSTALL_PREFIX)/lib/libduktape.so $(INSTALL_PREFIX)/lib/libduktape.so.$(SONAME_VERSION)
+	ln -s libduktape.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktape.so
+	ln -s libduktape.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktape.so.$(SONAME_VERSION)
+	rm -f $(INSTALL_PREFIX)/lib/libduktaped.so $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
+	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so
+	ln -s libduktaped.so.$(REAL_VERSION) $(INSTALL_PREFIX)/lib/libduktaped.so.$(SONAME_VERSION)
+	cp $(DUKTAPE_SRCDIR)/duktape.h $(DUKTAPE_SRCDIR)/duk_config.h $(INSTALL_PREFIX)/include/
+
+# Note: assumes /usr/local/include/ and /usr/local/lib/ are in include/link
+# path which may not be the case for all distributions.
+#CCOPTS=-I/usr/local/include -L/usr/local/lib
+CCOPTS=
+duk:
+	gcc $(CCOPTS) -Wall -Wextra -Os -o $@ ./examples/cmdline/duk_cmdline.c -lduktape -lm
