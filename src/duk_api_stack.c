@@ -373,6 +373,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t index) {
 
 #if defined(DUK_USE_VALSTACK_UNSAFE)
 	DUK_ASSERT(uindex <= vs_limit);
+	DUK_UNREF(vs_limit);
 #else
 	if (DUK_UNLIKELY(uindex > vs_limit)) {
 		DUK_ERROR_API_INDEX(thr, index);

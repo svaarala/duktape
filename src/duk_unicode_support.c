@@ -1041,6 +1041,7 @@ DUK_INTERNAL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, 
 #if defined(DUK_USE_REGEXP_CANON_WORKAROUND)
 	/* Fast canonicalization lookup at the cost of 128kB footprint. */
 	DUK_ASSERT(cp >= 0);
+	DUK_UNREF(thr);
 	if (DUK_LIKELY(cp < 0x10000L)) {
 		return (duk_codepoint_t) duk_unicode_re_canon_lookup[cp];
 	}
