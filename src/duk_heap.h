@@ -19,6 +19,7 @@
 #define DUK_HEAP_FLAG_REFZERO_FREE_RUNNING                     (1 << 2)  /* refcount code is processing refzero list */
 #define DUK_HEAP_FLAG_ERRHANDLER_RUNNING                       (1 << 3)  /* an error handler (user callback to augment/replace error) is running */
 #define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 4)  /* executor interrupt running (used to avoid nested interrupts) */
+#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1 << 5)  /* heap destruction ongoing, finalizer rescue no longer possible */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -33,18 +34,21 @@
 #define DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_HAS_ERRHANDLER_RUNNING(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 
 #define DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_SET_ERRHANDLER_RUNNING(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_SET_FINALIZER_NORESCUE(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
 #define DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_REFZERO_FREE_RUNNING)
 #define DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)             DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
+#define DUK_HEAP_CLEAR_FINALIZER_NORESCUE(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 
 /*
  *  Longjmp types, also double as identifying continuation type for a rethrow (in 'finally')
@@ -69,8 +73,9 @@
 
 #define DUK_MS_FLAG_EMERGENCY                (1 << 0)   /* emergency mode: try extra hard */
 #define DUK_MS_FLAG_NO_STRINGTABLE_RESIZE    (1 << 1)   /* don't resize stringtable (but may sweep it); needed during stringtable resize */
-#define DUK_MS_FLAG_NO_FINALIZERS            (1 << 2)   /* don't run finalizers (which may have arbitrary side effects) */
-#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 3)   /* don't compact objects; needed during object property allocation resize */
+#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 2)   /* don't compact objects; needed during object property allocation resize */
+#define DUK_MS_FLAG_NO_FINALIZERS            (1 << 3)   /* don't run finalizers; leave finalizable objects in finalize_list for next round */
+#define DUK_MS_FLAG_SKIP_FINALIZERS          (1 << 4)   /* don't run finalizers; queue finalizable objects back to heap_allocated */
 
 /*
  *  Thread switching

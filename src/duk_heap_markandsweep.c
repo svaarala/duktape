@@ -855,7 +855,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
  *  Run (object) finalizers in the "to be finalized" work list.
  */
 
-DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap) {
+DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 #ifdef DUK_USE_DEBUG
@@ -878,13 +878,22 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
 
-		/* run the finalizer */
-		duk_hobject_run_finalizer(thr, (duk_hobject *) curr);  /* must never longjmp */
-
-		/* mark FINALIZED, for next mark-and-sweep (will collect unless has become reachable;
-		 * prevent running finalizer again if reachable)
-		 */
-		DUK_HEAPHDR_SET_FINALIZED(curr);
+		if (DUK_LIKELY((flags & DUK_MS_FLAG_SKIP_FINALIZERS) == 0)) {
+			/* Run the finalizer, duk_hobject_run_finalizer() sets FINALIZED.
+			 * Next mark-and-sweep will collect the object unless it has
+			 * become reachable (i.e. rescued).  FINALIZED prevents the
+			 * finalizer from being executed again before that.
+			 */
+			duk_hobject_run_finalizer(thr, (duk_hobject *) curr);  /* must never longjmp */
+			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(curr));
+		} else {
+			/* Used during heap destruction: don't actually run finalizers
+			 * because we're heading into forced finalization.  Instead,
+			 * queue finalizable objects back to the heap_allocated list.
+			 */
+			DUK_D(DUK_DPRINT("skip finalizers flag set, queue object to heap_allocated without finalizing"));
+			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
+		}
 
 		/* queue back to heap_allocated */
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
@@ -1321,7 +1330,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	if (flags & DUK_MS_FLAG_NO_FINALIZERS) {
 		DUK_D(DUK_DPRINT("finalizer run skipped because DUK_MS_FLAG_NO_FINALIZERS is set"));
 	} else {
-		duk__run_object_finalizers(heap);
+		duk__run_object_finalizers(heap, flags);
 	}
 
 	/*

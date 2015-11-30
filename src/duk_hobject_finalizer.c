@@ -18,7 +18,10 @@
 #include "duk_internal.h"
 
 DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx) {
+	duk_hthread *thr;
+
 	DUK_ASSERT(ctx != NULL);
+	thr = (duk_hthread *) ctx;
 
 	DUK_DDD(DUK_DDDPRINT("protected finalization helper running"));
 
@@ -36,9 +39,10 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx) {
 		DUK_DDD(DUK_DDDPRINT("-> no finalizer or finalizer not callable"));
 		return 0;
 	}
-	duk_dup(ctx, -2);  /* -> [... obj finalizer obj] */
+	duk_dup(ctx, -2);
+	duk_push_boolean(ctx, DUK_HEAP_HAS_FINALIZER_NORESCUE(thr->heap));
 	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling finalizer"));
-	duk_call(ctx, 1);  /* -> [... obj retval] */
+	duk_call(ctx, 2);  /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */
 	DUK_DDD(DUK_DDDPRINT("finalizer finished successfully"));
 	return 0;
 
@@ -70,6 +74,20 @@ DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) 
 	 *  in a protected call, because even getting the finalizer
 	 *  may trigger an error (getter may throw one, for instance).
 	 */
+
+	if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) obj)) {
+		DUK_D(DUK_DPRINT("object already finalized, avoid running finalizer twice: %!O", obj));
+		return;
+	}
+	DUK_HEAPHDR_SET_FINALIZED((duk_heaphdr *) obj);  /* ensure never re-entered until rescue cycle complete */
+	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) {
+		/* This shouldn't happen; call sites should avoid looking up
+		 * _Finalizer "through" a Proxy, but ignore if we come here
+		 * with a Proxy to avoid finalizer re-entry.
+		 */
+		DUK_D(DUK_DPRINT("object is a proxy, skip finalizer call"));
+		return;
+	}
 
 	/* XXX: use a NULL error handler for the finalizer call? */
 
