@@ -403,6 +403,43 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 #endif  /* !DUK_USE_TRACEBACKS */
 
 /*
+ *  Add line number to a compiler error.
+ */
+
+DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
+	duk_context *ctx;
+
+	/* Append a "(line NNN)" to the "message" property of any error
+	 * thrown during compilation.  Usually compilation errors are
+	 * SyntaxErrors but they can also be out-of-memory errors and
+	 * the like.
+	 */
+
+	/* [ ... error ] */
+
+	ctx = (duk_context *) thr;
+	DUK_ASSERT(duk_is_object(ctx, -1));
+
+	if (!(thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL)) {
+		return;
+	}
+
+	DUK_DDD(DUK_DDDPRINT("compile error, before adding line info: %!T",
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
+
+	if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_MESSAGE)) {
+		duk_push_sprintf(ctx, " (line %ld)", (long) thr->compile_ctx->curr_token.start_line);
+		duk_concat(ctx, 2);
+		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE);
+	} else {
+		duk_pop(ctx);
+	}
+
+	DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T",
+	                     (duk_tval *) duk_get_tval(ctx, -1)));
+}
+
+/*
  *  Augment an error being created using Duktape specific properties
  *  like _Tracedata or .fileName/.lineNumber.
  */
@@ -421,6 +458,8 @@ DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *th
 
 	DUK_UNREF(obj);  /* unreferenced w/o tracebacks */
 	DUK_UNREF(ctx);  /* unreferenced w/o asserts */
+
+	duk__add_compiler_error_line(thr);
 
 #if defined(DUK_USE_TRACEBACKS)
 	/* If tracebacks are enabled, the '_Tracedata' property is the only
