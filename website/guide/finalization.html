@@ -1,36 +1,118 @@
 <h1 id="finalization">Finalization</h1>
 
+<h2>Overview</h2>
+
 <p>Duktape supports object finalization as a custom feature.  A finalizer
 is called when an object is about to be freed, so that application code
-can e.g. free native resources associated with an object.</p>
-
-<p>An object which has an internal finalizer property in its prototype
-chain (or in the object itself) is subject to finalization before being
-freed.  The internal finalizer property is set using the <code>Duktape.fin()</code>
-method with the object and the finalizer function as call arguments.
-The current finalizer is read back by calling <code>Duktape.fin()</code>
-with only the object as a call argument.  A finalizer can also be set/get from
-C code using the <code>duk_get_finalizer()</code> and <code>duk_set_finalizer()</code>
-API calls.  A finalizer can be either an Ecmascript function or a Duktape/C function.</p>
-
-<p>A finalizer is triggered when an unreachable object is detected by
-reference counting or mark-and-sweep.  Finalizers are also executed for all
-remaining objects (regardless of their reachability status) when a heap is destroyed.
-This guarantees that a finalizer gets executed at some point before a heap
-is destroyed, which allows native resources (such as sockets and files) to
-be freed reliably.</p>
-
-<p>The finalizer function is called with the target object as its sole
-argument.  The finalizer may rescue the object by creating a live reference
-to the object before returning.  The return value is ignored, and any errors
-thrown by the finalizer are silently ignored.  A finalizer may be called
-multiple times (this may happen in special cases even when the object is not
-rescued by the finalizer).  A finalizer should be careful to avoid e.g.
-freeing a native resource twice in such cases.</p>
-
-<p>Finalizers cannot currently yield.  The context executing the finalization
-can currently be any coroutine in the heap.  (This will be fixed in the future.)
-</p>
+can e.g. free native resources associated with the object.  The finalizer
+can be either an Ecmascript function or a Duktape/C function.  However,
+Ecmascript finalizers may interact badly with script timeouts, see below.</p>
 
 <p>See <a href="http://wiki.duktape.org/HowtoFinalization.html">How to use finalization</a>
 for examples.</p>
+
+<h2>Getting and setting the current finalizer</h2>
+
+<p>An object which has an internal <code>_Finalizer</code> property in its
+prototype chain (or in the object itself) is subject to finalization before
+being freed.  The internal property should not be accessed directly, but can
+be read/written using the following:</p>
+<ul>
+<li><code>Duktape.fin(obj)</code> (Ecmascript) or
+    <code>duk_get_finalizer()</code> (C)
+    gets the current finalizer.</li>
+<li><code>Duktape.fin(obj, fn)</code> (Ecmascript) or
+    <code>duk_set_finalizer()</code> (C)
+    sets the current finalizer.</li>
+</ul>
+
+<h2>Finalizer function arguments and return value</h2>
+
+<p>The finalizer function is called with two arguments:</p>
+<ul>
+<li>The object being finalized.</li>
+<li>A boolean flag indicating if the object is being forcibly freed as part
+    of heap destruction.  This argument was added in Duktape 1.4.0:
+    <ul>
+    <li>If <code>false</code> (normal case), the finalizer may rescue the object
+        by creating a live reference to the object before returning and the
+        finalizer is guaranteed to be called again later (heap destruction at
+        the latest).</li>
+    <li>If <code>true</code> (forced finalization in heap destruction), the
+        object cannot be rescued and will be forcibly freed after the finalizer
+        finishes.  Native resources should be freed without expecting any further
+        calls into the finalizer.</li>
+    </ul>
+    </li>
+</ul>
+
+<p>The return value of a finalizer is ignored.  Any errors thrown by the
+finalizer are also silently ignored.</p>
+
+<h2>Finalizer execution guarantees</h2>
+
+<p>The main finalizer guarantees are:</p>
+<ul>
+<li>Finalizers are executed for unreachable objects detected by reference
+    counting or mark-and-sweep.  The finalizer may not execute immediately,
+    however, not even when reference counting detects that the object became
+    unreachable.</li>
+<li>Finalizers are also executed for all remaining objects, regardless of
+    their reachability status, when a Duktape heap is destroyed.</li>
+<li>A finalizer is called exactly once, at the latest when the heap is
+    destroyed, unless the object is rescued by the finalizer by making
+    it reachable again.  An object may be rescued an arbitrary number of
+    times; the finalizer is called exactly once for each "rescue cycle".
+    Even with this guarantee in place, it's best practice for a finalizer
+    to be re-entrant and carefully avoid e.g. freeing a native resource
+    multiple times if re-entered.</li>
+<li>A finalizer is not executed for a Proxy object, but is executed for
+    the plain target object.  This ensures that a finalizer isn't executed
+    multiple times when Proxy objects are created.</li>
+</ul>
+
+<p>Together these guarantee that a finalizer gets executed at some point
+before a heap is destroyed, which allows native resources (such as sockets
+and files) to be freed reliably.  There are two exceptions to this guarantee,
+see below for more discussion:</p>
+<ul>
+<li>Heap destruction finalizer sanity limit may cause a finalizer not to
+    be executed.</li>
+<li>When a script timeout is being propagated out of the current callstack,
+    Ecmascript finalizers will immediately rethrow the script timeout error.
+    Duktape/C finalizers will execute normally.</li>
+</ul>
+
+<p>When the Duktape heap is being destroyed there are a few limitations for
+finalizer behavior:</p>
+<ul>
+<li>Finalizers are executed for all finalizable objects in the heap,
+    including reachable objects.</li>
+<li>Finalizers cannot rescue objects; the semantics for a "rescue" would be
+    ambiguous.  The finalizer's second argument is <code>true</code> when
+    called during heap destruction to indicate rescue is not possible.</li>
+<li>A finalizer can create new finalizable objects and these objects will also
+    be finalized.  For example, a finalizer may post a HTTP notification of
+    an object destruction which may use native network resources with their
+    own finalizers.  However, there's a sanity limit to this process to ensure
+    runaway finalizers cannot prevent a heap from being destroyed.</li>
+<li>The finalizer sanity algorithm is version specific, see
+    <a href="http://wiki.duktape.org/HowtoFinalization.html">How to use finalization</a>.
+    The algorithm allows the number of finalizable objects to grow initially,
+    but it must decrease in a reasonable time or the finalization process is
+    aborted, which may cause some native resource leaks.</li>
+</ul>
+
+<h2>Other current limitations</h2>
+
+<ul>
+<li>When script execution timeout
+(<code>DUK_OPT_EXEC_TIMEOUT_CHECK</code> / <code>DUK_USE_EXEC_TIMEOUT_CHECK</code>)
+is used and a timeout occurs, it's possible for an Ecmascript finalizer to start
+running but immediately fail due to a script timeout.  If this is a concrete
+concern, use a Duktape/C native finalizer instead which will run normally even
+when propagating a timeout.</li>
+<li>The context (Duktape thread) executing the finalizer can currently be any
+    coroutine in the heap.  This must be taken into account in sandboxing.</li>
+<li>Finalizers cannot currently yield.</li>
+</ul>
