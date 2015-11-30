@@ -18,10 +18,12 @@ function test() {
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 5000; i++) {
-        // Assigning to 'res' avoids garbage collection of result; this is
-        // intentional to avoid mixing string intern performance to the test.
-        var res = Duktape.enc('hex', tmp2);
+    for (i = 0; i < 1000; i++) {
+        // Assigning to 'res1' and 'res2' avoids garbage collection of result;
+        // this is intentional to avoid mixing string intern performance to the
+        // test.  Test both hex alignments (internal fast loop is aligned by 2).
+        var res1 = Duktape.enc('jx', { foo: tmp2 });
+        var res2 = Duktape.enc('jx', { foox: tmp2 });
     }
 }
 

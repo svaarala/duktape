@@ -463,11 +463,16 @@ struct duk_bufwriter_ctx {
  */
 
 #if !defined(DUK_SINGLE_FILE)
-DUK_INTERNAL_DECL duk_uint8_t duk_lc_digits[36];
-DUK_INTERNAL_DECL duk_uint8_t duk_uc_nybbles[16];
-DUK_INTERNAL_DECL duk_int8_t duk_hex_dectab[256];
+DUK_INTERNAL_DECL const duk_uint8_t duk_lc_digits[36];
+DUK_INTERNAL_DECL const duk_uint8_t duk_uc_nybbles[16];
+DUK_INTERNAL_DECL const duk_int8_t duk_hex_dectab[256];
 #if defined(DUK_USE_HEX_FASTPATH)
-DUK_INTERNAL_DECL duk_int16_t duk_hex_dectab_shift4[256];
+DUK_INTERNAL_DECL const duk_int16_t duk_hex_dectab_shift4[256];
+DUK_INTERNAL_DECL const duk_uint16_t duk_hex_enctab[256];
+#endif
+#if defined(DUK_USE_BASE64_FASTPATH)
+DUK_INTERNAL_DECL const duk_uint8_t duk_base64_enctab[64];
+DUK_INTERNAL_DECL const duk_int8_t duk_base64_dectab[256];
 #endif
 #endif  /* !DUK_SINGLE_FILE */
 

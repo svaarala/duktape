@@ -1305,7 +1305,7 @@ Planned
   fast path (GH-445)
 
 * Internal performance improvement: add fast paths for hex and base64
-  encoding/decoding (GH-465, GH-467)
+  encoding/decoding (GH-465, GH-467, GH-471)
 
 2.0.0 (XXXX-XX-XX)
 ------------------

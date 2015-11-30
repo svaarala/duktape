@@ -590,11 +590,25 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
 	const duk_uint8_t *p;
+	duk_uint8_t *buf;
+	duk_size_t src_len;
 	duk_small_int_t x;
 
 	/* Caller has already eaten the first character ('|') which we don't need. */
 
 	p = js_ctx->p;
+
+	/* XXX: Would be nice to share the fast path loop from duk_hex_decode()
+	 * and avoid creating a temporary buffer.  However, there are some
+	 * differences which prevent trivial sharing:
+	 *
+	 *   - Pipe char detection
+	 *   - EOF detection
+	 *   - Unknown length of input and output
+	 *
+	 * The best approach here would be a bufwriter and a reasonaly sized
+	 * safe inner loop (e.g. 64 output bytes at a time).
+	 */
 
 	for (;;) {
 		x = *p;
@@ -611,8 +625,12 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 		p++;
 	}
 
-	duk_push_lstring(ctx, (const char *) js_ctx->p, (duk_size_t) (p - js_ctx->p));
+	src_len = (duk_size_t) (p - js_ctx->p);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, src_len);
+	DUK_ASSERT(buf != NULL);
+	DUK_MEMCPY((void *) buf, (const void *) js_ctx->p, src_len);
 	duk_hex_decode(ctx, -1);
+
 	js_ctx->p = p + 1;  /* skip '|' */
 
 	/* [ ... buf ] */
@@ -1420,10 +1438,86 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 #endif
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+#if defined(DUK_USE_HEX_FASTPATH)
+DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size_t src_len, duk_uint8_t *dst) {
+	duk_uint8_t *q;
+	duk_uint16_t *q16;
+	duk_small_uint_t x;
+	duk_size_t i, len_safe;
+#if !defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE)
+	duk_bool_t shift_dst;
+#endif
+
+	/* Unlike in duk_hex_encode() 'dst' is not necessarily aligned by 2.
+	 * For platforms where unaligned accesses are not allowed, shift 'dst'
+	 * ahead by 1 byte to get alignment and then DUK_MEMMOVE() the result
+	 * in place.  The faster encoding loop makes up the difference.
+	 * There's always space for one extra byte because a terminator always
+	 * follows the hex data and that's been accounted for by the caller.
+	 */
+
+#if defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE)
+	q16 = (duk_uint16_t *) (void *) dst;
+#else
+	shift_dst = (duk_bool_t) (((duk_uintptr_t) dst) & 0x01U);
+	if (shift_dst) {
+		DUK_DD(DUK_DDPRINT("unaligned accesses not possible, dst not aligned -> step to dst + 1"));
+		q16 = (duk_uint16_t *) (void *) (dst + 1);
+	} else {
+		DUK_DD(DUK_DDPRINT("unaligned accesses not possible, dst is aligned"));
+		q16 = (duk_uint16_t *) (void *) dst;
+	}
+	DUK_ASSERT((((duk_uintptr_t) q16) & 0x01U) == 0);
+#endif
+
+	len_safe = src_len & ~0x03U;
+	for (i = 0; i < len_safe; i += 4) {
+		q16[0] = duk_hex_enctab[src[i]];
+		q16[1] = duk_hex_enctab[src[i + 1]];
+		q16[2] = duk_hex_enctab[src[i + 2]];
+		q16[3] = duk_hex_enctab[src[i + 3]];
+		q16 += 4;
+	}
+	q = (duk_uint8_t *) q16;
+
+#if !defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE)
+	if (shift_dst) {
+		q--;
+		DUK_MEMMOVE((void *) dst, (const void *) (dst + 1), 2 * len_safe);
+		DUK_ASSERT(dst + 2 * len_safe == q);
+	}
+#endif
+
+	for (; i < src_len; i++) {
+		x = src[i];
+		*q++ = duk_lc_digits[x >> 4];
+		*q++ = duk_lc_digits[x & 0x0f];
+	}
+
+	return q;
+}
+#else  /* DUK_USE_HEX_FASTPATH */
+DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size_t src_len, duk_uint8_t *dst) {
+	const duk_uint8_t *p;
+	const duk_uint8_t *p_end;
+	duk_uint8_t *q;
+	duk_small_uint_t x;
+
+	p = src;
+	p_end = src + src_len;
+	q = dst;
+	while (p != p_end) {
+		x = *p++;
+		*q++ = duk_lc_digits[x >> 4];
+		*q++ = duk_lc_digits[x & 0x0f];
+	}
+
+	return q;
+}
+#endif  /* DUK_USE_HEX_FASTPATH */
+
 DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_data, duk_size_t buf_len) {
 	duk_hthread *thr;
-	duk_uint8_t *p, *p_end;
-	duk_small_uint_t x;
 	duk_uint8_t *q;
 	duk_size_t space;
 
@@ -1442,9 +1536,6 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 	 * (1) JX+JC, (2) JX only, (3) JC only.
 	 */
 
-	p = buf_data;
-	p_end = buf_data + buf_len;
-
 	/* Note: space must cater for both JX and JC. */
 	space = 9 + buf_len * 2 + 2;
 	DUK_ASSERT(DUK_HBUFFER_MAX_BYTELEN <= 0x7ffffffeUL);
@@ -1457,11 +1548,7 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 #if defined(DUK_USE_JX)
 	{
 		*q++ = DUK_ASC_PIPE;
-		while (p < p_end) {
-			x = *p++;
-			*q++ = duk_lc_digits[(x >> 4) & 0x0f];
-			*q++ = duk_lc_digits[x & 0x0f];
-		}
+		q = duk__enc_buffer_data_hex(buf_data, buf_len, q);
 		*q++ = DUK_ASC_PIPE;
 
 	}
@@ -1474,11 +1561,7 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 		DUK_ASSERT(js_ctx->flag_ext_compatible);
 		DUK_MEMCPY((void *) q, (const void *) "{\"_buf\":\"", 9);  /* len: 9 */
 		q += 9;
-		while (p < p_end) {
-			x = *p++;
-			*q++ = duk_lc_digits[(x >> 4) & 0x0f];
-			*q++ = duk_lc_digits[x & 0x0f];
-		}
+		q = duk__enc_buffer_data_hex(buf_data, buf_len, q);
 		*q++ = DUK_ASC_DOUBLEQUOTE;
 		*q++ = DUK_ASC_RCURLY;
 	}

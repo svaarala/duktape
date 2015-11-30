@@ -4,6 +4,7 @@ function test() {
     var tmp1 = [];
     var tmp2 = [];
     var i, n, buf;
+    var inp1, inp2;
 
     print('build');
     buf = Duktape.Buffer(1024);
@@ -18,10 +19,12 @@ function test() {
 
     print(tmp2.length);
     print('run');
-    for (i = 0; i < 5000; i++) {
-        // Assigning to 'res' avoids garbage collection of result; this is
-        // intentional to avoid mixing string intern performance to the test.
-        var res = Duktape.enc('hex', tmp2);
+    inp1 = Duktape.enc('jx', { foo: tmp2 });
+    inp2 = Duktape.enc('jx', { foox: tmp2 });
+
+    for (i = 0; i < 1000; i++) {
+        var res1 = Duktape.dec('jx', inp1);
+        var res2 = Duktape.dec('jx', inp2);
     }
 }
 
