@@ -216,7 +216,9 @@ Suggestions for sandboxing:
   reference directly.
 
 * Write finalizers very carefully.  Make minimal assumptions on which
-  thread they run, i.e. which global object they see.
+  thread they run, i.e. which global object they see.  It's also best
+  practice to tolerate re-entry (although Duktape 1.4.0 and above has
+  a guarantee of no re-entry unless object is rescued).
 
 * For sandboxed environments it may be sensible to make all finalizers
   native code so that they can access the necessary thread contexts
