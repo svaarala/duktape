@@ -704,6 +704,7 @@ extract_chars() {
 
 extract_caseconv() {
 	python src/extract_caseconv.py \
+		--command=caseconv_bitpacked \
 		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
 		--special-casing=src/SpecialCasing.txt \
 		--out-source=$DISTSRCSEP/duk_unicode_caseconv.c.tmp \
@@ -711,6 +712,15 @@ extract_caseconv() {
 		--table-name-lc=duk_unicode_caseconv_lc \
 		--table-name-uc=duk_unicode_caseconv_uc \
 		> $DISTSRCSEP/caseconv.txt
+
+	python src/extract_caseconv.py \
+		--command=re_canon_lookup \
+		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
+		--special-casing=src/SpecialCasing.txt \
+		--out-source=$DISTSRCSEP/duk_unicode_re_canon_lookup.c.tmp \
+		--out-header=$DISTSRCSEP/duk_unicode_re_canon_lookup.h.tmp \
+		--table-name-re-canon-lookup=duk_unicode_re_canon_lookup \
+		> $DISTSRCSEP/caseconv_re_canon_lookup.txt
 }
 
 extract_chars $WHITESPACE_INCL $WHITESPACE_EXCL ws
@@ -763,6 +773,10 @@ cat > $DISTSRCSEP/sed.tmp <<EOF
 	r $DISTSRCSEP/duk_unicode_caseconv.h.tmp
 	d
 }
+/#include "duk_unicode_re_canon_lookup.h"/ {
+	r $DISTSRCSEP/duk_unicode_re_canon_lookup.h.tmp
+	d
+}
 EOF
 
 mv $DISTSRCSEP/duk_unicode.h $DISTSRCSEP/duk_unicode.h.tmp
@@ -799,6 +813,10 @@ cat > $DISTSRCSEP/sed.tmp <<EOF
 	r $DISTSRCSEP/duk_unicode_caseconv.c.tmp
 	d
 }
+/#include "duk_unicode_re_canon_lookup.c"/ {
+	r $DISTSRCSEP/duk_unicode_re_canon_lookup.c.tmp
+	d
+}
 EOF
 
 mv $DISTSRCSEP/duk_unicode_tables.c $DISTSRCSEP/duk_unicode_tables.c.tmp
@@ -817,7 +835,7 @@ for i in \
 	idp_m_ids idp_m_ids_noa idp_m_ids_noabmp; do
 	rm $DISTSRCSEP/$i.txt
 done
-rm $DISTSRCSEP/caseconv.txt
+rm $DISTSRCSEP/caseconv*.txt
 
 # Create a combined source file, duktape.c, into a separate combined source
 # directory.  This allows user to just include "duktape.c", "duktape.h", and
