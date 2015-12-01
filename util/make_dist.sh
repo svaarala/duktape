@@ -415,6 +415,7 @@ for i in \
 	Makefile.jxpretty \
 	Makefile.sandbox \
 	Makefile.codepage \
+	Makefile.sharedlibrary \
 	mandel.js \
 	; do
 	cp dist-files/$i $DIST/
