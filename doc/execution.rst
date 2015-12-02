@@ -203,6 +203,237 @@ Debugger support relies on:
 
 See ``debugger.rst`` for details.
 
+Call processing: duk_handle_call()
+==================================
+
+When handling a call, ``duk_handle_call()`` is given ``num_stack_args`` which
+indicates how many arguments have been pushed on the current stack for the
+call.  The stack frame of the calling activation looks as follows::
+
+      top - num_stack_args - 2
+           |
+           |          top - num_stack_args
+           |               |
+           v               v
+  +-----+------+--------+------+-----+------+
+  | ... | func | 'this' | arg0 | ... | argN | <- top
+  +-----+------+--------+------+-----+------+
+
+To prepare the stack frame for the called function, ``duk_handle_call()`` does
+the following:
+
+* If ``func`` is a bound function, follows the bound function chain until
+  a non-bound function is found.  While following the chain, the requested
+  ``this`` binding may be updated by the bound function, and arguments may be
+  prepended at the ``arg0`` point.
+
+* Coerces the ``this`` binding as specified in E5.  The ``this`` in the calling
+  stack frame is the caller requested ``this`` binding.  For instance, for a
+  property-based call (e.g. ``obj.method()``) this is the base object.  The
+  effective ``this`` binding may be coerced (for non-strict target functions)
+  or replaced during bound function handling.
+
+* Resolves the difference between arguments requested (target function
+  ``nargs``) and provided (``num_stack_args``) by filling in missing arguments
+  with ``undefined`` or discarding extra arguments so that exactly ``nargs``
+  arguments are present.  (Special handling is needed for vararg functions
+  where ``nargs`` indicates ``num_stack_args`` arguments are used as is.)
+
+* Finalizes the value stack "top":
+
+  - For Duktape/C target functions the top is set to ``nargs`` (or
+    ``num_stack_args`` for vararg functions).
+
+  - For Ecmascript target functions the top is first set to ``nargs``, wiping
+    any values above that, and then extended to ``nregs``.  Values above
+    ``nargs`` are filled with ``undefined``.  At the end the value stack frame
+    has ``nregs`` allocated and initialized entries, with ``[0, nargs-1]``
+    mapping to call arguments.
+
+* Creates a new lexical scope object if necessary; this step is postponed
+  when possible and done lazily only when actually necessary.
+
+* Creates a new activation, and switches the valstack bottom to the first
+  argument.
+
+The value stack looks as follows after call setup is complete and the new
+function is ready to execute (the example is for an Ecmascript target
+function)::
+
+     (-1)     0      1          nargs-1                   nregs - 1
+  +--------+------+------+-----+------+-----------+-----+-----------+
+  | 'this' | arg0 | arg1 | ... | argM | undefined | ... | undefined | <- top
+  +--------+------+------+-----+------+-----------+-----+-----------+
+
+The effective ``this`` binding for the function is always stashed right below
+the active value stack frame.  This interacts well with the calling convention
+where the requested ``this`` binding can be coerced in-place nicely, and the
+``this`` binding can also be accessed quickly.
+
+When doing tail calls, no stacks (value stack, call stack, catch stack) may
+grow in size; otherwise the point of cail talls would be defeated.  This is
+ensured as follows:
+
+* The value stack is manipulated so that the callee's first argument (``arg0``)
+  will be placed in the current activation's index 0 (value stack bottom).
+  The effective ``this`` binding is overwritten just below the current
+  activation's value stack bottom.
+
+* The call stack does not grow by virtue of reusing the current activation.
+
+* The catch stack does not grow because the Ecmascript compiler never emits
+  a tailcall if there is a catch stack; tail calls are not possible if a
+  catch stack exists, because e.g. ``try`` and ``finally`` must be processable.
+  Hence, ``duk_handle_call()`` simply asserts for this condition.
+
+Notes:
+
+* The value stack doesn't hold all the internal state relevant for an
+  activation.  Some state, such as active environment records (``lex_env``
+  and ``var_env``) are held in the ``duk_activation`` call stack structure.
+
+Value stack management
+======================
+
+One value stack per thread
+--------------------------
+
+A thread has a single value stack, essentially an array of tagged values,
+which is shared by the activations in the call stack.  Each activation has
+a set of registers indexed relative to "frame bottom", starting from zero,
+mapped to the range [regbase, regtop[ in the value stack.  The register ranges
+of activations may and often do overlap (see call handling discussion).
+For instance, function call arguments prepared by the caller are used directly
+by the callee.
+
+The value stack can be thought of as follows::
+
+  size ->    _
+            : :    [0,size[    allocated range
+            : :    [top,size[  allocated, initialized to undefined, ignored by GC
+            : :    [0,top[     active range, must be initialized for GC
+  top ->    :_:
+            ! ! -.
+            ! !  !-- current activation
+            ! !  !
+  bottom -> !_! -'
+            ! !
+            ! !
+            ! !
+            ! !
+  0 ->      !_!
+
+There are several possible policies for values above "top".  The current
+policy is based on concrete performance measurements, and is as follows:
+
+* Values above "top" are not considered reachable to GC.
+
+* Values above "top" are initialized to "undefined" (DUK_TAG_UNDEFINED).
+  Whenever the "top" is decreased, previous values are set to undefined.
+
+Overlap between activations
+---------------------------
+
+Example of value stack overlap for two Ecmascript activations during a
+function call::
+
+  size ->    _
+            : :    [0,size[    allocated range
+            : :    [top,size[  allocated, initialized to undefined, ignored by GC
+            : :    [0,top[     active range, must be initialized for GC
+  top ->    :_:
+            !=! -.
+            !=!  !
+            !=!  !-- activation 2
+            !#!  !  -.
+  bottom -> !#! -'   !-- activation 1
+            !:!      !
+            !:!     -'
+            ! !
+  0 ->      !_!
+
+The callee's activation (activation 2 in the figure) may also be smaller
+than the caller's activation::
+
+  size ->    _
+            : :    [0,size[    allocated range
+            : :    [top,size[  allocated, initialized to undefined, ignored by GC
+            : :    [0,top[     active range, must be initialized for GC
+            : :
+            : :
+            ::: -.
+            :::  !-- activation 1
+  top ->    :::  !
+            !#!  !  -.
+            !#!  !   !-- activation 2
+  bottom -> !#!  !  -'
+            !:!  !
+            !:! -'
+            ! !
+  0 ->      !_!
+
+When the callee returns, call handling will restore the value stack frame
+to the size expected by the caller.  Values above the entries used for
+call handling will be reinitialized to ``undefined``.
+
+Call handling will also ensure that the reserved size for the value stack
+never decreases as a result of the call, even if the caller has a much
+smaller value stack frame.  This is important for the value stack size
+guarantees provided by e.g. ``duk_require_stack()``.
+
+Note that there is nothing in the value stack model or the execution model
+in general which requires activations to share registers for parameter
+passing.  It is just a convenient thing to do especially for
+Ecmascript-to-Ecmascript calls: it minimizes value stack growth, minimizes
+unnecessary copying of arguments (which is pointless because the caller will
+never rely on the argument values after a call anyway).
+
+When an Ecmascript function with a very large value stack frame calls
+a function with a very small value stack frame, a lot of value stack
+resize / wipe mechanics will happen.  It might be useful to avoid the
+register overlap in such cases to improve performance.
+
+Growing and shrinking
+---------------------
+
+The value stack allocation size grows and shrinks as required by the active
+range, which changes e.g. during function calls.  Some hysteresis is applied
+to minimize memory allocation activity when the value stack changes active
+size.  Note that when the value stack grows or shrinks, it is reallocated and
+its base pointer may change, which invalidates any outstanding pointers to
+values in the stack.  For this reason, all persistent execution state refers
+to registers and value stack entries by index, not by memory pointer.
+
+Whenever there is a risk of a garbage collector run (either directly or
+indirectly through an error, a finalizer run, etc) all the entries in the
+[0,top[ range of the value stack must be initialized and correctly reference
+counted: all active ranges of reachable threads are considered GC roots.  The
+compiler and the executor should wipe any unused value stack entries as soon
+as the values are no longer needed: otherwise the values will be reachable
+for the GC and will prevent garbage collection.  This is easy to do e.g.
+when a function call returns (just wipe the entire range of registers used
+by the function) but is more difficult for a function which runs forever.
+
+When Ecmascript functions are compiled, the compiler keeps track of how many
+registers are needed by the opcodes comprising the compiled bytecode, and
+this value is stored in the ``nregs`` entry of a compiled function.  While
+the Ecmascript function is executing, we know that *all* register accesses
+will be to valid and initialized parts of the value stack, so no grow/shrink
+or other sanity checks are necessary while the function is executing.  This
+does not mean that all the ``nregs`` will always be used, and any unused
+registers at the top of the activation record's register range can be reused
+during e.g. function calls.
+
+The value stack is handled quite differently for C functions, which use a
+traditional stack model (this is similar to how Lua manages its value stack).
+Value stack grow/shrink checks are needed whenever pushing and popping values,
+and the number of value stack entries needed is not known beforehand.
+Arguments to C functions are placed on top of the initial C activation record
+(starting from register 0).  A possible return value is left by the C code at
+the top of the stack, not necessarily at position 0.  The return value of the
+C function indicates whether a return value is intended or not; if not, the
+return value defaults to ``undefined``.
+
 Managing executor interrupt
 ===========================
 
