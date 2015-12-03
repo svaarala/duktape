@@ -2,8 +2,8 @@
 #
 #  Process Duktape option metadata and produce various useful outputs:
 #
-#    - duk_config.h matching Duktape 1.x feature option model (DUK_OPT_xxx)
-#    - duk_config.h for a selected platform, compiler, forced options, etc.
+#    - duk_config.h with specific or autodetected platform, compiler, and
+#      architecture; forced options; sanity checks; etc
 #    - option documentation for Duktape 1.x feature options (DUK_OPT_xxx)
 #    - option documentation for Duktape 1.x/2.x config options (DUK_USE_xxx)
 #
@@ -15,9 +15,10 @@
 #  Instead, the goal is to allow the metadata to be extended, or to provide
 #  a reasonable starting point for manual duk_config.h tweaking.
 #
-#  NOTE: For Duktape 1.3 release the main goal is to autogenerate a Duktape
-#  1.2 compatible "autodetect" header from snippets.  Other outputs are still
-#  experimental.
+#  For Duktape 1.3 release the main goal was to autogenerate a Duktape 1.2
+#  compatible "autodetect" header from legacy snippets, with other outputs
+#  being experimental.  For Duktape 1.4 duk_config.h is always created from
+#  modular sources.
 #
 
 import os
@@ -30,7 +31,10 @@ import tarfile
 import tempfile
 import atexit
 import shutil
-import StringIO
+try:
+	from StringIO import StringIO
+except ImportError:
+	from io import StringIO
 
 #
 #  Globals holding scanned metadata, helper snippets, etc
@@ -113,33 +117,27 @@ assumed_provides = {
 }
 
 # Platform files must provide at least these (additional checks
-# in validate_platform_file()).
+# in validate_platform_file()).  Fill-ins provide missing optionals.
 platform_required_provides = [
-	'DUK_USE_OS_STRING',
-	'DUK_SETJMP', 'DUK_LONGJMP',
+	'DUK_USE_OS_STRING'  # must be #define'd
 ]
 
 # Architecture files must provide at least these (additional checks
-# in validate_architecture_file()).
+# in validate_architecture_file()).  Fill-ins provide missing optionals.
 architecture_required_provides = [
-	'DUK_USE_ARCH_STRING',
-	'DUK_USE_ALIGN_BY', 'DUK_USE_UNALIGNED_ACCESSES_POSSIBLE', 'DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS',
-	'DUK_USE_PACKED_TVAL', 'DUK_USE_PACKED_TVAL_POSSIBLE'
+	'DUK_USE_ARCH_STRING'
 ]
 
 # Compiler files must provide at least these (additional checks
-# in validate_compiler_file()).
+# in validate_compiler_file()).  Fill-ins provide missing optionals.
 compiler_required_provides = [
-	# XXX: incomplete, maybe a generic fill-in for missing stuff because
-	# there's quite a lot of required compiler defines.
+	# Compilers need a lot of defines; missing defines are automatically
+	# filled in with defaults (which are mostly compiler independent), so
+	# the requires define list is not very large.
 
-	'DUK_USE_COMPILER_STRING',
-
-	'DUK_EXTERNAL_DECL', 'DUK_EXTERNAL',
-	'DUK_INTERNAL_DECL', 'DUK_INTERNAL',
-	'DUK_LOCAL_DECL', 'DUK_LOCAL',
-
-	'DUK_FILE_MACRO', 'DUK_LINE_MACRO', 'DUK_FUNC_MACRO'
+	'DUK_USE_COMPILER_STRING',  # must be #define'd
+	'DUK_USE_BRANCH_HINTS',     # may be #undef'd, as long as provided
+	'DUK_USE_VARIADIC_MACROS'   # may be #undef'd, as long as provided
 ]
 
 #
@@ -149,7 +147,7 @@ compiler_required_provides = [
 def get_auto_delete_tempdir():
 	tmpdir = tempfile.mkdtemp(suffix='-genconfig')
 	def _f(dirname):
-		print 'Deleting temporary directory: %r' % dirname
+		#print('Deleting temporary directory: %r' % dirname)
 		if os.path.isdir(dirname) and '-genconfig' in dirname:
 			shutil.rmtree(dirname)
 	atexit.register(_f, tmpdir)
@@ -163,6 +161,7 @@ def strip_comments_from_lines(lines):
 	# Comment contents are stripped of any DUK_ prefixed text to avoid
 	# incorrect requires/provides detection.  Other comment text is kept;
 	# in particular a "/* redefine */" comment must remain intact here.
+	# (The 'redefine' hack is not actively needed now.)
 	#
 	# Avoid Python 2.6 vs. Python 2.7 argument differences.
 
@@ -212,12 +211,9 @@ class Snippet:
 			# matters and this is not handled now.)
 			#
 			# Also, some snippets may #undef/#define another define but
-			# they don't "provide" the define as such.  For example,
-			# DUK_F_CLANG.h.in undefines DUK_F_GCC defines if clang is
-			# detected: DUK_F_CLANG.h.in is considered to require
-			# DUK_F_GCC but doesn't provide it.  Such redefinitions are
-			# marked "/* redefine */" in the snippets.  They're best
-			# avoided, of course.
+			# they don't "provide" the define as such.  Such redefinitions
+			# are marked "/* redefine */" in the snippets.  They're best
+			# avoided (and not currently needed in Duktape 1.4.0).
 
 			if autoscan_provides:
 				m = re_line_provides.match(line)
@@ -251,7 +247,15 @@ class Snippet:
 			for line in f:
 				if line[-1] == '\n':
 					line = line[:-1]
-				lines.append(line)
+				if line[:8] == '#snippet':
+					m = re.match(r'#snippet\s+"(.*?)"', line)
+					# XXX: better plumbing for lookup path
+					sub_fn = os.path.normpath(os.path.join(filename, '..', '..', 'header-snippets', m.group(1)))
+					#print('#snippet ' + sub_fn)
+					sn = Snippet.fromFile(sub_fn)
+					lines += sn.lines
+				else:
+					lines.append(line)
 		return Snippet(lines, autoscan_requires=True, autoscan_provides=True)
 	fromFile = classmethod(fromFile)
 
@@ -302,10 +306,12 @@ class FileBuilder:
 	def snippet_relative(self, fn):
 		sn = Snippet.fromFile(os.path.join(self.base_dir, fn))
 		self.vals.append(sn)
+		return sn
 
-	def snippet_absolute(fn):
+	def snippet_absolute(self, fn):
 		sn = Snippet.fromFile(fn)
 		self.vals.append(sn)
+		return sn
 
 	def cpp_error(self, msg):
 		# XXX: assume no newlines etc
@@ -325,6 +331,9 @@ class FileBuilder:
 			self.cpp_error(msg)
 		else:
 			self.cpp_warning(msg)
+
+	def chdr_comment_line(self, msg):
+		self.vals.append(Snippet([ '/* %s */' % msg ]))
 
 	def chdr_block_heading(self, msg):
 		lines = []
@@ -381,7 +390,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 					found = True  # at least one other node provides 'k'
 
 			if not found:
-				#print 'Resolving %r' % k
+				#print('Resolving %r' % k)
 				resolved.append(k)
 
 				# Find a header snippet which provides the missing define.
@@ -448,7 +457,8 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 
 #	print(repr(graph))
 #	print(repr(snlist))
-	print 'Resolved helper defines: %r' % resolved
+#	print('Resolved helper defines: %r' % resolved)
+	print('Resolved %d helper defines' % len(resolved))
 
 def serialize_snippet_list(snippets):
 	ret = []
@@ -563,7 +573,7 @@ def scan_tags_meta(filename):
 	with open(filename, 'rb') as f:
 		tags_meta = yaml.load(f)
 
-def scan_snippets(dirname):
+def scan_helper_snippets(dirname):  # DUK_F_xxx snippets
 	global helper_snippets
 	helper_snippets = []
 
@@ -573,33 +583,64 @@ def scan_snippets(dirname):
 		#print('Autoscanning snippet: %s' % fn)
 		helper_snippets.append(Snippet.fromFile(os.path.join(dirname, fn)))
 
+def get_opt_defs(removed=True, deprecated=True, unused=True):
+	ret = []
+	for doc in opt_defs_list:
+		# XXX: aware of target version
+		if removed == False and doc.get('removed', None) is not None:
+			continue
+		if deprecated == False and doc.get('deprecated', None) is not None:
+			continue
+		if unused == False and doc.get('unused', False) == True:
+			continue
+		ret.append(doc)
+	return ret
+
+def get_use_defs(removed=True, deprecated=True, unused=True):
+	ret = []
+	for doc in use_defs_list:
+		# XXX: aware of target version
+		if removed == False and doc.get('removed', None) is not None:
+			continue
+		if deprecated == False and doc.get('deprecated', None) is not None:
+			continue
+		if unused == False and doc.get('unused', False) == True:
+			continue
+		ret.append(doc)
+	return ret
+
 def validate_platform_file(filename):
 	sn = Snippet.fromFile(filename)
 
-	# XXX: move required provides/defines into metadata only
 	for req in platform_required_provides:
 		if req not in sn.provides:
 			raise Exception('Platform %s is missing %s' % (filename, req))
 
-	if not ('DUK_USE_SETJMP' in sn.provides or 'DUK_USE_UNDERSCORE_SETJMP' in sn.provides or
-	        'DUK_USE_SIGSETJMP' in sn.provides):
-		raise Exception('Platform %s is missing a setjmp provider' % filename)
+	# DUK_USE_{SETJMP,UNDERSCORE_SETJMP,SIGSETJMP} are optional, fill-in
+	# provides if none defined.
 
 def validate_architecture_file(filename):
 	sn = Snippet.fromFile(filename)
 
-	# XXX: move required provides/defines into metadata only
 	for req in architecture_required_provides:
 		if req not in sn.provides:
 			raise Exception('Architecture %s is missing %s' % (filename, req))
 
+	# Byte order and alignment defines are allowed to be missing,
+	# a fill-in will handle them.  This is necessary because for
+	# some architecture byte order and/or alignment may vary between
+	# targets and may be software configurable.
+
+	# XXX: require automatic detection to be signaled?
+	# e.g. define DUK_USE_ALIGN_BY -1
+	#      define DUK_USE_BYTE_ORDER -1
+
 def validate_compiler_file(filename):
 	sn = Snippet.fromFile(filename)
 
-	# XXX: move required provides/defines into metadata only
 	for req in compiler_required_provides:
 		if req not in sn.provides:
-			raise Exception('Architecture %s is missing %s' % (filename, req))
+			raise Exception('Compiler %s is missing %s' % (filename, req))
 
 def get_tag_title(tag):
 	meta = tags_meta.get(tag, None)
@@ -739,10 +780,12 @@ def generate_option_documentation(opts, opt_list=None, rst_title=None, include_d
 	return ret.join()
 
 def generate_feature_option_documentation(opts):
-	return generate_option_documentation(opts, opt_list=opt_defs_list, rst_title='Duktape feature options', include_default=False)
+	defs = get_opt_defs()
+	return generate_option_documentation(opts, opt_list=defs, rst_title='Duktape feature options', include_default=False)
 
 def generate_config_option_documentation(opts):
-	return generate_option_documentation(opts, opt_list=use_defs_list, rst_title='Duktape config options', include_default=True)
+	defs = get_use_defs()
+	return generate_option_documentation(opts, opt_list=defs, rst_title='Duktape config options', include_default=True)
 
 #
 #  Helpers for duk_config.h generation
@@ -753,15 +796,16 @@ def get_forced_options(opts):
 	# overridden by a more specific one).
 	forced_opts = {}
 	for val in opts.force_options_yaml:
-		doc = yaml.load(StringIO.StringIO(val))
+		doc = yaml.load(StringIO(val))
 		for k in doc.keys():
 			if use_defs.has_key(k):
 				pass  # key is known
 			else:
-				print 'WARNING: option override key %s not defined in metadata, ignoring' % k
+				print('WARNING: option override key %s not defined in metadata, ignoring' % k)
 			forced_opts[k] = doc[k]  # shallow copy
 
-	print 'Overrides: %s' % json.dumps(forced_opts)
+	if len(forced_opts.keys()) > 0:
+		print('Overrides: %s' % json.dumps(forced_opts))
 
 	return forced_opts
 
@@ -802,12 +846,13 @@ def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
 # options which will be removed in Duktape 2.x.
 def add_legacy_feature_option_checks(opts, ret):
 	ret.chdr_block_heading('Checks for legacy feature options (DUK_OPT_xxx)')
+	ret.empty()
 
 	defs = []
-	for doc in opt_defs_list:
+	for doc in get_opt_defs():
 		if doc['define'] not in defs:
 			defs.append(doc['define'])
-	for doc in use_defs_list:
+	for doc in get_opt_defs():
 		for dname in doc.get('related_feature_defines', []):
 			if dname not in defs:
 				defs.append(dname)
@@ -815,10 +860,9 @@ def add_legacy_feature_option_checks(opts, ret):
 
 	for optname in defs:
 		suggested = []
-		for doc in use_defs_list:
+		for doc in get_use_defs():
 			if optname in doc.get('related_feature_defines', []):
 				suggested.append(doc['define'])
-		ret.empty()
 		ret.line('#if defined(%s)' % optname)
 		if len(suggested) > 0:
 			ret.cpp_warning_or_error('unsupported legacy feature option %s used, consider options: %s' % (optname, ', '.join(suggested)), opts.sanity_strict)
@@ -832,9 +876,10 @@ def add_legacy_feature_option_checks(opts, ret):
 # options, e.g. inconsistent options, invalid option values.
 def add_config_option_checks(opts, ret):
 	ret.chdr_block_heading('Checks for config option consistency (DUK_USE_xxx)')
+	ret.empty()
 
 	defs = []
-	for doc in use_defs_list:
+	for doc in get_use_defs():
 		if doc['define'] not in defs:
 			defs.append(doc['define'])
 	defs.sort()
@@ -846,24 +891,20 @@ def add_config_option_checks(opts, ret):
 		# XXX: more checks
 
 		if doc.get('removed', None) is not None:
-			ret.empty()
 			ret.line('#if defined(%s)' % dname)
 			ret.cpp_warning_or_error('unsupported config option used (option has been removed): %s' % dname, opts.sanity_strict)
 			ret.line('#endif')
 		elif doc.get('deprecated', None) is not None:
-			ret.empty()
 			ret.line('#if defined(%s)' % dname)
 			ret.cpp_warning_or_error('unsupported config option used (option has been deprecated): %s' % dname, opts.sanity_strict)
 			ret.line('#endif')
 
 		for req in doc.get('requires', []):
-			ret.empty()
 			ret.line('#if defined(%s) && !defined(%s)' % (dname, req))
 			ret.cpp_warning_or_error('config option %s requires option %s (which is missing)' % (dname, req), opts.sanity_strict)
 			ret.line('#endif')
 
 		for req in doc.get('conflicts', []):
-			ret.empty()
 			ret.line('#if defined(%s) && defined(%s)' % (dname, req))
 			ret.cpp_warning_or_error('config option %s conflicts with option %s (which is also defined)' % (dname, req), opts.sanity_strict)
 			ret.line('#endif')
@@ -887,7 +928,7 @@ def add_override_defines_section(opts, ret):
 def add_feature_option_handling(opts, ret, forced_opts):
 	ret.chdr_block_heading('Feature option handling')
 
-	for doc in use_defs_list:
+	for doc in get_use_defs(removed=False, deprecated=False, unused=False):
 		# If a related feature option exists, it can be used to force
 		# enable/disable the target feature.  If neither feature option
 		# (DUK_OPT_xxx or DUK_OPT_NO_xxx) is given, revert to default.
@@ -939,7 +980,7 @@ def add_duk_active_defines_macro(ret):
 	ret.chdr_block_heading('DUK_ACTIVE_DEFINES macro (development only)')
 
 	idx = 0
-	for doc in use_defs_list:
+	for doc in get_use_defs():
 		defname = doc['define']
 
 		ret.line('#if defined(%s)' % defname)
@@ -960,252 +1001,21 @@ def add_duk_active_defines_macro(ret):
 #  duk_config.h generation
 #
 
-# Generate the default duk_config.h which provides automatic detection of
-# platform, compiler, architecture, and features for major platforms.
-# Use manually written monolithic header snippets from Duktape 1.2 for
-# generating the header.  This header is Duktape 1.2 compatible and supports
-# DUK_OPT_xxx feature options.  Later on the DUK_OPT_xxx options will be
-# removed and users can override DUK_USE_xxx flags directly by modifying
-# duk_config.h or by generating a new header using genconfig.
-def generate_autodetect_duk_config_header(opts, meta_dir):
-	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
-	                  use_cpp_warning=opts.use_cpp_warning)
-
-	forced_opts = get_forced_options(opts)
-
-	ret.snippet_relative('comment_prologue.h.in')
-	ret.empty()
-
-	ret.line('#ifndef DUK_CONFIG_H_INCLUDED')
-	ret.line('#define DUK_CONFIG_H_INCLUDED')
-	ret.empty()
-
-	# Compiler features, processor/architecture, OS, compiler
-	ret.snippet_relative('compiler_features.h.in')
-	ret.empty()
-	ret.snippet_relative('rdtsc.h.in')  # XXX: move downwards
-	ret.empty()
-	ret.snippet_relative('platform1.h.in')
-	ret.empty()
-
-	# Feature selection, system include, Date provider
-	# Most #include statements are here
-	ret.snippet_relative('platform2.h.in')
-	ret.empty()
-	ret.snippet_relative('ullconsts.h.in')
-	ret.empty()
-	ret.snippet_relative('libc.h.in')
-	ret.empty()
-
-	# Number types
-	ret.snippet_relative('types1.h.in')
-	ret.line('#if defined(DUK_F_HAVE_INTTYPES)')
-	ret.line('/* C99 or compatible */')
-	ret.empty()
-	ret.snippet_relative('types_c99.h.in')
-	ret.empty()
-	ret.line('#else  /* C99 types */')
-	ret.empty()
-	ret.snippet_relative('types_legacy.h.in')
-	ret.empty()
-	ret.line('#endif  /* C99 types */')
-	ret.empty()
-	ret.snippet_relative('types2.h.in')
-	ret.empty()
-	ret.snippet_relative('64bitops.h.in')
-	ret.empty()
-
-	# Alignment
-	ret.snippet_relative('alignment.h.in')
-	ret.empty()
-
-	# Object layout
-	ret.snippet_relative('object_layout.h.in')
-	ret.empty()
-
-	# Byte order
-	ret.snippet_relative('byteorder.h.in')
-	ret.empty()
-
-	# Packed duk_tval
-	ret.snippet_relative('packed_tval.h.in')
-	ret.empty()
-
-	# Detect 'fast math'
-	ret.snippet_relative('reject_fast_math.h.in')
-	ret.empty()
-
-	# IEEE double constants
-	ret.snippet_relative('double_const.h.in')
-	ret.empty()
-
-	# Math and other ANSI replacements, NetBSD workaround, paranoid math, paranoid Date
-	ret.snippet_relative('repl_math.h.in')
-	ret.empty()
-	ret.snippet_relative('paranoid_date.h.in')
-	ret.empty()
-	ret.snippet_relative('repl_ansi.h.in')
-	ret.empty()
-
-	# Platform function pointers
-	ret.snippet_relative('platform_funcptr.h.in')
-	ret.empty()
-
-	# General compiler stuff
-	ret.snippet_relative('stringify.h.in')
-	ret.empty()
-	ret.snippet_relative('segfault.h.in')
-	ret.empty()
-	ret.snippet_relative('unreferenced.h.in')
-	ret.empty()
-	ret.snippet_relative('loseconst.h.in')
-	ret.empty()
-	ret.snippet_relative('noreturn.h.in')
-	ret.empty()
-	ret.snippet_relative('unreachable.h.in')
-	ret.empty()
-	ret.snippet_relative('likely.h.in')
-	ret.empty()
-	ret.snippet_relative('inline.h.in')
-	ret.empty()
-	ret.snippet_relative('visibility.h.in')
-	ret.empty()
-	ret.snippet_relative('file_line_func.h.in')
-	ret.empty()
-	ret.snippet_relative('byteswap.h.in')
-	ret.empty()
-
-	# Arhitecture, OS, and compiler strings
-	ret.snippet_relative('arch_string.h.in')
-	ret.empty()
-	ret.snippet_relative('os_string.h.in')
-	ret.empty()
-	ret.snippet_relative('compiler_string.h.in')
-	ret.empty()
-
-	# Target info
-	ret.snippet_relative('target_info.h.in')
-	ret.empty()
-
-	# Longjmp handling
-	ret.snippet_relative('longjmp.h.in')
-	ret.empty()
-
-	# Unsorted flags, contains almost all actual Duktape-specific
-	# but platform independent features
-	ret.snippet_relative('unsorted_flags.h.in')
-	ret.empty()
-
-	# User declarations
-	ret.snippet_relative('user_declare.h.in')
-	ret.empty()
-
-	# Emit forced options.  If a corresponding option is already defined
-	# by a snippet above, #undef it first.
-
-	tmp = Snippet(ret.join().split('\n'))
-	first_forced = True
-	for doc in use_defs_list:
-		defname = doc['define']
-
-		if doc.get('removed', None) is not None and opts.omit_removed_config_options:
-			continue
-		if doc.get('deprecated', None) is not None and opts.omit_deprecated_config_options:
-			continue
-		if doc.get('unused', False) == True and opts.omit_unused_config_options:
-			continue
-		if not forced_opts.has_key(defname):
-			continue
-
-		if not doc.has_key('default'):
-			raise Exception('config option %s is missing default value' % defname)
-
-		if first_forced:
-			ret.chdr_block_heading('Forced options')
-			first_forced = False
-
-		undef_done = False
-		if tmp.provides.has_key(defname):
-			ret.line('#undef ' + defname)
-			undef_done = True
-
-		emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
-
-	ret.empty()
-
-	# If manually-edited snippets don't #define or #undef a certain
-	# config option, emit a default value here.  This is useful to
-	# fill-in for new config options not covered by manual snippets
-	# (which is intentional).
-
-	tmp = Snippet(ret.join().split('\n'))
-	need = {}
-	for doc in use_defs_list:
-		if doc.get('removed', None) is not None:  # XXX: check version
-			continue
-		need[doc['define']] = True
-	for k in tmp.provides.keys():
-		if need.has_key(k):
-			del need[k]
-	need_keys = sorted(need.keys())
-
-	if len(need_keys) > 0:
-		ret.chdr_block_heading('Autogenerated defaults')
-
-		for k in need_keys:
-			#print('config option %s not covered by manual snippets, emitting default automatically' % k)
-			emit_default_from_config_meta(ret, use_defs[k], {}, False)
-
-		ret.empty()
-
-	ret.snippet_relative('custom_header.h.in')
-	ret.empty()
-
-	if len(opts.fixup_header_lines) > 0:
-		ret.chdr_block_heading('Fixups')
-		for line in opts.fixup_header_lines:
-			ret.line(line)
-		ret.empty()
-
-	add_override_defines_section(opts, ret)
-
-	# Date provider snippet is after custom header and overrides, so that
-	# the user may define e.g. DUK_USE_DATE_NOW_GETTIMEOFDAY in their
-	# custom header.
-	ret.snippet_relative('date_provider.h.in')
-	ret.empty()
-
-	# Sanity checks
-	# XXX: use autogenerated sanity checks instead
-	ret.snippet_relative('sanity.h.in')
-	ret.empty()
-
-	if opts.emit_legacy_feature_check:
-		# XXX: this doesn't really make sense for the autodetect
-		# header yet, because sanity.h.in already covers these.
-		add_legacy_feature_option_checks(opts, ret)
-	if opts.emit_config_sanity_check:
-		add_config_option_checks(opts, ret)
-	if opts.add_active_defines_macro:
-		add_duk_active_defines_macro(ret)
-
-	ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
-	ret.empty()  # for trailing newline
-	return remove_duplicate_newlines(ret.join())
-
 # Generate a duk_config.h where platform, architecture, and compiler are
-# all either autodetected or specified by user.  When autodetection is
-# used, the generated header is based on modular snippets and metadata to
-# be more easily maintainable than manually edited monolithic snippets.
+# all either autodetected or specified by user.
 #
-# This approach will replace the legacy autodetect header in Duktape 1.4,
-# and most likely the separate barebones header also.
+# Autodetection is based on a configured list of supported platforms,
+# architectures, and compilers.  For example, platforms.yaml defines the
+# supported platforms and provides a helper define (DUK_F_xxx) to use for
+# detecting that platform, and names the header snippet to provide the
+# platform-specific definitions.  Necessary dependencies (DUK_F_xxx) are
+# automatically pulled in.
 #
-# The generated header is Duktape 1.2 compatible for now, and supports
-# DUK_OPT_xxx feature options.  Later on the DUK_OPT_xxx options will be
-# removed and user code overrides DUK_USE_xxx flags directly by modifying
-# duk_config.h manually or by generating a new header using genconfig.
-def generate_autodetect_duk_config_header_modular(opts, meta_dir):
+# Automatic "fill ins" are used for mandatory platform, architecture, and
+# compiler defines which have a reasonable portable default.  This reduces
+# e.g. compiler-specific define count because there are a lot compiler
+# macros which have a good default.
+def generate_duk_config_header(opts, meta_dir):
 	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
 	                  use_cpp_warning=opts.use_cpp_warning)
 
@@ -1221,8 +1031,11 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 	with open(os.path.join(meta_dir, 'compilers.yaml'), 'rb') as f:
 		compilers = yaml.load(f)
 
+	# XXX: indicate feature option support, sanity checks enabled, etc
+	# in general summary of options, perhaps genconfig command line?
+
 	ret.line('/*')
-	ret.line(' *  duk_config.h autodetect header generated by genconfig.py.')
+	ret.line(' *  duk_config.h configuration header generated by genconfig.py.')
 	ret.line(' *')
 	ret.line(' *  Git commit: %s' % opts.git_commit or 'n/a')
 	ret.line(' *  Git describe: %s' % opts.git_describe or 'n/a')
@@ -1251,13 +1064,35 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 	ret.line(' *')
 	ret.line(' */')
 	ret.empty()
-	ret.line('#ifndef DUK_CONFIG_H_INCLUDED')
+	ret.line('#if !defined(DUK_CONFIG_H_INCLUDED)')
 	ret.line('#define DUK_CONFIG_H_INCLUDED')
 	ret.empty()
 
 	ret.chdr_block_heading('Intermediate helper defines')
 
-	idx_deps = len(ret.vals)  # position where to emit dependencies
+	# DLL build affects visibility attributes on Windows but unfortunately
+	# cannot be detected automatically from preprocessor defines or such.
+	# DLL build status is hidden behind DUK_F_DLL_BUILD and there are two
+	# ways for that to be set:
+	#
+	#   - Duktape 1.3 backwards compatible DUK_OPT_DLL_BUILD
+	#   - Genconfig --dll option
+	ret.chdr_comment_line('DLL build detection')
+	ret.line('#if defined(DUK_OPT_DLL_BUILD)')
+	ret.line('#define DUK_F_DLL_BUILD')
+	ret.line('#elif defined(DUK_OPT_NO_DLL_BUILD)')
+	ret.line('#undef DUK_F_DLL_BUILD')
+	ret.line('#else')
+	if opts.dll:
+		ret.line('/* configured for DLL build */')
+		ret.line('#define DUK_F_DLL_BUILD')
+	else:
+		ret.line('/* not configured for DLL build */')
+		ret.line('#undef DUK_F_DLL_BUILD')
+	ret.line('#endif')
+	ret.empty()
+
+	idx_deps = len(ret.vals)  # position where to emit DUK_F_xxx dependencies
 
 	# Feature selection, system include, Date provider
 	# Most #include statements are here
@@ -1270,8 +1105,9 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 
 		# XXX: better to lookup platforms metadata
 		include = 'platform_%s.h.in' % opts.platform
-		validate_platform_file(os.path.join(meta_dir, 'header-snippets', include))
-		ret.snippet_relative(include)
+		abs_fn = os.path.join(meta_dir, 'platforms', include)
+		validate_platform_file(abs_fn)
+		ret.snippet_absolute(abs_fn)
 	else:
 		ret.chdr_block_heading('Platform autodetection')
 
@@ -1281,7 +1117,9 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 		for idx, platf in enumerate(platforms['autodetect']):
 			check = platf.get('check', None)
 			include = platf['include']
-			validate_platform_file(os.path.join(meta_dir, 'header-snippets', include))
+			abs_fn = os.path.join(meta_dir, 'platforms', include)
+
+			validate_platform_file(abs_fn)
 
 			if idx == 0:
 				ret.line('#if defined(%s)' % check)
@@ -1290,26 +1128,43 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 					ret.line('#else')
 				else:
 					ret.line('#elif defined(%s)' % check)
-			ret.snippet_relative(include)
+			ret.line('/* --- %s --- */' % platf.get('name', '???'))
+			ret.snippet_absolute(abs_fn)
 		ret.line('#endif  /* autodetect platform */')
 
+	ret.empty()
 	ret.snippet_relative('platform_sharedincludes.h.in')
 	ret.empty()
+
+	byteorder_provided_by_all = True  # byteorder provided by all architecture files
+	alignment_provided_by_all = True  # alignment provided by all architecture files
+	packedtval_provided_by_all = True # packed tval provided by all architecture files
 
 	if opts.architecture is not None:
 		ret.chdr_block_heading('Architecture: ' + opts.architecture)
 
 		# XXX: better to lookup architectures metadata
 		include = 'architecture_%s.h.in' % opts.architecture
-		validate_architecture_file(os.path.join(meta_dir, 'header-snippets', include))
-		ret.snippet_relative(include)
+		abs_fn = os.path.join(meta_dir, 'architectures', include)
+		validate_architecture_file(abs_fn)
+		sn = ret.snippet_absolute(abs_fn)
+		if not sn.provides.get('DUK_USE_BYTEORDER', False):
+			byteorder_provided_by_all = False
+		if not sn.provides.get('DUK_USE_ALIGN_BY', False):
+			alignment_provided_by_all = False
+		if sn.provides.get('DUK_USE_PACKED_TVAL', False):
+			ret.line('#define DUK_F_PACKED_TVAL_PROVIDED')  # signal to fillin
+		else:
+			packedtval_provided_by_all = False
 	else:
 		ret.chdr_block_heading('Architecture autodetection')
 
 		for idx, arch in enumerate(architectures['autodetect']):
 			check = arch.get('check', None)
 			include = arch['include']
-			validate_architecture_file(os.path.join(meta_dir, 'header-snippets', include))
+			abs_fn = os.path.join(meta_dir, 'architectures', include)
+
+			validate_architecture_file(abs_fn)
 
 			if idx == 0:
 				ret.line('#if defined(%s)' % check)
@@ -1318,23 +1173,39 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 					ret.line('#else')
 				else:
 					ret.line('#elif defined(%s)' % check)
-			ret.snippet_relative(include)
+			ret.line('/* --- %s --- */' % arch.get('name', '???'))
+			sn = ret.snippet_absolute(abs_fn)
+			if not sn.provides.get('DUK_USE_BYTEORDER', False):
+				byteorder_provided_by_all = False
+			if not sn.provides.get('DUK_USE_ALIGN_BY', False):
+				alignment_provided_by_all = False
+			if sn.provides.get('DUK_USE_PACKED_TVAL', False):
+				ret.line('#define DUK_F_PACKED_TVAL_PROVIDED')  # signal to fillin
+			else:
+				packedtval_provided_by_all = False
 		ret.line('#endif  /* autodetect architecture */')
+
+	ret.empty()
 
 	if opts.compiler is not None:
 		ret.chdr_block_heading('Compiler: ' + opts.compiler)
 
 		# XXX: better to lookup compilers metadata
 		include = 'compiler_%s.h.in' % opts.compiler
-		validate_compiler_file(os.path.join(meta_dir, 'header-snippets', include))
-		ret.snippet_relative(include)
+		abs_fn = os.path.join(meta_dir, 'compilers', include)
+		validate_compiler_file(abs_fn)
+		sn = ret.snippet_absolute(abs_fn)
+		if sn.provides.get('DUK_USE_VARIADIC_MACROS', False):
+			ret.line('#define DUK_F_VARIADIC_MACROS_PROVIDED')  # signal to fillin
 	else:
 		ret.chdr_block_heading('Compiler autodetection')
 
 		for idx, comp in enumerate(compilers['autodetect']):
 			check = comp.get('check', None)
 			include = comp['include']
-			validate_compiler_file(os.path.join(meta_dir, 'header-snippets', include))
+			abs_fn = os.path.join(meta_dir, 'compilers', include)
+
+			validate_compiler_file(abs_fn)
 
 			if idx == 0:
 				ret.line('#if defined(%s)' % check)
@@ -1343,145 +1214,88 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 					ret.line('#else')
 				else:
 					ret.line('#elif defined(%s)' % check)
-			ret.snippet_relative(include)
+			ret.line('/* --- %s --- */' % comp.get('name', '???'))
+			sn = ret.snippet_absolute(abs_fn)
+			if sn.provides.get('DUK_USE_VARIADIC_MACROS', False):
+				ret.line('#define DUK_F_VARIADIC_MACROS_PROVIDED')  # signal to fillin
 		ret.line('#endif  /* autodetect compiler */')
 
-	# FIXME: The snippets below have some conflicts with the platform,
-	# architecture, and compiler snippets files included above.  These
-	# need to be resolved so that (a) each define is only provided from
-	# one place or (b) the latter definition is a "fill-in" which is
-	# only used when a certain define is missing from e.g. a compiler
-	# snippet (useful for e.g. compiler defines which have sane, standard
-	# defaults).
-
-	# FIXME: __uclibc__ needs stdlib.h, but it really is the only exception
-	ret.snippet_relative('libc.h.in')
 	ret.empty()
+
+	# XXX: platform/compiler could provide types; if so, need some signaling
+	# defines like DUK_F_TYPEDEFS_DEFINED
 
 	# Number types
-	ret.snippet_relative('types1.h.in')
-	ret.line('#if defined(DUK_F_HAVE_INTTYPES)')
-	ret.line('/* C99 or compatible */')
-	ret.empty()
-	ret.snippet_relative('types_c99.h.in')
-	ret.empty()
-	ret.line('#else  /* C99 types */')
-	ret.empty()
-	ret.snippet_relative('types_legacy.h.in')
-	ret.empty()
-	ret.line('#endif  /* C99 types */')
-	ret.empty()
+	if opts.c99_types_only:
+		ret.snippet_relative('types1.h.in')
+		ret.line('/* C99 types assumed */')
+		ret.snippet_relative('types_c99.h.in')
+		ret.empty()
+	else:
+		ret.snippet_relative('types1.h.in')
+		ret.line('#if defined(DUK_F_HAVE_INTTYPES)')
+		ret.line('/* C99 or compatible */')
+		ret.empty()
+		ret.snippet_relative('types_c99.h.in')
+		ret.empty()
+		ret.line('#else  /* C99 types */')
+		ret.empty()
+		ret.snippet_relative('types_legacy.h.in')
+		ret.empty()
+		ret.line('#endif  /* C99 types */')
+		ret.empty()
 	ret.snippet_relative('types2.h.in')
 	ret.empty()
 	ret.snippet_relative('64bitops.h.in')
 	ret.empty()
 
-	# Alignment
-	ret.snippet_relative('alignment.h.in')
+	# Platform, architecture, compiler fillins.  These are after all
+	# detection so that e.g. DUK_SPRINTF() can be provided by platform
+	# or compiler before trying a fill-in.
+
+	ret.chdr_block_heading('Fill-ins for platform, architecture, and compiler')
+
+	ret.snippet_relative('platform_fillins.h.in')
 	ret.empty()
+	ret.snippet_relative('architecture_fillins.h.in')
+	if not byteorder_provided_by_all:
+		ret.empty()
+		ret.snippet_relative('byteorder_fillin.h.in')
+	if not alignment_provided_by_all:
+		ret.empty()
+		ret.snippet_relative('alignment_fillin.h.in')
+	ret.empty()
+	ret.snippet_relative('compiler_fillins.h.in')
+	ret.empty()
+	ret.snippet_relative('inline_workaround.h.in')
+	ret.empty()
+	if not packedtval_provided_by_all:
+		ret.empty()
+		ret.snippet_relative('packed_tval_fillin.h.in')
 
 	# Object layout
 	ret.snippet_relative('object_layout.h.in')
 	ret.empty()
 
-	# Byte order
-	# FIXME: from the architecture snippet
-	ret.snippet_relative('byteorder.h.in')
-	ret.empty()
-
-	# Packed duk_tval
-	# FIXME: from the architecture snippet
-	ret.snippet_relative('packed_tval.h.in')
-	ret.empty()
-
-	# Detect 'fast math'
+	# Detect and reject 'fast math'
 	ret.snippet_relative('reject_fast_math.h.in')
 	ret.empty()
 
-	# IEEE double constants
-	# FIXME: these should maybe be 'fill-ins' if previous headers
-	# didn't provide something
-	ret.snippet_relative('double_const.h.in')
-	ret.empty()
-
-	# Math and other ANSI replacements, NetBSD workaround, paranoid math, paranoid Date
-	ret.snippet_relative('repl_math.h.in')
-	ret.empty()
-	ret.snippet_relative('paranoid_date.h.in')
-	ret.empty()
-	ret.snippet_relative('repl_ansi.h.in')
-	ret.empty()
-
-	# Platform function pointers
-	ret.snippet_relative('platform_funcptr.h.in')
-	ret.empty()
-
-	# General compiler stuff
-	ret.snippet_relative('stringify.h.in')
-	ret.empty()
-	ret.snippet_relative('segfault.h.in')
-	ret.empty()
-	ret.snippet_relative('unreferenced.h.in')
-	ret.empty()
-	ret.snippet_relative('loseconst.h.in')
-	ret.empty()
-	ret.snippet_relative('noreturn.h.in')
-	ret.empty()
-	ret.snippet_relative('unreachable.h.in')
-	ret.empty()
-	ret.snippet_relative('likely.h.in')
-	ret.empty()
-	ret.snippet_relative('inline.h.in')
-	ret.empty()
-	ret.snippet_relative('visibility.h.in')
-	ret.empty()
-	ret.snippet_relative('file_line_func.h.in')
-	ret.empty()
-	ret.snippet_relative('byteswap.h.in')
-	ret.empty()
-
-	# These come directly from platform, architecture, and compiler
-	# snippets.
-	#ret.snippet_relative('arch_string.h.in')
-	#ret.empty()
-	#ret.snippet_relative('os_string.h.in')
-	#ret.empty()
-	#ret.snippet_relative('compiler_string.h.in')
-	#ret.empty()
-	#ret.snippet_relative('longjmp.h.in')
-	#ret.empty()
-
-	# Target info
-	ret.snippet_relative('target_info.h.in')
-	ret.empty()
-
 	# Automatic DUK_OPT_xxx feature option handling
-	# FIXME: platform setjmp/longjmp defines now conflict with this
-	if True:
-		# Unsorted flags, contains almost all actual Duktape-specific
-		# but platform independent features
-		#ret.snippet_relative('unsorted_flags.h.in')
-		#ret.empty()
-
+	if opts.support_feature_options:
+		print('Autogenerating feature option (DUK_OPT_xxx) support')
 		add_feature_option_handling(opts, ret, forced_opts)
-
-	ret.snippet_relative('user_declare.h.in')
-	ret.empty()
 
 	# Emit forced options.  If a corresponding option is already defined
 	# by a snippet above, #undef it first.
 
 	tmp = Snippet(ret.join().split('\n'))
 	first_forced = True
-	for doc in use_defs_list:
+	for doc in get_use_defs(removed=not opts.omit_removed_config_options,
+	                        deprecated=not opts.omit_deprecated_config_options,
+	                        unused=not opts.omit_unused_config_options):
 		defname = doc['define']
 
-		if doc.get('removed', None) is not None and opts.omit_removed_config_options:
-			continue
-		if doc.get('deprecated', None) is not None and opts.omit_deprecated_config_options:
-			continue
-		if doc.get('unused', False) == True and opts.omit_unused_config_options:
-			continue
 		if not forced_opts.has_key(defname):
 			continue
 
@@ -1508,9 +1322,7 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 
 	tmp = Snippet(ret.join().split('\n'))
 	need = {}
-	for doc in use_defs_list:
-		if doc.get('removed', None) is not None:  # XXX: check version
-			continue
+	for doc in get_use_defs(removed=False):
 		need[doc['define']] = True
 	for k in tmp.provides.keys():
 		if need.has_key(k):
@@ -1545,189 +1357,22 @@ def generate_autodetect_duk_config_header_modular(opts, meta_dir):
 
 	ret.fill_dependencies_for_snippets(idx_deps)
 
-	# FIXME: use autogenerated sanity instead of sanity.h.in
-
-	ret.snippet_relative('sanity.h.in')
-	ret.empty()
-
 	if opts.emit_legacy_feature_check:
-		# FIXME: this doesn't really make sense for the autodetect header yet
 		add_legacy_feature_option_checks(opts, ret)
 	if opts.emit_config_sanity_check:
 		add_config_option_checks(opts, ret)
 	if opts.add_active_defines_macro:
 		add_duk_active_defines_macro(ret)
+
+	# Derived defines (DUK_USE_INTEGER_LE, etc) from DUK_USE_BYTEORDER.
+	# Duktape internals currently rely on the derived defines.  This is
+	# after sanity checks because the derived defines are marked removed.
+	ret.snippet_relative('byteorder_derived.h.in')
+	ret.empty()
 
 	ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
 	ret.empty()  # for trailing newline
 	return remove_duplicate_newlines(ret.join())
-
-# Generate a barebones duk_config.h header for a specific platform, architecture,
-# and compiler.  The header won't do automatic feature detection and does not
-# support DUK_OPT_xxx feature options (which will be removed in Duktape 2.x).
-# Users can then modify this barebones header for very exotic platforms and manage
-# the needed changes either as a YAML file or by appending a fixup header snippet.
-#
-# XXX: to be replaced by generate_modular_duk_config_header().
-def generate_barebones_duk_config_header(opts, meta_dir):
-	ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
-	                  use_cpp_warning=opts.use_cpp_warning)
-
-	# XXX: Provide more defines from YAML config files so that such
-	#      defines can be overridden more conveniently (e.g. DUK_COS).
-
-	forced_opts = get_forced_options(opts)
-
-	ret.line('/*')
-	ret.line(' *  duk_config.h generated by genconfig.py for:')
-	ret.line(' *      platform: %s' % opts.platform)
-	ret.line(' *      compiler: %s' % opts.compiler)
-	ret.line(' *      architecture: %s' % opts.architecture)
-	ret.line(' *')
-	ret.line(' *  Git commit: %s' % opts.git_commit or 'n/a')
-	ret.line(' *  Git describe: %s' % opts.git_describe or 'n/a')
-	ret.line(' *  Git branch: %s' % opts.git_branch or 'n/a')
-	ret.line(' */')
-	ret.empty()
-	ret.line('#ifndef DUK_CONFIG_H_INCLUDED')
-	ret.line('#define DUK_CONFIG_H_INCLUDED')
-
-	ret.chdr_block_heading('Intermediate helper defines')
-
-	idx_deps = len(ret.vals)  # position where to emit dependencies
-
-	ret.chdr_block_heading('Platform headers and typedefs')
-
-	if opts.platform is None:
-		raise Exception('no platform specified')
-
-	fn = 'platform_%s.h.in' % opts.platform
-	ret.snippet_relative(fn)
-	ret.empty()
-	ret.snippet_relative('types_c99.h.in')  # XXX: C99 typedefs forced for now
-	ret.snippet_relative('types2.h.in')     # XXX: boilerplate type stuff
-
-	ret.chdr_block_heading('Platform features')
-
-	# XXX: double constants
-	# XXX: replacement functions
-	# XXX: inherit definitions (like '#define DUK_FFLUSH fflush') from a
-	#      generic set of defaults, allow platform configs to override
-
-	ret.snippet_relative('platform_generic.h.in')
-
-	ret.chdr_block_heading('Compiler features')
-
-	if opts.compiler is None:
-		raise Exception('no compiler specified')
-
-	fn = 'compiler_%s.h.in' % opts.compiler
-	ret.snippet_relative(fn)
-
-	# noreturn, vacopy, etc
-	# visibility attributes
-
-	ret.chdr_block_heading('Architecture features')
-
-	if opts.architecture is None:
-		raise Exception('no architecture specified')
-
-	fn = 'architecture_%s.h.in' % opts.architecture
-	ret.snippet_relative(fn)
-
-	ret.chdr_block_heading('Config options')
-
-	tags = get_tag_list_with_preferred_order(header_tag_order)
-
-	handled = {}
-
-	# Mark all defines 'provided' by the snippets so far as handled.
-	# For example, if the system header provides a DUK_USE_OS_STRING,
-	# we won't emit it again below with its default value (but will
-	# emit an override value if specified).
-
-	for sn in ret.vals:
-		for k in sn.provides.keys():
-			handled[k] = True
-
-	for tag in tags:
-		ret.line('/* ' + get_tag_title(tag) + ' */')
-
-		for doc in use_defs_list:
-			defname = doc['define']
-
-			if doc.get('removed', None) is not None and opts.omit_removed_config_options:
-				continue
-			if doc.get('deprecated', None) is not None and opts.omit_deprecated_config_options:
-				continue
-			if doc.get('unused', False) == True and opts.omit_unused_config_options:
-				continue
-
-			if tag != doc['tags'][0]:  # sort under primary tag
-				continue
-
-			if not doc.has_key('default'):
-				raise Exception('config option %s is missing default value' % defname)
-
-			undef_done = False
-
-			if handled.has_key(defname):
-				defval = forced_opts.get(defname, None)
-				if defval is None:
-					ret.line('/* %s already emitted above */' % defname)
-					continue
-
-				# Define already emitted by snippets above but
-				# an explicit override wants to redefine it.
-				# Undef first and then use shared handler to
-				# setup the forced value.
-				ret.line('#undef ' + defname)
-				undef_done = True
-
-			# FIXME: macro args; DUK_USE_USER_DECLARE vs. DUK_USE_USER_DECLARE()
-			#        vs. DUK_USE_USER_DECLARE(x,y)
-
-			handled[defname] = True
-			emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
-
-		ret.empty()
-
-	if len(opts.fixup_header_lines) > 0:
-		ret.chdr_block_heading('Fixups')
-		for line in opts.fixup_header_lines:
-			ret.line(line)
-
-	add_override_defines_section(opts, ret)
-
-	# Date provider snippet is after custom header and overrides, so that
-	# the user may define e.g. DUK_USE_DATE_NOW_GETTIMEOFDAY in their
-	# custom header.
-	ret.empty()
-	ret.snippet_relative('date_provider.h.in')
-	ret.empty()
-
-	ret.fill_dependencies_for_snippets(idx_deps)
-
-	# XXX: ensure no define is unhandled at the end
-
-	# Check for presence of legacy feature options (DUK_OPT_xxx),
-	# and consistency of final DUK_USE_xxx options.
-	#
-	# These could also be emitted into Duktape source code, but it's
-	# probably better that the checks can be easily disabled from
-	# duk_config.h.
-
-	if opts.emit_legacy_feature_check:
-		add_legacy_feature_option_checks(opts, ret)
-	if opts.emit_config_sanity_check:
-		add_config_option_checks(opts, ret)
-	if opts.add_active_defines_macro:
-		add_duk_active_defines_macro(ret)
-
-	ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
-	ret.empty()  # for trailing newline
-
-	return remove_duplicate_newlines(serialize_snippet_list(ret.vals))  # XXX: refactor into FileBuilder
 
 #
 #  Main
@@ -1772,8 +1417,7 @@ def main():
 				fixup_header_lines.append(line)
 
 	commands = [
-		'autodetect-header',
-		'barebones-header',
+		'duk-config-header',
 		'feature-documentation',
 		'config-documentation'
 	]
@@ -1782,12 +1426,15 @@ def main():
 		description='Generate a duk_config.h or config option documentation based on config metadata.',
 		epilog='COMMAND can be one of: ' + ', '.join(commands) + '.'
 	)
+
 	parser.add_option('--metadata', dest='metadata', default=None, help='metadata directory or metadata tar.gz file')
 	parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
 	parser.add_option('--platform', dest='platform', default=None, help='platform (for "barebones-header" command)')
 	parser.add_option('--compiler', dest='compiler', default=None, help='compiler (for "barebones-header" command)')
 	parser.add_option('--architecture', dest='architecture', default=None, help='architecture (for "barebones-header" command)')
-	parser.add_option('--dll', dest='dll', action='store_true', default=False, help='dll build of Duktape, affects symbol visibility macros especially on Windows')  # FIXME: unimplemented
+	parser.add_option('--c99-types-only', dest='c99_types_only', action='store_true', default=False, help='assume C99 types, no legacy type detection')
+	parser.add_option('--dll', dest='dll', action='store_true', default=False, help='dll build of Duktape, affects symbol visibility macros especially on Windows')
+	parser.add_option('--support-feature-options', dest='support_feature_options', action='store_true', default=False, help='support DUK_OPT_xxx feature options in duk_config.h')
 	parser.add_option('--emit-legacy-feature-check', dest='emit_legacy_feature_check', action='store_true', default=False, help='emit preprocessor checks to reject legacy feature options (DUK_OPT_xxx)')
 	parser.add_option('--emit-config-sanity-check', dest='emit_config_sanity_check', action='store_true', default=False, help='emit preprocessor checks for config option consistency (DUK_OPT_xxx)')
 	parser.add_option('--omit-removed-config-options', dest='omit_removed_config_options', action='store_true', default=False, help='omit removed config options from generated headers')
@@ -1818,50 +1465,40 @@ def main():
 
 	if opts.metadata is not None and os.path.isdir(opts.metadata):
 		meta_dir = opts.metadata
-		print 'Using metadata directory: %r' % meta_dir
+		metadata_src_text = 'Using metadata directory: %r' % meta_dir
 	elif opts.metadata is not None and os.path.isfile(opts.metadata) and tarfile.is_tarfile(opts.metadata):
 		meta_dir = get_auto_delete_tempdir()
 		tar = tarfile.open(name=opts.metadata, mode='r:*')
 		tar.extractall(path=meta_dir)
-		print 'Using metadata tar file %r, unpacked to directory: %r' % (opts.metadata, meta_dir)
+		metadata_src_text = 'Using metadata tar file %r, unpacked to directory: %r' % (opts.metadata, meta_dir)
 	else:
 		raise Exception('metadata source must be a directory or a tar.gz file')
 
-	scan_snippets(os.path.join(meta_dir, 'header-snippets'))
+	scan_helper_snippets(os.path.join(meta_dir, 'helper-snippets'))
 	scan_use_defs(os.path.join(meta_dir, 'config-options'))
 	scan_opt_defs(os.path.join(meta_dir, 'feature-options'))
 	scan_use_tags()
 	scan_tags_meta(os.path.join(meta_dir, 'tags.yaml'))
-	print('Scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
-		(len(opt_defs.keys()), len(use_defs.keys()), len(helper_snippets)))
+	print('%s, scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
+		(metadata_src_text, len(opt_defs.keys()), len(use_defs.keys()), len(helper_snippets)))
 	#print('Tags: %r' % use_tags_list)
 
 	if len(args) == 0:
 		raise Exception('missing command')
 	cmd = args[0]
 
+	# Compatibility with Duktape 1.3
 	if cmd == 'autodetect-header':
-		cmd = 'autodetect-header-legacy'
+		cmd = 'duk-config-header'
+	if cmd == 'barebones-header':
+		cmd = 'duk-config-header'
 
-	if cmd == 'autodetect-header-legacy':
-		# Generate a duk_config.h similar to Duktape 1.2 feature detection,
-		# based on manually written monolithic snippets.
-		# To be replaced by modular header.
-		result = generate_autodetect_duk_config_header(opts, meta_dir)
-		with open(opts.output, 'wb') as f:
-			f.write(result)
-	elif cmd == 'autodetect-header-modular':
-		# Generate a duk_config.h similar to Duktape 1.2 feature detection.
-		# Platform, architecture, and compiler can each be either autodetected
-		# or specified by user.  Generated header is based on modular snippets
-		# rather than a monolithic platform detection header.
-		result = generate_autodetect_duk_config_header_modular(opts, meta_dir)
-		with open(opts.output, 'wb') as f:
-			f.write(result)
-	elif cmd == 'barebones-header':
-		# Generate a duk_config.h with default options for a specific platform,
-		# compiler, and architecture.
-		result = generate_barebones_duk_config_header(opts, meta_dir)
+	if cmd == 'duk-config-header':
+		# Generate a duk_config.h header with platform, compiler, and
+		# architecture either autodetected (default) or specified by
+		# user.  Support for autogenerated DUK_OPT_xxx flags is also
+		# selected by user.
+		result = generate_duk_config_header(opts, meta_dir)
 		with open(opts.output, 'wb') as f:
 			f.write(result)
 	elif cmd == 'feature-documentation':
