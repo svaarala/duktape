@@ -41,10 +41,11 @@
 #error cannot check complement of two
 #endif
 
-/* Pointer size determination based on architecture.
- * XXX: unsure about BCC correctness.
+/* Pointer size determination based on __WORDSIZE or architecture when
+ * that's not available.
  */
 #if defined(DUK_F_X86) || defined(DUK_F_X32) || \
+    defined(DUK_F_M68K) || defined(DUK_F_PPC32) || \
     defined(DUK_F_BCC) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32))
 #define DUK_F_32BIT_PTRS

@@ -1,0 +1,11 @@
+#define DUK_EXTERNAL_DECL  __attribute__ ((visibility("default"))) extern
+#define DUK_EXTERNAL       __attribute__ ((visibility("default")))
+#if defined(DUK_SINGLE_FILE)
+#define DUK_INTERNAL_DECL  static
+#define DUK_INTERNAL       static
+#else
+#define DUK_INTERNAL_DECL  __attribute__ ((visibility("hidden"))) extern
+#define DUK_INTERNAL       __attribute__ ((visibility("hidden")))
+#endif
+#define DUK_LOCAL_DECL     static
+#define DUK_LOCAL          static

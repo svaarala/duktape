@@ -1,5 +1,0 @@
-/* Windows (32-bit or above) */
-#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || \
-    defined(__WIN32__) || defined(__TOS_WIN__) || defined(__WINDOWS__)
-#define DUK_F_WINDOWS
-#endif

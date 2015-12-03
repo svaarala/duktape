@@ -1,5 +1,6 @@
 define: DUK_OPT_DPRINT_RDTSC
 introduced: 1.0.0
+removed: 1.4.0
 tags:
   - debug
 description: >

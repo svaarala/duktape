@@ -1,8 +1,0 @@
-/*
- *  Detection for specific libc variants (like uclibc) and other libc specific
- *  features.  Potentially depends on the #includes above.
- */
-
-#if defined(__UCLIBC__)
-#define DUK_F_UCLIBC
-#endif

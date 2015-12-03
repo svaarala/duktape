@@ -1,5 +1,6 @@
 define: DUK_USE_INTEGER_ME
 introduced: 1.0.0
+removed: 1.4.0
 default: false
 conflicts:
   - DUK_USE_INTEGER_LE
@@ -11,5 +12,3 @@ description: >
 
   This option is unused (and unsupported) because no target platform currently
   needs this.
-
-# FIXME: remove as unused? mark as unsupported?

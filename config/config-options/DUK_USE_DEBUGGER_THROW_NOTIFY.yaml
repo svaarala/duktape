@@ -5,7 +5,7 @@ requires:
   - DUK_USE_DEBUGGER_SUPPORT
 related:
   - DUK_USE_DEBUGGER_PAUSE_UNCAUGHT
-default: true
+default: false
 tags:
   - debugger
 description: >

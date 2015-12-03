@@ -1,14 +1,10 @@
-# Platform metadata
-
-required_defines:
-  # FIXME
-  - DUK_USE_PLATFORM_STRING
+# Platform metadata.
 
 autodetect:
   # Platforms for autodetect header.  Order matters because some defines
   # overlap, so rules select for more specific define first.
   -
-    name: Apple iPhone, OSX, Darwin
+    name: Mac OSX, iPhone, Darwin
     check: DUK_F_APPLE
     include: platform_apple.h.in
   -
@@ -20,7 +16,7 @@ autodetect:
     check: DUK_F_BSD
     include: platform_genericbsd.h.in
   -
-    name: Atari TOS
+    name: Atari ST TOS
     check: DUK_F_TOS
     include: platform_tos.h.in
   -
@@ -44,9 +40,17 @@ autodetect:
     check: DUK_F_TINSPIRE
     include: platform_tinspire.h.in
   -
+    name: Emscripten
+    check: DUK_F_EMSCRIPTEN
+    include: platform_emscripten.h.in
+  -
     name: Linux
     check: DUK_F_LINUX
     include: platform_linux.h.in
+  -
+    name: Solaris
+    check: DUK_F_SUN
+    include: platform_solaris.h.in
   -
     name: Generic POSIX
     check: DUK_F_POSIX
@@ -57,5 +61,9 @@ autodetect:
     include: platform_cygwin.h.in
   -
     name: Generic UNIX
+    check: DUK_F_UNIX
+    include: platform_genericunix.h.in
+  -
+    name: Generic fallback
     check: null
-    include: platform_genericunix.h.in  # if nothing else
+    include: platform_generic.h.in  # if nothing else

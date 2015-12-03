@@ -1,0 +1,10 @@
+#define DUK_USE_ARCH_STRING "mips32"
+/* MIPS byte order varies so rely on autodetection. */
+/* Based on 'make checkalign' there are no alignment requirements on
+ * Linux MIPS except for doubles, which need align by 4.  Alignment
+ * requirements vary based on target though.
+ */
+#if !defined(DUK_USE_ALIGN_BY)
+#define DUK_USE_ALIGN_BY 4
+#endif
+#define DUK_USE_PACKED_TVAL

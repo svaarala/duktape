@@ -14,6 +14,7 @@ feature_snippet: |
   #undef DUK_USE_DOUBLE_BE
   #endif
 introduced: 1.0.0
+removed: 1.4.0
 default: false
 conflicts:
   - DUK_USE_DOUBLE_LE

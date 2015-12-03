@@ -1,7 +1,0 @@
-/*
- *  Macro hackery to convert e.g. __LINE__ to a string without formatting,
- *  see: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string
- */
-
-#define DUK_F_STRINGIFY_HELPER(x)  #x
-#define DUK_MACRO_STRINGIFY(x)  DUK_F_STRINGIFY_HELPER(x)
