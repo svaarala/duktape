@@ -30,17 +30,17 @@ function createGarbage() {
 try {
     // Forced GC to ensure GC is "in sync"
     print('gc before creating garbage');
-    Duktape.gc(4);
+    Duktape.gc(8);
 
     createGarbage();
 
-    // Mark-and-sweep without finalizers.  (1 << 2) = 4 is a flag from
+    // Mark-and-sweep without finalizers.  (1 << 3) = 8 is a flag from
     // duk_heap.h (this is a fragile dependency):
     //
-    // #define DUK_MS_FLAG_NO_FINALIZERS            (1 << 2)   /* don't run finalizers (which may have arbitrary side effects) */
+    // #define DUK_MS_FLAG_NO_FINALIZERS            (1 << 3)   /* don't run finalizers; leave finalizable objects in finalize_list for next round */
 
     print('gc without finalizers');
-    Duktape.gc(4);
+    Duktape.gc(8);
 
     // Mark-and-sweep with finalizers, should run the pending finalizers.
 

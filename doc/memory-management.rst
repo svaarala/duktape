@@ -1122,21 +1122,23 @@ The following flags in the heap element header are used for controlling
 mark-and-sweep:
 
 * ``DUK_HEAPHDR_FLAG_REACHABLE``:
-  element is reachable through the reachability graph
+  element is reachable through the reachability graph.
 
 * ``DUK_HEAPHDR_FLAG_TEMPROOT``:
   element's reachability has been marked, but its children have not been
-  processed; this is required to limit the C recursion level
+  processed; this is required to limit the C recursion level.
 
 * ``DUK_HEAPHDR_FLAG_FINALIZABLE``:
   element is not reachable after the first marking pass (see algorithm),
   has a finalizer, and the finalizer has not been called in the previous
   mark-and-sweep round; object will be moved to the finalization work
-  list and will be considered (temporarily) a reachability root
+  list and will be considered (temporarily) a reachability root.
 
 * ``DUK_HEAPHDR_FLAG_FINALIZED``:
   element's finalizer has been executed, and if still unreachable, object
-  can be collected
+  can be collected.  The finalizer will not be called again until this
+  flag is cleared; this prevents accidental re-entry of the finalizer
+  until the object is explicitly rescued and this flag cleared.
 
 These are referred to as ``REACHABLE``, ``TEMPROOT``, ``FINALIZABLE``,
 and ``FINALIZED`` below for better readability.  All the flags are clear

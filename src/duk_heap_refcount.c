@@ -291,10 +291,9 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		 *  objects and must be safe (not throw any errors, ever).
 		 */
 
-		/* XXX: If object has FINALIZED, it was finalized by mark-and-sweep on
-		 * its previous run.  Any point in running finalizer again here?  If
-		 * finalization semantics is changed so that finalizer is only run once,
-		 * checking for FINALIZED would happen here.
+		/* An object may have FINALIZED here if it was finalized by mark-and-sweep
+		 * on a previous run and refcount then decreased to zero.  We won't run the
+		 * finalizer again here.
 		 */
 
 		/* A finalizer is looked up from the object and up its prototype chain
@@ -307,6 +306,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 			DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
 
 			duk_hobject_run_finalizer(thr, obj);  /* must never longjmp */
+			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));  /* duk_hobject_run_finalizer() sets */
 
 			DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
 			DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
@@ -347,6 +347,9 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		if (rescued) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
+			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
+			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));
+			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
 			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
 			DUK_HEAPHDR_SET_NEXT(heap, h1, heap->heap_allocated);
 			heap->heap_allocated = h1;
@@ -400,22 +403,25 @@ DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 	heap = thr->heap;
 	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, (duk_heaphdr *) h));
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 	/*
 	 *  If mark-and-sweep is running, don't process 'refzero' situations at all.
 	 *  They may happen because mark-and-sweep needs to finalize refcounts for
 	 *  each object it sweeps.  Otherwise the target objects of swept objects
 	 *  would have incorrect refcounts.
 	 *
+	 *  This check must be enabled also when mark-and-sweep support has been
+	 *  disabled: the flag is also used in heap destruction when running
+	 *  finalizers for remaining objects, and the flag prevents objects from
+	 *  being moved around in heap linked lists.
+	 *
 	 *  Note: mark-and-sweep could use a separate decref handler to avoid coming
 	 *  here at all.  However, mark-and-sweep may also call finalizers, which
 	 *  can do arbitrary operations and would use this decref variant anyway.
 	 */
-	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (DUK_UNLIKELY(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap))) {
 		DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h));
 		return;
 	}
-#endif
 
 	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING:
