@@ -689,7 +689,11 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 			/* [... env callee varmap key val] */
 
 			/* if property already exists, overwrites silently */
+#if 0
 			duk_xdef_prop(ctx, -5, DUK_PROPDESC_FLAGS_WE);  /* writable but not deletable */
+#else
+			duk_pop_2(ctx);  /*FIXME*/
+#endif
 		}
 
 		duk_pop_2(ctx);
