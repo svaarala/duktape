@@ -1713,7 +1713,7 @@ return value downgrade test
 
 function retvalDowngradeTest() {
     // All function return values (both Ecmascript and C) are automatically
-    // double-to-fastint downgraded
+    // double-to-fastint downgraded.
 
     function myfunc() {
         var x = 123.0;
@@ -1725,6 +1725,49 @@ function retvalDowngradeTest() {
     printFastint(Math.floor(123.1));
     printFastint('foo'.charCodeAt(1));
     printFastint(myfunc());
+}
+
+/*===
+yield/resume value downgrade test
+x before initial resume
+123 7b
+arg in thread
+123 7b fastint
+x before initial yield
+123 7b
+yield value
+123 7b fastint
+===*/
+
+function yieldResumeDowngradeTest() {
+    // All yielded values are automatically double-to-fastint downgraded.
+    // All resume values are automatically double-to-fastint downgraded.
+
+    print('yield/resume value downgrade test');
+
+    function myThread(arg) {
+        print('arg in thread');
+        printFastint(arg);
+
+        var x = 123.0;
+        x += 0.5; x -= 0.5;
+        print('x before initial yield');
+        printFastint(x);
+        var resumeValue = Duktape.Thread.yield(x);
+
+        print('resume value');
+        printFastint(resumeValue);
+    }
+
+    var t = new Duktape.Thread(myThread);
+
+    var x = 123.0;
+    x += 0.5; x -= 0.5;
+    print('x before initial resume');
+    printFastint(x);
+    var yieldValue = Duktape.Thread.resume(t, x);
+    print('yield value');
+    printFastint(yieldValue);
 }
 
 /*===
@@ -3090,6 +3133,7 @@ try {
     unaryBitopsBrute();
     negativeZeroTest();
     retvalDowngradeTest();
+    yieldResumeDowngradeTest();
     unaryPlusDowngradeTest();
     downgradeSanityTest();
 } catch (e) {
