@@ -108,7 +108,7 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	unsigned char extbuf[256];
 
 	for (i = 0; i < sizeof(test) / sizeof(duk_uint_t); i++) {
-		switch (i % 3) {
+		switch (i % 4) {
 		case 0:
 			duk_push_fixed_buffer(ctx, 256);
 			break;
@@ -118,6 +118,14 @@ static duk_ret_t test_basic(duk_context *ctx) {
 		case 2:
 			duk_push_external_buffer(ctx);
 			duk_config_buffer(ctx, -1, (void *) extbuf, 256);
+			break;
+		case 3:
+			duk_eval_string(ctx,
+				"(function () {\n"
+				"    var uarr = new Uint32Array(100);\n"
+				"    for (var i = 0; i < uarr.length; i++) { uarr[i] = 0x11223300 + i; }\n"
+				"    return uarr.slice(3, 3 + 64);  // 256 bytes\n"
+				"})()\n");
 			break;
 		}
 
