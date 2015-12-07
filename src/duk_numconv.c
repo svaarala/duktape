@@ -1938,7 +1938,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 
 		DUK_DDD(DUK_DDDPRINT("parse digits: p=%p, ch='%c' (%ld), expt=%ld, expt_adj=%ld, "
 		                     "dig_whole=%ld, dig_frac=%ld, dig_expt=%ld, dig_lzero=%ld, dig_prec=%ld",
-		                     (void *) p, (int) ((ch >= 0x20 && ch <= 0x7e) ? ch : '?'), (long) ch,
+		                     (const void *) p, (int) ((ch >= 0x20 && ch <= 0x7e) ? ch : '?'), (long) ch,
 		                     (long) expt, (long) expt_adj, (long) dig_whole, (long) dig_frac,
 		                     (long) dig_expt, (long) dig_lzero, (long) dig_prec));
 		DUK__BI_PRINT("f", &nc_ctx->f);

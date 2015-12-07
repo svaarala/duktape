@@ -812,8 +812,8 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		DUK_ASSERT(re_ctx.recursion_depth == 0);
 
 		DUK_DDD(DUK_DDDPRINT("attempt match at char offset %ld; %p [%p,%p]",
-		                     (long) char_offset, (void *) sp, (void *) re_ctx.input,
-		                     (void *) re_ctx.input_end));
+		                     (long) char_offset, (const void *) sp,
+		                     (const void *) re_ctx.input, (const void *) re_ctx.input_end));
 
 		/*
 		 *  Note:

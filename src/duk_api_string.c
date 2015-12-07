@@ -298,7 +298,8 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(q_end >= q_start);
 
 	DUK_DDD(DUK_DDDPRINT("trim: p_start=%p, p_end=%p, q_start=%p, q_end=%p",
-	                     (void *) p_start, (void *) p_end, (void *) q_start, (void *) q_end));
+	                     (const void *) p_start, (const void *) p_end,
+	                     (const void *) q_start, (const void *) q_end));
 
 	if (q_start == p_start && q_end == p_end) {
 		DUK_DDD(DUK_DDDPRINT("nothing was trimmed: avoid interning (hashing etc)"));
