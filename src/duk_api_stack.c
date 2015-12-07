@@ -3928,6 +3928,7 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hthread *thr;
 	duk_hbufferobject *h_bufobj;
+	duk_tval *tv_val;
 	duk_hbuffer *h_val;
 	duk_uint32_t tmp;
 	duk_uint_t classnum;
@@ -3943,6 +3944,8 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	 * duk_uint_t; make sure argument values fit and that offset + length
 	 * does not wrap.
 	 */
+
+	/* FIXME: wrap check unnecessary? the accesses are validated anyway */
 	uint_offset = (duk_uint_t) byte_offset;
 	uint_length = (duk_uint_t) byte_length;
 	if (sizeof(duk_size_t) != sizeof(duk_uint_t)) {
@@ -3950,11 +3953,6 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 			goto range_error;
 		}
 	}
-	uint_added = uint_offset + uint_length;
-	if (uint_added < uint_offset) {
-		goto range_error;
-	}
-	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
 
 	DUK_ASSERT_DISABLE(flags >= 0);  /* flags is unsigned */
 	lookupidx = flags & 0x0f;  /* 4 low bits */
@@ -3965,8 +3963,38 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	classnum = tmp >> 24;
 	protobidx = (tmp >> 16) & 0xff;
 
-	h_val = duk_require_hbuffer(ctx, idx_buffer);
+	/* Accept a plain buffer or any bufferobject. */
+	tv_val = duk_require_tval(ctx, idx_buffer);
+	h_val = NULL;
+	if (DUK_TVAL_IS_BUFFER(tv_val)) {
+		h_val = DUK_TVAL_GET_BUFFER(tv_val);
+	} else if (DUK_TVAL_IS_OBJECT(tv_val)) {
+		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv_val);
+		DUK_ASSERT(h != NULL);
+		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+			h_bufobj = (duk_hbufferobject *) h;
+			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+			h_val = h_bufobj->buf;
+
+			/* FIXME: wrap check unnecessary? the accesses are validated anyway */
+			uint_added = uint_offset + h_bufobj->offset;
+			if (uint_added < uint_offset) {
+				goto range_error;
+			}
+			uint_offset = uint_added;
+		}
+	}
+	if (h_val == NULL) {
+		goto arg_error;
+	}
 	DUK_ASSERT(h_val != NULL);
+
+	/* Final wrap check. */
+	uint_added = uint_offset + uint_length;
+	if (uint_added < uint_offset) {
+		goto range_error;
+	}
+	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
 
 	h_bufobj = duk_push_bufferobject_raw(ctx,
 	                                     DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -3983,6 +4011,10 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_bufobj->elem_type = (tmp >> 8) & 0xff;
 	h_bufobj->is_view = tmp & 0x0f;
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+
+	/* FIXME: if input is an ArrayBuffer, use it as .buffer directly?
+	 * Should that be the only exception?
+	 */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	/* TypedArray views need an automatic ArrayBuffer which must be
