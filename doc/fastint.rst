@@ -27,12 +27,15 @@ only applied in specific situations.  Currently:
 * All function return values are automatically downgraded to fastints if
   possible.
 
+* Thread yield/resume values are automatically downgraded to fastints if
+  possible.
+
 Fastints don't affect Ecmascript semantics and are completely transparent
 to user C and Ecmascript code: all conversions are automatic.
 
-To enable fastint support, simply define the feature option:
+To enable fastint support, simply define:
 
-* ``DUK_OPT_FASTINT``
+* ``DUK_OPT_FASTINT`` / ``DUK_USE_FASTINT``
 
 You should measure the impact of enabling fastint support for your target
 platform and Ecmascript code base.  Fastint support is not an automatic
