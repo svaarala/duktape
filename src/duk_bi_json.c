@@ -664,8 +664,8 @@ DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 		x = *p;
 
 		DUK_DDD(DUK_DDDPRINT("parse_number: p_start=%p, p=%p, p_end=%p, x=%ld",
-		                     (void *) p_start, (void *) p,
-		                     (void *) js_ctx->p_end, (long) x));
+		                     (const void *) p_start, (const void *) p,
+		                     (const void *) js_ctx->p_end, (long) x));
 
 #if defined(DUK_USE_JSON_DECNUMBER_FASTPATH)
 		/* This fast path is pretty marginal in practice.
@@ -1164,7 +1164,8 @@ DUK_LOCAL duk_bool_t duk__enc_key_quotes_needed(duk_hstring *h_key) {
 	p = p_start;
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_key_quotes_needed: h_key=%!O, p_start=%p, p_end=%p, p=%p",
-	                     (duk_heaphdr *) h_key, (void *) p_start, (void *) p_end, (void *) p));
+	                     (duk_heaphdr *) h_key, (const void *) p_start,
+	                     (const void *) p_end, (const void *) p));
 
 	/* Since we only accept ASCII characters, there is no need for
 	 * actual decoding.  A non-ASCII character will be >= 0x80 which
