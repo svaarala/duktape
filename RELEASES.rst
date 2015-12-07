@@ -1212,6 +1212,8 @@ Planned
 
 * Add duk_require_function() and duk_require_callable() (GH-441)
 
+* Accept buffer objects as base values in duk_push_buffer_object (GH-483)
+
 * Improve error message verbosity for API index check calls, duk_require_xxx()
   calls, and Array iterator calls (GH-441)
 
