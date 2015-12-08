@@ -1210,6 +1210,13 @@ Planned
   to match V8 and Spidermonkey behavior; the previous behavior is provided
   by polyfills/duktape-error-setter-nonwritable.js (GH-390)
 
+* Accept a plain buffer in typed array constructors with same behavior as
+  for Duktape.Buffer arguments (use as a value initializer) (GH-484)
+
+* Zero buffer data in ArrayBuffer and typed array constructors even when
+  DUK_USE_ZERO_BUFFER_DATA is not set (default is set) to respect explicit
+  zeroing guarantee of Khronos/ES6 (GH-484)
+
 * Add duk_require_function() and duk_require_callable() (GH-441)
 
 * Improve error message verbosity for API index check calls, duk_require_xxx()
