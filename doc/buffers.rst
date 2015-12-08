@@ -425,7 +425,8 @@ Specification notes:
 
 * Newly created buffers don't seem to be zeroed automatically.  Duktape zeroes
   buffer data as a side effect of underlying ``duk_hbuffer`` values being
-  automatically zeroed.
+  automatically zeroed.  However, if DUK_USE_ZERO_BUFFER_DATA is not set,
+  Node.js Buffers are not zeroed.
 
 * Buffer inspect() provides a limited hex dump of buffer contents.  Duktape
   doesn't currently provide a similar function by default.
@@ -618,6 +619,10 @@ Specification notes
     buf.writeUInt16BE(value, offset, [noAssert])
 
   Unfortunately also the argument order (value/offset) are swapped.
+
+* There are explicit zeroing guarantees for ArrayBuffer constructor and
+  typedarray constructors, so buffer data must be zeroed even when
+  DUK_USE_ZERO_BUFFER_DATA is not set.
 
 Implementation notes
 --------------------
