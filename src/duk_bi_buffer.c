@@ -669,8 +669,13 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
+	duk_hthread *thr;
 	duk_hbufferobject *h_bufobj;
 	duk_hbuffer *h_val;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
 
 	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
@@ -695,6 +700,14 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 		(void) duk_push_fixed_buffer(ctx, (duk_size_t) len);
 		h_val = (duk_hbuffer *) duk_get_hbuffer(ctx, -1);
 		DUK_ASSERT(h_val != NULL);
+
+#if !defined(DUK_USE_ZERO_BUFFER_DATA)
+		/* Khronos/ES6 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
+		 * is not set.
+		 */
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) h_val));
+		DUK_MEMZERO((void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_val), (duk_size_t) len);
+#endif
 	}
 
 	h_bufobj = duk_push_bufferobject_raw(ctx,
@@ -906,6 +919,14 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			elem_length_signed = (duk_int_t) duk_get_length(ctx, 0);
 			copy_mode = 2;
 		}
+	} else if (DUK_TVAL_IS_BUFFER(tv)) {
+		/* Accept plain buffer values like array initializers
+		 * (new in Duktape 1.4.0).
+		 */
+		duk_hbuffer *h_srcbuf;
+		h_srcbuf = DUK_TVAL_GET_BUFFER(tv);
+		elem_length_signed = DUK_HBUFFER_GET_SIZE(h_srcbuf);
+		copy_mode = 2;  /* XXX: could add fast path for u8 compatible views */
 	} else {
 		/* Non-object argument is simply int coerced, matches
 		 * V8 behavior (except for "null", which we coerce to
@@ -1052,6 +1073,13 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 		 * ambiguity with Float32/Float64 because zero bytes also
 		 * represent 0.0.
 		 */
+#if !defined(DUK_USE_ZERO_BUFFER_DATA)
+		/* Khronos/ES6 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
+		 * is not set.
+		 */
+		DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC((duk_hbuffer *) h_val));
+		DUK_MEMZERO((void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_val), (duk_size_t) byte_length);
+#endif
 
 		DUK_DDD(DUK_DDDPRINT("using no copy"));
 		break;

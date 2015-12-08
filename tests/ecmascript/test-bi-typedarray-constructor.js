@@ -1699,3 +1699,61 @@ try {
 } catch (e) {
     print(e.stack || e);
 }
+
+/*===
+plain buffer argument
+object |00666f6fff| |00666f6fff|
+|00666f6fff| |fe666f6fff| [object ArrayBuffer]
+object |00666f6fff| |000066006f006f00ff00|
+|00666f6fff| |feca66006f006f00ff00| [object ArrayBuffer]
+buffer |00666f6fff| |00666f6fff|
+|00666f6fff| |fe666f6fff| [object ArrayBuffer]
+buffer |00666f6fff| |000066006f006f00ff00|
+|00666f6fff| |feca66006f006f00ff00| [object ArrayBuffer]
+===*/
+
+/* Since Duktape 1.4.0 a plain Duktape buffer is accepted similarly to a
+ * Duktape.Buffer.  Behavior in Duktape 1.3.0 is a bit confusing:
+ *
+ *     duk> u8 = new Uint8Array(new Duktape.Buffer('foobar'))
+ *     = [object Uint8Array]
+ *     duk> Duktape.enc('jx', u8)
+ *     = |666f6f626172|
+ *     duk> u8 = new Uint8Array(Duktape.Buffer('foobar'))
+ *     = [object Uint8Array]
+ *     duk> Duktape.enc('jx', u8)
+ *     = ||
+ */
+
+function plainBufferArgumentTest() {
+    var buf, view;
+
+    function test(buf, view) {
+        print(typeof buf, Duktape.enc('jx', buf), Duktape.enc('jx', view));
+        view[0] = 0xcafe;  // demonstrate view does not share underlying buffer
+        print(Duktape.enc('jx', buf), Duktape.enc('jx', view), Object.prototype.toString.call(view.buffer));
+    }
+
+    buf = new Duktape.Buffer(Duktape.dec('hex', '00666f6fff'));
+    view = new Uint8Array(buf);
+    test(buf, view);
+
+    buf = new Duktape.Buffer(Duktape.dec('hex', '00666f6fff'));
+    view = new Int16Array(buf);
+    test(buf, view);
+
+    buf = Duktape.dec('hex', '00666f6fff');
+    view = new Uint8Array(buf);
+    test(buf, view);
+
+    buf = Duktape.dec('hex', '00666f6fff');
+    view = new Int16Array(buf);
+    test(buf, view);
+}
+
+try {
+    print('plain buffer argument');
+    plainBufferArgumentTest();
+} catch (e) {
+    print(e.stack || e);
+}
