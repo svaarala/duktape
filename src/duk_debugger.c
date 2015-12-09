@@ -1376,6 +1376,12 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	 * as seen by, e.g. Duktape.act() will be the same regardless.
 	 */
 
+	/* FIXME: the global eval() code will interpret this eval call as an
+	 * indirect eval so 'this' will be mapped to the global object.  Rework
+	 * the eval handling to avoid this.  It'd probably be best if we didn't
+	 * actually call eval() here.
+	 */
+
 	/* nargs == 2 so we can pass a callstack level to eval(). */
 	duk_push_c_function(ctx, duk_bi_global_object_eval, 2 /*nargs*/);
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */

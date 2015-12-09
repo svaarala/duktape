@@ -430,8 +430,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_bool_t this_to_global = 1;
 	duk_small_uint_t comp_flags;
 	duk_int_t level = -2;
+	duk_idx_t entry_top;
 
-	DUK_ASSERT_TOP(ctx, 1);
 	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
 	DUK_ASSERT(((thr->callstack + thr->callstack_top - 1)->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0 || /* indirect eval */
 	           (thr->callstack_top >= 2));  /* if direct eval, calling activation must exist */
@@ -444,6 +444,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	 *  activation doesn't exist, call must be indirect.
 	 */
 
+	entry_top = duk_get_top(ctx);
 	h = duk_get_hstring(ctx, 0);
 	if (!h) {
 		return 1;  /* return arg as-is */
@@ -496,7 +497,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	/* E5 Section 10.4.2 */
 	DUK_ASSERT(thr->callstack_top >= 1);
 	act = thr->callstack + thr->callstack_top - 1;  /* this function */
-	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
+	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL || entry_top >= 2) {  /* FIXME: hack */
 		DUK_ASSERT(thr->callstack_top >= 2);
 		act = thr->callstack + thr->callstack_top + level;  /* caller */
 		if (act->lex_env == NULL) {
