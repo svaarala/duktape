@@ -8,7 +8,7 @@ stack: |
 
 summary: |
   <p>Like <code><a href="#duk_peval">duk_peval()</a></code> but leaves no result
-  on the value stack.</p>
+  on the value stack (regardless of success/error result).</p>
 
 example: |
   duk_push_string(ctx, "print('Hello world!'); syntax error here=");

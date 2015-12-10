@@ -9,7 +9,7 @@ stack: |
 summary: |
   <p>Like
   <code><a href="#duk_peval_lstring">duk_peval_lstring()</a></code>, but leaves
-  no result on the value stack.</p>
+  no result on the value stack (regardless of success/error result).</p>
 
   <div include="no-string-intern.html" />
 
