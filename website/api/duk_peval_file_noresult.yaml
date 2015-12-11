@@ -9,7 +9,7 @@ stack: |
 summary: |
   <p>Like
   <code><a href="#duk_peval_file">duk_peval_file()</a></code>, but leaves no
-  result on the value stack.</p>
+  result on the value stack (regardless of success/error result).</p>
 
   <div include="path-encoding.html" />
 
