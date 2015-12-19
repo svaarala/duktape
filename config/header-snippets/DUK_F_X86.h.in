@@ -1,7 +1,0 @@
-/* Intel x86 (32-bit) */
-#if defined(i386) || defined(__i386) || defined(__i386__) || \
-    defined(__i486__) || defined(__i586__) || defined(__i686__) || \
-    defined(__IA32__) || defined(_M_IX86) || defined(__X86__) || \
-    defined(_X86_) || defined(__THW_INTEL__) || defined(__I86__)
-#define DUK_F_X86
-#endif

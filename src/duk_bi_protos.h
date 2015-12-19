@@ -83,6 +83,31 @@ DUK_INTERNAL_DECL duk_bool_t duk_bi_date_is_leap_year(duk_int_t year);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_valid_range(duk_double_t x);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_year_in_valid_range(duk_double_t year);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_leeway_range(duk_double_t x);
+/* Built-in providers */
+#if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx);
+#endif
+#if defined(DUK_USE_DATE_NOW_TIME)
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_time(duk_context *ctx);
+#endif
+#if defined(DUK_USE_DATE_NOW_WINDOWS)
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx);
+#endif
+#if defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME)
+DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d);
+#endif
+#if defined(DUK_USE_DATE_TZO_WINDOWS)
+DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d);
+#endif
+#if defined(DUK_USE_DATE_PRS_STRPTIME)
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, const char *str);
+#endif
+#if defined(DUK_USE_DATE_PRS_GETDATE)
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const char *str);
+#endif
+#if defined(DUK_USE_DATE_FMT_STRFTIME)
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
+#endif
 
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx);
 DUK_INTERNAL_DECL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx);

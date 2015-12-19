@@ -90,7 +90,7 @@ DUK_INTERNAL const duk_int16_t duk_hex_dectab_shift4[256] = {
  *   print('big endian'); genhextab(False)
  *   print('little endian'); genhextab(True)
 */
-DUK_INTERNAL duk_uint16_t duk_hex_enctab[256] = {
+DUK_INTERNAL const duk_uint16_t duk_hex_enctab[256] = {
 #if defined(DUK_USE_INTEGER_BE)
 	0x3030U, 0x3031U, 0x3032U, 0x3033U, 0x3034U, 0x3035U, 0x3036U, 0x3037U,
 	0x3038U, 0x3039U, 0x3061U, 0x3062U, 0x3063U, 0x3064U, 0x3065U, 0x3066U,

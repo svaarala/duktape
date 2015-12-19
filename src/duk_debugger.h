@@ -86,9 +86,11 @@ DUK_INTERNAL_DECL void duk_debug_write_error_eom(duk_hthread *thr, duk_small_uin
 DUK_INTERNAL_DECL void duk_debug_write_notify(duk_hthread *thr, duk_small_uint_t command);
 DUK_INTERNAL_DECL void duk_debug_write_eom(duk_hthread *thr);
 
-DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr);
-DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_debug_send_status(duk_hthread *thr);
+#if defined(DUK_USE_DEBUGGER_THROW_NOTIFY)
 DUK_INTERNAL_DECL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal);
+#endif
 
 DUK_INTERNAL_DECL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev_pc);
 DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block);

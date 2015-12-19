@@ -1,0 +1,9 @@
+#define DUK_USE_ARCH_STRING "mips64"
+/* MIPS byte order varies so rely on autodetection. */
+/* Good default is a bit arbitrary because alignment requirements
+ * depend on target.  See https://github.com/svaarala/duktape/issues/102.
+ */
+#if !defined(DUK_USE_ALIGN_BY)
+#define DUK_USE_ALIGN_BY 8
+#endif
+#undef DUK_USE_PACKED_TVAL

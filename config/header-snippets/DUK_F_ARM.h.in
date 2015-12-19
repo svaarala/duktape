@@ -1,4 +1,0 @@
-/* ARM */
-#if defined(__arm__) || defined(__thumb__) || defined(_ARM) || defined(_M_ARM)
-#define DUK_F_ARM
-#endif

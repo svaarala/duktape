@@ -1,0 +1,11 @@
+#define DUK_USE_ARCH_STRING "x32"
+#if !defined(DUK_USE_BYTEORDER)
+#define DUK_USE_BYTEORDER 1
+#endif
+/* XXX: This is technically not guaranteed because it's possible to configure
+ * an x86 to require aligned accesses with Alignment Check (AC) flag.
+ */
+#if !defined(DUK_USE_ALIGN_BY)
+#define DUK_USE_ALIGN_BY 1
+#endif
+#define DUK_USE_PACKED_TVAL

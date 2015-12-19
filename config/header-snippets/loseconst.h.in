@@ -1,5 +1,0 @@
-/* Convert any input pointer into a "void *", losing a const qualifier.
- * This is not fully portable because casting through duk_uintptr_t may
- * not work on all architectures (e.g. those with long, segmented pointers).
- */
-#define DUK_LOSE_CONST(src) ((void *) (duk_uintptr_t) (src))

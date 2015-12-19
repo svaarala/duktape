@@ -1,4 +1,0 @@
-#undef DUK_F_CPP
-#if defined(__cplusplus)
-#define DUK_F_CPP
-#endif

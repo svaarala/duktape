@@ -534,9 +534,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #else
 	                "?"
 #endif
-#if defined(DUK_USE_BYTEORDER_FORCED)
-			"f"
-#endif
 	                " "
 			/* Packed or unpacked tval */
 #if defined(DUK_USE_PACKED_TVAL)

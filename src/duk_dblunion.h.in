@@ -58,13 +58,13 @@
 union duk_double_union {
 	double d;
 	float f[2];
-#ifdef DUK_USE_64BIT_OPS
+#if defined(DUK_USE_64BIT_OPS)
 	duk_uint64_t ull[1];
 #endif
 	duk_uint32_t ui[2];
 	duk_uint16_t us[4];
 	duk_uint8_t uc[8];
-#ifdef DUK_USE_PACKED_TVAL_POSSIBLE
+#if defined(DUK_USE_PACKED_TVAL)
 	void *vp[2];  /* used by packed duk_tval, assumes sizeof(void *) == 4 */
 #endif
 };

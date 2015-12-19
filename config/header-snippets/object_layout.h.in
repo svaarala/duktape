@@ -6,7 +6,7 @@
 #undef DUK_USE_HOBJECT_LAYOUT_1
 #undef DUK_USE_HOBJECT_LAYOUT_2
 #undef DUK_USE_HOBJECT_LAYOUT_3
-#if defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE) && (DUK_USE_ALIGN_BY == 1)
+#if (DUK_USE_ALIGN_BY == 1)
 /* On platforms without any alignment issues, layout 1 is preferable
  * because it compiles to slightly less code and provides direct access
  * to property keys.

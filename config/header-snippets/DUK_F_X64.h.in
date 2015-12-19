@@ -1,6 +1,0 @@
-/* AMD64 (64-bit) */
-#if defined(__amd64__) || defined(__amd64) || \
-    defined(__x86_64__) || defined(__x86_64) || \
-    defined(_M_X64) || defined(_M_AMD64)
-#define DUK_F_X64
-#endif

@@ -221,8 +221,12 @@ tar cfz $DIST/config/genconfig_metadata.tar.gz \
 	platforms.yaml \
 	architectures.yaml \
 	compilers.yaml \
+	platforms \
+	architectures \
+	compilers \
 	feature-options \
 	config-options \
+	helper-snippets \
 	header-snippets \
 	other-defines \
 	examples
@@ -451,31 +455,54 @@ echo '/*' > $DIST/AUTHORS.rst.tmp
 cat AUTHORS.rst | python util/make_ascii.py | sed -e 's/^/ \*  /' >> $DIST/AUTHORS.rst.tmp
 echo ' */' >> $DIST/AUTHORS.rst.tmp
 
-# Build duk_config.h from snippets using genconfig.
+# Build default duk_config.h from snippets using genconfig.
 python config/genconfig.py --metadata config --output $DIST/duk_config.h.tmp \
 	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
-	autodetect-header-legacy
+	--omit-removed-config-options --omit-unused-config-options \
+	--emit-config-sanity-check \
+	--support-feature-options \
+	duk-config-header
 cp $DIST/duk_config.h.tmp $DISTSRCCOM/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCNOL/duk_config.h
 cp $DIST/duk_config.h.tmp $DISTSRCSEP/duk_config.h
 #cp $DIST/duk_config.h.tmp $DIST/config/duk_config.h-autodetect
 
-# Modular duk_config.h (to replace the previous monolithic one)
-#python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular \
-#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
-#	autodetect-header-modular
+# Build duk_config.h without feature option support.
+python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular-static \
+	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
+	--omit-removed-config-options --omit-unused-config-options \
+	--emit-legacy-feature-check --emit-config-sanity-check \
+	duk-config-header
+python config/genconfig.py --metadata config --output $DIST/config/duk_config.h-modular-dll \
+	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
+	--omit-removed-config-options --omit-unused-config-options \
+	--emit-legacy-feature-check --emit-config-sanity-check \
+	--dll \
+	duk-config-header
 
 # Generate a few barebones config examples
-#python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
-#	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
-#	--output $DIST/config/duk_config.h-linux-gcc-x64 \
-#	--platform linux --compiler gcc --architecture x64 \
-#	barebones-header
+genconfig_barebones() {
+	python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
+		--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
+		--output $DIST/config/duk_config.h-$1-$2-$3 --platform $1 --architecture $2 --compiler $3 \
+		duk-config-header
+}
+#genconfig_barebones linux x86 gcc
+#genconfig_barebones linux x64 gcc
+#genconfig_barebones linux x86 clang
+#genconfig_barebones linux x64 clang
+#genconfig_barebones windows x86 msvc
+#genconfig_barebones windows x64 msvc
+#genconfig_barebones apple x86 gcc
+#genconfig_barebones apple x64 gcc
+#genconfig_barebones apple x86 clang
+#genconfig_barebones apple x64 clang
+
 #python config/genconfig.py --metadata config --emit-legacy-feature-check --emit-config-sanity-check --omit-removed-config-options --omit-unused-config-options \
 #	--git-commit "$GIT_COMMIT" --git-describe "$GIT_DESCRIBE" --git-branch "$GIT_BRANCH" \
 #	--output $DIST/config/duk_config.h-linux-gcc-x86 \
 #	--platform linux --compiler gcc --architecture x86 \
-#	barebones-header
+#	duk-config-header
 
 # Build duktape.h from parts, with some git-related replacements.
 # The only difference between single and separate file duktape.h
@@ -693,6 +720,7 @@ IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 python src/prepare_unicode_data.py src/UnicodeData.txt $DISTSRCSEP/UnicodeData-expanded.tmp
 
 extract_chars() {
+	echo "Unicode extract_chars: $1 $2 $3"
 	python src/extract_chars.py \
 		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
 		--include-categories="$1" \
@@ -704,6 +732,7 @@ extract_chars() {
 }
 
 extract_caseconv() {
+	echo "Unicode extract_caseconv case conversion"
 	python src/extract_caseconv.py \
 		--command=caseconv_bitpacked \
 		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \
@@ -714,6 +743,7 @@ extract_caseconv() {
 		--table-name-uc=duk_unicode_caseconv_uc \
 		> $DISTSRCSEP/caseconv.txt
 
+	echo "Unicode extract_caseconv canon lookup"
 	python src/extract_caseconv.py \
 		--command=re_canon_lookup \
 		--unicode-data=$DISTSRCSEP/UnicodeData-expanded.tmp \

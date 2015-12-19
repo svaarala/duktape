@@ -6,4 +6,8 @@ tags:
 description: >
   Don't assume that platform functions (e.g. math functions) are actual
   functions.  This option is needed if platform functions may be defined
-  as macros.
+  as macros.  This is certainly the case with some platform "polyfills"
+  which provide missing C99/C++11 functions through macros, and may be
+  the case with VS2013 (see GH-17).
+
+  This is now the default: the cost in footprint is negligible.

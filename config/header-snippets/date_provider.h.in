@@ -11,13 +11,10 @@
 #if defined(DUK_USE_DATE_GET_NOW)
 /* External provider already defined. */
 #elif defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx);
 #define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_gettimeofday((ctx))
 #elif defined(DUK_USE_DATE_NOW_TIME)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_time(duk_context *ctx);
 #define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_time((ctx))
 #elif defined(DUK_USE_DATE_NOW_WINDOWS)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx);
 #define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows((ctx))
 #else
 #error no provider for DUK_USE_DATE_GET_NOW()
@@ -26,10 +23,8 @@ DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx);
 #if defined(DUK_USE_DATE_GET_LOCAL_TZOFFSET)
 /* External provider already defined. */
 #elif defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME)
-DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d);
 #define DUK_USE_DATE_GET_LOCAL_TZOFFSET(d)   duk_bi_date_get_local_tzoffset_gmtime((d))
 #elif defined(DUK_USE_DATE_TZO_WINDOWS)
-DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d);
 #define DUK_USE_DATE_GET_LOCAL_TZOFFSET(d)   duk_bi_date_get_local_tzoffset_windows((d))
 #else
 #error no provider for DUK_USE_DATE_GET_LOCAL_TZOFFSET()
@@ -38,10 +33,8 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t 
 #if defined(DUK_USE_DATE_PARSE_STRING)
 /* External provider already defined. */
 #elif defined(DUK_USE_DATE_PRS_STRPTIME)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, const char *str);
 #define DUK_USE_DATE_PARSE_STRING(ctx,str)   duk_bi_date_parse_string_strptime((ctx), (str))
 #elif defined(DUK_USE_DATE_PRS_GETDATE)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const char *str);
 #define DUK_USE_DATE_PARSE_STRING(ctx,str)   duk_bi_date_parse_string_getdate((ctx), (str))
 #else
 /* No provider for DUK_USE_DATE_PARSE_STRING(), fall back to ISO 8601 only. */
@@ -50,7 +43,6 @@ DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, 
 #if defined(DUK_USE_DATE_FORMAT_STRING)
 /* External provider already defined. */
 #elif defined(DUK_USE_DATE_FMT_STRFTIME)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
 #define DUK_USE_DATE_FORMAT_STRING(ctx,parts,tzoffset,flags) \
 	duk_bi_date_format_parts_strftime((ctx), (parts), (tzoffset), (flags))
 #else

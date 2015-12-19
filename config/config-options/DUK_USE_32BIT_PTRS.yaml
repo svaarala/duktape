@@ -1,5 +1,6 @@
 define: DUK_USE_32BIT_PTRS
 introduced: 1.0.0
+removed: 1.4.0
 default: false
 tags:
   - portability

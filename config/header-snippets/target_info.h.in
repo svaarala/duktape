@@ -1,9 +1,0 @@
-/*
- *  Target info string
- */
-
-#if defined(DUK_OPT_TARGET_INFO)
-#define DUK_USE_TARGET_INFO DUK_OPT_TARGET_INFO
-#else
-#define DUK_USE_TARGET_INFO "unknown"
-#endif
