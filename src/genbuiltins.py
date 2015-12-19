@@ -753,7 +753,7 @@ bi_regexp_prototype = {
 		# RegExp internal value should match that of new RegExp() (E5 Sections 15.10.6
 		# and 15.10.7), i.e. a bytecode sequence that matches an empty string.
 		# The compiled regexp bytecode for that is embedded here, and must match the
-		# defines in duk_regexp.h.
+		# defines in duk_regexp.h.  The bytecode must provide the 0'th capture.
 		#
 		# Note that the property attributes are non-default.
 
@@ -762,6 +762,10 @@ bi_regexp_prototype = {
 			'name': internal('Bytecode'),
 			'value': unichr(0) +		# flags (none)
 			         unichr(2) +		# nsaved == 2
+			         unichr(11) +           # DUK_REOP_SAVE
+			         unichr(0) +            # 0
+			         unichr(11) +           # DUK_REOP_SAVE
+			         unichr(1) +            # 1
 			         unichr(1),		# DUK_REOP_MATCH
 			'attributes': '',
 		},
