@@ -1,8 +1,9 @@
 define: DUK_USE_DEBUGGER_TRANSPORT_TORTURE
 feature_enables: DUK_OPT_DEBUGGER_TRANSPORT_TORTURE
 introduced: 1.2.0
-requires:
-  - DUK_USE_DEBUGGER_SUPPORT
+# Option is ignored unless debugger support is enabled.
+#requires:
+#  - DUK_USE_DEBUGGER_SUPPORT
 default: false
 tags:
   - debugger

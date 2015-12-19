@@ -1,8 +1,9 @@
 define: DUK_USE_DEBUGGER_PAUSE_UNCAUGHT
 feature_enables: DUK_OPT_DEBUGGER_PAUSE_UNCAUGHT
 introduced: 1.4.0
-requires:
-  - DUK_USE_DEBUGGER_SUPPORT
+# Option is ignored unless debugger support is enabled.
+#requires:
+#  - DUK_USE_DEBUGGER_SUPPORT
 related:
   - DUK_USE_DEBUGGER_THROW_NOTIFY
 default: false
