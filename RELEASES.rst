@@ -1286,6 +1286,9 @@ Planned
 * Fix base64 decode reject for whitespace between padding characters
   (e.g. "Zm= =") (GH-465)
 
+* Fix a (possibly incorrect) setjmp-related warning by adding "volatile" to
+  call handling "idx_func" variable (GH-497)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
