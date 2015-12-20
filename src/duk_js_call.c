@@ -841,13 +841,19 @@ duk_int_t duk_handle_call(duk_hthread *thr,
 	duk_instr_t **entry_ptr_curr_pc;
 	volatile duk_bool_t need_setjmp;
 	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
-	duk_idx_t idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
-	duk_idx_t idx_args;         /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
-	duk_idx_t nargs;            /* # argument registers target function wants (< 0 => "as is") */
-	duk_idx_t nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
-	duk_hobject *func;          /* 'func' on stack (borrowed reference) */
-	duk_tval *tv_func;          /* duk_tval ptr for 'func' on stack (borrowed reference) or tv_func_copy */
-	duk_tval tv_func_copy;      /* to avoid relookups */
+	/* idx_func is written before setjmp() and only read afterwards
+	 * so it shouldn't need to be volatile.  However, without volatile
+	 * here there are some issues on NetSurf:
+	 * https://github.com/svaarala/duktape/issues/493
+	 * http://source.netsurf-browser.org/netsurf.git/commit/?id=9d097b37f632327cb84d10aee89d9cef390fd37d
+	 */
+	volatile duk_idx_t idx_func;  /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
+	duk_idx_t idx_args;           /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
+	duk_idx_t nargs;              /* # argument registers target function wants (< 0 => "as is") */
+	duk_idx_t nregs;              /* # total registers target function wants on entry (< 0 => "as is") */
+	duk_hobject *func;            /* 'func' on stack (borrowed reference) */
+	duk_tval *tv_func;            /* duk_tval ptr for 'func' on stack (borrowed reference) or tv_func_copy */
+	duk_tval tv_func_copy;        /* to avoid relookups */
 	duk_activation *act;
 	duk_hobject *env;
 	duk_jmpbuf our_jmpbuf;
