@@ -11,6 +11,7 @@
 #ifndef DUK_JMPBUF_H_INCLUDED
 #define DUK_JMPBUF_H_INCLUDED
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 struct duk_jmpbuf {
 #if defined(DUK_USE_SETJMP) || defined(DUK_USE_UNDERSCORE_SETJMP)
 	jmp_buf jb;
@@ -20,5 +21,6 @@ struct duk_jmpbuf {
 #error internal error, no long control transfer provider
 #endif
 };
+#endif
 
 #endif  /* DUK_JMPBUF_H_INCLUDED */

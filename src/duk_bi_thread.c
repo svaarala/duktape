@@ -173,7 +173,9 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	thr->heap->lj.iserror = is_error;
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
+#endif
 	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
 	return 0;  /* never here */
 
@@ -290,7 +292,9 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 
 	thr->heap->lj.iserror = is_error;
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
+#endif
 	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
 	return 0;  /* never here */
 

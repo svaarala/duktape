@@ -176,6 +176,7 @@ for i in \
 	duk_debugger.h		\
 	duk_internal.h		\
 	duk_jmpbuf.h		\
+	duk_exception.h		\
 	duk_js_bytecode.h	\
 	duk_js_call.c		\
 	duk_js_compiler.c	\

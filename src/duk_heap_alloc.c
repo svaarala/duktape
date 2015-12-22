@@ -565,7 +565,9 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_tval);
 
 	/* structs from duk_forwdecl.h */
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	DUK__DUMPSZ(duk_jmpbuf);
+#endif
 	DUK__DUMPSZ(duk_heaphdr);
 	DUK__DUMPSZ(duk_heaphdr_string);
 	DUK__DUMPSZ(duk_hstring);
