@@ -87,6 +87,7 @@ mkdir $DIST/examples/debug-trans-socket
 mkdir $DIST/examples/debug-trans-dvalue
 mkdir $DIST/examples/codepage-conv
 mkdir $DIST/examples/dummy-date-provider
+mkdir $DIST/examples/cpp-exceptions
 
 # Copy most files directly
 
@@ -405,6 +406,13 @@ for i in \
 	dummy_date_provider.c \
 	; do
 	cp examples/dummy-date-provider/$i $DIST/examples/dummy-date-provider/
+done
+
+for i in \
+	README.rst \
+	cpp_exceptions.cpp \
+	; do
+	cp examples/cpp-exceptions/$i $DIST/examples/cpp-exceptions/
 done
 
 cp extras/README.rst $DIST/extras/
