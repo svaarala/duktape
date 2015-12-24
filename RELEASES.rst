@@ -1280,6 +1280,10 @@ Planned
   the presence of a compilation error and/or a C call site was not taken
   into account in stack trace creation (GH-455)
 
+* Fix a bogus trailing semicolon in the duk_push_buffer() API macro which
+  caused compilation errors if duk_push_buffer() was e.g. part of a comma
+  expression (GH-500, GH-501)
+
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
 
