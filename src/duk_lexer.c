@@ -311,7 +311,7 @@ DUK_LOCAL void duk__fill_lexer_buffer(duk_lexer_ctx *lex_ctx, duk_small_uint_t s
 	lex_ctx->input_offset = (duk_size_t) (p - lex_ctx->input);
 	lex_ctx->input_line = input_line;
 
-	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "char decode failed");
+	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "utf8 decode failed");
 }
 
 DUK_LOCAL void duk__advance_bytes(duk_lexer_ctx *lex_ctx, duk_small_uint_t count_bytes) {
@@ -471,7 +471,7 @@ DUK_LOCAL duk_codepoint_t duk__read_char(duk_lexer_ctx *lex_ctx) {
 
  error_clipped:   /* clipped codepoint */
  error_encoding:  /* invalid codepoint encoding or codepoint */
-	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "char decode failed");
+	DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR, "utf8 decode failed");
 	return 0;
 }
 
