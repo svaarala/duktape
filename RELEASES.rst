@@ -1293,6 +1293,8 @@ Planned
 * Fix a (possibly incorrect) setjmp-related warning by adding "volatile" to
   call handling "idx_func" variable (GH-497)
 
+* Improve error message for source code UTF-8 decode error (GH-504, GH-506)
+
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
   significantly on Emscripten (GH-342, GH-345)
