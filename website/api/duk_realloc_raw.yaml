@@ -35,7 +35,7 @@ summary: |
       <code><a href="#duk_alloc_raw">duk_alloc_raw()</a></code> with a zero
       size argument; the call may return <code>NULL</code> or some other value
       which is safe to give to
-      <code><a href="#duk_free_raw()">duk_free_raw()</a></code>.</li>
+      <code><a href="#duk_free_raw">duk_free_raw()</a></code>.</li>
   </ul>
 
   <p>Memory reallocated with <code>duk_realloc_raw()</code> can be freed with either
