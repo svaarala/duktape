@@ -56,9 +56,10 @@ Ecmascript function.  Such a call may be caused by an obvious API call like
 ``duk_get_prop()``, which may invoke a getter, or ``duk_to_string()`` which
 may invoke a ``toString()`` coercion method.
 
-The initial call into Duktape is always handled using ``duk_handle_call()``
-which can handle a call from any state into any kind of target function.
-Setting up a call involves a lot of state changes:
+The initial call into Duktape is usually handled using
+``duk_handle_call_(un)protected()`` which can handle a call from any state
+into any kind of target function.  Setting up a call involves a lot of state
+changes:
 
 * A setjmp catchpoint is needed for protected calls.
 
@@ -83,7 +84,7 @@ without tearing down the call state; the catchpoint will have to do that.
 If the target function is a Duktape/C function, the corresponding C function
 is looked up and called.  The C function now has access to a fresh value stack
 frame it can operate on using the Duktape API.  It can make further calls which
-get handled by ``duk_handle_call()``.
+get handled by ``duk_handle_call_(un)protected()``.
 
 If the target function is an Ecmascript function, the value stack is resized
 for the function register count (nregs) established by the compiler during
@@ -93,15 +94,15 @@ temporaries on the value stack but they must always be popped off before
 proceeding to dispatch the next opcode.
 
 The bytecode executor has its own setjmp catchpoint.  If bytecode makes a
-call into a Duktape/C function it is handled normally using ``duk_handle_call()``;
-such calls may happen also when the bytecode executor uses the value stack API
-for various coercions etc.
+call into a Duktape/C function it is handled normally using
+``duk_handle_call_(un)protected()``; such calls may happen also when the
+bytecode executor uses the value stack API for various coercions etc.
 
 If bytecode makes a function call into an Ecmascript function it is handled
 specially by ``duk_handle_ecma_call_setup()``.  This call handler sets up a
-new activation similarly to ``duk_handle_call()``, but instead of doing a
-recursive call into the bytecode executor it returns to the bytecode executor
-which restarts execution and starts executing the call target without
+new activation similarly to ``duk_handle_call_(un)protected()``, but instead
+of doing a recursive call into the bytecode executor it returns to the bytecode
+executor which restarts execution and starts executing the call target without
 increasing C stack depth.  The call handler also supports tail calls where an
 activation record is reused.
 
@@ -133,9 +134,9 @@ Basic functionality
 Setjmp catchpoint
 -----------------
 
-The ``duk_handle_call()`` and ``duk_safe_call()`` catchpoints are only used to
-handle ordinary error throws which propagate out of the calling function.  The
-bytecode executor setjmp catchpoint handles a wider variety of longjmp call
+The ``duk_handle_call_protected()`` and ``duk_safe_call()`` catchpoints are only
+used to handle ordinary error throws which propagate out of the calling function.
+The bytecode executor setjmp catchpoint handles a wider variety of longjmp call
 types, and in many cases the longjmp may be handled without exiting the current
 function:
 
@@ -154,8 +155,8 @@ function:
   call adjusts the states and uses this longjmp() type to restart execution
   in the target coroutine.
 
-* An ordinary throw is handled as in ``duk_handle_call()`` with the difference
-  that there are both 'try' and 'finally' sites.
+* An ordinary throw is handled as in ``duk_handle_call_protected()`` with the
+  difference that there are both 'try' and 'finally' sites.
 
 Returns, coroutine yields, and throws may propagate out of the initial bytecode
 executor entry and outwards to whatever code called into the executor.
@@ -203,12 +204,16 @@ Debugger support relies on:
 
 See ``debugger.rst`` for details.
 
-Call processing: duk_handle_call()
-==================================
+Call processing: duk_handle_call_(un)protected()
+================================================
 
-When handling a call, ``duk_handle_call()`` is given ``num_stack_args`` which
-indicates how many arguments have been pushed on the current stack for the
-call.  The stack frame of the calling activation looks as follows::
+Call setup
+----------
+
+When handling a call, ``duk_handle_call_(un)protected()`` is given
+``num_stack_args`` which indicates how many arguments have been pushed
+on the current stack for the call.  The stack frame of the calling
+activation looks as follows::
 
       top - num_stack_args - 2
            |
@@ -219,8 +224,8 @@ call.  The stack frame of the calling activation looks as follows::
   | ... | func | 'this' | arg0 | ... | argN | <- top
   +-----+------+--------+------+-----+------+
 
-To prepare the stack frame for the called function, ``duk_handle_call()`` does
-the following:
+To prepare the stack frame for the called function,
+``duk_handle_call_(un)protected()`` does the following:
 
 * If ``func`` is a bound function, follows the bound function chain until
   a non-bound function is found.  While following the chain, the requested
@@ -284,9 +289,94 @@ ensured as follows:
 * The catch stack does not grow because the Ecmascript compiler never emits
   a tailcall if there is a catch stack; tail calls are not possible if a
   catch stack exists, because e.g. ``try`` and ``finally`` must be processable.
-  Hence, ``duk_handle_call()`` simply asserts for this condition.
+  Hence, ``duk_handle_call_(un)protected()`` simply asserts for this condition.
 
-Notes:
+Call cleanup after a successful call
+------------------------------------
+
+The C return value of the called Duktape/C function indicates how many return
+values are on the value stack, with negative values indicating an error which
+is thrown by call handling (this is a shorthand for throwing errors).
+
+To clean up after a call:
+
+* The call stack and catch stack are unwound, and a best effort shrink check
+  is done.  If shrinking is attempted and it fails, the error is ignored.
+
+* The value stack is restored to the caller's configuration.  The return value
+  is moved into its expected position (same as ``func`` on the input stack).
+  Value stack top is configured so that the return value is at the stack top
+  (for Duktape/C callers) or so that the stack top is at ``nregs`` (for
+  Ecmascript callers).  A value stack shrink (or grow) check is done; shrink
+  errors should be ignored silently.
+
+* Other book-keeping variables are restored to their entry values, e.g.:
+  call recursion depth, bytecode executor instruction pointer, thread state,
+  current thread, etc.
+
+Call cleanup after a failed call
+--------------------------------
+
+When an error is thrown it is caught by the nearest ``setjmp`` catch point.
+If that catch point is in ``duk_handle_call_protected()`` the processing is
+quite similar to success handling except that multiple call stack and catch
+stack frames are potentially unwound:
+
+* Restore the previous ``setjmp`` catchpoint so that any errors thrown during
+  call cleanup are propagated outwards to avoid recursion into the same
+  handler.  Note, however, that the error handling code path should never
+  actually throw further errors -- doing so would break protected call
+  semantics.
+
+* The call stack and catch stack are unwound, and a best effort shrink check
+  is done.
+
+* The value stack is configured as for successful calls, except that the error
+  thrown is left on the value stack instead of a return value.
+
+* Other book-keeping variables are restored to their entry values.
+
+If there's no catcher for the error the uncaught error causes the fatal error
+handler to be called.  None of the stacks are unwound, and since the entry
+values for various book-keeping variables are lost, there's no way to properly
+unwind the call state afterwards.  This is OK because fatal errors are not
+recoverable and there's no way to resume execution if a fatal error occurs.
+It should be possible to free the Duktape heap normally but this is of little
+use because it's not safe to continue execution after a fatal error in general.
+
+Managing heap->curr_thread
+--------------------------
+
+The current thread is managed in several places:
+
+* Call handling saves and restores ``heap->curr_thread`` whose previous value
+  may be different from the call thread when an initial call is made, i.e.
+  previous value is ``NULL``.
+
+* Bytecode executor longjmp handler ultimately handles each coroutine resume
+  and yield operation.  The longjmp handler will update ``heap->curr_thread``
+  as a resume enters a thread and when a yield exits a thread.
+
+* As a result, the setjmp catch point of ordinary call handling doesn't need
+  to unwind multiple levels of resumers: it just needs to restore the previous
+  value in case it was ``NULL``.
+
+Current limitations in call cleanup
+-----------------------------------
+
+As of Duktape 1.4.0 the error handling path is not completely free of errors
+in out-of-memory situations:
+
+* Value stack may need to be grown during call cleanup.  This will be fixed
+  so that value stack is never shrunk in call setup so that there's no need
+  to grow it in cleanup.
+
+* Unwinding activations causes lexical scope objects to be allocated which
+  may fail and propagate an error from error handling.  This needs to be fixed
+  e.g. so that the scope object is preallocated, see: https://github.com/svaarala/duktape/issues/476.
+
+Misc notes
+----------
 
 * The value stack doesn't hold all the internal state relevant for an
   activation.  Some state, such as active environment records (``lex_env``
