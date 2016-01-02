@@ -9,7 +9,11 @@
  *  Forward declarations
  */
 
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+class duk_internal_exception;
+#else
 struct duk_jmpbuf;
+#endif
 
 /* duk_tval intentionally skipped */
 struct duk_heaphdr;
@@ -60,7 +64,11 @@ struct duk_compiler_ctx;
 struct duk_re_matcher_ctx;
 struct duk_re_compiler_ctx;
 
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+/* no typedef */
+#else
 typedef struct duk_jmpbuf duk_jmpbuf;
+#endif
 
 /* duk_tval intentionally skipped */
 typedef struct duk_heaphdr duk_heaphdr;

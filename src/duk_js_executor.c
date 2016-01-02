@@ -1967,16 +1967,66 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 		thr->ptr_curr_pc = NULL; \
 	} while (0)
 
+DUK_LOCAL void duk__handle_executor_error(duk_heap *heap,
+                                          duk_hthread *entry_thread,
+                                          duk_size_t entry_callstack_top,
+                                          duk_int_t entry_call_recursion_depth
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+                                          , duk_jmpbuf *entry_jmpbuf_ptr
+#endif
+                                          ) {
+	duk_small_uint_t lj_ret;
+
+	/* Longjmp callers are required to sync-and-null thr->ptr_curr_pc
+	 * before longjmp.
+	 */
+	DUK_ASSERT(heap->curr_thread != NULL);
+	DUK_ASSERT(heap->curr_thread->ptr_curr_pc == NULL);
+
+	/* XXX: signalling the need to shrink check (only if unwound) */
+
+	/* Must be restored here to handle e.g. yields properly. */
+	heap->call_recursion_depth = entry_call_recursion_depth;
+
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+	/* Switch to caller's setjmp() catcher so that if an error occurs
+	 * during error handling, it is always propagated outwards instead
+	 * of causing an infinite loop in our own handler.
+	 */
+	heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
+#endif
+
+	lj_ret = duk__handle_longjmp(heap->curr_thread, entry_thread, entry_callstack_top);
+
+	if (lj_ret == DUK__LONGJMP_RESTART) {
+		/* Restart bytecode execution, possibly with a changed thread. */
+		;
+	} else {
+		/* Rethrow error to calling state. */
+		DUK_ASSERT(lj_ret == DUK__LONGJMP_RETHROW);
+
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+		/* Longjmp handling has restored jmpbuf_ptr. */
+		DUK_ASSERT(heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
+#endif
+
+		/* Thread may have changed, e.g. YIELD converted to THROW. */
+		duk_err_longjmp(heap->curr_thread);
+		DUK_UNREACHABLE();
+	}
+}
+
 /* Outer executor with setjmp/longjmp handling. */
 DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	/* Entry level info. */
 	duk_hthread *entry_thread;
 	duk_size_t entry_callstack_top;
 	duk_int_t entry_call_recursion_depth;
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	duk_jmpbuf *entry_jmpbuf_ptr;
-
-	duk_heap *heap;
 	duk_jmpbuf jmpbuf;
+#endif
+	duk_heap *heap;
 
 	DUK_ASSERT(exec_thr != NULL);
 	DUK_ASSERT(exec_thr->heap != NULL);
@@ -1990,7 +2040,9 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	heap = entry_thread->heap;
 	entry_callstack_top = entry_thread->callstack_top;
 	entry_call_recursion_depth = entry_thread->heap->call_recursion_depth;
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	entry_jmpbuf_ptr = entry_thread->heap->lj.jmpbuf_ptr;
+#endif
 
 	/*
 	 *  Note: we currently assume that the setjmp() catchpoint is
@@ -2002,55 +2054,83 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	 */
 
 	for (;;) {
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 		heap->lj.jmpbuf_ptr = &jmpbuf;
 		DUK_ASSERT(heap->lj.jmpbuf_ptr != NULL);
+#endif
 
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+		try {
+#else
 		if (DUK_LIKELY(DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) == 0)) {
+#endif
 			/* Execute bytecode until returned or longjmp(). */
 			duk__js_execute_bytecode_inner(entry_thread, entry_callstack_top);
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 			/* Successful return: restore jmpbuf and return to caller. */
 			heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
-			return;
-		} else {
-			duk_small_uint_t lj_ret;
+#endif
 
+			return;
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+		} catch (duk_internal_exception &exc) {
+#else
+		} else {
+#endif
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+			DUK_UNREF(exc);
+#endif
 			DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
 
-			/* Longjmp callers are required to sync-and-null thr->ptr_curr_pc
-			 * before longjmp.
-			 */
-			DUK_ASSERT(heap->curr_thread != NULL);
-			DUK_ASSERT(heap->curr_thread->ptr_curr_pc == NULL);
-
-			/* XXX: signalling the need to shrink check (only if unwound) */
-
-			/* Must be restored here to handle e.g. yields properly. */
-			heap->call_recursion_depth = entry_call_recursion_depth;
-
-			/* Switch to caller's setjmp() catcher so that if an error occurs
-			 * during error handling, it is always propagated outwards instead
-			 * of causing an infinite loop in our own handler.
-			 */
-			heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
-
-			lj_ret = duk__handle_longjmp(heap->curr_thread, entry_thread, entry_callstack_top);
-
-			if (lj_ret == DUK__LONGJMP_RESTART) {
-				/* Restart bytecode execution, possibly with a changed thread. */
-				;
-			} else {
-				/* Rethrow error to calling state. */
-				DUK_ASSERT(lj_ret == DUK__LONGJMP_RETHROW);
-
-				/* Longjmp handling has restored jmpbuf_ptr. */
-				DUK_ASSERT(heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
-
-				/* Thread may have changed, e.g. YIELD converted to THROW. */
-				duk_err_longjmp(heap->curr_thread);
-				DUK_UNREACHABLE();
+			duk__handle_executor_error(heap,
+			                           entry_thread,
+			                           entry_callstack_top,
+			                           entry_call_recursion_depth
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+			                           , entry_jmpbuf_ptr
+#endif
+			                           );
+		}
+#if defined(DUK_USE_CPP_EXCEPTIONS)
+		catch (std::exception &exc) {
+			const char *what = exc.what();
+			if (!what) {
+				what = "unknown";
+			}
+			DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
+			try {
+				DUK_ASSERT(heap->curr_thread != NULL);
+				DUK_ERROR(heap->curr_thread, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			} catch (duk_internal_exception exc) {
+				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
+				duk__handle_executor_error(heap,
+				                           entry_thread,
+				                           entry_callstack_top,
+				                           entry_call_recursion_depth
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+				                           , entry_jmpbuf_ptr
+#endif
+				                           );
+			}
+		} catch (...) {
+			DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
+			try {
+				DUK_ASSERT(heap->curr_thread != NULL);
+				DUK_ERROR(heap->curr_thread, DUK_ERR_API_ERROR, "caught invalid c++ exception (perhaps thrown by user code)");
+			} catch (duk_internal_exception exc) {
+				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
+				duk__handle_executor_error(heap,
+				                           entry_thread,
+				                           entry_callstack_top,
+				                           entry_call_recursion_depth
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
+				                           , entry_jmpbuf_ptr
+#endif
+				                           );
 			}
 		}
+#endif
 	}
 
 	DUK_UNREACHABLE();
@@ -4208,7 +4288,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 					duk_err_setup_heap_ljstate(thr, (duk_small_int_t) cont_type);
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 					DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+#endif
 					duk_err_longjmp(thr);
 					DUK_UNREACHABLE();
 				}
@@ -4245,7 +4327,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 				duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+#endif
 				duk_err_longjmp(thr);
 				DUK_UNREACHABLE();
 				break;

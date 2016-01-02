@@ -910,6 +910,8 @@ def add_config_option_checks(opts, ret):
 			ret.line('#endif')
 
 	ret.empty()
+	ret.snippet_relative('cpp_exception_sanity.h.in')
+	ret.empty()
 
 # Add a header snippet for providing a __OVERRIDE_DEFINES__ section.
 def add_override_defines_section(opts, ret):

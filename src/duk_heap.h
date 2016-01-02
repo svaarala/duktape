@@ -302,7 +302,9 @@ struct duk_strcache {
  */
 
 struct duk_ljstate {
+#if !defined(DUK_USE_CPP_EXCEPTIONS)
 	duk_jmpbuf *jmpbuf_ptr;   /* current setjmp() catchpoint */
+#endif
 	duk_small_uint_t type;    /* longjmp type */
 	duk_bool_t iserror;       /* isError flag for yield */
 	duk_tval value1;          /* 1st related value (type specific) */

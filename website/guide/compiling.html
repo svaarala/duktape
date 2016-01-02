@@ -67,6 +67,13 @@ in your compiler):</p>
     is compatible with these and they improve the resulting C code</li>
 <li><code>-DDUK_OPT_DLL_BUILD</code>: needed when Duktape is built as a DLL
     (the option is needed for both Duktape and application build)</li>
+<li>By default Duktape uses <code>setjmp()</code> and <code>longjmp()</code>
+    (or their variants) for internal long control transfers.  If you're
+    compiling with a C++ compiler you may want to use
+    <code>DUK_OPT_CPP_EXCEPTIONS</code> which causes Duktape to use C++
+    exceptions for long control transfers and allows scope-based resource
+    management (automatic destructors, etc) in Duktape/C functions to work
+    as expected.</li>
 </ul>
 
 <p>If you're using Duktape on a platform where Duktape's automatic feature
@@ -261,6 +268,13 @@ active features or data types.  If that were to happen, Duktape and the
 application would be binary incompatible (which would be difficult to
 diagnose).  This is usually not an issue, but to avoid the potential, compile
 Duktape and the application with the same compiler.</p>
+
+<p>By default scope-based resource management (sometimes referred to
+as RAII) won't work in Duktape/C functions because Duktape uses
+<code>longjmp()</code> for internal long control transfers, bypassing
+C++ stack unwind mechanisms.  You can use <code>DUK_OPT_CPP_EXCEPTIONS</code>
+to cause Duktape to use C++ exceptions for internal long control transfers,
+which allows scope-based resource management to work in Duktape/C functions.</p>
 
 <h2 id="installing-system-wide">Installing Duktape as a system-wide library</h2>
 
