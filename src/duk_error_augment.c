@@ -136,12 +136,11 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 	DUK_ASSERT(!DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));  /* since no recursive error handler calls */
 	DUK_HEAP_SET_ERRHANDLER_RUNNING(thr->heap);
 
-	call_flags = DUK_CALL_FLAG_PROTECTED |
-	             DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* protected, ignore reclimit, not constructor */
+	call_flags = DUK_CALL_FLAG_IGNORE_RECLIMIT;  /* ignore reclimit, not constructor */
 
-	rc = duk_handle_call(thr,
-	                     1,            /* num args */
-	                     call_flags);  /* call_flags */
+	rc = duk_handle_call_protected(thr,
+	                               1,            /* num args */
+	                               call_flags);  /* call_flags */
 	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
 
 	DUK_ASSERT(DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap));

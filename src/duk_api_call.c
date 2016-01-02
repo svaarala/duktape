@@ -39,7 +39,6 @@ DUK_EXTERNAL void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
-	duk_int_t rc;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -58,17 +57,15 @@ DUK_EXTERNAL void duk_call(duk_context *ctx, duk_idx_t nargs) {
 
 	call_flags = 0;  /* not protected, respect reclimit, not constructor */
 
-	rc = duk_handle_call(thr,           /* thread */
-	                     nargs,         /* num_stack_args */
-	                     call_flags);   /* call_flags */
-	DUK_UNREF(rc);
+	duk_handle_call_unprotected(thr,           /* thread */
+	                            nargs,         /* num_stack_args */
+	                            call_flags);   /* call_flags */
 }
 
 DUK_EXTERNAL void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
-	duk_int_t rc;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -81,10 +78,9 @@ DUK_EXTERNAL void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 
 	call_flags = 0;  /* not protected, respect reclimit, not constructor */
 
-	rc = duk_handle_call(thr,           /* thread */
-	                     nargs,         /* num_stack_args */
-	                     call_flags);   /* call_flags */
-	DUK_UNREF(rc);
+	duk_handle_call_unprotected(thr,           /* thread */
+	                            nargs,         /* num_stack_args */
+	                            call_flags);   /* call_flags */
 }
 
 DUK_EXTERNAL void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs) {
@@ -133,11 +129,11 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 	duk_push_undefined(ctx);
 	duk_insert(ctx, idx_func + 1);
 
-	call_flags = DUK_CALL_FLAG_PROTECTED;  /* protected, respect reclimit, not constructor */
+	call_flags = 0;  /* respect reclimit, not constructor */
 
-	rc = duk_handle_call(thr,           /* thread */
-	                     nargs,         /* num_stack_args */
-	                     call_flags);   /* call_flags */
+	rc = duk_handle_call_protected(thr,           /* thread */
+	                               nargs,         /* num_stack_args */
+	                               call_flags);   /* call_flags */
 
 	return rc;
 }
@@ -158,11 +154,11 @@ DUK_EXTERNAL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	call_flags = DUK_CALL_FLAG_PROTECTED;  /* protected, respect reclimit, not constructor */
+	call_flags = 0;  /* respect reclimit, not constructor */
 
-	rc = duk_handle_call(thr,           /* thread */
-	                     nargs,         /* num_stack_args */
-	                     call_flags);   /* call_flags */
+	rc = duk_handle_call_protected(thr,           /* thread */
+	                               nargs,         /* num_stack_args */
+	                               call_flags);   /* call_flags */
 
 	return rc;
 }
@@ -271,7 +267,6 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	duk_hobject *fallback;
 	duk_idx_t idx_cons;
 	duk_small_uint_t call_flags;
-	duk_int_t rc;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -365,15 +360,13 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	call_flags = DUK_CALL_FLAG_CONSTRUCTOR_CALL;  /* not protected, respect reclimit, is a constructor call */
 
-	rc = duk_handle_call(thr,           /* thread */
-	                     nargs,         /* num_stack_args */
-	                     call_flags);   /* call_flags */
-	DUK_UNREF(rc);
+	duk_handle_call_unprotected(thr,           /* thread */
+	                            nargs,         /* num_stack_args */
+	                            call_flags);   /* call_flags */
 
 	/* [... fallback retval] */
 
-	DUK_DDD(DUK_DDDPRINT("constructor call finished, rc=%ld, fallback=%!iT, retval=%!iT",
-	                     (long) rc,
+	DUK_DDD(DUK_DDDPRINT("constructor call finished, fallback=%!iT, retval=%!iT",
 	                     (duk_tval *) duk_get_tval(ctx, -2),
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 

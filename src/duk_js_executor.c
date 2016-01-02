@@ -1380,6 +1380,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 		 * Return value is already on the stack top: [ ... retval ].
 		 */
 
+		/* XXX: could unwind catchstack here, so that call handling
+		 * didn't need to do that?
+		 */
 		DUK_DDD(DUK_DDDPRINT("-> return propagated up to entry level, exit bytecode executor"));
 		return DUK__RETHAND_FINISHED;
 	}
@@ -2002,7 +2005,14 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 		heap->lj.jmpbuf_ptr = &jmpbuf;
 		DUK_ASSERT(heap->lj.jmpbuf_ptr != NULL);
 
-		if (DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) != 0) {
+		if (DUK_LIKELY(DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) == 0)) {
+			/* Execute bytecode until returned or longjmp(). */
+			duk__js_execute_bytecode_inner(entry_thread, entry_callstack_top);
+
+			/* Successful return: restore jmpbuf and return to caller. */
+			heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
+			return;
+		} else {
 			duk_small_uint_t lj_ret;
 
 			DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
@@ -2040,13 +2050,6 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				duk_err_longjmp(heap->curr_thread);
 				DUK_UNREACHABLE();
 			}
-		} else {
-			/* Execute bytecode until returned or longjmp(). */
-			duk__js_execute_bytecode_inner(entry_thread, entry_callstack_top);
-
-			/* Successful return: restore jmpbuf and return to caller. */
-			heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
-			return;
 		}
 	}
 
@@ -3307,9 +3310,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				 */
 				DUK_ASSERT(DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func) != duk_bi_global_object_eval);
 
-				duk_handle_call(thr,
-				                num_stack_args,
-				                call_flags);
+				duk_handle_call_unprotected(thr,
+				                            num_stack_args,
+				                            call_flags);
 
 				/* duk_js_call.c is required to restore the stack reserve
 				 * so we only need to reset the top.
@@ -3353,9 +3356,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 					}
 				}
 
-				duk_handle_call(thr,
-				                num_stack_args,
-				                call_flags);
+				duk_handle_call_unprotected(thr,
+				                            num_stack_args,
+				                            call_flags);
 
 				/* duk_js_call.c is required to restore the stack reserve
 				 * so we only need to reset the top.
