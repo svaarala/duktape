@@ -982,10 +982,10 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	duk_uint_fast8_t entry_thread_state;
 	duk_instr_t **entry_ptr_curr_pc;
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
-	duk_jmpbuf * volatile old_jmpbuf_ptr = NULL;    /* ptr is volatile (not the target) */
+	duk_jmpbuf *old_jmpbuf_ptr = NULL;
 	duk_jmpbuf our_jmpbuf;
 #endif
-	volatile duk_idx_t idx_func;         /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
+	duk_idx_t idx_func;  /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
 
 	/* XXX: Multiple tv_func lookups are now avoided by making a local
 	 * copy of tv_func.  Another approach would be to compute an offset
