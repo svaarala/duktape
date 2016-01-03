@@ -7,9 +7,6 @@
   test: "test-bi-global-parseint.js"
   knownissue: "rounding differences for parsing integers larger than 2^53"
 -
-  test: "test-bi-global-parseint-oct.js"
-  knownissue: "non-standard octal behavior does not match V8/Rhino"
--
   test: "test-bi-json-dec-types.js"
   knownissue: "'\\x' should be allowed by eval() but not by JSON.parse(), Duktape rejects '\\x' in both"
 -
