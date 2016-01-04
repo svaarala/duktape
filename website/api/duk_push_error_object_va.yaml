@@ -16,7 +16,7 @@ example: |
       duk_idx_t err_idx;
 
       va_start(ap, fmt);
-      err_idx = duk_push_error_object_va(ctx, fmt, ap);
+      err_idx = duk_push_error_object_va(ctx, DUK_ERR_TYPE_ERROR, fmt, ap);
       va_end(ap);
 
       return err_idx;
