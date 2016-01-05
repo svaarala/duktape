@@ -1609,26 +1609,34 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		duk_uint_fast32_t val1 = 0;
 		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
+
+		/*
+		 *  Store lexer position, restoring if quantifier is invalid
+		 */
+
+#ifdef DUK_USE_NONSTD_REGEXP_BRACES
+		duk_lexer_point lex_pt;
+		DUK_LEXER_GETPOINT(lex_ctx, &lex_pt);
+#endif
+
 		for (;;) {
-			DUK__ADVANCECHARS(lex_ctx, 1);  /* eat '{' on entry */
+			DUK__ADVANCECHARS(lex_ctx, 1); /* eat '{' on entry */
 			x = DUK__L0();
 			if (DUK__ISDIGIT(x)) {
+				digits++;
+				val1 = val1 * 10 + (duk_uint_fast32_t) duk__hexval(lex_ctx, x);
+			} else if (x == ',') {
 				if (digits >= DUK__MAX_RE_QUANT_DIGITS) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
 					          "invalid regexp quantifier (too many digits)");
 				}
-				digits++;
-				val1 = val1 * 10 + (duk_uint_fast32_t) duk__hexval(lex_ctx, x);
-			} else if (x == ',') {
 				if (val2 != DUK_RE_QUANTIFIER_INFINITE) {
-					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-					          "invalid regexp quantifier (double comma)");
+					goto invalid_quantifier;
 				}
-				if (DUK__L1() == '}') {
+				if ( DUK__L1() == '}') {
 					/* form: { DecimalDigits , }, val1 = min count */
 					if (digits == 0) {
-						DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-						          "invalid regexp quantifier (missing digits)");
+						goto invalid_quantifier;
 					}
 					out_token->qmin = val1;
 					out_token->qmax = DUK_RE_QUANTIFIER_INFINITE;
@@ -1639,9 +1647,12 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				val1 = 0;
 				digits = 0;  /* not strictly necessary because of lookahead '}' above */
 			} else if (x == '}') {
-				if (digits == 0) {
+				if (digits >= DUK__MAX_RE_QUANT_DIGITS) {
 					DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-					          "invalid regexp quantifier (missing digits)");
+						"invalid regexp quantifier (too many digits)");
+				}
+				if (digits == 0) {
+					goto invalid_quantifier;
 				}
 				if (val2 != DUK_RE_QUANTIFIER_INFINITE) {
 					/* val2 = min count, val1 = max count */
@@ -1655,8 +1666,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				DUK__ADVANCECHARS(lex_ctx, 1);
 				break;
 			} else {
-				DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
-				          "invalid regexp quantifier (unknown char)");
+				goto invalid_quantifier;
 			}
 		}
 		if (DUK__L0() == '?') {
@@ -1666,6 +1676,18 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			out_token->greedy = 1;
 		}
 		advtok = DUK__ADVTOK(0, DUK_RETOK_QUANTIFIER);
+		break;
+invalid_quantifier:
+#ifdef DUK_USE_NONSTD_REGEXP_BRACES
+
+		/* Failed to match the quantifier, restore lexer */
+		DUK_LEXER_SETPOINT(lex_ctx, &lex_pt);
+		advtok = DUK__ADVTOK(1, DUK_RETOK_ATOM_CHAR);
+		out_token->num = '{';
+#else
+		DUK_ERROR(lex_ctx->thr, DUK_ERR_SYNTAX_ERROR,
+				"invalid regexp quantifier");
+#endif
 		break;
 	}
 	case '.': {
@@ -1806,8 +1828,10 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		}
 		break;
 	}
-	case ']':
-	case '}': {
+#ifndef DUK_USE_NONSTD_REGEXP_BRACES
+	case '}':
+#endif
+	case ']': {
 		/* Although these could be parsed as PatternCharacters unambiguously (here),
 		 * E5 Section 15.10.1 grammar explicitly forbids these as PatternCharacters.
 		 */
