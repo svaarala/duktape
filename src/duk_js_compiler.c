@@ -920,8 +920,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	 */
 
 	DUK_ASSERT(func->temp_max >= 0);
-	h_res->nregs = func->temp_max;
-	h_res->nargs = duk_hobject_get_length(thr, func->h_argnames);
+	h_res->nregs = (duk_uint16_t) func->temp_max;
+	h_res->nargs = (duk_uint16_t) duk_hobject_get_length(thr, func->h_argnames);
 	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	h_res->start_line = (duk_uint32_t) func->min_line;

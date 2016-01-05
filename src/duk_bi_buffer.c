@@ -866,8 +866,8 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			DUK_HBUFFER_INCREF(thr, h_val);
 			h_bufobj->offset = h_bufarg->offset + byte_offset;
 			h_bufobj->length = byte_length;
-			h_bufobj->shift = shift;
-			h_bufobj->elem_type = elem_type;
+			h_bufobj->shift = (duk_uint8_t) shift;
+			h_bufobj->elem_type = (duk_uint8_t) elem_type;
 			h_bufobj->is_view = 1;
 			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 
@@ -970,8 +970,8 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	DUK_HBUFFER_INCREF(thr, h_val);
 	DUK_ASSERT(h_bufobj->offset == 0);
 	h_bufobj->length = byte_length;
-	h_bufobj->shift = shift;
-	h_bufobj->elem_type = elem_type;
+	h_bufobj->shift = (duk_uint8_t) shift;
+	h_bufobj->elem_type = (duk_uint8_t) elem_type;
 	h_bufobj->is_view = 1;
 	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
 

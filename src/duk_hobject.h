@@ -492,7 +492,7 @@
 		DUK_HOBJECT_E_GET_VALUE((heap), (h), (i)).a.set = (v); \
 	} while (0)
 #define DUK_HOBJECT_E_SET_FLAGS(heap,h,i,f)  do { \
-		DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) = (f); \
+		DUK_HOBJECT_E_GET_FLAGS((heap), (h), (i)) = (duk_uint8_t) (f); \
 	} while (0)
 #define DUK_HOBJECT_A_SET_VALUE(heap,h,i,v)  do { \
 		DUK_HOBJECT_A_GET_VALUE((heap), (h), (i)) = (v); \

@@ -1183,7 +1183,7 @@ DUK_LOCAL duk_small_int_t duk__dragon4_fixed_format_round(duk__numconv_stringify
 			DUK_DDD(DUK_DDDPRINT("digit before carry: %ld", (long) t));
 			if (++t < nc_ctx->B) {
 				DUK_DDD(DUK_DDDPRINT("rounding carry terminated"));
-				*p = t;
+				*p = (duk_uint8_t) t;
 				break;
 			}
 

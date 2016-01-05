@@ -3735,7 +3735,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 	duk_hnativefunction *obj;
 	duk_idx_t ret;
 	duk_tval *tv_slot;
-	duk_uint16_t func_nargs;
+	duk_int16_t func_nargs;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -3747,7 +3747,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 		goto api_error;
 	}
 	if (nargs >= 0 && nargs < DUK_HNATIVEFUNCTION_NARGS_MAX) {
-		func_nargs = (duk_uint16_t) nargs;
+		func_nargs = (duk_int16_t) nargs;
 	} else if (nargs == DUK_VARARGS) {
 		func_nargs = DUK_HNATIVEFUNCTION_NARGS_VARARGS;
 	} else {
