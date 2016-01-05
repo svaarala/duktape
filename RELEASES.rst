@@ -1258,6 +1258,8 @@ Planned
 
 * Add a fastint downgrade check for yield/resume values (GH-482)
 
+* Improve error message for source code UTF-8 decode error (GH-504, GH-506)
+
 * Fix a segfault (and assertion error) caused by compiler intermediate value
   handling bug; the bug was triggered when a temporary register was required
   by the compiler, but an existing "intermediate value" referred to a const
@@ -1295,8 +1297,6 @@ Planned
 
 * Fix base64 decode reject for whitespace between padding characters
   (e.g. "Zm= =") (GH-465)
-
-* Improve error message for source code UTF-8 decode error (GH-504, GH-506)
 
 * Internal performance improvement: rework RETURN opcode handling to avoid
   longjmp() calls, improving performance slightly on ordinary platforms and
