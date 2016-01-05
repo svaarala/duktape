@@ -2518,16 +2518,16 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		 *   true
 		 */
 		duk_small_uint_t lf_flags;
-		duk_small_uint_t nargs;
+		duk_idx_t nargs;
 		duk_small_uint_t lf_len;
 		duk_c_function func;
 		duk_hnativefunction *nf;
 
 		DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);
 
-		nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
+		nargs = (duk_idx_t) DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
 		if (nargs == DUK_LFUNC_NARGS_VARARGS) {
-			nargs = DUK_VARARGS;
+			nargs = (duk_idx_t) DUK_VARARGS;
 		}
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
@@ -2537,10 +2537,10 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	                DUK_HOBJECT_FLAG_NOTAIL |
 			/* DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC: omitted here intentionally */
 	                DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION);
-		(void) duk__push_c_function_raw(ctx, func, (duk_idx_t) nargs, flags);
+		(void) duk__push_c_function_raw(ctx, func, nargs, flags);
 
 		lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
-		if (lf_len != nargs) {
+		if ((duk_idx_t) lf_len != nargs) {
 			/* Explicit length is only needed if it differs from 'nargs'. */
 			duk_push_int(ctx, (duk_int_t) lf_len);
 			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
