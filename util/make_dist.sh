@@ -553,7 +553,7 @@ cat src/duktape.h.in | sed -e '
 # keep the line so line numbers match between the two variant headers
 cat $DISTSRCCOM/duktape.h | sed -e 's/^#define DUK_SINGLE_FILE$//' \
 	> $DISTSRCSEP/duktape.h
-cp $DISTSRCSEP/duktape.h $DISTSRCNOL/duktape.h
+cp $DISTSRCCOM/duktape.h $DISTSRCNOL/duktape.h
 
 # Initjs code: built-in Ecmascript code snippets which are evaluated when
 # a new global context is created.  There are multiple minifiers, closure
