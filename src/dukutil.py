@@ -116,7 +116,10 @@ class GenerateC:
 		line = ''
 		for i in xrange(len(data)):
 			if intvalues:
-				t = "%d," % data[i]
+				suffix = ''
+				if data[i] < -32768 or data[i] > 32767:
+					suffix = 'L'
+				t = "%d%s," % (data[i], suffix)
 			else:
 				t = "(%s)'\\x%02x', " % (typename, data[i])
 			if len(line) + len(t) >= self.wrap_col:
