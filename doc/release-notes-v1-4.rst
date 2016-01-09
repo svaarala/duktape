@@ -103,6 +103,15 @@ Portability and platforms
   when you actually compile for a 64-bit target, those code paths are not
   used so the warnings are irrelevant.
 
+* MSVC ``/W4`` produces a harmless "conditional expression is constant"
+  warning caused by a sizeof() comparison.
+
+* MinGW produces harmless "visibility attribute not supported in this
+  configuration" warnings when compiling from separate sources.
+
+* An older mixed endian ARM toolchain (based on gcc-3.x) produces
+  "xxx declared inline after being called" warnings.
+
 * The JSON.stringify() fast path (DUK_USE_JSON_STRINGIFY_FASTPATH) assumes
   that "%lld" format specifier is correct for the "unsigned long long" type.
 
