@@ -1177,10 +1177,7 @@ Released
   by the compiler, but an existing "intermediate value" referred to a const
   instead of a register value (GH-449)
 
-Planned
-=======
-
-1.4.0 (XXXX-XX-XX)
+1.4.0 (2016-01-09)
 ------------------
 
 * Add support for using C++ exceptions instead of setjmp()/longjmp() to
@@ -1348,6 +1345,12 @@ Planned
 
 * Internal performance improvement: add fast paths for hex and base64
   encoding/decoding (GH-465, GH-467, GH-471)
+
+Planned
+=======
+
+1.5.0 (XXXX-XX-XX)
+------------------
 
 2.0.0 (XXXX-XX-XX)
 ------------------

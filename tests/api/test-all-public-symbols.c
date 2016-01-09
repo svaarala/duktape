@@ -126,6 +126,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_is_dynamic_buffer(ctx, 0);
 	(void) duk_is_ecmascript_function(ctx, 0);
 	(void) duk_is_error(ctx, 0);
+	(void) duk_is_eval_error(ctx, 0);
 	(void) duk_is_fixed_buffer(ctx, 0);
 	(void) duk_is_function(ctx, 0);
 	(void) duk_is_lightfunc(ctx, 0);
@@ -137,10 +138,15 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_is_object(ctx, 0);
 	(void) duk_is_pointer(ctx, 0);
 	(void) duk_is_primitive(ctx, 0);
+	(void) duk_is_range_error(ctx, 0);
+	(void) duk_is_reference_error(ctx, 0);
 	(void) duk_is_strict_call(ctx);
 	(void) duk_is_string(ctx, 0);
+	(void) duk_is_syntax_error(ctx, 0);
 	(void) duk_is_thread(ctx, 0);
+	(void) duk_is_type_error(ctx, 0);
 	(void) duk_is_undefined(ctx, 0);
+	(void) duk_is_uri_error(ctx, 0);
 	(void) duk_is_valid_index(ctx, 0);
 	(void) duk_join(ctx, 0);
 	(void) duk_json_decode(ctx, 0);
@@ -226,7 +232,9 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_require_buffer_data(ctx, 0, NULL);
 	(void) duk_require_buffer(ctx, 0, NULL);
 	(void) duk_require_c_function(ctx, 0);
+	(void) duk_require_callable(ctx, 0);
 	(void) duk_require_context(ctx, 0);
+	(void) duk_require_function(ctx, 0);
 	(void) duk_require_heapptr(ctx, 0);
 	(void) duk_require_int(ctx, 0);
 	(void) duk_require_lstring(ctx, 0, NULL);

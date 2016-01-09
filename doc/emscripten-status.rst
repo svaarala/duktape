@@ -42,6 +42,9 @@ need Emscripten "fastcomp".  Example steps to setup emscripten:
 
   - https://kripken.github.io/emscripten-site/docs/building_from_source/building_fastcomp_manually_from_source.html
 
+  - The ``LLVM_ROOT`` path in the documentation seems to be outdated,
+    ``.../build/bin`` should apparently be ``.../build/Release/bin``
+
 * Checkout emscripten::
 
       $ cd (duktape)
