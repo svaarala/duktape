@@ -1224,6 +1224,14 @@ def generate_duk_config_header(opts, meta_dir):
 
 	ret.empty()
 
+	# DUK_F_UCLIBC is special because __UCLIBC__ is provided by an #include
+	# file, so the check must happen after platform includes.  It'd be nice
+	# for this to be automatic (e.g. DUK_F_UCLIBC.h.in could indicate the
+	# dependency somehow).
+
+	ret.snippet_absolute(os.path.join(meta_dir, 'helper-snippets', 'DUK_F_UCLIBC.h.in'))
+	ret.empty()
+
 	# XXX: platform/compiler could provide types; if so, need some signaling
 	# defines like DUK_F_TYPEDEFS_DEFINED
 
