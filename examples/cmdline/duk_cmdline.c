@@ -16,17 +16,14 @@
     defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
 /* Suppress warnings about plain fopen() etc. */
 #define _CRT_SECURE_NO_WARNINGS
-/* Add missing snprintf(); not same NUL termination but we don't rely on it. */
-#define snprintf _snprintf
-#endif
-
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
 /* Workaround for snprintf() missing in older MSVC versions.
  * Note that _snprintf() may not NUL terminate the string, but
  * this difference does not matter here as a NUL terminator is
  * always explicitly added.
  */
 #define snprintf _snprintf
+#endif
 #endif
 
 #define  GREET_CODE(variant)  \
