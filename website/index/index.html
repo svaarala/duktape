@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 C function:</p>
 
 <pre class="c-code">
-int adder(duk_context *ctx) {
+duk_ret_t adder(duk_context *ctx) {
   int i;
   int n = duk_get_top(ctx);  /* #args */
   double res = 0.0;
@@ -157,18 +157,29 @@ int adder(duk_context *ctx) {
 
 <p>Register your function e.g. into the global object:</p>
 
+<!--
 <pre class="c-code">
 duk_push_global_object(ctx);
 duk_push_c_function(ctx, adder, DUK_VARARGS);
 duk_put_prop_string(ctx, -2 /*idx:global*/, "adder");
 duk_pop(ctx);  /* pop global */
 </pre>
+-->
+<pre class="c-code">
+duk_push_c_function(ctx, adder, DUK_VARARGS);
+duk_put_global_string(ctx, "adder");
+</pre>
 
 <p>You can then call your function from Ecmascript code:</p>
 
+<!---
 <pre class="c-code">
 duk_eval_string(ctx, "print('2+3=' + adder(2, 3));");
 duk_pop(ctx);  /* pop eval result */
+</pre>
+-->
+<pre class="c-code">
+duk_eval_string_noresult(ctx, "print('2+3=' + adder(2, 3));");
 </pre>
 
 </div>  <!-- front-steps -->
