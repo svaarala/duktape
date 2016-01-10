@@ -1177,7 +1177,7 @@ Released
   by the compiler, but an existing "intermediate value" referred to a const
   instead of a register value (GH-449)
 
-1.4.0 (2016-01-09)
+1.4.0 (2016-01-10)
 ------------------
 
 * Add support for using C++ exceptions instead of setjmp()/longjmp() to
