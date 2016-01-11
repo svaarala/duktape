@@ -1177,6 +1177,17 @@ Released
   by the compiler, but an existing "intermediate value" referred to a const
   instead of a register value (GH-449)
 
+1.3.2 (2016-01-11)
+------------------
+
+* Fix segfault (assertion failure when asserts enabled) in
+  String.prototype.replace() when match argument is RegExp.prototype
+  (GH-492, GH-495)
+
+* Fix a bogus trailing semicolon in the duk_push_buffer() API macro which
+  caused compilation errors if duk_push_buffer() was e.g. part of a comma
+  expression (GH-500, GH-501)
+
 1.4.0 (2016-01-10)
 ------------------
 
@@ -1288,6 +1299,10 @@ Released
 * Fix a bogus trailing semicolon in the duk_push_buffer() API macro which
   caused compilation errors if duk_push_buffer() was e.g. part of a comma
   expression (GH-500, GH-501)
+
+* Fix segfault (assertion failure when asserts enabled) in
+  String.prototype.replace() when match argument is RegExp.prototype
+  (GH-492, GH-495)
 
 * Remove octal autodetection in parseInt(), also fixes incorrect octal
   autodetection in e.g. "parseInt('00e1', 16)" (GH-413, GH-414)
