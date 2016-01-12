@@ -1598,7 +1598,7 @@ DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t index) {
 /* This would be pointless: we'd return NULL for both lightfuncs and
  * unexpected types.
  */
-duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t index) {
 }
 #endif
 
