@@ -274,8 +274,14 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		if (rescued) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
+			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
+			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
+			h2 = heap->heap_allocated;
 			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
-			DUK_HEAPHDR_SET_NEXT(heap, h1, heap->heap_allocated);
+			if (h2) {
+				DUK_HEAPHDR_SET_PREV(heap, h2, h1);
+			}
+			DUK_HEAPHDR_SET_NEXT(heap, h1, h2);
 			heap->heap_allocated = h1;
 		} else {
 			/* no -> decref members, then free */
