@@ -1367,6 +1367,11 @@ Planned
 1.5.0 (XXXX-XX-XX)
 ------------------
 
+* Fix potentially memory unsafe behavior when a refcount-triggered finalizer
+  function rescues an object; the memory unsafe behavior doesn't happen
+  immediately which makes the cause of the unsafe behavior difficult to
+  diagnose (GH-531)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
