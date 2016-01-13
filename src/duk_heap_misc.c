@@ -21,6 +21,11 @@ DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_he
 	} else {
 		;
 	}
+
+	/* The prev/next pointers of the removed duk_heaphdr are left as garbage.
+	 * It's up to the caller to ensure they're written before inserting the
+	 * object back.
+	 */
 }
 #endif
 

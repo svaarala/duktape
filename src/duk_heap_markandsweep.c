@@ -752,6 +752,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				DUK_HEAPHDR_SET_PREV(heap, curr, NULL);
 #endif
 				DUK_HEAPHDR_SET_NEXT(heap, curr, heap->finalize_list);
+				DUK_ASSERT_HEAPHDR_LINKS(heap, curr);
 				heap->finalize_list = curr;
 #ifdef DUK_USE_DEBUG
 				count_finalize++;
@@ -789,6 +790,8 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 #ifdef DUK_USE_DOUBLE_LINKED_HEAP
 				DUK_HEAPHDR_SET_PREV(heap, curr, prev);
 #endif
+				DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
+				DUK_ASSERT_HEAPHDR_LINKS(heap, curr);
 				prev = curr;
 			}
 
@@ -843,6 +846,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 	if (prev) {
 		DUK_HEAPHDR_SET_NEXT(heap, prev, NULL);
 	}
+	DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
 
 #ifdef DUK_USE_DEBUG
 	DUK_D(DUK_DPRINT("mark-and-sweep sweep objects (non-string): %ld freed, %ld kept, %ld rescued, %ld queued for finalization",
