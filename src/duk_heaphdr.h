@@ -238,7 +238,7 @@ struct duk_heaphdr_string {
 /* Check that prev/next links are consistent: if e.g. h->prev is != NULL,
  * h->prev->next should point back to h.
  */
-#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_ASSERTIONS)
 #define DUK_ASSERT_HEAPHDR_LINKS(heap,h) do { \
 		if ((h) != NULL) { \
 			duk_heaphdr *h__prev, *h__next; \
