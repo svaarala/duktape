@@ -1372,6 +1372,10 @@ Planned
   immediately which makes the cause of the unsafe behavior difficult to
   diagnose (GH-531)
 
+* Fix pointer arithmetic portability issues with platforms/compilers with
+  exotic pointer models by avoiding arithmetic and binary operations on
+  (u)intptr_t values (GH-530, GH-539)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
