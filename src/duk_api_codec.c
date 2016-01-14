@@ -473,7 +473,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT(buf != NULL);
 
 #if defined(DUK_USE_HEX_FASTPATH)
-	DUK_ASSERT((((duk_uintptr_t) buf) & 0x01U) == 0);   /* pointer is aligned, guaranteed for fixed buffer */
+	DUK_ASSERT((((duk_size_t) buf) & 0x01U) == 0);   /* pointer is aligned, guaranteed for fixed buffer */
 	p16 = (duk_uint16_t *) (void *) buf;
 	len_safe = len & ~0x03U;
 	for (i = 0; i < len_safe; i += 4) {
