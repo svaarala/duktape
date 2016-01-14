@@ -25,6 +25,9 @@ import re
 import shutil
 import optparse
 import subprocess
+import tarfile
+
+# Helpers
 
 def exec_get_stdout(cmd, input=None):
 	proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -89,6 +92,23 @@ def delete_matching_files(dirpath, cb):
 			#print('Deleting %r' % os.path.join(dirpath, fn))
 			os.unlink(os.path.join(dirpath, fn))
 
+def create_targz(dstfile, filelist):
+	# https://docs.python.org/2/library/tarfile.html#examples
+
+	def _add(tf, fn):  # recursive add
+		#print('Adding to tar: ' + fn)
+		if os.path.isdir(fn):
+			for i in sorted(os.listdir(fn)):
+				_add(tf, os.path.join(fn, i))
+		elif os.path.isfile(fn):
+			tf.add(fn)
+		else:
+			raise Exception('invalid file: %r' % fn)
+
+	with tarfile.open(dstfile, 'w:gz') as tf:
+		for fn in filelist:
+			_add(tf, fn)
+
 def cstring(x):
 	return '"' + x + '"'  # good enough for now
 
@@ -141,12 +161,59 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'examples', 'dummy-date-provider'))
 	mkdir(os.path.join(dist, 'examples', 'cpp-exceptions'))
 
+# Path check
+
+if not (os.path.isfile(os.path.join('src', 'duk_api_public.h.in')) and \
+        os.path.isfile(os.path.join('config', 'genconfig.py'))):
+	sys.stderr.write('\n')
+	sys.stderr.write('*** Working directory must be Duktape repo checkout root!\n')
+	sys.stderr.write('\n')
+	raise Exception('Incorrect working directory')
+
 # Option parsing
 
 parser = optparse.OptionParser()
 parser.add_option('--create-spdx', action='store_true', default=False, help='Create SPDX license file')
 parser.add_option('--minify', dest='minify', default='none', help='Minifier: none, closure, uglifyjs, uglifyjs2')
 (opts, args) = parser.parse_args()
+
+# Python module check and friendly errors
+
+def check_python_modules():
+	# make_dist.py doesn't need yaml but other dist utils will; check for it and
+	# warn if it is missing.
+	failed = False
+
+	def _warning(module, aptPackage, pipPackage):
+		sys.stderr.write('\n')
+		sys.stderr.write('*** NOTE: Could not "import %s" needed for dist.  Install it using e.g.:\n' % module)
+		sys.stderr.write('\n')
+		sys.stderr.write('    # Linux\n')
+		sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
+		sys.stderr.write('\n')
+		sys.stderr.write('    # Windows\n')
+		sys.stderr.write('    > pip install %s\n' % pipPackage)
+
+	try:
+		import yaml
+	except ImportError:
+		_warning('yaml', 'python-yaml', 'PyYAML')
+		failed = True
+
+	try:
+		if opts.create_spdx:
+			import rdflib
+	except:
+		_warning('rdflib', 'python-rdflib', 'rdflib')
+		failed = True
+
+	if failed:
+		sys.stderr.write('\n')
+		raise Exception('Missing some required Python modules')
+
+check_python_modules()
+
+# Figure out directories, git info, etc
 
 entry_pwd = os.getcwd()
 dist = os.path.join(entry_pwd, 'dist')
@@ -171,6 +238,7 @@ print('Dist for Duktape version %s, commit %s, describe %s, branch %s' % \
 print('Create dist directories and copy static files')
 
 # Create dist directory structure
+
 create_dist_directories(dist)
 
 # Copy most files directly
@@ -301,10 +369,7 @@ copy_files([
 ], 'src', distsrcsep)
 
 os.chdir(os.path.join(entry_pwd, 'config'))
-exec_print_stdout([
-	'tar',
-	'cfz',
-	os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'),
+create_targz(os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'), [
 	'tags.yaml',
 	'platforms.yaml',
 	'architectures.yaml',
@@ -604,6 +669,9 @@ copy_file(os.path.join(distsrccom, 'duktape.h'), os.path.join(distsrcnol, 'dukta
 #
 # Closure compiler --compilation_level ADVANCED_OPTIMIZATIONS breaks some
 # of the existing code, so don't use it.
+
+# XXX: currently assumes minifiers are present in static paths, it'd be
+# better to take the minifier path as an argument.
 
 def minify_none(src):
 	return read_file(src)
