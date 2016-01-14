@@ -27,11 +27,14 @@ DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
 		DUK_HEAPHDR_SET_PREV(heap, hdr, hdr_prev);
 		DUK_HEAPHDR_SET_NEXT(heap, hdr_prev, hdr);
+		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
+		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr_prev);
 		heap->refzero_list_tail = hdr;
 	} else {
 		DUK_ASSERT(heap->refzero_list_tail == NULL);
 		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
 		DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
+		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
 		heap->refzero_list = hdr;
 		heap->refzero_list_tail = hdr;
 	}
@@ -350,8 +353,14 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));
 			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
+			h2 = heap->heap_allocated;
 			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
-			DUK_HEAPHDR_SET_NEXT(heap, h1, heap->heap_allocated);
+			if (h2) {
+				DUK_HEAPHDR_SET_PREV(heap, h2, h1);
+			}
+			DUK_HEAPHDR_SET_NEXT(heap, h1, h2);
+			DUK_ASSERT_HEAPHDR_LINKS(heap, h1);
+			DUK_ASSERT_HEAPHDR_LINKS(heap, h2);
 			heap->heap_allocated = h1;
 		} else {
 			/* no -> decref members, then free */

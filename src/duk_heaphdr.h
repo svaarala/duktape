@@ -232,6 +232,27 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_STRING_INIT_NULLS(h)  /* currently nop */
 
 /*
+ *  Assert helpers
+ */
+
+/* Check that prev/next links are consistent: if e.g. h->prev is != NULL,
+ * h->prev->next should point back to h.
+ */
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+#define DUK_ASSERT_HEAPHDR_LINKS(heap,h) do { \
+		if ((h) != NULL) { \
+			duk_heaphdr *h__prev, *h__next; \
+			h__prev = DUK_HEAPHDR_GET_PREV((heap), (h)); \
+			h__next = DUK_HEAPHDR_GET_NEXT((heap), (h)); \
+			DUK_ASSERT(h__prev == NULL || (DUK_HEAPHDR_GET_NEXT((heap), h__prev) == (h))); \
+			DUK_ASSERT(h__next == NULL || (DUK_HEAPHDR_GET_PREV((heap), h__next) == (h))); \
+		} \
+	} while (0)
+#else
+#define DUK_ASSERT_HEAPHDR_LINKS(heap,h) do {} while (0)
+#endif
+
+/*
  *  Reference counting helper macros.  The macros take a thread argument
  *  and must thus always be executed in a specific thread context.  The
  *  thread argument is needed for features like finalization.  Currently
