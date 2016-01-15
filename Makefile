@@ -1021,7 +1021,7 @@ cloc:	dist cloc-1.60.pl
 # XXX: make prints a harmless warning related to the sub-make.
 dist:
 	@make codepolicycheck
-	if [ -f compiler.jar ]; then sh util/make_dist.sh --minify closure --create-spdx; else sh util/make_dist.sh --minify none --create-spdx; fi
+	if [ -f compiler.jar ]; then python util/make_dist.py --minify closure --create-spdx; else python util/make_dist.py --minify none --create-spdx; fi
 
 .PHONY:	dist-src
 dist-src:	dist
@@ -1084,7 +1084,8 @@ endif
 
 .PHONY: codepolicycheck
 codepolicycheck:
-	python util/check_code_policy.py \
+	@echo Code policy check
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1098,7 +1099,7 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		src/*.c src/*.h src/*.h.in tests/api/*.c
-	python util/check_code_policy.py \
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1109,7 +1110,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		tests/ecmascript/*.js
-	python util/check_code_policy.py \
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1121,7 +1122,7 @@ codepolicycheck:
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h
 	# XXX: not yet FIXME pure
-	python util/check_code_policy.py \
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-non-ascii \
@@ -1130,7 +1131,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		config/config-options/*.yaml config/feature-options/*.yaml config/*.yaml
-	python util/check_code_policy.py \
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1140,7 +1141,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		debugger/*.yaml
-	python util/check_code_policy.py \
+	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
