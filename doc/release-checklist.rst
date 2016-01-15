@@ -105,6 +105,11 @@ Checklist for ordinary releases
     > cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Isrc /Feduk.exe examples\cmdline\duk_cmdline.c duktape.lib
     > duk.exe
 
+* Test genconfig manually using metadata from the distributable
+
+  - Ensure that Duktape compiles with e.g. ``-DDUK_USE_FASTINT`` genconfig
+    argument
+
 * Ecmascript testcases
 
   - **FIXME: semiautomate test running for various configurations**
