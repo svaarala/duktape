@@ -1021,7 +1021,7 @@ cloc:	dist cloc-1.60.pl
 # XXX: make prints a harmless warning related to the sub-make.
 dist:
 	@make codepolicycheck
-	if [ -f compiler.jar ]; then python util/make_dist.py --minify closure --create-spdx; else python util/make_dist.py --minify none --create-spdx; fi
+	if [ -f compiler.jar ]; then python util/make_dist.py --minify closure --create-spdx; else python util/make_dist.py --minify none; fi
 
 .PHONY:	dist-src
 dist-src:	dist
