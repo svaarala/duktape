@@ -54,7 +54,8 @@ duktape.org web site, etc.
 
 Current branch policy: the "master" branch is used for active development,
 other branches are frequently rebased feature branches (so you should not
-fork off them), and tags are used for releases.
+fork off them), and tags are used for releases.  Master is quite stable,
+but may be broken from time to time so use it with care.
 
 Getting started: end user
 -------------------------
@@ -64,19 +65,39 @@ distributables available from [duktape.org/download.html](http://duktape.org/dow
 See [duktape.org/guide.html#gettingstarted](http://duktape.org/guide.html#gettingstarted)
 for the basics.
 
-However, if you really want to use a bleeding edge version:
+Automatically generated bleeding edge snapshots from master are available at
+[duktape.org/snapshots](http://duktape.org/snapshots).
 
-    $ git clone https://github.com/svaarala/duktape.git
-    $ cd duktape
-    $ make dist-src
+You can also clone this repository, make modifications, and build a source
+distributable on Linux, OSX, and Windows using `python util/make_dist.py`.
 
-Then use `duktape-<version>.tar.xz` like a normal source distributable.
+Getting started: modifying and rebuilding the distributable
+-----------------------------------------------------------
 
-Getting started: developing Duktape
------------------------------------
+If you intend to change Duktape internals and want to rebuild the source
+distributable in Linux, OSX, or Windows:
 
-If you intend to change Duktape internals, build the source distributable or
-the website, run test cases, etc:
+    # Linux; can often install from packages or using 'pip'
+    $ sudo apt-get install python python-yaml
+    $ python util/make_dist.py
+
+    # OSX
+    # Install Python 2.7.x
+    $ pip install PyYAML
+    $ python util/make_dist.py
+
+    # Windows
+    ; Install Python 2.7.x from python.org, and add it to PATH
+    > pip install PyYAML
+    > python util\make_dist.py
+
+The source distributable directory will be in `dist/`.
+
+Getting started: other development (Linux only)
+-----------------------------------------------
+
+Other development stuff, such as building the website and running test cases,
+is based on a `Makefile` **intended for Linux only**:
 
     # Install required packages (exact packages depend on distribution)
     $ sudo apt-get install nodejs nodejs-legacy npm perl ant openjdk-7-jdk \
@@ -108,11 +129,8 @@ the website, run test cases, etc:
     $ make bluebirdtest
     # etc
 
-**Note: the repo Makefile is intended for Linux developer use**, it is not a
-multi-platform "end user" Makefile.  In particular, the Makefile is not
-intended to work on e.g. OSX or Windows.  The source distributable has more
-user-friendly Makefile examples, but you should normally simply write your
-own Makefile when integrating Duktape into your program.
+You may get the Makefile working in OSX or Windows (using Cygwin), but this is
+not supported at the moment.
 
 Versioning
 ----------
