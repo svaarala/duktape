@@ -2,8 +2,7 @@ language: c
 sudo: required
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install bc
-  - sudo apt-get install python-rdflib python-yaml
+  - sudo apt-get install python-yaml
   - sudo apt-get install tidy
 #compiler:
 #  - clang
