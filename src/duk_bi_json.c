@@ -1460,7 +1460,7 @@ DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size
 #if defined(DUK_USE_UNALIGNED_ACCESSES_POSSIBLE)
 	q16 = (duk_uint16_t *) (void *) dst;
 #else
-	shift_dst = (duk_bool_t) (((duk_uintptr_t) dst) & 0x01U);
+	shift_dst = (duk_bool_t) (((duk_size_t) dst) & 0x01U);
 	if (shift_dst) {
 		DUK_DD(DUK_DDPRINT("unaligned accesses not possible, dst not aligned -> step to dst + 1"));
 		q16 = (duk_uint16_t *) (void *) (dst + 1);
@@ -1468,7 +1468,7 @@ DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size
 		DUK_DD(DUK_DDPRINT("unaligned accesses not possible, dst is aligned"));
 		q16 = (duk_uint16_t *) (void *) dst;
 	}
-	DUK_ASSERT((((duk_uintptr_t) q16) & 0x01U) == 0);
+	DUK_ASSERT((((duk_size_t) q16) & 0x01U) == 0);
 #endif
 
 	len_safe = src_len & ~0x03U;

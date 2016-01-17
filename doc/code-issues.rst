@@ -535,6 +535,7 @@ There doesn't seem to be a nice portable approach:
 * Casting through an integer (e.g. ``(void *) (duk_uintptr_t) const_ptr``)
   works but assumes that pointers can be safely cast through an integer.
   This is not necessarily portable to platforms with segmented pointers.
+  Also, ``(u)intptr_t`` is an optional type in C99.
 
 If a const-losing cast is required internally, the following macro is used
 to cast an arbitrary const pointer into a ``void *``::
@@ -599,6 +600,36 @@ code base is not ``-Wfloat-equal`` clean.
 One workaround would be to implement all comparisons by looking at the IEEE
 byte representation directly (using a union with double and byte array).
 This is a rather heavy workaround though.
+
+Avoid (u)intptr_t arithmetic
+----------------------------
+
+The ``(u)intptr_t`` types are optional in C99 so it's best to avoid using
+them whenever possible.  Duktape provides ``duk_(u)intptr_t`` even when
+they're missing.
+
+Platforms/compilers with exotic pointer models may have unexpected behavior
+when a pointer is cast to ``(u)intptr_t`` and then used in arithmetic or
+binary operations.  For more details, see:
+
+* https://github.com/svaarala/duktape/issues/530#issuecomment-171654860
+
+* https://github.com/svaarala/duktape/issues/530#issuecomment-171697759
+
+Arithmetic on integer cast pointer values may be needed e.g. for alignment::
+
+    /* Align to 4. */
+    while (((duk_size_t) (p)) & 0x03) {
+        p++;
+    }
+
+**Don't** use ``duk_(u)intptr_t`` in such cases to avoid portability issues
+with exotic pointer models::
+
+    /* AVOID THIS */
+    while (((duk_uintptr_t) (p)) & 0x03) {
+        p++;
+    }
 
 Symbol visibility
 =================
