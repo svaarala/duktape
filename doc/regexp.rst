@@ -380,6 +380,20 @@ Empty quantifier bodies in complex quantifiers
   This problem could also be fixed for complex quantifiers, but the
   fix is not as trivial as for simple quantifiers.
 
+Non-standard RegExp syntax in existing code
+:::::::::::::::::::::::::::::::::::::::::::
+
+Some Ecmascript code bases depend on non-standard RegExp syntax, such as
+using literal braces without escaping::
+
+    /{(\d+)}/    non-standard
+    /\{(\d+)\}/  standard
+
+Duktape's regexp engine supports a few non-standard expressions to reduce
+issues with existing code.  A longer term, more flexible solution is to
+allow the built-in minimal engine to be replaced with an external engine
+with wider regexp syntax, better performance, etc.
+
 Miscellaneous
 :::::::::::::
 

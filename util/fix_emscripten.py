@@ -12,28 +12,33 @@ replacements = {
 	# RegExp fix, now fixed in the Emscripten repository and should no longer
 	# be necessary.
 	# https://github.com/kripken/emscripten/commit/277ac5239057721ebe3c6e7813dc478eeab2cea0
-	r"""if (/<?{ ?[^}]* ?}>?/.test(type)) return true""":
-		r"""if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true""",
+	# Duktape 1.5.0: no longer needed with non-standard regexp curly brace support
+	#r"""if (/<?{ ?[^}]* ?}>?/.test(type)) return true""":
+	#	r"""if (/<?\{ ?[^}]* ?\}>?/.test(type)) return true""",
 
 	# GH-11: Another RegExp escaping fix.
-	r"""var sourceRegex = /^function\s\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;""":
-		r"""var sourceRegex = /^function\s\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""",
-	r"""var sourceRegex = /^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;""":
-		r"""var sourceRegex = /^function\s*\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""",
+	# Duktape 1.5.0: no longer needed with non-standard regexp curly brace support
+	#r"""var sourceRegex = /^function\s\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;""":
+	#	r"""var sourceRegex = /^function\s\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""",
+	#r"""var sourceRegex = /^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/;""":
+	#	r"""var sourceRegex = /^function\s*\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/;""",
 
 	# GH-11: Attempt to parse a function's toString() output with a RegExp.
 	# The RegExp makes invalid assumptions and won't parse Duktape's function
 	# toString output ("function empty() {/* source code*/)}").
 	# This stopgap will prevent a 'TypeError: invalid base reference for property read'
 	# and allows at least a hello world to run.
+	# Still needed with Duktape 1.5.0 because the issue is what Emscripten
+	# expects from .toString() of a function.
 	r"""var parsed = jsfunc.toString().match(sourceRegex).slice(1);""":
 		r"""var parsed = (jsfunc.toString().match(sourceRegex) || []).slice(1);""",
 	r"""jsfunc.toString().match(sourceRegex).slice(1);""":
 		r"""(jsfunc.toString().match(sourceRegex) || []).slice(1);""",
 
 	# Newer emscripten has this at least with -O2
-	r"""/^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/""":
-		r"""/^function\s*\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/""",
+	# Duktape 1.5.0: no longer needed with non-standard regexp curly brace support
+	#r"""/^function\s*\(([^)]*)\)\s*{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?}$/""":
+	#	r"""/^function\s*\(([^)]*)\)\s*\{\s*([^*]*?)[\s;]*(?:return\s*(.*?)[;\s]*)?\}$/""",
 }
 
 repl_keys = replacements.keys()
