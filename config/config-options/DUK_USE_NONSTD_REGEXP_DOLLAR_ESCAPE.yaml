@@ -4,6 +4,7 @@ introduced: 1.0.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
   Enable support for non-standard regexp dollar escape "\$".  This option is
   recommended because such regexps are used by existing code bases.
