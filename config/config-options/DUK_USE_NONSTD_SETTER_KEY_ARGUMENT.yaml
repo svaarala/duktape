@@ -4,6 +4,7 @@ introduced: 1.0.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
   Give setter calls the accessed property name as an additional non-standard
   argument.  This allows a single setter function to be reused for multiple

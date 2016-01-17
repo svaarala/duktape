@@ -1,10 +1,12 @@
 define: DUK_USE_NONSTD_REGEXP_BRACES
 feature_enables: DUK_OPT_NONSTD_REGEXP_BRACES
-introduced: 1.3.2
+introduced: 1.5.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
-  Enable support for non-standard '{' literal. Ecmascript requires
-  curly braces to be escaped, but most regex engine support them
-  when they are not used in valid quantifier. This option is recommended.
+  Enable support for non-standard '{' and '}' literals.  Ecmascript requires
+  literal curly braces to be escaped, but most Ecmascript engines support them
+  when they are not used in valid quantifier.  This option is recommended
+  because a lot of existing code depends on non-standard literal braces.

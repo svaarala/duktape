@@ -4,6 +4,7 @@ introduced: 1.0.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
   Enable support for function declarations outside program or function top
   level (also known as "function statements").  Such declarations are

@@ -4,6 +4,7 @@ introduced: 1.0.0
 default: false
 tags:
   - ecmascript
+  - compliance
 description: >
   Add a non-standard "caller" property to non-strict function instances
   for better compatibility with existing code.  The semantics of this

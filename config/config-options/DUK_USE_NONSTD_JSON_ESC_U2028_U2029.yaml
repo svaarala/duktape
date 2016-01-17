@@ -4,6 +4,7 @@ introduced: 1.1.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
   When enabled, Duktape JSON.stringify() will escape U+2028 and U+2029 which
   is non-compliant behavior.  This is recommended to make JSON.stringify()

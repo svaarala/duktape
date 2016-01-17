@@ -59,7 +59,8 @@ Javascript.  There are no known issues.</p>
 <p><a href="https://github.com/Microsoft/TypeScript/">TypeScript</a>
 compiles to Javascript.  There are no known issues with compiling TypeScript
 using the Microsoft TypeScript compiler (in the ES5/CommonJS mode) and
-running the resulting Javascript using Duktape.</p>
+running the resulting Javascript using Duktape.  It's also possible to
+<a href="http://wiki.duktape.org/CompatibilityTypeScript.html">run the TypeScript compiler with Duktape</a>.</p>
 
 <h2 id="compatibility-underscorejs">Underscore.js</h2>
 
@@ -93,8 +94,10 @@ support yet, no "heap object" can be provided.</p>
 
 <p><a href="https://github.com/kripken/emscripten">Emscripten</a> compiles
 C/C++ into Javascript.  Duktape is currently Emscripten compatible except
-for a few RegExp issues, see:
+for an assumption about the format of a function's <code>toString()</code>
+output, see:
 <a href="https://github.com/svaarala/duktape/blob/master/util/fix_emscripten.py">fix_emscripten.py</a>.
+Since Duktape 1.5.0 fixes for non-standard regexps are no longer needed.
 </p>
 
 <p>As of Duktape 1.3 there is support for Khronos/ES6 TypedArray which improves

@@ -15,7 +15,10 @@ Tweaks needed:
 
 * ``--memory-init-file 0``: don't use an external memory file.
 
-* Some RegExps need to be fixed, see ``util/fix_emscripten.py``.
+* Emscripten expects a function's ``.toString()`` to match a certain
+  pattern which is not guaranteed (and Duktape doesn't match), see
+  ``util/fix_emscripten.py``.  Since Duktape 1.5.0 non-standard regexp
+  fixes for unescaped curly braces are no longer needed.
 
 Normally this suffices.  If you're running Duktape with a small amount of
 memory (e.g. when running the Duktape command line tool with the ``-r``

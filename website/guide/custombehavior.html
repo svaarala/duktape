@@ -93,16 +93,27 @@ binding in any of the points A, B, or C.</p>
 
 <h2>RegExp leniency</h2>
 
-<p>Although not allowed by E5.1, the following escape is allowed in RegExp
-syntax:</p>
+<p>Most Ecmascript engines support more syntax than guaranteed by the
+<a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.10.1">Ecmascript
+E5.1 specification (Section 15.10.1 Patterns)</a>.  As a result there's quite
+a lot of code that won't work with strict Ecmascript regexp syntax.  Duktape also
+allows some non-standard syntax to better support existing code (you can turn
+this non-standard behavior off using config options if you prefer).</p>
+
+<p>Curly braces (<code>{</code> and <code>}</code>) are treated as literals
+when they don't parse as a valid quantifier:</p>
+
 <pre>
-  /\$/       /* matches dollar literally, non-standard */
-  /\u0024/   /* same, standard */
+  /{(\d+)}/    /* left curly, digits, right curly; non-standard */
+  /\{(\d+)\}/  /* same, standard */
 </pre>
 
-<p>This escape occurs in real world code so it is allowed.  (More leniency
-will be added in future versions to deal with real world RegExps; dollar
-escapes are not the only issue.)</p>
+<p>Escaping a dollar sign as <code>\$</code> is not allowed by E5.1, but
+is accepted by Duktape:</p>
+<pre>
+  /\$/       /* matches dollar literally; non-standard */
+  /\u0024/   /* same, standard */
+</pre>
 
 <h2>Array.prototype.splice() when deleteCount not given</h2>
 

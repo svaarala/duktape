@@ -4,6 +4,7 @@ introduced: 1.0.0
 default: true
 tags:
   - ecmascript
+  - compliance
 description: >
   For better compatibility with existing code, enable non-standard
   Array.prototype.map() behavior for trailing non-existent elements of

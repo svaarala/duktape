@@ -9,6 +9,9 @@ ecmascript:
 ecmascript6:
   title: Ecmascript Edition 6 (ES6) feature options
 
+compliance:
+  title: Compliance related options
+
 debugger:
   title: Debugger options
 
