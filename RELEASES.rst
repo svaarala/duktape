@@ -1367,6 +1367,11 @@ Planned
 1.5.0 (XXXX-XX-XX)
 ------------------
 
+* Allow non-standard unescaped braces ('{' and '}') in regular expressions
+  when no valid quantifier can be parsed; this improves compatibility with
+  existing Javascript code which often assumes support for some non-standard
+  regexp expressions (GH-142, GH-513, GH-547)
+
 * Fix potentially memory unsafe behavior when a refcount-triggered finalizer
   function rescues an object; the memory unsafe behavior doesn't happen
   immediately which makes the cause of the unsafe behavior difficult to
