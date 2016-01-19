@@ -927,7 +927,7 @@ def add_override_defines_section(opts, ret):
 
 # Add automatic DUK_OPT_XXX and DUK_OPT_NO_XXX handling for backwards
 # compatibility with Duktape 1.2 and before.
-def add_feature_option_handling(opts, ret, forced_opts):
+def add_feature_option_handling(opts, ret, forced_opts, already_provided_keys):
 	ret.chdr_block_heading('Feature option handling')
 
 	for doc in get_use_defs(removed=False, deprecated=False, unused=False):
@@ -962,7 +962,18 @@ def add_feature_option_handling(opts, ret, forced_opts):
 				ret.line('#undef %s' % config_define)
 			ret.line('#else')
 			undef_done = False
-			emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
+
+			# For some options like DUK_OPT_PACKED_TVAL the default comes
+			# from platform definition.
+			if doc.get('feature_no_default', False):
+				print('Skip default for option %s' % config_define)
+				ret.line('/* Already provided above */')
+			elif already_provided_keys.has_key(config_define):
+				# This is a fallback in case config option metadata is wrong.
+				print('Skip default for option %s (already provided but not flagged in metadata!)' % config_define)
+				ret.line('/* Already provided above */')
+			else:
+				emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
 			ret.line('#endif')
 		elif doc.has_key('feature_snippet'):
 			ret.lines(doc['feature_snippet'])
@@ -1294,7 +1305,8 @@ def generate_duk_config_header(opts, meta_dir):
 	# Automatic DUK_OPT_xxx feature option handling
 	if opts.support_feature_options:
 		print('Autogenerating feature option (DUK_OPT_xxx) support')
-		add_feature_option_handling(opts, ret, forced_opts)
+		tmp = Snippet(ret.join().split('\n'))
+		add_feature_option_handling(opts, ret, forced_opts, tmp.provides)
 
 	# Emit forced options.  If a corresponding option is already defined
 	# by a snippet above, #undef it first.
