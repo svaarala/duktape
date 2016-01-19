@@ -1381,6 +1381,10 @@ Planned
   exotic pointer models by avoiding arithmetic and binary operations on
   (u)intptr_t values (GH-530, GH-539)
 
+* Fix a genconfig legacy feature option bug in Duktape 1.4.0 which caused
+  DUK_USE_PACKED_TVAL to default to false unless forced using
+  DUK_OPT_PACKED_TVAL (GH-550)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 

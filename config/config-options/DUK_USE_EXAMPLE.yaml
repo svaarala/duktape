@@ -30,6 +30,12 @@ related_feature_defines:
 #   #endif
 #   #endif
 
+# Feature default value is provided by platform, compiler, or architecture.
+# DUK_OPT_xxx handling can force the value if explicitly requested by
+# DUK_OPT_XXX or DUK_OPT_NO_xxx, but if neither is given, don't emit a
+# default.
+#feature_no_default: true
+
 # Duktape version number where this option was first introduced.
 introduced: 1.1.0
 
