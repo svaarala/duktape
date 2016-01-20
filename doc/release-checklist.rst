@@ -61,6 +61,9 @@ Checklist for ordinary releases
 
   - Run ``mandel.js`` to test the the command line tool works.
 
+  - Check that ``duk_tval`` is packed by default on x86 and unpacked on
+    x64
+
   - Platform / compiler combinations (incomplete, should be automated):
 
     + Linux x86-64 gcc
