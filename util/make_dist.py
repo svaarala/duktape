@@ -29,12 +29,21 @@ import tarfile
 
 # Helpers
 
-def exec_get_stdout(cmd, input=None):
-	proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-	ret = proc.communicate(input=input)
-	if proc.returncode != 0:
-		raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
-	return ret[0]
+def exec_get_stdout(cmd, input=None, default=None):
+	try:
+		proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		ret = proc.communicate(input=input)
+		if proc.returncode != 0:
+			if default is not None:
+				print('WARNING: command %r failed, return default' % cmd)
+				return default
+			raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
+		return ret[0]
+	except:
+		if default is not None:
+			print('WARNING: command %r failed, return default' % cmd)
+			return default
+		raise
 
 def exec_print_stdout(cmd, input=None):
 	ret = exec_get_stdout(cmd, input=input)
@@ -175,6 +184,9 @@ if not (os.path.isfile(os.path.join('src', 'duk_api_public.h.in')) and \
 parser = optparse.OptionParser()
 parser.add_option('--create-spdx', action='store_true', default=False, help='Create SPDX license file')
 parser.add_option('--minify', dest='minify', default='none', help='Minifier: none, closure, uglifyjs, uglifyjs2')
+parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
+parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
+parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
 (opts, args) = parser.parse_args()
 
 # Python module check and friendly errors
@@ -225,11 +237,22 @@ distsrcnol = os.path.join(dist, 'src-noline')  # src-noline/duktape.c is same as
 
 duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted = get_duk_version()
 
-git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ]).strip()
+if opts.git_commit is not None:
+	git_commit = opts.git_commit
+else:
+	git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ], default='external').strip()
 git_commit_cstring = cstring(git_commit)
-git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ]).strip()
+
+if opts.git_describe is not None:
+	git_describe = opts.git_describe
+else:
+	git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ], default='external').strip()
 git_describe_cstring = cstring(git_describe)
-git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ]).strip()
+
+if opts.git_branch is not None:
+	git_branch = opts.git_branch
+else:
+	git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], default='external').strip()
 git_branch_cstring = cstring(git_branch)
 
 print('Dist for Duktape version %s, commit %s, describe %s, branch %s' % \
