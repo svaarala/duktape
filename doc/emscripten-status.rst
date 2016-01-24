@@ -8,17 +8,11 @@ Hello world test
 Quick hello world test::
 
   $ ./emcc --memory-init-file 0 tests/hello_world.cpp -o /tmp/test.js
-  $ python $DUKTAPE/util/fix_emscripten.py < /tmp/test.js > /tmp/test-fixed.js
-  $ duk /tmp/test-fixed.js
+  $ duk /tmp/test.js
 
 Tweaks needed:
 
 * ``--memory-init-file 0``: don't use an external memory file.
-
-* Emscripten expects a function's ``.toString()`` to match a certain
-  pattern which is not guaranteed (and Duktape doesn't match), see
-  ``util/fix_emscripten.py``.  Since Duktape 1.5.0 non-standard regexp
-  fixes for unescaped curly braces are no longer needed.
 
 Normally this suffices.  If you're running Duktape with a small amount of
 memory (e.g. when running the Duktape command line tool with the ``-r``
@@ -31,9 +25,18 @@ following additional options:
 * ``-s TOTAL_STACK=524288``: reduce total stack size to fit it into the
   reduced memory size.
 
-Since Duktape 1.3 there is support for Khronos/ES6 TypedArrays which allow
-Emscripten to run better than with Duktape 1.2, and also allows use of
-Emscripten fastcomp.
+Changes in Duktape versions:
+
+* Since Duktape 1.3 there is support for Khronos/ES6 TypedArrays which allow
+  Emscripten to run better than with Duktape 1.2, and also allows use of
+  Emscripten fastcomp.
+
+* Since Duktape 1.5 no fixups are needed to run Emscripten-generated code:
+  Duktape now accepts non-standard unescaped curly braces in regexps, and
+  the Function ``.toString()`` output was changed to be acceptable to the
+  Emscripten regexps.  Earlier a fixup script was needed::
+
+      $ python $DUKTAPE/util/fix_emscripten.py < /tmp/test.js > /tmp/test-fixed.js
 
 Setting up fastcomp for Duktape
 ===============================
