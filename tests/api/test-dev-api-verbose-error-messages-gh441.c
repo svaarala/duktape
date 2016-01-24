@@ -120,14 +120,14 @@ TypeError: buffer required, found [object Function] (stack index -3)
 TypeError: pointer required, found [object Function] (stack index -3)
 test__c_function ok
 top: 1
-TypeError: undefined required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: null required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: boolean required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: number required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: string required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: buffer required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: pointer required, found function LFUNC() {/= light =/} (stack index -3)
-TypeError: nativefunction required, found function LFUNC() {/= light =/} (stack index -3)
+TypeError: undefined required, found function LFUNC() {"light"} (stack index -3)
+TypeError: null required, found function LFUNC() {"light"} (stack index -3)
+TypeError: boolean required, found function LFUNC() {"light"} (stack index -3)
+TypeError: number required, found function LFUNC() {"light"} (stack index -3)
+TypeError: string required, found function LFUNC() {"light"} (stack index -3)
+TypeError: buffer required, found function LFUNC() {"light"} (stack index -3)
+TypeError: pointer required, found function LFUNC() {"light"} (stack index -3)
+TypeError: nativefunction required, found function LFUNC() {"light"} (stack index -3)
 top: 1
 TypeError: undefined required, found [object Function] (stack index -3)
 TypeError: null required, found [object Function] (stack index -3)
@@ -212,8 +212,7 @@ static duk_ret_t test__c_function(duk_context *ctx) {
 		rc = duk_safe_call(ctx, (fn), 3, 3); \
 		if (rc != 0) { \
 			duk_eval_string(ctx, "(function (v) { print(String(v).replace(/\\(0x.*?\\)/g, '(PTR)')" \
-			                     ".replace(/light_[0-9a-fA-F_]+/g, 'LFUNC')" \
-			                     ".replace(/\\*/g, '=')); })"); \
+			                     ".replace(/light_[0-9a-fA-F_]+/g, 'LFUNC')); })"); \
 			duk_dup(ctx, -4); \
 			duk_call(ctx, 1); \
 		} else { \

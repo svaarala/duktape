@@ -906,7 +906,7 @@ static duk_ret_t test_to_object(duk_context *ctx) {
 
 /*===
 *** test_to_buffer (duk_safe_call)
-function light_PTR_4232() {(* light *)}
+function light_PTR_4232() {"light"}
 final top: 1
 ==> rc=0, result='undefined'
 ===*/

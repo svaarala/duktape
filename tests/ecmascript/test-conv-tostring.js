@@ -18,7 +18,7 @@
 3 string false
 4 string 123
 5 string foo
-6 string function myfunc() {|* ecmascript *|}
+6 string function myfunc() {"ecmascript"}
 7 string [object Object]
 8 TypeError
 9 string foo
@@ -49,7 +49,7 @@ function test() {
         try {
             var t = String(v);
             if (typeof v === 'function' && typeof t === 'string') {
-                // expect string hack
+                // expect string hack (no longer needed in Duktape 1.5.0)
                 t = t.replace(/\//g, '|');
             }
             print(i, typeof t, t);

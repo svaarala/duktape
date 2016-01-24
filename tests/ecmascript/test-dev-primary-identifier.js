@@ -6,10 +6,10 @@
 foo
 foo
 234
-function inner() {|* ecmascript *|}
+function inner() {"ecmascript"}
 123
 234
-function inner() {|* ecmascript *|}
+function inner() {"ecmascript"}
 123
 ===*/
 
@@ -30,12 +30,12 @@ function test(arg) {
 
     // fast path local variable, local function, local argument
     print(x);
-    print(String(inner).replace(/\//g, '|'));
+    print(String(inner));
     print(arg);
 
     // same through slow path eval
     eval('print(x);');
-    eval('print(String(inner).replace(/\\//g, "|"));');
+    eval('print(String(inner));');
     eval('print(arg);');
 }
 
