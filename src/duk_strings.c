@@ -122,5 +122,4 @@ DUK_INTERNAL const char *duk_str_regexp_executor_recursion_limit = "regexp execu
 DUK_INTERNAL const char *duk_str_regexp_executor_step_limit = "regexp step limit";
 
 /* Misc */
-DUK_INTERNAL const char *duk_str_anon = "anon";
 DUK_INTERNAL const char *duk_str_realloc_failed = "realloc failed";

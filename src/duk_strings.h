@@ -263,7 +263,6 @@ DUK_INTERNAL_DECL const char *duk_str_regexp_executor_recursion_limit;
 DUK_INTERNAL_DECL const char *duk_str_regexp_executor_step_limit;
 #endif  /* !DUK_SINGLE_FILE */
 
-#define DUK_STR_ANON duk_str_anon
 #define DUK_STR_REALLOC_FAILED duk_str_realloc_failed
 
 #if !defined(DUK_SINGLE_FILE)
