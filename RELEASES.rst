@@ -1372,6 +1372,11 @@ Planned
   existing Javascript code which often assumes support for some non-standard
   regexp expressions (GH-142, GH-513, GH-547)
 
+* Change Function object .toString() output to be Emscripten compatible:
+  anonymous functions won't get an automatic "anon" name, and the function
+  type is indicated using a fake directive rather than a comment; for example,
+  'function () {"ecmascript"}' (GH-554)
+
 * Fix potentially memory unsafe behavior when a refcount-triggered finalizer
   function rescues an object; the memory unsafe behavior doesn't happen
   immediately which makes the cause of the unsafe behavior difficult to
