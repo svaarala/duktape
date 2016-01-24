@@ -93,19 +93,13 @@ support yet, no "heap object" can be provided.</p>
 <h2 id="compatibility-emscripten">Emscripten</h2>
 
 <p><a href="https://github.com/kripken/emscripten">Emscripten</a> compiles
-C/C++ into Javascript.  Duktape is currently Emscripten compatible except
-for an assumption about the format of a function's <code>toString()</code>
-output, see:
-<a href="https://github.com/svaarala/duktape/blob/master/util/fix_emscripten.py">fix_emscripten.py</a>.
-Since Duktape 1.5.0 fixes for non-standard regexps are no longer needed.
-</p>
+C/C++ into Javascript.  Duktape is currently (as of Duktape 1.5.0) Emscripten
+compatible and supports Khronos/ES6 TypedArray which allows Emscripten fastcomp
+to be used.</p>
 
-<p>As of Duktape 1.3 there is support for Khronos/ES6 TypedArray which improves
-Emscripten performance over Duktape 1.2 and allows the Emscripten fastcomp
-to be used.  Duktape can now also execute larger Emscripten-compiled programs
-and can e.g. run both Emscripten-compiled Lua and Duktape.  Large programs may
-still fail due to Duktape compiler running out of virtual registers, and
-performance is somewhat limited as Duktape is an interpreted engine.  See
+<p>Large programs may fail due to Duktape compiler running out of virtual
+registers, and performance is somewhat limited as Duktape is an interpreted
+engine.  See
 <a href="https://github.com/svaarala/duktape/blob/master/doc/emscripten-status.rst">emscripten-status.rst</a>
 for current compatibility status.</p>
 
