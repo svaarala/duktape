@@ -1385,6 +1385,8 @@ Planned
   DUK_USE_PACKED_TVAL to default to false unless forced using
   DUK_OPT_PACKED_TVAL (GH-550)
 
+* Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
