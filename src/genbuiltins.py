@@ -1516,9 +1516,9 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
 	genc.emitLine('#else')
 	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
-	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (props), (const duk_hobject *) (iproto), (esize), (enext), (asize), (hsize) } }')
+	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) } }')
 	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
-	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (void *) (props), (const duk_hobject *) (void *) (iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
 	genc.emitLine('#endif')
 
 	# Emit duk_tval structs.  This gets a bit messier with packed/unpacked
