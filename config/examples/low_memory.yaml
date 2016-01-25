@@ -7,6 +7,7 @@
 #   - Strips some commonly unnecessary API calls like bytecode dump/load
 #   - Does not enable pointer compression or external strings: these
 #     need target specific support code
+#   - Does not enable ROM string/object support by default, enable manually
 #
 
 DUK_USE_PREFER_SIZE: true
@@ -37,6 +38,21 @@ DUK_USE_STRTAB_CHAIN: true
 DUK_USE_STRTAB_PROBE: false
 DUK_USE_STRTAB_CHAIN_SIZE: 128
 
+# Consider using pointer compression, see doc/low-memory.rst.
+#DUK_USE_REFCOUNT16
+#DUK_USE_STRHASH16
+#DUK_USE_STRLEN16
+#DUK_USE_BUFLEN16
+#DUK_USE_OBJSIZES16
+#DUK_USE_HEAPPTR16
+#DUK_USE_HEAPPTR_DEC16
+#DUK_USE_HEAPPTR_ENC16
+
+# Consider using external strings, see doc/low_memory.rst.
+#DUK_USE_EXTERNAL_STRINGS
+#DUK_USE_EXTSTR_INTERN_CHECK
+#DUK_USE_EXTSTR_FREE
+
 # Consider removing Node.js Buffer and Khronos/ES6 typed array support if not
 # needed (about 8-9 kB code footprint difference on x64)
 #DUK_USE_BUFFEROBJECT_SUPPORT: false
@@ -51,3 +67,11 @@ DUK_USE_STRTAB_CHAIN_SIZE: 128
 
 # Short term workaround with large footprint, disable.
 DUK_USE_REGEXP_CANON_WORKAROUND: false
+
+# Consider using ROM strings/objects to reduce footprint, see doc/low_memory.rst.
+# ROM strings/objects reduce startup RAM usage at the expense of code footprint
+# and some compliance.
+#DUK_USE_ROM_STRINGS: true
+#DUK_USE_ROM_OBJECTS: true
+#DUK_USE_ROM_GLOBAL_INHERIT: true  # select inherit or clone; inherit recommended
+#DUK_USE_ROM_GLOBAL_CLONE: false
