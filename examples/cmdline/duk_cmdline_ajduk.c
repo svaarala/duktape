@@ -34,6 +34,19 @@ static const void *duk__romptr_high = NULL;
  *  Helpers
  */
 
+static void *ajduk__lose_const(const void *ptr) {
+	/* Somewhat portable way of losing a const without warnings.
+	 * Another approach is to cast through intptr_t, but that
+	 * type is not always available.
+	 */
+	union {
+		const void *p;
+		void *q;
+	} u;
+	u.p = ptr;
+	return u.q;
+}
+
 static void safe_print_chars(const char *p, duk_size_t len, int until_nul) {
 	duk_size_t i;
 
@@ -141,7 +154,7 @@ void ajsheap_init(void) {
 	 * later on.
 	 */
 	if (1) {
-		const void **ptrs = duk_rom_compressed_pointers;
+		const void * const * ptrs = (const void * const *) duk_rom_compressed_pointers;
 		duk__romptr_low = duk__romptr_high = (const void *) *ptrs;
 		while (*ptrs) {
 			if (*ptrs > duk__romptr_high) {
@@ -152,7 +165,8 @@ void ajsheap_init(void) {
 			}
 			ptrs++;
 		}
-		fprintf(stderr, "romptrs: low=%p high=%p\n", (void *) duk__romptr_low, (void *) duk__romptr_high);
+		fprintf(stderr, "romptrs: low=%p high=%p\n",
+		        (const void *) duk__romptr_low, (const void *) duk__romptr_high);
 		fflush(stderr);
 	}
 #endif
@@ -279,7 +293,7 @@ duk_uint16_t ajsheap_enc16(void *ud, void *p) {
 		 * which is very bad for performance and for illustration
 		 * only.
 		 */
-		const void **ptrs = duk_rom_compressed_pointers;
+		const void * const * ptrs = duk_rom_compressed_pointers;
 		while (*ptrs) {
 			if (*ptrs == p) {
 				ret = DUK__ROMPTR_FIRST + (ptrs - duk_rom_compressed_pointers);
@@ -356,7 +370,7 @@ void *ajsheap_dec16(void *ud, duk_uint16_t x) {
 		 * Duktape should never decompress a pointer which would
 		 * be out-of-bounds here.
 		 */
-		ret = (void *) duk_rom_compressed_pointers[x - DUK__ROMPTR_FIRST];
+		ret = (void *) ajduk__lose_const(duk_rom_compressed_pointers[x - DUK__ROMPTR_FIRST]);
 #if 0
 		fprintf(stderr, "ajsheap_dec16: rom pointer: 0x%04lx -> %p\n", (long) x, ret);
 		fflush(stderr);
@@ -878,7 +892,7 @@ const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len) {
 			safe_print_chars((const char *) ptr, len, 0 /*until_nul*/);
 			printf(" -> constant string index %ld\n", (long) i);
 #endif
-			return (void *) strdata_duk_builtin_strings[i];
+			return (void *) ajduk__lose_const(strdata_duk_builtin_strings[i]);
 		}
 	}
 
@@ -943,7 +957,7 @@ void ajsheap_extstr_free_3(const void *ptr) {
 	safe_print_chars((const char *) ptr, DUK_SIZE_MAX, 1 /*until_nul*/);
 	printf("\n");
 #endif
-	free((void *) ptr);
+	free((void *) ajduk__lose_const(ptr));
 }
 
 /*
