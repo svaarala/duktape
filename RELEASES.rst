@@ -1367,6 +1367,10 @@ Planned
 1.5.0 (XXXX-XX-XX)
 ------------------
 
+* Add support for placing Duktape built-in strings and objects into ROM
+  (read-only data section) which reduces the startup RAM usage of a low
+  memory build to ~3kB (from ~27kB) (GH-559)
+
 * Allow non-standard unescaped braces ('{' and '}') in regular expressions
   when no valid quantifier can be parsed; this improves compatibility with
   existing Javascript code which often assumes support for some non-standard
