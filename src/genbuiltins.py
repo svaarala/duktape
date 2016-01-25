@@ -1,1328 +1,167 @@
 #!/usr/bin/python
 #
-#  Generate initialization data for builtins.
+#  Generate initialization data for built-in strings and objects.
 #
-#  The init data is a bit-packed stream tailored to match the decoder
-#  in duk_hthread_builtins.c.  Various bitfield sizes are used to
-#  minimize the bitstream size without resorting to actual, expensive
-#  compression.  The goal is to minimize the overall size of the init
-#  code and the init data.
+#  Supports two different initialization approaches:
 #
-#  Notes on value representation
+#    1. Bit-packed format for unpacking strings and objects during
+#       heap or thread init into RAM-based structures.  This is the
+#       default behavior.
 #
-#    - Strings are represented either by indexing the built-in strings
-#      (genstrings.py) or by emitting them verbatim
+#    2. Embedding strings and/or objects into a read-only data section
+#       at compile time.  This is useful for low memory targets to reduce
+#       memory usage.  Objects in data section will be immutable.
 #
-#    - Built-in objects are represented by their built-in index
+#  Both of these have practical complications like endianness differences,
+#  pointer compression variants, object property table layout variants,
+#  and so on.  Multiple #ifdef'd initializer sections are emitted to cover
+#  all supported alternatives.
 #
-#    - Native functions are represented by indexing the built-in
-#      native function array
-#
-#  Other notes:
-#
-#    - 'values' and 'functions' are intentionally ordered, so that the
-#      initialization order (and hence enumeration order) of keys can be
-#      controlled.
-#
-#    - Some algorithms need to refer to the original, unmodified built-in
-#      functions (like Object.toString).  These should be marked somehow here
-#      and slots in thr->builtins should be allocated for them.
 
 import os
 import sys
+import re
 import json
+import yaml
 import math
 import struct
 import optparse
 import copy
 
 import dukutil
-import genstrings
+
+# Fixed seed for ROM strings, must match src/duk_heap_alloc.c.
+DUK__FIXED_HASH_SEED = 0xabcd1234
+
+# Base value for compressed ROM pointers, used range is [ROMPTR_FIRST,0xffff].
+# Must match DUK_USE_ROM_PTRCOMP_FIRST (generated header checks).
+ROMPTR_FIRST = 0xf800  # 2048 should be enough; now around ~1000 used
 
 #
-#  Helpers and constants
-#
-#  Double constants, see http://en.wikipedia.org/wiki/Double-precision_floating-point_format.
-#  Some double constants have been created with 'python-mpmath'.  The constants are in binary
-#  so that the package is not needed for a normal build.
+#  Miscellaneous helpers
 #
 
-def create_double_constants_mpmath():
-	# Just a helper to use manually
-	# http://mpmath.googlecode.com/svn/trunk/doc/build/basics.html
-	import mpmath
+# Convert Unicode to bytes, identifying Unicode U+0000 to U+00FF as bytes.
+# This representation is used in YAML metadata and allows invalid UTF-8 to
+# be represented exactly (which is necessary).
+def unicode_to_bytes(x):
+	if isinstance(x, str):
+		return x
+	tmp = ''
+	for c in x:
+		if ord(c) > 0xff:
+			raise Exception('invalid codepoint: %r' % x)
+		tmp += chr(ord(c))
+	assert(isinstance(tmp, str))
+	return tmp
 
-	mpmath.mp.prec = 1000  # 1000 bits
+# Convert bytes to Unicode, identifying bytes as U+0000 to U+00FF.
+def bytes_to_unicode(x):
+	if isinstance(x, unicode):
+		return x
+	tmp = u''
+	for c in x:
+		tmp += unichr(ord(c))
+	assert(isinstance(tmp, unicode))
+	return tmp
 
-	def printhex(name, x):
-		# to hex string, ready for create_double()
-		hex = struct.pack('>d', float(str(x))).encode('hex')
-		flt = struct.unpack('>d', hex.decode('hex'))[0]
-		print '%s -> %s  (= %.20f)' % (name, hex, flt)
+# Convert all strings in an object to bytes recursively.  Useful for
+# normalizing all strings in a YAML document.
+def recursive_strings_to_bytes(doc):
+	def f(x):
+		if isinstance(x, unicode):
+			return unicode_to_bytes(x)
+		if isinstance(x, dict):
+			res = {}
+			for k in x.keys():
+				res[f(k)] = f(x[k])
+			return res
+		if isinstance(x, list):
+			res = []
+			for e in x:
+				res.append(f(e))
+			return res
+		return x
 
-	printhex('DBL_E', mpmath.mpf(mpmath.e))
-	printhex('DBL_LN10', mpmath.log(10))
-	printhex('DBL_LN2', mpmath.log(2))
-	printhex('DBL_LOG2E', mpmath.log(mpmath.e) / mpmath.log(2))
-	printhex('DBL_LOG10E', mpmath.log(mpmath.e) / mpmath.log(10))
-	printhex('DBL_PI', mpmath.mpf(mpmath.pi))
-	printhex('DBL_SQRT1_2', mpmath.mpf(1) / mpmath.sqrt(2))
-	printhex('DBL_SQRT2', mpmath.sqrt(2))
+	return f(doc)
 
-#create_double_constants_mpmath()
+# Check if string is an "array index" in Ecmascript terms.
+def string_is_arridx(v):
+	is_arridx = False
+	try:
+		ival = int(v)
+		if ival >= 0 and ival <= 0xfffffffe and ('%d' % ival == v):
+			is_arridx = True
+	except ValueError:
+		pass
 
-def create_double(x):
-	return struct.unpack('>d', x.decode('hex'))[0]
-
-DBL_NAN =                    create_double('7ff8000000000000')  # a NaN matching our "normalized NAN" definition (see duk_tval.h)
-DBL_POSITIVE_INFINITY =      create_double('7ff0000000000000')  # positive infinity (unique)
-DBL_NEGATIVE_INFINITY =      create_double('fff0000000000000')  # negative infinity (unique)
-DBL_MAX_DOUBLE =             create_double('7fefffffffffffff')  # 'Max Double'
-DBL_MIN_DOUBLE =             create_double('0000000000000001')  # 'Min subnormal positive double'
-DBL_E =                      create_double('4005bf0a8b145769')  # (= 2.71828182845904509080)
-DBL_LN10 =                   create_double('40026bb1bbb55516')  # (= 2.30258509299404590109)
-DBL_LN2 =                    create_double('3fe62e42fefa39ef')  # (= 0.69314718055994528623)
-DBL_LOG2E =                  create_double('3ff71547652b82fe')  # (= 1.44269504088896338700)
-DBL_LOG10E =                 create_double('3fdbcb7b1526e50e')  # (= 0.43429448190325181667)
-DBL_PI =                     create_double('400921fb54442d18')  # (= 3.14159265358979311600)
-DBL_SQRT1_2 =                create_double('3fe6a09e667f3bcd')  # (= 0.70710678118654757274)
-DBL_SQRT2 =                  create_double('3ff6a09e667f3bcd')  # (= 1.41421356237309514547)
-
-# marker for 'undefined' value
-UNDEFINED = {}
-
-# default property atrributes, see E5 Section 15 beginning
-LENGTH_PROPERTY_ATTRIBUTES = ""
-DEFAULT_PROPERTY_ATTRIBUTES = "wc"
-
-# encoding constants (must match duk_hthread_builtins.c)
-CLASS_BITS = 5
-BIDX_BITS = 7
-STRIDX_BITS = 9   # would be nice to optimize to 8
-NATIDX_BITS = 8
-NUM_NORMAL_PROPS_BITS = 6
-NUM_FUNC_PROPS_BITS = 6
-PROP_FLAGS_BITS = 3
-STRING_LENGTH_BITS = 8
-STRING_CHAR_BITS = 7
-LENGTH_PROP_BITS = 3
-NARGS_BITS = 3
-PROP_TYPE_BITS = 3
-MAGIC_BITS = 16
-
-NARGS_VARARGS_MARKER = 0x07
-NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_UNUSED 
-NO_BIDX_MARKER = 0x7f
-NO_STRIDX_MARKER = 0xff
-
-PROP_TYPE_DOUBLE = 0
-PROP_TYPE_STRING = 1
-PROP_TYPE_STRIDX = 2
-PROP_TYPE_BUILTIN = 3
-PROP_TYPE_UNDEFINED = 4
-PROP_TYPE_BOOLEAN_TRUE = 5
-PROP_TYPE_BOOLEAN_FALSE = 6
-PROP_TYPE_ACCESSOR = 7
-
-# must match duk_hobject.h
-PROPDESC_FLAG_WRITABLE =     (1 << 0)
-PROPDESC_FLAG_ENUMERABLE =   (1 << 1)
-PROPDESC_FLAG_CONFIGURABLE = (1 << 2)
-PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
-
-# magic values for Array built-in
-BI_ARRAY_ITER_EVERY =    0
-BI_ARRAY_ITER_SOME =     1
-BI_ARRAY_ITER_FOREACH =  2
-BI_ARRAY_ITER_MAP =      3
-BI_ARRAY_ITER_FILTER =   4
-
-# magic values for Math built-in
-BI_MATH_FABS_IDX =   0
-BI_MATH_ACOS_IDX =   1
-BI_MATH_ASIN_IDX =   2
-BI_MATH_ATAN_IDX =   3
-BI_MATH_CEIL_IDX =   4
-BI_MATH_COS_IDX =    5
-BI_MATH_EXP_IDX =    6
-BI_MATH_FLOOR_IDX =  7
-BI_MATH_LOG_IDX =    8
-BI_MATH_ROUND_IDX =  9
-BI_MATH_SIN_IDX =    10
-BI_MATH_SQRT_IDX =   11
-BI_MATH_TAN_IDX =    12
-
-BI_MATH_ATAN2_IDX =  0
-BI_MATH_POW_IDX =    1
-
-# numeric indices must match duk_hobject.h class numbers
-_classnames = [
-	'Unused',
-	'Arguments',
-	'Array',
-	'Boolean',
-	'Date',
-	'Error',
-	'Function',
-	'JSON',
-	'Math',
-	'Number',
-	'Object',
-	'RegExp',
-	'String',
-	'global',
-	'ObjEnv',
-	'DecEnv',
-	'Buffer',
-	'Pointer',
-	'Thread',
-]
-_class2num = {}
-for i,v in enumerate(_classnames):
-	_class2num[v] = i
-
-def classToNumber(x):
-	return _class2num[x]
-
-def internal(x):
-	# zero-prefix is used to mark internal values in genstrings.py;
-	# it is converted to \xFF during initialization
-	return '\x00' + x
+	return is_arridx
 
 #
-#  Standard built-ins
+#  Metadata normalization
 #
 
-bi_global = {
-	# internal prototype: implementation specific
-	#	Smjs: Object.prototype
-	#	Rhino: Object.prototype
-	#	V8: *not* Object.prototype, but prototype chain includes Object.prototype
-	# external prototype: apparently not set
-	# external constructor: apparently not set
-	# internal class: implemented specific
-	#	Smjs: 'global'
-	#	Rhino: 'global'
-	#	V8: 'global'
-
-	# E5 Sections B.2.1 and B.2.2 describe non-standard properties which are
-	# included below but flagged as extensions.
-
-	'internal_prototype': 'bi_object_prototype',
-	'class': 'global',
-
-	'values': [
-		{ 'name': 'NaN',			'value': DBL_NAN,		'attributes': '' },
-		{ 'name': 'Infinity',			'value': DBL_POSITIVE_INFINITY, 'attributes': '' },
-		{ 'name': 'undefined',			'value': UNDEFINED,		'attributes': '' },	# marker value
-
-		{ 'name': 'Object',			'value': { 'type': 'builtin', 'id': 'bi_object_constructor' } },
-		{ 'name': 'Function',			'value': { 'type': 'builtin', 'id': 'bi_function_constructor' } },
-		{ 'name': 'Array',			'value': { 'type': 'builtin', 'id': 'bi_array_constructor' } },
-		{ 'name': 'String',			'value': { 'type': 'builtin', 'id': 'bi_string_constructor' } },
-		{ 'name': 'Boolean',			'value': { 'type': 'builtin', 'id': 'bi_boolean_constructor' } },
-		{ 'name': 'Number',			'value': { 'type': 'builtin', 'id': 'bi_number_constructor' } },
-		{ 'name': 'Date',			'value': { 'type': 'builtin', 'id': 'bi_date_constructor' } },
-		{ 'name': 'RegExp',			'value': { 'type': 'builtin', 'id': 'bi_regexp_constructor' } },
-		{ 'name': 'Error',			'value': { 'type': 'builtin', 'id': 'bi_error_constructor' } },
-		{ 'name': 'EvalError',			'value': { 'type': 'builtin', 'id': 'bi_eval_error_constructor' } },
-		{ 'name': 'RangeError',			'value': { 'type': 'builtin', 'id': 'bi_range_error_constructor' } },
-		{ 'name': 'ReferenceError',		'value': { 'type': 'builtin', 'id': 'bi_reference_error_constructor' } },
-		{ 'name': 'SyntaxError',		'value': { 'type': 'builtin', 'id': 'bi_syntax_error_constructor' } },
-		{ 'name': 'TypeError',			'value': { 'type': 'builtin', 'id': 'bi_type_error_constructor' } },
-		{ 'name': 'URIError',			'value': { 'type': 'builtin', 'id': 'bi_uri_error_constructor' } },
-		{ 'name': 'Math',			'value': { 'type': 'builtin', 'id': 'bi_math' } },
-		{ 'name': 'JSON',			'value': { 'type': 'builtin', 'id': 'bi_json' } },
-
-		# Duktape specific
-		{ 'name': 'Duktape',			'value': { 'type': 'builtin', 'id': 'bi_duktape' } },
-
-		# ES6
-		{ 'name': 'Proxy',			'value': { 'type': 'builtin', 'id': 'bi_proxy_constructor' } },
-
-		# Node.js Buffer
-		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_nodejs_buffer_constructor' } },
-
-		# TypedArray
-		{ 'name': 'ArrayBuffer',		'value': { 'type': 'builtin', 'id': 'bi_arraybuffer_constructor' } },
-		{ 'name': 'DataView',			'value': { 'type': 'builtin', 'id': 'bi_dataview_constructor' } },
-		{ 'name': 'Int8Array',			'value': { 'type': 'builtin', 'id': 'bi_int8array_constructor' } },
-		{ 'name': 'Uint8Array',			'value': { 'type': 'builtin', 'id': 'bi_uint8array_constructor' } },
-		{ 'name': 'Uint8ClampedArray',		'value': { 'type': 'builtin', 'id': 'bi_uint8clampedarray_constructor' } },
-		{ 'name': 'Int16Array',			'value': { 'type': 'builtin', 'id': 'bi_int16array_constructor' } },
-		{ 'name': 'Uint16Array',		'value': { 'type': 'builtin', 'id': 'bi_uint16array_constructor' } },
-		{ 'name': 'Int32Array',			'value': { 'type': 'builtin', 'id': 'bi_int32array_constructor' } },
-		{ 'name': 'Uint32Array',		'value': { 'type': 'builtin', 'id': 'bi_uint32array_constructor' } },
-		{ 'name': 'Float32Array',		'value': { 'type': 'builtin', 'id': 'bi_float32array_constructor' } },
-		{ 'name': 'Float64Array',		'value': { 'type': 'builtin', 'id': 'bi_float64array_constructor' } },
-	],
-	'functions': [
-		{ 'name': 'eval',			'native': 'duk_bi_global_object_eval', 			'length': 1 },
-		{ 'name': 'parseInt',			'native': 'duk_bi_global_object_parse_int',		'length': 2 },
-		{ 'name': 'parseFloat',			'native': 'duk_bi_global_object_parse_float',		'length': 1 },
-		{ 'name': 'isNaN',			'native': 'duk_bi_global_object_is_nan',		'length': 1 },
-		{ 'name': 'isFinite',			'native': 'duk_bi_global_object_is_finite',		'length': 1 },
-		{ 'name': 'decodeURI',			'native': 'duk_bi_global_object_decode_uri',		'length': 1 },
-		{ 'name': 'decodeURIComponent',		'native': 'duk_bi_global_object_decode_uri_component',	'length': 1 },
-		{ 'name': 'encodeURI',			'native': 'duk_bi_global_object_encode_uri',		'length': 1 },
-		{ 'name': 'encodeURIComponent',		'native': 'duk_bi_global_object_encode_uri_component', 	'length': 1 },
-
-		# Non-standard extensions: E5 Sections B.2.1 and B.2.2
-		#
-		# 'length' is not specified explicitly in E5 but it follows the
-		# general argument count rule.  V8 also agrees on the lengths.
-
-		{ 'name': 'escape',			'native': 'duk_bi_global_object_escape',		'length': 1,	'section_b': True },
-		{ 'name': 'unescape',			'native': 'duk_bi_global_object_unescape',              'length': 1,	'section_b': True },
-
-		# Non-standard extensions from the web (not comprehensive)
-		#
-		#   print:  common even outside browsers (smjs: length = 0)
-		#   alert:  common in browsers (Chromium: length = 0)
-
-		{ 'name': 'print',			'native': 'duk_bi_global_object_print_helper',		'length': 0,	'varargs': True,	'browser': True,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'alert',			'native': 'duk_bi_global_object_print_helper',		'length': 0,	'varargs': True,	'browser': True,	'magic': { 'type': 'plain', 'value': 1 } },
-
-		# CommonJS module loading
-		#
-		#  require:  not required to be in the global environment but useful
-
-		{ 'name': 'require',			'native': 'duk_bi_global_object_require',		'length': 1,	'varargs': False,	'commonjs': True },
-	],
-}
-
-bi_global_env = {
-	'class': 'ObjEnv',
-
-	'values': [
-		{ 'name': internal('Target'),		'value': { 'type': 'builtin', 'id': 'bi_global' },	'attributes': '' },
-	],
-	'functions': [],
-}
-
-bi_object_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_object_prototype',
-	'class': 'Function',
-	'name': 'Object',
-
-	'length': 1,
-	'native': 'duk_bi_object_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-		{ 'name': 'getPrototypeOf',		'native': 'duk_bi_object_getprototype_shared',				'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
-		{ 'name': 'setPrototypeOf',		'native': 'duk_bi_object_setprototype_shared',				'length': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # ES6
-		{ 'name': 'getOwnPropertyDescriptor',	'native': 'duk_bi_object_constructor_get_own_property_descriptor',	'length': 2 },
-		{ 'name': 'getOwnPropertyNames',	'native': 'duk_bi_object_constructor_keys_shared',	 		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'create',			'native': 'duk_bi_object_constructor_create',				'length': 2 },
-		{ 'name': 'defineProperty',		'native': 'duk_bi_object_constructor_define_property',			'length': 3 },
-		{ 'name': 'defineProperties',		'native': 'duk_bi_object_constructor_define_properties',		'length': 2 },
-		{ 'name': 'seal',			'native': 'duk_bi_object_constructor_seal_freeze_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'freeze',			'native': 'duk_bi_object_constructor_seal_freeze_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
-		{ 'name': 'preventExtensions',		'native': 'duk_bi_object_constructor_prevent_extensions',		'length': 1 },
-		{ 'name': 'isSealed',			'native': 'duk_bi_object_constructor_is_sealed_frozen_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'isFrozen',			'native': 'duk_bi_object_constructor_is_sealed_frozen_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
-		{ 'name': 'isExtensible',		'native': 'duk_bi_object_constructor_is_extensible',			'length': 1 },
-		{ 'name': 'keys',			'native': 'duk_bi_object_constructor_keys_shared',			'length': 1,	'magic': { 'type': 'plain', 'value': 1 } },
-	],
-}
-
-bi_object_prototype = {
-	# internal prototype is null
-	'external_constructor': 'bi_object_constructor',
-	'class': 'Object',
-
-	'values': [
-		# ES6 (also non-standard legacy)
-		# NOTE: magic is not explicitly set and defaults to 0 (which is
-		# significant because the helper is shared)
-		{ 'name': '__proto__',
-		  'getter': 'duk_bi_object_getprototype_shared',
-		  'setter': 'duk_bi_object_setprototype_shared' }
-	],
-
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_object_prototype_to_string',			'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_bi_object_prototype_to_locale_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_bi_object_prototype_value_of',			'length': 0 },
-		{ 'name': 'hasOwnProperty',		'native': 'duk_bi_object_prototype_has_own_property',		'length': 1 },
-		{ 'name': 'isPrototypeOf',		'native': 'duk_bi_object_prototype_is_prototype_of',		'length': 1 },
-		{ 'name': 'propertyIsEnumerable',	'native': 'duk_bi_object_prototype_property_is_enumerable',	'length': 1 },
-	],
-}
-
-bi_function_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_function_prototype',
-	'class': 'Function',
-	'name': 'Function',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_function_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [],
-}
-
-# Note, unlike other prototype objects, Function.prototype is itself
-# a Function and callable.  When invoked, it accepts any arguments
-# and returns undefined.  It cannot be called as a constructor.
-# See E5 Section 15.3.4.
-bi_function_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_function_constructor',
-	'class': 'Function',
-	'name': '',  # dummy
-
-	'length': 0,
-	'native': 'duk_bi_function_prototype',
-	'callable': True,
-	'constructable': False,  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
-
-	'values': [
-		# Each built-in of class Function has a 'name' which is
-		# non-writable (the empty string above).  Function.prototype
-		# is a special case: it is a function but we want it's name
-		# to be writable so that user code can set a 'name' property
-		# for Duktape/C functions.  If the Function.prototype.name
-		# property were non-writable, that would be prevented.
-		{ 'name': 'name',			'value': '',			'attributes': 'w' }
-	],
-	'functions': [
-		# test262 ch15/15.3/15.3.4/15.3.4.2/S15.3.4.2_A11 checks that Function.prototype.toString.length
-		# is zero, cannot find specification support for that but 0 is a good value.
-		{ 'name': 'toString',			'native': 'duk_bi_function_prototype_to_string',	'length': 0 },
-		{ 'name': 'apply',			'native': 'duk_bi_function_prototype_apply',		'length': 2 },
-		{ 'name': 'call',			'native': 'duk_bi_function_prototype_call',		'length': 1,	'varargs': True },
-		{ 'name': 'bind',			'native': 'duk_bi_function_prototype_bind',		'length': 1,	'varargs': True },
-	],
-}
-
-bi_array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_array_prototype',
-	'class': 'Function',
-	'name': 'Array',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_array_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-		{ 'name': 'isArray',			'native': 'duk_bi_array_constructor_is_array',		'length': 1 },
-	],
-}
-
-bi_array_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_array_constructor',
-	'class': 'Array',
-
-	# An array prototype is an Array itself.  It has a length property initialized to 0,
-	# with property attributes: writable, non-configurable, non-enumerable.  The attributes
-	# are not specified very explicitly for the prototype, but are given for Array instances
-	# in E5 Section 15.4.5.2 (and this matches the behavior of e.g. V8).
-
-	'length': 0,
-	'length_attributes': 'w',
-
-	'values': [],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_array_prototype_to_string',		'length': 0 },
-		{ 'name': 'toLocaleString',		'native': 'duk_bi_array_prototype_join_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: to_locale_string, here 1
-		{ 'name': 'concat',			'native': 'duk_bi_array_prototype_concat',		'length': 1,	'varargs': True },
-		{ 'name': 'join',			'native': 'duk_bi_array_prototype_join_shared',		'length': 1,	'magic': { 'type': 'plain', 'value': 0 } },   # magic: to_locale_string, here 0
-		{ 'name': 'pop',			'native': 'duk_bi_array_prototype_pop',			'length': 0 },
-		{ 'name': 'push',			'native': 'duk_bi_array_prototype_push',		'length': 1,	'varargs': True },
-		{ 'name': 'reverse',			'native': 'duk_bi_array_prototype_reverse',		'length': 0 },
-		{ 'name': 'shift',			'native': 'duk_bi_array_prototype_shift',		'length': 0 },
-		{ 'name': 'slice',			'native': 'duk_bi_array_prototype_slice',		'length': 2 },
-		{ 'name': 'sort',			'native': 'duk_bi_array_prototype_sort',		'length': 1 },
-		{ 'name': 'splice',			'native': 'duk_bi_array_prototype_splice',		'length': 2,	'varargs': True },
-		{ 'name': 'unshift',			'native': 'duk_bi_array_prototype_unshift',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_bi_array_prototype_indexof_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
-		{ 'name': 'lastIndexOf',		'native': 'duk_bi_array_prototype_indexof_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
-		{ 'name': 'every',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_EVERY } },
-		{ 'name': 'some',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_SOME } },
-		{ 'name': 'forEach',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FOREACH } },
-		{ 'name': 'map',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_MAP } },
-		{ 'name': 'filter',			'native': 'duk_bi_array_prototype_iter_shared',		'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': BI_ARRAY_ITER_FILTER } },
-		{ 'name': 'reduce',			'native': 'duk_bi_array_prototype_reduce_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },   # magic: idx_step = +1
-		{ 'name': 'reduceRight',		'native': 'duk_bi_array_prototype_reduce_shared',	'length': 1,	'varargs': True,	'magic': { 'type': 'plain', 'value': -1 } },  # magic: idx_step = -1
-	],
-}
-
-bi_string_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_string_prototype',
-	'class': 'Function',
-	'name': 'String',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_string_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-		{ 'name': 'fromCharCode',		'native': 'duk_bi_string_constructor_from_char_code',	'length': 1,	'varargs': True },
-	],
-}
-
-bi_string_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_string_constructor',
-	'class': 'String',
-
-	# String prototype is a String instance and must have length value 0.
-	# This is supplied by the String instance virtual properties and does
-	# not need to be included in init data.
-	#
-	# Unlike Array.prototype.length, String.prototype.length has the default
-	# 'length' attributes of built-in objects: non-writable, non-enumerable,
-	# non-configurable.
-
-	#'length': 0,  # omitted; non-writable, non-enumerable, non-configurable
-
-	'values': [
-		# Internal empty string value.  Note that this value is not writable
-		# which prevents a String instance's internal value also from being
-		# written with standard methods.  The internal code creating String
-		# instances has no such issues.
-		{ 'name': internal('Value'),            'value': '',	'attributes': '' },
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_string_prototype_to_string',		'length': 0 },
-		{ 'name': 'valueOf',			'native': 'duk_bi_string_prototype_to_string',		'length': 0 },  # share native function, behavior is identical
-		{ 'name': 'charAt',			'native': 'duk_bi_string_prototype_char_at',		'length': 1 },
-		{ 'name': 'charCodeAt',			'native': 'duk_bi_string_prototype_char_code_at',	'length': 1 },
-		{ 'name': 'concat',			'native': 'duk_bi_string_prototype_concat',		'length': 1,	'varargs': True },
-		{ 'name': 'indexOf',			'native': 'duk_bi_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0 -> indexOf
-		{ 'name': 'lastIndexOf',		'native': 'duk_bi_string_prototype_indexof_shared',	'length': 1,	'nargs': 2,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1 -> lastIndexOf
-		{ 'name': 'localeCompare',		'native': 'duk_bi_string_prototype_locale_compare',	'length': 1 },
-		{ 'name': 'match',			'native': 'duk_bi_string_prototype_match',		'length': 1 },
-		{ 'name': 'replace',			'native': 'duk_bi_string_prototype_replace',		'length': 2 },
-		{ 'name': 'search',			'native': 'duk_bi_string_prototype_search',		'length': 1 },
-		{ 'name': 'slice',			'native': 'duk_bi_string_prototype_slice',		'length': 2 },
-		{ 'name': 'split',			'native': 'duk_bi_string_prototype_split',		'length': 2 },
-		{ 'name': 'substring',			'native': 'duk_bi_string_prototype_substring',		'length': 2 },
-		{ 'name': 'toLowerCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase
-		{ 'name': 'toLocaleLowerCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = uppercase; no locale specific conversion now
-		{ 'name': 'toUpperCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase
-		{ 'name': 'toLocaleUpperCase',		'native': 'duk_bi_string_prototype_caseconv_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = uppercase; no locale specific conversion now
-		{ 'name': 'trim',			'native': 'duk_bi_string_prototype_trim',		'length': 0 },
-
-		# Non-standard extension: E5 Section B.2.3
-
-		{ 'name': 'substr',			'native': 'duk_bi_string_prototype_substr',		'length': 2,	'section_b': True },
-	],
-}
-
-bi_boolean_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_boolean_prototype',
-	'class': 'Function',
-	'name': 'Boolean',
-
-	'length': 1,
-	'native': 'duk_bi_boolean_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [],
-}
-
-bi_boolean_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_boolean_constructor',
-	'class': 'Boolean',
-
-	'values': [
-		# Internal false boolean value.  Note that this value is not writable
-		# which prevents a Boolean instance's internal value also from being
-		# written with standard methods.  The internal code creating Boolean
-		# instances has no such issues.
-		{ 'name': internal('Value'),            'value': False,		'attributes': '' },
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = coerce_tostring
-		{ 'name': 'valueOf',			'native': 'duk_bi_boolean_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = coerce_tostring
-	],
-}
-
-bi_number_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_number_prototype',
-	'class': 'Function',
-	'name': 'Number',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_number_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [
-		{ 'name': 'MAX_VALUE',			'value': DBL_MAX_DOUBLE,		'attributes': '' },
-		{ 'name': 'MIN_VALUE',			'value': DBL_MIN_DOUBLE,		'attributes': '' },
-		{ 'name': 'NaN',			'value': DBL_NAN,			'attributes': '' },
-		{ 'name': 'POSITIVE_INFINITY',		'value': DBL_POSITIVE_INFINITY,		'attributes': '' },
-		{ 'name': 'NEGATIVE_INFINITY',		'value': DBL_NEGATIVE_INFINITY,		'attributes': '' },
-	],
-	'functions': [],
-}
-
-bi_number_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_number_constructor',
-	'class': 'Number',
-
-	'values': [
-		# Internal 0.0 number value.  Note that this value is not writable
-		# which prevents a Number instance's internal value also from being
-		# written with standard methods.  The internal code creating Number
-		# instances has no such issues.
-		{ 'name': internal('Value'),            'value': 0.0,		'attributes': '' }
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_number_prototype_to_string',		'length': 1 },
-		{ 'name': 'toLocaleString',		'native': 'duk_bi_number_prototype_to_locale_string',	'length': 1 },
-		{ 'name': 'valueOf',			'native': 'duk_bi_number_prototype_value_of',		'length': 0 },
-		{ 'name': 'toFixed',			'native': 'duk_bi_number_prototype_to_fixed',		'length': 1 },
-		{ 'name': 'toExponential',		'native': 'duk_bi_number_prototype_to_exponential',	'length': 1 },
-		{ 'name': 'toPrecision',		'native': 'duk_bi_number_prototype_to_precision',	'length': 1 },
-	],
-}
-
-bi_date_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_date_prototype',
-	'class': 'Function',
-	'name': 'Date',
-
-	'length': 7,
-	'varargs': True,
-	'native': 'duk_bi_date_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [
-	],
-	'functions': [
-		{ 'name': 'parse',			'native': 'duk_bi_date_constructor_parse',		'length': 1 },
-		{ 'name': 'UTC',			'native': 'duk_bi_date_constructor_utc',		'length': 7,	'varargs': True },
-		{ 'name': 'now',			'native': 'duk_bi_date_constructor_now',		'length': 0 },
-	],
-}
-
-bi_date_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_date_constructor',
-	'class': 'Date',
-
-	# The Date prototype is an instance of Date with [[PrimitiveValue]] NaN.
-
-	# Setters with optional arguments must be varargs functions because
-	# they must detect the number of parameters actually given (cannot
-	# assume parameters not given are undefined).
-
-	# Date.prototype.valueOf() and Date.prototype.getTime() have identical
-	# behavior so they share the same C function, but have different
-	# function instances.
-
-	# Getters, setters, and string conversion functions use shared native
-	# helpers and the function 'magic' value is used to pass flags and
-	# parameters to the helpers.
-
-	'values': [
-		# Internal date value (E5 Section 15.9.5).
-		#
-		# Note: the value is writable, as you can e.g. do the following (V8):
-		#  > Date.prototype.toString()
-		#  'Invalid Date'
-		#  > Date.prototype.setYear(2010)
-		#  1262296800000
-		#  > Date.prototype.toString()
-		#  'Fri Jan 01 2010 00:00:00 GMT+0200 (EET)'
-
-		{ 'name': internal('Value'),            'value': DBL_NAN,	'attributes': 'w' }
-	],
-
-	# NOTE: The magic values for Date prototype are special.  The actual control
-	# flags needed for the built-ins don't fit into LIGHTFUNC magic field, so
-	# the values here are indices to duk__date_magics[] in duk_bi_date.c which
-	# contains the actual control flags.  Magic values here must be kept in strict
-	# sync with duk_bi_date.c!
-
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'toDateString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },
-		{ 'name': 'toTimeString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 2 } },
-		{ 'name': 'toLocaleString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 3 } },
-		{ 'name': 'toLocaleDateString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 4 } },
-		{ 'name': 'toLocaleTimeString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 5 } },
-		{ 'name': 'toUTCString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 6 } },
-		{ 'name': 'toISOString',		'native': 'duk_bi_date_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 7 } },
-		{ 'name': 'toJSON',			'native': 'duk_bi_date_prototype_to_json',		'length': 1 },
-		{ 'name': 'valueOf',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },
-		{ 'name': 'getTime',			'native': 'duk_bi_date_prototype_value_of',		'length': 0 },  # Native function shared on purpose
-		{ 'name': 'getFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 8 } },
-		{ 'name': 'getUTCFullYear',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 9 } },
-		{ 'name': 'getMonth',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 10 } },
-		{ 'name': 'getUTCMonth',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 11 } },
-		{ 'name': 'getDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 12 } },
-		{ 'name': 'getUTCDate',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 13 } },
-		{ 'name': 'getDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 14 } },
-		{ 'name': 'getUTCDay',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 15 } },
-		{ 'name': 'getHours',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 16 } },
-		{ 'name': 'getUTCHours',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 17 } },
-		{ 'name': 'getMinutes',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 18 } },
-		{ 'name': 'getUTCMinutes',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 19 } },
-		{ 'name': 'getSeconds',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 20 } },
-		{ 'name': 'getUTCSeconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 21 } },
-		{ 'name': 'getMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 22 } },
-		{ 'name': 'getUTCMilliseconds',		'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'magic': { 'type': 'plain', 'value': 23 } },
-		{ 'name': 'getTimezoneOffset',		'native': 'duk_bi_date_prototype_get_timezone_offset',	'length': 0 },
-		{ 'name': 'setTime',			'native': 'duk_bi_date_prototype_set_time',		'length': 1 },
-		{ 'name': 'setMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 24 } },
-		{ 'name': 'setUTCMilliseconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 25 } },
-		{ 'name': 'setSeconds',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True, 	'magic': { 'type': 'plain', 'value': 26 } },
-		{ 'name': 'setUTCSeconds',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 27 } },
-		{ 'name': 'setMinutes',			'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': 28 } },
-		{ 'name': 'setUTCMinutes',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': 29 } },
-		{ 'name': 'setHours',			'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': 30 } },
-		{ 'name': 'setUTCHours',		'native': 'duk_bi_date_prototype_set_shared',		'length': 4,	'varargs': True,	'magic': { 'type': 'plain', 'value': 31 } },
-		{ 'name': 'setDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 32 } },
-		{ 'name': 'setUTCDate',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,				'magic': { 'type': 'plain', 'value': 33 } },
-		{ 'name': 'setMonth',			'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 34 } },
-		{ 'name': 'setUTCMonth',		'native': 'duk_bi_date_prototype_set_shared',		'length': 2,	'varargs': True,	'magic': { 'type': 'plain', 'value': 35 } },
-		{ 'name': 'setFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': 36 } },
-		{ 'name': 'setUTCFullYear',		'native': 'duk_bi_date_prototype_set_shared',		'length': 3,	'varargs': True,	'magic': { 'type': 'plain', 'value': 37 } },
-
-		# Non-standard extensions: E5 Section B.2.4, B.2.5, B.2.6
-		#
-		# 'length' values are not given explicitly but follows the general rule.
-		# The lengths below agree with V8.
-
-		{ 'name': 'getYear',			'native': 'duk_bi_date_prototype_get_shared',		'length': 0,	'section_b': True,	'magic': { 'type': 'plain', 'value': 38 } },
-		{ 'name': 'setYear',			'native': 'duk_bi_date_prototype_set_shared',		'length': 1,	'section_b': True,	'magic': { 'type': 'plain', 'value': 39 } },
-
-		# Note: toGMTString() is required to initially be the same Function object as the initial
-		# Date.prototype.toUTCString.  In other words: Date.prototype.toGMTString === Date.prototype.toUTCString --> true.
-		# This is implemented as a special post-tweak in duk_hthread_builtins.c, so the property is not included here.
-		#
-		# Note that while Smjs respects the requirement in E5 Section B.2.6, V8 does not.
-
-		#{ 'name': 'toGMTString',		'native': 'duk_bi_date_prototype_to_gmt_string',		'length': 0,	'section_b': True },
-
-	],
-}
-
-bi_regexp_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_regexp_prototype',
-	'class': 'Function',
-	'name': 'RegExp',
-
-	'length': 2,
-	'native': 'duk_bi_regexp_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [],
-}
-
-bi_regexp_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_regexp_constructor',
-	'class': 'RegExp',
-
-	'values': [
-		# RegExp internal value should match that of new RegExp() (E5 Sections 15.10.6
-		# and 15.10.7), i.e. a bytecode sequence that matches an empty string.
-		# The compiled regexp bytecode for that is embedded here, and must match the
-		# defines in duk_regexp.h.  The bytecode must provide the 0'th capture.
-		#
-		# Note that the property attributes are non-default.
-
-		{
-			# Compiled bytecode, must match duk_regexp.h.
-			'name': internal('Bytecode'),
-			'value': unichr(0) +		# flags (none)
-			         unichr(2) +		# nsaved == 2
-			         unichr(11) +           # DUK_REOP_SAVE
-			         unichr(0) +            # 0
-			         unichr(11) +           # DUK_REOP_SAVE
-			         unichr(1) +            # 1
-			         unichr(1),		# DUK_REOP_MATCH
-			'attributes': '',
-		},
-		{
-			# An object created as new RegExp('') should have the escaped source
-			# '(?:)' (E5 Section 15.10.4.1).  However, at least V8 and Smjs seem
-			# to have an empty string here.
-
-			'name': 'source',
-			'value': '(?:)',
-			'attributes': '',
-		},
-		{
-			'name': 'global',
-			'value': False,
-			'attributes': '',
-		},
-		{
-			'name': 'ignoreCase',
-			'value': False,
-			'attributes': '',
-		},
-		{
-			'name': 'multiline',
-			'value': False,
-			'attributes': '',
-		},
-		{
-			# 'lastIndex' is writable, even in the RegExp.prototype object.
-			# This matches at least V8.
-
-			'name': 'lastIndex',
-			'value': 0,
-			'attributes': 'w',
-		},
-
-	],
-	'functions': [
-		{ 'name': 'exec',			'native': 'duk_bi_regexp_prototype_exec',		'length': 1 },
-		{ 'name': 'test',			'native': 'duk_bi_regexp_prototype_test',		'length': 1 },
-		{ 'name': 'toString',			'native': 'duk_bi_regexp_prototype_to_string',		'length': 0 },
-	],
-}
-
-bi_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_error_prototype',
-	'class': 'Function',
-	'name': 'Error',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_error_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		# Standard properties; property attributes:
-		#
-		# 'message' is writable and deletable.  This matches the default
-		# attributes of 'wc'.  V8 and Smjs both match this.
-		#
-		# 'name' is writable and deletable.  This matches the default
-		# attributes too.  Smjs behaves like this, but in V8 'name' is
-		# non-writable:
-		#
-		#  > Object.getOwnPropertyDescriptor(Error.prototype, 'name')
-		#  { value: 'Error',
-		#    writable: false,
-		#    enumerable: false,
-		#    configurable: false }
-		#
-		# We go with the standard attributes ("wc").
-
-		{ 'name': 'name',			'value': 'Error' },
-		{ 'name': 'message',			'value': '' },
-
-		# Custom properties
-
-		{ 'name': 'stack',
-		  'getter': 'duk_bi_error_prototype_stack_getter',
-		  'setter': 'duk_bi_error_prototype_stack_setter' },
-		{ 'name': 'fileName',
-		  'getter': 'duk_bi_error_prototype_filename_getter',
-		  'setter': 'duk_bi_error_prototype_filename_setter' },
-		{ 'name': 'lineNumber',
-		  'getter': 'duk_bi_error_prototype_linenumber_getter',
-		  'setter': 'duk_bi_error_prototype_linenumber_setter' },
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_error_prototype_to_string',		'length': 0 },
-	],
-}
-
-# NOTE: Error subclass prototypes have an empty 'message' property, even
-# though one is inherited already from Error prototype (E5 Section 15.11.7.10).
+def normalize_object_metadata(objects_metadata):
+	# Default 'nargs' from 'length' for top level function objects.
+	for o in objects_metadata['objects']:
+		if o.has_key('nargs'):
+			continue
+		if not o.get('callable', False):
+			continue
+		for p in o['properties']:
+			if p['key'] != 'length':
+				continue
+			#print 'default nargs for top level: %r' % p
+			assert(isinstance(p['value'], int))
+			o['nargs'] = p['value']
+			break
+		assert(o.has_key('nargs'))
+
+	# Default 'nargs' from 'length' for function property shorthand.
+	for o in objects_metadata['objects']:
+		for p in o['properties']:
+			if not (isinstance(p['value'], dict) and p['value']['type'] == 'function'):
+				continue
+			pval = p['value']
+			assert(pval.has_key('length'))
+			if not pval.has_key('nargs'):
+				#print 'default nargs for function shorthand: %r' % p
+				pval['nargs'] = pval['length']
 #
-# V8 does not respect this: Error subclasses ("native Errors" in E5 spec)
-# do not have a 'message' property at all.  Also, in V8 their 'name' property
-# is not writable and configurable as E5 requires.
-
-bi_eval_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_eval_error_prototype',
-	'class': 'Function',
-	'name': 'EvalError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_eval_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_eval_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_eval_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'EvalError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_range_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_range_error_prototype',
-	'class': 'Function',
-	'name': 'RangeError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_range_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_range_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_range_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'RangeError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_reference_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_reference_error_prototype',
-	'class': 'Function',
-	'name': 'ReferenceError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_reference_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_reference_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_reference_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'ReferenceError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_syntax_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_syntax_error_prototype',
-	'class': 'Function',
-	'name': 'SyntaxError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_syntax_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_syntax_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_syntax_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'SyntaxError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_type_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_type_error_prototype',
-	'class': 'Function',
-	'name': 'TypeError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_type_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_type_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_type_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'TypeError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_uri_error_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_uri_error_prototype',
-	'class': 'Function',
-	'name': 'URIError',
-
-	'length': 1,
-	'native': 'duk_bi_error_constructor_shared',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'bidx', 'value': 'bi_uri_error_prototype' },
-
-	'values': [],
-	'functions': [],
-}
-
-bi_uri_error_prototype = {
-	'internal_prototype': 'bi_error_prototype',
-	'external_constructor': 'bi_uri_error_constructor',
-	'class': 'Error',
-
-	'values': [
-		{ 'name': 'name',			'value': 'URIError' },
-		{ 'name': 'message',			'value': '' },
-	],
-	'functions': [],
-}
-
-bi_math = {
-	'internal_prototype': 'bi_object_prototype',
-	# apparently no external 'prototype' property
-	# apparently no external 'constructor' property
-	'class': 'Math',
-
-	'values': [
-		{ 'name': 'E',				'value': DBL_E,			'attributes': '' },
-		{ 'name': 'LN10',			'value': DBL_LN10,		'attributes': '' },
-		{ 'name': 'LN2',			'value': DBL_LN2,		'attributes': '' },
-		{ 'name': 'LOG2E',			'value': DBL_LOG2E,		'attributes': '' },
-		{ 'name': 'LOG10E',			'value': DBL_LOG10E,		'attributes': '' },
-		{ 'name': 'PI',				'value': DBL_PI,		'attributes': '' },
-		{ 'name': 'SQRT1_2',			'value': DBL_SQRT1_2,		'attributes': '' },
-		{ 'name': 'SQRT2',			'value': DBL_SQRT2,		'attributes': '' },
-	],
-	'functions': [
-		{ 'name': 'abs',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FABS_IDX } },
-		{ 'name': 'acos',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ACOS_IDX } },
-		{ 'name': 'asin',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ASIN_IDX } },
-		{ 'name': 'atan',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN_IDX } },
-		{ 'name': 'atan2',			'native': 'duk_bi_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_ATAN2_IDX } },
-		{ 'name': 'ceil',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_CEIL_IDX } },
-		{ 'name': 'cos',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_COS_IDX } },
-		{ 'name': 'exp',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_EXP_IDX } },
-		{ 'name': 'floor',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_FLOOR_IDX } },
-		{ 'name': 'log',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_LOG_IDX } },
-		{ 'name': 'max',			'native': 'duk_bi_math_object_max',		'length': 2,	'varargs': True },
-		{ 'name': 'min',			'native': 'duk_bi_math_object_min',		'length': 2,	'varargs': True },
-		{ 'name': 'pow',			'native': 'duk_bi_math_object_twoarg_shared',	'length': 2,	'magic': { 'type': 'plain', 'value': BI_MATH_POW_IDX } },
-		{ 'name': 'random',			'native': 'duk_bi_math_object_random',		'length': 0 },
-		{ 'name': 'round',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_ROUND_IDX } },
-		{ 'name': 'sin',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SIN_IDX } },
-		{ 'name': 'sqrt',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_SQRT_IDX } },
-		{ 'name': 'tan',			'native': 'duk_bi_math_object_onearg_shared',	'length': 1,	'magic': { 'type': 'plain', 'value': BI_MATH_TAN_IDX } },
-	],
-}
-
-bi_json = {
-	'internal_prototype': 'bi_object_prototype',
-	# apparently no external 'prototype' property
-	# apparently no external 'constructor' property
-	'class': 'JSON',
-
-	'values': [],
-	'functions': [
-		{ 'name': 'parse',			'native': 'duk_bi_json_object_parse',		'length': 2 },
-		{ 'name': 'stringify',			'native': 'duk_bi_json_object_stringify',		'length': 3 },
-	],
-}
-
-# E5 Section 13.2.3
-bi_type_error_thrower = {
-	'internal_prototype': 'bi_function_prototype',
-	'class': 'Function',
-	'name': 'ThrowTypeError',  # custom, matches V8
-
-	'length': 0,
-	'native': 'duk_bi_type_error_thrower',
-	'callable': True,
-	'constructable': False,  # This is not clearly specified, but [[Construct]] is not set in E5 Section 13.2.3.
-
-	'values': [],
-	'functions': [],
-}
-
-#
-#  Duktape-specific built-ins
+#  Metadata helpers
 #
 
-bi_duktape = {
-	'internal_prototype': 'bi_object_prototype',
-	'class': 'Object',
-
-	'values': [
-		# Note: 'version' is added from parameter file.
-		# They are intentionally non-writable and non-configurable now.
-		{ 'name': 'Buffer',			'value': { 'type': 'builtin', 'id': 'bi_buffer_constructor' } },
-		{ 'name': 'Pointer',			'value': { 'type': 'builtin', 'id': 'bi_pointer_constructor' } },
-		{ 'name': 'Thread',			'value': { 'type': 'builtin', 'id': 'bi_thread_constructor' } },
-		{ 'name': 'Logger',			'value': { 'type': 'builtin', 'id': 'bi_logger_constructor' } },
-	],
-	'functions': [
-		{ 'name': 'info',			'native': 'duk_bi_duktape_object_info',		'length': 1 },
-		{ 'name': 'act',			'native': 'duk_bi_duktape_object_act',		'length': 1 },
-		{ 'name': 'gc',				'native': 'duk_bi_duktape_object_gc',		'length': 1 },
-		{ 'name': 'fin',			'native': 'duk_bi_duktape_object_fin',		'length': 0,	'varargs': True },
-		{ 'name': 'enc',			'native': 'duk_bi_duktape_object_enc',		'length': 0,	'varargs': True },
-		{ 'name': 'dec',			'native': 'duk_bi_duktape_object_dec',		'length': 0,	'varargs': True },
-		{ 'name': 'compact',			'native': 'duk_bi_duktape_object_compact',	'length': 1 },
-	],
+# Magic values for Math built-in.
+math_onearg_magic = {
+	'fabs': 0,   # BI_MATH_FABS_IDX
+	'acos': 1,   # BI_MATH_ACOS_IDX
+	'asin': 2,   # BI_MATH_ASIN_IDX
+	'atan': 3,   # BI_MATH_ATAN_IDX
+	'ceil': 4,   # BI_MATH_CEIL_IDX
+	'cos': 5,    # BI_MATH_COS_IDX
+	'exp': 6,    # BI_MATH_EXP_IDX
+	'floor': 7,  # BI_MATH_FLOOR_IDX
+	'log': 8,    # BI_MATH_LOG_IDX
+	'round': 9,  # BI_MATH_ROUND_IDX
+	'sin': 10,   # BI_MATH_SIN_IDX
+	'sqrt': 11,  # BI_MATH_SQRT_IDX
+	'tan': 12    # BI_MATH_TAN_IDX
+}
+math_twoarg_magic = {
+	'atan2': 0,  # BI_MATH_ATAN2_IDX
+	'pow': 1     # BI_MATH_POW_IDX
 }
 
-bi_thread_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_thread_prototype',
-	'class': 'Function',
-	'name': 'Thread',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_thread_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-		# 'yield' is a reserved word but does not prevent its use as a property name
-		{ 'name': 'yield',			'native': 'duk_bi_thread_yield',		'length': 2 },
-		{ 'name': 'resume',			'native': 'duk_bi_thread_resume',		'length': 3 },
-		{ 'name': 'current',			'native': 'duk_bi_thread_current',		'length': 0 },
-	]
+# Magic values for Array built-in.
+array_iter_magic = {
+	'every': 0,    # BI_ARRAY_ITER_EVERY
+	'some': 1,     # BI_ARRAY_ITER_SOME
+	'forEach': 2,  # BI_ARRAY_ITER_FOREACH
+	'map': 3,      # BI_ARRAY_ITER_MAP
+	'filter': 4    # BI_ARRAY_ITER_FILTER
 }
 
-bi_thread_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_thread_constructor',
-	'class': 'Thread',
-
-	# Note: we don't keep up with the E5 "convention" that prototype objects
-	# are some faux instances of their type (e.g. Date.prototype is a Date
-	# instance).
-	#
-	# Also, we don't currently have a "constructor" property because there is
-	# no explicit constructor object.
-
-	'values': [
-	],
-	'functions': [
-		# toString() and valueOf() are inherited from Object.prototype
-	],
-}
-
-bi_buffer_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_buffer_prototype',
-	'class': 'Function',
-	'name': 'Buffer',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_buffer_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-	]
-}
-
-bi_buffer_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_buffer_constructor',
-	'class': 'Buffer',
-
-	'values': [
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
-		{ 'name': 'valueOf',			'native': 'duk_bi_buffer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
-	],
-}
-
-bi_pointer_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_pointer_prototype',
-	'class': 'Function',
-	'name': 'Pointer',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_pointer_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-	]
-}
-
-bi_pointer_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_pointer_constructor',
-	'class': 'Pointer',
-
-	'values': [
-	],
-	'functions': [
-		{ 'name': 'toString',			'native': 'duk_bi_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = to_string
-		{ 'name': 'valueOf',			'native': 'duk_bi_pointer_prototype_tostring_shared',	'length': 0,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = to_string
-	],
-}
-
-bi_logger_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_logger_prototype',
-	'class': 'Function',
-	'name': 'Logger',
-
-	'length': 1,
-	'varargs': True,
-	'native': 'duk_bi_logger_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-	]
-}
-
-bi_logger_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_logger_constructor',
-	'class': 'Object',
-
-	'values': [
-		# default log level: 2 = info
-		{ 'name': 'l',				'value': 2,			'attributes': 'w' },
-
-		# default logger name (if undefined given or fileName of caller not known)
-		{ 'name': 'n',				'value': 'anon',		'attributes': 'w' },
-	],
-	'functions': [
-		{ 'name': 'fmt',			'native': 'duk_bi_logger_prototype_fmt',		'length': 1 },
-		{ 'name': 'raw',			'native': 'duk_bi_logger_prototype_raw',		'length': 1 },
-		{ 'name': 'trace',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 0 } },
-		{ 'name': 'debug',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 1 } },
-		{ 'name': 'info',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 2 } },
-		{ 'name': 'warn',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 3 } },
-		{ 'name': 'error',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 4 } },
-		{ 'name': 'fatal',			'native': 'duk_bi_logger_prototype_log_shared',		'length': 0,	'varargs': True,	'magic': { 'type': 'plain', 'value': 5 } },
-	],
-}
-
-# This is an Error *instance* used to avoid allocation when a "double error" occurs.
-# The object is "frozen and sealed" to avoid code accidentally modifying the instance.
-# This is important because the error is rethrown as is.
-
-bi_double_error = {
-	'internal_prototype': 'bi_error_prototype',
-	'class': 'Error',
-	'extensible': False,
-
-	# Note: this is the only non-extensible built-in, so there is special
-	# post-tweak in duk_hthread_builtins.c to handle this.
-
-	'values': [
-		{ 'name': 'name',			'value': 'DoubleError',				'attributes': '' },
-		{ 'name': 'message',                    'value': 'error in error handling', 		'attributes': '' },
-	],
-	'functions': [
-	],
-}
-
-#
-#  ES6
-#
-
-bi_proxy_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	# no external prototype
-	'class': 'Function',
-	'name': 'Proxy',
-
-	'length': 2,
-	'native': 'duk_bi_proxy_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': [
-#		{ 'name': 'revocable',			'native': 'duk_bi_proxy_constructor_revocable',	'length': 2 },
-	],
-}
-
-#
-#  TypedArray
-#
-
+# Magic value for typedarray/node.js buffer read field operations.
 def magic_readfield(elem, signed=None, bigendian=None, typedarray=None):
 	# Must match duk__FLD_xxx in duk_bi_buffer.c
 	elemnum = {
@@ -1353,9 +192,11 @@ def magic_readfield(elem, signed=None, bigendian=None, typedarray=None):
 		raise Exception('missing "typedarray"')
 	return elemnum + (signednum << 4) + (bigendiannum << 3) + (typedarraynum << 5)
 
+# Magic value for typedarray/node.js buffer write field operations.
 def magic_writefield(elem, signed=None, bigendian=None, typedarray=None):
 	return magic_readfield(elem, signed=signed, bigendian=bigendian, typedarray=typedarray)
 
+# Magic value for typedarray constructors.
 def magic_typedarray_constructor(elem, shift):
 	# Must match duk_hbufferobject.h header
 	elemnum = {
@@ -1371,1043 +212,1980 @@ def magic_typedarray_constructor(elem, shift):
 	}[elem]
 	return (elemnum << 2) + shift
 
-bi_arraybuffer_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_arraybuffer_prototype',
-	'class': 'Function',
-	'name': 'ArrayBuffer',  # matches V8, not specified explicitly in Khronos spec
+# Resolve a magic value from a YAML metadata element into an integer.
+def resolve_magic(elem, objid_to_bidx):
+	if elem is None:
+		return 0
+	if isinstance(elem, (int, long)):
+		v = int(elem)
+		if not (v >= -0x8000 and v <= 0x7fff):
+			raise Exception('invalid plain value for magic: %s' % repr(v))
+		# Magic is a 16-bit signed value, but convert to 16-bit signed
+		# for encoding
+		return v & 0xffff
+	if not isinstance(elem, dict):
+		raise Exception('invalid magic: %r' % elem)
 
-	'length': 1,
-	'varargs': False,
-	'native': 'duk_bi_arraybuffer_constructor',
-	'callable': True,
-	'constructable': True,
+	assert(elem.has_key('type'))
+	if elem['type'] == 'bidx':
+		# Maps to thr->builtins[].
+		v = elem['id']
+		return objid_to_bidx[v]
+	elif elem['type'] == 'plain':
+		v = elem['value']
+		if not (v >= -0x8000 and v <= 0x7fff):
+			raise Exception('invalid plain value for magic: %s' % repr(v))
+		# Magic is a 16-bit signed value, but convert to 16-bit signed
+		# for encoding
+		return v & 0xffff
+	elif elem['type'] == 'math_onearg':
+		return math_onearg_magic[elem['funcname']]
+	elif elem['type'] == 'math_twoarg':
+		return math_twoarg_magic[elem['funcname']]
+	elif elem['type'] == 'array_iter':
+		return array_iter_magic[elem['funcname']]
+	elif elem['type'] == 'typedarray_constructor':
+		return magic_typedarray_constructor(elem['elem'], elem['shift'])
+	elif elem['type'] == 'buffer_readfield':
+		return magic_readfield(elem['elem'], elem['signed'], elem['bigendian'], elem['typedarray'])
+	elif elem['type'] == 'buffer_writefield':
+		return magic_writefield(elem['elem'], elem['signed'], elem['bigendian'], elem['typedarray'])
+	else:
+		raise Exception('invalid magic type: %r' % elem)
 
-	'values': [],
-	'functions': [
-		{ 'name': 'isView',			'native': 'duk_bi_arraybuffer_isview',			'length': 1,	'varargs': False },
-	]
-}
+# Resolve object list; quite straightforward now.
+def resolve_object_list(doc):
+	res = []
+	objid_to_object = {}
+	for idx,o in enumerate(doc['objects']):
+		objid_to_object[o['id']] = o
+	for idx,o in enumerate(doc['builtins']):
+		# No filtering now, just use list as is
+		res.append(objid_to_object[o['id']])
+	for o in res:
+		# For now, assume all objects in 'builtins' list are referenced.
+		# Other objects are not (relevant for ROM objects).
+		o['need_bidx'] = True
+	return res
 
-bi_arraybuffer_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_arraybuffer_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': [
-		{ 'name': 'slice',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x02 } },  # magic: 0x01=isView, 0x02=create copy
-	]
-}
-
-bi_dataview_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_dataview_prototype',
-	'class': 'Function',
-	'name': 'DataView',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_dataview_constructor',
-	'callable': True,
-	'constructable': True,
-
-	'values': [],
-	'functions': []
-}
-
-bi_dataview_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_dataview_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': [
-		# Int8/Uint8 get/set calls don't have a little endian argument
-		# but length/nargs must provide it for the shared helper anyway.
-
-		{ 'name': 'getInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'getUint8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'getInt16',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'getUint16',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'getInt32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'getUint32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'getFloat32',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'getFloat64',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'setInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'setUint8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'setInt16',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'setUint16',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'setInt32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=False, typedarray=True) } },
-		{ 'name': 'setUint32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'setFloat32',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=False, typedarray=True) } },
-		{ 'name': 'setFloat64',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=False, typedarray=True) } },
-	]
-}
-
-# Custom prototype object providing properties shared by all TypedArray
-# instances (reduces built-in object count).  The view specific prototypes
-# (such as Uint8Array.prototype) are still needed so that e.g. instanceof
-# will work properly.
-
-bi_typedarray_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	# no external_constructor (specific views provide it)
-	'class': 'Object',
-
-	'values': [],
-	'functions': [
-	{ 'name': 'set',			'native': 'duk_bi_typedarray_set',				'length': 2,	'varargs': False },
-	{ 'name': 'subarray',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x01 } },  # magic: 0x01=isView, 0x02=create copy
-	]
-}
-
-bi_int8array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_int8array_prototype',
-	'class': 'Function',
-	'name': 'Int8Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int8', 0) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_int8array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_int8array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_uint8array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_uint8array_prototype',
-	'class': 'Function',
-	'name': 'Uint8Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint8', 0) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_uint8array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_uint8array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_uint8clampedarray_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_uint8clampedarray_prototype',
-	'class': 'Function',
-	'name': 'Uint8ClampedArray',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint8clamped', 0) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 1,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_uint8clampedarray_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_uint8clampedarray_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_int16array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_int16array_prototype',
-	'class': 'Function',
-	'name': 'Int16Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int16', 1) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 2,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_int16array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_int16array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_uint16array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_uint16array_prototype',
-	'class': 'Function',
-	'name': 'Uint16Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint16', 1) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 2,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_uint16array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_uint16array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_int32array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_int32array_prototype',
-	'class': 'Function',
-	'name': 'Int32Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('int32', 2) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_int32array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_int32array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_uint32array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_uint32array_prototype',
-	'class': 'Function',
-	'name': 'Uint32Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('uint32', 2) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_uint32array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_uint32array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_float32array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_float32array_prototype',
-	'class': 'Function',
-	'name': 'Float32Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('float32', 2) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 4,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_float32array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_float32array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
-
-bi_float64array_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_float64array_prototype',
-	'class': 'Function',
-	'name': 'Float64Array',  # matches V8, not specified explicitly in Khronos spec
-
-	'length': 3,
-	'varargs': False,
-	'native': 'duk_bi_typedarray_constructor',
-	'callable': True,
-	'constructable': True,
-	'magic': { 'type': 'plain', 'value': magic_typedarray_constructor('float64', 3) },
-
-	'values': [
-		{ 'name': 'BYTES_PER_ELEMENT',		'value': 8,		'attributes': '' },
-	],
-	'functions': []
-}
-
-bi_float64array_prototype = {
-	'internal_prototype': 'bi_typedarray_prototype',
-	'external_constructor': 'bi_float64array_constructor',
-	'class': 'Object',
-
-	'values': [],
-	'functions': []
-}
+# Helper to find a property from a property list, remove it from the
+# property list, and return the removed property.
+def steal_prop(props, key):
+	for idx,prop in enumerate(props):
+		if prop['key'] == key:
+			return props.pop(idx)
+	return None
 
 #
-#  Node.js Buffer
+#  RAM initialization data
+#
+#  Init data for built-in strings and objects.  The init data for both
+#  strings and objects is a bit-packed stream tailored to match the decoders
+#  in duk_heap_alloc.c (strings) and duk_hthread_builtins.c (objects).
+#  Various bitfield sizes are used to minimize the bitstream size without
+#  resorting to actual, expensive compression.  The goal is to minimize the
+#  overall size of the init code and the init data.
+#
+#  The built-in data created here is used to set up initial RAM versions
+#  of the strings and objects.  References to these objects are tracked in
+#  heap->strs[] and thr->builtins[] which allows Duktape internals to refer
+#  to built-ins e.g. as thr->builtins[DUK_BIDX_STRING_PROTOTYPE].
+#
+#  Not all strings and objects need to be reachable through heap->strs[]
+#  or thr->builtins[]: the strings/objects that need to be in these arrays
+#  is determined based on metadata and source code scanning.
 #
 
-bi_nodejs_buffer_constructor = {
-	'internal_prototype': 'bi_function_prototype',
-	'external_prototype': 'bi_nodejs_buffer_prototype',
-	'class': 'Function',
-	'name': 'Buffer',
+# XXX: Reserved word stridx's could be made to match token numbers
+#      directly so that a duk_stridx2token[] would not be needed.
 
-	'length': 2,
-	'varargs': False,
-	'native': 'duk_bi_nodejs_buffer_constructor',
-	'callable': True,
-	'constructable': True,
+# Default property attributes, see E5 Section 15 beginning.
+LENGTH_PROPERTY_ATTRIBUTES = ""
+ACCESSOR_PROPERTY_ATTRIBUTES = "c"
+DEFAULT_DATA_PROPERTY_ATTRIBUTES = "wc"
 
-	'values': [],
-	'functions': [
-		{ 'name': 'concat',			'native': 'duk_bi_nodejs_buffer_concat',		'length': 2,	'varargs': False },
-		{ 'name': 'isEncoding',			'native': 'duk_bi_nodejs_buffer_is_encoding',		'length': 1,	'varargs': False },
-		{ 'name': 'isBuffer',			'native': 'duk_bi_nodejs_buffer_is_buffer',		'length': 1,	'varargs': False },
-		{ 'name': 'byteLength',			'native': 'duk_bi_nodejs_buffer_byte_length',		'length': 2,	'varargs': False },
-		{ 'name': 'compare',			'native': 'duk_bi_buffer_compare_shared',		'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0x02 + 0x01 } },  # magic: 0x02=static call, 0x01=compare
-	]
-}
+# Encoding constants (must match duk_hthread_builtins.c).
+CLASS_BITS = 5
+BIDX_BITS = 7
+STRIDX_BITS = 9   # would be nice to optimize to 8
+NATIDX_BITS = 8
+NUM_NORMAL_PROPS_BITS = 6
+NUM_FUNC_PROPS_BITS = 6
+PROP_FLAGS_BITS = 3
+STRING_LENGTH_BITS = 8
+STRING_CHAR_BITS = 7
+LENGTH_PROP_BITS = 3
+NARGS_BITS = 3
+PROP_TYPE_BITS = 3
+MAGIC_BITS = 16
 
-bi_nodejs_buffer_prototype = {
-	'internal_prototype': 'bi_object_prototype',
-	'external_constructor': 'bi_nodejs_buffer_constructor',
-	'class': 'Object',
+NARGS_VARARGS_MARKER = 0x07
+NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_UNUSED
+NO_BIDX_MARKER = 0x7f
+NO_STRIDX_MARKER = 0xff
 
-	'values': [
-	],
-	'functions': [
-		{ 'name': 'readUInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readInt8',			'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('8bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'readUInt16LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readUInt16BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'readInt16LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'readInt16BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('16bit', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'readUInt32LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readUInt32BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'readInt32LE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'readInt32BE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('32bit', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'readFloatLE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readFloatBE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('float', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'readDoubleLE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readDoubleBE',		'native': 'duk_bi_buffer_readfield',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('double', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'readUIntLE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'readUIntBE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'readIntLE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'readIntBE',			'native': 'duk_bi_buffer_readfield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_readfield('varint', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeUInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeInt8',			'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('8bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeUInt16LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeUInt16BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeInt16LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeInt16BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('16bit', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeUInt32LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeUInt32BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeInt32LE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeInt32BE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('32bit', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeFloatLE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeFloatBE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('float', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeDoubleLE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeDoubleBE',		'native': 'duk_bi_buffer_writefield',			'length': 3,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('double', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeUIntLE',		'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=False, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeUIntBE',		'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=False, bigendian=True, typedarray=False) } },
-		{ 'name': 'writeIntLE',			'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=True, bigendian=False, typedarray=False) } },
-		{ 'name': 'writeIntBE',			'native': 'duk_bi_buffer_writefield',			'length': 4,	'varargs': False,	'magic': { 'type': 'plain', 'value': magic_writefield('varint', signed=True, bigendian=True, typedarray=False) } },
-		{ 'name': 'toString',			'native': 'duk_bi_nodejs_buffer_tostring',		'length': 3,	'varargs': False },
-		{ 'name': 'toJSON',			'native': 'duk_bi_nodejs_buffer_tojson',		'length': 0,	'varargs': False },
-		{ 'name': 'fill',			'native': 'duk_bi_nodejs_buffer_fill',			'length': 3,	'varargs': False },
-		{ 'name': 'equals',			'native': 'duk_bi_buffer_compare_shared',		'length': 1,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0 } },  # magic = 0: equals
-		{ 'name': 'compare',			'native': 'duk_bi_buffer_compare_shared',		'length': 1,	'varargs': False,	'magic': { 'type': 'plain', 'value': 1 } },  # magic = 1: compare
-		{ 'name': 'copy',			'native': 'duk_bi_nodejs_buffer_copy',			'length': 4,	'varargs': False },
-		{ 'name': 'slice',			'native': 'duk_bi_buffer_slice_shared',			'length': 2,	'varargs': False,	'magic': { 'type': 'plain', 'value': 0 } },  # magic: 0x01=isView, 0x02=create copy
-		{ 'name': 'write',			'native': 'duk_bi_nodejs_buffer_write',			'length': 4,	'varargs': False },
-	]
-}
+PROP_TYPE_DOUBLE = 0
+PROP_TYPE_STRING = 1
+PROP_TYPE_STRIDX = 2
+PROP_TYPE_BUILTIN = 3
+PROP_TYPE_UNDEFINED = 4
+PROP_TYPE_BOOLEAN_TRUE = 5
+PROP_TYPE_BOOLEAN_FALSE = 6
+PROP_TYPE_ACCESSOR = 7
 
-#
-#  Built-ins table.  The ordering determines ordering for the DUK_BIDX_XXX constants.
-#
+# must match duk_hobject.h
+PROPDESC_FLAG_WRITABLE =     (1 << 0)
+PROPDESC_FLAG_ENUMERABLE =   (1 << 1)
+PROPDESC_FLAG_CONFIGURABLE = (1 << 2)
+PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
 
-builtins_orig = [
-	{ 'id': 'bi_global',				'info': bi_global },
-	{ 'id': 'bi_global_env',			'info': bi_global_env },
-	{ 'id': 'bi_object_constructor',		'info': bi_object_constructor },
-	{ 'id': 'bi_object_prototype',			'info': bi_object_prototype },
-	{ 'id': 'bi_function_constructor',		'info': bi_function_constructor },
-	{ 'id': 'bi_function_prototype',		'info': bi_function_prototype },
-	{ 'id': 'bi_array_constructor',			'info': bi_array_constructor },
-	{ 'id': 'bi_array_prototype',			'info': bi_array_prototype },
-	{ 'id': 'bi_string_constructor',		'info': bi_string_constructor },
-	{ 'id': 'bi_string_prototype',			'info': bi_string_prototype },
-	{ 'id': 'bi_boolean_constructor',		'info': bi_boolean_constructor },
-	{ 'id': 'bi_boolean_prototype',			'info': bi_boolean_prototype },
-	{ 'id': 'bi_number_constructor',		'info': bi_number_constructor },
-	{ 'id': 'bi_number_prototype',			'info': bi_number_prototype },
-	{ 'id': 'bi_date_constructor',			'info': bi_date_constructor },
-	{ 'id': 'bi_date_prototype',			'info': bi_date_prototype },
-	{ 'id': 'bi_regexp_constructor',		'info': bi_regexp_constructor },
-	{ 'id': 'bi_regexp_prototype',			'info': bi_regexp_prototype },
-	{ 'id': 'bi_error_constructor',			'info': bi_error_constructor },
-	{ 'id': 'bi_error_prototype',			'info': bi_error_prototype },
-	{ 'id': 'bi_eval_error_constructor',		'info': bi_eval_error_constructor },
-	{ 'id': 'bi_eval_error_prototype',		'info': bi_eval_error_prototype },
-	{ 'id': 'bi_range_error_constructor',		'info': bi_range_error_constructor },
-	{ 'id': 'bi_range_error_prototype',		'info': bi_range_error_prototype },
-	{ 'id': 'bi_reference_error_constructor',	'info': bi_reference_error_constructor },
-	{ 'id': 'bi_reference_error_prototype',		'info': bi_reference_error_prototype },
-	{ 'id': 'bi_syntax_error_constructor',		'info': bi_syntax_error_constructor },
-	{ 'id': 'bi_syntax_error_prototype',		'info': bi_syntax_error_prototype },
-	{ 'id': 'bi_type_error_constructor',		'info': bi_type_error_constructor },
-	{ 'id': 'bi_type_error_prototype',		'info': bi_type_error_prototype },
-	{ 'id': 'bi_uri_error_constructor',		'info': bi_uri_error_constructor },
-	{ 'id': 'bi_uri_error_prototype',		'info': bi_uri_error_prototype },
-	{ 'id': 'bi_math',				'info': bi_math },
-	{ 'id': 'bi_json',				'info': bi_json },
-	{ 'id': 'bi_type_error_thrower',		'info': bi_type_error_thrower },
-
-	# es6
-	{ 'id': 'bi_proxy_constructor',			'info': bi_proxy_constructor,			'es6': True },
-
-	# custom
-	{ 'id': 'bi_duktape',				'info': bi_duktape,				'custom': True },
-	{ 'id': 'bi_thread_constructor',		'info': bi_thread_constructor,			'custom': True },
-	{ 'id': 'bi_thread_prototype',			'info': bi_thread_prototype,			'custom': True },
-	{ 'id': 'bi_buffer_constructor',		'info': bi_buffer_constructor,			'custom': True },
-	{ 'id': 'bi_buffer_prototype',			'info': bi_buffer_prototype,			'custom': True },
-	{ 'id': 'bi_pointer_constructor',		'info': bi_pointer_constructor,			'custom': True },
-	{ 'id': 'bi_pointer_prototype',			'info': bi_pointer_prototype,			'custom': True },
-	{ 'id': 'bi_logger_constructor',		'info': bi_logger_constructor,			'custom': True },
-	{ 'id': 'bi_logger_prototype',			'info': bi_logger_prototype,			'custom': True },
-	{ 'id': 'bi_double_error',                      'info': bi_double_error,			'custom': True },
-
-	# TypedArray
-	{ 'id': 'bi_arraybuffer_constructor',		'info': bi_arraybuffer_constructor,		'typedarray': True },
-	{ 'id': 'bi_arraybuffer_prototype',		'info': bi_arraybuffer_prototype,		'typedarray': True },
-	{ 'id': 'bi_dataview_constructor',		'info': bi_dataview_constructor,		'typedarray': True },
-	{ 'id': 'bi_dataview_prototype',		'info': bi_dataview_prototype,			'typedarray': True },
-	{ 'id': 'bi_typedarray_prototype',		'info': bi_typedarray_prototype,		'typedarray': True },
-	{ 'id': 'bi_int8array_constructor',		'info': bi_int8array_constructor,		'typedarray': True },
-	{ 'id': 'bi_int8array_prototype',		'info': bi_int8array_prototype,			'typedarray': True },
-	{ 'id': 'bi_uint8array_constructor',		'info': bi_uint8array_constructor,		'typedarray': True },
-	{ 'id': 'bi_uint8array_prototype',		'info': bi_uint8array_prototype,		'typedarray': True },
-	{ 'id': 'bi_uint8clampedarray_constructor',	'info': bi_uint8clampedarray_constructor,	'typedarray': True },
-	{ 'id': 'bi_uint8clampedarray_prototype',	'info': bi_uint8clampedarray_prototype,		'typedarray': True },
-	{ 'id': 'bi_int16array_constructor',		'info': bi_int16array_constructor,		'typedarray': True },
-	{ 'id': 'bi_int16array_prototype',		'info': bi_int16array_prototype,		'typedarray': True },
-	{ 'id': 'bi_uint16array_constructor',		'info': bi_uint16array_constructor,		'typedarray': True },
-	{ 'id': 'bi_uint16array_prototype',		'info': bi_uint16array_prototype,		'typedarray': True },
-	{ 'id': 'bi_int32array_constructor',		'info': bi_int32array_constructor,		'typedarray': True },
-	{ 'id': 'bi_int32array_prototype',		'info': bi_int32array_prototype,		'typedarray': True },
-	{ 'id': 'bi_uint32array_constructor',		'info': bi_uint32array_constructor,		'typedarray': True },
-	{ 'id': 'bi_uint32array_prototype',		'info': bi_uint32array_prototype,		'typedarray': True },
-	{ 'id': 'bi_float32array_constructor',		'info': bi_float32array_constructor,		'typedarray': True },
-	{ 'id': 'bi_float32array_prototype',		'info': bi_float32array_prototype,		'typedarray': True },
-	{ 'id': 'bi_float64array_constructor',		'info': bi_float64array_constructor,		'typedarray': True },
-	{ 'id': 'bi_float64array_prototype',		'info': bi_float64array_prototype,		'typedarray': True },
-
-	# Node.js Buffer
-	{ 'id': 'bi_nodejs_buffer_constructor',		'info': bi_nodejs_buffer_constructor,		'nodejs_buffer': True },
-	{ 'id': 'bi_nodejs_buffer_prototype',		'info': bi_nodejs_buffer_prototype,		'nodejs_buffer': True },
+# Class names, numeric indices must match duk_hobject.h class numbers.
+class_names = [
+	'Unused',
+	'Arguments',
+	'Array',
+	'Boolean',
+	'Date',
+	'Error',
+	'Function',
+	'JSON',
+	'Math',
+	'Number',
+	'Object',
+	'RegExp',
+	'String',
+	'global',
+	'ObjEnv',
+	'DecEnv',
+	'Buffer',
+	'Pointer',
+	'Thread',
 ]
+class2num = {}
+for i,v in enumerate(class_names):
+	class2num[v] = i
 
-#
-#  GenBuiltins
-#
+# Map class name to a class number.
+def class_to_number(x):
+	return class2num[x]
 
-class GenBuiltins:
-	build_info = None
-	double_byte_order = None
-	ext_section_b = None
-	ext_browser_like = None
+# Merge duplicate strings in string metadata.
+def merge_string_entries(strlist):
+	# The raw string list may contain duplicates so merge entries.
+	# The list is processed in reverse because the last entry should
+	# "win" and keep its place (this matters for reserved words).
 
-	builtins = None
-	gs = None
-	init_data = None
-	initjs_data = None
-	native_func_hash = None
-	native_func_list = None
-	builtin_indexes = None
-
-	count_builtins = None
-	count_normal_props = None
-	count_function_props = None
-
-	def __init__(self, build_info=None, initjs_data=None, double_byte_order=None, ext_section_b=None, ext_browser_like=None):
-		self.build_info = build_info
-		self.double_byte_order = double_byte_order
-		self.ext_section_b = ext_section_b
-		self.ext_browser_like = ext_browser_like
-
-		self.builtins = copy.deepcopy(builtins_orig)
-		self.gs = None
-		self.init_data = None
-		self.initjs_data = initjs_data
-		if len(self.initjs_data) > 1 and self.initjs_data[-1] != '\0':
-			# force NUL termination, init code now expects that
-			self.initjs_data += '\0'
-		self.native_func_hash = {}
-		self.native_func_list = []
-		self.builtin_indexes = {}
-
-		self.count_builtins = 0
-		self.count_normal_props = 0
-		self.count_function_props = 0
-
-	def findBuiltIn(self, id_):
-		for i in self.builtins:
-			if i['id'] == id_:
-				return i
-		return None
-
-	def initBuiltinIndex(self):
-		idx = 0
-		for bi in self.builtins:
-			self.builtin_indexes[bi['id']] = idx
-			idx += 1
-
-	def getNativeFuncs(self, bi):
-		if bi.has_key('native'):
-			native_func = bi['native']
-			self.native_func_hash[native_func] = -1
-
-		for valspec in bi['values']:
-			if valspec.has_key('getter'):
-				native_func = valspec['getter']
-				self.native_func_hash[native_func] = -1
-			if valspec.has_key('setter'):
-				native_func = valspec['setter']
-				self.native_func_hash[native_func] = -1
-
-		for funspec in bi['functions']:
-			if funspec.has_key('native'):
-				native_func = funspec['native']
-				self.native_func_hash[native_func] = -1
-	
-	def numberNativeFuncs(self):
-		k = self.native_func_hash.keys()
-		k.sort()
-		idx = 0
-		for i in k:
-			self.native_func_hash[i] = idx
-			self.native_func_list.append(i)
-			idx += 1
-
-	def writeNativeFuncArray(self, genc):
-		genc.emitLine('/* native functions: %d */' % len(self.native_func_list))
-		genc.emitLine('DUK_INTERNAL const duk_c_function duk_bi_native_functions[%d] = {' % len(self.native_func_list))
-		for i in self.native_func_list:
-			# The function pointer cast here makes BCC complain about
-			# "initializer too complicated", so omit the cast.
-			#genc.emitLine('\t(duk_c_function) %s,' % i)
-			genc.emitLine('\t%s,' % i)
-		genc.emitLine('};')
-
-	def generateDefineNames(self, id):
-		t1 = id.upper().split('_')
-		t2 = '_'.join(t1[1:])  # bi_foo_bar -> FOO_BAR
-		return 'DUK_BIDX_' + t2, 'DUK_BUILTIN_' + t2
-
-	def encodePropertyFlags(self, flags):
-		# Note: must match duk_hobject.h
-
-		res = 0
-		nflags = 0
-		if 'w' in flags:
-			nflags += 1
-			res = res | PROPDESC_FLAG_WRITABLE
-		if 'e' in flags:
-			nflags += 1
-			res = res | PROPDESC_FLAG_ENUMERABLE
-		if 'c' in flags:
-			nflags += 1
-			res = res | PROPDESC_FLAG_CONFIGURABLE
-		if 'a' in flags:
-			nflags += 1
-			res = res | PROPDESC_FLAG_ACCESSOR
-
-		if nflags != len(flags):
-			raise Exception('unsupported flags: %s' % repr(flags))
-
-		return res
-
-	def resolveMagic(self, elem):
-		if elem is None:
-			return 0
-		assert(elem.has_key('type'))
-		if elem['type'] == 'bidx':
-			v = elem['value']
-			for i, bi in enumerate(self.builtins):
-				if bi['id'] == v:
-					#print(v, '->', i)
-					return i
-			raise Exception('invalid builtin index for magic: ' % repr(v))
-		elif elem['type'] == 'stridx':
-			v = self.gs.stringToIndex(valspec['name'])
-			if not (v >= -0x8000 and v <= 0x7fff):
-				raise Exception('invalid stridx value for magic: %s' % repr(v))
-			return v & 0xffff
-		elif elem['type'] == 'plain':
-			v = elem['value']
-			if not (v >= -0x8000 and v <= 0x7fff):
-				raise Exception('invalid plain value for magic: %s' % repr(v))
-			#print('MAGIC', v)
-			# Magic is a 16-bit signed value, but convert to 16-bit signed
-			# for encoding
-			return v & 0xffff
+	strs = []
+	str_map = {}   # plain string -> object in strs[]
+	tmp = copy.deepcopy(strlist)
+	tmp.reverse()
+	for s in tmp:
+		prev = str_map.get(s['str'])
+		if prev is not None:
+			for k in s.keys():
+				if prev.has_key(k) and prev[k] != s[k]:
+					raise Exception('fail to merge string entry, conflicting keys: %r <-> %r' % (prev, s))
+				prev[k] = s[k]
 		else:
-			raise Exception('invalid magic type: %s' % repr(elem['type']))
+			strs.append(s)
+			str_map[s['str']] = s
+	strs.reverse()
+	return strs
 
-	def generatePropertiesDataForBuiltin(self, be, bi):
-		self.count_builtins += 1
+# Order builtin strings (strings with a stridx) into an order satisfying
+# multiple constraints.
+def order_builtin_strings(input_strlist, keyword_list, strip_unused_stridx=False):
+	# Strings are ordered in the result as follows:
+	#   1. Non-reserved words requiring 8-bit indices
+	#   2. Non-reserved words not requiring 8-bit indices
+	#   3. Reserved words in non-strict mode only
+	#   4. Reserved words in strict mode
+	#
+	# Reserved words must follow an exact order because they are
+	# translated to/from token numbers by addition/subtraction.
+	# Some strings require an 8-bit index and must be in the
+	# beginning.
 
-		if bi.has_key('internal_prototype'):
-			be.bits(self.builtin_indexes[bi['internal_prototype']], BIDX_BITS)
+	tmp_strs = []
+	for s in copy.deepcopy(input_strlist):
+		if strip_unused_stridx and not s.get('stridx_used', False):
+			# Drop strings which are not actually needed by src/*.(c|h).
+			# Such strings won't be in heap->strs[] or ROM legacy list.
+			pass
 		else:
-			be.bits(NO_BIDX_MARKER, BIDX_BITS)
+			tmp_strs.append(s)
 
-		if bi.has_key('external_prototype'):
-			be.bits(self.builtin_indexes[bi['external_prototype']], BIDX_BITS)
+	# The reserved word list must match token order in duk_lexer.h
+	# exactly, so pluck them out first.
+
+	str_index = {}
+	kw_index = {}
+	keywords = []
+	strs = []
+	for idx,s in enumerate(tmp_strs):
+		str_index[s['str']] = s
+	for idx,s in enumerate(keyword_list):
+		keywords.append(str_index[s])
+		kw_index[s] = True
+	for idx,s in enumerate(tmp_strs):
+		if not kw_index.has_key(s['str']):
+			strs.append(s)
+
+	# Sort the strings by category number; within category keep
+	# previous order.
+
+	for idx,s in enumerate(strs):
+		s['_idx'] = idx  # for ensuring stable sort
+
+	def req8Bit(s):
+		return s.get('class_name', False)   # currently just class names
+
+	def getCat(s):
+		req8 = req8Bit(s)
+		if s.get('reserved_word', False):
+			# XXX: unused path now, because keywords are "plucked out"
+			# explicitly.
+			assert(not req8)
+			if s.get('future_reserved_word_strict', False):
+				return 4
+			else:
+				return 3
+		elif req8:
+			return 1
 		else:
-			be.bits(NO_BIDX_MARKER, BIDX_BITS)
+			return 2
 
-		if bi.has_key('external_constructor'):
-			be.bits(self.builtin_indexes[bi['external_constructor']], BIDX_BITS)
+	def sortCmp(a,b):
+		return cmp( (getCat(a),a['_idx']), (getCat(b),b['_idx']) )
+
+	strs.sort(cmp=sortCmp)
+
+	for idx,s in enumerate(strs):
+		# Remove temporary _idx properties
+		del s['_idx']
+
+	for idx,s in enumerate(strs):
+		if req8Bit(s):
+			if i >= 256:
+				raise Exception('8-bit string index not satisfied: ' + repr(s))
+
+	return strs + keywords
+
+# Add C define names for builtin strings.
+def add_string_define_names(strlist, special_defs):
+	for s in strlist:
+		v = s['str']
+
+		if special_defs.has_key(v):
+			s['define'] = 'DUK_STRIDX_' + special_defs[v]
+			continue
+
+		if len(v) >= 1 and v[0] == '\xff':
+			pfx = 'DUK_STRIDX_INT_'
+			v = v[1:]
 		else:
-			be.bits(NO_BIDX_MARKER, BIDX_BITS)
+			pfx = 'DUK_STRIDX_'
 
-		# Filter values and functions
-		values = []
-		for valspec in bi['values']:
-			if valspec.has_key('section_b') and valspec['section_b'] and not gb.ext_section_b:
-				continue
-			if valspec.has_key('browser') and valspec['browser'] and not gb.ext_browser_like:
-				continue
-			values.append(valspec)
+		t = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', v)  # add underscores: aB -> a_B
+		s['define'] = pfx + t.upper()
 
-		functions = []
-		for valspec in bi['functions']:
-			if valspec.has_key('section_b') and valspec['section_b'] and not self.ext_section_b:
-				continue
-			if valspec.has_key('browser') and valspec['browser'] and not self.ext_browser_like:
-				continue
-			functions.append(valspec)
+# Add a 'stridx_used' flag for strings which need a stridx.
+def add_string_used_stridx(strlist, used_stridx_meta):
+	defs = {}
+	for s in used_stridx_meta['used_stridx_defines']:
+		defs[s] = True
 
-		be.bits(len(values), NUM_NORMAL_PROPS_BITS)
+	for s in strlist:
+		if defs.has_key(s['define']):
+			s['stridx_used'] = True
 
-		for valspec in values:
-			self.count_normal_props += 1
+	# duk_lexer.h needs all reserved words
+	for s in strlist:
+		if s.get('reserved_word', False):
+			s['stridx_used'] = True
 
-			# NOTE: we rely on there being less than 256 built-in strings
-			stridx = self.gs.stringToIndex(valspec['name'])
-			val = valspec.get('value')  # missing for accessors
+# Generate bit-packed RAM string init data.
+def gen_ramstr_initdata_bitpacked(strlist):
+	be = dukutil.BitEncoder()
 
+	# Strings are encoded as follows: a string begins in lowercase
+	# mode and recognizes the following 5-bit symbols:
+	#
+	#    0-25    'a' ... 'z'
+	#    26	     '_'
+	#    27      0x00 (actually decoded to 0xff, internal marker)
+	#    28	     reserved
+	#    29      switch to uppercase for one character
+	#            (next 5-bit symbol must be in range 0-25)
+	#    30      switch to uppercase
+	#    31      read a 7-bit character verbatim
+	#
+	# Uppercase mode is the same except codes 29 and 30 switch to
+	# lowercase.
+
+	UNDERSCORE = 26
+	ZERO = 27
+	SWITCH1 = 29
+	SWITCH = 30
+	SEVENBIT = 31
+
+	maxlen = 0
+	n_optimal = 0
+	n_switch1 = 0
+	n_switch = 0
+	n_sevenbit = 0
+
+	for s_obj in strlist:
+		s = s_obj['str']
+
+		be.bits(len(s), 5)
+
+		if len(s) > maxlen:
+			maxlen = len(s)
+
+		# 5-bit character, mode specific
+		mode = 'lowercase'
+
+		for idx, c in enumerate(s):
+			# This encoder is not that optimal, but good enough for now.
+
+			islower = (ord(c) >= ord('a') and ord(c) <= ord('z'))
+			isupper = (ord(c) >= ord('A') and ord(c) <= ord('Z'))
+			islast = (idx == len(s) - 1)
+			isnextlower = False
+			isnextupper = False
+			if not islast:
+				c2 = s[idx+1]
+				isnextlower = (ord(c2) >= ord('a') and ord(c2) <= ord('z'))
+				isnextupper = (ord(c2) >= ord('A') and ord(c2) <= ord('Z'))
+
+			if c == '_':
+				be.bits(UNDERSCORE, 5)
+				n_optimal += 1
+			elif c == '\xff':
+				# A 0xff prefix (never part of valid UTF-8) is used for internal properties.
+				# It is encoded as 0x00 in generated init data for technical reasons: it
+				# keeps lookup table elements 7 bits instead of 8 bits.
+				be.bits(ZERO, 5)
+				n_optimal += 1
+			elif islower and mode == 'lowercase':
+				be.bits(ord(c) - ord('a'), 5)
+				n_optimal += 1
+			elif isupper and mode == 'uppercase':
+				be.bits(ord(c) - ord('A'), 5)
+				n_optimal += 1
+			elif islower and mode == 'uppercase':
+				if isnextlower:
+					be.bits(SWITCH, 5)
+					be.bits(ord(c) - ord('a'), 5)
+					mode = 'lowercase'
+					n_switch += 1
+				else:
+					be.bits(SWITCH1, 5)
+					be.bits(ord(c) - ord('a'), 5)
+					n_switch1 += 1
+			elif isupper and mode == 'lowercase':
+				if isnextupper:
+					be.bits(SWITCH, 5)
+					be.bits(ord(c) - ord('A'), 5)
+					mode = 'uppercase'
+					n_switch += 1
+				else:
+					be.bits(SWITCH1, 5)
+					be.bits(ord(c) - ord('A'), 5)
+					n_switch1 += 1
+			else:
+				assert(ord(c) >= 0 and ord(c) <= 127)
+				be.bits(SEVENBIT, 5)
+				be.bits(ord(c), 7)
+				n_sevenbit += 1
+				#print 'sevenbit for: %r' % c
+
+	# end marker not necessary, C code knows length from define
+
+	res = be.getByteString()
+
+	print ('%d ram strings, %d bytes of string init data, %d maximum string length, ' + \
+	       'encoding: optimal=%d,switch1=%d,switch=%d,sevenbit=%d') % \
+		(len(strlist), len(res), maxlen, \
+	         n_optimal, n_switch1, n_switch, n_sevenbit)
+
+	return res, maxlen
+
+# Get helper maps for strings, e.g. map string/define to stridx.
+def get_string_maps(strlist):
+	string_to_stridx = {}
+	define_to_stridx = {}
+	reserved_words = {}   # map to True
+	strict_reserved_words = {}
+
+	for idx,s in enumerate(strlist):
+		string_to_stridx[s['str']] = idx
+		define_to_stridx[s['define']] = idx
+		if s.get('reserved_word', False):
+			reserved_words[s['str']] = True  # includes also strict reserved words
+		if s.get('future_reserved_word_strict', False):
+			strict_reserved_words[s['str']] = True
+
+	return string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words
+
+# Get a plain list of strings.
+def get_plain_string_list(strlist):
+	res = []
+	for s in strlist:
+		res.append(s['str'])
+	return res
+
+# Functions to emit string-related source/header parts.
+
+def emit_ramstr_source_strinit_data(genc, strdata):
+	genc.emitArray(strdata, 'duk_strings_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(strdata))
+
+def emit_ramstr_header_strinit_defines(genc, strlist, strdata, strmaxlen):
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
+	genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_strings_data[%d];' % len(strdata))
+	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
+	genc.emitDefine('DUK_STRDATA_MAX_STRLEN', strmaxlen)
+	genc.emitDefine('DUK_STRDATA_DATA_LENGTH', len(strdata))
+
+# This is used for both RAM and ROM strings.
+def emit_header_stridx_defines(genc, strlist):
+	for idx,s in enumerate(strlist):
+		genc.emitDefine(s['define'], idx, repr(s['str']))
+		defname = s['define'].replace('_STRIDX','_HEAP_STRING')
+		genc.emitDefine(defname + '(heap)', 'DUK_HEAP_GET_STRING((heap),%s)' % s['define'])
+		defname = s['define'].replace('_STRIDX', '_HTHREAD_STRING')
+		genc.emitDefine(defname + '(thr)', 'DUK_HTHREAD_GET_STRING((thr),%s)' % s['define'])
+
+	idx_start_reserved = None
+	idx_start_strict_reserved = None
+	for idx,s in enumerate(strlist):
+		if idx_start_reserved is None and s.get('reserved_word', False):
+			idx_start_reserved = idx
+		if idx_start_strict_reserved is None and s.get('future_reserved_word_strict', False):
+			idx_start_strict_reserved = idx
+	assert(idx_start_reserved is not None)
+	assert(idx_start_strict_reserved is not None)
+
+	genc.emitLine('')
+	genc.emitDefine('DUK_HEAP_NUM_STRINGS', len(strlist))
+	genc.emitDefine('DUK_STRIDX_START_RESERVED', idx_start_reserved)
+	genc.emitDefine('DUK_STRIDX_START_STRICT_RESERVED', idx_start_strict_reserved)
+	genc.emitDefine('DUK_STRIDX_END_RESERVED', len(strlist), comment='exclusive endpoint')
+	genc.emitLine('')
+	genc.emitLine('/* To convert a heap stridx to a token number, subtract')
+	genc.emitLine(' * DUK_STRIDX_START_RESERVED and add DUK_TOK_START_RESERVED.')
+	genc.emitLine(' */')
+
+# Encode property flags for RAM initializers.
+def encode_property_flags(flags):
+	# Note: must match duk_hobject.h
+
+	res = 0
+	nflags = 0
+	if 'w' in flags:
+		nflags += 1
+		res = res | PROPDESC_FLAG_WRITABLE
+	if 'e' in flags:
+		nflags += 1
+		res = res | PROPDESC_FLAG_ENUMERABLE
+	if 'c' in flags:
+		nflags += 1
+		res = res | PROPDESC_FLAG_CONFIGURABLE
+	if 'a' in flags:
+		nflags += 1
+		res = res | PROPDESC_FLAG_ACCESSOR
+
+	if nflags != len(flags):
+		raise Exception('unsupported flags: %s' % repr(flags))
+
+	return res
+
+# Generate RAM object initdata for an object (but not its properties).
+def gen_ramobj_initdata_for_object(be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx):
+	def _stridx(strval):
+		stridx = string_to_stridx[strval]
+		be.bits(stridx, STRIDX_BITS)
+	def _stridx_or_string(strval):
+		# XXX: could share the built-in strings decoder, would save ~200 bytes.
+		stridx = string_to_stridx.get(strval)
+		if stridx is not None:
+			be.bits(0, 1)  # marker: stridx
 			be.bits(stridx, STRIDX_BITS)
+		else:
+			be.bits(1, 1)  # marker: raw bytes
+			be.bits(len(strval), STRING_LENGTH_BITS)
+			for i in xrange(len(strval)):
+				be.bits(ord(strval[i]), STRING_CHAR_BITS)
+	def _natidx(native_name):
+		natidx = natfunc_name_to_natidx[native_name]
+		be.bits(natidx, NATIDX_BITS)
 
-			if valspec['name'] == 'length':
-				default_attrs = LENGTH_PROPERTY_ATTRIBUTES
+	class_num = class_to_number(bi['class'])
+	be.bits(class_num, CLASS_BITS)
+
+	props = [x for x in bi['properties']]  # clone
+
+	prop_proto = steal_prop(props, 'prototype')
+	prop_constr = steal_prop(props, 'constructor')
+	prop_name = steal_prop(props, 'name')
+	prop_length = steal_prop(props, 'length')
+
+	length = -1  # default value -1 signifies varargs
+	if prop_length is not None:
+		assert(isinstance(prop_length['value'], int))
+		length = prop_length['value']
+		be.bits(1, 1)  # flag: have length
+		be.bits(length, LENGTH_PROP_BITS)
+	else:
+		be.bits(0, 1)  # flag: no length
+
+	# The attributes for 'length' are standard ("none") except for
+	# Array.prototype.length which must be writable (this is handled
+	# separately in duk_hthread_builtins.c).
+
+	len_attrs = LENGTH_PROPERTY_ATTRIBUTES
+	if prop_length is not None:
+		len_attrs = prop_length['attributes']
+
+	if len_attrs != LENGTH_PROPERTY_ATTRIBUTES:
+		# Attributes are assumed to be the same, except for Array.prototype.
+		if bi['class'] != 'Array':  # Array.prototype is the only one with this class
+			raise Exception('non-default length attribute for unexpected object')
+
+	# For 'Function' classed objects, emit the native function stuff.
+	# Unfortunately this is more or less a copy of what we do for
+	# function properties now.  This should be addressed if a rework
+	# on the init format is done.
+
+	if bi['class'] == 'Function':
+		_natidx(bi['native'])
+
+		if bi.get('varargs', False):
+			be.bits(1, 1)  # flag: non-default nargs
+			be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
+		elif bi.has_key('nargs') and bi['nargs'] != length:
+			be.bits(1, 1)  # flag: non-default nargs
+			be.bits(bi['nargs'], NARGS_BITS)
+		else:
+			assert(length is not None)
+			be.bits(0, 1)  # flag: default nargs OK
+
+		# All Function-classed global level objects are callable
+		# (have [[Call]]) but not all are constructable (have
+		# [[Construct]]).  Flag that.
+
+		assert(bi.has_key('callable'))
+		assert(bi['callable'] == True)
+
+		assert(prop_name is not None)
+		assert(isinstance(prop_name['value'], str))
+		_stridx_or_string(prop_name['value'])
+
+		if bi.has_key('constructable') and bi['constructable'] == True:
+			be.bits(1, 1)	# flag: constructable
+		else:
+			be.bits(0, 1)	# flag: not constructable
+
+		magic = resolve_magic(bi.get('magic'), objid_to_bidx)
+		if magic != 0:
+			assert(magic >= 0)
+			assert(magic < (1 << MAGIC_BITS))
+			be.bits(1, 1)
+			be.bits(magic, MAGIC_BITS)
+		else:
+			be.bits(0, 1)
+
+# Generate RAM object initdata for an object's properties.
+def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx, double_byte_order):
+	count_normal_props = 0
+	count_function_props = 0
+
+	def _bidx(bi_id):
+		if bi_id is None:
+			be.bits(NO_BIDX_MARKER, BIDX_BITS)
+		else:
+			be.bits(objid_to_bidx[bi_id], BIDX_BITS)
+	def _stridx(strval):
+		stridx = string_to_stridx[strval]
+		be.bits(stridx, STRIDX_BITS)
+	def _stridx_or_string(strval):
+		# XXX: could share the built-in strings decoder, would save ~200 bytes.
+		stridx = string_to_stridx.get(strval)
+		if stridx is not None:
+			be.bits(0, 1)  # marker: stridx
+			be.bits(stridx, STRIDX_BITS)
+		else:
+			be.bits(1, 1)  # marker: raw bytes
+			be.bits(len(strval), STRING_LENGTH_BITS)
+			for i in xrange(len(strval)):
+				be.bits(ord(strval[i]), STRING_CHAR_BITS)
+	def _natidx(native_name):
+		natidx = natfunc_name_to_natidx[native_name]
+		be.bits(natidx, NATIDX_BITS)
+
+	props = [x for x in bi['properties']]  # clone
+
+	# internal prototype: not an actual property so not in property list
+	if bi.has_key('internal_prototype'):
+		_bidx(bi['internal_prototype'])
+	else:
+		_bidx(None)
+
+	# external prototype: encoded specially, steal from property list
+	prop_proto = steal_prop(props, 'prototype')
+	if prop_proto is not None:
+		assert(prop_proto['value']['type'] == 'object')
+		assert(prop_proto['attributes'] == '')
+		_bidx(prop_proto['value']['id'])
+	else:
+		_bidx(None)
+
+	# external constructor: encoded specially, steal from property list
+	prop_constr = steal_prop(props, 'constructor')
+	if prop_constr is not None:
+		assert(prop_constr['value']['type'] == 'object')
+		assert(prop_constr['attributes'] == 'wc')
+		_bidx(prop_constr['value']['id'])
+	else:
+		_bidx(None)
+
+	# name: encoded specially for function objects, so steal and ignore here
+	if bi['class'] == 'Function':
+		prop_name = steal_prop(props, 'name')
+		assert(isinstance(prop_name['value'], str))
+		# Function.prototype.name has special handling in duk_hthread_builtins.c
+		assert((bi['id'] != 'bi_function_prototype' and prop_name['attributes'] == '') or \
+		       (bi['id'] == 'bi_function_prototype' and prop_name['attributes'] == 'w'))
+
+	# length: encoded specially, so steal and ignore
+	prop_proto = steal_prop(props, 'length')
+
+	# Date.prototype.toGMTString needs special handling and is handled
+	# directly in duk_hthread_builtins.c; so steal and ignore here.
+	if bi['id'] == 'bi_date_prototype':
+		prop_togmtstring = steal_prop(props, 'toGMTString')
+		assert(prop_togmtstring is not None)
+		#print 'Stole Date.prototype.toGMTString'
+
+	# Filter values and functions.  The built-in bit stream assumes
+	# non-function properties come first so split into two arrays.
+	values = []
+	functions = []
+	for prop in props:
+		if isinstance(prop['value'], dict) and prop['value']['type'] == 'function':
+			functions.append(prop)
+		else:
+			values.append(prop)
+
+	be.bits(len(values), NUM_NORMAL_PROPS_BITS)
+
+	for valspec in values:
+		count_normal_props += 1
+
+		val = valspec['value']
+
+		_stridx_or_string(valspec['key'])
+
+		# Attribute check doesn't check for accessor flag; that is now
+		# automatically set by C code when value is an accessor type.
+		# Accessors must not have 'writable', so they'll always have
+		# non-default attributes (less footprint than adding a different
+		# default).
+		default_attrs = DEFAULT_DATA_PROPERTY_ATTRIBUTES
+
+		attrs = valspec.get('attributes', default_attrs)
+		if attrs != default_attrs:
+			#print 'non-default attributes: %s -> %r (default %r)' % (valspec['key'], attrs, default_attrs)
+			be.bits(1, 1)  # flag: have custom attributes
+			be.bits(encode_property_flags(attrs), PROP_FLAGS_BITS)
+		else:
+			be.bits(0, 1)  # flag: no custom attributes
+
+		if isinstance(val, bool):
+			if val == True:
+				be.bits(PROP_TYPE_BOOLEAN_TRUE, PROP_TYPE_BITS)
 			else:
-				default_attrs = DEFAULT_PROPERTY_ATTRIBUTES
-			attrs = default_attrs
-			if valspec.has_key('attributes'):
-				attrs = valspec['attributes']
-
-			# attribute check doesn't check for accessor flag; that is now
-			# automatically set by C code when value is an accessor type
-			if attrs != default_attrs:
-				#print 'non-default attributes: %s -> %r (default %r)' % (valspec['name'], attrs, default_attrs)
-				be.bits(1, 1)  # flag: have custom attributes
-				be.bits(self.encodePropertyFlags(attrs), PROP_FLAGS_BITS)
+				be.bits(PROP_TYPE_BOOLEAN_FALSE, PROP_TYPE_BITS)
+		elif isinstance(val, (float, int)) or isinstance(val, dict) and val['type'] == 'double':
+			# Avoid converting a manually specified NaN temporarily into
+			# a float to avoid risk of e.g. NaN being replaced by another.
+			if isinstance(val, dict):
+				val = val['bytes'].decode('hex')
+				assert(len(val) == 8)
 			else:
-				be.bits(0, 1)  # flag: no custom attributes
+				val = struct.pack('>d', float(val))
 
-			if isinstance(val, bool):
-				if val == True:
-					be.bits(PROP_TYPE_BOOLEAN_TRUE, PROP_TYPE_BITS)
-				else:
-					be.bits(PROP_TYPE_BOOLEAN_FALSE, PROP_TYPE_BITS)
-			elif val == UNDEFINED:
+			be.bits(PROP_TYPE_DOUBLE, PROP_TYPE_BITS)
+
+			# encoding of double must match target architecture byte order
+			indexlist = {
+				'big':    [ 0, 1, 2, 3, 4, 5, 6, 7 ],
+				'little': [ 7, 6, 5, 4, 3, 2, 1, 0 ],
+				'mixed':  [ 3, 2, 1, 0, 7, 6, 5, 4 ]    # some arm platforms
+			}[double_byte_order]
+
+			data = ''.join([ val[indexlist[idx]] for idx in xrange(8) ])
+
+			#print('DOUBLE: %s -> %s' % (val.encode('hex'), data.encode('hex')))
+
+			if len(data) != 8:
+				raise Exception('internal error')
+			be.string(data)
+		elif isinstance(val, str) or isinstance(val, unicode):
+			if isinstance(val, unicode):
+				# Note: non-ASCII characters will not currently work,
+				# because bits/char is too low.
+				val = val.encode('utf-8')
+
+			if string_to_stridx.has_key(val):
+				# String value is in built-in string table -> encode
+				# using a string index.  This saves some space,
+				# especially for the 'name' property of errors
+				# ('EvalError' etc).
+	
+				be.bits(PROP_TYPE_STRIDX, PROP_TYPE_BITS)
+				_stridx(val)
+			else:
+				# Not in string table -> encode as raw 7-bit value
+	
+				be.bits(PROP_TYPE_STRING, PROP_TYPE_BITS)
+				be.bits(len(val), STRING_LENGTH_BITS)
+				for i in xrange(len(val)):
+					be.bits(ord(val[i]), STRING_CHAR_BITS)
+		elif isinstance(val, dict):
+			if val['type'] == 'object':
+				be.bits(PROP_TYPE_BUILTIN, PROP_TYPE_BITS)
+				_bidx(val['id'])
+			elif val['type'] == 'undefined':
 				be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
-			elif isinstance(val, (float, int)):
-				be.bits(PROP_TYPE_DOUBLE, PROP_TYPE_BITS)
-				val = float(val)
-
-				# encoding of double must match target architecture byte order
-				bo = self.double_byte_order
-				if bo == 'big':
-					data = struct.pack('>d', val)	# 01234567
-				elif bo == 'little':
-					data = struct.pack('<d', val)	# 76543210
-				elif bo == 'mixed':	# arm
-					data = struct.pack('<d', val)	# 32107654
-					data = data[4:8] + data[0:4]
-				else:
-					raise Exception('unsupported byte order: %s' % repr(bo))
-
-				#print('DOUBLE: ' + data.encode('hex'))
-
-				if len(data) != 8:
-					raise Exception('internal error')
-				be.string(data)
-			elif isinstance(val, str) or isinstance(val, unicode):
-				if isinstance(val, unicode):
-					# Note: non-ASCII characters will not currently work,
-					# because bits/char is too low.
-					val = val.encode('utf-8')
-
-				if self.gs.hasString(val):
-					# String value is in built-in string table -> encode
-					# using a string index.  This saves some space,
-					# especially for the 'name' property of errors
-					# ('EvalError' etc).
-	
-					stridx = self.gs.stringToIndex(val)
-					be.bits(PROP_TYPE_STRIDX, PROP_TYPE_BITS)
-					be.bits(stridx, STRIDX_BITS)
-				else:
-					# Not in string table -> encode as raw 7-bit value
-	
-					be.bits(PROP_TYPE_STRING, PROP_TYPE_BITS)
-					be.bits(len(val), STRING_LENGTH_BITS)
-					for i in xrange(len(val)):
-						t = ord(val[i])
-						be.bits(t, STRING_CHAR_BITS)
-			elif isinstance(val, dict):
-				if val['type'] == 'builtin':
-					be.bits(PROP_TYPE_BUILTIN, PROP_TYPE_BITS)
-					be.bits(self.builtin_indexes[val['id']], BIDX_BITS)
-				else:
-					raise Exception('unsupported value: %s' % repr(val))
-			elif val is None and valspec.has_key('getter') and valspec.has_key('setter'):
+			elif val['type'] == 'accessor':
 				be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS)
-				natidx = self.native_func_hash[valspec['getter']]
-				be.bits(natidx, NATIDX_BITS)
-				natidx = self.native_func_hash[valspec['setter']]
-				be.bits(natidx, NATIDX_BITS)
+				_natidx(val['getter'])  # 'getter' is native function name
+				_natidx(val['setter'])  # 'setter' is native function name
+				assert(val['getter_nargs'] == 0)
+				assert(val['setter_nargs'] == 1)
+				assert(val['getter_magic'] == 0)
+				assert(val['setter_magic'] == 0)
 			else:
 				raise Exception('unsupported value: %s' % repr(val))
-
-		be.bits(len(functions), NUM_FUNC_PROPS_BITS)
-
-		for funspec in functions:
-			self.count_function_props += 1
-
-			# NOTE: we rely on there being less than 256 built-in strings
-			# and built-in native functions
-
-			stridx = self.gs.stringToIndex(funspec['name'])
-			be.bits(stridx, STRIDX_BITS)
-
-			natidx = self.native_func_hash[funspec['native']]
-			be.bits(natidx, NATIDX_BITS)
-
-			length = funspec['length']
-			be.bits(length, LENGTH_PROP_BITS)
-
-			if funspec.get('varargs', False):
-				be.bits(1, 1)  # flag: non-default nargs
-				be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
-			elif funspec.has_key('nargs'):
-				be.bits(1, 1)  # flag: non-default nargs
-				be.bits(funspec['nargs'], NARGS_BITS)
-			else:
-				be.bits(0, 1)  # flag: default nargs OK
-
-			# XXX: make this check conditional to minimize bit count
-			# (there are quite a lot of function properties)
-			magic = self.resolveMagic(funspec.get('magic'))
-			if magic != 0:
-				assert(magic >= 0)
-				assert(magic < (1 << MAGIC_BITS))
-				be.bits(1, 1)
-				be.bits(magic, MAGIC_BITS)
-			else:
-				be.bits(0, 1)
-
-	def generateCreationDataForBuiltin(self, be, bi):
-		class_num = classToNumber(bi['class'])
-		be.bits(class_num, CLASS_BITS)
-
-		if bi.has_key('length'):
-			be.bits(1, 1)  # flag: have length
-			be.bits(bi['length'], LENGTH_PROP_BITS)
 		else:
-			be.bits(0, 1)  # flag: no length
+			raise Exception('unsupported value: %s' % repr(val))
 
-		# This is a very unfortunate format; 'length' property of a top
-		# level object may be non-standard.  However, this is only the
-		# case for the Array prototype, whose 'length' property has the
-		# attributes expected of an Array instance.  This is handled
-		# with custom code in duk_hthread_builtins.c
+	be.bits(len(functions), NUM_FUNC_PROPS_BITS)
 
-		len_attrs = LENGTH_PROPERTY_ATTRIBUTES
-		if bi.has_key('length_attributes'):
-			len_attrs = bi['length_attributes']
+	for funspec in functions:
+		count_function_props += 1
 
-		if len_attrs != LENGTH_PROPERTY_ATTRIBUTES:
-			if bi['class'] != 'Array':  # Array.prototype is the only one with this class
-				raise Exception('non-default length attribute for unexpected object')
+		_stridx_or_string(funspec['key'])
 
-		# For 'Function' classed objects, emit the native function stuff.
-		# Unfortunately this is more or less a copy of what we do for
-		# function properties now.  This should be addressed if a rework
-		# on the init format is done.
+		_natidx(funspec['value']['native'])
 
-		if bi['class'] == 'Function':
-			length = bi['length']
+		length = funspec['value']['length']
+		be.bits(length, LENGTH_PROP_BITS)
 
-			natidx = self.native_func_hash[bi['native']]
-			be.bits(natidx, NATIDX_BITS)
+		if funspec['value'].get('varargs', False):
+			be.bits(1, 1)  # flag: non-default nargs
+			be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
+		elif funspec['value'].has_key('nargs') and funspec['value']['nargs'] != length:
+			be.bits(1, 1)  # flag: non-default nargs
+			be.bits(funspec['value']['nargs'], NARGS_BITS)
+		else:
+			be.bits(0, 1)  # flag: default nargs OK
 
-			stridx = self.gs.stringToIndex(bi['name'])
-			be.bits(stridx, STRIDX_BITS)
+		# XXX: make this check conditional to minimize bit count
+		# (there are quite a lot of function properties)
+		magic = resolve_magic(funspec['value'].get('magic'), objid_to_bidx)
+		if magic != 0:
+			assert(magic >= 0)
+			assert(magic < (1 << MAGIC_BITS))
+			be.bits(1, 1)
+			be.bits(magic, MAGIC_BITS)
+		else:
+			be.bits(0, 1)
 
-			if bi.get('varargs', False):
-				be.bits(1, 1)  # flag: non-default nargs
-				be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
-			elif bi.has_key('nargs'):
-				be.bits(1, 1)  # flag: non-default nargs
-				be.bits(bi['nargs'], NARGS_BITS)
+	return count_normal_props, count_function_props
+
+# Get helper maps for RAM objects.
+def get_ramobj_native_func_maps(objlist):
+	# Native function list and index
+	native_funcs_found = {}
+	native_funcs = []
+	natfunc_name_to_natidx = {}
+
+	for o in objlist:
+		if o.has_key('native'):
+			native_funcs_found[o['native']] = True
+		for v in o['properties']:
+			val = v['value']
+			if isinstance(val, dict):
+				if val.has_key('getter'):
+					native_funcs_found[val['getter']] = True
+				if val.has_key('setter'):
+					native_funcs_found[val['setter']] = True
+				if val['type'] == 'function' and val.has_key('native'):
+					native_funcs_found[val['native']] = True
+	for idx,k in enumerate(sorted(native_funcs_found.keys())):
+		native_funcs.append(k)  # native func names
+		natfunc_name_to_natidx[k] = idx
+
+	return native_funcs, natfunc_name_to_natidx
+
+# Generate bit-packed RAM object init data.
+def gen_ramobj_initdata_bitpacked(objlist, string_index, native_funcs, natfunc_name_to_natidx, double_byte_order):
+	# Object index
+	objid_to_object = {}
+	objid_to_bidx = {}
+	for idx,o in enumerate(objlist):
+		objid_to_object[o['id']] = o
+		objid_to_bidx[o['id']] = idx
+
+	# Generate bitstream
+	be = dukutil.BitEncoder()
+	count_builtins = 0
+	count_normal_props = 0
+	count_function_props = 0
+	for o in objlist:
+		count_builtins += 1
+		gen_ramobj_initdata_for_object(be, o, string_index, natfunc_name_to_natidx, objid_to_bidx)
+	for o in objlist:
+		count_obj_normal, count_obj_func = gen_ramobj_initdata_for_props(be, o, string_index, natfunc_name_to_natidx, objid_to_bidx, double_byte_order)
+		count_normal_props += count_obj_normal
+		count_function_props += count_obj_func
+
+	romobj_init_data = be.getByteString()
+	#print(repr(romobj_init_data))
+	#print(len(romobj_init_data))
+
+	print '%d ram builtins, %d normal properties, %d function properties, %d of object init data' % \
+		(count_builtins, count_normal_props, count_function_props, len(romobj_init_data))
+
+	return romobj_init_data
+
+# Functions to emit object-related source/header parts.
+
+def emit_ramobj_source_nativefunc_array(genc, native_func_list):
+	genc.emitLine('/* native functions: %d */' % len(native_func_list))
+	genc.emitLine('DUK_INTERNAL const duk_c_function duk_bi_native_functions[%d] = {' % len(native_func_list))
+	for i in native_func_list:
+		# The function pointer cast here makes BCC complain about
+		# "initializer too complicated", so omit the cast.
+		#genc.emitLine('\t(duk_c_function) %s,' % i)
+		genc.emitLine('\t%s,' % i)
+	genc.emitLine('};')
+
+def emit_ramobj_source_objinit_data(genc, init_data):
+	genc.emitArray(init_data, 'duk_builtins_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(init_data))
+
+def emit_initjs_source(genc, initjs_data):
+	genc.emitLine('#if defined(DUK_USE_BUILTIN_INITJS)')
+	genc.emitArray(initjs_data, 'duk_initjs_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(initjs_data))
+	genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
+
+def emit_ramobj_header_initjs(genc, initjs_data):
+	genc.emitLine('#if defined(DUK_USE_BUILTIN_INITJS)')
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
+	genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[%d];' % len(initjs_data))
+	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
+	genc.emitDefine('DUK_BUILTIN_INITJS_DATA_LENGTH', len(initjs_data))
+	genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
+
+def emit_ramobj_header_nativefunc_array(genc, native_func_list):
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
+	genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%d];' % len(native_func_list))
+	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
+
+def emit_ramobj_header_objects(genc, objlist):
+	for idx,o in enumerate(objlist):
+		defname = 'DUK_BIDX_' + '_'.join(o['id'].upper().split('_')[1:])  # bi_foo_bar -> FOO_BAR
+		genc.emitDefine(defname, idx)
+	genc.emitDefine('DUK_NUM_BUILTINS', len(objlist))
+
+def emit_ramobj_header_initdata(genc, init_data):
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
+	genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_builtins_data[%d];' % len(init_data))
+	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
+	genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(init_data))
+
+#
+#  ROM init data
+#
+#  Compile-time initializers for ROM strings and ROM objects.  This involves
+#  a lot of small details:
+#
+#    - Several variants are needed for different options: unpacked vs.
+#      packed duk_tval, endianness, string hash in use, etc).
+#
+#    - Static initializers must represent objects of different size.  For
+#      example, separate structs are needed for property tables of different
+#      size or value typing.
+#
+#    - Union initializers cannot be used portable because they're only
+#      available in C99 and above.
+#
+#    - Initializers must use 'const' correctly to ensure that the entire
+#      initialization data will go into ROM (read-only data section).
+#      Const pointers etc will need to be cast into non-const pointers at
+#      some point to properly mix with non-const RAM pointers, so a portable
+#      const losing cast is needed.
+#
+#    - C++ doesn't allow forward declaration of "static const" structures
+#      which is problematic because there are cyclical const structures.
+#
+
+# Normalize strings/objects metadata for ROM initializer use.
+def normalize_rom_builtins(strlist, user_strings, objlist):
+	# The builtins data we use for the existing RAM initializers is not
+	# ideal for writing out the ROM initializers.  For example, we have
+	# a list of top level objects only; their property values may specify
+	# further objects (functions) inline with a different notation.
+	# Create a normalized object/property representation as a first step.
+
+	# We just need plain strings here.  Add user strings if given.
+	strs = []
+	strs_have = {}
+	for s in strlist + user_strings:
+		if not strs_have.has_key(s['str']):
+			strs.append(s['str'])
+			strs_have[s['str']] = True
+
+	# Gather objects through the top level built-ins list.
+	objs = []
+	subobjs = []
+
+	def addFun(fun):
+		# Convert the built-in function property "shorthand" into an actual
+		# object for ROM built-ins.
+		obj = {}
+		props = []
+		obj['properties'] = props
+		obj['id'] = 'subobj_%d' % len(subobjs)  # synthetic id
+		obj['native'] = fun['value']['native']
+		obj['nargs'] = fun['value'].get('nargs', fun['value']['length'])
+		obj['varargs'] = fun['value'].get('varargs', False)
+		obj['magic'] = fun['value'].get('magic', 0)
+		obj['internal_prototype'] = 'bi_function_prototype'
+		obj['class'] = 'Function'
+		obj['callable'] = True
+		obj['constructable'] = fun['value'].get('constructable', False)
+		props.append({ 'key': 'length', 'value': fun['value']['length'], 'attributes': '' })
+		props.append({ 'key': 'name', 'value': fun['key'], 'attributes': '' })
+		subobjs.append(obj)
+		return obj
+
+	def addAccessor(fun, magic, nargs, native_func):
+		obj = {}
+		props = []
+		obj['properties'] = props
+		obj['id'] = 'subobj_%d' % len(subobjs)  # synthetic id
+		obj['native'] = native_func
+		obj['length'] = 0
+		obj['nargs'] = nargs
+		obj['varargs'] = False
+		obj['magic'] = magic
+		obj['internal_prototype'] = 'bi_function_prototype'
+		obj['class'] = 'Function'
+		obj['callable'] = True
+		obj['constructable'] = False
+		subobjs.append(obj)
+		return obj
+
+	def addGetter(fun):
+		return addAccessor(fun, fun['value']['getter_magic'], fun['value']['getter_nargs'], fun['value']['getter'])
+
+	def addSetter(fun):
+		return addAccessor(fun, fun['value']['setter_magic'], fun['value']['setter_nargs'], fun['value']['setter'])
+
+	objs = []
+	for idx,bi in enumerate(objlist):
+		obj = copy.deepcopy(bi)
+		obj['id'] = bi['id']
+		props = []
+		repl_props = []
+
+		for val in obj['properties']:
+			# Date.prototype.toGMTString must point to the same Function object
+			# as Date.prototype.toUTCString, so special case hack it here.
+			if bi['id'] == 'bi_date_prototype' and val['key'] == 'toGMTString':
+				print 'Skip Date.prototype.toGMTString'
+				continue
+
+			if isinstance(val['value'], dict) and val['value']['type'] == 'function':
+				subfun = addFun(val)
+				prop = { 'key': val['key'], 'value': { 'type': 'object', 'id': subfun['id'] } }
+				repl_props.append(prop)
+			elif isinstance(val['value'], dict) and val['value']['type'] == 'accessor':
+				# Accessor are specified as native function names, change
+				# them to object references.
+				sub_getter = addGetter(val)
+				sub_setter = addSetter(val)
+				val['value']['getter'] = sub_getter
+				val['value']['setter'] = sub_setter
+				repl_props.append(val)
 			else:
-				be.bits(0, 1)  # flag: default nargs OK
+				repl_props.append(val)
 
-			# All Function-classed global level objects are callable
-			# (have [[Call]]) but not all are constructable (have
-			# [[Construct]]).  Flag that.
+			if bi['id'] == 'bi_date_prototype' and val['key'] == 'toUTCString':
+				print 'Clone Date.prototype.toUTCString to Date.prototype.toGMTString'
+				prop2 = copy.deepcopy(repl_props[-1])
+				prop2['key'] = 'toGMTString'
+				repl_props.append(prop2)
 
-			assert(bi.has_key('callable'))
-			assert(bi['callable'] == True)
+		# Replace properties with a variant where function properties
+		# point to built-ins rather than using an inline syntax.
+		obj['properties'] = repl_props
+		objs.append(obj)
 
-			if bi.has_key('constructable') and bi['constructable'] == True:
-				be.bits(1, 1)	# flag: constructable
+	# For ROM builtins all the strings must be in the strings list,
+	# so scan objects for any strings not explicitly listed in metadata.
+	count_add = 0
+	for idx, obj in enumerate(objs):
+		for prop in obj['properties']:
+			key = prop['key']
+			if key not in strs:
+				#print('Add missing string: %r' % key)
+				count_add += 1
+				strs.append(key)
+			if prop.has_key('value') and isinstance(prop['value'], (str, unicode)):
+				val = unicode_to_bytes(prop['value'])
+				if val not in strs:
+					#print('Add missing string: %r' % val)
+					count_add += 1
+					strs.append(val)
+
+	final_strings = strs
+	final_objects = objs + subobjs
+
+	print '%d rom strings (%d automatically added), %d rom objects' % \
+		(len(final_strings), count_add, len(final_objects))
+
+	return final_strings, final_objects
+
+# Get string hash initializers; need to compute possible string hash variants
+# which will match runtime values.
+def rom_get_strhash16_macro(val):
+	hash16le = dukutil.duk_heap_hashstring_dense(val, DUK__FIXED_HASH_SEED, big_endian=False, strhash16=True)
+	hash16be = dukutil.duk_heap_hashstring_dense(val, DUK__FIXED_HASH_SEED, big_endian=True, strhash16=True)
+	hash16sparse = dukutil.duk_heap_hashstring_sparse(val, DUK__FIXED_HASH_SEED, strhash16=True)
+	return 'DUK__STRHASH16(%dU,%dU,%dU)' % (hash16le, hash16be, hash16sparse)
+def rom_get_strhash32_macro(val):
+	hash32le = dukutil.duk_heap_hashstring_dense(val, DUK__FIXED_HASH_SEED, big_endian=False, strhash16=False)
+	hash32be = dukutil.duk_heap_hashstring_dense(val, DUK__FIXED_HASH_SEED, big_endian=True, strhash16=False)
+	hash32sparse = dukutil.duk_heap_hashstring_sparse(val, DUK__FIXED_HASH_SEED, strhash16=False)
+	return 'DUK__STRHASH32(%dUL,%dUL,%dUL)' % (hash32le, hash32be, hash32sparse)
+
+# Get string character .length; must match runtime .length computation.
+def rom_charlen(x):
+	return dukutil.duk_unicode_unvalidated_utf8_length(x)
+
+# Get an initializer type and initializer literal for a specified value
+# (expressed in YAML metadata format).  The types and initializers depend
+# on declarations emitted before the initializers, and in several cases
+# use a macro to hide the selection between several initializer variants.
+def rom_get_value_initializer(val, bi_str_map, bi_obj_map):
+	def double_bytes_initializer(val):
+		# Portable and exact float initializer.
+		assert(isinstance(val, str) and len(val) == 16)  # hex encoded bytes
+		val = val.decode('hex')
+		tmp = []
+		for i in xrange(8):
+			t = ord(val[i])
+			if t >= 128:
+				tmp.append('%dU' % t)
 			else:
-				be.bits(0, 1)	# flag: not constructable
+				tmp.append('%d' % t)
+		return 'DUK__DBLBYTES(' + ','.join(tmp) + ')'
 
-			magic = self.resolveMagic(bi.get('magic'))
-			if magic != 0:
-				assert(magic >= 0)
-				assert(magic < (1 << MAGIC_BITS))
-				be.bits(1, 1)
-				be.bits(magic, MAGIC_BITS)
+	def tval_number_initializer(val):
+		return 'DUK__TVAL_NUMBER(%s)' % double_bytes_initializer(val)
+
+	v = val['value']
+	if isinstance(v, (bool)):
+		init_type = 'duk_rom_tval_boolean'
+		bval = 0
+		if v:
+			bval = 1
+		init_lit = 'DUK__TVAL_BOOLEAN(%d)' % bval
+	elif isinstance(v, (int, float)):
+		fval = struct.pack('>d', float(v)).encode('hex')
+		init_type = 'duk_rom_tval_number'
+		init_lit = tval_number_initializer(fval)
+	elif isinstance(v, (str, unicode)):
+		init_type = 'duk_rom_tval_string'
+		init_lit = 'DUK__TVAL_STRING(&%s)' % bi_str_map[v]
+	elif isinstance(v, (dict)):
+		if v['type'] == 'double':
+			init_type = 'duk_rom_tval_number'
+			init_lit = tval_number_initializer(v['bytes'])
+		elif v['type'] == 'undefined':
+			init_type = 'duk_rom_tval_undefined'
+			init_lit = 'DUK__TVAL_UNDEFINED()'
+		elif v['type'] == 'object':
+			init_type = 'duk_rom_tval_object'
+			init_lit = 'DUK__TVAL_OBJECT(&%s)' % bi_obj_map[v['id']]
+		elif v['type'] == 'accessor':
+			getter_object = v['getter']
+			setter_object = v['setter']
+			init_type = 'duk_rom_tval_accessor'
+			init_lit = '{ (const duk_hobject *) &%s, (const duk_hobject *) &%s }' % (bi_obj_map[getter_object['id']], bi_obj_map[setter_object['id']])
+		else:
+			raise Exception('unhandled value: %r' % val)
+	else:
+		raise Exception('internal error: %r' % val)
+	return init_type, init_lit
+
+# Helpers to get either initializer type or value only (not both).
+def rom_get_value_initializer_type(val, bi_str_map, bi_obj_map):
+	init_type, init_lit = rom_get_value_initializer(val, bi_str_map, bi_obj_map)
+	return init_type
+def rom_get_value_initializer_literal(val, bi_str_map, bi_obj_map):
+	init_type, init_lit = rom_get_value_initializer(val, bi_str_map, bi_obj_map)
+	return init_lit
+
+# Emit ROM strings source: structs/typedefs and their initializers.
+# Separate initialization structs are needed for strings of different
+# length.
+def rom_emit_strings_source(genc, strs, reserved_words, strict_reserved_words, strs_needing_stridx):
+	# Write built-in strings as code section initializers.
+
+	# Sort used lengths and declare per-length initializers.
+	lens = []
+	for v in strs:
+		strlen = len(v)
+		if strlen not in lens:
+			lens.append(strlen)
+	lens.sort()
+	for strlen in lens:
+		genc.emitLine('typedef struct duk_romstr_%d duk_romstr_%d; ' % (strlen, strlen) +
+		              'struct duk_romstr_%d { duk_hstring hdr; duk_uint8_t data[%d]; };' % (strlen, strlen + 1))
+	genc.emitLine('')
+
+	# String hash values depend on endianness and other factors,
+	# use an initializer macro to select the appropriate hash.
+	genc.emitLine('/* When unaligned access possible, 32-bit values are fetched using host order.')
+	genc.emitLine(' * When unaligned access not possible, always simulate little endian order.')
+	genc.emitLine(' * See: src/duk_util_hashbytes.c:duk_util_hashbytes().')
+	genc.emitLine(' */')
+	genc.emitLine('#if defined(DUK_USE_STRHASH_DENSE)')
+	genc.emitLine('#if defined(DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS)')  # XXX: config option to be reworked
+	genc.emitLine('#if defined(DUK_USE_INTEGER_BE)')
+	genc.emitLine('#define DUK__STRHASH16(hash16le,hash16be,hash16sparse) (hash16be)')
+	genc.emitLine('#define DUK__STRHASH32(hash32le,hash32be,hash32sparse) (hash32be)')
+	genc.emitLine('#else')
+	genc.emitLine('#define DUK__STRHASH16(hash16le,hash16be,hash16sparse) (hash16le)')
+	genc.emitLine('#define DUK__STRHASH32(hash32le,hash32be,hash32sparse) (hash32le)')
+	genc.emitLine('#endif')
+	genc.emitLine('#else')
+	genc.emitLine('#define DUK__STRHASH16(hash16le,hash16be,hash16sparse) (hash16le)')
+	genc.emitLine('#define DUK__STRHASH32(hash32le,hash32be,hash32sparse) (hash32le)')
+	genc.emitLine('#endif')
+	genc.emitLine('#else  /* DUK_USE_STRHASH_DENSE */')
+	genc.emitLine('#define DUK__STRHASH16(hash16le,hash16be,hash16sparse) (hash16sparse)')
+	genc.emitLine('#define DUK__STRHASH32(hash32le,hash32be,hash32sparse) (hash32sparse)')
+	genc.emitLine('#endif  /* DUK_USE_STRHASH_DENSE */')
+
+	# String header initializer macro, takes into account lowmem etc.
+	genc.emitLine('#if defined(DUK_USE_HEAPPTR16)')
+	genc.emitLine('#if !defined(DUK_USE_REFCOUNT16)')
+	genc.emitLine('#error currently assumes DUK_USE_HEAPPTR16 and DUK_USE_REFCOUNT16 are both defined')
+	genc.emitLine('#endif')
+	genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
+	genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount) }, (blen), (clen) }')
+	genc.emitLine('#else')
+	genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
+	genc.emitLine('\t{ { (heaphdr_flags), (refcount) }, (hash32), (blen), (clen) }')
+	genc.emitLine('#endif')
+
+	# Emit string initializers.
+	genc.emitLine('')
+	bi_str_map = {}   # string -> initializer variable name
+	for str_index,v in enumerate(strs):
+		bi_str_map[v] = 'duk_str_%d' % str_index
+
+		tmp = 'DUK_INTERNAL const duk_romstr_%d duk_str_%d = {' % (len(v), str_index)
+		flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY' ]
+		is_arridx = string_is_arridx(v)
+
+		if is_arridx:
+			#print('%r is arridx' % v)
+			flags.append('DUK_HSTRING_FLAG_ARRIDX')
+		if len(v) >= 1 and v[0] == '\xff':
+			flags.append('DUK_HSTRING_FLAG_INTERNAL')
+		if v in [ 'eval', 'arguments' ]:
+			flags.append('DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS')
+		if reserved_words.has_key(v):
+			flags.append('DUK_HSTRING_FLAG_RESERVED_WORD')
+		if strict_reserved_words.has_key(v):
+			flags.append('DUK_HSTRING_FLAG_STRICT_RESERVED_WORD')
+
+		blen = len(v)
+		clen = rom_charlen(v)
+
+		tmp += 'DUK__STRINIT(%s,%d,%s,%s,%d,%d),' % \
+			('|'.join(flags), 1, rom_get_strhash32_macro(v), \
+			 rom_get_strhash16_macro(v), blen, clen)
+
+		tmpbytes = []
+		for c in v:
+			if ord(c) < 128:
+				tmpbytes.append('%d' % ord(c))
 			else:
-				be.bits(0, 1)
+				tmpbytes.append('%dU' % ord(c))
+		tmpbytes.append('%d' % 0)  # NUL term
+		tmp += '{' + ','.join(tmpbytes) + '}'
+		tmp += '};'
+		genc.emitLine(tmp)
 
-	def processBuiltins(self):
-		# finalize built-in data
-		bi_duktape = self.findBuiltIn('bi_duktape')['info']
-		bi_duktape['values'].insert(0, { 'name': 'version', 'value': int(build_info['version']), 'attributes': '' })
+	# Emit an array of ROM strings, used for string interning.
+	#
+	# XXX: String interning now simply walks through the list checking if
+	# an incoming string is present in ROM.  It would be better to use
+	# binary search (or perhaps even a perfect hash) for this lookup.
+	# To support binary search we could emit the list in string hash
+	# order, but because there are multiple different hash variants
+	# there would need to be multiple lists.  We could also order the
+	# strings based on the string data which is independent of the string
+	# hash and still possible to binary search relatively efficiently.
+	#
+	# cdecl> explain const int * const foo;
+	# declare foo as const pointer to const int
+	genc.emitLine('')
+	genc.emitLine('DUK_INTERNAL const duk_hstring * const duk_rom_strings[%d] = {'% len(strs))
+	tmp = []
+	linecount = 0
+	for str_index,v in enumerate(strs):
+		if str_index > 0:
+			tmp.append(', ')
+		if linecount >= 6:
+			linecount = 0
+			tmp.append('\n')
+		tmp.append('(const duk_hstring *) &duk_str_%d' % str_index)
+		linecount += 1
+	for line in ''.join(tmp).split('\n'):
+		genc.emitLine(line)
+	genc.emitLine('};')
 
-		# generate built-in strings
-		self.gs = genstrings.GenStrings()
-		self.gs.processStrings()
+	# Emit an array of duk_hstring pointers indexed using DUK_STRIDX_xxx.
+	# This will back e.g. DUK_HTHREAD_STRING_XYZ(thr) directly, without
+	# needing an explicit array in thr/heap->strs[].
+	#
+	# cdecl > explain const int * const foo;
+	# declare foo as const pointer to const int
+	genc.emitLine('')
+	genc.emitLine('DUK_INTERNAL const duk_hstring * const duk_rom_strings_stridx[%d] = {' % len(strs_needing_stridx))
+	for s in strs_needing_stridx:
+		genc.emitLine('\t(const duk_hstring *) &%s,' % bi_str_map[s['str']])  # strs_needing_stridx is a list of objects, not plain strings
+	genc.emitLine('};')
 
-		# init indexes etc
-		self.initBuiltinIndex()
-		for bi in self.builtins:
-			self.getNativeFuncs(bi['info'])
-		self.numberNativeFuncs()
+	return bi_str_map
 
-		# First, emit the control data required for creating correct
-		# objects.  Then emit object properties.
+# Emit ROM strings header.
+def rom_emit_strings_header(genc, strs, strs_needing_stridx):
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')  # C++ static const workaround
+	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings[%d];'% len(strs))
+	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_stridx[%d];' % len(strs_needing_stridx))
+	genc.emitLine('#endif')
 
-		be = dukutil.BitEncoder()
-		for bi in self.builtins:
-			self.generateCreationDataForBuiltin(be, bi['info'])
+# Emit ROM objects initialized types and macros.
+def rom_emit_object_initializer_types_and_macros(genc):
+	# Objects and functions are straightforward because they just use the
+	# RAM structure which has no dynamic or variable size parts.
+	genc.emitLine('typedef struct duk_romobj duk_romobj; ' + \
+	              'struct duk_romobj { duk_hobject hdr; };')
+	genc.emitLine('typedef struct duk_romfun duk_romfun; ' + \
+	              'struct duk_romfun { duk_hnativefunction hdr; };')
 
-		for bi in self.builtins:
-			self.generatePropertiesDataForBuiltin(be, bi['info'])
+	# For ROM pointer compression we'd need a -compile time- variant.
+	# The current portable solution is to just assign running numbers
+	# to ROM compressed pointers, and provide the table for user pointer
+	# compression function.  Much better solutions would be possible,
+	# but such solutions are often compiler/platform specific.
 
-		self.init_data = be.getByteString()
+	# Emit object/function initializer which is aware of options affecting
+	# the header.  Heap next/prev pointers are always NULL.
+	genc.emitLine('#if defined(DUK_USE_HEAPPTR16)')
+	genc.emitLine('#if !defined(DUK_USE_REFCOUNT16) || defined(DUK_USE_HOBJECT_HASH_PART)')
+	genc.emitLine('#error currently assumes DUK_USE_HEAPPTR16 and DUK_USE_REFCOUNT16 are both defined and DUK_USE_HOBJECT_HASH_PART is undefined')
+	genc.emitLine('#endif')
+	#genc.emitLine('#if !defined(DUK_USE_HEAPPTR_ENC16_STATIC)')
+	#genc.emitLine('#error need DUK_USE_HEAPPTR_ENC16_STATIC which provides compile-time pointer compression')
+	#genc.emitLine('#endif')
+	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
+	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) } }')
+	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+	genc.emitLine('#else')
+	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
+	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (props), (const duk_hobject *) (iproto), (esize), (enext), (asize), (hsize) } }')
+	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (void *) (props), (const duk_hobject *) (void *) (iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+	genc.emitLine('#endif')
 
-		print '%d bytes of built-in init data, %d built-in objects, %d normal props, %d func props, %d initjs data bytes' % \
-			(len(self.init_data), self.count_builtins, self.count_normal_props, self.count_function_props, len(self.initjs_data))
+	# Emit duk_tval structs.  This gets a bit messier with packed/unpacked
+	# duk_tval, endianness variants, pointer sizes, etc.
+	genc.emitLine('#if defined(DUK_USE_PACKED_TVAL)')
+	genc.emitLine('typedef struct duk_rom_tval_undefined duk_rom_tval_undefined;')
+	genc.emitLine('typedef struct duk_rom_tval_boolean duk_rom_tval_boolean;')
+	genc.emitLine('typedef struct duk_rom_tval_number duk_rom_tval_number;')
+	genc.emitLine('typedef struct duk_rom_tval_object duk_rom_tval_object;')
+	genc.emitLine('typedef struct duk_rom_tval_string duk_rom_tval_string;')
+	genc.emitLine('typedef struct duk_rom_tval_accessor duk_rom_tval_accessor;')
+	genc.emitLine('struct duk_rom_tval_number { duk_uint8_t bytes[8]; };')
+	genc.emitLine('struct duk_rom_tval_accessor { const duk_hobject *get; const duk_hobject *set; };')
+	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	genc.emitLine('struct duk_rom_tval_object { const void *ptr; duk_uint32_t hiword; };')
+	genc.emitLine('struct duk_rom_tval_string { const void *ptr; duk_uint32_t hiword; };')
+	genc.emitLine('struct duk_rom_tval_undefined { const void *ptr; duk_uint32_t hiword; };')
+	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t dummy; duk_uint32_t hiword; };')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	genc.emitLine('struct duk_rom_tval_object { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_string { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_undefined { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t hiword; duk_uint32_t dummy; };')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	genc.emitLine('struct duk_rom_tval_object { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_string { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_undefined { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t hiword; duk_uint32_t dummy; };')
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid endianness defines')
+	genc.emitLine('#endif')
+	genc.emitLine('#else  /* DUK_USE_PACKED_TVAL */')
+	# Unpacked initializers are written assuming normal struct alignment
+	# rules so that sizeof(duk_tval) == 16.  32-bit pointers need special
+	# handling to ensure the individual initializers pad to 16 bytes as
+	# necessary.
+	# XXX: 32-bit unpacked duk_tval is not yet supported.
+	genc.emitLine('#if defined(DUK_UINTPTR_MAX)')
+	genc.emitLine('#if (DUK_UINTPTR_MAX <= 0xffffffffUL)')
+	genc.emitLine('#error ROM initializer with unpacked duk_tval does not currently work on 32-bit targets')
+	genc.emitLine('#endif')
+	genc.emitLine('#endif')
+	genc.emitLine('typedef struct duk_rom_tval_undefined duk_rom_tval_undefined;')
+	genc.emitLine('struct duk_rom_tval_undefined { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint8_t bytes[8]; };')
+	genc.emitLine('typedef struct duk_rom_tval_boolean duk_rom_tval_boolean;')
+	genc.emitLine('struct duk_rom_tval_boolean { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint32_t val; duk_uint32_t unused; };')
+	genc.emitLine('typedef struct duk_rom_tval_number duk_rom_tval_number;')
+	genc.emitLine('struct duk_rom_tval_number { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint8_t bytes[8]; };')
+	genc.emitLine('typedef struct duk_rom_tval_object duk_rom_tval_object;')
+	genc.emitLine('struct duk_rom_tval_object { duk_small_uint_t tag; duk_small_uint_t extra; const duk_heaphdr *val; };')
+	genc.emitLine('typedef struct duk_rom_tval_string duk_rom_tval_string;')
+	genc.emitLine('struct duk_rom_tval_string { duk_small_uint_t tag; duk_small_uint_t extra; const duk_heaphdr *val; };')
+	genc.emitLine('typedef struct duk_rom_tval_accessor duk_rom_tval_accessor;')
+	genc.emitLine('struct duk_rom_tval_accessor { const duk_hobject *get; const duk_hobject *set; };')
+	genc.emitLine('#endif  /* DUK_USE_PACKED_TVAL */')
+	genc.emitLine('')
 
-	def emitSource(self, genc):
-		self.gs.emitStringsData(genc)
+	# Double initializer byte shuffle macro to handle byte orders
+	# without duplicating the entire initializers.
+	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	genc.emitLine('#define DUK__DBLBYTES(a,b,c,d,e,f,g,h) { (h), (g), (f), (e), (d), (c), (b), (a) }')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	genc.emitLine('#define DUK__DBLBYTES(a,b,c,d,e,f,g,h) { (a), (b), (c), (d), (e), (f), (g), (h) }')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	genc.emitLine('#define DUK__DBLBYTES(a,b,c,d,e,f,g,h) { (d), (c), (b), (a), (h), (g), (f), (e) }')
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid endianness defines')
+	genc.emitLine('#endif')
+	genc.emitLine('')
 
-		genc.emitLine('')
-		self.writeNativeFuncArray(genc)
-		genc.emitLine('')
-		genc.emitArray(self.init_data, 'duk_builtins_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(self.init_data))
-		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
-		genc.emitArray(self.initjs_data, 'duk_initjs_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(self.initjs_data))
-		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
+	# Emit duk_tval initializer literal macros.
+	genc.emitLine('#if defined(DUK_USE_PACKED_TVAL)')
+	genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { hostbytes }')  # bytes already in host order
+	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (const void *) NULL, (DUK_TAG_UNDEFINED << 16) }')
+	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { 0, (DUK_TAG_BOOLEAN << 16) + (bval) }')
+	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (const void *) (ptr), (DUK_TAG_OBJECT << 16) }')
+	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (const void *) (ptr), (DUK_TAG_STRING << 16) }')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (DUK_TAG_UNDEFINED << 16), (const void *) NULL }')
+	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { (DUK_TAG_BOOLEAN << 16) + (bval), 0 }')
+	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (DUK_TAG_OBJECT << 16), (const void *) (ptr) }')
+	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (DUK_TAG_STRING << 16), (const void *) (ptr) }')
+	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (DUK_TAG_UNDEFINED << 16), (const void *) NULL }')
+	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { (DUK_TAG_BOOLEAN << 16) + (bval), 0 }')
+	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (DUK_TAG_OBJECT << 16), (const void *) (ptr) }')
+	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (DUK_TAG_STRING << 16), (const void *) (ptr) }')
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid endianness defines')
+	genc.emitLine('#endif')
+	genc.emitLine('#else  /* DUK_USE_PACKED_TVAL */')
+	genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK__TAG_NUMBER, 0, hostbytes }')  # bytes already in host order
+	genc.emitLine('#define DUK__TVAL_UNDEFINED() { DUK_TAG_UNDEFINED, 0, {0,0,0,0,0,0,0,0} }')
+	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { DUK_TAG_BOOLEAN, 0, (bval), 0 }')
+	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { DUK_TAG_OBJECT, 0, (const duk_heaphdr *) (ptr) }')
+	genc.emitLine('#define DUK__TVAL_STRING(ptr) { DUK_TAG_STRING, 0, (const duk_heaphdr *) (ptr) }')
+	genc.emitLine('#endif  /* DUK_USE_PACKED_TVAL */')
 
-	def emitHeader(self, genc):
-		self.gs.emitStringsHeader(genc)
+# Emit ROM objects source: the object/function headers themselves, property
+# table structs for different property table sizes/types, and property table
+# initializers.
+def rom_emit_objects(genc, strs, objs, bi_str_map):
+	# Helper map converting an object ID to a bidx.
+	id_to_bidx = {}
+	bidx = 0
+	for o in objs:
+		if o.get('need_bidx', False):
+			id_to_bidx[o['id']] = bidx
+			bidx += 1
 
-		genc.emitLine('')
-		genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
-		genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%s];' % len(self.native_func_list))
-		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_builtins_data[%d];' % len(self.init_data))
-		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
-		genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[%s];' % len(self.initjs_data))
-		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
-		genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
-		genc.emitLine('')
-		genc.emitDefine('DUK_BUILTINS_DATA_LENGTH', len(self.init_data))
-		genc.emitLine('#ifdef DUK_USE_BUILTIN_INITJS')
-		genc.emitDefine('DUK_BUILTIN_INITJS_DATA_LENGTH', len(self.initjs_data))
-		genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
-		genc.emitLine('')
-		for idx,t in enumerate(self.builtins):
-			def_name1, def_name2 = self.generateDefineNames(t['id'])
-			genc.emitDefine(def_name1, idx)
-		genc.emitLine('')
-		genc.emitDefine('DUK_NUM_BUILTINS', len(self.builtins))
-		genc.emitLine('')
+	# Table for compressed ROM pointers; reserve high range of compressed pointer
+	# values for this purpose.  This must contain all ROM pointers that might be
+	# referenced (all objects, strings, and property tables at least).
+	romptr_compress_list = []
+	def compress_rom_ptr(x):
+		if x == 'NULL':
+			return 0
+		try:
+			idx = romptr_compress_list.index(x)
+			res = ROMPTR_FIRST + idx
+		except ValueError:
+			romptr_compress_list.append(x)
+			res = ROMPTR_FIRST + len(romptr_compress_list) - 1
+		assert(res <= 0xffff)
+		return res
+
+	# Need string and object maps (id -> C symbol name) early.
+	bi_obj_map = {}   # object id -> initializer variable name
+	for idx,obj in enumerate(objs):
+		bi_obj_map[obj['id']] = 'duk_obj_%d' % idx
+
+	# Add built-in strings and objects to compressed ROM pointers first.
+	for k in sorted(bi_str_map.keys()):
+		compress_rom_ptr('&%s' % bi_str_map[k])
+	for k in sorted(bi_obj_map.keys()):
+		compress_rom_ptr('&%s' % bi_obj_map[k])
+
+	# Property attributes lookup, map metadata attribute string into a
+	# C initializer.
+	attr_lookup = {
+		'':	'DUK_PROPDESC_FLAGS_NONE',
+		'w':	'DUK_PROPDESC_FLAGS_W',
+		'e':	'DUK_PROPDESC_FLAGS_E',
+		'c':	'DUK_PROPDESC_FLAGS_C',
+		'we':	'DUK_PROPDESC_FLAGS_WE',
+		'wc':	'DUK_PROPDESC_FLAGS_WC',
+		'ec':	'DUK_PROPDESC_FLAGS_EC',
+		'wec':	'DUK_PROPDESC_FLAGS_WEC',
+		'a':	'DUK_PROPDESC_FLAGS_NONE|DUK_PROPDESC_FLAG_ACCESSOR',
+		'ea':	'DUK_PROPDESC_FLAGS_E|DUK_PROPDESC_FLAG_ACCESSOR',
+		'ca':	'DUK_PROPDESC_FLAGS_C|DUK_PROPDESC_FLAG_ACCESSOR',
+		'eca':	'DUK_PROPDESC_FLAGS_EC|DUK_PROPDESC_FLAG_ACCESSOR',
+	}
+
+	# Emit property table structs.  These are very complex because
+	# property count *and* individual property type affect the fields
+	# in the initializer, properties can be data properties or accessor
+	# properties or different duk_tval types.  There are also several
+	# property table memory layouts, each with a different ordering of
+	# keys, values, etc.  Union initializers would make things a bit
+	# easier but they're not very portable (being C99).
+	#
+	# The easy solution is to use a separate initializer type for each
+	# property type.  Could also cache and reuse identical initializers
+	# but there'd be very few of them so it's more straightforward to
+	# not reuse the structs.
+	#
+	# NOTE: naming is a bit inconsistent here, duk_tval is used also
+	# to refer to property value initializers like a getter/setter pair.
+
+	genc.emitLine('#if defined(DUK_USE_HOBJECT_LAYOUT_1)')
+	for idx,obj in enumerate(objs):
+		numprops = len(obj['properties'])
+		if numprops == 0:
+			continue
+		tmp = 'typedef struct duk_romprops_%d duk_romprops_%d; ' % (idx, idx)
+		tmp += 'struct duk_romprops_%d { ' % idx
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'const duk_hstring *key%d; ' % idx
+		for idx,val in enumerate(obj['properties']):
+			# XXX: fastint support
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'duk_uint8_t flags%d; ' % idx
+		tmp += '};'
+		genc.emitLine(tmp)
+	genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_2)')
+	for idx,obj in enumerate(objs):
+		numprops = len(obj['properties'])
+		if numprops == 0:
+			continue
+		tmp = 'typedef struct duk_romprops_%d duk_romprops_%d; ' % (idx, idx)
+		tmp += 'struct duk_romprops_%d { ' % idx
+		for idx,val in enumerate(obj['properties']):
+			# XXX: fastint support
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'const duk_hstring *key%d; ' % idx
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'duk_uint8_t flags%d; ' % idx
+		# Padding follows for flags, but we don't need to emit it
+		# (at the moment there is never an array or hash part).
+		tmp += '};'
+		genc.emitLine(tmp)
+	genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_3)')
+	for idx,obj in enumerate(objs):
+		numprops = len(obj['properties'])
+		if numprops == 0:
+			continue
+		tmp = 'typedef struct duk_romprops_%d duk_romprops_%d; ' % (idx, idx)
+		tmp += 'struct duk_romprops_%d { ' % idx
+		for idx,val in enumerate(obj['properties']):
+			# XXX: fastint support
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+		# No array values
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'const duk_hstring *key%d; ' % idx
+		# No hash index
+		for idx,val in enumerate(obj['properties']):
+			tmp += 'duk_uint8_t flags%d; ' % idx
+		tmp += '};'
+		genc.emitLine(tmp)
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid object layout')
+	genc.emitLine('#endif')
+	genc.emitLine('')
+
+	# Forward declare all property tables so that objects can reference them.
+	# Also pointer compress them.
+
+	for idx,obj in enumerate(objs):
+		numprops = len(obj['properties'])
+		if numprops == 0:
+			continue
+
+		# We would like to use DUK_INTERNAL_DECL here, but that maps
+		# to "static const" in a single file build which has C++
+		# portability issues: you can't forward declare a static const.
+		# We can't reorder the property tables to avoid this because
+		# there are cyclic references.  So, as the current workaround,
+		# declare as external.
+		genc.emitLine('DUK_EXTERNAL_DECL const duk_romprops_%d duk_prop_%d;' % (idx, idx))
+
+		# Add property tables to ROM compressed pointers too.
+		compress_rom_ptr('&duk_prop_%d' % idx)
+	genc.emitLine('')
+
+	# Forward declare all objects so that objects can reference them,
+	# e.g. internal prototype reference.
+
+	for idx,obj in enumerate(objs):
+		# Careful with C++: must avoid redefining a non-extern const.
+		# See commentary above for duk_prop_%d forward declarations.
+		if obj.get('callable', False):
+			genc.emitLine('DUK_EXTERNAL_DECL const duk_romfun duk_obj_%d;' % idx)
+		else:
+			genc.emitLine('DUK_EXTERNAL_DECL const duk_romobj duk_obj_%d;' % idx)
+	genc.emitLine('')
+
+	# Define objects, reference property tables.  Objects will be
+	# logically non-extensible so also leave their extensible flag
+	# cleared despite what metadata requests; the runtime code expects
+	# ROM objects to be non-extensible.
+	for idx,obj in enumerate(objs):
+		numprops = len(obj['properties'])
+
+		isfunc = obj.get('callable', False)
+
+		if isfunc:
+			tmp = 'DUK_EXTERNAL const duk_romfun duk_obj_%d = ' % idx
+		else:
+			tmp = 'DUK_EXTERNAL const duk_romobj duk_obj_%d = ' % idx
+
+		flags = [ 'DUK_HTYPE_OBJECT', 'DUK_HEAPHDR_FLAG_READONLY' ]
+		if isfunc:
+			flags.append('DUK_HOBJECT_FLAG_NATIVEFUNCTION')
+			flags.append('DUK_HOBJECT_FLAG_STRICT')
+			flags.append('DUK_HOBJECT_FLAG_NEWENV')
+		if obj.get('constructable', False):
+			flags.append('DUK_HOBJECT_FLAG_CONSTRUCTABLE')
+		flags.append('DUK_HOBJECT_CLASS_AS_FLAGS(%d)' % class_to_number(obj['class']))  # XXX: use constant, not number
+
+		refcount = 1  # refcount is faked to be always 1
+		if numprops == 0:
+			props = 'NULL'
+		else:
+			props = '&duk_prop_%d' % idx
+		props_enc16 = compress_rom_ptr(props)
+
+		if obj.has_key('internal_prototype'):
+			iproto = '&%s' % bi_obj_map[obj['internal_prototype']]
+		else:
+			iproto = 'NULL'
+		iproto_enc16 = compress_rom_ptr(iproto)
+
+		e_size = numprops
+		e_next = e_size
+		a_size = 0  # never an array part for now
+		h_size = 0  # never a hash for now; not appropriate for perf relevant builds
+
+		if isfunc:
+			nativefunc = obj['native']
+			if obj.get('varargs', False):
+				nargs = 'DUK_VARARGS'
+			elif obj.has_key('nargs'):
+				nargs = '%d' % obj['nargs']
+			else:
+				assert(False)  # 'nargs' should be defaulted from 'length' at metadata load
+			magic = '%d' % resolve_magic(obj.get('magic', None), id_to_bidx)
+		else:
+			nativefunc = 'dummy'
+			nargs = '0'
+			magic = '0'
+
+		assert(a_size == 0)
+		assert(h_size == 0)
+		if isfunc:
+			tmp += 'DUK__ROMFUN_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d,%s,%s,%s);' % \
+				('|'.join(flags), refcount, props, props_enc16, \
+				 iproto, iproto_enc16, e_size, e_next, a_size, h_size, \
+				 nativefunc, nargs, magic)
+		else:
+			tmp += 'DUK__ROMOBJ_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d);' % \
+				('|'.join(flags), refcount, props, props_enc16, \
+				 iproto, iproto_enc16, e_size, e_next, a_size, h_size)
+
+		genc.emitLine(tmp)
+
+	# Property tables.  Can reference arbitrary strings and objects as
+	# they're defined before them.
+
+	# Properties will be non-configurable, but must be writable so that
+	# standard property semantics allow shadowing properties to be
+	# established in inherited objects (e.g. "var obj={}; obj.toString
+	# = myToString").  Enumerable can also be kept.
+
+	def _prepAttrs(val):
+		attrs = val.get('attributes', 'wc')  # XXX: remove default here
+		attrs = attrs.replace('c', '')       # XXX: handle in normalization?
+		if isinstance(val['value'], dict) and val['value']['type'] == 'accessor':
+			attrs += 'a'
+		return attr_lookup[attrs]
+
+	def _emitPropTableInitializer(idx, obj, layout):
+		init_vals = []
+		init_keys = []
+		init_flags = []
+
+		numprops = len(obj['properties'])
+		for val in obj['properties']:
+			init_keys.append('(const duk_hstring *)&%s' % bi_str_map[val['key']])
+		for val in obj['properties']:
+			# XXX: fastint support
+			init_vals.append('%s' % rom_get_value_initializer_literal(val, bi_str_map, bi_obj_map))
+		for val in obj['properties']:
+			init_flags.append('%s' % _prepAttrs(val))
+
+		if layout == 1:
+			initlist = init_keys + init_vals + init_flags
+		elif layout == 2:
+			initlist = init_vals + init_keys + init_flags
+		elif layout == 3:
+			# Same as layout 2 now, no hash/array
+			initlist = init_vals + init_keys + init_flags
+
+		if len(initlist) > 0:
+			genc.emitLine('DUK_EXTERNAL const duk_romprops_%d duk_prop_%d = {%s};' % (idx, idx, ','.join(initlist)))
+
+	genc.emitLine('#if defined(DUK_USE_HOBJECT_LAYOUT_1)')
+	for idx,obj in enumerate(objs):
+		_emitPropTableInitializer(idx, obj, 1)
+	genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_2)')
+	for idx,obj in enumerate(objs):
+		_emitPropTableInitializer(idx, obj, 2)
+	genc.emitLine('#elif defined(DUK_USE_HOBJECT_LAYOUT_3)')
+	for idx,obj in enumerate(objs):
+		_emitPropTableInitializer(idx, obj, 3)
+	genc.emitLine('#else')
+	genc.emitLine('#error invalid object layout')
+	genc.emitLine('#endif')
+	genc.emitLine('')
+
+	# Emit a list of ROM builtins (those objects needing a bidx).
+	#
+	# cdecl > explain const int * const foo;
+	# declare foo as const pointer to const int
+
+	count_bidx = 0
+	for bi in objs:
+		if bi.get('need_bidx', False):
+			count_bidx += 1
+	genc.emitLine('DUK_INTERNAL const duk_hobject * const duk_rom_builtins_bidx[%d] = {' % count_bidx)
+	for bi in objs:
+		if not bi.get('need_bidx', False):
+			continue  # for this we want the toplevel objects only
+		genc.emitLine('\t(const duk_hobject *) &%s,' % bi_obj_map[bi['id']])
+	genc.emitLine('};')
+
+	# Emit a table of compressed ROM pointers.  We must be able to
+	# compress ROM pointers at compile time so we assign running
+	# indices to them.  User pointer compression macros must use this
+	# array to encode/decode ROM pointers.
+
+	genc.emitLine('')
+	genc.emitLine('#if defined(DUK_USE_ROM_OBJECTS) && defined(DUK_USE_HEAPPTR16)')
+	genc.emitLine('DUK_EXTERNAL const void * const duk_rom_compressed_pointers[%d] = {' % (len(romptr_compress_list) + 1))
+	for idx,ptr in enumerate(romptr_compress_list):
+		genc.emitLine('\t(const void *) %s,  /* 0x%04x */' % (ptr, ROMPTR_FIRST + idx))
+	genc.emitLine('\tNULL')  # for convenience
+	genc.emitLine('};')
+	genc.emitLine('#endif')
+
+	print '%d compressed rom pointers' % len(romptr_compress_list)
+
+	# Undefine helpers.
+	genc.emitLine('')
+	for i in [
+		'DUK__STRHASH16',
+		'DUK__STRHASH32',
+		'DUK__DBLBYTES',
+		'DUK__TVAL_NUMBER',
+		'DUK__TVAL_BOOLEAN',
+		'DUK__TVAL_STRING',
+		'DUK__TVAL_UNDEFINED',
+		'DUK__TVAL_OBJECT',
+		'DUK__STRINIT',
+		'DUK__ROMOBJ_INIT',
+		'DUK__ROMFUN_INIT'
+	]:
+		genc.emitLine('#undef ' + i)
+
+	return romptr_compress_list
+
+# Emit ROM objects header.
+def rom_emit_objects_header(genc, objs, strs_needing_stridx):
+	bidx = 0
+	for bi in objs:
+		if not bi.get('need_bidx', False):
+			continue  # for this we want the toplevel objects only
+		genc.emitDefine('DUK_BIDX_' + '_'.join(bi['id'].upper().split('_')[1:]), bidx)  # bi_foo_bar -> FOO_BAR
+		bidx += 1
+	count_bidx = bidx
+	genc.emitDefine('DUK_NUM_BUILTINS', count_bidx)
+	genc.emitLine('')
+	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')  # C++ static const workaround
+	genc.emitLine('DUK_INTERNAL_DECL const duk_hobject * const duk_rom_builtins_bidx[%d];' % count_bidx)
+	genc.emitLine('#endif')
+
+	# XXX: missing declarations here, not an issue for single source build.
+	# Add missing declarations.
+	# XXX: For example, 'DUK_EXTERNAL_DECL ... duk_rom_compressed_pointers[]' is missing.
 
 #
 #  Main
 #
 
-if __name__ == '__main__':
+def main():
 	parser = optparse.OptionParser()
-	parser.add_option('--buildinfo', dest='buildinfo')
-	parser.add_option('--initjs-data', dest='initjs_data')
-	parser.add_option('--out-header', dest='out_header')
-	parser.add_option('--out-source', dest='out_source')
-	parser.add_option('--out-metadata-json', dest='out_metadata_json')
+	parser.add_option('--buildinfo', dest='buildinfo', help='Build info, JSON format')
+	parser.add_option('--initjs-data', dest='initjs_data', help='InitJS data to embed')
+	parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', help='DUK_STRIDX_xxx used by source/headers, JSON format')
+	parser.add_option('--strings-metadata', dest='strings_metadata', help='Built-in strings metadata file, YAML format')
+	parser.add_option('--objects-metadata', dest='objects_metadata', help='Built-in objects metadata file, YAML format')
+	#parser.add_option('--user-rom-objects', dest='user_rom_objects', help='User strings and objects to embed in ROM, YAML format')
+	parser.add_option('--rom-support', dest='rom_support', action='store_true', default=False, help='Support ROM strings/objects (increases output size considerably)')
+	parser.add_option('--out-header', dest='out_header', help='Output header file')
+	parser.add_option('--out-source', dest='out_source', help='Output source file')
+	parser.add_option('--out-metadata-json', dest='out_metadata_json', help='Output metadata file')
 	(opts, args) = parser.parse_args()
 
-	f = open(opts.buildinfo, 'rb')
-	build_info = dukutil.json_decode(f.read().strip())
-	f.close()
+	# Options processing.
 
-	f = open(opts.initjs_data, 'rb')
-	initjs_data = f.read();
-	f.close()
+	if opts.buildinfo is None:
+		raise Exception('missing buildinfo')
 
-	# genbuiltins for different profiles
-	gb_little = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='little', ext_section_b=True, ext_browser_like=True)
-	gb_little.processBuiltins()
-	gb_big = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='big', ext_section_b=True, ext_browser_like=True)
-	gb_big.processBuiltins()
-	gb_mixed = GenBuiltins(build_info = build_info, initjs_data = initjs_data, double_byte_order='mixed', ext_section_b=True, ext_browser_like=True)
-	gb_mixed.processBuiltins()
+	with open(opts.buildinfo, 'rb') as f:
+		build_info = dukutil.json_decode(f.read().strip())
 
-	# write C source file containing both strings and builtins
-	genc = dukutil.GenerateC()
-	genc.emitHeader('genbuiltins.py')
-	genc.emitLine('#include "duk_internal.h"')
-	genc.emitLine('')
-	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
-	gb_little.emitSource(genc)
-	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
-	gb_big.emitSource(genc)
-	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
-	gb_mixed.emitSource(genc)
-	genc.emitLine('#else')
-	genc.emitLine('#error invalid endianness defines')
-	genc.emitLine('#endif')
+	if opts.initjs_data is None:
+		initjs_data = ''
+	else:
+		with open(opts.initjs_data, 'rb') as f:
+			initjs_data = f.read()
+		if len(initjs_data) > 1 and initjs_data[-1] != '\0':
+			# force NUL termination, init code now expects that
+			initjs_data += '\0'
 
-	f = open(opts.out_source, 'wb')
-	f.write(genc.getString())
-	f.close()
+	# Read in metadata files, normalizing and merging as necessary.
 
-	# write C header file containing both strings and builtins
-	genc = dukutil.GenerateC()
-	genc.emitHeader('genbuiltins.py')
-	genc.emitLine('#ifndef DUK_BUILTINS_H_INCLUDED')
-	genc.emitLine('#define DUK_BUILTINS_H_INCLUDED')
-	genc.emitLine('')
-	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
-	gb_little.emitHeader(genc)
-	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
-	gb_big.emitHeader(genc)
-	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
-	gb_mixed.emitHeader(genc)
-	genc.emitLine('#else')
-	genc.emitLine('#error invalid endianness defines')
-	genc.emitLine('#endif')
-	genc.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */')
+	def init_strings_meta(strip_unused_stridx=False):
+		with open(opts.strings_metadata, 'rb') as f:
+			strings_metadata = recursive_strings_to_bytes(yaml.load(f))
+		string_list = strings_metadata['strings']
+		special_defs = strings_metadata['special_define_names']
+		reserved_words_token_order = strings_metadata['reserved_word_token_order']
 
-	f = open(opts.out_header, 'wb')
-	f.write(genc.getString())
-	f.close()
+		merged_strlist = merge_string_entries(string_list)
+		add_string_define_names(merged_strlist, special_defs)
+		with open(opts.used_stridx_metadata, 'rb') as f:
+			add_string_used_stridx(merged_strlist, json.loads(f.read()))
+		ordered_strlist = order_builtin_strings(merged_strlist, reserved_words_token_order, strip_unused_stridx=strip_unused_stridx)
+		string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words = \
+			get_string_maps(ordered_strlist)
 
-	# write a JSON file with build metadata, which is useful e.g.
-	# if application needs to know the built-in strings beforehand
-	# for external strings low memory optimization
-	meta = {}
+		return ordered_strlist, special_defs, string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words
+
+	def init_objects_meta(rom=False):
+		with open(opts.objects_metadata, 'rb') as f:
+			objects_metadata = recursive_strings_to_bytes(yaml.load(f))
+		normalize_object_metadata(objects_metadata)
+
+		# XXX: add user_rom_objects support
+
+		resolved_objlist = resolve_object_list(objects_metadata)
+		for o in resolved_objlist:
+			# Add Duktape.version and Duktape.env (for ROM case).
+			if o['id'] == 'bi_duktape':
+				o['properties'].insert(0, { 'key': 'version', 'value': int(build_info['version']), 'attributes': '' })
+				if rom:
+					# Use a fixed (quite dummy for now) Duktape.env
+					# when ROM builtins are in use.
+					o['properties'].insert(0, { 'key': 'env', 'value': 'ROM', 'attributes': '' })
+
+		return resolved_objlist
+
+	# RAM strings, full set of strings in heap->strs[]
+	# (Future work: prune some away.)
+	ram_strlist, ram_special_defs, ram_string_to_stridx, ram_define_to_stridx, ram_reserved_words, ram_strict_reserved_words = \
+		init_strings_meta(strip_unused_stridx=True)
+
+	# ROM strings, pruned set of strings in heap->strs[]
+	rom_strlist, rom_special_defs, rom_string_to_stridx, rom_define_to_stridx, rom_reserved_words, rom_strict_reserved_words = \
+		init_strings_meta(strip_unused_stridx=True)
+
+	# RAM objects
+	ram_objlist = init_objects_meta(rom=False)
+
+	# Full set of ROM strings and objects (not just those going into bidx[] or stridx[])
+	rom_objlist_tmp = init_objects_meta(rom=True)
+	rom_normalized_strlist, rom_normalized_objlist = normalize_rom_builtins(rom_strlist, [], rom_objlist_tmp)
+
+	# Create RAM init data bitstreams.
+
+	ramstr_data, ramstr_maxlen = gen_ramstr_initdata_bitpacked(ram_strlist)
+	ram_native_funcs, ram_natfunc_name_to_natidx = get_ramobj_native_func_maps(ram_objlist)
+
+	ramobj_data_le = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'little')
+	ramobj_data_be = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'big')
+	ramobj_data_me = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'mixed')
+
+	# Write source and header files.
+
+	gc_src = dukutil.GenerateC()
+	gc_src.emitHeader('genbuiltins.py')
+	gc_src.emitLine('#include "duk_internal.h"')
+	gc_src.emitLine('')
+	gc_src.emitLine('#if defined(DUK_USE_ROM_STRINGS)')
+	if opts.rom_support:
+		rom_bi_str_map = rom_emit_strings_source(gc_src, rom_normalized_strlist, rom_reserved_words, rom_strict_reserved_words, rom_strlist)
+		rom_emit_object_initializer_types_and_macros(gc_src)
+		rom_emit_objects(gc_src, rom_normalized_strlist, rom_normalized_objlist, rom_bi_str_map)
+	else:
+		gc_src.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
+	gc_src.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
+	emit_ramstr_source_strinit_data(gc_src, ramstr_data)
+	gc_src.emitLine('#endif  /* DUK_USE_ROM_STRINGS */')
+	gc_src.emitLine('')
+	gc_src.emitLine('#if defined(DUK_USE_ROM_OBJECTS)')
+	if opts.rom_support:
+		gc_src.emitLine('#if !defined(DUK_USE_ROM_STRINGS)')
+		gc_src.emitLine('#error DUK_USE_ROM_OBJECTS requires DUK_USE_ROM_STRINGS')
+		gc_src.emitLine('#endif')
+	else:
+		gc_src.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
+	gc_src.emitLine('#else  /* DUK_USE_ROM_OBJECTS */')
+	emit_ramobj_source_nativefunc_array(gc_src, ram_native_funcs)  # endian independent
+	emit_initjs_source(gc_src, initjs_data)  # InitJS is now only active with RAM objects
+	gc_src.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	emit_ramobj_source_objinit_data(gc_src, ramobj_data_le)
+	gc_src.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	emit_ramobj_source_objinit_data(gc_src, ramobj_data_be)
+	gc_src.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	emit_ramobj_source_objinit_data(gc_src, ramobj_data_me)
+	gc_src.emitLine('#else')
+	gc_src.emitLine('#error invalid endianness defines')
+	gc_src.emitLine('#endif')
+	gc_src.emitLine('#endif  /* DUK_USE_ROM_OBJECTS */')
+
+	gc_hdr = dukutil.GenerateC()
+	gc_hdr.emitHeader('genbuiltins.py')
+	gc_hdr.emitLine('#ifndef DUK_BUILTINS_H_INCLUDED')
+	gc_hdr.emitLine('#define DUK_BUILTINS_H_INCLUDED')
+	gc_hdr.emitLine('')
+	gc_hdr.emitLine('#if defined(DUK_USE_ROM_STRINGS)')
+	if opts.rom_support:
+		emit_header_stridx_defines(gc_hdr, rom_strlist)
+		rom_emit_strings_header(gc_hdr, rom_normalized_strlist, rom_strlist)
+	else:
+		gc_hdr.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
+	gc_hdr.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
+	emit_header_stridx_defines(gc_hdr, ram_strlist)
+	emit_ramstr_header_strinit_defines(gc_hdr, ram_strlist, ramstr_data, ramstr_maxlen)
+	gc_hdr.emitLine('#endif  /* DUK_USE_ROM_STRINGS */')
+	gc_hdr.emitLine('')
+	gc_hdr.emitLine('#if defined(DUK_USE_ROM_OBJECTS)')
+	if opts.rom_support:
+		# Currently DUK_USE_ROM_PTRCOMP_FIRST must match our fixed
+		# define, and the two must be updated in sync.  Catch any
+		# mismatch to avoid difficult to diagnose errors.
+		gc_hdr.emitLine('#if !defined(DUK_USE_ROM_PTRCOMP_FIRST)')
+		gc_hdr.emitLine('#error missing DUK_USE_ROM_PTRCOMP_FIRST define')
+		gc_hdr.emitLine('#endif')
+		gc_hdr.emitLine('#if (DUK_USE_ROM_PTRCOMP_FIRST != %dL)' % ROMPTR_FIRST)
+		gc_hdr.emitLine('#error DUK_USE_ROM_PTRCOMP_FIRST must match ROMPTR_FIRST in genbuiltins.py (%d), update manually and re-dist' % ROMPTR_FIRST)
+		gc_hdr.emitLine('#endif')
+		rom_emit_objects_header(gc_hdr, rom_normalized_objlist, rom_strlist)
+	else:
+		gc_hdr.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
+	gc_hdr.emitLine('#else')
+	emit_ramobj_header_nativefunc_array(gc_hdr, ram_native_funcs)
+	emit_ramobj_header_initjs(gc_hdr, initjs_data)
+	emit_ramobj_header_objects(gc_hdr, ram_objlist)
+	gc_hdr.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
+	emit_ramobj_header_initdata(gc_hdr, ramobj_data_le)
+	gc_hdr.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
+	emit_ramobj_header_initdata(gc_hdr, ramobj_data_be)
+	gc_hdr.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
+	emit_ramobj_header_initdata(gc_hdr, ramobj_data_me)
+	gc_hdr.emitLine('#else')
+	gc_hdr.emitLine('#error invalid endianness defines')
+	gc_hdr.emitLine('#endif')
+	gc_hdr.emitLine('#endif  /* DUK_USE_ROM_OBJECTS */')
+	gc_hdr.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */')
+
+	with open(opts.out_source, 'wb') as f:
+		f.write(gc_src.getString())
+
+	with open(opts.out_header, 'wb') as f:
+		f.write(gc_hdr.getString())
+
+	# Write a JSON file with build metadata, e.g. built-in strings.
+
 	ver = long(build_info['version'])
-	meta['comment'] = 'Metadata for Duktape build'
-	meta['duk_version'] = ver
-	meta['duk_version_string'] = '%d.%d.%d' % (ver / 10000, (ver / 100) % 100, ver % 100)
-	meta['git_describe'] = build_info['git_describe']
-	strs, strs_base64 = gb_little.gs.getStringList()  # endianness doesn't matter
-	meta['builtin_strings'] = strs
-	meta['builtin_strings_base64'] = strs_base64
-	f = open(opts.out_metadata_json, 'wb')
-	f.write(json.dumps(meta, indent=4, sort_keys=True, ensure_ascii=True))
-	f.close()
+	plain_strs = []
+	base64_strs = []
+	str_objs = []
+	for s in ram_strlist:  # XXX: provide all lists?
+		t1 = bytes_to_unicode(s['str'])
+		t2 = unicode_to_bytes(s['str']).encode('base64').strip()
+		plain_strs.append(t1)
+		base64_strs.append(t2)
+		str_objs.append({
+			'plain': t1, 'base64': t2, 'define': s['define']
+		})
+	meta = {
+		'comment': 'Metadata for Duktape build',
+		'duk_version': ver,
+		'duk_version_string': '%d.%d.%d' % (ver / 10000, (ver / 100) % 100, ver % 100),
+		'git_describe': build_info['git_describe'],
+		'builtin_strings': plain_strs,
+		'builtin_strings_base64': base64_strs,
+		'builtin_strings_info': str_objs
+	}
+
+	with open(opts.out_metadata_json, 'wb') as f:
+		f.write(json.dumps(meta, indent=4, sort_keys=True, ensure_ascii=True))
+
+if __name__ == '__main__':
+	main()
