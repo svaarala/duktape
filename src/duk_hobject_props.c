@@ -161,6 +161,7 @@ DUK_LOCAL duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_t
 
 /* String is an own (virtual) property of a lightfunc. */
 DUK_LOCAL duk_bool_t duk__key_is_lightfunc_ownprop(duk_hthread *thr, duk_hstring *key) {
+	DUK_UNREF(thr);
 	return (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
 	        key == DUK_HTHREAD_STRING_NAME(thr));
 }

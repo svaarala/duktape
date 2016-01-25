@@ -151,7 +151,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		duk_hobject *h;
-		h = (duk_hobject *) duk_rom_builtins_bidx[i];
+		h = (duk_hobject *) DUK_LOSE_CONST(duk_rom_builtins_bidx[i]);
 		DUK_ASSERT(h != NULL);
 		thr->builtins[i] = h;
 	}

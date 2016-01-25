@@ -847,7 +847,7 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 #endif
 
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_INTERN_CHECK)
-	extdata = (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK(heap->heap_udata, (void *) str, (duk_size_t) blen);
+	extdata = (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK(heap->heap_udata, (void *) DUK_LOSE_CONST(str), (duk_size_t) blen);
 #else
 	extdata = (const duk_uint8_t *) NULL;
 #endif
@@ -900,9 +900,9 @@ DUK_LOCAL duk_hstring *duk__do_lookup(duk_heap *heap, const duk_uint8_t *str, du
 		 */
 		for (i = 0; i < (duk_small_uint_t) (sizeof(duk_rom_strings) / sizeof(duk_hstring *)); i++) {
 			duk_hstring *romstr;
-			romstr = (duk_hstring *) duk_rom_strings[i];
+			romstr = (duk_hstring *) DUK_LOSE_CONST(duk_rom_strings[i]);
 			if (blen == DUK_HSTRING_GET_BYTELEN(romstr) &&
-			    DUK_MEMCMP(str, (void *) DUK_HSTRING_GET_DATA(romstr), blen) == 0) {
+			    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(romstr), blen) == 0) {
 				DUK_DD(DUK_DDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
 				                   romstr, (unsigned long) *out_strhash, (unsigned long) DUK_HSTRING_GET_HASH(romstr)));
 				DUK_ASSERT(*out_strhash == DUK_HSTRING_GET_HASH(romstr));
