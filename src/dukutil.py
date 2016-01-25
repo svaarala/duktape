@@ -164,3 +164,103 @@ def json_decode(x):
 	# for older library versions
 	return json.read(x)
 
+# Compute a byte hash identical to duk_util_hashbytes().
+DUK__MAGIC_M = 0x5bd1e995
+DUK__MAGIC_R = 24
+def duk_util_hashbytes(x, off, nbytes, str_seed, big_endian):
+	h = (str_seed ^ nbytes) & 0xffffffff
+
+	while nbytes >= 4:
+		# 4-byte fetch byte order:
+		#  - native (endian dependent) if unaligned accesses allowed
+		#  - little endian if unaligned accesses not allowed
+
+		if big_endian:
+			k = ord(x[off + 3]) + (ord(x[off + 2]) << 8) + \
+			    (ord(x[off + 1]) << 16) + (ord(x[off + 0]) << 24)
+		else:
+			k = ord(x[off]) + (ord(x[off + 1]) << 8) + \
+			    (ord(x[off + 2]) << 16) + (ord(x[off + 3]) << 24)
+
+		k = (k * DUK__MAGIC_M) & 0xffffffff
+		k = (k ^ (k >> DUK__MAGIC_R)) & 0xffffffff
+		k = (k * DUK__MAGIC_M) & 0xffffffff
+		h = (h * DUK__MAGIC_M) & 0xffffffff
+		h = (h ^ k) & 0xffffffff
+
+		off += 4
+		nbytes -= 4
+
+	if nbytes >= 3:
+		h = (h ^ (ord(x[off + 2]) << 16)) & 0xffffffff
+	if nbytes >= 2:
+		h = (h ^ (ord(x[off + 1]) << 8)) & 0xffffffff
+	if nbytes >= 1:
+		h = (h ^ ord(x[off])) & 0xffffffff
+		h = (h * DUK__MAGIC_M) & 0xffffffff
+
+	h = (h ^ (h >> 13)) & 0xffffffff
+	h = (h * DUK__MAGIC_M) & 0xffffffff
+	h = (h ^ (h >> 15)) & 0xffffffff
+
+	return h
+
+# Compute a string hash identical to duk_heap_hashstring() when dense
+# hashing is enabled.
+DUK__STRHASH_SHORTSTRING = 4096
+DUK__STRHASH_MEDIUMSTRING = 256 * 1024
+DUK__STRHASH_BLOCKSIZE = 256
+def duk_heap_hashstring_dense(x, hash_seed, big_endian=False, strhash16=False):
+	str_seed = (hash_seed ^ len(x)) & 0xffffffff
+
+	if len(x) <= DUK__STRHASH_SHORTSTRING:
+		res = duk_util_hashbytes(x, 0, len(x), str_seed, big_endian)
+	else:
+		if len(x) <= DUK__STRHASH_MEDIUMSTRING:
+			skip = 16 * DUK__STRHASH_BLOCKSIZE + DUK__STRHASH_BLOCKSIZE
+		else:
+			skip = 256 * DUK__STRHASH_BLOCKSIZE + DUK__STRHASH_BLOCKSIZE
+
+		res = duk_util_hashbytes(x, 0, DUK__STRHASH_SHORTSTRING, str_seed, big_endian)
+		off = DUK__STRHASH_SHORTSTRING + (skip * (res % 256)) / 256
+
+		while off < len(x):
+			left = len(x) - off
+			now = left
+			if now > DUK__STRHASH_BLOCKSIZE:
+				now = DUK__STRHASH_BLOCKSIZE
+			res = (res ^ duk_util_hashbytes(str, off, now, str_seed, big_endian)) & 0xffffffff
+			off += skip
+
+	if strhash16:
+		res &= 0xffff
+
+	return res
+
+# Compute a string hash identical to duk_heap_hashstring() when sparse
+# hashing is enabled.
+DUK__STRHASH_SKIP_SHIFT = 5   # XXX: assumes default value
+def duk_heap_hashstring_sparse(x, hash_seed, strhash16=False):
+	res = (hash_seed ^ len(x)) & 0xffffffff
+
+	step = (len(x) >> DUK__STRHASH_SKIP_SHIFT) + 1
+	off = len(x)
+	while off >= step:
+		assert(off >= 1)
+		res = ((res * 33) + ord(x[off - 1])) & 0xffffffff
+		off -= step
+
+	if strhash16:
+		res &= 0xffff
+
+	return res
+
+# Must match src/duk_unicode_support:duk_unicode_unvalidated_utf8_length().
+def duk_unicode_unvalidated_utf8_length(x):
+	assert(isinstance(x, str))
+	clen = 0
+	for c in x:
+		t = ord(c)
+		if t < 0x80 or t >= 0xc0:  # 0x80...0xbf are continuation chars, not counted
+			clen += 1
+	return clen
