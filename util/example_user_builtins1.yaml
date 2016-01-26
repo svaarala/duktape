@@ -1,0 +1,346 @@
+#
+#  Example of user-supplied built-in strings and objects
+#
+#  Top level keys:
+#
+#    - add_forced_strings: provide a list of keys to be forced into ROM
+#    - add_objects: provide additional objects
+#    - modify_objects: modify previously added objects
+#
+#  See examples below for details on how to use these.
+#
+#  Note that genbuiltins.py (and make_dist.py) accept multiple user built-in
+#  YAML files, so that you can manage your custom strings and objects in
+#  individual YAML files for modularity.
+#
+#  When using pointer compression, all ROM strings and objects need a number
+#  from the ROM pointer compression range (e.g. [0xf800,0xffff]).  By default
+#  there is space for ~1000 user strings and objects.  You can tweak the range
+#  starting point if you need more space.
+#
+
+# Strings that must be included in ROM even if not referenced by any
+# built-in object.  String data is in a raw format where Unicode codepoints
+# U+0000...U+00FF are identified with exact bytes in the string (allows
+# invalid UTF-8 so that internal strings can be represented).  Placing
+# strings in ROM avoids interning them if they're encountered at run time;
+# you can e.g. add function and constant names used in custom Ecmascript
+# bindings.
+#
+# NOTE: You don't need to list any keys of custom built-in objects here
+# as those strings will automatically be included in ROM strings.
+
+add_forced_strings:
+
+  # If numbers are often string coerced it might be useful to add e.g.
+  # numbers 0-9 or 0-99.
+
+  - str: "0"
+  - str: "1"
+  - str: "2"
+  - str: "3"
+  - str: "4"
+  - str: "5"
+  - str: "6"
+  - str: "7"
+  - str: "8"
+  - str: "9"
+
+  # Non-ascii strings: encode into UTF-8, map bytes to U+0000...U+00FF.
+  #
+  # >>> u'säätö'.encode('utf-8').encode('hex')
+  # '73c3a4c3a474c3b6'
+
+  - str: "s\u00c3\u00a4\u00c3\u00a4t\u00c3\u00b6"
+
+  # Custom run-time constants are useful to add (if they're not already
+  # present as keys of any builtin-in object).
+
+  - str: "Led1"
+  - str: "Led2"
+  - str: "Led3"
+  - str: "Led4"
+  - str: "Led5"
+  - str: "Led6"
+  - str: "Led7"
+  - str: "Led8"
+
+  # In general, any strings that may be used frequently can be added,
+  # at the cost of increasing ROM footprint and reducing RAM footprint.
+  # You can find eligible strings in many ways, e.g. by grepping source
+  # code, or by adding a few debug prints to Duktape string intern code.
+
+  - str: "Content-Type"
+  - str: "Content-Type: application/octet-stream"
+  - str: "Arglebargle, glop-glyf!?!"
+  - str: "Do you want your possessions identified?"
+  - str: "Project Marathon"
+  - str: "Motel Key"
+  - str: "Bus Ticket"
+  - str: "foo"
+  - str: "bar"
+  - str: "quux"
+  - str: "baz"
+
+# Objects to add.  Properties may reference other objects using the 'id'
+# strings even if the object hasn't been introduced yet (and may be introduced
+# by a different user builtins YAML file).  Error if an object with the same
+# 'id' already exists.
+
+add_objects:
+  # Basic example: add a built-in object with plain property values.  This
+  # just creates the built-in object; for the object to be actually useful
+  # you must use the 'modify_objects' key to add a reference to the object
+  # to some existing object reachable from the global object (see below for
+  # an example pointing to this object).
+  #
+  # (In more detail, it's sufficient for the custom object to be reachable
+  # from any object with a 'bidx', but in practice objects are reachable
+  # directly on indirectly through the global object.)
+
+  - id: bi_star_trek
+    class: Object  # recommended for objects
+    internal_prototype: bi_object_prototype  # recommended so that e.g. .toString() works
+
+    # Because we don't give explicit property attributes here, defaults
+    # (writable, configurable, not enumerable) are used automatically.
+
+    properties:
+      - key: "tos"
+        value: true
+      - key: "tng"
+        value: true
+      - key: "ds9"
+        value: true
+      - key: "voy"
+        value: true
+      - key: "ent"
+        value: true
+
+  # Example of plain value types supported at the moment:
+  #
+  # - Object, function, and accessor types not illustrated here
+  #   (see src/builtins.yaml for examples of those).
+  #
+  # - Duktape buffer and pointer types cannot be used by built-in
+  #   objects at the moment.
+  #
+  # - The "null" type is supported for ROM init data but not for RAM
+  #   init data.  Null values are replaced with "undefined" for RAM
+  #   init data at the moment (with a build warning).
+  #
+  # - One simple way of coming up with exact IEEE doubles is to use
+  #   Python:
+  #
+  #       import struct
+  #       print(struct.pack('>d', 12345.6789).encode('hex'))
+
+  - id: bi_type_examples
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "undefinedType"
+        value:
+          type: undefined
+        attributes: wec
+      - key: "nullType"
+        value: null
+        attributes: wec
+      - key: "booleanType"
+        value: true
+        attributes: wec
+      - key: "integerType"
+        value: 123
+        attributes: wec
+      - key: "floatType"
+        value: 123.4
+        attributes: wec
+      - key: "ieeeDoubleType"         # Allows exact specification of IEEE doubles
+        value:
+        attributes: wec
+        value:
+          type: double
+          bytes: "41d2658965400000"   # 123456789.0 as IEEE double, big endian
+      - key: "stringType"
+        value: "foobar"               # Encode string as UTF-8, then map bytes to U+0000...U+00FF
+        attributes: wec
+
+  # Object IDs are only resolved when metadata loading is complete, so it's
+  # OK to create reference loops or refer to objects defined later (even in
+  # a separate YAML file not yet loaded).
+
+  - id: bi_circular1
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "name"
+        value: "circular1"
+      - key: "ref"
+        value:
+          type: object
+          id: bi_circular2
+
+  - id: bi_circular2
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "name"
+        value: "circular2"
+      - key: "ref"
+        value:
+          type: object
+          id: bi_circular1
+
+  # Example of unreachable objects; these will be dropped by genbuiltins.py
+  # with a note in the build log.
+
+  - id: my_unreachable_object1
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "foo"
+        value: "bar"
+
+  - id: my_unreachable_object2
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "foo"
+        value: "bar"
+
+# Objects to modify, i.e. delete, augment top level metadata, add property,
+# delete property, or modify a property.  You can operate on the same object
+# multiple times in the same 'modify_objects' list.
+#
+# Top level keys other than 'properties' are copied over the existing object
+# so that you can e.g. change the class of an object.
+#
+# If the object has "delete: true" the entire object is deleted.  Dangling
+# references to the object are deleted automatically, with a note in the
+# build log.
+#
+# Property list is then walked in order.
+#
+# If a property has "delete: true" the property is deleted:
+#
+#   - If the key doesn't exist in the existing object, ignore silently.
+#
+#   - If the key exists, delete the property.
+#
+# Otherwise the property is added/modified:
+#
+#   - If the key already exists the existing property is replaced
+#     (and keeps its enumeration position).
+#
+#   - If the key doesn't exist the property is added to the end of
+#     the property list.
+#
+# XXX: At present there's no support for reordering properties which would
+# be nice because it affects enumeration order (and may affect performance
+# marginally).
+
+modify_objects:
+  # Add references to the example objects added above into the global object.
+  # The references can be in any object reachable from the global object of
+  # course.  Unreachable objects will be dropped with a build note.
+
+  - id: bi_global
+
+    properties:
+      - key: 'StarTrek'
+        value:
+          type: object
+          id: bi_star_trek
+
+      - key: 'TypeExamples'
+        value:
+          type: object
+          id: bi_type_examples
+
+      - key: 'circular1'
+        value:
+          type: object
+          id: bi_circular1
+
+      # The 'structured' type can be used to represent structured (object)
+      # values compactly, with property attributes etc set similarly to
+      # JSON.parse() return value.  Useful for e.g. build info objects and such.
+      #
+      # The JSON equivalent of the value below would be:
+      # {
+      #     "comment": "structured value; there are some type limitations now, e.g. arrays not supported",
+      #     "foo": 123,
+      #     "bar": "quux",
+      #     "quux": {
+      #         "comment": "object property",
+      #         "foo": 321
+      #     }
+      # }
+
+      - key: 'ExampleStructured1'
+        value:
+          type: structured
+          value:
+            comment: structured value; there are some type limitations now, e.g. arrays not supported
+            foo: 123
+            bar: 'quux'
+            quux:
+              comment: object property
+              foo: 321
+
+      # Note that because JSON is a subset of YAML, you can give the structured
+      # value directly in JSON notation if you wish.
+
+      - key: 'ExampleStructured2'
+        value:
+          type: structured
+          value: { "build_date": "2016-01-31T11:22:33Z", "build_host": "c64", "build_time": 15.34 }
+
+      # User functions can be expressed using shorthand or longhand.
+      # Duktape will automatically emit an internal declaration for the
+      # function:
+      #
+      #     extern duk_ret_t my_dummy_adder(duk_context *ctx);
+      #
+      # User code must then provide that function, but there's no need
+      # to declare the function e.g. using DUK_USE_USER_DECLARE config
+      # option.
+
+      - key: 'myDummyAdder'
+        value:
+          type: function
+          constructable: false
+          native: my_dummy_adder
+          varargs: true
+        disable: true   # Disabled by default here; provide my_dummy_adder() if you enable this.
+
+  # Example of how to delete a property from an existing built-in.  In this
+  # example Math.cos() is deleted.
+
+  - id: bi_math
+
+    properties:
+      - key: 'cos'
+        delete: true
+
+  # Example of how to delete an existing built-in.  Dangling references are
+  # automatically deleted with a note in the build log.
+  #
+  # This doesn't currently work very well for Duktape built-ins because most
+  # built-ins are expected to be present in Duktape internals (and they have
+  # a DUK_BIDX_xxx index).
+  #
+  # Deleting user objects may be useful e.g. if a base YAML file provides your
+  # custom built-ins and a target specific YAML file removes bindings not
+  # needed for a certain target.
+  #
+  # In this example we'd delete the StarTrek object.  The global reference
+  # global.StarTrek would be deleted automatically.
+
+  #- id: bi_star_trek
+  #  delete: true
