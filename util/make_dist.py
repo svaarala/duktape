@@ -30,11 +30,16 @@ import tarfile
 
 # Helpers
 
-def exec_get_stdout(cmd, input=None, default=None):
+def exec_get_stdout(cmd, input=None, default=None, print_stdout=False):
 	try:
-		proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		ret = proc.communicate(input=input)
+		if print_stdout:
+			sys.stdout.write(ret[0])
+			sys.stdout.flush()
 		if proc.returncode != 0:
+			sys.stdout.write(ret[1])  # print stderr on error
+			sys.stdout.flush()
 			if default is not None:
 				print('WARNING: command %r failed, return default' % cmd)
 				return default
@@ -47,9 +52,7 @@ def exec_get_stdout(cmd, input=None, default=None):
 		raise
 
 def exec_print_stdout(cmd, input=None):
-	ret = exec_get_stdout(cmd, input=input)
-	sys.stdout.write(ret)
-	sys.stdout.flush()
+	ret = exec_get_stdout(cmd, input=input, print_stdout=True)
 
 def mkdir(path):
 	os.mkdir(path)
@@ -192,6 +195,7 @@ parser.add_option('--git-commit', dest='git_commit', default=None, help='Force g
 parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
 parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
 parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Add support for ROM strings/objects (increases duktape.c size considerably)')
+parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
 (opts, args) = parser.parse_args()
 
 # Python module check and friendly errors
@@ -773,12 +777,12 @@ exec_print_stdout([
 
 res = exec_get_stdout([
 	'python',
-	os.path.join('src', 'scan_used_stridx.py')
+	os.path.join('src', 'scan_used_stridx_bidx.py')
 ] + glob_files(os.path.join('src', '*.c')) \
   + glob_files(os.path.join('src', '*.h')) \
   + glob_files(os.path.join('src', '*.h.in'))
 )
-with open(os.path.join(dist, 'duk_used_stridx_defs.json.tmp'), 'wb') as f:
+with open(os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
 	f.write(res)
 
 gb_opts = []
@@ -787,11 +791,15 @@ if opts.rom_support:
 	# it increases the generated duktape.c considerably.
 	print('Enabling --rom-support for genbuiltins.py')
 	gb_opts.append('--rom-support')
+for fn in opts.user_builtin_metadata:
+	print('Forwarding --user-builtin-metadata %s' % fn)
+	gb_opts.append('--user-builtin-metadata')
+	gb_opts.append(fn)
 exec_print_stdout([
 	'python',
 	os.path.join('src', 'genbuiltins.py'),
 	'--buildinfo=' + os.path.join(distsrcsep, 'buildparams.json.tmp'),
-	'--used-stridx-metadata=' + os.path.join(dist, 'duk_used_stridx_defs.json.tmp'),
+	'--used-stridx-metadata=' + os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'),
 	'--strings-metadata=' + os.path.join('src', 'strings.yaml'),
 	'--objects-metadata=' + os.path.join('src', 'builtins.yaml'),
 	'--initjs-data=' + os.path.join(distsrcsep, 'duk_initjs_min.js'),
