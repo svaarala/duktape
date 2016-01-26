@@ -1877,6 +1877,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	DUK_UNREF(ctx);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
+	DUK_ASSERT(thr->heap->dbg_processing == 1);  /* caller ensures */
 #if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
