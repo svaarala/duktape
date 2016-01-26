@@ -1489,6 +1489,8 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	duk_bool_t process_messages;
 	duk_bool_t processed_messages = 0;
 
+	DUK_ASSERT(thr->heap->dbg_processing == 0);  /* don't re-enter e.g. during Eval */
+
 	ctx = (duk_context *) thr;
 	act = thr->callstack + thr->callstack_top - 1;
 
@@ -1621,7 +1623,10 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 */
 
 	if (process_messages) {
+		DUK_ASSERT(thr->heap->dbg_processing == 0);
+		thr->heap->dbg_processing = 1;
 		processed_messages = duk_debug_process_messages(thr, 0 /*no_block*/);
+		thr->heap->dbg_processing = 0;
 	}
 
 	/* XXX: any case here where we need to re-send status? */
@@ -1738,7 +1743,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 #endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
 		duk__interrupt_handle_debugger(thr, &immediate, &retval);
 		act = thr->callstack + thr->callstack_top - 1;  /* relookup if changed */
 	}
@@ -1774,6 +1779,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
  *  in checked or normal mode.  Note that we can't do this when an activation
  *  is created, because breakpoint status (and stepping status) may change
  *  later, so we must recheck every time we're executing an activation.
+ *  This primitive should be side effect free to avoid changes during check.
  */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
@@ -2239,10 +2245,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
-			thr->heap->dbg_processing = 1;
 			duk__executor_recheck_debugger(thr, act, fun);
-			act = thr->callstack + thr->callstack_top - 1;  /* relookup after side effects */
-			thr->heap->dbg_processing = 0;
+			act = thr->callstack + thr->callstack_top - 1;  /* relookup after side effects (no side effects currently however) */
 		}
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
