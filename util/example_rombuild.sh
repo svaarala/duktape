@@ -4,10 +4,14 @@
 
 set -e
 
-# Run dist manually, ROM support is not enabled by default so add --rom-support
+# Run dist manually, ROM support is not enabled by default so add --rom-support.
+# User builtin metadata can be provided through one or more YAML files (applied
+# in sequence).
 make clean
 python util/make_dist.py \
 	--rom-support \
+	--user-builtin-metadata util/example_user_builtins1.yaml \
+	--user-builtin-metadata util/example_user_builtins2.yaml \
 	--minify closure
 
 # Run genconfig.py and create a custom duk_config.h with ROM support etc.
