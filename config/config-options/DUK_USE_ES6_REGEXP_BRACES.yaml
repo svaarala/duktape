@@ -1,0 +1,15 @@
+define: DUK_USE_ES6_REGEXP_BRACES
+feature_enables: DUK_OPT_ES6_REGEXP_BRACES
+introduced: 1.5.0
+default: true
+tags:
+  - ecmascript6
+description: >
+  Enable support for unescaped '{' and '}' literals in regular expressions,
+  which is an ES6 Appendix feature (and non-standard before ES6).  Ecmascript
+  E5 requires literal curly braces to be escaped, but most Ecmascript engines
+  support them when they are not used in valid quantifier, and this behavior
+  has been added to ES6 Appendix.
+
+  This option is recommended because a lot of existing code depends on literal
+  regexp braces.
