@@ -127,3 +127,15 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 
 	/* [ ... ] */
 }
+
+/* FIXME: add a duk_recheck_builtins() which would go through the thr->builtins[]
+ * array and copy current values from the global object into the array.
+ * For example, global.Duktape would be copied to thr->builtins[DUK_BIDX_DUKTAPE].
+ * This would allow sandboxing code to reset the built-in references without
+ * exposing the internal indices.
+ *
+ * FIXME: the duk_recheck_builtins() could also take the global object as a stack
+ * argument rather than taking the current value, so that it'd be possible to
+ * switch to a fresh global object without any dependency to the current global
+ * object.  It would then potentially deprecate duk_set_global_object().
+ */
