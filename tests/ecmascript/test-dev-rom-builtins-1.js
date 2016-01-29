@@ -403,6 +403,18 @@ function romObjectErrorPrototypeAccessorTest() {
     test('stack');
 }
 
+/*===
+--- Accessor test
+true
+===*/
+
+function romObjectAccessorTest() {
+    // Development time issue: accessors were mapped incorrectly.
+    // Test that __proto__ result matches Object.getPrototypeOf().
+    var global = new Function('return this;')();
+    print(global.__proto__ == Object.getPrototypeOf(global));
+}
+
 // Read-only code paths related to object properties which aren't covered:
 //
 // duk_hobject_props.c:duk_realloc_props(): assert, can't be exercised directly.
@@ -448,6 +460,9 @@ try {
 
     print('--- Error.prototype setter/getter');
     romObjectErrorPrototypeAccessorTest();
+
+    print('--- Accessor test')
+    romObjectAccessorTest();
 } catch (e) {
     print(e.stack || e);
 }
