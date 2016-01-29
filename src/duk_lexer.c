@@ -1609,14 +1609,12 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		duk_uint_fast32_t val1 = 0;
 		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
-#if defined(DUK_USE_NONSTD_REGEXP_BRACES)
+#if defined(DUK_USE_ES6_REGEXP_BRACES)
 		duk_lexer_point lex_pt;
 #endif
 
-#if defined(DUK_USE_NONSTD_REGEXP_BRACES)
-		/*
-		 *  Store lexer position, restoring if quantifier is invalid.
-		 */
+#if defined(DUK_USE_ES6_REGEXP_BRACES)
+		/* Store lexer position, restoring if quantifier is invalid. */
 		DUK_LEXER_GETPOINT(lex_ctx, &lex_pt);
 #endif
 
@@ -1677,7 +1675,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		advtok = DUK__ADVTOK(0, DUK_RETOK_QUANTIFIER);
 		break;
  invalid_quantifier:
-#if defined(DUK_USE_NONSTD_REGEXP_BRACES)
+#if defined(DUK_USE_ES6_REGEXP_BRACES)
 		/* Failed to match the quantifier, restore lexer and parse
 		 * opening brace as a literal.
 		 */
@@ -1828,7 +1826,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		}
 		break;
 	}
-#ifndef DUK_USE_NONSTD_REGEXP_BRACES
+#if !defined(DUK_USE_ES6_REGEXP_BRACES)
 	case '}':
 #endif
 	case ']': {
