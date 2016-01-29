@@ -678,8 +678,8 @@ emscriptentest: emscripten duk
 	emscripten/emcc $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
-	./duk /tmp/duk-emcc-test-fixed.js
-	#./duk /tmp/duk-emcc-test.js
+	#./duk /tmp/duk-emcc-test-fixed.js
+	./duk /tmp/duk-emcc-test.js
 
 .PHONY: emscriptenmandeltest
 emscriptenmandeltest: emscripten duk
@@ -689,8 +689,8 @@ emscriptenmandeltest: emscripten duk
 	emscripten/emcc $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
-	./duk /tmp/duk-emcc-test-fixed.js
-	#./duk /tmp/duk-emcc-test.js
+	#./duk /tmp/duk-emcc-test-fixed.js
+	./duk /tmp/duk-emcc-test.js
 
 # Compile Duktape and hello.c using Emscripten and execute the result with
 # Duktape.
@@ -702,8 +702,8 @@ emscripteninceptiontest: emscripten dist duk
 	emscripten/emcc $(EMCCOPTS) -Idist/src dist/src/duktape.c dist/examples/hello/hello.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
-	./duk /tmp/duk-emcc-test-fixed.js
-	#./duk /tmp/duk-emcc-test.js
+	#./duk /tmp/duk-emcc-test-fixed.js
+	./duk /tmp/duk-emcc-test.js
 
 # Compile Duktape with Emscripten and execute it with NodeJS:
 #   - --memory-init-file 0 to avoid a separate memory init file (this is
@@ -771,7 +771,8 @@ emscriptenluatest: emscripten duk lua-5.2.3
 	emscripten/emcc $(EMCCOPTS) -Ilua-5.2.3/src/ $(patsubst %,lua-5.2.3/src/%,$(LUASRC)) -o /tmp/duk-emcc-luatest.js
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
-	./duk /tmp/duk-emcc-luatest-fixed.js
+	#./duk /tmp/duk-emcc-luatest-fixed.js
+	./duk /tmp/duk-emcc-luatest.js
 
 JS-Interpreter:
 	# https://github.com/NeilFraser/JS-Interpreter

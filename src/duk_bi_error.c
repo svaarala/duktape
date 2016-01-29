@@ -194,6 +194,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 					}
 				}
 
+				/* XXX: Change 'anon' handling here too, to use empty string for anonymous functions? */
+				/* XXX: Could be improved by coercing to a readable duk_tval (especially string escaping) */
 				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
 				           "anon" : (const char *) DUK_HSTRING_GET_DATA(h_name);
