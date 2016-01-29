@@ -49,7 +49,7 @@ null
 ===*/
 
 // 10 digits: SyntaxError without non-standard literal curly braces
-// (DUK_USE_NONSTD_REGEXP_BRACES), treated as a literal with non-standard
+// (DUK_USE_ES6_REGEXP_BRACES), treated as a literal with non-standard
 // curly braces.
 try {
     print(eval("JSON.stringify(/x{3,9999999999}/.exec('xxx'))"));
