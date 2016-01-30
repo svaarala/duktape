@@ -101,7 +101,8 @@ allows some non-standard syntax to better support existing code (you can turn
 this non-standard behavior off using config options if you prefer).</p>
 
 <p>Curly braces (<code>{</code> and <code>}</code>) are treated as literals
-when they don't parse as a valid quantifier:</p>
+when they don't parse as a valid quantifier (literal curly braces are part of
+ES6 Appendix so they're not entirely non-standard anymore):</p>
 
 <pre>
   /{(\d+)}/    /* left curly, digits, right curly; non-standard */
