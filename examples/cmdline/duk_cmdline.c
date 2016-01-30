@@ -63,6 +63,7 @@
 #if defined(DUK_CMDLINE_AJSHEAP)
 /* Defined in duk_cmdline_ajduk.c or alljoyn.js headers. */
 void ajsheap_init(void);
+void ajsheap_free(void);
 void ajsheap_dump(void);
 void ajsheap_register(duk_context *ctx);
 void ajsheap_start_exec_timeout(void);
@@ -777,6 +778,7 @@ static void destroy_duktape_heap(duk_context *ctx, int alloc_provider) {
 		fprintf(stdout, "Pool dump after duk_destroy_heap() (should have zero allocs)\n");
 		ajsheap_dump();
 	}
+	ajsheap_free();
 #endif
 }
 
