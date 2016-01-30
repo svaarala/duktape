@@ -60,6 +60,7 @@ allowed_use_meta_keys = [
 	'feature_enables',
 	'feature_disables',
 	'feature_snippet',
+	'feature_no_default',
 	'related_feature_defines',
 	'introduced',
 	'deprecated',

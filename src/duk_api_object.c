@@ -58,6 +58,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT_DISABLE(stridx >= 0);
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_UNREF(thr);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
@@ -133,6 +134,7 @@ DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT_DISABLE(stridx >= 0);
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_UNREF(thr);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
@@ -187,6 +189,7 @@ DUK_INTERNAL duk_bool_t duk_del_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT_DISABLE(stridx >= 0);
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_UNREF(thr);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
@@ -238,6 +241,7 @@ DUK_INTERNAL duk_bool_t duk_has_prop_stridx(duk_context *ctx, duk_idx_t obj_inde
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT_DISABLE(stridx >= 0);
 	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_UNREF(thr);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
@@ -562,6 +566,13 @@ DUK_EXTERNAL void duk_set_prototype(duk_context *ctx, duk_idx_t index) {
 	                               DUK_TYPE_MASK_OBJECT);
 	proto = duk_get_hobject(ctx, -1);
 	/* proto can also be NULL here (allowed explicitly) */
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);  /* XXX: "read only object"? */
+		return;
+	}
+#endif
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, obj, proto);
 

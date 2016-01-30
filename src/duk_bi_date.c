@@ -320,10 +320,8 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const ch
 		}  /* if-digit-else-ctrl */
 	}  /* char loop */
 
-	/* We should never exit the loop above, but if we do, reject
-	 * by falling through.
-	 */
-	DUK_DDD(DUK_DDDPRINT("fell out of char loop without explicit accept/reject -> reject"));
+	/* We should never exit the loop above. */
+	DUK_UNREACHABLE();
 
  reject:
 	DUK_DDD(DUK_DDDPRINT("reject"));

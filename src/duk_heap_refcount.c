@@ -478,7 +478,7 @@ DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 DUK_INTERNAL void duk_tval_incref(duk_tval *tv) {
 	DUK_ASSERT(tv != NULL);
 
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
@@ -493,7 +493,7 @@ DUK_INTERNAL void duk_tval_incref_allownull(duk_tval *tv) {
 	if (tv == NULL) {
 		return;
 	}
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
@@ -507,7 +507,7 @@ DUK_INTERNAL void duk_tval_decref(duk_hthread *thr, duk_tval *tv) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv != NULL);
 
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
@@ -522,7 +522,7 @@ DUK_INTERNAL void duk_tval_decref_allownull(duk_hthread *thr, duk_tval *tv) {
 	if (tv == NULL) {
 		return;
 	}
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
@@ -560,6 +560,11 @@ DUK_INTERNAL void duk_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
 	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
 
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY(h)) {
+		return;
+	}
+#endif
 	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
 		return;
 	}
@@ -573,10 +578,14 @@ DUK_INTERNAL void duk_heaphdr_decref_allownull(duk_hthread *thr, duk_heaphdr *h)
 	if (h == NULL) {
 		return;
 	}
-
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
-	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
 
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY(h)) {
+		return;
+	}
+#endif
+	DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) >= 1);
 	if (DUK_HEAPHDR_PREDEC_REFCOUNT(h) != 0) {
 		return;
 	}

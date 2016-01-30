@@ -263,6 +263,8 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
  * is useful if possible in the algorithm.  The current algorithms were
  * chosen from several variants, based on x64 gcc -O2 testing.  See:
  * https://github.com/svaarala/duktape/pull/422
+ *
+ * NOTE: must match src/dukutil.py:duk_unicode_unvalidated_utf8_length().
  */
 
 #if defined(DUK_USE_PREFER_SIZE)

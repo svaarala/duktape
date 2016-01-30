@@ -128,6 +128,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 	const char *str_empty = "";
 
 	DUK_ASSERT_TOP(ctx, 0);  /* fixed arg count */
+	DUK_UNREF(thr);
 
 	duk_push_this(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TRACEDATA);

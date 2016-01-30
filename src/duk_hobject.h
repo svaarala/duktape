@@ -53,7 +53,7 @@
 #define DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC        DUK_HEAPHDR_USER_FLAG(18)  /* Duktape/C (nativefunction) object, exotic 'length' */
 #define DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ       DUK_HEAPHDR_USER_FLAG(19)  /* 'Proxy' object */
 
-#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(21)
+#define DUK_HOBJECT_FLAG_CLASS_BASE            DUK_HEAPHDR_USER_FLAG_NUMBER(20)
 #define DUK_HOBJECT_FLAG_CLASS_BITS            5
 
 #define DUK_HOBJECT_GET_CLASS_NUMBER(h)        \
@@ -456,7 +456,7 @@
 #error invalid hobject layout defines
 #endif  /* hobject property layout */
 
-#define DUK_HOBJECT_E_ALLOC_SIZE(h) \
+#define DUK_HOBJECT_P_ALLOC_SIZE(h) \
 	DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE((h)), DUK_HOBJECT_GET_ASIZE((h)), DUK_HOBJECT_GET_HSIZE((h)))
 
 #define DUK_HOBJECT_E_GET_KEY(heap,h,i)              (DUK_HOBJECT_E_GET_KEY_BASE((heap), (h))[(i)])

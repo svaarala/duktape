@@ -1032,6 +1032,17 @@ DUK_EXTERNAL_DECL void duk_debugger_cooperate(duk_context *ctx);
 #define DUK_DATE_FLAG_VALUE_SHIFT          12        /* additional values begin at bit 12 */
 
 /*
+ *  ROM pointer compression
+ */
+
+/* Support array for ROM pointer compression.  Only declared when ROM
+ * pointer compression is active.
+ */
+#if defined(DUK_USE_ROM_OBJECTS) && defined(DUK_USE_HEAPPTR16)
+DUK_EXTERNAL_DECL const void * const duk_rom_compressed_pointers[];
+#endif
+
+/*
  *  C++ name mangling
  */
 

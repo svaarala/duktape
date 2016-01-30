@@ -73,7 +73,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hobject);
 		}
 		duk_push_uint(ctx, (duk_uint_t) hdr_size);
-		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_E_ALLOC_SIZE(h_obj));
+		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_P_ALLOC_SIZE(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_ESIZE(h_obj));
 		/* Note: e_next indicates the number of gc-reachable entries
 		 * in the entry part, and also indicates the index where the
@@ -221,6 +221,8 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
 
+	DUK_UNREF(thr);
+
 	/* Vararg function: must be careful to check/require arguments.
 	 * The JSON helpers accept invalid indices and treat them like
 	 * non-existent optional parameters.
@@ -265,6 +267,8 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_str;
+
+	DUK_UNREF(thr);
 
 	/* Vararg function: must be careful to check/require arguments.
 	 * The JSON helpers accept invalid indices and treat them like

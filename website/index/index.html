@@ -59,12 +59,13 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <h1>Code and RAM footprint</h1>
 <table>
 <tr><td>&nbsp;</td><td>x86 default</td><td>x86 lowmem</td><td>x86 full lowmem</td></tr>
-<tr><td>Code</td><td>224kB</td><td>198kB</td><td>234kB</td></tr>
-<tr><td>Startup RAM</td><td>70kB</td><td>43kB</td><td>28kB</td></tr>
+<tr><td>Code</td><td>224kB</td><td>198kB</td><td>234kB</td></tr>  <!-- FIXME: to be updated -->
+<tr><td>Startup RAM</td><td>70kB</td><td>43kB</td><td>3kB</td></tr>
 </table>
 
 <p>Full <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">lowmem</a>
-uses "pointer compression", Node.js Buffer and typed array support enabled.</p>
+uses "pointer compression" and ROM-based strings/objects.  ROM-based strings/objects can
+also be used without other low memory options.</p>
 
 <h1>Current status</h1>
 <ul>

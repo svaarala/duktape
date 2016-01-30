@@ -143,7 +143,12 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 	if (!h) {
 		return;
 	}
-
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY(h)) {
+		DUK_DDD(DUK_DDDPRINT("readonly object %p, skip", (void *) h));
+		return;
+	}
+#endif
 	if (DUK_HEAPHDR_HAS_REACHABLE(h)) {
 		DUK_DDD(DUK_DDDPRINT("already marked reachable, skip"));
 		return;
@@ -286,6 +291,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 			                   "finalized -> mark as finalizable "
 			                   "and treat as a reachability root: %p",
 			                   (void *) hdr));
+			DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(hdr));
 			DUK_HEAPHDR_SET_FINALIZABLE(hdr);
 			count_finalizable ++;
 		}
@@ -721,8 +727,9 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 	curr = heap->heap_allocated;
 	heap->heap_allocated = NULL;
 	while (curr) {
-		/* strings are never placed on the heap allocated list */
+		/* Strings and ROM objects are never placed on the heap allocated list. */
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) != DUK_HTYPE_STRING);
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(curr));
 
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 
@@ -778,6 +785,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 					/*
 					 *  Plain, boring reachable object.
 					 */
+					DUK_DD(DUK_DDPRINT("keep object: %!iO", curr));
 					count_keep++;
 				}
 
@@ -881,6 +889,7 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(curr));  /* No finalizers for ROM objects */
 
 		if (DUK_LIKELY((flags & DUK_MS_FLAG_SKIP_FINALIZERS) == 0)) {
 			/* Run the finalizer, duk_hobject_run_finalizer() sets FINALIZED.

@@ -514,6 +514,7 @@ void duk__realloc_props(duk_hthread *thr,
 	DUK_ASSERT(new_h_size == 0 || new_h_size >= new_e_size);  /* required to guarantee success of rehashing,
 	                                                           * intentionally use unadjusted new_e_size
 	                                                           */
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
 	/*
@@ -1053,6 +1054,13 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_DD(DUK_DDPRINT("ignore attempt to compact a rom object"));
+		return;
+	}
+#endif
 
 	e_size = duk__count_used_e_keys(thr, obj);
 	duk__compute_a_stats(thr, obj, &a_used, &a_size);
@@ -2035,6 +2043,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 	      DUK_HOBJECT_HAS_EXTENSIBLE(obj))) {
 		return 0;
 	}
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures */
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
@@ -2159,8 +2168,9 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 	      DUK_TVAL_IS_NUMBER(tv_val))) {
 		return 0;
 	}
-	h_bufobj = (duk_hbufferobject *) obj;
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures; rom objects are never bufferobjects now */
 
+	h_bufobj = (duk_hbufferobject *) obj;
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
 		idx = duk__tval_fastint_to_arr_idx(tv_key);
@@ -3337,6 +3347,18 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		orig = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(orig != NULL);
 
+#if defined(DUK_USE_ROM_OBJECTS)
+		/* With this check in place fast paths won't need read-only
+		 * object checks.  This is technically incorrect if there are
+		 * setters that cause no writes to ROM objects, but current
+		 * built-ins don't have such setters.
+		 */
+		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) orig)) {
+			DUK_DD(DUK_DDPRINT("attempt to putprop on read-only target object"));
+			goto fail_not_writable_no_pop;  /* Must avoid duk_pop() in exit path */
+		}
+#endif
+
 		/* The fast path for array property put is not fully compliant:
 		 * If one places conflicting number-indexed properties into
 		 * Array.prototype (for example, a non-writable Array.prototype[7])
@@ -3565,6 +3587,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			/*
 			 *  Found existing accessor property (own or inherited).
 			 *  Call setter with 'this' set to orig, and value as the only argument.
+			 *  Setter calls are OK even for ROM objects.
 			 *
 			 *  Note: no exotic arguments object behavior, because [[Put]] never
 			 *  calls [[DefineOwnProperty]] (E5 Section 8.12.5, step 5.b).
@@ -3714,6 +3737,14 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_DDD(DUK_DDDPRINT("update an existing property of the original object"));
 
 	DUK_ASSERT(orig != NULL);
+#if defined(DUK_USE_ROM_OBJECTS)
+	/* This should not happen because DUK_TAG_OBJECT case checks
+	 * for this already, but check just in case.
+	 */
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) orig)) {
+		goto fail_not_writable;
+	}
+#endif
 
 	/* Although there are writable virtual properties (e.g. plain buffer
 	 * and buffer object number indices), they are handled before we come
@@ -3796,6 +3827,15 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_DDD(DUK_DDDPRINT("create new property to original object"));
 
 	DUK_ASSERT(orig != NULL);
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	/* This should not happen because DUK_TAG_OBJECT case checks
+	 * for this already, but check just in case.
+	 */
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) orig)) {
+		goto fail_not_writable;
+	}
+#endif
 
 	/* Not possible because array object 'length' is present
 	 * from its creation and cannot be deleted, and is thus
@@ -4043,6 +4083,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	duk_pop(ctx);  /* remove key */
 	return 1;
 
+#if defined(DUK_USE_ES6_PROXY)
  fail_proxy_rejected:
 	DUK_DDD(DUK_DDDPRINT("result: error, proxy rejects"));
 	if (throw_flag) {
@@ -4050,6 +4091,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 	/* Note: no key on stack */
 	return 0;
+#endif
 
  fail_base_primitive:
 	DUK_DDD(DUK_DDDPRINT("result: error, base primitive"));
@@ -4079,6 +4121,15 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
+
+#if defined(DUK_USE_ROM_OBJECTS)
+ fail_not_writable_no_pop:
+	DUK_DDD(DUK_DDDPRINT("result: error, not writable"));
+	if (throw_flag) {
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_WRITABLE);
+	}
+	return 0;
+#endif
 
  fail_array_length_partial:
 	DUK_DDD(DUK_DDDPRINT("result: error, array length write only partially successful"));
@@ -4137,6 +4188,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 		DUK_DDD(DUK_DDDPRINT("property not found, succeed always"));
 		goto success;
 	}
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_DD(DUK_DDPRINT("attempt to delprop on read-only target object"));
+		goto fail_not_configurable;
+	}
+#endif
 
 	if ((desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) == 0 && !force_flag) {
 		goto fail_not_configurable;
@@ -4429,12 +4487,14 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 #endif
 	return 0;
 
+#if defined(DUK_USE_ES6_PROXY)
  fail_proxy_rejected:
 	if (throw_flag) {
 		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
 	}
 	duk_set_top(ctx, entry_top);
 	return 0;
+#endif
 
  fail_not_configurable:
 	if (throw_flag) {
@@ -4480,7 +4540,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
-
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 	DUK_ASSERT(duk_is_valid_index(ctx, -1));  /* contains value */
 
@@ -4592,6 +4652,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 
 	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) &&
 	    arr_idx != DUK__NO_ARRAY_INDEX &&
@@ -4652,6 +4713,7 @@ DUK_INTERNAL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hob
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT((propflags & ~DUK_PROPDESC_FLAGS_MASK) == 0);
 	/* setter and/or getter may be NULL */
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
@@ -5342,6 +5404,14 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		goto fail_virtual;
 	}
 
+	/* Reject attempt to change a read-only object. */
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_DD(DUK_DDPRINT("attempt to define property on read-only target object"));
+		goto fail_not_configurable;
+	}
+#endif
+
 	/* descriptor type specific checks */
 	if (has_set || has_get) {
 		/* IsAccessorDescriptor(desc) == true */
@@ -5806,6 +5876,13 @@ DUK_INTERNAL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_ho
 	DUK_ASSERT(obj != NULL);
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
+
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+		DUK_DD(DUK_DDPRINT("attempt to seal/freeze a readonly object, reject"));
+		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);
+	}
+#endif
 
 	/*
 	 *  Abandon array part because all properties must become non-configurable.
