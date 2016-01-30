@@ -158,6 +158,13 @@ void ajsheap_init(void) {
 #endif
 }
 
+void ajsheap_free(void) {
+	if (ajsheap_ram != NULL) {
+		free(ajsheap_ram);
+		ajsheap_ram = NULL;
+	}
+}
+
 /* AjsHeap.dump(), allows Ecmascript code to dump heap status at suitable
  * points.
  */
