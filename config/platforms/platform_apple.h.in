@@ -14,9 +14,9 @@
 #elif TARGET_OS_IPHONE
 #define DUK_USE_OS_STRING "iphone"
 #elif TARGET_OS_MAC
-#define DUK_USE_OS_STRING "ios"
+#define DUK_USE_OS_STRING "osx"
 #else
-#define DUK_USE_OS_STRING "ios-unknown"
+#define DUK_USE_OS_STRING "osx-unknown"
 #endif
 
 /* Use _setjmp() on Apple by default, see GH-55. */
