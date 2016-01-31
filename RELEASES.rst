@@ -1396,6 +1396,9 @@ Planned
 
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 
+* Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
+  targets (GH-570, GH-571)
+
 2.0.0 (XXXX-XX-XX)
 ------------------
 
