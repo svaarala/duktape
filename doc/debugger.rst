@@ -1350,6 +1350,21 @@ reestablish the link).
 ``msg`` is an optional string elaborating on the reason for the detach.  It may
 or may not be present depending on the nature of detachment.
 
+Break notification (0x07)
+-------------------------
+
+Format::
+
+    NFY <int: 7> <int: index> EOM
+
+Example::
+
+    NFY 7 3 EOM
+
+Duktape sends a Break notification whenever a breakpoint is hit during checked
+execution. ``index`` is the number of the breakpoint which was hit, as returned
+in the response for AddBreak (see below).
+
 Commands sent by debug client
 =============================
 
