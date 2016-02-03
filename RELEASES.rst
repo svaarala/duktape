@@ -1378,6 +1378,11 @@ Planned
 * Garbage collection is now automatically disabled when execution is paused
   in the debugger, which facilitates safe heap walking (GH-617)
 
+* Add a config option to drop the 16-bit character length field from
+  duk_hstring to reduce duk_hstring header overhead from 12 to 8 bytes,
+  which reduces low memory startup size using default RAM-based built-ins
+  from 27kB to 24kB (GH-642)
+
 * Allow ES6 unescaped curly braces ('{' and '}') in regular expressions
   (non-standard before ES6) when no valid quantifier can be parsed; this
   improves compatibility with existing Javascript code which often assumes
