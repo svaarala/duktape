@@ -2020,12 +2020,17 @@ def rom_emit_strings_source(genc, meta):
 	genc.emitLine('#if !defined(DUK_USE_REFCOUNT16)')
 	genc.emitLine('#error currently assumes DUK_USE_HEAPPTR16 and DUK_USE_REFCOUNT16 are both defined')
 	genc.emitLine('#endif')
+	genc.emitLine('#if defined(DUK_USE_HSTRING_CLEN)')
 	genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-	genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount) }, (blen), (clen) }')
-	genc.emitLine('#else')
+	genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen) }, (clen) }')
+	genc.emitLine('#else  /* DUK_USE_HSTRING_CLEN */')
+	genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
+	genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen) } }')
+	genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */')
+	genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
 	genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
 	genc.emitLine('\t{ { (heaphdr_flags), (refcount) }, (hash32), (blen), (clen) }')
-	genc.emitLine('#endif')
+	genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
 	# Emit string initializers.
 	genc.emitLine('')
@@ -2037,6 +2042,11 @@ def rom_emit_strings_source(genc, meta):
 		flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY' ]
 		is_arridx = string_is_arridx(v)
 
+		blen = len(v)
+		clen = rom_charlen(v)
+
+		if blen == clen:
+			flags.append('DUK_HSTRING_FLAG_ASCII')
 		if is_arridx:
 			#print('%r is arridx' % v)
 			flags.append('DUK_HSTRING_FLAG_ARRIDX')
@@ -2048,9 +2058,6 @@ def rom_emit_strings_source(genc, meta):
 			flags.append('DUK_HSTRING_FLAG_RESERVED_WORD')
 		if strict_reserved_words.has_key(v):
 			flags.append('DUK_HSTRING_FLAG_STRICT_RESERVED_WORD')
-
-		blen = len(v)
-		clen = rom_charlen(v)
 
 		tmp += 'DUK__STRINIT(%s,%d,%s,%s,%d,%d),' % \
 			('|'.join(flags), 1, rom_get_strhash32_macro(v), \
