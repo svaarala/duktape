@@ -70,6 +70,7 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 		data[blen] = (duk_uint8_t) 0;
 	}
 
+	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
 	if (duk_js_to_arrayindex_raw_string(str, blen, &dummy)) {
 		DUK_HSTRING_SET_ARRIDX(res);
 	}
@@ -81,15 +82,28 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	 * (such as string has already been interned and has the 'internal'
 	 * flag set).
 	 */
+	DUK_ASSERT(!DUK_HSTRING_HAS_INTERNAL(res));
 	if (blen > 0 && str[0] == (duk_uint8_t) 0xff) {
 		DUK_HSTRING_SET_INTERNAL(res);
 	}
 
 	DUK_HSTRING_SET_HASH(res, strhash);
 	DUK_HSTRING_SET_BYTELEN(res, blen);
+
 	clen = (duk_uint32_t) duk_unicode_unvalidated_utf8_length(str, (duk_size_t) blen);
 	DUK_ASSERT(clen <= blen);
+#if defined(DUK_USE_HSTRING_CLEN)
 	DUK_HSTRING_SET_CHARLEN(res, clen);
+#endif
+
+	/* Using an explicit 'ASCII' flag has larger footprint (one call site
+	 * only) but is quite useful for the case when there's no explicit
+	 * 'clen' in duk_hstring.
+	 */
+	DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
+	if (clen == blen) {
+		DUK_HSTRING_SET_ASCII(res);
+	}
 
 	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld, has_extdata=%ld",
 	                     (unsigned long) DUK_HSTRING_GET_HASH(res),
