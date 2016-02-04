@@ -1367,7 +1367,7 @@ Planned
 1.5.0 (XXXX-XX-XX)
 ------------------
 
-* Add support for placing Duktape built-in strings and objects into ROM
+* Add support for placing Duktape and user strings and objects into ROM
   (read-only data section) which reduces the startup RAM usage of a low
   memory build to ~3kB (from ~27kB) (GH-559)
 
