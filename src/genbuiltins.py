@@ -85,6 +85,26 @@ def recursive_strings_to_bytes(doc):
 
 	return f(doc)
 
+# Convert all strings in an object to from bytes to Unicode recursively.
+# Useful for writing back JSON/YAML dumps.
+def recursive_bytes_to_strings(doc):
+	def f(x):
+		if isinstance(x, str):
+			return bytes_to_unicode(x)
+		if isinstance(x, dict):
+			res = {}
+			for k in x.keys():
+				res[f(k)] = f(x[k])
+			return res
+		if isinstance(x, list):
+			res = []
+			for e in x:
+				res.append(f(e))
+			return res
+		return x
+
+	return f(doc)
+
 # Check if string is an "array index" in Ecmascript terms.
 def string_is_arridx(v):
 	is_arridx = False
@@ -98,12 +118,135 @@ def string_is_arridx(v):
 	return is_arridx
 
 #
-#  Metadata normalization
+#  Metadata loading, merging, and other preprocessing
+#
+#  Final metadata object contains merged and normalized objects and strings.
+#  Keys added include (see more below):
+#
+#    strings_stridx: string objects which have a stridx, matches stridx index order
+#    objects_bidx: objects which have a bidx, matches bidx index order
+#    objects_ram_toplevel: objects which are top level for RAM init
+#
+#  Various helper keys are also added, containing auxiliary object/string
+#  lists, lookup maps, etc.  See code below for details of these.
 #
 
-def normalize_object_metadata(objects_metadata):
+def metadata_lookup_object(meta, obj_id):
+	return meta['_objid_to_object'][obj_id]
+
+def metadata_lookup_property(obj, key):
+	for p in obj['properties']:
+		if p['key'] == key:
+			return p
+	raise Exception('cannot find property %s from object %s' % (key, obj_id))
+
+# Remove disabled objects and properties.
+def metadata_remove_disabled(meta):
+	objlist = []
+	for o in meta['objects']:
+		if o.get('disable', False):
+			print('Remove disabled object: %s' % o['id'])
+		else:
+			objlist.append(o)
+
+		props = []
+		for p in o['properties']:
+			if p.get('disable', False):
+				print('Remove disabled property: %s, object: %s' % (p['key'], o['id']))
+			else:
+				props.append(p)
+
+		o['properties'] = props
+
+	meta['objects'] = objlist
+
+# Delete dangling references to removed/missing objects.
+def metadata_delete_dangling_references_to_object(meta, obj_id):
+	for o in meta['objects']:
+		new_p = []
+		for p in o['properties']:
+			v = p['value']
+			ptype = None
+			if isinstance(v, dict):
+				ptype = p['value']['type']
+			delprop = False
+			if ptype == 'object' and v['id'] == obj_id:
+				delprop = True
+			if ptype == 'accessor' and v.get('getter_id') == obj_id:
+				p['getter_id'] = None
+			if ptype == 'accessor' and v.get('setter_id') == obj_id:
+				p['setter_id'] = None
+			# XXX: Should empty accessor (= no getter, no setter) be deleted?
+			# If so, beware of shorthand.
+			if delprop:
+				print('Deleted property %s of object %s, points to deleted object %s' % \
+				      (p['key'], o['id'], obj_id))
+			else:
+				new_p.append(p)
+		o['properties'] = new_p
+
+# Merge a user YAML file into current metadata.
+def metadata_merge_user_objects(meta, user_meta):
+	def _findObject(objid):
+		for i,t in enumerate(meta['objects']):
+			if t['id'] == objid:
+				return t, i
+		return None, None
+
+	for o in user_meta.get('add_objects', []):
+		#print('Add user object %s' % o['id'])
+		targ, targ_idx = _findObject(o['id'])
+		if targ is not None:
+			raise Exception('Cannot add object %s which already exists' % o['id'])
+		meta['objects'].append(o)
+
+	for o in user_meta.get('modify_objects', []):
+		if o.get('disable', False):
+			print('Skip disabled object: %s' % o['id'])
+			continue
+		targ, targ_idx = _findObject(o['id'])
+		assert(targ is not None)
+
+		if o.get('delete', False):
+			print('Delete object: %s' % targ['id'])
+			meta['objects'].pop(targ_idx)
+			metadata_delete_dangling_references_to_object(meta, targ['id'])
+			continue
+
+		for k in sorted(o.keys()):
+			# Merge top level keys by copying over, except 'properties'
+			if k == 'properties':
+				continue
+			targ[k] = o[k]
+		for p in o.get('properties', []):
+			if p.get('disable', False):
+				print('Skip disabled property: %s' % p['key'])
+				continue
+			prop = None
+			prop_idx = None
+			for idx,targ_prop in enumerate(targ['properties']):
+				if targ_prop['key'] == p['key']:
+					prop = targ_prop
+					prop_idx = idx
+					break
+			if prop is not None:
+				if p.get('delete', False):
+					print('Delete property %s of %s' % (p['key'], o['id']))
+					targ['properties'].pop(prop_idx)
+				else:
+					print('Replace property %s of %s' % (p['key'], o['id']))
+					targ['properties'][prop_idx] = p
+			else:
+				if p.get('delete', False):
+					print('Deleting property %s of %s: doesn\'t exist, nop' % (p['key'], o['id']))
+				else:
+					print('Add property %s of %s' % (p['key'], o['id']))
+					targ['properties'].append(p)
+
+# Normalize nargs for top level functions by defaulting 'nargs' from 'length'.
+def metadata_normalize_nargs_length(meta):
 	# Default 'nargs' from 'length' for top level function objects.
-	for o in objects_metadata['objects']:
+	for o in meta['objects']:
 		if o.has_key('nargs'):
 			continue
 		if not o.get('callable', False):
@@ -111,22 +254,745 @@ def normalize_object_metadata(objects_metadata):
 		for p in o['properties']:
 			if p['key'] != 'length':
 				continue
-			#print 'default nargs for top level: %r' % p
+			#print('Default nargs for top level: %r' % p)
 			assert(isinstance(p['value'], int))
 			o['nargs'] = p['value']
 			break
 		assert(o.has_key('nargs'))
 
 	# Default 'nargs' from 'length' for function property shorthand.
-	for o in objects_metadata['objects']:
+	for o in meta['objects']:
 		for p in o['properties']:
 			if not (isinstance(p['value'], dict) and p['value']['type'] == 'function'):
 				continue
 			pval = p['value']
-			assert(pval.has_key('length'))
+			if not pval.has_key('length'):
+				print('Default length for function shorthand: %r' % p)
+				pval['length'] = 0
 			if not pval.has_key('nargs'):
-				#print 'default nargs for function shorthand: %r' % p
+				#print('Default nargs for function shorthand: %r' % p)
 				pval['nargs'] = pval['length']
+
+# Prepare a list of built-in objects which need a runtime 'bidx'.
+def metadata_prepare_objects_bidx(meta):
+	objlist = meta['objects']
+	meta['objects'] = []
+	meta['objects_bidx'] = []
+	objid_map = {}  # temp map
+
+	# Build helper index.
+	for o in objlist:
+		objid_map[o['id']] = o
+
+	# Use 'builtins' as the bidx list with no filtering for now.
+	# Ideally we'd scan the actually needed indices from the source.
+	for o in meta['builtins']:
+		# No filtering now, just use list as is
+		obj = objid_map[o['id']]
+		obj['bidx_used'] = True
+		meta['objects'].append(obj)
+		meta['objects_bidx'].append(obj)
+
+	# Append remaining objects.
+	for o in objlist:
+		if o.get('bidx_used', False):
+			# Already in meta['objects'].
+			pass
+		else:
+			meta['objects'].append(o)
+
+# Normalize metadata property shorthand.  For example, if a proprety value
+# is a shorthand function, create a function object and change the property
+# to point to that function object.
+def metadata_normalize_shorthand(meta):
+	# Gather objects through the top level built-ins list.
+	objs = []
+	subobjs = []
+
+	def getSubObject():
+		obj = {}
+		obj['id'] = 'subobj_%d' % len(subobjs)  # synthetic ID
+		obj['properties'] = []
+		obj['auto_generated'] = True  # mark as autogenerated (just FYI)
+		subobjs.append(obj)
+		return obj
+
+	def decodeFunctionShorthand(funprop):
+		# Convert the built-in function property "shorthand" into an actual
+		# object for ROM built-ins.
+		assert(funprop['value']['type'] == 'function')
+		val = funprop['value']
+		obj = getSubObject()
+		props = obj['properties']
+		obj['native'] = val['native']
+		obj['nargs'] = val.get('nargs', val['length'])
+		obj['varargs'] = val.get('varargs', False)
+		obj['magic'] = val.get('magic', 0)
+		obj['internal_prototype'] = 'bi_function_prototype'
+		obj['class'] = 'Function'
+		obj['callable'] = True
+		obj['constructable'] = val.get('constructable', False)
+		props.append({ 'key': 'length', 'value': val['length'], 'attributes': '' })
+		props.append({ 'key': 'name', 'value': funprop['key'], 'attributes': '' })
+		return obj
+
+	def addAccessor(funprop, magic, nargs, length, name, native_func):
+		assert(funprop['value']['type'] == 'accessor')
+		obj = getSubObject()
+		props = obj['properties']
+		obj['native'] = native_func
+		obj['nargs'] = nargs
+		obj['varargs'] = False
+		obj['magic'] = magic
+		obj['internal_prototype'] = 'bi_function_prototype'
+		obj['class'] = 'Function'
+		obj['callable'] = True
+		obj['constructable'] = False
+		# Shorthand accessors are minimal and have no .length or .name
+		# right now.  Use longhand if these matter.
+		#props.append({ 'key': 'length', 'value': length, 'attributes': '' })
+		#props.append({ 'key': 'name', 'value': name, 'attributes': '' })
+		return obj
+
+	def decodeGetterShorthand(key, funprop):
+		assert(funprop['value']['type'] == 'accessor')
+		val = funprop['value']
+		return addAccessor(funprop,
+		                   val['getter_magic'],
+		                   val['getter_nargs'],
+		                   val.get('getter_length', 0),
+		                   key,
+		                   val['getter'])
+
+	def decodeSetterShorthand(key, funprop):
+		assert(funprop['value']['type'] == 'accessor')
+		val = funprop['value']
+		return addAccessor(funprop,
+		                   val['setter_magic'],
+		                   val['setter_nargs'],
+		                   val.get('setter_length', 0),
+		                   key,
+		                   val['setter'])
+
+	def decodeStructuredValue(val):
+		#print('Decode structured value: %r' % val)
+		if isinstance(val, (int, long, float, str)):
+			return val  # as is
+		elif isinstance(val, (dict)):
+			# Object: decode recursively
+			obj = decodeStructuredObject(val)
+			return { 'type': 'object', 'id': obj['id'] }
+		elif isinstance(val, (list)):
+			raise Exception('structured shorthand does not yet support array literals')
+		else:
+			raise Exception('unsupported value in structured shorthand: %r' % v)
+
+	def decodeStructuredObject(val):
+		# XXX: We'd like to preserve dict order from YAML source but
+		# Python doesn't do that.  Use sorted order to make the result
+		# deterministic.  User can always use longhand for exact
+		# property control.
+
+		#print('Decode structured object: %r' % val)
+		obj = getSubObject()
+		obj['class'] = 'Object'
+		obj['internal_prototype'] = 'bi_object_prototype'
+
+		props = obj['properties']
+		keys = sorted(val.keys())
+		for k in keys:
+			#print('Decode property %s' % k)
+			prop = { 'key': k, 'value': decodeStructuredValue(val[k]), 'attributes': 'wec' }
+			props.append(prop)
+
+		return obj
+
+	def decodeStructuredShorthand(structprop):
+		assert(structprop['value']['type'] == 'structured')
+		val = structprop['value']['value']
+		return decodeStructuredValue(val)
+
+	for idx,obj in enumerate(meta['objects']):
+		props = []
+		repl_props = []
+
+		for val in obj['properties']:
+			# Date.prototype.toGMTString must point to the same Function object
+			# as Date.prototype.toUTCString, so special case hack it here.
+			if obj['id'] == 'bi_date_prototype' and val['key'] == 'toGMTString':
+				#print('Skip Date.prototype.toGMTString')
+				continue
+
+			if isinstance(val['value'], dict) and val['value']['type'] == 'function':
+				# Function shorthand.
+				subfun = decodeFunctionShorthand(val)
+				prop = { 'key': val['key'], 'value': { 'type': 'object', 'id': subfun['id'] }, 'attributes': val['attributes'] }
+				repl_props.append(prop)
+			elif isinstance(val['value'], dict) and val['value']['type'] == 'accessor' and \
+			     (val['value'].has_key('getter') or val['value'].has_key('setter')):
+				# Accessor normal and shorthand forms both use the type 'accessor',
+				# but are differentiated by properties.
+				sub_getter = decodeGetterShorthand(val['key'], val)
+				sub_setter = decodeSetterShorthand(val['key'], val)
+				prop = { 'key': val['key'], 'value': { 'type': 'accessor', 'getter_id': sub_getter['id'], 'setter_id': sub_setter['id'] }, 'attributes': val['attributes'] }
+				assert('a' in prop['attributes'])  # If missing, weird things happen runtime
+				#print('Expand accessor shorthand: %r -> %r' % (val, prop))
+				repl_props.append(prop)
+			elif isinstance(val['value'], dict) and val['value']['type'] == 'structured':
+				# Structured shorthand.
+				subval = decodeStructuredShorthand(val)
+				prop = { 'key': val['key'], 'value': subval, 'attributes': val['attributes'] }
+				repl_props.append(prop)
+				print('Decoded structured shorthand for object %s, property %s' % (obj['id'], val['key']))
+			elif isinstance(val['value'], dict) and val['value']['type'] == 'buffer':
+				# Duktape buffer type not yet supported.
+				raise Exception('Buffer type not yet supported for builtins: %r' % val)
+			elif isinstance(val['value'], dict) and val['value']['type'] == 'pointer':
+				# Duktape pointer type not yet supported.
+				raise Exception('Pointer type not yet supported for builtins: %r' % val)
+			else:
+				# Property already in normalized form.
+				repl_props.append(val)
+
+			if obj['id'] == 'bi_date_prototype' and val['key'] == 'toUTCString':
+				#print('Clone Date.prototype.toUTCString to Date.prototype.toGMTString')
+				prop2 = copy.deepcopy(repl_props[-1])
+				prop2['key'] = 'toGMTString'
+				repl_props.append(prop2)
+
+		# Replace properties with a variant where function properties
+		# point to built-ins rather than using an inline syntax.
+		obj['properties'] = repl_props
+
+	len_before = len(meta['objects'])
+	meta['objects'] += subobjs
+	len_after = len(meta['objects'])
+
+	print('Normalized metadata shorthand, %d objects -> %d final objects' % (len_before, len_after))
+
+# Normalize property attribute order, default attributes, etc.
+def metadata_normalize_property_attributes(meta):
+	for o in meta['objects']:
+		for p in o['properties']:
+			orig_attrs = p.get('attributes', None)
+			is_accessor = (isinstance(p['value'], dict) and p['value']['type'] == 'accessor')
+
+			# If missing, set default attributes.
+			attrs = orig_attrs
+			if attrs is None:
+				if is_accessor:
+					attrs = 'ca'  # accessor default is configurable
+				else:
+					attrs = 'wc'  # default is writable, configurable
+				#print('Defaulted attributes of %s/%s to %s' % (o['id'], p['key'], attrs))
+
+			# Decode flags to normalize their order in the end.
+			writable = 'w' in attrs
+			enumerable = 'e' in attrs
+			configurable = 'c' in attrs
+			accessor = 'a' in attrs
+
+			# Force 'accessor' attribute for accessors.
+			if is_accessor and not accessor:
+				#print('Property %s is accessor but has no "a" attribute, add attribute' % p['key'])
+				accessor = True
+
+			# Normalize order and write back.
+			attrs = ''
+			if writable:
+				attrs += 'w'
+			if enumerable:
+				attrs += 'e'
+			if configurable:
+				attrs += 'c'
+			if accessor:
+				attrs += 'a'
+			p['attributes'] = attrs
+
+			if orig_attrs != attrs:
+				#print('Updated attributes of %s/%s from %r to %r' % (o['id'], p['key'], orig_attrs, attrs))
+				pass
+
+# Normalize ROM property attributes.
+def metadata_normalize_rom_property_attributes(meta):
+	for o in meta['objects']:
+		for p in o['properties']:
+			# ROM properties must not be configurable (runtime code
+			# depends on this).  Writability is kept so that instance
+			# objects can override parent properties.
+			p['attributes'] = p['attributes'].replace('c', '')
+
+# Add a 'name' property for all top level functions; expected by RAM
+# initialization code.
+def metadata_normalize_ram_function_names(meta):
+	for o in meta['objects']:
+		if not o.get('callable', False):
+			continue
+		name_prop = None
+		for p in o['properties']:
+			if p['key'] == 'name':
+				name_prop = p
+				break
+		if name_prop is None:
+			print('Adding missing "name" property for top level function %s' % o['id'])
+			o['properties'].append({ 'key': 'name', 'value': '', 'attributes': '' })
+
+# Add a built-in objects list for RAM initialization.
+def metadata_add_ram_filtered_object_list(meta):
+	# For RAM init data to support user objects, we need to prepare a
+	# filtered top level object list, containing only those objects which
+	# need a value stack index during duk_hthread_builtins.c init process.
+	#
+	# Objects in meta['objects'] which are covered by inline property
+	# notation in the init data (this includes e.g. member functions like
+	# Math.cos) must not be present.
+
+	objlist = []
+	for o in meta['objects']:
+		keep = o.get('bidx_used', False)
+		if o.has_key('native') and not o.has_key('bidx'):
+			# Handled inline by run-time init code
+			pass
+		else:
+			# Top level object
+			keep = True
+		if keep:
+			objlist.append(o)
+
+	print('Filtered RAM object list: %d objects with bidx, %d total top level objects' % \
+	      (len(meta['objects_bidx']), len(objlist)))
+
+	meta['objects_ram_toplevel'] = objlist
+
+# Add missing strings into strings metadata.  For example, if an object
+# property key is not part of the strings list, append it there.  This
+# is critical for ROM builtins because all property keys etc must also
+# be in ROM.
+def metadata_normalize_missing_strings(meta, user_meta):
+	# We just need plain strings here.
+	strs_have = {}
+	for s in meta['strings']:
+		strs_have[s['str']] = True
+
+	# For ROM builtins all the strings must be in the strings list,
+	# so scan objects for any strings not explicitly listed in metadata.
+	for idx, obj in enumerate(meta['objects']):
+		for prop in obj['properties']:
+			key = prop['key']
+			if not strs_have.get(key):
+				#print('Add missing string: %r' % key)
+				meta['strings'].append({ 'str': key, '_auto_add_ref': True })
+				strs_have[key] = True
+			if prop.has_key('value') and isinstance(prop['value'], (str, unicode)):
+				val = unicode_to_bytes(prop['value'])  # XXX: should already be
+				if not strs_have.get(val):
+					#print('Add missing string: %r' % val)
+					meta['strings'].append({ 'str': val, '_auto_add_ref': True })
+					strs_have[val] = True
+
+	# Force user strings to be in ROM data.
+	for s in user_meta.get('add_forced_strings', []):
+		if not strs_have.get(s['str']):
+			#print('Add user string: %r' % s['str'])
+			s['_auto_add_user'] = True
+			meta['strings'].append(s)
+
+# Detect objects not reachable from any object with a 'bidx'.  This is usually
+# a user error because such objects can't be reached at runtime so they're
+# useless in RAM or ROM init data.
+def metadata_remove_orphan_objects(meta):
+	reachable = {}
+
+	for o in meta['objects']:
+		if o.get('bidx_used', False):
+			reachable[o['id']] = True
+
+	while True:
+		reachable_count = len(reachable.keys())
+
+		def _markId(obj_id):
+			if obj_id is None:
+				return
+			reachable[obj_id] = True
+
+		for o in meta['objects']:
+			if not reachable.has_key(o['id']):
+				continue
+			for p in o['properties']:
+				# Shorthand has been normalized so no need
+				# to support it here.
+				v = p['value']
+				ptype = None
+				if isinstance(v, dict):
+					ptype = p['value']['type']
+				if ptype == 'object':
+					_markId(v['id'])
+				if ptype == 'accessor':
+					_markId(v.get('getter_id'))
+					_markId(v.get('setter_id'))
+
+		print('Mark reachable: reachable count initially %d, now %d' % \
+		      (reachable_count, len(reachable.keys())))
+		if reachable_count == len(reachable.keys()):
+			break
+
+	deleted = True
+	while deleted:
+		deleted = False
+		for i,o in enumerate(meta['objects']):
+			if not reachable.has_key(o['id']):
+				print('WARNING: object %s not reachable, dropping' % o['id'])
+				meta['objects'].pop(i)
+				deleted = True
+				break
+
+# Add C define names for builtin strings.  These defines are added to all
+# strings, even when they won't get a stridx because the define names are
+# used to autodetect referenced strings.
+def metadata_add_string_define_names(strlist, special_defs):
+	for s in strlist:
+		v = s['str']
+
+		if special_defs.has_key(v):
+			s['define'] = 'DUK_STRIDX_' + special_defs[v]
+			continue
+
+		if len(v) >= 1 and v[0] == '\xff':
+			pfx = 'DUK_STRIDX_INT_'
+			v = v[1:]
+		else:
+			pfx = 'DUK_STRIDX_'
+
+		t = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', v)  # add underscores: aB -> a_B
+		s['define'] = pfx + t.upper()
+
+# Add a 'stridx_used' flag for strings which need a stridx.
+def metadata_add_string_used_stridx(strlist, used_stridx_meta):
+	defs = {}
+	for s in used_stridx_meta['used_stridx_defines']:
+		defs[s] = True
+
+	for s in strlist:
+		if s.has_key('define') and defs.has_key(s['define']):
+			s['stridx_used'] = True
+
+	# duk_lexer.h needs all reserved words
+	for s in strlist:
+		if s.get('reserved_word', False):
+			s['stridx_used'] = True
+
+# Merge duplicate strings in string metadata.
+def metadata_merge_string_entries(strlist):
+	# The raw string list may contain duplicates so merge entries.
+	# The list is processed in reverse because the last entry should
+	# "win" and keep its place (this matters for reserved words).
+
+	strs = []
+	str_map = {}   # plain string -> object in strs[]
+	tmp = copy.deepcopy(strlist)
+	tmp.reverse()
+	for s in tmp:
+		prev = str_map.get(s['str'])
+		if prev is not None:
+			for k in s.keys():
+				if prev.has_key(k) and prev[k] != s[k]:
+					raise Exception('fail to merge string entry, conflicting keys: %r <-> %r' % (prev, s))
+				prev[k] = s[k]
+		else:
+			strs.append(s)
+			str_map[s['str']] = s
+	strs.reverse()
+	return strs
+
+# Order builtin strings (strings with a stridx) into an order satisfying
+# multiple constraints.
+def metadata_order_builtin_strings(input_strlist, keyword_list, strip_unused_stridx=False):
+	# Strings are ordered in the result as follows:
+	#   1. Non-reserved words requiring 8-bit indices
+	#   2. Non-reserved words not requiring 8-bit indices
+	#   3. Reserved words in non-strict mode only
+	#   4. Reserved words in strict mode
+	#
+	# Reserved words must follow an exact order because they are
+	# translated to/from token numbers by addition/subtraction.
+	# Some strings require an 8-bit index and must be in the
+	# beginning.
+
+	tmp_strs = []
+	for s in copy.deepcopy(input_strlist):
+		if not s.get('stridx_used', False):
+			# Drop strings which are not actually needed by src/*.(c|h).
+			# Such strings won't be in heap->strs[] or ROM legacy list.
+			pass
+		else:
+			tmp_strs.append(s)
+
+	# The reserved word list must match token order in duk_lexer.h
+	# exactly, so pluck them out first.
+
+	str_index = {}
+	kw_index = {}
+	keywords = []
+	strs = []
+	for idx,s in enumerate(tmp_strs):
+		str_index[s['str']] = s
+	for idx,s in enumerate(keyword_list):
+		keywords.append(str_index[s])
+		kw_index[s] = True
+	for idx,s in enumerate(tmp_strs):
+		if not kw_index.has_key(s['str']):
+			strs.append(s)
+
+	# Sort the strings by category number; within category keep
+	# previous order.
+
+	for idx,s in enumerate(strs):
+		s['_idx'] = idx  # for ensuring stable sort
+
+	def req8Bit(s):
+		return s.get('class_name', False)   # currently just class names
+
+	def getCat(s):
+		req8 = req8Bit(s)
+		if s.get('reserved_word', False):
+			# XXX: unused path now, because keywords are "plucked out"
+			# explicitly.
+			assert(not req8)
+			if s.get('future_reserved_word_strict', False):
+				return 4
+			else:
+				return 3
+		elif req8:
+			return 1
+		else:
+			return 2
+
+	def sortCmp(a,b):
+		return cmp( (getCat(a),a['_idx']), (getCat(b),b['_idx']) )
+
+	strs.sort(cmp=sortCmp)
+
+	for idx,s in enumerate(strs):
+		# Remove temporary _idx properties
+		del s['_idx']
+
+	for idx,s in enumerate(strs):
+		if req8Bit(s) and i >= 256:
+			raise Exception('8-bit string index not satisfied: ' + repr(s))
+
+	return strs + keywords
+
+# Dump metadata into a JSON file.
+def dump_metadata(meta, fn):
+	tmp = json.dumps(recursive_bytes_to_strings(meta), indent=4)
+	with open(fn, 'wb') as f:
+		f.write(tmp)
+	print('Wrote metadata dump to %s' % fn)
+
+# Main metadata loading function: load metadata from multiple sources,
+# merge and normalize, prepare various indexes etc.
+def load_metadata(opts, rom=False, build_info=None):
+	# Load built-in strings and objects.
+	with open(opts.strings_metadata, 'rb') as f:
+		strings_metadata = recursive_strings_to_bytes(yaml.load(f))
+	with open(opts.objects_metadata, 'rb') as f:
+		objects_metadata = recursive_strings_to_bytes(yaml.load(f))
+
+	# Merge strings and objects metadata as simple top level key merge.
+	meta = {}
+	for k in objects_metadata.keys():
+		meta[k] = objects_metadata[k]
+	for k in strings_metadata.keys():
+		meta[k] = strings_metadata[k]
+
+	# Add user objects.
+	user_meta = {}
+	for fn in opts.user_builtin_metadata:
+		print('Merging user builtin metadata file %s' % fn)
+		with open(fn, 'rb') as f:
+			user_meta = recursive_strings_to_bytes(yaml.load(f))
+		metadata_merge_user_objects(meta, user_meta)
+
+	# Remove disabled objects and properties.
+	metadata_remove_disabled(meta)
+
+	# Normalize 'nargs' and 'length' defaults.
+	metadata_normalize_nargs_length(meta)
+
+	# Normalize property attributes.
+	metadata_normalize_property_attributes(meta)
+
+	# Normalize property shorthand into full objects.
+	metadata_normalize_shorthand(meta)
+
+	# RAM top-level functions must have a 'name'.
+	if not rom:
+		metadata_normalize_ram_function_names(meta)
+
+	# Add Duktape.version and (Duktape.env for ROM case).
+	for o in meta['objects']:
+		if o['id'] == 'bi_duktape':
+			o['properties'].insert(0, { 'key': 'version', 'value': int(build_info['version']), 'attributes': '' })
+			if rom:
+				# Use a fixed (quite dummy for now) Duktape.env
+				# when ROM builtins are in use.  In the RAM case
+				# this is added during global object initialization
+				# based on config options in use.
+				o['properties'].insert(0, { 'key': 'env', 'value': 'ROM', 'attributes': '' })
+
+	# Normalize property attributes (just in case shorthand handling
+	# didn't add attributes to all properties).
+	metadata_normalize_property_attributes(meta)
+
+	# For ROM objects, mark all properties non-configurable.
+	if rom:
+		metadata_normalize_rom_property_attributes(meta)
+
+	# Create a list of objects needing a 'bidx'.  This is now just
+	# based on the 'builtins' metadata list but could be dynamically
+	# scanned somehow.  Ensure 'objects' and 'objects_bidx' match
+	# in order for shared length.
+	metadata_prepare_objects_bidx(meta)
+
+	# Merge duplicate strings.
+	meta['strings'] = metadata_merge_string_entries(meta['strings'])
+
+	# Prepare an ordered list of strings with 'stridx':
+	#   - Add a 'stridx_used' flag for strings which need an index in current code base
+	#   - Add a C define (DUK_STRIDX_xxx) for such strings
+	#   - Compute a stridx string order satisfying current runtime constraints
+	#
+	# The meta['strings_stridx'] result will be in proper order and stripped of
+	# any strings which don't need a stridx.
+	metadata_add_string_define_names(meta['strings'], meta['special_define_names'])
+	with open(opts.used_stridx_metadata, 'rb') as f:
+		metadata_add_string_used_stridx(meta['strings'], json.loads(f.read()))
+	meta['strings_stridx'] = metadata_order_builtin_strings(meta['strings'], meta['reserved_word_token_order'])
+
+	# For the ROM build: add any strings referenced by built-in objects
+	# into the string list (not the 'stridx' list though): all strings
+	# referenced by ROM objects must also be in ROM.
+	user_meta = {}
+	for fn in opts.user_builtin_metadata:
+		# XXX: awkward second pass
+		with open(fn, 'rb') as f:
+			user_meta = recursive_strings_to_bytes(yaml.load(f))
+		if rom:
+			metadata_normalize_missing_strings(meta, user_meta)
+
+	# Check for orphan objects and remove them.
+	metadata_remove_orphan_objects(meta)
+
+	# Add final stridx and bidx indices to metadata objects and strings.
+	idx = 0
+	for o in meta['objects']:
+		if o.get('bidx_used', False):
+			o['bidx'] = idx
+			idx += 1
+	idx = 0
+	for s in meta['strings']:
+		if s.get('stridx_used', False):
+			s['stridx'] = idx
+			idx += 1
+
+	# Prepare a filtered RAM top level object list, needed for technical
+	# reasons during RAM init handling.
+	if not rom:
+		metadata_add_ram_filtered_object_list(meta)
+
+	# Sanity check: object index must match 'bidx' for all objects
+	# which have a runtime 'bidx'.  This is assumed by e.g. RAM
+	# thread init.
+	for i,o in enumerate(meta['objects']):
+		if i < len(meta['objects_bidx']):
+			assert(meta['objects_bidx'][i] == meta['objects'][i])
+		if o.has_key('bidx'):
+			assert(o['bidx'] == i)
+
+	# Create a set of helper lists and maps now that the metadata is
+	# in its final form.
+	meta['_strings_plain'] = []
+	meta['_strings_stridx_plain'] = []
+	meta['_stridx_to_string'] = {}
+	meta['_idx_to_string'] = {}
+	meta['_stridx_to_plain'] = {}
+	meta['_idx_to_plain'] = {}
+	meta['_string_to_stridx'] = {}
+	meta['_plain_to_stridx'] = {}
+	meta['_string_to_idx'] = {}
+	meta['_plain_to_idx'] = {}
+	meta['_define_to_stridx'] = {}
+	meta['_stridx_to_define'] = {}
+	meta['_is_plain_reserved_word'] = {}
+	meta['_is_plain_strict_reserved_word'] = {}
+	meta['_objid_to_object'] = {}
+	meta['_objid_to_bidx'] = {}
+	meta['_objid_to_idx'] = {}
+	meta['_objid_to_ramidx'] = {}
+	meta['_bidx_to_objid'] = {}
+	meta['_idx_to_objid'] = {}
+	meta['_bidx_to_object'] = {}
+	meta['_idx_to_object'] = {}
+
+	for i,s in enumerate(meta['strings']):
+		assert(s['str'] not in meta['_strings_plain'])
+		meta['_strings_plain'].append(s['str'])
+		if s.get('reserved_word', False):
+			meta['_is_plain_reserved_word'][s['str']] = True  # includes also strict reserved words
+		if s.get('future_reserved_word_strict', False):
+			meta['_is_plain_strict_reserved_word'][s['str']] = True
+		meta['_idx_to_string'][i] = s
+		meta['_idx_to_plain'][i] = s['str']
+		meta['_plain_to_idx'][s['str']] = i
+		#meta['_string_to_idx'][s] = i
+	for i,s in enumerate(meta['strings_stridx']):
+		assert(s.get('stridx_used', False) == True)
+		meta['_strings_stridx_plain'].append(s['str'])
+		meta['_stridx_to_string'][i] = s
+		meta['_stridx_to_plain'][i] = s['str']
+		#meta['_string_to_stridx'][s] = i
+		meta['_plain_to_stridx'][s['str']] = i
+		meta['_define_to_stridx'][s['define']] = i
+		meta['_stridx_to_define'][i] = s['define']
+	for i,o in enumerate(meta['objects']):
+		meta['_objid_to_object'][o['id']] = o
+		meta['_objid_to_idx'][o['id']] = i
+		meta['_idx_to_objid'][i] = o['id']
+		meta['_idx_to_object'][i] = o
+	for i,o in enumerate(meta['objects_bidx']):
+		assert(o.get('bidx_used', False) == True)
+		meta['_objid_to_bidx'][o['id']] = i
+		meta['_bidx_to_objid'][i] = o['id']
+		meta['_bidx_to_object'][i] = o
+	if meta.has_key('objects_ram_toplevel'):
+		for i,o in enumerate(meta['objects_ram_toplevel']):
+			meta['_objid_to_ramidx'][o['id']] = i
+
+	# Dump stats.
+
+	if rom:
+		meta_name = 'ROM'
+	else:
+		meta_name = 'RAM'
+
+	count_add_ref = 0
+	count_add_user = 0
+	for s in meta['strings']:
+		if s.get('_auto_add_ref', False):
+			count_add_ref += 1
+		if s.get('_auto_add_user', False):
+			count_add_user += 1
+	count_add = count_add_ref + count_add_user
+
+	print(('Prepared %s metadata: %d objects, %d objects with bidx, ' + \
+	       '%d strings, %d strings with stridx, %d strings added ' + \
+	       '(%d property key references, %d user strings)') % \
+	      (meta_name, len(meta['objects']), len(meta['objects_bidx']), \
+	       len(meta['strings']), len(meta['strings_stridx']), \
+	       count_add, count_add_ref, count_add_user))
+
+	return meta
+
 #
 #  Metadata helpers
 #
@@ -253,21 +1119,6 @@ def resolve_magic(elem, objid_to_bidx):
 	else:
 		raise Exception('invalid magic type: %r' % elem)
 
-# Resolve object list; quite straightforward now.
-def resolve_object_list(doc):
-	res = []
-	objid_to_object = {}
-	for idx,o in enumerate(doc['objects']):
-		objid_to_object[o['id']] = o
-	for idx,o in enumerate(doc['builtins']):
-		# No filtering now, just use list as is
-		res.append(objid_to_object[o['id']])
-	for o in res:
-		# For now, assume all objects in 'builtins' list are referenced.
-		# Other objects are not (relevant for ROM objects).
-		o['need_bidx'] = True
-	return res
-
 # Helper to find a property from a property list, remove it from the
 # property list, and return the removed property.
 def steal_prop(props, key):
@@ -296,13 +1147,13 @@ def steal_prop(props, key):
 #  is determined based on metadata and source code scanning.
 #
 
-# XXX: Reserved word stridx's could be made to match token numbers
+# XXX: Reserved word stridxs could be made to match token numbers
 #      directly so that a duk_stridx2token[] would not be needed.
 
 # Default property attributes, see E5 Section 15 beginning.
-LENGTH_PROPERTY_ATTRIBUTES = ""
-ACCESSOR_PROPERTY_ATTRIBUTES = "c"
-DEFAULT_DATA_PROPERTY_ATTRIBUTES = "wc"
+LENGTH_PROPERTY_ATTRIBUTES = ''
+ACCESSOR_PROPERTY_ATTRIBUTES = 'c'
+DEFAULT_DATA_PROPERTY_ATTRIBUTES = 'wc'
 
 # Encoding constants (must match duk_hthread_builtins.c).
 CLASS_BITS = 5
@@ -369,143 +1220,8 @@ for i,v in enumerate(class_names):
 def class_to_number(x):
 	return class2num[x]
 
-# Merge duplicate strings in string metadata.
-def merge_string_entries(strlist):
-	# The raw string list may contain duplicates so merge entries.
-	# The list is processed in reverse because the last entry should
-	# "win" and keep its place (this matters for reserved words).
-
-	strs = []
-	str_map = {}   # plain string -> object in strs[]
-	tmp = copy.deepcopy(strlist)
-	tmp.reverse()
-	for s in tmp:
-		prev = str_map.get(s['str'])
-		if prev is not None:
-			for k in s.keys():
-				if prev.has_key(k) and prev[k] != s[k]:
-					raise Exception('fail to merge string entry, conflicting keys: %r <-> %r' % (prev, s))
-				prev[k] = s[k]
-		else:
-			strs.append(s)
-			str_map[s['str']] = s
-	strs.reverse()
-	return strs
-
-# Order builtin strings (strings with a stridx) into an order satisfying
-# multiple constraints.
-def order_builtin_strings(input_strlist, keyword_list, strip_unused_stridx=False):
-	# Strings are ordered in the result as follows:
-	#   1. Non-reserved words requiring 8-bit indices
-	#   2. Non-reserved words not requiring 8-bit indices
-	#   3. Reserved words in non-strict mode only
-	#   4. Reserved words in strict mode
-	#
-	# Reserved words must follow an exact order because they are
-	# translated to/from token numbers by addition/subtraction.
-	# Some strings require an 8-bit index and must be in the
-	# beginning.
-
-	tmp_strs = []
-	for s in copy.deepcopy(input_strlist):
-		if strip_unused_stridx and not s.get('stridx_used', False):
-			# Drop strings which are not actually needed by src/*.(c|h).
-			# Such strings won't be in heap->strs[] or ROM legacy list.
-			pass
-		else:
-			tmp_strs.append(s)
-
-	# The reserved word list must match token order in duk_lexer.h
-	# exactly, so pluck them out first.
-
-	str_index = {}
-	kw_index = {}
-	keywords = []
-	strs = []
-	for idx,s in enumerate(tmp_strs):
-		str_index[s['str']] = s
-	for idx,s in enumerate(keyword_list):
-		keywords.append(str_index[s])
-		kw_index[s] = True
-	for idx,s in enumerate(tmp_strs):
-		if not kw_index.has_key(s['str']):
-			strs.append(s)
-
-	# Sort the strings by category number; within category keep
-	# previous order.
-
-	for idx,s in enumerate(strs):
-		s['_idx'] = idx  # for ensuring stable sort
-
-	def req8Bit(s):
-		return s.get('class_name', False)   # currently just class names
-
-	def getCat(s):
-		req8 = req8Bit(s)
-		if s.get('reserved_word', False):
-			# XXX: unused path now, because keywords are "plucked out"
-			# explicitly.
-			assert(not req8)
-			if s.get('future_reserved_word_strict', False):
-				return 4
-			else:
-				return 3
-		elif req8:
-			return 1
-		else:
-			return 2
-
-	def sortCmp(a,b):
-		return cmp( (getCat(a),a['_idx']), (getCat(b),b['_idx']) )
-
-	strs.sort(cmp=sortCmp)
-
-	for idx,s in enumerate(strs):
-		# Remove temporary _idx properties
-		del s['_idx']
-
-	for idx,s in enumerate(strs):
-		if req8Bit(s):
-			if i >= 256:
-				raise Exception('8-bit string index not satisfied: ' + repr(s))
-
-	return strs + keywords
-
-# Add C define names for builtin strings.
-def add_string_define_names(strlist, special_defs):
-	for s in strlist:
-		v = s['str']
-
-		if special_defs.has_key(v):
-			s['define'] = 'DUK_STRIDX_' + special_defs[v]
-			continue
-
-		if len(v) >= 1 and v[0] == '\xff':
-			pfx = 'DUK_STRIDX_INT_'
-			v = v[1:]
-		else:
-			pfx = 'DUK_STRIDX_'
-
-		t = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', v)  # add underscores: aB -> a_B
-		s['define'] = pfx + t.upper()
-
-# Add a 'stridx_used' flag for strings which need a stridx.
-def add_string_used_stridx(strlist, used_stridx_meta):
-	defs = {}
-	for s in used_stridx_meta['used_stridx_defines']:
-		defs[s] = True
-
-	for s in strlist:
-		if defs.has_key(s['define']):
-			s['stridx_used'] = True
-
-	# duk_lexer.h needs all reserved words
-	for s in strlist:
-		if s.get('reserved_word', False):
-			s['stridx_used'] = True
-
 # Generate bit-packed RAM string init data.
-def gen_ramstr_initdata_bitpacked(strlist):
+def gen_ramstr_initdata_bitpacked(meta):
 	be = dukutil.BitEncoder()
 
 	# Strings are encoded as follows: a string begins in lowercase
@@ -535,7 +1251,7 @@ def gen_ramstr_initdata_bitpacked(strlist):
 	n_switch = 0
 	n_sevenbit = 0
 
-	for s_obj in strlist:
+	for s_obj in meta['strings_stridx']:
 		s = s_obj['str']
 
 		be.bits(len(s), 5)
@@ -599,49 +1315,25 @@ def gen_ramstr_initdata_bitpacked(strlist):
 				be.bits(SEVENBIT, 5)
 				be.bits(ord(c), 7)
 				n_sevenbit += 1
-				#print 'sevenbit for: %r' % c
+				#print('sevenbit for: %r' % c)
 
 	# end marker not necessary, C code knows length from define
 
 	res = be.getByteString()
 
-	print ('%d ram strings, %d bytes of string init data, %d maximum string length, ' + \
-	       'encoding: optimal=%d,switch1=%d,switch=%d,sevenbit=%d') % \
-		(len(strlist), len(res), maxlen, \
-	         n_optimal, n_switch1, n_switch, n_sevenbit)
+	print('%d ram strings, %d bytes of string init data, %d maximum string length, ' + \
+	      'encoding: optimal=%d,switch1=%d,switch=%d,sevenbit=%d') % \
+	      (len(meta['strings_stridx']), len(res), maxlen, \
+	      n_optimal, n_switch1, n_switch, n_sevenbit)
 
 	return res, maxlen
-
-# Get helper maps for strings, e.g. map string/define to stridx.
-def get_string_maps(strlist):
-	string_to_stridx = {}
-	define_to_stridx = {}
-	reserved_words = {}   # map to True
-	strict_reserved_words = {}
-
-	for idx,s in enumerate(strlist):
-		string_to_stridx[s['str']] = idx
-		define_to_stridx[s['define']] = idx
-		if s.get('reserved_word', False):
-			reserved_words[s['str']] = True  # includes also strict reserved words
-		if s.get('future_reserved_word_strict', False):
-			strict_reserved_words[s['str']] = True
-
-	return string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words
-
-# Get a plain list of strings.
-def get_plain_string_list(strlist):
-	res = []
-	for s in strlist:
-		res.append(s['str'])
-	return res
 
 # Functions to emit string-related source/header parts.
 
 def emit_ramstr_source_strinit_data(genc, strdata):
 	genc.emitArray(strdata, 'duk_strings_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(strdata))
 
-def emit_ramstr_header_strinit_defines(genc, strlist, strdata, strmaxlen):
+def emit_ramstr_header_strinit_defines(genc, meta, strdata, strmaxlen):
 	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
 	genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_strings_data[%d];' % len(strdata))
 	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
@@ -649,7 +1341,9 @@ def emit_ramstr_header_strinit_defines(genc, strlist, strdata, strmaxlen):
 	genc.emitDefine('DUK_STRDATA_DATA_LENGTH', len(strdata))
 
 # This is used for both RAM and ROM strings.
-def emit_header_stridx_defines(genc, strlist):
+def emit_header_stridx_defines(genc, meta):
+	strlist = meta['strings_stridx']
+
 	for idx,s in enumerate(strlist):
 		genc.emitDefine(s['define'], idx, repr(s['str']))
 		defname = s['define'].replace('_STRIDX','_HEAP_STRING')
@@ -702,7 +1396,7 @@ def encode_property_flags(flags):
 	return res
 
 # Generate RAM object initdata for an object (but not its properties).
-def gen_ramobj_initdata_for_object(be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx):
+def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx):
 	def _stridx(strval):
 		stridx = string_to_stridx[strval]
 		be.bits(stridx, STRIDX_BITS)
@@ -782,7 +1476,7 @@ def gen_ramobj_initdata_for_object(be, bi, string_to_stridx, natfunc_name_to_nat
 		assert(isinstance(prop_name['value'], str))
 		_stridx_or_string(prop_name['value'])
 
-		if bi.has_key('constructable') and bi['constructable'] == True:
+		if bi.get('constructable', False):
 			be.bits(1, 1)	# flag: constructable
 		else:
 			be.bits(0, 1)	# flag: not constructable
@@ -797,7 +1491,7 @@ def gen_ramobj_initdata_for_object(be, bi, string_to_stridx, natfunc_name_to_nat
 			be.bits(0, 1)
 
 # Generate RAM object initdata for an object's properties.
-def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx, double_byte_order):
+def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx, double_byte_order):
 	count_normal_props = 0
 	count_function_props = 0
 
@@ -853,6 +1547,7 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 	# name: encoded specially for function objects, so steal and ignore here
 	if bi['class'] == 'Function':
 		prop_name = steal_prop(props, 'name')
+		assert(prop_name is not None)
 		assert(isinstance(prop_name['value'], str))
 		# Function.prototype.name has special handling in duk_hthread_builtins.c
 		assert((bi['id'] != 'bi_function_prototype' and prop_name['attributes'] == '') or \
@@ -866,14 +1561,18 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 	if bi['id'] == 'bi_date_prototype':
 		prop_togmtstring = steal_prop(props, 'toGMTString')
 		assert(prop_togmtstring is not None)
-		#print 'Stole Date.prototype.toGMTString'
+		#print('Stole Date.prototype.toGMTString')
 
-	# Filter values and functions.  The built-in bit stream assumes
-	# non-function properties come first so split into two arrays.
+	# Split properties into non-builtin functions and other properties.
+	# This split is a bit arbitrary, but is used to reduce flag bits in
+	# the bit stream.
 	values = []
 	functions = []
 	for prop in props:
-		if isinstance(prop['value'], dict) and prop['value']['type'] == 'function':
+		if isinstance(prop['value'], dict) and \
+		   prop['value']['type'] == 'object' and \
+		   metadata_lookup_object(meta, prop['value']['id']).has_key('native') and \
+		   not metadata_lookup_object(meta, prop['value']['id']).has_key('bidx'):
 			functions.append(prop)
 		else:
 			values.append(prop)
@@ -895,14 +1594,19 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 		default_attrs = DEFAULT_DATA_PROPERTY_ATTRIBUTES
 
 		attrs = valspec.get('attributes', default_attrs)
+		attrs = attrs.replace('a', '')  # ram bitstream doesn't encode 'accessor' attribute
 		if attrs != default_attrs:
-			#print 'non-default attributes: %s -> %r (default %r)' % (valspec['key'], attrs, default_attrs)
+			#print('non-default attributes: %s -> %r (default %r)' % (valspec['key'], attrs, default_attrs))
 			be.bits(1, 1)  # flag: have custom attributes
 			be.bits(encode_property_flags(attrs), PROP_FLAGS_BITS)
 		else:
 			be.bits(0, 1)  # flag: no custom attributes
 
-		if isinstance(val, bool):
+		if val is None:
+			print('WARNING: RAM init data format doesn\'t support "null" now, value replaced with "undefined": %r' % valspec)
+			#raise Exception('RAM init format doesn\'t support a "null" value now')
+			be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
+		elif isinstance(val, bool):
 			if val == True:
 				be.bits(PROP_TYPE_BOOLEAN_TRUE, PROP_TYPE_BITS)
 			else:
@@ -943,12 +1647,12 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 				# using a string index.  This saves some space,
 				# especially for the 'name' property of errors
 				# ('EvalError' etc).
-	
+
 				be.bits(PROP_TYPE_STRIDX, PROP_TYPE_BITS)
 				_stridx(val)
 			else:
 				# Not in string table -> encode as raw 7-bit value
-	
+
 				be.bits(PROP_TYPE_STRING, PROP_TYPE_BITS)
 				be.bits(len(val), STRING_LENGTH_BITS)
 				for i in xrange(len(val)):
@@ -961,12 +1665,14 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 				be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
 			elif val['type'] == 'accessor':
 				be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS)
-				_natidx(val['getter'])  # 'getter' is native function name
-				_natidx(val['setter'])  # 'setter' is native function name
-				assert(val['getter_nargs'] == 0)
-				assert(val['setter_nargs'] == 1)
-				assert(val['getter_magic'] == 0)
-				assert(val['setter_magic'] == 0)
+				getter_fn = metadata_lookup_object(meta, val['getter_id'])
+				setter_fn = metadata_lookup_object(meta, val['setter_id'])
+				_natidx(getter_fn['native'])
+				_natidx(setter_fn['native'])
+				assert(getter_fn['nargs'] == 0)
+				assert(setter_fn['nargs'] == 1)
+				assert(getter_fn['magic'] == 0)
+				assert(setter_fn['magic'] == 0)
 			else:
 				raise Exception('unsupported value: %s' % repr(val))
 		else:
@@ -974,28 +1680,31 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 
 	be.bits(len(functions), NUM_FUNC_PROPS_BITS)
 
-	for funspec in functions:
+	for funprop in functions:
 		count_function_props += 1
 
-		_stridx_or_string(funspec['key'])
+		funobj = metadata_lookup_object(meta, funprop['value']['id'])
+		prop_len = metadata_lookup_property(funobj, 'length')
+		assert(prop_len is not None)
+		assert(isinstance(prop_len['value'], (int)))
+		length = prop_len['value']
 
-		_natidx(funspec['value']['native'])
-
-		length = funspec['value']['length']
+		_stridx_or_string(funprop['key'])
+		_natidx(funobj['native'])
 		be.bits(length, LENGTH_PROP_BITS)
 
-		if funspec['value'].get('varargs', False):
+		if funobj.get('varargs', False):
 			be.bits(1, 1)  # flag: non-default nargs
 			be.bits(NARGS_VARARGS_MARKER, NARGS_BITS)
-		elif funspec['value'].has_key('nargs') and funspec['value']['nargs'] != length:
+		elif funobj.has_key('nargs') and funobj['nargs'] != length:
 			be.bits(1, 1)  # flag: non-default nargs
-			be.bits(funspec['value']['nargs'], NARGS_BITS)
+			be.bits(funobj['nargs'], NARGS_BITS)
 		else:
 			be.bits(0, 1)  # flag: default nargs OK
 
 		# XXX: make this check conditional to minimize bit count
 		# (there are quite a lot of function properties)
-		magic = resolve_magic(funspec['value'].get('magic'), objid_to_bidx)
+		magic = resolve_magic(funobj.get('magic'), objid_to_bidx)
 		if magic != 0:
 			assert(magic >= 0)
 			assert(magic < (1 << MAGIC_BITS))
@@ -1007,24 +1716,27 @@ def gen_ramobj_initdata_for_props(be, bi, string_to_stridx, natfunc_name_to_nati
 	return count_normal_props, count_function_props
 
 # Get helper maps for RAM objects.
-def get_ramobj_native_func_maps(objlist):
+def get_ramobj_native_func_maps(meta):
 	# Native function list and index
 	native_funcs_found = {}
 	native_funcs = []
 	natfunc_name_to_natidx = {}
 
-	for o in objlist:
+	for o in meta['objects']:
 		if o.has_key('native'):
 			native_funcs_found[o['native']] = True
 		for v in o['properties']:
 			val = v['value']
 			if isinstance(val, dict):
-				if val.has_key('getter'):
-					native_funcs_found[val['getter']] = True
-				if val.has_key('setter'):
-					native_funcs_found[val['setter']] = True
-				if val['type'] == 'function' and val.has_key('native'):
-					native_funcs_found[val['native']] = True
+				if val['type'] == 'accessor':
+					getter = metadata_lookup_object(meta, val['getter_id'])
+					native_funcs_found[getter['native']] = True
+					setter = metadata_lookup_object(meta, val['setter_id'])
+					native_funcs_found[setter['native']] = True
+				if val['type'] == 'object':
+					target = metadata_lookup_object(meta, val['id'])
+					if target.has_key('native'):
+						native_funcs_found[target['native']] = True
 	for idx,k in enumerate(sorted(native_funcs_found.keys())):
 		native_funcs.append(k)  # native func names
 		natfunc_name_to_natidx[k] = idx
@@ -1032,13 +1744,14 @@ def get_ramobj_native_func_maps(objlist):
 	return native_funcs, natfunc_name_to_natidx
 
 # Generate bit-packed RAM object init data.
-def gen_ramobj_initdata_bitpacked(objlist, string_index, native_funcs, natfunc_name_to_natidx, double_byte_order):
-	# Object index
-	objid_to_object = {}
-	objid_to_bidx = {}
-	for idx,o in enumerate(objlist):
-		objid_to_object[o['id']] = o
-		objid_to_bidx[o['id']] = idx
+def gen_ramobj_initdata_bitpacked(meta, native_funcs, natfunc_name_to_natidx, double_byte_order):
+	# RAM initialization is based on a specially filtered list of top
+	# level objects which includes objects with 'bidx' and objects
+	# which aren't handled as inline values in the init bitstream.
+	objlist = meta['objects_ram_toplevel']
+	objid_to_idx = meta['_objid_to_ramidx']
+	objid_to_object = meta['_objid_to_object']  # This index is valid even for filtered object list
+	string_index = meta['_plain_to_stridx']
 
 	# Generate bitstream
 	be = dukutil.BitEncoder()
@@ -1047,9 +1760,9 @@ def gen_ramobj_initdata_bitpacked(objlist, string_index, native_funcs, natfunc_n
 	count_function_props = 0
 	for o in objlist:
 		count_builtins += 1
-		gen_ramobj_initdata_for_object(be, o, string_index, natfunc_name_to_natidx, objid_to_bidx)
+		gen_ramobj_initdata_for_object(meta, be, o, string_index, natfunc_name_to_natidx, objid_to_idx)
 	for o in objlist:
-		count_obj_normal, count_obj_func = gen_ramobj_initdata_for_props(be, o, string_index, natfunc_name_to_natidx, objid_to_bidx, double_byte_order)
+		count_obj_normal, count_obj_func = gen_ramobj_initdata_for_props(meta, be, o, string_index, natfunc_name_to_natidx, objid_to_idx, double_byte_order)
 		count_normal_props += count_obj_normal
 		count_function_props += count_obj_func
 
@@ -1057,8 +1770,8 @@ def gen_ramobj_initdata_bitpacked(objlist, string_index, native_funcs, natfunc_n
 	#print(repr(romobj_init_data))
 	#print(len(romobj_init_data))
 
-	print '%d ram builtins, %d normal properties, %d function properties, %d of object init data' % \
-		(count_builtins, count_normal_props, count_function_props, len(romobj_init_data))
+	print('%d ram builtins, %d normal properties, %d function properties, %d bytes of object init data' % \
+	      (count_builtins, count_normal_props, count_function_props, len(romobj_init_data)))
 
 	return romobj_init_data
 
@@ -1095,11 +1808,14 @@ def emit_ramobj_header_nativefunc_array(genc, native_func_list):
 	genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%d];' % len(native_func_list))
 	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
 
-def emit_ramobj_header_objects(genc, objlist):
+def emit_ramobj_header_objects(genc, meta):
+	objlist = meta['objects_bidx']
 	for idx,o in enumerate(objlist):
 		defname = 'DUK_BIDX_' + '_'.join(o['id'].upper().split('_')[1:])  # bi_foo_bar -> FOO_BAR
 		genc.emitDefine(defname, idx)
 	genc.emitDefine('DUK_NUM_BUILTINS', len(objlist))
+	genc.emitDefine('DUK_NUM_BIDX_BUILTINS', len(objlist))                      # Objects with 'bidx'
+	genc.emitDefine('DUK_NUM_ALL_BUILTINS', len(meta['objects_ram_toplevel']))  # Objects with 'bidx' + temps needed in init
 
 def emit_ramobj_header_initdata(genc, init_data):
 	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
@@ -1133,134 +1849,6 @@ def emit_ramobj_header_initdata(genc, init_data):
 #      which is problematic because there are cyclical const structures.
 #
 
-# Normalize strings/objects metadata for ROM initializer use.
-def normalize_rom_builtins(strlist, user_strings, objlist):
-	# The builtins data we use for the existing RAM initializers is not
-	# ideal for writing out the ROM initializers.  For example, we have
-	# a list of top level objects only; their property values may specify
-	# further objects (functions) inline with a different notation.
-	# Create a normalized object/property representation as a first step.
-
-	# We just need plain strings here.  Add user strings if given.
-	strs = []
-	strs_have = {}
-	for s in strlist + user_strings:
-		if not strs_have.has_key(s['str']):
-			strs.append(s['str'])
-			strs_have[s['str']] = True
-
-	# Gather objects through the top level built-ins list.
-	objs = []
-	subobjs = []
-
-	def addFun(fun):
-		# Convert the built-in function property "shorthand" into an actual
-		# object for ROM built-ins.
-		obj = {}
-		props = []
-		obj['properties'] = props
-		obj['id'] = 'subobj_%d' % len(subobjs)  # synthetic id
-		obj['native'] = fun['value']['native']
-		obj['nargs'] = fun['value'].get('nargs', fun['value']['length'])
-		obj['varargs'] = fun['value'].get('varargs', False)
-		obj['magic'] = fun['value'].get('magic', 0)
-		obj['internal_prototype'] = 'bi_function_prototype'
-		obj['class'] = 'Function'
-		obj['callable'] = True
-		obj['constructable'] = fun['value'].get('constructable', False)
-		props.append({ 'key': 'length', 'value': fun['value']['length'], 'attributes': '' })
-		props.append({ 'key': 'name', 'value': fun['key'], 'attributes': '' })
-		subobjs.append(obj)
-		return obj
-
-	def addAccessor(fun, magic, nargs, native_func):
-		obj = {}
-		props = []
-		obj['properties'] = props
-		obj['id'] = 'subobj_%d' % len(subobjs)  # synthetic id
-		obj['native'] = native_func
-		obj['length'] = 0
-		obj['nargs'] = nargs
-		obj['varargs'] = False
-		obj['magic'] = magic
-		obj['internal_prototype'] = 'bi_function_prototype'
-		obj['class'] = 'Function'
-		obj['callable'] = True
-		obj['constructable'] = False
-		subobjs.append(obj)
-		return obj
-
-	def addGetter(fun):
-		return addAccessor(fun, fun['value']['getter_magic'], fun['value']['getter_nargs'], fun['value']['getter'])
-
-	def addSetter(fun):
-		return addAccessor(fun, fun['value']['setter_magic'], fun['value']['setter_nargs'], fun['value']['setter'])
-
-	objs = []
-	for idx,bi in enumerate(objlist):
-		obj = copy.deepcopy(bi)
-		obj['id'] = bi['id']
-		props = []
-		repl_props = []
-
-		for val in obj['properties']:
-			# Date.prototype.toGMTString must point to the same Function object
-			# as Date.prototype.toUTCString, so special case hack it here.
-			if bi['id'] == 'bi_date_prototype' and val['key'] == 'toGMTString':
-				print 'Skip Date.prototype.toGMTString'
-				continue
-
-			if isinstance(val['value'], dict) and val['value']['type'] == 'function':
-				subfun = addFun(val)
-				prop = { 'key': val['key'], 'value': { 'type': 'object', 'id': subfun['id'] } }
-				repl_props.append(prop)
-			elif isinstance(val['value'], dict) and val['value']['type'] == 'accessor':
-				# Accessor are specified as native function names, change
-				# them to object references.
-				sub_getter = addGetter(val)
-				sub_setter = addSetter(val)
-				val['value']['getter'] = sub_getter
-				val['value']['setter'] = sub_setter
-				repl_props.append(val)
-			else:
-				repl_props.append(val)
-
-			if bi['id'] == 'bi_date_prototype' and val['key'] == 'toUTCString':
-				print 'Clone Date.prototype.toUTCString to Date.prototype.toGMTString'
-				prop2 = copy.deepcopy(repl_props[-1])
-				prop2['key'] = 'toGMTString'
-				repl_props.append(prop2)
-
-		# Replace properties with a variant where function properties
-		# point to built-ins rather than using an inline syntax.
-		obj['properties'] = repl_props
-		objs.append(obj)
-
-	# For ROM builtins all the strings must be in the strings list,
-	# so scan objects for any strings not explicitly listed in metadata.
-	count_add = 0
-	for idx, obj in enumerate(objs):
-		for prop in obj['properties']:
-			key = prop['key']
-			if key not in strs:
-				#print('Add missing string: %r' % key)
-				count_add += 1
-				strs.append(key)
-			if prop.has_key('value') and isinstance(prop['value'], (str, unicode)):
-				val = unicode_to_bytes(prop['value'])
-				if val not in strs:
-					#print('Add missing string: %r' % val)
-					count_add += 1
-					strs.append(val)
-
-	final_strings = strs
-	final_objects = objs + subobjs
-
-	print '%d rom strings (%d automatically added), %d rom objects' % \
-		(len(final_strings), count_add, len(final_objects))
-
-	return final_strings, final_objects
-
 # Get string hash initializers; need to compute possible string hash variants
 # which will match runtime values.
 def rom_get_strhash16_macro(val):
@@ -1282,7 +1870,7 @@ def rom_charlen(x):
 # (expressed in YAML metadata format).  The types and initializers depend
 # on declarations emitted before the initializers, and in several cases
 # use a macro to hide the selection between several initializer variants.
-def rom_get_value_initializer(val, bi_str_map, bi_obj_map):
+def rom_get_value_initializer(meta, val, bi_str_map, bi_obj_map):
 	def double_bytes_initializer(val):
 		# Portable and exact float initializer.
 		assert(isinstance(val, str) and len(val) == 16)  # hex encoded bytes
@@ -1300,7 +1888,10 @@ def rom_get_value_initializer(val, bi_str_map, bi_obj_map):
 		return 'DUK__TVAL_NUMBER(%s)' % double_bytes_initializer(val)
 
 	v = val['value']
-	if isinstance(v, (bool)):
+	if v is None:
+		init_type = 'duk_rom_tval_null'
+		init_lit = 'DUK__TVAL_NULL()'
+	elif isinstance(v, (bool)):
 		init_type = 'duk_rom_tval_boolean'
 		bval = 0
 		if v:
@@ -1324,8 +1915,8 @@ def rom_get_value_initializer(val, bi_str_map, bi_obj_map):
 			init_type = 'duk_rom_tval_object'
 			init_lit = 'DUK__TVAL_OBJECT(&%s)' % bi_obj_map[v['id']]
 		elif v['type'] == 'accessor':
-			getter_object = v['getter']
-			setter_object = v['setter']
+			getter_object = metadata_lookup_object(meta, v['getter_id'])
+			setter_object = metadata_lookup_object(meta, v['setter_id'])
 			init_type = 'duk_rom_tval_accessor'
 			init_lit = '{ (const duk_hobject *) &%s, (const duk_hobject *) &%s }' % (bi_obj_map[getter_object['id']], bi_obj_map[setter_object['id']])
 		else:
@@ -1335,18 +1926,23 @@ def rom_get_value_initializer(val, bi_str_map, bi_obj_map):
 	return init_type, init_lit
 
 # Helpers to get either initializer type or value only (not both).
-def rom_get_value_initializer_type(val, bi_str_map, bi_obj_map):
-	init_type, init_lit = rom_get_value_initializer(val, bi_str_map, bi_obj_map)
+def rom_get_value_initializer_type(meta, val, bi_str_map, bi_obj_map):
+	init_type, init_lit = rom_get_value_initializer(meta, val, bi_str_map, bi_obj_map)
 	return init_type
-def rom_get_value_initializer_literal(val, bi_str_map, bi_obj_map):
-	init_type, init_lit = rom_get_value_initializer(val, bi_str_map, bi_obj_map)
+def rom_get_value_initializer_literal(meta, val, bi_str_map, bi_obj_map):
+	init_type, init_lit = rom_get_value_initializer(meta, val, bi_str_map, bi_obj_map)
 	return init_lit
 
 # Emit ROM strings source: structs/typedefs and their initializers.
 # Separate initialization structs are needed for strings of different
 # length.
-def rom_emit_strings_source(genc, strs, reserved_words, strict_reserved_words, strs_needing_stridx):
+def rom_emit_strings_source(genc, meta):
 	# Write built-in strings as code section initializers.
+
+	strs = meta['_strings_plain']  # all strings, plain versions
+	reserved_words = meta['_is_plain_reserved_word']
+	strict_reserved_words = meta['_is_plain_strict_reserved_word']
+	strs_needing_stridx = meta['strings_stridx']
 
 	# Sort used lengths and declare per-length initializers.
 	lens = []
@@ -1480,10 +2076,10 @@ def rom_emit_strings_source(genc, strs, reserved_words, strict_reserved_words, s
 	return bi_str_map
 
 # Emit ROM strings header.
-def rom_emit_strings_header(genc, strs, strs_needing_stridx):
+def rom_emit_strings_header(genc, meta):
 	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')  # C++ static const workaround
-	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings[%d];'% len(strs))
-	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_stridx[%d];' % len(strs_needing_stridx))
+	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings[%d];'% len(meta['strings']))
+	genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_stridx[%d];' % len(meta['strings_stridx']))
 	genc.emitLine('#endif')
 
 # Emit ROM objects initialized types and macros.
@@ -1516,15 +2112,16 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
 	genc.emitLine('#else')
 	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
-	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (props), (const duk_hobject *) (iproto), (esize), (enext), (asize), (hsize) } }')
+	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) } }')
 	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
-	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (const duk_uint8_t *) (void *) (props), (const duk_hobject *) (void *) (iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
 	genc.emitLine('#endif')
 
 	# Emit duk_tval structs.  This gets a bit messier with packed/unpacked
 	# duk_tval, endianness variants, pointer sizes, etc.
 	genc.emitLine('#if defined(DUK_USE_PACKED_TVAL)')
 	genc.emitLine('typedef struct duk_rom_tval_undefined duk_rom_tval_undefined;')
+	genc.emitLine('typedef struct duk_rom_tval_null duk_rom_tval_null;')
 	genc.emitLine('typedef struct duk_rom_tval_boolean duk_rom_tval_boolean;')
 	genc.emitLine('typedef struct duk_rom_tval_number duk_rom_tval_number;')
 	genc.emitLine('typedef struct duk_rom_tval_object duk_rom_tval_object;')
@@ -1536,16 +2133,19 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('struct duk_rom_tval_object { const void *ptr; duk_uint32_t hiword; };')
 	genc.emitLine('struct duk_rom_tval_string { const void *ptr; duk_uint32_t hiword; };')
 	genc.emitLine('struct duk_rom_tval_undefined { const void *ptr; duk_uint32_t hiword; };')
+	genc.emitLine('struct duk_rom_tval_null { const void *ptr; duk_uint32_t hiword; };')
 	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t dummy; duk_uint32_t hiword; };')
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
 	genc.emitLine('struct duk_rom_tval_object { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_string { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_undefined { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_null { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t hiword; duk_uint32_t dummy; };')
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
 	genc.emitLine('struct duk_rom_tval_object { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_string { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_undefined { duk_uint32_t hiword; const void *ptr; };')
+	genc.emitLine('struct duk_rom_tval_null { duk_uint32_t hiword; const void *ptr; };')
 	genc.emitLine('struct duk_rom_tval_boolean { duk_uint32_t hiword; duk_uint32_t dummy; };')
 	genc.emitLine('#else')
 	genc.emitLine('#error invalid endianness defines')
@@ -1563,6 +2163,8 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('#endif')
 	genc.emitLine('typedef struct duk_rom_tval_undefined duk_rom_tval_undefined;')
 	genc.emitLine('struct duk_rom_tval_undefined { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint8_t bytes[8]; };')
+	genc.emitLine('typedef struct duk_rom_tval_null duk_rom_tval_null;')
+	genc.emitLine('struct duk_rom_tval_null { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint8_t bytes[8]; };')
 	genc.emitLine('typedef struct duk_rom_tval_boolean duk_rom_tval_boolean;')
 	genc.emitLine('struct duk_rom_tval_boolean { duk_small_uint_t tag; duk_small_uint_t extra; duk_uint32_t val; duk_uint32_t unused; };')
 	genc.emitLine('typedef struct duk_rom_tval_number duk_rom_tval_number;')
@@ -1594,16 +2196,19 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { hostbytes }')  # bytes already in host order
 	genc.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
 	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (const void *) NULL, (DUK_TAG_UNDEFINED << 16) }')
+	genc.emitLine('#define DUK__TVAL_NULL() { (const void *) NULL, (DUK_TAG_NULL << 16) }')
 	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { 0, (DUK_TAG_BOOLEAN << 16) + (bval) }')
 	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (const void *) (ptr), (DUK_TAG_OBJECT << 16) }')
 	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (const void *) (ptr), (DUK_TAG_STRING << 16) }')
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
 	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (DUK_TAG_UNDEFINED << 16), (const void *) NULL }')
+	genc.emitLine('#define DUK__TVAL_NULL() { (DUK_TAG_NULL << 16), (const void *) NULL }')
 	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { (DUK_TAG_BOOLEAN << 16) + (bval), 0 }')
 	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (DUK_TAG_OBJECT << 16), (const void *) (ptr) }')
 	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (DUK_TAG_STRING << 16), (const void *) (ptr) }')
 	genc.emitLine('#elif defined(DUK_USE_DOUBLE_ME)')
 	genc.emitLine('#define DUK__TVAL_UNDEFINED() { (DUK_TAG_UNDEFINED << 16), (const void *) NULL }')
+	genc.emitLine('#define DUK__TVAL_NULL() { (DUK_TAG_NULL << 16), (const void *) NULL }')
 	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { (DUK_TAG_BOOLEAN << 16) + (bval), 0 }')
 	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { (DUK_TAG_OBJECT << 16), (const void *) (ptr) }')
 	genc.emitLine('#define DUK__TVAL_STRING(ptr) { (DUK_TAG_STRING << 16), (const void *) (ptr) }')
@@ -1613,6 +2218,7 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('#else  /* DUK_USE_PACKED_TVAL */')
 	genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK__TAG_NUMBER, 0, hostbytes }')  # bytes already in host order
 	genc.emitLine('#define DUK__TVAL_UNDEFINED() { DUK_TAG_UNDEFINED, 0, {0,0,0,0,0,0,0,0} }')
+	genc.emitLine('#define DUK__TVAL_NULL() { DUK_TAG_NULL, 0, {0,0,0,0,0,0,0,0} }')
 	genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { DUK_TAG_BOOLEAN, 0, (bval), 0 }')
 	genc.emitLine('#define DUK__TVAL_OBJECT(ptr) { DUK_TAG_OBJECT, 0, (const duk_heaphdr *) (ptr) }')
 	genc.emitLine('#define DUK__TVAL_STRING(ptr) { DUK_TAG_STRING, 0, (const duk_heaphdr *) (ptr) }')
@@ -1621,14 +2227,9 @@ def rom_emit_object_initializer_types_and_macros(genc):
 # Emit ROM objects source: the object/function headers themselves, property
 # table structs for different property table sizes/types, and property table
 # initializers.
-def rom_emit_objects(genc, strs, objs, bi_str_map):
-	# Helper map converting an object ID to a bidx.
-	id_to_bidx = {}
-	bidx = 0
-	for o in objs:
-		if o.get('need_bidx', False):
-			id_to_bidx[o['id']] = bidx
-			bidx += 1
+def rom_emit_objects(genc, meta, bi_str_map):
+	objs = meta['objects']
+	id_to_bidx = meta['_objid_to_bidx']
 
 	# Table for compressed ROM pointers; reserve high range of compressed pointer
 	# values for this purpose.  This must contain all ROM pointers that might be
@@ -1701,7 +2302,7 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 			tmp += 'const duk_hstring *key%d; ' % idx
 		for idx,val in enumerate(obj['properties']):
 			# XXX: fastint support
-			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(meta, val, bi_str_map, bi_obj_map), idx)
 		for idx,val in enumerate(obj['properties']):
 			tmp += 'duk_uint8_t flags%d; ' % idx
 		tmp += '};'
@@ -1715,7 +2316,7 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 		tmp += 'struct duk_romprops_%d { ' % idx
 		for idx,val in enumerate(obj['properties']):
 			# XXX: fastint support
-			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(meta, val, bi_str_map, bi_obj_map), idx)
 		for idx,val in enumerate(obj['properties']):
 			tmp += 'const duk_hstring *key%d; ' % idx
 		for idx,val in enumerate(obj['properties']):
@@ -1733,7 +2334,7 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 		tmp += 'struct duk_romprops_%d { ' % idx
 		for idx,val in enumerate(obj['properties']):
 			# XXX: fastint support
-			tmp += '%s val%d; ' % (rom_get_value_initializer_type(val, bi_str_map, bi_obj_map), idx)
+			tmp += '%s val%d; ' % (rom_get_value_initializer_type(meta, val, bi_str_map, bi_obj_map), idx)
 		# No array values
 		for idx,val in enumerate(obj['properties']):
 			tmp += 'const duk_hstring *key%d; ' % idx
@@ -1857,10 +2458,8 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 	# = myToString").  Enumerable can also be kept.
 
 	def _prepAttrs(val):
-		attrs = val.get('attributes', 'wc')  # XXX: remove default here
-		attrs = attrs.replace('c', '')       # XXX: handle in normalization?
-		if isinstance(val['value'], dict) and val['value']['type'] == 'accessor':
-			attrs += 'a'
+		attrs = val['attributes']
+		assert('c' not in attrs)
 		return attr_lookup[attrs]
 
 	def _emitPropTableInitializer(idx, obj, layout):
@@ -1873,7 +2472,7 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 			init_keys.append('(const duk_hstring *)&%s' % bi_str_map[val['key']])
 		for val in obj['properties']:
 			# XXX: fastint support
-			init_vals.append('%s' % rom_get_value_initializer_literal(val, bi_str_map, bi_obj_map))
+			init_vals.append('%s' % rom_get_value_initializer_literal(meta, val, bi_str_map, bi_obj_map))
 		for val in obj['properties']:
 			init_flags.append('%s' % _prepAttrs(val))
 
@@ -1909,11 +2508,11 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 
 	count_bidx = 0
 	for bi in objs:
-		if bi.get('need_bidx', False):
+		if bi.get('bidx_used', False):
 			count_bidx += 1
 	genc.emitLine('DUK_INTERNAL const duk_hobject * const duk_rom_builtins_bidx[%d] = {' % count_bidx)
 	for bi in objs:
-		if not bi.get('need_bidx', False):
+		if not bi.get('bidx_used', False):
 			continue  # for this we want the toplevel objects only
 		genc.emitLine('\t(const duk_hobject *) &%s,' % bi_obj_map[bi['id']])
 	genc.emitLine('};')
@@ -1928,11 +2527,13 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 	genc.emitLine('DUK_EXTERNAL const void * const duk_rom_compressed_pointers[%d] = {' % (len(romptr_compress_list) + 1))
 	for idx,ptr in enumerate(romptr_compress_list):
 		genc.emitLine('\t(const void *) %s,  /* 0x%04x */' % (ptr, ROMPTR_FIRST + idx))
+	romptr_highest = ROMPTR_FIRST + len(romptr_compress_list) - 1
 	genc.emitLine('\tNULL')  # for convenience
 	genc.emitLine('};')
 	genc.emitLine('#endif')
 
-	print '%d compressed rom pointers' % len(romptr_compress_list)
+	print('%d compressed rom pointers (used range is [0x%04x,0x%04x], %d space left)' % \
+	      (len(romptr_compress_list), ROMPTR_FIRST, romptr_highest, 0xffff - romptr_highest))
 
 	# Undefine helpers.
 	genc.emitLine('')
@@ -1941,10 +2542,11 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 		'DUK__STRHASH32',
 		'DUK__DBLBYTES',
 		'DUK__TVAL_NUMBER',
-		'DUK__TVAL_BOOLEAN',
-		'DUK__TVAL_STRING',
 		'DUK__TVAL_UNDEFINED',
+		'DUK__TVAL_NULL',
+		'DUK__TVAL_BOOLEAN',
 		'DUK__TVAL_OBJECT',
+		'DUK__TVAL_STRING',
 		'DUK__STRINIT',
 		'DUK__ROMOBJ_INIT',
 		'DUK__ROMFUN_INIT'
@@ -1954,15 +2556,17 @@ def rom_emit_objects(genc, strs, objs, bi_str_map):
 	return romptr_compress_list
 
 # Emit ROM objects header.
-def rom_emit_objects_header(genc, objs, strs_needing_stridx):
+def rom_emit_objects_header(genc, meta):
 	bidx = 0
-	for bi in objs:
-		if not bi.get('need_bidx', False):
+	for bi in meta['objects']:
+		if not bi.get('bidx_used', False):
 			continue  # for this we want the toplevel objects only
 		genc.emitDefine('DUK_BIDX_' + '_'.join(bi['id'].upper().split('_')[1:]), bidx)  # bi_foo_bar -> FOO_BAR
 		bidx += 1
 	count_bidx = bidx
 	genc.emitDefine('DUK_NUM_BUILTINS', count_bidx)
+	genc.emitDefine('DUK_NUM_BIDX_BUILTINS', count_bidx)
+	genc.emitDefine('DUK_NUM_ALL_BUILTINS', len(meta['objects']))
 	genc.emitLine('')
 	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')  # C++ static const workaround
 	genc.emitLine('DUK_INTERNAL_DECL const duk_hobject * const duk_rom_builtins_bidx[%d];' % count_bidx)
@@ -1971,6 +2575,27 @@ def rom_emit_objects_header(genc, objs, strs_needing_stridx):
 	# XXX: missing declarations here, not an issue for single source build.
 	# Add missing declarations.
 	# XXX: For example, 'DUK_EXTERNAL_DECL ... duk_rom_compressed_pointers[]' is missing.
+
+#
+#  Shared for both RAM and ROM
+#
+
+def emit_header_native_function_declarations(genc, meta):
+	emitted = {}  # To suppress duplicates
+	for o in meta['objects']:
+		if not o.has_key('native'):
+			continue
+		fname = o['native']
+		if emitted.has_key(fname):
+			continue  # already emitted, suppress duplicate
+		emitted[fname] = True
+
+		# Visibility depends on whether the function is Duktape internal or user.
+		# Use a simple prefix for now.
+		if fname[:4] == 'duk_':
+			genc.emitLine('DUK_INTERNAL_DECL duk_ret_t %s(duk_context *ctx);' % o['native'])
+		else:
+			genc.emitLine('extern duk_ret_t %s(duk_context *ctx);' % o['native'])
 
 #
 #  Main
@@ -1983,11 +2608,13 @@ def main():
 	parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', help='DUK_STRIDX_xxx used by source/headers, JSON format')
 	parser.add_option('--strings-metadata', dest='strings_metadata', help='Built-in strings metadata file, YAML format')
 	parser.add_option('--objects-metadata', dest='objects_metadata', help='Built-in objects metadata file, YAML format')
-	#parser.add_option('--user-rom-objects', dest='user_rom_objects', help='User strings and objects to embed in ROM, YAML format')
+	parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
 	parser.add_option('--rom-support', dest='rom_support', action='store_true', default=False, help='Support ROM strings/objects (increases output size considerably)')
 	parser.add_option('--out-header', dest='out_header', help='Output header file')
 	parser.add_option('--out-source', dest='out_source', help='Output source file')
 	parser.add_option('--out-metadata-json', dest='out_metadata_json', help='Output metadata file')
+	parser.add_option('--dev-dump-final-ram-metadata', dest='dev_dump_final_ram_metadata', help='Development option')
+	parser.add_option('--dev-dump-final-rom-metadata', dest='dev_dump_final_rom_metadata', help='Development option')
 	(opts, args) = parser.parse_args()
 
 	# Options processing.
@@ -2009,66 +2636,21 @@ def main():
 
 	# Read in metadata files, normalizing and merging as necessary.
 
-	def init_strings_meta(strip_unused_stridx=False):
-		with open(opts.strings_metadata, 'rb') as f:
-			strings_metadata = recursive_strings_to_bytes(yaml.load(f))
-		string_list = strings_metadata['strings']
-		special_defs = strings_metadata['special_define_names']
-		reserved_words_token_order = strings_metadata['reserved_word_token_order']
-
-		merged_strlist = merge_string_entries(string_list)
-		add_string_define_names(merged_strlist, special_defs)
-		with open(opts.used_stridx_metadata, 'rb') as f:
-			add_string_used_stridx(merged_strlist, json.loads(f.read()))
-		ordered_strlist = order_builtin_strings(merged_strlist, reserved_words_token_order, strip_unused_stridx=strip_unused_stridx)
-		string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words = \
-			get_string_maps(ordered_strlist)
-
-		return ordered_strlist, special_defs, string_to_stridx, define_to_stridx, reserved_words, strict_reserved_words
-
-	def init_objects_meta(rom=False):
-		with open(opts.objects_metadata, 'rb') as f:
-			objects_metadata = recursive_strings_to_bytes(yaml.load(f))
-		normalize_object_metadata(objects_metadata)
-
-		# XXX: add user_rom_objects support
-
-		resolved_objlist = resolve_object_list(objects_metadata)
-		for o in resolved_objlist:
-			# Add Duktape.version and Duktape.env (for ROM case).
-			if o['id'] == 'bi_duktape':
-				o['properties'].insert(0, { 'key': 'version', 'value': int(build_info['version']), 'attributes': '' })
-				if rom:
-					# Use a fixed (quite dummy for now) Duktape.env
-					# when ROM builtins are in use.
-					o['properties'].insert(0, { 'key': 'env', 'value': 'ROM', 'attributes': '' })
-
-		return resolved_objlist
-
-	# RAM strings, full set of strings in heap->strs[]
-	# (Future work: prune some away.)
-	ram_strlist, ram_special_defs, ram_string_to_stridx, ram_define_to_stridx, ram_reserved_words, ram_strict_reserved_words = \
-		init_strings_meta(strip_unused_stridx=True)
-
-	# ROM strings, pruned set of strings in heap->strs[]
-	rom_strlist, rom_special_defs, rom_string_to_stridx, rom_define_to_stridx, rom_reserved_words, rom_strict_reserved_words = \
-		init_strings_meta(strip_unused_stridx=True)
-
-	# RAM objects
-	ram_objlist = init_objects_meta(rom=False)
-
-	# Full set of ROM strings and objects (not just those going into bidx[] or stridx[])
-	rom_objlist_tmp = init_objects_meta(rom=True)
-	rom_normalized_strlist, rom_normalized_objlist = normalize_rom_builtins(rom_strlist, [], rom_objlist_tmp)
+	ram_meta = load_metadata(opts, rom=False, build_info=build_info)
+	rom_meta = load_metadata(opts, rom=True, build_info=build_info)
+	if opts.dev_dump_final_ram_metadata is not None:
+		dump_metadata(ram_meta, opts.dev_dump_final_ram_metadata)
+	if opts.dev_dump_final_rom_metadata is not None:
+		dump_metadata(rom_meta, opts.dev_dump_final_rom_metadata)
 
 	# Create RAM init data bitstreams.
 
-	ramstr_data, ramstr_maxlen = gen_ramstr_initdata_bitpacked(ram_strlist)
-	ram_native_funcs, ram_natfunc_name_to_natidx = get_ramobj_native_func_maps(ram_objlist)
+	ramstr_data, ramstr_maxlen = gen_ramstr_initdata_bitpacked(ram_meta)
+	ram_native_funcs, ram_natfunc_name_to_natidx = get_ramobj_native_func_maps(ram_meta)
 
-	ramobj_data_le = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'little')
-	ramobj_data_be = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'big')
-	ramobj_data_me = gen_ramobj_initdata_bitpacked(ram_objlist, ram_string_to_stridx, ram_native_funcs, ram_natfunc_name_to_natidx, 'mixed')
+	ramobj_data_le = gen_ramobj_initdata_bitpacked(ram_meta, ram_native_funcs, ram_natfunc_name_to_natidx, 'little')
+	ramobj_data_be = gen_ramobj_initdata_bitpacked(ram_meta, ram_native_funcs, ram_natfunc_name_to_natidx, 'big')
+	ramobj_data_me = gen_ramobj_initdata_bitpacked(ram_meta, ram_native_funcs, ram_natfunc_name_to_natidx, 'mixed')
 
 	# Write source and header files.
 
@@ -2078,9 +2660,9 @@ def main():
 	gc_src.emitLine('')
 	gc_src.emitLine('#if defined(DUK_USE_ROM_STRINGS)')
 	if opts.rom_support:
-		rom_bi_str_map = rom_emit_strings_source(gc_src, rom_normalized_strlist, rom_reserved_words, rom_strict_reserved_words, rom_strlist)
+		rom_bi_str_map = rom_emit_strings_source(gc_src, rom_meta)
 		rom_emit_object_initializer_types_and_macros(gc_src)
-		rom_emit_objects(gc_src, rom_normalized_strlist, rom_normalized_objlist, rom_bi_str_map)
+		rom_emit_objects(gc_src, rom_meta, rom_bi_str_map)
 	else:
 		gc_src.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
 	gc_src.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
@@ -2115,13 +2697,13 @@ def main():
 	gc_hdr.emitLine('')
 	gc_hdr.emitLine('#if defined(DUK_USE_ROM_STRINGS)')
 	if opts.rom_support:
-		emit_header_stridx_defines(gc_hdr, rom_strlist)
-		rom_emit_strings_header(gc_hdr, rom_normalized_strlist, rom_strlist)
+		emit_header_stridx_defines(gc_hdr, rom_meta)
+		rom_emit_strings_header(gc_hdr, rom_meta)
 	else:
 		gc_hdr.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
 	gc_hdr.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
-	emit_header_stridx_defines(gc_hdr, ram_strlist)
-	emit_ramstr_header_strinit_defines(gc_hdr, ram_strlist, ramstr_data, ramstr_maxlen)
+	emit_header_stridx_defines(gc_hdr, ram_meta)
+	emit_ramstr_header_strinit_defines(gc_hdr, ram_meta, ramstr_data, ramstr_maxlen)
 	gc_hdr.emitLine('#endif  /* DUK_USE_ROM_STRINGS */')
 	gc_hdr.emitLine('')
 	gc_hdr.emitLine('#if defined(DUK_USE_ROM_OBJECTS)')
@@ -2135,13 +2717,15 @@ def main():
 		gc_hdr.emitLine('#if (DUK_USE_ROM_PTRCOMP_FIRST != %dL)' % ROMPTR_FIRST)
 		gc_hdr.emitLine('#error DUK_USE_ROM_PTRCOMP_FIRST must match ROMPTR_FIRST in genbuiltins.py (%d), update manually and re-dist' % ROMPTR_FIRST)
 		gc_hdr.emitLine('#endif')
-		rom_emit_objects_header(gc_hdr, rom_normalized_objlist, rom_strlist)
+		emit_header_native_function_declarations(gc_hdr, rom_meta)
+		rom_emit_objects_header(gc_hdr, rom_meta)
 	else:
 		gc_hdr.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
 	gc_hdr.emitLine('#else')
+	emit_header_native_function_declarations(gc_hdr, rom_meta)
 	emit_ramobj_header_nativefunc_array(gc_hdr, ram_native_funcs)
 	emit_ramobj_header_initjs(gc_hdr, initjs_data)
-	emit_ramobj_header_objects(gc_hdr, ram_objlist)
+	emit_ramobj_header_objects(gc_hdr, ram_meta)
 	gc_hdr.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
 	emit_ramobj_header_initdata(gc_hdr, ramobj_data_le)
 	gc_hdr.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
@@ -2166,7 +2750,7 @@ def main():
 	plain_strs = []
 	base64_strs = []
 	str_objs = []
-	for s in ram_strlist:  # XXX: provide all lists?
+	for s in ram_meta['strings_stridx']:  # XXX: provide all lists?
 		t1 = bytes_to_unicode(s['str'])
 		t2 = unicode_to_bytes(s['str']).encode('base64').strip()
 		plain_strs.append(t1)

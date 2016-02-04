@@ -1236,6 +1236,8 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	duk_small_int_t stridx = 0;
 
+	DUK_UNREF(thr);
+
 	switch (DUK_TVAL_GET_TAG(tv_x)) {
 	case DUK_TAG_UNDEFINED: {
 		stridx = DUK_STRIDX_LC_UNDEFINED;

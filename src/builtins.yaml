@@ -20,35 +20,60 @@
 #      - native: native function name
 #      - callable: true
 #      - constructable: true/false, depending on function
+#    - To disable an object without removing its metadata, you can
+#      use 'disable: true'.
 #
 # Property format:
 #
 #    - key: verbatim string key, codepoints U+0000...U+00FF map to bytes,
 #           so that \u00ff is 0xFF prefix
 #    - value: see below
-#    - attributes: string of format /w?e?c?/, e.g. "wc" is writable and
+#    - attributes: string of format /w?e?c?a?/, e.g. "wc" is writable and
 #                  configurable
-#    - may also have feature tags like "es6: true" to indicate property
+#        + w: writable
+#        + e: enumerable
+#        + c: configurable
+#        + a: accessor (determined automatically, not necessary to give explicitly)
+#    - May also have feature tags like "es6: true" to indicate property
 #      is related to a specific standard
+#    - To disable a property without removing its metadata, you can use
+#      'disable: true'.
 #
 # Property value format:
 #
-#    - plain string: plain string, string data as with keys
-#    - plain number: treated as a fastint/ieee double
+#    - Ecmascript undefined:
+#      - type: undefined
+#    - Plain YAML/JSON null (parses as Python None)
+#      - treated as Ecmascript null
+#    - Plain string:
+#      - treated as plain string, string data as with keys
+#    - Plain number:
+#      - treated as a fastint/ieee double
 #    - IEEE double:
 #      - type: double
 #      - bytes: IEEE bytes in big endian format, hex encoded
-#    - Ecmascript undefined:
-#      - type: undefined
+#      - NOTE: if you define a NaN, make sure it is in the Duktape normalized
+#        form (see bi_global 'NaN' property): otherwise strange things will
+#        happen with packed duk_tval
+#    - Buffer:
+#      - type: buffer
+#      - NOTE: not supported yet, type is reserved
+#    - Pointer:
+#      - type: pointer
+#      - NOTE: not supported yet, type is reserved
 #    - Reference to a built-in object:
 #      - type: object
 #        id: ID string of target object
+#    - Accessor (setter/getter):
+#      - type: accessor
+#      - getter_id: object ID of getter
+#      - setter_id: object ID of setter
 #    - Native function shorthand; alternative to defining a function as a
 #      native object and referencing it using an ID:
 #      - type: function (implicitly callable)
 #      - constructable: default is false
 #      - native: native function name
-#      - length: function .length (optional)
+#      - length: function .length (optional, defaults to 0)
 #      - nargs: function nargs (optional, defaults to length)
 #      - varargs: if true, function is vararg (nargs = DUK_VARARGS)
 #      - magic: magic value for function (see below)
@@ -60,6 +85,15 @@
 #      - setter_magic: magic value for setter
 #      - getter_nargs: nargs value for getter
 #      - setter_nargs: nargs value for setter
+#      - getter_length: length value for getter (0 if missing)
+#      - setter_length: length value for setter (0 if missing)
+#    - Structured object shorthand:
+#      - type: structured
+#      - value: arbitrary JSON-like value
+#      - NOTE: value is converted into object(s) with properties
+#        similarly to JSON.parse() results: properties will be
+#        writable, enumerable, and configurable, inherit from
+#        Object.prototype, etc.
 #
 # Magic format:
 #
@@ -398,7 +432,7 @@ objects:
     properties:
       - key: "length"
         value: 1
-        attributes: ''
+        attributes: ""
       - key: "prototype"
         value:
           type: object

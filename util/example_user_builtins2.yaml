@@ -1,0 +1,11 @@
+#
+#  User builtins can be specified in multiple files; you can apply this over
+#  util/example_user_builtins1.yaml.
+#
+
+modify_objects:
+
+  - id: bi_global
+    properties:
+      - key: meaningOfLife
+        value: 42

@@ -536,6 +536,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__func:");
 		duk_fb_put_funcptr(fb, (duk_uint8_t *) &f->func, sizeof(f->func));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__magic:%ld", (long) f->magic);
 	} else if (st->internal && DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
 		duk_hbufferobject *b = (duk_hbufferobject *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__buf:");

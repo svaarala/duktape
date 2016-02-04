@@ -151,7 +151,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 		duk_hobject *h;
-		h = (duk_hobject *) duk_rom_builtins_bidx[i];
+		h = (duk_hobject *) DUK_LOSE_CONST(duk_rom_builtins_bidx[i]);
 		DUK_ASSERT(h != NULL);
 		thr->builtins[i] = h;
 	}
@@ -214,7 +214,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_hobject *h;
 	duk_small_uint_t i, j;
 
-	DUK_D(DUK_DPRINT("INITBUILTINS BEGIN"));
+	DUK_D(DUK_DPRINT("INITBUILTINS BEGIN: DUK_NUM_BUILTINS=%d, DUK_NUM_BUILTINS_ALL=%d", (int) DUK_NUM_BUILTINS, (int) DUK_NUM_ALL_BUILTINS));
 
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_builtins_data;
@@ -222,18 +222,22 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	/*
 	 *  First create all built-in bare objects on the empty valstack.
-	 *  During init, their indices will correspond to built-in indices.
 	 *
-	 *  Built-ins will be reachable from both valstack and thr->builtins.
+	 *  Built-ins in the index range [0,DUK_NUM_BUILTINS-1] have value
+	 *  stack indices matching their eventual thr->builtins[] index.
+	 *
+	 *  Built-ins in the index range [DUK_NUM_BUILTINS,DUK_NUM_ALL_BUILTINS]
+	 *  will exist on the value stack during init but won't be placed
+	 *  into thr->builtins[].  These are objects referenced in some way
+	 *  from thr->builtins[] roots but which don't need to be indexed by
+	 *  Duktape through thr->builtins[] (e.g. user custom objects).
 	 */
 
-	/* XXX: there is no need to resize valstack because builtin count
-	 * is much less than the default space; assert for it.
-	 */
+	duk_require_stack(ctx, DUK_NUM_ALL_BUILTINS);
 
 	DUK_DD(DUK_DDPRINT("create empty built-ins"));
 	DUK_ASSERT_TOP(ctx, 0);
-	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
+	for (i = 0; i < DUK_NUM_ALL_BUILTINS; i++) {
 		duk_small_uint_t class_num;
 		duk_small_int_t len = -1;  /* must be signed */
 
@@ -308,8 +312,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		DUK_HOBJECT_SET_CLASS_NUMBER(h, class_num);
 
-		thr->builtins[i] = h;
-		DUK_HOBJECT_INCREF(thr, &h->hdr);
+		if (i < DUK_NUM_BUILTINS) {
+			thr->builtins[i] = h;
+			DUK_HOBJECT_INCREF(thr, &h->hdr);
+		}
 
 		if (len >= 0) {
 			/*
@@ -370,17 +376,18 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 	DUK_DD(DUK_DDPRINT("initialize built-in object properties"));
-	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
+	for (i = 0; i < DUK_NUM_ALL_BUILTINS; i++) {
 		duk_small_uint_t t;
 		duk_small_uint_t num;
 
 		DUK_DDD(DUK_DDDPRINT("initializing built-in object at index %ld", (long) i));
-		h = thr->builtins[i];
+		h = duk_require_hobject(ctx, i);
+		DUK_ASSERT(h != NULL);
 
 		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
 			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %ld", (long) t));
-			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[t]);
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, duk_require_hobject(ctx, t));
 		}
 
 		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
@@ -795,25 +802,26 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 	DUK_DD(DUK_DDPRINT("compact built-ins"));
-	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
-		duk_hobject_compact_props(thr, thr->builtins[i]);
+	for (i = 0; i < DUK_NUM_ALL_BUILTINS; i++) {
+		duk_hobject_compact_props(thr, duk_require_hobject(ctx, i));
 	}
 
 	DUK_D(DUK_DPRINT("INITBUILTINS END"));
 
 #ifdef DUK_USE_DDPRINT
-	for (i = 0; i < DUK_NUM_BUILTINS; i++) {
+	for (i = 0; i < DUK_NUM_ALL_BUILTINS; i++) {
 		DUK_DD(DUK_DDPRINT("built-in object %ld after initialization and compacting: %!@iO",
-		                   (long) i, (duk_heaphdr *) thr->builtins[i]));
+		                   (long) i, (duk_heaphdr *) duk_require_hobject(ctx, i)));
 	}
 #endif
 
 	/*
 	 *  Pop built-ins from stack: they are now INCREF'd and
-	 *  reachable from the builtins[] array.
+	 *  reachable from the builtins[] array or indirectly
+	 *  through builtins[].
 	 */
 
-	duk_pop_n(ctx, DUK_NUM_BUILTINS);
+	duk_set_top(ctx, 0);
 	DUK_ASSERT_TOP(ctx, 0);
 }
 #endif  /* DUK_USE_ROM_OBJECTS */

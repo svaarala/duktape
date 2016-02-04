@@ -123,7 +123,7 @@
 
 #if defined(DUK_USE_ROM_STRINGS)
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
-	((duk_hstring *) duk_rom_strings_stridx[(idx)])
+	((duk_hstring *) DUK_LOSE_CONST(duk_rom_strings_stridx[(idx)]))
 #else  /* DUK_USE_ROM_STRINGS */
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HTHREAD_GET_STRING(thr,idx) \
