@@ -281,16 +281,16 @@ The following may be appropriate when even less memory is available
 
 * Consider also moving your own built-in objects and strings into ROM:
 
-  - There is no direct support for this at present, but you can manually
-    modify ``src/strings.yaml`` and ``src/builtins.yaml`` to include your
-    own bindings.  Then rerun ``make_dist.py`` with ``--rom-support``
-    option.
+  - User strings and objects can also be moved into ROM.  You can also
+    modify default Duktape built-ins, adding and removing properties, etc.
+    For more details, see:
 
-  - As a future work ``make_dist.py`` (``genbuiltins.py`` internally)
-    will accept external YAML config files to add custom strings and
-    objects (and modify existing objects) without editing Duktape's
-    ``strings.yaml`` and ``builtins.yaml``.  This is logically equivalent
-    to making direct edits but easier to manage in the build process.
+    + ``util/example_user_builtins1.yaml``: examples of user builtins
+
+    + ``src/builtins.yaml``: documents some more format details
+
+    + ``util/example_rombuild.sh``: illustrates how to run ``make_dist.py``
+      with user builtins
 
 Notes on pointer compression
 ============================
