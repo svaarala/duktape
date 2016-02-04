@@ -4070,11 +4070,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
-#if 0
-	/* Disabled for now, not sure this is a useful property */
-	duk_push_int(ctx, err_code);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CODE, DUK_PROPDESC_FLAGS_WC);
-#endif
+	/* XXX: .code = err_code disabled, not sure if useful */
 
 	/* Creation time error augmentation */
 #ifdef DUK_USE_AUGMENT_ERROR_CREATE
