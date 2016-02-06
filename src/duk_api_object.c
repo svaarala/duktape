@@ -479,6 +479,24 @@ DUK_EXTERNAL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_index, c
 	}
 }
 
+DUK_EXTERNAL void duk_put_function_list_magic(duk_context *ctx, duk_idx_t obj_index, const duk_function_list_magic_entry *funcs) {
+	const duk_function_list_magic_entry *ent = funcs;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+	if (ent != NULL) {
+		while (ent->key != NULL) {
+			duk_push_c_function(ctx, ent->value, ent->nargs);
+			if (ent->magic != 0) {
+				duk_set_magic(ctx, -1, ent->magic);
+			}
+			duk_put_prop_string(ctx, obj_index, ent->key);
+			ent++;
+		}
+	}
+}
+
 DUK_EXTERNAL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number_list_entry *numbers) {
 	const duk_number_list_entry *ent = numbers;
 
