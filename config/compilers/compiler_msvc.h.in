@@ -26,6 +26,17 @@
 #define DUK_USE_VARIADIC_MACROS
 #endif
 
+#undef DUK_USE_UNION_INITIALIZERS
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+/* VS2013+ supports union initializers but there's a bug involving union-inside-struct:
+ * https://connect.microsoft.com/VisualStudio/feedback/details/805981
+ * The bug was fixed (at least) in VS2015 so check for VS2015 for now:
+ * https://blogs.msdn.microsoft.com/vcblog/2015/07/01/c-compiler-front-end-fixes-in-vs2015/
+ * Manually tested using VS2013, CL reports 18.00.31101, so enable for VS2013 too.
+ */
+#define DUK_USE_UNION_INITIALIZERS
+#endif
+
 #undef DUK_USE_FLEX_C99
 #undef DUK_USE_FLEX_ZEROSIZE
 #undef DUK_USE_FLEX_ONESIZE

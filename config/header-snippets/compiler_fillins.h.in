@@ -134,14 +134,8 @@
 	((duk_uint16_t) (x) << 8)
 #endif
 
-
-/* Explicit marker needed; may be 'defined', 'undefined, 'or 'not provided'. */
-#if !defined(DUK_F_VARIADIC_MACROS_PROVIDED)
-#undef DUK_USE_VARIADIC_MACROS
-#if defined(DUK_F_C99) || defined(DUK_F_CPP11)
-#define DUK_USE_VARIADIC_MACROS
-#endif
-#endif
+/* DUK_USE_VARIADIC_MACROS: required from compilers, so no fill-in. */
+/* DUK_USE_UNION_INITIALIZERS: required from compilers, so no fill-in. */
 
 #if !(defined(DUK_USE_FLEX_C99) || defined(DUK_USE_FLEX_ZEROSIZE) || defined(DUK_USE_FLEX_ONESIZE))
 #if defined(DUK_F_C99)

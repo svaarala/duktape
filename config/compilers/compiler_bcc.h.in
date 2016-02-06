@@ -6,8 +6,11 @@
 #define DUK_USE_COMPILER_STRING "bcc"
 #endif
 
-/* XXX */
+/* Most portable */
 #undef DUK_USE_VARIADIC_MACROS
+
+/* Most portable, wastes space */
+#undef DUK_USE_UNION_INITIALIZERS
 
 /* Most portable, wastes space */
 #define DUK_USE_FLEX_ONESIZE
