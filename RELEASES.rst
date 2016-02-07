@@ -1710,6 +1710,10 @@ Planned
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
   DUK_FPUTC(), DUK_STDOUT, DUK_STDERR, DUK_STDIN, duk_file (GH-787, GH-761)
 
+* Add duk_def_prop_list() with a flexible and more easily versionably
+  macro-based initializers syntax; this API call will eventually replace
+  duk_put_function_list() and duk_put_number_list() (GH-130, GH-575)
+
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
   same time provider as seen by Ecmascript code (GH-771)
