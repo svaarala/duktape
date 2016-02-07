@@ -185,6 +185,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
+
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_ASSERT(heap->refzero_list == NULL);  /* refzero not running -> must be empty */
 #endif
@@ -200,7 +201,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 
 	/* Prevent mark-and-sweep for the pending finalizers, also prevents
 	 * refzero handling from moving objects away from the heap_allocated
-	 * list.
+	 * list.  (The flag meaning is slightly abused here.)
 	 */
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap);

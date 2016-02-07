@@ -413,21 +413,33 @@ DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 	DUK_DDD(DUK_DDDPRINT("refzero %p: %!O", (void *) h, (duk_heaphdr *) h));
 
 	/*
-	 *  If mark-and-sweep is running, don't process 'refzero' situations at all.
-	 *  They may happen because mark-and-sweep needs to finalize refcounts for
-	 *  each object it sweeps.  Otherwise the target objects of swept objects
-	 *  would have incorrect refcounts.
+	 *  Refzero handling is skipped entirely if (1) mark-and-sweep is
+	 *  running or (2) execution is paused in the debugger.  The objects
+	 *  are left in the heap, and will be freed by mark-and-sweep or
+	 *  eventual heap destruction.
+	 *
+	 *  This is necessary during mark-and-sweep because refcounts are also
+	 *  updated during the sweep phase (otherwise objects referenced by a
+	 *  swept object would have incorrect refcounts) which then calls here.
+	 *  This could be avoided by using separate decref macros in
+	 *  mark-and-sweep; however, mark-and-sweep also calls finalizers which
+	 *  would use the ordinary decref macros anyway and still call this
+	 *  function.
 	 *
 	 *  This check must be enabled also when mark-and-sweep support has been
 	 *  disabled: the flag is also used in heap destruction when running
 	 *  finalizers for remaining objects, and the flag prevents objects from
 	 *  being moved around in heap linked lists.
-	 *
-	 *  Note: mark-and-sweep could use a separate decref handler to avoid coming
-	 *  here at all.  However, mark-and-sweep may also call finalizers, which
-	 *  can do arbitrary operations and would use this decref variant anyway.
 	 */
+
+	/* XXX: ideally this would be just one flag (maybe a derived one) so
+	 * that a single bit test is sufficient to check the condition.
+	 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (DUK_UNLIKELY(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap) || DUK_HEAP_IS_PAUSED(heap))) {
+#else
 	if (DUK_UNLIKELY(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap))) {
+#endif
 		DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h));
 		return;
 	}
