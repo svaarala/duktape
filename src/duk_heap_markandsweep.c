@@ -1157,7 +1157,8 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 */
 
 	/* If thr != NULL, the thr may still be in the middle of
-	 * initialization; improve the thread viability test.
+	 * initialization.
+	 * XXX: Improve the thread viability test.
 	 */
 	thr = duk__get_temp_hthread(heap);
 	if (thr == NULL) {

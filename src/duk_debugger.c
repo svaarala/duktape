@@ -1888,7 +1888,8 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 }
 
 /*
- *  Object inspection commands: GetHeapObjInfo, GetObjProp, GetObjPropRange
+ *  Object inspection commands: GetHeapObjInfo, GetObjPropDesc,
+ *  GetObjPropDescRange
  */
 
 #if defined(DUK_USE_DEBUGGER_INSPECT)
@@ -2249,13 +2250,13 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 	duk_debug_write_eom(thr);
 }
 
-DUK_LOCAL void duk__debug_handle_get_obj_prop(duk_hthread *thr, duk_heap *heap) {
+DUK_LOCAL void duk__debug_handle_get_obj_prop_desc(duk_hthread *thr, duk_heap *heap) {
 	duk_heaphdr *h;
 	duk_hobject *h_obj;
 	duk_hstring *h_key;
 	duk_propdesc desc;
 
-	DUK_D(DUK_DPRINT("debug command GetObjProp"));
+	DUK_D(DUK_DPRINT("debug command GetObjPropDesc"));
 	DUK_UNREF(heap);
 
 	h = duk_debug_read_any_ptr(thr);
@@ -2292,12 +2293,12 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop(duk_hthread *thr, duk_heap *heap) 
 	duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNKNOWN, "invalid args");
 }
 
-DUK_LOCAL void duk__debug_handle_get_obj_prop_range(duk_hthread *thr, duk_heap *heap) {
+DUK_LOCAL void duk__debug_handle_get_obj_prop_desc_range(duk_hthread *thr, duk_heap *heap) {
 	duk_heaphdr *h;
 	duk_hobject *h_obj;
 	duk_uint_t idx, idx_start, idx_end;
 
-	DUK_D(DUK_DPRINT("debug command GetObjPropRange"));
+	DUK_D(DUK_DPRINT("debug command GetObjPropDescRange"));
 	DUK_UNREF(heap);
 
 	h = duk_debug_read_any_ptr(thr);
@@ -2442,12 +2443,12 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 			duk__debug_handle_get_heap_obj_info(thr, heap);
 			break;
 		}
-		case DUK_DBG_CMD_GETOBJPROP: {
-			duk__debug_handle_get_obj_prop(thr, heap);
+		case DUK_DBG_CMD_GETOBJPROPDESC: {
+			duk__debug_handle_get_obj_prop_desc(thr, heap);
 			break;
 		}
-		case DUK_DBG_CMD_GETOBJPROPRANGE: {
-			duk__debug_handle_get_obj_prop_range(thr, heap);
+		case DUK_DBG_CMD_GETOBJPROPDESCRANGE: {
+			duk__debug_handle_get_obj_prop_desc_range(thr, heap);
 			break;
 		}
 #endif  /* DUK_USE_DEBUGGER_INSPECT */
