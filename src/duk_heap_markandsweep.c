@@ -1155,12 +1155,13 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
 	 */
-	/* XXX: if thr != NULL, the thr may still be in the middle of
+
+	/* If thr != NULL, the thr may still be in the middle of
 	 * initialization; improve the thread viability test.
 	 */
 	thr = duk__get_temp_hthread(heap);
 	if (thr == NULL) {
-		DUK_D(DUK_DPRINT("temporary hack: gc skipped because we don't have a temp thread"));
+		DUK_D(DUK_DPRINT("gc skipped because we don't have a temp thread"));
 
 		/* reset voluntary gc trigger count */
 #ifdef DUK_USE_VOLUNTARY_GC
@@ -1168,6 +1169,21 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #endif
 		return 0;  /* OK */
 	}
+
+	/* If debugger is paused, garbage collection is disabled by default.
+	 * FIXME: need an exception flag for forced GC.
+	 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (DUK_HEAP_IS_PAUSED(heap)) {
+		/* Checking this here rather that in memory alloc primitives
+		 * reduces checking code there but means a failed allocation
+		 * will go through a few retries before giving up.  That's
+		 * fine because this only happens during debugging.
+		 */
+		DUK_D(DUK_DPRINT("gc skipped because debugger is paused"));
+		return 0;
+	}
+#endif
 
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
 	                 (unsigned long) flags, (unsigned long) (flags | heap->mark_and_sweep_base_flags)));

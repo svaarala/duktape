@@ -246,7 +246,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 	 */
 
 	if (DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)) {
-		DUK_DDD(DUK_DDDPRINT("refzero free running, skip run"));
+		DUK_DDD(DUK_DDDPRINT("refzero free running or gc is locked, skip run"));
 		return;
 	}
 
@@ -431,6 +431,20 @@ DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 		DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h));
 		return;
 	}
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	if (DUK_HEAP_IS_PAUSED(heap)) {
+		/* FIXME: this will now cause objects to be freed by forced
+		 * mark-and-sweep when debugger resumes.
+		 */
+		/* FIXME: adding this check here means it will be included
+		 * in every refzero check - try to figure out how to avoid
+		 * doing so; could MARKANDSWEEP_RUNNING be set (perhaps
+		 * rename it to GC_LOCKED)?
+		 */
+		DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when debugger is active, object: %p", (void *) h));
+		return;
+	}
+#endif
 
 	switch ((duk_small_int_t) DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING:
