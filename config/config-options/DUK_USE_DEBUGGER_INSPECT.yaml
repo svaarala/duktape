@@ -1,0 +1,13 @@
+define: DUK_USE_DEBUGGER_INSPECT
+feature_enables: DUK_OPT_DEBUGGER_INSPECT
+introduced: 1.5.0
+# Option is ignored unless debugger support is enabled.
+#requires:
+#  - DUK_USE_DEBUGGER_SUPPORT
+default: false
+tags:
+  - debugger
+description: >
+  Support the InspectHeapObject command.  This is optional because the command
+  is not always needed so that it's possible to save on footprint by disabling
+  the command.
