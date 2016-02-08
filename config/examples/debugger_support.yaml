@@ -13,6 +13,10 @@ DUK_USE_DEBUGGER_PAUSE_UNCAUGHT: true
 # Enable DumpHeap command (experimental).
 DUK_USE_DEBUGGER_DUMPHEAP: true
 
+# Enable object inspection commands: GetHeapObjInfo, GetObjProp,
+# GetObjPropRange.
+DUK_USE_DEBUGGER_INSPECT: true
+
 # Transport torture testing: enable when testing your transport
 # implementation.
 DUK_USE_DEBUGGER_TRANSPORT_TORTURE: false
