@@ -270,19 +270,9 @@ def processApiDoc(doc, testrefs, used_tags):
 			return cmp( (a[0].isdigit(), a), (b[0].isdigit(), b) )
 		p = sorted(doc['tags'], reverse=True, cmp=mycmp)
 
-		# 'introduced' is automatically added as a tag now
-		#if doc.has_key('introduced'):
-		#	p = [ doc['introduced'] ] + p
-		if doc.has_key('deprecated'):
-			# XXX: must mark deprecation
-			pass
-		if doc.has_key('removed'):
-			# XXX: must mark removal
-			pass
-
 		for idx, val in enumerate(p):
 			classes = [ 'apitag' ]
-			if val == 'experimental' or val == 'nonportable':
+			if val in [ 'experimental', 'nonportable', 'deprecated', 'removed' ]:
 				classes.append('apitagwarn')
 			if val == 'protected':
 				classes.append('apitagprotected')
@@ -752,9 +742,13 @@ def generateApiDoc(apidocdir, apitestdir):
 				apidoc['tags'] = []  # ensures tags is present
 			apidoc['name'] = funcname  # add funcname automatically
 
-			# add 'introduced' version to tag list automatically
+			# Add a few tags automatically.
 			if apidoc.has_key('introduced'):
 				apidoc['tags'].insert(0, apidoc['introduced'])
+			if apidoc.has_key('deprecated'):
+				apidoc['tags'].insert(0, 'deprecated')
+			if apidoc.has_key('removed'):
+				apidoc['tags'].insert(0, 'removed')
 
 			if 'omit' in apidoc['tags']:
 				print 'Omit API doc: ' + str(funcname)
