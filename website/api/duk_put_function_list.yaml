@@ -15,6 +15,11 @@ summary: |
   <p>This is useful e.g. when defining modules or classes implemented
   as a set of Duktape/C functions.</p>
 
+  <div class="note">
+  This API call was deprecated in Duktape 1.5.0: use
+  <code><a href="#duk_def_prop_list">duk_def_prop_list()</a></code> instead.
+  </div>
+
 example: |
   const duk_function_list_entry my_module_funcs[] = {
       { "tweak", do_tweak, 0 /* no args */ },
@@ -39,5 +44,7 @@ tags:
 
 seealso:
   - duk_put_number_list
+  - duk_def_prop_list
 
 introduced: 1.0.0
+deprecated: 1.5.0
