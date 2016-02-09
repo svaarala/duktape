@@ -162,6 +162,8 @@ Checklist for ordinary releases
 
     - make apitest
 
+  - Test with and without ``DUK_USE_UNION_INITIALIZERS``
+
 * Compile option matrix test
 
   - Run 1000 iterations of ``util/matrix_compile.py`` which compiles and runs
