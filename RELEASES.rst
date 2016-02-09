@@ -1394,6 +1394,10 @@ Planned
   DUK_USE_PACKED_TVAL to default to false unless forced using
   DUK_OPT_PACKED_TVAL (GH-550)
 
+* Fix debugger Eval handling issue where an uncaught error during Eval
+  command (with "pause on uncaught" option enabled) would cause a recursive
+  attempt to halt execution (GH-558, GH-562)
+
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 
 * Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
