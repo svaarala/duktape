@@ -14,6 +14,11 @@ summary: |
   <p>This is useful e.g. when defining numeric constants for modules or
   classes implemented in C.</p>
 
+  <div class="note">
+  This API call was deprecated in Duktape 1.5.0: use
+  <code><a href="#duk_def_prop_list">duk_def_prop_list()</a></code> instead.
+  </div>
+
 example: |
   const duk_number_list_entry my_module_consts[] = {
       { "FLAG_FOO", (double) (1 << 0) },
@@ -31,5 +36,7 @@ tags:
 
 seealso:
   - duk_put_function_list
+  - duk_def_prop_list
 
 introduced: 1.0.0
+deprecated: 1.5.0

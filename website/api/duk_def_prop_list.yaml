@@ -1,0 +1,155 @@
+name: duk_def_prop_list
+
+proto: |
+  void duk_def_prop_list(duk_context *ctx, duk_idx_t obj_index, const duk_prop_list_entry *props);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Set multiple properties into a target object from a property list.
+  The property list contains <code>DUK_PROP_xxx()</code> initializer macros
+  which support multiple types, and ends with <code>DUK_PROP_END()</code>.
+  The property list is processed in order, and if a property appears multiple
+  times the last occurrence wins (unless a previous occurrence is non-configurable
+  in which case a TypeError may be thrown.</p>
+
+  <p>This call is useful e.g. when defining modules statically in C code.
+  See test case <b>FIXME</b> for concrete examples.</p>
+
+  <p>Supported property initializers:</p>
+
+  <table>
+  <tr>
+  <td>DUK_PROP_END()</td>
+  <td>Terminates the property list.  Mandatory; if missing, memory unsafe
+  behavior will result.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_UNDEFINED(key)</td>
+  <td>Ecmascript <code>undefined</code>.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_NULL(key)</td>
+  <td>Ecmascript <code>null</code>.</td>
+  </tr>
+  <tr>
+  <tr>
+  <td>DUK_PROP_BOOLEAN(key,val)</td>
+  <td>Ecmascript boolean, false if val is 0, true otherwise.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_NUMBER(key,val)</td>
+  <td>Ecmascript number (IEEE double).</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_STRING(key,str)</td>
+  <td>Ecmascript string, argument is a NUL-terminated C string.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_LSTRING(key,str,len)</td>
+  <td>Ecmascript string, explicit length.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_BUFFER(key,buf,len)</td>
+  <td>Duktape plain fixed buffer.</td> <!-- FIXME: fixed? flags? -->
+  </tr>
+  <tr>
+  <td>DUK_PROP_POINTER(key,ptr)</td>
+  <td>Duktape plain pointer.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_FUNCTION(key,func,nargs)</td>
+  <td>Duktape/C function, <code>func</code> is a function pointer.
+      Matches <code>duk_push_c_function()</code>.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_LIGHTFUNC(key,func,nargs)</td>
+  <td>Duktape/C lightfunc, <code>func</code> is a function pointer.
+      Matches <code>duk_push_c_lightfunc()</code> with
+      <code>length</code> defaulting to <code>nargs</code> and
+      <code>magic</code> to 0.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_LIGHTFUNC_LENGTH_MAGIC(key,func,nargs,length,magic)</td>
+  <td>Duktape/C lightfunc, <code>func</code> is a function pointer.
+      Matches <code>duk_push_c_lightfunc()</code>.</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_ACCESSOR(key,getfunc,setfunc)</td>
+  <td>Accessor property, <code>getfunc</code> and <code>setfunc</code>
+      are Duktape/C function pointers (may be NULL).</td>
+  </tr>
+  <tr>
+  <td>DUK_PROP_PROPLIST(key,proplist)</td>
+  <td>Sub-object whose properties are specific using a property list.</td>
+  </tr>
+  <tr>
+  <td>FIXME</td>
+  <td>Rest.</td>
+  </tr>
+  </table>
+
+  <div class="note">
+  Property initializers are API macros which hide the internal structures
+  needed for initialization.  This allows new macros and initialization features
+  to be introduced without breaking API compatibility.  The macros also hide
+  compiler specific differences for static initializers; some compilers don't
+  support <i>designated union initializers</i> for example in which case
+  Duktape will fall back to using a bit larger struct-based initializers.
+  </div>
+
+  <div class="note">
+  The initializer macros may evaluate their argument(s) multiple times.
+  For example <code>DUK_PROP_LIGHTFUNC</code> evaluates "nargs" twice
+  because it's used to initialize both lightfunc "nargs" and "length"
+  fields.  Don't rely on any specific evaluation count.
+
+  This is usually not an issue because initializers tend to be static
+  and not computed on-the-fly.  For on-the-fly initializers, be careful
+  to avoid e.g. function call expressions in the macro arguments.
+  </div>
+
+  <div class="note">
+  This API call deprecates the more restrictive (and difficult to version)
+  <code><a href="#duk_put_function_list">duk_put_function_list()</a></code> and
+  <code><a href="#duk_put_number_list">duk_put_number_list()</a></code>.
+  </div>
+
+example: |
+  duk_prop_list_entry sub_props[] = {
+      DUK_PROP_STRING("name", "subObject"),
+      DUK_PROP_STRING("comment", "a new object is created for DUK_PROP_PROPLIST()"),
+      DUK_PROP_END()
+  };
+  duk_prop_list_entry props[] = {
+      DUK_PROP_UNDEFINED("undefinedValue"),
+      DUK_PROP_NULL("nullValue"),
+      DUK_PROP_BOOLEAN("booleanTrueValue", 123),  /* any nonzero */
+      DUK_PROP_BOOLEAN("booleanFalseValue", 0),
+      DUK_PROP_NUMBER("numberValue", 123.456),
+      DUK_PROP_STRING("stringValue", "NUL terminated string value"),
+      DUK_PROP_LSTRING("lstringValue", "string with\x00internal NULs[IGNORED]", 25),
+      /* FIXME: object */
+      DUK_PROP_BUFFER("bufferWithoutInitValue", NULL, 18),  /* fixed buffer without initialization data */
+      DUK_PROP_BUFFER("bufferWithInitValue", buf_data, 8),  /* fixed buffer with initialization data */
+      DUK_PROP_POINTER("pointerValue", (void *) 0xdeadbeef),
+      DUK_PROP_FUNCTION("functionValue", my_function, 3 /*nargs*/),
+      DUK_PROP_LIGHTFUNC("lightfuncValue1", my_function, 4 /*nargs*/),
+      DUK_PROP_LIGHTFUNC_LENGTH_MAGIC("lightfuncValue2", my_function, 4 /*nargs*/, 2 /*length*/, 9 /*magic*/),
+      DUK_PROP_ACCESSOR("accessorValue", my_getter, my_setter),
+      DUK_PROP_PROPLIST("proplistValue", sub_props),
+      DUK_PROP_END()
+  };
+
+  duk_def_prop_list(ctx, -3, props);
+
+tags:
+  - property
+  - module
+
+seealso:
+  - duk_put_function_list
+  - duk_put_number_list
+
+introduced: 1.5.0
