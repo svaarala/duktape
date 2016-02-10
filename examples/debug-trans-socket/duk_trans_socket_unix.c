@@ -1,11 +1,8 @@
 /*
- *  Example debug transport using a TCP socket
+ *  Example debug transport using a Linux/Unix TCP socket
  *
- *  The application has a server socket which can be connected to.
+ *  Provides a TCP server socket which a debug client can connect to.
  *  After that data is just passed through.
- *
- *  NOTE: This is Linux specific on purpose, as it's just an example how
- *  a debug transport can be concretely implemented.
  */
 
 #include <stdio.h>
@@ -17,7 +14,7 @@
 #include <errno.h>
 #include "duktape.h"
 
-#ifndef DUK_DEBUG_PORT
+#if !defined(DUK_DEBUG_PORT)
 #define DUK_DEBUG_PORT 9091
 #endif
 
@@ -38,14 +35,16 @@ void duk_trans_socket_init(void) {
 
 	server_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_sock < 0) {
-		fprintf(stderr, "%s: failed to create server socket: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: failed to create server socket: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	}
 
 	on = 1;
 	if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, (const char *) &on, sizeof(on)) < 0) {
-		fprintf(stderr, "%s: failed to set SO_REUSEADDR for server socket: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: failed to set SO_REUSEADDR for server socket: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	}
@@ -56,7 +55,8 @@ void duk_trans_socket_init(void) {
 	addr.sin_port = htons(DUK_DEBUG_PORT);
 
 	if (bind(server_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-		fprintf(stderr, "%s: failed to bind server socket: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: failed to bind server socket: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	}
@@ -87,7 +87,8 @@ void duk_trans_socket_waitconn(void) {
 	socklen_t sz;
 
 	if (server_sock < 0) {
-		fprintf(stderr, "%s: no server socket, skip waiting for connection\n", __FILE__);
+		fprintf(stderr, "%s: no server socket, skip waiting for connection\n",
+		        __FILE__);
 		fflush(stderr);
 		return;
 	}
@@ -102,7 +103,8 @@ void duk_trans_socket_waitconn(void) {
 	sz = (socklen_t) sizeof(addr);
 	client_sock = accept(server_sock, (struct sockaddr *) &addr, &sz);
 	if (client_sock < 0) {
-		fprintf(stderr, "%s: accept() failed, skip waiting for connection: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: accept() failed, skip waiting for connection: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	}
@@ -132,7 +134,7 @@ void duk_trans_socket_waitconn(void) {
  *  Duktape callbacks
  */
 
-/* Duktape debug transport callback: partial read */
+/* Duktape debug transport callback: (possibly partial) read. */
 duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length) {
 	ssize_t ret;
 
@@ -150,14 +152,16 @@ duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length
 
 	if (length == 0) {
 		/* This shouldn't happen. */
-		fprintf(stderr, "%s: read request length == 0, closing connection\n", __FILE__);
+		fprintf(stderr, "%s: read request length == 0, closing connection\n",
+		        __FILE__);
 		fflush(stderr);
 		goto fail;
 	}
 
 	if (buffer == NULL) {
 		/* This shouldn't happen. */
-		fprintf(stderr, "%s: read request buffer == NULL, closing connection\n", __FILE__);
+		fprintf(stderr, "%s: read request buffer == NULL, closing connection\n",
+		        __FILE__);
 		fflush(stderr);
 		goto fail;
 	}
@@ -168,15 +172,18 @@ duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length
 
 	ret = read(client_sock, (void *) buffer, (size_t) length);
 	if (ret < 0) {
-		fprintf(stderr, "%s: debug read failed, errno %d, closing connection: %s\n", __FILE__, errno, strerror(errno));
+		fprintf(stderr, "%s: debug read failed, closing connection: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	} else if (ret == 0) {
-		fprintf(stderr, "%s: debug read failed, ret == 0 (EOF), closing connection\n", __FILE__);
+		fprintf(stderr, "%s: debug read failed, ret == 0 (EOF), closing connection\n",
+		        __FILE__);
 		fflush(stderr);
 		goto fail;
 	} else if (ret > (ssize_t) length) {
-		fprintf(stderr, "%s: debug read failed, ret too large (%ld > %ld), closing connection\n", __FILE__, (long) ret, (long) length);
+		fprintf(stderr, "%s: debug read failed, ret too large (%ld > %ld), closing connection\n",
+		        __FILE__, (long) ret, (long) length);
 		fflush(stderr);
 		goto fail;
 	}
@@ -191,7 +198,7 @@ duk_size_t duk_trans_socket_read_cb(void *udata, char *buffer, duk_size_t length
 	return 0;
 }
 
-/* Duktape debug transport callback: partial write */
+/* Duktape debug transport callback: (possibly partial) write. */
 duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t length) {
 	ssize_t ret;
 
@@ -209,14 +216,16 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 
 	if (length == 0) {
 		/* This shouldn't happen. */
-		fprintf(stderr, "%s: write request length == 0, closing connection\n", __FILE__);
+		fprintf(stderr, "%s: write request length == 0, closing connection\n",
+		        __FILE__);
 		fflush(stderr);
 		goto fail;
 	}
 
 	if (buffer == NULL) {
 		/* This shouldn't happen. */
-		fprintf(stderr, "%s: write request buffer == NULL, closing connection\n", __FILE__);
+		fprintf(stderr, "%s: write request buffer == NULL, closing connection\n",
+		        __FILE__);
 		fflush(stderr);
 		goto fail;
 	}
@@ -227,7 +236,8 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 
 	ret = write(client_sock, (const void *) buffer, (size_t) length);
 	if (ret <= 0 || ret > (ssize_t) length) {
-		fprintf(stderr, "%s: debug write failed, closing connection: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: debug write failed, closing connection: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;
 	}
@@ -253,17 +263,23 @@ duk_size_t duk_trans_socket_peek_cb(void *udata) {
 	fflush(stderr);
 #endif
 
+	if (client_sock < 0) {
+		return 0;
+	}
+
 	fds[0].fd = client_sock;
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
 
 	poll_rc = poll(fds, 1, 0);
 	if (poll_rc < 0) {
-		fprintf(stderr, "%s: poll returned < 0, closing connection: %s\n", __FILE__, strerror(errno));
+		fprintf(stderr, "%s: poll returned < 0, closing connection: %s\n",
+		        __FILE__, strerror(errno));
 		fflush(stderr);
 		goto fail;  /* also returns 0, which is correct */
 	} else if (poll_rc > 1) {
-		fprintf(stderr, "%s: poll returned > 1, treating like 1\n", __FILE__);
+		fprintf(stderr, "%s: poll returned > 1, treating like 1\n",
+		        __FILE__);
 		fflush(stderr);
 		return 1;  /* should never happen */
 	} else if (poll_rc == 0) {
@@ -281,12 +297,12 @@ duk_size_t duk_trans_socket_peek_cb(void *udata) {
 }
 
 void duk_trans_socket_read_flush_cb(void *udata) {
+	(void) udata;  /* not needed by the example */
+
 #if defined(DEBUG_PRINTS)
 	fprintf(stderr, "%s: udata=%p\n", __func__, (void *) udata);
 	fflush(stderr);
 #endif
-
-	(void) udata;  /* not needed by the example */
 
 	/* Read flush: Duktape may not be making any more read calls at this
 	 * time.  If the transport maintains a receive window, it can use a
@@ -303,12 +319,12 @@ void duk_trans_socket_read_flush_cb(void *udata) {
 }
 
 void duk_trans_socket_write_flush_cb(void *udata) {
+	(void) udata;  /* not needed by the example */
+
 #if defined(DEBUG_PRINTS)
 	fprintf(stderr, "%s: udata=%p\n", __func__, (void *) udata);
 	fflush(stderr);
 #endif
-
-	(void) udata;  /* not needed by the example */
 
 	/* Write flush.  If the transport combines multiple writes
 	 * before actually sending, a write flush is an indication

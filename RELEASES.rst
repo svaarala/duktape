@@ -1381,6 +1381,8 @@ Planned
   type is indicated using a fake directive rather than a comment; for example,
   'function () {"ecmascript"}' (GH-554)
 
+* Add Windows version of the debugger example TCP transport (GH-579)
+
 * Fix potentially memory unsafe behavior when a refcount-triggered finalizer
   function rescues an object; the memory unsafe behavior doesn't happen
   immediately which makes the cause of the unsafe behavior difficult to

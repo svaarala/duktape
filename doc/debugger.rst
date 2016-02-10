@@ -63,7 +63,7 @@ To integrate debugger support into your target, you need to:
   target device and the Duktape debugger.  The best transport depends on the
   target, e.g. a TCP socket, a serial link, or embedding debug data in an
   existing custom protocol.  An example TCP debug transport is given in
-  ``examples/debug-trans-socket/duk_trans_socket.c``.
+  ``examples/debug-trans-socket/duk_trans_socket_unix.c``.
 
 * **Add code to attach a debugger**: call ``duk_debugger_attach()`` when it is
   time to start debugging.  Duktape will pause execution and process debug
@@ -2600,7 +2600,7 @@ You may get the following when doing a DumpHeap::
 
     ==17318== Syscall param write(buf) points to uninitialised byte(s)
     ==17318==    at 0x5466700: __write_nocancel (syscall-template.S:81)
-    ==17318==    by 0x427ADA: duk_trans_socket_write_cb (duk_trans_socket.c:237)
+    ==17318==    by 0x427ADA: duk_trans_socket_write_cb (duk_trans_socket_unix.c:237)
     ==17318==    by 0x403538: duk_debug_write_bytes.isra.11 (duk_debugger.c:379)
     ==17318==    by 0x4036AC: duk_debug_write_strbuf (duk_debugger.c:463)
     [...]

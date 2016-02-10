@@ -4,9 +4,11 @@
 
 DUKTAPE_SOURCES = src/duktape.c
 
+# Windows (MinGW): use examples/debug-trans-socket/duk_trans_socket_windows.c
+# and link with -lws2_32.
 DUKTAPE_CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
-	examples/debug-trans-socket/duk_trans_socket.c
+	examples/debug-trans-socket/duk_trans_socket_unix.c
 
 CC	= gcc
 CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
