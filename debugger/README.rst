@@ -6,7 +6,8 @@ Overview
 ========
 
 Debugger web UI which connects to the Duktape command line tool or any other
-target supporting the example TCP transport (``examples/debug-trans-socket``).
+target supporting the example TCP transport (``examples/debug-trans-socket``)
+on Unix and Windows.
 
 Also provides a JSON debug proxy with a JSON mapping for the Duktape debug
 protocol.
