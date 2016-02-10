@@ -50,6 +50,15 @@
 
 #define DUK_USE_PACK_MSVC_PRAGMA
 
+/* These have been tested from VS2008 onwards; may work in older VS versions
+ * too but not enabled by default.
+ */
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+#define DUK_NOINLINE        __declspec(noinline)
+#define DUK_INLINE          __inline
+#define DUK_ALWAYS_INLINE   __forceinline
+#endif
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 #define DUK_SNPRINTF     snprintf
 #define DUK_VSNPRINTF    vsnprintf
