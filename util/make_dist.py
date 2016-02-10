@@ -533,7 +533,8 @@ copy_files([
 
 copy_files([
 	'README.rst',
-	'duk_trans_socket.c',
+	'duk_trans_socket_unix.c',
+	'duk_trans_socket_windows.c',
 	'duk_trans_socket.h'
 ], os.path.join('examples', 'debug-trans-socket'), os.path.join(dist, 'examples', 'debug-trans-socket'))
 

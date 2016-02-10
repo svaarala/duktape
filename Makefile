@@ -171,7 +171,7 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/alloc-logging/duk_alloc_logging.c \
 	dist/examples/alloc-torture/duk_alloc_torture.c \
 	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
-	dist/examples/debug-trans-socket/duk_trans_socket.c
+	dist/examples/debug-trans-socket/duk_trans_socket_unix.c
 
 # Compiler setup for Linux
 CC	= gcc
