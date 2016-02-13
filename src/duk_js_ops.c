@@ -730,7 +730,10 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(ctx, tv_x);
 		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
-		rc = duk_js_equals_helper(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0 /*flags:nonstrict*/);
+		rc = duk_js_equals_helper(thr,
+		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
+		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
+		                          0 /*flags:nonstrict*/);
 		duk_pop_2(ctx);
 		return rc;
 	}
@@ -748,7 +751,10 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
 		duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* apparently no hint? */
-		rc = duk_js_equals_helper(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0 /*flags:nonstrict*/);
+		rc = duk_js_equals_helper(thr,
+		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
+		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
+		                          0 /*flags:nonstrict*/);
 		duk_pop_2(ctx);
 		return rc;
 	}
@@ -903,8 +909,8 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	}
 
 	/* Note: reuse variables */
-	tv_x = duk_get_tval(ctx, -2);
-	tv_y = duk_get_tval(ctx, -1);
+	tv_x = DUK_GET_TVAL_NEGIDX(ctx, -2);
+	tv_y = DUK_GET_TVAL_NEGIDX(ctx, -1);
 
 	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
 		duk_hstring *h1 = DUK_TVAL_GET_STRING(tv_x);
@@ -1213,7 +1219,9 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC);
 	duk_to_string(ctx, -2);               /* coerce lval with ToString() */
 
-	retval = duk_hobject_hasprop(thr, duk_get_tval(ctx, -1), duk_get_tval(ctx, -2));
+	retval = duk_hobject_hasprop(thr,
+	                             DUK_GET_TVAL_NEGIDX(ctx, -1),
+	                             DUK_GET_TVAL_NEGIDX(ctx, -2));
 
 	duk_pop_2(ctx);
 	return retval;

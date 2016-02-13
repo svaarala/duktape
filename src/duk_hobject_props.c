@@ -4353,7 +4353,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	duk_push_tval(ctx, tv_obj);
 	duk_push_tval(ctx, tv_key);
 
-	tv_obj = duk_get_tval(ctx, -2);
+	tv_obj = DUK_GET_TVAL_NEGIDX(ctx, -2);
 	if (DUK_TVAL_IS_OBJECT(tv_obj)) {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(obj != NULL);
@@ -4745,7 +4745,11 @@ DUK_INTERNAL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk
 	duk_push_hobject(ctx, obj);
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 	duk_push_u32(ctx, length);
-	(void) duk_hobject_putprop(thr, duk_get_tval(ctx, -3), duk_get_tval(ctx, -2), duk_get_tval(ctx, -1), 0);
+	(void) duk_hobject_putprop(thr,
+	                           DUK_GET_TVAL_NEGIDX(ctx, -3),
+	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
+	                           DUK_GET_TVAL_NEGIDX(ctx, -1),
+	                           0);
 	duk_pop_n(ctx, 3);
 }
 
@@ -4758,7 +4762,9 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 	duk_double_t val;
 	duk_push_hobject(ctx, obj);
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
-	(void) duk_hobject_getprop(thr, duk_get_tval(ctx, -2), duk_get_tval(ctx, -1));
+	(void) duk_hobject_getprop(thr,
+	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
+	                           DUK_GET_TVAL_NEGIDX(ctx, -1));
 	val = duk_to_number(ctx, -1);
 	duk_pop_n(ctx, 3);
 	if (val >= 0.0 && val < DUK_DOUBLE_2TO32) {
