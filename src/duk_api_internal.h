@@ -173,4 +173,22 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t 
 /* Set object 'length'. */
 DUK_INTERNAL_DECL void duk_set_length(duk_context *ctx, duk_idx_t index, duk_size_t length);
 
+/* Raw internal valstack access macros: access is unsafe so call site
+ * must have a guarantee that the index is valid.  When that is the case,
+ * using these macro results in faster and smaller code than duk_get_tval().
+ * Both 'ctx' and 'idx' are evaluted multiple times, but only for asserts.
+ */
+#define DUK_ASSERT_VALID_NEGIDX(ctx,idx) \
+	(DUK_ASSERT_EXPR((idx) < 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
+#define DUK_ASSERT_VALID_POSIDX(ctx,idx) \
+	(DUK_ASSERT_EXPR((idx) >= 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
+#define DUK_GET_TVAL_NEGIDX(ctx,idx) \
+	(DUK_ASSERT_VALID_NEGIDX((ctx),(idx)), ((duk_hthread *) (ctx))->valstack_top + (idx))
+#define DUK_GET_TVAL_POSIDX(ctx,idx) \
+	(DUK_ASSERT_VALID_POSIDX((ctx),(idx)), ((duk_hthread *) (ctx))->valstack_bottom + (idx))
+#define DUK_GET_HOBJECT_NEGIDX(ctx,idx) \
+	(DUK_ASSERT_VALID_NEGIDX((ctx),(idx)), DUK_TVAL_GET_OBJECT(((duk_hthread *) (ctx))->valstack_top + (idx)))
+#define DUK_GET_HOBJECT_POSIDX(ctx,idx) \
+	(DUK_ASSERT_VALID_POSIDX((ctx),(idx)), DUK_TVAL_GET_OBJECT(((duk_hthread *) (ctx))->valstack_bottom + (idx)))
+
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */

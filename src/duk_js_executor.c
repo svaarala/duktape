@@ -422,6 +422,8 @@ DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_idx_
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(opcode == DUK_EXTRAOP_UNM || opcode == DUK_EXTRAOP_UNP);
+	DUK_ASSERT(tv_x != NULL);
+	DUK_ASSERT(idx_x >= 0);
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_x)) {
@@ -449,7 +451,7 @@ DUK_LOCAL void duk__vm_arith_unary_op(duk_hthread *thr, duk_tval *tv_x, duk_idx_
 
 	if (!DUK_TVAL_IS_NUMBER(tv_x)) {
 		duk_to_number(ctx, idx_x);  /* side effects, perform in-place */
-		tv_x = duk_get_tval(ctx, idx_x);
+		tv_x = DUK_GET_TVAL_POSIDX(ctx, idx_x);
 		DUK_ASSERT(tv_x != NULL);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 	}
@@ -726,7 +728,7 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 		                                    act_lex_env);
-		new_env = duk_get_hobject(ctx, -1);
+		new_env = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
 		DUK_ASSERT(new_env != NULL);
 		DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
@@ -2797,12 +2799,12 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			} else {
 				duk_push_tval(ctx, DUK__REGCONSTP(c));
 			}
-			tv1 = duk_get_tval(ctx, -1);
+			tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 
 			act = thr->callstack + thr->callstack_top - 1;
 			if (duk_js_declvar_activation(thr, act, name, tv1, prop_flags, is_func_decl)) {
 				/* already declared, must update binding value */
-				tv1 = duk_get_tval(ctx, -1);
+				tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 				duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			}
 
@@ -3591,7 +3593,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				DUK_DDD(DUK_DDDPRINT("activating object env: %!iT",
 				                     (duk_tval *) duk_get_tval(ctx, -1)));
 				DUK_ASSERT(act->lex_env != NULL);
-				new_env = duk_get_hobject(ctx, -1);
+				new_env = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
 				DUK_ASSERT(new_env != NULL);
 
 				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
@@ -3750,7 +3752,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			duk_push_number(ctx, y);
-			tv1 = duk_get_tval(ctx, -1);
+			tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 			DUK_ASSERT(tv1 != NULL);
 			duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			duk_pop(ctx);
@@ -3804,7 +3806,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			duk_push_number(ctx, y);
-			tv_val = duk_get_tval(ctx, -1);
+			tv_val = DUK_GET_TVAL_NEGIDX(ctx, -1);
 			DUK_ASSERT(tv_val != NULL);
 			tv_obj = DUK__REGCONSTP(b);
 			tv_key = DUK__REGCONSTP(c);
@@ -3944,7 +3946,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				act = thr->callstack + thr->callstack_top - 1;
 				if (duk_js_getvar_activation(thr, act, name, 0 /*throw*/)) {
 					/* -> [... val this] */
-					tv = duk_get_tval(ctx, -2);
+					tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
 					duk_push_hstring(ctx, duk_js_typeof(thr, tv));
 					duk_replace(ctx, (duk_idx_t) b);
 					duk_pop_2(ctx);

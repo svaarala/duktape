@@ -512,23 +512,23 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	duk_push_array(ctx);
 	func->consts_idx = entry_top + 1;
-	func->h_consts = duk_get_hobject(ctx, entry_top + 1);
+	func->h_consts = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 1);
 	DUK_ASSERT(func->h_consts != NULL);
 
 	duk_push_array(ctx);
 	func->funcs_idx = entry_top + 2;
-	func->h_funcs = duk_get_hobject(ctx, entry_top + 2);
+	func->h_funcs = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 2);
 	DUK_ASSERT(func->h_funcs != NULL);
 	DUK_ASSERT(func->fnum_next == 0);
 
 	duk_push_array(ctx);
 	func->decls_idx = entry_top + 3;
-	func->h_decls = duk_get_hobject(ctx, entry_top + 3);
+	func->h_decls = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 3);
 	DUK_ASSERT(func->h_decls != NULL);
 
 	duk_push_array(ctx);
 	func->labelnames_idx = entry_top + 4;
-	func->h_labelnames = duk_get_hobject(ctx, entry_top + 4);
+	func->h_labelnames = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 4);
 	DUK_ASSERT(func->h_labelnames != NULL);
 
 	duk_push_dynamic_buffer(ctx, 0);
@@ -539,12 +539,12 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 
 	duk_push_array(ctx);
 	func->argnames_idx = entry_top + 6;
-	func->h_argnames = duk_get_hobject(ctx, entry_top + 6);
+	func->h_argnames = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 6);
 	DUK_ASSERT(func->h_argnames != NULL);
 
 	duk_push_object_internal(ctx);
 	func->varmap_idx = entry_top + 7;
-	func->h_varmap = duk_get_hobject(ctx, entry_top + 7);
+	func->h_varmap = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 7);
 	DUK_ASSERT(func->h_varmap != NULL);
 }
 
@@ -570,7 +570,7 @@ DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	/* truncated in case pass 3 needed */
 	duk_push_object_internal(ctx);
 	duk_replace(ctx, func->varmap_idx);
-	func->h_varmap = duk_get_hobject(ctx, func->varmap_idx);
+	func->h_varmap = DUK_GET_HOBJECT_POSIDX(ctx, func->varmap_idx);
 	DUK_ASSERT(func->h_varmap != NULL);
 }
 
@@ -588,7 +588,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 
 	/* [ ... varmap ] */
 
-	h_varmap = duk_get_hobject(ctx, -1);
+	h_varmap = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
 	DUK_ASSERT(h_varmap != NULL);
 
 	ret = 0;
@@ -655,7 +655,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	/* Valstack should suffice here, required on function valstack init */
 
 	(void) duk_push_compiledfunction(ctx);
-	h_res = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);  /* XXX: specific getter */
+	h_res = (duk_hcompiledfunction *) DUK_GET_HOBJECT_NEGIDX(ctx, -1);  /* XXX: specific getter */
 	DUK_ASSERT(h_res != NULL);
 
 	if (func->is_function) {
@@ -1892,7 +1892,7 @@ DUK_LOCAL duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 
 	n = (duk_int_t) duk_get_length(ctx, f->consts_idx);
 
-	tv1 = duk_get_tval(ctx, -1);
+	tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	DUK_ASSERT(tv1 != NULL);
 
 #if defined(DUK_USE_FASTINT)
@@ -1968,7 +1968,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	case DUK_ISPEC_VALUE: {
 		duk_tval *tv;
 
-		tv = duk_get_tval(ctx, x->valstack_idx);
+		tv = DUK_GET_TVAL_POSIDX(ctx, x->valstack_idx);
 		DUK_ASSERT(tv != NULL);
 
 		switch (DUK_TVAL_GET_TAG(tv)) {
@@ -2158,8 +2158,8 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 		/* inline arithmetic check for constant values */
 		/* XXX: use the exactly same arithmetic function here as in executor */
 		if (x->x1.t == DUK_ISPEC_VALUE && x->x2.t == DUK_ISPEC_VALUE && x->t == DUK_IVAL_ARITH) {
-			tv1 = duk_get_tval(ctx, x->x1.valstack_idx);
-			tv2 = duk_get_tval(ctx, x->x2.valstack_idx);
+			tv1 = DUK_GET_TVAL_POSIDX(ctx, x->x1.valstack_idx);
+			tv2 = DUK_GET_TVAL_POSIDX(ctx, x->x2.valstack_idx);
 			DUK_ASSERT(tv1 != NULL);
 			DUK_ASSERT(tv2 != NULL);
 
@@ -3593,12 +3593,13 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__expr(comp_ctx, res, DUK__BP_MULTIPLICATIVE /*rbp_flags*/);  /* UnaryExpression */
 		if (res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_VALUE &&
 		    duk_is_number(ctx, res->x1.valstack_idx)) {
-			/* this optimization is important to handle negative literals (which are not directly
-			 * provided by the lexical grammar
+			/* this optimization is important to handle negative literals
+			 * (which are not directly provided by the lexical grammar)
 			 */
-			duk_tval *tv_num = duk_get_tval(ctx, res->x1.valstack_idx);
+			duk_tval *tv_num;
 			duk_double_union du;
 
+			tv_num = DUK_GET_TVAL_POSIDX(ctx, res->x1.valstack_idx);
 			DUK_ASSERT(tv_num != NULL);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_num));
 			du.d = DUK_TVAL_GET_NUMBER(tv_num);
@@ -3621,8 +3622,9 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			/* Very minimal inlining to handle common idioms '!0' and '!1',
 			 * and also boolean arguments like '!false' and '!true'.
 			 */
-			duk_tval *tv_val = duk_get_tval(ctx, res->x1.valstack_idx);
+			duk_tval *tv_val;
 
+			tv_val = DUK_GET_TVAL_POSIDX(ctx, res->x1.valstack_idx);
 			DUK_ASSERT(tv_val != NULL);
 			if (DUK_TVAL_IS_NUMBER(tv_val)) {
 				duk_double_t d;

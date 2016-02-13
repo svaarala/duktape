@@ -731,7 +731,7 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 
 	for (;;) {
 		/* Use loop to minimize code size of relookup after bound function case */
-		tv_func = duk_get_tval(ctx, idx_func);
+		tv_func = DUK_GET_TVAL_POSIDX(ctx, idx_func);
 		DUK_ASSERT(tv_func != NULL);
 
 		if (DUK_TVAL_IS_OBJECT(tv_func)) {
