@@ -126,6 +126,7 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 		duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
 	} else {
 		duk_double_t d1, d2;
+		duk_tval *tv_res;
 
 		d1 = duk_to_number(ctx, -2);
 		d2 = duk_to_number(ctx, -1);
@@ -139,8 +140,8 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 
 		duk_pop_2(ctx);
-		duk_push_number(ctx, du.d);
-		duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
+		tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) idx_z);
+		DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_res, du.d);  /* side effects */
 	}
 }
 
@@ -2673,6 +2674,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_context *ctx = (duk_context *) thr;
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);  /* restricted to regs */
 			duk_uint_fast_t idx;
+			duk_tval *tv1;
+			duk_tval *tv2;
 
 			/* A -> target register (A, A+1) for call setup
 			 *      (for DUK_OP_CSREGI, 'a' is indirect)
@@ -2700,10 +2703,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 #endif
 
-			duk_push_tval(ctx, DUK__REGP(b));
-			duk_replace(ctx, (duk_idx_t) idx);
-			duk_push_undefined(ctx);
-			duk_replace(ctx, (duk_idx_t) (idx + 1));
+			tv1 = DUK__REGP(b);
+			tv2 = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) idx);
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv2, tv1);
+			tv2 = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) (idx + 1));  /* relookup, careful of side effects */
+			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv2);
 			break;
 		}
 
@@ -2813,9 +2817,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			DUK_DDD(DUK_DDDPRINT("DELVAR '%!O'", (duk_heaphdr *) name));
 			act = thr->callstack + thr->callstack_top - 1;
 			rc = duk_js_delvar_activation(thr, act, name);
+			DUK_ASSERT(rc == 0 || rc == 1);
 
-			duk_push_boolean(ctx, rc);
-			duk_replace(ctx, (duk_idx_t) a);
+			tv1 = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv1, rc);
 			break;
 		}
 
@@ -2991,6 +2996,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
+			duk_tval *tv_res;
 			duk_bool_t rc;
 
 			/* A -> result reg
@@ -3004,8 +3010,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
 
-			duk_push_boolean(ctx, rc);
-			duk_replace(ctx, (duk_idx_t) a);    /* result */
+			DUK_ASSERT(rc == 0 || rc == 1);
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, rc);
 			break;
 		}
 
@@ -3017,6 +3024,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_uint_fast_t idx;
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
+			duk_tval *tv_src;
+			duk_tval *tv_res;
 			duk_bool_t rc;
 
 			/* E5 Section 11.2.3, step 6.a.i */
@@ -3053,13 +3062,21 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 #endif
 
-			duk_push_tval(ctx, DUK__REGP(b));         /* [ ... val obj ] */
-			duk_replace(ctx, (duk_idx_t) (idx + 1));  /* 'this' binding */
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) (idx + 1));
+			tv_src = DUK__REGP(b);
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_res, tv_src);  /* 'this' binding */
 			duk_replace(ctx, (duk_idx_t) idx);        /* val */
 			break;
 		}
 
-		case DUK_OP_ADD:
+		case DUK_OP_ADD: {
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_small_uint_fast_t b = DUK_DEC_B(ins);
+			duk_small_uint_fast_t c = DUK_DEC_C(ins);
+
+			duk__vm_arith_add(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a);
+			break;
+		}
 		case DUK_OP_SUB:
 		case DUK_OP_MUL:
 		case DUK_OP_DIV:
@@ -3069,15 +3086,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
 
-			if (op == DUK_OP_ADD) {
-				/*
-				 *  Handling DUK_OP_ADD this way is more compact (experimentally)
-				 *  than a separate case with separate argument decoding.
-				 */
-				duk__vm_arith_add(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a);
-			} else {
-				duk__vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
-			}
+			duk__vm_arith_binary_op(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c), a, op);
 			break;
 		}
 
@@ -3103,14 +3112,18 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
 			tmp = duk_js_equals(thr, DUK__REGCONSTP(b), DUK__REGCONSTP(c));
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 			if (DUK_DEC_OP(ins) == DUK_OP_NEQ) {
-				tmp = !tmp;
+				tmp ^= 1;
 			}
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			DUK_ASSERT(tmp == 0 || tmp == 1);
+
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3121,14 +3134,18 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* E5 Sections 11.9.1, 11.9.3 */
 			tmp = duk_js_strict_equals(DUK__REGCONSTP(b), DUK__REGCONSTP(c));
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 			if (DUK_DEC_OP(ins) == DUK_OP_SNEQ) {
-				tmp = !tmp;
+				tmp ^= 1;
 			}
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			DUK_ASSERT(tmp == 0 || tmp == 1);
+
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3148,15 +3165,17 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* x > y  -->  y < x */
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK__REGCONSTP(b),  /* x */
 			                            0);                 /* flags */
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3166,6 +3185,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* x >= y  -->  not (x < y) */
 			tmp = duk_js_compare_helper(thr,
@@ -3173,9 +3193,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK_COMPARE_FLAG_EVAL_LEFT_FIRST |
 			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3185,15 +3206,17 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* x < y */
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(b),  /* x */
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK_COMPARE_FLAG_EVAL_LEFT_FIRST);  /* flags */
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3203,15 +3226,17 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
+			duk_tval *tv_res;
 
 			/* x <= y  -->  not (x > y)  -->  not (y < x) */
 			tmp = duk_js_compare_helper(thr,
 			                            DUK__REGCONSTP(c),  /* y */
 			                            DUK__REGCONSTP(b),  /* x */
 			                            DUK_COMPARE_FLAG_NEGATE);  /* flags */
+			DUK_ASSERT(tmp == 0 || tmp == 1);
 
-			duk_push_boolean(ctx, tmp);
-			duk_replace(ctx, (duk_idx_t) a);
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 			break;
 		}
 
@@ -3682,7 +3707,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 				DUK_TVAL_SET_NUMBER(tv1, y);  /* no need for refcount update */
 			} else {
-				x = duk_to_number(ctx, bc);
+				x = duk_to_number(ctx, bc);  /* invalidates 'tv1' */
 
 				if (ins & DUK_ENC_OP(0x01)) {
 					y = x - 1.0;
@@ -3690,8 +3715,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 					y = x + 1.0;
 				}
 
-				duk_push_number(ctx, y);
-				duk_replace(ctx, bc);
+				tv1 = DUK__REGP(bc);
+				DUK_TVAL_SET_NUMBER_UPDREF(thr, tv1, y);
 			}
 
 			tv2 = DUK__REGP(a);
@@ -3709,9 +3734,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_activation *act;
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
-			duk_double_t x, y;
+			duk_double_t x, y, z;
 			duk_tval *tv1;
 			duk_hstring *name;
+			duk_tval *tv_res;
 
 			/* Two lowest bits of opcode are used to distinguish
 			 * variants.  Bit 0 = inc(0)/dec(1), bit 1 = pre(0)/post(1).
@@ -3744,8 +3770,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			duk_pop(ctx);
 
-			duk_push_number(ctx, (ins & DUK_ENC_OP(0x02)) ? x : y);
-			duk_replace(ctx, (duk_idx_t) a);
+			z = (ins & DUK_ENC_OP(0x02)) ? x : y;
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_res, z);
 			break;
 		}
 
@@ -3761,8 +3788,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_tval *tv_obj;
 			duk_tval *tv_key;
 			duk_tval *tv_val;
+			duk_tval *tv_res;
 			duk_bool_t rc;
-			duk_double_t x, y;
+			duk_double_t x, y, z;
 
 			/* A -> target reg
 			 * B -> object reg/const (may be const e.g. in "'foo'[1]")
@@ -3803,8 +3831,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			tv_key = NULL;  /* invalidated */
 			duk_pop(ctx);
 
-			duk_push_number(ctx, (ins & DUK_ENC_OP(0x02)) ? x : y);
-			duk_replace(ctx, (duk_idx_t) a);
+			z = (ins & DUK_ENC_OP(0x02)) ? x : y;
+			tv_res = DUK_GET_TVAL_POSIDX(ctx, (duk_idx_t) a);
+			DUK_TVAL_SET_NUMBER_UPDREF(thr, tv_res, z);
 			break;
 		}
 
@@ -3908,10 +3937,13 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			case DUK_EXTRAOP_TYPEOF: {
-				duk_context *ctx = (duk_context *) thr;
 				duk_uint_fast_t bc = DUK_DEC_BC(ins);
-				duk_push_hstring(ctx, duk_js_typeof(thr, DUK__REGP(bc)));
-				duk_replace(ctx, (duk_idx_t) bc);
+				duk_hstring *h_val;
+				duk_tval *tv_res;
+
+				h_val = duk_js_typeof(thr, DUK__REGP(bc));
+				tv_res = DUK__REGP(bc);
+				DUK_TVAL_SET_STRING_UPDREF(thr, tv_res, h_val);
 				break;
 			}
 
@@ -3922,6 +3954,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 				duk_hstring *name;
 				duk_tval *tv;
+				duk_hstring *h_val;
+				duk_tval *tv_res;
 
 				/* B -> target register
 				 * C -> constant index of identifier name
@@ -3934,15 +3968,16 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				if (duk_js_getvar_activation(thr, act, name, 0 /*throw*/)) {
 					/* -> [... val this] */
 					tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
-					duk_push_hstring(ctx, duk_js_typeof(thr, tv));
-					duk_replace(ctx, (duk_idx_t) b);
-					duk_pop_2(ctx);
+
+					h_val = duk_js_typeof(thr, tv);
+					duk_pop_2(ctx);  /* h_val is still reachable */
 				} else {
 					/* unresolvable, no stack changes */
-					duk_push_hstring_stridx(ctx, DUK_STRIDX_LC_UNDEFINED);
-					duk_replace(ctx, (duk_idx_t) b);
+					h_val = DUK_HTHREAD_STRING_LC_UNDEFINED(thr);
 				}
 
+				tv_res = DUK__REGP(b);
+				DUK_TVAL_SET_STRING_UPDREF(thr, tv_res, h_val);
 				break;
 			}
 
@@ -3964,13 +3999,12 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 				if (duk_is_null_or_undefined(ctx, (duk_idx_t) c)) {
 					duk_push_null(ctx);
-					duk_replace(ctx, (duk_idx_t) b);
 				} else {
 					duk_dup(ctx, (duk_idx_t) c);
 					duk_to_object(ctx, -1);
 					duk_hobject_enumerator_create(ctx, 0 /*enum_flags*/);  /* [ ... val ] --> [ ... enum ] */
-					duk_replace(ctx, (duk_idx_t) b);
 				}
+				duk_replace(ctx, (duk_idx_t) b);
 				break;
 			}
 
@@ -4389,26 +4423,28 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			case DUK_EXTRAOP_INSTOF: {
-				duk_context *ctx = (duk_context *) thr;
 				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 				duk_bool_t tmp;
+				duk_tval *tv_res;
 
 				tmp = duk_js_instanceof(thr, DUK__REGP(b), DUK__REGCONSTP(c));
-				duk_push_boolean(ctx, tmp);
-				duk_replace(ctx, (duk_idx_t) b);
+				DUK_ASSERT(tmp == 0 || tmp == 1);
+				tv_res = DUK__REGP(b);
+				DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 				break;
 			}
 
 			case DUK_EXTRAOP_IN: {
-				duk_context *ctx = (duk_context *) thr;
 				duk_small_uint_fast_t b = DUK_DEC_B(ins);
 				duk_small_uint_fast_t c = DUK_DEC_C(ins);
 				duk_bool_t tmp;
+				duk_tval *tv_res;
 
 				tmp = duk_js_in(thr, DUK__REGP(b), DUK__REGCONSTP(c));
-				duk_push_boolean(ctx, tmp);
-				duk_replace(ctx, (duk_idx_t) b);
+				DUK_ASSERT(tmp == 0 || tmp == 1);
+				tv_res = DUK__REGP(b);
+				DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv_res, tmp);
 				break;
 			}
 
