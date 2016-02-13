@@ -1662,6 +1662,9 @@ Planned
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
 
+* Internal performance improvement: minor bytecode executor optimizations
+  (GH-583)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
