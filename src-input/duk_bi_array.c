@@ -1,10 +1,13 @@
 /*
  *  Array built-ins
  *
- *  Note that most Array built-ins are intentionally generic and work even
- *  when the 'this' binding is not an Array instance.  To ensure this,
- *  Array algorithms do not assume "magical" Array behavior for the "length"
- *  property, for instance.
+ *  Most Array built-ins are intentionally generic in Ecmascript, and are
+ *  intended to work even when the 'this' binding is not an Array instance.
+ *  This Ecmascript feature is also used by much real world code.  For this
+ *  reason the implementations here don't assume exotic Array behavior or
+ *  e.g. presence of a .length property.  However, some algorithms have a
+ *  fast path for duk_harray backed actual Array instances, enabled when
+ *  footprint is not a concern.
  *
  *  XXX: the "Throw" flag should be set for (almost?) all [[Put]] and
  *  [[Delete]] operations, but it's currently false throughout.  Go through
@@ -17,7 +20,6 @@
  *  the unsigned 32-bit range (E5.1 Section 15.4.5.1 throws a RangeError if so)
  *  some intermediate values may be above 0xffffffff and this may not be always
  *  correctly handled now (duk_uint32_t is not enough for all algorithms).
- *
  *  For instance, push() can legitimately write entries beyond length 0xffffffff
  *  and cause a RangeError only at the end.  To do this properly, the current
  *  push() implementation tracks the array index using a 'double' instead of a
@@ -34,11 +36,6 @@
  *  Both "put" and "define" are used in the E5.1 specification; as a rule,
  *  "put" is used when modifying an existing array (or a non-array 'this'
  *  binding) and "define" for setting values into a fresh result array.
- *
- *  Also note that Array instance 'length' should be writable, but not
- *  enumerable and definitely not configurable: even Duktape code internally
- *  assumes that an Array instance will always have a 'length' property.
- *  Preventing deletion of the property is critical.
  */
 
 #include "duk_internal.h"
@@ -48,12 +45,19 @@
  */
 #define  DUK__ARRAY_MID_JOIN_LIMIT  4096
 
-/* Shared entry code for many Array built-ins.  Note that length is left
- * on stack (it could be popped, but that's not necessary).
+/*
+ *  Shared helpers.
+ */
+
+/* Shared entry code for many Array built-ins: the 'this' binding is pushed
+ * on the value stack and object coerced, and the current .length is returned.
+ * Note that length is left on stack (it could be popped, but that's not
+ * usually necessary because call handling will clean it up automatically).
  */
 DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
 	duk_uint32_t len;
 
+	/* XXX: push more directly? */
 	(void) duk_push_this_coercible_to_object(ctx);
 	DUK_ASSERT_HOBJECT_VALID(duk_get_hobject(ctx, -1));
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
@@ -74,6 +78,64 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
 	}
 	return ret;
 }
+
+#if defined(DUK_USE_ARRAY_FASTPATH)
+/* Check if 'this' binding is an Array instance (duk_harray) which satisfies
+ * a few other guarantees for fast path operation.  The fast path doesn't
+ * need to handle all operations, even for duk_harrays, but must handle a
+ * significant fraction to improve performance.  Return a non-NULL duk_harray
+ * pointer when all fast path criteria are met, NULL otherwise.
+ */
+DUK_LOCAL duk_harray *duk__arraypart_fastpath_this(duk_context *ctx) {
+	duk_hthread *thr;
+	duk_tval *tv;
+	duk_hobject *h;
+	duk_uint_t flags_mask, flags_bits, flags_value;
+
+	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(thr->valstack_bottom > thr->valstack);  /* because call in progress */
+	tv = DUK_GET_THIS_TVAL_PTR(thr);
+
+	/* Fast path requires that 'this' is a duk_harray.  Read only arrays
+	 * (ROM backed) are also rejected for simplicity.
+	 */
+	if (!DUK_TVAL_IS_OBJECT(tv)) {
+		DUK_DD(DUK_DDPRINT("reject array fast path: not an object"));
+		return NULL;
+	}
+	h = DUK_TVAL_GET_OBJECT(tv);
+	DUK_ASSERT(h != NULL);
+	flags_mask = DUK_HOBJECT_FLAG_ARRAY_PART | \
+	             DUK_HOBJECT_FLAG_EXOTIC_ARRAY | \
+	             DUK_HEAPHDR_FLAG_READONLY;
+	flags_bits = DUK_HOBJECT_FLAG_ARRAY_PART | \
+	             DUK_HOBJECT_FLAG_EXOTIC_ARRAY;
+	flags_value = DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) h);
+	if ((flags_value & flags_mask) != flags_bits) {
+		DUK_DD(DUK_DDPRINT("reject array fast path: object flag check failed"));
+		return NULL;
+	}
+
+	/* In some cases a duk_harray's 'length' may be larger than the
+	 * current array part allocation.  Avoid the fast path in these
+	 * cases, so that all fast path code can safely assume that all
+	 * items in the range [0,length[ are backed by the current array
+	 * part allocation.
+	 */
+	if (((duk_harray *) h)->length > DUK_HOBJECT_GET_ASIZE(h)) {
+		DUK_DD(DUK_DDPRINT("reject array fast path: length > array part size"));
+		return NULL;
+	}
+
+	/* Guarantees for fast path. */
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(h) == 0 || DUK_HOBJECT_A_GET_BASE(thr->heap, h) != NULL);
+	DUK_ASSERT(((duk_harray *) h)->length <= DUK_HOBJECT_GET_ASIZE(h));
+
+	DUK_DD(DUK_DDPRINT("array fast path allowed for: %!O", (duk_heaphdr *) h));
+	return (duk_harray *) h;
+}
+#endif  /* DUK_USE_ARRAY_FASTPATH */
 
 /*
  *  Constructor
@@ -339,11 +401,66 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
  *  pop(), push()
  */
 
+#if defined(DUK_USE_ARRAY_FASTPATH)
+DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_context *ctx, duk_harray *h_arr) {
+	duk_hthread *thr;
+	duk_tval *tv_arraypart;
+	duk_tval *tv_val;
+	duk_uint32_t len;
+
+	thr = (duk_hthread *) ctx;
+
+	tv_arraypart = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
+	len = h_arr->length;
+	if (len <= 0) {
+		/* nop, return undefined */
+		return 0;
+	}
+
+	len--;
+	h_arr->length = len;
+
+	/* Fast path doesn't check for an index property inherited from
+	 * Array.prototype.  This is quite often acceptable; if not,
+	 * disable fast path.
+	 */
+	DUK_ASSERT_VS_SPACE(thr);
+	tv_val = tv_arraypart + len;
+	if (DUK_TVAL_IS_UNUSED(tv_val)) {
+		/* No net refcount change.  Value stack already has
+		 * 'undefined' based on value stack init policy.
+		 */
+		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));
+		DUK_ASSERT(DUK_TVAL_IS_UNUSED(tv_val));
+	} else {
+		/* No net refcount change. */
+		DUK_TVAL_SET_TVAL(thr->valstack_top, tv_val);
+		DUK_TVAL_SET_UNUSED(tv_val);
+	}
+	thr->valstack_top++;
+
+	/* XXX: there's no shrink check in the fast path now */
+
+	return 1;
+}
+#endif  /* DUK_USE_ARRAY_FASTPATH */
+
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t idx;
+	duk_harray *h_arr;
 
 	DUK_ASSERT_TOP(ctx, 0);
+
+#if defined(DUK_USE_ARRAY_FASTPATH)
+	h_arr = duk__arraypart_fastpath_this(ctx);
+	if (h_arr) {
+		return duk__array_pop_fastpath(ctx, h_arr);
+	}
+#endif
+
+	/* XXX: Merge fastpath check into a related call (push this, coerce length, etc)? */
+
 	len = duk__push_this_obj_len_u32(ctx);
 	if (len == 0) {
 		duk_push_int(ctx, 0);
@@ -359,6 +476,53 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 	return 1;
 }
 
+#if defined(DUK_USE_ARRAY_FASTPATH)
+DUK_LOCAL duk_bool_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr) {
+	duk_hthread *thr;
+	duk_tval *tv_arraypart;
+	duk_tval *tv_src;
+	duk_tval *tv_dst;
+	duk_uint32_t len;
+	duk_idx_t i, n;
+
+	thr = (duk_hthread *) ctx;
+
+	len = h_arr->length;
+	tv_arraypart = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
+
+	n = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	if (DUK_UNLIKELY(len + n < len)) {
+		DUK_D(DUK_DPRINT("Array.prototype.push() would go beyond 32-bit length, throw"));
+		return DUK_RET_RANGE_ERROR;
+	}
+	if (len + n > DUK_HOBJECT_GET_ASIZE((duk_hobject *) h_arr)) {
+		/* Array part would need to be extended.  Rely on slow path
+		 * for now.
+		 *
+		 * XXX: Rework hobject code a bit and add extend support.
+		 */
+		return 0;
+	}
+
+	tv_src = thr->valstack_bottom;
+	tv_dst = tv_arraypart + len;
+	for (i = 0; i < n; i++) {
+		/* No net refcount change; reset value stack values to
+		 * undefined to satisfy value stack init policy.
+		 */
+		DUK_TVAL_SET_TVAL(tv_dst, tv_src);
+		DUK_TVAL_SET_UNDEFINED(tv_src);
+		tv_src++;
+		tv_dst++;
+	}
+	thr->valstack_top = thr->valstack_bottom;
+	len += n;
+	h_arr->length = len;
+
+	return 1;
+}
+#endif  /* DUK_USE_ARRAY_FASTPATH */
+
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 	/* Note: 'this' is not necessarily an Array object.  The push()
 	 * algorithm is supposed to work for other kinds of objects too,
@@ -368,6 +532,19 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 
 	duk_uint32_t len;
 	duk_idx_t i, n;
+	duk_harray *h_arr;
+
+#if defined(DUK_USE_ARRAY_FASTPATH)
+	h_arr = duk__arraypart_fastpath_this(ctx);
+	if (h_arr) {
+		duk_ret_t rc;
+		rc = duk__array_push_fastpath(ctx, h_arr);
+		if (rc != 0) {
+			return rc;
+		}
+		DUK_DD(DUK_DDPRINT("array push() fast path exited, resize case"));
+	}
+#endif
 
 	n = duk_get_top(ctx);
 	len = duk__push_this_obj_len_u32(ctx);

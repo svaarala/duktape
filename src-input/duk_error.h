@@ -325,6 +325,9 @@
 #define DUK_ASSERT_DOUBLE_IS_NORMALIZED(dval)  /* nop */
 #endif
 
+#define DUK_ASSERT_VS_SPACE(thr) \
+	DUK_ASSERT(thr->valstack_top < thr->valstack_end)
+
 /*
  *  Helper for valstack space
  *
