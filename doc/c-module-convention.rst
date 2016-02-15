@@ -111,11 +111,26 @@ The algorithm for Duktape 2.0 is still under design, but at a high level:
   (Alternatively, expose RET with a fixed name, e.g. initialize ``exports``
   as ``{ value: RET }``.)
 
+Since Duktape 1.3 the ``modSearch()`` function can overwrite ``module.exports``
+which allows you to implement the Duktape 2.0 approach in Duktape 1.x too.
+
 Duktape 1.x CommonJS notes
 ==========================
 
-In Duktape 1.x the module ``exports`` value is always an object created by
-Duktape, and cannot be replaced by modSearch().  modSearch() can only add
+Duktape 1.3 and above
+---------------------
+
+In Duktape 1.3 you can replace ``module.exports`` with the object returned
+by the native module initialization function.  That value then becomes the
+result of the original ``require()`` call.
+
+For an example, see: https://github.com/svaarala/duktape/blob/master/tests/api/test-dev-cmodule-guide.c.
+
+Prior to Duktape 1.3
+--------------------
+
+Prior to Duktape 1.3 the module ``exports`` value is always an object created
+by Duktape, and cannot be replaced by modSearch().  modSearch() can only add
 symbols to the pre-created object.  This has two implications for
 implementing modSearch():
 
@@ -132,9 +147,6 @@ implementing modSearch():
   + The modSearch() function can copy the module value into a fixed name in
     the ``exports`` table.  Suggested name is ``exports.value``.
 
-These limitations will most likely be fixed in Duktape 2.0 module loading
-rework.
-
 Limitations
 ===========
 
@@ -147,7 +159,7 @@ Limitations
   identifier).  This trade-off is intentional to keep the C module convention
   as simple as possible.
 
-* Duktape 1.x CommonJS module loading doesn't support modules with a non-object
-  return value (i.e. all modules return an ``exports`` table).  This module
-  convention is not limited to object return values so that non-object modules
-  can be supported in Duktape 2.0.
+* CommonJS module loading prior to Duktape 1.3 doesn't support modules with
+  a non-object return value (i.e. all modules return an ``exports`` table).
+  This module convention is not limited to object return values so that
+  non-object modules can be supported in Duktape 1.3 and above.
