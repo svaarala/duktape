@@ -1381,6 +1381,9 @@ Planned
   type is indicated using a fake directive rather than a comment; for example,
   'function () {"ecmascript"}' (GH-554)
 
+* Make .stack format a bit more user friendly; if you are parsing the stack
+  trace format this may need changes in your parser (GH-588, GH-592)
+
 * Add Windows version of the debugger example TCP transport (GH-579)
 
 * Add support for application specific debugger commands (AppRequest) and
