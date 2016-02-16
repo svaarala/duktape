@@ -16,7 +16,7 @@
 
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HCOMPFUNC_GET_DATA(heap,h) \
-	((duk_hbuffer_fixed *) (void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->data16))
+	((duk_hbuffer *) (void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->data16))
 #define DUK_HCOMPFUNC_SET_DATA(heap,h,v) do { \
 		(h)->data16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
@@ -25,10 +25,9 @@
 #define DUK_HCOMPFUNC_SET_FUNCS(heap,h,v)  do { \
 		(h)->funcs16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#define DUK_HCOMPFUNC_GET_BYTECODE(heap,h)  \
-	((duk_instr_t *) (void *) (DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->bytecode16)))
+#define DUK_HCOMPFUNC_GET_BYTECODE(heap,h)  (h)->bytecode
 #define DUK_HCOMPFUNC_SET_BYTECODE(heap,h,v)  do { \
-		(h)->bytecode16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
+		(h)->bytecode = (v); \
 	} while (0)
 #define DUK_HCOMPFUNC_GET_LEXENV(heap,h)  \
 	((duk_hobject *) (void *) (DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->lex_env16)))
@@ -40,8 +39,9 @@
 #define DUK_HCOMPFUNC_SET_VARENV(heap,h,v)  do { \
 		(h)->var_env16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#else
-#define DUK_HCOMPFUNC_GET_DATA(heap,h)  ((duk_hbuffer_fixed *) (void *) (h)->data)
+#else  /* DUK_USE_HEAPPTR16 */
+#define DUK_HCOMPFUNC_GET_DATA(heap,h) \
+	((duk_hbuffer *) (void *) (h)->data)
 #define DUK_HCOMPFUNC_SET_DATA(heap,h,v) do { \
 		(h)->data = (duk_hbuffer *) (v); \
 	} while (0)
@@ -61,35 +61,38 @@
 #define DUK_HCOMPFUNC_SET_VARENV(heap,h,v)  do { \
 		(h)->var_env = (v); \
 	} while (0)
-#endif
+#endif  /* DUK_USE_HEAPPTR16 */
 
 /*
  *  Accessor macros for function specific data areas
  */
 
-/* Note: assumes 'data' is always a fixed buffer */
+/* Without external bytecode check assumes 'data' is always a fixed buffer. */
 #define DUK_HCOMPFUNC_GET_BUFFER_BASE(heap,h)  \
 	DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPFUNC_GET_DATA((heap), (h)))
 
 #define DUK_HCOMPFUNC_GET_CONSTS_BASE(heap,h)  \
 	((duk_tval *) (void *) DUK_HCOMPFUNC_GET_BUFFER_BASE((heap), (h)))
-
-#define DUK_HCOMPFUNC_GET_FUNCS_BASE(heap,h)  \
-	DUK_HCOMPFUNC_GET_FUNCS((heap), (h))
-
-#define DUK_HCOMPFUNC_GET_CODE_BASE(heap,h)  \
-	DUK_HCOMPFUNC_GET_BYTECODE((heap), (h))
-
 #define DUK_HCOMPFUNC_GET_CONSTS_END(heap,h)  \
 	((duk_tval *) (void *) DUK_HCOMPFUNC_GET_FUNCS((heap), (h)))
 
+#define DUK_HCOMPFUNC_GET_FUNCS_BASE(heap,h)  \
+	DUK_HCOMPFUNC_GET_FUNCS((heap), (h))
 #define DUK_HCOMPFUNC_GET_FUNCS_END(heap,h)  \
-	((duk_hobject **) (void *) DUK_HCOMPFUNC_GET_BYTECODE((heap), (h)))
+	((duk_hobject **) ((duk_uint8_t *) DUK_HCOMPFUNC_GET_FUNCS((heap), (h)) + (h)->funcs_size))
 
+#define DUK_HCOMPFUNC_GET_CODE_BASE(heap,h)  \
+	DUK_HCOMPFUNC_GET_BYTECODE((heap), (h))
 /* XXX: double evaluation of DUK_HCOMPFUNC_GET_DATA() */
+#if defined(DUK_USE_EXTBC_CHECK)
+/* XXX: change to use external buffer? depends on EXTBC lifecycle handling */
+#define DUK_HCOMPFUNC_GET_CODE_END(heap,h)  \
+	((duk_instr_t *) (void *) ((duk_uint8_t *) (h)->bytecode + (h)->bytecode_size))
+#else
 #define DUK_HCOMPFUNC_GET_CODE_END(heap,h)  \
 	((duk_instr_t *) (void *) (DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPFUNC_GET_DATA((heap), (h))) + \
 	                DUK_HBUFFER_GET_SIZE((duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA((heap), h))))
+#endif
 
 #define DUK_HCOMPFUNC_GET_CONSTS_SIZE(heap,h)  \
 	( \
@@ -157,6 +160,10 @@ struct duk_hcompfunc {
 	 *  to the 'data' element.
 	 */
 
+	/* Bytecode pointer for external bytecode. */
+	/* XXX: conditional to extbc support? */
+	duk_instr_t *bytecode;
+
 	/* Data area, fixed allocation, stable data ptrs. */
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t data16;
@@ -166,17 +173,23 @@ struct duk_hcompfunc {
 
 	/* No need for constants pointer (= same as data).
 	 *
-	 * When using 16-bit packing alignment to 4 is nice.  'funcs' will be
-	 * 4-byte aligned because 'constants' are duk_tvals.  For now the
-	 * inner function pointers are not compressed, so that 'bytecode' will
-	 * also be 4-byte aligned.
+	 * When using 16-bit packing alignment to 4 is nice.  For now constants
+	 * are not compressed, so that 'bytecode' will also be 4-byte aligned.
 	 */
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t funcs16;
-	duk_uint16_t bytecode16;
 #else
 	duk_hobject **funcs;
-	duk_instr_t *bytecode;
+#endif
+
+#if defined(DUK_USE_OBJSIZES16)
+	duk_uint16_t bytecode_size;
+	duk_uint16_t consts_size;
+	duk_uint16_t funcs_size;
+#else
+	duk_size_t bytecode_size;
+	duk_size_t consts_size;
+	duk_size_t funcs_size;
 #endif
 
 	/* Lexenv: lexical environment of closure, NULL for templates.

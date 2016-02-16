@@ -28,6 +28,7 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK_UNREF(f);
 		/* Currently nothing to free; 'data' is a heap object */
+		/* XXX: EXTBC free macro */
 	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);

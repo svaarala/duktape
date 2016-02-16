@@ -493,6 +493,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__length_nonwritable:%ld", (long) a->length_nonwritable);
 	} else if (st->internal && DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
+		DUK__COMMA(); duk_fb_sprintf(fb, "__bytecode:%p", (void *) f->bytecode);
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__lexenv:"); duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(NULL, f));
