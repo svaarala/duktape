@@ -91,11 +91,16 @@ var DVAL_NFY = { type: 'nfy' };
 
 // String map for commands (debug dumping).  A single map works (instead of
 // separate maps for each direction) because command numbers don't currently
-// overlap.
-var debugCommandNames = yaml.load('duk_debugcommands.yaml');
-
-// Map debug command names to numbers.
-var debugCommandNumbers = {};
+// overlap.  So merge the YAML metadata.
+var debugCommandMeta = yaml.load('duk_debugcommands.yaml');
+var debugCommandNames = [];  // list of command names, merged client/target
+debugCommandMeta.target_commands.forEach(function (k, i) {
+    debugCommandNames[i] = k;
+});
+debugCommandMeta.client_commands.forEach(function (k, i) {  // override
+    debugCommandNames[i] = k;
+});
+var debugCommandNumbers = {};  // map from (merged) command name to number
 debugCommandNames.forEach(function (k, i) {
     debugCommandNumbers[k] = i;
 });
@@ -106,10 +111,11 @@ var DUK_HTYPE_OBJECT = 2;
 var DUK_HTYPE_BUFFER = 3;
 
 // Duktape internal class numbers, must match C headers
-var dukClassNames = yaml.load('duk_classnames.yaml');
+var dukClassNameMeta = yaml.load('duk_classnames.yaml');
+var dukClassNames = dukClassNameMeta.class_names;
 
 // Bytecode opcode/extraop metadata
-var dukOpcodes = yaml.load('duk_opcodes.yaml')
+var dukOpcodes = yaml.load('duk_opcodes.yaml');
 if (dukOpcodes.opcodes.length != 64) {
     throw new Error('opcode metadata length incorrect');
 }
@@ -160,7 +166,7 @@ function writeDebugStringToBuffer(str, buf, off) {
     var i, n;
 
     for (i = 0, n = str.length; i < n; i++) {
-        buf[off + i] = str.charCodeAt(i) & 0xff;
+        buf[off + i] = str.charCodeAt(i) & 0xff;  // truncate higher bits
     }
 }
 
@@ -195,11 +201,11 @@ function prettyDebugValue(x) {
  * and signed zeroes properly.
  */
 function prettyUiNumber(x) {
-    if (x === 1/0) { return 'Infinity'; }
-    if (x === -1/0) { return '-Infinity'; }
+    if (x === 1 / 0) { return 'Infinity'; }
+    if (x === -1 / 0) { return '-Infinity'; }
     if (Number.isNaN(x)) { return 'NaN'; }
-    if (x === 0 && 1/x > 0) { return '0'; }
-    if (x === 0 && 1/x < 0) { return '-0'; }
+    if (x === 0 && 1 / x > 0) { return '0'; }
+    if (x === 0 && 1 / x < 0) { return '-0'; }
     return x.toString();
 }
 
@@ -427,7 +433,7 @@ RateLimited.prototype.trigger = function () {
 
 function SourceFileManager(directories) {
     this.directories = directories;
-    this.extensions = { '.js': true, '.jsm': true };
+    this.extensions = { '.js': true, '.jsm': true };
     this.files;
 }
 
@@ -715,12 +721,12 @@ function DebugProtocolParser(inputStream,
                     if (buf.length >= 9) {
                         v = new Buffer(8);
                         buf.copy(v, 0, 1, 9);
-                        v = { type: 'number', data: v.toString('hex') }
+                        v = { type: 'number', data: v.toString('hex') };
 
                         if (_this.readableNumberValue) {
-                            // The _value key should not be used programmatically,
+                            // The value key should not be used programmatically,
                             // it is just there to make the dumps more readable.
-                            v._value = buf.readDoubleBE(1);
+                            v.value = buf.readDoubleBE(1);
                         }
                         consume(9);
                     }
@@ -1069,7 +1075,7 @@ Debugger.prototype.decodeBytecodeFromBuffer = function (buf, consts, funcs) {
         comments = [];
         if (op.args) {
             for (j = 0, m = op.args.length; j < m; j++) {
-                switch(op.args[j]) {
+                switch (op.args[j]) {
                 case 'A_R':   args.push('r' + ((ins >>> 6) & 0xff)); break;
                 case 'A_RI':  args.push('r' + ((ins >>> 6) & 0xff) + '(indirect)'); break;
                 case 'A_C':   args.push('c' + ((ins >>> 6) & 0xff)); break;
@@ -1222,14 +1228,14 @@ Debugger.prototype.sendInvalidCommandTestRequest = function () {
     // Intentional invalid command
     var _this = this;
     return this.sendRequest([ DVAL_REQ, 0xdeadbeef, DVAL_EOM ]);
-}
+};
 
 Debugger.prototype.sendStatusRequest = function () {
     // Send a status request to trigger a status notify, result is ignored:
     // target sends a status notify instead of a meaningful reply
     var _this = this;
     return this.sendRequest([ DVAL_REQ, CMD_TRIGGERSTATUS, DVAL_EOM ]);
-}
+};
 
 Debugger.prototype.sendBreakpointListRequest = function () {
     var _this = this;
@@ -1744,7 +1750,7 @@ Debugger.prototype.run = function () {
         // while a previous request is pending.  The flag-based approach is
         // quite awkward.  Rework to use promises.
 
-        switch(sendRound) {
+        switch (sendRound) {
         case 0:
             if (!statusPending) {
                 statusPending = true;
@@ -2299,7 +2305,7 @@ DebugProxy.prototype.connectToTarget = function () {
         null   // console logging is done at a higher level to match request/response
     );
 
-    // Don't add a '_value' key to numbers.
+    // Don't add a 'value' key to numbers.
     this.inputParser.readableNumberValue = false;
 
     this.inputParser.on('transport-close', function () {
@@ -2327,7 +2333,7 @@ DebugProxy.prototype.connectToTarget = function () {
         console.log('Debug version identification:', msg.versionIdentification);
 
         _this.writeJson({
-            notify: '_Connected',
+            notify: '_TargetConnected',
             args: [ msg.versionIdentification ]  // raw identification string
         });
 
@@ -2343,9 +2349,9 @@ DebugProxy.prototype.connectToTarget = function () {
 
         if (typeof msg[0] !== 'object' || msg[0] === null) {
             throw new Error('unexpected initial dvalue: ' + msg[0]);
-        } else if (msg.type === 'eom') {
+        } else if (msg[0].type === 'eom') {
             throw new Error('unexpected initial dvalue: ' + msg[0]);
-        } else if (msg.type === 'req') {
+        } else if (msg[0].type === 'req') {
             if (typeof msg[1] !== 'number') {
                 throw new Error('unexpected request command number: ' + msg[1]);
             }
@@ -2353,19 +2359,19 @@ DebugProxy.prototype.connectToTarget = function () {
                 request: _this.commandNumberToString(msg[1]),
                 command: msg[1],
                 args: msg.slice(2, msg.length - 1)
-            }
+            };
             _this.writeJson(t);
         } else if (msg[0].type === 'rep') {
             t = {
                 reply: true,
                 args: msg.slice(1, msg.length - 1)
-            }
+            };
             _this.writeJson(t);
         } else if (msg[0].type === 'err') {
             t = {
                 error: true,
                 args: msg.slice(1, msg.length - 1)
-            }
+            };
             _this.writeJson(t);
         } else if (msg[0].type === 'nfy') {
             if (typeof msg[1] !== 'number') {
@@ -2375,7 +2381,7 @@ DebugProxy.prototype.connectToTarget = function () {
                 notify: _this.commandNumberToString(msg[1]),
                 command: msg[1],
                 args: msg.slice(2, msg.length - 1)
-            }
+            };
             _this.writeJson(t);
         } else {
             throw new Error('unexpected initial dvalue: ' + msg[0]);
