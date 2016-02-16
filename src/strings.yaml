@@ -389,12 +389,12 @@ strings:
   - str: "0"
   - str: "+0"
   - str: "-0"
-  - str: ""       # used as a class name for unused/invalid class
+  - str: ""        # used as a class name for unused/invalid class
     class_name: true
-  - str: ","      # for array joining
-  - str: " "      # for print()
-  - str: "\n\t"   # for tracebacks
-  - str: "[...]"  # for tracebacks
+  - str: ","       # for array joining
+  - str: " "       # for print()
+  - str: "\n    "  # for tracebacks
+  - str: "[...]"   # for tracebacks
   - str: "Invalid Date"  # for invalid Date instances
 
   # arguments object (E5 Section 10.6)
@@ -1216,7 +1216,7 @@ special_define_names:
   "": "EMPTY_STRING"
   ",": "COMMA"
   " ": "SPACE"
-  "\n\t": "NEWLINE_TAB"
+  "\n    ": "NEWLINE_4SPACE"
   "[...]": "BRACKETED_ELLIPSIS"
 
   "{\"_undef\":true}": "JSON_EXT_UNDEFINED"

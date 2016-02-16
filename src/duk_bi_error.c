@@ -120,7 +120,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 	duk_small_int_t i;  /* traceback depth fits into 16 bits */
 	duk_small_int_t t;  /* stack type fits into 16 bits */
 	duk_small_int_t count_func = 0;  /* traceback depth ensures fits into 16 bits */
-	const char *str_tailcalled = " tailcalled";
+	const char *str_tailcall = " tailcall";
 	const char *str_strict = " strict";
 	const char *str_construct = " construct";
 	const char *str_prevyield = " preventsyield";
@@ -134,7 +134,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TRACEDATA);
 	idx_td = duk_get_top_index(ctx);
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_NEWLINE_TAB);
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_NEWLINE_4SPACE);
 	duk_push_this(ctx);
 
 	/* [ ... this tracedata sep this ] */
@@ -199,36 +199,36 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 				/* XXX: Could be improved by coercing to a readable duk_tval (especially string escaping) */
 				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
-				           "anon" : (const char *) DUK_HSTRING_GET_DATA(h_name);
+				           "[anon]" : (const char *) DUK_HSTRING_GET_DATA(h_name);
 				filename = duk_get_string(ctx, -1);
 				filename = filename ? filename : "";
 				DUK_ASSERT(funcname != NULL);
 				DUK_ASSERT(filename != NULL);
 
 				if (h_func == NULL) {
-					duk_push_sprintf(ctx, "%s light%s%s%s%s%s",
+					duk_push_sprintf(ctx, "at %s light%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
-					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcall : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 				} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
-					duk_push_sprintf(ctx, "%s %s native%s%s%s%s%s",
+					duk_push_sprintf(ctx, "at %s (%s) native%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) filename,
 					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
-					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcall : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 				} else {
-					duk_push_sprintf(ctx, "%s %s:%ld%s%s%s%s%s",
+					duk_push_sprintf(ctx, "at %s (%s:%ld)%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) filename,
 					                 (long) line,
 					                 (const char *) ((flags & DUK_ACT_FLAG_STRICT) ? str_strict : str_empty),
-					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcalled : str_empty),
+					                 (const char *) ((flags & DUK_ACT_FLAG_TAILCALLED) ? str_tailcall : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
@@ -257,7 +257,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 					}
 				}
 
-				duk_push_sprintf(ctx, "%s:%ld",
+				duk_push_sprintf(ctx, "at [anon] (%s:%ld) internal",
 				                 (const char *) duk_get_string(ctx, -2), (long) pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
