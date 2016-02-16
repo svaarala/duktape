@@ -85,7 +85,9 @@ This distributable contains:
 
 * ``debugger/``: a debugger with a web UI, see ``debugger/README.rst`` and
   https://github.com/svaarala/duktape/blob/master/doc/debugger.rst for
-  details on Duktape debugger support.
+  details on Duktape debugger support.  Also contains a JSON debug proxy
+  (one written in Node.js and another in DukLuv) to make talking to the
+  debug target easier.
 
 * ``licenses/``: licensing information.
 
