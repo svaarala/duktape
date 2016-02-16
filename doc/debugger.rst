@@ -37,7 +37,8 @@ Duktape debugging architecture is based on the following major pieces:
   debug protocol endpoint and provides a user interface.
 
 * An optional **JSON debug protocol proxy** which provides an easier
-  JSON-based interface for talking to the debug target.
+  JSON-based interface for talking to the debug target.  Example proxy
+  implementations written in Node.js and DukLuv are included with Duktape.
 
 This document describes these pieces in detail.
 
@@ -1043,6 +1044,22 @@ JSON representation of dvalues
       // (here Math.PI)
       { "type": "number", "data": "400921fb54442d18" }
 
+  The object may also contain an optional ``value`` field which provides the
+  number as a JSON compatible approximate value.  Some accuracy may be lost
+  compared to the raw IEEE double, e.g. fraction digits or zero sign may be
+  lost.  The value may also be ``null`` for NaN/infinity so that writing code
+  can simply rely on ``JSON.stringify()`` to encode the value.  Example::
+
+      // 4.5
+      { "type": "number", "data": "4012000000000000", "value": 4.5 }
+
+      // +Infinity
+      { "type": "number", "data": "7ff0000000000000", "value": null }
+
+  **IMPORTANT**: the ``value`` key must not be machine processed and is only
+  present to make it easier to read JSON protocol text directly.  Parsing code
+  must always ignore it and use ``data`` instead.
+
 * Strings are mapped like in the text representation, i.e. bytes 0x00...0xff
   map to Unicode codepoints U+0000...U+00FF::
 
@@ -1163,27 +1180,48 @@ Other JSON messages
 In addition to the core message formats above, there are a few custom messages
 for debug protocol version info and transport events.  These are expressed as
 "notify" messages with a special command name beginning with an underscore, and
-no command number.
+no command number.  These are mostly to improve human readability, and minor
+details may change as needed.
 
-When connecting to a debug target, a version identification line is received.
-This line doesn't follow the dvalue format, so it is transmitted specially::
+When connection to the target is attempted a notify like this can be sent::
 
     {
-        "notify": "_Connected",
+        "notify": "_TargetConnecting",
+        "args": [ "1.2.3.4", 9091 ]
+    }
+
+When connected to the target, version identification is relayed verbatim::
+
+    {
+        "notify": "_TargetConnected",
         "args": [ "1 10199 v1.1.0-173-gecd806e-dirty duk command built from Duktape repo" ]
     }
 
-When a transport error occurs (not necessarily a terminal error)::
+When the target disconnects::
+
+    {
+        "notify": "_TargetDisconnected"
+    }
+
+When a transport error occurs (not necessarily a terminal error so may appear
+multiple times)::
 
     {
         "notify": "_Error",
         "args": [ "some kind of error" ]
     }
 
-When the JSON connection is just about to be disconnected::
+When the JSON proxy connection is just about to be disconnected::
 
     {
         "notify": "_Disconnecting"
+    }
+
+An optional reason argument can be included::
+
+    {
+        "notify": "_Disconnecting",
+        "args": [ "Target disconnected" ]
     }
 
 JSON protocol line formatting
