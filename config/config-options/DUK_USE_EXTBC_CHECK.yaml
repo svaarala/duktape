@@ -1,0 +1,22 @@
+define: DUK_USE_EXTBC_CHECK
+introduced: 2.0.0
+default: false
+tags:
+  - memory
+  - experimental
+description: >
+  Provide a hook for checking if a compiled Ecmascript function's bytecode
+  (which is free of dynamic pointer values) should be mapped to a user
+  supplied data area.
+
+  The user callback gets three arguments: heap userdata, data pointer, and
+  length.  If the user code wants to map that bytecode data area into a user
+  supplied data area, it returns replacement pointer and NULL otherwise.
+
+  The returned pointer MUST remain valid until Duktape is guaranteed to no
+  longer reference it.  At present there's no integration to notify the
+  application of the data area becoming unreferenced (to be fixed in separate
+  pulls).
+
+  See doc/low-memory.rst for more discussion how to use this feature option
+  in practice.

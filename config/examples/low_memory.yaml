@@ -77,6 +77,9 @@ DUK_USE_HOBJECT_HASH_PROP_LIMIT: 64
 #DUK_USE_EXTSTR_INTERN_CHECK
 #DUK_USE_EXTSTR_FREE
 
+# Consider using bytecode mapping to external buffer, see doc/low-memory.rst.
+#DUK_USE_EXTBC_CHECK
+
 # Consider removing Node.js Buffer and ES2015 typed array support if not
 # needed (about 10 kB code footprint difference on x64)
 DUK_USE_BUFFEROBJECT_SUPPORT: false
