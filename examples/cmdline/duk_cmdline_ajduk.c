@@ -87,18 +87,18 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 16,     300,  AJS_POOL_BORROW,  0 },
 	{ 20,     300,  AJS_POOL_BORROW,  0 },
 	{ 24,     300,  AJS_POOL_BORROW,  0 },
-	{ 28,     250,  AJS_POOL_BORROW,  0 },
-	{ 32,     150,  AJS_POOL_BORROW,  0 },
-	{ 40,     150,  AJS_POOL_BORROW,  0 },
+	{ 28,     300,  AJS_POOL_BORROW,  0 },
+	{ 32,     300,  AJS_POOL_BORROW,  0 },
+	{ 40,     300,  AJS_POOL_BORROW,  0 },
 	{ 48,     50,   AJS_POOL_BORROW,  0 },
 	{ 52,     50,   AJS_POOL_BORROW,  0 },
 	{ 56,     50,   AJS_POOL_BORROW,  0 },
 	{ 60,     50,   AJS_POOL_BORROW,  0 },
-	{ 64,     50,   AJS_POOL_BORROW,  0 },
+	{ 64,     150,  AJS_POOL_BORROW,  0 },
 	{ 96,     50,   AJS_POOL_BORROW,  0 },
-	{ 128,    80,   AJS_POOL_BORROW,  0 },
+	{ 128,    200,  AJS_POOL_BORROW,  0 },
 	{ 200,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
-	{ 256,    16,   AJS_POOL_BORROW,  0 },
+	{ 256,    64,   AJS_POOL_BORROW,  0 },
 	{ 288,    1,    AJS_POOL_BORROW,  0 },
 	{ 320,    1,    AJS_POOL_BORROW,  0 },
 	{ 396,    1,    AJS_POOL_BORROW,  0 },  /* duk_hthread, with heap ptr compression, ROM strings+objects */
@@ -1003,6 +1003,48 @@ duk_bool_t ajsheap_exec_timeout_check(void *udata) {
 		return 1;
 	}
 	return 0;
+}
+
+/*
+ *  Ecmascript bytecode "interning"
+ */
+
+void *ajsheap_extbc_check(void *ptr, duk_size_t len) {
+	/* Very hacky example where any function 'data' which isn't tiny is
+	 * mapped on an external buffer.  There's no release mechanism for
+	 * the buffer now so the malloc()'d external buffers just leak now.
+	 */
+
+	if (len > 8) {
+		void *tmp = malloc(len);
+		if (!tmp) {
+			return NULL;
+		}
+		memcpy(tmp, ptr, len);
+#if 0
+		{
+			duk_size_t i;
+			printf("EXTBC DUMP:");
+			for (i = 0; i < len; i++) {
+				printf("%02x", (unsigned int) ((unsigned char *) tmp)[i]);
+			}
+			printf("\n");
+		}
+#endif
+#if 0
+		printf("ajsheap external bytecode, mapped ptr=%p, len=%ld -> %p\n",
+		       ptr, (long) len, tmp);
+		fflush(stdout);
+#endif
+		return tmp;
+	} else {
+#if 0
+		printf("ajsheap external bytecode check: ptr=%p, len=%ld -> NULL (not moved to external storage)\n",
+		       ptr, (long) len);
+		fflush(stdout);
+#endif
+		return NULL;
+	}
 }
 
 #else  /* DUK_CMDLINE_AJSHEAP */
