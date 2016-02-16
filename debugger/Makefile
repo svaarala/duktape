@@ -1,4 +1,5 @@
 NODE:=$(shell which nodejs node | head -1)
+DUKLUV:=dukluv
 
 # Try to get a useful default --source-dirs which works both in the Duktape
 # repo and in the distributable.  We don't want to add '..' because it would
@@ -19,9 +20,18 @@ run: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/r
 rundebug: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
 	"$(NODE)" duk_debug.js --source-dirs=$(SOURCEDIRS) --verbose --log-messages /tmp/dukdebug-messages --dump-debug-pretty /tmp/dukdebug-pretty
 
-.PHONY: runproxy
-runproxy: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
+.PHONY: runproxynodejs
+runproxynodejs: node_modules static/socket.io-1.2.0.js static/jquery-1.11.1.min.js static/reset.css static/jquery-ui.min.js static/jquery-ui.min.css static/images
+	@echo "Running Node.js based debug proxy"
 	"$(NODE)" duk_debug.js --json-proxy
+
+.PHONY: runproxydukluv
+runproxydukluv: duk_debug_meta.json
+	@echo "Running Dukluv based debug proxy (you may need to edit DUKLUV in the Makefile)"
+	"$(DUKLUV)" duk_debug_proxy.js --log-level 2 --metadata duk_debug_meta.json --readable-numbers
+
+.PHONY: runproxy
+runproxy: runproxydukluv
 
 .PHONY: clean
 clean:
@@ -38,9 +48,16 @@ clean:
 	@rm -f jquery-ui-1.11.2.zip
 	@rm -rf jquery-ui-1.11.2
 	@rm -rf node_modules
+	@rm -f duk_debug_meta.json
 
 node_modules:
 	npm install
+
+duk_debug_meta.json:
+	python merge_debug_meta.py --output $@ \
+		--class-names duk_classnames.yaml \
+		--opcodes duk_opcodes.yaml \
+		--debug-commands duk_debugcommands.yaml
 
 static/socket.io-1.2.0.js:
 	wget -O $@ http://cdn.socket.io/socket.io-1.2.0.js
