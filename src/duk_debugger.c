@@ -1448,6 +1448,49 @@ DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
 	DUK__SET_CONN_BROKEN(thr, 0);  /* not an error */
 }
 
+DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
+	DUK_D(DUK_DPRINT("debug command AppRequest"));
+
+	if (heap->dbg_request_cb != NULL) {
+		duk_context *ctx = (duk_context *) thr;
+		duk_idx_t nrets;
+		duk_idx_t nvalues = 0;
+		duk_idx_t old_top;
+		duk_idx_t top, idx;
+
+		/* Read tvals from the message and push them onto the valstack,
+		 * then call the request callback to process the request.
+		 */
+		old_top = duk_get_top(ctx);  /* save stack top */
+		while (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+			duk_debug_read_tval(thr);  /* push to stack */
+			nvalues++;
+		}
+
+		/* Request callback should push values for reply to client onto valstack */
+		nrets = heap->dbg_request_cb(heap->dbg_udata, ctx, nvalues);
+		if (nrets > 0) {
+			DUK_ASSERT(duk_get_top(ctx) >= old_top + nrets);
+
+			/* Reply with tvals pushed by request callback */
+			duk_debug_write_byte(thr, DUK_DBG_MARKER_REPLY);
+			top = duk_get_top(ctx);
+			for (idx = top - nrets; idx < top; idx++) {
+				duk_debug_write_tval(thr, DUK_GET_TVAL_POSIDX(ctx, idx));
+			}
+			duk_debug_write_eom(thr);
+		} else {
+			DUK_ASSERT(duk_get_top(ctx) >= old_top + 1);
+			duk_debug_write_error_eom(thr, DUK_DBG_ERR_APPLICATION, duk_safe_to_string(ctx, -1));
+		}
+
+		duk_set_top(ctx, old_top);  /* restore stack top */
+	} else {
+		DUK_D(DUK_DPRINT("no request callback, treat AppRequest as unsupported"));
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNSUPPORTED, "AppRequest unsupported by target");
+	}
+}
+
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 DUK_LOCAL void duk__debug_dump_heaphdr(duk_hthread *thr, duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_UNREF(heap);
@@ -1758,6 +1801,10 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 		case DUK_DBG_CMD_GETBYTECODE: {
 			duk__debug_handle_get_bytecode(thr, heap);
+			break;
+		}
+		case DUK_DBG_CMD_APPREQUEST: {
+			duk__debug_handle_apprequest(thr, heap);
 			break;
 		}
 		default: {
