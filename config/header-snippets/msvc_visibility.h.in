@@ -17,4 +17,3 @@
 #endif
 #define DUK_LOCAL_DECL     static
 #define DUK_LOCAL          static
-
