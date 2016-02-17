@@ -1,36 +1,47 @@
-# Debug command names.  A single map works for now because command names
-# provided by client/target don't overlap.
-- Reserved_0
-- Status
-- Print
-- Alert
-- Log
-- Throw
-- Detaching
-- Reserved_7
-- Reserved_8
-- Reserved_9
-- Reserved_10
-- Reserved_11
-- Reserved_12
-- Reserved_13
-- Reserved_14
-- Reserved_15
-- BasicInfo
-- TriggerStatus
-- Pause
-- Resume
-- StepInto
-- StepOver
-- StepOut
-- ListBreak
-- AddBreak
-- DelBreak
-- GetVar
-- PutVar
-- GetCallStack
-- GetLocals
-- Eval
-- Detach
-- DumpHeap
-- GetBytecode
+# Debug request/notify command names provided by the debug client.
+# These are concretely notify names now.
+client_commands:
+  - Reserved_0
+  - Status
+  - Print
+  - Alert
+  - Log
+  - Throw
+  - Detaching
+
+# Debug request/notify command names provided by the debug target (Duktape).
+target_commands:
+  - Reserved_0
+  - Reserved_1
+  - Reserved_2
+  - Reserved_3
+  - Reserved_4
+  - Reserved_5
+  - Reserved_6
+  - Reserved_7
+  - Reserved_8
+  - Reserved_9
+  - Reserved_10
+  - Reserved_11
+  - Reserved_12
+  - Reserved_13
+  - Reserved_14
+  - Reserved_15
+  - BasicInfo
+  - TriggerStatus
+  - Pause
+  - Resume
+  - StepInto
+  - StepOver
+  - StepOut
+  - ListBreak
+  - AddBreak
+  - DelBreak
+  - GetVar
+  - PutVar
+  - GetCallStack
+  - GetLocals
+  - Eval
+  - Detach
+  - DumpHeap
+  - GetBytecode
