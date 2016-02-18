@@ -1487,7 +1487,6 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	duk_breakpoint *bp;
 	duk_breakpoint **bp_active;
 	duk_uint_fast32_t line = 0;
-	duk_bool_t send_status;
 	duk_bool_t process_messages;
 	duk_bool_t processed_messages = 0;
 
@@ -1569,16 +1568,12 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 *  counter is used to rate limit getting timestamps.
 	 */
 
+	process_messages = 0;
 	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused) {
-		send_status = 1;
-	} else {
-		send_status = 0;
-	}
-
-	if (thr->heap->dbg_paused) {
+		/* Send message if we're paused or state is dirty (in which case
+		 * the message loop will send a status.
+		 */
 		process_messages = 1;
-	} else {
-		process_messages = 0;
 	}
 
 	/* XXX: remove heap->dbg_exec_counter, use heap->inst_count_interrupt instead? */
@@ -1603,35 +1598,26 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 			 */
 
 			thr->heap->dbg_last_time = now;
-			send_status = 1;
+			thr->heap->dbg_state_dirty = 1;
 			process_messages = 1;
 		}
 	}
 
 	/*
-	 *  Send status
+	 *  Process messages and send status if necessary.
+	 *
+	 *  If we're paused, we'll block for new messages.  If we're not
+	 *  paused, we'll process anything we can peek but won't block
+	 *  for more.  Detach (and re-attach) handling is all localized
+	 *  to duk_debug_process_messages() too.
 	 */
 
 	act = NULL;  /* may be changed */
-	if (send_status) {
-		duk_debug_send_status(thr);
-		thr->heap->dbg_state_dirty = 0;
-	}
-
-	/*
-	 *  Process messages.  If we're paused, we'll block for new messages.
-	 *  if we're not paused, we'll process anything we can peek but won't
-	 *  block for more.
-	 */
-
 	if (process_messages && DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
 		DUK_ASSERT(thr->heap->dbg_processing == 0);
-		thr->heap->dbg_processing = 1;
 		processed_messages = duk_debug_process_messages(thr, 0 /*no_block*/);
-		thr->heap->dbg_processing = 0;
+		DUK_ASSERT(thr->heap->dbg_processing == 0);
 	}
-
-	/* XXX: any case here where we need to re-send status? */
 
 	/* Continue checked execution if there are breakpoints or we're stepping.
 	 * Also use checked execution if paused flag is active - it shouldn't be

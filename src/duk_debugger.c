@@ -1842,19 +1842,17 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 
 	/* Process debug messages until we are no longer paused. */
 
-	/* NOTE: This is a bit fragile. It's important to ensure that neither
-	 * duk_debug_send_status() or duk_debug_process_messages() throws an
-	 * error or act->curr_pc will never be reset.
+	/* NOTE: This is a bit fragile. It's important to ensure that
+	 * duk_debug_process_messages() never throws an error or
+	 * act->curr_pc will never be reset.
 	 */
 
-	thr->heap->dbg_processing = 1;
-	duk_debug_send_status(thr);
+	thr->heap->dbg_state_dirty = 1;
 	while (thr->heap->dbg_paused) {
 		DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
 		DUK_ASSERT(thr->heap->dbg_processing);
 		duk_debug_process_messages(thr, 0 /*no_block*/);
 	}
-	thr->heap->dbg_processing = 0;
 
 	/* XXX: Decrementing and restoring act->curr_pc works now, but if the
 	 * debugger message loop gains the ability to adjust the current PC
@@ -1868,6 +1866,13 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 	}
 }
 
+DUK_LOCAL void duk__check_resend_status(duk_hthread *thr) {
+	if (thr->heap->dbg_read_cb != NULL && thr->heap->dbg_state_dirty) {
+		duk_debug_send_status(thr);
+		thr->heap->dbg_state_dirty = 0;
+	}
+}
+
 DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block) {
 	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
@@ -1878,13 +1883,15 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	DUK_ASSERT(thr != NULL);
 	DUK_UNREF(ctx);
 	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
-	DUK_ASSERT(thr->heap->dbg_processing == 1);  /* caller ensures */
 #if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
 
 	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
+
+	DUK_ASSERT(thr->heap->dbg_detaching == 0);
+	DUK_ASSERT(thr->heap->dbg_processing == 0);
+	thr->heap->dbg_processing = 1;
 
 	for (;;) {
 		/* Process messages until we're no longer paused or we peek
@@ -1893,11 +1900,39 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 		DUK_DD(DUK_DDPRINT("top at loop top: %ld", (long) duk_get_top(ctx)));
 		DUK_ASSERT(thr->heap->dbg_processing == 1);
 
+		while (thr->heap->dbg_read_cb == NULL && thr->heap->dbg_detaching) {
+			/* Became detached during message handling (perhaps because
+			 * of an error or by an explicit Detach).  Call detached
+			 * callback here, between messages, to avoid confusing the
+			 * broken connection and a possible replacement (which may
+			 * be provided by an instant reattach inside the detached
+			 * callback).
+			 */
+			DUK_D(DUK_DPRINT("detached pending, call detach2"));
+			duk__debug_do_detach2(thr->heap);
+
+			/* Reset dbg_processing = 1 forcibly, in case we re-attached
+			 * (which will set dbg_processing to 0 at the moment).
+			 */
+			thr->heap->dbg_processing = 1;
+
+			/* Recheck for detach (while loop) because it's possible that
+			 * the detached callback calls duk_debugger_attach(), which
+			 * tries to write a status line and we immediately end up in
+			 * the "transport broken, detaching" case for the second time!
+			 */
+			DUK_D(DUK_DPRINT("after detach2 (and possible reattach): dbg_read_cb=%s, dbg_detaching=%ld",
+			                 thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) thr->heap->dbg_detaching));
+		}
+		DUK_ASSERT(thr->heap->dbg_detaching == 0);  /* true even with reattach */
+		DUK_ASSERT(thr->heap->dbg_processing == 1);  /* even after a detach and possible reattach */
+
 		if (thr->heap->dbg_read_cb == NULL) {
-			DUK_ASSERT(thr->heap->dbg_detaching == 0);  /* FIXME: wrong assumption? */
-			DUK_D(DUK_DPRINT("debug connection broken, stop processing messages"));
+			DUK_D(DUK_DPRINT("debug connection broken (and not detaching), stop processing messages"));
 			break;
-		} else if (!thr->heap->dbg_paused || no_block) {
+		}
+
+		if (!thr->heap->dbg_paused || no_block) {
 			if (!duk_debug_read_peek(thr)) {
 				DUK_D(DUK_DPRINT("processing debug message, peek indicated no data, stop processing"));
 				break;
@@ -1907,35 +1942,19 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 			DUK_D(DUK_DPRINT("paused, process debug message, blocking if necessary"));
 		}
 
+		duk__check_resend_status(thr);
 		duk__debug_process_message(thr);
+		duk__check_resend_status(thr);
 
-		if (thr->heap->dbg_read_cb == NULL) {
-			/* Became detached during message handling (perhaps because
-			 * of an error or by an explicit Detach).  Call detached
-			 * callback here, between messages, to avoid confusing the
-			 * broken connection and a possible replacement (which may
-			 * be provided by an instant reattach inside the detached
-			 * callback).
-			 */
-			duk__debug_do_detach2(thr->heap);
-
-			/* Reset dbg_processing = 1 forcibly, in case we re-attached
-			 * (which will set dbg_processing to 0 at the moment).
-			 */
-			thr->heap->dbg_processing = 1;
-		}
-		if (thr->heap->dbg_state_dirty) {
-			/* Executed something that may have affected status,
-			 * resend.
-			 */
-			duk_debug_send_status(thr);
-			thr->heap->dbg_state_dirty = 0;
-		}
 		retval = 1;  /* processed one or more messages */
 	}
 
+	DUK_ASSERT(thr->heap->dbg_detaching == 0);
+	DUK_ASSERT(thr->heap->dbg_processing == 1);
+	thr->heap->dbg_processing = 0;
+
 	/* As an initial implementation, read flush after exiting the message
-	 * loop.
+	 * loop.  If transport is broken, this is a no-op (with debug logs).
 	 */
 	duk_debug_read_flush(thr);
 
