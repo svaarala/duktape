@@ -1899,6 +1899,8 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	DUK_ASSERT(thr->heap->dbg_processing == 0);
 	thr->heap->dbg_processing = 1;
 
+	duk__check_resend_status(thr);
+
 	for (;;) {
 		/* Process messages until we're no longer paused or we peek
 		 * and see there's nothing to read right now.
