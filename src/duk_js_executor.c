@@ -1624,7 +1624,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 *  block for more.
 	 */
 
-	if (process_messages) {
+	if (process_messages && DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
 		DUK_ASSERT(thr->heap->dbg_processing == 0);
 		thr->heap->dbg_processing = 1;
 		processed_messages = duk_debug_process_messages(thr, 0 /*no_block*/);
