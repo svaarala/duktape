@@ -134,7 +134,7 @@ static void my_sighandler(int x) {
 }
 static void set_sigint_handler(void) {
 	(void) signal(SIGINT, my_sighandler);
-	(void) signal(SIGPIPE, my_sighandler);  /* for socket errors */
+	(void) signal(SIGPIPE, SIG_IGN);  /* avoid SIGPIPE killing process */
 }
 #endif  /* NO_SIGNAL */
 
