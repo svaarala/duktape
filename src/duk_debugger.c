@@ -1887,9 +1887,15 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	entry_top = duk_get_top(ctx);
 #endif
 
+	DUK_D(DUK_DPRINT("process debug messages: read_cb=%s, no_block=%ld, detaching=%ld, processing=%ld",
+	                 thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
+	                 (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
 	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
 
-	DUK_ASSERT(thr->heap->dbg_detaching == 0);
+	/* thr->heap->dbg_detaching may be != 0 if a debugger write outside
+	 * the message loop caused a transport error and detach1() to run.
+	 */
+	DUK_ASSERT(thr->heap->dbg_detaching == 0 || thr->heap->dbg_detaching == 1);
 	DUK_ASSERT(thr->heap->dbg_processing == 0);
 	thr->heap->dbg_processing = 1;
 
@@ -1956,7 +1962,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	/* As an initial implementation, read flush after exiting the message
 	 * loop.  If transport is broken, this is a no-op (with debug logs).
 	 */
-	duk_debug_read_flush(thr);
+	duk_debug_read_flush(thr);  /* this cannot cause transport to break */
 
 	DUK_DD(DUK_DDPRINT("top at exit: %ld", (long) duk_get_top(ctx)));
 

@@ -1569,9 +1569,9 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 */
 
 	process_messages = 0;
-	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused) {
-		/* Send message if we're paused or state is dirty (in which case
-		 * the message loop will send a status notify).
+	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused || thr->heap->dbg_detaching) {
+		/* Enter message processing loop for sending Status notifys and
+		 * to finish a pending detach.
 		 */
 		process_messages = 1;
 	}
@@ -1610,10 +1610,16 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 *  paused, we'll process anything we can peek but won't block
 	 *  for more.  Detach (and re-attach) handling is all localized
 	 *  to duk_debug_process_messages() too.
+	 *
+	 *  Debugger writes outside the message loop may cause debugger
+	 *  detach1 phase to run, after which dbg_read_cb == NULL and
+	 *  dbg_detaching != 0.  The message loop will finish the detach
+	 *  by running detach2 phase, so enter the message loop also when
+	 *  detaching.
 	 */
 
 	act = NULL;  /* may be changed */
-	if (process_messages && DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (process_messages) {
 		DUK_ASSERT(thr->heap->dbg_processing == 0);
 		processed_messages = duk_debug_process_messages(thr, 0 /*no_block*/);
 		DUK_ASSERT(thr->heap->dbg_processing == 0);
@@ -1731,7 +1737,11 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 #endif  /* DUK_USE_EXEC_TIMEOUT_CHECK */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
+	if (!thr->heap->dbg_processing &&
+	    (thr->heap->dbg_read_cb != NULL || thr->heap->dbg_detaching)) {
+		/* Avoid recursive re-entry; enter when we're attached or
+		 * detaching (to finish off the pending detach).
+		 */
 		duk__interrupt_handle_debugger(thr, &immediate, &retval);
 		act = thr->callstack + thr->callstack_top - 1;  /* relookup if changed */
 	}

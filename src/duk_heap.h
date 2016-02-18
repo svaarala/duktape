@@ -267,6 +267,7 @@ struct duk_breakpoint {
 };
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
+/* FIXME: does this macro make sense, with dbg_detaching issues? */
 #define DUK_HEAP_IS_DEBUGGER_ATTACHED(heap) ((heap)->dbg_read_cb != NULL)
 #define DUK_HEAP_CLEAR_STEP_STATE(heap) do { \
 		(heap)->dbg_step_type = DUK_STEP_TYPE_NONE; \
