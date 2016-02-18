@@ -1887,9 +1887,9 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	entry_top = duk_get_top(ctx);
 #endif
 
-	DUK_D(DUK_DPRINT("process debug messages: read_cb=%s, no_block=%ld, detaching=%ld, processing=%ld",
-	                 thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
-	                 (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
+	DUK_DD(DUK_DDPRINT("process debug messages: read_cb=%s, no_block=%ld, detaching=%ld, processing=%ld",
+	                   thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
+	                   (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
 	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
 
 	/* thr->heap->dbg_detaching may be != 0 if a debugger write outside
@@ -1940,7 +1940,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 
 		if (!thr->heap->dbg_paused || no_block) {
 			if (!duk_debug_read_peek(thr)) {
-				DUK_D(DUK_DPRINT("processing debug message, peek indicated no data, stop processing"));
+				DUK_DD(DUK_DDPRINT("processing debug message, peek indicated no data, stop processing"));
 				break;
 			}
 			DUK_D(DUK_DPRINT("processing debug message, peek indicated there is data, handle it"));
