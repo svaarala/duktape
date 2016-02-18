@@ -1571,7 +1571,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	process_messages = 0;
 	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused) {
 		/* Send message if we're paused or state is dirty (in which case
-		 * the message loop will send a status.
+		 * the message loop will send a status notify).
 		 */
 		process_messages = 1;
 	}
