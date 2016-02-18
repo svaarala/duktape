@@ -282,7 +282,7 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 
 #if defined(DEBUG_PRINTS)
 	fprintf(stderr, "%s: udata=%p, buffer=%p, length=%ld\n",
-	        __FUNCTION__, (void *) udata, (void *) buffer, (long) length);
+	        __FUNCTION__, (void *) udata, (const void *) buffer, (long) length);
 	fflush(stderr);
 #endif
 
