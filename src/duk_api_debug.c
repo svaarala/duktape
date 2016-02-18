@@ -57,6 +57,8 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	 * already attached?
 	 */
 
+	DUK_D(DUK_DPRINT("application called duk_debugger_attach()"));
+
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(read_cb != NULL);
 	DUK_ASSERT(write_cb != NULL);
@@ -103,6 +105,8 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	duk_hthread *thr;
 
+	DUK_D(DUK_DPRINT("application called duk_debugger_detach()"));
+
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK_ASSERT(thr != NULL);
@@ -132,9 +136,7 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 		return;
 	}
 
-	thr->heap->dbg_processing = 1;
 	processed_messages = duk_debug_process_messages(thr, 1 /*no_block*/);
-	thr->heap->dbg_processing = 0;
 	DUK_UNREF(processed_messages);
 }
 
