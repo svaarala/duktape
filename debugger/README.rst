@@ -76,10 +76,125 @@ web UI.
 Using the JSON debug proxy
 ==========================
 
-A JSON debug proxy is also provided by ``duk_debug.js``::
+There are two JSON debug proxy implementations: one implemented in DukLuv
+and another in Node.js.
 
-    # Same prerequisites as above
-    $ make runproxy
+DukLuv JSON proxy
+-----------------
+
+DukLuv (https://github.com/creationix/dukluv) is a small and portable event
+loop based on LibUV and Duktape with MIT license (like Duktape).  As such it's
+easy to embed in a custom debug client: you just include the DukLuv executable
+and the JSON proxy source file in your debug client.
+
+Install DukLuv:
+
+* Ensure ``cmake`` is installed
+
+* ``git clone https://github.com/creationix/dukluv.git``
+
+* ``git submodule init; git submodule update``
+
+* ``make``
+
+* Binary should appear in:
+
+  - ``./build/dukluv`` on Linux
+
+  - ``.\build\Debug\dukluv.exe`` on Windows
+
+Run the proxy::
+
+    # Using Makefile; autogenerates duk_debug_meta.json
+    # (You may need to edit DUKLUV in Makefile to point to your DukLuv)
+    $ make runproxydukluv
+
+    # Manually: see "dukluv duk_debug_proxy.js --help" for help
+    $ .../path/to/dukluv duk_debug_proxy.js
+
+Start Duktape command line (or whatever your target is)::
+
+    $ cd <duktape checkout>/tests/ecmascript/
+    $ ../../duk --debugger test-dev-mandel2-func.js
+
+Now connect to the proxy using e.g. telnet::
+
+    $ telnet localhost 9093
+
+The proxy will then connect to the target and you can start issuing commands::
+
+    $ telnet localhost 9093
+    Trying 127.0.0.1...
+    Connected to localhost.
+    Escape character is '^]'.
+    {"notify":"_TargetConnecting","args":["127.0.0.1",9091]}
+    {"notify":"_TargetConnected","args":["1 10499 v1.4.0-140-gc9a6c7c duk command built from Duktape repo"]}
+    {"notify":"Status","command":1,"args":[1,"test-dev-mandel2-func.js","global",58,0]}
+    {"request":"BasicInfo"}
+    {"reply":true,"args":[10499,"v1.4.0-140-gc9a6c7c","duk command built from Duktape repo",1]}
+    {"request":"Eval","args":["print('Hello world!'); 123;"]}
+    {"notify":"Print","command":2,"args":["Hello world!\n"]}
+    {"reply":true,"args":[0,{"type":"number","data":"405ec00000000000"}]}
+    [...]
+
+The proxy log provides dumps both JSON and dvalue binary traffic which is
+quite useful in development::
+
+    $ make runproxydukluv
+    Running Dukluv based debug proxy
+    "dukluv" duk_debug_proxy.js --log-level 2 --metadata duk_debug_meta.json
+    2016-02-17T13:59:42.308Z INF Proxy: Read proxy metadata from duk_debug_meta.json
+    2016-02-17T13:59:42.325Z INF Proxy: Listening for incoming JSON debug connection on 0.0.0.0:9093, target is 127.0.0.1:9091
+    2016-02-17T13:59:47.994Z INF Proxy: JSON proxy client connected
+    2016-02-17T13:59:47.994Z INF Proxy: Connecting to debug target at 127.0.0.1:9091
+    2016-02-17T13:59:47.994Z INF Proxy: PROXY --> CLIENT: {"notify":"_TargetConnecting","args":["127.0.0.1",9091]}
+    2016-02-17T13:59:47.994Z INF Proxy: Connected to debug target at 127.0.0.1:9091
+    2016-02-17T13:59:48.003Z INF Proxy: PROXY --> CLIENT: {"notify":"_TargetConnected","args":["1 10499 v1.4.0-140-gc9a6c7c duk command built from Duktape repo"]}
+    2016-02-17T13:59:48.003Z INF Proxy: Target handshake: {"line":"1 10499 v1.4.0-140-gc9a6c7c duk command built from Duktape repo","protocolVersion":1,"text":"10499 v1.4.0-140-gc9a6c7c duk command built from Duktape repo","dukVersion":"1","dukGitDescribe":"10499","targetString":"v1.4.0-140-gc9a6c7c"}
+    2016-02-17T13:59:48.151Z INF Proxy: PROXY <-- TARGET: |04|
+    2016-02-17T13:59:48.152Z INF Proxy: PROXY <-- TARGET: |81|
+    2016-02-17T13:59:48.152Z INF Proxy: PROXY <-- TARGET: |81|
+    2016-02-17T13:59:48.160Z INF Proxy: PROXY <-- TARGET: |78746573742d6465762d6d616e64656c322d66756e632e6a73|
+    2016-02-17T13:59:48.161Z INF Proxy: PROXY <-- TARGET: |66676c6f62616c|
+    2016-02-17T13:59:48.165Z INF Proxy: PROXY <-- TARGET: |ba|
+    2016-02-17T13:59:48.165Z INF Proxy: PROXY <-- TARGET: |80|
+    2016-02-17T13:59:48.165Z INF Proxy: PROXY <-- TARGET: |00|
+    2016-02-17T13:59:48.165Z INF Proxy: PROXY --> CLIENT: {"notify":"Status","command":1,"args":[1,"test-dev-mandel2-func.js","global",58,0]}
+    2016-02-17T13:59:51.289Z INF Proxy: PROXY <-- CLIENT: {"request":"BasicInfo"}
+    2016-02-17T13:59:51.289Z INF Proxy: PROXY --> TARGET: |01|
+    2016-02-17T13:59:51.289Z INF Proxy: PROXY --> TARGET: |90|
+    2016-02-17T13:59:51.289Z INF Proxy: PROXY --> TARGET: |00|
+    2016-02-17T13:59:51.291Z INF Proxy: PROXY <-- TARGET: |02|
+    2016-02-17T13:59:51.291Z INF Proxy: PROXY <-- TARGET: |e903|
+    2016-02-17T13:59:51.292Z INF Proxy: PROXY <-- TARGET: |7376312e342e302d3134302d6763396136633763|
+    2016-02-17T13:59:51.293Z INF Proxy: PROXY <-- TARGET: |12002364756b20636f6d6d616e64206275696c742066726f6d2044756b74617065207265706f|
+    2016-02-17T13:59:51.293Z INF Proxy: PROXY <-- TARGET: |81|
+    2016-02-17T13:59:51.293Z INF Proxy: PROXY <-- TARGET: |00|
+    2016-02-17T13:59:51.293Z INF Proxy: PROXY --> CLIENT: {"reply":true,"args":[10499,"v1.4.0-140-gc9a6c7c","duk command built from Duktape repo",1]}
+    2016-02-17T14:00:06.105Z INF Proxy: PROXY <-- CLIENT: {"request":"Eval","args":["print('Hello world!'); 123;"]}
+    2016-02-17T14:00:06.105Z INF Proxy: PROXY --> TARGET: |01|
+    2016-02-17T14:00:06.105Z INF Proxy: PROXY --> TARGET: |9e|
+    2016-02-17T14:00:06.105Z INF Proxy: PROXY --> TARGET: |7b7072696e74282748656c6c6f20776f726c642127293b203132333b|
+    2016-02-17T14:00:06.105Z INF Proxy: PROXY --> TARGET: |00|
+    2016-02-17T14:00:06.167Z INF Proxy: PROXY <-- TARGET: |04|
+    2016-02-17T14:00:06.167Z INF Proxy: PROXY <-- TARGET: |82|
+    2016-02-17T14:00:06.167Z INF Proxy: PROXY <-- TARGET: |6d48656c6c6f20776f726c64210a|
+    2016-02-17T14:00:06.168Z INF Proxy: PROXY <-- TARGET: |00|
+    2016-02-17T14:00:06.168Z INF Proxy: PROXY --> CLIENT: {"notify":"Print","command":2,"args":["Hello world!\n"]}
+    2016-02-17T14:00:06.171Z INF Proxy: PROXY <-- TARGET: |02|
+    2016-02-17T14:00:06.171Z INF Proxy: PROXY <-- TARGET: |80|
+    2016-02-17T14:00:06.173Z INF Proxy: PROXY <-- TARGET: |1a405ec00000000000|
+    2016-02-17T14:00:06.173Z INF Proxy: PROXY <-- TARGET: |00|
+    2016-02-17T14:00:06.174Z INF Proxy: PROXY --> CLIENT: {"reply":true,"args":[0,{"type":"number","data":"405ec00000000000"}]}
+    [...]
+
+Node.js JSON proxy
+------------------
+
+A Node.js-based JSON debug proxy is also provided by ``duk_debug.js``::
+
+    # Same prerequisites as for running the debug client
+    $ make runproxynodejs
 
 Start Duktape command line (or whatever your target is)::
 
@@ -95,7 +210,7 @@ readability and are not part of the stream::
     Trying 127.0.0.1...
     Connected to localhost.
     Escape character is '^]'.
-    <-- {"notify":"_Connected","args":["1 10199 v1.1.0-275-gbd4d610-dirty duk command built from Duktape repo"]}
+    <-- {"notify":"_TargetConnected","args":["1 10199 v1.1.0-275-gbd4d610-dirty duk command built from Duktape repo"]}
     <-- {"notify":"Status","command":1,"args":[1,"test-dev-mandel2-func.js","global",58,0]}
     --> {"request":"BasicInfo"}
     <-- {"reply":true,"args":[10199,"v1.1.0-275-gbd4d610-dirty","duk command built from Duktape repo",1]}
