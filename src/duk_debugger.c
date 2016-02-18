@@ -38,6 +38,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	 */
 
 	if (heap->dbg_detaching) {
+		DUK_D(DUK_DPRINT("debugger already detaching, ignore detach1"));
 		return;
 	}
 
@@ -1892,6 +1893,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 		DUK_ASSERT(thr->heap->dbg_processing == 1);
 
 		if (thr->heap->dbg_read_cb == NULL) {
+			DUK_ASSERT(thr->heap->dbg_detaching == 0);  /* FIXME: wrong assumption? */
 			DUK_D(DUK_DPRINT("debug connection broken, stop processing messages"));
 			break;
 		} else if (!thr->heap->dbg_paused || no_block) {
