@@ -131,6 +131,7 @@ static void my_sighandler(int x) {
 }
 static void set_sigint_handler(void) {
 	(void) signal(SIGINT, my_sighandler);
+	(void) signal(SIGPIPE, my_sighandler);  /* for socket errors */
 }
 #endif  /* NO_SIGNAL */
 
@@ -726,6 +727,10 @@ static void debugger_detached(void *udata) {
 	duk_trans_socket_waitconn();
 	fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
 	fflush(stderr);
+#if 0
+	/* This is not necessary but should be harmless. */
+	duk_debugger_detach(ctx);
+#endif
 	duk_debugger_attach(ctx,
 	                    duk_trans_socket_read_cb,
 	                    duk_trans_socket_write_cb,
