@@ -962,7 +962,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	 *  Compilation
 	 */
 
-	DUK_D(DUK_DPRINT("starting regexp compilation"));
+	DUK_DD(DUK_DDPRINT("starting regexp compilation"));
 
 	duk__append_u32(&re_ctx, DUK_REOP_SAVE);
 	duk__append_u32(&re_ctx, 0);
@@ -1006,8 +1006,8 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	duk_remove(ctx, -4);     /* -> [ ... flags escaped_source bytecode ] */
 	duk_remove(ctx, -3);     /* -> [ ... escaped_source bytecode ] */
 
-	DUK_D(DUK_DPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
-	                 (duk_tval *) duk_get_tval(ctx, -1), (duk_tval *) duk_get_tval(ctx, -2)));
+	DUK_DD(DUK_DDPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
+	                   (duk_tval *) duk_get_tval(ctx, -1), (duk_tval *) duk_get_tval(ctx, -2)));
 }
 
 /*
