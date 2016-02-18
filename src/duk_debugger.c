@@ -63,7 +63,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	heap->dbg_write_flush_cb = NULL;
 	/* heap->dbg_detached_cb: keep */
 	/* heap->dbg_udata: keep */
-	heap->dbg_processing = 0;
+	/*heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
@@ -1889,6 +1889,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 		 * and see there's nothing to read right now.
 		 */
 		DUK_DD(DUK_DDPRINT("top at loop top: %ld", (long) duk_get_top(ctx)));
+		DUK_ASSERT(thr->heap->dbg_processing == 1);
 
 		if (thr->heap->dbg_read_cb == NULL) {
 			DUK_D(DUK_DPRINT("debug connection broken, stop processing messages"));
@@ -1914,6 +1915,11 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 			 * callback).
 			 */
 			duk__debug_do_detach2(thr->heap);
+
+			/* Reset dbg_processing = 1 forcibly, in case we re-attached
+			 * (which will set dbg_processing to 0 at the moment).
+			 */
+			thr->heap->dbg_processing = 1;
 		}
 		if (thr->heap->dbg_state_dirty) {
 			/* Executed something that may have affected status,
