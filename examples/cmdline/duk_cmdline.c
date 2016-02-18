@@ -88,6 +88,9 @@ void AJS_Free(void *udata, void *ptr);
 #define  LINEBUF_SIZE       65536
 
 static int interactive_mode = 0;
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
+static int debugger_reattach = 0;
+#endif
 
 /*
  *  Misc helpers
@@ -721,25 +724,26 @@ static void debugger_detached(void *udata) {
 	fprintf(stderr, "Debugger detached, udata: %p\n", (void *) udata);
 	fflush(stderr);
 
-#if 0  /* For manual auto-reattach test */
-	duk_trans_socket_finish();
-	duk_trans_socket_init();
-	duk_trans_socket_waitconn();
-	fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
-	fflush(stderr);
+	if (debugger_reattach) {
+		/* For automatic reattach testing. */
+		duk_trans_socket_finish();
+		duk_trans_socket_init();
+		duk_trans_socket_waitconn();
+		fprintf(stderr, "Debugger reconnected, call duk_debugger_attach()\n");
+		fflush(stderr);
 #if 0
-	/* This is not necessary but should be harmless. */
-	duk_debugger_detach(ctx);
+		/* This is not necessary but should be harmless. */
+		duk_debugger_detach(ctx);
 #endif
-	duk_debugger_attach(ctx,
-	                    duk_trans_socket_read_cb,
-	                    duk_trans_socket_write_cb,
-	                    duk_trans_socket_peek_cb,
-	                    duk_trans_socket_read_flush_cb,
-	                    duk_trans_socket_write_flush_cb,
-	                    debugger_detached,
-	                    (void *) ctx);
-#endif
+		duk_debugger_attach(ctx,
+		                    duk_trans_socket_read_cb,
+		                    duk_trans_socket_write_cb,
+		                    duk_trans_socket_peek_cb,
+		                    duk_trans_socket_read_flush_cb,
+		                    duk_trans_socket_write_flush_cb,
+		                    debugger_detached,
+		                    (void *) ctx);
+	}
 }
 #endif
 
@@ -1030,6 +1034,10 @@ int main(int argc, char *argv[]) {
 			ajsheap_log = 1;
 		} else if (strcmp(arg, "--debugger") == 0) {
 			debugger = 1;
+#if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
+		} else if (strcmp(arg, "--reattach") == 0) {
+			debugger_reattach = 1;
+#endif
 		} else if (strcmp(arg, "--recreate-heap") == 0) {
 			recreate_heap = 1;
 		} else if (strcmp(arg, "--no-heap-destroy") == 0) {
@@ -1196,6 +1204,7 @@ int main(int argc, char *argv[]) {
 #endif
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 			"   --debugger         start example debugger\n"
+			"   --reattach         automatically reattach debugger on detach\n"
 #endif
 			"   --recreate-heap    recreate heap after every file\n"
 			"   --no-heap-destroy  force GC, but don't destroy heap at end (leak testing)\n"
