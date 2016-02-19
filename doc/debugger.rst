@@ -3022,3 +3022,25 @@ Buffer object support
 
 Make it easier to see buffer object contents (like for plain buffers), either
 by serializing them differently, or through heap walking.
+
+Separate callback for checking transport status
+-----------------------------------------------
+
+When Duktape is in the running state (not paused), Duktape will only call:
+
+* The peek callback periodically to see if there is anything to read.
+  There's no way to indicate a transport detach/error with peek now.
+
+* The write callback periodically, as a side effect of sending Status
+  notifies.  This is the main mechanism now for detecting a broken
+  transport in the running state.  If Status notifies were removed,
+  Duktape would not notice a transport break unless something else prompted
+  a write to the debug transport.
+
+It might be cleaner to provide either:
+
+* A callback to check transport status explicitly and perhaps allows even
+  an error message to be indicated.
+
+* Allow user code to proactively call into Duktape to indicate the transport
+  is broken (beyond calling ``duk_debugger_detach()``).

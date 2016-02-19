@@ -1404,6 +1404,19 @@ Planned
   command (with "pause on uncaught" option enabled) would cause a recursive
   attempt to halt execution (GH-558, GH-562)
 
+* Fix debugger detach handling bug which could cause the debugger to be
+  re-entered recursively during detach handling; this could cause various
+  difficult to diagnose side effects (GH-599, GH-597, GH-591)
+
+* Fix debugger detach handling bug which could cause detach handling to be
+  initiated but not completed if the debug transport write error occurred
+  outside of the debugger message loop (for example when writing a Status
+  notify in running state) (GH-599, GH-597, GH-591)
+
+* Fix debugger transport write error bug which could cause Duktape to call
+  the debug transport write callback after it had already returned an error
+  (GH-599)
+
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 
 * Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
