@@ -112,6 +112,22 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	duk__debug_do_detach2(heap);
 }
 
+/* Called on a read/write error: NULL all transport related callbacks except
+ * the detached callback so that we never accidentally call them after a
+ * read/write error has been indicated.
+ */
+DUK_LOCAL void duk__debug_null_io_callbacks(duk_hthread *thr) {
+	duk_heap *heap;
+	heap = thr->heap;
+	DUK_D(DUK_DPRINT("transport read/write error, NULL all I/O callbacks (everything but detached)"));
+	heap->dbg_read_cb = NULL;
+	heap->dbg_write_cb = NULL;  /* this is especially critical to avoid another write call in detach1() */
+	heap->dbg_peek_cb = NULL;
+	heap->dbg_read_flush_cb = NULL;
+	heap->dbg_write_flush_cb = NULL;
+	/* keep heap->dbg_detached_cb */
+}
+
 /*
  *  Debug connection peek and flush primitives
  */
@@ -250,8 +266,8 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 #endif
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
-			heap->dbg_write_cb = NULL;  /* squelch further writes in detach1() */
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
+			duk__debug_null_io_callbacks(thr);  /* avoid calling write callback in detach1() */
 			DUK__SET_CONN_BROKEN(thr, 1);
 			goto fail;
 		}
@@ -545,7 +561,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 #endif
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
-			heap->dbg_write_cb = NULL;  /* squelch further writes in detach1() */
+			duk__debug_null_io_callbacks(thr);  /* avoid calling write callback in detach1() */
 			DUK_D(DUK_DPRINT("connection error during write"));
 			DUK__SET_CONN_BROKEN(thr, 1);
 			return;
