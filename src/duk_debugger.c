@@ -250,7 +250,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 #endif
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
-			heap->dbg_write_cb = NULL;  /* squelch further writes */
+			heap->dbg_write_cb = NULL;  /* squelch further writes in detach1() */
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
 			DUK__SET_CONN_BROKEN(thr, 1);
 			goto fail;
@@ -545,7 +545,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 #endif
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
-			heap->dbg_write_cb = NULL;  /* squelch further writes */
+			heap->dbg_write_cb = NULL;  /* squelch further writes in detach1() */
 			DUK_D(DUK_DPRINT("connection error during write"));
 			DUK__SET_CONN_BROKEN(thr, 1);
 			return;
@@ -555,24 +555,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 }
 
 DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
-	duk_heap *heap;
-	duk_size_t got;
-
-	DUK_ASSERT(thr != NULL);
-	heap = thr->heap;
-	DUK_ASSERT(heap != NULL);
-
-	if (heap->dbg_write_cb == NULL) {
-		DUK_D(DUK_DPRINT("attempt to write 1 bytes in detached state, ignore"));
-		return;
-	}
-
-	DUK_ASSERT(heap->dbg_write_cb != NULL);
-	got = heap->dbg_write_cb(heap->dbg_udata, (const char *) (&x), 1);
-	if (got != 1) {
-		DUK_D(DUK_DPRINT("connection error during write"));
-		DUK__SET_CONN_BROKEN(thr, 1);
-	}
+	duk_debug_write_bytes(thr, (const duk_uint8_t *) &x, 1);
 }
 
 DUK_INTERNAL void duk_debug_write_unused(duk_hthread *thr) {
