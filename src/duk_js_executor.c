@@ -1486,6 +1486,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	duk_activation *act;
 	duk_breakpoint *bp;
 	duk_breakpoint **bp_active;
+	duk_uint32_t bp_idx;
 	duk_uint_fast32_t line = 0;
 	duk_bool_t send_status;
 	duk_bool_t process_messages;
@@ -1536,6 +1537,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 			 * described in: https://github.com/svaarala/duktape/issues/263.
 			 */
 			bp_active = thr->heap->dbg_breakpoints_active;
+			bp_idx = 0;
 			for (;;) {
 				bp = *bp_active++;
 				if (bp == NULL) {
@@ -1547,8 +1549,11 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
 					                 (duk_heaphdr *) bp->filename, (long) bp->line));
 
+					duk_debug_send_break(thr, bp_idx);
 					DUK_HEAP_SET_PAUSED(thr->heap);
 				}
+
+				bp_idx++;
 			}
 		} else {
 			;

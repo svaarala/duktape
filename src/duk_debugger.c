@@ -906,6 +906,16 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_debug_write_eom(thr);
 }
 
+DUK_INTERNAL void duk_debug_send_break(duk_hthread *thr, duk_uint32_t index) {
+	/*
+	 *  NFY <int: 7> <int: index> EOM
+	 */
+
+	duk_debug_write_notify(thr, DUK_DBG_CMD_BREAK);
+	duk_debug_write_int(thr, index);
+	duk_debug_write_eom(thr);
+}
+
 #if defined(DUK_USE_DEBUGGER_THROW_NOTIFY)
 DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	/*
