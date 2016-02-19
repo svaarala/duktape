@@ -21,11 +21,12 @@ Duktape provides the following basic debugging features:
 
 * Get/put variable at any callstack level
 
+* A mechanism for application-defined requests (AppRequest) and notifications
+  (AppNotify)
+
 * Forwarding of print(), alert(), and logger writes
 
 * Full heap dump (debugger web UI converts to JSON)
-
-* Bindings for application-defined commands (AppRequest and AppNotify)
 
 Duktape debugging architecture is based on the following major pieces:
 
@@ -79,9 +80,14 @@ To integrate debugger support into your target, you need to:
   etc.  (A detach can also occur if explicitly requested by the debug client
   or if Duktape detects a debug stream error.)
 
-* **If you have an eventloop**: optionally call ``duk_debugger_cooperate()``
+* **If you have an event loop**: optionally call ``duk_debugger_cooperate()``
   once in a while when no call to Duktape is in progress.  This allows debug
   commands to be executed outside of any Duktape calls.
+
+Duktape comes with a bundled debug client which supports a plain TCP transport.
+There are also several third party debug clients which may be adapted to talk
+to your target: they share the same debug protocol so only the transport will
+need adaptation.
 
 You can also write your own debug client by implementing the client side of
 the debug protocol.  The debug client is intended to adapt to the target
@@ -92,8 +98,8 @@ with the same semantic versioning principles as the Duktape API.
 You can implement the binary debug protocol directly in your debug client,
 but an easier option is to use the JSON mapping of the debug protocol which
 is much more user friendly.  Duktape includes a proxy server which converts
-between the JSON mapping and the binary debug protocol (which actually runs
-on the target).
+between the JSON mapping and the binary debug protocol which actually runs
+on the target.
 
 Example debug client and server
 -------------------------------
@@ -142,7 +148,8 @@ A standard debug transport
 
 This is up to user code, because the most appropriate transport varies a great
 deal: Wi-Fi, serial port, etc.  However, TCP is probably a good default
-transport if there are no specific reasons not to use it.
+transport if there are no specific reasons not to use it.  The bundled
+example debugger web UI and JSON debug proxy use TCP as a transport.
 
 A standard debugger UI
 ::::::::::::::::::::::
@@ -1828,9 +1835,9 @@ If the target hasn't registered a request callback, Duktape responds::
 
     ERR 2 "AppRequest unsupported by target" EOM
 
-The target might also respond with error, e.g.::
+The application request callback may also indicate an error, e.g.::
 
-    ERR 4 "unrecognized AppRequest message"
+    ERR 4 "missing argument for SetFrameRate"
 
 This is a custom request message whose meaning and semantics depend on the
 application.
@@ -1852,7 +1859,7 @@ which merely serves to marshal them back and forth through a defined API.
 
 AppNotify messages may be sent by pushing the contents of the message to the
 stack and calling ``duk_debugger_notify()`` passing the number of values
-pushed. Each value pushed will be sent as a dvalue in the message.  So if you
+pushed.  Each value pushed will be sent as a dvalue in the message.  So if you
 push two strings, "foo" and "bar", the client will see ``NFY 7 "foo" "bar" EOM``.
 
 AppRequest is used to make requests to the target which are not directly
@@ -1871,40 +1878,50 @@ AppRequest is received, the request callback is invoked with the contents of
 the message on the value stack, and may push its own values to be sent in
 reply.
 
-This is a do-nothing request callback::
+This is a minimal do-nothing request callback::
 
     duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
-        /* nop */
+        /* Number of return values is returned: here empty reply. */
         return 0;
     }
 
-The above callback simply responds with ``REP EOM`` (an empty reply) to all
-requests.  This is admittedly not very useful and a real implementation should
-process the values it receives on the stack, push its own values to send in
-reply, and return a non-negative integer indicating how many values it pushed.
+The above dummy callback simply responds with ``REP EOM`` (an empty reply) to
+all requests.
 
-Here is a slightly more useful implementation::
+A more useful callback should process the values it receives on the value
+stack, push its own values to send in reply, and return a non-negative integer
+indicating how many values it pushed.  Here is a slightly more useful
+implementation::
 
     duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
-        /* Must use negative stack indices to access dvalues */
-        const char *cmd_name = duk_get_string(ctx, -nvalues + 0);
-        
-        if (strcmp(cmd_name, "VersionInfo") == 0) {
+        const char *cmd_name = NULL;
+
+        /* Callback must be very careful NEVER to access values below
+         * 'nvalues' topmost value stack elements.
+         */
+        if (nvalues >= 1) {
+            /* Must access values relative to stack top. */
+            cmd_name = duk_get_string(ctx, -nvalues + 0);
+        }
+
+        if (cmd_name == NULL) {
+            /* Return -1 to send an ERR reply.  The value on top of the stack
+             * should be a string which will be used for the error text sent
+             * to the debug client.
+             */
+            duk_push_string(ctx, "missing application specific command name");
+            return -1;
+        } else if (strcmp(cmd_name, "VersionInfo") == 0) {
             /* Return a positive integer to send a REP containing values pushed
-             * to the stack. The return value indicates how many dvalues you
+             * to the stack.  The return value indicates how many dvalues you
              * are including in the response.
              */
-            
             duk_push_string(ctx, "My Awesome Program");
             duk_push_int(ctx, 81200);  /* ver. 8.12.0 */
-            
             return 2;  /* 2 dvalues */
         } else {
-            /* Return -1 to send an ERR reply. The value on top of the stack
-             * will be string coerced and used for the error text.
-             */
-            
-            duk_push_string(ctx, "unrecognized AppRequest command name");
+            duk_push_sprintf(ctx, "unrecognized application specific command name: %s",
+                             cmd_name);
             return -1;
         }
     }
@@ -1914,12 +1931,13 @@ unsupported command, eliciting an ERR reply from Duktape saying so.  A target
 is always free to send AppNotify messages.
 
 As a precaution, the target should try to avoid sending structured values such
-as JS objects in notify messages as their heap pointers may become stale by the
-time the client receives them.  This is especially true for notifications sent
-while the target is running.  It's better to stick to primitives which have
-unique dvalue representations, e.g. numbers, booleans, and strings.  If a
-structured value does need to be sent, it can simply be e.g. JSON/JX encoded
-and sent as a string instead.
+as JS objects in notify messages as their heap pointers may become stale by
+the time the client receives and inspects them.  This is especially true for
+notifications sent while the target is running.  It's better to stick to
+primitives which have unique dvalue representations, e.g. numbers, booleans,
+and strings.  If a structured value does need to be sent, it can simply be
+e.g. JSON/JX encoded and sent as a string instead (carefully avoiding uncaught
+errors).
 
 Important notes on the request callback
 ---------------------------------------
@@ -1927,6 +1945,10 @@ Important notes on the request callback
 The request callback is provided with a ``duk_context`` pointer with which it
 can access the value stack and is assumed to be trusted.  There are certain
 things it MUST NOT do.  Specifically:
+
+* It MUST NOT assume that ``nvalues`` has any specific value.  In particular
+  it might be zero so that there are no arguments to the callback (not even a
+  string used, by convention, to identify an application specific command).
 
 * It MUST NOT attempt to access or pop any values from the top of the stack
   beyond the ``nvalues`` it is given and the values it pushes itself.
@@ -1963,8 +1985,8 @@ AppRequest/AppNotify command format
 
 As a general convention, it is recommended for the first field in an AppRequest
 or AppNotify message after the command number be a string identifying the
-command, e.g. "VersionInfo" or "RebootDevice". This makes it simpler for
-different clients and targets to interoperate. Unrecognized command names can
+command, e.g. "VersionInfo" or "RebootDevice".  This makes it simpler for
+different clients and targets to interoperate.  Unrecognized command names can
 simply be ignored, whereas, e.g. integer commands may be interpreted
 differently depending on the debug client and target in use.
 
@@ -3209,3 +3231,23 @@ It might be cleaner to provide either:
 
 * Allow user code to proactively call into Duktape to indicate the transport
   is broken (beyond calling ``duk_debugger_detach()``).
+
+Extend ERR message with a programmatic string error code
+--------------------------------------------------------
+
+Current error messages have the form::
+
+    ERR <error number> <message> EOM
+
+The number space is awkward to manage modularly, and doesn't work well for
+application specific errors which would be useful for e.g. AppRequest
+messages.  Extend the error format to::
+
+    ERR <error number> <error string code> <message> EOM
+
+String codes could follow an all caps convention like ``"NOT_FOUND"``::
+
+    ERR 3 "NOT_FOUND" "breakpoint not found" EOM
+
+String error codes are easy to extend without conflicts like one has with
+a numbered sequence.
