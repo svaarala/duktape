@@ -2,7 +2,21 @@
 
 <p>Duktape has built-in debugger support as an option you can enable during
 compilation.  Debugger support adds about 15-20kB of code footprint (depending
-on what debugger features are enabled) and has very minimal memory footprint.</p>
+on what debugger features are enabled) and has very minimal memory footprint.
+Debugger features include:</p>
+<ul>
+<li>Execution status information such running/paused at file/line, callstack,
+    local variables for different callstack levels</li>
+<li>Execution control including pause/resume, step over/into/out, breakpoints
+    targeted at file/line, debugger statement</li>
+<li>Generic Eval at any callstack level, get/put variable at any callstack
+    level</li>
+<li>A mechanism for application-defined requests (AppRequest) and notifications
+    (AppNotify)</li>
+<li>Forwarding of print(), alert(), and logger writes</li>
+<li>Heap object in-depth inspection, Duktape heap walking, and getting a
+    full heap dump</li>
+</ul>
 
 <p>The debugger is based on the following main concepts:</p>
 <ul>
@@ -59,6 +73,17 @@ using the binary debug protocol, or use the JSON proxy provided by
 (Node.js) or
 <a href="https://github.com/svaarala/duktape/blob/master/debugger/duk_debug_proxy.js">duk_debug_proxy.js</a>
 (DukLuv).</p>
+
+<p>Debug targets and debug clients are intended to be mixed and matched:
+apart from the transport (which is usually either TCP or easy to adapt) the
+debug protocol is the same.  Core functionality will be the same regardless
+of the debug client or the debug target, but some optional features may be
+missing.  Debug clients and debug targets may also implement application
+specific commands (AppRequest) and notifications (AppNotify) for richer
+integration which can be used when both the client and the target support
+them (they're easy and safe to ignore if not supported).  Custom commands
+and notifications allow e.g. deep inspection of the state of a custom target
+specific memory allocator, rebooting the target on command, etc.</p>
 
 <p>For more details on the implementation and how to get started, see:</p>
 <ul>
