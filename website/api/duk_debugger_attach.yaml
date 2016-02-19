@@ -11,7 +11,8 @@ proto: |
                            void *udata);
 
 summary: |
-  <p>Attach a debugger to the Duktape heap.  If debugger support is not
+  <p>Attach a debugger to the Duktape heap.  The debugger will automatically
+  enter paused state when the attach is complete.  If debugger support is not
   compiled into Duktape, throws an error.  See
   <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
   for more information.</p>
@@ -20,6 +21,12 @@ summary: |
   The <code>peek_cb</code> is strongly recommended but optional.  The
   <code>read_flush_cb</code> and <code>write_flush_cb</code> callbacks are
   optional.  Unimplemented callbacks are indicated using a <code>NULL</code>.</p>
+
+  <div class="note">
+  The <code><a href="#duk_debugger_attach_custom">duk_debugger_attach_custom()</a></code>
+  variant accepts an additional callback to support application specific commands
+  (AppRequest).  These two calls will be merged in Duktape 2.x.
+  </div>
 
   <div class="note">
   Since Duktape 1.4.0 the debugger detached callback is allowed to call
@@ -40,10 +47,12 @@ example: |
                       my_udata);
 
 tags:
-  - debug
+  - debugger
 
 seealso:
+  - duk_debugger_attach_custom
   - duk_debugger_detach
   - duk_debugger_cooperate
+  - duk_debugger_notify
 
 introduced: 1.2.0
