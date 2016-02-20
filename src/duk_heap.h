@@ -438,6 +438,7 @@ struct duk_heap {
 	duk_debug_peek_function dbg_peek_cb;
 	duk_debug_read_flush_function dbg_read_flush_cb;
 	duk_debug_write_flush_function dbg_write_flush_cb;
+	duk_debug_request_function dbg_request_cb;
 	duk_debug_detached_function dbg_detached_cb;
 	void *dbg_udata;
 

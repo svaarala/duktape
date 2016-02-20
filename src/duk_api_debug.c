@@ -40,14 +40,15 @@ DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
-DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
-                                      duk_debug_read_function read_cb,
-                                      duk_debug_write_function write_cb,
-                                      duk_debug_peek_function peek_cb,
-                                      duk_debug_read_flush_function read_flush_cb,
-                                      duk_debug_write_flush_function write_flush_cb,
-                                      duk_debug_detached_function detached_cb,
-                                      void *udata) {
+DUK_EXTERNAL void duk_debugger_attach_custom(duk_context *ctx,
+                                             duk_debug_read_function read_cb,
+                                             duk_debug_write_function write_cb,
+                                             duk_debug_peek_function peek_cb,
+                                             duk_debug_read_flush_function read_flush_cb,
+                                             duk_debug_write_flush_function write_flush_cb,
+                                             duk_debug_request_function request_cb,
+                                             duk_debug_detached_function detached_cb,
+                                             void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 	const char *str;
@@ -70,6 +71,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	heap->dbg_peek_cb = peek_cb;
 	heap->dbg_read_flush_cb = read_flush_cb;
 	heap->dbg_write_flush_cb = write_flush_cb;
+	heap->dbg_request_cb = request_cb;
 	heap->dbg_detached_cb = detached_cb;
 	heap->dbg_udata = udata;
 	heap->dbg_have_next_byte = 0;
@@ -140,22 +142,58 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 	DUK_UNREF(processed_messages);
 }
 
+DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues) {
+	duk_hthread *thr;
+	duk_idx_t top, idx;
+	duk_bool_t ret = 0;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		top = duk_get_top(ctx);
+		if (top < nvalues) {
+			DUK_ERROR_API((duk_hthread *) ctx, "not enough stack values for notify");
+		}
+		duk_debug_write_notify(thr, DUK_DBG_CMD_APPNOTIFY);
+		for (idx = top - nvalues; idx < top; idx++) {
+			duk_tval *tv = DUK_GET_TVAL_POSIDX(ctx, idx);
+			duk_debug_write_tval(thr, tv);
+		}
+		duk_debug_write_eom(thr);
+
+		/* Return non-zero (true) if we have a good reason to believe the notify was
+		 * delivered; if we're still attached at least a transport error was not indicated
+		 * by the transport write callback.  This is not a 100% guarantee of course.
+		 */
+		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+			ret = 1;
+		}
+	}
+	duk_pop_n(ctx, nvalues);
+	return ret;
+}
+
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
-DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
-                                      duk_debug_read_function read_cb,
-                                      duk_debug_write_function write_cb,
-                                      duk_debug_peek_function peek_cb,
-                                      duk_debug_read_flush_function read_flush_cb,
-                                      duk_debug_write_flush_function write_flush_cb,
-                                      duk_debug_detached_function detached_cb,
-                                      void *udata) {
+DUK_EXTERNAL void duk_debugger_attach_custom(duk_context *ctx,
+                                             duk_debug_read_function read_cb,
+                                             duk_debug_write_function write_cb,
+                                             duk_debug_peek_function peek_cb,
+                                             duk_debug_read_flush_function read_flush_cb,
+                                             duk_debug_write_flush_function write_flush_cb,
+                                             duk_debug_request_function request_cb,
+                                             duk_debug_detached_function detached_cb,
+                                             void *udata) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(read_cb);
 	DUK_UNREF(write_cb);
 	DUK_UNREF(peek_cb);
 	DUK_UNREF(read_flush_cb);
 	DUK_UNREF(write_flush_cb);
+	DUK_UNREF(request_cb);
 	DUK_UNREF(detached_cb);
 	DUK_UNREF(udata);
 	DUK_ERROR_API((duk_hthread *) ctx, "no debugger support");
@@ -170,6 +208,14 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 	/* nop */
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(ctx);
+}
+
+DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* no debugger support, just pop values */
+	duk_pop_n(ctx, nvalues);
+	return 0;
 }
 
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */

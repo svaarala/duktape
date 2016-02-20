@@ -25,6 +25,8 @@ Duktape provides the following basic debugging features:
 
 * Full heap dump (debugger web UI converts to JSON)
 
+* Bindings for application-defined commands (AppRequest and AppNotify)
+
 Duktape debugging architecture is based on the following major pieces:
 
 * A standard **debug protocol**, implemented directly by Duktape.
@@ -66,10 +68,10 @@ To integrate debugger support into your target, you need to:
   existing custom protocol.  An example TCP debug transport is given in
   ``examples/debug-trans-socket/duk_trans_socket_unix.c``.
 
-* **Add code to attach a debugger**: call ``duk_debugger_attach()`` when it is
-  time to start debugging.  Duktape will pause execution and process debug
-  messages (blocking if necessary).  Execution resumes under control of the
-  debug client.
+* **Add code to attach a debugger**: call ``duk_debugger_attach()`` (or
+  ``duk_debugger_attach_custom()``) when it is time to start debugging. 
+  Duktape will pause execution and process debug messages (blocking if
+  necessary).  Execution resumes under control of the debug client.
 
 * **When done, detach the debugger**: call ``duk_debugger_detach()`` to stop
   debugging; any debug stream error also causes an automatic detach.  When
@@ -215,6 +217,19 @@ Called when the application wants to attach a debugger to the Duktape heap::
                         my_trans_write_flush_cb,  /* write flush callback (optional) */
                         my_detached_cb,           /* debugger detached callback */
                         my_udata);                /* debug udata */
+
+Or, if you need to support application-defined requests through the AppRequest
+debug command (see "Custom requests and notifications"), use instead::
+
+    duk_debugger_attach_custom(ctx,
+                               my_trans_read_cb,         /* read callback */
+                               my_trans_write_cb,        /* write callback */
+                               my_trans_peek_cb,         /* peek callback (optional) */
+                               my_trans_read_flush_cb,   /* read flush callback (optional) */
+                               my_trans_write_flush_cb,  /* write flush callback (optional) */
+                               my_request_cb,            /* request callback (optional) */
+                               my_detached_cb,           /* debugger detached callback */
+                               my_udata);                /* debug udata */
 
 When called, Duktape will enter debug mode, pause execution, and wait for
 further instructions from the debug client.
@@ -922,6 +937,8 @@ Error codes
 +--------+------------------------------------------------------------------+
 | 0x03   | Not found (e.g. invalid breakpoint index)                        |
 +--------+------------------------------------------------------------------+
+| 0x04   | Application error (e.g. AppRequest-related error)                |
++--------+------------------------------------------------------------------+
 
 Handling of inbound requests
 ----------------------------
@@ -1388,6 +1405,27 @@ reestablish the link).
 ``msg`` is an optional string elaborating on the reason for the detach.  It may
 or may not be present depending on the nature of detachment.
 
+AppNotify notification (0x07)
+-----------------------------
+
+Format::
+
+    NFY <int: 0x07> [<tval>]* EOM
+
+Example::
+
+    NFY 7 "DebugPrint" "Everything is going according to plan!" EOM
+
+This is a custom notification message whose meaning and semantics depend on the
+application.
+
+AppNotify messages are used for direct communication between the debug client
+and debug target over the Duktape debug protocol.  Both the meaning of a custom
+message and the dvalues it contains are entirely up to the implementation and
+depending on the needs of the application, need not be supported at all.
+
+See "Custom requests and notifications" below for more details.
+
 Commands sent by debug client
 =============================
 
@@ -1772,6 +1810,172 @@ target endianness and interpret the bytecode based on that.
 
 .. note:: This command is somewhat incomplete at the moment and may be modified
    once the best way to do this in the debugger UI has been figured out.
+
+AppRequest request (0x22)
+-------------------------
+
+Format::
+
+    REQ <int: 0x22> [<tval>*] EOM
+    REP [<tval>*] EOM
+
+Example::
+
+    REQ 34 "GameInfo" "GetTitle" EOM
+    REP "Spectacles: Bruce's Story" EOM
+
+If the target hasn't registered a request callback, Duktape responds::
+
+    ERR 2 "AppRequest unsupported by target" EOM
+
+The target might also respond with error, e.g.::
+
+    ERR 4 "unrecognized AppRequest message"
+
+This is a custom request message whose meaning and semantics depend on the
+application.
+
+AppRequest messages are used for direct communication between the debug client
+and debug target over the Duktape debug protocol.  Both the meaning of a custom
+message and the dvalues it contains are entirely up to the implementation and
+depending on the needs of the application, need not be supported at all.
+
+See "Custom requests and notifications" below for more details.
+
+Custom requests and notifications
+=================================
+
+Starting in Duktape 1.5.x, Duktape supports direct communication between the
+debug client and debug target over the same transport by using the special
+AppRequest and AppNotify messages.  These messages have no meaning to Duktape,
+which merely serves to marshal them back and forth through a defined API.
+
+AppNotify messages may be sent by pushing the contents of the message to the
+stack and calling ``duk_debugger_notify()`` passing the number of values
+pushed. Each value pushed will be sent as a dvalue in the message.  So if you
+push two strings, "foo" and "bar", the client will see ``NFY 7 "foo" "bar" EOM``.
+
+AppRequest is used to make requests to the target which are not directly
+related to Ecmascript execution and may be implementation-dependent.  For
+example, an AppRequest might be used to:
+
+* Change the frame rate of a game engine
+
+* Reset/reboot an embedded target device while debugging
+
+* Perform or trigger software or script updates
+
+A target that wishes to support AppRequest should attach the debugger using the
+``duk_debugger_attach_custom()`` API and provide a request callback.  When an
+AppRequest is received, the request callback is invoked with the contents of
+the message on the value stack, and may push its own values to be sent in
+reply.
+
+This is a do-nothing request callback::
+
+    duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
+        /* nop */
+        return 0;
+    }
+
+The above callback simply responds with ``REP EOM`` (an empty reply) to all
+requests.  This is admittedly not very useful and a real implementation should
+process the values it receives on the stack, push its own values to send in
+reply, and return a non-negative integer indicating how many values it pushed.
+
+Here is a slightly more useful implementation::
+
+    duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
+        /* Must use negative stack indices to access dvalues */
+        const char *cmd_name = duk_get_string(ctx, -nvalues + 0);
+        
+        if (strcmp(cmd_name, "VersionInfo") == 0) {
+            /* Return a positive integer to send a REP containing values pushed
+             * to the stack. The return value indicates how many dvalues you
+             * are including in the response.
+             */
+            
+            duk_push_string(ctx, "My Awesome Program");
+            duk_push_int(ctx, 81200);  /* ver. 8.12.0 */
+            
+            return 2;  /* 2 dvalues */
+        } else {
+            /* Return -1 to send an ERR reply. The value on top of the stack
+             * will be string coerced and used for the error text.
+             */
+            
+            duk_push_string(ctx, "unrecognized AppRequest command name");
+            return -1;
+        }
+    }
+
+If no request callback is provided at attach, AppRequest will be treated as an
+unsupported command, eliciting an ERR reply from Duktape saying so.  A target
+is always free to send AppNotify messages.
+
+As a precaution, the target should try to avoid sending structured values such
+as JS objects in notify messages as their heap pointers may become stale by the
+time the client receives them.  This is especially true for notifications sent
+while the target is running.  It's better to stick to primitives which have
+unique dvalue representations, e.g. numbers, booleans, and strings.  If a
+structured value does need to be sent, it can simply be e.g. JSON/JX encoded
+and sent as a string instead.
+
+Important notes on the request callback
+---------------------------------------
+
+The request callback is provided with a ``duk_context`` pointer with which it
+can access the value stack and is assumed to be trusted.  There are certain
+things it MUST NOT do.  Specifically:
+
+* It MUST NOT attempt to access or pop any values from the top of the stack
+  beyond the ``nvalues`` it is given and the values it pushes itself.
+
+* It MUST NOT assume any specific value for ``duk_get_top()`` and similar
+  primitives.  In practice this means using negative stack indices to access
+  values.
+
+* It MUST NOT throw errors.  It is very easy to accidentally throw an error
+  when working with value stack values directly, so caution must be exercised
+  here.
+
+Violating this contract is undefined behavior and may corrupt debugger state,
+cause incorrect behavior, or even lead to a segfault.  In the future it would
+be nice to make this more robust, e.g. by sandboxing the function so that it
+cannot access unrelated stack values and is allowed to throw errors safely.
+
+The dvalues of a message are pushed in the order they are received.  This makes
+them inconvenient to access using negative indices, since the relative position
+of any given value on the stack is dependent on the total number of values.
+However because the callback receives the total number of values as a parameter,
+a useful convention is to index the stack like so::
+
+    if (nvalues < 3) {
+        duk_push_string(ctx, "not enough arguments");
+        return -1;
+    }
+    cmd_name = duk_get_string(ctx, -nvalues + 0);
+    val_1 = duk_get_string(ctx, -nvalues + 1);
+    val_2 = duk_get_int(ctx, -nvalues + 2);
+
+AppRequest/AppNotify command format
+-----------------------------------
+
+As a general convention, it is recommended for the first field in an AppRequest
+or AppNotify message after the command number be a string identifying the
+command, e.g. "VersionInfo" or "RebootDevice". This makes it simpler for
+different clients and targets to interoperate. Unrecognized command names can
+simply be ignored, whereas, e.g. integer commands may be interpreted
+differently depending on the debug client and target in use.
+
+If a command is specific to your application in some way (purpose or behavior),
+it might make sense to add a prefix, e.g. "MyApp-AwesomeCmd".  This avoids
+clashes with other targets which may have similarly-named commands.
+
+Ultimately, no convention or overall form for application message contents is
+actually enforced by Duktape.  A peer should therefore not make any assumptions
+about the contents of an AppRequest or AppNotify message unless it knows
+exactly where that message came from.
 
 "debugger" statement
 ====================
@@ -2824,16 +3028,6 @@ GC is triggered, the GC notify cannot be sent inline from the mark-and-sweep
 code because it might then appear in the middle of the "get locals" response.
 Instead, events need to be flagged, based on counters, or queued.
 
-Reset command
--------------
-
-Having a shared command to reset/reboot a target might be useful.  It would
-require either a specific API callback or some form of command integration
-through the Duktape debugger API.
-
-Many targets have a management protocol that can be used to implement a reset,
-so that it doesn't necessarily have to be in the debug protocol.
-
 Possible new commands or command improvements
 ---------------------------------------------
 
@@ -2864,35 +3058,6 @@ Possible new commands or command improvements
 * Error handling for PutVar
 
 * Avoid side effects (getter invocation) in GetVar
-
-Application specific messages
------------------------------
-
-It would be useful to be able to send application specific commands to the
-target.  For instance, a debug client may want to query the target's memory
-allocator state or file system free space.
-
-Such messages can of course be exchanged out of band, outside the Duktape
-debugger protocol, and this is the cleanest option.  Note that this can be
-done even with a single TCP connection: some minimal framing is needed to
-distinguish between application specific data and Duktape debugger stream
-chunks.
-
-Even if an out of band solution is possible, it might be convenient to be able
-to add application specific commands into the debug protocol.  This would make
-it easy for debug clients to query target specific information (e.g. the heap
-allocator state of a specific target device) and show it in the debugger UI in
-an integrated fashion.
-
-Exposing the whole debug protocol to user code through a supported public API
-would mean significant versioning issues, but perhaps a limited API could be
-exposed:
-
-* An API call to send an application specific message with a string name
-  (e.g. "my-target-heap-state") and a string value.
-
-* A callback to receive an application specific message with a string name
-  and a string value.
 
 Direct support for structured values
 ------------------------------------
