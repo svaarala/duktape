@@ -1383,6 +1383,9 @@ Planned
 
 * Add Windows version of the debugger example TCP transport (GH-579)
 
+* Add support for application specific debugger commands (AppRequest) and
+  notifications (AppNotify) (GH-596, GH-563)
+
 * A DukLuv-based JSON debug proxy is now included in the dist package;
   it should allow much easier and more flexible packaging of a JSON debug
   proxy into a debug client (GH-590)
