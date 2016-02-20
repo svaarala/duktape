@@ -399,15 +399,17 @@ JsonConnHandler.prototype.dispatchJsonMessage = function dispatchJsonMessage(msg
 JsonConnHandler.prototype.determineCommandNumber = function determineCommandNumber(name, val) {
     var res;
 
-    if (typeof(name) === 'string') {
+    if (typeof name === 'string') {
         res = this.commandNumberLookup[name];
         if (!res) {
             log.info('Unknown command name: ' + name + ', command number: ' + val);
         }
+    } else if (typeof name === 'number') {
+        res = name;
     } else if (name !== true) {
-        throw new Error('invalid command name (must be string or "true"): ' + name);
+        throw new Error('invalid command name (must be string, number, or "true"): ' + name);
     }
-    if (typeof res === 'undefined' && typeof(val) === 'undefined') {
+    if (typeof res === 'undefined' && typeof val === 'undefined') {
         throw new Error('cannot determine command number from name: ' + name);
     }
     if (typeof val !== 'number' && typeof val !== 'undefined') {

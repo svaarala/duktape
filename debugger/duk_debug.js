@@ -2166,14 +2166,16 @@ function DebugProxy(serverPort) {
     this.dval_err = formatDebugValue(DVAL_ERR);
 }
 
-DebugProxy.prototype.determineCommandNumber = function (cmdString, cmdNumber) {
+DebugProxy.prototype.determineCommandNumber = function (cmdName, cmdNumber) {
     var ret;
-    if (typeof cmdString === 'string') {
-        ret = debugCommandNumbers[cmdString];
+    if (typeof cmdName === 'string') {
+        ret = debugCommandNumbers[cmdName];
+    } else if (typeof cmdName === 'number') {
+        ret = cmdName;
     }
     ret = ret || cmdNumber;
     if (typeof ret !== 'number') {
-        throw Error('cannot figure out command number for "' + cmdString + '" (' + cmdNumber + ')');
+        throw Error('cannot figure out command number for "' + cmdName + '" (' + cmdNumber + ')');
     }
     return ret;
 };
