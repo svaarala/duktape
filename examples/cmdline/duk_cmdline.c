@@ -87,6 +87,8 @@ void AJS_Free(void *udata, void *ptr);
 #define  MEM_LIMIT_HIGH     (2047*1024*1024)  /* ~2 GB */
 #define  LINEBUF_SIZE       65536
 
+static int main_argc = 0;
+static char **main_argv = NULL;
 static int interactive_mode = 0;
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
 static int debugger_reattach = 0;
@@ -423,6 +425,11 @@ static int handle_file(duk_context *ctx, const char *filename, const char *bytec
 	int retval;
 	char fnbuf[256];
 
+	/* Example of sending an application specific debugger notification. */
+	duk_push_string(ctx, "DebuggerHandleFile");
+	duk_push_string(ctx, filename);
+	duk_debugger_notify(ctx, 2);
+
 #if defined(EMSCRIPTEN)
 	if (filename[0] == '/') {
 		snprintf(fnbuf, sizeof(fnbuf), "%s", filename);
@@ -718,6 +725,36 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
  */
 
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
+static duk_idx_t debugger_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
+	const char *cmd;
+	int i;
+
+	(void) udata;
+
+	if (nvalues < 1) {
+		duk_push_string(ctx, "missing AppRequest argument(s)");
+		return -1;
+	}
+
+	cmd = duk_get_string(ctx, -nvalues + 0);
+
+	if (cmd && strcmp(cmd, "CommandLine") == 0) {
+		if (!duk_check_stack(ctx, main_argc)) {
+			/* Callback should avoid errors for now, so use
+			 * duk_check_stack() rather than duk_require_stack().
+			 */
+			duk_push_string(ctx, "failed to extend stack");
+			return -1;
+		}
+		for (i = 0; i < main_argc; i++) {
+			duk_push_string(ctx, main_argv[i]);
+		}
+		return main_argc;
+	}
+	duk_push_sprintf(ctx, "command not supported");
+	return -1;
+}
+
 static void debugger_detached(void *udata) {
 	duk_context *ctx = (duk_context *) udata;
 	(void) ctx;
@@ -735,14 +772,15 @@ static void debugger_detached(void *udata) {
 		/* This is not necessary but should be harmless. */
 		duk_debugger_detach(ctx);
 #endif
-		duk_debugger_attach(ctx,
-		                    duk_trans_socket_read_cb,
-		                    duk_trans_socket_write_cb,
-		                    duk_trans_socket_peek_cb,
-		                    duk_trans_socket_read_flush_cb,
-		                    duk_trans_socket_write_flush_cb,
-		                    debugger_detached,
-		                    (void *) ctx);
+		duk_debugger_attach_custom(ctx,
+		                           duk_trans_socket_read_cb,
+		                           duk_trans_socket_write_cb,
+		                           duk_trans_socket_peek_cb,
+		                           duk_trans_socket_read_flush_cb,
+		                           duk_trans_socket_write_flush_cb,
+		                           debugger_request,
+		                           debugger_detached,
+		                           (void *) ctx);
 	}
 }
 #endif
@@ -855,14 +893,15 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		duk_trans_socket_waitconn();
 		fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
 		fflush(stderr);
-		duk_debugger_attach(ctx,
-		                    duk_trans_socket_read_cb,
-		                    duk_trans_socket_write_cb,
-		                    duk_trans_socket_peek_cb,
-		                    duk_trans_socket_read_flush_cb,
-		                    duk_trans_socket_write_flush_cb,
-		                    debugger_detached,
-		                    (void *) ctx);
+		duk_debugger_attach_custom(ctx,
+		                           duk_trans_socket_read_cb,
+		                           duk_trans_socket_write_cb,
+		                           duk_trans_socket_peek_cb,
+		                           duk_trans_socket_read_flush_cb,
+		                           duk_trans_socket_write_flush_cb,
+		                           debugger_request,
+		                           debugger_detached,
+		                           (void *) ctx);
 #else
 		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
 		fflush(stderr);
@@ -931,6 +970,9 @@ int main(int argc, char *argv[]) {
 	int run_stdin = 0;
 	const char *compile_filename = NULL;
 	int i;
+
+	main_argc = argc;
+	main_argv = (char **) argv;
 
 #if defined(EMSCRIPTEN)
 	/* Try to use NODEFS to provide access to local files.  Mount the
