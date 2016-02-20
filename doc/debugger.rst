@@ -1135,18 +1135,44 @@ JSON representation of debug messages
 Messages are represented as JSON objects, with the message type marker and the
 EOM marker removed, as follows.
 
-Request messages have a 'request' key which contains the command name (if
-known) or "true" (if not known), a 'command' key which contains the command
-number, and 'args' which contains remaining dvalues (EOM omitted)::
+Request messages specify the command using a 'request' key and an 'args' array
+containing a list of dvalues (EOM omitted)::
 
     {
         "request": "AddBreak",
+        "args": [ "foo.js", 123 ]
+    }
+
+The 'args' argument is optional; if it's missing, it's treated the same as an
+empty array::
+
+    {
+        "request": "AddBreak"
+    }
+
+Usually debug commands are specific as strings, with the proxy automatically
+mapping the string into a command number using debugger metadata.  You can
+specify the command number explicitly and even specify both::
+
+    // Explicit command number (e.g. metadata doesn't know custom command).
+    {
+        "request": 24,
+        "args": [ "foo.js", 123 ]
+    }
+
+    // Equivalent, this is a form used earlier (above form preferred).
+    {
+        "request": true,
         "command": 24,
         "args": [ "foo.js", 123 ]
     }
 
+    // You can also give command name in 'request' and a fallback numeric
+    // command in 'command'.  If the command name cannot be resolved via
+    // command metadata, the command number in 'command' will then (and only
+    // then) be used.
     {
-        "request": true,
+        "request": "AddBreak",
         "command": 24,
         "args": [ "foo.js", 123 ]
     }
@@ -1168,13 +1194,19 @@ contain the error arguments (EOM omitted)::
         "args": [ 2, "no space for breakpoint" ]
     }
 
-Notify messages have a 'notify' key with the notify command name (if known)
-or "true" (if not known), a 'command' key which contains the command number,
-and an 'args' for arguments (EOM omitted)::
+Notify messages have the same form as requests, but the 'request' key is
+replaced with 'notify'::
 
     {
         "notify": "Status",
-        "command": 1,
+        "args": [ 0, "foo.js", "frob", 123, 808 ]
+    }
+
+Alternative forms for specifying the notify command number are also available
+for notifies::
+
+    {
+        "notify": 1,
         "args": [ 0, "foo.js", "frob", 123, 808 ]
     }
 
@@ -1184,19 +1216,28 @@ and an 'args' for arguments (EOM omitted)::
         "args": [ 0, "foo.js", "frob", 123, 808 ]
     }
 
+    {
+        "notify": "Status",
+        "command": 1,
+        "args": [ 0, "foo.js", "frob", 123, 808 ]
+    }
+
 If an argument list is empty, 'args' can be omitted from any message.
 
 The request and notify message contain both a request/notify command name and
-a number.  The intent is to allow debug clients to use command names (rather
-than numbers).  The command name/number is resolved as follows:
+a number, and several forms are supported.  The command name/number is resolved
+as follows:
 
-* If command name is present, look up the command name from command metadata.
-  If the command is known, use the command number in the command metadata and
-  ignore a possible 'command' key.
+* If 'request' / 'notify' provides the command name as a string, look up the
+  command from command metadata.  If the command is known, use the command number
+  in the command metadata (ignore a possible 'command' key).
 
-* If command number is present, use it verbatim if the name lookup failed.
+* If 'request' / 'notify' provides the command number, use that as is.
 
-* If no command number is present, fail.
+* If 'command' provides the command number, use that as is.  The 'request' or
+  'notify' may also be present with a ``true`` value, and is ignored.
+
+* If the above steps fail, the request / notify cannot be processed.
 
 Other JSON messages
 -------------------
