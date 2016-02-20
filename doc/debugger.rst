@@ -1910,8 +1910,8 @@ Here is a slightly more useful implementation::
     }
 
 If no request callback is provided at attach, AppRequest will be treated as an
-unsupported command, eliciting an ERR reply from Duktape saying so.  Such a
-target is still free to send AppNotify messages, however.
+unsupported command, eliciting an ERR reply from Duktape saying so.  A target
+is always free to send AppNotify messages.
 
 As a precaution, the target should try to avoid sending structured values such
 as JS objects in notify messages as their heap pointers may become stale by the
@@ -1929,7 +1929,7 @@ can access the value stack and is assumed to be trusted.  There are certain
 things it MUST NOT do.  Specifically:
 
 * It MUST NOT attempt to access or pop any values from the top of the stack
-  beyond the ``nvalues`` it is given.
+  beyond the ``nvalues`` it is given and the values it pushes itself.
 
 * It MUST NOT assume any specific value for ``duk_get_top()`` and similar
   primitives.  In practice this means using negative stack indices to access
