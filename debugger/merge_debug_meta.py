@@ -11,6 +11,7 @@ if __name__ == '__main__':
 	parser.add_option('--output', dest='output', default=None, help='output JSON filename')
 	parser.add_option('--class-names', dest='class_names', help='YAML metadata for class names')
 	parser.add_option('--debug-commands', dest='debug_commands', help='YAML metadata for debug commands')
+	parser.add_option('--debug-errors', dest='debug_errors', help='YAML metadata for debug protocol error codes')
 	parser.add_option('--opcodes', dest='opcodes', help='YAML metadata for opcodes')
 	(opts, args) = parser.parse_args()
 
@@ -23,6 +24,7 @@ if __name__ == '__main__':
 
 	merge(opts.class_names)
 	merge(opts.debug_commands)
+	merge(opts.debug_errors)
 	merge(opts.opcodes)
 
 	with open(opts.output, 'wb') as f:
