@@ -13,7 +13,7 @@
 #define DUK_DBG_ERR_UNSUPPORTED   0x01
 #define DUK_DBG_ERR_TOOMANY       0x02
 #define DUK_DBG_ERR_NOTFOUND      0x03
-#define DUK_DBG_ERR_APPLICATION   0x03
+#define DUK_DBG_ERR_APPLICATION   0x04
 
 /* Initiated by Duktape */
 #define DUK_DBG_CMD_STATUS        0x01

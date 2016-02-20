@@ -1824,6 +1824,14 @@ Example::
     REQ 34 "GameInfo" "GetTitle" EOM
     REP "Spectacles: Bruce's Story" EOM
 
+If the target hasn't registered a request callback, Duktape responds::
+
+    ERR 2 "AppRequest unsupported by target" EOM
+
+The target might also respond with error, e.g.::
+
+    ERR 4 "unrecognized AppRequest message"
+
 This is a custom request message whose meaning and semantics depend on the
 application.
 
@@ -1843,12 +1851,12 @@ AppRequest and AppNotify messages.  These messages have no meaning to Duktape,
 which merely serves to marshal them back and forth through a defined API.
 
 AppNotify messages may be sent by pushing the contents of the message to the
-stack and calling `duk_debugger_notify()` passing the number of values pushed.
-Each value pushed will be sent as a dvalue in the message.  So if you push two
-strings, "foo" and "bar", the client will see ``NFY 7 "foo" "bar" EOM``.
+stack and calling ``duk_debugger_notify()`` passing the number of values
+pushed. Each value pushed will be sent as a dvalue in the message.  So if you
+push two strings, "foo" and "bar", the client will see ``NFY 7 "foo" "bar" EOM``.
 
 AppRequest is used to make requests to the target which are not directly
-related to Ecmascript execution and may be implementation-dependant.  For
+related to Ecmascript execution and may be implementation-dependent.  For
 example, an AppRequest might be used to:
 
 * Change the frame rate of a game engine
@@ -1865,7 +1873,7 @@ reply.
 
 This is a do-nothing request callback::
 
-    duk_idx_t duk_cb_debug_request(void* udata, duk_context* ctx, duk_idx_t nvalues) {
+    duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
         /* nop */
         return 0;
     }
@@ -1877,11 +1885,11 @@ reply, and return a non-negative integer indicating how many values it pushed.
 
 Here is a slightly more useful implementation::
 
-    duk_idx_t duk_cb_debug_request(void* udata, duk_context* ctx, duk_idx_t nvalues) {
+    duk_idx_t duk_cb_debug_request(duk_context *ctx, void *udata, duk_idx_t nvalues) {
         /* Must use negative stack indices to access dvalues */
-        const char* cmdname = duk_get_string(ctx, -nvalues + 0);
+        const char *cmd_name = duk_get_string(ctx, -nvalues + 0);
         
-        if (strcmp(cmdname, "VersionInfo") == 0) {
+        if (strcmp(cmd_name, "VersionInfo") == 0) {
             /* Return a positive integer to send a REP containing values pushed
              * to the stack. The return value indicates how many dvalues you
              * are including in the response.
@@ -1909,16 +1917,16 @@ As a precaution, the target should try to avoid sending structured values such
 as JS objects in notify messages as their heap pointers may become stale by the
 time the client receives them.  This is especially true for notifications sent
 while the target is running.  It's better to stick to primitives which have
-unique dvalue representations, i.e. numbers, strings and buffers.  If a
-structured value does need to be sent, it can simply be, e.g. JSON/JX encoded
+unique dvalue representations, e.g. numbers, booleans, and strings.  If a
+structured value does need to be sent, it can simply be e.g. JSON/JX encoded
 and sent as a string instead.
 
 Important notes on the request callback
 ---------------------------------------
 
 The request callback is provided with a ``duk_context`` pointer with which it
-can access the value stack and is assumed to be trusted.  Specifically, there
-are certain things it **MUST NOT** do.  Specifically:
+can access the value stack and is assumed to be trusted.  There are certain
+things it MUST NOT do.  Specifically:
 
 * It MUST NOT attempt to access or pop any values from the top of the stack
   beyond the ``nvalues`` it is given.
@@ -1934,7 +1942,7 @@ are certain things it **MUST NOT** do.  Specifically:
 Violating this contract is undefined behavior and may corrupt debugger state,
 cause incorrect behavior, or even lead to a segfault.  In the future it would
 be nice to make this more robust, e.g. by sandboxing the function so that it
-cannot access unrelated stack values.
+cannot access unrelated stack values and is allowed to throw errors safely.
 
 The dvalues of a message are pushed in the order they are received.  This makes
 them inconvenient to access using negative indices, since the relative position
@@ -1942,10 +1950,13 @@ of any given value on the stack is dependent on the total number of values.
 However because the callback receives the total number of values as a parameter,
 a useful convention is to index the stack like so::
 
+    if (nvalues < 3) {
+        duk_push_string(ctx, "not enough arguments");
+        return -1;
+    }
     cmd_name = duk_get_string(ctx, -nvalues + 0);
     val_1 = duk_get_string(ctx, -nvalues + 1);
     val_2 = duk_get_int(ctx, -nvalues + 2);
-    /* etc. */
 
 AppRequest/AppNotify command format
 -----------------------------------
