@@ -43,9 +43,9 @@ a "no match" result but hits an internal recursion limit instead:</p>
 $ duk
 duk&gt; t = /(x*)*/.exec('y');
 RangeError: regexp executor recursion limit
-        duk_regexp_executor.c:145
-        exec (null) native strict preventsyield
-        global input:1 preventsyield
+    at [anon] (duk_regexp_executor.c:145) internal
+    at exec () native strict preventsyield
+    at global (input:1) preventsyield
 </pre>
 
 <h2>Duktape does not fully support locales</h2>
