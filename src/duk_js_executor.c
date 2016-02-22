@@ -2066,7 +2066,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 		try {
 #else
-		if (DUK_LIKELY(DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) == 0)) {
+		if (DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) == 0) {
 #endif
 			/* Execute bytecode until returned or longjmp(). */
 			duk__js_execute_bytecode_inner(entry_thread, entry_callstack_top);
