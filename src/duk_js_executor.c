@@ -2028,7 +2028,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	duk_int_t entry_call_recursion_depth;
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
 	duk_jmpbuf *entry_jmpbuf_ptr;
-	duk_jmpbuf jmpbuf;
+	duk_jmpbuf our_jmpbuf;
 #endif
 	duk_heap *heap;
 
@@ -2059,21 +2059,22 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 	for (;;) {
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
-		heap->lj.jmpbuf_ptr = &jmpbuf;
+		heap->lj.jmpbuf_ptr = &our_jmpbuf;
 		DUK_ASSERT(heap->lj.jmpbuf_ptr != NULL);
 #endif
 
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 		try {
 #else
-		if (DUK_SETJMP(heap->lj.jmpbuf_ptr->jb) == 0) {
+		DUK_ASSERT(heap->lj.jmpbuf_ptr == &our_jmpbuf);
+		if (DUK_SETJMP(our_jmpbuf.jb) == 0) {
 #endif
 			/* Execute bytecode until returned or longjmp(). */
 			duk__js_execute_bytecode_inner(entry_thread, entry_callstack_top);
 
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
 			/* Successful return: restore jmpbuf and return to caller. */
-			heap->lj.jmpbuf_ptr = (duk_jmpbuf *) entry_jmpbuf_ptr;
+			heap->lj.jmpbuf_ptr = entry_jmpbuf_ptr;
 #endif
 
 			return;

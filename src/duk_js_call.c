@@ -1054,7 +1054,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 	try {
 #else
-	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
+	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr == &our_jmpbuf);
+	if (DUK_SETJMP(our_jmpbuf.jb) == 0) {
 #endif
 		/* Call handling and success path.  Success path exit cleans
 		 * up almost all state.
@@ -1954,7 +1955,8 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #if defined(DUK_USE_CPP_EXCEPTIONS)
 	try {
 #else
-	if (DUK_SETJMP(thr->heap->lj.jmpbuf_ptr->jb) == 0) {
+	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr == &our_jmpbuf);
+	if (DUK_SETJMP(our_jmpbuf.jb) == 0) {
 		/* Success path. */
 #endif
 		DUK_DDD(DUK_DDDPRINT("safe_call setjmp catchpoint setup complete"));
