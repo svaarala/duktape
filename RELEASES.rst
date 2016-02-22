@@ -1442,6 +1442,8 @@ Planned
   value (e.g. due to a transport detach) could lead to memory unsafe behavior
   (GH-610)
 
+* Remove branch hint from around setjmp() for better portability (GH-605)
+
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 
 * Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
