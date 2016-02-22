@@ -68,7 +68,7 @@
 - define: DUK_ABORT
 - define: DUK_EXIT
 
-# FIXME: these should really be DUK_USE_SETJMP(), DUK_USE_LONGJMP()
 # These don't need to save/restore signal mask.
 - define: DUK_SETJMP
 - define: DUK_LONGJMP
+- define: DUK_JMPBUF_TYPE  # e.g. jmp_buf
