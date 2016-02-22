@@ -1298,6 +1298,9 @@ See separate section below.
 Setjmp, longjmp, and volatile
 =============================
 
+Volatile variables
+------------------
+
 When a local variable in the function containing a ``setjmp()`` gets changed
 between ``setjmp()`` and ``longjmp()`` there is no guarantee that the change
 is visible after a ``longjmp()`` unless the variable is declared volatile.
@@ -1381,6 +1384,38 @@ variables, e.g.::
 (As of Duktape 1.3 this has not yet been done for all setjmp/longjmp
 functions.  Rather, volatile declarations have been added where they
 seem to be needed in practice.)
+
+Limitations in setjmp() call site
+---------------------------------
+
+There are limitations to what a ``setjmp()`` call site can look like,
+see e.g.:
+
+- https://www.securecoding.cert.org/confluence/display/c/MSC22-C.+Use+the+setjmp%28%29,+longjmp%28%29+facility+securely
+
+This is fine for example::
+
+  if (DUK_SETJMP(jb) == 0) {
+          /* ... */
+  }
+
+But this is not::
+
+  /* NOT OK */
+  if (DUK_LIKELY(DUK_SETJMP(jb) == 0)) {
+          /* ... */
+  }
+
+Setjmp and floating points
+--------------------------
+
+There may be limitations on what floating point registers or state is
+actually saved and restored, see e.g.:
+
+- http://www-personal.umich.edu/~williams/archive/computation/setjmp-fpmode.html
+
+To minimize portability issues, floating point variables used in the setjmp
+longjmp path should be volatile so that they won't be stored in registers.
 
 Numeric types
 =============
