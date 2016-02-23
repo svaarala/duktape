@@ -1389,6 +1389,8 @@ Planned
 * Add support for application specific debugger commands (AppRequest) and
   notifications (AppNotify) (GH-596, GH-563)
 
+* Add sizeof void pointer to the BasicInfo debugger command (GH-611)
+
 * A DukLuv-based JSON debug proxy is now included in the dist package;
   it should allow much easier and more flexible packaging of a JSON debug
   proxy into a debug client (GH-590)
