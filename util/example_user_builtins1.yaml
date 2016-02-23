@@ -4,8 +4,7 @@
 #  Top level keys:
 #
 #    - add_forced_strings: provide a list of keys to be forced into ROM
-#    - add_objects: provide additional objects
-#    - modify_objects: modify previously added objects
+#    - objects: objects to add, replace, delete, or modify
 #
 #  See examples below for details on how to use these.
 #
@@ -87,23 +86,39 @@ add_forced_strings:
   - str: "quux"
   - str: "baz"
 
-# Objects to add.  Properties may reference other objects using the 'id'
-# strings even if the object hasn't been introduced yet (and may be introduced
-# by a different user builtins YAML file).  Error if an object with the same
-# 'id' already exists.
+# Objects to add, replace, delete, or modify:
+#
+#   - If the object entry contains 'delete': true', the object will be
+#     deleted.  Error if the object doesn't exist.
+#
+#   - If the object entry contains 'replace: true', the object will be
+#     replaced; if the object doesn't exist it'll be added with a warning.
+#
+#   - If the object entry contains 'modify: true', the object will be
+#     modified incrementally.  Error if the object doesn't exist.
+#
+#   - If the object entry contains 'add: true', the object will be added.
+#     Error if the object already exists.  This is the default if no keys
+#     listed above are given.
 
-add_objects:
-  # Basic example: add a built-in object with plain property values.  This
-  # just creates the built-in object; for the object to be actually useful
-  # you must use the 'modify_objects' key to add a reference to the object
-  # to some existing object reachable from the global object (see below for
-  # an example pointing to this object).
+objects:
+
+  # Example of adding an object.  Properties may reference other objects using
+  # the 'id' strings even if the object hasn't been introduced yet (and may be
+  # introduced by a different user builtins YAML file).
+  #
+  # Add a built-in object with plain property values.  This just creates the
+  # built-in object; for the object to be actually useful you must use e.g.
+  # 'modify: true' to add a reference to the object to some existing object
+  # reachable from the global object (see below for an example pointing to
+  # this object).
   #
   # (In more detail, it's sufficient for the custom object to be reachable
   # from any object with a 'bidx', but in practice objects are reachable
   # directly on indirectly through the global object.)
 
   - id: bi_star_trek
+    add: true
     class: Object  # recommended for objects
     internal_prototype: bi_object_prototype  # recommended so that e.g. .toString() works
 
@@ -141,6 +156,7 @@ add_objects:
   #       print(struct.pack('>d', 12345.6789).encode('hex'))
 
   - id: bi_type_examples
+    add: true
     class: Object
     internal_prototype: bi_object_prototype
 
@@ -176,6 +192,7 @@ add_objects:
   # a separate YAML file not yet loaded).
 
   - id: bi_circular1
+    add: true
     class: Object
     internal_prototype: bi_object_prototype
 
@@ -188,6 +205,7 @@ add_objects:
           id: bi_circular2
 
   - id: bi_circular2
+    add: true
     class: Object
     internal_prototype: bi_object_prototype
 
@@ -203,6 +221,7 @@ add_objects:
   # with a note in the build log.
 
   - id: my_unreachable_object1
+    add: true
     class: Object
     internal_prototype: bi_object_prototype
 
@@ -211,6 +230,7 @@ add_objects:
         value: "bar"
 
   - id: my_unreachable_object2
+    add: true
     class: Object
     internal_prototype: bi_object_prototype
 
@@ -218,43 +238,98 @@ add_objects:
       - key: "foo"
         value: "bar"
 
-# Objects to modify, i.e. delete, augment top level metadata, add property,
-# delete property, or modify a property.  You can operate on the same object
-# multiple times in the same 'modify_objects' list.
-#
-# Top level keys other than 'properties' are copied over the existing object
-# so that you can e.g. change the class of an object.
-#
-# If the object has "delete: true" the entire object is deleted.  Dangling
-# references to the object are deleted automatically, with a note in the
-# build log.
-#
-# Property list is then walked in order.
-#
-# If a property has "delete: true" the property is deleted:
-#
-#   - If the key doesn't exist in the existing object, ignore silently.
-#
-#   - If the key exists, delete the property.
-#
-# Otherwise the property is added/modified:
-#
-#   - If the key already exists the existing property is replaced
-#     (and keeps its enumeration position).
-#
-#   - If the key doesn't exist the property is added to the end of
-#     the property list.
-#
-# XXX: At present there's no support for reordering properties which would
-# be nice because it affects enumeration order (and may affect performance
-# marginally).
+  - id: my_disabled
+    disable: true  # will be skipped in metadata
+    add: true
+    class: Object
+    internal_prototype: bi_object_prototype
 
-modify_objects:
+    properties:
+      - key: "bar"
+        value: "quux"
+
+  # Example of an object to be replaced entirely.
+  #
+  # Replace Error.prototype entirely with a stripped one.
+
+  - id: bi_error_prototype
+    replace: true
+    class: Error
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "constructor"
+        value:
+          type: object
+          id: bi_error_constructor
+        attributes: "wc"
+      - key: "name"
+        value: "Error"
+      - key: "message"
+        value: ""
+
+  - id: bi_json
+    disable: true  # disabled in metadata
+    replace: true
+
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties:
+      - key: "bar"
+        value: "quux"
+
+  # Example of how to delete an existing built-in object entirely.  Dangling
+  # references are automatically deleted with a note in the build log.
+  #
+  # This doesn't currently work very well for Duktape built-ins because most
+  # built-ins are expected to be present in Duktape internals (and they have
+  # a DUK_BIDX_xxx index).
+  #
+  # Deleting user objects may be useful e.g. if a base YAML file provides your
+  # custom built-ins and a target specific YAML file removes bindings not
+  # needed for a certain target.
+  #
+  # In this example we'd delete the StarTrek object.  The global reference
+  # global.StarTrek would be deleted automatically.
+
+  - id: bi_star_trek
+    disable: true  # disabled in metadata
+    delete: true
+
+  # Examples of modifying an object, i.e. augment top level metadata, add
+  # property, delete property, or modify a property.  You can operate on the
+  # same object multiple times in the same 'objects' list.
+  #
+  # Top level keys other than 'properties' are copied over the existing object
+  # so that you can e.g. change the class of an object.
+  #
+  # Property list is then walked in order.
+  #
+  # If a property has "delete: true" the property is deleted:
+  #
+  #   - If the key doesn't exist in the existing object, ignore silently.
+  #
+  #   - If the key exists, delete the property.
+  #
+  # Otherwise the property is added/modified:
+  #
+  #   - If the key already exists the existing property is replaced
+  #     (and keeps its enumeration position).
+  #
+  #   - If the key doesn't exist the property is added to the end of
+  #     the property list.
+  #
+  # XXX: At present there's no support for reordering properties which would
+  # be nice because it affects enumeration order (and may affect performance
+  # marginally).
+
   # Add references to the example objects added above into the global object.
   # The references can be in any object reachable from the global object of
   # course.  Unreachable objects will be dropped with a build note.
 
   - id: bi_global
+    modify: true
 
     properties:
       - key: 'StarTrek'
@@ -329,24 +404,8 @@ modify_objects:
   # example Math.cos() is deleted.
 
   - id: bi_math
+    modify: true
 
     properties:
       - key: 'cos'
         delete: true
-
-  # Example of how to delete an existing built-in object entirely.  Dangling
-  # references are automatically deleted with a note in the build log.
-  #
-  # This doesn't currently work very well for Duktape built-ins because most
-  # built-ins are expected to be present in Duktape internals (and they have
-  # a DUK_BIDX_xxx index).
-  #
-  # Deleting user objects may be useful e.g. if a base YAML file provides your
-  # custom built-ins and a target specific YAML file removes bindings not
-  # needed for a certain target.
-  #
-  # In this example we'd delete the StarTrek object.  The global reference
-  # global.StarTrek would be deleted automatically.
-
-  #- id: bi_star_trek
-  #  delete: true
