@@ -595,6 +595,8 @@ TargetConnHandler.prototype.finish = function finish(msg) {
     }
     log.info('TargetConnHandler finished:', msg);
 
+    this.jsonHandler.writeJson({ notify: '_TargetDisconnected' });
+
     // XXX: write a notify to target?
 
     uv.shutdown(this.handle);
@@ -703,7 +705,6 @@ TargetConnHandler.prototype.onRead = function onRead(err, data) {
         }
     } else {
         log.info('Target disconnected');
-        this.jsonHandler.writeJson({ notify: '_TargetDisconnected' });
         this.finish('Target disconnected');
     }
 };
