@@ -1866,6 +1866,8 @@ AppRequest is used to make requests to the target which are not directly
 related to Ecmascript execution and may be implementation-dependent.  For
 example, an AppRequest might be used to:
 
+* Download source files directly from the debug target file system
+
 * Change the frame rate of a game engine
 
 * Reset/reboot an embedded target device while debugging
