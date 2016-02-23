@@ -31,7 +31,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	if (flags & DUK_BUF_FLAG_EXTERNAL) {
 		header_size = sizeof(duk_hbuffer_external);
 		alloc_size = sizeof(duk_hbuffer_external);
-	} if (flags & DUK_BUF_FLAG_DYNAMIC) {
+	} else if (flags & DUK_BUF_FLAG_DYNAMIC) {
 		header_size = sizeof(duk_hbuffer_dynamic);
 		alloc_size = sizeof(duk_hbuffer_dynamic);
 	} else {
