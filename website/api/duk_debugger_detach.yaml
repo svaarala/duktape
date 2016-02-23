@@ -13,7 +13,7 @@ example: |
   duk_debugger_detach(ctx);
 
 tags:
-  - debug
+  - debugger
 
 seealso:
   - duk_debugger_attach

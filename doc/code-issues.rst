@@ -153,6 +153,20 @@ result to minimize error proneness::
    * similar reasons.
    */
 
+Labels are intended by one space relative to the parent tab depth::
+
+  DUK_LOCAL void duk__helper(duk_context *ctx) {
+          if (!ctx) {
+                  DUK_D(DUK_DPRINT("ctx is NULL"));
+                  goto fail;
+          }
+
+          return;
+
+   fail:
+          DUK_D(DUK_DPRINT("failed, detaching"));
+  }
+
 Local variable declarations
 ---------------------------
 

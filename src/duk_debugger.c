@@ -62,6 +62,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	heap->dbg_peek_cb = NULL;
 	heap->dbg_read_flush_cb = NULL;
 	heap->dbg_write_flush_cb = NULL;
+	heap->dbg_request_cb = NULL;
 	/* heap->dbg_detached_cb: keep */
 	/* heap->dbg_udata: keep */
 	/*heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
@@ -112,19 +113,21 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
 	duk__debug_do_detach2(heap);
 }
 
-/* Called on a read/write error: NULL all transport related callbacks except
- * the detached callback so that we never accidentally call them after a
- * read/write error has been indicated.
+/* Called on a read/write error: NULL all callbacks except the detached
+ * callback so that we never accidentally call them after a read/write
+ * error has been indicated.  This is especially important for the transport
+ * I/O callbacks to fulfill guaranteed callback semantics.
  */
-DUK_LOCAL void duk__debug_null_io_callbacks(duk_hthread *thr) {
+DUK_LOCAL void duk__debug_null_most_callbacks(duk_hthread *thr) {
 	duk_heap *heap;
 	heap = thr->heap;
-	DUK_D(DUK_DPRINT("transport read/write error, NULL all I/O callbacks (everything but detached)"));
+	DUK_D(DUK_DPRINT("transport read/write error, NULL all callbacks expected detached"));
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;  /* this is especially critical to avoid another write call in detach1() */
 	heap->dbg_peek_cb = NULL;
 	heap->dbg_read_flush_cb = NULL;
 	heap->dbg_write_flush_cb = NULL;
+	heap->dbg_request_cb = NULL;
 	/* keep heap->dbg_detached_cb */
 }
 
@@ -267,7 +270,7 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
-			duk__debug_null_io_callbacks(thr);  /* avoid calling write callback in detach1() */
+			duk__debug_null_most_callbacks(thr);  /* avoid calling write callback in detach1() */
 			DUK__SET_CONN_BROKEN(thr, 1);
 			goto fail;
 		}
@@ -561,7 +564,7 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 #endif
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
 		if (got == 0 || got > left) {
-			duk__debug_null_io_callbacks(thr);  /* avoid calling write callback in detach1() */
+			duk__debug_null_most_callbacks(thr);  /* avoid calling write callback in detach1() */
 			DUK_D(DUK_DPRINT("connection error during write"));
 			DUK__SET_CONN_BROKEN(thr, 1);
 			return;
@@ -1474,11 +1477,18 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 		}
 
 		/* Request callback should push values for reply to client onto valstack */
+		DUK_D(DUK_DPRINT("calling into AppRequest request_cb with nvalues=%ld, old_top=%ld, top=%ld",
+		                 (long) nvalues, (long) old_top, (long) duk_get_top(ctx)));
 		nrets = heap->dbg_request_cb(ctx, heap->dbg_udata, nvalues);
+		DUK_D(DUK_DPRINT("returned from AppRequest request_cb; nvalues=%ld -> nrets=%ld, old_top=%ld, top=%ld",
+		                 (long) nvalues, (long) nrets, (long) old_top, (long) duk_get_top(ctx)));
 		if (nrets >= 0) {
 			DUK_ASSERT(duk_get_top(ctx) >= old_top + nrets);
 			if (duk_get_top(ctx) < old_top + nrets) {
-				DUK_D(DUK_DPRINT("request callback return value doesn't match value stack configuration"));
+				DUK_D(DUK_DPRINT("AppRequest callback doesn't match value stack configuration, "
+				                 "top=%ld < old_top=%ld + nrets=%ld; "
+				                 "this might mean it's unsafe to continue!",
+				                 (long) duk_get_top(ctx), (long) old_top, (long) nrets));
 				goto fail;
 			}
 
@@ -1506,7 +1516,7 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 
 	return;
 
-fail:
+ fail:
 	duk_set_top(ctx, old_top);  /* restore stack top */
 	DUK__SET_CONN_BROKEN(thr, 1);
 }

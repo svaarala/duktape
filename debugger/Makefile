@@ -57,7 +57,8 @@ duk_debug_meta.json:
 	python merge_debug_meta.py --output $@ \
 		--class-names duk_classnames.yaml \
 		--opcodes duk_opcodes.yaml \
-		--debug-commands duk_debugcommands.yaml
+		--debug-commands duk_debugcommands.yaml \
+		--debug-errors duk_debugerrors.yaml
 
 static/socket.io-1.2.0.js:
 	wget -O $@ http://cdn.socket.io/socket.io-1.2.0.js

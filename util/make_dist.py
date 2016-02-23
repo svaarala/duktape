@@ -431,6 +431,7 @@ copy_files([
 	'duk_debug_proxy.js',
 	'duk_classnames.yaml',
 	'duk_debugcommands.yaml',
+	'duk_debugerrors.yaml',
 	'duk_opcodes.yaml',
 	'merge_debug_meta.py'
 ], 'debugger', os.path.join(dist, 'debugger'))
@@ -618,6 +619,7 @@ merged = exec_print_stdout([
 	'--output', os.path.join(dist, 'debugger', 'duk_debug_meta.json'),
 	'--class-names', os.path.join('debugger', 'duk_classnames.yaml'),
 	'--debug-commands', os.path.join('debugger', 'duk_debugcommands.yaml'),
+	'--debug-errors', os.path.join('debugger', 'duk_debugerrors.yaml'),
 	'--opcodes', os.path.join('debugger', 'duk_opcodes.yaml')
 ])
 

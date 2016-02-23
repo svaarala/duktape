@@ -1,0 +1,43 @@
+name: duk_debugger_notify
+
+proto: |
+  duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues);
+
+stack: |
+  [ ... val1! ...! valN! ] -> [ ... ]
+
+summary: |
+  <p>Send an application specific debugger notify (AppNotify) containing the
+  <code>nvalues</code> values on the value stack top mapped to debug protocol
+  dvalues.  The return value indicates whether the notify was successfully
+  sent (non-zero) or not (zero).  The <code>nvalues</code> arguments are
+  always popped off the stack top.  The call is a no-op if debugger support
+  has not been compiled in, or if the debugger is not attached; in both cases
+  the call will return zero to indicate that the notify was not sent.</p>
+
+  <p>See the debugger documentation for more information and examples on how
+  to use application specific notifications.</p>
+
+example: |
+  /* Causes the following notify to be sent over the debugger protocol:
+   *
+   *   NFY AppNotify "BatteryStatus" 740 1000 true EOM
+   */
+  int battery_current = 740;
+  int battery_limit = 1000;
+  int battery_charging = 1;
+
+  duk_push_string(ctx, "BatteryStatus");
+  duk_push_int(ctx, battery_current);
+  duk_push_int(ctx, battery_limit);
+  duk_push_boolean(ctx, battery_charging);
+  if (duk_debugger_notify(ctx, 4 /*nvalues*/)) {
+      printf("battery status notification sent\n");
+  } else {
+      printf("battery status notification not sent\n");
+  }
+
+tags:
+  - debugger
+
+introduced: 1.5.0

@@ -144,7 +144,8 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 
 DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues) {
 	duk_hthread *thr;
-	duk_idx_t top, idx;
+	duk_idx_t top;
+	duk_idx_t idx;
 	duk_bool_t ret = 0;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -152,11 +153,14 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
+	DUK_D(DUK_DPRINT("application called duk_debugger_notify() with nvalues=%ld", (long) nvalues));
+
+	top = duk_get_top(ctx);
+	if (top < nvalues) {
+		DUK_ERROR_API(thr, "not enough stack values for notify");
+		return ret;  /* unreachable */
+	}
 	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
-		top = duk_get_top(ctx);
-		if (top < nvalues) {
-			DUK_ERROR_API((duk_hthread *) ctx, "not enough stack values for notify");
-		}
 		duk_debug_write_notify(thr, DUK_DBG_CMD_APPNOTIFY);
 		for (idx = top - nvalues; idx < top; idx++) {
 			duk_tval *tv = DUK_GET_TVAL_POSIDX(ctx, idx);
@@ -164,9 +168,10 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 		}
 		duk_debug_write_eom(thr);
 
-		/* Return non-zero (true) if we have a good reason to believe the notify was
-		 * delivered; if we're still attached at least a transport error was not indicated
-		 * by the transport write callback.  This is not a 100% guarantee of course.
+		/* Return non-zero (true) if we have a good reason to believe
+		 * the notify was delivered; if we're still attached at least
+		 * a transport error was not indicated by the transport write
+		 * callback.  This is not a 100% guarantee of course.
 		 */
 		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
 			ret = 1;
@@ -211,9 +216,17 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues) {
+	duk_idx_t top;
+
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	/* no debugger support, just pop values */
+	top = duk_get_top(ctx);
+	if (top < nvalues) {
+		DUK_ERROR_API((duk_hthread *) ctx, "not enough stack values for notify");
+		return 0;  /* unreachable */
+	}
+
+	/* No debugger support, just pop values. */
 	duk_pop_n(ctx, nvalues);
 	return 0;
 }
