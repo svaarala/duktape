@@ -761,9 +761,13 @@ static void debugger_detached(void *udata) {
 	fprintf(stderr, "Debugger detached, udata: %p\n", (void *) udata);
 	fflush(stderr);
 
+	/* Ensure socket is closed even when detach is initiated by Duktape
+	 * rather than debug client.
+	 */
+        duk_trans_socket_finish();
+
 	if (debugger_reattach) {
 		/* For automatic reattach testing. */
-		duk_trans_socket_finish();
 		duk_trans_socket_init();
 		duk_trans_socket_waitconn();
 		fprintf(stderr, "Debugger reconnected, call duk_debugger_attach()\n");
