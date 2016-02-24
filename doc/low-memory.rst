@@ -216,6 +216,8 @@ system RAM):
 
   - ``DUK_OPT_OBJSIZES16``
 
+  - ``#undef DUK_USE_HSTRING_CLEN``
+
 * Enable heap pointer compression, assuming pointers provided by your allocator
   can be packed into 16 bits:
 
