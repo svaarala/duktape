@@ -1483,12 +1483,13 @@ BasicInfo request (0x10)
 Format::
 
     REQ <int: 0x10> EOM
-    REP <int: DUK_VERSION> <str: DUK_GIT_DESCRIBE> <str: target info> <int: endianness> EOM
+    REP <int: DUK_VERSION> <str: DUK_GIT_DESCRIBE> <str: target info>
+        <int: endianness> <int: sizeof(void *)> EOM
 
 Example::
 
     REQ 16 EOM
-    REP 10099 "v1.0.0-254-g2459e88" "Arduino Yun" 2 EOM
+    REP 10099 "v1.0.0-254-g2459e88" "Arduino Yun" 2 4 EOM
 
 Endianness:
 
@@ -1502,6 +1503,9 @@ Endianness affects decoding of a few dvalues.
 
 Target info is a string that can be compiled in, and can e.g. describe the
 device type.
+
+Void pointer size indicates pointer size used for pointer-related values.
+Note that function pointers may have a different size.
 
 TriggerStatus request (0x11)
 ----------------------------

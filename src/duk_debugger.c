@@ -1063,6 +1063,7 @@ DUK_LOCAL void duk__debug_handle_basic_info(duk_hthread *thr, duk_heap *heap) {
 #else
 	duk_debug_write_int(thr, 0);
 #endif
+	duk_debug_write_int(thr, (duk_int_t) sizeof(void *));
 	duk_debug_write_eom(thr);
 }
 
