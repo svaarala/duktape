@@ -425,7 +425,7 @@ DUK_LOCAL duk_double_t duk__debug_read_double_raw(duk_hthread *thr) {
 	return du.d;
 }
 
-DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
+DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t x;
 	duk_uint_t t;
@@ -439,16 +439,16 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		t = (duk_uint_t) (x - 0xc0);
 		t = (t << 8) + duk_debug_read_byte(thr);
 		duk_push_uint(ctx, (duk_uint_t) t);
-		return;
+		goto return_ptr;
 	}
 	if (x >= 0x80) {
 		duk_push_uint(ctx, (duk_uint_t) (x - 0x80));
-		return;
+		goto return_ptr;
 	}
 	if (x >= 0x60) {
 		len = (duk_uint32_t) (x - 0x60);
 		duk__debug_read_hstring_raw(thr, len);
-		return;
+		goto return_ptr;
 	}
 
 	switch (x) {
@@ -491,20 +491,27 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		duk_push_number(ctx, d);
 		break;
 	}
-	case 0x1b:
-		/* XXX: not needed for now, so not implemented */
-		DUK_D(DUK_DPRINT("reading object values unimplemented"));
-		goto fail;
+	case 0x1b: {
+		duk_heaphdr *h;
+		duk_debug_skip_byte(thr);
+		h = (duk_heaphdr *) duk__debug_read_pointer_raw(thr);
+		duk_push_heapptr(thr, (void *) h);
+		break;
+	}
 	case 0x1c: {
 		void *ptr;
 		ptr = duk__debug_read_pointer_raw(thr);
 		duk_push_pointer(thr, ptr);
 		break;
 	}
-	case 0x1d:
-		/* XXX: not needed for now, so not implemented */
+	case 0x1d: {
+		/* XXX: Not needed for now, so not implemented.  Note that
+		 * function pointers may have different size/layout than
+		 * a void pointer.
+		 */
 		DUK_D(DUK_DPRINT("reading lightfunc values unimplemented"));
 		goto fail;
+	}
 	case 0x1e: {
 		duk_heaphdr *h;
 		h = (duk_heaphdr *) duk__debug_read_pointer_raw(thr);
@@ -516,11 +523,13 @@ DUK_INTERNAL void duk_debug_read_tval(duk_hthread *thr) {
 		goto fail;
 	}
 
-	return;
+ return_ptr:
+	return DUK_GET_TVAL_NEGIDX(thr, -1);
 
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode tval"));
 	DUK__SET_CONN_BROKEN(thr, 1);
+	return NULL;
 }
 
 /*
@@ -1217,7 +1226,6 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *str;
 	duk_tval *tv;
 	duk_int32_t level;
@@ -1227,9 +1235,11 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
-	duk_debug_read_tval(thr);           /* push to stack */
-	tv = duk_get_tval(ctx, -1);
-	DUK_ASSERT(tv != NULL);
+	tv = duk_debug_read_tval(thr);
+	if (tv == NULL) {
+		/* detached */
+		return;
+	}
 	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
@@ -1469,13 +1479,19 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 		 * then call the request callback to process the request.
 		 */
 		while (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+			duk_tval *tv;
 			if (!duk_check_stack(ctx, 1)) {
 				DUK_D(DUK_DPRINT("failed to allocate space for request dvalue(s)"));
 				goto fail;
 			}
-			duk_debug_read_tval(thr);  /* push to stack */
+			tv = duk_debug_read_tval(thr);  /* push to stack */
+			if (tv == NULL) {
+				/* detached */
+				return;
+			}
 			nvalues++;
 		}
+		DUK_ASSERT(duk_get_top(ctx) == old_top + nvalues);
 
 		/* Request callback should push values for reply to client onto valstack */
 		DUK_D(DUK_DPRINT("calling into AppRequest request_cb with nvalues=%ld, old_top=%ld, top=%ld",
@@ -1690,53 +1706,79 @@ DUK_LOCAL void duk__debug_handle_dump_heap(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) {
 	duk_activation *act;
-	duk_hcompiledfunction *fun;
+	duk_hcompiledfunction *fun = NULL;
 	duk_size_t i, n;
 	duk_tval *tv;
 	duk_hobject **fn;
+	duk_int32_t level = -1;
+	duk_uint8_t ibyte;
 
 	DUK_UNREF(heap);
 
 	DUK_D(DUK_DPRINT("debug command GetBytecode"));
 
-	duk_debug_write_reply(thr);
-	if (thr->callstack_top == 0) {
-		fun = NULL;
-	} else {
-		act = thr->callstack + thr->callstack_top - 1;
+	ibyte = duk_debug_peek_byte(thr);
+	if (ibyte != DUK_DBG_MARKER_EOM) {
+		tv = duk_debug_read_tval(thr);
+		if (tv == NULL) {
+			/* detached */
+			return;
+		}
+		if (DUK_TVAL_IS_OBJECT(tv)) {
+			/* tentative, checked later */
+			fun = (duk_hcompiledfunction *) DUK_TVAL_GET_OBJECT(tv);
+			DUK_ASSERT(fun != NULL);
+		} else if (DUK_TVAL_IS_NUMBER(tv)) {
+			level = (duk_int32_t) DUK_TVAL_GET_NUMBER(tv);
+		} else {
+			DUK_D(DUK_DPRINT("invalid argument to GetBytecode: %!T", tv));
+			goto fail_args;
+		}
+	}
+
+	if (fun == NULL) {
+		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
+			DUK_D(DUK_DPRINT("invalid callstack level for GetBytecode"));
+			goto fail_level;
+		}
+		act = thr->callstack + thr->callstack_top + level;
 		fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
-		if (!DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun)) {
-			fun = NULL;
-		}
 	}
-	DUK_ASSERT(fun == NULL || DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun));
 
-	if (fun != NULL) {
-		n = DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(heap, fun);
-		duk_debug_write_int(thr, (duk_int32_t) n);
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, fun);
-		for (i = 0; i < n; i++) {
-			duk_debug_write_tval(thr, tv);
-			tv++;
-		}
-
-		n = DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(heap, fun);
-		duk_debug_write_int(thr, (duk_int32_t) n);
-		fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, fun);
-		for (i = 0; i < n; i++) {
-			duk_debug_write_hobject(thr, *fn);
-			fn++;
-		}
-
-		duk_debug_write_string(thr,
-		                       (const char *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(heap, fun),
-		                       (duk_size_t) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(heap, fun));
-	} else {
-		duk_debug_write_int(thr, 0);
-		duk_debug_write_int(thr, 0);
-		duk_debug_write_cstring(thr, "");
+	if (fun == NULL || !DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun)) {
+		DUK_D(DUK_DPRINT("invalid argument to GetBytecode: %!O", fun));
+		goto fail_args;
 	}
+	DUK_ASSERT(fun != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun));
+
+	duk_debug_write_reply(thr);
+	n = DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(heap, fun);
+	duk_debug_write_int(thr, (duk_int32_t) n);
+	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, fun);
+	for (i = 0; i < n; i++) {
+		duk_debug_write_tval(thr, tv);
+		tv++;
+	}
+	n = DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(heap, fun);
+	duk_debug_write_int(thr, (duk_int32_t) n);
+	fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, fun);
+	for (i = 0; i < n; i++) {
+		duk_debug_write_hobject(thr, *fn);
+		fn++;
+	}
+	duk_debug_write_string(thr,
+	                       (const char *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(heap, fun),
+	                       (duk_size_t) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(heap, fun));
 	duk_debug_write_eom(thr);
+	return;
+
+ fail_args:
+	duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNKNOWN, "invalid argument");
+	return;
+
+ fail_level:
+	duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
+	return;
 }
 
 /* Process one debug message.  Automatically restore value stack top to its
