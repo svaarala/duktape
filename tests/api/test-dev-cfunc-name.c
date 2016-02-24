@@ -9,16 +9,16 @@
 *** test_without_name (duk_safe_call)
 my name is: ''
 URIError: uri error (rc -106)
-	anon  native strict preventsyield
-	forEach  native strict preventsyield
-	eval XXX preventsyield
+    at [anon] () native strict preventsyield
+    at forEach () native strict preventsyield
+    at eval XXX preventsyield
 ==> rc=0, result='undefined'
 *** test_with_name (duk_safe_call)
 my name is: 'my_func'
 URIError: uri error (rc -106)
-	my_func  native strict preventsyield
-	forEach  native strict preventsyield
-	eval XXX preventsyield
+    at my_func () native strict preventsyield
+    at forEach () native strict preventsyield
+    at eval XXX preventsyield
 ==> rc=0, result='undefined'
 ===*/
 
