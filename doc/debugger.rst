@@ -765,11 +765,13 @@ types in the text)::
     REP
     ERR
     NFY
-    <int: field name>    e.g. <int: error code>
-    <str: field name>    e.g. <str: error message>
-    <buf: field name>    e.g. <buf: buffer data>
-    <ptr: field name>    e.g. <ptr: prototype pointer>
-    <tval: field name>   e.g. <tval: eval result>
+    <int: field name>      e.g. <int: error code>
+    <str: field name>      e.g. <str: error message>
+    <buf: field name>      e.g. <buf: buffer data>
+    <ptr: field name>      e.g. <ptr: prototype pointer>
+    <tval: field name>     e.g. <tval: eval result>
+    <obj: field name>      e.g. <obj: target>
+    <heapptr: field name>  e.g. <heapptr: target>
 
 When a field does not relate to an Ecmascript value exactly, e.g. the field
 is a debugger control field, typing can be loose.  For example, a boolean
@@ -1847,18 +1849,42 @@ GetBytecode request (0x21)
 
 Format::
 
-    REQ <int: 0x21> EOM
+    REQ <int: 0x21> [<int: level> OR <obj: target> OR <heapptr: target>] EOM
     REP <int: numconsts> (<tval: const>){numconsts}
         <int: numfuncs> (<tval: func>){numfuncs}
         <str: bytecode> EOM
 
-Example::
+Example without argument, gets bytecode for current function::
 
     REQ 33 EOM
     REP 2 "foo" "bar" 0  "...bytecode..." EOM
 
-Bytecode endianness is target specific so the debug client needs to get
-target endianness and interpret the bytecode based on that.
+Callstack level can be given explicitly, for example -3 is the third callstack
+level counting from callstack top::
+
+    REQ 33 -3 EOM
+    REP 2 "foo" "bar" 0  "...bytecode..." EOM
+
+An explicit Ecmascript function object can also be given using an "object" or
+"heapptr" dvalue::
+
+    REQ 33 {"type":"object","class":6,"pointer":"00000000014839e0"} EOM
+    REP 2 "foo" "bar" 0  "...bytecode..." EOM
+
+An error reply is returned if:
+
+* The argument exists but has an invalid type or points to a target value
+  which is not an Ecmascript function.
+
+* Callstack entry doesn't exist or isn't an Ecmascript activation.
+
+Notes:
+
+* Bytecode endianness is target specific so the debug client needs to get
+  target endianness and interpret the bytecode based on that.
+
+* Minor change from Duktape 1.4.0: when the callstack entry doesn't exist
+  Duktape 1.5.x and above will return an error rather than an empty result.
 
 .. note:: This command is somewhat incomplete at the moment and may be modified
    once the best way to do this in the debugger UI has been figured out.
