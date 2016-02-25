@@ -328,7 +328,7 @@ DUK_INTERNAL duk_int32_t duk_debug_read_int(duk_hthread *thr) {
 		return (duk_int32_t) (((x - 0xc0) << 8) + t);
 	} else if (x >= 0x80) {
 		return (duk_int32_t) (x - 0x80);
-	} else if (x == 0x10) {
+	} else if (x == DUK_DBG_IB_INT4) {
 		return (duk_int32_t) duk__debug_read_uint32_raw(thr);
 	}
 
@@ -366,9 +366,9 @@ DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
 	if (x >= 0x60 && x <= 0x7f) {
 		/* For short strings, use a fixed temp buffer. */
 		len = (duk_uint32_t) (x - 0x60);
-	} else if (x == 0x12) {
+	} else if (x == DUK_DBG_IB_STR2) {
 		len = (duk_uint32_t) duk__debug_read_uint16_raw(thr);
-	} else if (x == 0x11) {
+	} else if (x == DUK_DBG_IB_STR4) {
 		len = (duk_uint32_t) duk__debug_read_uint32_raw(thr);
 	} else {
 		goto fail;
@@ -452,59 +452,67 @@ DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 	}
 
 	switch (x) {
-	case 0x10: {
+	case DUK_DBG_IB_INT4: {
 		duk_int32_t i = duk__debug_read_int32_raw(thr);
 		duk_push_i32(ctx, i);
 		break;
 	}
-	case 0x11:
+	case DUK_DBG_IB_STR4: {
 		len = duk__debug_read_uint32_raw(thr);
 		duk__debug_read_hstring_raw(thr, len);
 		break;
-	case 0x12:
+	}
+	case DUK_DBG_IB_STR2: {
 		len = duk__debug_read_uint16_raw(thr);
 		duk__debug_read_hstring_raw(thr, len);
 		break;
-	case 0x13:
+	}
+	case DUK_DBG_IB_BUF4: {
 		len = duk__debug_read_uint32_raw(thr);
 		duk__debug_read_hbuffer_raw(thr, len);
 		break;
-	case 0x14:
+	}
+	case DUK_DBG_IB_BUF2: {
 		len = duk__debug_read_uint16_raw(thr);
 		duk__debug_read_hbuffer_raw(thr, len);
 		break;
-	case 0x16:
+	}
+	case DUK_DBG_IB_UNDEFINED: {
 		duk_push_undefined(ctx);
 		break;
-	case 0x17:
+	}
+	case DUK_DBG_IB_NULL: {
 		duk_push_null(ctx);
 		break;
-	case 0x18:
+	}
+	case DUK_DBG_IB_TRUE: {
 		duk_push_true(ctx);
 		break;
-	case 0x19:
+	}
+	case DUK_DBG_IB_FALSE: {
 		duk_push_false(ctx);
 		break;
-	case 0x1a: {
+	}
+	case DUK_DBG_IB_NUMBER: {
 		duk_double_t d;
 		d = duk__debug_read_double_raw(thr);
 		duk_push_number(ctx, d);
 		break;
 	}
-	case 0x1b: {
+	case DUK_DBG_IB_OBJECT: {
 		duk_heaphdr *h;
 		duk_debug_skip_byte(thr);
 		h = (duk_heaphdr *) duk__debug_read_pointer_raw(thr);
 		duk_push_heapptr(thr, (void *) h);
 		break;
 	}
-	case 0x1c: {
+	case DUK_DBG_IB_POINTER: {
 		void *ptr;
 		ptr = duk__debug_read_pointer_raw(thr);
 		duk_push_pointer(thr, ptr);
 		break;
 	}
-	case 0x1d: {
+	case DUK_DBG_IB_LIGHTFUNC: {
 		/* XXX: Not needed for now, so not implemented.  Note that
 		 * function pointers may have different size/layout than
 		 * a void pointer.
@@ -512,13 +520,13 @@ DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 		DUK_D(DUK_DPRINT("reading lightfunc values unimplemented"));
 		goto fail;
 	}
-	case 0x1e: {
+	case DUK_DBG_IB_HEAPPTR: {
 		duk_heaphdr *h;
 		h = (duk_heaphdr *) duk__debug_read_pointer_raw(thr);
 		duk_push_heapptr(thr, (void *) h);
 		break;
 	}
-	case 0x15:  /* unused: not accepted in inbound messages */
+	case DUK_DBG_IB_UNUSED:  /* unused: not accepted in inbound messages */
 	default:
 		goto fail;
 	}
@@ -587,11 +595,11 @@ DUK_INTERNAL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x) {
 }
 
 DUK_INTERNAL void duk_debug_write_unused(duk_hthread *thr) {
-	duk_debug_write_byte(thr, 0x15);
+	duk_debug_write_byte(thr, DUK_DBG_IB_UNUSED);
 }
 
 DUK_INTERNAL void duk_debug_write_undefined(duk_hthread *thr) {
-	duk_debug_write_byte(thr, 0x16);
+	duk_debug_write_byte(thr, DUK_DBG_IB_UNDEFINED);
 }
 
 /* Write signed 32-bit integer. */
@@ -610,7 +618,7 @@ DUK_INTERNAL void duk_debug_write_int(duk_hthread *thr, duk_int32_t x) {
 		len = 2;
 	} else {
 		/* Signed integers always map to 4 bytes now. */
-		buf[0] = (duk_uint8_t) 0x10;
+		buf[0] = (duk_uint8_t) DUK_DBG_IB_INT4;
 		buf[1] = (duk_uint8_t) ((x >> 24) & 0xff);
 		buf[2] = (duk_uint8_t) ((x >> 16) & 0xff);
 		buf[3] = (duk_uint8_t) ((x >> 8) & 0xff);
@@ -659,7 +667,7 @@ DUK_INTERNAL void duk_debug_write_strbuf(duk_hthread *thr, const char *data, duk
 }
 
 DUK_INTERNAL void duk_debug_write_string(duk_hthread *thr, const char *data, duk_size_t length) {
-	duk_debug_write_strbuf(thr, data, length, 0x11);
+	duk_debug_write_strbuf(thr, data, length, DUK_DBG_IB_STR4);
 }
 
 DUK_INTERNAL void duk_debug_write_cstring(duk_hthread *thr, const char *data) {
@@ -685,7 +693,7 @@ DUK_LOCAL void duk__debug_write_hstring_safe_top(duk_hthread *thr) {
 }
 
 DUK_INTERNAL void duk_debug_write_buffer(duk_hthread *thr, const char *data, duk_size_t length) {
-	duk_debug_write_strbuf(thr, data, length, 0x13);
+	duk_debug_write_strbuf(thr, data, length, DUK_DBG_IB_BUF4);
 }
 
 DUK_INTERNAL void duk_debug_write_hbuffer(duk_hthread *thr, duk_hbuffer *h) {
@@ -715,12 +723,12 @@ DUK_LOCAL void duk__debug_write_pointer_raw(duk_hthread *thr, void *ptr, duk_uin
 }
 
 DUK_INTERNAL void duk_debug_write_pointer(duk_hthread *thr, void *ptr) {
-	duk__debug_write_pointer_raw(thr, ptr, 0x1c);
+	duk__debug_write_pointer_raw(thr, ptr, DUK_DBG_IB_POINTER);
 }
 
 #if defined(DUK_USE_DEBUGGER_DUMPHEAP)
 DUK_INTERNAL void duk_debug_write_heapptr(duk_hthread *thr, duk_heaphdr *h) {
-	duk__debug_write_pointer_raw(thr, (void *) h, 0x1e);
+	duk__debug_write_pointer_raw(thr, (void *) h, DUK_DBG_IB_HEAPPTR);
 }
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */
 
@@ -732,7 +740,7 @@ DUK_INTERNAL void duk_debug_write_hobject(duk_hthread *thr, duk_hobject *obj) {
 	DUK_ASSERT(sizeof(obj) >= 1 && sizeof(obj) <= 16);
 	DUK_ASSERT(obj != NULL);
 
-	buf[0] = 0x1b;
+	buf[0] = DUK_DBG_IB_OBJECT;
 	buf[1] = (duk_uint8_t) DUK_HOBJECT_GET_CLASS_NUMBER(obj);
 	buf[2] = sizeof(pu);
 	duk_debug_write_bytes(thr, buf, 3);
@@ -754,25 +762,26 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
-		duk_debug_write_byte(thr, 0x16);
+		duk_debug_write_byte(thr, DUK_DBG_IB_UNDEFINED);
 		break;
 	case DUK_TAG_UNUSED:
-		duk_debug_write_byte(thr, 0x15);
+		duk_debug_write_byte(thr, DUK_DBG_IB_UNUSED);
 		break;
 	case DUK_TAG_NULL:
-		duk_debug_write_byte(thr, 0x17);
+		duk_debug_write_byte(thr, DUK_DBG_IB_NULL);
 		break;
 	case DUK_TAG_BOOLEAN:
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv) == 0 ||
 		           DUK_TVAL_GET_BOOLEAN(tv) == 1);
-		duk_debug_write_byte(thr, DUK_TVAL_GET_BOOLEAN(tv) ? 0x18 : 0x19);
+		duk_debug_write_byte(thr, DUK_TVAL_GET_BOOLEAN(tv) ?
+		                     DUK_DBG_IB_TRUE : DUK_DBG_IB_FALSE);
 		break;
 	case DUK_TAG_POINTER:
 		duk_debug_write_pointer(thr, (void *) DUK_TVAL_GET_POINTER(tv));
 		break;
 	case DUK_TAG_LIGHTFUNC:
 		DUK_TVAL_GET_LIGHTFUNC(tv, lf_func, lf_flags);
-		buf[0] = 0x1d;
+		buf[0] = DUK_DBG_IB_LIGHTFUNC;
 		buf[1] = (duk_uint8_t) (lf_flags >> 8);
 		buf[2] = (duk_uint8_t) (lf_flags & 0xff);
 		buf[3] = sizeof(lf_func);
@@ -798,7 +807,7 @@ DUK_INTERNAL void duk_debug_write_tval(duk_hthread *thr, duk_tval *tv) {
 		du.d = DUK_TVAL_GET_NUMBER(tv);
 		DUK_DBLUNION_DOUBLE_HTON(&du);
 
-		duk_debug_write_byte(thr, 0x1a);
+		duk_debug_write_byte(thr, DUK_DBG_IB_NUMBER);
 		duk_debug_write_bytes(thr, (const duk_uint8_t *) du.uc, sizeof(du.uc));
 	}
 }
@@ -823,30 +832,30 @@ DUK_LOCAL void duk__debug_write_tval_heapptr(duk_hthread *thr, duk_tval *tv) {
 
 #if 0  /* unused */
 DUK_INTERNAL void duk_debug_write_request(duk_hthread *thr, duk_small_uint_t command) {
-	duk_debug_write_byte(thr, DUK_DBG_MARKER_REQUEST);
+	duk_debug_write_byte(thr, DUK_DBG_IB_REQUEST);
 	duk_debug_write_int(thr, command);
 }
 #endif
 
 DUK_INTERNAL void duk_debug_write_reply(duk_hthread *thr) {
-	duk_debug_write_byte(thr, DUK_DBG_MARKER_REPLY);
+	duk_debug_write_byte(thr, DUK_DBG_IB_REPLY);
 }
 
 DUK_INTERNAL void duk_debug_write_error_eom(duk_hthread *thr, duk_small_uint_t err_code, const char *msg) {
 	/* Allow NULL 'msg' */
-	duk_debug_write_byte(thr, DUK_DBG_MARKER_ERROR);
+	duk_debug_write_byte(thr, DUK_DBG_IB_ERROR);
 	duk_debug_write_int(thr, (duk_int32_t) err_code);
 	duk_debug_write_cstring(thr, msg);
 	duk_debug_write_eom(thr);
 }
 
 DUK_INTERNAL void duk_debug_write_notify(duk_hthread *thr, duk_small_uint_t command) {
-	duk_debug_write_byte(thr, DUK_DBG_MARKER_NOTIFY);
+	duk_debug_write_byte(thr, DUK_DBG_IB_NOTIFY);
 	duk_debug_write_int(thr, command);
 }
 
 DUK_INTERNAL void duk_debug_write_eom(duk_hthread *thr) {
-	duk_debug_write_byte(thr, DUK_DBG_MARKER_EOM);
+	duk_debug_write_byte(thr, DUK_DBG_IB_EOM);
 
 	/* As an initial implementation, write flush after every EOM (and the
 	 * version identifier).  A better implementation would flush only when
@@ -984,45 +993,46 @@ DUK_LOCAL duk_bool_t duk__debug_skip_dvalue(duk_hthread *thr) {
 		return 0;
 	}
 	switch(x) {
-	case 0x00:
+	case DUK_DBG_IB_EOM:
 		return 1;  /* Return 1: got EOM */
-	case 0x01:
-	case 0x02:
-	case 0x03:
-	case 0x04:
+	case DUK_DBG_IB_REQUEST:
+	case DUK_DBG_IB_REPLY:
+	case DUK_DBG_IB_ERROR:
+	case DUK_DBG_IB_NOTIFY:
 		break;
-	case 0x10:
+	case DUK_DBG_IB_INT4:
 		(void) duk__debug_read_uint32_raw(thr);
 		break;
-	case 0x11:
-	case 0x13:
+	case DUK_DBG_IB_STR4:
+	case DUK_DBG_IB_BUF4:
 		len = duk__debug_read_uint32_raw(thr);
 		duk_debug_skip_bytes(thr, len);
 		break;
-	case 0x12:
-	case 0x14:
+	case DUK_DBG_IB_STR2:
+	case DUK_DBG_IB_BUF2:
 		len = duk__debug_read_uint16_raw(thr);
 		duk_debug_skip_bytes(thr, len);
 		break;
-	case 0x15:
-	case 0x16:
-	case 0x17:
-	case 0x18:
-	case 0x19:
+	case DUK_DBG_IB_UNUSED:
+	case DUK_DBG_IB_UNDEFINED:
+	case DUK_DBG_IB_NULL:
+	case DUK_DBG_IB_TRUE:
+	case DUK_DBG_IB_FALSE:
 		break;
-	case 0x1a:
+	case DUK_DBG_IB_NUMBER:
 		duk_debug_skip_bytes(thr, 8);
 		break;
-	case 0x1b:
+	case DUK_DBG_IB_OBJECT:
 		duk_debug_skip_byte(thr);
 		len = duk_debug_read_byte(thr);
 		duk_debug_skip_bytes(thr, len);
 		break;
-	case 0x1c:
+	case DUK_DBG_IB_POINTER:
+	case DUK_DBG_IB_HEAPPTR:
 		len = duk_debug_read_byte(thr);
 		duk_debug_skip_bytes(thr, len);
 		break;
-	case 0x1d:
+	case DUK_DBG_IB_LIGHTFUNC:
 		duk_debug_skip_bytes(thr, 2);
 		len = duk_debug_read_byte(thr);
 		duk_debug_skip_bytes(thr, len);
@@ -1188,7 +1198,7 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
-	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for GetVar"));
@@ -1240,7 +1250,7 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 		/* detached */
 		return;
 	}
-	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for PutVar"));
@@ -1325,7 +1335,7 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_UNREF(heap);
 
-	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for GetLocals"));
@@ -1395,7 +1405,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
 
 	(void) duk_debug_read_hstring(thr);
-	if (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 		level = duk_debug_read_int(thr);  /* optional callstack level */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
 			DUK_D(DUK_DPRINT("invalid callstack level for Eval"));
@@ -1478,7 +1488,7 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 		/* Read tvals from the message and push them onto the valstack,
 		 * then call the request callback to process the request.
 		 */
-		while (duk_debug_peek_byte(thr) != DUK_DBG_MARKER_EOM) {
+		while (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 			duk_tval *tv;
 			if (!duk_check_stack(ctx, 1)) {
 				DUK_D(DUK_DPRINT("failed to allocate space for request dvalue(s)"));
@@ -1510,7 +1520,7 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 			}
 
 			/* Reply with tvals pushed by request callback */
-			duk_debug_write_byte(thr, DUK_DBG_MARKER_REPLY);
+			duk_debug_write_byte(thr, DUK_DBG_IB_REPLY);
 			top = duk_get_top(ctx);
 			for (idx = top - nrets; idx < top; idx++) {
 				duk_debug_write_tval(thr, DUK_GET_TVAL_POSIDX(ctx, idx));
@@ -1718,7 +1728,7 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 	DUK_D(DUK_DPRINT("debug command GetBytecode"));
 
 	ibyte = duk_debug_peek_byte(thr);
-	if (ibyte != DUK_DBG_MARKER_EOM) {
+	if (ibyte != DUK_DBG_IB_EOM) {
 		tv = duk_debug_read_tval(thr);
 		if (tv == NULL) {
 			/* detached */
@@ -1801,7 +1811,7 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 
 	x = duk_debug_read_byte(thr);
 	switch (x) {
-	case DUK_DBG_MARKER_REQUEST: {
+	case DUK_DBG_IB_REQUEST: {
 		cmd = duk_debug_read_int(thr);
 		switch (cmd) {
 		case DUK_DBG_CMD_BASICINFO: {
@@ -1887,15 +1897,15 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 		}  /* switch cmd */
 		break;
 	}
-	case DUK_DBG_MARKER_REPLY: {
+	case DUK_DBG_IB_REPLY: {
 		DUK_D(DUK_DPRINT("debug reply, skipping"));
 		break;
 	}
-	case DUK_DBG_MARKER_ERROR: {
+	case DUK_DBG_IB_ERROR: {
 		DUK_D(DUK_DPRINT("debug error, skipping"));
 		break;
 	}
-	case DUK_DBG_MARKER_NOTIFY: {
+	case DUK_DBG_IB_NOTIFY: {
 		DUK_D(DUK_DPRINT("debug notify, skipping"));
 		break;
 	}
