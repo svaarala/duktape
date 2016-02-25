@@ -2237,7 +2237,7 @@ DUK_LOCAL void duk__debug_handle_inspect_heap_object(duk_hthread *thr, duk_heap 
 			                           duk__inspect_hbuffer_keys,
 			                           duk__inspect_hbuffer_masks,
 			                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
-			duk__debug_inspect_prop_uint(thr, "size", DUK_HBUFFER_GET_SIZE(h_buf));
+			duk__debug_inspect_prop_uint(thr, "size", (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_buf));
 			duk__debug_inspect_flags_key(thr, "dataptr");
 			duk_debug_write_pointer(thr, (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_buf));
 			duk__debug_inspect_flags_key(thr, "data");
