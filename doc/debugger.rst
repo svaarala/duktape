@@ -1958,8 +1958,9 @@ is valid and the pointer target is still in the Duktape heap:
 
 The request flags control what information is provided:
 
-* No flags defined so far.  Property type filtering is a potential feature
-  which may be added later.
+* 0x01: include "normal" properties of the object.
+
+* 0x02: include "artificial" properties of the object.
 
 The result is a list of property entries, each containing a flags field, a
 key, and a value.  The property list includes:
