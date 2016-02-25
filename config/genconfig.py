@@ -136,9 +136,10 @@ compiler_required_provides = [
 	# filled in with defaults (which are mostly compiler independent), so
 	# the requires define list is not very large.
 
-	'DUK_USE_COMPILER_STRING',  # must be #define'd
-	'DUK_USE_BRANCH_HINTS',     # may be #undef'd, as long as provided
-	'DUK_USE_VARIADIC_MACROS'   # may be #undef'd, as long as provided
+	'DUK_USE_COMPILER_STRING',    # must be #define'd
+	'DUK_USE_BRANCH_HINTS',       # may be #undef'd, as long as provided
+	'DUK_USE_VARIADIC_MACROS',    # may be #undef'd, as long as provided
+	'DUK_USE_UNION_INITIALIZERS'  # may be #undef'd, as long as provided
 ]
 
 #
@@ -1209,8 +1210,6 @@ def generate_duk_config_header(opts, meta_dir):
 		abs_fn = os.path.join(meta_dir, 'compilers', include)
 		validate_compiler_file(abs_fn)
 		sn = ret.snippet_absolute(abs_fn)
-		if sn.provides.get('DUK_USE_VARIADIC_MACROS', False):
-			ret.line('#define DUK_F_VARIADIC_MACROS_PROVIDED')  # signal to fillin
 	else:
 		ret.chdr_block_heading('Compiler autodetection')
 
@@ -1230,8 +1229,6 @@ def generate_duk_config_header(opts, meta_dir):
 					ret.line('#elif defined(%s)' % check)
 			ret.line('/* --- %s --- */' % comp.get('name', '???'))
 			sn = ret.snippet_absolute(abs_fn)
-			if sn.provides.get('DUK_USE_VARIADIC_MACROS', False):
-				ret.line('#define DUK_F_VARIADIC_MACROS_PROVIDED')  # signal to fillin
 		ret.line('#endif  /* autodetect compiler */')
 
 	ret.empty()

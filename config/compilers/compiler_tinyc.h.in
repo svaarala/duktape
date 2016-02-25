@@ -9,6 +9,8 @@
 /* http://bellard.org/tcc/tcc-doc.html#SEC7 */
 #define DUK_USE_VARIADIC_MACROS
 
+#define DUK_USE_UNION_INITIALIZERS
+
 /* Most portable, wastes space */
 #define DUK_USE_FLEX_ONESIZE
 
