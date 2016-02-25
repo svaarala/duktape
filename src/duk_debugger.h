@@ -74,6 +74,10 @@
 #define DUK_DBG_PROPFLAG_INTERNAL    (1 << 8)
 #define DUK_DBG_PROPFLAG_ARTIFICIAL  (1 << 9)
 
+/* Flags for DUK_DBG_CMD_INSPECTHEAPOBJECT. */
+#define DUK_DBG_INSPECT_NORMALPROP   (1 << 0)
+#define DUK_DBG_INSPECT_ARTIFPROP    (1 << 1)
+
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL void duk_debug_do_detach(duk_heap *heap);
 
