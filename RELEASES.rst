@@ -1391,6 +1391,9 @@ Planned
 
 * Add sizeof void pointer to the BasicInfo debugger command (GH-611)
 
+* Extend debugger GetBytecode command to accept an optional callstack level
+  or direct heap object argument (GH-610)
+
 * A DukLuv-based JSON debug proxy is now included in the dist package;
   it should allow much easier and more flexible packaging of a JSON debug
   proxy into a debug client (GH-590)
@@ -1424,6 +1427,10 @@ Planned
 * Fix debugger transport write error bug which could cause Duktape to call
   the debug transport write callback after it had already returned an error
   (GH-599)
+
+* Fix debugger PutVar command bug where a failure to read the PutVar variable
+  value (e.g. due to a transport detach) could lead to memory unsafe behavior
+  (GH-610)
 
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 

@@ -61,7 +61,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_debug_read_hstring(duk_hthread *thr);
 /* XXX: exposed duk_debug_read_pointer */
 /* XXX: exposed duk_debug_read_buffer */
 /* XXX: exposed duk_debug_read_hbuffer */
-DUK_INTERNAL_DECL void duk_debug_read_tval(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_tval *duk_debug_read_tval(duk_hthread *thr);
 
 DUK_INTERNAL_DECL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *data, duk_size_t length);
 DUK_INTERNAL_DECL void duk_debug_write_byte(duk_hthread *thr, duk_uint8_t x);
