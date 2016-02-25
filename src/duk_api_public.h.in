@@ -959,6 +959,7 @@ DUK_EXTERNAL_DECL void duk_debugger_attach_custom(duk_context *ctx,
 DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_debugger_cooperate(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues);
+DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
 
 /*
  *  Date provider related constants
