@@ -1403,6 +1403,9 @@ Planned
   immediately which makes the cause of the unsafe behavior difficult to
   diagnose (GH-531)
 
+* Fix memory unsafe behavior when an external plain buffer was allocated
+  with heap pointer compression enabled (DUK_USE_HEAPPTR16) (GH-618)
+
 * Fix pointer arithmetic portability issues with platforms/compilers with
   exotic pointer models by avoiding arithmetic and binary operations on
   (u)intptr_t values (GH-530, GH-539)
