@@ -4,20 +4,20 @@ proto: |
   void duk_debugger_pause(duk_context *ctx);
 
 summary: |
-  <p>Trigger a debugger pause as soon as possible.  In most cases Duktape pauses
-  immediately; however if a native call such as a Duktape/C function is in
-  progress or no Ecmascript code is currently executing, the pause will be
-  triggered the next time Ecmascript bytecode is executed.  This may take some
-  time e.g. if the native call in progress is long-running.</p>
+  <p>Request a debugger pause as soon as possible and return without blocking.
+  The pause will be triggered the next time Ecmascript bytecode is executed,
+  which is usually almost immediate.  However, if a native call such as a
+  Duktape/C function is in progress or no Ecmascript code is currently
+  executing, it may take longer for the pause to take effect.</p>
 
-  <p>If debugger support has not been compiled in, or if the debugger is not
-  attached, the call is a no-op.  This mimics the semantics of the Ecmascript
-  <code>debugger</code> statement.</p>
+  <p>The call is a no-op if (1) debugger support has not been compiled in, (2)
+  the debugger is not attached, or (3) Duktape is already paused.  This mimics
+  the semantics of the Ecmascript <code>debugger</code> statement.</p>
 
   <div class="note">
   Like all Duktape API calls, this call is not thread safe.  It may be tempting
-  to want to trigger a pause from a thread different than one running Ecmascript
-  code for the context, but this is unsafe and must be avoided.
+  to trigger a pause from a thread different than one running Ecmascript code
+  for the context, but this is unsafe and not currently supported.
   </div>
 
 example: |
