@@ -320,6 +320,25 @@ blocking), you can also use it like this::
         /*...*/
     }
 
+duk_debugger_pause()
+--------------------
+
+The target may call this at any time to pause Ecmascript execution and turn over
+control to the attached debug client.  This is safe to call if the debugger is
+not attached, in which case it has no effect::
+
+    duk_debugger_pause(ctx);
+
+A pause so requested may not happen immediately; for example if a long-running
+native call such as a Duktape/C function is in progress. The target will pause
+once the bytecode executor is re-entered, either by the native call returning
+into Ecmascript code or calling e.g. ``duk_eval()`` or ``duk_call()``.
+
+A common use case for this call is to bind it to a hotkey, which allows the
+user to break out of and debug infinite loops.  However, like all Duktape API
+calls, the call is not thread safe and must be called from the same thread used
+to run the Ecmascript code being debugged.
+
 Debug transport
 ===============
 

@@ -1389,6 +1389,9 @@ Planned
 * Add support for application specific debugger commands (AppRequest) and
   notifications (AppNotify) (GH-596, GH-563)
 
+* Add duk_debugger_pause() API which allows the target to quickly pause
+  Ecmascript execution and break into the debugger (GH-615)
+
 * Add sizeof void pointer to the BasicInfo debugger command (GH-611)
 
 * Extend debugger GetBytecode command to accept an optional callstack level

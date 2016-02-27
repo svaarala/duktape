@@ -181,6 +181,29 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 	return ret;
 }
 
+DUK_EXTERNAL void duk_debugger_pause(duk_context *ctx) {
+	duk_hthread *thr;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
+	DUK_D(DUK_DPRINT("application called duk_debugger_pause()"));
+
+	/* Treat like a debugger statement: ignore when not attached. */
+	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		DUK_HEAP_SET_PAUSED(thr->heap);
+
+		/* Pause on the next opcode executed.  This is always safe to do even
+		 * inside the debugger message loop: the interrupt counter will be reset
+		 * to its proper value when the message loop exits.
+		 */
+		thr->interrupt_init = 1;
+		thr->interrupt_counter = 0;
+	}
+}
+
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
 DUK_EXTERNAL void duk_debugger_attach_custom(duk_context *ctx,
@@ -229,6 +252,12 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 	/* No debugger support, just pop values. */
 	duk_pop_n(ctx, nvalues);
 	return 0;
+}
+
+DUK_EXTERNAL void duk_debugger_pause(duk_context *ctx) {
+	/* Treat like debugger statement: nop */
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_UNREF(ctx);
 }
 
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
