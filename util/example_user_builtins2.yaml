@@ -3,9 +3,11 @@
 #  util/example_user_builtins1.yaml.
 #
 
-modify_objects:
+objects:
 
   - id: bi_global
+    modify: true
+
     properties:
       - key: meaningOfLife
         value: 42

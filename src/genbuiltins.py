@@ -187,31 +187,58 @@ def metadata_delete_dangling_references_to_object(meta, obj_id):
 
 # Merge a user YAML file into current metadata.
 def metadata_merge_user_objects(meta, user_meta):
+	# XXX: could be reused from other call sites
 	def _findObject(objid):
 		for i,t in enumerate(meta['objects']):
 			if t['id'] == objid:
 				return t, i
 		return None, None
+	def _findProp(obj, key):
+		for i,t in enumerate(obj['properties']):
+			if t['key'] == key:
+				return t, i
+		return None, None
 
-	for o in user_meta.get('add_objects', []):
-		#print('Add user object %s' % o['id'])
-		targ, targ_idx = _findObject(o['id'])
-		if targ is not None:
-			raise Exception('Cannot add object %s which already exists' % o['id'])
-		meta['objects'].append(o)
+	if user_meta.has_key('add_objects'):
+		raise Exception('"add_objects" removed, use "objects" with "add: True"')
+	if user_meta.has_key('replace_objects'):
+		raise Exception('"replace_objects" removed, use "objects" with "replace: True"')
+	if user_meta.has_key('modify_objects'):
+		raise Exception('"modify_objects" removed, use "objects" with "modify: True"')
 
-	for o in user_meta.get('modify_objects', []):
+	for o in user_meta.get('objects', []):
 		if o.get('disable', False):
 			print('Skip disabled object: %s' % o['id'])
 			continue
 		targ, targ_idx = _findObject(o['id'])
-		assert(targ is not None)
 
 		if o.get('delete', False):
 			print('Delete object: %s' % targ['id'])
+			if targ is None:
+				raise Exception('Cannot delete object %s which doesn\'t exist' % o['id'])
 			meta['objects'].pop(targ_idx)
 			metadata_delete_dangling_references_to_object(meta, targ['id'])
 			continue
+
+		if o.get('replace', False):
+			print('Replace object %s' % o['id'])
+			if targ is None:
+				print('WARNING: object to be replaced doesn\'t exist, append new object')
+				meta['objects'].append(o)
+			else:
+				meta['objects'][targ_idx] = o
+			continue
+
+		if o.get('add', False) or not o.get('modify', False):  # 'add' is the default
+			print('Add object %s' % o['id'])
+			if targ is not None:
+				raise Exception('Cannot add object %s which already exists' % o['id'])
+			meta['objects'].append(o)
+			continue
+
+		assert(o.get('modify', False))  # modify handling
+		if targ is None:
+			raise Exception('Cannot modify object %s which doesn\'t exist' % o['id'])
 
 		for k in sorted(o.keys()):
 			# Merge top level keys by copying over, except 'properties'
@@ -224,11 +251,7 @@ def metadata_merge_user_objects(meta, user_meta):
 				continue
 			prop = None
 			prop_idx = None
-			for idx,targ_prop in enumerate(targ['properties']):
-				if targ_prop['key'] == p['key']:
-					prop = targ_prop
-					prop_idx = idx
-					break
+			prop, prop_idx = _findProp(targ, p['key'])
 			if prop is not None:
 				if p.get('delete', False):
 					print('Delete property %s of %s' % (p['key'], o['id']))
@@ -668,18 +691,30 @@ def metadata_add_string_define_names(strlist, special_defs):
 
 # Add a 'stridx_used' flag for strings which need a stridx.
 def metadata_add_string_used_stridx(strlist, used_stridx_meta):
-	defs = {}
+	defs_needed = {}
+	defs_found = {}
 	for s in used_stridx_meta['used_stridx_defines']:
-		defs[s] = True
+		defs_needed[s] = True
 
+	# strings whose define is referenced
 	for s in strlist:
-		if s.has_key('define') and defs.has_key(s['define']):
+		if s.has_key('define') and defs_needed.has_key(s['define']):
 			s['stridx_used'] = True
+			defs_found[s['define']] = True
 
 	# duk_lexer.h needs all reserved words
 	for s in strlist:
 		if s.get('reserved_word', False):
 			s['stridx_used'] = True
+
+	# ensure all needed defines are provided
+	defs_found['DUK_STRIDX_START_RESERVED'] = True  # special defines provided automatically
+	defs_found['DUK_STRIDX_START_STRICT_RESERVED'] = True
+	defs_found['DUK_STRIDX_END_RESERVED'] = True
+	defs_found['DUK_STRIDX_TO_TOK'] = True
+	for k in sorted(defs_needed.keys()):
+		if not defs_found.has_key(k):
+			raise Exception('source code needs define %s not provided by strings' % repr(k))
 
 # Merge duplicate strings in string metadata.
 def metadata_merge_string_entries(strlist):
