@@ -58,6 +58,10 @@ log.debug('Global is extensible:', Object.isExtensible(global));
  *  Misc helpers
  */
 
+function jxEncode(v) {
+    return Duktape.enc('jx', v);
+}
+
 function plainBufferCopy(typedarray) {
     // This is still pretty awkward in Duktape 1.4.x.
     // Argument may be a "slice" and we want a copy of the slice
@@ -354,7 +358,7 @@ JsonConnHandler.prototype.trialParseJsonMessage = function trialParseJsonMessage
                 // was a request the client is expecting a reply/error message back
                 // (otherwise it may go out of sync) but we can't send a synthetic
                 // one (as we can't parse the request).
-                errmsg = 'JSON parse failed for: ' + JSON.stringify(str) + ': ' + e;
+                errmsg = 'JSON parse failed for: ' + jxEncode(str) + ': ' + e;
                 this.writeJson({ notify: '_Error', args: [ errmsg ] });
                 if (lenientJsonParse) {
                     log.warn('JSON parse failed (lenient mode, ignoring):', e);
@@ -392,7 +396,7 @@ JsonConnHandler.prototype.dispatchJsonMessage = function dispatchJsonMessage(msg
     } else if (msg.error) {
         dvalues.push(new Uint8Array([ 0x03 ]));
     } else {
-        throw new Error('invalid input JSON message: ' + JSON.stringify(msg));
+        throw new Error('invalid input JSON message: ' + jxEncode(msg));
     }
 
     // Encode arguments into dvalues.
@@ -460,7 +464,7 @@ JsonConnHandler.prototype.encodeJsonDvalue = function encodeJsonDvalue(v) {
             dec = Duktape.dec('hex', v.data);
             len = dec.length;
             if (len !== 8) {
-                throw new TypeError('value cannot be converted to dvalue: ' + JSON.stringify(v));
+                throw new TypeError('value cannot be converted to dvalue: ' + jxEncode(v));
             }
             buf = new Uint8Array(1 + len);
             buf[0] = 0x1a;
@@ -582,7 +586,7 @@ JsonConnHandler.prototype.encodeJsonDvalue = function encodeJsonDvalue(v) {
         }
     }
 
-    throw new TypeError('value cannot be converted to dvalue: ' + JSON.stringify(v));
+    throw new TypeError('value cannot be converted to dvalue: ' + jxEncode(v));
 };
 
 /*
