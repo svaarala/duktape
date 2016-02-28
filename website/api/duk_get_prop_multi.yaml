@@ -1,0 +1,89 @@
+name: duk_get_prop_multi
+
+proto: |
+  void duk_get_prop_multi(duk_context *ctx, duk_idx_t obj_index, const char *fmt, ...);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]  (if no request to push values in 'fmt')
+  [ ... obj! ... ] -> [ ... obj! ... val1! ..! valN! ]  (if pushed values in 'fmt')
+
+summary: |
+  <p>Get multiple properties of a value at <code>obj_index</code>.  The
+  properties to get are described by a "format string" which describes,
+  for each property, the key and how the value is returned.  Values can
+  be either written to out-pointers (e.g. <code>&my_int</code> for reading
+  a <code>duk_int_t</code>) or pushed on the value stack.</p>
+
+  <p>FIXME: coercion behavior; defaulting.</p>
+
+  <p>FIXME: format or 'fmt'.  Keys cannot contain internal NUL characters or
+  leading space characters (which are automatically stripped).  Otherwise keys
+  are binary pure and can be arbitrary UTF-8 (without NULs).  Spaces before the
+  key are stripped, but spaces inside and at the end are allowed, e.g.
+  <code>"foo bar :d"</code> would look up the key <code>"foo bar "</code>.</p>
+
+  <p>The following format type characters are defined:</p>
+  <table>
+  <tr>
+  <th>Char</th>
+  <th>Out-pointer</th>
+  <th>Description</th>
+  </tr>
+  <tr>
+  <td><code>d</code></td>
+  <td><code>duk_int_t *</code></td>
+  <td>Signed integer.</td>
+  </tr>
+  <tr>
+  <td><code>u</code></td>
+  <td><code>duk_uint_t *</code></td>
+  <td>Unsigned integer.</td>
+  </tr>
+  <tr>
+  <td><code>n</code></td>
+  <td><code>duk_double_t</code></td>
+  <td>IEEE double.</td>
+  </tr>
+  <tr>
+  <td><code>b</code></td>
+  <td><code>duk_bool_t</code></td>
+  <td>Boolean, output is 0 or 1.</td>
+  </tr>
+  <tr>
+  <td><code>s</code></td>
+  <td><code>const char **</code></td>
+  <td>String, output value is <code>const char *</code> and has the same
+      semantics as pointers returned by e.g. <code>duk_get_string()</code>.</td>
+  </tr>
+  <tr>
+  <td><code>p</code></td>
+  <td><code>void **</code></td>
+  <td>Pointer, output value is <code>void *</code>.</td>
+  </tr>
+  <tr>
+  <td><code>x</code></td>
+  <td><code>void **</code>, <code>duk_size_t *</code></td>
+  <td>Buffer, output values are buffer pointer (<code>void *</code>) and
+      buffer length (<code>duk_size_t</code>).</td>
+  </tr>
+  <tr>
+  <td><code>v</code></td>
+  <td>None</td>
+  <td>Any type, value is pushed on the value stack.  This allows you to
+      look up functions, buffer objects, etc and get them conveniently
+      pushed on the value stack.</td>
+  </tr>
+  </table>
+
+  <div include="object-can-be-any-value.html" />
+
+example: |
+  /* FIXME */
+
+tags:
+  - property
+
+seealso:
+  - duk_get_prop
+
+introduced: 1.5.0
