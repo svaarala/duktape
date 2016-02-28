@@ -91,7 +91,8 @@ unused API symbols::
           -fomit-frame-pointer -I./src -DDUK_OPT_SELF_TESTS src/duktape.c \
           examples/cmdline/duk_cmdline.c -lm
     $ size duk
-    -rwxrwxr-x 1 duktape duktape 280604 Feb 28 23:53 duk
+       text     data      bss      dec      hex  filename
+     231079     1184       56   232319    38b7f  duk
 
 Add GCC specific options to remove unused symbols::
 
@@ -101,9 +102,11 @@ Add GCC specific options to remove unused symbols::
           -ffunction-sections -Wl,--gc-sections -DDUK_OPT_SELF_TESTS \
           src/duktape.c examples/cmdline/duk_cmdline.c -lm
     $ size duk
-    -rwxrwxr-x 1 duktape duktape 268677 Feb 28 23:53 duk
+       text     data      bss      dec      hex  filename
+     222743     1152       48   223943    36ac7  duk
 
-Here the difference is ~12kB on x64.
+Here the difference is ~8kB on x64.  For the dist Makefile.hello example,
+which uses very few public API calls, the difference is ~12kB.
 
 Suggested feature options
 =========================
