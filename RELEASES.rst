@@ -1401,6 +1401,10 @@ Planned
   it should allow much easier and more flexible packaging of a JSON debug
   proxy into a debug client (GH-590)
 
+* Use plain integer dvalues when serializing duk_tval numbers in the debugger
+  protocol when it's safe to do so, i.e. when the plain integer converts back
+  to an identical IEEE double with no loss of precision (GH-604)
+
 * Fix potentially memory unsafe behavior when a refcount-triggered finalizer
   function rescues an object; the memory unsafe behavior doesn't happen
   immediately which makes the cause of the unsafe behavior difficult to
