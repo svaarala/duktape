@@ -337,6 +337,24 @@ user to break out of and debug infinite loops.  However, like all Duktape API
 calls, the call is not thread safe and must be called from the same thread used
 to run the Ecmascript code being debugged.
 
+duk_debugger_notify()
+---------------------
+
+Optional call to send application specific notifications through the debug
+transport::
+
+    duk_bool_t sent;
+
+    duk_push_string(ctx, "BatteryLevel");
+    duk_push_uint(ctx, 130);  /* 130 of 1000 */
+    sent = duk_debugger_notify(ctx, 2 /*nvalues*/);
+    /* 'sent' indicates whether notify was successfully sent or not */
+
+The call returns 0 and is effectively ignored when debugger support is not
+compiled in, or when the debugger is not attached.
+
+See "Custom requests and notifications" below for more details.
+
 Debug transport
 ===============
 
