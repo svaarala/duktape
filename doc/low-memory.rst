@@ -74,6 +74,37 @@ The following genconfig option file template enables most low memory related
 option: ``config/examples/low_memory.yaml``.  It doesn't enable pointer
 compression because that always requires some application specific code.
 
+Stripping unused API functions
+==============================
+
+If you compile and link your application and Duktape statically, you can
+often strip away any Duktape API functions which are not actually used by
+your application or Duktape.  Doing so requires compiler specific steps,
+but see for example:
+
+- http://stackoverflow.com/questions/6687630/how-to-remove-unused-c-c-symbols-with-gcc-and-ld
+
+Example using GCC: compile the Duktape command line utility without removing
+unused API symbols::
+
+    $ gcc -o duk -Os -pedantic -std=c99 -Wall -fstrict-aliasing \
+          -fomit-frame-pointer -I./src -DDUK_OPT_SELF_TESTS src/duktape.c \
+          examples/cmdline/duk_cmdline.c -lm
+    $ size duk
+    -rwxrwxr-x 1 duktape duktape 280604 Feb 28 23:53 duk
+
+Add GCC specific options to remove unused symbols::
+
+    # With -fdata-sections -ffunction-sections -Wl,--gc-sections:
+    $ gcc -o duk -Os -pedantic -std=c99 -Wall -fstrict-aliasing \
+          -fomit-frame-pointer -I./src -fdata-sections \
+          -ffunction-sections -Wl,--gc-sections -DDUK_OPT_SELF_TESTS \
+          src/duktape.c examples/cmdline/duk_cmdline.c -lm
+    $ size duk
+    -rwxrwxr-x 1 duktape duktape 268677 Feb 28 23:53 duk
+
+Here the difference is ~12kB on x64.
+
 Suggested feature options
 =========================
 
