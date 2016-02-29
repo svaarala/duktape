@@ -4482,6 +4482,7 @@ DUK_EXTERNAL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t index1, duk_i
 DUK_INTERNAL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
 	duk_c_function func;
 
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
 
 	/* Lightfunc name, includes Duktape/C native function pointer, which
@@ -4504,6 +4505,7 @@ DUK_INTERNAL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv) {
 }
 
 DUK_INTERNAL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
 
 	duk_push_string(ctx, "function ");
