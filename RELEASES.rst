@@ -1371,6 +1371,9 @@ Planned
   (read-only data section) which reduces the startup RAM usage of a low
   memory build to ~3kB (from ~27kB) (GH-559)
 
+* Add duk_get_prop_multi() API call to read multiple properties conveniently
+  using a scanf()-like format string (GH-409)
+
 * Allow ES6 unescaped curly braces ('{' and '}') in regular expressions
   (non-standard before ES6) when no valid quantifier can be parsed; this
   improves compatibility with existing Javascript code which often assumes
