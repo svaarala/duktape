@@ -139,8 +139,9 @@ an automatic prototype object created for the function.  The function instance's
 <code>prototype</code> property points to the prototype object, and the prototype's
 <code>constructor</code> property points back to the function instance.  Only
 mark-and-sweep is able to collect these reference loops at the moment.  If you
-build with reference counting only, function instances may appear to leak memory;
-the memory will be released when the relevant heap is destroyed.</p>
+build with reference counting only (not recommended), function instances may
+appear to leak memory; the memory will be released when the relevant heap is
+destroyed.</p>
 
 <p>You can break the reference loops manually (although this is a bit cumbersome):</p>
 <pre class="ecmascript-code">
@@ -202,3 +203,19 @@ There are a few limitations, though:</p>
 
 <p>See the internal <code>test-bi-function-nonstd-caller-prop.js</code> test
 case for further details.</p>
+
+<h2>Garbage collection during debugger paused state</h2>
+
+<p>When debugger support is activated, a debugger session is active, and
+Duktape is paused, there are a few current limitations:</p>
+
+<ul>
+<li>When Duktape is built with reference counting only (mark-and-sweep left
+    out of config options), garbage created during the debugger paused state
+    will be left in the Duktape heap and freed only when the heap is destroyed.
+    The option to build with reference counting only is not recommended and will
+    most likely be removed in future versions.</li>
+<li>Because garbage collection is disabled during the paused state, calls to
+    <code>Duktape.gc()</code> and <code>duk_gc()</code> will be silently
+    ignored.</li>
+</ul>
