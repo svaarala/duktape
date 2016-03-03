@@ -1371,6 +1371,13 @@ Planned
   (read-only data section) which reduces the startup RAM usage of a low
   memory build to ~3kB (from ~27kB) (GH-559)
 
+* Add debugger heap object inspection support which allows a debug client
+  to inspect heap objects in detail, walk prototype chains, etc (GH-358,
+  GH-576)
+
+* Garbage collection is now automatically disabled when execution is paused
+  in the debugger, which facilitates safe heap walking (GH-576)
+
 * Allow ES6 unescaped curly braces ('{' and '}') in regular expressions
   (non-standard before ES6) when no valid quantifier can be parsed; this
   improves compatibility with existing Javascript code which often assumes
