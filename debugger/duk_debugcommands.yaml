@@ -8,6 +8,7 @@ client_commands:
   - Log
   - Throw
   - Detaching
+  - AppNotify
 
 # Debug request/notify command names provided by the debug target (Duktape).
 target_commands:
@@ -45,3 +46,7 @@ target_commands:
   - Detach
   - DumpHeap
   - GetBytecode
+  - AppRequest
+  - GetHeapObjInfo
+  - GetObjProp
+  - GetObjPropRange

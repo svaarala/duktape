@@ -284,6 +284,7 @@ struct duk_breakpoint {
 		(heap)->dbg_state_dirty = 1; \
 		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
 	} while (0)
+#define DUK_HEAP_IS_PAUSED(heap) ((heap)->dbg_paused)
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
