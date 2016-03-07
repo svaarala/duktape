@@ -93,44 +93,14 @@ distributable in Linux, OSX, or Windows:
 
 The source distributable directory will be in `dist/`.
 
+For platform specific notes see http://wiki.duktape.org/DevelopmentSetup.html.
+
 Getting started: other development (Linux only)
 -----------------------------------------------
 
 Other development stuff, such as building the website and running test cases,
-is based on a `Makefile` **intended for Linux only**:
-
-    # Install required packages (exact packages depend on distribution)
-    $ sudo apt-get install nodejs nodejs-legacy npm perl ant openjdk-7-jdk \
-          libreadline6-dev libncurses-dev python-rdflib python-bs4 python-yaml \
-          clang llvm bc
-
-    # Compile the command line tool ('duk')
-    $ git clone https://github.com/svaarala/duktape.git
-    $ cd duktape
-    $ make
-
-    # If you want to build dukweb.js or run Emscripten targets, you need
-    # to setup Emscripten fastcomp manually, see doc/emscripten-status.rst
-    # for step-by-step instructions.
-
-    # Run Ecmascript and API testcases, and some other tests
-    $ make ecmatest
-    $ make apitest
-    $ make regfuzztest
-    $ make underscoretest    # see doc/underscore-status.rst
-    $ make test262test       # see doc/test262-status.rst
-    $ make emscriptentest    # see doc/emscripten-status.rst
-    $ make emscriptenmandelbrottest  # run Emscripten-compiled mandelbrot.c with Duktape
-    $ make emscripteninceptiontest   # run Emscripten-compiled Duktape with Duktape
-    $ make jsinterpretertest
-    $ make luajstest
-    $ make dukwebtest        # then browse to file:///tmp/dukweb-test/dukweb.html
-    $ make xmldoctest
-    $ make bluebirdtest
-    # etc
-
-You may get the Makefile working in OSX or Windows (using Cygwin), but this is
-not supported at the moment.
+is based on a `Makefile` **intended for Linux only**.  See detailed
+instructions in http://wiki.duktape.org/DevelopmentSetup.html.
 
 Versioning
 ----------
