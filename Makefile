@@ -386,6 +386,9 @@ cleanall: clean
 	@rm -rf es5-tests.zip
 	@rm -rf alljoyn-js ajtcl
 	@rm -f v1.3.5.tar.gz
+	@rm -f "references/ECMA-262 5th edition December 2009.pdf"
+	@rm -f "references/ECMA-262 5.1 edition June 2011.pdf"
+	@rm -f "references/ECMA-262.pdf"
 
 libduktape.so.1.0.0: dist
 	rm -f $(subst .so.1.0.0,.so.1,$@) $(subst .so.1.0.0,.so.1.0.0,$@) $(subst .so.1.0.0,.so,$@)
@@ -929,6 +932,18 @@ dtrace4linux:
 flow:
 	# https://github.com/facebook/flow
 	$(GIT) clone --depth 1 https://github.com/facebook/flow.git
+
+references/ECMA-262\ 5th\ edition\ December\ 2009.pdf:
+	$(WGET) "http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%205th%20edition%20December%202009.pdf" -O "$@"
+references/ECMA-262\ 5.1\ edition\ June\ 2011.pdf:
+	$(WGET) "http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%205.1%20edition%20June%202011.pdf" -O "$@"
+references/ECMA-262.pdf:
+	$(WGET) "http://www.ecma-international.org/ecma-262/6.0/ECMA-262.pdf" -O "$@"
+
+.PHONY: refs
+refs:	references/ECMA-262\ 5th\ edition\ December\ 2009.pdf \
+	references/ECMA-262\ 5.1\ edition\ June\ 2011.pdf \
+	references/ECMA-262.pdf \
 
 alljoyn-js:
 	# https://git.allseenalliance.org/cgit/core/alljoyn-js.git/
