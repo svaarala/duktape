@@ -907,13 +907,13 @@ def load_metadata(opts, rom=False, build_info=None):
 	# For the ROM build: add any strings referenced by built-in objects
 	# into the string list (not the 'stridx' list though): all strings
 	# referenced by ROM objects must also be in ROM.
-	user_meta = {}
-	for fn in opts.user_builtin_metadata:
-		# XXX: awkward second pass
-		with open(fn, 'rb') as f:
-			user_meta = recursive_strings_to_bytes(yaml.load(f))
-		if rom:
-			metadata_normalize_missing_strings(meta, user_meta)
+	if rom:
+		for fn in opts.user_builtin_metadata:
+			# XXX: awkward second pass
+			with open(fn, 'rb') as f:
+				user_meta = recursive_strings_to_bytes(yaml.load(f))
+				metadata_normalize_missing_strings(meta, user_meta)
+		metadata_normalize_missing_strings(meta, {})  # in case no files
 
 	# Check for orphan objects and remove them.
 	metadata_remove_orphan_objects(meta)
