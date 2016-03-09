@@ -3655,6 +3655,13 @@ It might be cleaner to provide either:
 * Allow user code to proactively call into Duktape to indicate the transport
   is broken (beyond calling ``duk_debugger_detach()``).
 
+However, for some transports it may not be possible to get transport status
+information without actually attempting a write.  This may be caused by the
+nature of the transport or an underlying platform API limitation, for example.
+So, such a transport status callback must be optional, and it may still be
+necessary to ensure a periodic write (a "keepalive" if nothing else) to detect
+transport errors in such cases.
+
 Extend ERR message with a programmatic string error code
 --------------------------------------------------------
 
