@@ -74,8 +74,41 @@ The following genconfig option file template enables most low memory related
 option: ``config/examples/low_memory.yaml``.  It doesn't enable pointer
 compression because that always requires some application specific code.
 
+Optimizing code footprint
+=========================
+
+The best options for reducing code footprint depend obviously on your compiler.
+The footprint difference between different options can be quite large, sometimes
+over 20%, so for targets with code footprint limitations it's worth it to
+investigate the best compiler specific options.
+
+Gcc size optimization
+---------------------
+
+Based on: https://software.intel.com/en-us/blogs/2013/01/17/x86-gcc-code-size-optimizations.
+
+Default ``Makefile.cmdline`` on x64 which uses ``-O2 -fomit-frame-pointer``::
+
+       text     data      bss      dec      hex  filename
+     231549     1184       56   232789    38d55  duk
+
+Adding ``-flto``::
+
+       text     data      bss      dec      hex  filename
+     219825     1160       56   221041    35f71  duk
+
+Adding ``-flto -fno-asynchronous-unwind-tables``::
+
+       text     data      bss      dec      hex  filename
+     186745     1160       56   187961    2de39  duk
+
+Adding ``-flto -fno-asynchronous-unwind-tables -ffunction-sections -Wl,--gc-sections``::
+
+       text     data      bss      dec      hex  filename
+     186666     1144       56   187866    2ddda  duk
+
 Stripping unused API functions
-==============================
+------------------------------
 
 If you compile and link your application and Duktape statically, you can
 often strip away any Duktape API functions which are not actually used by
