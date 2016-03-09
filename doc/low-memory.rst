@@ -178,6 +178,8 @@ Suggested options
 
   - ``#undef DUK_USE_VERBOSE_ERRORS``
 
+  - ``#undef DUK_USE_VERBOSE_EXECUTOR_ERRORS``
+
   - ``#undef DUK_USE_PC2LINE``
 
 * Use slower but more compact lexer algorithm (saves on code footprint):
