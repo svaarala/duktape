@@ -2,6 +2,7 @@ define: DUK_USE_SETJMP
 feature_enables: DUK_OPT_SETJMP
 feature_no_default: true  # provided by platform unless forced
 introduced: 1.1.0
+removed: 1.5.0
 default: true
 tags:
   - portability
@@ -15,4 +16,4 @@ description: >
   if performance matters for your application.  (This is the case for OSX,
   for instance.)
 
-# FIXME: to be removed, DUK_SETJMP() is used instead?
+  Removed in Duktape 1.5.0: edit duk_config.h directly.
