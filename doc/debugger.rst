@@ -256,7 +256,8 @@ debug command (see "Custom requests and notifications"), use instead::
                                my_udata);                /* debug udata */
 
 When called, Duktape will enter debug mode, pause execution, and wait for
-further instructions from the debug client.
+further instructions from the debug client.  If Duktape debugger support is
+not enabled, an error is thrown.
 
 The transport callbacks are given as part of the start request.  Duktape
 expects a new virtual stream for every debug start/stop cycle, and will
@@ -267,7 +268,14 @@ The detached callback is called when the debugger becomes detached.  This
 can happen due to an explicit request (``duk_debugger_detach()``), a debug
 message/transport error, or Duktape heap destruction.
 
-If Duktape debugger support is not enabled, an error is thrown.
+Unless explicitly mentioned in the API documentation, none of the callbacks
+are allowed to call into the Duktape API (this is also the reason why they
+mostly don't get a ``ctx`` argument); doing so may cause memory unsafe
+behavior.  As a concrete example, if a user read callback calls into the
+Duktape API during a read operation, the API call may trigger garbage
+collection.  Because garbage collection may have arbitrary side effects,
+the debugger command in progress (implemented in ``src/duk_debugger.c``)
+may then break in a very confusing manner.
 
 duk_debugger_detach()
 ---------------------

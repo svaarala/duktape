@@ -22,18 +22,24 @@ summary: |
   <code>read_flush_cb</code> and <code>write_flush_cb</code> callbacks are
   optional.  Unimplemented callbacks are indicated using a <code>NULL</code>.</p>
 
+  <p><b>Important:</b> The callbacks are not allowed to call any Duktape API
+  functions (doing so may cause memory unsafe behavior) except for the following:</p>
+  <ul>
+  <li>The <code>request_cb</code> AppRequest callback (given in the extended
+      <code><a href="#duk_debugger_attach_custom">duk_debugger_attach_custom()</a></code>
+      API call) may use the value stack within the guidelines described in
+      <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>.</li>
+  <li>Since Duktape 1.4.0 the debugger detached callback is allowed to call
+      <code><a href="#duk_debugger_attach">duk_debugger_attach()</a></code>
+      to immediately reattach the debugger.  In Duktape 1.3.0 and before the
+      immediate reattach potentially caused
+      <a href="https://github.com/svaarala/duktape/pull/399">some issues</a>.</li>
+  </ul>
+
   <div class="note">
   The <code><a href="#duk_debugger_attach_custom">duk_debugger_attach_custom()</a></code>
   variant accepts an additional callback to support application specific commands
   (AppRequest).  These two calls will be merged in Duktape 2.x.
-  </div>
-
-  <div class="note">
-  Since Duktape 1.4.0 the debugger detached callback is allowed to call
-  <code><a href="#duk_debugger_attach">duk_debugger_attach()</a></code>
-  to immediately reattach the debugger.  In Duktape 1.3.0 and before the
-  immediate reattach potentially caused
-  <a href="https://github.com/svaarala/duktape/pull/399">some issues</a>.
   </div>
 
 example: |
