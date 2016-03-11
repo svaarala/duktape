@@ -212,8 +212,11 @@ def check_python_modules():
 		sys.stderr.write('    # Linux\n')
 		sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
 		sys.stderr.write('\n')
-		sys.stderr.write('    # Windows\n')
-		sys.stderr.write('    > pip install %s\n' % pipPackage)
+		sys.stderr.write('    # OS X (ensure PIP is installed first)\n')
+		sys.stderr.write('    > sudo pip install %s\n' % pippackage)
+		sys.stderr.write('\n')
+		sys.stderr.write('    # windows\n')
+		sys.stderr.write('    > pip install %s\n' % pippackage)
 
 	try:
 		import yaml

@@ -69,21 +69,21 @@ Automatically generated bleeding edge snapshots from master are available at
 [duktape.org/snapshots](http://duktape.org/snapshots).
 
 You can also clone this repository, make modifications, and build a source
-distributable on Linux, OSX, and Windows using `python util/make_dist.py`.
+distributable on Linux, OS X, and Windows using `python util/make_dist.py`.
 
 Getting started: modifying and rebuilding the distributable
 -----------------------------------------------------------
 
 If you intend to change Duktape internals and want to rebuild the source
-distributable in Linux, OSX, or Windows:
+distributable in Linux, OS X, or Windows:
 
     # Linux; can often install from packages or using 'pip'
     $ sudo apt-get install python python-yaml
     $ python util/make_dist.py
 
-    # OSX
-    # Install Python 2.7.x
-    $ pip install PyYAML
+    # OS X
+    # Ensure Python 2.x is installed and install 'pip'
+    $ sudo pip install PyYAML
     $ python util/make_dist.py
 
     # Windows
