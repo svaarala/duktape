@@ -20,6 +20,6 @@
 #endif
 
 /* Use _setjmp() on Apple by default, see GH-55. */
-#define DUK_USE_UNDERSCORE_SETJMP
+#define DUK_JMPBUF_TYPE       jmp_buf
 #define DUK_SETJMP(jb)        _setjmp((jb))
 #define DUK_LONGJMP(jb)       _longjmp((jb), 1)

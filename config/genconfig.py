@@ -618,7 +618,7 @@ def validate_platform_file(filename):
 		if req not in sn.provides:
 			raise Exception('Platform %s is missing %s' % (filename, req))
 
-	# DUK_USE_{SETJMP,UNDERSCORE_SETJMP,SIGSETJMP} are optional, fill-in
+	# DUK_SETJMP, DUK_LONGJMP, DUK_JMPBUF_TYPE are optional, fill-in
 	# provides if none defined.
 
 def validate_architecture_file(filename):

@@ -1,7 +1,14 @@
 #if !defined(DUK_SETJMP)
-#define DUK_USE_SETJMP
+#define DUK_JMPBUF_TYPE       jmp_buf
 #define DUK_SETJMP(jb)        setjmp((jb))
 #define DUK_LONGJMP(jb)       longjmp((jb), 1)
+#endif
+
+#if 0
+/* sigsetjmp() alternative */
+#define DUK_JMPBUF_TYPE       sigjmp_buf
+#define DUK_SETJMP(jb)        sigsetjmp((jb))
+#define DUK_LONGJMP(jb)       siglongjmp((jb), 1)
 #endif
 
 typedef FILE duk_file;

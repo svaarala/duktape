@@ -1453,6 +1453,12 @@ Planned
 
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
 
+* Rework setjmp/longjmp configuration model: (1) removed DUK_OPT_SETJMP,
+  DUK_OPT_SIGSETJMP, and DUK_OPT_UNDERSCORE_SETJMP; (2) added DUK_JMPBUF_TYPE
+  to duk_config.h to allow the jmp_buf struct to be replaced; (3) Duktape
+  internals now rely only on DUK_SETJMP, DUK_LONGJMP, and DUK_JMPBUF_TYPE,
+  all configurable via duk_config.h (or config platform definitions) (GH-635)
+
 * Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
   targets (GH-570, GH-571)
 
