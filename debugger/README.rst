@@ -25,7 +25,7 @@ Some prerequisites:
   the required packages.
 
 Compile Duktape command line tool with debugger support (for further options
-see ``doc/feature-options.rst``):
+see http://wiki.duktape.org/FeatureOptions.html):
 
 * ``DUK_OPT_DEBUGGER_SUPPORT``
 

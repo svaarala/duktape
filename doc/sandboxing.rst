@@ -294,7 +294,7 @@ Use the bytecode execution timeout mechanism
 --------------------------------------------
 
 Duktape 1.1 added a simple bytecode execution timeout mechanism, see
-``DUK_OPT_EXEC_TIMEOUT_CHECK`` in ``doc/feature-options.rst``.
+``DUK_USE_EXEC_TIMEOUT_CHECK`` in http://wiki.duktape.org/ConfigOptions.html.
 
 The mechanism and its limitations is described in a separate section below.
 
