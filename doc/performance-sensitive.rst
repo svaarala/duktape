@@ -38,15 +38,16 @@ Suggested feature options
 
 * On some platforms ``setjmp/longjmp`` store the signal mask and may be
   much slower than alternative like ``_setjmp/_longjmp`` or
-  ``sigsetjmp/siglongjmp``.  Use the long control transfer options to use
-  an alternative:
+  ``sigsetjmp/siglongjmp``:
 
-  - ``DUK_OPT_UNDERSCORE_SETJMP``
+  - Check the current provider from ``duk_config.h`` or ``config/platforms/``
+    header snippets.
 
-  - ``DUK_OPT_SIGSETJMP``
+  - Edit ``DUK_SETJMP``, ``DUK_LONGJMP``, and ``DUK_JMPBUF_TYPE`` to change
+    the setjmp provider.
 
   - On some platforms (e.g. OSX/iPhone) Duktape will automatically use
-    a faster alternative.
+    ``_setjmp()``.
 
 * Consider enabling "fastints":
 
