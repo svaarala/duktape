@@ -1,0 +1,26 @@
+# Testrunner client example configuration
+
+# Testrunner server host/port.
+serverHost: 'localhost'
+serverPort: 9080
+
+# Testrunner server SSL trust root (Duktape CA).
+serverCertificate: 'server.crt'
+
+# Testrunner API authentication.
+serverAuthPassword: 'foobarx'
+clientAuthUsername: 'foouser'
+clientAuthPassword: 'foopass'
+
+# Sleeps between successful/failed jobs.
+sleepJobSuccess: 10000
+sleepJobFailure: 60000
+
+# Supported simple commit job types (contexts).  Each context has a string
+# name which appears directly in Github web UI, and a script which is used
+# to execute test jobs of that type.
+supportedContexts:
+  - context: 'qecmatest'
+    script: '/path/to/run_qecmatest.sh'  # script paths must be absolute
+  - context: 'apitest'
+    script: '/path/to/run_apitest.sh'
