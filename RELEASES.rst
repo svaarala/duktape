@@ -1469,6 +1469,11 @@ Planned
   value (e.g. due to a transport detach) could lead to memory unsafe behavior
   (GH-610)
 
+* Fix JSON.stringify() fast path handling of boxed values to actually call
+  .toString() and/or .valueOf(); previously the fast path assumed that these
+  operations wouldn't be overridden by user code and accessed the internal
+  value directly (GH-447)
+
 * Remove branch hint from around setjmp() for better portability (GH-605)
 
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
@@ -1484,6 +1489,9 @@ Planned
 
 * Internal performance improvement: use raw value stack accessors internally
   when it's safe to do so (GH-582)
+
+* Internal performance improvement: single step encoding for JSON values in
+  the JSON slow path (GH-447)
 
 2.0.0 (XXXX-XX-XX)
 ------------------
