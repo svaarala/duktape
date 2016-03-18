@@ -1391,6 +1391,11 @@ Planned
 * Make .stack format a bit more user friendly; if you are parsing the stack
   trace format this may need changes in your parser (GH-588, GH-592)
 
+* Change automatic filename of compiled functions and eval code from
+  __FILE__ to "eval" (eval code) or "input" (other compiled code) when no
+  explicit filename is known; this makes file/line information thrown from
+  such code more useful in practice (GH-516, GH-644)
+
 * Add Windows version of the debugger example TCP transport (GH-579)
 
 * Add support for application specific debugger commands (AppRequest) and
