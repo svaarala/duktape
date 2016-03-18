@@ -11,8 +11,7 @@ summary: |
   <p>Like
   <code><a href="#duk_pcompile">duk_pcompile()</a></code>, but the compile input
   is given as a C string.  The filename associated with the function is
-  automatically provided from the <code>__FILE__</code> preprocessor define
-  of the caller.</p>
+  <code>"input"</code>.</p>
 
   <div include="no-string-intern.html" />
 

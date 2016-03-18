@@ -10,8 +10,7 @@ summary: |
   <p>Like
   <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
   is given as a C string.  The filename associated with the temporary
-  is automatically provided from the <code>__FILE__</code> preprocessor define
-  of the caller.</p>
+  eval function is <code>"eval"</code>.</p>
 
   <div include="no-string-intern.html" />
 

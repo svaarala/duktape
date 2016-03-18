@@ -10,12 +10,11 @@ summary: |
   <p>Evaluate the Ecmascript source code at the top of the stack, and leave a single
   return value on top of the stack.  May throw an error, errors are not caught
   automatically.  The filename associated with the temporary eval function is
-  automatically provided from the <code>__FILE__</code> preprocessor define
-  of the caller.</p>
+  <code>"eval"</code>.</p>
 
   <p>This is essentially a shortcut for:</p>
   <pre class="c-code">
-  duk_push_string(ctx, __FILE__);
+  duk_push_string(ctx, "eval");
   duk_compile(ctx, DUK_COMPILE_EVAL);  /* [ ... source filename ] -> [ function ] */
   duk_call(ctx, 0);
   </pre>
