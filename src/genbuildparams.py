@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Generate build parameter files based on build information.
 #  A C header is generated for C code, and a JSON file for

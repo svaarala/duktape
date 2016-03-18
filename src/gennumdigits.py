@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Generate a table indicating how many digits should be considered
 #  significant for each radix (2 to 36) when doing string-to-number

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Fix a few errors from Emscripten output (stopgap until emscripten mainline
 #  is updated).

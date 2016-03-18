@@ -44,7 +44,7 @@ NODE:=$(shell which nodejs node | head -1)
 WGET:=$(shell which wget)
 JAVA:=$(shell which java)
 VALGRIND:=$(shell which valgrind)
-PYTHON:=$(shell which python)
+PYTHON:=$(shell which python2 python|head -1)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
 DUK_VERSION:=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
@@ -551,16 +551,16 @@ endif
 
 .PHONY: matrix10
 matrix10: dist
-	cd dist; python ../util/matrix_compile.py --count=10
+	cd dist; $(PYTHON) ../util/matrix_compile.py --count=10
 .PHONY: matrix100
 matrix100: dist
-	cd dist; python ../util/matrix_compile.py --count=100
+	cd dist; $(PYTHON) ../util/matrix_compile.py --count=100
 .PHONY: matrix1000
 matrix1000: dist
-	cd dist; python ../util/matrix_compile.py --count=1000
+	cd dist; $(PYTHON) ../util/matrix_compile.py --count=1000
 .PHONY: matrix10000
 matrix10000: dist
-	cd dist; python ../util/matrix_compile.py --count=10000
+	cd dist; $(PYTHON) ../util/matrix_compile.py --count=10000
 
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
@@ -1044,7 +1044,7 @@ cloc:	dist cloc-1.60.pl
 # XXX: make prints a harmless warning related to the sub-make.
 dist:
 	@make codepolicycheck
-	if [ -f compiler.jar ]; then python util/make_dist.py --minify closure --create-spdx; else python util/make_dist.py --minify none; fi
+	if [ -f compiler.jar ]; then $(PYTHON) util/make_dist.py --minify closure --create-spdx; else $(PYTHON) util/make_dist.py --minify none; fi
 
 .PHONY:	dist-src
 dist-src:	dist
@@ -1108,7 +1108,7 @@ endif
 .PHONY: codepolicycheck
 codepolicycheck:
 	@echo Code policy check
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1122,7 +1122,7 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		src/*.c src/*.h src/*.h.in tests/api/*.c
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
@@ -1133,7 +1133,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		tests/ecmascript/*.js
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1158,7 +1158,7 @@ codepolicycheck:
 		config/examples/* config/header-snippets/* config/helper-snippets/* \
 		config/*.yaml
 	# XXX: not yet FIXME pure
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-non-ascii \
@@ -1167,7 +1167,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		config/config-options/*.yaml config/other-defines/*.yaml
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1177,7 +1177,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		debugger/*.yaml
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1190,7 +1190,7 @@ codepolicycheck:
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:
-	-python util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in tests/api/*.c
+	-$(PYTHON) util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in tests/api/*.c
 
 .PHONY: big-git-files
 big-git-files:
@@ -1233,9 +1233,9 @@ massif-arcfour: massif-test-dev-arcfour
 # - Node.js (V8) is JITed
 # - Luajit is JITed
 
-#TIME=python util/time_multi.py --count 1 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
-#TIME=python util/time_multi.py --count 3 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
-TIME=python util/time_multi.py --count 5 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+#TIME=$(PYTHON) util/time_multi.py --count 1 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+#TIME=$(PYTHON) util/time_multi.py --count 3 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+TIME=$(PYTHON) util/time_multi.py --count 5 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
 
 # Blocks: optimization variants, previous versions, other interpreting engines,
 # other JIT engines.
@@ -1254,7 +1254,7 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' |'; \
 		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
 		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
-		printf ' python %5s' "`$(TIME) python $${i%%.js}.py`"; \
+		printf ' python %5s' "`$(TIME) $(PYTHON) $${i%%.js}.py`"; \
 		printf ' perl %5s' "`$(TIME) perl $${i%%.js}.pl`"; \
 		printf ' ruby %5s' "`$(TIME) ruby $${i%%.js}.rb`"; \
 		printf ' |'; \

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Prepare an Ecmascript or API testcase file for execution.
 #

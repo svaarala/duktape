@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Throwaway utility to dump Ditz issues for grooming.
 #

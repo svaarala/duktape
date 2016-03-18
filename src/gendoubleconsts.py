@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 
 # Double constants, see http://en.wikipedia.org/wiki/Double-precision_floating-point_format.
 # Some double constants have been created with 'python-mpmath'.  The constants are in binary

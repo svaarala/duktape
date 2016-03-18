@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Select a set of Unicode characters (based on included/excluded categories
 #  etc) and write out a compact bitstream for matching a character against

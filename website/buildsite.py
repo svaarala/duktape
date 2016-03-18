@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Build Duktape website.  Must be run with cwd in the website/ directory.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Automatically fix one-line broken debug log calls.  Adds a missing
 #  wrapper for such lines, e.g. changes:

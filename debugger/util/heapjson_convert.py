@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Convert a HeapDump JSON file into a more useful format.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Extract unique DUK_USE_xxx flags from current code base:
 #

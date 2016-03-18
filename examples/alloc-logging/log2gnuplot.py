@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Analyze allocator logs and write total-bytes-in-use after every
 #  operation to stdout.  The output can be gnuplotted as:

@@ -28,6 +28,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Bruce Pascoe <fatcerberus1@gmail.com>
 * René Hollander <rene@rene8888.at>
 * Julien Hamaide (https://github.com/crazyjul)
+* Sebastian Götte (https://github.com/jaseg)
 
 Other contributions
 ===================

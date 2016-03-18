@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python2
 #
 #  Build data URIs for images.  Results are manually embedded into CSS.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Simulate pool allocator behavior against a memory allocation log written
 #  by duk_alloc_logging.c or in matching format.  Provide commands to provide

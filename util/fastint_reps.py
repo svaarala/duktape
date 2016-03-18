@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Print out a few IEEE double representations related to the Duktape fastint
 #  number model.

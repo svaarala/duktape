@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Extract rules for Unicode case conversion, specifically the behavior
 #  required by Ecmascript E5 in Sections 15.5.4.16 to 15.5.4.19.  The

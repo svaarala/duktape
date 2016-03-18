@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Generate a size report from a Duktape library / executable.
 #  Write out useful information about function sizes in a variety

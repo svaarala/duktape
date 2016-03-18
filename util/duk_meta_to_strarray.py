@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Create an array of C strings with Duktape built-in strings.
 #  Useful when using external strings.

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Merge debugger YAML metadata files and output a merged JSON metadata file.
 #
