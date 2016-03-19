@@ -25,7 +25,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 	 * See tests/api/test-eval-strictness.c for more discussion.
 	 */
 
-	/* [ ... source? filename ] (depends on flags) */
+	/* [ ... source? filename? ] (depends on flags) */
 
 	comp_flags = flags;
 	comp_flags |= DUK_COMPILE_EVAL;
@@ -74,11 +74,18 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	 * for discussion.
 	 */
 
-	/* [ ... source? filename &comp_args ] (depends on flags) */
+	/* [ ... source? filename? &comp_args ] (depends on flags) */
 
 	comp_args = (duk__compile_raw_args *) duk_require_pointer(ctx, -1);
 	flags = comp_args->flags;
 	duk_pop(ctx);
+
+	/* [ ... source? filename? ] */
+
+	if (flags & DUK_COMPILE_NOFILENAME) {
+		/* Automatic filename: 'eval' or 'input'. */
+		duk_push_hstring_stridx(ctx, (flags & DUK_COMPILE_EVAL) ? DUK_STRIDX_EVAL : DUK_STRIDX_INPUT);
+	}
 
 	/* [ ... source? filename ] */
 
@@ -158,15 +165,21 @@ DUK_EXTERNAL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer,
 	comp_args->flags = flags;
 	duk_push_pointer(ctx, (void *) comp_args);
 
-	/* [ ... source? filename &comp_args ] (depends on flags) */
+	/* [ ... source? filename? &comp_args ] (depends on flags) */
 
 	if (flags & DUK_COMPILE_SAFE) {
 		duk_int_t rc;
 		duk_int_t nargs;
 		duk_int_t nrets = 1;
 
-		/* Arguments are either: [ filename &comp_args ] or [ source filename &comp_args ] */
-		nargs = (flags & DUK_COMPILE_NOSOURCE) ? 2 : 3;
+		/* Arguments can be: [ source? filename? &comp_args] so that
+		 * nargs is 1 to 3.  Call site encodes the correct nargs count
+		 * directly into flags.
+		 */
+		nargs = flags & 0x07;
+		DUK_ASSERT(nargs == (1 +
+		                     ((flags & DUK_COMPILE_NOSOURCE) ? 0 : 1) +
+		                     ((flags & DUK_COMPILE_NOFILENAME) ? 0 : 1)));
 		rc = duk_safe_call(ctx, duk__do_compile, nargs, nrets);
 
 		/* [ ... closure ] */

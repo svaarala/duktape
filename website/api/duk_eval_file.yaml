@@ -10,7 +10,7 @@ summary: |
   <p>Like
   <code><a href="#duk_eval">duk_eval()</a></code>, but the eval input
   is given as a filename.  The filename associated with the temporary
-  function created for the eval code is <code>path</code> as is.</p>
+  eval function is <code>path</code> as is.</p>
 
   <div include="path-encoding.html" />
 
