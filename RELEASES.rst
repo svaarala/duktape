@@ -1396,6 +1396,17 @@ Planned
   explicit filename is known; this makes file/line information thrown from
   such code more useful in practice (GH-516, GH-644)
 
+* Add support for non-standard module.fileName (initialized to resolved
+  module ID) and module.name (initialized to last component of resolved
+  module ID) which are used for the internal module wrapper function's
+  .fileName and .name properties; they show up in stack traces, debugger
+  integration, logger instance default naming, etc, and can now be
+  controlled by modSearch() (GH-639)
+
+* Add a .name property for the require() functions created for included
+  modules, so that they have a readable name in stack traces like the top
+  level require() function (GH-639)
+
 * Add Windows version of the debugger example TCP transport (GH-579)
 
 * Add support for application specific debugger commands (AppRequest) and
