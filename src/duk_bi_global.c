@@ -840,17 +840,14 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_print_helper(duk_context *ctx) {
 #if defined(DUK_USE_COMMONJS_MODULES)
 DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *req_id, const char *mod_id) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_size_t mod_id_len;
-	duk_size_t req_id_len;
-	duk_uint8_t buf_in[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
-	duk_uint8_t buf_out[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
+	duk_uint8_t buf[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
 	duk_uint8_t *p;
 	duk_uint8_t *q;
 	duk_uint8_t *q_last;  /* last component */
+	duk_int_t int_rc;
 
 	DUK_ASSERT(req_id != NULL);
 	/* mod_id may be NULL */
-	DUK_ASSERT(sizeof(buf_out) >= sizeof(buf_in));  /* bound checking requires this */
 
 	/*
 	 *  A few notes on the algorithm:
@@ -860,8 +857,10 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	 *      is within CommonJS modules specification).
 	 *
 	 *    - There are few output bound checks here.  This is on purpose:
-	 *      we check the input length and rely on the output never being
-	 *      longer than the input, so we cannot run out of output space.
+	 *      the resolution input is length checked and the output is never
+	 *      longer than the input.  The resolved output is written directly
+	 *      over the input because it's never longer than the input at any
+	 *      point in the algorithm.
 	 *
 	 *    - Non-ASCII characters are processed as individual bytes and
 	 *      need no special treatment.  However, U+0000 terminates the
@@ -879,32 +878,29 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	 *  'foo/bar/.././quux'.
 	 */
 
-	req_id_len = DUK_STRLEN(req_id);
 	if (mod_id != NULL && req_id[0] == '.') {
-		mod_id_len = DUK_STRLEN(mod_id);
-		if (mod_id_len + 4 + req_id_len + 1 >= sizeof(buf_in)) {
-			DUK_DD(DUK_DDPRINT("resolve error: current and requested module ID don't fit into resolve input buffer"));
-			goto resolve_error;
-		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s/../%s", (const char *) mod_id, (const char *) req_id);
+		int_rc = DUK_SNPRINTF((char *) buf, sizeof(buf), "%s/../%s", mod_id, req_id);
 	} else {
-		if (req_id_len + 1 >= sizeof(buf_in)) {
-			DUK_DD(DUK_DDPRINT("resolve error: requested module ID doesn't fit into resolve input buffer"));
-			goto resolve_error;
-		}
-		(void) DUK_SNPRINTF((char *) buf_in, sizeof(buf_in), "%s", (const char *) req_id);
+		int_rc = DUK_SNPRINTF((char *) buf, sizeof(buf), "%s", req_id);
 	}
-	buf_in[sizeof(buf_in) - 1] = (duk_uint8_t) 0;
+	if (int_rc >= (duk_int_t) sizeof(buf) || int_rc < 0) {
+		/* Potentially truncated, NUL not guaranteed in any case.
+		 * The (int_rc < 0) case should not occur in practice.
+		 */
+		DUK_DD(DUK_DDPRINT("resolve error: temporary working module ID doesn't fit into resolve buffer"));
+		goto resolve_error;
+	}
+	DUK_ASSERT(DUK_STRLEN((const char *) buf) < sizeof(buf));  /* at most sizeof(buf) - 1 */
 
-	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", (const char *) buf_in));
+	DUK_DDD(DUK_DDDPRINT("input module id: '%s'", (const char *) buf));
 
 	/*
 	 *  Resolution loop.  At the top of the loop we're expecting a valid
 	 *  term: '.', '..', or a non-empty identifier not starting with a period.
 	 */
 
-	p = buf_in;
-	q = buf_out;
+	p = buf;
+	q = buf;
 	for (;;) {
 		duk_uint_fast8_t c;
 
@@ -915,8 +911,8 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 		 * on loop exit.
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p",
-		                     (const char *) p, (void *) q, (void *) buf_out));
+		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf=%p",
+		                     (const char *) p, (void *) q, (void *) buf));
 
 		q_last = q;
 
@@ -936,17 +932,17 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 				 *  q[-2] = last char of previous component (or beyond start of buffer)
 				 */
 				p++;  /* eat (first) input slash */
-				DUK_ASSERT(q >= buf_out);
-				if (q == buf_out) {
+				DUK_ASSERT(q >= buf);
+				if (q == buf) {
 					DUK_DD(DUK_DDPRINT("resolve error: term was '..' but nothing to backtrack"));
 					goto resolve_error;
 				}
 				DUK_ASSERT(*(q - 1) == '/');
-				q--;  /* backtrack to last output slash */
+				q--;  /* backtrack to last output slash (dups already eliminated) */
 				for (;;) {
 					/* Backtrack to previous slash or start of buffer. */
-					DUK_ASSERT(q >= buf_out);
-					if (q == buf_out) {
+					DUK_ASSERT(q >= buf);
+					if (q == buf) {
 						break;
 					}
 					if (*(q - 1) == '/') {
@@ -993,16 +989,16 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	}
  loop_done:
 	/* Output #1: resolved absolute name */
-	DUK_ASSERT(q >= buf_out);
-	duk_push_lstring(ctx, (const char *) buf_out, (size_t) (q - buf_out));
+	DUK_ASSERT(q >= buf);
+	duk_push_lstring(ctx, (const char *) buf, (size_t) (q - buf));
 
 	/* Output #2: last component name */
 	DUK_ASSERT(q >= q_last);
-	DUK_ASSERT(q_last >= buf_out);
+	DUK_ASSERT(q_last >= buf);
 	duk_push_lstring(ctx, (const char *) q_last, (size_t) (q - q_last));
 
-	DUK_DD(DUK_DDPRINT("after resolving module name: buf_out=%p, q_last=%p, q=%p",
-	                   (void *) buf_out, (void *) q_last, (void *) q));
+	DUK_DD(DUK_DDPRINT("after resolving module name: buf=%p, q_last=%p, q=%p",
+	                   (void *) buf, (void *) q_last, (void *) q));
 	return;
 
  resolve_error:
@@ -1118,21 +1114,17 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 * - module.exports: initial exports table (may be replaced by user)
 	 * - module.id is non-writable and non-configurable, as the CommonJS
 	 *   spec suggests this if possible
-	 * - module.fileName: fileName where module loaded from, defaults to
-	 *   resolved ID
-	 * - module.name: name for module wrapper function, defaults to last
-	 *   component of resolved ID
+	 * - module.fileName: not set, defaults to resolved ID if not explicitly
+	 *   set by modSearch()
+	 * - module.name: not set, defaults to last component of resolved ID if
+	 *   not explicitly set by modSearch()
 	 */
 	duk_push_object(ctx);  /* exports */
 	duk_push_object(ctx);  /* module */
 	duk_dup(ctx, DUK__IDX_EXPORTS);
 	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_EXPORTS, DUK_PROPDESC_FLAGS_WC);  /* module.exports = exports */
 	duk_dup(ctx, DUK__IDX_RESOLVED_ID);  /* resolved id: require(id) must return this same module */
-	duk_dup_top(ctx);
 	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);  /* module.id = resolved_id */
-	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);  /* module.fileName = resolved_id */
-	duk_dup(ctx, DUK__IDX_LASTCOMP);
-	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);  /* module.name = last_comp */
 	duk_compact(ctx, DUK__IDX_MODULE);  /* module table remains registered to modLoaded, minimize its size */
 	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 1);
 
@@ -1199,7 +1191,13 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
-	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME);  /* module.fileName for fileName */
+	if (!duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME)) {
+		/* module.fileName for .fileName, default to resolved ID if
+		 * not present.
+		 */
+		duk_pop(ctx);
+		duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	}
 	duk_eval_raw(ctx, NULL, 0, DUK_COMPILE_EVAL);
 
 	/* Module has now evaluated to a wrapped module function.  Force its
@@ -1213,7 +1211,13 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 */
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_NAME);
-	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_NAME);
+	if (!duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_NAME)) {
+		/* module.name for .name, default to last component if
+		 * not present.
+		 */
+		duk_pop(ctx);
+		duk_dup(ctx, DUK__IDX_LASTCOMP);
+	}
 	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
 	/*
@@ -1250,6 +1254,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 
  return_exports:
 	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_EXPORTS);
+	duk_compact(ctx, -1);  /* compact the exports table */
 	return 1;  /* return module.exports */
 
  delete_rethrow:
