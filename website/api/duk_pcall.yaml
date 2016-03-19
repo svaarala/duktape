@@ -29,6 +29,12 @@ summary: |
   multiple error codes to be defined later.
   </div>
 
+  <p>Error objects caught are typically instances of Error and have useful
+  properties like <code>.stack</code>, <code>.fileName</code>, and
+  <code>.lineNumber</code>.  These can be accessed using the normal property
+  methods.  However, arbitrary values can be thrown so you should avoid
+  assuming that's always the case.</p>
+
   <p>The target function <code>this</code> binding is initially set to
   <code>undefined</code>.  If the target function is not strict, the binding
   is replaced by the global object before the function is invoked; see
@@ -45,6 +51,8 @@ example: |
   duk_idx_t func_idx;
   duk_int_t rc;
 
+  /* Basic example: function call and duk_safe_to_string() error print. */
+
   duk_dup(ctx, func_idx);
   duk_push_int(ctx, 2);
   duk_push_int(ctx, 3);
@@ -52,7 +60,35 @@ example: |
   if (rc == DUK_EXEC_SUCCESS) {
       printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
   } else {
-      printf("error: %s\n", duk_to_string(ctx, -1));
+      /* Coercing with duk_safe_to_string() is a useful default, but you can
+       * also look up e.g. the .stack property of the error.
+       */
+      printf("error: %s\n", duk_safe_to_string(ctx, -1));
+  }
+  duk_pop(ctx);
+
+  /* Accessing .stack to print a stack trace if the value caught is an
+   * Error instance.
+   */
+
+  duk_dup(ctx, func_idx);
+  duk_push_int(ctx, 2);
+  duk_push_int(ctx, 3);
+  rc = duk_pcall(ctx, 2);  /* [ ... func 2 3 ] -> [ 5 ] */
+  if (rc == DUK_EXEC_SUCCESS) {
+      printf("2+3=%ld\n", (long) duk_get_int(ctx, -1));
+  } else {
+      if (duk_is_error(ctx, -1)) {
+          /* Accessing .stack might cause an error to be thrown, so wrap this
+           * access in a duk_safe_call() if it matters.
+           */
+          duk_get_prop_string(ctx, -1, "stack");
+          printf("error: %s\n", duk_safe_to_string(ctx, -1));
+          duk_pop(ctx);
+      } else {
+          /* Non-Error value, coerce safely to string. */
+          printf("error: %s\n", duk_safe_to_string(ctx, -1));
+      }
   }
   duk_pop(ctx);
 
