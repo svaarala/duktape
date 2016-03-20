@@ -667,7 +667,7 @@ var rnd_val;
 var rnd_sum = 0;
 var rnd_ge0 = true;
 var rnd_lt0 = true;
-for (i = 0; i < 100000; i++) {
+for (i = 0; i < 1e6; i++) {
     rnd_val = Math.random();
     if (!(rnd_val >= 0)) { rnd_ge0 = false; }
     if (!(rnd_val < 1)) { rnd_lt0 = false; }
@@ -675,7 +675,7 @@ for (i = 0; i < 100000; i++) {
 }
 
 print(rnd_ge0, rnd_lt0);
-print(rnd_sum >= 49700.0, rnd_sum <= 50300.0);
+print(rnd_sum >= 0.497e6, rnd_sum <= 0.503e6);
 
 /*===
 round
