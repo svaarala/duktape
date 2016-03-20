@@ -262,9 +262,10 @@ of the module wrapper function used to implement module loading.  This is
 useful because they appear in e.g. tracebacks for errors created from the
 module, see: https://github.com/svaarala/duktape/pull/639.
 
-The initial value for ``module.fileName`` is the full resolved module ID
-(e.g. ``foo/bar``) and for ``module.name`` the last component of the
-resolved module ID (e.g. ``bar``).
+The properties are missing by default.  If modSearch() doesn't set them,
+module.fileName defaults to the full resolved module ID (e.g. ``foo/bar``)
+and ``name`` defaults to the last component of the resolved module ID
+(e.g. ``bar``).
 
 C modules and DLLs
 ==================
