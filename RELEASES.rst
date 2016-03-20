@@ -1396,12 +1396,11 @@ Planned
   explicit filename is known; this makes file/line information thrown from
   such code more useful in practice (GH-516, GH-644)
 
-* Add support for non-standard module.fileName (initialized to resolved
-  module ID) and module.name (initialized to last component of resolved
-  module ID) which are used for the internal module wrapper function's
-  .fileName and .name properties; they show up in stack traces, debugger
-  integration, logger instance default naming, etc, and can now be
-  controlled by modSearch() (GH-639)
+* Add support for non-standard module.fileName and module.name used for the
+  internal module wrapper function's .fileName and .name properties
+  respectively (if unset, defaults are resolved module ID and last component
+  of the resolved module ID, respectively); these properties affect e.g.
+  stack traces and can now be controlled by modSearch() (GH-639)
 
 * Add a .name property for the require() functions created for included
   modules, so that they have a readable name in stack traces like the top
