@@ -4,19 +4,19 @@
 
 /*===
 default behavior
-test/foo2 test/foo2 test/foo2 foo2
+test/foo2 test/foo2 undefined undefined
 test/foo2
 2
 foo2
 TIME INF test/foo2: test
 override .name and .fileName
-test/bar2 test/bar2 test/bar2 bar2
+test/bar2 test/bar2 undefined undefined
 my_source.js
 2
 my_module
 TIME INF my_source.js: test
 .name shadowing test
-test/quux2 test/quux2 test/quux2 quux2
+test/quux2 test/quux2 undefined undefined
 object
 number
 123
@@ -39,7 +39,9 @@ function test() {
         print(String(buf).replace(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.*?Z/, 'TIME'));
     };
 
-    // Default behavior, module.fileName is resolved module ID.
+    // Default behavior, module wrapper .fileName is resolved module ID,
+    // .name is last component of resolved ID (module.fileName and module.name
+    // are not set by default which triggers the default values).
 
     Duktape.modSearch = function modSearch(id, require, exports, module) {
         print(id, module.id, module.fileName, module.name);
