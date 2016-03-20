@@ -2,8 +2,14 @@
  *  Filename for functions inside a module loaded using require()
  *
  *  In Duktape 1.0.0 this would always be "duk_bi_global.c" which is confusing.
- *  For Duktape 1.1.0 this was fixed to be the fully resolved module ID.
+ *
+ *  In Duktape 1.1.0 this was fixed to be the fully resolved module ID.
  *  See GH-58 for discussion.
+ *
+ *  In Duktape 1.5.0 the module wrapper function is also given a .name which
+ *  defaults to the last component of the resolved module ID.  Both the .name
+ *  and .fileName can be overridden by modSearch via module.name and
+ *  module.fileName.
  */
 
 /*---
@@ -13,10 +19,10 @@
 ---*/
 
 /*===
-moduleFunc name: 
-moduleFunc fileName: foo
+moduleFunc name: foo
+moduleFunc fileName: my/foo
 testFunc name: testFunc
-testFunc fileName: foo
+testFunc fileName: my/foo
 ===*/
 
 function modSearch() {
@@ -35,7 +41,7 @@ function test() {
      */
 
     Duktape.modSearch = modSearch;
-    var mod = require('foo');
+    var mod = require('my/foo');
 
     /* However, functions defined within the module don't have a proper
      * fileName in Duktape 1.0.0.

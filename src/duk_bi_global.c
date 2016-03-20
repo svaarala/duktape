@@ -580,7 +580,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("eval -> lex_env=%!iO, var_env=%!iO, this_binding=%!T",
 	                     (duk_heaphdr *) outer_lex_env,
 	                     (duk_heaphdr *) outer_var_env,
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     duk_get_tval(ctx, -1)));
 
 	/* [ source template closure this ] */
 
@@ -846,6 +846,7 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	duk_uint8_t buf_out[DUK_BI_COMMONJS_MODULE_ID_LIMIT];
 	duk_uint8_t *p;
 	duk_uint8_t *q;
+	duk_uint8_t *q_last;  /* last component */
 
 	DUK_ASSERT(req_id != NULL);
 	/* mod_id may be NULL */
@@ -907,9 +908,17 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	for (;;) {
 		duk_uint_fast8_t c;
 
-		/* Here 'p' always points to the start of a term. */
+		/* Here 'p' always points to the start of a term.
+		 *
+		 * We can also unconditionally reset q_last here: if this is
+		 * the last (non-empty) term q_last will have the right value
+		 * on loop exit.
+		 */
+
 		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf_out=%p",
 		                     (const char *) p, (void *) q, (void *) buf_out));
+
+		q_last = q;
 
 		c = *p++;
 		if (DUK_UNLIKELY(c == 0)) {
@@ -959,6 +968,9 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 				*q++ = c;
 				c = *p++;
 				if (DUK_UNLIKELY(c == 0)) {
+					/* This was the last term, and q_last was
+					 * updated to match this term at loop top.
+					 */
 					goto loop_done;
 				} else if (DUK_UNLIKELY(c == '/')) {
 					*q++ = '/';
@@ -980,8 +992,17 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 		}
 	}
  loop_done:
-
+	/* Output #1: resolved absolute name */
+	DUK_ASSERT(q >= buf_out);
 	duk_push_lstring(ctx, (const char *) buf_out, (size_t) (q - buf_out));
+
+	/* Output #2: last component name */
+	DUK_ASSERT(q >= q_last);
+	DUK_ASSERT(q_last >= buf_out);
+	duk_push_lstring(ctx, (const char *) q_last, (size_t) (q - q_last));
+
+	DUK_DD(DUK_DDPRINT("after resolving module name: buf_out=%p, q_last=%p, q=%p",
+	                   (void *) buf_out, (void *) q_last, (void *) q));
 	return;
 
  resolve_error:
@@ -990,6 +1011,19 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 #endif  /* DUK_USE_COMMONJS_MODULES */
 
 #if defined(DUK_USE_COMMONJS_MODULES)
+/* Stack indices for better readability */
+#define DUK__IDX_REQUESTED_ID   0  /* Module id requested */
+#define DUK__IDX_REQUIRE        1  /* Current require() function */
+#define DUK__IDX_REQUIRE_ID     2  /* The base ID of the current require() function, resolution base */
+#define DUK__IDX_RESOLVED_ID    3  /* Resolved, normalized absolute module ID */
+#define DUK__IDX_LASTCOMP       4  /* Last component name in resolved path */
+#define DUK__IDX_DUKTAPE        5  /* Duktape object */
+#define DUK__IDX_MODLOADED      6  /* Duktape.modLoaded[] module cache */
+#define DUK__IDX_UNDEFINED      7  /* 'undefined', artifact of lookup */
+#define DUK__IDX_FRESH_REQUIRE  8  /* New require() function for module, updated resolution base */
+#define DUK__IDX_EXPORTS        9  /* Default exports table */
+#define DUK__IDX_MODULE         10  /* Module object containing module.exports, etc */
+
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	const char *str_req_id;  /* requested identifier */
 	const char *str_mod_id;  /* require.id of current module */
@@ -1005,23 +1039,24 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  Resolve module identifier into canonical absolute form.
 	 */
 
-	str_req_id = duk_require_string(ctx, 0);
+	str_req_id = duk_require_string(ctx, DUK__IDX_REQUESTED_ID);
 	duk_push_current_function(ctx);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_ID);
-	str_mod_id = duk_get_string(ctx, 2);  /* ignore non-strings */
+	str_mod_id = duk_get_string(ctx, DUK__IDX_REQUIRE_ID);  /* ignore non-strings */
 	DUK_DDD(DUK_DDDPRINT("resolve module id: requested=%!T, currentmodule=%!T",
-	                     (duk_tval *) duk_get_tval(ctx, 0),
-	                     (duk_tval *) duk_get_tval(ctx, 2)));
+	                     duk_get_tval(ctx, DUK__IDX_REQUESTED_ID),
+	                     duk_get_tval(ctx, DUK__IDX_REQUIRE_ID)));
 	duk__bi_global_resolve_module_id(ctx, str_req_id, str_mod_id);
 	str_req_id = NULL;
 	str_mod_id = NULL;
-	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T",
-	                     (duk_tval *) duk_get_tval(ctx, 0),
-	                     (duk_tval *) duk_get_tval(ctx, 2),
-	                     (duk_tval *) duk_get_tval(ctx, 3)));
+	DUK_DDD(DUK_DDDPRINT("resolved module id: requested=%!T, currentmodule=%!T, result=%!T, lastcomp=%!T",
+	                     duk_get_tval(ctx, DUK__IDX_REQUESTED_ID),
+	                     duk_get_tval(ctx, DUK__IDX_REQUIRE_ID),
+	                     duk_get_tval(ctx, DUK__IDX_RESOLVED_ID),
+	                     duk_get_tval(ctx, DUK__IDX_LASTCOMP)));
 
-	/* [ requested_id require require.id resolved_id ] */
-	DUK_ASSERT_TOP(ctx, 4);
+	/* [ requested_id require require.id resolved_id last_comp ] */
+	DUK_ASSERT_TOP(ctx, DUK__IDX_LASTCOMP + 1);
 
 	/*
 	 *  Cached module check.
@@ -1032,27 +1067,22 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  be supported to some extent.
 	 */
 
-	/* [ requested_id require require.id resolved_id ] */
-	DUK_ASSERT_TOP(ctx, 4);
-
 	duk_push_hobject_bidx(ctx, DUK_BIDX_DUKTAPE);
-	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_LOADED);  /* Duktape.modLoaded */
-	(void) duk_require_hobject(ctx, 5);
+	duk_get_prop_stridx(ctx, DUK__IDX_DUKTAPE, DUK_STRIDX_MOD_LOADED);  /* Duktape.modLoaded */
+	(void) duk_require_hobject(ctx, DUK__IDX_MODLOADED);
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODLOADED + 1);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded ] */
-	DUK_ASSERT_TOP(ctx, 6);
-
-	duk_dup(ctx, 3);
-	if (duk_get_prop(ctx, 5)) {
-		/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	if (duk_get_prop(ctx, DUK__IDX_MODLOADED)) {
+		/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded Duktape.modLoaded[id] ] */
 		DUK_DD(DUK_DDPRINT("module already loaded: %!T",
-		                   (duk_tval *) duk_get_tval(ctx, 3)));
+		                   duk_get_tval(ctx, DUK__IDX_RESOLVED_ID)));
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_EXPORTS);  /* return module.exports */
 		return 1;
 	}
+	DUK_ASSERT_TOP(ctx, DUK__IDX_UNDEFINED + 1);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined ] */
-	DUK_ASSERT_TOP(ctx, 7);
+	/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded undefined ] */
 
 	/*
 	 *  Module not loaded (and loading not started previously).
@@ -1064,8 +1094,12 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  succeeds in finding the module.
 	 */
 
-	DUK_DD(DUK_DDPRINT("module not yet loaded: %!T",
-	                   (duk_tval *) duk_get_tval(ctx, 3)));
+	DUK_D(DUK_DPRINT("loading module %!T, resolution base %!T, requested ID %!T -> resolved ID %!T, last component %!T",
+                         duk_get_tval(ctx, DUK__IDX_RESOLVED_ID),
+                         duk_get_tval(ctx, DUK__IDX_REQUIRE_ID),
+                         duk_get_tval(ctx, DUK__IDX_REQUESTED_ID),
+                         duk_get_tval(ctx, DUK__IDX_RESOLVED_ID),
+                         duk_get_tval(ctx, DUK__IDX_LASTCOMP)));
 
 	/* Fresh require: require.id is left configurable (but not writable)
 	 * so that is not easy to accidentally tweak it, but it can still be
@@ -1075,32 +1109,44 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 * is no practical reason to touch it.
 	 */
 	duk_push_c_function(ctx, duk_bi_global_object_require, 1 /*nargs*/);
-	duk_dup(ctx, 3);
-	duk_xdef_prop_stridx(ctx, 7, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_REQUIRE);
+	duk_xdef_prop_stridx(ctx, DUK__IDX_FRESH_REQUIRE, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	duk_xdef_prop_stridx(ctx, DUK__IDX_FRESH_REQUIRE, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_C);  /* a fresh require() with require.id = resolved target module id */
 
 	/* Module table:
 	 * - module.exports: initial exports table (may be replaced by user)
 	 * - module.id is non-writable and non-configurable, as the CommonJS
-	 *   spec suggests this if possible.
+	 *   spec suggests this if possible
+	 * - module.fileName: fileName where module loaded from, defaults to
+	 *   resolved ID
+	 * - module.name: name for module wrapper function, defaults to last
+	 *   component of resolved ID
 	 */
 	duk_push_object(ctx);  /* exports */
 	duk_push_object(ctx);  /* module */
-	duk_dup(ctx, -2);
-	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS, DUK_PROPDESC_FLAGS_WC);  /* module.exports = exports */
-	duk_dup(ctx, 3);  /* resolved id: require(id) must return this same module */
-	duk_xdef_prop_stridx(ctx, 9, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);  /* module.id = resolved_id */
-	duk_compact(ctx, 9);  /* module table remains registered to modLoaded, minimize its size */
+	duk_dup(ctx, DUK__IDX_EXPORTS);
+	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_EXPORTS, DUK_PROPDESC_FLAGS_WC);  /* module.exports = exports */
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);  /* resolved id: require(id) must return this same module */
+	duk_dup_top(ctx);
+	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_ID, DUK_PROPDESC_FLAGS_NONE);  /* module.id = resolved_id */
+	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);  /* module.fileName = resolved_id */
+	duk_dup(ctx, DUK__IDX_LASTCOMP);
+	duk_xdef_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);  /* module.name = last_comp */
+	duk_compact(ctx, DUK__IDX_MODULE);  /* module table remains registered to modLoaded, minimize its size */
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 1);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module ] */
-	DUK_ASSERT_TOP(ctx, 10);
+	DUK_DD(DUK_DDPRINT("module table created: %!T", duk_get_tval(ctx, DUK__IDX_MODULE)));
+
+	/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded undefined fresh_require exports module ] */
 
 	/* Register the module table early to modLoaded[] so that we can
 	 * support circular references even in modSearch().  If an error
 	 * is thrown, we'll delete the reference.
 	 */
-	duk_dup(ctx, 3);
-	duk_dup(ctx, 9);
-	duk_put_prop(ctx, 5);  /* Duktape.modLoaded[resolved_id] = module */
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	duk_dup(ctx, DUK__IDX_MODULE);
+	duk_put_prop(ctx, DUK__IDX_MODLOADED);  /* Duktape.modLoaded[resolved_id] = module */
 
 	/*
 	 *  Call user provided module search function and build the wrapped
@@ -1122,13 +1168,13 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_push_string(ctx, "(function(require,exports,module){");
 
 	/* Duktape.modSearch(resolved_id, fresh_require, exports, module). */
-	duk_get_prop_stridx(ctx, 4, DUK_STRIDX_MOD_SEARCH);  /* Duktape.modSearch */
-	duk_dup(ctx, 3);
-	duk_dup(ctx, 7);
-	duk_dup(ctx, 8);
-	duk_dup(ctx, 9);  /* [ ... Duktape.modSearch resolved_id fresh_require exports module ] */
+	duk_get_prop_stridx(ctx, DUK__IDX_DUKTAPE, DUK_STRIDX_MOD_SEARCH);  /* Duktape.modSearch */
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	duk_dup(ctx, DUK__IDX_FRESH_REQUIRE);
+	duk_dup(ctx, DUK__IDX_EXPORTS);
+	duk_dup(ctx, DUK__IDX_MODULE);  /* [ ... Duktape.modSearch resolved_id last_comp fresh_require exports module ] */
 	pcall_rc = duk_pcall(ctx, 4 /*nargs*/);  /* -> [ ... source ] */
-	DUK_ASSERT_TOP(ctx, 12);
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 3);
 
 	if (pcall_rc != DUK_EXEC_SUCCESS) {
 		/* Delete entry in Duktape.modLoaded[] and rethrow. */
@@ -1138,7 +1184,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	/* If user callback did not return source code, module loading
 	 * is finished (user callback initialized exports table directly).
 	 */
-	if (!duk_is_string(ctx, 11)) {
+	if (!duk_is_string(ctx, -1)) {
 		/* User callback did not return source code, so module loading
 		 * is finished: just update modLoaded with final module.exports
 		 * and we're done.
@@ -1146,25 +1192,29 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		goto return_exports;
 	}
 
-	/* Finish the wrapped module source.  Force resolved module ID as the
-	 * fileName so it gets set for functions defined within a module.  This
-	 * also ensures loggers created within the module get the module ID as
-	 * their default logger name.
+	/* Finish the wrapped module source.  Force module.fileName as the
+	 * function .fileName so it gets set for functions defined within a
+	 * module.  This also ensures loggers created within the module get
+	 * the module ID (or overridden filename) as their default logger name.
 	 */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
-	duk_dup(ctx, 3);  /* resolved module ID for fileName */
+	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME);  /* module.fileName for fileName */
 	duk_eval_raw(ctx, NULL, 0, DUK_COMPILE_EVAL);
 
-	/* XXX: The module wrapper function is currently anonymous and is shown
-	 * in stack traces.  It would be nice to force it to match the module
-	 * name (perhaps just the cleaned up last term).  At the moment 'name'
-	 * is write protected so we can't change it directly.  Note that we must
-	 * not introduce an actual name binding into the function scope (which
-	 * is usually the case with a named function) because it would affect
-	 * the scope seen by the module and shadow accesses to globals of the
-	 * same name.
+	/* Module has now evaluated to a wrapped module function.  Force its
+	 * .name to match module.name (defaults to last component of resolved
+	 * ID) so that it is shown in stack traces too.  Note that we must not
+	 * introduce an actual name binding into the function scope (which is
+	 * usually the case with a named function) because it would affect the
+	 * scope seen by the module and shadow accesses to globals of the same name.
+	 * This is now done by compiling the function as anonymous and then forcing
+	 * its .name without setting a "has name binding" flag.
 	 */
+
+	duk_push_hstring_stridx(ctx, DUK_STRIDX_NAME);
+	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_NAME);
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
 	/*
 	 *  Call the wrapped module function.
@@ -1173,16 +1223,16 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 *  even if the module throws an error.
 	 */
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
-	DUK_ASSERT_TOP(ctx, 11);
+	/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded undefined fresh_require exports module mod_func ] */
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 2);
 
-	duk_dup(ctx, 8);  /* exports (this binding) */
-	duk_dup(ctx, 7);  /* fresh require (argument) */
-	duk_get_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS);  /* relookup exports from module.exports in case it was changed by modSearch */
-	duk_dup(ctx, 9);  /* module (argument) */
+	duk_dup(ctx, DUK__IDX_EXPORTS);  /* exports (this binding) */
+	duk_dup(ctx, DUK__IDX_FRESH_REQUIRE);  /* fresh require (argument) */
+	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_EXPORTS);  /* relookup exports from module.exports in case it was changed by modSearch */
+	duk_dup(ctx, DUK__IDX_MODULE);  /* module (argument) */
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 6);
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
-	DUK_ASSERT_TOP(ctx, 15);
+	/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded undefined fresh_require exports module mod_func exports fresh_require exports module ] */
 
 	pcall_rc = duk_pcall_method(ctx, 3 /*nargs*/);
 	if (pcall_rc != DUK_EXEC_SUCCESS) {
@@ -1193,21 +1243,33 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		goto delete_rethrow;
 	}
 
-	/* [ requested_id require require.id resolved_id Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
-	DUK_ASSERT_TOP(ctx, 11);
+	/* [ requested_id require require.id resolved_id last_comp Duktape Duktape.modLoaded undefined fresh_require exports module result(ignored) ] */
+	DUK_ASSERT_TOP(ctx, DUK__IDX_MODULE + 2);
 
 	/* fall through */
 
  return_exports:
-	duk_get_prop_stridx(ctx, 9, DUK_STRIDX_EXPORTS);
+	duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_EXPORTS);
 	return 1;  /* return module.exports */
 
  delete_rethrow:
-	duk_dup(ctx, 3);
-	duk_del_prop(ctx, 5);  /* delete Duktape.modLoaded[resolved_id] */
+	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
+	duk_del_prop(ctx, DUK__IDX_MODLOADED);  /* delete Duktape.modLoaded[resolved_id] */
 	duk_throw(ctx);  /* rethrow original error */
 	return 0;  /* not reachable */
 }
+
+#undef DUK__IDX_REQUESTED_ID
+#undef DUK__IDX_REQUIRE
+#undef DUK__IDX_REQUIRE_ID
+#undef DUK__IDX_RESOLVED_ID
+#undef DUK__IDX_LASTCOMP
+#undef DUK__IDX_DUKTAPE
+#undef DUK__IDX_MODLOADED
+#undef DUK__IDX_UNDEFINED
+#undef DUK__IDX_FRESH_REQUIRE
+#undef DUK__IDX_EXPORTS
+#undef DUK__IDX_MODULE
 #else
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	DUK_UNREF(ctx);
