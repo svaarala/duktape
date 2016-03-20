@@ -12,7 +12,8 @@ built into Duktape:
 
   - http://wiki.commonjs.org/wiki/Modules/1.1.1
 
-  - Duktape supports also ``module.exports``
+  - Duktape supports also ``module.exports`` and a few Duktape specific
+    properties (``module.fileName`` and ``module.name``)
 
 * The user must provide a *module search function* which locates a module
   corresponding to a resolved module ID, and can register module symbols
@@ -251,6 +252,19 @@ which initially has the same value as ``exports``:
 Duktape supports ``module.exports`` since Duktape 1.3, see:
 
 * ``test-commonjs-module-exports-repl.js``
+
+module.fileName and module.name
+===============================
+
+The ``module.fileName`` and ``module.name`` properties are Duktape specific
+and allow modSearch() to control the ``.fileName`` and ``.name`` properties
+of the module wrapper function used to implement module loading.  This is
+useful because they appear in e.g. tracebacks for errors created from the
+module, see: https://github.com/svaarala/duktape/pull/639.
+
+The initial value for ``module.fileName`` is the full resolved module ID
+(e.g. ``foo/bar``) and for ``module.name`` the last component of the
+resolved module ID (e.g. ``bar``).
 
 C modules and DLLs
 ==================
