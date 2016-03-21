@@ -97,6 +97,17 @@ def main():
 		if not kn.has_key('used'):
 			print('WARNING: unused rule: ' + json.dumps(kn))
 
+	# Used by testclient
+
+	if len(unknown_errors) > 0 or len(other_errors) > 0:
+		print('TEST262 FAILED')
+	elif len(known_errors) > 0 or len(diagnosed_errors) > 0:
+		# Known and diagnosed errors don't indicate test failure
+		# as far as Github status is concerned.
+		print('TEST262 SUCCESS')
+	else:
+		print('TEST262 SUCCESS')
+
 	# To fix count
 
 	print('')
