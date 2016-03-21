@@ -17,6 +17,7 @@ emscripten/
 underscore/
 lodash/
 test262-d067d2f0ca30/
+test262-es5-tests/
 JS-Interpreter/
 runtests/node_modules/
 d067d2f0ca30.tar.bz2
