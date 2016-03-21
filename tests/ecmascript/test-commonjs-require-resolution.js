@@ -265,7 +265,7 @@ Duktape.modSearch foo/bar
 252: foo/bar
 253: foo/bar
 254: foo/bar
-255: TypeError
+255: foo/bar
 256: TypeError
 257: TypeError
 258: TypeError
@@ -286,7 +286,7 @@ Duktape.modSearch foo/bar
 232: bar
 233: bar
 234: bar
-235: TypeError
+235: bar
 236: TypeError
 237: TypeError
 238: TypeError
