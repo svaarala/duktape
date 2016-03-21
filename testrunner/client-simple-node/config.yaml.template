@@ -16,11 +16,19 @@ clientAuthPassword: 'foopass'
 sleepJobSuccess: 10000
 sleepJobFailure: 60000
 
+# Directory for repo snapshots, expected by run_commit_test.py.  May not be
+# needed by all runner scripts.
+repoSnapshotDir: '/tmp/repo-snapshots'
+
 # Supported simple commit job types (contexts).  Each context has a string
 # name which appears directly in Github web UI, and a script which is used
 # to execute test jobs of that type.
 supportedContexts:
   - context: 'qecmatest'
-    script: '/path/to/run_qecmatest.sh'  # script paths must be absolute
+    command:
+      - 'python2'
+      - '/path/to/run_commit_test.py'
   - context: 'apitest'
-    script: '/path/to/run_apitest.sh'
+    command:
+      - 'python2'
+      - '/path/to/run_commit_test.py'
