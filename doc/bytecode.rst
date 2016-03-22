@@ -122,6 +122,26 @@ However, when doing so, you should note the following:
   debugging.  In other words, **obfuscation is not a design goal for the
   bytecode format**.
 
+That said, concrete issues to consider when using bytecode for obfuscation:
+
+* Variable names in the ``_Varmap`` property: this cannot be easily avoided
+  in general but a minifier may be able to rename variables.
+
+* Function name in the ``name`` property: this can be deleted or changed
+  before dumping a function, but note that some functions (such as
+  self-recursive functions) may depend on the property being present and
+  correct.
+
+* Function filename in the ``fileName`` property: this can also be deleted
+  or changed before dumping a function.  You can avoid introducing a filename
+  at all by using ``duk_compile()`` (rather than e.g. ``duk_eval_string()``)
+  to compile the function.
+
+* Line number information in the ``_Pc2line`` property: this can be deleted or
+  changed, or you can configure Duktape not to store this information in the
+  first place (``DUK_OPT_NO_PC2LINE`` or ``DUK_USE_PC2LINE``).  Without line
+  information tracebacks will of course be less useful.
+
 When not to use bytecode dump/load
 ==================================
 
