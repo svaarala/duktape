@@ -12,6 +12,9 @@ serverAuthPassword: 'foobarx'
 clientAuthUsername: 'foouser'
 clientAuthPassword: 'foopass'
 
+# Client name (human readable), should be User-Agent compatible.
+clientName: 'test-client'
+
 # Sleeps between successful/failed jobs.
 sleepJobSuccess: 10000
 sleepJobFailure: 60000

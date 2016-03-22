@@ -55,7 +55,7 @@ function getBasicAuthHeader() {
 }
 
 function getUserAgent() {
-    return 'testrunner-client';
+    return 'testrunner-client ' + clientConfig.clientName;
 }
 
 function serverAuthCheck(res) {
@@ -73,7 +73,7 @@ function postJson(path, request, cb) {
             'User-Agent': getUserAgent(),
             'Authorization': getBasicAuthHeader(),
             'Content-Type': 'application/json',
-            'Content-Length': requestData.length,
+            'Content-Length': requestData.length
         };
         var options = {
             host: clientConfig.serverHost,
@@ -291,6 +291,7 @@ function processSimpleScriptJob(rep) {
         // XXX: indicate possibly transient nature of error
 
         postJson('/finish-commit-simple', {
+            client_name: clientConfig.clientName,
             repo: assert(repo),
             repo_full: assert(repoFull),
             repo_clone_url: assert(repoCloneUrl),
@@ -321,6 +322,7 @@ function requestAndExecute() {
     }
 
     postJson('/get-commit-simple', {
+        client_name: clientConfig.clientName,
         contexts: contexts
     }).then(function (rep) {
         console.log(rep);
