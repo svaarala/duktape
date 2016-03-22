@@ -189,7 +189,7 @@ function cachedGetFile(path) {
  */
 
 function processSimpleScriptJob(rep) {
-    var context, repo, repoFull, repoCloneUrl, sha, script;
+    var context, repo, repoFull, repoCloneUrl, sha, scriptcmd;
     var tmpDir;
 
     var tmpDir = tmp.dirSync({
@@ -209,18 +209,28 @@ function processSimpleScriptJob(rep) {
 
         for (i = 0; i < clientConfig.supportedContexts.length; i++) {
             if (clientConfig.supportedContexts[i].context === assert(rep.context)) {
-                script = clientConfig.supportedContexts[i].script;
+                scriptcmd = clientConfig.supportedContexts[i].command;
             }
         }
-        if (!script) {
+        if (!scriptcmd) {
             reject(new Error('unsupported context: ' + context));
             return;
         }
 
         console.log('start simple commit test, repo ' + repoCloneUrl + ', sha ' + sha + ', context ' + context);
 
-        var args = [ assert(repoFull), assert(repoCloneUrl), assert(sha), assert(context), assert(tmpDir.name) ];
-        var cld = child_process.spawn(assert(script), args, { cwd: '/tmp' });
+        var args = [].concat(scriptcmd);
+        args = args.concat([
+            '--repo-full-name', assert(repoFull),
+            '--repo-clone-url', assert(repoCloneUrl),
+            '--commit-name', assert(sha),
+            '--context', assert(context),
+            '--temp-dir', assert(tmpDir.name),
+            '--repo-snapshot-dir', assert(clientConfig.repoSnapshotDir)
+        ]);
+
+        // XXX: child timeout and recovery
+        var cld = child_process.spawn(args[0], args.slice(1), { cwd: '/tmp' });
         var buffers = [];
         cld.stdout.on('data', function (data) {
             buffers.push(data);

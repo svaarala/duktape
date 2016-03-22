@@ -90,7 +90,7 @@ function makeDataFileHandler(state) {
 
             var fn = path.join(assert(state.dataDumpDirectory), sha);
             var data = fs.readFileSync(fn);
-            res.setHeader('content-type', 'text/plain');
+            res.setHeader('content-type', 'text/plain; charset=utf-8');
             res.send(data);
         }).catch(function (err) {
             res.status(500);
