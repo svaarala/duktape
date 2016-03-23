@@ -241,7 +241,7 @@ function handleGetCommitRequests(state) {
                             context: assert(ctx),
                             state: 'pending',
                             target_url: 'http://duktape.org/',  // XXX: useful temporary URI? web UI job status?
-                            description: 'Running...'
+                            description: 'Running... (' + (client.client_name || 'no client name') + ')'
                         });
 
                         // XXX: error recovery / restart; check for start_time
@@ -362,7 +362,8 @@ function makeGetCommitSimpleHandler(state) {
         getCommitRequests.push({
             time: Date.now(),
             res: res,
-            contexts: assert(body.contexts)
+            contexts: assert(body.contexts),
+            client_name: body.client_name
         });
         handleGetCommitRequests(state);
     };
