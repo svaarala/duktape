@@ -194,7 +194,7 @@ function processSimpleScriptJob(rep) {
 
     var tmpDir = tmp.dirSync({
         mode: 0750,
-        prefix: 'testrunner-' + context + '-',
+        prefix: 'testrunner-' + (rep.context || 'undefined') + '-',
         unsafeCleanup: true
     });
 
