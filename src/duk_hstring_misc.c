@@ -32,3 +32,14 @@ DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk
 	cp = duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 	return cp;
 }
+
+#if !defined(DUK_USE_HSTRING_CLEN)
+DUK_INTERNAL duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
+	if (DUK_HSTRING_HAS_ASCII(h)) {
+		/* Most practical strings will go here. */
+		return DUK_HSTRING_GET_BYTELEN(h);
+	} else {
+		return duk_unicode_unvalidated_utf8_length(DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+	}
+}
+#endif  /* !DUK_USE_HSTRING_CLEN */

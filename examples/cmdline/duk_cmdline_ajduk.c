@@ -83,13 +83,13 @@ static void safe_print_chars(const char *p, duk_size_t len, int until_nul) {
 
 static const AJS_HeapConfig ajsheap_config[] = {
 	{ 8,      10,   AJS_POOL_BORROW,  0 },
-	{ 12,     10,   AJS_POOL_BORROW,  0 },
-	{ 16,     200,  AJS_POOL_BORROW,  0 },
-	{ 20,     400,  AJS_POOL_BORROW,  0 },
-	{ 24,     400,  AJS_POOL_BORROW,  0 },
-	{ 28,     200,  AJS_POOL_BORROW,  0 },
-	{ 32,     200,  AJS_POOL_BORROW,  0 },
-	{ 40,     200,  AJS_POOL_BORROW,  0 },
+	{ 12,     600,  AJS_POOL_BORROW,  0 },
+	{ 16,     300,  AJS_POOL_BORROW,  0 },
+	{ 20,     300,  AJS_POOL_BORROW,  0 },
+	{ 24,     300,  AJS_POOL_BORROW,  0 },
+	{ 28,     150,  AJS_POOL_BORROW,  0 },
+	{ 32,     150,  AJS_POOL_BORROW,  0 },
+	{ 40,     150,  AJS_POOL_BORROW,  0 },
 	{ 48,     50,   AJS_POOL_BORROW,  0 },
 	{ 52,     50,   AJS_POOL_BORROW,  0 },
 	{ 56,     50,   AJS_POOL_BORROW,  0 },
@@ -102,7 +102,7 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 512,    16,   AJS_POOL_BORROW,  0 },
 	{ 964,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
 	{ 1024,   6,    AJS_POOL_BORROW,  0 },
-	{ 1780,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
+	{ 1344,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
 	{ 2048,   5,    AJS_POOL_BORROW,  0 },
 	{ 4096,   3,    0,                0 },
 	{ 8192,   3,    0,                0 },

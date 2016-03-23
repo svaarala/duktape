@@ -76,6 +76,7 @@ struct duk_heaphdr_string {
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #if defined(DUK_USE_REFCOUNT16)
 	duk_uint16_t h_refcount16;
+	duk_uint16_t h_strextra16;  /* round out to 8 bytes */
 #else
 	duk_size_t h_refcount;
 #endif
