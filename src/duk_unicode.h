@@ -199,13 +199,14 @@
 
 /* duk_unicode_support.c */
 #if !defined(DUK_SINGLE_FILE)
-DUK_INTERNAL_DECL duk_uint8_t duk_unicode_xutf8_markers[7];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_digit[2];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_white[22];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_wordchar[8];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_digit[4];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_white[24];
-DUK_INTERNAL_DECL duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
+DUK_INTERNAL_DECL const duk_uint8_t duk_unicode_xutf8_markers[7];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_digit[2];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_white[22];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_wordchar[8];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_not_digit[4];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_not_white[24];
+DUK_INTERNAL_DECL const duk_uint16_t duk_unicode_re_ranges_not_wordchar[10];
+DUK_INTERNAL_DECL const duk_int8_t duk_is_idchar_tab[128];
 #endif  /* !DUK_SINGLE_FILE */
 
 /*

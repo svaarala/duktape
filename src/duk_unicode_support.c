@@ -6,6 +6,27 @@
 #include "duk_internal.h"
 
 /*
+ *  Fast path tables
+ */
+
+#if defined(DUK_USE_IDCHAR_FASTPATH)
+DUK_INTERNAL const duk_int8_t duk_is_idchar_tab[128] = {
+	/* 0: not IdentifierStart or IdentifierPart
+	 * 1: IdentifierStart and IdentifierPart
+	 * -1: IdentifierPart only
+	 */
+	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x00...0x0f */
+	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x10...0x1f */
+	0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   /* 0x20...0x2f */
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0,  0,  0,  0,  0,  0,   /* 0x30...0x3f */
+	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   /* 0x40...0x4f */
+	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  1,   /* 0x50...0x5f */
+	0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   /* 0x60...0x6f */
+	1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,  0    /* 0x70...0x7f */
+};
+#endif
+
+/*
  *  XUTF-8 and CESU-8 encoding/decoding
  */
 
@@ -57,7 +78,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_get_cesu8_length(duk_ucodepoint_t cp) {
 }
 #endif  /* DUK_USE_ASSERTIONS */
 
-DUK_INTERNAL duk_uint8_t duk_unicode_xutf8_markers[7] = {
+DUK_INTERNAL const duk_uint8_t duk_unicode_xutf8_markers[7] = {
 	0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
 };
 
@@ -570,12 +591,16 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp)
 
 	/* ASCII (and EOF) fast path -- quick accept and reject */
 	if (cp <= 0x7fL) {
+#if defined(DUK_USE_IDCHAR_FASTPATH)
+		return (cp >= 0) && (duk_is_idchar_tab[cp] > 0);
+#else
 		if ((cp >= 'a' && cp <= 'z') ||
 		    (cp >= 'A' && cp <= 'Z') ||
 		    cp == '_' || cp == '$') {
 			return 1;
 		}
 		return 0;
+#endif
 	}
 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
@@ -655,6 +680,9 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 
 	/* ASCII (and EOF) fast path -- quick accept and reject */
 	if (cp <= 0x7fL) {
+#if defined(DUK_USE_IDCHAR_FASTPATH)
+		return (cp >= 0) && (duk_is_idchar_tab[cp] != 0);
+#else
 		if ((cp >= 'a' && cp <= 'z') ||
 		    (cp >= 'A' && cp <= 'Z') ||
 		    (cp >= '0' && cp <= '9') ||
@@ -662,6 +690,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 			return 1;
 		}
 		return 0;
+#endif
 	}
 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
@@ -1093,10 +1122,10 @@ DUK_INTERNAL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t x) {
  */
 
 /* exposed because lexer needs these too */
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_digit[2] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_digit[2] = {
 	(duk_uint16_t) 0x0030UL, (duk_uint16_t) 0x0039UL,
 };
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_white[22] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_white[22] = {
 	(duk_uint16_t) 0x0009UL, (duk_uint16_t) 0x000DUL,
 	(duk_uint16_t) 0x0020UL, (duk_uint16_t) 0x0020UL,
 	(duk_uint16_t) 0x00A0UL, (duk_uint16_t) 0x00A0UL,
@@ -1109,17 +1138,17 @@ DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_white[22] = {
 	(duk_uint16_t) 0x3000UL, (duk_uint16_t) 0x3000UL,
 	(duk_uint16_t) 0xFEFFUL, (duk_uint16_t) 0xFEFFUL,
 };
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_wordchar[8] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_wordchar[8] = {
 	(duk_uint16_t) 0x0030UL, (duk_uint16_t) 0x0039UL,
 	(duk_uint16_t) 0x0041UL, (duk_uint16_t) 0x005AUL,
 	(duk_uint16_t) 0x005FUL, (duk_uint16_t) 0x005FUL,
 	(duk_uint16_t) 0x0061UL, (duk_uint16_t) 0x007AUL,
 };
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_not_digit[4] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_digit[4] = {
 	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x002FUL,
 	(duk_uint16_t) 0x003AUL, (duk_uint16_t) 0xFFFFUL,
 };
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_not_white[24] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_white[24] = {
 	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x0008UL,
 	(duk_uint16_t) 0x000EUL, (duk_uint16_t) 0x001FUL,
 	(duk_uint16_t) 0x0021UL, (duk_uint16_t) 0x009FUL,
@@ -1133,7 +1162,7 @@ DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_not_white[24] = {
 	(duk_uint16_t) 0x3001UL, (duk_uint16_t) 0xFEFEUL,
 	(duk_uint16_t) 0xFF00UL, (duk_uint16_t) 0xFFFFUL,
 };
-DUK_INTERNAL duk_uint16_t duk_unicode_re_ranges_not_wordchar[10] = {
+DUK_INTERNAL const duk_uint16_t duk_unicode_re_ranges_not_wordchar[10] = {
 	(duk_uint16_t) 0x0000UL, (duk_uint16_t) 0x002FUL,
 	(duk_uint16_t) 0x003AUL, (duk_uint16_t) 0x0040UL,
 	(duk_uint16_t) 0x005BUL, (duk_uint16_t) 0x005EUL,

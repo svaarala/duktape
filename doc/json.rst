@@ -19,6 +19,18 @@ provides:
   special values need to be revived manually.  The result is not as
   readable as JX, but can be parsed by other JSON implementations.
 
+There are two code paths for JSON:
+
+* A compliant, fully featured slow path which is always present and handles
+  all cases.
+
+* A JSON.stringify() fast path which can be optionally compiled in.  The fast
+  path can be over 10x faster for JSON serialization, and works for a majority
+  of common cases where there are no side effects (such as ``.toJSON()`` calls)
+  during the serialization process.  An error in the fast path causes a fallback
+  into the slow path.  A similar fast path for parsing will probably be added
+  in the future.
+
 Overview of JSON
 ================
 
@@ -69,8 +81,8 @@ See also:
 Notes on stringify()
 ====================
 
-Basic approach
---------------
+Basic approach: slow path
+-------------------------
 
 Stringify uses a single context structure (``duk_json_enc_ctx``) whose pointer
 is passed around the helpers to minimize C call argument counts and also to
@@ -85,16 +97,29 @@ call Str() and only then decide whether to serialize the property at all (so
 that key and colon are only emitted if the Str(value) call does not return
 undefined).  Side effects prevent a two-pass "dry run" approach.
 
-This problem is now avoided by splitting Str() into two separate algorithms.
-The first algorithm performs all the conversions and coercions, and causes
-all side effects to take place, and then indicates whether the final result
-would be undefined or not.  The caller can then take appropriate action before
-anything needs to be written to the buffer.  The second algorithm performs
-the final output generation, assuming that all the coercions etc have already
-been done.
+The current implementation avoids this problem by using buffer rewinding to
+"undo" emitted values which should have been omitted.
 
 In addition to standard requirements, a C recursion limit is imposed to
 safeguard against overrunning the stack in stack limited environments.
+
+Basic approach: fast path
+-------------------------
+
+The optional ``JSON.stringify()`` fast path works with the assumption that in
+most cases side effects won't occur during serialization so that it's safe to
+e.g. iterate over internal data structures directly rather than query for keys
+and values via actual property lookups.  Because actual side effects are not
+easy to detect, the fast path simply bails out on operations which might
+potentially have a side effect, such as calling a user ``.toJSON()`` method.
+
+Whenever the fast path code throws an error (for any reason) the slow path is
+attempted before giving up.  This also means the fast path doesn't need to
+create useful error messages because they'll ultimately be ignored from the
+user's perspective.
+
+The fast path can be over 10x faster than the slow path in some situations,
+so it's useful for applications which make heavy use of JSON.
 
 Loop detection
 --------------
@@ -113,20 +138,30 @@ is popped.  Note that:
 * The maximum stack depth matches object recursion depth.  Even for very
   large JSON documents the maximum stack depth is not necessarily very high.
 
-The current implementation uses a tracking object instead of a stack.  The
-keys of the tracking object are heap pointers formatted with sprintf()
-``%p`` formatter.  Because heap objects have stable pointers in Duktape,
-this approach is reliable.  The upside of this approach is that we don't
-need to maintain yet another growing data structure for the stack, and don't
-need to do linear stack scans to detect loops.  The downside is relatively
-large memory footprint and lots of additional string table operations.
+The current implementation uses a hybrid implementation for faster loop
+detection:
 
-Another approach would be to accept a performance penalty for highly nested
-objects and user a linear C array for the heap object stack.
+* For shallow depths a plain C array referencing objects being visited is
+  used.  (Current define is ``DUK_JSON_ENC_LOOPARRAY``.)
 
-This should be improved in the future if possible.  Except for really
-heavily nested cases, a linear array scan of heap pointers would probably
-be a better approach.
+* For depths beyond the shallow limit a tracking object is used.  The
+  keys of the tracking object are heap pointers formatted with sprintf()
+  ``%p`` formatter.  Because heap objects have stable pointers in Duktape,
+  this approach is reliable.  The upside of this approach is that we don't
+  need to maintain yet another growing data structure for the stack, and don't
+  need to do linear stack scans to detect loops.  The downside is relatively
+  large memory footprint and lots of additional string table operations.
+  However, these effects only come into play for very deep objects.
+
+There's much room for improvement in the loop detection:
+
+* When using the JSON.stringify() fast path, it would be possible to skip
+  loop detection altogether.  For a looped object one would then eitehr hit
+  the recursion limit (for deep nesting) or maximum output size limit, and
+  fall back to the slow path which detected the loop and gave a proper error
+  message.  For almost all code the performance of JSON.stringify() for a
+  looped object is not critical so hitting these limits instead of detecting
+  the loop quickly should be an OK trade-off.
 
 PropertyList
 ------------

@@ -111,7 +111,7 @@ DUK_LOCAL duk_uint32_t duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t 
 #endif
 
 /* special helper for emitting u16 lists (used for character ranges for built-in char classes) */
-DUK_LOCAL void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, duk_uint16_t *values, duk_uint32_t count) {
+DUK_LOCAL void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, const duk_uint16_t *values, duk_uint32_t count) {
 	/* Call sites don't need the result length so it's not accumulated. */
 	while (count > 0) {
 		(void) duk__append_u32(re_ctx, (duk_uint32_t) (*values++));
