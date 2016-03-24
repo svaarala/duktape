@@ -21,7 +21,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 
 	DUK_UNREF(thr);
 
-	duk_push_object_helper(ctx, flags_and_class, bidx_prototype);
+	(void) duk_push_object_helper(ctx, flags_and_class, bidx_prototype);
 
 	/* If message is undefined, the own property 'message' is not set at
 	 * all to save property space.  An empty message is inherited anyway.

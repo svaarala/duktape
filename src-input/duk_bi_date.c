@@ -1419,10 +1419,10 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 
 	DUK_DDD(DUK_DDDPRINT("Date constructor, nargs=%ld, is_cons=%ld", (long) nargs, (long) is_cons));
 
-	duk_push_object_helper(ctx,
-	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATE),
-	                       DUK_BIDX_DATE_PROTOTYPE);
+	(void) duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DATE),
+	                              DUK_BIDX_DATE_PROTOTYPE);
 
 	/* Unlike most built-ins, the internal [[PrimitiveValue]] of a Date
 	 * is mutable.

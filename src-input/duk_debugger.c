@@ -2201,10 +2201,28 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
 			duk_hcompfunc *h_fun;
 			duk_hbuffer *h_buf;
+			duk_hobject *h_lexenv;
+			duk_hobject *h_varenv;
 			h_fun = (duk_hcompfunc *) h_obj;
 
 			duk__debug_getinfo_prop_int(thr, "nregs", h_fun->nregs);
 			duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
+
+			duk__debug_getinfo_flags_key(thr, "lex_env");
+			h_lexenv = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, h_fun);
+			if (h_lexenv != NULL) {
+				duk_debug_write_hobject(thr, h_lexenv);
+			} else {
+				duk_debug_write_null(thr);
+			}
+			duk__debug_getinfo_flags_key(thr, "var_env");
+			h_varenv = DUK_HCOMPFUNC_GET_VARENV(thr->heap, h_fun);
+			if (h_varenv != NULL) {
+				duk_debug_write_hobject(thr, h_varenv);
+			} else {
+				duk_debug_write_null(thr);
+			}
+
 			duk__debug_getinfo_prop_uint(thr, "start_line", h_fun->start_line);
 			duk__debug_getinfo_prop_uint(thr, "end_line", h_fun->end_line);
 			h_buf = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun);

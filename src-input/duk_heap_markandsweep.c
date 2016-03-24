@@ -84,6 +84,8 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		 */
 
 		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPFUNC_GET_DATA(heap, f));
+		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(heap, f));
+		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(heap, f));
 
 		tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
 		tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);

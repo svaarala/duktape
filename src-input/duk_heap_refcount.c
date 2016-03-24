@@ -144,7 +144,9 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 			funcs++;
 		}
 
-		DUK_HBUFFER_DECREF(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(thr->heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
 	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);

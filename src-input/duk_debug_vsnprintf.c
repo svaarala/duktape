@@ -344,9 +344,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			subtype = "thread";
 		} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 			subtype = "bufobj";
-			/* XXX: add duk_harray here */
-		} else {
-			duk_fb_sprintf(fb, "%sobject %p%s", (const char *) brace1, (void *) h, (const char *) brace2);  /* may be NULL */
+		} else if (DUK_HOBJECT_IS_ARRAY(h)) {
+			subtype = "array";
 		}
 		duk_fb_sprintf(fb, "%sobject/%s %p%s", (const char *) brace1, subtype, (void *) h, (const char *) brace2);
 		return;
@@ -456,6 +455,9 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		if (DUK_HOBJECT_HAS_STRICT(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__strict:true");
 		}
+		if (DUK_HOBJECT_HAS_NOTAIL(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__notail:true");
+		}
 		if (DUK_HOBJECT_HAS_NEWENV(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__newenv:true");
 		}
@@ -496,6 +498,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__lexenv:"); duk__print_hobject(st, DUK_HCOMPFUNC_GET_LEXENV(NULL, f));
+		DUK__COMMA(); duk_fb_put_cstring(fb, "__varenv:"); duk__print_hobject(st, DUK_HCOMPFUNC_GET_VARENV(NULL, f));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)

@@ -128,10 +128,10 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(outer_lex_env != NULL);
 	DUK_UNREF(len_value);
 
-	duk_push_compiledfunction(ctx);
+	fun_clos = duk_push_compiledfunction(ctx);
+	DUK_ASSERT(fun_clos != NULL);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
-	fun_clos = (duk_hcompfunc *) duk_known_hcompfunc(ctx, -2);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun_clos));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) == NULL);
@@ -222,6 +222,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 		if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
 			duk_hobject *proto;
+			duk_hobject *new_env;
 
 			/*
 			 *  Named function expression, name needs to be bound
@@ -241,10 +242,11 @@ void duk_js_push_closure(duk_hthread *thr,
 			}
 
 			/* -> [ ... closure template env ] */
-			(void) duk_push_object_helper_proto(ctx,
-			                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                                    proto);
+			new_env = duk_push_object_helper_proto(ctx,
+			                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                                       proto);
+			DUK_ASSERT(new_env != NULL);
 
 			/* It's important that duk_xdef_prop() is a 'raw define' so that any
 			 * properties in an ancestor are never an issue (they should never be
@@ -257,10 +259,11 @@ void duk_js_push_closure(duk_hthread *thr,
 
 			/* [ ... closure template env ] */
 
-			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
-			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
-			 * will be ignored anyway
-			 */
+			DUK_HCOMPFUNC_SET_LEXENV(thr->heap, fun_clos, new_env);
+			DUK_HCOMPFUNC_SET_VARENV(thr->heap, fun_clos, new_env);
+			DUK_HOBJECT_INCREF(thr, new_env);
+			DUK_HOBJECT_INCREF(thr, new_env);
+			duk_pop(ctx);
 
 			/* [ ... closure template ] */
 		} else {
@@ -270,11 +273,10 @@ void duk_js_push_closure(duk_hthread *thr,
 			 *  the caller gave us.
 			 */
 
-			duk_push_hobject(ctx, outer_lex_env);  /* -> [ ... closure template env ] */
-			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
-			/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
-			 * will be ignored anyway
-			 */
+			DUK_HCOMPFUNC_SET_LEXENV(thr->heap, fun_clos, outer_lex_env);
+			DUK_HCOMPFUNC_SET_VARENV(thr->heap, fun_clos, outer_lex_env);
+			DUK_HOBJECT_INCREF(thr, outer_lex_env);
+			DUK_HOBJECT_INCREF(thr, outer_lex_env);
 
 			/* [ ... closure template ] */
 		}
@@ -289,22 +291,18 @@ void duk_js_push_closure(duk_hthread *thr,
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj));
 
-		duk_push_hobject(ctx, outer_lex_env);  /* -> [ ... closure template env ] */
-		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
-
-		if (outer_var_env != outer_lex_env) {
-			duk_push_hobject(ctx, outer_var_env);  /* -> [ ... closure template env ] */
-			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_WC);
-		}
+		DUK_HCOMPFUNC_SET_LEXENV(thr->heap, fun_clos, outer_lex_env);
+		DUK_HCOMPFUNC_SET_VARENV(thr->heap, fun_clos, outer_var_env);
+		DUK_HOBJECT_INCREF(thr, outer_lex_env);  /* NULLs not allowed; asserted on entry */
+		DUK_HOBJECT_INCREF(thr, outer_var_env);
 	}
-#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARENV);
-	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_INT_LEXENV);
-	DUK_DDD(DUK_DDDPRINT("closure varenv -> %!ipT, lexenv -> %!ipT",
-	                     (duk_tval *) duk_get_tval(ctx, -2),
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
-	duk_pop_2(ctx);
-#endif
+	DUK_DDD(DUK_DDDPRINT("closure varenv -> %!ipO, lexenv -> %!ipO",
+	                     (duk_heaphdr *) fun_clos->var_env,
+	                     (duk_heaphdr *) fun_clos->lex_env));
+
+	/* Call handling assumes this for all callable closures. */
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_LEXENV(thr->heap, fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_VARENV(thr->heap, fun_clos) != NULL);
 
 	/*
 	 *  Copy some internal properties directly
@@ -483,17 +481,14 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *env;
 	duk_hobject *parent;
-	duk_tval *tv;
+	duk_hcompfunc *f;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
-	if (tv) {
-		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-		DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
-		parent = DUK_TVAL_GET_OBJECT(tv);
-	} else {
+	f = (duk_hcompfunc *) func;
+	parent = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f);
+	if (!parent) {
 		parent = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	}
 
@@ -918,6 +913,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 
 	if (env == NULL && act != NULL) {
 		duk_hobject *func;
+		duk_hcompfunc *f;
 
 		DUK_DDD(DUK_DDDPRINT("duk__get_identifier_reference: env is NULL, activation is non-NULL -> "
 		                     "delayed env case, look up activation regs first"));
@@ -962,13 +958,10 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 		func = DUK_ACT_GET_FUNC(act);
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV(func));
+		f = (duk_hcompfunc *) func;
 
-		tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
-		if (tv) {
-			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-			env = DUK_TVAL_GET_OBJECT(tv);
-		} else {
-			DUK_ASSERT(duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_VARENV(thr)) == NULL);
+		env = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f);
+		if (!env) {
 			env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 		}
 

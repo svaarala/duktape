@@ -335,6 +335,8 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 		fn++;
 	}
 
+	/* Lexenv and varenv are not dumped. */
+
 	/* Object extra properties.
 	 *
 	 * There are some difference between function templates and functions.
@@ -382,6 +384,8 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_idx_t idx_base;
 	duk_tval *tv1;
 	duk_uarridx_t arr_idx;
+	duk_hobject *func_env;
+	duk_bool_t need_pop;
 
 	/* XXX: There's some overlap with duk_js_closure() here, but
 	 * seems difficult to share code.  Ensure that the final function
@@ -416,8 +420,8 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* Push function object, init flags etc.  This must match
 	 * duk_js_push_closure() quite carefully.
 	 */
-	duk_push_compiledfunction(ctx);
-	h_fun = duk_known_hcompfunc(ctx, -1);
+	h_fun = duk_push_compiledfunction(ctx);
+	DUK_ASSERT(h_fun != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) h_fun));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, h_fun) == NULL);
@@ -560,26 +564,37 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_push_u32(ctx, tmp32);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
-	p = duk__load_string_raw(ctx, p);
+	p = duk__load_string_raw(ctx, p);  /* -> [ func funcname ] */
+	func_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
+	DUK_ASSERT(func_env != NULL);
+	need_pop = 0;
 	if (DUK_HOBJECT_HAS_NAMEBINDING((duk_hobject *) h_fun)) {
 		/* Original function instance/template had NAMEBINDING.
 		 * Must create a lexical environment on loading to allow
 		 * recursive functions like 'function foo() { foo(); }'.
 		 */
-		duk_hobject *proto;
+		duk_hobject *new_env;
 
-		proto = thr->builtins[DUK_BIDX_GLOBAL_ENV];
-		(void) duk_push_object_helper_proto(ctx,
-		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-		                                    proto);
+		new_env = duk_push_object_helper_proto(ctx,
+		                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+		                                       func_env);
+		DUK_ASSERT(new_env != NULL);
+		func_env = new_env;
+
 		duk_dup_m2(ctx);                                  /* -> [ func funcname env funcname ] */
 		duk_dup(ctx, idx_base);                           /* -> [ func funcname env funcname func ] */
 		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);  /* -> [ func funcname env ] */
-		duk_xdef_prop_stridx(ctx, idx_base, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
-		/* since closure has NEWENV, never define DUK_STRIDX_INT_VARENV, as it
-		 * will be ignored anyway
-		 */
+
+		need_pop = 1;  /* Need to pop env, but -after- updating h_fun and increfs. */
+	}
+	DUK_ASSERT(func_env != NULL);
+	DUK_HCOMPFUNC_SET_LEXENV(thr->heap, h_fun, func_env);
+	DUK_HCOMPFUNC_SET_VARENV(thr->heap, h_fun, func_env);
+	DUK_HOBJECT_INCREF(thr, func_env);
+	DUK_HOBJECT_INCREF(thr, func_env);
+	if (need_pop) {
+		duk_pop(ctx);
 	}
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 

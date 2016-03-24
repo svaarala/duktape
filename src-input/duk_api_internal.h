@@ -152,9 +152,9 @@ DUK_INTERNAL_DECL void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
 #define duk_push_hnatfunc(ctx,h) \
 	duk_push_hobject((ctx), (duk_hobject *) (h))
 DUK_INTERNAL_DECL void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builtin_idx);
-DUK_INTERNAL_DECL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
-DUK_INTERNAL_DECL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_hobject *proto);
-DUK_INTERNAL_DECL duk_idx_t duk_push_compiledfunction(duk_context *ctx);
+DUK_INTERNAL_DECL duk_hobject *duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
+DUK_INTERNAL_DECL duk_hobject *duk_push_object_helper_proto(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_hobject *proto);
+DUK_INTERNAL_DECL duk_hcompfunc *duk_push_compiledfunction(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);
 DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);
 
@@ -210,6 +210,8 @@ DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
+
+DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_unsafe(duk_context *ctx);
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

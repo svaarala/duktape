@@ -929,11 +929,10 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		act_lex_env = act->lex_env;
 		act = NULL;  /* invalidated */
 
-		(void) duk_push_object_helper_proto(ctx,
-		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-		                                    act_lex_env);
-		new_env = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
+		new_env = duk_push_object_helper_proto(ctx,
+		                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+		                                       act_lex_env);
 		DUK_ASSERT(new_env != NULL);
 		DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 

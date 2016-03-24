@@ -169,25 +169,23 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	 *    - 'mappedNames' object: temporary value used during construction
 	 */
 
-	i_arg = duk_push_object_helper(ctx,
-	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                               DUK_HOBJECT_FLAG_ARRAY_PART |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
-	                               DUK_BIDX_OBJECT_PROTOTYPE);
-	DUK_ASSERT(i_arg >= 0);
-	arg = duk_known_hobject(ctx, -1);
-
-	i_map = duk_push_object_helper(ctx,
-	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                               -1);  /* no prototype */
-	DUK_ASSERT(i_map >= 0);
-
-	i_mappednames = duk_push_object_helper(ctx,
-	                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
-	                                       -1);  /* no prototype */
-	DUK_ASSERT(i_mappednames >= 0);
+	arg = duk_push_object_helper(ctx,
+	                             DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                             DUK_HOBJECT_FLAG_ARRAY_PART |
+	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
+	                             DUK_BIDX_OBJECT_PROTOTYPE);
+	DUK_ASSERT(arg != NULL);
+	(void) duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                              -1);  /* no prototype */
+	(void) duk_push_object_helper(ctx,
+	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
+	                              -1);  /* no prototype */
+	i_arg = duk_get_top(ctx) - 3;
+	i_map = i_arg + 1;
+	i_mappednames = i_arg + 2;
 
 	/* [ ... formals arguments map mappedNames ] */
 
@@ -522,35 +520,27 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 DUK_LOCAL void duk__handle_oldenv_for_call(duk_hthread *thr,
                                            duk_hobject *func,
                                            duk_activation *act) {
-	duk_tval *tv;
+	duk_hcompfunc *f;
+	duk_hobject *h_lex;
+	duk_hobject *h_var;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(act != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NEWENV(func));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(func));
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(func));
+	DUK_UNREF(thr);
 
-	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_LEXENV(thr));
-	if (tv) {
-		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-		DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
-		act->lex_env = DUK_TVAL_GET_OBJECT(tv);
-
-		tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, func, DUK_HTHREAD_STRING_INT_VARENV(thr));
-		if (tv) {
-			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
-			DUK_ASSERT(DUK_HOBJECT_IS_ENV(DUK_TVAL_GET_OBJECT(tv)));
-			act->var_env = DUK_TVAL_GET_OBJECT(tv);
-		} else {
-			act->var_env = act->lex_env;
-		}
-	} else {
-		act->lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
-		act->var_env = act->lex_env;
-	}
-
-	DUK_HOBJECT_INCREF_ALLOWNULL(thr, act->lex_env);
-	DUK_HOBJECT_INCREF_ALLOWNULL(thr, act->var_env);
+	f = (duk_hcompfunc *) func;
+	h_lex = DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f);
+	h_var = DUK_HCOMPFUNC_GET_VARENV(thr->heap, f);
+	DUK_ASSERT(h_lex != NULL);  /* Always true for closures (not for templates) */
+	DUK_ASSERT(h_var != NULL);
+	act->lex_env = h_lex;
+	act->var_env = h_var;
+	DUK_HOBJECT_INCREF(thr, h_lex);
+	DUK_HOBJECT_INCREF(thr, h_var);
 }
 
 /*
