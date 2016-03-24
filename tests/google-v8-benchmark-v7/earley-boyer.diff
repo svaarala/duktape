@@ -1,0 +1,28 @@
+--- earley-boyer.js.orig	2011-09-01 14:28:10.000000000 +0300
++++ earley-boyer.js	2016-03-23 20:42:47.809113337 +0200
+@@ -1077,6 +1077,9 @@
+ }
+ sc_Char.lazy = new Object();
+ // thanks to Eric
++sc_Char.char2readable = {};
++sc_Char.readable2char = {};
++/*
+ sc_Char.char2readable = {
+     "\000": "#\\null",
+     "\007": "#\\bell",
+@@ -1089,7 +1092,6 @@
+     "\040": "#\\space",
+     "\177": "#\\delete",
+ 
+-  /* poeticless names */
+     "\001": "#\\soh",
+     "\002": "#\\stx",
+     "\003": "#\\etx",
+@@ -1163,6 +1165,7 @@
+     "us": "\037",
+     "sp": "\040",
+     "del": "\177"};
++*/
+ 
+ sc_Char.prototype.toString = function() {
+     return this.val;
