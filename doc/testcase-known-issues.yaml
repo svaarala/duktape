@@ -87,6 +87,9 @@
 -
   test: "test-bi-json-enc-proxy.js"
   knownissue: "JSON enumeration behavior for Proxy targets is incomplete and uses 'enumerate' trap instead of 'ownKeys' trap"
+-
+  test: "test-bi-proxy-object-tostring.js"
+  knownissue: "Object class handling for Proxy objects is incomplete"
 
 # Ecmascript testcases that need special options or environment to work
 
