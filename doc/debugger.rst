@@ -2019,7 +2019,7 @@ is valid and the pointer target is still in the Duktape heap:
   may lead to crashes, etc.
 
 The result is a list of artificial property entries, each containing a flags
-field, a key, and a value.  See GetObjProp for the shared format used.
+field, a key, and a value.  See GetObjPropDesc for the shared format used.
 
 Artificial properties are not actually present in a property table but are
 generated based on e.g. ``duk_heaphdr`` flags and are string keyed to make
@@ -2032,8 +2032,8 @@ debug client to adapt to such changes.
 The current artificial keys are described in the section "Heap object
 inspection".
 
-GetObjProp (0x24)
------------------
+GetObjPropDesc (0x24)
+---------------------
 
 Format::
 
@@ -2046,7 +2046,8 @@ Example::
     REP 7 "message" "Hello there!" EOM
 
 Inspect a property of an Ecmascript object using a specific string key
-without causing side effects such as getter calls.  The result is either:
+without causing side effects such as getter calls or Proxy traps.  The
+result is either:
 
 * A property value using the format described below.
 
@@ -2056,11 +2057,17 @@ Properties stored in the internal "array part" are indexed using numeric
 string keys, e.g. ``"3"``, not integers, to avoid unnecessary string churn
 on the target.
 
+Proxy objects are inspected as is without invoking any traps.  The only
+properties usually available are the Duktape specific internal control
+properties indicating the target and the handler object with traps.  A Proxy
+object can be reliably detected using the artificial property ``exotic_proxyobj``
+returned by GetHeapObjInfo.
+
 See GetHeapObjInfo for notes about pointer safety.
 
 Each property entry is described using the following sequence of dvalues
 (this format is shared with other property related commands, including
-GetHeapObjInfo and GetObjPropRange):
+GetHeapObjInfo and GetObjPropDescRange):
 
 * Flags field
 
@@ -2107,8 +2114,8 @@ The flags field is an unsigned integer bitmask with the following bits:
 For artificial properties (returned by GetHeapObjInfo) the property attributes
 are not relevant (sent as zero) and the value is currently never an accessor.
 
-GetObjPropRange (0x25)
-----------------------
+GetObjPropDescRange (0x25)
+--------------------------
 
 Format::
 
@@ -2124,7 +2131,8 @@ Inspect a range ``[idx_start,idx_end[`` of an Ecmascript object's "own"
 properties.  Result contains properties found; if the start/end index is
 larger than available property count those values will be missing from the
 result entirely.  For example, if the object has 3 properties and the range
-``[0,10[`` is requested, the result will contain 3 properties only.
+``[0,10[`` is requested, the result will contain 3 properties only.  If the
+indices are crossed (e.g. ``[10,5[``) an empty result is returned.
 
 The indices in the range ``[idx_start,idx_end[`` refer to a conceptual index
 space which is guaranteed to be stable as long as (1) execution is paused
@@ -2180,7 +2188,22 @@ properties, without side effects:
   visible in Ecmascript enumeration but may not be visible in the inspection.
   For example, String object has virtual index properties (0, 1, 2, ...) for
   string characters, and these are not included in the inspection result at
-  the moment.  They can be read using GetObjProp, however.
+  the moment.  They can be read using GetObjPropDesc, however.
+
+* Proxy traps are not invoked, and the properties returned are the "own"
+  properties of the Proxy itself.  Typically the Proxy has only Duktape
+  specific internal control properties identifying the Proxy target and
+  handler table.
+
+Note that Array objects can be dense or sparse.  This distinction is internal:
+dense arrays have an array part where the array items are stored while sparse
+arrays don't have an array part and array items are stored in the main property
+table together with normal string keyed properties.  Array items for sparse
+arrays will thus appear as normal string keyed properties, and may not be in
+ascending index order; the debug client should always reorder properties to
+fit the preferred display order.  For both dense and sparse arrays there may
+be gaps in the array, i.e. elements may be missing.  Such elements will not
+be included in the inspection result at all.
 
 See GetHeapObjInfo for notes about pointer safety.
 
@@ -2339,8 +2362,9 @@ exactly where that message came from.
 Heap object inspection
 ======================
 
-Artificial keys are subject to change between versions.  The most important
-keys are:
+Artificial keys are subject to change between versions.
+
+The following, however, have versioning guarantees:
 
 * ``prototype``: internal prototype (not to be confused with a possible
   "prototype" property, which is the external prototype).
