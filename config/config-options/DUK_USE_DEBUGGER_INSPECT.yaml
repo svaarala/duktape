@@ -8,6 +8,7 @@ default: false
 tags:
   - debugger
 description: >
-  Support debugger heap object inspection commands GetHeapObjInfo, GetObjProp,
-  GetObjPropRange.  These are optional because the commands have a relatively
-  high code footprint (about 3kB) and are not always needed.
+  Support debugger heap object inspection commands GetHeapObjInfo,
+  GetObjPropDesc, GetObjPropDescRange.  These are optional because the
+  commands have a relatively high code footprint (about 3kB) and are not
+  always needed.

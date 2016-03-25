@@ -48,5 +48,5 @@ target_commands:
   - GetBytecode
   - AppRequest
   - GetHeapObjInfo
-  - GetObjProp
-  - GetObjPropRange
+  - GetObjPropDesc
+  - GetObjPropDescRange
