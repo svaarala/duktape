@@ -1371,8 +1371,8 @@ Planned
   (read-only data section) which reduces the startup RAM usage of a low
   memory build to ~3kB (from ~27kB) (GH-559)
 
-* Add debugger heap object inspection commands GetHeapObjInfo, GetObjProp,
-  and GetObjPropRange, which allow a debug client to inspect heap objects
+* Add debugger heap object inspection commands GetHeapObjInfo, GetObjPropDesc,
+  and GetObjPropDescRange, which allow a debug client to inspect heap objects
   in detail, walk prototype chains, etc (GH-358, GH-617)
 
 * Garbage collection is now automatically disabled when execution is paused
