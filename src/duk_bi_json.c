@@ -1148,9 +1148,6 @@ DUK_LOCAL void duk__enc_key_autoquote(duk_json_enc_ctx *js_ctx, duk_hstring *k) 
 	duk_size_t k_len;
 	duk_codepoint_t cp;
 
-	DUK_DDD(DUK_DDDPRINT("duk__enc_key_quotes_needed: h_key=%!O, p_start=%p, p_end=%p, p=%p",
-	                     (duk_heaphdr *) h_key, (const void *) p_start,
-	                     (const void *) p_end, (const void *) p));
 	DUK_ASSERT(k != NULL);
 
 	/* Accept ASCII strings which conform to identifier requirements
