@@ -442,7 +442,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			/* Function.prototype.bind() should never let this happen,
 			 * ugly error message is enough.
 			 */
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+			DUK_ERROR_INTERNAL_DEFMSG(thr);
 		}
 		DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv_func) != NULL);
 
@@ -494,7 +494,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_BOUND_CHAIN_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %!T", duk_get_tval(ctx, idx_func)));
@@ -765,9 +765,9 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
  not_callable_error:
 	DUK_ASSERT(tv_func != NULL);
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
 #else
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
 #endif
 	DUK_UNREACHABLE();
 	return NULL;  /* never executed */
@@ -1103,7 +1103,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 		}
 		DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 			duk__handle_call_error(thr,
@@ -1122,7 +1122,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	} catch (...) {
 		DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "caught invalid c++ exception (perhaps thrown by user code)");
+			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 			duk__handle_call_error(thr,
@@ -1282,7 +1282,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			 * limit which is also essentially the same as a C callstack limit
 			 * (except perhaps with some relaxed threading assumptions).
 			 */
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
+			DUK_ERROR_RANGE(thr, DUK_STR_C_CALLSTACK_LIMIT);
 		}
 		thr->heap->call_recursion_depth++;
 	}
@@ -1383,7 +1383,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			nregs = nargs;
 		} else {
 			/* XXX: this should be an assert */
-			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
+			DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
 		}
 	} else {
 		duk_small_uint_t lf_flags;
@@ -1629,7 +1629,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			duk_error_throw_from_negative_rc(thr, rc);
 			DUK_UNREACHABLE();
 		} else if (rc > 1) {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "c function returned invalid rc");
+			DUK_ERROR_API(thr, "c function returned invalid rc");
 		}
 		DUK_ASSERT(rc == 0 || rc == 1);
 
@@ -1723,7 +1723,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	return;
 
  thread_state_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for call (%ld)", (long) thr->state);
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for call (%ld)", (long) thr->state);
 	DUK_UNREACHABLE();
 	return;  /* never executed */
 }
@@ -1988,7 +1988,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		}
 		DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 			duk__handle_safe_call_error(thr,
@@ -2003,7 +2003,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	} catch (...) {
 		DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR(thr, DUK_ERR_API_ERROR, "caught invalid c++ exception (perhaps thrown by user code)");
+			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 			duk__handle_safe_call_error(thr,
@@ -2090,7 +2090,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 		 * limit which is also essentially the same as a C callstack limit
 		 * (except perhaps with some relaxed threading assumptions).
 		 */
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_C_CALLSTACK_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_C_CALLSTACK_LIMIT);
 	}
 	thr->heap->call_recursion_depth++;
 
@@ -2136,7 +2136,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	return;
 
  thread_state_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for safe_call (%ld)", (long) thr->state);
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "invalid thread state for safe_call (%ld)", (long) thr->state);
 	DUK_UNREACHABLE();
 }
 

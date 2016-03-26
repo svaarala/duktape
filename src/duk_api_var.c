@@ -74,13 +74,13 @@ DUK_EXTERNAL void duk_put_var(duk_context *ctx) {
 DUK_EXTERNAL duk_bool_t duk_del_var(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
+	DUK_ERROR_UNIMPLEMENTED_DEFMSG((duk_hthread *) ctx);
 	return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_has_var(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
+	DUK_ERROR_UNIMPLEMENTED_DEFMSG((duk_hthread *) ctx);
 	return 0;
 }

@@ -380,7 +380,7 @@ DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, c
 	return;
 
  esc_error:
-	DUK_ERROR(tfm_ctx->thr, DUK_ERR_TYPE_ERROR, "invalid input");
+	DUK_ERROR_TYPE(tfm_ctx->thr, "invalid input");
 }
 
 DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {
@@ -1002,7 +1002,7 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 	return;
 
  resolve_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", (const char *) req_id);
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", (const char *) req_id);
 }
 #endif  /* DUK_USE_COMMONJS_MODULES */
 

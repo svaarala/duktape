@@ -41,7 +41,7 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->callstack_max) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CALLSTACK_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_CALLSTACK_LIMIT);
 	}
 
 	DUK_DD(DUK_DDPRINT("growing callstack %ld -> %ld", (long) old_size, (long) new_size));
@@ -55,7 +55,7 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	new_ptr = (duk_activation *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
 	if (!new_ptr) {
 		/* No need for a NULL/zero-size check because new_size > 0) */
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_REALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 	thr->callstack = new_ptr;
 	thr->callstack_size = new_size;
@@ -346,7 +346,7 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 
 	/* this is a bit approximate (errors out before max is reached); this is OK */
 	if (new_size >= thr->catchstack_max) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_CATCHSTACK_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_CATCHSTACK_LIMIT);
 	}
 
 	DUK_DD(DUK_DDPRINT("growing catchstack %ld -> %ld", (long) old_size, (long) new_size));
@@ -360,7 +360,7 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	new_ptr = (duk_catcher *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
 	if (!new_ptr) {
 		/* No need for a NULL/zero-size check because new_size > 0) */
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_REALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 	thr->catchstack = new_ptr;
 	thr->catchstack_size = new_size;

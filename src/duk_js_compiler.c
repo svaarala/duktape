@@ -381,7 +381,7 @@ DUK_LOCAL void duk__recursion_increase(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(comp_ctx->recursion_depth >= 0);
 	if (comp_ctx->recursion_depth >= comp_ctx->recursion_limit) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_COMPILER_RECURSION_LIMIT);
+		DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_COMPILER_RECURSION_LIMIT);
 	}
 	comp_ctx->recursion_depth++;
 }
@@ -440,7 +440,7 @@ DUK_LOCAL void duk__advance_helper(duk_compiler_ctx *comp_ctx, duk_small_int_t e
 	if (expect >= 0 && comp_ctx->curr_token.t != expect) {
 		DUK_D(DUK_DPRINT("parse error: expect=%ld, got=%ld",
 		                 (long) expect, (long) comp_ctx->curr_token.t));
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_PARSE_ERROR);
+		DUK_ERROR_SYNTAX(thr, DUK_STR_PARSE_ERROR);
 	}
 
 	/* make current token the previous; need to fiddle with valstack "backing store" */
@@ -1094,7 +1094,7 @@ DUK_LOCAL void duk__emit(duk_compiler_ctx *comp_ctx, duk_instr_t ins) {
 	return;
 
   fail_bc_limit:
-	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
+	DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_BYTECODE_LIMIT);
 }
 
 /* Update function min/max line from current token.  Needed to improve
@@ -1373,7 +1373,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 	return;
 
  error_outofregs:
-	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REG_LIMIT);
+	DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_REG_LIMIT);
 }
 
 DUK_LOCAL void duk__emit_a_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a, duk_regconst_t b) {
@@ -1432,7 +1432,7 @@ DUK_LOCAL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_fl
 	return;
 
  error_outofregs:
-	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REG_LIMIT);
+	DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_REG_LIMIT);
 }
 
 DUK_LOCAL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, duk_regconst_t abc) {
@@ -1458,7 +1458,7 @@ DUK_LOCAL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, du
 	return;
 
  error_outofregs:
-	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_REG_LIMIT);
+	DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_REG_LIMIT);
 }
 
 DUK_LOCAL void duk__emit_extraop_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t extraop_flags, duk_regconst_t b, duk_regconst_t c) {
@@ -1606,7 +1606,7 @@ DUK_LOCAL void duk__insert_jump_entry(duk_compiler_ctx *comp_ctx, duk_int_t jump
 	return;
 
   fail_bc_limit:
-	DUK_ERROR(comp_ctx->thr, DUK_ERR_RANGE_ERROR, DUK_STR_BYTECODE_LIMIT);
+	DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_BYTECODE_LIMIT);
 }
 
 /* Does not assume that jump_pc contains a DUK_OP_JUMP previously; this is intentional
@@ -1661,7 +1661,7 @@ DUK_LOCAL void duk__patch_trycatch(duk_compiler_ctx *comp_ctx, duk_int_t ldconst
 			 */
 			DUK_D(DUK_DPRINT("failed to patch trycatch: flags=%ld, reg_catch=%ld, const_varname=%ld (0x%08lx)",
 			                 (long) flags, (long) reg_catch, (long) const_varname, (long) const_varname));
-			DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_REG_LIMIT);
+			DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_REG_LIMIT);
 		}
 		instr->ins |= DUK_ENC_OP_A_BC(0, 0, const_varname);
 	} else {
@@ -1860,7 +1860,7 @@ DUK_LOCAL duk_reg_t duk__alloctemps(duk_compiler_ctx *comp_ctx, duk_small_int_t 
 	comp_ctx->curr_func.temp_next += num;
 
 	if (comp_ctx->curr_func.temp_next > DUK__MAX_TEMPS) {  /* == DUK__MAX_TEMPS is OK */
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_TEMP_LIMIT);
+		DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_TEMP_LIMIT);
 	}
 
 	/* maintain highest 'used' temporary, needed to figure out nregs of function */
@@ -1920,7 +1920,7 @@ DUK_LOCAL duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 	}
 
 	if (n > DUK__MAX_CONSTS) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_CONST_LIMIT);
+		DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_CONST_LIMIT);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("allocating new constant for %!T -> const index %ld",
@@ -2113,7 +2113,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	}
 	}
 
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+	DUK_ERROR_INTERNAL_DEFMSG(thr);
 	return 0;
 }
 
@@ -2337,7 +2337,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 	}
 	}
 
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+	DUK_ERROR_INTERNAL_DEFMSG(thr);
 	return;
 }
 
@@ -2559,7 +2559,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 		li--;
 
 		if (li->h_label == h_label && h_label != DUK_HTHREAD_STRING_EMPTY_STRING(thr)) {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_DUPLICATE_LABEL);
+			DUK_ERROR_SYNTAX(thr, DUK_STR_DUPLICATE_LABEL);
 		}
 	}
 
@@ -2689,7 +2689,7 @@ DUK_LOCAL void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring 
 			 * finding a match deeper in the label stack.
 			 */
 			if (h_label != DUK_HTHREAD_STRING_EMPTY_STRING(thr)) {
-				DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_LABEL);
+				DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_LABEL);
 			} else {
 				DUK_DDD(DUK_DDDPRINT("continue matched an empty label which does not "
 				                     "allow a continue -> continue lookup deeper in label stack"));
@@ -2698,7 +2698,7 @@ DUK_LOCAL void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring 
 	}
 	/* XXX: match flag is awkward, rework */
 	if (!match) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_LABEL);
+		DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_LABEL);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("label match: %!O -> label_id %ld, catch_depth=%ld, pc_label=%ld",
@@ -2882,7 +2882,7 @@ DUK_LOCAL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_ARRAY_LITERAL);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_ARRAY_LITERAL);
 }
 
 /* duplicate/invalid key checks; returns 1 if syntax error */
@@ -3183,7 +3183,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_OBJECT_LITERAL);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_OBJECT_LITERAL);
 }
 
 /* Parse argument list.  Arguments are written to temps starting from
@@ -3483,7 +3483,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			duk_regconst_t rc_varname;
 
 			if (comp_ctx->curr_func.is_strict) {
-				DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_CANNOT_DELETE_IDENTIFIER);
+				DUK_ERROR_SYNTAX(thr, DUK_STR_CANNOT_DELETE_IDENTIFIER);
 			}
 
 			DUK__SETTEMP(comp_ctx, temp_at_entry);
@@ -3654,7 +3654,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 	}  /* end switch */
 
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_PARSE_ERROR);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_PARSE_ERROR);
 	return;
 
  unary_extraop:
@@ -3757,7 +3757,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	}
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_EXPRESSION);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_EXPRESSION);
 }
 
 /* XXX: add flag to indicate whether caller cares about return value; this
@@ -3812,7 +3812,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 		/* NB: must accept reserved words as property name */
 		if (comp_ctx->curr_token.t_nores != DUK_TOK_IDENTIFIER) {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_EXPECTED_IDENTIFIER);
+			DUK_ERROR_SYNTAX(thr, DUK_STR_EXPECTED_IDENTIFIER);
 		}
 
 		res->t = DUK_IVAL_PROP;
@@ -4206,7 +4206,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	}
 
 	DUK_D(DUK_DPRINT("parse error: unexpected token: %ld", (long) tok));
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_PARSE_ERROR);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_PARSE_ERROR);
 	return;
 
 #if 0
@@ -4641,11 +4641,11 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	}
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_EXPRESSION);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_EXPRESSION);
 	return;
 
  syntax_error_lvalue:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_LVALUE);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_LVALUE);
 	return;
 }
 
@@ -4730,7 +4730,7 @@ DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_
 		/* XXX: possibly incorrect handling of empty expression */
 		DUK_DDD(DUK_DDDPRINT("empty expression"));
 		if (!(rbp_flags & DUK__EXPR_FLAG_ALLOW_EMPTY)) {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_EMPTY_EXPR_NOT_ALLOWED);
+			DUK_ERROR_SYNTAX(thr, DUK_STR_EMPTY_EXPR_NOT_ALLOWED);
 		}
 		res->t = DUK_IVAL_PLAIN;
 		res->x1.t = DUK_ISPEC_VALUE;
@@ -4770,7 +4770,7 @@ DUK_LOCAL void duk__exprtop(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_sma
 	duk__expr(comp_ctx, res, rbp_flags);
 
 	if (!(rbp_flags & DUK__EXPR_FLAG_ALLOW_EMPTY) && duk__expr_is_empty(comp_ctx)) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_EMPTY_EXPR_NOT_ALLOWED);
+		DUK_ERROR_SYNTAX(thr, DUK_STR_EMPTY_EXPR_NOT_ALLOWED);
 	}
 }
 
@@ -4979,7 +4979,7 @@ DUK_LOCAL void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_VAR_DECLARATION);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_VAR_DECLARATION);
 }
 
 DUK_LOCAL void duk__parse_var_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t expr_flags) {
@@ -5351,7 +5351,7 @@ DUK_LOCAL void duk__parse_for_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, 
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_FOR);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_FOR);
 }
 
 DUK_LOCAL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_int_t pc_label_site) {
@@ -5550,7 +5550,7 @@ DUK_LOCAL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_SWITCH);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_SWITCH);
 }
 
 DUK_LOCAL void duk__parse_if_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
@@ -5684,7 +5684,7 @@ DUK_LOCAL void duk__parse_break_or_continue_stmt(duk_compiler_ctx *comp_ctx, duk
 		duk__lookup_active_label(comp_ctx, comp_ctx->curr_token.str1, is_break, &label_id, &label_catch_depth, &label_pc, &label_is_closest);
 		duk__advance(comp_ctx);
 	} else {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_BREAK_CONT_LABEL);
+		DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_BREAK_CONT_LABEL);
 	}
 
 	/* Use a fast break/continue when possible.  A fast break/continue is
@@ -5726,7 +5726,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	 * not as part of eval or global code.
 	 */
 	if (!comp_ctx->curr_func.is_function) {
-		DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_RETURN);
+		DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_RETURN);
 	}
 
 	ret_flags = 0;
@@ -5823,7 +5823,7 @@ DUK_LOCAL void duk__parse_throw_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res
 	/* Unlike break/continue, throw statement does not allow an empty value. */
 
 	if (comp_ctx->curr_token.lineterm) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_THROW);
+		DUK_ERROR_SYNTAX(comp_ctx->thr, DUK_STR_INVALID_THROW);
 	}
 
 	reg_val = duk__exprtop_toreg(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
@@ -6064,7 +6064,7 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 	return;
 
  syntax_error:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_TRY);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_TRY);
 }
 
 DUK_LOCAL void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
@@ -6074,7 +6074,7 @@ DUK_LOCAL void duk__parse_with_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res)
 	duk_small_uint_t trycatch_flags;
 
 	if (comp_ctx->curr_func.is_strict) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_WITH_IN_STRICT_MODE);
+		DUK_ERROR_SYNTAX(comp_ctx->thr, DUK_STR_WITH_IN_STRICT_MODE);
 	}
 
 	comp_ctx->curr_func.catch_depth++;
@@ -6256,7 +6256,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 			stmt_flags = 0;
 			break;
 		} else {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_FUNC_STMT_NOT_ALLOWED);
+			DUK_ERROR_SYNTAX(thr, DUK_STR_FUNC_STMT_NOT_ALLOWED);
 		}
 		break;
 	}
@@ -6593,7 +6593,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 				DUK_DDD(DUK_DDDPRINT("automatic semicolon terminates statement (allowed for compatibility "
 				                     "even though no lineterm present before next token)"));
 			} else {
-				DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_UNTERMINATED_STMT);
+				DUK_ERROR_SYNTAX(thr, DUK_STR_UNTERMINATED_STMT);
 			}
 		}
 	} else {
@@ -7018,12 +7018,12 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 	return;
 
  error_outofregs:
-	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_REG_LIMIT);
+	DUK_ERROR_RANGE(thr, DUK_STR_REG_LIMIT);
 	DUK_UNREACHABLE();
 	return;
 
  error_argname:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_ARG_NAME);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_ARG_NAME);
 	DUK_UNREACHABLE();
 	return;
 }
@@ -7272,7 +7272,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 		if (compile_round >= 3) {
 			/* Should never happen but avoid infinite loop just in case. */
 			DUK_D(DUK_DPRINT("more than 3 compile passes needed, should never happen"));
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+			DUK_ERROR_INTERNAL_DEFMSG(thr);
 		}
 		DUK_D(DUK_DPRINT("need additional round to compile function, round now %d", (int) compile_round));
 	}
@@ -7320,7 +7320,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	return;
 
  error_funcname:
-	DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_FUNC_NAME);
+	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_FUNC_NAME);
 }
 
 /*
@@ -7369,7 +7369,7 @@ DUK_LOCAL void duk__parse_func_formals(duk_compiler_ctx *comp_ctx) {
 		 */
 
 		if (comp_ctx->curr_token.t != DUK_TOK_IDENTIFIER) {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, "expected identifier");
+			DUK_ERROR_SYNTAX(thr, "expected identifier");
 		}
 		DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_IDENTIFIER);
 		DUK_ASSERT(comp_ctx->curr_token.str1 != NULL);
@@ -7424,7 +7424,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 			duk_push_number(ctx, comp_ctx->curr_token.num);
 			duk_to_string(ctx, -1);
 		} else {
-			DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_INVALID_GETSET_NAME);
+			DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_GETSET_NAME);
 		}
 		comp_ctx->curr_func.h_name = duk_get_hstring(ctx, -1);  /* borrowed reference */
 		DUK_ASSERT(comp_ctx->curr_func.h_name != NULL);
@@ -7443,7 +7443,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_bool_t i
 			/* valstack will be unbalanced, which is OK */
 			DUK_ASSERT(!is_setget);
 			if (is_decl) {
-				DUK_ERROR(thr, DUK_ERR_SYNTAX_ERROR, DUK_STR_FUNC_NAME_REQUIRED);
+				DUK_ERROR_SYNTAX(thr, DUK_STR_FUNC_NAME_REQUIRED);
 			}
 		}
 	}
@@ -7575,7 +7575,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bo
 	fnum = old_func.fnum_next++;
 
 	if (fnum > DUK__MAX_FUNCS) {
-		DUK_ERROR(comp_ctx->thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_FUNC_LIMIT);
+		DUK_ERROR_RANGE(comp_ctx->thr, DUK_STR_FUNC_LIMIT);
 	}
 
 	/* array writes autoincrement length */

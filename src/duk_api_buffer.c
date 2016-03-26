@@ -14,7 +14,7 @@ DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size
 	DUK_ASSERT(h != NULL);
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
 	}
 
 	/* maximum size check is handled by callee */
@@ -35,7 +35,7 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_
 	DUK_ASSERT(h != NULL);
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
 	}
 
 	/* Forget the previous allocation, setting size to 0 and alloc to
@@ -64,7 +64,7 @@ DUK_EXTERNAL void duk_config_buffer(duk_context *ctx, duk_idx_t index, void *ptr
 	DUK_ASSERT(h != NULL);
 
 	if (!DUK_HBUFFER_HAS_EXTERNAL(h)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_WRONG_BUFFER_TYPE);
+		DUK_ERROR_TYPE(thr, DUK_STR_WRONG_BUFFER_TYPE);
 	}
 	DUK_ASSERT(DUK_HBUFFER_HAS_DYNAMIC(h));
 

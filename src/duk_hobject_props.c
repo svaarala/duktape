@@ -335,7 +335,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *o
 
 	tv_handler = duk_hobject_find_existing_entry_tval_ptr(thr->heap, obj, DUK_HTHREAD_STRING_INT_HANDLER(thr));
 	if (!tv_handler) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REVOKED);
+		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REVOKED);
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_handler));
@@ -346,7 +346,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *o
 
 	tv_target = duk_hobject_find_existing_entry_tval_ptr(thr->heap, obj, DUK_HTHREAD_STRING_INT_TARGET(thr));
 	if (!tv_target) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REVOKED);
+		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REVOKED);
 		return 0;
 	}
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
@@ -583,7 +583,7 @@ void duk__realloc_props(duk_hthread *thr,
 	 */
 
 	if (new_e_size_adjusted + new_a_size > DUK_HOBJECT_MAX_PROPERTIES) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_OBJECT_PROPERTY_LIMIT);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	/*
@@ -933,7 +933,7 @@ void duk__realloc_props(duk_hthread *thr,
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
 #endif
 
-	DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_OBJECT_RESIZE_FAILED);
+	DUK_ERROR_ALLOC_DEFMSG(thr);
 }
 
 /*
@@ -1938,7 +1938,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 				/* treat like property not found */
 				break;
 			} else {
-				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+				DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 			}
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
@@ -2075,7 +2075,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 		                     "(arr_idx=%ld, old_len=%ld)",
 		                     (long) idx, (long) old_len));
 		if (!(temp_desc->flags & DUK_PROPDESC_FLAG_WRITABLE)) {
-			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_WRITABLE);
+			DUK_ERROR_TYPE(thr, DUK_STR_NOT_WRITABLE);
 			return 0;  /* not reachable */
 		}
 		new_len = idx + 1;
@@ -2263,10 +2263,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is undefined or null -> reject"));
 #if defined(DUK_USE_PARANOID_ERRORS)
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
 #else
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot read property %s of %s",
-		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+		DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot read property %s of %s",
+		               duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
 #endif
 		return 0;
 	}
@@ -2402,7 +2402,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 					                 (desc.get == NULL) &&
 					                 !DUK_TVAL_IS_UNDEFINED(tv_hook);
 					if (datadesc_reject || accdesc_reject) {
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+						DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 					}
 
 					duk_pop_2(ctx);
@@ -2624,7 +2624,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * hit might be useful.
 		 */
 		if (sanity-- == 0) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+			DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
 	} while (curr);
@@ -2694,7 +2694,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			    DUK_HOBJECT_IS_FUNCTION(h) &&
 			    DUK_HOBJECT_HAS_STRICT(h)) {
 				/* XXX: sufficient to check 'strict', assert for 'is function' */
-				DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_STRICT_CALLER_READ);
+				DUK_ERROR_TYPE(thr, DUK_STR_STRICT_CALLER_READ);
 			}
 		}
 	}
@@ -2771,7 +2771,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	} else {
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is not an object -> reject"));
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
 	}
 
 	/* XXX: fast path for arrays? */
@@ -2814,7 +2814,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 					 */
 					if (!((desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&  /* property is configurable and */
 					      DUK_HOBJECT_HAS_EXTENSIBLE(h_target))) {          /* ... target is extensible */
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+						DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 					}
 				}
 			}
@@ -2930,7 +2930,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	d = duk_to_number(ctx, -1);
 	res = (duk_uint32_t) d;
 	if ((duk_double_t) res != d) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_ARRAY_LENGTH);
+		DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARRAY_LENGTH);
 	}
 	duk_pop(ctx);
 	return res;
@@ -3303,10 +3303,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_DDD(DUK_DDDPRINT("base object is undefined or null -> reject (object=%!iT)",
 		                     (duk_tval *) tv_obj));
 #if defined(DUK_USE_PARANOID_ERRORS)
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
 #else
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
-		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+		DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
+		               duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
 #endif
 		return 0;
 	}
@@ -3429,7 +3429,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 					                 !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) &&
 					                 (desc.set == NULL);
 					if (datadesc_reject || accdesc_reject) {
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+						DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 					}
 
 					duk_pop_2(ctx);
@@ -3703,7 +3703,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * hit might be useful.
 		 */
 		if (sanity-- == 0) {
-			DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+			DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
 	} while (curr);
@@ -4087,7 +4087,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_proxy_rejected:
 	DUK_DDD(DUK_DDDPRINT("result: error, proxy rejects"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 	}
 	/* Note: no key on stack */
 	return 0;
@@ -4097,10 +4097,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_DDD(DUK_DDDPRINT("result: error, base primitive"));
 	if (throw_flag) {
 #if defined(DUK_USE_PARANOID_ERRORS)
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
 #else
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
-		          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+		DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot write property %s of %s",
+		               duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
 #endif
 	}
 	duk_pop(ctx);  /* remove key */
@@ -4109,7 +4109,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_not_extensible:
 	DUK_DDD(DUK_DDDPRINT("result: error, not extensible"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_EXTENSIBLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4117,7 +4117,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_not_writable:
 	DUK_DDD(DUK_DDDPRINT("result: error, not writable"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_WRITABLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_WRITABLE);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4126,7 +4126,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_not_writable_no_pop:
 	DUK_DDD(DUK_DDDPRINT("result: error, not writable"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_WRITABLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_WRITABLE);
 	}
 	return 0;
 #endif
@@ -4134,7 +4134,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_array_length_partial:
 	DUK_DDD(DUK_DDDPRINT("result: error, array length write only partially successful"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
+		DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4142,7 +4142,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_no_setter:
 	DUK_DDD(DUK_DDDPRINT("result: error, accessor property without setter"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_SETTER_UNDEFINED);
+		DUK_ERROR_TYPE(thr, DUK_STR_SETTER_UNDEFINED);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4150,7 +4150,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_internal:
 	DUK_DDD(DUK_DDDPRINT("result: error, internal"));
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INTERNAL_ERROR);
+		DUK_ERROR_INTERNAL_DEFMSG(thr);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4299,7 +4299,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 	DUK_DDD(DUK_DDDPRINT("delete failed: property found, force flag, but virtual"));
 
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROPERTY_IS_VIRTUAL);
+		DUK_ERROR_TYPE(thr, DUK_STR_PROPERTY_IS_VIRTUAL);
 	}
 	return 0;
 
@@ -4307,7 +4307,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 	DUK_DDD(DUK_DDDPRINT("delete failed: property found, not configurable"));
 
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
 	return 0;
 }
@@ -4394,7 +4394,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 					desc_reject = !(desc.flags & DUK_PROPDESC_FLAG_CONFIGURABLE);
 					if (desc_reject) {
 						/* unconditional */
-						DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+						DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 					}
 				}
 				rc = 1;  /* success */
@@ -4480,17 +4480,17 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	/* Note: unconditional throw */
 	DUK_ASSERT(duk_get_top(ctx) == entry_top);
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_BASE);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_BASE);
 #else
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "cannot delete property %s of %s",
-	          duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
+	DUK_ERROR_FMT2(thr, DUK_ERR_TYPE_ERROR, "cannot delete property %s of %s",
+	               duk_push_string_tval_readable(ctx, tv_key), duk_push_string_tval_readable(ctx, tv_obj));
 #endif
 	return 0;
 
 #if defined(DUK_USE_ES6_PROXY)
  fail_proxy_rejected:
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROXY_REJECTED);
+		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 	}
 	duk_set_top(ctx, entry_top);
 	return 0;
@@ -4498,7 +4498,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 
  fail_not_configurable:
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
 	duk_set_top(ctx, entry_top);
 	return 0;
@@ -4625,11 +4625,11 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 	return;
 
  error_internal:
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
+	DUK_ERROR_INTERNAL_DEFMSG(thr);
 	return;
 
  error_virtual:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_REDEFINE_VIRT_PROP);
+	DUK_ERROR_TYPE(thr, DUK_STR_REDEFINE_VIRT_PROP);
 	return;
 }
 
@@ -4990,7 +4990,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_DESCRIPTOR);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_DESCRIPTOR);
 }
 
 /*
@@ -5815,23 +5815,23 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	return;
 
  fail_virtual:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_PROPERTY_IS_VIRTUAL);
+	DUK_ERROR_TYPE(thr, DUK_STR_PROPERTY_IS_VIRTUAL);
 	return;
 
  fail_not_writable_array_length:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_ARRAY_LENGTH_NOT_WRITABLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_NOT_WRITABLE);
 	return;
 
  fail_not_extensible:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_EXTENSIBLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
 	return;
 
  fail_not_configurable:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	return;
 
  fail_array_length_partial:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
 	return;
 }
 
@@ -5886,7 +5886,7 @@ DUK_INTERNAL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_ho
 #if defined(DUK_USE_ROM_OBJECTS)
 	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
 		DUK_DD(DUK_DDPRINT("attempt to seal/freeze a readonly object, reject"));
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
 #endif
 

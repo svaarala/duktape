@@ -31,7 +31,6 @@ DUK_INTERNAL const char *duk_str_sprintf_too_long = "sprintf message too long";
 DUK_INTERNAL const char *duk_str_alloc_failed = "alloc failed";
 DUK_INTERNAL const char *duk_str_pop_too_many = "attempt to pop too many entries";
 DUK_INTERNAL const char *duk_str_wrong_buffer_type = "wrong buffer type";
-DUK_INTERNAL const char *duk_str_failed_to_extend_valstack = "failed to extend valstack";
 DUK_INTERNAL const char *duk_str_encode_failed = "encode failed";
 DUK_INTERNAL const char *duk_str_decode_failed = "decode failed";
 DUK_INTERNAL const char *duk_str_no_sourcecode = "no sourcecode";
@@ -49,7 +48,6 @@ DUK_INTERNAL const char *duk_str_cyclic_input = "cyclic input";
 
 /* Object property access */
 DUK_INTERNAL const char *duk_str_proxy_revoked = "proxy revoked";
-DUK_INTERNAL const char *duk_str_object_resize_failed = "object resize failed";
 DUK_INTERNAL const char *duk_str_invalid_base = "invalid base value";
 DUK_INTERNAL const char *duk_str_strict_caller_read = "attempt to read strict 'caller'";
 DUK_INTERNAL const char *duk_str_proxy_rejected = "proxy rejected";
@@ -87,9 +85,6 @@ DUK_INTERNAL const char *duk_str_invalid_func_name = "invalid function name";
 DUK_INTERNAL const char *duk_str_invalid_getset_name = "invalid getter/setter name";
 DUK_INTERNAL const char *duk_str_func_name_required = "function name required";
 
-/* Executor */
-DUK_INTERNAL const char *duk_str_internal_error_exec_longjmp = "internal error in bytecode executor longjmp handler";
-
 /* Regexp */
 DUK_INTERNAL const char *duk_str_invalid_quantifier_no_atom = "quantifier without preceding atom";
 DUK_INTERNAL const char *duk_str_invalid_quantifier_values = "quantifier values invalid (qmin > qmax)";
@@ -99,15 +94,11 @@ DUK_INTERNAL const char *duk_str_unexpected_end_of_pattern = "unexpected end of 
 DUK_INTERNAL const char *duk_str_unexpected_regexp_token = "unexpected token in regexp";
 DUK_INTERNAL const char *duk_str_invalid_regexp_flags = "invalid regexp flags";
 DUK_INTERNAL const char *duk_str_invalid_backrefs = "invalid backreference(s)";
-DUK_INTERNAL const char *duk_str_regexp_backtrack_failed = "regexp backtrack failed";
-DUK_INTERNAL const char *duk_str_regexp_advance_failed = "regexp advance failed";
-DUK_INTERNAL const char *duk_str_regexp_internal_error = "regexp internal error";
 
 /* Limits */
 DUK_INTERNAL const char *duk_str_valstack_limit = "valstack limit";
 DUK_INTERNAL const char *duk_str_callstack_limit = "callstack limit";
 DUK_INTERNAL const char *duk_str_catchstack_limit = "catchstack limit";
-DUK_INTERNAL const char *duk_str_object_property_limit = "object property limit";
 DUK_INTERNAL const char *duk_str_prototype_chain_limit = "prototype chain limit";
 DUK_INTERNAL const char *duk_str_bound_chain_limit = "function call bound chain limit";
 DUK_INTERNAL const char *duk_str_c_callstack_limit = "C call stack depth limit";
@@ -122,4 +113,3 @@ DUK_INTERNAL const char *duk_str_regexp_executor_recursion_limit = "regexp execu
 DUK_INTERNAL const char *duk_str_regexp_executor_step_limit = "regexp step limit";
 
 /* Misc */
-DUK_INTERNAL const char *duk_str_realloc_failed = "realloc failed";

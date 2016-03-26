@@ -46,7 +46,7 @@ DUK_EXTERNAL void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	idx_func = duk_get_top(ctx) - nargs - 1;
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	/* XXX: awkward; we assume there is space for this, overwrite
@@ -73,7 +73,7 @@ DUK_EXTERNAL void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
 		/* note that we can't reliably pop anything here */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 	}
 
 	call_flags = 0;  /* not protected, respect reclimit, not constructor */
@@ -121,7 +121,7 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 		 * might STILL throw an out-of-memory error or some other internal
 		 * fatal error.
 		 */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
@@ -150,7 +150,7 @@ DUK_EXTERNAL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
 	if (idx_func < 0 || nargs < 0) {
 		/* See comments in duk_pcall(). */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
@@ -210,7 +210,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 
 	if (duk_get_top(ctx) < nargs || nrets < 0) {
 		/* See comments in duk_pcall(). */
-		DUK_ERROR(thr, DUK_ERR_API_ERROR, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
@@ -397,7 +397,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	return;
 
  not_constructable:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONSTRUCTABLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
 }
 
 DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx) {
@@ -520,7 +520,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 
 	/* fall through */
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+	DUK_ERROR_TYPE(thr, DUK_STR_UNEXPECTED_TYPE);
 	return 0;
 }
 

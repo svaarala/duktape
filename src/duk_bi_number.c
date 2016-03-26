@@ -20,7 +20,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	if (!h ||
 	    (DUK_HOBJECT_GET_CLASS_NUMBER(h) != DUK_HOBJECT_CLASS_NUMBER)) {
 		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_TYPE_ERROR, "expected a number");
+		DUK_ERROR_TYPE((duk_hthread *) ctx, "number expected");
 	}
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(ctx, -1));
