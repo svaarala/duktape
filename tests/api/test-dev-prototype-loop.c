@@ -43,7 +43,7 @@ second gc
 *** test_is_prototype_of (duk_safe_call)
 Object.prototype.isPrototypeOf result: false
 Object.prototype.isPrototypeOf result: true
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 *** test_error_augment (duk_safe_call)
 ret=1
 throw value .foo=123
@@ -51,22 +51,22 @@ throw value .foo=123
 *** test_hasprop (duk_safe_call)
 hasprop foo: 1
 hasprop bar: 1
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 *** test_getprop (duk_safe_call)
 getprop foo: 123
 getprop bar: 321
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 *** test_putprop (duk_safe_call)
 putprop foo done
 putprop bar done
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 *** test_instanceof (duk_safe_call)
 object function
 true
 object function
 true
 object function
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 still here
 ===*/
 

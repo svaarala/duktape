@@ -40,7 +40,7 @@ set obj0 prototype to obj1
 set obj1 prototype to obj0
 obj0.foo=123
 obj0.bar=123
-==> rc=1, result='Error: prototype chain limit'
+==> rc=1, result='RangeError: prototype chain limit'
 ===*/
 
 /* Multiple basic tests in one: test duk_set_prototype() and duk_get_prototype()

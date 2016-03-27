@@ -9,14 +9,14 @@
 1e-1000000 number 0
 1e1000000000 number Infinity
 1e-1000000000 number 0
-Error
-Error
-Error
-Error
-Error
-Error
-Error
-Error
+RangeError
+RangeError
+RangeError
+RangeError
+RangeError
+RangeError
+RangeError
+RangeError
 ===*/
 
 /* There is an implementation limit for the maximum exponent value

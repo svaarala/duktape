@@ -10,9 +10,9 @@
 
 /*===
 65531
-Error
-Error
-Error
+RangeError
+RangeError
+RangeError
 ===*/
 
 function test(n) {
