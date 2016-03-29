@@ -2067,7 +2067,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 				 * doesn't need to get tracked using a bigint.
 				 */
 				DUK_DDD(DUK_DDDPRINT("parse failed: exponent too large"));
-				goto parse_int_error;
+				goto parse_explimit_error;
 			}
 			dig_expt++;
 		}
@@ -2259,8 +2259,8 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	duk_push_nan(ctx);
 	return;
 
- parse_int_error:
+ parse_explimit_error:
 	DUK_DDD(DUK_DDDPRINT("parse failed, internal error, can't return a value"));
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "number parse error");
+	DUK_ERROR_RANGE(thr, "exponent too large");
 	return;
 }

@@ -900,8 +900,11 @@ No variadic macros
 ------------------
 
 Lack of variadic macros can be worked around by using comma expressions.
-The ``duk_push_error_object()`` API call is a good example.  Without
-variadic macros it's defined as::
+The ``duk_push_error_object()`` API call is a good example.  It needs to
+capture the call site's ``__FILE__`` and ``__LINE__`` which needs some
+macro expansions to be included in the function call arguments.
+
+Without variadic macros it's defined as::
 
     DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
     /* Note: parentheses are required so that the comma expression works in assignments. */
@@ -932,6 +935,12 @@ not work::
                   duk_push_error_object_stash (ctx, 123, "foo %s", "bar");
 
 The problem is that ``__FILE__`` gets assigned to err_idx.
+
+The limitation in this technique is the need to "stash" the file/line
+information temporarily which is not thread safe unless the stash is
+located e.g. in the ``duk_hthread`` or ``duk_heap`` structure.  (At least
+up to Duktape 1.4.x the stashes for file/line are global and thus not
+thread safe; the potential issues don't compromise memory safety though.)
 
 Missing or broken platform functions
 ------------------------------------

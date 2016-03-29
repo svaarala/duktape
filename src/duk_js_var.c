@@ -1116,7 +1116,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 		}
 
                 if (sanity-- == 0) {
-                        DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+                        DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
                 }
 		env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);
 	};
@@ -1254,9 +1254,9 @@ duk_bool_t duk__getvar_helper(duk_hthread *thr,
 		return 1;
 	} else {
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR,
-			          "identifier '%s' undefined",
-			          (const char *) DUK_HSTRING_GET_DATA(name));
+			DUK_ERROR_FMT1(thr, DUK_ERR_REFERENCE_ERROR,
+			               "identifier '%s' undefined",
+			               (const char *) DUK_HSTRING_GET_DATA(name));
 		}
 
 		return 0;
@@ -1772,7 +1772,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 
  fail_existing_attributes:
  fail_not_extensible:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "declaration failed");
+	DUK_ERROR_TYPE(thr, "declaration failed");
 	return 0;
 }
 

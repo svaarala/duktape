@@ -414,11 +414,11 @@ DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_uint_t
 	return;
 
  fail_invalid_desc:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_DESCRIPTOR);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_DESCRIPTOR);
 	return;
 
  fail_not_callable:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CALLABLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
 	return;
 }
 
@@ -569,7 +569,7 @@ DUK_EXTERNAL void duk_set_prototype(duk_context *ctx, duk_idx_t index) {
 
 #if defined(DUK_USE_ROM_OBJECTS)
 	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_CONFIGURABLE);  /* XXX: "read only object"? */
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);  /* XXX: "read only object"? */
 		return;
 	}
 #endif

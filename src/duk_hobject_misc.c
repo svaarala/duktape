@@ -21,7 +21,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, d
 			if (ignore_loop) {
 				break;
 			} else {
-				DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+				DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 			}
 		}
 		h = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);

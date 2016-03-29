@@ -677,7 +677,7 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account).
 		 */
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_VALSTACK_LIMIT);
+			DUK_ERROR_RANGE(thr, DUK_STR_VALSTACK_LIMIT);
 		} else {
 			return 0;
 		}
@@ -704,7 +704,7 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 		DUK_DD(DUK_DDPRINT("valstack resize failed"));
 
 		if (throw_flag) {
-			DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_FAILED_TO_EXTEND_VALSTACK);
+			DUK_ERROR_ALLOC_DEFMSG(thr);
 		} else {
 			return 0;
 		}
@@ -1825,7 +1825,7 @@ DUK_EXTERNAL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t index, duk_int
 		return;
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_DEFAULTVALUE_COERCE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_DEFAULTVALUE_COERCE_FAILED);
 }
 
 DUK_EXTERNAL void duk_to_undefined(duk_context *ctx, duk_idx_t index) {
@@ -2210,7 +2210,7 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index,
 	} else {
 		/* coerced value is updated to value stack even when RangeError thrown */
 		if (clamped) {
-			DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_NUMBER_OUTSIDE_RANGE);
+			DUK_ERROR_RANGE(thr, DUK_STR_NUMBER_OUTSIDE_RANGE);
 		}
 	}
 
@@ -2452,7 +2452,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL: {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_OBJECT_COERCIBLE);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_OBJECT_COERCIBLE);
 		break;
 	}
 	case DUK_TAG_BOOLEAN: {
@@ -2731,7 +2731,7 @@ DUK_EXTERNAL duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, d
 		return 1;
 	}
 	if (mask & DUK_TYPE_MASK_THROW) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_UNEXPECTED_TYPE);
+		DUK_ERROR_TYPE(thr, DUK_STR_UNEXPECTED_TYPE);
 		DUK_UNREACHABLE();
 	}
 	return 0;
@@ -3164,7 +3164,7 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk
 
 	/* Check for maximum string length */
 	if (len > DUK_HSTRING_MAX_BYTELEN) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_STRING_TOO_LONG);
+		DUK_ERROR_RANGE(thr, DUK_STR_STRING_TOO_LONG);
 	}
 
 	h = duk_heap_string_intern_checked(thr, (const duk_uint8_t *) str, (duk_uint32_t) len);
@@ -3237,7 +3237,7 @@ DUK_EXTERNAL const char *duk_push_string_file_raw(duk_context *ctx, const char *
 		duk_push_undefined(ctx);
 	} else {
 		/* XXX: string not shared because it is conditional */
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "read file error");
+		DUK_ERROR_TYPE(thr, "read file error");
 	}
 	return NULL;
 }
@@ -3252,7 +3252,7 @@ DUK_EXTERNAL const char *duk_push_string_file_raw(duk_context *ctx, const char *
 		duk_push_undefined(ctx);
 	} else {
 		/* XXX: string not shared because it is conditional */
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "file I/O disabled");
+		DUK_ERROR_UNSUPPORTED(thr, "file I/O disabled");
 	}
 	return NULL;
 }
@@ -3305,7 +3305,7 @@ DUK_LOCAL void duk__push_this_helper(duk_context *ctx, duk_small_uint_t check_ob
 	return;
 
  type_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_OBJECT_COERCIBLE);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_OBJECT_COERCIBLE);
 }
 
 DUK_EXTERNAL void duk_push_this(duk_context *ctx) {
@@ -3548,7 +3548,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 
 	h = duk_hobject_alloc(thr->heap, hobject_flags_and_class);
 	if (!h) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08lx", (unsigned long) h->hdr.h_flags));
@@ -3651,7 +3651,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 #if defined(DUK_USE_ROM_STRINGS)
@@ -3674,7 +3674,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	/* important to do this *after* pushing, to make the thread reachable for gc */
 	if (!duk_hthread_init_stacks(thr->heap, obj)) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	/* initialize built-ins - either by copying or creating new ones */
@@ -3719,7 +3719,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	                                  DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
 	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created compiled function object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
@@ -3762,7 +3762,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 
 	obj = duk_hnativefunction_alloc(thr->heap, flags);
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	obj->func = func;
@@ -3887,7 +3887,7 @@ DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_
 
 	obj = duk_hbufferobject_alloc(thr->heap, hobject_flags_and_class);
 	if (!obj) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
@@ -4021,11 +4021,11 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	return;
 
  range_error:
-	DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_CALL_ARGS);
 	return;  /* not reached */
 
  arg_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CALL_ARGS);
 	return;  /* not reached */
 }
 
@@ -4126,12 +4126,12 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 
 	/* Check for maximum buffer length. */
 	if (size > DUK_HBUFFER_MAX_BYTELEN) {
-		DUK_ERROR(thr, DUK_ERR_RANGE_ERROR, DUK_STR_BUFFER_TOO_LONG);
+		DUK_ERROR_RANGE(thr, DUK_STR_BUFFER_TOO_LONG);
 	}
 
 	h = duk_hbuffer_alloc(thr->heap, size, flags, &buf_data);
 	if (!h) {
-		DUK_ERROR(thr, DUK_ERR_ALLOC_ERROR, DUK_STR_ALLOC_FAILED);
+		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	tv_slot = thr->valstack_top;

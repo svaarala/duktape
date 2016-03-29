@@ -270,7 +270,7 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 	if (duk_unicode_decode_xutf8(thr, ptr, ptr_start, ptr_end, &cp)) {
 		return cp;
 	}
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "utf-8 decode failed");
+	DUK_ERROR_INTERNAL(thr, "utf-8 decode failed");  /* XXX: 'internal error' is a bit of a misnomer */
 	DUK_UNREACHABLE();
 	return 0;
 }

@@ -393,7 +393,7 @@ DUK_INTERNAL void duk_js_checkobjectcoercible(duk_hthread *thr, duk_tval *tv_x) 
 	    tag == DUK_TAG_NULL ||
 	    tag == DUK_TAG_POINTER ||
 	    tag == DUK_TAG_BUFFER) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "not object coercible");
+		DUK_ERROR_TYPE(thr, "not object coercible");
 	}
 }
 #endif
@@ -1081,7 +1081,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 			 *
 			 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
 			 */
-			DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, "invalid instanceof rval");
+			DUK_ERROR_TYPE(thr, "invalid instanceof rval");
 		}
 
 		if (!DUK_HOBJECT_HAS_BOUND(func)) {
@@ -1098,7 +1098,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_BOUND_CHAIN_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
 	/*
@@ -1170,7 +1170,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
-		DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 	}
 	DUK_UNREACHABLE();
 

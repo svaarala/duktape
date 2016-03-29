@@ -69,7 +69,7 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
 	 */
 	duk_uint32_t ret = duk__push_this_obj_len_u32(ctx);
 	if (DUK_UNLIKELY(ret >= 0x80000000UL)) {
-		DUK_ERROR((duk_hthread *) ctx, DUK_ERR_INTERNAL_ERROR, DUK_STR_ARRAY_LENGTH_OVER_2G);
+		DUK_ERROR_RANGE((duk_hthread *) ctx, DUK_STR_ARRAY_LENGTH_OVER_2G);
 	}
 	return ret;
 }

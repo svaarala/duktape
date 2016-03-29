@@ -125,7 +125,7 @@ DUK_LOCAL duk_hbufferobject *duk__getrequire_bufobj_this(duk_context *ctx, duk_b
 	}
 
 	if (throw_flag) {
-		DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_BUFFER);
 	}
 	return NULL;
 }
@@ -170,7 +170,7 @@ DUK_LOCAL duk_hbufferobject *duk__require_bufobj_value(duk_context *ctx, duk_idx
 		}
 	}
 
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_NOT_BUFFER);
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_BUFFER);
 	return NULL;  /* not reachable */
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
@@ -277,7 +277,7 @@ DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
 	return;
 
  fail_range:
-	duk_error(thr, DUK_ERR_RANGE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_CALL_ARGS);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 

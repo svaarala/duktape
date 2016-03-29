@@ -293,6 +293,6 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	return byte_offset;
 
  error:
-	DUK_ERROR(thr, DUK_ERR_INTERNAL_ERROR, "string scan error");
+	DUK_ERROR_INTERNAL_DEFMSG(thr);
 	return 0;
 }

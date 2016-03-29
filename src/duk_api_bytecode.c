@@ -705,7 +705,7 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 	return;
 
  format_error:
-	DUK_ERROR(thr, DUK_ERR_TYPE_ERROR, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 }
 
 #undef DUK__SER_MARKER
@@ -717,11 +717,11 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
 
 DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_ERROR, DUK_STR_UNSUPPORTED);
+	DUK_ERROR_UNSUPPORTED_DEFMSG((duk_hthread *) ctx);
 }
 
 DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
-	DUK_ERROR((duk_hthread *) ctx, DUK_ERR_ERROR, DUK_STR_UNSUPPORTED);
+	DUK_ERROR_UNSUPPORTED_DEFMSG((duk_hthread *) ctx);
 }
 
 #endif  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
