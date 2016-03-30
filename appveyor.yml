@@ -1,0 +1,36 @@
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Release
+
+matrix:
+  fast_finish: true
+
+install:
+  - cmd: python -m pip install PyYAML
+
+build_script:
+  # C:\projects\duktape
+  #- set
+  #- dir "C:\Program Files\"
+  #- dir "C:\Program Files (x86)\"
+
+  # PATH doesn't include any 'cl' by default, not sure how to do this correctly.
+  # https://msdn.microsoft.com/en-us/library/f2ccy3wt.aspx
+  # Multi-line commands are run line-by-line (?)
+  - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
+  - cmd: set VCPLATFORM="NONE"
+  - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
+  - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
+  - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
+  - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
+
+  - cmd: cd C:\projects\duktape
+  - cmd: python util\make_dist.py
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk.exe
+
+test_script:
+  - cmd: duk.exe -e "print(Duktape.env);"
+  - cmd: duk.exe -e "print('Hello world!');"
