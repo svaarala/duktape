@@ -1,3 +1,7 @@
+version: "{build}"
+
+clone_depth: 5
+
 platform:
   - x64
   - x86
@@ -27,10 +31,20 @@ build_script:
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
 
+  # Normal build
   - cmd: cd C:\projects\duktape
   - cmd: python util\make_dist.py
   - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk.exe
+  - cmd: del *.obj *.lib
+
+  # DLL build
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll.exe duktape.lib
+
+  - cmd: dir
 
 test_script:
   - cmd: duk.exe -e "print(Duktape.env);"
   - cmd: duk.exe -e "print('Hello world!');"
+  - cmd: duk-dll.exe -e "print(Duktape.env);"
+  - cmd: duk-dll.exe -e "print('Hello world!');"
