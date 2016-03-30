@@ -26,6 +26,7 @@ import sys
 import re
 import optparse
 import subprocess
+import time
 import datetime
 import traceback
 import tarfile
@@ -153,12 +154,28 @@ def set_output_description(desc):
 #  Test context handlers
 #
 
+def genconfig_dist_src(genconfig_opts):
+	cwd = os.getcwd()
+	execute([
+		'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+		'--metadata', os.path.join(cwd, 'config'),
+		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),
+		'--support-feature-options'
+	] + genconfig_opts + [
+		'duk-config-header'
+	])
+
 def context_codepolicycheck():
 	return execute([ 'make', 'codepolicycheck' ], env=newenv(TRAVIS=1), catch=True)['success']
 
-def context_linux_x64_qecmatest():
+def context_helper_x64_qecmatest(env=None, genconfig_opts=[], valgrind=False):
 	cwd = os.getcwd()
+	execute([ 'make', 'dist' ])
+	genconfig_dist_src(genconfig_opts)
 	execute([ 'make', 'duk', 'runtestsdeps' ])
+	opts = []
+	if valgrind:
+		opts.append('--valgrind')
 	return execute([
 		'node',
 		os.path.join(cwd, 'runtests', 'runtests.js'),
@@ -168,12 +185,28 @@ def context_linux_x64_qecmatest():
 		'--known-issues', os.path.join(cwd, 'doc', 'testcase-known-issues.yaml'),
 		'--run-duk', '--cmd-duk', os.path.join(cwd, 'duk'),
 		'--num-threads', '1',
-		'--log-file', os.path.join(cwd, 'test.out'),
+		'--log-file', os.path.join(cwd, 'test.out')
+	] + opts + [
 		os.path.join(cwd, 'tests', 'ecmascript')
-	], catch=True)['success']
+	], env=env, catch=True)['success']
 
-def context_linux_x64_apitest():
-	return execute([ 'make', 'apiprep' ], catch=True)['success']
+def context_linux_x64_qecmatest():
+	return context_helper_x64_qecmatest(env=newenv())
+
+def context_linux_x64_qecmatest_assert():
+	return context_helper_x64_qecmatest(env=newenv(), genconfig_opts=[ '-DDUK_USE_ASSERTIONS' ])
+
+def context_linux_x64_qecmatest_valgrind():
+	return context_helper_x64_qecmatest(env=newenv(), valgrind=True)
+
+def context_helper_x64_apitest(env=None, genconfig_opts=[], valgrind=False):
+	cwd = os.getcwd()
+	execute([ 'make', 'dist' ])
+	genconfig_dist_src(genconfig_opts)
+	execute([ 'make', 'apiprep' ])
+	opts = []
+	if valgrind:
+		opts.append('--valgrind')
 	return execute([
 		'node',
 		os.path.join(cwd, 'runtests', 'runtests.js'),
@@ -185,7 +218,33 @@ def context_linux_x64_apitest():
 		'--num-threads', '1',
 		'--log-file', os.path.join(cwd, 'test.out'),
 		os.path.join(cwd, 'tests', 'api')
-	], catch=True)['success']
+	] + opts + [
+	], env=env, catch=True)['success']
+
+def context_linux_x64_apitest():
+	return context_helper_x64_apitest(env=newenv())
+
+def context_linux_x64_apitest_assert():
+	return context_helper_x64_apitest(env=newenv(), genconfig_opts=[ '-DDUK_USE_ASSERTIONS' ])
+
+def context_linux_x64_apitest_valgrind():
+	return context_helper_x64_apitest(env=newenv(), valgrind=True)
+
+def context_linux_x64_v8_bench_pass():
+	cwd = os.getcwd()
+
+	print('NOTE: This performance test is executed as a functional')
+	print('test because it also stress GC etc; the benchmark score')
+	print('is meaningless unless executed on dedicated hardware.')
+	print('')
+
+	unpack_targz(os.path.join(repo_snapshot_dir, 'google-v8-benchmark-v7.tar.gz'))
+	execute([ 'make', 'duk' ])
+	os.chdir(os.path.join(cwd, 'tests', 'google-v8-benchmark-v7'))
+	execute([ 'make', 'combined.js' ])
+	os.chdir(cwd)
+	execute([ os.path.join(cwd, 'duk'), os.path.join('tests', 'google-v8-benchmark-v7', 'combined.js') ])
+	return True
 
 def context_linux_x64_duk_clang():
 	cwd = os.getcwd()
@@ -376,14 +435,334 @@ def context_linux_x64_test262test():
 	# Github status.
 	return 'TEST262 SUCCESS\n' in res['stdout']
 
+def context_linux_x64_duk_dddprint():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+	os.chdir(os.path.join(cwd, 'dist'))
+
+	res = execute([
+		'gcc', '-oduk',
+		'-DDUK_OPT_ASSERTIONS', '-DDUK_OPT_SELF_TESTS',
+		'-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDPRINT', '-DDUK_OPT_DDDPRINT',
+		'-I' + os.path.join(cwd, 'dist', 'src'),
+		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		'-lm'
+	], catch=True)
+	if not res['success']:
+		print('Compilation failed.')
+		return False
+
+	res = execute([
+		os.path.join(cwd, 'dist', 'duk'),
+		'-e', 'print("Hello world!");'
+	], dump_stderr=False)
+
+	return 'Hello world!\n' in res['stdout']
+
+def context_linux_x64_duk_separate_src():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+	os.chdir(os.path.join(cwd, 'dist'))
+
+	cfiles =[]
+	for fn in os.listdir(os.path.join(cwd, 'dist', 'src-separate')):
+		if fn[-2:] == '.c':
+			cfiles.append(os.path.join(cwd, 'dist', 'src-separate', fn))
+	cfiles.append(os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'))
+
+	execute([
+		'gcc', '-oduk',
+		'-I' + os.path.join(cwd, 'dist', 'src-separate'),
+	] + cfiles + [
+		'-lm'
+	])
+
+	res = execute([
+		os.path.join(cwd, 'dist', 'duk'),
+		'-e', 'print("Hello world!");'
+	])
+
+	return 'Hello world!\n' in res['stdout']
+
+def context_linux_x86_packed_tval():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+	os.chdir(os.path.join(cwd, 'dist'))
+
+	execute([
+		'gcc', '-oduk', '-m32',
+		'-I' + os.path.join(cwd, 'dist', 'src'),
+		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		'-lm'
+	])
+
+	# Size of a 3-element array is 25 + 3x16 = 73 on x64 and
+	# 13 + 3x8 = 37 on x86.
+	res = execute([
+		os.path.join(cwd, 'dist', 'duk'),
+		'-e',
+		'var arr = Duktape.compact([1,2,3]); ' +
+			'print(Duktape.info(true)[1] >= 0xf000); ' +  # packed internal tag
+			'print(Duktape.info(arr)[4] <= 40)'           # array size (1 element + .length property)
+	]);
+	return res['stdout'] == 'true\ntrue\n'
+
+def context_linux_x86_dist_genconfig():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+
+	os.chdir(os.path.join(cwd, 'dist'))
+	execute([
+		'python2', os.path.join(cwd, 'dist', 'config', 'genconfig.py'),
+		'--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),  # overwrite default duk_config.h
+		'-DDUK_USE_FASTINT', '-UDUK_USE_JX', '-UDUK_USE_JC',
+		'duk-config-header'
+	])
+
+	os.chdir(os.path.join(cwd, 'dist'))
+	execute([
+		'gcc', '-oduk',
+		'-I' + os.path.join(cwd, 'dist', 'src'),
+		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		'-lm'
+	])
+
+	res = execute([
+		os.path.join(cwd, 'dist', 'duk'),
+		'-e', 'try { print(Duktape.enc("jx", {})); } catch (e) { print("ERROR: " + e.name); }'
+	])
+
+	return 'ERROR: TypeError\n' in res['stdout']
+
+def context_linux_x64_error_variants():
+	# Test Duktape build using:
+	#   (1) verbose and non-paranoid errors
+	#   (2) verbose and paranoid errors
+	#   (3) non-verbose errors
+
+	cwd = os.getcwd()
+
+	retval = True
+
+	for params in [
+		{ 'genconfig_opts': [ '-DDUK_USE_VERBOSE_ERRORS', '-UDUK_USE_PARANOID_ERRORS' ],
+		  'binary_name': 'duk.verbose_nonparanoid' },
+		{ 'genconfig_opts': [ '-DDUK_USE_VERBOSE_ERRORS', '-DDUK_USE_PARANOID_ERRORS' ],
+		  'binary_name': 'duk.verbose_paranoid' },
+		{ 'genconfig_opts': [ '-UDUK_USE_VERBOSE_ERRORS', '-UDUK_USE_PARANOID_ERRORS' ],
+		  'binary_name': 'duk.nonverbose' },
+	]:
+		os.chdir(cwd)
+		execute([ 'make', 'clean', 'dist' ])
+		os.chdir(os.path.join(cwd, 'dist'))
+		execute([
+			'python2', os.path.join(cwd, 'dist', 'config', 'genconfig.py'),
+			'--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')  # overwrite default duk_config.h
+		] + params['genconfig_opts'] + [
+			'duk-config-header'
+		])
+		execute([
+			'gcc', '-o' + params['binary_name'],
+			'-I' + os.path.join(cwd, 'dist', 'src'),
+			os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+			os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+			'-lm'
+		])
+		execute([ 'size', params['binary_name'] ])
+
+		with open('test.js', 'wb') as f:
+			f.write("""\
+try {
+    (undefined).foo = 123;
+} catch (e) {
+    print('ERRORNAME: ' + e.name);
+    print('ERRORMESSAGE: ' + e);
+    print(e.stack);
+}
+""")
+
+		res = execute([
+			os.path.join(cwd, 'dist', params['binary_name']),
+			'test.js'
+		])
+		if 'ERRORNAME: TypeError\n' not in res['stdout']:
+			print('Cannot find error name in output')
+			retval = False
+
+		# For now, just check that the code compiles and error Type is
+		# correct.  XXX: add check for error message too.
+
+	return retval
+
+def context_helper_hello_ram(archopt):
+	cwd = os.getcwd()
+
+	def test(genconfig_opts):
+		os.chdir(cwd)
+		execute([ 'make', 'clean' ])
+		execute([
+			'python2', os.path.join(cwd, 'util', 'make_dist.py'),
+			'--rom-support',
+			'--minify', 'closure'
+		])
+		genconfig_dist_src(genconfig_opts)
+		execute([
+			'gcc', '-ohello', archopt,
+			'-Os', '-fomit-frame-pointer',
+			'-flto', '-fno-asynchronous-unwind-tables',
+			'-ffunction-sections', '-Wl,--gc-sections',
+			'-I' + os.path.join('dist', 'src'),
+			os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+			os.path.join(cwd, 'dist', 'examples', 'hello', 'hello.c'),
+			'-lm'
+		])
+		execute([
+			'size',
+			os.path.join(cwd, 'hello')
+		])
+		execute([
+			'valgrind', '--tool=massif',
+			'--massif-out-file=' + os.path.join(cwd, 'massif.out'),
+			'--peak-inaccuracy=0.0',
+			os.path.join(cwd, 'hello')
+		])
+		res = execute([
+			'ms_print',
+			os.path.join(cwd, 'massif.out')
+		], dump_stdout=False)
+		lines = res['stdout'].split('\n')
+		print('\n'.join(lines[0:50]))  # print 50 first lines only
+
+		#    KB
+		#107.5^                                            :
+		#     |                                        @#::::@::   :::@:::    :   :
+
+		kb = '???'
+		re_kb = re.compile(r'^([0-9\.]+)\^.*?$')
+		for line in lines[0:10]:
+			m = re_kb.match(line)
+			if m is not None:
+				kb = m.group(1)
+		print(' --> KB: ' + kb)
+		return kb
+
+	print('--- Default')
+	print('')
+	kb_default = test([])
+
+	print('')
+	print('--- No bufferobject support')
+	print('')
+	kb_nobufobj = test([
+		'-UDUK_USE_BUFFEROBJECT_SUPPORT'
+	])
+
+	print('')
+	print('--- ROM built-ins, global object inherits from ROM global')
+	print('--- No other low memory options (fast paths, pointer compression, etc)')
+	print('')
+	kb_rom = test([
+		'-DDUK_USE_ROM_OBJECTS',
+		'-DDUK_USE_ROM_STRINGS',
+		'-DDUK_USE_ROM_GLOBAL_INHERIT'
+	])
+
+	set_output_description('%s %s %s (kB)' % (kb_default, kb_nobufobj, kb_rom))
+
+	return True
+
+def context_linux_x64_hello_ram():
+	return context_helper_hello_ram('-m64')
+
+def context_linux_x86_hello_ram():
+	return context_helper_hello_ram('-m32')
+
+def context_linux_x32_hello_ram():
+	return context_helper_hello_ram('-mx32')
+
+def context_linux_x64_minisphere():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+
+	# Unpack minisphere snapshot and copy Duktape files over.
+	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160328.tar.gz'))
+	for i in [ 'duktape.c', 'duktape.h', 'duk_config.h' ]:
+		execute([
+			'cp',
+			os.path.join(cwd, 'dist', 'src', i),
+			os.path.join(cwd, 'minisphere', 'src', 'shared', i)
+		])
+
+	# sudo apt-get install liballegro5-dev libmng-dev
+	os.chdir(os.path.join(cwd, 'minisphere'))
+	return execute([ 'make' ], catch=True)['success']
+
+def context_linux_x64_dukluv():
+	cwd = os.getcwd()
+
+	execute([ 'make', 'dist' ])
+
+	# Unpack dukluv snapshot and symlink dukluv/lib/duktape to dist.
+	unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160328.tar.gz'))
+	execute([
+		'mv',
+		os.path.join(cwd, 'dukluv', 'lib', 'duktape'),
+		os.path.join(cwd, 'dukluv', 'lib', 'duktape-moved')
+	])
+	execute([
+		'ln',
+		'-s',
+		os.path.join(cwd, 'dist'),
+		os.path.join(cwd, 'dukluv', 'lib', 'duktape')
+	])
+
+	os.chdir(os.path.join(cwd, 'dukluv'))
+	execute([ 'mkdir', 'build' ])
+	os.chdir(os.path.join(cwd, 'dukluv', 'build'))
+	execute([ 'cmake', '..' ])
+	res = execute([ 'make' ], catch=True)
+	if not res['success']:
+		print('Build failed!')
+		return False
+
+	# Binary is in dukluv/build/dukluv.
+
+	execute([
+		os.path.join(cwd, 'dukluv', 'build', 'dukluv'),
+		os.path.join(cwd, 'dukluv', 'test-argv.js')
+	])
+
+	return True
+
 context_handlers = {
 	# Linux
 
 	'codepolicycheck': context_codepolicycheck,
-
 	'linux-x64-qecmatest': context_linux_x64_qecmatest,
+	'linux-x64-qecmatest-assert': context_linux_x64_qecmatest_assert,
+	'linux-x64-qecmatest-valgrind': context_linux_x64_qecmatest_valgrind,
+	# XXX: torture options
 	'linux-x64-apitest': context_linux_x64_apitest,
+	'linux-x64-apitest-assert': context_linux_x64_apitest_assert,
+	'linux-x64-apitest-valgrind': context_linux_x64_apitest_valgrind,
 	'linux-x64-test262test': context_linux_x64_test262test,
+	# XXX: torture options
+
+	# XXX: regfuzztest
+	# XXX: luajstest
+	# XXX: jsinterpretertest
+	# XXX: bluebirdtest
+	# XXX: emscripteninceptiontest
 
 	'linux-x64-duk-clang': context_linux_x64_duk_clang,
 	'linux-x64-duk-gxx': context_linux_x64_duk_gxx,
@@ -398,6 +777,22 @@ context_handlers = {
 
 	'linux-x86-ajduk': context_linux_x86_ajduk,
 	'linux-x86-ajduk-rombuild': context_linux_x86_ajduk_rombuild,
+
+	'linux-x64-v8-bench-pass': context_linux_x64_v8_bench_pass,
+
+	'linux-x64-duk-dddprint': context_linux_x64_duk_dddprint,
+	'linux-x64-duk-separate-src': context_linux_x64_duk_separate_src,
+	'linux-x86-packed-tval': context_linux_x86_packed_tval,
+	'linux-x86-dist-genconfig': context_linux_x86_dist_genconfig,
+
+	'linux-x64-error-variants': context_linux_x64_error_variants,
+
+	'linux-x64-hello-ram': context_linux_x64_hello_ram,
+	'linux-x86-hello-ram': context_linux_x86_hello_ram,
+	'linux-x32-hello-ram': context_linux_x32_hello_ram,
+
+	'linux-x64-minisphere': context_linux_x64_minisphere,
+	'linux-x64-dukluv': context_linux_x64_dukluv,
 
 	# OS X: can currently share Linux handlers
 
@@ -496,15 +891,22 @@ def main():
 		raise Exception('context handler returned a non-boolean: %r' % success)
 
 if __name__ == '__main__':
+	start_time = time.time()
+
 	try:
-		main()
-	except SystemExit:
-		raise
-	except:
-		# Test script failed, automatic retry is useful
+		try:
+			main()
+		except SystemExit:
+			raise
+		except:
+			# Test script failed, automatic retry is useful
+			print('')
+			print('*** Test script failed')
+			print('')
+			traceback.print_exc()
+			print('TESTRUNNER_DESCRIPTION: Test script error')
+			sys.exit(2)
+	finally:
+		end_time = time.time()
 		print('')
-		print('*** Test script failed')
-		print('')
-		traceback.print_exc()
-		print('TESTRUNNER_DESCRIPTION: Test script error')
-		sys.exit(2)
+		print('Test took %.2f minutes' % ((end_time - start_time) / 60.0))
