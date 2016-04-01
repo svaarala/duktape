@@ -1144,6 +1144,19 @@ codepolicycheck:
 		--check-cpp-comment \
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h
+	@python util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--check-nonleading-tab \
+		--dump-vim-commands \
+		config/architectures/* config/compilers/* config/platforms/* \
+		config/feature-options/*.yaml \
+		config/examples/* config/header-snippets/* config/helper-snippets/* \
+		config/*.yaml
 	# XXX: not yet FIXME pure
 	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
@@ -1153,7 +1166,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-nonleading-tab \
 		--dump-vim-commands \
-		config/config-options/*.yaml config/feature-options/*.yaml config/*.yaml
+		config/config-options/*.yaml config/other-defines/*.yaml
 	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
