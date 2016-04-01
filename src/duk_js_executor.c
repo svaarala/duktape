@@ -2091,6 +2091,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				DUK_ERROR_FMT1(heap->curr_thread, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 			} catch (duk_internal_exception exc) {
 				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
+				DUK_UNREF(exc);
 				duk__handle_executor_error(heap,
 				                           entry_thread,
 				                           entry_callstack_top,
@@ -2104,6 +2105,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				DUK_ERROR_API(heap->curr_thread, "caught invalid c++ exception (perhaps thrown by user code)");
 			} catch (duk_internal_exception exc) {
 				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
+				DUK_UNREF(exc);
 				duk__handle_executor_error(heap,
 				                           entry_thread,
 				                           entry_callstack_top,

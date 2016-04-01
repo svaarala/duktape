@@ -277,14 +277,17 @@ def main():
 	files = []
 	filelist = os.listdir(opts.source_dir)
 	filelist.sort()  # for consistency
-	handpick = [ 'duk_strings.c',
-	             'duk_debug_macros.c',
-	             'duk_builtins.c',
-	             'duk_error_macros.c',
-	             'duk_unicode_support.c',
-	             'duk_util_misc.c',
-	             'duk_util_hashprime.c',
-	             'duk_hobject_class.c' ]
+	handpick = [
+		'duk_replacements.c',
+		'duk_strings.c',
+		'duk_debug_macros.c',
+		'duk_builtins.c',
+		'duk_error_macros.c',
+		'duk_unicode_support.c',
+		'duk_util_misc.c',
+		'duk_util_hashprime.c',
+		'duk_hobject_class.c'
+	]
 	handpick.reverse()
 	for fn in handpick:
 		# These files must appear before the alphabetically sorted

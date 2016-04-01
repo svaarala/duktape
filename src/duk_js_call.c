@@ -1106,6 +1106,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
+			DUK_UNREF(exc);
 			duk__handle_call_error(thr,
 			                       entry_valstack_bottom_index,
 			                       entry_valstack_end,
@@ -1125,6 +1126,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
+			DUK_UNREF(exc);
 			duk__handle_call_error(thr,
 			                       entry_valstack_bottom_index,
 			                       entry_valstack_end,
@@ -1991,6 +1993,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
+			DUK_UNREF(exc);
 			duk__handle_safe_call_error(thr,
 			                            idx_retbase,
 			                            num_stack_rets,
@@ -2006,6 +2009,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
+			DUK_UNREF(exc);
 			duk__handle_safe_call_error(thr,
 			                            idx_retbase,
 			                            num_stack_rets,
