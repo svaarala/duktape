@@ -33,7 +33,8 @@ build_script:
   # https://msdn.microsoft.com/en-us/library/f2ccy3wt.aspx
   # Multi-line commands are run line-by-line (?).
   - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
-  - cmd: set VCPLATFORM="NONE"
+  - cmd: set VCPLATFORM=NONE
+  - cmd: set VCNAME=vs2015
   - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
   - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
@@ -41,112 +42,119 @@ build_script:
   - cmd: cl
 
   # Normal build.
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-vs2015.exe
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
 
   # DLL build.
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-vs2015.exe duktape.lib
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
 
   # Build as C++, catches some static variable issues specific to C++.
   # Also test C++ exceptions on Windows.
   # /TP forces files to be interpreted as C++ despite their extension.
   # /EHsc enables exception unwind support.
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-vs2015.exe
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2013 ---
 
   - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 12.0\VC"
-  - cmd: set VCPLATFORM="NONE"
+  - cmd: set VCPLATFORM=NONE
+  - cmd: set VCNAME=vs2013
   - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
   - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-vs2013.exe
-
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-vs2013.exe duktape.lib
-
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-vs2013.exe
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2012 ---
 
   # Use VS2012 (11.0) to catch https://github.com/svaarala/duktape/pull/595.
   - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 11.0\VC"
-  - cmd: set VCPLATFORM="NONE"
+  - cmd: set VCPLATFORM=NONE
+  - cmd: set VCNAME=vs2012
   - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
   - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-vs2012.exe
-
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-vs2012.exe duktape.lib
-
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-vs2012.exe
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2010 ---
 
   - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 10.0\VC"
-  - cmd: set VCPLATFORM="NONE"
+  - cmd: set VCPLATFORM=NONE
+  - cmd: set VCNAME=vs2010
   - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
   - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-vs2010.exe
-
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-vs2010.exe duktape.lib
-
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-vs2010.exe
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2008 ---
 
   - cmd: set VCPATH="\Program Files (x86)\Microsoft Visual Studio 9.0\VC"
-  - cmd: set VCPLATFORM="NONE"
+  - cmd: set VCPLATFORM=NONE
+  - cmd: set VCNAME=vs2008
   - cmd: if "%PLATFORM%"=="x86" ( set VCPLATFORM=x86 )
   - cmd: if "%PLATFORM%"=="x64" ( set VCPLATFORM=x86_amd64 )
   - cmd: echo PLATFORM=%PLATFORM%, VCPLATFORM=%VCPLATFORM%
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-vs2008.exe
-
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-vs2008.exe duktape.lib
-
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-vs2008.exe
-
-  # Show what was built.
-  - cmd: dir
+  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
+  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
 test_script:
   - cmd: echo --- VS2015
-  - cmd: duk-vs2015.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-dll-vs2015.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-cxx-vs2015.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-dll-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-cxx-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
 
   - cmd: echo --- VS2013
-  - cmd: duk-vs2013.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-dll-vs2013.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-cxx-vs2013.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2013-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-dll-vs2013-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-cxx-vs2013-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
 
   - cmd: echo --- VS2012
-  - cmd: duk-vs2012.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-dll-vs2012.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-cxx-vs2012.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2012-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-dll-vs2012-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-cxx-vs2012-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
 
   - cmd: echo --- VS2010
-  - cmd: duk-vs2010.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-dll-vs2010.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-cxx-vs2010.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2010-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-dll-vs2010-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-cxx-vs2010-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
 
   - cmd: echo --- VS2008
-  - cmd: duk-vs2008.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-dll-vs2008.exe -e "print(Duktape.env); print('Hello world!');"
-  - cmd: duk-cxx-vs2008.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2008-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-dll-vs2008-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-cxx-vs2008-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+
+after_build:
+  # Show what was built.
+  - cmd: dir
+
+artifacts:
+  - path: duk-*.exe
+    name: Duk command line binary
+  - path: duktape-*.dll
+    name: Duktape DLL
+  - path: duktape-*.exp
+    name: Duktape EXP
+  - path: duktape-*.lib
+    name: Duktape LIB
