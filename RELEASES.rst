@@ -1487,6 +1487,8 @@ Planned
 * Portability improvement for VS2012 C++ compilation: avoid double definition
   of replacement double constants (GH-595)
 
+* Portability improvement for Windows MSVC: add inline macros (GH-580)
+
 * Rework setjmp/longjmp configuration model: (1) removed DUK_OPT_SETJMP,
   DUK_OPT_SIGSETJMP, and DUK_OPT_UNDERSCORE_SETJMP; (2) added DUK_JMPBUF_TYPE
   to duk_config.h to allow the jmp_buf struct to be replaced; (3) Duktape
