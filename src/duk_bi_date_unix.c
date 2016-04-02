@@ -129,8 +129,6 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	t = (time_t) (d / 1000.0);
 	DUK_DDD(DUK_DDDPRINT("timeval: %lf -> time_t %ld", (double) d, (long) t));
 
-	t1 = t;
-
 	DUK_MEMZERO((void *) tms, sizeof(struct tm) * 2);
 
 #if defined(DUK_USE_DATE_TZO_GMTIME_R)

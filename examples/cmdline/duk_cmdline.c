@@ -318,14 +318,16 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 		avail = bufsz - bufoff;
 		if (avail < 1024) {
 			size_t newsz;
+			char *buf_new;
 #if 0
 			fprintf(stderr, "resizing read buffer: %ld -> %ld\n", (long) bufsz, (long) (bufsz * 2));
 #endif
 			newsz = bufsz + (bufsz >> 2) + 1024;  /* +25% and some extra */
-			buf = (char *) realloc(buf, newsz);
-			if (!buf) {
+			buf_new = (char *) realloc(buf, newsz);
+			if (!buf_new) {
 				goto error;
 			}
+			buf = buf_new;
 			bufsz = newsz;
 		}
 
@@ -411,6 +413,7 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
  cleanup:
 	if (buf) {
 		free(buf);
+		buf = NULL;
 	}
 	return retval;
 

@@ -4937,7 +4937,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 		duk_tval *tv = duk_require_tval(ctx, -1);
 		duk_hobject *h_set;
 
-		is_acc_desc = 1;
 		if (DUK_TVAL_IS_UNDEFINED(tv)) {
 			/* undefined is accepted */
 			DUK_ASSERT(setter == NULL);

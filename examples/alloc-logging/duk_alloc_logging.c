@@ -90,8 +90,8 @@ void *duk_realloc_logging(void *udata, void *ptr, duk_size_t size) {
 		old_size = hdr->u.sz;
 
 		if (size == 0) {
-			free((void *) hdr);
 			write_log("R %p %ld NULL 0\n", ptr, (long) old_size);
+			free((void *) hdr);
 			return NULL;
 		} else {
 			t = realloc((void *) hdr, size + sizeof(alloc_hdr));
