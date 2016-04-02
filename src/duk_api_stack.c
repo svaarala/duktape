@@ -2101,7 +2101,7 @@ DUK_EXTERNAL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, 
 }
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
-DUK_EXTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t index) {
 	(void) duk_safe_to_string(ctx, index);
 	DUK_ASSERT(duk_is_string(ctx, index));
 	DUK_ASSERT(duk_get_hstring(ctx, index) != NULL);
@@ -2184,10 +2184,12 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t index,
 	} else {
 		res = (duk_int_t) d;
 	}
+	DUK_UNREF(d);  /* SCANBUILD: with suitable dmin/dmax limits 'd' is unused */
 	/* 'd' and 'res' agree here */
 
 	/* Relookup in case duk_js_tointeger() ends up e.g. coercing an object. */
-	tv = duk_require_tval(ctx, index);
+	tv = duk_get_tval(ctx, index);
+	DUK_ASSERT(tv != NULL);  /* not popped by side effect */
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 #if defined(DUK_USE_FASTINT)
 #if (DUK_INT_MAX <= 0x7fffffffL)

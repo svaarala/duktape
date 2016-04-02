@@ -1744,6 +1744,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		 */
 		duk__interrupt_handle_debugger(thr, &immediate, &retval);
 		act = thr->callstack + thr->callstack_top - 1;  /* relookup if changed */
+		DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
 	}
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
@@ -3506,6 +3507,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 					/* must relookup act in case of side effects */
 					duk_js_init_activation_environment_records_delayed(thr, act);
 					act = thr->callstack + thr->callstack_top - 1;
+					DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
 				}
 				DUK_ASSERT(act->lex_env != NULL);
 				DUK_ASSERT(act->var_env != NULL);

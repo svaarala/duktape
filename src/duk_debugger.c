@@ -1375,6 +1375,7 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 	duk_uint_fast32_t line;
 	duk_size_t i;
 
+	DUK_ASSERT(thr != NULL);
 	DUK_UNREF(heap);
 
 	duk_debug_write_reply(thr);
@@ -1413,6 +1414,9 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 		}
 		curr_thr = curr_thr->resumer;
 	}
+	/* SCANBUILD: warning about 'thr' potentially being NULL here,
+	 * warning is incorrect because thr != NULL always here.
+	 */
 	duk_debug_write_eom(thr);
 }
 

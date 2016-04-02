@@ -594,7 +594,6 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 	 */
 	duk_int_t len;
 	duk_int_t i;
-	duk_uint8_t *buf;
 	duk_hbuffer *h_buf;
 	duk_hbufferobject *h_bufobj;
 	duk_size_t buf_size;
@@ -609,10 +608,12 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 	}
 	case DUK_TYPE_NUMBER: {
 		len = duk_to_int_clamped(ctx, 0, 0, DUK_INT_MAX);
-		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+		(void) duk_push_fixed_buffer(ctx, (duk_size_t) len);
 		break;
 	}
 	case DUK_TYPE_OBJECT: {
+		duk_uint8_t *buf;
+
 		(void) duk_get_prop_string(ctx, 0, "length");
 		len = duk_to_int_clamped(ctx, -1, 0, DUK_INT_MAX);
 		duk_pop(ctx);
@@ -628,7 +629,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 	case DUK_TYPE_STRING: {
 		/* ignore encoding for now */
 		duk_dup(ctx, 0);
-		buf = (duk_uint8_t *) duk_to_buffer(ctx, -1, &buf_size);
+		(void) duk_to_buffer(ctx, -1, &buf_size);
 		break;
 	}
 	default:
@@ -847,6 +848,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 					goto fail_arguments;
 				}
 			}
+			DUK_UNREF(elem_length);
 			DUK_ASSERT_DISABLE(byte_offset >= 0);
 			DUK_ASSERT(byte_offset <= h_bufarg->length);
 			DUK_ASSERT_DISABLE(byte_length >= 0);
@@ -2400,10 +2402,14 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	if (h_this->buf) {
 		buf = DUK_HBUFFEROBJECT_GET_SLICE_BASE(thr->heap, h_this);
 	} else {
-		/* neutered, value doesn't matter because check_length is 0. */
+		/* Neutered.  We could go into the switch-case safely with
+		 * buf == NULL because check_length == 0.  To avoid scanbuild
+		 * warnings, fail directly instead.
+		 */
 		DUK_ASSERT(check_length == 0);
-		buf = NULL;
+		goto fail_neutered;
 	}
+	DUK_ASSERT(buf != NULL);
 
 	switch (magic_ftype) {
 	case DUK__FLD_8BIT: {
@@ -2562,6 +2568,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 
 	return 1;
 
+ fail_neutered:
  fail_field_length:
  fail_bounds:
 	if (no_assert) {
@@ -2686,10 +2693,14 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	if (h_this->buf) {
 		buf = DUK_HBUFFEROBJECT_GET_SLICE_BASE(thr->heap, h_this);
 	} else {
-		/* neutered, value doesn't matter because check_length is 0. */
+		/* Neutered.  We could go into the switch-case safely with
+		 * buf == NULL because check_length == 0.  To avoid scanbuild
+		 * warnings, fail directly instead.
+		 */
 		DUK_ASSERT(check_length == 0);
-		buf = NULL;
+		goto fail_neutered;
 	}
+	DUK_ASSERT(buf != NULL);
 
 	switch (magic_ftype) {
 	case DUK__FLD_8BIT: {
@@ -2835,6 +2846,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	duk_push_uint(ctx, offset + nbytes);
 	return 1;
 
+ fail_neutered:
  fail_field_length:
  fail_bounds:
 	if (no_assert) {
