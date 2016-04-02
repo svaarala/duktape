@@ -1401,7 +1401,7 @@ Planned
   explicit filename is known; this makes file/line information thrown from
   such code more useful in practice (GH-516, GH-644)
 
-* Add support for non-standard module.fileName and module.name used for the
+* Add support for non-standard module.filename and module.name used for the
   internal module wrapper function's .fileName and .name properties
   respectively (if unset, defaults are resolved module ID and last component
   of the resolved module ID, respectively); these properties affect e.g.

@@ -1114,8 +1114,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 * - module.exports: initial exports table (may be replaced by user)
 	 * - module.id is non-writable and non-configurable, as the CommonJS
 	 *   spec suggests this if possible
-	 * - module.fileName: not set, defaults to resolved ID if not explicitly
-	 *   set by modSearch()
+	 * - module.filename: not set, defaults to resolved ID if not explicitly
+	 *   set by modSearch() (note capitalization, not .fileName, matches Node.js)
 	 * - module.name: not set, defaults to last component of resolved ID if
 	 *   not explicitly set by modSearch()
 	 */
@@ -1184,15 +1184,17 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 		goto return_exports;
 	}
 
-	/* Finish the wrapped module source.  Force module.fileName as the
+	/* Finish the wrapped module source.  Force module.filename as the
 	 * function .fileName so it gets set for functions defined within a
 	 * module.  This also ensures loggers created within the module get
 	 * the module ID (or overridden filename) as their default logger name.
+	 * (Note capitalization: .filename matches Node.js while .fileName is
+	 * used elsewhere in Duktape.)
 	 */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
-	if (!duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILE_NAME)) {
-		/* module.fileName for .fileName, default to resolved ID if
+	if (!duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILENAME)) {
+		/* module.filename for .fileName, default to resolved ID if
 		 * not present.
 		 */
 		duk_pop(ctx);

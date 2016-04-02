@@ -459,6 +459,10 @@ strings:
     commonjs: true
   - str: "exports"
     commonjs: true
+  - str: "filename"    # module.filename; capitalization (filename instead of fileName)
+    duktape: true      # is to match Node.js, see https://github.com/svaarala/duktape/pull/660
+  - str: "lineNumber"  # module.lineNumber
+    duktape: true
 
   # --- Node.js Buffer / TypedArray related strings ---
 

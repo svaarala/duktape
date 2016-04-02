@@ -13,7 +13,7 @@ built into Duktape:
   - http://wiki.commonjs.org/wiki/Modules/1.1.1
 
   - Duktape supports also ``module.exports`` and a few Duktape specific
-    properties (``module.fileName`` and ``module.name``)
+    properties (``module.filename`` and ``module.name``)
 
 * The user must provide a *module search function* which locates a module
   corresponding to a resolved module ID, and can register module symbols
@@ -234,10 +234,12 @@ Logger names and tracebacks
 Logger name defaulting uses the calling function's ``fileName`` property.
 The ``fileName`` of the internal module wrapper function is set to the
 resolved module identifier to make the logger default name come out right.
+Application code can control logger name by overwriting ``module.filename``
+in modSearch().
 
 Tracebacks show both ``name`` and ``fileName`` of the internal wrapper
-function.  The ``name`` property is currently not set, so the wrapper
-function appears anonymous.  It could also be set to the module name.
+function.  Application code can control these by overwriting
+``module.filename`` and/or ``module.name``.
 
 module.exports
 ==============
@@ -253,19 +255,25 @@ Duktape supports ``module.exports`` since Duktape 1.3, see:
 
 * ``test-commonjs-module-exports-repl.js``
 
-module.fileName and module.name
+module.filename and module.name
 ===============================
 
-The ``module.fileName`` and ``module.name`` properties are Duktape specific
-and allow modSearch() to control the ``.fileName`` and ``.name`` properties
-of the module wrapper function used to implement module loading.  This is
-useful because they appear in e.g. tracebacks for errors created from the
-module, see: https://github.com/svaarala/duktape/pull/639.
+The ``module.filename`` and ``module.name`` properties are Duktape specific
+but also supported by e.g. Node.js.  They allow modSearch() to control the
+``.fileName`` and ``.name`` properties of the module wrapper function used
+to implement module loading.  This is useful because they appear in e.g.
+tracebacks for errors created from the module.  See discussion in:
+https://github.com/svaarala/duktape/pull/639.
 
 The properties are missing by default.  If modSearch() doesn't set them,
-module.fileName defaults to the full resolved module ID (e.g. ``foo/bar``)
-and ``name`` defaults to the last component of the resolved module ID
-(e.g. ``bar``).
+the module wrapper function .fileName defaults to the full resolved module ID
+(e.g. ``foo/bar``) and .name defaults to the last component of the resolved
+module ID (e.g. ``bar``).
+
+The capitalization of ``module.filename`` is chosen to match Node.js (see
+https://nodejs.org/api/modules.html#modules_module_filename); the form
+``.fileName`` is used elsewhere in Duktape.  See discussion in:
+https://github.com/svaarala/duktape/pull/660.
 
 C modules and DLLs
 ==================
@@ -348,6 +356,8 @@ Module loading APIs or "formats":
 * NodeJS, more or less CommonJS:
 
   - http://nodejs.org/docs/v0.11.13/api/modules.html
+
+  - https://nodejs.org/api/modules.html
 
 * ES6:
 
