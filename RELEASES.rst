@@ -1504,6 +1504,9 @@ Planned
 * Internal performance improvement: single step encoding for JSON values in
   the JSON slow path (GH-447)
 
+* Internal performance improvement: faster (and smaller) handling of bytecode
+  executor 'regconst' fields (GH-670)
+
 * Internal footprint improvement: reduce error call site size (GH-661)
 
 2.0.0 (XXXX-XX-XX)
