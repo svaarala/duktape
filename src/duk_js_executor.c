@@ -2262,6 +2262,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	/* Dispatch loop. */
 
 	for (;;) {
+		duk_small_uint_t a;
+
 		DUK_ASSERT(thr->callstack_top >= 1);
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == DUK__FUN()->nregs);
 		DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) == valstack_top_base);
@@ -2350,6 +2352,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 #endif
 
 		ins = *curr_pc++;
+		a = DUK_DEC_A(ins);
 
 		/* Typing: use duk_small_(u)int_fast_t when decoding small
 		 * opcode fields (op, A, B, C) and duk_(u)int_fast_t when
@@ -2371,40 +2374,36 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		/* XXX: switch cast? */
 
 		case DUK_OP_LDREG: {
-			duk_small_uint_fast_t a;
 			duk_uint_fast_t bc;
 			duk_tval *tv1, *tv2;
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); tv2 = DUK__REGP(bc);
 			DUK_TVAL_SET_TVAL_UPDREF_FAST(thr, tv1, tv2);  /* side effects */
 			break;
 		}
 
 		case DUK_OP_STREG: {
-			duk_small_uint_fast_t a;
 			duk_uint_fast_t bc;
 			duk_tval *tv1, *tv2;
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); tv2 = DUK__REGP(bc);
 			DUK_TVAL_SET_TVAL_UPDREF_FAST(thr, tv2, tv1);  /* side effects */
 			break;
 		}
 
 		case DUK_OP_LDCONST: {
-			duk_small_uint_fast_t a;
 			duk_uint_fast_t bc;
 			duk_tval *tv1, *tv2;
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); tv2 = DUK__CONSTP(bc);
 			DUK_TVAL_SET_TVAL_UPDREF_FAST(thr, tv1, tv2);  /* side effects */
 			break;
 		}
 
 		case DUK_OP_LDINT: {
-			duk_small_uint_fast_t a;
 			duk_int_fast_t bc;
 			duk_tval *tv1;
 #if defined(DUK_USE_FASTINT)
@@ -2414,11 +2413,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 #endif
 
 #if defined(DUK_USE_FASTINT)
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); val = (duk_int32_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_FASTINT_I32_UPDREF(thr, tv1, val);  /* side effects */
 #else
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			bc = DUK_DEC_BC(ins); val = (duk_double_t) (bc - DUK_BC_LDINT_BIAS);
 			DUK_TVAL_SET_NUMBER_UPDREF(thr, tv1, val);  /* side effects */
 #endif
@@ -2426,7 +2425,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 		case DUK_OP_LDINTX: {
-			duk_small_uint_fast_t a;
 			duk_tval *tv1;
 			duk_double_t val;
 
@@ -2437,7 +2435,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * range very rarely needed.
 			 */
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 			val = DUK_TVAL_GET_NUMBER(tv1) * ((duk_double_t) (1L << DUK_BC_LDINTX_SHIFT)) +
 			      (duk_double_t) DUK_DEC_BC(ins);
@@ -2452,7 +2450,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_MPUTOBJ:
 		case DUK_OP_MPUTOBJI: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a;
 			duk_tval *tv1;
 			duk_hobject *obj;
 			duk_uint_fast_t idx;
@@ -2463,7 +2460,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * C -> number of key/value pairs
 			 */
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 
@@ -2505,7 +2502,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_MPUTARR:
 		case DUK_OP_MPUTARRI: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a;
 			duk_tval *tv1;
 			duk_hobject *obj;
 			duk_uint_fast_t idx;
@@ -2517,7 +2513,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * C -> number of key/value pairs (N)
 			 */
 
-			a = DUK_DEC_A(ins); tv1 = DUK__REGP(a);
+			tv1 = DUK__REGP(a);
 			DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv1));
 			obj = DUK_TVAL_GET_OBJECT(tv1);
 			DUK_ASSERT(obj != NULL);
@@ -2638,7 +2634,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_REGEXP: {
 #ifdef DUK_USE_REGEXP_SUPPORT
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 
@@ -2685,7 +2680,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * Careful here.
 			 */
 
-			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
+			idx = (duk_uint_fast_t) a;
 			if (DUK_DEC_OP(ins) == DUK_OP_CSREGI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
@@ -2710,7 +2705,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_GETVAR: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
@@ -2730,7 +2724,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_PUTVAR: {
 			duk_activation *act;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
@@ -2753,7 +2746,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_DECLVAR: {
 			duk_activation *act;
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv1;
@@ -2800,7 +2792,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_DELVAR: {
 			duk_activation *act;
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_tval *tv1;
 			duk_hstring *name;
@@ -2848,7 +2839,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
-			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
+			idx = (duk_uint_fast_t) a;
 			if (DUK_DEC_OP(ins) == DUK_OP_CSVARI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
@@ -2872,7 +2863,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
 			duk_hcompiledfunction *fun;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_hobject *fun_temp;
 
@@ -2918,7 +2908,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_GETPROP: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
@@ -2948,7 +2937,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 		case DUK_OP_PUTPROP: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
@@ -2986,7 +2974,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_DELPROP: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
@@ -3038,7 +3025,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * and DUK__REGCONSTP(c).  Careful here.
 			 */
 
-			idx = (duk_uint_fast_t) DUK_DEC_A(ins);
+			idx = (duk_uint_fast_t) a;
 			if (DUK_DEC_OP(ins) == DUK_OP_CSPROPI) {
 				duk_tval *tv_ind = DUK__REGP(idx);
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind));
@@ -3064,7 +3051,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_MUL:
 		case DUK_OP_DIV:
 		case DUK_OP_MOD: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
@@ -3087,7 +3073,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_BASL:
 		case DUK_OP_BLSR:
 		case DUK_OP_BASR: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_small_uint_fast_t op = DUK_DEC_OP(ins);
@@ -3099,7 +3084,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_EQ:
 		case DUK_OP_NEQ: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3117,7 +3101,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_SEQ:
 		case DUK_OP_SNEQ: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3144,7 +3127,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_GT: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3162,7 +3144,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_GE: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3181,7 +3162,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_LT: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3199,7 +3179,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_LE: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_bool_t tmp;
@@ -3216,7 +3195,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 		case DUK_OP_IF: {
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_bool_t tmp;
 
@@ -3239,7 +3217,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		case DUK_OP_RETURN: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			/* duk_small_uint_fast_t c = DUK_DEC_C(ins); */
 			duk_small_uint_t ret_result;
@@ -3276,7 +3253,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_CALL:
 		case DUK_OP_CALLI: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_uint_fast_t idx;
 			duk_small_uint_t call_flags;
@@ -3457,7 +3433,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_activation *act;
 			duk_catcher *cat;
 			duk_tval *tv1;
-			duk_small_uint_fast_t a;
 			duk_uint_fast_t bc;
 
 			/* A -> flags
@@ -3498,7 +3473,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
 			                     (unsigned long) DUK_DEC_A(ins)));
 
-			a = DUK_DEC_A(ins);
 			bc = DUK_DEC_BC(ins);
 
 			act = thr->callstack + thr->callstack_top - 1;
@@ -3629,7 +3603,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_POSTINCR:
 		case DUK_OP_POSTDECR: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_tval *tv1, *tv2;
 			duk_double_t x, y, z;
@@ -3707,7 +3680,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_POSTDECV: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_double_t x, y;
 			duk_tval *tv1;
@@ -3755,7 +3727,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_POSTINCP:
 		case DUK_OP_POSTDECP: {
 			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t b = DUK_DEC_B(ins);
 			duk_small_uint_fast_t c = DUK_DEC_C(ins);
 			duk_tval *tv_obj;
@@ -3811,7 +3782,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_EXTRA: {
 			/* XXX: shared decoding of 'b' and 'c'? */
 
-			duk_small_uint_fast_t extraop = DUK_DEC_A(ins);
+			duk_small_uint_fast_t extraop = a;
 			switch ((int) extraop) {
 			/* XXX: switch cast? */
 
