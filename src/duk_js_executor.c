@@ -1943,12 +1943,27 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 #define DUK__FUN()          ((duk_hcompiledfunction *) DUK_ACT_GET_FUNC((thr)->callstack + (thr)->callstack_top - 1))
 #endif
 #define DUK__STRICT()       (DUK_HOBJECT_HAS_STRICT((duk_hobject *) DUK__FUN()))
+
+/* Reg/const access macros: these are very footprint and performance sensitive
+ * so modify with care.
+ */
 #define DUK__REG(x)         (*(thr->valstack_bottom + (x)))
 #define DUK__REGP(x)        (thr->valstack_bottom + (x))
 #define DUK__CONST(x)       (*(consts + (x)))
 #define DUK__CONSTP(x)      (consts + (x))
+#if 0
 #define DUK__REGCONST(x)    ((x) < DUK_BC_REGLIMIT ? DUK__REG((x)) : DUK__CONST((x) - DUK_BC_REGLIMIT))
 #define DUK__REGCONSTP(x)   ((x) < DUK_BC_REGLIMIT ? DUK__REGP((x)) : DUK__CONSTP((x) - DUK_BC_REGLIMIT))
+#define DUK__REGCONST(x)    *((((x) < DUK_BC_REGLIMIT ? thr->valstack_bottom : consts2) + (x)))
+#define DUK__REGCONSTP(x)   (((x) < DUK_BC_REGLIMIT ? thr->valstack_bottom : consts2) + (x))
+#endif
+/* This macro works when a regconst field is 9 bits, [0,0x1ff].  Adding
+ * DUK_LIKELY/DUK_UNLIKELY increases code footprint and doesn't seem to
+ * improve performance on x64 (and actually harms performance in some tests).
+ */
+#define DUK__RCISREG(x)     (((x) & 0x100) == 0)
+#define DUK__REGCONST(x)    (*((DUK__RCISREG((x)) ? thr->valstack_bottom : consts2) + (x)))
+#define DUK__REGCONSTP(x)   ((DUK__RCISREG((x)) ? thr->valstack_bottom : consts2) + (x))
 
 #ifdef DUK_USE_VERBOSE_EXECUTOR_ERRORS
 #define DUK__INTERNAL_ERROR(msg)  do { \
@@ -2134,6 +2149,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	 */
 	duk_hthread *thr;             /* stable */
 	duk_tval *consts;             /* stable */
+	duk_tval *consts2;            /* stable; precalculated for faster lookups */
 	duk_uint_fast32_t ins;
 	/* 'funcs' is quite rarely used, so no local for it */
 #if defined(DUK_USE_EXEC_FUN_LOCAL)
@@ -2220,6 +2236,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom == fun->nregs);
 		consts = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, fun);
 		DUK_ASSERT(consts != NULL);
+		consts2 = consts - DUK_BC_REGLIMIT;
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
@@ -4489,6 +4506,16 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 #undef DUK__RETHAND_RESTART
 #undef DUK__RETHAND_FINISHED
+
+#undef DUK__FUN
+#undef DUK__STRICT
+#undef DUK__REG
+#undef DUK__REGP
+#undef DUK__CONST
+#undef DUK__CONSTP
+#undef DUK__RCISREG
+#undef DUK__REGCONST
+#undef DUK__REGCONSTP
 
 #undef DUK__INTERNAL_ERROR
 #undef DUK__SYNC_CURR_PC
