@@ -1188,6 +1188,17 @@ Released
   caused compilation errors if duk_push_buffer() was e.g. part of a comma
   expression (GH-500, GH-501)
 
+1.3.3 (2016-04-17)
+------------------
+
+* Fix potentially memory unsafe behavior when a refcount-triggered finalizer
+  function rescues an object; the memory unsafe behavior doesn't happen
+  immediately which makes the cause of the unsafe behavior difficult to
+  diagnose (GH-531)
+
+* Fix memory unsafe behavior when an external plain buffer was allocated
+  with heap pointer compression enabled (DUK_USE_HEAPPTR16) (GH-618)
+
 1.4.0 (2016-01-10)
 ------------------
 
