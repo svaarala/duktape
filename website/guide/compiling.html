@@ -250,7 +250,7 @@ C++ toolchain.  At least when mixing gcc/g++ you may encounter something like:</
 <pre>
 $ g++ -c -o duktape.o -Isrc/ src/duktape.c
 $ gcc -c -o duk_cmdline.o -Isrc/ examples/cmdline/duk_cmdline.c
-$ gcc -o duk duktape.o duk_cmdline.o -lm -lreadline -lncurses
+$ gcc -o duk duktape.o duk_cmdline.o -lm
 duktape.o:(.eh_frame+0x1ab): undefined reference to `__gxx_personality_v0'
 collect2: error: ld returned 1 exit status
 </pre>
@@ -259,7 +259,7 @@ collect2: error: ld returned 1 exit status
 <pre>
 $ g++ -c -o duktape.o -Isrc/ src/duktape.c
 $ gcc -c -o duk_cmdline.o -Isrc/ examples/cmdline/duk_cmdline.c
-$ g++ -o duk duktape.o duk_cmdline.o -lm -lreadline -lncurses
+$ g++ -o duk duktape.o duk_cmdline.o -lm
 </pre>
 
 <p>Because <code>duktape.h</code> selects C/C++ data types needed by
