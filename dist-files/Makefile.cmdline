@@ -13,18 +13,22 @@ CCOPTS	= -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
 CCOPTS += -I./src   # duktape.h and duk_config.h must be in include path
 CCLIBS	= -lm
 
-# If you have readline, you may want to enable these.  On some platforms
-# -lreadline also requires -lncurses (e.g. RHEL), so it is added by default
-# (you may be able to remove it)
+# If you want linenoise, you can enable these.  At the moment linenoise
+# will cause some harmless compilation warnings.
 #CCOPTS += -DDUK_CMDLINE_FANCY
-#CCLIBS += -lreadline
-#CCLIBS += -lncurses
+#DUKTAPE_CMDLINE_SOURCES += linenoise/linenoise.c
+#CCOPTS += -I./linenoise
+#duk:	linenoise
 
 # Optional feature defines, see: http://duktape.org/guide.html#compiling
 CCOPTS += -DDUK_OPT_SELF_TESTS
 #CCOPTS += -DDUK_OPT_DEBUG
 #CCOPTS += -DDUK_OPT_DPRINT
 # ...
+
+linenoise/linenoise.c: linenoise
+linenoise:
+	git clone https://github.com/antirez/linenoise.git
 
 duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
