@@ -1492,6 +1492,11 @@ Planned
 * Portability improvement for FreeBSD: switch to using netinet/in.h header
   instead of inet/arpa.h in debugger socket transport example (GH-676)
 
+* Portability improvement: python tooling (genconfig.py, make_dist.py) etc
+  use sys.executable for launching Python scripts so that e.g. "python2
+  util/make_dist.py" works on platforms where "python" points to Python 3;
+  repo Makefile updated to detect python2 vs. python (GH-646)
+
 * Rework setjmp/longjmp configuration model: (1) removed DUK_OPT_SETJMP,
   DUK_OPT_SIGSETJMP, and DUK_OPT_UNDERSCORE_SETJMP; (2) added DUK_JMPBUF_TYPE
   to duk_config.h to allow the jmp_buf struct to be replaced; (3) Duktape
