@@ -1506,6 +1506,11 @@ Planned
 * Change OS string (visible in Duktape.env) from "ios" to "osx" for non-phone
   targets (GH-570, GH-571)
 
+* Remove readline support from duk_cmdline.c ('duk' command line tool), add
+  support for Linenoise instead; -DDUK_CMDLINE_FANCY now assumes linenoise.h
+  is in the include path and that linenoise.c is compiled with the command
+  line tool (or linked from a library) (GH-678)
+
 * Internal performance improvement: use raw value stack accessors internally
   when it's safe to do so (GH-582)
 
