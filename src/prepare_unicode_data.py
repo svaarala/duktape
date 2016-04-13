@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  UnicodeData.txt may contain ranges in addition to individual characters.
 #  Unpack the ranges into individual characters for the other scripts to use.

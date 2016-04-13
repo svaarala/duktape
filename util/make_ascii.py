@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Paranoia escape input file to be printable ASCII.
 #

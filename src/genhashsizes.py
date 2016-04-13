@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Find a sequence of duk_hobject hash sizes which have a desired 'ratio'
 #  and are primes.  Prime hash sizes ensure that all probe sequence values

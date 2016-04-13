@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Generate equivalent year table needed by duk_bi_date.c.  Based on:
 #

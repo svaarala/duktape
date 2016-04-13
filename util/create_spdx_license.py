@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Helper to create an SPDX license file (http://spdx.org)
 #

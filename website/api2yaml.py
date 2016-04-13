@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  One-time tool to convert from old custom API document format to YAML.
 #

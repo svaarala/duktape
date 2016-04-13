@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Resolve a line number in the combined source into an uncombined file/line
 #  using a dist/src/metadata.json file.

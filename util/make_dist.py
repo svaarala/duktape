@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Create a distributable Duktape package into 'dist' directory.  The contents
 #  of this directory can then be packaged into a source distributable.
@@ -615,7 +615,7 @@ print('Create duk_config.h headers')
 
 # Merge debugger metadata.
 merged = exec_print_stdout([
-	'python', os.path.join('debugger', 'merge_debug_meta.py'),
+	sys.executable, os.path.join('debugger', 'merge_debug_meta.py'),
 	'--output', os.path.join(dist, 'debugger', 'duk_debug_meta.json'),
 	'--class-names', os.path.join('debugger', 'duk_classnames.yaml'),
 	'--debug-commands', os.path.join('debugger', 'duk_debugcommands.yaml'),
@@ -625,7 +625,7 @@ merged = exec_print_stdout([
 
 # Build default duk_config.h from snippets using genconfig.
 exec_print_stdout([
-	'python', os.path.join('config', 'genconfig.py'), '--metadata', 'config',
+	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
 	'--output', os.path.join(dist, 'duk_config.h.tmp'),
 	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
 	'--omit-removed-config-options', '--omit-unused-config-options',
@@ -641,7 +641,7 @@ copy_file(os.path.join(dist, 'duk_config.h.tmp'), os.path.join(distsrcsep, 'duk_
 
 # Build duk_config.h without feature option support.
 exec_print_stdout([
-	'python', os.path.join('config', 'genconfig.py'), '--metadata', 'config',
+	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
 	'--output', os.path.join(dist, 'config', 'duk_config.h-modular-static'),
 	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
 	'--omit-removed-config-options', '--omit-unused-config-options',
@@ -649,7 +649,7 @@ exec_print_stdout([
 	'duk-config-header'
 ])
 exec_print_stdout([
-	'python', os.path.join('config', 'genconfig.py'), '--metadata', 'config',
+	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
 	'--output', os.path.join(dist, 'config', 'duk_config.h-modular-dll'),
 	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
 	'--omit-removed-config-options', '--omit-unused-config-options',
@@ -661,7 +661,7 @@ exec_print_stdout([
 # Generate a few barebones config examples
 def genconfig_barebones(platform, architecture, compiler):
 	exec_print_stdout([
-		'python', os.path.join('config', 'genconfig.py'), '--metadata', 'config',
+		sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
 		'--output', os.path.join(dist, 'config', 'duk_config.h-%s-%s-%s' % (platform, architecture, compiler)),
 		'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
 		'--platform', platform, '--architecture', architecture, '--compiler', compiler,
@@ -778,7 +778,7 @@ with open(os.path.join(distsrcsep, 'duk_initjs_min.js'), 'wb') as f:
 # this will probably change when functions are added/removed based on profile.
 
 exec_print_stdout([
-	'python',
+	sys.executable,
 	os.path.join('src', 'genbuildparams.py'),
 	'--version=' + str(duk_version),
 	'--git-commit=' + git_commit,
@@ -789,7 +789,7 @@ exec_print_stdout([
 ])
 
 res = exec_get_stdout([
-	'python',
+	sys.executable,
 	os.path.join('src', 'scan_used_stridx_bidx.py')
 ] + glob_files(os.path.join('src', '*.c')) \
   + glob_files(os.path.join('src', '*.h')) \
@@ -809,7 +809,7 @@ for fn in opts.user_builtin_metadata:
 	gb_opts.append('--user-builtin-metadata')
 	gb_opts.append(fn)
 exec_print_stdout([
-	'python',
+	sys.executable,
 	os.path.join('src', 'genbuiltins.py'),
 	'--buildinfo=' + os.path.join(distsrcsep, 'buildparams.json.tmp'),
 	'--used-stridx-metadata=' + os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'),
@@ -883,7 +883,7 @@ IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 print('Expand UnicodeData.txt ranges')
 
 exec_print_stdout([
-	'python',
+	sys.executable,
 	os.path.join('src', 'prepare_unicode_data.py'),
 	os.path.join('src', 'UnicodeData.txt'),
 	os.path.join(distsrcsep, 'UnicodeData-expanded.tmp')
@@ -892,7 +892,7 @@ exec_print_stdout([
 def extract_chars(incl, excl, suffix):
 	#print('- extract_chars: %s %s %s' % (incl, excl, suffix))
 	res = exec_get_stdout([
-		'python',
+		sys.executable,
 		os.path.join('src', 'extract_chars.py'),
 		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
 		'--include-categories=' + incl,
@@ -907,7 +907,7 @@ def extract_chars(incl, excl, suffix):
 def extract_caseconv():
 	#print('- extract_caseconv case conversion')
 	res = exec_get_stdout([
-		'python',
+		sys.executable,
 		os.path.join('src', 'extract_caseconv.py'),
 		'--command=caseconv_bitpacked',
 		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
@@ -922,7 +922,7 @@ def extract_caseconv():
 
 	#print('- extract_caseconv canon lookup')
 	res = exec_get_stdout([
-		'python',
+		sys.executable,
 		os.path.join('src', 'extract_caseconv.py'),
 		'--command=re_canon_lookup',
 		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
@@ -1006,7 +1006,7 @@ delete_matching_files(distsrcsep, lambda x: x[0:8] == 'caseconv' and x[-4:] == '
 # created for that, see: https://github.com/svaarala/duktape/pull/363.
 
 exec_print_stdout([
-	'python',
+	sys.executable,
 	os.path.join('util', 'combine_src.py'),
 	'--source-dir', distsrcsep,
 	'--output-source', os.path.join(distsrccom, 'duktape.c'),
@@ -1021,7 +1021,7 @@ exec_print_stdout([
 ])
 
 exec_print_stdout([
-	'python',
+	sys.executable,
 	os.path.join('util', 'combine_src.py'),
 	'--source-dir', distsrcsep,
 	'--output-source', os.path.join(distsrcnol, 'duktape.c'),
@@ -1041,7 +1041,7 @@ delete_matching_files(dist, lambda x: x[-4:] == '.tmp')
 if opts.create_spdx:
 	print('Create SPDX license')
 	exec_get_stdout([
-		'python',
+		sys.executable,
 		os.path.join('util', 'create_spdx_license.py'),
 		os.path.join(dist, 'license.spdx')
 	])

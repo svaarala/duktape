@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Scan Duktape code base for references to built-in strings and built-in
 #  objects, i.e. for:

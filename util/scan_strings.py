@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Scan potential external strings from Ecmascript and C files.
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Process Duktape option metadata and produce various useful outputs:
 #

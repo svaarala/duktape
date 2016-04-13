@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 #
 #  Combine all source and header files in source directory into
 #  a single C file.
