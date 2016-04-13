@@ -1489,6 +1489,9 @@ Planned
 
 * Portability improvement for Windows MSVC: add inline macros (GH-580)
 
+* Portability improvement for FreeBSD: switch to using netinet/in.h header
+  instead of inet/arpa.h in debugger socket transport example (GH-676)
+
 * Rework setjmp/longjmp configuration model: (1) removed DUK_OPT_SETJMP,
   DUK_OPT_SIGSETJMP, and DUK_OPT_UNDERSCORE_SETJMP; (2) added DUK_JMPBUF_TYPE
   to duk_config.h to allow the jmp_buf struct to be replaced; (3) Duktape
