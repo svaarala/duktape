@@ -3,7 +3,7 @@
  */
 
 /*===
-Hello world!
+Hello Hulda!
 ===*/
 
-print('Hello world!');
+print('Hello Hulda!');
