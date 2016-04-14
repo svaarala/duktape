@@ -172,6 +172,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/alloc-torture/duk_alloc_torture.c \
 	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
 	dist/examples/debug-trans-socket/duk_trans_socket_unix.c
+LINENOISE_SOURCES = \
+	linenoise/linenoise.c
 
 # Compiler setup for Linux
 CC	= gcc
@@ -265,6 +267,7 @@ CCOPTS_FEATURES += -DDUK_CMDLINE_DEBUGGER_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_FILEIO
 
 CCOPTS_SHARED =
+CCOPTS_SHARED += -D_POSIX_C_SOURCE=200809L  # to avoid linenoise strdup() warnings
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
 CCOPTS_SHARED += -Wall -Wextra -Wunused-result
@@ -272,7 +275,7 @@ CCOPTS_SHARED += -Wcast-qual
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
 # -Wfloat-equal is too picky, there's no apparent way to compare floats
 # (even when you know it's safe) without triggering warnings
-CCOPTS_SHARED += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/examples/debug-trans-socket
+CCOPTS_SHARED += -I./dist/src -I./linenoise -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/examples/debug-trans-socket
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -300,8 +303,6 @@ GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
 CCLIBS	= -lm
-CCLIBS += -lreadline
-CCLIBS += -lncurses  # on some systems -lreadline also requires -lncurses (e.g. RHEL)
 
 # Replace 'duk' and 'dukd' with automatic valgrind wrappers (plain commands
 # will be duk.raw and dukd.raw).  Targets for runtests.js bypass the wrapper
@@ -359,6 +360,7 @@ cleanall: clean
 	# Don't delete these in 'clean' to avoid re-downloading them over and over
 	@rm -rf duktape-releases
 	@rm -f regfuzz-*.tar.gz
+	@rm -rf linenoise
 	@rm -rf UglifyJS
 	@rm -rf UglifyJS2
 	@rm -rf closure-compiler
@@ -402,32 +404,32 @@ libduktaped.so.1.0.0: dist
 	ln -s $@ $(subst .so.1.0.0,.so.1,$@)
 	ln -s $@ $(subst .so.1.0.0,.so,$@)
 
-duk.raw: dist
-	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+duk.raw: dist linenoise
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
-duk-clang: dist
+duk-clang: dist linenoise
 	# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
-	clang -o $@ -Wcast-align $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	clang -o $@ -Wcast-align $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
-duk.O2: dist
-	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O2 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+duk.O2: dist linenoise
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O2 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
-duk.O3: dist
-	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O3 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+duk.O3: dist linenoise
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O3 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
-duk.O4: dist
-	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O4 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+duk.O4: dist linenoise
+	$(CC) -o $@ $(CCOPTS_NONDEBUG) -O4 $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
 # Test target for g++ compile
-duk-g++: dist
+duk-g++: dist linenoise
 	$(GXX) -o $@ $(GXXOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
-dukd-g++: dist
+dukd-g++: dist linenoise
 	$(GXX) -o $@ $(GXXOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
 	-@size $@
 
@@ -451,8 +453,8 @@ else
 	@cp duk.raw $@
 endif
 
-dukd.raw: dist
-	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+dukd.raw: dist linenoise
+	$(CC) -o $@ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
 dukd.vg: dukd.raw
@@ -484,11 +486,11 @@ issuecount:
 
 .PHONY: dukscanbuild
 dukscanbuild: dist
-	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 
 .PHONY: dukdscanbuild
 dukdscanbuild: dist
-	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	scan-build gcc -o/tmp/duk.scanbuild -Idist/src-separate/ $(CCOPTS_DEBUG) $(DUKTAPE_SOURCES_SEPARATE) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest emscripteninceptiontest test262test
@@ -561,6 +563,12 @@ matrix1000: dist
 .PHONY: matrix10000
 matrix10000: dist
 	cd dist; $(PYTHON) ../util/matrix_compile.py --count=10000
+
+linenoise:
+	# git clone https://github.com/antirez/linenoise.git
+	# Use forked repo to get compile warnings fixed (not yet fixed in
+	# linenoise master).
+	git clone -b fix-compile-warnings https://github.com/svaarala/linenoise.git
 
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
@@ -991,7 +999,7 @@ CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint1
 # Command line with Alljoyn.js pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
 # us to use barebones cmdline too.
-ajduk: alljoyn-js ajtcl dist
+ajduk: alljoyn-js ajtcl dist linenoise
 	$(CC) -o $@ \
 		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ \
 		$(CCOPTS_NONDEBUG) \
@@ -1002,7 +1010,7 @@ ajduk: alljoyn-js ajtcl dist
 		-lm -lpthread
 	@echo "*** SUCCESS:"
 	@ls -l ajduk
-ajdukd: alljoyn-js ajtcl dist
+ajdukd: alljoyn-js ajtcl dist linenoise
 	$(CC) -o $@ \
 		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ \
 		$(CCOPTS_DEBUG) \

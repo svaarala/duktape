@@ -1,15 +1,16 @@
 /*
  *  Command line execution tool.  Useful for test cases and manual testing.
  *
- *  To enable readline and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
+ *  To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
  *  It is not the default to maximize portability.  You can also compile in
  *  support for example allocators, grep for DUK_CMDLINE_*.
  */
 
-#if !defined(DUK_CMDLINE_FANCY)
-#define NO_READLINE
-#define NO_RLIMIT
-#define NO_SIGNAL
+/* Helper define to enable a feature set; can also use separate defines. */
+#if defined(DUK_CMDLINE_FANCY)
+#define DUK_CMDLINE_LINENOISE
+#define DUK_CMDLINE_RLIMIT
+#define DUK_CMDLINE_SIGNAL
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
@@ -36,15 +37,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if !defined(NO_SIGNAL)
+#if defined(DUK_CMDLINE_SIGNAL)
 #include <signal.h>
 #endif
-#if !defined(NO_RLIMIT)
+#if defined(DUK_CMDLINE_RLIMIT)
 #include <sys/resource.h>
 #endif
-#if !defined(NO_READLINE)
-#include <readline/readline.h>
-#include <readline/history.h>
+#if defined(DUK_CMDLINE_LINENOISE)
+#include "linenoise.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -98,7 +98,7 @@ static int debugger_reattach = 0;
  *  Misc helpers
  */
 
-#if !defined(NO_RLIMIT)
+#if defined(DUK_CMDLINE_RLIMIT)
 static void set_resource_limits(rlim_t mem_limit_value) {
 	int rc;
 	struct rlimit lim;
@@ -127,9 +127,9 @@ static void set_resource_limits(rlim_t mem_limit_value) {
 	fprintf(stderr, "Set RLIMIT_AS to %d\n", (int) mem_limit_value);
 #endif
 }
-#endif  /* NO_RLIMIT */
+#endif  /* DUK_CMDLINE_RLIMIT */
 
-#if !defined(NO_SIGNAL)
+#if defined(DUK_CMDLINE_SIGNAL)
 static void my_sighandler(int x) {
 	fprintf(stderr, "Got signal %d\n", x);
 	fflush(stderr);
@@ -138,7 +138,7 @@ static void set_sigint_handler(void) {
 	(void) signal(SIGINT, my_sighandler);
 	(void) signal(SIGPIPE, SIG_IGN);  /* avoid SIGPIPE killing process */
 }
-#endif  /* NO_SIGNAL */
+#endif  /* DUK_CMDLINE_SIGNAL */
 
 static int get_stack_raw(duk_context *ctx) {
 	if (!duk_is_object(ctx, -1)) {
@@ -486,7 +486,68 @@ static int handle_eval(duk_context *ctx, char *code) {
 	return retval;
 }
 
-#if defined(NO_READLINE)
+#if defined(DUK_CMDLINE_LINENOISE)
+static int handle_interactive(duk_context *ctx) {
+	const char *prompt = "duk> ";
+	char *buffer = NULL;
+	int retval = 0;
+	int rc;
+
+	duk_eval_string(ctx, GREET_CODE(" [linenoise]"));
+	duk_pop(ctx);
+
+	linenoiseSetMultiLine(1);
+	linenoiseHistorySetMaxLen(64);
+
+	for (;;) {
+		if (buffer) {
+			linenoiseFree(buffer);
+			buffer = NULL;
+		}
+
+		buffer = linenoise(prompt);
+		if (!buffer) {
+			break;
+		}
+
+		if (buffer && buffer[0] != (char) 0) {
+			linenoiseHistoryAdd(buffer);
+		}
+
+		duk_push_pointer(ctx, (void *) buffer);
+		duk_push_uint(ctx, (duk_uint_t) strlen(buffer));
+		duk_push_string(ctx, "input");
+
+		interactive_mode = 1;  /* global */
+
+		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+
+#if defined(DUK_CMDLINE_AJSHEAP)
+		ajsheap_clear_exec_timeout();
+#endif
+
+		if (buffer) {
+			linenoiseFree(buffer);
+			buffer = NULL;
+		}
+
+		if (rc != DUK_EXEC_SUCCESS) {
+			/* in interactive mode, write to stdout */
+			print_pop_error(ctx, stdout);
+			retval = -1;  /* an error 'taints' the execution */
+		} else {
+			duk_pop(ctx);
+		}
+	}
+
+	if (buffer) {
+		linenoiseFree(buffer);
+		buffer = NULL;
+	}
+
+	return retval;
+}
+#else  /* DUK_CMDLINE_LINENOISE */
 static int handle_interactive(duk_context *ctx) {
 	const char *prompt = "duk> ";
 	char *buffer = NULL;
@@ -494,7 +555,7 @@ static int handle_interactive(duk_context *ctx) {
 	int rc;
 	int got_eof = 0;
 
-	duk_eval_string(ctx, GREET_CODE(" [no readline]"));
+	duk_eval_string(ctx, GREET_CODE(""));
 	duk_pop(ctx);
 
 	buffer = (char *) malloc(LINEBUF_SIZE);
@@ -557,73 +618,7 @@ static int handle_interactive(duk_context *ctx) {
 
 	return retval;
 }
-#else  /* NO_READLINE */
-static int handle_interactive(duk_context *ctx) {
-	const char *prompt = "duk> ";
-	char *buffer = NULL;
-	int retval = 0;
-	int rc;
-
-	duk_eval_string(ctx, GREET_CODE(""));
-	duk_pop(ctx);
-
-	/*
-	 *  Note: using readline leads to valgrind-reported leaks inside
-	 *  readline itself.  Execute code from an input file (and not
-	 *  through stdin) for clean valgrind runs.
-	 */
-
-	rl_initialize();
-
-	for (;;) {
-		if (buffer) {
-			free(buffer);
-			buffer = NULL;
-		}
-
-		buffer = readline(prompt);
-		if (!buffer) {
-			break;
-		}
-
-		if (buffer && buffer[0] != (char) 0) {
-			add_history(buffer);
-		}
-
-		duk_push_pointer(ctx, (void *) buffer);
-		duk_push_uint(ctx, (duk_uint_t) strlen(buffer));
-		duk_push_string(ctx, "input");
-
-		interactive_mode = 1;  /* global */
-
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
-
-#if defined(DUK_CMDLINE_AJSHEAP)
-		ajsheap_clear_exec_timeout();
-#endif
-
-		if (buffer) {
-			free(buffer);
-			buffer = NULL;
-		}
-
-		if (rc != DUK_EXEC_SUCCESS) {
-			/* in interactive mode, write to stdout */
-			print_pop_error(ctx, stdout);
-			retval = -1;  /* an error 'taints' the execution */
-		} else {
-			duk_pop(ctx);
-		}
-	}
-
-	if (buffer) {
-		free(buffer);
-		buffer = NULL;
-	}
-
-	return retval;
-}
-#endif  /* NO_READLINE */
+#endif  /* DUK_CMDLINE_LINENOISE */
 
 /*
  *  Simple file read/write bindings
@@ -1037,7 +1032,7 @@ int main(int argc, char *argv[]) {
 	 *  Signal handling setup
 	 */
 
-#if !defined(NO_SIGNAL)
+#if defined(DUK_CMDLINE_SIGNAL)
 	set_sigint_handler();
 
 	/* This is useful at the global level; libraries should avoid SIGPIPE though */
@@ -1109,7 +1104,7 @@ int main(int argc, char *argv[]) {
 	 *  Memory limit
 	 */
 
-#if !defined(NO_RLIMIT)
+#if defined(DUK_CMDLINE_RLIMIT)
 	set_resource_limits(memlimit_high ? MEM_LIMIT_HIGH : MEM_LIMIT_NORMAL);
 #else
 	if (memlimit_high == 0) {
