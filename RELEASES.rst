@@ -1511,6 +1511,9 @@ Planned
   is in the include path and that linenoise.c is compiled with the command
   line tool (or linked from a library) (GH-678)
 
+* Add minimal tab completion support for duk_cmdline.c ('duk') using Linenoise
+  completions (GH-679)
+
 * Internal performance improvement: use raw value stack accessors internally
   when it's safe to do so (GH-582)
 
