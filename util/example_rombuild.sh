@@ -4,18 +4,20 @@
 
 set -e
 
+PYTHON=`which python2 python | head -1`
+
 # Run dist manually, ROM support is not enabled by default so add --rom-support.
 # User builtin metadata can be provided through one or more YAML files (applied
 # in sequence).
 make clean
-python util/make_dist.py \
+$PYTHON util/make_dist.py \
 	--rom-support \
 	--user-builtin-metadata util/example_user_builtins1.yaml \
 	--user-builtin-metadata util/example_user_builtins2.yaml \
 	--minify closure
 
 # Run genconfig.py and create a custom duk_config.h with ROM support etc.
-python config/genconfig.py \
+$PYTHON config/genconfig.py \
 	--metadata config \
 	--output dist/src/duk_config.h \
 	-DDUK_USE_ROM_STRINGS \
@@ -31,7 +33,7 @@ make duk dukd
 # This would ideally be done directly using genconfig.py without
 # --support-feature-options by moving the options into a genconfig
 # YAML config file.
-python config/genconfig.py \
+$PYTHON config/genconfig.py \
 	--metadata config \
 	--output dist/src/duk_config.h \
 	-DDUK_USE_ROM_STRINGS \
