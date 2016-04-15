@@ -911,6 +911,8 @@ DUK_LOCAL void duk__bi_global_resolve_module_id(duk_context *ctx, const char *re
 		 * on loop exit.
 		 */
 
+		DUK_ASSERT(p >= q);  /* output is never longer than input during resolution */
+
 		DUK_DDD(DUK_DDDPRINT("resolve loop top: p -> '%s', q=%p, buf=%p",
 		                     (const char *) p, (void *) q, (void *) buf));
 
