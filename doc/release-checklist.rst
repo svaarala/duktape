@@ -350,7 +350,9 @@ Checklist for maintenance releases
 * Tag release, description "maintenance release" should be good enough for
   most patch releases.
 
-* Build release, push it to ``duktape-releases`` in binary and unpacked form.
+* Build release.  Compare release to previous release package by diffing the
+  unpacked directories.  The SPDX license can be diffed by sorting the files
+  first and then using diff -u.
 
 * Build website from master.  Deploy only ``download.html``.
 
