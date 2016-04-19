@@ -65,7 +65,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	heap->dbg_request_cb = NULL;
 	/* heap->dbg_detached_cb: keep */
 	/* heap->dbg_udata: keep */
-	/*heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
+	/* heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
@@ -2515,8 +2515,8 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 #endif
 
 	DUK_D(DUK_DPRINT("process debug messages: read_cb=%s, no_block=%ld, detaching=%ld, processing=%ld",
-	                   thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
-	                   (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
+	                 thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
+	                 (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
 	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
 
 	/* thr->heap->dbg_detaching may be != 0 if a debugger write outside
