@@ -28,7 +28,6 @@ example: |
 tags:
   - stack
   - bytecode
-  - experimental
 
 seealso:
   - duk_dump_function

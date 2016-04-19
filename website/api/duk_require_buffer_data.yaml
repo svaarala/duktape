@@ -22,7 +22,6 @@ tags:
   - stack
   - buffer
   - bufferobject
-  - experimental
 
 seealso:
   - duk_get_buffer_data

@@ -19,11 +19,6 @@ summary: |
   <a href="https://github.com/svaarala/duktape/blob/master/tests/api/test-set-global-object.c">test-set-global-object.c</a>
   for discussion of detailed behavior after the change.</p>
 
-  <div class="note">
-  This API call is experimental at present, and some of the semantics may
-  change when other sandboxing features are implemented.
-  </div>
-
 example: |
   /* Build a global object with a subset of bindings. */
   duk_eval_string(ctx,
@@ -39,6 +34,5 @@ tags:
   - stack
   - thread
   - sandbox
-  - experimental
 
 introduced: 1.0.0
