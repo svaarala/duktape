@@ -1372,6 +1372,38 @@ Released
 * Internal performance improvement: add fast paths for hex and base64
   encoding/decoding (GH-465, GH-467, GH-471)
 
+1.4.1 (2016-04-19)
+------------------
+
+* Fix potentially memory unsafe behavior when a refcount-triggered finalizer
+  function rescues an object; the memory unsafe behavior doesn't happen
+  immediately which makes the cause of the unsafe behavior difficult to
+  diagnose (GH-531)
+
+* Fix a genconfig legacy feature option bug in Duktape 1.4.0 which caused
+  DUK_USE_PACKED_TVAL to default to false unless forced using
+  DUK_OPT_PACKED_TVAL (GH-550)
+
+* Fix debugger Eval handling issue where an uncaught error during Eval
+  command (with "pause on uncaught" option enabled) would cause a recursive
+  attempt to halt execution (GH-558, GH-562)
+
+* Fix debugger detach handling bug which could cause the debugger to be
+  re-entered recursively during detach handling; this could cause various
+  difficult to diagnose side effects (GH-599, GH-597, GH-591)
+
+* Fix debugger detach handling bug which could cause detach handling to be
+  initiated but not completed if the debug transport write error occurred
+  outside of the debugger message loop (for example when writing a Status
+  notify in running state) (GH-599, GH-597, GH-591)
+
+* Fix debugger transport write error bug which could cause Duktape to call
+  the debug transport write callback after it had already returned an error
+  (GH-599)
+
+* Fix memory unsafe behavior when an external plain buffer was allocated
+  with heap pointer compression enabled (DUK_USE_HEAPPTR16) (GH-618)
+
 Planned
 =======
 
