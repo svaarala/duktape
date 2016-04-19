@@ -137,7 +137,20 @@ function pushGithubStatuses(state) {
                     //console.log('status created:', err, ret);
                     if (err) {
                         console.log(err);
-                        return;
+
+                        // If commit is not found, Github returns something like:
+                        // { message: '{"message":"No commit found for SHA: 239e1a240b70576ca123aa14f75c7a5781f6e8c5","documentation_url":"https://developer.github.com/v3/repos/statuses/"}',
+                        //   code: 422 }
+                        //
+                        // Don't retry indefinitely.
+                        // XXX: Better fix is a backoff and try count.
+
+                        if (err.code === 422) {
+                            console.log('commit no longer exists, don\'t retry status push');
+                            // fall through and mark non-dirty
+                        } else {
+                            return;
+                        }
                     }
 
                     db.update({
