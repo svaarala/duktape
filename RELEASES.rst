@@ -981,6 +981,18 @@ Released
   by the compiler, but an existing "intermediate value" referred to a const
   instead of a register value (GH-449)
 
+1.2.6 (2016-04-19)
+------------------
+
+* Fix potentially memory unsafe behavior when a refcount-triggered finalizer
+  function rescues an object; the memory unsafe behavior doesn't happen
+  immediately which makes the cause of the unsafe behavior difficult to
+  diagnose (GH-531)
+
+* Fix debugger detach handling bug which could cause the debugger to be
+  re-entered recursively during detach handling; this could cause various
+  difficult to diagnose side effects (GH-599, GH-597, GH-591)
+
 1.3.0 (2015-09-12)
 ------------------
 
