@@ -59,7 +59,6 @@ example: |
 tags:
   - stack
   - bufferobject
-  - experimental
 
 seealso:
   - duk_push_buffer

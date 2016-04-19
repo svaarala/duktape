@@ -19,7 +19,6 @@ example: |
 tags:
   - stack
   - buffer
-  - experimental
 
 seealso:
   - duk_push_external_buffer

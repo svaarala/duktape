@@ -45,7 +45,6 @@ example: |
 tags:
   - stack
   - buffer
-  - experimental
 
 seealso:
   - duk_config_buffer
