@@ -29,19 +29,23 @@ typedef union {
 	} while (0)
 
 DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
-	/* Can be called muliple times with no harm. */
+	/* Can be called multiple times with no harm. */
+	duk_bool_t prev_processing;
 
+	prev_processing = heap->dbg_processing;  /* typically 1, but 0 in heap destruction */
 	heap->dbg_read_cb = NULL;
 	heap->dbg_write_cb = NULL;
 	heap->dbg_peek_cb = NULL;
 	heap->dbg_read_flush_cb = NULL;
 	heap->dbg_write_flush_cb = NULL;
 	if (heap->dbg_detached_cb) {
+		DUK_ASSERT(heap->dbg_processing == prev_processing);
 		heap->dbg_detached_cb(heap->dbg_udata);
+		heap->dbg_processing = prev_processing;  /* restore in case detached callback re-attached; not supported in 1.2.x so not really mandatory */
 	}
 	heap->dbg_detached_cb = NULL;
 	heap->dbg_udata = NULL;
-	heap->dbg_processing = 0;
+	DUK_ASSERT(heap->dbg_processing == prev_processing);
 	heap->dbg_paused = 0;
 	heap->dbg_state_dirty = 0;
 	heap->dbg_step_type = 0;
@@ -1637,6 +1641,8 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 #if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
+	DUK_ASSERT(thr->heap->dbg_processing == 0);
+	thr->heap->dbg_processing = 1;
 
 	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
 
@@ -1674,6 +1680,8 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	 * loop.
 	 */
 	duk_debug_read_flush(thr);
+
+	thr->heap->dbg_processing = 0;
 
 	DUK_DD(DUK_DDPRINT("top at exit: %ld", (long) duk_get_top(ctx)));
 

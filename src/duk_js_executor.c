@@ -2121,9 +2121,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
-		thr->heap->dbg_processing = 1;
 		duk__executor_handle_debugger(thr, act, fun);
-		thr->heap->dbg_processing = 0;
 	}
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
