@@ -860,6 +860,20 @@ strings:
     duktape: true
   - str: "compact"
     duktape: true
+  - str: "add"
+    duktape: true
+  - str: "sub"
+    duktape: true
+  - str: "mul"
+    duktape: true
+  - str: "div"
+    duktape: true
+  - str: "mod"
+    duktape: true
+  - str: "unp"
+    duktape: true
+  - str: "unm"
+    duktape: true
 
   # enc/dec algorithms
   - str: "hex"
