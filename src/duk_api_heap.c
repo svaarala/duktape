@@ -24,9 +24,14 @@ duk_context *duk_create_heap(duk_alloc_function alloc_func,
 	if (!alloc_func) {
 		DUK_ASSERT(realloc_func == NULL);
 		DUK_ASSERT(free_func == NULL);
+#if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 		alloc_func = duk_default_alloc_function;
 		realloc_func = duk_default_realloc_function;
 		free_func = duk_default_free_function;
+#else
+		DUK_D(DUK_DPRINT("no allocation functions given and no default providers"));
+		return NULL;
+#endif
 	} else {
 		DUK_ASSERT(realloc_func != NULL);
 		DUK_ASSERT(free_func != NULL);

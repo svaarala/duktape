@@ -7,6 +7,7 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 DUK_INTERNAL void *duk_default_alloc_function(void *udata, duk_size_t size) {
 	void *res;
 	DUK_UNREF(udata);
@@ -30,3 +31,4 @@ DUK_INTERNAL void duk_default_free_function(void *udata, void *ptr) {
 	DUK_UNREF(udata);
 	DUK_ANSI_FREE(ptr);
 }
+#endif  /* DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS */
