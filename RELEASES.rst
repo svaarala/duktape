@@ -1535,6 +1535,11 @@ Planned
   operations wouldn't be overridden by user code and accessed the internal
   value directly (GH-447)
 
+* Fix conditional compilation for default alloc providers (enabled by
+  default using DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS) so that if the
+  option is disabled there's no reference to malloc(), realloc(), or
+  free() during compilation (GH-695)
+
 * Remove branch hint from around setjmp() for better portability (GH-605)
 
 * Portability improvement for Atari Mint: avoid fmin/fmax (GH-556)
