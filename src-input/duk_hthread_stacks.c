@@ -490,3 +490,92 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 	duk_hthread_catchstack_unwind_norz(thr, new_top);
 	DUK_REFZERO_CHECK_FAST(thr);
 }
+
+#if defined(DUK_USE_FINALIZER_TORTURE)
+DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
+	duk_size_t alloc_size;
+	duk_tval *new_ptr;
+	duk_ptrdiff_t end_off;
+	duk_ptrdiff_t bottom_off;
+	duk_ptrdiff_t top_off;
+
+	if (thr->valstack == NULL) {
+		return;
+	}
+
+	end_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+	bottom_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
+	top_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack);
+	alloc_size = (duk_size_t) end_off;
+	if (alloc_size == 0) {
+		return;
+	}
+
+	new_ptr = (duk_tval *) DUK_ALLOC(thr->heap, alloc_size);
+	if (new_ptr != NULL) {
+		DUK_MEMCPY((void *) new_ptr, (const void *) thr->valstack, alloc_size);
+		DUK_MEMSET((void *) thr->valstack, 0x55, alloc_size);
+		DUK_FREE(thr->heap, (void *) thr->valstack);
+		thr->valstack = new_ptr;
+		thr->valstack_end = (duk_tval *) ((duk_uint8_t *) new_ptr + end_off);
+		thr->valstack_bottom = (duk_tval *) ((duk_uint8_t *) new_ptr + bottom_off);
+		thr->valstack_top = (duk_tval *) ((duk_uint8_t *) new_ptr + top_off);
+		/* No change in size. */
+	} else {
+		DUK_D(DUK_DPRINT("failed to realloc valstack for torture, ignore"));
+	}
+}
+
+DUK_INTERNAL void duk_hthread_callstack_torture_realloc(duk_hthread *thr) {
+	duk_size_t alloc_size;
+	duk_activation *new_ptr;
+	duk_ptrdiff_t curr_off;
+
+	if (thr->callstack == NULL) {
+		return;
+	}
+
+	curr_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->callstack_curr - (duk_uint8_t *) thr->callstack);
+	alloc_size = sizeof(duk_activation) * thr->callstack_size;
+	if (alloc_size == 0) {
+		return;
+	}
+
+	new_ptr = (duk_activation *) DUK_ALLOC(thr->heap, alloc_size);
+	if (new_ptr != NULL) {
+		DUK_MEMCPY((void *) new_ptr, (const void *) thr->callstack, alloc_size);
+		DUK_MEMSET((void *) thr->callstack, 0x55, alloc_size);
+		DUK_FREE(thr->heap, (void *) thr->callstack);
+		thr->callstack = new_ptr;
+		thr->callstack_curr = (duk_activation *) ((duk_uint8_t *) new_ptr + curr_off);
+		/* No change in size. */
+	} else {
+		DUK_D(DUK_DPRINT("failed to realloc callstack for torture, ignore"));
+	}
+}
+
+DUK_INTERNAL void duk_hthread_catchstack_torture_realloc(duk_hthread *thr) {
+	duk_size_t alloc_size;
+	duk_catcher *new_ptr;
+
+	if (thr->catchstack == NULL) {
+		return;
+	}
+
+	alloc_size = sizeof(duk_catcher) * thr->catchstack_size;
+	if (alloc_size == 0) {
+		return;
+	}
+
+	new_ptr = (duk_catcher *) DUK_ALLOC(thr->heap, alloc_size);
+	if (new_ptr != NULL) {
+		DUK_MEMCPY((void *) new_ptr, (const void *) thr->catchstack, alloc_size);
+		DUK_MEMSET((void *) thr->catchstack, 0x55, alloc_size);
+		DUK_FREE(thr->heap, (void *) thr->catchstack);
+		thr->catchstack = new_ptr;
+		/* No change in size. */
+	} else {
+		DUK_D(DUK_DPRINT("failed to realloc catchstack for torture, ignore"));
+	}
+}
+#endif  /* DUK_USE_FINALIZER_TORTURE */

@@ -17,9 +17,12 @@ DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_context *ctx) {
 	/* Require a lot of stack to force a value stack grow/shrink. */
 	duk_require_stack(ctx, 100000);
 
-	/* XXX: do something to force a callstack grow/shrink, perhaps
-	 * just a manual forced resize or a forced relocating realloc?
+	/* Force a reallocation with pointer change for value, call, and
+	 * catch stacks to maximize side effects.
 	 */
+	duk_hthread_valstack_torture_realloc((duk_hthread *) ctx);
+	duk_hthread_callstack_torture_realloc((duk_hthread *) ctx);
+	duk_hthread_catchstack_torture_realloc((duk_hthread *) ctx);
 
 	/* Inner function call, error throw. */
 	duk_eval_string_noresult(ctx,
