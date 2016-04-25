@@ -182,8 +182,8 @@ necessary information (in a highly fragile manner though).  For instance,
 you can use something like::
 
   /* Fastint tag depends on duk_tval packing */
-  var fastintTag = (Duktape.info(true)[1] === 0xfff5 ?
-                   0xfff2 /* tag for packed duk_tval) :
+  var fastintTag = (Duktape.info(true)[1] >= 0xfff0 ?
+                   0xfff1 /* tag for packed duk_tval) :
                    1 /* tag for unpacked duk_tval */ );
 
   function isFastint(x) {
@@ -352,14 +352,11 @@ that the value is fastint compatible) uses::
   /* 'i' must be in 32-bit signed range */
   DUK_TVAL_SET_FASTINT_I32(tv, i);  /* i is duk_int32_t */
 
-The following macros are available even when fastints are disabled::
-
-  DUK_TVAL_SET_DOUBLE(tv, d);
-  DUK_TVAL_SET_NUMBER_CHKFAST(tv, d);
-
-When fastints are disabled the macros will just write a double with no
-checks or additional overhead.  This is just a convenience to reduce the
-number of ifdefs.
+The macros are also available when fastints are disabled, and will just
+write a double with no checks or additional overhead.  This is just a
+convenience to reduce the number of ifdefs in call sites.  For example,
+``DUK_TVAL_SET_FASTINT_U32`` coerces the uint32 argument to a double
+when fastints are disabled.
 
 In-place double-to-fastint downgrade check
 ------------------------------------------
