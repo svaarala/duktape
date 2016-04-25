@@ -654,11 +654,7 @@ DUK_LOCAL void duk__set_catcher_regs(duk_hthread *thr, duk_size_t cat_idx, duk_t
 	tv1 = thr->valstack + thr->catchstack[cat_idx].idx_base + 1;
 	DUK_ASSERT(tv1 < thr->valstack_top);
 
-#if defined(DUK_USE_FASTINT)
 	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv1, (duk_uint32_t) lj_type);  /* side effects */
-#else
-	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv1, (duk_double_t) lj_type);  /* side effects */
-#endif
 }
 
 DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval *tv_val_unstable, duk_small_uint_t lj_type) {
@@ -1267,11 +1263,7 @@ DUK_LOCAL void duk__handle_break_or_continue(duk_hthread *thr,
 
 			cat_idx = (duk_size_t) (cat - thr->catchstack);  /* get before side effects */
 
-#if defined(DUK_USE_FASTINT)
 			DUK_TVAL_SET_FASTINT_U32(&tv_tmp, (duk_uint32_t) label_id);
-#else
-			DUK_TVAL_SET_NUMBER(&tv_tmp, (duk_double_t) label_id);
-#endif
 			duk__handle_finally(thr, cat_idx, &tv_tmp, lj_type);
 
 			DUK_DD(DUK_DDPRINT("-> break/continue caught by 'finally', restart execution"));
@@ -4113,11 +4105,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 					tv1 = thr->valstack + cat->idx_base + 1;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-#if defined(DUK_USE_FASTINT)
 					DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-#else
-					DUK_TVAL_SET_NUMBER_UPDREF(thr, tv1, (duk_double_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-#endif
 					tv1 = NULL;
 
 					DUK_CAT_CLEAR_FINALLY_ENABLED(cat);
@@ -4171,11 +4159,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 					tv1 = thr->valstack + cat->idx_base + 1;
 					DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-#if defined(DUK_USE_FASTINT)
 					DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-#else
-					DUK_TVAL_SET_NUMBER_UPDREF(thr, tv1, (duk_double_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-#endif
 					tv1 = NULL;
 
 					DUK_CAT_CLEAR_FINALLY_ENABLED(cat);

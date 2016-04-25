@@ -472,6 +472,9 @@ struct duk_heaphdr_string {
 		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
+#else
+#define DUK_TVAL_SET_DOUBLE_CAST_UPDREF(thr,tvptr_dst,newval) \
+	DUK_TVAL_SET_DOUBLE_UPDREF((thr), (tvptr_dst), (duk_double_t) (newval))
 #endif  /* DUK_USE_FASTINT */
 
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0(thr,tvptr_dst,lf_v,lf_fp,lf_flags) do { \
@@ -559,6 +562,10 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
 #define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
 #define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#else
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast int-to-double */
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
 #endif  /* DUK_USE_FASTINT */
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
 #define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0
@@ -669,6 +676,9 @@ struct duk_heaphdr_string {
 		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
+#else
+#define DUK_TVAL_SET_DOUBLE_CAST_UPDREF(thr,tvptr_dst,newval) \
+	DUK_TVAL_SET_DOUBLE_UPDREF((thr), (tvptr_dst), (duk_double_t) (newval))
 #endif  /* DUK_USE_FASTINT */
 
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0(thr,tvptr_dst,lf_v,lf_fp,lf_flags) do { \
@@ -720,6 +730,10 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
 #define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
 #define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#else
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast-int-to-double */
+#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
 #endif  /* DUK_USE_FASTINT */
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
 #define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0

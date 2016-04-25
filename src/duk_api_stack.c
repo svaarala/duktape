@@ -1964,13 +1964,8 @@ DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t index) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
-#if defined(DUK_USE_FASTINT)
 	DUK_TVAL_SET_FASTINT_I32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
-#else
-	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
-	return ret;
-#endif
 }
 
 DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
@@ -1986,12 +1981,7 @@ DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t index) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
-#if defined(DUK_USE_FASTINT)
 	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
-	return ret;
-#else
-	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
-#endif
 	return ret;
 }
 
@@ -2008,12 +1998,7 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t index) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, index);
-#if defined(DUK_USE_FASTINT)
 	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
-	return ret;
-#else
-	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, (duk_double_t) ret);  /* side effects */
-#endif
 	return ret;
 }
 
