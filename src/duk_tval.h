@@ -26,7 +26,7 @@
 #error unsupported: cannot determine byte order variant
 #endif
 
-#ifdef DUK_USE_PACKED_TVAL
+#if defined(DUK_USE_PACKED_TVAL)
 /* ======================================================================== */
 
 /*
@@ -58,8 +58,8 @@ typedef union duk_double_union duk_tval;
 #define DUK_XTAG_BOOLEAN_TRUE     0xfff50001UL
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
-#ifdef DUK_USE_64BIT_OPS
-#ifdef DUK_USE_DOUBLE_ME
+#if defined(DUK_USE_64BIT_OPS)
+#if defined(DUK_USE_DOUBLE_ME)
 #define DUK__TVAL_SET_TAGGEDPOINTER(v,h,tag)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) (tag)) << 16) | (((duk_uint64_t) (duk_uint32_t) (h)) << 32); \
 	} while (0)
@@ -75,9 +75,9 @@ typedef union duk_double_union duk_tval;
 	} while (0)
 #endif  /* DUK_USE_64BIT_OPS */
 
-#ifdef DUK_USE_64BIT_OPS
+#if defined(DUK_USE_64BIT_OPS)
 /* Double casting for pointer to avoid gcc warning (cast from pointer to integer of different size) */
-#ifdef DUK_USE_DOUBLE_ME
+#if defined(DUK_USE_DOUBLE_ME)
 #define DUK__TVAL_SET_LIGHTFUNC(v,fp,flags)  do { \
 		(v)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_LIGHTFUNC) << 16) | \
 		                             ((duk_uint64_t) (flags)) | \
@@ -99,7 +99,7 @@ typedef union duk_double_union duk_tval;
 
 #if defined(DUK_USE_FASTINT)
 /* Note: masking is done for 'i' to deal with negative numbers correctly */
-#ifdef DUK_USE_DOUBLE_ME
+#if defined(DUK_USE_DOUBLE_ME)
 #define DUK__TVAL_SET_FASTINT(v,i)  do { \
 		(v)->ui[DUK_DBL_IDX_UI0] = ((duk_uint32_t) DUK_TAG_FASTINT) << 16 | (((duk_uint32_t) ((i) >> 32)) & 0x0000ffffUL); \
 		(v)->ui[DUK_DBL_IDX_UI1] = (duk_uint32_t) (i); \
@@ -123,7 +123,7 @@ typedef union duk_double_union duk_tval;
 	} while (0)
 
 /* XXX: clumsy sign extend and masking of 16 topmost bits */
-#ifdef DUK_USE_DOUBLE_ME
+#if defined(DUK_USE_DOUBLE_ME)
 #define DUK__TVAL_GET_FASTINT(v)      (((duk_int64_t) ((((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI0]) << 32) | ((duk_uint64_t) (v)->ui[DUK_DBL_IDX_UI1]))) << 16 >> 16)
 #else
 #define DUK__TVAL_GET_FASTINT(v)      ((((duk_int64_t) (v)->ull[DUK_DBL_IDX_ULL0]) << 16) >> 16)
@@ -175,6 +175,9 @@ typedef union duk_double_union duk_tval;
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(duk__dblval); \
 		DUK_DBLUNION_SET_DOUBLE((v), duk__dblval); \
 	} while (0)
+#define DUK_TVAL_SET_FASTINT(v,i)           DUK_TVAL_SET_DOUBLE((v), (duk_double_t) (i))  /* XXX: fast int-to-double */
+#define DUK_TVAL_SET_FASTINT_I32(v,i)       DUK_TVAL_SET_DOUBLE((v), (duk_double_t) (i))
+#define DUK_TVAL_SET_FASTINT_U32(v,i)       DUK_TVAL_SET_DOUBLE((v), (duk_double_t) (i))
 #define DUK_TVAL_SET_NUMBER_CHKFAST(v,d)    DUK_TVAL_SET_DOUBLE((v), (d))
 #define DUK_TVAL_SET_NUMBER(v,d)            DUK_TVAL_SET_DOUBLE((v), (d))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { } while (0)
@@ -350,13 +353,19 @@ struct duk_tval_struct {
 		} \
 	} while (0)
 #else
+#define DUK_TVAL_SET_DOUBLE(tv,d) \
+	DUK_TVAL_SET_NUMBER((tv), (d))
+#define DUK_TVAL_SET_FASTINT(tv,val) \
+	DUK_TVAL_SET_NUMBER((tv), (duk_double_t) (val))  /* XXX: fast int-to-double */
+#define DUK_TVAL_SET_FASTINT_U32(tv,val) \
+	DUK_TVAL_SET_NUMBER((tv), (duk_double_t) (val))
+#define DUK_TVAL_SET_FASTINT_I32(tv,val) \
+	DUK_TVAL_SET_NUMBER((tv), (duk_double_t) (val))
 #define DUK_TVAL_SET_NUMBER(tv,val)  do { \
 		(tv)->t = DUK__TAG_NUMBER; \
 		(tv)->v.d = (val); \
 	} while (0)
 #define DUK_TVAL_SET_NUMBER_CHKFAST(tv,d) \
-	DUK_TVAL_SET_NUMBER((tv), (d))
-#define DUK_TVAL_SET_DOUBLE(v,d) \
 	DUK_TVAL_SET_NUMBER((tv), (d))
 #define DUK_TVAL_CHKFAST_INPLACE(v)  do { } while (0)
 #endif  /* DUK_USE_FASTINT */
