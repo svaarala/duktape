@@ -2083,7 +2083,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 		/* No resize has occurred so temp_desc->e_idx is still OK */
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, temp_desc->e_idx);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		DUK_TVAL_SET_FASTINT_U32(tv, new_len);  /* no need for decref/incref because value is a number */
+		DUK_TVAL_SET_U32(tv, new_len);  /* no need for decref/incref because value is a number */
 	} else {
 		;
 	}
@@ -3175,7 +3175,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		/* no decref needed for a number */
-		DUK_TVAL_SET_FASTINT_U32(tv, new_len);
+		DUK_TVAL_SET_U32(tv, new_len);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return 1;
 	}
@@ -3198,7 +3198,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 	/* no decref needed for a number */
-	DUK_TVAL_SET_FASTINT_U32(tv, result_len);
+	DUK_TVAL_SET_U32(tv, result_len);
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 
 	/* XXX: shrink array allocation or entries compaction here? */
@@ -4014,7 +4014,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		/* no need for decref/incref because value is a number */
-		DUK_TVAL_SET_FASTINT_U32(tv, new_array_length);
+		DUK_TVAL_SET_U32(tv, new_array_length);
 	}
 
 	/*
@@ -5679,7 +5679,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
 			/* no need for decref/incref because value is a number */
-			DUK_TVAL_SET_FASTINT_U32(tmp, arridx_new_array_length);
+			DUK_TVAL_SET_U32(tmp, arridx_new_array_length);
 		}
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr) && arrlen_new_len < arrlen_old_len) {
 			/*
@@ -5711,7 +5711,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
 			/* no decref needed for a number */
-			DUK_TVAL_SET_FASTINT_U32(tmp, result_len);
+			DUK_TVAL_SET_U32(tmp, result_len);
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
 
 			if (pending_write_protect) {
