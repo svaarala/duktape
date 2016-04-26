@@ -62,6 +62,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_hnatfunc.h"
 #include "duk_hbufobj.h"
 #include "duk_hthread.h"
+#include "duk_harray.h"
 #include "duk_hbuffer.h"
 #include "duk_heap.h"
 #include "duk_debugger.h"

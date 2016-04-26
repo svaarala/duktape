@@ -63,12 +63,16 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	case DUK_HTYPE_OBJECT: {
 		duk_hobject *h_obj = (duk_hobject *) h;
 		duk_small_uint_t hdr_size;
-		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+		if (DUK_HOBJECT_IS_ARRAY(h_obj)) {
+			hdr_size = (duk_small_uint_t) sizeof(duk_harray);
+		} else if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hcompfunc);
 		} else if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hnatfunc);
 		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hthread);
+		} else if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
+			hdr_size = (duk_small_uint_t) sizeof(duk_hbufobj);
 		} else {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hobject);
 		}

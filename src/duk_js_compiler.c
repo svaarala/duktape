@@ -7763,6 +7763,7 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	thr->compile_ctx = prev_ctx;  /* must restore reliably before returning */
 
 	if (safe_rc != DUK_EXEC_SUCCESS) {
+		DUK_D(DUK_DPRINT("compilation failed: %!T", duk_get_tval(ctx, -1)));
 		duk_throw(ctx);
 	}
 

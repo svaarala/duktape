@@ -159,7 +159,11 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t depth;
 	duk_int_t i, i_min;
-	duk_uarridx_t arr_idx;
+	duk_int_t arr_size;
+	duk_harray *a;
+	duk_tval *tv;
+	duk_hstring *s;
+	duk_uint32_t u32;
 	duk_double_t d;
 
 	DUK_ASSERT(thr != NULL);
@@ -179,20 +183,41 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	DUK_DDD(DUK_DDDPRINT("adding traceback to object: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk_push_array(ctx);  /* XXX: specify array size, as we know it */
-	arr_idx = 0;
+	/* Preallocate array to correct size, so that we can just write out
+	 * the _Tracedata values into the array part.
+	 */
+	depth = DUK_USE_TRACEBACK_DEPTH;
+	arr_size = (thr_callstack->callstack_top <= depth ? thr_callstack->callstack_top : depth) * 2;
+	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
+		arr_size += 2;
+	}
+	if (c_filename) {
+		/* We need the C filename to be interned before getting the
+		 * array part pointer to avoid any GC interference while the
+		 * array part is populated.
+		 */
+		duk_push_string(ctx, c_filename);
+		arr_size += 2;
+	}
+
+	DUK_D(DUK_DPRINT("preallocated _Tracedata to %ld items", (long) arr_size));
+	a = duk_push_harray_with_size(ctx, (duk_uint32_t) arr_size);  /* XXX: call which returns array part pointer directly */
+	DUK_ASSERT(a != NULL);
+	tv = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
+	DUK_ASSERT(tv != NULL || arr_size == 0);
 
 	/* Compiler SyntaxErrors (and other errors) come first, and are
 	 * blamed by default (not flagged "noblame").
 	 */
 	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
-		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		s = thr->compile_ctx->h_filename;
+		DUK_TVAL_SET_STRING(tv, s);
+		DUK_HSTRING_INCREF(thr, s);
+		tv++;
 
-		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);  /* (flags<<32) + (line), flags = 0 */
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		u32 = (duk_uint32_t) thr->compile_ctx->curr_token.start_line;  /* (flags<<32) + (line), flags = 0 */
+		DUK_TVAL_SET_U32(tv, u32);
+		tv++;
 	}
 
 	/* Filename/line from C macros (__FILE__, __LINE__) are added as an
@@ -200,31 +225,20 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	 * the line and flags.
 	 */
 
-	/* XXX: optimize: allocate an array part to the necessary size (upwards
-	 * estimate) and fill in the values directly into the array part; finally
-	 * update 'length'.
-	 */
-
-	/* XXX: using duk_put_prop_index() would cause obscure error cases when Array.prototype
-	 * has write-protected array index named properties.  This was seen as DoubleErrors
-	 * in e.g. some test262 test cases.  Using duk_xdef_prop_index() is better but heavier.
-	 * The best fix is to fill in the tracedata directly into the array part.  There are
-	 * no side effect concerns if the array part is allocated directly and only INCREFs
-	 * happen after that.
-	 */
-
-	/* [ ... error arr ] */
+	/* [ ... error c_filename? arr ] */
 
 	if (c_filename) {
-		duk_push_string(ctx, c_filename);
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		DUK_ASSERT(DUK_TVAL_IS_STRING(thr->valstack_top - 2));
+		s = DUK_TVAL_GET_STRING(thr->valstack_top - 2);  /* interned c_filename */
+		DUK_ASSERT(s != NULL);
+		DUK_TVAL_SET_STRING(tv, s);
+		DUK_HSTRING_INCREF(thr, s);
+		tv++;
 
 		d = (noblame_fileline ? ((duk_double_t) DUK_TB_FLAG_NOBLAME_FILELINE) * DUK_DOUBLE_2TO32 : 0.0) +
 		    (duk_double_t) c_line;
-		duk_push_number(ctx, d);
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		DUK_TVAL_SET_DOUBLE(tv, d);
+		tv++;
 	}
 
 	/* traceback depth doesn't take into account the filename/line
@@ -234,11 +248,12 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	i_min = (thr_callstack->callstack_top > (duk_size_t) depth ? (duk_int_t) (thr_callstack->callstack_top - depth) : 0);
 	DUK_ASSERT(i_min >= 0);
 
-	/* [ ... error arr ] */
+	/* [ ... error c_filename? arr ] */
 
 	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
 	for (i = (duk_int_t) (thr_callstack->callstack_top - 1); i >= i_min; i--) {
 		duk_uint32_t pc;
+		duk_tval *tv_src;
 
 		/*
 		 *  Note: each API operation potentially resizes the callstack,
@@ -253,9 +268,11 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		DUK_ASSERT_DISABLE(thr_callstack->callstack[i].pc >= 0);  /* unsigned */
 
 		/* Add function object. */
-		duk_push_tval(ctx, &(thr_callstack->callstack + i)->tv_func);
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		tv_src = &(thr_callstack->callstack + i)->tv_func;  /* object (function) or lightfunc */
+		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_src) || DUK_TVAL_IS_LIGHTFUNC(tv_src));
+		DUK_TVAL_SET_TVAL(tv, tv_src);
+		DUK_TVAL_INCREF(thr, tv);
+		tv++;
 
 		/* Add a number containing: pc, activation flags.
 		 *
@@ -266,14 +283,18 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		DUK_ASSERT_DISABLE(pc >= 0);  /* unsigned */
 		DUK_ASSERT((duk_double_t) pc < DUK_DOUBLE_2TO32);  /* assume PC is at most 32 bits and non-negative */
 		d = ((duk_double_t) thr_callstack->callstack[i].flags) * DUK_DOUBLE_2TO32 + (duk_double_t) pc;
-		duk_push_number(ctx, d);  /* -> [... arr num] */
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
-		arr_idx++;
+		DUK_TVAL_SET_DOUBLE(tv, d);
+		tv++;
 	}
 
-	/* XXX: set with duk_hobject_set_length() when tracedata is filled directly */
-	duk_push_uint(ctx, (duk_uint_t) arr_idx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	DUK_ASSERT((duk_uint32_t) (tv - DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a)) == a->length);
+	DUK_ASSERT(a->length == (duk_uint32_t) arr_size);
+
+	/* [ ... error c_filename? arr ] */
+
+	if (c_filename) {
+		duk_remove(ctx, -2);
+	}
 
 	/* [ ... error arr ] */
 

@@ -55,6 +55,7 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
 	duk_uint32_t len;
 
 	(void) duk_push_this_coercible_to_object(ctx);
+	DUK_ASSERT_HOBJECT_VALID(duk_get_hobject(ctx, -1));
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
 	len = duk_to_uint32(ctx, -1);
 
@@ -80,12 +81,12 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
 
 DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 	duk_idx_t nargs;
+	duk_harray *a;
 	duk_double_t d;
 	duk_uint32_t len;
-	duk_idx_t i;
+	duk_uint32_t len_prealloc;
 
 	nargs = duk_get_top(ctx);
-	duk_push_array(ctx);
 
 	if (nargs == 1 && duk_is_number(ctx, 0)) {
 		/* XXX: expensive check (also shared elsewhere - so add a shared internal API call?) */
@@ -95,25 +96,17 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 			return DUK_RET_RANGE_ERROR;
 		}
 
-		/* XXX: if 'len' is low, may want to ensure array part is kept:
-		 * the caller is likely to want a dense array.
+		/* For small lengths create a dense preallocated array.
+		 * For large arrays preallocate an initial part.
 		 */
-		duk_push_u32(ctx, len);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);  /* [ ToUint32(len) array ToUint32(len) ] -> [ ToUint32(len) array ] */
+		len_prealloc = len < 64 ? len : 64;
+		a = duk_push_harray_with_size(ctx, len_prealloc);
+		DUK_ASSERT(a != NULL);
+		a->length = len;
 		return 1;
 	}
 
-	/* XXX: optimize by creating array into correct size directly, and
-	 * operating on the array part directly; values can be memcpy()'d from
-	 * value stack directly as long as refcounts are increased.
-	 */
-	for (i = 0; i < nargs; i++) {
-		duk_dup(ctx, i);
-		duk_xdef_prop_index_wec(ctx, -2, (duk_uarridx_t) i);
-	}
-
-	duk_push_u32(ctx, (duk_uint32_t) nargs);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_pack(ctx, nargs);
 	return 1;
 }
 
@@ -303,6 +296,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	count = 0;
 	idx = 0;
 	for (;;) {
+		DUK_DDD(DUK_DDDPRINT("join idx=%ld", (long) idx));
 		if (count >= DUK__ARRAY_MID_JOIN_LIMIT ||   /* intermediate join to avoid valstack overflow */
 		    idx >= len) { /* end of loop (careful with len==0) */
 			/* [ sep ToObject(this) len sep str0 ... str(count-1) ] */

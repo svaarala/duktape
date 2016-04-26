@@ -133,11 +133,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 		/* Indicate function type in the function body using a dummy
 		 * directive.
 		 */
-		if (DUK_HOBJECT_HAS_COMPFUNC(obj)) {
+		if (DUK_HOBJECT_IS_COMPFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"ecmascript\"}", (const char *) func_name);
-		} else if (DUK_HOBJECT_HAS_NATFUNC(obj)) {
+		} else if (DUK_HOBJECT_IS_NATFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"native\"}", (const char *) func_name);
-		} else if (DUK_HOBJECT_HAS_BOUND(obj)) {
+		} else if (DUK_HOBJECT_IS_BOUNDFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"bound\"}", (const char *) func_name);
 		} else {
 			goto type_error;
@@ -274,7 +274,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	/* create bound function object */
 	duk_push_object_helper(ctx,
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_FLAG_BOUND |
+	                       DUK_HOBJECT_FLAG_BOUNDFUNC |
 	                       DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
 	                       DUK_BIDX_FUNCTION_PROTOTYPE);

@@ -2455,55 +2455,54 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 			arr_len = (duk_uint_fast32_t) duk_hobject_get_length(js_ctx->thr, obj);
 			asize = (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj);
-			if (arr_len > asize) {
-				/* Array length is larger than 'asize'.  This shouldn't
-				 * happen in practice.  Bail out just in case.
-				 */
-				DUK_DD(DUK_DDPRINT("arr_len > asize, abort fast path"));
-				goto abort_fastpath;
-			}
 			/* Array part may be larger than 'length'; if so, iterate
-			 * only up to array 'length'.
+			 * only up to array 'length'.  Array part may also be smaller
+			 * than 'length' in some cases.
 			 */
 			for (i = 0; i < arr_len; i++) {
-				DUK_ASSERT(i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj));
-
-				tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(js_ctx->thr->heap, obj, i);
+				duk_tval *tv_arrval;
+				duk_hstring *h_tmp;
+				duk_bool_t has_inherited;
 
 				if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
 					duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth);
 				}
 
-				if (DUK_UNLIKELY(DUK_TVAL_IS_UNUSED(tv_val))) {
-					/* Gap in array; check for inherited property,
-					 * bail out if one exists.  This should be enough
-					 * to support gappy arrays for all practical code.
-					 */
-					duk_hstring *h_tmp;
-					duk_bool_t has_inherited;
-
-					/* XXX: refactor into an internal helper, pretty awkward */
-					duk_push_uint((duk_context *) js_ctx->thr, (duk_uint_t) i);
-					h_tmp = duk_to_hstring((duk_context *) js_ctx->thr, -1);
-					DUK_ASSERT(h_tmp != NULL);
-					has_inherited = duk_hobject_hasprop_raw(js_ctx->thr, obj, h_tmp);
-					duk_pop((duk_context *) js_ctx->thr);
-
-					if (has_inherited) {
-						DUK_D(DUK_DPRINT("gap in array, conflicting inherited property, abort fast path"));
-						goto abort_fastpath;
-					}
-
-					/* Ordinary gap, undefined encodes to 'null' in
-					 * standard JSON (and no JX/JC support here now).
-					 */
-					DUK_D(DUK_DPRINT("gap in array, no conflicting inherited property, remain on fast path"));
-					DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
-				} else {
-					if (duk__json_stringify_fast_value(js_ctx, tv_val) == 0) {
-						DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
+				if (DUK_LIKELY(i < asize)) {
+					tv_arrval = DUK_HOBJECT_A_GET_VALUE_PTR(js_ctx->thr->heap, obj, i);
+					if (DUK_LIKELY(!DUK_TVAL_IS_UNUSED(tv_arrval))) {
+						/* Expected case: element is present. */
+						if (duk__json_stringify_fast_value(js_ctx, tv_arrval) == 0) {
+							DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
+						}
+						goto elem_done;
 					}
 				}
+
+				/* Gap in array; check for inherited property,
+				 * bail out if one exists.  This should be enough
+				 * to support gappy arrays for all practical code.
+				 */
+
+				/* XXX: refactor into an internal helper, pretty awkward */
+				duk_push_uint((duk_context *) js_ctx->thr, (duk_uint_t) i);
+				h_tmp = duk_to_hstring((duk_context *) js_ctx->thr, -1);
+				DUK_ASSERT(h_tmp != NULL);
+				has_inherited = duk_hobject_hasprop_raw(js_ctx->thr, obj, h_tmp);
+				duk_pop((duk_context *) js_ctx->thr);
+				if (has_inherited) {
+					DUK_D(DUK_DPRINT("gap in array, conflicting inherited property, abort fast path"));
+					goto abort_fastpath;
+				}
+
+				/* Ordinary gap, undefined encodes to 'null' in
+				 * standard JSON (and no JX/JC support here now).
+				 */
+				DUK_D(DUK_DPRINT("gap in array, no conflicting inherited property, remain on fast path"));
+				DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
+				/* fall through */
+
+			 elem_done:
 				DUK__EMIT_1(js_ctx, DUK_ASC_COMMA);
 				emitted = 1;
 			}

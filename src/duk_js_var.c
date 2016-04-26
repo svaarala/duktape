@@ -176,7 +176,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_HOBJECT_SET_CONSTRUCTABLE(&fun_clos->obj);  /* Note: not set in template (has no "prototype") */
 	DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&fun_clos->obj));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&fun_clos->obj));
@@ -346,7 +346,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		/* [ ... closure template formals ] */
 		DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH));
 		DUK_ASSERT(duk_get_length(ctx, -1) <= DUK_UINT_MAX);  /* formal arg limits */
-		len_value = (duk_uint_t) duk_get_length(ctx, -1);
+		len_value = (duk_uint_t) duk_get_length(ctx, -1);  /* could access duk_harray directly, not important */
 	} else {
 		/* XXX: what to do if _Formals is not empty but compiler has
 		 * optimized it away -- read length from an explicit property
@@ -529,7 +529,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 
 	func = DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound functions are never in act 'func' */
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound functions are never in act 'func' */
 
 	/*
 	 *  Delayed initialization only occurs for 'NEWENV' functions.

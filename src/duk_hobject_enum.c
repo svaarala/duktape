@@ -394,6 +394,16 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			/* [enum_target res] */
 		}
 
+		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(curr)) {
+			/* Array .length comes after numeric indices. */
+
+			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
+				duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
+				duk_push_true(ctx);
+				duk_put_prop(ctx, -3);
+			}
+		}
+
 		/*
 		 *  Entries part
 		 */

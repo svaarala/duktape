@@ -190,3 +190,23 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t
 	return res;
 }
 #endif
+
+/*
+ *  Allocate a new array.
+ */
+
+DUK_INTERNAL duk_harray *duk_harray_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+	duk_harray *res;
+
+	res = (duk_harray *) DUK_ALLOC(heap, sizeof(duk_harray));
+	if (!res) {
+		return NULL;
+	}
+	DUK_MEMZERO(res, sizeof(duk_harray));
+
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
+
+	DUK_ASSERT(res->length == 0);
+
+	return res;
+}
