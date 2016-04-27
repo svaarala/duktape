@@ -1416,10 +1416,7 @@ Released
 * Fix memory unsafe behavior when an external plain buffer was allocated
   with heap pointer compression enabled (DUK_USE_HEAPPTR16) (GH-618)
 
-Planned
-=======
-
-1.5.0 (XXXX-XX-XX)
+1.5.0 (2016-05-03)
 ------------------
 
 * Add support for placing Duktape and user strings and objects into ROM
@@ -1589,6 +1586,9 @@ Planned
   executor 'regconst' fields (GH-670)
 
 * Internal footprint improvement: reduce error call site size (GH-661)
+
+Planned
+=======
 
 2.0.0 (XXXX-XX-XX)
 ------------------
