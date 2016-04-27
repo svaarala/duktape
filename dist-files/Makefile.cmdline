@@ -26,9 +26,9 @@ CCOPTS += -DDUK_OPT_SELF_TESTS
 #CCOPTS += -DDUK_OPT_DPRINT
 # ...
 
+duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
+	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+
 linenoise/linenoise.c: linenoise
 linenoise:
 	git clone https://github.com/antirez/linenoise.git
-
-duk:	$(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES)
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
