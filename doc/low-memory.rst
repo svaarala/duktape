@@ -107,6 +107,8 @@ Adding ``-flto -fno-asynchronous-unwind-tables -ffunction-sections -Wl,--gc-sect
        text     data      bss      dec      hex  filename
      186666     1144       56   187866    2ddda  duk
 
+Adding an explicit ``-fno-stack-protector -fno-stack-check`` may also have an effect.
+
 Stripping unused API functions
 ------------------------------
 
