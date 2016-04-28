@@ -9,7 +9,7 @@
  *      # Set LOOP_COUNT to 1 manually and re-run the test
  *      $ valgrind ./duk --no-heap-destroy test-dev-refcount-leak-basic.js
  *
- *  Inspect the final "still allocated" to ensure that in botj cases we arrive at
+ *  Inspect the final "still allocated" to ensure that in both cases we arrive at
  *  the same baseline allocation at the end.  There's a large loop count in this
  *  test to magnify any leaks.  Using LOOP_COUNT 0 is OK but there may be small
  *  differences due to the value stack and/or call stack having a different size
@@ -26,15 +26,21 @@
  *  should provide a reasonable regression harness.  The basic coverage here
  *  is based on:
  *
- *      $ cd src/; grep DECREF UPDREF *.c > /tmp/worklist
+ *      $ cd src/; grep DECREF *.c > /tmp/worklist
+ *      $ cd src/; grep UPDREF *.c >> /tmp/worklist
  *
  *  Run the test with and without fastint support because that affects the
  *  code paths executed.  It's best to test with mark-and-sweep disabled so
  *  that garbage with broken refcounts won't get collected.
  *
  *  NOTE! To avoid circular references, all functions are made cycle free by
- *  forcing .prototype to null.  If this is not done, and mark-and-sweep is
- *  disabled, all functions will be leaks.
+ *  forcing .prototype to null.  Named function expressions ('function foo() {}')
+ *  are also in a circular reference with the intermediate scope object (which
+ *  provides the name binding) because the function references the scope via
+ *  _LexEnv and the scope object references the function.  Avoid named function
+ *  expressions in the test for this reason.  If these are not done, and
+ *  mark-and-sweep is disabled, all functions will be "leaks" until the heap
+ *  is destroyed.
  *
  *  NOTE! Leaving function instances (even cycle free ones) in the function
  *  registers when the function exits leads to a circular reference: the
@@ -213,9 +219,8 @@ this.T.objectMiscTest = function objectMiscTest() {
 
     // duk_hobject_props.c: duk_hobject_delprop_raw() delete accessor
     x = {};
-    setter = function setter() {}; setter.prototype = null;
-    getter = function getter() {}; getter.prototype = null;
-
+    setter = function () {}; setter.prototype = null;
+    getter = function () {}; getter.prototype = null;
     Object.defineProperty(x, 'prop', {
         set: setter, get: getter, configurable: true
     });
