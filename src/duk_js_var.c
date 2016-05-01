@@ -113,7 +113,8 @@ DUK_INTERNAL
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
-                         duk_hobject *outer_lex_env) {
+                         duk_hobject *outer_lex_env,
+                         duk_bool_t add_auto_proto) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hcompiledfunction *fun_clos;
 	duk_small_uint_t i;
@@ -373,11 +374,13 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/* [ ... closure template ] */
 
-	duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
-	duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
-	duk_compact(ctx, -1);  /* compact the prototype */
-	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
+	if (add_auto_proto) {
+		duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
+		duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
+		duk_compact(ctx, -1);  /* compact the prototype */
+		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
+	}
 
 	/*
 	 *  "arguments" and "caller" must be mapped to throwers for strict
@@ -444,7 +447,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, &fun_clos->obj) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH) != 0);
-	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE) != 0);
+	DUK_ASSERT(add_auto_proto == 0 || duk_has_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE) != 0);
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_NAME) != 0);  /* non-standard */
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||
 	           duk_has_prop_stridx(ctx, -2, DUK_STRIDX_CALLER) != 0);

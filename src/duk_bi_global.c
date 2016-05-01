@@ -536,7 +536,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			outer_lex_env = new_env;
 			outer_var_env = new_env;
 
-			duk_insert(ctx, 0);  /* stash to bottom of value stack to keep new_env reachable */
+			duk_insert(ctx, 0);  /* stash to bottom of value stack to keep new_env reachable for duration of eval */
 
 			/* compiler's responsibility */
 			DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV((duk_hobject *) func));
@@ -561,7 +561,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	}
 	act = NULL;
 
-	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
+	/* Eval code doesn't need an automatic .prototype object. */
+	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env, 0 /*add_auto_proto*/);
 
 	/* [ source template closure ] */
 

@@ -139,7 +139,8 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_js_push_closure(thr,
 	                   h_templ,
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
-	                   thr->builtins[DUK_BIDX_GLOBAL_ENV]);
+	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
+	                   1 /*add_auto_proto*/);
 	duk_remove(ctx, -2);   /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
