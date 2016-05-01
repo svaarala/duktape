@@ -84,7 +84,8 @@ DUK_INTERNAL_DECL
 void duk_js_push_closure(duk_hthread *thr,
                          duk_hcompiledfunction *fun_temp,
                          duk_hobject *outer_var_env,
-                         duk_hobject *outer_lex_env);
+                         duk_hobject *outer_lex_env,
+                         duk_bool_t add_auto_proto);
 
 /* call handling */
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_protected(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);

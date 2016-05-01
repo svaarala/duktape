@@ -2909,7 +2909,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_js_push_closure(thr,
 			                    (duk_hcompiledfunction *) fun_temp,
 			                    act->var_env,
-			                    act->lex_env);
+			                    act->lex_env,
+			                    1 /*add_auto_proto*/);
 			duk_replace(ctx, (duk_idx_t) a);
 
 			break;

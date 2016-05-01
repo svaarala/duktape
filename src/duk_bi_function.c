@@ -74,7 +74,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 
-	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env);
+	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env, 1 /*add_auto_proto*/);
 
 	/* [ body formals source template closure ] */
 
