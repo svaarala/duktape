@@ -1493,6 +1493,11 @@ Planned
 
 * Minor changes to error message strings (GH-661)
 
+* Avoid reference loop for eval() code (previously caused by an automatic
+  .prototype property added for the internal function the eval source
+  compiles to); this allows eval functions to be collected immediately by
+  reference counting rather than by mark-and-sweep (GH-717)
+
 * Fix potentially memory unsafe behavior when a refcount-triggered finalizer
   function rescues an object; the memory unsafe behavior doesn't happen
   immediately which makes the cause of the unsafe behavior difficult to
