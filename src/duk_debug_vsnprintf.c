@@ -574,9 +574,15 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__class:%ld", (long) DUK_HOBJECT_GET_CLASS_NUMBER(h));
 	}
 
+	DUK__COMMA(); duk_fb_sprintf(fb, "__heapptr:%p", (void *) h);  /* own pointer */
+
 	/* prototype should be last, for readability */
-	if (st->follow_proto && DUK_HOBJECT_GET_PROTOTYPE(NULL, h)) {
-		DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
+	if (DUK_HOBJECT_GET_PROTOTYPE(NULL, h)) {
+		if (st->follow_proto) {
+			DUK__COMMA(); duk_fb_put_cstring(fb, "__prototype:"); duk__print_hobject(st, DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
+		} else {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__prototype:%p", (void *) DUK_HOBJECT_GET_PROTOTYPE(NULL, h));
+		}
 	}
 
 	duk_fb_put_cstring(fb, brace2);
