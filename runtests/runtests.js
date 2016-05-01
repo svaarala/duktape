@@ -245,7 +245,8 @@ function executeTest(options, callback) {
         execopts = {
             maxBuffer: 128 * 1024 * 1024,
             timeout: timeout,
-            stdio: 'pipe'
+            stdio: 'pipe',
+            killSignal: 'SIGKILL'
         };
 
         //console.log(cmdline);
@@ -282,7 +283,8 @@ function executeTest(options, callback) {
         execopts = {
             maxBuffer: 128 * 1024 * 1024,
             timeout: timeout,
-            stdio: 'pipe'
+            stdio: 'pipe',
+            killSignal: 'SIGKILL'
         };
 
         console.log(options.testPath, cmdline);
