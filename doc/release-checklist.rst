@@ -64,6 +64,9 @@ Checklist for ordinary releases
   - Check that ``duk_tval`` is packed by default on x86 and unpacked on
     x64
 
+  - util/checklist_compile_test.sh: linux compiler/arch combinations,
+    run in dist, check output manually
+
   - Platform / compiler combinations (incomplete, should be automated):
 
     + Linux x86-64 gcc
