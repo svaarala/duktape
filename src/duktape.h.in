@@ -1,5 +1,6 @@
 /*
  *  Duktape public API for Duktape @DUK_VERSION_FORMATTED@.
+ *
  *  See the API reference for documentation on call semantics.
  *  The exposed API is inside the DUK_API_PUBLIC_H_INCLUDED
  *  include guard.  Other parts of the header are Duktape

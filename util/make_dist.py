@@ -155,7 +155,7 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'config'))
 	mkdir(os.path.join(dist, 'extras'))
 	mkdir(os.path.join(dist, 'polyfills'))
-	mkdir(os.path.join(dist, 'doc'))
+	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
 	mkdir(os.path.join(dist, 'licenses'))
 	mkdir(os.path.join(dist, 'debugger'))
 	mkdir(os.path.join(dist, 'debugger', 'static'))

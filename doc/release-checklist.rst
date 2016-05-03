@@ -32,6 +32,9 @@ Checklist for ordinary releases
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
+  - Check dist-files/Makefile.sharedlibrary; currently duplicates version
+    number and needs to be fixed manually
+
 * Check dist-files/README.rst
 
 * Ensure LICENSE.txt is up-to-date
@@ -217,6 +220,13 @@ Checklist for ordinary releases
 
     - make luajstest
 
+* Debugger test
+
+  - Test Makefile.dukdebug + debugger/duk_debug.js to ensure all files
+    are included (easy to forget e.g. YAML metadata files)
+
+  - Test JSON proxy
+
 * Release notes (``doc/release-notes-*.rst``)
 
   - Write new release notes for release; needs known issues output from at
@@ -270,9 +280,6 @@ Checklist for ordinary releases
 
   - Trivial compile test for separate sources (important because
     it's easy to forget to add files in make_dist.sh)
-
-  - Test Makefile.dukdebug + debugger/duk_debug.js to ensure all files
-    are included (easy to forget e.g. YAML metadata files)
 
 * Store binaries to duktape-releases repo
 
@@ -347,6 +354,9 @@ Checklist for maintenance releases
   the maintenance branch.
 
 * Bump DUK_VERSION in maintenance branch.
+
+* Check dist-files/Makefile.sharedlibrary; currently duplicates version
+  number and needs to be fixed manually.
 
 * Review diff between previous release and new patch release.
 
