@@ -639,8 +639,11 @@ duk_pop(ctx);
  * but is a bit more verbose.
  */
 
-static duk_ret_t unsafe_code(duk_context *ctx) {
+static duk_ret_t unsafe_code(duk_context *ctx, void *udata) {
     /* Here we can use unprotected calls freely. */
+
+    (void) udata;  /* 'udata' may be used to pass e.g. a struct pointer */
+
     duk_eval_file_noresult(ctx, "myscript.js");
 
     /* ... */
@@ -650,7 +653,7 @@ static duk_ret_t unsafe_code(duk_context *ctx) {
 
 /* elsewhere: */
 
-if (duk_safe_call(ctx, unsafe_code, 0 /*nargs*/, 1 /*nrets */) != 0) {
+if (duk_safe_call(ctx, unsafe_code, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets */) != 0) {
     /* The 'nrets' argument should be at least 1 so that an error value
      * is left on the stack if an error occurs.  To avoid further errors,
      * use duk_safe_to_string() for safe error printing.
