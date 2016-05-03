@@ -163,19 +163,23 @@ DUK_EXTERNAL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	return rc;
 }
 
-DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_context *ctx) {
+struct duk__pcall_prop_args {
 	duk_idx_t obj_index;
 	duk_idx_t nargs;
+};
+typedef struct duk__pcall_prop_args duk__pcall_prop_args;
 
-	/* Get the original arguments.  Note that obj_index may be a relative
-	 * index so the stack must have the same top when we use it.
-	 */
+DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_context *ctx, void *udata) {
+	duk_idx_t obj_index;
+	duk_idx_t nargs;
+	duk__pcall_prop_args *args;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(udata != NULL);
 
-	obj_index = (duk_idx_t) duk_get_int(ctx, -2);
-	nargs = (duk_idx_t) duk_get_int(ctx, -1);
-	duk_pop_2(ctx);
+	args = (duk__pcall_prop_args *) udata;
+	obj_index = args->obj_index;
+	nargs = args->nargs;
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
 	duk__call_prop_prep_stack(ctx, obj_index, nargs);
@@ -184,6 +188,8 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_context *ctx) {
 }
 
 DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t nargs) {
+	duk__pcall_prop_args args;
+
 	/*
 	 *  Must be careful to catch errors related to value stack manipulation
 	 *  and property lookup, not just the call itself.
@@ -191,17 +197,17 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	duk_push_idx(ctx, obj_index);
-	duk_push_idx(ctx, nargs);
+	args.obj_index = obj_index;
+	args.nargs = nargs;
 
-	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing.
-	 * If the value stack does not contain enough args, an error is thrown; this matches
+	/* Inputs: explicit arguments (nargs), +1 for key.  If the value stack
+	 * does not contain enough args, an error is thrown; this matches
 	 * behavior of the other protected call API functions.
 	 */
-	return duk_safe_call(ctx, duk__pcall_prop_raw, nargs + 1 + 2 /*nargs*/, 1 /*nrets*/);
+	return duk_safe_call(ctx, duk__pcall_prop_raw, (void *) &args /*udata*/, nargs + 1 /*nargs*/, 1 /*nrets*/);
 }
 
-DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, duk_idx_t nargs, duk_idx_t nrets) {
+DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function func, void *udata, duk_idx_t nargs, duk_idx_t nrets) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t rc;
 
@@ -216,6 +222,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 
 	rc = duk_handle_safe_call(thr,           /* thread */
 	                          func,          /* func */
+	                          udata,         /* udata */
 	                          nargs,         /* num_stack_args */
 	                          nrets);        /* num_stack_res */
 
@@ -400,11 +407,11 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
 }
 
-DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx) {
-	duk_uint_t nargs;
+DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx, void *udata) {
+	duk_idx_t nargs;
 
-	nargs = duk_to_uint(ctx, -1);
-	duk_pop(ctx);
+	DUK_ASSERT(udata != NULL);
+	nargs = *((duk_idx_t *) udata);
 
 	duk_new(ctx, nargs);
 	return 1;
@@ -423,8 +430,7 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
 	 * wrapper.
 	 */
 
-	duk_push_uint(ctx, nargs);
-	rc = duk_safe_call(ctx, duk__pnew_helper, nargs + 2 /*nargs*/, 1 /*nrets*/);
+	rc = duk_safe_call(ctx, duk__pnew_helper, (void *) &nargs /*udata*/, nargs + 1 /*nargs*/, 1 /*nrets*/);
 	return rc;
 }
 

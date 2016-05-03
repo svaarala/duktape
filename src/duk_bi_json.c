@@ -2647,14 +2647,14 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 	return 0;  /* unreachable */
 }
 
-DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_context *ctx, void *udata) {
 	duk_json_enc_ctx *js_ctx;
 	duk_tval *tv;
 
 	DUK_ASSERT(ctx != NULL);
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
-	DUK_ASSERT(DUK_TVAL_IS_POINTER(tv));
-	js_ctx = (duk_json_enc_ctx *) DUK_TVAL_GET_POINTER(tv);
+	DUK_ASSERT(udata != NULL);
+
+	js_ctx = (duk_json_enc_ctx *) udata;
 	DUK_ASSERT(js_ctx != NULL);
 
 	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
@@ -3009,7 +3009,6 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		 * limited loop detection).
 		 */
 
-		duk_push_pointer(ctx, (void *) js_ctx);
 		duk_dup(ctx, idx_value);
 
 #if defined(DUK_USE_MARK_AND_SWEEP)
@@ -3020,7 +3019,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		        DUK_MS_FLAG_NO_OBJECT_COMPACTION;   /* avoid attempt to compact any objects */
 #endif
 
-		pcall_rc = duk_safe_call(ctx, duk__json_stringify_fast, 2 /*nargs*/, 0 /*nret*/);
+		pcall_rc = duk_safe_call(ctx, duk__json_stringify_fast, (void *) js_ctx /*udata*/, 1 /*nargs*/, 0 /*nret*/);
 
 #if defined(DUK_USE_MARK_AND_SWEEP)
 		thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;

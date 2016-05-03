@@ -42,6 +42,7 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
                                       duk_jmpbuf *old_jmpbuf_ptr);
 DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
                                            duk_safe_call_function func,
+                                           void *udata,
                                            duk_idx_t idx_retbase,
                                            duk_idx_t num_stack_rets,
                                            duk_size_t entry_valstack_bottom_index,
@@ -1871,6 +1872,7 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 
 DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
                                             duk_safe_call_function func,
+                                            void *udata,
                                             duk_idx_t num_stack_args,
                                             duk_idx_t num_stack_rets) {
 	duk_context *ctx = (duk_context *) thr;
@@ -1943,6 +1945,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 		duk__handle_safe_call_inner(thr,
 		                            func,
+		                            udata,
 		                            idx_retbase,
 		                            num_stack_rets,
 		                            entry_valstack_bottom_index,
@@ -2037,6 +2040,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
                                            duk_safe_call_function func,
+                                           void *udata,
                                            duk_idx_t idx_retbase,
                                            duk_idx_t num_stack_rets,
                                            duk_size_t entry_valstack_bottom_index,
@@ -2108,7 +2112,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	 *  Make the C call
 	 */
 
-	rc = func(ctx);
+	rc = func(ctx, udata);
 
 	DUK_DDD(DUK_DDDPRINT("safe_call, func rc=%ld", (long) rc));
 

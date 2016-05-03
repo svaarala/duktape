@@ -932,10 +932,12 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
  *  Compaction is assumed to never throw an error.
  */
 
-DUK_LOCAL int duk__protected_compact_object(duk_context *ctx) {
+DUK_LOCAL int duk__protected_compact_object(duk_context *ctx, void *udata) {
+	duk_hobject *obj;
 	/* XXX: for threads, compact value stack, call stack, catch stack? */
 
-	duk_hobject *obj = duk_get_hobject(ctx, -1);
+	DUK_UNREF(udata);
+	obj = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(obj != NULL);
 	duk_hobject_compact_props((duk_hthread *) ctx, obj);
 	return 0;
@@ -972,7 +974,7 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 		DUK_DD(DUK_DDPRINT("compact object: %p", (void *) obj));
 		duk_push_hobject((duk_context *) thr, obj);
 		/* XXX: disable error handlers for duration of compaction? */
-		duk_safe_call((duk_context *) thr, duk__protected_compact_object, 1, 0);
+		duk_safe_call((duk_context *) thr, duk__protected_compact_object, NULL, 1, 0);
 
 #ifdef DUK_USE_DEBUG
 		new_size = DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
