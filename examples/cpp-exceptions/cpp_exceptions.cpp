@@ -65,6 +65,10 @@ duk_ret_t test1(duk_context *ctx) {
 
 	return 0;
 }
+duk_ret_t test1_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test1(ctx);
+}
 
 /*
  *  You can use C++ exceptions inside Duktape/C functions for your own
@@ -82,6 +86,10 @@ duk_ret_t test2(duk_context *ctx) {
 
 	return 0;
 }
+duk_ret_t test2_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	test2(ctx);
+}
 
 /*
  *  If you let your own C++ exceptions propagate out of a Duktape/C function
@@ -98,6 +106,10 @@ duk_ret_t test3(duk_context *ctx) {
 	throw 123;  /* ERROR: exception propagated to Duktape */
 
 	return 0;
+}
+duk_ret_t test3_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test3(ctx);
 }
 
 /*
@@ -119,6 +131,10 @@ duk_ret_t test4(duk_context *ctx) {
 
 	return 0;
 }
+duk_ret_t test4_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test4(ctx);
+}
 
 /*
  *  Same as above, but if the exception inherits from std::exception with
@@ -139,6 +155,10 @@ duk_ret_t test5(duk_context *ctx) {
 
 	return 0;
 }
+duk_ret_t test5_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test5(ctx);
+}
 
 int main(int argc, char *argv[]) {
 	duk_context *ctx = duk_create_heap_default();
@@ -154,7 +174,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 
 	printf("*** test1 - duk_safe_call()\n");
-	rc = duk_safe_call(ctx, test1, 0, 1);
+	rc = duk_safe_call(ctx, test1_safecall, NULL, 0, 1);
 	printf("--> rc=%ld (%s)\n", (long) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("\n");
@@ -178,7 +198,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 
 	printf("*** test2 - duk_safe_call()\n");
-	rc = duk_safe_call(ctx, test2, 0, 1);
+	rc = duk_safe_call(ctx, test2_safecall, NULL, 0, 1);
 	printf("--> rc=%ld (%s)\n", (long) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("\n");
@@ -202,7 +222,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 
 	printf("*** test3 - duk_safe_call()\n");
-	rc = duk_safe_call(ctx, test3, 0, 1);
+	rc = duk_safe_call(ctx, test3_safecall, NULL, 0, 1);
 	printf("--> rc=%ld (%s)\n", (long) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("\n");
@@ -226,7 +246,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 
 	printf("*** test4 - duk_safe_call()\n");
-	rc = duk_safe_call(ctx, test4, 0, 1);
+	rc = duk_safe_call(ctx, test4_safecall, NULL, 0, 1);
 	printf("--> rc=%ld (%s)\n", (long) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("\n");
@@ -250,7 +270,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 
 	printf("*** test5 - duk_safe_call()\n");
-	rc = duk_safe_call(ctx, test5, 0, 1);
+	rc = duk_safe_call(ctx, test5_safecall, NULL, 0, 1);
 	printf("--> rc=%ld (%s)\n", (long) rc, duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 	printf("\n");

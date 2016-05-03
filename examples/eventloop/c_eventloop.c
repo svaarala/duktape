@@ -254,7 +254,7 @@ static void compact_poll_list(void) {
 	poll_count = j;
 }
 
-int eventloop_run(duk_context *ctx) {
+duk_ret_t eventloop_run(duk_context *ctx, void *udata) {
 	ev_timer *t;
 	double now;
 	double diff;
@@ -263,6 +263,8 @@ int eventloop_run(duk_context *ctx) {
 	int i, n;
 	int idx_eventloop;
 	int idx_fd_handler;
+
+	(void) udata;
 
 	/* The Ecmascript poll handler is passed through EventLoop.fdPollHandler
 	 * which c_eventloop.js sets before we come here.

@@ -141,7 +141,9 @@ static void set_sigint_handler(void) {
 }
 #endif  /* DUK_CMDLINE_SIGNAL */
 
-static int get_stack_raw(duk_context *ctx) {
+static int get_stack_raw(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	if (!duk_is_object(ctx, -1)) {
 		return 1;
 	}
@@ -164,16 +166,18 @@ static void print_pop_error(duk_context *ctx, FILE *f) {
 	 * Note that getting the stack trace may throw an error
 	 * so this also needs to be safe call wrapped.
 	 */
-	(void) duk_safe_call(ctx, get_stack_raw, 1 /*nargs*/, 1 /*nrets*/);
+	(void) duk_safe_call(ctx, get_stack_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 	fprintf(f, "%s\n", duk_safe_to_string(ctx, -1));
 	fflush(f);
 	duk_pop(ctx);
 }
 
-static int wrapped_compile_execute(duk_context *ctx) {
+static int wrapped_compile_execute(duk_context *ctx, void *udata) {
 	const char *src_data;
 	duk_size_t src_len;
 	int comp_flags;
+
+	(void) udata;
 
 	/* XXX: Here it'd be nice to get some stats for the compilation result
 	 * when a suitable command line is given (e.g. code size, constant
@@ -315,7 +319,7 @@ static int completion_digit(unsigned char c) {
 	return (c >= (unsigned char) '0' && c <= (unsigned char) '9');
 }
 
-static duk_ret_t linenoise_completion_lookup(duk_context *ctx) {
+static duk_ret_t linenoise_completion_lookup(duk_context *ctx, void *udata) {
 	duk_size_t len;
 	const char *orig;
 	const unsigned char *p;
@@ -325,6 +329,8 @@ static duk_ret_t linenoise_completion_lookup(duk_context *ctx) {
 	const char *prefix;
 	linenoiseCompletions *lc;
 	duk_idx_t idx_obj;
+
+	(void) udata;
 
 	orig = duk_require_string(ctx, -3);
 	p_curr = (const unsigned char *) duk_require_lstring(ctx, -2, &len);
@@ -478,7 +484,7 @@ static void linenoise_completion(const char *buf, linenoiseCompletions *lc) {
 	duk_push_lstring(ctx, (const char *) p, (duk_size_t) (p_end - p));
 	duk_push_pointer(ctx, (void *) lc);
 
-	rc = duk_safe_call(ctx, linenoise_completion_lookup, 3 /*nargs*/, 1 /*nrets*/);
+	rc = duk_safe_call(ctx, linenoise_completion_lookup, NULL /*udata*/, 3 /*nargs*/, 1 /*nrets*/);
 	if (rc != DUK_EXEC_SUCCESS) {
 		fprintf(stderr, "Completion handling failure: %s\n", duk_safe_to_string(ctx, -1));
 	}
@@ -586,7 +592,7 @@ static int handle_fh(duk_context *ctx, FILE *f, const char *filename, const char
 
 	interactive_mode = 0;  /* global */
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 4 /*nargs*/, 1 /*nret*/);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 4 /*nargs*/, 1 /*nret*/);
 
 #if defined(DUK_CMDLINE_AJSHEAP)
 	ajsheap_clear_exec_timeout();
@@ -664,7 +670,7 @@ static int handle_eval(duk_context *ctx, char *code) {
 
 	interactive_mode = 0;  /* global */
 
-	rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+	rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
 #if defined(DUK_CMDLINE_AJSHEAP)
 	ajsheap_clear_exec_timeout();
@@ -724,7 +730,7 @@ static int handle_interactive(duk_context *ctx) {
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
 #if defined(DUK_CMDLINE_AJSHEAP)
 		ajsheap_clear_exec_timeout();
@@ -799,7 +805,7 @@ static int handle_interactive(duk_context *ctx) {
 
 		interactive_mode = 1;  /* global */
 
-		rc = duk_safe_call(ctx, wrapped_compile_execute, 3 /*nargs*/, 1 /*nret*/);
+		rc = duk_safe_call(ctx, wrapped_compile_execute, NULL /*udata*/, 3 /*nargs*/, 1 /*nret*/);
 
 #if defined(DUK_CMDLINE_AJSHEAP)
 		ajsheap_clear_exec_timeout();
