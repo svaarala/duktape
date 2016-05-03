@@ -8,20 +8,20 @@
   },
   "dependencies": {
     "bluebird": "~2.6.4",
-    "minimist": "~1.1.0",
-    "express": "~4.10.1",
     "body-parser": "~1.9.3",
-    "socket.io": "~1.2.1",
-    "utf8": "~2.0.0",
-    "wrench": "~1.5.8",
-    "sprintf": "~0.1.5",
+    "byline": "~4.2.1",
     "events": "~1.0.2",
-    "stream": "0.0.2",
-    "readline": "0.0.5",
-    "util": "~0.10.3",
+    "express": "~4.10.1",
     "http": "0.0.0",
-    "yamljs": "~0.2.1",
-    "byline": "~4.2.1"
+    "minimist": "~1.1.0",
+    "readline": "0.0.5",
+    "recursive-readdir-sync": "^1.0.6",
+    "socket.io": "~1.2.1",
+    "sprintf": "~0.1.5",
+    "stream": "0.0.2",
+    "utf8": "~2.0.0",
+    "util": "~0.10.3",
+    "yamljs": "~0.2.1"
   },
   "main": "duk_debug.js"
 }

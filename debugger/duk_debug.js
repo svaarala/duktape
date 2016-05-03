@@ -27,8 +27,8 @@ var util = require('util');
 var readline = require('readline');
 var sprintf = require('sprintf').sprintf;
 var utf8 = require('utf8');
-var wrench = require('wrench');  // https://github.com/ryanmcgrath/wrench-js
 var yaml = require('yamljs');
+var recursiveReadSync = require('recursive-readdir-sync');
 
 // Command line options (defaults here, overwritten if necessary)
 var optTargetHost = '127.0.0.1';
@@ -445,7 +445,7 @@ SourceFileManager.prototype.scan = function () {
     this.directories.forEach(function (dir) {
         console.log('Scanning source files: ' + dir);
         try {
-            wrench.readdirSyncRecursive(dir).forEach(function (fn) {
+            recursiveReadSync(dir).forEach(function (fn) {
                 var absFn = path.normalize(path.join(dir, fn));   // './foo/bar.js' -> 'foo/bar.js'
                 var ent;
 
