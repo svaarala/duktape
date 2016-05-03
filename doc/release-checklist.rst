@@ -281,6 +281,16 @@ Checklist for ordinary releases
   - Trivial compile test for separate sources (important because
     it's easy to forget to add files in make_dist.sh)
 
+  - Validate SPDX license: FIXME, maybe spdx-licenses package?
+
+    * sudo apt-get install pkg-php-tools
+
+    * Install composer: http://www.cyberciti.biz/faq/how-to-install-composer-on-debian-ubuntu-linux-server/
+
+    * Install spdx-licenses: https://packagist.org/search/?q=g
+
+    * composer require composer/spdx-licenses
+
 * Store binaries to duktape-releases repo
 
   - Add the tar.xz to the master branch
