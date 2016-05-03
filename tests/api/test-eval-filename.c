@@ -12,8 +12,10 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	rc = duk_peval_string(ctx, "\n\naiee");
 	printf("rc: %ld\n", (long) rc);

@@ -35,8 +35,10 @@ static void prep(duk_context *ctx) {
 	duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	prep(ctx);
 	duk_copy(ctx, -4, 2);         /* -> [ 123 234 123 "foo" ] */
@@ -49,8 +51,10 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	prep(ctx);
 	duk_copy(ctx, -3, -3);  /* nop */
@@ -63,43 +67,57 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, -5, 2);  /* source index too low */
 	return 0;
 }
 
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, 5, 2);  /* source index too high */
 	return 0;
 }
 
-static duk_ret_t test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, DUK_INVALID_INDEX, 2);  /* source index invalid */
 	return 0;
 }
 
-static duk_ret_t test_3d(duk_context *ctx) {
+static duk_ret_t test_3d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, 2, -5);  /* source index too low */
 	return 0;
 }
 
-static duk_ret_t test_3e(duk_context *ctx) {
+static duk_ret_t test_3e(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, 2, 5);  /* source index too high */
 	return 0;
 }
 
-static duk_ret_t test_3f(duk_context *ctx) {
+static duk_ret_t test_3f(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_copy(ctx, 2, DUK_INVALID_INDEX);  /* source index invalid */
 	return 0;
 }
 
-static duk_ret_t test_3g(duk_context *ctx) {
+static duk_ret_t test_3g(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	/* indices both invalid and equal: would be nop, but still not allowed for invalid indices */
 	duk_copy(ctx, 10, 10);

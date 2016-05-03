@@ -11,7 +11,9 @@ boolean: 0
 ==> rc=1, result='TypeError: boolean required, found none (stack index -2147483648)'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_true(ctx);
 	duk_push_false(ctx);
@@ -20,20 +22,26 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
 	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	printf("boolean: %d\n", (int) duk_require_boolean(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	printf("boolean: %d\n", (int) duk_require_boolean(ctx, DUK_INVALID_INDEX));
 	return 0;

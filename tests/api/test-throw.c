@@ -3,7 +3,9 @@
 ==> rc=1, result='throw me'
 ===*/
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "throw me");
 	duk_throw(ctx);
 	return 0;

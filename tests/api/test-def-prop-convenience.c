@@ -25,7 +25,9 @@ static void dump_prop(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "prop");

@@ -258,7 +258,9 @@ static void push_setter_lightfunc(duk_context *ctx) {
 }
 
 /* Define new property, value only.  Other attributes get defaults. */
-static duk_ret_t test_value_only(duk_context *ctx) {
+static duk_ret_t test_value_only(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 	duk_push_string(ctx, "dummy");
 	duk_push_string(ctx, "my_key");
@@ -273,7 +275,9 @@ static duk_ret_t test_value_only(duk_context *ctx) {
 }
 
 /* Try to re-define a value for a non-configurable property. */
-static duk_ret_t test_value_redefine(duk_context *ctx) {
+static duk_ret_t test_value_redefine(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Define new property, value only.  Other attributes will have
 	 * default values (false).
 	 */
@@ -315,8 +319,10 @@ static duk_ret_t test_value_redefine(duk_context *ctx) {
 }
 
 /* Define a property with a value and all attribute combinations. */
-static duk_ret_t test_value_attr_combinations(duk_context *ctx) {
+static duk_ret_t test_value_attr_combinations(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	duk_push_object(ctx);
 
@@ -345,7 +351,9 @@ static duk_ret_t test_value_attr_combinations(duk_context *ctx) {
 /* Test presence of value and attributes; exercises the "tri-state"
  * nature of attributes.
  */
-static duk_ret_t test_value_attr_presence(duk_context *ctx) {
+static duk_ret_t test_value_attr_presence(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	/* First set the property to have all attributes true. */
@@ -412,7 +420,9 @@ static duk_ret_t test_value_attr_presence(duk_context *ctx) {
 /* Test property creation with setter, getter, or both.  Use a few attribute
  * combinations at the same time (including not present = default).
  */
-static duk_ret_t test_setget_only(duk_context *ctx) {
+static duk_ret_t test_setget_only(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	/* Getter only. */
@@ -450,7 +460,9 @@ static duk_ret_t test_setget_only(duk_context *ctx) {
 /* Test an invalid call where we "have" a value, a getter, and a setter.
  * This is an invalid property descriptor.
  */
-static duk_ret_t test_value_and_setget(duk_context *ctx) {
+static duk_ret_t test_value_and_setget(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "my_key_1");
@@ -470,7 +482,9 @@ static duk_ret_t test_value_and_setget(duk_context *ctx) {
 /* Test an invalid call where we "have" writable (implies plain property)
  * and setter (implies accessor property).
  */
-static duk_ret_t test_writable_and_set(duk_context *ctx) {
+static duk_ret_t test_writable_and_set(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "my_key_1");
@@ -487,7 +501,9 @@ static duk_ret_t test_writable_and_set(duk_context *ctx) {
 /* Test a valid call where setter and getter are undefined.  This causes
  * them to be removed from the property.
  */
-static duk_ret_t test_setget_undefined(duk_context *ctx) {
+static duk_ret_t test_setget_undefined(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	/* First setup a setter and a getter. */
@@ -522,7 +538,9 @@ static duk_ret_t test_setget_undefined(duk_context *ctx) {
 }
 
 /* Test an invalid call where getter is a non-object (but not undefined). */
-static duk_ret_t test_getter_nonobject(duk_context *ctx) {
+static duk_ret_t test_getter_nonobject(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	/* First setup a setter and a getter. */
@@ -549,7 +567,9 @@ static duk_ret_t test_getter_nonobject(duk_context *ctx) {
 }
 
 /* Test an invalid call where setter is a non-object (but not undefined). */
-static duk_ret_t test_setter_nonobject(duk_context *ctx) {
+static duk_ret_t test_setter_nonobject(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	/* First setup a setter and a getter. */
@@ -576,7 +596,9 @@ static duk_ret_t test_setter_nonobject(duk_context *ctx) {
 }
 
 /* Test an invalid call where getter is a non-callable object. */
-static duk_ret_t test_getter_noncallable(duk_context *ctx) {
+static duk_ret_t test_getter_noncallable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "my_key_1");
@@ -591,7 +613,9 @@ static duk_ret_t test_getter_noncallable(duk_context *ctx) {
 }
 
 /* Test an invalid call where setter is a non-callable object. */
-static duk_ret_t test_setter_noncallable(duk_context *ctx) {
+static duk_ret_t test_setter_noncallable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "my_key_1");
@@ -608,7 +632,9 @@ static duk_ret_t test_setter_noncallable(duk_context *ctx) {
 /* Test that lightfuncs work as setter and getter.  They get coerced to
  * a full function in the process though.
  */
-static duk_ret_t test_setget_lightfunc(duk_context *ctx) {
+static duk_ret_t test_setget_lightfunc(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 
 	duk_push_string(ctx, "my_key_1");
@@ -645,10 +671,14 @@ static duk_ret_t test_force_nonextensible_raw(duk_context *ctx, duk_bool_t force
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_nonextensible(duk_context *ctx) {
+static duk_ret_t test_fail_nonextensible(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_nonextensible_raw(ctx, 0);
 }
-static duk_ret_t test_force_nonextensible(duk_context *ctx) {
+static duk_ret_t test_force_nonextensible(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_nonextensible_raw(ctx, 1);
 }
 
@@ -672,10 +702,14 @@ static duk_ret_t test_force_set_configurable_raw(duk_context *ctx, duk_bool_t fo
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_set_configurable(duk_context *ctx) {
+static duk_ret_t test_fail_set_configurable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_configurable_raw(ctx, 0);
 }
-static duk_ret_t test_force_set_configurable(duk_context *ctx) {
+static duk_ret_t test_force_set_configurable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_configurable_raw(ctx, 1);
 }
 
@@ -699,10 +733,14 @@ static duk_ret_t test_force_set_enumerable_raw(duk_context *ctx, duk_bool_t forc
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_set_enumerable(duk_context *ctx) {
+static duk_ret_t test_fail_set_enumerable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_enumerable_raw(ctx, 0);
 }
-static duk_ret_t test_force_set_enumerable(duk_context *ctx) {
+static duk_ret_t test_force_set_enumerable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_enumerable_raw(ctx, 1);
 }
 
@@ -726,10 +764,14 @@ static duk_ret_t test_force_set_writable_raw(duk_context *ctx, duk_bool_t forced
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_set_writable(duk_context *ctx) {
+static duk_ret_t test_fail_set_writable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_writable_raw(ctx, 0);
 }
-static duk_ret_t test_force_set_writable(duk_context *ctx) {
+static duk_ret_t test_force_set_writable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_writable_raw(ctx, 1);
 }
 
@@ -754,10 +796,14 @@ static duk_ret_t test_force_set_value_raw(duk_context *ctx, duk_bool_t forced) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_set_value(duk_context *ctx) {
+static duk_ret_t test_fail_set_value(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_value_raw(ctx, 0);
 }
-static duk_ret_t test_force_set_value(duk_context *ctx) {
+static duk_ret_t test_force_set_value(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_value_raw(ctx, 1);
 }
 
@@ -786,16 +832,24 @@ static duk_ret_t test_force_set_setget_raw(duk_context *ctx, duk_bool_t setter, 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_set_getter(duk_context *ctx) {
+static duk_ret_t test_fail_set_getter(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_setget_raw(ctx, 0, 0);
 }
-static duk_ret_t test_force_set_getter(duk_context *ctx) {
+static duk_ret_t test_force_set_getter(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_setget_raw(ctx, 0, 1);
 }
-static duk_ret_t test_fail_set_setter(duk_context *ctx) {
+static duk_ret_t test_fail_set_setter(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_setget_raw(ctx, 1, 0);
 }
-static duk_ret_t test_force_set_setter(duk_context *ctx) {
+static duk_ret_t test_force_set_setter(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_set_setget_raw(ctx, 1, 1);
 }
 
@@ -825,10 +879,14 @@ static duk_ret_t test_force_data2accessor_raw(duk_context *ctx, duk_bool_t force
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_data2accessor(duk_context *ctx) {
+static duk_ret_t test_fail_data2accessor(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_data2accessor_raw(ctx, 0);
 }
-static duk_ret_t test_force_data2accessor(duk_context *ctx) {
+static duk_ret_t test_force_data2accessor(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_data2accessor_raw(ctx, 1);
 }
 
@@ -856,10 +914,14 @@ static duk_ret_t test_force_accessor2data_raw(duk_context *ctx, duk_bool_t force
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_accessor2data(duk_context *ctx) {
+static duk_ret_t test_fail_accessor2data(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_accessor2data_raw(ctx, 0);
 }
-static duk_ret_t test_force_accessor2data(duk_context *ctx) {
+static duk_ret_t test_force_accessor2data(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_accessor2data_raw(ctx, 1);
 }
 
@@ -897,16 +959,24 @@ static duk_ret_t test_force_array_smaller_raw(duk_context *ctx, duk_bool_t lengt
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_array_smaller(duk_context *ctx) {
+static duk_ret_t test_fail_array_smaller(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_array_smaller_raw(ctx, 1, 0);
 }
-static duk_ret_t test_force_array_smaller(duk_context *ctx) {
+static duk_ret_t test_force_array_smaller(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_array_smaller_raw(ctx, 1, 1);
 }
-static duk_ret_t test_fail_array_smaller_nonwritablelength(duk_context *ctx) {
+static duk_ret_t test_fail_array_smaller_nonwritablelength(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_array_smaller_raw(ctx, 0, 0);
 }
-static duk_ret_t test_force_array_smaller_nonwritablelength(duk_context *ctx) {
+static duk_ret_t test_force_array_smaller_nonwritablelength(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_array_smaller_raw(ctx, 0, 1);
 }
 
@@ -942,10 +1012,14 @@ static duk_ret_t test_force_nondeletable_raw(duk_context *ctx, duk_bool_t forced
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_fail_nondeletable(duk_context *ctx) {
+static duk_ret_t test_fail_nondeletable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_nondeletable_raw(ctx, 0);
 }
-static duk_ret_t test_force_nondeletable(duk_context *ctx) {
+static duk_ret_t test_force_nondeletable(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return test_force_nondeletable_raw(ctx, 1);
 }
 

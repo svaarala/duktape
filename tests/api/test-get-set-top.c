@@ -93,7 +93,9 @@ static void prep(duk_context *ctx) {
 	print_stack(ctx);
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test_1\n");
 	prep(ctx);
 
@@ -112,7 +114,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test_2\n");
 	prep(ctx);
 
@@ -123,7 +127,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test_3\n");
 	prep(ctx);
 
@@ -134,7 +140,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test_4\n");
 	prep(ctx);
 
@@ -145,7 +153,9 @@ static duk_ret_t test_4(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test_5\n");
 	prep(ctx);
 

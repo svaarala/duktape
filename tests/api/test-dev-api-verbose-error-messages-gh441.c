@@ -150,56 +150,80 @@ done
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_normalize_index(ctx, -3);
 	return 0;
 }
 
-static duk_ret_t test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_valid_index(ctx, -3);
 	return 0;
 }
 
-static duk_ret_t test_1c(duk_context *ctx) {
+static duk_ret_t test_1c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_top_index(ctx);
 	return 0;
 }
 
 static duk_ret_t dummy_func(duk_context *ctx) {
 	(void) ctx;
+
 	return 0;
 }
 
-static duk_ret_t test__undefined(duk_context *ctx) {
+static duk_ret_t test__undefined(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_undefined(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__null(duk_context *ctx) {
+static duk_ret_t test__null(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_null(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__boolean(duk_context *ctx) {
+static duk_ret_t test__boolean(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_require_boolean(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__number(duk_context *ctx) {
+static duk_ret_t test__number(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_require_number(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__string(duk_context *ctx) {
+static duk_ret_t test__string(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_require_string(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__buffer(duk_context *ctx) {
+static duk_ret_t test__buffer(duk_context *ctx, void *udata) {
 	duk_size_t sz;
+
+	(void) udata;
+
 	(void) duk_require_buffer(ctx, -3, &sz);
 	return 0;
 }
-static duk_ret_t test__pointer(duk_context *ctx) {
+static duk_ret_t test__pointer(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_require_pointer(ctx, -3);
 	return 0;
 }
-static duk_ret_t test__c_function(duk_context *ctx) {
+static duk_ret_t test__c_function(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_require_c_function(ctx, -3);
 	return 0;
 }
@@ -209,7 +233,7 @@ static duk_ret_t test__c_function(duk_context *ctx) {
 		duk_dup(ctx, 0); \
 		duk_push_null(ctx); \
 		duk_push_null(ctx); \
-		rc = duk_safe_call(ctx, (fn), 3, 3); \
+		rc = duk_safe_call(ctx, (fn), NULL, 3, 3); \
 		if (rc != 0) { \
 			duk_eval_string(ctx, "(function (v) { print(String(v).replace(/\\(0x.*?\\)/g, '(PTR)')" \
 			                     ".replace(/light_[0-9a-fA-F_]+/g, 'LFUNC')); })"); \
@@ -237,9 +261,11 @@ static void test__require_calls(duk_context *ctx) {
 	/* No duk_require_object(), duk_require_array(), duk_require_c_lightfunc(), etc. */
 }
 
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Test first with nothing on stack index -3. */
-	duk_safe_call(ctx, test__null, 0, 1); printf("%s\n", duk_safe_to_string(ctx, 0));
+	duk_safe_call(ctx, test__null, NULL, 0, 1); printf("%s\n", duk_safe_to_string(ctx, 0));
 	duk_pop(ctx);
 
 	duk_set_top(ctx, 0); duk_push_undefined(ctx); test__require_calls(ctx);

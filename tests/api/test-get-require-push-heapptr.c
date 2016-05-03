@@ -40,9 +40,11 @@ final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t raw_require_heapptr(duk_context *ctx) {
+static duk_ret_t raw_require_heapptr(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	void *ptr;
+
+	(void) udata;
 
 	i = duk_require_uint(ctx, -1);
 	duk_pop(ctx);
@@ -55,11 +57,13 @@ static duk_ret_t raw_require_heapptr(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
 	void *ptr;
 	void *p1, *p2, *p3;
 	duk_int_t ret;
+
+	(void) udata;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -83,7 +87,7 @@ static duk_ret_t test_basic(duk_context *ctx) {
 		       (long) i, (long) duk_get_type(ctx, i), (ptr ? "non-NULL" : "NULL"));
 
 		duk_push_uint(ctx, (duk_uint_t) i);
-		ret = duk_safe_call(ctx, raw_require_heapptr, 1 /*nargs*/, 1 /*nrets*/);
+		ret = duk_safe_call(ctx, raw_require_heapptr, NULL, 1 /*nargs*/, 1 /*nrets*/);
 		if (ret == DUK_EXEC_SUCCESS) {
 			;
 		} else {
@@ -150,8 +154,10 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_api_example(duk_context *ctx) {
+static duk_ret_t test_api_example(duk_context *ctx, void *udata) {
 	void *ptr;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "({ foo: 'bar' })");
 	ptr = duk_get_heapptr(ctx, -1);

@@ -6,7 +6,7 @@ name: RangeError
 message: range error: 123
 code: undefined
 fileName is a string: 1
-lineNumber: 43
+lineNumber: 45
 isNative: undefined
 *** test_2 (duk_pcall)
 ==> rc=1
@@ -15,7 +15,7 @@ name: Error
 message: arbitrary error code
 code: undefined
 fileName is a string: 1
-lineNumber: 52
+lineNumber: 56
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
@@ -24,7 +24,7 @@ name: TypeError
 message: 105
 code: undefined
 fileName is a string: 1
-lineNumber: 62
+lineNumber: 68
 isNative: undefined
 *** test_4 (duk_pcall)
 ==> rc=1
@@ -33,11 +33,13 @@ name: RangeError
 message: my error 123 234 foobar
 code: undefined
 fileName is a string: 1
-lineNumber: 73
+lineNumber: 79
 isNative: undefined
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_error(ctx, DUK_ERR_RANGE_ERROR, "range error: %d", 123);
@@ -46,7 +48,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_error(ctx, 1234567, "arbitrary error code");
@@ -55,7 +59,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	/* error code replaces message automatically now if message is NULL */
@@ -74,7 +80,9 @@ static void my_error(duk_context *ctx, duk_errcode_t errcode, const char *fmt, .
 	va_end(ap);
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	my_error(ctx, DUK_ERR_RANGE_ERROR, "my error %d %d %s", 123, 234, "foobar");
@@ -118,7 +126,7 @@ void dump_error(duk_context *ctx) {
 /* use custom helper because of dump_error() */
 #define  TEST(func)  do {  \
 		printf("*** %s (duk_pcall)\n", #func); \
-		rc = duk_safe_call(ctx, (func), 0, 1); \
+		rc = duk_safe_call(ctx, (func), NULL, 0, 1); \
 		printf("==> rc=%d\n", (int) rc); \
 		dump_error(ctx); \
 		duk_pop(ctx); \

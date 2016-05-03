@@ -90,7 +90,9 @@ static duk_ret_t draw_pixels(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_function(ctx, draw_pixels, 3 /*nargs*/);
 	duk_put_global_string(ctx, "drawPixels");
 
@@ -140,7 +142,44 @@ static duk_ret_t test_1(duk_context *ctx) {
  *  Ecmascript code.
  */
 
-/* XXX: no API yet */
+/*===
+*** test_2 (duk_safe_call)
+[object Uint32Array]
+8
+final top: 1
+==> rc=0, result='undefined'
+===*/
+
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_eval_string(ctx,
+		"(function test(buf) {\n"
+		"    print(Object.prototype.toString.call(buf));\n"
+		"    print(buf.length);\n"
+		"    buf[0] = 0xdeadbeef;\n"
+		"})");
+
+	/* Create plain buffer which backs the buffer object. */
+	duk_push_fixed_buffer(ctx, 256);
+
+	/* Create a Uint32Array of 8 entries (32 bytes) mapping to
+	 * the byte range [16,48[ of the underlying buffer.
+	 */
+	duk_push_buffer_object(ctx, -1, 16, 32, DUK_BUFOBJ_UINT32ARRAY);  /* offset 16, length 32 bytes, Uint32Array of 8 entries */
+
+	/* The plain buffer is now referenced by the buffer object
+	 * and doesn't need to be kept explicitly reachable.
+	 */
+	duk_remove(ctx, -2);
+
+	/* [ func bufferobject ] */
+
+	duk_call(ctx, 1);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
 
 /*
  *  Main
@@ -148,4 +187,5 @@ static duk_ret_t test_1(duk_context *ctx) {
 
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
+	TEST_SAFE_CALL(test_2);
 }

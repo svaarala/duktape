@@ -16,7 +16,9 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* For non-strict eval code the 'this' binding was effectively
 	 * the global object even before fixing GH-164: an undefined
 	 * 'this' binding gets promoted to the global object by the

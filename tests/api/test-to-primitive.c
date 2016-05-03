@@ -31,8 +31,10 @@ index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
  * They are indirectly covered by Ecmascript tests to some extent, though.
  */
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);
@@ -72,14 +74,18 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_primitive(ctx, 3, DUK_HINT_NONE);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_primitive(ctx, DUK_INVALID_INDEX, DUK_HINT_NONE);
 	printf("index DUK_INVALID_INDEX OK\n");

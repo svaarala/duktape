@@ -55,8 +55,10 @@ static void init_test_values(duk_context *ctx) {
 	/* XXX: add an infinite loop and timeout case */
 }
 
-static int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	/* duk_safe_to_string() */
 	init_test_values(ctx);

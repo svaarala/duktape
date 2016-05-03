@@ -309,8 +309,10 @@ static void unwind_logged(duk_context *ctx, const char *name) {
 	}
 }
 
-static duk_ret_t test_xcopy_top_basic(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_basic(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -331,8 +333,10 @@ static duk_ret_t test_xcopy_top_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_large(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_large(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_large(ctx, &ctx1, &ctx2);
 
@@ -346,8 +350,10 @@ static duk_ret_t test_xcopy_top_large(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_refcount(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_refcount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_finalizers(ctx, &ctx1, &ctx2);
 
@@ -379,8 +385,10 @@ static duk_ret_t test_xcopy_top_refcount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_samectx(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_samectx(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -393,8 +401,10 @@ static duk_ret_t test_xcopy_top_samectx(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_negcount(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_negcount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -407,8 +417,10 @@ static duk_ret_t test_xcopy_top_negcount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_verylargecount(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_verylargecount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -425,8 +437,10 @@ static duk_ret_t test_xcopy_top_verylargecount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_notenoughsrc(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_notenoughsrc(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -439,9 +453,11 @@ static duk_ret_t test_xcopy_top_notenoughsrc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xcopy_top_notenoughdst(duk_context *ctx) {
+static duk_ret_t test_xcopy_top_notenoughdst(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
 	int i;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 	duk_require_stack(ctx2, 1000);
@@ -461,8 +477,10 @@ static duk_ret_t test_xcopy_top_notenoughdst(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_basic(duk_context *ctx) {
+static duk_ret_t test_xmove_top_basic(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -480,8 +498,10 @@ static duk_ret_t test_xmove_top_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_large(duk_context *ctx) {
+static duk_ret_t test_xmove_top_large(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_large(ctx, &ctx1, &ctx2);
 
@@ -495,8 +515,10 @@ static duk_ret_t test_xmove_top_large(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_refcount(duk_context *ctx) {
+static duk_ret_t test_xmove_top_refcount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_finalizers(ctx, &ctx1, &ctx2);
 
@@ -520,8 +542,10 @@ static duk_ret_t test_xmove_top_refcount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_samectx(duk_context *ctx) {
+static duk_ret_t test_xmove_top_samectx(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -534,8 +558,10 @@ static duk_ret_t test_xmove_top_samectx(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_negcount(duk_context *ctx) {
+static duk_ret_t test_xmove_top_negcount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -548,8 +574,10 @@ static duk_ret_t test_xmove_top_negcount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_verylargecount(duk_context *ctx) {
+static duk_ret_t test_xmove_top_verylargecount(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -562,8 +590,10 @@ static duk_ret_t test_xmove_top_verylargecount(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_notenoughsrc(duk_context *ctx) {
+static duk_ret_t test_xmove_top_notenoughsrc(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 
@@ -576,9 +606,11 @@ static duk_ret_t test_xmove_top_notenoughsrc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_xmove_top_notenoughdst(duk_context *ctx) {
+static duk_ret_t test_xmove_top_notenoughdst(duk_context *ctx, void *udata) {
 	duk_context *ctx1, *ctx2;
 	int i;
+
+	(void) udata;
 
 	prep_plain(ctx, &ctx1, &ctx2);
 	duk_require_stack(ctx2, 1000);

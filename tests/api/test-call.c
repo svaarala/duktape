@@ -29,7 +29,9 @@ static duk_ret_t my_adder(duk_context *ctx) {
 	return 1;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);
@@ -47,7 +49,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_c_function(ctx, my_adder, 3 /*nargs*/);

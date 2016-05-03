@@ -88,7 +88,7 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_uint_t test[] = {
 		DUK_BUFOBJ_DUKTAPE_BUFFER,
 		DUK_BUFOBJ_NODEJS_BUFFER,
@@ -106,6 +106,8 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	};
 	int i;
 	unsigned char extbuf[256];
+
+	(void) udata;
 
 	for (i = 0; i < sizeof(test) / sizeof(duk_uint_t); i++) {
 		switch (i % 3) {
@@ -168,8 +170,10 @@ final top: 1
  * Test the .buffer reference in more detail: check that property
  * attributes are correct, check that it backs to the same slice, etc.
  */
-static duk_ret_t test_view_buffer_prop(duk_context *ctx) {
+static duk_ret_t test_view_buffer_prop(duk_context *ctx, void *udata) {
 	unsigned char extbuf[256];
+
+	(void) udata;
 
 	duk_push_external_buffer(ctx);
 	duk_config_buffer(ctx, -1, (void *) extbuf, 256);
@@ -220,7 +224,9 @@ final top: 0
  * of the element size (e.g. 4 bytes for Uint32Array) and that the slice ends
  * evenly.  The C API doesn't pose such restrictions.
  */
-static duk_ret_t test_unaligned(duk_context *ctx) {
+static duk_ret_t test_unaligned(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -1, 7, 64, DUK_BUFOBJ_UINT32ARRAY);
 
@@ -252,7 +258,9 @@ final top: 0
  * .byteLength is 63 here, which means that .length x .BYTES_PER_ELEMENT
  * won't match .byteLength in this case.
  */
-static duk_ret_t test_unaligned_uneven(duk_context *ctx) {
+static duk_ret_t test_unaligned_uneven(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Start at an unaligned offset, with slice length NOT a multiple
 	 * of 4.
 	 */
@@ -284,7 +292,9 @@ final top: 0
  * and external buffers at run time anyway.  In any case, no memory
  * unsafe behavior happens.
  */
-static duk_ret_t test_uncovered(duk_context *ctx) {
+static duk_ret_t test_uncovered(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -1, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 
@@ -315,14 +325,18 @@ static duk_ret_t test_uncovered(duk_context *ctx) {
 ==> rc=1, result='TypeError: buffer required, found none (stack index -2147483648)'
 ===*/
 
-static duk_ret_t test_invalid_index1(duk_context *ctx) {
+static duk_ret_t test_invalid_index1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -2, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-static duk_ret_t test_invalid_index2(duk_context *ctx) {
+static duk_ret_t test_invalid_index2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, DUK_INVALID_INDEX, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
@@ -341,7 +355,9 @@ static duk_ret_t test_invalid_index2(duk_context *ctx) {
 /* A bufferobject is -not- accepted as the underlying buffer.  This also
  * prevents issues like a slice being applied to a sliced view.
  */
-static duk_ret_t test_invalid_bufferobject(duk_context *ctx) {
+static duk_ret_t test_invalid_bufferobject(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx, "new Uint16Array(123);");
 	duk_push_buffer_object(ctx, -1, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
@@ -349,14 +365,18 @@ static duk_ret_t test_invalid_bufferobject(duk_context *ctx) {
 }
 
 /* A string is not allowed (although this might be useful). */
-static duk_ret_t test_invalid_string(duk_context *ctx) {
+static duk_ret_t test_invalid_string(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "foobar");
 	duk_push_buffer_object(ctx, -1, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-static duk_ret_t test_invalid_null(duk_context *ctx) {
+static duk_ret_t test_invalid_null(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_null(ctx);
 	duk_push_buffer_object(ctx, -1, 7, 512, DUK_BUFOBJ_UINT32ARRAY);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
@@ -376,14 +396,18 @@ final top: 2
 /* If 'flags' is given as zero, it will match a DUK_BUFOBJ_DUKTAPEBUFFER.
  * So this test succeeds which is intentional.
  */
-static duk_ret_t test_invalid_flags1(duk_context *ctx) {
+static duk_ret_t test_invalid_flags1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -1, 7, 512, 0 /* no type given, but matches DUK_BUFOBJ_DUKTAPEBUFFER */);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
 
-static duk_ret_t test_invalid_flags2(duk_context *ctx) {
+static duk_ret_t test_invalid_flags2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -1, 7, 512, (duk_uint_t) 0xdeadbeef /* ERROR: bogus type */);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
@@ -391,7 +415,9 @@ static duk_ret_t test_invalid_flags2(duk_context *ctx) {
 }
 
 /* Boundary case. */
-static duk_ret_t test_invalid_flags3(duk_context *ctx) {
+static duk_ret_t test_invalid_flags3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx, -1, 7, 512, (duk_uint_t) (DUK_BUFOBJ_FLOAT64ARRAY + 1) /* ERROR: bogus type, right after last defined */);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
@@ -406,7 +432,9 @@ static duk_ret_t test_invalid_flags3(duk_context *ctx) {
 ===*/
 
 /* Byte offset + byte length wrap. */
-static duk_ret_t test_invalid_offlen_wrap1(duk_context *ctx) {
+static duk_ret_t test_invalid_offlen_wrap1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx,
 	                       -1,
@@ -418,7 +446,9 @@ static duk_ret_t test_invalid_offlen_wrap1(duk_context *ctx) {
 }
 
 /* Byte offset + byte length wrap, just barely */
-static duk_ret_t test_invalid_offlen_wrap2(duk_context *ctx) {
+static duk_ret_t test_invalid_offlen_wrap2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx,
 	                       -1,
@@ -442,7 +472,9 @@ final top: 1
  * wrap.  This works and doesn't cause a ~4G allocation because the conceptual
  * size (~4G) is unrelated to the underlying buffer size (256 bytes here).
  */
-static duk_ret_t test_allowed_offlen_nowrap1(duk_context *ctx) {
+static duk_ret_t test_allowed_offlen_nowrap1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 256);
 	duk_push_buffer_object(ctx,
 	                       -1,

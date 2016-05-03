@@ -89,14 +89,18 @@ static duk_ret_t my_func_error2(duk_context *ctx) {
 	return DUK_RET_URI_ERROR;
 }
 
-static duk_ret_t my_safe_func_success(duk_context *ctx) {
+static duk_ret_t my_safe_func_success(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("hello from my_safe_func_success\n");
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	return 2;  /* caller wants 1 ret only, so 123 is effective */
 }
 
-static duk_ret_t my_safe_func_error1(duk_context *ctx) {
+static duk_ret_t my_safe_func_error1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("hello from my_safe_func_error1\n");
 	duk_error(ctx, 123, "error thrown by my_safe_func_error1");
 	duk_push_int(ctx, 123);
@@ -104,15 +108,19 @@ static duk_ret_t my_safe_func_error1(duk_context *ctx) {
 	return 2;  /* caller wants 1 ret only, so 123 is effective */
 }
 
-static duk_ret_t my_safe_func_error2(duk_context *ctx) {
+static duk_ret_t my_safe_func_error2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("hello from my_safe_func_error2\n");
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 234);
 	return DUK_RET_URI_ERROR;
 }
 
-static duk_ret_t test_ecma_call_success(duk_context *ctx) {
+static duk_ret_t test_ecma_call_success(duk_context *ctx, void *udata) {
 	duk_idx_t i;
+
+	(void) udata;
 
 	/* Ensure stack space for a lot of elements. */
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
@@ -139,8 +147,10 @@ static duk_ret_t test_ecma_call_success(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_ecma_call_error(duk_context *ctx) {
+static duk_ret_t test_ecma_call_error(duk_context *ctx, void *udata) {
 	duk_idx_t i;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -156,9 +166,11 @@ static duk_ret_t test_ecma_call_error(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_ecma_pcall_success(duk_context *ctx) {
+static duk_ret_t test_ecma_pcall_success(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -174,9 +186,11 @@ static duk_ret_t test_ecma_pcall_success(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_ecma_pcall_error(duk_context *ctx) {
+static duk_ret_t test_ecma_pcall_error(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -192,8 +206,10 @@ static duk_ret_t test_ecma_pcall_error(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_call_success(duk_context *ctx) {
+static duk_ret_t test_c_call_success(duk_context *ctx, void *udata) {
 	duk_idx_t i;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -209,8 +225,10 @@ static duk_ret_t test_c_call_success(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_call_error1(duk_context *ctx) {
+static duk_ret_t test_c_call_error1(duk_context *ctx, void *udata) {
 	duk_idx_t i;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -226,8 +244,10 @@ static duk_ret_t test_c_call_error1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_call_error2(duk_context *ctx) {
+static duk_ret_t test_c_call_error2(duk_context *ctx, void *udata) {
 	duk_idx_t i;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -243,9 +263,11 @@ static duk_ret_t test_c_call_error2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_pcall_success(duk_context *ctx) {
+static duk_ret_t test_c_pcall_success(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -261,9 +283,11 @@ static duk_ret_t test_c_pcall_success(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_pcall_error1(duk_context *ctx) {
+static duk_ret_t test_c_pcall_error1(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -279,9 +303,11 @@ static duk_ret_t test_c_pcall_error1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_c_pcall_error2(duk_context *ctx) {
+static duk_ret_t test_c_pcall_error2(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
@@ -297,13 +323,15 @@ static duk_ret_t test_c_pcall_error2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_safe_call_success(duk_context *ctx) {
+static duk_ret_t test_safe_call_success(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
 
+	(void) udata;
+
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
-	rc = duk_safe_call(ctx, my_safe_func_success, 0 /*nargs*/, 1 /*nrets*/);
+	rc = duk_safe_call(ctx, my_safe_func_success, NULL, 0 /*nargs*/, 1 /*nrets*/);
 	printf("duk_safe_call: rc=%ld, value: %s\n", (long) rc, duk_safe_to_string(ctx, -1));
 
 	for (i = 0; i < STACK_REQUIRE; i++) {
@@ -314,13 +342,15 @@ static duk_ret_t test_safe_call_success(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_safe_call_error1(duk_context *ctx) {
+static duk_ret_t test_safe_call_error1(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
 
+	(void) udata;
+
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
-	rc = duk_safe_call(ctx, my_safe_func_error1, 0 /*nargs*/, 1 /*nrets*/);
+	rc = duk_safe_call(ctx, my_safe_func_error1, NULL, 0 /*nargs*/, 1 /*nrets*/);
 	printf("duk_safe_call: rc=%ld, value: %s\n", (long) rc, duk_safe_to_string(ctx, -1));
 
 	for (i = 0; i < STACK_REQUIRE; i++) {
@@ -331,13 +361,15 @@ static duk_ret_t test_safe_call_error1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_safe_call_error2(duk_context *ctx) {
+static duk_ret_t test_safe_call_error2(duk_context *ctx, void *udata) {
 	duk_idx_t i;
 	duk_int_t rc;
 
+	(void) udata;
+
 	duk_require_stack(ctx, STACK_REQUIRE + 1);
 
-	rc = duk_safe_call(ctx, my_safe_func_error2, 0 /*nargs*/, 1 /*nrets*/);
+	rc = duk_safe_call(ctx, my_safe_func_error2, NULL, 0 /*nargs*/, 1 /*nrets*/);
 	printf("duk_safe_call: rc=%ld, value: %s\n", (long) rc, duk_safe_to_string(ctx, -1));
 
 	for (i = 0; i < STACK_REQUIRE; i++) {

@@ -22,7 +22,9 @@ static duk_ret_t my_print(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_global_object(ctx);
 	duk_push_c_function(ctx, my_print, DUK_VARARGS);
 	duk_put_prop_string(ctx, -2, "print");

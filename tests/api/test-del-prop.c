@@ -1,5 +1,5 @@
 /*===
-*** test_1a (duk_safe_call)
+*** test_1a_safecall (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
 delete obj[123] -> rc=1
@@ -9,31 +9,31 @@ final object: {"bar":"barval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
-*** test_1b (duk_safe_call)
+*** test_1b_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_1b (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_1c (duk_safe_call)
+*** test_1c_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_1c (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_1d (duk_safe_call)
+*** test_1d_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_1d (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_1e (duk_safe_call)
+*** test_1e_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index 234'
 *** test_1e (duk_pcall)
 ==> rc=1, result='Error: invalid stack index 234'
-*** test_1f (duk_safe_call)
+*** test_1f_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_1f (duk_pcall)
 ==> rc=1, result='Error: invalid stack index -2147483648'
-*** test_1g (duk_safe_call)
+*** test_1g_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_1g (duk_pcall)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
-*** test_2a (duk_safe_call)
+*** test_2a_safecall (duk_safe_call)
 delete obj.foo -> rc=1
 delete obj.nonexistent -> rc=1
 delete obj['123'] -> rc=1
@@ -43,31 +43,31 @@ final object: {"bar":"barval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
-*** test_2b (duk_safe_call)
+*** test_2b_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_2b (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_2c (duk_safe_call)
+*** test_2c_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_2c (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_2d (duk_safe_call)
+*** test_2d_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_2d (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_2e (duk_safe_call)
+*** test_2e_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index 234'
 *** test_2e (duk_pcall)
 ==> rc=1, result='Error: invalid stack index 234'
-*** test_2f (duk_safe_call)
+*** test_2f_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_2f (duk_pcall)
 ==> rc=1, result='Error: invalid stack index -2147483648'
-*** test_2g (duk_safe_call)
+*** test_2g_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_2g (duk_pcall)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
-*** test_3a (duk_safe_call)
+*** test_3a_safecall (duk_safe_call)
 delete obj[31337] -> rc=1
 delete obj[123] -> rc=1
 delete arr[31337] -> rc=1
@@ -76,15 +76,15 @@ final object: {"foo":"fooval","bar":"barval"}
 final array: ["foo","bar",null]
 final top: 3
 ==> rc=0, result='undefined'
-*** test_3b (duk_safe_call)
+*** test_3b_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_3b (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
-*** test_3c (duk_safe_call)
+*** test_3c_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index 234'
 *** test_3c (duk_pcall)
 ==> rc=1, result='Error: invalid stack index 234'
-*** test_3d (duk_safe_call)
+*** test_3d_safecall (duk_safe_call)
 ==> rc=1, result='Error: invalid stack index -2147483648'
 *** test_3d (duk_pcall)
 ==> rc=1, result='Error: invalid stack index -2147483648'
@@ -106,8 +106,10 @@ static void prep(duk_context *ctx) {
 }
 
 /* duk_del_prop(), success cases */
-static duk_ret_t test_1a(duk_context *ctx) {
+static duk_ret_t test_1a_safecall(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -151,7 +153,6 @@ static duk_ret_t test_1a(duk_context *ctx) {
  */
 static duk_ret_t test_1b(duk_context *ctx) {
 	duk_ret_t rc;
-
 	prep(ctx);
 
 	duk_push_string(ctx, "length");
@@ -160,6 +161,10 @@ static duk_ret_t test_1b(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_1b_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1b(ctx);
 }
 
 /* duk_del_prop(), non-configurable virtual property of a plain string.
@@ -177,6 +182,10 @@ static duk_ret_t test_1c(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_1c_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1c(ctx);
+}
 
 /* duk_del_prop(), non-configurable virtual property of a plain string.
  * Same behavior when called inside/outside of a Duktape/C activation.
@@ -193,6 +202,10 @@ static duk_ret_t test_1d(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_1d_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1d(ctx);
+}
 
 /* duk_del_prop(), invalid index */
 static duk_ret_t test_1e(duk_context *ctx) {
@@ -206,6 +219,10 @@ static duk_ret_t test_1e(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_1e_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1e(ctx);
 }
 
 /* duk_del_prop(), DUK_INVALID_INDEX */
@@ -221,6 +238,10 @@ static duk_ret_t test_1f(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_1f_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1f(ctx);
+}
 
 /* duk_del_prop(), not object coercible */
 static duk_ret_t test_1g(duk_context *ctx) {
@@ -235,10 +256,16 @@ static duk_ret_t test_1g(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_1g_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_1g(ctx);
+}
 
 /* duk_del_prop_string(), success cases */
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a_safecall(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -280,6 +307,10 @@ static duk_ret_t test_2b(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_2b_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2b(ctx);
+}
 
 /* duk_del_prop_string(), non-configurable virtual property of a plain string.
  * Same behavior when called inside/outside of a Duktape/C activation.
@@ -294,6 +325,10 @@ static duk_ret_t test_2c(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_2c_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2c(ctx);
 }
 
 /* duk_del_prop_string(), non-configurable virtual property of a plain string.
@@ -310,6 +345,10 @@ static duk_ret_t test_2d(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_2d_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2d(ctx);
+}
 
 /* duk_del_prop_string(), invalid index */
 static duk_ret_t test_2e(duk_context *ctx) {
@@ -322,6 +361,10 @@ static duk_ret_t test_2e(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_2e_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2e(ctx);
 }
 
 /* duk_del_prop_string(), DUK_INVALID_INDEX */
@@ -336,6 +379,10 @@ static duk_ret_t test_2f(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_2f_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2f(ctx);
+}
 
 /* duk_del_prop_string(), not object coercible */
 static duk_ret_t test_2g(duk_context *ctx) {
@@ -349,10 +396,16 @@ static duk_ret_t test_2g(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_2g_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_2g(ctx);
+}
 
 /* duk_del_prop_index(), success cases */
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a_safecall(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -391,6 +444,10 @@ static duk_ret_t test_3b(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_3b_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_3b(ctx);
+}
 
 /* duk_del_prop_index(), invalid index */
 static duk_ret_t test_3c(duk_context *ctx) {
@@ -403,6 +460,10 @@ static duk_ret_t test_3c(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_3c_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_3c(ctx);
 }
 
 /* duk_del_prop_index(), DUK_INVALID_INDEX */
@@ -417,41 +478,45 @@ static duk_ret_t test_3d(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_3d_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_3d(ctx);
+}
 
 void test(duk_context *ctx) {
-	TEST_SAFE_CALL(test_1a);
-	TEST_SAFE_CALL(test_1b);
+	TEST_SAFE_CALL(test_1a_safecall);
+	TEST_SAFE_CALL(test_1b_safecall);
 	TEST_PCALL(test_1b);
-	TEST_SAFE_CALL(test_1c);
+	TEST_SAFE_CALL(test_1c_safecall);
 	TEST_PCALL(test_1c);
-	TEST_SAFE_CALL(test_1d);
+	TEST_SAFE_CALL(test_1d_safecall);
 	TEST_PCALL(test_1d);
-	TEST_SAFE_CALL(test_1e);
+	TEST_SAFE_CALL(test_1e_safecall);
 	TEST_PCALL(test_1e);
-	TEST_SAFE_CALL(test_1f);
+	TEST_SAFE_CALL(test_1f_safecall);
 	TEST_PCALL(test_1f);
-	TEST_SAFE_CALL(test_1g);
+	TEST_SAFE_CALL(test_1g_safecall);
 	TEST_PCALL(test_1g);
 
-	TEST_SAFE_CALL(test_2a);
-	TEST_SAFE_CALL(test_2b);
+	TEST_SAFE_CALL(test_2a_safecall);
+	TEST_SAFE_CALL(test_2b_safecall);
 	TEST_PCALL(test_2b);
-	TEST_SAFE_CALL(test_2c);
+	TEST_SAFE_CALL(test_2c_safecall);
 	TEST_PCALL(test_2c);
-	TEST_SAFE_CALL(test_2d);
+	TEST_SAFE_CALL(test_2d_safecall);
 	TEST_PCALL(test_2d);
-	TEST_SAFE_CALL(test_2e);
+	TEST_SAFE_CALL(test_2e_safecall);
 	TEST_PCALL(test_2e);
-	TEST_SAFE_CALL(test_2f);
+	TEST_SAFE_CALL(test_2f_safecall);
 	TEST_PCALL(test_2f);
-	TEST_SAFE_CALL(test_2g);
+	TEST_SAFE_CALL(test_2g_safecall);
 	TEST_PCALL(test_2g);
 
-	TEST_SAFE_CALL(test_3a);
-	TEST_SAFE_CALL(test_3b);
+	TEST_SAFE_CALL(test_3a_safecall);
+	TEST_SAFE_CALL(test_3b_safecall);
 	TEST_PCALL(test_3b);
-	TEST_SAFE_CALL(test_3c);
+	TEST_SAFE_CALL(test_3c_safecall);
 	TEST_PCALL(test_3c);
-	TEST_SAFE_CALL(test_3d);
+	TEST_SAFE_CALL(test_3d_safecall);
 	TEST_PCALL(test_3d);
 }

@@ -36,8 +36,10 @@ static duk_ret_t my_dummy_func(duk_context *ctx) {
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_is_lightfunc(duk_context *ctx) {
+static duk_ret_t test_is_lightfunc(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	/* Just a few spot checks. */
 
@@ -72,8 +74,10 @@ final top: 3
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_simple_push(duk_context *ctx) {
+static duk_ret_t test_simple_push(duk_context *ctx, void *udata) {
 	duk_idx_t ret;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);  /* dummy padding */
@@ -615,21 +619,25 @@ i=256, res=Error: invalid call args
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_magic_raw(duk_context *ctx) {
+static duk_ret_t test_magic_raw(duk_context *ctx, void *udata) {
 	int i = duk_require_int(ctx, -1);
 	duk_idx_t ret;
+
+	(void) udata;
 
 	ret = duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, 3 /*length*/, i /*magic*/);
 	duk_push_int(ctx, (duk_int_t) ret);
 	return 1;
 }
 
-static duk_ret_t test_magic(duk_context *ctx) {
+static duk_ret_t test_magic(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	for (i = -256; i <= 256; i++) {
 		duk_push_int(ctx, i);
-		duk_safe_call(ctx, test_magic_raw, 1, 1);
+		duk_safe_call(ctx, test_magic_raw, NULL, 1, 1);
 		printf("i=%ld, res=%s\n", (long) i, duk_safe_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
@@ -674,21 +682,25 @@ i=16, res=Error: invalid call args
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_length_raw(duk_context *ctx) {
+static duk_ret_t test_length_raw(duk_context *ctx, void *udata) {
 	int i = duk_require_int(ctx, -1);
 	duk_idx_t ret;
+
+	(void) udata;
 
 	ret = duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, i /*length*/, 0x42 /*magic*/);
 	duk_push_int(ctx, (duk_int_t) ret);
 	return 1;
 }
 
-static duk_ret_t test_length_values(duk_context *ctx) {
+static duk_ret_t test_length_values(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	for (i = -16; i <= 16; i++) {
 		duk_push_int(ctx, i);
-		duk_safe_call(ctx, test_length_raw, 1, 1);
+		duk_safe_call(ctx, test_length_raw, NULL, 1, 1);
 		printf("i=%ld, res=%s\n", (long) i, duk_safe_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
@@ -736,19 +748,23 @@ i=18, nargs=18, res=Error: invalid call args
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_nargs_raw(duk_context *ctx) {
+static duk_ret_t test_nargs_raw(duk_context *ctx, void *udata) {
 	int i = duk_require_int(ctx, -1);
 	duk_idx_t ret;
+
+	(void) udata;
 
 	ret = duk_push_c_lightfunc(ctx, my_addtwo_lfunc, i /*nargs*/, 2 /*length*/, 0x42 /*magic*/);
 	duk_push_int(ctx, (duk_int_t) ret);
 	return 1;
 }
 
-static duk_ret_t test_nargs_values(duk_context *ctx) {
+static duk_ret_t test_nargs_values(duk_context *ctx, void *udata) {
 	int i;
 	int nargs;
 	int is_vararg;
+
+	(void) udata;
 
 	for (i = -16; i <= 18; i++) {
 		if (i == 17) {
@@ -758,7 +774,7 @@ static duk_ret_t test_nargs_values(duk_context *ctx) {
 		}
 		nargs = duk_get_int(ctx, -1);
 		is_vararg =  (nargs == DUK_VARARGS);
-		duk_safe_call(ctx, test_nargs_raw, 1, 1);
+		duk_safe_call(ctx, test_nargs_raw, NULL, 1, 1);
 		printf("i=%ld, nargs=%ld%s, res=%s\n",
 		       (long) i, (long) nargs, (is_vararg ? " (varargs)" : ""),
 		       duk_safe_to_string(ctx, -1));
@@ -796,7 +812,9 @@ top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_enum(duk_context *ctx) {
+static duk_ret_t test_enum(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, 3 /*length*/, 0x42 /*magic*/);
 
 	printf("enum defaults\n");
@@ -846,8 +864,10 @@ final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_get_length(duk_context *ctx) {
+static duk_ret_t test_get_length(duk_context *ctx, void *udata) {
 	duk_size_t len;
+
+	(void) udata;
 
 	/*
 	 *  Lightfunc length is its virtual 'length' property, same as for
@@ -882,7 +902,9 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_to_object(duk_context *ctx) {
+static duk_ret_t test_to_object(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	(void) duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, 3 /*length*/, 0x42 /*magic*/);
 
 	printf("tag before: %ld\n", (long) duk_get_type(ctx, -1));
@@ -911,9 +933,11 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_to_buffer(duk_context *ctx) {
+static duk_ret_t test_to_buffer(duk_context *ctx, void *udata) {
 	duk_size_t sz;
 	unsigned char *p;
+
+	(void) udata;
 
 	(void) duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, 3 /*length*/, 0x42 /*magic*/);
 
@@ -958,8 +982,10 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_to_pointer(duk_context *ctx) {
+static duk_ret_t test_to_pointer(duk_context *ctx, void *udata) {
 	void *p;
+
+	(void) udata;
 
 	(void) duk_push_c_lightfunc(ctx, my_addtwo_lfunc, 2 /*nargs*/, 3 /*length*/, 0x42 /*magic*/);
 
@@ -989,7 +1015,9 @@ final top: 1
  * because duk_is_object() is 0 for lightfuncs.
  */
 
-static duk_ret_t test_is_primitive(duk_context *ctx) {
+static duk_ret_t test_is_primitive(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
 	printf("is_primitive: %ld\n", (long) duk_is_primitive(ctx, -1));
 
@@ -1006,7 +1034,9 @@ final top: 1
 
 /* Lightfuncs are not objects (they're primitive). */
 
-static duk_ret_t test_is_object(duk_context *ctx) {
+static duk_ret_t test_is_object(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
 	printf("is_object: %ld\n", (long) duk_is_object(ctx, -1));
 
@@ -1022,7 +1052,9 @@ final top: 1
 
 /* Lightfuncs are object coercible. */
 
-static duk_ret_t test_is_object_coercible(duk_context *ctx) {
+static duk_ret_t test_is_object_coercible(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_lightfunc(ctx, my_dummy_func, 0, 0, 0);
 	printf("is_object_coercible: %ld\n", (long) duk_is_object_coercible(ctx, -1));
 

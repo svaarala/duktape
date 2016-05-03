@@ -21,7 +21,9 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string_noresult(ctx,
 		"this.myFinalizer = function myfin(o) {\n"
 		"    print('finalizer, rescuing object', JSON.stringify(o));\n"

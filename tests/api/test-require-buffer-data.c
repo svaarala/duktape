@@ -19,10 +19,12 @@ buffer
 ==> rc=1, result='TypeError: buffer required, found none (stack index -2147483648)'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	void *ptr;
 	duk_size_t sz;
 	int i;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_fixed_buffer(ctx, 1024);
@@ -46,9 +48,11 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	void *ptr;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
@@ -58,9 +62,11 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	void *ptr;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	sz = (duk_size_t) 0xdeadbeefUL;
@@ -69,9 +75,11 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
 	void *ptr;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	sz = (duk_size_t) 0xdeadbeefUL;

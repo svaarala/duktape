@@ -26,8 +26,10 @@ final top: 6
 ===*/
 
 /* Basic test. */
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "new RangeError('test error')");  /* 0 */
 	duk_eval_string(ctx, "Error");  /* 1 */
@@ -49,7 +51,9 @@ static duk_ret_t test_1(duk_context *ctx) {
  * to do the equivalent of: "new Error() instanceof new Error()" is a TypeError
  * because the rval is a non-callable object.
  */
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx, "new Error('test error')");
 
 	duk_instanceof(ctx, 0, 0);  /* -> TypeError */
@@ -61,27 +65,37 @@ static duk_ret_t test_2(duk_context *ctx) {
 /* Strict behavior is also used for indices to match the strictness of
  * instanceof.  (This differs from e.g. duk_equals() on purpose.)
  */
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("%d\n", duk_instanceof(ctx, -1, 0));  /* -1 is out of stack */
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("%d\n", duk_instanceof(ctx, 0, -1));  /* -1 is out of stack */
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("%d\n", duk_instanceof(ctx, 1, 0));  /* 1 is out of stack */
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_3d(duk_context *ctx) {
+static duk_ret_t test_3d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("%d\n", duk_instanceof(ctx, 0, 1));  /* 1 is out of stack */
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_3e(duk_context *ctx) {
+static duk_ret_t test_3e(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("%d\n", duk_instanceof(ctx, DUK_INVALID_INDEX, DUK_INVALID_INDEX));
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;

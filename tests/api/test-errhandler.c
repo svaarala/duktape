@@ -22,7 +22,9 @@ static void remove_handlers(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -38,7 +40,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -53,7 +57,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	/* Causes a ReferenceError when error handler runs.  The
@@ -70,7 +76,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);
@@ -87,7 +95,9 @@ static duk_ret_t test_4(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	remove_handlers(ctx);

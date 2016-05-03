@@ -18,8 +18,10 @@ index 2, type 6 -> 3, result: true
  * Ecmascript tests.
  */
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_object(ctx);
@@ -43,7 +45,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* non-object input */
 	duk_set_top(ctx, 0);
 	duk_push_int(ctx, 123);
@@ -53,14 +57,18 @@ static duk_ret_t test_2(duk_context *ctx) {
 
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_defaultvalue(ctx, 3, DUK_HINT_NONE);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_defaultvalue(ctx, DUK_INVALID_INDEX, DUK_HINT_NONE);
 	printf("index DUK_INVALID_INDEX OK\n");

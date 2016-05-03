@@ -90,7 +90,9 @@ static void prep(duk_context *ctx) {
 	 */
 }
 
-static duk_ret_t test_gc(duk_context *ctx) {
+static duk_ret_t test_gc(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 
 	/* Both objects are now in a prototype loop.  Force garbage
@@ -113,7 +115,9 @@ static duk_ret_t test_gc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_is_prototype_of(duk_context *ctx) {
+static duk_ret_t test_is_prototype_of(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 
 	/* obj0.isPrototypeOf(dummy) -> false, traverses prototype chain of dummy */
@@ -143,13 +147,17 @@ static duk_ret_t test_is_prototype_of(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t augment_raw(duk_context *ctx) {
+static duk_ret_t augment_raw(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_throw(ctx);
 	return 0;
 }
 
-static duk_ret_t test_error_augment(duk_context *ctx) {
+static duk_ret_t test_error_augment(duk_context *ctx, void *udata) {
 	duk_int_t ret;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -169,7 +177,7 @@ static duk_ret_t test_error_augment(duk_context *ctx) {
 	 */
 
 	duk_dup(ctx, 0);
-	ret = duk_safe_call(ctx, augment_raw, 0 /*nargs*/, 1 /*nrets*/);
+	ret = duk_safe_call(ctx, augment_raw, NULL, 0 /*nargs*/, 1 /*nrets*/);
 	printf("ret=%d\n", (int) ret);
 	duk_get_prop_string(ctx, -1, "foo");
 	printf("throw value .foo=%d\n", duk_get_int(ctx, -1));
@@ -178,8 +186,10 @@ static duk_ret_t test_error_augment(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_hasprop(duk_context *ctx) {
+static duk_ret_t test_hasprop(duk_context *ctx, void *udata) {
 	duk_bool_t ret;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -198,7 +208,9 @@ static duk_ret_t test_hasprop(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_getprop(duk_context *ctx) {
+static duk_ret_t test_getprop(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 
 	/* Property exists, own property */
@@ -219,7 +231,9 @@ static duk_ret_t test_getprop(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_putprop(duk_context *ctx) {
+static duk_ret_t test_putprop(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 
 	/* Property exists, own property */
@@ -240,7 +254,9 @@ static duk_ret_t test_putprop(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_instanceof(duk_context *ctx) {
+static duk_ret_t test_instanceof(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 
 	/* For 'a instanceof b', the [[HasInstance]] algorithm looks up

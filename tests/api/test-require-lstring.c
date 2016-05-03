@@ -21,9 +21,11 @@ static void dump_string_size(const char *p, duk_size_t sz) {
 	printf("string:%s%s (%ld)\n", (strlen(p) == 0 ? "" : " "), p, (long) sz);
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_lstring(ctx, "foo\0bar", 7);
@@ -47,9 +49,11 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
@@ -59,9 +63,11 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -70,9 +76,11 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 

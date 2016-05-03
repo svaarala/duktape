@@ -12,9 +12,11 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	int i;
+
+	(void) udata;
 
 	p = (unsigned char *) duk_push_fixed_buffer(ctx, 256);
 	for (i = 0; i < 256; i++) {

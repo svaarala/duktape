@@ -17,8 +17,10 @@ heap destroyed
  * Object has been finalized but not yet rescued, and should not be
  * finalized again on destruction.
  */
-static duk_ret_t test_heap_destruction(duk_context *ignored_ctx) {
+static duk_ret_t test_heap_destruction(duk_context *ignored_ctx, void *udata) {
 	duk_context *my_ctx;
+
+	(void) udata;
 
 	printf("creating heap\n"); fflush(stdout);
 	my_ctx = duk_create_heap_default();

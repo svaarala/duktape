@@ -41,7 +41,9 @@ result: 123
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* This test would trigger the assertion failure in Duktape 0.10.0. */
 
 	duk_eval_string(ctx, "function g() { print('g'); return 123; };\n"

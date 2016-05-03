@@ -62,10 +62,12 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic_overlap(duk_context *ctx) {
+static duk_ret_t test_basic_overlap(duk_context *ctx, void *udata) {
 	unsigned char buf[16];
 	int offset;
 	int i;
+
+	(void) udata;
 
 	for (offset = 0; offset <= 8; offset++) {
 		printf("offset: %d\n", offset);
@@ -224,10 +226,12 @@ final top: 0
  *  check in the implementation.
  */
 
-static duk_ret_t test_expand_overlap(duk_context *ctx) {
+static duk_ret_t test_expand_overlap(duk_context *ctx, void *udata) {
 	unsigned char buf[48];
 	int offset;
 	int i;
+
+	(void) udata;
 
 	for (offset = 0; offset < 16; offset++) {  /* dst offset */
 		printf("offset: %d\n", offset);

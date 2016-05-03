@@ -11,8 +11,10 @@ still here
 ==> rc=1, result='TypeError: thread required, found none (stack index -2147483648)'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_context *new_ctx;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	(void) duk_push_thread(ctx);
@@ -34,8 +36,10 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	duk_context *new_ctx;
+
+	(void) udata;
 
 	/* non-thread value */
 	duk_set_top(ctx, 0);
@@ -45,8 +49,10 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	duk_context *new_ctx;
+
+	(void) udata;
 
 	/* invalid index */
 	duk_set_top(ctx, 0);
@@ -56,8 +62,10 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
 	duk_context *new_ctx;
+
+	(void) udata;
 
 	/* invalid index */
 	duk_set_top(ctx, 0);

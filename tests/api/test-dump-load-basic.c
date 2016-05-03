@@ -53,9 +53,11 @@ final top: 1
  * function.  Hex dumping the bytecode provides an exact test case dependency
  * to the dump format so that any accidental changes break the test.
  */
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	duk_size_t i, sz;
+
+	(void) udata;
 
 	/* Integer constants generate LDINT now so also use a fractional
 	 * constant to exercise number constants.
@@ -126,9 +128,11 @@ final top: 1
 ===*/
 
 /* Dump/load mandelbrot.  No inner functions but a bit more code. */
-static duk_ret_t test_mandel(duk_context *ctx) {
+static duk_ret_t test_mandel(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	duk_size_t i, sz;
+
+	(void) udata;
 
 	printf("Mandelbrot source length: %ld\n", (long) strlen(MANDELBROT));
 
@@ -163,7 +167,9 @@ final top: 1
 ===*/
 
 /* Test dumping of a large function to exercise buffer resizes. */
-static duk_ret_t test_large_func(duk_context *ctx) {
+static duk_ret_t test_large_func(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var res = [];\n"
@@ -204,7 +210,9 @@ final top: 0
 ===*/
 
 /* Properties and property attributes of a loaded function. */
-static duk_ret_t test_properties(duk_context *ctx) {
+static duk_ret_t test_properties(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Compile explicitly to force fileName. */
 	duk_push_string(ctx,
 		"(function () {\n"
@@ -258,7 +266,9 @@ final top: 0
  * - Bindings established via Eval code are not configurable
  *   (E5 Section 10.5 step 2).
  */
-static duk_ret_t test_program_code(duk_context *ctx) {
+static duk_ret_t test_program_code(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Demonstrate behavior without dump/load. */
 	duk_compile_string(ctx, 0,
 		"var testProgram1 = 123;"
@@ -302,7 +312,9 @@ final top: 0
  * Here we bytecode dump an eval function that is then loaded and executed
  * in the global scope.
  */
-static duk_ret_t test_eval_code(duk_context *ctx) {
+static duk_ret_t test_eval_code(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Demonstrate behavior without dump/load. */
 	duk_compile_string(ctx, DUK_COMPILE_EVAL,
 		"var testEval1 = 123;"
@@ -338,7 +350,9 @@ final top: 0
 ===*/
 
 /* Strictness status is preserved. */
-static duk_ret_t test_strict(duk_context *ctx) {
+static duk_ret_t test_strict(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_compile_string(ctx, DUK_COMPILE_FUNCTION,
 		"function () {\n"
 		"    var strict = (function () { return !this; })();\n"
@@ -373,7 +387,9 @@ final top: 0
 ===*/
 
 /* _Varmap is preserved if function needs it. */
-static duk_ret_t test_varmap(duk_context *ctx) {
+static duk_ret_t test_varmap(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Get access to _Varmap by creating a function that provides
 	 * an 'eval service' in a function scope.
 	 */
@@ -418,7 +434,9 @@ final top: 0
 ===*/
 
 /* Arguments object still works after dump/load, relies on e.g. _Formals. */
-static duk_ret_t test_arguments_object(duk_context *ctx) {
+static duk_ret_t test_arguments_object(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var f = function test(x,y) {\n"
@@ -456,7 +474,9 @@ final top: 0
 ===*/
 
 /* _Pc2line is preserved, check by traceback line numbers. */
-static duk_ret_t test_pc2line(duk_context *ctx) {
+static duk_ret_t test_pc2line(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var f = function test() {\n"
@@ -505,7 +525,9 @@ final top: 0
 /* Name binding for function expressions is preserved, it is important
  * for recursive functions.
  */
-static duk_ret_t test_name_binding_funcexpr(duk_context *ctx) {
+static duk_ret_t test_name_binding_funcexpr(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var f = function test() { print('i am a ' + typeof test); };\n"
@@ -552,7 +574,9 @@ final top: 1
  * we dump/load the function, only the function object is resurrected while the
  * global binding is not.
  */
-static duk_ret_t test_name_binding_funcdecl(duk_context *ctx) {
+static duk_ret_t test_name_binding_funcdecl(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_compile_string(ctx, 0 /*flags: program*/,
 		"function declaredTest() {\n"
 		"    print('i am a ' + typeof declaredTest);\n"
@@ -582,7 +606,9 @@ dummythis x-arg y-arg
 ===*/
 
 /* Bound functions are rejected with TypeError. */
-static duk_ret_t test_bound_rejected(duk_context *ctx) {
+static duk_ret_t test_bound_rejected(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* XXX: Perhaps rework bound function support so that the final non-bound
 	 * function is serialized instead?
 	 */
@@ -615,7 +641,9 @@ final top: 0
 ===*/
 
 /* Custom external prototype is lost during a dump/load. */
-static duk_ret_t test_external_prototype_lost(duk_context *ctx) {
+static duk_ret_t test_external_prototype_lost(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var f = function test() {};\n"
@@ -656,7 +684,9 @@ final top: 0
 ===*/
 
 /* Custom internal prototype is lost during a dump/load. */
-static duk_ret_t test_internal_prototype_lost(duk_context *ctx) {
+static duk_ret_t test_internal_prototype_lost(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var f = function test() {};\n"

@@ -36,8 +36,10 @@ index 9: null
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_get_string(duk_context *ctx) {
+static duk_ret_t test_get_string(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -86,8 +88,10 @@ index 9: null
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_get_lstring(duk_context *ctx) {
+static duk_ret_t test_get_lstring(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);

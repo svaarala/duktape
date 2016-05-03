@@ -25,8 +25,10 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_peval_file(duk_context *ctx) {
+static duk_ret_t test_peval_file(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	rc = duk_peval_file(ctx, NONEXISTENT_FILE);
 	printf("rc: %ld\n", (long) rc);
@@ -36,8 +38,10 @@ static duk_ret_t test_peval_file(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_peval_file_noresult(duk_context *ctx) {
+static duk_ret_t test_peval_file_noresult(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	rc = duk_peval_file_noresult(ctx, NONEXISTENT_FILE);
 	printf("rc: %ld\n", (long) rc);
@@ -46,8 +50,10 @@ static duk_ret_t test_peval_file_noresult(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_pcompile_file(duk_context *ctx) {
+static duk_ret_t test_pcompile_file(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	rc = duk_pcompile_file(ctx, 0, NONEXISTENT_FILE);
 	printf("rc: %ld\n", (long) rc);

@@ -9,7 +9,9 @@ static duk_ret_t my_constructor(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_global_object(ctx);
 	duk_push_c_function(ctx, my_constructor, 0);   /* constructor (function) */
 	duk_push_object(ctx);                          /* prototype object -> [ global cons proto ] */

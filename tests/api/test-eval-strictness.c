@@ -43,8 +43,10 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	const char *str;
+
+	(void) udata;
 
 	/* Eval happens outside of a Duktape/C activation.  The eval code was
 	 * executed in non-strict mode also in Duktape 0.11.0 and prior.
@@ -75,8 +77,10 @@ static duk_ret_t test_2_inner(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	const char *str;
+
+	(void) udata;
 
 	printf("context is strict: %d\n", duk_is_strict_call(ctx));
 

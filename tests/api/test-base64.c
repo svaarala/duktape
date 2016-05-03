@@ -11,7 +11,9 @@ top after: 2
 ==> rc=1, result='TypeError: decode failed'
 ===*/
 
-static duk_ret_t test_encode(duk_context *ctx) {
+static duk_ret_t test_encode(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
 	duk_push_int(ctx, 123);  /* dummy */
@@ -20,7 +22,9 @@ static duk_ret_t test_encode(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode(duk_context *ctx) {
+static duk_ret_t test_decode(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "dGVzdCBzdHJpbmc=");
 	duk_push_int(ctx, 321);  /* dummy */
@@ -31,7 +35,9 @@ static duk_ret_t test_decode(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode_invalid_char(duk_context *ctx) {
+static duk_ret_t test_decode_invalid_char(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "dGVzdCBzdHJ@bmc=");
 	duk_push_int(ctx, 321);  /* dummy */

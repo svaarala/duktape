@@ -26,10 +26,12 @@ final top: 0
 
 unsigned char global_buffer[256];
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	void *ptr;
 	duk_size_t len;
 	int i;
+
+	(void) udata;
 
 	for (i = 0; i < sizeof(global_buffer); i++) {
 		if ((i / 3) & 2) {
@@ -82,7 +84,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 }
 
 /* Attempt to set external buffer for wrong buffer type. */
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_fixed_buffer(ctx, 1024);
 	duk_config_buffer(ctx, -1, (void *) global_buffer, sizeof(global_buffer));
 
@@ -90,7 +94,9 @@ static duk_ret_t test_2a(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_config_buffer(ctx, -1, (void *) global_buffer, sizeof(global_buffer));
 
@@ -99,7 +105,9 @@ static duk_ret_t test_2b(duk_context *ctx) {
 }
 
 /* Attempt to set external buffer for wrong type altogether. */
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 	duk_config_buffer(ctx, -1, (void *) global_buffer, sizeof(global_buffer));
 
@@ -108,8 +116,10 @@ static duk_ret_t test_3(duk_context *ctx) {
 }
 
 /* Check Duktape.info() for external buffers. */
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
 	unsigned char buf[16];
+
+	(void) udata;
 
 	/* Censor refcount too because e.g. in shuffle torture test the
 	 * refcount will be different than otherwise.

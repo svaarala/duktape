@@ -9,10 +9,12 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	char buf[65536 + 1024];
 	duk_size_t fmt_len, i;
 	double len_sum = 0.0;
+
+	(void) udata;
 
 	for (fmt_len = 0;
 	     fmt_len <= 65536;

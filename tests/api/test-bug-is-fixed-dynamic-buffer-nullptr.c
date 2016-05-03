@@ -11,7 +11,9 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* These would segfault or at least cause valgrind issues. */
 	printf("duk_is_dynamic_buffer(-1): %d\n", (int) duk_is_dynamic_buffer(ctx, -1));
 	printf("duk_is_fixed_buffer(-1): %d\n", (int) duk_is_fixed_buffer(ctx, -1));

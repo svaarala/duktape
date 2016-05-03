@@ -10,7 +10,9 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_function(ctx, my_func, 0);
 
 	duk_dup(ctx, 0);   /* -> [ func func ] */

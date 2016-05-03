@@ -13,8 +13,10 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_bool_t ret;
+
+	(void) udata;
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));
 	ret = duk_get_global_string(ctx, "encodeURIComponent");

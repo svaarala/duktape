@@ -23,8 +23,10 @@ final top: 18
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -73,8 +75,10 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_null_ptr(duk_context *ctx) {
+static duk_ret_t test_null_ptr(duk_context *ctx, void *udata) {
 	void *p;
+
+	(void) udata;
 
 	duk_push_fixed_buffer(ctx, 1024);
 
@@ -96,9 +100,11 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_invalid_index(duk_context *ctx) {
+static duk_ret_t test_invalid_index(duk_context *ctx, void *udata) {
 	void *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_get_buffer(ctx, -1, &sz);
@@ -118,9 +124,11 @@ p is NULL
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_buffer_object(duk_context *ctx) {
+static duk_ret_t test_buffer_object(duk_context *ctx, void *udata) {
 	void *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	/* duk_get_buffer_data() doesn't accept a buffer object */
 

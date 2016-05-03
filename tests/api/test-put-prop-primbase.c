@@ -1,11 +1,11 @@
 /*===
-*** test_put (duk_safe_call)
+*** test_put_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: cannot write property 'foo' of 0'
 *** test_put (duk_pcall)
 ==> rc=1, result='TypeError: cannot write property 'foo' of 0'
 ===*/
 
-duk_ret_t test_put(duk_context *ctx) {
+static duk_ret_t test_put(duk_context *ctx) {
 	duk_ret_t rc;
 
 	/* In Ecmascript, '(0).foo = "bar"' should work and evaluate to "bar"
@@ -23,11 +23,15 @@ duk_ret_t test_put(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_put_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_put(ctx);
+}
 
 void test(duk_context *ctx) {
 	/* Since Duktape 0.12.0, a Duktape/C context is considered strict
 	 * both inside and outside of Duktape/C calls.
 	 */
-	TEST_SAFE_CALL(test_put);  /* outside: strict (non-strict before 0.12.0) */
+	TEST_SAFE_CALL(test_put_safecall);  /* outside: strict (non-strict before 0.12.0) */
 	TEST_PCALL(test_put);      /* inside: strict */
 }

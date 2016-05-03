@@ -16,7 +16,9 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_eval_string(ctx, "({ myfunc: function(x,y,z) { print(this); return x+y+z; } })");
@@ -40,7 +42,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_eval_string(ctx, "({ myfunc: function(x,y,z) { print(this); throw new Error('my error'); } })");
@@ -66,7 +70,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 }
 
 /* test this coercion in strict/non-strict functions */
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	/* Use Number.prototype to stash new functions, and call "through" a

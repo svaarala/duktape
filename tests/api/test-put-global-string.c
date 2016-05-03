@@ -11,8 +11,10 @@ top: 0
 ==> rc=1, result='TypeError: not writable'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_bool_t ret;
+
+	(void) udata;
 
 	printf("top: %ld\n", (long) duk_get_top(ctx));
 	duk_push_string(ctx, "1.2.3");
@@ -26,8 +28,10 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_nonwritable(duk_context *ctx) {
+static duk_ret_t test_nonwritable(duk_context *ctx, void *udata) {
 	duk_bool_t ret;
+
+	(void) udata;
 
 	duk_eval_string_noresult(ctx,
 		"Object.defineProperty(this, 'nonWritable', "

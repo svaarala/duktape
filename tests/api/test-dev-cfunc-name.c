@@ -31,7 +31,9 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return DUK_RET_URI_ERROR;
 }
 
-static duk_ret_t test_without_name(duk_context *ctx) {
+static duk_ret_t test_without_name(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_function(ctx, my_func, 0);
 	duk_put_global_string(ctx, "MyFunc");
 
@@ -45,7 +47,9 @@ static duk_ret_t test_without_name(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_with_name(duk_context *ctx) {
+static duk_ret_t test_with_name(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_get_global_string(ctx, "MyFunc");
 	duk_push_string(ctx, "my_func");
 	duk_put_prop_string(ctx, -2, "name");

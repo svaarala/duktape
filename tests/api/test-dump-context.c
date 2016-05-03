@@ -5,7 +5,9 @@ final top: 4
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_int(ctx, 123);
 	duk_eval_string(ctx, "'foo\\u1234bar'");
 	duk_eval_string(ctx, "({ foo: 123, bar: [ 1, 2, 3 ]})");

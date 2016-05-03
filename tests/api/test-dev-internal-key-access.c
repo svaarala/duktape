@@ -14,7 +14,9 @@ final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx, "new Date(123456)");
 	duk_push_string(ctx, "\xffValue");
 	duk_get_prop(ctx, -2);

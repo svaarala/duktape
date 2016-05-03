@@ -14,8 +14,10 @@ final top: 3
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t err_idx;
+
+	(void) udata;
 
 	/* dummy values */
 	duk_push_int(ctx, 123);
@@ -64,7 +66,9 @@ static void push_1(duk_context *ctx, duk_errcode_t errcode, const char *fmt, ...
 	va_end(ap);
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* dummy values */
 	duk_push_int(ctx, 123);
 	duk_push_int(ctx, 123);

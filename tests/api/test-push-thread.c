@@ -14,9 +14,11 @@ context b: undefined
 ===*/
 
 /* Some basic tests. */
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t thr_idx;
 	duk_context *new_ctx;
+
+	(void) udata;
 
 	duk_push_int(ctx, 123);  /* dummy */
 
@@ -40,9 +42,11 @@ static duk_ret_t test_1(duk_context *ctx) {
 }
 
 /* Thread with shared and fresh globals. */
-static int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	duk_context *ctx_a;
 	duk_context *ctx_b;
+
+	(void) udata;
 
 	duk_eval_string_noresult(ctx, "this.globalFoo = 'bar';");
 

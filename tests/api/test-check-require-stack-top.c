@@ -23,8 +23,10 @@ final top: 1000
 ===*/
 
 /* demonstrate how pushing too many elements causes an error */
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	for (i = 0; i < 1000; i++) {
 		duk_push_int(ctx, 123);
@@ -37,9 +39,11 @@ static duk_ret_t test_1(duk_context *ctx) {
 /* demonstrate how using one large duk_check_stack_top() before such
  * a loop works.
  */
-static duk_ret_t check_1(duk_context *ctx) {
+static duk_ret_t check_1(duk_context *ctx, void *udata) {
 	int i;
 	duk_ret_t rc;
+
+	(void) udata;
 
 	rc = duk_check_stack_top(ctx, 1000);
 	printf("rc=%d\n", (int) rc);
@@ -53,9 +57,11 @@ static duk_ret_t check_1(duk_context *ctx) {
 }
 
 /* same test but with one element checks, once per loop */
-static duk_ret_t check_2(duk_context *ctx) {
+static duk_ret_t check_2(duk_context *ctx, void *udata) {
 	int i;
 	duk_ret_t rc;
+
+	(void) udata;
 
 	for (i = 0; i < 1000; i++) {
 		rc = duk_check_stack_top(ctx, i + 1);
@@ -70,8 +76,10 @@ static duk_ret_t check_2(duk_context *ctx) {
 }
 
 /* try to extend value stack too much with duk_check_stack_top */
-static duk_ret_t check_3(duk_context *ctx) {
+static duk_ret_t check_3(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	rc = duk_check_stack_top(ctx, 1000*1000*1000);
 	printf("rc=%d\n", (int) rc);  /* should print 0: fail */
@@ -81,8 +89,10 @@ static duk_ret_t check_3(duk_context *ctx) {
 }
 
 /* same as check_1 but with duk_require_stack_top() */
-static duk_ret_t require_1(duk_context *ctx) {
+static duk_ret_t require_1(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	duk_require_stack_top(ctx, 1000);
 
@@ -95,8 +105,10 @@ static duk_ret_t require_1(duk_context *ctx) {
 }
 
 /* same as check_2 but with duk_require_stack_top() */
-static duk_ret_t require_2(duk_context *ctx) {
+static duk_ret_t require_2(duk_context *ctx, void *udata) {
 	int i;
+
+	(void) udata;
 
 	for (i = 0; i < 1000; i++) {
 		duk_require_stack_top(ctx, i + 1);
@@ -108,7 +120,9 @@ static duk_ret_t require_2(duk_context *ctx) {
 }
 
 /* same as check_3 but with duk_require_stack_top */
-static duk_ret_t require_3(duk_context *ctx) {
+static duk_ret_t require_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_require_stack_top(ctx, 1000*1000*1000);
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
