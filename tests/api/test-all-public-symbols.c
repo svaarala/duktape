@@ -54,6 +54,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_debugger_cooperate(ctx);
 	(void) duk_debugger_detach(ctx);
 	(void) duk_debugger_notify(ctx, 0);
+	(void) duk_debugger_pause(ctx);
 	(void) duk_decode_string(ctx, 0, NULL, NULL);
 	(void) duk_def_prop(ctx, 0, 0);
 	(void) duk_del_prop_index(ctx, 0, 0);
