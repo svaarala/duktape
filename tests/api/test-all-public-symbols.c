@@ -49,8 +49,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_copy(ctx, 0, 0);
 	(void) duk_create_heap_default();
 	(void) duk_create_heap(NULL, NULL, NULL, NULL, NULL);
-	(void) duk_debugger_attach(ctx, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-	(void) duk_debugger_attach_custom(ctx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+	(void) duk_debugger_attach(ctx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 	(void) duk_debugger_cooperate(ctx);
 	(void) duk_debugger_detach(ctx);
 	(void) duk_debugger_notify(ctx, 0);
