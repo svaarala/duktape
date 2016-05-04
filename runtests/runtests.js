@@ -269,7 +269,7 @@ function executeTest(options, callback) {
                 '-L.',
                 '-Idist/src',
                 '-Wl,-rpath,.',
-                '-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
+                '-pedantic', '-ansi', '-std=c99', '-Wall', '-Wdeclaration-after-statement', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
                 '-g', '-ggdb',
                 '-Werror',
                 //'-m32',
