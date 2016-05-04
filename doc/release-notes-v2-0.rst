@@ -31,6 +31,52 @@ duk_safe_call() userdata
 
 FIXME.
 
+duk_debugger_attach() and duk_debugger_attach_custom() merged
+-------------------------------------------------------------
+
+The ``duk_debugger_attach_custom()`` API call in Duktape 1.x has been renamed
+to ``duk_debugger_attach()`` to eliminate an unnecessary API call variant from
+the public API.  The remaining debugger attach call always includes an
+AppRequest callback argument.
+
+To upgrade:
+
+* ``duk_debugger_attach_custom()`` call sites: rename API call to
+  ``duk_debugger_attach()``; no argument changes are needed.
+
+* ``duk_debugger_attach()`` call sites: add a NULL ``request_cb`` callback
+  argument.
+
+* If a call site needs to support both Duktape 1.x and Duktape 2.x::
+
+      /* Alternative #1: conditional call name. */
+      #if (DUK_VERSION >= 20000)
+          duk_debugger_attach(
+      #else
+          duk_debugger_attach_custom(
+      #endif
+              read_cb,
+              write_cb,
+              peek_cb,
+              read_flush_cb,
+              write_flush_cb,
+              request_cb,  /* NULL OK if not necessary */
+              detached_cb,
+              udata);
+
+      /* Alternative #2: conditional request_cb argument. */
+          duk_debugger_attach(
+              read_cb,
+              write_cb,
+              peek_cb,
+              read_flush_cb,
+              write_flush_cb,
+      #if (DUK_VERSION >= 20000)
+              request_cb,  /* NULL OK if not necessary */
+      #endif
+              detached_cb,
+              udata);
+
 Known issues
 ============
 
