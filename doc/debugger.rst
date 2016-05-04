@@ -72,10 +72,10 @@ To integrate debugger support into your target, you need to:
   existing custom protocol.  An example TCP debug transport is given in
   ``examples/debug-trans-socket/duk_trans_socket_unix.c``.
 
-* **Add code to attach a debugger**: call ``duk_debugger_attach()`` (or
-  ``duk_debugger_attach_custom()``) when it is time to start debugging. 
-  Duktape will pause execution and process debug messages (blocking if
-  necessary).  Execution resumes under control of the debug client.
+* **Add code to attach a debugger**: call ``duk_debugger_attach()`` when it
+  is time to start debugging.  Duktape will pause execution and process debug
+  messages (blocking if necessary).  Execution resumes under control of the
+  debug client.
 
 * **When done, detach the debugger**: call ``duk_debugger_detach()`` to stop
   debugging; any debug stream error also causes an automatic detach.  When
@@ -239,21 +239,9 @@ Called when the application wants to attach a debugger to the Duktape heap::
                         my_trans_peek_cb,         /* peek callback (optional) */
                         my_trans_read_flush_cb,   /* read flush callback (optional) */
                         my_trans_write_flush_cb,  /* write flush callback (optional) */
+                        my_request_cb,            /* app request callback (optional) */
                         my_detached_cb,           /* debugger detached callback */
                         my_udata);                /* debug udata */
-
-Or, if you need to support application-defined requests through the AppRequest
-debug command (see "Custom requests and notifications"), use instead::
-
-    duk_debugger_attach_custom(ctx,
-                               my_trans_read_cb,         /* read callback */
-                               my_trans_write_cb,        /* write callback */
-                               my_trans_peek_cb,         /* peek callback (optional) */
-                               my_trans_read_flush_cb,   /* read flush callback (optional) */
-                               my_trans_write_flush_cb,  /* write flush callback (optional) */
-                               my_request_cb,            /* request callback (optional) */
-                               my_detached_cb,           /* debugger detached callback */
-                               my_udata);                /* debug udata */
 
 When called, Duktape will enter debug mode, pause execution, and wait for
 further instructions from the debug client.  If Duktape debugger support is
@@ -2232,11 +2220,14 @@ example, an AppRequest might be used to:
 
 * Perform or trigger software or script updates
 
-A target that wishes to support AppRequest should attach the debugger using the
-``duk_debugger_attach_custom()`` API and provide a request callback.  When an
-AppRequest is received, the request callback is invoked with the contents of
-the message on the value stack, and may push its own values to be sent in
-reply.
+A target that wishes to support AppRequest should provide a request callback
+when calling ``duk_debugger_attach()``.  When an AppRequest is received, the
+request callback is invoked with the contents of the message on the value
+stack, and may push its own values to be sent in reply.  The request callback
+may block if necessary (for example, the callback might wait for a hardware
+button press).  Note, however, that Duktape will also be blocked while the
+callback executes which may not be desirable in some cases and may cause a
+debug client to time out (this of course depends entirely on the debug client).
 
 This is a minimal do-nothing request callback::
 
