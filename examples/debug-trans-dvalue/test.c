@@ -186,6 +186,7 @@ int main(int argc, char *argv[]) {
 	                    duk_trans_dvalue_peek_cb,
 	                    duk_trans_dvalue_read_flush_cb,
 	                    duk_trans_dvalue_write_flush_cb,
+	                    NULL,  /* app request cb */
 	                    duk_trans_dvalue_detached_cb,
 	                    (void *) trans_ctx);
 
