@@ -40,15 +40,15 @@ DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
-DUK_EXTERNAL void duk_debugger_attach_custom(duk_context *ctx,
-                                             duk_debug_read_function read_cb,
-                                             duk_debug_write_function write_cb,
-                                             duk_debug_peek_function peek_cb,
-                                             duk_debug_read_flush_function read_flush_cb,
-                                             duk_debug_write_flush_function write_flush_cb,
-                                             duk_debug_request_function request_cb,
-                                             duk_debug_detached_function detached_cb,
-                                             void *udata) {
+DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
+                                      duk_debug_read_function read_cb,
+                                      duk_debug_write_function write_cb,
+                                      duk_debug_peek_function peek_cb,
+                                      duk_debug_read_flush_function read_flush_cb,
+                                      duk_debug_write_flush_function write_flush_cb,
+                                      duk_debug_request_function request_cb,
+                                      duk_debug_detached_function detached_cb,
+                                      void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
 	const char *str;
@@ -206,15 +206,15 @@ DUK_EXTERNAL void duk_debugger_pause(duk_context *ctx) {
 
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
-DUK_EXTERNAL void duk_debugger_attach_custom(duk_context *ctx,
-                                             duk_debug_read_function read_cb,
-                                             duk_debug_write_function write_cb,
-                                             duk_debug_peek_function peek_cb,
-                                             duk_debug_read_flush_function read_flush_cb,
-                                             duk_debug_write_flush_function write_flush_cb,
-                                             duk_debug_request_function request_cb,
-                                             duk_debug_detached_function detached_cb,
-                                             void *udata) {
+DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
+                                      duk_debug_read_function read_cb,
+                                      duk_debug_write_function write_cb,
+                                      duk_debug_peek_function peek_cb,
+                                      duk_debug_read_flush_function read_flush_cb,
+                                      duk_debug_write_flush_function write_flush_cb,
+                                      duk_debug_request_function request_cb,
+                                      duk_debug_detached_function detached_cb,
+                                      void *udata) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_UNREF(read_cb);
 	DUK_UNREF(write_cb);

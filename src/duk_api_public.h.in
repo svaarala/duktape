@@ -932,19 +932,15 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
  *  Debugger (debug protocol)
  */
 
-#define duk_debugger_attach(ctx,read_cb,write_cb,peek_cb,read_flush_cb,write_flush_cb,detached_cb,udata) \
-	duk_debugger_attach_custom((ctx), (read_cb), (write_cb), (peek_cb), (read_flush_cb), (write_flush_cb), \
-	                           NULL, (detached_cb), (udata))
-
-DUK_EXTERNAL_DECL void duk_debugger_attach_custom(duk_context *ctx,
-                                                  duk_debug_read_function read_cb,
-                                                  duk_debug_write_function write_cb,
-                                                  duk_debug_peek_function peek_cb,
-                                                  duk_debug_read_flush_function read_flush_cb,
-                                                  duk_debug_write_flush_function write_flush_cb,
-                                                  duk_debug_request_function request_cb,
-                                                  duk_debug_detached_function detached_cb,
-                                                  void *udata);
+DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx,
+                                           duk_debug_read_function read_cb,
+                                           duk_debug_write_function write_cb,
+                                           duk_debug_peek_function peek_cb,
+                                           duk_debug_read_flush_function read_flush_cb,
+                                           duk_debug_write_flush_function write_flush_cb,
+                                           duk_debug_request_function request_cb,
+                                           duk_debug_detached_function detached_cb,
+                                           void *udata);
 DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_debugger_cooperate(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues);
