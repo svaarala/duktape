@@ -1291,18 +1291,14 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command GetVar"));
 
+	level = duk_debug_read_int(thr);  /* callstack index */
+	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
+		DUK_D(DUK_DPRINT("invalid callstack index for GetVar"));
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+		return;
+	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
-	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
-		level = duk_debug_read_int(thr);  /* optional callstack level */
-		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack level for GetVar"));
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
-			return;
-		}
-	} else {
-		level = -1;
-	}
 
 	if (thr->callstack_top > 0) {
 		rc = duk_js_getvar_activation(thr,
@@ -1338,22 +1334,18 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command PutVar"));
 
+	level = duk_debug_read_int(thr);  /* callstack index */
+	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
+		DUK_D(DUK_DPRINT("invalid callstack index for PutVar"));
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+		return;
+	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
 	tv = duk_debug_read_tval(thr);
 	if (tv == NULL) {
 		/* detached */
 		return;
-	}
-	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
-		level = duk_debug_read_int(thr);  /* optional callstack level */
-		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack level for PutVar"));
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
-			return;
-		}
-	} else {
-		level = -1;
 	}
 
 	if (thr->callstack_top > 0) {
@@ -1434,21 +1426,13 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_UNREF(heap);
 
-	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
-		level = duk_debug_read_int(thr);  /* optional callstack level */
-		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack level for GetLocals"));
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
-			return;
-		}
-		duk_debug_write_reply(thr);
-	} else {
-		duk_debug_write_reply(thr);
-		if (thr->callstack_top == 0) {
-			goto callstack_empty;
-		}
-		level = -1;
+	level = duk_debug_read_int(thr);  /* callstack index */
+	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
+		DUK_D(DUK_DPRINT("invalid callstack index for GetLocals"));
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+		return;
 	}
+	duk_debug_write_reply(thr);
 
 	curr_act = thr->callstack + thr->callstack_top + level;
 
@@ -1475,7 +1459,6 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 		DUK_D(DUK_DPRINT("varmap is not an object in GetLocals, ignore"));
 	}
 
- callstack_empty:
 	duk_debug_write_eom(thr);
 }
 
@@ -1484,7 +1467,10 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_small_uint_t call_flags;
 	duk_int_t call_ret;
 	duk_small_int_t eval_err;
+	duk_int_t num_eval_args;
+	duk_bool_t direct_eval;
 	duk_int32_t level;
+	duk_tval* tv;
 
 	DUK_UNREF(heap);
 
@@ -1494,33 +1480,43 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	 * activation.  For now, use global object eval() function, with the eval
 	 * considered a 'direct call to eval'.
 	 *
-	 * Callstack level for debug commands only affects scope -- the callstack
+	 * Callstack index for debug commands only affects scope -- the callstack
 	 * as seen by, e.g. Duktape.act() will be the same regardless.
 	 */
 
-	/* nargs == 2 so we can pass a callstack level to eval(). */
+	/* nargs == 2 so we can pass a callstack index to eval(). */
 	duk_push_c_function(ctx, duk_bi_global_object_eval, 2 /*nargs*/);
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
 
-	(void) duk_debug_read_hstring(thr);
-	if (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
-		level = duk_debug_read_int(thr);  /* optional callstack level */
+	/* Read callstack index, if non-null. */
+	if (duk_debug_peek_byte(thr) == DUK_DBG_IB_NULL) {
+		direct_eval = 0;
+		(void) duk_debug_read_byte(thr);
+	} else {
+		direct_eval = 1;
+		level = (duk_int32_t) DUK_TVAL_GET_NUMBER(tv);  /* callstack index */
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack level for Eval"));
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
+			DUK_D(DUK_DPRINT("invalid callstack index for Eval"));
+			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
 			return;
 		}
 	}
-	else {
-		level = -1;
+
+	DUK_ASSERT(!direct_eval ||
+	           (level < 0 && -level <= (duk_int32_t) thr->callstack_top));
+
+	(void) duk_debug_read_hstring(thr);
+	if (direct_eval) {
+		num_eval_args = 2;
+		duk_push_int(ctx, level - 1);  /* compensate for eval() call */
+	} else {
+		num_eval_args = 1;
 	}
-	DUK_ASSERT(level < 0 && -level <= (duk_int32_t) thr->callstack_top);
-	duk_push_int(ctx, level - 1);  /* compensate for eval() call */
 
 	/* [ ... eval "eval" eval_input level ] */
 
 	call_flags = 0;
-	if (thr->callstack_top >= (duk_size_t) -level) {
+	if (direct_eval && thr->callstack_top >= (duk_size_t) -level) {
 		duk_activation *act;
 		duk_hobject *fun;
 
@@ -1536,7 +1532,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		}
 	}
 
-	call_ret = duk_handle_call_protected(thr, 2 /*num_stack_args*/, call_flags);
+	call_ret = duk_handle_call_protected(thr, num_eval_args, call_flags);
 
 	if (call_ret == DUK_EXEC_SUCCESS) {
 		eval_err = 0;
@@ -1853,8 +1849,8 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 
 	if (fun == NULL) {
 		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack level for GetBytecode"));
-			goto fail_level;
+			DUK_D(DUK_DPRINT("invalid callstack index for GetBytecode"));
+			goto fail_index;
 		}
 		act = thr->callstack + thr->callstack_top + level;
 		fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
@@ -1891,8 +1887,8 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 	duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNKNOWN, "invalid argument");
 	return;
 
- fail_level:
-	duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack level");
+ fail_index:
+	duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
 	return;
 }
 
