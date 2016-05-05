@@ -169,7 +169,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/alloc-logging/duk_alloc_logging.c \
 	dist/examples/alloc-torture/duk_alloc_torture.c \
 	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
-	dist/examples/debug-trans-socket/duk_trans_socket_unix.c
+	dist/examples/debug-trans-socket/duk_trans_socket_unix.c \
+	dist/extras/print-alert/duk_print_alert.c
 LINENOISE_SOURCES = \
 	linenoise/linenoise.c
 
@@ -208,11 +209,9 @@ CCOPTS_FEATURES += -DDUK_OPT_DEBUG_BUFSIZE=512
 #CCOPTS_FEATURES += -DDUK_OPT_NO_OCTAL_SUPPORT
 #CCOPTS_FEATURES += -DDUK_OPT_NO_SOURCE_NONBMP
 #CCOPTS_FEATURES += -DDUK_OPT_STRICT_UTF8_SOURCE
-#CCOPTS_FEATURES += -DDUK_OPT_NO_BROWSER_LIKE
 #CCOPTS_FEATURES += -DDUK_OPT_NO_SECTION_B
 CCOPTS_FEATURES += -DDUK_OPT_INTERRUPT_COUNTER
 CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_SUPPORT
-CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_FWD_PRINTALERT
 CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_FWD_LOGGING
 CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_DUMPHEAP
 CCOPTS_FEATURES += -DDUK_OPT_DEBUGGER_INSPECT
@@ -257,6 +256,7 @@ CCOPTS_FEATURES += -DDUK_OPT_FASTINT
 #CCOPTS_FEATURES += -DDUK_OPT_ROM_STRINGS
 #CCOPTS_FEATURES += -DDUK_OPT_ROM_OBJECTS
 CCOPTS_FEATURES += -DDUK_OPT_JSON_STRINGIFY_FASTPATH
+CCOPTS_FEATURES += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
@@ -273,7 +273,13 @@ CCOPTS_SHARED += -Wcast-qual
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
 # -Wfloat-equal is too picky, there's no apparent way to compare floats
 # (even when you know it's safe) without triggering warnings
-CCOPTS_SHARED += -I./dist/src -I./linenoise -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/examples/debug-trans-socket
+CCOPTS_SHARED += -I./dist/src
+CCOPTS_SHARED += -I./linenoise
+CCOPTS_SHARED += -I./dist/examples/alloc-logging
+CCOPTS_SHARED += -I./dist/examples/alloc-torture
+CCOPTS_SHARED += -I./dist/examples/alloc-hybrid
+CCOPTS_SHARED += -I./dist/examples/debug-trans-socket
+CCOPTS_SHARED += -I./dist/extras/print-alert
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -293,11 +299,11 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
-GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert
+GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT
 GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid
-GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
 CCLIBS	= -lm
@@ -1149,7 +1155,8 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--check-cpp-comment \
 		--dump-vim-commands \
-		examples/*/*.c examples/*/*.h
+		examples/*/*.c examples/*/*.h \
+		extras/*/*.c extras/*/*.h
 	@python util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
