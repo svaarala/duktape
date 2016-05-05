@@ -1,6 +1,8 @@
 /*
  *  Command line execution tool.  Useful for test cases and manual testing.
  *
+ *  To enable print()/alert() bindings, define DUK_CMDLINE_PRINTALERT_SUPPORT.
+ *
  *  To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
  *  It is not the default to maximize portability.  You can also compile in
  *  support for example allocators, grep for DUK_CMDLINE_*.
@@ -28,13 +30,6 @@
 #endif
 #endif
 
-#define  GREET_CODE(variant)  \
-	"print('((o) Duktape" variant " ' + " \
-	"Math.floor(Duktape.version / 10000) + '.' + " \
-	"Math.floor(Duktape.version / 100) % 100 + '.' + " \
-	"Duktape.version % 100" \
-	", '(" DUK_GIT_DESCRIBE ")');"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +41,9 @@
 #endif
 #if defined(DUK_CMDLINE_LINENOISE)
 #include "linenoise.h"
+#endif
+#if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
+#include "duk_print_alert.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -98,6 +96,19 @@ static int debugger_reattach = 0;
 /*
  *  Misc helpers
  */
+
+static void print_greet_line(void) {
+	printf("((o) Duktape%s %d.%d.%d (%s)\n",
+#ifdef DUK_CMDLINE_LINENOISE
+	       " [linenoise]",
+#else
+	       "",
+#endif
+	       (int) (DUK_VERSION / 10000),
+	       (int) ((DUK_VERSION / 100) % 100),
+	       (int) (DUK_VERSION % 100),
+	       DUK_GIT_DESCRIBE);
+}
 
 #if defined(DUK_CMDLINE_RLIMIT)
 static void set_resource_limits(rlim_t mem_limit_value) {
@@ -693,9 +704,6 @@ static int handle_interactive(duk_context *ctx) {
 	int retval = 0;
 	int rc;
 
-	duk_eval_string(ctx, GREET_CODE(" [linenoise]"));
-	duk_pop(ctx);
-
 	linenoiseSetMultiLine(1);
 	linenoiseHistorySetMaxLen(64);
 #if defined(DUK_CMDLINE_LINENOISE_COMPLETION)
@@ -764,9 +772,6 @@ static int handle_interactive(duk_context *ctx) {
 	int retval = 0;
 	int rc;
 	int got_eof = 0;
-
-	duk_eval_string(ctx, GREET_CODE(""));
-	duk_pop(ctx);
 
 	buffer = (char *) malloc(LINEBUF_SIZE);
 	if (!buffer) {
@@ -1090,6 +1095,11 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	}
 #endif
 
+	/* Register print() and alert() (removed in Duktape 2.x). */
+#if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
+	duk_print_alert_init(ctx);
+#endif
+
 #if defined(DUK_CMDLINE_FILEIO)
 	duk_push_c_function(ctx, fileio_read_file, 1 /*nargs*/);
 	duk_put_global_string(ctx, "readFile");
@@ -1403,6 +1413,7 @@ int main(int argc, char *argv[]) {
 	 */
 
 	if (interactive) {
+		print_greet_line();
 		if (handle_interactive(ctx) != 0) {
 			retval = 1;
 			goto cleanup;

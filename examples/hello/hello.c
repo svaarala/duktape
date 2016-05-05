@@ -4,7 +4,15 @@
 
 #include "duktape.h"
 
-int adder(duk_context *ctx) {
+static duk_ret_t native_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
+static duk_ret_t native_adder(duk_context *ctx) {
 	int i;
 	int n = duk_get_top(ctx);  /* #args */
 	double res = 0.0;
@@ -22,12 +30,12 @@ int main(int argc, char *argv[]) {
 
 	(void) argc; (void) argv;  /* suppress warning */
 
-	duk_eval_string(ctx, "print('Hello world!');");
+	duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
+	duk_push_c_function(ctx, native_adder, DUK_VARARGS);
+	duk_put_global_string(ctx, "adder");
 
-	duk_push_global_object(ctx);
-	duk_push_c_function(ctx, adder, DUK_VARARGS);
-	duk_put_prop_string(ctx, -2, "adder");
-	duk_pop(ctx);  /* pop global */
+	duk_eval_string(ctx, "print('Hello world!');");
 
 	duk_eval_string(ctx, "print('2+3=' + adder(2, 3));");
 	duk_pop(ctx);  /* pop eval result */

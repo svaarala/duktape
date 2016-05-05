@@ -266,6 +266,14 @@ unsigned int cp1252[256] = {
  */
 static const char *example_source = "print('Hello w\xfcrld - \x80');";
 
+static duk_ret_t duk__print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
 /* Example: compile and run test source encoded in Windows codepage 1252. */
 int main(int argc, char *argv[]) {
 	duk_context *ctx;
@@ -277,6 +285,10 @@ int main(int argc, char *argv[]) {
 		printf("Failed to create Duktape heap.\n");
 		return 1;
 	}
+
+	/* Minimal print() provider. */
+	duk_push_c_function(ctx, duk__print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
 
 	duk_decode_string_codepage(ctx, example_source, strlen(example_source), cp1252);
 	duk_eval_noresult(ctx);
