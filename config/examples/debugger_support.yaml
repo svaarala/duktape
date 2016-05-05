@@ -4,7 +4,6 @@ DUK_USE_DEBUGGER_SUPPORT: true
 
 # Basic set of Notifys.
 DUK_USE_DEBUGGER_FWD_LOGGING: true
-DUK_USE_DEBUGGER_FWD_PRINTALERT: true
 DUK_USE_DEBUGGER_THROW_NOTIFY: true
 
 # Automatically pause on an uncaught error about to be thrown.
