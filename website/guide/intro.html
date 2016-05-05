@@ -1,6 +1,7 @@
 <h1 id="introduction">Introduction</h1>
 
-<p>Version: <span class="duktape-version">XX.XX.XX</span> (<span class="current-date">XXXX-XX-XX</span>)</p>
+<p>Version: <span class="duktape-version">XX.XX.XX</span>
+(<span class="current-date">XXXX-XX-XX</span>)</p>
 
 <h2>Document scope</h2>
 
@@ -22,14 +23,20 @@ C/C++ program you can easily extend its functionality through scripting.
 You can also build the main control flow of your program in Ecmascript
 and use fast C code functions to do heavy lifting.</p>
 
+<p>Embeddability means that Duktape makes minimal assumptions about the
+underlying platform and its capabilities; instead, the application which
+embeds Duktape is in control of which native bindings are provided and
+in what manner.  For example, there are no default bindings for printing
+text to the console or to interact with the file system.  Duktape
+distributable package includes example providers which you can easily
+integrate if they suit your needs.</p>
+
 <p>The terms Ecmascript and Javascript are often considered more or less
 equivalent, although Javascript and its variants are technically just one
 environment where the Ecmascript language is used.  The line between the
 two is not very clear in practice: even non-browser Ecmascript environments
-often provide some browser-specific built-ins.  Duktape is no exception,
-and provides the commonly used <code>print()</code> and <code>alert()</code>
-built-ins.  Even so, we use the term Ecmascript throughout to refer to the
-language implemented by Duktape.</p>
+often provide some browser-specific built-ins.  Even so, we use the term
+Ecmascript throughout to refer to the language implemented by Duktape.</p>
 
 <h2>Conformance</h2>
 
@@ -69,7 +76,6 @@ features (some are visible to applications, while others are internal):</p>
     and <a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js Buffer</a> bindings</li>
 <li>Borrowed from ES6: <code>setPrototypeOf</code>/<code>__proto__</code>,
     a subset of <code>Proxy</code> objects, and minimal <code>const</code> support</li>
-<li>Borrowed from browsers: <code>print()</code> and <code>alert()</code></li>
 <li>Duktape specific built-ins: provided by the <code>Duktape</code> global object</li>
 <li>Extended types: custom "buffer" and "pointer" types, extended string type
     which supports arbitary binary strings and
@@ -80,7 +86,7 @@ features (some are visible to applications, while others are internal):</p>
     with just mark-and-sweep)</li>
 <li>Coroutine support</li>
 <li>Tail call support</li>
-<li>Built-in debugger</li>
+<li>Built-in debugger framework based on a debugger protocol</li>
 <li>Built-in CommonJS-based module loading framework</li>
 <li>Built-in regular expression engine with no platform dependencies</li>
 <li>Built-in Unicode support with no platform dependencies</li>
@@ -112,7 +118,8 @@ representation should be UTF-8 with automatic NUL terminators to match
 common C use.</p>
 
 <p><b>Small footprint</b>.  Code and data footprint should be as small as
-possible, even for small programs.  This is more important than performance,
+possible, even for small programs.  Duktape is portable even to "bare metal"
+targets with no standard libraries.  This is more important than performance,
 as there are already several very fast engines but fewer very compact,
 portable engines.</p>
 

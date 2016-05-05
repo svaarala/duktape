@@ -19,10 +19,23 @@ $ cd /tmp/duktape-&lt;version&gt;/
 $ make -f Makefile.cmdline
 </pre>
 
-<div class="note">
-The Makefile assumes you have <code>gcc</code> installed.  If you don't,
+<p>The Makefile assumes you have <code>gcc</code> installed.  If you don't,
 you can just edit the Makefile to match your compiler (the Makefile is
-quite simple).
+quite simple).</p>
+
+<div class="note">
+Duktape doesn't provide built-in bindings for file or console I/O to avoid
+portability issues (for example, some platforms don't have I/O APIs at all).
+The command line utility provides <code>print()</code> and <code>alert()</code>
+bindings using <a href="https://github.com/svaarala/duktape/blob/master/extras/print-alert">extras/print-alert</a>
+to make it easier to play with.  There are useful "extras" in the distributable
+providing useful (optional) bindings such as:
+<ul>
+<li><a href="https://github.com/svaarala/duktape/blob/master/extras/print-alert">print() and alert()</a></li>
+<li><a href="https://github.com/svaarala/duktape/blob/master/extras/console">console object (e.g. console.log())</a></li>
+</ul>
+<b>Throughout the guide examples will assume a <code>print()</code> binding for
+illustration.</b>
 </div>
 
 <div class="note">
@@ -33,7 +46,7 @@ by editing the Makefile:
 <li>Add <code class="nobreak">-DDUK_CMDLINE_FANCY</code></li>
 <li>Add <code>-Ipath/to/linenoise</code> for the <code>linenoise.h</code> header</li>
 <li>Add <code>path/to/linenoise.c</code> to the source list</li>
-<li>Note: linenoise only works for POSIX environments using a C compiler (not C++)</li>
+<li>Linenoise only works in POSIX environments and requires a C compiler (not C++)</li>
 </ul>
 </div>
 

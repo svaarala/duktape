@@ -321,8 +321,9 @@ implementation of a certain API call may change between a macro and an
 actual function even between compatible releases.  The Duktape API provides
 the following guarantees for macros:</p>
 <ul>
-<li>Arguments are never evaluated more than once.  However, an argument may not
-    be evaluated at all if an argument is ignored in the current version.</li>
+<li>Arguments are never evaluated more than once (unless explicitly mentioned).
+    However, an argument may not be evaluated at all if an argument is ignored
+    in the current version.</li>
 <li>An API call with a return value can be used as an expression.  If the API
     macro contains multiple statements, it is implemented as a comma expression
     (e.g. <code>(foo, bar, quux)</code>).</li>
