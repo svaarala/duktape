@@ -27,7 +27,7 @@ Duktape provides the following basic debugging features:
 * A mechanism for application-defined requests (AppRequest) and notifications
   (AppNotify)
 
-* Forwarding of print(), alert(), and logger writes
+* Forwarding of logger writes
 
 * Full heap dump (debugger web UI converts to JSON)
 
@@ -63,8 +63,7 @@ To integrate debugger support into your target, you need to:
 * **Check your feature options**: define ``DUK_OPT_DEBUGGER_SUPPORT`` and
   ``DUK_OPT_INTERRUPT_COUNTER`` to enable debugger support in Duktape.
   Also consider other debugging related feature options, like forwarding
-  built-in ``print()``/``alert()`` calls (``DUK_OPT_DEBUGGER_FWD_PRINTALERT``)
-  and logging (``DUK_OPT_DEBUGGER_FWD_LOGGING``) to the debug client.
+  logging (``DUK_OPT_DEBUGGER_FWD_LOGGING``) to the debug client.
 
 * **Implement a concrete stream transport mechanism**: needed for both the
   target device and the Duktape debugger.  The best transport depends on the
@@ -1415,31 +1414,15 @@ The rate of Status updates is automatically rate limited using a Date-based
 timestamp, so that Status updates are sent at most every 200ms when Duktape
 is running in normal or checked mode.
 
-Print notification (0x02)
--------------------------
+Reserved (0x02)
+---------------
 
-Format::
+(Removed in Duktape 2.0.0, Print notify in Duktape 1.x.)
 
-    NFY <int: 2> <str: message> EOM
+Reserved (0x03)
+---------------
 
-Example::
-
-    NFY 2 "hello world!\n" EOM
-
-String output redirected from the ``print()`` function.
-
-Alert notification (0x03)
--------------------------
-
-Format::
-
-    NFY <int: 3> <str: message> EOM
-
-Example::
-
-    NFY 3 "hello world!\n" EOM
-
-String output redirected from the ``alert()`` function.
+(Removed in Duktape 2.0.0, Alert notify in Duktape 1.x.)
 
 Log notification (0x04)
 -----------------------
