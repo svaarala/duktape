@@ -86,6 +86,10 @@ Maintenance branches:
   before an initial zero patch level release.  Release prepping should be done
   in master so that there's no need to backport release notes and such.
 
+* ``vN-maintenance``: Maintenance branch for a certain major version (e.g. 1.x)
+  which is created when master moves on for development of the next major
+  version.
+
 Release tags:
 
 * ``vN.N.N``: Release tags.  All releases are created from a maintenance
