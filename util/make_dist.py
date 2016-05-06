@@ -154,6 +154,7 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'src-noline'))
 	mkdir(os.path.join(dist, 'config'))
 	mkdir(os.path.join(dist, 'extras'))
+	mkdir(os.path.join(dist, 'extras', 'duk-v1-compat'))
 	mkdir(os.path.join(dist, 'polyfills'))
 	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
 	mkdir(os.path.join(dist, 'licenses'))
@@ -569,6 +570,12 @@ copy_files([
 copy_files([
 	'README.rst'
 ], 'extras', os.path.join(dist, 'extras'))
+
+copy_files([
+	'README.rst',
+	'duk_v1_compat.c',
+	'duk_v1_compat.h'
+], os.path.join('extras', 'duk-v1-compat'), os.path.join(dist, 'extras', 'duk-v1-compat'))
 
 copy_files([
 	'Makefile.cmdline',

@@ -1,0 +1,6 @@
+#if !defined(DUK_V1_COMPAT_INCLUDED)
+#define DUK_V1_COMPAT_INCLUDED
+
+/* FIXME */
+
+#endif  /* DUK_V1_COMPAT_INCLUDED */
