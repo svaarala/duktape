@@ -33,6 +33,15 @@ in the same application.  For example::
     rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
     #endif
 
+If you're developing against Duktape master before 2.x release, ``DUK_VERSION``
+is set to 19999 so that you can use::
+
+    #if (DUK_VERSION >= 19999)
+    rc = duk_safe_call(ctx, my_safe_call, NULL, 1 /*nargs*/, 1 /*nrets*/);
+    #else
+    rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
+    #endif
+
 DUK_OPT_xxx feature option support removed
 ------------------------------------------
 
