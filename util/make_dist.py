@@ -580,9 +580,12 @@ copy_files([
 	'Makefile.jxpretty',
 	'Makefile.sandbox',
 	'Makefile.codepage',
-	'Makefile.sharedlibrary',
 	'mandel.js'
 ], 'dist-files', dist)
+copy_and_replace(os.path.join('dist-files', 'Makefile.sharedlibrary'), os.path.join(dist, 'Makefile.sharedlibrary'), {
+	'@DUK_VERSION@': str(duk_version),
+	'@SONAME_VERSION@': str(int(duk_version / 100))  # 10500 -> 105
+})
 
 copy_and_replace(os.path.join('dist-files', 'README.rst'), os.path.join(dist, 'README.rst'), {
 	'@DUK_VERSION_FORMATTED@': duk_version_formatted,
