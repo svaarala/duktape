@@ -21,6 +21,9 @@ migrate from 1.5.x to 2.0.0.  There are also bug fixes and other minor
 behavioral changes which may affect some applications, see ``RELEASES.rst``
 for details.
 
+There are backwards compatible providers for some removed/modified API calls
+in ``extras/duk-v1-compat``.
+
 Supporting Duktape 1.x and Duktape 2.x simultaneously
 -----------------------------------------------------
 
@@ -91,6 +94,27 @@ To upgrade:
       #else
       rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
       #endif
+
+duk_dump_context_stdout() and duk_dump_context_stderr() removed
+---------------------------------------------------------------
+
+These two API calls were helpers based on ``duk_push_context_dump()`` which
+would write the context dump directly to stdout/stderr.  Having a dependency
+on stdout/stderr is a portability concern so the calls were removed in
+Duktape 2.x.
+
+To upgrade:
+
+* Replace ``duk_dump_context_stdout()`` with an explicit call sequence like::
+
+      duk_push_context_dump(ctx);
+      printf("%s\n", duk_to_string(ctx, -1));
+      duk_pop(ctx);
+
+  Similarly for ``duk_dump_context_stderr()``.
+
+* Alternatively, include extras/duk-v1-compat into your compilation to add back
+  the removed API calls.
 
 duk_debugger_attach() and duk_debugger_attach_custom() merged
 -------------------------------------------------------------
