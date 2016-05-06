@@ -22,8 +22,10 @@ static void prep(duk_context *ctx) {
 	duk_push_string(ctx, "foo");  /* -> [ 123 234 345 "foo" ] */
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	prep(ctx);
 	duk_replace(ctx, -3);         /* -> [ 123 "foo" 345 ] */
@@ -35,7 +37,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_replace(ctx, 3);          /* -> [ 123 234 "foo" ]  (legal) */
 	printf("replace at 3 ok\n");
@@ -44,7 +48,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_replace(ctx, -4);         /* -> [ "foo" 234 345 ]  (legal) */
 	printf("replace at -4 ok\n");
@@ -53,7 +59,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_replace(ctx, DUK_INVALID_INDEX);  /* (illegal: invalid index) */
 	printf("replace at DUK_INVALID_INDEX ok\n");

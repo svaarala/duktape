@@ -17,7 +17,9 @@ static duk_ret_t dummy_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Lightfunc, must sanitize the address for the expect string. */
 	duk_eval_string(ctx,
 		"(function (v) {\n"

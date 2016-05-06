@@ -24,8 +24,10 @@ i=18, n=19, charcode=0
 ==> rc=1, result='TypeError: string required, found 123 (stack index -1)'
 ===*/
 
-static int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_size_t i, n;
+
+	(void) udata;
 
 	/* Simple test, intentional out-of-bounds access at the end. */
 
@@ -40,7 +42,9 @@ static int test_1(duk_context *ctx) {
 	return 0;
 }
 
-static int test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* TypeError for invalid arg type */
 
 	duk_push_int(ctx, 123);

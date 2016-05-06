@@ -41,8 +41,10 @@ static void dump_buffer(duk_context *ctx) {
 	printf("\n");
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	unsigned char *p;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -70,8 +72,10 @@ static duk_ret_t test_1(duk_context *ctx) {
 }
 
 /* fixed buffer */
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	unsigned char *p;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -91,7 +95,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 }
 
 /* non-buffer */
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");
@@ -105,7 +111,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 }
 
 /* invalid index */
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");
@@ -119,7 +127,9 @@ static duk_ret_t test_4(duk_context *ctx) {
 }
 
 /* DUK_INVALID_INDEX */
-static duk_ret_t test_5(duk_context *ctx) {
+static duk_ret_t test_5(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	printf("non-buffer\n");

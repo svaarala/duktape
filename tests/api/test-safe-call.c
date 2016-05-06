@@ -5,8 +5,10 @@ error: Error: test_2 error
 final top: 1
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	double a, b, c;
+
+	(void) udata;
 
 	a = duk_get_number(ctx, -3);
 	b = duk_get_number(ctx, -2);
@@ -18,7 +20,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 1;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_error(ctx, DUK_ERR_INTERNAL_ERROR, "test_2 error");
 	return 0;
 }
@@ -34,7 +38,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	duk_push_int(ctx, 12);
-	rc = duk_safe_call(ctx, test_1, 3 /*nargs*/, 2 /*nrets*/);
+	rc = duk_safe_call(ctx, test_1, NULL /*udata*/, 3 /*nargs*/, 2 /*nrets*/);
 	if (rc == DUK_EXEC_SUCCESS) {
 		printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
 		printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */
@@ -47,7 +51,7 @@ void test(duk_context *ctx) {
 	duk_push_int(ctx, 10);
 	duk_push_int(ctx, 11);
 	duk_push_int(ctx, 12);
-	rc = duk_safe_call(ctx, test_2, 3 /*nargs*/, 2 /*nrets*/);
+	rc = duk_safe_call(ctx, test_2, NULL /*udata*/, 3 /*nargs*/, 2 /*nrets*/);
 	if (rc == DUK_EXEC_SUCCESS) {
 		printf("1st return value: %s\n", duk_to_string(ctx, -2));  /* 21 */
 		printf("2nd return value: %s\n", duk_to_string(ctx, -1));  /* undefined */

@@ -35,10 +35,12 @@ static void write_file(const char *filename, const char *data) {
 	}
 }
 
-static duk_ret_t test_raw(duk_context *ctx) {
+static duk_ret_t test_raw(duk_context *ctx, void *udata) {
 	const char *data1 = "print('Hello world from a file!'); 123;";
 	const char *data2 = "print('Hello world from a file, with syntax error'); obj = {";
 	duk_ret_t rc;
+
+	(void) udata;
 
 	write_file(TMPFILE, data1);
 	duk_compile_file(ctx, 0, TMPFILE);

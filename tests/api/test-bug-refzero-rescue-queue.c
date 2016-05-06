@@ -61,9 +61,11 @@ static duk_ret_t inspect_badger(duk_context *ctx);
 static void *cached_badger_1 = NULL;
 static void *cached_badger_2 = NULL;
 
-static duk_ret_t test_badgers(duk_context *ctx) {
+static duk_ret_t test_badgers(duk_context *ctx, void *udata) {
 	cached_badger_1 = create_badger(ctx, "badger1");
 	cached_badger_2 = create_badger(ctx, "badger2");
+
+	(void) udata;
 
 	printf("first call\n");
 

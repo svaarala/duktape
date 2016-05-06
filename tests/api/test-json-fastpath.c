@@ -9,7 +9,9 @@ final top: 4
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Bufferobject without cover. */
 	duk_push_fixed_buffer(ctx, 4);
 	duk_push_buffer_object(ctx, 0, 0, 100, DUK_BUFOBJ_UINT8ARRAY);

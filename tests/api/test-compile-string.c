@@ -29,8 +29,10 @@ top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_string(duk_context *ctx) {
+static duk_ret_t test_string(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	/* Normal compile */
 	duk_compile_string(ctx, 0, "print('program code'); 123");
@@ -69,11 +71,13 @@ static duk_ret_t test_string(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_lstring(duk_context *ctx) {
+static duk_ret_t test_lstring(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 	const char *src1 = "print('program code'); 123@";
 	const char *src2 = "print(Duktape.act(-2).function.fileName); 234@";
 	const char *src3 = "print('program code'); 123; obj={@";
+
+	(void) udata;
 
 	/* Normal compile */
 	duk_compile_lstring(ctx, 0, src1, strlen(src1) - 1);

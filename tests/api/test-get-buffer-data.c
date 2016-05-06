@@ -23,8 +23,10 @@ final top: 18
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_push_undefined(ctx);
 	duk_push_null(ctx);
@@ -73,8 +75,10 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_null_ptr(duk_context *ctx) {
+static duk_ret_t test_null_ptr(duk_context *ctx, void *udata) {
 	void *p;
+
+	(void) udata;
 
 	duk_eval_string(ctx,
 		"(function () {\n"
@@ -114,10 +118,12 @@ final top: 1
  * is correctly offsetted.  Avoid endianness by using initializers
  * which have the same memory representation in either case.
  */
-static duk_ret_t test_slice(duk_context *ctx) {
+static duk_ret_t test_slice(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	duk_size_t sz;
 	duk_size_t i;
+
+	(void) udata;
 
 	duk_eval_string(ctx,
 		"(function () {\n"
@@ -152,9 +158,11 @@ final top: 2
 ===*/
 
 /* Underlying buffer doesn't cover logical slice. */
-static duk_ret_t test_uncovered_buffer(duk_context *ctx) {
+static duk_ret_t test_uncovered_buffer(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_push_dynamic_buffer(ctx, 64);  /* 16x4 elements */
 
@@ -206,9 +214,11 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_invalid_index(duk_context *ctx) {
+static duk_ret_t test_invalid_index(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_get_buffer_data(ctx, -1, &sz);

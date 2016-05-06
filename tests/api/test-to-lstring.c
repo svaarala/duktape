@@ -48,9 +48,11 @@ index 19, string: '0xdeadbeef'
 ==> rc=1, result='Error: invalid stack index -2147483648'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_int_t i, j, n;
 	char *ptr;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_undefined(ctx);
@@ -110,9 +112,11 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	p = duk_to_lstring(ctx, 3, &sz);
@@ -120,9 +124,11 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	const char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	p = duk_to_lstring(ctx, DUK_INVALID_INDEX, &sz);

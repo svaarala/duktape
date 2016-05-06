@@ -15,7 +15,9 @@ static void dump_string(const char *p) {
 	printf("string:%s%s\n", (strlen(p) == 0 ? "" : " "), p);
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
 	duk_push_string(ctx, "");
@@ -24,20 +26,26 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
 	dump_string(duk_require_string(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	dump_string(duk_require_string(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	dump_string(duk_require_string(ctx, DUK_INVALID_INDEX));
 	return 0;

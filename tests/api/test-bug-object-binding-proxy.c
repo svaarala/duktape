@@ -17,8 +17,10 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_eval_string(ctx,
 		"new Proxy(new Function('return this')() /* global object */, {\n"

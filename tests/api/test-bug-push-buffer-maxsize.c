@@ -23,8 +23,10 @@ dynamic size buffer, maximum size_t - 8 (should fail)
  * size to the requested size (this is done now).
  */
 
-static int test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx, void *udata) {
 	void *buf;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -36,8 +38,10 @@ static int test_1a(duk_context *ctx) {
 	return 0;
 }
 
-static int test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx, void *udata) {
 	void *buf;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -49,8 +53,10 @@ static int test_1b(duk_context *ctx) {
 	return 0;
 }
 
-static int test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 	void *buf;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -63,8 +69,10 @@ static int test_2a(duk_context *ctx) {
 }
 
 /* This test actually succeeds even with the bug. */
-static int test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
 	void *buf;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 

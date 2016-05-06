@@ -11,7 +11,9 @@ number: nan
 ==> rc=1, result='TypeError: number required, found none (stack index -2147483648)'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_int(ctx, 123);
 	duk_push_nan(ctx);
@@ -20,20 +22,26 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_push_null(ctx);
 	printf("number: %lf\n", (double) duk_require_number(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	printf("number: %lf\n", (double) duk_require_number(ctx, 0));
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	printf("number: %lf\n", (double) duk_require_number(ctx, DUK_INVALID_INDEX));
 	return 0;

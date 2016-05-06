@@ -24,8 +24,10 @@ push string with maximum size_t - 8 (should fail)
 
 const char dummy[4] = { 'f', 'o', 'o', '\0' };
 
-static duk_ret_t test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx, void *udata) {
 	const char *p;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -37,8 +39,10 @@ static duk_ret_t test_1a(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx, void *udata) {
 	const char *p;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 

@@ -33,7 +33,7 @@ static void dump_string(duk_context *ctx) {
 	duk_pop(ctx);
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	/*
 	 *  Test with a string containing non-ASCII to ensure indices are
 	 *  treated correctly as char indices.
@@ -42,6 +42,8 @@ static duk_ret_t test_1(duk_context *ctx) {
 	 *  '666f6fe188b46172'
 	 */
 	const char *teststr = "666f6fe188b46172";
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -76,7 +78,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 }
 
 /* non-string -> error */
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123456);
@@ -87,7 +91,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 }
 
 /* invalid index */
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "foobar");
@@ -98,7 +104,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 }
 
 /* invalid index */
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_string(ctx, "foobar");

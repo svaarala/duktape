@@ -16,8 +16,10 @@ final top: 4
 ==> rc=1, result='Error: invalid stack index -1'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -35,7 +37,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -46,7 +50,9 @@ static duk_ret_t test_2a(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -57,7 +63,9 @@ static duk_ret_t test_2b(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -68,7 +76,9 @@ static duk_ret_t test_2c(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_dup_top(ctx);  /* empty */

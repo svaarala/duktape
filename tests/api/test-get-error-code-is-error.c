@@ -48,8 +48,10 @@ static duk_ret_t my_error_thrower(duk_context *ctx) {
 	return DUK_RET_INTERNAL_ERROR;
 }
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	/*
 	 *  Test values
@@ -112,7 +114,9 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_protoloop_code(duk_context *ctx) {
+static duk_ret_t test_protoloop_code(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/*
 	 *  A prototype loop currently results in a DUK_ERR_NONE
 	 *  instead of an error.
@@ -130,7 +134,9 @@ static duk_ret_t test_protoloop_code(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_protoloop_iserror(duk_context *ctx) {
+static duk_ret_t test_protoloop_iserror(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);  /* 0 */
 	duk_push_object(ctx);  /* 1 */
 

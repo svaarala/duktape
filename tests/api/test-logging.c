@@ -22,7 +22,9 @@ TIMESTAMP FTL C: fatal error: 123 quux
 	"long long long long long long long long long long " \
 	"long long long long long long long long long long "
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Force log level to output all logs. */
 	duk_eval_string(ctx, "Duktape.Logger.clog.l = 0;");
 	duk_pop(ctx);
@@ -72,7 +74,9 @@ static void my_log_write(duk_context *ctx, duk_int_t level, const char *fmt, ...
 	va_end(ap);
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Rely on the log "censoring" set up in test_1(). */
 
 	my_log_write(ctx, DUK_LOG_FATAL, "fatal error: %d %s", 123, "quux");

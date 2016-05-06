@@ -34,8 +34,10 @@ static void test_1(duk_context *ctx, int fmt_len, ...) {
 	va_end(ap);
 }
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_size_t fmt_len;
+
+	(void) udata;
 
 	/* Note: don't reuse 'ap' in multiple calls, so the fmt_len loop
 	 * is here.

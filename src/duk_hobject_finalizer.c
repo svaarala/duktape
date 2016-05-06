@@ -17,11 +17,12 @@
 
 #include "duk_internal.h"
 
-DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 	duk_hthread *thr;
 
 	DUK_ASSERT(ctx != NULL);
 	thr = (duk_hthread *) ctx;
+	DUK_UNREF(udata);
 
 	DUK_DDD(DUK_DDDPRINT("protected finalization helper running"));
 
@@ -94,7 +95,7 @@ DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) 
 
 	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling wrapped finalize helper"));
 	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */
-	rc = duk_safe_call(ctx, duk__finalize_helper, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
+	rc = duk_safe_call(ctx, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
 	DUK_ASSERT_TOP(ctx, entry_top + 2);  /* duk_safe_call discipline */
 
 	if (rc != DUK_EXEC_SUCCESS) {

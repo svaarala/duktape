@@ -17,8 +17,10 @@ top: 1
 ==> rc=1, result='ReferenceError: identifier 'zork' undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_context *ctx2;
+
+	(void) udata;
 
 	duk_push_thread(ctx);
 	ctx2 = duk_require_context(ctx, -1);
@@ -29,8 +31,10 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	duk_context *ctx2;
+
+	(void) udata;
 
 	duk_push_thread_new_globalenv(ctx);
 	ctx2 = duk_require_context(ctx, -1);

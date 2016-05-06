@@ -270,7 +270,7 @@ CCOPTS_SHARED =
 CCOPTS_SHARED += -D_POSIX_C_SOURCE=200809L  # to avoid linenoise strdup() warnings
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
-CCOPTS_SHARED += -Wall -Wextra -Wunused-result
+CCOPTS_SHARED += -Wall -Wextra -Wunused-result -Wdeclaration-after-statement
 CCOPTS_SHARED += -Wcast-qual
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
 # -Wfloat-equal is too picky, there's no apparent way to compare floats

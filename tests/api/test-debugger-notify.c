@@ -12,7 +12,9 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_notify_not_attached(duk_context *ctx) {
+static duk_ret_t test_notify_not_attached(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Not attached, ignored; no arguments. */
 	duk_debugger_notify(ctx, 0);
 	printf("top: %ld\n", (long) duk_get_top(ctx));
@@ -40,7 +42,9 @@ static duk_ret_t test_notify_not_attached(duk_context *ctx) {
 ==> rc=1, result='Error: not enough stack values for notify'
 ===*/
 
-static duk_ret_t test_notify_invalid_count1(duk_context *ctx) {
+static duk_ret_t test_notify_invalid_count1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "DummyNotify");
 	duk_debugger_notify(ctx, 2);
 
@@ -53,7 +57,9 @@ static duk_ret_t test_notify_invalid_count1(duk_context *ctx) {
 ==> rc=1, result='Error: invalid count'
 ===*/
 
-static duk_ret_t test_notify_invalid_count2(duk_context *ctx) {
+static duk_ret_t test_notify_invalid_count2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "DummyNotify");
 	duk_debugger_notify(ctx, -1);
 

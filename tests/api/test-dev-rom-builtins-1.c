@@ -20,7 +20,9 @@
  * different from setPrototypeOf() because the C API does not care if
  * the object is non-extensible.
  */
-static duk_ret_t test_set_prototype(duk_context *ctx) {
+static duk_ret_t test_set_prototype(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx, "Math");
 	duk_push_object(ctx);  /* dummy */
 	duk_set_prototype(ctx, -2);

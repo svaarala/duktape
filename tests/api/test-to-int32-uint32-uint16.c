@@ -145,8 +145,10 @@ index 42, uint16: 1, number before: nan, number after: 1.000000
 ==> rc=1, result='Error: invalid stack index -2147483648'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -234,42 +236,54 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_int32(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_uint32(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-static duk_ret_t test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_uint16(ctx, 3);
 	printf("index 3 OK\n");
 	return 0;
 }
 
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_int32(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
 	return 0;
 }
 
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_uint32(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");
 	return 0;
 }
 
-static duk_ret_t test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 	duk_to_uint16(ctx, DUK_INVALID_INDEX);
 	printf("index DUK_INVALID_INDEX OK\n");

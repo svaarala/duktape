@@ -39,7 +39,9 @@ final top: 0
 ===*/
 
 /* basic enum success cases */
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	printf("object with own properties only, enum with get_value=0\n");

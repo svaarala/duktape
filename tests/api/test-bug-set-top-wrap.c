@@ -7,7 +7,9 @@ top=0
 ==> rc=1, result='Error: invalid stack index 357913942'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* duk_set_top() uses pointer arithmetic internally, and because
@@ -28,7 +30,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("top=%ld\n", (long) duk_get_top(ctx));
 
 	/* On a 32-bit platform and 12-byte values there is no zero-

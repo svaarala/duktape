@@ -35,7 +35,9 @@ final top: 0
 ===*/
 
 /* Normal call from a duk_safe_call() wrapper, implicit return value. */
-static duk_ret_t test_basic_implicit(duk_context *ctx) {
+static duk_ret_t test_basic_implicit(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    print('inside func');\n"
@@ -49,7 +51,9 @@ static duk_ret_t test_basic_implicit(duk_context *ctx) {
 }
 
 /* Normal call from a duk_safe_call() wrapper, explicit return value. */
-static duk_ret_t test_basic_explicit(duk_context *ctx) {
+static duk_ret_t test_basic_explicit(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    print('inside func');\n"
@@ -66,7 +70,9 @@ static duk_ret_t test_basic_explicit(duk_context *ctx) {
 /* Ecmascript finally captures return and the return is propagated
  * onwards after finally finishes.
  */
-static duk_ret_t test_endfin_return(duk_context *ctx) {
+static duk_ret_t test_endfin_return(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    try {\n"

@@ -22,7 +22,9 @@ top after: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_encode(duk_context *ctx) {
+static duk_ret_t test_encode(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 	duk_push_int(ctx, 123);
 	duk_put_prop_string(ctx, -2, "foo");
@@ -35,7 +37,9 @@ static duk_ret_t test_encode(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_encode_apidoc(duk_context *ctx) {
+static duk_ret_t test_encode_apidoc(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 	duk_push_int(ctx, 42);
 	duk_put_prop_string(ctx, -2, "meaningOfLife");
@@ -46,7 +50,9 @@ static duk_ret_t test_encode_apidoc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode(duk_context *ctx) {
+static duk_ret_t test_decode(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "{\"foo\":\"bar\"}");
 	duk_push_int(ctx, 321);  /* dummy */
 	duk_json_decode(ctx, -2);
@@ -57,7 +63,9 @@ static duk_ret_t test_decode(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode_apidoc(duk_context *ctx) {
+static duk_ret_t test_decode_apidoc(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_string(ctx, "{\"meaningOfLife\":42}");
 	duk_json_decode(ctx, -1);
 	duk_get_prop_string(ctx, -1, "meaningOfLife");
@@ -68,19 +76,23 @@ static duk_ret_t test_decode_apidoc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_decode_error_raw(duk_context *ctx) {
+static duk_ret_t test_decode_error_raw(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_json_decode(ctx, -1);
 	return 1;
 }
 
-static duk_ret_t test_decode_error(duk_context *ctx) {
+static duk_ret_t test_decode_error(duk_context *ctx, void *udata) {
 	/* The JSON.parse() error message includes a byte offset, so we need to
 	 * normalize it.
 	 */
 	duk_int_t ret;
 
+	(void) udata;
+
 	duk_push_string(ctx, "{\"meaningOfLife\":,42}");
-	ret = duk_safe_call(ctx, test_decode_error_raw, 1 /*nargs*/, 1 /*nrets*/);
+	ret = duk_safe_call(ctx, test_decode_error_raw, NULL, 1 /*nargs*/, 1 /*nrets*/);
 	printf("ret: %ld\n", (long) ret);
 
 	duk_eval_string(ctx, "(function (x) { print(x.replace(/at offset \\d+/, 'at offset N')); })");

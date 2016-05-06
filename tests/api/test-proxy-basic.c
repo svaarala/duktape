@@ -137,8 +137,10 @@ static void setup_proxy(duk_context *ctx) {
 	/* -> [ proxy_object ] */
 }
 
-static duk_ret_t test_get1(duk_context *ctx) {
+static duk_ret_t test_get1(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 
@@ -152,8 +154,10 @@ static duk_ret_t test_get1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_get2(duk_context *ctx) {
+static duk_ret_t test_get2(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 
@@ -168,8 +172,10 @@ static duk_ret_t test_get2(duk_context *ctx) {
 }
 
 
-static duk_ret_t test_set1(duk_context *ctx) {
+static duk_ret_t test_set1(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 
@@ -183,8 +189,10 @@ static duk_ret_t test_set1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_set2(duk_context *ctx) {
+static duk_ret_t test_set2(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 
@@ -198,8 +206,10 @@ static duk_ret_t test_set2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_delete1(duk_context *ctx) {
+static duk_ret_t test_delete1(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 
@@ -212,8 +222,10 @@ static duk_ret_t test_delete1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_delete2(duk_context *ctx) {
+static duk_ret_t test_delete2(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	setup_proxy(ctx);
 

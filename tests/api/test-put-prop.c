@@ -1,5 +1,5 @@
 /*===
-*** test_ex_writable (duk_safe_call)
+*** test_ex_writable_safecall (duk_safe_call)
 strict: 1
 put rc=1
 result: {"foo":"bar"}
@@ -11,7 +11,7 @@ put rc=1
 result: {"foo":"bar"}
 final top: 1
 ==> rc=0, result='undefined'
-*** test_ex_nonwritable (duk_safe_call)
+*** test_ex_nonwritable_safecall (duk_safe_call)
 strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
@@ -21,7 +21,7 @@ strict: 1
 get Math -> rc=1
 Math.PI=3.141592653589793
 ==> rc=1, result='TypeError: not writable'
-*** test_ex_accessor_wo_setter (duk_safe_call)
+*** test_ex_accessor_wo_setter_safecall (duk_safe_call)
 strict: 1
 eval:
 (function () {
@@ -51,7 +51,7 @@ eval:
 })()
 top after eval: 1
 ==> rc=1, result='TypeError: setter undefined'
-*** test_ex_setter_throws (duk_safe_call)
+*** test_ex_setter_throws_safecall (duk_safe_call)
 strict: 1
 eval:
 (function () {
@@ -83,7 +83,7 @@ eval:
 top after eval: 1
 setter, throw error
 ==> rc=1, result='setter error'
-*** test_new_extensible (duk_safe_call)
+*** test_new_extensible_safecall (duk_safe_call)
 strict: 1
 put rc=1
 result: {"foo":1,"bar":"quux"}
@@ -95,7 +95,7 @@ put rc=1
 result: {"foo":1,"bar":"quux"}
 final top: 1
 ==> rc=0, result='undefined'
-*** test_new_not_extensible (duk_safe_call)
+*** test_new_not_extensible_safecall (duk_safe_call)
 strict: 1
 eval:
 (function () { var o = { foo: 1 }; Object.preventExtensions(o); return o; })()
@@ -158,6 +158,10 @@ static duk_ret_t test_ex_writable(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_ex_writable_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_ex_writable(ctx);
+}
 
 /* strict: error
  * (non-strict: return 0)
@@ -189,6 +193,10 @@ static duk_ret_t test_ex_nonwritable(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_ex_nonwritable_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_ex_nonwritable(ctx);
 }
 
 /* strict: error
@@ -227,6 +235,10 @@ static duk_ret_t test_ex_accessor_wo_setter(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_ex_accessor_wo_setter_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_ex_accessor_wo_setter(ctx);
 }
 
 /* strict: setter error propagates
@@ -271,6 +283,10 @@ static duk_ret_t test_ex_setter_throws(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_ex_setter_throws_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_ex_setter_throws(ctx);
+}
 
 /* success */
 static duk_ret_t test_new_extensible(duk_context *ctx) {
@@ -292,6 +308,10 @@ static duk_ret_t test_new_extensible(duk_context *ctx) {
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
+}
+static duk_ret_t test_new_extensible_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_new_extensible(ctx);
 }
 
 /* strict: error
@@ -322,9 +342,13 @@ static duk_ret_t test_new_not_extensible(duk_context *ctx) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
+static duk_ret_t test_new_not_extensible_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return test_new_not_extensible(ctx);
+}
 
 #define  TEST(func)  do { \
-		TEST_SAFE_CALL(func); \
+		TEST_SAFE_CALL(func ## _safecall); \
 		TEST_PCALL(func); \
 	} while (0)
 

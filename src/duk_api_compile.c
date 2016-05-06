@@ -58,7 +58,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 }
 
 /* Helper which can be called both directly and with duk_safe_call(). */
-DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__compile_raw_args *comp_args;
 	duk_uint_t flags;
@@ -66,6 +66,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	duk_hcompiledfunction *h_templ;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(udata != NULL);
 
 	/* Note: strictness is not inherited from the current Duktape/C
 	 * context.  Otherwise it would not be possible to compile
@@ -74,13 +75,10 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx) {
 	 * for discussion.
 	 */
 
-	/* [ ... source? filename? &comp_args ] (depends on flags) */
+	/* [ ... source? filename? ] (depends on flags) */
 
-	comp_args = (duk__compile_raw_args *) duk_require_pointer(ctx, -1);
+	comp_args = (duk__compile_raw_args *) udata;
 	flags = comp_args->flags;
-	duk_pop(ctx);
-
-	/* [ ... source? filename? ] */
 
 	if (flags & DUK_COMPILE_NOFILENAME) {
 		/* Automatic filename: 'eval' or 'input'. */
@@ -164,9 +162,8 @@ DUK_EXTERNAL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer,
 	comp_args->src_buffer = (const duk_uint8_t *) src_buffer;
 	comp_args->src_length = src_length;
 	comp_args->flags = flags;
-	duk_push_pointer(ctx, (void *) comp_args);
 
-	/* [ ... source? filename? &comp_args ] (depends on flags) */
+	/* [ ... source? filename? ] (depends on flags) */
 
 	if (flags & DUK_COMPILE_SAFE) {
 		duk_int_t rc;
@@ -178,16 +175,15 @@ DUK_EXTERNAL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_buffer,
 		 * directly into flags.
 		 */
 		nargs = flags & 0x07;
-		DUK_ASSERT(nargs == (1 +
-		                     ((flags & DUK_COMPILE_NOSOURCE) ? 0 : 1) +
-		                     ((flags & DUK_COMPILE_NOFILENAME) ? 0 : 1)));
-		rc = duk_safe_call(ctx, duk__do_compile, nargs, nrets);
+		DUK_ASSERT(nargs == ((flags & DUK_COMPILE_NOSOURCE) ? 0 : 1) +
+		                    ((flags & DUK_COMPILE_NOFILENAME) ? 0 : 1));
+		rc = duk_safe_call(ctx, duk__do_compile, (void *) comp_args, nargs, nrets);
 
 		/* [ ... closure ] */
 		return rc;
 	}
 
-	(void) duk__do_compile(ctx);
+	(void) duk__do_compile(ctx, (void *) comp_args);
 
 	/* [ ... closure ] */
 	return DUK_EXEC_SUCCESS;

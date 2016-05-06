@@ -13,8 +13,10 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_c_function funcptr;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_func, 1 /*nargs*/);
@@ -25,8 +27,10 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	duk_c_function funcptr;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_func, 1 /*nargs*/);
@@ -37,8 +41,10 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	duk_c_function funcptr;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_c_function(ctx, my_func, 1 /*nargs*/);

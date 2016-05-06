@@ -30,7 +30,9 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Check that Function.prototype.name is writable. */
 	duk_eval_string_noresult(ctx,
 		"var pd = Object.getOwnPropertyDescriptor(Function.prototype, 'name');\n"

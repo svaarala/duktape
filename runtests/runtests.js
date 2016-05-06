@@ -269,7 +269,7 @@ function executeTest(options, callback) {
                 '-L.',
                 '-Idist/src',
                 '-Wl,-rpath,.',
-                '-pedantic', '-ansi', '-std=c99', '-Wall', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
+                '-pedantic', '-ansi', '-std=c99', '-Wall', '-Wdeclaration-after-statement', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
                 '-g', '-ggdb',
                 '-Werror',
                 //'-m32',
@@ -370,7 +370,7 @@ var API_TEST_HEADER =
     "\t\tduk_ret_t _rc; \\\n" +
     "\t\tprintf(\"*** %s (duk_safe_call)\\n\", #func); \\\n" +
     "\t\tfflush(stdout); \\\n" +
-    "\t\t_rc = duk_safe_call(ctx, (func), 0, 1); \\\n" +
+    "\t\t_rc = duk_safe_call(ctx, (func), NULL, 0, 1); \\\n" +
     "\t\tprintf(\"==> rc=%d, result='%s'\\n\", (int) _rc, duk_safe_to_string(ctx, -1)); \\\n" +
     "\t\tfflush(stdout); \\\n" +
     "\t\tduk_pop(ctx); \\\n" +

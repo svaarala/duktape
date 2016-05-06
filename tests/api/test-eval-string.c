@@ -35,8 +35,10 @@ top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_string(duk_context *ctx) {
+static duk_ret_t test_string(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "print('Hello world!'); 123;");
 	printf("return value is: %lf\n", duk_get_number(ctx, -1));
@@ -75,13 +77,15 @@ static duk_ret_t test_string(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_lstring(duk_context *ctx) {
+static duk_ret_t test_lstring(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 	const char *src1 = "print('Hello world!'); 123;@";
 	const char *src2 = "'testString'.toUpperCase()@";
 	const char *src3 = "throw new Error('eval error');@";
 	const char *src4 = "throw new Error('eval error'); obj = {@";
 	const char *src5 = "print('Hello world!'); obj = {@";
+
+	(void) udata;
 
 	duk_eval_lstring(ctx, src1, strlen(src1) - 1);
 	printf("return value is: %lf\n", duk_get_number(ctx, -1));

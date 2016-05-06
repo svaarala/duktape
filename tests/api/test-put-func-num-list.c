@@ -53,7 +53,9 @@ static const duk_number_list_entry my_consts[] = {
 	{ NULL, 0.0 }
 };
 
-int test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* This becomes our module. */
 	duk_push_object(ctx);
 	duk_push_string(ctx, "dummy");  /* just for offset */

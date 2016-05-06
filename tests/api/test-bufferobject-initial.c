@@ -19,10 +19,12 @@ final top: 8
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_to_buffer_1(duk_context *ctx) {
+static duk_ret_t test_to_buffer_1(duk_context *ctx, void *udata) {
 	int i, j;
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "new Buffer('foobar')");
 	duk_eval_string(ctx,

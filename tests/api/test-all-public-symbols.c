@@ -15,7 +15,9 @@ dummy - return here
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_func(duk_context *ctx) {
+static duk_ret_t test_func(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	if (ctx) {
 		printf("dummy - return here\n"); fflush(stdout);
 		return 0;
@@ -254,7 +256,7 @@ static duk_ret_t test_func(duk_context *ctx) {
 	(void) duk_require_undefined(ctx, 0);
 	(void) duk_require_valid_index(ctx, 0);
 	(void) duk_resize_buffer(ctx, 0, 0);
-	(void) duk_safe_call(ctx, NULL, 0, 0);
+	(void) duk_safe_call(ctx, NULL, NULL, 0, 0);
 	(void) duk_safe_to_lstring(ctx, 0, NULL);
 	(void) duk_safe_to_string(ctx, 0);
 	(void) duk_set_finalizer(ctx, 0);

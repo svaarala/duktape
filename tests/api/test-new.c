@@ -49,7 +49,9 @@ static duk_ret_t my_func_2(duk_context *ctx) {
 	return 1;
 }
 
-static duk_ret_t test_new(duk_context *ctx) {
+static duk_ret_t test_new(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Create a constructor (function object).  Its "prototype" property
 	 * controls the internal prototype of created instances.
 	 */
@@ -81,8 +83,10 @@ static duk_ret_t test_new(duk_context *ctx) {
 }
 
 /* Successful duk_pnew(). */
-static duk_ret_t test_pnew_1(duk_context *ctx) {
+static duk_ret_t test_pnew_1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "Error");  /* constructor */
 	duk_push_string(ctx, "my error message");
@@ -96,8 +100,10 @@ static duk_ret_t test_pnew_1(duk_context *ctx) {
 }
 
 /* Failed duk_pnew(). */
-static duk_ret_t test_pnew_2(duk_context *ctx) {
+static duk_ret_t test_pnew_2(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_eval_string(ctx, "null");  /* constructor: not callable */
 	duk_push_string(ctx, "whatever");

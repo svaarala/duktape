@@ -58,8 +58,10 @@ static void prep(duk_context *ctx) {
 }
 
 /* duk_has_prop(), success cases */
-static duk_ret_t test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -92,8 +94,10 @@ static duk_ret_t test_1a(duk_context *ctx) {
 }
 
 /* duk_has_prop(), invalid index */
-static duk_ret_t test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -106,8 +110,10 @@ static duk_ret_t test_1b(duk_context *ctx) {
 }
 
 /* duk_has_prop(), DUK_INVALID_INDEX */
-static duk_ret_t test_1c(duk_context *ctx) {
+static duk_ret_t test_1c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -120,8 +126,10 @@ static duk_ret_t test_1c(duk_context *ctx) {
 }
 
 /* duk_has_prop(), not an object */
-static duk_ret_t test_1d(duk_context *ctx) {
+static duk_ret_t test_1d(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -135,8 +143,10 @@ static duk_ret_t test_1d(duk_context *ctx) {
 }
 
 /* duk_has_prop(), not an object */
-static duk_ret_t test_1e(duk_context *ctx) {
+static duk_ret_t test_1e(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -150,8 +160,10 @@ static duk_ret_t test_1e(duk_context *ctx) {
 }
 
 /* duk_has_prop_string(), success cases */
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -178,8 +190,10 @@ static duk_ret_t test_2a(duk_context *ctx) {
 }
 
 /* duk_has_prop_string(), invalid index */
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -191,8 +205,10 @@ static duk_ret_t test_2b(duk_context *ctx) {
 }
 
 /* duk_has_prop_string(), DUK_INVALID_INDEX */
-static duk_ret_t test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -204,8 +220,10 @@ static duk_ret_t test_2c(duk_context *ctx) {
 }
 
 /* duk_has_prop_index(), success cases */
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -226,8 +244,10 @@ static duk_ret_t test_3a(duk_context *ctx) {
 }
 
 /* duk_has_prop_index(), invalid index */
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 
@@ -239,8 +259,10 @@ static duk_ret_t test_3b(duk_context *ctx) {
 }
 
 /* duk_has_prop_index(), DUK_INVALID_INDEX */
-static duk_ret_t test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
+
+	(void) udata;
 
 	prep(ctx);
 

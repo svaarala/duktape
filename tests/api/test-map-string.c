@@ -19,7 +19,9 @@ static duk_codepoint_t map_char_1(void *udata, duk_codepoint_t codepoint) {
 	return codepoint;
 }
 
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	printf("test 1\n");
 	duk_push_string(ctx, "test_string");
 	duk_map_string(ctx, -1, map_char_1, NULL);
@@ -53,9 +55,11 @@ static duk_codepoint_t map_char_2(void *udata, duk_codepoint_t codepoint) {
 	return codepoint + 0x1234;
 }
 
-static duk_ret_t test_vary_size(duk_context *ctx) {
+static duk_ret_t test_vary_size(duk_context *ctx, void *udata) {
 	duk_size_t i;
 	unsigned char buf[1024];
+
+	(void) udata;
 
 	for (i = 0; i < 1024; i++) {
 		buf[i] = (duk_uint8_t) (i & 0x7f);

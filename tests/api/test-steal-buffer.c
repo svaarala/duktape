@@ -35,11 +35,13 @@ static void dump_buffer(duk_context *ctx) {
 	printf("\n");
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	unsigned char *buf;
 	duk_size_t sz;
 	int i;
+
+	(void) udata;
 
 	duk_push_dynamic_buffer(ctx, 0);
 	dump_buffer(ctx);

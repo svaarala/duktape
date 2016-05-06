@@ -21,7 +21,9 @@ static duk_ret_t my_lightfunc(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* First test: lightfunc without varargs. */
 
 	duk_push_c_lightfunc(ctx, my_lightfunc, 12 /*nargs*/, 3 /*length*/, 0 /*magic*/);
@@ -39,7 +41,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Second test: lightfunc with varargs. */
 
 	duk_push_c_lightfunc(ctx, my_lightfunc, DUK_VARARGS /*nargs*/, 3 /*length*/, 0 /*magic*/);

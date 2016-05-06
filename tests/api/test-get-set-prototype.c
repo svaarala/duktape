@@ -47,7 +47,9 @@ obj0.bar=123
  * stack top changes, and object/undefined for duk_set_prototype().  Also checks
  * how a naked object works.
  */
-static duk_ret_t test_basic(duk_context *ctx) {
+static duk_ret_t test_basic(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* Prototype object: { foo: 123 }, internal prototype is null. */
 	duk_push_object(ctx);
 	duk_push_undefined(ctx);
@@ -120,7 +122,9 @@ static duk_ret_t test_basic(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_loop(duk_context *ctx) {
+static duk_ret_t test_loop(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_object(ctx);
 	duk_push_int(ctx, 123);
 	duk_put_prop_string(ctx, -2, "foo");

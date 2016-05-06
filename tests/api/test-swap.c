@@ -34,7 +34,9 @@ static void dump_stack(duk_context *ctx) {
 	printf(" ]\n");
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -64,7 +66,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -75,7 +79,9 @@ static duk_ret_t test_2a(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -86,7 +92,9 @@ static duk_ret_t test_2b(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2c(duk_context *ctx) {
+static duk_ret_t test_2c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -97,7 +105,9 @@ static duk_ret_t test_2c(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2d(duk_context *ctx) {
+static duk_ret_t test_2d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -108,7 +118,9 @@ static duk_ret_t test_2d(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_swap_top(ctx, 0);  /* empty stack */
@@ -117,7 +129,9 @@ static duk_ret_t test_3a(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);
@@ -128,7 +142,9 @@ static duk_ret_t test_3b(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3c(duk_context *ctx) {
+static duk_ret_t test_3c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_set_top(ctx, 0);
 
 	duk_push_int(ctx, 123);

@@ -88,10 +88,12 @@ static void dump_buffer(duk_context *ctx) {
 }
 
 /* source: dynamic buffer, target: fixed buffer */
-static duk_ret_t test_1a(duk_context *ctx) {
+static duk_ret_t test_1a(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	void *q, *r;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -118,10 +120,12 @@ static duk_ret_t test_1a(duk_context *ctx) {
 }
 
 /* source: fixed buffer, target: dynamic buffer */
-static duk_ret_t test_1b(duk_context *ctx) {
+static duk_ret_t test_1b(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	void *q, *r;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -148,10 +152,12 @@ static duk_ret_t test_1b(duk_context *ctx) {
 }
 
 /* source: fixed buffer, target: fixed buffer */
-static duk_ret_t test_2a(duk_context *ctx) {
+static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -171,10 +177,12 @@ static duk_ret_t test_2a(duk_context *ctx) {
 }
 
 /* source: dynamic buffer, target: dynamic buffer */
-static duk_ret_t test_2b(duk_context *ctx) {
+static duk_ret_t test_2b(duk_context *ctx, void *udata) {
 	unsigned char *p;
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -194,9 +202,11 @@ static duk_ret_t test_2b(duk_context *ctx) {
 }
 
 /* source: non-buffer, target: fixed buffer */
-static duk_ret_t test_3a(duk_context *ctx) {
+static duk_ret_t test_3a(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
@@ -211,9 +221,11 @@ static duk_ret_t test_3a(duk_context *ctx) {
 }
 
 /* source: non-buffer, target: dynamic buffer */
-static duk_ret_t test_3b(duk_context *ctx) {
+static duk_ret_t test_3b(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 	duk_push_string(ctx, "foo");
@@ -228,9 +240,11 @@ static duk_ret_t test_3b(duk_context *ctx) {
 }
 
 /* invalid index, target: fixed buffer */
-static duk_ret_t test_4a(duk_context *ctx) {
+static duk_ret_t test_4a(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -243,9 +257,11 @@ static duk_ret_t test_4a(duk_context *ctx) {
 }
 
 /* invalid index, target: dynamic buffer */
-static duk_ret_t test_4b(duk_context *ctx) {
+static duk_ret_t test_4b(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -258,9 +274,11 @@ static duk_ret_t test_4b(duk_context *ctx) {
 }
 
 /* DUK_INVALID_INDEX, target: fixed buffer */
-static duk_ret_t test_5a(duk_context *ctx) {
+static duk_ret_t test_5a(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -273,9 +291,11 @@ static duk_ret_t test_5a(duk_context *ctx) {
 }
 
 /* DUK_INVALID_INDEX, target: dynamic buffer */
-static duk_ret_t test_5b(duk_context *ctx) {
+static duk_ret_t test_5b(duk_context *ctx, void *udata) {
 	void *q;
 	duk_size_t sz;
+
+	(void) udata;
 
 	duk_set_top(ctx, 0);
 
@@ -290,11 +310,13 @@ static duk_ret_t test_5b(duk_context *ctx) {
 /* When converting from an external buffer to a fixed buffer a copy is
  * always made.
  */
-static duk_ret_t test_6a(duk_context *ctx) {
+static duk_ret_t test_6a(duk_context *ctx, void *udata) {
 	unsigned char buf[16];
 	int i;
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	for (i = 0; i < 16; i++) {
 		buf[i] = (unsigned char) i;
@@ -317,11 +339,13 @@ static duk_ret_t test_6a(duk_context *ctx) {
 /* When converting from an external buffer to a dynamic buffer a copy
  * is always made.
  */
-static duk_ret_t test_6b(duk_context *ctx) {
+static duk_ret_t test_6b(duk_context *ctx, void *udata) {
 	unsigned char buf[16];
 	int i;
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	for (i = 0; i < 16; i++) {
 		buf[i] = (unsigned char) i;
@@ -344,11 +368,13 @@ static duk_ret_t test_6b(duk_context *ctx) {
 /* When converting from an external buffer to a "don't care" buffer,
  * an external buffer is kept as is.
  */
-static duk_ret_t test_6c(duk_context *ctx) {
+static duk_ret_t test_6c(duk_context *ctx, void *udata) {
 	unsigned char buf[16];
 	int i;
 	unsigned char *p;
 	duk_size_t sz;
+
+	(void) udata;
 
 	for (i = 0; i < 16; i++) {
 		buf[i] = (unsigned char) i;

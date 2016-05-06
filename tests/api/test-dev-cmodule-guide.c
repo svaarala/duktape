@@ -52,8 +52,10 @@ final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_use_module(duk_context *ignored_ctx) {
+static duk_ret_t test_use_module(duk_context *ignored_ctx, void *udata) {
 	duk_context *ctx;
+
+	(void) udata;
 
 	ctx = duk_create_heap_default();
 	if (!ctx) {
@@ -106,8 +108,10 @@ static duk_ret_t my_modsearch(duk_context *ctx) {
 	return 0;  /* return undefined, no Ecmascript source code */
 }
 
-static duk_ret_t test_modsearch_module(duk_context *ignored_ctx) {
+static duk_ret_t test_modsearch_module(duk_context *ignored_ctx, void *udata) {
 	duk_context *ctx;
+
+	(void) udata;
 
 	ctx = duk_create_heap_default();
 	if (!ctx) {

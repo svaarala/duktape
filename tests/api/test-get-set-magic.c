@@ -38,7 +38,9 @@ static duk_ret_t my_func(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_function(ctx, my_func, 0);
 	duk_push_undefined(ctx);  /* dummy filler */
 
@@ -71,7 +73,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* duk_get_magic() is strict: incorrect target type throws an error.
 	 * This minimizes compiled function size and magic manipulation is
 	 * rare.
@@ -81,7 +85,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	/* duk_set_magic() is similarly strict. */
 	duk_eval_string(ctx, "(function () {})");
 	duk_set_magic(ctx, -1, 0x4321);
@@ -108,7 +114,9 @@ static duk_ret_t guide_example(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_c_function(ctx, guide_example, 1);
 	duk_set_magic(ctx, -1, 0);  /* INFO */
 

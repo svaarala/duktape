@@ -22,8 +22,10 @@ static void prep(duk_context *ctx) {
 	duk_push_int(ctx, 345);       /* -> [ 123 234 345 ] */
 }
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+
+	(void) udata;
 
 	prep(ctx);
 	duk_remove(ctx, -2);          /* -> [ 123 345 ] */
@@ -35,7 +37,9 @@ static duk_ret_t test_1(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_2(duk_context *ctx) {
+static duk_ret_t test_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_remove(ctx, 2);   /* -> [ 123 234 ]  (legal) */
 	printf("remove at 2 ok\n");
@@ -46,7 +50,9 @@ static duk_ret_t test_2(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_3(duk_context *ctx) {
+static duk_ret_t test_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_remove(ctx, 0);   /* -> [ 234 345 ]  (legal) */
 	printf("remove at 0 ok\n");
@@ -57,7 +63,9 @@ static duk_ret_t test_3(duk_context *ctx) {
 	return 0;
 }
 
-static duk_ret_t test_4(duk_context *ctx) {
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	prep(ctx);
 	duk_remove(ctx, DUK_INVALID_INDEX);  /* (illegal) */
 	printf("remove at DUK_INVALID_INDEX ok\n");

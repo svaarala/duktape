@@ -9,7 +9,9 @@ final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_1(duk_context *ctx) {
+static duk_ret_t test_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_eval_string(ctx, "(function (x) { print(Duktape.enc('jx', x)); })");
 
 	duk_push_object(ctx);

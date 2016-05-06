@@ -193,6 +193,10 @@ static duk_ret_t my_thrower_1(duk_context *ctx) {
 	duk_call(ctx, 0);
 	return 0;
 }
+static duk_ret_t my_thrower_1_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return my_thrower_1(ctx);
+}
 
 static duk_ret_t my_thrower_2(duk_context *ctx) {
 	/* When an error is thrown using duk_error(), the __FILE__ and __LINE__
@@ -202,6 +206,10 @@ static duk_ret_t my_thrower_2(duk_context *ctx) {
 #line 1234 "dummy.c"
 	duk_error(ctx, DUK_ERR_RANGE_ERROR, "user error");
 	return 0;
+}
+static duk_ret_t my_thrower_2_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return my_thrower_2(ctx);
 }
 
 static duk_ret_t my_thrower_3(duk_context *ctx) {
@@ -213,6 +221,10 @@ static duk_ret_t my_thrower_3(duk_context *ctx) {
 	duk_throw(ctx);
 	return 0;
 }
+static duk_ret_t my_thrower_3_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return my_thrower_3(ctx);
+}
 
 static duk_ret_t my_thrower_4(duk_context *ctx) {
 	/* When an error is thrown from inside Duktape (which is always
@@ -223,15 +235,19 @@ static duk_ret_t my_thrower_4(duk_context *ctx) {
 	duk_require_string(ctx, -1);
 	return 0;
 }
+static duk_ret_t my_thrower_4_safecall(duk_context *ctx, void *udata) {
+	(void) udata;
+	return my_thrower_4(ctx);
+}
 
 /*
  *  Empty callstack
  */
 
-static duk_ret_t empty_helper(duk_context *ctx, duk_c_function target_func) {
+static duk_ret_t empty_helper(duk_context *ctx, duk_safe_call_function target_func) {
 	duk_int_t rc;
 
-	rc = duk_safe_call(ctx, target_func, 0, 1);
+	rc = duk_safe_call(ctx, target_func, NULL, 0, 1);
 	(void) rc;
 
 	duk_eval_string(ctx, "(function (e) { print(e.fileName, e.lineNumber); if (PRINT_STACK) { print(e.stack); } })");
@@ -243,20 +259,28 @@ static duk_ret_t empty_helper(duk_context *ctx, duk_c_function target_func) {
 	return 0;
 }
 
-static duk_ret_t test_empty_1(duk_context *ctx) {
-	return empty_helper(ctx, my_thrower_1);
+static duk_ret_t test_empty_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	return empty_helper(ctx, my_thrower_1_safecall);
 }
 
-static duk_ret_t test_empty_2(duk_context *ctx) {
-	return empty_helper(ctx, my_thrower_2);
+static duk_ret_t test_empty_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	return empty_helper(ctx, my_thrower_2_safecall);
 }
 
-static duk_ret_t test_empty_3(duk_context *ctx) {
-	return empty_helper(ctx, my_thrower_3);
+static duk_ret_t test_empty_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	return empty_helper(ctx, my_thrower_3_safecall);
 }
 
-static duk_ret_t test_empty_4(duk_context *ctx) {
-	return empty_helper(ctx, my_thrower_4);
+static duk_ret_t test_empty_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	return empty_helper(ctx, my_thrower_4_safecall);
 }
 
 /*
@@ -296,19 +320,27 @@ static duk_ret_t nofile_helper(duk_context *ctx, duk_c_function target_func) {
 	return 0;
 }
 
-static duk_ret_t test_nofile_1(duk_context *ctx) {
+static duk_ret_t test_nofile_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return nofile_helper(ctx, my_thrower_1);
 }
 
-static duk_ret_t test_nofile_2(duk_context *ctx) {
+static duk_ret_t test_nofile_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return nofile_helper(ctx, my_thrower_2);
 }
 
-static duk_ret_t test_nofile_3(duk_context *ctx) {
+static duk_ret_t test_nofile_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return nofile_helper(ctx, my_thrower_3);
 }
 
-static duk_ret_t test_nofile_4(duk_context *ctx) {
+static duk_ret_t test_nofile_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return nofile_helper(ctx, my_thrower_4);
 }
 
@@ -349,19 +381,27 @@ static duk_ret_t havefile1_helper(duk_context *ctx, duk_c_function target_func) 
 	return 0;
 }
 
-static duk_ret_t test_havefile1_1(duk_context *ctx) {
+static duk_ret_t test_havefile1_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile1_helper(ctx, my_thrower_1);
 }
 
-static duk_ret_t test_havefile1_2(duk_context *ctx) {
+static duk_ret_t test_havefile1_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile1_helper(ctx, my_thrower_2);
 }
 
-static duk_ret_t test_havefile1_3(duk_context *ctx) {
+static duk_ret_t test_havefile1_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile1_helper(ctx, my_thrower_3);
 }
 
-static duk_ret_t test_havefile1_4(duk_context *ctx) {
+static duk_ret_t test_havefile1_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile1_helper(ctx, my_thrower_4);
 }
 
@@ -406,19 +446,27 @@ static duk_ret_t havefile2_helper(duk_context *ctx, duk_c_function target_func) 
 	return 0;
 }
 
-static duk_ret_t test_havefile2_1(duk_context *ctx) {
+static duk_ret_t test_havefile2_1(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile2_helper(ctx, my_thrower_1);
 }
 
-static duk_ret_t test_havefile2_2(duk_context *ctx) {
+static duk_ret_t test_havefile2_2(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile2_helper(ctx, my_thrower_2);
 }
 
-static duk_ret_t test_havefile2_3(duk_context *ctx) {
+static duk_ret_t test_havefile2_3(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile2_helper(ctx, my_thrower_3);
 }
 
-static duk_ret_t test_havefile2_4(duk_context *ctx) {
+static duk_ret_t test_havefile2_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return havefile2_helper(ctx, my_thrower_4);
 }
 
@@ -469,55 +517,87 @@ static duk_ret_t deep_helper(duk_context *ctx, duk_c_function target_func, int d
 	return 0;
 }
 
-static duk_ret_t test_deep_1a(duk_context *ctx) {
+static duk_ret_t test_deep_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_1, 9);
 }
-static duk_ret_t test_deep_1b(duk_context *ctx) {
+static duk_ret_t test_deep_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_1, 10);
 }
-static duk_ret_t test_deep_1c(duk_context *ctx) {
+static duk_ret_t test_deep_1c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_1, 11);
 }
-static duk_ret_t test_deep_1d(duk_context *ctx) {
+static duk_ret_t test_deep_1d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_1, 50);
 }
 
-static duk_ret_t test_deep_2a(duk_context *ctx) {
+static duk_ret_t test_deep_2a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_2, 9);
 }
-static duk_ret_t test_deep_2b(duk_context *ctx) {
+static duk_ret_t test_deep_2b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_2, 10);
 }
-static duk_ret_t test_deep_2c(duk_context *ctx) {
+static duk_ret_t test_deep_2c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_2, 11);
 }
-static duk_ret_t test_deep_2d(duk_context *ctx) {
+static duk_ret_t test_deep_2d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_2, 50);
 }
 
-static duk_ret_t test_deep_3a(duk_context *ctx) {
+static duk_ret_t test_deep_3a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_3, 9);
 }
-static duk_ret_t test_deep_3b(duk_context *ctx) {
+static duk_ret_t test_deep_3b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_3, 10);
 }
-static duk_ret_t test_deep_3c(duk_context *ctx) {
+static duk_ret_t test_deep_3c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_3, 11);
 }
-static duk_ret_t test_deep_3d(duk_context *ctx) {
+static duk_ret_t test_deep_3d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_3, 50);
 }
 
-static duk_ret_t test_deep_4a(duk_context *ctx) {
+static duk_ret_t test_deep_4a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_4, 9);
 }
-static duk_ret_t test_deep_4b(duk_context *ctx) {
+static duk_ret_t test_deep_4b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_4, 10);
 }
-static duk_ret_t test_deep_4c(duk_context *ctx) {
+static duk_ret_t test_deep_4c(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_4, 11);
 }
-static duk_ret_t test_deep_4d(duk_context *ctx) {
+static duk_ret_t test_deep_4d(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	return deep_helper(ctx, my_thrower_4, 50);
 }
 

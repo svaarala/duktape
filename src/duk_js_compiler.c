@@ -7611,7 +7611,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_bo
 
 /* XXX: source code property */
 
-DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_filename;
 	duk__compiler_stkstate *comp_stk;
@@ -7625,15 +7625,16 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	duk_small_uint_t flags;
 
 	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(udata != NULL);
 
 	/*
 	 *  Arguments check
 	 */
 
 	entry_top = duk_get_top(ctx);
-	DUK_ASSERT(entry_top >= 2);
+	DUK_ASSERT(entry_top >= 1);
 
-	comp_stk = (duk__compiler_stkstate *) duk_require_pointer(ctx, -1);
+	comp_stk = (duk__compiler_stkstate *) udata;
 	comp_ctx = &comp_stk->comp_ctx_alloc;
 	lex_pt = &comp_stk->lex_pt_alloc;
 	DUK_ASSERT(comp_ctx != NULL);
@@ -7644,7 +7645,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx) {
 	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
 	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
 
-	h_filename = duk_get_hstring(ctx, -2);  /* may be undefined */
+	h_filename = duk_get_hstring(ctx, -1);  /* may be undefined */
 
 	/*
 	 *  Init compiler and lexer contexts
@@ -7764,11 +7765,6 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	duk_compiler_ctx *prev_ctx;
 	duk_ret_t safe_rc;
 
-	/* XXX: this illustrates that a C catchpoint implemented using duk_safe_call()
-	 * is a bit heavy at the moment.  The wrapper compiles to ~180 bytes on x64.
-	 * Alternatives would be nice.
-	 */
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(src_buffer != NULL);
 
@@ -7779,13 +7775,11 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	comp_stk.comp_ctx_alloc.lex.input = src_buffer;
 	comp_stk.comp_ctx_alloc.lex.input_length = src_length;
 
-	duk_push_pointer(ctx, (void *) &comp_stk);
-
-	/* [ ... filename &comp_stk ] */
+	/* [ ... filename ] */
 
 	prev_ctx = thr->compile_ctx;
 	thr->compile_ctx = &comp_stk.comp_ctx_alloc;  /* for duk_error_augment.c */
-	safe_rc = duk_safe_call(ctx, duk__js_compile_raw, 2 /*nargs*/, 1 /*nret*/);
+	safe_rc = duk_safe_call(ctx, duk__js_compile_raw, (void *) &comp_stk /*udata*/, 1 /*nargs*/, 1 /*nret*/);
 	thr->compile_ctx = prev_ctx;  /* must restore reliably before returning */
 
 	if (safe_rc != DUK_EXEC_SUCCESS) {

@@ -2046,8 +2046,9 @@ DUK_EXTERNAL const char *duk_to_lstring(duk_context *ctx, duk_idx_t index, duk_s
 	return duk_require_lstring(ctx, index, out_len);
 }
 
-DUK_LOCAL duk_ret_t duk__safe_to_string_raw(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__safe_to_string_raw(duk_context *ctx, void *udata) {
 	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_UNREF(udata);
 
 	duk_to_string(ctx, -1);
 	return 1;
@@ -2064,10 +2065,10 @@ DUK_EXTERNAL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, 
 	 */
 
 	duk_dup(ctx, index);
-	(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/);
+	(void) duk_safe_call(ctx, duk__safe_to_string_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 	if (!duk_is_string(ctx, -1)) {
 		/* Error: try coercing error to string once. */
-		(void) duk_safe_call(ctx, duk__safe_to_string_raw, 1 /*nargs*/, 1 /*nrets*/);
+		(void) duk_safe_call(ctx, duk__safe_to_string_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 		if (!duk_is_string(ctx, -1)) {
 			/* Double error */
 			duk_pop(ctx);

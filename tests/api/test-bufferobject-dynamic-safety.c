@@ -431,7 +431,9 @@ static void shared_read_write_index(duk_context *ctx, duk_size_t resize_to) {
 }
 
 /* Duktape.Buffer */
-static duk_ret_t test_duktape_buffer_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_duktape_buffer_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 100);
 	setup_duktape_buffer(ctx, -1);
 	shared_read_write_index(ctx, 95);
@@ -441,7 +443,9 @@ static duk_ret_t test_duktape_buffer_indexed_1a(duk_context *ctx) {
 }
 
 /* Node.js Buffer, "full slice" */
-static duk_ret_t test_nodejs_buffer_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 100);
 	setup_nodejs_buffer(ctx, -1);
 	shared_read_write_index(ctx, 95);
@@ -451,7 +455,9 @@ static duk_ret_t test_nodejs_buffer_indexed_1a(duk_context *ctx) {
 }
 
 /* Node.js Buffer, "partial slice" */
-static duk_ret_t test_nodejs_buffer_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 150);
 	setup_nodejs_buffer_slice(ctx, -1, 30, 130);
 	shared_read_write_index(ctx, 30 + 95);
@@ -461,7 +467,9 @@ static duk_ret_t test_nodejs_buffer_indexed_1b(duk_context *ctx) {
 }
 
 /* ArrayBuffer, "full slice" */
-static duk_ret_t test_arraybuffer_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_arraybuffer_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 100);
 	setup_arraybuffer(ctx, -1);
 	shared_read_write_index(ctx, 95);
@@ -473,7 +481,9 @@ static duk_ret_t test_arraybuffer_indexed_1a(duk_context *ctx) {
 /* Can't create slices for ArrayBuffer directly. */
 
 /* Uint8Array, "full slice" */
-static duk_ret_t test_uint8array_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_uint8array_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 100);
 	setup_typedarray(ctx, -1, "Uint8Array");
 	shared_read_write_index(ctx, 95);
@@ -483,7 +493,9 @@ static duk_ret_t test_uint8array_indexed_1a(duk_context *ctx) {
 }
 
 /* Uint8Array, "partial slice" */
-static duk_ret_t test_uint8array_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_uint8array_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 150);
 	setup_typedarray_slice(ctx, -1, "Uint8Array", 30, 100);
 	shared_read_write_index(ctx, 30 + 95);
@@ -493,7 +505,9 @@ static duk_ret_t test_uint8array_indexed_1b(duk_context *ctx) {
 }
 
 /* Uint16Array, "full slice" */
-static duk_ret_t test_uint16array_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_uint16array_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 200);
 	setup_typedarray(ctx, -1, "Uint16Array");
 	shared_read_write_index(ctx, 95 * 2);
@@ -503,7 +517,9 @@ static duk_ret_t test_uint16array_indexed_1a(duk_context *ctx) {
 }
 
 /* Uint16Array, "partial slice" */
-static duk_ret_t test_uint16array_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_uint16array_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 300);
 	setup_typedarray_slice(ctx, -1, "Uint16Array", 60, 100);
 	shared_read_write_index(ctx, 60 + 95 * 2);
@@ -513,7 +529,9 @@ static duk_ret_t test_uint16array_indexed_1b(duk_context *ctx) {
 }
 
 /* Uint32Array, "full slice" */
-static duk_ret_t test_uint32array_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_uint32array_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 400);
 	setup_typedarray(ctx, -1, "Uint32Array");
 	shared_read_write_index(ctx, 95 * 4);
@@ -523,7 +541,9 @@ static duk_ret_t test_uint32array_indexed_1a(duk_context *ctx) {
 }
 
 /* Uint32Array, "partial slice" */
-static duk_ret_t test_uint32array_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_uint32array_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 600);
 	setup_typedarray_slice(ctx, -1, "Uint32Array", 120, 100);
 	shared_read_write_index(ctx, 120 + 95 * 4);
@@ -533,7 +553,9 @@ static duk_ret_t test_uint32array_indexed_1b(duk_context *ctx) {
 }
 
 /* Float32Array, "full slice" */
-static duk_ret_t test_float32array_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_float32array_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 400);
 	setup_typedarray(ctx, -1, "Float32Array");
 	shared_read_write_index(ctx, 95 * 4);
@@ -543,7 +565,9 @@ static duk_ret_t test_float32array_indexed_1a(duk_context *ctx) {
 }
 
 /* Float32Array, "partial slice" */
-static duk_ret_t test_float32array_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_float32array_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 600);
 	setup_typedarray_slice(ctx, -1, "Float32Array", 120, 100);
 	shared_read_write_index(ctx, 120 + 95 * 4);
@@ -553,7 +577,9 @@ static duk_ret_t test_float32array_indexed_1b(duk_context *ctx) {
 }
 
 /* Float64Array, "full slice" */
-static duk_ret_t test_float64array_indexed_1a(duk_context *ctx) {
+static duk_ret_t test_float64array_indexed_1a(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 800);
 	setup_typedarray(ctx, -1, "Float64Array");
 	shared_read_write_index(ctx, 95 * 8);
@@ -563,7 +589,9 @@ static duk_ret_t test_float64array_indexed_1a(duk_context *ctx) {
 }
 
 /* Float64Array, "partial slice" */
-static duk_ret_t test_float64array_indexed_1b(duk_context *ctx) {
+static duk_ret_t test_float64array_indexed_1b(duk_context *ctx, void *udata) {
+	(void) udata;
+
 	duk_push_dynamic_buffer(ctx, 1200);
 	setup_typedarray_slice(ctx, -1, "Float64Array", 240, 100);
 	shared_read_write_index(ctx, 240 + 95 * 8);
@@ -641,10 +669,12 @@ final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_json_serialize_1(duk_context *ctx) {
+static duk_ret_t test_json_serialize_1(duk_context *ctx, void *udata) {
 	unsigned char *data;
 	int i;
 	duk_uarridx_t arridx = 0;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 20);
 	for (i = 0; i < 20; i++) {
@@ -717,9 +747,11 @@ final top: 2
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_typedarray_constructor_copy_1(duk_context *ctx) {
+static duk_ret_t test_typedarray_constructor_copy_1(duk_context *ctx, void *udata) {
 	int i;
 	unsigned char *data;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 10);  /* index 0 */
 	for (i = 0; i < 10; i++) {
@@ -1050,9 +1082,11 @@ final top: 6
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_typedarray_set_1(duk_context *ctx) {
+static duk_ret_t test_typedarray_set_1(duk_context *ctx, void *udata) {
 	int i, dst, src;
 	unsigned char *data;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 10);  /* index 0 */
 	for (i = 0; i < 10; i++) {
@@ -1457,9 +1491,11 @@ final top: 5
 ==> rc=0, result='undefined'
 ===*/
 
-static int test_nodejs_buffer_compare_1(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_compare_1(duk_context *ctx, void *udata) {
 	int i, dst, src;
 	unsigned char *data;
+
+	(void) udata;
 
 	/* There are two relevant methods: Buffer.compare and Buffer.prototype.compare() */
 
@@ -1677,9 +1713,11 @@ final top: 9
 ==> rc=0, result='undefined'
 ===*/
 
-static int test_nodejs_buffer_write_1(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_write_1(duk_context *ctx, void *udata) {
 	int i, dst, src;
 	unsigned char *data;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 10);  /* index 0 */
 	for (i = 0; i < 10; i++) {
@@ -1907,9 +1945,11 @@ final top: 5
 ==> rc=0, result='undefined'
 ===*/
 
-static int test_nodejs_buffer_copy_1(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_copy_1(duk_context *ctx, void *udata) {
 	int i, dst, src;
 	unsigned char *data;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 10);  /* index 0 */
 	for (i = 0; i < 10; i++) {
@@ -1981,9 +2021,11 @@ final top: 6
 ==> rc=0, result='undefined'
 ===*/
 
-static int test_nodejs_buffer_concat_1(duk_context *ctx) {
+static duk_ret_t test_nodejs_buffer_concat_1(duk_context *ctx, void *udata) {
 	int i;
 	unsigned char *data;
+
+	(void) udata;
 
 	data = (unsigned char *) duk_push_dynamic_buffer(ctx, 10);  /* index 0 */
 	for (i = 0; i < 10; i++) {
