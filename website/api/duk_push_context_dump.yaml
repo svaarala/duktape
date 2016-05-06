@@ -32,8 +32,4 @@ tags:
   - stack
   - debug
 
-seealso:
-  - duk_dump_context_stdout
-  - duk_dump_context_stderr
-
 introduced: 1.0.0
