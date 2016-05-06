@@ -7,6 +7,7 @@ proto: |
                            duk_debug_peek_function peek_cb,
                            duk_debug_read_flush_function read_flush_cb,
                            duk_debug_write_flush_function write_flush_cb,
+                           duk_debug_request_function request_cb,
                            duk_debug_detached_function detached_cb,
                            void *udata);
 
@@ -15,19 +16,41 @@ summary: |
   enter paused state when the attach is complete.  If debugger support is not
   compiled into Duktape, throws an error.  See
   <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>
-  for more information.</p>
+  for more information on debugger integration.  The callbacks are as follows,
+  optional callbacks may be <code>NULL</code>:</p>
 
-  <p>The <code>read_cb</code> and <code>write_cb</code> callbacks are mandatory.
-  The <code>peek_cb</code> is strongly recommended but optional.  The
-  <code>read_flush_cb</code> and <code>write_flush_cb</code> callbacks are
-  optional.  Unimplemented callbacks are indicated using a <code>NULL</code>.</p>
+  <table>
+  <tr>
+  <th>Callback</th><th>Required</th><th>Description</th>
+  </tr>
+  <tr>
+  <td>read_cb</td><td>Yes</td><td>Debug transport read callback</td>
+  </tr>
+  <tr>
+  <td>write_cb</td><td>Yes</td><td>Debug transport write callback</td>
+  </tr>
+  <tr>
+  <td>peek_cb</td><td>No</td><td>Debug transport peek callback, strongly recommended but optional</td>
+  </tr>
+  <tr>
+  <td>read_flush_cb</td><td>No</td><td>Debug transport read flush callback</td>
+  </tr>
+  <tr>
+  <td>write_flush_cb</td><td>No</td><td>Debug transport write flush callback</td>
+  </tr>
+  <tr>
+  <td>request_cb</td><td>No</td><td>Application specific command (AppRequest) callback, NULL indicates no AppRequest support</td>
+  </tr>
+  <tr>
+  <td>detached_cb</td><td>No</td><td>Debugger detached callback</td>
+  </tr>
+  </table>
 
   <p><b>Important:</b> The callbacks are not allowed to call any Duktape API
   functions (doing so may cause memory unsafe behavior) except for the following:</p>
   <ul>
-  <li>The <code>request_cb</code> AppRequest callback (given in the extended
-      <code><a href="#duk_debugger_attach_custom">duk_debugger_attach_custom()</a></code>
-      API call) may use the value stack within the guidelines described in
+  <li>The <code>request_cb</code> AppRequest callback may use the value stack
+      within the guidelines described in
       <a href="https://github.com/svaarala/duktape/blob/master/doc/debugger.rst">debugger.rst</a>.</li>
   <li>Since Duktape 1.4.0 the debugger detached callback is allowed to call
       <code><a href="#duk_debugger_attach">duk_debugger_attach()</a></code>
@@ -37,9 +60,8 @@ summary: |
   </ul>
 
   <div class="note">
-  The <code><a href="#duk_debugger_attach_custom">duk_debugger_attach_custom()</a></code>
-  variant accepts an additional callback to support application specific commands
-  (AppRequest).  These two calls will be merged in Duktape 2.x.
+  The <code>duk_debugger_attach_custom()</code> and <code>duk_debugger_attach()</code>
+  API calls were merged in Duktape 2.x.
   </div>
 
 example: |
@@ -49,6 +71,7 @@ example: |
                       my_peek_cb,
                       NULL,
                       NULL,
+                      NULL,
                       my_detached_cb,
                       my_udata);
 
@@ -56,9 +79,9 @@ tags:
   - debugger
 
 seealso:
-  - duk_debugger_attach_custom
   - duk_debugger_detach
   - duk_debugger_cooperate
   - duk_debugger_notify
 
+# Introduced in 1.2.0 but incompatible change in 2.0.0.
 introduced: 1.2.0

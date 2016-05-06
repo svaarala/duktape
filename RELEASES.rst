@@ -1593,7 +1593,7 @@ Planned
 2.0.0 (XXXX-XX-XX)
 ------------------
 
-* Rework Duktape module loading model to be more flexible
+* Incompatible change: rename duk_debugger_attach_custom() API call to
+  duk_debugger_attach() to eliminate an unnecessary API call variant
+  (GH-735, GH-742)
 
-* Ecmascript 6 features will be implemented in v2.x.x at the earliest
-  (some individual features may be cherry picked into v1.x.x)

@@ -978,15 +978,15 @@ static void debugger_detached(void *udata) {
 		/* This is not necessary but should be harmless. */
 		duk_debugger_detach(ctx);
 #endif
-		duk_debugger_attach_custom(ctx,
-		                           duk_trans_socket_read_cb,
-		                           duk_trans_socket_write_cb,
-		                           duk_trans_socket_peek_cb,
-		                           duk_trans_socket_read_flush_cb,
-		                           duk_trans_socket_write_flush_cb,
-		                           debugger_request,
-		                           debugger_detached,
-		                           (void *) ctx);
+		duk_debugger_attach(ctx,
+		                    duk_trans_socket_read_cb,
+		                    duk_trans_socket_write_cb,
+		                    duk_trans_socket_peek_cb,
+		                    duk_trans_socket_read_flush_cb,
+		                    duk_trans_socket_write_flush_cb,
+		                    debugger_request,
+		                    debugger_detached,
+		                    (void *) ctx);
 	}
 }
 #endif
@@ -1099,15 +1099,15 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		duk_trans_socket_waitconn();
 		fprintf(stderr, "Debugger connected, call duk_debugger_attach() and then execute requested file(s)/eval\n");
 		fflush(stderr);
-		duk_debugger_attach_custom(ctx,
-		                           duk_trans_socket_read_cb,
-		                           duk_trans_socket_write_cb,
-		                           duk_trans_socket_peek_cb,
-		                           duk_trans_socket_read_flush_cb,
-		                           duk_trans_socket_write_flush_cb,
-		                           debugger_request,
-		                           debugger_detached,
-		                           (void *) ctx);
+		duk_debugger_attach(ctx,
+		                    duk_trans_socket_read_cb,
+		                    duk_trans_socket_write_cb,
+		                    duk_trans_socket_peek_cb,
+		                    duk_trans_socket_read_flush_cb,
+		                    duk_trans_socket_write_flush_cb,
+		                    debugger_request,
+		                    debugger_detached,
+		                    (void *) ctx);
 #else
 		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
 		fflush(stderr);
