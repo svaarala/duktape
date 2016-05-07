@@ -12,7 +12,6 @@
 DUK_INTERNAL const char *duk_str_internal_error = "internal error";
 DUK_INTERNAL const char *duk_str_invalid_count = "invalid count";
 DUK_INTERNAL const char *duk_str_invalid_call_args = "invalid call args";
-DUK_INTERNAL const char *duk_str_not_constructable = "not constructable";
 DUK_INTERNAL const char *duk_str_not_callable = "not callable";
 DUK_INTERNAL const char *duk_str_not_extensible = "not extensible";
 DUK_INTERNAL const char *duk_str_not_writable = "not writable";

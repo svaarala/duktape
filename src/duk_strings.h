@@ -24,7 +24,7 @@
 #define DUK_STR_INTERNAL_ERROR duk_str_internal_error
 #define DUK_STR_INVALID_COUNT duk_str_invalid_count
 #define DUK_STR_INVALID_CALL_ARGS duk_str_invalid_call_args
-#define DUK_STR_NOT_CONSTRUCTABLE duk_str_not_constructable
+#define DUK_STR_NOT_CONSTRUCTABLE "not constructable"
 #define DUK_STR_NOT_CALLABLE duk_str_not_callable
 #define DUK_STR_NOT_EXTENSIBLE duk_str_not_extensible
 #define DUK_STR_NOT_WRITABLE duk_str_not_writable
@@ -34,7 +34,6 @@
 DUK_INTERNAL_DECL const char *duk_str_internal_error;
 DUK_INTERNAL_DECL const char *duk_str_invalid_count;
 DUK_INTERNAL_DECL const char *duk_str_invalid_call_args;
-DUK_INTERNAL_DECL const char *duk_str_not_constructable;
 DUK_INTERNAL_DECL const char *duk_str_not_callable;
 DUK_INTERNAL_DECL const char *duk_str_not_extensible;
 DUK_INTERNAL_DECL const char *duk_str_not_writable;
