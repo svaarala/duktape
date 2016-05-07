@@ -6366,7 +6366,7 @@ DUK_INTERNAL void duk_push_lightfunc_name_raw(duk_hthread *thr, duk_c_function f
 
 	DUK_ASSERT_API_ENTRY(thr);
 
-	duk_push_sprintf(thr, "light_");
+	duk_push_literal(thr, "light_");
 	duk_push_string_funcptr(thr, (duk_uint8_t *) &func, sizeof(func));
 	duk_push_sprintf(thr, "_%04x", (unsigned int) lf_flags);
 	duk_concat(thr, 3);
@@ -6391,9 +6391,9 @@ DUK_INTERNAL void duk_push_lightfunc_tostring(duk_hthread *thr, duk_tval *tv) {
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv));
 
 	DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);  /* read before 'tv' potentially invalidated */
-	duk_push_string(thr, "function ");
+	duk_push_literal(thr, "function ");
 	duk_push_lightfunc_name_raw(thr, func, lf_flags);
-	duk_push_string(thr, "() { [lightfunc code] }");
+	duk_push_literal(thr, "() { [lightfunc code] }");
 	duk_concat(thr, 3);
 }
 
@@ -6505,7 +6505,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 	/* 'tv' may be NULL */
 
 	if (tv == NULL) {
-		duk_push_string(thr, "none");
+		duk_push_literal(thr, "none");
 	} else {
 		switch (DUK_TVAL_GET_TAG(tv)) {
 		case DUK_TAG_STRING: {
@@ -6514,11 +6514,11 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 				/* XXX: string summary produces question marks
 				 * so this is not very ideal.
 				 */
-				duk_push_string(thr, "[Symbol ");
+				duk_push_literal(thr, "[Symbol ");
 				duk_push_string(thr, duk__get_symbol_type_string(h));
-				duk_push_string(thr, " ");
+				duk_push_literal(thr, " ");
 				duk__push_hstring_readable_unicode(thr, h, DUK__READABLE_STRING_MAXCHARS);
-				duk_push_string(thr, "]");
+				duk_push_literal(thr, "]");
 				duk_concat(thr, 5);
 				break;
 			}
@@ -6603,7 +6603,7 @@ DUK_INTERNAL void duk_push_symbol_descriptive_string(duk_hthread *thr, duk_hstri
 	DUK_ASSERT_API_ENTRY(thr);
 
 	/* .toString() */
-	duk_push_string(thr, "Symbol(");
+	duk_push_literal(thr, "Symbol(");
 	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
 	p_end = p + DUK_HSTRING_GET_BYTELEN(h);
 	DUK_ASSERT(p[0] == 0xff || (p[0] & 0xc0) == 0x80);
@@ -6619,7 +6619,7 @@ DUK_INTERNAL void duk_push_symbol_descriptive_string(duk_hthread *thr, duk_hstri
 		}
 	}
 	duk_push_lstring(thr, (const char *) p, (duk_size_t) (q - p));
-	duk_push_string(thr, ")");
+	duk_push_literal(thr, ")");
 	duk_concat(thr, 3);
 }
 

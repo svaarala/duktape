@@ -1080,7 +1080,7 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	n = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 
 	if (n == 0) {
-		duk_push_string(thr, "(?:)");
+		duk_push_literal(thr, "(?:)");
 		return;
 	}
 

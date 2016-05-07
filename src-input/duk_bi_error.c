@@ -54,7 +54,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_hthread *thr) {
 	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_NAME);
 	if (duk_is_undefined(thr, -1)) {
 		duk_pop(thr);
-		duk_push_string(thr, "Error");
+		duk_push_literal(thr, "Error");
 	} else {
 		duk_to_string(thr, -1);
 	}
@@ -84,7 +84,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_hthread *thr) {
 		duk_pop(thr);
 		return 1;
 	}
-	duk_push_string(thr, ": ");
+	duk_push_literal(thr, ": ");
 	duk_insert(thr, -2);  /* ... name ': ' message */
 	duk_concat(thr, 3);
 

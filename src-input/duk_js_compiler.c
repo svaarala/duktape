@@ -977,7 +977,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		 */
 
 #if 0
-		duk_push_string(thr, "XXX");
+		duk_push_literal(thr, "XXX");
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 #endif
 	}
