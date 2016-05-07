@@ -99,7 +99,7 @@ struct duk_number_list_entry {
 #define DUK_GIT_BRANCH                    @GIT_BRANCH_CSTRING@
 
 /* Duktape debug protocol version used by this build. */
-#define DUK_DEBUG_PROTOCOL_VERSION        1
+#define DUK_DEBUG_PROTOCOL_VERSION        2
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
