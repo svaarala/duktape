@@ -63,8 +63,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_del_prop(ctx, 0);
 	(void) duk_del_var(ctx);
 	(void) duk_destroy_heap(ctx);
-	(void) duk_dump_context_stderr(ctx);
-	(void) duk_dump_context_stdout(ctx);
 	(void) duk_dump_function(ctx);
 	(void) duk_dup_top(ctx);
 	(void) duk_dup(ctx, 0);
