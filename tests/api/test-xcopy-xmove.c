@@ -5,6 +5,20 @@
  *  the implementation.
  */
 
+static duk_ret_t my_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
+static void setup_print_binding(duk_context *ctx) {
+	/* Dummy print() binding. */
+	duk_push_c_function(ctx, my_print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
+}
+
 /*===
 *** test_xcopy_top_basic (duk_safe_call)
 ctx1 (top=10): foo0 foo1 foo2 foo3 foo4 foo5 foo6 foo7 foo8 foo9
@@ -199,6 +213,8 @@ static void prep_plain(duk_context *ctx, duk_context **out1, duk_context **out2)
 	ctx1 = duk_require_context(ctx, -2);
 	ctx2 = duk_require_context(ctx, -1);
 
+	setup_print_binding(ctx2);
+
 	for (i = 0; i < 10; i++) {
 		duk_push_sprintf(ctx1, "foo%d", i);
 	}
@@ -219,6 +235,8 @@ static void prep_large(duk_context *ctx, duk_context **out1, duk_context **out2)
 	duk_push_thread_new_globalenv(ctx);
 	ctx1 = duk_require_context(ctx, -2);
 	ctx2 = duk_require_context(ctx, -1);
+
+	setup_print_binding(ctx2);
 
 	duk_require_stack(ctx1, 100000);
 	duk_require_stack(ctx2, 80000);
@@ -243,6 +261,8 @@ static void prep_finalizers(duk_context *ctx, duk_context **out1, duk_context **
 	duk_push_thread_new_globalenv(ctx);
 	ctx1 = duk_require_context(ctx, -2);
 	ctx2 = duk_require_context(ctx, -1);
+
+	setup_print_binding(ctx2);
 
 	/* Use a global finalizer to avoid any chance of the object being finalized
 	 * residing in the closure of the finalizer and thus participating in a

@@ -5,6 +5,14 @@
 /* Include duktape.h and whatever platform headers are needed. */
 #include "duktape.h"
 
+static duk_ret_t my_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
 /*
  *  Duktape/C functions providing module functionality.
  */
@@ -118,6 +126,10 @@ static duk_ret_t test_modsearch_module(duk_context *ignored_ctx, void *udata) {
 		printf("Failed to create heap\n");
 		return 0;
 	}
+
+	/* Dummy print() binding. */
+	duk_push_c_function(ctx, my_print, 1);
+	duk_put_global_string(ctx, "print");
 
 	/* Register Duktape.modSearch. */
 	duk_eval_string(ctx, "(function (fun) { Duktape.modSearch = fun; })");

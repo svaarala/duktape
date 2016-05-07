@@ -11,8 +11,6 @@
 /*===
 global
 Duktape object wc
-print function wc
-alert function wc
 Duktape
 Duktape.version number none
 Duktape.Buffer function wc
@@ -144,8 +142,7 @@ function propsTest() {
 
     print('global');
     printraw(this, 'Duktape', 'Duktape');
-    printraw(this, 'print', 'print');
-    printraw(this, 'alert', 'alert');
+    // print and alert were removed in Duktape 2.x.
 
     print('Duktape');
     printall(Duktape, 'Duktape');

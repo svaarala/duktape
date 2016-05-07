@@ -3,6 +3,14 @@
  *  rescued the object.
  */
 
+static duk_ret_t my_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
 /*===
 *** test_heap_destruction (duk_safe_call)
 creating heap
@@ -29,6 +37,10 @@ static duk_ret_t test_heap_destruction(duk_context *ignored_ctx, void *udata) {
 		return 0;
 	}
 	printf("heap created\n"); fflush(stdout);
+
+	/* Dummy print() binding. */
+	duk_push_c_function(my_ctx, my_print, 1);
+	duk_put_global_string(my_ctx, "print");
 
 	duk_eval_string_noresult(my_ctx,
 		"(function () {\n"

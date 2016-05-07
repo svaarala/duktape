@@ -3,10 +3,16 @@
  */
 
 /*===
-2+3 is 5
+1+2=3
+2+3=5
 ===*/
 
-static duk_ret_t my_adder(duk_context *ctx) {
+static duk_ret_t native_print(duk_context *ctx) {
+	printf("%s\n", duk_to_string(ctx, 0));
+	return 0;
+}
+
+static duk_ret_t native_adder(duk_context *ctx) {
 	duk_idx_t i, n;
 	double res = 0.0;
 
@@ -20,12 +26,14 @@ static duk_ret_t my_adder(duk_context *ctx) {
 }
 
 void test(duk_context *ctx) {
-	duk_push_global_object(ctx);
-	duk_push_c_function(ctx, my_adder, DUK_VARARGS);
-	duk_put_prop_string(ctx, -2, "myAdder");
-	duk_pop(ctx);  /* pop global */
+	duk_eval_string(ctx, "1+2");
+	printf("1+2=%d\n", (int) duk_get_int(ctx, -1));
+	duk_pop(ctx);
 
-	duk_push_string(ctx, "print('2+3 is', myAdder(2, 3));");
-	duk_eval(ctx);
-	duk_pop(ctx);  /* pop eval result */
+	duk_push_c_function(ctx, native_print, 1);
+	duk_put_global_string(ctx, "print");
+	duk_push_c_function(ctx, native_adder, DUK_VARARGS);
+	duk_put_global_string(ctx, "adder");
+
+	duk_eval_string_noresult(ctx, "print('2+3=' + adder(2, 3));");
 }
