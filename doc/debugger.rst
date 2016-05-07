@@ -1689,12 +1689,12 @@ GetVar request (0x1a)
 
 Format::
 
-    REQ <int: 0x1a> <str: varname> [<int: level>] EOM
+    REQ <int: 0x1a> <int: level> <str: varname> EOM
     REP <int: 0/1, found> <tval: value> EOM
 
 Example::
 
-    REQ 26 "testVar" EOM
+    REQ 26 -1 "testVar" EOM
     REP 1 "myValue" EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
@@ -1706,12 +1706,12 @@ PutVar request (0x1b)
 
 Format::
 
-    REQ <int: 0x1b> <str: varname> <tval: value> [<int: level>] EOM
+    REQ <int: 0x1b> <int: level> <str: varname> <tval: value> EOM
     REP EOM
 
 Example::
 
-    REQ 27 "testVar" "newValue" EOM
+    REQ 27 -1 "testVar" "newValue" EOM
     REP EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
@@ -1738,18 +1738,17 @@ GetLocals request (0x1d)
 
 Format::
 
-    REQ <int: 0x1d> [<int: level>] EOM
+    REQ <int: 0x1d> <int: level> EOM
     REP [ <str: varName> <tval: varValue> ]* EOM
 
 Example::
 
-    REQ 29 EOM
+    REQ 29 -1 EOM
     REP "x" "1" "y" "3.1415" "foo" "bar" EOM
 
 List local variable names from specified activation (the internal ``_Varmap``).
 Level specifies the callstack depth, where -1 is the topmost (current) function,
--2 is the calling function, etc.  If not provided, the topmost function will be
-used.
+-2 is the calling function, etc.
 
 The result includes only local variables declared with ``var`` and locally
 declared functions.  Variables outside the current function scope, including
@@ -1765,25 +1764,26 @@ Eval request (0x1e)
 
 Format::
 
-    REQ <int: 0x1e> <str: expression> [<int: level>] EOM
+    REQ <int: 0x1e> <int: level | null> <str: expression> EOM
     REP <int: 0=success, 1=error> <tval: value> EOM
 
 Example::
 
-    REQ 30 "1+2" EOM
+    REQ 30 null "1+2" EOM
     REP 0 3 EOM
 
 Level specifies the callstack depth, where -1 is the topmost (current) function,
 -2 is the calling function, etc.  If not provided, the topmost function will be
 used (as with a real ``eval()``).  The level affects only the lexical scope of
 the code evaluated.  The callstack will be intact, and will be visible in e.g.
-stack traces and ``Duktape.act()``.
+stack traces and ``Duktape.act()``.  The level can also be null to perform an
+indirect Eval.
 
-The eval expression is evaluated as if a "direct call" to eval was executed
-in the position where execution has paused, in the lexical scope specified by
-the provided callstack index.  A direct eval call shares the same lexical scope
-as the function it is called from (an indirect eval call does not).  For
-instance, suppose we're executing::
+If a valid callstack level is given, the eval expression is evaluated as if a
+"direct call" to eval was executed in the position where execution has paused,
+in the lexical scope specified by the provided callstack level.  A direct eval
+call shares the same lexical scope as the function it is called from (an
+indirect eval call does not).  For instance, suppose we're executing::
 
     function foo(x, y) {
         print(x);  // (A)
@@ -1818,7 +1818,8 @@ so that the Eval statement would:
 When Eval is requested from outside any Duktape activation, e.g. while doing
 a duk_debugger_cooperate() call, there is no active Ecmascript activation so
 that a "direct" Eval is not possible.  Eval will then be executed as an
-indirect Eval instead.
+indirect Eval instead.  As noted above, you can request an indirect Eval
+explicitly by sending null for the callstack level.
 
 Current limitations:
 
@@ -1875,7 +1876,7 @@ GetBytecode request (0x21)
 
 Format::
 
-    REQ <int: 0x21> [<int: level> OR <obj: target> OR <heapptr: target>] EOM
+    REQ <int: 0x21> [<int: level | obj: target | heapptr: target>] EOM
     REP <int: numconsts> (<tval: const>){numconsts}
         <int: numfuncs> (<tval: func>){numfuncs}
         <str: bytecode> EOM
@@ -1955,7 +1956,7 @@ GetHeapObjInfo (0x23)
 Format::
 
     REQ <int: 0x23> <tval: heapptr|object|pointer> EOM
-    REP [int: flags> <str/int: key> [<tval: value> OR <obj: getter> <obj: setter>]]* EOM
+    REP [<int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>]]* EOM
 
 Example::
 
@@ -2000,7 +2001,7 @@ GetObjPropDesc (0x24)
 Format::
 
     REQ <int: 0x24> <obj: target> <str: key> EOM
-    REP <int: flags> <str/int: key> [<tval: value> OR <obj: getter> <obj: setter>] EOM
+    REP <int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>] EOM
 
 Example::
 
@@ -2079,7 +2080,7 @@ GetObjPropDescRange (0x25)
 Format::
 
     REQ <int: 0x25> <obj: target> <int: idx_start> <int: idx_end> EOM
-    REP [int: flags> <str/int: key> [<tval: value> OR <obj: getter> <obj: setter>]]* EOM
+    REP [<int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>]]* EOM
 
 Example::
 
