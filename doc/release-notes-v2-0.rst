@@ -138,6 +138,21 @@ To upgrade:
               detached_cb,
               udata);
 
+Debug protocol version bumped from 1 to 2
+-----------------------------------------
+
+Because there are small incompatible changes in the debug protocol in this
+release, the debug protocol version has been bumped from 1 to 2.  The version
+is provided by the ``DUK_DEBUG_PROTOCOL_VERSION`` constant, and also appears
+in the debug protocol version identification string.
+
+To upgrade:
+
+* Review the debug protocol changes and ensure debug client has corresponding
+  changes.
+
+* Update debug client code to support both versions 1 and 2, or version 2 only.
+
 Known issues
 ============
 

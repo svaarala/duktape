@@ -1599,3 +1599,6 @@ Planned
 * Incompatible change: rename duk_debugger_attach_custom() API call to
   duk_debugger_attach() to eliminate an unnecessary API call variant
   (GH-735, GH-742)
+
+* Incompatible change: debug protocol version bumped from 1 to 2 to indicate
+  version incompatible protocol changes in the 2.0.0 release (GH-756)
