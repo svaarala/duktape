@@ -552,6 +552,20 @@ DUK_EXTERNAL_DECL void duk_push_pointer(duk_context *ctx, void *p);
 DUK_EXTERNAL_DECL const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
 DUK_EXTERNAL_DECL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
 
+/* duk_push_literal() may evaluate its argument (a C string literal) more than
+ * once on purpose.  When speed is preferred, sizeof() avoids an unnecessary
+ * strlen() at runtime.  Sizeof("foo") == 4, so subtract 1.  The argument
+ * must be non-NULL and should not contain internal NUL characters as the
+ * behavior will then depend on config options.
+ */
+#if defined(DUK_USE_PREFER_SIZE)
+#define duk_push_literal(ctx,cstring) \
+	duk_push_string((ctx), (cstring))
+#else
+#define duk_push_literal(ctx,cstring) \
+	duk_push_lstring((ctx), (cstring), sizeof((cstring)) - 1)
+#endif
+
 DUK_EXTERNAL_DECL void duk_push_this(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_new_target(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_current_function(duk_context *ctx);
