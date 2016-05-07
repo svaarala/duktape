@@ -1605,3 +1605,6 @@ Planned
 
 * Incompatible change: debug protocol version bumped from 1 to 2 to indicate
   version incompatible protocol changes in the 2.0.0 release (GH-756)
+
+* Add a human readable summary of 'new MyConstructor()' constructor call
+  target when the target is non-constructable (GH-757)
