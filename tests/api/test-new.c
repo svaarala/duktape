@@ -14,7 +14,7 @@ final top: 0
 ==> rc=0, result='undefined'
 *** test_pnew_2 (duk_safe_call)
 pnew returned: 1
-result: TypeError: not constructable
+result: TypeError: null not constructable
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
