@@ -657,15 +657,15 @@ as an UTF-8 encoded line of the form::
 
     <protocolversion> <SP (0x20)> <additional text, no LF> <LF (0x0a)>
 
-The current protocol version is "1" and the identification line currently
+The current protocol version is "2" and the identification line currently
 has the form::
 
-    1 <DUK_VERSION> <DUK_GIT_DESCRIBE> <target string> <LF>
+    2 <DUK_VERSION> <DUK_GIT_DESCRIBE> <target string> <LF>
 
 Everything that follows the protocol version number is informative only.
 Example::
 
-    1 10099 v1.0.0-254-g2459e88 duk command built from Duktape repo
+    2 20000 v2.0.0 duk command built from Duktape repo
 
 The debug protocol version is available as a define to the user code
 (defined by ``duktape.h``)::
