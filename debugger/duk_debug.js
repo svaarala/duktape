@@ -47,6 +47,7 @@ var UI_MESSAGE_CLIPLEN = 128;
 var LOCALS_CLIPLEN = 64;
 var EVAL_CLIPLEN = 4096;
 var GETVAR_CLIPLEN = 4096;
+var SUPPORTED_DEBUG_PROTOCOL_VERSION = 2;
 
 // Commands initiated by Duktape
 var CMD_STATUS = 0x01;
@@ -1591,7 +1592,8 @@ Debugger.prototype.connectDebugger = function () {
         console.log('Debug version identification:', msg.versionIdentification);
         _this.protocolVersion = ver;
         _this.uiMessage('debugger-info', 'Debug version identification: ' + msg.versionIdentification);
-        if (ver !== 1) {
+        if (ver !== SUPPORTED_DEBUG_PROTOCOL_VERSION) {
+            console.log('Unsupported debug protocol version (got ' + ver + ', support ' + SUPPORTED_DEBUG_PROTOCOL_VERSION + ')');
             _this.uiMessage('debugger-info', 'Protocol version ' + ver + ' unsupported, dropping connection');
             _this.targetStream.destroy();
         } else {
