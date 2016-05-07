@@ -279,7 +279,6 @@ def main():
 	filelist.sort()  # for consistency
 	handpick = [
 		'duk_replacements.c',
-		'duk_strings.c',
 		'duk_debug_macros.c',
 		'duk_builtins.c',
 		'duk_error_macros.c',

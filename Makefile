@@ -157,8 +157,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_bi_buffer.c \
 	$(DISTSRCSEP)/duk_bi_pointer.c \
 	$(DISTSRCSEP)/duk_bi_logger.c \
-	$(DISTSRCSEP)/duk_selftest.c \
-	$(DISTSRCSEP)/duk_strings.c
+	$(DISTSRCSEP)/duk_selftest.c
 
 # Use combined sources for testing etc.
 DUKTAPE_SOURCES = $(DUKTAPE_SOURCES_COMBINED)

@@ -1608,3 +1608,8 @@ Planned
 
 * Add a human readable summary of 'new MyConstructor()' constructor call
   target when the target is non-constructable (GH-757)
+
+* Internal change: rework shared internal string handling so that shared
+  strings are plain string constants used in macro values, rather than
+  being declared as actual symbols; this reduces compilation warnings with
+  non-default config options (GH-760)

@@ -395,7 +395,6 @@ copy_files([
 	'duk_util_bufwriter.c',
 	'duk_selftest.c',
 	'duk_selftest.h',
-	'duk_strings.c',
 	'duk_strings.h',
 	'duk_replacements.c',
 	'duk_replacements.h'
