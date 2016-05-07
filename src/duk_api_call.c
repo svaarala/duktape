@@ -404,7 +404,15 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	return;
 
  not_constructable:
-	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
+#if defined(DUK_USE_VERBOSE_ERRORS)
+#if defined(DUK_USE_PARANOID_ERRORS)
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, -1));
+#else
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_readable(ctx, -1));
+#endif
+#else
+	DUK_ERROR_TYPE(thr, "not constructable");
+#endif
 }
 
 DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx, void *udata) {
