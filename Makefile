@@ -126,7 +126,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_api_string.c \
 	$(DISTSRCSEP)/duk_api_object.c \
 	$(DISTSRCSEP)/duk_api_buffer.c \
-	$(DISTSRCSEP)/duk_api_var.c \
 	$(DISTSRCSEP)/duk_api_logging.c \
 	$(DISTSRCSEP)/duk_api_debug.c \
 	$(DISTSRCSEP)/duk_lexer.c \
