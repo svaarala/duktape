@@ -61,7 +61,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_del_prop_index(ctx, 0, 0);
 	(void) duk_del_prop_string(ctx, 0, "dummy");
 	(void) duk_del_prop(ctx, 0);
-	(void) duk_del_var(ctx);
 	(void) duk_destroy_heap(ctx);
 	(void) duk_dump_function(ctx);
 	(void) duk_dup_top(ctx);
@@ -109,11 +108,9 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_type_mask(ctx, 0);
 	(void) duk_get_type(ctx, 0);
 	(void) duk_get_uint(ctx, 0);
-	(void) duk_get_var(ctx);
 	(void) duk_has_prop_index(ctx, 0, 0);
 	(void) duk_has_prop_string(ctx, 0, "dummy");
 	(void) duk_has_prop(ctx, 0);
-	(void) duk_has_var(ctx);
 	(void) duk_hex_decode(ctx, 0);
 	(void) duk_hex_encode(ctx, 0);
 	(void) duk_insert(ctx, 0);
@@ -225,7 +222,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_put_prop_index(ctx, 0, 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");
 	(void) duk_put_prop(ctx, 0);
-	(void) duk_put_var(ctx);
 	(void) duk_realloc_raw(ctx, NULL, 0);
 	(void) duk_realloc(ctx, NULL, 0);
 	(void) duk_remove(ctx, 0);
