@@ -11,17 +11,6 @@
 #define DUK_LONGJMP(jb)       siglongjmp((jb), 1)
 #endif
 
-typedef FILE duk_file;
-#if !defined(DUK_STDIN)
-#define DUK_STDIN       stdin
-#endif
-#if !defined(DUK_STDOUT)
-#define DUK_STDOUT      stdout
-#endif
-#if !defined(DUK_STDERR)
-#define DUK_STDERR      stderr
-#endif
-
 /* Special naming to avoid conflict with e.g. DUK_FREE() in duk_heap.h
  * (which is unfortunately named).  May sometimes need replacement, e.g.
  * some compilers don't handle zero length or NULL correctly in realloc().
@@ -88,12 +77,6 @@ typedef FILE duk_file;
 #if !defined(DUK_STRNCMP)
 #define DUK_STRNCMP      strncmp
 #endif
-#if !defined(DUK_PRINTF)
-#define DUK_PRINTF       printf
-#endif
-#if !defined(DUK_FPRINTF)
-#define DUK_FPRINTF      fprintf
-#endif
 #if !defined(DUK_SPRINTF)
 #define DUK_SPRINTF      sprintf
 #endif
@@ -113,30 +96,6 @@ typedef FILE duk_file;
 #endif
 #if !defined(DUK_VSSCANF)
 #define DUK_VSSCANF      vsscanf
-#endif
-#if !defined(DUK_FOPEN)
-#define DUK_FOPEN        fopen
-#endif
-#if !defined(DUK_FCLOSE)
-#define DUK_FCLOSE       fclose
-#endif
-#if !defined(DUK_FREAD)
-#define DUK_FREAD        fread
-#endif
-#if !defined(DUK_FWRITE)
-#define DUK_FWRITE       fwrite
-#endif
-#if !defined(DUK_FSEEK)
-#define DUK_FSEEK        fseek
-#endif
-#if !defined(DUK_FTELL)
-#define DUK_FTELL        ftell
-#endif
-#if !defined(DUK_FFLUSH)
-#define DUK_FFLUSH       fflush
-#endif
-#if !defined(DUK_FPUTC)
-#define DUK_FPUTC        fputc
 #endif
 #if !defined(DUK_MEMZERO)
 #define DUK_MEMZERO(p,n) DUK_MEMSET((p), 0, (n))
