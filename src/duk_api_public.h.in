@@ -721,18 +721,6 @@ DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_ind
 DUK_EXTERNAL_DECL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number_list_entry *numbers);
 
 /*
- *  Variable access
- */
-
-/* XXX: These calls are incomplete and not usable now.  They are not (yet)
- * part of the public API.
- */
-DUK_EXTERNAL_DECL void duk_get_var(duk_context *ctx);
-DUK_EXTERNAL_DECL void duk_put_var(duk_context *ctx);
-DUK_EXTERNAL_DECL duk_bool_t duk_del_var(duk_context *ctx);
-DUK_EXTERNAL_DECL duk_bool_t duk_has_var(duk_context *ctx);
-
-/*
  *  Object operations
  */
 

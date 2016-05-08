@@ -290,7 +290,6 @@ copy_files([
 	'duk_api_memory.c',
 	'duk_api_object.c',
 	'duk_api_string.c',
-	'duk_api_var.c',
 	'duk_api_logging.c',
 	'duk_api_debug.c',
 	'duk_bi_array.c',
