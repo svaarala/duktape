@@ -1618,6 +1618,8 @@ Planned
 * Add an extra module providing Duktape 1.x compatible print() and alert()
   bindings (GH-745)
 
+* Add an extra module with a minimal 'console' binding (GH-767)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
