@@ -170,7 +170,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/alloc-torture/duk_alloc_torture.c \
 	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
 	dist/examples/debug-trans-socket/duk_trans_socket_unix.c \
-	dist/extras/print-alert/duk_print_alert.c
+	dist/extras/print-alert/duk_print_alert.c \
+	dist/extras/console/duk_console.c
 LINENOISE_SOURCES = \
 	linenoise/linenoise.c
 
@@ -257,6 +258,7 @@ CCOPTS_FEATURES += -DDUK_OPT_FASTINT
 #CCOPTS_FEATURES += -DDUK_OPT_ROM_OBJECTS
 CCOPTS_FEATURES += -DDUK_OPT_JSON_STRINGIFY_FASTPATH
 CCOPTS_FEATURES += -DDUK_CMDLINE_PRINTALERT_SUPPORT
+CCOPTS_FEATURES += -DDUK_CMDLINE_CONSOLE_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
@@ -280,6 +282,7 @@ CCOPTS_SHARED += -I./dist/examples/alloc-torture
 CCOPTS_SHARED += -I./dist/examples/alloc-hybrid
 CCOPTS_SHARED += -I./dist/examples/debug-trans-socket
 CCOPTS_SHARED += -I./dist/extras/print-alert
+CCOPTS_SHARED += -I./dist/extras/console
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -299,11 +302,11 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert
-GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console
+GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT
 GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert
-GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
 CCLIBS	= -lm

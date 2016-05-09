@@ -2,6 +2,7 @@
  *  Command line execution tool.  Useful for test cases and manual testing.
  *
  *  To enable print()/alert() bindings, define DUK_CMDLINE_PRINTALERT_SUPPORT.
+ *  To enable console.log() etc, define DUK_CMDLINE_CONSOLE_SUPPORT.
  *
  *  To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
  *  It is not the default to maximize portability.  You can also compile in
@@ -44,6 +45,9 @@
 #endif
 #if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
 #include "duk_print_alert.h"
+#endif
+#if defined(DUK_CMDLINE_CONSOLE_SUPPORT)
+#include "duk_console.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -1097,7 +1101,12 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 
 	/* Register print() and alert() (removed in Duktape 2.x). */
 #if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
-	duk_print_alert_init(ctx);
+	duk_print_alert_init(ctx, 0 /*flags*/);
+#endif
+
+	/* Register console object. */
+#if defined(DUK_CMDLINE_CONSOLE_SUPPORT)
+	duk_console_init(ctx, DUK_CONSOLE_PROXY_WRAPPER /*flags*/);
 #endif
 
 #if defined(DUK_CMDLINE_FILEIO)
