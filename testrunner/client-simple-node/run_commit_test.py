@@ -445,9 +445,12 @@ def context_linux_x64_duk_dddprint():
 		'gcc', '-oduk',
 		'-DDUK_OPT_ASSERTIONS', '-DDUK_OPT_SELF_TESTS',
 		'-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDPRINT', '-DDUK_OPT_DDDPRINT',
+		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 		'-I' + os.path.join(cwd, 'dist', 'src'),
+		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
 		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
 		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
 		'-lm'
 	], catch=True)
 	if not res['success']:
@@ -472,10 +475,13 @@ def context_linux_x64_duk_separate_src():
 		if fn[-2:] == '.c':
 			cfiles.append(os.path.join(cwd, 'dist', 'src-separate', fn))
 	cfiles.append(os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'))
+	cfiles.append(os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'))
 
 	execute([
 		'gcc', '-oduk',
+		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 		'-I' + os.path.join(cwd, 'dist', 'src-separate'),
+		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert')
 	] + cfiles + [
 		'-lm'
 	])
@@ -495,9 +501,12 @@ def context_linux_x86_packed_tval():
 
 	execute([
 		'gcc', '-oduk', '-m32',
+		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 		'-I' + os.path.join(cwd, 'dist', 'src'),
+		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
 		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
 		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
 		'-lm'
 	])
 
@@ -529,9 +538,12 @@ def context_linux_x86_dist_genconfig():
 	os.chdir(os.path.join(cwd, 'dist'))
 	execute([
 		'gcc', '-oduk',
+		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 		'-I' + os.path.join(cwd, 'dist', 'src'),
+		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
 		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
 		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
 		'-lm'
 	])
 
@@ -572,9 +584,12 @@ def context_linux_x64_error_variants():
 		])
 		execute([
 			'gcc', '-o' + params['binary_name'],
+			'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 			'-I' + os.path.join(cwd, 'dist', 'src'),
+			'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
 			os.path.join(cwd, 'dist', 'src', 'duktape.c'),
 			os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+			os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
 			'-lm'
 		])
 		execute([ 'size', params['binary_name'] ])
@@ -695,7 +710,9 @@ def context_linux_x64_minisphere():
 	execute([ 'make', 'dist' ])
 
 	# Unpack minisphere snapshot and copy Duktape files over.
-	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160328.tar.gz'))
+	#unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160328.tar.gz'))
+	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160507.tar.gz'))
+
 	for i in [ 'duktape.c', 'duktape.h', 'duk_config.h' ]:
 		execute([
 			'cp',
@@ -713,7 +730,9 @@ def context_linux_x64_dukluv():
 	execute([ 'make', 'dist' ])
 
 	# Unpack dukluv snapshot and symlink dukluv/lib/duktape to dist.
-	unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160328.tar.gz'))
+	#unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160328.tar.gz'))
+	unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160508.tar.gz'))
+
 	execute([
 		'mv',
 		os.path.join(cwd, 'dukluv', 'lib', 'duktape'),
