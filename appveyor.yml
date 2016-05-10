@@ -42,17 +42,17 @@ build_script:
   - cmd: cl
 
   # Normal build.
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_CMDLINE_PRINTALERT_SUPPORT /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-%VCNAME%-%PLATFORM%.exe
 
   # DLL build.
   - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
 
   # Build as C++, catches some static variable issues specific to C++.
   # Also test C++ exceptions on Windows.
   # /TP forces files to be interpreted as C++ despite their extension.
   # /EHsc enables exception unwind support.
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2013 ---
 
@@ -65,10 +65,10 @@ build_script:
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-%VCNAME%-%PLATFORM%.exe
   - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2012 ---
 
@@ -82,10 +82,10 @@ build_script:
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-%VCNAME%-%PLATFORM%.exe
   - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2010 ---
 
@@ -98,10 +98,10 @@ build_script:
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-%VCNAME%-%PLATFORM%.exe
   - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
   # --- Visual Studio 2008 ---
 
@@ -114,10 +114,10 @@ build_script:
   - cmd: "%VCPATH%\\vcvarsall %VCPLATFORM%"
   - cmd: cl
 
-  - cmd: cl /W3 /O2 /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-%VCNAME%-%PLATFORM%.exe
   - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /LD /Feduktape-%VCNAME%-%PLATFORM% dist\src\duktape.c
-  - cmd: cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline dist\examples\cmdline\duk_cmdline.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
-  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
+  - cmd: cl /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_DLL_BUILD /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-dll-%VCNAME%-%PLATFORM%.exe duktape-%VCNAME%-%PLATFORM%.lib
+  - cmd: cl /TP /EHsc /W3 /O2 /DDUK_CMDLINE_PRINTALERT_SUPPORT /DDUK_OPT_CPP_EXCEPTIONS /Idist\src /Idist\examples\cmdline /Idist\extras\print-alert dist\src\duktape.c dist\examples\cmdline\duk_cmdline.c dist\extras\print-alert\duk_print_alert.c /Feduk-cxx-%VCNAME%-%PLATFORM%.exe
 
 test_script:
   - cmd: echo --- VS2015
