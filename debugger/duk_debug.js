@@ -51,8 +51,8 @@ var SUPPORTED_DEBUG_PROTOCOL_VERSION = 2;
 
 // Commands initiated by Duktape
 var CMD_STATUS = 0x01;
-var CMD_PRINT = 0x02;
-var CMD_ALERT = 0x03;
+var CMD_UNUSED_2 = 0x02;  // Duktape 1.x: print notify
+var CMD_UNUSED_3 = 0x03;  // Duktape 1.x: alert notify
 var CMD_LOG = 0x04;
 var CMD_THROW = 0x05;
 var CMD_DETACHING = 0x06;
@@ -1703,10 +1703,6 @@ Debugger.prototype.processDebugMessage = function (msg) {
             }
 
             this.emit('exec-status-update');
-        } else if (msg[1] === CMD_PRINT) {
-            this.uiMessage('print', prettyUiStringUnquoted(msg[2], UI_MESSAGE_CLIPLEN));
-        } else if (msg[1] === CMD_ALERT) {
-            this.uiMessage('alert', prettyUiStringUnquoted(msg[2], UI_MESSAGE_CLIPLEN));
         } else if (msg[1] === CMD_LOG) {
             this.uiMessage({ type: 'log', level: msg[2], message: prettyUiStringUnquoted(msg[3], UI_MESSAGE_CLIPLEN) });
         } else if (msg[1] === CMD_THROW) {
