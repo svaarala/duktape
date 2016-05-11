@@ -19,7 +19,9 @@ print() and alert() bindings:
       /* After initializing the Duktape heap or when creating a new
        * thread with a new global environment:
        */
-      duk_print_alert_init(ctx);
+      duk_print_alert_init(ctx, 0 /*flags*/);
+
+  See ``duk_print_alert.h`` for available flags.
 
 * After these steps, ``print()`` and ``alert()`` will be registered to the
   global object and are ready to use.

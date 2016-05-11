@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	duk_print_alert_init(ctx);
+	duk_print_alert_init(ctx, 0 /*flags*/);
 
 	for (i = 1; i < argc; i++) {
 		printf("Evaling: %s\n", argv[i]);
