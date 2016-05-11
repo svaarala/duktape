@@ -105,7 +105,7 @@ Duktape.eval = function(code) {
     // For unsupported types JSON.stringify() might return e.g. 'undefined'.
     var res = Duktape.dukweb_eval(
         '(function() { var t; try { ' +
-        't = eval(' + escapedString + ');' + 
+        't = eval(' + escapedString + ');' +
         'return JSON.stringify(t) || "\\"undefined\\"";' +
         '} catch (e) { ' +
         'return "ERROR: " + String(e); ' +
@@ -145,14 +145,60 @@ Duktape.logOwnProperties();
  *  browser side.
  */
 
+// Minimal console object.
+var DUKWEB_CONSOLE_INIT =
+    'Dukweb.console = (function () {\n' +
+    '    var useProxyWrapper = true;\n' +
+    '    var c = {};\n' +
+    '    function console_log(args, errName) {\n' +
+    '        var msg = Array.prototype.map.call(args, function (v) {\n' +
+    '            if (typeof v === "object" && v !== null) { return console.format(v); };\n' +
+    '            return v;\n' +
+    '        }).join(" ");\n' +
+    '        if (errName) {\n' +
+    '            var err = new Error(msg);\n' +
+    '            err.name = "Trace";\n' +
+    '            Dukweb.print(err.stack || err);\n' +
+    '        } else {\n' +
+    '            Dukweb.print(msg);\n' +
+    '        }\n' +
+    '    };\n' +
+    '    c.format = function format(v) { try { return Duktape.enc("jx", v); } catch (e) { return String(v); } };\n' +
+    '    c.assert = function assert(v) {\n' +
+    '        if (arguments[0]) { return; }\n' +
+    '        console_log(arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [ "false == true" ], "AssertionError");\n' +
+    '    };\n'+
+    '    c.log = function log() { console_log(arguments, null); };\n' +
+    '    c.debug = function debug() { console_log(arguments, null); };\n' +
+    '    c.trace = function trace() { console_log(arguments, "Trace"); };\n' +
+    '    c.info = function info() { console_log(arguments, null); };\n' +
+    '    c.warn = function warn() { console_log(arguments, null); };\n' +
+    '    c.error = function error() { console_log(arguments, "Error"); };\n' +
+    '    c.exception = function exception() { console_log(arguments, "Error"); };\n' +
+    '    c.dir = function dir() { console_log(arguments, null); };\n' +
+    '    if (typeof Proxy === "function" && useProxyWrapper) {\n' +
+    '        var orig = c;\n' +
+    '        var dummy = function () {};\n' +
+    '        c = new Proxy(orig, {\n' +
+    '            get: function (targ, key, recv) {\n' +
+    '                var v = targ[key];\n' +
+    '                return typeof v === "function" ? v : dummy;\n' +
+    '            }\n' +
+    '        });\n' +
+    '    }\n' +
+    '    return c;\n' +
+    '})();';
+
 Duktape.eval('Dukweb = {};');
 Duktape.eval('Dukweb.userAgent = ' + (JSON.stringify(navigator.userAgent.toString()) || '"unknown"') + ';');
 Duktape.eval('Dukweb.emscripten_run_script = this.emscripten_run_script; delete this.emscripten_run_script;');
 Duktape.eval('Dukweb.eval = Dukweb.emscripten_run_script;')  // FIXME: better binding
 Duktape.eval('Dukweb.print = function() { Dukweb.eval("Duktape.printHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
 Duktape.eval('Dukweb.alert = function() { Dukweb.eval("Duktape.alertHandler(" + JSON.stringify(Array.prototype.join.call(arguments, " ")) + ")") };');
+Duktape.eval(DUKWEB_CONSOLE_INIT);
 Duktape.eval('print = Dukweb.print;');
 Duktape.eval('alert = Dukweb.print;');  // intentionally bound to print()
+Duktape.eval('console = Dukweb.console;');
 
 Duktape.initSuccess = !!Duktape.dukweb_is_open();
 //console.log('=== ' + Duktape.eval('Duktape.enc("jx", { env: Duktape.env, version: Duktape.version })') + ' ===');
