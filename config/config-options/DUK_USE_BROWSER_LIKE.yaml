@@ -1,6 +1,7 @@
 define: DUK_USE_BROWSER_LIKE
 feature_enables: DUK_OPT_BROWSER_LIKE
 introduced: 1.0.0
+removed: 2.0.0
 default: true
 tags:
   - ecmascript

@@ -50,6 +50,43 @@ DUK_OPT_xxx feature option support removed
 
 FIXME.
 
+print() and alert() globals removed
+-----------------------------------
+
+The ``print()`` and ``alert()`` globals were removed because they depended on
+stdout/stderr which is a portability issue on some platforms.  Further, even
+if stdout/stderr is available, it's not always the appropriate place for debug
+printouts, so it's cleaner if the application provides its own debug/console
+logging functions.
+
+To migrate:
+
+* If you don't use ``print()`` or ``alert()`` no action is needed; they simply
+  won't be a part of the global object anymore.
+
+* If a simple ``print()`` and/or ``alert()`` suffices, you can use something
+  like this::
+
+      static duk_ret_t my_print(duk_context *ctx) {
+          duk_push_string(ctx, " ");
+          duk_insert(ctx, 0);
+          duk_join(ctx, duk_get_top(ctx) - 1);
+          fprintf(stdout, "%s\n", duk_to_string(ctx, -1));  /* 'stderr' for alert() */
+          fflush(stdout);  /* may or may not want to flush, depends on application */
+          return 0;
+      }
+
+      /* And after Duktape heap creation (or after each new thread with a
+       * fresh global environment):
+       */
+
+      duk_push_c_function(ctx, my_print, DUK_VARARGS);
+      duk_put_global_string(ctx, "print");
+
+* If you do need ``print()`` and/or ``alert()`` with the Duktape 1.x
+  semantics you can include the following extra into your compilation:
+  ``extras/print-alert``.
+
 duk_safe_call() userdata
 ------------------------
 
@@ -176,6 +213,23 @@ To upgrade:
   changes.
 
 * Update debug client code to support both versions 1 and 2, or version 2 only.
+
+Debugger print/alert forwarding removed
+---------------------------------------
+
+Forwarding of ``print()`` and ``alert()`` calls, enabled using config option
+``DUK_USE_DEBUGGER_FWD_PRINTALERT``, was removed as part of removing the calls
+themselves.  Also debugger notifications Print (0x02) and Alert (0x03) were
+deprecated.
+
+To upgrade:
+
+* No changes are needed, but print/alert notification support can be removed
+  from a debug client.
+
+* If you rely on print/alert forwarding in your debugger setup, you can add
+  custom print/alert forwarding by implementing print and alert yourself and
+  using AppNotify (``duk_debugger_notify()``) to forward print/alert text.
 
 Known issues
 ============

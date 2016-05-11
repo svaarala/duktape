@@ -144,6 +144,14 @@ static void sandbox_free(void *udata, void *ptr) {
  *  Sandbox setup and test
  */
 
+static duk_ret_t duk__print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
 static duk_ret_t do_sandbox_test(duk_context *ctx, void *udata) {
 	FILE *f;
 	char buf[4096];
@@ -155,6 +163,10 @@ static duk_ret_t do_sandbox_test(duk_context *ctx, void *udata) {
 	/*
 	 *  Setup sandbox
 	 */
+
+	/* Minimal print() provider. */
+	duk_push_c_function(ctx, duk__print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
 
 	globobj =
 		"({\n"

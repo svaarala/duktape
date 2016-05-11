@@ -80,10 +80,6 @@ strings:
   - str: "encodeURIComponent"
   - str: "escape"
   - str: "unescape"
-  - str: "print"
-    browser_like: true
-  - str: "alert"
-    browser_like: true
 
   # Object constructor
   - str: "length"
@@ -392,7 +388,6 @@ strings:
   - str: ""        # used as a class name for unused/invalid class
     class_name: true
   - str: ","       # for array joining
-  - str: " "       # for print()
   - str: "\n    "  # for tracebacks
   - str: "[...]"   # for tracebacks
   - str: "Invalid Date"  # for invalid Date instances
@@ -1219,7 +1214,6 @@ special_define_names:
   "Duktape": "DUKTAPE"
   "": "EMPTY_STRING"
   ",": "COMMA"
-  " ": "SPACE"
   "\n    ": "NEWLINE_4SPACE"
   "[...]": "BRACKETED_ELLIPSIS"
 

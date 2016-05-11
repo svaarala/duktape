@@ -37,7 +37,7 @@ Duktape API to call Ecmascript functions from C code and vice versa.</p>
 <h1>Main features</h1>
 <ul>
 <li>Embeddable, portable, compact:
-    can run on platforms with 256kB flash and 64kB system RAM</li>
+    can run on platforms with 192kB flash and 64kB system RAM</li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">Ecmascript E5/E5.1</a>
     compliant, some features borrowed from
     <a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript E6</a></li>
@@ -118,7 +118,7 @@ In the simplest case:</p>
 <pre>
 $ gcc -std=c99 -o test test.c duktape.c -lm
 $ ./test
-Hello world!
+1+2=3
 </pre>
 
 <h1><span class="step">2</span> Initialize a context</h1>
@@ -127,11 +127,13 @@ Hello world!
 
 <pre class="c-code">
 /* test.c */
+#include &lt;stdio.h&gt;
 #include &quot;duktape.h&quot;
 
 int main(int argc, char *argv[]) {
   duk_context *ctx = duk_create_heap_default();
-  duk_eval_string(ctx, "print('Hello world!');");
+  duk_eval_string(ctx, "1+2");
+  printf("1+2=%d\n", (int) duk_get_int(ctx, -1));
   duk_destroy_heap(ctx);
   return 0;
 }
@@ -140,10 +142,20 @@ int main(int argc, char *argv[]) {
 <h1><span class="step">3</span> Add C function bindings</h1>
 
 <p>To call a C function from Ecmascript code, first declare your
-C function:</p>
+C functions:</p>
 
 <pre class="c-code">
-duk_ret_t adder(duk_context *ctx) {
+/* Being an embeddable engine, Duktape doesn't provide I/O
+ * bindings by default.  Here's a simple one argument print()
+ * function.
+ */
+static duk_ret_t native_print(duk_context *ctx) {
+  printf("%s\n", duk_to_string(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+
+/* Adder: add argument values. */
+static duk_ret_t native_adder(duk_context *ctx) {
   int i;
   int n = duk_get_top(ctx);  /* #args */
   double res = 0.0;
@@ -157,29 +169,17 @@ duk_ret_t adder(duk_context *ctx) {
 }
 </pre>
 
-<p>Register your function e.g. into the global object:</p>
+<p>Register your functions e.g. into the global object:</p>
 
-<!--
 <pre class="c-code">
-duk_push_global_object(ctx);
-duk_push_c_function(ctx, adder, DUK_VARARGS);
-duk_put_prop_string(ctx, -2 /*idx:global*/, "adder");
-duk_pop(ctx);  /* pop global */
-</pre>
--->
-<pre class="c-code">
-duk_push_c_function(ctx, adder, DUK_VARARGS);
+duk_push_c_function(ctx, native_print, 1 /*nargs*/);
+duk_put_global_string(ctx, "print");
+duk_push_c_function(ctx, native_adder, DUK_VARARGS);
 duk_put_global_string(ctx, "adder");
 </pre>
 
 <p>You can then call your function from Ecmascript code:</p>
 
-<!---
-<pre class="c-code">
-duk_eval_string(ctx, "print('2+3=' + adder(2, 3));");
-duk_pop(ctx);  /* pop eval result */
-</pre>
--->
 <pre class="c-code">
 duk_eval_string_noresult(ctx, "print('2+3=' + adder(2, 3));");
 </pre>

@@ -3,8 +3,8 @@
 client_commands:
   - Reserved_0
   - Status
-  - Print
-  - Alert
+  - Reserved_2  # Duktape 1.x: print notify
+  - Reserved_3  # Duktape 1.x: alert notify
   - Log
   - Throw
   - Detaching

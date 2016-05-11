@@ -374,30 +374,6 @@ objects:
           length: 1
         section_b: true
 
-      # Non-standard extensions from the web (very minimal)
-      #
-      #   print:  common even outside browsers (smjs: length = 0)
-      #   alert:  common in browsers (Chromium: length = 0)
-
-      - key: "print"
-        value:
-          type: function
-          native: duk_bi_global_object_print_helper
-          length: 0
-          varargs: true
-          magic: 0
-        browser: true
-        duktape: true
-      - key: "alert"
-        value:
-          type: function
-          native: duk_bi_global_object_print_helper
-          length: 0
-          varargs: true
-          magic: 1
-        browser: true
-        duktape: true
-
       # CommonJS module loading
       #
       #  require:  not required to be in the global environment but useful

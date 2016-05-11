@@ -1596,6 +1596,9 @@ Planned
 * Incompatible change: add a userdata argument to duk_safe_call() to make it
   easier to pass C pointers to safe functions (GH-277, GH-727)
 
+* Incompatible change: remove print() and alert() bindings which, being
+  dependent on stdout/stderr, are often a portability issue (GH-745)
+
 * Incompatible change: rename duk_debugger_attach_custom() API call to
   duk_debugger_attach() to eliminate an unnecessary API call variant
   (GH-735, GH-742)
@@ -1611,6 +1614,9 @@ Planned
 
 * Remove duk_{get,put,has,del}_var() calls from API header; they were not
   fully implemented and not part of the documented public API (GH-762)
+
+* Add an extra module providing Duktape 1.x compatible print() and alert()
+  bindings (GH-745)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than

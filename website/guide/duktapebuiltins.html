@@ -18,10 +18,6 @@ values.</p>
     <td>Proxy constructor borrowed from ES6 (not part of Ecmascript E5/E5.1).</td></tr>
 <tr><td class="propname"><a href="#builtin-require">require</a></td>
     <td>Non-standard, CommonsJS module loading function.</td></tr>
-<tr><td class="propname"><a href="#builtin-print-alert">print</a></td>
-    <td>Non-standard, browser-like function for writing to <code>stdout</code>.</td></tr>
-<tr><td class="propname"><a href="#builtin-print-alert">alert</a></td>
-    <td>Non-standard, browser-like function for writing to <code>stderr</code>.</td></tr>
 </tbody>
 </table>
 
@@ -29,28 +25,6 @@ values.</p>
 
 <p>CommonJS module loading function, see
 <a href="#modules">Modules</a>.</p>
-
-<h3 id="builtin-print-alert">print() and alert()</h3>
-
-<p><code>print()</code> writes to <code>stdout</code> with an automatic
-flush afterwards.  The bytes written depend on the arguments:</p>
-<ul>
-<li>If given a single buffer argument, the contents of that buffer are
-    written to <code>stdout</code> as is.  This allows raw byte streams
-    to be reliably written.</li>
-<li>Otherwise arguments are string coerced, joined with a single space
-    character, a newline (0x0a) is appended, and the result is written
-    to <code>stdout</code>.  For instance, <code>print('foo', 'bar')</code>
-    would write the bytes <code>66 6f 6f 20 62 61 72 0a</code>.  Non-ASCII
-    characters are written directly in their internal extended UTF-8
-    representation; for most strings this means that output data is
-    properly UTF-8 encoded.  Terminal encoding, locale, platform newline
-    conventions etc. have no effect on the output.</li>
-</ul>
-
-<p><code>alert()</code> behaves the same way, but writes to
-<code>stderr</code>.  Unlike a browser <code>alert()</code>, the call
-does not block.</p>
 
 <h2 id="builtin-duktape">The Duktape object</h2>
 
