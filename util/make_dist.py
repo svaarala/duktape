@@ -293,6 +293,7 @@ copy_files([
 	'duk_api_object.c',
 	'duk_api_string.c',
 	'duk_api_logging.c',
+	'duk_api_time.c',
 	'duk_api_debug.c',
 	'duk_bi_array.c',
 	'duk_bi_boolean.c',

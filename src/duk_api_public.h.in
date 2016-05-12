@@ -35,6 +35,7 @@ extern "C" {
 struct duk_memory_functions;
 struct duk_function_list_entry;
 struct duk_number_list_entry;
+struct duk_time_components;
 
 /* duk_context is now defined in duk_config.h because it may also be
  * referenced there by prototypes.
@@ -42,6 +43,7 @@ struct duk_number_list_entry;
 typedef struct duk_memory_functions duk_memory_functions;
 typedef struct duk_function_list_entry duk_function_list_entry;
 typedef struct duk_number_list_entry duk_number_list_entry;
+typedef struct duk_time_components duk_time_components;
 
 typedef duk_ret_t (*duk_c_function)(duk_context *ctx);
 typedef void *(*duk_alloc_function) (void *udata, duk_size_t size);
@@ -75,6 +77,17 @@ struct duk_function_list_entry {
 struct duk_number_list_entry {
 	const char *key;
 	duk_double_t value;
+};
+
+struct duk_time_components {
+	duk_uint_t year;            /* year, e.g. 2016, Ecmascript year range */
+	duk_uint_t month;           /* month: 1-12 */
+	duk_uint_t day;             /* day: 1-31 */
+	duk_uint_t hour;            /* hour: 0-59 */
+	duk_uint_t minute;          /* minute: 0-59 */
+	duk_uint_t second;          /* second: 0-59 (in POSIX time no leap second) */
+	duk_uint_t weekday;         /* weekday: 0-6, 0=Sunday, 1=Monday, ..., 6=Saturday */
+	duk_double_t millisecond;   /* may contain sub-millisecond fractions */
 };
 
 /*
@@ -916,6 +929,14 @@ DUK_EXTERNAL_DECL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nva
 DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
 
 /*
+ *  Time handling
+ */
+
+DUK_EXTERNAL_DECL duk_double_t duk_get_now(duk_context *ctx);
+DUK_EXTERNAL_DECL void duk_time_to_components(duk_context *ctx, duk_double_t time, duk_time_components *comp);
+DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time_components *comp);
+
+/*
  *  Date provider related constants
  *
  *  NOTE: These are "semi public" - you should only use these if you write
@@ -951,7 +972,7 @@ DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
  * depend on the specific ordering, so change with care.  16 bits are not
  * enough for all parts (year, specifically).
  *
- * (Must be in-sync with genbuiltins.py.)
+ * Must be in-sync with genbuiltins.py.
  */
 #define DUK_DATE_IDX_YEAR           0  /* year */
 #define DUK_DATE_IDX_MONTH          1  /* month: 0 to 11 */
@@ -963,7 +984,7 @@ DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
 #define DUK_DATE_IDX_WEEKDAY        7  /* weekday: 0 to 6, 0=sunday, 1=monday, etc */
 #define DUK_DATE_IDX_NUM_PARTS      8
 
-/* Internal API call flags, used for various functions in this file.
+/* Internal API call flags, used for various functions in duk_bi_date.c.
  * Certain flags are used by only certain functions, but since the flags
  * don't overlap, a single flags value can be passed around to multiple
  * functions.
@@ -971,7 +992,7 @@ DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
  * The unused top bits of the flags field are also used to pass values
  * to helpers (duk__get_part_helper() and duk__set_part_helper()).
  *
- * (Must be in-sync with genbuiltins.py.)
+ * Must be in-sync with genbuiltins.py.
  */
 
 /* NOTE: when writing a Date provider you only need a few specific
