@@ -1,0 +1,52 @@
+name: duk_components_to_time
+
+proto: |
+  duk_double_t duk_components_to_time(duk_context *ctx, duk_time_components *comp);
+
+summary: |
+  <p>Convert components (year, month, day, etc), interpreted in UTC, into a
+  time value.  The <code>comp-&gt;weekday</code> argument is ignored in the
+  conversion.  If the component values are invalid, an error is thrown.</p>
+
+  <p>There are some differences to the Ecmascript <code>Date.UTC()</code>
+  built-in:</p>
+  <ul>
+  <li>There's no special handling of two-digit years.  For example,
+      <code>Date.UTC(99, 0, 1)</code> gets interpreted as 1999-01-01.
+      If <code>comp-&gt;time</code> is 99, it's interpreted as the year 99.</li>
+  <li>The month component is one-based, not zero-based.</li>
+  <li>The milliseconds component is allowed fractions (sub-millisecond
+      resolution) so that the resulting time value may have fractions.</li>
+  </ul>
+
+  <p>Like the Ecmascript primitives, the components can exceed their natural
+  range and are normalized.  For example, specifying <code>comp-&gt;minutes</code>
+  as 120 is interpreted as adding 2 hours to the time value.  Note, however,
+  that components other than milliseconds are <code>duk_uint_t</code> so they
+  may wrap for very large values.</p>
+
+example: |
+  duk_time_components comp;
+  duk_double_t time;
+
+  memset((void *) &comp, 0, sizeof(comp));  /* good practice even if fully initialized */
+  comp.year = 2016;
+  comp.month = 1;  /* 1-based, 1=January */
+  comp.day = 2;    /* 1-based */
+  comp.hour = 3;
+  comp.minute = 4;
+  comp.second = 5;
+  comp.weekday = 0;  /* ignored */
+  comp.millisecond = 6.0;  /* duk_double_t typing, to allow sub-millisecond resolution */
+
+  time = duk_components_to_time(ctx, &comp);
+  printf("2016-01-02 03:04:05.006Z -> %lf\n", (double) time);
+
+tags:
+  - time
+  - experimental
+
+seealso:
+  - duk_time_to_components
+
+introduced: 2.0.0

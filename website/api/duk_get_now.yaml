@@ -1,0 +1,21 @@
+name: duk_get_now
+
+proto: |
+  duk_double_t duk_get_now(duk_context *ctx);
+
+summary: |
+  Get current time in POSIX milliseconds, as seen by the Ecmascript
+  environment.  The return value matches Date.now() with the reservation
+  that sub-millisecond resolution may be available.
+
+example: |
+  duk_double_t now;
+
+  now = duk_get_now(ctx);
+  print("timestamp: %lf\n", (double) now);
+
+tags:
+  - time
+  - experimental
+
+introduced: 2.0.0
