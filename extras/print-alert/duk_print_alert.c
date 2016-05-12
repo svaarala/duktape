@@ -112,7 +112,9 @@ static duk_ret_t duk__alert(duk_context *ctx) {
 	return duk__print_alert_helper(ctx, stderr);
 }
 
-void duk_print_alert_init(duk_context *ctx) {
+void duk_print_alert_init(duk_context *ctx, duk_uint_t flags) {
+	(void) flags;  /* unused at the moment */
+
 	/* XXX: use duk_def_prop_list(). */
 	duk_push_global_object(ctx);
 	duk_push_string(ctx, "print");
