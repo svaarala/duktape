@@ -6,13 +6,13 @@
 #ifndef DUK_BUILTIN_PROTOS_H_INCLUDED
 #define DUK_BUILTIN_PROTOS_H_INCLUDED
 
-/* Buffer size needed for duk_bi_date_format_timeval().
+/* Buffer size needed for ISO 8601 formatting.
  * Accurate value is 32 + 1 for NUL termination:
  *   >>> len('+123456-01-23T12:34:56.123+12:34')
  *   32
  * Include additional space to be safe.
  */
-#define  DUK_BI_DATE_ISO8601_BUFSIZE  48
+#define  DUK_BI_DATE_ISO8601_BUFSIZE  40
 
 /* Maximum length of CommonJS module identifier to resolve.  Length includes
  * both current module ID, requested (possibly relative) module ID, and a
@@ -23,7 +23,6 @@
 /* Helpers exposed for internal use */
 DUK_INTERNAL_DECL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
-DUK_INTERNAL_DECL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_is_leap_year(duk_int_t year);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_valid_range(duk_double_t x);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_year_in_valid_range(duk_double_t year);

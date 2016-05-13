@@ -247,14 +247,6 @@ struct duk_time_components {
 #define DUK_EXEC_SUCCESS                  0
 #define DUK_EXEC_ERROR                    1
 
-/* Log levels */
-#define DUK_LOG_TRACE                     0
-#define DUK_LOG_DEBUG                     1
-#define DUK_LOG_INFO                      2
-#define DUK_LOG_WARN                      3
-#define DUK_LOG_ERROR                     4
-#define DUK_LOG_FATAL                     5
-
 /*
  *  If no variadic macros, __FILE__ and __LINE__ are passed through globals
  *  which is ugly and not thread safe.
@@ -896,13 +888,6 @@ DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx, const char *src_bu
 
 DUK_EXTERNAL_DECL void duk_dump_function(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_load_function(duk_context *ctx);
-
-/*
- *  Logging
- */
-
-DUK_EXTERNAL_DECL void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...);
-DUK_EXTERNAL_DECL void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap);
 
 /*
  *  Debugging
