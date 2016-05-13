@@ -602,8 +602,9 @@ handled.  However, instead of a try-catch statement application code uses
 Duktape API calls to establish points in C code where errors can be caught
 and handled.
 An uncaught error causes the fatal error handler to be called, which is
-considered an unrecoverable situation and should ordinarily be avoided
-(see <a href="#error-fatal-panic">Error, fatal, and panic</a>).</p>
+considered an unrecoverable situation and should ordinarily be avoided,
+see <a href="#normal-and-fatal-errors">Normal and fatal errors</a> and
+<a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>.</p>
 
 <p>To avoid fatal errors, typical application code should establish an error
 catch point before making other Duktape API calls.  This is done using
@@ -688,42 +689,46 @@ applications would typically simply exit when a fatal error occurs.  Even
 without an actual recovery strategy, a fatal error handler should be used to
 e.g. write fatal error information to <code>stderr</code> before process exit.</p>
 
-<h2 id="error-fatal-panic">Error, fatal, and panic</h2>
+<a name="error-fatal-panic"></a> <!-- for old links -->
+<h2 id="normal-and-fatal-errors">Normal and fatal errors</h2>
 
 <p>An <b>ordinary error</b> is caused by a <code>throw</code> statement, a
 <code><a href="api.html#duk_throw">duk_throw()</a></code>
-API call (or similar), or by an internal,
-recoverable Duktape error.  Ordinary errors can be caught with a
-<code>try-catch</code> in Ecmascript code or e.g.
-<code><a href="api.html#duk_pcall">duk_pcall()</a></code>
+API call (or similar), or by an internal, recoverable Duktape error.
+Ordinary errors can be caught with a <code>try-catch</code> in Ecmascript
+code or e.g. <code><a href="api.html#duk_pcall">duk_pcall()</a></code>
 (see API calls tagged
 <code><a href="api.html#taglist-protected">protected</a></code>)
 in C code.</p>
 
-<p>An uncaught error or an explicit call to
-<code><a href="api.html#duk_fatal">duk_fatal()</a></code>
-causes a <b>fatal error</b> handler to be called.  A fatal error handler is
-associated with every Duktape heap upon creation.  There is no reasonable way
-to resume execution after a fatal error, so the fatal error handler must not
-return.  The default fatal error handler writes an error message to <code>stderr</code>
-and then escalates the fatal error to a panic (which, by default,
-<code>abort()</code>s the process).  You can provide your own fatal error
-handler to deal with fatal errors.  The most appropriate recovery action is,
-of course, platform and application specific.  The handler could, for instance,
-write a diagnostic file detailing the situation and then restart the application
-to recover.</p>
+<p>A <b>fatal error</b> is caused by an uncaught error, an explicit call to
+<code><a href="api.html#duk_fatal">duk_fatal()</a></code>, or an
+unrecoverable error inside Duktape.  Each Duktape heap has a heap-wide fatal
+error handler registered in
+<code><a href="api.html#duk_create_heap">duk_create_heap()</a></code>; if no
+handler is given a built-in default handler is used.  There's no safe way to
+resume execution after a fatal error, so that a fatal error handler must not
+return or call into the Duktape API.  Instead the handler should e.g. write
+out the message to the console or a log file and then exit the process (or
+restart an embedded device).</p>
 
-<p>A <b>panic</b> is caused by Duktape assertion code (if included in the build)
-or by the default fatal error handler.  There is no way to induce a panic from
-user code.  The default panic handler writes an error message to <code>stderr</code>
-and <code>abort()</code>s the process.  You can use the
-<code>DUK_OPT_SEGFAULT_ON_PANIC</code> feature option to cause a deliberate
-segfault instead of an <code>abort()</code>, which may be useful to get a stack
-trace from some debugging tools.  You can also override the default panic
-handler entirely with the feature option <code>DUK_OPT_PANIC_HANDLER</code>.
-The panic handler is decided during build, while the fatal error handler is
-decided at runtime by the calling application.</p>
+<p>Fatal errors may also happen without any heap context, so that Duktape
+can't look up a possible heap-specific fatal error handler.  Duktape will then
+always call the built-in default fatal error handler (with the handler
+userdata argument set to NULL).  Fatal errors handled this way are currently
+limited to assertion failures, so that if you don't enable assertions, no such
+errors will currently occur.  All fatal error handling goes through the
+heap-associated fatal error handler which is in direct application control.</p>
 
-<p>If assertions are turned off and the application provides a fatal error
-handler, no panics will be caused by Duktape code.  All errors will then be
-either ordinary errors or fatal errors, both under application control.</p>
+<div class="note">
+The built-in default fatal error handler will write a debug log message
+(but <b>won't</b> write anything to <code>stdout</code> to <code>stderr</code>),
+and will then cause an <b>intentional segfault</b>; if that fails, it enters an
+infinite loop to ensure execution doesn't resume after a fatal error.  It is
+<b>strongly recommended</b> to both (1) provide a custom fatal error handler
+in heap creation and (2) replace the built-in default fatal error handler using
+the <code>DUK_USE_FATAL_HANDLER()</code> option in <code>duk_config.h</code>.
+</div>
+
+<p>See <a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>
+for more detail and examples.</p>
