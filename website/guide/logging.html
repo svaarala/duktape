@@ -1,7 +1,9 @@
 <h1 id="logging">Logging</h1>
 
-<p>Duktape has a built-in logging framework with a small footprint, reasonable
-performance, and redirectable output.</p>
+<p>The Duktape distributable includes a
+<a href="https://github.com/svaarala/duktape/tree/master/extras/logging">logging framework</a>
+with a small footprint, reasonable performance, and redirectable output.  The framework
+was a built-in in Duktape 1.x but was moved into an optional extra in Duktape 2.x.</p>
 
 <p>Basic usage example:</p>
 <pre class="ecmascript-code">
@@ -13,11 +15,12 @@ var logger = new Duktape.Logger();  // or new Duktape.Logger('logger name')
 logger.info('three values:', val1, val2, val3);
 </pre>
 
-<p>The example would print something like the following to <code>stdout</code>:</p>
+<p>The example would print something like the following to <code>stderr</code>:</p>
 <pre>
 2014-10-17T19:26:42.141Z INF test.js: three values: foo 123 1973-11-29 23:33:09.000+02:00
 </pre>
 
-<p>See
+<p>See the Wiki article
+<a href="http://wiki.duktape.org/HowtoLogging.html">How to use logging</a> and
 <a href="https://github.com/svaarala/duktape/blob/master/doc/logging.rst">logging.rst</a>
-for more info.</p>
+for more details.</p>
