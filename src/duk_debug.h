@@ -47,16 +47,12 @@
  *  Exposed debug macros: debugging enabled
  */
 
-#define DUK_LEVEL_DEBUG    1
-#define DUK_LEVEL_DDEBUG   2
-#define DUK_LEVEL_DDDEBUG  3
-
 #ifdef DUK_USE_VARIADIC_MACROS
 
 /* Note: combining __FILE__, __LINE__, and __func__ into fmt would be
  * possible compile time, but waste some space with shared function names.
  */
-#define DUK__DEBUG_LOG(lev,...)  duk_debug_log((duk_small_int_t) (lev), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
+#define DUK__DEBUG_LOG(lev,...)  duk_debug_log((duk_int_t) (lev), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, DUK_FUNC_MACRO, __VA_ARGS__);
 
 #define DUK_DPRINT(...)          DUK__DEBUG_LOG(DUK_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -76,11 +72,10 @@
 
 #define DUK__DEBUG_STASH(lev)    \
 	(void) DUK_SNPRINTF(duk_debug_file_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FILE_MACRO), \
-	duk_debug_file_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
-	(void) DUK_SNPRINTF(duk_debug_line_stash, DUK_DEBUG_STASH_SIZE, "%ld", (long) DUK_LINE_MACRO), \
-	duk_debug_line_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
+	(void) (duk_debug_file_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0), \
+	(void) (duk_debug_line_stash = (duk_int_t) DUK_LINE_MACRO), \
 	(void) DUK_SNPRINTF(duk_debug_func_stash, DUK_DEBUG_STASH_SIZE, "%s", (const char *) DUK_FUNC_MACRO), \
-	duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0; \
+	(void) (duk_debug_func_stash[DUK_DEBUG_STASH_SIZE - 1] = (char) 0), \
 	(void) (duk_debug_level_stash = (lev))
 
 /* Without variadic macros resort to comma expression trickery to handle debug
@@ -160,15 +155,15 @@ DUK_INTERNAL_DECL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const
 DUK_INTERNAL_DECL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size);
 
 #ifdef DUK_USE_VARIADIC_MACROS
-DUK_INTERNAL_DECL void duk_debug_log(duk_small_int_t level, const char *file, duk_int_t line, const char *func, const char *fmt, ...);
+DUK_INTERNAL_DECL void duk_debug_log(duk_int_t level, const char *file, duk_int_t line, const char *func, const char *fmt, ...);
 #else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */
 #define DUK_DEBUG_STASH_SIZE  128
 #if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL char duk_debug_file_stash[DUK_DEBUG_STASH_SIZE];
-DUK_INTERNAL_DECL char duk_debug_line_stash[DUK_DEBUG_STASH_SIZE];
+DUK_INTERNAL_DECL duk_int_t duk_debug_line_stash;
 DUK_INTERNAL_DECL char duk_debug_func_stash[DUK_DEBUG_STASH_SIZE];
-DUK_INTERNAL_DECL duk_small_int_t duk_debug_level_stash;
+DUK_INTERNAL_DECL duk_int_t duk_debug_level_stash;
 #endif
 DUK_INTERNAL_DECL void duk_debug_log(const char *fmt, ...);
 #endif  /* DUK_USE_VARIADIC_MACROS */
