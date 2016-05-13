@@ -1,0 +1,16 @@
+define: DUK_USE_DEBUG_WRITE
+feature_snippet: |
+  #if defined(DUK_OPT_DEBUG_WRITE)
+  #define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) DUK_OPT_DEBUG_WRITE((level),(file),(line),(func),(msg))
+  #endif
+introduced: 2.0.0
+default: false
+tags:
+  - debug
+description: >
+  Macro used for Duktape debug log writes (when DUK_USE_DEBUG is enabled).
+  There's no default provider to avoid a dependency on platform I/O calls.
+  The macro is called like a function with the following prototype:
+  "void DUK_USE_DEBUG_WRITE(long level, const char *file, long line, const char *func, const char *msg)".
+  See http://wiki.duktape.org/HowtoDebugPrints.html for more information
+  and examples.
