@@ -5,16 +5,22 @@ Duktape logging framework
 Introduction
 ============
 
-Duktape contains a built-in very minimal logging framework which has a
-small footprint (around 1kB), reasonably high performance, and makes it
+Duktape 1.x contains a built-in very minimal logging framework which has
+a small footprint (around 1kB), reasonably high performance, and makes it
 easy to change both the frontend and the backend of logging.  It is easy
 to write log entries from both C and Ecmascript, and then redirect all
 the log output to a custom backend.  Lazy formatting is also possible.
 
+In Duktape 2.x the logging framework was moved into an optional extra
+(``extras/logging``) to avoid portability issues on exotic target platforms.
+The extra has the same feature set as Duktape 1.x built-in logging and
+provides the same bindings (``Duktape.Logger`` object, ``duk_log()`` and
+``duk_log_va()`` API calls).
+
 The framework focuses on how logger objects are created and what the
 logger interface looks like.  Other features are quite barebones; for
-example the default backend simply writes to the stderr and there is no
-advanced backend configuration like multiple log outputs.  The user can
+example the default backend simply writes to the ``stderr`` and there is
+no advanced backend configuration like multiple log outputs.  The user can
 easily replace the frontend and the backend functions to extend the
 basic feature set in a transparent manner.
 
@@ -296,4 +302,4 @@ but that would be easy to change.
 __FILE__ and __LINE__ for C log writes
 --------------------------------------
 
-Include __FILE__ and __LINE__ automatically in C log writes somehow?
+Include ``__FILE__`` and ``__LINE__`` automatically in C log writes somehow?
