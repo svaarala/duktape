@@ -11,7 +11,7 @@ contains an example binding:
 
 * Ensure ``duk_console.h`` is in the include path.
 
-* Include the extra header in calling code::
+* Include the extra header in calling code and initialize the bindings::
 
       #include "duktape.h"
       #include "duk_console.h"
