@@ -1,6 +1,7 @@
 define: DUK_USE_DEBUGGER_FWD_LOGGING
 feature_enables: DUK_OPT_DEBUGGER_FWD_LOGGING
 introduced: 1.2.0
+removed: 2.0.0
 # Option is ignored unless debugger support is enabled.
 #requires:
 #  - DUK_USE_DEBUGGER_SUPPORT
