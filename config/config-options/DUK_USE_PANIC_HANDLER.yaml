@@ -5,6 +5,7 @@ feature_snippet: |
   #define DUK_USE_PANIC_HANDLER(code,msg) DUK_OPT_PANIC_HANDLER((code),(msg))
   #endif
 introduced: 1.0.0
+removed: 2.0.0
 default: false
 tags:
   - portability
