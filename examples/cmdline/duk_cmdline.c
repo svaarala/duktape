@@ -1,12 +1,20 @@
 /*
  *  Command line execution tool.  Useful for test cases and manual testing.
  *
- *  To enable print()/alert() bindings, define DUK_CMDLINE_PRINTALERT_SUPPORT.
- *  To enable console.log() etc, define DUK_CMDLINE_CONSOLE_SUPPORT.
+ *  Optional features:
  *
- *  To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
- *  It is not the default to maximize portability.  You can also compile in
- *  support for example allocators, grep for DUK_CMDLINE_*.
+ *  - To enable print()/alert() bindings, define DUK_CMDLINE_PRINTALERT_SUPPORT
+ *    and add extras/print-alert/duk_print_alert.c to compilation.
+ *
+ *  - To enable console.log() etc, define DUK_CMDLINE_CONSOLE_SUPPORT
+ *    and add extras/console/duk_console.c to compilation.
+ *
+ *  - To enable Duktape.Logger, define DUK_CMDLINE_LOGGING_SUPPORT
+ *    and add extras/logging/duk_logging.c to compilation.
+ *
+ *  - To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
+ *    It is not the default to maximize portability.  You can also compile in
+ *    support for example allocators, grep for DUK_CMDLINE_*.
  */
 
 /* Helper define to enable a feature set; can also use separate defines. */
@@ -48,6 +56,9 @@
 #endif
 #if defined(DUK_CMDLINE_CONSOLE_SUPPORT)
 #include "duk_console.h"
+#endif
+#if defined(DUK_CMDLINE_LOGGING_SUPPORT)
+#include "duk_logging.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -1107,6 +1118,11 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	/* Register console object. */
 #if defined(DUK_CMDLINE_CONSOLE_SUPPORT)
 	duk_console_init(ctx, DUK_CONSOLE_PROXY_WRAPPER /*flags*/);
+#endif
+
+	/* Register Duktape.Logger (removed in Duktape 2.x). */
+#if defined(DUK_CMDLINE_LOGGING_SUPPORT)
+	duk_logging_init(ctx, 0 /*flags*/);
 #endif
 
 #if defined(DUK_CMDLINE_FILEIO)

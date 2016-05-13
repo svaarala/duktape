@@ -12,10 +12,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	duk_print_alert_init(ctx, 0 /*flags*/);
+	printf("top after init: %ld\n", (long) duk_get_top(ctx));
 
 	for (i = 1; i < argc; i++) {
 		printf("Evaling: %s\n", argv[i]);
-		duk_eval_string_noresult(ctx, argv[i]);
+		(void) duk_peval_string(ctx, argv[i]);
+		printf("--> %s\n", duk_safe_to_string(ctx, -1));
+		duk_pop(ctx);
 	}
 
 	printf("Done\n");

@@ -126,7 +126,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_api_string.c \
 	$(DISTSRCSEP)/duk_api_object.c \
 	$(DISTSRCSEP)/duk_api_buffer.c \
-	$(DISTSRCSEP)/duk_api_logging.c \
 	$(DISTSRCSEP)/duk_api_time.c \
 	$(DISTSRCSEP)/duk_api_debug.c \
 	$(DISTSRCSEP)/duk_lexer.c \
@@ -156,7 +155,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_bi_proxy.c \
 	$(DISTSRCSEP)/duk_bi_buffer.c \
 	$(DISTSRCSEP)/duk_bi_pointer.c \
-	$(DISTSRCSEP)/duk_bi_logger.c \
 	$(DISTSRCSEP)/duk_selftest.c
 
 # Use combined sources for testing etc.
@@ -172,7 +170,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/alloc-hybrid/duk_alloc_hybrid.c \
 	dist/examples/debug-trans-socket/duk_trans_socket_unix.c \
 	dist/extras/print-alert/duk_print_alert.c \
-	dist/extras/console/duk_console.c
+	dist/extras/console/duk_console.c \
+	dist/extras/logging/duk_logging.c
 LINENOISE_SOURCES = \
 	linenoise/linenoise.c
 
@@ -260,6 +259,7 @@ CCOPTS_FEATURES += -DDUK_OPT_FASTINT
 CCOPTS_FEATURES += -DDUK_OPT_JSON_STRINGIFY_FASTPATH
 CCOPTS_FEATURES += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_CONSOLE_SUPPORT
+CCOPTS_FEATURES += -DDUK_CMDLINE_LOGGING_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
@@ -284,6 +284,7 @@ CCOPTS_SHARED += -I./dist/examples/alloc-hybrid
 CCOPTS_SHARED += -I./dist/examples/debug-trans-socket
 CCOPTS_SHARED += -I./dist/extras/print-alert
 CCOPTS_SHARED += -I./dist/extras/console
+CCOPTS_SHARED += -I./dist/extras/logging
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -303,11 +304,11 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console
-GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
+GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console
-GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
 
 CCLIBS	= -lm
@@ -977,6 +978,7 @@ CCOPTS_AJDUK = -m32
 #CCOPTS_AJDUK += '-fpack-struct=1'
 CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-result
 CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L
+CCOPTS_AJDUK += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
 CCOPTS_AJDUK += -DDUK_OPT_FORCE_ALIGN=4
 CCOPTS_AJDUK += -DDUK_OPT_ASSERTIONS
 CCOPTS_AJDUK += -DDUK_OPT_LIGHTFUNC_BUILTINS

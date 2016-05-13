@@ -59,7 +59,7 @@ if stdout/stderr is available, it's not always the appropriate place for debug
 printouts, so it's cleaner if the application provides its own debug/console
 logging functions.
 
-To migrate:
+To upgrade:
 
 * If you don't use ``print()`` or ``alert()`` no action is needed; they simply
   won't be a part of the global object anymore.
@@ -86,6 +86,27 @@ To migrate:
 * If you do need ``print()`` and/or ``alert()`` with the Duktape 1.x
   semantics you can include the following extra into your compilation:
   ``extras/print-alert``.
+
+Duktape.Logger, duk_log(), and duk_log_va() removed
+---------------------------------------------------
+
+The built-in logging framework consisting of ``Duktape.Logger``, ``duk_log()``,
+and ``duk_log_va()`` were removed because they depended on stdout/stderr which
+is a portability issue on some platforms.  The logging framework also didn't
+always match user expectations: for some uses it was too simple (lacking e.g.
+expressive backend configuration); for other uses it was too complex (too
+high a ROM/RAM footprint for some embedded uses).  Sometimes an existing API
+like ``console.log()`` was preferred while in other cases a platform specific
+logging binding was more appropriate.
+
+To upgrade:
+
+* If you don't need ``Duktape.Logger`` or the C logging API calls, no action
+  is needed.
+
+* If you do need ``Duktape.Logger`` and/or the C logging API calls with
+  Duktape 1.x semantics, you can include the following extra into your
+  compilation: ``extras/logging``.
 
 duk_safe_call() userdata
 ------------------------

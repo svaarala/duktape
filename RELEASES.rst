@@ -1596,8 +1596,11 @@ Planned
 * Incompatible change: add a userdata argument to duk_safe_call() to make it
   easier to pass C pointers to safe functions (GH-277, GH-727)
 
-* Incompatible change: remove print() and alert() bindings which, being
-  dependent on stdout/stderr, are often a portability issue (GH-745)
+* Incompatible change: remove built-in print() and alert() bindings which,
+  being dependent on stdout/stderr, are often a portability issue (GH-745)
+
+* Incompatible change: remove the built-in logging framework (Duktape.Logger,
+  duk_log(), duk_log_va()) (GH-746)
 
 * Incompatible change: rename duk_debugger_attach_custom() API call to
   duk_debugger_attach() to eliminate an unnecessary API call variant
@@ -1621,6 +1624,9 @@ Planned
 
 * Add an extra module providing Duktape 1.x compatible print() and alert()
   bindings (GH-745)
+
+* Add an extra module providing Duktape 1.x compatible logging framework
+  (Duktape.Logger, duk_log(), duk_log_va()) (GH-746)
 
 * Add an extra module with a minimal 'console' binding (GH-767)
 

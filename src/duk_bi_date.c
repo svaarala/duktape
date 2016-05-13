@@ -1267,27 +1267,6 @@ DUK_LOCAL void duk__set_parts_from_args(duk_context *ctx, duk_double_t *dparts, 
 }
 
 /*
- *  Helper to format a time value into caller buffer, used by logging.
- *  'out_buf' must be at least DUK_BI_DATE_ISO8601_BUFSIZE long.
- */
-
-DUK_INTERNAL void duk_bi_date_format_timeval(duk_double_t timeval, duk_uint8_t *out_buf) {
-	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
-
-	duk_bi_date_timeval_to_parts(timeval,
-	                             parts,
-	                             NULL,
-	                             DUK_DATE_FLAG_ONEBASED);
-
-	duk__format_parts_iso8601(parts,
-	                          0 /*tzoffset*/,
-	                          DUK_DATE_FLAG_TOSTRING_DATE |
-	                          DUK_DATE_FLAG_TOSTRING_TIME |
-	                          DUK_DATE_FLAG_SEP_T /*flags*/,
-	                          out_buf);
-}
-
-/*
  *  Indirect magic value lookup for Date methods.
  *
  *  Date methods don't put their control flags into the function magic value

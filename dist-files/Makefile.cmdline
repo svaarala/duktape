@@ -21,6 +21,10 @@ CMDLINE_SOURCES += extras/print-alert/duk_print_alert.c
 CCOPTS += -DDUK_CMDLINE_CONSOLE_SUPPORT -I./extras/console
 DUKTAPE_CMDLINE_SOURCES += extras/console/duk_console.c
 
+# Enable Duktape.Logger for command line.
+CCOPTS += -DDUK_CMDLINE_LOGGING_SUPPORT -I./extraslogging
+DUKTAPE_CMDLINE_SOURCES += extras/logging/duk_logging.c
+
 # If you want linenoise, you can enable these.  At the moment linenoise
 # will cause some harmless compilation warnings.
 #CCOPTS += -DDUK_CMDLINE_FANCY -I./linenoise

@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	duk_console_init(ctx, DUK_CONSOLE_PROXY_WRAPPER /*flags*/);
+	printf("top after init: %ld\n", (long) duk_get_top(ctx));
 
 	for (i = 1; i < argc; i++) {
 		printf("Evaling: %s\n", argv[i]);

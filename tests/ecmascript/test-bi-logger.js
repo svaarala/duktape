@@ -6,6 +6,10 @@
  *  log lines to write expect strings.
  */
 
+// This test relies on 'duk' being compiled with the external logging
+// framework since Duktape 2.x.  The test should technically be disabled
+// and moved into the test harness of the extras.
+
 function raw_replacement(msg) {
     // Timestamp is non-predictable
     msg = String(msg);  // arg is a buffer

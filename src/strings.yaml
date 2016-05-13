@@ -694,8 +694,6 @@ strings:
   - str: "Thread"
     duktape: true
     class_name: true
-  - str: "Logger"
-    duktape: true
 
   # non-standard built-in object names
   - str: "ThrowTypeError"  # implementation specific, matches V8
@@ -883,38 +881,6 @@ strings:
     duktape: true
 
   # Thread prototype
-
-  # Logger constructor
-
-  # Logger prototype and logger instances
-  - str: "fmt"
-    duktape: true
-  - str: "raw"
-    duktape: true
-  - str: "trace"
-    duktape: true
-  - str: "debug"
-    duktape: true
-  - str: "info"
-    duktape: true
-  - str: "warn"
-    duktape: true
-  - str: "error"
-    duktape: true
-  - str: "fatal"
-    duktape: true
-  - str: "n"
-    duktape: true
-  - str: "l"
-    duktape: true
-
-  # Auxiliary logger strings
-  - str: "clog"    # C logger
-    duktape: true
-
-  # for controlling log formatting of objects
-  - str: "toLogString"
-    duktape: true
 
   # special literals for custom json encodings
   - str: "{\"_undef\":true}"
@@ -1151,10 +1117,6 @@ special_define_names:
   "Pointer": "UC_POINTER"
   #"thread": "LC_THREAD"
   "Thread": "UC_THREAD"
-  #"logger": "LC_LOGGER"
-  "Logger": "UC_LOGGER"
-  "n": "LC_N"
-  "l": "LC_L"
 
   "error": "LC_ERROR"
   "Error": "UC_ERROR"

@@ -16,7 +16,6 @@ Duktape.version number none
 Duktape.Buffer function wc
 Duktape.Pointer function wc
 Duktape.Thread function wc
-Duktape.Logger function wc
 Duktape.info function wc
 Duktape.act function wc
 Duktape.gc function wc
@@ -59,38 +58,6 @@ Duktape.Thread.resume.length number none
 Duktape.Thread.resume.name string none
 Duktape.Thread.current.length number none
 Duktape.Thread.current.name string none
-Duktape.Logger.name string none
-Duktape.Logger.length number none
-Duktape.Logger.prototype object none
-Duktape.Logger.clog object wc
-Duktape.Logger.prototype.constructor function wc
-Duktape.Logger.prototype.l number w
-Duktape.Logger.prototype.n string w
-Duktape.Logger.prototype.fmt function wc
-Duktape.Logger.prototype.raw function wc
-Duktape.Logger.prototype.trace function wc
-Duktape.Logger.prototype.debug function wc
-Duktape.Logger.prototype.info function wc
-Duktape.Logger.prototype.warn function wc
-Duktape.Logger.prototype.error function wc
-Duktape.Logger.prototype.fatal function wc
-Duktape.Logger.prototype.fmt.length number none
-Duktape.Logger.prototype.fmt.name string none
-Duktape.Logger.prototype.raw.length number none
-Duktape.Logger.prototype.raw.name string none
-Duktape.Logger.prototype.trace.length number none
-Duktape.Logger.prototype.trace.name string none
-Duktape.Logger.prototype.debug.length number none
-Duktape.Logger.prototype.debug.name string none
-Duktape.Logger.prototype.info.length number none
-Duktape.Logger.prototype.info.name string none
-Duktape.Logger.prototype.warn.length number none
-Duktape.Logger.prototype.warn.name string none
-Duktape.Logger.prototype.error.length number none
-Duktape.Logger.prototype.error.name string none
-Duktape.Logger.prototype.fatal.length number none
-Duktape.Logger.prototype.fatal.name string none
-Duktape.Logger.clog.n string wec
 Duktape.info.length number none
 Duktape.info.name string none
 Duktape.act.length number none
@@ -127,6 +94,10 @@ function propsTest() {
         function rec(obj, printname) {
             visited.push(obj);
             var ownprops = Object.getOwnPropertyNames(obj);  // keep enum order
+
+            // Skip Logger which is no longer a default built-in in Duktape 2.x.
+            ownprops = ownprops.filter(function (pname) { return pname !== 'Logger'; });
+
             ownprops.forEach(function (pname) {
                 printraw(obj, pname, printname + '.' + pname);
             });
