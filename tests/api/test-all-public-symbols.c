@@ -151,8 +151,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_json_decode(ctx, 0);
 	(void) duk_json_encode(ctx, 0);
 	(void) duk_load_function(ctx);
-	(void) duk_log_va(ctx, 0, NULL, NULL);
-	(void) duk_log(ctx, 0, NULL);
 	(void) duk_map_string(ctx, 0, NULL, NULL);
 	(void) duk_new(ctx, 0);
 	(void) duk_next(ctx, 0, 0);

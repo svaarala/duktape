@@ -1,3 +1,10 @@
+/* Built-in logging framework removed in Duktape 2.x. */
+/*---
+{
+    "skip": true
+}
+---*/
+
 /*===
 *** test_1 (duk_safe_call)
 TIMESTAMP TRC C: trace: 123
