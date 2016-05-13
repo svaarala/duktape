@@ -1,5 +1,5 @@
 /*
- *  Error, fatal, and panic handling.
+ *  Error and fatal handling.
  */
 
 #include "duk_internal.h"
@@ -104,58 +104,29 @@ DUK_INTERNAL void duk_err_alloc(duk_hthread *thr) {
  *  Default fatal error handler
  */
 
-DUK_INTERNAL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
-	DUK_UNREF(ctx);
-#if defined(DUK_USE_FILE_IO)
-	DUK_FPRINTF(DUK_STDERR, "FATAL %ld: %s\n", (long) code, (const char *) (msg ? msg : "null"));
-	DUK_FFLUSH(DUK_STDERR);
-#else
-	/* omit print */
-#endif
-	DUK_D(DUK_DPRINT("default fatal handler called, code %ld -> calling DUK_PANIC()", (long) code));
-	DUK_PANIC(code, msg);
-	DUK_UNREACHABLE();
-}
-
-/*
- *  Default panic handler
- */
-
-#if !defined(DUK_USE_PANIC_HANDLER)
-DUK_INTERNAL void duk_default_panic_handler(duk_errcode_t code, const char *msg) {
-#if defined(DUK_USE_FILE_IO)
-	DUK_FPRINTF(DUK_STDERR, "PANIC %ld: %s ("
-#if defined(DUK_USE_PANIC_ABORT)
-	            "calling abort"
-#elif defined(DUK_USE_PANIC_EXIT)
-	            "calling exit"
-#elif defined(DUK_USE_PANIC_SEGFAULT)
-	            "segfaulting on purpose"
-#else
-#error no DUK_USE_PANIC_xxx macro defined
-#endif
-	            ")\n", (long) code, (const char *) (msg ? msg : "null"));
-	DUK_FFLUSH(DUK_STDERR);
-#else
-	/* omit print */
-	DUK_UNREF(code);
+DUK_INTERNAL void duk_default_fatal_handler(void *udata, const char *msg) {
+	DUK_UNREF(udata);
 	DUK_UNREF(msg);
-#endif
 
-#if defined(DUK_USE_PANIC_ABORT)
-	DUK_ABORT();
-#elif defined(DUK_USE_PANIC_EXIT)
-	DUK_EXIT(-1);
-#elif defined(DUK_USE_PANIC_SEGFAULT)
-	/* exit() afterwards to satisfy "noreturn" */
-	DUK_CAUSE_SEGFAULT();  /* SCANBUILD: "Dereference of null pointer", normal */
-	DUK_EXIT(-1);
+#if defined(DUK_USE_FATAL_HANDLER)
+	/* duk_config.h provided a custom default fatal handler. */
+	DUK_D(DUK_DPRINT("custom default fatal error handler called: %s", msg ? msg : "NULL"));
+	DUK_USE_FATAL_HANDLER(udata, msg);
 #else
-#error no DUK_USE_PANIC_xxx macro defined
+	/* Since we don't want to rely on stdio being available, we'll just
+	 * cause a segfault on purpose: it's a portable way to usually cause
+	 * a process to finish, and when used with valgrind it also gives us
+	 * a nice stack trace.  For better behavior application code should
+	 * provide a fatal error handler.
+	 */
+	DUK_D(DUK_DPRINT("built-in default fatal error handler called: %s", msg ? msg : "NULL"));
+	DUK_CAUSE_SEGFAULT();  /* SCANBUILD: "Dereference of null pointer", normal */
 #endif
 
-	DUK_UNREACHABLE();
+	DUK_D(DUK_DPRINT("fatal error handler returned or segfault didn't succeed, enter forever loop"));
+	for (;;) {
+		/* Loop forever to ensure we don't return. */
+	}
 }
-#endif  /* !DUK_USE_PANIC_HANDLER */
 
 #undef DUK__ERRFMT_BUFSIZE

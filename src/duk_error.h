@@ -1,15 +1,16 @@
 /*
  *  Error handling macros, assertion macro, error codes.
  *
- *  There are three level of 'errors':
+ *  There are three types of 'errors':
  *
- *    1. Ordinary errors, relative to a thread, cause a longjmp, catchable.
- *    2. Fatal errors, relative to a heap, cause fatal handler to be called.
- *    3. Panic errors, unrelated to a heap and cause a process exit.
+ *    1. Ordinary errors relative to a thread, cause a longjmp, catchable.
+ *    2. Fatal errors relative to a heap, cause fatal handler to be called.
+ *    3. Fatal errors without context, cause the default (not heap specific)
+ *       fatal handler to be called.
  *
- *  Panics are used by the default fatal error handler and by debug code
- *  such as assertions.  By providing a proper fatal error handler, user
- *  code can avoid panics in non-debug builds.
+ *  Fatal errors without context are used by debug code such as assertions.
+ *  By providing a fatal error handler for a Duktape heap, user code can
+ *  avoid fatal errors without context in non-debug builds.
  */
 
 #ifndef DUK_ERROR_H_INCLUDED
@@ -127,66 +128,41 @@
 #endif  /* DUK_USE_VERBOSE_ERRORS */
 
 /*
- *  Fatal error
+ *  Fatal error without context
  *
- *  There are no fatal error macros at the moment.  There are so few call
- *  sites that the fatal error handler is called directly.
+ *  The macro is an expression to make it compatible with DUK_ASSERT_EXPR().
  */
 
-/*
- *  Panic error
- *
- *  Panic errors are not relative to either a heap or a thread, and cause
- *  DUK_PANIC() macro to be invoked.  Unless a user provides DUK_USE_PANIC_HANDLER,
- *  DUK_PANIC() calls a helper which prints out the error and causes a process
- *  exit.
- *
- *  The user can override the macro to provide custom handling.  A macro is
- *  used to allow the user to have inline panic handling if desired (without
- *  causing a potentially risky function call).
- *
- *  Panics are only used in debug code such as assertions, and by the default
- *  fatal error handler.
- */
-
-#if defined(DUK_USE_PANIC_HANDLER)
-/* already defined, good */
-#define DUK_PANIC(code,msg)  DUK_USE_PANIC_HANDLER((code),(msg))
-#else
-#define DUK_PANIC(code,msg)  duk_default_panic_handler((code),(msg))
-#endif  /* DUK_USE_PANIC_HANDLER */
+#define DUK_FATAL_WITHOUT_CONTEXT(msg) \
+	duk_default_fatal_handler(NULL, (msg))
 
 /*
- *  Assert macro: failure causes panic.
+ *  Assert macro: failure causes a fatal error.
+ *
+ *  NOTE: since the assert macro doesn't take a heap/context argument, there's
+ *  no way to look up a heap/context specific fatal error handler which may have
+ *  been given by the application.  Instead, assertion failures always use the
+ *  internal default fatal error handler; it can be replaced via duk_config.h
+ *  and then applies to all Duktape heaps.
  */
 
 #if defined(DUK_USE_ASSERTIONS)
 
-/* the message should be a compile time constant without formatting (less risk);
+/* The message should be a compile time constant without formatting (less risk);
  * we don't care about assertion text size because they're not used in production
  * builds.
  */
 #define DUK_ASSERT(x)  do { \
 	if (!(x)) { \
-		DUK_PANIC(DUK_ERR_ASSERTION_ERROR, \
-			"assertion failed: " #x \
+		DUK_FATAL_WITHOUT_CONTEXT("assertion failed: " #x \
 			" (" DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO) ")"); \
 	} \
 	} while (0)
 
-/* Assertion compatible inside a comma expression, evaluates to void.
- * Currently not compatible with DUK_USE_PANIC_HANDLER() which may have
- * a statement block.
- */
-#if defined(DUK_USE_PANIC_HANDLER)
-/* XXX: resolve macro definition issue or call through a helper function? */
-#define DUK_ASSERT_EXPR(x)  ((void) 0)
-#else
+/* Assertion compatible inside a comma expression, evaluates to void. */
 #define DUK_ASSERT_EXPR(x) \
-	((void) ((x) ? 0 : (DUK_PANIC(DUK_ERR_ASSERTION_ERROR, \
-				"assertion failed: " #x \
+	((void) ((x) ? 0 : (DUK_FATAL_WITHOUT_CONTEXT("assertion failed: " #x \
 				" (" DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO) ")"), 0)))
-#endif
 
 #else  /* DUK_USE_ASSERTIONS */
 
@@ -422,11 +398,7 @@ DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_alloc(duk_hthread *thr));
 
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_longjmp(duk_hthread *thr));
 
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg));
-
-#if !defined(DUK_USE_PANIC_HANDLER)
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_panic_handler(duk_errcode_t code, const char *msg));
-#endif
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_fatal_handler(void *udata, const char *msg));
 
 DUK_INTERNAL_DECL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type);
 

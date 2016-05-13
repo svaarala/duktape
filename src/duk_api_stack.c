@@ -4337,15 +4337,15 @@ DUK_EXTERNAL void duk_throw(duk_context *ctx) {
 	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
 
 	/* thr->heap->lj.jmpbuf_ptr is checked by duk_err_longjmp() so we don't
-	 * need to check that here.  If the value is NULL, a panic occurs because
-	 * we can't return.
+	 * need to check that here.  If the value is NULL, a fatal error occurs
+	 * because we can't return.
 	 */
 
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();
 }
 
-DUK_EXTERNAL void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char *err_msg) {
+DUK_EXTERNAL void duk_fatal(duk_context *ctx, const char *err_msg) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4353,16 +4353,22 @@ DUK_EXTERNAL void duk_fatal(duk_context *ctx, duk_errcode_t err_code, const char
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(thr->heap->fatal_func != NULL);
 
-	DUK_D(DUK_DPRINT("fatal error occurred, code %ld, message %s",
-	                 (long) err_code, (const char *) err_msg));
+	DUK_D(DUK_DPRINT("fatal error occurred: %s", err_msg ? err_msg : "NULL"));
 
 	/* fatal_func should be noreturn, but noreturn declarations on function
 	 * pointers has a very spotty support apparently so it's not currently
 	 * done.
 	 */
-	thr->heap->fatal_func(ctx, err_code, err_msg);
+	thr->heap->fatal_func(thr->heap->heap_udata, err_msg);
 
-	DUK_PANIC(DUK_ERR_API_ERROR, "fatal handler returned");
+	/* If the fatal handler returns, all bets are off.  It'd be nice to
+	 * print something here but since we don't want to depend on stdio,
+	 * there's no way to do so portably.
+	 */
+	DUK_D(DUK_DPRINT("fatal error handler returned, all bets are off!"));
+	for (;;) {
+		/* loop forever, don't return (function marked noreturn) */
+	}
 }
 
 DUK_EXTERNAL void duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {

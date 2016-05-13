@@ -27,9 +27,7 @@
 
 /*
  *  User declarations, e.g. prototypes for user functions used by Duktape
- *  macros.  Concretely, if DUK_USE_PANIC_HANDLER is used and the macro
- *  value calls a user function, it needs to be declared for Duktape
- *  compilation to avoid warnings.
+ *  macros.
  */
 
 DUK_USE_USER_DECLARE()

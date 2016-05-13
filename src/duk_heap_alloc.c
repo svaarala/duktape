@@ -748,12 +748,12 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 
 	/*
-	 *  If selftests enabled, run them as early as possible
+	 *  If selftests enabled, run them as early as possible.
 	 */
 #if defined(DUK_USE_SELF_TESTS)
-	DUK_D(DUK_DPRINT("running self tests"));
-	duk_selftest_run_tests();
-	DUK_D(DUK_DPRINT("self tests passed"));
+	if (duk_selftest_run_tests() > 0) {
+		fatal_func(heap_udata, "self test(s) failed");
+	}
 #endif
 
 	/*
