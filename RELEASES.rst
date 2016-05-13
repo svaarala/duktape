@@ -1609,6 +1609,10 @@ Planned
 * Incompatible change: debug protocol version bumped from 1 to 2 to indicate
   version incompatible protocol changes in the 2.0.0 release (GH-756)
 
+* Add time functions to the C API (duk_get_now(), duk_time_to_components(),
+  duk_components_to_time()) to allow C code to conveniently work with the
+  same time provider as seen by Ecmascript code (GH-771)
+
 * Add a human readable summary of 'new MyConstructor()' constructor call
   target when the target is non-constructable (GH-757)
 

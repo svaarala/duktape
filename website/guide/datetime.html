@@ -1,0 +1,25 @@
+<h1 id="datetime">Date and time</h1>
+
+<p>Date and time handling is often a portability issue when adapting Duktape
+to more exotic environments.  The <code>duk_config.h</code> configuration
+header selects platform specific providers needed to implement the
+<code>Date</code> built-in.  Duktape has built-in providers for mainstream
+platforms (Linux, Windows, OS X) which should usually work without changes.
+You can also write an
+<a href="https://github.com/svaarala/duktape/blob/master/doc/datetime.rst#external-date-providers">external Date provider</a>
+for more exotic environments.  An external Date provider can also be used e.g.
+when a time offset needs to be applied to the platform time, or when using
+time virtualization.</p>
+
+<p>Ecmascript code interacts with date/time through the standard
+<code>Date</code> built-in which is, by specification, limited to millisecond
+resolution.  There are currently no Duktape specific Ecmascript date/time APIs.
+(A custom API may be added later to deal with sub-millisecond resolution.)</p>
+
+<p>C code can of course use platform date/time APIs directly, but the Duktape
+C API also provides date/time API calls.  These calls see the same time values
+as Ecmascript code which may matter when e.g. time virtualization is used.
+Using these calls makes your code platform neutral and thus more portable.
+The Duktape C API allows sub-millisecond resolution for time values.  See
+<a href="http://wiki.duktape.org/HowtoTimeValues.html">How to work with time values</a>
+for more details.</p>
