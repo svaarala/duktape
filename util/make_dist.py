@@ -157,6 +157,7 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'extras', 'duk-v1-compat'))
 	mkdir(os.path.join(dist, 'extras', 'print-alert'))
 	mkdir(os.path.join(dist, 'extras', 'console'))
+	mkdir(os.path.join(dist, 'extras', 'logging'))
 	mkdir(os.path.join(dist, 'polyfills'))
 	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
 	mkdir(os.path.join(dist, 'licenses'))
@@ -292,7 +293,6 @@ copy_files([
 	'duk_api_memory.c',
 	'duk_api_object.c',
 	'duk_api_string.c',
-	'duk_api_logging.c',
 	'duk_api_time.c',
 	'duk_api_debug.c',
 	'duk_bi_array.c',
@@ -310,7 +310,6 @@ copy_files([
 	'duk_bi_number.c',
 	'duk_bi_object.c',
 	'duk_bi_pointer.c',
-	'duk_bi_logger.c',
 	'duk_bi_protos.h',
 	'duk_bi_regexp.c',
 	'duk_bi_string.c',
@@ -571,6 +570,15 @@ copy_files([
 copy_files([
 	'README.rst'
 ], 'extras', os.path.join(dist, 'extras'))
+
+
+copy_files([
+	'README.rst',
+	'duk_logging.c',
+	'duk_logging.h',
+	'test.c',
+	'Makefile'
+], os.path.join('extras', 'logging'), os.path.join(dist, 'extras', 'logging'))
 
 copy_files([
 	'README.rst',
