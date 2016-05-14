@@ -190,7 +190,6 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MARK_AND_SWEEP
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
 CCOPTS_FEATURES += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
-CCOPTS_FEATURES += -DDUK_OPT_DPRINT_COLORS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_FILE_IO
 #CCOPTS_FEATURES += '-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
 CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS
@@ -205,6 +204,7 @@ CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS
 #CCOPTS_FEATURES += -DDUK_OPT_MARKANDSWEEP_FINALIZER_TORTURE
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MS_RESIZE_STRINGTABLE
 CCOPTS_FEATURES += -DDUK_OPT_DEBUG_BUFSIZE=512
+CCOPTS_FEATURES += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)'
 #CCOPTS_FEATURES += -DDUK_OPT_NO_STRICT_DECL
 #CCOPTS_FEATURES += -DDUK_OPT_NO_REGEXP_SUPPORT
 #CCOPTS_FEATURES += -DDUK_OPT_NO_OCTAL_SUPPORT
@@ -303,10 +303,12 @@ CCOPTS_DEBUG += -DDUK_OPT_DPRINT
 #CCOPTS_DEBUG += -DDUK_OPT_DDDPRINT
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
-GXXOPTS_NONDEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Os -fomit-frame-pointer
+GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result
+GXXOPTS_SHARED += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)={fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));}'
+GXXOPTS_NONDEBUG = $(GXXOPTS_SHARED) -Os -fomit-frame-pointer
 GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
 GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
-GXXOPTS_DEBUG = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -O0 -g -ggdb
+GXXOPTS_DEBUG = $(GXXOPTS_SHARED) -O0 -g -ggdb
 GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
 GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 #GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
