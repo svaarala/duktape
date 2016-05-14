@@ -323,7 +323,6 @@ def create_matrix(fn_duk):
 		'-DDUK_OPT_SHUFFLE_TORTURE',
 		'-DDUK_OPT_NO_VOLUNTARY_GC',
 		'-DDUK_OPT_SEGFAULT_ON_PANIC',
-		'-DDUK_OPT_DPRINT_COLORS',
 		'-DDUK_OPT_NO_PACKED_TVAL',
 		Select([ '', '-DDUK_OPT_FORCE_ALIGN=4', '-DDUK_OPT_FORCE_ALIGN=8' ]),
 		'-DDUK_OPT_NO_TRACEBACKS',
@@ -355,7 +354,7 @@ def create_matrix(fn_duk):
 		'''-DDUK_OPT_USER_INITJS="Math.MEANING_OF_LIFE=42"''',
 		'-DDUK_OPT_LIGHTFUNC_BUILTINS',
 		'-DDUK_OPT_ASSERTIONS',
-		[ '-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDDPRINT' ],
+		[ '-DDUK_OPT_DEBUG', '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "%ld %s %ld %s %s\\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDDPRINT' ],
 		'-DDUK_OPT_SELF_TESTS',
 		[ '-DDUK_OPT_STRTAB_CHAIN', '-DDUK_OPT_STRTAB_CHAIN_SIZE=64' ],
 
@@ -386,7 +385,7 @@ def create_matrix(fn_duk):
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
+		[ '-DDUK_CMDLINE_PRINTALERT_SUPPORT', '-Isrc', '-Iextras/print-alert', 'src/duktape.c', 'extras/print-alert/duk_print_alert.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	gxx_cmd_matrix = Combine([
@@ -395,7 +394,7 @@ def create_matrix(fn_duk):
 		gcc_gxx_warning_options,
 		gcc_gxx_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
+		[ '-DDUK_CMDLINE_PRINTALERT_SUPPORT', '-Isrc', '-Iextras/print-alert', 'src/duktape.c', 'extras/print-alert/duk_print_alert.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	clang_cmd_matrix = Combine([
@@ -404,7 +403,7 @@ def create_matrix(fn_duk):
 		clang_warning_options,
 		clang_optimization_options,
 		duktape_options,
-		[ '-Isrc', 'src/duktape.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
+		[ '-DDUK_CMDLINE_PRINTALERT_SUPPORT', '-Isrc', '-Iextras/print-alert', 'src/duktape.c', 'extras/print-alert/duk_print_alert.c', 'examples/cmdline/duk_cmdline.c', '-o', fn_duk, '-lm' ]
 	])
 
 	matrix = Select([ gcc_cmd_matrix, gxx_cmd_matrix, clang_cmd_matrix ])
