@@ -252,6 +252,26 @@ To upgrade:
   custom print/alert forwarding by implementing print and alert yourself and
   using AppNotify (``duk_debugger_notify()``) to forward print/alert text.
 
+Debug print config options changed
+----------------------------------
+
+Debug print related config options were reworked as follows:
+
+* Debug prints no longer automatically go to ``stderr``.  Instead, an
+  application must define ``DUK_USE_DEBUG_WRITE()`` in ``duk_config.h``
+  when ``DUK_USE_DEBUG`` is enabled.  The macro is called to write debug log
+  lines; there's no default provider to avoid platform I/O dependencies.
+  Using a user-provided macro removes a dependency on platform I/O and also
+  allows debug logs to be filtered and redirected in whatever manner is most
+  useful for the application.  Example provider::
+
+      #define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do { \
+              fprintf(stderr, "D%ld %s:%ld (%s): %s\n", \
+                      (long) (level), (file), (long) (line), (func), (msg)); \
+          } while (0)
+
+  See http://wiki.duktape.org/HowtoDebugPrints.html for more information.
+
 Known issues
 ============
 
