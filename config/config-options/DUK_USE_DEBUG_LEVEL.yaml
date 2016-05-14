@@ -1,0 +1,14 @@
+define: DUK_USE_DEBUG_LEVEL
+feature_snippet: |
+  #if defined(DUK_OPT_DEBUG_LEVEL)
+  #define DUK_USE_DEBUG_LEVEL DUK_OPT_DEBUG_LEVEL
+  #else
+  #define DUK_USE_DEBUG_LEVEL 0
+  #endif
+introduced: 2.0.0
+default: 0
+tags:
+  - debug
+description: >
+  Set debug print level when DUK_USE_DEBUG is enabled.  The level can be
+  0 (minimal), 1 (verbose), 2 (very verbose).

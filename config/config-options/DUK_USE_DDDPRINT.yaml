@@ -1,9 +1,10 @@
 define: DUK_USE_DDDPRINT
 feature_enables: DUK_OPT_DDDPRINT
 introduced: 1.0.0
+removed: 2.0.0
 default: false
 tags:
   - debug
 description: >
   Enable even more debug printouts.  Not recommended unless you have
-  grep handy.
+  grep handy.  Replaced by DUK_USE_DEBUG_LEVEL.
