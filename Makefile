@@ -298,9 +298,7 @@ CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
 CCOPTS_DEBUG += -O0
 CCOPTS_DEBUG += -g -ggdb
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG
-CCOPTS_DEBUG += -DDUK_OPT_DPRINT
-#CCOPTS_DEBUG += -DDUK_OPT_DDPRINT
-#CCOPTS_DEBUG += -DDUK_OPT_DDDPRINT
+CCOPTS_DEBUG += -DDUK_OPT_DEBUG_LEVEL=0
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result
@@ -310,8 +308,8 @@ GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/exampl
 GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 GXXOPTS_DEBUG = $(GXXOPTS_SHARED) -O0 -g -ggdb
 GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
-GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
-#GXXOPTS_DEBUG += -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
+GXXOPTS_DEBUG += -DDUK_OPT_DEBUG_LEVEL=0
 
 CCLIBS	= -lm
 
@@ -1005,8 +1003,7 @@ CCOPTS_AJDUK += '-DDUK_OPT_EXTSTR_FREE(ud,ptr)=ajsheap_extstr_free_2((ptr))'
 CCOPTS_AJDUK += '-DDUK_OPT_EXEC_TIMEOUT_CHECK(udata)=ajsheap_exec_timeout_check(udata)'
 CCOPTS_AJDUK += '-DDUK_OPT_DECLARE=extern uint8_t *ajsheap_ram; extern duk_uint16_t ajsheap_enc16(void *ud, void *p); extern void *ajsheap_dec16(void *ud, duk_uint16_t x); extern const void *ajsheap_extstr_check_1(const void *ptr, duk_size_t len); extern const void *ajsheap_extstr_check_2(const void *ptr, duk_size_t len); extern const void *ajsheap_extstr_check_3(const void *ptr, duk_size_t len); extern void ajsheap_extstr_free_1(const void *ptr); extern void ajsheap_extstr_free_2(const void *ptr); extern void ajsheap_extstr_free_3(const void *ptr); extern duk_bool_t ajsheap_exec_timeout_check(void *udata);'
 #CCOPTS_AJDUK += -DDUK_OPT_ROM_STRINGS -DDUK_OPT_ROM_OBJECTS -DDUK_OPT_ROM_GLOBAL_INHERIT
-#CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT
-#CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DPRINT -DDUK_OPT_DDPRINT -DDUK_OPT_DDDPRINT
+#CCOPTS_AJDUK += -DDUK_OPT_DEBUG -DDUK_OPT_DEBUG_LEVEL=0
 
 # Command line with Alljoyn.js pool allocator, for low memory testing.
 # The pool sizes only make sense with -m32, so force that.  This forces
