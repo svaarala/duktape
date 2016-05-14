@@ -941,7 +941,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	 *  Debug dumping
 	 */
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	{
 		duk_hcompfunc *h;
 		duk_instr_t *p, *p_start, *p_end;

@@ -691,6 +691,7 @@ DUK_LOCAL void duk__dump_misc_options(void) {
 	DUK_D(DUK_DPRINT("OS string: %s", DUK_USE_OS_STRING));
 	DUK_D(DUK_DPRINT("architecture string: %s", DUK_USE_ARCH_STRING));
 	DUK_D(DUK_DPRINT("compiler string: %s", DUK_USE_COMPILER_STRING));
+	DUK_D(DUK_DPRINT("debug level: %ld", (long) DUK_USE_DEBUG_LEVEL));
 #if defined(DUK_USE_PACKED_TVAL)
 	DUK_D(DUK_DPRINT("DUK_USE_PACKED_TVAL: yes"));
 #else

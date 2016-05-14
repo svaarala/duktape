@@ -131,7 +131,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	use_cache = (DUK_HSTRING_GET_CHARLEN(h) > DUK_HEAP_STRINGCACHE_NOCACHE_LIMIT);
 
 	if (use_cache) {
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 		DUK_DDD(DUK_DDDPRINT("stringcache before char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = heap->strcache + i;
@@ -280,7 +280,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 
 			/* 'sce' points to the wrong entry here, but is no longer used */
 		}
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 		DUK_DDD(DUK_DDDPRINT("stringcache after char2byte (using cache):"));
 		for (i = 0; i < DUK_HEAP_STRCACHE_SIZE; i++) {
 			duk_strcache *c = heap->strcache + i;

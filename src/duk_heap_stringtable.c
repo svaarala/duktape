@@ -657,7 +657,7 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw_probe(duk_heap *heap, duk_uint32_t n
 	DUK_UNREF(old_used);  /* unused with some debug level combinations */
 #endif
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	DUK_DDD(DUK_DDDPRINT("attempt to resize stringtable: %ld entries, %ld bytes, %ld used, %ld%% load -> %ld entries, %ld bytes, %ld used, %ld%% load",
 	                     (long) old_size, (long) (sizeof(duk_hstring *) * old_size), (long) old_used,
 	                     (long) (((double) old_used) / ((double) old_size) * 100.0),
@@ -733,7 +733,7 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw_probe(duk_heap *heap, duk_uint32_t n
 		duk__insert_hstring_probe(heap, new_entries, new_size, &new_used, e);
 	}
 
-#ifdef DUK_USE_DDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 1)
 	DUK_DD(DUK_DDPRINT("resized stringtable: %ld entries, %ld bytes, %ld used, %ld%% load -> %ld entries, %ld bytes, %ld used, %ld%% load",
 	                   (long) old_size, (long) (sizeof(duk_hstring *) * old_size), (long) old_used,
 	                   (long) (((double) old_used) / ((double) old_size) * 100.0),

@@ -567,7 +567,7 @@ DUK_LOCAL void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) 
 	}
 }
 
-#if defined(DUK_USE_DDDPRINT)
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 /* Debug print which visualizes the qsort partitioning process. */
 DUK_LOCAL void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t hi, duk_int_t pivot) {
 	char buf[4096];
@@ -688,7 +688,7 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
 	duk__array_sort_swap(ctx, lo, r);
 
-#if defined(DUK_USE_DDDPRINT)
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	duk__debuglog_qsort_state(ctx, lo, hi, r);
 #endif
 

@@ -73,7 +73,7 @@ DUK_LOCAL const duk__exp_limits duk__str2num_exp_limits[] = {
  */
 #define DUK__BI_MAX_PARTS  37  /* 37x32 = 1184 bits */
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 #define DUK__BI_PRINT(name,x)  duk__bi_print((name),(x))
 #else
 #define DUK__BI_PRINT(name,x)
@@ -85,7 +85,7 @@ typedef struct {
 	duk_uint32_t v[DUK__BI_MAX_PARTS];  /* low to high */
 } duk__bigint;
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 DUK_LOCAL void duk__bi_print(const char *name, duk__bigint *x) {
 	/* Overestimate required size; debug code so not critical to be tight. */
 	char buf[DUK__BI_MAX_PARTS * 9 + 64];
@@ -1097,7 +1097,7 @@ DUK_LOCAL void duk__dragon4_generate(duk__numconv_stringify_ctx *nc_ctx) {
 
 	DUK_DDD(DUK_DDDPRINT("generate finished"));
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	{
 		duk_uint8_t buf[2048];
 		duk_small_int_t i, t;
