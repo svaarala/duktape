@@ -1609,6 +1609,12 @@ Planned
 * Incompatible change: remove duk_dump_context_{stdout,stderr}() to avoid a
   dependency on stdout/stderr which is a porting issue (GH-736, GH-743)
 
+* Incompatible change: remove file related Duktape C API calls to avoid a
+  dependency on platform file I/O which is a porting issue; removed calls
+  (which were moved into extras): duk_push_string_file(), duk_compile_file(),
+  duk_pcompile_file(), duk_eval_file(), duk_eval_file_noresult(),
+  duk_peval_file(), duk_peval_file_noresult() (GH-788)
+
 * Incompatible change: debug protocol version bumped from 1 to 2 to indicate
   version incompatible protocol changes in the 2.0.0 release (GH-756)
 
@@ -1641,13 +1647,17 @@ Planned
 * Remove duk_{get,put,has,del}_var() calls from API header; they were not
   fully implemented and not part of the documented public API (GH-762)
 
-* Add an extra module providing Duktape 1.x compatible print() and alert()
-  bindings (GH-745)
+* Add an extra module (extras/duk-v1-compat) providing many Duktape 1.x API
+  calls removed in Duktape 2.x (multiple Github issues)
 
-* Add an extra module providing Duktape 1.x compatible logging framework
-  (Duktape.Logger, duk_log(), duk_log_va()) (GH-746)
+* Add an extra module (extras/print-alert) providing Duktape 1.x compatible
+  print() and alert() bindings (GH-745)
 
-* Add an extra module providing a minimal 'console' binding (GH-767)
+* Add an extra module (extras/logging) providing Duktape 1.x compatible
+  logging framework (Duktape.Logger, duk_log(), duk_log_va()) (GH-746)
+
+* Add an extra module (extras/console) providing a minimal 'console' binding
+  (GH-767)
 
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
