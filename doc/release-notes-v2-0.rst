@@ -272,6 +272,70 @@ Debug print related config options were reworked as follows:
 
   See http://wiki.duktape.org/HowtoDebugPrints.html for more information.
 
+Fatal error and panic handling reworked
+---------------------------------------
+
+The following changes were made to fatal error and panic handling:
+
+* Fatal error function signature was simplied from::
+
+      /* Duktape 1.x */
+      void func(duk_context *ctx, duk_errcode_t code, const char *msg);
+
+  to::
+
+      /* Duktape 2.x */
+      void func(void *udata, const char *msg);
+
+  where the ``udata`` argument is the userdata argument given in heap creation.
+
+* ``duk_fatal()`` error code argument was removed to match the signature
+  change.
+
+* The entire concept of "panic errors" was removed and replaced with calls to
+  the fatal error mechanism.  There's a user-registered (optional) fatal error
+  handler in heap creation, and a built-in default fatal error handler which
+  is called if user code doesn't provide a fatal error handler.
+
+  Some fatal errors, currently assertion failures, happen without a Duktape
+  heap/thread context so that a user-registered handler cannot be called
+  (there's no heap reference to look it up).  For these errors the default
+  fatal error handler is always called, with the userdata argument as ``NULL``.
+  The default fatal error handler can be replaced by editing ``duk_config.h``.
+
+To upgrade:
+
+* If you're not providing a fatal error handler nor using a custom panic
+  handler, no action is needed -- however, providing a fatal error handler
+  in heap creation is **strongly recommended**.  The default fatal error
+  handler will by default cause an intentional segfault; to improve this
+  behavior define ``DUK_USE_FATAL_HANDLER()`` in your ``duk_config.h``.
+
+* If you have a fatal error handler, update its signature::
+
+      /* Duktape 1.x */
+      void my_fatal(duk_context *ctx, duk_errcode_t error_code, const char *msg) {
+          /* ... */
+      }
+
+      /* Duktape 2.x */
+      void my_fatal(void *udata, const char *msg) {
+          /* ... */
+      }
+
+* If you're using ``duk_fatal()`` API calls, remove the error code argument::
+
+      /* Duktape 1.x */
+      duk_fatal(ctx, DUK_ERR_INTERNAL_ERROR, "assumption failed");
+
+      /* Duktape 2.x */
+      duk_fatal(ctx, "assumption failed");
+
+* If you have a custom panic handler in your ``duk_config.h``, convert it to
+  a default fatal error handler, also provided by ``duk_config.h``.  Both
+  Duktape 1.x panic handler and Duktape 2.x default fatal error handler apply
+  to all Duktape heaps (rather than a specific Duktape heap).
+
 Known issues
 ============
 
