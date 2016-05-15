@@ -19,16 +19,19 @@ summary: |
   memory management functions (ANSI C <code>malloc()</code>, <code>realloc()</code>
   , and <code>free()</code>) are used.  The memory management functions
   share the same opaque userdata pointer, <code>heap_udata</code>.  This
-  userdata pointer is also used for other Duktape features (like low memory
-  pointer compression macros).</p>
+  userdata pointer is also used for other Duktape features like fatal error
+  handling and low memory pointer compression macros.</p>
 
   <p>A fatal error handler is provided in <code>fatal_handler</code>.  This
   handler is called in unrecoverable error situations such as uncaught
-  errors, out-of-memory errors not resolved by garbage collection, etc.
-  A caller SHOULD implement a fatal error handler in most applications.
-  If not given, a default fatal error handler is used.  The default
-  handler ultimately calls ANSI C <code>abort()</code>, which may not always
-  be the preferred action.</p>
+  errors, out-of-memory errors not resolved by garbage collection, self test
+  errors, etc.  A caller SHOULD implement a fatal error handler in most
+  applications.  If not given, a default fatal error handler built into
+  Duktape is used instead.  <b>Note that the default fatal error handler (unless
+  overridden by <code>duk_config.h</code>) causes an intentional segfault to
+  exit a process to avoid relying on platform API calls like abort().</b>  See
+  <a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>
+  for more detail and examples.</p>
 
   <p>To create a Duktape heap with default settings, use
   <code><a href="#duk_create_heap_default">duk_create_heap_default()</a></code>.</p>
