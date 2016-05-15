@@ -247,6 +247,11 @@ struct duk_time_components {
 #define DUK_EXEC_SUCCESS                  0
 #define DUK_EXEC_ERROR                    1
 
+/* Debug levels for DUK_USE_DEBUG_WRITE(). */
+#define DUK_LEVEL_DEBUG                   0
+#define DUK_LEVEL_DDEBUG                  1
+#define DUK_LEVEL_DDDEBUG                 2
+
 /*
  *  If no variadic macros, __FILE__ and __LINE__ are passed through globals
  *  which is ugly and not thread safe.

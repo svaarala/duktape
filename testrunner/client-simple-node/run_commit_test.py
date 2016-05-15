@@ -445,6 +445,7 @@ def context_linux_x64_duk_dddprint():
 		'gcc', '-oduk',
 		'-DDUK_OPT_ASSERTIONS', '-DDUK_OPT_SELF_TESTS',
 		'-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDPRINT', '-DDUK_OPT_DDDPRINT',
+		'-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "%ld %s:%ld (%s): %s\\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)',
 		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
 		'-I' + os.path.join(cwd, 'dist', 'src'),
 		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),

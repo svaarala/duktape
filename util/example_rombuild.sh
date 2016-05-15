@@ -23,7 +23,9 @@ $PYTHON config/genconfig.py \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \
 	-DDUK_USE_ROM_GLOBAL_INHERIT \
-	-DDUK_USE_DEBUG -DDUK_USE_DPRINT -DDUK_USE_ASSERTIONS \
+	-DDUK_USE_DEBUG -DDUK_USE_DPRINT \
+	--option-yaml 'DUK_USE_DEBUG_WRITE: { "verbatim": "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stderr, \"%ld %s:%ld (%s): %s\\n\", (long) (level), (file), (long) (line), (func), (msg)); } while(0)" }' \
+	-DDUK_USE_ASSERTIONS \
 	autodetect-header
 cp dist/src/duk_config.h dist/src-separate/
 #gcc -std=c99 -Wall -Wextra -Os -Idist/src-separate/ -Idist/examples/cmdline dist/src-separate/*.c dist/examples/cmdline/duk_cmdline.c -o _duk -lm
