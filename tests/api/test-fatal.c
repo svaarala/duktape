@@ -1,10 +1,12 @@
 /*===
 my_func
-fatal error: 123456 (reason)
+fatal error: my reason
 ===*/
 
-void my_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
-	printf("fatal error: %d (%s)\n", (int) code, msg);
+void my_fatal_handler(void *udata, const char *msg) {
+	(void) udata;
+
+	printf("fatal error: %s\n", msg);
 
 	/* A fatal error handler must not return, so exit here */
 	exit(0);
@@ -14,7 +16,7 @@ static duk_ret_t my_func(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	printf("my_func\n");
-	duk_fatal(ctx, 123456, "reason");
+	duk_fatal(ctx, "my reason");
 	printf("never here\n");
 	return 0;
 }

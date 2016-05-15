@@ -77,7 +77,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_eval_string_noresult(ctx, "dummy");
 	(void) duk_eval_string(ctx, "dummy");
 	(void) duk_eval(ctx);
-	(void) duk_fatal(ctx, 0, "dummy");
+	(void) duk_fatal(ctx, "dummy");
 	(void) duk_free_raw(ctx, NULL);
 	(void) duk_free(ctx, NULL);
 	(void) duk_gc(ctx, 0);
