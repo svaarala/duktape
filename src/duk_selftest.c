@@ -16,15 +16,21 @@ typedef union {
 	duk_uint8_t c[8];
 } duk__test_double_union;
 
+/* Self test failed.  Expects a local variable 'error_count' to exist. */
+#define DUK__FAILED(msg)  do { \
+		DUK_D(DUK_DPRINT("self test failed: " #msg)); \
+		error_count++; \
+	} while (0)
+
 #define DUK__DBLUNION_CMP_TRUE(a,b)  do { \
 		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) != 0) { \
-			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares false (expected true)"); \
+			DUK__FAILED("double union compares false (expected true)"); \
 		} \
 	} while (0)
 
 #define DUK__DBLUNION_CMP_FALSE(a,b)  do { \
 		if (DUK_MEMCMP((const void *) (a), (const void *) (b), sizeof(duk__test_double_union)) == 0) { \
-			DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double union compares true (expected false)"); \
+			DUK__FAILED("double union compares true (expected false)"); \
 		} \
 	} while (0)
 
@@ -37,19 +43,21 @@ typedef union {
  *  Various sanity checks for typing
  */
 
-DUK_LOCAL void duk__selftest_types(void) {
+DUK_LOCAL duk_uint_t duk__selftest_types(void) {
+	duk_uint_t error_count = 0;
+
 	if (!(sizeof(duk_int8_t) == 1 &&
 	      sizeof(duk_uint8_t) == 1 &&
 	      sizeof(duk_int16_t) == 2 &&
 	      sizeof(duk_uint16_t) == 2 &&
 	      sizeof(duk_int32_t) == 4 &&
 	      sizeof(duk_uint32_t) == 4)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_(u)int{8,16,32}_t size");
+		DUK__FAILED("duk_(u)int{8,16,32}_t size");
 	}
 #if defined(DUK_USE_64BIT_OPS)
 	if (!(sizeof(duk_int64_t) == 8 &&
 	      sizeof(duk_uint64_t) == 8)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_(u)int64_t size");
+		DUK__FAILED("duk_(u)int64_t size");
 	}
 #endif
 
@@ -57,30 +65,37 @@ DUK_LOCAL void duk__selftest_types(void) {
 		/* Some internal code now assumes that all duk_uint_t values
 		 * can be expressed with a duk_size_t.
 		 */
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_size_t is smaller than duk_uint_t");
+		DUK__FAILED("duk_size_t is smaller than duk_uint_t");
 	}
 	if (!(sizeof(duk_int_t) >= 4)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_int_t is not 32 bits");
+		DUK__FAILED("duk_int_t is not 32 bits");
 	}
+
+	return error_count;
 }
 
 /*
  *  Packed tval sanity
  */
 
-DUK_LOCAL void duk__selftest_packed_tval(void) {
+DUK_LOCAL duk_uint_t duk__selftest_packed_tval(void) {
+	duk_uint_t error_count = 0;
+
 #if defined(DUK_USE_PACKED_TVAL)
 	if (sizeof(void *) > 4) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: packed duk_tval in use but sizeof(void *) > 4");
+		DUK__FAILED("packed duk_tval in use but sizeof(void *) > 4");
 	}
 #endif
+
+	return error_count;
 }
 
 /*
  *  Two's complement arithmetic.
  */
 
-DUK_LOCAL void duk__selftest_twos_complement(void) {
+DUK_LOCAL duk_uint_t duk__selftest_twos_complement(void) {
+	duk_uint_t error_count = 0;
 	volatile int test;
 	test = -1;
 
@@ -88,8 +103,10 @@ DUK_LOCAL void duk__selftest_twos_complement(void) {
 	 * 'test' will be 0xFF for two's complement.
 	 */
 	if (((volatile duk_uint8_t *) &test)[0] != (duk_uint8_t) 0xff) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: two's complement arithmetic");
+		DUK__FAILED("two's complement arithmetic");
 	}
+
+	return error_count;
 }
 
 /*
@@ -98,7 +115,8 @@ DUK_LOCAL void duk__selftest_twos_complement(void) {
  *  defines.
  */
 
-DUK_LOCAL void duk__selftest_byte_order(void) {
+DUK_LOCAL duk_uint_t duk__selftest_byte_order(void) {
+	duk_uint_t error_count = 0;
 	duk__test_u32_union u1;
 	duk__test_double_union u2;
 
@@ -130,19 +148,22 @@ DUK_LOCAL void duk__selftest_byte_order(void) {
 #endif
 
 	if (u1.i != (duk_uint32_t) 0xdeadbeefUL) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: duk_uint32_t byte order");
+		DUK__FAILED("duk_uint32_t byte order");
 	}
 
 	if (u2.d != (double) 102030405060.0) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double byte order");
+		DUK__FAILED("double byte order");
 	}
+
+	return error_count;
 }
 
 /*
  *  DUK_BSWAP macros
  */
 
-DUK_LOCAL void duk__selftest_bswap_macros(void) {
+DUK_LOCAL duk_uint_t duk__selftest_bswap_macros(void) {
+	duk_uint_t error_count = 0;
 	duk_uint32_t x32;
 	duk_uint16_t x16;
 	duk_double_union du;
@@ -151,13 +172,13 @@ DUK_LOCAL void duk__selftest_bswap_macros(void) {
 	x16 = 0xbeefUL;
 	x16 = DUK_BSWAP16(x16);
 	if (x16 != (duk_uint16_t) 0xefbeUL) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_BSWAP16");
+		DUK__FAILED("DUK_BSWAP16");
 	}
 
 	x32 = 0xdeadbeefUL;
 	x32 = DUK_BSWAP32(x32);
 	if (x32 != (duk_uint32_t) 0xefbeaddeUL) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_BSWAP32");
+		DUK__FAILED("DUK_BSWAP32");
 	}
 
 	/* >>> struct.unpack('>d', '4000112233445566'.decode('hex'))
@@ -169,7 +190,7 @@ DUK_LOCAL void duk__selftest_bswap_macros(void) {
 	DUK_DBLUNION_DOUBLE_NTOH(&du);
 	du_diff = du.d - 2.008366013071895;
 #if 0
-	DUK_FPRINTF(DUK_STDERR, "du_diff: %lg\n", (double) du_diff);
+	DUK_D(DUK_DPRINT("du_diff: %lg\n", (double) du_diff));
 #endif
 	if (du_diff > 1e-15) {
 		/* Allow very small lenience because some compilers won't parse
@@ -177,41 +198,44 @@ DUK_LOCAL void duk__selftest_bswap_macros(void) {
 		 * Linux gcc-4.8 -m32 at least).
 		 */
 #if 0
-		DUK_FPRINTF(DUK_STDERR, "Result of DUK_DBLUNION_DOUBLE_NTOH: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+		DUK_D(DUK_DPRINT("Result of DUK_DBLUNION_DOUBLE_NTOH: %02x %02x %02x %02x %02x %02x %02x %02x\n",
 		            (unsigned int) du.uc[0], (unsigned int) du.uc[1],
 		            (unsigned int) du.uc[2], (unsigned int) du.uc[3],
 		            (unsigned int) du.uc[4], (unsigned int) du.uc[5],
-		            (unsigned int) du.uc[6], (unsigned int) du.uc[7]);
+		            (unsigned int) du.uc[6], (unsigned int) du.uc[7]));
 #endif
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: DUK_DBLUNION_DOUBLE_NTOH");
+		DUK__FAILED("DUK_DBLUNION_DOUBLE_NTOH");
 	}
+
+	return error_count;
 }
 
 /*
  *  Basic double / byte union memory layout.
  */
 
-DUK_LOCAL void duk__selftest_double_union_size(void) {
+DUK_LOCAL duk_uint_t duk__selftest_double_union_size(void) {
+	duk_uint_t error_count = 0;
+
 	if (sizeof(duk__test_double_union) != 8) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: invalid union size");
+		DUK__FAILED("invalid union size");
 	}
+
+	return error_count;
 }
 
 /*
  *  Union aliasing, see misc/clang_aliasing.c.
  */
 
-DUK_LOCAL void duk__selftest_double_aliasing(void) {
-	duk__test_double_union a, b;
-
+DUK_LOCAL duk_uint_t duk__selftest_double_aliasing(void) {
 	/* This testcase fails when Emscripten-generated code runs on Firefox.
 	 * It's not an issue because the failure should only affect packed
 	 * duk_tval representation, which is not used with Emscripten.
 	 */
-#if !defined(DUK_USE_PACKED_TVAL)
-	DUK_D(DUK_DPRINT("skip double aliasing self test when duk_tval is not packed"));
-	return;
-#endif
+#if defined(DUK_USE_PACKED_TVAL)
+	duk_uint_t error_count = 0;
+	duk__test_double_union a, b;
 
 	/* Test signaling NaN and alias assignment in all endianness combinations.
 	 */
@@ -233,18 +257,27 @@ DUK_LOCAL void duk__selftest_double_aliasing(void) {
 	a.c[4] = 0x11; a.c[5] = 0x22; a.c[6] = 0x33; a.c[7] = 0x44;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
+
+	return error_count;
+#else
+	DUK_D(DUK_DPRINT("skip double aliasing self test when duk_tval is not packed"));
+	return 0;
+#endif
 }
 
 /*
  *  Zero sign, see misc/tcc_zerosign2.c.
  */
 
-DUK_LOCAL void duk__selftest_double_zero_sign(void) {
+DUK_LOCAL duk_uint_t duk__selftest_double_zero_sign(void) {
+	duk_uint_t error_count = 0;
 	duk__test_double_union a, b;
 
 	a.d = 0.0;
 	b.d = -a.d;
 	DUK__DBLUNION_CMP_FALSE(&a, &b);
+
+	return error_count;
 }
 
 /*
@@ -254,20 +287,23 @@ DUK_LOCAL void duk__selftest_double_zero_sign(void) {
  *  selftest ensures they're correctly detected and used.
  */
 
-DUK_LOCAL void duk__selftest_struct_align(void) {
+DUK_LOCAL duk_uint_t duk__selftest_struct_align(void) {
+	duk_uint_t error_count = 0;
+
 #if (DUK_USE_ALIGN_BY == 4)
 	if ((sizeof(duk_hbuffer_fixed) % 4) != 0) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 4");
+		DUK__FAILED("sizeof(duk_hbuffer_fixed) not aligned to 4");
 	}
 #elif (DUK_USE_ALIGN_BY == 8)
 	if ((sizeof(duk_hbuffer_fixed) % 8) != 0) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: sizeof(duk_hbuffer_fixed) not aligned to 8");
+		DUK__FAILED("sizeof(duk_hbuffer_fixed) not aligned to 8");
 	}
 #elif (DUK_USE_ALIGN_BY == 1)
 	/* no check */
 #else
 #error invalid DUK_USE_ALIGN_BY
 #endif
+	return error_count;
 }
 
 /*
@@ -277,7 +313,8 @@ DUK_LOCAL void duk__selftest_struct_align(void) {
  *  but don't work correctly.  Test for known cases.
  */
 
-DUK_LOCAL void duk__selftest_64bit_arithmetic(void) {
+DUK_LOCAL duk_uint_t duk__selftest_64bit_arithmetic(void) {
+	duk_uint_t error_count = 0;
 #if defined(DUK_USE_64BIT_OPS)
 	volatile duk_int64_t i;
 	volatile duk_double_t d;
@@ -286,21 +323,24 @@ DUK_LOCAL void duk__selftest_64bit_arithmetic(void) {
 	d = 2147483648.0;
 	i = (duk_int64_t) d;
 	if (i != 0x80000000LL) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: casting 2147483648.0 to duk_int64_t failed");
+		DUK__FAILED("casting 2147483648.0 to duk_int64_t failed");
 	}
 #else
 	/* nop */
 #endif
+	return error_count;
 }
 
 /*
  *  Casting
  */
 
-DUK_LOCAL void duk__selftest_cast_double_to_small_uint(void) {
+DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_small_uint(void) {
 	/*
 	 *  https://github.com/svaarala/duktape/issues/127#issuecomment-77863473
 	 */
+
+	duk_uint_t error_count = 0;
 
 	duk_double_t d1, d2;
 	duk_small_uint_t u;
@@ -315,7 +355,7 @@ DUK_LOCAL void duk__selftest_cast_double_to_small_uint(void) {
 	d2 = (duk_double_t) u;
 
 	if (!(d1 == 1.0 && u == 1 && d2 == 1.0 && d1 == d2)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_small_uint_t cast failed");
+		DUK__FAILED("double to duk_small_uint_t cast failed");
 	}
 
 	/* Same test with volatiles */
@@ -325,11 +365,13 @@ DUK_LOCAL void duk__selftest_cast_double_to_small_uint(void) {
 	d2v = (duk_double_t) uv;
 
 	if (!(d1v == 1.0 && uv == 1 && d2v == 1.0 && d1v == d2v)) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_small_uint_t cast failed");
+		DUK__FAILED("double to duk_small_uint_t cast failed");
 	}
+
+	return error_count;
 }
 
-DUK_LOCAL void duk__selftest_cast_double_to_uint32(void) {
+DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_uint32(void) {
 	/*
 	 *  This test fails on an exotic ARM target; double-to-uint
 	 *  cast is incorrectly clamped to -signed- int highest value.
@@ -337,6 +379,7 @@ DUK_LOCAL void duk__selftest_cast_double_to_uint32(void) {
 	 *  https://github.com/svaarala/duktape/issues/336
 	 */
 
+	duk_uint_t error_count = 0;
 	duk_double_t dv;
 	duk_uint32_t uv;
 
@@ -344,29 +387,40 @@ DUK_LOCAL void duk__selftest_cast_double_to_uint32(void) {
 	uv = (duk_uint32_t) dv;
 
 	if (uv != 0xdeadbeefUL) {
-		DUK_PANIC(DUK_ERR_INTERNAL_ERROR, "self test failed: double to duk_uint32_t cast failed");
+		DUK__FAILED("double to duk_uint32_t cast failed");
 	}
+
+	return error_count;
 }
 
 /*
  *  Self test main
  */
 
-DUK_INTERNAL void duk_selftest_run_tests(void) {
-	duk__selftest_types();
-	duk__selftest_packed_tval();
-	duk__selftest_twos_complement();
-	duk__selftest_byte_order();
-	duk__selftest_bswap_macros();
-	duk__selftest_double_union_size();
-	duk__selftest_double_aliasing();
-	duk__selftest_double_zero_sign();
-	duk__selftest_struct_align();
-	duk__selftest_64bit_arithmetic();
-	duk__selftest_cast_double_to_small_uint();
-	duk__selftest_cast_double_to_uint32();
+DUK_INTERNAL duk_uint_t duk_selftest_run_tests(void) {
+	duk_uint_t error_count = 0;
+
+	DUK_D(DUK_DPRINT("self test starting"));
+
+	error_count += duk__selftest_types();
+	error_count += duk__selftest_packed_tval();
+	error_count += duk__selftest_twos_complement();
+	error_count += duk__selftest_byte_order();
+	error_count += duk__selftest_bswap_macros();
+	error_count += duk__selftest_double_union_size();
+	error_count += duk__selftest_double_aliasing();
+	error_count += duk__selftest_double_zero_sign();
+	error_count += duk__selftest_struct_align();
+	error_count += duk__selftest_64bit_arithmetic();
+	error_count += duk__selftest_cast_double_to_small_uint();
+	error_count += duk__selftest_cast_double_to_uint32();
+
+	DUK_D(DUK_DPRINT("self test complete, total error count: %ld", (long) error_count));
+
+	return error_count;
 }
 
+#undef DUK__FAILED
 #undef DUK__DBLUNION_CMP_TRUE
 #undef DUK__DBLUNION_CMP_FALSE
 

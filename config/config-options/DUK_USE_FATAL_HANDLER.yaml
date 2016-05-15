@@ -1,0 +1,27 @@
+define: DUK_USE_FATAL_HANDLER
+feature_snippet: |
+  #undef DUK_USE_FATAL_HANDLER
+  #if defined(DUK_OPT_FATAL_HANDLER)
+  #define DUK_USE_FATAL_HANDLER(udata,msg) DUK_OPT_FATAL_HANDLER((udata),(msg))
+  #endif
+introduced: 2.0.0
+default: false
+tags:
+  - portability
+description: >
+  Provide a custom default fatal error handler to replace the built-in one
+  (which causes an intentional segfault and forever loops).  The default
+  fatal error gets called when (1) a fatal error occurs and application code
+  didn't register a fatal error handler in heap creation or (2) a context-free
+  fatal error happens, concretely e.g. an assertion failure.
+
+  The handler is called like a C function with the prototype
+  "void fatal_handler(void *udata, const char *msg)".  The "msg" argument can
+  be NULL.  The "udata" argument matches the heap-related userdata but is
+  NULL for fatal errors unrelated to a heap/thread context (this is the case
+  for e.g. assertions).
+
+  A custom default fatal error handler is recommended for any environment
+  where recover from fatal errors is important.  A custom handler can take
+  appropriate action to recover, e.g. record the error and reboot the target
+  device.

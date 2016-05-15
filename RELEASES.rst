@@ -1616,6 +1616,18 @@ Planned
   debug writes when DUK_USE_DEBUG is enabled; this avoids a platform I/O
   dependency and allows debug log filtering and retargeting (GH-782)
 
+* Incompatible change: remove the distinction between panic and fatal errors,
+  and simplify the fatal error handler function signature to
+  ``void my_fatal(void *udata, const char *msg);``  (GH-781)
+
+* Incompatible change: remove error code argument from duk_fatal() API
+  call to match revised fatal error handler function signature (GH-781)
+
+* Incompatible change: default fatal error handler (similar to panic handler
+  in Duktape 1.x) segfaults and infinite loops without calling e.g. abort()
+  (which may not be available); this behavior can be overridden by defining
+  DUK_USE_FATAL_HANDLER() in duk_config.h (GH-781)
+
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
   same time provider as seen by Ecmascript code (GH-771)
@@ -1632,7 +1644,7 @@ Planned
 * Add an extra module providing Duktape 1.x compatible logging framework
   (Duktape.Logger, duk_log(), duk_log_va()) (GH-746)
 
-* Add an extra module with a minimal 'console' binding (GH-767)
+* Add an extra module providing a minimal 'console' binding (GH-767)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than

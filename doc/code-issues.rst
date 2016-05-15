@@ -645,6 +645,26 @@ with exotic pointer models::
         p++;
     }
 
+Argument order
+==============
+
+Having a consistent argument order makes it easier to read and maintain code.
+Also when the argument position of functions match it often saves some move
+instructions in the compiled code.
+
+Current conventions:
+
+* The ``ctx`` or ``heap`` argument, if present, is always first.
+
+* For callbacks, a userdata argument follows ``ctx`` or ``heap``; if neither
+  is present, the userdata argument is first.  Same applies to user-defined
+  macros which accept a userdata argument (e.g. pointer compression macros).
+
+* When registering a callback, the userdata argument to be given in later
+  callbacks is immediately after the callback(s) related to the userdata.
+
+* Flags fields are typically last.
+
 Symbol visibility
 =================
 
@@ -1908,13 +1928,13 @@ Calling platform functions
 ==========================
 
 All platform function calls (ANSI C and other) are wrapped through macros
-defined in ``duk_features.h``.  For example, ``fwrite()`` calls are made
-using ``DUK_FWRITE()``.
+defined in ``duk_config.h``.  For example, ``fwrite()`` calls are made using
+``DUK_FWRITE()``.
 
 Many of these wrappers are not currently needed but some are, so it's simplest
 to wrap just about everything in case something needs to be tweaked.  As an
 example, on some old uclibc versions ``memcpy()`` is broken and can be
-replaced with ``memmove()`` in ``duk_features.h``.
+replaced with ``memmove()`` in ``duk_config.h``.
 
 The only exception is platform specific Date built-in code.  As this code is
 always platform specific and contained to the Date code, wrapping them is not
@@ -1940,31 +1960,23 @@ is more space for code and fixed data.
 Feature defines
 ===============
 
-Almost all feature detection is concentrated into ``duk_features.h`` which
-considers inputs from various sources:
+All feature detection is concentrated into ``duk_config.h`` which considers
+inputs from various sources:
 
 * ``DUK_OPT_xxx`` defines, which allow a user to request a specific feature
-  or provide a specific value (such as traceback depth)
+  or provide a specific value (such as traceback depth).
 
-* Compiler and platform specific defines and features
+* Compiler and platform specific defines and features.
 
-As a result, ``duk_features.h`` defines ``DUK_USE_xxx`` macros which enable
+As a result, ``duk_config.h`` defines ``DUK_USE_xxx`` macros which enable
 and disable specific features and provide parameter values (such as traceback
 depth).  These are the **only** feature defines which should be used in
-internal Duktape code.
-
-The only exception so far is ``DUK_PANIC_HANDLER()`` in ``duk_error.h`` which
-can be directly overridden by the user if necessary.
-
-This basic approach is complicated a bit by the fact that ``duktape.h`` must
-do some minimal platform feature detection to ensure that the public API uses
-the correct types, etc.  These are coordinated with ``duk_features.h``;
-``duk_features.h`` either uses whatever ``duktape.h`` ended up using, or does
-its own checking and ensures the two are consistent.
+internal Duktape code.  The ``duk_config.h`` defines, especially typedefs,
+are also visible for the public API header.
 
 When adding specific hacks and workarounds which might not be of interest
 to all users, add a ``DUK_OPT_xxx`` flag for them and translate it to a
-``DUK_USE_xxx`` flag in ``duk_features.h``.  If the ``DUK_OPT_xxx`` flag
+``DUK_USE_xxx`` flag in ``duk_config.h``.  If the ``DUK_OPT_xxx`` flag
 is absent, the custom behavior MUST NOT be enabled.
 
 Platforms and compilers

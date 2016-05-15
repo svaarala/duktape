@@ -189,9 +189,8 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_REFERENCE_COUNTING
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MARK_AND_SWEEP
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
-CCOPTS_FEATURES += -DDUK_OPT_SEGFAULT_ON_PANIC       # segfault on panic allows valgrind to show stack trace on panic
 #CCOPTS_FEATURES += -DDUK_OPT_NO_FILE_IO
-#CCOPTS_FEATURES += '-DDUK_OPT_PANIC_HANDLER(code,msg)={printf("*** %d:%s\n",(code),(msg));abort();}'
+CCOPTS_FEATURES += '-DDUK_OPT_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); *((unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)'
 CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_PC2LINE
@@ -756,7 +755,7 @@ emscriptenduktest: emscripten dist
 # and providing an eval() facility from both sides.  This is a placeholder now
 # and doesn't do anything useful yet.
 EMCCOPTS_DUKWEB_EXPORT=-s EXPORTED_FUNCTIONS='["_dukweb_is_open", "_dukweb_open","_dukweb_close","_dukweb_eval"]'
-EMCCOPTS_DUKWEB_DEFINES='-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg);' '-DDUK_OPT_PANIC_HANDLER(code,msg)={dukweb_panic_handler((code),(msg));abort();}'
+EMCCOPTS_DUKWEB_DEFINES='-DDUK_OPT_DECLARE=extern void dukweb_panic_handler(int code, const char *msg); extern void dukweb_fatal_handler(void *udata, const char *msg);' '-DDUK_OPT_FATAL_HANDLER(udata,msg)={dukweb_fatal_handler((udata),(msg));abort();}'
 #EMCCOPTS_DUKWEB_DEFINES+=-DDUK_OPT_ASSERTIONS
 EMCCOPTS_DUKWEB_DEFINES+=-DDUK_OPT_SELF_TESTS
 

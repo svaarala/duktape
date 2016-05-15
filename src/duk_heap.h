@@ -351,7 +351,7 @@ struct duk_heap {
 	duk_free_function free_func;
 
 	/* Heap udata, used for allocator functions but also for other heap
-	 * level callbacks like pointer compression, etc.
+	 * level callbacks like fatal function, pointer compression, etc.
 	 */
 	void *heap_udata;
 

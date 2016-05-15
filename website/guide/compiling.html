@@ -160,16 +160,17 @@ may be used to improve performance by e.g. enabling fast paths, enabling
 <a href="https://github.com/svaarala/duktape/blob/master/doc/performance-sensitive.rst">performance-sensitive.rst</a>
 for suggested feature options.</p>
 
-<h2>DUK_OPT_PANIC_HANDLER</h2>
+<h2>DUK_USE_FATAL_HANDLER</h2>
 
-<p>The default panic handler will print an error message to stdout unless I/O is
-disabled by <code>DUK_OPT_NO_FILE_IO</code>.  It will then call <code>abort()</code>
-or cause a segfault if <code>DUK_OPT_SEGFAULT_ON_PANIC</code> is defined.</p>
+<p>The built-in default fatal error handler will write a debug log message
+(but <b>won't</b> write anything to <code>stdout</code> to <code>stderr</code>),
+and will then cause an <b>intentional segfault</b>; if that fails, it enters an
+infinite loop to ensure execution doesn't resume after a fatal error.</p>
 
-<p>This is not always the best behavior for production applications which may
-already have better panic recovery mechanisms.  To replace the default panic
+<p>This is usually not the best behavior for production applications which may
+already have better fatal error recovery mechanisms.  To replace the default fatal
 handler, see
-<a href="http://wiki.duktape.org/FeatureOptions.html">Duktape feature options</a>.</p>
+<a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>.</p>
 
 <h2>Memory management alternatives</h2>
 

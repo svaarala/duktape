@@ -22,23 +22,48 @@ static int dukweb__emscripten_run_script(duk_context *ctx) {
 	return 0;
 }
 
-void dukweb_panic_handler(int code, const char *msg) {
-	printf("dukweb_panic_handler(), code=%d, msg=%s\n", code, msg);
-	fflush(stdout);
-	/* FIXME: add code/msg to alert */
-	EM_ASM(
-		alert('Duktape panic handler called');
-	);
-	abort();
+/* XXX: extract shared helper for string compatible escaping */
+static void dukweb_fatal_helper(const char *msg, const char *prefix) {
+	char buf[4096];
+	char *p;
+	const char *q;
+
+	memset((void *) buf, 0, sizeof(buf));
+	p = buf;
+	p += sprintf(p, "%s('Duktape fatal error: ", prefix);
+
+	for (q = msg; *q; q++) {
+		size_t space = sizeof(buf) - (size_t) (q - buf);
+		unsigned char ch;
+
+		if (space < 8) {
+			break;
+		}
+		ch = (unsigned char) *q;
+		if (ch < 0x20 || ch >= 0x7e || ch == (unsigned char) '\'' || ch == (unsigned char) '"') {
+			/* Escape to remain compatible with a string literal.
+			 * No UTF-8 handling now; shouldn't be needed as fatal
+			 * error messages are typically ASCII.
+			 */
+			p += sprintf(p, "\\u%04x", (unsigned int) ch);
+		} else {
+			*p++ = (char) ch;
+		}
+	}
+	p += sprintf(p, "');");
+	*p++ = (char) 0;
+
+	emscripten_run_script((const char *) buf);
 }
 
-void dukweb_fatal_handler(duk_context *ctx, duk_errcode_t code, const char *msg) {
-	printf("dukweb_fatal_handler(), code=%d, msg=%s\n", (int) code, msg);
-	fflush(stdout);
-	/* FIXME: add code/msg to alert */
-	EM_ASM(
-		alert('Duktape fatal handler called');
-	);
+void dukweb_fatal_handler(void *udata, const char *msg) {
+	(void) udata;
+
+	if (!msg) {
+		msg = "no message";
+	}
+	dukweb_fatal_helper(msg, "alert");
+	dukweb_fatal_helper(msg, "throw new Error");
 	abort();
 }
 
@@ -123,6 +148,10 @@ const char *dukweb_eval(const char *code) {
 	}
 
 	duk_set_top(ctx, 0);
+#if 0
+	/* Test fatal error handling and its escaping */
+	duk_fatal(ctx, "aiee! {} ' + ' \" \n \xc0");
+#endif
 
 	return (const char *) duk__evalbuf;
 }

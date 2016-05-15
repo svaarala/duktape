@@ -5,8 +5,7 @@ Duktape feature options
 Overview
 ========
 
-The effective set of Duktape features is resolved in three steps in Duktape 1.x
-(this process will change in Duktape 2.x):
+The effective set of Duktape features is resolved in three steps in Duktape 1.x:
 
 * User defines ``DUK_OPT_xxx`` feature options.  These are essentially
   requests to enable/disable some feature.  (These will be removed in
@@ -34,7 +33,9 @@ The effective set of Duktape features is resolved in three steps in Duktape 1.x
 
 Starting from Duktape 1.3 an external ``duk_config.h`` is required; it may
 be a prebuilt multi-platform header or a user-modified one.  Duktape 2.x
-will remove support for ``DUK_OPT_xxx`` feature options entirely.
+will remove support for ``DUK_OPT_xxx`` feature options entirely so that
+all config changes are made by editing ``duk_config.h`` or by regenerating
+it e.g. using genconfig.
 
 Feature option naming
 =====================

@@ -712,7 +712,7 @@ def context_linux_x64_minisphere():
 
 	# Unpack minisphere snapshot and copy Duktape files over.
 	#unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160328.tar.gz'))
-	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160507.tar.gz'))
+	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160515.tar.gz'))
 
 	for i in [ 'duktape.c', 'duktape.h', 'duk_config.h' ]:
 		execute([
@@ -732,7 +732,7 @@ def context_linux_x64_dukluv():
 
 	# Unpack dukluv snapshot and symlink dukluv/lib/duktape to dist.
 	#unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160328.tar.gz'))
-	unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160508.tar.gz'))
+	unpack_targz(os.path.join(repo_snapshot_dir, 'dukluv-20160515.tar.gz'))
 
 	execute([
 		'mv',
