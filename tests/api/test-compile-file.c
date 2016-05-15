@@ -1,3 +1,9 @@
+/*---
+{
+    "skip": true
+}
+---*/
+
 /*===
 *** test_raw (duk_safe_call)
 Hello world from a file!

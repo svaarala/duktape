@@ -6,6 +6,12 @@
  *  Reported by David Demelier.
  */
 
+/*---
+{
+    "skip": true
+}
+---*/
+
 #define  NONEXISTENT_FILE  "/tmp/this/file/does/not/exist"
 
 /*===

@@ -40,7 +40,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_check_type_mask(ctx, 0, 0);
 	(void) duk_check_type(ctx, 0, 0);
 	(void) duk_compact(ctx, 0);
-	(void) duk_compile_file(ctx, 0, "dummy");
 	(void) duk_compile_lstring_filename(ctx, 0, "dummy", 0);
 	(void) duk_compile_lstring(ctx, 0, "dummy", 0);
 	(void) duk_compile_string_filename(ctx, 0, "dummy");
@@ -69,8 +68,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_equals(ctx, 0, 0);
 	duk_error_va(ctx, 0, NULL, NULL);
 	duk_error(ctx, 0, "dummy");  /* (void) cast won't work without variadic macros */
-	(void) duk_eval_file_noresult(ctx, "dummy");
-	(void) duk_eval_file(ctx, "dummy");
 	(void) duk_eval_lstring_noresult(ctx, "dummy", 0);
 	(void) duk_eval_lstring(ctx, "dummy", 0);
 	(void) duk_eval_noresult(ctx);
@@ -158,14 +155,11 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_pcall_method(ctx, 0);
 	(void) duk_pcall_prop(ctx, 0, 0);
 	(void) duk_pcall(ctx, 0);
-	(void) duk_pcompile_file(ctx, 0, "dummy");
 	(void) duk_pcompile_lstring_filename(ctx, 0, "dummy", 0);
 	(void) duk_pcompile_lstring(ctx, 0, "dummy", 0);
 	(void) duk_pcompile_string_filename(ctx, 0, "dummy");
 	(void) duk_pcompile_string(ctx, 0, "dummy");
 	(void) duk_pcompile(ctx, 0);
-	(void) duk_peval_file_noresult(ctx, "dummy");
-	(void) duk_peval_file(ctx, "dummy");
 	(void) duk_peval_lstring_noresult(ctx, "dummy", 0);
 	(void) duk_peval_lstring(ctx, "dummy", 0);
 	(void) duk_peval_noresult(ctx);
@@ -204,7 +198,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_object(ctx);
 	(void) duk_push_pointer(ctx, NULL);
 	(void) duk_push_sprintf(ctx, "dummy");
-	(void) duk_push_string_file(ctx, "dummy");
 	(void) duk_push_string(ctx, "dummy");
 	(void) duk_push_this(ctx);
 	(void) duk_push_thread_new_globalenv(ctx);
