@@ -167,6 +167,15 @@ static void set_sigint_handler(void) {
 }
 #endif  /* DUK_CMDLINE_SIGNAL */
 
+static void cmdline_fatal_handler(void *udata, const char *msg) {
+	(void) udata;
+	fprintf(stderr, "*** FATAL ERROR: %s\n", msg ? msg : "no message");
+	fprintf(stderr, "Causing intentional segfault...\n");
+	fflush(stderr);
+	*((unsigned int *) 0) = (unsigned int) 0xdeadbeefUL;
+	abort();
+}
+
 static int get_stack_raw(duk_context *ctx, void *udata) {
 	(void) udata;
 
@@ -1035,7 +1044,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		                      duk_realloc_logging,
 		                      duk_free_logging,
 		                      (void *) 0xdeadbeef,
-		                      NULL);
+		                      cmdline_fatal_handler);
 #else
 		fprintf(stderr, "Warning: option --alloc-logging ignored, no logging allocator support\n");
 		fflush(stderr);
@@ -1047,7 +1056,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		                      duk_realloc_torture,
 		                      duk_free_torture,
 		                      (void *) 0xdeadbeef,
-		                      NULL);
+		                      cmdline_fatal_handler);
 #else
 		fprintf(stderr, "Warning: option --alloc-torture ignored, no torture allocator support\n");
 		fflush(stderr);
@@ -1064,7 +1073,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 			                      duk_realloc_hybrid,
 			                      duk_free_hybrid,
 			                      udata,
-			                      NULL);
+			                      cmdline_fatal_handler);
 		}
 #else
 		fprintf(stderr, "Warning: option --alloc-hybrid ignored, no hybrid allocator support\n");
@@ -1080,15 +1089,14 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 			ajsheap_log ? ajsheap_realloc_wrapped : AJS_Realloc,
 			ajsheap_log ? ajsheap_free_wrapped : AJS_Free,
 			(void *) 0xdeadbeef,  /* heap_udata: ignored by AjsHeap, use as marker */
-			NULL
-		);                /* fatal_handler */
+			cmdline_fatal_handler);
 #else
 		fprintf(stderr, "Warning: option --alloc-ajsheap ignored, no ajsheap allocator support\n");
 		fflush(stderr);
 #endif
 	}
 	if (!ctx && alloc_provider == ALLOC_DEFAULT) {
-		ctx = duk_create_heap_default();
+		ctx = duk_create_heap(NULL, NULL, NULL, NULL, cmdline_fatal_handler);
 	}
 
 	if (!ctx) {
