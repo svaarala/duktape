@@ -843,23 +843,6 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 	}
 #endif
 
-	/* For manual testing only. */
-#if 0
-	{
-		duk_size_t i;
-		DUK_PRINTF("INTERN: \"");
-		for (i = 0; i < blen; i++) {
-			duk_uint8_t x = str[i];
-			if (x >= 0x20 && x <= 0x7e && x != '"' && x != '\\') {
-				DUK_PRINTF("%c", (int) x);  /* char: use int cast */
-			} else {
-				DUK_PRINTF("\\x%02lx", (long) x);
-			}
-		}
-		DUK_PRINTF("\"\n");
-	}
-#endif
-
 #if defined(DUK_USE_HSTRING_EXTDATA) && defined(DUK_USE_EXTSTR_INTERN_CHECK)
 	extdata = (const duk_uint8_t *) DUK_USE_EXTSTR_INTERN_CHECK(heap->heap_udata, (void *) DUK_LOSE_CONST(str), (duk_size_t) blen);
 #else
