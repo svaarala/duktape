@@ -41,7 +41,7 @@
 #define DUK_DBG_CMD_STATUS               0x01
 #define DUK_DBG_CMD_UNUSED_2             0x02  /* Duktape 1.x: print notify */
 #define DUK_DBG_CMD_UNUSED_3             0x03  /* Duktape 1.x: alert notify */
-#define DUK_DBG_CMD_LOG                  0x04
+#define DUK_DBG_CMD_UNUSED_4             0x04  /* Duktape 1.x: log notify */
 #define DUK_DBG_CMD_THROW                0x05
 #define DUK_DBG_CMD_DETACHING            0x06
 #define DUK_DBG_CMD_APPNOTIFY            0x07
