@@ -5,7 +5,7 @@ client_commands:
   - Status
   - Reserved_2  # Duktape 1.x: print notify
   - Reserved_3  # Duktape 1.x: alert notify
-  - Log
+  - Reserved_4  # Duktape 1.x: log notify
   - Throw
   - Detaching
   - AppNotify

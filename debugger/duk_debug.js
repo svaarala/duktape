@@ -53,7 +53,7 @@ var SUPPORTED_DEBUG_PROTOCOL_VERSION = 2;
 var CMD_STATUS = 0x01;
 var CMD_UNUSED_2 = 0x02;  // Duktape 1.x: print notify
 var CMD_UNUSED_3 = 0x03;  // Duktape 1.x: alert notify
-var CMD_LOG = 0x04;
+var CMD_UNUSED_4 = 0x04;  // Duktape 1.x: log notify
 var CMD_THROW = 0x05;
 var CMD_DETACHING = 0x06;
 
@@ -1703,8 +1703,6 @@ Debugger.prototype.processDebugMessage = function (msg) {
             }
 
             this.emit('exec-status-update');
-        } else if (msg[1] === CMD_LOG) {
-            this.uiMessage({ type: 'log', level: msg[2], message: prettyUiStringUnquoted(msg[3], UI_MESSAGE_CLIPLEN) });
         } else if (msg[1] === CMD_THROW) {
             this.uiMessage({ type: 'throw', fatal: msg[2], message: (msg[2] ? 'UNCAUGHT: ' : 'THROW: ') + prettyUiStringUnquoted(msg[3], UI_MESSAGE_CLIPLEN), fileName: msg[4], lineNumber: msg[5] });
         } else if (msg[1] === CMD_DETACHING) {
