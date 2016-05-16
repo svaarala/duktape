@@ -4484,24 +4484,3 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	DUK_ERROR_INTERNAL(thr, "internal error in bytecode executor");
 #endif
 }
-
-#undef DUK__LONGJMP_RESTART
-#undef DUK__LONGJMP_FINISHED
-#undef DUK__LONGJMP_RETHROW
-
-#undef DUK__RETHAND_RESTART
-#undef DUK__RETHAND_FINISHED
-
-#undef DUK__FUN
-#undef DUK__STRICT
-#undef DUK__REG
-#undef DUK__REGP
-#undef DUK__CONST
-#undef DUK__CONSTP
-#undef DUK__RCISREG
-#undef DUK__REGCONST
-#undef DUK__REGCONSTP
-
-#undef DUK__INTERNAL_ERROR
-#undef DUK__SYNC_CURR_PC
-#undef DUK__SYNC_AND_NULL_CURR_PC

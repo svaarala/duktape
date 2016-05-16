@@ -2870,13 +2870,3 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	return DUK_RET_UNSUPPORTED_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-
-#undef  DUK__FLD_8BIT
-#undef  DUK__FLD_16BIT
-#undef  DUK__FLD_32BIT
-#undef  DUK__FLD_FLOAT
-#undef  DUK__FLD_DOUBLE
-#undef  DUK__FLD_VARINT
-#undef  DUK__FLD_BIGENDIAN
-#undef  DUK__FLD_SIGNED
-#undef  DUK__FLD_TYPEDARRAY

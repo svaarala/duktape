@@ -84,8 +84,6 @@ DUK_LOCAL const duk_uint8_t duk__escape_unescaped_table[16] = {
 };
 #endif  /* DUK_USE_SECTION_B */
 
-#undef DUK__MKBITS
-
 typedef struct {
 	duk_hthread *thr;
 	duk_hstring *h_str;
@@ -1154,18 +1152,6 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	duk_throw(ctx);  /* rethrow original error */
 	return 0;  /* not reachable */
 }
-
-#undef DUK__IDX_REQUESTED_ID
-#undef DUK__IDX_REQUIRE
-#undef DUK__IDX_REQUIRE_ID
-#undef DUK__IDX_RESOLVED_ID
-#undef DUK__IDX_LASTCOMP
-#undef DUK__IDX_DUKTAPE
-#undef DUK__IDX_MODLOADED
-#undef DUK__IDX_UNDEFINED
-#undef DUK__IDX_FRESH_REQUIRE
-#undef DUK__IDX_EXPORTS
-#undef DUK__IDX_MODULE
 #else
 DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	DUK_UNREF(ctx);

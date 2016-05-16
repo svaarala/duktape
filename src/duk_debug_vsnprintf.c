@@ -301,9 +301,6 @@ DUK_LOCAL void duk__print_hstring(duk__dprint_state *st, duk_hstring *h, duk_boo
 #endif
 }
 
-#ifdef DUK__COMMA
-#undef DUK__COMMA
-#endif
 #define DUK__COMMA()  do { \
 		if (first) { \
 			first = 0; \
@@ -614,8 +611,6 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		st->loop_stack[st->loop_stack_index] = NULL;
 	}
 }
-
-#undef DUK__COMMA
 
 DUK_LOCAL void duk__print_hbuffer(duk__dprint_state *st, duk_hbuffer *h) {
 	duk_fixedbuffer *fb = st->fb;

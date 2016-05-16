@@ -684,11 +684,6 @@ DUK_LOCAL void duk__dump_type_limits(void) {
 	DUK__DUMPLM_SIGNED(SMALL_INT_FAST);
 	DUK__DUMPLM_UNSIGNED(SMALL_UINT_FAST);
 }
-#undef DUK__DUMPSZ
-#undef DUK__DUMPLM_SIGNED_RAW
-#undef DUK__DUMPLM_UNSIGNED_RAW
-#undef DUK__DUMPLM_SIGNED
-#undef DUK__DUMPLM_UNSIGNED
 
 DUK_LOCAL void duk__dump_misc_options(void) {
 	DUK_D(DUK_DPRINT("DUK_VERSION: %ld", (long) DUK_VERSION));
@@ -1029,11 +1024,3 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 	return NULL;
 }
-
-#undef DUK__BITPACK_LETTER_LIMIT
-#undef DUK__BITPACK_UNDERSCORE
-#undef DUK__BITPACK_FF
-#undef DUK__BITPACK_SWITCH1
-#undef DUK__BITPACK_SWITCH
-#undef DUK__BITPACK_SEVENBIT
-#undef DUK__FIXED_HASH_SEED

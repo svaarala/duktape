@@ -28,7 +28,6 @@
 
 #define DUK__RE_INITIAL_BUFSIZE 64
 
-#undef DUK__RE_BUFLEN
 #define DUK__RE_BUFLEN(re_ctx) \
 	DUK_BW_GET_SIZE(re_ctx->thr, &re_ctx->bw)
 
@@ -1062,8 +1061,6 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 
 	/* [ ... regexp_object ] */
 }
-
-#undef DUK__RE_BUFLEN
 
 #else  /* DUK_USE_REGEXP_SUPPORT */
 

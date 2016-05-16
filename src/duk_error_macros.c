@@ -128,5 +128,3 @@ DUK_INTERNAL void duk_default_fatal_handler(void *udata, const char *msg) {
 		/* Loop forever to ensure we don't return. */
 	}
 }
-
-#undef DUK__ERRFMT_BUFSIZE

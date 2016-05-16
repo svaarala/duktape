@@ -307,10 +307,6 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_linenumber_getter(duk_context *ctx
 	return duk__error_getter_helper(ctx, DUK__OUTPUT_TYPE_LINENUMBER);
 }
 
-#undef DUK__OUTPUT_TYPE_TRACEBACK
-#undef DUK__OUTPUT_TYPE_FILENAME
-#undef DUK__OUTPUT_TYPE_LINENUMBER
-
 #else  /* DUK_USE_TRACEBACKS */
 
 /*

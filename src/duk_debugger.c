@@ -2764,8 +2764,6 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	return 1;
 }
 
-#undef DUK__SET_CONN_BROKEN
-
 #else  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /* No debugger support. */

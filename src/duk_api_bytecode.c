@@ -708,12 +708,6 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 }
 
-#undef DUK__SER_MARKER
-#undef DUK__SER_VERSION
-#undef DUK__SER_STRING
-#undef DUK__SER_NUMBER
-#undef DUK__BYTECODE_INITIAL_ALLOC
-
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
 
 DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {

@@ -3126,9 +3126,3 @@ DUK_INTERNAL duk_ret_t duk_bi_json_object_stringify(duk_context *ctx) {
 	                             0 /*flags*/);
 	return 1;
 }
-
-#undef DUK__JSON_DECSTR_BUFSIZE
-#undef DUK__JSON_DECSTR_CHUNKSIZE
-#undef DUK__JSON_ENCSTR_CHUNKSIZE
-#undef DUK__JSON_STRINGIFY_BUFSIZE
-#undef DUK__JSON_MAX_ESC_LEN
