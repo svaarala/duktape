@@ -141,12 +141,6 @@ typedef FILE duk_file;
 #if !defined(DUK_MEMZERO)
 #define DUK_MEMZERO(p,n) DUK_MEMSET((p), 0, (n))
 #endif
-#if !defined(DUK_ABORT)
-#define DUK_ABORT        abort
-#endif
-#if !defined(DUK_EXIT)
-#define DUK_EXIT         exit
-#endif
 
 #if !defined(DUK_DOUBLE_2TO32)
 #define DUK_DOUBLE_2TO32     4294967296.0

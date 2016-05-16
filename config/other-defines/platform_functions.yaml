@@ -64,10 +64,6 @@
 - define: DUK_STDERR
 - define: DUK_STDIN
 
-# Abort and exit
-- define: DUK_ABORT
-- define: DUK_EXIT
-
 # These don't need to save/restore signal mask.
 - define: DUK_SETJMP
 - define: DUK_LONGJMP
