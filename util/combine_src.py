@@ -1,31 +1,27 @@
 #!/usr/bin/env python2
 #
-#  Combine all source and header files in source directory into
-#  a single C file.
-#
-#  The process is not very simple or clean.  This helper is not
-#  a generic or 100% correct in the general case: it just needs
-#  to work for Duktape.
+#  Combine a set of a source files into a single C file.
 #
 #  Overview of the process:
 #
-#    * Parse all relevant C and H files.
+#    * Parse user supplied C files.  Add automatic #undefs at the end
+#      of each C file to avoid defined bleeding from one file to another.
 #
-#    * Change all non-exposed functions and variables to "static" in
-#      both headers (extern -> static) and in implementation files.
+#    * Combine the C files in specified order.  If sources have ordering
+#      dependencies (depends on application), order may matter.
 #
-#    * Emit internal headers by starting from duk_internal.h (the only
-#      internal header included by Duktape C files) and emulating the
-#      include mechanism recursively.
-#
-#    * Emit all source files, removing any internal includes (these
-#      should all be duk_internal.h ideally but there are a few remnants).
+#    * Process #include statements in the combined source, categorizing
+#      them either as "internal" (found in specified include path) or
+#      "external".  Internal includes, unless explicitly excluded, are
+#      inlined into the result while extenal includes are left as is.
+#      Duplicate #include statements are replaced with a comment.
 #      
 #  At every step, source and header lines are represented with explicit
 #  line objects which keep track of original filename and line.  The
 #  output contains #line directives, if necessary, to ensure error
 #  throwing and other diagnostic info will work in a useful manner when
-#  deployed.
+#  deployed.  It's also possible to generate a combined source with no
+#  #line directives.
 #
 #  Making the process deterministic is important, so that if users have
 #  diffs that they apply to the combined source, such diffs would apply
@@ -33,16 +29,20 @@
 #
 #  Limitations and notes:
 #
-#    * #defines are not #undef'd at the end of an input file, so defines
-#      may bleed to other files.  These need to be fixed in the original
-#      sources.
+#    * While there are automatic #undef's for #define's introduced in each
+#      C file, it's not possible to "undefine" structs, unions, etc.  If
+#      there are structs/unions/typedefs with conflicting names, these
+#      have to be resolved in the source files first.
 #
-#    * System headers included with a certain define (like _BSD_SOURCE)
-#      are not handled correctly now.
+#     * Because duplicate #include statements are suppressed, currently
+#       assumes #include statements are not conditional.
 #
-#    * External includes are not removed or combined: some of them are
-#      inside #ifdef directives, so it would difficult to do so.  Ideally
-#      there would be no external includes in individual files.
+#     * A system header might be #include'd in multiple source files with
+#       different feature defines (like _BSD_SOURCE).  Because the #include
+#       file will only appear once in the resulting source, the first
+#       occurrence wins.  The result may not work correctly if the feature
+#       defines must actually be different between two or more source files.
+#
 
 import os
 import sys
@@ -50,8 +50,11 @@ import re
 import json
 import optparse
 
-re_extinc = re.compile(r'^#include <(.*?)>.*$')
-re_intinc = re.compile(r'^#include \"(duk.*?)\".*$')  # accept duktape.h too
+# Include path for finding include files which are amalgamated.
+include_paths = []
+
+# Include files specifically excluded from being inlined.
+include_excluded = []
 
 class File:
 	filename_full = None
@@ -75,106 +78,72 @@ class Line:
 		self.lineno = lineno
 		self.data = data
 
-def read(filename):
+def readFile(filename):
 	lines = []
 
-	f = None
-	try:
-		f = open(filename, 'rb')
+	with open(filename, 'rb') as f:
 		lineno = 0
 		for line in f:
 			lineno += 1
 			if len(line) > 0 and line[-1] == '\n':
 				line = line[:-1]
 			lines.append(Line(filename, lineno, line))
-	finally:
-		if f is not None:
-			f.close()
 
 	return File(filename, lines)
 
-def findFile(files, filename):
-	for i in files:
-		if i.filename == filename:
-			return i
+def lookupInclude(incfn):
+	re_sep = re.compile(r'/|\\')
+
+	inccomp = re.split(re_sep, incfn)  # split include path, support / and \
+
+	for path in include_paths:
+		fn = apply(os.path.join, [ path ] + inccomp)
+		if os.path.exists(fn):
+			return fn  # Return full path to first match
+
 	return None
 
-def processIncludes(f):
-	extinc = []
-	intinc = []
+def addAutomaticUndefs(f):
+	defined = {}
+
+	re_def = re.compile(r'#define\s+(\w+).*$')
+	re_undef = re.compile(r'#undef\s+(\w+).*$')
 
 	for line in f.lines:
-		if not line.data.startswith('#include'):
-			continue
-
-		m = re_extinc.match(line.data)
+		m = re_def.match(line.data)
 		if m is not None:
-			# external includes are kept; they may even be conditional
-			extinc.append(m.group(1))
-			#line.data = ''
-			continue
-
-		m = re_intinc.match(line.data)
+			#print('DEFINED: %s' % repr(m.group(1)))
+			defined[m.group(1)] = True
+		m = re_undef.match(line.data)
 		if m is not None:
-			intinc.append(m.group(1))
-			#line.data = ''
-			continue
+			# Could just ignore #undef's here: we'd then emit
+			# reliable #undef's (though maybe duplicates) at
+			# the end.
+			#print('UNDEFINED: %s' % repr(m.group(1)))
+			if defined.has_key(m.group(1)):
+				del defined[m.group(1)]
 
-		print(line.data)
-		raise Exception('cannot parse include directive')
+	# Undefine anything that seems to be left defined.  This not a 100%
+	# process because some #undef's might be conditional which we don't
+	# track at the moment.  Note that it's safe to #undef something that's
+	# not defined.
 
-	return extinc, intinc
+	keys = sorted(defined.keys())  # deterministic order
+	if len(keys) > 0:
+		#print('STILL DEFINED: %r' % repr(defined.keys()))
+		f.lines.append(Line(f.filename, len(f.lines) + 1, ''))
+		f.lines.append(Line(f.filename, len(f.lines) + 1, '/* automatic undefs */'))
+		for k in keys:
+			f.lines.append(Line(f.filename, len(f.lines) + 1, '#undef %s' % k))
 
-def processDeclarations(f):
-	for line in f.lines:
-		# FIXME: total placeholder
-		if line.data.startswith('int ') or line.data.startswith('void '):
-			line.data = 'static ' + line.data
-		elif line.data.startswith('extern int') or line.data.startswith('extern void '):
-			line.data = 'static ' + line.data[7:]  # replace extern with static
-
-def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe, git_branch, license_file, authors_file, line_directives):
+def createCombined(files, prologue_filename, line_directives):
 	res = []
 	line_map = []   # indicate combined source lines where uncombined file/line would change
 	metadata = {
 		'line_map': line_map
 	}
 
-
 	emit_state = [ None, None ]  # curr_filename, curr_lineno
-
-	# Because duktape.c/duktape.h/duk_config.h are often distributed or
-	# included in project sources as is, add a license reminder and
-	# Duktape version information to the duktape.c header (duktape.h
-	# already contains them).
-
-	duk_major = duk_version / 10000
-	duk_minor = duk_version / 100 % 100
-	duk_patch = duk_version % 100
-	res.append('/*')
-	res.append(' *  Single source autogenerated distributable for Duktape %d.%d.%d.' % (duk_major, duk_minor, duk_patch))
-	res.append(' *')
-	res.append(' *  Git commit %s (%s).' % (git_commit, git_describe))
-	res.append(' *  Git branch %s.' % git_branch)
-	res.append(' *')
-	res.append(' *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and')
-	res.append(' *  licensing information.')
-	res.append(' */')
-	res.append('')
-
-	# Add LICENSE.txt and AUTHORS.rst to combined source so that they're automatically
-	# included and are up-to-date.
-
-	res.append('/* LICENSE.txt */')
-	f = open(license_file, 'rb')
-	for line in f:
-		res.append(line.strip())
-	f.close()
-	res.append('/* AUTHORS.rst */')
-	f = open(authors_file, 'rb')
-	for line in f:
-		res.append(line.strip())
-	f.close()
 
 	def emit(line):
 		if isinstance(line, (str, unicode)):
@@ -182,162 +151,107 @@ def createCombined(files, extinc, intinc, duk_version, git_commit, git_describe,
 			emit_state[1] += 1
 		else:
 			if line.filename != emit_state[0] or line.lineno != emit_state[1]:
+				if line_directives:
+					res.append('#line %d "%s"' % (line.lineno, line.filename))
 				line_map.append({ 'original_file': line.filename,
 				                  'original_line': line.lineno,
 				                  'combined_line': len(res) + 1 })
-				if line_directives:
-					res.append('#line %d "%s"' % (line.lineno, line.filename))
 			res.append(line.data)
 			emit_state[0] = line.filename
 			emit_state[1] = line.lineno + 1
 
-	processed = {}
+	included = {}  # headers already included
 
-	# Helper to process internal headers recursively, starting from duk_internal.h
-	def processHeader(f_hdr):
-		#print('Process header: ' + f_hdr.filename)
-		for line in f_hdr.lines:
-			m = re_intinc.match(line.data)
-			if m is None:
-				emit(line)
-				continue
-			incname = m.group(1)
-			if incname in [ 'duktape.h', 'duk_custom.h' ]:
-				# keep a few special headers as is
-				emit(line)
-				continue
+	if prologue_filename is not None:
+		with open(prologue_filename, 'rb') as f:
+			for line in f.read().split('\n'):
+				res.append(line)
 
-			#print('Include: ' + incname)
-			f_inc = findFile(files, incname)
-			assert(f_inc)
+	re_inc = re.compile(r'^#include\s+(<|\")(.*?)(>|\").*$')
 
-			if processed.has_key(f_inc.filename):
-				#print('already included, skip: ' + f_inc.filename)
-				emit('/* already included: %s */' % f_inc.filename)
-				continue
-			processed[f_inc.filename] = True
-
-			# include file in this place, recursively
-			processHeader(f_inc)
-
-	# Process internal headers by starting with duk_internal.h
-	f_dukint = findFile(files, 'duk_internal.h')
-	assert(f_dukint)
-	processHeader(f_dukint)
-
-	# Mark all internal headers processed
-	for f in files:
-		if os.path.splitext(f.filename)[1] != '.h':
-			continue
-		processed[f.filename] = True
-
-	# Then emit remaining files
-	for f in files:
-		if processed.has_key(f.filename):
-			continue
+	# Process a file, appending it to the result; the input may be a
+	# source or an include file.  #include directives are handled
+	# recursively.
+	def processFile(f):
+		#print('Process file: ' + f.filename)
 
 		for line in f.lines:
-			m = re_intinc.match(line.data)
-			if m is None:
+			if not line.data.startswith('#include'):
 				emit(line)
+				continue
+
+			m = re_inc.match(line.data)
+			if m is None:
+				raise Exception('Couldn\'t match #include line: %s' % repr(line.data))
+			incpath = m.group(2)
+			if incpath in include_excluded:
+				# Specific include files excluded from the
+				# inlining / duplicate suppression process.
+				emit(line)  # keep as is
+				continue
+
+			if included.has_key(incpath):
+				# We suppress duplicate includes, both internal and
+				# external, based on the assumption that includes are
+				# not behind #ifdef checks.  This is the case for
+				# Duktape (except for the include files excluded).
+				emit('/* #include %s -> already included */' % incpath)
+				continue
+			included[incpath] = True
+
+			# An include file is considered "internal" and is amalgamated
+			# if it is found in the include path provided by the user.
+
+			incfile = lookupInclude(incpath)
+			if incfile is not None:
+				#print('Include considered internal: %s -> %s' % (repr(line.data), repr(incfile)))
+				emit('/* #include %s */' % incpath)
+				processFile(readFile(incfile))
 			else:
-				incname = m.group(1)
-				emit('/* include removed: %s */' % incname)
+				#print('Include considered external: %s' % repr(line.data))
+				emit(line)  # keep as is
+
+	for f in files:
+		processFile(f)
 
 	return '\n'.join(res) + '\n', metadata
 
 def main():
+	global include_paths, include_excluded
+
 	parser = optparse.OptionParser()
-	parser.add_option('--source-dir', dest='source_dir', help='Source directory')
+	parser.add_option('--include-path', dest='include_paths', action='append', default=[], help='Include directory for "internal" includes, can be specified multiple times')
+	parser.add_option('--include-exclude', dest='include_excluded', action='append', default=[], help='Include file excluded from being considered internal (even if found in include dirs)')
+	parser.add_option('--prologue', dest='prologue', help='Prologue to prepend to start of file')
 	parser.add_option('--output-source', dest='output_source', help='Output source filename')
 	parser.add_option('--output-metadata', dest='output_metadata', help='Output metadata filename')
-	parser.add_option('--duk-version', type='int', dest='duk_version', help='Duktape version integer (e.g. 10203 for 1.2.3)')
-	parser.add_option('--git-commit', dest='git_commit', help='Git commit hash')
-	parser.add_option('--git-describe', dest='git_describe', help='Git describe')
-	parser.add_option('--git-branch', dest='git_branch', help='Git branch')
-	parser.add_option('--license-file', dest='license_file', help='License file to embed')
-	parser.add_option('--authors-file', dest='authors_file', help='Authors file to embed')
 	parser.add_option('--line-directives', dest='line_directives', action='store_true', default=False, help='Use #line directives in combined source')
 	(opts, args) = parser.parse_args()
 
-	assert(opts.source_dir)
+	assert(opts.include_paths is not None)
+	include_paths = opts.include_paths  # global for easy access
+	include_excluded = opts.include_excluded
 	assert(opts.output_source)
 	assert(opts.output_metadata)
-	assert(opts.duk_version)
-	assert(opts.git_commit)
-	assert(opts.git_describe)
-	assert(opts.git_branch)
-	assert(opts.license_file)
-	assert(opts.authors_file)
 
-	if not os.path.exists('LICENSE.txt'):
-		raise Exception('CWD must be Duktape checkout top')
-
-	print 'Read input files'
+	print('Read input files, add automatic #undefs')
+	sources = args
 	files = []
-	filelist = os.listdir(opts.source_dir)
-	filelist.sort()  # for consistency
-	handpick = [
-		'duk_replacements.c',
-		'duk_debug_macros.c',
-		'duk_builtins.c',
-		'duk_error_macros.c',
-		'duk_unicode_support.c',
-		'duk_util_misc.c',
-		'duk_util_hashprime.c',
-		'duk_hobject_class.c'
-	]
-	handpick.reverse()
-	for fn in handpick:
-		# These files must appear before the alphabetically sorted
-		# ones so that static variables get defined before they're
-		# used.  We can't forward declare them because that would
-		# cause C++ issues (see GH-63).  When changing, verify by
-		# compiling with g++.
-		idx = filelist.index(fn)
-		filelist.insert(0, filelist.pop(idx))
-	for fn in filelist:
-		if os.path.splitext(fn)[1] not in [ '.c', '.h' ]:
-			continue
-		res = read(os.path.join(opts.source_dir, fn))
+	for fn in sources:
+		res = readFile(fn)
+		#print('Add automatic undefs for: ' + fn)
+		addAutomaticUndefs(res)
 		files.append(res)
-	print '%d files read' % len(files)
 
-	print 'Process #include statements'
-	extinc = []
-	intinc = []
-	for f in files:
-		extnew, intnew = processIncludes(f)
-		for i in extnew:
-			if i in extinc:
-				continue
-			extinc.append(i)
-		for i in intnew:
-			if i in intinc:
-				continue
-			intinc.append(i)
-
-	#print('external includes: ' + ', '.join(extinc))
-	#print('internal includes: ' + ', '.join(intinc))
-
-	print 'Process declarations (non-exposed are converted to static)'
-	for f in files:
-		#processDeclarations(f)
-		pass
-
-	print 'Output final file'
+	print('Create combined source file from %d source files' % len(files))
 	combined_source, metadata = \
-	    createCombined(files, extinc, intinc, opts.duk_version,
-	                   opts.git_commit, opts.git_describe, opts.git_branch,
-	                   opts.license_file, opts.authors_file,
-	                   opts.line_directives)
+	    createCombined(files, opts.prologue, opts.line_directives)
 	with open(opts.output_source, 'wb') as f:
 		f.write(combined_source)
 	with open(opts.output_metadata, 'wb') as f:
 		f.write(json.dumps(metadata, indent=4))
 
-	print 'Wrote %d bytes to %s' % (len(combined_source), opts.output_source)
+	print('Wrote %d bytes to %s' % (len(combined_source), opts.output_source))
 
 if __name__ == '__main__':
 	main()
-
