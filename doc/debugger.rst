@@ -1427,15 +1427,7 @@ Reserved (0x03)
 Log notification (0x04)
 -----------------------
 
-Format::
-
-    NFY <int: 4> <int: log level> <str: message> EOM
-
-Example::
-
-    NFY 4 2 "2014-12-07T23:46:27.796Z INF foo: hello world" EOM
-
-Logger output redirected from Duktape logger calls.
+(Removed in Duktape 2.0.0, Log notify in Duktape 1.x.)
 
 Throw notification (0x05)
 -------------------------
