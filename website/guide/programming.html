@@ -625,7 +625,8 @@ protected Duktape API calls, for example:</p>
  * handled safely.  Both syntax errors and runtime errors are caught.
  */
 
-if (duk_peval_file(ctx, "myscript.js") != 0) {
+push_file_as_string(ctx, "myscript.js");
+if (duk_peval(ctx) != 0) {
     /* Use duk_safe_to_string() to convert error into string.  This API
      * call is guaranteed not to throw an error during the coercion.
      */
@@ -646,7 +647,8 @@ static duk_ret_t unsafe_code(duk_context *ctx, void *udata) {
 
     (void) udata;  /* 'udata' may be used to pass e.g. a struct pointer */
 
-    duk_eval_file_noresult(ctx, "myscript.js");
+    push_file_as_string(ctx, "myscript.js");
+    duk_eval(ctx);
 
     /* ... */
 

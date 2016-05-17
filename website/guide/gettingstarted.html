@@ -134,6 +134,33 @@ Here we need to gloss over some details for brevity, see
 
 <li>
 <pre class="c-code">
+/* For brevity assumes a maximum file length of 16kB. */
+static void push_file_as_string(duk_context *ctx, const char *filename) {
+    FILE *f;
+    size_t len;
+    char buf[16384];
+
+    f = fopen(filename, "rb");
+    if (f) {
+        len = fread((void *) buf, 1, sizeof(buf), f);
+        fclose(f);
+        duk_push_lstring(ctx, (const char *) buf, (duk_size_t) len);
+    } else {
+        duk_push_undefined(ctx);
+    }
+}
+</pre>
+<p>Because Duktape is an embeddable engine and makes minimal assumptions
+there are no file I/O bindings in the default C or Ecmascript API.  The
+above helper is an example of how to push the contents of a file as a
+string; the example uses a fixed read buffer for brevity, a better
+implementation would first check the file size and then allocate a buffer
+for it.  The Duktape distributable includes "extras" which provide, among
+other things, useful C and Ecmascript helpers, including file I/O helpers.</p>
+</li>
+
+<li>
+<pre class="c-code">
 ctx = duk_create_heap_default();
 if (!ctx) {
     printf("Failed to create a Duktape heap.\n");
@@ -151,20 +178,22 @@ for discussion of error handling best practices.</p>
 
 <li>
 <pre class="c-code">
-if (duk_peval_file(ctx, "process.js") != 0) {
+push_file_as_string(ctx, "process.js");
+if (duk_peval(ctx) != 0) {
     printf("Error: %s\n", duk_safe_to_string(ctx, -1));
     goto finished;
 }
 duk_pop(ctx);  /* ignore result */
 </pre>
-<p>The eval call reads in <code>process.js</code>, then compiles and executes
-the script.  The script registers <code>processLine()</code> into the Ecmascript
-global object for later use.  The eval call is protected so that any script
-errors, such as syntax errors, are caught and handled without causing a fatal
-error.  If an error occurs, the error message is coerced safely using
-<a href="api.html#duk_safe_to_string">duk_safe_to_string()</a> which is
-guaranteed not to throw a further error.  The result of the string coercion is
-a <code>const char *</code> pointing to a read-only, NUL-terminated, UTF-8
+<p>First we use our file helper to push <code>process.js</code> onto the value
+stack as a string.  Then we use <code>duk_peval()</code> to compile and run the
+script.  The script registers <code>processLine()</code> into the Ecmascript
+global object for later use.  A <b>protected call, duk_peval(),</b> is used for
+running the script so that any script errors, such as syntax errors, are caught
+and handled without causing a fatal error.  If an error occurs, the error message
+is coerced safely using <a href="api.html#duk_safe_to_string">duk_safe_to_string()</a>
+which is guaranteed not to throw a further error.  The result of the string coercion
+is a <code>const char *</code> pointing to a read-only, NUL-terminated, UTF-8
 encoded string, which can be used directly with <code>printf</code>.</p>
 </li>
 
@@ -316,7 +345,8 @@ script is loaded.  You can also detect it when the code is actually called
 which is more flexible.</p>
 
 <p>A native helper with functionality equivalent to <code>primeCheckEcmascript</code>
-is quite straightforward to implement.  Adding a program main we get
+is quite straightforward to implement.  Adding a program main and a simple
+<code>print()</code> binding into the Ecmascript global object, we get
 <code>primecheck.c</code>:</p>
 <pre class="c-code" include="primecheck.c"></pre>
 
