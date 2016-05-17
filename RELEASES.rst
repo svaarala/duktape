@@ -1649,6 +1649,9 @@ Planned
 
 * Add an extra module providing a minimal 'console' binding (GH-767)
 
+* Fix a harmless compilation warning related to a shadowed variable (GH-793,
+  GH-794)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
