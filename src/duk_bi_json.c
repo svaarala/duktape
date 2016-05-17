@@ -1931,7 +1931,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h;
+	duk_hobject *h_tmp;
 	duk_tval *tv;
 	duk_tval *tv_holder;
 	duk_tval *tv_key;
@@ -1953,12 +1953,12 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 
 	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	h = duk_get_hobject_or_lfunc_coerce(ctx, -1);
-	if (h != NULL) {
+	h_tmp = duk_get_hobject_or_lfunc_coerce(ctx, -1);
+	if (h_tmp != NULL) {
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
-		h = duk_get_hobject_or_lfunc_coerce(ctx, -1);  /* toJSON() can also be a lightfunc */
+		h_tmp = duk_get_hobject_or_lfunc_coerce(ctx, -1);  /* toJSON() can also be a lightfunc */
 
-		if (h != NULL && DUK_HOBJECT_IS_CALLABLE(h)) {
+		if (h_tmp != NULL && DUK_HOBJECT_IS_CALLABLE(h_tmp)) {
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
 			/* XXX: duk_dup_unvalidated(ctx, -2) etc. */
 			duk_dup(ctx, -2);         /* -> [ ... key val toJSON val ] */
@@ -1991,6 +1991,8 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 
 	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h;
+
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
