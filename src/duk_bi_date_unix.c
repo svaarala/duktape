@@ -304,6 +304,3 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_
 	return 1;
 }
 #endif  /* DUK_USE_DATE_FMT_STRFTIME */
-
-#undef DUK__STRPTIME_BUF_SIZE
-#undef DUK__STRFTIME_BUF_SIZE

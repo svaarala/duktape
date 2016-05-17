@@ -1147,8 +1147,3 @@ DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
 	}
 }
 #endif  /* DUK_USE_STRTAB_PROBE */
-
-/* Undefine local defines */
-#undef DUK__HASH_INITIAL
-#undef DUK__HASH_PROBE_STEP
-#undef DUK__DELETED_MARKER

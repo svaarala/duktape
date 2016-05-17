@@ -4864,22 +4864,6 @@ DUK_LOCAL void duk__exprtop_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_ivalu
  *  the token after the terminator).
  */
 
-#ifdef DUK__HAS_VAL
-#undef DUK__HAS_VAL
-#endif
-#ifdef DUK__HAS_TERM
-#undef DUK__HAS_TERM
-#endif
-#ifdef DUK__ALLOW_AUTO_SEMI_ALWAYS
-#undef DUK__ALLOW_AUTO_SEMI_ALWAYS
-#endif
-#ifdef DUK__STILL_PROLOGUE
-#undef DUK__STILL_PROLOGUE
-#endif
-#ifdef DUK__IS_TERMINAL
-#undef DUK__IS_TERMINAL
-#endif
-
 #define DUK__HAS_VAL                  (1 << 0)  /* stmt has non-empty value */
 #define DUK__HAS_TERM                 (1 << 1)  /* stmt has explicit/implicit semicolon terminator */
 #define DUK__ALLOW_AUTO_SEMI_ALWAYS   (1 << 2)  /* allow automatic semicolon even without lineterm (compatibility) */
@@ -6630,10 +6614,6 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 
 	DUK__RECURSION_DECREASE(comp_ctx, thr);
 }
-
-#undef DUK__HAS_VAL
-#undef DUK__HAS_TERM
-#undef DUK__ALLOW_AUTO_SEMI_ALWAYS
 
 /*
  *  Parse a statement list.

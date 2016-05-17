@@ -5967,12 +5967,3 @@ DUK_INTERNAL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *
  *  Not needed, implemented by macros DUK_HOBJECT_{HAS,CLEAR,SET}_EXTENSIBLE
  *  and the Object built-in bindings.
  */
-
-/* Undefine local defines */
-
-#undef DUK__NO_ARRAY_INDEX
-#undef DUK__HASH_INITIAL
-#undef DUK__HASH_PROBE_STEP
-#undef DUK__HASH_UNUSED
-#undef DUK__HASH_DELETED
-#undef DUK__VALSTACK_SPACE

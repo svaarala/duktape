@@ -420,8 +420,4 @@ DUK_INTERNAL duk_uint_t duk_selftest_run_tests(void) {
 	return error_count;
 }
 
-#undef DUK__FAILED
-#undef DUK__DBLUNION_CMP_TRUE
-#undef DUK__DBLUNION_CMP_FALSE
-
 #endif  /* DUK_USE_SELF_TESTS */

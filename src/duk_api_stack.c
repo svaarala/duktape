@@ -3917,7 +3917,6 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0)   /* DUK_BUFOBJ_DUKTAPE_BUFFER */
 };
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-#undef DUK__PACK_ARGS
 
 DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hthread *thr;
@@ -4659,7 +4658,3 @@ DUK_INTERNAL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t in
 	return duk_push_string_tval_readable(ctx, duk_get_tval(ctx, index));
 }
 #endif  /* !DUK_USE_PARANOID_ERRORS */
-
-#undef DUK__CHECK_SPACE
-#undef DUK__PACK_ARGS
-#undef DUK__READABLE_STRING_MAXCHARS

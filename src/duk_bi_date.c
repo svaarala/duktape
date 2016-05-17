@@ -88,7 +88,6 @@ DUK_LOCAL duk_uint8_t duk__date_equivyear[14] = {
 	DUK__YEAR(1976), DUK__YEAR(1988), DUK__YEAR(1972)
 #endif
 };
-#undef DUK__YEAR
 
 /*
  *  ISO 8601 subset parser.
