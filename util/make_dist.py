@@ -583,7 +583,13 @@ copy_files([
 copy_files([
 	'README.rst',
 	'duk_v1_compat.c',
-	'duk_v1_compat.h'
+	'duk_v1_compat.h',
+	'test.c',
+	'Makefile',
+	'test_eval1.js',
+	'test_eval2.js',
+	'test_compile1.js',
+	'test_compile2.js'
 ], os.path.join('extras', 'duk-v1-compat'), os.path.join(dist, 'extras', 'duk-v1-compat'))
 
 copy_files([

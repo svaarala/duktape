@@ -18,6 +18,8 @@ extern void poll_register(duk_context *ctx);
 extern void ncurses_register(duk_context *ctx);
 extern void socket_register(duk_context *ctx);
 extern void fileio_register(duk_context *ctx);
+extern void fileio_push_file_buffer(duk_context *ctx, const char *filename);
+extern void fileio_push_file_string(duk_context *ctx, const char *filename);
 extern void eventloop_register(duk_context *ctx);
 extern duk_ret_t eventloop_run(duk_context *ctx, void *udata);
 
@@ -217,12 +219,14 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 
 		eventloop_register(ctx);
-		duk_eval_file(ctx, "c_eventloop.js");
+		fileio_push_file_string(ctx, "c_eventloop.js");
+		duk_eval(ctx);
 	} else {
 		fprintf(stderr, "Using Ecmascript based eventloop (give -c to use C based eventloop)\n");
 		fflush(stderr);
 
-		duk_eval_file(ctx, "ecma_eventloop.js");
+		fileio_push_file_string(ctx, "ecma_eventloop.js");
+		duk_eval(ctx);
 	}
 
 	fprintf(stderr, "Executing code from: '%s'\n", filename);

@@ -174,6 +174,44 @@ To upgrade:
 * Alternatively, include extras/duk-v1-compat into your compilation to add back
   the removed API calls.
 
+File I/O Duktape C API calls were removed
+-----------------------------------------
+
+Some platform don't have file I/O API calls (even ANSI), while on others they
+are present but don't actually map to the file system (instead, a platform
+specific API is used to access the actual file system).  Finally, there are
+character encoding issues with ANSI C file I/O APIs e.g. on Windows, so that
+the built-in file I/O support didn't always work as expected.
+
+To improve portability, the following Duktape C API calls depending on
+platform file I/O (fopen() etc) were removed (moved to extras):
+
+* duk_push_string_file()
+
+* duk_compile_file()
+
+* duk_pcompile_file()
+
+* duk_eval_file()
+
+* duk_eval_file_noresult()
+
+* duk_peval_file()
+
+* duk_peval_file_noresult()
+
+To upgrade:
+
+* If you don't use these API calls, no action is needed.
+
+* If you use these API calls you can e.g. implement a helper to push a file
+  as a string (like ``duk_push_string_file()``) and then implement any needed
+  compile/eval helpers based on that.
+
+* Alternatively, you can include the following extra into your compilation:
+  ``extras/duk-v1-compat``.  The extra provides Duktape 1.x compatible
+  file-related API call bindings.
+
 duk_debugger_attach() and duk_debugger_attach_custom() merged
 -------------------------------------------------------------
 
@@ -235,22 +273,23 @@ To upgrade:
 
 * Update debug client code to support both versions 1 and 2, or version 2 only.
 
-Debugger print/alert forwarding removed
----------------------------------------
+Debugger print/alert and logger forwarding removed
+--------------------------------------------------
 
-Forwarding of ``print()`` and ``alert()`` calls, enabled using config option
-``DUK_USE_DEBUGGER_FWD_PRINTALERT``, was removed as part of removing the calls
-themselves.  Also debugger notifications Print (0x02) and Alert (0x03) were
-deprecated.
+Forwarding of ``print()``, ``alert()``, and log writes, enabled using config
+options ``DUK_USE_DEBUGGER_FWD_PRINTALERT`` and ``DUK_USE_DEBUGGER_FWD_LOGGING``,
+was removed as part of removing the bindings themselves.  Also debugger
+notifications Print (0x02), Alert (0x03), Log (0x04) were deprecated.
 
 To upgrade:
 
-* No changes are needed, but print/alert notification support can be removed
-  from a debug client.
+* No changes are needed, but print/alert and logger notification support can
+  be removed from a debug client.
 
-* If you rely on print/alert forwarding in your debugger setup, you can add
-  custom print/alert forwarding by implementing print and alert yourself and
-  using AppNotify (``duk_debugger_notify()``) to forward print/alert text.
+* If you rely on print/alert or logger forwarding in your debugger setup, you
+  can add custom print/alert or logger forwarding by implementing print/alert
+  or logging yourself and using AppNotify (``duk_debugger_notify()``) to
+  forward print/alert or logger text.
 
 Debug print config options changed
 ----------------------------------
@@ -307,9 +346,12 @@ To upgrade:
 
 * If you're not providing a fatal error handler nor using a custom panic
   handler, no action is needed -- however, providing a fatal error handler
-  in heap creation is **strongly recommended**.  The default fatal error
-  handler will by default cause an intentional segfault; to improve this
-  behavior define ``DUK_USE_FATAL_HANDLER()`` in your ``duk_config.h``.
+  in heap creation is **strongly recommended**, see
+  http://wiki.duktape.org/HowtoFatalErrors.html for instructions.
+
+  The default fatal error handler will by default cause an intentional
+  segfault; to improve this behavior define ``DUK_USE_FATAL_HANDLER()``
+  in your ``duk_config.h``.
 
 * If you have a fatal error handler, update its signature::
 

@@ -8,8 +8,8 @@
 
 #include "duktape.h"
 
-static int fileio_readfile(duk_context *ctx) {
-	const char *filename = duk_to_string(ctx, 0);
+/* Push file as a buffer. */
+void fileio_push_file_buffer(duk_context *ctx, const char *filename) {
 	FILE *f = NULL;
 	long len;
 	void *buf;
@@ -38,20 +38,35 @@ static int fileio_readfile(duk_context *ctx) {
 
 	got = fread(buf, 1, len, f);
 	if (got != (size_t) len) {
+		duk_pop(ctx);
 		goto error;
 	}
 
 	fclose(f);
-	f = NULL;
-
-	return 1;
+	return;
 
  error:
 	if (f) {
 		fclose(f);
 	}
+	duk_push_undefined(ctx);
+}
 
-	return DUK_RET_ERROR;
+/* Push file as a string. */
+void fileio_push_file_string(duk_context *ctx, const char *filename) {
+	fileio_push_file_buffer(ctx, filename);
+	if (duk_is_buffer(ctx, -1)) {
+		duk_to_string(ctx, -1);
+	}
+}
+
+static int fileio_readfile(duk_context *ctx) {
+	const char *filename = duk_to_string(ctx, 0);
+	fileio_push_file_buffer(ctx, filename);
+	if (!duk_is_buffer(ctx, -1)) {
+		return DUK_RET_ERROR;
+	}
+	return 1;
 }
 
 static duk_function_list_entry fileio_funcs[] = {

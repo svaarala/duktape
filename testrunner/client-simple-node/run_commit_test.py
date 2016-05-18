@@ -712,7 +712,7 @@ def context_linux_x64_minisphere():
 
 	# Unpack minisphere snapshot and copy Duktape files over.
 	#unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160328.tar.gz'))
-	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160515.tar.gz'))
+	unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160516.tar.gz'))
 
 	for i in [ 'duktape.c', 'duktape.h', 'duk_config.h' ]:
 		execute([

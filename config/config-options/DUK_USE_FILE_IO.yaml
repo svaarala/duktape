@@ -3,6 +3,7 @@ feature_enables: DUK_OPT_FILE_IO
 related_feature_defines:
   - DUK_OPT_NO_FILE_IO
 introduced: 1.0.0
+removed: 2.0.0
 default: true
 tags:
   - io
