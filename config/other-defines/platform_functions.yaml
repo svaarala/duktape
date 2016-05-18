@@ -41,28 +41,11 @@
 - define: DUK_STRNCMP
 
 # String printing and parsing
-- define: DUK_PRINTF
-- define: DUK_FPRINTF
 - define: DUK_SPRINTF
 - define: DUK_SNPRINTF
 - define: DUK_VSNPRINT
 - define: DUK_SSCANF
 - define: DUK_VSSCANF
-
-# File I/O
-- define: DUK_FOPEN
-- define: DUK_FCLOSE
-- define: DUK_FREAD
-- define: DUK_FWRITE
-- define: DUK_FSEEK
-- define: DUK_FTELL
-- define: DUK_FFLUSH
-- define: DUK_FPUTC
-
-# I/O streams
-- define: DUK_STDOUT
-- define: DUK_STDERR
-- define: DUK_STDIN
 
 # These don't need to save/restore signal mask.
 - define: DUK_SETJMP
