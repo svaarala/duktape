@@ -226,9 +226,9 @@ static duk_ret_t do_sandbox_test(duk_context *ctx, void *udata) {
  *  Main
  */
 
-static void sandbox_fatal(duk_context *ctx, duk_errcode_t code, const char *msg) {
-	(void) ctx;  /* Suppress warning. */
-	fprintf(stderr, "FATAL %ld: %s\n", (long) code, (msg ? msg : "no message"));
+static void sandbox_fatal(void *udata, const char *msg) {
+	(void) udata;  /* Suppress warning. */
+	fprintf(stderr, "FATAL: %s\n", (msg ? msg : "no message"));
 	fflush(stderr);
 	exit(1);  /* must not return */
 }
