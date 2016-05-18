@@ -162,38 +162,38 @@ final top: 1
 final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_array_smaller (duk_safe_call)
+"length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-"length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
 ==> rc=1, result='TypeError: array length write failed'
 *** test_force_array_smaller (duk_safe_call)
+"length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-"length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
-"0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "length" {value:1,writable:true,enumerable:false,configurable:false} no-getter no-setter
+"0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 json: ["foo"]
 final top: 1
 ==> rc=0, result='undefined'
 *** test_fail_array_smaller_nonwritablelength (duk_safe_call)
+"length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-"length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
 ==> rc=1, result='TypeError: array length non-writable'
 *** test_force_array_smaller_nonwritablelength (duk_safe_call)
+"length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-"length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
-"0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "length" {value:1,writable:false,enumerable:false,configurable:false} no-getter no-setter
+"0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
 json: ["foo"]
 final top: 1
 ==> rc=0, result='undefined'
@@ -927,6 +927,11 @@ static duk_ret_t test_force_accessor2data(duk_context *ctx, void *udata) {
 
 /* Make array smaller, ignoring non-configurable elements. */
 static duk_ret_t test_force_array_smaller_raw(duk_context *ctx, duk_bool_t length_writable, duk_bool_t forced) {
+	/* The array will have a non-configurable element (not very common)
+	 * which causes the array part to be abandoned and affects enumeration
+	 * order; in Duktape 2.0 'length' will enumerate before the properties
+	 * because .length is virtual.
+	 */
 	if (length_writable) {
 		duk_eval_string(ctx,
 		                "(function () {\n"

@@ -383,19 +383,29 @@ function romObjectRegExpTest() {
 
 /*===
 --- Error.prototype setter/getter
+fileName
 {get:{_func:true},set:{_func:true},enumerable:false,configurable:false}
 get length: 0, set length: 0
+lineNumber
 {get:{_func:true},set:{_func:true},enumerable:false,configurable:false}
 get length: 0, set length: 0
+stack
 {get:{_func:true},set:{_func:true},enumerable:false,configurable:false}
 get length: 0, set length: 0
 ===*/
 
 function romObjectErrorPrototypeAccessorTest() {
     function test(key) {
-        var pd = Object.getOwnPropertyDescriptor(Error.prototype, key);
-        print(Duktape.enc('jx', pd));
-        print('get length: ' + pd.get.length + ', set length: ' + pd.set.length);
+        print(key);
+        try {
+            var pd = Object.getOwnPropertyDescriptor(Error.prototype, key);
+            print(Duktape.enc('jx', pd));
+            print('get length: ' + pd.get.length + ', set length: ' + pd.set.length);
+        } catch (e) {
+            print(typeof e, typeof e.message, typeof e.name, e.message, e.name);
+            print(e instanceof Error);
+            print(e.stack || e);
+        }
     }
 
     test('fileName');
@@ -413,6 +423,21 @@ function romObjectAccessorTest() {
     // Test that __proto__ result matches Object.getPrototypeOf().
     var global = new Function('return this;')();
     print(global.__proto__ == Object.getPrototypeOf(global));
+}
+
+/*===
+--- Array.prototype test
+[object Array]
+[object Array]
+0
+===*/
+
+function romObjectArrayPrototypeTest() {
+    // Array.prototype is also an Array instance; this affects the
+    // ROM init data and is thus useful to check.
+    print(Object.prototype.toString.call([]));
+    print(Object.prototype.toString.call(Array.prototype));
+    print(Array.prototype.length);
 }
 
 // Read-only code paths related to object properties which aren't covered:
@@ -463,6 +488,9 @@ try {
 
     print('--- Accessor test')
     romObjectAccessorTest();
+
+    print('--- Array.prototype test');
+    romObjectArrayPrototypeTest();
 } catch (e) {
     print(e.stack || e);
 }

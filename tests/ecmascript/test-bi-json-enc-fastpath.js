@@ -59,12 +59,13 @@ top level value test
 6 "foo"
 7 {"foo":123}
 8 ["foo"]
-9 undefined
-10 "1970-01-01T00:00:00.123Z"
-11 undefined
+9 [null,null,null,null,null,null,null,null,null,null]
+10 undefined
+11 "1970-01-01T00:00:00.123Z"
 12 undefined
 13 undefined
-14 {"type":"Buffer","data":[65,66,67,68,69,70,71,72]}
+14 undefined
+15 {"type":"Buffer","data":[65,66,67,68,69,70,71,72]}
 ===*/
 
 /* Top level value */
@@ -73,6 +74,7 @@ function jsonStringifyFastPathTopLevelValueTest() {
     var values = [
         undefined, null, true, false, 123, 123.456, 'foo',
         { foo: 123 }, [ 'foo' ],
+        new Array(10),  // .length is larger than underlying array part length
         function myfunc() {},
         new Date(123),
         Duktape.dec('hex', 'deadbeef'),
