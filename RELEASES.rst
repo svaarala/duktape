@@ -1680,6 +1680,14 @@ Planned
 * Make coroutine support optional (DUK_USE_COROUTINE_SUPPORT); disabling
   coroutines reduces code footprint by about 2kB (GH-829)
 
+* Add an internal type for representing Array instances (duk_harray) to
+  simplify array operations and improve performance; this also changes the
+  key order of Object.getOwnPropertyNames() for sparse arrays (arrays whose
+  internal "array part" has been abandoned) (GH-703)
+
+* Rename debugger protocol artificial property "bound" to "boundfunction"
+  for consistency with an internal flag rename (GH-703)
+
 * Add an extra module (extras/duk-v1-compat) providing many Duktape 1.x API
   calls removed in Duktape 2.x (multiple Github issues)
 
@@ -1720,6 +1728,10 @@ Planned
 
 * Fix -Wshift-sign-overflow warnings on some Clang versions for signed left
   shifts whose result was used as unsigned (GH-812, GH-813)
+
+* Fix JSON.stringify (and JX/JC encode) fast path to allow arrays whose
+  .length is larger than the internal array part size (created e.g. when
+  calling new Array(10)) without falling back to the slow path (GH-703)
 
 * Internal performance improvement: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674)
