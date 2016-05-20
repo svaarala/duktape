@@ -63,10 +63,10 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 	case DUK_HTYPE_OBJECT: {
 		duk_hobject *h_obj = (duk_hobject *) h;
 		duk_small_uint_t hdr_size;
-		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-			hdr_size = (duk_small_uint_t) sizeof(duk_hcompiledfunction);
-		} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h_obj)) {
-			hdr_size = (duk_small_uint_t) sizeof(duk_hnativefunction);
+		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+			hdr_size = (duk_small_uint_t) sizeof(duk_hcompfunc);
+		} else if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
+			hdr_size = (duk_small_uint_t) sizeof(duk_hnatfunc);
 		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hthread);
 		} else {
@@ -85,8 +85,8 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_ENEXT(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_ASIZE(h_obj));
 		duk_push_uint(ctx, (duk_uint_t) DUK_HOBJECT_GET_HSIZE(h_obj));
-		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, (duk_hcompiledfunction *) h_obj);
+		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+			duk_hbuffer *h_data = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, (duk_hcompfunc *) h_obj);
 			if (h_data) {
 				duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_data));
 			} else {

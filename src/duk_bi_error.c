@@ -213,7 +213,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 					                 (const char *) ((flags & DUK_ACT_FLAG_CONSTRUCT) ? str_construct : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_DIRECT_EVAL) ? str_directeval : str_empty),
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
-				} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h_func)) {
+				} else if (DUK_HOBJECT_HAS_NATFUNC(h_func)) {
 					duk_push_sprintf(ctx, "at %s (%s) native%s%s%s%s%s",
 					                 (const char *) funcname,
 					                 (const char *) filename,

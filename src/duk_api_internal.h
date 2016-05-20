@@ -77,8 +77,8 @@ DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_context *ctx, duk_idx_t index
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hbuffer *duk_get_hbuffer(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t index);
-DUK_INTERNAL_DECL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t index);
-DUK_INTERNAL_DECL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index);
+DUK_INTERNAL_DECL duk_hcompfunc *duk_get_hcompfunc(duk_context *ctx, duk_idx_t index);
+DUK_INTERNAL_DECL duk_hnatfunc *duk_get_hnatfunc(duk_context *ctx, duk_idx_t index);
 
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_with_class(duk_context *ctx, duk_idx_t index, duk_small_uint_t classnum);
 
@@ -111,8 +111,8 @@ DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t i
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hbuffer *duk_require_hbuffer(duk_context *ctx, duk_idx_t index);
 DUK_INTERNAL_DECL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t index);
-DUK_INTERNAL_DECL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index);
-DUK_INTERNAL_DECL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index);
+DUK_INTERNAL_DECL duk_hcompfunc *duk_require_hcompfunc(duk_context *ctx, duk_idx_t index);
+DUK_INTERNAL_DECL duk_hnatfunc *duk_require_hnatfunc(duk_context *ctx, duk_idx_t index);
 
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_with_class(duk_context *ctx, duk_idx_t index, duk_small_uint_t classnum);
 
@@ -125,9 +125,9 @@ DUK_INTERNAL_DECL void duk_push_hobject(duk_context *ctx, duk_hobject *h);
 DUK_INTERNAL_DECL void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
 #define duk_push_hthread(ctx,h) \
 	duk_push_hobject((ctx), (duk_hobject *) (h))
-#define duk_push_hcompiledfunction(ctx,h) \
+#define duk_push_hcompfunc(ctx,h) \
 	duk_push_hobject((ctx), (duk_hobject *) (h))
-#define duk_push_hnativefunction(ctx,h) \
+#define duk_push_hnatfunc(ctx,h) \
 	duk_push_hobject((ctx), (duk_hobject *) (h))
 DUK_INTERNAL_DECL void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builtin_idx);
 DUK_INTERNAL_DECL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
@@ -140,7 +140,7 @@ DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
-DUK_INTERNAL_DECL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
+DUK_INTERNAL_DECL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
 
 #if !defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t index);

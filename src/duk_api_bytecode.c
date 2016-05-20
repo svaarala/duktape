@@ -217,7 +217,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 	return p;
 }
 
-static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func, duk_bufwriter_ctx *bw_ctx, duk_uint8_t *p) {
+static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bufwriter_ctx *bw_ctx, duk_uint8_t *p) {
 	duk_hthread *thr;
 	duk_tval *tv, *tv_end;
 	duk_instr_t *ins, *ins_end;
@@ -238,29 +238,29 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 	                   "code=[%p,%p[ (%ld bytes, %ld items)",
 	                   (void *) func,
 	                   (void *) p,
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, func),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(thr->heap, func),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, func),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(thr->heap, func),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, func),
-	                   (void *) DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(thr->heap, func),
-	                   (long) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(thr->heap, func)));
+	                   (void *) DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, func),
+	                   (void *) DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_CONSTS_SIZE(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_CONSTS_COUNT(thr->heap, func),
+	                   (void *) DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, func),
+	                   (void *) DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_FUNCS_SIZE(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, func),
+	                   (void *) DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, func),
+	                   (void *) DUK_HCOMPFUNC_GET_CODE_END(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_CODE_SIZE(thr->heap, func),
+	                   (long) DUK_HCOMPFUNC_GET_CODE_COUNT(thr->heap, func)));
 
 	DUK_ASSERT(DUK_USE_ESBC_MAX_BYTES <= 0x7fffffffUL);  /* ensures no overflow */
-	count_instr = (duk_uint32_t) DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(thr->heap, func);
+	count_instr = (duk_uint32_t) DUK_HCOMPFUNC_GET_CODE_COUNT(thr->heap, func);
 	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 3 * 4 + 2 * 2 + 3 * 4 + count_instr * 4, p);
 
 	/* Fixed header info. */
 	tmp32 = count_instr;
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
-	tmp32 = (duk_uint32_t) DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(thr->heap, func);
+	tmp32 = (duk_uint32_t) DUK_HCOMPFUNC_GET_CONSTS_COUNT(thr->heap, func);
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
-	tmp32 = (duk_uint32_t) DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(thr->heap, func);
+	tmp32 = (duk_uint32_t) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, func);
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
 	tmp16 = func->nregs;
 	DUK_RAW_WRITE_U16_BE(p, tmp16);
@@ -281,8 +281,8 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 	/* Bytecode instructions: endian conversion needed unless
 	 * platform is big endian.
 	 */
-	ins = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, func);
-	ins_end = DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, func);
+	ins = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, func);
+	ins_end = DUK_HCOMPFUNC_GET_CODE_END(thr->heap, func);
 	DUK_ASSERT((duk_size_t) (ins_end - ins) == (duk_size_t) count_instr);
 #if defined(DUK_USE_INTEGER_BE)
 	DUK_MEMCPY((void *) p, (const void *) ins, (size_t) (ins_end - ins));
@@ -296,8 +296,8 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 #endif
 
 	/* Constants: variable size encoding. */
-	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, func);
-	tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, func);
+	tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, func);
+	tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, func);
 	while (tv != tv_end) {
 		/* constants are strings or numbers now */
 		DUK_ASSERT(DUK_TVAL_IS_STRING(tv) ||
@@ -321,8 +321,8 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 	}
 
 	/* Inner functions recursively. */
-	fn = (duk_hobject **) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, func);
-	fn_end = (duk_hobject **) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, func);
+	fn = (duk_hobject **) DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, func);
+	fn_end = (duk_hobject **) DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, func);
 	while (fn != fn_end) {
 		/* XXX: This causes recursion up to inner function depth
 		 * which is normally not an issue, e.g. mark-and-sweep uses
@@ -330,8 +330,8 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 		 * this would mean some sort of a work list or just refusing
 		 * to serialize deep functions.
 		 */
-		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(*fn));
-		p = duk__dump_func(ctx, (duk_hcompiledfunction *) *fn, bw_ctx, p);
+		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(*fn));
+		p = duk__dump_func(ctx, (duk_hcompfunc *) *fn, bw_ctx, p);
 		fn++;
 	}
 
@@ -370,7 +370,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompiledfunction *func
 
 static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t *p_end) {
 	duk_hthread *thr;
-	duk_hcompiledfunction *h_fun;
+	duk_hcompfunc *h_fun;
 	duk_hbuffer *h_data;
 	duk_size_t data_size;
 	duk_uint32_t count_instr, count_const, count_funcs;
@@ -417,12 +417,12 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	 * duk_js_push_closure() quite carefully.
 	 */
 	duk_push_compiledfunction(ctx);
-	h_fun = duk_get_hcompiledfunction(ctx, -1);
+	h_fun = duk_get_hcompfunc(ctx, -1);
 	DUK_ASSERT(h_fun != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) h_fun));
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, h_fun) == NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, h_fun) == NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, h_fun) == NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) h_fun));
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun) == NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, h_fun) == NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, h_fun) == NULL);
 
 	h_fun->nregs = DUK_RAW_READ_U16_BE(p);
 	h_fun->nargs = DUK_RAW_READ_U16_BE(p);
@@ -433,7 +433,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	p += 8;  /* skip line info */
 #endif
 
-	/* duk_hcompiledfunction flags; quite version specific */
+	/* duk_hcompfunc flags; quite version specific */
 	tmp32 = DUK_RAW_READ_U32_BE(p);
 	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) h_fun, tmp32);
 
@@ -443,8 +443,8 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* assert just a few critical flags */
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h_fun) == DUK_HTYPE_OBJECT);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&h_fun->obj));
-	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(&h_fun->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(&h_fun->obj));
+	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&h_fun->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(&h_fun->obj));
@@ -518,7 +518,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	h_data = (duk_hbuffer *) duk_get_hbuffer(ctx, idx_base + 1);
 	DUK_ASSERT(h_data != NULL);
 	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(h_data));
-	DUK_HCOMPILEDFUNCTION_SET_DATA(thr->heap, h_fun, h_data);
+	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_fun, h_data);
 	DUK_HBUFFER_INCREF(thr, h_data);
 
 	tv1 = duk_get_tval(ctx, idx_base + 2);  /* may be NULL if no constants or inner funcs */
@@ -535,7 +535,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		tv1 += count_const;
 	}
 
-	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) (void *) q);
+	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, h_fun, (duk_hobject **) (void *) q);
 	for (n = count_funcs; n > 0; n--) {
 		duk_hobject *h_obj;
 
@@ -549,7 +549,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		q += sizeof(duk_hobject *);
 	}
 
-	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_fun, (duk_instr_t *) (void *) q);
+	DUK_HCOMPFUNC_SET_BYTECODE(thr->heap, h_fun, (duk_instr_t *) (void *) q);
 
 	/* The function object is now reachable and refcounts are fine,
 	 * so we can pop off all the temporaries.
@@ -636,7 +636,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	duk_hthread *thr;
-	duk_hcompiledfunction *func;
+	duk_hcompfunc *func;
 	duk_bufwriter_ctx bw_ctx_alloc;
 	duk_bufwriter_ctx *bw_ctx = &bw_ctx_alloc;
 	duk_uint8_t *p;
@@ -648,7 +648,7 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	 * lookup the non-bound target function or reject bound functions.
 	 * For now, bound functions are rejected.
 	 */
-	func = duk_require_hcompiledfunction(ctx, -1);
+	func = duk_require_hcompfunc(ctx, -1);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&func->obj));
 

@@ -63,7 +63,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	duk__compile_raw_args *comp_args;
 	duk_uint_t flags;
 	duk_small_uint_t comp_flags;
-	duk_hcompiledfunction *h_templ;
+	duk_hcompfunc *h_templ;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(udata != NULL);
@@ -128,7 +128,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 
 	/* [ ... func_template ] */
 
-	h_templ = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
+	h_templ = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h_templ != NULL);
 	duk_js_push_closure(thr,
 	                   h_templ,

@@ -1521,7 +1521,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 		act = thr->callstack + thr->callstack_top + level;
 		fun = DUK_ACT_GET_FUNC(act);
-		if (fun != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION(fun)) {
+		if (fun != NULL && DUK_HOBJECT_IS_COMPFUNC(fun)) {
 			/* Direct eval requires that there's a current
 			 * activation and it is an Ecmascript function.
 			 * When Eval is executed from e.g. cooperate API
@@ -1816,7 +1816,7 @@ DUK_LOCAL void duk__debug_handle_dump_heap(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) {
 	duk_activation *act;
-	duk_hcompiledfunction *fun = NULL;
+	duk_hcompfunc *fun = NULL;
 	duk_size_t i, n;
 	duk_tval *tv;
 	duk_hobject **fn;
@@ -1836,7 +1836,7 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 		}
 		if (DUK_TVAL_IS_OBJECT(tv)) {
 			/* tentative, checked later */
-			fun = (duk_hcompiledfunction *) DUK_TVAL_GET_OBJECT(tv);
+			fun = (duk_hcompfunc *) DUK_TVAL_GET_OBJECT(tv);
 			DUK_ASSERT(fun != NULL);
 		} else if (DUK_TVAL_IS_NUMBER(tv)) {
 			level = (duk_int32_t) DUK_TVAL_GET_NUMBER(tv);
@@ -1852,33 +1852,33 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 			goto fail_level;
 		}
 		act = thr->callstack + thr->callstack_top + level;
-		fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
+		fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 	}
 
-	if (fun == NULL || !DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun)) {
+	if (fun == NULL || !DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun)) {
 		DUK_D(DUK_DPRINT("invalid argument to GetBytecode: %!O", fun));
 		goto fail_args;
 	}
-	DUK_ASSERT(fun != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun));
+	DUK_ASSERT(fun != NULL && DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun));
 
 	duk_debug_write_reply(thr);
-	n = DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(heap, fun);
+	n = DUK_HCOMPFUNC_GET_CONSTS_COUNT(heap, fun);
 	duk_debug_write_int(thr, (duk_int32_t) n);
-	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, fun);
+	tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, fun);
 	for (i = 0; i < n; i++) {
 		duk_debug_write_tval(thr, tv);
 		tv++;
 	}
-	n = DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(heap, fun);
+	n = DUK_HCOMPFUNC_GET_FUNCS_COUNT(heap, fun);
 	duk_debug_write_int(thr, (duk_int32_t) n);
-	fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, fun);
+	fn = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, fun);
 	for (i = 0; i < n; i++) {
 		duk_debug_write_hobject(thr, *fn);
 		fn++;
 	}
 	duk_debug_write_string(thr,
-	                       (const char *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(heap, fun),
-	                       (duk_size_t) DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(heap, fun));
+	                       (const char *) DUK_HCOMPFUNC_GET_CODE_BASE(heap, fun),
+	                       (duk_size_t) DUK_HCOMPFUNC_GET_CODE_SIZE(heap, fun));
 	duk_debug_write_eom(thr);
 	return;
 
@@ -1942,9 +1942,9 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"extensible",
 	"constructable",
 	"bound",
-	"compiledfunction",
-	"nativefunction",
-	"bufferobject",
+	"compfunc",
+	"natfunc",
+	"bufobj",
 	"thread",
 	"array_part",
 	"strict",
@@ -1964,9 +1964,9 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_EXTENSIBLE,
 	DUK_HOBJECT_FLAG_CONSTRUCTABLE,
 	DUK_HOBJECT_FLAG_BOUND,
-	DUK_HOBJECT_FLAG_COMPILEDFUNCTION,
-	DUK_HOBJECT_FLAG_NATIVEFUNCTION,
-	DUK_HOBJECT_FLAG_BUFFEROBJECT,
+	DUK_HOBJECT_FLAG_COMPFUNC,
+	DUK_HOBJECT_FLAG_NATFUNC,
+	DUK_HOBJECT_FLAG_BUFOBJ,
 	DUK_HOBJECT_FLAG_THREAD,
 	DUK_HOBJECT_FLAG_ARRAY_PART,
 	DUK_HOBJECT_FLAG_STRICT,
@@ -2174,14 +2174,14 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		duk__debug_getinfo_prop_uint(thr, "a_size", (duk_uint_t) DUK_HOBJECT_GET_ASIZE(h_obj));
 		duk__debug_getinfo_prop_uint(thr, "h_size", (duk_uint_t) DUK_HOBJECT_GET_HSIZE(h_obj));
 
-		/* duk_hnativefunction specific fields. */
-		if (DUK_HOBJECT_IS_NATIVEFUNCTION(h_obj)) {
-			duk_hnativefunction *h_fun;
-			h_fun = (duk_hnativefunction *) h_obj;
+		/* duk_hnatfunc specific fields. */
+		if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
+			duk_hnatfunc *h_fun;
+			h_fun = (duk_hnatfunc *) h_obj;
 
 			duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
 			duk__debug_getinfo_prop_int(thr, "magic", h_fun->magic);
-			duk__debug_getinfo_prop_bool(thr, "varargs", h_fun->magic == DUK_HNATIVEFUNCTION_NARGS_VARARGS);
+			duk__debug_getinfo_prop_bool(thr, "varargs", h_fun->magic == DUK_HNATFUNC_NARGS_VARARGS);
 			/* Native function pointer may be different from a void pointer,
 			 * and we serialize it from memory directly now (no byte swapping etc).
 			 */
@@ -2189,16 +2189,16 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk_debug_write_buffer(thr, (const char *) &h_fun->func, sizeof(h_fun->func));
 		}
 
-		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h_obj)) {
-			duk_hcompiledfunction *h_fun;
+		if (DUK_HOBJECT_IS_COMPFUNC(h_obj)) {
+			duk_hcompfunc *h_fun;
 			duk_hbuffer *h_buf;
-			h_fun = (duk_hcompiledfunction *) h_obj;
+			h_fun = (duk_hcompfunc *) h_obj;
 
 			duk__debug_getinfo_prop_int(thr, "nregs", h_fun->nregs);
 			duk__debug_getinfo_prop_int(thr, "nargs", h_fun->nargs);
 			duk__debug_getinfo_prop_uint(thr, "start_line", h_fun->start_line);
 			duk__debug_getinfo_prop_uint(thr, "end_line", h_fun->end_line);
-			h_buf = (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, h_fun);
+			h_buf = (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun);
 			if (h_buf != NULL) {
 				duk__debug_getinfo_flags_key(thr, "data");
 				duk_debug_write_heapptr(thr, (duk_heaphdr *) h_buf);
@@ -2214,9 +2214,9 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			DUK_UNREF(h_thr);
 		}
 
-		if (DUK_HOBJECT_IS_BUFFEROBJECT(h_obj)) {
-			duk_hbufferobject *h_bufobj;
-			h_bufobj = (duk_hbufferobject *) h_obj;
+		if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
+			duk_hbufobj *h_bufobj;
+			h_bufobj = (duk_hbufobj *) h_obj;
 
 			duk__debug_getinfo_prop_uint(thr, "slice_offset", h_bufobj->offset);
 			duk__debug_getinfo_prop_uint(thr, "slice_length", h_bufobj->length);
@@ -2629,7 +2629,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 
 DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev_pc) {
 	duk_activation *act;
-	duk_hcompiledfunction *fun;
+	duk_hcompfunc *fun;
 	duk_instr_t *old_pc = NULL;
 
 	DUK_ASSERT(thr != NULL);
@@ -2649,16 +2649,16 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 	if (act != NULL) {
 		duk_hthread_sync_currpc(thr);
 		old_pc = act->curr_pc;
-		fun = (duk_hcompiledfunction *) DUK_ACT_GET_FUNC(act);
+		fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 
 		/* Short circuit if is safe: if act->curr_pc != NULL, 'fun' is
 		 * guaranteed to be a non-NULL Ecmascript function.
 		 */
 		DUK_ASSERT(act->curr_pc == NULL ||
-		           (fun != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun)));
+		           (fun != NULL && DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun)));
 		if (use_prev_pc &&
 		    act->curr_pc != NULL &&
-		    act->curr_pc > DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, fun)) {
+		    act->curr_pc > DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, fun)) {
 			act->curr_pc--;
 		}
 	}

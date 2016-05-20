@@ -70,22 +70,22 @@ typedef struct {
  *     even if the closure object remains reachable.
  */
 
-DUK_LOCAL void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompiledfunction *f) {
+DUK_LOCAL void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompfunc *f) {
 	duk_tval *tv, *tv_end;
 	duk_hobject **funcs, **funcs_end;
 
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
 	DUK_UNREF(thr);
 
-	tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
-	tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
+	tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
+	tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
 	while (tv < tv_end) {
 		DUK_TVAL_INCREF(thr, tv);
 		tv++;
 	}
 
-	funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
-	funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
+	funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, f);
+	funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, f);
 	while (funcs < funcs_end) {
 		DUK_HEAPHDR_INCREF(thr, (duk_heaphdr *) *funcs);
 		funcs++;
@@ -111,19 +111,19 @@ DUK_LOCAL const duk_uint16_t duk__closure_copy_proplist[] = {
 
 DUK_INTERNAL
 void duk_js_push_closure(duk_hthread *thr,
-                         duk_hcompiledfunction *fun_temp,
+                         duk_hcompfunc *fun_temp,
                          duk_hobject *outer_var_env,
                          duk_hobject *outer_lex_env,
                          duk_bool_t add_auto_proto) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_hcompiledfunction *fun_clos;
+	duk_hcompfunc *fun_clos;
 	duk_small_uint_t i;
 	duk_uint_t len_value;
 
 	DUK_ASSERT(fun_temp != NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_temp) != NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_temp) != NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_temp) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_temp) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_temp) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_temp) != NULL);
 	DUK_ASSERT(outer_var_env != NULL);
 	DUK_ASSERT(outer_lex_env != NULL);
 	DUK_UNREF(len_value);
@@ -131,23 +131,23 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_push_compiledfunction(ctx);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
-	fun_clos = (duk_hcompiledfunction *) duk_get_hcompiledfunction(ctx, -2);
+	fun_clos = (duk_hcompfunc *) duk_get_hcompfunc(ctx, -2);
 	DUK_ASSERT(fun_clos != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) fun_clos));
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_clos) == NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_clos) == NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_clos) == NULL);
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun_clos));
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos) == NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) == NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_clos) == NULL);
 
-	DUK_HCOMPILEDFUNCTION_SET_DATA(thr->heap, fun_clos, DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_temp));
-	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, fun_clos, DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_temp));
-	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, fun_clos, DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_temp));
+	DUK_HCOMPFUNC_SET_DATA(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_temp));
+	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_temp));
+	DUK_HCOMPFUNC_SET_BYTECODE(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_temp));
 
 	/* Note: all references inside 'data' need to get their refcounts
 	 * upped too.  This is the case because refcounts are decreased
 	 * through every function referencing 'data' independently.
 	 */
 
-	DUK_HBUFFER_INCREF(thr, DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_clos));
+	DUK_HBUFFER_INCREF(thr, DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos));
 	duk__inc_data_inner_refcounts(thr, fun_temp);
 
 	fun_clos->nregs = fun_temp->nregs;
@@ -157,9 +157,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	fun_clos->end_line = fun_temp->end_line;
 #endif
 
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, fun_clos) != NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_FUNCS(thr->heap, fun_clos) != NULL);
-	DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_BYTECODE(thr->heap, fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) != NULL);
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_clos) != NULL);
 
 	/* XXX: could also copy from template, but there's no way to have any
 	 * other value here now (used code has no access to the template).
@@ -177,8 +177,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_HOBJECT_SET_CONSTRUCTABLE(&fun_clos->obj);  /* Note: not set in template (has no "prototype") */
 	DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&fun_clos->obj));
-	DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(&fun_clos->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(&fun_clos->obj));
+	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&fun_clos->obj));
 	/* DUK_HOBJECT_FLAG_ARRAY_PART: don't care */
 	if (DUK_HOBJECT_HAS_STRICT(&fun_temp->obj)) {
@@ -508,7 +508,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	/* open scope information, for compiled functions only */
 
-	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 		duk_push_hthread(ctx, thr);
 		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
@@ -623,7 +623,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	}
 #endif
 
-	if (func != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (func != NULL && DUK_HOBJECT_IS_COMPFUNC(func)) {
 		duk_hobject *varmap;
 		duk_hstring *key;
 		duk_tval *tv;
@@ -678,7 +678,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));  /* assume value is a number */
 			regnum = (duk_uint_t) DUK_TVAL_GET_NUMBER(tv);
 			DUK_ASSERT_DISABLE(regnum >= 0);  /* unsigned */
-			DUK_ASSERT(regnum < ((duk_hcompiledfunction *) func)->nregs);  /* regnum is sane */
+			DUK_ASSERT(regnum < ((duk_hcompfunc *) func)->nregs);  /* regnum is sane */
 			DUK_ASSERT(thr->valstack + regbase + regnum >= thr->valstack);
 			DUK_ASSERT(thr->valstack + regbase + regnum < thr->valstack_top);
 
@@ -772,7 +772,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 	DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv) != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_TVAL_GET_OBJECT(tv)));
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_TVAL_GET_OBJECT(tv)));
 	env_func = DUK_TVAL_GET_OBJECT(tv);
 	DUK_ASSERT(env_func != NULL);
 
@@ -791,7 +791,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 	reg_rel = (duk_size_t) DUK_TVAL_GET_NUMBER(tv);
 	DUK_ASSERT_DISABLE(reg_rel >= 0);  /* unsigned */
-	DUK_ASSERT(reg_rel < ((duk_hcompiledfunction *) env_func)->nregs);
+	DUK_ASSERT(reg_rel < ((duk_hcompfunc *) env_func)->nregs);
 
 	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, env, DUK_HTHREAD_STRING_INT_THREAD(thr));
 	DUK_ASSERT(tv != NULL);
@@ -846,7 +846,7 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(DUK_HOBJECT_HAS_NEWENV(func));
 
-	if (!DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (!DUK_HOBJECT_IS_COMPFUNC(func)) {
 		return 0;
 	}
 
@@ -865,7 +865,7 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 	reg_rel = (duk_size_t) DUK_TVAL_GET_NUMBER(tv);
 	DUK_ASSERT_DISABLE(reg_rel >= 0);
-	DUK_ASSERT(reg_rel < ((duk_hcompiledfunction *) func)->nregs);
+	DUK_ASSERT(reg_rel < ((duk_hcompfunc *) func)->nregs);
 
 	idx = act->idx_bottom + reg_rel;
 	DUK_ASSERT(idx >= act->idx_bottom);

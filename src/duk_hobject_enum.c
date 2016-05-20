@@ -24,7 +24,7 @@
 /* must match exactly the number of internal properties inserted to enumerator */
 #define DUK__ENUM_START_INDEX  2
 
-DUK_LOCAL const duk_uint16_t duk__bufferobject_virtual_props[] = {
+DUK_LOCAL const duk_uint16_t duk__bufobj_virtual_props[] = {
 	DUK_STRIDX_LENGTH,
 	DUK_STRIDX_BYTE_LENGTH,
 	DUK_STRIDX_BYTE_OFFSET,
@@ -295,7 +295,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		 */
 
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr) ||
-		    DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
+		    DUK_HOBJECT_IS_BUFOBJ(curr)) {
 			/* String and buffer enumeration behavior is identical now,
 			 * so use shared handler.
 			 */
@@ -305,9 +305,9 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				DUK_ASSERT(h_val != NULL);  /* string objects must not created without internal value */
 				len = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_val);
 			} else {
-				duk_hbufferobject *h_bufobj;
-				DUK_ASSERT(DUK_HOBJECT_IS_BUFFEROBJECT(curr));
-				h_bufobj = (duk_hbufferobject *) curr;
+				duk_hbufobj *h_bufobj;
+				DUK_ASSERT(DUK_HOBJECT_IS_BUFOBJ(curr));
+				h_bufobj = (duk_hbufobj *) curr;
 				if (h_bufobj == NULL) {
 					/* Neutered buffer, zero length seems
 					 * like good behavior here.
@@ -343,16 +343,16 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
 				duk_uint_fast32_t n;
 
-				if (DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
-					n = sizeof(duk__bufferobject_virtual_props) / sizeof(duk_uint16_t);
+				if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
+					n = sizeof(duk__bufobj_virtual_props) / sizeof(duk_uint16_t);
 				} else {
 					DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr));
-					DUK_ASSERT(duk__bufferobject_virtual_props[0] == DUK_STRIDX_LENGTH);
+					DUK_ASSERT(duk__bufobj_virtual_props[0] == DUK_STRIDX_LENGTH);
 					n = 1;  /* only 'length' */
 				}
 
 				for (i = 0; i < n; i++) {
-					duk_push_hstring_stridx(ctx, duk__bufferobject_virtual_props[i]);
+					duk_push_hstring_stridx(ctx, duk__bufobj_virtual_props[i]);
 					duk_push_true(ctx);
 					duk_put_prop(ctx, -3);
 				}

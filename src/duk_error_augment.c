@@ -368,7 +368,7 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 
 			ecma_line = 0;
 #if defined(DUK_USE_PC2LINE)
-			if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+			if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 				ecma_line = duk_hobject_pc2line_query(ctx, -2, (duk_uint_fast32_t) pc);
 			} else {
 				/* Native function, no relevant lineNumber. */

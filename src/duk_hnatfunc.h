@@ -2,13 +2,13 @@
  *  Heap native function representation.
  */
 
-#ifndef DUK_HNATIVEFUNCTION_H_INCLUDED
-#define DUK_HNATIVEFUNCTION_H_INCLUDED
+#ifndef DUK_HNATFUNC_H_INCLUDED
+#define DUK_HNATFUNC_H_INCLUDED
 
-#define DUK_HNATIVEFUNCTION_NARGS_VARARGS  ((duk_int16_t) -1)
-#define DUK_HNATIVEFUNCTION_NARGS_MAX      ((duk_int16_t) 0x7fff)
+#define DUK_HNATFUNC_NARGS_VARARGS  ((duk_int16_t) -1)
+#define DUK_HNATFUNC_NARGS_MAX      ((duk_int16_t) 0x7fff)
 
-struct duk_hnativefunction {
+struct duk_hnatfunc {
 	/* shared object part */
 	duk_hobject obj;
 
@@ -29,4 +29,4 @@ struct duk_hnativefunction {
 	 */
 };
 
-#endif  /* DUK_HNATIVEFUNCTION_H_INCLUDED */
+#endif  /* DUK_HNATFUNC_H_INCLUDED */

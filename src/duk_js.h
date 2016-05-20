@@ -82,7 +82,7 @@ DUK_INTERNAL_DECL void duk_js_close_environment_record(duk_hthread *thr, duk_hob
 DUK_INTERNAL_DECL duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t idx_bottom);
 DUK_INTERNAL_DECL
 void duk_js_push_closure(duk_hthread *thr,
-                         duk_hcompiledfunction *fun_temp,
+                         duk_hcompfunc *fun_temp,
                          duk_hobject *outer_var_env,
                          duk_hobject *outer_lex_env,
                          duk_bool_t add_auto_proto);

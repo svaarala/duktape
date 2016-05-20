@@ -1099,7 +1099,7 @@ def magic_writefield(elem, signed=None, bigendian=None, typedarray=None):
 
 # Magic value for typedarray constructors.
 def magic_typedarray_constructor(elem, shift):
-	# Must match duk_hbufferobject.h header
+	# Must match duk_hbufobj.h header
 	elemnum = {
 		'uint8': 0,
 		'uint8clamped': 1,
@@ -2131,7 +2131,7 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	genc.emitLine('typedef struct duk_romobj duk_romobj; ' + \
 	              'struct duk_romobj { duk_hobject hdr; };')
 	genc.emitLine('typedef struct duk_romfun duk_romfun; ' + \
-	              'struct duk_romfun { duk_hnativefunction hdr; };')
+	              'struct duk_romfun { duk_hnatfunc hdr; };')
 
 	# For ROM pointer compression we'd need a -compile time- variant.
 	# The current portable solution is to just assign running numbers
@@ -2438,7 +2438,7 @@ def rom_emit_objects(genc, meta, bi_str_map):
 
 		flags = [ 'DUK_HTYPE_OBJECT', 'DUK_HEAPHDR_FLAG_READONLY' ]
 		if isfunc:
-			flags.append('DUK_HOBJECT_FLAG_NATIVEFUNCTION')
+			flags.append('DUK_HOBJECT_FLAG_NATFUNC')
 			flags.append('DUK_HOBJECT_FLAG_STRICT')
 			flags.append('DUK_HOBJECT_FLAG_NEWENV')
 		if obj.get('constructable', False):

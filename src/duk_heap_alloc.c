@@ -32,12 +32,12 @@ DUK_INTERNAL void duk_free_hobject_inner(duk_heap *heap, duk_hobject *h) {
 
 	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(heap, h));
 
-	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
+	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK_UNREF(f);
 		/* Currently nothing to free; 'data' is a heap object */
-	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-		duk_hnativefunction *f = (duk_hnativefunction *) h;
+	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
+		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);
 		/* Currently nothing to free */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
@@ -608,8 +608,8 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_hstring);
 	DUK__DUMPSZ(duk_hstring_external);
 	DUK__DUMPSZ(duk_hobject);
-	DUK__DUMPSZ(duk_hcompiledfunction);
-	DUK__DUMPSZ(duk_hnativefunction);
+	DUK__DUMPSZ(duk_hcompfunc);
+	DUK__DUMPSZ(duk_hnatfunc);
 	DUK__DUMPSZ(duk_hthread);
 	DUK__DUMPSZ(duk_hbuffer);
 	DUK__DUMPSZ(duk_hbuffer_fixed);

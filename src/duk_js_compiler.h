@@ -104,7 +104,7 @@ typedef struct {
 	 */
 } duk_labelinfo;
 
-/* Compiling state of one function, eventually converted to duk_hcompiledfunction */
+/* Compiling state of one function, eventually converted to duk_hcompfunc */
 struct duk_compiler_func {
 	/* These pointers are at the start of the struct so that they pack
 	 * nicely.  Mixing pointers and integer values is bad on some
@@ -164,7 +164,7 @@ struct duk_compiler_func {
 	duk_int_t num_formals;              /* number of formal arguments */
 	duk_reg_t reg_stmt_value;           /* register for writing value of 'non-empty' statements (global or eval code), -1 is marker */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	duk_int_t min_line;                 /* XXX: typing (duk_hcompiledfunction has duk_uint32_t) */
+	duk_int_t min_line;                 /* XXX: typing (duk_hcompfunc has duk_uint32_t) */
 	duk_int_t max_line;
 #endif
 
