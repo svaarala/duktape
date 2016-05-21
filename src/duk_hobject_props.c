@@ -1719,14 +1719,14 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(obj)) {
-		duk_hbufferobject *h_bufobj;
+	} else if (DUK_HOBJECT_IS_BUFOBJ(obj)) {
+		duk_hbufobj *h_bufobj;
 		duk_uint_t byte_off;
 		duk_small_uint_t elem_size;
 
-		h_bufobj = (duk_hbufferobject *) obj;
-		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
-		DUK_DDD(DUK_DDDPRINT("bufferobject property get for key: %!O, arr_idx: %ld",
+		h_bufobj = (duk_hbufobj *) obj;
+		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+		DUK_DDD(DUK_DDDPRINT("bufobj property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
 		if (arr_idx != DUK__NO_ARRAY_INDEX) {
@@ -1741,11 +1741,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
 					duk_uint8_t *data;
 
-					if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+					if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
 						data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
-						duk_hbufferobject_push_validated_read(ctx, h_bufobj, data, elem_size);
+						duk_hbufobj_push_validated_read(ctx, h_bufobj, data, elem_size);
 					} else {
-						DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (read zero)"));
+						DUK_D(DUK_DPRINT("bufobj access out of underlying buffer, ignoring (read zero)"));
 						duk_push_uint(ctx, 0);
 					}
 				}
@@ -1805,8 +1805,8 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
 
 			if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
-				duk_int16_t func_nargs = ((duk_hnativefunction *) obj)->nargs;
-				duk_push_int(ctx, func_nargs == DUK_HNATIVEFUNCTION_NARGS_VARARGS ? 0 : func_nargs);
+				duk_int16_t func_nargs = ((duk_hnatfunc *) obj)->nargs;
+				duk_push_int(ctx, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* not enumerable */
 
@@ -1980,7 +1980,7 @@ DUK_LOCAL duk_tval *duk__getprop_shallow_fastpath_array_tval(duk_hthread *thr, d
 	if (!(DUK_HOBJECT_HAS_ARRAY_PART(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) &&
-	     !DUK_HOBJECT_IS_BUFFEROBJECT(obj) &&
+	     !DUK_HOBJECT_IS_BUFOBJ(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
 		/* Must have array part and no conflicting exotic behaviors.
 		 * Doesn't need to have array special behavior, e.g. Arguments
@@ -2096,23 +2096,23 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 }
 
 /*
- *  Fast path for bufferobject getprop/putprop
+ *  Fast path for bufobj getprop/putprop
  */
 
 DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key) {
 	duk_context *ctx;
 	duk_uint32_t idx;
-	duk_hbufferobject *h_bufobj;
+	duk_hbufobj *h_bufobj;
 	duk_uint_t byte_off;
 	duk_small_uint_t elem_size;
 	duk_uint8_t *data;
 
 	ctx = (duk_context *) thr;
 
-	if (!DUK_HOBJECT_IS_BUFFEROBJECT(obj)) {
+	if (!DUK_HOBJECT_IS_BUFOBJ(obj)) {
 		return 0;
 	}
-	h_bufobj = (duk_hbufferobject *) obj;
+	h_bufobj = (duk_hbufobj *) obj;
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
@@ -2127,7 +2127,7 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 
 	/* If index is not valid, idx will be DUK__NO_ARRAY_INDEX which
 	 * is 0xffffffffUL.  We don't need to check for that explicitly
-	 * because 0xffffffffUL will never be inside bufferobject length.
+	 * because 0xffffffffUL will never be inside bufobj length.
 	 */
 
 	/* Careful with wrapping (left shifting idx would be unsafe). */
@@ -2139,11 +2139,11 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 	byte_off = idx << h_bufobj->shift;  /* no wrap assuming h_bufobj->length is valid */
 	elem_size = 1 << h_bufobj->shift;
 
-	if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+	if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
 		data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
-		duk_hbufferobject_push_validated_read(ctx, h_bufobj, data, elem_size);
+		duk_hbufobj_push_validated_read(ctx, h_bufobj, data, elem_size);
 	} else {
-		DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (read zero)"));
+		DUK_D(DUK_DPRINT("bufobj access out of underlying buffer, ignoring (read zero)"));
 		duk_push_uint(ctx, 0);
 	}
 
@@ -2153,20 +2153,20 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_tval *tv_val) {
 	duk_context *ctx;
 	duk_uint32_t idx;
-	duk_hbufferobject *h_bufobj;
+	duk_hbufobj *h_bufobj;
 	duk_uint_t byte_off;
 	duk_small_uint_t elem_size;
 	duk_uint8_t *data;
 
 	ctx = (duk_context *) thr;
 
-	if (!(DUK_HOBJECT_IS_BUFFEROBJECT(obj) &&
+	if (!(DUK_HOBJECT_IS_BUFOBJ(obj) &&
 	      DUK_TVAL_IS_NUMBER(tv_val))) {
 		return 0;
 	}
-	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures; rom objects are never bufferobjects now */
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures; rom objects are never bufobjs now */
 
-	h_bufobj = (duk_hbufferobject *) obj;
+	h_bufobj = (duk_hbufobj *) obj;
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
 		idx = duk__tval_fastint_to_arr_idx(tv_key);
@@ -2180,7 +2180,7 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 
 	/* If index is not valid, idx will be DUK__NO_ARRAY_INDEX which
 	 * is 0xffffffffUL.  We don't need to check for that explicitly
-	 * because 0xffffffffUL will never be inside bufferobject length.
+	 * because 0xffffffffUL will never be inside bufobj length.
 	 */
 
 	/* Careful with wrapping (left shifting idx would be unsafe). */
@@ -2198,11 +2198,11 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 	duk_push_tval(ctx, tv_val);
 	DUK_ASSERT(duk_is_number(ctx, -1));
 
-	if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+	if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
 		data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
-		duk_hbufferobject_validated_write(ctx, h_bufobj, data, elem_size);
+		duk_hbufobj_validated_write(ctx, h_bufobj, data, elem_size);
 	} else {
-		DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (write skipped)"));
+		DUK_D(DUK_DPRINT("bufobj access out of underlying buffer, ignoring (write skipped)"));
 	}
 
 	duk_pop(ctx);
@@ -2352,7 +2352,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		if (duk__getprop_fastpath_bufobj_tval(thr, curr, tv_key) != 0) {
 			/* Read value pushed on stack. */
-			DUK_DDD(DUK_DDDPRINT("-> %!T (base is bufobj, key is a number, bufferobject "
+			DUK_DDD(DUK_DDDPRINT("-> %!T (base is bufobj, key is a number, bufobj "
 			                     "fast path)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			return 1;
@@ -3368,7 +3368,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 
 		if (duk__putprop_fastpath_bufobj_tval(thr, orig, tv_key, tv_val) != 0) {
-			DUK_DDD(DUK_DDDPRINT("base is bufobj, key is a number, bufferobject fast path"));
+			DUK_DDD(DUK_DDDPRINT("base is bufobj, key is a number, bufobj fast path"));
 			return 1;
 		}
 
@@ -3639,13 +3639,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			}
 			if (desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
 				DUK_DD(DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable"));
-				if (DUK_HOBJECT_IS_BUFFEROBJECT(curr)) {
-					duk_hbufferobject *h_bufobj;
+				if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
+					duk_hbufobj *h_bufobj;
 					duk_uint_t byte_off;
 					duk_small_uint_t elem_size;
 
-					h_bufobj = (duk_hbufferobject *) curr;
-					DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+					h_bufobj = (duk_hbufobj *) curr;
+					DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 					DUK_DD(DUK_DDPRINT("writable virtual property is in buffer object"));
 
@@ -3661,18 +3661,18 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 						elem_size = 1 << h_bufobj->shift;
 
 						/* Coerce to number before validating pointers etc so that the
-						 * number coercions in duk_hbufferobject_validated_write() are
+						 * number coercions in duk_hbufobj_validated_write() are
 						 * guaranteed to be side effect free and not invalidate the
 						 * pointer checks we do here.
 						 */
 						duk_push_tval(ctx, tv_val);
 						duk_to_number(ctx, -1);
 
-						if (h_bufobj->buf != NULL && DUK_HBUFFEROBJECT_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
+						if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
 							data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
-							duk_hbufferobject_validated_write(ctx, h_bufobj, data, elem_size);
+							duk_hbufobj_validated_write(ctx, h_bufobj, data, elem_size);
 						} else {
-							DUK_D(DUK_DPRINT("bufferobject access out of underlying buffer, ignoring (write skipped)"));
+							DUK_D(DUK_DPRINT("bufobj access out of underlying buffer, ignoring (write skipped)"));
 						}
 						duk_pop(ctx);
 						goto success_no_arguments_exotic;

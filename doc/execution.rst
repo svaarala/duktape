@@ -668,8 +668,8 @@ The measurements below are using ``gcc -O2`` on x64::
 Accessing constants
 ===================
 
-The executor stores a copy of the ``duk_hcompiledfunction`` constant table
-base address into a local variable ``consts``.  This reduces code footprint
+The executor stores a copy of the ``duk_hcompfunc`` constant table base
+address into a local variable ``consts``.  This reduces code footprint
 and performs better compared to reading the consts base address on-the-fly
 through the function reference.  Because the constants table has a stable
 base address, this is easy and safe.

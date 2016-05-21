@@ -52,8 +52,8 @@ DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk
 	DUK_UNREF(thr);
 
 	/* XXX: store 'bcode' pointer to activation for faster lookup? */
-	if (act->func && DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
-		bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) (act->func));
+	if (act->func && DUK_HOBJECT_IS_COMPFUNC(act->func)) {
+		bcode = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) (act->func));
 		return (duk_uint_fast32_t) (act->curr_pc - bcode);
 	}
 	return 0;
@@ -68,8 +68,8 @@ DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_prev_pc(duk_hthread *thr, duk
 	DUK_ASSERT(act != NULL);
 	DUK_UNREF(thr);
 
-	if (act->func && DUK_HOBJECT_IS_COMPILEDFUNCTION(act->func)) {
-		bcode = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) (act->func));
+	if (act->func && DUK_HOBJECT_IS_COMPFUNC(act->func)) {
+		bcode = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) (act->func));
 		ret = (duk_uint_fast32_t) (act->curr_pc - bcode);
 		if (ret > 0) {
 			ret--;

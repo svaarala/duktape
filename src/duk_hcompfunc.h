@@ -5,8 +5,8 @@
  *  bytecode, constants, and inner functions.
  */
 
-#ifndef DUK_HCOMPILEDFUNCTION_H_INCLUDED
-#define DUK_HCOMPILEDFUNCTION_H_INCLUDED
+#ifndef DUK_HCOMPFUNC_H_INCLUDED
+#define DUK_HCOMPFUNC_H_INCLUDED
 
 /*
  *  Field accessor macros
@@ -15,35 +15,35 @@
 /* XXX: casts could be improved, especially for GET/SET DATA */
 
 #if defined(DUK_USE_HEAPPTR16)
-#define DUK_HCOMPILEDFUNCTION_GET_DATA(heap,h) \
+#define DUK_HCOMPFUNC_GET_DATA(heap,h) \
 	((duk_hbuffer_fixed *) (void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->data16))
-#define DUK_HCOMPILEDFUNCTION_SET_DATA(heap,h,v) do { \
+#define DUK_HCOMPFUNC_SET_DATA(heap,h,v) do { \
 		(h)->data16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS(heap,h)  \
+#define DUK_HCOMPFUNC_GET_FUNCS(heap,h)  \
 	((duk_hobject **) (void *) (DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->funcs16)))
-#define DUK_HCOMPILEDFUNCTION_SET_FUNCS(heap,h,v)  do { \
+#define DUK_HCOMPFUNC_SET_FUNCS(heap,h,v)  do { \
 		(h)->funcs16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
-#define DUK_HCOMPILEDFUNCTION_GET_BYTECODE(heap,h)  \
+#define DUK_HCOMPFUNC_GET_BYTECODE(heap,h)  \
 	((duk_instr_t *) (void *) (DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, (h)->bytecode16)))
-#define DUK_HCOMPILEDFUNCTION_SET_BYTECODE(heap,h,v)  do { \
+#define DUK_HCOMPFUNC_SET_BYTECODE(heap,h,v)  do { \
 		(h)->bytecode16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
 #else
-#define DUK_HCOMPILEDFUNCTION_GET_DATA(heap,h) \
+#define DUK_HCOMPFUNC_GET_DATA(heap,h) \
 	((duk_hbuffer_fixed *) (void *) (h)->data)
-#define DUK_HCOMPILEDFUNCTION_SET_DATA(heap,h,v) do { \
+#define DUK_HCOMPFUNC_SET_DATA(heap,h,v) do { \
 		(h)->data = (duk_hbuffer *) (v); \
 	} while (0)
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS(heap,h)  \
+#define DUK_HCOMPFUNC_GET_FUNCS(heap,h)  \
 	((h)->funcs)
-#define DUK_HCOMPILEDFUNCTION_SET_FUNCS(heap,h,v)  do { \
+#define DUK_HCOMPFUNC_SET_FUNCS(heap,h,v)  do { \
 		(h)->funcs = (v); \
 	} while (0)
-#define DUK_HCOMPILEDFUNCTION_GET_BYTECODE(heap,h)  \
+#define DUK_HCOMPFUNC_GET_BYTECODE(heap,h)  \
 	((h)->bytecode)
-#define DUK_HCOMPILEDFUNCTION_SET_BYTECODE(heap,h,v)  do { \
+#define DUK_HCOMPFUNC_SET_BYTECODE(heap,h,v)  do { \
 		(h)->bytecode = (v); \
 	} while (0)
 #endif
@@ -53,71 +53,71 @@
  */
 
 /* Note: assumes 'data' is always a fixed buffer */
-#define DUK_HCOMPILEDFUNCTION_GET_BUFFER_BASE(heap,h)  \
-	DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPILEDFUNCTION_GET_DATA((heap), (h)))
+#define DUK_HCOMPFUNC_GET_BUFFER_BASE(heap,h)  \
+	DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPFUNC_GET_DATA((heap), (h)))
 
-#define DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap,h)  \
-	((duk_tval *) (void *) DUK_HCOMPILEDFUNCTION_GET_BUFFER_BASE((heap), (h)))
+#define DUK_HCOMPFUNC_GET_CONSTS_BASE(heap,h)  \
+	((duk_tval *) (void *) DUK_HCOMPFUNC_GET_BUFFER_BASE((heap), (h)))
 
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap,h)  \
-	DUK_HCOMPILEDFUNCTION_GET_FUNCS((heap), (h))
+#define DUK_HCOMPFUNC_GET_FUNCS_BASE(heap,h)  \
+	DUK_HCOMPFUNC_GET_FUNCS((heap), (h))
 
-#define DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(heap,h)  \
-	DUK_HCOMPILEDFUNCTION_GET_BYTECODE((heap), (h))
+#define DUK_HCOMPFUNC_GET_CODE_BASE(heap,h)  \
+	DUK_HCOMPFUNC_GET_BYTECODE((heap), (h))
 
-#define DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(heap,h)  \
-	((duk_tval *) (void *) DUK_HCOMPILEDFUNCTION_GET_FUNCS((heap), (h)))
+#define DUK_HCOMPFUNC_GET_CONSTS_END(heap,h)  \
+	((duk_tval *) (void *) DUK_HCOMPFUNC_GET_FUNCS((heap), (h)))
 
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap,h)  \
-	((duk_hobject **) (void *) DUK_HCOMPILEDFUNCTION_GET_BYTECODE((heap), (h)))
+#define DUK_HCOMPFUNC_GET_FUNCS_END(heap,h)  \
+	((duk_hobject **) (void *) DUK_HCOMPFUNC_GET_BYTECODE((heap), (h)))
 
-/* XXX: double evaluation of DUK_HCOMPILEDFUNCTION_GET_DATA() */
-#define DUK_HCOMPILEDFUNCTION_GET_CODE_END(heap,h)  \
-	((duk_instr_t *) (void *) (DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPILEDFUNCTION_GET_DATA((heap), (h))) + \
-	                DUK_HBUFFER_GET_SIZE((duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA((heap), h))))
+/* XXX: double evaluation of DUK_HCOMPFUNC_GET_DATA() */
+#define DUK_HCOMPFUNC_GET_CODE_END(heap,h)  \
+	((duk_instr_t *) (void *) (DUK_HBUFFER_FIXED_GET_DATA_PTR((heap), DUK_HCOMPFUNC_GET_DATA((heap), (h))) + \
+	                DUK_HBUFFER_GET_SIZE((duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA((heap), h))))
 
-#define DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE(heap,h)  \
+#define DUK_HCOMPFUNC_GET_CONSTS_SIZE(heap,h)  \
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_END((heap), (h))) - \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE((heap), (h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_CONSTS_END((heap), (h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_CONSTS_BASE((heap), (h))) \
 	 ) \
 	)
 
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE(heap,h)  \
+#define DUK_HCOMPFUNC_GET_FUNCS_SIZE(heap,h)  \
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_END((heap), (h))) - \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE((heap), (h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_FUNCS_END((heap), (h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_FUNCS_BASE((heap), (h))) \
 	 ) \
 	)
 
-#define DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE(heap,h)  \
+#define DUK_HCOMPFUNC_GET_CODE_SIZE(heap,h)  \
 	( \
 	 (duk_size_t) \
 	 ( \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END((heap),(h))) - \
-	   ((const duk_uint8_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE((heap),(h))) \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_CODE_END((heap),(h))) - \
+	   ((const duk_uint8_t *) DUK_HCOMPFUNC_GET_CODE_BASE((heap),(h))) \
 	 ) \
 	)
 
-#define DUK_HCOMPILEDFUNCTION_GET_CONSTS_COUNT(heap,h)  \
-	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CONSTS_SIZE((heap), (h)) / sizeof(duk_tval)))
+#define DUK_HCOMPFUNC_GET_CONSTS_COUNT(heap,h)  \
+	((duk_size_t) (DUK_HCOMPFUNC_GET_CONSTS_SIZE((heap), (h)) / sizeof(duk_tval)))
 
-#define DUK_HCOMPILEDFUNCTION_GET_FUNCS_COUNT(heap,h)  \
-	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_FUNCS_SIZE((heap), (h)) / sizeof(duk_hobject *)))
+#define DUK_HCOMPFUNC_GET_FUNCS_COUNT(heap,h)  \
+	((duk_size_t) (DUK_HCOMPFUNC_GET_FUNCS_SIZE((heap), (h)) / sizeof(duk_hobject *)))
 
-#define DUK_HCOMPILEDFUNCTION_GET_CODE_COUNT(heap,h)  \
-	((duk_size_t) (DUK_HCOMPILEDFUNCTION_GET_CODE_SIZE((heap), (h)) / sizeof(duk_instr_t)))
+#define DUK_HCOMPFUNC_GET_CODE_COUNT(heap,h)  \
+	((duk_size_t) (DUK_HCOMPFUNC_GET_CODE_SIZE((heap), (h)) / sizeof(duk_instr_t)))
 
 
 /*
  *  Main struct
  */
 
-struct duk_hcompiledfunction {
+struct duk_hcompfunc {
 	/* shared object part */
 	duk_hobject obj;
 
@@ -236,4 +236,4 @@ struct duk_hcompiledfunction {
 #endif
 };
 
-#endif  /* DUK_HCOMPILEDFUNCTION_H_INCLUDED */
+#endif  /* DUK_HCOMPFUNC_H_INCLUDED */

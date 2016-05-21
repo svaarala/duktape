@@ -275,8 +275,8 @@ struct duk_tval_struct {
 		void *voidptr;
 		duk_hstring *hstring;
 		duk_hobject *hobject;
-		duk_hcompiledfunction *hcompiledfunction;
-		duk_hnativefunction *hnativefunction;
+		duk_hcompfunc *hcompfunc;
+		duk_hnatfunc *hnatfunc;
 		duk_hthread *hthread;
 		duk_hbuffer *hbuffer;
 		duk_heaphdr *heaphdr;

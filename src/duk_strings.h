@@ -43,8 +43,8 @@
 #define DUK_STR_NOT_BUFFER                       "not buffer"  /* still in use with verbose messages */
 #define DUK_STR_UNEXPECTED_TYPE                  "unexpected type"
 #define DUK_STR_NOT_THREAD                       "unexpected type"
-#define DUK_STR_NOT_COMPILEDFUNCTION             "unexpected type"
-#define DUK_STR_NOT_NATIVEFUNCTION               "unexpected type"
+#define DUK_STR_NOT_COMPFUNC                     "unexpected type"
+#define DUK_STR_NOT_NATFUNC                      "unexpected type"
 #define DUK_STR_NOT_C_FUNCTION                   "unexpected type"
 #define DUK_STR_NOT_FUNCTION                     "unexpected type"
 #define DUK_STR_NOT_REGEXP                       "unexpected type"

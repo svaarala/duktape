@@ -422,7 +422,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_activation *act_caller;
 	duk_activation *act_eval;
 	duk_activation *act;
-	duk_hcompiledfunction *func;
+	duk_hcompfunc *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
 	duk_bool_t this_to_global = 1;
@@ -485,9 +485,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h),
 	               comp_flags);
-	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
+	func = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
 	/* [ source template ] */
 

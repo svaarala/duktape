@@ -69,8 +69,8 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
 
-	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
+	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **fn, **fn_end;
 
@@ -78,27 +78,27 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		 * contains a reference.
 		 */
 
-		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(heap, f));
+		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPFUNC_GET_DATA(heap, f));
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(heap, f);
+		tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
+		tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);
 		while (tv < tv_end) {
 			duk__mark_tval(heap, tv);
 			tv++;
 		}
 
-		fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
-		fn_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
+		fn = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, f);
+		fn_end = DUK_HCOMPFUNC_GET_FUNCS_END(heap, f);
 		while (fn < fn_end) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) *fn);
 			fn++;
 		}
-	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-		duk_hnativefunction *f = (duk_hnativefunction *) h;
+	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
+		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);
 		/* nothing to mark */
-	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
-		duk_hbufferobject *b = (duk_hbufferobject *) h;
+	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+		duk_hbufobj *b = (duk_hbufobj *) h;
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;

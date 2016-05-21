@@ -2361,11 +2361,11 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``bound``                       | ``duk_hobject``           | DUK_HOBJECT_FLAG_BOUND                                  |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``compiledfunction``            | ``duk_hobject``           | DUK_HOBJECT_FLAG_COMPILEDFUNCTION                       |
+| ``compfunc``                    | ``duk_hobject``           | DUK_HOBJECT_FLAG_COMPFUNC                               |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``nativefunction``              | ``duk_hobject``           | DUK_HOBJECT_FLAG_NATIVEFUNCTION                         |
+| ``natfunc``                     | ``duk_hobject``           | DUK_HOBJECT_FLAG_NATFUNC                                |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``bufferobject``                | ``duk_hobject``           | DUK_HOBJECT_FLAG_BUFFEROBJECT                           |
+| ``bufobj``                      | ``duk_hobject``           | DUK_HOBJECT_FLAG_BUFOBJ                                 |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``thread``                      | ``duk_hobject``           | DUK_HOBJECT_FLAG_THREAD                                 |
 +---------------------------------+---------------------------+---------------------------------------------------------+
@@ -2410,37 +2410,37 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``h_size``                      | ``duk_hobject``           | Hash part size.                                         |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| (not present yet)               | ``duk_hnativefunction``   | Native function pointer.                                |
+| (not present yet)               | ``duk_hnatfunc``          | Native function pointer.                                |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``nargs``                       | ``duk_hnativefunction``   | Number of stack arguments.                              |
+| ``nargs``                       | ``duk_hnatfunc``          | Number of stack arguments.                              |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``magic``                       | ``duk_hnativefunction``   | Magic value.                                            |
+| ``magic``                       | ``duk_hnatfunc``          | Magic value.                                            |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``varargs``                     | ``duk_hnativefunction``   | True if function has variable arguments.                |
+| ``varargs``                     | ``duk_hnatfunc``          | True if function has variable arguments.                |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| (not present yet)               | ``duk_hcompiledfunction`` | Ecmascript function data area, including bytecode.      |
+| (not present yet)               | ``duk_hcompfunc``         | Ecmascript function data area, including bytecode.      |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``nregs``                       | ``duk_hcompiledfunction`` | Number of bytecode executor registers.                  |
+| ``nregs``                       | ``duk_hcompfunc``         | Number of bytecode executor registers.                  |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``nargs``                       | ``duk_hcompiledfunction`` | Number of stack arguments.                              |
+| ``nargs``                       | ``duk_hcompfunc``         | Number of stack arguments.                              |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``start_line``                  | ``duk_hcompiledfunction`` | First source code line.                                 |
+| ``start_line``                  | ``duk_hcompfunc``         | First source code line.                                 |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``end_line``                    | ``duk_hcompiledfunction`` | Last source code line.                                  |
+| ``end_line``                    | ``duk_hcompfunc``         | Last source code line.                                  |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | (no properties yet)             | ``duk_hthread``           | No thread properties yet.                               |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``buffer``                      | ``duk_hbufferobject``     | Underlying plain buffer (provided as a heapptr).        |
+| ``buffer``                      | ``duk_hbufobj``           | Underlying plain buffer (provided as a heapptr).        |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``slice_offset``                | ``duk_hbufferobject``     | Byte offset to underlying buffer for start of slice.    |
+| ``slice_offset``                | ``duk_hbufobj``           | Byte offset to underlying buffer for start of slice.    |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``slice_length``                | ``duk_hbufferobject``     | Byte length of slice.                                   |
+| ``slice_length``                | ``duk_hbufobj``           | Byte length of slice.                                   |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``elem_shift``                  | ``duk_hbufferobject``     | Shift value for element, e.g. Uint64 -> 3.              |
+| ``elem_shift``                  | ``duk_hbufobj``           | Shift value for element, e.g. Uint64 -> 3.              |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``elem_type``                   | ``duk_hbufferobject``     | DUK_HBUFFEROBJECT_ELEM_xxx                              |
+| ``elem_type``                   | ``duk_hbufobj``           | DUK_HBUFOBJ_ELEM_xxx                                    |
 +---------------------------------+---------------------------+---------------------------------------------------------+
-| ``is_view``                     | ``duk_hbufferobject``     | True if bufferobject is a view (e.g. Uint8Array).       |
+| ``is_view``                     | ``duk_hbufobj``           | True if bufferobject is a view (e.g. Uint8Array).       |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``extdata``                     | ``duk_hstring``           | DUK_HSTRING_FLAG_EXTDATA                                |
 +---------------------------------+---------------------------+---------------------------------------------------------+
@@ -2823,8 +2823,8 @@ pair.  The current file/line approach is intuitive but means that:
   functions.  This also affects minified Ecmascript code.
 
 * There are potentially multiple Ecmascript function instance (i.e.
-  ``duk_hcompiledfunction`` objects) that have been created from the same
-  spot.  The breakpoint will match all of them.
+  ``duk_hcompfunc`` objects) that have been created from the same spot.
+  The breakpoint will match all of them.
 
 Line transitions
 ----------------

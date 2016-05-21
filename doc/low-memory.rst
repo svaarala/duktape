@@ -956,13 +956,13 @@ Normal function representation
 
 In Duktape 1.0.0 functions are represented as:
 
-* A ``duk_hcompiledfunction`` (a superset of ``duk_hobject``): represents
-  an Ecmascript function which may have a set of properties, and points to
+* A ``duk_hcompfuncn`` (a superset of ``duk_hobject``): represents an
+  Ecmascript function which may have a set of properties, and points to
   the function's data area (bytecode, constants, inner function refs).
 
-* A ``duk_hnativefunction`` (a superset of ``duk_hobject``): represents
-  a Duktape/C function which may also have a set of properties.  A pointer
-  to the C function is inside the ``duk_hnativefunction`` structure.
+* A ``duk_hnatfunc`` (a superset of ``duk_hobject``): represents a
+  Duktape/C function which may also have a set of properties.  A pointer
+  to the C function is inside the ``duk_hnatfunc`` structure.
 
 In Duktape 1.1.0 a lightfunc type is available:
 
@@ -1001,7 +1001,7 @@ functions, Duktape/C function are already stripped of unnecessary properties
 and don't have an automatic prototype object.
 
 Even so, there are close to 200 built-in functions, so the footprint of
-the ``duk_hnativefunction`` objects is around 14-16kB, not taking into account
+the ``duk_hnatfunc`` objects is around 14-16kB, not taking into account
 allocator overhead.
 
 Duktape/C lightfuncs

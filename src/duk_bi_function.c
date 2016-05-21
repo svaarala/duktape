@@ -10,7 +10,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_idx_t i;
 	duk_small_uint_t comp_flags;
-	duk_hcompiledfunction *func;
+	duk_hcompfunc *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
 
@@ -61,9 +61,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
 	               comp_flags);
-	func = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
+	func = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION((duk_hobject *) func));
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
 	/* [ body formals source template ] */
 
@@ -133,9 +133,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 		/* Indicate function type in the function body using a dummy
 		 * directive.
 		 */
-		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(obj)) {
+		if (DUK_HOBJECT_HAS_COMPFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"ecmascript\"}", (const char *) func_name);
-		} else if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
+		} else if (DUK_HOBJECT_HAS_NATFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"native\"}", (const char *) func_name);
 		} else if (DUK_HOBJECT_HAS_BOUND(obj)) {
 			duk_push_sprintf(ctx, "function %s() {\"bound\"}", (const char *) func_name);

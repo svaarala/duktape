@@ -336,15 +336,21 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	}
 
 	if (st->depth >= st->depth_limit) {
-		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-			duk_fb_sprintf(fb, "%sobject/compiledfunction %p%s", (const char *) brace1, (void *) h, (const char *) brace2);
-		} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-			duk_fb_sprintf(fb, "%sobject/nativefunction %p%s", (const char *) brace1, (void *) h, (const char *) brace2);
+		const char *subtype = "generic";
+
+		if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+			subtype = "compfunc";
+		} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
+			subtype = "natfunc";
 		} else if (DUK_HOBJECT_IS_THREAD(h)) {
-			duk_fb_sprintf(fb, "%sobject/thread %p%s", (const char *) brace1, (void *) h, (const char *) brace2);
+			subtype = "thread";
+		} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+			subtype = "bufobj";
+			/* XXX: add duk_harray here */
 		} else {
 			duk_fb_sprintf(fb, "%sobject %p%s", (const char *) brace1, (void *) h, (const char *) brace2);  /* may be NULL */
 		}
+		duk_fb_sprintf(fb, "%sobject/%s %p%s", (const char *) brace1, subtype, (void *) h, (const char *) brace2);
 		return;
 	}
 
@@ -427,99 +433,66 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 	if (st->internal) {
 		if (DUK_HOBJECT_HAS_EXTENSIBLE(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__extensible:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__constructable:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_BOUND(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__bound:true");
-		} else {
-			;
 		}
-		if (DUK_HOBJECT_HAS_COMPILEDFUNCTION(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__compiledfunction:true");
-		} else {
-			;
+		if (DUK_HOBJECT_HAS_COMPFUNC(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__compfunc:true");
 		}
-		if (DUK_HOBJECT_HAS_NATIVEFUNCTION(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__nativefunction:true");
-		} else {
-			;
+		if (DUK_HOBJECT_HAS_NATFUNC(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__natfunc:true");
+		}
+		if (DUK_HOBJECT_HAS_BUFOBJ(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__bufobj:true");
 		}
 		if (DUK_HOBJECT_HAS_THREAD(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__thread:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_ARRAY_PART(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__array_part:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_STRICT(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__strict:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_NEWENV(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__newenv:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_NAMEBINDING(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__namebinding:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_CREATEARGS(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__createargs:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_ENVRECCLOSED(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__envrecclosed:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_array:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_stringobj:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_arguments:true");
-		} else {
-			;
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_dukfunc:true");
-		} else {
-			;
 		}
-		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_bufferobj:true");
-		} else {
-			;
+		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_bufobj:true");
 		}
 		if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_proxyobj:true");
-		} else {
-			;
 		}
 	}
-	if (st->internal && DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
+	if (st->internal && DUK_HOBJECT_IS_COMPFUNC(h)) {
+		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
-		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(NULL, f));
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nregs:%ld", (long) f->nregs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
@@ -527,15 +500,15 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__end_line:%ld", (long) f->end_line);
 #endif
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
-		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPILEDFUNCTION_GET_DATA(NULL, f));
-	} else if (st->internal && DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-		duk_hnativefunction *f = (duk_hnativefunction *) h;
+		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
+	} else if (st->internal && DUK_HOBJECT_IS_NATFUNC(h)) {
+		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__func:");
 		duk_fb_put_funcptr(fb, (duk_uint8_t *) &f->func, sizeof(f->func));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__magic:%ld", (long) f->magic);
-	} else if (st->internal && DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
-		duk_hbufferobject *b = (duk_hbufferobject *) h;
+	} else if (st->internal && DUK_HOBJECT_IS_BUFOBJ(h)) {
+		duk_hbufobj *b = (duk_hbufobj *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__buf:");
 		duk__print_hbuffer(st, (duk_hbuffer *) b->buf);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__offset:%ld", (long) b->offset);

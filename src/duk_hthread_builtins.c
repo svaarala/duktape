@@ -298,7 +298,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* Cast converts magic to 16-bit signed value */
 			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0 /*def_value*/);
-			((duk_hnativefunction *) h)->magic = magic;
+			((duk_hnatfunc *) h)->magic = magic;
 		} else {
 			/* XXX: ARRAY_PART for Array prototype? */
 
@@ -353,12 +353,12 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h));
 		/* DUK_HOBJECT_FLAG_CONSTRUCTABLE varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(h));
-		DUK_ASSERT(!DUK_HOBJECT_HAS_COMPILEDFUNCTION(h));
-		/* DUK_HOBJECT_FLAG_NATIVEFUNCTION varies */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_COMPFUNC(h));
+		/* DUK_HOBJECT_FLAG_NATFUNC varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h));       /* currently, even for Array.prototype */
 		/* DUK_HOBJECT_FLAG_STRICT varies */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(h) ||  /* all native functions have NEWENV */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(h) ||  /* all native functions have NEWENV */
 		           DUK_HOBJECT_HAS_NEWENV(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(h));
@@ -525,7 +525,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_small_uint_t c_length;
 			duk_int16_t magic;
 			duk_c_function c_func;
-			duk_hnativefunction *h_func;
+			duk_hnatfunc *h_func;
 #if defined(DUK_USE_LIGHTFUNC_BUILTINS)
 			duk_small_int_t lightfunc_eligible;
 #endif
@@ -585,7 +585,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) name ] */
 
 			duk_push_c_function_noconstruct_noexotic(ctx, c_func, c_nargs);
-			h_func = duk_require_hnativefunction(ctx, -1);
+			h_func = duk_require_hnatfunc(ctx, -1);
 			DUK_UNREF(h_func);
 
 			/* Currently all built-in native functions are strict.

@@ -574,8 +574,8 @@ declarative environment (record2) to be created.
 Functions and environment records
 ---------------------------------
 
-A function object (``duk_hcompiledfunction``) records the following
-conceptual variable access related information:
+A function object (``duk_hcompfunc``) records the following conceptual
+variable access related information:
 
 * A variable map, which maps an identifier to a register number.  Ideally
   all function variables / functions are register mapped, but this is not

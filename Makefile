@@ -108,7 +108,7 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_hobject_misc.c \
 	$(DISTSRCSEP)/duk_hbuffer_alloc.c \
 	$(DISTSRCSEP)/duk_hbuffer_ops.c \
-	$(DISTSRCSEP)/duk_hbufferobject_misc.c \
+	$(DISTSRCSEP)/duk_hbufobj_misc.c \
 	$(DISTSRCSEP)/duk_unicode_tables.c \
 	$(DISTSRCSEP)/duk_unicode_support.c \
 	$(DISTSRCSEP)/duk_debugger.c \

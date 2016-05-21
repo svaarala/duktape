@@ -507,8 +507,8 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		func = DUK_TVAL_GET_OBJECT(tv_func);
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func) ||
-		           DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func) ||
+		           DUK_HOBJECT_HAS_NATFUNC(func));
 	}
 #endif
 
@@ -757,8 +757,8 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
 	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
-	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
-	                            DUK_HOBJECT_IS_NATIVEFUNCTION(func)));
+	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
+	                            DUK_HOBJECT_IS_NATFUNC(func)));
 
 	*out_tv_func = tv_func;
 	return func;
@@ -801,7 +801,7 @@ DUK_LOCAL void duk__adjust_valstack_and_top(duk_hthread *thr,
 		/* 'func' wants stack "as is" */
 		vs_min_size += num_stack_args;  /* num entries of new func at entry */
 	}
-	if (func == NULL || DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
+	if (func == NULL || DUK_HOBJECT_IS_NATFUNC(func)) {
 		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;  /* Duktape/C API guaranteed entries (on top of args) */
 	}
 	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA;             /* + spare */
@@ -1311,8 +1311,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	tv_func = &tv_func_copy;  /* local copy to avoid relookups */
 
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
-	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPILEDFUNCTION(func) ||
-	                            DUK_HOBJECT_IS_NATIVEFUNCTION(func)));
+	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
+	                            DUK_HOBJECT_IS_NATFUNC(func)));
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
@@ -1373,16 +1373,16 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		if (DUK_HOBJECT_HAS_STRICT(func)) {
 			act->flags |= DUK_ACT_FLAG_STRICT;
 		}
-		if (DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
-			nargs = ((duk_hcompiledfunction *) func)->nargs;
-			nregs = ((duk_hcompiledfunction *) func)->nregs;
+		if (DUK_HOBJECT_IS_COMPFUNC(func)) {
+			nargs = ((duk_hcompfunc *) func)->nargs;
+			nregs = ((duk_hcompfunc *) func)->nregs;
 			DUK_ASSERT(nregs >= nargs);
-		} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
+		} else if (DUK_HOBJECT_IS_NATFUNC(func)) {
 			/* Note: nargs (and nregs) may be negative for a native,
 			 * function, which indicates that the function wants the
 			 * input stack "as is" (i.e. handles "vararg" arguments).
 			 */
-			nargs = ((duk_hnativefunction *) func)->nargs;
+			nargs = ((duk_hnatfunc *) func)->nargs;
 			nregs = nargs;
 		} else {
 			/* XXX: this should be an assert */
@@ -1533,7 +1533,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  new value stack bottom, and call the target.
 	 */
 
-	if (func != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (func != NULL && DUK_HOBJECT_IS_COMPFUNC(func)) {
 		/*
 		 *  Ecmascript call
 		 */
@@ -1542,8 +1542,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		duk_tval *tv_funret;
 
 		DUK_ASSERT(func != NULL);
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
-		act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
+		act->curr_pc = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) func);
 
 		thr->valstack_bottom = thr->valstack_bottom + idx_func + 2;
 		/* keep current valstack_top */
@@ -1612,7 +1612,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 		DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 		DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
-		DUK_ASSERT(func == NULL || ((duk_hnativefunction *) func)->func != NULL);
+		DUK_ASSERT(func == NULL || ((duk_hnatfunc *) func)->func != NULL);
 
 		/* [ ... func this | arg1 ... argN ] ('this' must precede new bottom) */
 
@@ -1620,7 +1620,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_ASSERT(thr->ptr_curr_pc == NULL);
 
 		if (func) {
-			rc = ((duk_hnativefunction *) func)->func((duk_context *) thr);
+			rc = ((duk_hnatfunc *) func)->func((duk_context *) thr);
 		} else {
 			duk_c_function funcptr = DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func);
 			rc = funcptr((duk_context *) thr);
@@ -2343,7 +2343,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT_DISABLE(our_callstack_index >= 0);
 		DUK_ASSERT(our_callstack_index < thr->callstack_size);
 		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + our_callstack_index) != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(thr->callstack + our_callstack_index)));
+		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack + our_callstack_index)));
 
 		/* No entry in the catchstack which would actually catch a
 		 * throw can refer to the callstack entry being reused.
@@ -2398,7 +2398,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 */
 
 	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
-	if (func == NULL || !DUK_HOBJECT_IS_COMPILEDFUNCTION(func)) {
+	if (func == NULL || !DUK_HOBJECT_IS_COMPFUNC(func)) {
 		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc/nativefunc, cannot do ecma-to-ecma call"));
 		thr->ptr_curr_pc = entry_ptr_curr_pc;
 		return 0;
@@ -2407,14 +2407,14 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
-	DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(func));
+	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(func));
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
 	DUK_DDD(DUK_DDDPRINT("effective 'this' binding is: %!T",
 	                     duk_get_tval(ctx, idx_func + 1)));
 
-	nargs = ((duk_hcompiledfunction *) func)->nargs;
-	nregs = ((duk_hcompiledfunction *) func)->nregs;
+	nargs = ((duk_hcompfunc *) func)->nargs;
+	nregs = ((duk_hcompfunc *) func)->nregs;
 	DUK_ASSERT(nregs >= nargs);
 
 	/* [ ... func this arg1 ... argN ] */
@@ -2483,8 +2483,8 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		/* 'act' already set above */
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
-		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(func));
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 
 		/* Unwind catchstack entries referring to the callstack entry we're reusing */
@@ -2514,9 +2514,9 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->prev_caller = NULL;
 #endif
 		DUK_ASSERT(func != NULL);
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 		/* don't want an intermediate exposed state with invalid pc */
-		act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
+		act->curr_pc = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) func);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		act->prev_line = 0;
 #endif
@@ -2594,7 +2594,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 			DUK_ASSERT(thr->callstack_top >= 1);
 			act = thr->callstack + thr->callstack_top - 1;
 			DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
-			DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(DUK_ACT_GET_FUNC(act)));
+			DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act)));
 			act->idx_retval = entry_valstack_bottom_index + idx_func;
 		}
 
@@ -2604,8 +2604,8 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
-		DUK_ASSERT(!DUK_HOBJECT_HAS_NATIVEFUNCTION(func));
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(func));
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
 		              DUK_ACT_FLAG_STRICT :
@@ -2617,8 +2617,8 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->prev_caller = NULL;
 #endif
 		DUK_ASSERT(func != NULL);
-		DUK_ASSERT(DUK_HOBJECT_HAS_COMPILEDFUNCTION(func));
-		act->curr_pc = DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, (duk_hcompiledfunction *) func);
+		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
+		act->curr_pc = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) func);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		act->prev_line = 0;
 #endif

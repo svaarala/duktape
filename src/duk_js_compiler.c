@@ -39,7 +39,7 @@
 #define DUK__GETCONST_MAX_CONSTS_CHECK    256
 
 /* These limits are based on bytecode limits.  Max temps is limited
- * by duk_hcompiledfunction nargs/nregs fields being 16 bits.
+ * by duk_hcompfunc nargs/nregs fields being 16 bits.
  */
 #define DUK__MAX_CONSTS                   DUK_BC_BC_MAX
 #define DUK__MAX_FUNCS                    DUK_BC_BC_MAX
@@ -632,7 +632,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_hcompiledfunction *h_res;
+	duk_hcompfunc *h_res;
 	duk_hbuffer_fixed *h_data;
 	duk_size_t consts_count;
 	duk_size_t funcs_count;
@@ -655,7 +655,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	/* Valstack should suffice here, required on function valstack init */
 
 	(void) duk_push_compiledfunction(ctx);
-	h_res = (duk_hcompiledfunction *) DUK_GET_HOBJECT_NEGIDX(ctx, -1);  /* XXX: specific getter */
+	h_res = (duk_hcompfunc *) DUK_GET_HOBJECT_NEGIDX(ctx, -1);  /* XXX: specific getter */
 	DUK_ASSERT(h_res != NULL);
 
 	if (func->is_function) {
@@ -733,7 +733,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	h_data = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_data != NULL);
 
-	DUK_HCOMPILEDFUNCTION_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
+	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
 	DUK_HEAPHDR_INCREF(thr, h_data);
 
 	p_const = (duk_tval *) (void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data);
@@ -749,7 +749,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	}
 
 	p_func = (duk_hobject **) p_const;
-	DUK_HCOMPILEDFUNCTION_SET_FUNCS(thr->heap, h_res, p_func);
+	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, h_res, p_func);
 	for (i = 0; i < funcs_count; i++) {
 		duk_hobject *h;
 		DUK_ASSERT(i * 3 <= DUK_UARRIDX_MAX);  /* func limits */
@@ -758,7 +758,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_COMPILEDFUNCTION(h));
+		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(h));
 		*p_func++ = h;
 		DUK_HOBJECT_INCREF(thr, h);
 
@@ -767,7 +767,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	}
 
 	p_instr = (duk_instr_t *) p_func;
-	DUK_HCOMPILEDFUNCTION_SET_BYTECODE(thr->heap, h_res, p_instr);
+	DUK_HCOMPFUNC_SET_BYTECODE(thr->heap, h_res, p_instr);
 
 	/* copy bytecode instructions one at a time */
 	q_instr = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
@@ -943,12 +943,12 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 #ifdef DUK_USE_DDDPRINT
 	{
-		duk_hcompiledfunction *h;
+		duk_hcompfunc *h;
 		duk_instr_t *p, *p_start, *p_end;
 
-		h = (duk_hcompiledfunction *) duk_get_hobject(ctx, -1);
-		p_start = (duk_instr_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_BASE(thr->heap, h);
-		p_end = (duk_instr_t *) DUK_HCOMPILEDFUNCTION_GET_CODE_END(thr->heap, h);
+		h = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
+		p_start = (duk_instr_t *) DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, h);
+		p_end = (duk_instr_t *) DUK_HCOMPFUNC_GET_CODE_END(thr->heap, h);
 
 		p = p_start;
 		while (p < p_end) {

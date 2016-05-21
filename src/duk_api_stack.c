@@ -1355,15 +1355,15 @@ DUK_LOCAL void *duk__get_buffer_data_helper(duk_context *ctx, duk_idx_t index, d
 	} else if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 			/* XXX: this is probably a useful shared helper: for a
-			 * duk_hbufferobject, get a validated buffer pointer/length.
+			 * duk_hbufobj, get a validated buffer pointer/length.
 			 */
-			duk_hbufferobject *h_bufobj = (duk_hbufferobject *) h;
-			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+			duk_hbufobj *h_bufobj = (duk_hbufobj *) h;
+			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 			if (h_bufobj->buf != NULL &&
-			    DUK_HBUFFEROBJECT_VALID_SLICE(h_bufobj)) {
+			    DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
 				duk_uint8_t *p;
 
 				p = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf);
@@ -1468,44 +1468,44 @@ DUK_INTERNAL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t index)
 	return (duk_hthread *) h;
 }
 
-DUK_INTERNAL duk_hcompiledfunction *duk_get_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hcompfunc *duk_get_hcompfunc(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
-	if (h != NULL && !DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
+	if (h != NULL && !DUK_HOBJECT_IS_COMPFUNC(h)) {
 		h = NULL;
 	}
-	return (duk_hcompiledfunction *) h;
+	return (duk_hcompfunc *) h;
 }
 
-DUK_INTERNAL duk_hcompiledfunction *duk_require_hcompiledfunction(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hcompfunc *duk_require_hcompfunc(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
-	if (!(h != NULL && DUK_HOBJECT_IS_COMPILEDFUNCTION(h))) {
-		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "compiledfunction", DUK_STR_NOT_COMPILEDFUNCTION);
+	if (!(h != NULL && DUK_HOBJECT_IS_COMPFUNC(h))) {
+		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "compiledfunction", DUK_STR_NOT_COMPFUNC);
 	}
-	return (duk_hcompiledfunction *) h;
+	return (duk_hcompfunc *) h;
 }
 
-DUK_INTERNAL duk_hnativefunction *duk_get_hnativefunction(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hnatfunc *duk_get_hnatfunc(duk_context *ctx, duk_idx_t index) {
 	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
-	if (h != NULL && !DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
+	if (h != NULL && !DUK_HOBJECT_IS_NATFUNC(h)) {
 		h = NULL;
 	}
-	return (duk_hnativefunction *) h;
+	return (duk_hnatfunc *) h;
 }
 
-DUK_INTERNAL duk_hnativefunction *duk_require_hnativefunction(duk_context *ctx, duk_idx_t index) {
+DUK_INTERNAL duk_hnatfunc *duk_require_hnatfunc(duk_context *ctx, duk_idx_t index) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h = (duk_hobject *) duk__get_tagged_heaphdr_raw(ctx, index, DUK_TAG_OBJECT);
-	if (!(h != NULL && DUK_HOBJECT_IS_NATIVEFUNCTION(h))) {
-		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "nativefunction", DUK_STR_NOT_NATIVEFUNCTION);
+	if (!(h != NULL && DUK_HOBJECT_IS_NATFUNC(h))) {
+		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "nativefunction", DUK_STR_NOT_NATFUNC);
 	}
-	return (duk_hnativefunction *) h;
+	return (duk_hnatfunc *) h;
 }
 
 DUK_EXTERNAL duk_c_function duk_get_c_function(duk_context *ctx, duk_idx_t index) {
 	duk_tval *tv;
 	duk_hobject *h;
-	duk_hnativefunction *f;
+	duk_hnatfunc *f;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -1519,11 +1519,11 @@ DUK_EXTERNAL duk_c_function duk_get_c_function(duk_context *ctx, duk_idx_t index
 	h = DUK_TVAL_GET_OBJECT(tv);
 	DUK_ASSERT(h != NULL);
 
-	if (!DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
+	if (!DUK_HOBJECT_IS_NATFUNC(h)) {
 		return NULL;
 	}
-	DUK_ASSERT(DUK_HOBJECT_HAS_NATIVEFUNCTION(h));
-	f = (duk_hnativefunction *) h;
+	DUK_ASSERT(DUK_HOBJECT_HAS_NATFUNC(h));
+	f = (duk_hnatfunc *) h;
 
 	return f->func;
 }
@@ -1536,7 +1536,7 @@ DUK_EXTERNAL duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t i
 
 	ret = duk_get_c_function(ctx, index);
 	if (!ret) {
-		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "nativefunction", DUK_STR_NOT_NATIVEFUNCTION);
+		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, index, "nativefunction", DUK_STR_NOT_NATFUNC);
 	}
 	return ret;
 }
@@ -2466,29 +2466,29 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		 * still make more sense to produce an ArrayBuffer here?
 		 */
 
-		duk_hbufferobject *h_bufobj;
+		duk_hbufobj *h_bufobj;
 		duk_hbuffer *h_val;
 
 		h_val = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h_val != NULL);
 
-		h_bufobj = duk_push_bufferobject_raw(ctx,
-		                                     DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                     DUK_HOBJECT_FLAG_BUFFEROBJECT |
-		                                     DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
-		                                     DUK_BIDX_BUFFER_PROTOTYPE);
+		h_bufobj = duk_push_bufobj_raw(ctx,
+		                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                               DUK_HOBJECT_FLAG_BUFOBJ |
+		                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
+		                               DUK_BIDX_BUFFER_PROTOTYPE);
 		DUK_ASSERT(h_bufobj != NULL);
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE((duk_hobject *) h_bufobj));
-		DUK_ASSERT(DUK_HOBJECT_IS_BUFFEROBJECT((duk_hobject *) h_bufobj));
+		DUK_ASSERT(DUK_HOBJECT_IS_BUFOBJ((duk_hobject *) h_bufobj));
 
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
 		DUK_ASSERT(h_bufobj->offset == 0);
 		h_bufobj->length = (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_val);
 		DUK_ASSERT(h_bufobj->shift == 0);
-		DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFFEROBJECT_ELEM_UINT8);
+		DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFOBJ_ELEM_UINT8);
 
-		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 		goto replace_value;
 	}
 	case DUK_TAG_POINTER: {
@@ -2511,7 +2511,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		duk_idx_t nargs;
 		duk_small_uint_t lf_len;
 		duk_c_function func;
-		duk_hnativefunction *nf;
+		duk_hnatfunc *nf;
 
 		DUK_TVAL_GET_LIGHTFUNC(tv, func, lf_flags);
 
@@ -2521,7 +2521,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		}
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
-		        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+		        DUK_HOBJECT_FLAG_NATFUNC |
 	                DUK_HOBJECT_FLAG_NEWENV |
 	                DUK_HOBJECT_FLAG_STRICT |
 	                DUK_HOBJECT_FLAG_NOTAIL |
@@ -2538,7 +2538,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t index) {
 		duk_push_lightfunc_name(ctx, tv);
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
-		nf = duk_get_hnativefunction(ctx, -1);
+		nf = duk_get_hnatfunc(ctx, -1);
 		DUK_ASSERT(nf != NULL);
 		nf->magic = (duk_int16_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
 
@@ -2839,8 +2839,8 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t index) {
 	}
 	return duk__obj_flag_any_default_false(ctx,
 	                                       index,
-	                                       DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
-	                                       DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	                                       DUK_HOBJECT_FLAG_COMPFUNC |
+	                                       DUK_HOBJECT_FLAG_NATFUNC |
 	                                       DUK_HOBJECT_FLAG_BOUND);
 }
 
@@ -2848,14 +2848,14 @@ DUK_EXTERNAL duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__obj_flag_any_default_false(ctx,
 	                                       index,
-	                                       DUK_HOBJECT_FLAG_NATIVEFUNCTION);
+	                                       DUK_HOBJECT_FLAG_NATFUNC);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__obj_flag_any_default_false(ctx,
 	                                       index,
-	                                       DUK_HOBJECT_FLAG_COMPILEDFUNCTION);
+	                                       DUK_HOBJECT_FLAG_COMPFUNC);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t index) {
@@ -3616,7 +3616,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hcompiledfunction *obj;
+	duk_hcompfunc *obj;
 	duk_idx_t ret;
 	duk_tval *tv_slot;
 
@@ -3632,10 +3632,10 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	 * DUK_HOBJECT_FLAG_CONSRUCTABLE flag cleared here.
 	 */
 
-	obj = duk_hcompiledfunction_alloc(thr->heap,
-	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                  DUK_HOBJECT_FLAG_COMPILEDFUNCTION |
-	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
+	obj = duk_hcompfunc_alloc(thr->heap,
+	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                          DUK_HOBJECT_FLAG_COMPFUNC |
+	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (!obj) {
 		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
@@ -3656,7 +3656,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 
 DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hnativefunction *obj;
+	duk_hnatfunc *obj;
 	duk_idx_t ret;
 	duk_tval *tv_slot;
 	duk_int16_t func_nargs;
@@ -3670,15 +3670,15 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 	if (func == NULL) {
 		goto api_error;
 	}
-	if (nargs >= 0 && nargs < DUK_HNATIVEFUNCTION_NARGS_MAX) {
+	if (nargs >= 0 && nargs < DUK_HNATFUNC_NARGS_MAX) {
 		func_nargs = (duk_int16_t) nargs;
 	} else if (nargs == DUK_VARARGS) {
-		func_nargs = DUK_HNATIVEFUNCTION_NARGS_VARARGS;
+		func_nargs = DUK_HNATFUNC_NARGS_VARARGS;
 	} else {
 		goto api_error;
 	}
 
-	obj = duk_hnativefunction_alloc(thr->heap, flags);
+	obj = duk_hnatfunc_alloc(thr->heap, flags);
 	if (!obj) {
 		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
@@ -3712,7 +3712,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
-	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
 	        DUK_HOBJECT_FLAG_NOTAIL |
@@ -3729,7 +3729,7 @@ DUK_INTERNAL void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function 
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
-	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
 	        DUK_HOBJECT_FLAG_NOTAIL |
@@ -3744,7 +3744,7 @@ DUK_INTERNAL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-	        DUK_HOBJECT_FLAG_NATIVEFUNCTION |
+	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
 	        DUK_HOBJECT_FLAG_NOTAIL |
@@ -3790,9 +3790,9 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 	return 0;  /* not reached */
 }
 
-DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
+DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hbufferobject *obj;
+	duk_hbufobj *obj;
 	duk_tval *tv_slot;
 
 	DUK_ASSERT(ctx != NULL);
@@ -3803,13 +3803,13 @@ DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_
 		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 	}
 
-	obj = duk_hbufferobject_alloc(thr->heap, hobject_flags_and_class);
+	obj = duk_hbufobj_alloc(thr->heap, hobject_flags_and_class);
 	if (!obj) {
 		DUK_ERROR_ALLOC_DEFMSG(thr);
 	}
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
-	DUK_ASSERT_HBUFFEROBJECT_VALID(obj);
+	DUK_ASSERT_HBUFOBJ_VALID(obj);
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -3827,30 +3827,30 @@ DUK_INTERNAL duk_hbufferobject *duk_push_bufferobject_raw(duk_context *ctx, duk_
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_DUKTAPE_BUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_DATAVIEW */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT8ARRAY,         DUK_BIDX_INT8ARRAY_PROTOTYPE,         DUK_HBUFFEROBJECT_ELEM_INT8,         0, 1),  /* DUK_BUFOBJ_INT8ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_UINT8ARRAY_PROTOTYPE,        DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_UINT8ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY, DUK_BIDX_UINT8CLAMPEDARRAY_PROTOTYPE, DUK_HBUFFEROBJECT_ELEM_UINT8CLAMPED, 0, 1),  /* DUK_BUFOBJ_UINT8CLAMPEDARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT16ARRAY,        DUK_BIDX_INT16ARRAY_PROTOTYPE,        DUK_HBUFFEROBJECT_ELEM_INT16,        1, 1),  /* DUK_BUFOBJ_INT16ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT16ARRAY,       DUK_BIDX_UINT16ARRAY_PROTOTYPE,       DUK_HBUFFEROBJECT_ELEM_UINT16,       1, 1),  /* DUK_BUFOBJ_UINT16ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT32ARRAY,        DUK_BIDX_INT32ARRAY_PROTOTYPE,        DUK_HBUFFEROBJECT_ELEM_INT32,        2, 1),  /* DUK_BUFOBJ_INT32ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT32ARRAY,       DUK_BIDX_UINT32ARRAY_PROTOTYPE,       DUK_HBUFFEROBJECT_ELEM_UINT32,       2, 1),  /* DUK_BUFOBJ_UINT32ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT32ARRAY,      DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,      DUK_HBUFFEROBJECT_ELEM_FLOAT32,      2, 1),  /* DUK_BUFOBJ_FLOAT32ARRAY */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFFEROBJECT_ELEM_FLOAT64,      3, 1)   /* DUK_BUFOBJ_FLOAT64ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_DUKTAPE_BUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_DATAVIEW */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT8ARRAY,         DUK_BIDX_INT8ARRAY_PROTOTYPE,         DUK_HBUFOBJ_ELEM_INT8,         0, 1),  /* DUK_BUFOBJ_INT8ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_UINT8ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_UINT8ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY, DUK_BIDX_UINT8CLAMPEDARRAY_PROTOTYPE, DUK_HBUFOBJ_ELEM_UINT8CLAMPED, 0, 1),  /* DUK_BUFOBJ_UINT8CLAMPEDARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT16ARRAY,        DUK_BIDX_INT16ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_INT16,        1, 1),  /* DUK_BUFOBJ_INT16ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT16ARRAY,       DUK_BIDX_UINT16ARRAY_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT16,       1, 1),  /* DUK_BUFOBJ_UINT16ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT32ARRAY,        DUK_BIDX_INT32ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_INT32,        2, 1),  /* DUK_BUFOBJ_INT32ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT32ARRAY,       DUK_BIDX_UINT32ARRAY_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT32,       2, 1),  /* DUK_BUFOBJ_UINT32ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT32ARRAY,      DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,      DUK_HBUFOBJ_ELEM_FLOAT32,      2, 1),  /* DUK_BUFOBJ_FLOAT32ARRAY */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFOBJ_ELEM_FLOAT64,      3, 1)   /* DUK_BUFOBJ_FLOAT64ARRAY */
 };
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 /* Only allow Duktape.Buffer when support disabled. */
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFFEROBJECT_ELEM_UINT8,        0, 0)   /* DUK_BUFOBJ_DUKTAPE_BUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFOBJ_ELEM_UINT8,        0, 0)   /* DUK_BUFOBJ_DUKTAPE_BUFFER */
 };
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hthread *thr;
-	duk_hbufferobject *h_bufobj;
+	duk_hbufobj *h_bufobj;
 	duk_hbuffer *h_val;
 	duk_uint32_t tmp;
 	duk_uint_t classnum;
@@ -3862,9 +3862,9 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 
-	/* The underlying types for offset/length in duk_hbufferobject is
-	 * duk_uint_t; make sure argument values fit and that offset + length
-	 * does not wrap.
+	/* The underlying types for offset/length in duk_hbufobj is
+	 * duk_uint_t; make sure argument values fit and that
+	 * offset + length does not wrap.
 	 */
 	uint_offset = (duk_uint_t) byte_offset;
 	uint_length = (duk_uint_t) byte_length;
@@ -3891,11 +3891,11 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_val = duk_require_hbuffer(ctx, idx_buffer);
 	DUK_ASSERT(h_val != NULL);
 
-	h_bufobj = duk_push_bufferobject_raw(ctx,
-	                                     DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                     DUK_HOBJECT_FLAG_BUFFEROBJECT |
-	                                     DUK_HOBJECT_CLASS_AS_FLAGS(classnum),
-	                                     protobidx);
+	h_bufobj = duk_push_bufobj_raw(ctx,
+	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                               DUK_HOBJECT_FLAG_BUFOBJ |
+	                               DUK_HOBJECT_CLASS_AS_FLAGS(classnum),
+	                               protobidx);
 	DUK_ASSERT(h_bufobj != NULL);
 
 	h_bufobj->buf = h_val;
@@ -3905,7 +3905,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_bufobj->shift = (tmp >> 4) & 0x0f;
 	h_bufobj->elem_type = (tmp >> 8) & 0xff;
 	h_bufobj->is_view = tmp & 0x0f;
-	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	/* TypedArray views need an automatic ArrayBuffer which must be
@@ -3913,11 +3913,11 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	 * ArrayBuffer sharing the same underlying buffer.
 	 */
 	if (flags & DUK_BUFOBJ_CREATE_ARRBUF) {
-		h_bufobj = duk_push_bufferobject_raw(ctx,
-		                                     DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                     DUK_HOBJECT_FLAG_BUFFEROBJECT |
-		                                     DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
-		                                     DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
+		h_bufobj = duk_push_bufobj_raw(ctx,
+		                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                               DUK_HOBJECT_FLAG_BUFOBJ |
+		                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
+		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
 
 		DUK_ASSERT(h_bufobj != NULL);
 
@@ -3926,9 +3926,9 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 		h_bufobj->offset = uint_offset;
 		h_bufobj->length = uint_length;
 		DUK_ASSERT(h_bufobj->shift == 0);
-		h_bufobj->elem_type = DUK_HBUFFEROBJECT_ELEM_UINT8;
+		h_bufobj->elem_type = DUK_HBUFOBJ_ELEM_UINT8;
 		DUK_ASSERT(h_bufobj->is_view == 0);
-		DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 		duk_compact(ctx, -1);

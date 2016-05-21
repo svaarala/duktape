@@ -84,34 +84,34 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 	duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h));
 
-	if (DUK_HOBJECT_IS_COMPILEDFUNCTION(h)) {
-		duk_hcompiledfunction *f = (duk_hcompiledfunction *) h;
+	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
+		DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
+		tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
+		tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
 		while (tv < tv_end) {
 			duk_tval_decref(thr, tv);
 			tv++;
 		}
 
-		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
-		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
+		funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, f);
+		funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, f);
 		while (funcs < funcs_end) {
 			duk_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
 			funcs++;
 		}
 
-		duk_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f));
-	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
-		duk_hnativefunction *f = (duk_hnativefunction *) h;
+		duk_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
+	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
+		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);
 		/* nothing to finalize */
-	} else if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
-		duk_hbufferobject *b = (duk_hbufferobject *) h;
+	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+		duk_hbufobj *b = (duk_hbufobj *) h;
 		if (b->buf) {
 			duk_heaphdr_decref(thr, (duk_heaphdr *) b->buf);
 		}
@@ -193,8 +193,8 @@ DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject
 	/* Avoid fake finalization for the duk__refcount_fake_finalizer function
 	 * itself, otherwise we're in infinite recursion.
 	 */
-	if (DUK_HOBJECT_HAS_NATIVEFUNCTION(obj)) {
-		if (((duk_hnativefunction *) obj)->func == duk__refcount_fake_finalizer) {
+	if (DUK_HOBJECT_HAS_NATFUNC(obj)) {
+		if (((duk_hnatfunc *) obj)->func == duk__refcount_fake_finalizer) {
 			DUK_DD(DUK_DDPRINT("avoid fake torture finalizer for duk__refcount_fake_finalizer itself"));
 			return;
 		}

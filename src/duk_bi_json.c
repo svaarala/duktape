@@ -71,7 +71,7 @@ DUK_LOCAL_DECL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL_DECL void duk__enc_buffer(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
 DUK_LOCAL_DECL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr);
-DUK_LOCAL_DECL void duk__enc_bufferobject(duk_json_enc_ctx *js_ctx, duk_hbufferobject *h_bufobj);
+DUK_LOCAL_DECL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj);
 #endif
 DUK_LOCAL_DECL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth);
 
@@ -1599,15 +1599,15 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 #endif  /* DUK_USE_JX || DUK_USE_JC */
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-DUK_LOCAL void duk__enc_bufferobject(duk_json_enc_ctx *js_ctx, duk_hbufferobject *h_bufobj) {
-	DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+DUK_LOCAL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj) {
+	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
-	if (h_bufobj->buf == NULL || !DUK_HBUFFEROBJECT_VALID_SLICE(h_bufobj)) {
+	if (h_bufobj->buf == NULL || !DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
 		DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
 	} else {
 		/* Handle both full and partial slice (as long as covered). */
 		duk__enc_buffer_data(js_ctx,
-		                     (duk_uint8_t *) DUK_HBUFFEROBJECT_GET_SLICE_BASE(js_ctx->thr->heap, h_bufobj),
+		                     (duk_uint8_t *) DUK_HBUFOBJ_GET_SLICE_BASE(js_ctx->thr->heap, h_bufobj),
 		                     (duk_size_t) h_bufobj->length);
 	}
 }
@@ -1996,11 +1996,11 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
-		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-			duk_hbufferobject *h_bufobj;
-			h_bufobj = (duk_hbufferobject *) h;
-			DUK_ASSERT_HBUFFEROBJECT_VALID(h_bufobj);
+			duk_hbufobj *h_bufobj;
+			h_bufobj = (duk_hbufobj *) h;
+			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 			/* Conceptually we'd extract the plain underlying buffer
 			 * or its slice and then do a type mask check below to
@@ -2009,14 +2009,14 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			 */
 
 			if (js_ctx->mask_for_undefined & DUK_TYPE_MASK_BUFFER) {
-				DUK_DDD(DUK_DDDPRINT("-> bufferobject (-> plain buffer) will result in undefined (type mask check)"));
+				DUK_DDD(DUK_DDDPRINT("-> bufobj (-> plain buffer) will result in undefined (type mask check)"));
 				goto pop2_undef;
 			}
-			DUK_DDD(DUK_DDDPRINT("-> bufferobject won't result in undefined, encode directly"));
-			duk__enc_bufferobject(js_ctx, h_bufobj);
+			DUK_DDD(DUK_DDDPRINT("-> bufobj won't result in undefined, encode directly"));
+			duk__enc_bufobj(js_ctx, h_bufobj);
 			goto pop2_emitted;
 #else
-			DUK_DDD(DUK_DDDPRINT("no JX/JC support, bufferobject/buffer will always result in undefined"));
+			DUK_DDD(DUK_DDDPRINT("no JX/JC support, bufobj/buffer will always result in undefined"));
 			goto pop2_undef;
 #endif
 		} else {
@@ -2350,7 +2350,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			          DUK_HOBJECT_CMASK_BOOLEAN |
 			          DUK_HOBJECT_CMASK_POINTER;
 			c_func = DUK_HOBJECT_CMASK_FUNCTION;
-			c_bufobj = DUK_HOBJECT_CMASK_ALL_BUFFEROBJECTS;
+			c_bufobj = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
 			c_undef = 0;
 			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef);
 		}
@@ -2366,7 +2366,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_bufobj = 0;
 			c_undef = DUK_HOBJECT_CMASK_FUNCTION |
 			          DUK_HOBJECT_CMASK_POINTER |
-			          DUK_HOBJECT_CMASK_ALL_BUFFEROBJECTS;
+			          DUK_HOBJECT_CMASK_ALL_BUFOBJS;
 			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef);
 		}
 
@@ -2552,7 +2552,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		} else if (c_bit & c_func) {
 			DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
 		} else if (c_bit & c_bufobj) {
-			duk__enc_bufferobject(js_ctx, (duk_hbufferobject *) obj);
+			duk__enc_bufobj(js_ctx, (duk_hbufobj *) obj);
 #endif
 		} else {
 			DUK_ASSERT((c_bit & c_undef) != 0);

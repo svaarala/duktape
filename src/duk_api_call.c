@@ -504,8 +504,8 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 		}
 		DUK_ASSERT(func != NULL);
 
-		if (DUK_HOBJECT_IS_NATIVEFUNCTION(func)) {
-			duk_hnativefunction *nf = (duk_hnativefunction *) func;
+		if (DUK_HOBJECT_IS_NATFUNC(func)) {
+			duk_hnatfunc *nf = (duk_hnatfunc *) func;
 			return (duk_int_t) nf->magic;
 		}
 	}
@@ -523,10 +523,10 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
-		if (!DUK_HOBJECT_HAS_NATIVEFUNCTION(h)) {
+		if (!DUK_HOBJECT_HAS_NATFUNC(h)) {
 			goto type_error;
 		}
-		return (duk_int_t) ((duk_hnativefunction *) h)->magic;
+		return (duk_int_t) ((duk_hnatfunc *) h)->magic;
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
 		duk_small_uint_t lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
 		return (duk_int_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
@@ -539,11 +539,11 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t index) {
 }
 
 DUK_EXTERNAL void duk_set_magic(duk_context *ctx, duk_idx_t index, duk_int_t magic) {
-	duk_hnativefunction *nf;
+	duk_hnatfunc *nf;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	nf = duk_require_hnativefunction(ctx, index);
+	nf = duk_require_hnatfunc(ctx, index);
 	DUK_ASSERT(nf != NULL);
 	nf->magic = (duk_int16_t) magic;
 }
