@@ -1634,6 +1634,10 @@ Planned
   (which may not be available); this behavior can be overridden by defining
   DUK_USE_FATAL_HANDLER() in duk_config.h (GH-781)
 
+* Incompatible change: change some debugger artificial property names to match
+  internal renames: compiledfunction -> compfunc, nativefunction -> natfunc,
+  bufferobject -> bufobj (GH-798)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
@@ -1668,3 +1672,8 @@ Planned
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
   non-default config options (GH-760)
+
+* Internal change: shorten internal struct names to improve source code
+  readability: duk_hcompiledfunction -> duk_hcompfunc,
+  duk_hnativefunction -> duk_hnatfunc, duk_hbufferobject -> duk_hbufobj
+  (GH-798)
