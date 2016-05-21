@@ -104,7 +104,7 @@ duk_hobject
 -----------
 
 * Many built-in objects are actually native functions, so the relevant
-  structure is often ``duk_hnativefunction``.
+  structure is often ``duk_hnatfunc``.
 
 * Heap header will have more bits in use, but no effect otherwise.
 
@@ -153,8 +153,8 @@ duk_hobject properties allocation
   to duplicate into ``duk_propvalue_dataprop`` and ``duk_propvalue_accessorprop``
   so that non-union initializers can be used (which is more portable).
 
-duk_hnativefunction
--------------------
+duk_hnatfunc
+------------
 
 Same issues as ``duk_hobject`` plus the following:
 
@@ -162,8 +162,8 @@ Same issues as ``duk_hobject`` plus the following:
 
 * Nargs and magic should have no issues.
 
-duk_hcompiledfunction
----------------------
+duk_hcompfunc
+-------------
 
 Same issues as ``duk_hobject`` plus the following:
 

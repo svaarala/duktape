@@ -109,16 +109,16 @@ The various buffer and view objects ultimately point to an underlying buffer
 and provide access to the full buffer or a slice/view of the buffer using
 either accessor methods (like getUint32()) or virtual index properties.
 
-All buffer objects are internally implemented using the ``duk_hbufferobject``
+All buffer objects are internally implemented using the ``duk_hbufobj``
 type which makes it easy to mix values between different APIs.  As a result
 Duktape e.g. accepts a Node.js Buffer as an input for a Khronos DataView.
 
-duk_hbufferobject
------------------
+duk_hbufobj
+-----------
 
-The internal ``duk_hbufferobject`` type is a heap-allocated structure
-extended from ``duk_hobject``.  In addition having the usual object
-property tables and such, it has C struct fields for quick access:
+The internal ``duk_hbufobj`` type is a heap-allocated structure extended
+from ``duk_hobject``.  In addition having the usual object property tables
+and such, it has C struct fields for quick access:
 
 * A reference to an underlying plain buffer value (``duk_hbuffer``),
   which may be of any type: fixed, dynamic, or external.
@@ -155,23 +155,22 @@ The following figure illustrates these for a fictional Int16-view::
                                               length in elements: 5 (= .length)
                                               virtual indices: 0, 1, 2, 3, 4
 
-Each ``duk_hbufferobject`` has virtual index behavior with indices mapping
-logically to elements in the range [0,length[.  Elements may be signed or
-unsigned integers of multiple sizes, IEEE floats, or IEEE doubles.  All
-accesses to the underlying buffer are byte-based, and no alignment is required
-by Duktape; however, Khronos TypedArray specification restricts creation of
+Each ``duk_hbufobj`` has virtual index behavior with indices mapping logically
+to elements in the range [0,length[.  Elements may be signed or unsigned
+integers of multiple sizes, IEEE floats, or IEEE doubles.  All accesses to
+the underlying buffer are byte-based, and no alignment is required by Duktape;
+however, Khronos TypedArray specification restricts creation of
 non-element-aligned views.  All multi-byte elements are accessed in the host
 endianness (this is required by the Khronos/ES6 TypedArray specification).
 
-A ``duk_hbufferobject`` acts as a both a buffer representation (providing
-Node.js Buffer and ArrayBuffer) and a view representation (prodiving e.g.
-DataView, Uint8Array, and other TypedArray views).  It supports both a direct
-1:1 mapping to an underlying buffer and a slice/view mapping to a subset of
-the buffer.
+A ``duk_hbufobj`` acts as a both a buffer representation (providing Node.js
+Buffer and ArrayBuffer) and a view representation (prodiving e.g. DataView,
+Uint8Array, and other TypedArray views).  It supports both a direct 1:1 mapping
+to an underlying buffer and a slice/view mapping to a subset of the buffer.
 
 The byteLength/byteOffset pair provides a logical window for the buffer object.
 The underlying buffer may be smaller, e.g. as a result of a dynamic buffer
-being resized after a ``duk_hbufferobject`` was created.  For example::
+being resized after a ``duk_hbufobj`` was created.  For example::
 
     +------+---------------------+
     | xx xx:xx xx xx xx xx xx xx | / / / /    underlying buffer resized to 9 bytes
@@ -263,7 +262,7 @@ Notes:
   "byteOffset", and "BYTES_PER_ELEMENT" properties.  These are a union of
   various virtual properties used (e.g. byteLength, byteOffset, and
   BYTES_PER_ELEMENT come from TypedArray specification).  They're uniformly
-  provided for all objects implemented internally as a ``duk_hbufferobject``.
+  provided for all objects implemented internally as a ``duk_hbufobj``.
 
 Built-in objects related to buffers
 -----------------------------------
@@ -345,7 +344,7 @@ specifications require such behavior, of course).
 
 As a general rule:
 
-* Any Buffer object/view (implemented internally as a ``duk_hbufferobject``)
+* Any Buffer object/view (implemented internally as a ``duk_hbufobj``)
   is accepted by any API expecting a specific object/view.  For example,
   Khronos DataView() constructor accepts a Node.js Buffer, and Node.js
   Buffer() accepts a Duktape.Buffer as an input.
@@ -969,10 +968,10 @@ Add support for neutering (detached buffer)
 -------------------------------------------
 
 Currently not supported.  Neutering an ArrayBuffer must also affect all views
-referencing that ArrayBuffer.  Because duk_hbufferobject has a direct
-duk_hbuffer pointer (not a pointer to ArrayBuffer which is stored as .buffer)
-the neutering cannot be implemented by replacing the duk_hbuffer pointer with
-zero, as that wouldn't affect all the shared views.
+referencing that ArrayBuffer.  Because duk_hbufobj has a direct duk_hbuffer
+pointer (not a pointer to ArrayBuffer which is stored as .buffer) the neutering
+cannot be implemented by replacing the duk_hbuffer pointer with zero, as that
+wouldn't affect all the shared views.
 
 Instead, neutering probably needs to be implemented at the plain buffer level;
 for example, by adding a "neutered" flag to duk_hbuffer.  A dynamic buffer can
@@ -993,9 +992,9 @@ which is close to what current code is doing:
 Configurable endianness for TypedArray views
 --------------------------------------------
 
-Change duk_hbufferobject so that it records requested endianness explicitly:
-host, little, or big endian.  Then use the specified endianness in readfield
-and writefield internal primitives.
+Change duk_hbufobj so that it records requested endianness explicitly: host,
+little, or big endian.  Then use the specified endianness in readfield and
+writefield internal primitives.
 
 This should be relatively straightforward to do, and perhaps useful.
 
@@ -1024,8 +1023,8 @@ Additional arguments to TypedArray constructor
 It would be nice to have offset/length when constructing a TypedArray from
 another TypedArray.
 
-Accept plain buffer values where duk_hbufferobject is accepted
---------------------------------------------------------------
+Accept plain buffer values where duk_hbufobj is accepted
+--------------------------------------------------------
 
 This would be convenient and easy to add by automatically coercing the
 "this" argument (which needs to be type checked anyway).
@@ -1076,9 +1075,8 @@ Improve fastint handling for buffer indices, lengths, values, etc.
 Unsorted future work
 --------------------
 
-* Clean up ``duk_hbufferobject`` ``buf == NULL`` handling.  Perhaps don't
-  allow ``NULL`` at all; this depends on the neutering / detached buffer
-  solution.
+* Clean up ``duk_hbufobj`` ``buf == NULL`` handling.  Perhaps don't allow
+  ``NULL`` at all; this depends on the neutering / detached buffer solution.
 
 * Implement and test for integer arithmetic wrap checks e.g. when coercing
   an index into a byte offset by shifting.
@@ -1118,7 +1116,7 @@ Unsorted future work
   add testcases, etc.
 
 * Implement fast path for Node.js Buffer constructor when argument is another
-  duk_hbufferobject (now reads indexed properties explicitly).
+  duk_hbufobj (now reads indexed properties explicitly).
 
 * Duktape C API tests for buffer handling.
 

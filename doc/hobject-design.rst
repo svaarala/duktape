@@ -570,10 +570,10 @@ The memory layout of an ``duk_hobject`` is illustrated below::
   | duk_u32 h_size         |     +->| entry part flags          |
   | duk_hobject *prototype |     :  | (e_size x duk_u8)         |
   +------------------------+     :  +---------------------------+
-  : duk_hcompiledfunction  :     +->| array part values         |
-  : duk_hnativefunction    :     :  | (a_size x duk_tval)       |
+  : duk_hcompfunc          :     +->| array part values         |
+  : duk_hnatfunc           :     :  | (a_size x duk_tval)       |
   : duk_hthread            :     :  +---------------------------+
-  :                        :     +->| hash part indices         |
+  : ...                    :     +->| hash part indices         |
   : (extended structures)  :     :  | (h_size x duk_u32)        |
   +------------------------+     :  +---------------------------+
                                  :
@@ -602,8 +602,9 @@ The object specific part of ``duk_hobject`` contains:
 * internal prototype field for fast prototype chain walking;
   other internal properties are stored in the property allocation
 
-* ``duk_hcompiledfunction``, ``duk_hnativefunction``, and ``duk_hthread``
-  object sub-types have an extended structure with more fields
+Some ``duk_hobject`` sub-types share the beginning of the ``duk_hobject``
+struct but have additional fields.  These sub-types include: ``duk_harray``,
+``duk_hcompfunc``, ``duk_hnatfunc``, ``duk_hthread``, and ``duk_hbufobj``.
 
 The property allocation part is a single memory allocation containing all
 the object properties, both external and internal.  It is subdivided
@@ -1649,13 +1650,13 @@ double brackets are omitted from the specification property names
 | FormalParameters  | Internal property ``_Formals``.                      |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-| Code              | An Ecmascript function (``duk_hcompiledfunction``)   |
-|                   | has a pointer to compiled bytecode and associated    |
-|                   | data (such as constants), see                        |
-|                   | ``duk_hcompiledfunction.h``.                         |
-|                   | A C function (``duk_hnativefunction``) has a pointer |
-|                   | to a C function and some related control data, see   |
-|                   | ``duk_hnativefunction.h``.                           |
+| Code              | An Ecmascript function (``duk_hcompfunc``) has       |
+|                   | a pointer to compiled bytecode and associated        |
+|                   | data (such as constants), see ``duk_hcompfunc.h``.   |
+|                   | A C function (``duk_hnatfunc``) has a pointer to a   |
+|                   | a C function and some related control data, see      |
+|                   | ``duk_hnatfunc.h``.  Lightfunc C function pointer is |
+|                   | embedded in the tagged ``duk_tval`` directly.
 +-------------------+------------------------------------------------------+
 | TargetFunction    | ``duk_hobject`` flag ``DUK_HOBJECT_FLAG_BOUND`` is   |
 |                   | set, and the internal property ``_Target`` is set    |

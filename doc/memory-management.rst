@@ -511,7 +511,7 @@ allocation.
 Normally, heap elements are typed by the tagged value (``duk_tval``)
 which holds the heap pointer, or if the heap element reference is in
 a struct field, the field is usually already correctly typed through its
-C type (e.g. a field might have the type "``duk_hcompiledfunction *``").
+C type (e.g. a field might have the type "``duk_hcompfunc *``").
 However, heap elements do have a "heap type" field as part of the
 ``h_flags`` field of the header; this is not normally used, but is
 needed by e.g. reference counting.  As a separate issue, some heap types
@@ -532,23 +532,24 @@ The current specific heap element types are:
 
   + Fixed size allocation consisting of a header, whose size
     depends on the object type (``duk_hobject``, ``duk_hthread``,
-    ``duk_hcompiledfunction``, or ``duk_hnativefunction``).
+    ``duk_hcompfunc``, ``duk_hnatfunc``, etc).
 
   + The specific "sub type" and its associated struct definition
     can be determined using object flags, using the macros:
 
-    - ``DUK_HOBJECT_IS_COMPILEDFUNCTION``
-    - ``DUK_HOBJECT_IS_NATIVEFUNCTION``
+    - ``DUK_HOBJECT_IS_COMPFUNC``
+    - ``DUK_HOBJECT_IS_NATFUNC``
     - ``DUK_HOBJECT_IS_THREAD``
+    - (and other sub types added later)
     - If none of the above are true, the object is a plain object
       (``duk_hobject`` without any extended structure)
 
   + Properties are stored in a separate, dynamic allocation, and contain
     references to other heap elements.
 
-  + For ``duk_hcompiledfunction``, function bytecode, constants, and
+  + For ``duk_hcompfunc``, function bytecode, constants, and
     references to inner functions are stored in a fixed ``duk_hbuffer``
-    referenced by the ``duk_hcompiledfunction`` header.  These provide
+    referenced by the ``duk_hcompfunc`` header.  These provide
     further references to other heap elements.
 
   + For ``duk_hthread`` the heap header contains references to the
