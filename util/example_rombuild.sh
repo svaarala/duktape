@@ -23,13 +23,13 @@ $PYTHON config/genconfig.py \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \
 	-DDUK_USE_ROM_GLOBAL_INHERIT \
-	-DDUK_USE_DEBUG -DDUK_USE_DPRINT \
+	-DDUK_USE_DEBUG -DDUK_USE_DEBUG_LEVEL=0 \
 	--option-yaml 'DUK_USE_DEBUG_WRITE: { "verbatim": "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stderr, \"%ld %s:%ld (%s): %s\\n\", (long) (level), (file), (long) (line), (func), (msg)); } while(0)" }' \
 	-DDUK_USE_ASSERTIONS \
 	autodetect-header
 cp dist/src/duk_config.h dist/src-separate/
 #gcc -std=c99 -Wall -Wextra -Os -Idist/src-separate/ -Idist/examples/cmdline dist/src-separate/*.c dist/examples/cmdline/duk_cmdline.c -o _duk -lm
-make duk dukd
+make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT modifies Duktape object (doesn't work with ROM built-ins)
 
 # Ajduk depends on 'make ajduk' and uses DUK_OPT_xxx feature options.
 # This would ideally be done directly using genconfig.py without
