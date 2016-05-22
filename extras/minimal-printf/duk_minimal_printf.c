@@ -1,11 +1,16 @@
 /*
- *  Minimal sprintf() for Duktape.
+ *  Minimal vsnprintf(), snprintf(), sprintf(), and sscanf() for Duktape.
+ *  The supported conversion formats narrowly match what Duktape needs.
  */
 
 #include <stdarg.h>  /* va_list etc */
 #include <stddef.h>  /* size_t */
 #include <stdint.h>  /* SIZE_MAX */
 
+/* Write character with bound checking.  Offset 'off' is updated regardless
+ * of whether an actual write is made.  This is necessary to satisfy snprintf()
+ * return value semantics.
+ */
 #define DUK__WRITE_CHAR(c) do { \
 		if (off < size) { \
 			str[off] = (char) c; \
@@ -13,11 +18,22 @@
 		off++; \
 	} while (0)
 
-static const char duk__fmt_nybbles[16] = {
+/* Digits up to radix 16. */
+static const char duk__format_digits[16] = {
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 };
 
-static size_t duk__format_long(char *str, size_t size, size_t off, int fixed_length, char pad, int radix, int neg_sign, unsigned long v) {
+/* Format an unsigned long with various options.  An unsigned long is large
+ * enough for formatting all supported types.
+ */
+static size_t duk__format_long(char *str,
+                               size_t size,
+                               size_t off,
+                               int fixed_length,
+                               char pad,
+                               int radix,
+                               int neg_sign,
+                               unsigned long v) {
 	char buf[24];  /* 2^64 = 18446744073709552000, length 20 */
 	char *required;
 	char *p;
@@ -37,19 +53,24 @@ static size_t duk__format_long(char *str, size_t size, size_t off, int fixed_len
 
 	p = buf;
 	do {
-		*p++ = duk__fmt_nybbles[v % radix];
+		*p++ = duk__format_digits[v % radix];
 		v /= radix;
 	} while (v != 0);
 
 	required = buf + fixed_length;
-	if (pad == (char) '0' && fixed_length > 0 /* handle "%0d" correctly, though insane */) {
-		/* Leave space for negative sign. */
-		if (p < required - neg_sign) {
-			p = required - neg_sign;
-		}
+	if (p < required && pad == (char) '0') {
+		/* Zero padding and we didn't reach maximum length: place
+		 * negative sign at the last position.  We can't get here
+		 * with fixed_length == 0 so that required[-1] is safe.
+		 *
+		 * Technically we should only do this for 'neg_sign == 1',
+		 * but it's OK to advance the pointer even when that's not
+		 * the case.
+		 */
+		p = required - 1;
 	}
 	if (neg_sign) {
-		*p++ = '-';
+		*p++ = (char) '-';
 	}
 	if (p < required) {
 		p = required;
@@ -65,11 +86,13 @@ static size_t duk__format_long(char *str, size_t size, size_t off, int fixed_len
 	return off;
 }
 
+/* Parse a pointer.  Must parse whatever is produced by '%p' in sprintf(). */
 static int duk__parse_pointer(const char *str, void **out) {
 	const unsigned char *p;
-	long val;  /* assume void * fits into long */
-	int count;
 	unsigned char ch;
+	int count;
+	int limit;
+	long val;  /* assume void * fits into long */
 
 	/* We only need to parse what our minimal printf() produces, so that
 	 * we can check for a '0x' prefix, and assume all hex digits are
@@ -77,14 +100,12 @@ static int duk__parse_pointer(const char *str, void **out) {
 	 */
 
 	p = (const unsigned char *) str;
-	if (*p++ != (unsigned char) '0') {
+	if (p[0] != (unsigned char) '0' || p[1] != (unsigned char) 'x') {
 		return 0;
 	}
-	if (*p++ != (unsigned char) 'x') {
-		return 0;
-	}
+	p += 2;
 
-	for (val = 0, count = 0; count < (int) (sizeof(void *) * 2); count++) {
+	for (val = 0, count = 0, limit = sizeof(void *) * 2; count < limit; count++) {
 		ch = *p++;
 
 		val <<= 4;
@@ -106,11 +127,14 @@ static int duk__parse_pointer(const char *str, void **out) {
 	return 1;
 }
 
+/* Minimal vsnprintf() entry point. */
 int duk_minimal_vsnprintf(char *str, size_t size, const char *format, va_list ap) {
 	size_t off = 0;
 	const char *p;
+#if 0
 	const char *p_tmp;
 	const char *p_fmt_start;
+#endif
 	char c;
 	char pad;
 	int fixed_length;
@@ -133,7 +157,9 @@ int duk_minimal_vsnprintf(char *str, size_t size, const char *format, va_list ap
 
 		/* Start format sequence.  Scan flags and format specifier. */
 
+#if 0
 		p_fmt_start = p - 1;
+#endif
 		is_long = 0;
 		pad = ' ';
 		fixed_length = 0;
@@ -181,7 +207,7 @@ int duk_minimal_vsnprintf(char *str, size_t size, const char *format, va_list ap
 				break;
 			} else if (c == (char) 'c') {
 				char v;
-				v = va_arg(ap, int);  /* intentionally not 'char' */
+				v = (char) va_arg(ap, int);  /* intentionally not 'char' */
 				DUK__WRITE_CHAR(v);
 				break;
 			} else if (c == (char) 's') {
@@ -210,18 +236,25 @@ int duk_minimal_vsnprintf(char *str, size_t size, const char *format, va_list ap
 				off = duk__format_long(str, size, off, sizeof(void *) * 2, '0', 16, 0, (unsigned long) v);
 				break;
 			} else {
-				/* Unrecognized, just copy verbatim. */
+				/* Unrecognized, bail out early.  We could also emit the format
+				 * specifier verbatim, but it'd be a waste of footprint because
+				 * this case should never happen in practice.
+				 */
 #if 0
 				DUK__WRITE_CHAR('!');
 #endif
+#if 0
 				for (p_tmp = p_fmt_start; p_tmp != p; p_tmp++) {
 					DUK__WRITE_CHAR(*p_tmp);
 				}
 				break;
+#endif
+				goto finish;
 			}
 		}
 	}
 
+ finish:
 	if (off < size) {
 		str[off] = (char) 0;  /* No increment for 'off', not counted in return value. */
 	} else if (size > 0) {
@@ -232,31 +265,39 @@ int duk_minimal_vsnprintf(char *str, size_t size, const char *format, va_list ap
 	return (int) off;
 }
 
+/* Minimal snprintf() entry point. */
 int duk_minimal_snprintf(char *str, size_t size, const char *format, ...) {
 	va_list ap;
 	int ret;
+
 	va_start(ap, format);
 	ret = duk_minimal_vsnprintf(str, size, format, ap);
 	va_end(ap);
+
 	return ret;
 }
 
+/* Minimal sprintf() entry point. */
 int duk_minimal_sprintf(char *str, const char *format, ...) {
 	va_list ap;
 	int ret;
+
 	va_start(ap, format);
 	ret = duk_minimal_vsnprintf(str, SIZE_MAX, format, ap);
 	va_end(ap);
+
 	return ret;
 }
 
+/* Minimal sscanf() entry point. */
 int duk_minimal_sscanf(const char *str, const char *format, ...) {
 	va_list ap;
 	int ret;
 	void **out;
 
 	/* Only the exact "%p" format is supported. */
-	if (format[0] != (char) '%' || format[1] != (char) 'p' ||
+	if (format[0] != (char) '%' ||
+	    format[1] != (char) 'p' ||
 	    format[2] != (char) 0) {
 	}
 
