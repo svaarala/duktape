@@ -57,7 +57,7 @@ Checklist for ordinary releases
 * Compilation tests:
 
   - Clean compile for command line tool with (a) no options and (b) common
-    debug options (DUK_USE_DEBUG, DUK_USE_DPRINT, DUK_USE_SELF_TESTS,
+    debug options (DUK_USE_DEBUG, DUK_USE_DEBUG_LEVEL=0, DUK_USE_SELF_TESTS,
     DUK_USE_ASSERTIONS)
 
   - Compile both from ``src`` and ``src-separate``.
