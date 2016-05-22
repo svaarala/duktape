@@ -43,7 +43,7 @@
 # String printing and parsing
 - define: DUK_SPRINTF
 - define: DUK_SNPRINTF
-- define: DUK_VSNPRINT
+- define: DUK_VSNPRINTF
 - define: DUK_SSCANF
 - define: DUK_VSSCANF
 

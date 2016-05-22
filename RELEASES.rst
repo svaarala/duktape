@@ -1665,6 +1665,12 @@ Planned
 * Add an extra module (extras/console) providing a minimal 'console' binding
   (GH-767)
 
+* Add an extra module (extras/minimal-printf) providing minimal,
+  Duktape-optimized sprintf(), snprintf(), vsnprintf(), and sscanf()
+  implementations; the extra compiles to less than 1kB of code which is
+  useful on bare metal platforms where an external printf() or scanf()
+  dependency may have a large footprint impact (often 10-30 kB) (GH-801)
+
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
 
