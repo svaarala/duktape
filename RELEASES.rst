@@ -1622,6 +1622,10 @@ Planned
   debug writes when DUK_USE_DEBUG is enabled; this avoids a platform I/O
   dependency and allows debug log filtering and retargeting (GH-782)
 
+* Incompatible change: use DUK_USE_DEBUG_LEVEL for debug print level control
+  rather than the previous DUK_USE_DPRINT, DUK_USE_DDPRINT, and
+  DUK_USE_DDDPRINT defines (GH-783)
+
 * Incompatible change: remove the distinction between panic and fatal errors,
   and simplify the fatal error handler function signature to
   ``void my_fatal(void *udata, const char *msg);``  (GH-781)

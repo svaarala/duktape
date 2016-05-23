@@ -4439,10 +4439,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			case DUK_EXTRAOP_ENDLABEL: {
 				duk_catcher *cat;
-#if defined(DUK_USE_DDDPRINT) || defined(DUK_USE_ASSERTIONS)
+#if (defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)) || defined(DUK_USE_ASSERTIONS)
 				duk_uint_fast_t bc = DUK_DEC_BC(ins);
 #endif
-#if defined(DUK_USE_DDDPRINT)
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 				DUK_DDD(DUK_DDDPRINT("ENDLABEL %ld", (long) bc));
 #endif
 

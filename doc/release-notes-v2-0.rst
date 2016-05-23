@@ -311,6 +311,29 @@ Debug print related config options were reworked as follows:
 
   See http://wiki.duktape.org/HowtoDebugPrints.html for more information.
 
+* Debug level options ``DUK_USE_DPRINT``, ``DUK_USE_DDPRINT``, and
+  ``DUK_DDDPRINT`` were replaced with a single config option
+  ``DUK_USE_DEBUG_LEVEL`` with a numeric value:
+
+  - 0 is minimal logging (matches ``DUK_USE_DPRINT``)
+
+  - 1 is verbose logging (matches ``DUK_USE_DDPRINT``)
+
+  - 2 is very verbose logging (matches ``DUK_USE_DDDPRINT``)
+
+To upgrade:
+
+* If you're not using debug prints, no action is needed.
+
+* If you're using debug prints:
+
+  - Add a ``DUK_USE_DEBUG_WRITE()`` to your ``duk_config.h``.  By itself it
+    won't enable debug prints so it's safe to add even when debug prints are
+    disabled.
+
+  - Convert debug level options from ``DUK_USE_{D,DD,DDD}PRINT`` to the
+    equivalent ``DUK_USE_DEBUG_LEVEL`` (0, 1, or 2).
+
 Fatal error and panic handling reworked
 ---------------------------------------
 

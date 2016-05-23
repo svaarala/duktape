@@ -75,7 +75,7 @@ DUK_LOCAL void duk__sort_array_indices(duk_hthread *thr, duk_hobject *h_obj) {
 	DUK_DDD(DUK_DDDPRINT("keys=%p, p_end=%p (after skipping enum props)",
 	                     (void *) keys, (void *) p_end));
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	{
 		duk_uint_fast32_t i;
 		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h_obj); i++) {
@@ -145,7 +145,7 @@ DUK_LOCAL void duk__sort_array_indices(duk_hthread *thr, duk_hobject *h_obj) {
 		/* keep val_highest */
 	}
 
-#ifdef DUK_USE_DDDPRINT
+#if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 	{
 		duk_uint_fast32_t i;
 		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(h_obj); i++) {

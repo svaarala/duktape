@@ -31,6 +31,6 @@ description: >
   implementation.
 
   Current limitation:  Duktape internal debug code enabled with e.g.
-  DUK_USE_DEBUG and DUK_USE_DPRINT doesn't have enough plumbing to be able to
-  decode pointers.  Debug printing cannot currently be enabled when pointer
-  compression is active.
+  DUK_USE_DEBUG and DUK_USE_DEBUG_LEVEL=0 doesn't have enough plumbing to be
+  able to decode pointers.  Debug printing cannot currently be enabled when
+  pointer compression is active.
