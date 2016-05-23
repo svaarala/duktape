@@ -167,6 +167,72 @@ Labels are intended by one space relative to the parent tab depth::
           DUK_D(DUK_DPRINT("failed, detaching"));
   }
 
+Comment styles
+--------------
+
+A block or "banner" comment is used in file headers and to distinguish logical
+sections containing (typically) multiple functions, definitions, variables, etc::
+
+    /*
+     *  First line is empty and there are two spaces between the star
+     *  characters and text.
+     *
+     *  There are two spaces after a period ending a sentence.  This is
+     *  used throughout the Duktape code base and documentation.
+     */
+
+A compact comment is typically used to describe a single function/variable,
+or a sequence of small defines grouped together::
+
+    /* Text starts on the first line with a capital letter.  There's only
+     * one space between a star and the text.  Text ends with a period.
+     */
+
+    /* Can also be a single line. */
+    static void duk__helper(void) {
+            /* ... */
+    }
+
+A compact comment may also appear intended inside a function.  The style is
+the same::
+
+    static void duk__helper(char *values, int count) {
+            int i;
+
+            /* Frobnicate all the elements in the user supplied
+             * list of values.
+             */
+            for (i = 0; i < count; i++) {
+                /* ... */
+            }
+    }
+
+If a comment doesn't begin with a capital letter, it also doesn't have an
+ending period (i.e. the text is not a sentence)::
+
+    static void duk__helper(char *values, int count) {
+            int i;
+
+            /* frobnicate values */
+            for (i = 0; i < count; i++) {
+                /* ... */
+            }
+    }
+
+A comment on the same line as a statement is separate by two spaces.  Don't
+use C++ style comments as they're not portable::
+
+    static void duk__helper(char *values, int count) {
+            int i;  /* loop counter */
+
+            /* ... */
+
+            return;  /* No return value. */
+    }
+
+The text in the comment may be a sentence (``/* No return value. */``, ends
+in a period) or not (``/* no return value */``, no period).
+
 Local variable declarations
 ---------------------------
 
