@@ -34,7 +34,8 @@ CMDLINE_SOURCES += extras/logging/duk_logging.c
 # Optional feature defines, see: http://duktape.org/guide.html#compiling
 CCOPTS += -DDUK_OPT_SELF_TESTS
 #CCOPTS += -DDUK_OPT_DEBUG
-#CCOPTS += -DDUK_OPT_DPRINT
+#CCOPTS += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)'
+#CCOPTS += -DDUK_OPT_DEBUG_LEVEL=0
 # ...
 
 duk:	$(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
