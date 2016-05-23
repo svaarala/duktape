@@ -3,13 +3,16 @@ Minimal sprintf/sscanf replacement for Duktape
 ==============================================
 
 The ``duk_minimal_printf.c`` provides a portable provider for sprintf()/scanf()
-with a feature set matching minimally what Duktape needs.  The provider
+with a feature set matching minimally what Duktape internals need.  The provider
 compiles to less than 1kB.  The functions provided are::
 
     sprintf()
     snprintf()
     vsnprintf()
     sscanf()
+
+In addition to Duktape internals, the set of supported formats affects the
+``duk_push_(v)sprintf()`` call which may have an impact on user code.
 
 Assumptions:
 
@@ -46,7 +49,7 @@ following (this list is from Duktape 1.5.0)::
     %02lx
     %08lx
 
-This minimal provider supports the following slightly different set:
+This minimal provider supports the following slightly different, wider set.
 
 * Character format ``%c``.
 
@@ -58,6 +61,9 @@ This minimal provider supports the following slightly different set:
   length modifiers.
 
 * Hex formats ``%x``, ``%lx`` with optional padding and length modifiers.
+
+The wider set is useful to make ``duk_push_(v)sprintf()`` behave reasonably
+for any user code call sites.
 
 The ``%lld`` format is not supported to avoid depending on the ``long long``
 type; this makes the replacement incompatible with the JSON fast path which
