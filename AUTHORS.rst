@@ -30,6 +30,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Julien Hamaide (https://github.com/crazyjul)
 * Sebastian Götte (https://github.com/jaseg)
 * Tomasz Magulski (https://github.com/magul)
+* D. Bohdan (https://github.com/dbohdan)
 
 Other contributions
 ===================
@@ -68,7 +69,6 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * https://github.com/chris-y
 * Laurent Zubiaur (https://github.com/lzubiaur)
 * Ole André Vadla Ravnås (https://github.com/oleavr)
-* D. Bohdan (https://github.com/dbohdan)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
