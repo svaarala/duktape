@@ -1162,7 +1162,7 @@ codepolicycheck:
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h \
 		extras/*/*.c extras/*/*.h
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
