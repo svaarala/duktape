@@ -12,12 +12,12 @@
  * buffer and string values because they're the most common.  In particular,
  * avoid creating a temporary string or buffer when possible.
  */
-DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t index, duk_size_t *out_len) {
-	DUK_ASSERT(duk_is_valid_index(ctx, index));  /* checked by caller */
-	if (duk_is_buffer(ctx, index)) {
-		return (const duk_uint8_t *) duk_get_buffer(ctx, index, out_len);
+DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len) {
+	DUK_ASSERT(duk_is_valid_index(ctx, idx));  /* checked by caller */
+	if (duk_is_buffer(ctx, idx)) {
+		return (const duk_uint8_t *) duk_get_buffer(ctx, idx, out_len);
 	} else {
-		return (const duk_uint8_t *) duk_to_lstring(ctx, index, out_len);
+		return (const duk_uint8_t *) duk_to_lstring(ctx, idx, out_len);
 	}
 }
 
@@ -367,7 +367,7 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 }
 #endif  /* DUK_USE_BASE64_FASTPATH */
 
-DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *src;
 	duk_size_t srclen;
@@ -381,8 +381,8 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	 * which makes a copy of the input.
 	 */
 
-	index = duk_require_normalize_index(ctx, index);
-	src = duk__prep_codec_arg(ctx, index, &srclen);
+	idx = duk_require_normalize_index(ctx, idx);
+	src = duk__prep_codec_arg(ctx, idx, &srclen);
 	/* Note: for srclen=0, src may be NULL */
 
 	/* Computation must not wrap; this limit works for 32-bit size_t:
@@ -399,7 +399,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	duk__base64_encode_helper((const duk_uint8_t *) src, srclen, dst);
 
 	ret = duk_to_string(ctx, -1);
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 	return ret;
 
  type_error:
@@ -407,7 +407,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t index) {
 	return NULL;  /* never here */
 }
 
-DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *src;
 	duk_size_t srclen;
@@ -422,8 +422,8 @@ DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 	 * which causes an unnecessary interning.
 	 */
 
-	index = duk_require_normalize_index(ctx, index);
-	src = duk__prep_codec_arg(ctx, index, &srclen);
+	idx = duk_require_normalize_index(ctx, idx);
+	src = duk__prep_codec_arg(ctx, idx, &srclen);
 
 	/* Computation must not wrap, only srclen + 3 is at risk of
 	 * wrapping because after that the number gets smaller.
@@ -444,14 +444,14 @@ DUK_EXTERNAL void duk_base64_decode(duk_context *ctx, duk_idx_t index) {
 
 	/* XXX: convert to fixed buffer? */
 	(void) duk_resize_buffer(ctx, -1, (duk_size_t) (dst_final - dst));
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 	return;
 
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 }
 
-DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx) {
 	const duk_uint8_t *inp;
 	duk_size_t len;
 	duk_size_t i;
@@ -464,8 +464,8 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	index = duk_require_normalize_index(ctx, index);
-	inp = duk__prep_codec_arg(ctx, index, &len);
+	idx = duk_require_normalize_index(ctx, idx);
+	inp = duk__prep_codec_arg(ctx, idx, &len);
 	DUK_ASSERT(inp != NULL || len == 0);
 
 	/* Fixed buffer, no zeroing because we'll fill all the data. */
@@ -503,11 +503,11 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t index) {
 	 */
 
 	ret = duk_to_string(ctx, -1);
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 	return ret;
 }
 
-DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	const duk_uint8_t *inp;
 	duk_size_t len;
@@ -522,8 +522,8 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	index = duk_require_normalize_index(ctx, index);
-	inp = duk__prep_codec_arg(ctx, index, &len);
+	idx = duk_require_normalize_index(ctx, idx);
+	inp = duk__prep_codec_arg(ctx, idx, &len);
 	DUK_ASSERT(inp != NULL || len == 0);
 
 	if (len & 0x01) {
@@ -584,14 +584,14 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t index) {
 	}
 #endif  /* DUK_USE_HEX_FASTPATH */
 
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 	return;
 
  type_error:
 	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 }
 
-DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx) {
 #ifdef DUK_USE_ASSERTIONS
 	duk_idx_t top_at_entry;
 #endif
@@ -602,22 +602,22 @@ DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t index) {
 	top_at_entry = duk_get_top(ctx);
 #endif
 
-	index = duk_require_normalize_index(ctx, index);
+	idx = duk_require_normalize_index(ctx, idx);
 	duk_bi_json_stringify_helper(ctx,
-	                             index /*idx_value*/,
+	                             idx /*idx_value*/,
 	                             DUK_INVALID_INDEX /*idx_replacer*/,
 	                             DUK_INVALID_INDEX /*idx_space*/,
 	                             0 /*flags*/);
 	DUK_ASSERT(duk_is_string(ctx, -1));
-	duk_replace(ctx, index);
-	ret = duk_get_string(ctx, index);
+	duk_replace(ctx, idx);
+	ret = duk_get_string(ctx, idx);
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
 
 	return ret;
 }
 
-DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t idx) {
 #ifdef DUK_USE_ASSERTIONS
 	duk_idx_t top_at_entry;
 #endif
@@ -627,12 +627,12 @@ DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t index) {
 	top_at_entry = duk_get_top(ctx);
 #endif
 
-	index = duk_require_normalize_index(ctx, index);
+	idx = duk_require_normalize_index(ctx, idx);
 	duk_bi_json_parse_helper(ctx,
-	                         index /*idx_value*/,
+	                         idx /*idx_value*/,
 	                         DUK_INVALID_INDEX /*idx_reviver*/,
 	                         0 /*flags*/);
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
 }
