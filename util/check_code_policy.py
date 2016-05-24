@@ -112,7 +112,19 @@ rejected_plain_identifiers_list = [
 	'abort',
 	'exit',
 	'setjmp',
-	'longjmp'
+	'longjmp',
+
+	# variable/argument names which have shadowing issues with platform headers
+	# see e.g. https://github.com/svaarala/duktape/pull/810
+	'index',
+	'rindex',
+
+	# for consistency avoid these too, use obj_idx rather than obj_index, etc
+	'obj_index',
+	'from_index',
+	'to_index',
+	'arr_index',
+	'uindex',
 ]
 rejected_plain_identifiers = {}
 for id in rejected_plain_identifiers_list:
