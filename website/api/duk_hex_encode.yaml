@@ -1,7 +1,7 @@
 name: duk_hex_encode
 
 proto: |
-  const char *duk_hex_encode(duk_context *ctx, duk_idx_t index);
+  const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... hex_val! ... ]

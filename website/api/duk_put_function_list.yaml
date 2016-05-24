@@ -1,13 +1,13 @@
 name: duk_put_function_list
 
 proto: |
-  void duk_put_function_list(duk_context *ctx, duk_idx_t obj_index, const duk_function_list_entry *funcs);
+  void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs);
 
 stack: |
   [ ... obj! ... ] -> [ ... obj! ... ]
 
 summary: |
-  <p>Set multiple function properties into a target object at <code>obj_index</code>.
+  <p>Set multiple function properties into a target object at <code>obj_idx</code>.
   The functions are specified as a list of triples (name, function, nargs), ending
   with a triple where name is <code>NULL</code> (preferably also function is
   <code>NULL</code> for sanity).</p>

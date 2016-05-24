@@ -1,13 +1,13 @@
 name: duk_require_function
 
 proto: |
-  void duk_require_function(duk_context *ctx, duk_idx_t index);
+  void duk_require_function(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Throw an error if the value at <code>index</code> is not a function
+  <p>Throw an error if the value at <code>idx</code> is not a function
   or if the index is invalid.</p>
 
   <div class="note">

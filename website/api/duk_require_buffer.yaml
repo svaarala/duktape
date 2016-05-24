@@ -1,14 +1,14 @@
 name: duk_require_buffer
 
 proto: |
-  void *duk_require_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+  void *duk_require_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
   <p>Like <code><a href="#duk_get_buffer">duk_get_buffer()</a></code>,
-  but throws an error if the value at <code>index</code> is not a (plain)
+  but throws an error if the value at <code>idx</code> is not a (plain)
   buffer or if the index is invalid.</p>
 
 example: |

@@ -1,7 +1,7 @@
 name: duk_base64_decode
 
 proto: |
-  void duk_base64_decode(duk_context *ctx, duk_idx_t index);
+  void duk_base64_decode(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... base64_val! ... ] -> [ ... val! ... ]

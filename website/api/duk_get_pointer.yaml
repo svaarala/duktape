@@ -1,13 +1,13 @@
 name: duk_get_pointer
 
 proto: |
-  void *duk_get_pointer(duk_context *ctx, duk_idx_t index);
+  void *duk_get_pointer(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get the pointer value at <code>index</code> as <code>void *</code> without
+  <p>Get the pointer value at <code>idx</code> as <code>void *</code> without
   modifying or coercing the value.  Returns <code>NULL</code> if the value is
   not a pointer or the index is invalid.</p>
 

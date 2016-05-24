@@ -1,14 +1,14 @@
 name: duk_require_number
 
 proto: |
-  duk_double_t duk_require_number(duk_context *ctx, duk_idx_t index);
+  duk_double_t duk_require_number(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
   <p>Like <code><a href="#duk_get_number">duk_get_number()</a></code>,
-  but throws an error if the value at <code>index</code> is not a number
+  but throws an error if the value at <code>idx</code> is not a number
   or if the index is invalid.</p>
 
 example: |

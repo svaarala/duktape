@@ -1,13 +1,13 @@
 name: duk_set_finalizer
 
 proto: |
-  void duk_set_finalizer(duk_context *ctx, duk_idx_t index);
+  void duk_set_finalizer(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... finalizer! ] -> [ ... val! ... ]
 
 summary: |
-  <p>Set the finalizer of the value at <code>index</code> to the value at
+  <p>Set the finalizer of the value at <code>idx</code> to the value at
   stack top.  If the target value is not an object an error is thrown.  The
   finalizer value can be an arbitrary one; non-function values are treated
   as if no finalizer was set.  To delete a finalizer from an object, set it

@@ -1,14 +1,14 @@
 name: duk_get_heapptr
 
 proto: |
-  void *duk_get_heapptr(duk_context *ctx, duk_idx_t index);
+  void *duk_get_heapptr(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
   <p>Get a borrowed <code>void *</code> reference to a Duktape heap allocated
-  value (object, buffer, string) at <code>index</code>.  Return <code>NULL</code>
+  value (object, buffer, string) at <code>idx</code>.  Return <code>NULL</code>
   if the index is invalid or the target value is not heap allocated.
   The returned pointer must not be interpreted or dereferenced, but
   <code><a href="#duk_push_heapptr">duk_push_heapptr()</a></code> can be used

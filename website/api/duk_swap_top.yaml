@@ -1,15 +1,15 @@
 name: duk_swap_top
 
 proto: |
-  void duk_swap_top(duk_context *ctx, duk_idx_t index);
+  void duk_swap_top(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val1! ... val2! ] -> [ ... val2! ... val1! ]
 
 summary: |
-  <p>Swap stack top with value at <code>index</code>.  If <code>index</code> refers
+  <p>Swap stack top with value at <code>idx</code>.  If <code>idx</code> refers
   to the stack top, the call is a no-op.  If the value stack is empty or
-  <code>index</code> is invalid, throws an error.</p>
+  <code>idx</code> is invalid, throws an error.</p>
 
 example: |
   duk_swap_top(ctx, -3);

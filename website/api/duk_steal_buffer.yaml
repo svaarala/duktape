@@ -1,13 +1,13 @@
 name: duk_steal_buffer
 
 proto: |
-  void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+  void *duk_steal_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Steal the current allocation of the dynamic buffer at <code>index</code>.
+  <p>Steal the current allocation of the dynamic buffer at <code>idx</code>.
   In concrete terms, Duktape forgets the previous allocation and resets the
   buffer to zero size (and NULL data pointer).  Pointer to the previous
   allocation is returned and previous allocation length is written to

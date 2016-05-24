@@ -1,14 +1,14 @@
 name: duk_require_int
 
 proto: |
-  duk_int_t duk_require_int(duk_context *ctx, duk_idx_t index);
+  duk_int_t duk_require_int(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
   <p>Like <code><a href="#duk_get_int">duk_get_int()</a></code>,
-  but throws an error if the value at <code>index</code> is not a number
+  but throws an error if the value at <code>idx</code> is not a number
   or if the index is invalid.</p>
 
   <!--

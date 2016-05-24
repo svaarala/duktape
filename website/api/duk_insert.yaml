@@ -1,15 +1,15 @@
 name: duk_insert
 
 proto: |
-  void duk_insert(duk_context *ctx, duk_idx_t to_index);
+  void duk_insert(duk_context *ctx, duk_idx_t to_idx);
 
 stack: |
-  [ ... old(to_index)! ... val! ] -> [ ... val(to_index)! old! ... ]
+  [ ... old(to_idx)! ... val! ] -> [ ... val(to_idx)! old! ... ]
 
 summary: |
-  <p>Insert a value at <code>to_index</code> with a value popped from the
-  stack top.  The previous value at <code>to_index</code> and any values
-  above it are moved up the stack by a step.  If <code>to_index</code> is
+  <p>Insert a value at <code>to_idx</code> with a value popped from the
+  stack top.  The previous value at <code>to_idx</code> and any values
+  above it are moved up the stack by a step.  If <code>to_idx</code> is
   an invalid index, throws an error.</p>
 
   <div class="note">

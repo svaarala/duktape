@@ -1,7 +1,7 @@
 name: duk_safe_to_lstring
 
 proto: |
-  const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+  const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
 
 stack: |
   [ ... val! ... ] -> [ ... ToString(val)! ... ]

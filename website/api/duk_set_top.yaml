@@ -1,13 +1,13 @@
 name: duk_set_top
 
 proto: |
-  void duk_set_top(duk_context *ctx, duk_idx_t index);
+  void duk_set_top(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ...! ] -> [ ...! ]
 
 summary: |
-  <p>Set stack top (stack size) to match the argument <code>index</code>,
+  <p>Set stack top (stack size) to match the argument <code>idx</code>,
   normalizing negative index values.  If the value stack shrinks,
   values above the new stack top are dropped; if the value stack grows,
   <code>undefined</code> values are pushed to the new stack slots.</p>

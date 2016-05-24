@@ -1,13 +1,13 @@
 name: duk_to_null
 
 proto: |
-  void duk_to_null(duk_context *ctx, duk_idx_t index);
+  void duk_to_null(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... null! ... ]
 
 summary: |
-  <p>Replace the value at <code>index</code> with <code>null</code>, regardless
+  <p>Replace the value at <code>idx</code> with <code>null</code>, regardless
   of the previous value.  Throws an error if index is invalid.</p>
 
   <div class="note">

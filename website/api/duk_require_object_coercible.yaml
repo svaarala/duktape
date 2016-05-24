@@ -1,7 +1,7 @@
 name: duk_require_object_coercible
 
 proto: |
-  void duk_require_object_coercible(duk_context *ctx, duk_idx_t index);
+  void duk_require_object_coercible(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]

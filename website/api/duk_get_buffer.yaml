@@ -1,13 +1,13 @@
 name: duk_get_buffer
 
 proto: |
-  void *duk_get_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+  void *duk_get_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get the data pointer for a (plain) buffer value at <code>index</code> without
+  <p>Get the data pointer for a (plain) buffer value at <code>idx</code> without
   modifying or coercing the value.  Returns a non-<code>NULL</code> pointer if the value
   is a valid buffer with a non-zero size.  For a zero-size buffer, may return a
   <code>NULL</code> or a non-<code>NULL</code> pointer.  Returns <code>NULL</code>

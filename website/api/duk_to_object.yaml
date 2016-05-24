@@ -1,18 +1,18 @@
 name: duk_to_object
 
 proto: |
-  void duk_to_object(duk_context *ctx, duk_idx_t index);
+  void duk_to_object(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... ToObject(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>index</code> with an Ecmascript
+  <p>Replace the value at <code>idx</code> with an Ecmascript
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.9">ToObject()</a>
   coerced value.  There is no return value.  Throws an error if value at
-  <code>index</code> is not
+  <code>idx</code> is not
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
-  or if <code>index</code> is invalid.</p>
+  or if <code>idx</code> is invalid.</p>
 
   <p>The following types are not object coercible:</p>
   <ul>

@@ -1,14 +1,14 @@
 name: duk_get_prop
 
 proto: |
-  duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_index);
+  duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx);
 
 stack: |
   [ ... obj! ... key! ] -> [ ... obj! ... val! ]  (if key exists)
   [ ... obj! ... key! ] -> [ ... obj! ... undefined! ]  (if key doesn't exist)
 
 summary: |
-  <p>Get the property <code>key</code> of a value at <code>obj_index</code>.
+  <p>Get the property <code>key</code> of a value at <code>obj_idx</code>.
   Return code and error throwing behavior:</p>
   <ul>
   <li>If the property exists, <code>1</code> is returned and <code>key</code>
@@ -17,10 +17,10 @@ summary: |
       an error.</li>
   <li>If the property does not exist, 0 is returned and <code>key</code>
       is replaced by <code>undefined</code> on the value stack.</li>
-  <li>If the value at <code>obj_index</code> is not
+  <li>If the value at <code>obj_idx</code> is not
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
       throws an error.</li>
-  <li>If <code>obj_index</code> is invalid, throws an error.</li>
+  <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
   <p>The property read is equivalent to the Ecmascript expression:</p>
