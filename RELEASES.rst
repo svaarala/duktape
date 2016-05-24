@@ -1678,6 +1678,9 @@ Planned
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
 
+* Fix -Wshadow warnings on some GCC versions for variable/argument name
+  'index' by avoiding such identifiers in API and internals (GH-810)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
