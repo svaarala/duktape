@@ -275,6 +275,18 @@ The fix is::
           ...
   }
 
+Local variable naming
+---------------------
+
+Variables are generally lowercase and underscore separated, but no strict
+guidelines otherwise.
+
+Avoid local variable names which might shadow with global symbols defined in
+platform headers (not just one platform but potentially any platform).  For
+example, using ``alloc`` would be a bad idea, and ``index`` also causes
+concrete problems with some GCC versions.  There are a few blacklisted
+identifiers in the code policy check.
+
 Other variable declarations
 ---------------------------
 
