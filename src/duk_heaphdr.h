@@ -219,7 +219,7 @@ struct duk_heaphdr_string {
 
 #define DUK_HEAPHDR_SET_FLAG_RANGE(h,m,n,v)  do { \
 		(h)->h_flags = \
-			((h)->h_flags & (~(((1 << (n)) - 1) << (m)))) \
+			((h)->h_flags & (~(((1UL << (n)) - 1UL) << (m)))) \
 			| ((v) << (m)); \
 	} while (0)
 
