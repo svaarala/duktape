@@ -1,13 +1,13 @@
 name: duk_trim
 
 proto: |
-  void duk_trim(duk_context *ctx, duk_idx_t index);
+  void duk_trim(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... str! ... ] -> [ ... trimmed_str! ... ]
 
 summary: |
-  <p>Trim string at <code>index</code>.  If the value at <code>index</code> is not a
+  <p>Trim string at <code>idx</code>.  If the value at <code>idx</code> is not a
   string or the index is invalid, throws an error.</p>
 
   <p>Trimming removes white space characters from the beginning and

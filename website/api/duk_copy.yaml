@@ -1,13 +1,13 @@
 name: duk_copy
 
 proto: |
-  void duk_copy(duk_context *ctx, duk_idx_t from_index, duk_idx_t to_index);
+  void duk_copy(duk_context *ctx, duk_idx_t from_idx, duk_idx_t to_idx);
 
 stack: |
-  [ ... old(to_index)! ... val(from_index)! ... ] -> [ ... val(to_index)! ... val(from_index)! ... ]
+  [ ... old(to_idx)! ... val(from_idx)! ... ] -> [ ... val(to_idx)! ... val(from_idx)! ... ]
 
 summary: |
-  <p>Copy a value from <code>from_index</code> to <code>to_index</code>,
+  <p>Copy a value from <code>from_idx</code> to <code>to_idx</code>,
   overwriting the previous value.  If either index is invalid, throws an
   error.</p>
 
@@ -16,9 +16,9 @@ summary: |
   /* to_index must be normalize in case it is negative and would change its
    * meaning after duk_dup().
    */
-  to_index = duk_normalize_index(ctx, to_index);
-  duk_dup(ctx, from_index);
-  duk_replace(ctx, to_index);
+  to_idx = duk_normalize_idx(ctx, to_idx);
+  duk_dup(ctx, from_idx);
+  duk_replace(ctx, to_idx);
   </pre>
 
 example: |

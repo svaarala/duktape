@@ -1,12 +1,12 @@
 name: duk_compact
 
 proto: |
-  void duk_compact(duk_context *ctx, duk_idx_t obj_index);
+  void duk_compact(duk_context *ctx, duk_idx_t obj_idx);
 
 summary: |
   <p>
   Resizes an object's internal memory allocation to minimize memory usage.
-  If the value at <code>obj_index</code> is not an object, does nothing.
+  If the value at <code>obj_idx</code> is not an object, does nothing.
   Although compaction is normally safe, it can fail due to an internal error
   (such as out-of-memory error).  Compaction only affects to an object's
   "own properties", not its inherited properties.

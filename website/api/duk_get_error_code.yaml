@@ -1,17 +1,17 @@
 name: duk_get_error_code
 
 proto: |
-  duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t index);
+  duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Map the value at <code>index</code> to the error codes <code>DUK_ERR_xxx</code>
+  <p>Map the value at <code>idx</code> to the error codes <code>DUK_ERR_xxx</code>
   based on which <code>Error</code> subclass the value inherits from.  For example,
   if the value at the stack top is an user-defined error which inherits from
   <code>ReferenceError</code>, the return value will be <code>DUK_ERR_REFERENCE_ERROR</code>.
-  If the value is not an object, does not inherit from <code>Error</code>, or <code>index</code>
+  If the value is not an object, does not inherit from <code>Error</code>, or <code>idx</code>
   is invalid, returns 0 (= <code>DUK_ERR_NONE</code>).</p>
 
 example: |

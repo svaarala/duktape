@@ -1117,7 +1117,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_int_t i, len;
-	duk_int_t from_index;
+	duk_int_t from_idx;
 	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
@@ -1156,22 +1156,22 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 		 * lastIndexOf: clamp fromIndex to [-len - 1, len - 1]
 		 * (if clamped to -len-1 -> fromIndex becomes -1, terminates for-loop directly)
 		 */
-		from_index = duk_to_int_clamped(ctx,
-		                                1,
-		                                (idx_step > 0 ? -len : -len - 1),
-		                                (idx_step > 0 ? len : len - 1));
-		if (from_index < 0) {
+		from_idx = duk_to_int_clamped(ctx,
+		                              1,
+		                              (idx_step > 0 ? -len : -len - 1),
+		                              (idx_step > 0 ? len : len - 1));
+		if (from_idx < 0) {
 			/* for lastIndexOf, result may be -1 (mark immediate termination) */
-			from_index = len + from_index;
+			from_idx = len + from_idx;
 		}
 	} else {
 		/* for indexOf, ToInteger(undefined) would be 0, i.e. correct, but
 		 * handle both indexOf and lastIndexOf specially here.
 		 */
 		if (idx_step > 0) {
-			from_index = 0;
+			from_idx = 0;
 		} else {
-			from_index = len - 1;
+			from_idx = len - 1;
 		}
 	}
 
@@ -1181,7 +1181,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	 * stack[3] = length (not needed, but not popped above)
 	 */
 
-	for (i = from_index; i >= 0 && i < len; i += idx_step) {
+	for (i = from_idx; i >= 0 && i < len; i += idx_step) {
 		DUK_ASSERT_TOP(ctx, 4);
 
 		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {

@@ -1,13 +1,13 @@
 name: duk_get_string
 
 proto: |
-  const char *duk_get_string(duk_context *ctx, duk_idx_t index);
+  const char *duk_get_string(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get character data pointer for a string at <code>index</code> without
+  <p>Get character data pointer for a string at <code>idx</code> without
   modifying or coercing the value.  Returns a non-<code>NULL</code> pointer to
   the read-only, NUL-terminated string data.  Returns <code>NULL</code> if the
   value is not a string or the index is invalid.</p>

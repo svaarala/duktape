@@ -36,21 +36,21 @@ DUK_INTERNAL void duk_err_handle_error(duk_hthread *thr, duk_errcode_t code) {
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-DUK_INTERNAL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index, const char *expect_name) {
+DUK_INTERNAL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
 	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_get_type_name((duk_context *) thr, index), (long) index);
+	                   expect_name, duk_get_type_name((duk_context *) thr, idx), (long) idx);
 }
 #else
-DUK_INTERNAL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index, const char *expect_name) {
+DUK_INTERNAL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
 	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_push_string_readable((duk_context *) thr, index), (long) index);
+	                   expect_name, duk_push_string_readable((duk_context *) thr, idx), (long) idx);
 }
 #endif
 DUK_INTERNAL void duk_err_range(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_RANGE_ERROR, message);
 }
-DUK_INTERNAL void duk_err_api_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index) {
-	DUK_ERROR_RAW_FMT1(thr, filename, linenumber, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (index));
+DUK_INTERNAL void duk_err_api_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx) {
+	DUK_ERROR_RAW_FMT1(thr, filename, linenumber, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (idx));
 }
 DUK_INTERNAL void duk_err_api(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_API_ERROR, message);

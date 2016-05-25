@@ -1,14 +1,14 @@
 name: duk_to_pointer
 
 proto: |
-  void *duk_to_pointer(duk_context *ctx, duk_idx_t index);
+  void *duk_to_pointer(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... pointer(val)! ... ]
 
 summary: |
-  <p>Replaces the value at <code>index</code> with a pointer-coerced value.  Returns
-  the resulting <code>void *</code> value.  If <code>index</code> is invalid, throws an
+  <p>Replaces the value at <code>idx</code> with a pointer-coerced value.  Returns
+  the resulting <code>void *</code> value.  If <code>idx</code> is invalid, throws an
   error.</p>
 
   <p>Coercion rules:</p>

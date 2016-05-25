@@ -149,7 +149,7 @@ DUK_LOCAL duk_hbufobj *duk__require_bufobj_this(duk_context *ctx) {
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 /* Check that value is a duk_hbufobj and return a pointer to it. */
-DUK_LOCAL duk_hbufobj *duk__require_bufobj_value(duk_context *ctx, duk_idx_t index) {
+DUK_LOCAL duk_hbufobj *duk__require_bufobj_value(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr;
 	duk_tval *tv;
 	duk_hbufobj *h_obj;
@@ -157,9 +157,9 @@ DUK_LOCAL duk_hbufobj *duk__require_bufobj_value(duk_context *ctx, duk_idx_t ind
 	thr = (duk_hthread *) ctx;
 
 	/* Don't accept relative indices now. */
-	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(idx >= 0);
 
-	tv = duk_require_tval(ctx, index);
+	tv = duk_require_tval(ctx, idx);
 	DUK_ASSERT(tv != NULL);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		h_obj = (duk_hbufobj *) DUK_TVAL_GET_OBJECT(tv);

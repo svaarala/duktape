@@ -243,12 +243,12 @@
  * vs. non-paranoid distinction affects only a few specific errors.
  */
 #if defined(DUK_USE_PARANOID_ERRORS)
-#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,index,expectname,lowmemstr) do { \
-		duk_err_require_type_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (index), (expectname)); \
+#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,idx,expectname,lowmemstr) do { \
+		duk_err_require_type_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (idx), (expectname)); \
 	} while (0)
 #else  /* DUK_USE_PARANOID_ERRORS */
-#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,index,expectname,lowmemstr) do { \
-		duk_err_require_type_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (index), (expectname)); \
+#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,idx,expectname,lowmemstr) do { \
+		duk_err_require_type_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (idx), (expectname)); \
 	} while (0)
 #endif  /* DUK_USE_PARANOID_ERRORS */
 
@@ -277,8 +277,8 @@
 		DUK_ERROR_ALLOC((thr), DUK_STR_ALLOC_FAILED); \
 	} while (0)
 /* DUK_ERR_ASSERTION_ERROR: no macros needed */
-#define DUK_ERROR_API_INDEX(thr,index) do { \
-		duk_err_api_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (index)); \
+#define DUK_ERROR_API_INDEX(thr,idx) do { \
+		duk_err_api_index((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (idx)); \
 	} while (0)
 #define DUK_ERROR_API(thr,msg) do { \
 		duk_err_api((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (msg)); \
@@ -300,7 +300,7 @@
 #else  /* DUK_USE_VERBOSE_ERRORS */
 /* Non-verbose errors for low memory targets: no file, line, or message. */
 
-#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,index,expectname,lowmemstr) do { \
+#define DUK_ERROR_REQUIRE_TYPE_INDEX(thr,idx,expectname,lowmemstr) do { \
 		duk_err_type((thr)); \
 	} while (0)
 
@@ -328,7 +328,7 @@
 #define DUK_ERROR_ALLOC_DEFMSG(thr) do { \
 		duk_err_alloc((thr)); \
 	} while (0)
-#define DUK_ERROR_API_INDEX(thr,index) do { \
+#define DUK_ERROR_API_INDEX(thr,idx) do { \
 		duk_err_api((thr)); \
 	} while (0)
 #define DUK_ERROR_API(thr,msg) do { \
@@ -373,11 +373,11 @@ DUK_INTERNAL_DECL void duk_err_augment_error_throw(duk_hthread *thr);
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index, const char *expect_name));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name));
 #else
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index, const char *expect_name));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name));
 #endif
-DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t index));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_api(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_range(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_unimplemented_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber));

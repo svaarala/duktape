@@ -1,7 +1,7 @@
 name: duk_base64_encode
 
 proto: |
-  const char *duk_base64_encode(duk_context *ctx, duk_idx_t index);
+  const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... base64_val! ... ]

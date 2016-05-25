@@ -1,13 +1,13 @@
 name: duk_get_lstring
 
 proto: |
-  const char *duk_get_lstring(duk_context *ctx, duk_idx_t index, duk_size_t *out_len);
+  const char *duk_get_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get character data pointer and length for a string at <code>index</code>
+  <p>Get character data pointer and length for a string at <code>idx</code>
   without modifying or coercing the value.  Returns a non-<code>NULL</code>
   pointer to the read-only, NUL-terminated string data, and writes the
   string byte length to <code>*out_len</code> (if <code>out_len</code> is

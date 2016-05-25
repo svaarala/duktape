@@ -1,7 +1,7 @@
 name: duk_is_valid_index
 
 proto: |
-  duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t index);
+  duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]

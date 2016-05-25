@@ -1,23 +1,23 @@
 name: duk_put_prop
 
 proto: |
-  duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_index);
+  duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx);
 
 stack: |
   [ ... obj! ... key! val! ] -> [ ... obj! ... ]
 
 summary: |
   <p>Write <code>val</code> to the property <code>key</code> of a value at
-  <code>obj_index</code>.  <code>key</code> and <code>val</code> are removed
+  <code>obj_idx</code>.  <code>key</code> and <code>val</code> are removed
   from the stack.  Return code and error throwing behavior:</p>
   <ul>
   <li>If the property write succeeds, returns <code>1</code>.</li>
   <li>If the property write fails, throws an error (strict mode semantics).
       An error may also be thrown by the "setter" function of an accessor property.</li>
-  <li>If the value at <code>obj_index</code> is not
+  <li>If the value at <code>obj_idx</code> is not
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
       throws an error.</li>
-  <li>If <code>obj_index</code> is invalid, throws an error.</li>
+  <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
   <p>The property write is equivalent to the Ecmascript expression:</p>

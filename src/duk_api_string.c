@@ -122,7 +122,7 @@ DUK_EXTERNAL void duk_join(duk_context *ctx, duk_idx_t count) {
  * Case conversion needs also the character surroundings though.
  */
 
-DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decode_char_function callback, void *udata) {
+DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t idx, duk_decode_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	const duk_uint8_t *p, *p_start, *p_end;
@@ -130,7 +130,7 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decod
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	h_input = duk_require_hstring(ctx, index);
+	h_input = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h_input != NULL);
 
 	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
@@ -146,7 +146,7 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t index, duk_decod
 	}
 }
 
-DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char_function callback, void *udata) {
+DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_function callback, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_input;
 	duk_bufwriter_ctx bw_alloc;
@@ -156,9 +156,9 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	index = duk_normalize_index(ctx, index);
+	idx = duk_normalize_index(ctx, idx);
 
-	h_input = duk_require_hstring(ctx, index);
+	h_input = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h_input != NULL);
 
 	bw = &bw_alloc;
@@ -184,10 +184,10 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t index, duk_map_char
 
 	DUK_BW_COMPACT(thr, bw);
 	duk_to_string(ctx, -1);
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 }
 
-DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t start_offset, duk_size_t end_offset) {
+DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t start_offset, duk_size_t end_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_hstring *res;
@@ -196,8 +196,8 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t st
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	index = duk_require_normalize_index(ctx, index);
-	h = duk_require_hstring(ctx, index);
+	idx = duk_require_normalize_index(ctx, idx);
+	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	if (end_offset >= DUK_HSTRING_GET_CHARLEN(h)) {
@@ -228,13 +228,13 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t index, duk_size_t st
 	                                     (duk_uint32_t) (end_byte_offset - start_byte_offset));
 
 	duk_push_hstring(ctx, res);
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 }
 
 /* XXX: this is quite clunky.  Add Unicode helpers to scan backwards and
  * forwards with a callback to process codepoints?
  */
-DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
+DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	const duk_uint8_t *p, *p_start, *p_end, *p_tmp1, *p_tmp2;  /* pointers for scanning */
@@ -243,8 +243,8 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	index = duk_require_normalize_index(ctx, index);
-	h = duk_require_hstring(ctx, index);
+	idx = duk_require_normalize_index(ctx, idx);
+	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	p_start = DUK_HSTRING_GET_DATA(h);
@@ -307,17 +307,17 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t index) {
 	}
 
 	duk_push_lstring(ctx, (const char *) q_start, (duk_size_t) (q_end - q_start));
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 }
 
-DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t index, duk_size_t char_offset) {
+DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, duk_size_t char_offset) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h;
 	duk_ucodepoint_t cp;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	h = duk_require_hstring(ctx, index);
+	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	DUK_ASSERT_DISABLE(char_offset >= 0);  /* always true, arg is unsigned */

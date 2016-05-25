@@ -44,14 +44,14 @@ DUK_LOCAL const char *duk__get_heap_type_string(duk_heaphdr *hdr) {
 #endif
 
 #if 0
-DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
+DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int idx) {
 	DUK_UNREF(obj);
-	DUK_UNREF(index);
+	DUK_UNREF(idx);
 	DUK_UNREF(duk__get_heap_type_string);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
 	DUK_D(DUK_DPRINT("  [%ld]: %p %s (flags: 0x%08lx, ref: %ld) -> %!O",
-	                 (long) index,
+	                 (long) idx,
 	                 (void *) obj,
 	                 (const char *) duk__get_heap_type_string(obj),
 	                 (unsigned long) DUK_HEAPHDR_GET_FLAGS(obj),
@@ -59,7 +59,7 @@ DUK_LOCAL void duk__dump_indented(duk_heaphdr *obj, int index) {
 	                 (duk_heaphdr *) obj));
 #else
 	DUK_D(DUK_DPRINT("  [%ld]: %p %s (flags: 0x%08lx) -> %!O",
-	                 (long) index,
+	                 (long) idx,
 	                 (void *) obj,
 	                 (const char *) duk__get_heap_type_string(obj),
 	                 (unsigned long) DUK_HEAPHDR_GET_FLAGS(obj),

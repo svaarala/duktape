@@ -87,7 +87,7 @@
 #define DUK__ISDIGIT47(x)        ((x) >= DUK_ASC_4 && (x) <= DUK_ASC_7)
 
 /* lexer character window helpers */
-#define DUK__LOOKUP(lex_ctx,index)        ((lex_ctx)->window[(index)].codepoint)
+#define DUK__LOOKUP(lex_ctx,idx)          ((lex_ctx)->window[(idx)].codepoint)
 #define DUK__ADVANCECHARS(lex_ctx,count)  duk__advance_bytes((lex_ctx), (count) * sizeof(duk_lexer_codepoint))
 #define DUK__ADVANCEBYTES(lex_ctx,count)  duk__advance_bytes((lex_ctx), (count))
 #define DUK__INITBUFFER(lex_ctx)          duk__initbuffer((lex_ctx))

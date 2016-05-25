@@ -1,16 +1,16 @@
 name: duk_to_buffer
 
 proto: |
-  void *duk_to_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size);
+  void *duk_to_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 
 stack: |
   [ ... val! ... ] -> [ ... buffer(val)! ... ]
 
 summary: |
-  <p>Replace the value at <code>index</code> with a buffer-coerced value.  Returns
+  <p>Replace the value at <code>idx</code> with a buffer-coerced value.  Returns
   a pointer to the buffer data (may be <code>NULL</code> for a zero-size buffer),
   and writes the size of the buffer into <code>*out_size</code> (if <code>out_size</code>
-  is non-<code>NULL</code>).  If <code>index</code> is invalid, throws an error.</p>
+  is non-<code>NULL</code>).  If <code>idx</code> is invalid, throws an error.</p>
 
   <p>Coercion rules:</p>
   <ul>

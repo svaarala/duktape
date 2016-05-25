@@ -1,13 +1,13 @@
 name: duk_require_callable
 
 proto: |
-  void duk_require_callable(duk_context *ctx, duk_idx_t index);
+  void duk_require_callable(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Throw an error if the value at <code>index</code> is not callable
+  <p>Throw an error if the value at <code>idx</code> is not callable
   or if the index is invalid.</p>
 
   <div class="note">

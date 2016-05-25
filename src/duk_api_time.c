@@ -8,7 +8,7 @@ DUK_EXTERNAL duk_double_t duk_get_now(duk_context *ctx) {
 	return ((duk_double_t) DUK_USE_DATE_GET_NOW((ctx)));
 }
 
-DUK_EXTERNAL void duk_time_to_components(duk_context *ctx, duk_double_t time, duk_time_components *comp) {
+DUK_EXTERNAL void duk_time_to_components(duk_context *ctx, duk_double_t timeval, duk_time_components *comp) {
 	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	duk_uint_t flags;
@@ -20,7 +20,7 @@ DUK_EXTERNAL void duk_time_to_components(duk_context *ctx, duk_double_t time, du
 	/* XXX: one-based or zero-based? or expose flag(s)? */
 	flags = DUK_DATE_FLAG_ONEBASED | DUK_DATE_FLAG_NAN_TO_ZERO;
 
-	duk_bi_date_timeval_to_parts(time, parts, dparts, flags);
+	duk_bi_date_timeval_to_parts(timeval, parts, dparts, flags);
 
 	/* XXX: expensive conversion */
 	comp->year = (duk_uint_t) parts[DUK_DATE_IDX_YEAR];

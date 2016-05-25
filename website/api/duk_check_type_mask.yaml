@@ -1,13 +1,13 @@
 name: duk_check_type_mask
 
 proto: |
-  duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t index, duk_uint_t mask);
+  duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t mask);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Matches the type of the value at <code>index</code> against the type
+  <p>Matches the type of the value at <code>idx</code> against the type
   mask bits given in <code>mask</code>.  Returns 1 if the value type matches
   one of the type mask bits and zero otherwise.</p>
 

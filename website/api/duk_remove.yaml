@@ -1,15 +1,15 @@
 name: duk_remove
 
 proto: |
-  void duk_remove(duk_context *ctx, duk_idx_t index);
+  void duk_remove(duk_context *ctx, duk_idx_t idx);
 
 stack: |
-  [ ... val(index)! ... ] -> [ ... ... ]
+  [ ... val(idx)! ... ] -> [ ... ... ]
 
 summary: |
-  <p>Remove value at <code>index</code>.  Elements above <code>index</code>
-  are shifted down the stack by a step.  If <code>to_index</code> is
-  an invalid index, throws an error.</p>
+  <p>Remove value at <code>idx</code>.  Elements above <code>idx</code>
+  are shifted down the stack by a step.  If <code>idx</code> is an invalid
+  index, throws an error.</p>
 
 example: |
   duk_push_int(ctx, 123);

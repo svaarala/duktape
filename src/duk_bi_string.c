@@ -1089,18 +1089,18 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
  */
 
 #ifdef DUK_USE_REGEXP_SUPPORT
-DUK_LOCAL void duk__to_regexp_helper(duk_context *ctx, duk_idx_t index, duk_bool_t force_new) {
+DUK_LOCAL void duk__to_regexp_helper(duk_context *ctx, duk_idx_t idx, duk_bool_t force_new) {
 	duk_hobject *h;
 
 	/* Shared helper for match() steps 3-4, search() steps 3-4. */
 
-	DUK_ASSERT(index >= 0);
+	DUK_ASSERT(idx >= 0);
 
 	if (force_new) {
 		goto do_new;
 	}
 
-	h = duk_get_hobject_with_class(ctx, index, DUK_HOBJECT_CLASS_REGEXP);
+	h = duk_get_hobject_with_class(ctx, idx, DUK_HOBJECT_CLASS_REGEXP);
 	if (!h) {
 		goto do_new;
 	}
@@ -1108,9 +1108,9 @@ DUK_LOCAL void duk__to_regexp_helper(duk_context *ctx, duk_idx_t index, duk_bool
 
  do_new:
 	duk_push_hobject_bidx(ctx, DUK_BIDX_REGEXP_CONSTRUCTOR);
-	duk_dup(ctx, index);
+	duk_dup(ctx, idx);
 	duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
-	duk_replace(ctx, index);
+	duk_replace(ctx, idx);
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 

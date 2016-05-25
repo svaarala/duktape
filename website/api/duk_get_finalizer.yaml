@@ -1,13 +1,13 @@
 name: duk_get_finalizer
 
 proto: |
-  void duk_get_finalizer(duk_context *ctx, duk_idx_t index);
+  void duk_get_finalizer(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ] -> [ ... val! ... finalizer! ]
 
 summary: |
-  <p>Get the finalizer associated with a value at <code>index</code>.  If the
+  <p>Get the finalizer associated with a value at <code>idx</code>.  If the
   value is not an object or it is an object without a finalizer,
   <code>undefined</code> is pushed to the stack instead.</p>
 

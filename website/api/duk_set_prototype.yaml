@@ -1,13 +1,13 @@
 name: duk_set_prototype
 
 proto: |
-  void duk_set_prototype(duk_context *ctx, duk_idx_t index);
+  void duk_set_prototype(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... proto! ] -> [ ... val! ... ]
 
 summary: |
-  <p>Set the internal prototype of the value at <code>index</code> to the value
+  <p>Set the internal prototype of the value at <code>idx</code> to the value
   at stack top (which must be an object or <code>undefined</code>).  If the
   target value is not an object or the prototype value is not an object or
   <code>undefined</code>, an error is thrown.</p>

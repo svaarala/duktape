@@ -1,7 +1,7 @@
 name: duk_def_prop
 
 proto: |
-  void duk_def_prop(duk_context *ctx, duk_idx_t obj_index, duk_uint_t flags);
+  void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
 
 stack: |
   [ ... obj! ... key! ] -> [ ... obj! ... ]  (if have no value, setter, getter)
@@ -12,7 +12,7 @@ stack: |
 
 summary: |
   <p>Create or alter the attributes of property <code>key</code> of object at
-  <code>obj_index</code>, with semantics like
+  <code>obj_idx</code>, with semantics like
   <code><a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.6">Object.defineProperty()</a></code>.
   When the requested change is not allowed (e.g. property is not configurable), a
   <code>TypeError</code> is thrown.  If the target is not an object (or the

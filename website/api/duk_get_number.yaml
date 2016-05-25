@@ -1,13 +1,13 @@
 name: duk_get_number
 
 proto: |
-  duk_double_t duk_get_number(duk_context *ctx, duk_idx_t index);
+  duk_double_t duk_get_number(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get the number value at <code>index</code> without modifying or coercing
+  <p>Get the number value at <code>idx</code> without modifying or coercing
   the value.  Returns <code>NaN</code> if the value is not a number or the
   index is invalid.</p>
 

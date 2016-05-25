@@ -1,13 +1,13 @@
 name: duk_del_prop
 
 proto: |
-  duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_index);
+  duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_idx);
 
 stack: |
   [ ... obj! ... key! ] -> [ ... obj! ... ]
 
 summary: |
-  <p>Delete the property <code>key</code> of a value at <code>obj_index</code>.
+  <p>Delete the property <code>key</code> of a value at <code>obj_idx</code>.
   <code>key</code> is removed from the stack.  Return code and error throwing
   behavior:</p>
   <ul>
@@ -16,10 +16,10 @@ summary: |
   <li>If property exists but is not configurable, throws an error
       (strict mode semantics).</li>
   <li>If property does not exist, returns <code>1</code> (<i>not</i> 0).</li>
-  <li>If the value at <code>obj_index</code> is not
+  <li>If the value at <code>obj_idx</code> is not
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.10">object coercible</a>,
       throws an error.</li>
-  <li>If <code>obj_index</code> is invalid, throws an error.</li>
+  <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
   <p>The property deletion is equivalent to the Ecmascript expression:</p>

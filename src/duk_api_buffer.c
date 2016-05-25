@@ -4,13 +4,13 @@
 
 #include "duk_internal.h"
 
-DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size_t new_size) {
+DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t new_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, index);
+	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
@@ -23,7 +23,7 @@ DUK_EXTERNAL void *duk_resize_buffer(duk_context *ctx, duk_idx_t index, duk_size
 	return DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, h);
 }
 
-DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_t *out_size) {
+DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_dynamic *h;
 	void *ptr;
@@ -31,7 +31,7 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_
 
 	DUK_ASSERT(ctx != NULL);
 
-	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, index);
+	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	if (!(DUK_HBUFFER_HAS_DYNAMIC(h) && !DUK_HBUFFER_HAS_EXTERNAL(h))) {
@@ -54,13 +54,13 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_context *ctx, duk_idx_t index, duk_size_
 	return ptr;
 }
 
-DUK_EXTERNAL void duk_config_buffer(duk_context *ctx, duk_idx_t index, void *ptr, duk_size_t len) {
+DUK_EXTERNAL void duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *ptr, duk_size_t len) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbuffer_external *h;
 
 	DUK_ASSERT(ctx != NULL);
 
-	h = (duk_hbuffer_external *) duk_require_hbuffer(ctx, index);
+	h = (duk_hbuffer_external *) duk_require_hbuffer(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
 	if (!DUK_HBUFFER_HAS_EXTERNAL(h)) {

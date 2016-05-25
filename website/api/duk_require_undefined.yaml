@@ -1,13 +1,13 @@
 name: duk_require_undefined
 
 proto: |
-  void duk_require_undefined(duk_context *ctx, duk_idx_t index);
+  void duk_require_undefined(duk_context *ctx, duk_idx_t idx);
 
 stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Throw an error if the value at <code>index</code> is not <code>undefined</code>
+  <p>Throw an error if the value at <code>idx</code> is not <code>undefined</code>
   or if the index is invalid.</p>
 
   <div class="note">
