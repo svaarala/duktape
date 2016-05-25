@@ -2493,6 +2493,10 @@ Planned
 
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
+* Change default data alignment for x86, x64, and x32 from align-by-1 (no
+  alignment) to align-by-4 which may be marginally faster and avoids some
+  -fsanitize warnings (GH-814)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
