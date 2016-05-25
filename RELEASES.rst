@@ -1681,6 +1681,9 @@ Planned
 * Fix -Wshadow warnings on some GCC versions for variable/argument name
   'index' by avoiding such identifiers in API and internals (GH-810)
 
+* Fix -Wshift-sign-overflow warnings on some Clang versions for signed left
+  shifts whose result was used as unsigned (GH-812, GH-813)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
