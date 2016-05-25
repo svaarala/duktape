@@ -418,7 +418,9 @@ duk.raw: dist linenoise
 
 duk-clang: dist linenoise
 	# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
-	clang -o $@ -Wcast-align $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
+	# -Weverything
+	clang -o $@ -Wcast-align -Wshift-sign-overflow $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
 duk.O2: dist linenoise
