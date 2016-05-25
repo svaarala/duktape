@@ -1720,3 +1720,7 @@ Planned
 
 * Internal change: avoid explicit casts for 'switch' statement arguments,
   other internal cast fixes (GH-825)
+
+* Internal change: rework tagged value (duk_tval) fastint/integer handling
+  macros to avoid multiple evaluation of argument(s) and for easier mixing
+  of fastint and non-fastint aware code (GH-702)
