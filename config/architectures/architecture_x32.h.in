@@ -2,10 +2,11 @@
 #if !defined(DUK_USE_BYTEORDER)
 #define DUK_USE_BYTEORDER 1
 #endif
-/* XXX: This is technically not guaranteed because it's possible to configure
- * an x86 to require aligned accesses with Alignment Check (AC) flag.
+/* While x86/x64/x32 doesn't usually require any alignment, providing at least
+ * align by 4 may be marginally faster (depends on processor architecture).
+ * It's also possible to enable Alignment Check (AC) for userspace software.
  */
 #if !defined(DUK_USE_ALIGN_BY)
-#define DUK_USE_ALIGN_BY 1
+#define DUK_USE_ALIGN_BY 4
 #endif
 #define DUK_USE_PACKED_TVAL
