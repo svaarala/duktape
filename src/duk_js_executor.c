@@ -349,15 +349,15 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 		 */
 
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		i3 = i1 << (u2 & 0x1f);                      /* E5 Section 11.7.1, steps 7 and 8 */
-		i3 = i3 & ((duk_int32_t) 0xffffffffUL);      /* Note: left shift, should mask */
+		i3 = (duk_int32_t) (((duk_uint32_t) i1) << (u2 & 0x1fUL));  /* E5 Section 11.7.1, steps 7 and 8 */
+		i3 = i3 & ((duk_int32_t) 0xffffffffUL);                     /* Note: left shift, should mask */
 		break;
 	}
 	case DUK_OP_BASR: {
 		/* signed shift */
 
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
-		i3 = i1 >> (u2 & 0x1f);                      /* E5 Section 11.7.2, steps 7 and 8 */
+		i3 = i1 >> (u2 & 0x1fUL);                      /* E5 Section 11.7.2, steps 7 and 8 */
 		break;
 	}
 	case DUK_OP_BLSR: {
@@ -367,7 +367,7 @@ DUK_LOCAL void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_tval *tv_x, duk_t
 		u2 = ((duk_uint32_t) i2) & 0xffffffffUL;
 
 		/* special result value handling */
-		u3 = u1 >> (u2 & 0x1f);     /* E5 Section 11.7.2, steps 7 and 8 */
+		u3 = u1 >> (u2 & 0x1fUL);     /* E5 Section 11.7.2, steps 7 and 8 */
 #if defined(DUK_USE_FASTINT)
 		fi3 = (duk_int64_t) u3;
 		goto fastint_result_set;
