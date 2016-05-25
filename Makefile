@@ -189,7 +189,7 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MARK_AND_SWEEP
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
 #CCOPTS_FEATURES += -DDUK_OPT_NO_FILE_IO
-CCOPTS_FEATURES += '-DDUK_OPT_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); *((unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)'
+CCOPTS_FEATURES += '-DDUK_OPT_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); *((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)'
 CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_PC2LINE
