@@ -319,7 +319,6 @@ copy_files([
 	'duk_bi_thrower.c',
 	'duk_debug_fixedbuffer.c',
 	'duk_debug.h',
-	'duk_debug_heap.c',
 	'duk_debug_macros.c',
 	'duk_debug_vsnprintf.c',
 	'duk_error_augment.c',
