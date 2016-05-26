@@ -79,7 +79,6 @@ DUKTAPE_SOURCES_SEPARATE =	\
 	$(DISTSRCSEP)/duk_alloc_default.c \
 	$(DISTSRCSEP)/duk_debug_macros.c \
 	$(DISTSRCSEP)/duk_debug_vsnprintf.c \
-	$(DISTSRCSEP)/duk_debug_heap.c \
 	$(DISTSRCSEP)/duk_debug_fixedbuffer.c \
 	$(DISTSRCSEP)/duk_error_macros.c \
 	$(DISTSRCSEP)/duk_error_longjmp.c \
