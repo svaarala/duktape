@@ -172,7 +172,7 @@ static void cmdline_fatal_handler(void *udata, const char *msg) {
 	fprintf(stderr, "*** FATAL ERROR: %s\n", msg ? msg : "no message");
 	fprintf(stderr, "Causing intentional segfault...\n");
 	fflush(stderr);
-	*((unsigned int *) 0) = (unsigned int) 0xdeadbeefUL;
+	*((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL;
 	abort();
 }
 

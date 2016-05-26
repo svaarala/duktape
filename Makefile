@@ -189,7 +189,7 @@ CCOPTS_FEATURES =
 #CCOPTS_FEATURES += -DDUK_OPT_NO_MARK_AND_SWEEP
 #CCOPTS_FEATURES += -DDUK_OPT_NO_VOLUNTARY_GC
 #CCOPTS_FEATURES += -DDUK_OPT_NO_FILE_IO
-CCOPTS_FEATURES += '-DDUK_OPT_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); *((unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)'
+CCOPTS_FEATURES += '-DDUK_OPT_FATAL_HANDLER(udata,msg)=do { const char *fatal_msg = (msg); fprintf(stderr, "*** FATAL ERROR: %s\n", fatal_msg ? fatal_msg : "no message"); *((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)'
 CCOPTS_FEATURES += -DDUK_OPT_SELF_TESTS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_TRACEBACKS
 #CCOPTS_FEATURES += -DDUK_OPT_NO_PC2LINE
@@ -418,7 +418,9 @@ duk.raw: dist linenoise
 
 duk-clang: dist linenoise
 	# Use -Wcast-align to trigger issues like: https://github.com/svaarala/duktape/issues/270
-	clang -o $@ -Wcast-align $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	# Use -Wshift-sign-overflow to trigger issues like: https://github.com/svaarala/duktape/issues/812
+	# -Weverything
+	clang -o $@ -Wcast-align -Wshift-sign-overflow $(CCOPTS_NONDEBUG) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	-@size $@
 
 duk.O2: dist linenoise
