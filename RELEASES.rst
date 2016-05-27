@@ -1669,6 +1669,9 @@ Planned
 * Add an extra module (extras/console) providing a minimal 'console' binding
   (GH-767)
 
+* Add an extra module (extras/module-node) providing a Node.js-like module
+  loading framework supporting require.cache, module.loaded, etc.
+
 * Add an extra module (extras/minimal-printf) providing minimal,
   Duktape-optimized sprintf(), snprintf(), vsnprintf(), and sscanf()
   implementations; the extra compiles to less than 1kB of code which is
