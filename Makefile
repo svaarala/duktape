@@ -39,12 +39,12 @@
 # A few commands which may need to be edited.  NodeJS is sometimes found
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
 # so check 'nodejs' first.
-GIT:=$(shell which git)
-NODE:=$(shell which nodejs node | head -1)
-WGET:=$(shell which wget)
-JAVA:=$(shell which java)
-VALGRIND:=$(shell which valgrind)
-PYTHON:=$(shell which python2 python | head -1)
+GIT:=$(shell command -v git 2>/dev/null)
+NODE:= $(shell { command -v nodejs || command -v node; } 2>/dev/null)
+WGET:=$(shell command -v wget 2>/dev/null)
+JAVA:=$(shell command -v java 2>/dev/null)
+VALGRIND:=$(shell command -v valgrind 2>/dev/null)
+PYTHON:=$(shell { command -v python2 || command -v python; } 2>/dev/null)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
 DUK_VERSION:=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
@@ -1163,7 +1163,7 @@ codepolicycheck:
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h \
 		extras/*/*.c extras/*/*.h
-	@python util/check_code_policy.py \
+	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
 		--check-fixme \
