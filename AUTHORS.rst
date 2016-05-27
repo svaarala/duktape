@@ -30,7 +30,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Julien Hamaide (https://github.com/crazyjul)
 * Sebastian Götte (https://github.com/jaseg)
 * Tomasz Magulski (https://github.com/magul)
-* D. Bohdan (https://github.com/dbohdan)
+* \D. Bohdan (https://github.com/dbohdan)
 * Ondřej Jirman (https://github.com/megous)
 
 Other contributions
