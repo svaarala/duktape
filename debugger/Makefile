@@ -1,5 +1,5 @@
-NODE:=$(shell which nodejs node | head -1)
-DUKLUV:=dukluv
+NODE:=$(shell { command -v nodejs || command -v node; } 2>/dev/null)
+DUKLUV:=$(shell command -v dukluv 2>/dev/null)
 
 # Try to get a useful default --source-dirs which works both in the Duktape
 # repo and in the distributable.  We don't want to add '..' because it would
