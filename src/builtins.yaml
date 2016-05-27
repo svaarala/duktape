@@ -374,18 +374,6 @@ objects:
           length: 1
         section_b: true
 
-      # CommonJS module loading
-      #
-      #  require:  not required to be in the global environment but useful
-
-      - key: "require"
-        value:
-          type: function
-          native: duk_bi_global_object_require
-          length: 1
-          varargs: false
-        commonjs: true
-
   - id: bi_global_env
     class: ObjEnv
     duktape: true

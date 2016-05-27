@@ -14,12 +14,6 @@
  */
 #define  DUK_BI_DATE_ISO8601_BUFSIZE  40
 
-/* Maximum length of CommonJS module identifier to resolve.  Length includes
- * both current module ID, requested (possibly relative) module ID, and a
- * slash in between.
- */
-#define  DUK_BI_COMMONJS_MODULE_ID_LIMIT  256
-
 /* Helpers exposed for internal use */
 DUK_INTERNAL_DECL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_timeval_from_dparts(duk_double_t *dparts, duk_small_uint_t flags);
