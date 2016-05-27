@@ -40,7 +40,7 @@
 # as 'nodejs', sometimes as 'node'; sometimes 'node' is unrelated to NodeJS
 # so check 'nodejs' first.
 GIT:=$(shell command -v git 2>/dev/null)
-NODE:= $(shell { command -v nodejs || command -v node; } 2>/dev/null)
+NODE:=$(shell { command -v nodejs || command -v node; } 2>/dev/null)
 WGET:=$(shell command -v wget 2>/dev/null)
 JAVA:=$(shell command -v java 2>/dev/null)
 VALGRIND:=$(shell command -v valgrind 2>/dev/null)
