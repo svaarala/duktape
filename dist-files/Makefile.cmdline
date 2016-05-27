@@ -25,6 +25,10 @@ CMDLINE_SOURCES += extras/console/duk_console.c
 CCOPTS += -DDUK_CMDLINE_LOGGING_SUPPORT -I./extras/logging
 CMDLINE_SOURCES += extras/logging/duk_logging.c
 
+# Enable Duktape 1.x module loading for command line.
+CCOPTS += -DDUK_CMDLINE_MODULE_SUPPORT -I./extras/module-duktape
+CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
+
 # If you want linenoise, you can enable these.  At the moment linenoise
 # will cause some harmless compilation warnings.
 #CCOPTS += -DDUK_CMDLINE_FANCY -I./linenoise

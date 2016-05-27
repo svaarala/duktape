@@ -170,7 +170,8 @@ DUKTAPE_CMDLINE_SOURCES = \
 	dist/examples/debug-trans-socket/duk_trans_socket_unix.c \
 	dist/extras/print-alert/duk_print_alert.c \
 	dist/extras/console/duk_console.c \
-	dist/extras/logging/duk_logging.c
+	dist/extras/logging/duk_logging.c \
+	dist/extras/module-duktape/duk_module_duktape.c
 LINENOISE_SOURCES = \
 	linenoise/linenoise.c
 
@@ -258,6 +259,7 @@ CCOPTS_FEATURES += -DDUK_OPT_JSON_STRINGIFY_FASTPATH
 CCOPTS_FEATURES += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_CONSOLE_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_LOGGING_SUPPORT
+CCOPTS_FEATURES += -DDUK_CMDLINE_MODULE_SUPPORT
 CCOPTS_FEATURES += -DDUK_CMDLINE_FANCY
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_FEATURES += -DDUK_CMDLINE_ALLOC_TORTURE
@@ -284,6 +286,7 @@ CCOPTS_SHARED += -I./dist/examples/debug-trans-socket
 CCOPTS_SHARED += -I./dist/extras/print-alert
 CCOPTS_SHARED += -I./dist/extras/console
 CCOPTS_SHARED += -I./dist/extras/logging
+CCOPTS_SHARED += -I./dist/extras/module-duktape
 #CCOPTS_SHARED += -I./dist/src-separate
 #CCOPTS_SHARED += -m32                             # force 32-bit compilation on a 64-bit host
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
@@ -303,10 +306,10 @@ CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result
 GXXOPTS_SHARED += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)={fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));}'
 GXXOPTS_NONDEBUG = $(GXXOPTS_SHARED) -Os -fomit-frame-pointer
-GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
+GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging -I./dist/extras/module-duktape
 GXXOPTS_NONDEBUG += -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 GXXOPTS_DEBUG = $(GXXOPTS_SHARED) -O0 -g -ggdb
-GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging
+GXXOPTS_DEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging -I./dist/extras/module-duktape
 GXXOPTS_DEBUG += -DDUK_OPT_DEBUG -DDUK_OPT_ASSERTIONS -DDUK_OPT_SELF_TESTS -DDUK_CMDLINE_PRINTALERT_SUPPORT -DDUK_CMDLINE_CONSOLE_SUPPORT -DDUK_CMDLINE_LOGGING_SUPPORT
 GXXOPTS_DEBUG += -DDUK_OPT_DEBUG_LEVEL=0
 
@@ -980,6 +983,7 @@ CCOPTS_AJDUK = -m32
 CCOPTS_AJDUK += -Wno-unused-parameter -Wno-pedantic -Wno-sign-compare -Wno-missing-field-initializers -Wno-unused-result
 CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=200809L
 CCOPTS_AJDUK += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
+CCOPTS_AJDUK += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
 CCOPTS_AJDUK += -DDUK_OPT_FORCE_ALIGN=4
 CCOPTS_AJDUK += -DDUK_OPT_ASSERTIONS
 CCOPTS_AJDUK += -DDUK_OPT_LIGHTFUNC_BUILTINS
