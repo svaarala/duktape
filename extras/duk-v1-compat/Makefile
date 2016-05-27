@@ -2,5 +2,5 @@
 
 .PHONY: test
 test:
-	gcc -o $@ -I../../src/ -I. ../../src/duktape.c duk_v1_compat.c test.c -lm
+	gcc -std=c99 -Wall -Wextra -o $@ -I../../src/ -I. ../../src/duktape.c duk_v1_compat.c test.c -lm
 	./test
