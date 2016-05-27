@@ -61,7 +61,6 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 	 */
 
 	const char *id;
-	duk_ret_t nrets;
 	const char *parent_id;
 	duk_idx_t module_idx;
 	duk_idx_t stash_idx;
@@ -73,6 +72,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 	duk_push_current_function(ctx);
 	(void) duk_get_prop_string(ctx, -1, "\xff" "moduleId");
 	parent_id = duk_require_string(ctx, -1);
+	(void) parent_id;  /* not used directly; suppress warning */
 
 	/* [ id stash require parent_id ] */
 
@@ -116,7 +116,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 	}
 
 	if (duk_is_string(ctx, -1)) {
-		duk_int ret;
+		duk_int_t ret;
 
 		/* [ ... module source ] */
 
@@ -133,7 +133,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 		/* nop */
 	} else {
 		duk__del_cached_module(ctx, id);
-		duk_error(ctx, DUK_ERR_API_ERROR, "error in module load callback");
+		duk_error(ctx, DUK_ERR_API_ERROR, "invalid module load callback return value");
 	}
 
 	/* fall through */
@@ -191,7 +191,7 @@ static duk_int_t duk__eval_module_source (duk_context *ctx, void *udata) {
 static duk_int_t duk__eval_module_source (duk_context *ctx) {
 #endif
 	/*
-	 *  Stack: [ module source ]
+	 *  Stack: [ ... module source ]
 	 */
 
 #if DUK_VERSION >= 19999
@@ -202,36 +202,38 @@ static duk_int_t duk__eval_module_source (duk_context *ctx) {
 	 * way to implement CommonJS closure semantics and matches the behavior of
 	 * e.g. Node.js.
 	 */
-	duk_push_string(ctx, "(function main(exports, require, module, __filename, __dirname) { ");
-	duk_dup(ctx, 1);  /* source */
-	duk_push_string(ctx, " })");
+	duk_push_string(ctx, "(function main(exports,require,module,__filename,__dirname){");
+	duk_dup(ctx, -2);  /* source */
+	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
 
-	/* [ module source func_src ] */
+	/* [ ... module source func_src ] */
 
-	(void) duk_get_prop_string(ctx, 0, "filename");
+	(void) duk_get_prop_string(ctx, -3, "filename");
 	duk_compile(ctx, DUK_COMPILE_EVAL);
 	duk_call(ctx, 0);
 
-	/* [ module source func ] */
+	/* [ ... module source func ] */
 
 	/* call the function wrapper */
-	(void) duk_get_prop_string(ctx, 0, "exports");   /* exports */
-	(void) duk_get_prop_string(ctx, 0, "require");   /* require */
-	duk_dup(ctx, 0);                                 /* module */
-	(void) duk_get_prop_string(ctx, 0, "filename");  /* __filename */
-	duk_push_undefined(ctx);                         /* __dirname */
+	(void) duk_get_prop_string(ctx, -3, "exports");   /* exports */
+	(void) duk_get_prop_string(ctx, -4, "require");   /* require */
+	duk_dup(ctx, -5);                                 /* module */
+	(void) duk_get_prop_string(ctx, -6, "filename");  /* __filename */
+	duk_push_undefined(ctx);                          /* __dirname */
 	duk_call(ctx, 5);
+
+	/* [ ... module source result(ignore) ] */
 
 	/* module.loaded = true */
 	duk_push_true(ctx);
-	duk_put_prop_string(ctx, 0, "loaded");
+	duk_put_prop_string(ctx, -4, "loaded");
 
-	/* [ module source retval ] */
+	/* [ ... module source retval ] */
 
 	duk_pop_2(ctx);
 
-	/* [ module ] */
+	/* [ ... module ] */
 
 	return 1;
 }
@@ -243,16 +245,18 @@ void duk_module_node_init(duk_context *ctx) {
 
 	duk_idx_t options_idx;
 
-	duk_require_object_coercible(ctx, -1);
+	duk_require_object_coercible(ctx, -1);  /* error before setting up requireCache */
 	options_idx = duk_require_normalize_index(ctx, -1);
 
-	/* initialize the require cache to a fresh object */
+	/* Initialize the require cache to a fresh object. */
 	duk_push_global_stash(ctx);
 	duk_push_object(ctx);
 	duk_put_prop_string(ctx, -2, "\xff" "requireCache");
 	duk_pop(ctx);
 
-	/* stash callbacks for later use */
+	/* Stash callbacks for later use.  User code can overwrite them later
+	 * on directly by accessing the global stash.
+	 */
 	duk_push_global_stash(ctx);
 	duk_get_prop_string(ctx, options_idx, "resolve");
 	duk_require_function(ctx, -1);

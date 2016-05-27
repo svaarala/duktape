@@ -3,7 +3,7 @@ Node.js-like module loading framework
 =====================================
 
 This directory contains an example module resolution and loading framework and
-``require`` implementation based on the Node.js module system:
+``require()`` implementation based on the Node.js module system:
 
 * https://nodejs.org/api/modules.html
 
@@ -35,9 +35,9 @@ The application needs only to provide the module resolution and loading logic:
   It is possible to replace the callbacks after initialization by setting the
   following internal properties on the global stash:
   
-  - `\xffmodResolve`
+  - ``\xffmodResolve``
   
-  - `\xffmodLoad`
+  - ``\xffmodLoad``
 
 * The resolve callback is a Duktape/C function which takes the string passed
   to ``require()`` and resolves it to a canonical module ID (for Node.js this
@@ -60,11 +60,12 @@ The application needs only to provide the module resolution and loading logic:
 
   If the module ID cannot be resolved, the resolve callback should throw an
   error, which will propagate out of the ``require()`` call.  Note also that
-  when the global ``require`` is called, the parent ID is an empty string.
+  when the global ``require()`` is called, the parent ID is an empty string.
 
 * The load callback is a Duktape/C function which takes the resolved module ID
-  and either returns the Ecmascript source code for the module, or populates
-  ``module.exports`` itself and returns undefined (useful for C modules)::
+  and: (1) returns the Ecmascript source code for the module or ``undefined``
+  if there's no source code, e.g. for pure C modules, (2) can populate
+  ``module.exports`` itself, and (3) can replace ``module.exports``::
 
       duk_ret_t cb_load_module(duk_context *ctx) {
           /*
@@ -80,5 +81,5 @@ The application needs only to provide the module resolution and loading logic:
   As with the resolve callback, the load callback should throw an error if the
   module cannot be loaded for any reason.
 
-* After these steps, ``require`` will be registered to the global object and
+* After these steps, ``require()`` will be registered to the global object and
   the module system is ready to use.
