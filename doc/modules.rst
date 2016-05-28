@@ -6,7 +6,7 @@ Introduction
 ============
 
 This document discusses the barebone CommonJS-based module framework
-built into Duktape:
+built into Duktape 1.x (moved into an optional extra in Duktape 2.x):
 
 * Ecmascript modules are defined using the CommonJS module format:
 
