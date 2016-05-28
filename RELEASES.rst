@@ -1670,7 +1670,7 @@ Planned
   (GH-767)
 
 * Add an extra module (extras/module-node) providing a Node.js-like module
-  loading framework supporting require.cache, module.loaded, etc.
+  loading framework supporting require.cache, module.loaded, etc. (GH-796)
 
 * Add an extra module (extras/minimal-printf) providing minimal,
   Duktape-optimized sprintf(), snprintf(), vsnprintf(), and sscanf()

@@ -24,6 +24,7 @@ static duk_ret_t init_logging(duk_context *ctx, void *udata) {
 int main(int argc, char *argv[]) {
 	duk_context *ctx;
 	int i;
+	int exitcode = 0;
 
 	ctx = duk_create_heap_default();
 	if (!ctx) {
@@ -38,13 +39,18 @@ int main(int argc, char *argv[]) {
 		printf("Evaling: %s\n", argv[i]);
 		duk_push_string(ctx, argv[i]);
 		duk_push_string(ctx, "evalCodeFileName");  /* for automatic logger name testing */
-		duk_compile(ctx, DUK_COMPILE_EVAL);
-		(void) duk_pcall(ctx, 0);
+		if (duk_pcompile(ctx, DUK_COMPILE_EVAL) != 0) {
+			exitcode = 1;
+		} else {
+			if (duk_pcall(ctx, 0) != 0) {
+				exitcode = 1;
+			}
+		}
 		printf("--> %s\n", duk_safe_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 
 	printf("Done\n");
 	duk_destroy_heap(ctx);
-	return 0;
+	return exitcode;
 }

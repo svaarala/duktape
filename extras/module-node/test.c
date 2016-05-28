@@ -34,8 +34,10 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
 		duk_push_string(ctx, "module.exports = require('pig');");
 	} else if (strcmp(module_id, "ape.js") == 0) {
 		duk_push_string(ctx, "module.exports = { module: module, __filename: __filename, wasLoaded: module.loaded };");
+	} else if (strcmp(module_id, "badger.js") == 0) {
+		duk_push_string(ctx, "exports.foo = 123; exports.bar = 234;");
 	} else {
-		duk_push_string(ctx, "module.exports = undefined;");
+		duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot find module: %s", module_id);
 	}
 
 	return 1;
@@ -46,14 +48,28 @@ static duk_ret_t handle_print(duk_context *ctx) {
 	return 0;
 }
 
+static duk_ret_t handle_assert(duk_context *ctx) {
+	if (duk_to_boolean(ctx, 0)) {
+		return 0;
+	}
+	duk_error(ctx, DUK_ERR_ERROR, "assertion failed: %s", duk_safe_to_string(ctx, 1));
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	duk_context *ctx;
 	int i;
+	int exitcode = 0;
 
 	ctx = duk_create_heap_default();
 	if (!ctx) {
 		return 1;
 	}
+
+	duk_push_c_function(ctx, handle_print, 1);
+	duk_put_global_string(ctx, "print");
+	duk_push_c_function(ctx, handle_assert, 2);
+	duk_put_global_string(ctx, "assert");
 
 	duk_push_object(ctx);
 	duk_push_c_function(ctx, cb_resolve_module, DUK_VARARGS);
@@ -65,12 +81,19 @@ int main(int argc, char *argv[]) {
 
 	for (i = 1; i < argc; i++) {
 		printf("Evaling: %s\n", argv[i]);
-		(void) duk_peval_string(ctx, argv[i]);
+		if (duk_peval_string(ctx, argv[i]) != 0) {
+			if (duk_get_prop_string(ctx, -1, "stack")) {
+				duk_replace(ctx, -2);
+			} else {
+				duk_pop(ctx);
+			}
+			exitcode = 1;
+		}
 		printf("--> %s\n", duk_safe_to_string(ctx, -1));
 		duk_pop(ctx);
 	}
 
-	printf("Done\n\n");
+	printf("Done\n");
 	duk_destroy_heap(ctx);
-	return 0;
+	return exitcode;
 }
