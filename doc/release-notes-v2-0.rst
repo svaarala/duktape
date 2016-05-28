@@ -87,6 +87,26 @@ To upgrade:
   semantics you can include the following extra into your compilation:
   ``extras/print-alert``.
 
+Built-in CommonJS module framework removed
+------------------------------------------
+
+The built-in CommonJS module loading framework consisting of ``require()``,
+``Duktape.modSearch()`` and ``Duktape.modLoaded`` was removed; a module
+framework isn't always needed, and when it is, it's difficult for a single
+framework to match the very different use cases.
+
+To upgrade:
+
+* If you don't use the built-in module loading framework, no action is needed.
+
+* If you do use the built-in module loading framework and want to continue
+  using a module loader with Duktape 1.x semantics, you can include the
+  following extra into your compilation: ``extras/module-duktape``.
+
+* If you're upgrading, there are also other alternatives to module loading.
+  For example, the ``extras/module-node`` module loader provides Node.js-like
+  semantics with a more flexible module resolution and loading process.
+
 Duktape.Logger, duk_log(), and duk_log_va() removed
 ---------------------------------------------------
 
