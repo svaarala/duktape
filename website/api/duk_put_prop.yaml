@@ -42,7 +42,7 @@ summary: |
       step 7 of the special [[Put]] variant).</li>
   <li>The <code>key</code> argument is internally coerced to a string.  There is
       an internal fast path for arrays and numeric indices which avoids an
-      explicit string coercion, so use a numeric <code>key</code> when applicable.</p>
+      explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
 
   <div class="note">
