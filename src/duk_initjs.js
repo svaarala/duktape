@@ -18,8 +18,5 @@
         def(D, name, value);
     }
 
-    // Tracking table for CommonJS module loading.
-    if (true) {
-        def(D, 'modLoaded', {});
-    }
+    // XXX: at the moment there's no init stuff; remove?
 })(this, Duktape);

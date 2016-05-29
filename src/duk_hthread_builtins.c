@@ -559,8 +559,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			if (h_key == DUK_HTHREAD_STRING_EVAL(thr) ||
 			    h_key == DUK_HTHREAD_STRING_YIELD(thr) ||
-			    h_key == DUK_HTHREAD_STRING_RESUME(thr) ||
-			    h_key == DUK_HTHREAD_STRING_REQUIRE(thr)) {
+			    h_key == DUK_HTHREAD_STRING_RESUME(thr)) {
 				/* These functions have trouble working as lightfuncs.
 				 * Some of them have specific asserts and some may have
 			         * additional properties (e.g. 'require.id' may be written).

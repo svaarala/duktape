@@ -2,7 +2,7 @@
 
 .PHONY: test
 test:
-	gcc -o $@ -I../../src/ -I. ../../src/duktape.c duk_console.c test.c -lm
+	gcc -std=c99 -Wall -Wextra -o $@ -I../../src/ -I. ../../src/duktape.c duk_console.c test.c -lm
 	./test 'console.assert(true, "not shown");'
 	./test 'console.assert(false, "shown", { foo: 123 });'
 	./test 'console.log(1, 2, 3, { foo: "bar" });'

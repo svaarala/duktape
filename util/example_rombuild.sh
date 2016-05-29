@@ -29,7 +29,7 @@ $PYTHON config/genconfig.py \
 	autodetect-header
 cp dist/src/duk_config.h dist/src-separate/
 #gcc -std=c99 -Wall -Wextra -Os -Idist/src-separate/ -Idist/examples/cmdline dist/src-separate/*.c dist/examples/cmdline/duk_cmdline.c -o _duk -lm
-make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT modifies Duktape object (doesn't work with ROM built-ins)
+make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT, DUK_CMDLINE_MODULE_SUPPORT modify Duktape object (doesn't work with ROM built-ins)
 
 # Ajduk depends on 'make ajduk' and uses DUK_OPT_xxx feature options.
 # This would ideally be done directly using genconfig.py without

@@ -1,7 +1,7 @@
 # For manual testing; say 'make' in extras/logging and run ./test.
 .PHONY: test
 test:
-	gcc -otest -I../../src ../../src/duktape.c duk_logging.c test.c -lm
+	gcc -std=c99 -Wall -Wextra -otest -I../../src ../../src/duktape.c duk_logging.c test.c -lm
 	./test 'L = new Duktape.Logger(); L.trace("testing"); L.l = 0; L.trace("testing 2");'
 	./test 'L = new Duktape.Logger(); L.debug("testing"); L.l = 1; L.debug("testing 2");'
 	./test 'L = new Duktape.Logger(); L.info("testing");'

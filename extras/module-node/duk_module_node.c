@@ -8,11 +8,11 @@
 #include "duk_module_node.h"
 
 #if DUK_VERSION >= 19999
-static duk_int_t duk__eval_module_source (duk_context *ctx, void *udata);
+static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata);
 #else
-static duk_int_t duk__eval_module_source (duk_context *ctx);
+static duk_int_t duk__eval_module_source(duk_context *ctx);
 #endif
-static void duk__push_module_object (duk_context *ctx, const char *id);
+static void duk__push_module_object(duk_context *ctx, const char *id);
 
 static duk_bool_t duk__get_cached_module(duk_context *ctx, const char *id) {
 	duk_push_global_stash(ctx);
@@ -186,9 +186,9 @@ static void duk__push_module_object(duk_context *ctx, const char *id) {
 }
 
 #if DUK_VERSION >= 19999
-static duk_int_t duk__eval_module_source (duk_context *ctx, void *udata) {
+static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata) {
 #else
-static duk_int_t duk__eval_module_source (duk_context *ctx) {
+static duk_int_t duk__eval_module_source(duk_context *ctx) {
 #endif
 	/*
 	 *  Stack: [ ... module source ]

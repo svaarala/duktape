@@ -159,6 +159,7 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'extras', 'console'))
 	mkdir(os.path.join(dist, 'extras', 'logging'))
 	mkdir(os.path.join(dist, 'extras', 'minimal-printf'))
+	mkdir(os.path.join(dist, 'extras', 'module-duktape'))
 	mkdir(os.path.join(dist, 'extras', 'module-node'))
 	mkdir(os.path.join(dist, 'polyfills'))
 	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
@@ -616,6 +617,14 @@ copy_files([
 	'Makefile',
 	'test.c'
 ], os.path.join('extras', 'minimal-printf'), os.path.join(dist, 'extras', 'minimal-printf'))
+
+copy_files([
+	'README.rst',
+	'duk_module_duktape.c',
+	'duk_module_duktape.h',
+	'Makefile',
+	'test.c'
+], os.path.join('extras', 'module-duktape'), os.path.join(dist, 'extras', 'module-duktape'))
 
 copy_files([
 	'README.rst',

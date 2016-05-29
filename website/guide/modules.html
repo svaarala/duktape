@@ -1,63 +1,57 @@
 <a name="writing-c-modules"></a>  <!-- for old links -->
 <h1 id="modules">Modules</h1>
 
-<p>Duktape has a built-in minimal module loading framework based on
-<a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>,
-with additional support for <code>module.exports</code> and a few Duktape
-specific <code>module</code> object properties.
-The internals are documented in
-<a href="https://github.com/svaarala/duktape/blob/master/doc/modules.rst">modules.rst</a>.
-A recommended (but not mandatory) C module convention is described in
-<a href="https://github.com/svaarala/duktape/blob/master/doc/c-module-convention.rst">c-module-convention.rst</a>.
-</p>
+<h2>CommonJS module loading frameworks</h2>
 
-<p>You can load modules from Ecmascript code with the global <code>require()</code> function:</p>
+<p>There's no built-in module loading framework because it's difficult for a
+single framework to match a wide variety of different module loading use cases.
+The Duktape distributable includes several optional module loader frameworks,
+for example:</p>
+<table>
+<tr>
+<td><a href="https://github.com/svaarala/duktape/tree/master/extras/module-duktape">module-duktape</a></td>
+<td>A Duktape 1.x compatible loader based on
+<a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules version 1.1.1</a>,
+with additional support for <code>module.exports</code> and a few Duktape specific
+<code>module</code> object properties.  The internals are documented in
+<a href="https://github.com/svaarala/duktape/blob/master/doc/modules.rst">modules.rst</a>,
+see <a href="http://wiki.duktape.org/HowtoModules.html">How to use modules</a> for examples.
+This loader was a built-in in Duktape 1.x but was moved into an optional extra in Duktape 2.x.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/svaarala/duktape/tree/master/extras/module-node">module-node</a></td>
+<td>A <a href="https://nodejs.org/api/modules.html">Node.js modules</a> compatible
+loader.  See <a href="http://wiki.duktape.org/HowtoNodejsModules.html">How to use Node.js-like modules</a>
+for examples.</td>
+</tr>
+</table>
+
+<p>You can also implement your own module loader from scratch: the above
+loaders are implemented using the Duktape public API with no special access
+to internals.</p>
+
+<p>The module loaders provide a <code>require()</code> function which allows
+modules to be loaded as follows:</p>
 <pre class="ecmascript-code">
 var mod = require('foo/bar');
 mod.hello();
 </pre>
 
-<p>Modules are defined by Ecmascript code running in a special environment
-defined by the CommonJS modules specification.  Inside this environment,
-variable/function declarations are local to the module and don't affect the
-global object.  The environment also provides three special symbols related
-to module loading: <code>exports</code> for exporting module symbols,
-<code>module</code> for providing module metadata (<code>module.id</code>
-in particular), and <code>require()</code> for loading further modules with
-relative module identifiers resolved in the context of the current module.
-Example:</p>
-<pre class="ecmascript-code">
-// foo/bar.js
-var text = 'Hello world!';     // not visible outside the module
-var quux = require('./quux');  // loads foo/quux
-exports.hello = function () {
-    print(text);
-};
-</pre>
+<p>The loaders abstract actual module resolution/loading to user-provided hook(s)
+to allow the loader to be embedded in wide variety of environments.  For example:</p>
+<ul>
+<li>Module loading can be used in environments with no file system by loading
+modules from a set of virtual built-in files.</li>
+<li>On-the-fly transpiling can be done during loading, for example using
+<a href="https://babeljs.io/">Babel</a>.</li>
+</ul>
 
-<p>Duktape supports <code>module.exports</code> (as of Duktape 1.3) so that
-you can write modules like:</p>
-<pre class="ecmascript-code">
-// foo/bar.js
-module.exports = function adder(x, y) { return x + y; };
+<h2>ES6 modules</h2>
 
-// main.js
-var adder = require('foo/bar');
-print('2 + 3 = ' + adder(2, 3));
-</pre>
+<p>There's currently no support for ES6 import/export and ES6 modules.</p>
 
-<p>Because Duktape is embeddable and portable to different environments there
-is no standard way to search for modules.  <b>User code must provide a module
-search function</b> in <code>Duktape.modSearch</code> for module loading to work.
-The module search function essentially maps a module identifier to the source
-code of the module (see below for more details).  Example:</p>
-<pre class="ecmascript-code">
-// See module search function details below.
-Duktape.modSearch = function (id) {
-    print('loading module:', id);
-    // Return source code for module or throw an error.
-};
-</pre>
+<h2>C module convention</h2>
 
-<p>See <a href="http://wiki.duktape.org/HowtoModules.html">How to use modules</a>
-for examples.</p>
+<p>There's a recommended (but not mandatory) C module convention which allows
+C modules to be loaded and initialized from DLLs:
+<a href="https://github.com/svaarala/duktape/blob/master/doc/c-module-convention.rst">c-module-convention.rst</a>.</p>

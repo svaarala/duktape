@@ -446,19 +446,6 @@ strings:
   - str: "__proto__"
     es6: true
 
-  # --- CommonJS related strings ---
-
-  - str: "require"
-    commonjs: true
-  - str: "id"
-    commonjs: true
-  - str: "exports"
-    commonjs: true
-  - str: "filename"    # module.filename; capitalization (filename instead of fileName)
-    duktape: true      # is to match Node.js, see https://github.com/svaarala/duktape/pull/660
-  - str: "lineNumber"  # module.lineNumber
-    duktape: true
-
   # --- Node.js Buffer / TypedArray related strings ---
 
   # Node.js class
@@ -830,10 +817,6 @@ strings:
   - str: "errCreate"
     duktape: true
   - str: "errThrow"
-    duktape: true
-  - str: "modSearch"
-    duktape: true
-  - str: "modLoaded"
     duktape: true
   - str: "env"
     duktape: true

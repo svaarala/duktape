@@ -16,15 +16,8 @@ values.</p>
     <td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
 <tr><td class="propname"><a href="#virtualization-proxy-object">Proxy</a></td>
     <td>Proxy constructor borrowed from ES6 (not part of Ecmascript E5/E5.1).</td></tr>
-<tr><td class="propname"><a href="#builtin-require">require</a></td>
-    <td>Non-standard, CommonsJS module loading function.</td></tr>
 </tbody>
 </table>
-
-<h3 id="builtin-require">require()</h3>
-
-<p>CommonJS module loading function, see
-<a href="#modules">Modules</a>.</p>
 
 <h2 id="builtin-duktape">The Duktape object</h2>
 
@@ -57,10 +50,6 @@ values.</p>
     <td>Callback to modify/replace a created error.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-errcreate-errthrow">errThrow</a></td>
     <td>Callback to modify/replace an error about to be thrown.</td></tr>
-<tr><td class="propname"><a href="#builtin-duktape-modsearch-modloaded">modSearch</a></td>
-    <td>Module search function, must be provided by user code if using modules.</td></tr>
-<tr><td class="propname"><a href="#builtin-duktape-modsearch-modloaded">modLoaded</a></td>
-    <td>Internal tracking table for loaded modules, maps resolved identifier to module metadata object.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-buffer">Buffer</a></td>
     <td>Buffer constructor (function).</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-pointer">Pointer</a></td>
@@ -500,18 +489,6 @@ initially non-existent.</p>
 <p>See
 <a href="#error-handlers">Error handlers (errCreate and errThrow)</a> for
 details.</p>
-
-<h3 id="builtin-duktape-modsearch-modloaded">modSearch() and modLoaded</h3>
-
-<p><code>modSearch()</code> is a module search function which must be provided
-by user code to support module loading.
-<code>modLoaded</code> is an internal module loading tracking table
-maintained by Duktape which maps a resolved absolute module identifier to the
-module's <code>module</code> object for modules which are either fully loaded
-or currently being loaded (<code>module.exports</code> is the exported value
-returned by <code>require()</code>).</p>
-
-<p>See <a href="#modules">Modules</a> for details.</p>
 
 <h2 id="builtin-duktape-buffer">Duktape.Buffer (constructor)</h2>
 

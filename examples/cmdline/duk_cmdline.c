@@ -12,6 +12,10 @@
  *  - To enable Duktape.Logger, define DUK_CMDLINE_LOGGING_SUPPORT
  *    and add extras/logging/duk_logging.c to compilation.
  *
+ *  - To enable Duktape 1.x module loading support (require(),
+ *    Duktape.modSearch() etc), define DUK_CMDLINE_MODULE_SUPPORT and add
+ *    extras/module-duktape/duk_module_duktape.c to compilation.
+ *
  *  - To enable linenoise and other fancy stuff, compile with -DDUK_CMDLINE_FANCY.
  *    It is not the default to maximize portability.  You can also compile in
  *    support for example allocators, grep for DUK_CMDLINE_*.
@@ -59,6 +63,9 @@
 #endif
 #if defined(DUK_CMDLINE_LOGGING_SUPPORT)
 #include "duk_logging.h"
+#endif
+#if defined(DUK_CMDLINE_MODULE_SUPPORT)
+#include "duk_module_duktape.h"
 #endif
 #if defined(DUK_CMDLINE_FILEIO)
 #include <errno.h>
@@ -1131,6 +1138,11 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	/* Register Duktape.Logger (removed in Duktape 2.x). */
 #if defined(DUK_CMDLINE_LOGGING_SUPPORT)
 	duk_logging_init(ctx, 0 /*flags*/);
+#endif
+
+	/* Register require() (removed in Duktape 2.x). */
+#if defined(DUK_CMDLINE_MODULE_SUPPORT)
+	duk_module_duktape_init(ctx);
 #endif
 
 #if defined(DUK_CMDLINE_FILEIO)

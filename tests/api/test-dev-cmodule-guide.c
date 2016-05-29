@@ -5,6 +5,13 @@
 /* Include duktape.h and whatever platform headers are needed. */
 #include "duktape.h"
 
+/* No longer applicable because module framework is no longer built in. */
+/*---
+{
+    "skip": true
+}
+---*/
+
 static duk_ret_t my_print(duk_context *ctx) {
 	duk_push_string(ctx, " ");
 	duk_insert(ctx, 0);

@@ -1600,7 +1600,10 @@ Planned
   being dependent on stdout/stderr, are often a portability issue (GH-745)
 
 * Incompatible change: remove the built-in logging framework (Duktape.Logger,
-  duk_log(), duk_log_va()) (GH-746, GH-790)
+  duk_log(), duk_log_va()); now provided as an extra (GH-746, GH-790)
+
+* Incompatible change: remove the built-in module loading framework (global
+  require() call, Duktape.modSearch() etc); now provided as an extra (GH-821)
 
 * Incompatible change: rename duk_debugger_attach_custom() API call to
   duk_debugger_attach() to eliminate an unnecessary API call variant
@@ -1668,6 +1671,9 @@ Planned
 
 * Add an extra module (extras/console) providing a minimal 'console' binding
   (GH-767)
+
+* Add an extra module (extras/module-duktape) providing a Duktape 1.x
+  compatible module loading framework (Duktape.modSearch etc) (GH-821)
 
 * Add an extra module (extras/module-node) providing a Node.js-like module
   loading framework supporting require.cache, module.loaded, etc. (GH-796)
