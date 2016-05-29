@@ -53,7 +53,7 @@ static duk_ret_t duk__logger_constructor(duk_context *ctx) {
 		 */
 
 		duk_push_global_stash(ctx);
-		duk_get_prop_string(ctx, -1, "Logger:getLoggerName");
+		duk_get_prop_string(ctx, -1, "\xff" "logger:getName");
 		duk_call(ctx, 0 /*nargs*/);
 		duk_replace(ctx, 0);
 		/* leave stash on top intentionally, no need to pop */
@@ -294,7 +294,7 @@ void duk_log_va(duk_context *ctx, duk_int_t level, const char *fmt, va_list ap) 
 	}
 
 	duk_push_global_stash(ctx);
-	duk_get_prop_string(ctx, -1, "Logger:constructor");  /* fixed at init time */
+	duk_get_prop_string(ctx, -1, "\xff" "logger:constructor");  /* fixed at init time */
 	duk_get_prop_string(ctx, -1, "clog");
 	duk_get_prop_string(ctx, -1, duk__log_method_names[level]);
 	duk_dup(ctx, -2);
@@ -373,21 +373,21 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 	 */
 
 	/* Stash some values so that we can look them up later even if they
-	 * have changed since init.  Add a getLoggerName() helper into the
-	 * stash for determining logger names based on the calling function
+	 * have changed since init.  Add a getName() helper into the stash
+	 * for determining logger names based on the calling function
 	 * (uses Duktape.act() now).
 	 */
 	duk_push_global_stash(ctx);
 	duk_dup(ctx, -3);
-	duk_put_prop_string(ctx, -2, "Logger:constructor");
+	duk_put_prop_string(ctx, -2, "\xff" "logger:constructor");
 	duk_eval_string(ctx,
 		"(function(){"
 		"var act=Duktape.act;"  /* ensure doesn't change after init */
-		"return function getLoggerName(){"
+		"return function getName(){"
 		"try{return act(-4).function.fileName;}catch(e){}"  /* undefined -> inherit "anon" */
 		"};"
 		"})()");
-	duk_put_prop_string(ctx, -2, "Logger:getLoggerName");
+	duk_put_prop_string(ctx, -2, "\xff" "logger:getName");
 	duk_pop(ctx);
 
 	/* [ ... func Duktape.Logger Duktape.Logger.prototype ] */
