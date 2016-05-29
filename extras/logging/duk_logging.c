@@ -318,16 +318,21 @@ void duk_log(duk_context *ctx, duk_int_t level, const char *fmt, ...) {
 }
 
 void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
-	/* XXX: Use duk_def_prop(), and check attributes against 1.x (e.g. not enumerable). */
 	/* XXX: Add .name property for logger functions (useful for stack traces if they throw). */
 
 	(void) flags;
 
-	duk_get_global_string(ctx, "Duktape");
+	duk_eval_string(ctx,
+		"(function(cons,prot){"
+		"Object.defineProperty(Duktape,'Logger',{value:cons,writable:true,configurable:true});"
+		"Object.defineProperty(cons,'prototype',{value:prot});"
+		"Object.defineProperty(cons,'clog',{value:new Duktape.Logger('C'),writable:true,configurable:true});"
+		"});");
+
 	duk_push_c_function(ctx, duk__logger_constructor, DUK_VARARGS /*nargs*/);  /* Duktape.Logger */
 	duk_push_object(ctx);  /* Duktape.Logger.prototype */
 
-	/* [ ... Duktape Duktape.Logger Duktape.Logger.prototype ] */
+	/* [ ... func Duktape.Logger Duktape.Logger.prototype ] */
 
 	duk_push_string(ctx, "Logger");
 	duk_put_prop_string(ctx, -3, "name");
@@ -361,7 +366,7 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 	duk_set_magic(ctx, -1, 5);  /* magic=5: fatal */
 	duk_put_prop_string(ctx, -2, "fatal");
 
-	/* [ ... Duktape Duktape.Logger Duktape.Logger.prototype ] */
+	/* [ ... func Duktape.Logger Duktape.Logger.prototype ] */
 
 	/* XXX: when using ROM built-ins, "Duktape" is read-only by default so
 	 * setting Duktape.Logger will now fail.
@@ -376,26 +381,17 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 	duk_dup(ctx, -3);
 	duk_put_prop_string(ctx, -2, "Logger:constructor");
 	duk_eval_string(ctx,
-		"(function () {\n"
-		"    var origDuktapeAct = Duktape.act;\n"  /* ensure doesn't change after init */
-		"    return function getLoggerName() {\n"
-		"        try { return origDuktapeAct(-4).function.fileName; }\n"
-		"        catch (e) { return; }\n"  /* undefined -> inherit "anon" */
-		"    };"
+		"(function(){"
+		"var act=Duktape.act;"  /* ensure doesn't change after init */
+		"return function getLoggerName(){"
+		"try{return act(-4).function.fileName;}catch(e){}"  /* undefined -> inherit "anon" */
+		"};"
 		"})()");
 	duk_put_prop_string(ctx, -2, "Logger:getLoggerName");
 	duk_pop(ctx);
 
-	duk_put_prop_string(ctx, -2, "prototype");  /* set Duktape.Logger.prototype */
-	duk_put_prop_string(ctx, -2, "Logger");  /* set Duktape.Logger */
-	duk_pop(ctx);  /* pop Duktape */
+	/* [ ... func Duktape.Logger Duktape.Logger.prototype ] */
 
-	duk_eval_string_noresult(ctx,
-		"Object.defineProperty(Duktape.Logger, 'clog', {\n"
-		"    value: new Duktape.Logger('C'),\n"
-		"    writable: true,\n"
-		"    enumerable: false,\n"
-		"    configurable: true\n"
-		"});"
-	);
+	duk_call(ctx, 2);
+	duk_pop(ctx);
 }
