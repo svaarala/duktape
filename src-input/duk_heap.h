@@ -417,7 +417,9 @@ struct duk_heap {
 	duk_uint32_t hash_seed;
 
 	/* rnd_state for duk_util_tinyrandom.c */
+#if !defined(DUK_USE_GET_RANDOM_DOUBLE)
 	duk_uint32_t rnd_state;
+#endif
 
 	/* For manual debugging: instruction count based on executor and
 	 * interrupt counter book-keeping.  Inspect debug logs to see how

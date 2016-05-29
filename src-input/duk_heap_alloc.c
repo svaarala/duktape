@@ -894,7 +894,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	/* XXX: use the pointer as a seed for now: mix in time at least */
 
-	/* The casts through duk_intr_pt is to avoid the following GCC warning:
+	/* The casts through duk_intptr_t is to avoid the following GCC warning:
 	 *
 	 *   warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
 	 *
@@ -906,7 +906,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->hash_seed = (duk_uint32_t) DUK__FIXED_HASH_SEED;
 #else  /* DUK_USE_ROM_STRINGS */
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
-	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 #if !defined(DUK_USE_STRHASH_DENSE)
 	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
 #endif
@@ -1031,6 +1030,14 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		goto error;
 	}
 	DUK_HOBJECT_INCREF(res->heap_thread, res->heap_object);
+
+	/*
+	 *  Odds and ends depending on the heap thread
+	 */
+
+#if !defined(DUK_USE_GET_RANDOM_DOUBLE)
+	res->rnd_state = (duk_uint32_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
+#endif
 
 	/*
 	 *  All done

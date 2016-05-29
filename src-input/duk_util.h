@@ -9,6 +9,12 @@
 
 #define DUK_UTIL_GET_HASH_PROBE_STEP(hash)  (duk_util_probe_steps[(hash) & 0x1f])
 
+#if defined(DUK_USE_GET_RANDOM_DOUBLE)
+#define DUK_UTIL_GET_RANDOM_DOUBLE(thr) DUK_USE_GET_RANDOM_DOUBLE((thr)->heap_udata)
+#else
+#define DUK_UTIL_GET_RANDOM_DOUBLE(thr) duk_util_tinyrandom_get_double(thr)
+#endif
+
 /*
  *  Endian conversion
  */
@@ -498,8 +504,9 @@ DUK_INTERNAL_DECL duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk
 DUK_INTERNAL_DECL void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t bits);
 DUK_INTERNAL_DECL void duk_be_finish(duk_bitencoder_ctx *ctx);
 
-DUK_INTERNAL_DECL duk_uint32_t duk_util_tinyrandom_get_bits(duk_hthread *thr, duk_small_int_t n);
+#if !defined(DUK_USE_GET_RANDOM_DOUBLE)
 DUK_INTERNAL_DECL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr);
+#endif
 
 DUK_INTERNAL_DECL void duk_bw_init(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_hbuffer_dynamic *h_buf);
 DUK_INTERNAL_DECL void duk_bw_init_pushbuf(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t buf_size);

@@ -318,7 +318,7 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
-	duk_push_number(ctx, (duk_double_t) duk_util_tinyrandom_get_double((duk_hthread *) ctx));
+	duk_push_number(ctx, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx));
 	return 1;
 }
 
