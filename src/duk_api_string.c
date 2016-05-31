@@ -141,7 +141,7 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t idx, duk_decode_
 		if (p >= p_end) {
 			break;
 		}
-		cp = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
+		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 		callback(udata, cp);
 	}
 }
@@ -176,7 +176,7 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_f
 		if (p >= p_end) {
 			break;
 		}
-		cp = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
+		cp = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 		cp = callback(udata, cp);
 
 		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);

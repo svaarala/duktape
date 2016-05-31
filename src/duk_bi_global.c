@@ -189,7 +189,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 
 	len = duk_unicode_encode_xutf8((duk_ucodepoint_t) cp, xutf8_buf);
 	for (i = 0; i < len; i++) {
-		t = (int) xutf8_buf[i];
+		t = (duk_small_int_t) xutf8_buf[i];
 		DUK_BW_WRITE_RAW_U8_3(tfm_ctx->thr,
 		                      &tfm_ctx->bw,
 		                      DUK_ASC_PERCENT,

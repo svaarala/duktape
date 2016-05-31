@@ -1028,7 +1028,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 		curr = next;
 		next = -1;
 		if (p < p_end) {
-			next = (int) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
+			next = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(thr, &p, p_start, p_end);
 		} else {
 			/* end of input and last char has been processed */
 			if (curr < 0) {

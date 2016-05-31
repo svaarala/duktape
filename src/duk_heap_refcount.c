@@ -152,7 +152,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr) {
 	DUK_ASSERT(hdr);
 
-	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_OBJECT:
 		duk__refcount_finalize_hobject(thr, (duk_hobject *) hdr);
 		break;

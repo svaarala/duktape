@@ -90,7 +90,7 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 
 	DUK_DDD(DUK_DDDPRINT("free heaphdr %p, htype %ld", (void *) hdr, (long) DUK_HEAPHDR_GET_TYPE(hdr)));
 
-	switch ((int) DUK_HEAPHDR_GET_TYPE(hdr)) {
+	switch (DUK_HEAPHDR_GET_TYPE(hdr)) {
 	case DUK_HTYPE_STRING:
 		duk_free_hstring_inner(heap, (duk_hstring *) hdr);
 		break;

@@ -683,7 +683,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				}
 
 				ch2 = r[0];
-				switch ((int) ch2) {
+				switch (ch2) {
 				case DUK_ASC_DOLLAR: {
 					ch1 = (1 << 8) + DUK_ASC_DOLLAR;
 					goto repl_write;
