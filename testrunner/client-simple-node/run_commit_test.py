@@ -31,6 +31,7 @@ import datetime
 import traceback
 import tarfile
 import zipfile
+import md5
 
 #
 #  Parameters and option parsing, some control globals
@@ -705,6 +706,51 @@ def context_linux_x86_hello_ram():
 def context_linux_x32_hello_ram():
 	return context_helper_hello_ram('-mx32')
 
+def context_linux_regconst_variants():
+	cwd = os.getcwd()
+
+	def test(archopt, genconfig_opts):
+		execute([ 'make', 'dist' ])
+		execute([
+			'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+			'--metadata', os.path.join(cwd, 'config'),
+			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')
+		] + genconfig_opts + [
+			'duk-config-header'
+		])
+		execute([
+			'gcc', '-oduk', archopt,
+			'-Os', '-fomit-frame-pointer',
+			'-flto', '-fno-asynchronous-unwind-tables',
+			'-ffunction-sections', '-Wl,--gc-sections',
+			'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
+			'-I' + os.path.join('dist', 'src'),
+			'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
+			'-I' + os.path.join('dist', 'examples', 'cmdline'),
+			os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+			os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+			os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
+			'-lm'
+		])
+
+		execute([ 'size', os.path.join(cwd, 'duk') ])
+		res = execute([
+			os.path.join(cwd, 'duk'),
+			os.path.join('dist', 'mandel.js')
+		])
+		md5_stdout = md5.md5(res['stdout']).digest().encode('hex')
+		md5_expect = '627cd86f0a4255e018c564f86c6d0ab3'
+		print(md5_stdout)
+		print(md5_expect)
+		return md5_stdout == md5_expect
+
+	res = True
+	res = res and test('-m64', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and test('-m64', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and test('-m32', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and test('-m32', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	return res
+
 def context_linux_x64_minisphere():
 	cwd = os.getcwd()
 
@@ -808,6 +854,8 @@ context_handlers = {
 	'linux-x64-hello-ram': context_linux_x64_hello_ram,
 	'linux-x86-hello-ram': context_linux_x86_hello_ram,
 	'linux-x32-hello-ram': context_linux_x32_hello_ram,
+
+	'linux-regconst-variants': context_linux_regconst_variants,
 
 	'linux-x64-minisphere': context_linux_x64_minisphere,
 	'linux-x64-dukluv': context_linux_x64_dukluv,
