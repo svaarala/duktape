@@ -1355,9 +1355,7 @@ overflowing?  If so, all such shifts would need to be replaced with::
 Switch statement
 ----------------
 
-**FIXME: what is the set of acceptable types for the switch target value
-and case values (when portability to old compilers is an issue)?  Is it
-just "int"?  What casts are most appropriate?**
+Any integral type should work as a switch argument, so avoid casting it.
 
 String handling
 ---------------
