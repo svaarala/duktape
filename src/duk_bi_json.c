@@ -332,7 +332,7 @@ DUK_LOCAL duk_small_int_t duk__dec_string_escape(duk_json_dec_ctx *js_ctx, duk_u
 	 * will match the default case (syntax error).
 	 */
 	cp = (duk_uint_fast32_t) duk__dec_get(js_ctx);
-	switch ((int) cp) {
+	switch (cp) {
 	case DUK_ASC_BACKSLASH: break;
 	case DUK_ASC_DOUBLEQUOTE: break;
 	case DUK_ASC_SLASH: break;
@@ -2021,7 +2021,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 #endif
 		} else {
 			c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
-			switch ((int) c) {
+			switch (c) {
 			case DUK_HOBJECT_CLASS_NUMBER: {
 				DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
 				duk_to_number(ctx, -1);

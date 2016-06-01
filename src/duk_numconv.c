@@ -1945,7 +1945,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 
 		/* Most common cases first. */
 		if (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9') {
-			dig = (int) ch - '0' + 0;
+			dig = (duk_small_int_t) ch - '0' + 0;
 		} else if (ch == (duk_small_int_t) '.') {
 			/* A leading digit is not required in some cases, e.g. accept ".123".
 			 * In other cases (JSON.parse()) a leading digit is required.  This

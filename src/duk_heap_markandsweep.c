@@ -165,7 +165,7 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 
 	heap->mark_and_sweep_recursion_depth++;
 
-	switch ((int) DUK_HEAPHDR_GET_TYPE(h)) {
+	switch (DUK_HEAPHDR_GET_TYPE(h)) {
 	case DUK_HTYPE_STRING:
 		duk__mark_hstring(heap, (duk_hstring *) h);
 		break;

@@ -2429,7 +2429,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 		/* XXX: use macros for the repetitive tval/refcount handling. */
 
-		switch ((int) DUK_DEC_OP(ins)) {
+		switch (DUK_DEC_OP(ins)) {
 		/* XXX: switch cast? */
 
 		case DUK_OP_LDREG: {
@@ -3858,7 +3858,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			/* XXX: shared decoding of 'b' and 'c'? */
 
 			duk_small_uint_fast_t extraop = DUK_DEC_A(ins);
-			switch ((int) extraop) {
+			switch (extraop) {
 			/* XXX: switch cast? */
 
 			case DUK_EXTRAOP_NOP: {

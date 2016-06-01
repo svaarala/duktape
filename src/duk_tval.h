@@ -192,7 +192,7 @@ typedef union duk_double_union duk_tval;
 #define DUK_TVAL_SET_TVAL(v,x)              do { *(v) = *(x); } while (0)
 
 /* getters */
-#define DUK_TVAL_GET_BOOLEAN(v)             ((int) (v)->us[DUK_DBL_IDX_US1])
+#define DUK_TVAL_GET_BOOLEAN(v)             ((duk_small_int_t) (v)->us[DUK_DBL_IDX_US1])
 #if defined(DUK_USE_FASTINT)
 #define DUK_TVAL_GET_DOUBLE(v)              ((v)->d)
 #define DUK_TVAL_GET_FASTINT(v)             DUK__TVAL_GET_FASTINT((v))
@@ -208,7 +208,7 @@ typedef union duk_double_union duk_tval;
 		(out_fp) = (duk_c_function) (v)->ui[DUK_DBL_IDX_UI1]; \
 	} while (0)
 #define DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(v)   ((duk_c_function) ((v)->ui[DUK_DBL_IDX_UI1]))
-#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(v)     (((int) (v)->ui[DUK_DBL_IDX_UI0]) & 0xffffUL)
+#define DUK_TVAL_GET_LIGHTFUNC_FLAGS(v)     (((duk_small_int_t) (v)->ui[DUK_DBL_IDX_UI0]) & 0xffffUL)
 #define DUK_TVAL_GET_STRING(v)              ((duk_hstring *) (v)->vp[DUK_DBL_IDX_VP1])
 #define DUK_TVAL_GET_OBJECT(v)              ((duk_hobject *) (v)->vp[DUK_DBL_IDX_VP1])
 #define DUK_TVAL_GET_BUFFER(v)              ((duk_hbuffer *) (v)->vp[DUK_DBL_IDX_VP1])

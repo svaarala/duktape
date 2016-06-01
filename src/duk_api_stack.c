@@ -4071,7 +4071,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 		goto push_undefined;
 	}
 
-	switch ((int) DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
+	switch (DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
 	case DUK_HTYPE_STRING:
 		duk_push_hstring(ctx, (duk_hstring *) ptr);
 		break;
