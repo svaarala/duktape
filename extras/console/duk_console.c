@@ -113,12 +113,12 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 	 * to ToString(v).
 	 */
 	duk_eval_string(ctx,
-		"(function format(v) {\n"
-		"    try {\n"
-		"        return Duktape.enc('jx', v);\n"
-		"    } catch (e) {\n"
-		"        return String(v);\n"
-		"    }\n"
+		"(function format(v){"
+		    "try{"
+		        "return Duktape.enc('jx',v);"
+		    "}catch(e){"
+		        "return ""+v;"
+		    "}"
 		"})");
 	duk_put_prop_string(ctx, -2, "format");
 
@@ -142,15 +142,14 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 
 	if (flags & DUK_CONSOLE_PROXY_WRAPPER) {
 		duk_eval_string_noresult(ctx,
-			"(function () {\n"
-			"    var orig = console;\n"
-			"    var dummy = function () {};\n"
-			"    console = new Proxy(orig, {\n"
-			"        get: function (targ, key, recv) {\n"
-			"            var v = targ[key];\n"
-			"            return typeof v === 'function' ? v : dummy;\n"
-			"        }\n"
-			"    });\n"
+			"(function(){"
+			    "var D=function(){};"
+			    "console=new Proxy(console,{"
+			        "get:function(t,k){"
+			            "var v=t[k];"
+			            "return typeof v==='function'?v:D;"
+			        "}"
+			    "});"
 			"})();"
 		);
 	}
