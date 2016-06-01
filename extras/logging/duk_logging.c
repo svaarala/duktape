@@ -382,10 +382,10 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 	duk_put_prop_string(ctx, -2, "\xff" "logger:constructor");
 	duk_eval_string(ctx,
 		"(function(){"
-		"var act=Duktape.act;"  /* ensure doesn't change after init */
-		"return function getName(){"
-		"try{return act(-4).function.fileName;}catch(e){}"  /* undefined -> inherit "anon" */
-		"};"
+		    "var A=Duktape.act;"  /* ensure doesn't change after init */
+		    "return function getName(){"
+		        "try{return A(-4).function.fileName;}catch(e){}"  /* undefined -> inherit "anon" */
+		    "};"
 		"})()");
 	duk_put_prop_string(ctx, -2, "\xff" "logger:getName");
 	duk_pop(ctx);
