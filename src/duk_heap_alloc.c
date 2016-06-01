@@ -760,7 +760,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 #if defined(DUK_USE_EXEC_REGCONST_OPTIMIZE)
 	/* Can't check sizeof() using preprocessor so explicit check.
-	 * This will be optimized away in practice.
+	 * This will be optimized away in practice; unfortunately a
+	 * warning is generated on some compilers as a result.
 	 */
 #if defined(DUK_USE_PACKED_TVAL)
 	if (sizeof(duk_tval) != 8) {
