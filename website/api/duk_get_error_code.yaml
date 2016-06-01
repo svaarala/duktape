@@ -11,8 +11,11 @@ summary: |
   based on which <code>Error</code> subclass the value inherits from.  For example,
   if the value at the stack top is an user-defined error which inherits from
   <code>ReferenceError</code>, the return value will be <code>DUK_ERR_REFERENCE_ERROR</code>.
-  If the value is not an object, does not inherit from <code>Error</code>, or <code>idx</code>
-  is invalid, returns 0 (= <code>DUK_ERR_NONE</code>).</p>
+  If the value inherits from <code>Error</code> but doesn't inherit from any of
+  the standard subclasses (EvalError, RangeError, ReferenceError, SyntaxError,
+  TypeError, URIError) <code>DUK_ERR_ERROR</code> is returned.
+  If the value is not an object, does not inherit from <code>Error</code>, or
+  <code>idx</code> is invalid, returns 0 (= <code>DUK_ERR_NONE</code>).</p>
 
 example: |
   if (duk_get_error_code(ctx, -3) == DUK_ERR_URI_ERROR) {
