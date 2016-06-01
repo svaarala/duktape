@@ -1693,6 +1693,9 @@ Planned
 * Fix -Wshift-sign-overflow warnings on some Clang versions for signed left
   shifts whose result was used as unsigned (GH-812, GH-813)
 
+* Internal performance improvement: avoid one extra shift when computing
+  reg/const pointers in the bytecode executor (GH-674)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with

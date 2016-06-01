@@ -746,11 +746,30 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	/*
 	 *  If selftests enabled, run them as early as possible.
 	 */
+
 #if defined(DUK_USE_SELF_TESTS)
 	if (duk_selftest_run_tests() > 0) {
 		fatal_func(heap_udata, "self test(s) failed");
 	}
 #endif
+
+	/*
+	 *  Important assert-like checks that should be enabled even
+	 *  when assertions are otherwise not enabled.
+	 */
+
+#if defined(DUK_USE_EXEC_REGCONST_OPTIMIZE)
+	/* Can't check sizeof() using preprocessor so explicit check.
+	 * This will be optimized away in practice.
+	 */
+#if defined(DUK_USE_PACKED_TVAL)
+	if (sizeof(duk_tval) != 8) {
+#else
+	if (sizeof(duk_tval) != 16) {
+#endif
+		fatal_func(heap_udata, "sizeof(duk_tval) not 8 or 16, cannot use DUK_USE_EXEC_REGCONST_OPTIMIZE option");
+	}
+#endif  /* DUK_USE_EXEC_REGCONST_OPTIMIZE */
 
 	/*
 	 *  Computed values (e.g. INFINITY)
