@@ -1705,3 +1705,6 @@ Planned
   readability: duk_hcompiledfunction -> duk_hcompfunc,
   duk_hnativefunction -> duk_hnatfunc, duk_hbufferobject -> duk_hbufobj
   (GH-798)
+
+* Internal change: avoid explicit casts for 'switch' statement arguments,
+  other internal cast fixes (GH-825)
