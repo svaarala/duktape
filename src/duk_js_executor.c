@@ -1954,7 +1954,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
  * DUK_LIKELY/DUK_UNLIKELY increases code footprint and doesn't seem to
  * improve performance on x64 (and actually harms performance in some tests).
  */
-#define DUK__RCISREG(x)     (((x) & 0x100) == 0)
+#define DUK__RCISREG(x)     (((x) & 0x100UL) == 0)
 #define DUK__REGCONST(x)    (*((DUK__RCISREG((x)) ? thr->valstack_bottom : consts2) + (x)))
 #define DUK__REGCONSTP(x)   ((DUK__RCISREG((x)) ? thr->valstack_bottom : consts2) + (x))
 
@@ -1978,8 +1978,8 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 #define DUK__MASK_B     (DUK_BC_UNSHIFTED_MASK_B << DUK__TVAL_SHIFT)
 #define DUK__MASK_C     (DUK_BC_UNSHIFTED_MASK_C << DUK__TVAL_SHIFT)
 #define DUK__MASK_BC    (DUK_BC_UNSHIFTED_MASK_BC << DUK__TVAL_SHIFT)
-#define DUK__RCBIT_B    (0x100 << DUK_BC_SHIFT_B)
-#define DUK__RCBIT_C    (0x100 << DUK_BC_SHIFT_C)
+#define DUK__RCBIT_B    (0x100UL << DUK_BC_SHIFT_B)
+#define DUK__RCBIT_C    (0x100UL << DUK_BC_SHIFT_C)
 #define DUK__BYTEOFF_A(ins)   (((ins) >> DUK__SHIFT_A) & DUK__MASK_A)
 #define DUK__BYTEOFF_B(ins)   (((ins) >> DUK__SHIFT_B) & DUK__MASK_B)
 #define DUK__BYTEOFF_C(ins)   (((ins) >> DUK__SHIFT_C) & DUK__MASK_C)
@@ -1987,14 +1987,14 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 #define DUK__RCISREG_B(ins)   (((ins) & DUK__RCBIT_B) == 0)
 #define DUK__RCISREG_C(ins)   (((ins) & DUK__RCBIT_C) == 0)
 
-#define DUK__REGP_A(ins)      ((duk_tval *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_A((ins))))
-#define DUK__REGP_B(ins)      ((duk_tval *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_B((ins))))
-#define DUK__REGP_BC(ins)     ((duk_tval *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_BC((ins))))
-#define DUK__CONSTP_A(ins)    ((duk_tval *) ((duk_uint8_t *) consts + DUK__BYTEOFF_A((ins))))
-#define DUK__CONSTP_B(ins)    ((duk_tval *) ((duk_uint8_t *) consts + DUK__BYTEOFF_B((ins))))
-#define DUK__CONSTP_BC(ins)   ((duk_tval *) ((duk_uint8_t *) consts + DUK__BYTEOFF_BC((ins))))
-#define DUK__REGCONSTP_B(ins) ((duk_tval *) ((duk_uint8_t *) (DUK__RCISREG_B(ins) ? thr->valstack_bottom : consts2) + DUK__BYTEOFF_B((ins))))
-#define DUK__REGCONSTP_C(ins) ((duk_tval *) ((duk_uint8_t *) (DUK__RCISREG_C(ins) ? thr->valstack_bottom : consts2) + DUK__BYTEOFF_C((ins))))
+#define DUK__REGP_A(ins)      ((duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_A((ins))))
+#define DUK__REGP_B(ins)      ((duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_B((ins))))
+#define DUK__REGP_BC(ins)     ((duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_bottom + DUK__BYTEOFF_BC((ins))))
+#define DUK__CONSTP_A(ins)    ((duk_tval *) (void *) ((duk_uint8_t *) consts + DUK__BYTEOFF_A((ins))))
+#define DUK__CONSTP_B(ins)    ((duk_tval *) (void *) ((duk_uint8_t *) consts + DUK__BYTEOFF_B((ins))))
+#define DUK__CONSTP_BC(ins)   ((duk_tval *) (void *) ((duk_uint8_t *) consts + DUK__BYTEOFF_BC((ins))))
+#define DUK__REGCONSTP_B(ins) ((duk_tval *) (void *) ((duk_uint8_t *) (DUK__RCISREG_B(ins) ? thr->valstack_bottom : consts2) + DUK__BYTEOFF_B((ins))))
+#define DUK__REGCONSTP_C(ins) ((duk_tval *) (void *) ((duk_uint8_t *) (DUK__RCISREG_C(ins) ? thr->valstack_bottom : consts2) + DUK__BYTEOFF_C((ins))))
 #else  /* DUK_USE_EXEC_REGCONST_OPTIMIZE */
 /* Safe alternatives, no assumption about duk_tval size. */
 #define DUK__REGP_A(ins)    DUK__REGP(DUK_DEC_A((ins)))
