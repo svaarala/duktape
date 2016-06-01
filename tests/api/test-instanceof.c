@@ -14,15 +14,15 @@ final top: 6
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: invalid instanceof rval'
 *** test_3a (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -1'
+==> rc=1, result='RangeError: invalid stack index -1'
 *** test_3b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 0'
+==> rc=1, result='RangeError: invalid stack index 0'
 *** test_3c (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 1'
+==> rc=1, result='RangeError: invalid stack index 1'
 *** test_3d (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 0'
+==> rc=1, result='RangeError: invalid stack index 0'
 *** test_3e (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 /* Basic test. */

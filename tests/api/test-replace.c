@@ -6,12 +6,12 @@
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
 replace at 3 ok
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_3 (duk_safe_call)
 replace at -4 ok
-==> rc=1, result='Error: invalid stack index -4'
+==> rc=1, result='RangeError: invalid stack index -4'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {

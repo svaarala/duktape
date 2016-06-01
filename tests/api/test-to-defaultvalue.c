@@ -8,9 +8,9 @@ index 2, type 6 -> 3, result: true
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: object required, found 123 (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 /* XXX: this test is missing a lot of coverage, like different hints,

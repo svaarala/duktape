@@ -7,9 +7,9 @@ final top: 2
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: string required, found 123 (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 4'
+==> rc=1, result='RangeError: invalid stack index 4'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx, void *udata) {

@@ -9,9 +9,9 @@ final top: 1
 *** test_2 (duk_safe_call)
 ==> rc=1, result='TypeError: string required, found 123456 (stack index 0)'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2'
+==> rc=1, result='RangeError: invalid stack index -2'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void dump_string(duk_context *ctx) {

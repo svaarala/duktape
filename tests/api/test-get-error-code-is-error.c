@@ -22,17 +22,17 @@ index 14: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0
 index 15: type=7 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
 index 16: type=8 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
 index 17: type=8 errcode=0 is_error=0 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
-index 18: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
-index 19: type=6 errcode=101 is_error=1 eval=1 range=0 reference=0 syntax=0 type=0 uri=0
-index 20: type=6 errcode=102 is_error=1 eval=0 range=1 reference=0 syntax=0 type=0 uri=0
-index 21: type=6 errcode=103 is_error=1 eval=0 range=0 reference=1 syntax=0 type=0 uri=0
-index 22: type=6 errcode=104 is_error=1 eval=0 range=0 reference=0 syntax=1 type=0 uri=0
-index 23: type=6 errcode=105 is_error=1 eval=0 range=0 reference=0 syntax=0 type=1 uri=0
-index 24: type=6 errcode=106 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
-index 25: type=6 errcode=106 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
-index 26: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
-index 27: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
-index 28: type=6 errcode=100 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 18: type=6 errcode=1 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 19: type=6 errcode=2 is_error=1 eval=1 range=0 reference=0 syntax=0 type=0 uri=0
+index 20: type=6 errcode=3 is_error=1 eval=0 range=1 reference=0 syntax=0 type=0 uri=0
+index 21: type=6 errcode=4 is_error=1 eval=0 range=0 reference=1 syntax=0 type=0 uri=0
+index 22: type=6 errcode=5 is_error=1 eval=0 range=0 reference=0 syntax=1 type=0 uri=0
+index 23: type=6 errcode=6 is_error=1 eval=0 range=0 reference=0 syntax=0 type=1 uri=0
+index 24: type=6 errcode=7 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
+index 25: type=6 errcode=7 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=1
+index 26: type=6 errcode=1 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 27: type=6 errcode=1 is_error=1 eval=0 range=0 reference=0 syntax=0 type=0 uri=0
+index 28: type=6 errcode=3 is_error=1 eval=0 range=1 reference=0 syntax=0 type=0 uri=0
 final top: 29
 ==> rc=0, result='undefined'
 *** test_protoloop_code (duk_safe_call)
@@ -44,8 +44,8 @@ is error: 0
 ===*/
 
 static duk_ret_t my_error_thrower(duk_context *ctx) {
-	duk_pop_n(ctx, 1000);  /* APIError */
-	return DUK_RET_INTERNAL_ERROR;
+	duk_pop_n(ctx, 1000);  /* API error -> RangeError */
+	return DUK_RET_ERROR;
 }
 
 static duk_ret_t test_basic(duk_context *ctx, void *udata) {
@@ -89,9 +89,8 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_eval_string(ctx, "function MyError2() {}; MyError2.prototype = Error.prototype; new MyError2();");
 	duk_eval_string(ctx, "Object.create(new MyError2());");
 
-	/* APIError: it's used internally (and is has its own error code)
-	 * but from Ecmascript point-of-view it's an Error instance, so
-	 * we get DUK_ERR_ERROR for it.
+	/* API error: it's used internally but creates a TypeError
+	 * so we get a DUK_ERR_TYPE_ERROR for it.
 	 */
 	duk_push_c_function(ctx, my_error_thrower, 0);
 	duk_pcall(ctx, 0);

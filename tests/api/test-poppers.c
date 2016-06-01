@@ -6,7 +6,7 @@ test_pop_1 -> top=1, rc=0, ret='undefined'
 top: 2
 top: 1
 top: 0
-test_pop_b -> top=1, rc=1, ret='Error: attempt to pop too many entries'
+test_pop_b -> top=1, rc=1, ret='RangeError: invalid count'
 top: 5
 top: 3
 top: 1
@@ -14,7 +14,7 @@ test_pop_2a -> top=1, rc=0, ret='undefined'
 top: 5
 top: 3
 top: 1
-test_pop_2b -> top=1, rc=1, ret='Error: attempt to pop too many entries'
+test_pop_2b -> top=1, rc=1, ret='RangeError: invalid count'
 top: 7
 top: 4
 top: 1
@@ -22,14 +22,14 @@ test_pop_3a -> top=1, rc=0, ret='undefined'
 top: 7
 top: 4
 top: 1
-test_pop_3b -> top=1, rc=1, ret='Error: attempt to pop too many entries'
+test_pop_3b -> top=1, rc=1, ret='RangeError: invalid count'
 top: 11
 top: 11
 top: 10
 top: 0
 test_pop_na -> top=1, rc=0, ret='undefined'
 top: 11
-test_pop_nb -> top=1, rc=1, ret='Error: invalid count'
+test_pop_nb -> top=1, rc=1, ret='RangeError: invalid count'
 top: 1
 ===*/
 

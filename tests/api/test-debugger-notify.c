@@ -39,7 +39,7 @@ static duk_ret_t test_notify_not_attached(duk_context *ctx, void *udata) {
 
 /*===
 *** test_notify_invalid_count1 (duk_safe_call)
-==> rc=1, result='Error: not enough stack values for notify'
+==> rc=1, result='RangeError: not enough stack values for notify'
 ===*/
 
 static duk_ret_t test_notify_invalid_count1(duk_context *ctx, void *udata) {
@@ -54,7 +54,7 @@ static duk_ret_t test_notify_invalid_count1(duk_context *ctx, void *udata) {
 
 /*===
 *** test_notify_invalid_count2 (duk_safe_call)
-==> rc=1, result='Error: invalid count'
+==> rc=1, result='RangeError: invalid count'
 ===*/
 
 static duk_ret_t test_notify_invalid_count2(duk_context *ctx, void *udata) {

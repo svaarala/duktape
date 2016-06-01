@@ -22,9 +22,9 @@ index 17, ToString(result): 'null', type: 8 -> 8
 index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 /* XXX: coverage is pretty poor, e.g. different hints are not tested.
