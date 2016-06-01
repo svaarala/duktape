@@ -1645,6 +1645,15 @@ Planned
   internal renames: compiledfunction -> compfunc, nativefunction -> natfunc,
   bufferobject -> bufobj (GH-798)
 
+* Incompatible change: remove Duktape specific error codes DUK_ERR_ALLOC_ERROR,
+  DUK_ERR_API_ERROR, DUK_ERR_ASSERTION_ERROR, DUK_ERR_INTERNAL_ERROR,
+  DUK_ERR_UNCAUGHT_ERROR, DUK_ERR_UNIMPLEMENTED_ERROR,
+  DUK_ERR_UNSUPPORTED_ERROR; use standard error types instead (GH-827)
+
+* Incompatible change: map API related errors (which previously used
+  DUK_ERR_API_ERROR and a plain Error for Ecmascript representation) into
+  TypeErrors and RangeErrors to match common Ecmascript conventions (GH-827)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
@@ -1659,6 +1668,9 @@ Planned
 
 * Remove duk_{get,put,has,del}_var() calls from API header; they were not
   fully implemented and not part of the documented public API (GH-762)
+
+* Minor changes to error messages for errors thrown by Duktape internals
+  (GH-827)
 
 * Add an extra module (extras/duk-v1-compat) providing many Duktape 1.x API
   calls removed in Duktape 2.x (multiple Github issues)
