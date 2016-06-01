@@ -188,22 +188,22 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */

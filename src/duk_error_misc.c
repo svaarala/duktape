@@ -54,13 +54,6 @@ DUK_INTERNAL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_er
 		return thr->builtins[DUK_BIDX_TYPE_ERROR_PROTOTYPE];
 	case DUK_ERR_URI_ERROR:
 		return thr->builtins[DUK_BIDX_URI_ERROR_PROTOTYPE];
-
-	/* XXX: more specific error classes? */
-	case DUK_ERR_UNIMPLEMENTED_ERROR:
-	case DUK_ERR_INTERNAL_ERROR:
-	case DUK_ERR_ALLOC_ERROR:
-	case DUK_ERR_ASSERTION_ERROR:
-	case DUK_ERR_API_ERROR:
 	case DUK_ERR_ERROR:
 	default:
 		return thr->builtins[DUK_BIDX_ERROR_PROTOTYPE];

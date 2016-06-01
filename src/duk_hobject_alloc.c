@@ -185,7 +185,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_f
 DUK_INTERNAL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags) {
 	duk_hobject *res = duk_hobject_alloc(thr->heap, hobject_flags);
 	if (!res) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	return res;
 }

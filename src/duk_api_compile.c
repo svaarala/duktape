@@ -93,7 +93,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 		h_sourcecode = duk_get_hstring(ctx, -2);
 		if ((flags & DUK_COMPILE_NOSOURCE) ||  /* args incorrect */
 		    (h_sourcecode == NULL)) {          /* e.g. duk_push_string_file_raw() pushed undefined */
-			DUK_ERROR_API(thr, DUK_STR_NO_SOURCECODE);
+			DUK_ERROR_TYPE(thr, DUK_STR_NO_SOURCECODE);
 		}
 		DUK_ASSERT(h_sourcecode != NULL);
 		comp_args->src_buffer = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode);

@@ -2113,7 +2113,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 	}
 	}
 
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return 0;
 }
 
@@ -2337,7 +2337,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 	}
 	}
 
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return;
 }
 
@@ -7252,7 +7252,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 		if (compile_round >= 3) {
 			/* Should never happen but avoid infinite loop just in case. */
 			DUK_D(DUK_DPRINT("more than 3 compile passes needed, should never happen"));
-			DUK_ERROR_INTERNAL_DEFMSG(thr);
+			DUK_ERROR_INTERNAL(thr);
 		}
 		DUK_D(DUK_DPRINT("need additional round to compile function, round now %d", (int) compile_round));
 	}

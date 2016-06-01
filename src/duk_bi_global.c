@@ -200,7 +200,7 @@ DUK_LOCAL void duk__transform_callback_encode_uri(duk__transform_context *tfm_ct
 	return;
 
  uri_error:
-	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
+	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 }
 
 DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {
@@ -338,7 +338,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	return;
 
  uri_error:
-	DUK_ERROR(tfm_ctx->thr, DUK_ERR_URI_ERROR, "invalid input");
+	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 }
 
 #ifdef DUK_USE_SECTION_B
@@ -378,7 +378,7 @@ DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, c
 	return;
 
  esc_error:
-	DUK_ERROR_TYPE(tfm_ctx->thr, "invalid input");
+	DUK_ERROR_TYPE(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 }
 
 DUK_LOCAL void duk__transform_callback_unescape(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {
@@ -709,11 +709,11 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 #else  /* DUK_USE_SECTION_B */
 DUK_INTERNAL duk_ret_t duk_bi_global_object_escape(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */

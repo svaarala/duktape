@@ -67,7 +67,7 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, const duk_uin
 	return p;
 
  fail:
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return NULL;  /* never here */
 }
 
@@ -98,7 +98,7 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8
 	return p;
 
  fail:
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return NULL;  /* never here */
 }
 
@@ -641,7 +641,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 	return NULL;
 
  internal_error:
-	DUK_ERROR_INTERNAL_DEFMSG(re_ctx->thr);
+	DUK_ERROR_INTERNAL(re_ctx->thr);
 	return NULL;  /* never here */
 }
 

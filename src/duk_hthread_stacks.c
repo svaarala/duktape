@@ -55,7 +55,7 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	new_ptr = (duk_activation *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_callstack_ptr, (void *) thr, sizeof(duk_activation) * new_size);
 	if (!new_ptr) {
 		/* No need for a NULL/zero-size check because new_size > 0) */
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	thr->callstack = new_ptr;
 	thr->callstack_size = new_size;
@@ -360,7 +360,7 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	new_ptr = (duk_catcher *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_catchstack_ptr, (void *) thr, sizeof(duk_catcher) * new_size);
 	if (!new_ptr) {
 		/* No need for a NULL/zero-size check because new_size > 0) */
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	thr->catchstack = new_ptr;
 	thr->catchstack_size = new_size;

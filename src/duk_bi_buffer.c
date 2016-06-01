@@ -660,7 +660,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -729,7 +729,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1096,7 +1096,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1159,7 +1159,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1182,7 +1182,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1239,7 +1239,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1300,7 +1300,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx)
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_prototype_tostring_shared(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1349,7 +1349,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1411,7 +1411,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1488,7 +1488,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1539,7 +1539,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_write(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1654,7 +1654,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1950,7 +1950,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2087,7 +2087,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2109,7 +2109,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2150,7 +2150,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2176,7 +2176,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_byte_length(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2295,7 +2295,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2584,7 +2584,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2867,6 +2867,6 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */

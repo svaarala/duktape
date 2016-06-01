@@ -293,6 +293,6 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	return byte_offset;
 
  error:
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return 0;
 }

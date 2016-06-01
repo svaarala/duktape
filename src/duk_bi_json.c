@@ -2645,7 +2645,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
  abort_fastpath:
 	/* Error message doesn't matter: the error is ignored anyway. */
 	DUK_DD(DUK_DDPRINT("aborting fast path"));
-	DUK_ERROR_INTERNAL_DEFMSG(js_ctx->thr);
+	DUK_ERROR_INTERNAL(js_ctx->thr);
 	return 0;  /* unreachable */
 }
 

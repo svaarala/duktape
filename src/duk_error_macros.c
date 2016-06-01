@@ -46,57 +46,54 @@ DUK_INTERNAL void duk_err_require_type_index(duk_hthread *thr, const char *filen
 	                   expect_name, duk_push_string_readable((duk_context *) thr, idx), (long) idx);
 }
 #endif
+DUK_INTERNAL void duk_err_error_internal(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_ERROR, DUK_STR_INTERNAL_ERROR);
+}
+DUK_INTERNAL void duk_err_error_alloc_failed(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_ERROR, DUK_STR_ALLOC_FAILED);
+}
+DUK_INTERNAL void duk_err_error(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_ERROR, message);
+}
 DUK_INTERNAL void duk_err_range(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_RANGE_ERROR, message);
 }
-DUK_INTERNAL void duk_err_api_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx) {
-	DUK_ERROR_RAW_FMT1(thr, filename, linenumber, DUK_ERR_API_ERROR, "invalid stack index %ld", (long) (idx));
+DUK_INTERNAL void duk_err_range_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx) {
+	DUK_ERROR_RAW_FMT1(thr, filename, linenumber, DUK_ERR_RANGE_ERROR, "invalid stack index %ld", (long) (idx));
 }
-DUK_INTERNAL void duk_err_api(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_API_ERROR, message);
+DUK_INTERNAL void duk_err_range_push_beyond(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_RANGE_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 }
-DUK_INTERNAL void duk_err_unimplemented_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
-}
-DUK_INTERNAL void duk_err_unsupported_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_UNSUPPORTED_ERROR, DUK_STR_UNSUPPORTED);
-}
-DUK_INTERNAL void duk_err_internal_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
-}
-DUK_INTERNAL void duk_err_internal(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_INTERNAL_ERROR, message);
-}
-DUK_INTERNAL void duk_err_alloc(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_ALLOC_ERROR, message);
+DUK_INTERNAL void duk_err_type_invalid_args(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_CALL_ARGS);
 }
 #else
 /* The file/line arguments are NULL and 0, they're ignored by DUK_ERROR_RAW()
  * when non-verbose errors are used.
  */
-DUK_INTERNAL void duk_err_type(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_TYPE_ERROR, NULL);
+DUK_LOCAL void duk__err_shared(duk_hthread *thr, duk_uint_t code) {
+	DUK_ERROR_RAW(thr, NULL, 0, code, NULL);
 }
-DUK_INTERNAL void duk_err_api(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_API_ERROR, NULL);
+DUK_INTERNAL void duk_err_error(duk_hthread *thr) {
+	duk__err_shared(thr, DUK_ERR_ERROR);
 }
 DUK_INTERNAL void duk_err_range(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_RANGE_ERROR, NULL);
+	duk__err_shared(thr, DUK_ERR_RANGE_ERROR);
+}
+DUK_INTERNAL void duk_err_eval(duk_hthread *thr) {
+	duk__err_shared(thr, DUK_ERR_EVAL_ERROR);
+}
+DUK_INTERNAL void duk_err_reference(duk_hthread *thr) {
+	duk__err_shared(thr, DUK_ERR_REFERENCE_ERROR);
 }
 DUK_INTERNAL void duk_err_syntax(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_SYNTAX_ERROR, NULL);
+	duk__err_shared(thr, DUK_ERR_SYNTAX_ERROR);
 }
-DUK_INTERNAL void duk_err_unimplemented(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_UNIMPLEMENTED_ERROR, NULL);
+DUK_INTERNAL void duk_err_type(duk_hthread *thr) {
+	duk__err_shared(thr, DUK_ERR_TYPE_ERROR);
 }
-DUK_INTERNAL void duk_err_unsupported(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_UNSUPPORTED_ERROR, NULL);
-}
-DUK_INTERNAL void duk_err_internal(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, 0, DUK_ERR_INTERNAL_ERROR, NULL);
-}
-DUK_INTERNAL void duk_err_alloc(duk_hthread *thr) {
-	DUK_ERROR_RAW(thr, NULL, thr, DUK_ERR_ALLOC_ERROR, NULL);
+DUK_INTERNAL void duk_err_uri(duk_hthread *thr) {
+	duk__err_shared(thr, DUK_ERR_URI_ERROR);
 }
 #endif
 

@@ -205,33 +205,17 @@ struct duk_time_components {
 /* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 << 0)    /* create a new global environment */
 
-/* Duktape specific error codes (must be 8 bits at most, see duk_error.h) */
+/* Error codes (must be 8 bits at most, see duk_error.h) */
 #define DUK_ERR_NONE                      0    /* no error (e.g. from duk_get_error_code()) */
-#define DUK_ERR_UNIMPLEMENTED_ERROR       50   /* UnimplementedError */  /* XXX: replace with TypeError? */
-#define DUK_ERR_UNSUPPORTED_ERROR         51   /* UnsupportedError */    /* XXX: replace with TypeError? */
-#define DUK_ERR_INTERNAL_ERROR            52   /* InternalError */       /* XXX: replace with plain Error? */
-#define DUK_ERR_ALLOC_ERROR               53   /* AllocError */          /* XXX: replace with RangeError? */
-#define DUK_ERR_ASSERTION_ERROR           54   /* AssertionError */      /* XXX: to be removed? */
-#define DUK_ERR_API_ERROR                 55   /* APIError */            /* XXX: replace with TypeError? */
-#define DUK_ERR_UNCAUGHT_ERROR            56   /* UncaughtError */       /* XXX: to be removed? */
-
-/* Ecmascript E5 specification error codes */
-#define DUK_ERR_ERROR                     100  /* Error */
-#define DUK_ERR_EVAL_ERROR                101  /* EvalError */
-#define DUK_ERR_RANGE_ERROR               102  /* RangeError */
-#define DUK_ERR_REFERENCE_ERROR           103  /* ReferenceError */
-#define DUK_ERR_SYNTAX_ERROR              104  /* SyntaxError */
-#define DUK_ERR_TYPE_ERROR                105  /* TypeError */
-#define DUK_ERR_URI_ERROR                 106  /* URIError */
+#define DUK_ERR_ERROR                     1    /* Error */
+#define DUK_ERR_EVAL_ERROR                2    /* EvalError */
+#define DUK_ERR_RANGE_ERROR               3    /* RangeError */
+#define DUK_ERR_REFERENCE_ERROR           4    /* ReferenceError */
+#define DUK_ERR_SYNTAX_ERROR              5    /* SyntaxError */
+#define DUK_ERR_TYPE_ERROR                6    /* TypeError */
+#define DUK_ERR_URI_ERROR                 7    /* URIError */
 
 /* Return codes for C functions (shortcut for throwing an error) */
-#define DUK_RET_UNIMPLEMENTED_ERROR       (-DUK_ERR_UNIMPLEMENTED_ERROR)
-#define DUK_RET_UNSUPPORTED_ERROR         (-DUK_ERR_UNSUPPORTED_ERROR)
-#define DUK_RET_INTERNAL_ERROR            (-DUK_ERR_INTERNAL_ERROR)
-#define DUK_RET_ALLOC_ERROR               (-DUK_ERR_ALLOC_ERROR)
-#define DUK_RET_ASSERTION_ERROR           (-DUK_ERR_ASSERTION_ERROR)
-#define DUK_RET_API_ERROR                 (-DUK_ERR_API_ERROR)
-#define DUK_RET_UNCAUGHT_ERROR            (-DUK_ERR_UNCAUGHT_ERROR)
 #define DUK_RET_ERROR                     (-DUK_ERR_ERROR)
 #define DUK_RET_EVAL_ERROR                (-DUK_ERR_EVAL_ERROR)
 #define DUK_RET_RANGE_ERROR               (-DUK_ERR_RANGE_ERROR)

@@ -960,7 +960,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern(duk_heap *heap, const duk_uint8
 DUK_INTERNAL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_hstring *res = duk_heap_string_intern(thr->heap, str, blen);
 	if (!res) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	return res;
 }
@@ -986,7 +986,7 @@ DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_
 DUK_INTERNAL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val) {
 	duk_hstring *res = duk_heap_string_intern_u32(thr->heap, val);
 	if (!res) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	return res;
 }

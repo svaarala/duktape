@@ -66,7 +66,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 		DUK_HBUFFER_DYNAMIC_SET_SIZE(buf, new_size);
 		DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(thr->heap, buf, res);
 	} else {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	DUK_ASSERT(res != NULL || new_size == 0);

@@ -583,7 +583,7 @@ void duk__realloc_props(duk_hthread *thr,
 	 */
 
 	if (new_e_size_adjusted + new_a_size > DUK_HOBJECT_MAX_PROPERTIES) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	/*
@@ -933,7 +933,7 @@ void duk__realloc_props(duk_hthread *thr,
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
 #endif
 
-	DUK_ERROR_ALLOC_DEFMSG(thr);
+	DUK_ERROR_ALLOC_FAILED(thr);
 }
 
 /*
@@ -4134,7 +4134,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
  fail_internal:
 	DUK_DDD(DUK_DDDPRINT("result: error, internal"));
 	if (throw_flag) {
-		DUK_ERROR_INTERNAL_DEFMSG(thr);
+		DUK_ERROR_INTERNAL(thr);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4609,7 +4609,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 	return;
 
  error_internal:
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return;
 
  error_virtual:
