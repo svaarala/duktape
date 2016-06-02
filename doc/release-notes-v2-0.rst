@@ -173,6 +173,49 @@ To upgrade:
       rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
       #endif
 
+Duktape specific error codes removed from API
+---------------------------------------------
+
+Duktape specific error codes were removed from the public API and from
+internals.  These error codes were not very widely used, and they didn't
+have an Ecmascript counterpart (for example, a ``DUK_ERR_API_ERROR`` mapped
+to a plain ``Error`` object) which was confusing.  The removed error codes
+and defines are:
+
+* ``DUK_ERR_UNIMPLEMENTED_ERROR`` / ``DUK_RET_UNIMPLEMENTED_ERROR``
+
+* ``DUK_ERR_UNSUPPORTED_ERROR`` / ``DUK_RET_UNSUPPORTED_ERROR``
+
+* ``DUK_ERR_INTERNAL_ERROR`` / ``DUK_RET_INTERNAL_ERROR``
+
+* ``DUK_ERR_ALLOC_ERROR`` / ``DUK_RET_ALLOC_ERROR``
+
+* ``DUK_ERR_ASSERTION_ERROR`` / ``DUK_RET_ASSERTION_ERROR``
+
+* ``DUK_ERR_API_ERROR`` / ``DUK_RET_API_ERROR``
+
+* ``DUK_ERR_UNCAUGHT_ERROR`` / ``DUK_RET_UNCAUGHT_ERROR``
+
+Duktape API related errors were also changed to map to either a ``TypeError``
+or ``RangeError`` instead of a plain ``Error``:
+
+* A ``RangeError`` is used when an argument is out of bounds; for example:
+  a value stack index is out of bounds, pop count is too large, not enough
+  value stack items for call argument count.
+
+* A ``TypeError`` is used when a value has incorrect type, and is thrown by
+  for example ``duk_require_boolean()``.  ``TypeError`` is also typically
+  used when nothing else applies.
+
+To upgrade:
+
+* If you use the custom error codes (``DUK_ERR_INTERNAL_ERROR`` etc) in your
+  code, convert to using standard error codes (``DUK_ERR_TYPE_ERROR``, etc).
+
+* If you depend on API errors mapping to a plain ``Error``, revise such code
+  to accept also ``TypeError`` or ``RangeError``.  (In general depending on a
+  specific error type should be only be done when it's absolute necessary.)
+
 duk_dump_context_stdout() and duk_dump_context_stderr() removed
 ---------------------------------------------------------------
 
