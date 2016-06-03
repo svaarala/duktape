@@ -254,7 +254,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 #else  /* DUK_USE_SECTION_B */
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */
 
@@ -472,7 +472,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
 #else  /* DUK_USE_REGEXP_SUPPORT */
-		return DUK_RET_UNSUPPORTED_ERROR;
+		return DUK_RET_ERROR;
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 	} else {
 		duk_to_string(ctx, 0);
@@ -860,7 +860,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 		/* lastIndex is initialized to zero by new RegExp() */
 		is_regexp = 1;
 #else
-		return DUK_RET_UNSUPPORTED_ERROR;
+		return DUK_RET_ERROR;
 #endif
 	} else {
 		duk_to_string(ctx, 0);
@@ -1156,7 +1156,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 #else  /* DUK_USE_REGEXP_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
@@ -1235,7 +1235,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 #else  /* DUK_USE_REGEXP_SUPPORT */
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNSUPPORTED_ERROR;
+	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 

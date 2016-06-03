@@ -101,11 +101,17 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	}
 
 	/*
-	 *  Augment error (throw time), unless alloc/double error
+	 *  Augment error (throw time), unless double error
+	 *
+	 *  Note that an alloc error may happen during error augmentation.
+	 *  This may happen both when the original error is an alloc error
+	 *  and when it's something else.  Because any error in augmentation
+	 *  must be handled correctly anyway, there's no special check for
+	 *  avoiding it for alloc errors (this differs from Duktape 1.x).
 	 */
 
-	if (double_error || code == DUK_ERR_ALLOC_ERROR) {
-		DUK_D(DUK_DPRINT("alloc or double error: skip throw augmenting to avoid further trouble"));
+	if (double_error) {
+		DUK_D(DUK_DPRINT("double error: skip throw augmenting to avoid further trouble"));
 	} else {
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)",
@@ -150,20 +156,13 @@ DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t r
 	code = -rc;
 
 	switch (rc) {
-	case DUK_RET_UNIMPLEMENTED_ERROR:  msg = "unimplemented"; break;
-	case DUK_RET_UNSUPPORTED_ERROR:    msg = "unsupported"; break;
-	case DUK_RET_INTERNAL_ERROR:       msg = "internal"; break;
-	case DUK_RET_ALLOC_ERROR:          msg = "alloc"; break;
-	case DUK_RET_ASSERTION_ERROR:      msg = "assertion"; break;
-	case DUK_RET_API_ERROR:            msg = "api"; break;
-	case DUK_RET_UNCAUGHT_ERROR:       msg = "uncaught"; break;
-	case DUK_RET_ERROR:                msg = "error"; break;
 	case DUK_RET_EVAL_ERROR:           msg = "eval"; break;
 	case DUK_RET_RANGE_ERROR:          msg = "range"; break;
 	case DUK_RET_REFERENCE_ERROR:      msg = "reference"; break;
 	case DUK_RET_SYNTAX_ERROR:         msg = "syntax"; break;
 	case DUK_RET_TYPE_ERROR:           msg = "type"; break;
 	case DUK_RET_URI_ERROR:            msg = "uri"; break;
+	case DUK_RET_ERROR:  /* Error -> 'unknown error', rather than 'error error' */
 	default:                           msg = "unknown"; break;
 	}
 

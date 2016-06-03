@@ -40,7 +40,7 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
 #else
 #define DUK__CHECK_SPACE() do { \
 		if (DUK_UNLIKELY(thr->valstack_top >= thr->valstack_end)) { \
-			DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK); \
+			DUK_ERROR_RANGE_PUSH_BEYOND(thr); \
 		} \
 	} while (0)
 #endif
@@ -241,7 +241,7 @@ DUK_EXTERNAL duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t i
 	if (DUK_LIKELY(uidx < vs_size)) {
 		return (duk_idx_t) uidx;
 	}
-	DUK_ERROR_API_INDEX(thr, idx);
+	DUK_ERROR_RANGE_INDEX(thr, idx);
 	return 0;  /* unreachable */
 }
 
@@ -299,7 +299,7 @@ DUK_INTERNAL duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t idx) {
 	if (DUK_LIKELY(uidx < vs_size)) {
 		return thr->valstack_bottom + uidx;
 	}
-	DUK_ERROR_API_INDEX(thr, idx);
+	DUK_ERROR_RANGE_INDEX(thr, idx);
 	return NULL;
 }
 
@@ -319,7 +319,7 @@ DUK_EXTERNAL void duk_require_valid_index(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT(DUK_INVALID_INDEX < 0);
 
 	if (duk_normalize_index(ctx, idx) < 0) {
-		DUK_ERROR_API_INDEX(thr, idx);
+		DUK_ERROR_RANGE_INDEX(thr, idx);
 		return;  /* unreachable */
 	}
 }
@@ -376,7 +376,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t idx) {
 	DUK_UNREF(vs_limit);
 #else
 	if (DUK_UNLIKELY(uidx > vs_limit)) {
-		DUK_ERROR_API_INDEX(thr, idx);
+		DUK_ERROR_RANGE_INDEX(thr, idx);
 		return;  /* unreachable */
 	}
 #endif
@@ -456,7 +456,7 @@ DUK_EXTERNAL duk_idx_t duk_require_top_index(duk_context *ctx) {
 
 	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
 	if (DUK_UNLIKELY(ret < 0)) {
-		DUK_ERROR_API_INDEX(thr, -1);
+		DUK_ERROR_RANGE_INDEX(thr, -1);
 		return 0;  /* unreachable */
 	}
 	return ret;
@@ -704,7 +704,7 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 		DUK_DD(DUK_DDPRINT("valstack resize failed"));
 
 		if (throw_flag) {
-			DUK_ERROR_ALLOC_DEFMSG(thr);
+			DUK_ERROR_ALLOC_FAILED(thr);
 		} else {
 			return 0;
 		}
@@ -853,7 +853,7 @@ DUK_EXTERNAL void duk_dup_top(duk_context *ctx) {
 	DUK__CHECK_SPACE();
 
 	if (thr->valstack_top - thr->valstack_bottom <= 0) {
-		DUK_ERROR_API_INDEX(thr, -1);
+		DUK_ERROR_RANGE_INDEX(thr, -1);
 		return;  /* unreachable */
 	}
 	tv_from = thr->valstack_top - 1;
@@ -1004,13 +1004,13 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	DUK_ASSERT(from_ctx != NULL);
 
 	if (to_ctx == from_ctx) {
-		DUK_ERROR_API(to_thr, DUK_STR_INVALID_CONTEXT);
+		DUK_ERROR_TYPE(to_thr, DUK_STR_INVALID_CONTEXT);
 		return;
 	}
 	if ((count < 0) ||
 	    (count > (duk_idx_t) to_thr->valstack_max)) {
 		/* Maximum value check ensures 'nbytes' won't wrap below. */
-		DUK_ERROR_API(to_thr, DUK_STR_INVALID_COUNT);
+		DUK_ERROR_RANGE_INVALID_COUNT(to_thr);
 		return;
 	}
 
@@ -1020,11 +1020,11 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	}
 	DUK_ASSERT(to_thr->valstack_top <= to_thr->valstack_end);
 	if ((duk_size_t) ((duk_uint8_t *) to_thr->valstack_end - (duk_uint8_t *) to_thr->valstack_top) < nbytes) {
-		DUK_ERROR_API(to_thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(to_thr);
 	}
 	src = (void *) ((duk_uint8_t *) from_thr->valstack_top - nbytes);
 	if (src < (void *) from_thr->valstack_bottom) {
-		DUK_ERROR_API(to_thr, DUK_STR_INVALID_COUNT);
+		DUK_ERROR_RANGE_INVALID_COUNT(to_thr);
 	}
 
 	/* copy values (no overlap even if to_ctx == from_ctx; that's not
@@ -3138,7 +3138,7 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk
 
 	/* check stack before interning (avoid hanging temp) */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	/* NULL with zero length represents an empty string; NULL with higher
@@ -3344,7 +3344,7 @@ DUK_EXTERNAL void duk_push_thread_stash(duk_context *ctx, duk_context *target_ct
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_ASSERT_CTX_VALID(ctx);
 	if (!target_ctx) {
-		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		return;  /* not reached */
 	}
 	duk_push_hobject(ctx, (duk_hobject *) target_ctx);
@@ -3421,7 +3421,7 @@ DUK_EXTERNAL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va
 		/* failed, resize and try again */
 		sz = sz * 2;
 		if (sz >= DUK_PUSH_SPRINTF_SANITY_LIMIT) {
-			DUK_ERROR_API(thr, DUK_STR_SPRINTF_TOO_LONG);
+			DUK_ERROR_RANGE(thr, DUK_STR_RESULT_TOO_LONG);
 		}
 	}
 
@@ -3461,12 +3461,12 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	h = duk_hobject_alloc(thr->heap, hobject_flags_and_class);
 	if (!h) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08lx", (unsigned long) h->hdr.h_flags));
@@ -3561,7 +3561,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	obj = duk_hthread_alloc(thr->heap,
@@ -3569,7 +3569,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	if (!obj) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 #if defined(DUK_USE_ROM_STRINGS)
@@ -3592,7 +3592,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	/* important to do this *after* pushing, to make the thread reachable for gc */
 	if (!duk_hthread_init_stacks(thr->heap, obj)) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	/* initialize built-ins - either by copying or creating new ones */
@@ -3624,7 +3624,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	/* Template functions are not strictly constructable (they don't
@@ -3637,7 +3637,7 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	                          DUK_HOBJECT_FLAG_COMPFUNC |
 	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (!obj) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("created compiled function object with flags: 0x%08lx", (unsigned long) obj->obj.hdr.h_flags));
@@ -3665,7 +3665,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 	if (func == NULL) {
 		goto api_error;
@@ -3680,7 +3680,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 
 	obj = duk_hnatfunc_alloc(thr->heap, flags);
 	if (!obj) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	obj->func = func;
@@ -3701,7 +3701,7 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 	return ret;
 
  api_error:
-	DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	return 0;  /* not reached */
 }
 
@@ -3762,7 +3762,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	if (nargs >= DUK_LFUNC_NARGS_MIN && nargs <= DUK_LFUNC_NARGS_MAX) {
@@ -3786,7 +3786,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 	return ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
 
  api_error:
-	DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	return 0;  /* not reached */
 }
 
@@ -3800,12 +3800,12 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	obj = duk_hbufobj_alloc(thr->heap, hobject_flags_and_class);
 	if (!obj) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
@@ -4038,7 +4038,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 
 	/* check stack first */
 	if (thr->valstack_top >= thr->valstack_end) {
-		DUK_ERROR_API(thr, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
+		DUK_ERROR_RANGE_PUSH_BEYOND(thr);
 	}
 
 	/* Check for maximum buffer length. */
@@ -4048,7 +4048,7 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 
 	h = duk_hbuffer_alloc(thr->heap, size, flags, &buf_data);
 	if (!h) {
-		DUK_ERROR_ALLOC_DEFMSG(thr);
+		DUK_ERROR_ALLOC_FAILED(thr);
 	}
 
 	tv_slot = thr->valstack_top;
@@ -4149,13 +4149,13 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	if (DUK_UNLIKELY(count < 0)) {
-		DUK_ERROR_API(thr, DUK_STR_INVALID_COUNT);
+		DUK_ERROR_RANGE_INVALID_COUNT(thr);
 		return;
 	}
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	if (DUK_UNLIKELY((duk_size_t) (thr->valstack_top - thr->valstack_bottom) < (duk_size_t) count)) {
-		DUK_ERROR_API(thr, DUK_STR_POP_TOO_MANY);
+		DUK_ERROR_RANGE_INVALID_COUNT(thr);
 	}
 
 	/*
@@ -4207,7 +4207,7 @@ DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	if (DUK_UNLIKELY(thr->valstack_top == thr->valstack_bottom)) {
-		DUK_ERROR_API(thr, DUK_STR_POP_TOO_MANY);
+		DUK_ERROR_RANGE_INVALID_COUNT(thr);
 	}
 
 	tv = --thr->valstack_top;  /* tv points to element just below prev top */
@@ -4243,7 +4243,7 @@ DUK_EXTERNAL void duk_throw(duk_context *ctx) {
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
 	if (thr->valstack_top == thr->valstack_bottom) {
-		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/* Errors are augmented when they are created, not when they are

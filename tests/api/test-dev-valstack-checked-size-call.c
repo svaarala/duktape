@@ -37,7 +37,7 @@ hello from my_func_error1
 ==> rc=1, result='Error: error thrown by my_func_error1'
 *** test_c_call_error2 (duk_safe_call)
 hello from my_func_error2
-==> rc=1, result='URIError: uri error (rc -106)'
+==> rc=1, result='URIError: uri error (rc -7)'
 *** test_c_pcall_success (duk_safe_call)
 hello from my_func_success
 duk_pcall: rc=0, value: 234
@@ -50,7 +50,7 @@ final top: 10001
 ==> rc=0, result='undefined'
 *** test_c_pcall_error2 (duk_safe_call)
 hello from my_func_error2
-duk_pcall: rc=1, value: URIError: uri error (rc -106)
+duk_pcall: rc=1, value: URIError: uri error (rc -7)
 final top: 10001
 ==> rc=0, result='undefined'
 *** test_safe_call_success (duk_safe_call)
@@ -65,7 +65,7 @@ final top: 10001
 ==> rc=0, result='undefined'
 *** test_safe_call_error2 (duk_safe_call)
 hello from my_safe_func_error2
-duk_safe_call: rc=1, value: URIError: uri error (rc -106)
+duk_safe_call: rc=1, value: URIError: uri error (rc -7)
 final top: 10001
 ==> rc=0, result='undefined'
 ===*/

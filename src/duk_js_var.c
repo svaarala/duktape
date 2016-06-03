@@ -1381,7 +1381,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 	if (strict) {
 		DUK_DDD(DUK_DDDPRINT("identifier binding not found, strict => reference error"));
-		DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR, "identifier not defined");
+		DUK_ERROR_REFERENCE(thr, DUK_STR_IDENTIFIER_NOT_DEFINED);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("identifier binding not found, not strict => set to global"));

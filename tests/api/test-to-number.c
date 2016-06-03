@@ -32,9 +32,9 @@ index 27, number: 0.000000
 index 28, number: 1.000000
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_3 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx, void *udata) {

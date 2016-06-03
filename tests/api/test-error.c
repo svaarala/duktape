@@ -19,9 +19,9 @@ lineNumber: 56
 isNative: undefined
 *** test_3 (duk_pcall)
 ==> rc=1
-ToString(error): TypeError: 105
+ToString(error): TypeError: 6
 name: TypeError
-message: 105
+message: 6
 code: undefined
 fileName is a string: 1
 lineNumber: 68

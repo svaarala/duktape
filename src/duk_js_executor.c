@@ -986,7 +986,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			                                      call_flags);    /* call_flags */
 			if (setup_rc == 0) {
 				/* Shouldn't happen but check anyway. */
-				DUK_ERROR_INTERNAL_DEFMSG(thr);
+				DUK_ERROR_INTERNAL(thr);
 			}
 
 			resumee->resumer = thr;
@@ -1210,7 +1210,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	 * but it's better for internal errors to bubble outwards so that we won't
 	 * infinite loop in this catchpoint.
 	 */
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	DUK_UNREACHABLE();
 	return retval;
 }
@@ -1284,7 +1284,7 @@ DUK_LOCAL void duk__handle_break_or_continue(duk_hthread *thr,
 
 	/* should never happen, but be robust */
 	DUK_D(DUK_DPRINT("-> break/continue not caught by anything in the current function (should never happen), throw internal error"));
-	DUK_ERROR_INTERNAL_DEFMSG(thr);
+	DUK_ERROR_INTERNAL(thr);
 	return;
 }
 
@@ -2009,7 +2009,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 
 #ifdef DUK_USE_VERBOSE_EXECUTOR_ERRORS
 #define DUK__INTERNAL_ERROR(msg)  do { \
-		DUK_ERROR_INTERNAL(thr, (msg)); \
+		DUK_ERROR_ERROR(thr, (msg)); \
 	} while (0)
 #else
 #define DUK__INTERNAL_ERROR(msg)  do { \
@@ -2146,7 +2146,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
-				DUK_ERROR_FMT1(heap->curr_thread, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+				DUK_ERROR_FMT1(heap->curr_thread, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 			} catch (duk_internal_exception exc) {
 				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 				DUK_UNREF(exc);
@@ -2160,7 +2160,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
-				DUK_ERROR_API(heap->curr_thread, "caught invalid c++ exception (perhaps thrown by user code)");
+				DUK_ERROR_TYPE(heap->curr_thread, "caught invalid c++ exception (perhaps thrown by user code)");
 			} catch (duk_internal_exception exc) {
 				DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 				DUK_UNREF(exc);
@@ -3867,7 +3867,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			case DUK_EXTRAOP_INVALID: {
-				DUK_ERROR_FMT1(thr, DUK_ERR_INTERNAL_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_BC(ins));
+				DUK_ERROR_FMT1(thr, DUK_ERR_ERROR, "INVALID opcode (%ld)", (long) DUK_DEC_BC(ins));
 				break;
 			}
 
@@ -4363,8 +4363,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 
 			case DUK_EXTRAOP_INVLHS: {
-				DUK_ERROR(thr, DUK_ERR_REFERENCE_ERROR, "invalid lvalue");
-
+				DUK_ERROR_REFERENCE(thr, DUK_STR_INVALID_LVALUE);
 				DUK_UNREACHABLE();
 				break;
 			}
@@ -4527,6 +4526,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 #ifndef DUK_USE_VERBOSE_EXECUTOR_ERRORS
  internal_error:
-	DUK_ERROR_INTERNAL(thr, "internal error in bytecode executor");
+	DUK_ERROR_INTERNAL(thr);
 #endif
 }

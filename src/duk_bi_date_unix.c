@@ -22,7 +22,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx) {
 	duk_double_t d;
 
 	if (gettimeofday(&tv, NULL) != 0) {
-		DUK_ERROR_INTERNAL_DEFMSG(thr);
+		DUK_ERROR_INTERNAL(thr);
 	}
 
 	d = ((duk_double_t) tv.tv_sec) * 1000.0 +

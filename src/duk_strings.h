@@ -23,8 +23,10 @@
 
 /* Mostly API and built-in method related */
 #define DUK_STR_INTERNAL_ERROR                   "internal error"
+#define DUK_STR_UNSUPPORTED                      "unsupported"
 #define DUK_STR_INVALID_COUNT                    "invalid count"
 #define DUK_STR_INVALID_CALL_ARGS                "invalid call args"
+#define DUK_STR_INVALID_INPUT                    "invalid input"
 #define DUK_STR_NOT_CONSTRUCTABLE                "not constructable"
 #define DUK_STR_NOT_CALLABLE                     "not callable"
 #define DUK_STR_NOT_EXTENSIBLE                   "not extensible"
@@ -32,7 +34,7 @@
 #define DUK_STR_NOT_CONFIGURABLE                 "not configurable"
 #define DUK_STR_INVALID_CONTEXT                  "invalid context"
 #define DUK_STR_INVALID_INDEX                    "invalid call args"
-#define DUK_STR_PUSH_BEYOND_ALLOC_STACK          "attempt to push beyond currently allocated stack"
+#define DUK_STR_PUSH_BEYOND_ALLOC_STACK          "attempt to push beyond allocated stack"
 #define DUK_STR_NOT_UNDEFINED                    "unexpected type"
 #define DUK_STR_NOT_NULL                         "unexpected type"
 #define DUK_STR_NOT_BOOLEAN                      "unexpected type"
@@ -53,16 +55,12 @@
 #define DUK_STR_NOT_OBJECT_COERCIBLE             "not object coercible"
 #define DUK_STR_STRING_TOO_LONG                  "string too long"
 #define DUK_STR_BUFFER_TOO_LONG                  "buffer too long"
-#define DUK_STR_SPRINTF_TOO_LONG                 "sprintf message too long"
 #define DUK_STR_ALLOC_FAILED                     "alloc failed"
-#define DUK_STR_POP_TOO_MANY                     "attempt to pop too many entries"
 #define DUK_STR_WRONG_BUFFER_TYPE                "wrong buffer type"
 #define DUK_STR_ENCODE_FAILED                    "encode failed"
 #define DUK_STR_DECODE_FAILED                    "decode failed"
 #define DUK_STR_NO_SOURCECODE                    "no sourcecode"
-#define DUK_STR_CONCAT_RESULT_TOO_LONG           "concat result too long"
-#define DUK_STR_UNIMPLEMENTED                    "unimplemented"
-#define DUK_STR_UNSUPPORTED                      "unsupported"
+#define DUK_STR_RESULT_TOO_LONG                  "result too long"
 #define DUK_STR_ARRAY_LENGTH_OVER_2G             "array length over 2G"
 
 /* JSON */
@@ -75,15 +73,18 @@
 /* Object property access */
 #define DUK_STR_PROXY_REVOKED                    "proxy revoked"
 #define DUK_STR_INVALID_BASE                     "invalid base value"
-#define DUK_STR_STRICT_CALLER_READ               "attempt to read strict 'caller'"
+#define DUK_STR_STRICT_CALLER_READ               "cannot read strict 'caller'"
 #define DUK_STR_PROXY_REJECTED                   "proxy rejected"
 #define DUK_STR_INVALID_ARRAY_LENGTH             "invalid array length"
 #define DUK_STR_ARRAY_LENGTH_WRITE_FAILED        "array length write failed"
 #define DUK_STR_ARRAY_LENGTH_NOT_WRITABLE        "array length non-writable"
 #define DUK_STR_SETTER_UNDEFINED                 "setter undefined"
-#define DUK_STR_REDEFINE_VIRT_PROP               "attempt to redefine virtual property"
+#define DUK_STR_REDEFINE_VIRT_PROP               "cannot redefine virtual property"
 #define DUK_STR_INVALID_DESCRIPTOR               "invalid descriptor"
 #define DUK_STR_PROPERTY_IS_VIRTUAL              "property is virtual"
+
+/* Variables */
+#define DUK_STR_IDENTIFIER_NOT_DEFINED           "identifier not defined"
 
 /* Compiler */
 #define DUK_STR_PARSE_ERROR                      "parse error"
@@ -114,7 +115,7 @@
 /* Regexp */
 #define DUK_STR_INVALID_QUANTIFIER_NO_ATOM       "quantifier without preceding atom"
 #define DUK_STR_INVALID_QUANTIFIER_VALUES        "quantifier values invalid (qmin > qmax)"
-#define DUK_STR_QUANTIFIER_TOO_MANY_COPIES       "quantifier expansion requires too many atom copies"
+#define DUK_STR_QUANTIFIER_TOO_MANY_COPIES       "quantifier requires too many atom copies"
 #define DUK_STR_UNEXPECTED_CLOSING_PAREN         "unexpected closing parenthesis"
 #define DUK_STR_UNEXPECTED_END_OF_PATTERN        "unexpected end of pattern"
 #define DUK_STR_UNEXPECTED_REGEXP_TOKEN          "unexpected token in regexp"

@@ -8,13 +8,13 @@
 *** test_2 (duk_safe_call)
 insert at 3 ok
 insert at -1 ok
-==> rc=1, result='Error: invalid stack index 4'
+==> rc=1, result='RangeError: invalid stack index 4'
 *** test_3 (duk_safe_call)
 insert at 0 ok
 insert at -4 ok
-==> rc=1, result='Error: invalid stack index -5'
+==> rc=1, result='RangeError: invalid stack index -5'
 *** test_4 (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {

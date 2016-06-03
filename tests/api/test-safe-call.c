@@ -1,7 +1,7 @@
 /*===
 1st return value: 21
 2nd return value: undefined
-error: Error: test_2 error
+error: TypeError: test_2 error
 final top: 1
 ===*/
 
@@ -23,7 +23,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 static duk_ret_t test_2(duk_context *ctx, void *udata) {
 	(void) udata;
 
-	duk_error(ctx, DUK_ERR_INTERNAL_ERROR, "test_2 error");
+	duk_error(ctx, DUK_ERR_TYPE_ERROR, "test_2 error");
 	return 0;
 }
 

@@ -17,7 +17,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 
 	if (DUK_UNLIKELY(count_in <= 0)) {
 		if (count_in < 0) {
-			DUK_ERROR_API(thr, DUK_STR_INVALID_COUNT);
+			DUK_ERROR_RANGE_INVALID_COUNT(thr);
 			return;
 		}
 		DUK_ASSERT(count_in == 0);
@@ -103,7 +103,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 	return;
 
  error_overflow:
-	DUK_ERROR_RANGE(thr, DUK_STR_CONCAT_RESULT_TOO_LONG);
+	DUK_ERROR_RANGE(thr, DUK_STR_RESULT_TOO_LONG);
 }
 
 DUK_EXTERNAL void duk_concat(duk_context *ctx, duk_idx_t count) {

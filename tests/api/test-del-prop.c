@@ -22,13 +22,13 @@ final top: 3
 *** test_1d (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
 *** test_1e_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_1e (duk_pcall)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_1f_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_1f (duk_pcall)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_1g_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_1g (duk_pcall)
@@ -56,13 +56,13 @@ final top: 3
 *** test_2d (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
 *** test_2e_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_2e (duk_pcall)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_2f_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_2f (duk_pcall)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_2g_safecall (duk_safe_call)
 ==> rc=1, result='TypeError: cannot delete property 'foo' of null'
 *** test_2g (duk_pcall)
@@ -81,13 +81,13 @@ final top: 3
 *** test_3b (duk_pcall)
 ==> rc=1, result='TypeError: not configurable'
 *** test_3c_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_3c (duk_pcall)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_3d_safecall (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_3d (duk_pcall)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {

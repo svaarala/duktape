@@ -9,9 +9,9 @@ arr.length -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_1b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_1c (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_1d (duk_safe_call)
 ==> rc=1, result='TypeError: invalid base value'
 *** test_1e (duk_safe_call)
@@ -26,9 +26,9 @@ arr.length -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_2b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_2c (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_3a (duk_safe_call)
 obj[31337] -> rc=0
 obj[123] -> rc=1
@@ -37,9 +37,9 @@ arr[2] -> rc=1
 final top: 3
 ==> rc=0, result='undefined'
 *** test_3b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 234'
+==> rc=1, result='RangeError: invalid stack index 234'
 *** test_3c (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
 static void prep(duk_context *ctx) {

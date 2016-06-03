@@ -443,7 +443,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			/* Function.prototype.bind() should never let this happen,
 			 * ugly error message is enough.
 			 */
-			DUK_ERROR_INTERNAL_DEFMSG(thr);
+			DUK_ERROR_INTERNAL(thr);
 		}
 		DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv_func) != NULL);
 
@@ -935,7 +935,7 @@ DUK_LOCAL duk_idx_t duk__get_idx_func(duk_hthread *thr, duk_idx_t num_stack_args
 		 * here.  Invoke the existing setjmp catcher, or if it doesn't exist,
 		 * call the fatal error handler.
 		 */
-		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		return 0;
 	}
 	idx_func = (duk_idx_t) ((off_stack_top - off_stack_all) / sizeof(duk_tval));
@@ -1104,7 +1104,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 		}
 		DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 			DUK_UNREF(exc);
@@ -1124,7 +1124,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	} catch (...) {
 		DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
+			DUK_ERROR_TYPE(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 			DUK_UNREF(exc);
@@ -1632,7 +1632,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			duk_error_throw_from_negative_rc(thr, rc);
 			DUK_UNREACHABLE();
 		} else if (rc > 1) {
-			DUK_ERROR_API(thr, "c function returned invalid rc");
+			DUK_ERROR_TYPE(thr, "c function returned invalid rc");
 		}
 		DUK_ASSERT(rc == 0 || rc == 1);
 
@@ -1926,7 +1926,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		 * call the fatal error handler.
 		 */
 
-		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/* setjmp catchpoint setup */
@@ -1993,7 +1993,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		}
 		DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR_FMT1(thr, DUK_ERR_API_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
+			DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ std::exception"));
 			DUK_UNREF(exc);
@@ -2009,7 +2009,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	} catch (...) {
 		DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 		try {
-			DUK_ERROR_API(thr, "caught invalid c++ exception (perhaps thrown by user code)");
+			DUK_ERROR_TYPE(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {
 			DUK_D(DUK_DPRINT("caught api error thrown from unexpected c++ exception"));
 			DUK_UNREF(exc);
@@ -2134,7 +2134,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	DUK_ASSERT(rc >= 0);
 
 	if (duk_get_top(ctx) < rc) {
-		DUK_ERROR_API(thr, "not enough stack values for safe_call rc");
+		DUK_ERROR_RANGE(thr, "not enough stack values for safe_call rc");
 	}
 
 	DUK_ASSERT(thr->catchstack_top == entry_catchstack_top);  /* no need to unwind */
@@ -2377,7 +2377,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	if (DUK_UNLIKELY(idx_func < 0 || idx_args < 0)) {
 		/* XXX: assert? compiler is responsible for this never happening */
-		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/*

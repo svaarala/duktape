@@ -157,7 +157,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 
 	top = duk_get_top(ctx);
 	if (top < nvalues) {
-		DUK_ERROR_API(thr, "not enough stack values for notify");
+		DUK_ERROR_RANGE(thr, "not enough stack values for notify");
 		return ret;  /* unreachable */
 	}
 	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
@@ -224,12 +224,12 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	DUK_UNREF(request_cb);
 	DUK_UNREF(detached_cb);
 	DUK_UNREF(udata);
-	DUK_ERROR_API((duk_hthread *) ctx, "no debugger support");
+	DUK_ERROR_TYPE((duk_hthread *) ctx, "no debugger support");
 }
 
 DUK_EXTERNAL void duk_debugger_detach(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ERROR_API((duk_hthread *) ctx, "no debugger support");
+	DUK_ERROR_TYPE((duk_hthread *) ctx, "no debugger support");
 }
 
 DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
@@ -245,7 +245,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 
 	top = duk_get_top(ctx);
 	if (top < nvalues) {
-		DUK_ERROR_API((duk_hthread *) ctx, "not enough stack values for notify");
+		DUK_ERROR_RANGE_INVALID_COUNT((duk_hthread *) ctx);
 		return 0;  /* unreachable */
 	}
 

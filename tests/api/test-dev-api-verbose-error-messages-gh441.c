@@ -4,11 +4,11 @@
 
 /*===
 *** test_1a (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -3'
+==> rc=1, result='RangeError: invalid stack index -3'
 *** test_1b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -3'
+==> rc=1, result='RangeError: invalid stack index -3'
 *** test_1c (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -1'
+==> rc=1, result='RangeError: invalid stack index -1'
 *** test_2a (duk_safe_call)
 TypeError: null required, found none (stack index -3)
 top: 1

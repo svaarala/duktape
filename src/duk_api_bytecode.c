@@ -711,11 +711,11 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
 
 DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
-	DUK_ERROR_UNSUPPORTED_DEFMSG((duk_hthread *) ctx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
 }
 
 DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
-	DUK_ERROR_UNSUPPORTED_DEFMSG((duk_hthread *) ctx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
 }
 
 #endif  /* DUK_USE_BYTECODE_DUMP_SUPPORT */

@@ -322,27 +322,27 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
 	DUK_UNREF(ctx);
-	return DUK_RET_UNIMPLEMENTED_ERROR;
+	return DUK_RET_ERROR;
 }
 
 #endif  /* DUK_USE_MATH_BUILTIN */

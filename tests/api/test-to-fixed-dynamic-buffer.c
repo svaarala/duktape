@@ -50,13 +50,13 @@ sz=3
 final top: 1
 ==> rc=0, result='undefined'
 *** test_4a (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_4b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index 3'
+==> rc=1, result='RangeError: invalid stack index 3'
 *** test_5a (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_5b (duk_safe_call)
-==> rc=1, result='Error: invalid stack index -2147483648'
+==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_6a (duk_safe_call)
 sz=16
 p[0]=123, buf[0]=0
