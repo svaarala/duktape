@@ -71,6 +71,8 @@ DUK_INTERNAL void duk_err_type_invalid_args(duk_hthread *thr, const char *filena
 /* The file/line arguments are NULL and 0, they're ignored by DUK_ERROR_RAW()
  * when non-verbose errors are used.
  */
+
+DUK_NORETURN(DUK_LOCAL_DECL void duk__err_shared(duk_hthread *thr, duk_uint_t code));
 DUK_LOCAL void duk__err_shared(duk_hthread *thr, duk_uint_t code) {
 	DUK_ERROR_RAW(thr, NULL, 0, code, NULL);
 }
