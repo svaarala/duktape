@@ -1669,6 +1669,8 @@ Planned
 * Add a human readable summary of 'new MyConstructor()' constructor call
   target when the target is non-constructable (GH-757)
 
+* Add a safe summary for "uncaught error" fatal error (GH-832)
+
 * Remove duk_{get,put,has,del}_var() calls from API header; they were not
   fully implemented and not part of the documented public API (GH-762)
 
