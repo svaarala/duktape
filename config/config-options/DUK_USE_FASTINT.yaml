@@ -8,6 +8,8 @@ feature_snippet: |
   #endif
   #define DUK_USE_FASTINT
   #endif
+requires:
+  - DUK_USE_64BIT_OPS
 related_feature_defines:
   - DUK_OPT_FASTINT
 introduced: 1.2.0

@@ -706,49 +706,70 @@ def context_linux_x86_hello_ram():
 def context_linux_x32_hello_ram():
 	return context_helper_hello_ram('-mx32')
 
-def context_linux_regconst_variants():
+def mandel_test(archopt, genconfig_opts):
 	cwd = os.getcwd()
+	execute([ 'make', 'dist' ])
+	execute([
+		'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+		'--metadata', os.path.join(cwd, 'config'),
+		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')
+	] + genconfig_opts + [
+		'duk-config-header'
+	])
+	execute([
+		'gcc', '-oduk', archopt,
+		'-Os', '-fomit-frame-pointer',
+		'-flto', '-fno-asynchronous-unwind-tables',
+		'-ffunction-sections', '-Wl,--gc-sections',
+		'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
+		'-I' + os.path.join('dist', 'src'),
+		'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
+		'-I' + os.path.join('dist', 'examples', 'cmdline'),
+		os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+		os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+		os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
+		'-lm'
+	])
 
-	def test(archopt, genconfig_opts):
-		execute([ 'make', 'dist' ])
-		execute([
-			'python2', os.path.join(cwd, 'config', 'genconfig.py'),
-			'--metadata', os.path.join(cwd, 'config'),
-			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')
-		] + genconfig_opts + [
-			'duk-config-header'
-		])
-		execute([
-			'gcc', '-oduk', archopt,
-			'-Os', '-fomit-frame-pointer',
-			'-flto', '-fno-asynchronous-unwind-tables',
-			'-ffunction-sections', '-Wl,--gc-sections',
-			'-DDUK_CMDLINE_PRINTALERT_SUPPORT',
-			'-I' + os.path.join('dist', 'src'),
-			'-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
-			'-I' + os.path.join('dist', 'examples', 'cmdline'),
-			os.path.join(cwd, 'dist', 'src', 'duktape.c'),
-			os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
-			os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
-			'-lm'
-		])
+	execute([ 'size', os.path.join(cwd, 'duk') ])
 
-		execute([ 'size', os.path.join(cwd, 'duk') ])
-		res = execute([
-			os.path.join(cwd, 'duk'),
-			os.path.join('dist', 'mandel.js')
-		])
-		md5_stdout = md5.md5(res['stdout']).digest().encode('hex')
-		md5_expect = '627cd86f0a4255e018c564f86c6d0ab3'
-		print(md5_stdout)
-		print(md5_expect)
-		return md5_stdout == md5_expect
+	res = execute([
+		os.path.join(cwd, 'duk'),
+		'-e', 'print(Duktape.version); print(Duktape.env); print(Math.PI)'
+	])
 
+	res = execute([
+		os.path.join(cwd, 'duk'),
+		os.path.join('dist', 'mandel.js')
+	])
+	md5_stdout = md5.md5(res['stdout']).digest().encode('hex')
+	md5_expect = '627cd86f0a4255e018c564f86c6d0ab3'
+	print(md5_stdout)
+	print(md5_expect)
+	return md5_stdout == md5_expect
+
+def context_linux_regconst_variants():
 	res = True
-	res = res and test('-m64', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
-	res = res and test('-m64', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
-	res = res and test('-m32', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
-	res = res and test('-m32', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and mandel_test('-m64', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and mandel_test('-m64', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and mandel_test('-m32', [ '-DDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	res = res and mandel_test('-m32', [ '-UDUK_USE_EXEC_REGCONST_OPTIMIZE' ])
+	return res
+
+def context_linux_tval_variants():
+	# Cover most duk_tval.h cases, but only for little endian now.
+	res = True
+	for archopt in [ '-m64', '-m32' ]:
+		optsets = []
+		optsets.append([ '-UDUK_USE_PACKED_TVAL', '-DDUK_USE_64BIT_OPS', '-DDUK_USE_FASTINT' ])
+		optsets.append([ '-UDUK_USE_PACKED_TVAL', '-DDUK_USE_64BIT_OPS', '-UDUK_USE_FASTINT' ])
+		optsets.append([ '-UDUK_USE_PACKED_TVAL', '-UDUK_USE_64BIT_OPS', '-UDUK_USE_FASTINT' ])
+		if archopt == '-m32':
+			optsets.append([ '-DDUK_USE_PACKED_TVAL', '-DDUK_USE_64BIT_OPS', '-DDUK_USE_FASTINT' ])
+			optsets.append([ '-DDUK_USE_PACKED_TVAL', '-DDUK_USE_64BIT_OPS', '-UDUK_USE_FASTINT' ])
+			optsets.append([ '-DDUK_USE_PACKED_TVAL', '-UDUK_USE_64BIT_OPS', '-UDUK_USE_FASTINT' ])
+		for optset in optsets:
+			res = res and mandel_test(archopt, optset)
 	return res
 
 def context_linux_x64_minisphere():
@@ -856,6 +877,7 @@ context_handlers = {
 	'linux-x32-hello-ram': context_linux_x32_hello_ram,
 
 	'linux-regconst-variants': context_linux_regconst_variants,
+	'linux-tval-variants': context_linux_tval_variants,
 
 	'linux-x64-minisphere': context_linux_x64_minisphere,
 	'linux-x64-dukluv': context_linux_x64_dukluv,

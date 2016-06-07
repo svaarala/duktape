@@ -454,22 +454,22 @@ struct duk_heaphdr_string {
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 #if defined(DUK_USE_FASTINT)
-#define DUK_TVAL_SET_FASTINT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_I48_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_FASTINT(tv__dst, (newval)); \
+		DUK_TVAL_SET_I48(tv__dst, (newval)); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_FASTINT_I32(tv__dst, (newval)); \
+		DUK_TVAL_SET_I32(tv__dst, (newval)); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
+		DUK_TVAL_SET_U32(tv__dst, (newval)); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 #else
@@ -559,14 +559,15 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_SET_DOUBLE_UPDREF            DUK_TVAL_SET_DOUBLE_UPDREF_ALT0
 #define DUK_TVAL_SET_NAN_UPDREF               DUK_TVAL_SET_NAN_UPDREF_ALT0
 #if defined(DUK_USE_FASTINT)
-#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#define DUK_TVAL_SET_I48_UPDREF               DUK_TVAL_SET_I48_UPDREF_ALT0
+#define DUK_TVAL_SET_I32_UPDREF               DUK_TVAL_SET_I32_UPDREF_ALT0
+#define DUK_TVAL_SET_U32_UPDREF               DUK_TVAL_SET_U32_UPDREF_ALT0
 #else
-#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast int-to-double */
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_I48_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast int-to-double */
+#define DUK_TVAL_SET_I32_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_U32_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF
 #endif  /* DUK_USE_FASTINT */
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_I48_UPDREF  /* convenience */
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
 #define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0
 #define DUK_TVAL_SET_OBJECT_UPDREF            DUK_TVAL_SET_OBJECT_UPDREF_ALT0
@@ -661,19 +662,19 @@ struct duk_heaphdr_string {
 		DUK_UNREF((thr)); \
 	} while (0)
 #if defined(DUK_USE_FASTINT)
-#define DUK_TVAL_SET_FASTINT_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_I48_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_FASTINT(tv__dst, (newval)); \
+		DUK_TVAL_SET_I48(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_I32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_FASTINT_I32(tv__dst, (newval)); \
+		DUK_TVAL_SET_I32(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
+#define DUK_TVAL_SET_U32_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_FASTINT_U32(tv__dst, (newval)); \
+		DUK_TVAL_SET_U32(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
 #else
@@ -727,14 +728,15 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_SET_DOUBLE_UPDREF            DUK_TVAL_SET_DOUBLE_UPDREF_ALT0
 #define DUK_TVAL_SET_NAN_UPDREF               DUK_TVAL_SET_NAN_UPDREF_ALT0
 #if defined(DUK_USE_FASTINT)
-#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_FASTINT_UPDREF_ALT0
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_FASTINT_I32_UPDREF_ALT0
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_FASTINT_U32_UPDREF_ALT0
+#define DUK_TVAL_SET_I48_UPDREF               DUK_TVAL_SET_I48_UPDREF_ALT0
+#define DUK_TVAL_SET_I32_UPDREF               DUK_TVAL_SET_I32_UPDREF_ALT0
+#define DUK_TVAL_SET_U32_UPDREF               DUK_TVAL_SET_U32_UPDREF_ALT0
 #else
-#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast-int-to-double */
-#define DUK_TVAL_SET_FASTINT_I32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
-#define DUK_TVAL_SET_FASTINT_U32_UPDREF       DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_I48_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF  /* XXX: fast-int-to-double */
+#define DUK_TVAL_SET_I32_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF
+#define DUK_TVAL_SET_U32_UPDREF               DUK_TVAL_SET_DOUBLE_CAST_UPDREF
 #endif  /* DUK_USE_FASTINT */
+#define DUK_TVAL_SET_FASTINT_UPDREF           DUK_TVAL_SET_I48_UPDREF  /* convenience */
 #define DUK_TVAL_SET_LIGHTFUNC_UPDREF         DUK_TVAL_SET_LIGHTFUNC_UPDREF_ALT0
 #define DUK_TVAL_SET_STRING_UPDREF            DUK_TVAL_SET_STRING_UPDREF_ALT0
 #define DUK_TVAL_SET_OBJECT_UPDREF            DUK_TVAL_SET_OBJECT_UPDREF_ALT0

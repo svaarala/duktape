@@ -1964,7 +1964,7 @@ DUK_EXTERNAL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t idx) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, idx);
-	DUK_TVAL_SET_FASTINT_I32_UPDREF(thr, tv, ret);  /* side effects */
+	DUK_TVAL_SET_I32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 }
 
@@ -1981,7 +1981,7 @@ DUK_EXTERNAL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t idx) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, idx);
-	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
+	DUK_TVAL_SET_U32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 }
 
@@ -1998,7 +1998,7 @@ DUK_EXTERNAL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t idx) {
 
 	/* Relookup in case coerce_func() has side effects, e.g. ends up coercing an object */
 	tv = duk_require_tval(ctx, idx);
-	DUK_TVAL_SET_FASTINT_U32_UPDREF(thr, tv, ret);  /* side effects */
+	DUK_TVAL_SET_U32_UPDREF(thr, tv, ret);  /* side effects */
 	return ret;
 }
 
@@ -2179,7 +2179,7 @@ DUK_INTERNAL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t idx, d
 	DUK_TVAL_SET_TVAL(&tv_tmp, tv);
 #if defined(DUK_USE_FASTINT)
 #if (DUK_INT_MAX <= 0x7fffffffL)
-	DUK_TVAL_SET_FASTINT_I32(tv, res);
+	DUK_TVAL_SET_I32(tv, res);
 #else
 	/* Clamping needed if duk_int_t is 64 bits. */
 	if (res >= DUK_FASTINT_MIN && res <= DUK_FASTINT_MAX) {
@@ -3058,7 +3058,7 @@ DUK_EXTERNAL void duk_push_int(duk_context *ctx, duk_int_t val) {
 	DUK__CHECK_SPACE();
 	tv_slot = thr->valstack_top++;
 #if DUK_INT_MAX <= 0x7fffffffL
-	DUK_TVAL_SET_FASTINT_I32(tv_slot, (duk_int32_t) val);
+	DUK_TVAL_SET_I32(tv_slot, (duk_int32_t) val);
 #else
 	if (val >= DUK_FASTINT_MIN && val <= DUK_FASTINT_MAX) {
 		DUK_TVAL_SET_FASTINT(tv_slot, (duk_int64_t) val);
@@ -3091,7 +3091,7 @@ DUK_EXTERNAL void duk_push_uint(duk_context *ctx, duk_uint_t val) {
 	DUK__CHECK_SPACE();
 	tv_slot = thr->valstack_top++;
 #if DUK_UINT_MAX <= 0xffffffffUL
-	DUK_TVAL_SET_FASTINT_U32(tv_slot, (duk_uint32_t) val);
+	DUK_TVAL_SET_U32(tv_slot, (duk_uint32_t) val);
 #else
 	if (val <= DUK_FASTINT_MAX) {  /* val is unsigned so >= 0 */
 		/* XXX: take advantage of val being unsigned, no need to mask */
