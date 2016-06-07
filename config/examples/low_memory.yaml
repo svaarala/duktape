@@ -18,6 +18,7 @@ DUK_USE_ERRCREATE: false
 DUK_USE_ERRTHROW: false
 DUK_USE_VERBOSE_ERRORS: false
 DUK_USE_PARANOID_ERRORS: true
+DUK_USE_VERBOSE_EXECUTOR_ERRORS: false  # <100 bytes footprint
 DUK_USE_DEBUGGER_SUPPORT: false  # must be disabled if DUK_USE_PC2LINE is disabled
 DUK_USE_PC2LINE: false
 DUK_USE_LEXER_SLIDING_WINDOW: false
@@ -79,5 +80,7 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 #DUK_USE_ROM_GLOBAL_INHERIT: true  # select inherit or clone; inherit recommended
 #DUK_USE_ROM_GLOBAL_CLONE: false
 
-# Reduce footprint by dropping coroutine support (about 2kB).
+# Consider these:
 #DUK_USE_COROUTINE_SUPPORT: false
+#DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
+#DUK_USE_ES6_PROXY: false  # roughly 2kB footprint
