@@ -1,0 +1,25 @@
+# More stripping for low memory environments, removing e.g. RegExp support,
+# coroutine support, etc.
+
+DUK_USE_BUFFEROBJECT_SUPPORT: false
+
+DUK_USE_REGEXP_SUPPORT: false
+
+DUK_USE_REFERENCE_COUNTING: false
+DUK_USE_DOUBLE_LINKED_HEAP: false
+
+# Consider to reduce code footprint at the expense of less safeguards against
+# bugs in calling C code
+DUK_USE_VALSTACK_UNSAFE: true
+
+# Short term workaround with large footprint, disable.
+DUK_USE_REGEXP_CANON_WORKAROUND: false
+
+# Coroutine support has about 2kB footprint.
+DUK_USE_COROUTINE_SUPPORT: false
+
+# ES6 Proxy has about 2kB footprint.
+DUK_USE_ES6_PROXY: false
+
+# Don't support non-BMP characters in source code (UTF-8 otherwise OK).
+DUK_USE_SOURCE_NONBMP: false
