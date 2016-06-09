@@ -73,6 +73,8 @@ There are four basic goals for low memory optimization:
 The following genconfig option file template enables most low memory related
 option: ``config/examples/low_memory.yaml``.  It doesn't enable pointer
 compression because that always requires some application specific code.
+More aggressive feature stripping examples are in
+``config/examples/low_memory_strip.yaml``.
 
 Optimizing code footprint
 =========================
@@ -142,6 +144,19 @@ Add GCC specific options to remove unused symbols::
 
 Here the difference is ~8kB on x64.  For the dist Makefile.hello example,
 which uses very few public API calls, the difference is ~12kB.
+
+Miscellaneous
+-------------
+
+* On some low memory targets only libc features which are actually used get
+  pulled into the binary being built.  In such cases it may be useful to
+  avoid calling platform sprintf/sscanf because they may be surprisingly
+  large (>20 kB).  You can use ``extras/minimal-printf`` instead.
+
+* Math functions can sometimes have a relatively large footprint (15-20 kB),
+  usually from trigonometric and other transcendental functions.  You can
+  stub out unnecessary functions in ``duk_config.h``.  Note, however, that
+  Duktape internals at present depend on a few Math functions like ``DUK_FMOD()``.
 
 Suggested feature options
 =========================

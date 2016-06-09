@@ -1672,6 +1672,9 @@ Planned
 * Minor changes to error messages for errors thrown by Duktape internals
   (GH-827)
 
+* Make coroutine support optional (DUK_USE_COROUTINE_SUPPORT); disabling
+  coroutines reduces code footprint by about 2kB (GH-829)
+
 * Add an extra module (extras/duk-v1-compat) providing many Duktape 1.x API
   calls removed in Duktape 2.x (multiple Github issues)
 

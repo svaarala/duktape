@@ -795,6 +795,7 @@ DUK_LOCAL void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx, duk_small
 /* Called for handling both a longjmp() with type DUK_LJ_TYPE_YIELD and
  * when a RETURN opcode terminates a thread and yields to the resumer.
  */
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_size_t act_idx, duk_tval *tv_val_unstable) {
 	duk_tval *tv1;
 
@@ -814,6 +815,7 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_siz
 
 	/* caller must change active thread, and set thr->resumer to NULL */
 }
+#endif  /* DUK_USE_COROUTINE_SUPPORT */
 
 DUK_LOCAL
 duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
@@ -853,6 +855,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 	switch (thr->heap->lj.type) {
 
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 	case DUK_LJ_TYPE_RESUME: {
 		/*
 		 *  Note: lj.value1 is 'value', lj.value2 is 'resumee'.
@@ -1059,6 +1062,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		DUK_UNREACHABLE();
 		break;  /* never here */
 	}
+#endif  /* DUK_USE_COROUTINE_SUPPORT */
 
 	case DUK_LJ_TYPE_THROW: {
 		/*
@@ -1396,6 +1400,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 		return DUK__RETHAND_RESTART;
 	}
 
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 	DUK_DD(DUK_DDPRINT("no calling activation, thread finishes (similar to yield)"));
 
 	DUK_ASSERT(thr->resumer != NULL);
@@ -1427,6 +1432,11 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 
 	DUK_DD(DUK_DDPRINT("-> return not caught, thread terminated; handle like yield, restart execution in resumer"));
 	return DUK__RETHAND_RESTART;
+#else
+	/* Without coroutine support this case should never happen. */
+	DUK_ERROR_INTERNAL(thr);
+	return DUK__RETHAND_FINISHED;  /* not executed */
+#endif
 }
 
 /*

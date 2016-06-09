@@ -78,3 +78,6 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 #DUK_USE_ROM_OBJECTS: true
 #DUK_USE_ROM_GLOBAL_INHERIT: true  # select inherit or clone; inherit recommended
 #DUK_USE_ROM_GLOBAL_CLONE: false
+
+# Reduce footprint by dropping coroutine support (about 2kB).
+#DUK_USE_COROUTINE_SUPPORT: false

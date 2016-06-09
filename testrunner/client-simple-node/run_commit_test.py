@@ -305,17 +305,24 @@ def context_linux_x64_gcc_defsize_fltoetc():
 		])
 	return context_helper_get_binary_size_diff(comp)
 
-def context_helper_minsize_fltoetc(archopt):
+def context_helper_minsize_fltoetc(archopt, strip):
 	cwd = os.getcwd()
 	def comp():
 		execute([ 'make', 'dist' ])
-		execute([
+		cmd = [
 			'python2', os.path.join(cwd, 'config', 'genconfig.py'),
 			'--metadata', os.path.join(cwd, 'config'),
 			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),
-			'--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml'),
+			'--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
+		]
+		if strip:
+			cmd += [
+				'--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory_strip.yaml')
+			]
+		cmd += [
 			'duk-config-header'
-		])
+		]
+		execute(cmd)
 		execute([
 			'gcc', '-oduk', archopt,
 			'-Os', '-fomit-frame-pointer',
@@ -330,13 +337,22 @@ def context_helper_minsize_fltoetc(archopt):
 	return context_helper_get_binary_size_diff(comp)
 
 def context_linux_x64_gcc_minsize_fltoetc():
-	return context_helper_minsize_fltoetc('-m64')
+	return context_helper_minsize_fltoetc('-m64', False)
 
 def context_linux_x86_gcc_minsize_fltoetc():
-	return context_helper_minsize_fltoetc('-m32')
+	return context_helper_minsize_fltoetc('-m32', False)
 
 def context_linux_x32_gcc_minsize_fltoetc():
-	return context_helper_minsize_fltoetc('-mx32')
+	return context_helper_minsize_fltoetc('-mx32', False)
+
+def context_linux_x64_gcc_stripsize_fltoetc():
+	return context_helper_minsize_fltoetc('-m64', True)
+
+def context_linux_x86_gcc_stripsize_fltoetc():
+	return context_helper_minsize_fltoetc('-m32', True)
+
+def context_linux_x32_gcc_stripsize_fltoetc():
+	return context_helper_minsize_fltoetc('-mx32', True)
 
 def context_linux_x64_cpp_exceptions():
 	# For now rather simple: compile, run, and grep for my_class
@@ -857,6 +873,9 @@ context_handlers = {
 	'linux-x64-gcc-minsize-fltoetc': context_linux_x64_gcc_minsize_fltoetc,
 	'linux-x86-gcc-minsize-fltoetc': context_linux_x86_gcc_minsize_fltoetc,
 	'linux-x32-gcc-minsize-fltoetc': context_linux_x32_gcc_minsize_fltoetc,
+	'linux-x64-gcc-stripsize-fltoetc': context_linux_x64_gcc_stripsize_fltoetc,
+	'linux-x86-gcc-stripsize-fltoetc': context_linux_x86_gcc_stripsize_fltoetc,
+	'linux-x32-gcc-stripsize-fltoetc': context_linux_x32_gcc_stripsize_fltoetc,
 
 	'linux-x64-cpp-exceptions': context_linux_x64_cpp_exceptions,
 
