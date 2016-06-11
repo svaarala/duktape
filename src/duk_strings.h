@@ -84,7 +84,6 @@
 #define DUK_STR_PROPERTY_IS_VIRTUAL              "property is virtual"
 
 /* Variables */
-#define DUK_STR_IDENTIFIER_NOT_DEFINED           "identifier not defined"
 
 /* Compiler */
 #define DUK_STR_PARSE_ERROR                      "parse error"
