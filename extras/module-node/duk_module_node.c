@@ -130,7 +130,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 			duk_throw(ctx);  /* rethrow */
 		}
 	} else if (duk_is_undefined(ctx, -1)) {
-		/* nop */
+		duk_pop(ctx);
 	} else {
 		duk__del_cached_module(ctx, id);
 		duk_error(ctx, DUK_ERR_API_ERROR, "invalid module load callback return value");
