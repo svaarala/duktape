@@ -32,6 +32,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Tomasz Magulski (https://github.com/magul)
 * \D. Bohdan (https://github.com/dbohdan)
 * Ondřej Jirman (https://github.com/megous)
+* Saúl Ibarra Corretgé <saghul@gmail.com>
 
 Other contributions
 ===================
