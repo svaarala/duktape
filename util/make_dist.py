@@ -161,6 +161,7 @@ def create_dist_directories(dist):
 	mkdir(os.path.join(dist, 'extras', 'minimal-printf'))
 	mkdir(os.path.join(dist, 'extras', 'module-duktape'))
 	mkdir(os.path.join(dist, 'extras', 'module-node'))
+	mkdir(os.path.join(dist, 'extras', 'alloc-pool'))
 	mkdir(os.path.join(dist, 'polyfills'))
 	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
 	mkdir(os.path.join(dist, 'licenses'))
@@ -633,6 +634,16 @@ copy_files([
 	'Makefile',
 	'test.c'
 ], os.path.join('extras', 'module-node'), os.path.join(dist, 'extras', 'module-node'))
+
+copy_files([
+	'README.rst',
+	'duk_alloc_pool.c',
+	'duk_alloc_pool.h',
+	'ptrcomp.yaml',
+	'ptrcomp_fixup.h',
+	'Makefile',
+	'test.c'
+], os.path.join('extras', 'alloc-pool'), os.path.join(dist, 'extras', 'alloc-pool'))
 
 copy_files([
 	'Makefile.cmdline',

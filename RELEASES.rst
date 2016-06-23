@@ -1699,6 +1699,10 @@ Planned
   useful on bare metal platforms where an external printf() or scanf()
   dependency may have a large footprint impact (often 10-30 kB) (GH-801)
 
+* Add an extra module (extras/alloc-pool) providing an improved pool
+  allocator which supports runtime resizing of pool counts to specified
+  memory target and realloc shrinking (GH-847)
+
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
 
