@@ -1786,7 +1786,7 @@ DUK_LOCAL void duk__debug_dump_strtab_probe(duk_hthread *thr, duk_heap *heap) {
 
 	for (i = 0; i < heap->st_size; i++) {
 #if defined(DUK_USE_HEAPPTR16)
-		h = DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+		h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
 #else
 		h = heap->strtable[i];
 #endif
