@@ -1703,6 +1703,10 @@ Planned
   allocator which supports runtime resizing of pool counts to specified
   memory target and realloc shrinking (GH-847)
 
+* Fix compilation error triggered when using pointer compression and the
+  default string table implementation (probe-based rather than chained)
+  (GH-850)
+
 * Fix a harmless compilation warning related to a shadowed variable (GH-793,
   GH-794)
 

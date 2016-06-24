@@ -648,7 +648,7 @@ DUK_LOCAL void duk__sweep_stringtable_probe(duk_heap *heap, duk_size_t *out_coun
 
 	for (i = 0; i < heap->st_size; i++) {
 #if defined(DUK_USE_HEAPPTR16)
-		h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->strtable16[i]);
+		h = (duk_hstring *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
 #else
 		h = heap->strtable[i];
 #endif
