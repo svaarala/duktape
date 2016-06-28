@@ -202,7 +202,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	 * way to implement CommonJS closure semantics and matches the behavior of
 	 * e.g. Node.js.
 	 */
-	duk_push_string(ctx, "(function main(exports,require,module,__filename,__dirname){");
+	duk_push_string(ctx, "(function(exports,require,module,__filename,__dirname){");
 	duk_dup(ctx, -2);  /* source */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
@@ -214,6 +214,11 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	duk_call(ctx, 0);
 
 	/* [ ... module source func ] */
+
+	/* Set name for the wrapper function. */
+	duk_push_string(ctx, "name");
+	duk_push_string(ctx, "main");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
 	/* call the function wrapper */
 	(void) duk_get_prop_string(ctx, -3, "exports");   /* exports */
