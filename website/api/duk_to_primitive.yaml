@@ -19,10 +19,12 @@ summary: |
 
   <p>Custom type coercion:</p>
   <ul>
-  <li>Buffer value (plain): keep existing value</li>
-  <li>Buffer object: coerces to the underlying plain buffer value</li>
+  <li>Buffer value (plain): treated like an ArrayBuffer and usually
+      coerces to the string <code>[object ArrayBuffer]</code></li>
   <li>Pointer value (plain): keep existing value</li>
   <li>Pointer object: coerces to the underlying plain pointer value</li>
+  <li>Lightfunc value (plain): treated like a Function and usually
+      coerces to the string <code>[object Function]</code></li>
   </ul>
 
   <div include="ref-custom-type-coercion.html" />

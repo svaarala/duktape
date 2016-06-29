@@ -23,6 +23,14 @@
 <p>The following are not part of the "public API":</p>
 <ul>
 <li>Duktape API calls tagged <code>experimental</code>.</li>
+<li>Specific behavior which is explicitly noted to potentially change even in
+    minor versions, for example:
+    <ul>
+    <li>Behavior of buffer objects when their backing buffer is smaller than
+        the apparent size of the buffer object.  Memory safe behavior is
+        guaranteed, but otherwise behavior may vary between versions.</li>
+    </ul>
+</li>
 <li>Feature options.  Incompatible feature option changes are not made in patch
     releases, but can be made in minor releases (contrary to semantic versioning
     guarantees). Such changes are noted in release notes, and the goal is to cause

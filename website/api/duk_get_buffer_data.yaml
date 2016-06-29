@@ -7,15 +7,16 @@ stack: |
   [ ... val! ... ]
 
 summary: |
-  <p>Get the data pointer for a plain buffer or a Buffer object (Duktape.Buffer,
-  Node.js Buffer, ArrayBuffer, DataView, or TypedArray view) value at
-  <code>idx</code> without modifying or coercing the value.  Return a
-  non-<code>NULL</code> pointer if the value is a valid buffer with a non-zero
-  size.  For a zero-size buffer, may return a <code>NULL</code> or a
-  non-<code>NULL</code> pointer.  Returns <code>NULL</code> if the value is
-  not a buffer or the index is invalid.  If <code>out_size</code> is
-  non-<code>NULL</code>, the size of the buffer is written to <code>*out_size</code>;
-  0 is written if the return value is <code>NULL</code>.</p>
+  <p>Get the data pointer for a plain buffer or a buffer object (ArrayBuffer,
+  Node.js Buffer, DataView, or TypedArray view) value at <code>idx</code> without
+  modifying or coercing the value.  Return a non-<code>NULL</code> pointer if the
+  value is a valid buffer with a non-zero size.  For a zero-size buffer, may return
+  a <code>NULL</code> or a non-<code>NULL</code> pointer.  Returns <code>NULL</code>
+  if the value is not a buffer, the value is a buffer object whose "backing buffer"
+  doesn't fully cover the buffer object's apparent size, or the index is invalid.
+  If <code>out_size</code> is non-<code>NULL</code>, the size of the buffer is
+  written to <code>*out_size</code>; 0 is written if the return value is
+  <code>NULL</code>.</p>
 
   <p>The data area indicated by the return pointer and length is the full
   buffer for a plain buffer value, and the active "slice" for a buffer object.
@@ -41,6 +42,12 @@ summary: |
   buffer is resized/reconfigured.  Buffers created from Ecmascript code directly
   e.g. as <code>new Buffer(8)</code> are backed by an automatic fixed buffer, so
   their pointers are always stable.</p>
+
+  <p>In special cases it's possible that a buffer object is backed by a plain
+  buffer which is smaller than the buffer object's apparent size.  In these
+  cases a <code>NULL</code> is returned; this ensures that the pointer and size
+  returned can always be used safely.  (This behavior may change even in minor
+  versions.)</p>
 
   <div include="buffer-null-pointer-ambiguity.html" />
 

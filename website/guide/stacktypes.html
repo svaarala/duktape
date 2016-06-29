@@ -12,7 +12,7 @@
 <tr><td><a href="#type-number">number</a></td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
 <tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string</td></tr>
 <tr><td><a href="#type-object">object</a></td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
-<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic</td></tr>
+<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external</td></tr>
 <tr><td><a href="#type-pointer">pointer</a></td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
 <tr><td><a href="#type-lightfunc">lightfunc</a></td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C pointer (non-object)</td></tr>
 </table>
@@ -255,8 +255,8 @@ and an arbitrary value (including <b>undefined</b>).</p>
 
 <h2 id="type-buffer">Buffer</h2>
 
-<p>The <b>buffer</b> type is a raw buffer for user data.  There are three
-kinds of buffer values:</p>
+<p>The plain <b>buffer</b> type is a raw buffer for user data.  There are
+three kinds of plain buffer values:</p>
 <ul>
 <li>Fixed buffer: buffer size is fixed at creation, memory is managed
     automatically by Duktape.  Fixed buffers have an unchanging (stable)
@@ -272,9 +272,9 @@ kinds of buffer values:</p>
     buffer allocated by a graphics library.</li>
 </ul>
 
-<p>The data pointer of a zero-size dynamic buffer may (or may not) be
-<code>NULL</code> which must be handled by calling code properly: a
-<code>NULL</code> data pointer only indicates an error if the requested
+<p>The data pointer of a zero-size dynamic or external buffer may (or may
+not) be <code>NULL</code> which must be handled by calling code properly:
+a <code>NULL</code> data pointer only indicates an error if the requested
 size is non-zero.  Unlike strings, buffer data areas are not automatically
 NUL terminated and calling code must not access the bytes following the
 allocated buffer size.</p>
@@ -287,18 +287,18 @@ so user code is responsible for managing its life cycle.  User code must also
 make sure that no external buffer value is accessed when the external buffer
 is no longer (or not yet) valid.</p>
 
-<p>Like strings, buffer values have a <code>length</code> property and
-array index properties for reading and writing individual bytes in the buffer.
-The value of a indexed byte (<code>buf[123]</code>) is a number in the
-range 0...255 which represents a byte value (written values are coerced to
-integer modulo 256).  This differs from string behavior where the indexed
-values are one-character strings (much more expensive).  The <code>length</code>
-property is read-only so you can't resize a string by assigning to the length
-property.  These properties are available for both plain buffer values and
-buffer object values.</p>
+<p>Like strings, buffer values have a <code>length</code> property and array
+index properties for reading and writing individual bytes in the buffer;
+the read/write behavior for indices is the same as for <code>Uint8Array</code>.
+The <code>length</code> property is read-only so you can't resize a string by
+assigning to the length property.  Buffer values also have <code>.byteLength</code>,
+<code>.byteOffset</code>, and <code>BYTES_PER_ELEMENT</code> virtual properties.
+These properties are available for both plain buffer values and buffer objects.</p>
 
-<p>The plain buffer type is not standard Ecmascript.  Duktape provides several
-Object frontends for the plain buffer type: <code>Duktape.Buffer</code>, a
+<p>The plain buffer type is not standard Ecmascript.  Since Duktape 2.x plain
+buffers mimic ArrayBuffer objects to a large extent, so for most purposes they
+are a memory efficient alternative to working with ArrayBuffers.  Duktape also
+provides several Object frontends for the plain buffer type:
 <a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js compatible Buffer</a>,
 and Khronos/ES6
 <a href="http://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>.
