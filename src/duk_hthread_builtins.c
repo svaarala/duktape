@@ -25,7 +25,7 @@
 #define DUK__MAGIC_BITS                  16
 
 #define DUK__NARGS_VARARGS_MARKER        0x07
-#define DUK__NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_UNUSED */
+#define DUK__NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_NONE */
 #define DUK__NO_BIDX_MARKER              0x7f
 #define DUK__NO_STRIDX_MARKER            0xff
 
@@ -184,7 +184,7 @@ DUK_LOCAL void duk__push_string(duk_context *ctx, duk_bitdecoder_ctx *bd) {
 	for (i = 0; i < n; i++) {
 		*p++ = (duk_uint8_t) duk_bd_decode(bd, DUK__STRING_CHAR_BITS);
 	}
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 }
 DUK_LOCAL void duk__push_stridx_or_string(duk_context *ctx, duk_bitdecoder_ctx *bd) {
 	if (duk_bd_decode_flag(bd)) {

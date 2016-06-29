@@ -247,8 +247,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 				                     (const char *) duk_get_string(ctx, -1),
 				                     (long) idx));
 				duk_dup(ctx, -1);                      /* name */
-				duk_push_uint(ctx, (duk_uint_t) idx);  /* index */
-				duk_to_string(ctx, -1);
+				(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) idx);  /* index */
 				duk_xdef_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s",
@@ -680,7 +679,6 @@ DUK_LOCAL void duk__coerce_effective_this_binding(duk_hthread *thr,
 	tv_this = thr->valstack_bottom + idx_this;
 	switch (DUK_TVAL_GET_TAG(tv_this)) {
 	case DUK_TAG_OBJECT:
-	case DUK_TAG_LIGHTFUNC:  /* lightfuncs are treated like objects and not coerced */
 		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, object -> use directly"));
 		break;
 	case DUK_TAG_UNDEFINED:
@@ -702,6 +700,11 @@ DUK_LOCAL void duk__coerce_effective_this_binding(duk_hthread *thr,
 		}
 		break;
 	default:
+		/* Plain buffers and lightfuncs are object coerced.  Lightfuncs
+		 * very rarely come here however, because the call target would
+		 * need to be a strict non-lightfunc (lightfuncs are considered
+		 * strict) with an explicit lightfunc 'this' binding.
+		 */
 		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_this));
 		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)"));
 		duk_to_object(ctx, idx_this);  /* may have side effects */

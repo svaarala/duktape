@@ -127,7 +127,9 @@ struct duk_hbufobj {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_uint_t duk_hbufobj_clamp_bytelength(duk_hbufobj *h_bufobj, duk_uint_t len);
 #endif
+DUK_INTERNAL_DECL void duk_hbufobj_push_arraybuffer_from_plain(duk_hthread *thr, duk_hbuffer *h_buf);
 DUK_INTERNAL_DECL void duk_hbufobj_push_validated_read(duk_context *ctx, duk_hbufobj *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
 DUK_INTERNAL_DECL void duk_hbufobj_validated_write(duk_context *ctx, duk_hbufobj *h_bufobj, duk_uint8_t *p, duk_small_uint_t elem_size);
+DUK_INTERNAL_DECL void duk_hbufobj_promote_plain(duk_context *ctx, duk_idx_t idx);
 
 #endif  /* DUK_HBUFOBJ_H_INCLUDED */

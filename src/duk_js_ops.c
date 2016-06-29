@@ -201,6 +201,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		duk_push_hstring(ctx, h);
 		return duk__tonumber_string_raw(thr);
 	}
+	case DUK_TAG_BUFFER:  /* plain buffer treated like object */
 	case DUK_TAG_OBJECT: {
 		/* Note: ToPrimitive(object,hint) == [[DefaultValue]](object,hint),
 		 * so use [[DefaultValue]] directly.
@@ -216,15 +217,6 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 
 		duk_pop(ctx);
 		return d;
-	}
-	case DUK_TAG_BUFFER: {
-		/* Coerce like a string.  This makes sense because addition also treats
-		 * buffers like strings.
-		 */
-		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
-		duk_push_hbuffer(ctx, h);
-		duk_to_string(ctx, -1);  /* XXX: expensive, but numconv now expects to see a string */
-		return duk__tonumber_string_raw(thr);
 	}
 	case DUK_TAG_POINTER: {
 		/* Coerce like boolean */
@@ -597,30 +589,12 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		case DUK_TAG_BUFFER: {
-			if ((flags & (DUK_EQUALS_FLAG_STRICT | DUK_EQUALS_FLAG_SAMEVALUE)) != 0) {
-				/* heap pointer comparison suffices */
-				return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
-			} else {
-				/* non-strict equality for buffers compares contents */
-				duk_hbuffer *h_x = DUK_TVAL_GET_BUFFER(tv_x);
-				duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
-				duk_size_t len_x = DUK_HBUFFER_GET_SIZE(h_x);
-				duk_size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
-				void *buf_x;
-				void *buf_y;
-				if (len_x != len_y) {
-					return 0;
-				}
-				buf_x = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_x);
-				buf_y = (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
-				/* if len_x == len_y == 0, buf_x and/or buf_y may
-				 * be NULL, but that's OK.
-				 */
-				DUK_ASSERT(len_x == len_y);
-				DUK_ASSERT(len_x == 0 || buf_x != NULL);
-				DUK_ASSERT(len_y == 0 || buf_y != NULL);
-				return (DUK_MEMCMP((const void *) buf_x, (const void *) buf_y, (size_t) len_x) == 0) ? 1 : 0;
-			}
+			/* In Duktape 2.x plain buffers mimic ArrayBuffer objects
+			 * so always compare by heap pointer.  In Duktape 1.x
+			 * strict comparison would compare heap pointers and
+			 * non-strict would compare contents.
+			 */
+			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		case DUK_TAG_LIGHTFUNC: {
 			/* At least 'magic' has a significant impact on function
@@ -668,50 +642,22 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		return 1;
 	}
 
-	/* Number/string-or-buffer -> coerce string to number (e.g. "'1.5' == 1.5" -> true). */
-	if (DUK_TVAL_IS_NUMBER(tv_x) && (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
+	/* Number/string -> coerce string to number (e.g. "'1.5' == 1.5" -> true). */
+	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
 		/* the next 'if' is guaranteed to match after swap */
 		tv_tmp = tv_x;
 		tv_x = tv_y;
 		tv_y = tv_tmp;
 	}
-	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) && DUK_TVAL_IS_NUMBER(tv_y)) {
+	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
 		/* XXX: this is possible without resorting to the value stack */
 		duk_double_t d1, d2;
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		duk_push_tval(ctx, tv_x);
-		duk_to_string(ctx, -1);  /* buffer values are coerced first to string here */
 		duk_to_number(ctx, -1);
 		d1 = duk_require_number(ctx, -1);
 		duk_pop(ctx);
 		return duk__js_equals_number(d1, d2);
-	}
-
-	/* Buffer/string -> compare contents. */
-	if (DUK_TVAL_IS_BUFFER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
-		tv_tmp = tv_x;
-		tv_x = tv_y;
-		tv_y = tv_tmp;
-	}
-	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_BUFFER(tv_y)) {
-		duk_hstring *h_x = DUK_TVAL_GET_STRING(tv_x);
-		duk_hbuffer *h_y = DUK_TVAL_GET_BUFFER(tv_y);
-		duk_size_t len_x = DUK_HSTRING_GET_BYTELEN(h_x);
-		duk_size_t len_y = DUK_HBUFFER_GET_SIZE(h_y);
-		const void *buf_x;
-		const void *buf_y;
-		if (len_x != len_y) {
-			return 0;
-		}
-		buf_x = (const void *) DUK_HSTRING_GET_DATA(h_x);
-		buf_y = (const void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_y);
-		/* if len_x == len_y == 0, buf_x and/or buf_y may
-		 * be NULL, but that's OK.
-		 */
-		DUK_ASSERT(len_x == len_y);
-		DUK_ASSERT(len_x == 0 || buf_x != NULL);
-		DUK_ASSERT(len_y == 0 || buf_y != NULL);
-		return (DUK_MEMCMP((const void *) buf_x, (const void *) buf_y, (size_t) len_x) == 0) ? 1 : 0;
 	}
 
 	/* Boolean/any -> coerce boolean to number and try again.  If boolean is
@@ -738,15 +684,13 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		return rc;
 	}
 
-	/* String-number-buffer/object -> coerce object to primitive (apparently without hint), then try again. */
-	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x) || DUK_TVAL_IS_BUFFER(tv_x)) &&
-	    DUK_TVAL_IS_OBJECT(tv_y)) {
+	/* String-number/object -> coerce object to primitive (apparently without hint), then try again. */
+	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x)) && DUK_TVAL_IS_OBJECT(tv_y)) {
 		tv_tmp = tv_x;
 		tv_x = tv_y;
 		tv_y = tv_tmp;
 	}
-	if (DUK_TVAL_IS_OBJECT(tv_x) &&
-	    (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y) || DUK_TVAL_IS_BUFFER(tv_y))) {
+	if (DUK_TVAL_IS_OBJECT(tv_x) && (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y))) {
 		duk_bool_t rc;
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
@@ -1041,7 +985,9 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
+	duk_tval *tv;
 	duk_uint_t sanity;
+	duk_bool_t skip_first;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
@@ -1112,23 +1058,37 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 	/* [ ... lval rval(func) ] */
 
-	/* Handle lightfuncs through object coercion for now. */
-	/* XXX: direct implementation */
-	val = duk_get_hobject_or_lfunc_coerce(ctx, -2);
-	if (!val) {
+	/* For lightfuncs, buffers, and pointers start the comparison directly
+	 * from the virtual prototype object.
+	 */
+	skip_first = 0;
+	tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
+	switch (DUK_TVAL_GET_TAG(tv)) {
+	case DUK_TAG_LIGHTFUNC:
+		val = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+		DUK_ASSERT(val != NULL);
+		break;
+	case DUK_TAG_BUFFER:
+		val = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+		DUK_ASSERT(val != NULL);
+		break;
+	case DUK_TAG_POINTER:
+		val = thr->builtins[DUK_BIDX_POINTER_PROTOTYPE];
+		DUK_ASSERT(val != NULL);
+		break;
+	case DUK_TAG_OBJECT:
+		skip_first = 1;  /* Ignore object itself on first round. */
+		val = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(val != NULL);
+		break;
+	default:
 		goto pop_and_false;
 	}
+	DUK_ASSERT(val != NULL);  /* Loop doesn't actually rely on this. */
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
 	proto = duk_require_hobject(ctx, -1);
 	duk_pop(ctx);  /* -> [ ... lval rval ] */
-
-	DUK_ASSERT(val != NULL);
-
-#if defined(DUK_USE_ES6_PROXY)
-	val = duk_hobject_resolve_proxy_target(thr, val);
-	DUK_ASSERT(val != NULL);
-#endif
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
@@ -1150,9 +1110,6 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 *  also the built-in Function prototype, the result is true.
 		 */
 
-		DUK_ASSERT(val != NULL);
-		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
-
 		if (!val) {
 			goto pop_and_false;
 		}
@@ -1162,11 +1119,14 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		val = duk_hobject_resolve_proxy_target(thr, val);
 #endif
 
-		if (val == proto) {
+		if (skip_first) {
+			skip_first = 0;
+		} else if (val == proto) {
 			goto pop_and_true;
 		}
 
-		/* follow prototype chain */
+		DUK_ASSERT(val != NULL);
+		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
 	} while (--sanity > 0);
 
 	if (sanity == 0) {
@@ -1211,12 +1171,12 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	 * form (which is a shame).
 	 */
 
-	/* TypeError if rval is not an object (or lightfunc which should behave
-	 * like a Function instance).
+	/* TypeError if rval is not an object or object like (e.g. lightfunc
+	 * or plain buffer).
 	 */
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
-	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC);
+	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	duk_to_string(ctx, -2);               /* coerce lval with ToString() */
 
 	retval = duk_hobject_hasprop(thr,
@@ -1252,7 +1212,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 		break;
 	}
 	case DUK_TAG_NULL: {
-		/* Note: not a typo, "object" is returned for a null value */
+		/* Note: not a typo, "object" is returned for a null value. */
 		stridx = DUK_STRIDX_LC_OBJECT;
 		break;
 	}
@@ -1261,7 +1221,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 		break;
 	}
 	case DUK_TAG_POINTER: {
-		/* implementation specific */
+		/* Implementation specific. */
 		stridx = DUK_STRIDX_LC_POINTER;
 		break;
 	}
@@ -1280,8 +1240,11 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		/* implementation specific */
-		stridx = DUK_STRIDX_LC_BUFFER;
+		/* Implementation specific.  In Duktape 1.x this would be
+		 * 'buffer', in Duktape 2.x changed to 'object' because plain
+		 * buffers now mimic ArrayBuffer objects.
+		 */
+		stridx = DUK_STRIDX_LC_OBJECT;
 		break;
 	}
 	case DUK_TAG_LIGHTFUNC: {

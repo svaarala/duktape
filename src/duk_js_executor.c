@@ -114,12 +114,8 @@ DUK_LOCAL void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_
 	duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* side effects -> don't use tv_x, tv_y after */
 	duk_to_primitive(ctx, -1, DUK_HINT_NONE);
 
-	/* As a first approximation, buffer values are coerced to strings
-	 * for addition.  This means that adding two buffers currently
-	 * results in a string.
-	 */
-	if (duk_check_type_mask(ctx, -2, DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_BUFFER) ||
-	    duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_BUFFER)) {
+	/* Since Duktape 2.x plain buffers are treated like ArrayBuffer. */
+	if (duk_is_string(ctx, -2) || duk_is_string(ctx, -1)) {
 		duk_to_string(ctx, -2);
 		duk_to_string(ctx, -1);
 		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */

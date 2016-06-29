@@ -137,7 +137,7 @@ DUK_LOCAL int duk__transform_helper(duk_context *ctx, duk__transform_callback ca
 
 	DUK_BW_COMPACT(thr, &tfm_ctx->bw);
 
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 	return 1;
 }
 

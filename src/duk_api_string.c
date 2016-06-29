@@ -97,7 +97,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 
 	/* [... buf] */
 
-	(void) duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 
 	/* [... res] */
 	return;
@@ -183,7 +183,7 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_f
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 	duk_replace(ctx, idx);
 }
 

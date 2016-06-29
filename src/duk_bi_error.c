@@ -49,7 +49,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	/* XXX: optimize with more direct internal access */
 
 	duk_push_this(ctx);
-	(void) duk_require_hobject_or_lfunc_coerce(ctx, -1);
+	(void) duk_require_hobject_promote_mask(ctx, -1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 
 	/* [ ... this ] */
 

@@ -13,12 +13,17 @@
  * avoid creating a temporary string or buffer when possible.
  */
 DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len) {
+	void *ptr;
+	duk_bool_t isbuffer;
+
 	DUK_ASSERT(duk_is_valid_index(ctx, idx));  /* checked by caller */
-	if (duk_is_buffer(ctx, idx)) {
-		return (const duk_uint8_t *) duk_get_buffer(ctx, idx, out_len);
-	} else {
-		return (const duk_uint8_t *) duk_to_lstring(ctx, idx, out_len);
+
+	ptr = duk_get_buffer_data_raw(ctx, idx, out_len, 0 /*throw_flag*/, &isbuffer);
+	if (isbuffer) {
+		DUK_ASSERT(*out_len == 0 || ptr != NULL);
+		return (const duk_uint8_t *) ptr;
 	}
+	return (const duk_uint8_t *) duk_to_lstring(ctx, idx, out_len);
 }
 
 #if defined(DUK_USE_BASE64_FASTPATH)
@@ -398,7 +403,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx) {
 
 	duk__base64_encode_helper((const duk_uint8_t *) src, srclen, dst);
 
-	ret = duk_to_string(ctx, -1);
+	ret = duk_buffer_to_string(ctx, -1);
 	duk_replace(ctx, idx);
 	return ret;
 
@@ -502,7 +507,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx) {
 	 * caller coerce to string if necessary?
 	 */
 
-	ret = duk_to_string(ctx, -1);
+	ret = duk_buffer_to_string(ctx, -1);
 	duk_replace(ctx, idx);
 	return ret;
 }

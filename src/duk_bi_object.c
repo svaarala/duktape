@@ -5,27 +5,32 @@
 #include "duk_internal.h"
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
-	if (!duk_is_constructor_call(ctx) &&
-	    !duk_is_null_or_undefined(ctx, 0)) {
-		duk_to_object(ctx, 0);
-		return 1;
-	}
+	duk_uint_t arg_mask;
 
-	if (duk_is_object(ctx, 0)) {
+	arg_mask = duk_get_type_mask(ctx, 0);
+
+	if (!duk_is_constructor_call(ctx) &&  /* not a constructor call */
+	    ((arg_mask & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) == 0)) {  /* and argument not null or undefined */
+		duk_to_object(ctx, 0);
 		return 1;
 	}
 
 	/* Pointer and buffer primitive values are treated like other
 	 * primitives values which have a fully fledged object counterpart:
-	 * promote to an object value.  Lightfuncs are coerced with
-	 * ToObject() even they could also be returned as is.
+	 * promote to an object value.  Lightfuncs and plain buffers are
+	 * coerced with ToObject() even they could also be returned as is.
 	 */
-	if (duk_check_type_mask(ctx, 0, DUK_TYPE_MASK_STRING |
-	                                DUK_TYPE_MASK_BOOLEAN |
-	                                DUK_TYPE_MASK_NUMBER |
-	                                DUK_TYPE_MASK_POINTER |
-	                                DUK_TYPE_MASK_BUFFER |
-	                                DUK_TYPE_MASK_LIGHTFUNC)) {
+	if (arg_mask & (DUK_TYPE_MASK_OBJECT |
+	                DUK_TYPE_MASK_STRING |
+	                DUK_TYPE_MASK_BOOLEAN |
+	                DUK_TYPE_MASK_NUMBER |
+	                DUK_TYPE_MASK_POINTER |
+	                DUK_TYPE_MASK_BUFFER |
+	                DUK_TYPE_MASK_LIGHTFUNC)) {
+		/* For DUK_TYPE_OBJECT the coercion is a no-op and could
+		 * be checked for explicitly, but Object(obj) calls are
+		 * not very common so opt for minimal footprint.
+		 */
 		duk_to_object(ctx, 0);
 		return 1;
 	}
@@ -46,33 +51,39 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 	duk_hobject *proto;
+	duk_tval *tv;
 
 	DUK_UNREF(thr);
 
 	/* magic: 0=getter call, 1=Object.getPrototypeOf */
 	if (duk_get_current_magic(ctx) == 0) {
-		duk_push_this_coercible_to_object(ctx);
-		duk_insert(ctx, 0);
+		tv = DUK_HTHREAD_THIS_PTR(thr);
+	} else {
+		DUK_ASSERT(duk_get_top(ctx) >= 1);
+		tv = DUK_GET_TVAL_POSIDX(ctx, 0);
 	}
 
-	h = duk_require_hobject_or_lfunc(ctx, 0);
-	/* h is NULL for lightfunc */
-
-	/* XXX: should the API call handle this directly, i.e. attempt
-	 * to duk_push_hobject(ctx, null) would push a null instead?
-	 * (On the other hand 'undefined' would be just as logical, but
-	 * not wanted here.)
-	 */
-
-	if (h == NULL) {
-		duk_push_hobject_bidx(ctx, DUK_BIDX_FUNCTION_PROTOTYPE);
-	} else {
+	switch (DUK_TVAL_GET_TAG(tv)) {
+	case DUK_TAG_BUFFER:
+		proto = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+		break;
+	case DUK_TAG_LIGHTFUNC:
+		proto = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+		break;
+	case DUK_TAG_OBJECT:
+		h = DUK_TVAL_GET_OBJECT(tv);
 		proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
-		if (proto) {
-			duk_push_hobject(ctx, proto);
-		} else {
-			duk_push_null(ctx);
-		}
+		break;
+	default:
+		/* This implicitly handles CheckObjectCoercible() caused
+		 * TypeError.
+		 */
+		return DUK_RET_TYPE_ERROR;
+	}
+	if (proto != NULL) {
+		duk_push_hobject(ctx, proto);
+	} else {
+		duk_push_null(ctx);
 	}
 	return 1;
 }
@@ -89,6 +100,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	duk_hobject *h_new_proto;
 	duk_hobject *h_curr;
 	duk_ret_t ret_success = 1;  /* retval for success path */
+	duk_uint_t mask;
 
 	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4);
 	 * magic: 0=setter call, 1=Object.setPrototypeOf
@@ -111,14 +123,20 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 
 	h_new_proto = duk_get_hobject(ctx, 1);
 	/* h_new_proto may be NULL */
-	if (duk_is_lightfunc(ctx, 0)) {
-		if (h_new_proto == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]) {
+
+	mask = duk_get_type_mask(ctx, 0);
+	if (mask & (DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER)) {
+		duk_hobject *curr_proto;
+		curr_proto = thr->builtins[(mask & DUK_TYPE_MASK_LIGHTFUNC) ?
+		                               DUK_BIDX_FUNCTION_PROTOTYPE :
+		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+		if (h_new_proto == curr_proto) {
 			goto skip;
 		}
 		goto fail_nonextensible;
 	}
 	h_obj = duk_get_hobject(ctx, 0);
-	if (!h_obj) {
+	if (h_obj == NULL) {
 		goto skip;
 	}
 	DUK_ASSERT(h_obj != NULL);
@@ -161,10 +179,11 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 2);
 
+	duk_hbufobj_promote_plain(ctx, 0);  /* promote plain buffer to ArrayBuffer */
 	tv = duk_get_tval(ctx, 0);
 	DUK_ASSERT(tv != NULL);
 	if (DUK_TVAL_IS_NULL(tv)) {
-		;
+		DUK_ASSERT(proto == NULL);
 	} else if (DUK_TVAL_IS_OBJECT(tv)) {
 		proto = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(proto != NULL);
@@ -216,9 +235,10 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_context *ct
 
 	/* Lightfuncs are currently supported by coercing to a temporary
 	 * Function object; changes will be allowed (the coerced value is
-	 * extensible) but will be lost.
+	 * extensible) but will be lost.  Same for plain buffers.
 	 */
-	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
+	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	DUK_ASSERT(obj != NULL);
 	(void) duk_to_string(ctx, 1);
 	key = duk_require_hstring(ctx, 1);
 	(void) duk_require_hobject(ctx, 2);
@@ -274,8 +294,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *
 	duk_hobject *get;
 	duk_hobject *set;
 
-	/* Lightfunc handling by ToObject() coercion. */
-	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);  /* target */
+	/* Lightfunc and plain buffer handling by ToObject() coercion. */
+	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(obj != NULL);
 
 	duk_to_object(ctx, 1);        /* properties object */
@@ -354,32 +374,59 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context 
 	duk_hobject *h;
 	duk_bool_t is_freeze;
 
-	h = duk_require_hobject_or_lfunc(ctx, 0);
-	if (!h) {
-		/* Lightfunc, always success. */
+	is_freeze = (duk_bool_t) duk_get_current_magic(ctx);
+	if (duk_is_buffer(ctx, 0)) {
+		/* Plain buffer: already sealed, but not frozen (and can't be frozen
+		 * because index properties can't be made non-writable.
+		 */
+		if (is_freeze) {
+			goto fail_cannot_freeze;
+		}
+		return 1;
+	} else if (duk_is_lightfunc(ctx, 0)) {
+		/* Lightfunc: already sealed and frozen, success. */
 		return 1;
 	}
+#if 0
+	/* Seal/freeze are quite rare in practice so it'd be nice to get the
+	 * correct behavior simply via automatic promotion (at the cost of some
+	 * memory churn).  However, the promoted objects don't behave the same,
+	 * e.g. promoted lightfuncs are extensible.
+	 */
+	h = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+#endif
 
-	is_freeze = (duk_bool_t) duk_get_current_magic(ctx);
+	h = duk_require_hobject(ctx, 0);
+	DUK_ASSERT(h != NULL);
+	if (is_freeze && DUK_HOBJECT_IS_BUFOBJ(h)) {
+		/* Buffer objects cannot be frozen because there's no internal
+		 * support for making virtual array indices non-writable.
+		 */
+		DUK_DD(DUK_DDPRINT("cannot freeze a buffer object"));
+		goto fail_cannot_freeze;
+	}
+
 	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
 
 	/* Sealed and frozen objects cannot gain any more properties,
 	 * so this is a good time to compact them.
 	 */
 	duk_hobject_compact_props(thr, h);
-
 	return 1;
+
+ fail_cannot_freeze:
+	return DUK_RET_TYPE_ERROR;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
 
-	h = duk_require_hobject_or_lfunc(ctx, 0);
-	if (!h) {
-		/* Lightfunc, always success. */
+	if (duk_check_type_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER)) {
+		/* Lightfunc or plain buffer, already non-extensible so always success. */
 		return 1;
 	}
+	h = duk_require_hobject(ctx, 0);
 	DUK_ASSERT(h != NULL);
 
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
@@ -396,12 +443,17 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 	duk_hobject *h;
 	duk_bool_t is_frozen;
 	duk_bool_t rc;
+	duk_uint_t mask;
 
-	h = duk_require_hobject_or_lfunc(ctx, 0);
-	if (!h) {
-		duk_push_true(ctx);  /* frozen and sealed */
+	is_frozen = duk_get_current_magic(ctx);
+	mask = duk_get_type_mask(ctx, 0);
+	if (mask & (DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER)) {
+		DUK_ASSERT(is_frozen == 0 || is_frozen == 1);
+		duk_push_boolean(ctx, (mask & DUK_TYPE_MASK_LIGHTFUNC) ?
+		                          1 :               /* lightfunc always frozen and sealed */
+		                          (is_frozen ^ 1)); /* buffer sealed but not frozen (index props writable) */
 	} else {
-		is_frozen = duk_get_current_magic(ctx);
+		h = duk_require_hobject(ctx, 0);
 		rc = duk_hobject_object_is_sealed_frozen_helper((duk_hthread *) ctx, h, is_frozen /*is_frozen*/);
 		duk_push_boolean(ctx, rc);
 	}
@@ -411,8 +463,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx) {
 	duk_hobject *h;
 
-	h = duk_require_hobject_or_lfunc(ctx, 0);
-	if (!h) {
+	h = duk_require_hobject_accept_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	if (h == NULL) {
 		duk_push_false(ctx);
 	} else {
 		duk_push_boolean(ctx, DUK_HOBJECT_HAS_EXTENSIBLE(h));
@@ -437,7 +489,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 1);
 	DUK_UNREF(thr);
 
-	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
+	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(obj != NULL);
 	DUK_UNREF(obj);
 
@@ -542,6 +594,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_value_of(duk_context *ctx) {
+	/* For lightfuncs and plain buffers, returns Object() coerced. */
 	(void) duk_push_this_coercible_to_object(ctx);
 	return 1;
 }
