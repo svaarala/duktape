@@ -2,7 +2,7 @@
  *  Test float assignment and reading it back.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

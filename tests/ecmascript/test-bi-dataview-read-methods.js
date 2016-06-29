@@ -2,7 +2,7 @@
  *  Read through a DataView
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {
@@ -1761,7 +1761,7 @@ function readDataViewTest(arrayLength) {
             b_u8[i] = v;
         }
     });
-    printTypedArray(b);
+    printBuffer(b);
 
     [ -100, -5, -1, 0, 1, 2, 8, 13, 15, 16, 17, 100 ].forEach(function (offset, idx1) {
         [ undefined, 0, 1, 2, 3, 4, 5, 8, 100 ].forEach(function (length, idx2) {

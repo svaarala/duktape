@@ -20,52 +20,49 @@
  */
 
 static void setup_duktape_buffer(duk_context *ctx, duk_idx_t idx) {
+	duk_size_t sz;
+
 	idx = duk_require_normalize_index(ctx, idx);
-	duk_eval_string(ctx,
-		"(function (plain_buffer) {\n"
-		"    return new Duktape.Buffer(plain_buffer);\n"
-		"})\n");
-	duk_dup(ctx, idx);
-	duk_call(ctx, 1);
+	(void) duk_require_buffer(ctx, idx, &sz);
+	duk_push_buffer_object(ctx, idx, 0, sz, DUK_BUFOBJ_DUKTAPE_BUFFER);
 }
 
 static void setup_nodejs_buffer(duk_context *ctx, duk_idx_t idx) {
+	duk_size_t sz;
+
 	idx = duk_require_normalize_index(ctx, idx);
-	duk_eval_string(ctx,
-		"(function (plain_buffer) {\n"
-		"    return new Buffer(plain_buffer);\n"
-		"})\n");
-	duk_dup(ctx, idx);
-	duk_call(ctx, 1);
+	(void) duk_require_buffer(ctx, idx, &sz);
+	duk_push_buffer_object(ctx, idx, 0, sz, DUK_BUFOBJ_NODEJS_BUFFER);
 }
 
 static void setup_nodejs_buffer_slice(duk_context *ctx, duk_idx_t idx, duk_int_t start, duk_int_t end) {
+	duk_size_t sz;
+
 	idx = duk_require_normalize_index(ctx, idx);
+	(void) duk_require_buffer(ctx, idx, &sz);
 	duk_eval_string(ctx,
-		"(function (plain_buffer, start, end) {\n"
-		"    return Buffer(plain_buffer).slice(start, end);\n"
+		"(function (buf, start, end) {\n"
+		"    return buf.slice(start, end);\n"
 		"})\n");
-	duk_dup(ctx, idx);
+	duk_push_buffer_object(ctx, idx, 0, sz, DUK_BUFOBJ_NODEJS_BUFFER);
 	duk_push_int(ctx, start);
 	duk_push_int(ctx, end);
 	duk_call(ctx, 3);
 }
 
 static void setup_arraybuffer(duk_context *ctx, duk_idx_t idx) {
+	duk_size_t sz;
+
 	idx = duk_require_normalize_index(ctx, idx);
-	duk_eval_string(ctx,
-		"(function (plain_buffer) {\n"
-		"    return new ArrayBuffer(plain_buffer);\n"
-		"})\n");
-	duk_dup(ctx, idx);
-	duk_call(ctx, 1);
+	(void) duk_require_buffer(ctx, idx, &sz);
+	duk_push_buffer_object(ctx, idx, 0, sz, DUK_BUFOBJ_ARRAYBUFFER);
 }
 
 static void setup_typedarray(duk_context *ctx, duk_idx_t idx, const char *name) {
 	idx = duk_require_normalize_index(ctx, idx);
 	duk_push_sprintf(ctx,
 		"(function (plain_buffer) {\n"
-		"    return new %s(new ArrayBuffer(plain_buffer));\n"
+		"    return new %s(Object(plain_buffer));\n"
 		"})\n", name);
 	duk_eval(ctx);
 	duk_dup(ctx, idx);
@@ -76,7 +73,7 @@ static void setup_typedarray_slice(duk_context *ctx, duk_idx_t idx, const char *
 	idx = duk_require_normalize_index(ctx, idx);
 	duk_push_sprintf(ctx,
 		"(function (plain_buffer, start, length) {\n"
-		"    return new %s(new ArrayBuffer(plain_buffer), start, length);\n"
+		"    return new %s(Object(plain_buffer), start, length);\n"
 		"})\n", name);
 	duk_eval(ctx);
 	duk_dup(ctx, idx);

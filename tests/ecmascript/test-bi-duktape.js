@@ -2,6 +2,8 @@
  *  Duktape builtin.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -131,18 +133,30 @@ string
 666f6f
 string
 666f6fe188b4
-buffer
+object
 102 111 111
-buffer
+object
 102 111 111 4660
 string
 Zm9v
 string
 Zm9v4Yi0
-buffer
+object
 102 111 111
-buffer
+object
 102 111 111 4660
+string
+Zm9v
+object
+102 111 111
+string
+Zm9v
+object
+102 111 111
+string
+Zm9v
+object
+102 111 111
 ===*/
 
 function printEnc(x) {
@@ -152,7 +166,7 @@ function printEnc(x) {
 
 function printDec(x) {
     print(typeof x);
-    x = String(x);
+    x = bufferToString(x);
     var res = [];
     for (var i = 0; i < x.length; i++) {
         res.push(x.charCodeAt(i));
@@ -172,6 +186,51 @@ function encDecTest() {
 
     printDec(Duktape.dec('base64', 'Zm9v'));
     printDec(Duktape.dec('base64', 'Zm9v4Yi0'));
+
+    // Plain buffer input
+    var pb = Duktape.Buffer(3);
+    pb[0] = 'f'.charCodeAt(0);
+    pb[1] = 'o'.charCodeAt(0);
+    pb[2] = 'o'.charCodeAt(0);
+    printEnc(Duktape.enc('base64', pb));
+    var pb = Duktape.Buffer(4);
+    pb[0] = 'Z'.charCodeAt(0);
+    pb[1] = 'm'.charCodeAt(0);
+    pb[2] = '9'.charCodeAt(0);
+    pb[3] = 'v'.charCodeAt(0);
+    printDec(Duktape.dec('base64', pb));
+
+    // ArrayBuffer input
+    var ab = new ArrayBuffer(3);
+    ab[0] = 'f'.charCodeAt(0);
+    ab[1] = 'o'.charCodeAt(0);
+    ab[2] = 'o'.charCodeAt(0);
+    printEnc(Duktape.enc('base64', ab));
+    var ab = new ArrayBuffer(4);
+    ab[0] = 'Z'.charCodeAt(0);
+    ab[1] = 'm'.charCodeAt(0);
+    ab[2] = '9'.charCodeAt(0);
+    ab[3] = 'v'.charCodeAt(0);
+    printDec(Duktape.dec('base64', ab));
+
+    // Uint8Array slice input
+    var ab = new ArrayBuffer(6);
+    ab[0] = '!'.charCodeAt(0);
+    ab[1] = '!'.charCodeAt(0);
+    ab[2] = 'f'.charCodeAt(0);
+    ab[3] = 'o'.charCodeAt(0);
+    ab[4] = 'o'.charCodeAt(0);
+    ab[5] = '!'.charCodeAt(0);
+    printEnc(Duktape.enc('base64', new Uint8Array(ab).subarray(2, 5)));
+    var ab = new ArrayBuffer(7);
+    ab[0] = '_'.charCodeAt(0);
+    ab[1] = '_'.charCodeAt(0);
+    ab[2] = 'Z'.charCodeAt(0);
+    ab[3] = 'm'.charCodeAt(0);
+    ab[4] = '9'.charCodeAt(0);
+    ab[5] = 'v'.charCodeAt(0);
+    ab[6] = '_'.charCodeAt(0);
+    printDec(Duktape.dec('base64', new Uint8Array(ab).subarray(2, 6)));
 }
 
 print('encdec');

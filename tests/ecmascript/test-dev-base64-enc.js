@@ -7,6 +7,8 @@
  *  a buffer.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -14,6 +16,14 @@
 ---*/
 
 var t;
+
+function encPrint(x) {
+    print(Duktape.enc('base64', x));
+}
+
+function decPrint(x) {
+    print(bufferToString(Duktape.dec('base64', x)));
+}
 
 /*===
 
@@ -25,13 +35,13 @@ Zm9vYmE=
 Zm9vYmFy
 ===*/
 
-print(Duktape.enc('base64', ''));
-print(Duktape.enc('base64', 'f'));
-print(Duktape.enc('base64', 'fo'));
-print(Duktape.enc('base64', 'foo'));
-print(Duktape.enc('base64', 'foob'));
-print(Duktape.enc('base64', 'fooba'));
-print(Duktape.enc('base64', 'foobar'));
+encPrint('');
+encPrint('f');
+encPrint('fo');
+encPrint('foo');
+encPrint('foob');
+encPrint('fooba');
+encPrint('foobar');
 
 /*===
 
@@ -43,13 +53,13 @@ fooba
 foobar
 ===*/
 
-print('' + Duktape.dec('base64', ''));
-print('' + Duktape.dec('base64', 'Zg=='));
-print('' + Duktape.dec('base64', 'Zm8='));
-print('' + Duktape.dec('base64', 'Zm9v'));
-print('' + Duktape.dec('base64', 'Zm9vYg=='));
-print('' + Duktape.dec('base64', 'Zm9vYmE='));
-print('' + Duktape.dec('base64', 'Zm9vYmFy'));
+decPrint('');
+decPrint('Zg==');
+decPrint('Zm8=');
+decPrint('Zm9v');
+decPrint('Zm9vYg==');
+decPrint('Zm9vYmE=');
+decPrint('Zm9vYmFy');
 
 /*===
 Zm9v4Yi0
@@ -59,9 +69,9 @@ Zm9v4Yi0
 /* A string is UTF-8 encoded and then base-64 encoded. */
 
 // U+1234 -> 0xe1 0x88 0xb4
-print(Duktape.enc('base64', 'foo\u1234'));
+encPrint('foo\u1234');
 
-t = '' + Duktape.dec('base64', 'Zm9v4Yi0');
+t = bufferToString(Duktape.dec('base64', 'Zm9v4Yi0'));
 print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3));
 
 /*===
@@ -77,11 +87,11 @@ foo
 
 t = Duktape.enc('base64', 'f') + Duktape.enc('base64', 'oo');
 print(t);
-print('' + Duktape.dec('base64', t));
+decPrint(t);
 
 t = Duktape.enc('base64', 'fo') + Duktape.enc('base64', 'o');
 print(t);
-print('' + Duktape.dec('base64', t));
+decPrint(t);
 
 /*===
 Zm9vYmFycXV1eA==
@@ -96,10 +106,10 @@ foobarquux
 
 t = Duktape.enc('base64', 'foobarquux');
 print(t);
-print('' + Duktape.dec('base64', t));
+decPrint(t);
 
-print('' + Duktape.dec('base64', 'Zm9vYmFycXV1eA==\n'));
-print('' + Duktape.dec('base64', 'Z m\t9\rv\nY  \r\n\t m  \n\n FycX \r\r\nV1eA =\t\t=\n'));
+decPrint('Zm9vYmFycXV1eA==\n');
+decPrint('Z m\t9\rv\nY  \r\n\t m  \n\n FycX \r\r\nV1eA =\t\t=\n');
 
 /*===
 f
@@ -113,15 +123,15 @@ fo
  */
 
 try {
-    print('' + Duktape.dec('base64', 'Zg=='));  // standard
-    print('' + Duktape.dec('base64', 'Zh=='));  // non-zero unused bits
+    decPrint('Zg==');  // standard
+    decPrint('Zh==');  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
 
 try {
-    print('' + Duktape.dec('base64', 'Zm8='));  // standard
-    print('' + Duktape.dec('base64', 'Zm9='));  // non-zero unused bits
+    decPrint('Zm8=');  // standard
+    decPrint('Zm9=');  // non-zero unused bits
 } catch (e) {
     print(e.name);
 }
@@ -138,13 +148,13 @@ TypeError
  */
 
 try {
-    print('' + Duktape.dec('base64', 'eHk='));
+    decPrint('eHk=');
 } catch(e) {
     print(e.name);
 }
 
 try {
-    print('' + Duktape.dec('base64', 'eHk'));
+    decPrint('eHk');
 } catch(e) {
     print(e.name);
 }
@@ -160,7 +170,7 @@ foo
 
 t = Duktape.enc('base64', 'f') + '\n' + Duktape.enc('base64', 'oo') + '\n';
 print(t);
-print('' + Duktape.dec('base64', t));
+decPrint(t);
 
 /*===
 TypeError
@@ -169,7 +179,7 @@ TypeError
 /* Non-base64 characters will not be accepted */
 
 try {
-    print('' + Duktape.dec('base64', 'b28?'));
+    decPrint('b28?');
 } catch (e) {
     print(e.name);
 }

@@ -66,11 +66,10 @@ function isFixed(buf) {
     /* Currently this is hard to see from Ecmascript side, use
      * Duktape.info().
      */
-    if (typeof buf !== 'buffer') {
-        throw new Error('not a buffer');
-    }
-
     var t = Duktape.info(buf);
+    if (t[0] !== 7) {  // tag 7: plain buffer
+        throw new Error('not a buffer: ' + buf);
+    }
     if (t[4] !== undefined) {
         return false;
     }
@@ -78,14 +77,15 @@ function isFixed(buf) {
 }
 
 function dump(buf) {
+    var t = Duktape.info(buf);
     var is_plain;
-    if (typeof buf === 'buffer') {
+    if (t[0] === 7) {  // tag 7: plain buffer
         is_plain = true;
     } else if (buf instanceof Duktape.Buffer) {
         is_plain = false;
-        buf = buf.valueOf();
+        buf = Duktape.Buffer(buf);  // plain underlying buffer
     } else {
-        throw new Error('not a buffer');
+        throw new Error('not a buffer: ' + buf);
     }
 
     print(is_plain ? "plain" : "object",
@@ -138,13 +138,13 @@ function test() {
     dump(Duktape.Buffer(b, true));
     dump(Duktape.Buffer(b, false));
     dump(Duktape.Buffer(b, false, 'ignored'));
-    print('buffer is the same:', (Duktape.Buffer(b)).valueOf() === b);
+    print('buffer is the same:', Duktape.Buffer(b) === b);
 
     dump(new Duktape.Buffer(b));
     dump(new Duktape.Buffer(b, true));
     dump(new Duktape.Buffer(b, false));
     dump(new Duktape.Buffer(b, false, 'ignored'));
-    print('buffer is the same:', (new Duktape.Buffer(b)).valueOf() === b);
+    print('buffer is the same:', Duktape.Buffer(new Duktape.Buffer(b)) === b);
 
     b = Duktape.Buffer('bar', true);
 
@@ -152,13 +152,13 @@ function test() {
     dump(Duktape.Buffer(b, true));
     dump(Duktape.Buffer(b, false));
     dump(Duktape.Buffer(b, false, 'ignored'));
-    print('buffer is the same:', (Duktape.Buffer(b)).valueOf() === b);
+    print('buffer is the same:', Duktape.Buffer(b) === b);
 
     dump(new Duktape.Buffer(b));
     dump(new Duktape.Buffer(b, true));
     dump(new Duktape.Buffer(b, false));
     dump(new Duktape.Buffer(b, false, 'ignored'));
-    print('buffer is the same:', (new Duktape.Buffer(b)).valueOf() === b);
+    print('buffer is the same:', Duktape.Buffer(new Duktape.Buffer(b)) === b);
 
     /* Buffer object argument: if called as a plain function, return the
      * plain buffer; if called as a constructor, create a new Buffer object

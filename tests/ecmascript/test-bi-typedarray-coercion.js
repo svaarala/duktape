@@ -6,7 +6,7 @@
  * there are a few numconv rounding issues in the expect string.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

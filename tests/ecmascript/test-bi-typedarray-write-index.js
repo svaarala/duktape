@@ -2,7 +2,7 @@
  *  Write through a TypedArray view
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 /*@include util-checksum-string.js@*/
 
 /*---
@@ -727,7 +727,7 @@ function writeTypedArrayTest(arrayLength) {
                     } catch (e) {
                         tmp.push(e.name);
                     }
-                    tmp.push(printableTypedArray(b));
+                    tmp.push(printableBuffer(b));
                 });
             });
 

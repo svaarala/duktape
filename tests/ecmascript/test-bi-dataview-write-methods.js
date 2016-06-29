@@ -2,7 +2,7 @@
  *  Write through a DataView
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 /*@include util-checksum-string.js@*/
 
 /*---
@@ -726,33 +726,33 @@ function writeDataViewTest(arrayLength) {
                             b_u8[i] = 0x11;
                         }
                         v[funcname](0, value, true);
-                        tmp.push(printableTypedArray(b));
-                        //print(printableTypedArray(b));
+                        tmp.push(printableBuffer(b));
+                        //print(printableBuffer(b));
 
                         for (i = 0; i < b_u8.length; i++) {
                             b_u8[i] = 0x11;
                         }
                         v[funcname](0, value, false);
-                        tmp.push(printableTypedArray(b));
-                        //print(printableTypedArray(b));
+                        tmp.push(printableBuffer(b));
+                        //print(printableBuffer(b));
 
                         for (i = 0; i < b_u8.length; i++) {
                             b_u8[i] = 0x11;
                         }
                         v[funcname](1, value, true);
-                        tmp.push(printableTypedArray(b));
-                        //print(printableTypedArray(b));
+                        tmp.push(printableBuffer(b));
+                        //print(printableBuffer(b));
 
                         for (i = 0; i < b_u8.length; i++) {
                             b_u8[i] = 0x11;
                         }
                         v[funcname](1, value, false);
-                        tmp.push(printableTypedArray(b));
-                        //print(printableTypedArray(b));
+                        tmp.push(printableBuffer(b));
+                        //print(printableBuffer(b));
                     } catch (e) {
                         tmp.push(e.name);
-                        tmp.push(printableTypedArray(b));
-                        //print(printableTypedArray(b));
+                        tmp.push(printableBuffer(b));
+                        //print(printableBuffer(b));
                     }
                 });
             });

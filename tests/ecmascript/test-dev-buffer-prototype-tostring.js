@@ -18,7 +18,7 @@ object
 function
 object
 true
-buffer
+object
 object
 object
 true

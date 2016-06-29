@@ -15,14 +15,14 @@
 ---*/
 
 /*===
-buffer
+object
 -1 ok
 0 TypeError
 1 TypeError
 2 TypeError
 3 TypeError
 4 ok
-buffer
+object
 -1 ok
 0 TypeError
 1 TypeError

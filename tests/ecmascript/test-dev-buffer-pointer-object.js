@@ -9,15 +9,15 @@ function dumpClass(x) {
 
 /*===
 test buffer 1
-buffer [object Buffer]
-buffer [object Buffer]
+object [object ArrayBuffer]
+object [object ArrayBuffer]
 object [object Buffer]
 true
 string
-buffer
+object
 string
-buffer
-foo
+object
+[object ArrayBuffer]
 ===*/
 
 function testBuffer1() {
@@ -64,24 +64,24 @@ test buffer 2
 2 2 F F
 2 3 F F
 2 4 F F
-2 5 T F
+2 5 F F
 2 6 F F
 2 7 F F
 2 8 F F
-3 0 T F
+3 0 F F
 3 1 F F
 3 2 F F
 3 3 F F
-3 4 T F
+3 4 F F
 3 5 F F
 3 6 T F
 3 7 F F
 3 8 F F
-4 0 T F
+4 0 F F
 4 1 F F
 4 2 F F
 4 3 F F
-4 4 T F
+4 4 F F
 4 5 F F
 4 6 T F
 4 7 F F
@@ -89,17 +89,17 @@ test buffer 2
 5 0 F F
 5 1 F F
 5 2 F F
-5 3 T F
+5 3 F F
 5 4 F F
 5 5 F F
 5 6 F F
 5 7 F F
 5 8 F F
-6 0 T F
+6 0 F F
 6 1 F F
 6 2 F F
 6 3 F F
-6 4 T F
+6 4 F F
 6 5 F F
 6 6 T F
 6 7 F F
@@ -107,15 +107,15 @@ test buffer 2
 7 0 F F
 7 1 F F
 7 2 F F
-7 3 T F
+7 3 F F
 7 4 F F
 7 5 F F
 7 6 F F
 7 7 F F
 7 8 F F
 8 0 F F
-8 1 T F
-8 2 T F
+8 1 F F
+8 2 F F
 8 3 F F
 8 4 F F
 8 5 F F
@@ -123,8 +123,8 @@ test buffer 2
 8 7 T F
 8 8 T F
 9 0 F F
-9 1 T F
-9 2 T F
+9 1 F F
+9 2 F F
 9 3 F F
 9 4 F F
 9 5 F F
@@ -132,17 +132,17 @@ test buffer 2
 9 7 T F
 9 8 T F
 10 0 F F
-10 1 T F
-10 2 T F
+10 1 F F
+10 2 F F
 10 3 F F
 10 4 F F
 10 5 F F
 10 6 F F
-10 7 T F
-10 8 T F
+10 7 F F
+10 8 F F
 11 0 F F
-11 1 T F
-11 2 T F
+11 1 F F
+11 2 F F
 11 3 F F
 11 4 F F
 11 5 F F

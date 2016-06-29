@@ -8,6 +8,15 @@
 done
 ===*/
 
+function bufferEquals(b1, b2) {
+    var i;
+    if (b1.length != b2.length) { return false; }
+    for (i = 0; i < b1.length; i++) {
+        if (b1[i] != b2[i]) { return false; }
+    }
+    return true;
+}
+
 function test() {
     var i, j, len;
     var buf, tmp;
@@ -21,9 +30,9 @@ function test() {
         // Vary key by 1 char to ensure both aligned and unaligned output for
         // hex data.
         tmp = Duktape.enc('jx', { foo: buf });
-        if (Duktape.dec('jx', tmp).foo != buf) { throw new Error('decode error'); }
+        if (!bufferEquals(Duktape.dec('jx', tmp).foo, buf)) { throw new Error('decode error'); }
         tmp = Duktape.enc('jx', { foox: buf });
-        if (Duktape.dec('jx', tmp).foox != buf) { throw new Error('decode error'); }
+        if (!bufferEquals(Duktape.dec('jx', tmp).foox, buf)) { throw new Error('decode error'); }
     }
 
     // March all bytes through an 11 byte long buffer (2 x 4 bytes fast path, 3 leftover).
@@ -33,9 +42,9 @@ function test() {
             buf[j] = i + j;
         }
         tmp = Duktape.enc('jx', { foo: buf });
-        if (Duktape.dec('jx', tmp).foo != buf) { throw new Error('decode error'); }
+        if (!bufferEquals(Duktape.dec('jx', tmp).foo, buf)) { throw new Error('decode error'); }
         tmp = Duktape.enc('jx', { foox: buf });
-        if (Duktape.dec('jx', tmp).foox != buf) { throw new Error('decode error'); }
+        if (!bufferEquals(Duktape.dec('jx', tmp).foox, buf)) { throw new Error('decode error'); }
     }
 
     print('done');

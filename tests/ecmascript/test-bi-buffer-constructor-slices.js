@@ -30,7 +30,7 @@
  *  As described above, current behavior is alternative 1.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 emulated slice copy test
@@ -65,28 +65,28 @@ function emulatedSliceCopyTest() {
         tmp[i] = 0x41 + i;
     }
     view = tmp.subarray(2, 7);
-    printTypedArray(view);
+    printBuffer(view);
     view[0] = ('X').charCodeAt(0);
-    printTypedArray(view);          // -> XDEFG
-    printTypedArray(buf);           // -> ABXDEFGH (shared underlying buffer)
+    printBuffer(view);          // -> XDEFG
+    printBuffer(buf);           // -> ABXDEFGH (shared underlying buffer)
 
     // 'plainbuf' will be the underlying, plain buffer of 'view' without the
     // slice offsets, i.e. the 8-byte buffer containing 'ABXDEFGH'.
     plainbuf = Duktape.Buffer(view);
     print(plainbuf.length);  // --> 8
-    print(String(plainbuf)); // --> ABXDEFGH
+    print(bufferToString(plainbuf)); // --> ABXDEFGH
 
     // Create a new ArrayBuffer and copy the 'view' slice into it.
     buf2 = new ArrayBuffer(view.byteLength);
     (new Uint8Array(buf2)).set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
-    printTypedArray(buf2);         // -> XDEFG
+    printBuffer(buf2);         // -> XDEFG
 
     // Demonstrate independence.
 
     view2 = new Uint8Array(buf2);
     view2[0] = ('Z').charCodeAt(0);
-    printTypedArray(view);           // -> XDEFG
-    printTypedArray(view2);          // -> ZDEFG
+    printBuffer(view);           // -> XDEFG
+    printBuffer(view2);          // -> ZDEFG
     print(typeof view.buffer, typeof view2.buffer, view.buffer === view2.buffer);
 }
 

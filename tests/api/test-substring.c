@@ -49,7 +49,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	duk_push_string(ctx, (const char *) teststr);
 	duk_hex_decode(ctx, -1);
-	duk_to_string(ctx, -1);
+	duk_buffer_to_string(ctx, -1);
 
 	/* basic case */
 	duk_dup_top(ctx);

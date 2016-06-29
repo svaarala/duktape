@@ -2,6 +2,8 @@
  *  Duktape 1.5 added module.filename and module.name support.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 default behavior
 test/foo2 test/foo2 undefined undefined
@@ -36,7 +38,7 @@ function test() {
     // Replace Duktape.Logger.prototype.raw to censor timestamps.
 
     Duktape.Logger.prototype.raw = function (buf) {
-        print(String(buf).replace(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.*?Z/, 'TIME'));
+        print(bufferToString(buf).replace(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.*?Z/, 'TIME'));
     };
 
     // Default behavior, module wrapper .fileName is resolved module ID,

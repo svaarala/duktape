@@ -4,6 +4,7 @@
  */
 
 /*@include util-checksum-string.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 ||
@@ -96,7 +97,7 @@ function testLengths() {
                 failure++;
             }
             try {
-                res2 = Duktape.enc('jx', Duktape.dec('hex', String(buf)));
+                res2 = Duktape.enc('jx', Duktape.dec('hex', bufferToString(buf)));
             } catch (e) {
                 res2 = e.name;
             }

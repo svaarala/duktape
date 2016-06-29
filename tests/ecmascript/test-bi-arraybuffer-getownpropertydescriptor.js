@@ -3,7 +3,7 @@
  *  Object.getOwnPropertyDescriptor().
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

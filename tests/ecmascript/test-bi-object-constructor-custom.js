@@ -6,10 +6,10 @@
 
 /*===
 object constructor as function
-pointer false
+pointer true
 object true pointer
-buffer false
-object true buffer
+object false true
+object false true object
 ===*/
 
 print('object constructor as function');
@@ -19,13 +19,23 @@ function constructorAsFunctionTest() {
     var buf_plain = Duktape.dec('hex', 'deadbeef');
     var t;
 
+    // Note: for plain pointer values and Pointer objects .valueOf()
+    // returns the plain pointer.  This mimics how String.prototype.valueOf()
+    // works.
+
     print(typeof ptr_plain, ptr_plain instanceof Duktape.Pointer);
-    t = Object(ptr_plain);
+    t = Object(ptr_plain);  // coerce plain pointer to full Pointer object
     print(typeof t, t instanceof Duktape.Pointer, typeof t.valueOf());
 
-    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer);
-    t = Object(buf_plain);
-    print(typeof t, t instanceof Duktape.Buffer, typeof t.valueOf());
+    // Plain buffers are treated like ArrayBuffers (wherever possible),
+    // so that:
+    //   - typeof plainBuffer == 'object'
+    //   - plainBuffer.valueOf() returns Object-coerced version of buffer
+    //     (a full ArrayBuffer object with same backing)
+
+    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer, buf_plain instanceof ArrayBuffer);
+    t = Object(buf_plain);  // coerce plain buffer to an ArrayBuffer object
+    print(typeof t, t instanceof Duktape.Buffer, t instanceof ArrayBuffer, typeof t.valueOf());
 }
 
 try {
@@ -36,10 +46,10 @@ try {
 
 /*===
 object constructor as constructor
-pointer false
+pointer true
 object true pointer
-buffer false
-object true buffer
+object false true
+object false true object
 ===*/
 
 print('object constructor as constructor');
@@ -53,9 +63,9 @@ function constructorTest() {
     t = new Object(ptr_plain);
     print(typeof t, t instanceof Duktape.Pointer, typeof t.valueOf());
 
-    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer);
+    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer, buf_plain instanceof ArrayBuffer);
     t = new Object(buf_plain);
-    print(typeof t, t instanceof Duktape.Buffer, typeof t.valueOf());
+    print(typeof t, t instanceof Duktape.Buffer, t instanceof ArrayBuffer, typeof t.valueOf());
 }
 
 try {

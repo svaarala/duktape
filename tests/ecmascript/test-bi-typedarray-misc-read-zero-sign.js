@@ -3,7 +3,7 @@
  *  coerced views.  For floating point views negative zero must be preserved.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

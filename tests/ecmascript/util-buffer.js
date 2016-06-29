@@ -1,5 +1,5 @@
 /*
- *  Utilities for TypedArray tests
+ *  Utilities for buffer and TypedArray tests
  */
 
 var integerEndianness;
@@ -8,12 +8,23 @@ var isBigEndian;
 var isLittleEndian;
 var isMixedDouble;
 
+// Detect plain buffer, in Duktape 2.x plain buffers mimic ArrayBuffer so check
+// indirectly.
+function isPlainBuffer(x) {
+    var tag;
+    tag = Duktape.info(x)[0];  // api tag, 7=plain buffer, 6=object
+    return tag === 7;
+}
+
 // Helper to print out TypedArray prototype chains.
 function getPrototypeChain(x) {
     var res = [];
     var protos = [
         { ref: Object.prototype, name: 'Object.prototype' },
         { ref: Array.prototype, name: 'Array.prototype' },
+
+        { ref: Duktape.Buffer.prototype, name: 'Duktape.Buffer.prototype' },
+
         { ref: ArrayBuffer.prototype, name: 'ArrayBuffer.prototype' },
         { ref: DataView.prototype, name: 'DataView.prototype' },
         { ref: Int8Array.prototype, name: 'Int8Array.prototype' },
@@ -111,11 +122,13 @@ function buf2hex(b) {
     return res.join('');
 }
 
-function printableTypedArrayRaw(b) {
+function printableBufferRaw(b) {
     var res = [];
     var slice_start, slice_end;
     var i, n;
-    if (Object.prototype.toString.call(b) === '[object ArrayBuffer]') {
+
+    if (isPlainBuffer(b)) {
+    } else if (Object.prototype.toString.call(b) === '[object ArrayBuffer]') {
         slice_start = 0;
         slice_end = b.byteLength;
     } else if (b.buffer) {
@@ -136,14 +149,40 @@ function printableTypedArrayRaw(b) {
     }
 }
 
-function printableTypedArray(b) {
-    return printableTypedArrayRaw(b).data;
+function printableBuffer(b) {
+    return printableBufferRaw(b).data;
 }
 
 // Pretty print a Buffer/view
-function printTypedArray(b) {
-    var tmp = printableTypedArrayRaw(b);
+function printBuffer(b) {
+    var tmp = printableBufferRaw(b);
     print(tmp.sliceBytes + ' bytes: ' + tmp.data);
+}
+
+// Convert any buffer type into a plain string, using the buffer bytes
+// directly as the internal string representation (same as Duktape 1.x
+// ToString(plainBuffer) coercion).  This is no longer directly possible
+// using String(plainBuffer) in Duktape 2.x; this helper hides the mechanism
+// needed, as it may change later.
+
+function bufferToString(buf) {
+    // Node.js Buffer .toString() does the raw conversion and accepts buffer
+    // objects of any type in Duktape (but not plain buffers so coerce them
+    // to full ArrayBuffer objects).
+    return Buffer.prototype.toString.call(Object(buf));
+}
+
+// Convert any string into a buffer, interpreting the internal string
+// representation as the buffer bytes without interpretation.
+
+function stringToBuffer(str) {
+    // Node.js Buffer constructor currently uses string bytes 1:1.
+    // Return an ArrayBuffer for now.
+    return new Uint8Array(new Buffer(str)).buffer;
+}
+
+function isPlainBuffer(x) {
+    return Duktape.info(x)[0] === 7;   // tag 7: plain buffer
 }
 
 // Detect endianness and setup globals.

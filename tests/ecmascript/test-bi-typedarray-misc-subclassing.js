@@ -1,11 +1,9 @@
 /*
  *  Subclassing ArrayBuffer, DataView, or TypedArray views.
  *
- *  Right now .subarray() returns a new view instance which copies the
- *  internal prototype of the this binding (instead of using a default
- *  prototype based on type, e.g. Uint8Array.prototype).
- *
- *  This is probably not the preferred behavior, but test for current behavior.
+ *  Right now .subarray() returns a new view instance whose internal
+ *  prototype is set to the initial prototype matching the result
+ *  type (e.g. original value of Uint8Array.prototype).
  */
 
 /*---
@@ -13,8 +11,6 @@
     "custom": true
 }
 ---*/
-
-/* Custom because current behavior differs from e.g. V8. */
 
 /*===
 object
@@ -24,9 +20,9 @@ MyUint32Array
 true
 object
 [object Uint32Array]
-MyBuffer
-MyUint32Array
-true
+[object Uint32Array]
+undefined
+false
 ===*/
 
 function subarrayPrototypeInheritanceTest() {

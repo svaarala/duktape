@@ -4,7 +4,7 @@
  *  https://www.khronos.org/registry/typedarray/specs/latest/#4
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 NaN handling test

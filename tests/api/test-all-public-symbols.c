@@ -31,6 +31,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_alloc(ctx, 0);
 	(void) duk_base64_decode(ctx, 0);
 	(void) duk_base64_encode(ctx, 0);
+	(void) duk_buffer_to_string(ctx, 0);
 	(void) duk_call_method(ctx, 0);
 	(void) duk_call_prop(ctx, 0, 0);
 	(void) duk_call(ctx, 0);

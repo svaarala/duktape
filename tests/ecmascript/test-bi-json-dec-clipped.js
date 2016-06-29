@@ -11,6 +11,8 @@
  *  the full document with no trailing bytes parses correctly.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -51,7 +53,7 @@ function jsonClipTest(input, parser) {
                 if (j >= 0) {
                     buf = Duktape.Buffer(1);
                     buf[0] = j;
-                    t = t + buf;
+                    t = t + bufferToString(buf);
                 }
                 if (parser === 'json') {
                     t = JSON.parse(t);

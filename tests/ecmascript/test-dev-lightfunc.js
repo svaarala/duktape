@@ -14,6 +14,8 @@
  *  never ensure that the other argument is handled correctly.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -649,8 +651,8 @@ try {
 
 /*===
 toBuffer() test
-buffer: function light_PTR_0511() {"light"}
-buffer: function light_PTR_0a11() {"light"}
+object: function light_PTR_0511() {"light"}
+object: function light_PTR_0a11() {"light"}
 ===*/
 
 function toBufferTest() {
@@ -786,7 +788,7 @@ try {
 /*===
 this coercion test
 function true
-function true
+function false
 ===*/
 
 function thisCoercionTest() {
@@ -805,8 +807,9 @@ function thisCoercionTest() {
     // either we (1) treat them like objects and don't coerce them; or (2)
     // coerce them forcibly to a fully fledged object.
     //
-    // Current behavior is (1) so the 'this' binding should also be lightfunc
-    // in myNonStrict.
+    // Current behavior (revised in Duktape 2.x) is (2) so that the lightfunc
+    // is coerced to a full Function if the target function is non-strict.
+    // (Duktape 1.x used behavior (1)).
 
     function myNonStrict() {
         print(typeof this, isLightFunc(this));
@@ -1065,14 +1068,15 @@ function jsonJxJcTest() {
     });
 
     /* toJSON() should work, and is inherited from Function.prototype.
-     * XXX: right now the 'this' binding will be a lightfunc coerced
-     * to a normal function, so 'toJsonRetval' is returned.
+     * Because the .toJSON() function is non-strict, a lightfunc in the
+     * 'this' slot will be ToObject() coerced to a full Function object.
+     * The toJSON() method could be made strict to avoid this.
      */
 
     Function.prototype.toJSON = function (key) {
         //print('toJSON, this-is-lightfunc:', isLightFunc(this), 'key:', key);
         if (isLightFunc(this)) {
-            return 'toJsonLightfuncRetval';
+            return 'toJsonLightfuncRetval';  // doesn't happen because of ToObject() coercion
         }
         return 'toJsonRetval';
     };
@@ -1476,18 +1480,18 @@ type tag: 9
 getter, non-strict
 non-strict getter "this" binding test
 typeof this: function
-this == lightFunc: true
-this === lightFunc: true
+this == lightFunc: false
+this === lightFunc: false
 this.name: light_PTR_002f
-type tag: 9
+type tag: 6
 getter retval
 setter, non-strict
 non-strict setter "this" binding test
 typeof this: function
-this == lightFunc: true
-this === lightFunc: true
+this == lightFunc: false
+this === lightFunc: false
 this.name: light_PTR_002f
-type tag: 9
+type tag: 6
 ===*/
 
 function propertyAccessorThisBindingTest() {
@@ -1498,8 +1502,9 @@ function propertyAccessorThisBindingTest() {
      *  property, the getter/setter 'this' binding is set to the lightfunc
      *  (and not, e.g., Function.prototype).
      *
-     *  Because a lightfunc behaves like a full Function object, it is
-     *  not coerced with ToObject() even when the accessor is non-strict.
+     *  In Duktape 2.x a lightfunc in the 'this' binding slot is coerced
+     *  if the target function (here a setter/getter) is non-strict.
+     *  (In Duktape 1.x lightfuncs were never coerced in the 'this' slot.)
      */
 
     Object.defineProperty(Function.prototype, 'testAccessorStrict', {
@@ -2422,7 +2427,7 @@ function duktapeBuiltinTest() {
     // attempt to set finalizer
     testTypedJx(function () { return Duktape.fin(lfunc, function () {}); }, 'fin-set');
 
-    testTypedJx(function () { return sanitizeLfunc(Duktape.dec('hex', Duktape.enc('hex', lfunc))); }, 'encdec-hex');
+    testTypedJx(function () { return sanitizeLfunc(bufferToString(Duktape.dec('hex', Duktape.enc('hex', lfunc)))); }, 'encdec-hex');
     testTypedJx(function () { return Duktape.dec('hex', lfunc); }, 'dec-hex');
 
     // attempt to compact is a no-op
@@ -2579,7 +2584,7 @@ function duktapeLoggerBuiltinTest() {
 
     old_raw = Duktape.Logger.prototype.old_raw;
     Duktape.Logger.prototype.raw = function (buf) {
-        var msg = sanitizeLfunc(String(buf));
+        var msg = sanitizeLfunc(bufferToString(buf));
         msg = msg.replace(/^\S+/, 'TIMESTAMP');
         print(msg);
     };
@@ -2967,6 +2972,38 @@ function duktapeThreadBuiltinTest() {
 try {
     print('Duktape.Thread built-in test');
     duktapeThreadBuiltinTest();
+} catch (e) {
+    print(e.stack || e);
+}
+
+/*===
+Object .valueOf() test
+true
+function function
+false
+9
+6
+===*/
+
+function objectValueOfTest() {
+    var lfunc = Math.cos;
+    var t;
+
+    // Function .valueOf() is the same as Object.prototype.valueOf()
+    print(lfunc.valueOf === Object.prototype.valueOf);
+
+    // Calling lightFunc.valueOf() returns the object coerced version
+    // of the lightfunc.
+    t = lfunc.valueOf();
+    print(typeof lfunc, typeof t);
+    print(lfunc === t);
+    print(Duktape.info(lfunc)[0]);  // tag 9: lightfunc
+    print(Duktape.info(t)[0]);      // tag 6: object
+}
+
+try {
+    print('Object .valueOf() test');
+    objectValueOfTest();
 } catch (e) {
     print(e.stack || e);
 }

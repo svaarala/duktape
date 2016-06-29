@@ -2,7 +2,7 @@
  *  Read through a TypedArray view
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {
@@ -3400,7 +3400,7 @@ function readTypedArrayTest(arrayLength) {
             b_u8[i] = v;
         }
     });
-    printTypedArray(b);
+    printBuffer(b);
 
     [ -100, -5, -1, 0, 1, 2, 3, 8, 9, 10, 12, 13, 14, 15, 16, 17, 100 ].forEach(function (offset, idx1) {
         [ undefined, 0, 1, 2, 3, 4, 5, 6, 7, 8, 100 ].forEach(function (length, idx2) {

@@ -2,6 +2,8 @@
  *  Virtual properties for plain buffers and buffer objects.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -10,16 +12,12 @@
 
 /*===
 read non-strict
-buffer
+object
 length 4
 222 222
 173 173
 190 190
 239 239
-0 222 222
-1 173 173
-2 190 190
-3 239 239
 object
 length 4
 222 222
@@ -45,6 +43,9 @@ function readTestNonStrict() {
         print(buf_plain[i], buf_plain[String(i)]);
     }
     for (i in buf_plain) {
+        // In Duktape 2.x plain buffer which mimics ArrayBuffer and ArrayBuffer
+        // itself no longer have enumerable index properties (but the index
+        // properties are present).
         print(i, buf_plain[i], buf_plain[String(i)]);
     }
 
@@ -116,11 +117,11 @@ function writeTestNonStrict() {
 
     print(buf_plain[1] = 0x41);     // AACD, assignment result printed
     print(buf_plain['2'] = 0x41);   // AAAD
-    print(buf_plain.length, String(buf_plain));
+    print(buf_plain.length, bufferToString(buf_plain));
 
     print(buf_object[1] = 0x41);    // AACD, assignment result printed
     print(buf_object['2'] = 0x41);  // AAAD
-    print(buf_object.length, String(buf_object));
+    print(buf_object.length, bufferToString(buf_object));
 
     // Non-strict mode: write out of bounds is a silent failure for
     // plain buffers.  For buffer objects, the write becomes a normal
@@ -128,11 +129,11 @@ function writeTestNonStrict() {
 
     print(buf_plain[4] = 0x45);    // out of buffer, no autoextend now -> ignored
     print(buf_plain['5'] = 0x45);  // same -> ignored
-    print(buf_plain.length, String(buf_plain));
+    print(buf_plain.length, bufferToString(buf_plain));
 
     print(buf_object[4] = 0x45);
     print(buf_object['5'] = 0x45);
-    print(buf_object.length, String(buf_object));
+    print(buf_object.length, bufferToString(buf_object));
     print('4' in buf_object, buf_object['4']);  // stored as a normal property
     print('5' in buf_object, buf_object['5']);  // stored as a normal property
 
@@ -199,14 +200,14 @@ function writeTestStrict() {
     } catch (e) {
         print(e.name);
     }
-    print(buf_plain.length, String(buf_plain));
+    print(buf_plain.length, bufferToString(buf_plain));
 
     try {
         print(buf_object[4] = 0x45);
     } catch (e) {
         print(e.name);
     }
-    print(buf_object.length, String(buf_object));
+    print(buf_object.length, bufferToString(buf_object));
     print(buf_plain['4']);   // not stored -> undefined
     print(buf_object['4']);  // stored as a normal property
 }

@@ -965,9 +965,10 @@ static duk_ret_t test_to_buffer(duk_context *ctx, void *udata) {
 		                     ".replace(/\\/\\*/g, '(*').replace(/\\*\\//g, '*)')"
 		                     ".replace(/light_[0-9a-fA-F]+_/g, 'light_PTR_'); })");
 		duk_dup(ctx, -2);
+		duk_buffer_to_string(ctx, -1);
 		duk_call(ctx, 1);
 
-		printf("%s\n", duk_safe_to_string(ctx, -1));
+		printf("%s\n", duk_to_string(ctx, -1));
 		duk_pop(ctx);  /* pop temp */
 	}
 
@@ -1005,14 +1006,14 @@ static duk_ret_t test_to_pointer(duk_context *ctx, void *udata) {
 
 /*===
 *** test_is_primitive (duk_safe_call)
-is_primitive: 1
+is_primitive: 0
 final top: 1
 ==> rc=0, result='undefined'
 ===*/
 
-/* Because lightfuncs have their own type tag in the C API, they're considered
- * a primitive type like plain buffers and pointers.  This is also sensible
- * because duk_is_object() is 0 for lightfuncs.
+/* While lightfuncs have their own type tag in the C API, they're not considered
+ * a primitive type in Duktape 2.x because they are also coerced by
+ * duk_to_primitive().  This was changed to match plain buffers in 2.x.
  */
 
 static duk_ret_t test_is_primitive(duk_context *ctx, void *udata) {
