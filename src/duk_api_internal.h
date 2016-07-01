@@ -96,9 +96,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx);
 #endif
 DUK_INTERNAL_DECL void duk_to_object_class_string_top(duk_context *ctx);
-#if !defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL void duk_push_hobject_class_string(duk_context *ctx, duk_hobject *h);
-#endif
 
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t idx, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t idx, duk_int_t minval, duk_int_t maxval);
@@ -142,10 +140,9 @@ DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
 
-#if !defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL const char *duk_push_string_tval_readable(duk_context *ctx, duk_tval *tv);
-#endif
+DUK_INTERNAL_DECL const char *duk_push_string_tval_readable_error(duk_context *ctx, duk_tval *tv);
 
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx);     /* [] -> [val] */
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx);     /* [val] -> [] */

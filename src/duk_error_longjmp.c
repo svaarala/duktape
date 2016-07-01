@@ -5,6 +5,37 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_PREFER_SIZE)
+DUK_LOCAL void duk__uncaught_minimal(duk_hthread *thr) {
+	duk_fatal((duk_context *) thr, "uncaught error");
+}
+#endif
+
+#if 0
+DUK_LOCAL void duk__uncaught_readable(duk_hthread *thr) {
+	const char *summary;
+	char buf[64];
+
+	summary = duk_push_string_tval_readable((duk_context *) thr, &thr->heap->lj.value1);
+	DUK_SNPRINTF(buf, sizeof(buf), "uncaught: %s", summary);
+	buf[sizeof(buf) - 1] = (char) 0;
+	duk_fatal((duk_context *) thr, (const char *) buf);
+}
+#endif
+
+#if !defined(DUK_USE_PREFER_SIZE)
+DUK_LOCAL void duk__uncaught_error_aware(duk_hthread *thr) {
+	const char *summary;
+	char buf[64];
+
+	summary = duk_push_string_tval_readable_error((duk_context *) thr, &thr->heap->lj.value1);
+	DUK_ASSERT(summary != NULL);
+	DUK_SNPRINTF(buf, sizeof(buf), "uncaught: %s", summary);
+	buf[sizeof(buf) - 1] = (char) 0;
+	duk_fatal((duk_context *) thr, (const char *) buf);
+}
+#endif
+
 DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
@@ -26,7 +57,11 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 		                 (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
 		                 &thr->heap->lj.value1, &thr->heap->lj.value2));
 
-		duk_fatal((duk_context *) thr, "uncaught error");
+#if defined(DUK_USE_PREFER_SIZE)
+		duk__uncaught_minimal(thr);
+#else
+		duk__uncaught_error_aware(thr);
+#endif
 		DUK_UNREACHABLE();
 	}
 #endif  /* DUK_USE_CPP_EXCEPTIONS */
