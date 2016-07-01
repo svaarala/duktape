@@ -61,7 +61,7 @@ typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer,
 typedef duk_size_t (*duk_debug_peek_function) (void *udata);
 typedef void (*duk_debug_read_flush_function) (void *udata);
 typedef void (*duk_debug_write_flush_function) (void *udata);
-typedef void (*duk_debug_detached_function) (void *udata);
+typedef void (*duk_debug_detached_function) (duk_context *ctx, void *udata);
 
 struct duk_memory_functions {
         duk_alloc_function alloc_func;
