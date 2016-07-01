@@ -91,7 +91,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 		goto have_module;  /* use the cached module */
 	}
 
-	duk__push_module_object(ctx, id);
+	duk__push_module_object(ctx, id, 0 /*main*/);
 	duk__put_cached_module(ctx);  /* module remains on stack */
 
 	/*
@@ -158,10 +158,24 @@ static void duk__push_require_function(duk_context *ctx, const char *id) {
 	(void) duk_get_prop_string(ctx, -1, "\xff" "requireCache");
 	duk_put_prop_string(ctx, -3, "cache");
 	duk_pop(ctx);
+
+	/* require.main */
+	duk_push_global_stash(ctx);
+	(void) duk_get_prop_string(ctx, -1, "\xff" "mainModule");
+	duk_put_prop_string(ctx, -3, "main");
+	duk_pop(ctx);
 }
 
-static void duk__push_module_object(duk_context *ctx, const char *id) {
+static void duk__push_module_object(duk_context *ctx, const char *id, int main) {
 	duk_push_object(ctx);
+
+	/* Set this as the main module, if requested */
+	if (main) {
+		duk_push_global_stash(ctx);
+		duk_dup(ctx, -2);
+		duk_put_prop_string(ctx, -2, "\xff" "mainModule");
+		duk_pop(ctx);
+	}
 
 	/* Node.js uses the canonicalized filename of a module for both module.id
 	 * and module.filename.  We have no concept of a file system here, so just
@@ -202,7 +216,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	 * way to implement CommonJS closure semantics and matches the behavior of
 	 * e.g. Node.js.
 	 */
-	duk_push_string(ctx, "(function main(exports,require,module,__filename,__dirname){");
+	duk_push_string(ctx, "(function(exports,require,module,__filename,__dirname){");
 	duk_dup(ctx, -2);  /* source */
 	duk_push_string(ctx, "})");
 	duk_concat(ctx, 3);
@@ -214,6 +228,11 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	duk_call(ctx, 0);
 
 	/* [ ... module source func ] */
+
+	/* Set name for the wrapper function. */
+	duk_push_string(ctx, "name");
+	duk_push_string(ctx, "main");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
 	/* call the function wrapper */
 	(void) duk_get_prop_string(ctx, -3, "exports");   /* exports */
@@ -236,6 +255,20 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	/* [ ... module ] */
 
 	return 1;
+}
+
+duk_ret_t duk_module_node_peval_file(duk_context *ctx, const char* path) {
+	/*
+	 *  Stack: [ ... source ]
+	 */
+
+	duk__push_module_object(ctx, path, 1 /*main*/);
+	/* [ ... source module ] */
+
+	duk_dup(ctx, 0);
+	/* [ ... source module source ] */
+
+	return duk_safe_call(ctx, duk__eval_module_source, 2, 1);
 }
 
 void duk_module_node_init(duk_context *ctx) {
@@ -264,6 +297,12 @@ void duk_module_node_init(duk_context *ctx) {
 	duk_get_prop_string(ctx, options_idx, "load");
 	duk_require_function(ctx, -1);
 	duk_put_prop_string(ctx, -2, "\xff" "modLoad");
+	duk_pop(ctx);
+
+	/* Stash main module */
+	duk_push_global_stash(ctx);
+	duk_push_undefined(ctx);
+	duk_put_prop_string(ctx, -2, "\xff" "mainModule");
 	duk_pop(ctx);
 
 	/* register `require` as a global function */
