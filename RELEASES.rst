@@ -1654,8 +1654,8 @@ Planned
   DUK_ERR_API_ERROR and a plain Error for Ecmascript representation) into
   TypeErrors and RangeErrors to match common Ecmascript conventions (GH-827)
 
-* Incompatible change: add a ctx argument to detached_cb to allow easier
-  reattachment in detached callback
+* Incompatible change: add a "ctx" argument to the debugger detached_cb to
+  allow easier reattachment in detached callback (GH-758, GH-853)
 
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
