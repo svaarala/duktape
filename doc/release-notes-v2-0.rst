@@ -336,6 +336,37 @@ To upgrade:
 
 * Update debug client code to support both versions 1 and 2, or version 2 only.
 
+Debugger detached callback has a duk_context pointer argument
+-------------------------------------------------------------
+
+The debugger detached callback is allowed to immediately reattach the debugger
+session.  However, the detached callback didn't have a ``duk_context *``
+argument in Duktape 1.x so that the relevant context pointer needed to be passed
+e.g. via the udata argument which is awkward.
+
+In Duktape 2.x an explicit context argument was added::
+
+    /* Duktape 1.x */
+    typedef void (*duk_debug_detached_function) (void *udata);
+
+    /* Duktape 2.x */
+    typedef void (*duk_debug_detached_function) (duk_context *ctx, void *udata);
+
+To upgrade:
+
+* If you're using ``duk_debugger_attach()``, add an additional ``duk_context *``
+  argument to the detached callback.
+
+* If support for both Duktape 1.x and 2.x is desired, use::
+
+      #if DUK_VERSION >= 20000
+      void my_detached_cb(duk_context *ctx, void *udata) {
+      #else
+      void my_detached_cb(void *udata) {
+      #end
+          /* ... */
+      }
+
 Debugger print/alert and logger forwarding removed
 --------------------------------------------------
 

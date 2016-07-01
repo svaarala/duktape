@@ -1227,8 +1227,10 @@ void duk_trans_dvalue_write_flush_cb(void *udata) {
 	duk__trans_call_cooperate(ctx, 0);
 }
 
-void duk_trans_dvalue_detached_cb(void *udata) {
+void duk_trans_dvalue_detached_cb(duk_context *duk_ctx, void *udata) {
 	duk_trans_dvalue_ctx *ctx = (duk_trans_dvalue_ctx *) udata;
+
+	(void) duk_ctx;
 
 #if defined(DEBUG_PRINTS)
 	fprintf(stderr, "%s: %p\n", __func__, udata);
