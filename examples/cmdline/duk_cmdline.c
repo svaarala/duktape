@@ -999,9 +999,7 @@ static duk_idx_t debugger_request(duk_context *ctx, void *udata, duk_idx_t nvalu
 	return -1;
 }
 
-static void debugger_detached(void *udata) {
-	duk_context *ctx = (duk_context *) udata;
-	(void) ctx;
+static void debugger_detached(duk_context *ctx, void *udata) {
 	fprintf(stderr, "Debugger detached, udata: %p\n", (void *) udata);
 	fflush(stderr);
 
@@ -1028,7 +1026,7 @@ static void debugger_detached(void *udata) {
 		                    duk_trans_socket_write_flush_cb,
 		                    debugger_request,
 		                    debugger_detached,
-		                    (void *) ctx);
+		                    NULL);
 	}
 }
 #endif
@@ -1168,7 +1166,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 		                    duk_trans_socket_write_flush_cb,
 		                    debugger_request,
 		                    debugger_detached,
-		                    (void *) ctx);
+		                    NULL);
 #else
 		fprintf(stderr, "Warning: option --debugger ignored, no debugger support\n");
 		fflush(stderr);

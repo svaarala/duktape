@@ -88,6 +88,12 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 	duk_debug_detached_function detached_cb;
 	void *detached_udata;
+	duk_hthread *thr;
+	duk_context *ctx;
+
+	thr = heap->heap_thread;
+	DUK_ASSERT(thr != NULL);
+	ctx = (duk_context *) thr;
 
 	/* Safe to call multiple times. */
 
@@ -102,7 +108,7 @@ DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 		 * inside the callback.
 		 */
 		DUK_D(DUK_DPRINT("detached during message loop, delayed call to detached_cb"));
-		detached_cb(detached_udata);
+		detached_cb(ctx, detached_udata);
 	}
 
 	heap->dbg_detaching = 0;
