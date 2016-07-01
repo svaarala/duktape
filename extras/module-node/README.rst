@@ -84,6 +84,6 @@ The application needs only to provide the module resolution and loading logic:
 * After these steps, ``require()`` will be registered to the global object and
   the module system is ready to use.
 
-* The main module (file being evaluated) should be loaded using ``duk_note_peval_file``.
-  This function registers the module in ``require.main`` and thus should only be called
-  once.
+* The main module (file being evaluated) should be loaded using
+  ``duk_module_node_peval_main()``.  This function registers the module in
+  ``require.main`` and thus should only be called once.
