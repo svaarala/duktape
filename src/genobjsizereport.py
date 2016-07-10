@@ -71,4 +71,3 @@ if __name__ == '__main__':
 	#   $ python genobjsizereport.py *.o
 
 	main()
-

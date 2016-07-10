@@ -42,5 +42,3 @@ for radix in xrange(2, 36+1):
 
 print repr(digits_table)
 print repr(limits_table)
-
-		

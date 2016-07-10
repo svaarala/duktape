@@ -122,4 +122,3 @@ while True:
 	if is_prime(i):
 		print 'highest 32-bit prime is: %d (0x%08x)' % (i, i)
 		break
-
