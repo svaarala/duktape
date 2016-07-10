@@ -26,27 +26,27 @@ Related E5 sections:
 Default algorithm
 -----------------
 
-1. If ``O`` doesn’t have an own property with name ``P``, return ``undefined``.
+1. If ``O`` doesn't have an own property with name ``P``, return ``undefined``.
 
 2. Let ``D`` be a newly created Property Descriptor with no fields.
 
-3. Let ``X`` be ``O``\ ’s own property named P.
+3. Let ``X`` be ``O``\ 's own property named P.
 
 4. If ``X`` is a data property, then
 
-   a. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+   a. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
-   b. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]`` attribute.
+   b. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]`` attribute.
 
 5. Else ``X`` is an accessor property, so
 
-   a. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+   a. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-   b. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+   b. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
-6. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+6. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-7. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+7. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
 8. Return ``D``.
 
@@ -90,7 +90,7 @@ name.  (Whether this is useful in an implementation is another issue.)
 The combined algorithm, assuming the the virtual properties are checked
 after the normal property check is as follows:
 
-1. If ``O`` doesn’t have an own property with name ``P``:
+1. If ``O`` doesn't have an own property with name ``P``:
 
    a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
@@ -132,23 +132,23 @@ after the normal property check is as follows:
 
 2. Let ``D`` be a newly created Property Descriptor with no fields.
 
-3. Let ``X`` be ``O``\ ’s own property named ``P``.
+3. Let ``X`` be ``O``\ 's own property named ``P``.
 
 4. If ``X`` is a data property, then
 
-   a. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+   a. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
-   b. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]`` attribute.
+   b. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]`` attribute.
 
 5. Else ``X`` is an accessor property, so
 
-   a. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+   a. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-   b. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+   b. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
-6. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+6. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-7. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+7. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
 8. Return ``D``.
 
@@ -170,7 +170,7 @@ a data property.
 
 The exotic behavior can be appended to the above algorithm as follows:
 
-1. If ``O`` doesn’t have an own property with name ``P``:
+1. If ``O`` doesn't have an own property with name ``P``:
 
    a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
@@ -212,23 +212,23 @@ The exotic behavior can be appended to the above algorithm as follows:
 
 2. Let ``D`` be a newly created Property Descriptor with no fields.
 
-3. Let ``X`` be ``O``\ ’s own property named ``P``.
+3. Let ``X`` be ``O``\ 's own property named ``P``.
 
 4. If ``X`` is a data property, then
 
-   a. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+   a. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
-   b. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]`` attribute.
+   b. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]`` attribute.
 
 5. Else ``X`` is an accessor property, so
 
-   a. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+   a. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-   b. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+   b. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
-6. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+6. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-7. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+7. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
 8. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
@@ -275,8 +275,8 @@ Final version
 
 Final version with some cleanup and simplification:
 
-1. Let ``X`` be ``O``\ ’s own property named ``P``.
-   If ``O`` doesn’t have an own property with name ``P``:
+1. Let ``X`` be ``O``\ 's own property named ``P``.
+   If ``O`` doesn't have an own property with name ``P``:
 
    a. If ``O`` is not a ``String`` instance, return ``undefined``.
 
@@ -318,21 +318,21 @@ Final version with some cleanup and simplification:
 
    a. If ``X`` is a data property:
 
-      1. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+      1. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
-      2. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]`` attribute.
+      2. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]`` attribute.
 
    b. Else ``X`` is an accessor property:
 
-      1. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+      1. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-      2. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+      2. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
    c. For either type of property:
 
-      1. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+      1. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-      2. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+      2. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
 3. If ``O`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
@@ -620,16 +620,16 @@ Default algorithm
 
       1. Convert the property named ``P`` of object ``O`` from a data property
          to an accessor property.  Preserve the existing values of the
-         converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-         attributes and set the rest of the property’s attributes to their
+         converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+         attributes and set the rest of the property's attributes to their
          default values.
 
    c. Else,
 
       1. Convert the property named ``P`` of object ``O`` from an accessor
          property to a data property.  Preserve the existing values of the
-         converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-         attributes and set the rest of the property’s attributes to their
+         converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+         attributes and set the rest of the property's attributes to their
          default values.
 
 10. Else, if ``IsDataDescriptor(current)`` and ``IsDataDescriptor(Desc)``
@@ -743,16 +743,16 @@ Let's first do a little bit of reformulation (see above):
 
       1. Convert the property named ``P`` of object ``O`` from a data property
          to an accessor property.  Preserve the existing values of the
-         converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-         attributes and set the rest of the property’s attributes to their
+         converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+         attributes and set the rest of the property's attributes to their
          default values.
 
    c. Else,
 
       1. Convert the property named ``P`` of object ``O`` from an accessor
          property to a data property.  Preserve the existing values of the
-         converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-         attributes and set the rest of the property’s attributes to their
+         converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+         attributes and set the rest of the property's attributes to their
          default values.
 
    d. Goto VALIDATED.
@@ -861,7 +861,7 @@ Let's look at the variant algorithm first (here we assume ``O`` is an
 
    l. While ``newLen`` < ``oldLen`` repeat,
 
-      1. Set ``oldLen`` to ``oldLen – 1``.
+      1. Set ``oldLen`` to ``oldLen - 1``.
 
       2. Let ``canDelete`` be the result of calling the ``[[Delete]]``
          internal method of ``O`` passing ``ToString(oldLen)`` and ``false``
@@ -1203,16 +1203,16 @@ we get something like:
 
        1. Convert the property named ``P`` of object ``O`` from a data property
           to an accessor property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     c. Else,
 
        1. Convert the property named ``P`` of object ``O`` from an accessor
           property to a data property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     d. Goto VALIDATED.
@@ -1398,16 +1398,16 @@ This is easy to incorporate and results in:
 
        1. Convert the property named ``P`` of object ``O`` from a data property
           to an accessor property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     c. Else,
 
        1. Convert the property named ``P`` of object ``O`` from an accessor
           property to a data property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     d. Goto VALIDATED.
@@ -1651,7 +1651,7 @@ Notes:
 
 The ``[[HasInstance]]`` for bound functions is:
 
-1. Let ``target`` be the value of ``F``\ ’s ``[[TargetFunction]]`` internal
+1. Let ``target`` be the value of ``F``\ 's ``[[TargetFunction]]`` internal
    property.
 
 2. If ``target`` has no ``[[HasInstance]]`` internal method, a ``TypeError``

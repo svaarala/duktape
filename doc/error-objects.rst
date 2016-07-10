@@ -445,7 +445,7 @@ The following SyntaxError illustrates all the relevant file/line sources::
             input:3                                        <-- file/line of source text (SyntaxError)
             duk_js_compiler.c:3612                         <-- __FILE__ / __LINE__ of DUK_ERROR() call site
             eval  native strict directeval preventsyield   <-- innermost activation, eval() function
-            global input:1 preventsyield                   <-- second innermost activation, caller of eval()
+            global input:1 preventsyield                   <-- second innermost activation, caller of eval()
     input 3   <-- .fileName and .lineNumber blames source text for SyntaxError
 
 From the application point of view the most relevant file/line is usually the

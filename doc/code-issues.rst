@@ -1663,14 +1663,6 @@ Types used inside Duktape
   be larger than 32 bits while individual activations could be limited to
   a signed 32 bit index space.
 
-* **FIXME:** normal vs. fast variables: use tight values in structs,
-  "fast" values as e.g. loop counters in fast paths (character / byte
-  iteration loops etc)
-
-* **FIXME**: flags field type (storage vs. internal APIs)
-
-* **FIXME**: avoid casting when unnecessary
-
 Formatting considerations
 -------------------------
 

@@ -220,16 +220,16 @@ with exotic behaviors, we get:
 
        1. Convert the property named ``P`` of object ``O`` from a data property
           to an accessor property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     c. Else,
 
        1. Convert the property named ``P`` of object ``O`` from an accessor
           property to a data property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     d. Goto VALIDATED.
@@ -489,16 +489,16 @@ Some cleanup
 
        1. Convert the property named ``P`` of object ``O`` from a data property
           to an accessor property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     c. Else,
 
        1. Convert the property named ``P`` of object ``O`` from an accessor
           property to a data property.  Preserve the existing values of the
-          converted property’s ``[[Configurable]]`` and ``[[Enumerable]]``
-          attributes and set the rest of the property’s attributes to their
+          converted property's ``[[Configurable]]`` and ``[[Enumerable]]``
+          attributes and set the rest of the property's attributes to their
           default values.
 
     d. Goto VALIDATED.

@@ -158,25 +158,25 @@ The inlined form for default ``[[GetOwnProperty]]`` is essentially:
 
    a. Let ``D`` be a newly created Property Descriptor with no fields.
 
-   b. Let ``X`` be ``curr``\ ’s own property named P.
+   b. Let ``X`` be ``curr``\ 's own property named P.
 
    c. If ``X`` is a data property, then
 
-      1. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]``
+      1. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]``
          attribute.
 
-      2. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]``
+      2. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]``
          attribute.
 
    d. Else ``X`` is an accessor property, so
 
-      1. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+      1. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-      2. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+      2. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
-   e. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+   e. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-   f. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+   f. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
    g. Return ``D``.
 
@@ -197,8 +197,8 @@ The following inlines ``[[GetOwnProperty]]`` with all exotic behaviors:
 1. ``curr`` = ``O``
 
 2. **NEXT:**
-   Let ``X`` be ``curr``\ ’s own property named ``P``.
-   If ``curr`` doesn’t have an own property with name ``P``:
+   Let ``X`` be ``curr``\ 's own property named ``P``.
+   If ``curr`` doesn't have an own property with name ``P``:
 
    a. If ``curr`` is not a ``String`` instance, goto NOTFOUND.
 
@@ -240,21 +240,21 @@ The following inlines ``[[GetOwnProperty]]`` with all exotic behaviors:
 
    a. If ``X`` is a data property:
 
-      1. Set ``D.[[Value]]`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+      1. Set ``D.[[Value]]`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
-      2. Set ``D.[[Writable]]`` to the value of ``X``\ ’s ``[[Writable]]`` attribute.
+      2. Set ``D.[[Writable]]`` to the value of ``X``\ 's ``[[Writable]]`` attribute.
 
    b. Else ``X`` is an accessor property:
 
-      1. Set ``D.[[Get]]`` to the value of ``X``\ ’s ``[[Get]]`` attribute.
+      1. Set ``D.[[Get]]`` to the value of ``X``\ 's ``[[Get]]`` attribute.
 
-      2. Set ``D.[[Set]]`` to the value of ``X``\ ’s ``[[Set]]`` attribute.
+      2. Set ``D.[[Set]]`` to the value of ``X``\ 's ``[[Set]]`` attribute.
 
    c. For either type of property:
 
-      1. Set ``D.[[Enumerable]]`` to the value of ``X``\ ’s ``[[Enumerable]]`` attribute.
+      1. Set ``D.[[Enumerable]]`` to the value of ``X``\ 's ``[[Enumerable]]`` attribute.
 
-      2. Set ``D.[[Configurable]]`` to the value of ``X``\ ’s ``[[Configurable]]`` attribute.
+      2. Set ``D.[[Configurable]]`` to the value of ``X``\ 's ``[[Configurable]]`` attribute.
 
 4. If ``curr`` is an ``arguments`` object which contains a ``[[ParameterMap]]``
    internal property:
@@ -318,8 +318,8 @@ exotic behaviors:
 2. ``curr`` = ``O``
 
 3. **NEXT:**
-   Let ``X`` be ``curr``\ ’s own property named ``P``.
-   If ``curr`` doesn’t have an own property with name ``P``:
+   Let ``X`` be ``curr``\ 's own property named ``P``.
+   If ``curr`` doesn't have an own property with name ``P``:
 
    a. If ``curr`` is not a ``String`` instance, goto NOTFOUND.
 
@@ -349,7 +349,7 @@ exotic behaviors:
 
 4. If ``X`` is a data property:
 
-   a. Set ``res`` to the value of ``X``\ ’s ``[[Value]]`` attribute.
+   a. Set ``res`` to the value of ``X``\ 's ``[[Value]]`` attribute.
 
    b. Goto FOUND1
 
@@ -1331,7 +1331,7 @@ and is as follows:
    ``Obj`` with argument ``"value"`` is ``true``, then:
 
    a. Let ``value`` be the result of calling the ``[[Get]]`` internal method
-      of ``Obj`` with argument ``“value”``.
+      of ``Obj`` with argument ``"value"``.
 
    b. Set the ``[[Value]]`` field of ``desc`` to ``value``.
 
