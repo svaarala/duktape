@@ -19,7 +19,7 @@ example: |
   const duk_function_list_entry my_module_funcs[] = {
       { "tweak", do_tweak, 0 /* no args */ },
       { "adjust", do_adjust, 3 /* 3 args */ },
-      { "frobnicate", do_frobnicate, DUK_VARAGS /* variable args */ },
+      { "frobnicate", do_frobnicate, DUK_VARARGS /* variable args */ },
       { NULL, NULL, 0 }
   };
 
