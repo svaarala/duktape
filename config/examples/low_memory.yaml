@@ -2,6 +2,7 @@
 # doc/low-memory.rst:
 #
 #   - Strips verbose errors etc
+#   - Strips some ES6 features like Proxy support (re-enable if needed)
 #   - Strips some Duktape custom feature like JX/JC; keeps e.g. RegExp
 #     and other standard parts
 #   - Strips some commonly unnecessary API calls like bytecode dump/load
@@ -66,8 +67,8 @@ DUK_USE_STRTAB_CHAIN_SIZE: 128
 #DUK_USE_DOUBLE_LINKED_HEAP: false
 
 # Consider to reduce code footprint at the expense of less safeguards against
-# bugs in calling C code
-#DUK_USE_VALSTACK_UNSAFE: true
+# bugs in calling C code.
+DUK_USE_VALSTACK_UNSAFE: true
 
 # Short term workaround with large footprint, disable.
 DUK_USE_REGEXP_CANON_WORKAROUND: false
@@ -80,7 +81,7 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 #DUK_USE_ROM_GLOBAL_INHERIT: true  # select inherit or clone; inherit recommended
 #DUK_USE_ROM_GLOBAL_CLONE: false
 
-# Consider these:
-#DUK_USE_COROUTINE_SUPPORT: false
-#DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
-#DUK_USE_ES6_PROXY: false  # roughly 2kB footprint
+# Consider these; disabled by default because they don't impact E5 compliance.
+DUK_USE_COROUTINE_SUPPORT: false
+DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
+DUK_USE_ES6_PROXY: false  # roughly 2kB footprint
