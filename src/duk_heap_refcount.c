@@ -86,11 +86,11 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 	/* XXX: rearrange bits to allow a switch case to be used here? */
 	/* XXX: add a fast path for objects (and arrays)? */
-	if (DUK_HOBJECT_IS_ARRAY(h)) {
-		duk_harray *a = (duk_harray *) h;
-		/* No special ref updates. */
-		(void) a;
-	} else if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+
+	/* DUK_HOBJECT_IS_ARRAY(h): needs no special handling now as there are
+	 * no extra fields in need of decref.
+	 */
+	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;

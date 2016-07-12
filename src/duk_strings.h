@@ -34,7 +34,7 @@
 #define DUK_STR_NOT_CONFIGURABLE                 "not configurable"
 #define DUK_STR_INVALID_CONTEXT                  "invalid context"
 #define DUK_STR_INVALID_INDEX                    "invalid call args"
-#define DUK_STR_PUSH_BEYOND_ALLOC_STACK          "attempt to push beyond allocated stack"
+#define DUK_STR_PUSH_BEYOND_ALLOC_STACK          "cannot push beyond allocated stack"
 #define DUK_STR_NOT_UNDEFINED                    "unexpected type"
 #define DUK_STR_NOT_NULL                         "unexpected type"
 #define DUK_STR_NOT_BOOLEAN                      "unexpected type"
@@ -50,7 +50,7 @@
 #define DUK_STR_NOT_C_FUNCTION                   "unexpected type"
 #define DUK_STR_NOT_FUNCTION                     "unexpected type"
 #define DUK_STR_NOT_REGEXP                       "unexpected type"
-#define DUK_STR_DEFAULTVALUE_COERCE_FAILED       "[[DefaultValue]] coerce failed"
+#define DUK_STR_DEFAULTVALUE_COERCE_FAILED       "[[DefaultValue]] failed"
 #define DUK_STR_NUMBER_OUTSIDE_RANGE             "number outside range"
 #define DUK_STR_NOT_OBJECT_COERCIBLE             "not object coercible"
 #define DUK_STR_STRING_TOO_LONG                  "string too long"
@@ -76,12 +76,8 @@
 #define DUK_STR_STRICT_CALLER_READ               "cannot read strict 'caller'"
 #define DUK_STR_PROXY_REJECTED                   "proxy rejected"
 #define DUK_STR_INVALID_ARRAY_LENGTH             "invalid array length"
-#define DUK_STR_ARRAY_LENGTH_WRITE_FAILED        "array length write failed"
-#define DUK_STR_ARRAY_LENGTH_NOT_WRITABLE        "array length non-writable"
 #define DUK_STR_SETTER_UNDEFINED                 "setter undefined"
-#define DUK_STR_REDEFINE_VIRT_PROP               "cannot redefine virtual property"
 #define DUK_STR_INVALID_DESCRIPTOR               "invalid descriptor"
-#define DUK_STR_PROPERTY_IS_VIRTUAL              "property is virtual"
 
 /* Variables */
 

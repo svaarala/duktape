@@ -2180,7 +2180,14 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		duk__debug_getinfo_prop_uint(thr, "a_size", (duk_uint_t) DUK_HOBJECT_GET_ASIZE(h_obj));
 		duk__debug_getinfo_prop_uint(thr, "h_size", (duk_uint_t) DUK_HOBJECT_GET_HSIZE(h_obj));
 
-		/* duk_hnatfunc specific fields. */
+		if (DUK_HOBJECT_IS_ARRAY(h_obj)) {
+			duk_harray *h_arr;
+			h_arr = (duk_harray *) h_obj;
+
+			duk__debug_getinfo_prop_int(thr, "length", h_arr->length);
+			duk__debug_getinfo_prop_bool(thr, "length_nonwritable", h_arr->length_nonwritable);
+		}
+
 		if (DUK_HOBJECT_IS_NATFUNC(h_obj)) {
 			duk_hnatfunc *h_fun;
 			h_fun = (duk_hnatfunc *) h_obj;

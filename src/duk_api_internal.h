@@ -172,9 +172,9 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t 
 /* Set object 'length'. */
 DUK_INTERNAL_DECL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t length);
 
-DUK_EXTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
+DUK_INTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
 #if 0
-DUK_EXTERNAL_DECL void duk_unpack(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 #endif
 
 /* Raw internal valstack access macros: access is unsafe so call site
