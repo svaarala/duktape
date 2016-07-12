@@ -3445,7 +3445,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_func));
 				obj_func = DUK_TVAL_GET_OBJECT(tv_func);
 				DUK_ASSERT(obj_func != NULL);
-				DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(obj_func));
+				DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(obj_func));
 
 				/*
 				 *  Other cases, use C recursion.

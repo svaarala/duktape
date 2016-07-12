@@ -84,7 +84,13 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 	duk_heaphdr_decref_allownull(thr, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h));
 
-	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+	/* XXX: rearrange bits to allow a switch case to be used here? */
+	/* XXX: add a fast path for objects (and arrays)? */
+	if (DUK_HOBJECT_IS_ARRAY(h)) {
+		duk_harray *a = (duk_harray *) h;
+		/* No special ref updates. */
+		(void) a;
+	} else if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;

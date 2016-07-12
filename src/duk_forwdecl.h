@@ -18,6 +18,7 @@ struct duk_jmpbuf;
 /* duk_tval intentionally skipped */
 struct duk_heaphdr;
 struct duk_heaphdr_string;
+struct duk_harray;
 struct duk_hstring;
 struct duk_hstring_external;
 struct duk_hobject;
@@ -73,6 +74,7 @@ typedef struct duk_jmpbuf duk_jmpbuf;
 /* duk_tval intentionally skipped */
 typedef struct duk_heaphdr duk_heaphdr;
 typedef struct duk_heaphdr_string duk_heaphdr_string;
+typedef struct duk_harray duk_harray;
 typedef struct duk_hstring duk_hstring;
 typedef struct duk_hstring_external duk_hstring_external;
 typedef struct duk_hobject duk_hobject;

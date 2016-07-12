@@ -435,7 +435,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			break;
 		} else if (DUK_TVAL_IS_OBJECT(tv_func)) {
 			func = DUK_TVAL_GET_OBJECT(tv_func);
-			if (!DUK_HOBJECT_HAS_BOUND(func)) {
+			if (!DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
 				/* Normal non-bound function. */
 				break;
 			}
@@ -506,7 +506,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
 		func = DUK_TVAL_GET_OBJECT(tv_func);
 		DUK_ASSERT(func != NULL);
-		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func) ||
 		           DUK_HOBJECT_HAS_NATFUNC(func));
 	}
@@ -568,7 +568,7 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound chain resolved */
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound chain resolved */
 	DUK_ASSERT(thr->callstack_top >= 1);
 
 	if (DUK_HOBJECT_HAS_STRICT(func)) {
@@ -734,7 +734,7 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 			if (!DUK_HOBJECT_IS_CALLABLE(func)) {
 				goto not_callable_error;
 			}
-			if (DUK_HOBJECT_HAS_BOUND(func)) {
+			if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
 				duk__handle_bound_chain_for_call(thr, idx_func, out_num_stack_args, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 
 				/* The final object may be a normal function or a lightfunc.
@@ -756,7 +756,7 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 
 	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
 	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 	                            DUK_HOBJECT_IS_NATFUNC(func)));
 
@@ -1310,7 +1310,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	DUK_TVAL_SET_TVAL(&tv_func_copy, tv_func);
 	tv_func = &tv_func_copy;  /* local copy to avoid relookups */
 
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 	                            DUK_HOBJECT_IS_NATFUNC(func)));
 
@@ -1348,7 +1348,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	thr->callstack_top++;
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 	DUK_ASSERT(thr->valstack_top > thr->valstack_bottom);  /* at least effective 'this' */
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 
 	act->flags = 0;
 
@@ -1455,7 +1455,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  Delayed creation (on demand) is handled in duk_js_var.c.
 	 */
 
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUND(func));  /* bound function chain has already been resolved */
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function chain has already been resolved */
 
 	if (DUK_LIKELY(func != NULL)) {
 		if (DUK_LIKELY(DUK_HOBJECT_HAS_NEWENV(func))) {
@@ -2406,7 +2406,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	/* XXX: tv_func is not actually needed */
 
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(func));
 
 	duk__coerce_effective_this_binding(thr, func, idx_func + 1);
@@ -2482,7 +2482,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 		/* 'act' already set above */
 
-		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 		DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
@@ -2603,7 +2603,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		thr->callstack_top++;
 		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
-		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(func));
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 
@@ -2654,7 +2654,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* XXX: unify handling with native call. */
 
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));  /* bound function chain has already been resolved */
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function chain has already been resolved */
 
 	if (!DUK_HOBJECT_HAS_NEWENV(func)) {
 		/* use existing env (e.g. for non-strict eval); cannot have

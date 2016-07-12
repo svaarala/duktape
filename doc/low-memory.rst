@@ -124,7 +124,7 @@ but see for example:
 Example using GCC: compile the Duktape command line utility without removing
 unused API symbols::
 
-    $ gcc -o duk -Os -pedantic -std=c99 -Wall -fstrict-aliasing \
+    $ gcc -o duk -Os -pedantic -std=c99 -Wall -fstrict-aliasing \
           -fomit-frame-pointer -I./src -DDUK_OPT_SELF_TESTS src/duktape.c \
           examples/cmdline/duk_cmdline.c -lm
     $ size duk
@@ -715,7 +715,7 @@ Use the following command to run the optimization::
 
   $ rm -rf /tmp/out; mkdir /tmp/out
   $ python examples/alloc-logging/pool_simulator.py \
-      --out-dir /tmp/out \
+      --out-dir /tmp/out \
       --alloc-log /tmp/duk-alloc-log.txt \
       --pool-config examples/alloc-logging/pool_config_1.json \
       --out-pool-config /tmp/tight_borrow.json \

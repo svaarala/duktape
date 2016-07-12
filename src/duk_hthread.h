@@ -182,6 +182,16 @@
 	} while (0)
 
 /*
+ *  Misc
+ */
+
+/* Fast access to 'this' binding.  Assumes there's a call in progress. */
+#define DUK_HTHREAD_THIS_PTR(thr) \
+	(DUK_ASSERT_EXPR((thr) != NULL), \
+	 DUK_ASSERT_EXPR((thr)->valstack_bottom > (thr)->valstack), \
+	 (thr)->valstack_bottom - 1)
+
+/*
  *  Struct defines
  */
 

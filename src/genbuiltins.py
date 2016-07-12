@@ -2130,6 +2130,8 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	# RAM structure which has no dynamic or variable size parts.
 	genc.emitLine('typedef struct duk_romobj duk_romobj; ' + \
 	              'struct duk_romobj { duk_hobject hdr; };')
+	genc.emitLine('typedef struct duk_romarr duk_romarr; ' + \
+	              'struct duk_romarr { duk_harray hdr; };')
 	genc.emitLine('typedef struct duk_romfun duk_romfun; ' + \
 	              'struct duk_romfun { duk_hnatfunc hdr; };')
 
@@ -2150,14 +2152,18 @@ def rom_emit_object_initializer_types_and_macros(genc):
 	#genc.emitLine('#endif')
 	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
 	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) } }')
+	genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) \\')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (length), 0 /*length_nonwritable*/ } }')
 	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
 	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
-	genc.emitLine('#else')
+	genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
 	genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
 	genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) } }')
+	genc.emitLine('#define DUK__ROMARR_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,length) \\')
+	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (length), 0 /*length_nonwritable*/ } }')
 	genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
 	genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
-	genc.emitLine('#endif')
+	genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
 	# Emit duk_tval structs.  This gets a bit messier with packed/unpacked
 	# duk_tval, endianness variants, pointer sizes, etc.
@@ -2418,6 +2424,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
 		# See commentary above for duk_prop_%d forward declarations.
 		if obj.get('callable', False):
 			genc.emitLine('DUK_EXTERNAL_DECL const duk_romfun duk_obj_%d;' % idx)
+		elif obj.get('class') == 'Array':
+			genc.emitLine('DUK_EXTERNAL_DECL const duk_romarr duk_obj_%d;' % idx)
 		else:
 			genc.emitLine('DUK_EXTERNAL_DECL const duk_romobj duk_obj_%d;' % idx)
 	genc.emitLine('')
@@ -2433,6 +2441,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
 
 		if isfunc:
 			tmp = 'DUK_EXTERNAL const duk_romfun duk_obj_%d = ' % idx
+		elif obj.get('class') == 'Array':
+			tmp = 'DUK_EXTERNAL const duk_romarr duk_obj_%d = ' % idx
 		else:
 			tmp = 'DUK_EXTERNAL const duk_romobj duk_obj_%d = ' % idx
 
@@ -2443,6 +2453,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
 			flags.append('DUK_HOBJECT_FLAG_NEWENV')
 		if obj.get('constructable', False):
 			flags.append('DUK_HOBJECT_FLAG_CONSTRUCTABLE')
+		if obj.get('class') == 'Array':
+			flags.append('DUK_HOBJECT_FLAG_EXOTIC_ARRAY')
 		flags.append('DUK_HOBJECT_CLASS_AS_FLAGS(%d)' % class_to_number(obj['class']))  # XXX: use constant, not number
 
 		refcount = 1  # refcount is faked to be always 1
@@ -2484,6 +2496,11 @@ def rom_emit_objects(genc, meta, bi_str_map):
 				('|'.join(flags), refcount, props, props_enc16, \
 				 iproto, iproto_enc16, e_size, e_next, a_size, h_size, \
 				 nativefunc, nargs, magic)
+		elif obj.get('class') == 'Array':
+			arrlen = 0
+			tmp += 'DUK__ROMARR_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d);' % \
+				('|'.join(flags), refcount, props, props_enc16, \
+				 iproto, iproto_enc16, e_size, e_next, a_size, h_size, arrlen)
 		else:
 			tmp += 'DUK__ROMOBJ_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d);' % \
 				('|'.join(flags), refcount, props, props_enc16, \

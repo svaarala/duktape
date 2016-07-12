@@ -248,7 +248,7 @@ DUK_INTERNAL duk_bool_t duk_has_prop_stridx(duk_context *ctx, duk_idx_t obj_idx,
 	return duk_has_prop(ctx, obj_idx);
 }
 
-/* Define own property without inheritance looks and such.  This differs from
+/* Define own property without inheritance lookups and such.  This differs from
  * [[DefineOwnProperty]] because special behaviors (like Array 'length') are
  * not invoked by this method.  The caller must be careful to invoke any such
  * behaviors if necessary.

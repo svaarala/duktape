@@ -1947,7 +1947,7 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hstring_masks[] = {
 DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"extensible",
 	"constructable",
-	"bound",
+	"boundfunc",
 	"compfunc",
 	"natfunc",
 	"bufobj",
@@ -1969,7 +1969,7 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_EXTENSIBLE,
 	DUK_HOBJECT_FLAG_CONSTRUCTABLE,
-	DUK_HOBJECT_FLAG_BOUND,
+	DUK_HOBJECT_FLAG_BOUNDFUNC,
 	DUK_HOBJECT_FLAG_COMPFUNC,
 	DUK_HOBJECT_FLAG_NATFUNC,
 	DUK_HOBJECT_FLAG_BUFOBJ,

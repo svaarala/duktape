@@ -42,4 +42,3 @@ if __name__ == '__main__':
 	f.write('\n')
 	f.write('#endif  /* DUK_BUILDPARAMS_H_INCLUDED */\n')
 	f.close()
-

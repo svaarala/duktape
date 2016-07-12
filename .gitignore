@@ -2,7 +2,9 @@
 *.swp
 *.o
 *.strip
-/duk.O2.*
+/_*
+/duk.*
+/libduktape.*
 /build/
 /dist/
 /site/

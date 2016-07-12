@@ -299,17 +299,17 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* Cast converts magic to 16-bit signed value */
 			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0 /*def_value*/);
 			((duk_hnatfunc *) h)->magic = magic;
+		} else if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
+			duk_push_array(ctx);
 		} else {
-			/* XXX: ARRAY_PART for Array prototype? */
-
 			duk_push_object_helper(ctx,
 			                       DUK_HOBJECT_FLAG_EXTENSIBLE,
 			                       -1);  /* no prototype or class yet */
 
-			h = duk_require_hobject(ctx, -1);
-			DUK_ASSERT(h != NULL);
 		}
 
+		h = duk_require_hobject(ctx, -1);
+		DUK_ASSERT(h != NULL);
 		DUK_HOBJECT_SET_CLASS_NUMBER(h, class_num);
 
 		if (i < DUK_NUM_BUILTINS) {
@@ -327,22 +327,22 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 *  expected of an Array instance which are different: writable,
 			 *  non-enumerable, non-configurable (E5 Section 15.4.5.2).
 			 *
-			 *  This is currently determined implicitly based on class; there are
-			 *  no attribute flags in the init data.
+			 *  Because Array .length is virtual, it's not encoded in the init
+			 *  data separately.
 			 */
 
+			DUK_ASSERT(class_num != DUK_HOBJECT_CLASS_ARRAY);  /* .length is virtual */
 			duk_push_int(ctx, len);
 			duk_xdef_prop_stridx(ctx,
 			                     -2,
 			                     DUK_STRIDX_LENGTH,
-			                     (class_num == DUK_HOBJECT_CLASS_ARRAY ?  /* only Array.prototype matches */
-			                      DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE));
+			                     DUK_PROPDESC_FLAGS_NONE);
 		}
 
 		/* enable exotic behaviors last */
 
 		if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
-			DUK_HOBJECT_SET_EXOTIC_ARRAY(h);
+			DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(h));  /* set by duk_push_array() */
 		}
 		if (class_num == DUK_HOBJECT_CLASS_STRING) {
 			DUK_HOBJECT_SET_EXOTIC_STRINGOBJ(h);
@@ -352,11 +352,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h));
 		/* DUK_HOBJECT_FLAG_CONSTRUCTABLE varies */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(h));
+		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_COMPFUNC(h));
 		/* DUK_HOBJECT_FLAG_NATFUNC varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(h));
-		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h));       /* currently, even for Array.prototype */
+		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h) || class_num == DUK_HOBJECT_CLASS_ARRAY);
 		/* DUK_HOBJECT_FLAG_STRICT varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(h) ||  /* all native functions have NEWENV */
 		           DUK_HOBJECT_HAS_NEWENV(h));

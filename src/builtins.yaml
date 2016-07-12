@@ -654,9 +654,10 @@ objects:
     # in E5 Section 15.4.5.2 (and this matches the behavior of e.g. V8).
 
     properties:
-      - key: "length"
-        value: 0
-        attributes: "w"
+      # With duk_harray added to the internal representation, .length is now virtual.
+      #- key: "length"
+      #  value: 0
+      #  attributes: "w"
       - key: "constructor"
         value:
           type: object

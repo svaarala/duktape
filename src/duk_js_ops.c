@@ -1084,7 +1084,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 			DUK_ERROR_TYPE(thr, "invalid instanceof rval");
 		}
 
-		if (!DUK_HOBJECT_HAS_BOUND(func)) {
+		if (!DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
 			break;
 		}
 
@@ -1107,7 +1107,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	 *  to execute E5 Section 15.3.5.3.
 	 */
 
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(func));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
 
 	/* [ ... lval rval(func) ] */

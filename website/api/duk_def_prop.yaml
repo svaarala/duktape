@@ -35,8 +35,9 @@ summary: |
   <code>Object.defineProperty()</code> and is useful for e.g. sandboxing setup.
   In some cases even a forced change is not possible and will cause an error to be
   thrown.  For instance, properties implemented internally as virtual properties
-  (such as string "length" and index properties) cannot be modified because they
-  don't have concrete internal storage and thus no way of recording changes.</p>
+  may not be modifiable (such as string <code>.length</code> and index properties)
+  or may have limitations (such as array <code>.length</code> property which cannot
+  be made configurable or enumerable due to internal limitations).</p>
 
   <p>Some examples (see further examples below):</p>
   <ul>

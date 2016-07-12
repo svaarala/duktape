@@ -82,7 +82,6 @@ DUK_LOCAL_DECL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hob
 
 DUK_LOCAL_DECL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
 DUK_LOCAL_DECL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags);
-DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_propdesc *temp_desc);
 
 /*
  *  Misc helpers
@@ -484,13 +483,12 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
  *  will become invalid after this call.
  */
 
-DUK_LOCAL
-void duk__realloc_props(duk_hthread *thr,
-                        duk_hobject *obj,
-                        duk_uint32_t new_e_size,
-                        duk_uint32_t new_a_size,
-                        duk_uint32_t new_h_size,
-                        duk_bool_t abandon_array) {
+DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
+                                            duk_hobject *obj,
+                                            duk_uint32_t new_e_size,
+                                            duk_uint32_t new_a_size,
+                                            duk_uint32_t new_h_size,
+                                            duk_bool_t abandon_array) {
 	duk_context *ctx = (duk_context *) thr;
 #ifdef DUK_USE_MARK_AND_SWEEP
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
@@ -967,7 +965,7 @@ DUK_LOCAL void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject 
 	new_a_size = DUK_HOBJECT_GET_ASIZE(obj);
 	DUK_ASSERT(new_e_size >= old_e_used + 1);  /* duk__get_min_grow_e() is always >= 1 */
 
-	duk__realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
+	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
 }
 
 /* Grow array part for a new highest array index. */
@@ -987,7 +985,7 @@ DUK_LOCAL void duk__grow_props_for_array_item(duk_hthread *thr, duk_hobject *obj
 	new_a_size = highest_arr_idx + duk__get_min_grow_a(highest_arr_idx);
 	DUK_ASSERT(new_a_size >= highest_arr_idx + 1);  /* duk__get_min_grow_a() is always >= 1 */
 
-	duk__realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
+	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
 }
 
 /* Abandon array part, moving array entries into entries part.
@@ -1030,7 +1028,7 @@ DUK_LOCAL void duk__abandon_array_checked(duk_hthread *thr, duk_hobject *obj) {
 	                   (void *) obj, (long) e_used, (long) a_used, (long) a_size,
 	                   (long) new_e_size, (long) new_a_size, (long) new_h_size));
 
-	duk__realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 1);
+	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 1);
 }
 
 /*
@@ -1095,7 +1093,7 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
 	DUK_DD(DUK_DDPRINT("compacting hobject -> new e_size %ld, new a_size=%ld, new h_size=%ld, abandon_array=%ld",
 	                   (long) e_size, (long) a_size, (long) h_size, (long) abandon_array));
 
-	duk__realloc_props(thr, obj, e_size, a_size, h_size, abandon_array);
+	duk_hobject_realloc_props(thr, obj, e_size, a_size, h_size, abandon_array);
 }
 
 /*
@@ -1672,13 +1670,40 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	}
 
 	/*
-	 *  Not found as a concrete property, check whether a String object
-	 *  virtual property matches.
+	 *  Not found as a concrete property, check for virtual properties.
 	 */
 
  prop_not_found_concrete:
 
-	if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) {
+	if (!DUK_HOBJECT_HAS_VIRTUAL_PROPERTIES(obj)) {
+		/* Quick skip. */
+		goto prop_not_found;
+	}
+
+	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+		duk_harray *a;
+
+		DUK_DDD(DUK_DDDPRINT("array object exotic property get for key: %!O, arr_idx: %ld",
+		                     (duk_heaphdr *) key, (long) arr_idx));
+
+		a = (duk_harray *) obj;
+		DUK_ASSERT_HARRAY_VALID(a);
+
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
+
+			if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
+				duk_push_uint(ctx, (duk_uint_t) a->length);
+			}
+			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
+			if (DUK_HARRAY_LENGTH_WRITABLE(a)) {
+				out_desc->flags |= DUK_PROPDESC_FLAG_WRITABLE;
+			}
+
+			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
+			return 1;  /* cannot be arguments exotic */
+		}
+	} else if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) {
 		DUK_DDD(DUK_DDDPRINT("string object exotic property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
@@ -1827,6 +1852,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	 *  Not found as concrete or virtual
 	 */
 
+ prop_not_found:
 	DUK_DDD(DUK_DDDPRINT("-> not found (virtual, entry part, or array part)"));
 	return 0;
 
@@ -2033,8 +2059,9 @@ DUK_LOCAL duk_tval *duk__getprop_shallow_fastpath_array_tval(duk_hthread *thr, d
 	return NULL;
 }
 
-DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_tval *tv_val, duk_propdesc *temp_desc) {
+DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_tval *tv_val) {
 	duk_tval *tv;
+	duk_harray *a;
 	duk_uint32_t idx;
 	duk_uint32_t old_len, new_len;
 
@@ -2044,6 +2071,9 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 		return 0;
 	}
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));  /* caller ensures */
+
+	a = (duk_harray *) obj;
+	DUK_ASSERT_HARRAY_VALID(a);
 
 #if defined(DUK_USE_FASTINT)
 	if (DUK_TVAL_IS_FASTINT(tv_key)) {
@@ -2068,24 +2098,19 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 	DUK_ASSERT(idx != 0xffffffffUL);
 	DUK_ASSERT(idx != DUK__NO_ARRAY_INDEX);
 
-	old_len = duk__get_old_array_length(thr, obj, temp_desc);
+	old_len = a->length;
 
 	if (idx >= old_len) {
 		DUK_DDD(DUK_DDDPRINT("write new array entry requires length update "
 		                     "(arr_idx=%ld, old_len=%ld)",
 		                     (long) idx, (long) old_len));
-		if (!(temp_desc->flags & DUK_PROPDESC_FLAG_WRITABLE)) {
+		if (DUK_HARRAY_LENGTH_NONWRITABLE(a)) {
 			DUK_ERROR_TYPE(thr, DUK_STR_NOT_WRITABLE);
 			return 0;  /* not reachable */
 		}
 		new_len = idx + 1;
 
-		/* No resize has occurred so temp_desc->e_idx is still OK */
-		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, temp_desc->e_idx);
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		DUK_TVAL_SET_U32(tv, new_len);  /* no need for decref/incref because value is a number */
-	} else {
-		;
+		((duk_harray *) obj)->length = new_len;
 	}
 
 	tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, idx);
@@ -2339,6 +2364,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		curr = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(curr != NULL);
+
+		/* XXX: array .length fast path (important in e.g. loops)? */
 
 		tmp = duk__getprop_shallow_fastpath_array_tval(thr, curr, tv_key);
 		if (tmp) {
@@ -2683,7 +2710,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			 * only refers to the value being a "strict mode Function
 			 * object" which is ambiguous.
 			 */
-			DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(orig));
+			DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(orig));
 
 			h = duk_get_hobject(ctx, -1);  /* NULL if not an object */
 			if (h &&
@@ -2866,51 +2893,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *o
  *  Used by duk_hobject_putprop().
  */
 
-DUK_LOCAL duk_uint32_t duk__get_old_array_length(duk_hthread *thr, duk_hobject *obj, duk_propdesc *temp_desc) {
-	duk_bool_t rc;
-	duk_tval *tv;
-	duk_uint32_t res;
-
-	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
-
-	/* This function is only called for objects with array exotic behavior.
-	 * The [[DefineOwnProperty]] algorithm for arrays requires that
-	 * 'length' can never have a value outside the unsigned 32-bit range,
-	 * attempt to write such a value is a RangeError.  Here we can thus
-	 * assert for this.  When Duktape internals go around the official
-	 * property write interface (doesn't happen often) this assumption is
-	 * easy to accidentally break, so such code must be written carefully.
-	 * See test-bi-array-push-maxlen.js.
-	 */
-
-	rc = duk__get_own_propdesc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, temp_desc, 0 /*flags*/);  /* don't push value */
-	DUK_UNREF(rc);
-	DUK_ASSERT(rc != 0);  /* arrays MUST have a 'length' property */
-	DUK_ASSERT(temp_desc->e_idx >= 0);
-
-	tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, temp_desc->e_idx);
-	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));  /* array 'length' is always a number, as we coerce it */
-	DUK_ASSERT(DUK_TVAL_GET_NUMBER(tv) >= 0.0);
-	DUK_ASSERT(DUK_TVAL_GET_NUMBER(tv) <= (double) 0xffffffffUL);
-	DUK_ASSERT((duk_double_t) (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv) == DUK_TVAL_GET_NUMBER(tv));
-#if defined(DUK_USE_FASTINT)
-	/* Downgrade checks are not made everywhere, so 'length' is not always
-	 * a fastint (it is a number though).  This can be removed once length
-	 * is always guaranteed to be a fastint.
-	 */
-	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv) || DUK_TVAL_IS_DOUBLE(tv));
-	if (DUK_TVAL_IS_FASTINT(tv)) {
-		res = (duk_uint32_t) DUK_TVAL_GET_FASTINT_U32(tv);
-	} else {
-		res = (duk_uint32_t) DUK_TVAL_GET_DOUBLE(tv);
-	}
-#else
-	res = (duk_uint32_t) DUK_TVAL_GET_NUMBER(tv);
-#endif  /* DUK_USE_FASTINT */
-
-	return res;
-}
-
 DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint32_t res;
@@ -2921,7 +2903,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
 	 * outside the 32-bit range.  Negative zero is accepted as zero.
 	 */
 
-	/* XXX: fastint */
+	/* XXX: fastint; avoid value stack! */
 
 	d = duk_to_number(ctx, -1);
 	res = (duk_uint32_t) d;
@@ -2976,6 +2958,9 @@ duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 	DUK_ASSERT(new_len < old_len);
 	DUK_ASSERT(out_result_len != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
+
+	DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj));
+	DUK_ASSERT(DUK_HOBJECT_IS_ARRAY(obj));
 
 	if (DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
 		/*
@@ -3125,11 +3110,10 @@ duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 /* XXX: is valstack top best place for argument? */
 DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_propdesc desc;
+	duk_harray *a;
 	duk_uint32_t old_len;
 	duk_uint32_t new_len;
 	duk_uint32_t result_len;
-	duk_tval *tv;
 	duk_bool_t rc;
 
 	DUK_DDD(DUK_DDDPRINT("handling a put operation to array 'length' exotic property, "
@@ -3142,13 +3126,18 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj));
+	DUK_ASSERT(DUK_HOBJECT_IS_ARRAY(obj));
+	a = (duk_harray *) obj;
+	DUK_ASSERT_HARRAY_VALID(a);
+
 	DUK_ASSERT(duk_is_valid_index(ctx, -1));
 
 	/*
 	 *  Get old and new length
 	 */
 
-	old_len = duk__get_old_array_length(thr, obj, &desc);
+	old_len = a->length;
 	duk_dup(ctx, -1);  /* [in_val in_val] */
 	new_len = duk__to_new_array_length_checked(thr);  /* -> [in_val] */
 	DUK_DDD(DUK_DDDPRINT("old_len=%ld, new_len=%ld", (long) old_len, (long) new_len));
@@ -3157,7 +3146,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	 *  Writability check
 	 */
 
-	if (!(desc.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
+	if (DUK_HARRAY_LENGTH_NONWRITABLE(a)) {
 		DUK_DDD(DUK_DDDPRINT("length is not writable, fail"));
 		return 0;
 	}
@@ -3169,14 +3158,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 
 	if (new_len >= old_len) {
 		DUK_DDD(DUK_DDDPRINT("new length is higher than old length, just update length, no deletions"));
-
-		DUK_ASSERT(desc.e_idx >= 0);
-		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, desc.e_idx));
-		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		/* no decref needed for a number */
-		DUK_TVAL_SET_U32(tv, new_len);
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+		a->length = new_len;
 		return 1;
 	}
 
@@ -3193,13 +3175,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	rc = duk__handle_put_array_length_smaller(thr, obj, old_len, new_len, 0 /*force_flag*/, &result_len);
 	DUK_ASSERT(result_len >= new_len && result_len <= old_len);
 
-	DUK_ASSERT(desc.e_idx >= 0);
-	DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, desc.e_idx));
-	tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
-	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-	/* no decref needed for a number */
-	DUK_TVAL_SET_U32(tv, result_len);
-	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+	a->length = result_len;
 
 	/* XXX: shrink array allocation or entries compaction here? */
 
@@ -3362,7 +3338,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * tests/ecmascript/test-misc-array-fast-write.js
 		 */
 
-		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val, &desc) != 0) {
+		/* XXX: array .length? */
+
+		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val) != 0) {
 			DUK_DDD(DUK_DDDPRINT("array fast path success"));
 			return 1;
 		}
@@ -3639,7 +3617,37 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			}
 			if (desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
 				DUK_DD(DUK_DDPRINT("found existing own (non-inherited) virtual property, property is writable"));
-				if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
+
+				if (DUK_HOBJECT_IS_ARRAY(curr)) {
+					/*
+					 *  Write to 'length' of an array is a very complex case
+					 *  handled in a helper which updates both the array elements
+					 *  and writes the new 'length'.  The write may result in an
+					 *  unconditional RangeError or a partial write (indicated
+					 *  by a return code).
+					 *
+					 *  Note: the helper has an unnecessary writability check
+					 *  for 'length', we already know it is writable.
+					 */
+					DUK_ASSERT(key == DUK_HTHREAD_STRING_LENGTH(thr));  /* only virtual array property */
+
+					DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array exotic, invoke complex helper"));
+
+					/* XXX: the helper currently assumes stack top contains new
+					 * 'length' value and the whole calling convention is not very
+					 * compatible with what we need.
+					 */
+
+					duk_push_tval(ctx, tv_val);  /* [key val] */
+					rc = duk__handle_put_array_length(thr, orig);
+					duk_pop(ctx);  /* [key val] -> [key] */
+					if (!rc) {
+						goto fail_array_length_partial;
+					}
+
+					/* key is 'length', cannot match argument exotic behavior */
+					goto success_no_arguments_exotic;
+				} else if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
 					duk_hbufobj *h_bufobj;
 					duk_uint_t byte_off;
 					duk_small_uint_t elem_size;
@@ -3679,6 +3687,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 					}
 				}
 
+				DUK_D(DUK_DPRINT("should not happen, key %!O", key));
 				goto fail_internal;  /* should not happen */
 			}
 			DUK_DD(DUK_DDPRINT("put to existing own plain property, property is writable"));
@@ -3741,36 +3750,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_ASSERT((desc.flags & DUK_PROPDESC_FLAG_VIRTUAL) == 0);
 	DUK_ASSERT(desc.a_idx >= 0 || desc.e_idx >= 0);
 
-	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig) &&
-	    key == DUK_HTHREAD_STRING_LENGTH(thr)) {
-		/*
-		 *  Write to 'length' of an array is a very complex case
-		 *  handled in a helper which updates both the array elements
-		 *  and writes the new 'length'.  The write may result in an
-		 *  unconditional RangeError or a partial write (indicated
-		 *  by a return code).
-		 *
-		 *  Note: the helper has an unnecessary writability check
-		 *  for 'length', we already know it is writable.
-		 */
-
-		DUK_DDD(DUK_DDDPRINT("writing existing 'length' property to array exotic, invoke complex helper"));
-
-		/* XXX: the helper currently assumes stack top contains new
-		 * 'length' value and the whole calling convention is not very
-		 * compatible with what we need.
-		 */
-
-		duk_push_tval(ctx, tv_val);  /* [key val] */
-		rc = duk__handle_put_array_length(thr, orig);
-		duk_pop(ctx);  /* [key val] -> [key] */
-		if (!rc) {
-			goto fail_array_length_partial;
-		}
-
-		/* key is 'length', cannot match argument exotic behavior */
-		goto success_no_arguments_exotic;
-	}
+	/* Array own property .length is handled above. */
+	DUK_ASSERT(!(DUK_HOBJECT_IS_ARRAY(orig) && key == DUK_HTHREAD_STRING_LENGTH(thr)));
 
 	if (desc.e_idx >= 0) {
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
@@ -3816,6 +3797,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	DUK_ASSERT(orig != NULL);
 
+	/* Array own property .length is handled above. */
+	DUK_ASSERT(!(DUK_HOBJECT_IS_ARRAY(orig) && key == DUK_HTHREAD_STRING_LENGTH(thr)));
+
 #if defined(DUK_USE_ROM_OBJECTS)
 	/* This should not happen because DUK_TAG_OBJECT case checks
 	 * for this already, but check just in case.
@@ -3836,15 +3820,19 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	    arr_idx != DUK__NO_ARRAY_INDEX) {
 		/* automatic length update */
 		duk_uint32_t old_len;
+		duk_harray *a;
 
-		old_len = duk__get_old_array_length(thr, orig, &desc);
+		a = (duk_harray *) orig;
+		DUK_ASSERT_HARRAY_VALID(a);
+
+		old_len = a->length;
 
 		if (arr_idx >= old_len) {
 			DUK_DDD(DUK_DDDPRINT("write new array entry requires length update "
 			                     "(arr_idx=%ld, old_len=%ld)",
 			                     (long) arr_idx, (long) old_len));
 
-			if (!(desc.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
+			if (DUK_HARRAY_LENGTH_NONWRITABLE(a)) {
 				DUK_DD(DUK_DDPRINT("attempt to extend array, but array 'length' is not writable"));
 				goto fail_not_writable;
 			}
@@ -4003,18 +3991,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 *  may realloc and compact properties and hence change e_idx.
 		 */
 
+		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig));
+
 		DUK_DDD(DUK_DDDPRINT("write successful, pending array length update to: %ld",
 		                     (long) new_array_length));
 
-		rc = duk__get_own_propdesc_raw(thr, orig, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, &desc, 0 /*flags*/);  /* don't push value */
-		DUK_UNREF(rc);
-		DUK_ASSERT(rc != 0);
-		DUK_ASSERT(desc.e_idx >= 0);
-
-		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		/* no need for decref/incref because value is a number */
-		DUK_TVAL_SET_U32(tv, new_array_length);
+		((duk_harray *) orig)->length = new_array_length;
 	}
 
 	/*
@@ -4562,6 +4544,18 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 				DUK_DDD(DUK_DDDPRINT("property already exists but is virtual -> skip as requested"));
 				goto pop_exit;
 			}
+			if (key == DUK_HTHREAD_STRING_LENGTH(thr) && DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+				duk_uint32_t new_len;
+#if defined(DUK_USE_DEBUG)
+				duk_uint32_t prev_len;
+				prev_len = ((duk_harray *) obj)->length;
+#endif
+				new_len = duk__to_new_array_length_checked(thr);  /* pops length */
+				((duk_harray *) obj)->length = new_len;
+				DUK_D(DUK_DPRINT("internal define property for array .length: %ld -> %ld",
+				                 (long) prev_len, (long) ((duk_harray *) obj)->length));
+				goto no_pop_exit;
+			}
 			DUK_DDD(DUK_DDDPRINT("property already exists but is virtual -> failure"));
 			goto error_virtual;
 		}
@@ -4606,6 +4600,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 
  pop_exit:
 	duk_pop(ctx);  /* remove in_val */
+ no_pop_exit:
 	return;
 
  error_internal:
@@ -4743,6 +4738,16 @@ DUK_INTERNAL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj
 DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_double_t val;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(obj != NULL);
+
+	/* Fast path for Arrays. */
+	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+		return ((duk_harray *) obj)->length;
+	}
+
+	/* Slow path, .length can be e.g. accessor, obj can be a Proxy, etc. */
 	duk_push_hobject(ctx, obj);
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 	(void) duk_hobject_getprop(thr,
@@ -4750,6 +4755,8 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 	                           DUK_GET_TVAL_NEGIDX(ctx, -1));
 	val = duk_to_number(ctx, -1);
 	duk_pop_n(ctx, 3);
+
+	/* XXX: better check */
 	if (val >= 0.0 && val < DUK_DOUBLE_2TO32) {
 		return (duk_uint32_t) val;
 	}
@@ -5080,6 +5087,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	}
 
 	if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
+		duk_harray *a;
+
 		/* E5 Section 15.4.5.1, step 3, steps a - i are implemented here, j - n at the end */
 		if (!has_value) {
 			DUK_DDD(DUK_DDDPRINT("exotic array behavior for 'length', but no value in descriptor -> normal behavior"));
@@ -5092,9 +5101,11 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		 *  Get old and new length
 		 */
 
-		/* Note: reuse 'curr' as a temp propdesc */
-		arrlen_old_len = duk__get_old_array_length(thr, obj, &curr);
+		a = (duk_harray *) obj;
+		DUK_ASSERT_HARRAY_VALID(a);
+		arrlen_old_len = a->length;
 
+		DUK_ASSERT(idx_value >= 0);
 		duk_dup(ctx, idx_value);
 		arrlen_new_len = duk__to_new_array_length_checked(thr);
 		duk_push_u32(ctx, arrlen_new_len);
@@ -5110,8 +5121,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		DUK_DDD(DUK_DDDPRINT("new length is smaller than previous => exotic post behavior"));
 
 		/* XXX: consolidated algorithm step 15.f -> redundant? */
-		if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE) && !force_flag) {
-			/* Note: 'curr' refers to 'length' propdesc */
+		if (DUK_HARRAY_LENGTH_NONWRITABLE(a) && !force_flag) {
 			goto fail_not_writable_array_length;
 		}
 
@@ -5128,17 +5138,20 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 		/* E5 Section 15.4.5.1, step 4 */
 		duk_uint32_t old_len;
+		duk_harray *a;
 
-		/* Note: use 'curr' as a temp propdesc */
-		old_len = duk__get_old_array_length(thr, obj, &curr);
+		a = (duk_harray *) obj;
+		DUK_ASSERT_HARRAY_VALID(a);
+
+		old_len = a->length;
 
 		if (arr_idx >= old_len) {
 			DUK_DDD(DUK_DDDPRINT("defineProperty requires array length update "
 			                     "(arr_idx=%ld, old_len=%ld)",
 			                     (long) arr_idx, (long) old_len));
 
-			if (!(curr.flags & DUK_PROPDESC_FLAG_WRITABLE)) {
-				/* Note: 'curr' refers to 'length' propdesc */
+			if (DUK_HARRAY_LENGTH_NONWRITABLE(a) && !force_flag) {
+				/* With force flag allow writing. */
 				goto fail_not_writable_array_length;
 			}
 
@@ -5177,6 +5190,17 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		if (!DUK_HOBJECT_HAS_EXTENSIBLE(obj) && !force_flag) {
 			goto fail_not_extensible;
 		}
+
+#if defined(DUK_USE_ROM_OBJECTS)
+		/* ROM objects are never extensible but force flag may
+		 * allow us to come here anyway.
+		 */
+		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj) || !DUK_HOBJECT_HAS_EXTENSIBLE(obj));
+		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
+			DUK_D(DUK_DPRINT("attempt to define property on a read-only target object"));
+			goto fail_not_configurable;
+		}
+#endif
 
 		/* XXX: share final setting code for value and flags?  difficult because
 		 * refcount code is different.  Share entry allocation?  But can't allocate
@@ -5384,15 +5408,19 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		}
 	}
 
-	/* Reject attempt to change virtual properties: not part of the
-	 * standard algorithm, applies currently to e.g. virtual index
-	 * properties of buffer objects (which are virtual but writable).
-	 * (Cannot "force" modification of a virtual property.)
+	/* Virtual properties don't have backing so they can't mostly be
+	 * edited.  Some virtual properties are, however, writable: for
+	 * example, virtual index properties of buffer objects and Array
+	 * instance .length.  These are not configurable so the checks
+	 * above mostly cover attempts to change them, except when the
+	 * duk_def_prop() call is used with DUK_DEFPROP_FORCE; even in
+	 * that case we can't forcibly change the property attributes
+	 * because they don't have concrete backing.
 	 */
-	if (curr.flags & DUK_PROPDESC_FLAG_VIRTUAL) {
-		goto fail_virtual;
-	}
 
+	/* XXX: for ROM objects too it'd be best if value modify was
+	 * allowed if the value matches SameValue.
+	 */
 	/* Reject attempt to change a read-only object. */
 #if defined(DUK_USE_ROM_OBJECTS)
 	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj)) {
@@ -5436,7 +5464,12 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 				DUK_ASSERT(rc != 0);
 				DUK_ASSERT(curr.e_idx >= 0 && curr.a_idx < 0);
 			}
+			if (curr.e_idx < 0) {
+				DUK_ASSERT(curr.a_idx < 0 && curr.e_idx < 0);
+				goto fail_virtual;  /* safeguard for virtual property */
+			}
 
+			DUK_ASSERT(curr.e_idx >= 0);
 			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
 
 			tv1 = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
@@ -5473,8 +5506,11 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 				goto fail_not_configurable;
 			}
 
-			/* curr is accessor -> cannot be in array part */
-			DUK_ASSERT(curr.e_idx >= 0 && curr.a_idx < 0);
+			/* curr is accessor -> cannot be in array part. */
+			DUK_ASSERT(curr.a_idx < 0);
+			if (curr.e_idx < 0) {
+				goto fail_virtual;  /* safeguard; no virtual accessors now */
+			}
 
 			DUK_DDD(DUK_DDDPRINT("convert property to data property"));
 
@@ -5580,6 +5616,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			DUK_ASSERT(curr.flags == DUK_PROPDESC_FLAGS_WEC);  /* must have been, since in array part */
 			DUK_ASSERT(!has_set);
 			DUK_ASSERT(!has_get);
+			DUK_ASSERT(idx_value >= 0);  /* must be: if attributes match and we get here the value must differ (otherwise no change) */
 
 			tv2 = duk_require_tval(ctx, idx_value);
 			tv1 = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, curr.a_idx);
@@ -5598,14 +5635,44 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 	DUK_DDD(DUK_DDDPRINT("updating existing property in entry part"));
 
-	/* array case is handled comprehensively above */
-	DUK_ASSERT(curr.e_idx >= 0 && curr.a_idx < 0);
+	/* Array case is handled comprehensively above: either in entry
+	 * part or a virtual property.
+	 */
+	DUK_ASSERT(curr.a_idx < 0);
 
 	DUK_DDD(DUK_DDDPRINT("update existing property attributes"));
-	DUK_HOBJECT_E_SET_FLAGS(thr->heap, obj, curr.e_idx, new_flags);
+	if (curr.e_idx >= 0) {
+		DUK_HOBJECT_E_SET_FLAGS(thr->heap, obj, curr.e_idx, new_flags);
+	} else {
+		/* For Array .length the only allowed transition is for .length
+		 * to become non-writable.
+		 */
+		if (key == DUK_HTHREAD_STRING_LENGTH(thr) && DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+			duk_harray *a;
+			a = (duk_harray *) obj;
+			DUK_D(DUK_DPRINT("Object.defineProperty() attribute update for duk_harray .length -> %02lx", (unsigned long) new_flags));
+			DUK_ASSERT_HARRAY_VALID(a);
+			if ((new_flags & DUK_PROPDESC_FLAGS_EC) != (curr.flags & DUK_PROPDESC_FLAGS_EC)) {
+				DUK_D(DUK_DPRINT("Object.defineProperty() attempt to change virtual array .length enumerable or configurable attribute, fail"));
+				goto fail_virtual;
+			}
+			if (new_flags & DUK_PROPDESC_FLAG_WRITABLE) {
+				DUK_HARRAY_SET_LENGTH_WRITABLE(a);
+			} else {
+				DUK_HARRAY_SET_LENGTH_NONWRITABLE(a);
+			}
+		}
+	}
 
 	if (has_set) {
 		duk_hobject *tmp;
+
+		/* Virtual properties are non-configurable but with a 'force'
+		 * flag we might come here so check explicitly for virtual.
+		 */
+		if (curr.e_idx < 0) {
+			goto fail_virtual;
+		}
 
 		DUK_DDD(DUK_DDDPRINT("update existing property setter"));
 		DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
@@ -5618,6 +5685,10 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	}
 	if (has_get) {
 		duk_hobject *tmp;
+
+		if (curr.e_idx < 0) {
+			goto fail_virtual;
+		}
 
 		DUK_DDD(DUK_DDDPRINT("update existing property getter"));
 		DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
@@ -5632,11 +5703,29 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		duk_tval *tv1, *tv2;
 
 		DUK_DDD(DUK_DDDPRINT("update existing property value"));
-		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
 
-		tv2 = duk_require_tval(ctx, idx_value);
-		tv1 = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
-		DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv2);  /* side effects */
+		if (curr.e_idx >= 0) {
+			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
+			tv2 = duk_require_tval(ctx, idx_value);
+			tv1 = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
+			DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv2);  /* side effects */
+		} else {
+			DUK_ASSERT(curr.a_idx < 0);  /* array part case handled comprehensively previously */
+
+			DUK_D(DUK_DPRINT("Object.defineProperty(), value update for virtual property"));
+			/* XXX: Uint8Array and other typed array virtual writes not currently
+			 * handled.
+			 */
+			if (key == DUK_HTHREAD_STRING_LENGTH(thr) && DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
+				duk_harray *a;
+				a = (duk_harray *) obj;
+				DUK_D(DUK_DPRINT("Object.defineProperty() value update for duk_harray .length -> %ld", (long) arrlen_new_len));
+				DUK_ASSERT_HARRAY_VALID(a);
+				a->length = arrlen_new_len;
+			} else {
+				goto fail_virtual;  /* should not happen */
+			}
+		}
 	}
 
 	/*
@@ -5656,10 +5745,12 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	/* [obj key desc value get set curr_value] */
 
 	if (DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
-		if (arridx_new_array_length > 0) {
-			duk_tval *tmp;
-			duk_bool_t rc;
+		duk_harray *a;
 
+		a = (duk_harray *) obj;
+		DUK_ASSERT_HARRAY_VALID(a);
+
+		if (arridx_new_array_length > 0) {
 			/*
 			 *  Note: zero works as a "no update" marker because the new length
 			 *  can never be zero after a new property is written.
@@ -5670,31 +5761,19 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			DUK_DDD(DUK_DDDPRINT("defineProperty successful, pending array length update to: %ld",
 			                     (long) arridx_new_array_length));
 
-			/* Note: reuse 'curr' */
-			rc = duk__get_own_propdesc_raw(thr, obj, DUK_HTHREAD_STRING_LENGTH(thr), DUK__NO_ARRAY_INDEX, &curr, 0 /*flags*/);  /* don't push value */
-			DUK_UNREF(rc);
-			DUK_ASSERT(rc != 0);
-			DUK_ASSERT(curr.e_idx >= 0);
-
-			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
-			/* no need for decref/incref because value is a number */
-			DUK_TVAL_SET_U32(tmp, arridx_new_array_length);
+			a->length = arridx_new_array_length;
 		}
+
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr) && arrlen_new_len < arrlen_old_len) {
 			/*
 			 *  E5 Section 15.4.5.1, steps 3.k - 3.n.  The order at the end combines
 			 *  the error case 3.l.iii and the success case 3.m-3.n.
-			 *
-			 *  Note: 'length' is always in entries part, so no array abandon issues for
-			 *  'writable' update.
 			 */
 
 			/* XXX: investigate whether write protect can be handled above, if we
 			 * just update length here while ignoring its protected status
 			 */
 
-			duk_tval *tmp;
 			duk_uint32_t result_len;
 			duk_bool_t rc;
 
@@ -5706,23 +5785,14 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			/* update length (curr points to length, and we assume it's still valid) */
 			DUK_ASSERT(result_len >= arrlen_new_len && result_len <= arrlen_old_len);
 
-			DUK_ASSERT(curr.e_idx >= 0);
-			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
-			tmp = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
-			/* no decref needed for a number */
-			DUK_TVAL_SET_U32(tmp, result_len);
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tmp));
+			a->length = result_len;
 
 			if (pending_write_protect) {
 				DUK_DDD(DUK_DDDPRINT("setting array length non-writable (pending writability update)"));
-				DUK_HOBJECT_E_SLOT_CLEAR_WRITABLE(thr->heap, obj, curr.e_idx);
+				DUK_HARRAY_SET_LENGTH_NONWRITABLE(a);
 			}
 
-			/*
-			 *  XXX: shrink array allocation or entries compaction here?
-			 */
-
+			/* XXX: shrink array allocation or entries compaction here? */
 			if (!rc) {
 				goto fail_array_length_partial;
 			}

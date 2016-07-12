@@ -2057,7 +2057,7 @@ The flags field is an unsigned integer bitmask with the following bits:
 | Bitmask | Description                                                     |
 +=========+=================================================================+
 | 0x01    | Property attribute: writable, matches                           |
-|         | DUK_PROPDESC_FLAG_WRITABLE.                                     |
+|         | DUK_PROPDESC_FLAG_WRITABLE.                                     |
 +---------+-----------------------------------------------------------------+
 | 0x02    | Property attribute: enumerable,                                 |
 |         | matches DUK_PROPDESC_FLAG_ENUMERABLE.                           |

@@ -413,4 +413,3 @@ As an example, the bitstream for the diffs [+0, +2, +9, -3, +0] would be::
 Typically the pc2line data is about 10-15% of the size of the corresponding
 bytecode, a very modest addition to footprint compared to the 100% addition
 of a straight table approach.
-

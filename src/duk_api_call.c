@@ -301,13 +301,13 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 			 */
 			goto not_constructable;
 		}
-		if (!DUK_HOBJECT_HAS_BOUND(cons)) {
+		if (!DUK_HOBJECT_HAS_BOUNDFUNC(cons)) {
 			break;
 		}
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
 		duk_remove(ctx, -2);                                  /* -> [... target] */
 	}
-	DUK_ASSERT(cons != NULL && !DUK_HOBJECT_HAS_BOUND(cons));
+	DUK_ASSERT(cons != NULL && !DUK_HOBJECT_HAS_BOUNDFUNC(cons));
 
 	/* [... constructor arg1 ... argN final_cons] */
 

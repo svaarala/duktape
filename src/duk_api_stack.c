@@ -2095,47 +2095,70 @@ DUK_INTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx) {
 }
 #endif
 
-/* Coerce top into Object.prototype.toString() output. */
-DUK_INTERNAL void duk_to_object_class_string_top(duk_context *ctx) {
+/* Push Object.prototype.toString() output for 'tv'. */
+DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
 	duk_hthread *thr;
-	duk_uint_t typemask;
+	duk_small_uint_t stridx;
 	duk_hstring *h_strclass;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 
-	typemask = duk_get_type_mask(ctx, -1);
-	if (typemask & DUK_TYPE_MASK_UNDEFINED) {
-		h_strclass = DUK_HTHREAD_STRING_UC_UNDEFINED(thr);
-	} else if (typemask & DUK_TYPE_MASK_NULL) {
-		h_strclass = DUK_HTHREAD_STRING_UC_NULL(thr);
-	} else {
-		duk_hobject *h_obj;
-
-		duk_to_object(ctx, -1);
-		h_obj = duk_get_hobject(ctx, -1);
-		DUK_ASSERT(h_obj != NULL);
-
-		h_strclass = DUK_HOBJECT_GET_CLASS_STRING(thr->heap, h_obj);
+	switch (DUK_TVAL_GET_TAG(tv)) {
+	case DUK_TAG_UNUSED:  /* Treat like 'undefined', shouldn't happen. */
+	case DUK_TAG_UNDEFINED: {
+		stridx = DUK_STRIDX_UC_UNDEFINED;
+		break;
 	}
+	case DUK_TAG_NULL: {
+		stridx = DUK_STRIDX_UC_NULL;
+		break;
+	}
+	case DUK_TAG_BOOLEAN: {
+		stridx = DUK_STRIDX_UC_BOOLEAN;
+		break;
+	}
+	case DUK_TAG_POINTER: {
+		stridx = DUK_STRIDX_UC_POINTER;
+		break;
+	}
+	case DUK_TAG_LIGHTFUNC: {
+		stridx = DUK_STRIDX_UC_FUNCTION;
+		break;
+	}
+	case DUK_TAG_STRING: {
+		stridx = DUK_STRIDX_UC_STRING;
+		break;
+	}
+	case DUK_TAG_OBJECT: {
+		duk_hobject *h;
+		duk_small_uint_t classnum;
+
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		classnum = DUK_HOBJECT_GET_CLASS_NUMBER(h);
+		stridx = DUK_HOBJECT_CLASS_NUMBER_TO_STRIDX(classnum);
+		break;
+	}
+	case DUK_TAG_BUFFER: {
+		/* XXX: needs a plain buffer fix */
+		stridx = DUK_STRIDX_UC_BUFFER;
+		break;
+	}
+#if defined(DUK_USE_FASTINT)
+	case DUK_TAG_FASTINT:
+		/* Fall through to generic number case. */
+#endif
+	default: {
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));  /* number (maybe fastint) */
+		stridx = DUK_STRIDX_UC_NUMBER;
+		break;
+	}
+	}
+	h_strclass = DUK_HTHREAD_GET_STRING(thr, stridx);
 	DUK_ASSERT(h_strclass != NULL);
 
-	duk_pop(ctx);
-	duk_push_sprintf(ctx, "[object %s]", (const char *) DUK_HSTRING_GET_DATA(h_strclass));
-}
-
-DUK_INTERNAL void duk_push_hobject_class_string(duk_context *ctx, duk_hobject *h) {
-	duk_hthread *thr;
-	duk_hstring *h_strclass;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(h != NULL);
-	thr = (duk_hthread *) ctx;
-	DUK_UNREF(thr);
-
-	h_strclass = DUK_HOBJECT_GET_CLASS_STRING(thr->heap, h);
-	DUK_ASSERT(h_strclass != NULL);
 	duk_push_sprintf(ctx, "[object %s]", (const char *) DUK_HSTRING_GET_DATA(h_strclass));
 }
 
@@ -2839,7 +2862,7 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t idx) {
 	                                       idx,
 	                                       DUK_HOBJECT_FLAG_COMPFUNC |
 	                                       DUK_HOBJECT_FLAG_NATFUNC |
-	                                       DUK_HOBJECT_FLAG_BOUND);
+	                                       DUK_HOBJECT_FLAG_BOUNDFUNC);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t idx) {
@@ -2860,7 +2883,7 @@ DUK_EXTERNAL duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__obj_flag_any_default_false(ctx,
 	                                       idx,
-	                                       DUK_HOBJECT_FLAG_BOUND);
+	                                       DUK_HOBJECT_FLAG_BOUNDFUNC);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t idx) {
@@ -3513,40 +3536,65 @@ DUK_EXTERNAL duk_idx_t duk_push_object(duk_context *ctx) {
 
 DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *obj;
+	duk_uint_t flags;
+	duk_harray *obj;
 	duk_idx_t ret;
+	duk_tval *tv_slot;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	ret = duk_push_object_helper(ctx,
-	                             DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                             DUK_HOBJECT_FLAG_ARRAY_PART |
-	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY),
-	                             DUK_BIDX_ARRAY_PROTOTYPE);
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_ARRAY_PART |
+	        DUK_HOBJECT_FLAG_EXOTIC_ARRAY |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY);
 
-	obj = duk_require_hobject(ctx, ret);
+	obj = duk_harray_alloc(thr->heap, flags);
+	if (!obj) {
+		DUK_ERROR_ALLOC_FAILED(thr);
+	}
 
-	/*
-	 *  An array must have a 'length' property (E5 Section 15.4.5.2).
-	 *  The special array behavior flag must only be enabled once the
-	 *  length property has been added.
-	 *
-	 *  The internal property must be a number (and preferably a
-	 *  fastint if fastint support is enabled).
-	 */
+	/* XXX: since prototype is NULL, could save a check */
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
 
-	duk_push_int(ctx, 0);
-#if defined(DUK_USE_FASTINT)
-	DUK_ASSERT(DUK_TVAL_IS_FASTINT(duk_require_tval(ctx, -1)));
-#endif
+	tv_slot = thr->valstack_top;
+	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
+	DUK_HOBJECT_INCREF(thr, obj);  /* XXX: could preallocate with refcount = 1 */
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	thr->valstack_top++;
 
-	duk_hobject_define_property_internal(thr,
-	                                     obj,
-	                                     DUK_HTHREAD_STRING_LENGTH(thr),
-	                                     DUK_PROPDESC_FLAGS_W);
-	DUK_HOBJECT_SET_EXOTIC_ARRAY(obj);
-
+	DUK_ASSERT(obj->length == 0);  /* Array .length starts at zero. */
 	return ret;
+}
+
+DUK_INTERNAL duk_harray *duk_push_harray(duk_context *ctx) {
+	/* XXX: API call could do this directly, cast to void in API macro. */
+	duk_hthread *thr;
+	duk_harray *a;
+
+	thr = (duk_hthread *) ctx;
+	(void) duk_push_array(ctx);
+	DUK_ASSERT(DUK_TVAL_IS_OBJECT(thr->valstack_top - 1));
+	a = (duk_harray *) DUK_TVAL_GET_OBJECT(thr->valstack_top - 1);
+	DUK_ASSERT(a != NULL);
+	return a;
+}
+
+/* Push a duk_harray with preallocated size (.length also set to match size).
+ * Caller may then populate array part of the duk_harray directly.
+ */
+DUK_INTERNAL duk_harray *duk_push_harray_with_size(duk_context *ctx, duk_uint32_t size) {
+	duk_harray *a;
+
+	a = duk_push_harray(ctx);
+
+	duk_hobject_realloc_props((duk_hthread *) ctx,
+	                          (duk_hobject *) a,
+	                          0,
+	                          size,
+	                          0,
+	                          0);
+	a->length = size;
+	return a;
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
@@ -3601,6 +3649,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	}
 
 	/* default prototype (Note: 'obj' must be reachable) */
+	/* XXX: since prototype is NULL, could save a check */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	/* Initial stack size satisfies the stack spare constraints so there
@@ -4230,6 +4279,72 @@ DUK_EXTERNAL void duk_pop_3(duk_context *ctx) {
 }
 
 /*
+ *  Pack and unpack (pack value stack entries into an array and vice versa)
+ */
+
+/* XXX: pack index range? array index offset? */
+DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
+	duk_hthread *thr;
+	duk_harray *a;
+	duk_tval *tv_src;
+	duk_tval *tv_dst;
+	duk_tval *tv_curr;
+	duk_tval *tv_limit;
+	duk_idx_t top;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+
+	top = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	if (count > top) {
+		DUK_ERROR_RANGE_INVALID_COUNT(thr);
+	}
+
+	a = duk_push_harray_with_size(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
+	DUK_ASSERT(a != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE((duk_hobject *) a) == (duk_uint32_t) count);
+	DUK_ASSERT(count == 0 || DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a) != NULL);
+	a->length = count;
+
+	/* Copy value stack values directly to the array part without
+	 * any refcount updates: net refcount changes are zero.
+	 */
+
+	tv_src = thr->valstack_top - count - 1;
+	tv_dst = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
+	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
+
+	/* Overwrite result array to final value stack location and wipe
+	 * the rest; no refcount operations needed.
+	 */
+
+	tv_dst = tv_src;  /* when count == 0, same as tv_src (OK) */
+	tv_src = thr->valstack_top - 1;
+	DUK_TVAL_SET_TVAL(tv_dst, tv_src);
+
+	tv_curr = tv_dst + 1;
+	tv_limit = thr->valstack_top;
+	while (tv_curr != tv_limit) {
+		/* Wipe policy: keep as 'undefined'. */
+		DUK_TVAL_SET_UNDEFINED(tv_curr);
+		tv_curr++;
+	}
+	thr->valstack_top = tv_dst + 1;
+}
+
+#if 0
+/* XXX: unpack to position? */
+DUK_EXTERNAL void duk_unpack(duk_context *ctx) {
+	/* - dense with length <= a_part
+	 * - dense with length > a_part
+	 * - sparse
+	 * - array-like but not actually an array?
+	 * - how to deal with 'unused' values (gaps); inherit or ignore?
+	 */
+}
+#endif
+
+/*
  *  Error throwing
  */
 
@@ -4569,7 +4684,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 					return duk_push_string_tval_readable(ctx, tv);
 				}
 			}
-			duk_push_hobject_class_string(ctx, h);
+			duk_push_class_string_tval(ctx, tv);
 			break;
 		}
 		case DUK_TAG_BUFFER: {

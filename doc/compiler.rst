@@ -1303,7 +1303,7 @@ Statement types generating an empty value indirectly:
 Some examples:
 
 +--------------------+-------------+-------------------------------------------------------------------------+
-| Eval argument      | Eval result | Notes                                                                   |
+| Eval argument      | Eval result | Notes                                                                   |
 +====================+=============+=========================================================================+
 | "1+2;"             | 3           | Normal case, expression statement generates implicit return value.      |
 +--------------------+-------------+-------------------------------------------------------------------------+
@@ -1690,7 +1690,7 @@ ReferenceError at runtime.
 A valid left-hand-side expression (such as an identifier) may also be
 wrapped in one or more parentheses (i.e., an arbitrary number of tokens)::
 
-  for ( (((i))) in [ 'foo', 'bar' ] ) { }
+  for ( (((i))) in [ 'foo', 'bar' ] ) { }
   print(i);
 
   // -> prints 1

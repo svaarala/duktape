@@ -385,7 +385,7 @@ advantage of its non-mutability).  The requirement is stated in a
 footnote in E5 Section 8.6.2:
 
   NOTE This specification defines no ECMAScript language operators or
-  built-in functions that permit a program to modify an object’s
+  built-in functions that permit a program to modify an object's
   ``[[Class]]`` or ``[[Prototype]]`` internal properties or to change
   the value of [[Extensible]] from false to true.
 

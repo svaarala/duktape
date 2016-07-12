@@ -1146,6 +1146,15 @@ codepolicycheck:
 		src/*.c src/*.h src/*.h.in tests/api/*.c
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--check-fixme \
+		--check-non-ascii \
+		--check-trailing-whitespace \
+		--check-mixed-indent \
+		--dump-vim-commands \
+		src/*.py
+	@$(PYTHON) util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
 		--check-carriage-returns \
 		--check-fixme \
@@ -1210,6 +1219,11 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		website/api/*.yaml website/api/*.html
+	@$(PYTHON) util/check_code_policy.py \
+		$(CODEPOLICYOPTS) \
+		--check-carriage-returns \
+		--dump-vim-commands \
+		doc/*.rst
 
 .PHONY: codepolicycheckvim
 codepolicycheckvim:

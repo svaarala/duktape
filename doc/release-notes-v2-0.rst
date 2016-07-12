@@ -428,6 +428,19 @@ To upgrade:
   - Convert debug level options from ``DUK_USE_{D,DD,DDD}PRINT`` to the
     equivalent ``DUK_USE_DEBUG_LEVEL`` (0, 1, or 2).
 
+Other debugger changes
+----------------------
+
+* Artificial properties renamed for consistency with internal renaming:
+
+  - ``compiledfunction`` -> ``compfunc``
+
+  - ``nativefunction`` -> ``natfunc``
+
+  - ``bufferobject`` -> ``bufobj``
+
+  - ``bound`` -> ``boundfunc``
+
 Fatal error and panic handling reworked
 ---------------------------------------
 

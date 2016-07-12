@@ -31,6 +31,9 @@ Apparently the behavior relied on is roughly:
 * The properties of the object itself are enumerated first, followed by
   its prototype's properties, and so on
 
+ES6 has specific enumeration requirements which aren't yet implemented
+by Duktape (as of version 2.0).
+
 Specification (E5)
 ==================
 
@@ -269,4 +272,3 @@ Test 4 shows that 'length' is not exotic for an object which has an
 array as a prototype.  Exotic semantics of 'length' do not apply to
 the object because the property write goes to the object, which is not
 an array.  This also explains the result of test 3.
-

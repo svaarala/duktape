@@ -69,7 +69,13 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
 
-	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
+	/* XXX: rearrange bits to allow a switch case to be used here? */
+	/* XXX: add a fast path for objects (and arrays)? */
+	if (DUK_HOBJECT_IS_ARRAY(h)) {
+		duk_harray *a = (duk_harray *) h;
+		/* No special marking. */
+		(void) a;
+	} else if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
 		duk_hobject **fn, **fn_end;

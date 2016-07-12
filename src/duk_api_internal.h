@@ -95,8 +95,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx);
 #endif
-DUK_INTERNAL_DECL void duk_to_object_class_string_top(duk_context *ctx);
-DUK_INTERNAL_DECL void duk_push_hobject_class_string(duk_context *ctx, duk_hobject *h);
+DUK_INTERNAL_DECL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv);
 
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped_raw(duk_context *ctx, duk_idx_t idx, duk_int_t minval, duk_int_t maxval, duk_bool_t *out_clamped);  /* out_clamped=NULL, RangeError if outside range */
 DUK_INTERNAL_DECL duk_int_t duk_to_int_clamped(duk_context *ctx, duk_idx_t idx, duk_int_t minval, duk_int_t maxval);
@@ -135,6 +134,9 @@ DUK_INTERNAL_DECL duk_idx_t duk_push_compiledfunction(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);
 DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);
 
+DUK_INTERNAL_DECL duk_harray *duk_push_harray(duk_context *ctx);
+DUK_INTERNAL_DECL duk_harray *duk_push_harray_with_size(duk_context *ctx, duk_uint32_t size);
+
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
@@ -169,6 +171,11 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t 
 
 /* Set object 'length'. */
 DUK_INTERNAL_DECL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t length);
+
+DUK_EXTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
+#if 0
+DUK_EXTERNAL_DECL void duk_unpack(duk_context *ctx);
+#endif
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

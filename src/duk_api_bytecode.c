@@ -442,7 +442,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 	/* assert just a few critical flags */
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h_fun) == DUK_HTYPE_OBJECT);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&h_fun->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&h_fun->obj));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&h_fun->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&h_fun->obj));
@@ -650,7 +650,7 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	 */
 	func = duk_require_hcompfunc(ctx, -1);
 	DUK_ASSERT(func != NULL);
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUND(&func->obj));
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&func->obj));
 
 	/* Estimating the result size beforehand would be costly, so
 	 * start with a reasonable size and extend as needed.

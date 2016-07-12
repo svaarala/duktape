@@ -12,6 +12,10 @@ summary: |
   an Ecmascript Function object.  If there is no current function,
   <code>undefined</code> is pushed instead.</p>
 
+  <p>If the current function was called via one or more bound functions or a
+  Proxy object, the function returned from this call is the final, resolved
+  function (not the bound function or the Proxy).</p>
+
   <p>This function allows a C function to gain access to its function object.
   Since multiple function objects can internally point to the same C function,
   a function object is a convenient place for function parameterization and

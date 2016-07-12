@@ -437,8 +437,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		if (DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__constructable:true");
 		}
-		if (DUK_HOBJECT_HAS_BOUND(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__bound:true");
+		if (DUK_HOBJECT_HAS_BOUNDFUNC(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__boundfunc:true");
 		}
 		if (DUK_HOBJECT_HAS_COMPFUNC(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__compfunc:true");
@@ -489,7 +489,12 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_proxyobj:true");
 		}
 	}
-	if (st->internal && DUK_HOBJECT_IS_COMPFUNC(h)) {
+
+	if (st->internal && DUK_HOBJECT_IS_ARRAY(h)) {
+		duk_harray *a = (duk_harray *) h;
+		DUK__COMMA(); duk_fb_sprintf(fb, "__length:%ld", (long) a->length);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__length_nonwritable:%ld", (long) a->length_nonwritable);
+	} else if (st->internal && DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		DUK__COMMA(); duk_fb_put_cstring(fb, "__data:");
 		duk__print_hbuffer(st, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(NULL, f));
