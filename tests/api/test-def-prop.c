@@ -167,7 +167,7 @@ final top: 1
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-==> rc=1, result='TypeError: array length write failed'
+==> rc=1, result='TypeError: not configurable'
 *** test_force_array_smaller (duk_safe_call)
 "length" {value:4,writable:true,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
@@ -185,7 +185,7 @@ final top: 1
 "1" {value:"bar",writable:true,enumerable:true,configurable:true} no-getter no-setter
 "2" {value:"quux",writable:true,enumerable:true,configurable:false} no-getter no-setter
 "3" {value:"baz",writable:true,enumerable:true,configurable:true} no-getter no-setter
-==> rc=1, result='TypeError: array length non-writable'
+==> rc=1, result='TypeError: not configurable'
 *** test_force_array_smaller_nonwritablelength (duk_safe_call)
 "length" {value:4,writable:false,enumerable:false,configurable:false} no-getter no-setter
 "0" {value:"foo",writable:true,enumerable:true,configurable:true} no-getter no-setter
