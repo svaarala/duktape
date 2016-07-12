@@ -1657,6 +1657,11 @@ Planned
 * Incompatible change: add a "ctx" argument to the debugger detached_cb to
   allow easier reattachment in detached callback (GH-758, GH-853)
 
+* Incompatible change: debugger inspection of array objects no longer sees a
+  concrete .length property for arrays because of internal duk_harray type
+  related changes; instead, an artificial property "length" is available via
+  GetHeapObjInfo (GH-703, GH-856)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
