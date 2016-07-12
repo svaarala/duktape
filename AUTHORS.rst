@@ -33,6 +33,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * \D. Bohdan (https://github.com/dbohdan)
 * Ondřej Jirman (https://github.com/megous)
 * Saúl Ibarra Corretgé <saghul@gmail.com>
+* Jeremy HU <huxingyi@msn.com>
 
 Other contributions
 ===================
