@@ -2925,25 +2925,56 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *o
  *  Used by duk_hobject_putprop().
  */
 
-DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
+/* Coerce a new .length candidate to a number and check that it's a valid
+ * .length.
+ */
+DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr, duk_tval *tv) {
 	duk_uint32_t res;
 	duk_double_t d;
 
-	/* Input value should be on stack top and will be coerced and
-	 * popped.  Refuse to update an Array's 'length' to a value
-	 * outside the 32-bit range.  Negative zero is accepted as zero.
+#if !defined(DUK_USE_PREFER_SIZE)
+#if defined(DUK_USE_FASTINT)
+	/* When fastints are enabled, the most interesting case is assigning
+	 * a fastint to .length (e.g. arr.length = 0).
 	 */
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		/* Very common case. */
+		duk_int64_t fi;
+		fi = DUK_TVAL_GET_FASTINT(tv);
+		if (fi < 0 || fi > 0xffffffffLL) {
+			goto fail_range;
+		}
+		return (duk_uint32_t) fi;
+	}
+#else  /* DUK_USE_FASTINT */
+	/* When fastints are not enabled, the most interesting case is any
+	 * number.
+	 */
+	if (DUK_TVAL_IS_DOUBLE(tv)) {
+		d = DUK_TVAL_GET_NUMBER(tv);
+	}
+#endif  /* DUK_USE_FASTINT */
+	else
+#endif  /* !DUK_USE_PREFER_SIZE */
+	{
+		/* In all other cases, and when doing a size optimized build,
+		 * fall back to the comprehensive handler.
+		 */
+		d = duk_js_tonumber(thr, tv);
+	}
 
-	/* XXX: fastint; avoid value stack! */
-
-	d = duk_to_number(ctx, -1);
+	/* Refuse to update an Array's 'length' to a value outside the
+	 * 32-bit range.  Negative zero is accepted as zero.
+	 */
 	res = (duk_uint32_t) d;
 	if ((duk_double_t) res != d) {
-		DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARRAY_LENGTH);
+		goto fail_range;
 	}
-	duk_pop(ctx);
+
 	return res;
+
+ fail_range:
+	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARRAY_LENGTH);
 }
 
 /* Delete elements required by a smaller length, taking into account
@@ -3170,8 +3201,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	 */
 
 	old_len = a->length;
-	duk_dup(ctx, -1);  /* [in_val in_val] */
-	new_len = duk__to_new_array_length_checked(thr);  /* -> [in_val] */
+	new_len = duk__to_new_array_length_checked(thr, DUK_GET_TVAL_NEGIDX(ctx, -1));
 	DUK_DDD(DUK_DDDPRINT("old_len=%ld, new_len=%ld", (long) old_len, (long) new_len));
 
 	/*
@@ -4572,11 +4602,11 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 				duk_uint32_t prev_len;
 				prev_len = ((duk_harray *) obj)->length;
 #endif
-				new_len = duk__to_new_array_length_checked(thr);  /* pops length */
+				new_len = duk__to_new_array_length_checked(thr, DUK_GET_TVAL_NEGIDX(ctx, -1));
 				((duk_harray *) obj)->length = new_len;
 				DUK_D(DUK_DPRINT("internal define property for array .length: %ld -> %ld",
 				                 (long) prev_len, (long) ((duk_harray *) obj)->length));
-				goto no_pop_exit;
+				goto pop_exit;
 			}
 			DUK_DD(DUK_DDPRINT("property already exists but is virtual -> failure"));
 			goto error_virtual;
@@ -4622,7 +4652,6 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 
  pop_exit:
 	duk_pop(ctx);  /* remove in_val */
- no_pop_exit:
 	return;
 
  error_virtual:  /* share error message */
@@ -5124,8 +5153,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		arrlen_old_len = a->length;
 
 		DUK_ASSERT(idx_value >= 0);
-		duk_dup(ctx, idx_value);
-		arrlen_new_len = duk__to_new_array_length_checked(thr);
+		arrlen_new_len = duk__to_new_array_length_checked(thr, DUK_GET_TVAL_POSIDX(ctx, idx_value));
 		duk_push_u32(ctx, arrlen_new_len);
 		duk_replace(ctx, idx_value);  /* step 3.e: replace 'Desc.[[Value]]' */
 

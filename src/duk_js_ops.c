@@ -213,7 +213,8 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		/* recursive call for a primitive value (guaranteed not to cause second
 		 * recursion).
 		 */
-		d = duk_js_tonumber(thr, duk_require_tval(ctx, -1));
+		DUK_ASSERT(duk_get_tval(ctx, -1) != NULL);
+		d = duk_js_tonumber(thr, duk_get_tval(ctx, -1));
 
 		duk_pop(ctx);
 		return d;
