@@ -4283,7 +4283,7 @@ DUK_EXTERNAL void duk_pop_3(duk_context *ctx) {
  */
 
 /* XXX: pack index range? array index offset? */
-DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
+DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	duk_hthread *thr;
 	duk_harray *a;
 	duk_tval *tv_src;
@@ -4296,15 +4296,23 @@ DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	thr = (duk_hthread *) ctx;
 
 	top = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
-	if (count > top) {
+	if (count < 0 || count > top) {
 		DUK_ERROR_RANGE_INVALID_COUNT(thr);
+		return;
 	}
+
+	/* Wrapping is controlled by the check above: value stack top can be
+	 * at most thr->valstack_max which is low enough so that multiplying
+	 * with sizeof(duk_tval) won't wrap.
+	 */
+	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) thr->valstack_max);
+	DUK_ASSERT((duk_size_t) count <= DUK_SIZE_MAX / sizeof(duk_tval));  /* no wrapping */
 
 	a = duk_push_harray_with_size(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
 	DUK_ASSERT(a != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE((duk_hobject *) a) == (duk_uint32_t) count);
 	DUK_ASSERT(count == 0 || DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a) != NULL);
-	a->length = count;
+	DUK_ASSERT((duk_idx_t) a->length == count);
 
 	/* Copy value stack values directly to the array part without
 	 * any refcount updates: net refcount changes are zero.
@@ -4312,7 +4320,7 @@ DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 
 	tv_src = thr->valstack_top - count - 1;
 	tv_dst = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
-	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
+	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
 
 	/* Overwrite result array to final value stack location and wipe
 	 * the rest; no refcount operations needed.
@@ -4322,6 +4330,7 @@ DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	tv_src = thr->valstack_top - 1;
 	DUK_TVAL_SET_TVAL(tv_dst, tv_src);
 
+	/* XXX: internal helper to wipe a value stack segment? */
 	tv_curr = tv_dst + 1;
 	tv_limit = thr->valstack_top;
 	while (tv_curr != tv_limit) {
@@ -4334,7 +4343,7 @@ DUK_EXTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 
 #if 0
 /* XXX: unpack to position? */
-DUK_EXTERNAL void duk_unpack(duk_context *ctx) {
+DUK_INTERNAL void duk_unpack(duk_context *ctx) {
 	/* - dense with length <= a_part
 	 * - dense with length > a_part
 	 * - sparse

@@ -187,7 +187,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	 * the _Tracedata values into the array part.
 	 */
 	depth = DUK_USE_TRACEBACK_DEPTH;
-	arr_size = (thr_callstack->callstack_top <= depth ? thr_callstack->callstack_top : depth) * 2;
+	arr_size = (duk_int_t) (thr_callstack->callstack_top <= depth ? thr_callstack->callstack_top : depth) * 2;
 	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
 		arr_size += 2;
 	}

@@ -128,7 +128,7 @@ array .length property descriptor test
 defineProperty
 5 [1,2,3,4,5]
 5 [1,2,3,4,5]
-TypeError: array length non-writable
+TypeError: not configurable
 TypeError: not configurable
 TypeError: not configurable
 TypeError: not configurable
@@ -411,7 +411,7 @@ function arrayMiscTest() {
     print(arr.length);
 
     // Creating an Array with a huge count creates a dense array
-    // but with no preallocated array part.
+    // with a partial preallocated array part (64 elements in 2.0).
     arr = new Array(1e9);
     print(arr.length);
 }

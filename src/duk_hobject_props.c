@@ -3157,7 +3157,7 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
 	 */
 
 	if (new_len >= old_len) {
-		DUK_DDD(DUK_DDDPRINT("new length is higher than old length, just update length, no deletions"));
+		DUK_DDD(DUK_DDDPRINT("new length is same or higher than old length, just update length, no deletions"));
 		a->length = new_len;
 		return 1;
 	}
@@ -3983,12 +3983,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	 */
 
 	if (new_array_length > 0) {
-		/*
-		 *  Note: zero works as a "no update" marker because the new length
-		 *  can never be zero after a new property is written.
-		 *
-		 *  Note: must re-lookup because calls above (e.g. duk__alloc_entry_checked())
-		 *  may realloc and compact properties and hence change e_idx.
+		/* Note: zero works as a "no update" marker because the new length
+		 * can never be zero after a new property is written.
 		 */
 
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(orig));
@@ -4098,9 +4094,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 #endif
 
  fail_array_length_partial:
-	DUK_DDD(DUK_DDDPRINT("result: error, array length write only partially successful"));
+	DUK_DD(DUK_DDPRINT("result: error, array length write only partially successful"));
 	if (throw_flag) {
-		DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
 	duk_pop(ctx);  /* remove key */
 	return 0;
@@ -4169,6 +4165,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 		/* Currently there are no deletable virtual properties, but
 		 * with force_flag we might attempt to delete one.
 		 */
+		DUK_DD(DUK_DDPRINT("delete failed: property found, force flag, but virtual (and implicitly non-configurable)"));
 		goto fail_virtual;
 	}
 
@@ -4261,14 +4258,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 	DUK_DDD(DUK_DDDPRINT("delete successful"));
 	return 1;
 
- fail_virtual:
-	DUK_DDD(DUK_DDDPRINT("delete failed: property found, force flag, but virtual"));
-
-	if (throw_flag) {
-		DUK_ERROR_TYPE(thr, DUK_STR_PROPERTY_IS_VIRTUAL);
-	}
-	return 0;
-
+ fail_virtual:  /* just use the same "not configurable" error message */
  fail_not_configurable:
 	DUK_DDD(DUK_DDDPRINT("delete failed: property found, not configurable"));
 
@@ -4556,7 +4546,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
 				                 (long) prev_len, (long) ((duk_harray *) obj)->length));
 				goto no_pop_exit;
 			}
-			DUK_DDD(DUK_DDDPRINT("property already exists but is virtual -> failure"));
+			DUK_DD(DUK_DDPRINT("property already exists but is virtual -> failure"));
 			goto error_virtual;
 		}
 
@@ -4603,12 +4593,9 @@ DUK_INTERNAL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hob
  no_pop_exit:
 	return;
 
+ error_virtual:  /* share error message */
  error_internal:
 	DUK_ERROR_INTERNAL(thr);
-	return;
-
- error_virtual:
-	DUK_ERROR_TYPE(thr, DUK_STR_REDEFINE_VIRT_PROP);
 	return;
 }
 
@@ -5122,7 +5109,10 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 		/* XXX: consolidated algorithm step 15.f -> redundant? */
 		if (DUK_HARRAY_LENGTH_NONWRITABLE(a) && !force_flag) {
-			goto fail_not_writable_array_length;
+			/* Array .length is always non-configurable; if it's also
+			 * non-writable, don't allow it to be written.
+			 */
+			goto fail_not_configurable;
 		}
 
 		/* steps 3.h and 3.i */
@@ -5151,8 +5141,11 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 			                     (long) arr_idx, (long) old_len));
 
 			if (DUK_HARRAY_LENGTH_NONWRITABLE(a) && !force_flag) {
-				/* With force flag allow writing. */
-				goto fail_not_writable_array_length;
+				/* Array .length is always non-configurable, so
+				 * if it's also non-writable, don't allow a value
+				 * write.  With force flag allow writing.
+				 */
+				goto fail_not_configurable;
 			}
 
 			/* actual update happens once write has been completed without
@@ -5650,7 +5643,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr) && DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
 			duk_harray *a;
 			a = (duk_harray *) obj;
-			DUK_D(DUK_DPRINT("Object.defineProperty() attribute update for duk_harray .length -> %02lx", (unsigned long) new_flags));
+			DUK_DD(DUK_DDPRINT("Object.defineProperty() attribute update for duk_harray .length -> %02lx", (unsigned long) new_flags));
 			DUK_ASSERT_HARRAY_VALID(a);
 			if ((new_flags & DUK_PROPDESC_FLAGS_EC) != (curr.flags & DUK_PROPDESC_FLAGS_EC)) {
 				DUK_D(DUK_DPRINT("Object.defineProperty() attempt to change virtual array .length enumerable or configurable attribute, fail"));
@@ -5712,14 +5705,14 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		} else {
 			DUK_ASSERT(curr.a_idx < 0);  /* array part case handled comprehensively previously */
 
-			DUK_D(DUK_DPRINT("Object.defineProperty(), value update for virtual property"));
+			DUK_DD(DUK_DDPRINT("Object.defineProperty(), value update for virtual property"));
 			/* XXX: Uint8Array and other typed array virtual writes not currently
 			 * handled.
 			 */
 			if (key == DUK_HTHREAD_STRING_LENGTH(thr) && DUK_HOBJECT_HAS_EXOTIC_ARRAY(obj)) {
 				duk_harray *a;
 				a = (duk_harray *) obj;
-				DUK_D(DUK_DPRINT("Object.defineProperty() value update for duk_harray .length -> %ld", (long) arrlen_new_len));
+				DUK_DD(DUK_DDPRINT("Object.defineProperty() value update for duk_harray .length -> %ld", (long) arrlen_new_len));
 				DUK_ASSERT_HARRAY_VALID(a);
 				a->length = arrlen_new_len;
 			} else {
@@ -5794,7 +5787,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			/* XXX: shrink array allocation or entries compaction here? */
 			if (!rc) {
-				goto fail_array_length_partial;
+				DUK_DD(DUK_DDPRINT("array length write only partially successful"));
+				goto fail_not_configurable;
 			}
 		}
 	} else if (arr_idx != DUK__NO_ARRAY_INDEX && DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj)) {
@@ -5859,24 +5853,13 @@ void duk_hobject_define_property_helper(duk_context *ctx,
  success_no_exotics:
 	return;
 
- fail_virtual:
-	DUK_ERROR_TYPE(thr, DUK_STR_PROPERTY_IS_VIRTUAL);
-	return;
-
- fail_not_writable_array_length:
-	DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_NOT_WRITABLE);
-	return;
-
  fail_not_extensible:
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
 	return;
 
+ fail_virtual:  /* just use the same "not configurable" error message" */
  fail_not_configurable:
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
-	return;
-
- fail_array_length_partial:
-	DUK_ERROR_TYPE(thr, DUK_STR_ARRAY_LENGTH_WRITE_FAILED);
 	return;
 }
 

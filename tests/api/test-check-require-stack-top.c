@@ -1,6 +1,6 @@
 /*===
 *** test_1 (duk_safe_call)
-==> rc=1, result='RangeError: attempt to push beyond allocated stack'
+==> rc=1, result='RangeError: cannot push beyond allocated stack'
 *** check_1 (duk_safe_call)
 rc=1
 final top: 1000

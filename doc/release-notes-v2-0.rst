@@ -428,6 +428,23 @@ To upgrade:
   - Convert debug level options from ``DUK_USE_{D,DD,DDD}PRINT`` to the
     equivalent ``DUK_USE_DEBUG_LEVEL`` (0, 1, or 2).
 
+Internal duk_harray affects debugger array inspection
+-----------------------------------------------------
+
+Duktape 2.x introduces an internal ``duk_harray`` type to represent arrays.
+The array ``.length`` property is no longer stored in the property table of
+the array but is a C struct field in ``duk_harray`` and the property visible
+to Ecmascript code is virtual.
+
+As a result, array ``.length`` is not visible when inspecting ordinary array
+properties using e.g. GetObjPropDesc or GetObjPropDescRange.  Instead, array
+``.length`` is an artificial property ``"length"`` returned by GetHeapObjInfo.
+
+To upgrade:
+
+* If the debug client uses array ``.length`` for e.g. UI purposes, ensure
+  the artificial property ``"length"`` is used instead.
+
 Other debugger changes
 ----------------------
 
