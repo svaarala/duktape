@@ -12,7 +12,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata);
 #else
 static duk_int_t duk__eval_module_source(duk_context *ctx);
 #endif
-static void duk__push_module_object(duk_context *ctx, const char *id);
+static void duk__push_module_object(duk_context *ctx, const char *id, duk_bool_t main);
 
 static duk_bool_t duk__get_cached_module(duk_context *ctx, const char *id) {
 	duk_push_global_stash(ctx);
@@ -133,7 +133,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 		duk_pop(ctx);
 	} else {
 		duk__del_cached_module(ctx, id);
-		duk_error(ctx, DUK_ERR_API_ERROR, "invalid module load callback return value");
+		duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid module load callback return value");
 	}
 
 	/* fall through */
@@ -166,7 +166,7 @@ static void duk__push_require_function(duk_context *ctx, const char *id) {
 	duk_pop(ctx);
 }
 
-static void duk__push_module_object(duk_context *ctx, const char *id, int main) {
+static void duk__push_module_object(duk_context *ctx, const char *id, duk_bool_t main) {
 	duk_push_object(ctx);
 
 	/* Set this as the main module, if requested */
@@ -257,7 +257,8 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	return 1;
 }
 
-duk_ret_t duk_module_node_peval_file(duk_context *ctx, const char* path) {
+/* Load a module as the 'main' module. */
+duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *path) {
 	/*
 	 *  Stack: [ ... source ]
 	 */
@@ -268,7 +269,11 @@ duk_ret_t duk_module_node_peval_file(duk_context *ctx, const char* path) {
 	duk_dup(ctx, 0);
 	/* [ ... source module source ] */
 
+#if DUK_VERSION >= 19999
+	return duk_safe_call(ctx, duk__eval_module_source, NULL, 2, 1);
+#else
 	return duk_safe_call(ctx, duk__eval_module_source, 2, 1);
+#endif
 }
 
 void duk_module_node_init(duk_context *ctx) {
@@ -299,13 +304,13 @@ void duk_module_node_init(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "\xff" "modLoad");
 	duk_pop(ctx);
 
-	/* Stash main module */
+	/* Stash main module. */
 	duk_push_global_stash(ctx);
 	duk_push_undefined(ctx);
 	duk_put_prop_string(ctx, -2, "\xff" "mainModule");
 	duk_pop(ctx);
 
-	/* register `require` as a global function */
+	/* register `require` as a global function. */
 	duk_push_global_object(ctx);
 	duk_push_string(ctx, "require");
 	duk__push_require_function(ctx, "");
