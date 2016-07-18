@@ -1996,86 +1996,73 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
-		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+		if (DUK_HOBJECT_IS_BUFOBJ(h) &&
+		    js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_EXT_COMPATIBLE)) {
+			/* With JX/JC a bufferobject gets serialized specially. */
 			duk_hbufobj *h_bufobj;
 			h_bufobj = (duk_hbufobj *) h;
 			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
-
-			/* Conceptually we'd extract the plain underlying buffer
-			 * or its slice and then do a type mask check below to
-			 * see if we should reject it.  Do the mask check here
-			 * instead to avoid making a copy of the buffer slice.
-			 */
-
-			if (js_ctx->mask_for_undefined & DUK_TYPE_MASK_BUFFER) {
-				DUK_DDD(DUK_DDDPRINT("-> bufobj (-> plain buffer) will result in undefined (type mask check)"));
-				goto pop2_undef;
-			}
-			DUK_DDD(DUK_DDDPRINT("-> bufobj won't result in undefined, encode directly"));
 			duk__enc_bufobj(js_ctx, h_bufobj);
 			goto pop2_emitted;
-#else
-			DUK_DDD(DUK_DDDPRINT("no JX/JC support, bufobj/buffer will always result in undefined"));
-			goto pop2_undef;
-#endif
-		} else {
-			c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
-			switch (c) {
-			case DUK_HOBJECT_CLASS_NUMBER: {
-				DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
-				duk_to_number(ctx, -1);
-				/* The coercion potentially invokes user .valueOf() and .toString()
-				 * but can't result in a function value because [[DefaultValue]] would
-				 * reject such a result: test-dev-json-stringify-coercion-1.js.
-				 */
-				DUK_ASSERT(!duk_is_callable(ctx, -1));
-				break;
-			}
-			case DUK_HOBJECT_CLASS_STRING: {
-				DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
-				duk_to_string(ctx, -1);
-				/* Same coercion behavior as for Number. */
-				DUK_ASSERT(!duk_is_callable(ctx, -1));
-				break;
-			}
+		}
+		/* Otherwise bufferobjects get serialized as normal objects. */
+#endif  /* JX || JC */
+		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
+		switch (c) {
+		case DUK_HOBJECT_CLASS_NUMBER: {
+			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
+			duk_to_number(ctx, -1);
+			/* The coercion potentially invokes user .valueOf() and .toString()
+			 * but can't result in a function value because [[DefaultValue]] would
+			 * reject such a result: test-dev-json-stringify-coercion-1.js.
+			 */
+			DUK_ASSERT(!duk_is_callable(ctx, -1));
+			break;
+		}
+		case DUK_HOBJECT_CLASS_STRING: {
+			DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
+			duk_to_string(ctx, -1);
+			/* Same coercion behavior as for Number. */
+			DUK_ASSERT(!duk_is_callable(ctx, -1));
+			break;
+		}
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-			case DUK_HOBJECT_CLASS_POINTER:
+		case DUK_HOBJECT_CLASS_POINTER:
 #endif
-			case DUK_HOBJECT_CLASS_BOOLEAN: {
-				DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
-				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
-				duk_remove(ctx, -2);
-				break;
-			}
-			default: {
-				/* Normal object which doesn't get automatically coerced to a
-				 * primitive value.  Functions are checked for specially.  The
-				 * primitive value coercions for Number, String, Pointer, and
-				 * Boolean can't result in functions so suffices to check here.
-				 */
-				DUK_ASSERT(h != NULL);
-				if (DUK_HOBJECT_IS_CALLABLE(h)) {
+		case DUK_HOBJECT_CLASS_BOOLEAN: {
+			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
+			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+			duk_remove(ctx, -2);
+			break;
+		}
+		default: {
+			/* Normal object which doesn't get automatically coerced to a
+			 * primitive value.  Functions are checked for specially.  The
+			 * primitive value coercions for Number, String, Pointer, and
+			 * Boolean can't result in functions so suffices to check here.
+			 */
+			DUK_ASSERT(h != NULL);
+			if (DUK_HOBJECT_IS_CALLABLE(h)) {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-					if (js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
-					                     DUK_JSON_FLAG_EXT_COMPATIBLE)) {
-						/* We only get here when doing non-standard JSON encoding */
-						DUK_DDD(DUK_DDDPRINT("-> function allowed, serialize to custom format"));
-						DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);
-						DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
-						goto pop2_emitted;
-					} else {
-						DUK_DDD(DUK_DDDPRINT("-> will result in undefined (function)"));
-						goto pop2_undef;
-					}
-#else  /* DUK_USE_JX || DUK_USE_JC */
+				if (js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
+				                     DUK_JSON_FLAG_EXT_COMPATIBLE)) {
+					/* We only get here when doing non-standard JSON encoding */
+					DUK_DDD(DUK_DDDPRINT("-> function allowed, serialize to custom format"));
+					DUK_ASSERT(js_ctx->flag_ext_custom || js_ctx->flag_ext_compatible);
+					DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
+					goto pop2_emitted;
+				} else {
 					DUK_DDD(DUK_DDDPRINT("-> will result in undefined (function)"));
 					goto pop2_undef;
-#endif  /* DUK_USE_JX || DUK_USE_JC */
 				}
+#else  /* DUK_USE_JX || DUK_USE_JC */
+				DUK_DDD(DUK_DDDPRINT("-> will result in undefined (function)"));
+				goto pop2_undef;
+#endif  /* DUK_USE_JX || DUK_USE_JC */
 			}
-			}  /* end switch */
 		}
+		}  /* end switch */
 	}
 
 	/* [ ... key val ] */
@@ -2262,7 +2249,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		duk_tval *tv_val;
 		duk_bool_t emitted = 0;
 		duk_uint32_t c_bit, c_all, c_array, c_unbox, c_undef,
-		             c_func, c_bufobj, c_object;
+		             c_func, c_bufobj, c_object, c_abort;
 
 		/* For objects JSON.stringify() only looks for own, enumerable
 		 * properties which is nice for the fast path here.
@@ -2352,7 +2339,8 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_func = DUK_HOBJECT_CMASK_FUNCTION;
 			c_bufobj = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
 			c_undef = 0;
-			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef);
+			c_abort = 0;
+			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef | c_abort);
 		}
 		else
 #endif
@@ -2365,9 +2353,13 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_func = 0;
 			c_bufobj = 0;
 			c_undef = DUK_HOBJECT_CMASK_FUNCTION |
-			          DUK_HOBJECT_CMASK_POINTER |
-			          DUK_HOBJECT_CMASK_ALL_BUFOBJS;
-			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef);
+			          DUK_HOBJECT_CMASK_POINTER;
+			/* As the fast path doesn't currently properly support
+			 * duk_hbufobj virtual properties, abort fast path if
+			 * we encounter them in plain JSON mode.
+			 */
+			c_abort = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
+			c_object = c_all & ~(c_array | c_unbox | c_func | c_bufobj | c_undef | c_abort);
 		}
 
 		c_bit = DUK_HOBJECT_GET_CLASS_MASK(obj);
@@ -2428,8 +2420,8 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			}
 
 			/* If any non-Array value had enumerable virtual own
-			 * properties, they should be serialized here.  Standard
-			 * types don't.
+			 * properties, they should be serialized here (actually,
+			 * before the explicit properties).  Standard types don't.
 			 */
 
 			if (emitted) {
@@ -2553,6 +2545,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		} else if (c_bit & c_bufobj) {
 			duk__enc_bufobj(js_ctx, (duk_hbufobj *) obj);
 #endif
+		} else if (c_bit & c_abort) {
+			DUK_DD(DUK_DDPRINT("abort fast path for unsupported type"));
+			goto abort_fastpath;
 		} else {
 			DUK_ASSERT((c_bit & c_undef) != 0);
 

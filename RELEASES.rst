@@ -1593,6 +1593,10 @@ Planned
 2.0.0 (XXXX-XX-XX)
 ------------------
 
+* Incompatible change: ArrayBuffer and plain buffer numeric indices are
+  present but not enumerable, so that they won't be enumerated by for-in,
+  Object.keys(), or JSON (GH-867)
+
 * Incompatible change: add a userdata argument to duk_safe_call() to make it
   easier to pass C pointers to safe functions (GH-277, GH-727)
 
@@ -1720,6 +1724,15 @@ Planned
 * Add an extra module (extras/alloc-pool) providing an improved pool
   allocator which supports runtime resizing of pool counts to specified
   memory target and realloc shrinking (GH-847)
+
+* As a side effect of fixing JSON serialization of buffer objects, JSON
+  fast path is aborted when encountering buffer objects; the fast path
+  doesn't currently handleir buffer object virtual properties correctly
+  so to remain compliant fall back to slow path for now (GH-867)
+
+* Fix buffer object (duk_hbufobj) JSON serialization (bug present in 1.5.0):
+  buffer objects were omitted from serialization when they should be
+  serialized as normal objects instead (GH-867)
 
 * Fix compilation error triggered when using pointer compression and the
   default string table implementation (probe-based rather than chained)

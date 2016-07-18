@@ -50,6 +50,20 @@ DUK_OPT_xxx feature option support removed
 
 FIXME.
 
+Buffer behavior changes
+-----------------------
+
+There are a lot of buffer behavior changes in the 2.x release; see FIXME for
+details.  Here's a summary of changes:
+
+* Plain buffer and ArrayBuffer have numeric indices (e.g. ``arrayBuf[6]``) as
+  before, but the properties are not enumerable so that they won't be e.g.
+  JSON serialized.
+
+* FIXME.
+
+To upgrade, see FIXME.
+
 print() and alert() globals removed
 -----------------------------------
 
