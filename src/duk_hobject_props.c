@@ -1775,8 +1775,13 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 					}
 				}
 				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
-				                  DUK_PROPDESC_FLAG_ENUMERABLE |
 				                  DUK_PROPDESC_FLAG_VIRTUAL;
+				if (DUK_HOBJECT_GET_CLASS_NUMBER(obj) != DUK_HOBJECT_CLASS_ARRAYBUFFER) {
+					/* ArrayBuffer indices are non-standard and are
+					 * non-enumerable to avoid their serialization.
+					 */
+					out_desc->flags |= DUK_PROPDESC_FLAG_ENUMERABLE;
+				}
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
