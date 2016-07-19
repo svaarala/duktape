@@ -1601,11 +1601,11 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		duk_uint_fast32_t val1 = 0;
 		duk_uint_fast32_t val2 = DUK_RE_QUANTIFIER_INFINITE;
 		duk_small_int_t digits = 0;
-#if defined(DUK_USE_ES6_REGEXP_BRACES)
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		duk_lexer_point lex_pt;
 #endif
 
-#if defined(DUK_USE_ES6_REGEXP_BRACES)
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		/* Store lexer position, restoring if quantifier is invalid. */
 		DUK_LEXER_GETPOINT(lex_ctx, &lex_pt);
 #endif
@@ -1667,7 +1667,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		advtok = DUK__ADVTOK(0, DUK_RETOK_QUANTIFIER);
 		break;
  invalid_quantifier:
-#if defined(DUK_USE_ES6_REGEXP_BRACES)
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		/* Failed to match the quantifier, restore lexer and parse
 		 * opening brace as a literal.
 		 */
@@ -1762,7 +1762,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				out_token->num = val;
 			}
 		} else if ((y >= 0 && !duk_unicode_is_identifier_part(y)) ||
-#if defined(DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE)
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		           y == '$' ||
 #endif
 		           y == DUK_UNICODE_CP_ZWNJ ||
@@ -1807,15 +1807,19 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		 *  only the start token ('[' or '[^') is parsed here.  The regexp
 		 *  compiler parses the ranges itself.
 		 */
+
+		/* XXX: with DUK_USE_ES6_REGEXP_SYNTAX we should allow left bracket
+		 * literal too, but it's not easy to parse without backtracking.
+		 */
+
 		advtok = DUK__ADVTOK(1, DUK_RETOK_ATOM_START_CHARCLASS);
 		if (y == '^') {
 			advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_START_CHARCLASS_INVERTED);
 		}
 		break;
 	}
-#if !defined(DUK_USE_ES6_REGEXP_BRACES)
+#if !defined(DUK_USE_ES6_REGEXP_SYNTAX)
 	case '}':
-#endif
 	case ']': {
 		/* Although these could be parsed as PatternCharacters unambiguously (here),
 		 * E5 Section 15.10.1 grammar explicitly forbids these as PatternCharacters.
@@ -1823,6 +1827,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp character");
 		break;
 	}
+#endif
 	case -1: {
 		/* EOF */
 		advtok = DUK__ADVTOK(0, DUK_TOK_EOF);
@@ -2010,7 +2015,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 					DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp escape");
 				}
 			} else if (!duk_unicode_is_identifier_part(x)
-#if defined(DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE)
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 			           || x == '$'
 #endif
 			          ) {
