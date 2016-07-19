@@ -34,6 +34,10 @@
 #        + e: enumerable
 #        + c: configurable
 #        + a: accessor (determined automatically, not necessary to give explicitly)
+#    - autoLightfunc: if true (which is default), function property may be
+#      automatically converted to a lightfunc if other automatic lightfunc
+#      conversion criteria are met; use "autoLightfunc: false" to prevent
+#      lightfunc conversion
 #    - May also have feature tags like "es6: true" to indicate property
 #      is related to a specific standard
 #    - To disable a property without removing its metadata, you can use
@@ -61,6 +65,13 @@
 #    - Pointer:
 #      - type: pointer
 #      - NOTE: not supported yet, type is reserved
+#    - Lightfunc:
+#      - type: lightfunc
+#      - native: native function name
+#      - magic: -128 to 127
+#      - length: 0 to 15
+#      - nargs: 0 to 14; or varargs: true
+#      - varargs: if true, target has variable arguments
 #    - Reference to a built-in object:
 #      - type: object
 #        id: ID string of target object
@@ -315,6 +326,7 @@ objects:
           type: function
           native: duk_bi_global_object_eval
           length: 1
+        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
       - key: "parseInt"
         value:
           type: function
@@ -2267,12 +2279,14 @@ objects:
           native: duk_bi_thread_yield
           length: 2
         duktape: true
+        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
       - key: "resume"
         value:
           type: function
           native: duk_bi_thread_resume
           length: 3
         duktape: true
+        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
       - key: "current"
         value:
           type: function
