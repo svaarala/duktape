@@ -7,4 +7,5 @@ tags:
 description: >
   Enable support for Khronos/ES6 typed arrays and Node.js Buffer objects.
   This adds about 8-9 kB of code footprint on x64.  When disabled, Duktape
-  custom plain buffers and Duktape.Buffer are still supported.
+  custom plain buffers are present and functional, while ArrayBuffer and
+  ArrayBuffer.prototype are present but non-functional.
