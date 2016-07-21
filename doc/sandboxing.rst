@@ -112,9 +112,10 @@ Risky bindings:
   it from sandboxed code.  You can still cherry pick individual functions to
   be exposed directly or through a wrapper.
 
-* ``Duktape.Buffer`` allows creation of buffers and internal keys (through
-  buffer-to-string coercion) and thus provides access to internal properties.
-  See separate section on internal properties.
+* Plain buffer, ``ArrayBuffer``, Node.js ``Buffer``, and other buffer bindings
+  allow creation of buffers and internal keys through buffer-to-string coercion
+  and thus provides access to internal properties.  See separate section on
+  internal properties.
 
 * ``Duktape.dec()`` allows decoding of string data into a buffer value and thus
   provides access to internal properties.
@@ -125,6 +126,9 @@ Risky bindings:
 * ``Duktape.fin()`` provides access to setting and getting a finalizer.  Since
   a finalizer may run in a different thread than where it was created,
   finalizers are a sandboxing risk.
+
+* ``String.fromBuffer()`` and ``Buffer.prototype.toString()`` allow conversion
+  of buffer data directly into a string, potentially creating internal keys.
 
 You should also:
 
@@ -150,7 +154,11 @@ keys and then access internal properties, e.g.::
 
     // With an arbitrary buffer value 'buf' (with length >= 1)
     buf[0] = 0xff;  // create invalid utf-8 prefix
-    var key = String(buf).substring(0, 1) + 'foo';
+    var key = String.fromBuffer(buf).substring(0, 1) + 'foo';
+
+    // Same via Node.js Buffer binding
+    buf[0] = 0xff;
+    var key = Buffer.prototype.toString.call(buf).substring(0, 1) + 'foo';
 
 The risk in being able to access a certain internal property depends on the
 internal property in question.  Some internal properties are non-writable and
@@ -163,7 +171,7 @@ changing its value can lead to a potentially exploitable segfault.
 To prevent access to internal keys:
 
 * Ensure that sandboxed code has no direct access to buffer values, either
-  by creating one using ``Duktape.Buffer`` or through some C binding which
+  by creating one using e.g. ``Buffer`` or through some C binding which
   returns a buffer value in some way.
 
 * Ensure that sandboxed code has minimal access to objects with potentially
@@ -260,7 +268,7 @@ objects which participate in implicit inheritance:
   through explicit construction (if constructors visible) or implicitly
   through internal errors, e.g. ``/foo\123/`` which throws a SyntaxError
 
-* ``Duktape.Buffer.prototype``: through buffer values (if available); since
+* ``ArrayBuffer.prototype``: through buffer values (if available); since
   there is no buffer literal, user cannot construct buffer values directly
 
 * ``Duktape.Pointer.prototype`` through pointer values (if available); since

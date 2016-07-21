@@ -879,9 +879,9 @@ Notes:
   debugger protocol.
 
 * Plain buffer values are represented explicitly, but buffer objects
-  (Duktape.Buffer, Node.js Buffer, ArrayBuffer, DataView, and TypedArray
-  views) are represented as objects.  This means that their contents are
-  not transmitted, only their heap pointer and a class number.
+  (Node.js Buffer, ArrayBuffer, DataView, and TypedArray views) are
+  represented as objects.  This means that their contents are not
+  transmitted, only their heap pointer and a class number.
 
 * The "unused" value is special: it's used internally by Duktape to mark
   unmapped array entries, but is not intended to be used for actual values
