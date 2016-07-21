@@ -2334,33 +2334,48 @@ DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx) {
 	return ret;
 }
 
-/* Convert a plain buffer to a string, using the buffer bytes 1:1 in the
- * internal string representation.  This is necessary in Duktape 2.x because
- * ToString(plainBuffer) no longer creates a string with the same bytes as
- * in the buffer but rather (usually) '[object ArrayBuffer]'.
+/* Convert a plain buffer or any buffer object into a string, using the buffer
+ * bytes 1:1 in the internal string representation.  For views the active byte
+ * slice (not element slice interpreted as an initializer) is used.  This is
+ * necessary in Duktape 2.x because ToString(plainBuffer) no longer creates a
+ * string with the same bytes as in the buffer but rather (usually)
+ * '[object ArrayBuffer]'.
  */
 DUK_EXTERNAL const char *duk_buffer_to_string(duk_context *ctx, duk_idx_t idx) {
-	duk_hthread *thr;
-	duk_hbuffer *h_buf;
-	const char *ret;
+	void *ptr_src;
+	void *ptr_tmp;
+	duk_size_t len;
+	const char *res;
 
-	DUK_ASSERT_CTX_VALID(ctx);
-	thr = (duk_hthread *) ctx;
-	DUK_UNREF(thr);
+	/* Intermediate buffer is needed for safety in obscure corner cases:
+	 * if we were to duk_push_lstring() the argument buffer data directly,
+	 * side effects during the string push might e.g. run a finalizer
+	 * which reconfigured the argument buffer before we copied the data.
+	 * This is rather unfortunate because an extra copy is now made, and
+	 * that copy is almost always unnecessary.
+	 *
+	 *  - Maybe prevent side effects temporarily instead?
+	 *  - Fast path for fixed buffers which can't get side effects like that?
+	 *  - Add an internal string pusher which first does the string table
+	 *    check, and uses a callback to request an up-to-date data pointer
+	 *    when the string space has been allocated but not yet copied?
+	 *  - Add GC flags tweaks into string intern processing
+	 */
 
-	/* XXX: more direct implementation */
 	idx = duk_require_normalize_index(ctx, idx);
-	h_buf = duk_get_hbuffer(ctx, idx);
-	if (h_buf == NULL) {
-		/* XXX: accept more types, e.g. buffer objects? */
-		DUK_ERROR_TYPE_INVALID_ARGS(thr);
-	}
-	DUK_ASSERT(h_buf != NULL);
-	ret = duk_push_lstring(ctx,
-	                       (const char *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_buf),
-	                       (duk_size_t) DUK_HBUFFER_GET_SIZE(h_buf));
+
+	ptr_src = duk_require_buffer_data(ctx, idx, &len);
+	DUK_ASSERT(ptr_src != NULL || len == 0);
+
+	ptr_tmp = duk_push_fixed_buffer(ctx, len);
+	DUK_ASSERT(ptr_tmp != NULL || len == 0);
+
+	DUK_MEMCPY(ptr_tmp, (const void *) ptr_src, len);
+	res = duk_push_lstring(ctx, (const char *) ptr_tmp, len);
 	duk_replace(ctx, idx);
-	return ret;
+	duk_pop(ctx);
+
+	return res;
 }
 
 DUK_EXTERNAL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, duk_uint_t mode) {
@@ -3941,9 +3956,8 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_DUKTAPE_BUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_DATAVIEW */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT8ARRAY,         DUK_BIDX_INT8ARRAY_PROTOTYPE,         DUK_HBUFOBJ_ELEM_INT8,         0, 1),  /* DUK_BUFOBJ_INT8ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_UINT8ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_UINT8ARRAY */
@@ -3956,9 +3970,9 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFOBJ_ELEM_FLOAT64,      3, 1)   /* DUK_BUFOBJ_FLOAT64ARRAY */
 };
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-/* Only allow Duktape.Buffer when support disabled. */
+/* Only allow ArrayBuffer when support disabled. */
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_BUFFER_PROTOTYPE,            DUK_HBUFOBJ_ELEM_UINT8,        0, 0)   /* DUK_BUFOBJ_DUKTAPE_BUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0)  /* DUK_BUFOBJ_ARRAYBUFFER */
 };
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 

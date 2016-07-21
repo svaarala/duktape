@@ -831,6 +831,16 @@ objects:
           length: 1
           varargs: true
 
+      # Convert any buffer to a string, copying bytes 1:1 from the active
+      # buffer slice into the string internal representation.
+      - key: "fromBuffer"
+        value:
+          type: function
+          native: duk_bi_string_frombuffer
+          length: 1
+          varargs: false
+        duktape: true
+
   - id: bi_string_prototype
     class: String
     internal_prototype: bi_object_prototype
@@ -2168,11 +2178,6 @@ objects:
     #   - "env" is added dynamically at runtime.
 
     properties:
-      - key: "Buffer"
-        value:
-          type: object
-          id: bi_buffer_constructor
-        duktape: true
       - key: "Pointer"
         value:
           type: object
@@ -2296,59 +2301,6 @@ objects:
         duktape: true
 
       # toString() and valueOf() are inherited from Object.prototype
-
-  - id: bi_buffer_constructor
-    class: Function
-    internal_prototype: bi_function_prototype
-    varargs: true
-    native: duk_bi_buffer_constructor
-    callable: true
-    constructable: true
-    duktape: true
-
-    properties:
-      - key: "length"
-        value: 1
-        attributes: ""
-        duktape: true
-      - key: "prototype"
-        value:
-          type: object
-          id: bi_buffer_prototype
-        attributes: ""
-        duktape: true
-      - key: "name"
-        value: "Buffer"
-        attributes: ""
-        duktape: true
-
-  - id: bi_buffer_prototype
-    class: Buffer
-    internal_prototype: bi_object_prototype
-    duktape: true
-
-    properties:
-      - key: "constructor"
-        value:
-          type: object
-          id: bi_buffer_constructor
-        attributes: "wc"
-        duktape: true
-
-      - key: "toString"
-        value:
-          type: function
-          native: duk_bi_buffer_prototype_tostring_shared
-          length: 0
-          magic: 1  # magic = to_string
-        duktape: true
-      - key: "valueOf"
-        value:
-          type: function
-          native: duk_bi_buffer_prototype_tostring_shared
-          length: 0
-          magic: 0  # magic = to_string
-        duktape: true
 
   - id: bi_pointer_constructor
     class: Function
@@ -2497,6 +2449,25 @@ objects:
           varargs: false
         typedarray: true
         es6: true
+
+      # Duktape custom: allocate a plain buffer, return value is always a
+      # freshly allocated fixed plain buffer.
+      - key: "allocPlain"
+        value:
+          type: function
+          native: duk_bi_arraybuffer_allocplain
+          length: 1
+          varargs: false
+        duktape: true
+
+      # Get plain buffer underlying a buffer object.
+      - key: "plainOf"
+        value:
+          type: function
+          native: duk_bi_arraybuffer_plainof
+          length: 1
+          varargs: false
+        duktape: true
 
   - id: bi_arraybuffer_prototype
     class: Object
@@ -3962,10 +3933,6 @@ builtins:
   - id: bi_thread_constructor
     duktape: true
   - id: bi_thread_prototype
-    duktape: true
-  - id: bi_buffer_constructor
-    duktape: true
-  - id: bi_buffer_prototype
     duktape: true
   - id: bi_pointer_constructor
     duktape: true

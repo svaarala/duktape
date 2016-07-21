@@ -1312,3 +1312,19 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_context *ctx) 
 	duk_push_int(ctx, (duk_int_t) ret);
 	return 1;
 }
+
+/*
+ *  String.fromBuffer()
+ */
+
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+DUK_INTERNAL duk_ret_t duk_bi_string_frombuffer(duk_context *ctx) {
+	duk_buffer_to_string(ctx, 0);
+	return 1;
+}
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_string_frombuffer(duk_context *ctx) {
+	DUK_UNREF(ctx);
+	return DUK_RET_ERROR;
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
