@@ -1593,6 +1593,11 @@ Planned
 2.0.0 (XXXX-XX-XX)
 ------------------
 
+* Incompatible change: remove Duktape.Buffer custom built-in, ArrayBuffer
+  now serves its place; the following new bindings provide functionality
+  roughly equivalent to Duktape.Buffer: ArrayBuffer.allocPlain(),
+  ArrayBuffer.plainOf(), String.fromBuffer() (GH-875)
+
 * Incompatible change: rework buffer types and their Ecmascript and C API
   behavior: plain buffers now behave like ArrayBuffers and inherit from
   ArrayBuffer.prototype; there are a lot of associated small changes in
