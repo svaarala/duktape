@@ -6,13 +6,15 @@
  *  log lines to write expect strings.
  */
 
+/*@include util-buffer.js@*/
+
 // This test relies on 'duk' being compiled with the external logging
 // framework since Duktape 2.x.  The test should technically be disabled
 // and moved into the test harness of the extras.
 
 function raw_replacement(msg) {
     // Timestamp is non-predictable
-    msg = String(msg);  // arg is a buffer
+    msg = bufferToString(msg);  // arg is a buffer
     msg = msg.replace(/^\S+/, 'TIMESTAMP');
     print(msg);
 }
@@ -463,7 +465,7 @@ function lengthTest() {
     // Replace raw() with something that just prints the result length.
 
     function raw_printlen(msg) {
-        print(String(msg).length);
+        print(bufferToString(msg).length);
     }
     Duktape.Logger.prototype.raw = raw_printlen;
 

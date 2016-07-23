@@ -6,7 +6,7 @@ index 1, type 6 -> 4, result: 123
 index 2, type 6 -> 3, result: true
 ==> rc=0, result='undefined'
 *** test_2 (duk_safe_call)
-==> rc=1, result='TypeError: object required, found 123 (stack index 0)'
+==> rc=1, result='TypeError: unexpected type'
 *** test_3 (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 3'
 *** test_4 (duk_safe_call)

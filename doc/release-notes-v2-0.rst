@@ -53,16 +53,160 @@ FIXME.
 Buffer behavior changes
 -----------------------
 
-There are a lot of buffer behavior changes in the 2.x release; see FIXME for
-details.  Here's a summary of changes:
+There are a lot of buffer behavior changes in the 2.x release; see detailed
+changes below.  Here's a summary of changes:
+
+* Plain buffers now behave like ArrayBuffer instances (to the extent possible)
+  for Ecmascript code.  There are numerous small changes to how plain buffers
+  are treated by standard built-ins as a result.
 
 * Plain buffer and ArrayBuffer have numeric indices (e.g. ``arrayBuf[6]``) as
   before, but the properties are not enumerable so that they won't be e.g.
   JSON serialized.
 
-* FIXME.
+* Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` leaves ``ArrayBuffer`` constructor
+  and ``ArrayBuffer.prototype`` present but non-functional.
 
-To upgrade, see FIXME.
+To upgrade:
+
+* If you're using standard ArrayBuffers and typed arrays, no changes should be
+  necessary.
+
+* If you're using the Node.js Buffer binding, XXX.
+
+* If you're using plain buffers, review their usage especially in Ecmascript
+  code.  See http://wiki.duktape.org/HowtoBuffers.html.
+
+Some detailed changes (see ``tests/ecmascript/test-dev-plain-buffer.js)`` for
+even more detail):
+
+* ``typeof plainBuffer`` is now ``object`` instead of ``buffer``.
+
+- ``plainBuffer instanceof ArrayBuffer`` is true.
+
+* Plain buffer Object.prototype.toString() now usually (assuming no overridden
+  .toString()) yields ``[object ArrayBuffer]`` instead of ``[object Buffer]``.
+
+* Plain buffer inherits from ArrayBuffer.prototype instead of
+  Duktape.Buffer.prototype.
+
+* For a plain buffer ``duk_to_string()`` no longer creates a string with the
+  same underlying bytes, but results in ``[object ArrayBuffer]`` instead
+  (unless ``.toString()`` or ``.valueOf()`` has been overridden); in
+  particular, using a plain buffer as an object property key is misleading
+  as ``obj[buf]`` is (usually) equivalent to ``obj['[object ArrayBuffer]']``.
+  ``duk_to_buffer()`` for a string still results in a plain buffer with the
+  same underlying bytes as before.
+
+* A new ``duk_buffer_to_string()`` API call converts a plain buffer to a string
+  with the same underlying bytes as in the buffer (like ``duk_to_string()`` did
+  in Duktape 1.x).
+
+  * XXX: Buffer object handling.
+
+* ``duk_to_primitive()`` for plain buffer: plain buffer now not considered a
+  primitive value (same as for a full ArrayBuffer object) and usually coerces
+  to the string ``[object ArrayBuffer]``.
+
+* ``duk_is_primitive()`` for a plain buffer is now false to match how
+  ``duk_to_primitive()`` deals with plain buffers (i.e. coerces them rather
+  than returning them as is).
+
+* When a plain buffer is used as the "this" binding of a function call, it is
+  ToObject() coerced to an actual ArrayBuffer if the call target is non-strict.
+  This mimics what happens to e.g. plain strings.  Lightfuncs have also been
+  revised to behave the same way (in Duktape 1.x they would not be ToObject()
+  coerced in this situation).
+
+* ``new ArrayBuffer(plainBuffer)`` no longer creates a new ArrayBuffer with
+  the same underlying plain buffer; instead, the plain buffer gets coerced to
+  zero and creates a zero-length ArrayBuffer.  This matches how an ArrayBuffer
+  argument is handled in ``new ArrayBuffer()``.
+
+- ``new Buffer(plainBuffer)`` no longer special cases plain buffer and gets
+  treated like an ArrayBuffer: a fresh Buffer with matching ``.length`` is
+  created and index elements are copied into the result buffer (in effect
+  making an actual buffer copy).
+
+  * XXX: This will most likely change with Node.js Buffer binding version
+    update, as Node.js Buffer constructor also recognizes ArrayBuffers now.
+
+* ``new Uint32Array(plainBuffer)`` and other typed array constructors coerce
+  the argument plain buffer into an ArrayBuffer instance which is then used
+  as the result ``.buffer``.  The coerced ArrayBuffer shares the same
+  underlying plain buffer (storage).
+
+  * XXX: This may still change.
+
+* ``new DataView(plainBuffer)`` is now accepted (Duktape 1.x would reject with
+  TypeError) and gets treated like for typed arrays: the plain buffer is coerced
+  into an ArrayBuffer with the same underlying plain buffer (storage).
+
+* ``ArrayBuffer.prototype.slice()`` accepts a plain buffer and the resulting slice
+  (which is a copy) is also a plain buffer.  ``typedarray.prototype.subarray()`` and
+  Node.js ``Buffer.prototype.slice()`` create a view into the argument buffer, and
+  because plain buffers cannot represent a view offset/length, these calls yield an
+  ArrayBuffer when the argument is a plain buffer.
+
+* ``plainBuffer.valueOf()`` ordinarily backed by ``Object.prototype.valueOf()``
+  returns `Object(plainBuffer)`, i.e. converts plain buffer to an actual ArrayBuffer.
+  This matches normal ``Object.prototype.valueOf()`` behavior, e.g. plain string is
+  coerced into a String object.
+
+- ``JSON.stringify()`` now recognizes plain buffers like ArrayBuffer instances;
+  the result is typically ``{}`` without a ``.toJSON()`` implementation.
+
+  * XXX: JX/JC treatment may still change.
+
+* ``Object.freeze()`` not allowed for plain buffers or buffer objects (Duktape
+  1.x allowed silently) because array index elements cannot be made non-writable.
+  This is an internal limitation and failing with a TypeError signals this to the
+  caller (and matches how e.g. V8 handles ``Object.freeze(new Uint8Array(4))``).
+
+- Typed array ``.subarray()`` and Node.js Buffer ``.slice()`` result internal
+  prototype is now set to the default prototype of the result type (e.g. initial
+  value of ``Uint8Array.prototype`` if the input is an Uint8Array) rather than
+  being copied from the argument.
+
+* Node.js ``Buffer`` and ``Buffer.prototype`` methods now accept plain buffers.
+
+  * XXX: this (and other buffer mixing) may still change.
+
+Pointer behavior changes
+------------------------
+
+There are very minor changes to pointer value behavior:
+
+* ``plainPointer instanceof Duktape.Pointer`` now evaluates to ``true``
+  (``false`` in Duktape 1.x).
+
+To upgrade:
+
+* If you're using pointer values in Ecmascript code, check pointer handling.
+
+Lightfunc behavior changes
+--------------------------
+
+There are very minor changes to lightfunc value behavior:
+
+* ``duk_is_primitive()`` now returns false for lightfuncs; this is more in
+  line with how lightfuncs behave in Ecmascript ToPrimitive() coercion and
+  matches how plain buffers work in Duktape 2.x.
+
+* ``[[DefaultValue]]`` coercion now considers lightfuncs non-primitive
+  (previously considered primitive and thus accepted as ``[[DefaultValue]]``
+  result).
+
+* When a lightfunc is used as the "this" binding of a function call, it is
+  ToObject() coerced to a full function when the call target is non-strict.
+  Duktape 1.x would not coerce the lightfunc to an object in this situation;
+  the change was made to match plain buffer behavior.  Note that because
+  lightfuncs themselves are considered strict functions, this only happens
+  when the call target is not a lightfunc but the "this" binding is.
+
+To upgrade:
+
+* If you're using lightfuncs, review their handling.
 
 print() and alert() globals removed
 -----------------------------------

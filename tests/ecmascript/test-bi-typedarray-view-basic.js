@@ -2,7 +2,7 @@
  *  Very basic view test.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 basic view test

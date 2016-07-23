@@ -708,8 +708,8 @@ strings:
     duktape: true
 
   # typeof - these produce unfortunate naming conflicts like "Object" vs "object"
-  - str: "buffer"
-    duktape: true
+  #- str: "buffer"   # no longer used in Duktape 2.x for typeof (typeof plainBuffer -> 'object' instead)
+  #  duktape: true
   - str: "pointer"
     duktape: true
 

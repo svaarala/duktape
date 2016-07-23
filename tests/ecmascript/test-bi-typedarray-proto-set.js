@@ -44,7 +44,7 @@
  *  This testcase must cover all of these combinations.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 /*@include util-checksum-string.js@*/
 
 /*---
@@ -103,7 +103,7 @@ function byteCopyTest() {
             //print('v1', v1.length, v1.byteLength, v1.byteOffset);
             //print('v2', v2.length, v2.byteLength, v2.byteOffset);
             v1.set(v2);
-            print(range[0], range[1], printableTypedArray(buf));
+            print(range[0], range[1], printableBuffer(buf));
         } catch (e) {
             print(range[0], range[1], e.name);
         }
@@ -162,7 +162,7 @@ function fastCopyTest() {
             //print('v1', v1.length, v1.byteLength, v1.byteOffset);
             //print('v2', v2.length, v2.byteLength, v2.byteOffset);
             v1.set(v2);
-            print(range[0], range[1], printableTypedArray(buf));
+            print(range[0], range[1], printableBuffer(buf));
         } catch (e) {
             print(range[0], range[1], e.name);
         }
@@ -213,7 +213,7 @@ function slowCopyTest() {
             buf = getFilledBuffer(32);         // [0,32[
             v1 = new Int16Array(buf, 8, 8);    // [8,24[
             v1.set(arraylike);
-            print(arraylike, printableTypedArray(buf));
+            print(arraylike, printableBuffer(buf));
         } catch (e) {
             print(arraylike, e.name);
         }
@@ -339,9 +339,9 @@ function offsetTest() {
                 try {
                     initBuffers();
                     thisValue.set(argValue, offset);
-                    print(idx1, idx2, idx3, offset, printableTypedArray(b1), printableTypedArray(b2));
+                    print(idx1, idx2, idx3, offset, printableBuffer(b1), printableBuffer(b2));
                 } catch (e) {
-                    print(idx1, idx2, idx3, offset, e.name, printableTypedArray(b1), printableTypedArray(b2));
+                    print(idx1, idx2, idx3, offset, e.name, printableBuffer(b1), printableBuffer(b2));
                 }
             });
         });
@@ -523,15 +523,15 @@ function typedArraySetBruteForceTest() {
                         thisValue.set(argValue, offset);
                     }
                     tmp.push('success');
-                    tmp.push(printableTypedArray(b1));
-                    tmp.push(printableTypedArray(b2));
+                    tmp.push(printableBuffer(b1));
+                    tmp.push(printableBuffer(b2));
 
-                    //print(idx1, idx2, idx3, printableTypedArray(b1), printableTypedArray(b2));
+                    //print(idx1, idx2, idx3, printableBuffer(b1), printableBuffer(b2));
                 } catch (e) {
                     tmp.push(e.name);
-                    tmp.push(printableTypedArray(b1));
-                    tmp.push(printableTypedArray(b2));
-                    //print(idx1, idx2, idx3, e.name, printableTypedArray(b1), printableTypedArray(b2));
+                    tmp.push(printableBuffer(b1));
+                    tmp.push(printableBuffer(b2));
+                    //print(idx1, idx2, idx3, e.name, printableBuffer(b1), printableBuffer(b2));
                 }
             });
         });

@@ -1055,7 +1055,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	duk_to_string(ctx, -1);  /* invalidates h_buf pointer */
+	(void) duk_buffer_to_string(ctx, -1);  /* invalidates h_buf pointer */
 	duk_remove(ctx, -2);
 }
 

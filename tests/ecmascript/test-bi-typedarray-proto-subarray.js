@@ -2,7 +2,7 @@
  *  TypedArray subarray() method
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 basic test
@@ -24,14 +24,14 @@ function subarrayBasicTest() {
     for (i = 0; i < 8; i++) {
         v0[i] = 0x10 + i;
     }
-    printTypedArray(b);
+    printBuffer(b);
 
     var v1 = new Uint8Array(b);
-    printTypedArray(v1);
+    printBuffer(v1);
     print(typeof v1.buffer, v1.buffer === b);
 
     var v2 = v1.subarray(3, 5);
-    printTypedArray(v2);
+    printBuffer(v2);
     print(typeof v2.buffer, v2.buffer === b);
 
     v2[0] = 0xde;  // ok, map to b[3]
@@ -39,9 +39,9 @@ function subarrayBasicTest() {
     v2[2] = 0xbe;  // out of subarray, becomes a concrete property on v2
     v2[3] = 0xef;  // out of subarray, becomes a concrete property on v2
 
-    printTypedArray(b);
-    printTypedArray(v1);
-    printTypedArray(v2);
+    printBuffer(b);
+    printBuffer(v1);
+    printBuffer(v2);
 }
 
 try {
@@ -1265,9 +1265,9 @@ function subarrayBruteforceTest() {
                     } else {
                         sub = view.subarray(start, end);
                     }
-                    print(idx1, idx2, idx3, Object.prototype.toString.call(sub), printableTypedArray(sub));
+                    print(idx1, idx2, idx3, Object.prototype.toString.call(sub), printableBuffer(sub));
                 } catch (e) {
-                    print(idx1, idx2, idx3, Object.prototype.toString.call(sub), e.name, printableTypedArray(sub));
+                    print(idx1, idx2, idx3, Object.prototype.toString.call(sub), e.name, printableBuffer(sub));
                 }
             });
         });

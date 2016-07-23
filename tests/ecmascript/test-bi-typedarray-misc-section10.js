@@ -2,7 +2,7 @@
  *  Testcase matching Khronos specification Section 10 example to some extent.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 section 10 example test

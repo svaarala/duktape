@@ -9,14 +9,14 @@
 
 /*===
 index: 0
-json fast: undefined
-json slow: undefined
+json fast: {}
+json slow: {}
 jx fast: |00000000|
 jx slow: |00000000|
 jc fast: {"_buf":"00000000"}
 jc slow: {"_buf":"00000000"}
-json fast: {}
-json slow: {}
+json fast: {"buffer":{}}
+json slow: {"buffer":{}}
 jx fast: {buffer:|00000000|}
 jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}

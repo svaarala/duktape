@@ -15,10 +15,10 @@ index 12 -> type 5, value 'foo'
 index 13 -> type 5, value 'bar'
 index 14 -> type 6, value '[object Object]'
 index 15 -> type 6, value ''
-index 16 -> type 7, value ''
-index 17 -> type 7, value 'foo'
-index 18 -> type 7, value 'foo'
-index 19 -> type 7, value 'bar'
+index 16 -> type 7, value '[object ArrayBuffer]'
+index 17 -> type 7, value '[object ArrayBuffer]'
+index 18 -> type 7, value '[object ArrayBuffer]'
+index 19 -> type 7, value '[object ArrayBuffer]'
 index 20 -> type 8, value 'null'
 index 21 -> type 8, value '0xdeadbeef'
 0 vs. 0 -> equals=1, strict_equals=1
@@ -31,7 +31,6 @@ index 21 -> type 8, value '0xdeadbeef'
 3 vs. 7 -> equals=1, strict_equals=0
 3 vs. 11 -> equals=1, strict_equals=0
 3 vs. 15 -> equals=1, strict_equals=0
-3 vs. 16 -> equals=1, strict_equals=0
 4 vs. 4 -> equals=1, strict_equals=1
 5 vs. 5 -> equals=1, strict_equals=1
 6 vs. 3 -> equals=1, strict_equals=0
@@ -39,13 +38,11 @@ index 21 -> type 8, value '0xdeadbeef'
 6 vs. 7 -> equals=1, strict_equals=1
 6 vs. 11 -> equals=1, strict_equals=0
 6 vs. 15 -> equals=1, strict_equals=0
-6 vs. 16 -> equals=1, strict_equals=0
 7 vs. 3 -> equals=1, strict_equals=0
 7 vs. 6 -> equals=1, strict_equals=1
 7 vs. 7 -> equals=1, strict_equals=1
 7 vs. 11 -> equals=1, strict_equals=0
 7 vs. 15 -> equals=1, strict_equals=0
-7 vs. 16 -> equals=1, strict_equals=0
 8 vs. 8 -> equals=1, strict_equals=1
 9 vs. 9 -> equals=1, strict_equals=1
 11 vs. 3 -> equals=1, strict_equals=0
@@ -53,32 +50,17 @@ index 21 -> type 8, value '0xdeadbeef'
 11 vs. 7 -> equals=1, strict_equals=0
 11 vs. 11 -> equals=1, strict_equals=1
 11 vs. 15 -> equals=1, strict_equals=0
-11 vs. 16 -> equals=1, strict_equals=0
 12 vs. 12 -> equals=1, strict_equals=1
-12 vs. 17 -> equals=1, strict_equals=0
-12 vs. 18 -> equals=1, strict_equals=0
 13 vs. 13 -> equals=1, strict_equals=1
-13 vs. 19 -> equals=1, strict_equals=0
 14 vs. 14 -> equals=1, strict_equals=1
 15 vs. 3 -> equals=1, strict_equals=0
 15 vs. 6 -> equals=1, strict_equals=0
 15 vs. 7 -> equals=1, strict_equals=0
 15 vs. 11 -> equals=1, strict_equals=0
 15 vs. 15 -> equals=1, strict_equals=1
-15 vs. 16 -> equals=1, strict_equals=0
-16 vs. 3 -> equals=1, strict_equals=0
-16 vs. 6 -> equals=1, strict_equals=0
-16 vs. 7 -> equals=1, strict_equals=0
-16 vs. 11 -> equals=1, strict_equals=0
-16 vs. 15 -> equals=1, strict_equals=0
 16 vs. 16 -> equals=1, strict_equals=1
-17 vs. 12 -> equals=1, strict_equals=0
 17 vs. 17 -> equals=1, strict_equals=1
-17 vs. 18 -> equals=1, strict_equals=0
-18 vs. 12 -> equals=1, strict_equals=0
-18 vs. 17 -> equals=1, strict_equals=0
 18 vs. 18 -> equals=1, strict_equals=1
-19 vs. 13 -> equals=1, strict_equals=0
 19 vs. 19 -> equals=1, strict_equals=1
 20 vs. 20 -> equals=1, strict_equals=1
 21 vs. 21 -> equals=1, strict_equals=1

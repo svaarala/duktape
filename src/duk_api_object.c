@@ -367,7 +367,7 @@ DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t f
 		duk_require_type_mask(ctx, idx_base, DUK_TYPE_MASK_UNDEFINED |
 		                                     DUK_TYPE_MASK_OBJECT |
 		                                     DUK_TYPE_MASK_LIGHTFUNC);
-		set = duk_get_hobject_or_lfunc_coerce(ctx, idx_base);
+		set = duk_get_hobject_promote_lfunc(ctx, idx_base);
 		if (set != NULL && !DUK_HOBJECT_IS_CALLABLE(set)) {
 			goto fail_not_callable;
 		}
@@ -379,7 +379,7 @@ DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t f
 		duk_require_type_mask(ctx, idx_base, DUK_TYPE_MASK_UNDEFINED |
 		                                     DUK_TYPE_MASK_OBJECT |
 		                                     DUK_TYPE_MASK_LIGHTFUNC);
-		get = duk_get_hobject_or_lfunc_coerce(ctx, idx_base);
+		get = duk_get_hobject_promote_lfunc(ctx, idx_base);
 		if (get != NULL && !DUK_HOBJECT_IS_CALLABLE(get)) {
 			goto fail_not_callable;
 		}
@@ -448,7 +448,7 @@ DUK_EXTERNAL void duk_enum(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t enum_
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	duk_dup(ctx, obj_idx);
-	duk_require_hobject_or_lfunc_coerce(ctx, -1);
+	duk_require_hobject_promote_mask(ctx, -1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	duk_hobject_enumerator_create(ctx, enum_flags);   /* [target] -> [enum] */
 }
 

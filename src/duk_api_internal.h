@@ -31,6 +31,7 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_get_type_name(duk_context *ctx, duk_idx_t idx);
 #endif
+DUK_INTERNAL_DECL duk_small_uint_t duk_get_class_number(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t idx);
@@ -46,6 +47,8 @@ DUK_INTERNAL_DECL duk_hobject *duk_push_this_coercible_to_object(duk_context *ct
 
 /* duk_push_this() + CheckObjectCoercible() + duk_to_string() */
 DUK_INTERNAL_DECL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx);
+
+DUK_INTERNAL_DECL duk_hstring *duk_push_uint_to_hstring(duk_context *ctx, duk_uint_t i);
 
 /* Get a borrowed duk_tval pointer to the current 'this' binding.  Caller must
  * make sure there's an active callstack entry.  Note that the returned pointer
@@ -80,18 +83,25 @@ DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_get_hcompfunc(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_get_hnatfunc(duk_context *ctx, duk_idx_t idx);
 
+DUK_INTERNAL_DECL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, duk_bool_t throw_flag, duk_bool_t *out_found);
+
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_with_class(duk_context *ctx, duk_idx_t idx, duk_small_uint_t classnum);
 
-#if 0  /* This would be pointless: unexpected type and lightfunc would both return NULL */
-DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_or_lfunc(duk_context *ctx, duk_idx_t idx);
-#endif
-DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_promote_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t type_mask);
+DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_promote_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t type_mask);
+DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_accept_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t type_mask);
+#define duk_require_hobject_promote_lfunc(ctx,idx) \
+	duk_require_hobject_promote_mask((ctx), (idx), DUK_TYPE_MASK_LIGHTFUNC)
+#define duk_get_hobject_promote_lfunc(ctx,idx) \
+	duk_get_hobject_promote_mask((ctx), (idx), DUK_TYPE_MASK_LIGHTFUNC)
 
 #if 0  /*unused*/
 DUK_INTERNAL_DECL void *duk_get_voidptr(duk_context *ctx, duk_idx_t idx);
 #endif
 
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hobject *duk_to_hobject(duk_context *ctx, duk_idx_t idx);
+
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx);
 #endif
@@ -112,9 +122,6 @@ DUK_INTERNAL_DECL duk_hcompfunc *duk_require_hcompfunc(duk_context *ctx, duk_idx
 DUK_INTERNAL_DECL duk_hnatfunc *duk_require_hnatfunc(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_with_class(duk_context *ctx, duk_idx_t idx, duk_small_uint_t classnum);
-
-DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc(duk_context *ctx, duk_idx_t idx);
-DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_or_lfunc_coerce(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL void duk_push_hstring(duk_context *ctx, duk_hstring *h);
 DUK_INTERNAL_DECL void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx);
@@ -138,6 +145,7 @@ DUK_INTERNAL_DECL duk_harray *duk_push_harray(duk_context *ctx);
 DUK_INTERNAL_DECL duk_harray *duk_push_harray_with_size(duk_context *ctx, duk_uint32_t size);
 
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
+DUK_INTERNAL_DECL void duk_push_lightfunc_name_raw(duk_context *ctx, duk_c_function func, duk_small_uint_t lf_flags);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);

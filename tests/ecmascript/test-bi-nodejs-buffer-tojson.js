@@ -10,10 +10,12 @@ object string Buffer object [65,66,67]
 object string Buffer object []
 {"foo":"bar","my_buffer":{"type":"Buffer","data":[241,242,243]}}
 {"foo":"bar","my_buffer":{"type":"Buffer","data":[]}}
+still here
 ===*/
 
 function nodejsBufferToJsonTest() {
     var b, obj, v;
+    var i, j;
 
     // buf.toJSON()
 
@@ -38,6 +40,19 @@ function nodejsBufferToJsonTest() {
     b = new Buffer(0);
     obj = { foo: 'bar', my_buffer: b };
     print(JSON.stringify(obj));
+
+    // Test up to 1MB for memory safety (no output), up to 4096 all byte sizes,
+    // then skipping.
+    var rnd = Math.random;
+    for (i = 0; i < 1024 * 1024; i += (i < 4096 ? 1 : i >> 5)) {
+        //print(i);
+        b = new Buffer(i);
+        for (j = 0; j < i; j++) {
+            b[j] = rnd() * 256;
+        }
+        void b.toJSON();
+    }
+    print('still here');
 }
 
 try {

@@ -3,6 +3,8 @@
  *  Checks both Duktape.errCreate and Duktape.errThrow.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 errCreate
 - no errCreate
@@ -25,7 +27,7 @@ catch: string
 catch: object
 catch: object
 catch: function
-catch: buffer
+catch: object
 catch: pointer
 catch: object
 catch: object
@@ -289,8 +291,8 @@ errThrow: object false undefined
 catch: object
 errThrow: function
 catch: function
-errThrow: buffer
-catch: buffer
+errThrow: object
+catch: object
 errThrow: pointer
 catch: pointer
 errThrow: object false undefined
@@ -399,6 +401,7 @@ function errThrowTest() {
     print('- errThrow gets all value types');
     Duktape.errThrow = function (err) {
         if (err === null) { print('errThrow:', null); }
+        else if (isPlainBuffer(err)) { print('errThrow:', typeof err); }
         else if (typeof err === 'object') { print('errThrow:', typeof err, err instanceof Error, err.message); }
         else { print('errThrow:', typeof err); }
         return err;

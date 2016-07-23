@@ -2,7 +2,7 @@
  *  ArrayBuffer.prototype.slice()
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {
@@ -31,11 +31,11 @@ function arrayBufferSliceBasicTest() {
 
     // No arguments, return copy.
     b = buf.slice();
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     // Single argument, offset.
     b = buf.slice(1);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     // Negative argument is interpreted from end of buffer.  This is not
     // clearly specified in Khronos specification (it talks about clamping)
@@ -43,34 +43,34 @@ function arrayBufferSliceBasicTest() {
     // http://www.ecma-international.org/ecma-262/6.0/index.html#sec-%typedarray%.prototype.slice
 
     b = buf.slice(-1);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     // Indices are clamped, after taking account the negative number handling.
 
     b = buf.slice(10);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     b = buf.slice(-100);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     // End argument behaves similarly.
 
     b = buf.slice(1, 3);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     b = buf.slice(1, -1);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     b = buf.slice(1, 10);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     b = buf.slice(1, -100);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 
     // Crossed indices result in a zero size buffer.
 
     b = buf.slice(3, 2);
-    print(b === buf, b.byteLength, printableTypedArray(b));
+    print(b === buf, b.byteLength, printableBuffer(b));
 }
 
 try {
@@ -309,7 +309,7 @@ function arrayBufferSliceBruteForceTest() {
                     }
                     print(idx1, idx2, idx3, typeof b, b.length, b.byteLength,
                           b.byteOffset, b.BYTES_PER_ELEMENT,
-                          printableTypedArray(b));
+                          printableBuffer(b));
                 } catch (e) {
                     print(idx1, idx2, idx3, e.name);
                 }

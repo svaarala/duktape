@@ -322,10 +322,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_LOCALE_STRING);
 				duk_insert(ctx, -2);  /* -> [ ... toLocaleString ToObject(val) ] */
 				duk_call_method(ctx, 0);
-				duk_to_string(ctx, -1);
-			} else {
-				duk_to_string(ctx, -1);
 			}
+			duk_to_string(ctx, -1);
 		}
 
 		count++;
@@ -519,6 +517,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 
 	/* string compare is the default (a bit oddly) */
 
+	/* XXX: any special handling for plain array; causes repeated coercion now? */
 	h1 = duk_to_hstring(ctx, -2);
 	h2 = duk_to_hstring(ctx, -1);
 	DUK_ASSERT(h1 != NULL);

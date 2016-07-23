@@ -2,7 +2,7 @@
  *  TypedArray prototype properties
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

@@ -11,7 +11,7 @@
  *  be taken into account in testcases.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

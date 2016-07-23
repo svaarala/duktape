@@ -355,7 +355,7 @@ DUK_LOCAL duk_hstring *duk__debug_read_hstring_raw(duk_hthread *thr, duk_uint32_
 		p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
 		DUK_ASSERT(p != NULL);
 		duk_debug_read_bytes(thr, p, (duk_size_t) len);
-		duk_to_string(ctx, -1);
+		(void) duk_buffer_to_string(ctx, -1);
 	}
 
 	return duk_require_hstring(ctx, -1);

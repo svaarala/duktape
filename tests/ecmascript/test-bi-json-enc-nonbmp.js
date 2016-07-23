@@ -1,3 +1,5 @@
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -89,9 +91,9 @@ function nonBmpTest() {
     for (i = 0; i < buffers.length; i++) {
         buf = buffers[i];
 
-        t = Duktape.enc('jx', { string: String(buf) });
+        t = Duktape.enc('jx', { string: bufferToString(buf) });
         safePrint(t);
-        t = JSON.stringify({ string: String(buf) });
+        t = JSON.stringify({ string: bufferToString(buf) });
         safePrint(t);
         codepointDump(t);
     }

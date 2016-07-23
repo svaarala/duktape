@@ -2,7 +2,7 @@
  *  Stringify
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 stringify test

@@ -2,6 +2,8 @@
  *  Duktape Buffer objects
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -9,17 +11,9 @@
 ---*/
 
 /*===
-buffer
-TypeError
-length number 3
-byteLength number 3
-byteOffset number 0
-BYTES_PER_ELEMENT number 1
-0 number 111
-1 number 102
-2 number 102
-true
+false
 object
+0,1,2,length,byteLength,byteOffset,BYTES_PER_ELEMENT
 string 0 number 111
 string 1 number 102
 string 2 number 102
@@ -27,13 +21,17 @@ string length number 3
 string byteLength number 3
 string byteOffset number 0
 string BYTES_PER_ELEMENT number 1
-length number 3
-byteLength number 3
-byteOffset number 0
-BYTES_PER_ELEMENT number 1
-0 number 111
-1 number 255
-2 number 102
+true
+object
+0,1,2,length,byteLength,byteOffset,BYTES_PER_ELEMENT
+string 0 number 111
+string 1 number 102
+string 2 number 102
+string length number 3
+string byteLength number 3
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
+0,1,2,length,byteLength,byteOffset,BYTES_PER_ELEMENT
 string 0 number 111
 string 1 number 255
 string 2 number 102
@@ -41,49 +39,51 @@ string length number 3
 string byteLength number 3
 string byteOffset number 0
 string BYTES_PER_ELEMENT number 1
-buffer
-length number 3
-byteLength number 3
-byteOffset number 0
-BYTES_PER_ELEMENT number 1
-0 number 98
-1 number 97
-2 number 114
+0,1,2,length,byteLength,byteOffset,BYTES_PER_ELEMENT
+string 0 number 111
+string 1 number 255
+string 2 number 102
+string length number 3
+string byteLength number 3
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
+object
+0,1,2,length,byteLength,byteOffset,BYTES_PER_ELEMENT
+string 0 number 98
+string 1 number 97
+string 2 number 114
+string length number 3
+string byteLength number 3
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
 false
-true
-length number 4
-byteLength number 4
-byteOffset number 0
-BYTES_PER_ELEMENT number 1
-0 number 113
-1 number 117
-2 number 255
-3 number 120
-length number 4
-byteLength number 4
-byteOffset number 0
-BYTES_PER_ELEMENT number 1
-0 number 113
-1 number 117
-2 number 117
-3 number 120
+false
+0,1,2,3,length,byteLength,byteOffset,BYTES_PER_ELEMENT
+string 0 number 113
+string 1 number 117
+string 2 number 255
+string 3 number 120
+string length number 4
+string byteLength number 4
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
+0,1,2,3,length,byteLength,byteOffset,BYTES_PER_ELEMENT
+string 0 number 113
+string 1 number 117
+string 2 number 117
+string 3 number 120
+string length number 4
+string byteLength number 4
+string byteOffset number 0
+string BYTES_PER_ELEMENT number 1
 ===*/
 
 function dump(x) {
-    if (typeof x === 'buffer') {
-        // Object.getOwnPropertyNames() throws for a plain buffer
-        print('length', typeof x.length, x.length);
-        print('byteLength', typeof x.byteLength, x.byteLength);
-        print('byteOffset', typeof x.byteOffset, x.byteOffset);
-        print('BYTES_PER_ELEMENT', typeof x.BYTES_PER_ELEMENT, x.BYTES_PER_ELEMENT);
-        for (i = 0; i < x.length; i++) {
-            print(i, typeof x[i], x[i]);
-        }
-    } else {
-        Object.getOwnPropertyNames(x).forEach(function (k) {
-            print(typeof k, k, typeof x[k], x[k]);
-        });
-    }
+    // Works for both plain buffers and ArrayBuffers.
+    print(Object.getOwnPropertyNames(x));
+    Object.getOwnPropertyNames(x).forEach(function (k) {
+        print(typeof k, k, typeof x[k], x[k]);
+    });
 }
 
 function test() {
@@ -93,14 +93,8 @@ function test() {
     // easy way is to decode hex data.
 
     a = Duktape.dec('hex', '6f6666');
+    print(a.valueOf() === a);  // .valueOf() is Object() coerced now, so false
     print(typeof a);
-    try {
-        // For strings: Object.getOwnPropertyNames("foo") throws an error
-        // because the argument is not an object.  Buffers behave the same.
-        print(Object.getOwnPropertyNames(a));
-    } catch (e) {
-        print(e.name);
-    }
     dump(a);
 
     // The Duktape.Buffer() constructor works similarly to the String()
@@ -130,17 +124,13 @@ function test() {
     print(typeof c);
     dump(c);
 
-    // In Duktape 1.0 the Ecmascript buffer bindings are very minimal:
-    // buffers are intended to be manipulated mainly from C code.  As an
-    // example, there's no convenient way to make an actual copy of a buffer;
-    // the closest workaround (which is memory inefficient) is to go through
-    // a string temporary:
+    // One way of making a buffer copy:
 
     a = Duktape.Buffer('quux');
-    b = Duktape.Buffer(String(a));
+    b = Duktape.Buffer(bufferToString(a));
     print(a === b);  // strict equals: compares pointer
-    print(a == b);   // non-strict equals: compares contents
-    a[2] = 0xff;
+    print(a == b);   // non-strict equals: compares pointer (Since Duktape 2.x)
+    a[2] = 0xff;  // demonstrate independence
     dump(a);
     dump(b);
 }

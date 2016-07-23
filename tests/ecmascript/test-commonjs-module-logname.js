@@ -3,6 +3,8 @@
  *  logger name.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 Duktape.modSearch foo
 TIMESTAMP INF foo: hello from module
@@ -18,7 +20,7 @@ function moduleLogNameTest() {
         return 'var logger = new Duktape.Logger(); logger.info("hello from module");';
     };
     Duktape.Logger.prototype.raw = function (buf) {
-        var str = String(buf);
+        var str = bufferToString(buf);
         str = str.replace(/^\S+/, 'TIMESTAMP');
         print(str);
     };

@@ -62,7 +62,7 @@ top level value test
 9 [null,null,null,null,null,null,null,null,null,null]
 10 undefined
 11 "1970-01-01T00:00:00.123Z"
-12 undefined
+12 {}
 13 {"0":222,"1":173,"2":190,"3":239}
 14 {}
 15 {"type":"Buffer","data":[65,66,67,68,69,70,71,72]}
@@ -313,7 +313,7 @@ jx/jc test
 false
 true
 json1
-{"null":null,"true":true,"trueBoxed":true,"false":false,"falseBoxed":false,"number":123,"numberBoxed":123,"posZero":0,"negZero":0,"posInf":null,"negInf":null,"nan":null,"123mustquote":"must quote, non-identifier first char","mustquote\u0000":"must quote, NUL","mustquote<4660>":"must quote, non-ASCII","must_allow_unquoted123":"all chars ok","nonAsciiString":"nonascii: \u0000\u001e<127><4660><51966>","stringBoxed":"boxed string","bufferBoxed":{"0":222,"1":173,"2":190,"3":239},"duktapeBuffer":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0},"nodejsBuffer":{"0":65,"1":66,"2":67,"3":68,"4":69,"5":70,"6":71,"7":72,"8":73,"9":74,"10":75,"11":76},"nodejsBufferView":{"0":68,"1":69,"2":70,"3":71},"arrayBuffer":{},"dataView":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"int8Array":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"uint8Array":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"uint8ArrayView":{"0":98,"1":99,"2":100,"3":101},"uint8ClampedArray":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"int16Array":{"0":25185,"1":25699,"2":26213,"3":26727},"int16ArrayView":{"0":26213,"1":26727},"uint16Array":{"0":25185,"1":25699,"2":26213,"3":26727},"int32Array":{"0":1684234849,"1":1751606885},"uint32Array":{"0":1684234849,"1":1751606885},"float32Array":{"0":1.6777999408082104e+22,"1":4.371022013021617e+24},"float64Array":{"0":8.540883223036124e+194}}
+{"null":null,"true":true,"trueBoxed":true,"false":false,"falseBoxed":false,"number":123,"numberBoxed":123,"posZero":0,"negZero":0,"posInf":null,"negInf":null,"nan":null,"123mustquote":"must quote, non-identifier first char","mustquote\u0000":"must quote, NUL","mustquote<4660>":"must quote, non-ASCII","must_allow_unquoted123":"all chars ok","nonAsciiString":"nonascii: \u0000\u001e<127><4660><51966>","stringBoxed":"boxed string","buffer":{},"bufferBoxed":{"0":222,"1":173,"2":190,"3":239},"duktapeBuffer":{"0":0,"1":0,"2":0,"3":0,"4":0,"5":0,"6":0},"nodejsBuffer":{"0":65,"1":66,"2":67,"3":68,"4":69,"5":70,"6":71,"7":72,"8":73,"9":74,"10":75,"11":76},"nodejsBufferView":{"0":68,"1":69,"2":70,"3":71},"arrayBuffer":{},"dataView":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"int8Array":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"uint8Array":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"uint8ArrayView":{"0":98,"1":99,"2":100,"3":101},"uint8ClampedArray":{"0":97,"1":98,"2":99,"3":100,"4":101,"5":102,"6":103,"7":104},"int16Array":{"0":25185,"1":25699,"2":26213,"3":26727},"int16ArrayView":{"0":26213,"1":26727},"uint16Array":{"0":25185,"1":25699,"2":26213,"3":26727},"int32Array":{"0":1684234849,"1":1751606885},"uint32Array":{"0":1684234849,"1":1751606885},"float32Array":{"0":1.6777999408082104e+22,"1":4.371022013021617e+24},"float64Array":{"0":8.540883223036124e+194}}
 json2
 {
     "null": null,
@@ -334,6 +334,7 @@ json2
     "must_allow_unquoted123": "all chars ok",
     "nonAsciiString": "nonascii: \u0000\u001e<127><4660><51966>",
     "stringBoxed": "boxed string",
+    "buffer": {},
     "bufferBoxed": {
         "0": 222,
         "1": 173,
@@ -468,6 +469,7 @@ json3
     "must_allow_unquoted123": "all chars ok",
     "nonAsciiString": "nonascii: \u0000\u001e<127><4660><51966>",
     "stringBoxed": "boxed string",
+    "buffer": {},
     "bufferBoxed": {
         "0": 222,
         "1": 173,

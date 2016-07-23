@@ -164,6 +164,27 @@ DUK_LOCAL duk_bool_t duk__key_is_lightfunc_ownprop(duk_hthread *thr, duk_hstring
 	        key == DUK_HTHREAD_STRING_NAME(thr));
 }
 
+/* String is an own (virtual) property of a plain buffer. */
+DUK_LOCAL duk_bool_t duk__key_is_plain_buf_ownprop(duk_hthread *thr, duk_hbuffer *buf, duk_hstring *key, duk_uint32_t arr_idx) {
+	DUK_UNREF(thr);
+
+	/* Virtual index properties.  Checking explicitly for
+	 * 'arr_idx != DUK__NO_ARRAY_INDEX' is not necessary
+	 * because DUK__NO_ARRAY_INDEXi is always larger than
+	 * maximum allowed buffer size.
+	 */
+	DUK_ASSERT(DUK__NO_ARRAY_INDEX >= DUK_HBUFFER_GET_SIZE(buf));
+	if (arr_idx < DUK_HBUFFER_GET_SIZE(buf)) {
+		return 1;
+	}
+
+	/* Other virtual properties. */
+	return (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
+	        key == DUK_HTHREAD_STRING_BYTE_LENGTH(thr) ||
+	        key == DUK_HTHREAD_STRING_BYTE_OFFSET(thr) ||
+	        key == DUK_HTHREAD_STRING_BYTES_PER_ELEMENT(thr));
+}
+
 /*
  *  Helpers for managing property storage size
  */
@@ -2548,8 +2569,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			return 1;
 		}
 
-		DUK_DDD(DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype"));
-		curr = thr->builtins[DUK_BIDX_BUFFER_PROTOTYPE];
+		DUK_DDD(DUK_DDDPRINT("base object is a buffer, start lookup from ArrayBuffer prototype"));
+		curr = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
 		goto lookup;  /* avoid double coercion */
 	}
 
@@ -2769,7 +2790,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	 *
 	 *  However, lightfuncs need to behave like fully fledged objects
 	 *  here to be maximally transparent, so we need to handle them
-	 *  here.
+	 *  here.  Same goes for plain buffers which behave like ArrayBuffers.
 	 */
 
 	/* XXX: Refactor key coercion so that it's only called once.  It can't
@@ -2782,10 +2803,16 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_ASSERT(obj != NULL);
 
 		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+	} else if (DUK_TVAL_IS_BUFFER(tv_obj)) {
+		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
+		if (duk__key_is_plain_buf_ownprop(thr, DUK_TVAL_GET_BUFFER(tv_obj), key, arr_idx)) {
+			rc = 1;
+			goto pop_and_return;
+		}
+		obj = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
 		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 		if (duk__key_is_lightfunc_ownprop(thr, key)) {
-			/* FOUND */
 			rc = 1;
 			goto pop_and_return;
 		}
@@ -4649,8 +4676,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, 
 
 	DUK_DDD(DUK_DDDPRINT("define property fast path didn't work, use slow path"));
 
-	duk_push_uint(ctx, (duk_uint_t) arr_idx);
-	key = duk_to_hstring(ctx, -1);
+	key = duk_push_uint_to_hstring(ctx, (duk_uint_t) arr_idx);
 	DUK_ASSERT(key != NULL);
 	duk_insert(ctx, -2);  /* [ ... val key ] -> [ ... key val ] */
 
@@ -4772,7 +4798,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	obj = duk_require_hobject_or_lfunc_coerce(ctx, 0);
+	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	(void) duk_to_string(ctx, 1);
 	key = duk_require_hstring(ctx, 1);
 
@@ -4903,7 +4929,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 			 * lightfuncs don't fit into a property value slot.  This
 			 * has some side effects, see test-dev-lightfunc-accessor.js.
 			 */
-			h_get = duk_get_hobject_or_lfunc_coerce(ctx, -1);
+			h_get = duk_get_hobject_promote_lfunc(ctx, -1);
 			if (h_get == NULL || !DUK_HOBJECT_IS_CALLABLE(h_get)) {
 				goto type_error;
 			}
@@ -4928,7 +4954,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 			 * lightfuncs don't fit into a property value slot.  This
 			 * has some side effects, see test-dev-lightfunc-accessor.js.
 			 */
-			h_set = duk_get_hobject_or_lfunc_coerce(ctx, -1);
+			h_set = duk_get_hobject_promote_lfunc(ctx, -1);
 			if (h_set == NULL || !DUK_HOBJECT_IS_CALLABLE(h_set)) {
 				goto type_error;
 			}

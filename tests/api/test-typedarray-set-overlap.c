@@ -77,13 +77,13 @@ static duk_ret_t test_basic_overlap(duk_context *ctx, void *udata) {
 			buf[i] = (unsigned char) (0x11 * i);
 		}
 
-		/* Create two separate external buffer values that point to the
-		 * same underlying C array with some overlap.
+		/* Create two separate external buffer values that point to
+		 * the same underlying C array with some overlap.
 		 */
 		duk_eval_string(ctx,
 			"(function (plain1, plain2) {\n"
-			"    var b1 = new Uint8Array(new ArrayBuffer(plain1));\n"
-			"    var b2 = new Uint8Array(new ArrayBuffer(plain2));\n"
+			"    var b1 = new Uint8Array(plain1);\n"
+			"    var b2 = new Uint8Array(plain2);\n"
 			"    print(Duktape.enc('jx', b1));\n"
 			"    print(Duktape.enc('jx', b2));\n"
 			"    b1.set(b2, 4);\n"
@@ -246,10 +246,13 @@ static duk_ret_t test_expand_overlap(duk_context *ctx, void *udata) {
 		duk_push_external_buffer(ctx);  /* dst */
 		duk_config_buffer(ctx, -1, (void *) (buf + offset), 32);
 
+		/* For better coverage, coerce plain buffer (mimics ArrayBuffer)
+		 * into an actual ArrayBuffer here).
+		 */
 		duk_eval_string(ctx,
 			"(function (plain_src, plain_dst) {\n"
-			"    var bsrc = new Uint8Array(new ArrayBuffer(plain_src));\n"
-			"    var bdst = new Uint32Array(new ArrayBuffer(plain_dst));\n"
+			"    var bsrc = new Uint8Array(Object(plain_src));\n"
+			"    var bdst = new Uint32Array(Object(plain_dst));\n"
 			"    print(Duktape.enc('jx', bsrc));\n"
 			"    print(Duktape.enc('jx', bdst));\n"
 			"    bdst.set(bsrc, 1);\n"

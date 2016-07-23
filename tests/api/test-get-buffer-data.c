@@ -168,7 +168,7 @@ static duk_ret_t test_uncovered_buffer(duk_context *ctx, void *udata) {
 
 	duk_eval_string(ctx,
 		"(function (plain_buffer) {\n"
-		"    var b = new ArrayBuffer(plain_buffer);\n"
+		"    var b = Object(plain_buffer);\n"
 		"    return new Uint32Array(b).subarray(1,5);\n"
 		"})");
 	duk_dup(ctx, 0);

@@ -29,14 +29,14 @@ index 12, string: '[object Object]', length 15
 index 12, string: '[object Object]'
 index 13, string: '[object Thread]', length 15
 index 13, string: '[object Thread]'
-index 14, string: '', length 0
-index 14, string: ''
-index 15, string: 'abcdefghijklmnop', length 16
-index 15, string: 'abcdefghijklmnop'
-index 16, string: '', length 0
-index 16, string: ''
-index 17, string: 'abcdefghijklmnop', length 16
-index 17, string: 'abcdefghijklmnop'
+index 14, string: '[object ArrayBuffer]', length 20
+index 14, string: '[object ArrayBuffer]'
+index 15, string: '[object ArrayBuffer]', length 20
+index 15, string: '[object ArrayBuffer]'
+index 16, string: '[object ArrayBuffer]', length 20
+index 16, string: '[object ArrayBuffer]'
+index 17, string: '[object ArrayBuffer]', length 20
+index 17, string: '[object ArrayBuffer]'
 index 18, string: 'null', length 4
 index 18, string: 'null'
 index 19, string: '0xdeadbeef', length 10

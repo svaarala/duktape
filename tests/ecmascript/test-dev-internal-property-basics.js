@@ -3,6 +3,8 @@
  *  This testcase exercises a few basics of that.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -50,7 +52,7 @@ function test() {
 
     // Internal key \xFF\xFFabc is in principle enumerable, but because
     // internal keys have special behavior, it is never enumerated.
-    internalKey = Duktape.dec('hex', 'ffff616263');  // \xFF\xFFabc
+    internalKey = bufferToString(Duktape.dec('hex', 'ffff616264'));  // \xFF\xFFabc
     obj[internalKey] = 3;
 
     // The key \x20\xFFquux is invalid UTF-8 but not an internal string,
@@ -58,7 +60,7 @@ function test() {
     // varies.  For example, JSON.stringify() will encounter the invalid
     // UTF-8 initial byte \xFF and serialize it like it had encountered
     // the codepoint U+00FF (writing out the bytes c3 bf).
-    invalidUtf8Key = Duktape.dec('hex', '20ff71757578');  // \x20\xFFquux
+    invalidUtf8Key = bufferToString(Duktape.dec('hex', '20ff71757578'));  // \x20\xFFquux
     obj[invalidUtf8Key] = 4;
 
     // For-in only lists enumerable keys

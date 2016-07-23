@@ -468,7 +468,7 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 #endif  /* DUK_USE_JSON_DECSTRING_FASTPATH */
 
 	DUK_BW_SETPTR_AND_COMPACT(js_ctx->thr, bw, q);
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 
 	/* [ ... str ] */
 
@@ -973,10 +973,8 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 				                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),
 				                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-				/* XXX: push_uint_string / push_u32_string */
 				duk_dup_top(ctx);
-				duk_push_uint(ctx, (duk_uint_t) i);
-				duk_to_string(ctx, -1);  /* -> [ ... holder name val val ToString(i) ] */
+				(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) i);  /* -> [ ... holder name val val ToString(i) ] */
 				duk__dec_reviver_walk(js_ctx);  /* -> [ ... holder name val new_elem ] */
 
 				if (duk_is_undefined(ctx, -1)) {
@@ -1373,7 +1371,7 @@ DUK_LOCAL void duk__enc_double(duk_json_enc_ctx *js_ctx) {
 			/* [ ... number ] -> [ ... string ] */
 			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
 		}
-		h_str = duk_to_hstring(ctx, -1);
+		h_str = duk_get_hstring(ctx, -1);
 		DUK_ASSERT(h_str != NULL);
 		DUK__EMIT_HSTR(js_ctx, h_str);
 		return;
@@ -1890,9 +1888,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth);
 		}
 
-		/* XXX: duk_push_uint_string() */
-		duk_push_uint(ctx, (duk_uint_t) i);
-		duk_to_string(ctx, -1);  /* -> [ ... key ] */
+		(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) i);  /* -> [ ... key ] */
 
 		/* [ ... key ] */
 
@@ -1931,7 +1927,6 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder) {
 	duk_context *ctx = (duk_context *) js_ctx->thr;
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h_tmp;
 	duk_tval *tv;
 	duk_tval *tv_holder;
 	duk_tval *tv_key;
@@ -1953,12 +1948,16 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 
 	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	h_tmp = duk_get_hobject_or_lfunc_coerce(ctx, -1);
-	if (h_tmp != NULL) {
+	/* Standard JSON checks for .toJSON() only for actual objects; for
+	 * example, setting Number.prototype.toJSON and then serializing a
+	 * number won't invoke the .toJSON() method.  However, lightfuncs and
+	 * plain buffers mimic objects so we check for their .toJSON() method.
+	 */
+	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	                                 DUK_TYPE_MASK_LIGHTFUNC |
+	                                 DUK_TYPE_MASK_BUFFER)) {
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
-		h_tmp = duk_get_hobject_or_lfunc_coerce(ctx, -1);  /* toJSON() can also be a lightfunc */
-
-		if (h_tmp != NULL && DUK_HOBJECT_IS_CALLABLE(h_tmp)) {
+		if (duk_is_callable(ctx, -1)) {  /* toJSON() can also be a lightfunc */
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
 			/* XXX: duk_dup_unvalidated(ctx, -2) etc. */
 			duk_dup(ctx, -2);         /* -> [ ... key val toJSON val ] */
@@ -2123,13 +2122,23 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		}
 		break;
 	}
-#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-	/* When JX/JC not in use, the type mask above will avoid this case if needed. */
+	/* Because plain buffers mimic ArrayBuffers, they are supported even
+	 * without JX/JX support enabled.  Because JSON only serializes
+	 * enumerable own properties, no properties can be serialized for
+	 * plain buffers (all virtual properties are non-enumerable).  However,
+	 * there may be a .toJSON() method which was already handled above.
+	 * Thus, we serialize to '{}' here.
+	 */
 	case DUK_TAG_BUFFER: {
-		duk__enc_buffer(js_ctx, DUK_TVAL_GET_BUFFER(tv));
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+		if (js_ctx->flag_ext_custom_or_compatible) {
+			duk__enc_buffer(js_ctx, DUK_TVAL_GET_BUFFER(tv));
+			break;
+		}
+#endif
+		DUK__EMIT_2(js_ctx, DUK_ASC_LCURLY, DUK_ASC_RCURLY);
 		break;
 	}
-#endif  /* DUK_USE_JX || DUK_USE_JC */
 	case DUK_TAG_LIGHTFUNC: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		/* We only get here when doing non-standard JSON encoding */
@@ -2476,10 +2485,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				 * to support gappy arrays for all practical code.
 				 */
 
-				/* XXX: refactor into an internal helper, pretty awkward */
-				duk_push_uint((duk_context *) js_ctx->thr, (duk_uint_t) i);
-				h_tmp = duk_to_hstring((duk_context *) js_ctx->thr, -1);
-				DUK_ASSERT(h_tmp != NULL);
+				h_tmp = duk_push_uint_to_hstring((duk_context *) js_ctx->thr, (duk_uint_t) i);
 				has_inherited = duk_hobject_hasprop_raw(js_ctx->thr, obj, h_tmp);
 				duk_pop((duk_context *) js_ctx->thr);
 				if (has_inherited) {
@@ -2564,16 +2570,28 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		break;
 	}
 	case DUK_TAG_BUFFER: {
+		/* Plain buffers are treated like ArrayBuffers: because they
+		 * have no enumerable own properties they normally serialize
+		 * to '{}'.  However, there can be a replacer (not relevant
+		 * here) or a .toJSON() method (which we need to check for
+		 * explicitly).
+		 */
+
+		if (duk_hobject_hasprop_raw(js_ctx->thr,
+		                            js_ctx->thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE],
+		                            DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr))) {
+			DUK_DD(DUK_DDPRINT("value is a plain buffer and there's an inherited .toJSON, abort fast path"));
+			goto abort_fastpath;
+		}
+
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
 			duk__enc_buffer(js_ctx, DUK_TVAL_GET_BUFFER(tv));
 			break;
-		} else {
-			goto emit_undefined;
 		}
-#else
-		goto emit_undefined;
 #endif
+		DUK__EMIT_2(js_ctx, DUK_ASC_LCURLY, DUK_ASC_RCURLY);
+		break;
 	}
 	case DUK_TAG_POINTER: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
@@ -2864,9 +2882,13 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	else
 #endif  /* DUK_USE_JX || DUK_USE_JC */
 	{
+		/* Plain buffer is treated like ArrayBuffer and serialized.
+		 * Lightfuncs are treated like objects, but JSON explicitly
+		 * skips serializing Function objects so we can just reject
+		 * lightfuncs here.
+		 */
 		js_ctx->mask_for_undefined = DUK_TYPE_MASK_UNDEFINED |
 		                             DUK_TYPE_MASK_POINTER |
-		                             DUK_TYPE_MASK_BUFFER |
 		                             DUK_TYPE_MASK_LIGHTFUNC;
 	}
 

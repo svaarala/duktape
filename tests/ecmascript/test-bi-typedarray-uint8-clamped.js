@@ -2,7 +2,7 @@
  *  Specific test for Uint8ClampedArray coercion.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 Uint8ClampedArray coercion test

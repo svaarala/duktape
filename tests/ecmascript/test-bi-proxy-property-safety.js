@@ -9,6 +9,8 @@
  *  can maybe be reimplemented using the C API.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -52,7 +54,7 @@ function proxyPropertyTest(key) {
 }
 
 function proxyInternalKeysSandboxTest() {
-    var pfx = Duktape.dec('hex', 'ff');
+    var pfx = bufferToString(Duktape.dec('hex', 'ff'));
 
     print('_Target');
     proxyPropertyTest(pfx + 'Target');

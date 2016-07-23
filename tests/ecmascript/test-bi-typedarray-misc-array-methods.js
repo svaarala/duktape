@@ -10,7 +10,7 @@
  *  Spot check just a few methods, not exhaustive.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

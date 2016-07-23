@@ -2,7 +2,7 @@
  *  Prototype objects are not shared.
  */
 
-/*@include util-typedarray.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 1000000000000000000000

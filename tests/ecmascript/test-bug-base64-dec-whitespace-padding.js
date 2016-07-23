@@ -3,6 +3,8 @@
  *  tolerated.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 foo
 foo
@@ -16,33 +18,33 @@ TypeError
 
 function test() {
     // Whitespace is accepted at any point.
-    print(String(Duktape.dec('base64', 'Zm9v')));
-    print(String(Duktape.dec('base64', ' Z m 9 v ')));
+    print(bufferToString(Duktape.dec('base64', 'Zm9v')));
+    print(bufferToString(Duktape.dec('base64', ' Z m 9 v ')));
 
     // Works also for padding.
-    print(String(Duktape.dec('base64', 'Zm9=')));
-    print(String(Duktape.dec('base64', ' Z m 9 =')));
+    print(bufferToString(Duktape.dec('base64', 'Zm9=')));
+    print(bufferToString(Duktape.dec('base64', ' Z m 9 =')));
 
     // Whitespace between padding bytes was not accepted by Duktape 1.3.0.
     try {
-        print(String(Duktape.dec('base64', 'Zm==')));
+        print(bufferToString(Duktape.dec('base64', 'Zm==')));
     } catch (e) {
         print(e);
     }
     try {
-        print(String(Duktape.dec('base64', 'Zm==')));
+        print(bufferToString(Duktape.dec('base64', 'Zm==')));
     } catch (e) {
         print(e);
     }
     try {
-        print(String(Duktape.dec('base64', ' Z m = = ')));
+        print(bufferToString(Duktape.dec('base64', ' Z m = = ')));
     } catch (e) {
         print(e);
     }
 
     // Mixed padding not allowed.
     try {
-        print(String(Duktape.dec('base64', 'Z=m=')));
+        print(bufferToString(Duktape.dec('base64', 'Z=m=')));
     } catch (e) {
         print(e.name);
     }

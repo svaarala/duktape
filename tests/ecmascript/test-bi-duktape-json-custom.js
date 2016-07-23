@@ -3,6 +3,8 @@
  *  (DUK_USE_JX, DUK_USE_JC).
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -56,7 +58,7 @@ number Infinity {"_inf":true}
 string "foo" "foo"
 object [1,2,3] [1,2,3]
 object {test_key:123,"foo bar":321} {"test_key":123,"foo bar":321}
-buffer |deadbeef| {"_buf":"deadbeef"}
+object |deadbeef| {"_buf":"deadbeef"}
 object |deadbeef| {"_buf":"deadbeef"}
 pointer (null) {"_ptr":"null"}
 object (null) {"_ptr":"null"}
@@ -80,7 +82,7 @@ number Infinity
 string foo
 object [1,2,3]
 object {"test_key":"bar","foo bar":"quux"}
-buffer deadbeef
+object deadbeef
 pointer nonnull
 pointer null
 object functable
@@ -146,7 +148,7 @@ function typeEncodeTest() {
 
 function typeDecodeTest(dec) {
     function dval(t) {
-        if (typeof t == 'buffer') {
+        if (isPlainBuffer(t)) {
             print(typeof t, Duktape.enc('hex', t));
         } else if (typeof t == 'pointer') {
             if (t === Duktape.Pointer()) {
@@ -314,7 +316,7 @@ SyntaxError
 
 function characterEscapeEncodeTest() {
     function mk(hex) {
-        return String(Duktape.dec('hex', hex));
+        return bufferToString(Duktape.dec('hex', hex));
     }
 
     var values = [
@@ -761,7 +763,7 @@ function invalidXutf8Test() {
     // Because standard JSON does not escape non-ASCII codepoints, hex
     // encode its output
     values.forEach(function (v) {
-        var t = String(Duktape.dec('hex', v));
+        var t = bufferToString(Duktape.dec('hex', v));
         print(v);
         print('json ', Duktape.enc('hex', JSON.stringify(t)));
         print('jx', encJx(t));

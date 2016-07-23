@@ -24,9 +24,8 @@ ABC
 
 
 slice() prototype
+true
 false
-true
-true
 ===*/
 
 function nodejsDifferencesTest() {
@@ -99,7 +98,8 @@ function nodejsDifferencesTest() {
 
     /*
      *  buf.slice() result is a Node.js Buffer whose internal prototype is
-     *  copied from the argument (which may not be Buffer.prototype).
+     *  (the initial value of) Buffer.prototype.  This was changed to match
+     *  Node.js in Duktape 2.x.
      */
 
     print('slice() prototype');
@@ -108,9 +108,8 @@ function nodejsDifferencesTest() {
     Object.setPrototypeOf(proto, Buffer.prototype);
     Object.setPrototypeOf(buf, proto);
     buf2 = buf.slice(2, 6);
-    print(Object.getPrototypeOf(buf2) === Buffer.prototype);  // Node.js: true, Duktape: false
-    print(Object.getPrototypeOf(buf2) === proto);             // Node.js: false, Duktape: true
-    print(buf2 instanceof Buffer);                            // still true because my_proto inherits from Buffer.prototype
+    print(Object.getPrototypeOf(buf2) === Buffer.prototype);  // Node.js: true, Duktape: true
+    print(Object.getPrototypeOf(buf2) === proto);             // Node.js: false, Duktape: false
 }
 
 try {

@@ -1593,9 +1593,39 @@ Planned
 2.0.0 (XXXX-XX-XX)
 ------------------
 
+* Incompatible change: rework buffer types and their Ecmascript and C API
+  behavior: plain buffers now behave like ArrayBuffers and inherit from
+  ArrayBuffer.prototype; there are a lot of associated small changes in
+  how built-ins behave for plain buffer arguments (GH-864)
+
+* Incompatible change: plain buffers now test false in duk_is_primitive()
+  which is more consistent with how they behave in Ecmascript coercions
+  (GH-864)
+
 * Incompatible change: ArrayBuffer and plain buffer numeric indices are
   present but not enumerable, so that they won't be enumerated by for-in,
-  Object.keys(), or JSON (GH-867)
+  Object.keys(), or JSON (but are enumerated by Object.getOwnPropertyNames()
+  and duk_enum() when requesting non-enumerable keys) (GH-867)
+
+* Incompatible change: typed array .subarray() and Node.js buffer .slice()
+  result internal prototype is now the default prototype of the result
+  type (e.g. initial value of Uint8Array.prototype) rather than being
+  copied from the argument (GH-864)
+
+* Incompatible change: minor changes to buffer object behavior when buffer
+  types are mixed (e.g. Node.js Buffer as an argument to typed array calls)
+  (GH-864)
+
+* Incompatible change: plain pointer values now test true in instanceof
+  (plainPointer instanceof Duktape.Pointer === true) (GH-864)
+
+* Incompatible change: lightfunc values now test false in duk_is_primitive()
+  which is more consistent with how they behave in Ecmascript coercions
+  (GH-864)
+
+* Incompatible change: lightfunc value as a "this" binding is ToObject()
+  coerced to a full Function object if the call target is non-strict (this
+  matches e.g. string and plain buffer behavior) (GH-864)
 
 * Incompatible change: add a userdata argument to duk_safe_call() to make it
   easier to pass C pointers to safe functions (GH-277, GH-727)

@@ -85,7 +85,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 	return 1;
 }
 
@@ -794,7 +794,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 4);
 	DUK_BW_COMPACT(thr, bw);
-	duk_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);
 	return 1;
 }
 
