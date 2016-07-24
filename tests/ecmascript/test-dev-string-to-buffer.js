@@ -9,6 +9,7 @@
 /*===
 |ff666f6f|
 {type:"Buffer",data:[195,191,102,111,111]}
+|c3bf666f6f|
 ===*/
 
 function test() {
@@ -26,12 +27,20 @@ function test() {
 
     // Node.js Buffer constructor accepts a string argument.  In Duktape the
     // string is converted to a buffer using the bytes of the internal
-    // representation as is.  For standard strings this means that the buffer
-    // gets a CESU-8 representation of the string (same as UTF-8 except for
-    // the surrogate pair range).
+    // representation as is (this differs from Node.js).  For standard strings
+    // this means that the buffer gets a CESU-8 representation of the string
+    // (same as UTF-8 except for the surrogate pair range).
 
     s = '\xfffoo';
     b = new Buffer(s);
+    print(Duktape.enc('jx', b));
+
+    // In Duktape 2.x there's an explicit plain buffer constructor which also
+    // accepts a string argument, and copies bytes 1:1 from the string internal
+    // representation to the buffer.
+
+    s = '\xfffoo';
+    b = ArrayBuffer.allocPlain(s);
     print(Duktape.enc('jx', b));
 }
 

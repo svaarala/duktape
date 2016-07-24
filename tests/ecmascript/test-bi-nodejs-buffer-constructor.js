@@ -5,7 +5,7 @@
  *  TypedArray specification, both call styles are accepted.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

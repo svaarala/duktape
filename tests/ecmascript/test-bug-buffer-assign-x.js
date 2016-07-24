@@ -9,7 +9,7 @@
 ===*/
 
 try {
-    var buf = new Duktape.Buffer(1);  // Buffer object
+    var buf = new ArrayBuffer(1);  // Buffer object
     buf[0] = 'x';
     print(buf[0]);
 

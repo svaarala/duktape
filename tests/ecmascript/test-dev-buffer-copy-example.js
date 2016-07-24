@@ -1,5 +1,5 @@
 /*
- *  Making a copy of a plain buffer with Ecmascript code (example in guide).
+ *  Making a copy of a plain buffer with Ecmascript code.
  */
 
 /*@include util-buffer.js@*/
@@ -28,6 +28,9 @@ function bufferCopyTest() {
     // Plain buffer mimics ArrayBuffer so use .slice() to create a copy.
     // When called with a plain buffer the slice will also be a plain
     // buffer.
+    //
+    // A Duktape specific alternative would be:
+    // var copy = ArrayBuffer.createPlain(buf);
 
     var copy = buf.slice();
     print(typeof copy, copy, isPlainBuffer(copy), bufferToString(buf));

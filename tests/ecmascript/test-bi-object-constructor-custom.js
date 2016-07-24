@@ -8,8 +8,8 @@
 object constructor as function
 pointer true
 object true pointer
-object false true
-object false true object
+object true
+object true object
 ===*/
 
 print('object constructor as function');
@@ -33,9 +33,9 @@ function constructorAsFunctionTest() {
     //   - plainBuffer.valueOf() returns Object-coerced version of buffer
     //     (a full ArrayBuffer object with same backing)
 
-    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer, buf_plain instanceof ArrayBuffer);
+    print(typeof buf_plain, buf_plain instanceof ArrayBuffer);
     t = Object(buf_plain);  // coerce plain buffer to an ArrayBuffer object
-    print(typeof t, t instanceof Duktape.Buffer, t instanceof ArrayBuffer, typeof t.valueOf());
+    print(typeof t, t instanceof ArrayBuffer, typeof t.valueOf());
 }
 
 try {
@@ -48,8 +48,8 @@ try {
 object constructor as constructor
 pointer true
 object true pointer
-object false true
-object false true object
+object true
+object true object
 ===*/
 
 print('object constructor as constructor');
@@ -63,9 +63,9 @@ function constructorTest() {
     t = new Object(ptr_plain);
     print(typeof t, t instanceof Duktape.Pointer, typeof t.valueOf());
 
-    print(typeof buf_plain, buf_plain instanceof Duktape.Buffer, buf_plain instanceof ArrayBuffer);
+    print(typeof buf_plain, buf_plain instanceof ArrayBuffer);
     t = new Object(buf_plain);
-    print(typeof t, t instanceof Duktape.Buffer, t instanceof ArrayBuffer, typeof t.valueOf());
+    print(typeof t, t instanceof ArrayBuffer, typeof t.valueOf());
 }
 
 try {

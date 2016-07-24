@@ -2,8 +2,8 @@
  *  buf.fill()
  */
 
-/*@include util-nodejs-buffer.js@*/
-/*@include util-checksum-string.js@*/
+/*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 // Hack used to get an expect string using Node.js, adjusted
 // for clamping semantics differences.  Uncomment manually if

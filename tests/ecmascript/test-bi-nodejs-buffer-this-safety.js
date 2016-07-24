@@ -22,7 +22,7 @@ function nodejsBufferThisSanityTest() {
         { foo: 'bar' },
         [ 'foo', 'bar' ],
         Duktape.dec('hex', 'deadbeef'),
-        new Duktape.Buffer(Duktape.dec('hex', 'deadfeed')),
+        Object(Duktape.dec('hex', 'deadfeed')),
         new Buffer('ABCDEFGH'),
         function func() {}
     ];

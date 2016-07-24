@@ -2,7 +2,7 @@
  *  Buffer.isBuffer()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 isBuffer test

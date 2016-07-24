@@ -2,7 +2,7 @@
  *  Buffer.concat()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 concat test

@@ -2,7 +2,7 @@
  *  Buffer.compare() and buf.compare()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 Node.js Buffer.compare() test

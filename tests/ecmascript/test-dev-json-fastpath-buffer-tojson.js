@@ -2,6 +2,8 @@
  *  Test for a JSON fast path respecting an inherited .toJSON().
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 {}
 |61626364|
@@ -15,7 +17,7 @@
 ===*/
 
 function test() {
-    var buf = Duktape.Buffer('abcd');
+    var buf = createPlainBuffer('abcd');
     function id(k, v) { return v; }
 
     // Base case.

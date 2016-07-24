@@ -656,9 +656,7 @@ object: function light_PTR_0a11() {"light"}
 ===*/
 
 function toBufferTest() {
-    /* Duktape.Buffer(v) does -not- implement the same semantics as the
-     * ToBuffer() coercion provided by duk_to_buffer() API call.  The API
-     * ToBuffer() is not directly available, but Duktape.enc('base64', ...)
+    /* The API ToBuffer() is not directly available, but Duktape.enc('base64', ...)
      * will (currently) first call a duk_to_buffer() on the argument so we
      * can use that to get at ToBuffer().
      */

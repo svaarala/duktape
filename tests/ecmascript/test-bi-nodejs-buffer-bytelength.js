@@ -2,7 +2,7 @@
  *  Buffer.byteLength()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 byteLength test

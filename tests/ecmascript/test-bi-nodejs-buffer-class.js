@@ -3,8 +3,7 @@
  *  Node.js uses "Object".
  *
  *  This is useful e.g. when debugging because one can then easily see
- *  which values are Buffers.  Note that the same class number is used
- *  for Duktape.Buffer values.
+ *  which values are Buffers.
  */
 
 /*---
@@ -17,7 +16,6 @@
 [object Function]
 [object Object]
 [object Buffer]
-[object Buffer]
 ===*/
 
 function nodejsBufferClassTest() {
@@ -27,10 +25,6 @@ function nodejsBufferClassTest() {
     print(Object.prototype.toString.call(Buffer));
     print(Object.prototype.toString.call(Buffer.prototype));
     print(Object.prototype.toString.call(new Buffer(123)));
-
-    // Also Duktape.Buffer has class Buffer.
-
-    print(Object.prototype.toString.call(new Duktape.Buffer(123)));
 }
 
 try {

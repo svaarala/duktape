@@ -13,8 +13,8 @@ object
 string 20 [object ArrayBuffer]
 object 20 [object ArrayBuffer]
 object
-string 3 foo
-object 3 foo
+string 20 [object ArrayBuffer]
+object 20 [object ArrayBuffer]
 pointer
 string
 object
@@ -35,7 +35,7 @@ function test() {
     str = new String(buf);
     print(typeof str, str.length, str);
 
-    buf = new Duktape.Buffer(Duktape.dec('hex', '666f6f'));  // full buffer object
+    buf = new Uint8Array([ 0x66, 0x6f, 0x6f ]).buffer;  // full ArrayBuffer object
     print(typeof buf);
     str = String(buf);
     print(typeof str, str.length, str);

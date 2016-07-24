@@ -7,6 +7,8 @@
  *      in the absence of a .toJSON() method.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 index: 0
 json fast: {}
@@ -22,19 +24,6 @@ jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}
 jc slow: {"buffer":{"_buf":"00000000"}}
 index: 1
-json fast: {"0":0,"1":0,"2":0,"3":0}
-json slow: {"0":0,"1":0,"2":0,"3":0}
-jx fast: |00000000|
-jx slow: |00000000|
-jc fast: {"_buf":"00000000"}
-jc slow: {"_buf":"00000000"}
-json fast: {"buffer":{"0":0,"1":0,"2":0,"3":0}}
-json slow: {"buffer":{"0":0,"1":0,"2":0,"3":0}}
-jx fast: {buffer:|00000000|}
-jx slow: {buffer:|00000000|}
-jc fast: {"buffer":{"_buf":"00000000"}}
-jc slow: {"buffer":{"_buf":"00000000"}}
-index: 2
 json fast: {}
 json slow: {}
 jx fast: |00000000|
@@ -47,7 +36,7 @@ jx fast: {buffer:|00000000|}
 jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}
 jc slow: {"buffer":{"_buf":"00000000"}}
-index: 3
+index: 2
 json fast: {"0":0,"1":0,"2":0,"3":0}
 json slow: {"0":0,"1":0,"2":0,"3":0}
 jx fast: |00000000|
@@ -60,7 +49,7 @@ jx fast: {buffer:|00000000|}
 jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}
 jc slow: {"buffer":{"_buf":"00000000"}}
-index: 4
+index: 3
 json fast: {"myProperty":123}
 json slow: {"myProperty":123}
 jx fast: |00000000|
@@ -73,7 +62,7 @@ jx fast: {buffer:|00000000|}
 jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}
 jc slow: {"buffer":{"_buf":"00000000"}}
-index: 5
+index: 4
 json fast: {"0":0,"1":0,"2":0,"3":0,"myProperty":123}
 json slow: {"0":0,"1":0,"2":0,"3":0,"myProperty":123}
 jx fast: |00000000|
@@ -97,8 +86,7 @@ function test() {
     function id(v) { return v; }
 
     [
-        Duktape.Buffer(4),  // plain
-        new Duktape.Buffer(4),
+        createPlainBuffer(4),  // plain
         new ArrayBuffer(4),
         new Uint8Array(4),  // indices are enumerable so should be serialized!
         abWithProps,  // enumerable properties are serialized

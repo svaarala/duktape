@@ -45,7 +45,7 @@
  */
 
 /*@include util-buffer.js@*/
-/*@include util-checksum-string.js@*/
+/*@include util-string.js@*/
 
 /*---
 {

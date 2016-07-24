@@ -10,7 +10,7 @@
  *  and differs from Node.js coercion.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /* XXX: skip until a reasonable expect string exists. */
 /*---

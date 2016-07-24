@@ -9,7 +9,6 @@ static void register_dump_buffer_info(duk_context *ctx) {
 		"    var instof = [];\n"
 		"    var prot = [];\n"
 
-		"    if (v instanceof Duktape.Buffer) { instof.push('Duktape.Buffer'); }\n"
 		"    if (v instanceof Buffer) { instof.push('Buffer'); }\n"
 		"    if (v instanceof ArrayBuffer) { instof.push('ArrayBuffer'); }\n"
 		"    if (v instanceof DataView) { instof.push('DataView'); }\n"
@@ -23,7 +22,6 @@ static void register_dump_buffer_info(duk_context *ctx) {
 		"    if (v instanceof Float32Array) { instof.push('Float32Array'); }\n"
 		"    if (v instanceof Float64Array) { instof.push('Float64Array'); }\n"
 
-		"    if (p === Duktape.Buffer.prototype) { prot.push('Duktape.Buffer.prototype'); }\n"
 		"    if (p === Buffer.prototype) { prot.push('Buffer.prototype'); }\n"
 		"    if (p === ArrayBuffer.prototype) { prot.push('ArrayBuffer.prototype'); }\n"
 		"    if (p === DataView.prototype) { prot.push('DataView.prototype'); }\n"
@@ -38,59 +36,55 @@ static void register_dump_buffer_info(duk_context *ctx) {
 		"    if (p === Float64Array.prototype) { prot.push('Float64Array.prototype'); }\n"
 
 		"    print(typeof v, Object.prototype.toString.call(v), v.length, v.byteOffset, v.byteLength, v.BYTES_PER_ELEMENT, typeof v.buffer);\n"
-		"    print(v instanceof Duktape.Buffer, v instanceof Buffer, v instanceof ArrayBuffer, v instanceof DataView, v instanceof Int8Array, v instanceof Uint8Array, v instanceof Uint8ClampedArray, v instanceof Int16Array, v instanceof Uint16Array, v instanceof Int32Array, v instanceof Uint32Array, v instanceof Float32Array, v instanceof Float64Array, '->', instof.join(','));\n"
-		"    print(p === Duktape.Buffer.prototype, p === Buffer.prototype, p === ArrayBuffer.prototype, p === DataView.prototype, p === Int8Array.prototype, p === Uint8Array.prototype, p === Uint8ClampedArray.prototype, p === Int16Array.prototype, p === Uint16Array.prototype, p === Int32Array.prototype, p === Uint32Array.prototype, p === Float32Array.prototype, p === Float64Array.prototype, '->', prot.join(','));\n"
+		"    print(v instanceof Buffer, v instanceof ArrayBuffer, v instanceof DataView, v instanceof Int8Array, v instanceof Uint8Array, v instanceof Uint8ClampedArray, v instanceof Int16Array, v instanceof Uint16Array, v instanceof Int32Array, v instanceof Uint32Array, v instanceof Float32Array, v instanceof Float64Array, '->', instof.join(','));\n"
+		"    print(p === Buffer.prototype, p === ArrayBuffer.prototype, p === DataView.prototype, p === Int8Array.prototype, p === Uint8Array.prototype, p === Uint8ClampedArray.prototype, p === Int16Array.prototype, p === Uint16Array.prototype, p === Int32Array.prototype, p === Uint32Array.prototype, p === Float32Array.prototype, p === Float64Array.prototype, '->', prot.join(','));\n"
 		"}");
 }
 
 /*===
 *** test_basic (duk_safe_call)
 object [object Buffer] 32 128 32 1 undefined
-true false false false false false false false false false false false false -> Duktape.Buffer
-true false false false false false false false false false false false false -> Duktape.Buffer.prototype
-object [object Buffer] 32 128 32 1 undefined
-false true false false false false false false false false false false false -> Buffer
-false true false false false false false false false false false false false -> Buffer.prototype
+true false false false false false false false false false false false -> Buffer
+true false false false false false false false false false false false -> Buffer.prototype
 object [object ArrayBuffer] 32 128 32 1 undefined
-false false true false false false false false false false false false false -> ArrayBuffer
-false false true false false false false false false false false false false -> ArrayBuffer.prototype
+false true false false false false false false false false false false -> ArrayBuffer
+false true false false false false false false false false false false -> ArrayBuffer.prototype
 object [object DataView] 32 128 32 1 object
-false false false true false false false false false false false false false -> DataView
-false false false true false false false false false false false false false -> DataView.prototype
+false false true false false false false false false false false false -> DataView
+false false true false false false false false false false false false -> DataView.prototype
 object [object Int8Array] 32 128 32 1 object
-false false false false true false false false false false false false false -> Int8Array
-false false false false true false false false false false false false false -> Int8Array.prototype
+false false false true false false false false false false false false -> Int8Array
+false false false true false false false false false false false false -> Int8Array.prototype
 object [object Uint8Array] 32 128 32 1 object
-false false false false false true false false false false false false false -> Uint8Array
-false false false false false true false false false false false false false -> Uint8Array.prototype
+false false false false true false false false false false false false -> Uint8Array
+false false false false true false false false false false false false -> Uint8Array.prototype
 object [object Uint8ClampedArray] 32 128 32 1 object
-false false false false false false true false false false false false false -> Uint8ClampedArray
-false false false false false false true false false false false false false -> Uint8ClampedArray.prototype
+false false false false false true false false false false false false -> Uint8ClampedArray
+false false false false false true false false false false false false -> Uint8ClampedArray.prototype
 object [object Int16Array] 16 128 32 2 object
-false false false false false false false true false false false false false -> Int16Array
-false false false false false false false true false false false false false -> Int16Array.prototype
+false false false false false false true false false false false false -> Int16Array
+false false false false false false true false false false false false -> Int16Array.prototype
 object [object Uint16Array] 16 128 32 2 object
-false false false false false false false false true false false false false -> Uint16Array
-false false false false false false false false true false false false false -> Uint16Array.prototype
+false false false false false false false true false false false false -> Uint16Array
+false false false false false false false true false false false false -> Uint16Array.prototype
 object [object Int32Array] 8 128 32 4 object
-false false false false false false false false false true false false false -> Int32Array
-false false false false false false false false false true false false false -> Int32Array.prototype
+false false false false false false false false true false false false -> Int32Array
+false false false false false false false false true false false false -> Int32Array.prototype
 object [object Uint32Array] 8 128 32 4 object
-false false false false false false false false false false true false false -> Uint32Array
-false false false false false false false false false false true false false -> Uint32Array.prototype
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
 object [object Float32Array] 8 128 32 4 object
-false false false false false false false false false false false true false -> Float32Array
-false false false false false false false false false false false true false -> Float32Array.prototype
+false false false false false false false false false false true false -> Float32Array
+false false false false false false false false false false true false -> Float32Array.prototype
 object [object Float64Array] 4 128 32 8 object
-false false false false false false false false false false false false true -> Float64Array
-false false false false false false false false false false false false true -> Float64Array.prototype
+false false false false false false false false false false false true -> Float64Array
+false false false false false false false false false false false true -> Float64Array.prototype
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_uint_t test[] = {
-		DUK_BUFOBJ_DUKTAPE_BUFFER,
 		DUK_BUFOBJ_NODEJS_BUFFER,
 		DUK_BUFOBJ_ARRAYBUFFER,
 		DUK_BUFOBJ_DATAVIEW,
@@ -143,8 +137,8 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 *** test_view_buffer_prop (duk_safe_call)
 [object Uint8Array]
 object [object Uint8Array] 22 16 22 1 object
-false false false false false true false false false false false false false -> Uint8Array
-false false false false false true false false false false false false false -> Uint8Array.prototype
+false false false false true false false false false false false false -> Uint8Array
+false false false false true false false false false false false false -> Uint8Array.prototype
 22
 16
 22
@@ -153,8 +147,8 @@ false false false false false true false false false false false false false -> 
 [object ArrayBuffer] false false false
 [object ArrayBuffer]
 object [object ArrayBuffer] 22 16 22 1 undefined
-false false true false false false false false false false false false false -> ArrayBuffer
-false false true false false false false false false false false false false -> ArrayBuffer.prototype
+false true false false false false false false false false false false -> ArrayBuffer
+false true false false false false false false false false false false -> ArrayBuffer.prototype
 22
 16
 22
@@ -214,8 +208,8 @@ static duk_ret_t test_view_buffer_prop(duk_context *ctx, void *udata) {
 /*===
 *** test_unaligned (duk_safe_call)
 object [object Uint32Array] 16 7 64 4 object
-false false false false false false false false false false true false false -> Uint32Array
-false false false false false false false false false false true false false -> Uint32Array.prototype
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -244,8 +238,8 @@ static duk_ret_t test_unaligned(duk_context *ctx, void *udata) {
 /*===
 *** test_unaligned_uneven (duk_safe_call)
 object [object Uint32Array] 15 7 63 4 object
-false false false false false false false false false false true false false -> Uint32Array
-false false false false false false false false false false true false false -> Uint32Array.prototype
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -281,8 +275,8 @@ static duk_ret_t test_unaligned_uneven(duk_context *ctx, void *udata) {
 /*===
 *** test_uncovered (duk_safe_call)
 object [object Uint32Array] 128 7 512 4 object
-false false false false false false false false false false true false false -> Uint32Array
-false false false false false false false false false false true false false -> Uint32Array.prototype
+false false false false false false false false false true false false -> Uint32Array
+false false false false false false false false false true false false -> Uint32Array.prototype
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -462,8 +456,8 @@ static duk_ret_t test_invalid_offlen_wrap2(duk_context *ctx, void *udata) {
 /*===
 *** test_allowed_offlen_nowrap1 (duk_safe_call)
 object [object Uint8Array] 99 4294967196 99 1 object
-false false false false false true false false false false false false false -> Uint8Array
-false false false false false true false false false false false false false -> Uint8Array.prototype
+false false false false true false false false false false false false -> Uint8Array
+false false false false true false false false false false false false -> Uint8Array.prototype
 final top: 1
 ==> rc=0, result='undefined'
 ===*/

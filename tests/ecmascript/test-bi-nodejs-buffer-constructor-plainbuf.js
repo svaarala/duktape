@@ -2,6 +2,8 @@
  *  Node.js Buffer from an existing plain buffer
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -16,7 +18,7 @@ object 100
 ===*/
 
 function nodejsBufferPlainBufTest() {
-    var plain = Duktape.Buffer(100);
+    var plain = createPlainBuffer(100);
     print(typeof plain, plain.length);
 
     // XXX: as an initial first step treat like ArrayBuffer (= make a copy).

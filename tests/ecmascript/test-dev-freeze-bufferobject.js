@@ -5,6 +5,8 @@
  *  throws a TypeError in this situation, which matches V8 behavior.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 0 [object ArrayBuffer] TypeError
 1 [object ArrayBuffer] TypeError
@@ -16,7 +18,7 @@
 function test() {
     // Spot check some types.
     [
-        Duktape.Buffer(4),
+        createPlainBuffer(4),
         new ArrayBuffer(4),
         new Uint8Array(16),
         new Float32Array(16),

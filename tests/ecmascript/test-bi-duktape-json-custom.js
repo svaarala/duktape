@@ -115,7 +115,7 @@ function typeEncodeTest() {
         undefined, null, true, false, 123.0, -0, +0, 0 / 0, -1 / 0, 1 / 0,
         'foo', [1,2,3], { test_key: 123, 'foo bar': 321 },
         Duktape.dec('hex', 'deadbeef'),                      // plain buf
-        new Duktape.Buffer(Duktape.dec('hex', 'deadbeef')),  // object buf
+        Object(Duktape.dec('hex', 'deadbeef')),              // object buf
         Duktape.Pointer(),                                   // plain ptr; null pointer has a deterministic representation
         new Duktape.Pointer(),                               // object ptr
         function myfunc() {}

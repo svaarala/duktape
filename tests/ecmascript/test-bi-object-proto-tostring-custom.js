@@ -8,7 +8,7 @@
 string [object String]
 object [object String]
 object [object ArrayBuffer]
-object [object Buffer]
+object [object ArrayBuffer]
 pointer [object Pointer]
 object [object Pointer]
 ===*/
@@ -17,7 +17,7 @@ function test() {
     var plain_str = 'foo';  // string is for comparison
     var obj_str = new String(plain_str);
     var plain_buf = Duktape.dec('hex', '666f6f');
-    var obj_buf = new Duktape.Buffer(plain_buf);
+    var obj_buf = new Uint8Array(plain_buf).buffer;
     var plain_ptr = Duktape.Pointer('foo');  // dummy ptr
     var obj_ptr = new Duktape.Pointer(plain_ptr);
 

@@ -2,7 +2,7 @@
  *  Assigning a non-number to a buffer index
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 8 bytes: 1111111111111111

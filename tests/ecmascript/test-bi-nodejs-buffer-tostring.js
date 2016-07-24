@@ -2,7 +2,8 @@
  *  Node.js Buffer toString()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*===
 node.js Buffer toString() test
@@ -232,24 +233,24 @@ function nodejsBufferToStringTest() {
     // buffer is converted to string.  At least undefined and null
     // are accepted as "not defined" for encoding.
     b = new Buffer('ABC');
-    safePrint(b.toString());
-    safePrint(b.toString(undefined));
-    safePrint(b.toString(null));
+    safePrintString(b.toString());
+    safePrintString(b.toString(undefined));
+    safePrintString(b.toString(null));
 
     // If the buffer is a slice of an underlying buffer, only that slice
     // is string converted.  Offsets are relative to the slice.
     b = new Buffer('ABCDEFGH');
     b = b.slice(3, 7);  // DEFG
-    safePrint(b.toString());
-    safePrint(b.toString(null, 1));
-    safePrint(b.toString(null, 1, 2));
+    safePrintString(b.toString());
+    safePrintString(b.toString(null, 1));
+    safePrintString(b.toString(null, 1, 2));
 
     // When the buffer data is legal UTF-8 and the chosen encoding
     // is UTF-8 (default), Duktape internal representation is correct
     // as is.  Here the 4-byte data is U+CAFE U+0041.
     b = new Buffer(4);
     b[0] = 0xec; b[1] = 0xab; b[2] = 0xbe; b[3] = 0x41;
-    safePrint(b.toString());
+    safePrintString(b.toString());
 
     // When the buffer data is not legal UTF-8 Node.js behavior is
     // interesting and a bit inconsistent with other API calls:
@@ -259,7 +260,7 @@ function nodejsBufferToStringTest() {
     b = new Buffer(6);
     b[0] = 0xed; b[1] = 0xa0; b[2] = 0x80;
     b[3] = 0xed; b[4] = 0xbf; b[5] = 0xbf;
-    safePrint(b.toString());
+    safePrintString(b.toString());
 
     // Here the buffer data is invalid UTF-8 and invalid CESU-8.
     // Node.js replaces the offending character (0xff) with U+FFFD
@@ -270,7 +271,7 @@ function nodejsBufferToStringTest() {
 
     b = new Buffer(4);
     b[0] = 0xff; b[1] = 0x41; b[2] = 0x42; b[3] = 0x43;
-    safePrint(b.toString());
+    safePrintString(b.toString());
 
     // Invalid continuation characters.  Node.js seems to scan for
     // the next valid starting byte and each offending byte causes
@@ -282,7 +283,7 @@ function nodejsBufferToStringTest() {
 
     b = new Buffer(4);
     b[0] = 0xc1; b[1] = 0xc1; b[2] = 0x42; b[3] = 0xc1;
-    safePrint(b.toString());
+    safePrintString(b.toString());
 
     // XXX: encoding test?
 
@@ -300,7 +301,7 @@ function nodejsBufferToStringTest() {
 
     b = new Buffer('ABCDEFGH');
     b = b.slice(3, 7);  // DEFG
-    safePrint(b.toString());
+    safePrintString(b.toString());
 
     var offsetList = [
         'NONE',
@@ -323,7 +324,7 @@ function nodejsBufferToStringTest() {
                 } else {
                     s = b.toString('utf8', start, end);
                 }
-                print(start, end, safeEscape(s));
+                print(start, end, safeEscapeString(s));
             } catch (e) {
                 print(start, end, e.name);
             }

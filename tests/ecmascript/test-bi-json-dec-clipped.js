@@ -51,7 +51,7 @@ function jsonClipTest(input, parser) {
             try {
                 t = input.substring(0, i);
                 if (j >= 0) {
-                    buf = Duktape.Buffer(1);
+                    buf = createPlainBuffer(1);
                     buf[0] = j;
                     t = t + bufferToString(buf);
                 }

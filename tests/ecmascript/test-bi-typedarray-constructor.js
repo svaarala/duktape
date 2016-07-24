@@ -1702,10 +1702,6 @@ try {
 
 /*===
 plain buffer argument
-object false |00666f6fff| |00666f6fff| object false false
-|00666f6fff| |ff666f6fff| [object ArrayBuffer]
-object false |00666f6fff| |000066006f006f00ff00| object false false
-|00666f6fff| |ffff66006f006f00ff00| [object ArrayBuffer]
 object true |00666f6fff| |00666f6fff| object false false
 |ff666f6fff| |ff666f6fff| [object ArrayBuffer]
 RangeError
@@ -1717,18 +1713,6 @@ object true |00666f6fffab| |00666f6fffab| object false false
  * In Duktape 2.x a plain buffer is treated like ArrayBuffer, i.e. the view
  * is constructed over the plain buffer.  The .buffer property is set to an
  * object coerced version of the plain buffer (at least for now).
- *
- * In Duktape Duktape 1.4.0 a plain Duktape buffer is accepted similarly to
- * a Duktape.Buffer.  Behavior in Duktape 1.3.0 is a bit confusing:
- *
- *     duk> u8 = new Uint8Array(new Duktape.Buffer('foobar'))
- *     = [object Uint8Array]
- *     duk> Duktape.enc('jx', u8)
- *     = |666f6f626172|
- *     duk> u8 = new Uint8Array(Duktape.Buffer('foobar'))
- *     = [object Uint8Array]
- *     duk> Duktape.enc('jx', u8)
- *     = ||
  */
 
 function plainBufferArgumentTest() {
@@ -1739,17 +1723,6 @@ function plainBufferArgumentTest() {
         view[0] = 0xffffffff;  // demonstrate view shares underlying buffer; endian neutral value
         print(Duktape.enc('jx', buf), Duktape.enc('jx', view), Object.prototype.toString.call(view.buffer));
     }
-
-    // Duktape.Buffer argument is treated as an initializer and creates
-    // an independent buffer copy (and for non-8-bit views not a 1:1 copy).
-
-    buf = new Duktape.Buffer(Duktape.dec('hex', '00666f6fff'));
-    view = new Uint8Array(buf);
-    test(buf, view);
-
-    buf = new Duktape.Buffer(Duktape.dec('hex', '00666f6fff'));
-    view = new Int16Array(buf);
-    test(buf, view);
 
     // Plain buffer treated like ArrayBuffer.
 

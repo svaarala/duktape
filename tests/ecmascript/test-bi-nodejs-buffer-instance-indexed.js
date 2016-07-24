@@ -2,7 +2,7 @@
  *  Indexed properties
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 Node.js Buffer indexed property test

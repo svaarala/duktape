@@ -2,6 +2,8 @@
  *  ArrayBuffer.isView()
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -23,7 +25,7 @@ false
 7 object false
 8 object false
 9 object false
-10 object false
+10 object true
 11 object true
 12 object true
 13 object true
@@ -43,7 +45,6 @@ false
 27 object true
 28 object true
 29 object true
-30 object true
 ===*/
 
 function arrayBufferIsViewTest() {
@@ -51,20 +52,19 @@ function arrayBufferIsViewTest() {
     print(typeof ArrayBuffer.isView);
     print(ArrayBuffer.isView());
 
-    var b1 = Duktape.dec('hex', '414243');
-    var b2 = new Duktape.Buffer(b1);
-    var b3 = new Buffer('ABCDEFGH');
-    var b4 = new ArrayBuffer(16);  // ensure compatible with alignment
-    var v0 = new DataView(b4);
-    var v1 = new Int8Array(b4);
-    var v2 = new Uint8Array(b4);
-    var v3 = new Uint8ClampedArray(b4);
-    var v4 = new Int16Array(b4);
-    var v5 = new Uint16Array(b4);
-    var v6 = new Int32Array(b4);
-    var v7 = new Uint32Array(b4);
-    var v8 = new Float32Array(b4);
-    var v9 = new Float64Array(b4);
+    var b1 = createPlainBuffer(Duktape.dec('hex', '414243'));  // plain
+    var b2 = new Buffer('ABCDEFGH');
+    var b3 = new ArrayBuffer(16);  // ensure compatible with alignment
+    var v0 = new DataView(b3);
+    var v1 = new Int8Array(b3);
+    var v2 = new Uint8Array(b3);
+    var v3 = new Uint8ClampedArray(b3);
+    var v4 = new Int16Array(b3);
+    var v5 = new Uint16Array(b3);
+    var v6 = new Int32Array(b3);
+    var v7 = new Uint32Array(b3);
+    var v8 = new Float32Array(b3);
+    var v9 = new Float64Array(b3);
     var w0 = new Int8Array(v0);
     var w1 = new Int8Array(v1);
     var w2 = new Int8Array(v2);
@@ -77,7 +77,7 @@ function arrayBufferIsViewTest() {
     var w9 = new Int8Array(v9);
     [
         undefined, null, true, 123, 'foo', { foo: 'bar' }, [ 'foo', 'bar' ],
-        b1, b2, b3, b4,
+        b1, b2, b3,
         v0, v1, v2, v3, v4, v5, v6, v7, v8, v9,
         w0, w1, w2, w3, w4, w5, w6, w7, w8, w9
     ].forEach(function (v, idx) {

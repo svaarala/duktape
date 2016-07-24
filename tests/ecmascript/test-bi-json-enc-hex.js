@@ -6,6 +6,8 @@
  *  Test both alignments.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 0 {foo:||} {foox:||}
 1 {foo:|00|} {foox:|00|}
@@ -334,7 +336,7 @@ function test() {
     var buf;
 
     for (len = 0; len < 64; len++) {
-        buf = Duktape.Buffer(len);
+        buf = createPlainBuffer(len);
         for (i = 0; i < buf.length; i++) {
             buf[i] = 0x55 * i;
         }
@@ -346,7 +348,7 @@ function test() {
 
     // March all bytes through an 11 byte long buffer (2 x 4 bytes fast path, 3 leftover).
     for (i = 0; i < 256; i++) {
-        buf = Duktape.Buffer(11);
+        buf = createPlainBuffer(11);
         for (j = 0; j < 11; j++) {
             buf[j] = i + j;
         }

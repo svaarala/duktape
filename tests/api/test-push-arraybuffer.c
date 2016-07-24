@@ -1,11 +1,11 @@
 /*
- *  This testcase should succeed even when Node.js and Khronos/ES6 TypedArray
- *  support has been turned off.
+ *  This testcase should succeed even when DUK_USE_BUFFEROBJECT_SUPPORT
+ *  is disabled.
  */
 
 /*===
 *** test_basic (duk_safe_call)
-[object Buffer]
+[object ArrayBuffer]
 true
 |1011121314151617|
 final top: 0
@@ -23,11 +23,11 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 		p[i] = (unsigned char) i;
 	}
 
-	duk_push_buffer_object(ctx, -1, 16, 8, DUK_BUFOBJ_DUKTAPE_BUFFER);
+	duk_push_buffer_object(ctx, -1, 16, 8, DUK_BUFOBJ_ARRAYBUFFER);
 	duk_eval_string(ctx,
 		"(function (v) {\n"
 		"    print(Object.prototype.toString.call(v));\n"
-		"    print(v instanceof Duktape.Buffer);\n"
+		"    print(v instanceof ArrayBuffer);\n"
 		"    print(Duktape.enc('jx', v));\n"
 		"})");
 	duk_dup(ctx, -2);

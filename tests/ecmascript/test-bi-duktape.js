@@ -15,7 +15,6 @@ global
 Duktape object wc
 Duktape
 Duktape.version number none
-Duktape.Buffer function wc
 Duktape.Pointer function wc
 Duktape.Thread function wc
 Duktape.info function wc
@@ -27,16 +26,6 @@ Duktape.dec function wc
 Duktape.compact function wc
 Duktape.env string wc
 Duktape.modLoaded object wc
-Duktape.Buffer.name string none
-Duktape.Buffer.length number none
-Duktape.Buffer.prototype object none
-Duktape.Buffer.prototype.constructor function wc
-Duktape.Buffer.prototype.toString function wc
-Duktape.Buffer.prototype.valueOf function wc
-Duktape.Buffer.prototype.toString.length number none
-Duktape.Buffer.prototype.toString.name string none
-Duktape.Buffer.prototype.valueOf.length number none
-Duktape.Buffer.prototype.valueOf.name string none
 Duktape.Pointer.name string none
 Duktape.Pointer.length number none
 Duktape.Pointer.prototype object none
@@ -188,12 +177,12 @@ function encDecTest() {
     printDec(Duktape.dec('base64', 'Zm9v4Yi0'));
 
     // Plain buffer input
-    var pb = Duktape.Buffer(3);
+    var pb = createPlainBuffer(3);
     pb[0] = 'f'.charCodeAt(0);
     pb[1] = 'o'.charCodeAt(0);
     pb[2] = 'o'.charCodeAt(0);
     printEnc(Duktape.enc('base64', pb));
-    var pb = Duktape.Buffer(4);
+    var pb = createPlainBuffer(4);
     pb[0] = 'Z'.charCodeAt(0);
     pb[1] = 'm'.charCodeAt(0);
     pb[2] = '9'.charCodeAt(0);

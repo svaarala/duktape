@@ -13,9 +13,9 @@ index 8, boolean: 0
 index 9, boolean: 1
 index 10, boolean: 1
 index 11, boolean: 1
-index 12, boolean: 0
+index 12, boolean: 1
 index 13, boolean: 1
-index 14, boolean: 0
+index 14, boolean: 1
 index 15, boolean: 1
 index 16, boolean: 0
 index 17, boolean: 1
