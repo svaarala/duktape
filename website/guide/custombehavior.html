@@ -91,24 +91,32 @@ binding in any of the points A, B, or C.</p>
 <p>Most Ecmascript engines support more syntax than guaranteed by the
 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-15.10.1">Ecmascript
 E5.1 specification (Section 15.10.1 Patterns)</a>.  As a result there's quite
-a lot of code that won't work with strict Ecmascript regexp syntax.  Duktape also
-allows some non-standard syntax to better support existing code (you can turn
-this non-standard behavior off using config options if you prefer).</p>
+a lot of code that won't work with strict Ecmascript E5.1 regexp syntax.  Much
+of the additional syntax expected of web browser engines is documented in
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns">ES6 Annex B.1.4 Regular Expression Patterns</a>.
+However, note that features in
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-additional-ecmascript-features-for-web-browsers">Annex B Additional ECMAScript Features for Web Browsers</a> are
+not recommended for new code:
+"These features are not considered part of the core ECMAScript language.
+Programmers should not use or assume the existence of these features and
+behaviours when writing new ECMAScript code. ECMAScript implementations
+are discouraged from implementing these features unless the implementation
+is part of a web browser or is required to run the same legacy ECMAScript
+code that web browsers encounter."</p>
 
-<p>Curly braces (<code>{</code> and <code>}</code>) are treated as literals
-when they don't parse as a valid quantifier (literal curly braces are part of
-ES6 Appendix so they're not entirely non-standard anymore):</p>
+<p>Duktape also allows some ES6 Annex B syntax to better support existing
+code.  You can turn this non-standard behavior off using config options if
+you prefer.  Some examples of additional syntax supported:</p>
 
 <pre>
-  /{(\d+)}/    /* left curly, digits, right curly; non-standard */
-  /\{(\d+)\}/  /* same, standard */
-</pre>
+  /{(\d+)}/    // unescaped left curly, digits, unescaped right curly; ES6 Annex B
+  /\{(\d+)\}/  // same, ES5 compliant
 
-<p>Escaping a dollar sign as <code>\$</code> is not allowed by E5.1, but
-is accepted by Duktape:</p>
-<pre>
-  /\$/       /* matches dollar literally; non-standard */
-  /\u0024/   /* same, standard */
+  /]/          // unescaped right bracket; ES6 Annex B
+  /\]/         // same, ES5 compliant
+
+  /\$/         // literal dollar using escape; ES6 Annex B
+  /\u0024/     // same, ES5 compliant
 </pre>
 
 <h2>Array.prototype.splice() when deleteCount not given</h2>

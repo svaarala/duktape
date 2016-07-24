@@ -1,12 +1,10 @@
 define: DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE
 feature_enables: DUK_OPT_NONSTD_REGEXP_DOLLAR_ESCAPE
 introduced: 1.0.0
+removed: 2.0.0
 default: true
 tags:
   - ecmascript
   - compliance
 description: >
-  Enable support for non-standard regexp dollar escape "\$".  This option is
-  recommended because such regexps are used by existing code bases.
-
-  # FIXME: RST escaping works poorly now for backslash.
+  Replaced by DUK_USE_ES6_REGEXP_SYNTAX.
