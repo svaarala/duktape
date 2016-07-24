@@ -1436,8 +1436,8 @@ Released
   from 27kB to 24kB (GH-642)
 
 * Allow ES6 unescaped curly braces ('{' and '}') in regular expressions
-  (non-standard before ES6) when no valid quantifier can be parsed; this
-  improves compatibility with existing Javascript code which often assumes
+  (non-standard before ES6 Annex B) when no valid quantifier can be parsed;
+  this improves compatibility with existing Javascript code which often assumes
   support for literal curly braces (GH-142, GH-513, GH-547, GH-565)
 
 * Change Function object .toString() output to be Emscripten compatible:
@@ -1695,6 +1695,10 @@ Planned
   concrete .length property for arrays because of internal duk_harray type
   related changes; instead, an artificial property "length" is available via
   GetHeapObjInfo (GH-703, GH-856)
+
+* Allow ES6 unescaped right bracket (']') in regular expressions (non-standard
+  before ES6 Annex B), left bracket ('[') not yet supported because it needs
+  backtracking (GH-871)
 
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
