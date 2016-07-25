@@ -33,13 +33,13 @@ realistic memory targets are roughly:
     various internal structures (strings, buffers, objects), pointer
     compression, external strings, etc may need to be used
 
-* 256kB flash memory (code) and 96kB system RAM
+* 192-256kB flash memory (code) and 96kB system RAM
 
   - Requires a bare metal system, possibly a custom C library, etc.
 
   - http://pt.slideshare.net/seoyounghwang77/js-onmicrocontrollers
 
-* 256kB flash memory (code) and 64kB system RAM
+* 160-192kB flash memory (code) and 64kB system RAM
 
   - Requires a bare metal system, possibly a custom C library, etc.
 
@@ -347,7 +347,9 @@ The following may be appropriate when even less memory is available
   - Rerun ``make_dist.py`` with ``--rom-support`` to create a distributable
     with support for ROM builtins.  ROM builtin support is not enabled by
     default because it increases the size of ``duktape.c`` considerably.
-    (See ``util/example_rombuild.sh`` for some very simple examples.)
+    Add the option ``--rom-auto-lightfunc`` to convert built-in function
+    properties into lightfuncs to reduce ROM footprint.  (See
+    ``util/example_rombuild.sh`` for some very simple examples.)
 
   - Moving built-ins into ROM makes them read-only which has some side
     effects.  Some side effects are technical compliance issues while
@@ -377,6 +379,16 @@ The following may be appropriate when even less memory is available
 
     + ``util/example_rombuild.sh``: illustrates how to run ``make_dist.py``
       with user builtins
+
+* Consider using lightfuncs for representing function properties of ROM
+  built-ins.
+
+  - For custom built-ins you can use a "lightfunc" type for a property
+    value directly.
+
+  - You can also request automatic lightfunc conversion for built-in
+    function properties using ``--rom-auto-lightfunc``.  This saves
+    around 15kB for Duktape built-ins.
 
 Notes on pointer compression
 ============================
