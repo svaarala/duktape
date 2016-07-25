@@ -394,10 +394,67 @@ DUK_LOCAL duk_uint_t duk__selftest_cast_double_to_uint32(void) {
 }
 
 /*
+ *  Minimal test of user supplied allocation functions
+ *
+ *    - Basic alloc + realloc + free cycle
+ *
+ *    - Realloc to significantly larger size to (hopefully) trigger a
+ *      relocation and check that relocation copying works
+ */
+
+DUK_LOCAL duk_uint_t duk__selftest_alloc_funcs(duk_alloc_function alloc_func,
+                                               duk_realloc_function realloc_func,
+                                               duk_free_function free_func,
+                                               void *udata) {
+	duk_uint_t error_count = 0;
+	void *ptr;
+	void *new_ptr;
+	duk_small_int_t i, j;
+	unsigned char x;
+
+	if (alloc_func == NULL || realloc_func == NULL || free_func == NULL) {
+		return 0;
+	}
+
+	for (i = 1; i <= 256; i++) {
+		ptr = alloc_func(udata, i);
+		if (ptr == NULL) {
+			DUK_D(DUK_DPRINT("alloc failed, ignore"));
+			continue;  /* alloc failed, ignore */
+		}
+		for (j = 0; j < i; j++) {
+			((unsigned char *) ptr)[j] = (unsigned char) (0x80 + j);
+		}
+		new_ptr = realloc_func(udata, ptr, 1024);
+		if (new_ptr == NULL) {
+			DUK_D(DUK_DPRINT("realloc failed, ignore"));
+			free_func(udata, ptr);
+			continue;  /* realloc failed, ignore */
+		}
+		ptr = new_ptr;
+		for (j = 0; j < i; j++) {
+			x = ((unsigned char *) ptr)[j];
+			if (x != (unsigned char) (0x80 + j)) {
+				DUK_D(DUK_DPRINT("byte at index %ld doesn't match after realloc: %02lx",
+				                 (long) j, (unsigned long) x));
+				DUK__FAILED("byte compare after realloc");
+				break;
+			}
+		}
+		free_func(udata, ptr);
+	}
+
+	return error_count;
+}
+
+/*
  *  Self test main
  */
 
-DUK_INTERNAL duk_uint_t duk_selftest_run_tests(void) {
+DUK_INTERNAL duk_uint_t duk_selftest_run_tests(duk_alloc_function alloc_func,
+                                               duk_realloc_function realloc_func,
+                                               duk_free_function free_func,
+                                               void *udata) {
 	duk_uint_t error_count = 0;
 
 	DUK_D(DUK_DPRINT("self test starting"));
@@ -414,6 +471,7 @@ DUK_INTERNAL duk_uint_t duk_selftest_run_tests(void) {
 	error_count += duk__selftest_64bit_arithmetic();
 	error_count += duk__selftest_cast_double_to_small_uint();
 	error_count += duk__selftest_cast_double_to_uint32();
+	error_count += duk__selftest_alloc_funcs(alloc_func, realloc_func, free_func, udata);
 
 	DUK_D(DUK_DPRINT("self test complete, total error count: %ld", (long) error_count));
 
