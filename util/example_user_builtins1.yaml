@@ -139,8 +139,8 @@ objects:
 
   # Example of plain value types supported at the moment:
   #
-  # - Object, function, and accessor types not illustrated here
-  #   (see src/builtins.yaml for examples of those).
+  # - Object, function, lightfunc, and accessor types not illustrated
+  #   here (see src/builtins.yaml for examples of those).
   #
   # - Duktape buffer and pointer types cannot be used by built-in
   #   objects at the moment.
@@ -186,6 +186,16 @@ objects:
       - key: "stringType"
         value: "foobar"               # Encode string as UTF-8, then map bytes to U+0000...U+00FF
         attributes: wec
+
+      #- key: "lightfuncType"
+      #  value:
+      #    type: lightfunc
+      #    native: duk_bi_math_object_random
+      #    nargs: 0
+      #    varargs: false
+      #    length: 13
+      #    magic: 0
+      #  attributes: wec
 
   # Object IDs are only resolved when metadata loading is complete, so it's
   # OK to create reference loops or refer to objects defined later (even in

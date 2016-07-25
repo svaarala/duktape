@@ -12,6 +12,7 @@ PYTHON=`which python2 python | head -1`
 make clean
 $PYTHON util/make_dist.py \
 	--rom-support \
+	--rom-auto-lightfunc \
 	--user-builtin-metadata util/example_user_builtins1.yaml \
 	--user-builtin-metadata util/example_user_builtins2.yaml
 
@@ -37,6 +38,7 @@ make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT, DUK
 $PYTHON config/genconfig.py \
 	--metadata config \
 	--output dist/src/duk_config.h \
+	--option-file config/examples/low_memory.yaml \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \
 	-DDUK_USE_ROM_GLOBAL_INHERIT \
