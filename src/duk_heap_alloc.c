@@ -750,7 +750,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 #if defined(DUK_USE_SELF_TESTS)
-	if (duk_selftest_run_tests() > 0) {
+	if (duk_selftest_run_tests(alloc_func, realloc_func, free_func, heap_udata) > 0) {
 		fatal_func(heap_udata, "self test(s) failed");
 	}
 #endif
