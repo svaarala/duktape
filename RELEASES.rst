@@ -1764,6 +1764,9 @@ Planned
   doesn't currently handleir buffer object virtual properties correctly
   so to remain compliant fall back to slow path for now (GH-867)
 
+* Add a minimal alloc/realloc/free self test to the (optional) internal
+  self test (GH-877)
+
 * Fix buffer object (duk_hbufobj) JSON serialization (bug present in 1.5.0):
   buffer objects were omitted from serialization when they should be
   serialized as normal objects instead (GH-867)
