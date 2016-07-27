@@ -117,7 +117,7 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 		    "try{"
 		        "return Duktape.enc('jx',v);"
 		    "}catch(e){"
-		        "return ""+v;"
+		        "return ''+v;"
 		    "}"
 		"})");
 	duk_put_prop_string(ctx, -2, "format");
@@ -141,7 +141,8 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 	 */
 
 	if (flags & DUK_CONSOLE_PROXY_WRAPPER) {
-		duk_eval_string_noresult(ctx,
+		/* Tolerate errors: Proxy may be disabled. */
+		duk_peval_string_noresult(ctx,
 			"(function(){"
 			    "var D=function(){};"
 			    "console=new Proxy(console,{"
