@@ -34,6 +34,7 @@ DUK_INTERNAL_DECL const char *duk_get_type_name(duk_context *ctx, duk_idx_t idx)
 DUK_INTERNAL_DECL duk_small_uint_t duk_get_class_number(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_tval *duk_get_tval(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_tval *duk_get_tval_or_unused(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_tval *duk_require_tval(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_push_tval(duk_context *ctx, duk_tval *tv);
 

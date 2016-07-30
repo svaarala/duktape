@@ -33,6 +33,12 @@
 
 /* use duk_double_union as duk_tval directly */
 typedef union duk_double_union duk_tval;
+typedef struct {
+	duk_uint16_t a;
+	duk_uint16_t b;
+	duk_uint16_t c;
+	duk_uint16_t d;
+} duk_tval_unused;
 
 /* tags */
 #define DUK_TAG_NORMALIZED_NAN    0x7ff8UL   /* the NaN variant we use */
@@ -54,6 +60,10 @@ typedef union duk_double_union duk_tval;
 /* for convenience */
 #define DUK_XTAG_BOOLEAN_FALSE    0xfff50000UL
 #define DUK_XTAG_BOOLEAN_TRUE     0xfff50001UL
+
+/* DUK_TVAL_UNUSED initializer for duk_tval_unused, works for any endianness. */
+#define DUK_TVAL_UNUSED_INITIALIZER() \
+	{ DUK_TAG_UNUSED, DUK_TAG_UNUSED, DUK_TAG_UNUSED, DUK_TAG_UNUSED }
 
 /* two casts to avoid gcc warning: "warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]" */
 #if defined(DUK_USE_64BIT_OPS)
@@ -292,6 +302,20 @@ struct duk_tval_struct {
 		duk_c_function lightfunc;
 	} v;
 };
+
+typedef struct {
+	duk_small_uint_t t;
+	duk_small_uint_t v_extra;
+	/* The rest of the fields don't matter except for debug dumps and such
+	 * for which a partial initializer may trigger out-ot-bounds memory
+	 * reads.  Include a double field which is usually as large or larger
+	 * than pointers (not always however).
+	 */
+	duk_double_t d;
+} duk_tval_unused;
+
+#define DUK_TVAL_UNUSED_INITIALIZER() \
+	{ DUK_TAG_UNUSED, 0, 0.0 }
 
 #define DUK__TAG_NUMBER               0  /* not exposed */
 #if defined(DUK_USE_FASTINT)
