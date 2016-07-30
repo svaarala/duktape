@@ -1,9 +1,10 @@
 if (typeof print !== 'function') { print = console.log; }
 
 function test() {
-    var buf = Duktape.Buffer(31);
+    var buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(31);
     var i, j;
     var arr;
+    var bufferToString = String.fromBuffer || String;
 
     for (i = 0; i < buf.length; i++) {
         buf[i] = i;
@@ -16,7 +17,7 @@ function test() {
             buf[0] = j;
             buf[1] = j >> 8;
             buf[2] = j >> 16;
-            arr[j] = "" + buf;
+            arr[j] = bufferToString(buf);
         }
     }
 }

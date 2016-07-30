@@ -7,8 +7,9 @@
 if (typeof print !== 'function') { print = console.log; }
 
 function test() {
-    var buf = Duktape.Buffer(2048);
+    var buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(2048);
     var i;
+    var bufferToString = String.fromBuffer || String;
 
     for (i = 0; i < buf.length; i++) {
         buf[i] = i;
@@ -20,7 +21,7 @@ function test() {
         buf[1] = i >> 8;
         buf[2] = i >> 16;
 
-        void String(buf);
+        void bufferToString(buf);
     }
 }
 
