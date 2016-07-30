@@ -24,11 +24,14 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	/* Reject a proxy object as the handler because it would cause
 	 * potentially unbounded recursion.  (ES6 has no such restriction)
+	 *
+	 * There's little practical reason to use a lightfunc or a plain
+	 * buffer as the handler table: one could only provide traps via
+	 * their prototype objects (Function.prototype and ArrayBuffer.prototype).
+	 * Even so, as lightfuncs and plain buffers mimic their object
+	 * counterparts, they're promoted and accepted here.
 	 */
-	/* XXX: there's little reason to use a lightfunc as the handler
-	 * (which is usually an object with properties for traps).
-	 */
-	h_handler = duk_require_hobject_promote_lfunc(ctx, 1);
+	h_handler = duk_require_hobject_promote_mask(ctx, 1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_handler != NULL);
 	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_handler)) {
 		return DUK_RET_TYPE_ERROR;
@@ -36,7 +39,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	/* XXX: the returned value is exotic in ES6, but we use a
 	 * simple object here with no prototype.  Without a prototype,
-	 * [[DefaultValue]] coercion fails which is abit confusing.
+	 * [[DefaultValue]] coercion fails which is a bit confusing.
 	 * No callable check/handling in the current Proxy subset.
 	 */
 	(void) duk_push_object_helper_proto(ctx,
