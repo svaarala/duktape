@@ -7,11 +7,11 @@ function test() {
     var i, n, buf;
 
     print('build');
-    buf = Duktape.Buffer(1024);
+    buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(1024);
     for (i = 0; i < 1024; i++) {
         buf[i] = Math.random() * 256;
     }
-    tmp1 = String(buf);
+    tmp1 = (String.fromBuffer || String)(buf);
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }

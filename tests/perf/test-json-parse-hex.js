@@ -7,15 +7,15 @@ function test() {
     var inp1, inp2;
 
     print('build');
-    buf = Duktape.Buffer(1024);
+    buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(1024);
     for (i = 0; i < 1024; i++) {
         buf[i] = Math.random() * 256;
     }
-    tmp1 = String(buf);
+    tmp1 = (String.fromBuffer || String)(buf);
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }
-    tmp2 = Duktape.Buffer(tmp2.join(''));
+    tmp2 = (ArrayBuffer.allocPlain || Duktape.Buffer)(tmp2.join(''));
 
     print(tmp2.length);
     print('run');
