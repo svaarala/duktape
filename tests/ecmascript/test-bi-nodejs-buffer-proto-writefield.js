@@ -2,8 +2,8 @@
  *  Write fixed size field
  */
 
-/*@include util-nodejs-buffer.js@*/
-/*@include util-checksum-string.js@*/
+/*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*---
 {

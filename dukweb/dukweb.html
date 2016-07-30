@@ -26,7 +26,7 @@ fragment identifier: <a href="http://duktape.org/dukweb.html#print('Hello%20worl
 print('Duktape version is ' + Duktape.version);
 alert('alert from Duktape code');
 
-print(Duktape.enc('jx', { foo: 1, bar: 'xxx', quux: Duktape.Buffer('foo') }));
+print(Duktape.enc('jx', { foo: 1, bar: 'xxx', quux: ArrayBuffer.allocPlain('foo') }));
 
 var obj = {};
 Duktape.fin(obj, function () { print('obj finalized'); });

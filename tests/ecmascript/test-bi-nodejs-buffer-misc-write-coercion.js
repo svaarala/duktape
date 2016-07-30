@@ -6,7 +6,7 @@
  *  fractional values within the range.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

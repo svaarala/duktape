@@ -11,8 +11,12 @@ summary: |
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.1">ToPrimitive</a>,
   otherwise returns 0.  If <code>idx</code> is invalid, also returns 0.</p>
 
-  <p>Anything other than an object is a primitive type at the moment, including
-  custom buffer and pointer types.</p>
+  <p>Any standard type other than an object is a primitive type.  The custom
+  plain pointer type is also considered a primitive type.  However, the custom
+  plain buffer type (which behaves like an ArrayBuffer object in most situations) and
+  lightfunc type (which behaves like a Function object in most situations) are not
+  considered a primitive type.  This matches the behavior of <code>duk_to_primitive()</code>
+  which (usually) coerces e.g. a plain buffer to the string <code>[object ArrayBuffer]</code>.</p>
 
 example: |
   if (duk_is_primitive(ctx, -3)) {

@@ -9,11 +9,107 @@ var isLittleEndian;
 var isMixedDouble;
 
 // Detect plain buffer, in Duktape 2.x plain buffers mimic ArrayBuffer so check
-// indirectly.
+// indirectly via the API type tag.
 function isPlainBuffer(x) {
     var tag;
     tag = Duktape.info(x)[0];  // api tag, 7=plain buffer, 6=object
     return tag === 7;
+}
+
+// Create a plain buffer, (a) of a specified size, (b) copying a string's
+// internal bytes into a fresh buffer, or (c) copying the active slice of
+// any buffer object into a fresh buffer.  Because this idiom is liable to
+// change, test cases should go through this helper.  TypeError for invalid
+// arguments.
+function createPlainBuffer(arg) {
+    var res;
+    var plain, sliceOffset, sliceLength;
+    var i, limit;
+
+    if (typeof arg === 'number' ||
+        typeof arg === 'string' ||
+        arg instanceof ArrayBuffer ||  // matches plain buffers too
+        arg instanceof Buffer) {
+        // Semantics are compatible.
+        res = ArrayBuffer.allocPlain(arg);
+    } else if (arg instanceof Uint8Array ||
+               arg instanceof Uint8ClampedArray ||
+               arg instanceof Int8Array ||
+               arg instanceof Uint16Array ||
+               arg instanceof Int16Array ||
+               arg instanceof Uint32Array ||
+               arg instanceof Int32Array ||
+               arg instanceof Float32Array ||
+               arg instanceof Float64Array ||
+               arg instanceof DataView) {
+        // Current ArrayBuffer.allocPlain() cannot be used here as is because
+        // it interprets typed array views as initializers, not byte for byte.
+        plain = ArrayBuffer.plainOf(arg.buffer);  // get underlying buffer
+        if (plain === null) {
+            throw new Error('createPlainBuffer() argument invalid');
+        }
+        sliceOffset = arg.byteOffset;
+        sliceLength = arg.byteLength;
+
+        res = ArrayBuffer.allocBuffer(sliceLength);
+        for (i = 0; i < sliceLength; i++) {
+            res[i] = plain[i + sliceOffset];
+        }
+    }
+    if (!isPlainBuffer(res)) {
+        throw new Error('internal error, createPlainBuffer() failed to create a plain buffer');
+    }
+    return res;
+}
+
+// Get the underlying plain buffer (ignoring slice information) of a plain
+// buffer or a buffer object.  Because this isiom is liable to change, test
+// cases should go through this helper.  TypeError if argument is not a buffer
+// or a buffer object.
+function getPlainBuffer(buf) {
+    var res;
+
+    if (buf instanceof ArrayBuffer ||
+        buf instanceof Buffer ||
+        buf instanceof Uint8Array ||
+        buf instanceof Uint8ClampedArray ||
+        buf instanceof Int8Array ||
+        buf instanceof Uint16Array ||
+        buf instanceof Int16Array ||
+        buf instanceof Uint32Array ||
+        buf instanceof Int32Array ||
+        buf instanceof Float32Array ||
+        buf instanceof Float64Array ||
+        buf instanceof DataView) {
+        // Duktape 2.x: plain buffer mimics ArrayBuffer and is covered by
+        // 'plain instanceof ArrayBuffer' above.
+        res = ArrayBuffer.plainOf(buf);
+    } else {
+        throw new Error('getPlainBuffer() argument invalid');
+    }
+    if (!isPlainBuffer(res)) {
+        throw new Error('getPlainBuffer() failed to get a plain buffer');
+    }
+    return res;
+}
+
+// Helper to create an ArrayBuffer with support for a string initializer.
+function createArrayBuffer(arg) {
+    var res;
+    var i, limit;
+
+    if (typeof arg === 'number') {
+        res = new ArrayBuffer(arg);
+    } else if (typeof arg === 'string') {
+        res = new ArrayBuffer(arg.length);
+        for (i = 0, limit = arg.length; i < limit; i++) {
+            res[i] = arg.charCodeAt(i);
+        }
+    }
+    if (!(res instanceof ArrayBuffer)) {
+        throw new Error('createArrayBuffer() failed to create an ArrayBuffer instance');
+    }
+    return res;
 }
 
 // Helper to print out TypedArray prototype chains.
@@ -23,7 +119,7 @@ function getPrototypeChain(x) {
         { ref: Object.prototype, name: 'Object.prototype' },
         { ref: Array.prototype, name: 'Array.prototype' },
 
-        { ref: Duktape.Buffer.prototype, name: 'Duktape.Buffer.prototype' },
+        { ref: Buffer.prototype, name: 'Buffer.prototype' },
 
         { ref: ArrayBuffer.prototype, name: 'ArrayBuffer.prototype' },
         { ref: DataView.prototype, name: 'DataView.prototype' },
@@ -102,14 +198,8 @@ function getTestObjectList() {
     return values;
 }
 
-// Number to string, preserve negative zero sign.
-function num2str(v) {
-    if (v !== 0) { return String(v); }
-    return (1 / v > 0) ? '0' : '-0';
-}
-
 // Buffer/view to hex
-function buf2hex(b) {
+function bufferToHex(b) {
     var res = [];
     var i;
     if (b.buffer) {
@@ -169,7 +259,10 @@ function bufferToString(buf) {
     // Node.js Buffer .toString() does the raw conversion and accepts buffer
     // objects of any type in Duktape (but not plain buffers so coerce them
     // to full ArrayBuffer objects).
-    return Buffer.prototype.toString.call(Object(buf));
+    //return Buffer.prototype.toString.call(Object(buf));
+
+    // Prefer the cleaner, explicit custom method in String.
+    return String.fromBuffer(buf);
 }
 
 // Convert any string into a buffer, interpreting the internal string
@@ -183,6 +276,22 @@ function stringToBuffer(str) {
 
 function isPlainBuffer(x) {
     return Duktape.info(x)[0] === 7;   // tag 7: plain buffer
+}
+
+function printableNodejsBuffer(buf) {
+    var tmp = [];
+    var i, n;
+
+    for (i = 0, n = Math.min(buf.length, 32); i < n; i++) {
+        tmp.push(('00' + buf[i].toString(16)).substr(-2));
+    }
+    if (buf.length > 32) { tmp.push('...'); }
+    return tmp.join('');
+}
+
+// XXX: quite inconsistent with other buffer helpers
+function printNodejsBuffer(buf) {
+    print(buf.length + ' bytes: ' + printableNodejsBuffer(buf));
 }
 
 // Detect endianness and setup globals.

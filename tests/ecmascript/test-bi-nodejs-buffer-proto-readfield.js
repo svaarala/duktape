@@ -2,7 +2,7 @@
  *  Read fixed size field
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

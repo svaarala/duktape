@@ -2,7 +2,7 @@
  *  Node.js Buffer.prototype.write()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

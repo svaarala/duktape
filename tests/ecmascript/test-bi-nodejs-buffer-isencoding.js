@@ -2,7 +2,7 @@
  *  Buffer.isEncoding()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

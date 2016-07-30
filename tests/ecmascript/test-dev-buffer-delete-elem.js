@@ -8,6 +8,8 @@
  *  0.12.0 extends the rejection behavior for plain buffer values too.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -15,13 +17,6 @@
 ---*/
 
 /*===
-object
--1 ok
-0 TypeError
-1 TypeError
-2 TypeError
-3 TypeError
-4 ok
 object
 -1 ok
 0 TypeError
@@ -45,17 +40,6 @@ function test() {
     [ -1, 0, 1, 2, 3, 4 ].forEach(function (i) {
         try {
             delete buf_plain[i];
-            print(i, 'ok');
-        } catch (e) {
-            print(i, e.name)
-        }
-    });
-
-    buf_obj = new Duktape.Buffer(Duktape.dec('hex', 'deadbeef'));
-    print(typeof buf_plain);
-    [ -1, 0, 1, 2, 3, 4 ].forEach(function (i) {
-        try {
-            delete buf_obj[i];
             print(i, 'ok');
         } catch (e) {
             print(i, e.name)

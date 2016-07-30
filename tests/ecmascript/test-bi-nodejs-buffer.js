@@ -7,7 +7,7 @@
  *  Tests are based on NodeJS v0.12.1.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 Buffer: function

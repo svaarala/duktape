@@ -2,7 +2,7 @@
  *  Enumerating a Buffer, keys of a Buffer.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 enumerating and keys test

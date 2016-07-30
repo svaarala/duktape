@@ -3521,7 +3521,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 
 		DUK_DDD(DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype"));
-		curr = thr->builtins[DUK_BIDX_BUFFER_PROTOTYPE];
+		curr = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
 		goto lookup;  /* avoid double coercion */
 	}
 

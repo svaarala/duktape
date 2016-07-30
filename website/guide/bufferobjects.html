@@ -15,19 +15,8 @@
 <td>Plain buffer</td>
 <td>No<br />Duktape&nbsp;specific</td>
 <td>1.0</td>
-<td>Plain, primitive buffer value (not an object), similar to how a plain string relates to a String object</td>
-</tr>
-<tr>
-<td>Duktape.Buffer object</td>
-<td>No<br />Duktape&nbsp;specific</td>
-<td>1.0</td>
-<td>Object wrapped plain buffer, similar to how a String object relates to a plain string</td>
-</tr>
-<tr>
-<td>Node.js Buffer object</td>
-<td>No<br />Node.js-like</td>
-<td>1.3</td>
-<td>Object with <a href="https://nodejs.org/api/buffer.html">Node.js Buffer API</a></td>
+<td>Plain, primitive buffer value (not an object), similar to how a plain string relates to a String object;
+    behaves like an ArrayBuffer instance where possible, object coerces to an actual <code>ArrayBuffer</code></td>
 </tr>
 <tr>
 <td>ArrayBuffer object</td>
@@ -40,6 +29,12 @@
 <td>Yes<br />Khronos/ES6</td>
 <td>1.3</td>
 <td>View objects to access an underlying ArrayBuffer</td>
+</tr>
+<tr>
+<td>Node.js Buffer object</td>
+<td>No<br />Node.js-like</td>
+<td>1.3</td>
+<td>Object with <a href="https://nodejs.org/api/buffer.html">Node.js Buffer API</a></td>
 </tr>
 </table>
 
@@ -63,6 +58,16 @@ for a detailed discussion, including a
 <p>See
 <a href="http://wiki.duktape.org/HowtoBuffers.html">How to work with buffers</a>
 for examples.</p>
+
+<div class="note">
+In special cases the plain buffer backing a buffer object may not be large
+enough to cover the apparent size of the buffer object; the buffer object
+is then "uncovered" or "unbacked".  Duktape guarantees memory safe behavior
+for such buffers, but other than that behavior varies between calls.  For
+example, a call may ignore the situation silently returning undefined, NaN,
+or zero, or it may throw a TypeError.  <b>The behavior for unbacked buffers is
+not part of versioning guarantees and may change between minor versions.</b>
+</div>
 
 <h2>Current limitations</h2>
 

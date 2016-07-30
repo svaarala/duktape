@@ -7,6 +7,8 @@
  *  using separate code paths.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -22,7 +24,7 @@ function testOne(blen) {
     var i;
     var clen;
 
-    buf = new Duktape.Buffer(blen);
+    buf = createPlainBuffer(blen);
     for (i = 0; i < blen; i++) {
         buf[i] = Math.random() * 256;
     }
@@ -37,7 +39,7 @@ function testOne(blen) {
         }
     }
 
-    str = String(buf);
+    str = bufferToString(buf);
     if (str.length != clen) {
         throw new Error('mismatch: ' + str.length + ' vs ' + clen);
     }

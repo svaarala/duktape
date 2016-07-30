@@ -2,7 +2,7 @@
  *  Required properties
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 properties test

@@ -2,6 +2,8 @@
  *  ArrayBuffer from an existing plain buffer.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -18,7 +20,7 @@ object 0
 
 function arrayBufferPlainBufTest() {
     // Duktape 2.x: plain buffer mimics ArrayBuffer.
-    var plain = Duktape.Buffer(100);
+    var plain = createPlainBuffer(100);
     print(typeof plain, plain.length);
 
     // Duktape 2.x: Object() coerces a plain buffer into an equivalent

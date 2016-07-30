@@ -3,7 +3,8 @@
  *  lookup table indices.
  */
 
-/*@include util-checksum-string.js@*/
+/*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*===
 AA==
@@ -316,13 +317,13 @@ function test() {
     var csum;
 
     for (i = 0; i < 256; i++) {
-        buf = Duktape.Buffer(1); buf[0] = i;
+        buf = createPlainBuffer(1); buf[0] = i;
         print(Duktape.enc('base64', buf));
     }
 
     for (len = 0; len <= 8; len++) {
         print(len);
-        buf = Duktape.Buffer(len);
+        buf = createPlainBuffer(len);
 
         csum = 0;
         for (;;) {
@@ -352,7 +353,7 @@ function test() {
     csum = 0;
     for (len = 1; len < 8 * 1024 * 1024; len = Math.floor(len * 1.79 + 1)) {
         print(len);
-        buf = Duktape.Buffer(len);
+        buf = createPlainBuffer(len);
         for (i = 0; i < len; i++) { buf[i] = i; }
         csum += checksumString(Duktape.enc('base64', buf));
     }

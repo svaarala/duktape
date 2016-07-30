@@ -2,7 +2,7 @@
  *  Read/write variable length integer
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

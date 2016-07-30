@@ -2,6 +2,8 @@
  *  Fragile error test for (some) API error messages
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 TypeError: string required, found none (stack index 0)
 TypeError: string required, found undefined (stack index 0)
@@ -15,7 +17,7 @@ TypeError: string required, found [object Function] (stack index 0)
 TypeError: string required, found (PTR) (stack index 0)
 TypeError: string required, found [buffer:4] (stack index 0)
 TypeError: string required, found [object Pointer] (stack index 0)
-TypeError: string required, found [object Buffer] (stack index 0)
+TypeError: string required, found [object ArrayBuffer] (stack index 0)
 TypeError: object required, found '' (stack index 0)
 TypeError: object required, found 'foo' (stack index 0)
 TypeError: object required, found 'foo<4660>' (stack index 0)
@@ -32,8 +34,8 @@ function test() {
     // Duktape.enc() requires first arg to be string
     [ 'NONE', undefined, null, true, false, 123,
       { foo: 'bar' }, [ 'foo', 'bar' ], function nop() {},
-      Duktape.Pointer('dummy'), Duktape.Buffer(4),
-      new Duktape.Pointer('dummy'), new Duktape.Buffer(4) ].forEach(function (v) {
+      Duktape.Pointer('dummy'), createPlainBuffer(4),
+      new Duktape.Pointer('dummy'), new ArrayBuffer(4) ].forEach(function (v) {
         try {
             if (v === 'NONE') {
                 print(Duktape.enc());

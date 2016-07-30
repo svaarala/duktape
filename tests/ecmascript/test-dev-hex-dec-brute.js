@@ -3,7 +3,7 @@
  *  lookup table indices.
  */
 
-/*@include util-checksum-string.js@*/
+/*@include util-string.js@*/
 /*@include util-buffer.js@*/
 
 /*===
@@ -75,12 +75,12 @@ function testLengths() {
     var success = 0, failure = 0;
     var tmp, res;
 
-    print(Duktape.enc('jx', Duktape.dec('hex', Duktape.Buffer(''))));
+    print(Duktape.enc('jx', Duktape.dec('hex', createPlainBuffer(''))));
     print(Duktape.enc('jx', Duktape.dec('hex', '')));
 
     for (len = 2; len <= 32; len++) {
         print(len, csum);
-        buf = Duktape.Buffer(len);
+        buf = createPlainBuffer(len);
         for(i = 0; i < len; i++) {
             buf[i] = valid.charCodeAt(i % valid.length);
         }

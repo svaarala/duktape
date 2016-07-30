@@ -1,4 +1,5 @@
 /*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*---
 {

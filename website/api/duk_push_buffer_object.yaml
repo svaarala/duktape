@@ -16,7 +16,6 @@ summary: |
   <p>The available buffer types are:</p>
   <table>
   <tr><th>Define</th><th>Buffer/view type</th></tr>
-  <tr><td>DUK_BUFOBJ_DUKTAPE_BUFFER</td><td>Duktape.Buffer</td></tr>
   <tr><td>DUK_BUFOBJ_NODEJS_BUFFER</td><td>Buffer (Node.js)</td></tr>
   <tr><td>DUK_BUFOBJ_ARRAYBUFFER</td><td>ArrayBuffer</td></tr>
   <tr><td>DUK_BUFOBJ_DATAVIEW</td><td>DataView</td></tr>

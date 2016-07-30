@@ -61,7 +61,9 @@ function test() {
 <p>These declarations are also referred to as "function statements", and appear
 quite often in real world code (including the test262 test suite), so they are
 allowed by Duktape.  Unfortunately there are several semantics used by different
-Javascript engines.  Duktape follows the V8 behavior for function statements:</p>
+Javascript engines (<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-block-level-function-declarations-web-legacy-compatibility-semantics">ES6</a>
+unfortunately doesn't specify semantics for function statements either).
+Duktape follows the V8 behavior for function statements:</p>
 <ul>
 <li>Strict function: a SyntaxError is thrown (standard behavior).</li>
 <li>Non-strict function: treat a function statement like an ordinary function
@@ -207,18 +209,20 @@ following for more details on the fast path behavior:
 binding is the Khronos specification, not the full ES6 specification.
 There are some differences to Khronos/ES6, including:</p>
 <ul>
-<li>Interoperability with other buffer types: Duktape.Buffer or Node.js
-    Buffer is allowed wherever an ArrayBuffer or a view object would be
-    allowed.</li>
+<li>Interoperability with other buffer types: Node.js Buffer is usually
+    allowed wherever an ArrayBuffer or a view object would be allowed.</li>
 <li>Small differences in argument coercion e.g. for offset and length
     values.</li>
 <li>ArrayBuffer has numeric indices (behaving like Uint8Array), and
     additional <code>length</code> (matching <code>byteLength</code>),
     <code>byteOffset</code> (= 0), and <code>BYTES_PER_ELEMENT</code> (= 1)
-    properties.</li>
+    properties.  This allows more compact (non-standard) code to be written
+    for dealing with buffers.</li>
 <li>TypedArray <code>subarray()</code> returns a typed array object whose
     internal prototype is copied from the argument rather than being set
     to the default prototype for that view, such as <code>Uint8Array.prototype</code>.</li>
+<li>The plain buffer custom type behaves mostly like an ArrayBuffer object
+    for Ecmascript code, but has a separate type in the Duktape C API.</li>
 </ul>
 
 <h2 id="nodejsbuffer-custombehavior">Node.js Buffer binding</h2>
@@ -227,9 +231,9 @@ There are some differences to Khronos/ES6, including:</p>
 some differences between the Node.js behavior and Duktape behavior.  These
 differences include:</p>
 <ul>
-<li>Interoperability with other buffer types: Duktape.Buffer, ArrayBuffer,
-    DataView, or a typed array (Uint8Array etc) is allowed wherever a Node.js
-    Buffer would be allowed.</li>
+<li>Interoperability with other buffer types: ArrayBuffer, DataView, or a
+    typed array (Uint8Array etc) is usually allowed wherever a Node.js Buffer
+    would be allowed.</li>
 <li>Buffer data is always zeroed on allocation and when concatenation
     <code>totalLength</code> exceeds combined size of input buffers.</li>
 <li>Read/write offset and length arguments are always validated to ensure
@@ -242,7 +246,7 @@ differences include:</p>
 <li>Write calls coerce their value argument like TypedArray, e.g. when
     writing 0x100 using <code>writeUInt8()</code> silently coerces to
     0x00 rather than throwing a TypeError.</li>
-<li>Duktape only supports the <code>utf8</code> encoding (and accepts no
+<li>Duktape only supports the <code>"utf8"</code> encoding (and accepts no
     spelling variants).  Most API calls ignore an encoding argument, and
     use the Duktape internal string representation (CESU-8 / extended UTF-8)
     for string-to-buffer conversion.</li>

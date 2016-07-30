@@ -2,7 +2,7 @@
  *  JSON.stringify() for a Buffer
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 JSON.stringify test

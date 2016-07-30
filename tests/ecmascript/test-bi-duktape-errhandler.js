@@ -148,7 +148,7 @@ function errCreateTest() {
     Constructor4.prototype = Error.prototype;
 
     [ undefined, null, true, 123, 'foo', [ 'foo', 'bar' ], { foo:1, bar:2 },
-      function () {}, Duktape.Buffer('foo'), Duktape.Pointer('dummy'),
+      function () {}, createPlainBuffer('foo'), Duktape.Pointer('dummy'),
       new Object(), new Array(), new Error('foo'), Error('bar'),
       new Constructor1(), new Constructor2(),
       new Constructor3(), new Constructor4() ].forEach(function (v) {
@@ -423,7 +423,7 @@ function errThrowTest() {
     Constructor4.prototype = Error.prototype;
 
     [ undefined, null, true, 123, 'foo', [ 'foo', 'bar' ], { foo:1, bar:2 },
-      function () {}, Duktape.Buffer('foo'), Duktape.Pointer('dummy'),
+      function () {}, createPlainBuffer('foo'), Duktape.Pointer('dummy'),
       new Object(), new Array(), new Error('foo'), Error('bar'),
       new Constructor1(), new Constructor2(),
       new Constructor3(), new Constructor4() ].forEach(function (v) {

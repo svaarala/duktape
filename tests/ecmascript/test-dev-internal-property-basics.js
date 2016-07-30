@@ -25,7 +25,7 @@ function sanitizedPrint(x) {
     var buf, i, n;
     var tmp = '';
 
-    buf = Duktape.Buffer(x);
+    buf = createPlainBuffer(x);
     for (i = 0, n = buf.length; i < n; i++) {
         if (buf[i] < 0x20 || buf[i] > 0x7e || buf[i] == '<' || buf[i] == '>') {
             tmp += '<' + String(buf[i]) + '>';

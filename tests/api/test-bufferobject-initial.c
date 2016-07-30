@@ -48,11 +48,9 @@ static duk_ret_t test_to_buffer_1(duk_context *ctx, void *udata) {
 		"})()\n");
 
 	for (i = 0; i <= 3; i++) {
-		/* Coerce the buffer object into a plain buffer value
-		 * using Duktape.Buffer().  In the initial buffer merge
-		 * there's not yet API support to work with buffer objects
-		 * from the C API (e.g. duk_to_buffer() will go through
-		 * string coercion when the argument is a buffer object).
+		/* Coerce the buffer object into a plain buffer value.
+		 * There's no C API support yet to "break down" a buffer
+		 * object in pure C.
 		 *
 		 * The resulting plain buffer is the underlying buffer
 		 * of the duk_hbufferobject object, without slice/view
@@ -62,7 +60,7 @@ static duk_ret_t test_to_buffer_1(duk_context *ctx, void *udata) {
 		 */
 
 		duk_eval_string(ctx,
-			"(function (v) { return Duktape.Buffer(v); })");
+			"(function (v) { return ArrayBuffer.plainOf(v); })");
 		duk_dup(ctx, i);
 		duk_call(ctx, 1);
 

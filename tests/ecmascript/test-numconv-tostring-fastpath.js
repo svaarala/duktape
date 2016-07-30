@@ -12,7 +12,7 @@
 }
 ---*/
 
-/*@include util-checksum-string.js@*/
+/*@include util-string.js@*/
 
 /*===
 radix 2

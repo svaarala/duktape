@@ -2,7 +2,7 @@
  *  Node.js Buffer slice()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 Node.js Buffer slice() test

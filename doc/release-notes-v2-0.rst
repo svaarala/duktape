@@ -7,6 +7,9 @@ Release overview
 
 Main changes in this release (see RELEASES.rst for full details):
 
+* Improve buffer bindings: plain buffers now behave like ArrayBuffers,
+  and Duktape.Buffer has been removed with ArrayBuffer taking its place.
+
 * FIXME
 
 The release has API incompatible changes, see upgrading notes below.
@@ -27,8 +30,8 @@ in ``extras/duk-v1-compat``.
 Supporting Duktape 1.x and Duktape 2.x simultaneously
 -----------------------------------------------------
 
-You can use the ``DUK_VERSION`` define to support both Duktape 1.x and 2.x
-in the same application.  For example::
+For C code you can use the ``DUK_VERSION`` define to support both Duktape 1.x
+and 2.x in the same application.  For example::
 
     #if (DUK_VERSION >= 20000)
     rc = duk_safe_call(ctx, my_safe_call, NULL, 1 /*nargs*/, 1 /*nrets*/);
@@ -45,6 +48,20 @@ is set to 19999 so that you can use::
     rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
     #endif
 
+Similarly for Ecmascript code you can::
+
+    var plainBuffer;
+    if (Duktape.version >= 19999) {
+        plainBuffer = ArrayBuffer.plainOf(bufferObject);
+    } else {
+        plainBuffer = Duktape.Buffer(bufferObject);
+    }
+
+Or you can detect features specifically::
+
+    var plainBuffer = (typeof ArrayBuffer.plainOf === 'function' ?
+                       ArrayBuffer.plainOf : Duktape.Buffer)(bufferObject);
+
 DUK_OPT_xxx feature option support removed
 ------------------------------------------
 
@@ -57,25 +74,64 @@ There are a lot of buffer behavior changes in the 2.x release; see detailed
 changes below.  Here's a summary of changes:
 
 * Plain buffers now behave like ArrayBuffer instances (to the extent possible)
-  for Ecmascript code.  There are numerous small changes to how plain buffers
-  are treated by standard built-ins as a result.
+  for Ecmascript code, and ``Duktape.Buffer`` has been removed, with
+  ``ArrayBuffer`` taking its place.  There are numerous small changes to how
+  plain buffers are treated by standard built-ins as a result.
 
 * Plain buffer and ArrayBuffer have numeric indices (e.g. ``arrayBuf[6]``) as
   before, but the properties are not enumerable so that they won't be e.g.
   JSON serialized.
 
+* Plain buffer string coercion (``String(plainBuffer)``) now mimics ArrayBuffer
+  and usually results in the string ``[object ArrayBuffer]``.  A new built-in
+  ``String.fromBuffer()`` provides the removed behavior, i.e. creates a new
+  string by copying the buffer bytes directly into the string internal
+  representation.
+
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` leaves ``ArrayBuffer`` constructor
-  and ``ArrayBuffer.prototype`` present but non-functional.
+  and ``ArrayBuffer.prototype`` present but non-functional.  You can still create
+  ArrayBuffer instances using ``duk_push_buffer_object()`` but ArrayBuffer methods
+  won't work (and ``new ArrayBuffer()`` also won't work).  (This behavior is not
+  guaranteed and may change even in minor versions.)
 
 To upgrade:
 
-* If you're using standard ArrayBuffers and typed arrays, no changes should be
-  necessary.
+* If you're using buffers in general, review http://wiki.duktape.org/HowtoBuffers.html
+  which has been updated for Duktape 2.0.
+
+* If you're using standard ArrayBuffers and typed arrays, no changes should
+  normally be necessary, however:
+
+  - Typed array ``.subarray()`` handling of arguments inheriting from a typed
+    array (rather than being a direct instance) has been fixed so that the result
+    has the default prototype for the result type (e.g. ``Uint8Array.prototype``)
+    rather than being copied from the argument.
 
 * If you're using the Node.js Buffer binding, XXX.
 
+  - Node.js Buffer ``.slice()`` handling of arguments inheriting from a Buffer
+    (rather than being a direct instance) has been fixed so that the result has
+    the default prototype (``Buffer.prototype``) rather than being copied from
+    the argument.
+
 * If you're using plain buffers, review their usage especially in Ecmascript
-  code.  See http://wiki.duktape.org/HowtoBuffers.html.
+  code.
+
+  - One important change is that ``String(plainBuffer)`` and ``duk_to_string()``
+    for a buffer does not work as before, use new ``String.fromBuffer()``
+    ``duk_buffer_to_string()`` bindings instead.
+
+  - Another important change is that plain buffers, like ArrayBuffer objects,
+    boolean coerce to ``true`` regardless of buffer size (zero or larger) and
+    contents.
+
+* If you're using ``Duktape.Buffer``, the following new built-ins replace its
+  functionality (and more):
+
+  - ``ArrayBuffer.allocPlain()``: to allocate a new (fixed) plain buffer
+
+  - ``ArrayBuffer.plainOf()``: to get the underlying plain buffer of any
+    buffer object (without making a copy)
 
 Some detailed changes (see ``tests/ecmascript/test-dev-plain-buffer.js)`` for
 even more detail):
@@ -98,11 +154,13 @@ even more detail):
   ``duk_to_buffer()`` for a string still results in a plain buffer with the
   same underlying bytes as before.
 
-* A new ``duk_buffer_to_string()`` API call converts a plain buffer to a string
-  with the same underlying bytes as in the buffer (like ``duk_to_string()`` did
-  in Duktape 1.x).
+* A new ``duk_buffer_to_string()`` API call converts any buffer value to a
+  string with the same underlying bytes as in the buffer (like
+  ``duk_to_string()`` did in Duktape 1.x).  For Ecmascript code the new
+  custom binding ``String.fromBuffer()`` does the same thing.
 
-  * XXX: Buffer object handling.
+* ``duk_to_boolean()`` for plain buffer: always true, even if buffer is zero
+  length.
 
 * ``duk_to_primitive()`` for plain buffer: plain buffer now not considered a
   primitive value (same as for a full ArrayBuffer object) and usually coerces

@@ -2,7 +2,7 @@
  *  buf.fill() with a string argument.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*---
 {

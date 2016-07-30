@@ -2,7 +2,7 @@
  *  Node.js Buffer equals()
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 node.js Buffer equals() test

@@ -50,8 +50,6 @@ values.</p>
     <td>Callback to modify/replace a created error.</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-errcreate-errthrow">errThrow</a></td>
     <td>Callback to modify/replace an error about to be thrown.</td></tr>
-<tr><td class="propname"><a href="#builtin-duktape-buffer">Buffer</a></td>
-    <td>Buffer constructor (function).</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-pointer">Pointer</a></td>
     <td>Pointer constructor (function).</td></tr>
 <tr><td class="propname"><a href="#builtin-duktape-thread">Thread</a></td>
@@ -162,15 +160,17 @@ print(result);  // prints JX encoded {foo:123} with 4-space indent
 <p><code>dec()</code> provides the reverse function of <code>enc()</code>.</p>
 
 <p>For "hex" and "base64" the input value is first string coerced (it only
-really makes sense to decode strings).  The result is always a buffer.  For example:</p>
+really makes sense to decode strings).  The result is always a plain buffer.
+For example:</p>
 <pre class="ecmascript-code">
 var result = Duktape.dec('base64', 'Zm9v');
-print(typeof result, result);  // prints 'buffer foo'
+print(typeof result, result);  // prints 'object foo'
 </pre>
 
-<p>If you wish to get back a string value, you can simply:</p>
+<p>If you wish to get back a string value, you can coerce the plain buffer to
+a string as follows:</p>
 <pre class="ecmascript-code">
-var result = String(Duktape.dec('base64', 'Zm9v'));
+var result = String.fromBuffer(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
 
@@ -489,77 +489,6 @@ initially non-existent.</p>
 <p>See
 <a href="#error-handlers">Error handlers (errCreate and errThrow)</a> for
 details.</p>
-
-<h2 id="builtin-duktape-buffer">Duktape.Buffer (constructor)</h2>
-
-<table>
-<thead>
-<tr>
-<th>Property</th><th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr><td class="propname">prototype</td><td>Prototype for Buffer objects.</td></tr>
-</tbody>
-</table>
-
-<p>The Buffer constructor is a function which returns a plain buffer when
-called as a normal function and a Buffer object when called as a
-constructor.  Otherwise the behavior is the same:</p>
-<ul>
-<li>If the first argument is a plain buffer, the buffer is used as is (a new
-    buffer is not created).  The second argument is ignored.  This form
-    can be used to wrap a plain buffer value into a Buffer object.</li>
-<li>If the first argument is a Buffer object, the internal plain buffer value
-    of the argument is used (a new buffer is not created).  The second argument
-    is again ignored.  If called as a constructor, a new Buffer object is
-    returned, but it will internally point to the same plain buffer value.</li>
-<li>If the first argument is a string, a new buffer is created and the bytes
-    from the string's internal extended UTF-8 representation are copied to the
-    buffer.  The second argument (if present) indicates whether or not the new
-    buffer should be dynamic (resizable); the default value is false.</li>
-<li>If the first argument is a number, a new buffer is created and filled with
-    zero.  The second argument (if present) indicates whether or not the new
-    buffer should be dynamic.  Zero filling the buffer is the default behavior,
-    but this can be disabled with a feature option; if disabled, the contents
-    will be unpredictable.</li>
-<li>When called as a constructor, the result is converted into a Buffer
-    object whose internal value is the plain buffer.  The internal prototype
-    of the newly created Buffer will be the
-    <code>Duktape.Buffer.prototype</code> object.</li>
-</ul>
-
-<p>If the argument is a Node.js Buffer, ArrayBuffer, DataView, or a TypedArray,
-the call behaves as if the argument was a Duktape.Buffer, i.e. the underlying
-plain buffer is returned or promoted to a Duktape.Buffer.  However, any slice
-byte offset/length information is ignored, so that the full underlying buffer
-is always returned.</p>
-
-<div class="note">
-Duktape.Buffer doesn't provide a way to make a copy of a buffer, but you can
-use the TypedArray bindings to do that: <code>copy = Duktape.Buffer(new Uint8Array(new Duktape.Buffer(input)))</code>.
-</div>
-
-<h2>Duktape.Buffer.prototype</h2>
-
-<table>
-<thead>
-<tr>
-<th>Property</th><th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr><td class="propname">toString</td><td>Convert Buffer to a printable string.</td></tr>
-<tr><td class="propname">valueOf</td><td>Return the primitive buffer value held by Buffer.</td></tr>
-</tbody>
-</table>
-
-<p><code>toString()</code> and <code>valueOf</code> accept both plain buffers and
-Buffer objects as their <code>this</code> binding.  This allows code such as:</p>
-<pre class="ecmascript-code">
-var plain_buf = Duktape.Buffer('test');
-print(plain_buf.toString());
-</pre>
 
 <h2 id="builtin-duktape-pointer">Duktape.Pointer (constructor)</h2>
 

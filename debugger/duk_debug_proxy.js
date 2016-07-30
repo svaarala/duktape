@@ -32,6 +32,17 @@ var metadata = {};
 var TORTURE = false;  // for manual testing of binary/json parsing robustness
 
 /*
+ *  Duktape 1.x and 2.x buffer harmonization
+ */
+
+var allocPlain = (typeof ArrayBuffer.allocPlain === 'function' ?
+                  ArrayBuffer.allocPlain : Duktape.Buffer);
+var plainOf = (typeof ArrayBuffer.plainOf === 'function' ?
+               ArrayBuffer.plainOf : Duktape.Buffer);
+var bufferToString = (typeof String.fromBuffer === 'function' ?
+                      String.fromBuffer : String);
+
+/*
  *  Detect missing 'var' declarations
  */
 
@@ -54,7 +65,7 @@ function plainBufferCopy(typedarray) {
 
     var u8 = new Uint8Array(typedarray.length);
     u8.set(typedarray);  // make a copy, ensuring there's no slice offset
-    return Duktape.Buffer(u8);  // get underlying plain buffer
+    return plainOf(u8);  // get underlying plain buffer
 }
 
 function isObject(x) {
@@ -84,7 +95,7 @@ function readFully(filename, cb) {
                 uv.fs_close(handle);
                 res = new Uint8Array(dataOff);
                 res.set(data.subarray(0, dataOff));
-                res = Duktape.Buffer(res);  // plain buffer
+                res = plainOf(res);  // plain buffer
                 log.debug('Read', res.length, 'bytes from', filename);
                 return cb(res, null);
             }
@@ -217,7 +228,7 @@ JsonConnHandler.prototype.onRead = function onRead(err, data) {
         // Feed the data one byte at a time when torture testing.
         if (TORTURE && data.length > 1) {
             for (var i = 0; i < data.length; i++) {
-                tmpBuf = Duktape.Buffer(1);
+                tmpBuf = allocPlain(1);
                 tmpBuf[0] = data[i];
                 this.onRead(null, tmpBuf);
             }
@@ -328,7 +339,7 @@ JsonConnHandler.prototype.trialParseJsonMessage = function trialParseJsonMessage
 
     for (i = 0; i < avail; i++) {
         if (buf[i] == 0x0a) {
-            str = String(plainBufferCopy(buf.subarray(0, i)));
+            str = bufferToString(plainBufferCopy(buf.subarray(0, i)));
             try {
                 if (jxParse) {
                     msg = Duktape.dec('jx', str);
@@ -655,7 +666,7 @@ TargetConnHandler.prototype.onRead = function onRead(err, data) {
         // Feed the data one byte at a time when torture testing.
         if (TORTURE && data.length > 1) {
             for (var i = 0; i < data.length; i++) {
-                tmpBuf = Duktape.Buffer(1);
+                tmpBuf = allocPlain(1);
                 tmpBuf[0] = data[i];
                 this.onRead(null, tmpBuf);
             }
@@ -719,7 +730,7 @@ TargetConnHandler.prototype.trialParseHandshake = function trialParseHandshake()
 
     for (i = 0; i < avail; i++) {
         if (buf[i] == 0x0a) {
-            msg = String(plainBufferCopy(buf.subarray(0, i)));
+            msg = bufferToString(plainBufferCopy(buf.subarray(0, i)));
             this.incoming.set(this.incoming.subarray(i + 1));
             this.incomingOffset -= i + 1;
 
@@ -832,7 +843,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 5 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(5, 5 + len));
-                    v = { type: 'buffer', data: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'buffer', data: Duktape.enc('hex', plainOf(v)) };
                     consume(5 + len);
                 }
             }
@@ -843,7 +854,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 3 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(3, 3 + len));
-                    v = { type: 'buffer', data: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'buffer', data: Duktape.enc('hex', plainOf(v)) };
                     consume(3 + len);
                 }
             }
@@ -874,7 +885,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
             if (avail >= 9) {
                 tmp = new Uint8Array(8);
                 tmp.set(buf.subarray(1, 9));
-                v = { type: 'number', data: Duktape.enc('hex', Duktape.Buffer(tmp)) };
+                v = { type: 'number', data: Duktape.enc('hex', plainOf(tmp)) };
                 if (readableNumberValue) {
                     // The value key should not be used programmatically,
                     // it is just there to make the dumps more readable.
@@ -889,7 +900,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 3 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(3, 3 + len));
-                    v = { type: 'object', 'class': buf[1], pointer: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'object', 'class': buf[1], pointer: Duktape.enc('hex', plainOf(v)) };
                     consume(3 + len);
                 }
             }
@@ -900,7 +911,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 2 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(2, 2 + len));
-                    v = { type: 'pointer', pointer: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'pointer', pointer: Duktape.enc('hex', plainOf(v)) };
                     consume(2 + len);
                 }
             }
@@ -911,7 +922,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 4 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(4, 4 + len));
-                    v = { type: 'lightfunc', flags: dv.getUint16(1, false), pointer: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'lightfunc', flags: dv.getUint16(1, false), pointer: Duktape.enc('hex', plainOf(v)) };
                     consume(4 + len);
                 }
             }
@@ -922,7 +933,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 2 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(2, 2 + len));
-                    v = { type: 'heapptr', pointer: Duktape.enc('hex', Duktape.Buffer(v)) };
+                    v = { type: 'heapptr', pointer: Duktape.enc('hex', plainof(v)) };
                     consume(2 + len);
                 }
             }
@@ -1014,7 +1025,7 @@ function main() {
                 throw err;
             }
             try {
-                metadata = JSON.parse(String(data));
+                metadata = JSON.parse(bufferToString(data));
             } catch (e) {
                 log.error('Failed to parse JSON metadata from ' + metadataFile + ': ' + e);
                 throw e;

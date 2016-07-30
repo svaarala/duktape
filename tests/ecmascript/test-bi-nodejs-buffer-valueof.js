@@ -4,7 +4,7 @@
  *  Inherited from Object.prototype.valueOf() and returns Buffer as is.
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 node.js Buffer valueOf() test

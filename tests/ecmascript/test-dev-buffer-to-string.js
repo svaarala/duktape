@@ -10,6 +10,10 @@
 |c3bf616263|
 4 "\xffabc"
 |ff616263|
+4 "\xffabc"
+|ff616263|
+4 "\xffabc"
+|ff616263|
 ===*/
 
 function test() {
@@ -31,7 +35,8 @@ function test() {
     print(Duktape.enc('jx', stringToBuffer(s)));
 
     // Non-standard, works in both Duktape 1.x and 2.x: Node.js Buffer
-    // string coercion is 1:1 into the internal key representation.
+    // string coercion is 1:1 into the internal key representation with
+    // no encoding (which differs from Node.js).
 
     b = new Buffer(4);
     b[0] = 0xff;
@@ -39,6 +44,24 @@ function test() {
     b[2] = 0x62;
     b[3] = 0x63;
     s = String(b);
+    print(s.length, Duktape.enc('jx', s));
+    print(Duktape.enc('jx', stringToBuffer(s)));
+
+    // Buffer.prototype.toString() can also be called for other buffer
+    // types in Duktape (not in other engines necessarily).
+
+    b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
+    s = Buffer.prototype.toString.call(b);
+    print(s.length, Duktape.enc('jx', s));
+    print(Duktape.enc('jx', stringToBuffer(s)));
+
+    // In Duktape 2.x there's a specific method for doing a 1:1 buffer to
+    // string conversion.  The active slice of any buffer or buffer object
+    // argumented is interpreted as bytes (even for e.g. Uint32Array) and
+    // copied 1:1 into the internal string representation.
+
+    b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
+    s = String.fromBuffer(b);
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 }

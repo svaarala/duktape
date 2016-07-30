@@ -3,7 +3,7 @@
  *  lookup table indices.
  */
 
-/*@include util-checksum-string.js@*/
+/*@include util-string.js@*/
 
 /*===
 concatenate

@@ -15,6 +15,8 @@
  *  http://www.fileformat.info/format/iff/egff.htm
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 Rk9STQAAAFZJTEJNQk1IRAAAABQAEAAQAAAAAAEAAAAAAGRkAUAAyENNQVAAAAAG////AAD/Qk9EWQAAACAAAAAwAPwD8D8A/PAw8DzwDzwD/AP8A/wPMAwMPDwAAA==
 ===*/
@@ -116,7 +118,7 @@ function iffTest() {
     buf.copy(res);
 
     if (typeof Duktape === 'object') {
-        print(Duktape.enc('base64', Duktape.Buffer(res)));
+        print(Duktape.enc('base64', createPlainBuffer(res)));
     } else {
         print(res.toString('base64'));
     }

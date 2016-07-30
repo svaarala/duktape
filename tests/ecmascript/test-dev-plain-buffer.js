@@ -12,7 +12,7 @@
 ---*/
 
 function createPlain() {
-    var pb = Duktape.Buffer(16);
+    var pb = createPlainBuffer(16);
     for (var i = 0; i < 16; i++) {
         pb[i] = 0x61 + i;
     }
@@ -300,6 +300,10 @@ number 16 false false
 string "15" true true
 string "16" false false
 string "15.0" false false
+true
+true
+true
+true
 ===*/
 
 function operatorTest() {
@@ -325,7 +329,7 @@ function operatorTest() {
     print(pb === ab);
 
     // number and string comparisons are always false
-    pb = Duktape.Buffer(4);
+    pb = createPlainBuffer(4);
     pb[0] = '1'.charCodeAt(0);
     pb[1] = '2'.charCodeAt(0);
     pb[2] = '3'.charCodeAt(0);
@@ -355,6 +359,13 @@ function operatorTest() {
     [ 'length', 'byteLength', 'byteOffset', 'BYTES_PER_ELEMENT', -1, 0, 15, 16, '15', '16', '15.0' ].forEach(function (v) {
         print(typeof v, Duktape.enc('jx', v), v in pb, v in ab);
     });
+
+    // plain buffers ToBoolean() coerce to true, even if a zero length
+    // buffer (this differs from Duktape 1.x)
+    print(!!pb);
+    print(!!ab);
+    print(!!createPlainBuffer(0));
+    print(!!new ArrayBuffer(0));
 }
 
 /*===
@@ -1168,7 +1179,7 @@ function duktapeMethodTest() {
     resetValues();
     print('- dec');
     t = '666f6f';
-    pb = Duktape.Buffer(6);
+    pb = createPlainBuffer(6);
     pb[0] = t.charCodeAt(0);
     pb[1] = t.charCodeAt(1);
     pb[2] = t.charCodeAt(2);
@@ -1186,7 +1197,7 @@ function duktapeMethodTest() {
     print(bufferToString(Duktape.dec('hex', ab)));
 
     // Duktape.dec() outputs a plain buffer.
-    pb = Duktape.Buffer(4);
+    pb = createPlainBuffer(4);
     pb[0] = 0x61;
     pb[1] = 0x62;
     pb[2] = 0x63;
@@ -1499,7 +1510,7 @@ function nodejsBufferPrototypeMethodTest() {
 
     resetValues();
     print('- copy, source plain buffer, target plain buffer');
-    t = Duktape.Buffer(32);
+    t = createPlainBuffer(32);
     print(Duktape.enc('jx', t));
     print(Buffer.prototype.copy.call(pb, t));
     print(Duktape.enc('jx', t));
@@ -1508,7 +1519,7 @@ function nodejsBufferPrototypeMethodTest() {
 
     resetValues();
     print('- copy, source ArrayBuffer, target plain buffer');
-    t = Duktape.Buffer(32);
+    t = createPlainBuffer(32);
     print(Duktape.enc('jx', t));
     print(Buffer.prototype.copy.call(ab, t));
     print(Duktape.enc('jx', t));
@@ -1603,7 +1614,7 @@ function typedArrayPrototypeMethodTest() {
     print(Duktape.enc('jx', pb));
     Uint16Array.prototype.set.call(pb, [ 1, 2, 3 ], 6);  // as 'this'
     print(Duktape.enc('jx', pb));
-    t = Duktape.Buffer(3);
+    t = createPlainBuffer(3);
     t[0] = 0xff;
     t[1] = 0xfe;
     t[2] = 0xfd;
@@ -1615,7 +1626,7 @@ function typedArrayPrototypeMethodTest() {
     print(Duktape.enc('jx', ab));
     Uint16Array.prototype.set.call(ab, [ 1, 2, 3 ], 6);
     print(Duktape.enc('jx', ab));
-    t = Duktape.Buffer(3);
+    t = createPlainBuffer(3);
     t[0] = 0xff;
     t[1] = 0xfe;
     t[2] = 0xfd;
@@ -1831,7 +1842,7 @@ function miscTest() {
     // as in Duktape 1.x (which created a Node.js Buffer with the same
     // underlying plain buffer)  Instead, the argument is ToNumber() coerced
     // ultimately resulting in zero, and the result is a zero length ArrayBuffer.
-    t = new ArrayBuffer(Duktape.Buffer(4));
+    t = new ArrayBuffer(createPlainBuffer(4));
     print(t.length);
     t = new ArrayBuffer(new ArrayBuffer(4));
     print(t.length);
@@ -1840,7 +1851,7 @@ function miscTest() {
     // buffer.  Instead, a plain buffer is treated like ArrayBuffer or any
     // other object: its .length is read, and index properties are coerced
     // to form a fresh buffer with matching .length.
-    pb = Duktape.Buffer(4);
+    pb = createPlainBuffer(4);
     pb[0] = 0x61; pb[1] = 0x62; pb[2] = 0x63; pb[3] = 0x64;
     ab = new ArrayBuffer(4);
     ab[0] = 0x61; ab[1] = 0x62; ab[2] = 0x63; ab[3] = 0x64;
@@ -1855,7 +1866,7 @@ function miscTest() {
 
     // Typed array constructor coerces a plain buffer into an actual ArrayBuffer
     // and uses it for typedArray.buffer.  The underlying buffer is the same.
-    pb = Duktape.Buffer(16);
+    pb = createPlainBuffer(16);
     for (i = 0; i < pb.length; i++) { pb[i] = 0x66; }  // endian neutral
     ab = new ArrayBuffer(16);
     for (i = 0; i < ab.length; i++) { ab[i] = 0x66; }

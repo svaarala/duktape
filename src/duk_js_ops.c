@@ -78,10 +78,10 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 		return 1;
 	}
 	case DUK_TAG_BUFFER: {
-		/* mimic semantics for strings */
-		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
-		DUK_ASSERT(h != NULL);
-		return (DUK_HBUFFER_GET_SIZE(h) > 0 ? 1 : 0);
+		/* Mimic ArrayBuffer semantics: objects coerce true, regardless
+		 * of buffer length (zero or not) or context.
+		 */
+		return 1;
 	}
 	case DUK_TAG_POINTER: {
 		void *p = DUK_TVAL_GET_POINTER(tv);

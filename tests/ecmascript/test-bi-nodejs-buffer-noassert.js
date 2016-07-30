@@ -2,7 +2,7 @@
  *  noAssert specifics
  */
 
-/*@include util-nodejs-buffer.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 noAssert write return value test

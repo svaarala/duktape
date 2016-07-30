@@ -2,6 +2,8 @@
  *  Fragile testcase for testing property error messages.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -39,7 +41,7 @@ TypeError: cannot delete property 'foo' of null
 "TypeError: cannot write property (PTR) of null"
 "TypeError: cannot write property [object Pointer] of null"
 "TypeError: cannot write property [buffer:5] of null"
-"TypeError: cannot write property [object Buffer] of null"
+"TypeError: cannot write property [object ArrayBuffer] of null"
 ===*/
 
 function test() {
@@ -84,8 +86,8 @@ function test() {
         function test() {},
         Duktape.Pointer('dummy'),
         new Duktape.Pointer('dummy'),
-        Duktape.Buffer('dummy'),
-        new Duktape.Buffer('dummy'),
+        createPlainBuffer('dummy'),
+        createArrayBuffer('dummy')
     ].forEach(function (v) {
         try {
             null[v] = 123;

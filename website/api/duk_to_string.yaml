@@ -14,6 +14,14 @@ summary: |
 
   <div include="ref-custom-type-coercion.html" />
 
+  <div class="note">
+  In Duktape 2.x plain buffers mimic ArrayBuffer objects and will usually
+  ToString() coerce to "[object ArrayBuffer]".  To convert buffer or buffer
+  object contents into a string, use
+  <code><a href="#duk_buffer_to_string">duk_buffer_to_string()</code>
+  (new in Duktape 2.0).</a>.
+  </div>
+
 example: |
   printf("coerced string: %s\n", duk_to_string(ctx, -3));
 
@@ -23,5 +31,6 @@ tags:
 
 seealso:
   - duk_safe_to_string
+  - duk_buffer_to_string
 
 introduced: 1.0.0

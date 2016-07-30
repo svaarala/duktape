@@ -1,0 +1,42 @@
+name: duk_buffer_to_string
+
+proto: |
+  const char *duk_buffer_to_string(duk_context *ctx, duk_idx_t idx);
+
+stack: |
+  [ ... val! ... ] -> [ ... buffer_to_string(val)! ... ]
+
+summary: |
+  <p>Replace the buffer value (plain buffer or any buffer object) at
+  <code>idx</code> with a string whose internal byte representation is taken
+  1:1 from the buffer (same as if the buffer data was pushed using
+  <code>duk_push_lstring()</code>).  Returns a non-<code>NULL</code>
+  pointer to the read-only, NUL-terminated string data.  A TypeError is
+  thrown if (1) the argument is not a buffer value, (2) the argument is
+  a buffer object whose backing buffer doesn't cover the apparent
+  buffer size, (3) the index is invalid.</p>
+
+  <div include="ref-custom-type-coercion.html" />
+
+  <div class="note">
+  Since Duktape 2.0 the <code>duk_to_string()</code> coercion for a buffer
+  value is typically something like "[object ArrayBuffer]", which is not
+  usually intended.
+  </div>
+
+example: |
+  unsigned char *ptr;
+  ptr = (unsigned char *) duk_push_fixed_buffer(ctx, 4);
+  ptr[0] = 0x61;
+  ptr[1] = 0x62;
+  ptr[2] = 0x63;
+  ptr[3] = 0x64;  /* 61 62 63 64 */
+  printf("coerced string: %s\n", duk_buffer_to_string(ctx, -1));
+  duk_pop(ctx);
+
+tags:
+  - stack
+  - string
+  - buffer
+
+introduced: 2.0.0

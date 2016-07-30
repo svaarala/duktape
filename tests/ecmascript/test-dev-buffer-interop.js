@@ -42,8 +42,8 @@ function plainBufferTest() {
 
     a = new Buffer('ABCDEFGH');
     b = new Buffer(a);
-    c = Duktape.Buffer(a);   // get underlying buffer
-    d = Duktape.Buffer(b);
+    c = getPlainBuffer(a);   // get underlying buffer
+    d = getPlainBuffer(b);
     print(typeof a, typeof b, typeof c, typeof d);
     print(c === d);  // not the same
     print(a);
@@ -67,8 +67,6 @@ try {
 Node.js Buffer constructor interop
 {type:"Buffer",data:[102,111,111]}
 false 97 102
-{type:"Buffer",data:[102,111,111]}
-false 97 102
 {type:"Buffer",data:[1,255]}
 false 2 1
 {type:"Buffer",data:[239,123]}
@@ -85,16 +83,7 @@ function nodejsBufferConstructorTest() {
     // (XXX: newer Node.js Buffer binding will create a Node.js buffer
     // which shares the same underlying buffer).
 
-    t = Duktape.Buffer('foo');  // plain
-    b = new Buffer(t);
-    print(Duktape.enc('jx', b));
-    b[0] = 0x61;  // 'a'
-    print(b[0] === t[0], b[0], t[0]);
-
-    // A Duktape.Buffer is accepted as an input, interpreted as an Array-like
-    // input.  A copy (not slice) is made.
-
-    t = new Duktape.Buffer('foo');
+    t = createPlainBuffer('foo');  // plain
     b = new Buffer(t);
     print(Duktape.enc('jx', b));
     b[0] = 0x61;  // 'a'
@@ -136,22 +125,21 @@ try {
 
 /*===
 Node.js Buffer.concat interop
-foobarABCbcde
+fooABCbcde
 ===*/
 
 function nodejsConcatTest() {
     var res;
-    var b1, b2, b3, b4;
+    var b1, b2, b3;
 
     // Concat accepts all view/buffer types.  View/slice offsets are
     // respected, e.g. b4 first byte is skipped below.
 
     b1 = new Buffer('foo');
-    b2 = new Duktape.Buffer('bar');
-    b3 = new ArrayBuffer(3); b3[0] = 0x41; b3[1] = 0x42; b3[2] = 0x43;
-    b4 = new Uint8Array([ 0x61, 0x62, 0x63, 0x64, 0x65 ]).subarray(1);
+    b2 = new ArrayBuffer(3); b2[0] = 0x41; b2[1] = 0x42; b2[2] = 0x43;
+    b3 = new Uint8Array([ 0x61, 0x62, 0x63, 0x64, 0x65 ]).subarray(1);
 
-    res = Buffer.concat([ b1, b2, b3, b4 ]);
+    res = Buffer.concat([ b1, b2, b3 ]);
     print(res);
 }
 
@@ -178,7 +166,7 @@ function arrayBufferConstructorTest() {
     // new ArrayBuffer() input).  As a result a zero-length ArrayBuffer
     // gets created.
 
-    t = Duktape.Buffer('foo');  // plain
+    t = createPlainBuffer('foo');  // plain
     b = new ArrayBuffer(t);
     print(Duktape.enc('jx', b));
     print(b[0] === t[0], b[0], t[0]);

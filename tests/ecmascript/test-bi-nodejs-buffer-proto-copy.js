@@ -2,8 +2,8 @@
  *  Node.js Buffer copy()
  */
 
-/*@include util-nodejs-buffer.js@*/
-/*@include util-checksum-string.js@*/
+/*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*===
 Node.js Buffer copy() test
