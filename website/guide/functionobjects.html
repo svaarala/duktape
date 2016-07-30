@@ -1,6 +1,6 @@
 <h1 id="functionobjects">Function objects</h1>
 
-<h2 id="ecmascript-function-properties">Properties of Ecmascript functions</h2>
+<h2 id="ecmascript-function-properties">Ecmascript functions</h2>
 
 <p>Duktape Function objects add a few properties to standard Ecmascript
 properties.  The table below summarizes properties assigned to newly
@@ -45,7 +45,7 @@ Several Ecmascript built-in functions have properties different from user
 created Functions.
 </div>
 
-<h2 id="duktapec-function-properties">Properties of Duktape/C functions</h2>
+<h2 id="duktapec-function-properties">Duktape/C functions</h2>
 
 <p>User-created Duktape/C functions (<code>duk_push_c_function()</code>) have
 a different set of properties to reduce Function object memory footprint:</p>
@@ -64,13 +64,18 @@ Non-writable and non-configurable.</td></tr>
 <p>Note in particular that the standard <code>prototype</code>, <code>caller</code>,
 and <code>arguments</code> properties are missing by default.  This is not strictly
 compliant but is important to reduce function footprint.  User code can of course
-assign these but is not required to do so.</p>
+assign these properties but is not required to do so.</p>
 
-<h2 id="duktapec-lightfunc-properties">Properties of lightweight Duktape/C functions</h2>
+<p>There's also no (non-standard) <code>name</code> property.  Setting it manually
+is useful because it affects how a function appears in tracebacks.</p>
 
-<p>Lightweight functions have a set of non-configurable, non-writable virtual
-properties listed below.  Like normal functions, they inherit further properties
-from <code>Function.prototype</code>.</p>
+<h2 id="duktapec-lightfunc-properties">Lightweight Duktape/C functions</h2>
+
+<p>Lightweight Duktape/C functions (lightfuncs) are a very memory efficient way
+of representing a native function in the Ecmascript environment.  Lightfuncs
+don't have a property table so they can't hold properties.  However, they inherit
+from <code>Function.prototype</code> and have the following virtual properties
+(which are non-configurable and non-writable):</p>
 
 <table>
 <thead>
@@ -96,5 +101,12 @@ light_0805b94c_0511
 dependent string.  You shouldn't rely on a specific format.  For example:</p>
 <pre>
 duk&gt; print(myLightFunc);
-function light_0805b94c_0511() {/* light */}
+function light_0805b94c_0511() {"light"}
 </pre>
+
+<p>For more details, see:</p>
+<ul>
+<li><a href="http://wiki.duktape.org/HowtoLightfuncs.html">How to work with lightfuncs</a></li>
+<li><a href="#typealgorithms">Type algorithms</a></li>
+<li><a href="https://github.com/svaarala/duktape/blob/master/doc/lightweight-functions.rst">lightweight-functions.rst</a></li>
+</ul>
