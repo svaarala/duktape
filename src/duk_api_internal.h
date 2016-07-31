@@ -149,7 +149,9 @@ DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *pt
 DUK_INTERNAL_DECL void duk_push_lightfunc_name_raw(duk_context *ctx, duk_c_function func, duk_small_uint_t lf_flags);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name(duk_context *ctx, duk_tval *tv);
 DUK_INTERNAL_DECL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
+#endif
 
 DUK_INTERNAL_DECL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL const char *duk_push_string_tval_readable(duk_context *ctx, duk_tval *tv);

@@ -116,11 +116,13 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);
 		/* nothing to finalize */
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
 		if (b->buf) {
 			duk_heaphdr_decref(thr, (duk_heaphdr *) b->buf);
 		}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;

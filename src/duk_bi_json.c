@@ -71,7 +71,9 @@ DUK_LOCAL_DECL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL_DECL void duk__enc_buffer(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
 DUK_LOCAL_DECL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL_DECL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj);
+#endif
 #endif
 DUK_LOCAL_DECL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth);
 
@@ -1596,6 +1598,7 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj) {
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
@@ -1610,6 +1613,7 @@ DUK_LOCAL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj) 
 	}
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /* Indent helper.  Calling code relies on js_ctx->recursion_depth also being
  * directly related to indent depth.
@@ -1995,6 +1999,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (DUK_HOBJECT_IS_BUFOBJ(h) &&
 		    js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_EXT_COMPATIBLE)) {
@@ -2007,6 +2012,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		}
 		/* Otherwise bufferobjects get serialized as normal objects. */
 #endif  /* JX || JC */
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		switch (c) {
 		case DUK_HOBJECT_CLASS_NUMBER: {
@@ -2548,8 +2554,10 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		} else if (c_bit & c_func) {
 			DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_function);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		} else if (c_bit & c_bufobj) {
 			duk__enc_bufobj(js_ctx, (duk_hbufobj *) obj);
+#endif
 #endif
 		} else if (c_bit & c_abort) {
 			DUK_DD(DUK_DDPRINT("abort fast path for unsupported type"));

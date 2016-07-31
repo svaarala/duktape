@@ -1765,7 +1765,9 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_IS_BUFOBJ(obj)) {
+	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	else if (DUK_HOBJECT_IS_BUFOBJ(obj)) {
 		duk_hbufobj *h_bufobj;
 		duk_uint_t byte_off;
 		duk_small_uint_t elem_size;
@@ -1848,7 +1850,9 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 			return 1;  /* cannot be arguments exotic */
 		}
-	} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj)) {
+	}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+	else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj)) {
 		DUK_DDD(DUK_DDDPRINT("duktape/c object exotic property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
@@ -2150,6 +2154,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
  *  Fast path for bufobj getprop/putprop
  */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key) {
 	duk_context *ctx;
 	duk_uint32_t idx;
@@ -2200,7 +2205,9 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 
 	return 1;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key, duk_tval *tv_val) {
 	duk_context *ctx;
 	duk_uint32_t idx;
@@ -2259,6 +2266,7 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 	duk_pop(ctx);
 	return 1;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  GETPROP: Ecmascript property read.
@@ -2403,6 +2411,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			return 1;
 		}
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk__getprop_fastpath_bufobj_tval(thr, curr, tv_key) != 0) {
 			/* Read value pushed on stack. */
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is bufobj, key is a number, bufobj "
@@ -2410,6 +2419,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			return 1;
 		}
+#endif
 
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(curr))) {
@@ -3407,10 +3417,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			return 1;
 		}
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk__putprop_fastpath_bufobj_tval(thr, orig, tv_key, tv_val) != 0) {
 			DUK_DDD(DUK_DDDPRINT("base is bufobj, key is a number, bufobj fast path"));
 			return 1;
 		}
+#endif
 
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(orig))) {
@@ -3709,7 +3721,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 					/* key is 'length', cannot match argument exotic behavior */
 					goto success_no_arguments_exotic;
-				} else if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
+				}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+				else if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
 					duk_hbufobj *h_bufobj;
 					duk_uint_t byte_off;
 					duk_small_uint_t elem_size;
@@ -3748,6 +3762,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 						goto success_no_arguments_exotic;
 					}
 				}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 				DUK_D(DUK_DPRINT("should not happen, key %!O", key));
 				goto fail_internal;  /* should not happen */

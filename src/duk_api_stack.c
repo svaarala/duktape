@@ -1377,7 +1377,9 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_
 			*out_isbuffer = 1;
 		}
 		return (void *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);  /* may be NULL (but only if size is 0) */
-	} else if (DUK_TVAL_IS_OBJECT(tv)) {
+	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	else if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
@@ -1403,6 +1405,7 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_
 			/* if slice not fully valid, treat as error */
 		}
 	}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 	if (throw_flag) {
 		DUK_ERROR_REQUIRE_TYPE_INDEX(thr, idx, "buffer", DUK_STR_NOT_BUFFER);
@@ -2528,6 +2531,9 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT(tv != NULL);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
+#if !defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	case DUK_TAG_BUFFER:  /* With no bufferobject support, don't object coerce. */
+#endif
 	case DUK_TAG_UNDEFINED:
 	case DUK_TAG_NULL: {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_OBJECT_COERCIBLE);
@@ -2550,6 +2556,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		/* nop */
 		break;
 	}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	case DUK_TAG_BUFFER: {
 		/* A plain buffer object coerces to a full ArrayBuffer which
 		 * is not fully transparent behavior (ToObject() should be a
@@ -2564,6 +2571,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		duk_hbufobj_push_arraybuffer_from_plain(thr, h_buf);
 		goto replace_value;
 	}
+#endif
 	case DUK_TAG_POINTER: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER);
@@ -3889,6 +3897,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_lightfunc(duk_context *ctx, duk_c_function fun
 	return 0;  /* not reached */
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hbufobj *obj;
@@ -3917,14 +3926,15 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 
 	return obj;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /* XXX: There's quite a bit of overlap with buffer creation handling in
  * duk_bi_buffer.c.  Look for overlap and refactor.
  */
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 #define DUK__PACK_ARGS(classnum,protobidx,elemtype,elemshift,isview) \
 	(((classnum) << 24) | ((protobidx) << 16) | ((elemtype) << 8) | ((elemshift) << 4) | (isview))
 
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
@@ -3939,13 +3949,9 @@ static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT32ARRAY,      DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,      DUK_HBUFOBJ_ELEM_FLOAT32,      2, 1),  /* DUK_BUFOBJ_FLOAT32ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_FLOAT64ARRAY,      DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,      DUK_HBUFOBJ_ELEM_FLOAT64,      3, 1)   /* DUK_BUFOBJ_FLOAT64ARRAY */
 };
-#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-/* Only allow ArrayBuffer when support disabled. */
-static const duk_uint32_t duk__bufobj_flags_lookup[] = {
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0)  /* DUK_BUFOBJ_ARRAYBUFFER */
-};
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
 	duk_hthread *thr;
 	duk_hbufobj *h_bufobj;
@@ -4005,7 +4011,6 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_bufobj->is_view = tmp & 0x0f;
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  Just create a new
 	 * ArrayBuffer sharing the same underlying buffer.
@@ -4031,7 +4036,6 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 		duk_compact(ctx, -1);
 	}
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 	return;
 
@@ -4043,6 +4047,15 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CALL_ARGS);
 	return;  /* not reached */
 }
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags) {
+	DUK_UNREF(idx_buffer);
+	DUK_UNREF(byte_offset);
+	DUK_UNREF(byte_length);
+	DUK_UNREF(flags);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;

@@ -179,7 +179,9 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 2);
 
-	duk_hbufobj_promote_plain(ctx, 0);  /* promote plain buffer to ArrayBuffer */
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	duk_hbufobj_promote_plain(ctx, 0);
+#endif
 	tv = duk_get_tval(ctx, 0);
 	DUK_ASSERT(tv != NULL);
 	if (DUK_TVAL_IS_NULL(tv)) {
