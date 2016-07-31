@@ -18,6 +18,9 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 # Coroutine support has about 2kB footprint.
 DUK_USE_COROUTINE_SUPPORT: false
 
+# Finalizer support has about 0.8kB footprint.
+DUK_USE_FINALIZER_SUPPORT: false
+
 # ES6 Proxy has about 2kB footprint.
 DUK_USE_ES6_PROXY: false
 
