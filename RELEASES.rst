@@ -1793,6 +1793,11 @@ Planned
   .length is larger than the internal array part size (created e.g. when
   calling new Array(10)) without falling back to the slow path (GH-703)
 
+* Fix potential memory unsafe behavior when duk_push_(l)string() data pointer
+  is from a dynamic/external buffer (or any other relocatable data source)
+  and a finalizer side effect resizes/reconfigures the buffer, invalidating
+  the pointer before string table code has time to copy the data (GH-884)
+
 * Internal performance improvement: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674)
 
