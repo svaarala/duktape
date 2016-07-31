@@ -2343,38 +2343,16 @@ DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx) {
  */
 DUK_EXTERNAL const char *duk_buffer_to_string(duk_context *ctx, duk_idx_t idx) {
 	void *ptr_src;
-	void *ptr_tmp;
 	duk_size_t len;
 	const char *res;
-
-	/* Intermediate buffer is needed for safety in obscure corner cases:
-	 * if we were to duk_push_lstring() the argument buffer data directly,
-	 * side effects during the string push might e.g. run a finalizer
-	 * which reconfigured the argument buffer before we copied the data.
-	 * This is rather unfortunate because an extra copy is now made, and
-	 * that copy is almost always unnecessary.
-	 *
-	 *  - Maybe prevent side effects temporarily instead?
-	 *  - Fast path for fixed buffers which can't get side effects like that?
-	 *  - Add an internal string pusher which first does the string table
-	 *    check, and uses a callback to request an up-to-date data pointer
-	 *    when the string space has been allocated but not yet copied?
-	 *  - Add GC flags tweaks into string intern processing
-	 */
 
 	idx = duk_require_normalize_index(ctx, idx);
 
 	ptr_src = duk_require_buffer_data(ctx, idx, &len);
 	DUK_ASSERT(ptr_src != NULL || len == 0);
 
-	ptr_tmp = duk_push_fixed_buffer(ctx, len);
-	DUK_ASSERT(ptr_tmp != NULL || len == 0);
-
-	DUK_MEMCPY(ptr_tmp, (const void *) ptr_src, len);
-	res = duk_push_lstring(ctx, (const char *) ptr_tmp, len);
+	res = duk_push_lstring(ctx, (const char *) ptr_src, len);
 	duk_replace(ctx, idx);
-	duk_pop(ctx);
-
 	return res;
 }
 
