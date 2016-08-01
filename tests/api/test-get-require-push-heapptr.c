@@ -27,7 +27,7 @@ idx 6: type 7, duk_get_heapptr() -> non-NULL
 idx 6: type 7, duk_require_heapptr() -> non-NULL
 top: 7
 idx 7: type 0, duk_get_heapptr() -> NULL
-idx 7: type 5, duk_require_heapptr() -> RangeError: invalid stack index 7
+idx 7: type 5, duk_require_heapptr() -> TypeError: heapobject required, found none (stack index 7)
 "test string"
 {foo:"bar"}
 |deadbeef|
