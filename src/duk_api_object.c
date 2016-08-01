@@ -464,36 +464,6 @@ DUK_EXTERNAL duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_boo
  *  Helpers for writing multiple properties
  */
 
-DUK_EXTERNAL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs) {
-	const duk_function_list_entry *ent = funcs;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	if (ent != NULL) {
-		while (ent->key != NULL) {
-			duk_push_c_function(ctx, ent->value, ent->nargs);
-			duk_put_prop_string(ctx, obj_idx, ent->key);
-			ent++;
-		}
-	}
-}
-
-DUK_EXTERNAL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_idx, const duk_number_list_entry *numbers) {
-	const duk_number_list_entry *ent = numbers;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	if (ent != NULL) {
-		while (ent->key != NULL) {
-			duk_push_number(ctx, ent->value);
-			duk_put_prop_string(ctx, obj_idx, ent->key);
-			ent++;
-		}
-	}
-}
-
 #if defined(DUK_USE_UNION_INITIALIZERS)
 #define DUK__PROP_SELECT(unionval,structval) (unionval)
 #else
