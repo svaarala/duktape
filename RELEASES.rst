@@ -1701,6 +1701,9 @@ Planned
   related changes; instead, an artificial property "length" is available via
   GetHeapObjInfo (GH-703, GH-856)
 
+* Incompatible change: remove duk_put_function_list() and duk_put_number_list()
+  functions.
+
 * Allow ES6 unescaped right bracket (']') in regular expressions (non-standard
   before ES6 Annex B), left bracket ('[') not yet supported because it needs
   backtracking (GH-871)
