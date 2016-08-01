@@ -1142,11 +1142,11 @@ DUK_EXTERNAL duk_double_t duk_get_number(duk_context *ctx, duk_idx_t idx) {
 		ret.d = DUK_TVAL_GET_NUMBER(tv);
 	}
 
-	/* Number should already be in NaN-normalized form, but let's
-	 * normalize anyway.
+	/* When using packed duk_tval, number must be in NaN-normalized form
+	 * for it to be a duk_tval, so no need to normalize.  NOP for unpacked
+	 * duk_tval.
 	 */
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&ret));
-	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&ret);
 	return ret.d;
 }
 
@@ -1165,11 +1165,11 @@ DUK_EXTERNAL duk_double_t duk_require_number(duk_context *ctx, duk_idx_t idx) {
 
 	ret.d = DUK_TVAL_GET_NUMBER(tv);
 
-	/* Number should already be in NaN-normalized form,
-	 * but let's normalize anyway.
+	/* When using packed duk_tval, number must be in NaN-normalized form
+	 * for it to be a duk_tval, so no need to normalize.  NOP for unpacked
+	 * duk_tval.
 	 */
 	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&ret));
-	DUK_DBLUNION_NORMALIZE_NAN_CHECK(&ret);
 	return ret.d;
 }
 

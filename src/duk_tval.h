@@ -366,9 +366,12 @@ typedef struct {
 #if defined(DUK_USE_FASTINT)
 #define DUK_TVAL_SET_DOUBLE(tv,val)  do { \
 		duk_tval *duk__tv; \
+		duk_double_t duk__dblval; \
+		duk__dblval = (val); \
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(duk__dblval); /* nop for unpacked duk_tval */ \
 		duk__tv = (tv); \
 		duk__tv->t = DUK__TAG_NUMBER; \
-		duk__tv->v.d = (val); \
+		duk__tv->v.d = duk__dblval; \
 	} while (0)
 #define DUK_TVAL_SET_I48(tv,val)  do { \
 		duk_tval *duk__tv; \
@@ -412,9 +415,12 @@ typedef struct {
 	DUK_TVAL_SET_NUMBER((tv), (duk_double_t) (val))
 #define DUK_TVAL_SET_NUMBER(tv,val)  do { \
 		duk_tval *duk__tv; \
+		duk_double_t duk__dblval; \
+		duk__dblval = (val); \
+		DUK_ASSERT_DOUBLE_IS_NORMALIZED(duk__dblval); /* nop for unpacked duk_tval */ \
 		duk__tv = (tv); \
 		duk__tv->t = DUK__TAG_NUMBER; \
-		duk__tv->v.d = (val); \
+		duk__tv->v.d = duk__dblval; \
 	} while (0)
 #define DUK_TVAL_SET_NUMBER_CHKFAST(tv,d) \
 	DUK_TVAL_SET_NUMBER((tv), (d))
