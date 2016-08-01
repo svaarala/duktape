@@ -1896,14 +1896,13 @@ DUK_EXTERNAL duk_bool_t duk_to_boolean(duk_context *ctx, duk_idx_t idx) {
 	DUK_UNREF(thr);
 
 	idx = duk_require_normalize_index(ctx, idx);
-
-	tv = duk_require_tval(ctx, idx);
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
 
 	val = duk_js_toboolean(tv);
 	DUK_ASSERT(val == 0 || val == 1);
 
-	/* Note: no need to re-lookup tv, conversion is side effect free */
+	/* Note: no need to re-lookup tv, conversion is side effect free. */
 	DUK_ASSERT(tv != NULL);
 	DUK_TVAL_SET_BOOLEAN_UPDREF(thr, tv, val);  /* side effects */
 	return val;
@@ -1916,13 +1915,13 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	tv = duk_require_tval(ctx, idx);
+	idx = duk_require_normalize_index(ctx, idx);
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
-	/* XXX: fastint? */
-	d = duk_js_tonumber(thr, tv);
+	d = duk_js_tonumber(thr, tv);  /* XXX: fastint coercion? now result will always be a non-fastint */
 
-	/* Note: need to re-lookup because ToNumber() may have side effects */
-	tv = duk_require_tval(ctx, idx);
+	/* ToNumber() may have side effects so must relookup 'tv'. */
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, d);  /* side effects */
 	return d;
 }
@@ -2262,8 +2261,7 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t idx) {
 	DUK_UNREF(thr);
 
 	idx = duk_require_normalize_index(ctx, idx);
-
-	tv = duk_require_tval(ctx, idx);
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
@@ -2435,8 +2433,7 @@ DUK_EXTERNAL void *duk_to_pointer(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	idx = duk_require_normalize_index(ctx, idx);
-
-	tv = duk_require_tval(ctx, idx);
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
@@ -2527,8 +2524,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	idx = duk_require_normalize_index(ctx, idx);
-
-	tv = duk_require_tval(ctx, idx);
+	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
