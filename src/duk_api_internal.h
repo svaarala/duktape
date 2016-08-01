@@ -203,5 +203,6 @@ DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 	(DUK_ASSERT_VALID_NEGIDX((ctx),(idx)), DUK_TVAL_GET_OBJECT(((duk_hthread *) (ctx))->valstack_top + (idx)))
 #define DUK_GET_HOBJECT_POSIDX(ctx,idx) \
 	(DUK_ASSERT_VALID_POSIDX((ctx),(idx)), DUK_TVAL_GET_OBJECT(((duk_hthread *) (ctx))->valstack_bottom + (idx)))
-
+#define DUK_GET_TOP(ctx) \
+	((duk_idx_t) (thr->valstack_top - thr->valstack_bottom))
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */
