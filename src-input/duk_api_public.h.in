@@ -34,8 +34,6 @@ extern "C" {
 
 struct duk_thread_state;
 struct duk_memory_functions;
-struct duk_function_list_entry;  /* to be removed */
-struct duk_number_list_entry;    /* to be removed */
 struct duk_time_components;
 struct duk_prop_list_entry;
 
@@ -44,8 +42,6 @@ struct duk_prop_list_entry;
  */
 typedef struct duk_thread_state duk_thread_state;
 typedef struct duk_memory_functions duk_memory_functions;
-typedef struct duk_function_list_entry duk_function_list_entry;
-typedef struct duk_number_list_entry duk_number_list_entry;
 typedef struct duk_time_components duk_time_components;
 typedef struct duk_prop_list_entry duk_prop_list_entry;
 
@@ -78,17 +74,6 @@ struct duk_memory_functions {
 	duk_realloc_function realloc_func;
 	duk_free_function free_func;
 	void *udata;
-};
-
-struct duk_function_list_entry {
-	const char *key;
-	duk_c_function value;
-	duk_idx_t nargs;
-};
-
-struct duk_number_list_entry {
-	const char *key;
-	duk_double_t value;
 };
 
 struct duk_time_components {
@@ -895,10 +880,6 @@ DUK_EXTERNAL_DECL duk_int_t duk_get_current_magic(duk_context *ctx);
 #define DUK_PROPINIT_ACCESSOR    13
 #define DUK_PROPINIT_PROPLIST    14
 #define DUK_PROPINIT_STACK       15
-
-/* These are to be removed, in favor of the more flexible duk_def_prop_list() */
-DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_index, const duk_function_list_entry *funcs);
-DUK_EXTERNAL_DECL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_index, const duk_number_list_entry *numbers);
 
 DUK_EXTERNAL_DECL void duk_def_prop_list(duk_context *ctx, duk_idx_t obj_index, const duk_prop_list_entry *props);
 
