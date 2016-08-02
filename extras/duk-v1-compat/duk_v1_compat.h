@@ -20,4 +20,18 @@ extern void duk_to_defaultvalue(duk_context *ctx, duk_idx_t idx, duk_int_t hint)
 #define duk_push_string_file(ctx,path) \
 	duk_push_string_file_raw((ctx), (path), 0)
 
+typedef struct {
+	const char *key;
+	duk_c_function value;
+	duk_idx_t nargs;
+} duk_function_list_entry;
+
+typedef struct {
+	const char *key;
+	duk_double_t value;
+} duk_number_list_entry;
+
+void duk_put_number_list(duk_context *ctx, duk_idx_t obj_idx, const duk_number_list_entry *numbers);
+void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs);
+
 #endif  /* DUK_V1_COMPAT_INCLUDED */
