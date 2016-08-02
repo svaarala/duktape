@@ -5,10 +5,6 @@
 #if !defined(DUK_UTIL_H_INCLUDED)
 #define DUK_UTIL_H_INCLUDED
 
-#define DUK_UTIL_MIN_HASH_PRIME  17  /* must match genhashsizes.py */
-
-#define DUK_UTIL_GET_HASH_PROBE_STEP(hash)  (duk_util_probe_steps[(hash) & 0x1f])
-
 #if defined(DUK_USE_GET_RANDOM_DOUBLE)
 #define DUK_UTIL_GET_RANDOM_DOUBLE(thr) DUK_USE_GET_RANDOM_DOUBLE((thr)->heap_udata)
 #else
@@ -502,10 +498,6 @@ DUK_INTERNAL_DECL duk_uint8_t duk_util_probe_steps[32];
 
 #if defined(DUK_USE_STRHASH_DENSE)
 DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t len, duk_uint32_t seed);
-#endif
-
-#if defined(DUK_USE_HOBJECT_HASH_PART)
-DUK_INTERNAL_DECL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 #endif
 
 DUK_INTERNAL_DECL duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
