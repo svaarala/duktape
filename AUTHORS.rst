@@ -34,6 +34,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Ondřej Jirman (https://github.com/megous)
 * Saúl Ibarra Corretgé <saghul@gmail.com>
 * Jeremy HU <huxingyi@msn.com>
+* Ole André Vadla Ravnås (https://github.com/oleavr)
 
 Other contributions
 ===================
@@ -71,7 +72,6 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Michael Drake (https://github.com/tlsa)
 * https://github.com/chris-y
 * Laurent Zubiaur (https://github.com/lzubiaur)
-* Ole André Vadla Ravnås (https://github.com/oleavr)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
