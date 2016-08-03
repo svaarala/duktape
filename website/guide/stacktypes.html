@@ -12,9 +12,9 @@
 <tr><td><a href="#type-number">number</a></td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
 <tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string</td></tr>
 <tr><td><a href="#type-object">object</a></td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
-<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external</td></tr>
+<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external; mimics an ArrayBuffer</td></tr>
 <tr><td><a href="#type-pointer">pointer</a></td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
-<tr><td><a href="#type-lightfunc">lightfunc</a></td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C pointer (non-object)</td></tr>
+<tr><td><a href="#type-lightfunc">lightfunc</a></td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C function pointer (non-object); mimics a Function</td></tr>
 </table>
 </div>
 
@@ -142,17 +142,17 @@ as follows:
 </p>
 
 <pre class="c-code">
-// this works and generates nice code
+/* this works and generates nice code */
 int bitmask = (duk_get_boolean(ctx, -3) &lt;&lt; 2) |
               (duk_get_boolean(ctx, -2) &lt;&lt; 1) |
               duk_get_boolean(ctx, -1);
 
-// more verbose variant not relying on "true" being represented by 1
+/* more verbose variant not relying on "true" being represented by 1 */
 int bitmask = ((duk_get_boolean(ctx, -3) ? 1 : 0) &lt;&lt; 2) |
               ((duk_get_boolean(ctx, -2) ? 1 : 0) &lt;&lt; 1) |
               (duk_get_boolean(ctx, -1) ? 1 : 0);
 
-// another verbose variant
+/* another verbose variant */
 int bitmask = (duk_get_boolean(ctx, -3) ? (1 &lt;&lt; 2) : 0) |
               (duk_get_boolean(ctx, -2) ? (1 &lt;&lt; 1) : 0) |
               (duk_get_boolean(ctx, -1) ? 1 : 0);
@@ -190,21 +190,21 @@ Strings are immutable and must NEVER be changed by calling C code.  Doing so wil
 lead to very mysterious issues which are hard to diagnose.</p>
 
 <p>Calling code most often deals with Ecmascript strings, which may contain
-arbitrary 16-bit codepoints (the whole range U+0000 to U+FFFF) but cannot represent
+arbitrary 16-bit codepoints in the range U+0000 to U+FFFF but cannot represent
 non-<a href="http://en.wikipedia.org/wiki/Basic_Multilingual_Plane#Basic_Multilingual_Plane">BMP</a>
-codepoints (this is how strings are defined in the Ecmascript standard).
+codepoints.  This is how strings are defined in the Ecmascript standard.
 In Duktape, Ecmascript strings are encoded with
 <a href="http://en.wikipedia.org/wiki/CESU-8">CESU-8</a> encoding.  CESU-8
 matches <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> except that it
 allows codepoints in the surrogate pair range (U+D800 to U+DFFF) to be encoded
-directly; these are prohibited in UTF-8.  CESU-8, like UTF-8, encodes all 7-bit
-ASCII characters as-is which is convenient for C code.  For example:</p>
+directly (prohibited in UTF-8).  CESU-8, like UTF-8, encodes all 7-bit ASCII
+characters as-is which is convenient for C code.  For example:</p>
 
 <ul>
 <li>U+0041 ("A") encodes to <code>41</code>.</li>
 <li>U+1234 (ETHIOPIC SYLLABLE SEE) encodes to <code>e1 88 b4</code>.</li>
-<li>U+D812 (high surrogate) encodes to <code>ed a0 92</code> (this would be
-    <a href="http://en.wikipedia.org/wiki/UTF-8#Invalid_code_points">invalid UTF-8</a>).</li>
+<li>U+D812 (high surrogate) encodes to <code>ed a0 92</code>. This would be
+    <a href="http://en.wikipedia.org/wiki/UTF-8#Invalid_code_points">invalid UTF-8</a>.</li>
 </ul>
 
 <a name="extended-utf8"></a>
@@ -233,7 +233,7 @@ continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</
 <tr><td>U+1 0000 to U+1F FFFF</td><td>21</td><td>11110xxx C C C</td><td>Above U+10FFFF allowed (unlike UTF-8)</td></tr>
 <tr><td>U+20 0000 to U+3FF FFFF</td><td>26</td><td>111110xx C C C C</td><td></td></tr>
 <tr><td>U+400 0000 to U+7FFF FFFF</td><td>31</td><td>1111110x C C C C C</td><td></td></tr>
-<tr><td>U+8000 0000 to U+F FFFF FFFF</td><td>36</td><td>11111110 C C C C C C</td><td>Only 32 bits used in practice (up to U+FFFFFFFF)</td></tr>
+<tr><td>U+8000 0000 to U+F FFFF FFFF</td><td>36</td><td>11111110 C C C C C C</td><td>Only 32 bits used in practice (up to U+FFFF FFFF)</td></tr>
 </tbody>
 </table>
 
@@ -255,29 +255,54 @@ and an arbitrary value (including <b>undefined</b>).</p>
 
 <h2 id="type-buffer">Buffer</h2>
 
-<p>The plain <b>buffer</b> type is a raw buffer for user data.  There are
-three kinds of plain buffer values:</p>
-<ul>
-<li>Fixed buffer: buffer size is fixed at creation, memory is managed
-    automatically by Duktape.  Fixed buffers have an unchanging (stable)
-    data pointer.</li>
-<li>Dynamic buffer: buffer size can be changed after creation, memory is
-    managed automatically by Duktape.  The cost of being resizable is
-    having a potentially changing data pointer, and needing two memory
-    allocations internally.</li>
-<li>External buffer: buffer data is externally allocated, and is not memory
-    managed (freed or resized) by Duktape.  User code sets external pointer
-    and length explicitly.  External buffers are useful to allow a buffer
-    to point to data structures allocated outside Duktape, e.g. a frame
-    buffer allocated by a graphics library.</li>
-</ul>
+<p>The plain <b>buffer</b> type is a raw buffer for user data.  It's much
+more memory efficient than standard buffer object types like ArrayBuffer
+or Node.js Buffer.  There are three plain buffer sub-types:</p>
+<table>
+<tr>
+<th>Buffer sub-type</th>
+<th>Data pointer</th>
+<th>Resizable</th>
+<th>Memory managed by</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>Fixed</td>
+<td>Stable, non-NULL</td>
+<td>No</td>
+<td>Duktape</td>
+<td>Buffer size is fixed at creation, memory is managed automatically by
+    Duktape.  Fixed buffers have an unchanging (stable) non-NULL data
+    pointer.</td>
+</tr>
+<tr>
+<td>Dynamic</td>
+<td>Unstable, may be NULL</td>
+<td>Yes</td>
+<td>Duktape</td>
+<td>Buffer size can be changed after creation, memory is managed
+    automatically by Duktape.  Requires two memory allocations internally
+    to allow resizing.  Data pointer may change if buffer is resized.
+    Zero-size buffer may have a NULL data pointer.</td>
+</tr>
+<tr>
+<td>External</td>
+<td>Unstable, may be NULL</td>
+<td>Yes</td>
+<td>Duktape and user code</td>
+<td>Buffer data is externally allocated.  Duktape allocates and manages
+    a heap allocated buffer header structure, while the data area pointer
+    and length are configured by user code explicitly.  External buffers
+    are useful to allow a buffer to point to data structures outside
+    Duktape heap, e.g. a frame buffer allocated by a graphics library.
+    Zero-size buffer may have a NULL data pointer.</td>
+</tr>
+</table>
 
-<p>The data pointer of a zero-size dynamic or external buffer may (or may
-not) be <code>NULL</code> which must be handled by calling code properly:
-a <code>NULL</code> data pointer only indicates an error if the requested
-size is non-zero.  Unlike strings, buffer data areas are not automatically
-NUL terminated and calling code must not access the bytes following the
-allocated buffer size.</p>
+<p>Unlike strings, buffer data areas are not automatically NUL-terminated
+and calling code must never access bytes beyond the currently allocated
+buffer size.  The data pointer of a zero-size dynamic or external buffer
+may be NULL; fixed buffers always have a non-NULL data pointer.</p>
 
 <p>Fixed and dynamic buffers are automatically garbage collected.  This
 also means that C code must not hold onto a buffer data pointer unless the
@@ -287,25 +312,11 @@ so user code is responsible for managing its life cycle.  User code must also
 make sure that no external buffer value is accessed when the external buffer
 is no longer (or not yet) valid.</p>
 
-<p>Like strings, buffer values have a <code>length</code> property and array
-index properties for reading and writing individual bytes in the buffer;
-the read/write behavior for indices is the same as for <code>Uint8Array</code>.
-The <code>length</code> property is read-only so you can't resize a string by
-assigning to the length property.  Buffer values also have <code>.byteLength</code>,
-<code>.byteOffset</code>, and <code>BYTES_PER_ELEMENT</code> virtual properties.
-These properties are available for both plain buffer values and buffer objects.</p>
-
-<p>The plain buffer type is not standard Ecmascript.  Since Duktape 2.x plain
-buffers mimic ArrayBuffer objects to a large extent, so for most purposes they
-are a memory efficient alternative to working with ArrayBuffers.  Duktape also
-provides several Object frontends for the plain buffer type:
-<a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js compatible Buffer</a>,
-and Khronos/ES6
-<a href="http://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>.
-These are all implemented on top of plain buffer values, but provide additional
-functionality like view/slice support, typed accessors, methods to manipulate
-data in different endianness, etc; see
-<a href="#bufferobjects">Buffer objects</a>.</p>
+<p>Plain buffers mimic ArrayBuffer objects to a large extent, so they are
+a non-standard, memory efficient alternative to working with e.g. ArrayBuffer
+or typed arrays.  The standard buffer objects are implemented on top of plain
+buffers, so that e.g. an ArrayBuffer will be backed by a plain buffer.  See
+<a href="#bufferobjects">Buffer objects</a> for more discussion.</p>
 
 <p>A few notes:</p>
 <ul>
@@ -335,36 +346,36 @@ native resources related to the pointer(s).</p>
 <h2 id="type-lightfunc">Lightfunc</h2>
 
 <p>The <b>lightfunc</b> type is a plain Duktape/C function pointer and a small
-set of control flags packed into a single tagged value which requires no further
+set of control flags packed into a single tagged value which requires no separate
 heap allocations.  The control flags (16 bits currently) encode:
 (1) number of stack arguments expected by the Duktape/C function (0 to 14 or
 varargs), (2) virtual <code>length</code> property value (0 to 15), and
-(3) a magic value (-128 to 127).  Because a lightfunc is a plain tagged
-value, it cannot hold any actual own property values; it has a few virtual
-properties and inherits other properties through <code>Function.prototype</code>.</p>
+(3) a magic value (-128 to 127).</p>
 
 <p>Lightfuncs are a separate tagged type in the Duktape C API, but behave mostly
 like Function objects for Ecmascript code.  They have significant limitations
 compared to ordinary Function objects, the most important being:</p>
+
 <ul>
-<li>Lightfuncs cannot hold own properties and have a fixed virtual <code>name</code>
-    which appears in tracebacks, etc.</li>
+<li>Lightfuncs cannot hold own properties.  They have a fixed virtual <code>.name</code>
+    property which appears in tracebacks, and a virtual <code>.length</code> property.
+    Other properties are inherited from <code>Function.prototype</code>.</li>
 <li>Lightfuncs can be used as constructor functions, but cannot have a
-    <code>prototype</code> property.  If you need to construct objects which
+    <code>.prototype</code> property.  If you need to construct objects which
     don't inherit from <code>Object.prototype</code> (the default), you need to
-    construct and return an instance explicitly in the constructor.</li>
+    either (a) construct and return an instance explicitly in the constructor or
+    (b) explicitly override the internal prototype of the default instance in the
+    constructor.</li>
 <li>Lightfuncs can be used as accessor properties (getters/setters), but they
-    get converted to actual functions; see
+    get converted to actual functions so that their memory advantage is lost.
+    See
     <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-lightfunc-accessor.js">test-dev-lightfunc-accessor.js</a>.</li>
 <li>Lightfuncs cannot have a finalizer as they are a primitive type and
     don't have a reference count field or otherwise participate in garbage
-    collection; see
+    collection.  See
     <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-lightfunc-finalizer.js">test-dev-lightfunc-finalizer.js</a>.</li>
 </ul>
 
 <p>Lightfuncs are useful for very low memory environments where the memory
-impact of ordinary Function objects matters.  For more discussion, see
-<a href="#duktapec-lightfunc-properties">Properties of lightweight Duktape/C functions</a>,
-<a href="#typealgorithms">Type algorithms</a>,
-and
-<a href="https://github.com/svaarala/duktape/blob/master/doc/lightweight-functions.rst">lightweight-functions.rst</a>.</p>
+impact of ordinary Function objects matters.  See
+<a href="#functionobjects">Function objects</a> for more discussion.</p>
