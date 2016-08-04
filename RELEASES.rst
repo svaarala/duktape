@@ -1772,6 +1772,12 @@ Planned
 * Add a minimal alloc/realloc/free self test to the (optional) internal
   self test (GH-877)
 
+* Simplify call related bytecode opcodes for better performance; as a
+  result maximum argument count to normal and constructor calls dropped
+  from 511 to 255, and calling a user function (i.e. not the built-in
+  native eval()) via the identifier 'eval' doesn't get tailcall
+  optimization (GH-896)
+
 * Fix buffer object (duk_hbufobj) JSON serialization (bug present in 1.5.0):
   buffer objects were omitted from serialization when they should be
   serialized as normal objects instead (GH-867)
@@ -1805,7 +1811,7 @@ Planned
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
   Array .length coercion (GH-862); value stack operation optimization
-  (GH-891)
+  (GH-891); call related bytecode simplification (GH-896)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
