@@ -1798,6 +1798,10 @@ Planned
   and a finalizer side effect resizes/reconfigures the buffer, invalidating
   the pointer before string table code has time to copy the data (GH-884)
 
+* Fix lightfunc constructor call handling: lightfuncs were incorrectly
+  rejected as constructors, now allowed as both direct constructors and
+  via a bound function chain (GH-895)
+
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
   Array .length coercion (GH-862); value stack operation optimization
