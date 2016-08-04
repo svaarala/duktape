@@ -88,11 +88,15 @@ changes below.  Here's a summary of changes:
   string by copying the buffer bytes directly into the string internal
   representation.
 
-* Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` leaves ``ArrayBuffer`` constructor
-  and ``ArrayBuffer.prototype`` present but non-functional.  You can still create
-  ArrayBuffer instances using ``duk_push_buffer_object()`` but ArrayBuffer methods
-  won't work (and ``new ArrayBuffer()`` also won't work).  (This behavior is not
-  guaranteed and may change even in minor versions.)
+* Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
+  the C API, and allows manipulation of plain buffers in Ecmascript code via
+  their virtual properties (index properties, ``.length``, etc).  Plain buffers
+  will still inherit from ``ArrayBuffer.prototype``, but all ArrayBuffer, typed
+  array, and Node.js Buffer methods, as well as ``String.fromBuffer()`` will be
+  non-functional.  Plain buffers won't object coerce.  Duktape custom built-ins
+  operating on plain buffers (like Duktape.dec() with hex or base-64 encoding)
+  continue to work.  (This behavior is not guaranteed and may change even in
+  minor versions.)
 
 To upgrade:
 
