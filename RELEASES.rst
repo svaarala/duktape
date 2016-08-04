@@ -1621,6 +1621,12 @@ Planned
   types are mixed (e.g. Node.js Buffer as an argument to typed array calls)
   (GH-864)
 
+* Incompatible change: when DUK_USE_BUFFEROBJECT_SUPPORT is disabled, don't
+  support coercing plain buffers to ArrayBuffers, or any other buffer object
+  operations (including all ArrayBuffer, typed array, and Node.js Buffer
+  methods, and String.fromBuffer()); this reduces code footprint by around
+  1.2 kB (GH-889)
+
 * Incompatible change: plain pointer values now test true in instanceof
   (plainPointer instanceof Duktape.Pointer === true) (GH-864)
 
