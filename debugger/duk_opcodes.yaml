@@ -49,12 +49,11 @@ opcodes:
       - C_I
   - name: NEW
     args:
-      - B_R
-      - C_I
-  - name: NEWI
+      - A_I
+      - BC_R
+  - name: UNUSED10
     args:
-      - B_RI
-      - C_I
+      - ABC_I
   - name: REGEXP
     args:
       - A_R
@@ -63,11 +62,10 @@ opcodes:
   - name: CSREG
     args:
       - A_R
-      - B_R
-  - name: CSREGI
+      - BC_R
+  - name: UNUSED13
     args:
-      - A_RI
-      - B_R
+      - ABC_I
   - name: GETVAR
     args:
       - A_R
@@ -102,10 +100,9 @@ opcodes:
     args:
       - A_R
       - B_RC
-  - name: CSVARI
+  - name: UNUSED19
     args:
-      - A_RI
-      - B_RC
+      - ABC_I
   - name: CLOSURE
     args:
       - A_R
@@ -125,16 +122,13 @@ opcodes:
       - A_R
       - B_R
       - C_RC
-  - name: CSPROP
+  - name: UNUSED24
     args:
-      - A_R
-      - B_R
-      - C_RC
-  - name: CSPROPI
+      - ABC_I
+  - name: EVALCALL
     args:
-      - A_RI
-      - B_R
-      - C_RC
+      - A_I
+      - BC_R
   - name: ADD
     args:
       - A_R
@@ -246,19 +240,12 @@ opcodes:
         name: have_retval
   - name: CALL
     args:
-      - A_H
-      - B_R
-      - C_I
-    flags:
-      - mask: 0x40
-        name: tailcall
-      - mask: 0x80
-        name: evalcall
-  - name: CALLI
+      - A_I
+      - BC_R
+  - name: TAILCALL
     args:
-      - A_H
-      - B_RI
-      - C_I
+      - A_I
+      - BC_R
   - name: TRYCATCH
     args:
       - A_H
