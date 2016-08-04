@@ -286,21 +286,41 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	duk_dup(ctx, idx_cons);
 	for (;;) {
-		cons = duk_get_hobject(ctx, -1);
-		if (cons == NULL || !DUK_HOBJECT_HAS_CONSTRUCTABLE(cons)) {
-			/* Checking constructability from anything else than the
-			 * initial constructor is not strictly necessary, but a
-			 * nice sanity check.
-			 */
-			goto not_constructable;
-		}
-		if (!DUK_HOBJECT_HAS_BOUND(cons)) {
+		duk_tval *tv;
+		tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+		DUK_ASSERT(tv != NULL);
+
+		if (DUK_TVAL_IS_OBJECT(tv)) {
+			cons = DUK_TVAL_GET_OBJECT(tv);
+			DUK_ASSERT(cons != NULL);
+			if (!DUK_HOBJECT_IS_CALLABLE(cons) || !DUK_HOBJECT_HAS_CONSTRUCTABLE(cons)) {
+				/* Checking callability of the immediate target
+				 * is important, same for constructability.
+				 * Checking it for functions down the bound
+				 * function chain is not strictly necessary
+				 * because .bind() should normally reject them.
+				 * But it's good to check anyway because it's
+				 * technically possible to edit the bound function
+				 * chain via internal keys.
+				 */
+				goto not_constructable;
+			}
+			if (!DUK_HOBJECT_HAS_BOUND(cons)) {
+				break;
+			}
+		} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+			/* Lightfuncs cannot be bound. */
 			break;
+		} else {
+			/* Anything else is not constructable. */
+			goto not_constructable;
 		}
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
 		duk_remove(ctx, -2);                                  /* -> [... target] */
 	}
-	DUK_ASSERT(cons != NULL && !DUK_HOBJECT_HAS_BOUND(cons));
+	DUK_ASSERT(duk_is_callable(ctx, -1));
+	DUK_ASSERT(duk_is_lightfunc(ctx, -1) ||
+	           (duk_get_hobject(ctx, -1) != NULL && !DUK_HOBJECT_HAS_BOUND(duk_get_hobject(ctx, -1))));
 
 	/* [... constructor arg1 ... argN final_cons] */
 
