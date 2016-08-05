@@ -640,6 +640,11 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_compiler_ctx);
 	DUK__DUMPSZ(duk_re_matcher_ctx);
 	DUK__DUMPSZ(duk_re_compiler_ctx);
+
+	DUK__DUMPSZ(duk_memory_functions);
+	DUK__DUMPSZ(duk_function_list_entry);
+	DUK__DUMPSZ(duk_number_list_entry);
+	DUK__DUMPSZ(duk_prop_list_entry);
 }
 DUK_LOCAL void duk__dump_type_limits(void) {
 	DUK_D(DUK_DPRINT("limits"));
@@ -703,6 +708,11 @@ DUK_LOCAL void duk__dump_misc_options(void) {
 	DUK_D(DUK_DPRINT("DUK_USE_VARIADIC_MACROS: yes"));
 #else
 	DUK_D(DUK_DPRINT("DUK_USE_VARIADIC_MACROS: no"));
+#endif
+#if defined(DUK_USE_UNION_INITIALIZERS)
+	DUK_D(DUK_DPRINT("DUK_USE_UNION_INITIALIZERS: yes"));
+#else
+	DUK_D(DUK_DPRINT("DUK_USE_UNION_INITIALIZERS: no"));
 #endif
 #if defined(DUK_USE_INTEGER_LE)
 	DUK_D(DUK_DPRINT("integer endianness: little"));

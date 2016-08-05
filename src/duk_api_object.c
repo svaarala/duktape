@@ -464,35 +464,155 @@ DUK_EXTERNAL duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_boo
  *  Helpers for writing multiple properties
  */
 
-DUK_EXTERNAL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs) {
-	const duk_function_list_entry *ent = funcs;
+#if defined(DUK_USE_UNION_INITIALIZERS)
+#define DUK__PROP_SELECT(unionval,structval) (unionval)
+#else
+#define DUK__PROP_SELECT(unionval,structval) (structval)
+#endif
+
+DUK_EXTERNAL void duk_def_prop_list(duk_context *ctx, duk_idx_t obj_index, const duk_prop_list_entry *props) {
+	const duk_prop_list_entry *ent = props;
+#if defined(DUK_USE_ASSERTIONS)
+	duk_idx_t entry_top;
+#endif
 
 	DUK_ASSERT_CTX_VALID(ctx);
+#if defined(DUK_USE_ASSERTIONS)
+	entry_top = duk_get_top(ctx);
+#endif
 
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	if (ent != NULL) {
-		while (ent->key != NULL) {
-			duk_push_c_function(ctx, ent->value, ent->nargs);
-			duk_put_prop_string(ctx, obj_idx, ent->key);
-			ent++;
+	obj_index = duk_require_normalize_index(ctx, obj_index);
+	for (;;) {
+		/* FIXME: optimize by using DUK_TVAL_SET_xxx() */
+		duk_uint_t defprop_flags;
+
+#if defined(DUK_USE_ASSERTIONS)
+		DUK_ASSERT_TOP(ctx, entry_top);
+#endif
+		if (ent->key == NULL) {
+			DUK_ASSERT(ent->etype == DUK_PROPINIT_END);
+			break;
 		}
-	}
-}
+		duk_push_string(ctx, ent->key);
 
-DUK_EXTERNAL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_idx, const duk_number_list_entry *numbers) {
-	const duk_number_list_entry *ent = numbers;
+		defprop_flags = ent->eattr;  /* these are assumed to be correct, up to the duk_api_public.h macros */
 
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	if (ent != NULL) {
-		while (ent->key != NULL) {
-			duk_push_number(ctx, ent->value);
-			duk_put_prop_string(ctx, obj_idx, ent->key);
-			ent++;
+		DUK_ASSERT(ent->etype != DUK_PROPINIT_END);  /* key == NULL <=> DUK_PROPINIT_END */
+		switch (ent->etype) {
+		case DUK_PROPINIT_UNDEFINED: {
+			duk_push_undefined(ctx);
+			break;
 		}
+		case DUK_PROPINIT_NULL: {
+			duk_push_null(ctx);
+			break;
+		}
+		case DUK_PROPINIT_BOOLEAN: {
+			duk_push_boolean(ctx, DUK__PROP_SELECT(ent->u.bval, ent->s.ival));
+			break;
+		}
+		case DUK_PROPINIT_NUMBER: {
+			duk_push_number(ctx, DUK__PROP_SELECT(ent->u.num, ent->s.num));
+			break;
+		}
+		case DUK_PROPINIT_STRING: {
+			duk_push_string(ctx, (const char *) DUK__PROP_SELECT(ent->u.str.str, ent->s.ptr));
+			break;
+		}
+		case DUK_PROPINIT_LSTRING: {
+			duk_push_lstring(ctx,
+			                 (const char *) DUK__PROP_SELECT(ent->u.str.str, ent->s.ptr),
+			                 (duk_size_t) DUK__PROP_SELECT(ent->u.str.len, ent->s.idx));
+			break;
+		}
+		case DUK_PROPINIT_OBJECT: {
+			DUK_ERROR_INTERNAL((duk_hthread *) ctx);  /* FIXME: unimplemented */
+			break;
+		}
+		case DUK_PROPINIT_BUFFER: {
+			/* FIXME: buffer nature: fixed/dynamic */
+			/* FIXME: initialization? */
+			/* FIXME: buffer objects */
+			void *bufdata;
+			const void *initdata;
+			duk_size_t buflen;
+			buflen = (duk_size_t) DUK__PROP_SELECT(ent->u.str.len, ent->s.idx);
+			bufdata = duk_push_fixed_buffer(ctx, buflen);
+			DUK_ASSERT(bufdata != NULL);
+			initdata = (const void *) DUK__PROP_SELECT(ent->u.buf.buf, ent->s.ptr);
+			if (initdata) {
+				DUK_MEMCPY(bufdata, initdata, buflen);
+			}
+			break;
+		}
+		case DUK_PROPINIT_POINTER: {
+			/* FIXME: lose const for struct case */
+			duk_push_pointer(ctx, (void *) DUK__PROP_SELECT(ent->u.ptr, ent->s.ptr));
+			break;
+		}
+		case DUK_PROPINIT_FUNCTION: {
+			duk_push_c_function(ctx,
+			                    DUK__PROP_SELECT(ent->u.func.func, ent->s.func1),
+			                    DUK__PROP_SELECT(ent->u.func.nargs, ent->s.idx));
+			duk_set_magic(ctx, -1, DUK__PROP_SELECT(ent->u.func.magic, ent->s.ival));
+			/* FIXME: 'length' for a non-lightfunc? */
+			break;
+		}
+		case DUK_PROPINIT_LIGHTFUNC: {
+			duk_push_c_lightfunc(ctx,
+			                    DUK__PROP_SELECT(ent->u.func.func, ent->s.func1),
+			                    DUK__PROP_SELECT(ent->u.func.nargs, ent->s.idx),
+			                    DUK__PROP_SELECT(ent->u.func.length, (duk_idx_t) ent->s.num),
+			                    DUK__PROP_SELECT(ent->u.func.magic, (duk_int_t) ent->s.ival));
+			break;
+		}
+		case DUK_PROPINIT_ACCESSOR: {
+			/* FIXME: getter/setter nargs; provided by user or not?
+			 * Should the default be sensitive to custom key argument presence?
+			 */
+			/* FIXME: tolerating NULL? */
+			duk_push_c_function(ctx,
+			                    DUK__PROP_SELECT(ent->u.accessor.getter, ent->s.func1),
+			                    1 /*nargs*/);
+			duk_push_c_function(ctx,
+			                    DUK__PROP_SELECT(ent->u.accessor.setter, ent->s.func2),
+			                    2 /*nargs*/);
+			DUK_ASSERT(defprop_flags & DUK_DEFPROP_HAVE_GETTER);
+			DUK_ASSERT(defprop_flags & DUK_DEFPROP_HAVE_SETTER);
+			break;
+		}
+		case DUK_PROPINIT_PROPLIST: {
+			const duk_prop_list_entry *sub_props;
+			duk_push_object(ctx);
+			sub_props = (const duk_prop_list_entry *) DUK__PROP_SELECT(ent->u.props, ent->s.ptr);
+			DUK_ASSERT(sub_props != NULL);
+			duk_require_stack(ctx, 1);  /* this matters for deep recursion */
+			duk_def_prop_list(ctx, -1, sub_props);
+			break;
+		}
+		case DUK_PROPINIT_STACK: {
+			DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* FIXME */
+			break;
+		}
+		default: {
+			DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+		}
+		}  /* switch */
+
+		duk_def_prop(ctx, obj_index, defprop_flags);
+		ent++;
 	}
+
+	/* Because this call is generally used to initialize objects, it's
+	 * useful to automatically compact the object here.
+	 */
+	duk_compact(ctx, obj_index);
+
+#if defined(DUK_USE_ASSERTIONS)
+	DUK_ASSERT_TOP(ctx, entry_top);
+#endif
 }
+#undef DUK__PROP_SELECT
 
 /*
  *  Shortcut for accessing global object properties

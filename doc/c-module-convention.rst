@@ -31,7 +31,10 @@ The init function for a module ``my_module`` should have the following form::
 
         duk_push_object(ctx);  /* module result */
 
-        duk_put_function_list(ctx, -1, my_module_funcs);
+        /* Since Duktape 1.5.0 duk_def_prop_list() is the most flexible
+         * static property list initializer.
+         */
+        duk_def_prop_list(ctx, -1, my_module_props);
 
         duk_push_int(ctx, 42);
         duk_put_prop_string(ctx, -2, "meaningOfLife");

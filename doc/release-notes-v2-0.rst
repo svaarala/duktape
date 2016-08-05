@@ -389,6 +389,13 @@ To upgrade:
       rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
       #endif
 
+duk_put_function_list() and duk_put_number_list() replaced by duk_def_prop_list()
+---------------------------------------------------------------------------------
+
+FIXME.
+
+FIXME: compat extra?
+
 Duktape specific error codes removed from API
 ---------------------------------------------
 
