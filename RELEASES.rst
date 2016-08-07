@@ -1802,6 +1802,10 @@ Planned
   rejected as constructors, now allowed as both direct constructors and
   via a bound function chain (GH-895)
 
+* Fix direct references to __FILE__ and __LINE__ in the public header to use
+  DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
+  macros have been replaced in duk_config.h (GH-897)
+
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
   Array .length coercion (GH-862); value stack operation optimization
