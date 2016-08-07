@@ -31,7 +31,7 @@ array constructor test
 10 [null,null,null,null,null,"foo",null,null,null,null]
 6 [1,2,3,"foo","bar","quux"]
 6 [1,2,3,"foo","bar","baz"]
-256
+255
 ===*/
 
 function arrayConstructorTest() {
@@ -58,7 +58,7 @@ function arrayConstructorTest() {
 
     // Create Array with a lot of initializer arguments (more than value stack reserve).
     arr = new Array(
-        // 256
+        // 255 is the current maximum arg count
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
@@ -74,7 +74,7 @@ function arrayConstructorTest() {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     );
     print(arr.length);
 }
