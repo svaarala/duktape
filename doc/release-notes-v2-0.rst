@@ -741,6 +741,15 @@ To upgrade:
   Duktape 1.x panic handler and Duktape 2.x default fatal error handler apply
   to all Duktape heaps (rather than a specific Duktape heap).
 
+Other incompatible changes
+--------------------------
+
+* Normal and constructor function call argument limit is now 255, down from
+  the previous 511.
+
+* If a user function is called using the identifier 'eval', such a call won't
+  get tailcall optimized even if otherwise possible.
+
 Known issues
 ============
 

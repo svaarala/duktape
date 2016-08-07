@@ -1756,7 +1756,9 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 
 	if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
 		duk_hbufobj *h_bufarg;
+#if !defined(DUK_USE_PREFER_SIZE)
 		duk_uint16_t comp_mask;
+#endif
 		duk_small_int_t no_overlap = 0;
 		duk_uint_t src_length;
 		duk_uint_t dst_length;

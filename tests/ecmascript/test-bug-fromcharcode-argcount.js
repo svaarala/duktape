@@ -1,51 +1,46 @@
 /*===
-300
-ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJ
+250
+ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJ
+RangeError
 ===*/
 
-/* This currently fails due to Duktape register count limits; the failure is
- * not specific to String.fromCharCode().  However, String.fromCharCode() is
- * an example of a function which could conceivably be used with a lot of
- * arguments, to build a large Unicode string.
- */
+function test(count) {
+    var src = [];
+    var i;
+    src.push('String.fromCharCode(');
+    for (i = 0; i < count; i++) {
+        if (i > 0) {
+            src.push(',');
+        }
+        src.push(String(65 + (i % 10)));
+    }
+    src.push(')');
+    return eval(src.join(''));
+}
 
 try {
     var t;
 
-    t = String.fromCharCode(
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74);  // 300 args
+    try {
+        t = test(250);
+        print(t.length);
+        print(t);
+    } catch (e) {
+        print(e.name);
+    }
 
-    print(t.length);
-    print(t);
+    /* This currently fails due to Duktape register count limits; the failure is
+     * not specific to String.fromCharCode().  However, String.fromCharCode() is
+     * an example of a function which could conceivably be used with a lot of
+     * arguments, to build a large Unicode string.
+     */
+    try {
+        t = test(300);
+        print(t.length);
+        print(t);
+    } catch (e) {
+        print(e.name);
+    }
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

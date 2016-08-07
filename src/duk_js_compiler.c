@@ -973,7 +973,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
  *  Some emission helpers understand the range of target and source reg/const
  *  values and automatically emit shuffling code if necessary.  This is the
  *  case when the slot in question (A, B, C) is used in the standard way and
- *  for opcodes the emission helpers explicitly understand (like DUK_OP_CALL).
+ *  for opcodes the emission helpers explicitly understand (like DUK_OP_MPUTOBJ).
  *
  *  The standard way is that:
  *    - slot A is a target register
@@ -1134,6 +1134,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 	duk_int_t b_out = -1;
 	duk_int_t c_out = -1;
 	duk_int_t tmp;
+	duk_small_int_t op = op_flags & 0xff;
 
 	DUK_DDD(DUK_DDDPRINT("emit: op_flags=%04lx, a=%ld, b=%ld, c=%ld",
 	                     (unsigned long) op_flags, (long) a, (long) b, (long) c));
@@ -1171,20 +1172,20 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 		if (op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) {
 			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_LDREG, tmp, a));
 		} else {
-			duk_small_int_t op = op_flags & 0xff;
-			if (op == DUK_OP_CSVAR || op == DUK_OP_CSREG || op == DUK_OP_CSPROP) {
-				/* Special handling for call setup instructions.  The target
-				 * is expressed indirectly, but there is no output shuffling.
+			/* Output shuffle needed after main operation */
+			a_out = a;
+
+			/* The DUK_OP_CSVAR output shuffle assumes shuffle registers are
+			 * consecutive.
+			 */
+			DUK_ASSERT(comp_ctx->curr_func.shuffle2 == comp_ctx->curr_func.shuffle1 + 1);
+			if (op == DUK_OP_CSVAR) {
+				/* For CSVAR the limit is one smaller because output shuffle
+				 * must be able to express 'a + 1' in BC.
 				 */
-				DUK_ASSERT((op_flags & DUK__EMIT_FLAG_A_IS_SOURCE) == 0);
-				duk__emit_load_int32_noshuffle(comp_ctx, tmp, a);
-				DUK_ASSERT(DUK_OP_CSVARI == DUK_OP_CSVAR + 1);
-				DUK_ASSERT(DUK_OP_CSREGI == DUK_OP_CSREG + 1);
-				DUK_ASSERT(DUK_OP_CSPROPI == DUK_OP_CSPROP + 1);
-				op_flags++;  /* indirect opcode follows direct */
-			} else {
-				/* Output shuffle needed after main operation */
-				a_out = a;
+				if (a + 1 > DUK_BC_BC_MAX) {
+					goto error_outofregs;
+				}
 			}
 		}
 		a = tmp;
@@ -1198,8 +1199,6 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 	if (b & DUK__CONST_MARKER) {
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_B) == 0);
 		DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
-		DUK_ASSERT((op_flags & 0xff) != DUK_OP_CALL);
-		DUK_ASSERT((op_flags & 0xff) != DUK_OP_NEW);
 		b = b & ~DUK__CONST_MARKER;
 #if defined(DUK_USE_SHUFFLE_TORTURE)
 		if (0) {
@@ -1237,18 +1236,14 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 				b_out = b;
 			}
 			if (!(op_flags & DUK__EMIT_FLAG_B_IS_TARGET) || (op_flags & DUK__EMIT_FLAG_B_IS_TARGETSOURCE)) {
-				duk_small_int_t op = op_flags & 0xff;
-				if (op == DUK_OP_CALL || op == DUK_OP_NEW ||
-				    op == DUK_OP_MPUTOBJ || op == DUK_OP_MPUTARR) {
-					/* Special handling for CALL/NEW/MPUTOBJ/MPUTARR shuffling.
+				if (op == DUK_OP_MPUTOBJ || op == DUK_OP_MPUTARR) {
+					/* Special handling for MPUTOBJ/MPUTARR shuffling.
 					 * For each, slot B identifies the first register of a range
 					 * of registers, so normal shuffling won't work.  Instead,
 					 * an indirect version of the opcode is used.
 					 */
 					DUK_ASSERT((op_flags & DUK__EMIT_FLAG_B_IS_TARGET) == 0);
 					duk__emit_load_int32_noshuffle(comp_ctx, tmp, b);
-					DUK_ASSERT(DUK_OP_CALLI == DUK_OP_CALL + 1);
-					DUK_ASSERT(DUK_OP_NEWI == DUK_OP_NEW + 1);
 					DUK_ASSERT(DUK_OP_MPUTOBJI == DUK_OP_MPUTOBJ + 1);
 					DUK_ASSERT(DUK_OP_MPUTARRI == DUK_OP_MPUTARR + 1);
 					op_flags++;  /* indirect opcode follows direct */
@@ -1304,7 +1299,6 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 				/* Output shuffle needed after main operation */
 				c_out = c;
 			} else {
-				duk_small_int_t op = op_flags & 0xff;
 				if (op == DUK_OP_EXTRA &&
 				    (a == DUK_EXTRAOP_INITGET || a == DUK_EXTRAOP_INITSET)) {
 					/* Special shuffling for INITGET/INITSET, where slot C
@@ -1360,6 +1354,16 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 		DUK_ASSERT(b_out < 0);
 		DUK_ASSERT(c_out < 0);
 		duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, a, a_out));
+
+		if (op == DUK_OP_CSVAR) {
+			/* Special handling for CSVAR shuffling.  The variable lookup
+			 * results in a <value, this binding> pair in successive
+			 * registers so use two shuffle registers and two output
+			 * loads.  (In practice this is dead code because temp/const
+			 * limit is reached first.)
+			 */
+			duk__emit(comp_ctx, DUK_ENC_OP_A_BC(DUK_OP_STREG, a + 1, a_out + 1));
+		}
 	} else if (b_out >= 0) {
 		DUK_ASSERT(a_out < 0);
 		DUK_ASSERT(c_out < 0);
@@ -3415,11 +3419,10 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		/* Opcode slot C is used in a non-standard way, so shuffling
 		 * is not allowed.
 		 */
-		duk__emit_a_b_c(comp_ctx,
+		duk__emit_a_bc(comp_ctx,
 		              DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
-		              0 /*unused*/,
-		              reg_target /*target*/,
-		              nargs /*num_args*/);
+		              nargs /*num_args*/,
+		              reg_target /*target*/);
 
 		DUK_DDD(DUK_DDDPRINT("end parsing new expression"));
 
@@ -3863,14 +3866,10 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		/* function call */
 		duk_reg_t reg_cs = DUK__ALLOCTEMPS(comp_ctx, 2);
 		duk_int_t nargs;
-		duk_small_uint_t call_flags = 0;
+		duk_small_uint_t call_op = DUK_OP_CALL;
 
-		/*
-		 *  XXX: attempt to get the call result to "next temp" whenever
-		 *  possible to avoid unnecessary register shuffles.
-		 *
-		 *  XXX: CSPROP (and CSREG) can overwrite the call target register, and save one temp,
-		 *  if the call target is a temporary register and at the top of the temp reg "stack".
+		/* XXX: attempt to get the call result to "next temp" whenever
+		 * possible to avoid unnecessary register shuffles.
 		 */
 
 		/*
@@ -3897,35 +3896,38 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 				 * does not prevent 'eval' from being register bound.
 				 */
 				DUK_DDD(DUK_DDDPRINT("function call with identifier 'eval' "
-				                     "-> enabling EVALCALL flag, marking function "
+				                     "-> using EVALCALL, marking function "
 				                     "as may_direct_eval"));
-				call_flags |= DUK_BC_CALL_FLAG_EVALCALL;
-
+				call_op = DUK_OP_EVALCALL;
 				comp_ctx->curr_func.may_direct_eval = 1;
 			}
 
 			duk_dup(ctx, left->x1.valstack_idx);
 			if (duk__lookup_lhs(comp_ctx, &reg_varbind, &rc_varname)) {
-				duk__emit_a_b(comp_ctx,
-				              DUK_OP_CSREG,
-				              (duk_regconst_t) (reg_cs + 0),
-				              (duk_regconst_t) reg_varbind);
+				duk__emit_a_bc(comp_ctx,
+				              DUK_OP_CSREG | DUK__EMIT_FLAG_A_IS_SOURCE,
+				              (duk_regconst_t) reg_varbind,
+				              (duk_regconst_t) (reg_cs + 0));
 			} else {
+				/* XXX: expand target register or constant field to
+				 * reduce shuffling.
+				 */
+				DUK_ASSERT(DUK__ISCONST(comp_ctx, rc_varname));
 				duk__emit_a_b(comp_ctx,
 				              DUK_OP_CSVAR,
 				              (duk_regconst_t) (reg_cs + 0),
 				              rc_varname);
 			}
 		} else if (left->t == DUK_IVAL_PROP) {
+			/* Call through a property lookup, E5 Section 11.2.3, step 6.a.i,
+			 * E5 Section 10.4.3.  There used to be a separate CSPROP opcode
+			 * but a typical call setup took 3 opcodes (e.g. LDREG, LDCONST,
+			 * CSPROP) and the same can be achieved with ordinary loads.
+			 */
 			DUK_DDD(DUK_DDDPRINT("function call with property base"));
 
-			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 0);  /* base */
-			duk__ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 1);  /* key */
-			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_CSPROP,
-			                (duk_regconst_t) (reg_cs + 0),
-			                (duk_regconst_t) (reg_cs + 0),
-			                (duk_regconst_t) (reg_cs + 1));  /* in-place setup */
+			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 1);  /* base */
+			duk__ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);  /* base[key] */
 		} else {
 			DUK_DDD(DUK_DDDPRINT("function call with register base"));
 
@@ -3939,16 +3941,14 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		DUK__SETTEMP(comp_ctx, reg_cs + 2);
 		nargs = duk__parse_arguments(comp_ctx, res);  /* parse args starting from "next temp" */
 
-		/* Tailcalls are handled by back-patching the TAILCALL flag to the
+		/* Tailcalls are handled by back-patching the opcode to TAILCALL to the
 		 * already emitted instruction later (in return statement parser).
-		 * Since A and C have a special meaning here, they cannot be "shuffled".
 		 */
 
-		duk__emit_a_b_c(comp_ctx,
-		                DUK_OP_CALL | DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C,
-		                (duk_regconst_t) call_flags /*flags*/,
-		                (duk_regconst_t) reg_cs /*basereg*/,
-		                (duk_regconst_t) nargs /*numargs*/);
+		duk__emit_a_bc(comp_ctx,
+		               call_op | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+		               (duk_regconst_t) nargs /*numargs*/,
+		               (duk_regconst_t) reg_cs /*basereg*/);
 		DUK__SETTEMP(comp_ctx, reg_cs + 1);    /* result in csreg */
 
 		res->t = DUK_IVAL_PLAIN;
@@ -5733,8 +5733,8 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		rc_val = duk__exprtop_toregconst(comp_ctx, res, DUK__BP_FOR_EXPR /*rbp_flags*/);
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
-		/* Tail call check: if last opcode emitted was CALL(I), and
-		 * the context allows it, change the CALL(I) to a tail call.
+		/* Tail call check: if last opcode emitted was CALL, and
+		 * the context allows it, change the CALL to TAILCALL.
 		 * This doesn't guarantee that a tail call will be allowed at
 		 * runtime, so the RETURN must still be emitted.  (Duktape
 		 * 0.10.0 avoided this and simulated a RETURN if a tail call
@@ -5743,7 +5743,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		 * test-bug-tailcall-thread-yield-resume.js for discussion.)
 		 *
 		 * In addition to the last opcode being CALL, we also need to
-		 * be sure that 'rc_val' is the result register of the CALL(I).
+		 * be sure that 'rc_val' is the result register of the CALL.
 		 * For instance, for the expression 'return 0, (function ()
 		 * { return 1; }), 2' the last opcode emitted is CALL (no
 		 * bytecode is emitted for '2') but 'rc_val' indicates
@@ -5772,20 +5772,22 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		if (comp_ctx->curr_func.catch_depth == 0 &&   /* no catchers */
 		    pc_after_expr > pc_before_expr) {         /* at least one opcode emitted */
 			duk_compiler_instr *instr;
+			duk_instr_t ins;
 			duk_small_uint_t op;
 
 			instr = duk__get_instr_ptr(comp_ctx, pc_after_expr - 1);
 			DUK_ASSERT(instr != NULL);
 
-			op = (duk_small_uint_t) DUK_DEC_OP(instr->ins);
-			if ((op == DUK_OP_CALL || op == DUK_OP_CALLI) &&
+			ins = instr->ins;
+			op = (duk_small_uint_t) DUK_DEC_OP(ins);
+			if (op == DUK_OP_CALL &&
 			    DUK__ISTEMP(comp_ctx, rc_val) /* see above */) {
 				DUK_DDD(DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				                     "and last instruction is a CALL "
-				                     "-> set TAILCALL flag"));
-				/* Just flip the single bit. */
-				instr->ins |= DUK_ENC_OP_A_B_C(0, DUK_BC_CALL_FLAG_TAILCALL, 0, 0);
+				                     "-> change to TAILCALL"));
+				ins = (ins & ~DUK_BC_SHIFTED_MASK_OP) | (DUK_OP_TAILCALL << DUK_BC_SHIFT_OP);
+				instr->ins = ins;
 			}
 		}
 #endif  /* DUK_USE_TAILCALL */
