@@ -351,7 +351,6 @@ def create_matrix(fn_duk):
 		'-DDUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF',
 		'-DDUK_OPT_NO_ES6_PROXY',
 		'-DDUK_OPT_NO_ZERO_BUFFER_DATA',
-		'''-DDUK_OPT_USER_INITJS="Math.MEANING_OF_LIFE=42"''',
 		'-DDUK_OPT_LIGHTFUNC_BUILTINS',
 		'-DDUK_OPT_ASSERTIONS',
 		[ '-DDUK_OPT_DEBUG', '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "%ld %s %ld %s %s\\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDDPRINT' ],
