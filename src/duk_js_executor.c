@@ -2915,7 +2915,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_CLOSURE: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
-			duk_hcompfunc *fun;
+			duk_hcompfunc *fun_act;
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_uint_fast_t bc = DUK_DEC_BC(ins);
 			duk_hobject *fun_temp;
@@ -2931,8 +2931,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, DUK__FUN()));
 
 			act = thr->callstack + thr->callstack_top - 1;
-			fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
-			fun_temp = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, fun)[bc];
+			fun_act = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
+			fun_temp = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, fun_act)[bc];
 			DUK_ASSERT(fun_temp != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(fun_temp));
 
@@ -3351,8 +3351,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 */
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			fun = DUK__FUN();
-			duk_set_top(ctx, (duk_idx_t) fun->nregs);
 #endif
+			duk_set_top(ctx, (duk_idx_t) fun->nregs);
 
 			/* No need to reinit setjmp() catchpoint, as call handling
 			 * will store and restore our state.
@@ -3407,8 +3407,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			fun = DUK__FUN();
-			duk_set_top(ctx, (duk_idx_t) fun->nregs);
 #endif
+			duk_set_top(ctx, (duk_idx_t) fun->nregs);
 			break;
 		}
 
