@@ -6,6 +6,7 @@ feature_snippet: |
   #define DUK_USE_USER_INITJS (DUK_OPT_USER_INITJS)
   #endif
 introduced: 1.0.0
+removed: 2.0.0
 default: false
 tags:
   - portability
