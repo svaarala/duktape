@@ -741,6 +741,23 @@ To upgrade:
   Duktape 1.x panic handler and Duktape 2.x default fatal error handler apply
   to all Duktape heaps (rather than a specific Duktape heap).
 
+InitJS support removed
+----------------------
+
+Both Duktape InitJS (``DUK_USE_BUILTIN_INITJS``) and user InitJS
+(``DUK_USE_USER_INITJS``) were removed.  Duktape built-in InitJS is no
+longer needed (and was never used for very much).  User InitJS was rarely
+used and it's not a full solution because custom environment initialization
+may also involve native initialization code which isn't supported by the
+mechanism.
+
+To upgrade:
+
+* Duktape built-in InitJS removal requires no user code changes.
+
+* If you're using the user InitJS option, call sites need to be modified to
+  run the init code explicitly on heap/thread creation.
+
 Other incompatible changes
 --------------------------
 
