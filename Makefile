@@ -235,7 +235,6 @@ CCOPTS_FEATURES += -DDUK_OPT_TARGET_INFO='"duk command built from Duktape repo"'
 #CCOPTS_FEATURES += -DDUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF
 #CCOPTS_FEATURES += -DDUK_OPT_NO_ES6_PROXY
 #CCOPTS_FEATURES += -DDUK_OPT_NO_ZERO_BUFFER_DATA
-#CCOPTS_FEATURES += -DDUK_OPT_USER_INITJS='"this.foo = 123"'
 #CCOPTS_FEATURES += -DDUK_OPT_SETJMP
 #CCOPTS_FEATURES += -DDUK_OPT_UNDERSCORE_SETJMP
 #CCOPTS_FEATURES += -DDUK_OPT_SIGSETJMP
@@ -1067,7 +1066,7 @@ cloc:	dist cloc-1.60.pl
 # XXX: make prints a harmless warning related to the sub-make.
 dist:
 	@make codepolicycheck
-	if [ -f compiler.jar ]; then $(PYTHON) util/make_dist.py --minify closure --create-spdx; else $(PYTHON) util/make_dist.py --minify none; fi
+	$(PYTHON) util/make_dist.py --create-spdx
 
 .PHONY:	dist-src
 dist-src:	dist
@@ -1084,7 +1083,7 @@ dist-src:	dist
 
 # Require closure compiler for official build
 .PHONY: dist-src-official
-dist-src-official:	compiler.jar dist-src
+dist-src-official:	dist-src
 
 # ISO target is useful with some system emulators with no network access
 .PHONY: dist-iso
