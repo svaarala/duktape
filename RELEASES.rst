@@ -1701,6 +1701,10 @@ Planned
   related changes; instead, an artificial property "length" is available via
   GetHeapObjInfo (GH-703, GH-856)
 
+* Incompatible change: remove Duktape internal and user "InitJS" support
+  (DUK_USE_BUILTIN_INITJS and DUK_USE_USER_INITJS) which were very rarely
+  used and required minify tools to make a dist package (GH-899)
+
 * Allow ES6 unescaped right bracket (']') in regular expressions (non-standard
   before ES6 Annex B), left bracket ('[') not yet supported because it needs
   backtracking (GH-871)
