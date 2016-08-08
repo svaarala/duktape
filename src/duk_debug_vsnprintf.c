@@ -73,48 +73,46 @@
 #define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-DUK_LOCAL const char *duk__bc_optab[64] = {
-	"LDREG",    "STREG",    "LDCONST",  "LDINT",    "LDINTX",   "MPUTOBJ",  "MPUTOBJI", "MPUTARR",  "MPUTARRI", "NEW",
-	"UNUSED10", "REGEXP",   "CSREG",    "UNUSED13", "GETVAR",   "PUTVAR",   "DECLVAR",  "DELVAR",   "CSVAR",    "UNUSED19",
-	"CLOSURE",  "GETPROP",  "PUTPROP",  "DELPROP",  "UNUSED24", "EVALCALL", "ADD",      "SUB",      "MUL",      "DIV",
-	"MOD",      "BAND",     "BOR",      "BXOR",     "BASL",     "BLSR",     "BASR",     "EQ",       "NEQ",      "SEQ",
-	"SNEQ",     "GT",       "GE",       "LT",       "LE",       "IF",       "JUMP",     "RETURN",   "CALL",     "TAILCALL",
-	"TRYCATCH", "EXTRA",    "PREINCR",  "PREDECR",  "POSTINCR", "POSTDECR", "PREINCV",  "PREDECV",  "POSTINCV", "POSTDECV",
-	"PREINCP",  "PREDECP",  "POSTINCP", "POSTDECP"
-};
+DUK_LOCAL const char *duk__bc_optab[256] = {
+	"LDREG", "STREG", "LDCONST", "LDINT", "LDINTX", "LDTHIS", "LDUNDEF", "LDNULL",
+	"LDTRUE", "LDFALSE", "BNOT", "LNOT", "UNM", "UNP", "TYPEOF", "TYPEOFID",
+	"EQ_RR", "EQ_CR", "EQ_RC", "EQ_CC", "NEQ_RR", "NEQ_CR", "NEQ_RC", "NEQ_CC",
+	"SEQ_RR", "SEQ_CR", "SEQ_RC", "SEQ_CC", "SNEQ_RR", "SNEQ_CR", "SNEQ_RC", "SNEQ_CC",
 
-DUK_LOCAL const char *duk__bc_extraoptab[256] = {
-	"NOP", "INVALID", "LDTHIS", "LDUNDEF", "LDNULL", "LDTRUE", "LDFALSE", "NEWOBJ", "NEWARR", "SETALEN",
-	"TYPEOF", "TYPEOFID", "INITENUM", "NEXTENUM", "INITSET", "INITSETI", "INITGET", "INITGETI", "ENDTRY", "ENDCATCH",
-	"ENDFIN", "THROW", "INVLHS", "UNM", "UNP", "DEBUGGER", "BREAK", "CONTINUE", "BNOT", "LNOT",
-	"INSTOF", "IN", "LABEL", "ENDLABEL", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"GT_RR", "GT_CR", "GT_RC", "GT_CC", "GE_RR", "GE_CR", "GE_RC", "GE_CC",
+	"LT_RR", "LT_CR", "LT_RC", "LT_CC", "LE_RR", "LE_CR", "LE_RC", "LE_CC",
+	"IFTRUE_R", "IFTRUE_C", "IFFALSE_R", "IFFALSE_C", "ADD_RR", "ADD_CR", "ADD_RC", "ADD_CC",
+	"SUB_RR", "SUB_CR", "SUB_RC", "SUB_CC", "MUL_RR", "MUL_CR", "MUL_RC", "MUL_CC",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"DIV_RR", "DIV_CR", "DIV_RC", "DIV_CC", "MOD_RR", "MOD_CR", "MOD_RC", "MOD_CC",
+	"BAND_RR", "BAND_CR", "BAND_RC", "BAND_CC", "BOR_RR", "BOR_CR", "BOR_RC", "BOR_CC",
+	"BXOR_RR", "BXOR_CR", "BXOR_RC", "BXOR_CC", "BASL_RR", "BASL_CR", "BASL_RC", "BASL_CC",
+	"BLSR_RR", "BLSR_CR", "BLSR_RC", "BLSR_CC", "BASR_RR", "BASR_CR", "BASR_RC", "BASR_CC",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"INSTOF_RR", "INSTOF_CR", "INSTOF_RC", "INSTOF_CC", "IN_RR", "IN_CR", "IN_RC", "IN_CC",
+	"PREINCR", "PREDECR", "POSTINCR", "POSTDECR", "PREINCV", "PREDECV", "POSTINCV", "POSTDECV",
+	"PREINCP_RR", "PREINCP_CR", "PREINCP_RC", "PREINCP_CC", "PREDECP_RR", "PREDECP_CR", "PREDECP_RC", "PREDECP_CC",
+	"POSTINCP_RR", "POSTINCP_CR", "POSTINCP_RC", "POSTINCP_CC", "POSTDECP_RR", "POSTDECP_CR", "POSTDECP_RC", "POSTDECP_CC",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"GETPROP_RR", "GETPROP_CR", "GETPROP_RC", "GETPROP_CC", "PUTPROP_RR", "PUTPROP_CR", "PUTPROP_RC", "PUTPROP_CC",
+	"DELPROP_RR", "DELPROP_CR", "DELPROP_RC", "DELPROP_CC", "DECLVAR_RR", "DECLVAR_CR", "DECLVAR_RC", "DECLVAR_CC",
+	"REGEXP_RR", "REGEXP_RC", "REGEXP_CR", "REGEXP_CC", "CSVAR_RR", "CSVAR_CR", "CSVAR_RC", "CSVAR_CC",
+	"CLOSURE", "GETVAR", "PUTVAR", "DELVAR", "JUMP", "RETREG", "RETUNDEF", "RETCONST",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX", "XXX",
+	"RETCONSTN", "LABEL", "ENDLABEL", "BREAK", "CONTINUE", "TRYCATCH", "ENDTRY", "ENDCATCH",
+	"ENDFIN", "THROW", "CSREG", "EVALCALL", "CALL", "TAILCALL", "NEW", "NEWOBJ",
+	"NEWARR", "MPUTOBJ", "MPUTOBJI", "INITSET", "INITGET", "MPUTARR", "MPUTARRI", "SETALEN",
+	"INITENUM", "NEXTENUM", "INVLHS", "DEBUGGER", "NOP", "INVALID", "UNUSED190", "UNUSED191",
 
-	"XXX", "XXX", "XXX", "XXX", "XXX", "XXX"
+	"UNUSED192", "UNUSED193", "UNUSED194", "UNUSED195", "UNUSED196", "UNUSED197", "UNUSED198", "UNUSED199",
+	"UNUSED200", "UNUSED201", "UNUSED202", "UNUSED203", "UNUSED204", "UNUSED205", "UNUSED206", "UNUSED207",
+	"UNUSED208", "UNUSED209", "UNUSED210", "UNUSED211", "UNUSED212", "UNUSED213", "UNUSED214", "UNUSED215",
+	"UNUSED216", "UNUSED217", "UNUSED218", "UNUSED219", "UNUSED220", "UNUSED221", "UNUSED222", "UNUSED223",
+
+	"UNUSED224", "UNUSED225", "UNUSED226", "UNUSED227", "UNUSED228", "UNUSED229", "UNUSED230", "UNUSED231",
+	"UNUSED232", "UNUSED233", "UNUSED234", "UNUSED235", "UNUSED236", "UNUSED237", "UNUSED238", "UNUSED239",
+	"UNUSED240", "UNUSED241", "UNUSED242", "UNUSED243", "UNUSED244", "UNUSED245", "UNUSED246", "UNUSED247",
+	"UNUSED248", "UNUSED249", "UNUSED250", "UNUSED251", "UNUSED252", "UNUSED253", "UNUSED254", "UNUSED255"
 };
 
 typedef struct duk__dprint_state duk__dprint_state;
@@ -761,19 +759,13 @@ DUK_LOCAL void duk__print_instr(duk__dprint_state *st, duk_instr_t ins) {
 	duk_fixedbuffer *fb = st->fb;
 	duk_small_int_t op;
 	const char *op_name;
-	const char *extraop_name;
 
 	op = (duk_small_int_t) DUK_DEC_OP(ins);
 	op_name = duk__bc_optab[op];
 
 	/* XXX: option to fix opcode length so it lines up nicely */
 
-	if (op == DUK_OP_EXTRA) {
-		extraop_name = duk__bc_extraoptab[DUK_DEC_A(ins)];
-
-		duk_fb_sprintf(fb, "%s %ld, %ld",
-		               (const char *) extraop_name, (long) DUK_DEC_B(ins), (long) DUK_DEC_C(ins));
-	} else if (op == DUK_OP_JUMP) {
+	if (op == DUK_OP_JUMP) {
 		duk_int_t diff1 = DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;  /* from next pc */
 		duk_int_t diff2 = diff1 + 1;                            /* from curr pc */
 

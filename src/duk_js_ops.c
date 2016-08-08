@@ -1202,10 +1202,8 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
  *  lowercase variants now.
  */
 
-DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
-	duk_small_int_t stridx = 0;
-
-	DUK_UNREF(thr);
+DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
+	duk_small_uint_t stridx = 0;
 
 	switch (DUK_TVAL_GET_TAG(tv_x)) {
 	case DUK_TAG_UNDEFINED: {
@@ -1265,7 +1263,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
 	}
 
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
-	return DUK_HTHREAD_GET_STRING(thr, stridx);
+	return stridx;
 }
 
 /*

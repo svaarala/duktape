@@ -1918,6 +1918,9 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
+	/* XXX: No need to normalize; the whole operation could be inlined here to
+	 * avoid 'tv' re-lookup.
+	 */
 	idx = duk_require_normalize_index(ctx, idx);
 	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_ASSERT(tv != NULL);
