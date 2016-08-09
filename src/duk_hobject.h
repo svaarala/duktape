@@ -850,7 +850,9 @@ DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_u
 DUK_INTERNAL_DECL duk_harray *duk_harray_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_hcompfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_hnatfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+#endif
 DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 
 /* resize */

@@ -2227,6 +2227,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			DUK_UNREF(h_thr);
 		}
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
 			duk_hbufobj *h_bufobj;
 			h_bufobj = (duk_hbufobj *) h_obj;
@@ -2241,6 +2242,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 				duk_debug_write_heapptr(thr, (duk_heaphdr *) h_bufobj->buf);
 			}
 		}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 		break;
 	}
 	case DUK_HTYPE_BUFFER: {

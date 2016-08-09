@@ -512,6 +512,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_fb_put_funcptr(fb, (duk_uint8_t *) &f->func, sizeof(f->func));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__nargs:%ld", (long) f->nargs);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__magic:%ld", (long) f->magic);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (st->internal && DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__buf:");
@@ -520,6 +521,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__length:%ld", (long) b->length);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__shift:%ld", (long) b->shift);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__elemtype:%ld", (long) b->elem_type);
+#endif
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%ld", (long) t->strict);

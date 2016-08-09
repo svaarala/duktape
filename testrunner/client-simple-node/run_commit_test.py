@@ -334,6 +334,10 @@ def context_helper_minsize_fltoetc(archopt, strip):
 			os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
 			'-lm'
 		])
+		res = execute([
+			os.path.join(cwd, 'duk')
+		], input='1+2, "hello world!"')
+		return 'hello world' in res['stdout']
 	return context_helper_get_binary_size_diff(comp)
 
 def context_linux_x64_gcc_minsize_fltoetc():

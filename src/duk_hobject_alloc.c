@@ -109,6 +109,7 @@ DUK_INTERNAL duk_hnatfunc *duk_hnatfunc_alloc(duk_heap *heap, duk_uint_t hobject
 	return res;
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
 	duk_hbufobj *res;
 
@@ -127,6 +128,7 @@ DUK_INTERNAL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_f
 	DUK_ASSERT_HBUFOBJ_VALID(res);
 	return res;
 }
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
  *  Allocate a new thread.
