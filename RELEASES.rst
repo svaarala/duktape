@@ -1776,6 +1776,9 @@ Planned
 * Add a minimal alloc/realloc/free self test to the (optional) internal
   self test (GH-877)
 
+* Add an FP rounding mode self test (Duktape assumes rounding mode is
+  IEEE 754 round-to-nearest, C99 FE_TONEAREST) (GH-606)
+
 * Simplify call related bytecode opcodes for better performance; as a
   result maximum argument count to normal and constructor calls dropped
   from 511 to 255, and calling a user function (i.e. not the built-in
