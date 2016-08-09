@@ -199,8 +199,7 @@ DUK_EXTERNAL void duk_debugger_pause(duk_context *ctx) {
 		 * inside the debugger message loop: the interrupt counter will be reset
 		 * to its proper value when the message loop exits.
 		 */
-		thr->interrupt_init = 1;
-		thr->interrupt_counter = 0;
+		DUK_HTHREAD_INTCTR_SET(thr, 1);
 	}
 }
 
