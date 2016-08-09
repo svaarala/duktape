@@ -778,25 +778,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_xdef_prop_stridx(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
-	 *  InitJS code - Ecmascript code evaluated from a built-in source
-	 *  which provides e.g. backward compatibility.  User can also provide
-	 *  JS code to be evaluated at startup.
-	 */
-
-#ifdef DUK_USE_BUILTIN_INITJS
-	/* XXX: compression */
-	DUK_DD(DUK_DDPRINT("running built-in initjs"));
-	duk_eval_string(ctx, (const char *) duk_initjs_data);  /* initjs data is NUL terminated */
-	duk_pop(ctx);
-#endif  /* DUK_USE_BUILTIN_INITJS */
-
-#ifdef DUK_USE_USER_INITJS
-	/* XXX: compression (as an option) */
-	DUK_DD(DUK_DDPRINT("running user initjs"));
-	duk_eval_string_noresult(ctx, (const char *) DUK_USE_USER_INITJS);
-#endif  /* DUK_USE_USER_INITJS */
-
-	/*
 	 *  Since built-ins are not often extended, compact them.
 	 */
 

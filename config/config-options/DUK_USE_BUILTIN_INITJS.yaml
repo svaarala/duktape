@@ -1,5 +1,6 @@
 define: DUK_USE_BUILTIN_INITJS
 introduced: 1.0.0
+removed: 2.0.0
 default: true
 tags:
   - ecmascript

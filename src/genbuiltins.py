@@ -1825,19 +1825,6 @@ def emit_ramobj_source_nativefunc_array(genc, native_func_list):
 def emit_ramobj_source_objinit_data(genc, init_data):
 	genc.emitArray(init_data, 'duk_builtins_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(init_data))
 
-def emit_initjs_source(genc, initjs_data):
-	genc.emitLine('#if defined(DUK_USE_BUILTIN_INITJS)')
-	genc.emitArray(initjs_data, 'duk_initjs_data', visibility='DUK_INTERNAL', typename='duk_uint8_t', intvalues=True, const=True, size=len(initjs_data))
-	genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
-
-def emit_ramobj_header_initjs(genc, initjs_data):
-	genc.emitLine('#if defined(DUK_USE_BUILTIN_INITJS)')
-	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
-	genc.emitLine('DUK_INTERNAL_DECL const duk_uint8_t duk_initjs_data[%d];' % len(initjs_data))
-	genc.emitLine('#endif  /* !DUK_SINGLE_FILE */')
-	genc.emitDefine('DUK_BUILTIN_INITJS_DATA_LENGTH', len(initjs_data))
-	genc.emitLine('#endif  /* DUK_USE_BUILTIN_INITJS */')
-
 def emit_ramobj_header_nativefunc_array(genc, native_func_list):
 	genc.emitLine('#if !defined(DUK_SINGLE_FILE)')
 	genc.emitLine('DUK_INTERNAL_DECL const duk_c_function duk_bi_native_functions[%d];' % len(native_func_list))
@@ -2663,7 +2650,6 @@ def emit_header_native_function_declarations(genc, meta):
 def main():
 	parser = optparse.OptionParser()
 	parser.add_option('--buildinfo', dest='buildinfo', help='Build info, JSON format')
-	parser.add_option('--initjs-data', dest='initjs_data', help='InitJS data to embed')
 	parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', help='DUK_STRIDX_xxx used by source/headers, JSON format')
 	parser.add_option('--strings-metadata', dest='strings_metadata', help='Built-in strings metadata file, YAML format')
 	parser.add_option('--objects-metadata', dest='objects_metadata', help='Built-in objects metadata file, YAML format')
@@ -2683,15 +2669,6 @@ def main():
 
 	with open(opts.buildinfo, 'rb') as f:
 		build_info = dukutil.json_decode(f.read().strip())
-
-	if opts.initjs_data is None:
-		initjs_data = ''
-	else:
-		with open(opts.initjs_data, 'rb') as f:
-			initjs_data = f.read()
-		if len(initjs_data) > 1 and initjs_data[-1] != '\0':
-			# force NUL termination, init code now expects that
-			initjs_data += '\0'
 
 	# Read in metadata files, normalizing and merging as necessary.
 
@@ -2737,7 +2714,6 @@ def main():
 		gc_src.emitLine('#error ROM support not enabled, rerun make_dist.py with --rom-support')
 	gc_src.emitLine('#else  /* DUK_USE_ROM_OBJECTS */')
 	emit_ramobj_source_nativefunc_array(gc_src, ram_native_funcs)  # endian independent
-	emit_initjs_source(gc_src, initjs_data)  # InitJS is now only active with RAM objects
 	gc_src.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
 	emit_ramobj_source_objinit_data(gc_src, ramobj_data_le)
 	gc_src.emitLine('#elif defined(DUK_USE_DOUBLE_BE)')
@@ -2783,7 +2759,6 @@ def main():
 	gc_hdr.emitLine('#else')
 	emit_header_native_function_declarations(gc_hdr, rom_meta)
 	emit_ramobj_header_nativefunc_array(gc_hdr, ram_native_funcs)
-	emit_ramobj_header_initjs(gc_hdr, initjs_data)
 	emit_ramobj_header_objects(gc_hdr, ram_meta)
 	gc_hdr.emitLine('#if defined(DUK_USE_DOUBLE_LE)')
 	emit_ramobj_header_initdata(gc_hdr, ramobj_data_le)

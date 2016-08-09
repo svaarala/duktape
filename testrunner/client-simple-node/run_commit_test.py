@@ -644,8 +644,7 @@ def context_helper_hello_ram(archopt):
 		execute([ 'make', 'clean' ])
 		execute([
 			'python2', os.path.join(cwd, 'util', 'make_dist.py'),
-			'--rom-support',
-			'--minify', 'closure'
+			'--rom-support'
 		])
 		genconfig_dist_src(genconfig_opts)
 		execute([

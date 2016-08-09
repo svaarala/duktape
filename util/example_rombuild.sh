@@ -13,8 +13,7 @@ make clean
 $PYTHON util/make_dist.py \
 	--rom-support \
 	--user-builtin-metadata util/example_user_builtins1.yaml \
-	--user-builtin-metadata util/example_user_builtins2.yaml \
-	--minify closure
+	--user-builtin-metadata util/example_user_builtins2.yaml
 
 # Run genconfig.py and create a custom duk_config.h with ROM support etc.
 $PYTHON config/genconfig.py \
