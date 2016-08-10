@@ -3053,7 +3053,17 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			break;
 		}
 
-		case DUK_OP_ADD:
+		case DUK_OP_ADD: {
+			duk_small_uint_fast_t a = DUK_DEC_A(ins);
+			duk_tval *tv_b;
+			duk_tval *tv_c;
+
+			tv_b = DUK__REGCONSTP_B(ins);
+			tv_c = DUK__REGCONSTP_C(ins);
+			duk__vm_arith_add(thr, tv_b, tv_c, a);
+			break;
+		}
+
 		case DUK_OP_SUB:
 		case DUK_OP_MUL:
 		case DUK_OP_DIV:
@@ -3065,15 +3075,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			tv_b = DUK__REGCONSTP_B(ins);
 			tv_c = DUK__REGCONSTP_C(ins);
-			if (op == DUK_OP_ADD) {
-				/*
-				 *  Handling DUK_OP_ADD this way is more compact (experimentally)
-				 *  than a separate case with separate argument decoding.
-				 */
-				duk__vm_arith_add(thr, tv_b, tv_c, a);
-			} else {
-				duk__vm_arith_binary_op(thr, tv_b, tv_c, a, op);
-			}
+			duk__vm_arith_binary_op(thr, tv_b, tv_c, a, op);
 			break;
 		}
 
