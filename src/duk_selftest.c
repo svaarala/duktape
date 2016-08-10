@@ -13,7 +13,7 @@
 
 typedef union {
 	double d;
-	duk_uint8_t c[8];
+	duk_uint8_t x[8];
 } duk__test_double_union;
 
 /* Self test failed.  Expects a local variable 'error_count' to exist. */
@@ -36,8 +36,50 @@ typedef union {
 
 typedef union {
 	duk_uint32_t i;
-	duk_uint8_t c[8];
+	duk_uint8_t x[8];
 } duk__test_u32_union;
+
+#if defined(DUK_USE_INTEGER_LE)
+#define DUK__U32_INIT(u, a, b, c, d) do { \
+		(u)->x[0] = (d); (u)->x[1] = (c); (u)->x[2] = (b); (u)->x[3] = (a); \
+	} while (0)
+#elif defined(DUK_USE_INTEGER_ME)
+#error integer mixed endian not supported now
+#elif defined(DUK_USE_INTEGER_BE)
+#define DUK__U32_INIT(u, a, b, c, d) do { \
+		(u)->x[0] = (a); (u)->x[1] = (b); (u)->x[2] = (c); (u)->x[3] = (d); \
+	} while (0)
+#else
+#error unknown integer endianness
+#endif
+
+#if defined(DUK_USE_DOUBLE_LE)
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
+		(u)->x[0] = (h); (u)->x[1] = (g); (u)->x[2] = (f); (u)->x[3] = (e); \
+		(u)->x[4] = (d); (u)->x[5] = (c); (u)->x[6] = (b); (u)->x[7] = (a); \
+	} while (0)
+#define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
+	((u)->x[0] == (h) && (u)->x[1] == (g) && (u)->x[2] == (f) && (u)->x[3] == (e) && \
+	 (u)->x[4] == (d) && (u)->x[5] == (c) && (u)->x[6] == (b) && (u)->x[7] == (a))
+#elif defined(DUK_USE_DOUBLE_ME)
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
+		(u)->x[0] = (d); (u)->x[1] = (c); (u)->x[2] = (b); (u)->x[3] = (a); \
+		(u)->x[4] = (h); (u)->x[5] = (g); (u)->x[6] = (f); (u)->x[7] = (e); \
+	} while (0)
+#define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
+	((u)->x[0] == (d) && (u)->x[1] == (c) && (u)->x[2] == (b) && (u)->x[3] == (a) && \
+	 (u)->x[4] == (h) && (u)->x[5] == (g) && (u)->x[6] == (f) && (u)->x[7] == (e))
+#elif defined(DUK_USE_DOUBLE_BE)
+#define DUK__DOUBLE_INIT(u, a, b, c, d, e, f, g, h) do { \
+		(u)->x[0] = (a); (u)->x[1] = (b); (u)->x[2] = (c); (u)->x[3] = (d); \
+		(u)->x[4] = (e); (u)->x[5] = (f); (u)->x[6] = (g); (u)->x[7] = (h); \
+	} while (0)
+#define DUK__DOUBLE_COMPARE(u, a, b, c, d, e, f, g, h) \
+	((u)->x[0] == (a) && (u)->x[1] == (b) && (u)->x[2] == (c) && (u)->x[3] == (d) && \
+	 (u)->x[4] == (e) && (u)->x[5] == (f) && (u)->x[6] == (g) && (u)->x[7] == (h))
+#else
+#error unknown double endianness
+#endif
 
 /*
  *  Various sanity checks for typing
@@ -124,28 +166,9 @@ DUK_LOCAL duk_uint_t duk__selftest_byte_order(void) {
 	 *  >>> struct.pack('>d', 102030405060).encode('hex')
 	 *  '4237c17c6dc40000'
 	 */
-#if defined(DUK_USE_INTEGER_LE)
-	u1.c[0] = 0xef; u1.c[1] = 0xbe; u1.c[2] = 0xad; u1.c[3] = 0xde;
-#elif defined(DUK_USE_INTEGER_ME)
-#error integer mixed endian not supported now
-#elif defined(DUK_USE_INTEGER_BE)
-	u1.c[0] = 0xde; u1.c[1] = 0xad; u1.c[2] = 0xbe; u1.c[3] = 0xef;
-#else
-#error unknown integer endianness
-#endif
 
-#if defined(DUK_USE_DOUBLE_LE)
-	u2.c[0] = 0x00; u2.c[1] = 0x00; u2.c[2] = 0xc4; u2.c[3] = 0x6d;
-	u2.c[4] = 0x7c; u2.c[5] = 0xc1; u2.c[6] = 0x37; u2.c[7] = 0x42;
-#elif defined(DUK_USE_DOUBLE_ME)
-	u2.c[0] = 0x7c; u2.c[1] = 0xc1; u2.c[2] = 0x37; u2.c[3] = 0x42;
-	u2.c[4] = 0x00; u2.c[5] = 0x00; u2.c[6] = 0xc4; u2.c[7] = 0x6d;
-#elif defined(DUK_USE_DOUBLE_BE)
-	u2.c[0] = 0x42; u2.c[1] = 0x37; u2.c[2] = 0xc1; u2.c[3] = 0x7c;
-	u2.c[4] = 0x6d; u2.c[5] = 0xc4; u2.c[6] = 0x00; u2.c[7] = 0x00;
-#else
-#error unknown double endianness
-#endif
+	DUK__U32_INIT(&u1, 0xde, 0xad, 0xbe, 0xef);
+	DUK__DOUBLE_INIT(&u2, 0x42, 0x37, 0xc1, 0x7c, 0x6d, 0xc4, 0x00, 0x00);
 
 	if (u1.i != (duk_uint32_t) 0xdeadbeefUL) {
 		DUK__FAILED("duk_uint32_t byte order");
@@ -241,20 +264,20 @@ DUK_LOCAL duk_uint_t duk__selftest_double_aliasing(void) {
 	 */
 
 	/* little endian */
-	a.c[0] = 0x11; a.c[1] = 0x22; a.c[2] = 0x33; a.c[3] = 0x44;
-	a.c[4] = 0x00; a.c[5] = 0x00; a.c[6] = 0xf1; a.c[7] = 0xff;
+	a.x[0] = 0x11; a.x[1] = 0x22; a.x[2] = 0x33; a.x[3] = 0x44;
+	a.x[4] = 0x00; a.x[5] = 0x00; a.x[6] = 0xf1; a.x[7] = 0xff;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
 	/* big endian */
-	a.c[0] = 0xff; a.c[1] = 0xf1; a.c[2] = 0x00; a.c[3] = 0x00;
-	a.c[4] = 0x44; a.c[5] = 0x33; a.c[6] = 0x22; a.c[7] = 0x11;
+	a.x[0] = 0xff; a.x[1] = 0xf1; a.x[2] = 0x00; a.x[3] = 0x00;
+	a.x[4] = 0x44; a.x[5] = 0x33; a.x[6] = 0x22; a.x[7] = 0x11;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
 	/* mixed endian */
-	a.c[0] = 0x00; a.c[1] = 0x00; a.c[2] = 0xf1; a.c[3] = 0xff;
-	a.c[4] = 0x11; a.c[5] = 0x22; a.c[6] = 0x33; a.c[7] = 0x44;
+	a.x[0] = 0x00; a.x[1] = 0x00; a.x[2] = 0xf1; a.x[3] = 0xff;
+	a.x[4] = 0x11; a.x[5] = 0x22; a.x[6] = 0x33; a.x[7] = 0x44;
 	b = a;
 	DUK__DBLUNION_CMP_TRUE(&a, &b);
 
@@ -277,6 +300,78 @@ DUK_LOCAL duk_uint_t duk__selftest_double_zero_sign(void) {
 	b.d = -a.d;
 	DUK__DBLUNION_CMP_FALSE(&a, &b);
 
+	return error_count;
+}
+
+/*
+ *  Rounding mode: Duktape assumes round-to-nearest, check that this is true.
+ *  If we had C99 fenv.h we could check that fegetround() == FE_TONEAREST,
+ *  but we don't want to rely on that header; and even if we did, it's good
+ *  to ensure the rounding actually works.
+ */
+
+DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
+	duk_uint_t error_count = 0;
+	duk__test_double_union a, b, c;
+
+#if 0
+	/* Include <fenv.h> and test manually; these trigger failures: */
+	fesetround(FE_UPWARD);
+	fesetround(FE_DOWNWARD);
+	fesetround(FE_TOWARDZERO);
+
+	/* This is the default and passes. */
+	fesetround(FE_TONEAREST);
+#endif
+
+	/* Rounding tests check that none of the other modes (round to
+	 * +Inf, round to -Inf, round to zero) can be active:
+	 * http://www.gnu.org/software/libc/manual/html_node/Rounding.html
+	 */
+
+	/* 1.0 + 2^(-53): result is midway between 1.0 and 1.0 + ulp.
+	 * Round to nearest: 1.0
+	 * Round to +Inf:    1.0 + ulp
+	 * Round to -Inf:    1.0
+	 * Round to zero:    1.0
+	 * => Correct result eliminates round to +Inf.
+	 */
+	DUK__DOUBLE_INIT(&a, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+	DUK__DOUBLE_INIT(&b, 0x3c, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+	DUK_MEMSET((void *) &c, 0, sizeof(c));
+	c.d = a.d + b.d;
+	if (!DUK__DOUBLE_COMPARE(&c, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)) {
+		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",
+		                 (unsigned int) c.x[0], (unsigned int) c.x[1],
+		                 (unsigned int) c.x[2], (unsigned int) c.x[3],
+		                 (unsigned int) c.x[4], (unsigned int) c.x[5],
+		                 (unsigned int) c.x[6], (unsigned int) c.x[7]));
+		DUK__FAILED("invalid result from 1.0 + 0.5ulp");
+	}
+
+	/* (1.0 + ulp) + 2^(-53): result is midway between 1.0 + ulp and 1.0 + 2*ulp.
+	 * Round to nearest: 1.0 + 2*ulp (round to even mantissa)
+	 * Round to +Inf:    1.0 + 2*ulp
+	 * Round to -Inf:    1.0 + ulp
+	 * Round to zero:    1.0 + ulp
+	 * => Correct result eliminates round to -Inf and round to zero.
+	 */
+	DUK__DOUBLE_INIT(&a, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
+	DUK__DOUBLE_INIT(&b, 0x3c, 0xa0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+	DUK_MEMSET((void *) &c, 0, sizeof(c));
+	c.d = a.d + b.d;
+	if (!DUK__DOUBLE_COMPARE(&c, 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02)) {
+		DUK_D(DUK_DPRINT("broken result (native endiannesss): %02x %02x %02x %02x %02x %02x %02x %02x",
+		                 (unsigned int) c.x[0], (unsigned int) c.x[1],
+		                 (unsigned int) c.x[2], (unsigned int) c.x[3],
+		                 (unsigned int) c.x[4], (unsigned int) c.x[5],
+		                 (unsigned int) c.x[6], (unsigned int) c.x[7]));
+		DUK__FAILED("invalid result from (1.0 + ulp) + 0.5ulp");
+	}
+
+	/* Could do negative number testing too, but the tests above should
+	 * differentiate between IEEE 754 rounding modes.
+	 */
 	return error_count;
 }
 
@@ -467,6 +562,7 @@ DUK_INTERNAL duk_uint_t duk_selftest_run_tests(duk_alloc_function alloc_func,
 	error_count += duk__selftest_double_union_size();
 	error_count += duk__selftest_double_aliasing();
 	error_count += duk__selftest_double_zero_sign();
+	error_count += duk__selftest_double_rounding();
 	error_count += duk__selftest_struct_align();
 	error_count += duk__selftest_64bit_arithmetic();
 	error_count += duk__selftest_cast_double_to_small_uint();
