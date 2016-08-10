@@ -15,6 +15,38 @@ function test() {
         z = x >> y;
         z = x >>> y;
         z = ~x;
+
+        z = x & y;
+        z = x | y;
+        z = x ^ y;
+        z = x << y;
+        z = x >> y;
+        z = x >>> y;
+        z = ~x;
+
+        z = x & y;
+        z = x | y;
+        z = x ^ y;
+        z = x << y;
+        z = x >> y;
+        z = x >>> y;
+        z = ~x;
+
+        z = x & y;
+        z = x | y;
+        z = x ^ y;
+        z = x << y;
+        z = x >> y;
+        z = x >>> y;
+        z = ~x;
+
+        z = x & y;
+        z = x | y;
+        z = x ^ y;
+        z = x << y;
+        z = x >> y;
+        z = x >>> y;
+        z = ~x;
     }
 }
 

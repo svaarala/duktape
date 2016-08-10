@@ -10,7 +10,7 @@ function test() {
     var y = 234.5;  // not fastint
     var t;
 
-    for (i = 0; i < 1e6; i++) {
+    for (i = 0; i < 1e7; i++) {
         t = x + y;
         t = x + y;
         t = x + y;
