@@ -1711,6 +1711,10 @@ Planned
   (DUK_USE_BUILTIN_INITJS and DUK_USE_USER_INITJS) which were very rarely
   used and required minify tools to make a dist package (GH-899)
 
+* Incompatible change: bytecode opcode format reworks drop maximum function
+  and constructor call argument count from 511 to 255, and maximum Ecmascript
+  function constant count from 262144 to 65536 (GH-903)
+
 * Allow ES6 unescaped right bracket (']') in regular expressions (non-standard
   before ES6 Annex B), left bracket ('[') not yet supported because it needs
   backtracking (GH-871)
@@ -1825,10 +1829,17 @@ Planned
   DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
   macros have been replaced in duk_config.h (GH-897)
 
+* Internal performance improvement: rework bytecode format to use an 8-bit
+  opcode field (and 8-bit A, B, and C fields) to speed up opcode dispatch
+  by around 20-25% and avoid a two-level dispatch for EXTRA opcodes; the
+  performance optimized build is ~10kB larger while footprint optimized
+  build is slightly smaller (GH-903)
+
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
   Array .length coercion (GH-862); value stack operation optimization
-  (GH-891); call related bytecode simplification (GH-896)
+  (GH-891); call related bytecode simplification (GH-896); minor bytecode
+  opcode handler optimizations (GH-903)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
