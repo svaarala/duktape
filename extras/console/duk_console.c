@@ -113,13 +113,15 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 	 * to ToString(v).
 	 */
 	duk_eval_string(ctx,
-		"(function format(v){"
-		    "try{"
-		        "return Duktape.enc('jx',v);"
-		    "}catch(e){"
-		        "return ''+v;"
-		    "}"
-		"})");
+		"(function (E) {"
+		    "return function format(v){"
+		        "try{"
+		            "return E('jx',v);"
+		        "}catch(e){"
+		            "return ''+v;"
+		        "}"
+		    "};"
+		"})(Duktape.enc)");
 	duk_put_prop_string(ctx, -2, "format");
 
 	duk__console_reg_vararg_func(ctx, duk__console_assert, "assert");
