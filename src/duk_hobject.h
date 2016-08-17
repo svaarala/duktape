@@ -766,6 +766,9 @@ struct duk_hobject {
 	 *                                                      0xffffffffUL = unused, 0xfffffffeUL = deleted
 	 *    e_size * sizeof(duk_uint8_t)           bytes of   entry flags (e_next gc reachable)
 	 *
+	 *  FIXME: decide what layouts to keep; currently layout 3 is unused,
+	 *  performance test it to see if it could replace 1 or 2 (or both).
+	 *
 	 *  In layout 1, the 'e_next' count is rounded to 4 or 8 on platforms
 	 *  requiring 4 or 8 byte alignment.  This ensures proper alignment
 	 *  for the entries, at the cost of memory footprint.  However, it's
