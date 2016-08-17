@@ -117,11 +117,8 @@ var dukClassNames = dukClassNameMeta.class_names;
 
 // Bytecode opcode/extraop metadata
 var dukOpcodes = yaml.load('duk_opcodes.yaml');
-if (dukOpcodes.opcodes.length != 64) {
+if (dukOpcodes.opcodes.length != 256) {
     throw new Error('opcode metadata length incorrect');
-}
-if (dukOpcodes.extra.length != 256) {
-    throw new Error('extraop metadata length incorrect');
 }
 
 /*
@@ -1067,44 +1064,49 @@ Debugger.prototype.decodeBytecodeFromBuffer = function (buf, consts, funcs) {
             ins = buf.readInt32BE(i) >>> 0;
         }
 
-        op = dukOpcodes.opcodes[ins & 0x3f];
-        if (op.extra) {
-            op = dukOpcodes.extra[(ins >> 6) & 0xff];
-        }
+        op = dukOpcodes.opcodes[ins & 0xff];
 
         args = [];
         comments = [];
         if (op.args) {
             for (j = 0, m = op.args.length; j < m; j++) {
+                var A = (ins >>> 8) & 0xff;
+                var B = (ins >>> 16) & 0xff;
+                var C = (ins >>> 24) & 0xff;
+                var BC = (ins >>> 16) & 0xffff;
+                var ABC = (ins >>> 8) & 0xffffff;
+                var Bconst = op & 0x01;
+                var Cconst = op & 0x02;
+
                 switch (op.args[j]) {
-                case 'A_R':   args.push('r' + ((ins >>> 6) & 0xff)); break;
-                case 'A_RI':  args.push('r' + ((ins >>> 6) & 0xff) + '(indirect)'); break;
-                case 'A_C':   args.push('c' + ((ins >>> 6) & 0xff)); break;
-                case 'A_H':   args.push('0x' + ((ins >>> 6) & 0xff).toString(16)); break;
-                case 'A_I':   args.push(((ins >>> 6) & 0xff).toString(10)); break;
-                case 'A_B':   args.push(((ins >>> 6) & 0xff) ? 'true' : 'false'); break;
-                case 'B_RC':  args.push((ins & (1 << 22) ? 'c' : 'r') + ((ins >>> 14) & 0x0ff)); break;
-                case 'B_R':   args.push('r' + ((ins >>> 14) & 0x1ff)); break;
-                case 'B_RI':  args.push('r' + ((ins >>> 14) & 0x1ff) + '(indirect)'); break;
-                case 'B_C':   args.push('c' + ((ins >>> 14) & 0x1ff)); break;
-                case 'B_H':   args.push('0x' + ((ins >>> 14) & 0x1ff).toString(16)); break;
-                case 'B_I':   args.push(((ins >>> 14) & 0x1ff).toString(10)); break;
-                case 'C_RC':  args.push((ins & (1 << 31) ? 'c' : 'r') + ((ins >>> 23) & 0x0ff)); break;
-                case 'C_R':   args.push('r' + ((ins >>> 23) & 0x1ff)); break;
-                case 'C_RI':  args.push('r' + ((ins >>> 23) & 0x1ff) + '(indirect)'); break;
-                case 'C_C':   args.push('c' + ((ins >>> 23) & 0x1ff)); break;
-                case 'C_H':   args.push('0x' + ((ins >>> 23) & 0x1ff).toString(16)); break;
-                case 'C_I':   args.push(((ins >>> 23) & 0x1ff).toString(10)); break;
-                case 'BC_R':  args.push('r' + ((ins >>> 14) & 0x3ffff)); break;
-                case 'BC_C':  args.push('c' + ((ins >>> 14) & 0x3ffff)); break;
-                case 'BC_H':  args.push('0x' + ((ins >>> 14) & 0x3ffff).toString(16)); break;
-                case 'BC_I':  args.push(((ins >>> 14) & 0x3ffff).toString(10)); break;
-                case 'ABC_H': args.push(((ins >>> 6) & 0x03ffffff).toString(16)); break;
-                case 'ABC_I': args.push(((ins >>> 6) & 0x03ffffff).toString(10)); break;
-                case 'BC_LDINT': args.push(((ins >>> 14) & 0x3ffff) - (1 << 17)); break;
-                case 'BC_LDINTX': args.push(((ins >>> 14) & 0x3ffff) - 0); break;  // no bias in LDINTX
+                case 'A_R':   args.push('r' + A); break;
+                case 'A_RI':  args.push('r' + A + '(indirect)'); break;
+                case 'A_C':   args.push('c' + A); break;
+                case 'A_H':   args.push('0x' + A.toString(16)); break;
+                case 'A_I':   args.push(A.toString(10)); break;
+                case 'A_B':   args.push(A ? 'true' : 'false'); break;
+                case 'B_RC':  args.push((Bconst ? 'c' : 'r') + B); break;
+                case 'B_R':   args.push('r' + B); break;
+                case 'B_RI':  args.push('r' + B + '(indirect)'); break;
+                case 'B_C':   args.push('c' + B); break;
+                case 'B_H':   args.push('0x' + B.toString(16)); break;
+                case 'B_I':   args.push(B.toString(10)); break;
+                case 'C_RC':  args.push((Cconst ? 'c' : 'r') + C); break;
+                case 'C_R':   args.push('r' + C); break;
+                case 'C_RI':  args.push('r' + C + '(indirect)'); break;
+                case 'C_C':   args.push('c' + C); break;
+                case 'C_H':   args.push('0x' + C.toString(16)); break;
+                case 'C_I':   args.push(C.toString(10)); break;
+                case 'BC_R':  args.push('r' + BC); break;
+                case 'BC_C':  args.push('c' + BC); break;
+                case 'BC_H':  args.push('0x' + BC.toString(16)); break;
+                case 'BC_I':  args.push(BC.toString(10)); break;
+                case 'ABC_H': args.push(ABC.toString(16)); break;
+                case 'ABC_I': args.push(ABC.toString(10)); break;
+                case 'BC_LDINT': args.push(BC - (1 << 15)); break;
+                case 'BC_LDINTX': args.push(BC - 0); break;  // no bias in LDINTX
                 case 'ABC_JUMP': {
-                    var pc_add = ((ins >>> 6) & 0x03ffffff) - (1 << 25) + 1;  // pc is preincremented before adding
+                    var pc_add = ABC - (1 << 23) + 1;  // pc is preincremented before adding
                     var pc_dst = pc + pc_add;
                     args.push(pc_dst + ' (' + (pc_add >= 0 ? '+' : '') + pc_add + ')');
                     break;

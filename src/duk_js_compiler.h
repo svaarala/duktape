@@ -25,16 +25,18 @@
 #define DUK_IVAL_NONE          0   /* no value */
 #define DUK_IVAL_PLAIN         1   /* register, constant, or value */
 #define DUK_IVAL_ARITH         2   /* binary arithmetic; DUK_OP_ADD, DUK_OP_EQ, other binary ops */
-#define DUK_IVAL_ARITH_EXTRAOP 3   /* binary arithmetic using extraops; DUK_EXTRAOP_INSTOF etc */
-#define DUK_IVAL_PROP          4   /* property access */
-#define DUK_IVAL_VAR           5   /* variable access */
+#define DUK_IVAL_PROP          3   /* property access */
+#define DUK_IVAL_VAR           4   /* variable access */
 
 #define DUK_ISPEC_NONE         0   /* no value */
 #define DUK_ISPEC_VALUE        1   /* value resides in 'valstack_idx' */
 #define DUK_ISPEC_REGCONST     2   /* value resides in a register or constant */
 
-/* bit mask which indicates that a regconst is a constant instead of a register */
-#define DUK_JS_CONST_MARKER    0x80000000UL
+/* Bit mask which indicates that a regconst is a constant instead of a register.
+ * Chosen so that when a regconst is cast to duk_int32_t, all consts are
+ * negative values.
+ */
+#define DUK_REGCONST_CONST_MARKER    0x80000000UL
 
 /* type to represent a reg/const reference during compilation */
 typedef duk_uint32_t duk_regconst_t;

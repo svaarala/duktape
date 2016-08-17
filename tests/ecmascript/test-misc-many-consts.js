@@ -2,6 +2,9 @@
  *  Test for handling for large constant count with a large literal.
  *  Literal values are initialized using a fixed number of temps,
  *  so this does not require temp shuffling.
+ *
+ *  In Duktape 2.x the const limit dropped to 2^16 (from 2^18) as
+ *  part of opcode format rework.
  */
 
 /*===
@@ -16,7 +19,7 @@ array 257 257 1432
 array 300 300 1690
 array 3000 3000 19890
 array 10000 10000 68890
-array 100000 100000 788890
+array 65000 65000 508890
 object 0 0 0
 object 10 10 80
 object 100 100 980
@@ -34,7 +37,7 @@ object 257 257 2864
 object 300 300 3380
 object 3000 3000 39780
 object 10000 10000 137780
-object 100000 100000 1577780
+object 32000 32000 489780
 ===*/
 
 function createArrayConst(num) {
@@ -73,14 +76,14 @@ function testObject(num) {
 }
 
 try {
-    [0, 10, 100, 253, 254, 255, 256, 257, 300, 3000, 10000, 100000]
+    [0, 10, 100, 253, 254, 255, 256, 257, 300, 3000, 10000, 65000]
         .forEach(function(x) { testArray(x); });
 } catch (e) {
     print(e);
 }
 
 try {
-    [0, 10, 100, 125, 126, 127, 128, 129, 130, 253, 254, 255, 256, 257, 300, 3000, 10000, 100000]
+    [0, 10, 100, 125, 126, 127, 128, 129, 130, 253, 254, 255, 256, 257, 300, 3000, 10000, 32000]
         .forEach(function(x) { testObject(x); });
 } catch (e) {
     print(e);

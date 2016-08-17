@@ -27,243 +27,477 @@ opcodes:
     args:
       - A_R
       - BC_LDINTX
-  - name: MPUTOBJ
+  - name: LDTHIS
     args:
-      - A_R
-      - B_R
-      - C_I
-  - name: MPUTOBJI
-    args:
-      - A_R
-      - B_RI
-      - C_I
-  - name: MPUTARR
-    args:
-      - A_R
-      - B_R
-      - C_I
-  - name: MPUTARRI
-    args:
-      - A_R
-      - B_RI
-      - C_I
-  - name: NEW
-    args:
-      - A_I
       - BC_R
-  - name: UNUSED10
+  - name: LDUNDEF
     args:
-      - ABC_I
-  - name: REGEXP
+      - BC_R
+  - name: LDNULL
     args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: CSREG
+      - BC_R
+  - name: LDTRUE
+    args:
+      - BC_R
+  - name: LDFALSE
+    args:
+      - BC_R
+  - name: BNOT
     args:
       - A_R
       - BC_R
-  - name: UNUSED13
+  - name: LNOT
     args:
-      - ABC_I
-  - name: GETVAR
+      - A_R
+      - BC_R
+  - name: UNM
+    args:
+      - A_R
+      - BC_R
+  - name: UNP
+    args:
+      - A_R
+      - BC_R
+  - name: TYPEOF
+    args:
+      - A_R
+      - BC_R
+  - name: TYPEOFID
     args:
       - A_R
       - BC_C
-  - name: PUTVAR
-    args:
-      - A_R
-      - BC_C
-  - name: DECLVAR
-    args:
-      - A_H
-      - B_RC
-      - C_RC
-    flags:
-      - mask: 0x40
-        name: writable
-      - mask: 0x80
-        name: enumerable
-      - mask: 0x100
-        name: configurable
-      - mask: 0x200
-        name: accessor
-      - mask: 0x400
-        name: undef_value
-      - mask: 0x800
-        name: func_decl
-  - name: DELVAR
-    args:
-      - A_R
-      - B_RC
-  - name: CSVAR
-    args:
-      - A_R
-      - B_RC
-  - name: UNUSED19
-    args:
-      - ABC_I
-  - name: CLOSURE
-    args:
-      - A_R
-      - BC_I
-  - name: GETPROP
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: PUTPROP
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: DELPROP
+  - name: EQ_RR
     args:
       - A_R
       - B_R
-      - C_RC
-  - name: UNUSED24
+      - C_R
+  - name: EQ_CR
     args:
-      - ABC_I
-  - name: EVALCALL
+      - A_R
+      - B_C
+      - C_R
+  - name: EQ_RC
     args:
-      - A_I
+      - A_R
+      - B_R
+      - C_C
+  - name: EQ_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: NEQ_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: NEQ_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: NEQ_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: NEQ_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: SEQ_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: SEQ_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: SEQ_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: SEQ_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: SNEQ_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: SNEQ_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: SNEQ_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: SNEQ_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: GT_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: GT_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: GT_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: GT_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: GE_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: GE_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: GE_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: GE_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: LT_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: LT_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: LT_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: LT_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: LE_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: LE_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: LE_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: LE_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: IFTRUE_R
+    args:
       - BC_R
-  - name: ADD
+  - name: IFTRUE_C
     args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: SUB
+      - BC_C
+  - name: IFFALSE_R
     args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: MUL
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: DIV
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: MOD
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BAND
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BOR
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BXOR
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BASL
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BLSR
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: BASR
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: EQ
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: NEQ
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: SEQ
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: SNEQ
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: GT
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: GE
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: LT
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: LE
-    args:
-      - A_R
-      - B_RC
-      - C_RC
-  - name: IF
-    args:
-      - A_B
-      - B_RC
-  - name: JUMP
-    args:
-      - ABC_JUMP
-  - name: RETURN
-    args:
-      - A_H
-      - B_RC
-    flags:
-      - mask: 0x40
-        name: have_retval
-  - name: CALL
-    args:
-      - A_I
       - BC_R
-  - name: TAILCALL
+  - name: IFFALSE_C
     args:
-      - A_I
-      - BC_R
-  - name: TRYCATCH
+      - BC_C
+  - name: ADD_RR
     args:
-      - A_H
-      # base register for two consecutive regs (base_reg + 0, base_reg + 1) used for two things:
-      # - input: either 'with' target register or catch varname constant (base_reg + 0), depending on flags
-      # - output: when caught, catch value (base_reg + 0) and type (base_reg + 1)
-      - BC_R
-    flags:
-      - mask: 0x40
-        name: have_catch
-      - mask: 0x80
-        name: have_finally
-      - mask: 0x100
-        name: catch_binding
-      - mask: 0x200
-        name: with_binding
-  - name: EXTRA
-    extra: true
+      - A_R
+      - B_R
+      - C_R
+  - name: ADD_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: ADD_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: ADD_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: SUB_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: SUB_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: SUB_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: SUB_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: MUL_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: MUL_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: MUL_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: MUL_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: DIV_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: DIV_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: DIV_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: DIV_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: MOD_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: MOD_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: MOD_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: MOD_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BAND_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BAND_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BAND_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BAND_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BOR_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BOR_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BOR_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BOR_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BXOR_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BXOR_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BXOR_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BXOR_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BASL_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BASL_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BASL_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BASL_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BLSR_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BLSR_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BLSR_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BLSR_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: BASR_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: BASR_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: BASR_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: BASR_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: INSTOF_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: INSTOF_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: INSTOF_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: INSTOF_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: IN_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: IN_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: IN_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: IN_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
   - name: PREINCR
     args:
       - A_R
@@ -296,67 +530,375 @@ opcodes:
     args:
       - A_R
       - BC_C
-  - name: PREINCP
+  - name: PREINCP_RR
     args:
       - A_R
-      - B_RC
-      - C_RC
-  - name: PREDECP
+      - B_R
+      - C_R
+  - name: PREINCP_CR
     args:
       - A_R
-      - B_RC
-      - C_RC
-  - name: POSTINCP
+      - B_C
+      - C_R
+  - name: PREINCP_RC
     args:
       - A_R
-      - B_RC
-      - C_RC
-  - name: POSTDECP
+      - B_R
+      - C_C
+  - name: PREINCP_CC
     args:
       - A_R
-      - B_RC
+      - B_C
+      - C_C
+  - name: PREDECP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: PREDECP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: PREDECP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: PREDECP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: POSTINCP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: POSTINCP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: POSTINCP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: POSTINCP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: POSTDECP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: POSTDECP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: POSTDECP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: POSTDECP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: GETPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: GETPROP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: GETPROP_RC
+    args:
+      - A_R
+      - B_R
       - C_RC
-
-extra:
-  - name: NOP
-  - name: INVALID
+  - name: GETPROP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: PUTPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: PUTPROP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: PUTPROP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: PUTPROP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: DELPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: DELPROP_CR   # unused now
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: DELPROP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: DELPROP_CC   # unused now
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: DECLVAR_RR
+    args:
+      - A_H
+      - B_R
+      - C_R
+    flags:
+      - mask: 0x40
+        name: writable
+      - mask: 0x80
+        name: enumerable
+      - mask: 0x100
+        name: configurable
+      - mask: 0x200
+        name: accessor
+      - mask: 0x400
+        name: undef_value
+      - mask: 0x800
+        name: func_decl
+  - name: DECLVAR_CR
+    args:
+      - A_H
+      - B_C
+      - C_R
+    flags:
+      - mask: 0x40
+        name: writable
+      - mask: 0x80
+        name: enumerable
+      - mask: 0x100
+        name: configurable
+      - mask: 0x200
+        name: accessor
+      - mask: 0x400
+        name: undef_value
+      - mask: 0x800
+        name: func_decl
+  - name: DECLVAR_RC
+    args:
+      - A_H
+      - B_R
+      - C_C
+    flags:
+      - mask: 0x40
+        name: writable
+      - mask: 0x80
+        name: enumerable
+      - mask: 0x100
+        name: configurable
+      - mask: 0x200
+        name: accessor
+      - mask: 0x400
+        name: undef_value
+      - mask: 0x800
+        name: func_decl
+  - name: DECLVAR_CC
+    args:
+      - A_H
+      - B_C
+      - C_C
+    flags:
+      - mask: 0x40
+        name: writable
+      - mask: 0x80
+        name: enumerable
+      - mask: 0x100
+        name: configurable
+      - mask: 0x200
+        name: accessor
+      - mask: 0x400
+        name: undef_value
+      - mask: 0x800
+        name: func_decl
+  - name: REGEXP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: REGEXP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: REGEXP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: REGEXP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: CSVAR_RR
+    args:
+      - A_R
+      - B_R
+  - name: CSVAR_CR
+    args:
+      - A_R
+      - B_C
+  - name: CSVAR_RC
+    args:
+      - A_R
+      - B_R
+  - name: CSVAR_CC
+    args:
+      - A_R
+      - B_C
+  - name: CLOSURE
+    args:
+      - A_R
+      - BC_I
+  - name: GETVAR
+    args:
+      - A_R
+      - BC_C
+  - name: PUTVAR
+    args:
+      - A_R
+      - BC_C
+  - name: DELVAR
+    args:
+      - A_R
+      - BC_C
+  - name: JUMP
+    args:
+      - ABC_JUMP
+  - name: RETREG
+    args:
+      - BC_R
+  - name: RETUNDEF
+  - name: RETCONST
+    args:
+      - BC_C
+  - name: RETCONSTN
+    args:
+      - BC_C
+  - name: LABEL
     args:
       - BC_I
-  - name: LDTHIS
+  - name: ENDLABEL
+    args:
+      - BC_I
+  - name: BREAK
+    args:
+      - BC_I
+  - name: CONTINUE
+    args:
+      - BC_I
+  - name: TRYCATCH
+    args:
+      - A_H
+      # base register for two consecutive regs (base_reg + 0, base_reg + 1) used for two things:
+      # - input: either 'with' target register or catch varname constant (base_reg + 0), depending on flags
+      # - output: when caught, catch value (base_reg + 0) and type (base_reg + 1)
+      - BC_R
+    flags:
+      - mask: 0x40
+        name: have_catch
+      - mask: 0x80
+        name: have_finally
+      - mask: 0x100
+        name: catch_binding
+      - mask: 0x200
+        name: with_binding
+  - name: ENDTRY
+  - name: ENDCATCH
+  - name: ENDFIN
+  - name: THROW
     args:
       - BC_R
-  - name: LDUNDEF
+  - name: CSREG
     args:
+      - A_R
       - BC_R
-  - name: LDNULL
+  - name: EVALCALL
     args:
+      - A_I
       - BC_R
-  - name: LDTRUE
+  - name: CALL
     args:
+      - A_I
       - BC_R
-  - name: LDFALSE
+  - name: TAILCALL
     args:
+      - A_I
+      - BC_R
+  - name: NEW
+    args:
+      - A_I
       - BC_R
   - name: NEWOBJ
     args:
-      # XXX: extend to BC?
-      - B_R
+      - BC_R
   - name: NEWARR
     args:
-      # XXX: extend to BC?
+      - BC_R
+  - name: MPUTOBJ
+    args:
+      - A_R
       - B_R
+      - C_I
+  - name: MPUTOBJI
+    args:
+      - A_R
+      - B_RI
+      - C_I
+  - name: INITSET
+    args:
+      - A_R
+      - BC_R
+  - name: INITGET
+    args:
+      - A_R
+      - BC_R
+  - name: MPUTARR
+    args:
+      - A_R
+      - B_R
+      - C_I
+  - name: MPUTARRI
+    args:
+      - A_R
+      - B_RI
+      - C_I
   - name: SETALEN
     args:
       - B_R
       - C_R
-  - name: TYPEOF
-    args:
-      - BC_R
-  - name: TYPEOFID
-    args:
-      - B_R
-      # maybe changed to C_C later
-      - C_RC
   - name: INITENUM
     args:
       - B_R
@@ -365,281 +907,75 @@ extra:
     args:
       - B_R
       - C_R
-  - name: INITSET
-    args:
-      - B_R
-      - C_R
-  - name: INITSETI
-    args:
-      - B_R
-      - C_RI
-  - name: INITGET
-    args:
-      - B_R
-      - C_RI
-  - name: INITGETI
-    args:
-      - B_R
-      - C_RI
-  - name: ENDTRY
-  - name: ENDCATCH
-  - name: ENDFIN
-  - name: THROW
-    args:
-      - BC_R
   - name: INVLHS
-  - name: UNM
-    args:
-      - BC_R
-  - name: UNP
-    args:
-      - BC_R
   - name: DEBUGGER
-  - name: BREAK
+  - name: NOP
+  - name: INVALID
     args:
-      - BC_I
-  - name: CONTINUE
-    args:
-      - BC_I
-  - name: BNOT
-    args:
-      - BC_R
-  - name: LNOT
-    args:
-      - BC_R
-  - name: INSTOF
-    args:
-      - B_R
-      - C_RC
-  - name: IN
-    args:
-      - B_R
-      - C_RC
-  - name: LABEL
-    args:
-      - BC_I
-  - name: ENDLABEL
-    args:
-      - BC_I
-  - name: EXTRA34
-  - name: EXTRA35
-  - name: EXTRA36
-  - name: EXTRA37
-  - name: EXTRA38
-  - name: EXTRA39
-  - name: EXTRA40
-  - name: EXTRA41
-  - name: EXTRA42
-  - name: EXTRA43
-  - name: EXTRA44
-  - name: EXTRA45
-  - name: EXTRA46
-  - name: EXTRA47
-  - name: EXTRA48
-  - name: EXTRA49
-  - name: EXTRA50
-  - name: EXTRA51
-  - name: EXTRA52
-  - name: EXTRA53
-  - name: EXTRA54
-  - name: EXTRA55
-  - name: EXTRA56
-  - name: EXTRA57
-  - name: EXTRA58
-  - name: EXTRA59
-  - name: EXTRA60
-  - name: EXTRA61
-  - name: EXTRA62
-  - name: EXTRA63
-  - name: EXTRA64
-  - name: EXTRA65
-  - name: EXTRA66
-  - name: EXTRA67
-  - name: EXTRA68
-  - name: EXTRA69
-  - name: EXTRA70
-  - name: EXTRA71
-  - name: EXTRA72
-  - name: EXTRA73
-  - name: EXTRA74
-  - name: EXTRA75
-  - name: EXTRA76
-  - name: EXTRA77
-  - name: EXTRA78
-  - name: EXTRA79
-  - name: EXTRA80
-  - name: EXTRA81
-  - name: EXTRA82
-  - name: EXTRA83
-  - name: EXTRA84
-  - name: EXTRA85
-  - name: EXTRA86
-  - name: EXTRA87
-  - name: EXTRA88
-  - name: EXTRA89
-  - name: EXTRA90
-  - name: EXTRA91
-  - name: EXTRA92
-  - name: EXTRA93
-  - name: EXTRA94
-  - name: EXTRA95
-  - name: EXTRA96
-  - name: EXTRA97
-  - name: EXTRA98
-  - name: EXTRA99
-  - name: EXTRA100
-  - name: EXTRA101
-  - name: EXTRA102
-  - name: EXTRA103
-  - name: EXTRA104
-  - name: EXTRA105
-  - name: EXTRA106
-  - name: EXTRA107
-  - name: EXTRA108
-  - name: EXTRA109
-  - name: EXTRA110
-  - name: EXTRA111
-  - name: EXTRA112
-  - name: EXTRA113
-  - name: EXTRA114
-  - name: EXTRA115
-  - name: EXTRA116
-  - name: EXTRA117
-  - name: EXTRA118
-  - name: EXTRA119
-  - name: EXTRA120
-  - name: EXTRA121
-  - name: EXTRA122
-  - name: EXTRA123
-  - name: EXTRA124
-  - name: EXTRA125
-  - name: EXTRA126
-  - name: EXTRA127
-  - name: EXTRA128
-  - name: EXTRA129
-  - name: EXTRA130
-  - name: EXTRA131
-  - name: EXTRA132
-  - name: EXTRA133
-  - name: EXTRA134
-  - name: EXTRA135
-  - name: EXTRA136
-  - name: EXTRA137
-  - name: EXTRA138
-  - name: EXTRA139
-  - name: EXTRA140
-  - name: EXTRA141
-  - name: EXTRA142
-  - name: EXTRA143
-  - name: EXTRA144
-  - name: EXTRA145
-  - name: EXTRA146
-  - name: EXTRA147
-  - name: EXTRA148
-  - name: EXTRA149
-  - name: EXTRA150
-  - name: EXTRA151
-  - name: EXTRA152
-  - name: EXTRA153
-  - name: EXTRA154
-  - name: EXTRA155
-  - name: EXTRA156
-  - name: EXTRA157
-  - name: EXTRA158
-  - name: EXTRA159
-  - name: EXTRA160
-  - name: EXTRA161
-  - name: EXTRA162
-  - name: EXTRA163
-  - name: EXTRA164
-  - name: EXTRA165
-  - name: EXTRA166
-  - name: EXTRA167
-  - name: EXTRA168
-  - name: EXTRA169
-  - name: EXTRA170
-  - name: EXTRA171
-  - name: EXTRA172
-  - name: EXTRA173
-  - name: EXTRA174
-  - name: EXTRA175
-  - name: EXTRA176
-  - name: EXTRA177
-  - name: EXTRA178
-  - name: EXTRA179
-  - name: EXTRA180
-  - name: EXTRA181
-  - name: EXTRA182
-  - name: EXTRA183
-  - name: EXTRA184
-  - name: EXTRA185
-  - name: EXTRA186
-  - name: EXTRA187
-  - name: EXTRA188
-  - name: EXTRA189
-  - name: EXTRA190
-  - name: EXTRA191
-  - name: EXTRA192
-  - name: EXTRA193
-  - name: EXTRA194
-  - name: EXTRA195
-  - name: EXTRA196
-  - name: EXTRA197
-  - name: EXTRA198
-  - name: EXTRA199
-  - name: EXTRA200
-  - name: EXTRA201
-  - name: EXTRA202
-  - name: EXTRA203
-  - name: EXTRA204
-  - name: EXTRA205
-  - name: EXTRA206
-  - name: EXTRA207
-  - name: EXTRA208
-  - name: EXTRA209
-  - name: EXTRA210
-  - name: EXTRA211
-  - name: EXTRA212
-  - name: EXTRA213
-  - name: EXTRA214
-  - name: EXTRA215
-  - name: EXTRA216
-  - name: EXTRA217
-  - name: EXTRA218
-  - name: EXTRA219
-  - name: EXTRA220
-  - name: EXTRA221
-  - name: EXTRA222
-  - name: EXTRA223
-  - name: EXTRA224
-  - name: EXTRA225
-  - name: EXTRA226
-  - name: EXTRA227
-  - name: EXTRA228
-  - name: EXTRA229
-  - name: EXTRA230
-  - name: EXTRA231
-  - name: EXTRA232
-  - name: EXTRA233
-  - name: EXTRA234
-  - name: EXTRA235
-  - name: EXTRA236
-  - name: EXTRA237
-  - name: EXTRA238
-  - name: EXTRA239
-  - name: EXTRA240
-  - name: EXTRA241
-  - name: EXTRA242
-  - name: EXTRA243
-  - name: EXTRA244
-  - name: EXTRA245
-  - name: EXTRA246
-  - name: EXTRA247
-  - name: EXTRA248
-  - name: EXTRA249
-  - name: EXTRA250
-  - name: EXTRA251
-  - name: EXTRA252
-  - name: EXTRA253
-  - name: EXTRA254
-  - name: EXTRA255
+      - ABC_I
+  - name: UNUSED190
+  - name: UNUSED191
+  - name: UNUSED192
+  - name: UNUSED193
+  - name: UNUSED194
+  - name: UNUSED195
+  - name: UNUSED196
+  - name: UNUSED197
+  - name: UNUSED198
+  - name: UNUSED199
+  - name: UNUSED200
+  - name: UNUSED201
+  - name: UNUSED202
+  - name: UNUSED203
+  - name: UNUSED204
+  - name: UNUSED205
+  - name: UNUSED206
+  - name: UNUSED207
+  - name: UNUSED208
+  - name: UNUSED209
+  - name: UNUSED210
+  - name: UNUSED211
+  - name: UNUSED212
+  - name: UNUSED213
+  - name: UNUSED214
+  - name: UNUSED215
+  - name: UNUSED216
+  - name: UNUSED217
+  - name: UNUSED218
+  - name: UNUSED219
+  - name: UNUSED220
+  - name: UNUSED221
+  - name: UNUSED222
+  - name: UNUSED223
+  - name: UNUSED224
+  - name: UNUSED225
+  - name: UNUSED226
+  - name: UNUSED227
+  - name: UNUSED228
+  - name: UNUSED229
+  - name: UNUSED230
+  - name: UNUSED231
+  - name: UNUSED232
+  - name: UNUSED233
+  - name: UNUSED234
+  - name: UNUSED235
+  - name: UNUSED236
+  - name: UNUSED237
+  - name: UNUSED238
+  - name: UNUSED239
+  - name: UNUSED240
+  - name: UNUSED241
+  - name: UNUSED242
+  - name: UNUSED243
+  - name: UNUSED244
+  - name: UNUSED245
+  - name: UNUSED246
+  - name: UNUSED247
+  - name: UNUSED248
+  - name: UNUSED249
+  - name: UNUSED250
+  - name: UNUSED251
+  - name: UNUSED252
+  - name: UNUSED253
+  - name: UNUSED254
+  - name: UNUSED255

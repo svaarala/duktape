@@ -1,5 +1,5 @@
 /*
- *  Loading integer constant to register.
+ *  Loading integer constant to register; const fits LDINT.
  */
 
 if (typeof print !== 'function') { print = console.log; }

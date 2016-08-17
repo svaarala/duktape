@@ -2,7 +2,7 @@
  *  Loading register to property write LHS.
  */
 
-if (typeof print !== 'function') { prinobj.foo = console.log; }
+if (typeof print !== 'function') { print = console.log; }
 
 function test() {
     var i;
