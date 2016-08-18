@@ -1271,9 +1271,9 @@ massif-arcfour: massif-test-dev-arcfour
 # - Node.js (V8) is JITed
 # - Luajit is JITed
 
-#TIME=$(PYTHON) util/time_multi.py --count 1 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
-#TIME=$(PYTHON) util/time_multi.py --count 3 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
-TIME=$(PYTHON) util/time_multi.py --count 5 --sleep 0 --sleep-factor 0.8 --mode min # Take minimum time of N
+#TIME=$(PYTHON) util/time_multi.py --count 1 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
+#TIME=$(PYTHON) util/time_multi.py --count 3 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
+TIME=$(PYTHON) util/time_multi.py --count 5 --sleep 0 --sleep-factor 2.0 --mode min # Take minimum time of N
 
 # Blocks: optimization variants, previous versions, other interpreting engines,
 # other JIT engines.
@@ -1285,12 +1285,15 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' duk.O3 %5s' "`$(TIME) ./duk.O3 $$i`"; \
 		printf ' duk.O4 %5s' "`$(TIME) ./duk.O4 $$i`"; \
 		printf ' |'; \
+		printf ' duk.O2.150 %5s' "`$(TIME) ./duk.O2.150 $$i`"; \
+		printf ' duk.O2.140 %5s' "`$(TIME) ./duk.O2.140 $$i`"; \
 		printf ' duk.O2.130 %5s' "`$(TIME) ./duk.O2.130 $$i`"; \
 		printf ' duk.O2.124 %5s' "`$(TIME) ./duk.O2.124 $$i`"; \
 		printf ' duk.O2.113 %5s' "`$(TIME) ./duk.O2.113 $$i`"; \
 		printf ' duk.O2.102 %5s' "`$(TIME) ./duk.O2.102 $$i`"; \
 		printf ' |'; \
 		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
+		printf ' jerry %5s' "`$(TIME) jerry $$i`"; \
 		printf ' lua %5s' "`$(TIME) lua $${i%%.js}.lua`"; \
 		printf ' python %5s' "`$(TIME) $(PYTHON) $${i%%.js}.py`"; \
 		printf ' perl %5s' "`$(TIME) perl $${i%%.js}.pl`"; \
@@ -1301,16 +1304,15 @@ perftest: duk duk.O2 duk.O3 duk.O4
 		printf ' luajit %5s' "`$(TIME) luajit $${i%%.js}.lua`"; \
 		printf '\n'; \
 	done
-perftestduk: duk duk.O2
+perftestduk: duk.O2
 	for i in tests/perf/*.js; do \
 		printf '%-36s:' "`basename $$i`"; \
-		printf ' duk.Os %5s' "`$(TIME) ./duk $$i`"; \
 		printf ' duk.O2 %5s' "`$(TIME) ./duk.O2 $$i`"; \
 		printf ' |'; \
-		printf ' duk.O2.130 %5s' "`$(TIME) ./duk.O2.130 $$i`"; \
-		printf ' duk.O2.124 %5s' "`$(TIME) ./duk.O2.124 $$i`"; \
-		printf ' duk.O2.113 %5s' "`$(TIME) ./duk.O2.113 $$i`"; \
-		printf ' duk.O2.102 %5s' "`$(TIME) ./duk.O2.102 $$i`"; \
+		printf ' mujs %5s' "`$(TIME) mujs $$i`"; \
+		printf ' jerry %5s' "`$(TIME) jerry $$i`"; \
+		printf ' duk.O2.master %5s' "`$(TIME) ./duk.O2.master $$i`"; \
+		printf ' duk.O2.150 %5s' "`$(TIME) ./duk.O2.150 $$i`"; \
 		printf '\n'; \
 	done
 perftestduk3: duk.O2
