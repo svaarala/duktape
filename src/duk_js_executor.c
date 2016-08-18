@@ -2727,7 +2727,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_LDINT: {
 			duk_int32_t val;
 
-			val = (duk_int32_t) (DUK_DEC_BC(ins) - DUK_BC_LDINT_BIAS);
+			val = (duk_int32_t) DUK_DEC_BC(ins) - (duk_int32_t) DUK_BC_LDINT_BIAS;
 			duk_push_int((duk_context *) thr, val);
 			DUK__REPLACE_TOP_A_BREAK();
 		}
@@ -2744,7 +2744,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_tval *tv1;
 			duk_int32_t val;
 
-			val = (duk_int32_t) (DUK_DEC_BC(ins) - DUK_BC_LDINT_BIAS);
+			val = (duk_int32_t) DUK_DEC_BC(ins) - (duk_int32_t) DUK_BC_LDINT_BIAS;
 			tv1 = DUK__REGP_A(ins);
 			DUK_TVAL_SET_I32_UPDREF(thr, tv1, val);  /* side effects */
 			break;
@@ -3795,7 +3795,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 		case DUK_OP_JUMP: {
-			curr_pc += DUK_DEC_ABC(ins) - DUK_BC_JUMP_BIAS;
+			/* Note: without explicit cast to signed, MSVC will
+			 * apparently generate a large positive jump when the
+			 * bias-corrected value would normally be negative.
+			 */
+			curr_pc += (duk_int_fast_t) DUK_DEC_ABC(ins) - (duk_int_fast_t) DUK_BC_JUMP_BIAS;
 			break;
 		}
 
