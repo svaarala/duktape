@@ -35,6 +35,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Saúl Ibarra Corretgé <saghul@gmail.com>
 * Jeremy HU <huxingyi@msn.com>
 * Ole André Vadla Ravnås (https://github.com/oleavr)
+* Harold Brenes (https://github.com/harold-b)
 
 Other contributions
 ===================
