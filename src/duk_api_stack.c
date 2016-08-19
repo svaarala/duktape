@@ -4179,6 +4179,30 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
+	/* Reviving an object using a heap pointer is a dangerous API
+	 * operation: if the application doesn't guarantee that the
+	 * pointer target is always reachable, difficult-to-diagnose
+	 * problems may ensue.  Try to validate the 'ptr' argument to
+	 * the extent possible.
+	 */
+
+#if defined(DUK_USE_ASSERTIONS)
+#if defined(DUK_USE_MARK_AND_SWEEP)
+	{
+		/* One particular problem case is where an object has been
+		 * queued for finalization but the finalizer hasn't been
+		 * executed.
+		 */
+		duk_heaphdr *curr;
+		for (curr = thr->heap->finalize_list;
+		     curr != NULL;
+		     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+			DUK_ASSERT(curr != (duk_heaphdr *) ptr);
+		}
+	}
+#endif
+#endif
+
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 
 	if (ptr == NULL) {
