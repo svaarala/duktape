@@ -2176,7 +2176,9 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	}
 	}
 
+#if defined(DUK_USE_JX) || defined(DUK_USE_JC)
  pop2_emitted:
+#endif
 	duk_pop_2(ctx); /* [ ... key val ] -> [ ... ] */
 	return 1;  /* emitted */
 
