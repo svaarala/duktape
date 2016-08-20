@@ -18,6 +18,47 @@
 typedef double (*duk__one_arg_func)(double);
 typedef double (*duk__two_arg_func)(double, double);
 
+DUK_LOCAL duk_ret_t duk__math_hypot(duk_context *ctx) {
+	duk_idx_t n = duk_get_top(ctx);
+	duk_idx_t i;
+	duk_double_t res = 0;
+	duk_double_t t;
+
+	/*  ES6 20.2.2.18 Math.hypot
+	 *
+	 *  - If no arguments are passed, the result is +0.
+	 *  - If any argument is +inf, the result is +inf.
+	 *  - If any argument is -inf, the result is +inf.
+	 *  - If no argument is +inf or -inf, and any argument is NaN, the result is
+	 *    NaN.
+	 *  - If all arguments are either +0 or -0, the result is +0.
+	 */
+
+	/* FIXME: naive implementation */
+
+	/*
+	 *  Note: every input value must be coerced with ToNumber(), even
+	 *  if we know the result will be a NaN anyway: ToNumber() may have
+	 *  side effects for which even order of evaluation matters.
+	 */
+
+	for (i = 0; i < n; i++) {
+		t = duk_to_number(ctx, i);
+		if (DUK_FPCLASSIFY(t) == DUK_FP_INFINITE || DUK_FPCLASSIFY(res) == DUK_FP_INFINITE) {
+			res = (duk_double_t) DUK_DOUBLE_INFINITY;
+		} else if (DUK_FPCLASSIFY(t) == DUK_FP_NAN || DUK_FPCLASSIFY(res) == DUK_FP_NAN) {
+			/* Note: not normalized, but duk_push_number() will normalize */
+			res = (duk_double_t) DUK_DOUBLE_NAN;
+		} else {
+			res += (duk_double_t) (t * t);
+		}
+	}
+
+	duk_push_number(ctx, (duk_double_t) DUK_SQRT(res));
+
+	return 1;
+}
+
 DUK_LOCAL duk_ret_t duk__math_minmax(duk_context *ctx, duk_double_t initial, duk__two_arg_func min_max) {
 	duk_idx_t n = duk_get_top(ctx);
 	duk_idx_t i;
@@ -243,6 +284,10 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	fun = duk__two_arg_funcs[fun_idx];
 	duk_push_number(ctx, (duk_double_t) fun((double) arg1, (double) arg2));
 	return 1;
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
+	return duk__math_hypot(ctx);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
