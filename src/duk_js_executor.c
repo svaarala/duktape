@@ -1910,8 +1910,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		/* Set a high interrupt counter; the original executor
 		 * interrupt invocation will rewrite before exiting.
 		 */
-		thr->interrupt_init = ctr;
-		thr->interrupt_counter = ctr - 1;
+		DUK_HTHREAD_INTCTR_SET(thr, ctr);
 		return DUK__INT_NOACTION;
 	}
 	DUK_HEAP_SET_INTERRUPT_RUNNING(thr->heap);
@@ -1938,8 +1937,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 		 * until we've fully bubbled out of Duktape.
 		 */
 		DUK_D(DUK_DPRINT("execution timeout, throwing a RangeError"));
-		thr->interrupt_init = 0;
-		thr->interrupt_counter = 0;
+		DUK_HTHREAD_INTCTR_SET_IMMEDIATE(thr);
 		DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
 		DUK_ERROR_RANGE(thr, "execution timeout");
 	}
@@ -1972,8 +1970,7 @@ DUK_LOCAL duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	 * be 0.
 	 */
 	DUK_ASSERT(ctr >= 1);
-	thr->interrupt_init = ctr;
-	thr->interrupt_counter = ctr - 1;
+	DUK_HTHREAD_INTCTR_SET(thr, ctr);
 	DUK_HEAP_CLEAR_INTERRUPT_RUNNING(thr->heap);
 
 	return retval;
@@ -2111,7 +2108,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 		 */
 		DUK_ASSERT(thr->interrupt_counter <= thr->interrupt_init);
 		thr->interrupt_init = thr->interrupt_init - thr->interrupt_counter;
-		thr->interrupt_counter = 0;
+		thr->interrupt_counter = 0;  /* FIXME: 1 for consistency? */
 	}
 }
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
@@ -2427,10 +2424,6 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	/* 'fun' is quite rarely used, so no local for it */
 #endif
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
-	duk_int_t int_ctr;
-#endif
-
 #ifdef DUK_USE_ASSERTIONS
 	duk_size_t valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
 #endif
@@ -2563,11 +2556,12 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		 * whenever a thread switch occurs by the DUK_HEAP_SWITCH_THREAD() macro.
 		 */
 #if defined(DUK_USE_INTERRUPT_COUNTER)
-		int_ctr = thr->interrupt_counter;
-		if (DUK_LIKELY(int_ctr > 0)) {
-			thr->interrupt_counter = int_ctr - 1;
-		} else {
-			/* Trigger at zero or below */
+		/* FIXME: trigger condition now changes so rework all assign sites. */
+		if (--thr->interrupt_counter <= 0) {
+/*
+		if (thr->interrupt_counter-- <= 0) {
+*/
+			/* Trigger when result is zero or below */
 			duk_small_uint_t exec_int_ret;
 
 			/* Write curr_pc back for the debugger. */

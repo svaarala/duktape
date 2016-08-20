@@ -1717,7 +1717,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("returning with debugger enabled, force interrupt"));
 		DUK_ASSERT(thr->interrupt_counter <= thr->interrupt_init);
 		thr->interrupt_init -= thr->interrupt_counter;
-		thr->interrupt_counter = 0;
+		thr->interrupt_counter = 0;  /* FIXME: for consistency this should be 1? */
 		thr->heap->dbg_force_restart = 1;
 	}
 #endif
@@ -1850,7 +1850,7 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("returning with debugger enabled, force interrupt"));
 		DUK_ASSERT(thr->interrupt_counter <= thr->interrupt_init);
 		thr->interrupt_init -= thr->interrupt_counter;
-		thr->interrupt_counter = 0;
+		thr->interrupt_counter = 0;  /* FIXME: for consistency, should be 1? */
 		thr->heap->dbg_force_restart = 1;
 	}
 #endif

@@ -191,6 +191,23 @@
 	 DUK_ASSERT_EXPR((thr)->valstack_bottom > (thr)->valstack), \
 	 (thr)->valstack_bottom - 1)
 
+/* Initialize interrupt counter to a new countdown value.  If the value is 1,
+ * one opcode would be executed before interrupting.  This is behind a macro
+ * because changes in the counter model are likely and need specific tweaks
+ * (like subtracting 1 or not).
+ */
+#define DUK_HTHREAD_INTCTR_SET(thr,val) do { \
+		duk_int_t duk__val; \
+		duk__val = (val); \
+		(thr)->interrupt_init = duk__val; \
+		(thr)->interrupt_counter = duk__val; \
+	} while (0)
+
+#define DUK_HTHREAD_INTCTR_SET_IMMEDIATE(thr) do { \
+		(thr)->interrupt_init = 0; \
+		(thr)->interrupt_counter = 0; \
+	} while (0)
+
 /*
  *  Struct defines
  */

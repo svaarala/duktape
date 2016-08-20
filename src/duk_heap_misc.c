@@ -56,8 +56,7 @@ DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 			 * interrupt before executing the first insturction.
 			 */
 			DUK_DD(DUK_DDPRINT("switch thread, initial entry, init default interrupt counter"));
-			new_thr->interrupt_counter = 0;
-			new_thr->interrupt_init = 0;
+			DUK_HTHREAD_INTCTR_SET_IMMEDIATE(new_thr);
 		} else {
 			/* Copy interrupt counter/init value state to new thread (if any).
 			 * It's OK for new_thr to be the same as curr_thr.
