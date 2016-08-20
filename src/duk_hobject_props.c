@@ -2985,6 +2985,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr, duk_tv
 
  fail_range:
 	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARRAY_LENGTH);
+	return 0;  /* unreachable */
 }
 
 /* Delete elements required by a smaller length, taking into account
