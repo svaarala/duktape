@@ -249,6 +249,74 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	return 1;
 }
 
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
+	/*
+	 *  E6 Section 20.2.2.18: Math.hypot
+	 *
+	 *  - If no arguments are passed, the result is +0.
+	 *  - If any argument is +inf, the result is +inf.
+	 *  - If any argument is -inf, the result is +inf.
+	 *  - If no argument is +inf or -inf, and any argument is NaN, the result is
+	 *    NaN.
+	 *  - If all arguments are either +0 or -0, the result is +0.
+	 */
+
+	duk_idx_t nargs;
+	duk_idx_t i;
+	duk_bool_t found_nan;
+	duk_double_t max;
+	duk_double_t sum, summand;
+	duk_double_t comp, prelim;
+	duk_double_t t;
+
+	nargs = duk_get_top(ctx);
+
+	/* Find the highest value.  Also ToNumber() coerces. */
+	max = 0.0;
+	found_nan = 0;
+	for (i = 0; i < nargs; i++) {
+		t = DUK_FABS(duk_to_number(ctx, i));
+		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN) {
+			found_nan = 1;
+		} else {
+			max = DUK_FMAX(max, t);
+		}
+	}
+
+	/* Early return cases. */
+	if (max == DUK_DOUBLE_INFINITY) {
+		duk_push_number(ctx, DUK_DOUBLE_INFINITY);
+		return 1;
+	} else if (found_nan) {
+		duk_push_number(ctx, DUK_DOUBLE_NAN);
+		return 1;
+	} else if (max == 0.0) {
+		duk_push_number(ctx, 0.0);
+		/* Otherwise we'd divide by zero. */
+		return 1;
+	}
+
+	/* Use Kahan summation and normalize to the highest value to minimize
+	 * floating point rounding error and avoid overflow.
+	 *
+	 * https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+	 */
+	sum = 0.0;
+	comp = 0.0;
+	for (i = 0; i < nargs; i++) {
+		t = DUK_FABS(duk_get_number(ctx, i)) / max;
+		summand = (t * t) - comp;
+		prelim = sum + summand;
+		comp = (prelim - sum) - summand;
+		sum = prelim;
+	}
+
+	duk_push_number(ctx, (duk_double_t) DUK_SQRT(sum) * max);
+	return 1;
+}
+#endif
+
 DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
 	return duk__math_minmax(ctx, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
 }
