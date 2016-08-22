@@ -254,6 +254,9 @@ DUK_EXTERNAL_DECL duk_int_t duk_api_global_line;
  *  Context management
  */
 
+/* FIXME: reorder so that 'heap_udata' is last, as it is also used by
+ * the fatal handler.
+ */
 DUK_EXTERNAL_DECL
 duk_context *duk_create_heap(duk_alloc_function alloc_func,
                              duk_realloc_function realloc_func,
