@@ -175,6 +175,9 @@ struct duk_time_components {
 #define DUK_HINT_STRING                   1    /* prefer string */
 #define DUK_HINT_NUMBER                   2    /* prefer number */
 
+/* Summarization flags */
+#define DUK_SUMMARY_ERROR_AWARE           (1 << 0)
+
 /* Enumeration flags for duk_enum() */
 #define DUK_ENUM_INCLUDE_NONENUMERABLE    (1 << 0)    /* enumerate non-numerable properties in addition to enumerable */
 #define DUK_ENUM_INCLUDE_INTERNAL         (1 << 1)    /* enumerate internal properties (regardless of enumerability) */
@@ -628,6 +631,7 @@ DUK_EXTERNAL_DECL void *duk_to_pointer(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_to_object(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t idx, duk_int_t hint);
 DUK_EXTERNAL_DECL void duk_to_primitive(duk_context *ctx, duk_idx_t idx, duk_int_t hint);
+DUK_EXTERNAL_DECL void duk_safe_push_summary(duk_context *ctx, duk_idx_t idx, duk_uint_t flags);
 
 #define DUK_BUF_MODE_FIXED      0   /* internal: request fixed buffer result */
 #define DUK_BUF_MODE_DYNAMIC    1   /* internal: request dynamic buffer result */
