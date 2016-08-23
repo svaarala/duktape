@@ -1715,9 +1715,14 @@ Planned
   and constructor call argument count from 511 to 255, and maximum Ecmascript
   function constant count from 262144 to 65536 (GH-903)
 
-* Allow ES6 unescaped right bracket (']') in regular expressions (non-standard
-  before ES6 Annex B), left bracket ('[') not yet supported because it needs
-  backtracking (GH-871)
+* Allow ES6 Annex B unescaped right bracket (']') in regular expressions
+  (non-standard before ES6 Annex B), left bracket ('[') not yet supported
+  because it needs backtracking (GH-871)
+
+* Allow ES6 Annex B identity escapes, i.e. allow identity escapes also for
+  identifier part characters; the support is not yet complete as Duktape
+  won't backtrack on e.g. an invalid hex escape and treat it literally
+  (GH-926)
 
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
