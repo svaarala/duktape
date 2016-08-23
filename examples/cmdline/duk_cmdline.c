@@ -327,6 +327,11 @@ static int wrapped_compile_execute(duk_context *ctx, void *udata) {
 		 *  safely using duk_safe_to_string().
 		 */
 
+		duk_push_global_stash(ctx);
+		duk_get_prop_string(ctx, -1, "dukFormat");
+		duk_dup(ctx, -3);
+		duk_call(ctx, 1);  /* -> [ ... res stash formatted ] */
+
 		fprintf(stdout, "= %s\n", duk_to_string(ctx, -1));
 		fflush(stdout);
 	} else {
@@ -1143,12 +1148,28 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	duk_module_duktape_init(ctx);
 #endif
 
+	/* Trivial readFile/writeFile bindings for testing. */
 #if defined(DUK_CMDLINE_FILEIO)
 	duk_push_c_function(ctx, fileio_read_file, 1 /*nargs*/);
 	duk_put_global_string(ctx, "readFile");
 	duk_push_c_function(ctx, fileio_write_file, 2 /*nargs*/);
 	duk_put_global_string(ctx, "writeFile");
 #endif
+
+	/* Stash a formatting function for evaluation results. */
+	duk_push_global_stash(ctx);
+	duk_eval_string(ctx,
+		"(function (E) {"
+		    "return function format(v){"
+		        "try{"
+		            "return E('jx',v);"
+		        "}catch(e){"
+		            "return ''+v;"
+		        "}"
+		    "};"
+		"})(Duktape.enc)");
+	duk_put_prop_string(ctx, -2, "dukFormat");
+	duk_pop(ctx);
 
 	if (debugger) {
 #if defined(DUK_CMDLINE_DEBUGGER_SUPPORT)
