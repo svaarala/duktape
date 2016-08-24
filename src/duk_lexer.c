@@ -1761,16 +1761,26 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 				advtok = DUK__ADVTOK(0, DUK_RETOK_ATOM_BACKREFERENCE);
 				out_token->num = val;
 			}
-		} else if ((y >= 0 && !duk_unicode_is_identifier_part(y)) ||
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
-		           y == '$' ||
-#endif
+		} else if (y >= 0) {
+			/* For ES6 Annex B, accept any source character as identity
+			 * escape except 'c' which is used for control characters.
+			 * http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns
+			 * Careful not to match end-of-buffer (<0) here.
+			 * This is not yet full ES6 Annex B because cases above
+			 * (like hex escape) won't backtrack.
+			 */
+			DUK_ASSERT(y != DUK_ASC_LC_C);  /* covered above */
+#else  /* DUK_USE_ES6_REGEXP_SYNTAX */
+		} else if ((y >= 0 && !duk_unicode_is_identifier_part(y)) ||
 		           y == DUK_UNICODE_CP_ZWNJ ||
 		           y == DUK_UNICODE_CP_ZWJ) {
-			/* IdentityEscape, with dollar added as a valid additional
-			 * non-standard escape (see test-regexp-identity-escape-dollar.js).
-			 * Careful not to match end-of-buffer (<0) here.
+			/* For ES5.1 identity escapes are not allowed for identifier
+			 * parts.  This conflicts with a lot of real world code as this
+			 * doesn't e.g. allow escaping a dollar sign as /\$/, see
+			 * test-regexp-identity-escape-dollar.js.
 			 */
+#endif  /* DUK_USE_ES6_REGEXP_SYNTAX */
 			out_token->num = y;
 		} else {
 			DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp escape");
@@ -2014,13 +2024,22 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				} else {
 					DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp escape");
 				}
-			} else if (!duk_unicode_is_identifier_part(x)
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
-			           || x == '$'
-#endif
-			          ) {
-				/* IdentityEscape */
+			} else if (x >= 0) {
+				/* IdentityEscape: ES6 Annex B allows almost all
+				 * source characters here.  Match anything except
+				 * EOF here.
+				 */
 				ch = x;
+#else  /* DUK_USE_ES6_REGEXP_SYNTAX */
+			} else if (!duk_unicode_is_identifier_part(x)) {
+				/* IdentityEscape: ES5.1 doesn't allow identity escape
+				 * for identifier part characters, which conflicts with
+				 * some real world code.  For example, it doesn't allow
+				 * /[\$]/ which is awkward.
+				 */
+				ch = x;
+#endif  /* DUK_USE_ES6_REGEXP_SYNTAX */
 			} else {
 				DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp escape");
 			}

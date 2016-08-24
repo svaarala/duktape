@@ -4,7 +4,7 @@ var txt;
 var i;
 
 /*===
-SyntaxError
+/\z/
 ===*/
 
 /*
@@ -15,7 +15,8 @@ SyntaxError
  *     <ZWJ>
  *     <ZWNJ>
  *
- *  Note: Rhino and V8 will accept this.
+ *  However, with ES6 Annex B support this is accepted by Duktape (matching
+ *  both Rhino and V8).
  */
 
 try {
