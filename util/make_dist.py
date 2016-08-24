@@ -202,6 +202,7 @@ parser.add_option('--git-commit', dest='git_commit', default=None, help='Force g
 parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
 parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
 parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Add support for ROM strings/objects (increases duktape.c size considerably)')
+parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help='Convert ROM built-in function properties into lightfuncs automatically whenever possible')
 parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
 (opts, args) = parser.parse_args()
 
@@ -814,11 +815,15 @@ with open(os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
 	f.write(res)
 
 gb_opts = []
+gb_opts.append('--ram-support')  # enable by default
 if opts.rom_support:
 	# ROM string/object support is not enabled by default because
 	# it increases the generated duktape.c considerably.
 	print('Enabling --rom-support for genbuiltins.py')
 	gb_opts.append('--rom-support')
+if opts.rom_auto_lightfunc:
+	print('Enabling --rom-auto-lightfunc for genbuiltins.py')
+	gb_opts.append('--rom-auto-lightfunc')
 for fn in opts.user_builtin_metadata:
 	print('Forwarding --user-builtin-metadata %s' % fn)
 	gb_opts.append('--user-builtin-metadata')

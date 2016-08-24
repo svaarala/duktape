@@ -460,7 +460,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
 #	print(repr(graph))
 #	print(repr(snlist))
 #	print('Resolved helper defines: %r' % resolved)
-	print('Resolved %d helper defines' % len(resolved))
+#	print('Resolved %d helper defines' % len(resolved))
 
 def serialize_snippet_list(snippets):
 	ret = []

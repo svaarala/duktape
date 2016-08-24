@@ -1715,6 +1715,10 @@ Planned
   and constructor call argument count from 511 to 255, and maximum Ecmascript
   function constant count from 262144 to 65536 (GH-903)
 
+* Add support for converting ROM function property values into lightfuncs in
+  genbuiltins.py to reduce code footprint for ROM-based built-ins and custom
+  bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)
+
 * Allow ES6 Annex B unescaped right bracket (']') in regular expressions
   (non-standard before ES6 Annex B), left bracket ('[') not yet supported
   because it needs backtracking (GH-871)
