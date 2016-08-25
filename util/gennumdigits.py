@@ -24,21 +24,21 @@ digits_table = []
 limits_table = []
 
 for radix in xrange(2, 36+1):
-	bits_per_digit = math.log(radix, 2)
+    bits_per_digit = math.log(radix, 2)
 
-	if radix == 10:
-		prec_digits = 20
-	else:
-		target_bits = math.ceil(math.log(10, 2) * 20) + 2  # +2 is extra, just in case
-		prec_digits = int(math.ceil(target_bits / bits_per_digit))
-	digits_table.append(prec_digits)
+    if radix == 10:
+        prec_digits = 20
+    else:
+        target_bits = math.ceil(math.log(10, 2) * 20) + 2  # +2 is extra, just in case
+        prec_digits = int(math.ceil(target_bits / bits_per_digit))
+    digits_table.append(prec_digits)
 
-	# these are conservative (details are off by one etc); +/- 2 is the extra
-	overflow_limit = int(math.ceil(1024.0 / bits_per_digit)) + 2 - prec_digits
-	underflow_limit = int(math.floor((-1024.0 - 52.0) / bits_per_digit)) - 2 - prec_digits
+    # these are conservative (details are off by one etc); +/- 2 is the extra
+    overflow_limit = int(math.ceil(1024.0 / bits_per_digit)) + 2 - prec_digits
+    underflow_limit = int(math.floor((-1024.0 - 52.0) / bits_per_digit)) - 2 - prec_digits
 
-	limits_table.append(overflow_limit)
-	limits_table.append(underflow_limit)
+    limits_table.append(overflow_limit)
+    limits_table.append(underflow_limit)
 
 print repr(digits_table)
 print repr(limits_table)

@@ -8,30 +8,30 @@ import struct
 import mpmath
 
 def create_double_constants_mpmath():
-	# Just a helper to use manually
-	# http://mpmath.googlecode.com/svn/trunk/doc/build/basics.html
+    # Just a helper to use manually
+    # http://mpmath.googlecode.com/svn/trunk/doc/build/basics.html
 
-	mpmath.mp.prec = 1000  # 1000 bits
+    mpmath.mp.prec = 1000  # 1000 bits
 
-	def printhex(name, x):
-		# to hex string, ready for create_double()
-		hex = struct.pack('>d', float(str(x))).encode('hex')
-		flt = struct.unpack('>d', hex.decode('hex'))[0]
-		print '%-11s -> %s  (= %.20f)' % (name, hex, flt)
+    def printhex(name, x):
+        # to hex string, ready for create_double()
+        hex = struct.pack('>d', float(str(x))).encode('hex')
+        flt = struct.unpack('>d', hex.decode('hex'))[0]
+        print '%-11s -> %s  (= %.20f)' % (name, hex, flt)
 
-	printhex('DBL_E', mpmath.mpf(mpmath.e))
-	printhex('DBL_LN10', mpmath.log(10))
-	printhex('DBL_LN2', mpmath.log(2))
-	printhex('DBL_LOG2E', mpmath.log(mpmath.e) / mpmath.log(2))
-	printhex('DBL_LOG10E', mpmath.log(mpmath.e) / mpmath.log(10))
-	printhex('DBL_PI', mpmath.mpf(mpmath.pi))
-	printhex('DBL_SQRT1_2', mpmath.mpf(1) / mpmath.sqrt(2))
-	printhex('DBL_SQRT2', mpmath.sqrt(2))
+    printhex('DBL_E', mpmath.mpf(mpmath.e))
+    printhex('DBL_LN10', mpmath.log(10))
+    printhex('DBL_LN2', mpmath.log(2))
+    printhex('DBL_LOG2E', mpmath.log(mpmath.e) / mpmath.log(2))
+    printhex('DBL_LOG10E', mpmath.log(mpmath.e) / mpmath.log(10))
+    printhex('DBL_PI', mpmath.mpf(mpmath.pi))
+    printhex('DBL_SQRT1_2', mpmath.mpf(1) / mpmath.sqrt(2))
+    printhex('DBL_SQRT2', mpmath.sqrt(2))
 
 create_double_constants_mpmath()
 
 def create_double(x):
-	return struct.unpack('>d', x.decode('hex'))[0]
+    return struct.unpack('>d', x.decode('hex'))[0]
 
 DBL_NAN =                    create_double('7ff8000000000000')  # a NaN matching our "normalized NAN" definition (see duk_tval.h)
 DBL_POSITIVE_INFINITY =      create_double('7ff0000000000000')  # positive infinity (unique)
