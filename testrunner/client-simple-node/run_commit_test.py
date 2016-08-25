@@ -158,7 +158,7 @@ def set_output_description(desc):
 def genconfig_dist_src(genconfig_opts):
 	cwd = os.getcwd()
 	execute([
-		'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+		'python2', os.path.join(cwd, 'tools', 'genconfig.py'),
 		'--metadata', os.path.join(cwd, 'config'),
 		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),
 		'--support-feature-options'
@@ -310,7 +310,7 @@ def context_helper_minsize_fltoetc(archopt, strip):
 	def comp():
 		execute([ 'make', 'dist' ])
 		cmd = [
-			'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+			'python2', os.path.join(cwd, 'tools', 'genconfig.py'),
 			'--metadata', os.path.join(cwd, 'config'),
 			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),
 			'--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
@@ -550,7 +550,7 @@ def context_linux_x86_dist_genconfig():
 
 	os.chdir(os.path.join(cwd, 'dist'))
 	execute([
-		'python2', os.path.join(cwd, 'dist', 'config', 'genconfig.py'),
+		'python2', os.path.join(cwd, 'dist', 'tools', 'genconfig.py'),
 		'--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
 		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),  # overwrite default duk_config.h
 		'-DDUK_USE_FASTINT', '-UDUK_USE_JX', '-UDUK_USE_JC',
@@ -598,7 +598,7 @@ def context_linux_x64_error_variants():
 		execute([ 'make', 'clean', 'dist' ])
 		os.chdir(os.path.join(cwd, 'dist'))
 		execute([
-			'python2', os.path.join(cwd, 'dist', 'config', 'genconfig.py'),
+			'python2', os.path.join(cwd, 'dist', 'tools', 'genconfig.py'),
 			'--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
 			'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')  # overwrite default duk_config.h
 		] + params['genconfig_opts'] + [
@@ -729,7 +729,7 @@ def mandel_test(archopt, genconfig_opts):
 	cwd = os.getcwd()
 	execute([ 'make', 'dist' ])
 	execute([
-		'python2', os.path.join(cwd, 'config', 'genconfig.py'),
+		'python2', os.path.join(cwd, 'tools', 'genconfig.py'),
 		'--metadata', os.path.join(cwd, 'config'),
 		'--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')
 	] + genconfig_opts + [
