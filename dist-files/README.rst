@@ -67,8 +67,14 @@ This distributable contains:
 
 * ``src-separate/``: main Duktape library in multiple files format.
 
-* ``config/``: genconfig utility for creating duk_config.h configuration
+* ``src-input/``: raw input source files used for a config-and-prepare which
+  recreates the combined/separate prepared sources with specific options.
+
+* ``tools/``: various Python tools, such as prepare_sources.py for doing a
+  config-and-prepare and genconfig.py for creating duk_config.h configuration
   files, see: http://wiki.duktape.org/Configuring.html.
+
+* ``config/``: configuration metadata for genconfig.py.
 
 * ``examples/``: further examples for using Duktape.  Although Duktape
   itself is widely portable, some of the examples are Linux only.

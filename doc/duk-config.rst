@@ -94,7 +94,7 @@ Using genconfig
 Overview of genconfig
 ---------------------
 
-Genconfig (``config/genconfig.py``) is a helper script which provides
+Genconfig (``tools/genconfig.py``) is a helper script which provides
 several commands related to config handling:
 
 * Generate a ``duk_config.h`` for a specified platform, compiler, and
@@ -121,16 +121,16 @@ To generate an autodetect header suitable for directly supported platforms
     # The --metadata option can point to a metadata directory or a tar.gz
     # file with packed metadata (included in end user distributable).
 
-    $ cd duktape-1.4.0
-    $ python config/genconfig.py \
+    $ cd duktape-2.0.0
+    $ python tools/genconfig.py \
         --metadata config/genconfig_metadata.tar.gz \
         --output /tmp/duk_config.h \
         duk-config-header
 
     # The same command using unpacked metadata present in Duktape source repo.
 
-    $ cd duktape
-    $ python config/genconfig.py \
+    $ cd duktape-2.0.0
+    $ python tools/genconfig.py \
         --metadata config/ \
         --output /tmp/duk_config.h \
         duk-config-header
@@ -145,7 +145,7 @@ through a file or inline.
 
 If you're building Duktape as a DLL, you should use the ``--dll`` option::
 
-    $ python config/genconfig.py \
+    $ python tools/genconfig.py \
         --metadata config/ \
         --dll \
         --output /tmp/duk_config.h \
@@ -167,7 +167,7 @@ Generating a barebones duk_config.h
 To generate a barebones header you need to specify a platform, compiler, and
 architecture for genconfig::
 
-    $ python config/genconfig.py \
+    $ python tools/genconfig.py \
         --metadata config/ \
         --platform linux \
         --compiler gcc \
@@ -229,7 +229,7 @@ file, and a few options are then tweaked using the C compiler format.  An
 autodetect header is then generated::
 
     $ cd duktape
-    $ python config/genconfig.py \
+    $ python tools/genconfig.py \
         --metadata config/ \
         --option-file low_memory.yaml \
         -DDUK_USE_TRACEBACK_DEPTH=100 \
@@ -254,7 +254,7 @@ This file, another override file, and a few inline YAML forced options
 could be used as follows to generate a barebones header::
 
     $ cd duktape
-    $ python config/genconfig.py \
+    $ python tools/genconfig.py \
         --metadata config/ \
         --platform linux \
         --compiler gcc \
@@ -264,7 +264,7 @@ could be used as follows to generate a barebones header::
         --option-yaml 'DUK_USE_JX: false' \
         --option-yaml 'DUK_USE_JC: false' \
         --output /tmp/duk_config.h \
-        barebones-header
+        duk-config-header
 
 For inline YAML, multiple forced options can be given either by using a YAML
 value with multiple keys, or by using multiple options::
@@ -335,7 +335,7 @@ sanity checks (if enabled).
 
 For example, to generate a barebones header with two fixup headers::
 
-    $ python config/genconfig.py \
+    $ python tools/genconfig.py \
         --metadata config/ \
         --platform linux \
         --compiler gcc \
@@ -343,7 +343,7 @@ For example, to generate a barebones header with two fixup headers::
         --fixup-file my_env_strings.h \
         --fixup-file my_no_json_fastpath.h \
         --output /tmp/duk_config.h \
-        barebones-header
+        duk-config-header
 
 The ``my_env_strings.h`` fixup header could be::
 
@@ -476,7 +476,7 @@ header::
     # my_custom.h is applied after generated header; functionally similar
     # to Duktape 1.2.x duk_custom.h
 
-    $ python config/ genconfig.py [...] --fixup-file my_custom.h [...]
+    $ python tools/genconfig.py [...] --fixup-file my_custom.h [...]
 
 A genconfig-generated barebones header also has the following line near the end
 for detecting where to add override defines; this is easy to detect reliably::
