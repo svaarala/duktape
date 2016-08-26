@@ -1715,6 +1715,12 @@ Planned
   and constructor call argument count from 511 to 255, and maximum Ecmascript
   function constant count from 262144 to 65536 (GH-903)
 
+* Include raw input sources and a prepare-and-config tool in the distributable,
+  which allow user code to regenerate a config file and source code files for
+  specified options; this is more comprehensive than just running genconfig.py
+  and makes it possible to e.g. use ROM built-ins directly from the end user
+  distributable (GH-927, GH-928)
+
 * Add support for converting ROM function property values into lightfuncs in
   genbuiltins.py to reduce code footprint for ROM-based built-ins and custom
   bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)

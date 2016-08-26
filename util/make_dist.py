@@ -31,168 +31,170 @@ import tarfile
 # Helpers
 
 def exec_get_stdout(cmd, input=None, default=None, print_stdout=False):
-	try:
-		proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		ret = proc.communicate(input=input)
-		if print_stdout:
-			sys.stdout.write(ret[0])
-			sys.stdout.flush()
-		if proc.returncode != 0:
-			sys.stdout.write(ret[1])  # print stderr on error
-			sys.stdout.flush()
-			if default is not None:
-				print('WARNING: command %r failed, return default' % cmd)
-				return default
-			raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
-		return ret[0]
-	except:
-		if default is not None:
-			print('WARNING: command %r failed, return default' % cmd)
-			return default
-		raise
+    try:
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ret = proc.communicate(input=input)
+        if print_stdout:
+            sys.stdout.write(ret[0])
+            sys.stdout.flush()
+        if proc.returncode != 0:
+            sys.stdout.write(ret[1])  # print stderr on error
+            sys.stdout.flush()
+            if default is not None:
+                print('WARNING: command %r failed, return default' % cmd)
+                return default
+            raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
+        return ret[0]
+    except:
+        if default is not None:
+            print('WARNING: command %r failed, return default' % cmd)
+            return default
+        raise
 
 def exec_print_stdout(cmd, input=None):
-	ret = exec_get_stdout(cmd, input=input, print_stdout=True)
+    ret = exec_get_stdout(cmd, input=input, print_stdout=True)
 
 def mkdir(path):
-	os.mkdir(path)
+    os.mkdir(path)
 
 def copy_file(src, dst):
-	with open(src, 'rb') as f_in:
-		with open(dst, 'wb') as f_out:
-			f_out.write(f_in.read())
+    with open(src, 'rb') as f_in:
+        with open(dst, 'wb') as f_out:
+            f_out.write(f_in.read())
 
 def copy_files(filelist, srcdir, dstdir):
-	for i in filelist:
-		copy_file(os.path.join(srcdir, i), os.path.join(dstdir, i))
+    for i in filelist:
+        copy_file(os.path.join(srcdir, i), os.path.join(dstdir, i))
 
 def copy_and_replace(src, dst, rules):
-	# Read and write separately to allow in-place replacement
-	keys = sorted(rules.keys())
-	res = []
-	with open(src, 'rb') as f_in:
-		for line in f_in:
-			for k in keys:
-				line = line.replace(k, rules[k])
-			res.append(line)
-	with open(dst, 'wb') as f_out:
-		f_out.write(''.join(res))
+    # Read and write separately to allow in-place replacement
+    keys = sorted(rules.keys())
+    res = []
+    with open(src, 'rb') as f_in:
+        for line in f_in:
+            for k in keys:
+                line = line.replace(k, rules[k])
+            res.append(line)
+    with open(dst, 'wb') as f_out:
+        f_out.write(''.join(res))
 
 def copy_and_cquote(src, dst):
-	with open(src, 'rb') as f_in:
-		with open(dst, 'wb') as f_out:
-			f_out.write('/*\n')
-			for line in f_in:
-				line = line.decode('utf-8')
-				f_out.write(' *  ')
-				for c in line:
-					if (ord(c) >= 0x20 and ord(c) <= 0x7e) or (c in '\x0a'):
-						f_out.write(c.encode('ascii'))
-					else:
-						f_out.write('\\u%04x' % ord(c))
-			f_out.write(' */\n')
+    with open(src, 'rb') as f_in:
+        with open(dst, 'wb') as f_out:
+            f_out.write('/*\n')
+            for line in f_in:
+                line = line.decode('utf-8')
+                f_out.write(' *  ')
+                for c in line:
+                    if (ord(c) >= 0x20 and ord(c) <= 0x7e) or (c in '\x0a'):
+                        f_out.write(c.encode('ascii'))
+                    else:
+                        f_out.write('\\u%04x' % ord(c))
+            f_out.write(' */\n')
 
 def read_file(src, strip_last_nl=False):
-	with open(src, 'rb') as f:
-		data = f.read()
-		if len(data) > 0 and data[-1] == '\n':
-			data = data[:-1]
-		return data
+    with open(src, 'rb') as f:
+        data = f.read()
+        if len(data) > 0 and data[-1] == '\n':
+            data = data[:-1]
+        return data
 
 def delete_matching_files(dirpath, cb):
-	for fn in os.listdir(dirpath):
-		if os.path.isfile(os.path.join(dirpath, fn)) and cb(fn):
-			#print('Deleting %r' % os.path.join(dirpath, fn))
-			os.unlink(os.path.join(dirpath, fn))
+    for fn in os.listdir(dirpath):
+        if os.path.isfile(os.path.join(dirpath, fn)) and cb(fn):
+            #print('Deleting %r' % os.path.join(dirpath, fn))
+            os.unlink(os.path.join(dirpath, fn))
 
 def create_targz(dstfile, filelist):
-	# https://docs.python.org/2/library/tarfile.html#examples
+    # https://docs.python.org/2/library/tarfile.html#examples
 
-	def _add(tf, fn):  # recursive add
-		#print('Adding to tar: ' + fn)
-		if os.path.isdir(fn):
-			for i in sorted(os.listdir(fn)):
-				_add(tf, os.path.join(fn, i))
-		elif os.path.isfile(fn):
-			tf.add(fn)
-		else:
-			raise Exception('invalid file: %r' % fn)
+    def _add(tf, fn):  # recursive add
+        #print('Adding to tar: ' + fn)
+        if os.path.isdir(fn):
+            for i in sorted(os.listdir(fn)):
+                _add(tf, os.path.join(fn, i))
+        elif os.path.isfile(fn):
+            tf.add(fn)
+        else:
+            raise Exception('invalid file: %r' % fn)
 
-	with tarfile.open(dstfile, 'w:gz') as tf:
-		for fn in filelist:
-			_add(tf, fn)
+    with tarfile.open(dstfile, 'w:gz') as tf:
+        for fn in filelist:
+            _add(tf, fn)
 
 def glob_files(pattern):
-	return glob.glob(pattern)
+    return glob.glob(pattern)
 
 def cstring(x):
-	return '"' + x + '"'  # good enough for now
+    return '"' + x + '"'  # good enough for now
 
 # DUK_VERSION is grepped from duk_api_public.h.in: it is needed for the
 # public API and we want to avoid defining it in two places.
 def get_duk_version():
-	r = re.compile(r'^#define\s+DUK_VERSION\s+(.*?)L?\s*$')
-	with open(os.path.join('src', 'duk_api_public.h.in'), 'rb') as f:
-		for line in f:
-			m = r.match(line)
-			if m is not None:
-				duk_version = int(m.group(1))
-				duk_major = duk_version / 10000
-				duk_minor = (duk_version % 10000) / 100
-				duk_patch = duk_version % 100
-				duk_version_formatted = '%d.%d.%d' % (duk_major, duk_minor, duk_patch)
-				return duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted
+    r = re.compile(r'^#define\s+DUK_VERSION\s+(.*?)L?\s*$')
+    with open(os.path.join('src', 'duk_api_public.h.in'), 'rb') as f:
+        for line in f:
+            m = r.match(line)
+            if m is not None:
+                duk_version = int(m.group(1))
+                duk_major = duk_version / 10000
+                duk_minor = (duk_version % 10000) / 100
+                duk_patch = duk_version % 100
+                duk_version_formatted = '%d.%d.%d' % (duk_major, duk_minor, duk_patch)
+                return duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted
 
-	raise Exception('cannot figure out duktape version')
+    raise Exception('cannot figure out duktape version')
 
 def create_dist_directories(dist):
-	if os.path.isdir(dist):
-		shutil.rmtree(dist)
-	mkdir(dist)
-	mkdir(os.path.join(dist, 'src-separate'))
-	mkdir(os.path.join(dist, 'src'))
-	mkdir(os.path.join(dist, 'src-noline'))
-	mkdir(os.path.join(dist, 'config'))
-	mkdir(os.path.join(dist, 'extras'))
-	mkdir(os.path.join(dist, 'extras', 'duk-v1-compat'))
-	mkdir(os.path.join(dist, 'extras', 'print-alert'))
-	mkdir(os.path.join(dist, 'extras', 'console'))
-	mkdir(os.path.join(dist, 'extras', 'logging'))
-	mkdir(os.path.join(dist, 'extras', 'minimal-printf'))
-	mkdir(os.path.join(dist, 'extras', 'module-duktape'))
-	mkdir(os.path.join(dist, 'extras', 'module-node'))
-	mkdir(os.path.join(dist, 'extras', 'alloc-pool'))
-	mkdir(os.path.join(dist, 'polyfills'))
-	#mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
-	mkdir(os.path.join(dist, 'licenses'))
-	mkdir(os.path.join(dist, 'debugger'))
-	mkdir(os.path.join(dist, 'debugger', 'static'))
-	mkdir(os.path.join(dist, 'examples'))
-	mkdir(os.path.join(dist, 'examples', 'hello'))
-	mkdir(os.path.join(dist, 'examples', 'eval'))
-	mkdir(os.path.join(dist, 'examples', 'cmdline'))
-	mkdir(os.path.join(dist, 'examples', 'eventloop'))
-	mkdir(os.path.join(dist, 'examples', 'guide'))
-	mkdir(os.path.join(dist, 'examples', 'coffee'))
-	mkdir(os.path.join(dist, 'examples', 'jxpretty'))
-	mkdir(os.path.join(dist, 'examples', 'sandbox'))
-	mkdir(os.path.join(dist, 'examples', 'alloc-logging'))
-	mkdir(os.path.join(dist, 'examples', 'alloc-torture'))
-	mkdir(os.path.join(dist, 'examples', 'alloc-hybrid'))
-	mkdir(os.path.join(dist, 'examples', 'debug-trans-socket'))
-	mkdir(os.path.join(dist, 'examples', 'debug-trans-dvalue'))
-	mkdir(os.path.join(dist, 'examples', 'codepage-conv'))
-	mkdir(os.path.join(dist, 'examples', 'dummy-date-provider'))
-	mkdir(os.path.join(dist, 'examples', 'cpp-exceptions'))
+    if os.path.isdir(dist):
+        shutil.rmtree(dist)
+    mkdir(dist)
+    mkdir(os.path.join(dist, 'src-input'))
+    #mkdir(os.path.join(dist, 'src-separate'))  # created by prepare_sources.py
+    #mkdir(os.path.join(dist, 'src'))
+    #mkdir(os.path.join(dist, 'src-noline'))
+    mkdir(os.path.join(dist, 'tools'))
+    mkdir(os.path.join(dist, 'config'))
+    mkdir(os.path.join(dist, 'extras'))
+    mkdir(os.path.join(dist, 'extras', 'duk-v1-compat'))
+    mkdir(os.path.join(dist, 'extras', 'print-alert'))
+    mkdir(os.path.join(dist, 'extras', 'console'))
+    mkdir(os.path.join(dist, 'extras', 'logging'))
+    mkdir(os.path.join(dist, 'extras', 'minimal-printf'))
+    mkdir(os.path.join(dist, 'extras', 'module-duktape'))
+    mkdir(os.path.join(dist, 'extras', 'module-node'))
+    mkdir(os.path.join(dist, 'extras', 'alloc-pool'))
+    mkdir(os.path.join(dist, 'polyfills'))
+    #mkdir(os.path.join(dist, 'doc'))  # Empty, so omit
+    mkdir(os.path.join(dist, 'licenses'))
+    mkdir(os.path.join(dist, 'debugger'))
+    mkdir(os.path.join(dist, 'debugger', 'static'))
+    mkdir(os.path.join(dist, 'examples'))
+    mkdir(os.path.join(dist, 'examples', 'hello'))
+    mkdir(os.path.join(dist, 'examples', 'eval'))
+    mkdir(os.path.join(dist, 'examples', 'cmdline'))
+    mkdir(os.path.join(dist, 'examples', 'eventloop'))
+    mkdir(os.path.join(dist, 'examples', 'guide'))
+    mkdir(os.path.join(dist, 'examples', 'coffee'))
+    mkdir(os.path.join(dist, 'examples', 'jxpretty'))
+    mkdir(os.path.join(dist, 'examples', 'sandbox'))
+    mkdir(os.path.join(dist, 'examples', 'alloc-logging'))
+    mkdir(os.path.join(dist, 'examples', 'alloc-torture'))
+    mkdir(os.path.join(dist, 'examples', 'alloc-hybrid'))
+    mkdir(os.path.join(dist, 'examples', 'debug-trans-socket'))
+    mkdir(os.path.join(dist, 'examples', 'debug-trans-dvalue'))
+    mkdir(os.path.join(dist, 'examples', 'codepage-conv'))
+    mkdir(os.path.join(dist, 'examples', 'dummy-date-provider'))
+    mkdir(os.path.join(dist, 'examples', 'cpp-exceptions'))
 
-# Path check
+# Path check (spot check a few files to ensure we're in Duktape repo root)
 
 if not (os.path.isfile(os.path.join('src', 'duk_api_public.h.in')) and \
-        os.path.isfile(os.path.join('config', 'genconfig.py'))):
-	sys.stderr.write('\n')
-	sys.stderr.write('*** Working directory must be Duktape repo checkout root!\n')
-	sys.stderr.write('\n')
-	raise Exception('Incorrect working directory')
+        os.path.isfile(os.path.join('config', 'platforms.yaml'))):
+    sys.stderr.write('\n')
+    sys.stderr.write('*** Working directory must be Duktape repo checkout root!\n')
+    sys.stderr.write('\n')
+    raise Exception('Incorrect working directory')
 
 # Option parsing
 
@@ -209,37 +211,37 @@ parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', actio
 # Python module check and friendly errors
 
 def check_python_modules():
-	# make_dist.py doesn't need yaml but other dist utils will; check for it and
-	# warn if it is missing.
-	failed = False
+    # make_dist.py doesn't need yaml but other dist utils will; check for it and
+    # warn if it is missing.
+    failed = False
 
-	def _warning(module, aptPackage, pipPackage):
-		sys.stderr.write('\n')
-		sys.stderr.write('*** NOTE: Could not "import %s" needed for dist.  Install it using e.g.:\n' % module)
-		sys.stderr.write('\n')
-		sys.stderr.write('    # Linux\n')
-		sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
-		sys.stderr.write('\n')
-		sys.stderr.write('    # Windows\n')
-		sys.stderr.write('    > pip install %s\n' % pipPackage)
+    def _warning(module, aptPackage, pipPackage):
+        sys.stderr.write('\n')
+        sys.stderr.write('*** NOTE: Could not "import %s" needed for dist.  Install it using e.g.:\n' % module)
+        sys.stderr.write('\n')
+        sys.stderr.write('    # Linux\n')
+        sys.stderr.write('    $ sudo apt-get install %s\n' % aptPackage)
+        sys.stderr.write('\n')
+        sys.stderr.write('    # Windows\n')
+        sys.stderr.write('    > pip install %s\n' % pipPackage)
 
-	try:
-		import yaml
-	except ImportError:
-		_warning('yaml', 'python-yaml', 'PyYAML')
-		failed = True
+    try:
+        import yaml
+    except ImportError:
+        _warning('yaml', 'python-yaml', 'PyYAML')
+        failed = True
 
-	try:
-		if opts.create_spdx:
-			import rdflib
-	except:
-		# Tolerate missing rdflib, just warn about it.
-		_warning('rdflib', 'python-rdflib', 'rdflib')
-		#failed = True
+    try:
+        if opts.create_spdx:
+            import rdflib
+    except:
+        # Tolerate missing rdflib, just warn about it.
+        _warning('rdflib', 'python-rdflib', 'rdflib')
+        #failed = True
 
-	if failed:
-		sys.stderr.write('\n')
-		raise Exception('Missing some required Python modules')
+    if failed:
+        sys.stderr.write('\n')
+        raise Exception('Missing some required Python modules')
 
 check_python_modules()
 
@@ -247,30 +249,24 @@ check_python_modules()
 
 entry_pwd = os.getcwd()
 dist = os.path.join(entry_pwd, 'dist')
-distsrcsep = os.path.join(dist, 'src-separate')
-distsrccom = os.path.join(dist, 'src')
-distsrcnol = os.path.join(dist, 'src-noline')  # src-noline/duktape.c is same as src/duktape.c
-                                               # but without line directives
-                                               # https://github.com/svaarala/duktape/pull/363
 
 duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted = get_duk_version()
 
 if opts.git_commit is not None:
-	git_commit = opts.git_commit
+    git_commit = opts.git_commit
 else:
-	git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ], default='external').strip()
-git_commit_cstring = cstring(git_commit)
-
+    git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ], default='external').strip()
 if opts.git_describe is not None:
-	git_describe = opts.git_describe
+    git_describe = opts.git_describe
 else:
-	git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ], default='external').strip()
-git_describe_cstring = cstring(git_describe)
-
+    git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ], default='external').strip()
 if opts.git_branch is not None:
-	git_branch = opts.git_branch
+    git_branch = opts.git_branch
 else:
-	git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], default='external').strip()
+    git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], default='external').strip()
+
+git_commit_cstring = cstring(git_commit)
+git_describe_cstring = cstring(git_describe)
 git_branch_cstring = cstring(git_branch)
 
 print('Dist for Duktape version %s, commit %s, describe %s, branch %s' % \
@@ -285,471 +281,355 @@ create_dist_directories(dist)
 # Copy most files directly
 
 os.chdir(entry_pwd)
-copy_files([
-	'duk_alloc_default.c',
-	'duk_api_internal.h',
-	'duk_api_stack.c',
-	'duk_api_heap.c',
-	'duk_api_buffer.c',
-	'duk_api_call.c',
-	'duk_api_codec.c',
-	'duk_api_compile.c',
-	'duk_api_bytecode.c',
-	'duk_api_memory.c',
-	'duk_api_object.c',
-	'duk_api_string.c',
-	'duk_api_time.c',
-	'duk_api_debug.c',
-	'duk_bi_array.c',
-	'duk_bi_boolean.c',
-	'duk_bi_buffer.c',
-	'duk_bi_date.c',
-	'duk_bi_date_unix.c',
-	'duk_bi_date_windows.c',
-	'duk_bi_duktape.c',
-	'duk_bi_error.c',
-	'duk_bi_function.c',
-	'duk_bi_global.c',
-	'duk_bi_json.c',
-	'duk_bi_math.c',
-	'duk_bi_number.c',
-	'duk_bi_object.c',
-	'duk_bi_pointer.c',
-	'duk_bi_protos.h',
-	'duk_bi_regexp.c',
-	'duk_bi_string.c',
-	'duk_bi_proxy.c',
-	'duk_bi_thread.c',
-	'duk_bi_thrower.c',
-	'duk_debug_fixedbuffer.c',
-	'duk_debug.h',
-	'duk_debug_macros.c',
-	'duk_debug_vsnprintf.c',
-	'duk_error_augment.c',
-	'duk_error.h',
-	'duk_error_longjmp.c',
-	'duk_error_macros.c',
-	'duk_error_misc.c',
-	'duk_error_throw.c',
-	'duk_forwdecl.h',
-	'duk_harray.h',
-	'duk_hbuffer_alloc.c',
-	'duk_hbuffer.h',
-	'duk_hbuffer_ops.c',
-	'duk_hcompfunc.h',
-	'duk_heap_alloc.c',
-	'duk_heap.h',
-	'duk_heap_hashstring.c',
-	'duk_heaphdr.h',
-	'duk_heap_markandsweep.c',
-	'duk_heap_memory.c',
-	'duk_heap_misc.c',
-	'duk_heap_refcount.c',
-	'duk_heap_stringcache.c',
-	'duk_heap_stringtable.c',
-	'duk_hnatfunc.h',
-	'duk_hobject_alloc.c',
-	'duk_hobject_class.c',
-	'duk_hobject_enum.c',
-	'duk_hobject_finalizer.c',
-	'duk_hobject.h',
-	'duk_hobject_misc.c',
-	'duk_hobject_pc2line.c',
-	'duk_hobject_props.c',
-	'duk_hstring.h',
-	'duk_hstring_misc.c',
-	'duk_hthread_alloc.c',
-	'duk_hthread_builtins.c',
-	'duk_hthread.h',
-	'duk_hthread_misc.c',
-	'duk_hthread_stacks.c',
-	'duk_hbufobj.h',
-	'duk_hbufobj_misc.c',
-	'duk_debugger.c',
-	'duk_debugger.h',
-	'duk_internal.h',
-	'duk_jmpbuf.h',
-	'duk_exception.h',
-	'duk_js_bytecode.h',
-	'duk_js_call.c',
-	'duk_js_compiler.c',
-	'duk_js_compiler.h',
-	'duk_js_executor.c',
-	'duk_js.h',
-	'duk_json.h',
-	'duk_js_ops.c',
-	'duk_js_var.c',
-	'duk_lexer.c',
-	'duk_lexer.h',
-	'duk_numconv.c',
-	'duk_numconv.h',
-	'duk_regexp_compiler.c',
-	'duk_regexp_executor.c',
-	'duk_regexp.h',
-	'duk_tval.c',
-	'duk_tval.h',
-	'duk_unicode.h',
-	'duk_unicode_support.c',
-	'duk_unicode_tables.c',
-	'duk_util_bitdecoder.c',
-	'duk_util_bitencoder.c',
-	'duk_util.h',
-	'duk_util_hashbytes.c',
-	'duk_util_hashprime.c',
-	'duk_util_misc.c',
-	'duk_util_tinyrandom.c',
-	'duk_util_bufwriter.c',
-	'duk_selftest.c',
-	'duk_selftest.h',
-	'duk_strings.h',
-	'duk_replacements.c',
-	'duk_replacements.h'
-], 'src', distsrcsep)
+
+for fn in glob.glob(os.path.join('src', '*')):
+    copy_file(fn, os.path.join(dist, 'src-input', os.path.basename(fn)))
 
 os.chdir(os.path.join(entry_pwd, 'config'))
 create_targz(os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'), [
-	'tags.yaml',
-	'platforms.yaml',
-	'architectures.yaml',
-	'compilers.yaml',
-	'platforms',
-	'architectures',
-	'compilers',
-	'feature-options',
-	'config-options',
-	'helper-snippets',
-	'header-snippets',
-	'other-defines',
-	'examples'
+    'tags.yaml',
+    'platforms.yaml',
+    'architectures.yaml',
+    'compilers.yaml',
+    'platforms',
+    'architectures',
+    'compilers',
+    'feature-options',
+    'config-options',
+    'helper-snippets',
+    'header-snippets',
+    'other-defines',
+    'examples'
 ])
 os.chdir(entry_pwd)
 
 copy_files([
-	'README.rst',
-	'genconfig.py'
+    'prepare_sources.py',
+    'combine_src.py',
+    'create_spdx_license.py',
+    'duk_meta_to_strarray.py',
+    'dukutil.py',
+    'dump_bytecode.py',
+    'extract_caseconv.py',
+    'extract_chars.py',
+    'extract_unique_options.py',
+    'genbuildparams.py',
+    'genbuiltins.py',
+    'genconfig.py',
+    'json2yaml.py',
+    'merge_debug_meta.py',
+    'prepare_unicode_data.py',
+    'resolve_combined_lineno.py',
+    'scan_strings.py',
+    'scan_used_stridx_bidx.py',
+    'yaml2json.py',
+], 'tools', os.path.join(dist, 'tools'))
+
+# XXX: Copy genconfig.py also to config/genconfig.py for now.
+copy_file(os.path.join(dist, 'tools', 'genconfig.py'), os.path.join(dist, 'config', 'genconfig.py'))
+
+copy_files([
+    'README.rst'
 ], 'config', os.path.join(dist, 'config'))
 
 copy_files([
-	'README.rst',
-	'Makefile',
-	'package.json',
-	'duk_debug.js',
-	'duk_debug_proxy.js',
-	'duk_classnames.yaml',
-	'duk_debugcommands.yaml',
-	'duk_debugerrors.yaml',
-	'duk_opcodes.yaml',
-	'merge_debug_meta.py'
+    'README.rst',
+    'Makefile',
+    'package.json',
+    'duk_debug.js',
+    'duk_debug_proxy.js',
+    'duk_classnames.yaml',
+    'duk_debugcommands.yaml',
+    'duk_debugerrors.yaml',
+    'duk_opcodes.yaml'
 ], 'debugger', os.path.join(dist, 'debugger'))
 copy_files([
-	'index.html',
-	'style.css',
-	'webui.js'
+    'index.html',
+    'style.css',
+    'webui.js'
 ], os.path.join('debugger', 'static'), os.path.join(dist, 'debugger', 'static'))
 
 copy_files([
-	'console-minimal.js',
-	'object-prototype-definegetter.js',
-	'object-prototype-definesetter.js',
-	'object-assign.js',
-	'performance-now.js',
-	'duktape-isfastint.js',
-	'duktape-error-setter-writable.js',
-	'duktape-error-setter-nonwritable.js',
-	'duktape-buffer.js'
+    'console-minimal.js',
+    'object-prototype-definegetter.js',
+    'object-prototype-definesetter.js',
+    'object-assign.js',
+    'performance-now.js',
+    'duktape-isfastint.js',
+    'duktape-error-setter-writable.js',
+    'duktape-error-setter-nonwritable.js',
+    'duktape-buffer.js'
 ], 'polyfills', os.path.join(dist, 'polyfills'))
 
 copy_files([
-	'README.rst'
+    'README.rst'
 ], 'examples', os.path.join(dist, 'examples'))
 
 copy_files([
-	'README.rst',
-	'duk_cmdline.c',
-	'duk_cmdline_ajduk.c'
+    'README.rst',
+    'duk_cmdline.c',
+    'duk_cmdline_ajduk.c'
 ], os.path.join('examples', 'cmdline'), os.path.join(dist, 'examples', 'cmdline'))
 
 copy_files([
-	'README.rst',
-	'c_eventloop.c',
-	'c_eventloop.js',
-	'ecma_eventloop.js',
-	'main.c',
-	'poll.c',
-	'ncurses.c',
-	'socket.c',
-	'fileio.c',
-	'curses-timers.js',
-	'basic-test.js',
-	'server-socket-test.js',
-	'client-socket-test.js'
+    'README.rst',
+    'c_eventloop.c',
+    'c_eventloop.js',
+    'ecma_eventloop.js',
+    'main.c',
+    'poll.c',
+    'ncurses.c',
+    'socket.c',
+    'fileio.c',
+    'curses-timers.js',
+    'basic-test.js',
+    'server-socket-test.js',
+    'client-socket-test.js'
 ], os.path.join('examples', 'eventloop'), os.path.join(dist, 'examples', 'eventloop'))
 
 copy_files([
-	'README.rst',
-	'hello.c'
+    'README.rst',
+    'hello.c'
 ], os.path.join('examples', 'hello'), os.path.join(dist, 'examples', 'hello'))
 
 copy_files([
-	'README.rst',
-	'eval.c'
+    'README.rst',
+    'eval.c'
 ], os.path.join('examples', 'eval'), os.path.join(dist, 'examples', 'eval'))
 
 copy_files([
-	'README.rst',
-	'fib.js',
-	'process.js',
-	'processlines.c',
-	'prime.js',
-	'primecheck.c',
-	'uppercase.c'
+    'README.rst',
+    'fib.js',
+    'process.js',
+    'processlines.c',
+    'prime.js',
+    'primecheck.c',
+    'uppercase.c'
 ], os.path.join('examples', 'guide'), os.path.join(dist, 'examples', 'guide'))
 
 copy_files([
-	'README.rst',
-	'globals.coffee',
-	'hello.coffee',
-	'mandel.coffee'
+    'README.rst',
+    'globals.coffee',
+    'hello.coffee',
+    'mandel.coffee'
 ], os.path.join('examples', 'coffee'), os.path.join(dist, 'examples', 'coffee'))
 
 copy_files([
-	'README.rst',
-	'jxpretty.c'
+    'README.rst',
+    'jxpretty.c'
 ], os.path.join('examples', 'jxpretty'), os.path.join(dist, 'examples', 'jxpretty'))
 
 copy_files([
-	'README.rst',
-	'sandbox.c'
+    'README.rst',
+    'sandbox.c'
 ], os.path.join('examples', 'sandbox'), os.path.join(dist, 'examples', 'sandbox'))
 
 copy_files([
-	'README.rst',
-	'duk_alloc_logging.c',
-	'duk_alloc_logging.h',
-	'log2gnuplot.py'
+    'README.rst',
+    'duk_alloc_logging.c',
+    'duk_alloc_logging.h',
+    'log2gnuplot.py'
 ], os.path.join('examples', 'alloc-logging'), os.path.join(dist, 'examples', 'alloc-logging'))
 
 copy_files([
-	'README.rst',
-	'duk_alloc_torture.c',
-	'duk_alloc_torture.h'
+    'README.rst',
+    'duk_alloc_torture.c',
+    'duk_alloc_torture.h'
 ], os.path.join('examples', 'alloc-torture'), os.path.join(dist, 'examples', 'alloc-torture'))
 
 copy_files([
-	'README.rst',
-	'duk_alloc_hybrid.c',
-	'duk_alloc_hybrid.h'
+    'README.rst',
+    'duk_alloc_hybrid.c',
+    'duk_alloc_hybrid.h'
 ], os.path.join('examples', 'alloc-hybrid'), os.path.join(dist, 'examples', 'alloc-hybrid'))
 
 copy_files([
-	'README.rst',
-	'duk_trans_socket_unix.c',
-	'duk_trans_socket_windows.c',
-	'duk_trans_socket.h'
+    'README.rst',
+    'duk_trans_socket_unix.c',
+    'duk_trans_socket_windows.c',
+    'duk_trans_socket.h'
 ], os.path.join('examples', 'debug-trans-socket'), os.path.join(dist, 'examples', 'debug-trans-socket'))
 
 copy_files([
-	'README.rst',
-	'duk_trans_dvalue.c',
-	'duk_trans_dvalue.h',
-	'test.c',
-	'Makefile'
+    'README.rst',
+    'duk_trans_dvalue.c',
+    'duk_trans_dvalue.h',
+    'test.c',
+    'Makefile'
 ], os.path.join('examples', 'debug-trans-dvalue'), os.path.join(dist, 'examples', 'debug-trans-dvalue'))
 
 copy_files([
-	'README.rst',
-	'duk_codepage_conv.c',
-	'duk_codepage_conv.h',
-	'test.c'
+    'README.rst',
+    'duk_codepage_conv.c',
+    'duk_codepage_conv.h',
+    'test.c'
 ], os.path.join('examples', 'codepage-conv'), os.path.join(dist, 'examples', 'codepage-conv'))
 
 copy_files([
-	'README.rst',
-	'dummy_date_provider.c'
+    'README.rst',
+    'dummy_date_provider.c'
 ], os.path.join('examples', 'dummy-date-provider'), os.path.join(dist, 'examples', 'dummy-date-provider'))
 
 copy_files([
-	'README.rst',
-	'cpp_exceptions.cpp'
+    'README.rst',
+    'cpp_exceptions.cpp'
 ], os.path.join('examples', 'cpp-exceptions'), os.path.join(dist, 'examples', 'cpp-exceptions'))
 
 copy_files([
-	'README.rst'
+    'README.rst'
 ], 'extras', os.path.join(dist, 'extras'))
 
 
 copy_files([
-	'README.rst',
-	'duk_logging.c',
-	'duk_logging.h',
-	'test.c',
-	'Makefile'
+    'README.rst',
+    'duk_logging.c',
+    'duk_logging.h',
+    'test.c',
+    'Makefile'
 ], os.path.join('extras', 'logging'), os.path.join(dist, 'extras', 'logging'))
 
 copy_files([
-	'README.rst',
-	'duk_v1_compat.c',
-	'duk_v1_compat.h',
-	'test.c',
-	'Makefile',
-	'test_eval1.js',
-	'test_eval2.js',
-	'test_compile1.js',
-	'test_compile2.js'
+    'README.rst',
+    'duk_v1_compat.c',
+    'duk_v1_compat.h',
+    'test.c',
+    'Makefile',
+    'test_eval1.js',
+    'test_eval2.js',
+    'test_compile1.js',
+    'test_compile2.js'
 ], os.path.join('extras', 'duk-v1-compat'), os.path.join(dist, 'extras', 'duk-v1-compat'))
 
 copy_files([
-	'README.rst',
-	'duk_print_alert.c',
-	'duk_print_alert.h',
-	'test.c',
-	'Makefile'
+    'README.rst',
+    'duk_print_alert.c',
+    'duk_print_alert.h',
+    'test.c',
+    'Makefile'
 ], os.path.join('extras', 'print-alert'), os.path.join(dist, 'extras', 'print-alert'))
 
 copy_files([
-	'README.rst',
-	'duk_console.c',
-	'duk_console.h',
-	'test.c',
-	'Makefile'
+    'README.rst',
+    'duk_console.c',
+    'duk_console.h',
+    'test.c',
+    'Makefile'
 ], os.path.join('extras', 'console'), os.path.join(dist, 'extras', 'console'))
 
 copy_files([
-	'README.rst',
-	'duk_minimal_printf.c',
-	'duk_minimal_printf.h',
-	'Makefile',
-	'test.c'
+    'README.rst',
+    'duk_minimal_printf.c',
+    'duk_minimal_printf.h',
+    'Makefile',
+    'test.c'
 ], os.path.join('extras', 'minimal-printf'), os.path.join(dist, 'extras', 'minimal-printf'))
 
 copy_files([
-	'README.rst',
-	'duk_module_duktape.c',
-	'duk_module_duktape.h',
-	'Makefile',
-	'test.c'
+    'README.rst',
+    'duk_module_duktape.c',
+    'duk_module_duktape.h',
+    'Makefile',
+    'test.c'
 ], os.path.join('extras', 'module-duktape'), os.path.join(dist, 'extras', 'module-duktape'))
 
 copy_files([
-	'README.rst',
-	'duk_module_node.c',
-	'duk_module_node.h',
-	'Makefile',
-	'test.c'
+    'README.rst',
+    'duk_module_node.c',
+    'duk_module_node.h',
+    'Makefile',
+    'test.c'
 ], os.path.join('extras', 'module-node'), os.path.join(dist, 'extras', 'module-node'))
 
 copy_files([
-	'README.rst',
-	'duk_alloc_pool.c',
-	'duk_alloc_pool.h',
-	'ptrcomp.yaml',
-	'ptrcomp_fixup.h',
-	'Makefile',
-	'test.c'
+    'README.rst',
+    'duk_alloc_pool.c',
+    'duk_alloc_pool.h',
+    'ptrcomp.yaml',
+    'ptrcomp_fixup.h',
+    'Makefile',
+    'test.c'
 ], os.path.join('extras', 'alloc-pool'), os.path.join(dist, 'extras', 'alloc-pool'))
 
 copy_files([
-	'Makefile.cmdline',
-	'Makefile.dukdebug',
-	'Makefile.eventloop',
-	'Makefile.hello',
-	'Makefile.eval',
-	'Makefile.coffee',
-	'Makefile.jxpretty',
-	'Makefile.sandbox',
-	'Makefile.codepage',
-	'mandel.js'
+    'Makefile.cmdline',
+    'Makefile.dukdebug',
+    'Makefile.eventloop',
+    'Makefile.hello',
+    'Makefile.eval',
+    'Makefile.coffee',
+    'Makefile.jxpretty',
+    'Makefile.sandbox',
+    'Makefile.codepage',
+    'mandel.js'
 ], 'dist-files', dist)
 copy_and_replace(os.path.join('dist-files', 'Makefile.sharedlibrary'), os.path.join(dist, 'Makefile.sharedlibrary'), {
-	'@DUK_VERSION@': str(duk_version),
-	'@SONAME_VERSION@': str(int(duk_version / 100))  # 10500 -> 105
+    '@DUK_VERSION@': str(duk_version),
+    '@SONAME_VERSION@': str(int(duk_version / 100))  # 10500 -> 105
 })
 
 copy_and_replace(os.path.join('dist-files', 'README.rst'), os.path.join(dist, 'README.rst'), {
-	'@DUK_VERSION_FORMATTED@': duk_version_formatted,
-	'@GIT_COMMIT@': git_commit,
-	'@GIT_DESCRIBE@': git_describe,
-	'@GIT_BRANCH@': git_branch
+    '@DUK_VERSION_FORMATTED@': duk_version_formatted,
+    '@GIT_COMMIT@': git_commit,
+    '@GIT_DESCRIBE@': git_describe,
+    '@GIT_BRANCH@': git_branch
 })
 
 copy_files([
-	'LICENSE.txt',  # not strict RST so keep .txt suffix
-	'AUTHORS.rst'
+    'LICENSE.txt',  # not strict RST so keep .txt suffix
+    'AUTHORS.rst'
 ], '.', os.path.join(dist))
 
 # RELEASES.rst is only updated in master.  It's not included in the dist to
 # make maintenance fixes easier to make.
 
 copy_files([
-	'murmurhash2.txt',
-	'lua.txt',
-	'commonjs.txt'
+    'murmurhash2.txt',
+    'lua.txt',
+    'commonjs.txt'
 ], 'licenses', os.path.join(dist, 'licenses'))
-
-# Build temp versions of LICENSE.txt and AUTHORS.rst for embedding into
-# autogenerated C/H files.
-
-copy_and_cquote('LICENSE.txt', os.path.join(dist, 'LICENSE.txt.tmp'))
-copy_and_cquote('AUTHORS.rst', os.path.join(dist, 'AUTHORS.rst.tmp'))
-
-print('Create duk_config.h headers')
 
 # Merge debugger metadata.
 merged = exec_print_stdout([
-	sys.executable, os.path.join('debugger', 'merge_debug_meta.py'),
-	'--output', os.path.join(dist, 'debugger', 'duk_debug_meta.json'),
-	'--class-names', os.path.join('debugger', 'duk_classnames.yaml'),
-	'--debug-commands', os.path.join('debugger', 'duk_debugcommands.yaml'),
-	'--debug-errors', os.path.join('debugger', 'duk_debugerrors.yaml'),
-	'--opcodes', os.path.join('debugger', 'duk_opcodes.yaml')
+    sys.executable, os.path.join('tools', 'merge_debug_meta.py'),
+    '--output', os.path.join(dist, 'debugger', 'duk_debug_meta.json'),
+    '--class-names', os.path.join('debugger', 'duk_classnames.yaml'),
+    '--debug-commands', os.path.join('debugger', 'duk_debugcommands.yaml'),
+    '--debug-errors', os.path.join('debugger', 'duk_debugerrors.yaml'),
+    '--opcodes', os.path.join('debugger', 'duk_opcodes.yaml')
 ])
 
-# Build default duk_config.h from snippets using genconfig.
-exec_print_stdout([
-	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
-	'--output', os.path.join(dist, 'duk_config.h.tmp'),
-	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-	'--omit-removed-config-options', '--omit-unused-config-options',
-	'--emit-config-sanity-check',
-	'--support-feature-options',
-	'duk-config-header'
-])
-
-copy_file(os.path.join(dist, 'duk_config.h.tmp'), os.path.join(distsrccom, 'duk_config.h'))
-copy_file(os.path.join(dist, 'duk_config.h.tmp'), os.path.join(distsrcnol, 'duk_config.h'))
-copy_file(os.path.join(dist, 'duk_config.h.tmp'), os.path.join(distsrcsep, 'duk_config.h'))
-#copy_file(os.path.join(dist, 'duk_config.h.tmp'), os.path.join(dist, 'config', 'duk_config.h-autodetect'))
+print('Create duk_config.h headers')
 
 # Build duk_config.h without feature option support.
 exec_print_stdout([
-	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
-	'--output', os.path.join(dist, 'config', 'duk_config.h-modular-static'),
-	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-	'--omit-removed-config-options', '--omit-unused-config-options',
-	'--emit-legacy-feature-check', '--emit-config-sanity-check',
-	'duk-config-header'
+    sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
+    '--output', os.path.join(dist, 'config', 'duk_config.h-modular-static'),
+    '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+    '--omit-removed-config-options', '--omit-unused-config-options',
+    '--emit-legacy-feature-check', '--emit-config-sanity-check',
+    'duk-config-header'
 ])
 exec_print_stdout([
-	sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
-	'--output', os.path.join(dist, 'config', 'duk_config.h-modular-dll'),
-	'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-	'--omit-removed-config-options', '--omit-unused-config-options',
-	'--emit-legacy-feature-check', '--emit-config-sanity-check',
-	'--dll',
-	'duk-config-header'
+    sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
+    '--output', os.path.join(dist, 'config', 'duk_config.h-modular-dll'),
+    '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+    '--omit-removed-config-options', '--omit-unused-config-options',
+    '--emit-legacy-feature-check', '--emit-config-sanity-check',
+    '--dll',
+    'duk-config-header'
 ])
 
 # Generate a few barebones config examples
 def genconfig_barebones(platform, architecture, compiler):
-	exec_print_stdout([
-		sys.executable, os.path.join('config', 'genconfig.py'), '--metadata', 'config',
-		'--output', os.path.join(dist, 'config', 'duk_config.h-%s-%s-%s' % (platform, architecture, compiler)),
-		'--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-		'--platform', platform, '--architecture', architecture, '--compiler', compiler,
-		'--omit-removed-config-options', '--omit-unused-config-options',
-		'--emit-legacy-feature-check', '--emit-config-sanity-check',
-		'duk-config-header'
-	])
+    exec_print_stdout([
+        sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
+        '--output', os.path.join(dist, 'config', 'duk_config.h-%s-%s-%s' % (platform, architecture, compiler)),
+        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+        '--platform', platform, '--architecture', architecture, '--compiler', compiler,
+        '--omit-removed-config-options', '--omit-unused-config-options',
+        '--emit-legacy-feature-check', '--emit-config-sanity-check',
+        'duk-config-header'
+    ])
 
 #genconfig_barebones('linux', 'x86', 'gcc')
 #genconfig_barebones('linux', 'x64', 'gcc')
@@ -762,384 +642,46 @@ def genconfig_barebones(platform, architecture, compiler):
 #genconfig_barebones('apple', 'x86', 'clang')
 #genconfig_barebones('apple', 'x64', 'clang')
 
-# Build duktape.h from parts, with some git-related replacements.
-# The only difference between single and separate file duktape.h
-# is the internal DUK_SINGLE_FILE define.
-#
-# Newline after 'i \':
-# http://stackoverflow.com/questions/25631989/sed-insert-line-command-osx
-copy_and_replace(os.path.join('src', 'duktape.h.in'), os.path.join(distsrccom, 'duktape.h'), {
-	'@DUK_SINGLE_FILE@': '#define DUK_SINGLE_FILE',
-	'@LICENSE_TXT@': read_file(os.path.join(dist, 'LICENSE.txt.tmp'), strip_last_nl=True),
-	'@AUTHORS_RST@': read_file(os.path.join(dist, 'AUTHORS.rst.tmp'), strip_last_nl=True),
-	'@DUK_API_PUBLIC_H@': read_file(os.path.join('src', 'duk_api_public.h.in'), strip_last_nl=True),
-	'@DUK_DBLUNION_H@': read_file(os.path.join('src', 'duk_dblunion.h.in'), strip_last_nl=True),
-	'@DUK_VERSION_FORMATTED@': duk_version_formatted,
-	'@GIT_COMMIT@': git_commit,
-	'@GIT_COMMIT_CSTRING@': git_commit_cstring,
-	'@GIT_DESCRIBE@': git_describe,
-	'@GIT_DESCRIBE_CSTRING@': git_describe_cstring,
-	'@GIT_BRANCH@': git_branch,
-	'@GIT_BRANCH_CSTRING@': git_branch_cstring
-})
-# keep the line so line numbers match between the two variant headers
-copy_and_replace(os.path.join(distsrccom, 'duktape.h'), os.path.join(distsrcsep, 'duktape.h'), {
-	'#define DUK_SINGLE_FILE': '#undef DUK_SINGLE_FILE'
-})
-copy_file(os.path.join(distsrccom, 'duktape.h'), os.path.join(distsrcnol, 'duktape.h'))
-
-# Autogenerated strings and built-in files
-#
-# There are currently no profile specific variants of strings/builtins, but
-# this will probably change when functions are added/removed based on profile.
-
-exec_print_stdout([
-	sys.executable,
-	os.path.join('src', 'genbuildparams.py'),
-	'--version=' + str(duk_version),
-	'--git-commit=' + git_commit,
-	'--git-describe=' + git_describe,
-	'--git-branch=' + git_branch,
-	'--out-json=' + os.path.join(distsrcsep, 'buildparams.json.tmp'),
-	'--out-header=' + os.path.join(distsrcsep, 'duk_buildparams.h.tmp')
-])
-
-res = exec_get_stdout([
-	sys.executable,
-	os.path.join('src', 'scan_used_stridx_bidx.py')
-] + glob_files(os.path.join('src', '*.c')) \
-  + glob_files(os.path.join('src', '*.h')) \
-  + glob_files(os.path.join('src', '*.h.in'))
-)
-with open(os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
-	f.write(res)
-
-gb_opts = []
-gb_opts.append('--ram-support')  # enable by default
+# Build prepared sources (src/, src-noline/, src-separate/) with default
+# config.  This is done using tools and metadata in the dist directory.
+print('Config-and-prepare sources for default configuration')
+cmd = [
+    sys.executable, os.path.join(dist, 'tools', 'prepare_sources.py'),
+    '--source-directory', os.path.join(dist, 'src-input'),
+    '--output-directory', dist,
+    '--config-metadata', os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'),
+    '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+    '--omit-removed-config-options', '--omit-unused-config-options',
+    '--emit-config-sanity-check', '--support-feature-options'
+]
 if opts.rom_support:
-	# ROM string/object support is not enabled by default because
-	# it increases the generated duktape.c considerably.
-	print('Enabling --rom-support for genbuiltins.py')
-	gb_opts.append('--rom-support')
+    cmd.append('--rom-support')
 if opts.rom_auto_lightfunc:
-	print('Enabling --rom-auto-lightfunc for genbuiltins.py')
-	gb_opts.append('--rom-auto-lightfunc')
-for fn in opts.user_builtin_metadata:
-	print('Forwarding --user-builtin-metadata %s' % fn)
-	gb_opts.append('--user-builtin-metadata')
-	gb_opts.append(fn)
-exec_print_stdout([
-	sys.executable,
-	os.path.join('src', 'genbuiltins.py'),
-	'--buildinfo=' + os.path.join(distsrcsep, 'buildparams.json.tmp'),
-	'--used-stridx-metadata=' + os.path.join(dist, 'duk_used_stridx_bidx_defs.json.tmp'),
-	'--strings-metadata=' + os.path.join('src', 'strings.yaml'),
-	'--objects-metadata=' + os.path.join('src', 'builtins.yaml'),
-	'--out-header=' + os.path.join(distsrcsep, 'duk_builtins.h'),
-	'--out-source=' + os.path.join(distsrcsep, 'duk_builtins.c'),
-	'--out-metadata-json=' + os.path.join(dist, 'duk_build_meta.json')
-] + gb_opts)
-
-# Autogenerated Unicode files
-#
-# Note: not all of the generated headers are used.  For instance, the
-# match table for "WhiteSpace-Z" is not used, because a custom piece
-# of code handles that particular match.
-#
-# UnicodeData.txt contains ranges expressed like this:
-#
-#   4E00;<CJK Ideograph, First>;Lo;0;L;;;;;N;;;;;
-#   9FCB;<CJK Ideograph, Last>;Lo;0;L;;;;;N;;;;;
-#
-# These are currently decoded into individual characters as a prestep.
-#
-# For IDPART:
-#   UnicodeCombiningMark -> categories Mn, Mc
-#   UnicodeDigit -> categories Nd
-#   UnicodeConnectorPunctuation -> categories Pc
-
-# Whitespace (unused now)
-WHITESPACE_INCL='Zs'  # USP = Any other Unicode space separator
-WHITESPACE_EXCL='NONE'
-
-# Unicode letter (unused now)
-LETTER_INCL='Lu,Ll,Lt,Lm,Lo'
-LETTER_EXCL='NONE'
-LETTER_NOA_INCL='Lu,Ll,Lt,Lm,Lo'
-LETTER_NOA_EXCL='ASCII'
-LETTER_NOABMP_INCL=LETTER_NOA_INCL
-LETTER_NOABMP_EXCL='ASCII,NONBMP'
-
-# Identifier start
-# E5 Section 7.6
-IDSTART_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
-IDSTART_EXCL='NONE'
-IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
-IDSTART_NOA_EXCL='ASCII'
-IDSTART_NOABMP_INCL=IDSTART_NOA_INCL
-IDSTART_NOABMP_EXCL='ASCII,NONBMP'
-
-# Identifier start - Letter: allows matching of (rarely needed) 'Letter'
-# production space efficiently with the help of IdentifierStart.  The
-# 'Letter' production is only needed in case conversion of Greek final
-# sigma.
-IDSTART_MINUS_LETTER_INCL=IDSTART_NOA_INCL
-IDSTART_MINUS_LETTER_EXCL='Lu,Ll,Lt,Lm,Lo'
-IDSTART_MINUS_LETTER_NOA_INCL=IDSTART_NOA_INCL
-IDSTART_MINUS_LETTER_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII'
-IDSTART_MINUS_LETTER_NOABMP_INCL=IDSTART_NOA_INCL
-IDSTART_MINUS_LETTER_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,ASCII,NONBMP'
-
-# Identifier start - Identifier part
-# E5 Section 7.6: IdentifierPart, but remove IdentifierStart (already above)
-IDPART_MINUS_IDSTART_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
-IDPART_MINUS_IDSTART_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F'
-IDPART_MINUS_IDSTART_NOA_INCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,Mn,Mc,Nd,Pc,200C,200D'
-IDPART_MINUS_IDSTART_NOA_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII'
-IDPART_MINUS_IDSTART_NOABMP_INCL=IDPART_MINUS_IDSTART_NOA_INCL
-IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
-
-print('Expand UnicodeData.txt ranges')
-
-exec_print_stdout([
-	sys.executable,
-	os.path.join('src', 'prepare_unicode_data.py'),
-	os.path.join('src', 'UnicodeData.txt'),
-	os.path.join(distsrcsep, 'UnicodeData-expanded.tmp')
-])
-
-def extract_chars(incl, excl, suffix):
-	#print('- extract_chars: %s %s %s' % (incl, excl, suffix))
-	res = exec_get_stdout([
-		sys.executable,
-		os.path.join('src', 'extract_chars.py'),
-		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
-		'--include-categories=' + incl,
-		'--exclude-categories=' + excl,
-		'--out-source=' + os.path.join(distsrcsep, 'duk_unicode_%s.c.tmp' % suffix),
-		'--out-header=' + os.path.join(distsrcsep, 'duk_unicode_%s.h.tmp' % suffix),
-		'--table-name=' + 'duk_unicode_%s' % suffix
-	])
-	with open(os.path.join(distsrcsep, suffix + '.txt'), 'wb') as f:
-		f.write(res)
-
-def extract_caseconv():
-	#print('- extract_caseconv case conversion')
-	res = exec_get_stdout([
-		sys.executable,
-		os.path.join('src', 'extract_caseconv.py'),
-		'--command=caseconv_bitpacked',
-		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
-		'--special-casing=' + os.path.join('src', 'SpecialCasing.txt'),
-		'--out-source=' + os.path.join(distsrcsep, 'duk_unicode_caseconv.c.tmp'),
-		'--out-header=' + os.path.join(distsrcsep, 'duk_unicode_caseconv.h.tmp'),
-		'--table-name-lc=duk_unicode_caseconv_lc',
-		'--table-name-uc=duk_unicode_caseconv_uc'
-	])
-	with open(os.path.join(distsrcsep, 'caseconv.txt'), 'wb') as f:
-		f.write(res)
-
-	#print('- extract_caseconv canon lookup')
-	res = exec_get_stdout([
-		sys.executable,
-		os.path.join('src', 'extract_caseconv.py'),
-		'--command=re_canon_lookup',
-		'--unicode-data=' + os.path.join(distsrcsep, 'UnicodeData-expanded.tmp'),
-		'--special-casing=' + os.path.join('src', 'SpecialCasing.txt'),
-		'--out-source=' + os.path.join(distsrcsep, 'duk_unicode_re_canon_lookup.c.tmp'),
-		'--out-header=' + os.path.join(distsrcsep, 'duk_unicode_re_canon_lookup.h.tmp'),
-		'--table-name-re-canon-lookup=duk_unicode_re_canon_lookup'
-	])
-	with open(os.path.join(distsrcsep, 'caseconv_re_canon_lookup.txt'), 'wb') as f:
-		f.write(res)
-
-print('Create Unicode tables for codepoint classes')
-extract_chars(WHITESPACE_INCL, WHITESPACE_EXCL, 'ws')
-extract_chars(LETTER_INCL, LETTER_EXCL, 'let')
-extract_chars(LETTER_NOA_INCL, LETTER_NOA_EXCL, 'let_noa')
-extract_chars(LETTER_NOABMP_INCL, LETTER_NOABMP_EXCL, 'let_noabmp')
-extract_chars(IDSTART_INCL, IDSTART_EXCL, 'ids')
-extract_chars(IDSTART_NOA_INCL, IDSTART_NOA_EXCL, 'ids_noa')
-extract_chars(IDSTART_NOABMP_INCL, IDSTART_NOABMP_EXCL, 'ids_noabmp')
-extract_chars(IDSTART_MINUS_LETTER_INCL, IDSTART_MINUS_LETTER_EXCL, 'ids_m_let')
-extract_chars(IDSTART_MINUS_LETTER_NOA_INCL, IDSTART_MINUS_LETTER_NOA_EXCL, 'ids_m_let_noa')
-extract_chars(IDSTART_MINUS_LETTER_NOABMP_INCL, IDSTART_MINUS_LETTER_NOABMP_EXCL, 'ids_m_let_noabmp')
-extract_chars(IDPART_MINUS_IDSTART_INCL, IDPART_MINUS_IDSTART_EXCL, 'idp_m_ids')
-extract_chars(IDPART_MINUS_IDSTART_NOA_INCL, IDPART_MINUS_IDSTART_NOA_EXCL, 'idp_m_ids_noa')
-extract_chars(IDPART_MINUS_IDSTART_NOABMP_INCL, IDPART_MINUS_IDSTART_NOABMP_EXCL, 'idp_m_ids_noabmp')
-
-print('Create Unicode tables for case conversion')
-extract_caseconv()
-
-print('Combine sources and clean up')
-
-# Inject autogenerated files into source and header files so that they are
-# usable (for all profiles and define cases) directly.
-#
-# The injection points use a standard C preprocessor #include syntax
-# (earlier these were actual includes).
-
-copy_and_replace(os.path.join(distsrcsep, 'duk_unicode.h'), os.path.join(distsrcsep, 'duk_unicode.h'), {
-	'#include "duk_unicode_ids_noa.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_noa.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_noabmp.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_noabmp.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_m_let_noa.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_m_let_noa.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_m_let_noabmp.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_m_let_noabmp.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_idp_m_ids_noa.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_idp_m_ids_noa.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_idp_m_ids_noabmp.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_idp_m_ids_noabmp.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_caseconv.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_caseconv.h.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_re_canon_lookup.h"': read_file(os.path.join(distsrcsep, 'duk_unicode_re_canon_lookup.h.tmp'), strip_last_nl=True)
-})
-
-copy_and_replace(os.path.join(distsrcsep, 'duk_unicode_tables.c'), os.path.join(distsrcsep, 'duk_unicode_tables.c'), {
-	'#include "duk_unicode_ids_noa.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_noa.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_noabmp.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_noabmp.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_m_let_noa.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_m_let_noa.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_ids_m_let_noabmp.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_ids_m_let_noabmp.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_idp_m_ids_noa.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_idp_m_ids_noa.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_idp_m_ids_noabmp.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_idp_m_ids_noabmp.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_caseconv.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_caseconv.c.tmp'), strip_last_nl=True),
-	'#include "duk_unicode_re_canon_lookup.c"': read_file(os.path.join(distsrcsep, 'duk_unicode_re_canon_lookup.c.tmp'), strip_last_nl=True)
-})
-
-# Clean up some temporary files
-
-delete_matching_files(distsrcsep, lambda x: x[-4:] == '.tmp')
-delete_matching_files(distsrcsep, lambda x: x in [
-	'ws.txt',
-	'let.txt', 'let_noa.txt', 'let_noabmp.txt',
-	'ids.txt', 'ids_noa.txt', 'ids_noabmp.txt',
-	'ids_m_let.txt', 'ids_m_let_noa.txt', 'ids_m_let_noabmp.txt',
-	'idp_m_ids.txt', 'idp_m_ids_noa.txt', 'idp_m_ids_noabmp.txt'
-])
-delete_matching_files(distsrcsep, lambda x: x[0:8] == 'caseconv' and x[-4:] == '.txt')
-
-# Create a combined source file, duktape.c, into a separate combined source
-# directory.  This allows user to just include "duktape.c", "duktape.h", and
-# "duk_config.h" into a project and maximizes inlining and size optimization
-# opportunities even with older compilers.  Because some projects include
-# these files into their repository, the result should be deterministic and
-# diffable.  Also, it must retain __FILE__/__LINE__ behavior through
-# preprocessor directives.  Whitespace and comments can be stripped as long
-# as the other requirements are met.  For some users it's preferable *not*
-# to use #line directives in the combined source, so a separate variant is
-# created for that, see: https://github.com/svaarala/duktape/pull/363.
-
-def create_source_prologue(license_file, authors_file):
-	res = []
-
-	# Because duktape.c/duktape.h/duk_config.h are often distributed or
-	# included in project sources as is, add a license reminder and
-	# Duktape version information to the duktape.c header (duktape.h
-	# already contains them).
-
-	duk_major = duk_version / 10000
-	duk_minor = duk_version / 100 % 100
-	duk_patch = duk_version % 100
-	res.append('/*')
-	res.append(' *  Single source autogenerated distributable for Duktape %d.%d.%d.' % (duk_major, duk_minor, duk_patch))
-	res.append(' *')
-	res.append(' *  Git commit %s (%s).' % (git_commit, git_describe))
-	res.append(' *  Git branch %s.' % git_branch)
-	res.append(' *')
-	res.append(' *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and')
-	res.append(' *  licensing information.')
-	res.append(' */')
-	res.append('')
-
-	# Add LICENSE.txt and AUTHORS.rst to combined source so that they're automatically
-	# included and are up-to-date.
-
-	res.append('/* LICENSE.txt */')
-	with open(license_file, 'rb') as f:
-		for line in f:
-			res.append(line.strip())
-	res.append('')
-	res.append('/* AUTHORS.rst */')
-	with open(authors_file, 'rb') as f:
-		for line in f:
-			res.append(line.strip())
-
-	return '\n'.join(res) + '\n'
-
-def select_combined_sources():
-	# These files must appear before the alphabetically sorted
-	# ones so that static variables get defined before they're
-	# used.  We can't forward declare them because that would
-	# cause C++ issues (see GH-63).  When changing, verify by
-	# compiling with g++.
-	handpick = [
-		'duk_replacements.c',
-		'duk_debug_macros.c',
-		'duk_builtins.c',
-		'duk_error_macros.c',
-		'duk_unicode_support.c',
-		'duk_util_misc.c',
-		'duk_util_hashprime.c',
-		'duk_hobject_class.c'
-	]
-
-	files = []
-	for fn in handpick:
-		files.append(fn)
-
-	for fn in sorted(os.listdir(distsrcsep)):
-		f_ext = os.path.splitext(fn)[1]
-		if f_ext not in [ '.c' ]:
-			continue
-		if fn in files:
-			continue
-		files.append(fn)
-
-	res = map(lambda x: os.path.join(distsrcsep, x), files)
-	#print(repr(files))
-	#print(repr(res))
-	return res
-
-with open(os.path.join(dist, 'prologue.tmp'), 'wb') as f:
-	f.write(create_source_prologue(os.path.join(dist, 'LICENSE.txt.tmp'), os.path.join(dist, 'AUTHORS.rst.tmp')))
-
-exec_print_stdout([
-	sys.executable,
-	os.path.join('util', 'combine_src.py'),
-	'--include-path', distsrcsep,
-	'--include-exclude', 'duk_config.h',  # don't inline
-	'--include-exclude', 'duktape.h',     # don't inline
-	'--prologue', os.path.join(dist, 'prologue.tmp'),
-	'--output-source', os.path.join(distsrccom, 'duktape.c'),
-	'--output-metadata', os.path.join(distsrccom, 'metadata.json'),
-	'--line-directives'
-] + select_combined_sources())
-
-exec_print_stdout([
-	sys.executable,
-	os.path.join('util', 'combine_src.py'),
-	'--include-path', distsrcsep,
-	'--include-exclude', 'duk_config.h',  # don't inline
-	'--include-exclude', 'duktape.h',     # don't inline
-	'--prologue', os.path.join(dist, 'prologue.tmp'),
-	'--output-source', os.path.join(distsrcnol, 'duktape.c'),
-	'--output-metadata', os.path.join(distsrcnol, 'metadata.json')
-] + select_combined_sources())
+    cmd.append('--rom-auto-lightfunc')
+for i in opts.user_builtin_metadata:
+    cmd.append('--user-builtin-metadata')
+    cmd.append(i)
+exec_print_stdout(cmd)
 
 # Clean up remaining temp files
 delete_matching_files(dist, lambda x: x[-4:] == '.tmp')
 
 # Create SPDX license once all other files are in place (and cleaned)
 if opts.create_spdx:
-	print('Create SPDX license')
-	try:
-		exec_get_stdout([
-			sys.executable,
-			os.path.join('util', 'create_spdx_license.py'),
-			os.path.join(dist, 'license.spdx')
-		])
-	except:
-		print('')
-		print('***')
-		print('*** WARNING: Failed to create SPDX license, this should not happen for an official release!')
-		print('***')
-		print('')
+    print('Create SPDX license')
+    try:
+        exec_get_stdout([
+            sys.executable,
+            os.path.join('tools', 'create_spdx_license.py'),
+            os.path.join(dist, 'license.spdx')
+        ])
+    except:
+        print('')
+        print('***')
+        print('*** WARNING: Failed to create SPDX license, this should not happen for an official release!')
+        print('***')
+        print('')
 else:
-	print('Skip SPDX license creation')
+    print('Skip SPDX license creation')
 
 print('Dist finished successfully')

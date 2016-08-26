@@ -10,4 +10,3 @@ data = sys.stdin.read()
 data = data.strip()
 data = data.decode('hex')
 sys.stdout.write(data)
-

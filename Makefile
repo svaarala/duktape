@@ -1152,8 +1152,9 @@ codepolicycheck:
 		--check-non-ascii \
 		--check-trailing-whitespace \
 		--check-mixed-indent \
+		--check-tab-indent \
 		--dump-vim-commands \
-		src/*.py
+		src/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \

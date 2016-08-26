@@ -25,15 +25,15 @@ Usage
 
 To create an autodetect duk_config.h header (compatible with Duktape 1.2.x)::
 
-    $ python config/genconfig.py --metadata config --output /tmp/duk_config.h \
-          autodetect-header
+    $ python tools/genconfig.py --metadata config --output /tmp/duk_config.h \
+          duk-config-header
 
 To create a barebones duk_config.h header for a specific platform (easier to
 edit manually)::
 
-    $ python config/genconfig.py --metadata config --output /tmp/duk_config.h \
+    $ python tools/genconfig.py --metadata config --output /tmp/duk_config.h \
           --platform linux --compiler gcc --architecture x64 \
-          barebones-header
+          duk-config-header
 
 There are further commands to e.g. autogenerate config option documentation;
 see ``genconfig.py`` for details.
