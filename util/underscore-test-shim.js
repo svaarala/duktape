@@ -188,3 +188,13 @@ $.browser = {
 
 var jQuery = $;
 
+// document.createElement() is used by some tests
+document.createElement = function createElement(name) {
+    return { name: name };  // Just a dummy return value
+};
+
+// the Duktape require() function confuses underscore tests
+delete require;
+
+// ... and the 'window' binding is expected
+var window = new Function('return this;')();
