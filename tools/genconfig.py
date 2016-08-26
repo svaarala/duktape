@@ -1398,7 +1398,7 @@ def generate_duk_config_header(opts, meta_dir):
 #  Main
 #
 
-def main():
+def add_genconfig_optparse_options(parser, direct=False):
     # Forced options from multiple sources are gathered into a shared list
     # so that the override order remains the same as on the command line.
     force_options_yaml = []
@@ -1436,19 +1436,14 @@ def main():
                     line = line[:-1]
                 fixup_header_lines.append(line)
 
-    commands = [
-        'duk-config-header',
-        'feature-documentation',
-        'config-documentation'
-    ]
-    parser = optparse.OptionParser(
-        usage='Usage: %prog [options] COMMAND',
-        description='Generate a duk_config.h or config option documentation based on config metadata.',
-        epilog='COMMAND can be one of: ' + ', '.join(commands) + '.'
-    )
+    if direct:
+        parser.add_option('--metadata', dest='config_metadata', default=None, help='metadata directory or metadata tar.gz file')
+        parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
+    else:
+        # Different option name when called through prepare_sources.py,
+        # also no --output option.
+        parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory or metadata tar.gz file')
 
-    parser.add_option('--metadata', dest='metadata', default=None, help='metadata directory or metadata tar.gz file')
-    parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
     parser.add_option('--platform', dest='platform', default=None, help='platform (default is autodetect)')
     parser.add_option('--compiler', dest='compiler', default=None, help='compiler (default is autodetect)')
     parser.add_option('--architecture', dest='architecture', default=None, help='architecture (default is autodetec)')
@@ -1471,26 +1466,46 @@ def main():
     parser.add_option('--fixup-line', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_line, default=fixup_header_lines, help='C header fixup line to be appended to generated header (e.g. --fixup-line "#define DUK_USE_FASTINT")')
     parser.add_option('--sanity-warning', dest='sanity_strict', action='store_false', default=True, help='emit a warning instead of #error for option sanity check issues')
     parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
-    parser.add_option('--git-commit', dest='git_commit', default=None, help='git commit hash to be included in header comments')
-    parser.add_option('--git-describe', dest='git_describe', default=None, help='git describe string to be included in header comments')
-    parser.add_option('--git-branch', dest='git_branch', default=None, help='git branch string to be included in header comments')
+
+    if direct:
+        parser.add_option('--git-commit', dest='git_commit', default=None, help='git commit hash to be included in header comments')
+        parser.add_option('--git-describe', dest='git_describe', default=None, help='git describe string to be included in header comments')
+        parser.add_option('--git-branch', dest='git_branch', default=None, help='git branch string to be included in header comments')
+
+def parse_options():
+    commands = [
+        'duk-config-header',
+        'feature-documentation',
+        'config-documentation'
+    ]
+
+    parser = optparse.OptionParser(
+        usage='Usage: %prog [options] COMMAND',
+        description='Generate a duk_config.h or config option documentation based on config metadata.',
+        epilog='COMMAND can be one of: ' + ', '.join(commands) + '.'
+    )
+
+    add_genconfig_optparse_options(parser, direct=True)
     (opts, args) = parser.parse_args()
 
-    meta_dir = opts.metadata
-    if opts.metadata is None:
-        if os.path.isfile(os.path.join('.', 'genconfig_metadata.tar.gz')):
-            opts.metadata = 'genconfig_metadata.tar.gz'
-        elif os.path.isdir(os.path.join('.', 'config-options')):
-            opts.metadata = '.'
+    return opts, args
 
-    if opts.metadata is not None and os.path.isdir(opts.metadata):
-        meta_dir = opts.metadata
+def genconfig(opts, args):
+    meta_dir = opts.config_metadata
+    if opts.config_metadata is None:
+        if os.path.isfile(os.path.join('.', 'genconfig_metadata.tar.gz')):
+            opts.config_metadata = 'genconfig_metadata.tar.gz'
+        elif os.path.isdir(os.path.join('.', 'config-options')):
+            opts.config_metadata = '.'
+
+    if opts.config_metadata is not None and os.path.isdir(opts.config_metadata):
+        meta_dir = opts.config_metadata
         metadata_src_text = 'Using metadata directory: %r' % meta_dir
-    elif opts.metadata is not None and os.path.isfile(opts.metadata) and tarfile.is_tarfile(opts.metadata):
+    elif opts.config_metadata is not None and os.path.isfile(opts.config_metadata) and tarfile.is_tarfile(opts.config_metadata):
         meta_dir = get_auto_delete_tempdir()
-        tar = tarfile.open(name=opts.metadata, mode='r:*')
+        tar = tarfile.open(name=opts.config_metadata, mode='r:*')
         tar.extractall(path=meta_dir)
-        metadata_src_text = 'Using metadata tar file %r, unpacked to directory: %r' % (opts.metadata, meta_dir)
+        metadata_src_text = 'Using metadata tar file %r, unpacked to directory: %r' % (opts.config_metadata, meta_dir)
     else:
         raise Exception('metadata source must be a directory or a tar.gz file')
 
@@ -1525,6 +1540,10 @@ def main():
             f.write(result)
     else:
         raise Exception('invalid command: %r' % cmd)
+
+def main():
+    opts, args = parse_options()
+    genconfig(opts, args)
 
 if __name__ == '__main__':
     main()

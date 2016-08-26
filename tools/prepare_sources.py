@@ -15,6 +15,8 @@ import json
 import yaml
 import subprocess
 
+import genconfig
+
 # Helpers
 
 def exec_get_stdout(cmd, input=None, default=None, print_stdout=False):
@@ -214,29 +216,11 @@ def main():
     parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
 
     # Options forwarded to genconfig.py.
-    parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory or metadata tar.gz file')
-    parser.add_option('--platform', dest='platform', default=None, help='platform (default is autodetect)')
-    parser.add_option('--compiler', dest='compiler', default=None, help='compiler (default is autodetect)')
-    parser.add_option('--architecture', dest='architecture', default=None, help='architecture (default is autodetec)')
-    parser.add_option('--c99-types-only', dest='c99_types_only', action='store_true', default=False, help='assume C99 types, no legacy type detection')
-    parser.add_option('--dll', dest='dll', action='store_true', default=False, help='dll build of Duktape, affects symbol visibility macros especially on Windows')
-    parser.add_option('--support-feature-options', dest='support_feature_options', action='store_true', default=False, help='support DUK_OPT_xxx feature options in duk_config.h')
-    parser.add_option('--emit-legacy-feature-check', dest='emit_legacy_feature_check', action='store_true', default=False, help='emit preprocessor checks to reject legacy feature options (DUK_OPT_xxx)')
-    parser.add_option('--emit-config-sanity-check', dest='emit_config_sanity_check', action='store_true', default=False, help='emit preprocessor checks for config option consistency (DUK_OPT_xxx)')
-    parser.add_option('--omit-removed-config-options', dest='omit_removed_config_options', action='store_true', default=False, help='omit removed config options from generated headers')
-    parser.add_option('--omit-deprecated-config-options', dest='omit_deprecated_config_options', action='store_true', default=False, help='omit deprecated config options from generated headers')
-    parser.add_option('--omit-unused-config-options', dest='omit_unused_config_options', action='store_true', default=False, help='omit unused config options from generated headers')
-    parser.add_option('--add-active-defines-macro', dest='add_active_defines_macro', action='store_true', default=False, help='add DUK_ACTIVE_DEFINES macro, for development only')
-    parser.add_option('--define', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='force #define option using a C compiler like syntax, e.g. "--define DUK_USE_DEEP_C_STACK" or "--define DUK_USE_TRACEBACK_DEPTH=10"')
-    parser.add_option('-D', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='synonym for --define, e.g. "-DDUK_USE_DEEP_C_STACK" or "-DDUK_USE_TRACEBACK_DEPTH=10"')
-    parser.add_option('--undefine', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='force #undef option using a C compiler like syntax, e.g. "--undefine DUK_USE_DEEP_C_STACK"')
-    parser.add_option('-U', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='synonym for --undefine, e.g. "-UDUK_USE_DEEP_C_STACK"')
-    parser.add_option('--option-yaml', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_yaml, default=force_options_yaml, help='force option(s) using inline YAML (e.g. --option-yaml "DUK_USE_DEEP_C_STACK: true")')
-    parser.add_option('--option-file', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_file, default=force_options_yaml, help='YAML file(s) providing config option overrides')
-    parser.add_option('--fixup-file', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_file, default=fixup_header_lines, help='C header snippet file(s) to be appended to generated header, useful for manual option fixups')
-    parser.add_option('--fixup-line', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_line, default=fixup_header_lines, help='C header fixup line to be appended to generated header (e.g. --fixup-line "#define DUK_USE_FASTINT")')
-    parser.add_option('--sanity-warning', dest='sanity_strict', action='store_false', default=True, help='emit a warning instead of #error for option sanity check issues')
-    parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
+    genconfig.add_genconfig_optparse_options(parser)
+
+    # Options for Unicode.
+    parser.add_option('--unicode-data', dest='unicode_data', default=None, help='Provide custom UnicodeData.txt')
+    parser.add_option('--special-casing', dest='special_casing', default=None, help='Provide custom SpecialCasing.txt')
 
     (opts, args) = parser.parse_args()
 
@@ -289,6 +273,15 @@ def main():
     git_commit_cstring = cstring(git_commit)
     git_describe_cstring = cstring(git_describe)
     git_branch_cstring = cstring(git_branch)
+
+    if opts.unicode_data is None:
+        unicode_data = os.path.join(srcdir, 'UnicodeData.txt')
+    else:
+        unicode_data = opts.unicode_data
+    if opts.special_casing is None:
+        special_casing = os.path.join(srcdir, 'SpecialCasing.txt')
+    else:
+        special_casing = opts.special_casing
 
     print('Config-and-prepare for Duktape version %s, commit %s, describe %s, branch %s' % \
           (duk_version_formatted, git_commit, git_describe, git_branch))
@@ -431,7 +424,8 @@ def main():
     copy_and_cquote('AUTHORS.rst', os.path.join(outdir, 'AUTHORS.rst.tmp'))
 
     # Create a duk_config.h.
-    # XXX: might be easier to invoke genconfig directly
+    # XXX: might be easier to invoke genconfig directly, but there are a few
+    # options which currently conflict (output file, git commit info, etc).
     def forward_genconfig_options():
         res = []
         res += [ '--metadata', os.path.abspath(opts.config_metadata) ]  # rename option, --config-metadata => --metadata
@@ -459,10 +453,10 @@ def main():
             res += [ '--omit-unused-config-options' ]
         if opts.add_active_defines_macro:
             res += [ '--add-active-defines-macro' ]
-        for i in force_options_yaml:
+        for i in opts.force_options_yaml:
             res += [ '--option-yaml', i ]
-        for i in fixup_header_lines:
-            res += [ '--fixup-linu', i ]
+        for i in opts.fixup_header_lines:
+            res += [ '--fixup-line', i ]
         if not opts.sanity_strict:
             res += [ '--sanity-warning' ]
         if opts.use_cpp_warning:
@@ -478,7 +472,7 @@ def main():
     cmd += [
         'duk-config-header'
     ]
-    print(repr(cmd))
+    #print(repr(cmd))
     exec_print_stdout(cmd)
 
     copy_file(os.path.join(outdir, 'duk_config.h.tmp'), os.path.join(outdir, 'src', 'duk_config.h'))
@@ -516,18 +510,7 @@ def main():
     # There are currently no profile specific variants of strings/builtins, but
     # this will probably change when functions are added/removed based on profile.
 
-    # XXX: nuke this util, it's pointless
-    exec_print_stdout([
-        sys.executable,
-        os.path.join('tools', 'genbuildparams.py'),
-        '--version=' + str(duk_version),
-        '--git-commit=' + git_commit,
-        '--git-describe=' + git_describe,
-        '--git-branch=' + git_branch,
-        '--out-json=' + os.path.join(outdir, 'src-separate', 'buildparams.json.tmp'),
-        '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_buildparams.h.tmp')
-    ])
-
+    # XXX: call as direct python
     res = exec_get_stdout([
         sys.executable,
         os.path.join('tools', 'scan_used_stridx_bidx.py')
@@ -538,31 +521,40 @@ def main():
     with open(os.path.join(outdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
         f.write(res)
 
-    gb_opts = []
-    gb_opts.append('--ram-support')  # enable by default
-    if opts.rom_support:
-        # ROM string/object support is not enabled by default because
-        # it increases the generated duktape.c considerably.
-        print('Enabling --rom-support for genbuiltins.py')
-        gb_opts.append('--rom-support')
-    if opts.rom_auto_lightfunc:
-        print('Enabling --rom-auto-lightfunc for genbuiltins.py')
-        gb_opts.append('--rom-auto-lightfunc')
-    for fn in opts.user_builtin_metadata:
-        print('Forwarding --user-builtin-metadata %s' % fn)
-        gb_opts.append('--user-builtin-metadata')
-        gb_opts.append(fn)
-    exec_print_stdout([
+    # XXX: call as direct python? does this need to work outside of prepare_sources.py?
+    cmd = [
         sys.executable,
         os.path.join('tools', 'genbuiltins.py'),
-        '--buildinfo=' + os.path.join(outdir, 'src-separate', 'buildparams.json.tmp'),
+    ]
+    cmd += [
+        '--git-commit', git_commit,
+        '--git-branch', git_branch,
+        '--git-describe', git_describe,
+        '--duk-version', str(duk_version)
+    ]
+    cmd += [
         '--used-stridx-metadata=' + os.path.join(outdir, 'duk_used_stridx_bidx_defs.json.tmp'),
         '--strings-metadata=' + os.path.join(srcdir, 'strings.yaml'),
         '--objects-metadata=' + os.path.join(srcdir, 'builtins.yaml'),
         '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_builtins.h'),
         '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_builtins.c'),
         '--out-metadata-json=' + os.path.join(outdir, 'duk_build_meta.json')
-    ] + gb_opts)
+    ]
+    cmd.append('--ram-support')  # enable by default
+    if opts.rom_support:
+        # ROM string/object support is not enabled by default because
+        # it increases the generated duktape.c considerably.
+        print('Enabling --rom-support for genbuiltins.py')
+        cmd.append('--rom-support')
+    if opts.rom_auto_lightfunc:
+        print('Enabling --rom-auto-lightfunc for genbuiltins.py')
+        cmd.append('--rom-auto-lightfunc')
+    for fn in opts.user_builtin_metadata:
+        print('Forwarding --user-builtin-metadata %s' % fn)
+        cmd.append('--user-builtin-metadata')
+        cmd.append(fn)
+    #print(repr(cmd))
+    exec_print_stdout(cmd)
 
     # Autogenerated Unicode files
     #
@@ -628,7 +620,7 @@ def main():
     exec_print_stdout([
         sys.executable,
         os.path.join('tools', 'prepare_unicode_data.py'),
-        os.path.join(srcdir, 'UnicodeData.txt'),
+        unicode_data,
         os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp')
     ])
 
@@ -654,7 +646,7 @@ def main():
             os.path.join('tools', 'extract_caseconv.py'),
             '--command=caseconv_bitpacked',
             '--unicode-data=' + os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp'),
-            '--special-casing=' + os.path.join(srcdir, 'SpecialCasing.txt'),
+            '--special-casing=' + special_casing,
             '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.c.tmp'),
             '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.h.tmp'),
             '--table-name-lc=duk_unicode_caseconv_lc',
@@ -669,7 +661,7 @@ def main():
             os.path.join('tools', 'extract_caseconv.py'),
             '--command=re_canon_lookup',
             '--unicode-data=' + os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp'),
-            '--special-casing=' + os.path.join(srcdir, 'SpecialCasing.txt'),
+            '--special-casing=' + special_casing,
             '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.c.tmp'),
             '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.h.tmp'),
             '--table-name-re-canon-lookup=duk_unicode_re_canon_lookup'

@@ -2,7 +2,7 @@
  *  Check for alignment requirements and endianness.
  *
  *  Called from a shell script check_align.sh to execute one test at a time.
- *  Prohibited unaligned accesses cause a SIGBUS.
+ *  Prohibited unaligned accesses usually cause a SIGBUS.
  */
 
 #include <stdio.h>

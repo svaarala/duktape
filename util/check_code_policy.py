@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#  Check various C source code policy rules and issue warnings for offenders
+#  Check various source code policy rules and issue warnings for offenders.
 #
 #  Usage:
 #

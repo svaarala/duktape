@@ -342,7 +342,7 @@ clean:
 	@rm -f duktape-*.tar.*
 	@rm -f duktape-*.iso
 	@rm -f doc/*.html
-	@rm -f src/*.pyc
+	@rm -f src/*.pyc tools/*.pyc util/*.pyc
 	@rm -rf massif.out.* ms_print.tmp.*
 	@rm -rf cachegrind.out.*
 	@rm -rf callgrind.out.*
@@ -488,7 +488,7 @@ endif
 
 .PHONY: duksizes
 duksizes: duk.raw
-	$(PYTHON) src/genexesizereport.py $< > /tmp/duk_sizes.html
+	$(PYTHON) tools/genexesizereport.py $< > /tmp/duk_sizes.html
 
 .PHONY: issuecount
 issuecount:
@@ -1154,7 +1154,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-tab-indent \
 		--dump-vim-commands \
-		src/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py
+		src/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*/*.py
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \

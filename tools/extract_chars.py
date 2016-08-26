@@ -15,8 +15,11 @@
 #  supported in standard Ecmascript.
 #
 
-import os, sys, math
+import os
+import sys
+import math
 import optparse
+
 import dukutil
 
 def read_unicode_data(unidata, catsinc, catsexc, filterfunc):
@@ -318,19 +321,19 @@ def main():
         return True
 
     print('read unicode data')
-    res = read_unicode_data(unidata, catsinc, catsexc, filter1)
+    uni_filtered = read_unicode_data(unidata, catsinc, catsexc, filter1)
     print('done reading unicode data')
 
     # Raw output
     #print('RAW OUTPUT:')
     #print('===========')
-    #print('\n'.join(res))
+    #print('\n'.join(uni_filtered))
 
     # Scan ranges
     #print('')
     #print('RANGES:')
     #print('=======')
-    ranges = scan_ranges(res)
+    ranges = scan_ranges(uni_filtered)
     #for i in ranges:
     #    if i[0] == i[1]:
     #        print('0x%04x' % i[0])
@@ -376,7 +379,7 @@ def main():
 
     # Image (for illustrative purposes only)
     if opts.out_png is not None:
-        generate_png(res, opts.out_png)
+        generate_png(uni_filtered, opts.out_png)
 
 if __name__ == '__main__':
     main()

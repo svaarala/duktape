@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 #
 #  Format a perftest text dump into a HTML table.
+#
 
 import os
 import sys
