@@ -324,7 +324,7 @@ def generate_tables(convmap):
     be.bits(0x3f, 6)    # maximum count value = end of skips
 
     count = len(singles)
-    be.bits(count, 6)
+    be.bits(count, 7)
     for t in singles:
         cp_i, cp_o = t[0], t[1]
         be.bits(cp_i, 16)
