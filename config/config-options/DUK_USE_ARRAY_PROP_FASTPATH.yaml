@@ -1,0 +1,9 @@
+define: DUK_USE_ARRAY_PROP_FASTPATH
+introduced: 2.0.0
+default: true
+tags:
+  - performance
+  - fastpath
+  - lowmemory
+description: >
+  Enable a shallow fast path check for Array index property reads and writes.
