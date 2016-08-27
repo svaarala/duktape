@@ -2027,6 +2027,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
  *  standard Array objects.
  */
 
+#if defined(DUK_USE_ARRAY_PROP_FASTPATH)
 DUK_LOCAL duk_tval *duk__getprop_shallow_fastpath_array_tval(duk_hthread *thr, duk_hobject *obj, duk_tval *tv_key) {
 	duk_tval *tv;
 	duk_uint32_t idx;
@@ -2152,6 +2153,7 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 	DUK_DDD(DUK_DDDPRINT("array fast path success for index %ld", (long) idx));
 	return 1;
 }
+#endif  /* DUK_USE_ARRAY_PROP_FASTPATH */
 
 /*
  *  Fast path for bufobj getprop/putprop
@@ -2397,13 +2399,16 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 
 	case DUK_TAG_OBJECT: {
+#if defined(DUK_USE_ARRAY_PROP_FASTPATH)
 		duk_tval *tmp;
+#endif
 
 		curr = DUK_TVAL_GET_OBJECT(tv_obj);
 		DUK_ASSERT(curr != NULL);
 
 		/* XXX: array .length fast path (important in e.g. loops)? */
 
+#if defined(DUK_USE_ARRAY_PROP_FASTPATH)
 		tmp = duk__getprop_shallow_fastpath_array_tval(thr, curr, tv_key);
 		if (tmp) {
 			duk_push_tval(ctx, tmp);
@@ -2413,6 +2418,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			return 1;
 		}
+#endif
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk__getprop_fastpath_bufobj_tval(thr, curr, tv_key) != 0) {
@@ -3416,10 +3422,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		/* XXX: array .length? */
 
+#if defined(DUK_USE_ARRAY_PROP_FASTPATH)
 		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val) != 0) {
 			DUK_DDD(DUK_DDDPRINT("array fast path success"));
 			return 1;
 		}
+#endif
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk__putprop_fastpath_bufobj_tval(thr, orig, tv_key, tv_val) != 0) {
