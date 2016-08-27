@@ -18,7 +18,7 @@
 #define DUK__DIGITCHAR(x)  duk_lc_digits[(x)]
 
 /*
- *  Tables generated with src/gennumdigits.py.
+ *  Tables generated with util/gennumdigits.py.
  *
  *  duk__str2num_digits_for_radix indicates, for each radix, how many input
  *  digits should be considered significant for string-to-number conversion.

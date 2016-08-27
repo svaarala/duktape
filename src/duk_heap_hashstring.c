@@ -13,7 +13,7 @@
  *  with real world inputs).  Unless the hash is cryptographic, it's always
  *  possible to craft inputs with maximal hash collisions.
  *
- *  NOTE: The hash algorithms must match src/dukutil.py:duk_heap_hashstring()
+ *  NOTE: The hash algorithms must match tools/dukutil.py:duk_heap_hashstring()
  *  for ROM string support!
  */
 

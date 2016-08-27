@@ -61,7 +61,7 @@ DUK_LOCAL_DECL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk
 #define DUK__YEAR(x) ((duk_uint8_t) ((x) - 1970))
 DUK_LOCAL duk_uint8_t duk__date_equivyear[14] = {
 #if 1
-	/* This is based on V8 EquivalentYear() algorithm (see src/genequivyear.py):
+	/* This is based on V8 EquivalentYear() algorithm (see util/genequivyear.py):
 	 * http://code.google.com/p/v8/source/browse/trunk/src/date.h#146
 	 */
 
