@@ -161,7 +161,13 @@
 /* Missing some obvious constants. */
 #define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
-/* VBCC is missing the built-ins even in C99 mode (perhaps a header issue) */
+/* VBCC is missing the built-ins even in C99 mode (perhaps a header issue). */
+#define DUK_F_USE_REPL_ALL
+#elif defined(DUK_F_AMIGAOS) && defined(DUK_F_M68K)
+/* AmigaOS + M68K seems to have math issues even when using GCC cross
+ * compilation.  Use replacements for all AmigaOS versions on M68K
+ * regardless of compiler.
+ */
 #define DUK_F_USE_REPL_ALL
 #elif defined(DUK_F_FREEBSD) && defined(DUK_F_CLANG)
 /* Placeholder fix for (detection is wider than necessary):
