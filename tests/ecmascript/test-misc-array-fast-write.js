@@ -28,7 +28,7 @@
  *  (regardless of whether or not the fast path is active for a certain write).
  *
  *  Test for the non-compliant default behavior.  You can restore compliant
- *  behavior with a feature option DUK_OPT_NO_NONSTD_ARRAY_WRITE.
+ *  behavior by dropping the fast path; undefine DUK_USE_ARRAY_PROP_FASTPATH.
  */
 
 /*---
