@@ -1715,6 +1715,12 @@ Planned
   and constructor call argument count from 511 to 255, and maximum Ecmascript
   function constant count from 262144 to 65536 (GH-903)
 
+* Incompatible change: genconfig.py has been relocated to tools/genconfig.py
+  in the end user distributable (GH-929)
+
+* Incompatible change: make_dist.py no longer supports ROM built-ins, use
+  tools/prepare_sources.py instead (GH-929)
+
 * Include raw input sources and a prepare-and-config tool in the distributable,
   which allow user code to regenerate a config file and source code files for
   specified options; this is more comprehensive than just running genconfig.py
