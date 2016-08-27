@@ -1819,6 +1819,10 @@ Planned
   native eval()) via the identifier 'eval' doesn't get tailcall
   optimization (GH-896)
 
+* Make Array property read/write fast path optional to reduce footprint
+  for footprint optimized builds (ensure DUK_USE_ARRAY_PROP_FASTPATH is
+  disabled for low memory builds) (GH-934)
+
 * Fix buffer object (duk_hbufobj) JSON serialization (bug present in 1.5.0):
   buffer objects were omitted from serialization when they should be
   serialized as normal objects instead (GH-867)
