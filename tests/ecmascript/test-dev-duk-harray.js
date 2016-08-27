@@ -231,8 +231,15 @@ true
 
 1,2,3,4,5,6,7,8,9,10
 1,2,3,4,5,foo,7,8,9,10
+foo
+write succeeded
+1,2,3,4,5,foo,7,8,9,10
+undefined
+1,2,3,4,5,6,7,8,9,10
+1,2,3,4,5,foo,7,8,9,10
 TypeError: not writable
 1,2,3,4,5,foo,7,8,9,10
+undefined
 ===*/
 
 function arrayLengthTest() {
@@ -266,18 +273,40 @@ function arrayLengthTest() {
     print(Object.getOwnPropertyNames(obj));
 
     // Writing to an Array when .length is write protected.
+    // In a non-strict function this must be a silent failure.
     arr = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
     Object.defineProperty(arr, 'length', { writable: false });
     print(arr);
     arr[5] = 'foo';  // OK, length not changed
     print(arr);
     try {
-        arr[10] = 'foo';
+        print(arr[10] = 'foo');
+        print('write succeeded');
     } catch (e) {
         //print(e.stack);
         print(e);
     }
     print(arr);
+    print(arr[10]);
+
+    // For a strict function the result must be a TypeError.
+    arr = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
+    Object.defineProperty(arr, 'length', { writable: false });
+    print(arr);
+    arr[5] = 'foo';  // OK, length not changed
+    print(arr);
+    try {
+        (function() {
+            'use strict';
+            print(arr[10] = 'foo');
+            print('write succeeded');
+        })();
+    } catch (e) {
+        //print(e.stack);
+        print(e);
+    }
+    print(arr);
+    print(arr[10]);
 }
 
 try {
