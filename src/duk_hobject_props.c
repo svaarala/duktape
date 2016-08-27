@@ -2135,8 +2135,11 @@ DUK_LOCAL duk_bool_t duk__putprop_shallow_fastpath_array_tval(duk_hthread *thr, 
 		                     "(arr_idx=%ld, old_len=%ld)",
 		                     (long) idx, (long) old_len));
 		if (DUK_HARRAY_LENGTH_NONWRITABLE(a)) {
-			DUK_ERROR_TYPE(thr, DUK_STR_NOT_WRITABLE);
-			return 0;  /* not reachable */
+			/* The correct behavior here is either a silent error
+			 * or a TypeError, depending on strictness.  Fall back
+			 * to the slow path to handle the situation.
+			 */
+			return 0;
 		}
 		new_len = idx + 1;
 
