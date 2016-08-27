@@ -1804,6 +1804,9 @@ Planned
 * Add an FP rounding mode self test (Duktape assumes rounding mode is
   IEEE 754 round-to-nearest, C99 FE_TONEAREST) (GH-606)
 
+* Update UnicodeData.txt and SpecialCasing.txt used for building internal
+  Unicode control data to Unicode version 9.0.0 (GH-931)
+
 * Simplify call related bytecode opcodes for better performance; as a
   result maximum argument count to normal and constructor calls dropped
   from 511 to 255, and calling a user function (i.e. not the built-in

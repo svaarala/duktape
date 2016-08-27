@@ -853,7 +853,7 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	}
 
 	/* 1:1 conversion */
-	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 6);
+	n = (duk_small_int_t) duk_bd_decode(bd_ctx, 7);
 	DUK_DDD(DUK_DDDPRINT("checking 1:1 conversions (count %ld)", (long) n));
 	while (n--) {
 		start_i = (duk_codepoint_t) duk_bd_decode(bd_ctx, 16);
