@@ -158,8 +158,8 @@ Miscellaneous
   stub out unnecessary functions in ``duk_config.h``.  Note, however, that
   Duktape internals at present depend on a few Math functions like ``DUK_FMOD()``.
 
-Suggested feature options
-=========================
+Suggested options
+=================
 
 * Use the default memory management settings: although reference counting
   increases heap header size, it also reduces memory usage fluctuation
@@ -231,6 +231,17 @@ Suggested feature options
   the following to reduce this overhead:
 
   - ``-DDUK_OPT_DEBUG_BUFSIZE=2048``
+
+* If strict Unicode support is not critical in your application, you can:
+
+  - Strip the ``UnicodeData.txt`` and ``SpecialCasing.txt`` files manually.
+    There are example files in the distributable for Unicode data limited
+    to 8-bit codepoints.
+
+  - Provide the stripped files to ``prepare_sources.py`` to reduce Unicode
+    table size.
+
+  - Possible footprint savings are about 2-3kB.
 
 More aggressive options
 =======================
