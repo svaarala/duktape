@@ -334,7 +334,7 @@ The exact format is ultimately defined by the source code, see:
 
 * ``src/duk_api_bytecode.c``
 
-* ``util/dump_bytecode.py``
+* ``tools/dump_bytecode.py``
 
 As a simplified summary of the bytecode format:
 

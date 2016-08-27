@@ -1,0 +1,64 @@
+objects:
+
+  # The bufferobject related built-ins have a DUK_BIDX_xxx constant so they
+  # must at present map to an object value (they may not be missing or map
+  # to e.g. null).
+
+  - id: bi_empty_bufferobject
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties: []
+
+  - id: bi_global
+    modify: true
+
+    properties:
+      - key: 'DataView'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Uint8Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Uint8ClampedArray'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Int8Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Uint16Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Int16Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Uint32Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Int32Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Float32Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Float64Array'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'ArrayBuffer'
+        value:
+          type: object
+          id: bi_empty_bufferobject
+      - key: 'Buffer'
+        value:
+          type: object
+          id: bi_empty_bufferobject

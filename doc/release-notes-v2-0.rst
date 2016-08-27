@@ -67,6 +67,43 @@ DUK_OPT_xxx feature option support removed
 
 FIXME.
 
+Tooling changes
+---------------
+
+There are some tooling changes in this release:
+
+* The distributable now includes raw sources (``src/`` in Duktape main repo)
+  in ``src-input/`` and some tooling in ``tools/``.
+
+* The tooling includes a new ``tools/prepare_sources.py`` tool which creates
+  a ``duk_config.h`` and matching prepared sources simultaneously.  This
+  allows use of ROM built-ins from the distributable (previously required a
+  manual ``make_dist.py --rom-support ...`` command.
+
+* The ``make_dist.py`` utility in Duktape main repo no longer supports
+  ``--rom-support``, ``--rom-auto-lightfunc``, and ``--user-builtin-metadata``
+  options.  Use the  ``tools/prepare_sources.py`` tool instead, which supports
+  these options.
+
+* The distributable still includes sources prepared using default configuration
+  (``src/``, ``src-noline/``, and ``src-separate``) and some configuration
+  examples.
+
+* The ``config/genconfig.py`` has been relocated to ``tools/genconfig.py`` in
+  the distributable.  It can still be used as a standalone tool, but over time
+  the intent is that configuration and sources are prepared in one atomic step.
+
+To upgrade:
+
+* If you're just using the default sources and ``duk_config.h`` in the
+  distributable, no changes are needed.
+
+* If you're using ``genconfig.py``, check the path; correct path is now
+  ``tools/genconfig.py``.
+
+* If you're using ROM built-ins via ``make_dist.py``, change your build to
+  use ``tools/prepare_sources.py`` instead.
+
 Buffer behavior changes
 -----------------------
 

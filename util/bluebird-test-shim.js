@@ -7,7 +7,7 @@ var window;
 (function () {
     var timers = [];
 
-    window = Function('return this')();
+    window = Function('return this')();  // window <- global object
 
     window.setTimeout = function (fn, timeout) {
         timers.push(fn);

@@ -10,7 +10,7 @@ make clean dist
 
 # Prepare-and-config sources manually to enable ROM support.  User builtin
 # metadata can be provided through one or more YAML files (which are applied
-# in sequence).
+# in sequence).  Duktape configuration can be given at the same time.
 rm -rf dist/src dist/src-noline dist/src-separate
 $PYTHON dist/tools/prepare_sources.py \
 	--source-directory dist/src-input \

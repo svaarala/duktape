@@ -5,7 +5,7 @@
 #  Overview of the process:
 #
 #    * Parse user supplied C files.  Add automatic #undefs at the end
-#      of each C file to avoid defined bleeding from one file to another.
+#      of each C file to avoid defines bleeding from one file to another.
 #
 #    * Combine the C files in specified order.  If sources have ordering
 #      dependencies (depends on application), order may matter.
@@ -14,11 +14,11 @@
 #      them either as "internal" (found in specified include path) or
 #      "external".  Internal includes, unless explicitly excluded, are
 #      inlined into the result while extenal includes are left as is.
-#      Duplicate #include statements are replaced with a comment.
+#      Duplicate internal #include statements are replaced with a comment.
 #
 #  At every step, source and header lines are represented with explicit
 #  line objects which keep track of original filename and line.  The
-#  output contains #line directives, if necessary, to ensure error
+#  output contains #line directives, if requested, to ensure error
 #  throwing and other diagnostic info will work in a useful manner when
 #  deployed.  It's also possible to generate a combined source with no
 #  #line directives.
@@ -34,14 +34,14 @@
 #      there are structs/unions/typedefs with conflicting names, these
 #      have to be resolved in the source files first.
 #
-#     * Because duplicate #include statements are suppressed, currently
-#       assumes #include statements are not conditional.
+#    * Because duplicate #include statements are suppressed, currently
+#      assumes #include statements are not conditional.
 #
-#     * A system header might be #include'd in multiple source files with
-#       different feature defines (like _BSD_SOURCE).  Because the #include
-#       file will only appear once in the resulting source, the first
-#       occurrence wins.  The result may not work correctly if the feature
-#       defines must actually be different between two or more source files.
+#    * A system header might be #include'd in multiple source files with
+#      different feature defines (like _BSD_SOURCE).  Because the #include
+#      file will only appear once in the resulting source, the first
+#      occurrence wins.  The result may not work correctly if the feature
+#      defines must actually be different between two or more source files.
 #
 
 import os
@@ -234,7 +234,7 @@ def main():
     assert(opts.output_source)
     assert(opts.output_metadata)
 
-    print('Read input files, add automatic #undefs')
+    # Read input files, add automatic #undefs
     sources = args
     files = []
     for fn in sources:
@@ -243,7 +243,6 @@ def main():
         addAutomaticUndefs(res)
         files.append(res)
 
-    print('Create combined source file from %d source files' % len(files))
     combined_source, metadata = \
         createCombined(files, opts.prologue, opts.line_directives)
     with open(opts.output_source, 'wb') as f:
@@ -251,7 +250,7 @@ def main():
     with open(opts.output_metadata, 'wb') as f:
         f.write(json.dumps(metadata, indent=4))
 
-    print('Wrote %d bytes to %s' % (len(combined_source), opts.output_source))
+    print('Combined %d source files, %d bytes written to %s' % (len(files), len(combined_source), opts.output_source))
 
 if __name__ == '__main__':
     main()

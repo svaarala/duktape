@@ -19,6 +19,7 @@ else
 fi
 
 cat util/underscore-test-shim.js \
+    underscore/test/vendor/qunit.js \
     underscore/underscore.js \
     $TEST \
     > /tmp/duk-underscore-test.js

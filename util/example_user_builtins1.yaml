@@ -8,7 +8,7 @@
 #
 #  See examples below for details on how to use these.
 #
-#  Note that genbuiltins.py (and prepare_sources.py) accepts multiple user
+#  Note that genbuiltins.py and prepare_sources.py accept multiple user
 #  built-in YAML files, so that you can manage your custom strings and
 #  objects in individual YAML files for modularity.
 #
@@ -48,6 +48,13 @@ add_forced_strings:
   - str: "9"
 
   # Non-ascii strings: encode into UTF-8, map bytes to U+0000...U+00FF.
+  # This encoding approach ensures byte purity which is important to allow
+  # representing arbitrary byte strings in Duktape internal representation.
+  #
+  # For example, to encode 'ä' (U+00E4) first UTF-8 encode the codepoint
+  # which yields the bytes C3 A4, and then Unicode escape the bytes to get
+  # '\u00c3\u00a4'.  The direct Unicode escape '\u00e4' *will not work*.
+  # Another example:
   #
   # >>> u'säätö'.encode('utf-8').encode('hex')
   # '73c3a4c3a474c3b6'
@@ -105,7 +112,8 @@ objects:
 
   # Example of adding an object.  Properties may reference other objects using
   # the 'id' strings even if the object hasn't been introduced yet (and may be
-  # introduced by a different user builtins YAML file).
+  # introduced by a different user builtins YAML file).  The ID references are
+  # in effect resolved only after all metadata has been loaded.
   #
   # Add a built-in object with plain property values.  This just creates the
   # built-in object; for the object to be actually useful you must use e.g.
@@ -147,7 +155,8 @@ objects:
   #
   # - The "null" type is supported for ROM init data but not for RAM
   #   init data.  Null values are replaced with "undefined" for RAM
-  #   init data at the moment (with a build warning).
+  #   init data at the moment (with a build warning).  Same applies
+  #   to lightfunc values at present.
   #
   # - One simple way of coming up with exact IEEE doubles is to use
   #   Python:
@@ -172,10 +181,10 @@ objects:
         value: true
         attributes: wec
       - key: "integerType"
-        value: 123
+        value: 123                    # Interpreted as an IEEE double
         attributes: wec
       - key: "floatType"
-        value: 123.4
+        value: 123.4                  # Interpreted as an IEEE double
         attributes: wec
       - key: "ieeeDoubleType"         # Allows exact specification of IEEE doubles
         value:
@@ -193,13 +202,13 @@ objects:
       #    native: duk_bi_math_object_random
       #    nargs: 0
       #    varargs: false
-      #    length: 13
+      #    length: 11
       #    magic: 0
       #  attributes: wec
 
   # Object IDs are only resolved when metadata loading is complete, so it's
-  # OK to create reference loops or refer to objects defined later (even in
-  # a separate YAML file not yet loaded).
+  # OK to create reference loops or refer to objects defined later,(even in
+  # a separate YAML file not yet loaded.
 
   - id: bi_circular1
     add: true
@@ -279,7 +288,7 @@ objects:
         value: ""
 
   - id: bi_json
-    disable: true  # disabled in metadata
+    disable: true  # disabled in metadata, so no effect unless commented out
     replace: true
 
     class: Object
@@ -300,8 +309,8 @@ objects:
   # custom built-ins and a target specific YAML file removes bindings not
   # needed for a certain target.
   #
-  # In this example we'd delete the StarTrek object.  The global reference
-  # global.StarTrek would be deleted automatically.
+  # In this example we'd delete the StarTrek object.  The dangling global
+  # reference global.StarTrek would be deleted automatically.
 
   - id: bi_star_trek
     disable: true  # disabled in metadata

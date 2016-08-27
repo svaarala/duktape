@@ -12,14 +12,16 @@
 #  and String.prototype.toLocaleLowerCase()), so they are best handled
 #  in C anyway.
 #
-#  Case conversion rules for ASCII are also excluded as they are
-#  handled by C fast path.  Rules for non-BMP characters (codepoints
-#  above U+FFFF) are omitted as they're not required for standard
-#  Ecmascript.
+#  Case conversion rules for ASCII are also excluded as they are handled
+#  by the C fast path.  Rules for non-BMP characters (codepoints above
+#  U+FFFF) are omitted as they're not required for standard Ecmascript.
 #
 
-import os, sys, math
+import os
+import sys
+import math
 import optparse
+
 import dukutil
 
 class UnicodeData:
@@ -214,8 +216,8 @@ def generate_tables(convmap):
     # most reliable and simple way to scan
 
     ranges = []        # range mappings (2 or more consecutive mappings with a certain skip)
-    singles = []        # 1:1 character mappings
-    complex = []        # 1:n character mappings
+    singles = []       # 1:1 character mappings
+    multis = []        # 1:n character mappings
 
     # Ranges with skips
 
@@ -267,25 +269,25 @@ def generate_tables(convmap):
     #    print 'special399, skip %d: %d %d %d' % (skip, start_i, start_o, count)
     # print len(tmp.keys())
     # print repr(tmp)
-    # XXX: need to put 12 remaining mappings back to convmap...
+    # XXX: need to put 12 remaining mappings back to convmap
 
     # 1:n conversions
 
     k = convmap.keys()
     k.sort()
     for i in k:
-        complex.append([i, convmap[i]])        # codepoint, string
+        multis.append([i, convmap[i]])        # codepoint, string
         del convmap[i]
 
     for t in singles:
         print repr(t)
 
-    for t in complex:
+    for t in multis:
         print repr(t)
 
     print 'range mappings: %d' % len(ranges)
     print 'single character mappings: %d' % len(singles)
-    print 'complex mappings (1:n): %d' % len(complex)
+    print 'complex mappings (1:n): %d' % len(multis)
     print 'remaining (should be zero): %d' % len(convmap.keys())
 
     # XXX: opportunities for diff encoding skip=3 ranges?
@@ -330,9 +332,9 @@ def generate_tables(convmap):
         be.bits(cp_i, 16)
         be.bits(cp_o, 16)
 
-    count = len(complex)
+    count = len(multis)
     be.bits(count, 7)
-    for t in complex:
+    for t in multis:
         cp_i, str_o = t[0], t[1]
         be.bits(cp_i, 16)
         be.bits(len(str_o), 2)

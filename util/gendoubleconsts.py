@@ -1,8 +1,9 @@
 #!/usr/bin/env python2
-
-# Double constants, see http://en.wikipedia.org/wiki/Double-precision_floating-point_format.
-# Some double constants have been created with 'python-mpmath'.  The constants are in binary
-# so that the package is not needed for a normal build.
+#
+#  Double constants, see http://en.wikipedia.org/wiki/Double-precision_floating-point_format.
+#  YAML builtins metadata expressed the constants in binary form (8 bytes of
+#  IEEE double data) to ensure bit exactness.
+#
 
 import struct
 import mpmath

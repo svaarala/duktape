@@ -4,7 +4,7 @@
 #
 #  For Ecmascript testcases:
 #
-#    - Lift a 'use global' statement to top of file if present
+#    - Lift a 'use strict' statement to top of file if present
 #    - Add a prologue which handles engine differences
 #    - Resolve include files
 #

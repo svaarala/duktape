@@ -559,6 +559,7 @@ def metadata_normalize_rom_property_attributes(meta):
 # Add a 'name' property for all top level functions; expected by RAM
 # initialization code.
 def metadata_normalize_ram_function_names(meta):
+    num_added = 0
     for o in meta['objects']:
         if not o.get('callable', False):
             continue
@@ -568,8 +569,12 @@ def metadata_normalize_ram_function_names(meta):
                 name_prop = p
                 break
         if name_prop is None:
-            print('Adding missing "name" property for top level function %s' % o['id'])
+            num_added += 1
+            #print('Adding missing "name" property for function %s' % o['id'])
             o['properties'].append({ 'key': 'name', 'value': '', 'attributes': '' })
+
+    if num_added > 0:
+        print('Added missing "name" property for %d functions' % num_added)
 
 # Add a built-in objects list for RAM initialization.
 def metadata_add_ram_filtered_object_list(meta):
@@ -752,8 +757,8 @@ def metadata_remove_orphan_objects(meta):
                     _markId(v.get('getter_id'))
                     _markId(v.get('setter_id'))
 
-        print('Mark reachable: reachable count initially %d, now %d' % \
-              (reachable_count, len(reachable.keys())))
+        #print('Mark reachable: reachable count initially %d, now %d' % \
+        #      (reachable_count, len(reachable.keys())))
         if reachable_count == len(reachable.keys()):
             break
 
@@ -769,7 +774,8 @@ def metadata_remove_orphan_objects(meta):
                 num_deleted += 1
                 break
 
-    print('Deleted %d unreachable objects' % num_deleted)
+    if num_deleted > 0:
+        print('Deleted %d unreachable objects' % num_deleted)
 
 # Add C define names for builtin strings.  These defines are added to all
 # strings, even when they won't get a stridx because the define names are
@@ -969,7 +975,7 @@ def load_metadata(opts, rom=False, build_info=None):
     # Add Duktape.version and (Duktape.env for ROM case).
     for o in meta['objects']:
         if o['id'] == 'bi_duktape':
-            o['properties'].insert(0, { 'key': 'version', 'value': int(build_info['version']), 'attributes': '' })
+            o['properties'].insert(0, { 'key': 'version', 'value': int(build_info['duk_version']), 'attributes': '' })
             if rom:
                 # Use a fixed (quite dummy for now) Duktape.env
                 # when ROM builtins are in use.  In the RAM case
@@ -2811,7 +2817,10 @@ def emit_header_native_function_declarations(genc, meta):
 
 def main():
     parser = optparse.OptionParser()
-    parser.add_option('--buildinfo', dest='buildinfo', help='Build info, JSON format')
+    parser.add_option('--git-commit', dest='git_commit', default=None, help='Git commit hash')
+    parser.add_option('--git-describe', dest='git_describe', default=None, help='Git describe')
+    parser.add_option('--git-branch', dest='git_branch', default=None, help='Git branch name')
+    parser.add_option('--duk-version', dest='duk_version', default=None, help='Duktape version (e.g. 10203)')
     parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', help='DUK_STRIDX_xxx used by source/headers, JSON format')
     parser.add_option('--strings-metadata', dest='strings_metadata', help='Built-in strings metadata file, YAML format')
     parser.add_option('--objects-metadata', dest='objects_metadata', help='Built-in objects metadata file, YAML format')
@@ -2828,11 +2837,12 @@ def main():
 
     # Options processing.
 
-    if opts.buildinfo is None:
-        raise Exception('missing buildinfo')
-
-    with open(opts.buildinfo, 'rb') as f:
-        build_info = dukutil.json_decode(f.read().strip())
+    build_info = {
+        'git_commit': opts.git_commit,
+        'git_branch': opts.git_branch,
+        'git_describe': opts.git_describe,
+        'duk_version': int(opts.duk_version),
+    }
 
     # Read in metadata files, normalizing and merging as necessary.
 
@@ -2954,7 +2964,7 @@ def main():
 
     # Write a JSON file with build metadata, e.g. built-in strings.
 
-    ver = long(build_info['version'])
+    ver = long(build_info['duk_version'])
     plain_strs = []
     base64_strs = []
     str_objs = []
