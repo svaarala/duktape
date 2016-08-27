@@ -1,0 +1,8 @@
+objects:
+
+  - id: bi_math
+    replace: true
+    class: Object
+    internal_prototype: bi_object_prototype
+
+    properties: []
