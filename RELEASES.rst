@@ -1857,6 +1857,10 @@ Planned
   DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
   macros have been replaced in duk_config.h (GH-897)
 
+* Fix AmigaOS3 portability issue by enabling math function replacements
+  automatically for AmigaOS on M68K, regardless of OS version or compiler
+  (GH-932)
+
 * Internal performance improvement: rework bytecode format to use an 8-bit
   opcode field (and 8-bit A, B, and C fields) to speed up opcode dispatch
   by around 20-25% and avoid a two-level dispatch for EXTRA opcodes; the
