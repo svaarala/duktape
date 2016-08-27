@@ -58,23 +58,26 @@ To build an example command line tool, use the following::
 
 This distributable contains:
 
-* ``src/``: main Duktape library in a "single source file" format (duktape.c,
+* Pre-configured Duktape header and source files using the Duktape default
+  configuration:
+
+  - ``src/``: main Duktape library in a "single source file" format (duktape.c,
   duktape.h, and duk_config.h).
 
-* ``src-noline/``: contains a variant of ``src/duktape.c`` with no ``#line``
-  directives which is preferable for some users.  See discussion in
-  https://github.com/svaarala/duktape/pull/363.
+  * ``src-noline/``: contains a variant of ``src/duktape.c`` with no ``#line``
+    directives which is preferable for some users.  See discussion in
+    https://github.com/svaarala/duktape/pull/363.
 
-* ``src-separate/``: main Duktape library in multiple files format.
+  * ``src-separate/``: main Duktape library in multiple files format.
 
-* ``src-input/``: raw input source files used for a config-and-prepare which
+* ``src-input/``: raw input source files used by ``configure.py`` which
   recreates the combined/separate prepared sources with specific options.
 
-* ``tools/``: various Python tools, such as prepare_sources.py for doing a
-  config-and-prepare and genconfig.py for creating duk_config.h configuration
-  files, see: http://wiki.duktape.org/Configuring.html.
+* ``tools/``: various Python tools, such as ``configure.py`` for preparing
+  a ``duk_config.h`` header and Duktape source files for compilation, see
+  http://wiki.duktape.org/Configuring.html.
 
-* ``config/``: configuration metadata for genconfig.py.
+* ``config/``: configuration metadata for ``configure.py``.
 
 * ``examples/``: further examples for using Duktape.  Although Duktape
   itself is widely portable, some of the examples are Linux only.

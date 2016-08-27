@@ -2875,7 +2875,7 @@ def main():
         rom_emit_object_initializer_types_and_macros(gc_src)
         rom_emit_objects(gc_src, rom_meta, rom_bi_str_map)
     else:
-        gc_src.emitLine('#error ROM support not enabled, rerun prepare_sources.py with --rom-support')
+        gc_src.emitLine('#error ROM support not enabled, rerun configure.py with --rom-support')
     gc_src.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
     emit_ramstr_source_strinit_data(gc_src, ramstr_data)
     gc_src.emitLine('#endif  /* DUK_USE_ROM_STRINGS */')
@@ -2886,7 +2886,7 @@ def main():
         gc_src.emitLine('#error DUK_USE_ROM_OBJECTS requires DUK_USE_ROM_STRINGS')
         gc_src.emitLine('#endif')
     else:
-        gc_src.emitLine('#error ROM support not enabled, rerun prepare_sources.py with --rom-support')
+        gc_src.emitLine('#error ROM support not enabled, rerun configure.py with --rom-support')
     gc_src.emitLine('#else  /* DUK_USE_ROM_OBJECTS */')
     if opts.ram_support:
         emit_ramobj_source_nativefunc_array(gc_src, ram_native_funcs)  # endian independent
@@ -2900,7 +2900,7 @@ def main():
         gc_src.emitLine('#error invalid endianness defines')
         gc_src.emitLine('#endif')
     else:
-        gc_src.emitLine('#error RAM support not enabled, rerun prepare_sources.py with --ram-support')
+        gc_src.emitLine('#error RAM support not enabled, rerun configure.py with --ram-support')
     gc_src.emitLine('#endif  /* DUK_USE_ROM_OBJECTS */')
 
     gc_hdr = dukutil.GenerateC()
@@ -2913,13 +2913,13 @@ def main():
         emit_header_stridx_defines(gc_hdr, rom_meta)
         rom_emit_strings_header(gc_hdr, rom_meta)
     else:
-        gc_hdr.emitLine('#error ROM support not enabled, rerun prepare_sources.py with --rom-support')
+        gc_hdr.emitLine('#error ROM support not enabled, rerun configure.py with --rom-support')
     gc_hdr.emitLine('#else  /* DUK_USE_ROM_STRINGS */')
     if opts.ram_support:
         emit_header_stridx_defines(gc_hdr, ram_meta)
         emit_ramstr_header_strinit_defines(gc_hdr, ram_meta, ramstr_data, ramstr_maxlen)
     else:
-        gc_hdr.emitLine('#error RAM support not enabled, rerun prepare_sources.py with --ram-support')
+        gc_hdr.emitLine('#error RAM support not enabled, rerun configure.py with --ram-support')
     gc_hdr.emitLine('#endif  /* DUK_USE_ROM_STRINGS */')
     gc_hdr.emitLine('')
     gc_hdr.emitLine('#if defined(DUK_USE_ROM_OBJECTS)')
@@ -2936,7 +2936,7 @@ def main():
         emit_header_native_function_declarations(gc_hdr, rom_meta)
         rom_emit_objects_header(gc_hdr, rom_meta)
     else:
-        gc_hdr.emitLine('#error RAM support not enabled, rerun prepare_sources.py with --ram-support')
+        gc_hdr.emitLine('#error RAM support not enabled, rerun configure.py with --ram-support')
     gc_hdr.emitLine('#else  /* DUK_USE_ROM_OBJECTS */')
     if opts.ram_support:
         emit_header_native_function_declarations(gc_hdr, ram_meta)
@@ -2952,7 +2952,7 @@ def main():
         gc_hdr.emitLine('#error invalid endianness defines')
         gc_hdr.emitLine('#endif')
     else:
-        gc_hdr.emitLine('#error RAM support not enabled, rerun prepare_sources.py with --ram-support')
+        gc_hdr.emitLine('#error RAM support not enabled, rerun configure.py with --ram-support')
     gc_hdr.emitLine('#endif  /* DUK_USE_ROM_OBJECTS */')
     gc_hdr.emitLine('#endif  /* DUK_BUILTINS_H_INCLUDED */')
 

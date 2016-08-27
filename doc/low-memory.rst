@@ -238,7 +238,7 @@ Suggested options
     There are example files in the distributable for Unicode data limited
     to 8-bit codepoints.
 
-  - Provide the stripped files to ``prepare_sources.py`` to reduce Unicode
+  - Provide the stripped files to ``configure.py`` to reduce Unicode
     table size.
 
   - Possible footprint savings are about 2-3kB.
@@ -355,7 +355,7 @@ The following may be appropriate when even less memory is available
     is more memory efficient: it creates a writable (empty) global object
     which inherits from the ROM global object.
 
-  - Rerun ``prepare_sources.py`` with ``--rom-support`` to create prepared
+  - Rerun ``configure.py`` with ``--rom-support`` to create prepared
     sources with support for ROM builtins.  ROM builtin support is not
     enabled by default because it increases the size of ``duktape.c``
     considerably.  Add the option ``--rom-auto-lightfunc`` to convert
@@ -388,8 +388,8 @@ The following may be appropriate when even less memory is available
 
     + ``src/builtins.yaml``: documents some more format details
 
-    + ``util/example_rombuild.sh``: illustrates how to run
-      ``prepare_sources.py`` with user builtins
+    + ``util/example_rombuild.sh``: illustrates how to run ``configure.py``
+      with user builtins
 
 * Consider using lightfuncs for representing function properties of ROM
   built-ins.
@@ -448,10 +448,11 @@ Note that:
   is counterproductive because the external pointer takes more room than the
   character data.
 
-The Duktape built-in strings are available from build metadata:
+The Duktape built-in strings are available from prepared source metadata:
 
-* ``dist/duk_build_meta.json``, the ``builtin_strings_base64`` contains
-  the byte exact strings used, encoded with base-64.
+* For example, ``dist/src/duk_source_meta.json``, the
+  ``builtin_strings_base64`` contains the byte exact strings used, encoded
+  with base-64.
 
 Strings used by application C and Ecmascript code can be extracted with
 various methods.  The Duktape main repo contains an example script for

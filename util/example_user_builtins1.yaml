@@ -8,9 +8,9 @@
 #
 #  See examples below for details on how to use these.
 #
-#  Note that genbuiltins.py and prepare_sources.py accept multiple user
-#  built-in YAML files, so that you can manage your custom strings and
-#  objects in individual YAML files for modularity.
+#  Note that genbuiltins.py and configure.py accept multiple user built-in
+#  YAML files, so that you can manage your custom strings and objects in
+#  individual YAML files for modularity.
 #
 #  When using pointer compression, all ROM strings and objects need a number
 #  from the ROM pointer compression range (e.g. [0xf800,0xffff]).  By default

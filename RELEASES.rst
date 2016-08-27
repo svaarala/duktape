@@ -1761,8 +1761,8 @@ Planned
 * Incompatible change: genconfig.py has been relocated to tools/genconfig.py
   in the end user distributable (GH-929)
 
-* Incompatible change: make_dist.py no longer supports ROM built-ins, use
-  tools/prepare_sources.py instead (GH-929)
+* Incompatible change: util/dist.py no longer supports ROM built-ins, use
+  tools/configure.py instead (GH-929)
 
 * Include raw input sources and a prepare-and-config tool in the distributable,
   which allow user code to regenerate a config file and source code files for

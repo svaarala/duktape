@@ -64,7 +64,7 @@ Automatically generated bleeding edge snapshots from master are available at
 [duktape.org/snapshots](http://duktape.org/snapshots).
 
 You can also clone this repository, make modifications, and build a source
-distributable on Linux, OSX, and Windows using `python util/make_dist.py`.
+distributable on Linux, OSX, and Windows using `python util/dist.py`.
 
 Getting started: modifying and rebuilding the distributable
 -----------------------------------------------------------
@@ -74,17 +74,17 @@ distributable in Linux, OSX, or Windows:
 
     # Linux; can often install from packages or using 'pip'
     $ sudo apt-get install python python-yaml
-    $ python util/make_dist.py
+    $ python util/dist.py
 
     # OSX
     # Install Python 2.7.x
     $ pip install PyYAML
-    $ python util/make_dist.py
+    $ python util/dist.py
 
     # Windows
     ; Install Python 2.7.x from python.org, and add it to PATH
     > pip install PyYAML
-    > python util\make_dist.py
+    > python util\dist.py
 
 The source distributable directory will be in `dist/`.
 

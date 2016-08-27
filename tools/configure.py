@@ -1,7 +1,16 @@
 #!/usr/bin/env python2
 #
-#  Config-and-prepare: create a duk_config.h and combined/separate sources
-#  for configuration options specified on the command line.
+#  Prepare a duk_config.h and combined/separate sources for compilation,
+#  given user supplied config options, built-in metadata, Unicode tables, etc.
+#
+#  This is intended to be the main tool application build scripts would use
+#  before their build step, so convenient, versions, Python compatibility,
+#  etc all matter.
+#
+#  When obsoleting options, leave the option definitions behind (with
+#  help=optparse.SUPPRESS_HELP) and give useful suggestions when obsolete
+#  options are used.  This makes it easier for users to fix their build
+#  scripts.
 #
 
 import os
@@ -13,7 +22,9 @@ import optparse
 import tarfile
 import json
 import yaml
+import tempfile
 import subprocess
+import atexit
 
 import genconfig
 
@@ -134,7 +145,7 @@ def get_duk_version(apiheader_filename):
 # Python module check and friendly errors
 
 def check_python_modules():
-    # make_dist.py doesn't need yaml but other dist utils will; check for it and
+    # dist.py doesn't need yaml but other dist utils will; check for it and
     # warn if it is missing.
     failed = False
 
@@ -163,7 +174,12 @@ check_python_modules()
 # Option parsing
 
 def main():
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(
+        usage='Usage: %prog [options]',
+        description='Prepare Duktape source files and a duk_config.h configuration header for compilation. ' + \
+                    'Source files can be combined (amalgamated) or kept separate. ' + \
+                    'See http://wiki.duktape.org/Configuring.html for examples.'
+    )
 
     # Forced options from multiple sources are gathered into a shared list
     # so that the override order remains the same as on the command line.
@@ -202,25 +218,29 @@ def main():
                     line = line[:-1]
                 fixup_header_lines.append(line)
 
-    # Options for config-and-prepare tool itself.
+    # Options for configure.py tool itself.
     parser.add_option('--source-directory', dest='source_directory', default=None, help='Directory with raw input sources (src-input/)')
     parser.add_option('--output-directory', dest='output_directory', default=None, help='Directory for output files, must already exist')
-    parser.add_option('--duk-build-meta', dest='duk_build_meta', default=None, help='duk_build_meta.json for git commit info etc')
     parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
     parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
     parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
+    parser.add_option('--duk-dist-meta', dest='duk_dist_meta', default=None, help='duk_dist_meta.json to read git commit etc info from')
+
+    # Options for combining sources.
+    parser.add_option('--separate-sources', dest='separate_sources', action='store_true', default=False, help='Output separate sources instead of combined source (default is combined)')
+    parser.add_option('--line-directives', dest='line_directives', action='store_true', default=False, help='Output #line directives in combined source (default is false)')
 
     # Options forwarded to genbuiltins.py.
     parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Add support for ROM strings/objects (increases duktape.c size considerably)')
     parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help='Convert ROM built-in function properties into lightfuncs automatically whenever possible')
-    parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
-
-    # Options forwarded to genconfig.py.
-    genconfig.add_genconfig_optparse_options(parser)
+    parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', metavar='FILENAME', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
 
     # Options for Unicode.
     parser.add_option('--unicode-data', dest='unicode_data', default=None, help='Provide custom UnicodeData.txt')
     parser.add_option('--special-casing', dest='special_casing', default=None, help='Provide custom SpecialCasing.txt')
+
+    # Options forwarded to genconfig.py.
+    genconfig.add_genconfig_optparse_options(parser)
 
     (opts, args) = parser.parse_args()
 
@@ -228,15 +248,16 @@ def main():
     srcdir = opts.source_directory
     assert(opts.output_directory)
     outdir = opts.output_directory
+    assert(opts.config_metadata)
 
     # Figure out directories, git info, etc
 
     entry_pwd = os.getcwd()
 
-    duk_build_meta = None
-    if opts.duk_build_meta is not None:
-        with open(opts.duk_build_meta, 'rb') as f:
-            duk_build_meta = json.loads(f.read())
+    duk_dist_meta = None
+    if opts.duk_dist_meta is not None:
+        with open(opts.duk_dist_meta, 'rb') as f:
+            duk_dist_meta = json.loads(f.read())
 
     duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted = \
         get_duk_version(os.path.join(srcdir, 'duk_api_public.h.in'))
@@ -245,12 +266,10 @@ def main():
     git_branch = None
     git_describe = None
 
-    if duk_build_meta is not None:
-        git_commit = duk_build_meta['git_commit']
-        git_branch = duk_build_meta['git_branch']
-        git_describe = duk_build_meta['git_describe']
-    else:
-        print('No --duk-build-meta, git commit information determined automatically')
+    if duk_dist_meta is not None:
+        git_commit = duk_dist_meta['git_commit']
+        git_branch = duk_dist_meta['git_branch']
+        git_describe = duk_dist_meta['git_describe']
 
     if opts.git_commit is not None:
         git_commit = opts.git_commit
@@ -260,10 +279,13 @@ def main():
         git_branch = opts.git_branch
 
     if git_commit is None:
+        print('Git commit not specified, autodetect from current directory')
         git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ], default='external').strip()
     if git_describe is None:
+        print('Git describe not specified, autodetect from current directory')
         git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ], default='external').strip()
     if git_branch is None:
+        print('Git branch not specified, autodetect from current directory')
         git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], default='external').strip()
 
     git_commit = str(git_commit)
@@ -283,15 +305,14 @@ def main():
     else:
         special_casing = opts.special_casing
 
-    print('Config-and-prepare for Duktape version %s, commit %s, describe %s, branch %s' % \
+    print('Configuring Duktape version %s, commit %s, describe %s, branch %s' % \
           (duk_version_formatted, git_commit, git_describe, git_branch))
 
-    # For now, create the src/, src-noline/, and src-separate/ structure into the
-    # output directory.  Later on the output directory should get the specific
-    # variant output directly.
-    mkdir(os.path.join(outdir, 'src'))
-    mkdir(os.path.join(outdir, 'src-noline'))
-    mkdir(os.path.join(outdir, 'src-separate'))
+    # Temporary directory.
+    tempdir = tempfile.mkdtemp(prefix='tmp-duk-prepare-')
+    atexit.register(shutil.rmtree, tempdir)
+    mkdir(os.path.join(tempdir, 'src'))
+    #print('Using temporary directory %r' % tempdir)
 
     # Separate sources are mostly copied as is at present.
     copy_files([
@@ -413,15 +434,13 @@ def main():
         'duk_strings.h',
         'duk_replacements.c',
         'duk_replacements.h'
-    ], srcdir, os.path.join(outdir, 'src-separate'))
+    ], srcdir, os.path.join(tempdir, 'src'))
 
     # Build temp versions of LICENSE.txt and AUTHORS.rst for embedding into
     # autogenerated C/H files.
 
-    # XXX: use a proper temp directory
-
-    copy_and_cquote('LICENSE.txt', os.path.join(outdir, 'LICENSE.txt.tmp'))
-    copy_and_cquote('AUTHORS.rst', os.path.join(outdir, 'AUTHORS.rst.tmp'))
+    copy_and_cquote('LICENSE.txt', os.path.join(tempdir, 'LICENSE.txt.tmp'))
+    copy_and_cquote('AUTHORS.rst', os.path.join(tempdir, 'AUTHORS.rst.tmp'))
 
     # Create a duk_config.h.
     # XXX: might be easier to invoke genconfig directly, but there are a few
@@ -465,7 +484,7 @@ def main():
 
     cmd = [
         sys.executable, os.path.join('tools', 'genconfig.py'),
-        '--output', os.path.join(outdir, 'duk_config.h.tmp'),
+        '--output', os.path.join(tempdir, 'duk_config.h.tmp'),
         '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch
     ]
     cmd += forward_genconfig_options()
@@ -475,9 +494,7 @@ def main():
     #print(repr(cmd))
     exec_print_stdout(cmd)
 
-    copy_file(os.path.join(outdir, 'duk_config.h.tmp'), os.path.join(outdir, 'src', 'duk_config.h'))
-    copy_file(os.path.join(outdir, 'duk_config.h.tmp'), os.path.join(outdir, 'src-noline', 'duk_config.h'))
-    copy_file(os.path.join(outdir, 'duk_config.h.tmp'), os.path.join(outdir, 'src-separate', 'duk_config.h'))
+    copy_file(os.path.join(tempdir, 'duk_config.h.tmp'), os.path.join(outdir, 'duk_config.h'))
 
     # Build duktape.h from parts, with some git-related replacements.
     # The only difference between single and separate file duktape.h
@@ -485,10 +502,10 @@ def main():
     #
     # Newline after 'i \':
     # http://stackoverflow.com/questions/25631989/sed-insert-line-command-osx
-    copy_and_replace(os.path.join(srcdir, 'duktape.h.in'), os.path.join(outdir, 'src', 'duktape.h'), {
+    copy_and_replace(os.path.join(srcdir, 'duktape.h.in'), os.path.join(tempdir, 'duktape.h'), {
         '@DUK_SINGLE_FILE@': '#define DUK_SINGLE_FILE',
-        '@LICENSE_TXT@': read_file(os.path.join(outdir, 'LICENSE.txt.tmp'), strip_last_nl=True),
-        '@AUTHORS_RST@': read_file(os.path.join(outdir, 'AUTHORS.rst.tmp'), strip_last_nl=True),
+        '@LICENSE_TXT@': read_file(os.path.join(tempdir, 'LICENSE.txt.tmp'), strip_last_nl=True),
+        '@AUTHORS_RST@': read_file(os.path.join(tempdir, 'AUTHORS.rst.tmp'), strip_last_nl=True),
         '@DUK_API_PUBLIC_H@': read_file(os.path.join(srcdir, 'duk_api_public.h.in'), strip_last_nl=True),
         '@DUK_DBLUNION_H@': read_file(os.path.join(srcdir, 'duk_dblunion.h.in'), strip_last_nl=True),
         '@DUK_VERSION_FORMATTED@': duk_version_formatted,
@@ -499,11 +516,14 @@ def main():
         '@GIT_BRANCH@': git_branch,
         '@GIT_BRANCH_CSTRING@': git_branch_cstring
     })
-    # keep the line so line numbers match between the two variant headers
-    copy_and_replace(os.path.join(outdir, 'src', 'duktape.h'), os.path.join(outdir, 'src-separate', 'duktape.h'), {
-        '#define DUK_SINGLE_FILE': '#undef DUK_SINGLE_FILE'
-    })
-    copy_file(os.path.join(outdir, 'src', 'duktape.h'), os.path.join(outdir, 'src-noline', 'duktape.h'))
+
+    if opts.separate_sources:
+        # keep the line so line numbers match between the two variant headers
+        copy_and_replace(os.path.join(tempdir, 'duktape.h'), os.path.join(outdir, 'duktape.h'), {
+            '#define DUK_SINGLE_FILE': '#undef DUK_SINGLE_FILE'
+        })
+    else:
+        copy_file(os.path.join(tempdir, 'duktape.h'), os.path.join(outdir, 'duktape.h'))
 
     # Autogenerated strings and built-in files
     #
@@ -518,10 +538,10 @@ def main():
       + glob.glob(os.path.join(srcdir, '*.h')) \
       + glob.glob(os.path.join(srcdir, '*.h.in'))
     )
-    with open(os.path.join(outdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
+    with open(os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
         f.write(res)
 
-    # XXX: call as direct python? does this need to work outside of prepare_sources.py?
+    # XXX: call as direct python? does this need to work outside of configure.py?
     cmd = [
         sys.executable,
         os.path.join('tools', 'genbuiltins.py'),
@@ -533,12 +553,12 @@ def main():
         '--duk-version', str(duk_version)
     ]
     cmd += [
-        '--used-stridx-metadata=' + os.path.join(outdir, 'duk_used_stridx_bidx_defs.json.tmp'),
+        '--used-stridx-metadata=' + os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'),
         '--strings-metadata=' + os.path.join(srcdir, 'strings.yaml'),
         '--objects-metadata=' + os.path.join(srcdir, 'builtins.yaml'),
-        '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_builtins.h'),
-        '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_builtins.c'),
-        '--out-metadata-json=' + os.path.join(outdir, 'duk_build_meta.json')
+        '--out-header=' + os.path.join(tempdir, 'src', 'duk_builtins.h'),
+        '--out-source=' + os.path.join(tempdir, 'src', 'duk_builtins.c'),
+        '--out-metadata-json=' + os.path.join(tempdir, 'genbuiltins_metadata.json')
     ]
     cmd.append('--ram-support')  # enable by default
     if opts.rom_support:
@@ -620,8 +640,8 @@ def main():
     exec_print_stdout([
         sys.executable,
         os.path.join('tools', 'prepare_unicode_data.py'),
-        unicode_data,
-        os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp')
+        '--unicode-data', unicode_data,
+        '--output', os.path.join(tempdir, 'UnicodeData-expanded.tmp')
     ])
 
     def extract_chars(incl, excl, suffix):
@@ -629,14 +649,14 @@ def main():
         res = exec_get_stdout([
             sys.executable,
             os.path.join('tools', 'extract_chars.py'),
-            '--unicode-data=' + os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp'),
+            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
             '--include-categories=' + incl,
             '--exclude-categories=' + excl,
-            '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_unicode_%s.c.tmp' % suffix),
-            '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_unicode_%s.h.tmp' % suffix),
+            '--out-source=' + os.path.join(tempdir, 'duk_unicode_%s.c.tmp' % suffix),
+            '--out-header=' + os.path.join(tempdir, 'duk_unicode_%s.h.tmp' % suffix),
             '--table-name=' + 'duk_unicode_%s' % suffix
         ])
-        with open(os.path.join(outdir, 'src-separate', suffix + '.txt'), 'wb') as f:
+        with open(os.path.join(tempdir, suffix + '.txt'), 'wb') as f:
             f.write(res)
 
     def extract_caseconv():
@@ -645,14 +665,14 @@ def main():
             sys.executable,
             os.path.join('tools', 'extract_caseconv.py'),
             '--command=caseconv_bitpacked',
-            '--unicode-data=' + os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp'),
+            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
             '--special-casing=' + special_casing,
-            '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.c.tmp'),
-            '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.h.tmp'),
+            '--out-source=' + os.path.join(tempdir, 'duk_unicode_caseconv.c.tmp'),
+            '--out-header=' + os.path.join(tempdir, 'duk_unicode_caseconv.h.tmp'),
             '--table-name-lc=duk_unicode_caseconv_lc',
             '--table-name-uc=duk_unicode_caseconv_uc'
         ])
-        with open(os.path.join(outdir, 'src-separate', 'caseconv.txt'), 'wb') as f:
+        with open(os.path.join(tempdir, 'caseconv.txt'), 'wb') as f:
             f.write(res)
 
         #print('- extract_caseconv canon lookup')
@@ -660,13 +680,13 @@ def main():
             sys.executable,
             os.path.join('tools', 'extract_caseconv.py'),
             '--command=re_canon_lookup',
-            '--unicode-data=' + os.path.join(outdir, 'src-separate', 'UnicodeData-expanded.tmp'),
+            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
             '--special-casing=' + special_casing,
-            '--out-source=' + os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.c.tmp'),
-            '--out-header=' + os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.h.tmp'),
+            '--out-source=' + os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'),
+            '--out-header=' + os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'),
             '--table-name-re-canon-lookup=duk_unicode_re_canon_lookup'
         ])
-        with open(os.path.join(outdir, 'src-separate', 'caseconv_re_canon_lookup.txt'), 'wb') as f:
+        with open(os.path.join(tempdir, 'caseconv_re_canon_lookup.txt'), 'wb') as f:
             f.write(res)
 
     print('Create Unicode tables for codepoint classes')
@@ -695,39 +715,27 @@ def main():
     # The injection points use a standard C preprocessor #include syntax
     # (earlier these were actual includes).
 
-    copy_and_replace(os.path.join(outdir, 'src-separate', 'duk_unicode.h'), os.path.join(outdir, 'src-separate', 'duk_unicode.h'), {
-        '#include "duk_unicode_ids_noa.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_noa.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_noabmp.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_noabmp.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_m_let_noa.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_m_let_noa.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_m_let_noabmp.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_m_let_noabmp.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_idp_m_ids_noa.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_idp_m_ids_noa.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_idp_m_ids_noabmp.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_idp_m_ids_noabmp.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_caseconv.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_re_canon_lookup.h"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.h.tmp'), strip_last_nl=True)
+    copy_and_replace(os.path.join(tempdir, 'src', 'duk_unicode.h'), os.path.join(tempdir, 'src', 'duk_unicode.h'), {
+        '#include "duk_unicode_ids_noa.h"': read_file(os.path.join(tempdir, 'duk_unicode_ids_noa.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_noabmp.h"': read_file(os.path.join(tempdir, 'duk_unicode_ids_noabmp.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_m_let_noa.h"': read_file(os.path.join(tempdir, 'duk_unicode_ids_m_let_noa.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_m_let_noabmp.h"': read_file(os.path.join(tempdir, 'duk_unicode_ids_m_let_noabmp.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_idp_m_ids_noa.h"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noa.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_idp_m_ids_noabmp.h"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noabmp.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_caseconv.h"': read_file(os.path.join(tempdir, 'duk_unicode_caseconv.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_re_canon_lookup.h"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'), strip_last_nl=True)
     })
 
-    copy_and_replace(os.path.join(outdir, 'src-separate', 'duk_unicode_tables.c'), os.path.join(outdir, 'src-separate', 'duk_unicode_tables.c'), {
-        '#include "duk_unicode_ids_noa.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_noa.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_noabmp.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_noabmp.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_m_let_noa.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_m_let_noa.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_ids_m_let_noabmp.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_ids_m_let_noabmp.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_idp_m_ids_noa.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_idp_m_ids_noa.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_idp_m_ids_noabmp.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_idp_m_ids_noabmp.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_caseconv.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_caseconv.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_re_canon_lookup.c"': read_file(os.path.join(outdir, 'src-separate', 'duk_unicode_re_canon_lookup.c.tmp'), strip_last_nl=True)
+    copy_and_replace(os.path.join(tempdir, 'src', 'duk_unicode_tables.c'), os.path.join(tempdir, 'src', 'duk_unicode_tables.c'), {
+        '#include "duk_unicode_ids_noa.c"': read_file(os.path.join(tempdir, 'duk_unicode_ids_noa.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_noabmp.c"': read_file(os.path.join(tempdir, 'duk_unicode_ids_noabmp.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_m_let_noa.c"': read_file(os.path.join(tempdir, 'duk_unicode_ids_m_let_noa.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_ids_m_let_noabmp.c"': read_file(os.path.join(tempdir, 'duk_unicode_ids_m_let_noabmp.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_idp_m_ids_noa.c"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noa.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_idp_m_ids_noabmp.c"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noabmp.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_caseconv.c"': read_file(os.path.join(tempdir, 'duk_unicode_caseconv.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_re_canon_lookup.c"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'), strip_last_nl=True)
     })
-
-    # Clean up some temporary files
-
-    delete_matching_files(os.path.join(outdir, 'src-separate'), lambda x: x[-4:] == '.tmp')
-    delete_matching_files(os.path.join(outdir, 'src-separate'), lambda x: x in [
-        'ws.txt',
-        'let.txt', 'let_noa.txt', 'let_noabmp.txt',
-        'ids.txt', 'ids_noa.txt', 'ids_noabmp.txt',
-        'ids_m_let.txt', 'ids_m_let_noa.txt', 'ids_m_let_noabmp.txt',
-        'idp_m_ids.txt', 'idp_m_ids_noa.txt', 'idp_m_ids_noabmp.txt'
-    ])
-    delete_matching_files(os.path.join(outdir, 'src-separate'), lambda x: x[0:8] == 'caseconv' and x[-4:] == '.txt')
 
     # Create a combined source file, duktape.c, into a separate combined source
     # directory.  This allows user to just include "duktape.c", "duktape.h", and
@@ -798,7 +806,7 @@ def main():
         for fn in handpick:
             files.append(fn)
 
-        for fn in sorted(os.listdir(os.path.join(outdir, 'src-separate'))):
+        for fn in sorted(os.listdir(os.path.join(tempdir, 'src'))):
             f_ext = os.path.splitext(fn)[1]
             if f_ext not in [ '.c' ]:
                 continue
@@ -806,41 +814,60 @@ def main():
                 continue
             files.append(fn)
 
-        res = map(lambda x: os.path.join(outdir, 'src-separate', x), files)
+        res = map(lambda x: os.path.join(tempdir, 'src', x), files)
         #print(repr(files))
         #print(repr(res))
         return res
 
-    with open(os.path.join(outdir, 'prologue.tmp'), 'wb') as f:
-        f.write(create_source_prologue(os.path.join(outdir, 'LICENSE.txt.tmp'), os.path.join(outdir, 'AUTHORS.rst.tmp')))
+    if opts.separate_sources:
+        for fn in os.listdir(os.path.join(tempdir, 'src')):
+            copy_file(os.path.join(tempdir, 'src', fn), os.path.join(outdir, fn))
+    else:
+        with open(os.path.join(tempdir, 'prologue.tmp'), 'wb') as f:
+            f.write(create_source_prologue(os.path.join(tempdir, 'LICENSE.txt.tmp'), os.path.join(tempdir, 'AUTHORS.rst.tmp')))
 
-    exec_print_stdout([
-        sys.executable,
-        os.path.join('tools', 'combine_src.py'),
-        '--include-path', os.path.join(outdir, 'src-separate'),
-        '--include-exclude', 'duk_config.h',  # don't inline
-        '--include-exclude', 'duktape.h',     # don't inline
-        '--prologue', os.path.join(outdir, 'prologue.tmp'),
-        '--output-source', os.path.join(outdir, 'src', 'duktape.c'),
-        '--output-metadata', os.path.join(outdir, 'src', 'metadata.json'),
-        '--line-directives'
-    ] + select_combined_sources())
+        cmd = [
+            sys.executable,
+            os.path.join('tools', 'combine_src.py'),
+            '--include-path', os.path.join(tempdir, 'src'),
+            '--include-exclude', 'duk_config.h',  # don't inline
+            '--include-exclude', 'duktape.h',     # don't inline
+            '--prologue', os.path.join(tempdir, 'prologue.tmp'),
+            '--output-source', os.path.join(outdir, 'duktape.c'),
+            '--output-metadata', os.path.join(tempdir, 'combine_src_metadata.json')
+        ]
+        if opts.line_directives:
+            cmd += [ '--line-directives' ]
+        cmd += select_combined_sources()
+        exec_print_stdout(cmd)
 
-    exec_print_stdout([
-        sys.executable,
-        os.path.join('tools', 'combine_src.py'),
-        '--include-path', os.path.join(outdir, 'src-separate'),
-        '--include-exclude', 'duk_config.h',  # don't inline
-        '--include-exclude', 'duktape.h',     # don't inline
-        '--prologue', os.path.join(outdir, 'prologue.tmp'),
-        '--output-source', os.path.join(outdir, 'src-noline', 'duktape.c'),
-        '--output-metadata', os.path.join(outdir, 'src-noline', 'metadata.json')
-    ] + select_combined_sources())
+    # Merge metadata files.
 
-    # Clean up remaining temp files
-    delete_matching_files(outdir, lambda x: x[-4:] == '.tmp')
+    doc = {
+        'type': 'duk_source_meta',
+        'comment': 'Metadata for prepared Duktape sources and configuration',
+        'git_commit': git_commit,
+        'git_branch': git_branch,
+        'git_describe': git_describe,
+        'duk_version': duk_version,
+        'duk_version_string': duk_version_formatted
+    }
+    with open(os.path.join(tempdir, 'genbuiltins_metadata.json'), 'rb') as f:
+        tmp = json.loads(f.read())
+        for k in tmp.keys():
+            doc[k] = tmp[k]
+    if opts.separate_sources:
+        pass
+    else:
+        with open(os.path.join(tempdir, 'combine_src_metadata.json'), 'rb') as f:
+            tmp = json.loads(f.read())
+            for k in tmp.keys():
+                doc[k] = tmp[k]
 
-    print('Config-and-prepare finished successfully')
+    with open(os.path.join(outdir, 'duk_source_meta.json'), 'wb') as f:
+        f.write(json.dumps(doc, indent=4))
+
+    print('Configure finished successfully')
 
 if __name__ == '__main__':
     main()

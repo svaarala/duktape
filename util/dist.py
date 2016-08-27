@@ -7,6 +7,7 @@
 import os
 import sys
 import re
+import json
 import shutil
 import glob
 import optparse
@@ -136,9 +137,9 @@ def create_dist_directories(dist):
         shutil.rmtree(dist)
     mkdir(dist)
     mkdir(os.path.join(dist, 'src-input'))
-    #mkdir(os.path.join(dist, 'src-separate'))  # created by prepare_sources.py
-    #mkdir(os.path.join(dist, 'src'))
-    #mkdir(os.path.join(dist, 'src-noline'))
+    mkdir(os.path.join(dist, 'src-separate'))
+    mkdir(os.path.join(dist, 'src'))
+    mkdir(os.path.join(dist, 'src-noline'))
     mkdir(os.path.join(dist, 'tools'))
     mkdir(os.path.join(dist, 'config'))
     mkdir(os.path.join(dist, 'extras'))
@@ -192,9 +193,9 @@ def parse_options():
     parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
     parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
     parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
-    parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Deprecated, use prepare_sources.py instead')
-    parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help='Deprecated, use prepare_sources.py instead')
-    parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help='Deprecated, use prepare_sources.py instead')
+    parser.add_option('--rom-support', dest='rom_support', action='store_true', help=optparse.SUPPRESS_HELP)
+    parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help=optparse.SUPPRESS_HELP)
+    parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help=optparse.SUPPRESS_HELP)
     (opts, args) = parser.parse_args()
 
     return opts, args
@@ -202,7 +203,7 @@ def parse_options():
 # Python module check and friendly errors.
 
 def check_python_modules(opts):
-    # make_dist.py doesn't need yaml but other dist utils will; check for it and
+    # dist.py doesn't need yaml but other dist utils will; check for it and
     # warn if it is missing.
     failed = False
 
@@ -244,7 +245,7 @@ def main():
     # Obsolete options check.
 
     if opts.rom_support or opts.rom_auto_lightfunc or len(opts.user_builtin_metadata) > 0:
-        raise Exception('obsolete ROM support argument(s), use tools/prepare_sources.py instead')
+        raise Exception('obsolete ROM support argument(s), use tools/configure.py instead')
 
     # Figure out directories, git info, Duktape version, etc.
 
@@ -411,8 +412,7 @@ def main():
         'UnicodeData-8bit.txt',
     ], 'src', os.path.join(dist, 'src-input'))
 
-    os.chdir(os.path.join(entry_pwd, 'config'))
-    create_targz(os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'), [
+    for fn in [
         'tags.yaml',
         'platforms.yaml',
         'architectures.yaml',
@@ -426,11 +426,15 @@ def main():
         'header-snippets',
         'other-defines',
         'examples'
-    ])
-    os.chdir(entry_pwd)
+    ]:
+        # Copy directories in their entirety
+        if os.path.isfile(os.path.join('config', fn)):
+            shutil.copyfile(os.path.join('config', fn), os.path.join(dist, 'config', fn))
+        else:
+            shutil.copytree(os.path.join('config', fn), os.path.join(dist, 'config', fn))
 
     copy_files([
-        'prepare_sources.py',
+        'configure.py',
         'combine_src.py',
         'create_spdx_license.py',
         'duk_meta_to_strarray.py',
@@ -722,73 +726,48 @@ def main():
         '--opcodes', os.path.join('debugger', 'duk_opcodes.yaml')
     ])
 
-    # Build some example duk_config.h headers.  This may go away later.
+    # Add a build metadata file.
 
-    print('Create duk_config.h headers')
-
-    exec_print_stdout([
-        sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
-        '--output', os.path.join(dist, 'config', 'duk_config.h-modular-static'),
-        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-        '--omit-removed-config-options', '--omit-unused-config-options',
-        '--emit-legacy-feature-check', '--emit-config-sanity-check',
-        'duk-config-header'
-    ])
-
-    exec_print_stdout([
-        sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
-        '--output', os.path.join(dist, 'config', 'duk_config.h-modular-dll'),
-        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-        '--omit-removed-config-options', '--omit-unused-config-options',
-        '--emit-legacy-feature-check', '--emit-config-sanity-check',
-        '--dll',
-        'duk-config-header'
-    ])
-
-    def genconfig_barebones(platform, architecture, compiler):
-        exec_print_stdout([
-            sys.executable, os.path.join('tools', 'genconfig.py'), '--metadata', 'config',
-            '--output', os.path.join(dist, 'config', 'duk_config.h-%s-%s-%s' % (platform, architecture, compiler)),
-            '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-            '--platform', platform, '--architecture', architecture, '--compiler', compiler,
-            '--omit-removed-config-options', '--omit-unused-config-options',
-            '--emit-legacy-feature-check', '--emit-config-sanity-check',
-            'duk-config-header'
-        ])
-
-    #genconfig_barebones('linux', 'x86', 'gcc')
-    #genconfig_barebones('linux', 'x64', 'gcc')
-    #genconfig_barebones('linux', 'x86', 'clang')
-    #genconfig_barebones('linux', 'x64', 'clang')
-    #genconfig_barebones('windows', 'x86', 'msvc')
-    #genconfig_barebones('windows', 'x64', 'msvc')
-    #genconfig_barebones('apple', 'x86', 'gcc')
-    #genconfig_barebones('apple', 'x64', 'gcc')
-    #genconfig_barebones('apple', 'x86', 'clang')
-    #genconfig_barebones('apple', 'x64', 'clang')
+    doc = {
+        'type': 'duk_dist_meta',
+        'comment': 'Metadata for Duktape distributable',
+        'git_commit': git_commit,
+        'git_branch': git_branch,
+        'git_describe': git_describe,
+        'duk_version': duk_version,
+        'duk_version_string': duk_version_formatted
+    }
+    with open(os.path.join(dist, 'duk_dist_meta.json'), 'wb') as f:
+        f.write(json.dumps(doc, indent=4))
 
     # Build prepared sources (src/, src-noline/, src-separate/) with default
     # config.  This is done using tools and metadata in the dist directory.
 
-    print('Config-and-prepare sources for default configuration')
+    print('Create prepared sources for default configuration')
 
-    cmd = [
-        sys.executable, os.path.join(dist, 'tools', 'prepare_sources.py'),
-        '--source-directory', os.path.join(dist, 'src-input'),
-        '--output-directory', dist,
-        '--config-metadata', os.path.join(dist, 'config', 'genconfig_metadata.tar.gz'),
-        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
-        '--omit-removed-config-options', '--omit-unused-config-options',
-        '--emit-config-sanity-check', '--support-feature-options'
-    ]
-    if opts.rom_support:
-        cmd.append('--rom-support')
-    if opts.rom_auto_lightfunc:
-        cmd.append('--rom-auto-lightfunc')
-    for i in opts.user_builtin_metadata:
-        cmd.append('--user-builtin-metadata')
-        cmd.append(i)
-    exec_print_stdout(cmd)
+    def prep_default_sources(dirname, extraopts):
+        cmd = [
+            sys.executable, os.path.join(dist, 'tools', 'configure.py'),
+            '--source-directory', os.path.join(dist, 'src-input'),
+            '--output-directory', os.path.join(dist, dirname),
+            '--config-metadata', os.path.join(dist, 'config'),
+            '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+            '--omit-removed-config-options', '--omit-unused-config-options',
+            '--emit-config-sanity-check', '--support-feature-options'
+        ]
+        cmd += extraopts
+        if opts.rom_support:
+            cmd.append('--rom-support')
+        if opts.rom_auto_lightfunc:
+            cmd.append('--rom-auto-lightfunc')
+        for i in opts.user_builtin_metadata:
+            cmd.append('--user-builtin-metadata')
+            cmd.append(i)
+        exec_print_stdout(cmd)
+
+    prep_default_sources('src', [ '--line-directives' ])
+    prep_default_sources('src-noline', [])
+    prep_default_sources('src-separate', [ '--separate-sources' ])
 
     # Clean up remaining temp files.
 

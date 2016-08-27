@@ -1067,7 +1067,7 @@ cloc:	dist cloc-1.60.pl
 # XXX: make prints a harmless warning related to the sub-make.
 dist:
 	@make codepolicycheck
-	$(PYTHON) util/make_dist.py --create-spdx
+	$(PYTHON) util/dist.py --create-spdx
 
 .PHONY:	dist-src
 dist-src:	dist

@@ -25,7 +25,7 @@ build_script:
   # Make dist.
 
   - cmd: cd C:\projects\duktape
-  - cmd: python util\make_dist.py
+  - cmd: python util\dist.py
 
   # --- Visual Studio 2015 ---
 

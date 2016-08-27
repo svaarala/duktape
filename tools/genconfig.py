@@ -1437,12 +1437,12 @@ def add_genconfig_optparse_options(parser, direct=False):
                 fixup_header_lines.append(line)
 
     if direct:
-        parser.add_option('--metadata', dest='config_metadata', default=None, help='metadata directory or metadata tar.gz file')
+        parser.add_option('--metadata', dest='config_metadata', default=None, help='metadata directory')
         parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
     else:
-        # Different option name when called through prepare_sources.py,
+        # Different option name when called through configure.py,
         # also no --output option.
-        parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory or metadata tar.gz file')
+        parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory')
 
     parser.add_option('--platform', dest='platform', default=None, help='platform (default is autodetect)')
     parser.add_option('--compiler', dest='compiler', default=None, help='compiler (default is autodetect)')
@@ -1456,14 +1456,14 @@ def add_genconfig_optparse_options(parser, direct=False):
     parser.add_option('--omit-deprecated-config-options', dest='omit_deprecated_config_options', action='store_true', default=False, help='omit deprecated config options from generated headers')
     parser.add_option('--omit-unused-config-options', dest='omit_unused_config_options', action='store_true', default=False, help='omit unused config options from generated headers')
     parser.add_option('--add-active-defines-macro', dest='add_active_defines_macro', action='store_true', default=False, help='add DUK_ACTIVE_DEFINES macro, for development only')
-    parser.add_option('--define', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='force #define option using a C compiler like syntax, e.g. "--define DUK_USE_DEEP_C_STACK" or "--define DUK_USE_TRACEBACK_DEPTH=10"')
-    parser.add_option('-D', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='synonym for --define, e.g. "-DDUK_USE_DEEP_C_STACK" or "-DDUK_USE_TRACEBACK_DEPTH=10"')
-    parser.add_option('--undefine', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='force #undef option using a C compiler like syntax, e.g. "--undefine DUK_USE_DEEP_C_STACK"')
-    parser.add_option('-U', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='synonym for --undefine, e.g. "-UDUK_USE_DEEP_C_STACK"')
-    parser.add_option('--option-yaml', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_yaml, default=force_options_yaml, help='force option(s) using inline YAML (e.g. --option-yaml "DUK_USE_DEEP_C_STACK: true")')
-    parser.add_option('--option-file', type='string', dest='force_options_yaml', action='callback', callback=add_force_option_file, default=force_options_yaml, help='YAML file(s) providing config option overrides')
-    parser.add_option('--fixup-file', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_file, default=fixup_header_lines, help='C header snippet file(s) to be appended to generated header, useful for manual option fixups')
-    parser.add_option('--fixup-line', type='string', dest='fixup_header_lines', action='callback', callback=add_fixup_header_line, default=fixup_header_lines, help='C header fixup line to be appended to generated header (e.g. --fixup-line "#define DUK_USE_FASTINT")')
+    parser.add_option('--define', type='string', metavar='OPTION', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='force #define option using a C compiler like syntax, e.g. "--define DUK_USE_DEEP_C_STACK" or "--define DUK_USE_TRACEBACK_DEPTH=10"')
+    parser.add_option('-D', type='string', metavar='OPTION', dest='force_options_yaml', action='callback', callback=add_force_option_define, default=force_options_yaml, help='synonym for --define, e.g. "-DDUK_USE_DEEP_C_STACK" or "-DDUK_USE_TRACEBACK_DEPTH=10"')
+    parser.add_option('--undefine', type='string', metavar='OPTION', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='force #undef option using a C compiler like syntax, e.g. "--undefine DUK_USE_DEEP_C_STACK"')
+    parser.add_option('-U', type='string', metavar='OPTION', dest='force_options_yaml', action='callback', callback=add_force_option_undefine, default=force_options_yaml, help='synonym for --undefine, e.g. "-UDUK_USE_DEEP_C_STACK"')
+    parser.add_option('--option-yaml', type='string', metavar='YAML', dest='force_options_yaml', action='callback', callback=add_force_option_yaml, default=force_options_yaml, help='force option(s) using inline YAML (e.g. --option-yaml "DUK_USE_DEEP_C_STACK: true")')
+    parser.add_option('--option-file', type='string', metavar='FILENAME', dest='force_options_yaml', action='callback', callback=add_force_option_file, default=force_options_yaml, help='YAML file(s) providing config option overrides')
+    parser.add_option('--fixup-file', type='string', metavar='FILENAME', dest='fixup_header_lines', action='callback', callback=add_fixup_header_file, default=fixup_header_lines, help='C header snippet file(s) to be appended to generated header, useful for manual option fixups')
+    parser.add_option('--fixup-line', type='string', metavar='LINE', dest='fixup_header_lines', action='callback', callback=add_fixup_header_line, default=fixup_header_lines, help='C header fixup line to be appended to generated header (e.g. --fixup-line "#define DUK_USE_FASTINT")')
     parser.add_option('--sanity-warning', dest='sanity_strict', action='store_false', default=True, help='emit a warning instead of #error for option sanity check issues')
     parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
 
@@ -1493,21 +1493,13 @@ def parse_options():
 def genconfig(opts, args):
     meta_dir = opts.config_metadata
     if opts.config_metadata is None:
-        if os.path.isfile(os.path.join('.', 'genconfig_metadata.tar.gz')):
-            opts.config_metadata = 'genconfig_metadata.tar.gz'
-        elif os.path.isdir(os.path.join('.', 'config-options')):
+        if os.path.isdir(os.path.join('.', 'config-options')):
             opts.config_metadata = '.'
-
     if opts.config_metadata is not None and os.path.isdir(opts.config_metadata):
         meta_dir = opts.config_metadata
         metadata_src_text = 'Using metadata directory: %r' % meta_dir
-    elif opts.config_metadata is not None and os.path.isfile(opts.config_metadata) and tarfile.is_tarfile(opts.config_metadata):
-        meta_dir = get_auto_delete_tempdir()
-        tar = tarfile.open(name=opts.config_metadata, mode='r:*')
-        tar.extractall(path=meta_dir)
-        metadata_src_text = 'Using metadata tar file %r, unpacked to directory: %r' % (opts.config_metadata, meta_dir)
     else:
-        raise Exception('metadata source must be a directory or a tar.gz file')
+        raise Exception('metadata argument must be a directory (tar.gz no longer supported)')
 
     scan_helper_snippets(os.path.join(meta_dir, 'helper-snippets'))
     scan_use_defs(os.path.join(meta_dir, 'config-options'))

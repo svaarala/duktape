@@ -6,10 +6,18 @@
 
 import os
 import sys
+import optparse
 
 def main():
-    f_in = open(sys.argv[1], 'rb')
-    f_out = open(sys.argv[2], 'wb')
+    parser = optparse.OptionParser()
+    parser.add_option('--unicode-data', dest='unicode_data')
+    parser.add_option('--output', dest='output')
+    (opts, args) = parser.parse_args()
+    assert(opts.unicode_data is not None)
+    assert(opts.output is not None)
+
+    f_in = open(opts.unicode_data, 'rb')
+    f_out = open(opts.output, 'wb')
     while True:
         line = f_in.readline()
         if line == '' or line == '\n':
@@ -23,9 +31,13 @@ def main():
             cp1 = long(parts[0], 16)
             cp2 = long(parts2[0], 16)
 
-            suffix = ';'.join(parts[1:])
-            for i in xrange(cp1, cp2 + 1):  # inclusive
+            tmp = parts[1:]
+            tmp[0] = '-""-'
+            suffix = ';'.join(tmp)
+            f_out.write(line)
+            for i in xrange(cp1 + 1, cp2):
                 f_out.write('%04X;%s' % (i, suffix))
+            f_out.write(line2)
         else:
             f_out.write(line)
 
