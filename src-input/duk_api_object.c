@@ -651,6 +651,7 @@ DUK_EXTERNAL void duk_set_prototype(duk_context *ctx, duk_idx_t idx) {
  *  Object finalizer
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 /* XXX: these could be implemented as macros calling an internal function
  * directly.
  * XXX: same issue as with Duktape.fin: there's no way to delete the property
@@ -667,3 +668,16 @@ DUK_EXTERNAL void duk_set_finalizer(duk_context *ctx, duk_idx_t idx) {
 
 	duk_put_prop_stridx(ctx, idx, DUK_STRIDX_INT_FINALIZER);
 }
+#else  /* DUK_USE_FINALIZER_SUPPORT */
+DUK_EXTERNAL void duk_get_finalizer(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_UNREF(idx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+
+DUK_EXTERNAL void duk_set_finalizer(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_UNREF(idx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
