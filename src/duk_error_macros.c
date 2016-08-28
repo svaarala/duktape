@@ -58,9 +58,11 @@ DUK_INTERNAL void duk_err_api(duk_hthread *thr, const char *filename, duk_int_t 
 DUK_INTERNAL void duk_err_unimplemented_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_UNIMPLEMENTED_ERROR, DUK_STR_UNIMPLEMENTED);
 }
+#if !defined(DUK_USE_BYTECODE_DUMP_SUPPORT)
 DUK_INTERNAL void duk_err_unsupported_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_UNSUPPORTED_ERROR, DUK_STR_UNSUPPORTED);
 }
+#endif
 DUK_INTERNAL void duk_err_internal_defmsg(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_INTERNAL_ERROR, DUK_STR_INTERNAL_ERROR);
 }
