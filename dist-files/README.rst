@@ -91,6 +91,9 @@ This distributable contains:
 
 * ``config/``: configuration metadata for ``configure.py``.
 
+* ``profiles/``: example configuration profiles for various targets such
+  as low memory, best performance, strict compliance, etc.
+
 * ``examples/``: further examples for using Duktape.  Although Duktape
   itself is widely portable, some of the examples are Linux only.
   For instance the ``eventloop`` example illustrates how ``setTimeout()``
