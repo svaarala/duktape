@@ -69,6 +69,10 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hnativefunction);
 		} else if (DUK_HOBJECT_IS_THREAD(h_obj)) {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hthread);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+		} else if (DUK_HOBJECT_IS_BUFFEROBJECT(h_obj)) {
+			hdr_size = (duk_small_uint_t) sizeof(duk_hbufferobject);
+#endif
 		} else {
 			hdr_size = (duk_small_uint_t) sizeof(duk_hobject);
 		}
