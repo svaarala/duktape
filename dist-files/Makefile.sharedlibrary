@@ -24,7 +24,7 @@
 # convention is to set soname version to (100*MAJOR + MINOR), e.g. 104 for
 # Duktape 1.4.x, so that it gets automatically bumped for major and minor
 # releases (potentially binary incompatible), but not for patch releases.
-DUK_VERSION=10500
+DUK_VERSION=10501
 SONAME_VERSION=105
 REAL_VERSION=$(SONAME_VERSION).$(DUK_VERSION)
 
