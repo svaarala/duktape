@@ -1416,6 +1416,14 @@ Released
 * Fix memory unsafe behavior when an external plain buffer was allocated
   with heap pointer compression enabled (DUK_USE_HEAPPTR16) (GH-618)
 
+1.4.2 (2016-08-29)
+------------------
+
+* Fix potential memory unsafe behavior when duk_push_(l)string() data pointer
+  is from a dynamic/external buffer (or any other relocatable data source)
+  and a finalizer side effect resizes/reconfigures the buffer, invalidating
+  the pointer before string table code has time to copy the data (GH-884)
+
 1.5.0 (2016-05-03)
 ------------------
 
