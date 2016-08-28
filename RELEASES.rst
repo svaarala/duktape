@@ -1873,6 +1873,10 @@ Planned
   order; the order was not guaranteed but specification requires left-to-right
   ordering (GH-943)
 
+* Reduce harmless "unused function" warnings for GCC and Clang by using
+  __attribute__ ((unused)) for internal function declarations (GH-916,
+  GH-942)
+
 * Internal performance improvement: rework bytecode format to use an 8-bit
   opcode field (and 8-bit A, B, and C fields) to speed up opcode dispatch
   by around 20-25% and avoid a two-level dispatch for EXTRA opcodes; the
