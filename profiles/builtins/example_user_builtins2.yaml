@@ -1,6 +1,6 @@
 #
 #  User builtins can be specified in multiple files; you can apply this over
-#  util/example_user_builtins1.yaml.
+#  profiles/builtins/example_user_builtins1.yaml.
 #
 
 objects:
