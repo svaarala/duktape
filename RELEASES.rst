@@ -1595,6 +1595,41 @@ Released
 
 * Internal footprint improvement: reduce error call site size (GH-661)
 
+1.5.1 (2016-08-30)
+------------------
+
+* Fix a harmless compilation warning related to a shadowed variable (GH-793,
+  GH-794)
+
+* Fix incorrect duk_hbufferobject size in Duktape.info() (GH-804)
+
+* Fix compilation error triggered when using pointer compression and the
+  default string table implementation (probe-based rather than chained)
+  (GH-850)
+
+* Fix potential memory unsafe behavior when duk_push_(l)string() data pointer
+  is from a dynamic/external buffer (or any other relocatable data source)
+  and a finalizer side effect resizes/reconfigures the buffer, invalidating
+  the pointer before string table code has time to copy the data (GH-884)
+
+* Fix lightfunc constructor call handling: lightfuncs were incorrectly
+  rejected as constructors, now allowed as both direct constructors and
+  via a bound function chain (GH-895)
+
+* Fix direct references to __FILE__ and __LINE__ in the public header to use
+  DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
+  macros have been replaced in duk_config.h (GH-897)
+
+* Fix AmigaOS3 portability issue by enabling math function replacements
+  automatically for AmigaOS on M68K, regardless of OS version or compiler
+  (GH-932)
+
+* Fix clang compile warning for unused duk_err_unsupported_defmsg() (GH-764)
+
+* Reduce harmless "unused function" warnings for GCC and Clang by using
+  __attribute__ ((unused)) for internal function declarations (GH-916,
+  GH-942)
+
 Planned
 =======
 
@@ -1809,7 +1844,7 @@ Planned
 
 * As a side effect of fixing JSON serialization of buffer objects, JSON
   fast path is aborted when encountering buffer objects; the fast path
-  doesn't currently handleir buffer object virtual properties correctly
+  doesn't currently handle buffer object virtual properties correctly
   so to remain compliant fall back to slow path for now (GH-867)
 
 * Add a minimal alloc/realloc/free self test to the (optional) internal
@@ -1876,6 +1911,8 @@ Planned
 * Reduce harmless "unused function" warnings for GCC and Clang by using
   __attribute__ ((unused)) for internal function declarations (GH-916,
   GH-942)
+
+* Fix incorrect duk_hbufferobject size in Duktape.info() (GH-804)
 
 * Internal performance improvement: rework bytecode format to use an 8-bit
   opcode field (and 8-bit A, B, and C fields) to speed up opcode dispatch
