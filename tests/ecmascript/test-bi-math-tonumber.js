@@ -3,7 +3,7 @@
  *
  *  Ecmascript 5.1 requires that all Math object methods coerce all arguments
  *  with ToNumber from left to right.  This ensures that all side effects
- *  caused by ToNumber coercion have pig chance to be evaluated.
+ *  caused by ToNumber coercion have a chance to be evaluated.
  */
 
 var pig = { valueOf: function() { print("pig"); return 812; } };
