@@ -272,7 +272,7 @@ CCOPTS_SHARED =
 CCOPTS_SHARED += -D_POSIX_C_SOURCE=200809L  # to avoid linenoise strdup() warnings
 CCOPTS_SHARED += -pedantic -ansi -std=c99 -fstrict-aliasing
 # -Wextra is very picky but catches e.g. signed/unsigned comparisons
-CCOPTS_SHARED += -Wall -Wextra -Wunused-result -Wdeclaration-after-statement
+CCOPTS_SHARED += -Wall -Wextra -Wunused-result -Wdeclaration-after-statement -Wunused-function
 CCOPTS_SHARED += -Wcast-qual
 CCOPTS_SHARED += -Wshadow
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
@@ -304,7 +304,7 @@ CCOPTS_DEBUG += -DDUK_OPT_DEBUG
 CCOPTS_DEBUG += -DDUK_OPT_DEBUG_LEVEL=0
 CCOPTS_DEBUG += -DDUK_OPT_ASSERTIONS
 
-GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result
+GXXOPTS_SHARED = -pedantic -ansi -std=c++11 -fstrict-aliasing -Wall -Wextra -Wunused-result -Wunused-function
 GXXOPTS_SHARED += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)={fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));}'
 GXXOPTS_NONDEBUG = $(GXXOPTS_SHARED) -Os -fomit-frame-pointer
 GXXOPTS_NONDEBUG += -I./dist/src -I./dist/examples/alloc-logging -I./dist/examples/alloc-torture -I./dist/examples/alloc-hybrid -I./dist/extras/print-alert -I./dist/extras/console -I./dist/extras/logging -I./dist/extras/module-duktape
