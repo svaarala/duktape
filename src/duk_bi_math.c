@@ -284,22 +284,28 @@ DUK_LOCAL const duk__two_arg_func duk__two_arg_funcs[] = {
 DUK_INTERNAL duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
 	duk__one_arg_func fun;
+	duk_double_t arg1;
 
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__one_arg_funcs) / sizeof(duk__one_arg_func)));
+	arg1 = duk_to_number(ctx, 0);
 	fun = duk__one_arg_funcs[fun_idx];
-	duk_push_number(ctx, (duk_double_t) fun((double) duk_to_number(ctx, 0)));
+	duk_push_number(ctx, (duk_double_t) fun((double) arg1));
 	return 1;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
 	duk__two_arg_func fun;
+	duk_double_t arg1;
+	duk_double_t arg2;
 
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__two_arg_funcs) / sizeof(duk__two_arg_func)));
+	arg1 = duk_to_number(ctx, 0);  /* explicit ordered evaluation to match coercion semantics */
+	arg2 = duk_to_number(ctx, 1);
 	fun = duk__two_arg_funcs[fun_idx];
-	duk_push_number(ctx, (duk_double_t) fun((double) duk_to_number(ctx, 0), (double) duk_to_number(ctx, 1)));
+	duk_push_number(ctx, (duk_double_t) fun((double) arg1, (double) arg2));
 	return 1;
 }
 
