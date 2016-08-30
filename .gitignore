@@ -4,6 +4,7 @@
 *.strip
 /_*
 /duk.*
+/duk
 /libduktape.*
 /build/
 /dist/
