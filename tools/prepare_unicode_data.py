@@ -12,6 +12,8 @@ def main():
     parser = optparse.OptionParser()
     parser.add_option('--unicode-data', dest='unicode_data')
     parser.add_option('--output', dest='output')
+    parser.add_option('--quiet', dest='quiet', action='store_true', default=False, help='Suppress info messages (show warnings)')
+    parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
     (opts, args) = parser.parse_args()
     assert(opts.unicode_data is not None)
     assert(opts.output is not None)

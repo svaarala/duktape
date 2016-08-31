@@ -63,6 +63,23 @@ for the basics.
 Automatically generated bleeding edge snapshots from master are available at
 [duktape.org/snapshots](http://duktape.org/snapshots).
 
+The distributable `src/` directory contains a `duk_config.h` configuration
+header and amalgamated sources for Duktape default configuration.  Use
+`python tools/configure.py` to create header and sources for customized
+configuration options, see http://wiki.duktape.org/Configuring.html.  For
+example, to enable fastint support (example for Linux):
+
+    $ tar xvfJ duktape-2.0.0.tar.xz
+    $ cd duktape-2.0.0
+    $ rm -rf src-custom
+    $ python tools/configure.py \
+          --source-directory src-input \
+          --output-directory src-custom \
+          --config-metadata config \
+          -DDUK_USE_FASTINT
+
+    # src-custom/ will now contain: duktape.c, duktape.h, duk_config.h.
+
 You can also clone this repository, make modifications, and build a source
 distributable on Linux, OSX, and Windows using `python util/dist.py`.
 

@@ -308,24 +308,21 @@ def context_linux_x64_gcc_defsize_fltoetc():
 def context_helper_minsize_fltoetc(archopt, strip):
     cwd = os.getcwd()
     def comp():
-        execute([ 'make', 'dist' ])
-
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src') ])
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-noline') ])
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-separate') ])
+        execute([ 'make', 'clean' ])
+        execute([ 'rm', '-rf', os.path.join(cwd, 'prep') ])
 
         cmd = [
-            'python2', os.path.join(cwd, 'dist', 'tools', 'configure.py'),
-            '--source-directory', os.path.join(cwd, 'dist', 'src-input'),
-            '--output-directory', os.path.join(cwd, 'dist'),
-            '--config-metadata', os.path.join(cwd, 'dist', 'config'),
+            'python2', os.path.join(cwd, 'tools', 'configure.py'),
+            '--source-directory', os.path.join(cwd, 'src'),
+            '--output-directory', os.path.join(cwd, 'prep'),
+            '--config-metadata', os.path.join(cwd, 'config'),
             '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
         ]
         if strip:
             cmd += [
                 '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory_strip.yaml'),
-                '--unicode-data', os.path.join(cwd, 'dist', 'src-input', 'UnicodeData-8bit.txt'),
-                '--special-casing', os.path.join(cwd, 'dist', 'src-input', 'SpecialCasing-8bit.txt')
+                '--unicode-data', os.path.join(cwd, 'src', 'UnicodeData-8bit.txt'),
+                '--special-casing', os.path.join(cwd, 'src', 'SpecialCasing-8bit.txt')
             ]
         execute(cmd)
         execute([
@@ -333,10 +330,10 @@ def context_helper_minsize_fltoetc(archopt, strip):
             '-Os', '-fomit-frame-pointer',
             '-flto', '-fno-asynchronous-unwind-tables',
             '-ffunction-sections', '-Wl,--gc-sections',
-            '-I' + os.path.join('dist', 'src'),
-            '-I' + os.path.join('dist', 'examples', 'cmdline'),
-            os.path.join(cwd, 'dist', 'src', 'duktape.c'),
-            os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
+            '-I' + os.path.join('prep'),
+            '-I' + os.path.join('examples', 'cmdline'),
+            os.path.join(cwd, 'prep', 'duktape.c'),
+            os.path.join(cwd, 'examples', 'cmdline', 'duk_cmdline.c'),
             '-lm'
         ])
         res = execute([
@@ -650,17 +647,14 @@ def context_helper_hello_ram(archopt):
 
     def test(genconfig_opts):
         os.chdir(cwd)
-        execute([ 'make', 'clean', 'dist' ])
-
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src') ])
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-noline') ])
-        execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-separate') ])
+        execute([ 'make', 'clean' ])
+        execute([ 'rm', '-rf', os.path.join(cwd, 'prep') ])
 
         cmd = [
-            'python2', os.path.join(cwd, 'dist', 'tools', 'configure.py'),
-            '--source-directory', os.path.join(cwd, 'dist', 'src-input'),
-            '--output-directory', os.path.join(cwd, 'dist'),
-            '--config-metadata', os.path.join(cwd, 'dist', 'config'),
+            'python2', os.path.join(cwd, 'tools', 'configure.py'),
+            '--source-directory', os.path.join(cwd, 'src'),
+            '--output-directory', os.path.join(cwd, 'prep'),
+            '--config-metadata', os.path.join(cwd, 'config'),
             '--rom-support'
         ] + genconfig_opts
         print(repr(cmd))
@@ -670,9 +664,9 @@ def context_helper_hello_ram(archopt):
             '-Os', '-fomit-frame-pointer',
             '-flto', '-fno-asynchronous-unwind-tables',
             '-ffunction-sections', '-Wl,--gc-sections',
-            '-I' + os.path.join('dist', 'src'),
-            os.path.join(cwd, 'dist', 'src', 'duktape.c'),
-            os.path.join(cwd, 'dist', 'examples', 'hello', 'hello.c'),
+            '-I' + os.path.join('prep'),
+            os.path.join(cwd, 'prep', 'duktape.c'),
+            os.path.join(cwd, 'examples', 'hello', 'hello.c'),
             '-lm'
         ])
         execute([

@@ -4,15 +4,20 @@
 #  of this directory can then be packaged into a source distributable.
 #
 
-import os
+import logging
 import sys
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(name)-21s %(levelname)-7s %(message)s')
+logger = logging.getLogger('dist.py')
+logger.setLevel(logging.INFO)
+
+import os
 import re
 import json
 import shutil
 import glob
 import optparse
 import subprocess
-import tarfile
+import logging
 
 # Helpers.
 
@@ -27,13 +32,13 @@ def exec_get_stdout(cmd, input=None, default=None, print_stdout=False):
             sys.stdout.write(ret[1])  # print stderr on error
             sys.stdout.flush()
             if default is not None:
-                print('WARNING: command %r failed, return default' % cmd)
+                logger.warning(' command %r failed, return default' % cmd)
                 return default
             raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
         return ret[0]
     except:
         if default is not None:
-            print('WARNING: command %r failed, return default' % cmd)
+            logger.warning('command %r failed, return default' % cmd)
             return default
         raise
 
@@ -88,25 +93,8 @@ def read_file(src, strip_last_nl=False):
 def delete_matching_files(dirpath, cb):
     for fn in os.listdir(dirpath):
         if os.path.isfile(os.path.join(dirpath, fn)) and cb(fn):
-            #print('Deleting %r' % os.path.join(dirpath, fn))
+            logger.debug('Deleting %r' % os.path.join(dirpath, fn))
             os.unlink(os.path.join(dirpath, fn))
-
-def create_targz(dstfile, filelist):
-    # https://docs.python.org/2/library/tarfile.html#examples
-
-    def _add(tf, fn):  # recursive add
-        #print('Adding to tar: ' + fn)
-        if os.path.isdir(fn):
-            for i in sorted(os.listdir(fn)):
-                _add(tf, os.path.join(fn, i))
-        elif os.path.isfile(fn):
-            tf.add(fn)
-        else:
-            raise Exception('invalid file: %r' % fn)
-
-    with tarfile.open(dstfile, 'w:gz') as tf:
-        for fn in filelist:
-            _add(tf, fn)
 
 def glob_files(pattern):
     return glob.glob(pattern)
@@ -133,13 +121,10 @@ def get_duk_version():
     raise Exception('cannot figure out duktape version')
 
 def create_dist_directories(dist):
-    if os.path.isdir(dist):
-        shutil.rmtree(dist)
+    if os.path.exists(dist):
+        raise Exception('dist target directory %s already exists, please delete first' % repr(dist))
     mkdir(dist)
     mkdir(os.path.join(dist, 'src-input'))
-    mkdir(os.path.join(dist, 'src-separate'))
-    mkdir(os.path.join(dist, 'src'))
-    mkdir(os.path.join(dist, 'src-noline'))
     mkdir(os.path.join(dist, 'tools'))
     mkdir(os.path.join(dist, 'config'))
     mkdir(os.path.join(dist, 'extras'))
@@ -189,13 +174,17 @@ def check_cwd_duktape_repo_root():
 
 def parse_options():
     parser = optparse.OptionParser()
-    parser.add_option('--create-spdx', dest='create_spdx', action='store_true', default=False, help='Create SPDX license file')
+    parser.add_option('--repo-directory', dest='repo_directory', default=None, help='Duktape repo directory (default is CWD)')
+    parser.add_option('--output-directory', dest='output_directory', default=None, help='Dist output directory (created automatically, must not exist; default is <repo>/dist)')
     parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
     parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
     parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
+    parser.add_option('--create-spdx', dest='create_spdx', action='store_true', default=False, help='Create SPDX license file')
     parser.add_option('--rom-support', dest='rom_support', action='store_true', help=optparse.SUPPRESS_HELP)
     parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help=optparse.SUPPRESS_HELP)
     parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', action='append', default=[], help=optparse.SUPPRESS_HELP)
+    parser.add_option('--quiet', dest='quiet', action='store_true', default=False, help='Suppress info messages (show warnings)')
+    parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
     (opts, args) = parser.parse_args()
 
     return opts, args
@@ -239,18 +228,43 @@ def main():
     # Basic option parsing, Python module check, CWD check.
 
     opts, args = parse_options()
+
+    # Log level.
+    forward_loglevel = []
+    if opts.quiet:
+        logger.setLevel(logging.WARNING)
+        forward_loglevel = [ '--quiet' ]
+    elif opts.verbose:
+        logger.setLevel(logging.DEBUG)
+        forward_loglevel = [ '--verbose' ]
+
     check_python_modules(opts)
-    check_cwd_duktape_repo_root()
+
+    if opts.repo_directory is None:
+        opts.repo_directory = os.path.abspath('.')
+        logger.info('No --repo-directory option, defaulting to current directory %s' % opts.repo_directory)
+        check_cwd_duktape_repo_root()
+    opts.repo_directory = os.path.abspath(opts.repo_directory)
+    logger.debug('Using repo directory: %s' % opts.repo_directory)
+
+    if opts.output_directory is None:
+        opts.output_directory = os.path.abspath(os.path.join(opts.repo_directory, 'dist'))
+        logger.info('No --output-directory option, defaulting to repo/dist directory %s' % opts.output_directory)
+    opts.output_directory = os.path.abspath(opts.output_directory)
+    logger.debug('Using output directory: %s' % opts.output_directory)
 
     # Obsolete options check.
 
-    if opts.rom_support or opts.rom_auto_lightfunc or len(opts.user_builtin_metadata) > 0:
+    if opts.rom_support or opts.rom_auto_lightfunc:
         raise Exception('obsolete ROM support argument(s), use tools/configure.py instead')
+    if len(opts.user_builtin_metadata) > 0:
+        raise Exception('obsolete --user-builtin-metadata argument, use tools/configure.py and --builtin-file instead')
 
     # Figure out directories, git info, Duktape version, etc.
 
-    entry_pwd = os.getcwd()
-    dist = os.path.join(entry_pwd, 'dist')
+    entry_cwd = os.getcwd()
+    dist = opts.output_directory
+    os.chdir(opts.repo_directory)
 
     duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted = get_duk_version()
 
@@ -271,16 +285,17 @@ def main():
     git_describe_cstring = cstring(git_describe)
     git_branch_cstring = cstring(git_branch)
 
-    print('Dist for Duktape version %s, commit %s, describe %s, branch %s' % \
-          (duk_version_formatted, git_commit, git_describe, git_branch))
+    logger.info('Dist for Duktape version %s, commit %s, describe %s, branch %s' % \
+                (duk_version_formatted, git_commit, git_describe, git_branch))
 
     # Create dist directory structure, copy files.
 
-    print('Create dist directories and copy static files')
+    logger.debug('Create dist directories and copy static files')
 
+    os.chdir(opts.repo_directory)
     create_dist_directories(dist)
 
-    os.chdir(entry_pwd)
+    os.chdir(opts.repo_directory)
 
     copy_files([
         'builtins.yaml',
@@ -724,7 +739,7 @@ def main():
         '--debug-commands', os.path.join('debugger', 'duk_debugcommands.yaml'),
         '--debug-errors', os.path.join('debugger', 'duk_debugerrors.yaml'),
         '--opcodes', os.path.join('debugger', 'duk_opcodes.yaml')
-    ])
+    ] + forward_loglevel)
 
     # Add a build metadata file.
 
@@ -743,7 +758,7 @@ def main():
     # Build prepared sources (src/, src-noline/, src-separate/) with default
     # config.  This is done using tools and metadata in the dist directory.
 
-    print('Create prepared sources for default configuration')
+    logger.debug('Create prepared sources for default configuration')
 
     def prep_default_sources(dirname, extraopts):
         cmd = [
@@ -763,6 +778,7 @@ def main():
         for i in opts.user_builtin_metadata:
             cmd.append('--user-builtin-metadata')
             cmd.append(i)
+        cmd += forward_loglevel
         exec_print_stdout(cmd)
 
     prep_default_sources('src', [ '--line-directives' ])
@@ -776,7 +792,7 @@ def main():
     # Create SPDX license once all other files are in place (and cleaned).
 
     if opts.create_spdx:
-        print('Create SPDX license')
+        logger.debug('Create SPDX license')
         try:
             exec_get_stdout([
                 sys.executable,
@@ -784,15 +800,15 @@ def main():
                 os.path.join(dist, 'license.spdx')
             ])
         except:
-            print('')
-            print('***')
-            print('*** WARNING: Failed to create SPDX license, this should not happen for an official release!')
-            print('***')
-            print('')
+            logger.warning('')
+            logger.warning('***')
+            logger.warning('*** WARNING: Failed to create SPDX license, this should not happen for an official release!')
+            logger.warning('***')
+            logger.warning('')
     else:
-        print('Skip SPDX license creation')
+        logger.debug('Skip SPDX license creation')
 
-    print('Dist finished successfully')
+    logger.info('Dist finished successfully')
 
 if __name__ == '__main__':
     main()

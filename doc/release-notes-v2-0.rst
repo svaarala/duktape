@@ -72,8 +72,11 @@ Tooling changes
 
 There are some tooling changes in this release:
 
-* The distributable now includes raw sources (``src/`` in Duktape main repo)
-  in ``src-input/`` and some tooling in ``tools/``.
+* The distributable now includes raw sources in ``src-input/`` and some
+  tooling in ``tools/``.  This allows Duktape sources to be modified and
+  re-amalgamated directly from the distributable.  The distributable still
+  includes sources prepared using default configuration (``src/``,
+  ``src-noline/``, and ``src-separate``) and some configuration examples.
 
 * The tooling includes a new ``tools/configure.py`` tool which creates
   a ``duk_config.h`` and matching prepared sources simultaneously.  This
@@ -84,14 +87,11 @@ There are some tooling changes in this release:
   ``dist.py`` and no longer supports ``--rom-support``,
   ``--rom-auto-lightfunc``, and ``--user-builtin-metadata`` options.  Use
   the  ``tools/configure.py`` tool instead, which supports these options.
-
-* The distributable still includes sources prepared using default configuration
-  (``src/``, ``src-noline/``, and ``src-separate``) and some configuration
-  examples.
+  However, ``--user-builtin-metadata`` has been renamed ``--builtin-file``.
 
 * The ``config/genconfig.py`` has been relocated to ``tools/genconfig.py`` in
-  the distributable.  It can still be used as a standalone tool, but over time
-  the intent is that configuration and sources are prepared in one atomic step.
+  the distributable.  It can still be used as a standalone tool, but using
+  configure.py is recommended instead.
 
 To upgrade:
 
@@ -99,15 +99,16 @@ To upgrade:
   distributable, no changes are needed.
 
 * If you're using ``genconfig.py``, check the path; correct path is now
-  ``tools/genconfig.py``.
+  ``tools/genconfig.py``.  Consider replacing genconfig.py with configure.py.
 
 * If you're using ROM built-ins via ``make_dist.py``, change your build to
-  use ``tools/configure.py`` instead.
+  use ``tools/configure.py`` instead, and rename ``--user-builtins-metadata``
+  options to ``--builtin-file``.
 
 Dist package file changes
 -------------------------
 
-* Configuration metadata is now in unpacked form on ``dist/config`` to match
+* Configuration metadata is now in unpacked form in ``dist/config`` to match
   the Duktape master repo and make config files more convenient to patch.
   The ``dist/tools/genconfig.py`` tool no longer accepts a tar.gz metadata
   argument.

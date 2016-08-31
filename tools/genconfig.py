@@ -21,8 +21,13 @@
 #  modular sources.
 #
 
-import os
+import logging
 import sys
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(name)-21s %(levelname)-7s %(message)s')
+logger = logging.getLogger('genconfig.py')
+logger.setLevel(logging.INFO)
+
+import os
 import re
 import json
 import yaml
@@ -31,6 +36,7 @@ import tarfile
 import tempfile
 import atexit
 import shutil
+import logging
 try:
     from StringIO import StringIO
 except ImportError:
@@ -72,6 +78,7 @@ allowed_use_meta_keys = [
     'default',
     'tags',
     'description',
+    'warn_if_missing'
 ]
 required_opt_meta_keys = [
     'define',
@@ -149,7 +156,7 @@ compiler_required_provides = [
 def get_auto_delete_tempdir():
     tmpdir = tempfile.mkdtemp(suffix='-genconfig')
     def _f(dirname):
-        #print('Deleting temporary directory: %r' % dirname)
+        logger.debug('Deleting temporary directory: %r' % dirname)
         if os.path.isdir(dirname) and '-genconfig' in dirname:
             shutil.rmtree(dirname)
     atexit.register(_f, tmpdir)
@@ -204,7 +211,8 @@ class Snippet:
                 self.requires[k] = True
 
         stripped_lines = strip_comments_from_lines(lines)
-        # for line in stripped_lines: print(line)
+        #for line in stripped_lines:
+        #    logger.debug(line)
 
         for line in stripped_lines:
             # Careful with order, snippet may self-reference its own
@@ -222,7 +230,7 @@ class Snippet:
                 if m is not None and '/* redefine */' not in line and \
                     len(m.group(1)) > 0 and m.group(1)[-1] != '_':
                     # Don't allow e.g. DUK_USE_ which results from matching DUK_USE_xxx
-                    #print('PROVIDES: %r' % m.group(1))
+                    #logger.debug('PROVIDES: %r' % m.group(1))
                     self.provides[m.group(1)] = True
             if autoscan_requires:
                 matches = re.findall(re_line_requires, line)
@@ -240,7 +248,7 @@ class Snippet:
                         # Snippet provides it's own require; omit
                         pass
                     else:
-                        #print('REQUIRES: %r' % m)
+                        #logger.debug('REQUIRES: %r' % m)
                         self.requires[m] = True
 
     def fromFile(cls, filename):
@@ -253,7 +261,7 @@ class Snippet:
                     m = re.match(r'#snippet\s+"(.*?)"', line)
                     # XXX: better plumbing for lookup path
                     sub_fn = os.path.normpath(os.path.join(filename, '..', '..', 'header-snippets', m.group(1)))
-                    #print('#snippet ' + sub_fn)
+                    logger.debug('#snippet ' + sub_fn)
                     sn = Snippet.fromFile(sub_fn)
                     lines += sn.lines
                 else:
@@ -392,7 +400,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
                     found = True  # at least one other node provides 'k'
 
             if not found:
-                #print('Resolving %r' % k)
+                logger.debug('Resolving %r' % k)
                 resolved.append(k)
 
                 # Find a header snippet which provides the missing define.
@@ -405,7 +413,7 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
                         sn_req = sn2
                         break
                 if sn_req is None:
-                    print(repr(sn.lines))
+                    logger.debug(repr(sn.lines))
                     raise Exception('cannot resolve missing require: %r' % k)
 
                 # Snippet may have further unresolved provides; add recursively
@@ -452,15 +460,15 @@ def fill_dependencies_for_snippets(snippets, idx_deps):
     for sn in snlist:
         if handled.has_key(sn):
             continue
-        print('UNHANDLED KEY')
-        print('PROVIDES: %r' % sn.provides)
-        print('REQUIRES: %r' % sn.requires)
-        print('\n'.join(sn.lines))
+        logger.debug('UNHANDLED KEY')
+        logger.debug('PROVIDES: %r' % sn.provides)
+        logger.debug('REQUIRES: %r' % sn.requires)
+        logger.debug('\n'.join(sn.lines))
 
-#    print(repr(graph))
-#    print(repr(snlist))
-#    print('Resolved helper defines: %r' % resolved)
-#    print('Resolved %d helper defines' % len(resolved))
+    #logger.debug(repr(graph))
+    #logger.debug(repr(snlist))
+    logger.debug('Resolved helper defines: %r' % resolved)
+    logger.debug('Resolved %d helper defines' % len(resolved))
 
 def serialize_snippet_list(snippets):
     ret = []
@@ -476,7 +484,7 @@ def serialize_snippet_list(snippets):
         for k in sn.requires.keys():
             if not emitted_provides.has_key(k):
                 # XXX: conditional warning, happens in some normal cases
-                #print('WARNING: define %r required, not provided so far' % k)
+                logger.warning('define %r required, not provided so far' % k)
                 pass
 
     return '\n'.join(ret)
@@ -510,15 +518,15 @@ def scan_use_defs(dirname):
             if doc.get('example', False):
                 continue
             if doc.get('unimplemented', False):
-                print('WARNING: unimplemented: %s' % fn)
+                logger.warning('unimplemented: %s' % fn)
                 continue
             dockeys = doc.keys()
             for k in dockeys:
                 if not k in allowed_use_meta_keys:
-                    print('WARNING: unknown key %s in metadata file %s' % (k, fn))
+                    logger.warning('unknown key %s in metadata file %s' % (k, fn))
             for k in required_use_meta_keys:
                 if not k in dockeys:
-                    print('WARNING: missing key %s in metadata file %s' % (k, fn))
+                    logger.warning('missing key %s in metadata file %s' % (k, fn))
 
             use_defs[doc['define']] = doc
 
@@ -541,15 +549,15 @@ def scan_opt_defs(dirname):
             if doc.get('example', False):
                 continue
             if doc.get('unimplemented', False):
-                print('WARNING: unimplemented: %s' % fn)
+                logger.warning('unimplemented: %s' % fn)
                 continue
             dockeys = doc.keys()
             for k in dockeys:
                 if not k in allowed_opt_meta_keys:
-                    print('WARNING: unknown key %s in metadata file %s' % (k, fn))
+                    logger.warning('unknown key %s in metadata file %s' % (k, fn))
             for k in required_opt_meta_keys:
                 if not k in dockeys:
-                    print('WARNING: missing key %s in metadata file %s' % (k, fn))
+                    logger.warning('missing key %s in metadata file %s' % (k, fn))
 
             opt_defs[doc['define']] = doc
 
@@ -582,7 +590,7 @@ def scan_helper_snippets(dirname):  # DUK_F_xxx snippets
     for fn in os.listdir(dirname):
         if (fn[0:6] != 'DUK_F_'):
             continue
-        #print('Autoscanning snippet: %s' % fn)
+        logger.debug('Autoscanning snippet: %s' % fn)
         helper_snippets.append(Snippet.fromFile(os.path.join(dirname, fn)))
 
 def get_opt_defs(removed=True, deprecated=True, unused=True):
@@ -671,7 +679,7 @@ def get_tag_list_with_preferred_order(preferred):
         if tag not in tags:
             tags.append(tag)
 
-    #print('Effective tag order: %r' % tags)
+    logger.debug('Effective tag order: %r' % tags)
     return tags
 
 def rst_format(text):
@@ -803,11 +811,11 @@ def get_forced_options(opts):
             if use_defs.has_key(k):
                 pass  # key is known
             else:
-                print('WARNING: option override key %s not defined in metadata, ignoring' % k)
+                logger.warning('option override key %s not defined in metadata, ignoring' % k)
             forced_opts[k] = doc[k]  # shallow copy
 
     if len(forced_opts.keys()) > 0:
-        print('Overrides: %s' % json.dumps(forced_opts))
+        logger.debug('Overrides: %s' % json.dumps(forced_opts))
 
     return forced_opts
 
@@ -968,11 +976,11 @@ def add_feature_option_handling(opts, ret, forced_opts, already_provided_keys):
             # For some options like DUK_OPT_PACKED_TVAL the default comes
             # from platform definition.
             if doc.get('feature_no_default', False):
-                print('Skip default for option %s' % config_define)
+                logger.debug('Skip default for option %s' % config_define)
                 ret.line('/* Already provided above */')
             elif already_provided_keys.has_key(config_define):
                 # This is a fallback in case config option metadata is wrong.
-                print('Skip default for option %s (already provided but not flagged in metadata!)' % config_define)
+                logger.debug('Skip default for option %s (already provided but not flagged in metadata!)' % config_define)
                 ret.line('/* Already provided above */')
             else:
                 emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
@@ -1034,7 +1042,12 @@ def generate_duk_config_header(opts, meta_dir):
     ret = FileBuilder(base_dir=os.path.join(meta_dir, 'header-snippets'), \
                       use_cpp_warning=opts.use_cpp_warning)
 
+    # Parse forced options.  Warn about missing forced options when it is
+    # strongly recommended that the option is provided.
     forced_opts = get_forced_options(opts)
+    for doc in use_defs_list:
+        if doc.get('warn_if_missing', False) and not forced_opts.has_key(doc['define']):
+            logger.warning('Recommended config option ' + doc['define'] + ' not provided')
 
     platforms = None
     with open(os.path.join(meta_dir, 'platforms.yaml'), 'rb') as f:
@@ -1302,7 +1315,7 @@ def generate_duk_config_header(opts, meta_dir):
 
     # Automatic DUK_OPT_xxx feature option handling
     if opts.support_feature_options:
-        print('Autogenerating feature option (DUK_OPT_xxx) support')
+        logger.debug('Autogenerating feature option (DUK_OPT_xxx) support')
         tmp = Snippet(ret.join().split('\n'))
         add_feature_option_handling(opts, ret, forced_opts, tmp.provides)
 
@@ -1353,7 +1366,7 @@ def generate_duk_config_header(opts, meta_dir):
         ret.chdr_block_heading('Autogenerated defaults')
 
         for k in need_keys:
-            #print('config option %s not covered by manual snippets, emitting default automatically' % k)
+            logger.debug('config option %s not covered by manual snippets, emitting default automatically' % k)
             emit_default_from_config_meta(ret, use_defs[k], {}, False)
 
         ret.empty()
@@ -1471,6 +1484,8 @@ def add_genconfig_optparse_options(parser, direct=False):
         parser.add_option('--git-commit', dest='git_commit', default=None, help='git commit hash to be included in header comments')
         parser.add_option('--git-describe', dest='git_describe', default=None, help='git describe string to be included in header comments')
         parser.add_option('--git-branch', dest='git_branch', default=None, help='git branch string to be included in header comments')
+        parser.add_option('--quiet', dest='quiet', action='store_true', default=False, help='Suppress info messages (show warnings)')
+        parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
 
 def parse_options():
     commands = [
@@ -1491,6 +1506,12 @@ def parse_options():
     return opts, args
 
 def genconfig(opts, args):
+    # Log level.
+    if opts.quiet:
+        logger.setLevel(logging.WARNING)
+    elif opts.verbose:
+        logger.setLevel(logging.DEBUG)
+
     meta_dir = opts.config_metadata
     if opts.config_metadata is None:
         if os.path.isdir(os.path.join('.', 'config-options')):
@@ -1506,9 +1527,9 @@ def genconfig(opts, args):
     scan_opt_defs(os.path.join(meta_dir, 'feature-options'))
     scan_use_tags()
     scan_tags_meta(os.path.join(meta_dir, 'tags.yaml'))
-    print('%s, scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
+    logger.debug('%s, scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
         (metadata_src_text, len(opt_defs.keys()), len(use_defs.keys()), len(helper_snippets)))
-    #print('Tags: %r' % use_tags_list)
+    logger.debug('Tags: %r' % use_tags_list)
 
     if len(args) == 0:
         raise Exception('missing command')
@@ -1518,18 +1539,30 @@ def genconfig(opts, args):
         # Generate a duk_config.h header with platform, compiler, and
         # architecture either autodetected (default) or specified by
         # user.  Support for autogenerated DUK_OPT_xxx flags is also
-        # selected by user.
+        desc = [
+            'platform=' + ('any', opts.platform)[opts.platform is not None],
+            'architecture=' + ('any', opts.architecture)[opts.architecture is not None],
+            'compiler=' + ('any', opts.compiler)[opts.compiler is not None]
+        ]
+        if opts.dll:
+            desc.append('dll mode')
+        logger.info('Creating duk_config.h: ' + ', '.join(desc))
         result = generate_duk_config_header(opts, meta_dir)
         with open(opts.output, 'wb') as f:
             f.write(result)
+        logger.debug('Wrote duk_config.h to ' + str(opts.output))
     elif cmd == 'feature-documentation':
+        logger.info('Creating feature option documentation')
         result = generate_feature_option_documentation(opts)
         with open(opts.output, 'wb') as f:
             f.write(result)
+        logger.debug('Wrote feature option documentation to ' + str(opts.output))
     elif cmd == 'config-documentation':
+        logger.info('Creating config option documentation')
         result = generate_config_option_documentation(opts)
         with open(opts.output, 'wb') as f:
             f.write(result)
+        logger.debug('Wrote config option documentation to ' + str(opts.output))
     else:
         raise Exception('invalid command: %r' % cmd)
 
