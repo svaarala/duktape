@@ -60,10 +60,9 @@ Getting started: debugging your target
 
 To integrate debugger support into your target, you need to:
 
-* **Check your feature options**: define ``DUK_OPT_DEBUGGER_SUPPORT`` and
-  ``DUK_OPT_INTERRUPT_COUNTER`` to enable debugger support in Duktape.
-  Also consider other debugging related feature options, like forwarding
-  logging (``DUK_OPT_DEBUGGER_FWD_LOGGING``) to the debug client.
+* **Check your config options**: enable ``DUK_USE_DEBUGGER_SUPPORT`` and
+  ``DUK_USE_INTERRUPT_COUNTER`` to enable debugger support in Duktape.
+  Also consider other debugging related config options.
 
 * **Implement a concrete stream transport mechanism**: needed for both the
   target device and the Duktape debugger.  The best transport depends on the
@@ -116,7 +115,7 @@ debug transport.
 The example debugger stuff includes:
 
 * Duktape command line tool ``--debugger`` option which is enabled by using
-  both ``DUK_CMDLINE_DEBUGGER_SUPPORT`` and ``DUK_OPT_DEBUGGER_SUPPORT``.
+  both ``DUK_CMDLINE_DEBUGGER_SUPPORT`` and ``DUK_USE_DEBUGGER_SUPPORT``.
   The command line tool uses a TCP socket based example transport provided
   in ``examples/debug-trans-socket/``.
 
@@ -613,7 +612,7 @@ This topic is covered in a separate section.
 Development time transport torture option
 -----------------------------------------
 
-The feature option DUK_OPT_DEBUGGER_TRANSPORT_TORTURE causes Duktape to do
+The config option DUK_USE_DEBUGGER_TRANSPORT_TORTURE causes Duktape to do
 all debug transport read/write operations in 1-byte steps, which is useful
 to catch any incorrect assumptions about reading or writing chunks of a
 certain size.
@@ -2645,7 +2644,7 @@ Overview
 
 This section contains some implementation notes on the Duktape internals.
 
-Duktape debugger support is optional and enabled with a feature option.
+Duktape debugger support is optional and enabled with a config option.
 The bytecode executor interrupt feature is also mandatory when debugger
 support is enabled.
 

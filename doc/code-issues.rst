@@ -957,40 +957,6 @@ The downsides include:
 * Indirection obscures the strings emitted from each call site a bit, and
   makes the code less modular.
 
-Feature detection in duktape.h
-==============================
-
-The ``duktape.h`` header which provides the Duktape public API defines and
-also handles portability, such as:
-
-* Detecting compiler / platform combinations and choosing appropriate
-  values for byte order, alignment requirements, availability of variadic
-  macros, etc.
-
-* Provides type wrappers (typedefs) for all types required by Duktape both
-  in its public API and internally.
-
-* Resolve user feature options (``DUK_OPT_xxx``) into effective feature
-  options used internally (``DUK_USE_xxx``).
-
-* Includes system headers needed for e.g. type detection.
-
-* When compiling Duktape itself (distinguished through the ``DUK_COMPILING_DUKTAPE``
-  define provided by ``duk_internal.h``) defines critical feature selection
-  defines (like ``_POSIX_C_SOURCE``) needed by e.g. system date headers.
-  When compiling user code, avoids defining feature selection defines to
-  minimize conflicts with application code.
-
-The ``duktape.h`` header is built from individual parts to make it easier to
-manage during development.
-
-Originally public and internal feature detection were done separately, but
-increasingly the public API started needing typedefs and also became
-dependent on effective feature options.  The initial workaround was to do a
-minimal platform and feature detection in the public header and consistency
-check it against internal feature detection, but this became more and more
-unwieldy.
-
 Portability concerns
 ====================
 
@@ -2025,16 +1991,11 @@ Using ``const`` for tables allows tables to compiled into the text section.
 This is important on some embedded platforms where RAM is tight but there
 is more space for code and fixed data.
 
-Feature defines
-===============
+Config options
+==============
 
-All feature detection is concentrated into ``duk_config.h`` which considers
-inputs from various sources:
-
-* ``DUK_OPT_xxx`` defines, which allow a user to request a specific feature
-  or provide a specific value (such as traceback depth).
-
-* Compiler and platform specific defines and features.
+All feature detection is concentrated into ``duk_config.h`` which detects
+the compiler, platform, and architecture via preprocessor defines.
 
 As a result, ``duk_config.h`` defines ``DUK_USE_xxx`` macros which enable
 and disable specific features and provide parameter values (such as traceback
@@ -2043,9 +2004,7 @@ internal Duktape code.  The ``duk_config.h`` defines, especially typedefs,
 are also visible for the public API header.
 
 When adding specific hacks and workarounds which might not be of interest
-to all users, add a ``DUK_OPT_xxx`` flag for them and translate it to a
-``DUK_USE_xxx`` flag in ``duk_config.h``.  If the ``DUK_OPT_xxx`` flag
-is absent, the custom behavior MUST NOT be enabled.
+to all users, add a ``DUK_USE_xxx`` flag metadata into the build.
 
 Platforms and compilers
 =======================

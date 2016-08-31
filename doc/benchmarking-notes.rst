@@ -115,8 +115,7 @@ particular, if memory were to run out (in concrete terms, an attempt to allocate
 memory would fail), an emergency mark-and-sweep pass would free that memory which
 would then be available for other use.
 
-Enabling ``DUK_OPT_GC_TORTURE`` (or ``DUK_USE_GC_TORTURE`` if editing ``duk_config.h``
-directly) we get a very different result::
+Enabling ``DUK_USE_GC_TORTURE`` we get a very different result::
 
     ...
         KB

@@ -35,7 +35,7 @@ to user C and Ecmascript code: all conversions are automatic.
 
 To enable fastint support, simply define:
 
-* ``DUK_OPT_FASTINT`` / ``DUK_USE_FASTINT``
+* ``DUK_USE_FASTINT``
 
 You should measure the impact of enabling fastint support for your target
 platform and Ecmascript code base.  Fastint support is not an automatic

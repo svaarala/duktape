@@ -43,9 +43,3 @@ There a few limitations in this approach:
   struct alignment rules (among other things) may differ.  In practice it's
   unlikely you'll run into problems, at least when using mainline compilers
   like gcc/clang.
-
-Before Duktape 1.3 the application would also need to use the same feature
-options (``DUK_OPT_xxx``) used when compiling the shared Duktape library.
-However, as of Duktape 1.3 all the relevant config options (``DUK_USE_xxx``)
-are encapsulated in ``duk_config.h`` so they can be modified without relying
-on command line feature options.

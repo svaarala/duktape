@@ -139,8 +139,8 @@ That said, concrete issues to consider when using bytecode for obfuscation:
 
 * Line number information in the ``_Pc2line`` property: this can be deleted or
   changed, or you can configure Duktape not to store this information in the
-  first place (``DUK_OPT_NO_PC2LINE`` or ``DUK_USE_PC2LINE``).  Without line
-  information tracebacks will of course be less useful.
+  first place (using option ``DUK_USE_PC2LINE``).  Without line information
+  tracebacks will of course be less useful.
 
 When not to use bytecode dump/load
 ==================================
