@@ -2,6 +2,7 @@
 *.swp
 *.o
 *.strip
+*.pyc
 /_*
 /duk.*
 /libduktape.*
