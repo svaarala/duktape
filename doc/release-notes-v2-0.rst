@@ -75,15 +75,15 @@ There are some tooling changes in this release:
 * The distributable now includes raw sources (``src/`` in Duktape main repo)
   in ``src-input/`` and some tooling in ``tools/``.
 
-* The tooling includes a new ``tools/prepare_sources.py`` tool which creates
+* The tooling includes a new ``tools/configure.py`` tool which creates
   a ``duk_config.h`` and matching prepared sources simultaneously.  This
   allows use of ROM built-ins from the distributable (previously required a
-  manual ``make_dist.py --rom-support ...`` command.
+  manual ``dist.py --rom-support ...`` command.
 
-* The ``make_dist.py`` utility in Duktape main repo no longer supports
-  ``--rom-support``, ``--rom-auto-lightfunc``, and ``--user-builtin-metadata``
-  options.  Use the  ``tools/prepare_sources.py`` tool instead, which supports
-  these options.
+* The ``make_dist.py`` utility in Duktape main repo has been renamed to
+  ``dist.py`` and no longer supports ``--rom-support``,
+  ``--rom-auto-lightfunc``, and ``--user-builtin-metadata`` options.  Use
+  the  ``tools/configure.py`` tool instead, which supports these options.
 
 * The distributable still includes sources prepared using default configuration
   (``src/``, ``src-noline/``, and ``src-separate``) and some configuration
@@ -102,7 +102,30 @@ To upgrade:
   ``tools/genconfig.py``.
 
 * If you're using ROM built-ins via ``make_dist.py``, change your build to
-  use ``tools/prepare_sources.py`` instead.
+  use ``tools/configure.py`` instead.
+
+Dist package file changes
+-------------------------
+
+* Configuration metadata is now in unpacked form on ``dist/config`` to match
+  the Duktape master repo and make config files more convenient to patch.
+  The ``dist/tools/genconfig.py`` tool no longer accepts a tar.gz metadata
+  argument.
+
+* The pre-built ``duk_config.h`` examples have been removed as somewhat
+  useless.  Use ``dist/tools/configure.py`` (or ``dist/tools/genconfig.py)``
+  to generate ``duk_config.h`` files.
+
+* ``dist/duk_build_meta.json`` has been renamed to ``dist/duk_dist_meta.json``
+  for clarity.  It no longer contains string data scanned from source files.
+  This metadata is now in source directories, e.g.
+  ``dist/src/duk_source_meta.json`` as the string set potentially depends
+  on options used to prepare sources.
+
+* Source metadata, e.g. ``dist/src/metadata.json``, has been renamed to
+  ``dist/src/duk_source_meta.json`` for clarity.  The metadata contains
+  Duktape version information, strings scanned from source files, and for
+  combined (amalgamated) sources the line number metadata.
 
 Buffer behavior changes
 -----------------------

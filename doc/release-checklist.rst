@@ -279,7 +279,7 @@ Checklist for ordinary releases
   - Trivial compile test for combined source
 
   - Trivial compile test for separate sources (important because
-    it's easy to forget to add files in make_dist.sh)
+    it's easy to forget to add files in util/dist.py)
 
 * Store binaries to duktape-releases repo
 

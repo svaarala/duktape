@@ -12,14 +12,14 @@ make clean dist
 # metadata can be provided through one or more YAML files (which are applied
 # in sequence).  Duktape configuration can be given at the same time.
 rm -rf dist/src dist/src-noline dist/src-separate
-$PYTHON dist/tools/prepare_sources.py \
+$PYTHON dist/tools/configure.py \
 	--source-directory dist/src-input \
 	--output-directory dist \
 	--rom-support \
 	--rom-auto-lightfunc \
 	--user-builtin-metadata util/example_user_builtins1.yaml \
 	--user-builtin-metadata util/example_user_builtins2.yaml \
-	--config-metadata dist/config/genconfig_metadata.tar.gz \
+	--config-metadata dist/config \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \
 	-DDUK_USE_ROM_GLOBAL_INHERIT \
@@ -34,14 +34,14 @@ make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT, DUK
 # --support-feature-options by moving the options into a genconfig
 # YAML config file.
 rm -rf dist/src dist/src-noline dist/src-separate
-$PYTHON dist/tools/prepare_sources.py \
+$PYTHON dist/tools/configure.py \
 	--source-directory dist/src-input \
 	--output-directory dist \
 	--rom-support \
 	--rom-auto-lightfunc \
 	--user-builtin-metadata util/example_user_builtins1.yaml \
 	--user-builtin-metadata util/example_user_builtins2.yaml \
-	--config-metadata dist/config/genconfig_metadata.tar.gz \
+	--config-metadata dist/config \
 	--support-feature-options \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \

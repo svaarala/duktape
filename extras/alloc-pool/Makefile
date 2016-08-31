@@ -16,11 +16,10 @@ test:
 
 .PHONY: ptrcomptest
 ptrcomptest:
-	tar -x -v -z -f ../../config/genconfig_metadata.tar.gz examples/low_memory.yaml
 	python ../../tools/genconfig.py \
-		--metadata ../../config/genconfig_metadata.tar.gz \
+		--metadata ../../config \
 		--output ./duk_config.h \
-		--option-file examples/low_memory.yaml \
+		--option-file ../../config/examples/low_memory.yaml \
 		--option-file ptrcomp.yaml \
 		--fixup-file ptrcomp_fixup.h \
 		duk-config-header

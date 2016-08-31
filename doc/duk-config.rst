@@ -118,17 +118,6 @@ Generating an autodetect duk_config.h
 To generate an autodetect header suitable for directly supported platforms
 (matches Duktape 1.2 platform support)::
 
-    # The --metadata option can point to a metadata directory or a tar.gz
-    # file with packed metadata (included in end user distributable).
-
-    $ cd duktape-2.0.0
-    $ python tools/genconfig.py \
-        --metadata config/genconfig_metadata.tar.gz \
-        --output /tmp/duk_config.h \
-        duk-config-header
-
-    # The same command using unpacked metadata present in Duktape source repo.
-
     $ cd duktape-2.0.0
     $ python tools/genconfig.py \
         --metadata config/ \

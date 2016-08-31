@@ -315,10 +315,10 @@ def context_helper_minsize_fltoetc(archopt, strip):
         execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-separate') ])
 
         cmd = [
-            'python2', os.path.join(cwd, 'dist', 'tools', 'prepare_sources.py'),
+            'python2', os.path.join(cwd, 'dist', 'tools', 'configure.py'),
             '--source-directory', os.path.join(cwd, 'dist', 'src-input'),
             '--output-directory', os.path.join(cwd, 'dist'),
-            '--config-metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+            '--config-metadata', os.path.join(cwd, 'dist', 'config'),
             '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
         ]
         if strip:
@@ -556,7 +556,7 @@ def context_linux_x86_dist_genconfig():
     os.chdir(os.path.join(cwd, 'dist'))
     execute([
         'python2', os.path.join(cwd, 'dist', 'tools', 'genconfig.py'),
-        '--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+        '--metadata', os.path.join(cwd, 'dist', 'config'),
         '--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),  # overwrite default duk_config.h
         '-DDUK_USE_FASTINT', '-UDUK_USE_JX', '-UDUK_USE_JC',
         'duk-config-header'
@@ -604,7 +604,7 @@ def context_linux_x64_error_variants():
         os.chdir(os.path.join(cwd, 'dist'))
         execute([
             'python2', os.path.join(cwd, 'dist', 'tools', 'genconfig.py'),
-            '--metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+            '--metadata', os.path.join(cwd, 'dist', 'config'),
             '--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')  # overwrite default duk_config.h
         ] + params['genconfig_opts'] + [
             'duk-config-header'
@@ -657,10 +657,10 @@ def context_helper_hello_ram(archopt):
         execute([ 'rm', '-rf', os.path.join(cwd, 'dist', 'src-separate') ])
 
         cmd = [
-            'python2', os.path.join(cwd, 'dist', 'tools', 'prepare_sources.py'),
+            'python2', os.path.join(cwd, 'dist', 'tools', 'configure.py'),
             '--source-directory', os.path.join(cwd, 'dist', 'src-input'),
             '--output-directory', os.path.join(cwd, 'dist'),
-            '--config-metadata', os.path.join(cwd, 'dist', 'config', 'genconfig_metadata.tar.gz'),
+            '--config-metadata', os.path.join(cwd, 'dist', 'config'),
             '--rom-support'
         ] + genconfig_opts
         print(repr(cmd))
