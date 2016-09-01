@@ -15,7 +15,6 @@
 /autotest/
 /duktape-releases/
 /doc/*.pdf
-/src/*.pyc
 /UglifyJS/
 /UglifyJS2/
 /closure-compiler/

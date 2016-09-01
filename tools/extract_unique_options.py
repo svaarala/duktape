@@ -2,7 +2,7 @@
 #
 #  Extract unique DUK_USE_xxx flags from current code base:
 #
-#    $ python extract_unique_options.py ../src/*.c ../src/*.h ../src/*.h.in
+#    $ python extract_unique_options.py ../src-input/*.c ../src-input/*.h ../src-input/*.h.in
 #
 
 import os, sys, re

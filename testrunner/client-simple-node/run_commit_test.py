@@ -156,7 +156,7 @@ def prep(options=None, options_yaml=None):
     execute([ 'rm', '-rf', os.path.join(cwd, 'prep') ])
     cmd = [
         'python2', os.path.join(cwd, 'tools', 'configure.py'),
-        '--source-directory', os.path.join(cwd, 'src'),
+        '--source-directory', os.path.join(cwd, 'src-input'),
         '--output-directory', os.path.join(cwd, 'prep'),
         '--config-metadata', os.path.join(cwd, 'config')
     ]
@@ -333,7 +333,7 @@ def context_helper_minsize_fltoetc(archopt, strip):
 
         cmd = [
             'python2', os.path.join(cwd, 'tools', 'configure.py'),
-            '--source-directory', os.path.join(cwd, 'src'),
+            '--source-directory', os.path.join(cwd, 'src-input'),
             '--output-directory', os.path.join(cwd, 'prep'),
             '--config-metadata', os.path.join(cwd, 'config'),
             '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory.yaml')
@@ -341,8 +341,8 @@ def context_helper_minsize_fltoetc(archopt, strip):
         if strip:
             cmd += [
                 '--option-file', os.path.join(cwd, 'config', 'examples', 'low_memory_strip.yaml'),
-                '--unicode-data', os.path.join(cwd, 'src', 'UnicodeData-8bit.txt'),
-                '--special-casing', os.path.join(cwd, 'src', 'SpecialCasing-8bit.txt')
+                '--unicode-data', os.path.join(cwd, 'src-input', 'UnicodeData-8bit.txt'),
+                '--special-casing', os.path.join(cwd, 'src-input', 'SpecialCasing-8bit.txt')
             ]
         execute(cmd)
         execute([
@@ -669,7 +669,7 @@ def context_helper_hello_ram(archopt):
 
         cmd = [
             'python2', os.path.join(cwd, 'tools', 'configure.py'),
-            '--source-directory', os.path.join(cwd, 'src'),
+            '--source-directory', os.path.join(cwd, 'src-input'),
             '--output-directory', os.path.join(cwd, 'prep'),
             '--config-metadata', os.path.join(cwd, 'config'),
             '--rom-support'

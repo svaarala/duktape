@@ -13,7 +13,7 @@
 #
 #  Usage:
 #
-#    $ python autofix_debuglog_calls.py src/*.c
+#    $ python autofix_debuglog_calls.py src-input/*.c
 #
 #  WARNING: works in place, so commit any changes before running, then
 #  check diff.

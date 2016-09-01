@@ -107,7 +107,7 @@ def cstring(x):
 # defining it in multiple places.
 def get_duk_version():
     r = re.compile(r'^#define\s+DUK_VERSION\s+(.*?)L?\s*$')
-    with open(os.path.join('src', 'duk_api_public.h.in'), 'rb') as f:
+    with open(os.path.join('src-input', 'duk_api_public.h.in'), 'rb') as f:
         for line in f:
             m = r.match(line)
             if m is not None:
@@ -163,7 +163,7 @@ def create_dist_directories(dist):
 # works from there.
 
 def check_cwd_duktape_repo_root():
-    if not (os.path.isfile(os.path.join('src', 'duk_api_public.h.in')) and \
+    if not (os.path.isfile(os.path.join('src-input', 'duk_api_public.h.in')) and \
             os.path.isfile(os.path.join('config', 'platforms.yaml'))):
         sys.stderr.write('\n')
         sys.stderr.write('*** Working directory must be Duktape repo checkout root!\n')
@@ -425,7 +425,7 @@ def main():
         'SpecialCasing-8bit.txt',
         'UnicodeData.txt',
         'UnicodeData-8bit.txt',
-    ], 'src', os.path.join(dist, 'src-input'))
+    ], 'src-input', os.path.join(dist, 'src-input'))
 
     for fn in [
         'tags.yaml',
