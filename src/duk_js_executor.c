@@ -159,6 +159,28 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 	}
 
 	/*
+	 *  Operator overloading check unless fast paths used
+	 *  XXX: string+string fast path?
+	 */
+
+#if 1
+	{
+		duk_tval *tv_opfun;
+
+		/* XXX: thr->builtins[DUK_BIDX_DUKTAPE] == NULL check? */
+		tv_opfun = duk_hobject_find_existing_entry_tval_ptr(thr->heap, thr->builtins[DUK_BIDX_DUKTAPE], DUK_HTHREAD_STRING_ADD(thr));
+		if (tv_opfun != NULL) {
+			duk_push_tval(ctx, tv_opfun);
+			duk_push_tval(ctx, tv_x);
+			duk_push_tval(ctx, tv_y);
+			duk_call(ctx, 2);
+			duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
+			return;
+		}
+	}
+#endif
+
+	/*
 	 *  Slow path: potentially requires function calls for coercion
 	 */
 
