@@ -44,11 +44,17 @@
 #      defines must actually be different between two or more source files.
 #
 
-import os
+import logging
 import sys
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(name)-21s %(levelname)-7s %(message)s')
+logger = logging.getLogger('combine_src.py')
+logger.setLevel(logging.INFO)
+
+import os
 import re
 import json
 import optparse
+import logging
 
 # Include path for finding include files which are amalgamated.
 include_paths = []
@@ -112,14 +118,14 @@ def addAutomaticUndefs(f):
     for line in f.lines:
         m = re_def.match(line.data)
         if m is not None:
-            #print('DEFINED: %s' % repr(m.group(1)))
+            #logger.debug('DEFINED: %s' % repr(m.group(1)))
             defined[m.group(1)] = True
         m = re_undef.match(line.data)
         if m is not None:
             # Could just ignore #undef's here: we'd then emit
             # reliable #undef's (though maybe duplicates) at
             # the end.
-            #print('UNDEFINED: %s' % repr(m.group(1)))
+            #logger.debug('UNDEFINED: %s' % repr(m.group(1)))
             if defined.has_key(m.group(1)):
                 del defined[m.group(1)]
 
@@ -130,10 +136,11 @@ def addAutomaticUndefs(f):
 
     keys = sorted(defined.keys())  # deterministic order
     if len(keys) > 0:
-        #print('STILL DEFINED: %r' % repr(defined.keys()))
+        #logger.debug('STILL DEFINED: %r' % repr(defined.keys()))
         f.lines.append(Line(f.filename, len(f.lines) + 1, ''))
         f.lines.append(Line(f.filename, len(f.lines) + 1, '/* automatic undefs */'))
         for k in keys:
+            logger.debug('automatic #undef for ' + k)
             f.lines.append(Line(f.filename, len(f.lines) + 1, '#undef %s' % k))
 
 def createCombined(files, prologue_filename, line_directives):
@@ -173,7 +180,7 @@ def createCombined(files, prologue_filename, line_directives):
     # source or an include file.  #include directives are handled
     # recursively.
     def processFile(f):
-        #print('Process file: ' + f.filename)
+        logger.debug('Process file: ' + f.filename)
 
         for line in f.lines:
             if not line.data.startswith('#include'):
@@ -204,11 +211,11 @@ def createCombined(files, prologue_filename, line_directives):
 
             incfile = lookupInclude(incpath)
             if incfile is not None:
-                #print('Include considered internal: %s -> %s' % (repr(line.data), repr(incfile)))
+                logger.debug('Include considered internal: %s -> %s' % (repr(line.data), repr(incfile)))
                 emit('/* #include %s */' % incpath)
                 processFile(readFile(incfile))
             else:
-                #print('Include considered external: %s' % repr(line.data))
+                logger.debug('Include considered external: %s' % repr(line.data))
                 emit(line)  # keep as is
 
     for f in files:
@@ -226,6 +233,8 @@ def main():
     parser.add_option('--output-source', dest='output_source', help='Output source filename')
     parser.add_option('--output-metadata', dest='output_metadata', help='Output metadata filename')
     parser.add_option('--line-directives', dest='line_directives', action='store_true', default=False, help='Use #line directives in combined source')
+    parser.add_option('--quiet', dest='quiet', action='store_true', default=False, help='Suppress info messages (show warnings)')
+    parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
     (opts, args) = parser.parse_args()
 
     assert(opts.include_paths is not None)
@@ -234,12 +243,18 @@ def main():
     assert(opts.output_source)
     assert(opts.output_metadata)
 
+    # Log level.
+    if opts.quiet:
+        logger.setLevel(logging.WARNING)
+    elif opts.verbose:
+        logger.setLevel(logging.DEBUG)
+
     # Read input files, add automatic #undefs
     sources = args
     files = []
     for fn in sources:
         res = readFile(fn)
-        #print('Add automatic undefs for: ' + fn)
+        logger.debug('Add automatic undefs for: ' + fn)
         addAutomaticUndefs(res)
         files.append(res)
 
@@ -250,7 +265,7 @@ def main():
     with open(opts.output_metadata, 'wb') as f:
         f.write(json.dumps(metadata, indent=4))
 
-    print('Combined %d source files, %d bytes written to %s' % (len(files), len(combined_source), opts.output_source))
+    logger.info('Combined %d source files, %d bytes written to %s' % (len(files), len(combined_source), opts.output_source))
 
 if __name__ == '__main__':
     main()

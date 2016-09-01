@@ -8,6 +8,7 @@ introduced: 2.0.0
 default: false
 tags:
   - portability
+warn_if_missing: true
 description: >
   Provide a custom default fatal error handler to replace the built-in one
   (which causes an intentional segfault and forever loops).  The default

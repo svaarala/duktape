@@ -81,6 +81,11 @@ tags:
   - lowmemory
   - experimental
 
+# When set to true, genconfig.py will warn if no forced value is provided.
+# This should be used sparingly, for options which are really strongly
+# recommended so that configure.py output should warn about it.
+#warn_if_missing: true
+
 # Description for option, no newlines.  Line breaking for e.g. C header
 # is automatic.
 description: >

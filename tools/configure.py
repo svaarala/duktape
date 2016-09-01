@@ -13,8 +13,13 @@
 #  scripts.
 #
 
-import os
+import logging
 import sys
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(name)-21s %(levelname)-7s %(message)s')
+logger = logging.getLogger('configure.py')
+logger.setLevel(logging.INFO)
+
+import os
 import re
 import shutil
 import glob
@@ -41,13 +46,13 @@ def exec_get_stdout(cmd, input=None, default=None, print_stdout=False):
             sys.stdout.write(ret[1])  # print stderr on error
             sys.stdout.flush()
             if default is not None:
-                print('WARNING: command %r failed, return default' % cmd)
+                logger.info('WARNING: command %r failed, return default' % cmd)
                 return default
             raise Exception('command failed, return code %d: %r' % (proc.returncode, cmd))
         return ret[0]
     except:
         if default is not None:
-            print('WARNING: command %r failed, return default' % cmd)
+            logger.info('WARNING: command %r failed, return default' % cmd)
             return default
         raise
 
@@ -102,14 +107,14 @@ def read_file(src, strip_last_nl=False):
 def delete_matching_files(dirpath, cb):
     for fn in os.listdir(dirpath):
         if os.path.isfile(os.path.join(dirpath, fn)) and cb(fn):
-            #print('Deleting %r' % os.path.join(dirpath, fn))
+            logger.debug('Deleting %r' % os.path.join(dirpath, fn))
             os.unlink(os.path.join(dirpath, fn))
 
 def create_targz(dstfile, filelist):
     # https://docs.python.org/2/library/tarfile.html#examples
 
     def _add(tf, fn):  # recursive add
-        #print('Adding to tar: ' + fn)
+        logger.debug('Adding to tar: ' + fn)
         if os.path.isdir(fn):
             for i in sorted(os.listdir(fn)):
                 _add(tf, os.path.join(fn, i))
@@ -220,7 +225,7 @@ def main():
 
     # Options for configure.py tool itself.
     parser.add_option('--source-directory', dest='source_directory', default=None, help='Directory with raw input sources (src-input/)')
-    parser.add_option('--output-directory', dest='output_directory', default=None, help='Directory for output files, must already exist')
+    parser.add_option('--output-directory', dest='output_directory', default=None, help='Directory for output files (created automatically, must not exist)')
     parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
     parser.add_option('--git-describe', dest='git_describe', default=None, help='Force git describe')
     parser.add_option('--git-branch', dest='git_branch', default=None, help='Force git branch name')
@@ -233,7 +238,8 @@ def main():
     # Options forwarded to genbuiltins.py.
     parser.add_option('--rom-support', dest='rom_support', action='store_true', help='Add support for ROM strings/objects (increases duktape.c size considerably)')
     parser.add_option('--rom-auto-lightfunc', dest='rom_auto_lightfunc', action='store_true', default=False, help='Convert ROM built-in function properties into lightfuncs automatically whenever possible')
-    parser.add_option('--user-builtin-metadata', dest='user_builtin_metadata', metavar='FILENAME', action='append', default=[], help='User strings and objects to add, YAML format (can be repeated for multiple overrides)')
+    parser.add_option('--user-builtin-metadata', dest='obsolete_builtin_metadata', default=None, help=optparse.SUPPRESS_HELP)
+    parser.add_option('--builtin-file', dest='builtin_files', metavar='FILENAME', action='append', default=[], help='Built-in string/object YAML metadata to be applied over default built-ins (multiple files may be given, applied in sequence)')
 
     # Options for Unicode.
     parser.add_option('--unicode-data', dest='unicode_data', default=None, help='Provide custom UnicodeData.txt')
@@ -242,17 +248,35 @@ def main():
     # Options forwarded to genconfig.py.
     genconfig.add_genconfig_optparse_options(parser)
 
+    # Log level options.
+    parser.add_option('--quiet', dest='quiet', action='store_true', default=False, help='Suppress info messages (show warnings)')
+    parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
+
     (opts, args) = parser.parse_args()
 
     assert(opts.source_directory)
     srcdir = opts.source_directory
     assert(opts.output_directory)
     outdir = opts.output_directory
+    if os.path.exists(outdir):
+        raise Exception('configure target directory %s already exists, please delete first' % repr(outdir))
     assert(opts.config_metadata)
+
+    if opts.obsolete_builtin_metadata is not None:
+        raise Exception('--user-builtin-metadata has been removed, use --builtin-file instead')
+
+    # Log level.
+    forward_loglevel = []
+    if opts.quiet:
+        logger.setLevel(logging.WARNING)
+        forward_loglevel = [ '--quiet' ]
+    elif opts.verbose:
+        logger.setLevel(logging.DEBUG)
+        forward_loglevel = [ '--verbose' ]
 
     # Figure out directories, git info, etc
 
-    entry_pwd = os.getcwd()
+    entry_cwd = os.getcwd()
 
     duk_dist_meta = None
     if opts.duk_dist_meta is not None:
@@ -279,13 +303,13 @@ def main():
         git_branch = opts.git_branch
 
     if git_commit is None:
-        print('Git commit not specified, autodetect from current directory')
+        logger.debug('Git commit not specified, autodetect from current directory')
         git_commit = exec_get_stdout([ 'git', 'rev-parse', 'HEAD' ], default='external').strip()
     if git_describe is None:
-        print('Git describe not specified, autodetect from current directory')
+        logger.debug('Git describe not specified, autodetect from current directory')
         git_describe = exec_get_stdout([ 'git', 'describe', '--always', '--dirty' ], default='external').strip()
     if git_branch is None:
-        print('Git branch not specified, autodetect from current directory')
+        logger.debug('Git branch not specified, autodetect from current directory')
         git_branch = exec_get_stdout([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], default='external').strip()
 
     git_commit = str(git_commit)
@@ -305,14 +329,17 @@ def main():
     else:
         special_casing = opts.special_casing
 
-    print('Configuring Duktape version %s, commit %s, describe %s, branch %s' % \
-          (duk_version_formatted, git_commit, git_describe, git_branch))
+    logger.info('Configuring Duktape version %s, commit %s, describe %s, branch %s' % \
+                (duk_version_formatted, git_commit, git_describe, git_branch))
+
+    # Create output directory.
+    os.mkdir(outdir)
 
     # Temporary directory.
     tempdir = tempfile.mkdtemp(prefix='tmp-duk-prepare-')
     atexit.register(shutil.rmtree, tempdir)
     mkdir(os.path.join(tempdir, 'src'))
-    #print('Using temporary directory %r' % tempdir)
+    logger.debug('Using temporary directory %r' % tempdir)
 
     # Separate sources are mostly copied as is at present.
     copy_files([
@@ -490,8 +517,8 @@ def main():
     cmd += forward_genconfig_options()
     cmd += [
         'duk-config-header'
-    ]
-    #print(repr(cmd))
+    ] + forward_loglevel
+    logger.debug(repr(cmd))
     exec_print_stdout(cmd)
 
     copy_file(os.path.join(tempdir, 'duk_config.h.tmp'), os.path.join(outdir, 'duk_config.h'))
@@ -530,7 +557,6 @@ def main():
     # There are currently no profile specific variants of strings/builtins, but
     # this will probably change when functions are added/removed based on profile.
 
-    # XXX: call as direct python
     res = exec_get_stdout([
         sys.executable,
         os.path.join('tools', 'scan_used_stridx_bidx.py')
@@ -541,7 +567,6 @@ def main():
     with open(os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
         f.write(res)
 
-    # XXX: call as direct python? does this need to work outside of configure.py?
     cmd = [
         sys.executable,
         os.path.join('tools', 'genbuiltins.py'),
@@ -564,16 +589,17 @@ def main():
     if opts.rom_support:
         # ROM string/object support is not enabled by default because
         # it increases the generated duktape.c considerably.
-        print('Enabling --rom-support for genbuiltins.py')
+        logger.debug('Enabling --rom-support for genbuiltins.py')
         cmd.append('--rom-support')
     if opts.rom_auto_lightfunc:
-        print('Enabling --rom-auto-lightfunc for genbuiltins.py')
+        logger.debug('Enabling --rom-auto-lightfunc for genbuiltins.py')
         cmd.append('--rom-auto-lightfunc')
-    for fn in opts.user_builtin_metadata:
-        print('Forwarding --user-builtin-metadata %s' % fn)
-        cmd.append('--user-builtin-metadata')
+    for fn in opts.builtin_files:
+        logger.debug('Forwarding --builtin-file %s' % fn)
+        cmd.append('--builtin-file')
         cmd.append(fn)
-    #print(repr(cmd))
+    cmd += forward_loglevel
+    logger.debug(repr(cmd))
     exec_print_stdout(cmd)
 
     # Autogenerated Unicode files
@@ -635,17 +661,17 @@ def main():
     IDPART_MINUS_IDSTART_NOABMP_INCL=IDPART_MINUS_IDSTART_NOA_INCL
     IDPART_MINUS_IDSTART_NOABMP_EXCL='Lu,Ll,Lt,Lm,Lo,Nl,0024,005F,ASCII,NONBMP'
 
-    print('Expand UnicodeData.txt ranges')
+    logger.debug('Expand UnicodeData.txt ranges')
 
     exec_print_stdout([
         sys.executable,
         os.path.join('tools', 'prepare_unicode_data.py'),
         '--unicode-data', unicode_data,
         '--output', os.path.join(tempdir, 'UnicodeData-expanded.tmp')
-    ])
+    ] + forward_loglevel)
 
     def extract_chars(incl, excl, suffix):
-        #print('- extract_chars: %s %s %s' % (incl, excl, suffix))
+        logger.debug('- extract_chars: %s %s %s' % (incl, excl, suffix))
         res = exec_get_stdout([
             sys.executable,
             os.path.join('tools', 'extract_chars.py'),
@@ -660,7 +686,7 @@ def main():
             f.write(res)
 
     def extract_caseconv():
-        #print('- extract_caseconv case conversion')
+        logger.debug('- extract_caseconv case conversion')
         res = exec_get_stdout([
             sys.executable,
             os.path.join('tools', 'extract_caseconv.py'),
@@ -675,7 +701,7 @@ def main():
         with open(os.path.join(tempdir, 'caseconv.txt'), 'wb') as f:
             f.write(res)
 
-        #print('- extract_caseconv canon lookup')
+        logger.debug('- extract_caseconv canon lookup')
         res = exec_get_stdout([
             sys.executable,
             os.path.join('tools', 'extract_caseconv.py'),
@@ -689,7 +715,13 @@ def main():
         with open(os.path.join(tempdir, 'caseconv_re_canon_lookup.txt'), 'wb') as f:
             f.write(res)
 
-    print('Create Unicode tables for codepoint classes')
+    # XXX: Now with configure.py part of the distributable, could generate
+    # only those Unicode tables needed by desired configuration (e.g. BMP-only
+    # tables if BMP-only was enabled).
+    # XXX: Improve Unicode preparation performance; it consumes most of the
+    # source preparation time.
+
+    logger.debug('Create Unicode tables for codepoint classes')
     extract_chars(WHITESPACE_INCL, WHITESPACE_EXCL, 'ws')
     extract_chars(LETTER_INCL, LETTER_EXCL, 'let')
     extract_chars(LETTER_NOA_INCL, LETTER_NOA_EXCL, 'let_noa')
@@ -704,10 +736,10 @@ def main():
     extract_chars(IDPART_MINUS_IDSTART_NOA_INCL, IDPART_MINUS_IDSTART_NOA_EXCL, 'idp_m_ids_noa')
     extract_chars(IDPART_MINUS_IDSTART_NOABMP_INCL, IDPART_MINUS_IDSTART_NOABMP_EXCL, 'idp_m_ids_noabmp')
 
-    print('Create Unicode tables for case conversion')
+    logger.debug('Create Unicode tables for case conversion')
     extract_caseconv()
 
-    print('Combine sources and clean up')
+    logger.debug('Combine sources and clean up')
 
     # Inject autogenerated files into source and header files so that they are
     # usable (for all profiles and define cases) directly.
@@ -815,8 +847,8 @@ def main():
             files.append(fn)
 
         res = map(lambda x: os.path.join(tempdir, 'src', x), files)
-        #print(repr(files))
-        #print(repr(res))
+        logger.debug(repr(files))
+        logger.debug(repr(res))
         return res
 
     if opts.separate_sources:
@@ -839,6 +871,7 @@ def main():
         if opts.line_directives:
             cmd += [ '--line-directives' ]
         cmd += select_combined_sources()
+        cmd += forward_loglevel
         exec_print_stdout(cmd)
 
     # Merge metadata files.
@@ -867,7 +900,7 @@ def main():
     with open(os.path.join(outdir, 'duk_source_meta.json'), 'wb') as f:
         f.write(json.dumps(doc, indent=4))
 
-    print('Configure finished successfully')
+    logger.debug('Configure finished successfully')
 
 if __name__ == '__main__':
     main()

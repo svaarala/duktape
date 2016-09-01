@@ -14,11 +14,11 @@ make clean dist
 rm -rf dist/src dist/src-noline dist/src-separate
 $PYTHON dist/tools/configure.py \
 	--source-directory dist/src-input \
-	--output-directory dist \
+	--output-directory dist/src \
 	--rom-support \
 	--rom-auto-lightfunc \
-	--user-builtin-metadata util/example_user_builtins1.yaml \
-	--user-builtin-metadata util/example_user_builtins2.yaml \
+	--builtin-file util/example_user_builtins1.yaml \
+	--builtin-file util/example_user_builtins2.yaml \
 	--config-metadata dist/config \
 	-DDUK_USE_ROM_STRINGS \
 	-DDUK_USE_ROM_OBJECTS \
@@ -36,11 +36,11 @@ make duk dukd  # XXX: currently fails to start, DUK_CMDLINE_LOGGING_SUPPORT, DUK
 rm -rf dist/src dist/src-noline dist/src-separate
 $PYTHON dist/tools/configure.py \
 	--source-directory dist/src-input \
-	--output-directory dist \
+	--output-directory dist/src \
 	--rom-support \
 	--rom-auto-lightfunc \
-	--user-builtin-metadata util/example_user_builtins1.yaml \
-	--user-builtin-metadata util/example_user_builtins2.yaml \
+	--builtin-file util/example_user_builtins1.yaml \
+	--builtin-file util/example_user_builtins2.yaml \
 	--config-metadata dist/config \
 	--support-feature-options \
 	-DDUK_USE_ROM_STRINGS \
