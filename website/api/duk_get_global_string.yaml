@@ -31,6 +31,8 @@ tags:
   - property
 
 seealso:
+  - duk_get_global_lstring
   - duk_put_global_string
+  - duk_put_global_lstring
 
 introduced: 1.0.0

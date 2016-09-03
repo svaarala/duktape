@@ -12,7 +12,7 @@ summary: |
   <code>key</code>.</p>
 
 example: |
-  if (duk_has_prop(ctx, -3, "myProperty")) {
+  if (duk_has_prop_string(ctx, -3, "myProperty")) {
       printf("obj has 'myProperty'\n");
   } else {
       printf("obj does not have 'myProperty'\n");
@@ -21,5 +21,8 @@ example: |
 tags:
   - property
   - stack
+
+seealso:
+  - duk_has_prop_lstring
 
 introduced: 1.0.0
