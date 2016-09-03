@@ -21,4 +21,7 @@ example: |
 tags:
   - property
 
+seealso:
+  - duk_put_prop_lstring
+
 introduced: 1.0.0

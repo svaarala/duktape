@@ -1,0 +1,25 @@
+name: duk_del_prop_lstring
+
+proto: |
+  duk_bool_t duk_del_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+
+stack: |
+  [ ... obj! ... ] -> [ ... obj! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_del_prop">duk_del_prop()</a></code>,
+  but the property name is given as a string with explicit length.</p>
+
+example: |
+  duk_bool_t rc;
+
+  rc = duk_del_prop_lstring(ctx, -3, "internal" "\x00" "nul");
+  printf("delete obj.internal[00]nul -> rc=%d\n", (int) rc);
+
+tags:
+  - property
+
+seealso:
+  - duk_del_prop_string
+
+introduced: 2.0.0

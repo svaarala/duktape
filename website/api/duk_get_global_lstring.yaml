@@ -1,0 +1,25 @@
+name: duk_get_global_lstring
+
+proto: |
+  duk_bool_t duk_get_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
+
+stack: |
+  [ ... ] -> [ ... val! ]  (if key exists)
+  [ ... ] -> [ ... undefined! ]  (if key doesn't exist)
+
+summary: |
+  <p>Like <code><a href="#duk_get_global_string">duk_get_global_string()</a></code>
+  but the key is given as a string with explicit length.</p>
+
+example: |
+  (void) duk_get_global_lstring(ctx, "internal" "\x00" "nul");
+
+tags:
+  - property
+
+seealso:
+  - duk_get_global_string
+  - duk_put_global_string
+  - duk_put_global_lstring
+
+introduced: 2.0.0
