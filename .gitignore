@@ -5,6 +5,7 @@
 *.pyc
 /_*
 /duk.*
+/duk
 /libduktape.*
 /build/
 /dist/

@@ -37,6 +37,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Ole André Vadla Ravnås (https://github.com/oleavr)
 * Harold Brenes (https://github.com/harold-b)
 * Oliver Crow (https://github.com/ocrow)
+* Jakub Chłapiński (https://github.com/jchlapinski)
 
 Other contributions
 ===================

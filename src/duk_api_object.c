@@ -44,6 +44,15 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_idx,
 	return duk_get_prop(ctx, obj_idx);
 }
 
+DUK_EXTERNAL duk_bool_t duk_get_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(key != NULL);
+
+	obj_idx = duk_require_normalize_index(ctx, obj_idx);
+	duk_push_lstring(ctx, key, key_len);
+	return duk_get_prop(ctx, obj_idx);
+}
+
 DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -119,6 +128,16 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_idx,
 	return duk_put_prop(ctx, obj_idx);
 }
 
+DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(key != NULL);
+
+	obj_idx = duk_require_normalize_index(ctx, obj_idx);
+	duk_push_lstring(ctx, key, key_len);
+	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
+	return duk_put_prop(ctx, obj_idx);
+}
+
 DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -175,6 +194,15 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_idx,
 	return duk_del_prop(ctx, obj_idx);
 }
 
+DUK_EXTERNAL duk_bool_t duk_del_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(key != NULL);
+
+	obj_idx = duk_require_normalize_index(ctx, obj_idx);
+	duk_push_lstring(ctx, key, key_len);
+	return duk_del_prop(ctx, obj_idx);
+}
+
 DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -224,6 +252,15 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_idx,
 
 	obj_idx = duk_require_normalize_index(ctx, obj_idx);
 	duk_push_string(ctx, key);
+	return duk_has_prop(ctx, obj_idx);
+}
+
+DUK_EXTERNAL duk_bool_t duk_has_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(key != NULL);
+
+	obj_idx = duk_require_normalize_index(ctx, obj_idx);
+	duk_push_lstring(ctx, key, key_len);
 	return duk_has_prop(ctx, obj_idx);
 }
 
@@ -513,6 +550,21 @@ DUK_EXTERNAL duk_bool_t duk_get_global_string(duk_context *ctx, const char *key)
 	return ret;
 }
 
+DUK_EXTERNAL duk_bool_t duk_get_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_bool_t ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+	ret = duk_get_prop_lstring(ctx, -1, key, key_len);
+	duk_remove(ctx, -2);
+	return ret;
+}
+
 DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_bool_t ret;
@@ -525,6 +577,22 @@ DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key)
 	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
 	duk_insert(ctx, -2);
 	ret = duk_put_prop_string(ctx, -2, key);  /* [ ... global val ] -> [ ... global ] */
+	duk_pop(ctx);
+	return ret;
+}
+
+DUK_EXTERNAL duk_bool_t duk_put_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_bool_t ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
+
+	/* XXX: direct implementation */
+
+	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
+	duk_insert(ctx, -2);
+	ret = duk_put_prop_lstring(ctx, -2, key, key_len);  /* [ ... global val ] -> [ ... global ] */
 	duk_pop(ctx);
 	return ret;
 }
