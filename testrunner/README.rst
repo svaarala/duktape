@@ -74,10 +74,7 @@ The term "simple commit job" refers (here) to a simple script based test run:
 
   - "x64-qecmatest": maps to ``run_x64_qecmatest.sh`` in the test client.
 
-  - "x64-apitest": maps to ``run_x64_apitest.sh``
-
-  - "rombuild": maps to ``run_rombuild.sh`` which ultimately runs
-    ``util/example_rombuild.sh``
+  - "x64-apitest": maps to ``run_x64_apitest.sh``.
 
 * Each test run ultimately produces a success/failure indication and some
   text associated with the test run.  The Github status line links to an

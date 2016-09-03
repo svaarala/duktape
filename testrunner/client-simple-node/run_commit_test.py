@@ -151,6 +151,27 @@ def set_output_description(desc):
     global output_description
     output_description = desc
 
+def prep(options=None, options_yaml=None):
+    cwd = os.getcwd()
+    execute([ 'rm', '-rf', os.path.join(cwd, 'prep') ])
+    cmd = [
+        'python2', os.path.join(cwd, 'tools', 'configure.py'),
+        '--source-directory', os.path.join(cwd, 'src'),
+        '--output-directory', os.path.join(cwd, 'prep'),
+        '--config-metadata', os.path.join(cwd, 'config')
+    ]
+    cmd += [ '--line-directives' ]
+    if options is not None:
+        cmd += options
+    if options_yaml is not None:
+        with open(os.path.join(cwd, 'prep_options.yaml'), 'wb') as f:
+            f.write(options_yaml)
+        cmd += [ '--option-file', os.path.join(cwd, 'prep_options.yaml') ]
+        print('Prep options:')
+        execute([ 'cat', os.path.join(cwd, 'prep_options.yaml') ])
+    execute(cmd)
+    execute([ 'ls', '-l', os.path.join(cwd, 'prep') ])
+
 #
 #  Test context handlers
 #
@@ -160,8 +181,7 @@ def genconfig_dist_src(genconfig_opts):
     execute([
         'python2', os.path.join(cwd, 'tools', 'genconfig.py'),
         '--metadata', os.path.join(cwd, 'config'),
-        '--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h'),
-        '--support-feature-options'
+        '--output', os.path.join(cwd, 'dist', 'src', 'duk_config.h')
     ] + genconfig_opts + [
         'duk-config-header'
     ])
@@ -366,13 +386,11 @@ def context_linux_x64_cpp_exceptions():
     # and 15 with them.
 
     cwd = os.getcwd()
-
-    execute([ 'make', 'dist' ])
+    prep(options=[ '-DDUK_USE_CPP_EXCEPTIONS' ])
     execute([
         'g++', '-oduk-cpp-exc',
-        '-DDUK_OPT_CPP_EXCEPTIONS',
-        '-I' + os.path.join(cwd, 'dist', 'src'),
-        os.path.join(cwd, 'dist', 'src', 'duktape.c'),
+        '-I' + os.path.join(cwd, 'prep'),
+        os.path.join(cwd, 'prep', 'duktape.c'),
         os.path.join(cwd, 'examples', 'cpp-exceptions', 'cpp_exceptions.cpp'),
         '-lm'
     ])
@@ -405,23 +423,20 @@ def context_linux_x86_ajduk():
 def context_linux_x86_ajduk_rombuild():
     cwd = os.getcwd()
 
-    execute([
-        'bash',
-        os.path.join(cwd, 'util', 'example_rombuild.sh'),
-    ])
+    execute([ 'make', 'ajduk-rom' ])
 
     got_hello = False
     got_startrek = False
 
     res = execute([
-        os.path.join(cwd, 'ajduk'),
+        os.path.join(cwd, 'ajduk-rom'),
         '-e', 'print("hello world!");'
     ])
     got_hello = ('hello world!\n' in res['stdout'])  # ajduk stdout has pool dumps etc
     print('Got hello: %r' % got_hello)
 
     res = execute([
-        os.path.join(cwd, 'ajduk'),
+        os.path.join(cwd, 'ajduk-rom'),
         '-e', 'print("StarTrek.ent:", StarTrek.ent);'
     ])
     got_startrek = ('StarTrek.ent: true\n' in res['stdout'])
@@ -460,21 +475,23 @@ def context_linux_x64_test262test():
 
 def context_linux_x64_duk_dddprint():
     cwd = os.getcwd()
-
-    execute([ 'make', 'dist' ])
-    os.chdir(os.path.join(cwd, 'dist'))
+    prep(options_yaml=r"""
+DUK_USE_ASSERTIONS: true
+DUK_USE_SELF_TESTS: true
+DUK_USE_DEBUG: true
+DUK_USE_DEBUG_LEVEL: 2
+DUK_USE_DEBUG_WRITE:
+  verbatim: "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stderr, \"%ld %s:%ld (%s): %s\\n\", (long) (level), (file), (long) (line), (func), (msg));} while(0)"
+""")
 
     res = execute([
         'gcc', '-oduk',
-        '-DDUK_OPT_ASSERTIONS', '-DDUK_OPT_SELF_TESTS',
-        '-DDUK_OPT_DEBUG', '-DDUK_OPT_DPRINT', '-DDUK_OPT_DDPRINT', '-DDUK_OPT_DDDPRINT',
-        '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "%ld %s:%ld (%s): %s\\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
-        '-I' + os.path.join(cwd, 'dist', 'src'),
-        '-I' + os.path.join(cwd, 'dist', 'extras', 'print-alert'),
-        os.path.join(cwd, 'dist', 'src', 'duktape.c'),
-        os.path.join(cwd, 'dist', 'examples', 'cmdline', 'duk_cmdline.c'),
-        os.path.join(cwd, 'dist', 'extras', 'print-alert', 'duk_print_alert.c'),
+        '-I' + os.path.join(cwd, 'prep'),
+        '-I' + os.path.join(cwd, 'extras', 'print-alert'),
+        os.path.join(cwd, 'prep', 'duktape.c'),
+        os.path.join(cwd, 'examples', 'cmdline', 'duk_cmdline.c'),
+        os.path.join(cwd, 'extras', 'print-alert', 'duk_print_alert.c'),
         '-lm'
     ], catch=True)
     if not res['success']:
@@ -482,7 +499,7 @@ def context_linux_x64_duk_dddprint():
         return False
 
     res = execute([
-        os.path.join(cwd, 'dist', 'duk'),
+        os.path.join(cwd, 'duk'),
         '-e', 'print("Hello world!");'
     ], dump_stderr=False)
 
@@ -807,10 +824,12 @@ def context_linux_x64_minisphere():
     # Unpack minisphere snapshot and copy Duktape files over.
     unpack_targz(os.path.join(repo_snapshot_dir, 'minisphere-20160516.tar.gz'))
 
+    prep(options=[ '--fixup-file', os.path.join(cwd, 'minisphere', 'src', 'engine', 'duk_custom.h') ])
+
     for i in [ 'duktape.c', 'duktape.h', 'duk_config.h' ]:
         execute([
             'cp',
-            os.path.join(cwd, 'dist', 'src', i),
+            os.path.join(cwd, 'prep', i),
             os.path.join(cwd, 'minisphere', 'src', 'shared', i)
         ])
 
