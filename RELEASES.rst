@@ -1908,6 +1908,11 @@ Planned
   order; the order was not guaranteed but specification requires left-to-right
   ordering (GH-943)
 
+* Fix genconfig.py forced option boolean comparison; for forced numeric option
+  value 0 genconfig would emit "#undef XXX" (instead of "#define XXX 0") and
+  for forced numeric option value 1 it would emit "#define XXX" (instead of
+  "#define XXX 1") (GH-954)
+
 * Reduce harmless "unused function" warnings for GCC and Clang by using
   __attribute__ ((unused)) for internal function declarations (GH-916,
   GH-942)
