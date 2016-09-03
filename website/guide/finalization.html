@@ -107,7 +107,7 @@ finalizer behavior:</p>
 
 <ul>
 <li>When script execution timeout
-(<code>DUK_OPT_EXEC_TIMEOUT_CHECK</code> / <code>DUK_USE_EXEC_TIMEOUT_CHECK</code>)
+(<code>DUK_USE_EXEC_TIMEOUT_CHECK</code>)
 is used and a timeout occurs, it's possible for an Ecmascript finalizer to start
 running but immediately fail due to a script timeout.  If this is a concrete
 concern, use a Duktape/C native finalizer instead which will run normally even
