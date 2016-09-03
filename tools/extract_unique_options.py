@@ -10,7 +10,7 @@ import os, sys, re
 # DUK_USE_xxx/DUK_OPT_xxx are used as placeholders and not matched
 # (only uppercase allowed)
 re_use = re.compile(r'DUK_USE_[A-Z0-9_]+')
-re_opt = re.compile(r'DUK_OPT_[A-Z0-9_]+')
+re_opt = re.compile(r'DUK_OPT_[A-Z0-9_]+')  # removed in Duktape 2.x; match anyway just in case
 
 def main():
     uses = {}
