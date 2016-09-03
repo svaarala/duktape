@@ -1764,6 +1764,10 @@ Planned
 * Incompatible change: util/dist.py no longer supports ROM built-ins, use
   tools/configure.py instead (GH-929)
 
+* Add convenience API calls duk_get_prop_lstring(), duk_put_prop_lstring(),
+  duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
+  duk_put_global_lstring() (GH-946, GH-953)
+
 * Include raw input sources and a prepare-and-config tool in the distributable,
   which allow user code to regenerate a config file and source code files for
   specified options; this is more comprehensive than just running genconfig.py
