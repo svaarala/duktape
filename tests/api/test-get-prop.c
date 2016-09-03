@@ -1,5 +1,5 @@
 /*===
-*** test_1a (duk_safe_call)
+*** test_getprop_a (duk_safe_call)
 obj.foo -> rc=1, result='fooval'
 obj.nonexistent -> rc=0, result='undefined'
 obj[123] -> rc=1, result='123val'
@@ -10,18 +10,19 @@ arr.length -> rc=1, result='3'
 'test_string'.length -> rc=1, result='11'
 final top: 3
 ==> rc=0, result='undefined'
-*** test_1b (duk_safe_call)
+*** test_getprop_b (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
-*** test_1c (duk_safe_call)
+*** test_getprop_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
-*** test_1d (duk_safe_call)
+*** test_getprop_d (duk_safe_call)
 Math.PI is 3.141593
 configuration setting present, value: setting value
 final top: 4
 ==> rc=0, result='undefined'
-*** test_1e (duk_safe_call)
+*** test_getprop_e (duk_safe_call)
 ==> rc=1, result='TypeError: cannot read property 'foo' of null'
-*** test_2a (duk_safe_call)
+*** test_getpropstring_a (duk_safe_call)
+obj.foo -> rc=1, result='fooval'
 obj.foo -> rc=1, result='fooval'
 obj.nonexistent -> rc=0, result='undefined'
 obj['123'] -> rc=1, result='123val'
@@ -32,11 +33,11 @@ arr.length -> rc=1, result='3'
 'test_string'.length -> rc=1, result='11'
 final top: 3
 ==> rc=0, result='undefined'
-*** test_2b (duk_safe_call)
+*** test_getpropstring_b (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
-*** test_2c (duk_safe_call)
+*** test_getpropstring_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
-*** test_3a (duk_safe_call)
+*** test_getpropindex_a (duk_safe_call)
 obj[31337] -> rc=0, result='undefined'
 obj[123] -> rc=1, result='123val'
 arr[31337] -> rc=0, result='undefined'
@@ -44,9 +45,20 @@ arr[2] -> rc=1, result='quux'
 'test_string'[5] -> rc=1, result='s'
 final top: 3
 ==> rc=0, result='undefined'
-*** test_3b (duk_safe_call)
+*** test_getpropindex_b (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index 234'
-*** test_3c (duk_safe_call)
+*** test_getpropindex_c (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index -2147483648'
+*** test_getproplstring_a (duk_safe_call)
+obj.foo -> rc=1, result='fooval'
+obj.nonexistent -> rc=0, result='undefined'
+obj['123'] -> rc=1, result='123val'
+obj['nul<NUL>key'] -> rc=1, result='nulval'
+final top: 3
+==> rc=0, result='undefined'
+*** test_getproplstring_b (duk_safe_call)
+==> rc=1, result='RangeError: invalid stack index 234'
+*** test_getproplstring_c (duk_safe_call)
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 ===*/
 
@@ -54,7 +66,7 @@ static void prep(duk_context *ctx) {
 	duk_set_top(ctx, 0);
 
 	/* 0: object with both string and number keys */
-	duk_push_string(ctx, "{\"foo\": \"fooval\", \"bar\": \"barval\", \"123\": \"123val\"}");
+	duk_push_string(ctx, "{\"foo\": \"fooval\", \"bar\": \"barval\", \"123\": \"123val\", \"nul\\u0000key\": \"nulval\"}");
 	(void) duk_json_decode(ctx, -1);
 
 	/* 1: array with 3 elements */
@@ -66,7 +78,7 @@ static void prep(duk_context *ctx) {
 }
 
 /* duk_get_prop(), success cases */
-static duk_ret_t test_1a(duk_context *ctx, void *udata) {
+static duk_ret_t test_getprop_a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -118,7 +130,7 @@ static duk_ret_t test_1a(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop(), invalid index */
-static duk_ret_t test_1b(duk_context *ctx, void *udata) {
+static duk_ret_t test_getprop_b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -135,7 +147,7 @@ static duk_ret_t test_1b(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop(), DUK_INVALID_INDEX */
-static duk_ret_t test_1c(duk_context *ctx, void *udata) {
+static duk_ret_t test_getprop_c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -152,7 +164,7 @@ static duk_ret_t test_1c(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop(), test in API doc (more or less) */
-static duk_ret_t test_1d(duk_context *ctx, void *udata) {
+static duk_ret_t test_getprop_d(duk_context *ctx, void *udata) {
 	int cfg_idx;
 
 	(void) udata;
@@ -190,7 +202,7 @@ static duk_ret_t test_1d(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop(), not object coercible */
-static duk_ret_t test_1e(duk_context *ctx, void *udata) {
+static duk_ret_t test_getprop_e(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -208,7 +220,7 @@ static duk_ret_t test_1e(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_string(), success cases */
-static duk_ret_t test_2a(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropstring_a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -216,6 +228,10 @@ static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 	prep(ctx);
 
 	rc = duk_get_prop_string(ctx, 0, "foo");
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_string(ctx, 0, "foo" "\x00" "bar");  /* embedded NUL terminates key */
 	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
 	duk_pop(ctx);
 
@@ -252,7 +268,7 @@ static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_string(), invalid index */
-static duk_ret_t test_2b(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropstring_b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -268,7 +284,7 @@ static duk_ret_t test_2b(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_string(), DUK_INVALID_INDEX */
-static duk_ret_t test_2c(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropstring_c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -284,7 +300,7 @@ static duk_ret_t test_2c(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_index(), success cases */
-static duk_ret_t test_3a(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropindex_a(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -316,7 +332,7 @@ static duk_ret_t test_3a(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_index(), invalid index */
-static duk_ret_t test_3b(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropindex_b(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -332,7 +348,7 @@ static duk_ret_t test_3b(duk_context *ctx, void *udata) {
 }
 
 /* duk_get_prop_index(), DUK_INVALID_INDEX */
-static duk_ret_t test_3c(duk_context *ctx, void *udata) {
+static duk_ret_t test_getpropindex_c(duk_context *ctx, void *udata) {
 	duk_ret_t rc;
 
 	(void) udata;
@@ -347,18 +363,82 @@ static duk_ret_t test_3c(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* duk_get_prop_lstring(), success cases */
+static duk_ret_t test_getproplstring_a(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_lstring(ctx, 0, "foox", 3);
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_lstring(ctx, 0, "nonexistent", 11);
+	printf("obj.nonexistent -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_lstring(ctx, 0, "123", 3);
+	printf("obj['123'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	rc = duk_get_prop_lstring(ctx, 0, "nul" "\x00" "key", 7);
+	printf("obj['nul<NUL>key'] -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_get_prop_lstring(), invalid index */
+static duk_ret_t test_getproplstring_b(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_lstring(ctx, 234, "foox", 3);
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
+/* duk_get_prop_lstring(), DUK_INVALID_INDEX */
+static duk_ret_t test_getproplstring_c(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	prep(ctx);
+
+	rc = duk_get_prop_lstring(ctx, DUK_INVALID_INDEX, "foox", 3);
+	printf("obj.foo -> rc=%d, result='%s'\n", (int) rc, duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
-	TEST_SAFE_CALL(test_1a);
-	TEST_SAFE_CALL(test_1b);
-	TEST_SAFE_CALL(test_1c);
-	TEST_SAFE_CALL(test_1d);
-	TEST_SAFE_CALL(test_1e);
+	TEST_SAFE_CALL(test_getprop_a);
+	TEST_SAFE_CALL(test_getprop_b);
+	TEST_SAFE_CALL(test_getprop_c);
+	TEST_SAFE_CALL(test_getprop_d);
+	TEST_SAFE_CALL(test_getprop_e);
 
-	TEST_SAFE_CALL(test_2a);
-	TEST_SAFE_CALL(test_2b);
-	TEST_SAFE_CALL(test_2c);
+	TEST_SAFE_CALL(test_getpropstring_a);
+	TEST_SAFE_CALL(test_getpropstring_b);
+	TEST_SAFE_CALL(test_getpropstring_c);
 
-	TEST_SAFE_CALL(test_3a);
-	TEST_SAFE_CALL(test_3b);
-	TEST_SAFE_CALL(test_3c);
+	TEST_SAFE_CALL(test_getpropindex_a);
+	TEST_SAFE_CALL(test_getpropindex_b);
+	TEST_SAFE_CALL(test_getpropindex_c);
+
+	TEST_SAFE_CALL(test_getproplstring_a);
+	TEST_SAFE_CALL(test_getproplstring_b);
+	TEST_SAFE_CALL(test_getproplstring_c);
 }

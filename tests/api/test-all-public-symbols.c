@@ -59,6 +59,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_decode_string(ctx, 0, NULL, NULL);
 	(void) duk_def_prop(ctx, 0, 0);
 	(void) duk_del_prop_index(ctx, 0, 0);
+	(void) duk_del_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_del_prop_string(ctx, 0, "dummy");
 	(void) duk_del_prop(ctx, 0);
 	(void) duk_destroy_heap(ctx);
@@ -87,7 +88,8 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_current_magic(ctx);
 	(void) duk_get_error_code(ctx, 0);
 	(void) duk_get_finalizer(ctx, 0);
-	(void) duk_get_global_string(ctx, 0);
+	(void) duk_get_global_lstring(ctx, "dummy", 0);
+	(void) duk_get_global_string(ctx, "dummy");
 	(void) duk_get_heapptr(ctx, 0);
 	(void) duk_get_int(ctx, 0);
 	(void) duk_get_length(ctx, 0);
@@ -97,6 +99,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_number(ctx, 0);
 	(void) duk_get_pointer(ctx, 0);
 	(void) duk_get_prop_index(ctx, 0, 0);
+	(void) duk_get_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_get_prop_string(ctx, 0, "dummy");
 	(void) duk_get_prop(ctx, 0);
 	(void) duk_get_prototype(ctx, 0);
@@ -107,6 +110,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_type(ctx, 0);
 	(void) duk_get_uint(ctx, 0);
 	(void) duk_has_prop_index(ctx, 0, 0);
+	(void) duk_has_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_has_prop_string(ctx, 0, "dummy");
 	(void) duk_has_prop(ctx, 0);
 	(void) duk_hex_decode(ctx, 0);
@@ -209,9 +213,11 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_undefined(ctx);
 	(void) duk_push_vsprintf(ctx, "dummy", NULL);
 	(void) duk_put_function_list(ctx, 0, NULL);
-	(void) duk_put_global_string(ctx, NULL);
+	(void) duk_put_global_lstring(ctx, "dummy", 0);
+	(void) duk_put_global_string(ctx, "dummy");
 	(void) duk_put_number_list(ctx, 0, NULL);
 	(void) duk_put_prop_index(ctx, 0, 0);
+	(void) duk_put_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");
 	(void) duk_put_prop(ctx, 0);
 	(void) duk_realloc_raw(ctx, NULL, 0);
