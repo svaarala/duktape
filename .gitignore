@@ -8,6 +8,7 @@
 /duk
 /libduktape.*
 /build/
+/prep/
 /dist/
 /site/
 /stuff/
