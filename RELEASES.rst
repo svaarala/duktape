@@ -1636,6 +1636,10 @@ Planned
 2.0.0 (XXXX-XX-XX)
 ------------------
 
+* Incompatible change: remove feature option (DUK_OPT_xxx) support entirely,
+  use tools/configure.py (or tools/genconfig.py) or edit duk_config.h manually
+  to use custom config options (GH-949)
+
 * Incompatible change: remove Duktape.Buffer custom built-in, ArrayBuffer
   now serves its place; the following new bindings provide functionality
   roughly equivalent to Duktape.Buffer: ArrayBuffer.allocPlain(),
