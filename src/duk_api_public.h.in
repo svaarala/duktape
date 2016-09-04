@@ -407,6 +407,12 @@ DUK_EXTERNAL_DECL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t fla
 #define duk_push_thread_new_globalenv(ctx) \
 	duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
 
+/* FIXME: user control for error blaming; add a flags field for error
+ * pushing; make the flags OR'd into the error code explicit and
+ * part of the public API; or add separate variants to control blaming.
+ * Because there may be multiple flags controlling error creation,
+ * separate API call variants seem awkward.
+ */
 DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...);
 
 #ifdef DUK_API_VARIADIC_MACROS
