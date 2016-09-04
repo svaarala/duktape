@@ -1,5 +1,4 @@
 define: DUK_USE_DEBUG
-feature_enables: DUK_OPT_DEBUG
 introduced: 1.0.0
 default: false
 tags:

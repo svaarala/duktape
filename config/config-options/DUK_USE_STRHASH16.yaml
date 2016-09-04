@@ -1,5 +1,4 @@
 define: DUK_USE_STRHASH16
-feature_enables: DUK_OPT_STRHASH16
 introduced: 1.1.0
 default: false
 tags:

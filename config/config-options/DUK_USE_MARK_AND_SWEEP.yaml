@@ -1,5 +1,4 @@
 define: DUK_USE_MARK_AND_SWEEP
-feature_enables: DUK_OPT_MARK_AND_SWEEP
 introduced: 1.0.0
 default: true
 tags:

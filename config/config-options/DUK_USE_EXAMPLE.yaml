@@ -7,35 +7,6 @@
 # C #define name for the option.  Must match filename minus extension.
 define: DUK_USE_OBJSIZES16
 
-# Optional list of deprecated feature defines related to this option.
-# Useful so that we can issue automatic warnings/errors for deprecated
-# feature options.
-related_feature_defines:
-  - DUK_OPT_OBJSIZES16
-
-# Feature define (DUK_OPT_xxx) enables config define (DUK_USE_xxx), and
-# negative feature define (DUK_OPT_NO_xxx) disables config define.  If
-# neither present, use default.
-#feature_enables: DUK_OPT_OBJSIZES16
-
-# Feature define disables config define, and vice versa.
-#feature_disables: DUK_OPT_OBJSIZES16
-
-# Feature detection snippet given explicitly.
-#feature_snippet: |
-#   #if defined(DUK_OPT_OBJSIZES16)
-#   #define DUK_USE_OBJSIZES16
-#   #if defined(XYZ)
-#   #error DUK_OPT_OBJSIZES16 conflicts with XYZ
-#   #endif
-#   #endif
-
-# Feature default value is provided by platform, compiler, or architecture.
-# DUK_OPT_xxx handling can force the value if explicitly requested by
-# DUK_OPT_XXX or DUK_OPT_NO_xxx, but if neither is given, don't emit a
-# default.
-#feature_no_default: true
-
 # Duktape version number where this option was first introduced.
 introduced: 1.1.0
 

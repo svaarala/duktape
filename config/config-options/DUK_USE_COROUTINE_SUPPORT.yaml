@@ -1,5 +1,4 @@
 define: DUK_USE_COROUTINE_SUPPORT
-feature_enables: DUK_OPT_COROUTINE_SUPPORT
 introduced: 2.0.0
 default: true
 tags:

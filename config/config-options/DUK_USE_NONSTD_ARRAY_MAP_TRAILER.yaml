@@ -1,5 +1,4 @@
 define: DUK_USE_NONSTD_ARRAY_MAP_TRAILER
-feature_enables: DUK_OPT_NONSTD_ARRAY_MAP_TRAILER
 introduced: 1.0.0
 default: true
 tags:

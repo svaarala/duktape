@@ -1,0 +1,4 @@
+DUK_USE_SELF_TESTS: true
+#DUK_USE_ASSERTIONS: true
+DUK_USE_FATAL_HANDLER:
+  verbatim: "#define DUK_USE_FATAL_HANDLER(udata,msg) do {dukweb_fatal_handler((udata),(msg));abort();} while (0)"

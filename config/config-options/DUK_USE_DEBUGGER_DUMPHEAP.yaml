@@ -1,5 +1,4 @@
 define: DUK_USE_DEBUGGER_DUMPHEAP
-feature_enables: DUK_OPT_DEBUGGER_DUMPHEAP
 introduced: 1.2.0
 # Option is ignored unless debugger support is enabled.
 #requires:

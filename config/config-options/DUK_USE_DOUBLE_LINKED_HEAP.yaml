@@ -1,5 +1,4 @@
 define: DUK_USE_DOUBLE_LINKED_HEAP
-feature_enables: DUK_OPT_REFERENCE_COUNTING
 introduced: 1.0.0
 default: true
 tags:

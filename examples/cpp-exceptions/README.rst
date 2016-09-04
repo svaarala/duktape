@@ -8,12 +8,12 @@ C++ automatic destructors (scope-based resource management, SBRM, a special
 case of RAII) in Duktape/C functions won't be executed which is awkward for
 C++ programmers.
 
-When ``DUK_USE_CPP_EXCEPTIONS`` (``DUK_OPT_CPP_EXCEPTIONS``) is defined, and
-both Duktape and application code is compiled using a C++ compiler, Duktape
-uses C++ ``try-catch`` and ``throw`` for internal long control transfers.
-This allows automatic destructors to run as expected.  The config option is
-not enabled by default because C++ exceptions are sometimes disabled even
-when a C++ compiler is used (e.g. for performance reasons).
+When ``DUK_USE_CPP_EXCEPTIONS`` is defined, and both Duktape and application
+code is compiled using a C++ compiler, Duktape uses C++ ``try-catch`` and
+``throw`` for internal long control transfers.  This allows automatic
+destructors to run as expected.  The config option is not enabled by default
+because C++ exceptions are sometimes disabled even when a C++ compiler is
+used (e.g. for performance reasons).
 
 The ``cpp_exceptions.cpp`` example illustrates how C++ exceptions can be
 used in Duktape/C functions at the moment:

@@ -768,7 +768,7 @@ def main():
             '--config-metadata', os.path.join(dist, 'config'),
             '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
             '--omit-removed-config-options', '--omit-unused-config-options',
-            '--emit-config-sanity-check', '--support-feature-options'
+            '--emit-config-sanity-check', '--emit-legacy-feature-check'
         ]
         cmd += extraopts
         if opts.rom_support:

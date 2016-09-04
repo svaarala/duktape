@@ -1,5 +1,4 @@
 define: DUK_USE_REGEXP_SUPPORT
-feature_enables: DUK_OPT_REGEXP_SUPPORT
 introduced: 1.0.0
 default: true
 tags:

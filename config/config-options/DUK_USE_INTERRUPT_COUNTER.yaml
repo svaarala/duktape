@@ -1,5 +1,4 @@
 define: DUK_USE_INTERRUPT_COUNTER
-feature_enables: DUK_OPT_INTERRUPT_COUNTER
 introduced: 1.1.0
 related:
   - DUK_USE_DEBUGGER_SUPPORT

@@ -22,12 +22,9 @@ DEFINES =
 # If you want a 32-bit build on a 64-bit host
 #CCOPTS += -m32
 
-# Optional feature defines, see: http://duktape.org/guide.html#compiling
-DEFINES += -DDUK_OPT_SELF_TESTS
-#DEFINES += -DDUK_OPT_DEBUG
-#DEFINES += -DDUK_OPT_DPRINT
-#DEFINES += -DDUK_OPT_NO_TRACEBACKS
-# ...
+# Use the tools/configure.py utility to modify Duktape default configuration:
+# http://duktape.org/guide.html#compiling
+# http://wiki.duktape.org/Configuring.html
 
 # For debugging, use -O0 -g -ggdb, and don't add -fomit-frame-pointer
 

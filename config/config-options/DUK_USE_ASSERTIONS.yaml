@@ -1,7 +1,4 @@
 define: DUK_USE_ASSERTIONS
-related_feature_defines:
-  - DUK_OPT_ASSERTIONS
-feature_enables: DUK_OPT_ASSERTIONS
 introduced: 1.0.0
 default: false
 tags:

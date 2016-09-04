@@ -1,5 +1,4 @@
 define: DUK_USE_DPRINT
-feature_enables: DUK_OPT_DPRINT
 introduced: 1.0.0
 removed: 2.0.0
 requires:

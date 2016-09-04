@@ -1,5 +1,4 @@
 define: DUK_USE_CPP_EXCEPTIONS
-feature_enables: DUK_OPT_CPP_EXCEPTIONS
 introduced: 1.4.0
 default: false
 tags:

@@ -1,5 +1,4 @@
 define: DUK_USE_AUGMENT_ERROR_CREATE
-feature_enables: DUK_OPT_AUGMENT_ERRORS
 introduced: 1.0.0
 default: true
 tags:

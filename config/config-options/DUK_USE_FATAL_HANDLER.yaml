@@ -1,9 +1,4 @@
 define: DUK_USE_FATAL_HANDLER
-feature_snippet: |
-  #undef DUK_USE_FATAL_HANDLER
-  #if defined(DUK_OPT_FATAL_HANDLER)
-  #define DUK_USE_FATAL_HANDLER(udata,msg) DUK_OPT_FATAL_HANDLER((udata),(msg))
-  #endif
 introduced: 2.0.0
 default: false
 tags:

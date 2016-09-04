@@ -1,10 +1,4 @@
 define: DUK_USE_HOBJECT_HASH_PART
-feature_snippet: |
-  /* For now, hash part is dropped if and only if 16-bit object fields are used. */
-  #define DUK_USE_HOBJECT_HASH_PART
-  #if defined(DUK_OPT_OBJSIZES16)
-  #undef DUK_USE_HOBJECT_HASH_PART
-  #endif
 introduced: 1.1.0
 default: true
 tags:

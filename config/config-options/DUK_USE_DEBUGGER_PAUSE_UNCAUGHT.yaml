@@ -1,5 +1,4 @@
 define: DUK_USE_DEBUGGER_PAUSE_UNCAUGHT
-feature_enables: DUK_OPT_DEBUGGER_PAUSE_UNCAUGHT
 introduced: 1.4.0
 # Option is ignored unless debugger support is enabled.
 #requires:

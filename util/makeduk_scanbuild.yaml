@@ -1,0 +1,3 @@
+# Avoid NULL write for scanbuild fatal handler.
+DUK_USE_FATAL_HANDLER:
+  verbatim: "#define DUK_USE_FATAL_HANDLER(udata,msg) do { (void) (udata); (void) (msg); abort(); } while(0)"

@@ -1,5 +1,4 @@
 define: DUK_USE_PARANOID_ERRORS
-feature_enables: DUK_OPT_PARANOID_ERRORS
 introduced: 1.4.0
 default: false
 tags:

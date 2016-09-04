@@ -1,5 +1,4 @@
 define: DUK_USE_NONSTD_REGEXP_DOLLAR_ESCAPE
-feature_enables: DUK_OPT_NONSTD_REGEXP_DOLLAR_ESCAPE
 introduced: 1.0.0
 removed: 2.0.0
 default: true

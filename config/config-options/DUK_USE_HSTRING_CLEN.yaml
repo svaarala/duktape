@@ -1,5 +1,4 @@
 define: DUK_USE_HSTRING_CLEN
-feature_enables: DUK_OPT_HSTRING_CLEN
 introduced: 1.5.0
 default: true
 tags:

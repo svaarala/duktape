@@ -1,5 +1,4 @@
 define: DUK_USE_COMMONJS_MODULES
-feature_enables: DUK_OPT_COMMONJS_MODULES
 introduced: 1.0.0
 default: true
 tags:

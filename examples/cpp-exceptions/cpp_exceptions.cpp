@@ -2,13 +2,18 @@
  *  Example of how to use DUK_USE_CPP_EXCEPTIONS to support automatic
  *  variables (e.g. destructor calls) in Duktape/C functions.
  *
- *  Compile with -DDUK_OPT_CPP_EXCEPTIONS:
+ *  Configure and compile with -DDUK_USE_CPP_EXCEPTIONS:
  *
- *    $ g++ -otest -DDUK_OPT_CPP_EXCEPTIONS -I<duktape_dist>/src/ \
- *      <duktape_dist>/src/duktape.c cpp_exceptions.cpp -lm
+ *    $ python2 tools/configure.py \
+ *          --source-directory src-input \
+ *          --output-directory /tmp/output \
+ *          --config-metadata config \
+ *          -DDUK_USE_CPP_EXCEPTIONS
  *
- *  or ensure duk_config.h has DUK_USE_CPP_EXCEPTIONS enabled using
- *  genconfig.  When executed you should see something like:
+ *    $ g++ -otest -I/tmp/output \
+ *          /tmp/output/duktape.c cpp_exceptions.cpp -lm
+ *
+ *  When executed you should see something like:
  *
  *    $ ./test
  *    my_class instance created

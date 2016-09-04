@@ -1,5 +1,4 @@
 define: DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY
-feature_enables: DUK_OPT_NONSTD_FUNC_SOURCE_PROPERTY
 introduced: 1.0.0
 default: false
 tags:

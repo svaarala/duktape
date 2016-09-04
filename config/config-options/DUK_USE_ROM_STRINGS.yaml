@@ -1,5 +1,4 @@
 define: DUK_USE_ROM_STRINGS
-feature_enables: DUK_OPT_ROM_STRINGS
 introduced: 1.5.0
 requires:
   - DUK_USE_ROM_OBJECTS  # use both DUK_USE_ROM_STRINGS + DUK_USE_ROM_OBJECTS together for now

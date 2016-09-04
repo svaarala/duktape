@@ -19,25 +19,6 @@
  *  byte order for doubles is referred to as "mixed endian".
  */
 
-/* For custom platforms allow user to define byteorder explicitly.
- * Since endianness headers are not standardized, this is a useful
- * workaround for custom platforms for which endianness detection
- * is not directly supported.  Perhaps custom hardware is used and
- * user cannot submit upstream patches.
- */
-#if defined(DUK_OPT_FORCE_BYTEORDER)
-#undef DUK_USE_BYTEORDER
-#if (DUK_OPT_FORCE_BYTEORDER == 1)
-#define DUK_USE_BYTEORDER 1
-#elif (DUK_OPT_FORCE_BYTEORDER == 2)
-#define DUK_USE_BYTEORDER 2
-#elif (DUK_OPT_FORCE_BYTEORDER == 3)
-#define DUK_USE_BYTEORDER 3
-#else
-#error invalid DUK_OPT_FORCE_BYTEORDER value
-#endif
-#endif  /* DUK_OPT_FORCE_BYTEORDER */
-
 /* GCC and Clang provide endianness defines as built-in predefines, with
  * leading and trailing double underscores (e.g. __BYTE_ORDER__).  See
  * output of "make gccpredefs" and "make clangpredefs".  Clang doesn't

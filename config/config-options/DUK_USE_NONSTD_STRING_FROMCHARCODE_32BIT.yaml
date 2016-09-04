@@ -1,5 +1,4 @@
 define: DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT
-feature_enables: DUK_OPT_NONSTD_STRING_FROMCHARCODE_32BIT
 introduced: 1.2.0
 default: true
 tags:

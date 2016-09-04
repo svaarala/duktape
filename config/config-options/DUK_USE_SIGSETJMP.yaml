@@ -1,6 +1,4 @@
 define: DUK_USE_SIGSETJMP
-feature_enables: DUK_OPT_SIGSETJMP
-feature_no_default: true  # provided by platform unless forced
 introduced: 1.1.0
 removed: 1.5.0
 default: false

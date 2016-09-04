@@ -1,5 +1,4 @@
 define: DUK_USE_ES6_REGEXP_SYNTAX
-feature_enables: DUK_OPT_ES6_REGEXP_SYNTAX
 introduced: 2.0.0
 default: true
 tags:

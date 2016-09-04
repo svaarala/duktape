@@ -1,18 +1,4 @@
 define: DUK_USE_DOUBLE_ME
-feature_snippet: |
-  #if defined(DUK_OPT_FORCE_BYTEORDER)
-  #if (DUK_OPT_FORCE_BYTEORDER == 1)
-  #undef DUK_USE_DOUBLE_ME
-  #elif (DUK_OPT_FORCE_BYTEORDER == 2)
-  #define DUK_USE_DOUBLE_ME
-  #elif (DUK_OPT_FORCE_BYTEORDER == 3)
-  #undef DUK_USE_DOUBLE_ME
-  #else
-  #error invalid DUK_OPT_FORCE_BYTEORDER
-  #endif
-  #else
-  #undef DUK_USE_DOUBLE_ME
-  #endif
 introduced: 1.0.0
 removed: 1.4.0
 default: false

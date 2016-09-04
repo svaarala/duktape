@@ -1,5 +1,4 @@
 define: DUK_USE_STRICT_UTF8_SOURCE
-feature_enables: DUK_OPT_STRICT_UTF8_SOURCE
 introduced: 1.0.0
 default: false
 tags:

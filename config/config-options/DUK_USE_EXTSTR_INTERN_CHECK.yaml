@@ -1,9 +1,4 @@
 define: DUK_USE_EXTSTR_INTERN_CHECK
-feature_snippet: |
-  #undef DUK_USE_EXTSTR_INTERN_CHECK
-  #if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_INTERN_CHECK)
-  #define DUK_USE_EXTSTR_INTERN_CHECK(udata,ptr,len) DUK_OPT_EXTSTR_INTERN_CHECK((udata), (ptr), (len))
-  #endif
 introduced: 1.1.0
 requires:
   - DUK_USE_HSTRING_EXTDATA

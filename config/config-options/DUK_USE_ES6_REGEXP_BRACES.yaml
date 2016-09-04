@@ -1,5 +1,4 @@
 define: DUK_USE_ES6_REGEXP_BRACES
-feature_enables: DUK_OPT_ES6_REGEXP_BRACES
 introduced: 1.5.0
 removed: 2.0.0
 default: true

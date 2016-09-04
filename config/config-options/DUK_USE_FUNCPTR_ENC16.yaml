@@ -1,10 +1,4 @@
 define: DUK_USE_FUNCPTR_ENC16
-feature_snippet: |
-  #if defined(DUK_OPT_FUNCPTR_ENC16)
-  #define DUK_USE_FUNCPTR_ENC16(udata,ptr) DUK_OPT_FUNCPTR_ENC16((udata),(ptr))
-  #else
-  #undef DUK_USE_FUNCPTR_ENC16
-  #endif
 introduced: 1.1.0
 requires:
   - DUK_USE_FUNCPTR16

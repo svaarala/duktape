@@ -1,5 +1,4 @@
 define: DUK_USE_VERBOSE_ERRORS
-feature_enables: DUK_OPT_VERBOSE_ERRORS
 introduced: 1.0.0
 default: true
 tags:

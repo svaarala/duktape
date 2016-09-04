@@ -1,5 +1,4 @@
 define: DUK_USE_ZERO_BUFFER_DATA
-feature_enables: DUK_OPT_ZERO_BUFFER_DATA
 introduced: 1.0.0
 default: true
 tags:

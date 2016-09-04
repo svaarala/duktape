@@ -1,10 +1,4 @@
 define: DUK_USE_TARGET_INFO
-feature_snippet: |
-  #if defined(DUK_OPT_TARGET_INFO)
-  #define DUK_USE_TARGET_INFO DUK_OPT_TARGET_INFO
-  #else
-  #define DUK_USE_TARGET_INFO "unknown"
-  #endif
 introduced: 1.2.0
 default:
   string: "unknown"
