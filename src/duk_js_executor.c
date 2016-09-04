@@ -524,9 +524,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 		d1 = DUK_TVAL_GET_NUMBER(tv);
 	} else {
 		d1 = duk_to_number(ctx, idx_src);  /* side effects, perform in-place */
-		tv = DUK_GET_TVAL_POSIDX(ctx, idx_src);
-		DUK_ASSERT(tv != NULL);
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(DUK_GET_TVAL_POSIDX(ctx, idx_src)));
 	}
 
 	if (opcode == DUK_OP_UNP) {
@@ -3710,7 +3708,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("CLOSURE to target register %ld, fnum %ld (count %ld)",
-			                     (long) a, (long) bc, (long) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, DUK__FUN())));
+			                     (long) DUK_DEC_A(ins), (long) DUK_DEC_BC(ins), (long) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, DUK__FUN())));
 
 			DUK_ASSERT_DISABLE(bc >= 0); /* unsigned */
 			DUK_ASSERT((duk_uint_t) bc < (duk_uint_t) DUK_HCOMPFUNC_GET_FUNCS_COUNT(thr->heap, DUK__FUN()));
