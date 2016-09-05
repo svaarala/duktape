@@ -30,8 +30,8 @@ try {
      * compliant implementation.
      *
      * V8 allows this in non-strict mode (as function statement).
-     * This is also Duktape behavior now (unless DUK_OPT_NO_NONSTD_FUNC_STMT
-     * is used).
+     * This is also Duktape behavior now (unless DUK_USE_NONSTD_FUNC_STMT
+     * is disabled).
      */
 
     eval("function f1() { mylabel: function f2() {} }");

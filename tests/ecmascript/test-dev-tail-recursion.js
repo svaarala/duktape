@@ -7,7 +7,7 @@
 /*---
 {
     "custom": true,
-    "comment": "breaks with DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY"
+    "comment": "breaks with DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
 }
 ---*/
 

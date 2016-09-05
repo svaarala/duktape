@@ -14,7 +14,7 @@
 /*---
 {
     "nonstandard": true,
-    "comment": "will fail with DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT"
+    "comment": "requires DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT"
 }
 ---*/
 
