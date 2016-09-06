@@ -148,7 +148,7 @@ objects:
   # Example of plain value types supported at the moment:
   #
   # - Object, function, lightfunc, and accessor types not illustrated
-  #   here (see src/builtins.yaml for examples of those).
+  #   here (see src-input/builtins.yaml for examples of those).
   #
   # - Duktape buffer and pointer types cannot be used by built-in
   #   objects at the moment.

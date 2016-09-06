@@ -39,7 +39,7 @@ VALGRIND:=$(shell command -v valgrind 2>/dev/null)
 PYTHON:=$(shell { command -v python2 || command -v python; } 2>/dev/null)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
-DUK_VERSION:=$(shell cat src/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_VERSION:=$(shell cat src-input/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
 DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
@@ -187,7 +187,7 @@ clean:
 	@rm -f duktape-*.tar.*
 	@rm -f duktape-*.iso
 	@rm -f doc/*.html
-	@rm -f src/*.pyc tools/*.pyc util/*.pyc
+	@rm -f src-input/*.pyc tools/*.pyc util/*.pyc
 	@rm -rf massif.out.* ms_print.tmp.*
 	@rm -rf cachegrind.out.*
 	@rm -rf callgrind.out.*
@@ -254,37 +254,37 @@ prep:
 	@mkdir prep
 prep/nondebug: prep
 	@rm -rf ./prep/nondebug
-	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG) --line-directives
 prep/nondebug-scanbuild: prep
 	@rm -rf ./prep/nondebug-scanbuild
-	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-scanbuild --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG_SCANBUILD) --separate-sources --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-scanbuild --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_SCANBUILD) --separate-sources --line-directives
 prep/nondebug-perf: prep
 	@rm -rf ./prep/nondebug-perf
-	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-perf --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG_PERF) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-perf --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_PERF) --line-directives
 prep/nondebug-rom: prep
 	@rm -rf ./prep/nondebug-rom
-	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-rom --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG_ROM) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_ROM) --line-directives
 prep/debug: prep
 	@rm -rf ./prep/debug
-	$(PYTHON) tools/configure.py --output-directory ./prep/debug --source-directory src --config-metadata config $(CONFIGOPTS_DEBUG) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/debug --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG) --line-directives
 prep/debug-scanbuild: prep
 	@rm -rf ./prep/debug-scanbuild
-	$(PYTHON) tools/configure.py --output-directory ./prep/debug-scanbuild --source-directory src --config-metadata config $(CONFIGOPTS_DEBUG_SCANBUILD) --separate-sources --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/debug-scanbuild --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_SCANBUILD) --separate-sources --line-directives
 prep/debug-rom: prep
 	@rm -rf ./prep/debug-rom
-	$(PYTHON) tools/configure.py --output-directory ./prep/debug-rom --source-directory src --config-metadata config $(CONFIGOPTS_DEBUG_ROM) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/debug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_DEBUG_ROM) --line-directives
 prep/emduk: prep
 	@rm -rf ./prep/emduk
-	$(PYTHON) tools/configure.py --output-directory ./prep/emduk --source-directory src --config-metadata config $(CONFIGOPTS_EMDUK) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/emduk --source-directory src-input --config-metadata config $(CONFIGOPTS_EMDUK) --line-directives
 prep/dukweb: prep
 	@rm -rf ./prep/dukweb
-	$(PYTHON) tools/configure.py --output-directory ./prep/dukweb --source-directory src --config-metadata config $(CONFIGOPTS_DUKWEB) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/dukweb --source-directory src-input --config-metadata config $(CONFIGOPTS_DUKWEB) --line-directives
 prep/ajduk-nondebug: prep
 	@rm -rf ./prep/ajduk-nondebug
-	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK) --line-directives
 prep/ajduk-nondebug-rom: prep
 	@rm -rf ./prep/ajduk-nondebug-rom
-	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-rom --source-directory src --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_ROM) --line-directives
+	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_ROM) --line-directives
 
 # Library targets.
 libduktape.so.1.0.0: prep/nondebug
@@ -430,11 +430,11 @@ duksizes: duk
 	$(PYTHON) util/genexesizereport.py $< > /tmp/duk_sizes.html
 .PHONY: issuecount
 issuecount:
-	@echo "FIXME:     `grep FIXME: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
-	@echo "XXX:       `grep XXX: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
-	@echo "TODO:      `grep TODO: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
-	@echo "NOTE:      `grep NOTE: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
-	@echo "SCANBUILD: `grep SCANBUILD: src/*.c src/*.h src/*.in | wc -l | tr -d ' '`"
+	@echo "FIXME:     `grep FIXME: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
+	@echo "XXX:       `grep XXX: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
+	@echo "TODO:      `grep TODO: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
+	@echo "NOTE:      `grep NOTE: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
+	@echo "SCANBUILD: `grep SCANBUILD: src-input/*.c src-input/*.h src-input/*.in | wc -l | tr -d ' '`"
 cloc:	dist cloc-1.60.pl
 	@echo "CLOC report on combined duktape.c source file"
 	@perl cloc-1.60.pl --quiet dist/src/duktape.c
@@ -838,9 +838,6 @@ dist-src:	dist
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.gz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.gz
 	cp duktape-$(DUK_VERSION_FORMATTED).tar.xz duktape-$(DUK_VERSION_FORMATTED)-$(BUILD_DATETIME)-$(GIT_INFO).tar.xz
 	rm -rf duktape-$(DUK_VERSION_FORMATTED)
-# Require closure compiler for official build.
-.PHONY: dist-src-official
-dist-src-official:	dist-src compiler.jar
 # ISO target is useful with some system emulators with no network access.
 .PHONY: dist-iso
 dist-iso:	dist-src
@@ -893,7 +890,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--check-cpp-comment \
 		--dump-vim-commands \
-		src/*.c src/*.h src/*.h.in tests/api/*.c
+		src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-carriage-returns \
@@ -903,7 +900,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-tab-indent \
 		--dump-vim-commands \
-		src/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*/*.py
+		src-input/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*/*.py
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
@@ -977,7 +974,7 @@ codepolicycheck:
 		doc/*.rst
 .PHONY: codepolicycheckvim
 codepolicycheckvim:
-	-$(PYTHON) util/check_code_policy.py --dump-vim-commands src/*.c src/*.h src/*.h.in tests/api/*.c
+	-$(PYTHON) util/check_code_policy.py --dump-vim-commands src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 
 # Simple heap graph and peak usage using valgrind --tool=massif, for quick
 # and dirty baseline comparison.  Say e.g. 'make massif-test-dev-hello-world'.

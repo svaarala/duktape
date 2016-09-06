@@ -4,7 +4,7 @@
 #
 #  Usage:
 #
-#    $ python check_code_policy.py src/*.c
+#    $ python check_code_policy.py src-input/*.c
 #
 
 import os
@@ -323,7 +323,7 @@ def checkNoSymbolVisibility(lines, idx, filename):
 
     bn = os.path.basename(filename)
     if not ((bn[-2:] == '.c' or bn[-2:] == '.h' or bn[-5:] == '.h.in') and bn[0:5] != 'test-'):
-        # Apply to only specific files in src/
+        # Apply to only specific files in src-input/
         return
 
     if m.group(1) in allowed_visibility_macros and \

@@ -248,7 +248,7 @@ def duk_heap_hashstring_sparse(x, hash_seed, strhash16=False):
 
     return res
 
-# Must match src/duk_unicode_support:duk_unicode_unvalidated_utf8_length().
+# Must match src-input/duk_unicode_support:duk_unicode_unvalidated_utf8_length().
 def duk_unicode_unvalidated_utf8_length(x):
     assert(isinstance(x, str))
     clen = 0

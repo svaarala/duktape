@@ -1,9 +1,9 @@
 #!/usr/bin/env python2
 #
 #  Resolve a line number in the combined source into an uncombined file/line
-#  using a dist/src/metadata.json file.
+#  using a dist/src/duk_source_meta.json file.
 #
-#  Usage: $ python resolve_combined_lineno.py dist/src/metadata.json 12345
+#  Usage: $ python resolve_combined_lineno.py dist/src/duk_source_meta.json 12345
 #
 
 import os

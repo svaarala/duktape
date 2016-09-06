@@ -26,8 +26,8 @@
  *  should provide a reasonable regression harness.  The basic coverage here
  *  is based on:
  *
- *      $ cd src/; grep DECREF *.c > /tmp/worklist
- *      $ cd src/; grep UPDREF *.c >> /tmp/worklist
+ *      $ cd src-input/; grep DECREF *.c > /tmp/worklist
+ *      $ cd src-input/; grep UPDREF *.c >> /tmp/worklist
  *
  *  Run the test with and without fastint support because that affects the
  *  code paths executed.  It's best to test with mark-and-sweep disabled so

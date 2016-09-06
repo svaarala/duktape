@@ -37,7 +37,7 @@ import logging
 
 import dukutil
 
-# Fixed seed for ROM strings, must match src/duk_heap_alloc.c.
+# Fixed seed for ROM strings, must match src-input/duk_heap_alloc.c.
 DUK__FIXED_HASH_SEED = 0xabcd1234
 
 # Base value for compressed ROM pointers, used range is [ROMPTR_FIRST,0xffff].
@@ -870,7 +870,7 @@ def metadata_order_builtin_strings(input_strlist, keyword_list, strip_unused_str
     tmp_strs = []
     for s in copy.deepcopy(input_strlist):
         if not s.get('stridx_used', False):
-            # Drop strings which are not actually needed by src/*.(c|h).
+            # Drop strings which are not actually needed by src-input/*.(c|h).
             # Such strings won't be in heap->strs[] or ROM legacy list.
             pass
         else:
@@ -2130,7 +2130,7 @@ def rom_emit_strings_source(genc, meta):
     # use an initializer macro to select the appropriate hash.
     genc.emitLine('/* When unaligned access possible, 32-bit values are fetched using host order.')
     genc.emitLine(' * When unaligned access not possible, always simulate little endian order.')
-    genc.emitLine(' * See: src/duk_util_hashbytes.c:duk_util_hashbytes().')
+    genc.emitLine(' * See: src-input/duk_util_hashbytes.c:duk_util_hashbytes().')
     genc.emitLine(' */')
     genc.emitLine('#if defined(DUK_USE_STRHASH_DENSE)')
     genc.emitLine('#if defined(DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS)')  # XXX: config option to be reworked

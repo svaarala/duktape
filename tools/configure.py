@@ -295,7 +295,7 @@ def main():
         raise Exception('configure target directory %s already exists, please delete first' % repr(outdir))
     outdir = opts.output_directory
 
-    opts.source_directory = default_from_script_path('--source-directory', opts.source_directory, [ 'src-input', 'src' ])
+    opts.source_directory = default_from_script_path('--source-directory', opts.source_directory, [ 'src-input' ])
     srcdir = opts.source_directory
 
     opts.config_metadata = default_from_script_path('--config-metadata', opts.config_metadata, [ 'config' ])

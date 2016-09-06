@@ -1977,7 +1977,7 @@ the Date code.
 
 The following can be used to find "leaks", accidental unwrapped calls::
 
-  $ python util/find_func_calls.py src/*.c src/*.h | \
+  $ python util/find_func_calls.py src-input/*.c src-input/*.h | \
     grep -v -i -P ^duk_ | grep -v -P '^(sizeof|va_start|va_end|va_arg)' | \
     sort | uniq
 
