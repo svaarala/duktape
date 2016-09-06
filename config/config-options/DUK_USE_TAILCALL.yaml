@@ -1,10 +1,4 @@
 define: DUK_USE_TAILCALL
-feature_snippet: |
-  #if defined(DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY)
-  #undef DUK_USE_TAILCALL
-  #else
-  #define DUK_USE_TAILCALL
-  #endif
 introduced: 1.0.0
 conflicts:
   - DUK_USE_NONSTD_FUNC_CALLER_PROPERTY

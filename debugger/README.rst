@@ -24,14 +24,13 @@ Some prerequisites:
 * You'll need Node.js v0.10.x or newer.  Older Node.js versions don't support
   the required packages.
 
-Compile Duktape command line tool with debugger support (for further options
-see http://wiki.duktape.org/FeatureOptions.html):
+Compile Duktape command line tool with debugger support:
 
-* ``DUK_OPT_DEBUGGER_SUPPORT``
+* Enable ``DUK_USE_DEBUGGER_SUPPORT`` and ``DUK_USE_INTERRUPT_COUNTER`` for
+  ``tools/configure.py``.
 
-* ``DUK_OPT_INTERRUPT_COUNTER``
-
-* ``DUK_CMDLINE_DEBUGGER_SUPPORT``
+* Enable ``DUK_CMDLINE_DEBUGGER_SUPPORT`` on compiler command line for Duktape
+  command line utility.
 
 The source distributable contains a Makefile to build a "duk" command with
 debugger support::

@@ -1,5 +1,4 @@
 define: DUK_USE_DPRINT_COLORS
-feature_enables: DUK_OPT_DPRINT_COLORS
 introduced: 1.0.0
 removed: 2.0.0
 default: false

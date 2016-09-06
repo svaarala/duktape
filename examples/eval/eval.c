@@ -6,6 +6,14 @@
 #include "duktape.h"
 #include <stdio.h>
 
+static duk_ret_t native_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_to_string(ctx, -1));
+	return 0;
+}
+
 static duk_ret_t eval_raw(duk_context *ctx, void *udata) {
 	(void) udata;
 	duk_eval(ctx);
@@ -34,6 +42,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	ctx = duk_create_heap_default();
+
+	duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
+
 	for (i = 1; i < argc; i++) {
 		printf("=== eval: '%s' ===\n", argv[i]);
 		duk_push_string(ctx, argv[i]);

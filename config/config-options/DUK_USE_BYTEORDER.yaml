@@ -1,5 +1,4 @@
 define: DUK_USE_BYTEORDER
-# DUK_OPT_FORCE_BYTEORDER handled by genconfig specially
 introduced: 1.4.0
 default: 0  # no reasonable automatic default
 tags:

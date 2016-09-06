@@ -56,10 +56,10 @@ lightfunction values with ``duk_push_c_lightfunc()``.  Lightfunc limits:
 
 * Magic must be between -128 to 127 (-0x80 to 0x7f).
 
-DUK_OPT_LIGHTFUNC_BUILTINS
+DUK_USE_LIGHTFUNC_BUILTINS
 --------------------------
 
-The feature option ``DUK_OPT_LIGHTFUNC_BUILTINS`` converts most built-in
+The config option ``DUK_USE_LIGHTFUNC_BUILTINS`` converts most built-in
 functions forcibly into lightweight functions, reducing memory usage on
 low memory platforms by around 14 kB.
 

@@ -1,9 +1,4 @@
 define: DUK_USE_EXTSTR_FREE
-feature_snippet: |
-  #undef DUK_USE_EXTSTR_FREE
-  #if defined(DUK_OPT_EXTERNAL_STRINGS) && defined(DUK_OPT_EXTSTR_FREE)
-  #define DUK_USE_EXTSTR_FREE(udata,ptr) DUK_OPT_EXTSTR_FREE((udata), (ptr))
-  #endif
 introduced: 1.1.0
 requires:
   - DUK_USE_HSTRING_EXTDATA

@@ -8,23 +8,27 @@
  *
  *  Compiling 'duk' with debugger support using MSVC (Visual Studio):
  *
- *    > cl /W3 /O2 /Feduk.exe
- *          /DDUK_OPT_DEBUGGER_SUPPORT /DDUK_OPT_INTERRUPT_COUNTER
+ *    > python2 tools\configure.py \
+ *          --output-directory prep
+ *          -DDUK_USE_DEBUGGER_SUPPORT -DDUK_USE_INTERRUPT_COUNTER
+ *    > cl /W3 /O2 /Feduk.exe \
  *          /DDUK_CMDLINE_DEBUGGER_SUPPORT
- *          /Iexamples\debug-trans-socket /Isrc
+ *          /Iexamples\debug-trans-socket /Iprep
  *          examples\cmdline\duk_cmdline.c
  *          examples\debug-trans-socket\duk_trans_socket_windows.c
- *          src\duktape.c
+ *          prep\duktape.c
  *
  *  With MinGW:
  *
+ *    $ python2 tools\configure.py \
+ *          --output-directory prep
+ *          -DDUK_USE_DEBUGGER_SUPPORT -DDUK_USE_INTERRUPT_COUNTER
  *    $ gcc -oduk.exe -Wall -O2 \
- *          -DDUK_OPT_DEBUGGER_SUPPORT -DDUK_OPT_INTERRUPT_COUNTER \
  *          -DDUK_CMDLINE_DEBUGGER_SUPPORT \
- *          -Iexamples/debug-trans-socket -Isrc \
+ *          -Iexamples/debug-trans-socket -Iprep \
  *          examples/cmdline/duk_cmdline.c \
  *          examples/debug-trans-socket/duk_trans_socket_windows.c \
- *          src/duktape.c -lm -lws2_32
+ *          prep/duktape.c -lm -lws2_32
  */
 
 #undef UNICODE

@@ -52,8 +52,8 @@ is open or closed.  This is good practice anyway for robust native code.</p>
 <p>Duktape has a combined reference counting and non-incremental mark-and-sweep
 garbage collector (mark-and-sweep is needed only for reference cycles).  Collection
 pauses can be avoided by disabling voluntary mark-and-sweep passes
-(<code>DUK_OPT_NO_VOLUNTARY_GC</code>).  Lua has an incremental collector with no
-pauses, but has no reference counting.</p>
+(disable <code>DUK_USE_VOLUNTARY_GC</code>).  Lua has an incremental collector with
+no pauses, but has no reference counting.</p>
 
 <p>Duktape has an emergency garbage collector.  Lua 5.2 has an emergency
 garbage collector while Lua 5.1 does not (there is an emergency GC patch

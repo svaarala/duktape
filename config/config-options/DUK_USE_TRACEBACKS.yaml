@@ -1,12 +1,4 @@
 define: DUK_USE_TRACEBACKS
-feature_snippet: |
-  #if defined(DUK_OPT_NO_AUGMENT_ERRORS)
-  #undef DUK_USE_TRACEBACKS
-  #elif defined(DUK_OPT_NO_TRACEBACKS)
-  #undef DUK_USE_TRACEBACKS
-  #else
-  #define DUK_USE_TRACEBACKS
-  #endif
 introduced: 1.0.0
 default: true
 tags:

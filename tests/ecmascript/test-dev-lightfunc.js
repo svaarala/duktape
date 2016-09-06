@@ -38,7 +38,7 @@ try {
 var objLengthKey = { toString: function () { print('toString coerced object (return "length")'); return "length"; } };
 
 function getLightFunc() {
-    /* When using DUK_OPT_LIGHTFUNC_BUILTINS, all built-ins except just a
+    /* When using DUK_USE_LIGHTFUNC_BUILTINS, all built-ins except just a
      * handful are lightfuncs.
      *
      * Use math.max as a test function: it has a non-zero magic, it has
@@ -48,7 +48,7 @@ function getLightFunc() {
 }
 
 function getNormalFunc() {
-    /* Even with DUK_OPT_LIGHTFUNC_BUILTINS, the top level constructors
+    /* Even with DUK_USE_LIGHTFUNC_BUILTINS, the top level constructors
      * are not converted to lightfuncs: they have additional properties
      * like Number.POSITIVE_INFINITY which would be lost.
      */

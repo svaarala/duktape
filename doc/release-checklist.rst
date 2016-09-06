@@ -110,8 +110,10 @@ Checklist for ordinary releases
   macros::
 
     > cd dist
-    > cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Isrc /LD src\duktape.c
-    > cl /W3 /O2 /DDUK_OPT_DLL_BUILD /Isrc /Feduk.exe examples\cmdline\duk_cmdline.c duktape.lib
+    > python2 tools/configure --output-directory prep --source-directory src-input \
+      --config-metadata config --dll
+    > cl /W3 /O2 /Iprep /LD prep\duktape.c
+    > cl /W3 /O2 /Iprep /Feduk.exe examples\cmdline\duk_cmdline.c duktape.lib
     > duk.exe
 
 * Test genconfig manually using metadata from the distributable
@@ -145,7 +147,7 @@ Checklist for ordinary releases
 
   - DUK_USE_REFZERO_FINALIZER_TORTURE
 
-  - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE + DUK_OPT_GC_TORTURE
+  - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE + DUK_USE_GC_TORTURE
 
 * Memory usage testing
 

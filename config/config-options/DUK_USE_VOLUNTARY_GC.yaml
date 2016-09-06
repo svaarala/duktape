@@ -1,5 +1,4 @@
 define: DUK_USE_VOLUNTARY_GC
-feature_enables: DUK_OPT_VOLUNTARY_GC
 introduced: 1.0.0
 default: true
 tags:

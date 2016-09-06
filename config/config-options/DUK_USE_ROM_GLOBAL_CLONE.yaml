@@ -1,5 +1,4 @@
 define: DUK_USE_ROM_GLOBAL_CLONE
-feature_enables: DUK_OPT_ROM_GLOBAL_CLONE
 introduced: 1.5.0
 requires:
   - DUK_USE_ROM_STRINGS

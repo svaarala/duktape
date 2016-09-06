@@ -15,7 +15,7 @@ function basicTest() {
         // that isn't so useful.
         //
         // NOTE: normally Duktape.act.name is 'act' but when using
-        // DUK_OPT_LIGHTFUNC_BUILTINS Duktape.act() will be a lightfunc
+        // DUK_USE_LIGHTFUNC_BUILTINS Duktape.act() will be a lightfunc
         // and have a generic name (e.g. lightfunc_deadbeef_1234).  To
         // make the test case generic, avoid printing Duktape.act name.
         print(i, t.lineNumber, t.function === Duktape.act ? 'act' : t.function.name);

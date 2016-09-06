@@ -1,5 +1,4 @@
 define: DUK_USE_BYTEORDER_FORCED
-feature_enables: DUK_OPT_FORCE_BYTEORDER
 introduced: 1.0.0
 removed: 1.4.0
 default: false

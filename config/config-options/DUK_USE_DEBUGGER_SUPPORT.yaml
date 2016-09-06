@@ -1,5 +1,4 @@
 define: DUK_USE_DEBUGGER_SUPPORT
-feature_enables: DUK_OPT_DEBUGGER_SUPPORT
 introduced: 1.2.0
 requires:
   - DUK_USE_INTERRUPT_COUNTER

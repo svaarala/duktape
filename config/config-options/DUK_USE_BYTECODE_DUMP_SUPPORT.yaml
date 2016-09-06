@@ -1,7 +1,4 @@
 define: DUK_USE_BYTECODE_DUMP_SUPPORT
-related_feature_defines:
-  - DUK_OPT_NO_BYTECODE_DUMP_SUPPORT
-feature_enables: DUK_OPT_BYTECODE_DUMP_SUPPORT
 introduced: 1.3.0
 default: true
 tags:

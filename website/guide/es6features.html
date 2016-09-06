@@ -40,9 +40,9 @@ but is compatible with existing code base which has relied on a non-standard
 <code>__proto__</code> property for a while.  Duktape does not support the
 <a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-__proto__-property-names-in-object-initializers">__proto__ property name in an object initializer</a>.</p>
 
-<p>These custom features can be disabled with the feature options
-<code>DUK_OPT_NO_ES6_OBJECT_SETPROTOTYPEOF</code> and
-<code>DUK_OPT_NO_ES6_OBJECT_PROTO_PROPERTY</code>.</p>
+<p>These custom features can be disabled by disabling the config options
+<code>DUK_USE_ES6_OBJECT_SETPROTOTYPEOF</code> and
+<code>DUK_USE_ES6_OBJECT_PROTO_PROPERTY</code>.</p>
 
 <h2 id="es6-proxy">Proxy object (subset)</h2>
 
@@ -92,11 +92,11 @@ ES6.  The following traps are implemented:</p>
     enforces it to simplify the internal implementation.</li>
 </ul>
 
-<p>This custom feature can be disabled with the feature option
-<code>DUK_OPT_NO_ES6_PROXY</code>.</p>
+<p>This custom feature can be disabled by disabling the config option
+<code>DUK_USE_ES6_PROXY</code>.</p>
 
 <h2 id="es6-typedarray">Typed arrays</h2>
 
 <p>Duktape implements Khronos typed array support which is a subset of ES6
 typed arrays.  Support for typed arrays and Node.js Buffer can be disabled
-with the feature option <code>DUK_OPT_NO_BUFFEROBJECT_SUPPORT</code>.</p>
+by disabling the config option <code>DUK_USE_BUFFEROBJECT_SUPPORT</code>.</p>

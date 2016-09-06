@@ -65,7 +65,49 @@ Or you can detect features specifically::
 DUK_OPT_xxx feature option support removed
 ------------------------------------------
 
-FIXME.
+Duktape 2.x no longer supports ``DUK_OPT_xxx`` options given via the compiler
+command line.  Instead, all options are encoded in ``duk_config.h``.
+
+To use custom Duktape options, use the ``tools/configure.py`` tool to create
+a customized ``duk_config.h`` and prepared Duktape sources matching the
+configuration.  For example to enable assertions and fastint support::
+
+    $ python2 tools/configure.py \
+          --output-directory /tmp/output \
+          --source-directory src-input \
+          --config-metadata config \
+          -DDUK_USE_FASTINT \
+          -DDUK_USE_ASSERTIONS
+
+    # Prepared duk_config.h header and Duktape sources (duktape.h and
+    # duktape.c) are in /tmp/output.  Compile normally with your application.
+
+    $ gcc -std=c99 -Wall -o/tmp/test -I/tmp/output /tmp/output/duktape.c \
+          my_application.c -lm
+
+See http://wiki.duktape.org/Configuring.html for details and examples.
+
+To upgrade:
+
+* If you're using the Duktape default configuration (and no ``DUK_OPT_xxx``)
+  compiler options, no actions are needed.
+
+* Otherwise, remove ``DUK_OPT_xxx`` options from the compilation command and
+  add a ``tools/configure.py`` pre-step to your build.  Add the equivalent
+  ``DUK_USE_xxx`` options to ``tools/configure.py`` argument list; for example
+  ``-DDUK_USE_FASTINT``.
+
+* If you're using a ``duk_custom.h`` header there are three simple approaches:
+
+  - To embed your custom header into ``duk_config.h`` statically, use
+    ``--fixup-file duk_custom.h`` in ``tools/configure.py`` options.
+
+  - To include your custom header at compilation time, similarly to
+    ``DUK_OPT_HAVE_CUSTOM_H``, use ``--fixup-line '#include "duk_custom.h"'``
+    in ``tools/configure.py`` options.
+
+  - Finally, you can remove your custom header and add the equivalent options
+    to ``tools/configure.py`` when possible.
 
 Tooling changes
 ---------------

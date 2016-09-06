@@ -1,8 +1,5 @@
 define: DUK_USE_HSTRING_EXTDATA
-feature_enables: DUK_OPT_EXTERNAL_STRINGS
 introduced: 1.1.0
-related_feature_defines:
-  - DUK_OPT_EXTERNAL_STRINGS
 default: false
 tags:
   - memory

@@ -3,9 +3,8 @@
 #  Process Duktape option metadata and produce various useful outputs:
 #
 #    - duk_config.h with specific or autodetected platform, compiler, and
-#      architecture; forced options; sanity checks; etc
-#    - option documentation for Duktape 1.x feature options (DUK_OPT_xxx)
-#    - option documentation for Duktape 1.x/2.x config options (DUK_USE_xxx)
+#      architecture, forced options, sanity checks, etc
+#    - option documentation for Duktape config options (DUK_USE_xxx)
 #
 #  Genconfig tries to build all outputs based on modular metadata, so that
 #  managing a large number of config options (which is hard to avoid given
@@ -14,11 +13,6 @@
 #  Genconfig does *not* try to support all exotic platforms out there.
 #  Instead, the goal is to allow the metadata to be extended, or to provide
 #  a reasonable starting point for manual duk_config.h tweaking.
-#
-#  For Duktape 1.3 release the main goal was to autogenerate a Duktape 1.2
-#  compatible "autodetect" header from legacy snippets, with other outputs
-#  being experimental.  For Duktape 1.4 duk_config.h is always created from
-#  modular sources.
 #
 
 import logging
@@ -63,11 +57,6 @@ required_use_meta_keys = [
 ]
 allowed_use_meta_keys = [
     'define',
-    'feature_enables',
-    'feature_disables',
-    'feature_snippet',
-    'feature_no_default',
-    'related_feature_defines',
     'introduced',
     'deprecated',
     'removed',
@@ -239,6 +228,7 @@ class Snippet:
                         # Don't allow e.g. DUK_USE_ which results from matching DUK_USE_xxx
                         pass
                     elif m[:7] == 'DUK_OPT':
+                        #logger.warning('Encountered DUK_OPT_xxx in a header snippet: %s' % repr(line))
                         # DUK_OPT_xxx always come from outside
                         pass
                     elif m[:7] == 'DUK_USE':
@@ -735,7 +725,7 @@ def cstr_encode(x):
 #  Autogeneration of option documentation
 #
 
-# Shared helper to generate DUK_OPT_xxx and DUK_USE_xxx documentation.
+# Shared helper to generate DUK_USE_xxx documentation.
 # XXX: unfinished placeholder
 def generate_option_documentation(opts, opt_list=None, rst_title=None, include_default=False):
     ret = FileBuilder(use_cpp_warning=opts.use_cpp_warning)
@@ -788,10 +778,6 @@ def generate_option_documentation(opts, opt_list=None, rst_title=None, include_d
 
     ret.empty()
     return ret.join()
-
-def generate_feature_option_documentation(opts):
-    defs = get_opt_defs()
-    return generate_option_documentation(opts, opt_list=defs, rst_title='Duktape feature options', include_default=False)
 
 def generate_config_option_documentation(opts):
     defs = get_use_defs()
@@ -854,7 +840,8 @@ def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
         raise Exception('unsupported value for option %s: %r' % (defname, defval))
 
 # Add a header snippet for detecting presence of DUK_OPT_xxx feature
-# options which will be removed in Duktape 2.x.
+# options and warning/erroring if application defines them.  Useful for
+# Duktape 2.x migration.
 def add_legacy_feature_option_checks(opts, ret):
     ret.chdr_block_heading('Checks for legacy feature options (DUK_OPT_xxx)')
     ret.empty()
@@ -863,22 +850,11 @@ def add_legacy_feature_option_checks(opts, ret):
     for doc in get_opt_defs():
         if doc['define'] not in defs:
             defs.append(doc['define'])
-    for doc in get_opt_defs():
-        for dname in doc.get('related_feature_defines', []):
-            if dname not in defs:
-                defs.append(dname)
     defs.sort()
 
     for optname in defs:
-        suggested = []
-        for doc in get_use_defs():
-            if optname in doc.get('related_feature_defines', []):
-                suggested.append(doc['define'])
         ret.line('#if defined(%s)' % optname)
-        if len(suggested) > 0:
-            ret.cpp_warning_or_error('unsupported legacy feature option %s used, consider options: %s' % (optname, ', '.join(suggested)), opts.sanity_strict)
-        else:
-            ret.cpp_warning_or_error('unsupported legacy feature option %s used' % optname, opts.sanity_strict)
+        ret.cpp_warning_or_error('unsupported legacy feature option %s used' % optname, opts.sanity_strict)
         ret.line('#endif')
 
     ret.empty()
@@ -934,65 +910,6 @@ def add_override_defines_section(opts, ret):
     ret.line(' */')
     ret.empty()
     ret.line('/* __OVERRIDE_DEFINES__ */')
-    ret.empty()
-
-# Add automatic DUK_OPT_XXX and DUK_OPT_NO_XXX handling for backwards
-# compatibility with Duktape 1.2 and before.
-def add_feature_option_handling(opts, ret, forced_opts, already_provided_keys):
-    ret.chdr_block_heading('Feature option handling')
-
-    for doc in get_use_defs(removed=False, deprecated=False, unused=False):
-        # If a related feature option exists, it can be used to force
-        # enable/disable the target feature.  If neither feature option
-        # (DUK_OPT_xxx or DUK_OPT_NO_xxx) is given, revert to default.
-
-        config_define = doc['define']
-
-        feature_define = None
-        feature_no_define = None
-        inverted = False
-        if doc.has_key('feature_enables'):
-            feature_define = doc['feature_enables']
-        elif doc.has_key('feature_disables'):
-            feature_define = doc['feature_disables']
-            inverted = True
-        else:
-            pass
-
-        if feature_define is not None:
-            feature_no_define = 'DUK_OPT_NO_' + feature_define[8:]
-            ret.line('#if defined(%s)' % feature_define)
-            if inverted:
-                ret.line('#undef %s' % config_define)
-            else:
-                ret.line('#define %s' % config_define)
-            ret.line('#elif defined(%s)' % feature_no_define)
-            if inverted:
-                ret.line('#define %s' % config_define)
-            else:
-                ret.line('#undef %s' % config_define)
-            ret.line('#else')
-            undef_done = False
-
-            # For some options like DUK_OPT_PACKED_TVAL the default comes
-            # from platform definition.
-            if doc.get('feature_no_default', False):
-                logger.debug('Skip default for option %s' % config_define)
-                ret.line('/* Already provided above */')
-            elif already_provided_keys.has_key(config_define):
-                # This is a fallback in case config option metadata is wrong.
-                logger.debug('Skip default for option %s (already provided but not flagged in metadata!)' % config_define)
-                ret.line('/* Already provided above */')
-            else:
-                emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
-            ret.line('#endif')
-        elif doc.has_key('feature_snippet'):
-            ret.lines(doc['feature_snippet'])
-        else:
-            pass
-
-        ret.empty()
-
     ret.empty()
 
 # Development time helper: add DUK_ACTIVE which provides a runtime C string
@@ -1101,24 +1018,14 @@ def generate_duk_config_header(opts, meta_dir):
 
     # DLL build affects visibility attributes on Windows but unfortunately
     # cannot be detected automatically from preprocessor defines or such.
-    # DLL build status is hidden behind DUK_F_DLL_BUILD and there are two
-    # ways for that to be set:
-    #
-    #   - Duktape 1.3 backwards compatible DUK_OPT_DLL_BUILD
-    #   - Genconfig --dll option
+    # DLL build status is hidden behind DUK_F_DLL_BUILD. and there are two
     ret.chdr_comment_line('DLL build detection')
-    ret.line('#if defined(DUK_OPT_DLL_BUILD)')
-    ret.line('#define DUK_F_DLL_BUILD')
-    ret.line('#elif defined(DUK_OPT_NO_DLL_BUILD)')
-    ret.line('#undef DUK_F_DLL_BUILD')
-    ret.line('#else')
     if opts.dll:
         ret.line('/* configured for DLL build */')
         ret.line('#define DUK_F_DLL_BUILD')
     else:
         ret.line('/* not configured for DLL build */')
         ret.line('#undef DUK_F_DLL_BUILD')
-    ret.line('#endif')
     ret.empty()
 
     idx_deps = len(ret.vals)  # position where to emit DUK_F_xxx dependencies
@@ -1314,12 +1221,6 @@ def generate_duk_config_header(opts, meta_dir):
     ret.snippet_relative('reject_fast_math.h.in')
     ret.empty()
 
-    # Automatic DUK_OPT_xxx feature option handling
-    if opts.support_feature_options:
-        logger.debug('Autogenerating feature option (DUK_OPT_xxx) support')
-        tmp = Snippet(ret.join().split('\n'))
-        add_feature_option_handling(opts, ret, forced_opts, tmp.provides)
-
     # Emit forced options.  If a corresponding option is already defined
     # by a snippet above, #undef it first.
 
@@ -1371,9 +1272,6 @@ def generate_duk_config_header(opts, meta_dir):
             emit_default_from_config_meta(ret, use_defs[k], {}, False)
 
         ret.empty()
-
-    ret.snippet_relative('custom_header.h.in')
-    ret.empty()
 
     if len(opts.fixup_header_lines) > 0:
         ret.chdr_block_heading('Fixups')
@@ -1456,16 +1354,16 @@ def add_genconfig_optparse_options(parser, direct=False):
     else:
         # Different option name when called through configure.py,
         # also no --output option.
-        parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory')
+        parser.add_option('--config-metadata', dest='config_metadata', default=None, help='metadata directory (defaulted based on configure.py script path)')
 
     parser.add_option('--platform', dest='platform', default=None, help='platform (default is autodetect)')
     parser.add_option('--compiler', dest='compiler', default=None, help='compiler (default is autodetect)')
     parser.add_option('--architecture', dest='architecture', default=None, help='architecture (default is autodetec)')
     parser.add_option('--c99-types-only', dest='c99_types_only', action='store_true', default=False, help='assume C99 types, no legacy type detection')
     parser.add_option('--dll', dest='dll', action='store_true', default=False, help='dll build of Duktape, affects symbol visibility macros especially on Windows')
-    parser.add_option('--support-feature-options', dest='support_feature_options', action='store_true', default=False, help='support DUK_OPT_xxx feature options in duk_config.h')
+    parser.add_option('--support-feature-options', dest='support_feature_options', action='store_true', default=False, help=optparse.SUPPRESS_HELP)
     parser.add_option('--emit-legacy-feature-check', dest='emit_legacy_feature_check', action='store_true', default=False, help='emit preprocessor checks to reject legacy feature options (DUK_OPT_xxx)')
-    parser.add_option('--emit-config-sanity-check', dest='emit_config_sanity_check', action='store_true', default=False, help='emit preprocessor checks for config option consistency (DUK_OPT_xxx)')
+    parser.add_option('--emit-config-sanity-check', dest='emit_config_sanity_check', action='store_true', default=False, help='emit preprocessor checks for config option consistency (DUK_USE_xxx)')
     parser.add_option('--omit-removed-config-options', dest='omit_removed_config_options', action='store_true', default=False, help='omit removed config options from generated headers')
     parser.add_option('--omit-deprecated-config-options', dest='omit_deprecated_config_options', action='store_true', default=False, help='omit deprecated config options from generated headers')
     parser.add_option('--omit-unused-config-options', dest='omit_unused_config_options', action='store_true', default=False, help='omit unused config options from generated headers')
@@ -1491,7 +1389,6 @@ def add_genconfig_optparse_options(parser, direct=False):
 def parse_options():
     commands = [
         'duk-config-header',
-        'feature-documentation',
         'config-documentation'
     ]
 
@@ -1513,6 +1410,9 @@ def genconfig(opts, args):
     elif opts.verbose:
         logger.setLevel(logging.DEBUG)
 
+    if opts.support_feature_options:
+        raise Exception('--support-feature-options and support for DUK_OPT_xxx feature options are obsolete, use DUK_USE_xxx config options instead')
+
     meta_dir = opts.config_metadata
     if opts.config_metadata is None:
         if os.path.isdir(os.path.join('.', 'config-options')):
@@ -1528,8 +1428,8 @@ def genconfig(opts, args):
     scan_opt_defs(os.path.join(meta_dir, 'feature-options'))
     scan_use_tags()
     scan_tags_meta(os.path.join(meta_dir, 'tags.yaml'))
-    logger.debug('%s, scanned %d DUK_OPT_xxx, %d DUK_USE_XXX, %d helper snippets' % \
-        (metadata_src_text, len(opt_defs.keys()), len(use_defs.keys()), len(helper_snippets)))
+    logger.debug('%s, scanned%d DUK_USE_XXX, %d helper snippets' % \
+        (metadata_src_text, len(use_defs.keys()), len(helper_snippets)))
     logger.debug('Tags: %r' % use_tags_list)
 
     if len(args) == 0:
@@ -1539,7 +1439,7 @@ def genconfig(opts, args):
     if cmd == 'duk-config-header':
         # Generate a duk_config.h header with platform, compiler, and
         # architecture either autodetected (default) or specified by
-        # user.  Support for autogenerated DUK_OPT_xxx flags is also
+        # user.
         desc = [
             'platform=' + ('any', opts.platform)[opts.platform is not None],
             'architecture=' + ('any', opts.architecture)[opts.architecture is not None],
@@ -1553,11 +1453,7 @@ def genconfig(opts, args):
             f.write(result)
         logger.debug('Wrote duk_config.h to ' + str(opts.output))
     elif cmd == 'feature-documentation':
-        logger.info('Creating feature option documentation')
-        result = generate_feature_option_documentation(opts)
-        with open(opts.output, 'wb') as f:
-            f.write(result)
-        logger.debug('Wrote feature option documentation to ' + str(opts.output))
+        raise Exception('The feature-documentation command has been removed along with DUK_OPT_xxx feature option support')
     elif cmd == 'config-documentation':
         logger.info('Creating config option documentation')
         result = generate_config_option_documentation(opts)

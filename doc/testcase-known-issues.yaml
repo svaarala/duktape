@@ -101,28 +101,28 @@
   specialoptions: "test case has been written for Finnish locale"
 -
   test: "test-bi-duktape-json-lightfunc.js"
-  specialoptions: "DUK_OPT_LIGHTFUNC_BUILTINS"
+  specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
 -
   test: "test-bi-function-nonstd-caller-prop.js"
-  specialoptions: "DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY"
+  specialoptions: "DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
 -
   test: "test-dev-16bit-overflows.js"
   specialoptions: "requires 16-bit field options"
 -
   test: "test-dev-lightfunc-accessor.js"
-  specialoptions: "DUK_OPT_LIGHTFUNC_BUILTINS"
+  specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
 -
   test: "test-dev-lightfunc-finalizer.js"
-  specialoptions: "DUK_OPT_LIGHTFUNC_BUILTINS"
+  specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
 -
   test: "test-dev-lightfunc.js"
-  specialoptions: "DUK_OPT_LIGHTFUNC_BUILTINS"
+  specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
 -
   test: "test-dev-logicalnot-refcount.js"
   specialoptions: "requires refcounting"
 -
   test: "test-dev-nonstd-setget-key-argument.js"
-  specialoptions: "should work with default options, but will break with DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT"
+  specialoptions: "should work with default options, but will break with DUK_USE_NONSTD_GETTER_KEY_ARGUMENT or DUK_USE_NONSTD_SETTER_KEY_ARGUMENT"
 -
   test: "test-bi-typedarray-nan-handling.js"
   specialoptions: "NaN sign is platform dependent"

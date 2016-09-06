@@ -35,12 +35,9 @@ CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
 #CMDLINE_SOURCES += linenoise/linenoise.c
 #duk:	linenoise
 
-# Optional feature defines, see: http://duktape.org/guide.html#compiling
-CCOPTS += -DDUK_OPT_SELF_TESTS
-#CCOPTS += -DDUK_OPT_DEBUG
-#CCOPTS += '-DDUK_OPT_DEBUG_WRITE(level,file,line,func,msg)=do {fprintf(stderr, "D%ld %s:%ld (%s): %s\n", (long) (level), (file), (long) (line), (func), (msg));} while(0)'
-#CCOPTS += -DDUK_OPT_DEBUG_LEVEL=0
-# ...
+# Use the tools/configure.py utility to modify Duktape default configuration:
+# http://duktape.org/guide.html#compiling
+# http://wiki.duktape.org/Configuring.html
 
 duk:	$(DUKTAPE_SOURCES) $(CMDLINE_SOURCES)
 	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)

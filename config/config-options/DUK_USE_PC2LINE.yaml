@@ -1,5 +1,4 @@
 define: DUK_USE_PC2LINE
-feature_enables: DUK_OPT_PC2LINE
 introduced: 1.0.0
 default: true
 tags:

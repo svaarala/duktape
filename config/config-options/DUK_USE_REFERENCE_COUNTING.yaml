@@ -1,7 +1,4 @@
 define: DUK_USE_REFERENCE_COUNTING
-feature_enables: DUK_OPT_REFERENCE_COUNTING
-related_feature_defines:
-  - DUK_OPT_NO_REFERENCE_COUNTING
 introduced: 1.0.0
 default: true
 tags:

@@ -21,7 +21,7 @@
 /*---
 {
     "custom": true,
-    "specialoptions": "requires DUK_OPT_FASTINT"
+    "specialoptions": "requires DUK_USE_FASTINT"
 }
 ---*/
 

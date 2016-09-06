@@ -1,5 +1,4 @@
 define: DUK_USE_STRICT_DECL
-feature_enables: DUK_OPT_STRICT_DECL
 introduced: 1.1.0
 default: true
 tags:

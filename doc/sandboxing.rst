@@ -198,7 +198,7 @@ Prevent access to function references in the call stack:
 * Prevent access to ``Duktape.act()`` which provides programmatic access to
   the call stack and its function references.
 
-* If ``DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY`` is enabled, the ``caller``
+* If ``DUK_USE_NONSTD_FUNC_CALLER_PROPERTY`` is enabled, the ``caller``
   property provides access to calling functions.  Don't use this option
   with sandboxing, or at least carefully control the ``caller`` property
   values seen by the sandboxed code.

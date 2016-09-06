@@ -1,8 +1,4 @@
 define: DUK_USE_DEBUG_WRITE
-feature_snippet: |
-  #if defined(DUK_OPT_DEBUG_WRITE)
-  #define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) DUK_OPT_DEBUG_WRITE((level),(file),(line),(func),(msg))
-  #endif
 introduced: 2.0.0
 default: false
 tags:

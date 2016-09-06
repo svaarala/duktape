@@ -1,0 +1,36 @@
+# Base options for 'ajduk'.
+
+DUK_USE_ALIGN_BY: 4
+DUK_USE_ASSERTIONS: true
+DUK_USE_LIGHTFUNC_BUILTINS: true
+DUK_USE_REFCOUNT16: true
+DUK_USE_STRHASH16: true
+DUK_USE_STRLEN16: true
+DUK_USE_BUFLEN16: true
+DUK_USE_OBJSIZES16: true
+DUK_USE_HSTRING_CLEN: false
+DUK_USE_STRTAB_PROBE: false
+DUK_USE_STRTAB_CHAIN: true
+DUK_USE_STRTAB_CHAIN_SIZE: 128
+DUK_USE_HEAPPTR16: true
+DUK_USE_HEAPPTR_ENC16:
+  verbatim: "#define DUK_USE_HEAPPTR_ENC16(ud,p) ajsheap_enc16((ud),(p))"
+DUK_USE_HEAPPTR_DEC16:
+  verbatim: "#define DUK_USE_HEAPPTR_DEC16(ud,x) ajsheap_dec16((ud),(x))"
+#DUK_USE_EXTSTR_INTERN_CHECK:
+#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_1((ptr),(len))"
+#DUK_USE_EXTSTR_FREE:
+#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_1((ptr))"
+DUK_USE_EXTSTR_INTERN_CHECK:
+  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_2((ptr),(len))"
+DUK_USE_EXTSTR_FREE:
+  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_2((ptr))"
+#DUK_USE_EXTSTR_INTERN_CHECK:
+#  verbatim: "#define DUK_USE_EXTSTR_INTERN_CHECK(ud,ptr,len) ajsheap_extstr_check_3((ptr),(len))"
+#DUK_USE_EXTSTR_FREE:
+#  verbatim: "#define DUK_USE_EXTSTR_FREE(ud,ptr) ajsheap_extstr_free_3((ptr))"
+DUK_USE_EXEC_TIMEOUT_CHECK:
+  verbatim: "#define DUK_USE_EXEC_TIMEOUT_CHECK(udata) ajsheap_exec_timeout_check(udata)"
+#DUK_USE_ROM_STRINGS: true
+#DUK_USE_ROM_OBJECTS: true
+#DUK_USE_ROM_GLOBAL_INHERIT: true

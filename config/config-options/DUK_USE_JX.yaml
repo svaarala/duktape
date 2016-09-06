@@ -1,5 +1,4 @@
 define: DUK_USE_JX
-feature_enables: DUK_OPT_JX
 introduced: 1.0.0
 default: true
 tags:

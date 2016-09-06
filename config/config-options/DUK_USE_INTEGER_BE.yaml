@@ -1,18 +1,4 @@
 define: DUK_USE_INTEGER_BE
-feature_snippet: |
-  #if defined(DUK_OPT_FORCE_BYTEORDER)
-  #if (DUK_OPT_FORCE_BYTEORDER == 1)
-  #undef DUK_USE_INTEGER_BE
-  #elif (DUK_OPT_FORCE_BYTEORDER == 2)
-  #undef DUK_USE_INTEGER_BE
-  #elif (DUK_OPT_FORCE_BYTEORDER == 3)
-  #define DUK_USE_INTEGER_BE
-  #else
-  #error invalid DUK_OPT_FORCE_BYTEORDER
-  #endif
-  #else
-  #undef DUK_USE_INTEGER_BE
-  #endif
 introduced: 1.0.0
 removed: 1.4.0
 default: false

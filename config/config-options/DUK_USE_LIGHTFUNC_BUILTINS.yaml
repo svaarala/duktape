@@ -1,5 +1,4 @@
 define: DUK_USE_LIGHTFUNC_BUILTINS
-feature_enables: DUK_OPT_LIGHTFUNC_BUILTINS
 introduced: 1.1.0
 default: false
 tags:

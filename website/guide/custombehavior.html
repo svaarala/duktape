@@ -36,7 +36,7 @@ semantics (officially defined in Ecmascript 6).  See
 
 <p>Non-strict function instances don't have a <code>caller</code> property in the
 E5/E5.1 specification.  Some real world code expects to have this property, so it
-can be enabled with the feature option <code>DUK_OPT_NONSTD_FUNC_CALLER_PROPERTY</code>.</p>
+can be enabled with the config option <code>DUK_USE_NONSTD_FUNC_CALLER_PROPERTY</code>.</p>
 
 <h2>Function statements</h2>
 
@@ -131,7 +131,7 @@ the splice operation to the end of the array.</p>
 
 <p>Because the non-standard real world behavior is expected by much existing code,
 Duktape uses this behavior by default.  The strict standards compliant behavior can
-be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_SPLICE_DELCOUNT</code>.</p>
+be enabled by disabling the config option <code>DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT</code>.</p>
 
 <h2>Array.prototype.concat() trailing non-existent elements</h2>
 
@@ -143,13 +143,13 @@ value <code>length</code>.  See
 
 <p>The real world behavior seems consistent in other engines (V8, Rhino, Spidermonkey
 at least), so Duktape uses the real world behavior by default.  The strict standards compliant
-behavior can be enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_CONCAT_TRAILER</code>.</p>
+behavior can be enabled by disabling the config option <code>DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER</code>.</p>
 
 <h2>Array.prototype.map() trailing non-existent elements</h2>
 
 <p>Similar issue as with <code>Array.prototype.concat()</code>, see
 <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-bi-array-proto-map-nonstd-trailing.js">test-bi-array-proto-map-nonstd-trailing.js</a>.  The strict standards compliant behavior can be
-enabled with the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_MAP_TRAILER</code>.</p>
+enabled by disabling the config option <code>DUK_USE_NONSTD_ARRAY_MAP_TRAILER</code>.</p>
 
 <h2>Setter/getter key argument</h2>
 
@@ -163,7 +163,8 @@ argument to setter and getter functions.  See
 <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-dev-nonstd-setget-key-argument.js">test-dev-nonstd-setget-key-argument.js</a>
 and <a href="#propertyvirtualization">Property virtualization</a>
 for more discussion.  The strict standards compliant behavior can be enabled
-with the feature option <code>DUK_OPT_NO_NONSTD_ACCESSOR_KEY_ARGUMENT</code>.</p>
+by disabling the config options <code>DUK_USE_NONSTD_GETTER_KEY_ARGUMENT</code>
+and <code>DUK_USE_NONSTD_SETTER_KEY_ARGUMENT</code>.</p>
 
 <h2>Object.setPrototypeOf and Object.prototype.__proto__ (ES6)</h2>
 
@@ -180,15 +181,15 @@ U+2029 without escaping.  This leads to counterintuitive behavior when the
 output is used in a web page or parsed with <code>eval()</code>: the U+2028
 and U+2029 characters are considered line terminators which leads to a syntax
 error (unterminated string).  Duktape escapes U+2028 and U+2029 by default
-to avoid this issue; you can turn on the compliant behavior with the feature
-option <code>DUK_OPT_NO_NONSTD_JSON_ESC_U2028_U2029</code>.</p>
+to avoid this issue; you can turn on the compliant behavior by disabling the
+config option <code>DUK_USE_NONSTD_JSON_ESC_U2028_U2029</code>.</p>
 
 <h2>String.fromCharCode() accepts 32-bit codepoints</h2>
 
 <p><code>String.fromCharCode()</code> standard behavior is to use ToUInt16()
 coercion for codepoint values.  Duktape uses ToUint32() by default to better
-support non-BMP strings.  You can force the compliant behavior with the
-feature option <code>DUK_OPT_NO_NONSTD_STRING_FROMCHARCODE_32BIT</code>.</p>
+support non-BMP strings.  You can force the compliant behavior by disabling
+the config optipn <code>DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT</code>.</p>
 
 <h2>Array instance numeric index writes</h2>
 
@@ -198,9 +199,10 @@ and a few internal conditions are met.  When the fast path is taken, Duktape
 doesn't check Array.prototype for conflicting properties (these are very rare in
 practical code), which makes common array writes faster.  The behavior is
 non-compliant, but there's no outward difference unless Array.prototype has
-properties with numeric keys.  You can turn on the compliant behavior with
-the feature option <code>DUK_OPT_NO_NONSTD_ARRAY_WRITE</code>.  See the
-following for more details on the fast path behavior:
+properties with numeric keys.  You can turn on the compliant behavior by
+disaling the config options <code>DUK_USE_NONSTD_ARRAY_WRITE</code> and
+<code>DUK_USE_ARRAY_PROP_FASTPATH</code>.  See the following for more
+details on the fast path behavior:
 <a href="https://github.com/svaarala/duktape/blob/master/tests/ecmascript/test-misc-array-fast-write.js">test-misc-array-fast-write.js</a>.</p>
 
 <h2 id="typedarray-custombehavior">TypedArray binding</h2>

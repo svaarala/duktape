@@ -38,11 +38,3 @@
 
 #undef DUK_F_PACKED_TVAL_POSSIBLE
 #endif  /* DUK_F_PACKED_TVAL_PROVIDED */
-
-/* Feature option forcing. */
-#if defined(DUK_OPT_NO_PACKED_TVAL)
-#undef DUK_USE_PACKED_TVAL
-#elif defined(DUK_OPT_PACKED_TVAL)
-#undef DUK_USE_PACKED_TVAL
-#define DUK_USE_PACKED_TVAL
-#endif

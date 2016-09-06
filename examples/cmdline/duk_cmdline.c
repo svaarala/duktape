@@ -183,7 +183,7 @@ static void cmdline_fatal_handler(void *udata, const char *msg) {
 	abort();
 }
 
-static int get_stack_raw(duk_context *ctx, void *udata) {
+static duk_ret_t get_stack_raw(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	if (!duk_is_object(ctx, -1)) {
@@ -214,7 +214,7 @@ static void print_pop_error(duk_context *ctx, FILE *f) {
 	duk_pop(ctx);
 }
 
-static int wrapped_compile_execute(duk_context *ctx, void *udata) {
+static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	const char *src_data;
 	duk_size_t src_len;
 	int comp_flags;

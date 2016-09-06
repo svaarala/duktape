@@ -1,10 +1,4 @@
 define: DUK_USE_DEBUG_BUFSIZE
-feature_snippet: |
-  #if defined(DUK_OPT_DEBUG_BUFSIZE)
-  #define DUK_USE_DEBUG_BUFSIZE DUK_OPT_DEBUG_BUFSIZE
-  #else
-  #define DUK_USE_DEBUG_BUFSIZE 65536L
-  #endif
 introduced: 1.0.0
 related:  # not strictly required, value is defined even when DUK_USE_DEBUG not defined
   - DUK_USE_DEBUG

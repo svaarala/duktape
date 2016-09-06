@@ -1,6 +1,4 @@
 define: DUK_USE_PACKED_TVAL
-feature_enables: DUK_OPT_PACKED_TVAL
-feature_no_default: true  # provided by architecture unless forced
 introduced: 1.0.0
 default: false
 tags:

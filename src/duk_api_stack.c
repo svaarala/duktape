@@ -4762,6 +4762,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
+	/* 'tv' may be NULL */
 
 	if (tv == NULL) {
 		duk_push_string(ctx, "none");
@@ -4784,14 +4785,15 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 				/* XXX: better internal getprop call; get without side effects
 				 * but traverse inheritance chain.
 				 */
-				tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, h, DUK_HTHREAD_STRING_MESSAGE(thr));
-				if (tv) {
+				duk_tval *tv_msg;
+				tv_msg = duk_hobject_find_existing_entry_tval_ptr(thr->heap, h, DUK_HTHREAD_STRING_MESSAGE(thr));
+				if (tv_msg) {
 					/* It's important this summarization is
 					 * not error aware to avoid unlimited
 					 * recursion when the .message property
 					 * is e.g. another error.
 					 */
-					return duk_push_string_tval_readable(ctx, tv);
+					return duk_push_string_tval_readable(ctx, tv_msg);
 				}
 			}
 			duk_push_class_string_tval(ctx, tv);
@@ -4827,6 +4829,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 	return duk_to_string(ctx, -1);
 }
 DUK_INTERNAL const char *duk_push_string_tval_readable(duk_context *ctx, duk_tval *tv) {
+	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__push_string_tval_readable(ctx, tv, 0 /*error_aware*/);
 }
 
@@ -4836,5 +4839,6 @@ DUK_INTERNAL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t id
 }
 
 DUK_INTERNAL const char *duk_push_string_tval_readable_error(duk_context *ctx, duk_tval *tv) {
+	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__push_string_tval_readable(ctx, tv, 1 /*error_aware*/);
 }

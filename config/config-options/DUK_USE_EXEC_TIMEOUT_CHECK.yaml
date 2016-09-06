@@ -1,9 +1,4 @@
 define: DUK_USE_EXEC_TIMEOUT_CHECK
-feature_snippet: |
-  #undef DUK_USE_EXEC_TIMEOUT_CHECK
-  #if defined(DUK_OPT_EXEC_TIMEOUT_CHECK)
-  #define DUK_USE_EXEC_TIMEOUT_CHECK(udata)  DUK_OPT_EXEC_TIMEOUT_CHECK((udata))
-  #endif
 introduced: 1.2.0
 requires:
   - DUK_USE_INTERRUPT_COUNTER

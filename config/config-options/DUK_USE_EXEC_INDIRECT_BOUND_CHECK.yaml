@@ -1,10 +1,4 @@
 define: DUK_USE_EXEC_INDIRECT_BOUND_CHECK
-feature_snippet: |
-  #undef DUK_USE_EXEC_INDIRECT_BOUND_CHECK
-  #if defined(DUK_OPT_DEBUG) || defined(DUK_OPT_ASSERTIONS)
-  /* Enabled with debug/assertions just so that any issues can be caught. */
-  #define DUK_USE_EXEC_INDIRECT_BOUND_CHECK
-  #endif
 introduced: 1.0.0
 default: false
 tags:

@@ -1,5 +1,4 @@
 define: DUK_USE_GC_TORTURE
-feature_enables: DUK_OPT_GC_TORTURE
 introduced: 1.0.0
 default: false
 tags:

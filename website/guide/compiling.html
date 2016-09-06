@@ -16,7 +16,7 @@ platforms and toolchains.  For example, you can:</p>
 <li>Compile Duktape as a static library, and link the static library with
     your program.</li>
 <li>Compile Duktape as a dynamic library, and link the dynamic library with
-    your program (you'll need <code>DUK_OPT_DLL_BUILD</code>).</li>
+    your program.</li>
 </ul>
 
 <p>There are two alternative distribution formats for the Duktape source:
@@ -65,12 +65,12 @@ in your compiler):</p>
     footprint but may interfere with debugging (leave out from debug builds)</li>
 <li><code>-fstrict-aliasing</code>: use strict aliasing rules, Duktape
     is compatible with these and they improve the resulting C code</li>
-<li><code>-DDUK_OPT_DLL_BUILD</code>: needed when Duktape is built as a DLL
-    (the option is needed for both Duktape and application build)</li>
+<li>Configure.py with <code>--dll</code> is needed when Duktape is built as
+    a DLL, at least for Windows.</li>
 <li>By default Duktape uses <code>setjmp()</code> and <code>longjmp()</code>
     (or their variants) for internal long control transfers.  If you're
     compiling with a C++ compiler you may want to use
-    <code>DUK_OPT_CPP_EXCEPTIONS</code> which causes Duktape to use C++
+    <code>DUK_USE_CPP_EXCEPTIONS</code> which causes Duktape to use C++
     exceptions for long control transfers and allows scope-based resource
     management (automatic destructors, etc) in Duktape/C functions to work
     as expected.</li>
@@ -102,26 +102,27 @@ alignment requirements with feature options described below.</p>
 platform, you may need to add specific options to reduce memory footprint or to
 minimize garbage collection pauses.</p>
 
-<h2>Feature options (DUK_OPT_xxx)</h2>
+<h2>Customization Duktape configuration</h2>
 
-<p>If you wish to modify the defaults, you can provide feature options in the
-form of <code>DUK_OPT_xxx</code> compiler defines.  These will be taken into
-account by the default <code>duk_config.h</code> file, which resolves the
-final internal features based on feature requests, compiler features, and
-platform features.  The full list of feature options is described in
-<a href="http://wiki.duktape.org/FeatureOptions.html">Duktape feature options</a>
-(if you're modifying <code>duk_config.h</code> directly, see
-<a href="http://wiki.duktape.org/ConfigOptions.html">Duktape config options</a>).</p>
+<p>If you wish to modify the defaults, run the <code>tools/configure.py</code>
+utility which creates a <code>duk_config.h</code> config header and prepared
+Duktape source files for a configuration described on the command line.
+For example, to prepare sources for a DLL build with fastint support enabled:</p>
+
+<pre>
+$ python2 tools/configure.py \
+      --output-directory /tmp/output \
+      --source-directory src-input \
+      --config-metadata config \
+      --dll \
+      -DDUK_USE_FASTINT
+</pre>
+
+<p>The output directory (<code>/tmp/output</code>) will then contain the
+Duktape header and source files which you can then include in your build.</p>
 
 <p>See <a href="http://wiki.duktape.org/Configuring.html">Configuring Duktape for build</a>
 for more practical details.</p>
-
-<div class="note">
-If you use Duktape feature options, you must define the feature options both
-when compiling Duktape and when compiling any application code using the
-<code>duktape.h</code> header.  This is necessary because some feature options
-affect the binary compatibility of the Duktape API.
-</div>
 
 <h2>Suggested feature options for some environments</h2>
 
@@ -274,7 +275,7 @@ Duktape and the application with the same compiler.</p>
 <p>By default scope-based resource management (sometimes referred to
 as RAII) won't work in Duktape/C functions because Duktape uses
 <code>longjmp()</code> for internal long control transfers, bypassing
-C++ stack unwind mechanisms.  You can use <code>DUK_OPT_CPP_EXCEPTIONS</code>
+C++ stack unwind mechanisms.  You can use <code>DUK_USE_CPP_EXCEPTIONS</code>
 to cause Duktape to use C++ exceptions for internal long control transfers,
 which allows scope-based resource management to work in Duktape/C functions.</p>
 

@@ -1,5 +1,4 @@
 define: DUK_USE_DATAPTR16
-feature_enables: DUK_OPT_DATAPTR16
 introduced: 1.1.0
 related:
   - DUK_USE_DATAPTR_ENC16

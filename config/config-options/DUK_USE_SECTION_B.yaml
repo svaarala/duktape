@@ -1,5 +1,4 @@
 define: DUK_USE_SECTION_B
-feature_enables: DUK_OPT_SECTION_B
 introduced: 1.0.0
 default: true
 tags:

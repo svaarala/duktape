@@ -1,5 +1,4 @@
 define: DUK_USE_SELF_TESTS
-feature_enables: DUK_OPT_SELF_TESTS
 introduced: 1.0.0
 default: false
 tags:
