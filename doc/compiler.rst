@@ -334,11 +334,11 @@ not to be a code distribution format like e.g. Java bytecode.
 The bytecode executor is the best source for documentation on exact bytecode
 semantics at any given time.  Opcode information must be sync in:
 
-* ``src/duk_js_bytecode.h`` defines opcode names and various constants
+* ``src-input/duk_js_bytecode.h`` defines opcode names and various constants
 
-* ``src/duk_js_compiler.c`` emits bytecode
+* ``src-input/duk_js_compiler.c`` emits bytecode
 
-* ``src/duk_js_executor.c`` interprets bytecode
+* ``src-input/duk_js_executor.c`` interprets bytecode
 
 * ``debugger/duk_opcodes.yaml`` provides opcode metadata in a programmatic
   format, used by the debugger Web UI for bytecode dumping

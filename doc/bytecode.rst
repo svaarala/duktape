@@ -332,7 +332,7 @@ detail here.  Doing so would mean tedious documentation updates whenever
 bytecode was changed, and documentation would then easily fall out of date.
 The exact format is ultimately defined by the source code, see:
 
-* ``src/duk_api_bytecode.c``
+* ``src-input/duk_api_bytecode.c``
 
 * ``tools/dump_bytecode.py``
 

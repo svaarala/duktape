@@ -29,7 +29,7 @@ Handling unicode case conversion, character classes etc in a compact code
 size is bit challenging.  The current solution is to fast path ASCII
 characters and to use a bit-packed format for encoding case conversion
 rules (e.g. range mappings).  The rules are created by build-time Python
-scripts (see ``src/`` directory) and decoded by run-time code such as the
+scripts (see ``tools/`` directory) and decoded by run-time code such as the
 parser with the help of ``duk_bitdecoder_ctx`` and ``duk_bd_decode()``.
 
 .. note:: There are many Unicode specifications, and I'm not sure
@@ -141,7 +141,7 @@ See also:
 
 * http://www.unicode.org/faq/casemap_charprop.html.
 
-* ``src/CaseConversion.java`` which allows easy testing of what Java does
+* ``misc/CaseConversion.java`` which allows easy testing of what Java does
 
 Context and locale sensitive rules
 ==================================

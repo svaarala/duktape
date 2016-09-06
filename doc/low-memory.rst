@@ -380,7 +380,7 @@ The following may be appropriate when even less memory is available
 
     + ``util/example_user_builtins1.yaml``: examples of user builtins
 
-    + ``src/builtins.yaml``: documents some more format details
+    + ``src-input/builtins.yaml``: documents some more format details
 
     + Repo Makefile ``ajduk-rom`` target: illustrates how to run
       ``configure.py`` with user builtins

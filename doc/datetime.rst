@@ -126,9 +126,9 @@ There's an example dummy provider in:
 
 You can also look into the Unix/Windows Date providers built into Duktape:
 
-* ``src/duk_bi_date_unix.c``
+* ``src-input/duk_bi_date_unix.c``
 
-* ``src/duk_bi_date_windows.c``
+* ``src-input/duk_bi_date_windows.c``
 
 Platform dependencies
 =====================

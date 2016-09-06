@@ -260,7 +260,7 @@ mostly don't get a ``ctx`` argument); doing so may cause memory unsafe
 behavior.  As a concrete example, if a user read callback calls into the
 Duktape API during a read operation, the API call may trigger garbage
 collection.  Because garbage collection may have arbitrary side effects,
-the debugger command in progress (implemented in ``src/duk_debugger.c``)
+the debugger command in progress (implemented in ``src-input/duk_debugger.c``)
 may then break in a very confusing manner.
 
 duk_debugger_detach()
@@ -2342,7 +2342,7 @@ Duktape 1.5.0
 -------------
 
 The following list describes artificial keys included in Duktape 1.5.0, see
-``src/duk_debugger.c`` for up-to-date behavior:
+``src-input/duk_debugger.c`` for up-to-date behavior:
 
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | Artificial property key         | Object type(s)            | Description                                             |
