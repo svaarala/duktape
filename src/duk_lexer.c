@@ -973,6 +973,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		advtok = DUK__ADVTOK(1, DUK_TOK_COMMA);
 		break;
 	case DUK_ASC_LANGLE:  /* '<' */
+		/* FIXME: add HTML comment <!-- ... --> support here. */
 		if (DUK__L1() == '<' && DUK__L2() == '=') {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ALSHIFT_EQ);
 		} else if (DUK__L1() == '=') {
