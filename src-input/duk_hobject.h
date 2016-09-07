@@ -939,7 +939,9 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_b
 DUK_INTERNAL_DECL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
 
 /* finalization */
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL_DECL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
+#endif
 
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)

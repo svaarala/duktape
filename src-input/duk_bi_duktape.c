@@ -203,6 +203,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 #endif
 }
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 	(void) duk_require_hobject(ctx, 0);
 	if (duk_get_top(ctx) >= 2) {
@@ -222,6 +223,11 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 		return 1;
 	}
 }
+#else  /* DUK_USE_FINALIZER_SUPPORT */
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;

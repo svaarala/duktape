@@ -174,6 +174,7 @@ DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *h
 	}
 }
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 #if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
 DUK_LOCAL duk_ret_t duk__refcount_fake_finalizer(duk_context *ctx) {
 	DUK_UNREF(ctx);
@@ -227,6 +228,7 @@ DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject
 	duk_pop(ctx);
 }
 #endif  /* DUK_USE_REFZERO_FINALIZER_TORTURE */
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Refcount memory freeing loop.
@@ -265,7 +267,9 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 	DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap);
 	while (heap->refzero_list) {
 		duk_hobject *obj;
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 		duk_bool_t rescued = 0;
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 		/*
 		 *  Pick an object from the head (don't remove yet).
@@ -277,6 +281,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
 		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 #if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
 		/* Torture option to shake out finalizer side effect issues:
 		 * make a bogus function call for every finalizable object,
@@ -289,7 +294,8 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		duk__refcount_run_torture_finalizer(thr, obj);  /* must never longjmp */
 		DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
 		DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
-#endif
+#endif  /* DUK_USE_REFZERO_FINALIZER_TORTURE */
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 		/*
 		 *  Finalizer check.
@@ -300,16 +306,16 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		 *
 		 *  Note: quick reject check should match vast majority of
 		 *  objects and must be safe (not throw any errors, ever).
+		 *
+		 *  An object may have FINALIZED here if it was finalized by mark-and-sweep
+		 *  on a previous run and refcount then decreased to zero.  We won't run the
+		 *  finalizer again here.
+		 *
+		 *  A finalizer is looked up from the object and up its prototype chain
+		 *  (which allows inherited finalizers).
 		 */
 
-		/* An object may have FINALIZED here if it was finalized by mark-and-sweep
-		 * on a previous run and refcount then decreased to zero.  We won't run the
-		 * finalizer again here.
-		 */
-
-		/* A finalizer is looked up from the object and up its prototype chain
-		 * (which allows inherited finalizers).
-		 */
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
@@ -329,6 +335,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 				DUK_DDD(DUK_DDDPRINT("-> object refcount still zero after finalization, object will be freed"));
 			}
 		}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 		/* Refzero head is still the same.  This is the case even if finalizer
 		 * inserted more refzero objects; they are inserted to the tail.
@@ -355,6 +362,7 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 		 *  Rescue or free.
 		 */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 		if (rescued) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
@@ -370,7 +378,9 @@ DUK_LOCAL void duk__refzero_free_pending(duk_hthread *thr) {
 			DUK_ASSERT_HEAPHDR_LINKS(heap, h1);
 			DUK_ASSERT_HEAPHDR_LINKS(heap, h2);
 			heap->heap_allocated = h1;
-		} else {
+		} else
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
+		{
 			/* no -> decref members, then free */
 			duk__refcount_finalize_hobject(thr, obj);
 			duk_heap_free_heaphdr_raw(heap, h1);

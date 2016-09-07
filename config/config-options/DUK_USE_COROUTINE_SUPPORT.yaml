@@ -4,4 +4,4 @@ default: true
 tags:
   - execution
 description: >
-  Enable support Duktape coroutines, i.e. yield/resume.
+  Enable support for Duktape coroutines, i.e. yield/resume.

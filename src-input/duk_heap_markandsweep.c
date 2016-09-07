@@ -264,6 +264,7 @@ DUK_LOCAL void duk__mark_refzero_list(duk_heap *heap) {
  *  roots; otherwise circular references might be handled inconsistently.
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *hdr;
@@ -324,12 +325,14 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 
 	/* Caller will finish the marking process if we hit a recursion limit. */
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Mark objects on finalize_list.
  *
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 	duk_heaphdr *hdr;
 #ifdef DUK_USE_DEBUG
@@ -354,6 +357,7 @@ DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 	}
 #endif
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Fallback marking handler if recursion limit is reached.
@@ -443,7 +447,6 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
  *  identically to duk__sweep_heap().
  */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
 DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *hdr;
@@ -474,7 +477,6 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
-#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 /*
  *  Clear (reachable) flags of refzero work list.
@@ -508,6 +510,7 @@ DUK_LOCAL void duk__clear_refzero_list_flags(duk_heap *heap) {
  *  here.  (This now overlaps with the sweep handling in a harmless way.)
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__clear_finalize_list_flags(duk_heap *heap) {
 	duk_heaphdr *hdr;
 
@@ -522,6 +525,7 @@ DUK_LOCAL void duk__clear_finalize_list_flags(duk_heap *heap) {
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Sweep stringtable
@@ -874,6 +878,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
  *  Run (object) finalizers in the "to be finalized" work list.
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
@@ -932,6 +937,7 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 	DUK_D(DUK_DPRINT("mark-and-sweep finalize objects: %ld finalizers called", (long) count));
 #endif
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Object compaction.
@@ -1102,6 +1108,7 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
  *  similar to one or more finalizers on actual objects.
  */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 #if defined(DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE)
 DUK_LOCAL duk_ret_t duk__markandsweep_fake_finalizer(duk_context *ctx) {
 	DUK_D(DUK_DPRINT("fake mark-and-sweep torture finalizer executed"));
@@ -1142,6 +1149,7 @@ DUK_LOCAL void duk__markandsweep_torture_finalizer(duk_hthread *thr) {
 	duk_pop(ctx);
 }
 #endif  /* DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE */
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 /*
  *  Main mark-and-sweep function.
@@ -1246,8 +1254,10 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #endif
 	duk__mark_temproots_by_heap_scan(heap);   /* temproots */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	duk__mark_finalizable(heap);              /* mark finalizable as reachability roots */
 	duk__mark_finalize_list(heap);            /* mark finalizer work list as reachability roots */
+#endif
 	duk__mark_temproots_by_heap_scan(heap);   /* temproots */
 
 	/*
@@ -1277,10 +1287,12 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #else
 #error internal error, invalid strtab options
 #endif
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__clear_refzero_list_flags(heap);
 #endif
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	duk__clear_finalize_list_flags(heap);
+#endif
 
 	/*
 	 *  Object compaction (emergency only).
@@ -1354,6 +1366,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  already happened, this is probably good enough for now.
 	 */
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 #if defined(DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE)
 	/* Cannot simulate individual finalizers because finalize_list only
 	 * contains objects with actual finalizers.  But simulate side effects
@@ -1375,6 +1388,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	} else {
 		duk__run_object_finalizers(heap, flags);
 	}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 	/*
 	 *  Finish

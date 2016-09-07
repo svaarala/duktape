@@ -17,6 +17,7 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 	duk_hthread *thr;
 
@@ -109,3 +110,4 @@ DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) 
 
 	DUK_ASSERT_TOP(ctx, entry_top);
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */

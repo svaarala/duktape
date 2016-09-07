@@ -175,6 +175,7 @@ DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	duk_heap_free_strtab(heap);
 }
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *curr;
@@ -268,6 +269,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	DUK_ASSERT(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap);
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
@@ -313,8 +315,10 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk_heap_mark_and_sweep(heap, DUK_MS_FLAG_SKIP_FINALIZERS);  /* skip finalizers; queue finalizable objects to heap_allocated */
 #endif
 
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	DUK_HEAP_SET_FINALIZER_NORESCUE(heap);  /* rescue no longer supported */
 	duk__free_run_finalizers(heap);
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 	/* Note: heap->heap_thread, heap->curr_thread, and heap->heap_object
 	 * are on the heap allocated list.
