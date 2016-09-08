@@ -1877,6 +1877,11 @@ Planned
   for footprint optimized builds (ensure DUK_USE_ARRAY_PROP_FASTPATH is
   disabled for low memory builds) (GH-934)
 
+* Fix incorrect value stack handling in duk_put_prop_(l)string() and
+  duk_put_prop_index() when the target object and the property value
+  are in the same value stack slot (which is unusual but conceptually
+  clear) (GH-959)
+
 * Fix buffer object (duk_hbufobj) JSON serialization (bug present in 1.5.0):
   buffer objects were omitted from serialization when they should be
   serialized as normal objects instead (GH-867)
