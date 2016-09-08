@@ -72,16 +72,38 @@ $ ./duk fib.js
 <h2>Integrating Duktape into your program</h2>
 
 <p>The command line tool is simply an example of a program which embeds
-Duktape.  Embedding Duktape into your program is very simple: just add
-<code>duktape.c</code>, <code>duktape.h</code>, and <code>duk_config.h</code>
-to your build, and call the Duktape API from elsewhere in your program.</p>
+Duktape.  Embedding Duktape into your program is very simple:</p>
+
+<ul>
+<li>Run <code>duktape-N.N.N/tools/configure.py</code> to configure Duktape
+    for build.  The result is a directory containing <code>duktape.c</code>,
+    <code>duktape.h</code>, and <code>duk_config.h</code>.</li>
+<li>Add <code>duktape.c</code>, <code>duktape.h</code>, and <code>duk_config.h</code>
+    to your build, and call the Duktape API from elsewhere in your program.</li>
+</ul>
+
+<p>The Duktape distributable (duktape-N.N.N.tar.xz) <code>src/</code> directory
+contains preconfigured header and source files for the Duktape default configuration
+which can usually be used as is.  If needed, the configuration tool allows you to customize
+Duktape options, such as optimizing Duktape for low memory targets and
+enable/disable features.  See <a href="#compiling">Compiling</a> and
+<a href="http://wiki.duktape.org/Configuring.html">Configuring Duktape for build</a>
+for more details and examples.</p>
 
 <p>The distributable contains a very simple example program, <code>hello.c</code>,
-which illustrates this process.  Compile the test program e.g. as (see
-<a href="#compiling">Compiling</a> for compiler option suggestions):</p>
+which illustrates this process.  Compile the test program with the preconfigured
+Duktape header and source files e.g. as follows:</p>
 <pre>
 $ cd /tmp/duktape-&lt;version&gt;/
-$ gcc -std=c99 -o hello -Isrc/ src/duktape.c examples/hello/hello.c -lm
+$ gcc -std=c99 -o hello -Isrc src/duktape.c examples/hello/hello.c -lm
+</pre>
+
+<p>To customize Duktape configuration use <code>configure.py</code>:</p>
+<pre>
+$ cd /tmp/duktape-&lt;version&gt;/
+# Here we disable Ecmascript 6 Proxy object support
+$ python2 tools/configure.py --output-directory duktape-src -UDUK_USE_ES6_PROXY
+$ gcc -std=c99 -o hello -Iduktape-src duktape-src/duktape.c examples/hello/hello.c -lm
 </pre>
 
 <p>The test program creates a Duktape context and uses it to run some

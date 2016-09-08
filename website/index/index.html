@@ -117,9 +117,23 @@ be used.  The distributable contains an example Makefile for reference.
 In the simplest case:</p>
 
 <pre>
-$ gcc -std=c99 -o test test.c duktape.c -lm
+$ gcc -std=c99 -otest test.c duktape.c -lm
 $ ./test
-1+2=3
+<span class="index-shell-output">1+2=3</span>
+</pre>
+
+<p>To <a href="http://wiki.duktape.org/Configuring.html">customize Duktape configuration</a>,
+here to disable Ecmascript 6 <code>Proxy</code> object support:</p>
+
+<pre>
+$ python2 duktape-2.0.0/tools/configure.py --output-directory src-duktape \
+      -UDUK_USE_ES6_PROXY
+$ ls src-duktape/
+<span class="index-shell-output">duk_config.h  duk_source_meta.json  duktape.c  duktape.h</span>
+$ gcc -std=c99 -otest -Isrc-duktape \
+      test.c src-duktape/duktape.c -lm
+$ ./test
+<span class="index-shell-output">1+2=3</span>
 </pre>
 
 <h1><span class="step">2</span> Initialize a context</h1>
