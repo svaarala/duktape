@@ -225,7 +225,7 @@ def main():
 
     # Options for configure.py tool itself.
     parser.add_option('--source-directory', dest='source_directory', default=None, help='Directory with raw input sources (defaulted based on configure.py script path)')
-    parser.add_option('--output-directory', dest='output_directory', default=None, help='Directory for output files (created automatically, must not exist)')
+    parser.add_option('--output-directory', dest='output_directory', default=None, help='Directory for output files (created automatically if it doesn\'t exist, reused if safe)')
     parser.add_option('--license-file', dest='license_file', default=None, help='Source for LICENSE.txt (defaulted based on configure.py script path)')
     parser.add_option('--authors-file', dest='authors_file', default=None, help='Source for AUTHORS.rst (defaulted based on configure.py script path)')
     parser.add_option('--git-commit', dest='git_commit', default=None, help='Force git commit hash')
@@ -291,8 +291,6 @@ def main():
     if opts.output_directory is None:
         raise Exception('missing --output-directory')
     opts.output_directory = os.path.abspath(opts.output_directory)
-    if os.path.exists(opts.output_directory):
-        raise Exception('configure target directory %s already exists, please delete first' % repr(outdir))
     outdir = opts.output_directory
 
     opts.source_directory = default_from_script_path('--source-directory', opts.source_directory, [ 'src-input' ])
@@ -365,8 +363,25 @@ def main():
     logger.info('  - config metadata directory: ' + opts.config_metadata)
     logger.info('  - output directory: ' + opts.output_directory)
 
-    # Create output directory.
-    os.mkdir(outdir)
+    # Create output directory.  If the directory already exists, reuse it but
+    # only when it's safe to do so, i.e. it contains only known output files.
+    allow_outdir_reuse = True
+    outdir_whitelist = [ 'duk_config.h', 'duktape.c', 'duktape.h', 'duk_source_meta.json' ]
+    if os.path.exists(outdir):
+        if not allow_outdir_reuse:
+            raise Exception('configure target directory %s already exists, please delete it first' % repr(outdir))
+        for fn in os.listdir(outdir):
+            if fn == '.' or fn == '..' or (fn in outdir_whitelist and os.path.isfile(os.path.join(outdir, fn))):
+                continue
+            else:
+                raise Exception('configure target directory %s already exists, cannot reuse because it contains unknown files such as %s' % (repr(outdir), repr(fn)))
+        logger.info('Reusing output directory (already exists but contains only safe, known files)')
+        for fn in outdir_whitelist:
+            if os.path.isfile(os.path.join(outdir, fn)):
+                os.unlink(os.path.join(outdir, fn))
+    else:
+        logger.debug('Output directory doesn\'t exist, create it')
+        os.mkdir(outdir)
 
     # Temporary directory.
     tempdir = tempfile.mkdtemp(prefix='tmp-duk-prepare-')
