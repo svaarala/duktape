@@ -91,7 +91,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx_boolean(duk_context *ctx, duk_idx_t 
 	return rc;
 }
 
-DUK_EXTERNAL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx) {
+DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_context *ctx, duk_idx_t obj_idx, duk_idx_t idx_key) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_obj;
 	duk_tval *tv_key;
@@ -99,16 +99,19 @@ DUK_EXTERNAL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx) {
 	duk_small_int_t throw_flag;
 	duk_bool_t rc;
 
-	DUK_ASSERT_CTX_VALID(ctx);
-
 	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
 	 * resize is not necessary for a property put right now (putprop protects
 	 * against it internally).
 	 */
 
+	/* Key and value indices are either (-2, -1) or (-1, -2).  Given idx_key,
+	 * idx_val is always (idx_key ^ 0x01).
+	 */
+	DUK_ASSERT((idx_key == -2 && (idx_key ^ 1) == -1) ||
+	           (idx_key == -1 && (idx_key ^ 1) == -2));
 	tv_obj = duk_require_tval(ctx, obj_idx);
-	tv_key = duk_require_tval(ctx, -2);
-	tv_val = duk_require_tval(ctx, -1);
+	tv_key = duk_require_tval(ctx, idx_key);
+	tv_val = duk_require_tval(ctx, idx_key ^ 1);
 	throw_flag = duk_is_strict_call(ctx);
 
 	rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, throw_flag);
@@ -118,24 +121,31 @@ DUK_EXTERNAL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx) {
 	return rc;  /* 1 if property found, 0 otherwise */
 }
 
+DUK_EXTERNAL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	return duk__put_prop_shared(ctx, obj_idx, -2);
+}
+
 DUK_EXTERNAL duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(key != NULL);
 
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	duk_push_string(ctx, key);
-	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
-	return duk_put_prop(ctx, obj_idx);
+	/* Careful here and with other duk_put_prop_xxx() helpers: the
+	 * target object and the property value may be in the same value
+	 * stack slot (unusual, but still conceptually clear).
+	 */
+	obj_idx = duk_normalize_index(ctx, obj_idx);
+	(void) duk_push_string(ctx, key);
+	return duk__put_prop_shared(ctx, obj_idx, -1);
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(key != NULL);
 
-	obj_idx = duk_require_normalize_index(ctx, obj_idx);
-	duk_push_lstring(ctx, key, key_len);
-	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
-	return duk_put_prop(ctx, obj_idx);
+	obj_idx = duk_normalize_index(ctx, obj_idx);
+	(void) duk_push_lstring(ctx, key, key_len);
+	return duk__put_prop_shared(ctx, obj_idx, -1);
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
@@ -143,8 +153,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_idx, 
 
 	obj_idx = duk_require_normalize_index(ctx, obj_idx);
 	duk_push_uarridx(ctx, arr_idx);
-	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
-	return duk_put_prop(ctx, obj_idx);
+	return duk__put_prop_shared(ctx, obj_idx, -1);
 }
 
 DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx) {
@@ -157,8 +166,7 @@ DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_idx,
 
 	obj_idx = duk_require_normalize_index(ctx, obj_idx);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
-	duk_swap_top(ctx, -2);  /* [val key] -> [key val] */
-	return duk_put_prop(ctx, obj_idx);
+	return duk__put_prop_shared(ctx, obj_idx, -1);
 }
 
 DUK_EXTERNAL duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_idx) {
