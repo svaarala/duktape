@@ -13,8 +13,9 @@ objects), Khronos/ES6 ArrayBuffer/TypedView, and Node.js Buffer bindings.
 Duktape also provides a number of custom features such as error tracebacks,
 additional data types for better C integration, combined reference counting
 and mark-and sweep garbage collector, object finalizers, co-operative
-threads a.k.a. coroutines, tail calls, a built-in logging framework, a
-built-in debugger protocol, function bytecode dump/load, and so on.
+threads a.k.a. coroutines, tail calls, a built-in debugger protocol, function
+bytecode dump/load, and so on.  Bundled extra modules provide functionality
+such as CommonJS module loading and a logging framework.
 
 You can browse Duktape programmer's API and other documentation at:
 
@@ -28,20 +29,8 @@ More examples and how-to articles are in the Duktape Wiki:
 
 * http://wiki.duktape.org/
 
-Building and integrating Duktape into your project is very straightforward:
-
-* http://duktape.org/guide.html#compiling
-
-See Makefile.hello for a concrete example::
-
-  $ cd <dist_root>
-  $ make -f Makefile.hello
-  [...]
-  $ ./hello
-  Hello world!
-  2+3=5
-
-To build an example command line tool, use the following::
+To build an example command line tool with interactive evaluation (REPL) and
+the ability to run script files::
 
   $ cd <dist_root>
   $ make -f Makefile.cmdline
@@ -56,13 +45,34 @@ To build an example command line tool, use the following::
   $ ./duk mandel.js
   [...]
 
+To integrate Duktape into your program:
+
+* Use ``tools/configure.py`` to prepare Duktape source and header files
+  for build::
+
+      # Duktape options can be customized via command line options.
+      # In this example, enable "fastint" support and disable ES6 Proxy
+      # support
+
+      $ python2 tools/configure.py --output-directory duktape-src \
+            -DDUK_USE_FASTINT -UDUK_USE_ES6_PROXY
+
+* The output directory (duktape-src) will then contain ``duktape.c``,
+  ``duktape.h``, and ``duk_config.h`` which you include in your build.
+
+For more details, see:
+
+* http://duktape.org/guide.html#compiling
+
+* http://wiki.duktape.org/Configuring.html
+
 This distributable contains:
 
 * Pre-configured Duktape header and source files using the Duktape default
   configuration:
 
-  - ``src/``: main Duktape library in a "single source file" format (duktape.c,
-  duktape.h, and duk_config.h).
+  * ``src/``: main Duktape library in a "single source file" format (duktape.c,
+    duktape.h, and duk_config.h).
 
   * ``src-noline/``: contains a variant of ``src/duktape.c`` with no ``#line``
     directives which is preferable for some users.  See discussion in
