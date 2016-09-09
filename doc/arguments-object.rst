@@ -573,4 +573,3 @@ of an arguments object are beyond the range of "valid array indices"
 The current implementation assumes that this never happens in practice.
 As a result, arguments exotic behavior can do a fast reject if the
 key being accessed is not a valid array index.
-
