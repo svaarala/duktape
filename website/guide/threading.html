@@ -6,6 +6,12 @@
     single threaded: only one native thread can execute code in the heap at a
     time.  The native thread can change over time, as long as two native threads
     are not active at the same time in the same Duktape heap.</li>
+<li>It is possible to suspend Duktape execution in a Duktape/C call using
+    <code><a href="api.html#duk_suspend">duk_suspend()</a></code> and later
+    resume it with <code><a href="api.html#duk_resume">duk_resume()</a></code>.
+    Between these calls another thread may call into the same Duktape heap.
+    Application code must manage any locking necessary to ensure only one
+    native thread calls into Duktape at a time.</li>
 <li>Duktape heaps are completely isolated from each other.  Multiple native
     threads can execute code at the same time, as long as there is only one
     active native thread per Duktape heap.</li>
@@ -24,4 +30,5 @@ there are some limitations.</p>
 
 <p>See
 <a href="https://github.com/svaarala/duktape/blob/master/doc/threading.rst">threading.rst</a>
+and <a href="http://wiki.duktape.org/HowtoMultipleNativeThreads.html">How to use multiple native threads</a>
 for a detailed discussion of threading limitations and best practices.</p>
