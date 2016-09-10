@@ -80,13 +80,14 @@ DUK_EXTERNAL void duk_destroy_heap(duk_context *ctx) {
 
 DUK_EXTERNAL void duk_suspend(duk_context *ctx, duk_thread_state *state) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_internal_thread_state *snapshot = (duk_internal_thread_state *) state;
+	duk_internal_thread_state *snapshot = (duk_internal_thread_state *) (void *) state;
 	duk_heap *heap;
 	duk_ljstate *lj;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(state != NULL);  /* unvalidated */
 
 	heap = thr->heap;
 	lj = &heap->lj;
@@ -94,7 +95,7 @@ DUK_EXTERNAL void duk_suspend(duk_context *ctx, duk_thread_state *state) {
 	duk_push_tval(ctx, &lj->value1);
 	duk_push_tval(ctx, &lj->value2);
 
-	DUK_MEMMOVE((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
+	DUK_MEMCPY((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
 	snapshot->handling_error = heap->handling_error;
 	snapshot->curr_thread = heap->curr_thread;
 	snapshot->call_recursion_depth = heap->call_recursion_depth;
@@ -110,16 +111,17 @@ DUK_EXTERNAL void duk_suspend(duk_context *ctx, duk_thread_state *state) {
 
 DUK_EXTERNAL void duk_resume(duk_context *ctx, const duk_thread_state *state) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	const duk_internal_thread_state *snapshot = (const duk_internal_thread_state *) state;
+	const duk_internal_thread_state *snapshot = (const duk_internal_thread_state *) (const void *) state;
 	duk_heap *heap;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(state != NULL);  /* unvalidated */
 
 	heap = thr->heap;
 
-	DUK_MEMMOVE((void *) &heap->lj, (const void *) &snapshot->lj, sizeof(duk_ljstate));
+	DUK_MEMCPY((void *) &heap->lj, (const void *) &snapshot->lj, sizeof(duk_ljstate));
 	heap->handling_error = snapshot->handling_error;
 	heap->curr_thread = snapshot->curr_thread;
 	heap->call_recursion_depth = snapshot->call_recursion_depth;

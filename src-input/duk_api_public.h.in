@@ -64,6 +64,10 @@ typedef duk_idx_t (*duk_debug_request_function) (duk_context *ctx, void *udata, 
 typedef void (*duk_debug_detached_function) (duk_context *ctx, void *udata);
 
 struct duk_thread_state {
+	/* XXX: Enough space to hold internal suspend/resume structure.
+	 * This is rather awkward and to be fixed when the internal
+	 * structure is visible for the public API header.
+	 */
 	char data[128];
 };
 

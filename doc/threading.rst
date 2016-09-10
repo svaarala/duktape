@@ -12,15 +12,35 @@ The basic threading rules are as follows.
 Only one active native thread at a time per Duktape heap
 --------------------------------------------------------
 
-When user code calls e.g. ``duk_call()``, control flow is transferred to
-Duktape.  Duktape executes with that native thread until the original call
-returns or errors out.  While Duktape has control, it may execute multiple
-Duktape threads (coroutines, not to be confused with native threads).
-The caller must not interact with the Duktape heap with any other native
-thread until the original call returns.
+A Duktape heap can only be accessed by one native thread at a time.  There
+are no concurrency protection mechanisms inside Duktape so whenever two
+threads call into Duktape, even when seemingly not interacting with the same
+objects, the results are unpredictable and memory unsafe behavior may happen.
 
-After the original call returns, further calls into Duktape may use a
-different native thread, but never at the same time.
+The simplest way to use multiple threads is for only one native thread to call
+into Duktape API at a time.  If a call is made, e.g. using ``duk_call()``,
+control flow is transferred to Duktape for the duration of the call.  Within
+that call further Ecmascript and Duktape/C function calls can be made, and
+multiple Duktape threads (coroutines, not to be confused with native
+threads) can execute.  Once the initial call returns it's safe to call into
+the Duktape API from another native thread, as long as there's some
+application mechanism (e.g. a mutex) in place to ensure only one thread
+does so.
+
+A native thread can be suspended and resumed later
+--------------------------------------------------
+
+It's also possible for a Duktape/C call inside an active call stack to be
+temporarily suspended using ``duk_suspend()`` and later resumed using
+``duk_resume()``.  Between the two API calls the suspended native thread
+must not make any other Duktape API calls.  The application must ensure
+that no other thread is using Duktape when ``duk_resume()`` is called,
+e.g. using a mutex.
+
+The suspend/resume mechanism allows a blocking Duktape/C function to release
+control of the Duktape heap so that other native threads can execute other
+code within the same heap (also suspending if they encounter blocking
+operations).
 
 Multiple native threads can execute code on separate Duktape heaps
 ------------------------------------------------------------------

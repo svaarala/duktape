@@ -1,0 +1,77 @@
+name: duk_suspend
+
+proto: |
+  void duk_suspend(duk_context *ctx, duk_thread_state *state);
+
+stack: |
+  [ ... ] -> [ ... state(N)! ] (number of pushed stack entries may vary between versions)
+
+summary: |
+  <p>Suspend the current call stack so that another native thread may operate
+  on the same Duktape heap.  The necessary internal state is stored on the
+  value stack and/or the provided <code>state</code> allocation.
+  The <code>state</code> pointer must not be NULL, otherwise memory unsafe
+  behavior occurs.  Execution must later be resumed using
+  <code><a href="#duk_resume">duk_resume()</a></code>; if execution is not
+  resumed later some internal book-keeping will be left in an inconsistent
+  state.  The native call stack of the current native thread (which calls
+  <code>duk_suspend()</code> must not be unwound while Duktape execution
+  is suspended.</p>
+
+  <div class="note">
+  Duktape does not provide any locking for ensuring only one native thread
+  accesses a certain Duktape heap at a time.  Application code must provide
+  such mechanisms.
+  </div>
+
+  <p>See <a href="http://duktape.org/guide.html#threading">Threading</a>.</p>
+
+example: |
+  /* Example of a blocking connect which suspends Duktape execution while the
+   * connect blocks.  The example assumes an external locking mechanism for
+   * ensuring only one native thread accesses the Duktape heap at a time.
+   * When my_blocking_connect() is entered, the currently executing native
+   * thread is assumed to have already obtained the lock.
+   */
+
+  duk_ret_t my_blocking_connect(duk_context *ctx) {
+      duk_thread_state st;
+      const char *host;
+      int port;
+      int success;
+
+      host = duk_require_string(ctx, 0);
+      port = (int) duk_require_int(ctx, 1);
+
+      /* Suspend the Duktape thread.  Once duk_suspend() returns you must
+       * not call into the Duktape API before doing a duk_resume().
+       */
+      duk_suspend(ctx, &st);
+      my_release_lock();
+
+      /* Blocks until connect attempt is finished.  Another native thread
+       * may call into Duktape while we're blocked provided that application
+       * guarantees only thread does so at a time.
+       */
+      success = blocking_connect(host, port);
+
+      /* When we want to resume execution we must ensure no other thread is
+       * active for the Duktape heap.  We then call duk_resume() and proceed
+       * normally.
+       */
+      my_acquire_lock();
+      duk_resume(ctx, &st);
+
+      if (!success) {
+          duk_error(ctx, DUK_ERR_ERROR, "failed to connect");
+      }
+      return 0;
+  }
+
+tags:
+  - thread
+
+seealso:
+  - duk_resume
+
+introduced: 2.0.0

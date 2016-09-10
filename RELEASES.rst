@@ -1772,6 +1772,11 @@ Planned
   duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
   duk_put_global_lstring() (GH-946, GH-953)
 
+* Add duk_suspend() and duk_resume() which allow a native thread running a
+  Duktape/C function to be suspended temporarily (e.g. when a native system
+  call blocks) so that other native threads may execute while the thread is
+  blocked (GH-893, GH-909)
+
 * Include raw input sources and a prepare-and-config tool in the distributable,
   which allow user code to regenerate a config file and source code files for
   specified options; this is more comprehensive than just running genconfig.py

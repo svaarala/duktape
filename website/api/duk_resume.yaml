@@ -1,0 +1,25 @@
+name: duk_resume
+
+proto: |
+  void duk_resume(duk_context *ctx, const duk_thread_state *state);
+
+stack: |
+  [ ... state(N)! ] -> [ ... ] (number of popped stack entries may vary between versions)
+
+summary: |
+  <p>Resume Duktape execution previously suspended using
+  <code><a href="#duk_suspend">duk_suspend()</a></code>.  The <code>state</code>
+  argument must not be NULL.  Value stack and <code>state</code> must be in the
+  state where they were left by <code>duk_suspend()</code>; if that's not the
+  case, memory unsafe behavior will happen.</p>
+
+example: |
+  /* See example for duk_suspend(). */
+
+tags:
+  - thread
+
+seealso:
+  - duk_suspend
+
+introduced: 2.0.0
