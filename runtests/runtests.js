@@ -277,7 +277,11 @@ function executeTest(options, callback) {
                 tempSource,
                 '-lduktape',
                 //'-lduktaped',
-                '-lm' ];
+                '-lm'
+        ];
+        if (options.testcase.meta.pthread) {
+            cmd.push('-lpthread');
+        }
 
         cmdline = cmd.join(' ');
         execopts = {
