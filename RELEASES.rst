@@ -1587,9 +1587,6 @@ Released
 * Internal performance improvement: use raw value stack accessors internally
   when it's safe to do so (GH-582)
 
-* Internal performance improvement: add optional fast path for dense arrays in
-  Array.prototype operations like push() and pop() (GH-584)
-
 * Internal performance improvement: single step encoding for JSON values in
   the JSON slow path (GH-447)
 
@@ -1948,6 +1945,9 @@ Planned
   by around 20-25% and avoid a two-level dispatch for EXTRA opcodes; the
   performance optimized build is ~10kB larger while footprint optimized
   build is slightly smaller (GH-903)
+
+* Internal performance improvement: add optional fast path for dense arrays in
+  Array.prototype operations like push() and pop() (GH-584)
 
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
