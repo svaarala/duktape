@@ -206,4 +206,8 @@ DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 #define DUK_GET_HOBJECT_POSIDX(ctx,idx) \
 	(DUK_ASSERT_VALID_POSIDX((ctx),(idx)), DUK_TVAL_GET_OBJECT(((duk_hthread *) (ctx))->valstack_bottom + (idx)))
 
+#define DUK_GET_THIS_TVAL_PTR(thr) \
+	(DUK_ASSERT_EXPR((thr)->valstack_bottom > (thr)->valstack), \
+	 (thr)->valstack_bottom - 1)
+
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */

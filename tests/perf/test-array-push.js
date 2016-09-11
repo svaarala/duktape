@@ -5,13 +5,17 @@
 if (typeof print !== 'function') { print = console.log; }
 
 function test() {
-    var arr;
     var i, j;
+    var arr;
 
-    for (i = 0; i < 1e3; i++) {
+    for (i = 0; i < 1e5; i++) {
         arr = [];
-        for (j = 0; j < 1e4; j++) {
-            arr.push('foo');
+        for (j = 0; j < 10; j++) {
+            arr.push('foo'); arr.push('bar');
+            arr.push('foo'); arr.push('bar');
+            arr.push('foo'); arr.push('bar');
+            arr.push('foo'); arr.push('bar');
+            arr.push('foo'); arr.push('bar');
         }
     }
 }

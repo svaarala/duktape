@@ -24,7 +24,12 @@ struct duk_harray {
 	/* Shared object part. */
 	duk_hobject obj;
 
-	/* Array .length. */
+	/* Array .length.
+	 *
+	 * At present Array .length may be smaller, equal, or even larger
+	 * than the allocated underlying array part.  Fast path code must
+	 * always take this into account carefully.
+	 */
 	duk_uint32_t length;
 
 	/* Array .length property attributes.  The property is always

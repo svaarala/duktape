@@ -90,14 +90,14 @@ typedef struct {
 #if defined(DUK_USE_DOUBLE_ME)
 #define DUK__TVAL_SET_LIGHTFUNC(tv,fp,flags)  do { \
 		(tv)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_LIGHTFUNC) << 16) | \
-		                             ((duk_uint64_t) (flags)) | \
-		                             (((duk_uint64_t) (duk_uint32_t) (fp)) << 32); \
+		                              ((duk_uint64_t) (flags)) | \
+		                              (((duk_uint64_t) (duk_uint32_t) (fp)) << 32); \
 	} while (0)
 #else
 #define DUK__TVAL_SET_LIGHTFUNC(tv,fp,flags)  do { \
 		(tv)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_LIGHTFUNC) << 48) | \
-		                             (((duk_uint64_t) (flags)) << 32) | \
-		                             ((duk_uint64_t) (duk_uint32_t) (fp)); \
+		                              (((duk_uint64_t) (flags)) << 32) | \
+		                              ((duk_uint64_t) (duk_uint32_t) (fp)); \
 	} while (0)
 #endif
 #else  /* DUK_USE_64BIT_OPS */
