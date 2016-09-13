@@ -770,7 +770,6 @@ DUK_LOCAL void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int
 #endif
 
 DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t p, l, r;
 
 	/* The lo/hi indices may be crossed and hi < 0 is possible at entry. */
@@ -794,10 +793,9 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	DUK_ASSERT(hi - lo + 1 >= 2);
 
 	/* randomized pivot selection */
-	p = lo + (duk_util_tinyrandom_get_bits(thr, 30) % (hi - lo + 1));  /* rnd in [lo,hi] */
+	p = lo + (duk_int_t) (DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx) * (duk_double_t) (hi - lo + 1));
 	DUK_ASSERT(p >= lo && p <= hi);
-	DUK_DDD(DUK_DDDPRINT("lo=%ld, hi=%ld, chose pivot p=%ld",
-	                     (long) lo, (long) hi, (long) p));
+	DUK_DDD(DUK_DDDPRINT("lo=%ld, hi=%ld, chose pivot p=%ld", (long) lo, (long) hi, (long) p));
 
 	/* move pivot out of the way */
 	duk__array_sort_swap(ctx, p, lo);

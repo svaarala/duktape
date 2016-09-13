@@ -1,0 +1,13 @@
+<h1 id="random">Random numbers</h1>
+
+<p>Random numbers are used internally for <code>Math.random()</code>.
+They are also used currently for random pivot selection in the
+<code>Array.prototype.sort()</code> implementation.</p>
+
+<p>The default internal random number generator is optimized for a
+low footprint.  It has a reasonable quality but won't pass stringent
+statistical tests and is not at all suitable for cryptographic
+applications.</p>
+
+<p>You can replace the internal random number generator using the
+<code>DUK_USE_GET_RANDOM_DOUBLE</code> config option.</p>

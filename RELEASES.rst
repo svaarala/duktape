@@ -1882,6 +1882,10 @@ Planned
   for footprint optimized builds (ensure DUK_USE_ARRAY_PROP_FASTPATH is
   disabled for low memory builds) (GH-934)
 
+* Add DUK_USE_GET_RANDOM_DOUBLE() config option to allow an application
+  to override the built-in random number generator (which is very simple
+  and low footprint optimized) with something faster or better (GH-824)
+
 * Fix incorrect value stack handling in duk_put_prop_(l)string() and
   duk_put_prop_index() when the target object and the property value
   are in the same value stack slot (which is unusual but conceptually
