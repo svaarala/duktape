@@ -686,7 +686,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_reg_helper(duk_hthread *thr,
 		duk_push_number(ctx, y);
 		duk_replace(ctx, bc);
 
-		tv_dst = (duk_tval *) (((duk_uint8_t *) thr->valstack_bottom) + off_dst);
+		tv_dst = (duk_tval *) (void *) (((duk_uint8_t *) thr->valstack_bottom) + off_dst);
 	}
 
 	z = (op & 0x02) ? x : y;
