@@ -71,6 +71,7 @@ LINENOISE_SOURCES = \
 CONFIGOPTS_NONDEBUG=--option-file util/makeduk_base.yaml
 CONFIGOPTS_NONDEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_scanbuild.yaml
 CONFIGOPTS_NONDEBUG_PERF=--option-file config/examples/performance_sensitive.yaml
+CONFIGOPTS_NONDEBUG_SIZE=--option-file config/examples/low_memory.yaml
 CONFIGOPTS_NONDEBUG_AJDUK=--option-file util/makeduk_base.yaml --option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h
 CONFIGOPTS_NONDEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT
 CONFIGOPTS_NONDEBUG_AJDUK_ROM=--rom-support --rom-auto-lightfunc --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -DDUK_USE_ASSERTIONS -UDUK_USE_DEBUG
@@ -261,6 +262,9 @@ prep/nondebug-scanbuild: prep
 prep/nondebug-perf: prep
 	@rm -rf ./prep/nondebug-perf
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-perf --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_PERF) --line-directives
+prep/nondebug-size: prep
+	@rm -rf ./prep/nondebug-size
+	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-size --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_SIZE) --line-directives
 prep/nondebug-rom: prep
 	@rm -rf ./prep/nondebug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_ROM) --line-directives
@@ -305,6 +309,10 @@ duk: linenoise prep/nondebug
 	-@size $@
 duk-perf: linenoise prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+duk-size: linenoise prep/nondebug-size
+	$(CC) -o $@ -Iprep/nondebug-size $(CCOPTS_NONDEBUG) prep/nondebug-size/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
 duk-rom: linenoise prep/nondebug-rom
