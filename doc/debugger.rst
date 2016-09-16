@@ -2016,8 +2016,7 @@ result is either:
 * A "not found" error if the property doesn't exist.
 
 Properties stored in the internal "array part" are indexed using numeric
-string keys, e.g. ``"3"``, not integers, to avoid unnecessary string churn
-on the target.
+string keys, e.g. ``"3"``, not integers.
 
 Proxy objects are inspected as is without invoking any traps.  The only
 properties usually available are the Duktape specific internal control
@@ -2037,10 +2036,8 @@ GetHeapObjInfo and GetObjPropDescRange):
 
 * Key
 
-  - String for ordinary properties
-
-  - Number for array index properties of "dense arrays", i.e. arrays which
-    have an internal array part present
+  - Always a string, for array index properties convert index to canonical
+    index string (e.g. ``"3"``)
 
 * Property value:
 
@@ -2163,9 +2160,10 @@ arrays don't have an array part and array items are stored in the main property
 table together with normal string keyed properties.  Array items for sparse
 arrays will thus appear as normal string keyed properties, and may not be in
 ascending index order; the debug client should always reorder properties to
-fit the preferred display order.  For both dense and sparse arrays there may
-be gaps in the array, i.e. elements may be missing.  Such elements will not
-be included in the inspection result at all.
+fit the preferred display order.  Array gaps may be visible either as missing
+keys or as keys with the dvalue "unused".  Currently gaps in sparse arrays
+will be visible as missing keys while gaps in dense arrays are visible as
+"unused" dvalues; the debug client should handle both cases.
 
 See GetHeapObjInfo for notes about pointer safety.
 
