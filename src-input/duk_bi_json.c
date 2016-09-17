@@ -1481,6 +1481,7 @@ DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size
 	return q;
 }
 #else  /* DUK_USE_HEX_FASTPATH */
+/* FIXME: share with summarization */
 DUK_LOCAL duk_uint8_t *duk__enc_buffer_data_hex(const duk_uint8_t *src, duk_size_t src_len, duk_uint8_t *dst) {
 	const duk_uint8_t *p;
 	const duk_uint8_t *p_end;

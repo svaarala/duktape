@@ -80,7 +80,6 @@ DUK_LOCAL_DECL void duk__check_arguments_map_for_delete(duk_hthread *thr, duk_ho
 DUK_LOCAL_DECL duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr, duk_hobject *obj, duk_uint32_t old_len, duk_uint32_t new_len, duk_bool_t force_flag, duk_uint32_t *out_result_len);
 DUK_LOCAL_DECL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject *obj);
 
-DUK_LOCAL_DECL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags);
 DUK_LOCAL_DECL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_uint32_t arr_idx, duk_propdesc *out_desc, duk_small_uint_t flags);
 
 /*
@@ -1959,7 +1958,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_get_own_propdesc(duk_hthread *thr, duk_hobje
  *  pointers.
  */
 
-DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
+DUK_INTERNAL duk_bool_t duk_hobject_get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_propdesc *out_desc, duk_small_uint_t flags) {
 	duk_hobject *curr;
 	duk_uint32_t arr_idx;
 	duk_uint_t sanity;
@@ -1973,7 +1972,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
-	DUK_DDD(DUK_DDDPRINT("duk__get_propdesc: thr=%p, obj=%p, key=%p, out_desc=%p, flags=%lx, "
+	DUK_DDD(DUK_DDDPRINT("duk_hobject_get_propdesc: thr=%p, obj=%p, key=%p, out_desc=%p, flags=%lx, "
 	                     "arr_idx=%ld (obj -> %!O, key -> %!O)",
 	                     (void *) thr, (void *) obj, (void *) key, (void *) out_desc,
 	                     (long) flags, (long) arr_idx,
@@ -2903,7 +2902,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	/* XXX: inline into a prototype walking loop? */
 
-	rc = duk__get_propdesc(thr, obj, key, &desc, 0 /*flags*/);  /* don't push value */
+	rc = duk_hobject_get_propdesc(thr, obj, key, &desc, 0 /*flags*/);  /* don't push value */
 	/* fall through */
 
  pop_and_return:
@@ -2933,7 +2932,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *o
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	return duk__get_propdesc(thr, obj, key, &dummy, DUK_GETDESC_FLAG_IGNORE_PROTOLOOP);  /* don't push value */
+	return duk_hobject_get_propdesc(thr, obj, key, &dummy, DUK_GETDESC_FLAG_IGNORE_PROTOLOOP);  /* don't push value */
 }
 
 /*

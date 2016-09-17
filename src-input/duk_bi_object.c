@@ -579,7 +579,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 	tv = DUK_HTHREAD_THIS_PTR((duk_hthread *) ctx);
-	duk_push_class_string_tval(ctx, tv);
+	duk_push_object_class_string_tval(ctx, tv);
 	return 1;
 }
 
