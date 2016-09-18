@@ -1886,6 +1886,10 @@ Planned
   to override the built-in random number generator (which is very simple
   and low footprint optimized) with something faster or better (GH-824)
 
+* Change default built-in PRNG algorithm to xoroshiro128+ with SplitMix64
+  seed mixing; previous algorithm (Shamir's three-op algorithm) is still
+  used for low memory targets and targets without 64-bit types (GH-970)
+
 * Fix incorrect value stack handling in duk_put_prop_(l)string() and
   duk_put_prop_index() when the target object and the property value
   are in the same value stack slot (which is unusual but conceptually
