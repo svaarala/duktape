@@ -1036,7 +1036,34 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 #if !defined(DUK_USE_GET_RANDOM_DOUBLE)
+#if defined(DUK_USE_PREFER_SIZE) || !defined(DUK_USE_64BIT_OPS)
 	res->rnd_state = (duk_uint32_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
+	duk_util_tinyrandom_prepare_seed(res->heap_thread);
+#else
+	res->rnd_state[0] = (duk_uint64_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
+	DUK_ASSERT(res->rnd_state[1] == 0);  /* Not filled here, filled in by seed preparation. */
+#if 0  /* Manual test values matching misc/xoroshiro128plus_test.c. */
+	res->rnd_state[0] = 0xdeadbeef12345678ULL;
+	res->rnd_state[1] = 0xcafed00d12345678ULL;
+#endif
+	duk_util_tinyrandom_prepare_seed(res->heap_thread);
+	/* Mix in heap pointer: this ensures that if two Duktape heaps are
+	 * created on the same millisecond, they get a different PRNG
+	 * sequence (unless e.g. virtual memory addresses cause also the
+	 * heap object pointer to be the same).
+	 */
+	res->rnd_state[1] ^= (duk_uint64_t) (void *) res;
+	do {
+		duk_small_int_t i;
+		for (i = 0; i < 10; i++) {
+			/* Throw away a few initial random numbers just in
+			 * case.  Probably unnecessary due to SplitMix64
+			 * preparation.
+			 */
+			(void) duk_util_tinyrandom_get_double(res->heap_thread);
+		}
+	} while (0);
+#endif
 #endif
 
 	/*

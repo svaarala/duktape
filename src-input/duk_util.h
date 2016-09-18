@@ -506,6 +506,7 @@ DUK_INTERNAL_DECL void duk_be_finish(duk_bitencoder_ctx *ctx);
 
 #if !defined(DUK_USE_GET_RANDOM_DOUBLE)
 DUK_INTERNAL_DECL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_util_tinyrandom_prepare_seed(duk_hthread *thr);
 #endif
 
 DUK_INTERNAL_DECL void duk_bw_init(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_hbuffer_dynamic *h_buf);
