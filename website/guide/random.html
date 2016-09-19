@@ -4,10 +4,14 @@
 They are also used currently for random pivot selection in the
 <code>Array.prototype.sort()</code> implementation.</p>
 
-<p>The default internal random number generator is optimized for a
-low footprint.  It has a reasonable quality but won't pass stringent
-statistical tests and is not at all suitable for cryptographic
-applications.</p>
+<p>The default internal random number generator is
+<a href="http://xoroshiro.di.unimi.it/xoroshiro128plus.c">xoroshiro128+</a> with
+<a href="http://xorshift.di.unimi.it/splitmix64.c">SplitMix64</a> seed mixing.
+<a href="http://www.woodmann.com/forum/archive/index.php/t-3100.html.">Shamir's three-op PRNG</a>
+is used on low memory targets and when the compiler doesn't have 64-bit
+types.  The generators are not suitable for serious statistics algorithms
+due to e.g. limited quality of the seed material, and are not at all
+suitable for cryptography.</p>
 
 <p>You can replace the internal random number generator using the
 <code>DUK_USE_GET_RANDOM_DOUBLE</code> config option.</p>

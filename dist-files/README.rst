@@ -120,9 +120,11 @@ commit @GIT_COMMIT@ (@GIT_DESCRIBE@).
 Duktape is copyrighted by its authors (see ``AUTHORS.rst``) and licensed
 under the MIT license (see ``LICENSE.txt``).  String hashing algorithms are
 based on the algorithm from Lua (MIT license), djb2 hash, and Murmurhash2
-(MIT license).  Duktape module loader is based on the CommonJS module
-loading specification (without sharing any code), CommonJS is under the
-MIT license.
+(MIT license).  Pseudorandom number generator algorithms are based on
+Adi Shamir's three-op algorithm, xoroshiro128+ (public domain), and SplitMix64
+(public domain).  Duktape module loader is based on the CommonJS module
+loading specification (without sharing any code), CommonJS is under the MIT
+license.
 
 Have fun!
 

@@ -418,7 +418,11 @@ struct duk_heap {
 
 	/* rnd_state for duk_util_tinyrandom.c */
 #if !defined(DUK_USE_GET_RANDOM_DOUBLE)
-	duk_uint32_t rnd_state;
+#if defined(DUK_USE_PREFER_SIZE) || !defined(DUK_USE_64BIT_OPS)
+	duk_uint32_t rnd_state;  /* State for Shamir's three-op algorithm */
+#else
+	duk_uint64_t rnd_state[2];  /* State for xoroshiro128+ */
+#endif
 #endif
 
 	/* For manual debugging: instruction count based on executor and

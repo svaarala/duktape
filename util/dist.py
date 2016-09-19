@@ -727,7 +727,9 @@ def main():
     copy_files([
         'murmurhash2.txt',
         'lua.txt',
-        'commonjs.txt'
+        'commonjs.txt',
+        'xoroshiro128plus.txt',
+        'splitmix64.txt'
     ], 'licenses', os.path.join(dist, 'licenses'))
 
     # Merge debugger metadata.
