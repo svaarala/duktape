@@ -569,6 +569,7 @@ DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_ge
 DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);
 
 #ifdef DUK_USE_REFERENCE_COUNTING
+DUK_INTERNAL_DECL void duk_refzero_free_pending(duk_hthread *thr);
 #if !defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
 DUK_INTERNAL_DECL void duk_tval_incref(duk_tval *tv);
 #endif
@@ -576,6 +577,7 @@ DUK_INTERNAL_DECL void duk_tval_incref(duk_tval *tv);
 DUK_INTERNAL_DECL void duk_tval_incref_allownull(duk_tval *tv);
 #endif
 DUK_INTERNAL_DECL void duk_tval_decref(duk_hthread *thr, duk_tval *tv);
+DUK_INTERNAL_DECL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv);
 #if 0  /* unused */
 DUK_INTERNAL_DECL void duk_tval_decref_allownull(duk_hthread *thr, duk_tval *tv);
 #endif
@@ -586,8 +588,12 @@ DUK_INTERNAL_DECL void duk_heaphdr_incref(duk_heaphdr *h);
 DUK_INTERNAL_DECL void duk_heaphdr_incref_allownull(duk_heaphdr *h);
 #endif
 DUK_INTERNAL_DECL void duk_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h);
+#if 0  /* unused */
+DUK_INTERNAL_DECL void duk_heaphdr_decref_norz(duk_hthread *thr, duk_heaphdr *h);
+#endif
 DUK_INTERNAL_DECL void duk_heaphdr_decref_allownull(duk_hthread *thr, duk_heaphdr *h);
 DUK_INTERNAL_DECL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h);
+DUK_INTERNAL_DECL void duk_heaphdr_refzero_norz(duk_hthread *thr, duk_heaphdr *h);
 DUK_INTERNAL_DECL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr);
 #else
 /* no refcounting */
