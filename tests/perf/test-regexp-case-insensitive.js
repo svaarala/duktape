@@ -4,7 +4,6 @@
  */
 function test() {
     var i;
-    var src = [];
     for (i = 0; i < 1e2; i++) {
         // Use a RegExp constructor call rather than a literal to ensure the
         // RegExp is compiled on every loop.
