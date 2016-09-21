@@ -567,7 +567,7 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv != NULL);
 
-	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+	if (DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)) {
 		duk_heaphdr *h = DUK_TVAL_GET_HEAPHDR(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
