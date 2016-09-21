@@ -154,7 +154,15 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 		}
 		re_ctx->steps_count++;
 
+		/* Opcodes are at most 7 bits now so they encode to one byte.  If this
+		 * were not the case or 'pc' is invalid here (due to a bug etc) we'll
+		 * still fail safely through the switch default case.
+		 */
+		DUK_ASSERT(pc[0] <= 0x7fU);
+#if 0
 		op = (duk_small_int_t) duk__bc_get_u32(re_ctx, &pc);
+#endif
+		op = *pc++;
 
 		DUK_DDD(DUK_DDDPRINT("match: rec=%ld, steps=%ld, pc (after op)=%ld, sp=%ld, op=%ld",
 		                     (long) re_ctx->recursion_depth,

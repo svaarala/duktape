@@ -668,7 +668,7 @@ linenoise:
 regfuzz-0.1.tar.gz:
 	# https://code.google.com/p/regfuzz/
 	# SHA1: 774be8e3dda75d095225ba699ac59969d92ac970
-	$(WGET) https://regfuzz.googlecode.com/files/regfuzz-0.1.tar.gz -O $@
+	$(WGET) https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/regfuzz/regfuzz-0.1.tar.gz -O $@
 underscore:
 	# http://underscorejs.org/
 	# https://github.com/jashkenas/underscore
