@@ -387,7 +387,7 @@ The following may be appropriate when even less memory is available
     modify default Duktape built-ins, adding and removing properties, etc.
     For more details, see:
 
-    + ``util/example_user_builtins1.yaml``: examples of user builtins
+    + ``profiles/builtins/example_user_builtins1.yaml``: examples of user builtins
 
     + ``src-input/builtins.yaml``: documents some more format details
 
