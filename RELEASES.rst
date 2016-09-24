@@ -1890,6 +1890,9 @@ Planned
   seed mixing; previous algorithm (Shamir's three-op algorithm) is still
   used for low memory targets and targets without 64-bit types (GH-970)
 
+* Fix incorrect buffer zeroing assumption in regexp executor, triggered
+  when DUK_USE_ZERO_BUFFER_DATA is not set (default is set) (GH-978)
+
 * Fix incorrect value stack handling in duk_put_prop_(l)string() and
   duk_put_prop_index() when the target object and the property value
   are in the same value stack slot (which is unusual but conceptually
