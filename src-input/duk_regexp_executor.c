@@ -671,6 +671,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_hobject *h_regexp;
 	duk_hstring *h_bytecode;
 	duk_hstring *h_input;
+	duk_uint8_t *p_buf;
 	const duk_uint8_t *pc;
 	const duk_uint8_t *sp;
 	duk_small_int_t match = 0;
@@ -741,17 +742,21 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_ASSERT(re_ctx.nsaved >= 2);
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
-	duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);
+	p_buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);
+	DUK_UNREF(p_buf);
 	re_ctx.saved = (const duk_uint8_t **) duk_get_buffer(ctx, -1, NULL);
 	DUK_ASSERT(re_ctx.saved != NULL);
 
 	/* [ ... re_obj input bc saved_buf ] */
 
-	/* buffer is automatically zeroed */
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	for (i = 0; i < re_ctx.nsaved; i++) {
 		re_ctx.saved[i] = (duk_uint8_t *) NULL;
 	}
+#elif defined(DUK_USE_ZERO_BUFFER_DATA)
+	/* buffer is automatically zeroed */
+#else
+	DUK_MEMZERO((void *) p_buf, sizeof(duk_uint8_t *) * re_ctx.nsaved);
 #endif
 
 	DUK_DDD(DUK_DDDPRINT("regexp ctx initialized, flags=0x%08lx, nsaved=%ld, recursion_limit=%ld, steps_limit=%ld",
