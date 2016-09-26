@@ -1967,6 +1967,8 @@ Planned
   opcode handler optimizations (GH-903); refcount optimizations (GH-443);
   minor RegExp compile/execute optimizations (GH-974)
 
+* Miscellaneous footprint improvements: RegExp compiler/executor (GH-977)
+
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
   being declared as actual symbols; this reduces compilation warnings with
