@@ -328,12 +328,12 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_RETOK_ASSERT_START_NEG_LOOKAHEAD       8
 #define DUK_RETOK_ATOM_PERIOD                      9
 #define DUK_RETOK_ATOM_CHAR                        10
-#define DUK_RETOK_ATOM_DIGIT                       11
-#define DUK_RETOK_ATOM_NOT_DIGIT                   12
-#define DUK_RETOK_ATOM_WHITE                       13
-#define DUK_RETOK_ATOM_NOT_WHITE                   14
-#define DUK_RETOK_ATOM_WORD_CHAR                   15
-#define DUK_RETOK_ATOM_NOT_WORD_CHAR               16
+#define DUK_RETOK_ATOM_DIGIT                       11  /* assumptions in regexp compiler */
+#define DUK_RETOK_ATOM_NOT_DIGIT                   12  /* -""- */
+#define DUK_RETOK_ATOM_WHITE                       13  /* -""- */
+#define DUK_RETOK_ATOM_NOT_WHITE                   14  /* -""- */
+#define DUK_RETOK_ATOM_WORD_CHAR                   15  /* -""- */
+#define DUK_RETOK_ATOM_NOT_WORD_CHAR               16  /* -""- */
 #define DUK_RETOK_ATOM_BACKREFERENCE               17
 #define DUK_RETOK_ATOM_START_CAPTURE_GROUP         18
 #define DUK_RETOK_ATOM_START_NONCAPTURE_GROUP      19

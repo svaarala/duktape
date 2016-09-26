@@ -297,6 +297,17 @@ DUK_LOCAL void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_code
  *      as complex though.
  */
 
+DUK_LOCAL const duk_uint16_t * const duk__re_range_lookup1[3] = {
+	duk_unicode_re_ranges_digit,
+	duk_unicode_re_ranges_white,
+	duk_unicode_re_ranges_wordchar
+};
+DUK_LOCAL const duk_uint8_t duk__re_range_lookup2[3] = {
+	sizeof(duk_unicode_re_ranges_digit) / (2 * sizeof(duk_uint16_t)),
+	sizeof(duk_unicode_re_ranges_white) / (2 * sizeof(duk_uint16_t)),
+	sizeof(duk_unicode_re_ranges_wordchar) / (2 * sizeof(duk_uint16_t))
+};
+
 DUK_LOCAL void duk__append_range_atom_matcher(duk_re_compiler_ctx *re_ctx, duk_small_uint_t re_op, const duk_uint16_t *ranges, duk_small_uint_t count) {
 #if 0
 	DUK_ASSERT(re_op <= 0x7fUL);
@@ -617,35 +628,31 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 			break;
 		}
 		case DUK_RETOK_ATOM_DIGIT:
-		case DUK_RETOK_ATOM_NOT_DIGIT: {
-			new_atom_char_length = 1;
-			new_atom_start_offset = (duk_int32_t) DUK__RE_BUFLEN(re_ctx);
-			duk__append_range_atom_matcher(re_ctx,
-			                               (re_ctx->curr_token.t == DUK_RETOK_ATOM_DIGIT) ?
-			                               DUK_REOP_RANGES : DUK_REOP_INVRANGES,
-			                               duk_unicode_re_ranges_digit,
-			                               sizeof(duk_unicode_re_ranges_digit) / (2 * sizeof(duk_uint16_t)));
-			break;
-		}
+		case DUK_RETOK_ATOM_NOT_DIGIT:
 		case DUK_RETOK_ATOM_WHITE:
-		case DUK_RETOK_ATOM_NOT_WHITE: {
-			new_atom_char_length = 1;
-			new_atom_start_offset = (duk_int32_t) DUK__RE_BUFLEN(re_ctx);
-			duk__append_range_atom_matcher(re_ctx,
-			                               (re_ctx->curr_token.t == DUK_RETOK_ATOM_WHITE) ?
-			                               DUK_REOP_RANGES : DUK_REOP_INVRANGES,
-			                               duk_unicode_re_ranges_white,
-			                               sizeof(duk_unicode_re_ranges_white) / (2 * sizeof(duk_uint16_t)));
-		}
+		case DUK_RETOK_ATOM_NOT_WHITE:
 		case DUK_RETOK_ATOM_WORD_CHAR:
 		case DUK_RETOK_ATOM_NOT_WORD_CHAR: {
+			duk_small_uint_t re_op;
+			duk_small_uint_t idx;
+
 			new_atom_char_length = 1;
 			new_atom_start_offset = (duk_int32_t) DUK__RE_BUFLEN(re_ctx);
-			duk__append_range_atom_matcher(re_ctx,
-			                               (re_ctx->curr_token.t == DUK_RETOK_ATOM_WORD_CHAR) ?
-			                               DUK_REOP_RANGES : DUK_REOP_INVRANGES,
-			                               duk_unicode_re_ranges_wordchar,
-			                               sizeof(duk_unicode_re_ranges_wordchar) / (2 * sizeof(duk_uint16_t)));
+
+			DUK_ASSERT((DUK_RETOK_ATOM_DIGIT & 0x01) != 0);
+			DUK_ASSERT((DUK_RETOK_ATOM_WHITE & 0x01) != 0);
+			DUK_ASSERT((DUK_RETOK_ATOM_WORD_CHAR & 0x01) != 0);
+			DUK_ASSERT((DUK_RETOK_ATOM_NOT_DIGIT & 0x01) == 0);
+			DUK_ASSERT((DUK_RETOK_ATOM_NOT_WHITE & 0x01) == 0);
+			DUK_ASSERT((DUK_RETOK_ATOM_NOT_WORD_CHAR & 0x01) == 0);
+			re_op = (re_ctx->curr_token.t & 0x01) ? DUK_REOP_RANGES : DUK_REOP_INVRANGES;
+
+			DUK_ASSERT(DUK_RETOK_ATOM_WHITE == DUK_RETOK_ATOM_DIGIT + 2);
+			DUK_ASSERT(DUK_RETOK_ATOM_WORD_CHAR == DUK_RETOK_ATOM_DIGIT + 4);
+			idx = (re_ctx->curr_token.t - DUK_RETOK_ATOM_DIGIT) >> 1;
+			DUK_ASSERT(idx <= 2);  /* Assume continuous token numbers; also checks negative underflow. */
+
+			duk__append_range_atom_matcher(re_ctx, re_op, duk__re_range_lookup1[idx], duk__re_range_lookup2[idx]);
 			break;
 		}
 		case DUK_RETOK_ATOM_BACKREFERENCE: {
