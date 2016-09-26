@@ -127,9 +127,8 @@ DUK_LOCAL void duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
 /* special helper for emitting u16 lists (used for character ranges for built-in char classes) */
 DUK_LOCAL void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, const duk_uint16_t *values, duk_uint32_t count) {
 	/* Call sites don't need the result length so it's not accumulated. */
-	while (count > 0) {
+	while (count-- > 0) {
 		duk__append_u32(re_ctx, (duk_uint32_t) (*values++));
-		count--;
 	}
 }
 
@@ -159,17 +158,66 @@ DUK_LOCAL void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t data_
  *  variable length UTF-8 encoding.  See doc/regexp.rst for discussion.
  */
 DUK_LOCAL duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
-	duk_small_int_t len;
-
-	/* XXX: solve into closed form (smaller code) */
-
+#if 0
+	/* Iterative solution. */
 	if (skip < 0) {
+		duk_small_int_t len;
 		/* two encoding attempts suffices */
 		len = duk_unicode_get_xutf8_length((duk_codepoint_t) duk__encode_i32(skip));
 		len = duk_unicode_get_xutf8_length((duk_codepoint_t) duk__encode_i32(skip - (duk_int32_t) len));
 		DUK_ASSERT(duk_unicode_get_xutf8_length(duk__encode_i32(skip - (duk_int32_t) len)) == len);  /* no change */
 		skip -= (duk_int32_t) len;
 	}
+#endif
+
+#if defined(DUK_USE_PREFER_SIZE)
+	/* Closed form solution, this produces smallest code.
+	 * See re_neg_jump_offset (closed2).
+	 */
+	if (skip < 0) {
+		skip--;
+		if (skip < -0x3fL) {
+			skip--;
+		}
+		if (skip < -0x3ffL) {
+			skip--;
+		}
+		if (skip < -0x7fffL) {
+			skip--;
+		}
+		if (skip < -0xfffffL) {
+			skip--;
+		}
+		if (skip < -0x1ffffffL) {
+			skip--;
+		}
+		if (skip < -0x3fffffffL) {
+			skip--;
+		}
+	}
+#else  /* DUK_USE_PREFER_SIZE */
+	/* Closed form solution, this produces fastest code.
+	 * See re_neg_jump_offset (closed1).
+	 */
+	if (skip < 0) {
+		if (skip >= -0x3eL) {
+			skip -= 1;
+		} else if (skip >= -0x3fdL) {
+			skip -= 2;
+		} else if (skip >= -0x7ffcL) {
+			skip -= 3;
+		} else if (skip >= -0xffffbL) {
+			skip -= 4;
+		} else if (skip >= -0x1fffffaL) {
+			skip -= 5;
+		} else if (skip >= -0x3ffffff9L) {
+			skip -= 6;
+		} else {
+			skip -= 7;
+		}
+	}
+#endif  /* DUK_USE_PREFER_SIZE */
+
 	return duk__insert_i32(re_ctx, offset, skip);
 }
 
