@@ -108,10 +108,15 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8
 
 /* Get a (possibly canonicalized) input character from current sp.  The input
  * itself is never modified, and captures always record non-canonicalized
- * characters even in case-insensitive matching.
+ * characters even in case-insensitive matching.  Return <0 if out of input.
  */
 DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **sp) {
-	duk_codepoint_t res = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
+	duk_codepoint_t res;
+
+	if (*sp >= re_ctx->input_end) {
+		return -1;
+	}
+	res = (duk_codepoint_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end);
 	if (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) {
 		res = duk_unicode_re_canonicalize_char(re_ctx->thr, res);
 	}
@@ -194,10 +199,17 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			c1 = (duk_codepoint_t) duk__bc_get_u32(re_ctx, &pc);
 			DUK_ASSERT(!(re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) ||
 			           c1 == duk_unicode_re_canonicalize_char(re_ctx->thr, c1));  /* canonicalized by compiler */
-			if (sp >= re_ctx->input_end) {
+			c2 = duk__inp_get_cp(re_ctx, &sp);
+			/* No need to check for c2 < 0 (end of input): because c1 >= 0, it
+			 * will fail the match below automatically and cause goto fail.
+			 */
+#if 0
+			if (c2 < 0) {
 				goto fail;
 			}
-			c2 = duk__inp_get_cp(re_ctx, &sp);
+#endif
+			DUK_ASSERT(c1 >= 0);
+
 			DUK_DDD(DUK_DDDPRINT("char match, c1=%ld, c2=%ld", (long) c1, (long) c2));
 			if (c1 != c2) {
 				goto fail;
@@ -207,11 +219,8 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 		case DUK_REOP_PERIOD: {
 			duk_codepoint_t c;
 
-			if (sp >= re_ctx->input_end) {
-				goto fail;
-			}
 			c = duk__inp_get_cp(re_ctx, &sp);
-			if (duk_unicode_is_line_terminator(c)) {
+			if (c < 0 || duk_unicode_is_line_terminator(c)) {
 				/* E5 Sections 15.10.2.8, 7.3 */
 				goto fail;
 			}
@@ -224,10 +233,10 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			duk_small_int_t match;
 
 			n = duk__bc_get_u32(re_ctx, &pc);
-			if (sp >= re_ctx->input_end) {
+			c = duk__inp_get_cp(re_ctx, &sp);
+			if (c < 0) {
 				goto fail;
 			}
-			c = duk__inp_get_cp(re_ctx, &sp);
 
 			match = 0;
 			while (n) {
@@ -278,14 +287,14 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			duk_codepoint_t c;
 			const duk_uint8_t *tmp_sp;
 
-			if (sp >= re_ctx->input_end) {
+			tmp_sp = sp;
+			c = duk__inp_get_cp(re_ctx, &tmp_sp);
+			if (c < 0) {
 				break;
 			}
 			if (!(re_ctx->re_flags & DUK_RE_FLAG_MULTILINE)) {
 				goto fail;
 			}
-			tmp_sp = sp;
-			c = duk__inp_get_cp(re_ctx, &tmp_sp);
 			if (duk_unicode_is_line_terminator(c)) {
 				/* E5 Sections 15.10.2.8, 7.3 */
 				break;
@@ -622,11 +631,17 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 				 * valid compiled regexps cannot write a saved[] entry
 				 * which points to outside the string.
 				 */
-				if (sp >= re_ctx->input_end) {
+				c1 = duk__inp_get_cp(re_ctx, &p);
+				DUK_ASSERT(c1 >= 0);
+				c2 = duk__inp_get_cp(re_ctx, &sp);
+				/* No need for an explicit c2 < 0 check: because c1 >= 0,
+				 * the comparison will always fail if c2 < 0.
+				 */
+#if 0
+				if (c2 < 0) {
 					goto fail;
 				}
-				c1 = duk__inp_get_cp(re_ctx, &p);
-				c2 = duk__inp_get_cp(re_ctx, &sp);
+#endif
 				if (c1 != c2) {
 					goto fail;
 				}
@@ -929,22 +944,17 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 			 * as 'undefined'.  The same is done when saved[] pointers are insane
 			 * (this should, of course, never happen in practice).
 			 */
-			if (re_ctx.saved[i] && re_ctx.saved[i+1] && re_ctx.saved[i+1] >= re_ctx.saved[i]) {
-				duk_hstring *h_saved;
-
+			if (re_ctx.saved[i] && re_ctx.saved[i + 1] && re_ctx.saved[i + 1] >= re_ctx.saved[i]) {
 				duk_push_lstring(ctx,
 				                 (const char *) re_ctx.saved[i],
 				                 (duk_size_t) (re_ctx.saved[i+1] - re_ctx.saved[i]));
-				h_saved = duk_get_hstring(ctx, -1);
-				DUK_ASSERT(h_saved != NULL);
-
 				if (i == 0) {
 					/* Assumes that saved[0] and saved[1] are always
 					 * set by regexp bytecode (if not, char_end_offset
 					 * will be zero).  Also assumes clen reflects the
 					 * correct char length.
 					 */
-					char_end_offset = char_offset + DUK_HSTRING_GET_CHARLEN(h_saved);
+					char_end_offset = char_offset + (duk_uint32_t) duk_get_length(ctx, -1);  /* add charlen */
 				}
 			} else {
 				duk_push_undefined(ctx);
