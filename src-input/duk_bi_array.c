@@ -448,7 +448,9 @@ DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_context *ctx, duk_harray *h_arr)
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 	duk_uint32_t len;
 	duk_uint32_t idx;
+#if defined(DUK_USE_ARRAY_FASTPATH)
 	duk_harray *h_arr;
+#endif
 
 	DUK_ASSERT_TOP(ctx, 0);
 
@@ -532,7 +534,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 
 	duk_uint32_t len;
 	duk_idx_t i, n;
+#if defined(DUK_USE_ARRAY_FASTPATH)
 	duk_harray *h_arr;
+#endif
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
 	h_arr = duk__arraypart_fastpath_this(ctx);

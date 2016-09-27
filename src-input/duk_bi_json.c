@@ -28,7 +28,9 @@
 
 DUK_LOCAL_DECL void duk__dec_syntax_error(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx);
+#ifdef DUK_USE_JX
 DUK_LOCAL_DECL duk_uint8_t duk__dec_peek(duk_json_dec_ctx *js_ctx);
+#endif
 DUK_LOCAL_DECL duk_uint8_t duk__dec_get(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL duk_uint8_t duk__dec_get_nonwhite(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL duk_uint_fast32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, duk_small_uint_t n);
@@ -239,10 +241,12 @@ DUK_LOCAL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx) {
 	js_ctx->p = p;
 }
 
+#ifdef DUK_USE_JX
 DUK_LOCAL duk_uint8_t duk__dec_peek(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->p <= js_ctx->p_end);
 	return *js_ctx->p;
 }
+#endif
 
 DUK_LOCAL duk_uint8_t duk__dec_get(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->p <= js_ctx->p_end);

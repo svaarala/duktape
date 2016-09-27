@@ -1506,7 +1506,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
                                               duk_size_t entry_callstack_top) {
 	duk_tval *tv1;
 	duk_tval *tv2;
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 	duk_hthread *resumer;
+#endif
 	duk_catcher *cat;
 	duk_size_t new_cat_top;
 	duk_size_t orig_callstack_index;
