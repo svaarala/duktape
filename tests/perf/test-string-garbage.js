@@ -3,27 +3,27 @@ function test() {
     var s = 'x';
     var t;
 
-    for (i = 0; i < 5e5; i++) {
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
-        t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y'; t = s + 'y';
+    for (i = 0; i < 2e5; i++) {
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
+        t = s + 'a'; t = s + 'b'; t = s + 'c'; t = s + 'd'; t = s + 'e';
     }
 }
 

@@ -306,7 +306,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
  *  Add .fileName and .lineNumber to an error on the stack top.
  */
 
-#if !defined(DUK_USE_TRACEBACKS)
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE) && !defined(DUK_USE_TRACEBACKS)
 DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
 	duk_context *ctx;
 #if defined(DUK_USE_ASSERTIONS)
@@ -421,12 +421,13 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 }
-#endif  /* !DUK_USE_TRACEBACKS */
+#endif  /* DUK_USE_AUGMENT_ERROR_CREATE && !DUK_USE_TRACEBACKS */
 
 /*
  *  Add line number to a compiler error.
  */
 
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
 	duk_context *ctx;
 
@@ -459,6 +460,7 @@ DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
 	DUK_DDD(DUK_DDDPRINT("compile error, after adding line info: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, -1)));
 }
+#endif  /* DUK_USE_AUGMENT_ERROR_CREATE */
 
 /*
  *  Augment an error being created using Duktape specific properties

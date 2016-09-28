@@ -447,6 +447,7 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
  *  identically to duk__sweep_heap().
  */
 
+#ifdef DUK_USE_REFERENCE_COUNTING
 DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *hdr;
@@ -477,6 +478,7 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 /*
  *  Clear (reachable) flags of refzero work list.
@@ -561,8 +563,7 @@ DUK_LOCAL void duk__sweep_string_chain16(duk_heap *heap, duk_uint16_t *slot, duk
 		/* free inner references (these exist e.g. when external
 		 * strings are enabled)
 		 */
-		duk_free_hstring_inner(heap, h);
-		DUK_FREE(heap, h);
+		duk_free_hstring(heap, h);
 		(*count_free)++;
 	}
 }
@@ -589,8 +590,7 @@ DUK_LOCAL void duk__sweep_string_chain(duk_heap *heap, duk_hstring **slot, duk_s
 		/* free inner references (these exist e.g. when external
 		 * strings are enabled)
 		 */
-		duk_free_hstring_inner(heap, h);
-		DUK_FREE(heap, h);
+		duk_free_hstring(heap, h);
 		(*count_free)++;
 	}
 }
@@ -700,12 +700,9 @@ DUK_LOCAL void duk__sweep_stringtable_probe(duk_heap *heap, duk_size_t *out_coun
 #endif
 
 		/* free inner references (these exist e.g. when external
-		 * strings are enabled)
+		 * strings are enabled) and the struct itself.
 		 */
-		duk_free_hstring_inner(heap, (duk_hstring *) h);
-
-		/* finally free the struct itself */
-		DUK_FREE(heap, h);
+		duk_free_hstring(heap, (duk_hstring *) h);
 	}
 
 #ifdef DUK_USE_DEBUG

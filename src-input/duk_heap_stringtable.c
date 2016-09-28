@@ -1090,8 +1090,7 @@ DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
 #endif
 				/* strings may have inner refs (extdata) in some cases */
 				if (h != NULL) {
-					duk_free_hstring_inner(heap, h);
-					DUK_FREE(heap, h);
+					duk_free_hstring(heap, h);
 				}
 			}
 #if defined(DUK_USE_HEAPPTR16)
@@ -1109,8 +1108,7 @@ DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
 			e->u.str = NULL;
 #endif
 			if (h != NULL) {
-				duk_free_hstring_inner(heap, h);
-				DUK_FREE(heap, h);
+				duk_free_hstring(heap, h);
 			}
 		}
 		e->listlen = 0;
@@ -1140,8 +1138,7 @@ DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap) {
 			DUK_ASSERT(h != NULL);
 
 			/* strings may have inner refs (extdata) in some cases */
-			duk_free_hstring_inner(heap, h);
-			DUK_FREE(heap, h);
+			duk_free_hstring(heap, h);
 #if 0  /* not strictly necessary */
 			heap->strtable[i] = NULL;
 #endif
