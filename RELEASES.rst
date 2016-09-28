@@ -1964,8 +1964,8 @@ Planned
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
   Array .length coercion (GH-862); value stack operation optimization
   (GH-891); call related bytecode simplification (GH-896); minor bytecode
-  opcode handler optimizations (GH-903); refcount optimizations (GH-443);
-  minor RegExp compile/execute optimizations (GH-974)
+  opcode handler optimizations (GH-903); refcount optimizations (GH-443,
+  GH-973); minor RegExp compile/execute optimizations (GH-974)
 
 * Miscellaneous footprint improvements: RegExp compiler/executor (GH-977)
 
