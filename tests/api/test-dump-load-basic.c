@@ -197,9 +197,9 @@ static duk_ret_t test_large_func(duk_context *ctx, void *udata) {
 .name: {"value":"test","writable":false,"enumerable":false,"configurable":true}
 .fileName: {"value":"fakeFilename.js","writable":false,"enumerable":false,"configurable":true}
 .prototype: {"value":{},"writable":true,"enumerable":false,"configurable":false}
-._Formals: {value:["a","b","c"],writable:false,enumerable:false,configurable:false}
-._Varmap: {value:{a:0,b:1,c:2,x:3},writable:false,enumerable:false,configurable:false}
-._Pc2line: {value:|04000000020000000c00000000|,writable:true,enumerable:false,configurable:true}
+0: {value:["a","b","c"],writable:false,enumerable:false,configurable:false}
+1: {value:{a:0,b:1,c:2,x:3},writable:false,enumerable:false,configurable:false}
+2: {value:|04000000020000000c00000000|,writable:true,enumerable:false,configurable:true}
 typeof .prototype: object
 typeof .prototype.constructor: function
 .prototype.constructor === func: true
@@ -226,19 +226,16 @@ static duk_ret_t test_properties(duk_context *ctx, void *udata) {
 	duk_dump_function(ctx);
 	duk_load_function(ctx);
 
-	/* Create the internal key prefix (0xFF) is C code and pass it to the
-	 * eval code.  This avoids creating creating the prefix using Ecmascript
-	 * code (the idiom for that changed in Duktape 2.x).
-	 */
+	/* Create the internal keys (hidden symbols) from C code. */
 
 	duk_eval_string(ctx,
-		"(function (v, pfx) {\n"
+		"(function (v, k1, k2, k3) {\n"
 		"    [ 'length', 'name', 'fileName', 'prototype' ].forEach(function (k) {\n"
 		"        print('.' + k + ': ' + JSON.stringify(Object.getOwnPropertyDescriptor(v, k)));\n"
 		"    });\n"
 		"    // internal properties; print with JX to print buffer\n"
-		"    [ 'Formals', 'Varmap', 'Pc2line' ].forEach(function (k) {\n"
-		"        print('._' + k + ': ' + Duktape.enc('jx', Object.getOwnPropertyDescriptor(v, pfx + k)));\n"
+		"    [ k1, k2, k3 ].forEach(function (k, i) {\n"
+		"        print(i + ': ' + Duktape.enc('jx', Object.getOwnPropertyDescriptor(v, k)));\n"
 		"    });\n"
 		"    // .prototype\n"
 		"    print('typeof .prototype: ' + typeof v.prototype);\n"
@@ -248,8 +245,10 @@ static duk_ret_t test_properties(duk_context *ctx, void *udata) {
 		"    print('descriptor of .prototype.constructor: ' + JSON.stringify(Object.getOwnPropertyDescriptor(v.prototype, 'constructor')));\n"
 		"})");
 	duk_dup(ctx, -2),
-	duk_push_string(ctx, "\xFF");  /* internal key prefix */
-	duk_call(ctx, 2);
+	duk_push_string(ctx, "\xFF" "Formals");
+	duk_push_string(ctx, "\xFF" "Varmap");
+	duk_push_string(ctx, "\xFF" "Pc2line");
+	duk_call(ctx, 4);
 	duk_pop(ctx);
 
 	duk_pop(ctx);

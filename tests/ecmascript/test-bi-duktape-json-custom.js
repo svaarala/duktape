@@ -734,10 +734,6 @@ e188
 json  22c3a1c28822
 jx "\xe1\x88"
 jc "\u00e1\u0088"
-ff41
-json  22c3bf4122
-jx "\xffA"
-jc "\u00ffA"
 c080
 json  220022
 jx "\x00"
@@ -756,7 +752,6 @@ jc "\u0000"
 function invalidXutf8Test() {
     var values = [
         'e188',     // last byte missing from U+1234 encoding (e188b4)
-        'ff41',     // first byte is an invalid initial byte
         'c080',     // non-shortest encoding for U+0000
     ];
 

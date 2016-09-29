@@ -36,18 +36,18 @@ TypeError
 "\u07ad\xbe\xef"
 string "<U+07AD><U+FFFD>"
 |deadbeef|
-"\xff\ue74c"
+"\xfe\ue74c"
 string "<U+FFFD><U+E74C><U+074C><U+FFFD>"
-|ffeeddcc|
+|feeeddcc|
 "abcd"
 string "abcd"
 |61626364|
 "\x00\x01\x02\xfe\xff"
 string "<U+0000><U+0001><U+0002><U+FFFD><U+FFFD>"
 |000102feff|
-"\xff\xff\xff\xffxV4\x12\u03ba\xfe\xca"
-string "<U+FFFD><U+FFFD><U+FFFD><U+FFFD>xV4<U+0012><U+03BA><U+FFFD><U+FFFD><U+FFFD>"
-|ffffffff78563412cefafeca|
+"\U7df785b4\x12\u03ba\xfe\xca"
+string "<U+85B4><U+85B4><U+6D12><U+448E>xV4<U+0012><U+03BA><U+FFFD><U+FFFD><U+FFFD>"
+|fefdfdfd78563412cefafeca|
 "\x00\x00\x00\x00\x00\x00\x00\x00\x9a\x99\x99\x99\x99\x99\xb9?\x9a\x99\x99\x99\x99\x99\u067f\x00\x00\x00\x00\x00\x00\u0ff333333\u3fc0\x00\x00\x00\x00\x00\U0003f9a6ffff\U001bf000\x00\x00\x00\x00\U00fda659\x99\x99\x99\U01fc0000\x00\x00@\x8f@"
 string "<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000>?<U+067F>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0FF3>?333333<U+3FC0>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+F9A6>?ffffff<U+F000>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+A659>?<U+0000>?<U+0000><U+0000><U+0000><U+0000><U+0000>@@"
 |00000000000000009a9999999999b93f9a9999999999d93f000000000000e03f333333333333e33f000000000000f03f666666666666f63f000000000000f83f9a9999999999f93f0000000000408f40|
@@ -58,7 +58,7 @@ string "<U+0004><U+0000><U+0005><U+0000><U+0006><U+0000><U+0007><U+0000>"
 
 function test() {
     var arrayBuf = new ArrayBuffer(4);
-    arrayBuf[0] = 0xff;
+    arrayBuf[0] = 0xfe;  // avoid 0xFF -> interpreted as a symbol
     arrayBuf[1] = 0xee;
     arrayBuf[2] = 0xdd;
     arrayBuf[3] = 0xcc;
@@ -80,7 +80,7 @@ function test() {
         arrayBuf,
         new Buffer('abcd'),
         new Uint8Array([ 0, 1, 2, 0xfe, 0xff ]),
-        new Int32Array([ -1, 0x12345678, 0xcafeface ]),
+        new Int32Array([ -0x02020202, 0x12345678, 0xcafeface ]),
         new Float64Array([ 0.0, 0.1, 0.4, 0.5, 0.6, 1.0, 1.4, 1.5, 1.6, 1000 ]),
         new Uint16Array([ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]).subarray(3, 7)
     ].forEach(function (v) {

@@ -27,6 +27,10 @@ function testOne(blen) {
     buf = createPlainBuffer(blen);
     for (i = 0; i < blen; i++) {
         buf[i] = Math.random() * 256;
+        // With Duktape 2.x some initial bytes cause a duk_hstring to be
+        // interpreted as a symbol, avoid these.
+        if (buf[i] == 0xff) { buf[i] = 0xfe; }
+        if ((buf[i] & 0xc0) == 0x80) { buf[i] = 0xfe; }
     }
 
     // Expected character length computed using Ecmascript:

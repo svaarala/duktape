@@ -145,9 +145,8 @@ function basicEnumerationTest() {
     objDump(proxy);
 }
 
-print('basic test');
-
 try {
+    print('basic test');
     basicEnumerationTest();
 } catch (e) {
     print(e);
@@ -243,10 +242,44 @@ function trapResultTest() {
     });
 }
 
-print('trap result test');
-
 try {
+    print('trap result test');
     trapResultTest();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
+}
+
+/*===
+proxy in Object.keys() etc
+foo
+foo,bar
+Symbol(quux),Symbol(baz)
+foo,bar,Symbol(quux),Symbol(baz)
+===*/
+
+/* Proxy in Object.keys(), Object.getOwnPropertyNames(), etc. */
+
+function proxyInKeysTest() {
+    var proxy;
+    var target = {};
+    Object.defineProperties(target, {
+        foo: { value: 'foo-value', enumerable: true },
+        bar: { value: 'bar-value', enumerable: false },
+        [ Symbol.for('quux') ]: { value: 'quux-value', enumerable: true },
+        [ Symbol.for('baz') ]: { value: 'quux-value', enumerable: false }
+    });
+    var proxy = new Proxy(target, {
+    });
+
+    print(Object.keys(proxy).map(String));
+    print(Object.getOwnPropertyNames(proxy).map(String));
+    print(Object.getOwnPropertySymbols(proxy).map(String));
+    print(Reflect.ownKeys(proxy).map(String));
+}
+
+try {
+    print('proxy in Object.keys() etc');
+    proxyInKeysTest();
+} catch (e) {
+    print(e.stack || e);
 }

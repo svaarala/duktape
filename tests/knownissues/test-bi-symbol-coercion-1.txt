@@ -1,0 +1,30 @@
+summary: no @@toPrimitive coercion yet
+---
+symbol coercion
+true false
+[object Symbol]
+[object Symbol]
+true false
+true true
+true true
+TypeError
+TypeError
+Symbol(Symbol(foo))
+Symbol(123)
+TypeError
+Symbol(noSideEffects)
+true
+true
+true
+TypeError
+val
+undefined
+Symbol(foo)
+Symbol(foo)
+Symbol(foo)
+Symbol(foo)
+true false
+false false
+false false
+TypeError
+TypeError

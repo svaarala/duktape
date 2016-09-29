@@ -9,6 +9,7 @@ function test() {
     buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(1024);
     for (i = 0; i < 1024; i++) {
         buf[i] = Math.random() * 256;
+        if (i == 0 && (buf[i] == 0xff || (buf[i] & 0xc0) == 0x80)) { buf[i] &= 0x7f; }  // avoid symbols
     }
     tmp1 = (String.fromBuffer || String)(buf);
     for (i = 0; i < 1024; i++) {
