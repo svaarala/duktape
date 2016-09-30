@@ -64,71 +64,47 @@ typedef struct {
  *  even though the buffer operations will use duk_size_t.
  */
 
-/* XXX: the insert helpers should ensure that the bytecode result is not
- * larger than expected (or at least assert for it).  Many things in the
- * bytecode, like skip offsets, won't work correctly if the bytecode is
- * larger than say 2G.
- */
-
-DUK_LOCAL duk_uint32_t duk__encode_i32(duk_int32_t x) {
-	if (x < 0) {
-		return ((duk_uint32_t) (-x)) * 2 + 1;
-	} else {
-		return ((duk_uint32_t) x) * 2;
-	}
-}
-
 /* XXX: return type should probably be duk_size_t, or explicit checks are needed for
  * maximum size.
  */
-DUK_LOCAL duk_uint32_t duk__insert_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t x) {
-	duk_uint8_t buf[DUK_UNICODE_MAX_XUTF8_LENGTH];
-	duk_small_int_t len;
+DUK_LOCAL duk_size_t duk__insert_i32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t x) {
+	DUK_ASSERT(sizeof(x) == 4);
+	DUK_BW_INSERT_ENSURE_BYTES(re_ctx->thr, &re_ctx->bw, offset, (const void *) &x, sizeof(x));
+	/* FIXME: retval needed? */
+	return 4;
+}
 
-	len = duk_unicode_encode_xutf8((duk_ucodepoint_t) x, buf);
-	DUK_BW_INSERT_ENSURE_BYTES(re_ctx->thr, &re_ctx->bw, offset, buf, len);
-	return (duk_uint32_t) len;
+DUK_LOCAL duk_size_t duk__insert_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_uint32_t x) {
+	DUK_ASSERT(x <= 0x7fffffffUL);
+	return duk__insert_i32(re_ctx, offset, (duk_int32_t) x);
+}
+
+DUK_LOCAL void duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
+	DUK_ASSERT(sizeof(x) == 4);
+	DUK_BW_WRITE_ENSURE_BYTES(re_ctx->thr, &re_ctx->bw, (const void *) &x, sizeof(x));
 }
 
 DUK_LOCAL void duk__append_u32(duk_re_compiler_ctx *re_ctx, duk_uint32_t x) {
-	DUK_BW_WRITE_ENSURE_XUTF8(re_ctx->thr, &re_ctx->bw, x);
+	DUK_ASSERT(x <= 0x7fffffffUL);
+	duk__append_i32(re_ctx, (duk_int32_t) x);
 }
 
-DUK_LOCAL void duk__append_7bit(duk_re_compiler_ctx *re_ctx, duk_uint32_t x) {
-#if defined(DUK_USE_PREFER_SIZE)
-	duk__append_u32(re_ctx, x);
-#else
-	DUK_ASSERT(x <= 0x7fU);
-	DUK_BW_WRITE_ENSURE_U8(re_ctx->thr, &re_ctx->bw, (duk_uint8_t) x);
-#endif
-}
-
-#if 0
-DUK_LOCAL void duk__append_2bytes(duk_re_compiler_ctx *re_ctx, duk_uint8_t x, duk_uint8_t y) {
-	DUK_BW_WRITE_ENSURE_U8_2(re_ctx->thr, &re_ctx->bw, x, y);
-}
-#endif
-
-DUK_LOCAL duk_uint32_t duk__insert_i32(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t x) {
-	return duk__insert_u32(re_ctx, offset, duk__encode_i32(x));
+DUK_LOCAL void duk__append_7bit(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
+	/* FIXME: short encoding */
+	duk__append_i32(re_ctx, x);
 }
 
 DUK_LOCAL void duk__append_reop(duk_re_compiler_ctx *re_ctx, duk_uint32_t reop) {
+	/* FIXME: short encoding; maybe just encode opcodes a bytes always? */
 	DUK_ASSERT(reop <= 0x7fU);
-	(void) duk__append_7bit(re_ctx, reop);
+	DUK_BW_WRITE_ENSURE_U8(re_ctx->thr, &re_ctx->bw, (duk_uint8_t) reop);
 }
-
-#if 0  /* unused */
-DUK_LOCAL void duk__append_i32(duk_re_compiler_ctx *re_ctx, duk_int32_t x) {
-	duk__append_u32(re_ctx, duk__encode_i32(x));
-}
-#endif
 
 /* special helper for emitting u16 lists (used for character ranges for built-in char classes) */
 DUK_LOCAL void duk__append_u16_list(duk_re_compiler_ctx *re_ctx, const duk_uint16_t *values, duk_uint32_t count) {
 	/* Call sites don't need the result length so it's not accumulated. */
 	while (count-- > 0) {
-		duk__append_u32(re_ctx, (duk_uint32_t) (*values++));
+		duk__append_i32(re_ctx, (duk_int32_t) (*values++));
 	}
 }
 
@@ -155,74 +131,16 @@ DUK_LOCAL void duk__remove_slice(duk_re_compiler_ctx *re_ctx, duk_uint32_t data_
  *
  *  Computing the final (adjusted) skip value, which is relative to the
  *  first byte of the next instruction, is a bit tricky because of the
- *  variable length UTF-8 encoding.  See doc/regexp.rst for discussion.
+ *  variable length of the offset.  See doc/regexp.rst for discussion.
  */
 DUK_LOCAL duk_uint32_t duk__insert_jump_offset(duk_re_compiler_ctx *re_ctx, duk_uint32_t offset, duk_int32_t skip) {
-#if 0
-	/* Iterative solution. */
-	if (skip < 0) {
-		duk_small_int_t len;
-		/* two encoding attempts suffices */
-		len = duk_unicode_get_xutf8_length((duk_codepoint_t) duk__encode_i32(skip));
-		len = duk_unicode_get_xutf8_length((duk_codepoint_t) duk__encode_i32(skip - (duk_int32_t) len));
-		DUK_ASSERT(duk_unicode_get_xutf8_length(duk__encode_i32(skip - (duk_int32_t) len)) == len);  /* no change */
-		skip -= (duk_int32_t) len;
-	}
-#endif
-
-#if defined(DUK_USE_PREFER_SIZE)
-	/* Closed form solution, this produces smallest code.
-	 * See re_neg_jump_offset (closed2).
-	 */
-	if (skip < 0) {
-		skip--;
-		if (skip < -0x3fL) {
-			skip--;
-		}
-		if (skip < -0x3ffL) {
-			skip--;
-		}
-		if (skip < -0x7fffL) {
-			skip--;
-		}
-		if (skip < -0xfffffL) {
-			skip--;
-		}
-		if (skip < -0x1ffffffL) {
-			skip--;
-		}
-		if (skip < -0x3fffffffL) {
-			skip--;
-		}
-	}
-#else  /* DUK_USE_PREFER_SIZE */
-	/* Closed form solution, this produces fastest code.
-	 * See re_neg_jump_offset (closed1).
-	 */
-	if (skip < 0) {
-		if (skip >= -0x3eL) {
-			skip -= 1;
-		} else if (skip >= -0x3fdL) {
-			skip -= 2;
-		} else if (skip >= -0x7ffcL) {
-			skip -= 3;
-		} else if (skip >= -0xffffbL) {
-			skip -= 4;
-		} else if (skip >= -0x1fffffaL) {
-			skip -= 5;
-		} else if (skip >= -0x3ffffff9L) {
-			skip -= 6;
-		} else {
-			skip -= 7;
-		}
-	}
-#endif  /* DUK_USE_PREFER_SIZE */
-
+	/* FIXME: variable length encoding */
+	skip -= 4;
 	return duk__insert_i32(re_ctx, offset, skip);
 }
 
-DUK_LOCAL duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int32_t skip) {
-	return (duk_uint32_t) duk__insert_jump_offset(re_ctx, (duk_uint32_t) DUK__RE_BUFLEN(re_ctx), skip);
+DUK_LOCAL duk_size_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_int32_t skip) {
+	return (duk_size_t) duk__insert_jump_offset(re_ctx, (duk_uint32_t) DUK__RE_BUFLEN(re_ctx), skip);
 }
 
 /*

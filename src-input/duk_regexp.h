@@ -2,6 +2,8 @@
  *  Regular expression structs, constants, and bytecode defines.
  */
 
+/* FIXME: avoid extended UTF-8 for regexps. */
+
 #ifndef DUK_REGEXP_H_INCLUDED
 #define DUK_REGEXP_H_INCLUDED
 

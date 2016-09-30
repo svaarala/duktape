@@ -19,26 +19,32 @@
 #ifdef DUK_USE_REGEXP_SUPPORT
 
 /*
- *  Helpers for UTF-8 handling
+ *  Helpers for regexp bytecode decoding
  *
  *  For bytecode readers the duk_uint32_t and duk_int32_t types are correct
  *  because they're used for more than just codepoints.
  */
 
 DUK_LOCAL duk_uint32_t duk__bc_get_u32(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **pc) {
-	return (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
+	/* FIXME: this makes regexp bytecode endian dependent; doesn't matter
+	 * now because it's never serialized.
+	 */
+	union {
+		duk_int32_t x;
+		duk_uint8_t b[4];
+	} u;
+	DUK_ASSERT(*pc >= re_ctx->bytecode);
+	if (re_ctx->bytecode_end - *pc < 4) {
+		DUK_ERROR_INTERNAL(re_ctx->thr);
+	}
+	DUK_MEMCPY((void *) u.b, (const void *) *pc, 4);
+	*pc += 4;
+	return u.x;
 }
 
 DUK_LOCAL duk_int32_t duk__bc_get_i32(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **pc) {
-	duk_uint32_t t;
-
-	/* signed integer encoding needed to work with UTF-8 */
-	t = (duk_uint32_t) duk_unicode_decode_xutf8_checked(re_ctx->thr, pc, re_ctx->bytecode, re_ctx->bytecode_end);
-	if (t & 1) {
-		return -((duk_int32_t) (t >> 1));
-	} else {
-		return (duk_int32_t) (t >> 1);
-	}
+	duk_uint32_t t = duk__bc_get_u32(re_ctx, pc);
+	return (duk_int32_t) t;
 }
 
 DUK_LOCAL const duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
@@ -71,6 +77,7 @@ DUK_LOCAL const duk_uint8_t *duk__utf8_backtrack(duk_hthread *thr, const duk_uin
 	return NULL;  /* never here */
 }
 
+/* FIXME: only one call site, count 1... */
 DUK_LOCAL const duk_uint8_t *duk__utf8_advance(duk_hthread *thr, const duk_uint8_t **ptr, const duk_uint8_t *ptr_start, const duk_uint8_t *ptr_end, duk_uint_fast32_t count) {
 	const duk_uint8_t *p;
 
@@ -124,6 +131,7 @@ DUK_LOCAL duk_codepoint_t duk__inp_get_cp(duk_re_matcher_ctx *re_ctx, const duk_
 }
 
 DUK_LOCAL const duk_uint8_t *duk__inp_backtrack(duk_re_matcher_ctx *re_ctx, const duk_uint8_t **sp, duk_uint_fast32_t count) {
+	/* FIXME: move utf8 backtrack helper here */
 	return duk__utf8_backtrack(re_ctx->thr, sp, re_ctx->input, re_ctx->input_end, count);
 }
 
@@ -159,6 +167,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 		}
 		re_ctx->steps_count++;
 
+		/* FIXME: comment fix */
 		/* Opcodes are at most 7 bits now so they encode to one byte.  If this
 		 * were not the case or 'pc' is invalid here (due to a bug etc) we'll
 		 * still fail safely through the switch default case.

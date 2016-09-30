@@ -30,6 +30,8 @@ DUK_INTERNAL const duk_int8_t duk_is_idchar_tab[128] = {
  *  XUTF-8 and CESU-8 encoding/decoding
  */
 
+/* FIXME: remove extended codepoint support but keep CESU-8 support. */
+
 DUK_INTERNAL duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp) {
 	duk_uint_fast32_t x = (duk_uint_fast32_t) cp;
 	if (x < 0x80UL) {
@@ -41,18 +43,10 @@ DUK_INTERNAL duk_small_int_t duk_unicode_get_xutf8_length(duk_ucodepoint_t cp) {
 	} else if (x < 0x10000UL) {
 		/* 16 bits */
 		return 3;
-	} else if (x < 0x200000UL) {
-		/* 21 bits */
-		return 4;
-	} else if (x < 0x4000000UL) {
-		/* 26 bits */
-		return 5;
-	} else if (x < (duk_ucodepoint_t) 0x80000000UL) {
-		/* 31 bits */
-		return 6;
 	} else {
-		/* 36 bits */
-		return 7;
+		/* 21 bits */
+		/* FIXME: assert for valid range; caller responsibility? */
+		return 4;
 	}
 }
 
@@ -78,8 +72,8 @@ DUK_INTERNAL duk_small_int_t duk_unicode_get_cesu8_length(duk_ucodepoint_t cp) {
 }
 #endif  /* DUK_USE_ASSERTIONS */
 
-DUK_INTERNAL const duk_uint8_t duk_unicode_xutf8_markers[7] = {
-	0x00, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe
+DUK_INTERNAL const duk_uint8_t duk_unicode_xutf8_markers[4] = {
+	0x00, 0xc0, 0xe0, 0xf0
 };
 
 /* Encode to extended UTF-8; 'out' must have space for at least
@@ -92,8 +86,12 @@ DUK_INTERNAL duk_small_int_t duk_unicode_encode_xutf8(duk_ucodepoint_t cp, duk_u
 	duk_uint8_t marker;
 	duk_small_int_t i;
 
+	/* FIXME: better algorithm */
+	/* FIXME: assret for codepoint range */
+
 	len = duk_unicode_get_xutf8_length(cp);
 	DUK_ASSERT(len > 0);
+	DUK_ASSERT(len <= sizeof(duk_unicode_xutf8_markers));
 
 	marker = duk_unicode_xutf8_markers[len - 1];  /* 64-bit OK because always >= 0 */
 
@@ -218,27 +216,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const du
 		/* 1111 0xxx   10xx xxxx   10xx xxxx   10xx xxxx   [21 bits] */
 		res = (duk_uint32_t) (ch & 0x07);
 		n = 3;
-	} else if (ch < 0xfc) {
-		/* 1111 10xx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [26 bits] */
-		res = (duk_uint32_t) (ch & 0x03);
-		n = 4;
-	} else if (ch < 0xfe) {
-		/* 1111 110x   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [31 bits] */
-		res = (duk_uint32_t) (ch & 0x01);
-		n = 5;
-	} else if (ch < 0xff) {
-		/* 1111 1110   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [36 bits] */
-		res = (duk_uint32_t) (0);
-		n = 6;
 	} else {
-		/* 8-byte format could be:
-		 * 1111 1111   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   10xx xxxx   [41 bits]
-		 *
-		 * However, this format would not have a zero bit following the
-		 * leading one bits and would not allow 0xFF to be used as an
-		 * "invalid xutf-8" marker for internal keys.  Further, 8-byte
-		 * encodings (up to 41 bit code points) are not currently needed.
-		 */
 		goto fail;
 	}
 
@@ -248,6 +226,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const du
 		goto fail;
 	}
 
+	/* FIXME: continuation byte check; utf8 validity check */
 	while (n > 0) {
 		DUK_ASSERT(p >= ptr_start && p < ptr_end);
 		ch = (duk_uint_fast8_t) (*p++);
@@ -285,7 +264,8 @@ DUK_INTERNAL duk_ucodepoint_t duk_unicode_decode_xutf8_checked(duk_hthread *thr,
 }
 
 /* Compute (extended) utf-8 length without codepoint encoding validation,
- * used for string interning.
+ * used for string interning.  String char length is increased for every
+ * non-continuation byte.
  *
  * NOTE: This algorithm is performance critical, more so than string hashing
  * in some cases.  It is needed when interning a string and needs to scan

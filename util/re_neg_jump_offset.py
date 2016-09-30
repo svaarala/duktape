@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 
+# FIXME: no longer needed, remove
+
 def xutf8len(x):
     if x < 0x80: return 1
     if x < 0x800: return 2
