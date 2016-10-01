@@ -39,7 +39,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	/* XXX: the returned value is exotic in ES6, but we use a
 	 * simple object here with no prototype.  Without a prototype,
-	 * [[DefaultValue]] coercion fails which is a bit confusing.
+	 * ToPrimitive() coercion fails which is a bit confusing.
 	 * No callable check/handling in the current Proxy subset.
 	 */
 	(void) duk_push_object_helper_proto(ctx,

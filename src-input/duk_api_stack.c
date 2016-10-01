@@ -1805,46 +1805,6 @@ DUK_LOCAL duk_bool_t duk__defaultvalue_coerce_attempt(duk_context *ctx, duk_idx_
 	return 0;
 }
 
-DUK_EXTERNAL void duk_to_defaultvalue(duk_context *ctx, duk_idx_t idx, duk_int_t hint) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	/* inline initializer for coercers[] is not allowed by old compilers like BCC */
-	duk_small_int_t coercers[2];
-
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(thr != NULL);
-
-	coercers[0] = DUK_STRIDX_VALUE_OF;
-	coercers[1] = DUK_STRIDX_TO_STRING;
-
-	idx = duk_require_normalize_index(ctx, idx);
-	duk_require_type_mask(ctx, idx, (DUK_TYPE_MASK_OBJECT |
-	                                 DUK_TYPE_MASK_BUFFER |
-	                                 DUK_TYPE_MASK_LIGHTFUNC));
-
-	if (hint == DUK_HINT_NONE) {
-		if (duk_get_class_number(ctx, idx) == DUK_HOBJECT_CLASS_DATE) {
-			hint = DUK_HINT_STRING;
-		} else {
-			hint = DUK_HINT_NUMBER;
-		}
-	}
-
-	if (hint == DUK_HINT_STRING) {
-		coercers[0] = DUK_STRIDX_TO_STRING;
-		coercers[1] = DUK_STRIDX_VALUE_OF;
-	}
-
-	if (duk__defaultvalue_coerce_attempt(ctx, idx, coercers[0])) {
-		return;
-	}
-
-	if (duk__defaultvalue_coerce_attempt(ctx, idx, coercers[1])) {
-		return;
-	}
-
-	DUK_ERROR_TYPE(thr, DUK_STR_DEFAULTVALUE_COERCE_FAILED);
-}
-
 DUK_EXTERNAL void duk_to_undefined(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
@@ -1871,27 +1831,57 @@ DUK_EXTERNAL void duk_to_null(duk_context *ctx, duk_idx_t idx) {
 
 /* E5 Section 9.1 */
 DUK_EXTERNAL void duk_to_primitive(duk_context *ctx, duk_idx_t idx, duk_int_t hint) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	/* inline initializer for coercers[] is not allowed by old compilers like BCC */
+	duk_small_int_t coercers[2];
+
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(hint == DUK_HINT_NONE || hint == DUK_HINT_NUMBER || hint == DUK_HINT_STRING);
 
 	idx = duk_require_normalize_index(ctx, idx);
 
-	if (duk_check_type_mask(ctx, idx, DUK_TYPE_MASK_OBJECT |
-	                                  DUK_TYPE_MASK_LIGHTFUNC |
-	                                  DUK_TYPE_MASK_BUFFER)) {
-		/* Objects are coerced based on E5 specification.
-		 * Lightfuncs are coerced because they behave like
-		 * objects even if they're internally a primitive
-		 * type.  Same applies to plain buffers, which behave
-		 * like ArrayBuffer objects since Duktape 2.x.
-		 */
-		duk_to_defaultvalue(ctx, idx, hint);
-	} else {
+	if (!duk_check_type_mask(ctx, idx, DUK_TYPE_MASK_OBJECT |
+	                                   DUK_TYPE_MASK_LIGHTFUNC |
+	                                   DUK_TYPE_MASK_BUFFER)) {
 		/* Any other values stay as is. */
-		;
+		DUK_ASSERT(!duk_is_buffer(ctx, idx));  /* duk_to_string() relies on this behavior */
+		return;
 	}
 
-	DUK_ASSERT(!duk_is_buffer(ctx, idx));  /* duk_to_string() relies on this behavior */
+	/* Objects are coerced based on E5 specification.
+	 * Lightfuncs are coerced because they behave like
+	 * objects even if they're internally a primitive
+	 * type.  Same applies to plain buffers, which behave
+	 * like ArrayBuffer objects since Duktape 2.x.
+	 */
+
+	coercers[0] = DUK_STRIDX_VALUE_OF;
+	coercers[1] = DUK_STRIDX_TO_STRING;
+
+	if (hint == DUK_HINT_NONE) {
+		if (duk_get_class_number(ctx, idx) == DUK_HOBJECT_CLASS_DATE) {
+			hint = DUK_HINT_STRING;
+		} else {
+			hint = DUK_HINT_NUMBER;
+		}
+	}
+
+	if (hint == DUK_HINT_STRING) {
+		coercers[0] = DUK_STRIDX_TO_STRING;
+		coercers[1] = DUK_STRIDX_VALUE_OF;
+	}
+
+	if (duk__defaultvalue_coerce_attempt(ctx, idx, coercers[0])) {
+		DUK_ASSERT(!duk_is_buffer(ctx, idx));  /* duk_to_string() relies on this behavior */
+		return;
+	}
+
+	if (duk__defaultvalue_coerce_attempt(ctx, idx, coercers[1])) {
+		DUK_ASSERT(!duk_is_buffer(ctx, idx));  /* duk_to_string() relies on this behavior */
+		return;
+	}
+
+	DUK_ERROR_TYPE(thr, DUK_STR_TOPRIMITIVE_FAILED);
 }
 
 /* E5 Section 9.2 */

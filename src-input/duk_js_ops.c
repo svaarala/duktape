@@ -47,12 +47,6 @@
 #include "duk_internal.h"
 
 /*
- *  [[DefaultValue]]  (E5 Section 8.12.8)
- *
- *  ==> implemented in the API.
- */
-
-/*
  *  ToPrimitive()  (E5 Section 9.1)
  *
  *  ==> implemented in the API.
@@ -203,12 +197,9 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	}
 	case DUK_TAG_BUFFER:  /* plain buffer treated like object */
 	case DUK_TAG_OBJECT: {
-		/* Note: ToPrimitive(object,hint) == [[DefaultValue]](object,hint),
-		 * so use [[DefaultValue]] directly.
-		 */
 		duk_double_t d;
 		duk_push_tval(ctx, tv);
-		duk_to_defaultvalue(ctx, -1, DUK_HINT_NUMBER);  /* 'tv' becomes invalid */
+		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);  /* 'tv' becomes invalid */
 
 		/* recursive call for a primitive value (guaranteed not to cause second
 		 * recursion).

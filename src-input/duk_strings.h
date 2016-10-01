@@ -50,7 +50,7 @@
 #define DUK_STR_NOT_C_FUNCTION                   "unexpected type"
 #define DUK_STR_NOT_FUNCTION                     "unexpected type"
 #define DUK_STR_NOT_REGEXP                       "unexpected type"
-#define DUK_STR_DEFAULTVALUE_COERCE_FAILED       "[[DefaultValue]] failed"
+#define DUK_STR_TOPRIMITIVE_FAILED               "coercion to primitive failed"
 #define DUK_STR_NUMBER_OUTSIDE_RANGE             "number outside range"
 #define DUK_STR_NOT_OBJECT_COERCIBLE             "not object coercible"
 #define DUK_STR_STRING_TOO_LONG                  "string too long"
