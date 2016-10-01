@@ -560,6 +560,38 @@ To upgrade:
 * Alternatively, include extras/duk-v1-compat into your compilation to add back
   the removed API calls.
 
+duk_to_defaultvalue() removed
+-----------------------------
+
+The ``duk_to_defaultvalue()`` API call was rather technical: it invoked the
+internal ``[[DefaultValue]]`` algorithm which is used in ES5.1 as part of
+the ToPrimitive() coercion (``duk_to_primitive()``).  ES6 no longer specifies
+``[[DefaultValue]]`` which has been folded into ToPrimitive().  The API call
+thus no longer makes much sense.
+
+To upgrade:
+
+* If you're using ``duk_to_defaultvalue()`` (which is unlikely), you can in
+  most cases replace it with ``duk_to_primitive()``.  The main difference
+  is that ``duk_to_primitive()`` accepts all argument types (returning
+  those considered primitive as is) while ``duk_to_defaultvalue()`` rejects
+  primitive value arguments.  See the ES5.1/ES6 specifications for exact
+  differences between the two.
+
+* Here's an example replacement.  Replace this::
+
+      duk_to_defaultvalue(ctx, idx, hint);
+
+  with::
+
+      duk_require_type_mask(ctx, idx, DUK_TYPE_MASK_OBJECT |
+                                      DUK_TYPE_MASK_BUFFER |
+                                      DUK_TYPE_MASK_LIGHTFUNC);
+      duk_to_primitive(ctx, idx, hint);
+
+* Alternatively, include extras/duk-v1-compat into your compilation to add back
+  the removed API call.
+
 File I/O Duktape C API calls were removed
 -----------------------------------------
 
