@@ -17,7 +17,6 @@ var res;
  * where +[] evaluates to ToNumber([]):
  *
  *   [] -> ToPrimitive([], hint Number)
- *      -> [].[[DefaultValue]] (hint = Number)
  *      -> Object.prototype.valueOf() -> returns [] itself, not primitive
  *      -> Array.prototype.toString()
  *      -> ""
@@ -39,14 +38,12 @@ print(res, typeof res);
  *
  * Each side is first coerced using ToPrimitive():
  *
- *   ToPrimitive({})
- *     -> {}.[[DefaultValue]] (no hint -> Number)
- *     -> Object.prototype.valueOf() -> returns [] itself, not pritimive
+ *   ToPrimitive({}, no hint -> Number)
+ *     -> Object.prototype.valueOf() -> returns [] itself, not primitive
  *     -> Object.prototype.toString()
  *     -> "[object Object]"
  *
- *   ToPrimitive([])
- *     -> [].[[DefaultValue]] (no hint -> Number)
+ *   ToPrimitive([], no hint -> number)
  *     -> Object.prototype.valueOf() -> returns {} itself, not primitive
  *     -> Array.prototype.toString()
  *     -> ""

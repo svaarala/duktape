@@ -264,7 +264,6 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_throw(ctx);
 	(void) duk_to_boolean(ctx, 0);
 	(void) duk_to_buffer(ctx, 0, NULL);
-	(void) duk_to_defaultvalue(ctx, 0, 0);
 	(void) duk_to_dynamic_buffer(ctx, 0, NULL);
 	(void) duk_to_fixed_buffer(ctx, 0, NULL);
 	(void) duk_to_int32(ctx, 0);

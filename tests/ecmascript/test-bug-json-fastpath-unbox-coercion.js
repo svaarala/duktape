@@ -2,7 +2,7 @@
  *  JSON.stringify() fast path would handle boxed String and Number objects
  *  incorrectly in Duktape 1.4.x and before: the fast path would simply look
  *  up the primitive string or number value without actually invoking
- *  .toString() or .valueOf() as part of [[DefaultValue]] operation.
+ *  .toString() or .valueOf() as part of ToPrimitive() operation.
  *
  *  The difference shows up when .toString() and/or .valueOf() have been
  *  overridden.
@@ -25,7 +25,7 @@ function testNumberCoercion() {
     }
     x.valueOf = function myValueOf() {
         print('my .valueOf() called');
-        return {};  // because return value is not primitive, [[DefaultValue]] must invoke .valueOf()
+        return {};  // because return value is not primitive, ToPrimitive() must invoke .valueOf()
     }
 
     // The algorithm in E5.1 Section 15.12.3 calls ToNumber() on the value.
@@ -65,7 +65,7 @@ function testStringCoercion() {
     var x = new String('my string');
     x.toString = function myToString() {
         print('my .toString() called');
-        return {};  // because return value is not primitive, [[DefaultValue]] must invoke .valueOf()
+        return {};  // because return value is not primitive, ToPrimitive() must invoke .valueOf()
     }
     x.valueOf = function myValueOf() {
         print('my .valueOf() called');
