@@ -46,10 +46,11 @@ const char *duk_push_string_file_raw(duk_context *ctx, const char *path, duk_uin
 	}
 	buf = (char *) duk_push_fixed_buffer(ctx, (duk_size_t) sz);
 	if ((size_t) fread(buf, 1, (size_t) sz, f) != (size_t) sz) {
+		duk_pop(ctx);
 		goto fail;
 	}
 	(void) fclose(f);  /* ignore fclose() error */
-	return duk_to_string(ctx, -1);
+	return duk_buffer_to_string(ctx, -1);
 
  fail:
 	if (f) {
