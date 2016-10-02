@@ -1800,6 +1800,9 @@ Planned
   won't backtrack on e.g. an invalid hex escape and treat it literally
   (GH-926)
 
+* Add support for ES6 computed property names in object literals, e.g.
+  "{ [1+2]: 'three' }" (GH-985)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
