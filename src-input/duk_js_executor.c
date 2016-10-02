@@ -4640,6 +4640,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * it would not work correctly if there are inherited
 			 * properties in Object.prototype which might e.g.
 			 * prevent a key from being added.
+			 *
+			 * With ES6 computed property names the literal keys
+			 * may be arbitrary values and need to be ToPropertyKey()
+			 * coerced at runtime.
 			 */
 			do {
 				/* XXX: faster initialization (direct access or better primitives) */
