@@ -7,8 +7,9 @@ intended to be easily embeddable into C programs, with a C API similar in
 spirit to Lua's.
 
 Duktape supports the full E5/E5.1 feature set including errors, Unicode
-strings, and regular expressions, a subset of E6 features (e.g. Proxy
-objects), Khronos/ES6 ArrayBuffer/TypedView, and Node.js Buffer bindings.
+strings, and regular expressions, a subset of E6 features (e.g. computed
+property names and Proxy objects), Khronos/ES6 ArrayBuffer/TypedView, and
+Node.js Buffer bindings.
 
 Duktape also provides a number of custom features such as error tracebacks,
 additional data types for better C integration, combined reference counting
