@@ -117,3 +117,14 @@ duk_int_t duk_pcompile_file(duk_context *ctx, duk_uint_t flags, const char *path
 	rc = duk_pcompile(ctx, flags);
 	return rc;
 }
+
+/*
+ *  duk_to_defaultvalue()
+ */
+
+void duk_to_defaultvalue(duk_context *ctx, duk_idx_t idx, duk_int_t hint) {
+	duk_require_type_mask(ctx, idx, DUK_TYPE_MASK_OBJECT |
+	                                DUK_TYPE_MASK_BUFFER |
+	                                DUK_TYPE_MASK_LIGHTFUNC);
+	duk_to_primitive(ctx, idx, hint);
+}
