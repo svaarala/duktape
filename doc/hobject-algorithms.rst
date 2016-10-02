@@ -146,7 +146,7 @@ exotic behavior variants)::
           `---------.   |      |  |  .-----------'
                     |   |      |  |  |
                     v   v      v  v  v
-                    [[GetOwnProperty]]     [[DefaultValue]]
+                    [[GetOwnProperty]]
 
 However, these algorithms are only the "raw" property handling algorithms.
 Actual property access operations in Ecmascript code are "wrapped" by e.g.:
