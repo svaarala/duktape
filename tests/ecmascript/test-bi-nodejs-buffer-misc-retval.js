@@ -52,7 +52,7 @@ copy()
 function writeReturnValueTest() {
     var buf = new Buffer(256);
 
-    // The basic write field pritimives return "next offset", i.e. input
+    // The basic write field primitives return "next offset", i.e. input
     // offset + number of bytes written.
 
     print('write field');

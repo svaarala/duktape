@@ -46,10 +46,11 @@ const char *duk_push_string_file_raw(duk_context *ctx, const char *path, duk_uin
 	}
 	buf = (char *) duk_push_fixed_buffer(ctx, (duk_size_t) sz);
 	if ((size_t) fread(buf, 1, (size_t) sz, f) != (size_t) sz) {
+		duk_pop(ctx);
 		goto fail;
 	}
 	(void) fclose(f);  /* ignore fclose() error */
-	return duk_to_string(ctx, -1);
+	return duk_buffer_to_string(ctx, -1);
 
  fail:
 	if (f) {
@@ -116,4 +117,15 @@ duk_int_t duk_pcompile_file(duk_context *ctx, duk_uint_t flags, const char *path
 	duk_push_string(ctx, path);
 	rc = duk_pcompile(ctx, flags);
 	return rc;
+}
+
+/*
+ *  duk_to_defaultvalue()
+ */
+
+void duk_to_defaultvalue(duk_context *ctx, duk_idx_t idx, duk_int_t hint) {
+	duk_require_type_mask(ctx, idx, DUK_TYPE_MASK_OBJECT |
+	                                DUK_TYPE_MASK_BUFFER |
+	                                DUK_TYPE_MASK_LIGHTFUNC);
+	duk_to_primitive(ctx, idx, hint);
 }

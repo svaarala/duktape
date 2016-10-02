@@ -210,7 +210,7 @@ function test() {
     // - valueOf is called if callable, otherwise skipped; if result is
     //   primitive return that, otherwise continue
     // - toString is called if callable, otherwise skipped; if result is
-    //   pritimive return that, otherwise continue
+    //   primitive return that, otherwise continue
     // - TypeError
 
     print('ToPrimitive() with hint "number"');

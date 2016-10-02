@@ -20,21 +20,21 @@
 /*===
 x.toString() called
 x.valueOf() called
-TypeError: [[DefaultValue]] failed
+TypeError: coercion to primitive failed
 x.toString() called
 x.valueOf() called
-TypeError: [[DefaultValue]] failed
+TypeError: coercion to primitive failed
 ===*/
 
 function test1(forceSlow) {
     var x = new String('my string');
     x.toString = function () {
         print('x.toString() called');
-        return function dummy1() {};  // ignored by [[DefaultValue]]
+        return function dummy1() {};  // ignored by ToPrimitive()
     };
     x.valueOf = function () {
         print('x.valueOf() called');
-        return function dummy2() {};  // ignored by [[DefaultValue]]
+        return function dummy2() {};  // ignored by ToPrimitive()
     }
     if (forceSlow) {
         x.toJSON = 1;  // non-callable so ignored, but forces out of fast path (at least in Duktape 1.5.x)
@@ -57,21 +57,21 @@ try {
 /*===
 x.valueOf() called
 x.toString() called
-TypeError: [[DefaultValue]] failed
+TypeError: coercion to primitive failed
 x.valueOf() called
 x.toString() called
-TypeError: [[DefaultValue]] failed
+TypeError: coercion to primitive failed
 ===*/
 
 function test2(forceSlow) {
     var x = new Number(1234);
     x.toString = function () {
         print('x.toString() called');
-        return function dummy1() {};  // ignored by [[DefaultValue]]
+        return function dummy1() {};  // ignored by ToPrimitive()
     };
     x.valueOf = function () {
         print('x.valueOf() called');
-        return function dummy2() {};  // ignored by [[DefaultValue]]
+        return function dummy2() {};  // ignored by ToPrimitive()
     }
     if (forceSlow) {
         x.toJSON = 1;  // non-callable so ignored, but forces out of fast path (at least in Duktape 1.5.x)

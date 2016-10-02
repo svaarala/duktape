@@ -376,10 +376,10 @@ true
 [object ArrayBuffer]
 [Overridden]
 [Overridden]
-TypeError: [[DefaultValue]] failed
-TypeError: [[DefaultValue]] failed
-TypeError: [[DefaultValue]] failed
-TypeError: [[DefaultValue]] failed
+TypeError: coercion to primitive failed
+TypeError: coercion to primitive failed
+TypeError: coercion to primitive failed
+TypeError: coercion to primitive failed
 NaN
 NaN
 123

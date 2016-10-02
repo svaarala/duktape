@@ -319,7 +319,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 		 *
 		 *  The error is:
 		 *
-		 *    TypeError: failed to coerce with [[DefaultValue]]
+		 *    TypeError: coercion to primitive failed
 		 *            duk_api.c:1420
 		 *
 		 *  These are handled now by the caller which also has stack

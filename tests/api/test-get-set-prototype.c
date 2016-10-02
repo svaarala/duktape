@@ -26,7 +26,7 @@ top before set: 3
 top after set: 2
 top before get: 2
 top after get: 3
-prototype: TypeError: [[DefaultValue]] failed
+prototype: TypeError: coercion to primitive failed
 top before get: 2
 top after get: 3
 obj1 proto === Object.prototype: 0
