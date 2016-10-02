@@ -3074,30 +3074,44 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 
 				DUK__SETTEMP(comp_ctx, temp_start);
 			} else {
+				duk_bool_t skip_key_load = 0;
+
+				reg_temp = DUK__ALLOCTEMP(comp_ctx);
+
 				/* normal key/value */
 				if (comp_ctx->prev_token.t_nores == DUK_TOK_IDENTIFIER ||
 				    comp_ctx->prev_token.t_nores == DUK_TOK_STRING) {
-					/* same handling for identifiers and strings */
+					/* Same handling for identifiers and strings. */
 					DUK_ASSERT(comp_ctx->prev_token.str1 != NULL);
 					duk_push_hstring(ctx, comp_ctx->prev_token.str1);
 				} else if (comp_ctx->prev_token.t == DUK_TOK_NUMBER) {
 					duk_push_number(ctx, comp_ctx->prev_token.num);
 					duk_to_string(ctx, -1);
+				} else if (comp_ctx->prev_token.t == DUK_TOK_LBRACKET) {
+					/* ES6 computed property name.  Executor ToPropertyKey()
+					 * coerces the key at runtime.
+					 */
+					duk__expr_toforcedreg(comp_ctx, res, DUK__BP_FOR_EXPR, reg_temp);
+					DUK__SETTEMP(comp_ctx, reg_temp + 1);
+					duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
+					skip_key_load = 1;
 				} else {
 					goto syntax_error;
 				}
 
-				DUK_ASSERT(duk_is_string(ctx, -1));
-				if (duk__nud_object_literal_key_check(comp_ctx, DUK__OBJ_LIT_KEY_PLAIN)) {
-					goto syntax_error;
-				}
-				reg_key = duk__getconst(comp_ctx);
+				if (!skip_key_load) {
+					DUK_ASSERT(duk_is_string(ctx, -1));
+					if (duk__nud_object_literal_key_check(comp_ctx, DUK__OBJ_LIT_KEY_PLAIN)) {
+						goto syntax_error;
+					}
+					reg_key = duk__getconst(comp_ctx);
 
-				reg_temp = DUK__ALLOCTEMP(comp_ctx);
-				duk__emit_a_bc(comp_ctx,
-				               DUK_OP_LDCONST,
-				               (duk_regconst_t) reg_temp,
-				               (duk_regconst_t) reg_key);
+					duk__emit_a_bc(comp_ctx,
+					               DUK_OP_LDCONST,
+					               (duk_regconst_t) reg_temp,
+					               (duk_regconst_t) reg_key);
+				}
+
 				duk__advance_expect(comp_ctx, DUK_TOK_COLON);
 
 				reg_temp = DUK__ALLOCTEMP(comp_ctx);  /* alloc temp just in case, to update max temp */
