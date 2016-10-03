@@ -605,7 +605,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_t cp)
 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 	if (duk__uni_range_match(duk_unicode_ids_noa,
 	                         (duk_size_t) sizeof(duk_unicode_ids_noa),
 	                         (duk_codepoint_t) cp)) {
@@ -695,7 +695,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp) 
 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 	if (duk__uni_range_match(duk_unicode_ids_noa,
 	                         sizeof(duk_unicode_ids_noa),
 	                         (duk_codepoint_t) cp) ||
@@ -754,7 +754,7 @@ DUK_INTERNAL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp) {
 
 	/* Non-ASCII slow path (range-by-range linear comparison), very slow */
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 	if (duk__uni_range_match(duk_unicode_ids_noa,
 	                         sizeof(duk_unicode_ids_noa),
 	                         (duk_codepoint_t) cp) &&
@@ -1059,7 +1059,7 @@ DUK_INTERNAL void duk_unicode_case_convert_string(duk_hthread *thr, duk_small_in
 	duk_remove(ctx, -2);
 }
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 
 /*
  *  Canonicalize() abstract operation needed for canonicalization of individual

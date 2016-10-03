@@ -64,9 +64,4 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	return 1;  /* replacement handler */
 }
-#else  /* DUK_USE_ES6_PROXY */
-DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
 #endif  /* DUK_USE_ES6_PROXY */

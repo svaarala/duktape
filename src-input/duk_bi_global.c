@@ -70,7 +70,7 @@ DUK_LOCAL const duk_uint8_t duk__decode_uri_component_reserved_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x70-0x7f */
 };
 
-#ifdef DUK_USE_SECTION_B
+#if defined(DUK_USE_SECTION_B)
 /* E5.1 Section B.2.2, step 7. */
 DUK_LOCAL const duk_uint8_t duk__escape_unescaped_table[16] = {
 	DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0), DUK__MKBITS(0, 0, 0, 0, 0, 0, 0, 0),  /* 0x00-0x0f */
@@ -341,7 +341,7 @@ DUK_LOCAL void duk__transform_callback_decode_uri(duk__transform_context *tfm_ct
 	DUK_ERROR_URI(tfm_ctx->thr, DUK_STR_INVALID_INPUT);
 }
 
-#ifdef DUK_USE_SECTION_B
+#if defined(DUK_USE_SECTION_B)
 DUK_LOCAL void duk__transform_callback_escape(duk__transform_context *tfm_ctx, const void *udata, duk_codepoint_t cp) {
 	DUK_UNREF(udata);
 
@@ -698,22 +698,12 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_encode_uri_component(duk_context *ct
 	return duk__transform_helper(ctx, duk__transform_callback_encode_uri, (const void *) duk__encode_uricomponent_unescaped_table);
 }
 
-#ifdef DUK_USE_SECTION_B
+#if defined(DUK_USE_SECTION_B)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_escape(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_escape, (const void *) NULL);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_unescape, (const void *) NULL);
-}
-#else  /* DUK_USE_SECTION_B */
-DUK_INTERNAL duk_ret_t duk_bi_global_object_escape(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
 }
 #endif  /* DUK_USE_SECTION_B */

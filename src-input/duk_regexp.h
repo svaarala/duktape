@@ -74,9 +74,11 @@ struct duk_re_compiler_ctx {
  *  Prototypes
  */
 
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL_DECL void duk_regexp_compile(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_regexp_create_instance(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_regexp_match(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_regexp_match_force_global(duk_hthread *thr);  /* hacky helper for String.prototype.split() */
+#endif
 
 #endif  /* DUK_REGEXP_H_INCLUDED */

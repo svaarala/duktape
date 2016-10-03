@@ -322,33 +322,4 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
 	return 1;
 }
 
-#else  /* DUK_USE_MATH_BUILTIN */
-
-/* A stubbed built-in is useful for e.g. compilation torture testing with BCC. */
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
 #endif  /* DUK_USE_MATH_BUILTIN */
