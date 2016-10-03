@@ -568,6 +568,7 @@ def main():
     cmd = [
         sys.executable, os.path.join(script_path, 'genconfig.py'),
         '--output', os.path.join(tempdir, 'duk_config.h.tmp'),
+        '--output-active-options', os.path.join(tempdir, 'duk_config_active_options.json'),
         '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch
     ]
     cmd += forward_genconfig_options()
@@ -634,12 +635,13 @@ def main():
         '--duk-version', str(duk_version)
     ]
     cmd += [
-        '--used-stridx-metadata=' + os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'),
-        '--strings-metadata=' + os.path.join(srcdir, 'strings.yaml'),
-        '--objects-metadata=' + os.path.join(srcdir, 'builtins.yaml'),
-        '--out-header=' + os.path.join(tempdir, 'src', 'duk_builtins.h'),
-        '--out-source=' + os.path.join(tempdir, 'src', 'duk_builtins.c'),
-        '--out-metadata-json=' + os.path.join(tempdir, 'genbuiltins_metadata.json')
+        '--used-stridx-metadata', os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'),
+        '--strings-metadata', os.path.join(srcdir, 'strings.yaml'),
+        '--objects-metadata', os.path.join(srcdir, 'builtins.yaml'),
+        '--active-options', os.path.join(tempdir, 'duk_config_active_options.json'),
+        '--out-header', os.path.join(tempdir, 'src', 'duk_builtins.h'),
+        '--out-source', os.path.join(tempdir, 'src', 'duk_builtins.c'),
+        '--out-metadata-json', os.path.join(tempdir, 'genbuiltins_metadata.json')
     ]
     cmd.append('--ram-support')  # enable by default
     if opts.rom_support:
@@ -731,12 +733,12 @@ def main():
         res = exec_get_stdout([
             sys.executable,
             os.path.join(script_path, 'extract_chars.py'),
-            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
-            '--include-categories=' + incl,
-            '--exclude-categories=' + excl,
-            '--out-source=' + os.path.join(tempdir, 'duk_unicode_%s.c.tmp' % suffix),
-            '--out-header=' + os.path.join(tempdir, 'duk_unicode_%s.h.tmp' % suffix),
-            '--table-name=' + 'duk_unicode_%s' % suffix
+            '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
+            '--include-categories', incl,
+            '--exclude-categories', excl,
+            '--out-source', os.path.join(tempdir, 'duk_unicode_%s.c.tmp' % suffix),
+            '--out-header', os.path.join(tempdir, 'duk_unicode_%s.h.tmp' % suffix),
+            '--table-name', 'duk_unicode_%s' % suffix
         ])
         with open(os.path.join(tempdir, suffix + '.txt'), 'wb') as f:
             f.write(res)
@@ -747,12 +749,12 @@ def main():
             sys.executable,
             os.path.join(script_path, 'extract_caseconv.py'),
             '--command=caseconv_bitpacked',
-            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
-            '--special-casing=' + special_casing,
-            '--out-source=' + os.path.join(tempdir, 'duk_unicode_caseconv.c.tmp'),
-            '--out-header=' + os.path.join(tempdir, 'duk_unicode_caseconv.h.tmp'),
-            '--table-name-lc=duk_unicode_caseconv_lc',
-            '--table-name-uc=duk_unicode_caseconv_uc'
+            '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
+            '--special-casing', special_casing,
+            '--out-source', os.path.join(tempdir, 'duk_unicode_caseconv.c.tmp'),
+            '--out-header', os.path.join(tempdir, 'duk_unicode_caseconv.h.tmp'),
+            '--table-name-lc', 'duk_unicode_caseconv_lc',
+            '--table-name-uc', 'duk_unicode_caseconv_uc'
         ])
         with open(os.path.join(tempdir, 'caseconv.txt'), 'wb') as f:
             f.write(res)
@@ -762,11 +764,11 @@ def main():
             sys.executable,
             os.path.join(script_path, 'extract_caseconv.py'),
             '--command=re_canon_lookup',
-            '--unicode-data=' + os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
-            '--special-casing=' + special_casing,
-            '--out-source=' + os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'),
-            '--out-header=' + os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'),
-            '--table-name-re-canon-lookup=duk_unicode_re_canon_lookup'
+            '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
+            '--special-casing', special_casing,
+            '--out-source', os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'),
+            '--out-header', os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'),
+            '--table-name-re-canon-lookup', 'duk_unicode_re_canon_lookup'
         ])
         with open(os.path.join(tempdir, 'caseconv_re_canon_lookup.txt'), 'wb') as f:
             f.write(res)

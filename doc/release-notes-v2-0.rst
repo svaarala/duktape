@@ -109,6 +109,42 @@ To upgrade:
   - Finally, you can remove your custom header and add the equivalent options
     to ``tools/configure.py`` when possible.
 
+Built-ins disabled in configuration are now absent
+--------------------------------------------------
+
+If a built-in is disabled when running ``configure.py``, it won't be present
+in the Ecmascript environment.  For example, with ``-UDUK_USE_ES6_PROXY``::
+
+    duk> new Proxy()
+    ReferenceError: identifier 'Proxy' undefined
+        at [anon] (duk_js_var.c:1262) internal
+        at global (input:1) preventsyield
+    duk> typeof Proxy
+    = "undefined"
+
+In Duktape 1.x the binding was present but would just throw an Error when
+invoked::
+
+    duk> new Proxy()
+    Error: unknown error (rc -1)
+        at Proxy () native strict construct preventsyield
+        at global (input:1) preventsyield
+    duk> typeof Proxy
+    = "function"
+
+The revised behavior saves footprint and allows scripts to detect
+supported built-ins reliably using e.g.::
+
+    if (typeof Proxy === 'function') {
+        // supported
+    }
+
+To upgrade:
+
+* In most cases no action is needed.  If your code relies on the builtins
+  being present but throwing an error (which seems unlikely), such call
+  sites need to be fixed.
+
 Tooling changes
 ---------------
 

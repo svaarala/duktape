@@ -22,6 +22,10 @@
 #      - constructable: true/false, depending on function
 #    - To disable an object without removing its metadata, you can
 #      use 'disable: true'.
+#    - If the object is dependent on Duktape configuration, you can make the
+#      object optional using e.g. 'present_if: DUK_USE_BUFFEROBJECT_SUPPORT'.
+#    - If the object needs a DUK_BIDX_xxx define in Duktape source code, which
+#      also implies it'll get a slot in thr->builtins[] array, use 'bidx: true'.
 #
 # Property format:
 #
@@ -42,6 +46,8 @@
 #      is related to a specific standard
 #    - To disable a property without removing its metadata, you can use
 #      'disable: true'.
+#    - If the property is dependent on Duktape configuration, you can make the
+#      property optional using e.g. 'present_if: DUK_USE_BUFFEROBJECT_SUPPORT'.
 #
 # Property value format:
 #
@@ -145,6 +151,7 @@ objects:
   - id: bi_global
     class: global
     internal_prototype: bi_object_prototype
+    bidx: true
 
     properties:
       - key: "NaN"
@@ -194,6 +201,7 @@ objects:
         value:
           type: object
           id: bi_regexp_constructor
+        present_if: DUK_USE_REGEXP_SUPPORT
       - key: "Error"
         value:
           type: object
@@ -226,6 +234,7 @@ objects:
         value:
           type: object
           id: bi_math
+        present_if: DUK_USE_MATH_BUILTIN
       - key: "JSON"
         value:
           type: object
@@ -244,6 +253,7 @@ objects:
           type: object
           id: bi_proxy_constructor
         es6: true
+        present_if: DUK_USE_ES6_PROXY
 
       # Node.js Buffer
       - key: "Buffer"
@@ -251,6 +261,7 @@ objects:
           type: object
           id: bi_nodejs_buffer_constructor
         nodejs_buffer: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
       # TypedArray
       - key: "ArrayBuffer"
@@ -259,66 +270,77 @@ objects:
           id: bi_arraybuffer_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "DataView"
         value:
           type: object
           id: bi_dataview_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Int8Array"
         value:
           type: object
           id: bi_int8array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Uint8Array"
         value:
           type: object
           id: bi_uint8array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Uint8ClampedArray"
         value:
           type: object
           id: bi_uint8clampedarray_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Int16Array"
         value:
           type: object
           id: bi_int16array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Uint16Array"
         value:
           type: object
           id: bi_uint16array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Int32Array"
         value:
           type: object
           id: bi_int32array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Uint32Array"
         value:
           type: object
           id: bi_uint32array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Float32Array"
         value:
           type: object
           id: bi_float32array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "Float64Array"
         value:
           type: object
           id: bi_float64array_constructor
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
       # Functions
       - key: "eval"
@@ -379,16 +401,19 @@ objects:
           native: duk_bi_global_object_escape
           length: 1
         section_b: true
+        present_if: DUK_USE_SECTION_B
       - key: "unescape"
         value:
           type: function
           native: duk_bi_global_object_unescape
           length: 1
         section_b: true
+        present_if: DUK_USE_SECTION_B
 
   - id: bi_global_env
     class: ObjEnv
     duktape: true
+    bidx: true
 
     properties:
       - key: "\u00ffTarget"
@@ -404,6 +429,7 @@ objects:
     native: duk_bi_object_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -501,6 +527,7 @@ objects:
   - id: bi_object_prototype
     class: Object
     # internal_prototype: null
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -559,6 +586,7 @@ objects:
     native: duk_bi_function_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -583,6 +611,7 @@ objects:
     native: duk_bi_function_prototype
     callable: true
     constructable: false  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
+    bidx: true
 
     properties:
       - key: "length"
@@ -637,6 +666,7 @@ objects:
     native: duk_bi_array_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -659,6 +689,7 @@ objects:
   - id: bi_array_prototype
     class: Array
     internal_prototype: bi_object_prototype
+    bidx: true
 
     # An array prototype is an Array itself.  It has a length property initialized to 0,
     # with property attributes: writable, non-configurable, non-enumerable.  The attributes
@@ -822,6 +853,7 @@ objects:
     native: duk_bi_string_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -852,10 +884,12 @@ objects:
           length: 1
           varargs: false
         duktape: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
   - id: bi_string_prototype
     class: String
     internal_prototype: bi_object_prototype
+    bidx: true
 
     # String prototype is a String instance and must have length value 0.
     # This is supplied by the String instance virtual properties and does
@@ -933,6 +967,7 @@ objects:
           type: function
           native: duk_bi_string_prototype_match
           length: 1
+        present_if: DUK_USE_REGEXP_SUPPORT
       - key: "replace"
         value:
           type: function
@@ -943,6 +978,7 @@ objects:
           type: function
           native: duk_bi_string_prototype_search
           length: 1
+        present_if: DUK_USE_REGEXP_SUPPORT
       - key: "slice"
         value:
           type: function
@@ -996,6 +1032,7 @@ objects:
           native: duk_bi_string_prototype_substr
           length: 2
         section_b: true
+        present_if: DUK_USE_SECTION_B
 
   - id: bi_boolean_constructor
     class: Function
@@ -1003,6 +1040,7 @@ objects:
     native: duk_bi_boolean_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -1020,6 +1058,7 @@ objects:
   - id: bi_boolean_prototype
     class: Boolean
     internal_prototype: bi_object_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1057,6 +1096,7 @@ objects:
     native: duk_bi_number_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -1099,6 +1139,7 @@ objects:
   - id: bi_number_prototype
     class: Number
     internal_prototype: bi_object_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1154,6 +1195,7 @@ objects:
     native: duk_bi_date_constructor
     callable: true
     constructable: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -1188,6 +1230,7 @@ objects:
   - id: bi_date_prototype
     class: Date
     internal_prototype: bi_object_prototype
+    bidx: true
 
     # The Date prototype is an instance of Date with [[PrimitiveValue]] NaN.
     #
@@ -1541,6 +1584,8 @@ objects:
     native: duk_bi_regexp_constructor
     callable: true
     constructable: true
+    bidx: true
+    present_if: DUK_USE_REGEXP_SUPPORT
 
     properties:
       - key: "length"
@@ -1558,6 +1603,8 @@ objects:
   - id: bi_regexp_prototype
     class: RegExp
     internal_prototype: bi_object_prototype
+    bidx: true
+    present_if: DUK_USE_REGEXP_SUPPORT
 
     properties:
       - key: "constructor"
@@ -1628,6 +1675,7 @@ objects:
     magic:
       type: bidx
       id: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1645,6 +1693,7 @@ objects:
   - id: bi_error_prototype
     class: Error
     internal_prototype: bi_object_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1733,6 +1782,7 @@ objects:
     magic:
       type: bidx
       id: bi_eval_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1750,6 +1800,7 @@ objects:
   - id: bi_eval_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1771,6 +1822,7 @@ objects:
     magic:
       type: bidx
       id: bi_range_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1788,6 +1840,7 @@ objects:
   - id: bi_range_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1809,6 +1862,7 @@ objects:
     magic:
       type: bidx
       id: bi_reference_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1826,6 +1880,7 @@ objects:
   - id: bi_reference_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1847,6 +1902,7 @@ objects:
     magic:
       type: bidx
       id: bi_syntax_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1864,6 +1920,7 @@ objects:
   - id: bi_syntax_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1885,6 +1942,7 @@ objects:
     magic:
       type: bidx
       id: bi_type_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1902,6 +1960,7 @@ objects:
   - id: bi_type_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1923,6 +1982,7 @@ objects:
     magic:
       type: bidx
       id: bi_uri_error_prototype
+    bidx: true
 
     properties:
       - key: "length"
@@ -1940,6 +2000,7 @@ objects:
   - id: bi_uri_error_prototype
     class: Error
     internal_prototype: bi_error_prototype
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -1955,6 +2016,8 @@ objects:
   - id: bi_math
     class: Math
     internal_prototype: bi_object_prototype
+    bidx: true
+    present_if: DUK_USE_MATH_BUILTIN
 
     # apparently no external "prototype" property
     # apparently no external "constructor" property
@@ -2142,6 +2205,7 @@ objects:
   - id: bi_json
     class: JSON
     internal_prototype: bi_object_prototype
+    bidx: true
 
     # apparently no external "prototype" property
     # apparently no external "constructor" property
@@ -2165,6 +2229,7 @@ objects:
     native: duk_bi_type_error_thrower
     callable: true
     constructable: false  # This is not clearly specified, but [[Construct]] is not set in E5 Section 13.2.3.
+    bidx: true
 
     properties:
       - key: "length"
@@ -2184,6 +2249,7 @@ objects:
     class: Object
     internal_prototype: bi_object_prototype
     duktape: true
+    bidx: true
 
     # There are a few properties not listed here:
     #   - "version" is added from parameter file automatically.
@@ -2200,6 +2266,7 @@ objects:
           type: object
           id: bi_thread_constructor
         duktape: true
+        present_if: DUK_USE_COROUTINE_SUPPORT
 
       - key: "info"
         value:
@@ -2226,6 +2293,7 @@ objects:
           length: 0
           varargs: true
         duktape: true
+        present_if: DUK_USE_FINALIZER_SUPPORT
       - key: "enc"
         value:
           type: function
@@ -2255,6 +2323,8 @@ objects:
     callable: true
     constructable: true
     duktape: true
+    bidx: true
+    present_if: DUK_USE_COROUTINE_SUPPORT
 
     properties:
       - key: "length"
@@ -2280,6 +2350,7 @@ objects:
           length: 2
         duktape: true
         autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        present_if: DUK_USE_COROUTINE_SUPPORT
       - key: "resume"
         value:
           type: function
@@ -2287,17 +2358,25 @@ objects:
           length: 3
         duktape: true
         autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        present_if: DUK_USE_COROUTINE_SUPPORT
       - key: "current"
         value:
           type: function
           native: duk_bi_thread_current
           length: 0
         duktape: true
+        present_if: DUK_USE_COROUTINE_SUPPORT
 
   - id: bi_thread_prototype
     class: Thread
     internal_prototype: bi_object_prototype
     duktape: true
+    bidx: true
+
+    # Must be present even if coroutines are disabled for inheritance.
+    # Because Duktape.Thread.prototype is missing, the only way to access
+    # the prototype to e.g. add methods is to look it up from a thread
+    # instance.
 
     # Note: we don't keep up with the E5 convention that prototype objects
     # are some faux instances of their type (e.g. Date.prototype is a Date
@@ -2313,6 +2392,7 @@ objects:
           id: bi_thread_constructor
         attributes: "wc"
         duktape: true
+        present_if: DUK_USE_COROUTINE_SUPPORT
 
       # toString() and valueOf() are inherited from Object.prototype
 
@@ -2324,6 +2404,7 @@ objects:
     callable: true
     constructable: true
     duktape: true
+    bidx: true
 
     properties:
       - key: "length"
@@ -2345,6 +2426,7 @@ objects:
     class: Pointer
     internal_prototype: bi_object_prototype
     duktape: true
+    bidx: true
 
     properties:
       - key: "constructor"
@@ -2378,6 +2460,7 @@ objects:
     internal_prototype: bi_error_prototype
     extensible: false
     duktape: true
+    bidx: true
 
     # Note: this is the only non-extensible built-in, so there is special
     # post-tweak in duk_hthread_builtins.c to handle this.
@@ -2404,6 +2487,8 @@ objects:
     callable: true
     constructable: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_ES6_PROXY
 
     properties:
       - key: "length"
@@ -2434,6 +2519,8 @@ objects:
     constructable: true
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -2488,6 +2575,8 @@ objects:
     internal_prototype: bi_object_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -2517,6 +2606,8 @@ objects:
     constructable: true
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -2543,6 +2634,8 @@ objects:
     internal_prototype: bi_object_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -2792,6 +2885,8 @@ objects:
     # no external_constructor (specific views provide it)
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "set"
@@ -2825,6 +2920,8 @@ objects:
       shift: 0
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -2855,6 +2952,8 @@ objects:
     class: Object
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -2878,6 +2977,8 @@ objects:
       shift: 0
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -2908,6 +3009,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -2931,6 +3034,8 @@ objects:
       shift: 0
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -2961,6 +3066,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -2984,6 +3091,8 @@ objects:
       shift: 1
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3014,6 +3123,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3037,6 +3148,8 @@ objects:
       shift: 1
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3067,6 +3180,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3090,6 +3205,8 @@ objects:
       shift: 2
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3120,6 +3237,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3143,6 +3262,8 @@ objects:
       shift: 2
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3173,6 +3294,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3196,6 +3319,8 @@ objects:
       shift: 2
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3226,6 +3351,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3249,6 +3376,8 @@ objects:
       shift: 3
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3279,6 +3408,8 @@ objects:
     internal_prototype: bi_typedarray_prototype
     typedarray: true
     es6: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3301,6 +3432,8 @@ objects:
     callable: true
     constructable: true
     nodejs_buffer: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "length"
@@ -3359,6 +3492,8 @@ objects:
     internal_prototype: bi_object_prototype
     class: Object
     nodejs_buffer: true
+    bidx: true
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
       - key: "constructor"
@@ -3895,139 +4030,3 @@ objects:
           length: 4
           varargs: false
         nodejs_buffer: true
-
-#
-#  Built-ins table.  The ordering determines ordering for the DUK_BIDX_XXX constants.
-#
-
-builtins:
-  - id: bi_global
-  - id: bi_global_env
-  - id: bi_object_constructor
-  - id: bi_object_prototype
-  - id: bi_function_constructor
-  - id: bi_function_prototype
-  - id: bi_array_constructor
-  - id: bi_array_prototype
-  - id: bi_string_constructor
-  - id: bi_string_prototype
-  - id: bi_boolean_constructor
-  - id: bi_boolean_prototype
-  - id: bi_number_constructor
-  - id: bi_number_prototype
-  - id: bi_date_constructor
-  - id: bi_date_prototype
-  - id: bi_regexp_constructor
-  - id: bi_regexp_prototype
-  - id: bi_error_constructor
-  - id: bi_error_prototype
-  - id: bi_eval_error_constructor
-  - id: bi_eval_error_prototype
-  - id: bi_range_error_constructor
-  - id: bi_range_error_prototype
-  - id: bi_reference_error_constructor
-  - id: bi_reference_error_prototype
-  - id: bi_syntax_error_constructor
-  - id: bi_syntax_error_prototype
-  - id: bi_type_error_constructor
-  - id: bi_type_error_prototype
-  - id: bi_uri_error_constructor
-  - id: bi_uri_error_prototype
-  - id: bi_math
-  - id: bi_json
-  - id: bi_type_error_thrower
-
-  # es6
-  - id: bi_proxy_constructor
-    es6: true
-
-  # Duktape custom
-  - id: bi_duktape
-    duktape: true
-  - id: bi_thread_constructor
-    duktape: true
-  - id: bi_thread_prototype
-    duktape: true
-  - id: bi_pointer_constructor
-    duktape: true
-  - id: bi_pointer_prototype
-    duktape: true
-  - id: bi_double_error
-    duktape: true
-
-  # TypedArray
-  - id: bi_arraybuffer_constructor
-    typedarray: true
-    es6: true
-  - id: bi_arraybuffer_prototype
-    typedarray: true
-    es6: true
-  - id: bi_dataview_constructor
-    typedarray: true
-    es6: true
-  - id: bi_dataview_prototype
-    typedarray: true
-    es6: true
-  - id: bi_typedarray_prototype
-    typedarray: true
-    es6: true
-  - id: bi_int8array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_int8array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_uint8array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_uint8array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_uint8clampedarray_constructor
-    typedarray: true
-    es6: true
-  - id: bi_uint8clampedarray_prototype
-    typedarray: true
-    es6: true
-  - id: bi_int16array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_int16array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_uint16array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_uint16array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_int32array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_int32array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_uint32array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_uint32array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_float32array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_float32array_prototype
-    typedarray: true
-    es6: true
-  - id: bi_float64array_constructor
-    typedarray: true
-    es6: true
-  - id: bi_float64array_prototype
-    typedarray: true
-    es6: true
-
-  # Node.js Buffer
-  - id: bi_nodejs_buffer_constructor
-    nodejs_buffer: true
-  - id: bi_nodejs_buffer_prototype
-    nodejs_buffer: true

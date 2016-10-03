@@ -223,10 +223,6 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 		return 1;
 	}
 }
-#else  /* DUK_USE_FINALIZER_SUPPORT */
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
-	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
-}
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {

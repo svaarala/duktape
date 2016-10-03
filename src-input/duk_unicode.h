@@ -228,7 +228,9 @@ DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_identifier_start(duk_codepoint_
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_identifier_part(duk_codepoint_t cp);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_is_letter(duk_codepoint_t cp);
 DUK_INTERNAL_DECL void duk_unicode_case_convert_string(duk_hthread *thr, duk_bool_t uppercase);
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL_DECL duk_codepoint_t duk_unicode_re_canonicalize_char(duk_hthread *thr, duk_codepoint_t cp);
 DUK_INTERNAL_DECL duk_small_int_t duk_unicode_re_is_wordchar(duk_codepoint_t cp);
+#endif
 
 #endif  /* DUK_UNICODE_H_INCLUDED */

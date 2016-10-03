@@ -2589,7 +2589,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 
 		DUK_DDD(DUK_DDDPRINT("base object is a buffer, start lookup from ArrayBuffer prototype"));
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		curr = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+#else
+		curr = thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE];
+#endif
 		goto lookup;  /* avoid double coercion */
 	}
 
@@ -2828,7 +2832,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 			rc = 1;
 			goto pop_and_return;
 		}
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		obj = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+#else
+		obj = thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE];
+#endif
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
 		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 		if (duk__key_is_lightfunc_ownprop(thr, key)) {
@@ -3575,7 +3583,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 
 		DUK_DDD(DUK_DDDPRINT("base object is a buffer, start lookup from buffer prototype"));
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		curr = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+#else
+		curr = thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE];
+#endif
 		goto lookup;  /* avoid double coercion */
 	}
 

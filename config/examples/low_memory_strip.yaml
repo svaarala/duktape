@@ -26,3 +26,6 @@ DUK_USE_ES6_PROXY: false
 
 # Don't support non-BMP characters in source code (UTF-8 otherwise OK).
 DUK_USE_SOURCE_NONBMP: false
+
+# Remove Math built-in.
+DUK_USE_MATH_BUILTIN: false

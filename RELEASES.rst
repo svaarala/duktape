@@ -1772,6 +1772,12 @@ Planned
   [[DefaultValue]] specification algorithm removed in ES6 (it was folded
   to ToPrimitive()), use duk_to_primitive() instead (GH-984)
 
+* Add support for dropping built-in bindings entirely when they are disabled
+  in configuration, e.g. the Proxy and buffer object bindings will be absent
+  instead of being replaced by functions throwing an error; this is more
+  in line with how application code detects active features and reduces
+  footprint (GH-988)
+
 * Add convenience API calls duk_get_prop_lstring(), duk_put_prop_lstring(),
   duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
   duk_put_global_lstring() (GH-946, GH-953)

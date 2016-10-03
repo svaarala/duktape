@@ -1061,7 +1061,11 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		DUK_ASSERT(val != NULL);
 		break;
 	case DUK_TAG_BUFFER:
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		val = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+#else
+		val = thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE];
+#endif
 		DUK_ASSERT(val != NULL);
 		break;
 	case DUK_TAG_POINTER:

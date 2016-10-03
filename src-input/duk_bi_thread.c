@@ -32,11 +32,6 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 
 	return 1;  /* return thread */
 }
-#else
-DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
 #endif
 
 /*
@@ -193,11 +188,6 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	DUK_ERROR_TYPE(thr, "invalid state");
 	return 0;  /* never here */
 }
-#else
-DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
 #endif
 
 /*
@@ -313,21 +303,11 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	DUK_ERROR_TYPE(thr, "invalid state");
 	return 0;  /* never here */
 }
-#else
-DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
 #endif
 
 #if defined(DUK_USE_COROUTINE_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_thread_current(duk_context *ctx) {
 	duk_push_current_thread(ctx);
 	return 1;
-}
-#else
-DUK_INTERNAL duk_ret_t duk_bi_thread_current(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
 }
 #endif

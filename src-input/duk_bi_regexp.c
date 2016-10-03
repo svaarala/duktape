@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 
 DUK_LOCAL void duk__get_this_regexp(duk_context *ctx) {
 	duk_hobject *h;
@@ -182,28 +182,6 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 #endif
 
 	return 1;
-}
-
-#else  /* DUK_USE_REGEXP_SUPPORT */
-
-DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_exec(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	return DUK_RET_ERROR;
 }
 
 #endif  /* DUK_USE_REGEXP_SUPPORT */

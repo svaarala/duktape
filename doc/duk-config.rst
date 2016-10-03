@@ -136,8 +136,7 @@ but also ``duktape.c`` and ``duktape.h`` to be included in your build.
 
 You can override individual defines using in several ways (see "Option
 overrides" section below for more details): C compiler format (-D and -U
-options), YAML config through a file or inline, or verbatim fixup header
-through a file or inline.
+options) and YAML config through a file or inline.
 
 If you're building Duktape as a DLL, you should use the ``--dll`` option::
 
@@ -186,8 +185,7 @@ in config option metadata files in ``config/config-options/``.
 
 You can override individual defines using in several ways (see "Option
 overrides" section below for more details): C compiler format (-D and -U
-options), YAML config through a file or inline, or verbatim fixup header
-through a file or inline.
+options) or YAML config through a file or inline.
 
 Some changes such as reworking ``#include`` statements cannot be represented
 as override files; you'll need to edit the resulting config header manually
@@ -210,17 +208,18 @@ an autodetect or barebones ``duk_config.h`` header:
       --option-file my_config.yaml
       --option-yaml 'DUK_USE_FASTINT: true'
 
-* Verbatim fixup header lines read from a file or given inline on the command
-  line::
-
-      --fixup-file my_custom.h
-      --fixup-line '#undef DUK_USE_JX'
+* A verbatim fixup header can declare custom prototypes and include custom
+  headers, and can tweak ``DUK_USE_xxx`` options.  However, since Duktape 2.x
+  some config options control automatic pruning of built-in objects and
+  properties, and such options (like ``DUK_USE_BUFFEROBJECT_SUPPORT``)
+  **MUST NOT** be modified by fixups.  It's thus recommended to modify options
+  via the C compiler format or YAML.
 
 These option formats can be mixed which allows you to specify an option
 baseline (say ``--option-file low_memory.yaml``) and then apply
 further overrides in various ways.  All forced options in C compiler
 format and YAML format are processed first, with the last override
-winning.  Fixup headers are then emitted in order.
+winning.
 
 C compiler format
 -----------------
@@ -326,10 +325,13 @@ Fixup header
 In addition to YAML-based option overrides, genconfig has an option for
 appending direct "fixup headers" to deal with situations which cannot be
 handled with individual option overrides.  For example, you may want to
-inject specific environment sanity checks, or set config option values
-based on environment #ifdefs.  This mechanism is similar to Duktape 1.x
-``duk_custom.h`` header, and you can in fact use ``duk_custom.h`` headers
-directly as inputs.
+inject specific environment sanity checks.  This mechanism is similar to
+Duktape 1.x ``duk_custom.h`` header.
+
+Since Duktape 2.x some config options control automatic pruning of built-in
+objects and properties, and such options (like ``DUK_USE_BUFFEROBJECT_SUPPORT``)
+**MUST NOT** be modified by fixups.  It's thus recommended to modify options
+via the C compiler format or YAML metadata files.
 
 Fixup headers are emitted after all individual option overrides (in either
 C compiler or YAML format) have been resolved, but before emitting option
