@@ -2591,12 +2591,14 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * explicitly).
 		 */
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk_hobject_hasprop_raw(js_ctx->thr,
 		                            js_ctx->thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE],
 		                            DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr))) {
 			DUK_DD(DUK_DDPRINT("value is a plain buffer and there's an inherited .toJSON, abort fast path"));
 			goto abort_fastpath;
 		}
+#endif
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
