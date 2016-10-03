@@ -807,13 +807,14 @@ def get_forced_options(opts):
 
 # Emit a default #define / #undef for an option based on
 # a config option metadata node (parsed YAML doc).
-def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
+def emit_default_from_config_meta(ret, doc, forced_opts, undef_done, active_opts):
     defname = doc['define']
     defval = forced_opts.get(defname, doc['default'])
 
     # NOTE: careful with Python equality, e.g. "0 == False" is true.
     if isinstance(defval, bool) and defval == True:
         ret.line('#define ' + defname)
+        active_opts[defname] = True
     elif isinstance(defval, bool) and defval == False:
         if not undef_done:
             ret.line('#undef ' + defname)
@@ -821,12 +822,15 @@ def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
             # Default value is false, and caller has emitted
             # an unconditional #undef, so don't emit a duplicate
             pass
+        active_opts[defname] = False
     elif isinstance(defval, (int, long)):
         # integer value
         ret.line('#define ' + defname + ' ' + cint_encode(defval))
+        active_opts[defname] = True
     elif isinstance(defval, (str, unicode)):
         # verbatim value
         ret.line('#define ' + defname + ' ' + defval)
+        active_opts[defname] = True
     elif isinstance(defval, dict):
         if defval.has_key('verbatim'):
             # verbatim text for the entire line
@@ -836,6 +840,7 @@ def emit_default_from_config_meta(ret, doc, forced_opts, undef_done):
             ret.line('#define ' + defname + ' ' + cstr_encode(defval['string']))
         else:
             raise Exception('unsupported value for option %s: %r' % (defname, defval))
+        active_opts[defname] = True
     else:
         raise Exception('unsupported value for option %s: %r' % (defname, defval))
 
@@ -966,6 +971,13 @@ def generate_duk_config_header(opts, meta_dir):
     for doc in use_defs_list:
         if doc.get('warn_if_missing', False) and not forced_opts.has_key(doc['define']):
             logger.warning('Recommended config option ' + doc['define'] + ' not provided')
+
+    # Gather a map of "active options" for genbuiltins.py.  This is used to
+    # implement proper optional built-ins, e.g. if a certain config option
+    # (like DUK_USE_ES6_PROXY) is disabled, the corresponding objects and
+    # properties are dropped entirely.  The mechanism is not perfect: it won't
+    # detect fixup changes for example.
+    active_opts = {}
 
     platforms = None
     with open(os.path.join(meta_dir, 'platforms.yaml'), 'rb') as f:
@@ -1246,7 +1258,7 @@ def generate_duk_config_header(opts, meta_dir):
             ret.line('#undef ' + defname)
             undef_done = True
 
-        emit_default_from_config_meta(ret, doc, forced_opts, undef_done)
+        emit_default_from_config_meta(ret, doc, forced_opts, undef_done, active_opts)
 
     ret.empty()
 
@@ -1269,7 +1281,7 @@ def generate_duk_config_header(opts, meta_dir):
 
         for k in need_keys:
             logger.debug('config option %s not covered by manual snippets, emitting default automatically' % k)
-            emit_default_from_config_meta(ret, use_defs[k], {}, False)
+            emit_default_from_config_meta(ret, use_defs[k], {}, False, active_opts)
 
         ret.empty()
 
@@ -1304,7 +1316,7 @@ def generate_duk_config_header(opts, meta_dir):
 
     ret.line('#endif  /* DUK_CONFIG_H_INCLUDED */')
     ret.empty()  # for trailing newline
-    return remove_duplicate_newlines(ret.join())
+    return remove_duplicate_newlines(ret.join()), active_opts
 
 #
 #  Main
@@ -1351,6 +1363,7 @@ def add_genconfig_optparse_options(parser, direct=False):
     if direct:
         parser.add_option('--metadata', dest='config_metadata', default=None, help='metadata directory')
         parser.add_option('--output', dest='output', default=None, help='output filename for C header or RST documentation file')
+        parser.add_option('--output-active-options', dest='output_active_options', default=None, help='output JSON file with active config options information')
     else:
         # Different option name when called through configure.py,
         # also no --output option.
@@ -1448,10 +1461,14 @@ def genconfig(opts, args):
         if opts.dll:
             desc.append('dll mode')
         logger.info('Creating duk_config.h: ' + ', '.join(desc))
-        result = generate_duk_config_header(opts, meta_dir)
+        result, active_opts = generate_duk_config_header(opts, meta_dir)
         with open(opts.output, 'wb') as f:
             f.write(result)
         logger.debug('Wrote duk_config.h to ' + str(opts.output))
+        if opts.output_active_options is not None:
+            with open(opts.output_active_options, 'wb') as f:
+                f.write(json.dumps(active_opts, indent=4))
+            logger.debug('Wrote active options JSON metadata to ' + str(opts.output_active_options))
     elif cmd == 'feature-documentation':
         raise Exception('The feature-documentation command has been removed along with DUK_OPT_xxx feature option support')
     elif cmd == 'config-documentation':

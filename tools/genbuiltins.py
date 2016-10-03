@@ -160,11 +160,21 @@ def metadata_lookup_property_and_index(obj, key):
     return None, None
 
 # Remove disabled objects and properties.
-def metadata_remove_disabled(meta):
+def metadata_remove_disabled(meta, active_opts):
     objlist = []
+
+    count_disabled_object = 0
+    count_notneeded_object = 0
+    count_disabled_property = 0
+    count_notneeded_property = 0
+
     for o in meta['objects']:
         if o.get('disable', False):
             logger.debug('Remove disabled object: %s' % o['id'])
+            count_disabled_object += 1
+        elif o.has_key('present_if') and active_opts.get(o['present_if'], None) == False:
+            logger.debug('Removed object not needed in active configuration: %s' % o['id'])
+            count_notneeded_object += 1
         else:
             objlist.append(o)
 
@@ -172,12 +182,19 @@ def metadata_remove_disabled(meta):
         for p in o['properties']:
             if p.get('disable', False):
                 logger.debug('Remove disabled property: %s, object: %s' % (p['key'], o['id']))
+                count_disabled_property += 1
+            elif p.has_key('present_if') and active_opts.get(p['present_if'], None) == False:
+                logger.debug('Removed property not needed in active configuration: %s, object: %s' % (p['key'], o['id']))
+                count_notneeded_property += 1
             else:
                 props.append(p)
 
         o['properties'] = props
 
     meta['objects'] = objlist
+
+    if count_disabled_object + count_notneeded_object + count_disabled_property + count_notneeded_property > 0:
+        logger.info('Removed %d objects (%d disabled, %d not needed by config), %d properties (%d disabled, %d not needed by config' % (count_disabled_object + count_notneeded_object, count_disabled_object, count_notneeded_object, count_disabled_property + count_notneeded_property, count_disabled_property, count_notneeded_property))
 
 # Delete dangling references to removed/missing objects.
 def metadata_delete_dangling_references_to_object(meta, obj_id):
@@ -308,28 +325,25 @@ def metadata_prepare_objects_bidx(meta):
     objlist = meta['objects']
     meta['objects'] = []
     meta['objects_bidx'] = []
-    objid_map = {}  # temp map
 
-    # Build helper index.
-    for o in objlist:
-        objid_map[o['id']] = o
-
-    # Use 'builtins' as the bidx list with no filtering for now.
-    # Ideally we'd scan the actually needed indices from the source.
-    for o in meta['builtins']:
-        # No filtering now, just use list as is
-        obj = objid_map[o['id']]
-        obj['bidx_used'] = True
-        meta['objects'].append(obj)
-        meta['objects_bidx'].append(obj)
+    # Objects have a 'bidx: true' if they need a DUK_BIDX_xxx constant
+    # and need to be present in thr->builtins[].  The list is already
+    # stripped of built-in objects which are not needed based on config.
+    # Ideally we'd scan the actually needed indices from the source
+    # but since some usage is inside #ifdefs that's not trivial.
+    for obj in objlist:
+        if obj.get('bidx', False):
+            obj['bidx_used'] = True
+            meta['objects'].append(obj)
+            meta['objects_bidx'].append(obj)
 
     # Append remaining objects.
-    for o in objlist:
-        if o.get('bidx_used', False):
+    for obj in objlist:
+        if obj.get('bidx_used', False):
             # Already in meta['objects'].
             pass
         else:
-            meta['objects'].append(o)
+            meta['objects'].append(obj)
 
 # Normalize metadata property shorthand.  For example, if a proprety value
 # is a shorthand function, create a function object and change the property
@@ -940,7 +954,7 @@ def dump_metadata(meta, fn):
 
 # Main metadata loading function: load metadata from multiple sources,
 # merge and normalize, prepare various indexes etc.
-def load_metadata(opts, rom=False, build_info=None):
+def load_metadata(opts, rom=False, build_info=None, active_opts=None):
     # Load built-in strings and objects.
     with open(opts.strings_metadata, 'rb') as f:
         strings_metadata = recursive_strings_to_bytes(yaml.load(f))
@@ -962,8 +976,9 @@ def load_metadata(opts, rom=False, build_info=None):
             user_meta = recursive_strings_to_bytes(yaml.load(f))
         metadata_merge_user_objects(meta, user_meta)
 
-    # Remove disabled objects and properties.
-    metadata_remove_disabled(meta)
+    # Remove disabled objects and properties.  Also remove objects and
+    # properties which are disabled in (known) active duk_config.h.
+    metadata_remove_disabled(meta, active_opts)
 
     # Normalize 'nargs' and 'length' defaults.
     metadata_normalize_nargs_length(meta)
@@ -1002,10 +1017,8 @@ def load_metadata(opts, rom=False, build_info=None):
     if rom and opts.rom_auto_lightfunc:
         metadata_convert_lightfuncs(meta)
 
-    # Create a list of objects needing a 'bidx'.  This is now just
-    # based on the 'builtins' metadata list but could be dynamically
-    # scanned somehow.  Ensure 'objects' and 'objects_bidx' match
-    # in order for shared length.
+    # Create a list of objects needing a 'bidx'.  Ensure 'objects' and
+    # 'objects_bidx' match in order for shared length.
     metadata_prepare_objects_bidx(meta)
 
     # Merge duplicate strings.
@@ -2831,6 +2844,7 @@ def main():
     parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', help='DUK_STRIDX_xxx used by source/headers, JSON format')
     parser.add_option('--strings-metadata', dest='strings_metadata', help='Default built-in strings metadata file, YAML format')
     parser.add_option('--objects-metadata', dest='objects_metadata', help='Default built-in objects metadata file, YAML format')
+    parser.add_option('--active-options', dest='active_options', help='Active config options from genconfig.py, JSON format')
     parser.add_option('--user-builtin-metadata', dest='obsolete_builtin_metadata', default=None, help=optparse.SUPPRESS_HELP)
     parser.add_option('--builtin-file', dest='builtin_files', metavar='FILENAME', action='append', default=[], help='Built-in string/object YAML metadata to be applied over default built-ins (multiple files may be given, applied in sequence)')
     parser.add_option('--ram-support', dest='ram_support', action='store_true', default=False, help='Support RAM strings/objects')
@@ -2872,8 +2886,13 @@ def main():
 
     # Read in metadata files, normalizing and merging as necessary.
 
-    ram_meta = load_metadata(opts, rom=False, build_info=build_info)
-    rom_meta = load_metadata(opts, rom=True, build_info=build_info)
+    active_opts = {}
+    if opts.active_options is not None:
+        with open(opts.active_options, 'rb') as f:
+            active_opts = json.loads(f.read())
+
+    ram_meta = load_metadata(opts, rom=False, build_info=build_info, active_opts=active_opts)
+    rom_meta = load_metadata(opts, rom=True, build_info=build_info, active_opts=active_opts)
     if opts.dev_dump_final_ram_metadata is not None:
         dump_metadata(ram_meta, opts.dev_dump_final_ram_metadata)
     if opts.dev_dump_final_rom_metadata is not None:
