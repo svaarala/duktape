@@ -275,6 +275,7 @@ objects:
     replace: true
     class: Error
     internal_prototype: bi_object_prototype
+    bidx: true   # Duktape internals use DUK_BIDX_ERROR_PROTOTYPE, so this must be present
 
     properties:
       - key: "constructor"
@@ -290,6 +291,7 @@ objects:
   - id: bi_json
     disable: true  # disabled in metadata, so no effect unless commented out
     replace: true
+    bidx: true
 
     class: Object
     internal_prototype: bi_object_prototype
@@ -301,9 +303,19 @@ objects:
   # Example of how to delete an existing built-in object entirely.  Dangling
   # references are automatically deleted with a note in the build log.
   #
-  # This doesn't currently work very well for Duktape built-ins because most
-  # built-ins are expected to be present in Duktape internals (and they have
-  # a DUK_BIDX_xxx index).
+  # This doesn't always work very well for Duktape built-ins: if a certain
+  # feature is enabled Duktape internals may expect some built-in objects to
+  # be present and have a DUK_BIDX_xxx define.  For example, when
+  # DUK_USE_BUFFEROBJECT_SUPPORT is enabled, Duktape internals expect e.g.
+  # DUK_BIDX_UINT8ARRAY_PROTOTYPE to be present.
+  #
+  # In these cases you can replace the object with an empty one, but it still
+  # needs to be present, and it will need to have 'bidx: true' which indicates
+  # the object needs a DUK_BIDX_xxx constant and a place in thr->builtins[].
+  # If the feature is disabled, the internal references won't be active and
+  # the related built-ins can be removed, and are in fact automatically removed
+  # based on 'present_if' metadata (e.g. 'present_if:
+  # DUK_USE_BUFFEROBJECT_SUPPORT' for buffers, for example).
   #
   # Deleting user objects may be useful e.g. if a base YAML file provides your
   # custom built-ins and a target specific YAML file removes bindings not
