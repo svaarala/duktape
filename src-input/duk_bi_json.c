@@ -16,6 +16,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_JSON_SUPPORT)
+
 /*
  *  Local defines and forward declarations.
  */
@@ -3140,6 +3142,8 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	DUK_ASSERT(duk_get_top(ctx) == entry_top + 1);
 }
 
+#if defined(DUK_USE_JSON_BUILTIN)
+
 /*
  *  Entry points
  */
@@ -3160,3 +3164,7 @@ DUK_INTERNAL duk_ret_t duk_bi_json_object_stringify(duk_context *ctx) {
 	                             0 /*flags*/);
 	return 1;
 }
+
+#endif  /* DUK_USE_JSON_BUILTIN */
+
+#endif  /* DUK_USE_JSON_SUPPORT */

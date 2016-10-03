@@ -45,6 +45,8 @@
  */
 #define  DUK__ARRAY_MID_JOIN_LIMIT  4096
 
+#if defined(DUK_USE_ARRAY_BUILTIN)
+
 /*
  *  Shared helpers.
  */
@@ -1607,3 +1609,5 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
+
+#endif  /* DUK_USE_ARRAY_BUILTIN */

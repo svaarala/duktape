@@ -4,6 +4,16 @@
 
 #include "duk_internal.h"
 
+/* Needed even when Object built-in disabled. */
+DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx) {
+	duk_tval *tv;
+	tv = DUK_HTHREAD_THIS_PTR((duk_hthread *) ctx);
+	duk_push_class_string_tval(ctx, tv);
+	return 1;
+}
+
+#if defined(DUK_USE_OBJECT_BUILTIN)
+
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 	duk_uint_t arg_mask;
 
@@ -65,11 +75,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_BUFFER:
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		proto = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
-#else
-		proto = thr->builtins[DUK_BIDX_OBJECT_PROTOTYPE];
-#endif
 		break;
 	case DUK_TAG_LIGHTFUNC:
 		proto = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
@@ -133,12 +139,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 		duk_hobject *curr_proto;
 		curr_proto = thr->builtins[(mask & DUK_TYPE_MASK_LIGHTFUNC) ?
 		                               DUK_BIDX_FUNCTION_PROTOTYPE :
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE
-#else
-		                               DUK_BIDX_OBJECT_PROTOTYPE
-#endif
-		                          ];
+		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
 		if (h_new_proto == curr_proto) {
 			goto skip;
 		}
@@ -585,13 +586,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	return duk_hobject_get_enumerated_keys(ctx, enum_flags);
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx) {
-	duk_tval *tv;
-	tv = DUK_HTHREAD_THIS_PTR((duk_hthread *) ctx);
-	duk_push_class_string_tval(ctx, tv);
-	return 1;
-}
-
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_push_this_coercible_to_object(ctx);
@@ -640,3 +634,5 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_has_own_property(duk_context *ctx
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_property_is_enumerable(duk_context *ctx) {
 	return duk_hobject_object_ownprop_helper(ctx, DUK_PROPDESC_FLAG_ENUMERABLE /*required_desc_flags*/);
 }
+
+#endif  /* DUK_USE_OBJECT_BUILTIN */

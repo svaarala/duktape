@@ -4,6 +4,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_BOOLEAN_BUILTIN)
+
 /* Shared helper to provide toString() and valueOf().  Checks 'this', gets
  * the primitive value to stack top, and optionally coerces with ToString().
  */
@@ -66,3 +68,5 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 
 	return 1;
 }
+
+#endif  /* DUK_USE_BOOLEAN_BUILTIN */

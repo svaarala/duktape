@@ -652,8 +652,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *    conditional in init data.
 	 */
 
+#if defined(DUK_USE_DATE_BUILTIN)
 	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
 	duk_xdef_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
+#endif
 
 	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_ASSERT(h != NULL);

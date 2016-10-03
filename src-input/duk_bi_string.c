@@ -13,6 +13,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_STRING_BUILTIN)
+
 /*
  *  Constructor
  */
@@ -1308,3 +1310,5 @@ DUK_INTERNAL duk_ret_t duk_bi_string_frombuffer(duk_context *ctx) {
 	return 1;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
+#endif  /* DUK_USE_STRING_BUILTIN */

@@ -952,4 +952,12 @@ DUK_INTERNAL_DECL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, 
 /* misc */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, duk_hobject *h, duk_hobject *p, duk_bool_t ignore_loop);
 
+#if !defined(DUK_USE_OBJECT_BUILTIN)
+/* These declarations are needed when related built-in is disabled and
+ * genbuiltins.py won't automatically emit the declerations.
+ */
+DUK_INTERNAL_DECL duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_function_prototype(duk_context *ctx);
+#endif
+
 #endif  /* DUK_HOBJECT_H_INCLUDED */
