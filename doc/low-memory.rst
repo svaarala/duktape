@@ -13,7 +13,7 @@ The default Duktape options are quite memory conservative, and significant
 Ecmascript programs can be executed with e.g. 1MB of memory.  Currently
 realistic memory targets are roughly:
 
-* 256-384kB flash memory (code) and 256kB system RAM
+* 256-384kB system flash memory (code) and 256kB system RAM
 
   - Duktape compiled with default options is feasible
 
@@ -22,7 +22,7 @@ realistic memory targets are roughly:
     hardware initialization, communications, etc; 384kB is a more
     realistic flash target
 
-* 256-384kB flash memory (code) and 128kB system RAM
+* 256-384kB system flash memory (code) and 128kB system RAM
 
   - Duktape feature options are needed to reduce memory usage
 
@@ -33,18 +33,25 @@ realistic memory targets are roughly:
     various internal structures (strings, buffers, objects), pointer
     compression, external strings, etc may need to be used
 
-* 192-256kB flash memory (code) and 96kB system RAM
+* 192-256kB system flash memory (code) and 96kB system RAM
 
   - Requires a bare metal system, possibly a custom C library, etc.
 
   - http://pt.slideshare.net/seoyounghwang77/js-onmicrocontrollers
 
-* 160-192kB flash memory (code) and 64kB system RAM
+* 160-192kB system flash memory (code) and 64kB system RAM
 
   - Requires a bare metal system, possibly a custom C library, etc.
 
   - Requires use of ROM strings and objects to reduce Duktape startup
     RAM usage (which drops to around 2-3kB with ROM strings/objects).
+
+* 128kB system flash memory (code) and 32kB system RAM
+
+  - Requires the above, and removing built-in bindings like the global
+    Object (DUK_USE_OBJECT_BUILTIN), Array (DUK_USE_ARRAY_BUILTIN), etc
+    bindings.  See stripped configuration examples, and add back whatever
+    bindings are absolutely necessary.
 
 There are four basic goals for low memory optimization:
 
