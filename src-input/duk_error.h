@@ -232,6 +232,9 @@
 #define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
 		duk_err_type_invalid_trap_result((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
+		DUK_ERROR_TYPE((thr), DUK_STR_INVALID_TRAP_RESULT); \
+	} while (0)
 #define DUK_ERROR_TYPE(thr,msg) do { \
 		DUK_ERROR((thr), DUK_ERR_TYPE_ERROR, (msg)); \
 	} while (0)
@@ -303,6 +306,12 @@
 		duk_err_type((thr)); \
 	} while (0)
 #define DUK_DCERROR_TYPE_INVALID_STATE(thr) do { \
+		duk_err_type((thr)); \
+	} while (0)
+#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
+		duk_err_type((thr)); \
+	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
 		DUK_UNREF((thr)); \
 		return DUK_RET_TYPE_ERROR; \
 	} while (0)

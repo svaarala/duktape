@@ -108,6 +108,7 @@ DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_REG_EXP,
 	DUK_STRIDX_UC_STRING,
 	DUK_STRIDX_GLOBAL,
+	DUK_STRIDX_UC_SYMBOL,
 	DUK_STRIDX_OBJ_ENV,
 	DUK_STRIDX_DEC_ENV,
 	DUK_STRIDX_UC_POINTER,
@@ -123,7 +124,6 @@ DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_UINT32_ARRAY,
 	DUK_STRIDX_FLOAT32_ARRAY,
 	DUK_STRIDX_FLOAT64_ARRAY,
-	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 };

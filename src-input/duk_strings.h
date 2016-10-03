@@ -56,6 +56,8 @@
 #define DUK_STR_TOPRIMITIVE_FAILED               "coercion to primitive failed"
 #define DUK_STR_NUMBER_OUTSIDE_RANGE             "number outside range"
 #define DUK_STR_NOT_OBJECT_COERCIBLE             "not object coercible"
+#define DUK_STR_CANNOT_NUMBER_COERCE_SYMBOL      "cannot number coerce Symbol"
+#define DUK_STR_CANNOT_STRING_COERCE_SYMBOL      "cannot string coerce Symbol"
 #define DUK_STR_STRING_TOO_LONG                  "string too long"
 #define DUK_STR_BUFFER_TOO_LONG                  "buffer too long"
 #define DUK_STR_ALLOC_FAILED                     "alloc failed"

@@ -36,7 +36,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 		t2 = (duk_size_t) (count - 1);
 		limit = (duk_size_t) DUK_HSTRING_MAX_BYTELEN;
 		if (DUK_UNLIKELY(t2 != 0 && t1 > limit / t2)) {
-			/* Combined size of separators already overflows */
+			/* Combined size of separators already overflows. */
 			goto error_overflow;
 		}
 		len = (duk_size_t) (t1 * t2);
@@ -46,8 +46,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 
 	for (i = count; i >= 1; i--) {
 		duk_size_t new_len;
-		duk_to_string(ctx, -((duk_idx_t) i));
-		h = duk_require_hstring(ctx, -((duk_idx_t) i));
+		h = duk_to_hstring(ctx, -((duk_idx_t) i));
 		new_len = len + (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 
 		/* Impose a string maximum length, need to handle overflow
@@ -63,11 +62,13 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 	DUK_DDD(DUK_DDDPRINT("join/concat %lu strings, total length %lu bytes",
 	                     (unsigned long) count, (unsigned long) len));
 
-	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
+	/* Use stack allocated buffer to ensure reachability in errors
+	 * (e.g. intern error).
+	 */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, len);
 	DUK_ASSERT(buf != NULL);
 
-	/* [... (sep) str1 str2 ... strN buf] */
+	/* [ ... (sep) str1 str2 ... strN buf ] */
 
 	idx = 0;
 	for (i = count; i >= 1; i--) {
@@ -83,9 +84,9 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 
 	DUK_ASSERT(idx == len);
 
-	/* [... (sep) str1 str2 ... strN buf] */
+	/* [ ... (sep) str1 str2 ... strN buf ] */
 
-	/* get rid of the strings early to minimize memory use before intern */
+	/* Get rid of the strings early to minimize memory use before intern. */
 
 	if (is_join) {
 		duk_replace(ctx, -((duk_idx_t) count) - 2);  /* overwrite sep */
@@ -95,11 +96,11 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 		duk_pop_n(ctx, count-1);
 	}
 
-	/* [... buf] */
+	/* [ ... buf ] */
 
 	(void) duk_buffer_to_string(ctx, -1);
 
-	/* [... res] */
+	/* [ ... res ] */
 	return;
 
  error_overflow:
@@ -130,7 +131,7 @@ DUK_EXTERNAL void duk_decode_string(duk_context *ctx, duk_idx_t idx, duk_decode_
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	h_input = duk_require_hstring(ctx, idx);
+	h_input = duk_require_hstring(ctx, idx);  /* Accept symbols. */
 	DUK_ASSERT(h_input != NULL);
 
 	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
@@ -158,11 +159,11 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_f
 
 	idx = duk_normalize_index(ctx, idx);
 
-	h_input = duk_require_hstring(ctx, idx);
+	h_input = duk_require_hstring(ctx, idx);  /* Accept symbols. */
 	DUK_ASSERT(h_input != NULL);
 
 	bw = &bw_alloc;
-	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));  /* reasonable output estimate */
+	DUK_BW_INIT_PUSHBUF(thr, bw, DUK_HSTRING_GET_BYTELEN(h_input));  /* Reasonable output estimate. */
 
 	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
@@ -196,7 +197,7 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	idx = duk_require_normalize_index(ctx, idx);
+	idx = duk_require_normalize_index(ctx, idx);  /* Accept symbols. */
 	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
@@ -212,7 +213,7 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 	DUK_ASSERT_DISABLE(end_offset >= 0);
 	DUK_ASSERT(end_offset >= start_offset && end_offset <= DUK_HSTRING_GET_CHARLEN(h));
 
-	/* guaranteed by string limits */
+	/* Guaranteed by string limits. */
 	DUK_ASSERT(start_offset <= DUK_UINT32_MAX);
 	DUK_ASSERT(end_offset <= DUK_UINT32_MAX);
 
@@ -220,9 +221,9 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 	end_byte_offset = (duk_size_t) duk_heap_strcache_offset_char2byte(thr, h, (duk_uint_fast32_t) end_offset);
 
 	DUK_ASSERT(end_byte_offset >= start_byte_offset);
-	DUK_ASSERT(end_byte_offset - start_byte_offset <= DUK_UINT32_MAX);  /* guaranteed by string limits */
+	DUK_ASSERT(end_byte_offset - start_byte_offset <= DUK_UINT32_MAX);  /* Guaranteed by string limits. */
 
-	/* no size check is necessary */
+	/* No size check is necessary. */
 	res = duk_heap_string_intern_checked(thr,
 	                                     DUK_HSTRING_GET_DATA(h) + start_byte_offset,
 	                                     (duk_uint32_t) (end_byte_offset - start_byte_offset));
@@ -243,7 +244,7 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	idx = duk_require_normalize_index(ctx, idx);
+	idx = duk_require_normalize_index(ctx, idx);  /* Accept symbols. */
 	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
@@ -261,7 +262,7 @@ DUK_EXTERNAL void duk_trim(duk_context *ctx, duk_idx_t idx) {
 	}
 	q_start = p;
 	if (p == p_end) {
-		/* entire string is whitespace */
+		/* Entire string is whitespace. */
 		q_end = p;
 		goto scan_done;
 	}
@@ -321,15 +322,15 @@ DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, d
 	 * is handling of clamped offsets.
 	 */
 
-	h = duk_require_hstring(ctx, idx);
+	h = duk_require_hstring(ctx, idx);  /* Accept symbols. */
 	DUK_ASSERT(h != NULL);
 
-	DUK_ASSERT_DISABLE(char_offset >= 0);  /* always true, arg is unsigned */
+	DUK_ASSERT_DISABLE(char_offset >= 0);  /* Always true, arg is unsigned. */
 	if (char_offset >= DUK_HSTRING_GET_CHARLEN(h)) {
 		return 0;
 	}
 
-	DUK_ASSERT(char_offset <= DUK_UINT_MAX);  /* guaranteed by string limits */
+	DUK_ASSERT(char_offset <= DUK_UINT_MAX);  /* Guaranteed by string limits. */
 	cp = duk_hstring_char_code_at_raw(thr, h, (duk_uint_t) char_offset, 0 /*surrogate_aware*/);
 	return (duk_codepoint_t) cp;
 }

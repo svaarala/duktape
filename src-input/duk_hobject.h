@@ -92,24 +92,25 @@
 #define DUK_HOBJECT_CLASS_REGEXP               11
 #define DUK_HOBJECT_CLASS_STRING               12
 #define DUK_HOBJECT_CLASS_GLOBAL               13
-#define DUK_HOBJECT_CLASS_OBJENV               14  /* custom */
-#define DUK_HOBJECT_CLASS_DECENV               15  /* custom */
-#define DUK_HOBJECT_CLASS_POINTER              16  /* custom */
-#define DUK_HOBJECT_CLASS_THREAD               17  /* custom; implies DUK_HOBJECT_IS_THREAD */
-#define DUK_HOBJECT_CLASS_BUFOBJ_MIN           18
-#define DUK_HOBJECT_CLASS_ARRAYBUFFER          18  /* implies DUK_HOBJECT_IS_BUFOBJ */
-#define DUK_HOBJECT_CLASS_DATAVIEW             19
-#define DUK_HOBJECT_CLASS_INT8ARRAY            20
-#define DUK_HOBJECT_CLASS_UINT8ARRAY           21
-#define DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY    22
-#define DUK_HOBJECT_CLASS_INT16ARRAY           23
-#define DUK_HOBJECT_CLASS_UINT16ARRAY          24
-#define DUK_HOBJECT_CLASS_INT32ARRAY           25
-#define DUK_HOBJECT_CLASS_UINT32ARRAY          26
-#define DUK_HOBJECT_CLASS_FLOAT32ARRAY         27
-#define DUK_HOBJECT_CLASS_FLOAT64ARRAY         28
-#define DUK_HOBJECT_CLASS_BUFOBJ_MAX           28
-#define DUK_HOBJECT_CLASS_MAX                  28
+#define DUK_HOBJECT_CLASS_SYMBOL               14
+#define DUK_HOBJECT_CLASS_OBJENV               15  /* custom */
+#define DUK_HOBJECT_CLASS_DECENV               16  /* custom */
+#define DUK_HOBJECT_CLASS_POINTER              17  /* custom */
+#define DUK_HOBJECT_CLASS_THREAD               18  /* custom; implies DUK_HOBJECT_IS_THREAD */
+#define DUK_HOBJECT_CLASS_BUFOBJ_MIN           19
+#define DUK_HOBJECT_CLASS_ARRAYBUFFER          19  /* implies DUK_HOBJECT_IS_BUFOBJ */
+#define DUK_HOBJECT_CLASS_DATAVIEW             20
+#define DUK_HOBJECT_CLASS_INT8ARRAY            21
+#define DUK_HOBJECT_CLASS_UINT8ARRAY           22
+#define DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY    23
+#define DUK_HOBJECT_CLASS_INT16ARRAY           24
+#define DUK_HOBJECT_CLASS_UINT16ARRAY          25
+#define DUK_HOBJECT_CLASS_INT32ARRAY           26
+#define DUK_HOBJECT_CLASS_UINT32ARRAY          27
+#define DUK_HOBJECT_CLASS_FLOAT32ARRAY         28
+#define DUK_HOBJECT_CLASS_FLOAT64ARRAY         29
+#define DUK_HOBJECT_CLASS_BUFOBJ_MAX           29
+#define DUK_HOBJECT_CLASS_MAX                  29
 
 /* Class masks. */
 #define DUK_HOBJECT_CMASK_ALL                  ((1UL << (DUK_HOBJECT_CLASS_MAX + 1)) - 1UL)
@@ -127,6 +128,7 @@
 #define DUK_HOBJECT_CMASK_REGEXP               (1UL << DUK_HOBJECT_CLASS_REGEXP)
 #define DUK_HOBJECT_CMASK_STRING               (1UL << DUK_HOBJECT_CLASS_STRING)
 #define DUK_HOBJECT_CMASK_GLOBAL               (1UL << DUK_HOBJECT_CLASS_GLOBAL)
+#define DUK_HOBJECT_CMASK_SYMBOL               (1UL << DUK_HOBJECT_CLASS_SYMBOL)
 #define DUK_HOBJECT_CMASK_OBJENV               (1UL << DUK_HOBJECT_CLASS_OBJENV)
 #define DUK_HOBJECT_CMASK_DECENV               (1UL << DUK_HOBJECT_CLASS_DECENV)
 #define DUK_HOBJECT_CMASK_POINTER              (1UL << DUK_HOBJECT_CLASS_POINTER)

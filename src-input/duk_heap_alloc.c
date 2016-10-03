@@ -362,6 +362,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	return 1;
 }
 #else  /* DUK_USE_ROM_STRINGS */
+
 DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
@@ -373,8 +374,8 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 
 	for (i = 0; i < DUK_HEAP_NUM_STRINGS; i++) {
 		duk_uint8_t tmp[DUK_STRDATA_MAX_STRLEN];
-		duk_hstring *h;
 		duk_small_uint_t len;
+		duk_hstring *h;
 
 		len = duk_bd_decode_bitpacked_string(bd, tmp);
 

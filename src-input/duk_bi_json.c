@@ -1818,6 +1818,8 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 		h_key = duk_known_hstring(ctx, -1);
+		DUK_ASSERT(h_key != NULL);
+		DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(h_key));  /* proplist filtering; enum options */
 
 		prev_size = DUK_BW_GET_SIZE(js_ctx->thr, &js_ctx->bw);
 		if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
@@ -1947,6 +1949,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_holder));
 	tv_key = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	DUK_ASSERT(DUK_TVAL_IS_STRING(tv_key));
+	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(DUK_TVAL_GET_STRING(tv_key)));  /* Caller responsible. */
 	(void) duk_hobject_getprop(thr, tv_holder, tv_key);
 
 	/* -> [ ... key val ] */
@@ -2047,6 +2050,8 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			 * primitive value.  Functions are checked for specially.  The
 			 * primitive value coercions for Number, String, Pointer, and
 			 * Boolean can't result in functions so suffices to check here.
+			 * Symbol objects are handled like plain objects (their primitive
+			 * value is NOT looked up like for e.g. String objects).
 			 */
 			DUK_ASSERT(h != NULL);
 			if (DUK_HOBJECT_IS_CALLABLE(h)) {
@@ -2109,7 +2114,9 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-
+		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+			goto pop2_undef;
+		}
 		duk__enc_quote_string(js_ctx, h);
 		break;
 	}
@@ -2190,13 +2197,24 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 
 /* E5 Section 15.12.3, main algorithm, step 4.b.ii steps 1-4. */
 DUK_LOCAL duk_bool_t duk__enc_allow_into_proplist(duk_tval *tv) {
-	duk_hobject *h;
 	duk_small_int_t c;
 
+	/* XXX: some kind of external internal type checker?
+	 * - type mask; symbol flag; class mask
+	 */
 	DUK_ASSERT(tv != NULL);
-	if (DUK_TVAL_IS_STRING(tv) || DUK_TVAL_IS_NUMBER(tv)) {
+	if (DUK_TVAL_IS_STRING(tv)) {
+		duk_hstring *h;
+		h = DUK_TVAL_GET_STRING(tv);
+		DUK_ASSERT(h != NULL);
+		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+			return 0;
+		}
+		return 1;
+	} else if (DUK_TVAL_IS_NUMBER(tv)) {
 		return 1;
 	} else if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h;
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 		c = (duk_small_int_t) DUK_HOBJECT_GET_CLASS_NUMBER(h);
@@ -2256,9 +2274,11 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 	}
 	case DUK_TAG_STRING: {
 		duk_hstring *h;
-
 		h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
+		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+			goto emit_undefined;
+		}
 		duk__enc_quote_string(js_ctx, h);
 		break;
 	}
@@ -2353,7 +2373,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_unbox = DUK_HOBJECT_CMASK_NUMBER |
 			          DUK_HOBJECT_CMASK_STRING |
 			          DUK_HOBJECT_CMASK_BOOLEAN |
-			          DUK_HOBJECT_CMASK_POINTER;
+			          DUK_HOBJECT_CMASK_POINTER;  /* Symbols are not unboxed. */
 			c_func = DUK_HOBJECT_CMASK_FUNCTION;
 			c_bufobj = DUK_HOBJECT_CMASK_ALL_BUFOBJS;
 			c_undef = 0;
@@ -2367,7 +2387,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			c_array = DUK_HOBJECT_CMASK_ARRAY;
 			c_unbox = DUK_HOBJECT_CMASK_NUMBER |
 			          DUK_HOBJECT_CMASK_STRING |
-			          DUK_HOBJECT_CMASK_BOOLEAN;
+			          DUK_HOBJECT_CMASK_BOOLEAN;  /* Symbols are not unboxed. */
 			c_func = 0;
 			c_bufobj = 0;
 			c_undef = DUK_HOBJECT_CMASK_FUNCTION |
@@ -2421,7 +2441,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 					DUK_DD(DUK_DDPRINT("property is an accessor, abort fast path"));
 					goto abort_fastpath;
 				}
-				if (DUK_HSTRING_HAS_INTERNAL(k)) {
+				if (DUK_HSTRING_HAS_SYMBOL(k)) {
 					continue;
 				}
 
@@ -2542,6 +2562,8 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			 * automatic unboxing.  Rely on internal value being
 			 * sane (to avoid infinite recursion).
 			 */
+			DUK_ASSERT((c_bit & DUK_HOBJECT_CMASK_SYMBOL) == 0);  /* Symbols are not unboxed. */
+
 #if 1
 			/* The code below is incorrect if .toString() or .valueOf() have
 			 * have been overridden.  The correct approach would be to look up
@@ -2758,7 +2780,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	js_ctx->flag_ext_custom_or_compatible = flags & (DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_EXT_COMPATIBLE);
 #endif
 
-	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place */
+	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place; rejects Symbols */
 	DUK_ASSERT(h_text != NULL);
 
 	/* JSON parsing code is allowed to read [p_start,p_end]: p_end is
@@ -3005,8 +3027,8 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 		duk_push_lstring(ctx, spaces, (duk_size_t) nspace);
 		js_ctx->h_gap = duk_known_hstring(ctx, -1);
-	} else if (duk_is_string(ctx, idx_space)) {
-		/* XXX: substring in-place at idx_place? */
+		DUK_ASSERT(js_ctx->h_gap != NULL);
+	} else if (duk_is_string_notsymbol(ctx, idx_space)) {
 		duk_dup(ctx, idx_space);
 		duk_substring(ctx, -1, 0, 10);  /* clamp to 10 chars */
 		js_ctx->h_gap = duk_known_hstring(ctx, -1);

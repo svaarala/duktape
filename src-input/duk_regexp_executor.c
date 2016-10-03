@@ -714,8 +714,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_ASSERT(DUK_HOBJECT_GET_CLASS_NUMBER(h_regexp) == DUK_HOBJECT_CLASS_REGEXP);
 	DUK_UNREF(h_regexp);
 
-	duk_to_string(ctx, -1);
-	h_input = duk_get_hstring(ctx, -1);
+	h_input = duk_to_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
 	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */

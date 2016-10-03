@@ -1921,7 +1921,8 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_heaphdr_masks[] = {
 DUK_LOCAL const char * const duk__debug_getinfo_hstring_keys[] = {
 #if 0
 	"arridx",
-	"internal",
+	"symbol",
+	"hidden",
 	"reserved_word",
 	"strict_reserved_word",
 	"eval_or_arguments",
@@ -1932,7 +1933,8 @@ DUK_LOCAL const char * const duk__debug_getinfo_hstring_keys[] = {
 DUK_LOCAL duk_uint_t duk__debug_getinfo_hstring_masks[] = {
 #if 0
 	DUK_HSTRING_FLAG_ARRIDX,
-	DUK_HSTRING_FLAG_INTERNAL,
+	DUK_HSTRING_FLAG_SYMBOL,
+	DUK_HSTRING_FLAG_HIDDEN,
 	DUK_HSTRING_FLAG_RESERVED_WORD,
 	DUK_HSTRING_FLAG_STRICT_RESERVED_WORD,
 	DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS,
@@ -2072,8 +2074,11 @@ DUK_LOCAL duk_bool_t duk__debug_getprop_index(duk_hthread *thr, duk_heap *heap, 
 	}
 
 	flags = DUK_HOBJECT_E_GET_FLAGS(heap, h_obj, idx);
-	if (DUK_HSTRING_HAS_INTERNAL(h_key)) {
-		flags |= DUK_DBG_PROPFLAG_INTERNAL;
+	if (DUK_HSTRING_HAS_SYMBOL(h_key)) {
+		flags |= DUK_DBG_PROPFLAG_SYMBOL;
+	}
+	if (DUK_HSTRING_HAS_HIDDEN(h_key)) {
+		flags |= DUK_DBG_PROPFLAG_HIDDEN;
 	}
 	duk_debug_write_uint(thr, flags);
 	duk_debug_write_hstring(thr, h_key);

@@ -1783,6 +1783,10 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	 *  Automatic hex number detection (leading '0x' or '0X') and octal
 	 *  number detection (leading '0' followed by at least one octal digit)
 	 *  is done here too.
+	 *
+	 *  Symbols are not explicitly rejected here (that's up to the caller).
+	 *  If a symbol were passed here, it should ultimately safely fail
+	 *  parsing due to a syntax error.
 	 */
 
 	if (flags & DUK_S2N_FLAG_TRIM_WHITE) {

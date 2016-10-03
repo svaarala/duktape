@@ -2272,7 +2272,9 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 					return;
 				}
 			} else if (x->op == DUK_OP_ADD && DUK_TVAL_IS_STRING(tv1) && DUK_TVAL_IS_STRING(tv2)) {
-				/* inline string concatenation */
+				/* Inline string concatenation.  No need to check for
+				 * symbols, as all inputs are valid Ecmascript strings.
+				 */
 				duk_dup(ctx, x->x1.valstack_idx);
 				duk_dup(ctx, x->x2.valstack_idx);
 				duk_concat(ctx, 2);

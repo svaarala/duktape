@@ -90,7 +90,11 @@ DUK_INTERNAL_DECL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx);
 #define duk_push_size_t(ctx,val) \
 	duk_push_uint((ctx), (duk_uint_t) (val))  /* XXX: assumed to fit for now */
 
+DUK_INTERNAL_DECL duk_bool_t duk_is_string_notsymbol(duk_context *ctx, duk_idx_t idx);
+
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hstring *duk_get_hstring_notsymbol(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL const char *duk_get_string_notsymbol(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hbuffer *duk_get_hbuffer(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t idx);
@@ -119,9 +123,11 @@ DUK_INTERNAL_DECL duk_hbuffer *duk_known_hbuffer(duk_context *ctx, duk_idx_t idx
 DUK_INTERNAL_DECL duk_hcompfunc *duk_known_hcompfunc(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_known_hnatfunc(duk_context *ctx, duk_idx_t idx);
 
-DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_double_t duk_to_number_tval(duk_context *ctx, duk_tval *tv);
 
+DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring_m1(duk_context *ctx);
+DUK_INTERNAL_DECL duk_hstring *duk_to_hstring_acceptsymbol(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_hobject *duk_to_hobject(duk_context *ctx, duk_idx_t idx);
 
@@ -139,8 +145,12 @@ DUK_INTERNAL_DECL duk_int_t duk_to_int_check_range(duk_context *ctx, duk_idx_t i
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_uint8_t duk_to_uint8clamped(duk_context *ctx, duk_idx_t idx);
 #endif
+DUK_INTERNAL_DECL duk_hstring *duk_to_property_key_hstring(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_hstring *duk_require_hstring(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL duk_hstring *duk_require_hstring_notsymbol(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL const char *duk_require_lstring_notsymbol(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+DUK_INTERNAL_DECL const char *duk_require_string_notsymbol(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hobject *duk_require_hobject(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hbuffer *duk_require_hbuffer(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hthread *duk_require_hthread(duk_context *ctx, duk_idx_t idx);
@@ -264,8 +274,8 @@ DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 #endif
 
 DUK_INTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
-
 DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL void duk_push_symbol_descriptive_string(duk_context *ctx, duk_hstring *h);
 
 DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_context *ctx);
 
