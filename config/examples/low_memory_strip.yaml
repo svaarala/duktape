@@ -27,5 +27,16 @@ DUK_USE_ES6_PROXY: false
 # Don't support non-BMP characters in source code (UTF-8 otherwise OK).
 DUK_USE_SOURCE_NONBMP: false
 
-# Remove Math built-in.
+# Remove built-in bindings.
 DUK_USE_MATH_BUILTIN: false
+DUK_USE_DATE_BUILTIN: false
+DUK_USE_ARRAY_BUILTIN: false
+DUK_USE_STRING_BUILTIN: false
+DUK_USE_BOOLEAN_BUILTIN: false
+DUK_USE_NUMBER_BUILTIN: false
+DUK_USE_FUNCTION_BUILTIN: false
+DUK_USE_OBJECT_BUILTIN: false
+DUK_USE_DUKTAPE_BUILTIN: false
+DUK_USE_JSON_BUILTIN: false
+DUK_USE_JSON_SUPPORT: false   # also disables JSON support for C API
+DUK_USE_GLOBAL_BUILTIN: false
