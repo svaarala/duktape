@@ -2293,6 +2293,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 	}
 	case DUK_IVAL_NONE:
 	default: {
+		DUK_D(DUK_DPRINT("invalid ivalue type: %ld", (long) x->t));
 		break;
 	}
 	}
@@ -4274,13 +4275,24 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	 *  left-hand-side values (e.g. as in "f() = 1") must NOT cause a
 	 *  SyntaxError, but rather a run-time ReferenceError.
 	 *
-	 *  Assignment expression value is conceptually the LHS/RHS value
-	 *  copied into a fresh temporary so that it won't change even if
-	 *  LHS/RHS values change (e.g. when they're identifiers).  Doing this
-	 *  concretely produces inefficient bytecode, so we try to avoid the
-	 *  extra temporary for some known-to-be-safe cases.  Currently the
-	 *  only safe case we detect is a "top level assignment", for example
-	 *  "x = y + z;", where the assignment expression value is ignored.
+	 *  When evaluating X <op>= Y, the LHS (X) is conceptually evaluated
+	 *  to a temporary first.  The RHS is then evaluated.  Finally, the
+	 *  <op> is applied to the initial value of RHS (not the value after
+	 *  RHS evaluation), and written to X.  Doing so concretely generates
+	 *  inefficient code so we'd like to avoid the temporary when possible.
+	 *  See: https://github.com/svaarala/duktape/pull/992.
+	 *
+	 *  The expression value (final LHS value, written to RHS) is
+	 *  conceptually copied into a fresh temporary so that it won't
+	 *  change even if the LHS/RHS values change in outer expressions.
+	 *  For example, it'd be generally incorrect for the expression value
+	 *  to be the RHS register binding, unless there's a guarantee that it
+	 *  won't change during further expression evaluation.  Using the
+	 *  temporary concretely produces inefficient bytecode, so we try to
+	 *  avoid the extra temporary for some known-to-be-safe cases.
+	 *  Currently the only safe case we detect is a "top level assignment",
+	 *  for example "x = y + z;", where the assignment expression value is
+	 *  ignored.
 	 *  See: test-dev-assign-expr.js and test-bug-assign-mutate-gh381.js.
 	 */
 
@@ -4300,7 +4312,9 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		 * is a reg-bound identifier.  The RHS ('res') is right associative
 		 * so it has consumed all other assignment level operations; the
 		 * only relevant lower binding power construct is comma operator
-		 * which will ignore the expression value provided here.
+		 * which will ignore the expression value provided here.  Usually
+		 * the top level assignment expression value is ignored, but it
+		 * is relevant for e.g. eval code.
 		 */
 		toplevel_assign = (comp_ctx->curr_func.nud_count == 1 && /* one token before */
 		                   comp_ctx->curr_func.led_count == 1);  /* one operator (= assign) */
@@ -4316,13 +4330,6 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 			DUK_ASSERT(left->x1.t == DUK_ISPEC_VALUE);  /* LHS is already side effect free */
 
-			/* Keep the RHS as an unresolved ivalue for now, so it
-			 * can be a plain value or a unary/binary operation here.
-			 * We resolve it before finishing but doing it later allows
-			 * better bytecode in some cases.
-			 */
-			duk__expr(comp_ctx, res, args_rbp /*rbp_flags*/);
-
 			h_varname = duk_get_hstring(ctx, left->x1.valstack_idx);
 			DUK_ASSERT(h_varname != NULL);
 			if (duk__hstring_is_eval_or_arguments_in_strict_mode(comp_ctx, h_varname)) {
@@ -4333,6 +4340,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			(void) duk__lookup_lhs(comp_ctx, &reg_varbind, &rc_varname);
 
 			if (args_op == DUK_OP_NONE) {
+				duk__expr(comp_ctx, res, args_rbp /*rbp_flags*/);
 				if (toplevel_assign) {
 					/* Any 'res' will do. */
 					DUK_DDD(DUK_DDDPRINT("plain assignment, toplevel assign, use as is"));
@@ -4346,8 +4354,15 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 					}
 				}
 			} else {
-				duk__ivalue_toregconst(comp_ctx, res);
-				DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
+				/* For X <op>= Y we need to evaluate the pre-op
+				 * value of X before evaluating the RHS: the RHS
+				 * can change X, but when we do <op> we must use
+				 * the pre-op value.
+				 */
+				duk_reg_t reg_temp;
+
+				/* FIXME: safe but inefficient */
+				reg_temp = DUK__ALLOCTEMP(comp_ctx);
 
 				if (reg_varbind >= 0) {
 					duk_reg_t reg_res;
@@ -4363,25 +4378,43 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 						 * value, so go through a temp.
 						 */
 						reg_res = DUK__ALLOCTEMP(comp_ctx);
+						/* FIXME: suboptimal, reg_res should be < reg_temp, and reg_temp reset */
 					}
 
+					duk__emit_a_bc(comp_ctx,
+					               DUK_OP_LDREG,
+					               (duk_regconst_t) reg_temp,
+					               reg_varbind);
+
+					duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
+					DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
+
+					duk__emit_a_b_c(comp_ctx,
+					                args_op | DUK__EMIT_FLAG_BC_REGCONST,
+					                (duk_regconst_t) reg_res,
+					                (duk_regconst_t) reg_temp,
+					                res->x1.regconst);
+#if 0
 					duk__emit_a_b_c(comp_ctx,
 					                args_op | DUK__EMIT_FLAG_BC_REGCONST,
 					                (duk_regconst_t) reg_res,
 					                (duk_regconst_t) reg_varbind,
 					                res->x1.regconst);
+#endif
 					res->x1.regconst = (duk_regconst_t) reg_res;
 				} else {
 					/* When LHS is not register bound, always go through a
 					 * temporary.  No optimization for top level assignment.
 					 */
-					duk_reg_t reg_temp;
-					reg_temp = DUK__ALLOCTEMP(comp_ctx);
 
 					duk__emit_a_bc(comp_ctx,
 					               DUK_OP_GETVAR,
 					               (duk_regconst_t) reg_temp,
 					               rc_varname);
+
+					duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
+					DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
+
 					duk__emit_a_b_c(comp_ctx,
 					                args_op | DUK__EMIT_FLAG_BC_REGCONST,
 					                (duk_regconst_t) reg_temp,
@@ -4467,10 +4500,10 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			                                   DUK__IVAL_FLAG_REQUIRE_TEMP | DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
 
 			/* Evaluate RHS only when LHS is safe. */
-			duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
-			DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 
 			if (args_op == DUK_OP_NONE) {
+				duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
+				DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
 				rc_res = res->x1.regconst;
 			} else {
 				reg_temp = DUK__ALLOCTEMP(comp_ctx);
@@ -4479,6 +4512,10 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 				                (duk_regconst_t) reg_temp,
 				                (duk_regconst_t) reg_obj,
 				                rc_key);
+
+				duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
+				DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
+
 				duk__emit_a_b_c(comp_ctx,
 				                args_op | DUK__EMIT_FLAG_BC_REGCONST,
 				                (duk_regconst_t) reg_temp,
