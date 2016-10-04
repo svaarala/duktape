@@ -2666,7 +2666,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_push_hobject(ctx, desc.get);
 			duk_push_tval(ctx, tv_obj);       /* note: original, uncoerced base */
 #ifdef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
-			duk_dup(ctx, -3);
+			duk_dup_m3(ctx);
 			duk_call_method(ctx, 1);          /* [key getter this key] -> [key retval] */
 #else
 			duk_call_method(ctx, 0);          /* [key getter this] -> [key retval] */
@@ -3669,7 +3669,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_push_tval(ctx, tv_obj);  /* note: original, uncoerced base */
 			duk_push_tval(ctx, tv_val);  /* [key setter this val] */
 #ifdef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
-			duk_dup(ctx, -4);
+			duk_dup_m4(ctx);
 			duk_call_method(ctx, 2);     /* [key setter this val key] -> [key retval] */
 #else
 			duk_call_method(ctx, 1);     /* [key setter this val] -> [key retval] */
@@ -4904,7 +4904,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 		}
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
 	} else {
-		duk_dup(ctx, -2);  /* [obj key value desc value] */
+		duk_dup_m2(ctx);  /* [obj key value desc value] */
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_VALUE);
 		duk_push_boolean(ctx, DUK_PROPDESC_IS_WRITABLE(&pd));
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_WRITABLE);

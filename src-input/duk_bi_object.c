@@ -376,7 +376,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *
 	 *  Return target object
 	 */
 
-	duk_dup(ctx, 0);
+	duk_dup_0(ctx);
 	return 1;
 }
 
@@ -599,7 +599,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx
 	if (!duk_is_callable(ctx, 1)) {
 		return DUK_RET_TYPE_ERROR;
 	}
-	duk_dup(ctx, 0);  /* -> [ O toString O ] */
+	duk_dup_0(ctx);  /* -> [ O toString O ] */
 	duk_call_method(ctx, 0);  /* XXX: call method tail call? */
 	return 1;
 }

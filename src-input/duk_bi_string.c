@@ -38,7 +38,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 		                       DUK_BIDX_STRING_PROTOTYPE);
 
 		/* String object internal value is immutable */
-		duk_dup(ctx, 0);
+		duk_dup_0(ctx);
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	}
 	/* Note: unbalanced stack on purpose */
@@ -521,8 +521,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 #ifdef DUK_USE_REGEXP_SUPPORT
 		if (is_regexp) {
-			duk_dup(ctx, 0);
-			duk_dup(ctx, 2);
+			duk_dup_0(ctx);
+			duk_dup_2(ctx);
 			duk_regexp_match(thr);  /* [ ... regexp input ] -> [ res_obj ] */
 			if (!duk_is_object(ctx, -1)) {
 				duk_pop(ctx);
@@ -585,7 +585,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			while (p <= p_end) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
 				if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
-					duk_dup(ctx, 0);
+					duk_dup_0(ctx);
 					h_match = duk_get_hstring(ctx, -1);
 					DUK_ASSERT(h_match != NULL);
 #ifdef DUK_USE_REGEXP_SUPPORT
@@ -626,7 +626,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 			/* regexp res_obj is at index 4 */
 
-			duk_dup(ctx, 1);
+			duk_dup_1(ctx);
 			idx_args = duk_get_top(ctx);
 
 #ifdef DUK_USE_REGEXP_SUPPORT
@@ -642,10 +642,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			{  /* unconditionally */
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 				/* match == search string, by definition */
-				duk_dup(ctx, 0);
+				duk_dup_0(ctx);
 			}
 			duk_push_int(ctx, match_start_coff);
-			duk_dup(ctx, 2);
+			duk_dup_2(ctx);
 
 			/* [ ... replacer match [captures] match_char_offset input ] */
 
@@ -843,13 +843,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 		 * whether separator is undefined.  Since this is side effect free, we can
 		 * skip the ToString() here.
 		 */
-		duk_dup(ctx, 2);
+		duk_dup_2(ctx);
 		duk_put_prop_index(ctx, 3, 0);
 		return 1;
 	} else if (duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
 #ifdef DUK_USE_REGEXP_SUPPORT
 		duk_push_hobject_bidx(ctx, DUK_BIDX_REGEXP_CONSTRUCTOR);
-		duk_dup(ctx, 0);
+		duk_dup_0(ctx);
 		duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
 		duk_replace(ctx, 0);
 		/* lastIndex is initialized to zero by new RegExp() */
@@ -887,8 +887,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 
 #ifdef DUK_USE_REGEXP_SUPPORT
 		if (is_regexp) {
-			duk_dup(ctx, 0);
-			duk_dup(ctx, 2);
+			duk_dup_0(ctx);
+			duk_dup_2(ctx);
 			duk_regexp_match_force_global(thr);  /* [ ... regexp input ] -> [ res_obj ] */
 			if (!duk_is_object(ctx, -1)) {
 				duk_pop(ctx);
@@ -1135,8 +1135,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 	 * configurable and may have been changed.
 	 */
 
-	duk_dup(ctx, 0);
-	duk_dup(ctx, 1);  /* [ ... re_obj input ] */
+	duk_dup_0(ctx);
+	duk_dup_1(ctx);  /* [ ... re_obj input ] */
 	duk_regexp_match(thr);  /* -> [ ... res_obj ] */
 
 	if (!duk_is_object(ctx, -1)) {
@@ -1189,8 +1189,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	for (;;) {
 		DUK_ASSERT_TOP(ctx, 3);
 
-		duk_dup(ctx, 0);
-		duk_dup(ctx, 1);
+		duk_dup_0(ctx);
+		duk_dup_1(ctx);
 		duk_regexp_match(thr);  /* -> [ ... regexp string ] -> [ ... res_obj ] */
 
 		if (!duk_is_object(ctx, -1)) {

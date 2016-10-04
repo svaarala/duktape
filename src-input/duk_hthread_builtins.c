@@ -127,7 +127,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	                       -1);  /* no prototype */
 	h1 = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h1 != NULL);
-	duk_dup(ctx, -2);
+	duk_dup_m2(ctx);
 	duk_dup_top(ctx);  /* -> [ ... new_global new_globalenv new_global new_global ] */
 	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
@@ -610,7 +610,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_int(ctx, c_length);
 			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
-			duk_dup(ctx, -2);
+			duk_dup_m2(ctx);
 			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* XXX: other properties of function instances; 'arguments', 'caller'. */

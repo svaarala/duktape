@@ -129,7 +129,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
 		duk_dup(ctx, i);
 		duk_put_prop_index(ctx, 1, i - 2);
 	}
-	duk_dup(ctx, 1);
+	duk_dup_1(ctx);
 	return 1;
 }
 

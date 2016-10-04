@@ -166,8 +166,8 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
 	                              -1);  /* no prototype, updated below */
 
-	duk_dup(ctx, -2);
-	duk_dup(ctx, -3);
+	duk_dup_m2(ctx);
+	duk_dup_m3(ctx);
 
 	/* [ ... new_glob new_env new_glob new_glob ] */
 

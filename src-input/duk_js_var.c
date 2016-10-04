@@ -252,7 +252,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			 * e.g. non-writable, but just in case).
 			 */
 			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
-			duk_dup(ctx, -4);                                    /* -> [ ... closure template env funcname closure ] */
+			duk_dup_m4(ctx);                                     /* -> [ ... closure template env funcname closure ] */
 			duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);     /* -> [ ... closure template env ] */
 			/* env[funcname] = closure */
 
@@ -376,7 +376,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	if (add_auto_proto) {
 		duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
-		duk_dup(ctx, -3);          /* -> [ ... closure template newobj closure ] */
+		duk_dup_m3(ctx);       /* -> [ ... closure template newobj closure ] */
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
 		duk_compact(ctx, -1);  /* compact the prototype */
 		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */

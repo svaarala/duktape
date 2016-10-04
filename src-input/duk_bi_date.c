@@ -1557,7 +1557,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
 	duk_pop(ctx);
 
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_ISO_STRING);
-	duk_dup(ctx, -2);  /* -> [ O toIsoString O ] */
+	duk_dup_m2(ctx);  /* -> [ O toIsoString O ] */
 	duk_call_method(ctx, 0);
 	return 1;
 }

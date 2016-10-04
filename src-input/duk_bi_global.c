@@ -628,7 +628,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 		radix = 10;
 	}
 
-	duk_dup(ctx, 0);
+	duk_dup_0(ctx);
 	duk_numconv_parse(ctx, radix, s2n_flags);
 	return 1;
 

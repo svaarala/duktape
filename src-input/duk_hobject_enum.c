@@ -585,7 +585,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 		duk_push_hstring(ctx, res);
 		if (get_value) {
 			duk_push_hobject(ctx, enum_target);
-			duk_dup(ctx, -2);      /* -> [... enum key enum_target key] */
+			duk_dup_m2(ctx);       /* -> [... enum key enum_target key] */
 			duk_get_prop(ctx, -2); /* -> [... enum key enum_target val] */
 			duk_remove(ctx, -2);   /* -> [... enum key val] */
 			duk_remove(ctx, -3);   /* -> [... key val] */

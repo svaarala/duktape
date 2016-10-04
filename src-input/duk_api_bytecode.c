@@ -575,7 +575,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 		                                    proto);
-		duk_dup(ctx, -2);                                 /* -> [ func funcname env funcname ] */
+		duk_dup_m2(ctx);                                  /* -> [ func funcname env funcname ] */
 		duk_dup(ctx, idx_base);                           /* -> [ func funcname env funcname func ] */
 		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);  /* -> [ func funcname env ] */
 		duk_xdef_prop_stridx(ctx, idx_base, DUK_STRIDX_INT_LEXENV, DUK_PROPDESC_FLAGS_WC);
@@ -589,7 +589,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
 	duk_push_object(ctx);
-	duk_dup(ctx, -2);
+	duk_dup_m2(ctx);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
 	duk_compact(ctx, -1);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);

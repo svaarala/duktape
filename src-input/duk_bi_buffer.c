@@ -561,7 +561,7 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_context *ctx) {
 	}
 	case DUK_TYPE_STRING: {
 		/* ignore encoding for now */
-		duk_dup(ctx, 0);
+		duk_dup_0(ctx);
 		(void) duk_to_buffer(ctx, -1, &buf_size);
 		break;
 	}
@@ -811,7 +811,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 			/* Set .buffer to the argument ArrayBuffer. */
-			duk_dup(ctx, 0);
+			duk_dup_0(ctx);
 			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 			duk_compact(ctx, -1);
 			return 1;
@@ -912,7 +912,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 	/* Set .buffer */
-	duk_dup(ctx, -2);
+	duk_dup_m2(ctx);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 	duk_compact(ctx, -1);
 
@@ -1083,7 +1083,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	 * See: test-bug-dataview-buffer-prop.js.
 	 */
 
-	duk_dup(ctx, 0);
+	duk_dup_0(ctx);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 	duk_compact(ctx, -1);
 
