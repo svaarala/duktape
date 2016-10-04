@@ -1903,6 +1903,9 @@ Planned
   seed mixing; previous algorithm (Shamir's three-op algorithm) is still
   used for low memory targets and targets without 64-bit types (GH-970)
 
+* Fix incorrect evaluation order of X <op>= Y expressions when the RHS
+  (Y) mutates the value of X (GH-992)
+
 * Fix incorrect buffer zeroing assumption in regexp executor, triggered
   when DUK_USE_ZERO_BUFFER_DATA is not set (default is set) (GH-978)
 
