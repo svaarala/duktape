@@ -2860,7 +2860,7 @@ DUK_LOCAL duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *comp_ct
 	 *    PropertyNameAndValueList: PropertyNameAndValueList , PropertyAssignment
 	 */
 
-	duk_dup(ctx, -1);       /* [ ... key_obj key key ] */
+	duk_dup_top(ctx);       /* [ ... key_obj key key ] */
 	duk_get_prop(ctx, -3);  /* [ ... key_obj key val ] */
 	key_flags = duk_to_int(ctx, -1);
 	duk_pop(ctx);           /* [ ... key_obj key ] */
@@ -2894,7 +2894,7 @@ DUK_LOCAL duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *comp_ct
 	                     (duk_tval *) duk_get_tval(ctx, -1),
 	                     (unsigned long) key_flags,
 	                     (unsigned long) new_key_flags));
-	duk_dup(ctx, -1);
+	duk_dup_top(ctx);
 	duk_push_int(ctx, new_key_flags);   /* [ ... key_obj key key flags ] */
 	duk_put_prop(ctx, -4);              /* [ ... key_obj key ] */
 

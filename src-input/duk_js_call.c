@@ -232,7 +232,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 			duk_get_prop_index(ctx, i_formals, idx);
 			DUK_ASSERT(duk_is_string(ctx, -1));
 
-			duk_dup(ctx, -1);  /* [ ... name name ] */
+			duk_dup_top(ctx);  /* [ ... name name ] */
 
 			if (!duk_has_prop(ctx, i_mappednames)) {
 				/* steps 11.c.ii.1 - 11.c.ii.4, but our internal book-keeping
@@ -246,14 +246,14 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=%ld",
 				                     (const char *) duk_get_string(ctx, -1),
 				                     (long) idx));
-				duk_dup(ctx, -1);                      /* name */
+				duk_dup_top(ctx);                      /* name */
 				(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) idx);  /* index */
 				duk_xdef_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s",
 				                     (long) idx,
 				                     duk_get_string(ctx, -1)));
-				duk_dup(ctx, -1);         /* name */
+				duk_dup_top(ctx);         /* name */
 				duk_xdef_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
 			} else {
 				/* duk_has_prop() popped the second 'name' */

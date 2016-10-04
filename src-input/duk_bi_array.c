@@ -1469,7 +1469,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			/* nop */
 			break;
 		case DUK__ITER_MAP:
-			duk_dup(ctx, -1);
+			duk_dup_top(ctx);
 			duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) i);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
