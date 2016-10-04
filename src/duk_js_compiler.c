@@ -4361,7 +4361,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			h_varname = duk_get_hstring(ctx, left->x1.valstack_idx);
 			DUK_ASSERT(h_varname != NULL);
 			if (duk__hstring_is_eval_or_arguments_in_strict_mode(comp_ctx, h_varname)) {
-				/* E5 Section 11.13.1 (and others for other assignments), step 4 */
+				/* E5 Section 11.13.1 (and others for other assignments), step 4. */
 				goto syntax_error_lvalue;
 			}
 			duk_dup(ctx, left->x1.valstack_idx);
@@ -4389,47 +4389,78 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 				 */
 				duk_reg_t reg_temp;
 
-				/* FIXME: safe but inefficient */
 				reg_temp = DUK__ALLOCTEMP(comp_ctx);
 
 				if (reg_varbind >= 0) {
 					duk_reg_t reg_res;
+					duk_reg_t reg_src;
+					duk_int_t pc_temp_load;
+					duk_int_t pc_before_rhs;
+					duk_int_t pc_after_rhs;
 
 					if (toplevel_assign) {
 						/* 'reg_varbind' is the operation result and can also
 						 * become the expression value for top level assignments
 						 * such as: "var x; x += y;".
 						 */
+						DUK_DD(DUK_DDPRINT("<op>= expression is top level, write directly to reg_varbind"));
 						reg_res = reg_varbind;
 					} else {
 						/* Not safe to use 'reg_varbind' as assignment expression
 						 * value, so go through a temp.
 						 */
-						reg_res = DUK__ALLOCTEMP(comp_ctx);
-						/* FIXME: suboptimal, reg_res should be < reg_temp, and reg_temp reset */
+						DUK_DD(DUK_DDPRINT("<op>= expression is not top level, write to reg_temp"));
+						reg_res = reg_temp;  /* reg_res should be smallest possible */
+						reg_temp = DUK__ALLOCTEMP(comp_ctx);
 					}
 
+					/* Try to optimize X <op>= Y for reg-bound
+					 * variables.  Detect side-effect free RHS
+					 * narrowly by seeing whether it emits code.
+					 * If not, rewind the code emitter and overwrite
+					 * the unnecessary temp reg load.
+					 */
+
+					pc_temp_load = duk__get_current_pc(comp_ctx);
 					duk__emit_a_bc(comp_ctx,
 					               DUK_OP_LDREG,
 					               (duk_regconst_t) reg_temp,
 					               reg_varbind);
 
+					pc_before_rhs = duk__get_current_pc(comp_ctx);
 					duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
 					DUK_ASSERT(res->t == DUK_IVAL_PLAIN && res->x1.t == DUK_ISPEC_REGCONST);
+					pc_after_rhs = duk__get_current_pc(comp_ctx);
 
-					duk__emit_a_b_c(comp_ctx,
-					                args_op | DUK__EMIT_FLAG_BC_REGCONST,
-					                (duk_regconst_t) reg_res,
-					                (duk_regconst_t) reg_temp,
-					                res->x1.regconst);
-#if 0
+					DUK_DD(DUK_DDPRINT("pc_temp_load=%ld, pc_before_rhs=%ld, pc_after_rhs=%ld",
+					                   (long) pc_temp_load, (long) pc_before_rhs,
+					                   (long) pc_after_rhs));
+
+					if (pc_after_rhs == pc_before_rhs) {
+						/* Note: if the reg_temp load generated shuffling
+						 * instructions, we may need to rewind more than
+						 * one instruction, so use explicit PC computation.
+						 */
+						DUK_DD(DUK_DDPRINT("rhs is side effect free, rewind and avoid unnecessary temp for reg-based <op>="));
+						DUK_BW_ADD_PTR(comp_ctx->thr, &comp_ctx->curr_func.bw_code, (pc_temp_load - pc_before_rhs) * sizeof(duk_compiler_instr));
+						reg_src = reg_varbind;
+					} else {
+						DUK_DD(DUK_DDPRINT("rhs evaluation emitted code, not sure if rhs is side effect free; use temp reg for LHS"));
+						reg_src = reg_temp;
+					}
+
 					duk__emit_a_b_c(comp_ctx,
 					                args_op,
 					                (duk_regconst_t) reg_res,
-					                (duk_regconst_t) reg_varbind,
+					                (duk_regconst_t) reg_src,
 					                res->x1.regconst);
-#endif
+
 					res->x1.regconst = (duk_regconst_t) reg_res;
+
+					/* Ensure compact use of temps. */
+					if (DUK__ISTEMP(comp_ctx, reg_res)) {
+						DUK__SETTEMP(comp_ctx, reg_res + 1);
+					}
 				} else {
 					/* When LHS is not register bound, always go through a
 					 * temporary.  No optimization for top level assignment.
@@ -4575,16 +4606,17 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 			duk_regconst_t rc_res;
 
-			/* first evaluate LHS fully to ensure all side effects are out */
+			/* First evaluate LHS fully to ensure all side effects are out. */
 			duk__ivalue_toplain_ignore(comp_ctx, left);
 
-			/* then evaluate RHS fully (its value becomes the expression value too) */
+			/* Then evaluate RHS fully (its value becomes the expression value too).
+			 * Technically we'd need the side effect safety check here too, but because
+			 * we always throw using INVLHS the result doesn't matter.
+			 */
 			rc_res = duk__expr_toregconst(comp_ctx, res, args_rbp /*rbp_flags*/);
 
 			duk__emit_extraop_only(comp_ctx,
 			                       DUK_EXTRAOP_INVLHS);
-
-			/* XXX: this value is irrelevant because of INVLHS? */
 
 			res->t = DUK_IVAL_PLAIN;
 			res->x1.t = DUK_ISPEC_REGCONST;
