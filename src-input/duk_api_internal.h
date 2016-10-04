@@ -28,6 +28,14 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
                                    duk_size_t min_new_size,
                                    duk_small_uint_t flags);
 
+DUK_INTERNAL_DECL void duk_dup_0(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_dup_1(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_dup_2(duk_context *ctx);
+/* duk_dup_m1() would be same as duk_dup_top() */
+DUK_INTERNAL_DECL void duk_dup_m2(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_dup_m3(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_dup_m4(duk_context *ctx);
+
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_get_type_name(duk_context *ctx, duk_idx_t idx);
 #endif

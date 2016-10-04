@@ -41,7 +41,7 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 		DUK_DDD(DUK_DDDPRINT("-> no finalizer or finalizer not callable"));
 		return 0;
 	}
-	duk_dup(ctx, -2);
+	duk_dup_m2(ctx);
 	duk_push_boolean(ctx, DUK_HEAP_HAS_FINALIZER_NORESCUE(thr->heap));
 	DUK_DDD(DUK_DDDPRINT("-> finalizer found, calling finalizer"));
 	duk_call(ctx, 2);  /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */

@@ -4018,7 +4018,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 				duk_push_tval(ctx, DUK__REGP(bc));
 				duk_to_object(ctx, -1);
-				duk_dup(ctx, -1);
+				duk_dup_top(ctx);
 
 				/* [ ... env target ] */
 				/* [ ... env target target ] */

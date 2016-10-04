@@ -31,7 +31,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		/* Called as a function, pattern has [[Class]] "RegExp" and
 		 * flags is undefined -> return object as is.
 		 */
-		duk_dup(ctx, 0);
+		duk_dup_0(ctx);
 		return 1;
 	}
 
@@ -61,7 +61,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		if (duk_is_undefined(ctx, 0)) {
 			duk_push_string(ctx, "");
 		} else {
-			duk_dup(ctx, 0);
+			duk_dup_0(ctx);
 			duk_to_string(ctx, -1);
 		}
 		if (duk_is_undefined(ctx, 1)) {

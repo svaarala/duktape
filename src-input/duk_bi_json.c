@@ -1004,8 +1004,8 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 				                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
 
 				/* [ ... holder name val enum obj_key ] */
-				duk_dup(ctx, -3);
-				duk_dup(ctx, -2);
+				duk_dup_m3(ctx);
+				duk_dup_m2(ctx);
 
 				/* [ ... holder name val enum obj_key val obj_key ] */
 				duk__dec_reviver_walk(js_ctx);
@@ -1968,8 +1968,8 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		if (duk_is_callable(ctx, -1)) {  /* toJSON() can also be a lightfunc */
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
 			/* XXX: duk_dup_unvalidated(ctx, -2) etc. */
-			duk_dup(ctx, -2);         /* -> [ ... key val toJSON val ] */
-			duk_dup(ctx, -4);         /* -> [ ... key val toJSON val key ] */
+			duk_dup_m2(ctx);          /* -> [ ... key val toJSON val ] */
+			duk_dup_m4(ctx);          /* -> [ ... key val toJSON val key ] */
 			duk_call_method(ctx, 1);  /* -> [ ... key val val' ] */
 			duk_remove(ctx, -2);      /* -> [ ... key val' ] */
 		} else {
@@ -1986,8 +1986,8 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		DUK_DDD(DUK_DDDPRINT("replacer is set, call replacer"));
 		duk_push_hobject(ctx, js_ctx->h_replacer);  /* -> [ ... key val replacer ] */
 		duk_dup(ctx, idx_holder);                   /* -> [ ... key val replacer holder ] */
-		duk_dup(ctx, -4);                           /* -> [ ... key val replacer holder key ] */
-		duk_dup(ctx, -4);                           /* -> [ ... key val replacer holder key val ] */
+		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key ] */
+		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key val ] */
 		duk_call_method(ctx, 2);                    /* -> [ ... key val val' ] */
 		duk_remove(ctx, -2);                        /* -> [ ... key val' ] */
 	}
@@ -2777,7 +2777,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 		js_ctx->idx_reviver = idx_reviver;
 
 		duk_push_object(ctx);
-		duk_dup(ctx, -2);  /* -> [ ... val root val ] */
+		duk_dup_m2(ctx);  /* -> [ ... val root val ] */
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
 

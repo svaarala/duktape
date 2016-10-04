@@ -351,7 +351,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	                     DUK__ARRAY_MID_JOIN_LIMIT : len) + 4;
 	duk_require_stack(ctx, valstack_required);
 
-	duk_dup(ctx, 0);
+	duk_dup_0(ctx);
 
 	/* [ sep ToObject(this) len sep ] */
 
@@ -365,7 +365,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 			DUK_DDD(DUK_DDDPRINT("mid/final join, count=%ld, idx=%ld, len=%ld",
 			                     (long) count, (long) idx, (long) len));
 			duk_join(ctx, (duk_idx_t) count);  /* -> [ sep ToObject(this) len str ] */
-			duk_dup(ctx, 0);                   /* -> [ sep ToObject(this) len str sep ] */
+			duk_dup_0(ctx);                    /* -> [ sep ToObject(this) len str sep ] */
 			duk_insert(ctx, -2);               /* -> [ sep ToObject(this) len sep str ] */
 			count = 1;
 		}
@@ -1443,11 +1443,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		 * effects.
 		 */
 
-		duk_dup(ctx, 0);
-		duk_dup(ctx, 1);
-		duk_dup(ctx, -3);
+		duk_dup_0(ctx);
+		duk_dup_1(ctx);
+		duk_dup_m3(ctx);
 		duk_push_u32(ctx, i);
-		duk_dup(ctx, 2);  /* [ ... val callback thisArg val i obj ] */
+		duk_dup_2(ctx);  /* [ ... val callback thisArg val i obj ] */
 		duk_call_method(ctx, 3); /* -> [ ... val retval ] */
 
 		switch (iter_type) {
@@ -1469,14 +1469,14 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			/* nop */
 			break;
 		case DUK__ITER_MAP:
-			duk_dup(ctx, -1);
+			duk_dup_top(ctx);
 			duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) i);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
 		case DUK__ITER_FILTER:
 			bval = duk_to_boolean(ctx, -1);
 			if (bval) {
-				duk_dup(ctx, -2);  /* orig value */
+				duk_dup_m2(ctx);  /* orig value */
 				duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) k);
 				k++;
 				res_length = k;
@@ -1547,7 +1547,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 
 	have_acc = 0;
 	if (nargs >= 2) {
-		duk_dup(ctx, 1);
+		duk_dup_1(ctx);
 		have_acc = 1;
 	}
 	DUK_DDD(DUK_DDDPRINT("have_acc=%ld, acc=%!T",
@@ -1581,11 +1581,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 			DUK_ASSERT_TOP(ctx, 5);
 		} else {
 			DUK_ASSERT_TOP(ctx, 5);
-			duk_dup(ctx, 0);
+			duk_dup_0(ctx);
 			duk_dup(ctx, 4);
 			duk_get_prop_index(ctx, 2, (duk_uarridx_t) i);
 			duk_push_u32(ctx, i);
-			duk_dup(ctx, 2);
+			duk_dup_2(ctx);
 			DUK_DDD(DUK_DDDPRINT("calling reduce function: func=%!T, prev=%!T, curr=%!T, idx=%!T, obj=%!T",
 			                     (duk_tval *) duk_get_tval(ctx, -5), (duk_tval *) duk_get_tval(ctx, -4),
 			                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),

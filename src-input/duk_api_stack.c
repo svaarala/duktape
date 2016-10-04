@@ -858,6 +858,9 @@ DUK_EXTERNAL void duk_dup(duk_context *ctx, duk_idx_t from_idx) {
 }
 
 DUK_EXTERNAL void duk_dup_top(duk_context *ctx) {
+#if defined(DUK_USE_PREFER_SIZE)
+	duk_dup(ctx, -1);
+#else
 	duk_hthread *thr;
 	duk_tval *tv_from;
 	duk_tval *tv_to;
@@ -876,6 +879,26 @@ DUK_EXTERNAL void duk_dup_top(duk_context *ctx) {
 	DUK_ASSERT(tv_to != NULL);
 	DUK_TVAL_SET_TVAL(tv_to, tv_from);
 	DUK_TVAL_INCREF(thr, tv_to);  /* no side effects */
+#endif
+}
+
+DUK_INTERNAL void duk_dup_0(duk_context *ctx) {
+	duk_dup(ctx, 0);
+}
+DUK_INTERNAL void duk_dup_1(duk_context *ctx) {
+	duk_dup(ctx, 1);
+}
+DUK_INTERNAL void duk_dup_2(duk_context *ctx) {
+	duk_dup(ctx, 2);
+}
+DUK_INTERNAL void duk_dup_m2(duk_context *ctx) {
+	duk_dup(ctx, -2);
+}
+DUK_INTERNAL void duk_dup_m3(duk_context *ctx) {
+	duk_dup(ctx, -3);
+}
+DUK_INTERNAL void duk_dup_m4(duk_context *ctx) {
+	duk_dup(ctx, -4);
 }
 
 DUK_EXTERNAL void duk_insert(duk_context *ctx, duk_idx_t to_idx) {

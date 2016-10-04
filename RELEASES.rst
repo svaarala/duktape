@@ -1980,7 +1980,8 @@ Planned
   opcode handler optimizations (GH-903); refcount optimizations (GH-443,
   GH-973); minor RegExp compile/execute optimizations (GH-974)
 
-* Miscellaneous footprint improvements: RegExp compiler/executor (GH-977)
+* Miscellaneous footprint improvements: RegExp compiler/executor (GH-977),
+  internal duk_dup() variants (GH-990)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than

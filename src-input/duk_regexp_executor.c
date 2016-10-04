@@ -936,7 +936,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		duk_push_u32(ctx, char_offset);
 		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INDEX);
 
-		duk_dup(ctx, -4);
+		duk_dup_m4(ctx);
 		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INPUT);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {

@@ -42,9 +42,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	 * It will fail in corner cases; see test-dev-func-cons-args.js.
 	 */
 	duk_push_string(ctx, "function(");
-	duk_dup(ctx, 1);
+	duk_dup_1(ctx);
 	duk_push_string(ctx, "){");
-	duk_dup(ctx, 0);
+	duk_dup_0(ctx);
 	duk_push_string(ctx, "}");
 	duk_concat(ctx, 5);
 
@@ -282,10 +282,10 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	DUK_ASSERT(h_bound != NULL);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
-	duk_dup(ctx, -2);  /* func */
+	duk_dup_m2(ctx);  /* func */
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
-	duk_dup(ctx, 0);   /* thisArg */
+	duk_dup_0(ctx);   /* thisArg */
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_push_array(ctx);

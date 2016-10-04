@@ -1041,7 +1041,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	duk_debug_write_int(thr, fatal);
 
 	/* Report thrown value to client coerced to string */
-	duk_dup(ctx, -1);
+	duk_dup_top(ctx);
 	duk__debug_write_hstring_safe_top(thr);
 	duk_pop(ctx);
 
