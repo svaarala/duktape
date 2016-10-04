@@ -676,17 +676,17 @@ opcodes:
       - B_R
       - C_R
     flags:
-      - mask: 0x40
-        name: writable
-      - mask: 0x80
-        name: enumerable
       - mask: 0x100
-        name: configurable
+        name: writable
       - mask: 0x200
-        name: accessor
+        name: enumerable
       - mask: 0x400
-        name: undef_value
+        name: configurable
       - mask: 0x800
+        name: accessor
+      - mask: 0x1000
+        name: undef_value
+      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_CR
     args:
@@ -694,17 +694,17 @@ opcodes:
       - B_C
       - C_R
     flags:
-      - mask: 0x40
-        name: writable
-      - mask: 0x80
-        name: enumerable
       - mask: 0x100
-        name: configurable
+        name: writable
       - mask: 0x200
-        name: accessor
+        name: enumerable
       - mask: 0x400
-        name: undef_value
+        name: configurable
       - mask: 0x800
+        name: accessor
+      - mask: 0x1000
+        name: undef_value
+      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_RC
     args:
@@ -712,17 +712,17 @@ opcodes:
       - B_R
       - C_C
     flags:
-      - mask: 0x40
-        name: writable
-      - mask: 0x80
-        name: enumerable
       - mask: 0x100
-        name: configurable
+        name: writable
       - mask: 0x200
-        name: accessor
+        name: enumerable
       - mask: 0x400
-        name: undef_value
+        name: configurable
       - mask: 0x800
+        name: accessor
+      - mask: 0x1000
+        name: undef_value
+      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_CC
     args:
@@ -730,17 +730,17 @@ opcodes:
       - B_C
       - C_C
     flags:
-      - mask: 0x40
-        name: writable
-      - mask: 0x80
-        name: enumerable
       - mask: 0x100
-        name: configurable
+        name: writable
       - mask: 0x200
-        name: accessor
+        name: enumerable
       - mask: 0x400
-        name: undef_value
+        name: configurable
       - mask: 0x800
+        name: accessor
+      - mask: 0x1000
+        name: undef_value
+      - mask: 0x2000
         name: func_decl
   - name: REGEXP_RR
     args:
