@@ -384,10 +384,11 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_INVALID              189
 #define DUK_OP_UNUSED190            190
 #define DUK_OP_UNUSED191            191
-#define DUK_OP_UNUSED192            192
-#define DUK_OP_UNUSED193            193
-#define DUK_OP_UNUSED194            194
-#define DUK_OP_UNUSED195            195
+#define DUK_OP_EXP                  192
+#define DUK_OP_EXP_RR               192
+#define DUK_OP_EXP_CR               193
+#define DUK_OP_EXP_RC               194
+#define DUK_OP_EXP_CC               195
 #define DUK_OP_UNUSED196            196
 #define DUK_OP_UNUSED197            197
 #define DUK_OP_UNUSED198            198

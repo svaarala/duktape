@@ -267,9 +267,10 @@ DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, d
 #define DUK__BP_SHIFT                  26
 #define DUK__BP_ADDITIVE               28
 #define DUK__BP_MULTIPLICATIVE         30
-#define DUK__BP_POSTFIX                32
-#define DUK__BP_CALL                   34
-#define DUK__BP_MEMBER                 36
+#define DUK__BP_EXPONENTIATION         32
+#define DUK__BP_POSTFIX                34
+#define DUK__BP_CALL                   36
+#define DUK__BP_MEMBER                 38
 
 #define DUK__TOKEN_LBP_BP_MASK         0x1f
 #define DUK__TOKEN_LBP_FLAG_NO_REGEXP  (1 << 5)   /* regexp literal must not follow this token */
@@ -353,6 +354,7 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_MULTIPLICATIVE),                      /* DUK_TOK_MUL */
 	DUK__MK_LBP(DUK__BP_MULTIPLICATIVE),                      /* DUK_TOK_DIV */
 	DUK__MK_LBP(DUK__BP_MULTIPLICATIVE),                      /* DUK_TOK_MOD */
+	DUK__MK_LBP(DUK__BP_EXPONENTIATION),                      /* DUK_TOK_EXP */
 	DUK__MK_LBP(DUK__BP_POSTFIX),                             /* DUK_TOK_INCREMENT */
 	DUK__MK_LBP(DUK__BP_POSTFIX),                             /* DUK_TOK_DECREMENT */
 	DUK__MK_LBP(DUK__BP_SHIFT),                               /* DUK_TOK_ALSHIFT */
@@ -373,6 +375,7 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_MUL_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_DIV_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_MOD_EQ */
+	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_EXP_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_ALSHIFT_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_ARSHIFT_EQ */
 	DUK__MK_LBP(DUK__BP_ASSIGNMENT),                          /* DUK_TOK_RSHIFT_EQ */
@@ -2175,11 +2178,15 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				DUK_DDD(DUK_DDDPRINT("arith inline check: d1=%lf, d2=%lf, op=%ld",
 				                     (double) d1, (double) d2, (long) x->op));
 				switch (x->op) {
-				case DUK_OP_ADD:  d3 = d1 + d2; break;
-				case DUK_OP_SUB:  d3 = d1 - d2; break;
-				case DUK_OP_MUL:  d3 = d1 * d2; break;
-				case DUK_OP_DIV:  d3 = d1 / d2; break;
-				default:          accept = 0; break;
+				case DUK_OP_ADD: d3 = d1 + d2; break;
+				case DUK_OP_SUB: d3 = d1 - d2; break;
+				case DUK_OP_MUL: d3 = d1 * d2; break;
+				case DUK_OP_DIV: d3 = d1 / d2; break;
+				case DUK_OP_EXP: {
+					d3 = (duk_double_t) duk_js_arith_pow((double) d1, (double) d2);
+					break;
+				}
+				default: accept = 0; break;
 				}
 
 				if (accept) {
@@ -3941,18 +3948,25 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		goto postincdec;
 	}
 
+	/* EXPONENTIATION EXPRESSION */
+
+	case DUK_TOK_EXP: {
+		args = (DUK_OP_EXP << 8) + DUK__BP_EXPONENTIATION - 1;  /* UnaryExpression */
+		goto binary;
+	}
+
 	/* MULTIPLICATIVE EXPRESSION */
 
 	case DUK_TOK_MUL: {
-		args = (DUK_OP_MUL << 8) + DUK__BP_MULTIPLICATIVE;  /* UnaryExpression */
+		args = (DUK_OP_MUL << 8) + DUK__BP_MULTIPLICATIVE;  /* ExponentiationExpression */
 		goto binary;
 	}
 	case DUK_TOK_DIV: {
-		args = (DUK_OP_DIV << 8) + DUK__BP_MULTIPLICATIVE;  /* UnaryExpression */
+		args = (DUK_OP_DIV << 8) + DUK__BP_MULTIPLICATIVE;  /* ExponentiationExpression */
 		goto binary;
 	}
 	case DUK_TOK_MOD: {
-		args = (DUK_OP_MOD << 8) + DUK__BP_MULTIPLICATIVE;  /* UnaryExpression */
+		args = (DUK_OP_MOD << 8) + DUK__BP_MULTIPLICATIVE;  /* ExponentiationExpression */
 		goto binary;
 	}
 
@@ -4128,6 +4142,11 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 	case DUK_TOK_MOD_EQ: {
 		/* right associative */
 		args = (DUK_OP_MOD << 8) + DUK__BP_ASSIGNMENT - 1;
+		goto assign;
+	}
+	case DUK_TOK_EXP_EQ: {
+		/* right associative */
+		args = (DUK_OP_EXP << 8) + DUK__BP_ASSIGNMENT - 1;
 		goto assign;
 	}
 	case DUK_TOK_ALSHIFT_EQ: {
