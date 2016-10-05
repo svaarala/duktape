@@ -915,10 +915,26 @@ opcodes:
       - ABC_I
   - name: UNUSED190
   - name: UNUSED191
-  - name: UNUSED192
-  - name: UNUSED193
-  - name: UNUSED194
-  - name: UNUSED195
+  - name: EXP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: EXP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: EXP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: EXP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
   - name: UNUSED196
   - name: UNUSED197
   - name: UNUSED198
