@@ -42,10 +42,6 @@
   test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A4_T3"
   knownissue: "Duktape Array.prototype.push() doesn't allow Array length to grow beyond 2**32-1"
 -
-  test: "ch15/15.10/15.10.2/S15.10.2_A1_T1"
-  knownissue: "XML Shallow Parsing with Regular Expression: [^]]*]([^]]+])*]+.  The intent of [^]] is probably [^\\]].  An unescaped ']' is not allowed in a character class, so the expression is parsed as [^] (empty inverted class) followed by a literal ']', which is a SyntaxError.  There are two other literal ']' issues.  The RegExp can be fixed to: /[^\\]]*\\]([^\\]]+\\])*\\]+/."
-  regexp_leniency: true
--
   test: "ch15/15.10/15.10.2/15.10.2.5/S15.10.2.5_A1_T5"
   diagnosed: "Duktape bug, matching /(a*)b\\1+/ against 'baaaac' causes first capture to match the empty string; the '\\1+' part will then use the '+' quantifier over the empty string.  As there is no handling to empty quantified now, Duktape bails out with a RangeError."
   regexp_empty_quantified": true
@@ -64,9 +60,6 @@
 -
   test: "ch15/15.10/15.10.2/15.10.2.13/S15.10.2.13_A1_T16"
   knownissue: "uses invalid DecimalEscape inside a character class, '/[\\12-\\14]/'"
--
-  test: "ch15/15.10/15.10.2/15.10.2.6/S15.10.2.6_A4_T7"
-  knownissue: "the test case has unescaped invalid PatternCharacters (^, ] {, }) which follow the escaped '\\['"
 -
   test: "ch15/15.10/15.10.2/15.10.2.9/S15.10.2.9_A1_T4"
   knownissue: "invalid backreference '\\2', RegExp only has one capture; in E5.1 this is a SyntaxError"
