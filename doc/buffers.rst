@@ -946,6 +946,117 @@ there must be no side effects between the check and the operation:
 Future work
 ===========
 
+Missing ES6 features
+--------------------
+
+General semantics:
+
+* ToLength() coercion allows ArrayBuffer and typed array length up to
+  ``2^53 - 1``.
+
+* Virtual index getters/setters don't handle out-of-bound accesses
+  correctly (they should not be inherited through the inheritance chain).
+
+* Behavior for "detached" ArrayBuffers don't necessarily implement the
+  behavior described in http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-arraybuffer-instances:
+  "... all operators to access or modify data contained in the ArrayBuffer instance will fail."
+  However, there's no support for creating a detached buffer now, so this
+  doesn't really matter.
+
+* Coercion behavior may be correct, but needs to be checked for typed arrays
+  and DataView.
+
+ArrayBuffer:
+
+* ``ArrayBuffer.prototype[@@toStringTag]`` missing.
+
+DataView:
+
+* ``DataView.prototype.buffer`` is an accessor property, currently ``.buffer``
+  is a concrete property.
+
+* ``DataView.prototype[@@toStringTag]`` missing.
+
+Typed arrays:
+
+* Typed array constructors like ``Uint8Array`` should inherit from an unnamed
+  prototype object which hosts shared properties like ``.from()``.
+
+* ``%TypedArray%.from`` missing.
+
+* ``%TypedArray%.of`` missing.
+
+* ``%TypedArray%.prototype`` is ``%TypedArrayPrototype%`` which Duktape is
+  actually already using.
+
+* The ``.buffer`` property should be inherited from
+  ``%TypedArray%.prototype.buffer`` instead of being a concrete property.
+
+* The ``.byteLength`` property should be inherited, but is virtual.
+  The difference matters if inheritance relationship is altered.
+
+* The ``.byteOffset`` property should be inherited, but is virtual.
+
+* The ``.length`` property should be inherited, but is virtual.
+
+* ``%TypedArray%.prototype.copyWithin()`` is missing.
+
+* ``%TypedArray%.prototype.entries()`` is missing.
+
+* ``%TypedArray%.prototype.every()`` is missing.
+
+* ``%TypedArray%.prototype.fill()`` is missing.
+
+* ``%TypedArray%.prototype.filter()`` is missing.
+
+* ``%TypedArray%.prototype.find()`` is missing.
+
+* ``%TypedArray%.prototype.findIndex()`` is missing.
+
+* ``%TypedArray%.prototype.forEach()`` is missing.
+
+* ``%TypedArray%.prototype.indexOf()`` is missing.
+
+* ``%TypedArray%.prototype.join()`` is missing.
+
+* ``%TypedArray%.prototype.keys()`` is missing.
+
+* ``%TypedArray%.prototype.lastIndexOf()`` is missing.
+
+* ``%TypedArray%.prototype.map()`` is missing.
+
+* ``%TypedArray%.prototype.reduce()`` is missing.
+
+* ``%TypedArray%.prototype.reduceRight()`` is missing.
+
+* ``%TypedArray%.prototype.reverse()`` is missing.
+
+* ``%TypedArray%.prototype.set()`` exists, semantics need to be checked.
+
+* ``%TypedArray%.prototype.slice()`` is missing.
+
+* ``%TypedArray%.prototype.some()`` is missing.
+
+* ``%TypedArray%.prototype.sort()`` is missing.
+
+* ``%TypedArray%.prototype.subarray()`` exists, semantics need to be checked.
+
+* ``%TypedArray%.prototype.toLocaleString()`` is missing.
+
+* ``%TypedArray%.prototype.toString()`` is missing.
+
+* ``%TypedArray%.prototype.values()`` is missing.
+
+* ``%TypedArray%.prototype[@@iterator]()`` is missing.
+
+* ``get %TypedArray%.prototype[@@toStringTag]`` is missing.
+
+The initial implementations for some of the missing methods can be the
+equivalent methods in ``Array.prototype`` with the caveat that ``.length``
+should be accessed directly without invoking side effects.  For now this
+would not be an issue because typed array ``.length`` is a virtual own
+property, and accessing it has no side effects.
+
 Improve consistency of argument coercion
 ----------------------------------------
 
