@@ -338,6 +338,26 @@ opcodes:
       - A_R
       - B_C
       - C_C
+  - name: EXP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: EXP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: EXP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: EXP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
   - name: BAND_RR
     args:
       - A_R
@@ -498,6 +518,66 @@ opcodes:
       - A_R
       - B_C
       - C_C
+  - name: GETPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: GETPROP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: GETPROP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: GETPROP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: PUTPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: PUTPROP_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: PUTPROP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: PUTPROP_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
+  - name: DELPROP_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: DELPROP_CR   # unused now
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: DELPROP_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: DELPROP_CC   # unused now
+    args:
+      - A_R
+      - B_C
+      - C_C
   - name: PREINCR
     args:
       - A_R
@@ -606,66 +686,6 @@ opcodes:
       - B_R
       - C_C
   - name: POSTDECP_CC
-    args:
-      - A_R
-      - B_C
-      - C_C
-  - name: GETPROP_RR
-    args:
-      - A_R
-      - B_R
-      - C_R
-  - name: GETPROP_CR
-    args:
-      - A_R
-      - B_C
-      - C_R
-  - name: GETPROP_RC
-    args:
-      - A_R
-      - B_R
-      - C_RC
-  - name: GETPROP_CC
-    args:
-      - A_R
-      - B_C
-      - C_C
-  - name: PUTPROP_RR
-    args:
-      - A_R
-      - B_R
-      - C_R
-  - name: PUTPROP_CR
-    args:
-      - A_R
-      - B_C
-      - C_R
-  - name: PUTPROP_RC
-    args:
-      - A_R
-      - B_R
-      - C_C
-  - name: PUTPROP_CC
-    args:
-      - A_R
-      - B_C
-      - C_C
-  - name: DELPROP_RR
-    args:
-      - A_R
-      - B_R
-      - C_R
-  - name: DELPROP_CR   # unused now
-    args:
-      - A_R
-      - B_C
-      - C_R
-  - name: DELPROP_RC
-    args:
-      - A_R
-      - B_R
-      - C_C
-  - name: DELPROP_CC   # unused now
     args:
       - A_R
       - B_C
@@ -913,28 +933,8 @@ opcodes:
   - name: INVALID
     args:
       - ABC_I
-  - name: UNUSED190
-  - name: UNUSED191
-  - name: EXP_RR
-    args:
-      - A_R
-      - B_R
-      - C_R
-  - name: EXP_CR
-    args:
-      - A_R
-      - B_C
-      - C_R
-  - name: EXP_RC
-    args:
-      - A_R
-      - B_R
-      - C_C
-  - name: EXP_CC
-    args:
-      - A_R
-      - B_C
-      - C_C
+  - name: UNUSED194
+  - name: UNUSED195
   - name: UNUSED196
   - name: UNUSED197
   - name: UNUSED198

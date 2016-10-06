@@ -4923,8 +4923,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 #if !defined(DUK_USE_EXEC_PREFER_SIZE)
-		case DUK_OP_UNUSED190:
-		case DUK_OP_UNUSED191:
+		case DUK_OP_UNUSED194:
+		case DUK_OP_UNUSED195:
 		case DUK_OP_UNUSED196:
 		case DUK_OP_UNUSED197:
 		case DUK_OP_UNUSED198:

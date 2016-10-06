@@ -4,7 +4,7 @@
 
 #include "duk_internal.h"
 
-/* Shared helper for Math.pow() and exponentiation operator */
+/* Shared helper for Math.pow() and exponentiation operator. */
 DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 	/* The ANSI C pow() semantics differ from Ecmascript.
 	 *
@@ -49,7 +49,7 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 			 */
 
 			/* fmod() return value has same sign as input (negative) so
-			 * the result here will be in the range ]-2,0], 1 indicates
+			 * the result here will be in the range ]-2,0], -1 indicates
 			 * odd.  If x is -Infinity, NaN is returned and the odd check
 			 * always concludes "not odd" which results in desired outcome.
 			 */

@@ -1811,7 +1811,7 @@ Planned
 
 * Add support for ES7 exponentiation and exponentiation assignment operators,
   e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
-  Math.pow() while also being more readable (GH-987)
+  Math.pow() while also being more readable (GH-987, GH-997)
 
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
