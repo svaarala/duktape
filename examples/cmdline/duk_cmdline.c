@@ -1042,6 +1042,12 @@ static void debugger_detached(duk_context *ctx, void *udata) {
 #define  ALLOC_HYBRID   3
 #define  ALLOC_AJSHEAP  4
 
+/*FIXME*/
+duk_ret_t summary(duk_context *ctx) {
+	duk_push_string_readable_HACK(ctx, 0);
+	return 1;
+}
+
 static duk_context *create_duktape_heap(int alloc_provider, int debugger, int ajsheap_log) {
 	duk_context *ctx;
 
@@ -1154,6 +1160,11 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	duk_put_global_string(ctx, "readFile");
 	duk_push_c_function(ctx, fileio_write_file, 2 /*nargs*/);
 	duk_put_global_string(ctx, "writeFile");
+#endif
+
+#if 1 /*FIXME*/
+	duk_push_c_function(ctx, summary, 1 /*nargs*/);
+	duk_put_global_string(ctx, "summary");
 #endif
 
 	/* Stash a formatting function for evaluation results. */

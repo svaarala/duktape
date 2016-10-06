@@ -2138,15 +2138,10 @@ DUK_INTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx) {
 }
 #endif
 
-/* Push Object.prototype.toString() output for 'tv'. */
-DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
-	duk_hthread *thr;
+DUK_LOCAL duk_small_uint_t duk__get_class_stridx(duk_tval *tv) {
 	duk_small_uint_t stridx;
-	duk_hstring *h_strclass;
 
-	DUK_ASSERT_CTX_VALID(ctx);
-	thr = (duk_hthread *) ctx;
-	DUK_UNREF(thr);
+	DUK_ASSERT(tv != NULL);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNUSED:  /* Treat like 'undefined', shouldn't happen. */
@@ -2198,10 +2193,38 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
 		break;
 	}
 	}
+	return stridx;
+}
+
+DUK_INTERNAL const char *duk_get_class_string_tval(duk_context *ctx, duk_tval *tv) {
+	duk_hthread *thr;
+	duk_small_uint_t stridx;
+	duk_hstring *h_strclass;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+
+	stridx = duk__get_class_stridx(tv);
 	h_strclass = DUK_HTHREAD_GET_STRING(thr, stridx);
 	DUK_ASSERT(h_strclass != NULL);
+	return (const char *) DUK_HSTRING_GET_DATA(h_strclass);
+}
 
-	duk_push_sprintf(ctx, "[object %s]", (const char *) DUK_HSTRING_GET_DATA(h_strclass));
+DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
+	duk_small_uint_t stridx;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	stridx = duk__get_class_stridx(tv);
+	duk_push_hstring_stridx(ctx, stridx);
+}
+
+/* Push Object.prototype.toString() output for 'tv'. */
+DUK_INTERNAL void duk_push_object_class_string_tval(duk_context *ctx, duk_tval *tv) {
+	const char *class_str;
+	class_str = duk_get_class_string_tval(ctx, tv);
+	DUK_ASSERT(class_str != NULL);
+	duk_push_sprintf(ctx, "[object %s]", class_str);
 }
 
 /* XXX: other variants like uint, u32 etc */
@@ -4722,13 +4745,14 @@ DUK_INTERNAL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, du
  */
 
 #define DUK__READABLE_STRING_MAXCHARS 32
+#define DUK__READABLE_BUFFER_MAXBYTES 16
 
 /* String sanitizer which escapes ASCII control characters and a few other
  * ASCII characters, passes Unicode as is, and replaces invalid UTF-8 with
  * question marks.  No errors are thrown for any input string, except in out
  * of memory situations.
  */
-DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring *h_input) {
+DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring *h_input, duk_bool_t quotes) {
 	duk_hthread *thr;
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_uint8_t buf[DUK_UNICODE_MAX_XUTF8_LENGTH * DUK__READABLE_STRING_MAXCHARS +
@@ -4747,7 +4771,9 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring 
 	q = buf;
 
 	nchars = 0;
-	*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+	if (quotes) {
+		*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+	}
 	for (;;) {
 		if (p >= p_end) {
 			break;
@@ -4775,52 +4801,178 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_context *ctx, duk_hstring 
 		}
 		nchars++;
 	}
-	*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+	if (quotes) {
+		*q++ = (duk_uint8_t) DUK_ASC_SINGLEQUOTE;
+	}
 
 	duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (q - buf));
 }
 
-DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval *tv, duk_bool_t error_aware) {
+DUK_LOCAL duk_bool_t duk__push_safe_prop_summary(duk_context *ctx, duk_hobject *h, duk_small_uint_t stridx) {
+	duk_propdesc desc;
+
+	if (!duk_hobject_get_propdesc((duk_hthread *) ctx, h, DUK_HTHREAD_GET_STRING((duk_hthread *) ctx, stridx), &desc, DUK_GETDESC_FLAG_IGNORE_PROTOLOOP | DUK_GETDESC_FLAG_PUSH_VALUE)) {
+		return 0;
+	}
+	if (!duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_NUMBER | DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_POINTER)) {
+		duk_pop(ctx);
+		return 0;
+	}
+	/* This works for strings, but also for some other types, if string
+	 * coerced and without quotes they come out without escapes etc.
+	 */
+	duk__push_hstring_readable_unicode(ctx, duk_to_hstring(ctx, -1), 0 /*quotes*/);
+	duk_remove(ctx, -2);
+	return 1;
+}
+
+DUK_LOCAL void duk__push_buffer_data_summary(duk_context *ctx, const duk_uint8_t *data, duk_size_t length) {
+	duk_size_t i, limit;
+	duk_uint8_t buf[DUK__READABLE_BUFFER_MAXBYTES * 2 + 3];
+	duk_uint8_t *q;
+	duk_uint8_t x;
+
+	/* FIXME: sharing with JX */
+	limit = (length > DUK__READABLE_BUFFER_MAXBYTES ? DUK__READABLE_BUFFER_MAXBYTES : length);
+	q = buf;
+	for (i = 0; i < limit; i++) {
+		x = data[i];
+		*q++ = duk_lc_digits[x >> 4];
+		*q++ = duk_lc_digits[x & 0x0f];
+	}
+	if (limit < length) {
+		*q++ = DUK_ASC_PERIOD;
+		*q++ = DUK_ASC_PERIOD;
+		*q++ = DUK_ASC_PERIOD;
+	}
+	duk_push_lstring(ctx, (const char *) buf, (duk_size_t) (q - buf));
+	duk_push_sprintf(ctx, " %lu bytes", (unsigned long) length);
+}
+
+DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval *tv) {
 	duk_hthread *thr;
+	duk_idx_t entry_top;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 	/* 'tv' may be NULL */
 
+	entry_top = duk_get_top(ctx);
 	if (tv == NULL) {
 		duk_push_string(ctx, "none");
 	} else {
 		switch (DUK_TVAL_GET_TAG(tv)) {
 		case DUK_TAG_STRING: {
-			duk__push_hstring_readable_unicode(ctx, DUK_TVAL_GET_STRING(tv));
+			duk__push_hstring_readable_unicode(ctx, DUK_TVAL_GET_STRING(tv), 1 /*quotes*/);
 			break;
 		}
 		case DUK_TAG_OBJECT: {
 			duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
 			DUK_ASSERT(h != NULL);
 
-			if (error_aware &&
-			    duk_hobject_prototype_chain_contains(thr, h, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE], 1 /*ignore_loop*/)) {
-				/* Get error message in a side effect free way if
-				 * possible; if not, summarize as a generic object.
-				 * Error message currently gets quoted.
-				 */
-				/* XXX: better internal getprop call; get without side effects
-				 * but traverse inheritance chain.
-				 */
-				duk_tval *tv_msg;
-				tv_msg = duk_hobject_find_existing_entry_tval_ptr(thr->heap, h, DUK_HTHREAD_STRING_MESSAGE(thr));
-				if (tv_msg) {
-					/* It's important this summarization is
-					 * not error aware to avoid unlimited
-					 * recursion when the .message property
-					 * is e.g. another error.
+			duk_push_string(ctx, "[");
+			duk_push_class_string_tval(ctx, tv);
+
+			switch (DUK_HOBJECT_GET_CLASS_NUMBER(h)) {
+			case DUK_HOBJECT_CLASS_BOOLEAN:
+			case DUK_HOBJECT_CLASS_NUMBER:
+			case DUK_HOBJECT_CLASS_STRING:  /* FIXME: string quotes */
+			case DUK_HOBJECT_CLASS_POINTER: {  /* FIXME: pointer parens */
+				(void) duk__push_safe_prop_summary(thr, h, DUK_STRIDX_INT_VALUE);
+				break;
+			}
+
+			case DUK_HOBJECT_CLASS_FUNCTION: {
+				/* FIXME: Function special handling */
+				/* FIXME: duk_push_sprintf() and entry_top handling at shared exit path */
+				(void) duk__push_safe_prop_summary(thr, h, DUK_STRIDX_NAME);
+				break;
+			}
+
+			case DUK_HOBJECT_CLASS_DATE: {
+				/* FIXME: ISO formatting? */
+				(void) duk__push_safe_prop_summary(thr, h, DUK_STRIDX_INT_VALUE);
+				break;
+			}
+
+			case DUK_HOBJECT_CLASS_REGEXP: {
+				/* FIXME: slashes or other escaping? */
+				(void) duk__push_safe_prop_summary(thr, h, DUK_STRIDX_SOURCE);
+				break;
+			}
+
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+			case DUK_HOBJECT_CLASS_ARRAYBUFFER:
+			case DUK_HOBJECT_CLASS_DATAVIEW:
+			case DUK_HOBJECT_CLASS_INT8ARRAY:
+			case DUK_HOBJECT_CLASS_UINT8ARRAY:
+			case DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY:
+			case DUK_HOBJECT_CLASS_INT16ARRAY:
+			case DUK_HOBJECT_CLASS_UINT16ARRAY:
+			case DUK_HOBJECT_CLASS_INT32ARRAY:
+			case DUK_HOBJECT_CLASS_UINT32ARRAY:
+			case DUK_HOBJECT_CLASS_FLOAT32ARRAY:
+			case DUK_HOBJECT_CLASS_FLOAT64ARRAY:
+			case DUK_HOBJECT_CLASS_BUFFER: {
+				/* FIXME: Bufferobject special handling */
+				duk_hbufobj *h_bufobj;
+				duk_uint8_t *p_base;
+
+				h_bufobj = (duk_hbufobj *) h;
+				if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_SLICE(h_bufobj)) {
+					p_base = DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_bufobj);
+					duk__push_buffer_data_summary(ctx, (const duk_uint8_t *) p_base, h_bufobj->length);  /* push 2 elems */
+				} else {
+					duk_push_string(ctx, "unbacked");
+					duk_push_sprintf(ctx, " (%lu bytes)", (unsigned long) h_bufobj->length);
+				}
+				break;
+			}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
+#if 0
+			case DUK_HOBJECT_CLASS_NONE:
+			case DUK_HOBJECT_CLASS_ERROR:
+			case DUK_HOBJECT_CLASS_ARGUMENTS:
+			case DUK_HOBJECT_CLASS_OBJECT:
+			case DUK_HOBJECT_CLASS_ARRAY:
+			case DUK_HOBJECT_CLASS_OBJENV:
+			case DUK_HOBJECT_CLASS_DECENV:
+			case DUK_HOBJECT_CLASS_JSON:
+			case DUK_HOBJECT_CLASS_MATH:
+			case DUK_HOBJECT_CLASS_GLOBAL:
+			case DUK_HOBJECT_CLASS_THREAD:
+#endif
+			default: {
+				if (duk_hobject_prototype_chain_contains(thr, h, thr->builtins[DUK_BIDX_ERROR_PROTOTYPE], 1 /*ignore_loop*/)) {
+					/* Get error message in a side effect free way if
+					 * possible; if not, summarize as a generic object.
 					 */
-					return duk_push_string_tval_readable(ctx, tv_msg);
+					if (!duk__push_safe_prop_summary(thr, h, DUK_STRIDX_NAME)) {
+						DUK_ASSERT(duk_get_top(ctx) == entry_top + 2);
+						break;
+					}
+					if (!duk__push_safe_prop_summary(thr, h, DUK_STRIDX_MESSAGE)) {
+						duk_set_top(ctx, entry_top + 2);
+						break;
+					}
+					/* If we succeed, replace default class name with .name,
+					 * and let sharing handling add the space in-between.
+					 */
+					duk_remove(ctx, entry_top + 1);  /* Remove default class name, replace with .name. */
+					break;
 				}
 			}
-			duk_push_class_string_tval(ctx, tv);
+			}
+
+			if (duk_get_top(ctx) > entry_top + 2) {
+				/* Add space between class and value */
+				duk_push_string(ctx, " ");
+				duk_insert(ctx, entry_top + 2);
+			}
+			duk_push_string(ctx, "]");
+			duk_concat(ctx, duk_get_top(ctx) - entry_top);  /* FIXME: direct sprintf */
 			break;
 		}
 		case DUK_TAG_BUFFER: {
@@ -4828,22 +4980,26 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 			 * This is useful so that the summarized string accurately reflects the
 			 * internal type which may matter for figuring out bugs etc.
 			 */
-			/* XXX: Hex encoded, length limited buffer summary here? */
 			duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
 			DUK_ASSERT(h != NULL);
-			duk_push_sprintf(ctx, "[buffer:%ld]", (long) DUK_HBUFFER_GET_SIZE(h));
+			duk_push_string(ctx, "[buffer ");
+			duk__push_buffer_data_summary(ctx, (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h), DUK_HBUFFER_GET_SIZE(h));  /* push 2 elems */
+			duk_push_string(ctx, "]");
+			duk_concat(ctx, 4);
 			break;
 		}
 		case DUK_TAG_POINTER: {
 			/* Surround with parentheses like in JX, ensures NULL pointer
 			 * is distinguishable from null value ("(null)" vs "null").
 			 */
+			/* FIXME: direct formatting? */
 			duk_push_tval(ctx, tv);
 			duk_push_sprintf(ctx, "(%s)", duk_to_string(ctx, -1));
 			duk_remove(ctx, -2);
 			break;
 		}
 		default: {
+			/* For most primitive values string coercion is safe. */
 			duk_push_tval(ctx, tv);
 			break;
 		}
@@ -4854,7 +5010,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 }
 DUK_INTERNAL const char *duk_push_string_tval_readable(duk_context *ctx, duk_tval *tv) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	return duk__push_string_tval_readable(ctx, tv, 0 /*error_aware*/);
+	return duk__push_string_tval_readable(ctx, tv);
 }
 
 DUK_INTERNAL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t idx) {
@@ -4862,7 +5018,7 @@ DUK_INTERNAL const char *duk_push_string_readable(duk_context *ctx, duk_idx_t id
 	return duk_push_string_tval_readable(ctx, duk_get_tval(ctx, idx));
 }
 
-DUK_INTERNAL const char *duk_push_string_tval_readable_error(duk_context *ctx, duk_tval *tv) {
+DUK_EXTERNAL const char *duk_push_string_readable_HACK(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	return duk__push_string_tval_readable(ctx, tv, 1 /*error_aware*/);
+	return duk_push_string_tval_readable(ctx, duk_get_tval(ctx, idx));
 }

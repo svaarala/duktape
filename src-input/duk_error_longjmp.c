@@ -28,7 +28,7 @@ DUK_LOCAL void duk__uncaught_error_aware(duk_hthread *thr) {
 	const char *summary;
 	char buf[64];
 
-	summary = duk_push_string_tval_readable_error((duk_context *) thr, &thr->heap->lj.value1);
+	summary = duk_push_string_tval_readable((duk_context *) thr, &thr->heap->lj.value1);
 	DUK_ASSERT(summary != NULL);
 	DUK_SNPRINTF(buf, sizeof(buf), "uncaught: %s", summary);
 	buf[sizeof(buf) - 1] = (char) 0;
