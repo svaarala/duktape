@@ -100,45 +100,45 @@ function f_postdec() {
 }
 
 function f_continue() {
-	var done = false;
+    var done = false;
 
-	outer:
-	for (;;) {
-		if (done) {
-			print('return from outer');
-			return;
-		}
+    outer:
+    for (;;) {
+        if (done) {
+            print('return from outer');
+            return;
+        }
 
-		for (;;) {
-			if (done) {
-				print('return from inner');
-				return;
-			}
-			done = true;
+        for (;;) {
+            if (done) {
+                print('return from inner');
+                return;
+            }
+            done = true;
 
-			// interpreted as 'continue; outer;'
-			// continues inner loop -> exits from inner
-			// ('continue outer' would exit from outer)
-			continue
-			outer
-		}
-	}
+            // interpreted as 'continue; outer;'
+            // continues inner loop -> exits from inner
+            // ('continue outer' would exit from outer)
+            continue
+            outer
+        }
+    }
 }
 
 function f_break() {
-	outer:
-	for (;;) {
-		for (;;) {
-			// interpreted as 'break: outer'
-			break
-			outer
-		}
+    outer:
+    for (;;) {
+        for (;;) {
+            // interpreted as 'break: outer'
+            break
+            outer
+        }
 
-		print('return from inner');
-		return;
-	}
+        print('return from inner');
+        return;
+    }
 
-	print('return from outer');
+    print('return from outer');
 }
 
 function f_return() {

@@ -23,12 +23,12 @@ var o = { foo: "bar" };
 var rescue;
 
 function finalizer(x) {
-	if (rescue) {
-		o = x;
-		print("rescued");
-	} else {
-		print("not rescued");
-	}
+    if (rescue) {
+        o = x;
+        print("rescued");
+    } else {
+        print("not rescued");
+    }
 }
 
 Duktape.fin(o, finalizer);

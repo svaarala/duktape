@@ -64,7 +64,7 @@ function complexReviverTest() {
         var holder = this;
         print('reviver: json(name)=' + JSON.stringify(name) +
               ', json(val)=' + JSON.stringify(val) +
-	      ', json(holder)=' + JSON.stringify(holder));
+              ', json(holder)=' + JSON.stringify(holder));
         return val;
     }
 
@@ -114,7 +114,7 @@ function reviverDeletionTest() {
 
         print('reviver: json(name)=' + JSON.stringify(name) +
               ', json(val)=' + JSON.stringify(val) +
-	      ', json(holder)=' + JSON.stringify(holder));
+              ', json(holder)=' + JSON.stringify(holder));
 
         // delete k_arr and k_true
         if (name === 'k_arr' || name === 'k_true') {
@@ -173,7 +173,7 @@ function reviverReplacementTest() {
 
         print('reviver: json(name)=' + JSON.stringify(name) +
               ', json(val)=' + JSON.stringify(val) +
-	      ', json(holder)=' + JSON.stringify(holder));
+              ', json(holder)=' + JSON.stringify(holder));
 
         // replace k_true with [3,2,1] and k_arr with {foo:'foo',bar:'bar}
         if (name === 'k_arr') {
@@ -228,7 +228,7 @@ function reviverObjectIdentityTest() {
 
         print('reviver: json(name)=' + JSON.stringify(name) +
               ', json(val)=' + JSON.stringify(val) +
-	      ', json(holder)=' + JSON.stringify(holder));
+              ', json(holder)=' + JSON.stringify(holder));
 
         if (name === 'foo' || name === 'bar') {
             return repl_value;

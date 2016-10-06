@@ -563,11 +563,11 @@ whitespace and mutate test
 // various ways.
 /*
 for i in xrange(256):
-	print(chr(i).encode('base64'))
+    print(chr(i).encode('base64'))
 
 txt = 'foo bar quux baz'
 for i in xrange(16):
-	print(txt[0:i].encode('base64'))
+    print(txt[0:i].encode('base64'))
 */
 var testStrings = [
     '',

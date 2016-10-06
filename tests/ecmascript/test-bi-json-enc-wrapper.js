@@ -30,8 +30,8 @@ try {
 
         print("replacer");
 
-	var pd = Object.getOwnPropertyDescriptor(this, '');
-	print('desc:', pd.writable, pd.enumerable, pd.configurable, pd.value);
+        var pd = Object.getOwnPropertyDescriptor(this, '');
+        print('desc:', pd.writable, pd.enumerable, pd.configurable, pd.value);
 
         print(typeof this);
         print(this['']);  // access the empty string key of the wrapper

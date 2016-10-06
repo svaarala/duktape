@@ -917,6 +917,7 @@ codepolicycheck:
 		--check-no-symbol-visibility \
 		--check-trailing-whitespace \
 		--check-mixed-indent \
+		--check-tab-indent \
 		--check-nonleading-tab \
 		--dump-vim-commands \
 		tests/ecmascript/*.js
