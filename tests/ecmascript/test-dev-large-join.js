@@ -47,7 +47,7 @@ var limit = 1e6;
 
 print('building');
 for (i = 0; i < limit; i++) {
-	tmp[tmp.length] = String.fromCharCode(i % 65536);
+    tmp[tmp.length] = String.fromCharCode(i % 65536);
 }
 print(tmp.length);
 

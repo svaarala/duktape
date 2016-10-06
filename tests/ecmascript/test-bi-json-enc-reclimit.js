@@ -50,7 +50,7 @@ function objectAndArrayRecursionTest(n) {
     var i;
 
     for (i = 0; i < n; i++) {
-	if (i % 2) {
+        if (i % 2) {
             obj = { foo: obj };
         } else {
             obj = [ obj ];
@@ -100,7 +100,7 @@ function noRecursionTest(n) {
     var i;
 
     for (i = 0; i < n; i++) {
-	if (i % 2) {
+        if (i % 2) {
             obj.push([1, { foo: 1 }]);
         } else {
             obj.push({ foo: 1, bar: [1, 2] });

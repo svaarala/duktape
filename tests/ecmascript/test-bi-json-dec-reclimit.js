@@ -55,7 +55,7 @@ function objectAndArrayRecursionTest(n) {
     var i;
 
     for (i = 0; i < n; i++) {
-	if (i % 2) {
+        if (i % 2) {
             txt = "{\"foo\":" + txt + "}";
         } else {
             txt = "[" + txt + "]";
@@ -108,7 +108,7 @@ function noRecursionTest(n) {
     var i;
 
     for (i = 0; i < n; i++) {
-	if (i % 2) {
+        if (i % 2) {
             txt.push("[1, {\"foo\":1}]");
         } else {
             txt.push("{\"foo\":1, \"bar\":[1,2]}");

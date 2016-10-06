@@ -153,13 +153,13 @@ OBJ3
  */
 
 var obj1 = {
-	toString: function() { print('OBJ1'); return 'x'; }
+    toString: function() { print('OBJ1'); return 'x'; }
 };
 var obj2 = {
-	toString: function() { print('OBJ2'); return 'y'; }
+    toString: function() { print('OBJ2'); return 'y'; }
 };
 var obj3 = {
-	toString: function() { print('OBJ3'); return 'print(x+y)'; }
+    toString: function() { print('OBJ3'); return 'print(x+y)'; }
 };
 
 try {

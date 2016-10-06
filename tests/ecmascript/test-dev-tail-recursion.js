@@ -18,10 +18,10 @@
 /* Very basic case */
 
 function sum1(a, b) {
-	if (b == 0) {
-		return a;
-	}
-	return sum1(a + 1, b - 1);
+    if (b == 0) {
+        return a;
+    }
+    return sum1(a + 1, b - 1);
 }
 
 try {
@@ -42,14 +42,14 @@ try {
 
 var count = 0;
 function commaop() {
-	count++;
+    count++;
 }
 
 function sum2(a, b) {
-	if (b == 0) {
-		return a;
-	}
-	return commaop(), sum2(a + 1, b - 1);
+    if (b == 0) {
+        return a;
+    }
+    return commaop(), sum2(a + 1, b - 1);
 }
 
 try {
@@ -75,10 +75,10 @@ RangeError
  */
 
 function tail_eval(a,b) {
-	if (b == 0) {
-		return a;
-	}
-	return eval("tail_eval(a + 1, b - 1)");
+    if (b == 0) {
+        return a;
+    }
+    return eval("tail_eval(a + 1, b - 1)");
 }
 
 try {
