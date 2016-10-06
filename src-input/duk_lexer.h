@@ -135,41 +135,43 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 #define DUK_TOK_MUL                               68
 #define DUK_TOK_DIV                               69
 #define DUK_TOK_MOD                               70
-#define DUK_TOK_INCREMENT                         71
-#define DUK_TOK_DECREMENT                         72
-#define DUK_TOK_ALSHIFT                           73  /* named "arithmetic" because result is signed */
-#define DUK_TOK_ARSHIFT                           74
-#define DUK_TOK_RSHIFT                            75
-#define DUK_TOK_BAND                              76
-#define DUK_TOK_BOR                               77
-#define DUK_TOK_BXOR                              78
-#define DUK_TOK_LNOT                              79
-#define DUK_TOK_BNOT                              80
-#define DUK_TOK_LAND                              81
-#define DUK_TOK_LOR                               82
-#define DUK_TOK_QUESTION                          83
-#define DUK_TOK_COLON                             84
-#define DUK_TOK_EQUALSIGN                         85
-#define DUK_TOK_ADD_EQ                            86
-#define DUK_TOK_SUB_EQ                            87
-#define DUK_TOK_MUL_EQ                            88
-#define DUK_TOK_DIV_EQ                            89
-#define DUK_TOK_MOD_EQ                            90
-#define DUK_TOK_ALSHIFT_EQ                        91
-#define DUK_TOK_ARSHIFT_EQ                        92
-#define DUK_TOK_RSHIFT_EQ                         93
-#define DUK_TOK_BAND_EQ                           94
-#define DUK_TOK_BOR_EQ                            95
-#define DUK_TOK_BXOR_EQ                           96
+#define DUK_TOK_EXP                               71
+#define DUK_TOK_INCREMENT                         72
+#define DUK_TOK_DECREMENT                         73
+#define DUK_TOK_ALSHIFT                           74   /* named "arithmetic" because result is signed */
+#define DUK_TOK_ARSHIFT                           75
+#define DUK_TOK_RSHIFT                            76
+#define DUK_TOK_BAND                              77
+#define DUK_TOK_BOR                               78
+#define DUK_TOK_BXOR                              79
+#define DUK_TOK_LNOT                              80
+#define DUK_TOK_BNOT                              81
+#define DUK_TOK_LAND                              82
+#define DUK_TOK_LOR                               83
+#define DUK_TOK_QUESTION                          84
+#define DUK_TOK_COLON                             85
+#define DUK_TOK_EQUALSIGN                         86
+#define DUK_TOK_ADD_EQ                            87
+#define DUK_TOK_SUB_EQ                            88
+#define DUK_TOK_MUL_EQ                            89
+#define DUK_TOK_DIV_EQ                            90
+#define DUK_TOK_MOD_EQ                            91
+#define DUK_TOK_EXP_EQ                            92
+#define DUK_TOK_ALSHIFT_EQ                        93
+#define DUK_TOK_ARSHIFT_EQ                        94
+#define DUK_TOK_RSHIFT_EQ                         95
+#define DUK_TOK_BAND_EQ                           96
+#define DUK_TOK_BOR_EQ                            97
+#define DUK_TOK_BXOR_EQ                           98
 
 /* literals (E5 Section 7.8), except null, true, false, which are treated
  * like reserved words (above).
  */
-#define DUK_TOK_NUMBER                            97
-#define DUK_TOK_STRING                            98
-#define DUK_TOK_REGEXP                            99
+#define DUK_TOK_NUMBER                            99
+#define DUK_TOK_STRING                            100
+#define DUK_TOK_REGEXP                            101
 
-#define DUK_TOK_MAXVAL                            99  /* inclusive */
+#define DUK_TOK_MAXVAL                            101  /* inclusive */
 
 /* Convert heap string index to a token (reserved words) */
 #define DUK_STRIDX_TO_TOK(x)                        ((x) - DUK_STRIDX_START_RESERVED + DUK_TOK_START_RESERVED)

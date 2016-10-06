@@ -1035,7 +1035,11 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		}
 		break;
 	case DUK_ASC_STAR:  /* '*' */
-		if (DUK__L1() == '=') {
+		if (DUK__L1() == '*' && DUK__L2() == '=') {
+			advtok = DUK__ADVTOK(3, DUK_TOK_EXP_EQ);
+		} else if (DUK__L1() == '*') {
+			advtok = DUK__ADVTOK(2, DUK_TOK_EXP);
+		} else if (DUK__L1() == '=') {
 			advtok = DUK__ADVTOK(2, DUK_TOK_MUL_EQ);
 		} else {
 			advtok = DUK__ADVTOK(1, DUK_TOK_MUL);

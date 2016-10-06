@@ -385,6 +385,7 @@ def main():
         'duk_hthread_stacks.c',
         'duk_internal.h',
         'duk_jmpbuf.h',
+        'duk_js_arith.c',
         'duk_js_bytecode.h',
         'duk_js_call.c',
         'duk_js_compiler.c',
