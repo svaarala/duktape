@@ -244,6 +244,7 @@ function handleGetCommitRequests(state) {
                             repo_full: assert(doc.repo_full),
                             repo_clone_url: assert(doc.repo_clone_url),
                             sha: assert(doc.sha),
+                            fetch_ref: doc.fetch_ref,  // for pulls
                             context: ctx
                         });
 
@@ -326,6 +327,70 @@ function handleGithubPush(req, res, state) {
     handleGetCommitRequests(state);
 }
 
+// Handle a 'pull_request' webhook.
+function handleGithubPullRequest(req, res, state) {
+    var db = assert(state.db);
+    var github = assert(state.github);
+    var trustedAuthors = assert(state.githubTrustedAuthors);
+    var allowedRepos = assert(state.githubRepos);
+
+    var body = req.body;
+    if (body.action !== 'opened' && body.action !== 'synchronize') {
+        console.log('ignoring github webhook "pull_request", based on action: ' + body.action);
+        return;
+    }
+    if (typeof body.number !== 'number') {
+        console.log('ignoring github webhook "pull_request", missing number');
+        return;
+    }
+
+    var commitHash = body.after;
+    var senderName = body.sender && body.sender.login;
+    if (!senderName) {
+        console.log('ignoring github webhook "pull_request", missing sender name');
+        return;
+    }
+    var pullRequestUserName = body.pull_request && body.pull_request.user && body.pull_request.user.login;
+    if (!pullRequestUserName) {
+        console.log('ignoring github webhook "pull_request", missing pull request user name');
+        return;
+    }
+    var repoName = body.repository && body.repository.name;
+    var repoFullName = body.repository && body.repository.full_name;
+    if (!repoFullName || !repoName) {
+        console.log('ignoring github webhook "pull_request", missing repo name');
+        return;
+    }
+    if (trustedAuthors.indexOf(senderName) < 0 || trustedAuthors.indexOf(pullRequestUserName) < 0) {
+        console.log('ignoring github webhook "pull_request" from untrusted source: ' + senderName + ';' + pullRequestUserName);
+        return;
+    }
+    if (allowedRepos.indexOf(repoFullName) < 0) {
+        console.log('ignoring github webhook "pull_request" for non-allowed repo: ' + repoFullName);
+        return;
+    }
+
+    console.log('github webhook "pull_request" to repo ' + repoFullName + ' commit ' + commitHash +
+                ' from trusted source ' + senderName + ';' + pullRequestUserName + ', add automatic jobs');
+
+    // XXX: add a commit_simple UUID for exact matching for get/finish?
+
+    db.insert({
+        type: 'commit_simple',
+        time: Date.now(),
+        runs: [],
+        repo: repoName,
+        repo_full: repoFullName,
+        repo_clone_url: assert(body.repository.clone_url),
+        sender: senderName,
+        pullRequestUser: pullRequestUserName,
+        fetch_ref: '+refs/pull/' + body.number + '/head',
+        sha: assert(commitHash)
+    });
+
+    handleGetCommitRequests(state);
+}
+
 // Create a github-webhook handler.
 function makeGithubWebhookHandler(state) {
     var db = assert(state.db);
@@ -349,8 +414,13 @@ function makeGithubWebhookHandler(state) {
             data: assert(body)
         });
 
+/*
         if (ghEvent === 'push') {
             handleGithubPush(req, res, state);
+        } else
+*/
+	if (ghEvent === 'pull_request') {
+            handleGithubPullRequest(req, res, state);
         } else {
             console.log('unhandled github webhook: ' + ghEvent);
         }

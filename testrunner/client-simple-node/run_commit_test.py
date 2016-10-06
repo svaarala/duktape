@@ -50,6 +50,7 @@ parser = optparse.OptionParser()
 parser.add_option('--repo-full-name', dest='repo_full_name', help='Full name of repository, e.g. "svaarala/duktape"')
 parser.add_option('--repo-clone-url', dest='repo_clone_url', help='Repo HTTPS clone URI, e.g. "https://github.com/svaarala/duktape.git"')
 parser.add_option('--commit-name', dest='commit_name', help='Commit SHA hash or tag name')
+parser.add_option('--fetch-ref', dest='fetch_ref', default=None, help='Ref to fetch before checkout out SHA (e.g. +refs/pull/NNN/head)')
 parser.add_option('--context', dest='context', help='Context identifying test type, e.g. "linux-x64-qecmatest"')
 parser.add_option('--temp-dir', dest='temp_dir', help='Automatic temp dir created by testclient, automatically deleted (recursively) by testclient when test is done')
 parser.add_option('--repo-snapshot-dir', dest='repo_snapshot_dir', help='Directory for repo tar.gz snapshots for faster test init')
@@ -948,6 +949,8 @@ def main():
     print('')
     print('repo_full_name: ' + repo_full_name)
     print('repo_clone_url: ' + repo_clone_url)
+    if opts.fetch_ref is not None:
+        print('fetch_ref: ' + opts.fetch_ref)
     print('commit_name: ' + commit_name)
     print('context: ' + context);
 
@@ -1000,6 +1003,10 @@ def main():
     execute([ 'git', 'pull', '--rebase' ])
     execute([ 'git', 'clean', '-f' ])
     execute([ 'git', 'reset', '--quiet', '--hard' ])
+    if opts.fetch_ref is not None:
+        # For pull requests, fetch pull request head and hope the commit
+        # still exists.
+        execute([ 'git', 'fetch', '--quiet', '--force', 'origin', opts.fetch_ref ])
     execute([ 'git', 'checkout', '--quiet', commit_name ])
     execute([ 'git', 'describe', '--always', '--dirty' ])
 

@@ -206,6 +206,7 @@ function processSimpleScriptJob(rep) {
         repoFull = assert(rep.repo_full);
         repoCloneUrl = assert(rep.repo_clone_url);
         sha = assert(rep.sha);
+        fetch_ref = rep.fetch_ref;  // optional, only for pulls
 
         for (i = 0; i < clientConfig.supportedContexts.length; i++) {
             if (clientConfig.supportedContexts[i].context === assert(rep.context)) {
@@ -228,6 +229,11 @@ function processSimpleScriptJob(rep) {
             '--temp-dir', assert(tmpDir.name),
             '--repo-snapshot-dir', assert(clientConfig.repoSnapshotDir)
         ]);
+        if (fetch_ref) {
+            args = args.concat([
+                '--fetch-ref', fetch_ref
+            ]);
+        }
 
         // XXX: child timeout and recovery
         var cld = child_process.spawn(args[0], args.slice(1), { cwd: '/tmp' });
