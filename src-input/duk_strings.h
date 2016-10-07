@@ -82,6 +82,16 @@
 
 /* Variables */
 
+/* Lexer */
+#define DUK_STR_INVALID_ESCAPE                   "invalid escape"
+#define DUK_STR_UNTERMINATED_STRING              "unterminated string"
+#define DUK_STR_UNTERMINATED_COMMENT             "unterminated comment"
+#define DUK_STR_UNTERMINATED_REGEXP              "unterminated regexp"
+#define DUK_STR_TOKEN_LIMIT                      "token limit"
+#define DUK_STR_REGEXP_SUPPORT_DISABLED          "regexp support disabled"
+#define DUK_STR_INVALID_NUMBER_LITERAL           "invalid number literal"
+#define DUK_STR_INVALID_TOKEN                    "invalid token"
+
 /* Compiler */
 #define DUK_STR_PARSE_ERROR                      "parse error"
 #define DUK_STR_DUPLICATE_LABEL                  "duplicate label"
@@ -109,6 +119,7 @@
 #define DUK_STR_FUNC_NAME_REQUIRED               "function name required"
 
 /* Regexp */
+#define DUK_STR_INVALID_QUANTIFIER               "invalid regexp quantifier"
 #define DUK_STR_INVALID_QUANTIFIER_NO_ATOM       "quantifier without preceding atom"
 #define DUK_STR_INVALID_QUANTIFIER_VALUES        "quantifier values invalid (qmin > qmax)"
 #define DUK_STR_QUANTIFIER_TOO_MANY_COPIES       "quantifier requires too many atom copies"
@@ -116,7 +127,11 @@
 #define DUK_STR_UNEXPECTED_END_OF_PATTERN        "unexpected end of pattern"
 #define DUK_STR_UNEXPECTED_REGEXP_TOKEN          "unexpected token in regexp"
 #define DUK_STR_INVALID_REGEXP_FLAGS             "invalid regexp flags"
+#define DUK_STR_INVALID_REGEXP_ESCAPE            "invalid regexp escape"
 #define DUK_STR_INVALID_BACKREFS                 "invalid backreference(s)"
+#define DUK_STR_INVALID_REGEXP_CHARACTER         "invalid regexp character"
+#define DUK_STR_UNTERMINATED_CHARCLASS           "unterminated character class"
+#define DUK_STR_INVALID_RANGE                    "invalid range"
 
 /* Limits */
 #define DUK_STR_VALSTACK_LIMIT                   "valstack limit"
