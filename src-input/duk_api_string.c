@@ -317,6 +317,10 @@ DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, d
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
+	/* XXX: Share code with String.prototype.charCodeAt?  Main difference
+	 * is handling of clamped offsets.
+	 */
+
 	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
@@ -326,6 +330,6 @@ DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, d
 	}
 
 	DUK_ASSERT(char_offset <= DUK_UINT_MAX);  /* guaranteed by string limits */
-	cp = duk_hstring_char_code_at_raw(thr, h, (duk_uint_t) char_offset);
+	cp = duk_hstring_char_code_at_raw(thr, h, (duk_uint_t) char_offset, 0 /*surrogate_aware*/);
 	return (duk_codepoint_t) cp;
 }

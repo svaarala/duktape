@@ -658,6 +658,7 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bo
 
 	DUK_ASSERT(DUK__L0() == DUK_ASC_BACKSLASH);  /* caller responsibilities */
 	DUK_ASSERT(DUK__L1() == DUK_ASC_LC_X || DUK__L1() == DUK_ASC_LC_U);
+	DUK_UNREF(allow_es6);
 
 	adv = 2;
 	digits = 2;
