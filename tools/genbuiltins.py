@@ -168,11 +168,26 @@ def metadata_remove_disabled(meta, active_opts):
     count_disabled_property = 0
     count_notneeded_property = 0
 
+    def present_if_check(v):
+        pi = v.get('present_if', None)
+        if pi is None:
+            return True
+        if isinstance(pi, (str, unicode)):
+            pi = [ pi ]
+        if not isinstance(pi, list):
+            raise Exception('invalid present_if syntax: %r' % pi)
+        # Present if all listed options are true or unknown.
+        # Absent if any option is known to be false.
+        for opt in pi:
+            if active_opts.get(opt, None) == False:
+                return False
+        return True
+
     for o in meta['objects']:
         if o.get('disable', False):
             logger.debug('Remove disabled object: %s' % o['id'])
             count_disabled_object += 1
-        elif o.has_key('present_if') and active_opts.get(o['present_if'], None) == False:
+        elif not present_if_check(o):
             logger.debug('Removed object not needed in active configuration: %s' % o['id'])
             count_notneeded_object += 1
         else:
@@ -183,7 +198,7 @@ def metadata_remove_disabled(meta, active_opts):
             if p.get('disable', False):
                 logger.debug('Remove disabled property: %s, object: %s' % (p['key'], o['id']))
                 count_disabled_property += 1
-            elif p.has_key('present_if') and active_opts.get(p['present_if'], None) == False:
+            elif not present_if_check(p):
                 logger.debug('Removed property not needed in active configuration: %s, object: %s' % (p['key'], o['id']))
                 count_notneeded_property += 1
             else:
@@ -194,7 +209,7 @@ def metadata_remove_disabled(meta, active_opts):
     meta['objects'] = objlist
 
     if count_disabled_object + count_notneeded_object + count_disabled_property + count_notneeded_property > 0:
-        logger.info('Removed %d objects (%d disabled, %d not needed by config), %d properties (%d disabled, %d not needed by config' % (count_disabled_object + count_notneeded_object, count_disabled_object, count_notneeded_object, count_disabled_property + count_notneeded_property, count_disabled_property, count_notneeded_property))
+        logger.info('Removed %d objects (%d disabled, %d not needed by config), %d properties (%d disabled, %d not needed by config)' % (count_disabled_object + count_notneeded_object, count_disabled_object, count_notneeded_object, count_disabled_property + count_notneeded_property, count_disabled_property, count_notneeded_property))
 
 # Delete dangling references to removed/missing objects.
 def metadata_delete_dangling_references_to_object(meta, obj_id):
