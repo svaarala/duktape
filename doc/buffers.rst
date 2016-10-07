@@ -1057,6 +1057,140 @@ should be accessed directly without invoking side effects.  For now this
 would not be an issue because typed array ``.length`` is a virtual own
 property, and accessing it has no side effects.
 
+Update to newer Node.js Buffer API version
+------------------------------------------
+
+Current:
+
+* https://nodejs.org/docs/v0.12.1/api/buffer.html
+
+Latest at time of writing:
+
+* https://nodejs.org/docs/v6.7.0/api/buffer.html
+
+Gap between current implementation and latest:
+
+* ``Buffer.prototype`` should inherit from ``Uint8Array.prototype`` now;
+  Buffer instances are now Uint8Array instances, and
+  ``new Uint8Array([1,2,3]).__proto__ == Uint8Array.prototype`` is true.
+
+* Buffers can be for-of iterated; buf.values(), buf.keys(), and
+  buf.entries() create iterators.  For-of iteration requires @@iterator
+  support.
+
+* ``new Buffer(...)`` is deprecated in favor of ``Buffer.from()``,
+  ``Buffer.alloc()``, and ``Buffer.allocUnsafe()``.
+
+* ``new Buffer(arrayBuffer[, byteOffset [, length]])`` variant is not
+  supported.  This variant is already deprecated.
+
+* ``new Buffer(string[, encoding])`` does not handle encoding correctly.
+  The internal string representation (CESU-8, extended UTF-8, or even
+  invalid UTF-8) is used as buffer bytes as-is.  This is also incorrect
+  for Node.js Buffer v0.12.1 (and already incorrect in master).
+
+* ``Buffer.alloc(size[, fill[, encoding]])`` is missing.
+
+* ``Buffer.allocUnsafe(size)`` is missing.  In practice could be implemented
+  as ``Buffer.alloc(size)`` (ignoring any further parameters) so that a
+  zero-filled buffer is allocated.
+
+* ``Buffer.allocUnsafeSlow(size)`` is missing.  Could be implemented as
+  ``Buffer.alloc(size)`` (ignoring any further parameters).
+
+* ``Buffer.byteLength(string[, encoding])`` ignores the encoding argument
+  and just returns the byte length of the internal string representation
+  (CESU-8 typically, but not always).  It also doesn't handle buffer,
+  Uint8Array, etc values which now have special handling in v6.7.0.
+
+* ``Buffer.concat()`` no longer special cases array length 1: in v0.12.1
+  an argument ``[ buf ]`` would result in ``buf`` with no copy::
+
+      > a = new Buffer(4)
+      <Buffer 00 00 88 cf>
+      > b = Buffer.concat([a])
+      <Buffer 00 00 88 cf>
+      > a === b
+      true
+
+  In v6.7.0 a copy is always made which is much more predictable::
+
+      > a = new Buffer(4)
+      <Buffer b0 95 6f 02>
+      > b = Buffer.concat([a])
+      <Buffer b0 95 6f 02>
+      > a === b
+      false
+
+* ``Buffer.from()`` is missing.  It can share most code with the constructor.
+
+* ``Buffer.isEncoding()`` is implemented but (still) only narrowly recognizes
+  the exact string ``"utf8"``.
+
+* ``Buffer.poolSize`` is not provided.  The value is meaningless if it's not
+  used by the implementation (i.e. no "unsafe" buffers are implemented).
+
+* ``SlowBuffer`` is not implemented; it's part of v0.12.1 and deprecated (but
+  present) in v6.7.0.  If deprecated features are supported, it should be
+  implemented.
+
+* ``buf.compare()`` has additional arguments in v6.7.0 (source/target indices)
+  which are not implemented.
+
+* ``buf.copy()`` return value has been specified explicitly, must compare
+  against current implementation (also for truncated copys).
+
+* ``buf.entries()`` missing.  Depends on general iterator support.
+
+* ``buf.fill()`` has an explicit encoding argument which has an effect if
+  the fill argument is a string.  Depends on generally supporting string
+  encodings for Buffer API.
+
+* ``buf.indexOf()`` missing.  Note that this is not the same as the
+  typed array indexOf() because it recognizes Buffers.
+
+* ``buf.includes()`` missing.  Note that this is not the same as typed
+  array includes().
+
+* ``buf.keys()`` missing.
+
+* ``buf.lastIndexOf()`` missing.  Note that this is not the same as typed
+  array lastIndexOf().
+
+* ``buf.length`` writability comments in v6.7.0 may need documentation.
+
+* ``buf.readDoubleBE()``, ``buf.writeDoubleBE()`` and all the other read/write
+  accessors seem to be the same in v6.7.0.   Duktape doesn't implement the
+  ``noAssert`` argument and always checks the offsets (which should be within
+  the specification because:
+
+      Setting noAssert to true allows offset to be beyond the end of buf, but
+      the result should be considered undefined behavior.
+
+* ``buf.swap16()``, ``buf.swap32()``, ``buf.swap64()`` missing.
+
+* ``buf.toString()`` doesn't implement encoding.
+
+* ``buf.values()`` missing.
+
+* ``buf.write()`` doesn't implement encoding.  In both v0.12.1 and v6.7.0
+  partially encoded characters won't be written at all so that a few bytes at
+  the end of the buffer may (apparently) be left untouched on a truncated
+  write.  Duktape doesn't currently implement this behavior.
+
+* ``buffer.INSPECT_MAX_BYTES`` not implemented.  It's a property on the
+  ``require('buffer')`` module rather than ``Buffer`` or a ``Buffer`` instance.
+
+* ``SlowBuffer`` is not implemented.
+
+Other notes:
+
+* Deprecated features could be moved behind a config option, e.g.
+  ``DUK_USE_NODEJS_BUFFER_DEPRECATED``.
+
+* Node.js Buffer binding should have its own config option, e.g.
+  ``DUK_USE_NODEJS_BUFFER``.
+
 Improve consistency of argument coercion
 ----------------------------------------
 
