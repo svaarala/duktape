@@ -40,18 +40,16 @@ Ecmascript throughout to refer to the language implemented by Duktape.</p>
 
 <h2>Conformance</h2>
 
-<p>Duktape conforms to the following Ecmascript specifications:</p>
+<p>Duktape conforms to ES5.0/ES5.1:</p>
 <ul>
-<li><a href="http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%205th%20edition%20December%202009.pdf">Edition 5 (E5)</a></li>
-<li><a href="http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf">Edition 5.1 (E5.1)</a>
-    (as <a href="http://www.ecma-international.org/ecma-262/5.1/">HTML</a>)</li>
+<li><a href="http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%205th%20edition%20December%202009.pdf">ECMAScript Language Specification 5th Edition</a></li>
+<li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript&#x00ae; Language Specification 5.1 Edition</a></li>
 </ul>
 
-<p>Duktape borrows
-<a href="#es6features">a few features</a> from Ecmascript E6:</p>
+<p>Some features from Ecmascript 2015 (E6) and Ecmascript 2016 (E7) are implemented:</p>
 <ul>
-<li><a href="http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf">Edition 6 (E6)</a>
-    (as <a href="http://www.ecma-international.org/ecma-262/6.0/index.html">HTML</a>)</li>
+<li><a href="http://www.ecma-international.org/ecma-262/6.0/">ECMAScript&#x00ae; 2015 Language Specification</a></li>
+<li><a href="http://www.ecma-international.org/ecma-262/7.0/">ECMAScript&#x00ae; 2016 Language Specification</a></li>
 </ul>
 
 <p>TypedArray support is based on Khronos TypedArray specification with some
@@ -75,9 +73,10 @@ features (some are visible to applications, while others are internal):</p>
 <li>Khronos/ES6 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
     and <a href="https://nodejs.org/docs/v0.12.1/api/buffer.html">Node.js Buffer</a> bindings,
     plain buffer type (lightweight ArrayBuffer)</li>
-<li>Borrowed from ES6: <code>setPrototypeOf</code>/<code>__proto__</code>,
+<li>From Ecmascript 2015 (E6): <code>setPrototypeOf</code>/<code>__proto__</code>,
     a subset of <code>Proxy</code> objects, computed property names,
     and minimal <code>const</code> support</li>
+<li>From Ecmascript 2016 (E7): exponentiation operator (<code>**</code>, <code>**=</code>)</li>
 <li>Duktape specific built-ins: provided by the <code>Duktape</code> global object</li>
 <li>Extended types: custom "buffer" and "pointer" types, extended string type
     which supports arbitary binary strings and
@@ -155,7 +154,8 @@ wrappers are discussed in detail.</p>
 <p>Duktape specific Ecmascript features are discussed in multiple sections:
 <a href="#typealgorithms">Type algorithms</a> (for custom types),
 <a href="#duktapebuiltins">Duktape built-ins</a> (additional built-ins), 
-<a href="#es6features">Ecmascript E6 features</a> (features borrowed from ES6),
+<a href="#es6features">Ecmascript 2015 (E6) features</a> (features implemented from ES6),
+<a href="#es7features">Ecmascript 2016 (E7) features</a> (features implemented from ES7),
 <a href="#custombehavior">Custom behavior</a> (behavior differing from standard),
 <a href="#customjson">Custom JSON formats</a>,
 <a href="#customdirectives">Custom directives</a>,
