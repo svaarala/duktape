@@ -4,6 +4,15 @@
 
 #include "duk_internal.h"
 
+/* Needed even when Function built-in is disabled. */
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
+	/* ignore arguments, return undefined (E5 Section 15.3.4) */
+	DUK_UNREF(ctx);
+	return 0;
+}
+
+#if defined(DUK_USE_FUNCTION_BUILTIN)
+
 DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
@@ -79,12 +88,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	/* [ body formals source template closure ] */
 
 	return 1;
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
-	/* ignore arguments, return undefined (E5 Section 15.3.4) */
-	DUK_UNREF(ctx);
-	return 0;
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
@@ -344,3 +347,5 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
  type_error:
 	return DUK_RET_TYPE_ERROR;
 }
+
+#endif  /* DUK_USE_FUNCTION_BUILTIN */

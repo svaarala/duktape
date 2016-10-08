@@ -24,6 +24,8 @@
 #      use 'disable: true'.
 #    - If the object is dependent on Duktape configuration, you can make the
 #      object optional using e.g. 'present_if: DUK_USE_BUFFEROBJECT_SUPPORT'.
+#      If the value is a list, the object is present if all listed options are
+#      enabled (logical AND).
 #    - If the object needs a DUK_BIDX_xxx define in Duktape source code, which
 #      also implies it'll get a slot in thr->builtins[] array, use 'bidx: true'.
 #
@@ -48,6 +50,7 @@
 #      'disable: true'.
 #    - If the property is dependent on Duktape configuration, you can make the
 #      property optional using e.g. 'present_if: DUK_USE_BUFFEROBJECT_SUPPORT'.
+#      List of options is interpreted as for objects (logical AND).
 #
 # Property value format:
 #
@@ -159,44 +162,55 @@ objects:
           type: double
           bytes: "7ff8000000000000"  # DBL_NAN
         attributes: ""
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "Infinity"
         value:
           type: double
           bytes: "7ff0000000000000"  # DBL_POSITIVE_INFINITY
         attributes: ""
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "undefined"
         value:
           type: undefined
         attributes: ""
+        # This could be stripped when DUK_USE_GLOBAL_BUILTIN is disabled
+        # ("void 0" is the same and safer) but it's commonly used so keep.
 
       - key: "Object"
         value:
           type: object
           id: bi_object_constructor
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "Function"
         value:
           type: object
           id: bi_function_constructor
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "Array"
         value:
           type: object
           id: bi_array_constructor
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "String"
         value:
           type: object
           id: bi_string_constructor
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "Boolean"
         value:
           type: object
           id: bi_boolean_constructor
+        present_if: DUK_USE_BOOLEAN_BUILTIN
       - key: "Number"
         value:
           type: object
           id: bi_number_constructor
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "Date"
         value:
           type: object
           id: bi_date_constructor
+        present_if: DUK_USE_DATE_BUILTIN
       - key: "RegExp"
         value:
           type: object
@@ -239,6 +253,7 @@ objects:
         value:
           type: object
           id: bi_json
+        present_if: DUK_USE_JSON_BUILTIN
 
       # Duktape specific
       - key: "Duktape"
@@ -246,6 +261,8 @@ objects:
           type: object
           id: bi_duktape
         duktape: true
+        # Remains present even when disabled: needed for error augmentation internally.
+        #present_if: DUK_USE_DUKTAPE_BUILTIN
 
       # ES6
       - key: "Proxy"
@@ -349,46 +366,55 @@ objects:
           native: duk_bi_global_object_eval
           length: 1
         autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseInt"
         value:
           type: function
           native: duk_bi_global_object_parse_int
           length: 2
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseFloat"
         value:
           type: function
           native: duk_bi_global_object_parse_float
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "isNaN"
         value:
           type: function
           native: duk_bi_global_object_is_nan
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "isFinite"
         value:
           type: function
           native: duk_bi_global_object_is_finite
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "decodeURI"
         value:
           type: function
           native: duk_bi_global_object_decode_uri
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "decodeURIComponent"
         value:
           type: function
           native: duk_bi_global_object_decode_uri_component
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "encodeURI"
         value:
           type: function
           native: duk_bi_global_object_encode_uri
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "encodeURIComponent"
         value:
           type: function
           native: duk_bi_global_object_encode_uri_component
           length: 1
+        present_if: DUK_USE_GLOBAL_BUILTIN
 
       # Non-standard extensions: E5 Sections B.2.1 and B.2.2
       #
@@ -401,14 +427,18 @@ objects:
           native: duk_bi_global_object_escape
           length: 1
         section_b: true
-        present_if: DUK_USE_SECTION_B
+        present_if:
+          - DUK_USE_SECTION_B
+          - DUK_USE_GLOBAL_BUILTIN
       - key: "unescape"
         value:
           type: function
           native: duk_bi_global_object_unescape
           length: 1
         section_b: true
-        present_if: DUK_USE_SECTION_B
+        present_if:
+          - DUK_USE_SECTION_B
+          - DUK_USE_GLOBAL_BUILTIN
 
   - id: bi_global_env
     class: ObjEnv
@@ -430,6 +460,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_OBJECT_BUILTIN
 
     properties:
       - key: "length"
@@ -528,6 +559,7 @@ objects:
     class: Object
     # internal_prototype: null
     bidx: true
+    # Present even when DUK_USE_OBJECT_BUILTIN disabled.
 
     properties:
       - key: "constructor"
@@ -535,6 +567,7 @@ objects:
           type: object
           id: bi_object_constructor
         attributes: "wc"
+        present_if: DUK_USE_OBJECT_BUILTIN
 
       - key: "__proto__"
         value:
@@ -547,37 +580,44 @@ objects:
           setter_magic: 0
         attributes: "c"  # configurable in ES6, also V8
         es6: true  # also non-standard legacy
+        present_if: DUK_USE_OBJECT_BUILTIN
 
       - key: "toString"
         value:
           type: function
           native: duk_bi_object_prototype_to_string
           length: 0
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "toLocaleString"
         value:
           type: function
           native: duk_bi_object_prototype_to_locale_string
           length: 0
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "valueOf"
         value:
           type: function
           native: duk_bi_object_prototype_value_of
           length: 0
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "hasOwnProperty"
         value:
           type: function
           native: duk_bi_object_prototype_has_own_property
           length: 1
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "isPrototypeOf"
         value:
           type: function
           native: duk_bi_object_prototype_is_prototype_of
           length: 1
+        present_if: DUK_USE_OBJECT_BUILTIN
       - key: "propertyIsEnumerable"
         value:
           type: function
           native: duk_bi_object_prototype_property_is_enumerable
           length: 1
+        present_if: DUK_USE_OBJECT_BUILTIN
 
   - id: bi_function_constructor
     class: Function
@@ -587,6 +627,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_FUNCTION_BUILTIN
 
     properties:
       - key: "length"
@@ -612,16 +653,20 @@ objects:
     callable: true
     constructable: false  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
     bidx: true
+    nargs: 0  # given explicitly because .length is optional
+    # Present even when DUK_USE_FUNCTION_BUILTIN disabled.
 
     properties:
       - key: "length"
         value: 0
         attributes: ""
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "constructor"
         value:
           type: object
           id: bi_function_constructor
         attributes: "wc"
+        present_if: DUK_USE_FUNCTION_BUILTIN
 
       # Each built-in of class Function has a "name" which is
       # non-writable (the empty string above).  Function.prototype
@@ -633,6 +678,7 @@ objects:
       - key: "name"
         value: ""
         attributes: "w"
+        #present_if: DUK_USE_FUNCTION_BUILTIN  # Kept even when prototype is otherwise empty to guarantee a .name for functions
 
       # test262 ch15/15.3/15.3.4/15.3.4.2/S15.3.4.2_A11 checks that Function.prototype.toString.length
       # is zero, cannot find specification support for that but 0 is a good value.
@@ -641,23 +687,27 @@ objects:
           type: function
           native: duk_bi_function_prototype_to_string
           length: 0
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "apply"
         value:
           type: function
           native: duk_bi_function_prototype_apply
           length: 2
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "call"
         value:
           type: function
           native: duk_bi_function_prototype_call
           length: 1
           varargs: true
+        present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "bind"
         value:
           type: function
           native: duk_bi_function_prototype_bind
           length: 1
           varargs: true
+        present_if: DUK_USE_FUNCTION_BUILTIN
 
   - id: bi_array_constructor
     class: Function
@@ -667,6 +717,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_ARRAY_BUILTIN
 
     properties:
       - key: "length"
@@ -690,6 +741,7 @@ objects:
     class: Array
     internal_prototype: bi_object_prototype
     bidx: true
+    # Present even when DUK_USE_ARRAY_BUILTIN disabled.
 
     # An array prototype is an Array itself.  It has a length property initialized to 0,
     # with property attributes: writable, non-configurable, non-enumerable.  The attributes
@@ -706,72 +758,85 @@ objects:
           type: object
           id: bi_array_constructor
         attributes: "wc"
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "toString"
         value:
           type: function
           native: duk_bi_array_prototype_to_string
           length: 0
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "toLocaleString"
         value:
           type: function
           native: duk_bi_array_prototype_join_shared
           length: 0
           magic: 1  # magic: to_locale_string, here 1
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "concat"
         value:
           type: function
           native: duk_bi_array_prototype_concat
           length: 1
           varargs: true
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "join"
         value:
           type: function
           native: duk_bi_array_prototype_join_shared
           length: 1
           magic: 0  # magic: to_locale_string, here 0
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "pop"
         value:
           type: function
           native: duk_bi_array_prototype_pop
           length: 0
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "push"
         value:
           type: function
           native: duk_bi_array_prototype_push
           length: 1
           varargs: true
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "reverse"
         value:
           type: function
           native: duk_bi_array_prototype_reverse
           length: 0
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "shift"
         value:
           type: function
           native: duk_bi_array_prototype_shift
           length: 0
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "slice"
         value:
           type: function
           native: duk_bi_array_prototype_slice
           length: 2
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "sort"
         value:
           type: function
           native: duk_bi_array_prototype_sort
           length: 1
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "splice"
         value:
           type: function
           native: duk_bi_array_prototype_splice
           length: 2
           varargs: true
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "unshift"
         value:
           type: function
           native: duk_bi_array_prototype_unshift
           length: 1
           varargs: true
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "indexOf"
         value:
           type: function
@@ -779,6 +844,7 @@ objects:
           length: 1
           varargs: true
           magic: 1  # magic: idx_step = +1
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "lastIndexOf"
         value:
           type: function
@@ -786,6 +852,7 @@ objects:
           length: 1
           varargs: true
           magic: -1  # magic: idx_step = -1
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "every"
         value:
           type: function
@@ -795,6 +862,7 @@ objects:
           magic:
             type: array_iter
             funcname: "every"  # BI_ARRAY_ITER_EVERY
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "some"
         value:
           type: function
@@ -804,6 +872,7 @@ objects:
           magic:
             type: array_iter
             funcname: "some"  # BI_ARRAY_ITER_SOME
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "forEach"
         value:
           type: function
@@ -813,6 +882,7 @@ objects:
           magic:
             type: array_iter
             funcname: "forEach"  # BI_ARRAY_ITER_FOREACH
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "map"
         value:
           type: function
@@ -822,6 +892,7 @@ objects:
           magic:
             type: array_iter
             funcname: "map"  # BI_ARRAY_ITER_MAP
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "filter"
         value:
           type: function
@@ -831,6 +902,7 @@ objects:
           magic:
             type: array_iter
             funcname: filter  # BI_ARRAY_ITER_FILTER
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "reduce"
         value:
           type: function
@@ -838,6 +910,7 @@ objects:
           length: 1
           varargs: true
           magic: 1  # magic: idx_step = +1
+        present_if: DUK_USE_ARRAY_BUILTIN
       - key: "reduceRight"
         value:
           type: function
@@ -845,6 +918,7 @@ objects:
           length: 1
           varargs: true
           magic: -1  # magic: idx_step = -1
+        present_if: DUK_USE_ARRAY_BUILTIN
 
   - id: bi_string_constructor
     class: Function
@@ -854,6 +928,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_STRING_BUILTIN
 
     properties:
       - key: "length"
@@ -890,6 +965,7 @@ objects:
     class: String
     internal_prototype: bi_object_prototype
     bidx: true
+    # Present even when DUK_USE_STRING_BUILTIN disabled.
 
     # String prototype is a String instance and must have length value 0.
     # This is supplied by the String instance virtual properties and does
@@ -907,6 +983,7 @@ objects:
           type: object
           id: bi_string_constructor
         attributes: "wc"
+        present_if: DUK_USE_STRING_BUILTIN
 
       # Internal empty string value.  Note that this value is not writable
       # which prevents a String instance's internal value also from being
@@ -922,27 +999,32 @@ objects:
           type: function
           native: duk_bi_string_prototype_to_string
           length: 0
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "valueOf"
         value:
           type: function
           native: duk_bi_string_prototype_to_string  # share native function, behavior is identical
           length: 0
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "charAt"
         value:
           type: function
           native: duk_bi_string_prototype_char_at
           length: 1
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "charCodeAt"
         value:
           type: function
           native: duk_bi_string_prototype_char_code_at
           length: 1
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "concat"
         value:
           type: function
           native: duk_bi_string_prototype_concat
           length: 1
           varargs: true
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "indexOf"
         value:
           type: function
@@ -950,6 +1032,7 @@ objects:
           length: 1
           nargs: 2
           magic: 0  # magic = 0 -> indexOf
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "lastIndexOf"
         value:
           type: function
@@ -957,72 +1040,87 @@ objects:
           length: 1
           nargs: 2
           magic: 1  # magic = 1 -> lastIndexOf
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "localeCompare"
         value:
           type: function
           native: duk_bi_string_prototype_locale_compare
           length: 1
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "match"
         value:
           type: function
           native: duk_bi_string_prototype_match
           length: 1
-        present_if: DUK_USE_REGEXP_SUPPORT
+        present_if:
+          - DUK_USE_STRING_BUILTIN
+          - DUK_USE_REGEXP_SUPPORT
       - key: "replace"
         value:
           type: function
           native: duk_bi_string_prototype_replace
           length: 2
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "search"
         value:
           type: function
           native: duk_bi_string_prototype_search
           length: 1
-        present_if: DUK_USE_REGEXP_SUPPORT
+        present_if:
+          - DUK_USE_STRING_BUILTIN
+          - DUK_USE_REGEXP_SUPPORT
       - key: "slice"
         value:
           type: function
           native: duk_bi_string_prototype_slice
           length: 2
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "split"
         value:
           type: function
           native: duk_bi_string_prototype_split
           length: 2
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "substring"
         value:
           type: function
           native: duk_bi_string_prototype_substring
           length: 2
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "toLowerCase"
         value:
           type: function
           native: duk_bi_string_prototype_caseconv_shared
           length: 0
           magic: 0  # magic = uppercase
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "toLocaleLowerCase"
         value:
           type: function
           native: duk_bi_string_prototype_caseconv_shared
           length: 0
           magic: 0  # magic = uppercase; no locale specific conversion now
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "toUpperCase"
         value:
           type: function
           native: duk_bi_string_prototype_caseconv_shared
           length: 0
           magic: 1  # magic = uppercase
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "toLocaleUpperCase"
         value:
           type: function
           native: duk_bi_string_prototype_caseconv_shared
           length: 0
           magic: 1  # magic = uppercase; no locale specific conversion now
+        present_if: DUK_USE_STRING_BUILTIN
       - key: "trim"
         value:
           type: function
           native: duk_bi_string_prototype_trim
           length: 0
+        present_if: DUK_USE_STRING_BUILTIN
 
       # Non-standard extension: E5 Section B.2.3
 
@@ -1032,7 +1130,9 @@ objects:
           native: duk_bi_string_prototype_substr
           length: 2
         section_b: true
-        present_if: DUK_USE_SECTION_B
+        present_if:
+          - DUK_USE_STRING_BUILTIN
+          - DUK_USE_SECTION_B
 
   - id: bi_boolean_constructor
     class: Function
@@ -1041,6 +1141,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_BOOLEAN_BUILTIN
 
     properties:
       - key: "length"
@@ -1059,6 +1160,7 @@ objects:
     class: Boolean
     internal_prototype: bi_object_prototype
     bidx: true
+    # Present even when DUK_USE_BOOLEAN_BUILTIN disabled.
 
     properties:
       - key: "constructor"
@@ -1066,6 +1168,7 @@ objects:
           type: object
           id: bi_boolean_constructor
         attributes: "wc"
+        present_if: DUK_USE_BOOLEAN_BUILTIN
 
       # Internal false boolean value.  Note that this value is not writable
       # which prevents a Boolean instance's internal value also from being
@@ -1082,12 +1185,14 @@ objects:
           native: duk_bi_boolean_prototype_tostring_shared
           length: 0
           magic: 1  # magic = coerce_tostring
+        present_if: DUK_USE_BOOLEAN_BUILTIN
       - key: "valueOf"
         value:
           type: function
           native: duk_bi_boolean_prototype_tostring_shared
           length: 0
           magic: 0  # magic = coerce_tostring
+        present_if: DUK_USE_BOOLEAN_BUILTIN
 
   - id: bi_number_constructor
     class: Function
@@ -1097,6 +1202,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_NUMBER_BUILTIN
 
     properties:
       - key: "length"
@@ -1140,6 +1246,7 @@ objects:
     class: Number
     internal_prototype: bi_object_prototype
     bidx: true
+    # Present even when DUK_USE_NUMBER_BUILTIN disabled.
 
     properties:
       - key: "constructor"
@@ -1147,6 +1254,7 @@ objects:
           type: object
           id: bi_number_constructor
         attributes: "wc"
+        present_if: DUK_USE_NUMBER_BUILTIN
 
     # Internal 0.0 number value.  Note that this value is not writable
     # which prevents a Number instance's internal value also from being
@@ -1162,31 +1270,37 @@ objects:
           type: function
           native: duk_bi_number_prototype_to_string
           length: 1
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "toLocaleString"
         value:
           type: function
           native: duk_bi_number_prototype_to_locale_string
           length: 1
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "valueOf"
         value:
           type: function
           native: duk_bi_number_prototype_value_of
           length: 0
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "toFixed"
         value:
           type: function
           native: duk_bi_number_prototype_to_fixed
           length: 1
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "toExponential"
         value:
           type: function
           native: duk_bi_number_prototype_to_exponential
           length: 1
+        present_if: DUK_USE_NUMBER_BUILTIN
       - key: "toPrecision"
         value:
           type: function
           native: duk_bi_number_prototype_to_precision
           length: 1
+        present_if: DUK_USE_NUMBER_BUILTIN
 
   - id: bi_date_constructor
     class: Function
@@ -1196,6 +1310,7 @@ objects:
     callable: true
     constructable: true
     bidx: true
+    present_if: DUK_USE_DATE_BUILTIN
 
     properties:
       - key: "length"
@@ -1231,6 +1346,7 @@ objects:
     class: Date
     internal_prototype: bi_object_prototype
     bidx: true
+    present_if: DUK_USE_DATE_BUILTIN
 
     # The Date prototype is an instance of Date with [[PrimitiveValue]] NaN.
     #
@@ -2206,6 +2322,9 @@ objects:
     class: JSON
     internal_prototype: bi_object_prototype
     bidx: true
+    present_if:
+      - DUK_USE_JSON_BUILTIN
+      - DUK_USE_JSON_SUPPORT
 
     # apparently no external "prototype" property
     # apparently no external "constructor" property
@@ -2250,6 +2369,7 @@ objects:
     internal_prototype: bi_object_prototype
     duktape: true
     bidx: true
+    #present_if: DUK_USE_DUKTAPE_BUILTIN  # Present even when properties disabled, error augmentation relies on it
 
     # There are a few properties not listed here:
     #   - "version" is added from parameter file automatically.
@@ -2261,31 +2381,36 @@ objects:
           type: object
           id: bi_pointer_constructor
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "Thread"
         value:
           type: object
           id: bi_thread_constructor
         duktape: true
-        present_if: DUK_USE_COROUTINE_SUPPORT
-
+        present_if:
+          - DUK_USE_COROUTINE_SUPPORT
+          - DUK_USE_DUKTAPE_BUILTIN
       - key: "info"
         value:
           type: function
           native: duk_bi_duktape_object_info
           length: 1
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "act"
         value:
           type: function
           native: duk_bi_duktape_object_act
           length: 1
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "gc"
         value:
           type: function
           native: duk_bi_duktape_object_gc
           length: 1
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "fin"
         value:
           type: function
@@ -2293,7 +2418,9 @@ objects:
           length: 0
           varargs: true
         duktape: true
-        present_if: DUK_USE_FINALIZER_SUPPORT
+        present_if:
+          - DUK_USE_FINALIZER_SUPPORT
+          - DUK_USE_DUKTAPE_BUILTIN
       - key: "enc"
         value:
           type: function
@@ -2301,6 +2428,7 @@ objects:
           length: 0
           varargs: true
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "dec"
         value:
           type: function
@@ -2308,12 +2436,14 @@ objects:
           length: 0
           varargs: true
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "compact"
         value:
           type: function
           native: duk_bi_duktape_object_compact
           length: 1
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
 
   - id: bi_thread_constructor
     class: Function
@@ -2372,6 +2502,7 @@ objects:
     internal_prototype: bi_object_prototype
     duktape: true
     bidx: true
+    # Present even when DUK_USE_DUKTAPE_BUILTIN disabled.
 
     # Must be present even if coroutines are disabled for inheritance.
     # Because Duktape.Thread.prototype is missing, the only way to access
@@ -2392,7 +2523,9 @@ objects:
           id: bi_thread_constructor
         attributes: "wc"
         duktape: true
-        present_if: DUK_USE_COROUTINE_SUPPORT
+        present_if:
+          - DUK_USE_COROUTINE_SUPPORT
+          - DUK_USE_DUKTAPE_BUILTIN
 
       # toString() and valueOf() are inherited from Object.prototype
 
@@ -2427,6 +2560,7 @@ objects:
     internal_prototype: bi_object_prototype
     duktape: true
     bidx: true
+    # Present even when DUK_USE_DUKTAPE_BUILTIN disabled.
 
     properties:
       - key: "constructor"
@@ -2435,6 +2569,7 @@ objects:
           id: bi_pointer_constructor
         attributes: "wc"
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
 
       - key: "toString"
         value:
@@ -2443,6 +2578,7 @@ objects:
           length: 0
           magic: 1  # magic = to_string
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
       - key: "valueOf"
         value:
           type: function
@@ -2450,6 +2586,7 @@ objects:
           length: 0
           magic: 0  # magic = to_string
         duktape: true
+        present_if: DUK_USE_DUKTAPE_BUILTIN
 
   # This is an Error *instance* used to avoid allocation when a "double error" occurs.
   # The object is "frozen and sealed" to avoid code accidentally modifying the instance.
@@ -2576,7 +2713,7 @@ objects:
     typedarray: true
     es6: true
     bidx: true
-    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
+    # Present even when DUK_USE_BUFFEROBJECT_SUPPORT is disabled.
 
     properties:
       - key: "constructor"
@@ -2586,6 +2723,7 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
       - key: "slice"
         value:
@@ -2596,6 +2734,7 @@ objects:
           magic: 2  # magic: 0x01=isView, 0x02=create copy
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
   - id: bi_dataview_constructor
     class: Function

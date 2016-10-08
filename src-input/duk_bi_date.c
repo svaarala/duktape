@@ -13,6 +13,8 @@
 
 #include "duk_internal.h"
 
+/* XXX: currently defines unnecessary symbols when DUK_USE_DATE_BUILTIN is disabled. */
+
 /*
  *  Forward declarations
  */
@@ -224,7 +226,7 @@ DUK_LOCAL duk_bool_t duk__parse_string_iso8601_subset(duk_context *ctx, const ch
 				DUK_DDD(DUK_DDDPRINT("too many digits -> reject"));
 				goto reject;
 			}
-			if (part_idx == DUK__PI_MILLISECOND /*msec*/ && ndigits >= 3) {
+			if (part_idx == DUK__PI_MILLISECOND && ndigits >= 3) {
 				/* ignore millisecond fractions after 3 */
 			} else {
 				accum = accum * 10 + ((duk_int_t) ch) - ((duk_int_t) DUK_ASC_0) + 0x00;
@@ -1404,6 +1406,7 @@ DUK_LOCAL duk_small_uint_t duk__date_get_indirect_magic(duk_context *ctx) {
 	return (duk_small_uint_t) duk__date_magics[magicidx];
 }
 
+#if defined(DUK_USE_DATE_BUILTIN)
 /*
  *  Constructor calls
  */
@@ -1704,3 +1707,5 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx) {
 
 	return 1;
 }
+
+#endif  /* DUK_USE_DATE_BUILTIN */

@@ -11,6 +11,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_DUKTAPE_BUILTIN)
+
 /* Raw helper to extract internal information / statistics about a value.
  * The return values are version specific and must not expose anything
  * that would lead to security issues (e.g. exposing compiled function
@@ -323,3 +325,5 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_compact(duk_context *ctx) {
 	duk_compact(ctx, 0);
 	return 1;  /* return the argument object */
 }
+
+#endif  /* DUK_USE_DUKTAPE_BUILTIN */

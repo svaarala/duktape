@@ -4,6 +4,8 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_NUMBER_BUILTIN)
+
 DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	duk_hobject *h;
 
@@ -238,3 +240,5 @@ DUK_INTERNAL duk_ret_t duk_bi_number_prototype_to_precision(duk_context *ctx) {
 	duk_to_string(ctx, -1);
 	return 1;
 }
+
+#endif  /* DUK_USE_NUMBER_BUILTIN */

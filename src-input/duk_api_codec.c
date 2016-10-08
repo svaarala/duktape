@@ -596,6 +596,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t idx) {
 	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 }
 
+#if defined(DUK_USE_JSON_SUPPORT)
 DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx) {
 #ifdef DUK_USE_ASSERTIONS
 	duk_idx_t top_at_entry;
@@ -641,3 +642,14 @@ DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_ASSERT(duk_get_top(ctx) == top_at_entry);
 }
+#else  /* DUK_USE_JSON_SUPPORT */
+DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx) {
+	DUK_UNREF(idx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+
+DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t idx) {
+	DUK_UNREF(idx);
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_JSON_SUPPORT */

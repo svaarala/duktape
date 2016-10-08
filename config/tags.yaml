@@ -4,10 +4,16 @@
 #
 
 ecmascript:
-  title: Ecmascript feature options
+  title: Ecmascript Edition 5 options
 
 ecmascript6:
-  title: Ecmascript Edition 6 (ES6) feature options
+  title: Ecmascript Edition 6 (ES6, ES2015) options
+
+ecmascript7:
+  title: Ecmascript Edition 7 (ES7, ES2016) options
+
+duktape:
+  title: Duktape specific options
 
 compliance:
   title: Compliance related options
