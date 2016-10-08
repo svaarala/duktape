@@ -3950,10 +3950,12 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 	/* EXPONENTIATION EXPRESSION */
 
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 	case DUK_TOK_EXP: {
 		args = (DUK_OP_EXP << 8) + DUK__BP_EXPONENTIATION - 1;  /* UnaryExpression */
 		goto binary;
 	}
+#endif
 
 	/* MULTIPLICATIVE EXPRESSION */
 
@@ -4144,11 +4146,13 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		args = (DUK_OP_MOD << 8) + DUK__BP_ASSIGNMENT - 1;
 		goto assign;
 	}
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 	case DUK_TOK_EXP_EQ: {
 		/* right associative */
 		args = (DUK_OP_EXP << 8) + DUK__BP_ASSIGNMENT - 1;
 		goto assign;
 	}
+#endif
 	case DUK_TOK_ALSHIFT_EQ: {
 		/* right associative */
 		args = (DUK_OP_BASL << 8) + DUK__BP_ASSIGNMENT - 1;

@@ -84,9 +84,11 @@ DUK_LOCAL DUK__INLINE_PERF duk_double_t duk__compute_mod(duk_double_t d1, duk_do
 	return (duk_double_t) DUK_FMOD((double) d1, (double) d2);
 }
 
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 DUK_LOCAL DUK__INLINE_PERF duk_double_t duk__compute_exp(duk_double_t d1, duk_double_t d2) {
 	return (duk_double_t) duk_js_arith_pow((double) d1, (double) d2);
 }
+#endif
 
 DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_uint_fast_t idx_z) {
 	/*
@@ -325,10 +327,12 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 		du.d = duk__compute_mod(d1, d2);
 		break;
 	}
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 	case DUK_OP_EXP >> 2: {
 		du.d = duk__compute_exp(d1, d2);
 		break;
 	}
+#endif
 	default: {
 		DUK_UNREACHABLE();
 		du.d = DUK_DOUBLE_NAN;  /* should not happen */
@@ -3152,10 +3156,13 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		case DUK_OP_MOD_CR:
 		case DUK_OP_MOD_RC:
 		case DUK_OP_MOD_CC:
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 		case DUK_OP_EXP_RR:
 		case DUK_OP_EXP_CR:
 		case DUK_OP_EXP_RC:
-		case DUK_OP_EXP_CC: {
+		case DUK_OP_EXP_CC:
+#endif  /* DUK_USE_ES7_EXP_OPERATOR */
+		{
 			/* XXX: could leave value on stack top and goto replace_top_a; */
 			duk__vm_arith_binary_op(thr, DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins), DUK_DEC_A(ins), op);
 			break;
@@ -3225,6 +3232,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk__vm_arith_binary_op(thr, DUK__CONSTP_B(ins), DUK__CONSTP_C(ins), DUK_DEC_A(ins), DUK_OP_MOD);
 			break;
 		}
+#if defined(DUK_USE_ES7_EXP_OPERATOR)
 		case DUK_OP_EXP_RR: {
 			duk__vm_arith_binary_op(thr, DUK__REGP_B(ins), DUK__REGP_C(ins), DUK_DEC_A(ins), DUK_OP_EXP);
 			break;
@@ -3241,6 +3249,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk__vm_arith_binary_op(thr, DUK__CONSTP_B(ins), DUK__CONSTP_C(ins), DUK_DEC_A(ins), DUK_OP_EXP);
 			break;
 		}
+#endif  /* DUK_USE_ES7_EXP_OPERATOR */
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
 
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
@@ -4923,6 +4932,12 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 
 #if !defined(DUK_USE_EXEC_PREFER_SIZE)
+#if !defined(DUK_USE_ES7_EXP_OPERATOR)
+		case DUK_OP_EXP_RR:
+		case DUK_OP_EXP_CR:
+		case DUK_OP_EXP_RC:
+		case DUK_OP_EXP_CC:
+#endif
 		case DUK_OP_UNUSED194:
 		case DUK_OP_UNUSED195:
 		case DUK_OP_UNUSED196:

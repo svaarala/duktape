@@ -15,6 +15,9 @@ ecmascript7:
 duktape:
   title: Duktape specific options
 
+ecmascript7:
+  title: Ecmascript Edition 7 (ES7) feature options
+
 compliance:
   title: Compliance related options
 
