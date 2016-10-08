@@ -9,6 +9,9 @@ ecmascript:
 ecmascript6:
   title: Ecmascript Edition 6 (ES6) feature options
 
+ecmascript7:
+  title: Ecmascript Edition 7 (ES7) feature options
+
 compliance:
   title: Compliance related options
 

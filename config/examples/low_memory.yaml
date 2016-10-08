@@ -89,3 +89,4 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 DUK_USE_COROUTINE_SUPPORT: false
 DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
 DUK_USE_ES6_PROXY: false  # roughly 2kB footprint
+DUK_USE_ES7_EXP_OPERATOR: false  # pulls in pow()
