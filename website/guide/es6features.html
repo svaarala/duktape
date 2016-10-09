@@ -1,16 +1,14 @@
-<h1 id="es6features">Ecmascript E6 features</h1>
+<h1 id="es6features">Ecmascript 2015 (E6) features</h1>
 
-<p>This section describes the small set of features Duktape borrows from
-<a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript E6</a>.
-These features are not fully compliant; the intent is to minimize custom features
-and to align with the ES6 specification when possible.</p>
+<p>This section describes the current set of features Duktape implements from
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html">Ecmascript 2015 (E6)</a>.
+Many of the features can be disabled through config options such as
+<code>DUK_USE_ES6_PROXY</code> and <code>DUK_USE_BUFFEROBJECT_SUPPORT</code>.</p>
 
 <h2 id="es6-regexp-syntax">ES6 Annex B RegExp syntax</h2>
 
 <p>Duktape supports some of the additional RegExp syntax defined in
-<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns">ES6 Annex B.1.4</a>.
-These features can be enabled/disabled using the <code>DUK_USE_ES6_REGEXP_SYNTAX</code>
-config option (enabled by default).</p>
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns">ES6 Annex B.1.4</a>.</p>
 
 <h2 id="es6-const">Const variables</h2>
 
@@ -44,10 +42,6 @@ an accessor property (setter/getter) which provides the same functionality
 but is compatible with existing code base which has relied on a non-standard
 <code>__proto__</code> property for a while.  Duktape does not support the
 <a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-__proto__-property-names-in-object-initializers">__proto__ property name in an object initializer</a>.</p>
-
-<p>These custom features can be disabled by disabling the config options
-<code>DUK_USE_ES6_OBJECT_SETPROTOTYPEOF</code> and
-<code>DUK_USE_ES6_OBJECT_PROTO_PROPERTY</code>.</p>
 
 <h2 id="es6-proxy">Proxy object (subset)</h2>
 
@@ -97,11 +91,7 @@ ES6.  The following traps are implemented:</p>
     enforces it to simplify the internal implementation.</li>
 </ul>
 
-<p>This custom feature can be disabled by disabling the config option
-<code>DUK_USE_ES6_PROXY</code>.</p>
-
 <h2 id="es6-typedarray">Typed arrays</h2>
 
 <p>Duktape implements Khronos typed array support which is a subset of ES6
-typed arrays.  Support for typed arrays and Node.js Buffer can be disabled
-by disabling the config option <code>DUK_USE_BUFFEROBJECT_SUPPORT</code>.</p>
+typed arrays.</p>

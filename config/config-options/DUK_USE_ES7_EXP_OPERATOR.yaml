@@ -5,6 +5,6 @@ tags:
   - ecmascript
   - ecmascript7
 description: >
-  Support the ES7 exponentation operator (** and **=).  This is optional
+  Support the ES7 exponentiation operator (** and **=).  This is optional
   because the operator pulls in pow() which may have a significant footprint
   impact on bare metal platforms.
