@@ -1642,8 +1642,10 @@ Planned
 
 * Incompatible change: remove Duktape.Buffer custom built-in, ArrayBuffer
   now serves its place; the following new bindings provide functionality
-  roughly equivalent to Duktape.Buffer: ArrayBuffer.allocPlain(),
-  ArrayBuffer.plainOf(), String.fromBuffer() (GH-875)
+  roughly equivalent to Duktape.Buffer: ArrayBuffer.allocPlain() and
+  ArrayBuffer.plainOf(), however, the ability of doing a 1:1 buffer-to-string
+  coercion (using buffer data directly as the internal string representation)
+  has been removed (GH-875, GH-1005)
 
 * Incompatible change: rework buffer types and their Ecmascript and C API
   behavior: plain buffers now behave like ArrayBuffers and inherit from
@@ -1671,8 +1673,7 @@ Planned
 * Incompatible change: when DUK_USE_BUFFEROBJECT_SUPPORT is disabled, don't
   support coercing plain buffers to ArrayBuffers, or any other buffer object
   operations (including all ArrayBuffer, typed array, and Node.js Buffer
-  methods, and String.fromBuffer()); this reduces code footprint by around
-  1.2 kB (GH-889)
+  methods); this reduces code footprint by around 1.2 kB (GH-889)
 
 * Incompatible change: plain pointer values now test true in instanceof
   (plainPointer instanceof Duktape.Pointer === true) (GH-864)
