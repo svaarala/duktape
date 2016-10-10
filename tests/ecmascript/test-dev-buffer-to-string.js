@@ -36,7 +36,7 @@ function test() {
 
     // Non-standard, works in both Duktape 1.x and 2.x: Node.js Buffer
     // string coercion is 1:1 into the internal key representation with
-    // no encoding (which differs from Node.js).
+    // no encoding (which differs from Node.js and is to be fixed).
 
     b = new Buffer(4);
     b[0] = 0xff;
@@ -55,10 +55,11 @@ function test() {
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 
-    // In Duktape 2.x there's a specific method for doing a 1:1 buffer to
-    // string conversion.  The active slice of any buffer or buffer object
-    // argumented is interpreted as bytes (even for e.g. Uint32Array) and
-    // copied 1:1 into the internal string representation.
+    // In Duktape 2.x there's no default Ecmascript built-in for doing a
+    // 1:1 string conversion, but "duk" command fills in String.fromBuffer().
+    // The active slice of any buffer or buffer object argumented is
+    // interpreted as bytes (even for e.g. Uint32Array) and copied 1:1 into
+    // the internal string representation.
 
     b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
     s = String.fromBuffer(b);

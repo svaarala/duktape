@@ -256,12 +256,8 @@ function printBuffer(b) {
 // needed, as it may change later.
 
 function bufferToString(buf) {
-    // Node.js Buffer .toString() does the raw conversion and accepts buffer
-    // objects of any type in Duktape (but not plain buffers so coerce them
-    // to full ArrayBuffer objects).
-    //return Buffer.prototype.toString.call(Object(buf));
-
-    // Prefer the cleaner, explicit custom method in String.
+    // Prefer the cleaner, explicit custom method.  This is provided by "duk"
+    // and is NOT a part of the default Ecmascript built-ins!
     return String.fromBuffer(buf);
 }
 
