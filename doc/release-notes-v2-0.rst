@@ -222,20 +222,22 @@ changes below.  Here's a summary of changes:
   JSON serialized.
 
 * Plain buffer string coercion (``String(plainBuffer)``) now mimics ArrayBuffer
-  and usually results in the string ``[object ArrayBuffer]``.  A new built-in
-  ``String.fromBuffer()`` provides the removed behavior, i.e. creates a new
-  string by copying the buffer bytes directly into the string internal
-  representation.
+  and usually results in the string ``[object ArrayBuffer]``.
+
+* Default built-in bindings no longer provide the ability to do a 1:1
+  buffer-to-string coercion where the buffer bytes are used directly as the
+  internal string bytes (see https://github.com/svaarala/duktape/issues/1005).
+  C code can still do so using ``duk_buffer_to_string()`` (or by direct buffer
+  and string operations) and can expose such a binding to Ecmascript code.
 
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
   the C API, and allows manipulation of plain buffers in Ecmascript code via
   their virtual properties (index properties, ``.length``, etc).  Plain buffers
   will still inherit from ``ArrayBuffer.prototype``, but all ArrayBuffer, typed
-  array, and Node.js Buffer methods, as well as ``String.fromBuffer()`` will be
-  non-functional.  Plain buffers won't object coerce.  Duktape custom built-ins
-  operating on plain buffers (like Duktape.dec() with hex or base-64 encoding)
-  continue to work.  (This behavior is not guaranteed and may change even in
-  minor versions.)
+  array, and Node.js Buffer methods will be non-functional.  Plain buffers
+  won't object coerce.  Duktape custom built-ins operating on plain buffers
+  (like Duktape.dec() with hex or base-64 encoding) continue to work.  (This
+  behavior is not guaranteed and may change even in minor versions.)
 
 To upgrade:
 
@@ -261,8 +263,9 @@ To upgrade:
   code.
 
   - One important change is that ``String(plainBuffer)`` and ``duk_to_string()``
-    for a buffer does not work as before, use new ``String.fromBuffer()``
-    ``duk_buffer_to_string()`` bindings instead.
+    for a buffer does not work as before, use new ``duk_buffer_to_string()``
+    C API call instead.  There's no equivalent function for the default
+    Ecmascript built-ins.
 
   - Another important change is that plain buffers, like ArrayBuffer objects,
     boolean coerce to ``true`` regardless of buffer size (zero or larger) and
@@ -299,8 +302,8 @@ even more detail):
 
 * A new ``duk_buffer_to_string()`` API call converts any buffer value to a
   string with the same underlying bytes as in the buffer (like
-  ``duk_to_string()`` did in Duktape 1.x).  For Ecmascript code the new
-  custom binding ``String.fromBuffer()`` does the same thing.
+  ``duk_to_string()`` did in Duktape 1.x).  Ecmascript built-ins no longer
+  have this ability directly.
 
 * ``duk_to_boolean()`` for plain buffer: always true, even if buffer is zero
   length.
