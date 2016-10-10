@@ -166,9 +166,12 @@ print(typeof result, result);  // prints 'object foo'
 </pre>
 
 <p>If you wish to get back a string value, you can coerce the plain buffer to
-a string as follows:</p>
+a string e.g. as follows:</p>
 <pre class="ecmascript-code">
-var result = String.fromBuffer(Duktape.dec('base64', 'Zm9v'));
+// Use Node.js Buffer binding for buffer-to-string coercion.  The buffer
+// data is decoded as UTF-8 and re-encoded into an Ecmascript string (with
+// surrogate pairs used for non-BMP codepoints).
+var result = Buffer.from(Duktape.dec('base64', 'Zm9v')).toString();
 print(typeof result, result);  // prints 'string foo'
 </pre>
 
