@@ -1300,15 +1300,4 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_context *ctx) 
 	return 1;
 }
 
-/*
- *  String.fromBuffer()
- */
-
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-DUK_INTERNAL duk_ret_t duk_bi_string_frombuffer(duk_context *ctx) {
-	duk_buffer_to_string(ctx, 0);
-	return 1;
-}
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-
 #endif  /* DUK_USE_STRING_BUILTIN */

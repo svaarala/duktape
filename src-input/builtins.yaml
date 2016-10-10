@@ -950,17 +950,6 @@ objects:
           length: 1
           varargs: true
 
-      # Convert any buffer to a string, copying bytes 1:1 from the active
-      # buffer slice into the string internal representation.
-      - key: "fromBuffer"
-        value:
-          type: function
-          native: duk_bi_string_frombuffer
-          length: 1
-          varargs: false
-        duktape: true
-        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
-
   - id: bi_string_prototype
     class: String
     internal_prototype: bi_object_prototype
