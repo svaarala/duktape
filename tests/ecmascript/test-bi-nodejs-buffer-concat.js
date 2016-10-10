@@ -35,23 +35,23 @@ true object
 1 bytes: 22
 1 bytes: 5a
 0 bytes: 
-1 bytes: 5a
+1 bytes: 22
 16 bytes: 4142434445464748494a4b4c4d4e4f50
 8 bytes: 4445464748494a4b
 array length: 1, totalLength: 0
 true object
-1 bytes: 22
-1 bytes: 5a
 0 bytes: 
-1 bytes: 5a
+0 bytes: 
+0 bytes: 
+1 bytes: 22
 16 bytes: 4142434445464748494a4b4c4d4e4f50
 8 bytes: 4445464748494a4b
 array length: 1, totalLength: 10
 true object
-1 bytes: 22
-1 bytes: 5a
+10 bytes: 22000000000000000000
+10 bytes: 5a000000000000000000
 0 bytes: 
-1 bytes: 5a
+1 bytes: 22
 16 bytes: 4142434445464748494a4b4c4d4e4f50
 8 bytes: 4445464748494a4b
 array length: 4, totalLength: undefined
@@ -204,14 +204,17 @@ TypeError
 TypeError
 TypeError
 TypeError
+true
+false
+8
+true
+false
+100
+true
+0
 ===*/
 
-/* Buffer.concat().
- *
- * concat() has an interesting behavior: for an input list of length 1 the
- * first entry is returned (without copying!).  For an input list of length
- * > 1 a new buffer is created.
- */
+/* Buffer.concat(). */
 
 function concatTest() {
     var b1 = new Buffer(0);
@@ -264,8 +267,10 @@ function concatTest() {
     test([], 0);
     test([], 10);
 
-    // Length 1; totalLength is ignored and the (only) array
-    // element is returned without creating a copy.
+    // Length 1 used to have special handling in Node.js v0.12.1: totalLength
+    // is ignored and the (only) array element is returned without creating a
+    // copy.  This was changed in later versions and by v6.7.0 (new baseline)
+    // there's no longer special handling.
 
     test([b2], undefined);
     test([b2], 0);
@@ -341,6 +346,27 @@ function concatTest() {
             print(e.name);
         }
     });
+
+    // Specific test for 1-length array.
+    b1 = new Buffer('abcdefgh');
+    b2 = Buffer.concat([ b1 ]);
+    print(Buffer.isBuffer(b2));
+    print(b1 === b2);  // always a copy
+    print(b2.length);
+
+    // totalLength is respected with array length >= 1.
+    b1 = new Buffer('abcdefgh');
+    b2 = Buffer.concat([ b1 ], 100);
+    print(Buffer.isBuffer(b2));
+    print(b1 === b2);  // always a copy
+    print(b2.length);
+
+    // Specific test for 0-length array: totalLength is ignored even in
+    // Node.js v6.7.0 when argument array is zero length.
+    b1 = new Buffer('abcdefgh');
+    b2 = Buffer.concat([], 100);
+    print(Buffer.isBuffer(b2));
+    print(b2.length);
 }
 
 try {

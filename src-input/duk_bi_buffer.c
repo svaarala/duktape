@@ -2181,15 +2181,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 		total_length += h_bufobj->length;
 		duk_pop(ctx);
 	}
-	if (n == 1) {
-		/* For the case n==1 Node.js doesn't seem to type check
-		 * the sole member but we do it before returning it.
-		 * For this case only the original buffer object is
-		 * returned (not a copy).
-		 */
-		duk_get_prop_index(ctx, 0, 0);
-		return 1;
-	}
+	/* In Node.js v0.12.1 a 1-element array is special and won't create a
+	 * copy, this was fixed later so an explicit check no longer needed.
+	 */
 
 	/* User totalLength overrides a computed length, but we'll check
 	 * every copy in the copy loop.  Note that duk_to_uint() can
