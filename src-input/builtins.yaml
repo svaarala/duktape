@@ -3013,7 +3013,8 @@ objects:
         typedarray: true
         es6: true
 
-  # Custom prototype object providing properties shared by all TypedArray
+  # %TypedArrayPrototype%
+  # Prototype object providing properties shared by all TypedArray
   # instances (reduces built-in object count).  The view specific prototypes
   # (such as Uint8Array.prototype) are still needed so that e.g. instanceof
   # will work properly.
