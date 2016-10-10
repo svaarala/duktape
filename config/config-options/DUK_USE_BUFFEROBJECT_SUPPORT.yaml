@@ -11,5 +11,5 @@ description: >
   buffer contents in Ecmascript code.  Plain buffers will still inherit from
   ArrayBuffer.prototype, but none of the Ecmascript buffer related bindings
   will work.  This includes all ArrayBuffer, typed array, and Node.js Buffer
-  methods, and also String.fromBuffer().  Native bindings which produce plain
-  buffer results (like Duktape.dec()) will still work.
+  methods.  Native bindings which produce plain buffer results (like
+  Duktape.dec()) will still work.
