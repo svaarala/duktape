@@ -227,6 +227,9 @@ changes below.  Here's a summary of changes:
   string by copying the buffer bytes directly into the string internal
   representation.
 
+* Node.js Buffer binding has been aligned more with Node.js v6.7.0 (from
+  Node.js v0.12.1).
+
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
   the C API, and allows manipulation of plain buffers in Ecmascript code via
   their virtual properties (index properties, ``.length``, etc).  Plain buffers
@@ -256,6 +259,9 @@ To upgrade:
     (rather than being a direct instance) has been fixed so that the result has
     the default prototype (``Buffer.prototype``) rather than being copied from
     the argument.
+
+  - Node.js Buffer ``.concat()`` always returns a buffer copy, even for a
+    one-element input array which had special handling in Node.js v0.12.1.
 
 * If you're using plain buffers, review their usage especially in Ecmascript
   code.
