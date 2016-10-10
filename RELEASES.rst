@@ -1674,6 +1674,10 @@ Planned
   methods, and String.fromBuffer()); this reduces code footprint by around
   1.2 kB (GH-889)
 
+* Incompatible change: Node.js Buffer binding aligned with Node.js v6.7.0
+  (from v0.12.1): Buffer.concat() special case for 1-element array removed
+  (GH-1004)
+
 * Incompatible change: plain pointer values now test true in instanceof
   (plainPointer instanceof Duktape.Pointer === true) (GH-864)
 
