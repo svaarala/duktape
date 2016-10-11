@@ -265,6 +265,9 @@ To upgrade:
   - Node.js Buffer ``.concat()`` always returns a buffer copy, even for a
     one-element input array which had special handling in Node.js v0.12.1.
 
+  - Review Buffer code for Node.js Buffer changes between Node.js versions
+    v0.12.1 and v6.7.0 in general.
+
 * If you're using plain buffers, review their usage especially in Ecmascript
   code.
 
@@ -341,6 +344,9 @@ even more detail):
   * XXX: This will most likely change with Node.js Buffer binding version
     update, as Node.js Buffer constructor also recognizes ArrayBuffers now.
 
+- ``ArrayBuffer.isView(nodejsBuffer)`` is now true to reflect the fact that
+  Node.js Buffers are Uint8Arrays in Node.js v6.7.0.
+
 * ``new Uint32Array(plainBuffer)`` and other typed array constructors coerce
   the argument plain buffer into an ArrayBuffer instance which is then used
   as the result ``.buffer``.  The coerced ArrayBuffer shares the same
@@ -353,10 +359,17 @@ even more detail):
   into an ArrayBuffer with the same underlying plain buffer (storage).
 
 * ``ArrayBuffer.prototype.slice()`` accepts a plain buffer and the resulting slice
-  (which is a copy) is also a plain buffer.  ``typedarray.prototype.subarray()`` and
-  Node.js ``Buffer.prototype.slice()`` create a view into the argument buffer, and
-  because plain buffers cannot represent a view offset/length, these calls yield an
-  ArrayBuffer when the argument is a plain buffer.
+  (which is a copy) is also a plain buffer.
+
+* ``typedarray.prototype.subarray()`` accepts a plain buffer and the resulting slice
+  is an ArrayBuffer because plain buffers cannot represent a view offset/length.
+  (This could arguably also be a Uint8Array because ES6 doesn't recognize
+  ArrayBuffers which have a view offset.  However, as custom behavior, .subarray()
+  also returns an ArrayBuffer when called with an ArrayBuffer instance, so the
+  current plain buffer behavior is consistent with that.)
+
+* Node.js ``Buffer.prototype.slice()`` accepts a plain buffer and the result is a
+  Node.js Buffer (which itself is a special Uint8Array instance).
 
 * ``plainBuffer.valueOf()`` ordinarily backed by ``Object.prototype.valueOf()``
   returns `Object(plainBuffer)`, i.e. converts plain buffer to an actual ArrayBuffer.
