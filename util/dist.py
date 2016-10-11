@@ -127,6 +127,7 @@ def create_dist_directories(dist):
     mkdir(os.path.join(dist, 'src-input'))
     mkdir(os.path.join(dist, 'tools'))
     mkdir(os.path.join(dist, 'config'))
+    mkdir(os.path.join(dist, 'profiles'))
     mkdir(os.path.join(dist, 'extras'))
     mkdir(os.path.join(dist, 'extras', 'duk-v1-compat'))
     mkdir(os.path.join(dist, 'extras', 'print-alert'))
@@ -440,14 +441,15 @@ def main():
         'config-options',
         'helper-snippets',
         'header-snippets',
-        'other-defines',
-        'examples'
+        'other-defines'
     ]:
         # Copy directories in their entirety
         if os.path.isfile(os.path.join('config', fn)):
             shutil.copyfile(os.path.join('config', fn), os.path.join(dist, 'config', fn))
         else:
             shutil.copytree(os.path.join('config', fn), os.path.join(dist, 'config', fn))
+
+    # FIXME copy profiles
 
     copy_files([
         'configure.py',
