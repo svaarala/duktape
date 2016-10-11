@@ -49,9 +49,6 @@
 #if (DUK_STRIDX_DEC_ENV > 255)
 #error constant too large
 #endif
-#if (DUK_STRIDX_UC_BUFFER > 255)
-#error constant too large
-#endif
 #if (DUK_STRIDX_UC_POINTER > 255)
 #error constant too large
 #endif
@@ -126,7 +123,7 @@ DUK_INTERNAL duk_uint8_t duk_class_number_to_stridx[32] = {
 	DUK_STRIDX_UINT32_ARRAY,
 	DUK_STRIDX_FLOAT32_ARRAY,
 	DUK_STRIDX_FLOAT64_ARRAY,
-	DUK_STRIDX_UC_BUFFER,
+	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 	DUK_STRIDX_EMPTY_STRING,  /* UNUSED, intentionally empty */
 };

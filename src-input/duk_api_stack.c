@@ -3957,8 +3957,9 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 	(((classnum) << 24) | ((protobidx) << 16) | ((elemtype) << 8) | ((elemshift) << 4) | (isview))
 
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
+	/* Node.js Buffers are Uint8Array instances which inherit from Buffer.prototype. */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_BUFFER,            DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_NODEJS_BUFFER */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_NODEJS_BUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_DATAVIEW */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT8ARRAY,         DUK_BIDX_INT8ARRAY_PROTOTYPE,         DUK_HBUFOBJ_ELEM_INT8,         0, 1),  /* DUK_BUFOBJ_INT8ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_UINT8ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_UINT8ARRAY */
