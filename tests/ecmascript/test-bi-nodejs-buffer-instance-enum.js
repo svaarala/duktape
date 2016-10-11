@@ -43,6 +43,7 @@ string length
 string byteLength
 string byteOffset
 string BYTES_PER_ELEMENT
+string buffer
 ===*/
 
 function enumeratingAndKeysTest() {
@@ -51,7 +52,7 @@ function enumeratingAndKeysTest() {
 
     b.fill(0x12);
 
-    // Node.js v0.12.1 enumerates index keys, 'buffer', 'parent', and all
+    // Node.js v6.7.0 enumerates index keys, 'buffer', 'parent', and all
     // Buffer.prototype methods (they're enumerable).
     //
     // In Duktape the Buffer.prototype methods are not enumerable as that's
@@ -66,6 +67,10 @@ function enumeratingAndKeysTest() {
     Object.keys(b).forEach(function (k) {
         print(typeof k, k);
     });
+
+    // In ES6 (and Node.js) .byteOffset etc are inherited accessors and not
+    // shown here.  Current Duktape implementation is to treat them as virtual
+    // own properties so they show up here.
 
     print('Object.getOwnPropertyNames');
     Object.getOwnPropertyNames(b).forEach(function (k) {

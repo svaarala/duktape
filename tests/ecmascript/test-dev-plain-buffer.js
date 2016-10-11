@@ -1382,11 +1382,11 @@ true
 2
 |6162636465666768696a6b6c6d6e6f70000000000000006f7000000000000000|
 - slice
-object [object ArrayBuffer] false
+object cdefg false
 |6162636465666768696a6b6c6d6e6f70|
-|6364656667|
+{type:"Buffer",data:[99,100,101,102,103]}
 |6162636465ffee68696a6b6c6d6e6f70|
-|636465ffee|
+{type:"Buffer",data:[99,100,101,255,238]}
 - write
 |6162636465666768696a6b6c6d6e6f70| abcdefghijklmnop
 3
@@ -1526,8 +1526,9 @@ function nodejsBufferPrototypeMethodTest() {
     print(Buffer.prototype.copy.call(ab, t, 23 /*targetStart*/, 14 /*sourceStart*/, 16 /*sourceEnd*/));
     print(Duktape.enc('jx', t));
 
-    // slice for a plain buffer returns an ArrayBuffer object because a plain
-    // buffer cannot represent an offset/length slice (view) into the argument
+    // .slice() for a plain buffer returns a Node.js Buffer (an Uint8Array
+    // inheriting from Buffer.prototype) because a plain buffer cannot
+    // represent an offset/length slice (view) into the argument
     resetValues();
     print('- slice');
     t = Buffer.prototype.slice.call(pb, 2, 7);

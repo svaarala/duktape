@@ -1,9 +1,6 @@
 /*
- *  Duktape uses "Buffer" as the class for Node.js Buffer instances.
- *  Node.js uses "Object".
- *
- *  This is useful e.g. when debugging because one can then easily see
- *  which values are Buffers.
+ *  Duktape 2.x matches Node.js v6.7.0 where Buffer instances are Uint8Arrays,
+ *  i.e. the internal class is "Uint8Array".
  */
 
 /*---
@@ -15,7 +12,7 @@
 /*===
 [object Function]
 [object Object]
-[object Buffer]
+[object Uint8Array]
 ===*/
 
 function nodejsBufferClassTest() {
