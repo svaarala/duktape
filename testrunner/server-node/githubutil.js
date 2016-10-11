@@ -344,7 +344,7 @@ function handleGithubPullRequest(req, res, state) {
         return;
     }
 
-    var commitHash = body.after;
+    var commitHash = body.after || body.pull_request && body.pull_request.head && body.pull_request.head.sha;
     var senderName = body.sender && body.sender.login;
     if (!senderName) {
         console.log('ignoring github webhook "pull_request", missing sender name');
