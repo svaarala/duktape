@@ -970,6 +970,15 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
 #endif  /* DUK_CMDLINE_FILEIO */
 
 /*
+ *  String.fromBuffer()
+ */
+
+static duk_ret_t string_frombuffer(duk_context *ctx) {
+	duk_buffer_to_string(ctx, 0);
+	return 1;
+}
+
+/*
  *  Duktape heap lifecycle
  */
 
@@ -1132,6 +1141,21 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 #if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
 	duk_print_alert_init(ctx, 0 /*flags*/);
 #endif
+
+	/* Register String.fromBuffer() which does a 1:1 buffer-to-string
+	 * coercion needed by testcases.  String.fromBuffer() is -not- a
+	 * default built-in!  For stripped builds the 'String' built-in
+	 * doesn't exist and we create it here; for ROM builds it may be
+	 * present but unwritable (which is ignored).
+	 */
+	duk_eval_string(ctx,
+		"(function(v){"
+		    "if (typeof String === 'undefined') { String = {}; }"
+		    "Object.defineProperty(String, 'fromBuffer', {value:v, configurable:true});"
+		"})");
+	duk_push_c_function(ctx, string_frombuffer, 1 /*nargs*/);
+	(void) duk_pcall(ctx, 1);
+	duk_pop(ctx);
 
 	/* Register console object. */
 #if defined(DUK_CMDLINE_CONSOLE_SUPPORT)

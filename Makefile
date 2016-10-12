@@ -604,7 +604,7 @@ emscriptenduktest: emscripten prep/emduk
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
-	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(String.fromBuffer(Duktape.dec('base64', '$(MAND_BASE64)')))"
+	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())"
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c \
 	llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c \

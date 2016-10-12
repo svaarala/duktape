@@ -167,10 +167,8 @@ for standard types.  Custom type behavior is as follows:</p>
 
 <p>When a buffer is string coerced it behaves like an ArrayBuffer, with the
 result usually being <code>"[object ArrayBuffer]"</code>.  This behavior was
-changed in Duktape 2.0.  To create a string directly from the buffer contents,
-use the Duktape specific <code>String.fromBuffer(buffer)</code> binding which
-uses bytes from the buffer directly as string data.  The bytes will then be
-interpreted as CESU-8 (or extended UTF-8) from Ecmascript point of view.</p>
+changed in Duktape 2.0.  To create a string from buffer contents you can use
+e.g. the Node.js Buffer binding or the Encoding API.</p>
 
 <p>When a buffer is object coerced a new ArrayBuffer object is created, with
 the ArrayBuffer backing to the plain buffer (no copy is made).</p>

@@ -1,5 +1,9 @@
 /*
- *  Duktape custom: String.fromBuffer()
+ *  String.fromBuffer() provided by the "duk" command.
+ *
+ *  NOTE: String.fromBuffer() is -not- part of the default built-ins.  It is
+ *  provided by "duk" command to support testcases which need to deal with
+ *  the internal string representation.
  */
 
 /*@include util-buffer.js@*/

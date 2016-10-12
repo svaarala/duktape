@@ -598,13 +598,13 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t idx) {
 
 #if defined(DUK_USE_JSON_SUPPORT)
 DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx) {
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t top_at_entry;
 #endif
 	const char *ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	top_at_entry = duk_get_top(ctx);
 #endif
 
@@ -624,12 +624,12 @@ DUK_EXTERNAL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx) {
 }
 
 DUK_EXTERNAL void duk_json_decode(duk_context *ctx, duk_idx_t idx) {
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t top_at_entry;
 #endif
 
 	DUK_ASSERT_CTX_VALID(ctx);
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	top_at_entry = duk_get_top(ctx);
 #endif
 

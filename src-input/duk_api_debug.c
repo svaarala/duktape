@@ -4,6 +4,7 @@
 
 #include "duk_internal.h"
 
+#if defined(DUK_USE_JSON_SUPPORT)
 DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 	duk_idx_t idx;
 	duk_idx_t top;
@@ -37,6 +38,11 @@ DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
 	duk_pop(ctx);
 	DUK_ASSERT(duk_is_string(ctx, -1));
 }
+#else  /* DUK_USE_JSON_SUPPORT */
+DUK_EXTERNAL void duk_push_context_dump(duk_context *ctx) {
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_JSON_SUPPORT */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 

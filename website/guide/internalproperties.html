@@ -83,18 +83,9 @@ duk_push_string(ctx, "\xff" "myprop");
 <p>For more discussion on C string hex escaping, see
 <a href="https://github.com/svaarala/duktape/blob/master/misc/c_hex_esc.c">c_hex_esc.c</a>.</p>
 
-<p>Internal strings can also be created from Ecmascript code if one has access
-to e.g. a buffer constructor or <code>Duktape.dec()</code> (this must be considered
-in sandboxing):</p>
-<pre class="ecmascript-code">
-// Using Node.js Buffer
-var buf = new Buffer(1);
-buf[0] = 255;
-var key1 = buf + 'myprop';
-
-// Using Duktape.dec()
-var key2 = String.fromBuffer(Duktape.dec('hex', 'ff6d7970726f70'));  // \xFFmyprop
-</pre>
+<p>Internal strings cannot be created from Ecmascript code using the default
+built-ins alone.  However, application code can easily add such a binding
+using the C API (this must be considered in sandboxing).</p>
 
 <p>There's no special access control for internal properties: if user code has
 access to the property name (string), it can read/write the property value.

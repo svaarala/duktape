@@ -127,8 +127,8 @@ Risky bindings:
   a finalizer may run in a different thread than where it was created,
   finalizers are a sandboxing risk.
 
-* ``String.fromBuffer()`` and ``Buffer.prototype.toString()`` allow conversion
-  of buffer data directly into a string, potentially creating internal keys.
+* ``Buffer.prototype.toString()`` allows conversion of buffer data directly
+  into a string, potentially creating internal keys.
 
 You should also:
 
@@ -152,11 +152,7 @@ keys and then access internal properties, e.g.::
     // With access to Duktape.dec: decodes to \xFFfoo, invalid UTF-8 data
     var key = Duktape.dec('hex', 'ff666f6f');
 
-    // With an arbitrary buffer value 'buf' (with length >= 1)
-    buf[0] = 0xff;  // create invalid utf-8 prefix
-    var key = String.fromBuffer(buf).substring(0, 1) + 'foo';
-
-    // Same via Node.js Buffer binding
+    // Node.js Buffer binding used for 1:1 buffer-to-string coercion.
     buf[0] = 0xff;
     var key = Buffer.prototype.toString.call(buf).substring(0, 1) + 'foo';
 
