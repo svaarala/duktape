@@ -1992,9 +1992,10 @@ Planned
   opcode handler optimizations (GH-903); refcount optimizations (GH-443,
   GH-973); minor RegExp compile/execute optimizations (GH-974)
 
-* Miscellaneous footprint improvements: RegExp compiler/executor (GH-977),
-  internal duk_dup() variants (GH-990), allow stripping of (almost) all
-  built-ins for low memory builds (GH-989)
+* Miscellaneous footprint improvements: RegExp compiler/executor (GH-977);
+  internal duk_dup() variants (GH-990); allow stripping of (almost) all
+  built-ins for low memory builds (GH-989); remove internal accessor setup
+  helper and use duk_def_prop() instead (GH-1010)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
