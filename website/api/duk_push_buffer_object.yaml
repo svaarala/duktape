@@ -16,7 +16,7 @@ summary: |
   <p>The available buffer types are:</p>
   <table>
   <tr><th>Define</th><th>Buffer/view type</th></tr>
-  <tr><td>DUK_BUFOBJ_NODEJS_BUFFER</td><td>Buffer (Node.js)</td></tr>
+  <tr><td>DUK_BUFOBJ_NODEJS_BUFFER</td><td>Buffer (Node.js), a Uint8Array inheriting from Buffer.prototype</td></tr>
   <tr><td>DUK_BUFOBJ_ARRAYBUFFER</td><td>ArrayBuffer</td></tr>
   <tr><td>DUK_BUFOBJ_DATAVIEW</td><td>DataView</td></tr>
   <tr><td>DUK_BUFOBJ_INT8ARRAY</td><td>Int8Array</td></tr>
@@ -30,10 +30,10 @@ summary: |
   <tr><td>DUK_BUFOBJ_FLOAT64ARRAY</td><td>Float64Array</td></tr>
   </table>
 
-  <p>When <code>DataView</code> or any of the typed array views
-  (<code>Uint8Array</code>, etc) is pushed, an <code>ArrayBuffer</code>
-  backing the view is automatically created.  It is accessible through
-  the <code>buffer</code> property of the view object.</p>
+  <p>When anything other than an <code>ArrayBuffer</code> is pushed, an
+  <code>ArrayBuffer</code> backing the view is automatically created.
+  It is accessible through the <code>buffer</code> property of the view
+  object.</p>
 
   <p>The underlying plain buffer should normally cover the range indicated by
   the <code>byte_offset</code> and <code>byte_length</code> arguments, but
