@@ -418,7 +418,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		num = (duk_small_uint_t) duk_bd_decode(bd, DUK__NUM_NORMAL_PROPS_BITS);
 		DUK_DDD(DUK_DDDPRINT("built-in object %ld, %ld normal valued properties", (long) i, (long) num));
 		for (j = 0; j < num; j++) {
-			duk_small_uint_t prop_flags;
+			duk_small_uint_t defprop_flags;
 
 			duk__push_stridx_or_string(ctx, bd);
 
@@ -430,15 +430,27 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 
 			if (duk_bd_decode_flag(bd)) {
-				prop_flags = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_FLAGS_BITS);
+				defprop_flags = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_FLAGS_BITS);
 			} else {
-				prop_flags = DUK_PROPDESC_FLAGS_WC;
+				defprop_flags = DUK_PROPDESC_FLAGS_WC;
 			}
+			defprop_flags |= DUK_DEFPROP_FORCE |
+			                 DUK_DEFPROP_HAVE_VALUE |
+			                 DUK_DEFPROP_HAVE_WRITABLE |
+			                 DUK_DEFPROP_HAVE_ENUMERABLE |
+			                 DUK_DEFPROP_HAVE_CONFIGURABLE;  /* Defaults for data properties. */
+
+			/* The writable, enumerable, configurable flags in prop_flags
+			 * match both duk_def_prop() and internal property flags.
+			 */
+			DUK_ASSERT(DUK_PROPDESC_FLAG_WRITABLE == DUK_DEFPROP_WRITABLE);
+			DUK_ASSERT(DUK_PROPDESC_FLAG_ENUMERABLE == DUK_DEFPROP_ENUMERABLE);
+			DUK_ASSERT(DUK_PROPDESC_FLAG_CONFIGURABLE == DUK_DEFPROP_CONFIGURABLE);
 
 			t = (duk_small_uint_t) duk_bd_decode(bd, DUK__PROP_TYPE_BITS);
 
 			DUK_DDD(DUK_DDDPRINT("built-in %ld, normal-valued property %ld, key %!T, flags 0x%02lx, type %ld",
-			                     (long) i, (long) j, duk_get_tval(ctx, -1), (unsigned long) prop_flags, (long) t));
+			                     (long) i, (long) j, duk_get_tval(ctx, -1), (unsigned long) defprop_flags, (long) t));
 
 			switch (t) {
 			case DUK__PROP_TYPE_DOUBLE: {
@@ -479,38 +491,28 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_c_function c_func_getter;
 				duk_c_function c_func_setter;
 
-				/* XXX: this is a bit awkward because there is no exposed helper
-				 * in the API style, only this internal helper.
-				 */
 				DUK_DDD(DUK_DDDPRINT("built-in accessor property: objidx=%ld, key=%!T, getteridx=%ld, setteridx=%ld, flags=0x%04lx",
-				                     (long) i, duk_get_tval(ctx, -1), (long) natidx_getter, (long) natidx_setter, (unsigned long) prop_flags));
+				                     (long) i, duk_get_tval(ctx, -1), (long) natidx_getter, (long) natidx_setter, (unsigned long) defprop_flags));
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
-				c_func_setter = duk_bi_native_functions[natidx_setter];
 				if (c_func_getter != NULL) {
 					duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
-				} else {
-					duk_push_undefined(ctx);
+					defprop_flags |= DUK_DEFPROP_HAVE_GETTER;
 				}
+				c_func_setter = duk_bi_native_functions[natidx_setter];
 				if (c_func_setter != NULL) {
 					duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
-				} else {
-					duk_push_undefined(ctx);
+					defprop_flags |= DUK_DEFPROP_HAVE_SETTER;
 				}
 
-				/* XXX: magic for getter/setter? use duk_def_prop()? */
+				/* XXX: magic for getter/setter? */
 
-				DUK_ASSERT((prop_flags & DUK_PROPDESC_FLAG_WRITABLE) == 0);  /* genbuiltins.py ensures */
+				/* Writable flag doesn't make sense for an accessor. */
+				DUK_ASSERT((defprop_flags & DUK_PROPDESC_FLAG_WRITABLE) == 0);  /* genbuiltins.py ensures */
 
-				prop_flags |= DUK_PROPDESC_FLAG_ACCESSOR;  /* accessor flag not encoded explicitly */
-				duk_hobject_define_accessor_internal(thr,
-				                                     duk_require_hobject(ctx, i),
-				                                     duk_get_hstring(ctx, -3),
-				                                     duk_get_hobject(ctx, -2),
-				                                     duk_get_hobject(ctx, -1),
-				                                     prop_flags);
-				duk_pop_3(ctx);  /* key, getter and setter, now reachable through object */
-				goto skip_value;
+				defprop_flags &= ~(DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_HAVE_WRITABLE);
+				defprop_flags |= DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE;
+				break;
 			}
 			default: {
 				/* exhaustive */
@@ -518,11 +520,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 			}
 
-			DUK_ASSERT((prop_flags & DUK_PROPDESC_FLAG_ACCESSOR) == 0);
-			duk_xdef_prop(ctx, i, prop_flags);
-
-		 skip_value:
-			continue;  /* avoid empty label at the end of a compound statement */
+			duk_def_prop(ctx, i, defprop_flags);
+			DUK_ASSERT_TOP(ctx, DUK_NUM_ALL_BUILTINS);
 		}
 
 		/* native function properties */

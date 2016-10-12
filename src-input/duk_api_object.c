@@ -374,11 +374,12 @@ DUK_INTERNAL void duk_xdef_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_i
  * object creation code, function instance creation code, and Function.prototype.bind().
  */
 
-DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx, duk_small_uint_t desc_flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *obj = duk_require_hobject(ctx, obj_idx);
-	duk_hobject *thrower = thr->builtins[DUK_BIDX_TYPE_ERROR_THROWER];
-	duk_hobject_define_accessor_internal(thr, obj, DUK_HTHREAD_GET_STRING(thr, stridx), thrower, thrower, desc_flags);
+DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx) {
+	obj_idx = duk_require_normalize_index(ctx, obj_idx);
+	duk_push_hstring_stridx(ctx, stridx);
+	duk_push_hobject_bidx(ctx, DUK_BIDX_TYPE_ERROR_THROWER);
+	duk_dup_top(ctx);
+	duk_def_prop(ctx, obj_idx, DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_FORCE);  /* attributes always 0 */
 }
 
 /* Object.defineProperty() equivalent C binding. */

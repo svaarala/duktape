@@ -308,8 +308,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 
 		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
-		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER);
+		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
 		duk_push_hobject(ctx, func);

@@ -319,8 +319,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
 	/* caller and arguments must use the same thrower, [[ThrowTypeError]] */
-	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER);
+	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS);
 
 	/* these non-standard properties are copied for convenience */
 	/* XXX: 'copy properties' API call? */

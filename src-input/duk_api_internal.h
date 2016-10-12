@@ -176,7 +176,7 @@ DUK_INTERNAL_DECL void duk_xdef_prop(duk_context *ctx, duk_idx_t obj_idx, duk_sm
 DUK_INTERNAL_DECL void duk_xdef_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx, duk_small_uint_t desc_flags);  /* [val] -> [] */
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx, duk_small_uint_t desc_flags);  /* [val] -> [] */
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_builtin(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx, duk_small_int_t builtin_idx, duk_small_uint_t desc_flags);  /* [] -> [] */
-DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx, duk_small_uint_t desc_flags);  /* [] -> [] */
+DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_int_t stridx);  /* [] -> [] */
 
 /* These are macros for now, but could be separate functions to reduce code
  * footprint (check call site count before refactoring).

@@ -4742,51 +4742,6 @@ DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, 
 }
 
 /*
- *  Internal helper for defining an accessor property, ignoring
- *  normal semantics such as extensibility, write protection etc.
- *  Overwrites any existing value and attributes.  This is called
- *  very rarely, so the implementation first sets a value to undefined
- *  and then changes the entry to an accessor (this is to save code space).
- */
-
-DUK_INTERNAL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags) {
-	duk_context *ctx = (duk_context *) thr;
-	duk_int_t e_idx;
-	duk_int_t h_idx;
-
-	DUK_DDD(DUK_DDDPRINT("define new accessor (internal): thr=%p, obj=%!O, key=%!O, "
-	                     "getter=%!O, setter=%!O, flags=0x%02lx",
-	                     (void *) thr, (duk_heaphdr *) obj, (duk_heaphdr *) key,
-	                     (duk_heaphdr *) getter, (duk_heaphdr *) setter,
-	                     (unsigned long) propflags));
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT(obj != NULL);
-	DUK_ASSERT(key != NULL);
-	DUK_ASSERT((propflags & ~DUK_PROPDESC_FLAGS_MASK) == 0);
-	/* setter and/or getter may be NULL */
-	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
-
-	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
-
-	/* force the property to 'undefined' to create a slot for it */
-	duk_push_undefined(ctx);
-	duk_hobject_define_property_internal(thr, obj, key, propflags);
-	duk_hobject_find_existing_entry(thr->heap, obj, key, &e_idx, &h_idx);
-	DUK_DDD(DUK_DDDPRINT("accessor slot: e_idx=%ld, h_idx=%ld", (long) e_idx, (long) h_idx));
-	DUK_ASSERT(e_idx >= 0);
-	DUK_ASSERT((duk_uint32_t) e_idx < DUK_HOBJECT_GET_ENEXT(obj));
-
-	/* no need to decref, as previous value is 'undefined' */
-	DUK_HOBJECT_E_SLOT_SET_ACCESSOR(thr->heap, obj, e_idx);
-	DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, e_idx, getter);
-	DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, e_idx, setter);
-	DUK_HOBJECT_INCREF_ALLOWNULL(thr, getter);
-	DUK_HOBJECT_INCREF_ALLOWNULL(thr, setter);
-}
-
-/*
  *  Internal helpers for managing object 'length'
  */
 
