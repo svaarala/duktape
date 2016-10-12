@@ -416,6 +416,8 @@ def metadata_normalize_shorthand(meta):
     def decodeGetterShorthand(key, funprop):
         assert(funprop['value']['type'] == 'accessor')
         val = funprop['value']
+        if not val.has_key('getter'):
+            return None
         return addAccessor(funprop,
                            val['getter_magic'],
                            val['getter_nargs'],
@@ -426,6 +428,8 @@ def metadata_normalize_shorthand(meta):
     def decodeSetterShorthand(key, funprop):
         assert(funprop['value']['type'] == 'accessor')
         val = funprop['value']
+        if not val.has_key('setter'):
+            return None
         return addAccessor(funprop,
                            val['setter_magic'],
                            val['setter_nargs'],
@@ -502,7 +506,11 @@ def metadata_normalize_shorthand(meta):
                 sub_getter = decodeGetterShorthand(val['key'], val)
                 sub_setter = decodeSetterShorthand(val['key'], val)
                 prop = clonePropShared(val)
-                prop['value'] = { 'type': 'accessor', 'getter_id': sub_getter['id'], 'setter_id': sub_setter['id'] }
+                prop['value'] = { 'type': 'accessor' }
+                if sub_getter is not None:
+                    prop['value']['getter_id'] = sub_getter['id']
+                if sub_setter is not None:
+                    prop['value']['setter_id'] = sub_setter['id']
                 assert('a' in prop['attributes'])  # If missing, weird things happen runtime
                 logger.debug('Expand accessor shorthand: %r -> %r' % (val, prop))
                 repl_props.append(prop)
@@ -1694,9 +1702,11 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
             for i in xrange(len(strval)):
                 be.bits(ord(strval[i]), STRING_CHAR_BITS)
     def _natidx(native_name):
-        natidx = natfunc_name_to_natidx[native_name]
+        if native_name is None:
+            natidx = 0  # 0 is NULL in the native functions table, denotes missing function
+        else:
+            natidx = natfunc_name_to_natidx[native_name]
         be.bits(natidx, NATIDX_BITS)
-
     props = [x for x in bi['properties']]  # clone
 
     # internal prototype: not an actual property so not in property list
@@ -1844,14 +1854,20 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
                 be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
             elif val['type'] == 'accessor':
                 be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS)
-                getter_fn = metadata_lookup_object(meta, val['getter_id'])
-                setter_fn = metadata_lookup_object(meta, val['setter_id'])
-                _natidx(getter_fn['native'])
-                _natidx(setter_fn['native'])
-                assert(getter_fn['nargs'] == 0)
-                assert(setter_fn['nargs'] == 1)
-                assert(getter_fn['magic'] == 0)
-                assert(setter_fn['magic'] == 0)
+                getter_natfun = None
+                setter_natfun = None
+                if val.has_key('getter_id'):
+                    getter_fn = metadata_lookup_object(meta, val['getter_id'])
+                    getter_natfun = getter_fn['native']
+                    assert(getter_fn['nargs'] == 0)
+                    assert(getter_fn['magic'] == 0)
+                if val.has_key('setter_id'):
+                    setter_fn = metadata_lookup_object(meta, val['setter_id'])
+                    setter_natfun = setter_fn['native']
+                    assert(setter_fn['nargs'] == 1)
+                    assert(setter_fn['magic'] == 0)
+                _natidx(getter_natfun)
+                _natidx(setter_natfun)
             elif val['type'] == 'lightfunc':
                 logger.warning('RAM init data format doesn\'t support "lightfunc" now, value replaced with "undefined": %r' % valspec)
                 be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
@@ -1905,6 +1921,8 @@ def get_ramobj_native_func_maps(meta):
     native_funcs = []
     natfunc_name_to_natidx = {}
 
+    native_funcs.append(None)  # natidx 0 is reserved for NULL
+
     for o in meta['objects']:
         if o.has_key('native'):
             native_funcs_found[o['native']] = True
@@ -1912,10 +1930,12 @@ def get_ramobj_native_func_maps(meta):
             val = v['value']
             if isinstance(val, dict):
                 if val['type'] == 'accessor':
-                    getter = metadata_lookup_object(meta, val['getter_id'])
-                    native_funcs_found[getter['native']] = True
-                    setter = metadata_lookup_object(meta, val['setter_id'])
-                    native_funcs_found[setter['native']] = True
+                    if val.has_key('getter_id'):
+                        getter = metadata_lookup_object(meta, val['getter_id'])
+                        native_funcs_found[getter['native']] = True
+                    if val.has_key('setter_id'):
+                        setter = metadata_lookup_object(meta, val['setter_id'])
+                        native_funcs_found[setter['native']] = True
                 if val['type'] == 'object':
                     target = metadata_lookup_object(meta, val['id'])
                     if target.has_key('native'):
@@ -1925,8 +1945,8 @@ def get_ramobj_native_func_maps(meta):
                     pass
 
     for idx,k in enumerate(sorted(native_funcs_found.keys())):
+        natfunc_name_to_natidx[k] = len(native_funcs)
         native_funcs.append(k)  # native func names
-        natfunc_name_to_natidx[k] = idx
 
     return native_funcs, natfunc_name_to_natidx
 
@@ -1971,7 +1991,10 @@ def emit_ramobj_source_nativefunc_array(genc, native_func_list):
         # The function pointer cast here makes BCC complain about
         # "initializer too complicated", so omit the cast.
         #genc.emitLine('\t(duk_c_function) %s,' % i)
-        genc.emitLine('\t%s,' % i)
+        if i is None:
+            genc.emitLine('\tNULL,')
+        else:
+            genc.emitLine('\t%s,' % i)
     genc.emitLine('};')
 
 def emit_ramobj_source_objinit_data(genc, init_data):
