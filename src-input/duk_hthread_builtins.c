@@ -254,7 +254,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_ASSERT(len >= 0);
 
 			natidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
+			DUK_ASSERT(natidx != 0);
 			c_func = duk_bi_native_functions[natidx];
+			DUK_ASSERT(c_func != NULL);
 
 			c_nargs = (duk_small_uint_t) duk_bd_decode_flagged(bd, DUK__NARGS_BITS, len /*def_value*/);
 			if (c_nargs == DUK__NARGS_VARARGS_MARKER) {
@@ -485,8 +487,16 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				c_func_setter = duk_bi_native_functions[natidx_setter];
-				duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
-				duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
+				if (c_func_getter != NULL) {
+					duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
+				} else {
+					duk_push_undefined(ctx);
+				}
+				if (c_func_setter != NULL) {
+					duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
+				} else {
+					duk_push_undefined(ctx);
+				}
 
 				/* XXX: magic for getter/setter? use duk_def_prop()? */
 
@@ -496,8 +506,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				duk_hobject_define_accessor_internal(thr,
 				                                     duk_require_hobject(ctx, i),
 				                                     duk_get_hstring(ctx, -3),
-				                                     duk_require_hobject(ctx, -2),
-				                                     duk_require_hobject(ctx, -1),
+				                                     duk_get_hobject(ctx, -2),
+				                                     duk_get_hobject(ctx, -1),
 				                                     prop_flags);
 				duk_pop_3(ctx);  /* key, getter and setter, now reachable through object */
 				goto skip_value;
