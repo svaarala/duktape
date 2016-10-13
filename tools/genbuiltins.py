@@ -2115,11 +2115,16 @@ def rom_get_value_initializer(meta, val, bi_str_map, bi_obj_map):
             init_type = 'duk_rom_tval_object'
             init_lit = 'DUK__TVAL_OBJECT(&%s)' % bi_obj_map[v['id']]
         elif v['type'] == 'accessor':
-            getter_object = metadata_lookup_object(meta, v['getter_id'])
-            setter_object = metadata_lookup_object(meta, v['setter_id'])
+            getter_ref = 'NULL'
+            setter_ref = 'NULL'
+            if v.has_key('getter_id'):
+                getter_object = metadata_lookup_object(meta, v['getter_id'])
+                getter_ref = '&%s' % bi_obj_map[getter_object['id']]
+            if v.has_key('setter_id'):
+                setter_object = metadata_lookup_object(meta, v['setter_id'])
+                setter_ref = '&%s' % bi_obj_map[setter_object['id']]
             init_type = 'duk_rom_tval_accessor'
-            init_lit = 'DUK__TVAL_ACCESSOR(&%s, &%s)' % (bi_obj_map[getter_object['id']], bi_obj_map[setter_object['id']])
-
+            init_lit = 'DUK__TVAL_ACCESSOR(%s, %s)' % (getter_ref, setter_ref)
         elif v['type'] == 'lightfunc':
             # Match DUK_LFUNC_FLAGS_PACK() in duk_tval.h.
             if v.has_key('length'):
