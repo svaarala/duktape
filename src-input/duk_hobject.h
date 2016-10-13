@@ -108,9 +108,8 @@
 #define DUK_HOBJECT_CLASS_UINT32ARRAY          26
 #define DUK_HOBJECT_CLASS_FLOAT32ARRAY         27
 #define DUK_HOBJECT_CLASS_FLOAT64ARRAY         28
-#define DUK_HOBJECT_CLASS_BUFFER               29  /* custom; implies DUK_HOBJECT_IS_BUFOBJ */
-#define DUK_HOBJECT_CLASS_BUFOBJ_MAX           29
-#define DUK_HOBJECT_CLASS_MAX                  29
+#define DUK_HOBJECT_CLASS_BUFOBJ_MAX           28
+#define DUK_HOBJECT_CLASS_MAX                  28
 
 /* class masks */
 #define DUK_HOBJECT_CMASK_ALL                  ((1UL << (DUK_HOBJECT_CLASS_MAX + 1)) - 1UL)
@@ -130,7 +129,6 @@
 #define DUK_HOBJECT_CMASK_GLOBAL               (1UL << DUK_HOBJECT_CLASS_GLOBAL)
 #define DUK_HOBJECT_CMASK_OBJENV               (1UL << DUK_HOBJECT_CLASS_OBJENV)
 #define DUK_HOBJECT_CMASK_DECENV               (1UL << DUK_HOBJECT_CLASS_DECENV)
-#define DUK_HOBJECT_CMASK_BUFFER               (1UL << DUK_HOBJECT_CLASS_BUFFER)
 #define DUK_HOBJECT_CMASK_POINTER              (1UL << DUK_HOBJECT_CLASS_POINTER)
 #define DUK_HOBJECT_CMASK_THREAD               (1UL << DUK_HOBJECT_CLASS_THREAD)
 #define DUK_HOBJECT_CMASK_ARRAYBUFFER          (1UL << DUK_HOBJECT_CLASS_ARRAYBUFFER)
@@ -146,8 +144,7 @@
 #define DUK_HOBJECT_CMASK_FLOAT64ARRAY         (1UL << DUK_HOBJECT_CLASS_FLOAT64ARRAY)
 
 #define DUK_HOBJECT_CMASK_ALL_BUFOBJS \
-	(DUK_HOBJECT_CMASK_BUFFER | \
-	 DUK_HOBJECT_CMASK_ARRAYBUFFER | \
+	(DUK_HOBJECT_CMASK_ARRAYBUFFER | \
 	 DUK_HOBJECT_CMASK_DATAVIEW | \
 	 DUK_HOBJECT_CMASK_INT8ARRAY | \
 	 DUK_HOBJECT_CMASK_UINT8ARRAY | \
@@ -304,8 +301,7 @@
 		DUK_ASSERT(!DUK_HOBJECT_IS_CALLABLE((h)) || \
 		           DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_FUNCTION); \
 		DUK_ASSERT(!DUK_HOBJECT_IS_BUFOBJ((h)) || \
-		           (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_BUFFER || \
-		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAYBUFFER || \
+		           (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_ARRAYBUFFER || \
 		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_DATAVIEW || \
 		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_INT8ARRAY || \
 		            DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_UINT8ARRAY || \
@@ -889,7 +885,6 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobje
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
-DUK_INTERNAL_DECL void duk_hobject_define_accessor_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_hobject *getter, duk_hobject *setter, duk_small_uint_t propflags);
 DUK_INTERNAL_DECL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length);  /* XXX: duk_uarridx_t? */
 DUK_INTERNAL_DECL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
 DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);  /* XXX: duk_uarridx_t? */

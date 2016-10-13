@@ -23,8 +23,7 @@ static const duk_uint8_t duk__buffer_proto_from_classnum[] = {
 	DUK_BIDX_INT32ARRAY_PROTOTYPE,
 	DUK_BIDX_UINT32ARRAY_PROTOTYPE,
 	DUK_BIDX_FLOAT32ARRAY_PROTOTYPE,
-	DUK_BIDX_FLOAT64ARRAY_PROTOTYPE,
-	DUK_BIDX_NODEJS_BUFFER_PROTOTYPE
+	DUK_BIDX_FLOAT64ARRAY_PROTOTYPE
 };
 
 /* Map DUK_HBUFOBJ_ELEM_xxx to duk_hobject class number.
@@ -574,34 +573,29 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_context *ctx) {
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
- *  Node.js Buffer: constructor
+ *  Node.js Buffer constructor
+ *
+ *  Node.js Buffers are just Uint8Arrays with internal prototype set to
+ *  Buffer.prototype so they're handled otherwise the same as Uint8Array.
+ *  However, the constructor arguments are very different so a separate
+ *  constructor entry point is used.
  */
-
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_constructor(duk_context *ctx) {
-	/* Internal class is Object: Object.prototype.toString.call(new Buffer(0))
-	 * prints "[object Object]".
-	 */
 	duk_hbuffer *h_buf;
-	duk_hbufobj *h_bufobj;
 
 	h_buf = duk__hbufobj_fixed_from_argvalue(ctx);
 	DUK_ASSERT(h_buf != NULL);
 
-	h_bufobj = duk_push_bufobj_raw(ctx,
-	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                               DUK_HOBJECT_FLAG_BUFOBJ |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
-	                               DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
-	DUK_ASSERT(h_bufobj != NULL);
+	duk_push_buffer_object(ctx,
+	                       -1,
+	                       0,
+	                       DUK_HBUFFER_FIXED_GET_SIZE((duk_hbuffer_fixed *) h_buf),
+	                       DUK_BUFOBJ_UINT8ARRAY);
+	duk_push_hobject_bidx(ctx, DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
+	duk_set_prototype(ctx, -2);
 
-	h_bufobj->buf = h_buf;
-	DUK_HBUFFER_INCREF(thr, h_buf);
-	DUK_ASSERT(h_bufobj->offset == 0);
-	h_bufobj->length = (duk_int_t) DUK_HBUFFER_GET_SIZE(h_buf);
-	DUK_ASSERT(h_bufobj->elem_type == DUK_HBUFOBJ_ELEM_UINT8);
-
-	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+	/* XXX: a more direct implementation */
 
 	return 1;
 }
@@ -664,6 +658,8 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 /* Format of magic, bits:
  *   0...1: elem size shift (0-3)
  *   2...5: elem type (DUK_HBUFOBJ_ELEM_xxx)
+ *
+ * XXX: add prototype bidx explicitly to magic instead of using a mapping?
  */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
@@ -1860,7 +1856,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 /*
  *  Node.js Buffer.prototype.slice([start], [end])
  *  ArrayBuffer.prototype.slice(begin, [end])
- *  TypedArray.prototype.slice(begin, [end])
+ *  TypedArray.prototype.subarray(begin, [end])
  *
  *  The API calls are almost identical; negative indices are counted from end
  *  of buffer, and final indices are clamped (allowing crossed indices).  Main
@@ -1911,6 +1907,9 @@ DUK_LOCAL void duk__arraybuffer_plain_slice(duk_context *ctx, duk_hbuffer *h_val
 #endif /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+/* Shared helper for slice/subarray operation.
+ * Magic: 0x01=isView, 0x02=copy, 0x04=Node.js Buffer special handling.
+ */
 DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_small_int_t magic;
@@ -1984,19 +1983,24 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	slice_length = (duk_uint_t) (end_offset - start_offset);
 
 	/* The resulting buffer object gets the same class and prototype as
-	 * the buffer in 'this', e.g. if the input is a Node.js Buffer the
-	 * result is a Node.js Buffer; if the input is a Float32Array, the
+	 * the buffer in 'this', e.g. if the input is a Uint8Array the
+	 * result is a Uint8Array; if the input is a Float32Array, the
 	 * result is a Float32Array.  The result internal prototype should
 	 * be the default prototype for the class (e.g. initial value of
 	 * Uint8Array.prototype), not copied from the argument (Duktape 1.x
 	 * did that).
+	 *
+	 * Node.js Buffers have special handling: they're Uint8Arrays as far
+	 * as the internal class is concerned, so the new Buffer should also
+	 * be an Uint8Array but inherit from Buffer.prototype.
 	 */
-
 	res_class_num = DUK_HOBJECT_GET_CLASS_NUMBER((duk_hobject *) h_this);
 	DUK_ASSERT(res_class_num >= DUK_HOBJECT_CLASS_BUFOBJ_MIN);  /* type check guarantees */
 	DUK_ASSERT(res_class_num <= DUK_HOBJECT_CLASS_BUFOBJ_MAX);
 	res_proto_bidx = duk__buffer_proto_from_classnum[res_class_num - DUK_HOBJECT_CLASS_BUFOBJ_MIN];
-
+	if (magic & 0x04) {
+		res_proto_bidx = DUK_BIDX_NODEJS_BUFFER_PROTOTYPE;
+	}
 	h_bufobj = duk_push_bufobj_raw(ctx,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
@@ -2203,7 +2207,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 	h_bufres = duk_push_bufobj_raw(ctx,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BUFFER),
+	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_UINT8ARRAY),
 	                               DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
 	DUK_ASSERT(h_bufres != NULL);
 

@@ -2720,7 +2720,7 @@ objects:
           native: duk_bi_buffer_slice_shared
           length: 2
           varargs: false
-          magic: 2  # magic: 0x01=isView, 0x02=create copy
+          magic: 2  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         typedarray: true
         es6: true
         present_if: DUK_USE_BUFFEROBJECT_SUPPORT
@@ -3032,7 +3032,7 @@ objects:
           native: duk_bi_buffer_slice_shared
           length: 2
           varargs: false
-          magic: 1  # magic: 0x01=isView, 0x02=create copy
+          magic: 1  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         typedarray: true
         es6: true
 
@@ -3618,7 +3618,7 @@ objects:
         nodejs_buffer: true
 
   - id: bi_nodejs_buffer_prototype
-    internal_prototype: bi_object_prototype
+    internal_prototype: bi_uint8array_prototype
     class: Object
     nodejs_buffer: true
     bidx: true
@@ -4150,7 +4150,7 @@ objects:
           native: duk_bi_buffer_slice_shared
           length: 2
           varargs: false
-          magic: 0  # magic: 0x01=isView, 0x02=create copy
+          magic: 4  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         nodejs_buffer: true
       - key: "write"
         value:

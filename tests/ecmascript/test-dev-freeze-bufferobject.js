@@ -12,7 +12,7 @@
 1 [object ArrayBuffer] TypeError
 2 [object Uint8Array] TypeError
 3 [object Float32Array] TypeError
-4 [object Buffer] TypeError
+4 [object Uint8Array] TypeError
 ===*/
 
 function test() {

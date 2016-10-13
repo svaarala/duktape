@@ -1070,10 +1070,6 @@ Latest at time of writing:
 
 Gap between current implementation and latest:
 
-* ``Buffer.prototype`` should inherit from ``Uint8Array.prototype`` now;
-  Buffer instances are now Uint8Array instances, and
-  ``new Uint8Array([1,2,3]).__proto__ == Uint8Array.prototype`` is true.
-
 * Buffers can be for-of iterated; buf.values(), buf.keys(), and
   buf.entries() create iterators.  For-of iteration requires @@iterator
   support.
@@ -1102,25 +1098,6 @@ Gap between current implementation and latest:
   and just returns the byte length of the internal string representation
   (CESU-8 typically, but not always).  It also doesn't handle buffer,
   Uint8Array, etc values which now have special handling in v6.7.0.
-
-* ``Buffer.concat()`` no longer special cases array length 1: in v0.12.1
-  an argument ``[ buf ]`` would result in ``buf`` with no copy::
-
-      > a = new Buffer(4)
-      <Buffer 00 00 88 cf>
-      > b = Buffer.concat([a])
-      <Buffer 00 00 88 cf>
-      > a === b
-      true
-
-  In v6.7.0 a copy is always made which is much more predictable::
-
-      > a = new Buffer(4)
-      <Buffer b0 95 6f 02>
-      > b = Buffer.concat([a])
-      <Buffer b0 95 6f 02>
-      > a === b
-      false
 
 * ``Buffer.from()`` is missing.  It can share most code with the constructor.
 

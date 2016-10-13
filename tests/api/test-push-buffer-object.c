@@ -43,8 +43,8 @@ static void register_dump_buffer_info(duk_context *ctx) {
 
 /*===
 *** test_basic (duk_safe_call)
-object [object Buffer] 32 128 32 1 undefined
-true false false false false false false false false false false false -> Buffer
+object [object Uint8Array] 32 128 32 1 object
+true false false false true false false false false false false false -> Buffer,Uint8Array
 true false false false false false false false false false false false -> Buffer.prototype
 object [object ArrayBuffer] 32 128 32 1 undefined
 false true false false false false false false false false false false -> ArrayBuffer

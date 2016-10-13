@@ -17,29 +17,29 @@
 constructor test
 size: 0
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 16
 16 bytes: 00000000000000000000000000000000
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 16 bytes: 00000000000000000000000000000000
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: -1
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: -Infinity
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: NaN
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 1e+50
 RangeError
 RangeError
@@ -51,29 +51,29 @@ RangeError
 RangeError
 size: 1073741824
 1073741824 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 1073741824 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 1073741823
 1073741823 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 1073741823 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 16777216
 16777216 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 16777216 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 268435456
 268435456 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 268435456 bytes: 0000000000000000000000000000000000000000000000000000000000000000...
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 size: 123
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 0 bytes: 
-[object Buffer] -> Buffer.prototype -> Object.prototype
+[object Uint8Array] -> Buffer.prototype -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
 array length: 0
 0 bytes: 
 0 bytes: 

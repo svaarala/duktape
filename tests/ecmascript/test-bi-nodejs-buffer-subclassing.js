@@ -13,12 +13,12 @@
 
 /*===
 object
-[object Buffer]
+[object Uint8Array]
 MyBuffer
 MyNodejsBuffer
 true
 object
-[object Buffer]
+[object Uint8Array]
 FGH
 undefined
 false
