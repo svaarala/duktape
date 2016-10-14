@@ -10,4 +10,4 @@ description: >
 
   DUK_USE_BUFFEROBJECT_SUPPORT is recommended but not required: If it is
   disabled, TextEncoder will encode to a plain buffer instead of a Uint8Array.
-  TextDecoder always accept plain buffers as input.
+  TextDecoder always accepts plain buffers as input.
