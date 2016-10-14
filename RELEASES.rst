@@ -1818,6 +1818,10 @@ Planned
   e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
   Math.pow() while also being more readable (GH-987, GH-997)
 
+* Add TextEncoder and TextDecoder built-ins (the Encoding API) which allow
+  Ecmascript code to read and write text stored in an ArrayBuffer or Duktape
+  buffer (GH-975)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
