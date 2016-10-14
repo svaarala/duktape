@@ -23,6 +23,7 @@
 #define DUK__NARGS_BITS                  3
 #define DUK__PROP_TYPE_BITS              3
 #define DUK__MAGIC_BITS                  16
+#define DUK__ACCESSOR_MAGIC_BITS         2      /* just a few shared accessors now */
 
 #define DUK__NARGS_VARARGS_MARKER        0x07
 #define DUK__NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_NONE */
@@ -488,6 +489,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			case DUK__PROP_TYPE_ACCESSOR: {
 				duk_small_uint_t natidx_getter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
 				duk_small_uint_t natidx_setter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
+				duk_small_uint_t accessor_magic = (duk_small_uint_t) duk_bd_decode(bd, DUK__ACCESSOR_MAGIC_BITS);
 				duk_c_function c_func_getter;
 				duk_c_function c_func_setter;
 
@@ -497,15 +499,15 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				if (c_func_getter != NULL) {
 					duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
+					duk_set_magic(ctx, -1, (duk_int_t) accessor_magic);
 					defprop_flags |= DUK_DEFPROP_HAVE_GETTER;
 				}
 				c_func_setter = duk_bi_native_functions[natidx_setter];
 				if (c_func_setter != NULL) {
 					duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
+					duk_set_magic(ctx, -1, (duk_int_t) accessor_magic);
 					defprop_flags |= DUK_DEFPROP_HAVE_SETTER;
 				}
-
-				/* XXX: magic for getter/setter? */
 
 				/* Writable flag doesn't make sense for an accessor. */
 				DUK_ASSERT((defprop_flags & DUK_PROPDESC_FLAG_WRITABLE) == 0);  /* genbuiltins.py ensures */

@@ -196,6 +196,8 @@ DUK_INTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
 DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 #endif
 
+DUK_INTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
+
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,
  * using these macro results in faster and smaller code than duk_get_tval().

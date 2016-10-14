@@ -29,6 +29,7 @@
 #define DUK_STR_INVALID_INPUT                    "invalid input"
 #define DUK_STR_INVALID_LENGTH                   "invalid length"
 #define DUK_STR_NOT_CONSTRUCTABLE                "not constructable"
+#define DUK_STR_CONSTRUCT_ONLY                   "constructor requires 'new'"
 #define DUK_STR_NOT_CALLABLE                     "not callable"
 #define DUK_STR_NOT_EXTENSIBLE                   "not extensible"
 #define DUK_STR_NOT_WRITABLE                     "not writable"

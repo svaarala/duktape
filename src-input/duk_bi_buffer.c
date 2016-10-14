@@ -616,10 +616,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 	thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 
-	/* XXX: function flag to make this automatic? */
-	if (!duk_is_constructor_call(ctx)) {
-		DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* reworked in another branch... */
-	}
+	duk_require_constructor_call(ctx);
 
 	len = duk_to_int(ctx, 0);
 	if (len < 0) {
@@ -690,10 +687,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	 * buffer functions.
 	 */
 
-	/* XXX: function flag to make this automatic? */
-	if (!duk_is_constructor_call(ctx)) {
-		DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* reworked in another branch... */
-	}
+	duk_require_constructor_call(ctx);
 
 	/* We could fit built-in index into magic but that'd make the magic
 	 * number dependent on built-in numbering (genbuiltins.py doesn't
@@ -1038,10 +1032,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	duk_uint_t offset;
 	duk_uint_t length;
 
-	/* XXX: function flag to make this automatic? */
-	if (!duk_is_constructor_call(ctx)) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* reworked in another branch... */
-	}
+	duk_require_constructor_call(ctx);
 
 	h_bufarg = duk__require_bufobj_value(ctx, 0);
 	DUK_ASSERT(h_bufarg != NULL);

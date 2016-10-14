@@ -4175,7 +4175,7 @@ objects:
         nodejs_buffer: true
 
   #
-  # Encoding API
+  #  Encoding API
   #
 
   - id: bi_textencoder_constructor
@@ -4280,25 +4280,25 @@ objects:
       - key: "encoding"
         value:
           type: accessor
-          getter: duk_bi_textdecoder_prototype_encoding_getter
+          getter: duk_bi_textdecoder_prototype_shared_getter
           getter_nargs: 0
-          getter_magic: 0
+          getter_magic: 0  # 0=encoding
         attributes: "ec"
         encoding_api: true
       - key: "fatal"
         value:
           type: accessor
-          getter: duk_bi_textdecoder_prototype_fatal_getter
+          getter: duk_bi_textdecoder_prototype_shared_getter
           getter_nargs: 0
-          getter_magic: 0
+          getter_magic: 1  # 1=fatal
         attributes: "ec"
         encoding_api: true
       - key: "ignoreBOM"
         value:
           type: accessor
-          getter: duk_bi_textdecoder_prototype_ignorebom_getter
+          getter: duk_bi_textdecoder_prototype_shared_getter
           getter_nargs: 0
-          getter_magic: 0
+          getter_magic: 2  # 2=ignoreBOM
         attributes: "ec"
         encoding_api: true
       - key: "decode"
