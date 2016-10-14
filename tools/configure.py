@@ -412,6 +412,7 @@ def main():
         'duk_bi_date_unix.c',
         'duk_bi_date_windows.c',
         'duk_bi_duktape.c',
+        'duk_bi_encoding.c',
         'duk_bi_error.c',
         'duk_bi_function.c',
         'duk_bi_global.c',
