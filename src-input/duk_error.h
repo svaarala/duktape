@@ -144,6 +144,13 @@
  *  Small footprint is also useful for performance because small cold paths
  *  reduce code cache pressure.  Adding macros here only makes sense if there
  *  are enough call sites to get concrete benefits.
+ *
+ *  DUK_ERROR_xxx() macros are generic and can be used anywhere.
+ *
+ *  DUK_DCERROR_xxx() macros can only be used in Duktape/C functions where
+ *  the "return DUK_RET_xxx;" shorthand is available for low memory targets.
+ *  The DUK_DCERROR_xxx() macros always either throw or perform a
+ *  'return DUK_RET_xxx' from the calling function.
  */
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
@@ -179,8 +186,22 @@
 #define DUK_ERROR_RANGE_PUSH_BEYOND(thr) do { \
 		duk_err_range_push_beyond((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
+#define DUK_ERROR_RANGE_INVALID_ARGS(thr) do { \
+		DUK_ERROR_RANGE((thr), DUK_STR_INVALID_ARGS); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_ARGS(thr) do { \
+		DUK_ERROR_RANGE_INVALID_ARGS((thr)); \
+		return 0; \
+	} while (0)
 #define DUK_ERROR_RANGE_INVALID_COUNT(thr) do { \
 		DUK_ERROR_RANGE((thr), DUK_STR_INVALID_COUNT); \
+	} while (0)
+#define DUK_ERROR_RANGE_INVALID_LENGTH(thr) do { \
+		DUK_ERROR_RANGE((thr), DUK_STR_INVALID_LENGTH); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_LENGTH(thr) do { \
+		DUK_ERROR_RANGE_INVALID_LENGTH((thr)); \
+		return 0; \
 	} while (0)
 #define DUK_ERROR_RANGE(thr,msg) do { \
 		duk_err_range((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO, (msg)); \
@@ -196,6 +217,10 @@
 	} while (0)
 #define DUK_ERROR_TYPE_INVALID_ARGS(thr) do { \
 		duk_err_type_invalid_args((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_ARGS(thr) do { \
+		DUK_ERROR_TYPE_INVALID_ARGS((thr)); \
+		return 0; \
 	} while (0)
 #define DUK_ERROR_TYPE(thr,msg) do { \
 		DUK_ERROR((thr), DUK_ERR_TYPE_ERROR, (msg)); \
@@ -228,8 +253,22 @@
 #define DUK_ERROR_RANGE_PUSH_BEYOND(thr) do { \
 		duk_err_range((thr)); \
 	} while (0)
+#define DUK_ERROR_RANGE_INVALID_ARGS(thr) do { \
+		duk_err_range((thr)); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_ARGS(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_RANGE_ERROR; \
+	} while (0)
 #define DUK_ERROR_RANGE_INVALID_COUNT(thr) do { \
 		duk_err_range((thr)); \
+	} while (0)
+#define DUK_ERROR_RANGE_INVALID_LENGTH(thr) do { \
+		duk_err_range((thr)); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_LENGTH(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_RANGE_ERROR; \
 	} while (0)
 #define DUK_ERROR_RANGE(thr,msg) do { \
 		duk_err_range((thr)); \
@@ -245,6 +284,10 @@
 	} while (0)
 #define DUK_ERROR_TYPE_INVALID_ARGS(thr) do { \
 		duk_err_type((thr)); \
+	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_ARGS(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_TYPE_ERROR; \
 	} while (0)
 #define DUK_ERROR_TYPE(thr,msg) do { \
 		duk_err_type((thr)); \

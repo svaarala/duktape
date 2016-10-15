@@ -4062,11 +4062,11 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	return;
 
  range_error:
-	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARGS);
 	return;  /* not reached */
 
  arg_error:
-	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_TYPE(thr, DUK_STR_INVALID_ARGS);
 	return;  /* not reached */
 }
 #else  /* DUK_USE_BUFFEROBJECT_SUPPORT */

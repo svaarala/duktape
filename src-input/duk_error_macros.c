@@ -65,7 +65,7 @@ DUK_INTERNAL void duk_err_range_push_beyond(duk_hthread *thr, const char *filena
 	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_RANGE_ERROR, DUK_STR_PUSH_BEYOND_ALLOC_STACK);
 }
 DUK_INTERNAL void duk_err_type_invalid_args(duk_hthread *thr, const char *filename, duk_int_t linenumber) {
-	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_RAW(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, DUK_STR_INVALID_ARGS);
 }
 #else
 /* The file/line arguments are NULL and 0, they're ignored by DUK_ERROR_RAW()

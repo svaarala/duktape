@@ -55,7 +55,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 
 			/* [ ... pattern flags ] */
 		} else {
-			return DUK_RET_TYPE_ERROR;
+			DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 		}
 	} else {
 		if (duk_is_undefined(ctx, 0)) {

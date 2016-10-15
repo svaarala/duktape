@@ -36,7 +36,8 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx
 		}
 	}
 
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	/* never here */
 
  type_ok:
 	if (coerce_tostring) {

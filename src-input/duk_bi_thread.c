@@ -16,9 +16,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	/* XXX: need a duk_require_func_promote_lfunc() */
 	func = duk_require_hobject_promote_lfunc(ctx, 0);
 	DUK_ASSERT(func != NULL);
-	if (!DUK_HOBJECT_IS_CALLABLE(func)) {
-		return DUK_RET_TYPE_ERROR;
-	}
+	duk_require_callable(ctx, 0);
 
 	duk_push_thread(ctx);
 	new_thr = (duk_hthread *) duk_get_hobject(ctx, -1);

@@ -154,7 +154,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	return 1;
 
  type_error:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
@@ -164,10 +164,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
 
 	duk_push_this(ctx);
-	if (!duk_is_callable(ctx, -1)) {
-		DUK_DDD(DUK_DDDPRINT("func is not callable"));
-		goto type_error;
-	}
+	duk_require_callable(ctx, -1);
 	duk_insert(ctx, 0);
 	DUK_ASSERT_TOP(ctx, 3);
 
@@ -211,7 +208,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	return 1;
 
  type_error:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
@@ -266,10 +263,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	DUK_ASSERT(nargs >= 1);
 
 	duk_push_this(ctx);
-	if (!duk_is_callable(ctx, -1)) {
-		DUK_DDD(DUK_DDDPRINT("func is not callable"));
-		goto type_error;
-	}
+	duk_require_callable(ctx, -1);
 
 	/* [ thisArg arg1 ... argN func ]  (thisArg+args == nargs total) */
 	DUK_ASSERT_TOP(ctx, nargs + 1);
@@ -343,9 +337,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
 
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
