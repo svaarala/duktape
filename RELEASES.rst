@@ -1840,7 +1840,7 @@ Planned
   fully implemented and not part of the documented public API (GH-762)
 
 * Minor changes to error messages for errors thrown by Duktape internals
-  (GH-827, GH-839, GH-840)
+  (GH-827, GH-839, GH-840, GH-1016)
 
 * Make coroutine support optional (DUK_USE_COROUTINE_SUPPORT); disabling
   coroutines reduces code footprint by about 2kB (GH-829)

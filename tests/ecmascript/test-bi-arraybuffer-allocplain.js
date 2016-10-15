@@ -9,10 +9,10 @@
 ---*/
 
 /*===
-TypeError: invalid call args
-TypeError: invalid call args
-TypeError: invalid call args
-TypeError: invalid call args
+TypeError: invalid args
+TypeError: invalid args
+TypeError: invalid args
+TypeError: invalid args
 |666f6f|
 |313233|
 ||

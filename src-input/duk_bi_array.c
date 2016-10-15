@@ -76,7 +76,7 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
 	 */
 	duk_uint32_t ret = duk__push_this_obj_len_u32(ctx);
 	if (DUK_UNLIKELY(ret >= 0x80000000UL)) {
-		DUK_ERROR_RANGE((duk_hthread *) ctx, DUK_STR_ARRAY_LENGTH_OVER_2G);
+		DUK_ERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
 	}
 	return ret;
 }
@@ -157,7 +157,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
 		d = duk_get_number(ctx, 0);
 		len = duk_to_uint32(ctx, 0);
 		if (((duk_double_t) len) != d) {
-			return DUK_RET_RANGE_ERROR;
+			DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
 		}
 
 		/* For small lengths create a dense preallocated array.
@@ -481,7 +481,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
 }
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
-DUK_LOCAL duk_bool_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr) {
+DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr) {
 	duk_hthread *thr;
 	duk_tval *tv_arraypart;
 	duk_tval *tv_src;
@@ -497,7 +497,7 @@ DUK_LOCAL duk_bool_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_ar
 	n = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 	if (DUK_UNLIKELY(len + n < len)) {
 		DUK_D(DUK_DPRINT("Array.prototype.push() would go beyond 32-bit length, throw"));
-		return DUK_RET_RANGE_ERROR;
+		DUK_DCERROR_RANGE_INVALID_LENGTH(thr);  /* != 0 return value returned as is by caller */
 	}
 	if (len + n > DUK_HOBJECT_GET_ASIZE((duk_hobject *) h_arr)) {
 		/* Array part would need to be extended.  Rely on slow path
@@ -569,7 +569,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 
 	if (len + (duk_uint32_t) n < len) {
 		DUK_D(DUK_DPRINT("Array.prototype.push() would go beyond 32-bit length, throw"));
-		return DUK_RET_RANGE_ERROR;
+		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
 	}
 
 	for (i = 0; i < n; i++) {
@@ -962,7 +962,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	/* For now, restrict result array into 32-bit length range. */
 	if (((duk_double_t) len) - ((duk_double_t) del_count) + ((duk_double_t) item_count) > (duk_double_t) DUK_UINT32_MAX) {
 		DUK_D(DUK_DPRINT("Array.prototype.splice() would go beyond 32-bit length, throw"));
-		return DUK_RET_RANGE_ERROR;
+		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
 	}
 
 	duk_push_array(ctx);
@@ -1248,7 +1248,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 
 	if (len + (duk_uint32_t) nargs < len) {
 		DUK_D(DUK_DPRINT("Array.prototype.unshift() would go beyond 32-bit length, throw"));
-		return DUK_RET_RANGE_ERROR;
+		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
 	}
 
 	i = len;
@@ -1536,9 +1536,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 
 	duk_set_top(ctx, 2);
 	len = duk__push_this_obj_len_u32(ctx);
-	if (!duk_is_callable(ctx, 0)) {
-		goto type_error;
-	}
+	duk_require_callable(ctx, 0);
 
 	/* stack[0] = callback fn
 	 * stack[1] = initialValue
@@ -1600,14 +1598,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	}
 
 	if (!have_acc) {
-		goto type_error;
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 	}
 
 	DUK_ASSERT_TOP(ctx, 5);
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 
 #endif  /* DUK_USE_ARRAY_BUILTIN */

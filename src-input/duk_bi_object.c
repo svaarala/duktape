@@ -88,7 +88,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 		/* This implicitly handles CheckObjectCoercible() caused
 		 * TypeError.
 		 */
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 	if (proto != NULL) {
 		duk_push_hobject(ctx, proto);
@@ -175,7 +175,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 
  fail_nonextensible:
  fail_loop:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx) {
@@ -200,7 +200,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 		proto = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(proto != NULL);
 	} else {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 	}
 
 	(void) duk_push_object_helper_proto(ctx,
@@ -427,7 +427,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context 
 	return 1;
 
  fail_cannot_freeze:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* XXX: proper error message */
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context *ctx) {
@@ -590,9 +590,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx
 	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_STRING);
-	if (!duk_is_callable(ctx, 1)) {
-		return DUK_RET_TYPE_ERROR;
-	}
+	duk_require_callable(ctx, 1);
 	duk_dup_0(ctx);  /* -> [ O toString O ] */
 	duk_call_method(ctx, 0);  /* XXX: call method tail call? */
 	return 1;

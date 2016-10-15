@@ -70,5 +70,5 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_prototype_tostring_shared(duk_context *ctx
 	return 1;
 
  type_error:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }

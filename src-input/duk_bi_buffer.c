@@ -314,7 +314,7 @@ DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
 	return;
 
  fail_range:
-	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_CALL_ARGS);
+	DUK_ERROR_RANGE(thr, DUK_STR_INVALID_ARGS);
 }
 
 /* Shared lenient buffer length clamping helper.  No negative indices, no
@@ -618,7 +618,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 
 	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* reworked in another branch... */
 	}
 
 	len = duk_to_int(ctx, 0);
@@ -650,7 +650,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 	return 1;
 
  fail_length:
-	return DUK_RET_RANGE_ERROR;
+	DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -692,7 +692,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 
 	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* reworked in another branch... */
 	}
 
 	/* We could fit built-in index into magic but that'd make the magic
@@ -795,7 +795,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			                               proto_bidx);
 			h_val = h_bufarg->buf;
 			if (h_val == NULL) {
-				return DUK_RET_TYPE_ERROR;
+				DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 			}
 			h_bufobj->buf = h_val;
 			DUK_HBUFFER_INCREF(thr, h_val);
@@ -821,7 +821,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			DUK_ASSERT_HBUFOBJ_VALID(h_bufarg);
 			elem_length_signed = (duk_int_t) (h_bufarg->length >> h_bufarg->shift);
 			if (h_bufarg->buf == NULL) {
-				return DUK_RET_TYPE_ERROR;
+				DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 			}
 
 			/* Select copy mode.  Must take into account element
@@ -1026,7 +1026,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	return 1;
 
  fail_arguments:
-	return DUK_RET_RANGE_ERROR;
+	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1040,7 +1040,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 
 	/* XXX: function flag to make this automatic? */
 	if (!duk_is_constructor_call(ctx)) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* reworked in another branch... */
 	}
 
 	h_bufarg = duk__require_bufobj_value(ctx, 0);
@@ -1058,7 +1058,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 
 	h_val = h_bufarg->buf;
 	if (h_val == NULL) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 	}
 	h_bufobj->buf = h_val;
 	DUK_HBUFFER_INCREF(thr, h_val);
@@ -1183,7 +1183,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	DUK_ASSERT(buf_slice != NULL);
 
 	if (h_this->buf == NULL) {
-		goto type_error;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/* XXX: it'd be tempting to duk_push_lstring() the data, but technically
@@ -1210,9 +1210,6 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	 */
 	(void) duk_buffer_to_string(ctx, -1);
 	return 1;
-
- type_error:
-	return DUK_RET_TYPE_ERROR;
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1345,7 +1342,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_fill(duk_context *ctx) {
 	h_this = duk__require_bufobj_this(ctx);
 	DUK_ASSERT(h_this != NULL);
 	if (h_this->buf == NULL) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/* [ value offset end ] */
@@ -1553,7 +1550,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_copy(duk_context *ctx) {
 	return 1;
 
  fail_bounds:
-	return DUK_RET_RANGE_ERROR;
+	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1625,21 +1622,22 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	 */
 	offset_signed = duk_to_int(ctx, 1);
 	if (offset_signed < 0) {
-		return DUK_RET_TYPE_ERROR;
+		/* For some reason this is a TypeError (at least in V8). */
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 	offset_elems = (duk_uint_t) offset_signed;
 	offset_bytes = offset_elems << h_this->shift;
 	if ((offset_bytes >> h_this->shift) != offset_elems) {
 		/* Byte length would overflow. */
 		/* XXX: easier check with less code? */
-		return DUK_RET_RANGE_ERROR;
+		goto fail_args;
 	}
 	if (offset_bytes > h_this->length) {
 		/* Equality may be OK but >length not.  Checking
 		 * this explicitly avoids some overflow cases
 		 * below.
 		 */
-		return DUK_RET_RANGE_ERROR;
+		goto fail_args;
 	}
 	DUK_ASSERT(offset_bytes <= h_this->length);
 
@@ -1677,7 +1675,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 		if ((dst_length >> h_this->shift) != dst_length_elems) {
 			/* Byte length would overflow. */
 			/* XXX: easier check with less code? */
-			return DUK_RET_RANGE_ERROR;
+			goto fail_args;
 		}
 		DUK_DDD(DUK_DDDPRINT("nominal size check: src_length=%ld, dst_length=%ld",
 		                     (long) src_length, (long) dst_length));
@@ -1687,7 +1685,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 			 * side and guaranteed to be >= 0.
 			 */
 			DUK_DDD(DUK_DDDPRINT("copy exceeds target buffer nominal length"));
-			return DUK_RET_RANGE_ERROR;
+			goto fail_args;
 		}
 		if (!DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, offset_bytes + dst_length)) {
 			DUK_DDD(DUK_DDDPRINT("copy not covered by underlying target buffer, ignore"));
@@ -1830,7 +1828,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 			 * side and guaranteed to be >= 0.
 			 */
 			DUK_DDD(DUK_DDDPRINT("copy exceeds target buffer nominal length"));
-			return DUK_RET_RANGE_ERROR;
+			goto fail_args;
 		}
 
 		/* There's no need to check for buffer validity status for the
@@ -1850,6 +1848,9 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	}
 
 	return 0;
+
+ fail_args:
+	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1950,13 +1951,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 			 * buffer (handled automatically by duk__require_bufobj_this()).
 			 */
 
-#if 1
 			DUK_DDD(DUK_DDDPRINT("slice() doesn't handle view into plain buffer, coerce 'this' to ArrayBuffer object"));
 			/* fall through */
-#else
-			DUK_DDD(DUK_DDDPRINT("slice() doesn't handle view into plain buffer, refuse slice"));
-			return DUK_RET_TYPE_ERROR;
-#endif
 		}
 	}
 	tv = NULL;  /* No longer valid nor needed. */
@@ -2016,7 +2012,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 
 	h_val = h_this->buf;
 	if (h_val == NULL) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	if (magic & 0x02) {
@@ -2169,7 +2165,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 	/* Node.js accepts only actual Arrays. */
 	h_arg = duk_require_hobject(ctx, 0);
 	if (DUK_HOBJECT_GET_CLASS_NUMBER(h_arg) != DUK_HOBJECT_CLASS_ARRAY) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
 	/* Compute result length and validate argument buffers. */
@@ -2201,7 +2197,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 		total_length = duk_to_int(ctx, 1);
 	}
 	if (total_length < 0) {
-		return DUK_RET_RANGE_ERROR;
+		DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 	}
 
 	h_bufres = duk_push_bufobj_raw(ctx,
@@ -2533,8 +2529,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_readfield(duk_context *ctx) {
 		duk_push_nan(ctx);
 		return 1;
 	}
-
-	return DUK_RET_RANGE_ERROR;
+	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2812,6 +2807,6 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 		duk_push_uint(ctx, offset + nbytes);
 		return 1;
 	}
-	return DUK_RET_RANGE_ERROR;
+	DUK_DCERROR_RANGE_INVALID_ARGS(thr);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */

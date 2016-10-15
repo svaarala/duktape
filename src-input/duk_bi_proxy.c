@@ -10,7 +10,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_hobject *h_handler;
 
 	if (!duk_is_constructor_call(ctx)) {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* XXX */
 	}
 
 	/* Reject a proxy object as the target because it would need
@@ -19,7 +19,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	h_target = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_target != NULL);
 	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_target)) {
-		return DUK_RET_TYPE_ERROR;
+		goto fail_args;
 	}
 
 	/* Reject a proxy object as the handler because it would cause
@@ -34,7 +34,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	h_handler = duk_require_hobject_promote_mask(ctx, 1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_handler != NULL);
 	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(h_handler)) {
-		return DUK_RET_TYPE_ERROR;
+		goto fail_args;
 	}
 
 	/* XXX: the returned value is exotic in ES6, but we use a
@@ -63,5 +63,8 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_NONE);
 
 	return 1;  /* replacement handler */
+
+ fail_args:
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
 #endif  /* DUK_USE_ES6_PROXY */

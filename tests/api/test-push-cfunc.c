@@ -20,8 +20,8 @@ funcidx=3, argcount=2 -> result=3
 funcidx=3, argcount=3 -> result=6
 funcidx=3, argcount=4 -> result=10
 top after calling my_zero_ret: 1, retval='undefined'
-top after calling my_neg_ret: 1, rc=1, retval='Error: unknown error (rc -1)'
-top after calling my_type_error_ret: 1, rc=1, retval='TypeError: type error (rc -6)'
+top after calling my_neg_ret: 1, rc=1, retval='Error: error (rc -1)'
+top after calling my_type_error_ret: 1, rc=1, retval='TypeError: error (rc -6)'
 ===*/
 
 static duk_ret_t my_int_adder(duk_context *ctx) {

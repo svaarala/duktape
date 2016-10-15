@@ -103,134 +103,134 @@ static duk_ret_t test_simple_push(duk_context *ctx, void *udata) {
 
 /*===
 *** test_magic (duk_safe_call)
-i=-256, res=TypeError: invalid call args
-i=-255, res=TypeError: invalid call args
-i=-254, res=TypeError: invalid call args
-i=-253, res=TypeError: invalid call args
-i=-252, res=TypeError: invalid call args
-i=-251, res=TypeError: invalid call args
-i=-250, res=TypeError: invalid call args
-i=-249, res=TypeError: invalid call args
-i=-248, res=TypeError: invalid call args
-i=-247, res=TypeError: invalid call args
-i=-246, res=TypeError: invalid call args
-i=-245, res=TypeError: invalid call args
-i=-244, res=TypeError: invalid call args
-i=-243, res=TypeError: invalid call args
-i=-242, res=TypeError: invalid call args
-i=-241, res=TypeError: invalid call args
-i=-240, res=TypeError: invalid call args
-i=-239, res=TypeError: invalid call args
-i=-238, res=TypeError: invalid call args
-i=-237, res=TypeError: invalid call args
-i=-236, res=TypeError: invalid call args
-i=-235, res=TypeError: invalid call args
-i=-234, res=TypeError: invalid call args
-i=-233, res=TypeError: invalid call args
-i=-232, res=TypeError: invalid call args
-i=-231, res=TypeError: invalid call args
-i=-230, res=TypeError: invalid call args
-i=-229, res=TypeError: invalid call args
-i=-228, res=TypeError: invalid call args
-i=-227, res=TypeError: invalid call args
-i=-226, res=TypeError: invalid call args
-i=-225, res=TypeError: invalid call args
-i=-224, res=TypeError: invalid call args
-i=-223, res=TypeError: invalid call args
-i=-222, res=TypeError: invalid call args
-i=-221, res=TypeError: invalid call args
-i=-220, res=TypeError: invalid call args
-i=-219, res=TypeError: invalid call args
-i=-218, res=TypeError: invalid call args
-i=-217, res=TypeError: invalid call args
-i=-216, res=TypeError: invalid call args
-i=-215, res=TypeError: invalid call args
-i=-214, res=TypeError: invalid call args
-i=-213, res=TypeError: invalid call args
-i=-212, res=TypeError: invalid call args
-i=-211, res=TypeError: invalid call args
-i=-210, res=TypeError: invalid call args
-i=-209, res=TypeError: invalid call args
-i=-208, res=TypeError: invalid call args
-i=-207, res=TypeError: invalid call args
-i=-206, res=TypeError: invalid call args
-i=-205, res=TypeError: invalid call args
-i=-204, res=TypeError: invalid call args
-i=-203, res=TypeError: invalid call args
-i=-202, res=TypeError: invalid call args
-i=-201, res=TypeError: invalid call args
-i=-200, res=TypeError: invalid call args
-i=-199, res=TypeError: invalid call args
-i=-198, res=TypeError: invalid call args
-i=-197, res=TypeError: invalid call args
-i=-196, res=TypeError: invalid call args
-i=-195, res=TypeError: invalid call args
-i=-194, res=TypeError: invalid call args
-i=-193, res=TypeError: invalid call args
-i=-192, res=TypeError: invalid call args
-i=-191, res=TypeError: invalid call args
-i=-190, res=TypeError: invalid call args
-i=-189, res=TypeError: invalid call args
-i=-188, res=TypeError: invalid call args
-i=-187, res=TypeError: invalid call args
-i=-186, res=TypeError: invalid call args
-i=-185, res=TypeError: invalid call args
-i=-184, res=TypeError: invalid call args
-i=-183, res=TypeError: invalid call args
-i=-182, res=TypeError: invalid call args
-i=-181, res=TypeError: invalid call args
-i=-180, res=TypeError: invalid call args
-i=-179, res=TypeError: invalid call args
-i=-178, res=TypeError: invalid call args
-i=-177, res=TypeError: invalid call args
-i=-176, res=TypeError: invalid call args
-i=-175, res=TypeError: invalid call args
-i=-174, res=TypeError: invalid call args
-i=-173, res=TypeError: invalid call args
-i=-172, res=TypeError: invalid call args
-i=-171, res=TypeError: invalid call args
-i=-170, res=TypeError: invalid call args
-i=-169, res=TypeError: invalid call args
-i=-168, res=TypeError: invalid call args
-i=-167, res=TypeError: invalid call args
-i=-166, res=TypeError: invalid call args
-i=-165, res=TypeError: invalid call args
-i=-164, res=TypeError: invalid call args
-i=-163, res=TypeError: invalid call args
-i=-162, res=TypeError: invalid call args
-i=-161, res=TypeError: invalid call args
-i=-160, res=TypeError: invalid call args
-i=-159, res=TypeError: invalid call args
-i=-158, res=TypeError: invalid call args
-i=-157, res=TypeError: invalid call args
-i=-156, res=TypeError: invalid call args
-i=-155, res=TypeError: invalid call args
-i=-154, res=TypeError: invalid call args
-i=-153, res=TypeError: invalid call args
-i=-152, res=TypeError: invalid call args
-i=-151, res=TypeError: invalid call args
-i=-150, res=TypeError: invalid call args
-i=-149, res=TypeError: invalid call args
-i=-148, res=TypeError: invalid call args
-i=-147, res=TypeError: invalid call args
-i=-146, res=TypeError: invalid call args
-i=-145, res=TypeError: invalid call args
-i=-144, res=TypeError: invalid call args
-i=-143, res=TypeError: invalid call args
-i=-142, res=TypeError: invalid call args
-i=-141, res=TypeError: invalid call args
-i=-140, res=TypeError: invalid call args
-i=-139, res=TypeError: invalid call args
-i=-138, res=TypeError: invalid call args
-i=-137, res=TypeError: invalid call args
-i=-136, res=TypeError: invalid call args
-i=-135, res=TypeError: invalid call args
-i=-134, res=TypeError: invalid call args
-i=-133, res=TypeError: invalid call args
-i=-132, res=TypeError: invalid call args
-i=-131, res=TypeError: invalid call args
-i=-130, res=TypeError: invalid call args
-i=-129, res=TypeError: invalid call args
+i=-256, res=TypeError: invalid args
+i=-255, res=TypeError: invalid args
+i=-254, res=TypeError: invalid args
+i=-253, res=TypeError: invalid args
+i=-252, res=TypeError: invalid args
+i=-251, res=TypeError: invalid args
+i=-250, res=TypeError: invalid args
+i=-249, res=TypeError: invalid args
+i=-248, res=TypeError: invalid args
+i=-247, res=TypeError: invalid args
+i=-246, res=TypeError: invalid args
+i=-245, res=TypeError: invalid args
+i=-244, res=TypeError: invalid args
+i=-243, res=TypeError: invalid args
+i=-242, res=TypeError: invalid args
+i=-241, res=TypeError: invalid args
+i=-240, res=TypeError: invalid args
+i=-239, res=TypeError: invalid args
+i=-238, res=TypeError: invalid args
+i=-237, res=TypeError: invalid args
+i=-236, res=TypeError: invalid args
+i=-235, res=TypeError: invalid args
+i=-234, res=TypeError: invalid args
+i=-233, res=TypeError: invalid args
+i=-232, res=TypeError: invalid args
+i=-231, res=TypeError: invalid args
+i=-230, res=TypeError: invalid args
+i=-229, res=TypeError: invalid args
+i=-228, res=TypeError: invalid args
+i=-227, res=TypeError: invalid args
+i=-226, res=TypeError: invalid args
+i=-225, res=TypeError: invalid args
+i=-224, res=TypeError: invalid args
+i=-223, res=TypeError: invalid args
+i=-222, res=TypeError: invalid args
+i=-221, res=TypeError: invalid args
+i=-220, res=TypeError: invalid args
+i=-219, res=TypeError: invalid args
+i=-218, res=TypeError: invalid args
+i=-217, res=TypeError: invalid args
+i=-216, res=TypeError: invalid args
+i=-215, res=TypeError: invalid args
+i=-214, res=TypeError: invalid args
+i=-213, res=TypeError: invalid args
+i=-212, res=TypeError: invalid args
+i=-211, res=TypeError: invalid args
+i=-210, res=TypeError: invalid args
+i=-209, res=TypeError: invalid args
+i=-208, res=TypeError: invalid args
+i=-207, res=TypeError: invalid args
+i=-206, res=TypeError: invalid args
+i=-205, res=TypeError: invalid args
+i=-204, res=TypeError: invalid args
+i=-203, res=TypeError: invalid args
+i=-202, res=TypeError: invalid args
+i=-201, res=TypeError: invalid args
+i=-200, res=TypeError: invalid args
+i=-199, res=TypeError: invalid args
+i=-198, res=TypeError: invalid args
+i=-197, res=TypeError: invalid args
+i=-196, res=TypeError: invalid args
+i=-195, res=TypeError: invalid args
+i=-194, res=TypeError: invalid args
+i=-193, res=TypeError: invalid args
+i=-192, res=TypeError: invalid args
+i=-191, res=TypeError: invalid args
+i=-190, res=TypeError: invalid args
+i=-189, res=TypeError: invalid args
+i=-188, res=TypeError: invalid args
+i=-187, res=TypeError: invalid args
+i=-186, res=TypeError: invalid args
+i=-185, res=TypeError: invalid args
+i=-184, res=TypeError: invalid args
+i=-183, res=TypeError: invalid args
+i=-182, res=TypeError: invalid args
+i=-181, res=TypeError: invalid args
+i=-180, res=TypeError: invalid args
+i=-179, res=TypeError: invalid args
+i=-178, res=TypeError: invalid args
+i=-177, res=TypeError: invalid args
+i=-176, res=TypeError: invalid args
+i=-175, res=TypeError: invalid args
+i=-174, res=TypeError: invalid args
+i=-173, res=TypeError: invalid args
+i=-172, res=TypeError: invalid args
+i=-171, res=TypeError: invalid args
+i=-170, res=TypeError: invalid args
+i=-169, res=TypeError: invalid args
+i=-168, res=TypeError: invalid args
+i=-167, res=TypeError: invalid args
+i=-166, res=TypeError: invalid args
+i=-165, res=TypeError: invalid args
+i=-164, res=TypeError: invalid args
+i=-163, res=TypeError: invalid args
+i=-162, res=TypeError: invalid args
+i=-161, res=TypeError: invalid args
+i=-160, res=TypeError: invalid args
+i=-159, res=TypeError: invalid args
+i=-158, res=TypeError: invalid args
+i=-157, res=TypeError: invalid args
+i=-156, res=TypeError: invalid args
+i=-155, res=TypeError: invalid args
+i=-154, res=TypeError: invalid args
+i=-153, res=TypeError: invalid args
+i=-152, res=TypeError: invalid args
+i=-151, res=TypeError: invalid args
+i=-150, res=TypeError: invalid args
+i=-149, res=TypeError: invalid args
+i=-148, res=TypeError: invalid args
+i=-147, res=TypeError: invalid args
+i=-146, res=TypeError: invalid args
+i=-145, res=TypeError: invalid args
+i=-144, res=TypeError: invalid args
+i=-143, res=TypeError: invalid args
+i=-142, res=TypeError: invalid args
+i=-141, res=TypeError: invalid args
+i=-140, res=TypeError: invalid args
+i=-139, res=TypeError: invalid args
+i=-138, res=TypeError: invalid args
+i=-137, res=TypeError: invalid args
+i=-136, res=TypeError: invalid args
+i=-135, res=TypeError: invalid args
+i=-134, res=TypeError: invalid args
+i=-133, res=TypeError: invalid args
+i=-132, res=TypeError: invalid args
+i=-131, res=TypeError: invalid args
+i=-130, res=TypeError: invalid args
+i=-129, res=TypeError: invalid args
 i=-128, res=1
 i=-127, res=1
 i=-126, res=1
@@ -487,135 +487,135 @@ i=124, res=1
 i=125, res=1
 i=126, res=1
 i=127, res=1
-i=128, res=TypeError: invalid call args
-i=129, res=TypeError: invalid call args
-i=130, res=TypeError: invalid call args
-i=131, res=TypeError: invalid call args
-i=132, res=TypeError: invalid call args
-i=133, res=TypeError: invalid call args
-i=134, res=TypeError: invalid call args
-i=135, res=TypeError: invalid call args
-i=136, res=TypeError: invalid call args
-i=137, res=TypeError: invalid call args
-i=138, res=TypeError: invalid call args
-i=139, res=TypeError: invalid call args
-i=140, res=TypeError: invalid call args
-i=141, res=TypeError: invalid call args
-i=142, res=TypeError: invalid call args
-i=143, res=TypeError: invalid call args
-i=144, res=TypeError: invalid call args
-i=145, res=TypeError: invalid call args
-i=146, res=TypeError: invalid call args
-i=147, res=TypeError: invalid call args
-i=148, res=TypeError: invalid call args
-i=149, res=TypeError: invalid call args
-i=150, res=TypeError: invalid call args
-i=151, res=TypeError: invalid call args
-i=152, res=TypeError: invalid call args
-i=153, res=TypeError: invalid call args
-i=154, res=TypeError: invalid call args
-i=155, res=TypeError: invalid call args
-i=156, res=TypeError: invalid call args
-i=157, res=TypeError: invalid call args
-i=158, res=TypeError: invalid call args
-i=159, res=TypeError: invalid call args
-i=160, res=TypeError: invalid call args
-i=161, res=TypeError: invalid call args
-i=162, res=TypeError: invalid call args
-i=163, res=TypeError: invalid call args
-i=164, res=TypeError: invalid call args
-i=165, res=TypeError: invalid call args
-i=166, res=TypeError: invalid call args
-i=167, res=TypeError: invalid call args
-i=168, res=TypeError: invalid call args
-i=169, res=TypeError: invalid call args
-i=170, res=TypeError: invalid call args
-i=171, res=TypeError: invalid call args
-i=172, res=TypeError: invalid call args
-i=173, res=TypeError: invalid call args
-i=174, res=TypeError: invalid call args
-i=175, res=TypeError: invalid call args
-i=176, res=TypeError: invalid call args
-i=177, res=TypeError: invalid call args
-i=178, res=TypeError: invalid call args
-i=179, res=TypeError: invalid call args
-i=180, res=TypeError: invalid call args
-i=181, res=TypeError: invalid call args
-i=182, res=TypeError: invalid call args
-i=183, res=TypeError: invalid call args
-i=184, res=TypeError: invalid call args
-i=185, res=TypeError: invalid call args
-i=186, res=TypeError: invalid call args
-i=187, res=TypeError: invalid call args
-i=188, res=TypeError: invalid call args
-i=189, res=TypeError: invalid call args
-i=190, res=TypeError: invalid call args
-i=191, res=TypeError: invalid call args
-i=192, res=TypeError: invalid call args
-i=193, res=TypeError: invalid call args
-i=194, res=TypeError: invalid call args
-i=195, res=TypeError: invalid call args
-i=196, res=TypeError: invalid call args
-i=197, res=TypeError: invalid call args
-i=198, res=TypeError: invalid call args
-i=199, res=TypeError: invalid call args
-i=200, res=TypeError: invalid call args
-i=201, res=TypeError: invalid call args
-i=202, res=TypeError: invalid call args
-i=203, res=TypeError: invalid call args
-i=204, res=TypeError: invalid call args
-i=205, res=TypeError: invalid call args
-i=206, res=TypeError: invalid call args
-i=207, res=TypeError: invalid call args
-i=208, res=TypeError: invalid call args
-i=209, res=TypeError: invalid call args
-i=210, res=TypeError: invalid call args
-i=211, res=TypeError: invalid call args
-i=212, res=TypeError: invalid call args
-i=213, res=TypeError: invalid call args
-i=214, res=TypeError: invalid call args
-i=215, res=TypeError: invalid call args
-i=216, res=TypeError: invalid call args
-i=217, res=TypeError: invalid call args
-i=218, res=TypeError: invalid call args
-i=219, res=TypeError: invalid call args
-i=220, res=TypeError: invalid call args
-i=221, res=TypeError: invalid call args
-i=222, res=TypeError: invalid call args
-i=223, res=TypeError: invalid call args
-i=224, res=TypeError: invalid call args
-i=225, res=TypeError: invalid call args
-i=226, res=TypeError: invalid call args
-i=227, res=TypeError: invalid call args
-i=228, res=TypeError: invalid call args
-i=229, res=TypeError: invalid call args
-i=230, res=TypeError: invalid call args
-i=231, res=TypeError: invalid call args
-i=232, res=TypeError: invalid call args
-i=233, res=TypeError: invalid call args
-i=234, res=TypeError: invalid call args
-i=235, res=TypeError: invalid call args
-i=236, res=TypeError: invalid call args
-i=237, res=TypeError: invalid call args
-i=238, res=TypeError: invalid call args
-i=239, res=TypeError: invalid call args
-i=240, res=TypeError: invalid call args
-i=241, res=TypeError: invalid call args
-i=242, res=TypeError: invalid call args
-i=243, res=TypeError: invalid call args
-i=244, res=TypeError: invalid call args
-i=245, res=TypeError: invalid call args
-i=246, res=TypeError: invalid call args
-i=247, res=TypeError: invalid call args
-i=248, res=TypeError: invalid call args
-i=249, res=TypeError: invalid call args
-i=250, res=TypeError: invalid call args
-i=251, res=TypeError: invalid call args
-i=252, res=TypeError: invalid call args
-i=253, res=TypeError: invalid call args
-i=254, res=TypeError: invalid call args
-i=255, res=TypeError: invalid call args
-i=256, res=TypeError: invalid call args
+i=128, res=TypeError: invalid args
+i=129, res=TypeError: invalid args
+i=130, res=TypeError: invalid args
+i=131, res=TypeError: invalid args
+i=132, res=TypeError: invalid args
+i=133, res=TypeError: invalid args
+i=134, res=TypeError: invalid args
+i=135, res=TypeError: invalid args
+i=136, res=TypeError: invalid args
+i=137, res=TypeError: invalid args
+i=138, res=TypeError: invalid args
+i=139, res=TypeError: invalid args
+i=140, res=TypeError: invalid args
+i=141, res=TypeError: invalid args
+i=142, res=TypeError: invalid args
+i=143, res=TypeError: invalid args
+i=144, res=TypeError: invalid args
+i=145, res=TypeError: invalid args
+i=146, res=TypeError: invalid args
+i=147, res=TypeError: invalid args
+i=148, res=TypeError: invalid args
+i=149, res=TypeError: invalid args
+i=150, res=TypeError: invalid args
+i=151, res=TypeError: invalid args
+i=152, res=TypeError: invalid args
+i=153, res=TypeError: invalid args
+i=154, res=TypeError: invalid args
+i=155, res=TypeError: invalid args
+i=156, res=TypeError: invalid args
+i=157, res=TypeError: invalid args
+i=158, res=TypeError: invalid args
+i=159, res=TypeError: invalid args
+i=160, res=TypeError: invalid args
+i=161, res=TypeError: invalid args
+i=162, res=TypeError: invalid args
+i=163, res=TypeError: invalid args
+i=164, res=TypeError: invalid args
+i=165, res=TypeError: invalid args
+i=166, res=TypeError: invalid args
+i=167, res=TypeError: invalid args
+i=168, res=TypeError: invalid args
+i=169, res=TypeError: invalid args
+i=170, res=TypeError: invalid args
+i=171, res=TypeError: invalid args
+i=172, res=TypeError: invalid args
+i=173, res=TypeError: invalid args
+i=174, res=TypeError: invalid args
+i=175, res=TypeError: invalid args
+i=176, res=TypeError: invalid args
+i=177, res=TypeError: invalid args
+i=178, res=TypeError: invalid args
+i=179, res=TypeError: invalid args
+i=180, res=TypeError: invalid args
+i=181, res=TypeError: invalid args
+i=182, res=TypeError: invalid args
+i=183, res=TypeError: invalid args
+i=184, res=TypeError: invalid args
+i=185, res=TypeError: invalid args
+i=186, res=TypeError: invalid args
+i=187, res=TypeError: invalid args
+i=188, res=TypeError: invalid args
+i=189, res=TypeError: invalid args
+i=190, res=TypeError: invalid args
+i=191, res=TypeError: invalid args
+i=192, res=TypeError: invalid args
+i=193, res=TypeError: invalid args
+i=194, res=TypeError: invalid args
+i=195, res=TypeError: invalid args
+i=196, res=TypeError: invalid args
+i=197, res=TypeError: invalid args
+i=198, res=TypeError: invalid args
+i=199, res=TypeError: invalid args
+i=200, res=TypeError: invalid args
+i=201, res=TypeError: invalid args
+i=202, res=TypeError: invalid args
+i=203, res=TypeError: invalid args
+i=204, res=TypeError: invalid args
+i=205, res=TypeError: invalid args
+i=206, res=TypeError: invalid args
+i=207, res=TypeError: invalid args
+i=208, res=TypeError: invalid args
+i=209, res=TypeError: invalid args
+i=210, res=TypeError: invalid args
+i=211, res=TypeError: invalid args
+i=212, res=TypeError: invalid args
+i=213, res=TypeError: invalid args
+i=214, res=TypeError: invalid args
+i=215, res=TypeError: invalid args
+i=216, res=TypeError: invalid args
+i=217, res=TypeError: invalid args
+i=218, res=TypeError: invalid args
+i=219, res=TypeError: invalid args
+i=220, res=TypeError: invalid args
+i=221, res=TypeError: invalid args
+i=222, res=TypeError: invalid args
+i=223, res=TypeError: invalid args
+i=224, res=TypeError: invalid args
+i=225, res=TypeError: invalid args
+i=226, res=TypeError: invalid args
+i=227, res=TypeError: invalid args
+i=228, res=TypeError: invalid args
+i=229, res=TypeError: invalid args
+i=230, res=TypeError: invalid args
+i=231, res=TypeError: invalid args
+i=232, res=TypeError: invalid args
+i=233, res=TypeError: invalid args
+i=234, res=TypeError: invalid args
+i=235, res=TypeError: invalid args
+i=236, res=TypeError: invalid args
+i=237, res=TypeError: invalid args
+i=238, res=TypeError: invalid args
+i=239, res=TypeError: invalid args
+i=240, res=TypeError: invalid args
+i=241, res=TypeError: invalid args
+i=242, res=TypeError: invalid args
+i=243, res=TypeError: invalid args
+i=244, res=TypeError: invalid args
+i=245, res=TypeError: invalid args
+i=246, res=TypeError: invalid args
+i=247, res=TypeError: invalid args
+i=248, res=TypeError: invalid args
+i=249, res=TypeError: invalid args
+i=250, res=TypeError: invalid args
+i=251, res=TypeError: invalid args
+i=252, res=TypeError: invalid args
+i=253, res=TypeError: invalid args
+i=254, res=TypeError: invalid args
+i=255, res=TypeError: invalid args
+i=256, res=TypeError: invalid args
 ==> rc=0, result='undefined'
 ===*/
 
@@ -646,22 +646,22 @@ static duk_ret_t test_magic(duk_context *ctx, void *udata) {
 
 /*===
 *** test_length_values (duk_safe_call)
-i=-16, res=TypeError: invalid call args
-i=-15, res=TypeError: invalid call args
-i=-14, res=TypeError: invalid call args
-i=-13, res=TypeError: invalid call args
-i=-12, res=TypeError: invalid call args
-i=-11, res=TypeError: invalid call args
-i=-10, res=TypeError: invalid call args
-i=-9, res=TypeError: invalid call args
-i=-8, res=TypeError: invalid call args
-i=-7, res=TypeError: invalid call args
-i=-6, res=TypeError: invalid call args
-i=-5, res=TypeError: invalid call args
-i=-4, res=TypeError: invalid call args
-i=-3, res=TypeError: invalid call args
-i=-2, res=TypeError: invalid call args
-i=-1, res=TypeError: invalid call args
+i=-16, res=TypeError: invalid args
+i=-15, res=TypeError: invalid args
+i=-14, res=TypeError: invalid args
+i=-13, res=TypeError: invalid args
+i=-12, res=TypeError: invalid args
+i=-11, res=TypeError: invalid args
+i=-10, res=TypeError: invalid args
+i=-9, res=TypeError: invalid args
+i=-8, res=TypeError: invalid args
+i=-7, res=TypeError: invalid args
+i=-6, res=TypeError: invalid args
+i=-5, res=TypeError: invalid args
+i=-4, res=TypeError: invalid args
+i=-3, res=TypeError: invalid args
+i=-2, res=TypeError: invalid args
+i=-1, res=TypeError: invalid args
 i=0, res=1
 i=1, res=1
 i=2, res=1
@@ -678,7 +678,7 @@ i=12, res=1
 i=13, res=1
 i=14, res=1
 i=15, res=1
-i=16, res=TypeError: invalid call args
+i=16, res=TypeError: invalid args
 ==> rc=0, result='undefined'
 ===*/
 
@@ -710,21 +710,21 @@ static duk_ret_t test_length_values(duk_context *ctx, void *udata) {
 
 /*===
 *** test_nargs_values (duk_safe_call)
-i=-16, nargs=-16, res=TypeError: invalid call args
-i=-15, nargs=-15, res=TypeError: invalid call args
-i=-14, nargs=-14, res=TypeError: invalid call args
-i=-13, nargs=-13, res=TypeError: invalid call args
-i=-12, nargs=-12, res=TypeError: invalid call args
-i=-11, nargs=-11, res=TypeError: invalid call args
-i=-10, nargs=-10, res=TypeError: invalid call args
-i=-9, nargs=-9, res=TypeError: invalid call args
-i=-8, nargs=-8, res=TypeError: invalid call args
-i=-7, nargs=-7, res=TypeError: invalid call args
-i=-6, nargs=-6, res=TypeError: invalid call args
-i=-5, nargs=-5, res=TypeError: invalid call args
-i=-4, nargs=-4, res=TypeError: invalid call args
-i=-3, nargs=-3, res=TypeError: invalid call args
-i=-2, nargs=-2, res=TypeError: invalid call args
+i=-16, nargs=-16, res=TypeError: invalid args
+i=-15, nargs=-15, res=TypeError: invalid args
+i=-14, nargs=-14, res=TypeError: invalid args
+i=-13, nargs=-13, res=TypeError: invalid args
+i=-12, nargs=-12, res=TypeError: invalid args
+i=-11, nargs=-11, res=TypeError: invalid args
+i=-10, nargs=-10, res=TypeError: invalid args
+i=-9, nargs=-9, res=TypeError: invalid args
+i=-8, nargs=-8, res=TypeError: invalid args
+i=-7, nargs=-7, res=TypeError: invalid args
+i=-6, nargs=-6, res=TypeError: invalid args
+i=-5, nargs=-5, res=TypeError: invalid args
+i=-4, nargs=-4, res=TypeError: invalid args
+i=-3, nargs=-3, res=TypeError: invalid args
+i=-2, nargs=-2, res=TypeError: invalid args
 i=-1, nargs=-1 (varargs), res=1
 i=0, nargs=0, res=1
 i=1, nargs=1, res=1
@@ -741,10 +741,10 @@ i=11, nargs=11, res=1
 i=12, nargs=12, res=1
 i=13, nargs=13, res=1
 i=14, nargs=14, res=1
-i=15, nargs=15, res=TypeError: invalid call args
-i=16, nargs=16, res=TypeError: invalid call args
+i=15, nargs=15, res=TypeError: invalid args
+i=16, nargs=16, res=TypeError: invalid args
 i=17, nargs=-1 (varargs), res=1
-i=18, nargs=18, res=TypeError: invalid call args
+i=18, nargs=18, res=TypeError: invalid args
 ==> rc=0, result='undefined'
 ===*/
 

@@ -269,7 +269,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 		                             DUK_JSON_FLAG_ASCII_ONLY /*flags*/);
 #endif
 	} else {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 	return 1;
 }
@@ -311,7 +311,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx) {
 		                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
 #endif
 	} else {
-		return DUK_RET_TYPE_ERROR;
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 	return 1;
 }

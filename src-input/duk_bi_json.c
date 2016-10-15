@@ -2692,7 +2692,7 @@ DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_context *ctx, void *udata) {
 	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	if (duk__json_stringify_fast_value(js_ctx, tv) == 0) {
 		DUK_DD(DUK_DDPRINT("top level value not supported, fail fast path"));
-		return DUK_RET_ERROR;  /* error message doesn't matter, ignored anyway */
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* Error message is ignored, so doesn't matter. */
 	}
 
 	return 0;

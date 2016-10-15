@@ -125,7 +125,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_context *ctx) {
 	/* never here, but fall through */
 
  type_error:
-	return DUK_RET_TYPE_ERROR;
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
 
 /*
@@ -469,7 +469,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
 #else  /* DUK_USE_REGEXP_SUPPORT */
-		return DUK_RET_ERROR;
+		DUK_DCERROR_UNSUPPORTED(thr);
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 	} else {
 		duk_to_string(ctx, 0);
@@ -857,7 +857,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 		/* lastIndex is initialized to zero by new RegExp() */
 		is_regexp = 1;
 #else
-		return DUK_RET_ERROR;
+		DUK_DCERROR_UNSUPPORTED(thr);
 #endif
 	} else {
 		duk_to_string(ctx, 0);

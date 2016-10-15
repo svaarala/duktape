@@ -142,39 +142,20 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 
 DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
 	duk_context *ctx = (duk_context *) thr;
-	const char *msg;
-	duk_errcode_t code;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(rc < 0);
-
-	/* XXX: this generates quite large code - perhaps select the error
-	 * class based on the code and then just use the error 'name'?
-	 */
-	/* XXX: shared strings */
-
-	code = -rc;
-
-	switch (rc) {
-	case DUK_RET_EVAL_ERROR:           msg = "eval"; break;
-	case DUK_RET_RANGE_ERROR:          msg = "range"; break;
-	case DUK_RET_REFERENCE_ERROR:      msg = "reference"; break;
-	case DUK_RET_SYNTAX_ERROR:         msg = "syntax"; break;
-	case DUK_RET_TYPE_ERROR:           msg = "type"; break;
-	case DUK_RET_URI_ERROR:            msg = "uri"; break;
-	case DUK_RET_ERROR:  /* Error -> 'unknown error', rather than 'error error' */
-	default:                           msg = "unknown"; break;
-	}
-
-	DUK_ASSERT(msg != NULL);
 
 	/*
 	 *  The __FILE__ and __LINE__ information is intentionally not used in the
 	 *  creation of the error object, as it isn't useful in the tracedata.  The
 	 *  tracedata still contains the function which returned the negative return
 	 *  code, and having the file/line of this function isn't very useful.
+	 *
+	 *  The error messages for DUK_RET_xxx shorthand are intentionally very
+	 *  minimal: they're only really useful for low memory targets.
 	 */
 
-	duk_error_raw(ctx, code, NULL, 0, "%s error (rc %ld)", (const char *) msg, (long) rc);
+	duk_error_raw(ctx, -rc, NULL, 0, "error (rc %ld)", (long) rc);
 	DUK_UNREACHABLE();
 }
