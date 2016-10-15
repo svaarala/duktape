@@ -382,9 +382,9 @@ static duk_ret_t test_invalid_null(duk_context *ctx, void *udata) {
 final top: 2
 ==> rc=0, result='undefined'
 *** test_invalid_flags2 (duk_safe_call)
-==> rc=1, result='TypeError: invalid call args'
+==> rc=1, result='TypeError: invalid args'
 *** test_invalid_flags3 (duk_safe_call)
-==> rc=1, result='TypeError: invalid call args'
+==> rc=1, result='TypeError: invalid args'
 ===*/
 
 /* If 'flags' is given as zero, it will match a DUK_BUFOBJ_DUKTAPEBUFFER.
@@ -420,9 +420,9 @@ static duk_ret_t test_invalid_flags3(duk_context *ctx, void *udata) {
 
 /*===
 *** test_invalid_offlen_wrap1 (duk_safe_call)
-==> rc=1, result='RangeError: invalid call args'
+==> rc=1, result='RangeError: invalid args'
 *** test_invalid_offlen_wrap2 (duk_safe_call)
-==> rc=1, result='RangeError: invalid call args'
+==> rc=1, result='RangeError: invalid args'
 ===*/
 
 /* Byte offset + byte length wrap. */

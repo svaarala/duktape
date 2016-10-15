@@ -27,7 +27,7 @@ rc=1, result='RangeError: invalid stack index -6'
 rc=1, result='TypeError: undefined not callable'
 ==> rc=0, result='undefined'
 *** test_9 (duk_safe_call)
-==> rc=1, result='TypeError: invalid call args'
+==> rc=1, result='TypeError: invalid args'
 final top: 0
 ===*/
 
