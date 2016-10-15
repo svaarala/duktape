@@ -1819,7 +1819,7 @@ Planned
   Math.pow() while also being more readable (GH-987, GH-997)
 
 * Add TextEncoder and TextDecoder built-ins (the Encoding API) which allow
-  Ecmascript code to read and write text stored in an ArrayBuffer or Duktape
+  Ecmascript code to read and write text stored in an ArrayBuffer or a plain
   buffer (GH-975)
 
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
