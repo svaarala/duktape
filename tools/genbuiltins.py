@@ -1355,6 +1355,7 @@ LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
 MAGIC_BITS = 16
+ACCESSOR_MAGIC_BITS = 2
 
 NARGS_VARARGS_MARKER = 0x07
 NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_NONE
@@ -1856,18 +1857,23 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
                 be.bits(PROP_TYPE_ACCESSOR, PROP_TYPE_BITS)
                 getter_natfun = None
                 setter_natfun = None
+                getter_magic = 0
+                setter_magic = 0
                 if val.has_key('getter_id'):
                     getter_fn = metadata_lookup_object(meta, val['getter_id'])
                     getter_natfun = getter_fn['native']
                     assert(getter_fn['nargs'] == 0)
-                    assert(getter_fn['magic'] == 0)
+                    getter_magic = getter_fn['magic']
                 if val.has_key('setter_id'):
                     setter_fn = metadata_lookup_object(meta, val['setter_id'])
                     setter_natfun = setter_fn['native']
                     assert(setter_fn['nargs'] == 1)
-                    assert(setter_fn['magic'] == 0)
+                    setter_magic = setter_fn['magic']
+                if getter_natfun is not None and setter_natfun is not None:
+                    assert(getter_magic == setter_magic)
                 _natidx(getter_natfun)
                 _natidx(setter_natfun)
+                be.bits(getter_magic, ACCESSOR_MAGIC_BITS)
             elif val['type'] == 'lightfunc':
                 logger.warning('RAM init data format doesn\'t support "lightfunc" now, value replaced with "undefined": %r' % valspec)
                 be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)

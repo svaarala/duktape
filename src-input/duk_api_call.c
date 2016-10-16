@@ -475,6 +475,15 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
 }
 
+/* XXX: Make this obsolete by adding a function flag for rejecting a
+ * non-constructor call automatically?
+ */
+DUK_INTERNAL void duk_require_constructor_call(duk_context *ctx) {
+	if (!duk_is_constructor_call(ctx)) {
+		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_CONSTRUCT_ONLY);
+	}
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;

@@ -9,9 +9,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_hobject *h_target;
 	duk_hobject *h_handler;
 
-	if (!duk_is_constructor_call(ctx)) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* XXX */
-	}
+	duk_require_constructor_call(ctx);
 
 	/* Reject a proxy object as the target because it would need
 	 * special handler in property lookups.  (ES6 has no such restriction)

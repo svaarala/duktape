@@ -2,6 +2,8 @@
  *  Duktape custom: AllocBuffer.allocPlain()
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
