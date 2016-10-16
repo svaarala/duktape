@@ -306,3 +306,44 @@ try {
 } catch (e) {
     print(e.stack || e);
 }
+
+/*===
+replacement character policy
+65533 65533
+97 65533 65533 65533 98
+===*/
+
+// There are a few different replacement character strategies.  Unicode
+// Technical Committee recommends (http://www.unicode.org/review/pr-121.html):
+//
+//     Replace each maximal subpart of the ill-formed subsequence by a
+//     single U+FFFD.
+//
+// For example, UTF-8 for U+CAFE is EC AB BE.  A byte sequence containing
+// two truncated sequences EC AB EC AB could be decoded as:
+//
+//     1. U+FFFD (replace entire sequence)
+//     2. U+FFFD U+FFFD (replace each "maximal subpart")
+//     3. U+FFFD U+FFFD U+FFFD U+FFFD (replace each byte)
+//
+// Unicode Technical Committee recommends approach 2; Firefox does so too.
+// V8 seems to use approach 3.
+
+function replacementCharacterPolicyTest() {
+    // Truncated U+CAFE test.
+    var u8 = new Uint8Array([ 0xec, 0xab, 0xec, 0xab ]);
+    var res = new TextDecoder().decode(u8);
+    print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
+
+    // Test from http://www.unicode.org/review/pr-121.html.
+    var u8 = new Uint8Array([ 0x61, 0xF1, 0x80, 0x80, 0xE1, 0x80, 0xC2, 0x62 ]);
+    var res = new TextDecoder().decode(u8);
+    print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
+}
+
+try {
+    print('replacement character policy');
+    replacementCharacterPolicyTest();
+} catch (e) {
+    print(e.stack || e);
+}
