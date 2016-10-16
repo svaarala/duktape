@@ -1146,7 +1146,8 @@ Gap between current implementation and latest:
 
 * ``buf.swap16()``, ``buf.swap32()``, ``buf.swap64()`` missing.
 
-* ``buf.toString()`` doesn't implement encoding.
+* ``buf.toString()`` always decodes the buffer using UTF-8 (with replacement
+  characters for invalid sequences), and ignores the encoding argument.
 
 * ``buf.values()`` missing.
 
