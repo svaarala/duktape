@@ -19,7 +19,7 @@ byteLength test
 7 ascii 9
 7 dummy 9
 0
-16
+48
 123456
 10
 13
@@ -64,10 +64,9 @@ function byteLengthTest() {
 
     // Buffers b1 and b3 are ASCII compatible.  Their byteLength() will match
     // the input byte length.  For buffer b2 (16 bytes) Node.js returns 48,
-    // presumably because the string is invalid UTF-8 and coerces to 16 U+FFFD
-    // characters, which are then UTF-8 encoded into 48 bytes.
-    //
-    // Duktape returns 16 for buffer b2 too.
+    // because the string is invalid UTF-8 and coerces to 16 U+FFFD replacement
+    // characters, which are then UTF-8 encoded into 48 bytes.  Duktape 2.x
+    // matches this behavior.
 
     [ b1, b2, b3,
       { valueOf: function () { return 'dummydummy'; }, toString: function () { return 'dummydummy'; } },  // 10 bytes

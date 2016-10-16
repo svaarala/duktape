@@ -8,10 +8,12 @@
 /*===
 4 "\xffabc"
 |c3bf616263|
-4 "\xffabc"
-|ff616263|
-4 "\xffabc"
-|ff616263|
+4 "\ufffdabc"
+|efbfbd616263|
+4 "\ufffdabc"
+|efbfbd616263|
+4 "\ufffdabc"
+|efbfbd616263|
 4 "\xffabc"
 |ff616263|
 ===*/
@@ -34,9 +36,11 @@ function test() {
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 
-    // Non-standard, works in both Duktape 1.x and 2.x: Node.js Buffer
-    // string coercion is 1:1 into the internal key representation with
-    // no encoding (which differs from Node.js and is to be fixed).
+    // Node.js Buffer .toString() coercion decodes a buffer as UTF-8, emitting
+    // replacement characters for invalid sequences.  Duktape 2.x follows this
+    // behavior so one cannot create for example "internal keys".  (Duktape 1.x
+    // used the buffer as-is as the string internal representation which *did*
+    // allow internal keys to be created.)
 
     b = new Buffer(4);
     b[0] = 0xff;
@@ -52,6 +56,14 @@ function test() {
 
     b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
     s = Buffer.prototype.toString.call(b);
+    print(s.length, Duktape.enc('jx', s));
+    print(Duktape.enc('jx', stringToBuffer(s)));
+
+    // WHATWG Encoding API is supported in Duktape 2.x.
+
+    dec = new TextDecoder();
+    b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
+    s = dec.decode(b);
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));
 

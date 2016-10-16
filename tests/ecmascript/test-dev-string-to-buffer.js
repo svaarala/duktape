@@ -19,6 +19,7 @@ function test() {
     // string can be converted to an array using Array.prototype.map().  The
     // buffer bytes will be uint8-converted codepoints, not 1:1 with the
     // internal string representation (and not UTF-8 either).
+
     s = '\xfffoo';
     b = new Uint8Array(Array.prototype.map.call(s, function (v) {
         return v.charCodeAt(0);
@@ -30,6 +31,9 @@ function test() {
     // representation as is (this differs from Node.js).  For standard strings
     // this means that the buffer gets a CESU-8 representation of the string
     // (same as UTF-8 except for the surrogate pair range).
+    //
+    // Note that this allows an internal string to be converted into a buffer
+    // as is which is *not* a sandboxing issue like the reverse operation.
 
     s = '\xfffoo';
     b = new Buffer(s);
