@@ -59,4 +59,6 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
                                   duk_idx_t idx_space,
                                   duk_small_uint_t flags);
 
+DUK_INTERNAL_DECL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_context *ctx);
+
 #endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */

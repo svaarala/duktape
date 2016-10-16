@@ -1160,7 +1160,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	}
 	DUK_ASSERT_HBUFOBJ_VALID(h_this);
 
-	/* ignore encoding for now */
+	/* Ignore encoding for now. */
 
 	duk__clamp_startend_nonegidx_noshift(ctx,
 	                                     (duk_int_t) h_this->length,
@@ -1173,34 +1173,30 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	buf_slice = (duk_uint8_t *) duk_push_fixed_buffer(ctx, slice_length);
 	DUK_ASSERT(buf_slice != NULL);
 
-	if (h_this->buf == NULL) {
+	/* Neutered or uncovered, TypeError. */
+	if (h_this->buf == NULL ||
+	    !DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length)) {
 		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
-	/* XXX: it'd be tempting to duk_push_lstring() the data, but technically
-	 * allocating the string might trigger a side effect which invalidated
-	 * whatever buffer pointer we gave (for example a finalizer might resize
-	 * the underlying dynamic buffer).
+	/* XXX: ideally we wouldn't make a copy but a view into the buffer for the
+	 * decoding process.  Or the decoding helper could be changed to accept
+	 * the slice info (a buffer pointer is NOT a good approach because guaranteeing
+	 * its stability is difficult).
 	 */
 
-	/* XXX: extend duk_buffer_to_string() to internally support slices, so that
-	 * there'd be no need for this Node.js specific primitive?
-	 */
+	DUK_ASSERT(DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length));
+	DUK_MEMCPY((void *) buf_slice,
+	           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
+	           (size_t) slice_length);
 
-	if (DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_this, start_offset + slice_length)) {
-		DUK_MEMCPY((void *) buf_slice,
-		           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
-		           (size_t) slice_length);
-	} else {
-		/* not covered, return all zeroes */
-		;
-	}
-
-	/* This 1:1 coercion creates a way for Ecmascript code to convert a
-	 * byte buffer into a string and e.g. create an internal string key.
+	/* Use the equivalent of: new TextEncoder().encode(this) to convert the
+	 * string.  Result will be valid UTF-8; non-CESU-8 inputs are currently
+	 * interpreted loosely.  Value stack convention is a bit odd for now.
 	 */
-	(void) duk_buffer_to_string(ctx, -1);
-	return 1;
+	duk_replace(ctx, 0);
+	duk_set_top(ctx, 1);
+	return duk_textdecoder_decode_utf8_nodejs(ctx);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
