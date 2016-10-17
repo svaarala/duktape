@@ -1677,7 +1677,9 @@ Planned
 
 * Incompatible change: Node.js Buffer binding aligned with Node.js v6.7.0
   (from v0.12.1): Buffer.concat() special case for 1-element array removed
-  (GH-1004), Buffer now inherits from Uint8Array (GH-1008)
+  (GH-1004); Buffer now inherits from Uint8Array (GH-1008);
+  Buffer.prototype.toString() does UTF-8 decoding (previously buffer data
+  was copied into internal string representation as is) (GH-1020)
 
 * Incompatible change: plain pointer values now test true in instanceof
   (plainPointer instanceof Duktape.Pointer === true) (GH-864)
