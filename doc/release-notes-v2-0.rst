@@ -230,7 +230,7 @@ changes below.  Here's a summary of changes:
   C code can still do so using ``duk_buffer_to_string()`` (or by direct buffer
   and string operations) and can expose such a binding to Ecmascript code.
 
-* Node.js Buffer binding has been aligned more with Node.js v6.7.0 (from
+* Node.js Buffer binding has been aligned more with Node.js v6.8.1 (from
   Node.js v0.12.1).
 
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
@@ -266,7 +266,7 @@ To upgrade:
     one-element input array which had special handling in Node.js v0.12.1.
 
   - Review Buffer code for Node.js Buffer changes between Node.js versions
-    v0.12.1 and v6.7.0 in general.
+    v0.12.1 and v6.8.1 in general.
 
 * If you're using plain buffers, review their usage especially in Ecmascript
   code.
@@ -345,7 +345,7 @@ even more detail):
     update, as Node.js Buffer constructor also recognizes ArrayBuffers now.
 
 - ``ArrayBuffer.isView(nodejsBuffer)`` is now true to reflect the fact that
-  Node.js Buffers are Uint8Arrays in Node.js v6.7.0.
+  Node.js Buffers are Uint8Arrays in newer Node.js versions.
 
 * ``new Uint32Array(plainBuffer)`` and other typed array constructors coerce
   the argument plain buffer into an ArrayBuffer instance which is then used
