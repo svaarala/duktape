@@ -358,6 +358,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 	const duk_uint8_t *input;
 	duk__decode_context *dec_ctx;
 	duk_size_t len = 0;
+	duk_size_t len_tmp;
 	duk_bool_t stream = 0;
 	duk_codepoint_t codepoint;
 	duk_uint8_t *output;
@@ -378,7 +379,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 		duk_push_fixed_buffer(ctx, 0);
 		duk_replace(ctx, 0);
 	}
-	(void) duk_require_buffer_data(ctx, 0, NULL);  /* For side effects only. */
+	(void) duk_require_buffer_data(ctx, 0, &len);  /* Need 'len', avoid pointer. */
 
 	if (duk_is_null_or_undefined(ctx, 1)) {
 		/* Use defaults. */
@@ -406,8 +407,17 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 	}
 	output = (duk_uint8_t *) duk_push_fixed_buffer(ctx, 3 + (3 * len));
 
-	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len);
+	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len_tmp);
 	DUK_ASSERT(input != NULL || len == 0);
+	if (DUK_UNLIKELY(len != len_tmp)) {
+		/* Very unlikely but possible: source buffer was resized by
+		 * a side effect when fixed buffer was pushed.  Output buffer
+		 * may not be large enough to hold output, so just fail if
+		 * length has changed.
+		 */
+		DUK_D(DUK_DPRINT("input buffer resized by side effect, fail"));
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	}
 
 	/* From this point onwards it's critical that no side effect occur
 	 * which may disturb 'input': finalizer execution, property accesses,
