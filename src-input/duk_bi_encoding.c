@@ -366,12 +366,20 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 
 	dec_ctx = duk__get_textdecoder_context(ctx);
 
-	if (!duk_is_undefined(ctx, 0)) {
-		input = (const duk_uint8_t *) duk_require_buffer_data(ctx, 0, &len);
-	} else {
-		input = NULL;  /* NULL is OK if 'len' is 0. */
-		DUK_ASSERT(len == 0);
+	/* Careful with input buffer pointer: any side effects involving
+	 * code execution (e.g. getters, coercion calls, and finalizers)
+	 * may cause a resize and invalidate a pointer we've read.  This
+	 * is why the pointer is actually looked up at the last minute.
+	 * Argument validation must still happen first to match WHATWG
+	 * required side effect order.
+	 */
+
+	if (duk_is_undefined(ctx, 0)) {
+		duk_push_fixed_buffer(ctx, 0);
+		duk_replace(ctx, 0);
 	}
+	(void) duk_require_buffer_data(ctx, 0, NULL);  /* For side effects only. */
+
 	if (duk_is_null_or_undefined(ctx, 1)) {
 		/* Use defaults. */
 	} else {
@@ -397,6 +405,15 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
 	}
 	output = (duk_uint8_t *) duk_push_fixed_buffer(ctx, 3 + (3 * len));
+
+	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len);
+	DUK_ASSERT(input != NULL || len == 0);
+
+	/* From this point onwards it's critical that no side effect occur
+	 * which may disturb 'input': finalizer execution, property accesses,
+	 * active coercions, etc.  Even an allocation related mark-and-sweep
+	 * may affect the pointer because it may trigger a pending finalizer.
+	 */
 
 	in = input;
 	out = output;
@@ -446,6 +463,9 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
 		duk__utf8_decode_init(dec_ctx);  /* Initialize decoding state for potential reuse. */
 	}
 
+	/* Output buffer is fixed and thus stable even if there had been
+	 * side effects (which there shouldn't be).
+	 */
 	duk_push_lstring(ctx, (const char *) output, (duk_size_t) (out - output));
 	return 1;
 

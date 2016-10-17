@@ -347,3 +347,45 @@ try {
 } catch (e) {
     print(e.stack || e);
 }
+
+/*===
+argument coercion order
+invalid 1st arg
+TypeError
+invalid 2nd arg
+opts.stream read
+URIError
+===*/
+
+// Argument coercion order: left to right.
+
+function argumentCoercionOrderTest() {
+    var opts = {};
+    Object.defineProperty(opts, 'stream', {
+        get: function () { print('opts.stream read'); throw new URIError('aiee'); }
+    });
+
+    // Must fail before side effect on 2nd argument.
+    print('invalid 1st arg');
+    try {
+        new TextDecoder().decode(123, opts);
+        print('never here');
+    } catch (e) {
+        print(e.name);
+    }
+
+    print('invalid 2nd arg');
+    try {
+        new TextDecoder().decode(new Uint8Array([ 1, 2, 3 ]), opts);
+        print('never here');
+    } catch (e) {
+        print(e.name);
+    }
+}
+
+try {
+    print('argument coercion order');
+    argumentCoercionOrderTest();
+} catch (e) {
+    print(e.stack || e);
+}
