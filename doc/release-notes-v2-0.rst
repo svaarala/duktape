@@ -231,7 +231,8 @@ changes below.  Here's a summary of changes:
   and string operations) and can expose such a binding to Ecmascript code.
 
 * Node.js Buffer binding has been aligned more with Node.js v6.8.1 (from
-  Node.js v0.12.1).
+  Node.js v0.12.1) and some (but not all) behavior differences to actual
+  Node.js have been fixed.
 
 * Disabling ``DUK_USE_BUFFEROBJECT_SUPPORT`` allows use of plain buffers in
   the C API, and allows manipulation of plain buffers in Ecmascript code via
@@ -255,7 +256,7 @@ To upgrade:
     has the default prototype for the result type (e.g. ``Uint8Array.prototype``)
     rather than being copied from the argument.
 
-* If you're using the Node.js Buffer binding, XXX.
+* If you're using the Node.js Buffer binding, review the following:
 
   - Node.js Buffer ``.slice()`` handling of arguments inheriting from a Buffer
     (rather than being a direct instance) has been fixed so that the result has
@@ -264,6 +265,9 @@ To upgrade:
 
   - Node.js Buffer ``.concat()`` always returns a buffer copy, even for a
     one-element input array which had special handling in Node.js v0.12.1.
+
+  - Node.hs Buffer.prototype ``.toString()`` now decodes the input buffer
+    using UTF-8, emitting replacement characters for invalid UTF-8 sequences.
 
   - Review Buffer code for Node.js Buffer changes between Node.js versions
     v0.12.1 and v6.8.1 in general.

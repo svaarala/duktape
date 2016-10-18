@@ -7,7 +7,10 @@
 
 #include "duk_internal.h"
 
-#if defined(DUK_USE_ENCODING_BUILTINS)
+/*
+ *  Data structures for encoding/decoding
+ */
+
 typedef struct {
 	duk_uint8_t *out;      /* where to write next byte(s) */
 	duk_codepoint_t lead;  /* lead surrogate */
@@ -32,6 +35,10 @@ typedef struct {
 #define DUK__CP_CONTINUE   (-1)  /* continue to next byte, no completed codepoint */
 #define DUK__CP_ERROR      (-2)  /* decoding error */
 #define DUK__CP_RETRY      (-3)  /* decoding error; retry last byte */
+
+/*
+ *  Raw helpers for encoding/decoding
+ */
 
 /* Emit UTF-8 (= CESU-8) encoded U+FFFD (replacement char), i.e. ef bf bd. */
 DUK_LOCAL duk_uint8_t *duk__utf8_emit_repl(duk_uint8_t *ptr) {
@@ -191,6 +198,145 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 	enc_ctx->out += duk_unicode_encode_xutf8(codepoint, enc_ctx->out);
 }
 
+/* Shared helper for buffer-to-string using a TextDecoder() compatible UTF-8
+ * decoder.
+ */
+DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *dec_ctx) {
+	const duk_uint8_t *input;
+	duk_size_t len = 0;
+	duk_size_t len_tmp;
+	duk_bool_t stream = 0;
+	duk_codepoint_t codepoint;
+	duk_uint8_t *output;
+	const duk_uint8_t *in;
+	duk_uint8_t *out;
+
+	DUK_ASSERT(dec_ctx != NULL);
+
+	/* Careful with input buffer pointer: any side effects involving
+	 * code execution (e.g. getters, coercion calls, and finalizers)
+	 * may cause a resize and invalidate a pointer we've read.  This
+	 * is why the pointer is actually looked up at the last minute.
+	 * Argument validation must still happen first to match WHATWG
+	 * required side effect order.
+	 */
+
+	if (duk_is_undefined(ctx, 0)) {
+		duk_push_fixed_buffer(ctx, 0);
+		duk_replace(ctx, 0);
+	}
+	(void) duk_require_buffer_data(ctx, 0, &len);  /* Need 'len', avoid pointer. */
+
+	if (duk_check_type_mask(ctx, 1, DUK_TYPE_MASK_UNDEFINED |
+	                                DUK_TYPE_MASK_NULL |
+	                                DUK_TYPE_MASK_NONE)) {
+		/* Use defaults, treat missing value like undefined. */
+	} else {
+		duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_UNDEFINED |
+	                                      DUK_TYPE_MASK_NULL |
+	                                      DUK_TYPE_MASK_LIGHTFUNC |
+	                                      DUK_TYPE_MASK_BUFFER |
+		                              DUK_TYPE_MASK_OBJECT);
+		if (duk_get_prop_string(ctx, 1, "stream")) {
+			stream = duk_to_boolean(ctx, -1);
+		}
+	}
+
+	/* Allowance is 3*len in the general case because all bytes may potentially
+	 * become U+FFFD.  If the first byte completes a non-BMP codepoint it will
+	 * decode to a CESU-8 surrogate pair (6 bytes) so we allow 3 extra bytes to
+	 * compensate: (1*3)+3 = 6.  Non-BMP codepoints are safe otherwise because
+	 * the 4->6 expansion is well under the 3x allowance.
+	 *
+	 * XXX: As with TextEncoder, need a better buffer allocation strategy here.
+	 */
+	if (len >= (DUK_HBUFFER_MAX_BYTELEN / 3) - 3) {
+		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
+	}
+	output = (duk_uint8_t *) duk_push_fixed_buffer(ctx, 3 + (3 * len));
+
+	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len_tmp);
+	DUK_ASSERT(input != NULL || len == 0);
+	if (DUK_UNLIKELY(len != len_tmp)) {
+		/* Very unlikely but possible: source buffer was resized by
+		 * a side effect when fixed buffer was pushed.  Output buffer
+		 * may not be large enough to hold output, so just fail if
+		 * length has changed.
+		 */
+		DUK_D(DUK_DPRINT("input buffer resized by side effect, fail"));
+		goto fail_type;
+	}
+
+	/* From this point onwards it's critical that no side effect occur
+	 * which may disturb 'input': finalizer execution, property accesses,
+	 * active coercions, etc.  Even an allocation related mark-and-sweep
+	 * may affect the pointer because it may trigger a pending finalizer.
+	 */
+
+	in = input;
+	out = output;
+	while (in < input + len) {
+		codepoint = duk__utf8_decode_next(dec_ctx, *in++);
+		if (codepoint < 0) {
+			if (codepoint == DUK__CP_CONTINUE) {
+				continue;
+			}
+
+			/* Decoding error with or without retry. */
+			DUK_ASSERT(codepoint == DUK__CP_ERROR || codepoint == DUK__CP_RETRY);
+			if (codepoint == DUK__CP_RETRY) {
+				--in;  /* retry last byte */
+			}
+			/* replacement mode: replace with U+FFFD */
+			codepoint = DUK_UNICODE_CP_REPLACEMENT_CHARACTER;
+			if (dec_ctx->fatal) {
+				/* fatal mode: throw a TypeError */
+				goto fail_type;
+			}
+			/* Continue with 'codepoint', Unicode replacement. */
+		}
+		DUK_ASSERT(codepoint >= 0x0000L && codepoint <= 0x10ffffL);
+
+		if (!dec_ctx->bom_handled) {
+			dec_ctx->bom_handled = 1;
+			if (codepoint == 0xfeffL && !dec_ctx->ignore_bom) {
+				continue;
+			}
+		}
+
+		out += duk_unicode_encode_cesu8(codepoint, out);
+		DUK_ASSERT(out <= output + (3 + (3 * len)));
+	}
+
+	if (!stream) {
+		if (dec_ctx->needed != 0) {
+			/* truncated sequence at end of buffer */
+			if (dec_ctx->fatal) {
+				goto fail_type;
+			} else {
+				out += duk_unicode_encode_cesu8(DUK_UNICODE_CP_REPLACEMENT_CHARACTER, out);
+				DUK_ASSERT(out <= output + (3 + (3 * len)));
+			}
+		}
+		duk__utf8_decode_init(dec_ctx);  /* Initialize decoding state for potential reuse. */
+	}
+
+	/* Output buffer is fixed and thus stable even if there had been
+	 * side effects (which there shouldn't be).
+	 */
+	duk_push_lstring(ctx, (const char *) output, (duk_size_t) (out - output));
+	return 1;
+
+ fail_type:
+	DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_DECODE_FAILED);
+	DUK_UNREACHABLE();
+}
+
+/*
+ *  Built-in bindings
+ */
+
+#if defined(DUK_USE_ENCODING_BUILTINS)
 DUK_INTERNAL duk_ret_t duk_bi_textencoder_constructor(duk_context *ctx) {
 	/* TextEncoder currently requires no persistent state, so the constructor
 	 * does nothing on purpose.
@@ -355,132 +501,28 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_shared_getter(duk_context *c
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
-	const duk_uint8_t *input;
 	duk__decode_context *dec_ctx;
-	duk_size_t len = 0;
-	duk_size_t len_tmp;
-	duk_bool_t stream = 0;
-	duk_codepoint_t codepoint;
-	duk_uint8_t *output;
-	const duk_uint8_t *in;
-	duk_uint8_t *out;
 
 	dec_ctx = duk__get_textdecoder_context(ctx);
-
-	/* Careful with input buffer pointer: any side effects involving
-	 * code execution (e.g. getters, coercion calls, and finalizers)
-	 * may cause a resize and invalidate a pointer we've read.  This
-	 * is why the pointer is actually looked up at the last minute.
-	 * Argument validation must still happen first to match WHATWG
-	 * required side effect order.
-	 */
-
-	if (duk_is_undefined(ctx, 0)) {
-		duk_push_fixed_buffer(ctx, 0);
-		duk_replace(ctx, 0);
-	}
-	(void) duk_require_buffer_data(ctx, 0, &len);  /* Need 'len', avoid pointer. */
-
-	if (duk_is_null_or_undefined(ctx, 1)) {
-		/* Use defaults. */
-	} else {
-		duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_UNDEFINED |
-	                                      DUK_TYPE_MASK_NULL |
-	                                      DUK_TYPE_MASK_LIGHTFUNC |
-	                                      DUK_TYPE_MASK_BUFFER |
-		                              DUK_TYPE_MASK_OBJECT);
-		if (duk_get_prop_string(ctx, 1, "stream")) {
-			stream = duk_to_boolean(ctx, -1);
-		}
-	}
-
-	/* Allowance is 3*len in the general case because all bytes may potentially
-	 * become U+FFFD.  If the first byte completes a non-BMP codepoint it will
-	 * decode to a CESU-8 surrogate pair (6 bytes) so we allow 3 extra bytes to
-	 * compensate: (1*3)+3 = 6.  Non-BMP codepoints are safe otherwise because
-	 * the 4->6 expansion is well under the 3x allowance.
-	 *
-	 * XXX: As with TextEncoder, need a better buffer allocation strategy here.
-	 */
-	if (len >= (DUK_HBUFFER_MAX_BYTELEN / 3) - 3) {
-		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
-	}
-	output = (duk_uint8_t *) duk_push_fixed_buffer(ctx, 3 + (3 * len));
-
-	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len_tmp);
-	DUK_ASSERT(input != NULL || len == 0);
-	if (DUK_UNLIKELY(len != len_tmp)) {
-		/* Very unlikely but possible: source buffer was resized by
-		 * a side effect when fixed buffer was pushed.  Output buffer
-		 * may not be large enough to hold output, so just fail if
-		 * length has changed.
-		 */
-		DUK_D(DUK_DPRINT("input buffer resized by side effect, fail"));
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
-
-	/* From this point onwards it's critical that no side effect occur
-	 * which may disturb 'input': finalizer execution, property accesses,
-	 * active coercions, etc.  Even an allocation related mark-and-sweep
-	 * may affect the pointer because it may trigger a pending finalizer.
-	 */
-
-	in = input;
-	out = output;
-	while (in < input + len) {
-		codepoint = duk__utf8_decode_next(dec_ctx, *in++);
-		if (codepoint < 0) {
-			if (codepoint == DUK__CP_CONTINUE) {
-				continue;
-			}
-
-			/* Decoding error with or without retry. */
-			DUK_ASSERT(codepoint == DUK__CP_ERROR || codepoint == DUK__CP_RETRY);
-			if (codepoint == DUK__CP_RETRY) {
-				--in;  /* retry last byte */
-			}
-			/* replacement mode: replace with U+FFFD */
-			codepoint = DUK_UNICODE_CP_REPLACEMENT_CHARACTER;
-			if (dec_ctx->fatal) {
-				/* fatal mode: throw a TypeError */
-				goto fatal;
-			}
-			/* Continue with 'codepoint', Unicode replacement. */
-		}
-		DUK_ASSERT(codepoint >= 0x0000L && codepoint <= 0x10ffffL);
-
-		if (!dec_ctx->bom_handled) {
-			dec_ctx->bom_handled = 1;
-			if (codepoint == 0xfeffL && !dec_ctx->ignore_bom) {
-				continue;
-			}
-		}
-
-		out += duk_unicode_encode_cesu8(codepoint, out);
-		DUK_ASSERT(out <= output + (3 + (3 * len)));
-	}
-
-	if (!stream) {
-		if (dec_ctx->needed != 0) {
-			/* truncated sequence at end of buffer */
-			if (dec_ctx->fatal) {
-				goto fatal;
-			} else {
-				out += duk_unicode_encode_cesu8(DUK_UNICODE_CP_REPLACEMENT_CHARACTER, out);
-				DUK_ASSERT(out <= output + (3 + (3 * len)));
-			}
-		}
-		duk__utf8_decode_init(dec_ctx);  /* Initialize decoding state for potential reuse. */
-	}
-
-	/* Output buffer is fixed and thus stable even if there had been
-	 * side effects (which there shouldn't be).
-	 */
-	duk_push_lstring(ctx, (const char *) output, (duk_size_t) (out - output));
-	return 1;
-
- fatal:
-	DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_DECODE_FAILED);
-	DUK_UNREACHABLE();
+	return duk__decode_helper(ctx, dec_ctx);
 }
 #endif  /* DUK_USE_ENCODING_BUILTINS */
+
+/*
+ *  Internal helper for Node.js Buffer
+ */
+
+/* Internal helper used for Node.js Buffer .toString().  Value stack convention
+ * is currently odd: it mimics TextDecoder .decode() so that argument must be at
+ * index 0, and decode options (not present for Buffer) at index 1.  Return value
+ * is a Duktape/C function return value.
+ */
+DUK_INTERNAL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_context *ctx) {
+	duk__decode_context dec_ctx;
+
+	dec_ctx.fatal = 0;  /* use replacement chars */
+	dec_ctx.ignore_bom = 1;  /* ignore BOMs (matches Node.js Buffer .toString()) */
+	duk__utf8_decode_init(&dec_ctx);
+
+	return duk__decode_helper(ctx, &dec_ctx);
+}

@@ -85,25 +85,26 @@ duk_push_string(ctx, "\xff" "myprop");
 
 <p>Internal strings cannot be created from Ecmascript code using the default
 built-ins alone.  However, application code can easily add such a binding
-using the C API (this must be considered in sandboxing).</p>
+using the C API which must be considered in sandboxing.</p>
 
 <p>There's no special access control for internal properties: if user code has
 access to the property name (string), it can read/write the property value.
-Any code with the ability to create or use buffers can potentially create an
-internal string by converting a buffer into a string.  However, standard Ecmascript
-code with no access to buffer values or ability to create them cannot create internal
-strings (or any invalid UTF-8 strings in general).  When sandboxing, ensure that
-the sandboxed code has no access to the <code>Duktape</code> built-in or any
-buffer values.</p>
+The default Ecmascript built-ins don't provide a way of creating an internal
+string: buffer-to-string coercions always involve an encoding such as UTF-8
+which will reject or replace invalid byte sequences.  However, C code can
+easily create internal strings.  When sandboxing, ensure that custom C bindings
+don't accidentally provide a mechanism to create internal strings by e.g.
+converting a buffer as-is to a string.</p>
 
-<p>As a concrete example, the internal value of a <code>Date</code> can be
-accessed as follows:</p>
+<p>As a concrete example the internal value of a <code>Date</code> instance
+can be accessed as follows:</p>
 <pre class="ecmascript-code">
-// Print the internal timestamp of a Date instance.  User code should NEVER
-// actually do this because the internal properties may change between
-// versions in an arbitrary manner!
+// Print the internal timestamp of a Date instance.  Assumes a hypothetical
+// rawBufferToString() custom C binding which takes an input buffer and pushes
+// the bytes as-is as a string using duk_push_lstring(), thus creating an
+// internal string.
 
-var key = Duktape.dec('hex', 'ff56616c7565');  // \xFFValue
+var key = rawBufferToString(Duktape.dec('hex', 'ff56616c7565'));  // \xFFValue
 var dt = new Date(123456);
 print('internal value is:', dt[key]);  // prints 123456
 </pre>

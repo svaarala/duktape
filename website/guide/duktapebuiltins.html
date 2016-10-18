@@ -136,6 +136,7 @@ The first argument is a format (currently supported are "hex", "base64",
 "jx" and "jc"), second argument is the value to encode, and any further
 arguments are format specific.</p>
 
+<!-- XXX: maybe remove support for non-buffer inputs? -->
 <p>For "hex" and "base64", buffer values are encoded as is, other values
 are string coerced and the internal byte representation (extended UTF-8)
 is then encoded.  The result is a string.  For example, to encode a string
@@ -168,10 +169,10 @@ print(typeof result, result);  // prints 'object foo'
 <p>If you wish to get back a string value, you can coerce the plain buffer to
 a string e.g. as follows:</p>
 <pre class="ecmascript-code">
-// Use Node.js Buffer binding for buffer-to-string coercion.  The buffer
-// data is decoded as UTF-8 and re-encoded into an Ecmascript string (with
-// surrogate pairs used for non-BMP codepoints).
-var result = Buffer.from(Duktape.dec('base64', 'Zm9v')).toString();
+// Use TextDecoder which decodes the input as UTF-8.  You can also use
+// the Node.js Buffer binding to achieve a similar result.
+
+var result = new TextDecoder().decode(Duktape.dec('base64', 'Zm9v'));
 print(typeof result, result);  // prints 'string foo'
 </pre>
 

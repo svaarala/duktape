@@ -311,6 +311,7 @@ try {
 replacement character policy
 65533 65533
 97 65533 65533 65533 98
+65533 65533 65533
 ===*/
 
 // There are a few different replacement character strategies.  Unicode
@@ -328,6 +329,10 @@ replacement character policy
 //
 // Unicode Technical Committee recommends approach 2; Firefox does so too.
 // V8 seems to use approach 3.
+//
+// WHATWG Encoding specification has a required algorithm for decoding (as far
+// as outcomes are concerned) which provides approach 2.  So that behavior is
+// required here.
 
 function replacementCharacterPolicyTest() {
     // Truncated U+CAFE test.
@@ -337,6 +342,13 @@ function replacementCharacterPolicyTest() {
 
     // Test from http://www.unicode.org/review/pr-121.html.
     var u8 = new Uint8Array([ 0x61, 0xF1, 0x80, 0x80, 0xE1, 0x80, 0xC2, 0x62 ]);
+    var res = new TextDecoder().decode(u8);
+    print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
+
+    // Interesting special case: ED A0 80 is a CESU-8 encoded surrogate pair.
+    // Because ED is not a valid initial UTF-8 byte at all, the sequence
+    // generates three replacement characters; Firefox agrees.
+    var u8 = new Uint8Array([ 0xed, 0xa0, 0x80 ]);
     var res = new TextDecoder().decode(u8);
     print(Array.prototype.map.call(res, function (v) { return v.charCodeAt(0); }).join(' '));
 }
