@@ -332,6 +332,7 @@ def main():
         'duk_bi_pointer.c',
         'duk_bi_protos.h',
         'duk_bi_proxy.c',
+        'duk_bi_reflect.c',
         'duk_bi_regexp.c',
         'duk_bi_string.c',
         'duk_bi_thread.c',

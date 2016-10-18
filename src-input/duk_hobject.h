@@ -898,13 +898,14 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
                                              duk_hobject **out_getter,
                                              duk_hobject **out_setter);
 DUK_INTERNAL_DECL
-void duk_hobject_define_property_helper(duk_context *ctx,
-                                        duk_uint_t defprop_flags,
-                                        duk_hobject *obj,
-                                        duk_hstring *key,
-                                        duk_idx_t idx_value,
-                                        duk_hobject *get,
-                                        duk_hobject *set);
+duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
+                                              duk_uint_t defprop_flags,
+                                              duk_hobject *obj,
+                                              duk_hstring *key,
+                                              duk_idx_t idx_value,
+                                              duk_hobject *get,
+                                              duk_hobject *set,
+                                              duk_bool_t throw_flag);
 
 /* Object built-in methods */
 DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx);

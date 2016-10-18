@@ -449,7 +449,8 @@ DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t f
 	                                   key,
 	                                   idx_value,
 	                                   get,
-	                                   set);
+	                                   set,
+	                                   1 /*throw_flag*/);
 
 	/* Clean up stack */
 

@@ -156,35 +156,77 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
  type_error:
 	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
+#endif
 
+#if defined(DUK_USE_FUNCTION_BUILTIN) || defined(DUK_USE_REFLECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
+	/*
+	 *  magic = 0: Function.prototype.apply()
+	 *  magic = 1: Reflect.apply()
+	 *  magic = 2: Reflect.construct()
+	 */
+
+	duk_idx_t idx_args;
 	duk_idx_t len;
 	duk_idx_t i;
+	duk_int_t magic;
+	duk_idx_t nargs;
 
-	DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
+	magic = duk_get_current_magic(ctx);
+	switch (magic) {
+	case 0: {  /* Function.prototype.apply() */
+		DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
+		duk_push_this(ctx);
+		duk_insert(ctx, 0);
+		DUK_ASSERT_TOP(ctx, 3);
+		idx_args = 2;
+		break;
+	}
+	case 1: {  /* Reflect.apply() */
+		DUK_ASSERT_TOP(ctx, 3);  /* not a vararg function */
+		idx_args = 2;
+		break;
+	}
+	case 2: {  /* Reflect.construct() */
+		nargs = duk_get_top(ctx);
+		if (nargs < 2) {
+			DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+		}
+		if (nargs >= 3 && !duk_strict_equals(ctx, 0, 2)) {
+			/* XXX: [[Construct]] newTarget currently unsupported */
+			DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+		}
+		idx_args = 1;
+		break;
+	}
+	}
 
-	duk_push_this(ctx);
-	duk_require_callable(ctx, -1);
-	duk_insert(ctx, 0);
-	DUK_ASSERT_TOP(ctx, 3);
+	duk_require_callable(ctx, 0);
 
-	DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
-	                     (duk_tval *) duk_get_tval(ctx, 0),
-	                     (duk_tval *) duk_get_tval(ctx, 1),
-	                     (duk_tval *) duk_get_tval(ctx, 2)));
+	if (magic != 2) {
+		DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
+							 (duk_tval *) duk_get_tval(ctx, 0),
+							 (duk_tval *) duk_get_tval(ctx, 1),
+							 (duk_tval *) duk_get_tval(ctx, 2)));
+	} else {
+		/* thisArg is not applicable for Reflect.construct(). */
+		DUK_DDD(DUK_DDDPRINT("func=%!iT, argArray=%!iT",
+							 (duk_tval *) duk_get_tval(ctx, 0),
+							 (duk_tval *) duk_get_tval(ctx, 1)));
+	}
 
-	/* [ func thisArg argArray ] */
+	/* [ func thisArg? argArray ] */
 
-	if (duk_is_null_or_undefined(ctx, 2)) {
+	if (duk_is_null_or_undefined(ctx, idx_args)) {
 		DUK_DDD(DUK_DDDPRINT("argArray is null/undefined, no args"));
 		len = 0;
-	} else if (!duk_is_object(ctx, 2)) {
+	} else if (!duk_is_object(ctx, idx_args)) {
 		goto type_error;
 	} else {
 		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
 		/* XXX: make this an internal helper */
-		duk_get_prop_stridx(ctx, 2, DUK_STRIDX_LENGTH);
+		duk_get_prop_stridx(ctx, idx_args, DUK_STRIDX_LENGTH);
 		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
 		duk_pop(ctx);
 
@@ -192,25 +234,36 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 		DUK_DDD(DUK_DDDPRINT("argArray length is %ld", (long) len));
 		for (i = 0; i < len; i++) {
-			duk_get_prop_index(ctx, 2, i);
+			duk_get_prop_index(ctx, idx_args, i);
 		}
 	}
-	duk_remove(ctx, 2);
-	DUK_ASSERT_TOP(ctx, 2 + len);
+	duk_remove(ctx, idx_args);
+	DUK_ASSERT_TOP(ctx, idx_args + len);
 
-	/* [ func thisArg arg1 ... argN ] */
+	/* [ func thisArg? arg1 ... argN ] */
 
-	DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, 0),
-	                     (duk_tval *) duk_get_tval(ctx, 1),
-	                     (long) len));
-	duk_call_method(ctx, len);
+	if (magic != 2) {
+		/* Function.prototype.apply() or Reflect.apply() */
+		DUK_DDD(DUK_DDDPRINT("apply, func=%!iT, thisArg=%!iT, len=%ld",
+							 (duk_tval *) duk_get_tval(ctx, 0),
+							 (duk_tval *) duk_get_tval(ctx, 1),
+							 (long) len));
+		duk_call_method(ctx, len);
+	} else {
+		/* Reflect.construct() */
+		DUK_DDD(DUK_DDDPRINT("construct, func=%!iT, len=%ld",
+							 (duk_tval *) duk_get_tval(ctx, 0),
+							 (long) len));
+		duk_new(ctx, len);
+	}
 	return 1;
 
  type_error:
 	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 }
+#endif
 
+#if defined(DUK_USE_FUNCTION_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	duk_idx_t nargs;
 
