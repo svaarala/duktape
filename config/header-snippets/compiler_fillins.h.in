@@ -29,9 +29,8 @@
 #endif
 
 #if !defined(DUK_CAUSE_SEGFAULT)
-/* This is used by the default fatal error handling to cause the program to
- * intentionally segfault on a fatal error.  Valgrind will then indicate the
- * C call stack leading to the error.
+/* This can be used for testing; valgrind will then indicate the C call stack
+ * leading to the call site.
  */
 #define DUK_CAUSE_SEGFAULT()  do { *((volatile duk_uint32_t *) NULL) = (duk_uint32_t) 0xdeadbeefUL; } while (0)
 #endif

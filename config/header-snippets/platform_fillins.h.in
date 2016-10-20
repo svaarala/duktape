@@ -1,3 +1,8 @@
+/* An abort()-like primitive is needed by the default fatal error handler. */
+#if !defined(DUK_ABORT)
+#define DUK_ABORT             abort
+#endif
+
 #if !defined(DUK_SETJMP)
 #define DUK_JMPBUF_TYPE       jmp_buf
 #define DUK_SETJMP(jb)        setjmp((jb))
