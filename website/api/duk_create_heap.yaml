@@ -27,9 +27,9 @@ summary: |
   errors, out-of-memory errors not resolved by garbage collection, self test
   errors, etc.  A caller SHOULD implement a fatal error handler in most
   applications.  If not given, a default fatal error handler built into
-  Duktape is used instead.  <b>Note that the default fatal error handler (unless
-  overridden by <code>duk_config.h</code>) causes an intentional segfault to
-  exit a process to avoid relying on platform API calls like abort().</b>  See
+  Duktape is used instead.  The default fatal error handler (unless overridden
+  by <code>duk_config.h</code>) calls <code>abort()</code> with no error
+  message printed to stdout or stderr.  See
   <a href="http://wiki.duktape.org/HowtoFatalErrors.html">How to handle fatal errors</a>
   for more detail and examples.</p>
 
