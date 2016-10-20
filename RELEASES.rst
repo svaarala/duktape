@@ -2019,3 +2019,6 @@ Planned
 * Internal change: rework tagged value (duk_tval) fastint/integer handling
   macros to avoid multiple evaluation of argument(s) and for easier mixing
   of fastint and non-fastint aware code (GH-702)
+
+* Internal change: Add support for a receiver object in get/putprop operations,
+  needed by several ES6+ algorithms (GH-1027)
