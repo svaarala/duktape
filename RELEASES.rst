@@ -1801,9 +1801,10 @@ Planned
   call to match revised fatal error handler function signature (GH-781)
 
 * Incompatible change: default fatal error handler (similar to panic handler
-  in Duktape 1.x) segfaults and infinite loops without calling e.g. abort()
-  (which may not be available); this behavior can be overridden by defining
-  DUK_USE_FATAL_HANDLER() in duk_config.h (GH-781)
+  in Duktape 1.x) calls abort() without printing anything to stdout or stderr
+  (which avoids unnecessary platform dependencies); this behavior can be
+  overridden by defining DUK_USE_FATAL_HANDLER() in duk_config.h (GH-781,
+  GH-1218)
 
 * Incompatible change: change some debugger artificial property names to match
   internal renames: compiledfunction -> compfunc, nativefunction -> natfunc,
