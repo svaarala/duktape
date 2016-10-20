@@ -873,8 +873,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_get_own_propdesc(duk_hthread *thr, duk_
 	duk_hobject_find_existing_entry_tval_ptr((heap), (obj), DUK_HEAP_STRING_INT_VALUE((heap)))
 
 /* core property functions */
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_recv);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_tval *tv_recv, duk_bool_t throw_flag);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_bool_t throw_flag);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key);
 
