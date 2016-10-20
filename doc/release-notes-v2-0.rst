@@ -951,9 +951,9 @@ To upgrade:
   in heap creation is **strongly recommended**, see
   http://wiki.duktape.org/HowtoFatalErrors.html for instructions.
 
-  The default fatal error handler will by default cause an intentional
-  segfault; to improve this behavior define ``DUK_USE_FATAL_HANDLER()``
-  in your ``duk_config.h``.
+  The default fatal error handler will by default call ``abort()`` with no
+  error message to ``stdout`` or ``stderr``.  To improve this behavior define
+  ``DUK_USE_FATAL_HANDLER()`` in your ``duk_config.h``.
 
 * If you have a fatal error handler, update its signature::
 
