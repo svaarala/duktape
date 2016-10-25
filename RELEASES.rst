@@ -1820,6 +1820,10 @@ Planned
   e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
   Math.pow() while also being more readable (GH-987, GH-997)
 
+* Add support for ES6 \u{H+} escape syntax for source code string literals
+  and identifiers, no RegExp support yet (requires RegExp /u Unicode mode)
+  (GH-1001)
+
 * Add TextEncoder and TextDecoder built-ins (the Encoding API) which allow
   Ecmascript code to read and write text stored in an ArrayBuffer or a plain
   buffer (GH-975)
