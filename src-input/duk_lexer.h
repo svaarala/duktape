@@ -30,8 +30,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 
 #define DUK_LEXER_SETPOINT(ctx,pt)    duk_lexer_setpoint((ctx), (pt))
 
-#define DUK_LEXER_GETPOINT(ctx,pt)    do { (pt)->offset = (ctx)->window[0].offset; \
-                                           (pt)->line = (ctx)->window[0].line; } while (0)
+#define DUK_LEXER_GETPOINT(ctx,pt)    duk_lexer_getpoint((ctx), (pt))
 
 /* currently 6 characters of lookup are actually needed (duk_lexer.c) */
 #define DUK_LEXER_WINDOW_SIZE                     6
@@ -419,6 +418,7 @@ struct duk_lexer_ctx {
 
 DUK_INTERNAL_DECL void duk_lexer_initctx(duk_lexer_ctx *lex_ctx);
 
+DUK_INTERNAL_DECL void duk_lexer_getpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt);
 DUK_INTERNAL_DECL void duk_lexer_setpoint(duk_lexer_ctx *lex_ctx, duk_lexer_point *pt);
 
 DUK_INTERNAL_DECL

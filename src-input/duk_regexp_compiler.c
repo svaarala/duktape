@@ -614,6 +614,12 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 			/* Note: successive characters could be joined into string matches
 			 * but this is not trivial (consider e.g. '/xyz+/); see docs for
 			 * more discussion.
+			 *
+			 * No support for \u{H+} yet.  While only BMP Unicode escapes are
+			 * supported for RegExps at present, 'ch' may still be a non-BMP
+			 * codepoint if it is decoded straight from source text UTF-8.
+			 * There's no non-BMP support yet so this is handled simply by
+			 * matching the non-BMP character (which is custom behavior).
 			 */
 			duk_uint32_t ch;
 

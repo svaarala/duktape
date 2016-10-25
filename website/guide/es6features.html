@@ -32,6 +32,14 @@ the following non-standard semantics:</p>
 <p>Computed property names are supported and allow syntax like
 <code>{ [1 + 2]: "three" }</code>.</p>
 
+<h2 id="es6-unicode-escape">\u{H+} escape syntax</h2>
+
+<p>The <code>\u{H+}</code> escape syntax is supported in source code string
+literals and identifier names.  Codepoints above non-BMP, for example
+<code>\u{1f4a9}</code>, are decoded into surrogate pairs during parsing.
+RegExps don't yet support this escape format as it requires currently
+unsupported RegExp Unicode mode (<code>/u</code>).</p>
+
 <h2 id="es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</h2>
 
 <p><a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.setprototypeof">Object.setPrototypeOf</a>
