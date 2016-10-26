@@ -171,6 +171,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	duk_idx_t i;
 	duk_int_t magic;
 	duk_idx_t nargs;
+	duk_uint_t mask;
 
 	magic = duk_get_current_magic(ctx);
 	switch (magic) {
@@ -218,12 +219,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	/* [ func thisArg? argArray ] */
 
-	if (duk_is_null_or_undefined(ctx, idx_args)) {
+	mask = duk_get_type_mask(ctx, idx_args);
+	if (mask & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) {
 		DUK_DDD(DUK_DDDPRINT("argArray is null/undefined, no args"));
 		len = 0;
-	} else if (!duk_is_object(ctx, idx_args)) {
-		goto type_error;
-	} else {
+	} else if (mask & DUK_TYPE_MASK_OBJECT) {
 		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
 		/* XXX: make this an internal helper */
@@ -237,6 +237,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		for (i = 0; i < len; i++) {
 			duk_get_prop_index(ctx, idx_args, i);
 		}
+	} else {
+		goto type_error;
 	}
 	duk_remove(ctx, idx_args);
 	DUK_ASSERT_TOP(ctx, idx_args + len);
