@@ -187,7 +187,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		idx_args = 2;
 		break;
 	}
-	case 2: {  /* Reflect.construct() */
+	default: {  /* Reflect.construct() */
+		DUK_ASSERT(magic == 2);
 		nargs = duk_get_top(ctx);
 		if (nargs < 2) {
 			DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
