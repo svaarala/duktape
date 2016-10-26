@@ -50,7 +50,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_get(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	tv_obj = DUK_GET_TVAL_POSIDX(ctx, 0);
 	tv_key = DUK_GET_TVAL_POSIDX(ctx, 1);
-	(void) duk_hobject_getprop(thr, tv_obj, tv_key);
+	(void) duk_hobject_getprop(thr, tv_obj, tv_key);  /* This could also be a duk_get_prop(). */
 	return 1;
 }
 

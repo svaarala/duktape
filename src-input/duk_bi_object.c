@@ -320,8 +320,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_hobject *proto;
 	duk_tval *tv;
 
-	DUK_UNREF(thr);
-
 	if (duk_get_current_magic(ctx) == 0) {
 		tv = DUK_HTHREAD_THIS_PTR(thr);
 	} else {
