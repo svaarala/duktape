@@ -3,6 +3,8 @@
  *  Reflect.construct()
  */
 
+print=console.log
+
 /*===
 func() called with 2 args
 Casper the friendly ghost
@@ -85,6 +87,7 @@ last arg: kittiez r food 4 cowz
 true
 Hi, my name is Kittycow the kitty-eating cow
 Kittycow says: MOOOOOOoooooooooooooo...
+TypeError
 ===*/
 
 function constructTest() {
@@ -125,6 +128,24 @@ function constructTest() {
     var cow = Reflect.construct(Person, argList);
     print(cow instanceof Person);
     cow.talk();
+
+    // Construct must check that first argument is constructable before
+    // processing the arguments object.
+    var nonConstructable = Math.cos;  // built-in which is callable but not constructable
+    try {
+        var argObject = {};
+        Object.defineProperties(argObject, {
+            length: { value: 3 },
+            0: { get: function () { print('get 0'); return 'foo'; } },
+            1: { get: function () { print('get 1'); return 'bar'; } },
+            2: { get: function () { print('get 2'); return 'quux'; } }
+        })
+        Reflect.construct(nonConstructable, argObject);
+        print('never here');
+    } catch (e) {
+        //print(e.stack);
+        print(e.name);
+    }
 }
 
 try {
