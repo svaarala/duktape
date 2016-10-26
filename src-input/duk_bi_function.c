@@ -176,21 +176,19 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	magic = duk_get_current_magic(ctx);
 	switch (magic) {
-	case 0: {  /* Function.prototype.apply() */
+	case 0:  /* Function.prototype.apply() */
 		DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
 		duk_push_this(ctx);
 		duk_insert(ctx, 0);
-		DUK_ASSERT_TOP(ctx, 3);
-		idx_args = 2;
-		break;
-	}
-	case 1: {  /* Reflect.apply() */
+		/* Fall through intentionally for shared handling. */
+	case 1:  /* Reflect.apply(); Function.prototype.apply() after 'this' fixup. */
 		DUK_ASSERT_TOP(ctx, 3);  /* not a vararg function */
 		idx_args = 2;
+		duk_require_callable(ctx, 0);
 		break;
-	}
-	default: {  /* Reflect.construct() */
+	default:  /* Reflect.construct() */
 		DUK_ASSERT(magic == 2);
+		duk_require_constructable(ctx, 0);
 		nargs = duk_get_top(ctx);
 		if (nargs < 2) {
 			DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
@@ -202,9 +200,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		idx_args = 1;
 		break;
 	}
-	}
-
-	duk_require_callable(ctx, 0);
 
 	if (magic != 2) {
 		DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
