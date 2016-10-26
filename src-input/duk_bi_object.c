@@ -318,8 +318,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_property_is_enumerable(duk_contex
 #endif  /* DUK_USE_OBJECT_BUILTIN */
 
 #if defined(DUK_USE_OBJECT_BUILTIN) || defined(DUK_USE_REFLECT_BUILTIN)
-/* Shared helper to implement Object.getPrototypeOf and the ES6
- * Object.prototype.__proto__ getter.
+/* Shared helper to implement Object.getPrototypeOf,
+ * Object.prototype.__proto__ getter, and Reflect.getPrototypeOf.
  *
  * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-get-object.prototype.__proto__
  */
@@ -369,8 +369,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 #endif  /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */
 
 #if defined(DUK_USE_OBJECT_BUILTIN) || defined(DUK_USE_REFLECT_BUILTIN)
-/* Shared helper to implement ES6 Object.setPrototypeOf and
- * Object.prototype.__proto__ setter.
+/* Shared helper to implement ES6 Object.setPrototypeOf,
+ * Object.prototype.__proto__ setter, and Reflect.setPrototypeOf.
  *
  * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-get-object.prototype.__proto__
  * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-object.setprototypeof
@@ -390,7 +390,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	duk_uint_t mask;
 	duk_int_t magic;
 
-	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4) */
+	/* Preliminaries for __proto__ and setPrototypeOf (E6 19.1.2.18 steps 1-4). */
 	magic = duk_get_current_magic(ctx);
 	if (magic == 0) {
 		duk_push_this_check_object_coercible(ctx);
@@ -434,7 +434,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 	}
 	DUK_ASSERT(h_obj != NULL);
 
-	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2 */
+	/* [[SetPrototypeOf]] standard behavior, E6 9.1.2. */
 	/* TODO: implement Proxy object support here */
 
 	if (h_new_proto == DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_obj)) {
@@ -444,7 +444,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_setprototype_shared(duk_context *ctx) {
 		goto fail_nonextensible;
 	}
 	for (h_curr = h_new_proto; h_curr != NULL; h_curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_curr)) {
-		/* Loop prevention */
+		/* Loop prevention. */
 		if (h_curr == h_obj) {
 			goto fail_loop;
 		}

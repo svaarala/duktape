@@ -1,6 +1,9 @@
 /*
  *  'Reflect' built-in (ES7 Section 26.1)
  *  http://www.ecma-international.org/ecma-262/7.0/#sec-reflect-object
+ *
+ *  Many Reflect built-in functions are provided by shared helpers in
+ *  duk_bi_object.c or duk_bi_function.c.
  */
 
 #include "duk_internal.h"

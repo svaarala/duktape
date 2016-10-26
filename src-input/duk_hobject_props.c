@@ -5002,7 +5002,8 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 }
 
 /*
- *  Object.defineProperty() related helper  (E5 Section 15.2.3.6)
+ *  Object.defineProperty() related helper (E5 Section 15.2.3.6).
+ *  Also handles ES6 Reflect.defineProperty().
  *
  *  Inlines all [[DefineOwnProperty]] exotic behaviors.
  *
@@ -5084,14 +5085,14 @@ duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
 	                     "has_value=%ld value=%!T "
 	                     "has_get=%ld get=%p=%!O "
 	                     "has_set=%ld set=%p=%!O "
-	                     "arr_idx=%ld",
+	                     "arr_idx=%ld throw_flag=!%ld",
 	                     (long) has_enumerable, (long) is_enumerable,
 	                     (long) has_configurable, (long) is_configurable,
 	                     (long) has_writable, (long) is_writable,
 	                     (long) has_value, (duk_tval *) (idx_value >= 0 ? duk_get_tval(ctx, idx_value) : NULL),
 	                     (long) has_get, (void *) get, (duk_heaphdr *) get,
 	                     (long) has_set, (void *) set, (duk_heaphdr *) set,
-	                     (long) arr_idx));
+	                     (long) arr_idx, (long) throw_flag));
 
 	/*
 	 *  Array exotic behaviors can be implemented at this point.  The local variables
