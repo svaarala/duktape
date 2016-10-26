@@ -1609,12 +1609,10 @@ DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx
 	duk_hobject *h;
 
 	h = duk_require_hobject_accept_mask(ctx, idx, DUK_TYPE_MASK_LIGHTFUNC);
-	if (h == NULL) {
-		return;  /* Lightfuncs are constructable. */
-	}
-	if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
+	if (h != NULL && !DUK_HOBJECT_HAS_CONSTRUCTABLE(h)) {
 		DUK_ERROR_REQUIRE_TYPE_INDEX((duk_hthread *) ctx, idx, "constructable", DUK_STR_NOT_CONSTRUCTABLE);
 	}
+	/* Lightfuncs (h == NULL) are constructable. */
 }
 
 DUK_EXTERNAL duk_context *duk_get_context(duk_context *ctx, duk_idx_t idx) {
