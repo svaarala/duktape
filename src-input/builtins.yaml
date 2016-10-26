@@ -271,6 +271,12 @@ objects:
           id: bi_proxy_constructor
         es6: true
         present_if: DUK_USE_ES6_PROXY
+      - key: "Reflect"
+        value:
+          type: object
+          id: bi_reflect
+        es6: true
+        present_if: DUK_USE_REFLECT_BUILTIN
 
       # Node.js Buffer
       - key: "Buffer"
@@ -507,6 +513,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_get_own_property_descriptor
           length: 2
+          magic: 0
       - key: "getOwnPropertyNames"
         value:
           type: function
@@ -523,6 +530,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_define_property
           length: 3
+          magic: 0
       - key: "defineProperties"
         value:
           type: function
@@ -545,6 +553,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_prevent_extensions
           length: 1
+          magic: 0
       - key: "isSealed"
         value:
           type: function
@@ -562,6 +571,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_is_extensible
           length: 1
+          magic: 0
       - key: "keys"
         value:
           type: function
@@ -707,6 +717,7 @@ objects:
           type: function
           native: duk_bi_function_prototype_apply
           length: 2
+          magic: 0
         present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "call"
         value:
@@ -2645,6 +2656,104 @@ objects:
       #    native: duk_bi_proxy_constructor_revocable
       #    length: 2
       #  es6: true
+
+  - id: bi_reflect
+    class: Object
+    internal_prototype: bi_object_prototype
+    bidx: true
+    present_if: DUK_USE_REFLECT_BUILTIN
+
+    properties:
+      - key: "apply"
+        value:
+          type: function
+          native: duk_bi_function_prototype_apply
+          length: 3
+          magic: 1
+        es6: true
+      - key: "construct"
+        value:
+          type: function
+          native: duk_bi_function_prototype_apply
+          length: 2
+          magic: 2
+          varargs: true
+        es6: true
+      - key: "defineProperty"
+        value:
+          type: function
+          native: duk_bi_object_constructor_define_property
+          length: 3
+          magic: 1
+        es6: true
+      - key: "deleteProperty"
+        value:
+          type: function
+          native: duk_bi_reflect_object_delete_property
+          length: 2
+        es6: true
+      - key: "get"
+        value:
+          type: function
+          native: duk_bi_reflect_object_get
+          length: 2
+          varargs: true
+        es6: true
+      - key: "getOwnPropertyDescriptor"
+        value:
+          type: function
+          native: duk_bi_object_constructor_get_own_property_descriptor
+          length: 2
+          magic: 1
+        es6: true
+      - key: "getPrototypeOf"
+        value:
+          type: function
+          native: duk_bi_object_getprototype_shared
+          length: 1
+          magic: 2
+        es6: true
+      - key: "has"
+        value:
+          type: function
+          native: duk_bi_reflect_object_has
+          length: 2
+        es6: true
+      - key: "isExtensible"
+        value:
+          type: function
+          native: duk_bi_object_constructor_is_extensible
+          length: 1
+          magic: 1
+        es6: true
+      - key: "ownKeys"
+        value:
+          type: function
+          native: duk_bi_object_constructor_keys_shared
+          length: 1
+          magic: 0
+        es6: true
+      - key: "preventExtensions"
+        value:
+          type: function
+          native: duk_bi_object_constructor_prevent_extensions
+          length: 1
+          magic: 1
+        es6: true
+      - key: "set"
+        value:
+          type: function
+          native: duk_bi_reflect_object_set
+          length: 3
+          varargs: true
+        es6: true
+      - key: "setPrototypeOf"
+        value:
+          type: function
+          native: duk_bi_object_setprototype_shared
+          length: 2
+          magic: 2
+        es6: true
 
   #
   #  TypedArray

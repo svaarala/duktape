@@ -1820,6 +1820,10 @@ Planned
   e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
   Math.pow() while also being more readable (GH-987, GH-997)
 
+* Add a Reflect built-in, provides Reflect.construct() etc. from ES6; some
+  features like constructor retargeting require ES6+ semantics and are thus not
+  yet supported (GH-1025)
+
 * Add support for ES6 \u{H+} escape syntax for source code string literals
   and identifiers, no RegExp support yet (requires RegExp /u Unicode mode)
   (GH-1001)

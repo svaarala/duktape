@@ -5032,13 +5032,14 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 
 /* XXX: this is a major target for size optimization */
 DUK_INTERNAL
-void duk_hobject_define_property_helper(duk_context *ctx,
-                                        duk_uint_t defprop_flags,
-                                        duk_hobject *obj,
-                                        duk_hstring *key,
-                                        duk_idx_t idx_value,
-                                        duk_hobject *get,
-                                        duk_hobject *set) {
+duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
+                                              duk_uint_t defprop_flags,
+                                              duk_hobject *obj,
+                                              duk_hstring *key,
+                                              duk_idx_t idx_value,
+                                              duk_hobject *get,
+                                              duk_hobject *set,
+                                              duk_bool_t throw_flag) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_uint32_t arr_idx;
 	duk_tval tv;
@@ -5051,7 +5052,6 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	duk_bool_t is_enumerable;
 	duk_bool_t is_configurable;
 	duk_bool_t is_writable;
-	duk_bool_t throw_flag;
 	duk_bool_t force_flag;
 	duk_small_uint_t new_flags;
 	duk_propdesc curr;
@@ -5080,7 +5080,6 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	is_writable = (defprop_flags & DUK_DEFPROP_WRITABLE);
 	is_enumerable = (defprop_flags & DUK_DEFPROP_ENUMERABLE);
 	is_configurable = (defprop_flags & DUK_DEFPROP_CONFIGURABLE);
-	throw_flag = 1;   /* Object.defineProperty() calls [[DefineOwnProperty]] with Throw=true */
 	force_flag = (defprop_flags & DUK_DEFPROP_FORCE);
 
 	arr_idx = DUK_HSTRING_GET_ARRIDX_SLOW(key);
@@ -5876,7 +5875,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 				                     (duk_tval *) duk_require_tval(ctx, idx_value)));
 
 				/* strict flag for putvar comes from our caller (currently: fixed) */
-				duk_js_putvar_envrec(thr, varenv, varname, duk_require_tval(ctx, idx_value), throw_flag);
+				duk_js_putvar_envrec(thr, varenv, varname, duk_require_tval(ctx, idx_value), 1 /*throw_flag*/);
 			}
 			if (has_writable && !is_writable) {
 				DUK_DDD(DUK_DDDPRINT("defineProperty successful, key mapped to arguments 'map', "
@@ -5892,16 +5891,20 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 	}
 
  success_no_exotics:
-	return;
+	return 1;
 
  fail_not_extensible:
-	DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
-	return;
+	if (throw_flag) {
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
+	}
+	return 0;
 
  fail_virtual:  /* just use the same "not configurable" error message" */
  fail_not_configurable:
-	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
-	return;
+	if (throw_flag) {
+		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
+	}
+	return 0;
 }
 
 /*

@@ -51,6 +51,15 @@ but is compatible with existing code base which has relied on a non-standard
 <code>__proto__</code> property for a while.  Duktape does not support the
 <a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-__proto__-property-names-in-object-initializers">__proto__ property name in an object initializer</a>.</p>
 
+<h2 id="es6-reflect">Reflect built-in</h2>
+
+<p>The <code>Reflect</code> built-in provides access to several fundamental
+Ecmascript primitives as function calls.  For example, <code>Reflect.has()</code>
+works like the <code>in</code> operator, and <code>Reflect.construct()</code>
+is like <code>new</code>.  It also serves as a namespace for several functions
+previously exposed through <code>Object</code>, such as
+<code>Reflect.defineProperty()</code>.</p>
+
 <h2 id="es6-proxy">Proxy object (subset)</h2>
 
 <p>The Ecmascript E6 <code>Proxy</code> object allows property virtualization

@@ -439,6 +439,35 @@ strings:
   #  es6: true
   #- str: "construct"
   #  es6: true
+  
+  - str: "Reflect"
+    es6: true
+  - str: "apply"
+    es6: true
+  - str: "construct"
+    es6: true
+  - str: "defineProperty"
+    es6: true
+  - str: "deleteProperty"
+    es6: true
+  - str: "get"
+    es6: true
+  - str: "getOwnPropertyDescriptor"
+    es6: true
+  - str: "getPrototypeOf"
+    es6: true
+  - str: "has"
+    es6: true
+  - str: "isExtensible"
+    es6: true
+  - str: "ownKeys"
+    es6: true
+  - str: "preventExtensions"
+    es6: true
+  - str: "set"
+    es6: true
+  - str: "setPrototypeOf"
+    es6: true
 
   # Misc
   - str: "setPrototypeOf"
