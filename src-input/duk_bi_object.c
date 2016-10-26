@@ -488,8 +488,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_context *ct
 	 */
 	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(obj != NULL);
-	(void) duk_to_string(ctx, 1);
-	key = duk_require_hstring(ctx, 1);
+	key = duk_to_hstring(ctx, 1);
 	(void) duk_require_hobject(ctx, 2);
 
 	DUK_ASSERT(obj != NULL);
@@ -515,7 +514,8 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_context *ct
 	 *  Use Object.defineProperty() helper for the actual operation.
 	 */
 
-	throw_flag = (magic == 0);
+	DUK_ASSERT(magic == 0 || magic == 1);
+	throw_flag = magic ^ 1;
 	ret = duk_hobject_define_property_helper(ctx,
 	                                         defprop_flags,
 	                                         obj,
