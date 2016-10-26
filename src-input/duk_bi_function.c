@@ -12,7 +12,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
 }
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)
-
 DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
@@ -89,7 +88,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 
 	return 1;
 }
+#endif  /* DUK_USE_FUNCTION_BUILTIN */
 
+#if defined(DUK_USE_FUNCTION_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
@@ -297,7 +298,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	duk_call_method(ctx, nargs - 1);
 	return 1;
 }
+#endif  /* DUK_USE_FUNCTION_BUILTIN */
 
+#if defined(DUK_USE_FUNCTION_BUILTIN)
 /* XXX: the implementation now assumes "chained" bound functions,
  * whereas "collapsed" bound functions (where there is ever only
  * one bound function which directly points to a non-bound, final
@@ -394,5 +397,4 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	return 1;
 }
-
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
