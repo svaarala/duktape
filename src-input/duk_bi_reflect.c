@@ -20,8 +20,8 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_delete_property(duk_context *ctx) {
 
     thr = (duk_hthread *) ctx;
     DUK_ASSERT(thr != NULL);
-    tv_obj = duk_require_tval(ctx, 0);
-    tv_key = duk_require_tval(ctx, 1);
+    tv_obj = DUK_GET_TVAL_POSIDX(ctx, 0);
+    tv_key = DUK_GET_TVAL_POSIDX(ctx, 1);
     ret = duk_hobject_delprop(thr, tv_obj, tv_key, 0 /*throw_flag*/);
     duk_push_boolean(ctx, ret);
     return 1;
@@ -48,8 +48,8 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_get(duk_context *ctx) {
 
     thr = (duk_hthread *) ctx;
     DUK_ASSERT(thr != NULL);
-    tv_obj = duk_require_tval(ctx, 0);
-    tv_key = duk_require_tval(ctx, 1);
+    tv_obj = DUK_GET_TVAL_POSIDX(ctx, 0);
+    tv_key = DUK_GET_TVAL_POSIDX(ctx, 1);
     (void) duk_hobject_getprop(thr, tv_obj, tv_key);
     return 1;
 }
@@ -68,8 +68,8 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_has(duk_context *ctx) {
 
     thr = (duk_hthread *) ctx;
     DUK_ASSERT(thr != NULL);
-    tv_obj = duk_require_tval(ctx, 0);
-    tv_key = duk_require_tval(ctx, 1);
+    tv_obj = DUK_GET_TVAL_POSIDX(ctx, 0);
+    tv_key = DUK_GET_TVAL_POSIDX(ctx, 1);
     ret = duk_hobject_hasprop(thr, tv_obj, tv_key);
     duk_push_boolean(ctx, ret);
     return 1;
@@ -98,9 +98,9 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_set(duk_context *ctx) {
 
     thr = (duk_hthread *) ctx;
     DUK_ASSERT(thr != NULL);
-    tv_obj = duk_require_tval(ctx, 0);
-    tv_key = duk_require_tval(ctx, 1);
-    tv_val = duk_require_tval(ctx, 2);
+    tv_obj = DUK_GET_TVAL_POSIDX(ctx, 0);
+    tv_key = DUK_GET_TVAL_POSIDX(ctx, 1);
+    tv_val = DUK_GET_TVAL_POSIDX(ctx, 2);
     ret = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, 0 /*throw_flag*/);
     duk_push_boolean(ctx, ret);
     return 1;
