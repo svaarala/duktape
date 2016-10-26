@@ -152,7 +152,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *
 			                                        &get,
 			                                        &set);
 
-			/* [ hobject props enum(props) key desc value? getter? setter? ] */
+			/* [ hobject props enum(props) key desc [multiple values] ] */
 
 			if (pass == 0) {
 				continue;

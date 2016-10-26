@@ -4869,9 +4869,10 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
  *  Internal helper which validates and normalizes a property descriptor
  *  represented as an Ecmascript object (e.g. argument to defineProperty()).
  *  The output of this conversion is a set of defprop_flags and possibly
- *  some values pushed on the value stack; some subset of: property value,
- *  getter, setter.  Caller must manage stack top carefully because the
- *  number of values pushed depends on the input property descriptor.
+ *  some values pushed on the value stack to (1) ensure borrowed pointers
+ *  remain valid, and (2) avoid unnecessary pops for footprint reasons.
+ *  Caller must manage stack top carefully because the number of values
+ *  pushed depends on the input property descriptor.
  *
  *  The original descriptor object must not be altered in the process.
  */
@@ -4913,9 +4914,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 		is_data_desc = 1;
 		defprop_flags |= DUK_DEFPROP_HAVE_VALUE;
 		idx_value = duk_get_top_index(ctx);
-		/* Leave 'value' on stack */
-	} else {
-		duk_pop(ctx);
 	}
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_WRITABLE)) {
@@ -4926,7 +4924,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 			defprop_flags |= DUK_DEFPROP_HAVE_WRITABLE;
 		}
 	}
-	duk_pop(ctx);
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_GET)) {
 		duk_tval *tv = duk_require_tval(ctx, -1);
@@ -4948,9 +4945,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 		}
 		is_acc_desc = 1;
 		defprop_flags |= DUK_DEFPROP_HAVE_GETTER;
-		/* Leave 'getter' on stack */
-	} else {
-		duk_pop(ctx);
 	}
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_SET)) {
@@ -4973,9 +4967,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 		}
 		is_acc_desc = 1;
 		defprop_flags |= DUK_DEFPROP_HAVE_SETTER;
-		/* Leave 'setter' on stack */
-	} else {
-		duk_pop(ctx);
 	}
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_ENUMERABLE)) {
@@ -4985,7 +4976,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 			defprop_flags |= DUK_DEFPROP_HAVE_ENUMERABLE;
 		}
 	}
-	duk_pop(ctx);
 
 	if (duk_get_prop_stridx(ctx, idx_in, DUK_STRIDX_CONFIGURABLE)) {
 		if (duk_to_boolean(ctx, -1)) {
@@ -4994,7 +4984,6 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 			defprop_flags |= DUK_DEFPROP_HAVE_CONFIGURABLE;
 		}
 	}
-	duk_pop(ctx);
 
 	if (is_data_desc && is_acc_desc) {
 		goto type_error;
@@ -5005,7 +4994,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 	*out_getter = getter;
 	*out_setter = setter;
 
-	/* [ ... value? getter? setter? ] */
+	/* [ ... [multiple values] ] */
 	return;
 
  type_error:
