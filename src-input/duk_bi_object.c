@@ -254,7 +254,9 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx
 	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_push_this_coercible_to_object(ctx);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_STRING);
+#if 0  /* This is mentioned explicitly in the E5.1 spec, but duk_call_method() checks for it in practice. */
 	duk_require_callable(ctx, 1);
+#endif
 	duk_dup_0(ctx);  /* -> [ O toString O ] */
 	duk_call_method(ctx, 0);  /* XXX: call method tail call? */
 	return 1;
@@ -546,11 +548,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx)
 	duk_hobject *h;
 
 	h = duk_require_hobject_accept_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-	if (h == NULL) {
-		duk_push_false(ctx);
-	} else {
-		duk_push_boolean(ctx, DUK_HOBJECT_HAS_EXTENSIBLE(h));
-	}
+	duk_push_boolean(ctx, h != NULL && DUK_HOBJECT_HAS_EXTENSIBLE(h));
 	return 1;
 }
 
