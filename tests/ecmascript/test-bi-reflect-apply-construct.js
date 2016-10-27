@@ -3,6 +3,8 @@
  *  Reflect.construct()
  */
 
+print=console.log
+
 /*===
 func() called with 2 args
 Casper the friendly ghost

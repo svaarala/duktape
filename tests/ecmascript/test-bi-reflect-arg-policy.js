@@ -108,6 +108,7 @@ TypeError
 TypeError
 TypeError
 TypeError
+TypeError
 ===*/
 
 function argPolicyTest() {
@@ -187,6 +188,24 @@ function argPolicyTest() {
             print(e.name);
         }
     });
+
+    // Construct must check that first argument is constructable before
+    // processing the arguments object.
+    var nonConstructable = Math.cos;  // built-in which is callable but not constructable
+    try {
+        var argObject = {};
+        Object.defineProperties(argObject, {
+            length: { value: 3 },
+            0: { get: function () { print('get 0'); return 'foo'; } },
+            1: { get: function () { print('get 1'); return 'bar'; } },
+            2: { get: function () { print('get 2'); return 'quux'; } }
+        })
+        Reflect.construct(nonConstructable, argObject);
+        print('never here');
+    } catch (e) {
+        //print(e.stack);
+        print(e.name);
+    }
 }
 
 try {

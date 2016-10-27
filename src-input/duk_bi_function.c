@@ -12,7 +12,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
 }
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)
-
 DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_sourcecode;
@@ -89,7 +88,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 
 	return 1;
 }
+#endif  /* DUK_USE_FUNCTION_BUILTIN */
 
+#if defined(DUK_USE_FUNCTION_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	duk_tval *tv;
 
@@ -171,23 +172,23 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 	duk_idx_t i;
 	duk_int_t magic;
 	duk_idx_t nargs;
+	duk_uint_t mask;
 
 	magic = duk_get_current_magic(ctx);
 	switch (magic) {
-	case 0: {  /* Function.prototype.apply() */
+	case 0:  /* Function.prototype.apply() */
 		DUK_ASSERT_TOP(ctx, 2);  /* not a vararg function */
 		duk_push_this(ctx);
 		duk_insert(ctx, 0);
-		DUK_ASSERT_TOP(ctx, 3);
-		idx_args = 2;
-		break;
-	}
-	case 1: {  /* Reflect.apply() */
+		/* Fall through intentionally for shared handling. */
+	case 1:  /* Reflect.apply(); Function.prototype.apply() after 'this' fixup. */
 		DUK_ASSERT_TOP(ctx, 3);  /* not a vararg function */
 		idx_args = 2;
+		duk_require_callable(ctx, 0);
 		break;
-	}
-	case 2: {  /* Reflect.construct() */
+	default:  /* Reflect.construct() */
+		DUK_ASSERT(magic == 2);
+		duk_require_constructable(ctx, 0);
 		nargs = duk_get_top(ctx);
 		if (nargs < 2) {
 			DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
@@ -199,9 +200,6 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		idx_args = 1;
 		break;
 	}
-	}
-
-	duk_require_callable(ctx, 0);
 
 	if (magic != 2) {
 		DUK_DDD(DUK_DDDPRINT("func=%!iT, thisArg=%!iT, argArray=%!iT",
@@ -217,12 +215,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 
 	/* [ func thisArg? argArray ] */
 
-	if (duk_is_null_or_undefined(ctx, idx_args)) {
+	mask = duk_get_type_mask(ctx, idx_args);
+	if (mask & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) {
 		DUK_DDD(DUK_DDDPRINT("argArray is null/undefined, no args"));
 		len = 0;
-	} else if (!duk_is_object(ctx, idx_args)) {
-		goto type_error;
-	} else {
+	} else if (mask & DUK_TYPE_MASK_OBJECT) {
 		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
 		/* XXX: make this an internal helper */
@@ -236,6 +233,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		for (i = 0; i < len; i++) {
 			duk_get_prop_index(ctx, idx_args, i);
 		}
+	} else {
+		goto type_error;
 	}
 	duk_remove(ctx, idx_args);
 	DUK_ASSERT_TOP(ctx, idx_args + len);
@@ -294,7 +293,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
 	duk_call_method(ctx, nargs - 1);
 	return 1;
 }
+#endif  /* DUK_USE_FUNCTION_BUILTIN */
 
+#if defined(DUK_USE_FUNCTION_BUILTIN)
 /* XXX: the implementation now assumes "chained" bound functions,
  * whereas "collapsed" bound functions (where there is ever only
  * one bound function which directly points to a non-bound, final
@@ -391,5 +392,4 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	return 1;
 }
-
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
