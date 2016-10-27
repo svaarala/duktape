@@ -182,8 +182,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
 	duk_hobject *h;
 
 	h = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_ARRAY);
-	duk_push_boolean(ctx, (h != NULL));
-	return 1;
+	return duk_push_boolean(ctx, (h != NULL));
 }
 
 /*
@@ -1495,12 +1494,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 
 	switch (iter_type) {
 	case DUK__ITER_EVERY:
-		duk_push_true(ctx);
-		break;
+		return duk_push_true(ctx);
 	case DUK__ITER_SOME:
-		duk_push_false(ctx);
-		break;
+		return duk_push_false(ctx);
 	case DUK__ITER_FOREACH:
+		/* FIXME */
 		duk_push_undefined(ctx);
 		break;
 	case DUK__ITER_MAP:

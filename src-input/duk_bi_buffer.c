@@ -1090,8 +1090,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 	if (h_obj != NULL && DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
 		ret = ((duk_hbufobj *) h_obj)->is_view;
 	}
-	duk_push_boolean(ctx, ret);
-	return 1;
+	return duk_push_boolean(ctx, ret);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -1298,7 +1297,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_compare_shared(duk_context *ctx) {
 		duk_push_int(ctx, comp_res);
 	} else {
 		/* equals */
-		duk_push_boolean(ctx, (comp_res == 0));
+		return duk_push_boolean(ctx, (comp_res == 0));
 	}
 
 	return 1;
@@ -2059,8 +2058,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_encoding(duk_context *ctx) {
 
 	encoding = duk_to_string(ctx, 0);
 	DUK_ASSERT(duk_is_string(ctx, 0));  /* guaranteed by duk_to_string() */
-	duk_push_boolean(ctx, DUK_STRCMP(encoding, "utf8") == 0);
-	return 1;
+	return duk_push_boolean(ctx, DUK_STRCMP(encoding, "utf8") == 0);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -2089,8 +2087,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_is_buffer(duk_context *ctx) {
 		}
 	}
 
-	duk_push_boolean(ctx, ret);
-	return 1;
+	return duk_push_boolean(ctx, ret);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 

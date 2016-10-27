@@ -197,8 +197,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 	/* XXX: Not sure what the best return value would be in the API.
 	 * Return a boolean for now.  Note that rc == 0 is success (true).
 	 */
-	duk_push_boolean(ctx, !rc);
-	return 1;
+	return duk_push_boolean(ctx, !rc);
 #else
 	DUK_UNREF(ctx);
 	return 0;

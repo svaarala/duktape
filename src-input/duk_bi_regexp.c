@@ -112,9 +112,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 
 	/* [ result ] */
 
-	duk_push_boolean(ctx, (duk_is_null(ctx, -1) ? 0 : 1));
-
-	return 1;
+	return duk_push_boolean(ctx, (duk_is_null(ctx, -1) ? 0 : 1));
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
