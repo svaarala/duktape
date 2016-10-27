@@ -111,6 +111,55 @@ DUK_LOCAL void duk__push_promise_settler(duk_context *ctx, duk_idx_t idx_prom, d
 	duk_put_prop_string(ctx, -1, "\xff" "Promise");
 }
 
+/* GetCapabilitiesExecutor (ES7 25.4.1.5.1) */
+DUK_LOCAL duk_ret_t duk__get_caps_executor(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 2);
+
+	duk_push_current_function(ctx);
+	duk_get_prop_string(ctx, -1, "capability");
+
+	duk_dup(ctx, 0);
+	duk_put_prop_string(ctx, -2, "resolve");
+	duk_dup(ctx, 1);
+	duk_put_prop_string(ctx, -2, "reject");
+	return 0;
+}
+
+/*  NewPromiseCapability (ES7 Section 25.4.1.5) */
+DUK_LOCAL void duk__new_promise_cap(duk_context *ctx) {
+	/* [ ... ctor ] -> [ promCap ... ] */
+
+	/* FIXME: duk_require_constructable() */
+	duk_require_callable(ctx, -1);
+
+	duk_push_object(ctx);
+
+	/* [ ... ctor promCap ]
+
+	/* Steps 4-6 */
+	duk_dup(ctx, -2);
+	duk_push_c_function(ctx, duk__get_caps_executor, 2);
+	duk_dup(ctx, -3);  /* promCap */
+	duk_put_prop_string(ctx, -2, "capability");
+	duk_new(ctx, 1);
+
+	/* [ ... ctor promCap promise ]
+
+	/* Steps 7-8 */
+	duk_get_prop_string(ctx, -2, "resolve");
+	duk_require_callable(ctx, -1);
+	duk_get_prop_string(ctx, -3, "reject");
+	duk_require_callable(ctx, -1);
+	duk_pop_2(ctx);
+
+	/* Steps 9-10 */
+	duk_put_prop_string(ctx, -2, "promise");
+
+	/* [ ... ctor promCap ] */
+
+	duk_remove(ctx, -2);
+}
+
 /*
  *  PerformPromiseThen (ES7 Section 25.4.5.3.1)
  *
@@ -120,33 +169,43 @@ DUK_LOCAL void duk__push_promise_settler(duk_context *ctx, duk_idx_t idx_prom, d
  */
 DUK_LOCAL void duk__perform_promise_then(duk_context *ctx) {
 	/*
-	 *  [ ... promise onFulfilled onRejected ] -> [ ... newPromise ]
+	 *  [ ... promise onFulfilled onRejected promCap ] -> [ ... newPromise ]
 	 */
 
 	duk_uarridx_t len;
 	duk_idx_t idx_prom;
 	duk_idx_t idx_fulfill_func;
 	duk_idx_t idx_reject_func;
+	duk_idx_t idx_cap;
 	duk__promise *prom;
 
-	idx_prom = duk_require_normalize_index(ctx, -3);
-	idx_fulfill_func = duk_require_normalize_index(ctx, -2);
-	idx_reject_func = duk_require_normalize_index(ctx, -1);
+	idx_prom = duk_require_normalize_index(ctx, -4);
+	idx_fulfill_func = duk_require_normalize_index(ctx, -3);
+	idx_reject_func = duk_require_normalize_index(ctx, -2);
+	idx_cap = duk_require_normalize_index(ctx, -1);
 
 	prom = duk__require_promise(ctx, idx_prom);
 
-	/* Steps 3-9 */
+	/* Steps 1-9 */
 	if (duk_is_callable(ctx, idx_fulfill_func)) {
 		duk_get_prop_string(ctx, idx_prom, "\xff" "FulfillActs");
 		len = (duk_uarridx_t) duk_get_length(ctx, -1);
+		duk_push_object(ctx);
+		duk_dup(ctx, idx_cap);
+		duk_put_prop_string(ctx, -2, "capability");
 		duk_dup(ctx, idx_fulfill_func);
+		duk_put_prop_string(ctx, -2, "handler");
 		duk_put_prop_index(ctx, -2, len);
 		duk_pop(ctx);
 	}
 	if (duk_is_callable(ctx, idx_reject_func)) {
 		duk_get_prop_string(ctx, idx_prom, "\xff" "RejectActs");
 		len = (duk_uarridx_t) duk_get_length(ctx, -1);
-		duk_dup(ctx, idx_reject_func);
+		duk_push_object(ctx);
+		duk_dup(ctx, idx_cap);
+		duk_put_prop_string(ctx, -2, "capability");
+		duk_dup(ctx, idx_fulfill_func);
+		duk_put_prop_string(ctx, -2, "handler");
 		duk_put_prop_index(ctx, -2, len);
 		duk_pop(ctx);
 	}
@@ -186,11 +245,30 @@ DUK_LOCAL void duk__trigger_promise_reactions(duk_context *ctx, duk_idx_t idx) {
 		duk_get_prop_string(ctx, idx, "\xff" "RejectActs");
 	}
 
-	/* FIXME: deferred promise reactions */
+	/* FIXME: PromiseReactionJob */
 	duk_enum(ctx, -1, DUK_ENUM_ARRAY_INDICES_ONLY);
 	while (duk_next(ctx, -1, 1)) {
-		/* [ ... value handlers enum idx func ] */
+		/* [ ... value handlers enum idx reaction ] */
 
+		duk_get_prop_string(ctx, -1, "capability");
+
+		/* [ ... value handlers enum idx reaction promCap ] */
+
+		duk_get_prop_string(ctx, -2, "handler");
+		duk_push_undefined(ctx);
+		duk_dup(ctx, -6);
+		if (duk_pcall_method(ctx, 1) != 0) {
+			duk_get_prop_string(ctx, -2, "reject");
+			duk_dup(ctx, -2);
+			duk_call(ctx, 1);
+			duk_pop_2(ctx);
+		} else {
+			duk_get_prop_string(ctx, -2, "resolve");
+			duk_dup(ctx, -2);
+			duk_call(ctx, 1);
+			duk_pop_2(ctx);
+		}
+		
 		duk_dup(ctx, -5);  /* value */
 		duk_call(ctx, 1);
 		duk_pop_2(ctx);
@@ -240,6 +318,7 @@ DUK_INTERNAL duk_ret_t duk_bi_promise_race(duk_context *ctx) {
 	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
 }
 
+/* Shared helper for Promise.resolve() and Promise.reject() */
 DUK_INTERNAL duk_ret_t duk_bi_promise_resolve_shared(duk_context *ctx) {
 	/*
 	 *  magic = 0: Promise.resolve()
@@ -300,6 +379,12 @@ DUK_INTERNAL duk_ret_t duk_bi_promise_prototype_then(duk_context *ctx) {
 	duk_insert(ctx, 0);
 
 	/* [ promise onFulfilled onRejected ] */
+
+	/* FIXME: SpeciesConstructor */
+	duk_push_hobject_bidx(ctx, DUK_BIDX_PROMISE_CONSTRUCTOR);
+	duk__new_promise_cap(ctx);
+
+	/* [ promise onFulfilled onRejected promCap ] */
 
 	duk__perform_promise_then(ctx);
 	return 1;
