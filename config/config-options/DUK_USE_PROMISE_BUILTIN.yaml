@@ -1,0 +1,9 @@
+define: DUK_USE_PROMISE_BUILTIN
+introduced: 2.0.0
+default: true
+tags:
+  - ecmascript
+  - ecmascript6
+description: >
+  Provide a Promise built-in which allows Ecmascript code to create and use ES6
+  Promise objects.

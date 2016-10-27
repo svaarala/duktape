@@ -265,6 +265,12 @@ objects:
         #present_if: DUK_USE_DUKTAPE_BUILTIN
 
       # ES6
+      - key: "Promise"
+        value:
+          type: object
+          id: bi_promise_constructor
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
       - key: "Proxy"
         value:
           type: object
@@ -2629,6 +2635,98 @@ objects:
   #
   #  ES6
   #
+
+  - id: bi_promise_constructor
+    class: Function
+    internal_prototype: bi_function_prototype
+    native: duk_bi_promise_constructor
+    callable: true
+    constructable: true
+    es6: true
+    bidx: true
+    present_if: DUK_USE_PROMISE_BUILTIN
+
+    properties:
+      - key: "length"
+        value: 1
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "prototype"
+        value:
+          type: object
+          id: bi_promise_prototype
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "name"
+        value: "Promise"
+        attributes: ""
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "all"
+        value:
+          type: function
+          native: duk_bi_promise_all
+          length: 1
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "race"
+        value:
+          type: function
+          native: duk_bi_promise_race
+          length: 1
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "reject"
+        value:
+          type: function
+          native: duk_bi_promise_resolve_shared
+          magic: 1
+          length: 1
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "resolve"
+        value:
+          type: function
+          native: duk_bi_promise_resolve_shared
+          magic: 0
+          length: 1
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+
+  - id: bi_promise_prototype
+    class: Object
+    internal_prototype: bi_object_prototype
+    es6: true
+    bidx: true
+    present_if: DUK_USE_PROMISE_BUILTIN
+
+    properties:
+      - key: "constructor"
+        value:
+          type: object
+          id: bi_promise_constructor
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "catch"
+        value:
+          type: function
+          native: duk_bi_promise_prototype_catch
+          length: 1
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+      - key: "then"
+        value:
+          type: function
+          native: duk_bi_promise_prototype_then
+          length: 2
+        attributes: "wc"
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
+
 
   - id: bi_proxy_constructor
     class: Function
