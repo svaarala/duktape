@@ -46,7 +46,7 @@ type so various approaches are used:
 * Node.js Buffer:
 
   - http://nodejs.org/api/buffer.html
-  - https://nodejs.org/docs/v6.8.1/api/buffer.html
+  - https://nodejs.org/docs/v6.9.1/api/buffer.html
   - https://github.com/joyent/node/blob/master/lib/buffer.js
 
 * Duktape has a custom plain buffer type which has a minimal memory footprint:
@@ -1066,7 +1066,7 @@ Current:
 
 Latest at time of writing:
 
-* https://nodejs.org/docs/v6.8.1/api/buffer.html
+* https://nodejs.org/docs/v6.9.1/api/buffer.html
 
 Gap between current implementation and latest:
 
@@ -1097,7 +1097,7 @@ Gap between current implementation and latest:
 * ``Buffer.byteLength(string[, encoding])`` ignores the encoding argument
   and just returns the byte length of the internal string representation
   (CESU-8 typically, but not always).  It also doesn't handle buffer,
-  Uint8Array, etc values which now have special handling in v6.8.1.
+  Uint8Array, etc values which now have special handling in v6.9.1.
 
 * ``Buffer.from()`` is missing.  It can share most code with the constructor.
 
@@ -1108,10 +1108,10 @@ Gap between current implementation and latest:
   used by the implementation (i.e. no "unsafe" buffers are implemented).
 
 * ``SlowBuffer`` is not implemented; it's part of v0.12.1 and deprecated (but
-  present) in v6.8.1.  If deprecated features are supported, it should be
+  present) in v6.9.1.  If deprecated features are supported, it should be
   implemented.
 
-* ``buf.compare()`` has additional arguments in v6.8.1 (source/target indices)
+* ``buf.compare()`` has additional arguments in v6.9.1 (source/target indices)
   which are not implemented.
 
 * ``buf.copy()`` return value has been specified explicitly, must compare
@@ -1134,10 +1134,10 @@ Gap between current implementation and latest:
 * ``buf.lastIndexOf()`` missing.  Note that this is not the same as typed
   array lastIndexOf().
 
-* ``buf.length`` writability comments in v6.8.1 may need documentation.
+* ``buf.length`` writability comments in v6.9.1 may need documentation.
 
 * ``buf.readDoubleBE()``, ``buf.writeDoubleBE()`` and all the other read/write
-  accessors seem to be the same in v6.8.1.   Duktape doesn't implement the
+  accessors seem to be the same in v6.9.1.   Duktape doesn't implement the
   ``noAssert`` argument and always checks the offsets (which should be within
   the specification because:
 
@@ -1151,7 +1151,7 @@ Gap between current implementation and latest:
 
 * ``buf.values()`` missing.
 
-* ``buf.write()`` doesn't implement encoding.  In both v0.12.1 and v6.8.1
+* ``buf.write()`` doesn't implement encoding.  In both v0.12.1 and v6.9.1
   partially encoded characters won't be written at all so that a few bytes at
   the end of the buffer may (apparently) be left untouched on a truncated
   write.  Duktape doesn't currently implement this behavior.

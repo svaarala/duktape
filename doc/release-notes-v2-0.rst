@@ -230,7 +230,7 @@ changes below.  Here's a summary of changes:
   C code can still do so using ``duk_buffer_to_string()`` (or by direct buffer
   and string operations) and can expose such a binding to Ecmascript code.
 
-* Node.js Buffer binding has been aligned more with Node.js v6.8.1 (from
+* Node.js Buffer binding has been aligned more with Node.js v6.9.1 (from
   Node.js v0.12.1) and some (but not all) behavior differences to actual
   Node.js have been fixed.
 
@@ -270,7 +270,7 @@ To upgrade:
     using UTF-8, emitting replacement characters for invalid UTF-8 sequences.
 
   - Review Buffer code for Node.js Buffer changes between Node.js versions
-    v0.12.1 and v6.8.1 in general.
+    v0.12.1 and v6.9.1 in general.
 
 * If you're using plain buffers, review their usage especially in Ecmascript
   code.
