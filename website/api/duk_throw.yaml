@@ -1,13 +1,22 @@
 name: duk_throw
 
 proto: |
-  void duk_throw(duk_context *ctx);
+  duk_ret_t duk_throw(duk_context *ctx);
 
 stack: |
   [ ... val! ]
 
 summary: |
   <p>Throw the value on top of the stack.  This call never returns.</p>
+
+  <p>Even though the function never returns, the prototype describes a return
+  value which allows code such as:</p>
+  <pre class="c-code">
+  if (argvalue &lt; 0) {
+      duk_push_error_object(ctx, DUK_ERR_TYPE_ERROR, "invalid argument: %d", (int) argvalue);
+      return duk_throw(ctx);
+  }
+  </pre>
 
 example: |
   /* Throw a string value; equivalent to the Ecmascript code:

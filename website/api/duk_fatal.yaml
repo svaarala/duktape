@@ -1,7 +1,7 @@
 name: duk_fatal
 
 proto: |
-  void duk_fatal(duk_context *ctx, const char *err_msg);
+  duk_ret_t duk_fatal(duk_context *ctx, const char *err_msg);
 
 summary: |
   <p>Call fatal error handler with an optional message (<code>err_msg</code>
@@ -13,6 +13,13 @@ summary: |
   and error catching API calls) are bypassed, and finalizers are not executed.
   You should only call this function when a truly fatal, unrecoverable error
   has occurred.</p>
+
+  <p>Even though the function never returns, the prototype describes a return
+  value which allows code such as:</p>
+  <pre class="c-code">
+  if (argvalue &lt; 0) {
+      return duk_fatal(ctx, "argvalue invalid, cannot continue execution");
+  }
 
 example: |
   duk_fatal(ctx, "assumption failed");
