@@ -601,6 +601,23 @@ To upgrade:
   to accept also ``TypeError`` or ``RangeError``.  (In general depending on a
   specific error type should be only be done when it's absolute necessary.)
 
+duk_error(), duk_error_va(), duk_throw(), duk_fatal() have a return value
+-------------------------------------------------------------------------
+
+The prototype return value for these error throwers was changed from ``void``
+to ``duk_ret_t`` which allows for idioms like::
+
+    if (argvalue < 0) {
+        return duk_error(ctx, DUK_ERR_TYPE_ERROR,
+                         "invalid arg: %d", (int) argvalue);
+    }
+
+To upgrade:
+
+* Without an explicit cast to ``(void) duk_error(...)`` you may get some new
+  compiler warnings.  Fix by adding the void cast, or convert the call sites
+  to use the ``return duk_error(...)`` idiom where applicable.
+
 duk_dump_context_stdout() and duk_dump_context_stderr() removed
 ---------------------------------------------------------------
 
