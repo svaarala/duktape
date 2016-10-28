@@ -1,5 +1,5 @@
 /*
- *  In Node.js v6.8.1 Buffers are Uint8Arrays, so that ArrayBuffer.isView()
+ *  In Node.js v6.9.1 Buffers are Uint8Arrays, so that ArrayBuffer.isView()
  *  is true.
  */
 

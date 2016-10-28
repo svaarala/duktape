@@ -1,5 +1,5 @@
 /*
- *  Duktape 2.x matches Node.js v6.8.1 where Buffer instances are Uint8Arrays,
+ *  Duktape 2.x matches Node.js v6.9.1 where Buffer instances are Uint8Arrays,
  *  i.e. the internal class is "Uint8Array".
  */
 
