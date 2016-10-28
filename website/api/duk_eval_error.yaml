@@ -1,0 +1,23 @@
+name: duk_eval_error
+
+proto: |
+  duk_ret_t duk_eval_error(duk_context *ctx, const char *fmt, ...);
+
+stack: |
+  [ ... ] -> [ ... err! ]
+
+summary: |
+  <p>Convenience API call, equivalent to
+  <code><a href="#duk_error">duk_error()</a></code> with an error code
+  <code>DUK_ERR_EVAL_ERROR</code>.</p>
+
+example: |
+  return duk_eval_error(ctx, "my error: %d", (int) argval);
+
+tags:
+  - error
+
+seealso:
+  - duk_error
+
+introduced: 2.0.0

@@ -38,5 +38,12 @@ seealso:
   - duk_error_va
   - duk_throw
   - duk_push_error_object
+  - duk_generic_error
+  - duk_eval_error
+  - duk_range_error
+  - duk_reference_error
+  - duk_syntax_error
+  - duk_type_error
+  - duk_uri_error
 
 introduced: 1.0.0

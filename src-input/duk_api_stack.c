@@ -4579,10 +4579,11 @@ DUK_EXTERNAL duk_ret_t duk_error_raw(duk_context *ctx, duk_errcode_t err_code, c
 }
 
 #if !defined(DUK_USE_VARIADIC_MACROS)
-DUK_EXTERNAL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
+DUK_NORETURN(DUK_LOCAL_DECL void duk__throw_error_from_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap));
+
+DUK_LOCAL void duk__throw_error_from_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, va_list ap) {
 	const char *filename;
 	duk_int_t line;
-	va_list ap;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -4591,13 +4592,41 @@ DUK_EXTERNAL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code,
 	duk_api_global_filename = NULL;
 	duk_api_global_line = 0;
 
-	va_start(ap, fmt);
 	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
-	va_end(ap);
 	(void) duk_throw(ctx);
-#if 0  /* Never reached; if return present, gcc/clang will complain. */
-	return 0;  /* never reached */
-#endif
+}
+
+#define DUK__ERROR_STASH_SHARED(code) do { \
+		va_list ap; \
+		va_start(ap, fmt); \
+		duk__throw_error_from_stash(ctx, (code), fmt, ap); \
+		va_end(ap); \
+		/* Never reached; if return 0 here, gcc/clang will complain. */ \
+	} while (0)
+
+DUK_EXTERNAL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(err_code);
+}
+DUK_EXTERNAL duk_ret_t duk_generic_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_eval_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_EVAL_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_range_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_RANGE_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_reference_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_REFERENCE_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_syntax_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_SYNTAX_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_type_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_TYPE_ERROR);
+}
+DUK_EXTERNAL duk_ret_t duk_uri_error_stash(duk_context *ctx, const char *fmt, ...) {
+	DUK__ERROR_STASH_SHARED(DUK_ERR_URI_ERROR);
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */
 
