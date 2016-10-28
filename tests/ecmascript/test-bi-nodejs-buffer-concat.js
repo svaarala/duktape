@@ -269,7 +269,7 @@ function concatTest() {
 
     // Length 1 used to have special handling in Node.js v0.12.1: totalLength
     // is ignored and the (only) array element is returned without creating a
-    // copy.  This was changed in later versions and by v6.8.1 (new baseline)
+    // copy.  This was changed in later versions and by v6.9.1 (new baseline)
     // there's no longer special handling.
 
     test([b2], undefined);
@@ -362,7 +362,7 @@ function concatTest() {
     print(b2.length);
 
     // Specific test for 0-length array: totalLength is ignored even in
-    // Node.js v6.8.1 when argument array is zero length.
+    // Node.js v6.9.1 when argument array is zero length.
     b1 = new Buffer('abcdefgh');
     b2 = Buffer.concat([], 100);
     print(Buffer.isBuffer(b2));

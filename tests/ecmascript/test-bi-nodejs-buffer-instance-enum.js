@@ -52,7 +52,7 @@ function enumeratingAndKeysTest() {
 
     b.fill(0x12);
 
-    // Node.js v6.8.1 enumerates index keys, 'buffer', 'parent', and all
+    // Node.js v6.9.1 enumerates index keys, 'buffer', 'parent', and all
     // Buffer.prototype methods (they're enumerable).
     //
     // In Duktape the Buffer.prototype methods are not enumerable as that's

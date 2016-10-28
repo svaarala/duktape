@@ -693,7 +693,7 @@ replacement character policy
 // V8 seems to use approach 3, which also affects the Node.js Buffer binding.
 //
 // Duktape's Buffer .toString() will thus use fewer replacement characters
-// than Node.js (at least up to v6.8.1).
+// than Node.js (at least up to v6.9.1).
 //
 // WHATWG Encoding specification has a required algorithm for decoding (as far
 // as outcomes are concerned) which provides approach 2.  So that behavior is
