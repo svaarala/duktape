@@ -291,16 +291,16 @@ DUK_EXTERNAL_DECL void duk_gc(duk_context *ctx, duk_uint_t flags);
  *  Error handling
  */
 
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_throw(duk_context *ctx));
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_fatal(duk_context *ctx, const char *err_msg));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_throw(duk_context *ctx));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_fatal(duk_context *ctx, const char *err_msg));
 
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...));
 
 #ifdef DUK_API_VARIADIC_MACROS
 #define duk_error(ctx,err_code,...)  \
 	duk_error_raw((ctx), (duk_errcode_t) (err_code), (const char *) (DUK_FILE_MACRO), (duk_int_t) (DUK_LINE_MACRO), __VA_ARGS__)
 #else
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
 /* One problem with this macro is that expressions like the following fail
  * to compile: "(void) duk_error(...)".  But because duk_error() is noreturn,
  * they make little sense anyway.
@@ -311,7 +311,7 @@ DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_stash(duk_context *ctx, duk_er
 	 duk_error_stash)  /* last value is func pointer, arguments follow in parens */
 #endif
 
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap));
 #define duk_error_va(ctx,err_code,fmt,ap)  \
 	duk_error_va_raw((ctx), (duk_errcode_t) (err_code), (const char *) (DUK_FILE_MACRO), (duk_int_t) (DUK_LINE_MACRO), (fmt), (ap))
 

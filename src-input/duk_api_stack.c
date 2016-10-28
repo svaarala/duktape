@@ -4483,7 +4483,7 @@ DUK_INTERNAL void duk_unpack(duk_context *ctx) {
  *  Error throwing
  */
 
-DUK_EXTERNAL void duk_throw(duk_context *ctx) {
+DUK_EXTERNAL duk_ret_t duk_throw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
@@ -4520,9 +4520,12 @@ DUK_EXTERNAL void duk_throw(duk_context *ctx) {
 
 	duk_err_longjmp(thr);
 	DUK_UNREACHABLE();
+#if 0  /* Never reached; if return present, gcc/clang will complain. */
+	return 0;
+#endif
 }
 
-DUK_EXTERNAL void duk_fatal(duk_context *ctx, const char *err_msg) {
+DUK_EXTERNAL duk_ret_t duk_fatal(duk_context *ctx, const char *err_msg) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4546,16 +4549,22 @@ DUK_EXTERNAL void duk_fatal(duk_context *ctx, const char *err_msg) {
 	for (;;) {
 		/* loop forever, don't return (function marked noreturn) */
 	}
+#if 0  /* Never reached; if return present, gcc/clang will complain. */
+	return 0;  /* never reached */
+#endif
 }
 
-DUK_EXTERNAL void duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
+DUK_EXTERNAL duk_ret_t duk_error_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
-	duk_throw(ctx);
+	(void) duk_throw(ctx);
+#if 0  /* Never reached; if return present, gcc/clang will complain. */
+	return 0;  /* never reached */
+#endif
 }
 
-DUK_EXTERNAL void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...) {
+DUK_EXTERNAL duk_ret_t duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...) {
 	va_list ap;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4563,11 +4572,14 @@ DUK_EXTERNAL void duk_error_raw(duk_context *ctx, duk_errcode_t err_code, const 
 	va_start(ap, fmt);
 	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
-	duk_throw(ctx);
+	(void) duk_throw(ctx);
+#if 0  /* Never reached; if return present, gcc/clang will complain. */
+	return 0;  /* never reached */
+#endif
 }
 
 #if !defined(DUK_USE_VARIADIC_MACROS)
-DUK_EXTERNAL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
+DUK_EXTERNAL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...) {
 	const char *filename;
 	duk_int_t line;
 	va_list ap;
@@ -4582,7 +4594,10 @@ DUK_EXTERNAL void duk_error_stash(duk_context *ctx, duk_errcode_t err_code, cons
 	va_start(ap, fmt);
 	duk_push_error_object_va_raw(ctx, err_code, filename, line, fmt, ap);
 	va_end(ap);
-	duk_throw(ctx);
+	(void) duk_throw(ctx);
+#if 0  /* Never reached; if return present, gcc/clang will complain. */
+	return 0;  /* never reached */
+#endif
 }
 #endif  /* DUK_USE_VARIADIC_MACROS */
 

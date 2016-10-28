@@ -1785,6 +1785,10 @@ Planned
   in line with how application code detects active features and reduces
   footprint (GH-988)
 
+* Change return from of duk_throw(), duk_error(), and duk_fatal() from void
+  to duk_ret_t which allows them to be called using the idiom
+  "return duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid argument");" (GH-1038)
+
 * Add convenience API calls duk_get_prop_lstring(), duk_put_prop_lstring(),
   duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
   duk_put_global_lstring() (GH-946, GH-953)

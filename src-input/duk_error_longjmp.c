@@ -7,7 +7,7 @@
 
 #if defined(DUK_USE_PREFER_SIZE)
 DUK_LOCAL void duk__uncaught_minimal(duk_hthread *thr) {
-	duk_fatal((duk_context *) thr, "uncaught error");
+	(void) duk_fatal((duk_context *) thr, "uncaught error");
 }
 #endif
 
@@ -19,7 +19,7 @@ DUK_LOCAL void duk__uncaught_readable(duk_hthread *thr) {
 	summary = duk_push_string_tval_readable((duk_context *) thr, &thr->heap->lj.value1);
 	DUK_SNPRINTF(buf, sizeof(buf), "uncaught: %s", summary);
 	buf[sizeof(buf) - 1] = (char) 0;
-	duk_fatal((duk_context *) thr, (const char *) buf);
+	(void) duk_fatal((duk_context *) thr, (const char *) buf);
 }
 #endif
 
@@ -32,7 +32,7 @@ DUK_LOCAL void duk__uncaught_error_aware(duk_hthread *thr) {
 	DUK_ASSERT(summary != NULL);
 	DUK_SNPRINTF(buf, sizeof(buf), "uncaught: %s", summary);
 	buf[sizeof(buf) - 1] = (char) 0;
-	duk_fatal((duk_context *) thr, (const char *) buf);
+	(void) duk_fatal((duk_context *) thr, (const char *) buf);
 }
 #endif
 

@@ -156,6 +156,6 @@ DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t r
 	 *  minimal: they're only really useful for low memory targets.
 	 */
 
-	duk_error_raw(ctx, -rc, NULL, 0, "error (rc %ld)", (long) rc);
+	(void) duk_error_raw(ctx, -rc, NULL, 0, "error (rc %ld)", (long) rc);
 	DUK_UNREACHABLE();
 }
