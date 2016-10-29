@@ -1787,7 +1787,8 @@ Planned
 
 * Change return from of duk_throw(), duk_error(), and duk_fatal() from void
   to duk_ret_t which allows them to be called using the idiom
-  "return duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid argument");" (GH-1038)
+  "return duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid argument");"
+  (GH-1038, GH-1041)
 
 * Add convenience API calls to throw specific error types; for example,
   duk_type_error(), duk_type_error_va(), duk_range_error(), etc (GH-1040)
