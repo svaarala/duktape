@@ -463,6 +463,10 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
  *  from being moved around in heap linked lists.
  */
 
+/* The suppress condition is important to performance.  The flags being tested
+ * are in the same duk_heap field so a single TEST instruction (on x86) tests
+ * for them.
+ */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 #define DUK__RZ_SUPPRESS_COND() \
 	(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap) || DUK_HEAP_IS_PAUSED(heap))

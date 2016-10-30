@@ -1790,7 +1790,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 */
 
 	process_messages = 0;
-	if (thr->heap->dbg_state_dirty || thr->heap->dbg_paused || thr->heap->dbg_detaching) {
+	if (thr->heap->dbg_state_dirty || DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) || thr->heap->dbg_detaching) {
 		/* Enter message processing loop for sending Status notifys and
 		 * to finish a pending detach.
 		 */
@@ -1861,7 +1861,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		      thr->heap->dbg_step_type == DUK_STEP_TYPE_OVER) &&
 		     thr->heap->dbg_step_thread == thr &&
 		     thr->heap->dbg_step_csindex == thr->callstack_top - 1) ||
-		     thr->heap->dbg_paused) {
+		     DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap)) {
 			*out_immediate = 1;
 		}
 
@@ -2113,7 +2113,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 	 * Step out is handled by callstack unwind.
 	 */
 	if (act->flags & (DUK_ACT_FLAG_BREAKPOINT_ACTIVE) ||
-	    thr->heap->dbg_paused ||
+	    DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) ||
 	    (thr->heap->dbg_step_type != DUK_STEP_TYPE_OUT &&
 	     thr->heap->dbg_step_csindex == thr->callstack_top - 1)) {
 		/* We'll need to interrupt early so recompute the init
