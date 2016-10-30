@@ -66,7 +66,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	/* heap->dbg_detached_cb: keep */
 	/* heap->dbg_udata: keep */
 	/* heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
-	heap->dbg_paused = 0;
+	DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = 0;
@@ -1001,7 +1001,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_activation *act;
 
 	duk_debug_write_notify(thr, DUK_DBG_CMD_STATUS);
-	duk_debug_write_int(thr, thr->heap->dbg_paused);
+	duk_debug_write_int(thr, (DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) ? 1 : 0));
 
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* unsigned */
 	if (thr->callstack_top == 0) {
@@ -1222,7 +1222,7 @@ DUK_LOCAL void duk__debug_handle_step(duk_hthread *thr, duk_heap *heap, duk_int3
 
 	line = duk_debug_curr_line(thr);
 	if (line > 0) {
-		heap->dbg_paused = 0;
+		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
 		heap->dbg_step_type = step_type;
 		heap->dbg_step_thread = thr;
 		heap->dbg_step_csindex = thr->callstack_top - 1;
@@ -2591,7 +2591,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 			break;
 		}
 
-		if (!thr->heap->dbg_paused || no_block) {
+		if (!DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) || no_block) {
 			if (!duk_debug_read_peek(thr)) {
 				/* Note: peek cannot currently trigger a detach
 				 * so the dbg_detaching == 0 assert outside the
@@ -2686,7 +2686,7 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 	 */
 
 	thr->heap->dbg_state_dirty = 1;
-	while (thr->heap->dbg_paused) {
+	while (DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap)) {
 		DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
 		DUK_ASSERT(thr->heap->dbg_processing);
 		duk_debug_process_messages(thr, 0 /*no_block*/);

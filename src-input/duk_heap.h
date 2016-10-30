@@ -20,6 +20,7 @@
 #define DUK_HEAP_FLAG_ERRHANDLER_RUNNING                       (1 << 3)  /* an error handler (user callback to augment/replace error) is running */
 #define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 4)  /* executor interrupt running (used to avoid nested interrupts) */
 #define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1 << 5)  /* heap destruction ongoing, finalizer rescue no longer possible */
+#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1 << 6)  /* debugger is paused: talk with debug client until step/resume */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -35,6 +36,7 @@
 #define DUK_HEAP_HAS_ERRHANDLER_RUNNING(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_HAS_DEBUGGER_PAUSED(heap)                 DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 #define DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap)            DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
@@ -42,6 +44,7 @@
 #define DUK_HEAP_SET_ERRHANDLER_RUNNING(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_SET_FINALIZER_NORESCUE(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_SET_DEBUGGER_PAUSED(heap)                 DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap)          DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RUNNING)
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
@@ -49,6 +52,7 @@
 #define DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)             DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_CLEAR_FINALIZER_NORESCUE(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
+#define DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap)               DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 /*
  *  Longjmp types, also double as identifying continuation type for a rethrow (in 'finally')
@@ -275,16 +279,16 @@ struct duk_breakpoint {
 		(heap)->dbg_step_startline = 0; \
 	} while (0)
 #define DUK_HEAP_SET_PAUSED(heap) do { \
-		(heap)->dbg_paused = 1; \
+		DUK_HEAP_SET_DEBUGGER_PAUSED(heap); \
 		(heap)->dbg_state_dirty = 1; \
 		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
 	} while (0)
 #define DUK_HEAP_CLEAR_PAUSED(heap) do { \
-		(heap)->dbg_paused = 0; \
+		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap); \
 		(heap)->dbg_state_dirty = 1; \
 		DUK_HEAP_CLEAR_STEP_STATE((heap)); \
 	} while (0)
-#define DUK_HEAP_IS_PAUSED(heap) ((heap)->dbg_paused)
+#define DUK_HEAP_IS_PAUSED(heap) (DUK_HEAP_HAS_DEBUGGER_PAUSED((heap)))
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 /*
@@ -449,7 +453,6 @@ struct duk_heap {
 
 	/* debugger state, only relevant when attached */
 	duk_bool_t dbg_processing;              /* currently processing messages or breakpoints: don't enter message processing recursively (e.g. no breakpoints when processing debugger eval) */
-	duk_bool_t dbg_paused;                  /* currently paused: talk with debug client until step/resume */
 	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
 	duk_bool_t dbg_force_restart;           /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
 	duk_bool_t dbg_detaching;               /* debugger detaching; used to avoid calling detach handler recursively */
