@@ -81,7 +81,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx
 		cp = (duk_ucodepoint_t) duk_to_uint32(ctx, i);
 		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
 #else
-		cp = (duk_ucodepoint_t) duk_to_uint32(ctx, i);
+		cp = (duk_ucodepoint_t) duk_to_uint16(ctx, i);
 		DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
 #endif
 	}
