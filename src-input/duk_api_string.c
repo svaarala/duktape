@@ -64,7 +64,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 	                     (unsigned long) count, (unsigned long) len));
 
 	/* use stack allocated buffer to ensure reachability in errors (e.g. intern error) */
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, len);
 	DUK_ASSERT(buf != NULL);
 
 	/* [... (sep) str1 str2 ... strN buf] */

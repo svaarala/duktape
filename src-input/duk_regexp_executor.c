@@ -498,8 +498,8 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_ASSERT(idx_count > 0);
 
 			duk_require_stack((duk_context *) re_ctx->thr, 1);
-			range_save = (duk_uint8_t **) duk_push_fixed_buffer((duk_context *) re_ctx->thr,
-			                                                    sizeof(duk_uint8_t *) * idx_count);
+			range_save = (duk_uint8_t **) duk_push_fixed_buffer_nozero((duk_context *) re_ctx->thr,
+			                                                           sizeof(duk_uint8_t *) * idx_count);
 			DUK_ASSERT(range_save != NULL);
 			DUK_MEMCPY(range_save, re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
 #ifdef DUK_USE_EXPLICIT_NULL_INIT
@@ -555,8 +555,8 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_ASSERT(re_ctx->nsaved > 0);
 
 			duk_require_stack((duk_context *) re_ctx->thr, 1);
-			full_save = (duk_uint8_t **) duk_push_fixed_buffer((duk_context *) re_ctx->thr,
-			                                                   sizeof(duk_uint8_t *) * re_ctx->nsaved);
+			full_save = (duk_uint8_t **) duk_push_fixed_buffer_nozero((duk_context *) re_ctx->thr,
+			                                                          sizeof(duk_uint8_t *) * re_ctx->nsaved);
 			DUK_ASSERT(full_save != NULL);
 			DUK_MEMCPY(full_save, re_ctx->saved, sizeof(duk_uint8_t *) * re_ctx->nsaved);
 
@@ -757,7 +757,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	DUK_ASSERT(re_ctx.nsaved >= 2);
 	DUK_ASSERT((re_ctx.nsaved % 2) == 0);
 
-	p_buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);
+	p_buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, sizeof(duk_uint8_t *) * re_ctx.nsaved);  /* rely on zeroing */
 	DUK_UNREF(p_buf);
 	re_ctx.saved = (const duk_uint8_t **) duk_get_buffer(ctx, -1, NULL);
 	DUK_ASSERT(re_ctx.saved != NULL);

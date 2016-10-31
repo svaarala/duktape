@@ -537,5 +537,8 @@ DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival);
+DUK_INTERNAL_DECL duk_bool_t duk_is_anyinf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_is_posinf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_is_neginf(duk_double_t x);
 
 #endif  /* DUK_UTIL_H_INCLUDED */

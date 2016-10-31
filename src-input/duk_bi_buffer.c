@@ -549,7 +549,7 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_context *ctx) {
 		(void) duk_get_prop_string(ctx, 0, "length");
 		len = duk_to_int_clamped(ctx, -1, 0, DUK_INT_MAX);
 		duk_pop(ctx);
-		buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+		buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, (duk_size_t) len);  /* no zeroing, all indices get initialized */
 		for (i = 0; i < len; i++) {
 			/* XXX: fast path for array or buffer arguments? */
 			duk_get_prop_index(ctx, 0, (duk_uarridx_t) i);
@@ -1170,7 +1170,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 	                                     &end_offset);
 
 	slice_length = (duk_size_t) (end_offset - start_offset);
-	buf_slice = (duk_uint8_t *) duk_push_fixed_buffer(ctx, slice_length);
+	buf_slice = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, slice_length);  /* all bytes initialized below */
 	DUK_ASSERT(buf_slice != NULL);
 
 	/* Neutered or uncovered, TypeError. */
@@ -1755,7 +1755,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 			duk_uint8_t *p_src_copy;
 
 			DUK_DDD(DUK_DDDPRINT("there is overlap, make a copy of the source"));
-			p_src_copy = (duk_uint8_t *) duk_push_fixed_buffer(ctx, src_length);
+			p_src_copy = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, src_length);
 			DUK_ASSERT(p_src_copy != NULL);
 			DUK_MEMCPY((void *) p_src_copy, (const void *) p_src_base, (size_t) src_length);
 
@@ -1884,7 +1884,7 @@ DUK_LOCAL void duk__arraybuffer_plain_slice(duk_context *ctx, duk_hbuffer *h_val
 	DUK_ASSERT(end_offset >= start_offset);
 	slice_length = (duk_uint_t) (end_offset - start_offset);
 
-	p_copy = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) slice_length);
+	p_copy = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, (duk_size_t) slice_length);
 	DUK_ASSERT(p_copy != NULL);
 	copy_length = slice_length;
 
@@ -2007,7 +2007,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 		duk_uint8_t *p_copy;
 		duk_size_t copy_length;
 
-		p_copy = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) slice_length);
+		p_copy = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) slice_length);  /* must be zeroed, not all bytes always copied */
 		DUK_ASSERT(p_copy != NULL);
 
 		/* Copy slice, respecting underlying buffer limits; remainder
@@ -2194,7 +2194,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 	                               DUK_BIDX_NODEJS_BUFFER_PROTOTYPE);
 	DUK_ASSERT(h_bufres != NULL);
 
-	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, total_length);
+	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, total_length);  /* must be zeroed, all bytes not necessarily written over */
 	DUK_ASSERT(p != NULL);
 	space_left = total_length;
 

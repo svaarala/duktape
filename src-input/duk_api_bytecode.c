@@ -38,7 +38,7 @@ DUK_LOCAL duk_uint8_t *duk__load_buffer_raw(duk_context *ctx, duk_uint8_t *p) {
 	duk_uint8_t *buf;
 
 	len = DUK_RAW_READ_U32_BE(p);
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, (duk_size_t) len);
 	DUK_ASSERT(buf != NULL);
 	DUK_MEMCPY((void *) buf, (const void *) p, (size_t) len);
 	p += len;
@@ -451,7 +451,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(&h_fun->obj));
 
 	/* Create function 'data' buffer but don't attach it yet. */
-	fun_data = (duk_uint8_t *) duk_push_fixed_buffer(ctx, data_size);
+	fun_data = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, data_size);
 	DUK_ASSERT(fun_data != NULL);
 
 	/* Load bytecode instructions. */

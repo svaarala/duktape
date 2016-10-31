@@ -222,7 +222,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
 	 */
 
 	if (duk_is_undefined(ctx, 0)) {
-		duk_push_fixed_buffer(ctx, 0);
+		duk_push_fixed_buffer_nozero(ctx, 0);
 		duk_replace(ctx, 0);
 	}
 	(void) duk_require_buffer_data(ctx, 0, &len);  /* Need 'len', avoid pointer. */
@@ -253,7 +253,7 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
 	if (len >= (DUK_HBUFFER_MAX_BYTELEN / 3) - 3) {
 		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
 	}
-	output = (duk_uint8_t *) duk_push_fixed_buffer(ctx, 3 + (3 * len));
+	output = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, 3 + (3 * len));  /* used parts will be always manually written over */
 
 	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len_tmp);
 	DUK_ASSERT(input != NULL || len == 0);

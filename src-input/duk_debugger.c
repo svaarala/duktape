@@ -352,7 +352,7 @@ DUK_LOCAL duk_hstring *duk__debug_read_hstring_raw(duk_hthread *thr, duk_uint32_
 		duk_debug_read_bytes(thr, buf, (duk_size_t) len);
 		duk_push_lstring(ctx, (const char *) buf, (duk_size_t) len);
 	} else {
-		p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+		p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);  /* zero for paranoia */
 		DUK_ASSERT(p != NULL);
 		duk_debug_read_bytes(thr, p, (duk_size_t) len);
 		(void) duk_buffer_to_string(ctx, -1);
@@ -393,7 +393,7 @@ DUK_LOCAL duk_hbuffer *duk__debug_read_hbuffer_raw(duk_hthread *thr, duk_uint32_
 	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t *p;
 
-	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
+	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);  /* zero for paranoia */
 	DUK_ASSERT(p != NULL);
 	duk_debug_read_bytes(thr, p, (duk_size_t) len);
 

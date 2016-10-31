@@ -261,3 +261,21 @@ DUK_INTERNAL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival
 	*ival = t;
 	return 1;
 }
+
+DUK_INTERNAL duk_bool_t duk_is_anyinf(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	return DUK_DBLUNION_IS_ANYINF(&du);
+}
+
+DUK_INTERNAL duk_bool_t duk_is_posinf(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	return DUK_DBLUNION_IS_POSINF(&du);
+}
+
+DUK_INTERNAL duk_bool_t duk_is_neginf(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	return DUK_DBLUNION_IS_NEGINF(&du);
+}

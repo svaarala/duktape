@@ -181,7 +181,7 @@ DUK_LOCAL void duk__push_string(duk_context *ctx, duk_bitdecoder_ctx *bd) {
 	duk_uint8_t *p;
 
 	n = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRING_LENGTH_BITS);
-	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, n);
+	p = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, n);
 	for (i = 0; i < n; i++) {
 		*p++ = (duk_uint8_t) duk_bd_decode(bd, DUK__STRING_CHAR_BITS);
 	}

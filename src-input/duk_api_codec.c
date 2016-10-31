@@ -399,7 +399,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx) {
 		goto type_error;
 	}
 	dstlen = (srclen + 2) / 3 * 4;
-	dst = (duk_uint8_t *) duk_push_fixed_buffer(ctx, dstlen);
+	dst = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, dstlen);
 
 	duk__base64_encode_helper((const duk_uint8_t *) src, srclen, dst);
 
@@ -474,7 +474,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT(inp != NULL || len == 0);
 
 	/* Fixed buffer, no zeroing because we'll fill all the data. */
-	buf = (duk_uint8_t *) duk_push_buffer_raw(ctx, len * 2, DUK_BUF_FLAG_NOZERO /*flags*/);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, len * 2);
 	DUK_ASSERT(buf != NULL);
 
 #if defined(DUK_USE_HEX_FASTPATH)
@@ -536,7 +536,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_context *ctx, duk_idx_t idx) {
 	}
 
 	/* Fixed buffer, no zeroing because we'll fill all the data. */
-	buf = (duk_uint8_t *) duk_push_buffer_raw(ctx, len / 2, DUK_BUF_FLAG_NOZERO /*flags*/);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, len / 2);
 	DUK_ASSERT(buf != NULL);
 
 #if defined(DUK_USE_HEX_FASTPATH)
