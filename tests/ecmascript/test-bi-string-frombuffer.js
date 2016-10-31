@@ -34,19 +34,19 @@ TypeError
 TypeError
 TypeError
 "\u07ad\xbe\xef"
-string "<U+07AD><Error>"
+string "<U+07AD><U+FFFD>"
 |deadbeef|
 "\xff\ue74c"
-string "<Error><U+E74C><U+074C><Error>"
+string "<U+FFFD><U+E74C><U+074C><U+FFFD>"
 |ffeeddcc|
 "abcd"
 string "abcd"
 |61626364|
 "\x00\x01\x02\xfe\xff"
-string "<U+0000><U+0001><U+0002><Error><Error>"
+string "<U+0000><U+0001><U+0002><U+FFFD><U+FFFD>"
 |000102feff|
 "\xff\xff\xff\xffxV4\x12\u03ba\xfe\xca"
-string "<Error><Error><Error><Error>xV4<U+0012><U+03BA><Error><Error><Error>"
+string "<U+FFFD><U+FFFD><U+FFFD><U+FFFD>xV4<U+0012><U+03BA><U+FFFD><U+FFFD><U+FFFD>"
 |ffffffff78563412cefafeca|
 "\x00\x00\x00\x00\x00\x00\x00\x00\x9a\x99\x99\x99\x99\x99\xb9?\x9a\x99\x99\x99\x99\x99\u067f\x00\x00\x00\x00\x00\x00\u0ff333333\u3fc0\x00\x00\x00\x00\x00\U0003f9a6ffff\U001bf000\x00\x00\x00\x00\U00fda659\x99\x99\x99\U01fc0000\x00\x00@\x8f@"
 string "<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0000>?<U+067F>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+0FF3>?333333<U+3FC0>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+F9A6>?ffffff<U+F000>?<U+0000><U+0000><U+0000><U+0000><U+0000><U+0000><U+A659>?<U+0000>?<U+0000><U+0000><U+0000><U+0000><U+0000>@@"

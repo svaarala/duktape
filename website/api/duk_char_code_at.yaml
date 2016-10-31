@@ -9,8 +9,9 @@ stack: |
 summary: |
   <p>Get the codepoint of a character at character offset <code>char_offset</code>
   of a string at <code>idx</code>.  If the value at <code>idx</code> is not
-  a string, an error is thrown.  If <code>char_offset</code> is invalid (outside
-  the string) a zero is returned.</p>
+  a string, an error is thrown.  If the string cannot be (extended) UTF-8 decoded,
+  the result is U+FFFD (Unicode replacement character).  If <code>char_offset</code>
+  is invalid (outside the string) a zero is returned.</p>
 
 example: |
   printf("char code at char index 12: %ld\n", (long) duk_char_code_at(ctx, -3, 12));

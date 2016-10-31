@@ -143,11 +143,14 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_at(duk_context *ctx) {
 	return 1;
 }
 
+/* Magic: 0=charCodeAt, 1=codePointAt */
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t pos;
 	duk_hstring *h;
 	duk_bool_t clamped;
+	duk_uint32_t cp;
+	duk_int_t magic;
 
 	/* XXX: faster implementation */
 
@@ -161,12 +164,24 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	                             0 /*min(incl)*/,
 	                             DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl)*/,
 	                             &clamped /*out_clamped*/);
+#if defined(DUK_USE_ES6)
+	magic = duk_get_current_magic(ctx);
+#else
+	DUK_ASSERT(duk_get_current_magic(ctx) == 0);
+	magic = 0;
+#endif
 	if (clamped) {
-		duk_push_number(ctx, DUK_DOUBLE_NAN);
-		return 1;
+		/* For out-of-bounds indices .charCodeAt() returns NaN and
+		 * .codePointAt() returns undefined.
+		 */
+		if (magic != 0) {
+			return 0;
+		}
+		duk_push_nan(ctx);
+	} else {
+		cp = (duk_uint32_t) duk_hstring_char_code_at_raw(thr, h, pos, (duk_bool_t) magic /*surrogate_aware*/);
+		duk_push_u32(ctx, cp);
 	}
-
-	duk_push_u32(ctx, (duk_uint32_t) duk_hstring_char_code_at_raw(thr, h, pos));
 	return 1;
 }
 

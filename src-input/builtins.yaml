@@ -1031,7 +1031,18 @@ objects:
           type: function
           native: duk_bi_string_prototype_char_code_at
           length: 1
+          magic: 0
         present_if: DUK_USE_STRING_BUILTIN
+      - key: "codePointAt"
+        value:
+          type: function
+          native: duk_bi_string_prototype_char_code_at
+          length: 1
+          magic: 1
+        es6: true
+        present_if:
+          - DUK_USE_ES6
+          - DUK_USE_STRING_BUILTIN
       - key: "concat"
         value:
           type: function
