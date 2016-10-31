@@ -1287,6 +1287,13 @@ conservative and may indicate overflow even when one wouldn't occur::
   }
   z = x * y;
 
+One can also simply test by division (but careful for division-by-zero)::
+
+  z = x * y;
+  if (x != 0 && z / x != y) {
+          /* Overflow. */
+  }
+
 For 32-bit types the check is actually exact, see test in::
 
   misc/c_overflow_test.py 
