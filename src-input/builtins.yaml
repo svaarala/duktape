@@ -974,6 +974,13 @@ objects:
           native: duk_bi_string_constructor_from_char_code
           length: 1
           varargs: true
+      - key: "fromCodePoint"
+        value:
+          type: function
+          native: duk_bi_string_constructor_from_code_point
+          length: 1
+          varargs: true
+        present_if: DUK_USE_ES6
 
   - id: bi_string_prototype
     class: String

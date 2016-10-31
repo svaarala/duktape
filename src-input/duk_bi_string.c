@@ -48,7 +48,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_context *ctx, duk_bool_t nonbmp) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_bufwriter_ctx bw_alloc;
 	duk_bufwriter_ctx *bw;
@@ -71,25 +71,51 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx
 		 * with one ensure call but the relative benefit would be quite small.
 		 */
 
+		if (nonbmp) {
+			/* ES6 requires that (1) SameValue(cp, ToInteger(cp)) and
+			 * (2) cp >= 0 and cp <= 0x10ffff.  This check does not
+			 * implement the steps exactly but the outcome should be
+			 * the same.
+			 */
+			duk_int32_t i32 = 0;
+			if (!duk_is_whole_get_int32(duk_to_number(ctx, i), &i32) ||
+			    i32 < 0 || i32 > 0x10ffffL) {
+				DUK_DCERROR_RANGE_INVALID_ARGS((duk_hthread *) ctx);
+			}
+			cp = (duk_ucodepoint_t) i32;
+			DUK_ASSERT(cp >= 0 && cp <= 0x10ffffL);
+			DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
+		} else {
 #if defined(DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT)
-		/* ToUint16() coercion is mandatory in the E5.1 specification, but
-		 * this non-compliant behavior makes more sense because we support
-		 * non-BMP codepoints.  Don't use CESU-8 because that'd create
-		 * surrogate pairs.
-		 */
-
-		cp = (duk_ucodepoint_t) duk_to_uint32(ctx, i);
-		DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
+			/* ToUint16() coercion is mandatory in the E5.1 specification, but
+			 * this non-compliant behavior makes more sense because we support
+			 * non-BMP codepoints.  Don't use CESU-8 because that'd create
+			 * surrogate pairs.
+			 */
+			cp = (duk_ucodepoint_t) duk_to_uint32(ctx, i);
+			DUK_BW_WRITE_ENSURE_XUTF8(thr, bw, cp);
 #else
-		cp = (duk_ucodepoint_t) duk_to_uint16(ctx, i);
-		DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
+			cp = (duk_ucodepoint_t) duk_to_uint16(ctx, i);
+			DUK_ASSERT(cp >= 0 && cp <= 0x10ffffL);
+			DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
 #endif
+		}
 	}
 
 	DUK_BW_COMPACT(thr, bw);
 	(void) duk_buffer_to_string(ctx, -1);
 	return 1;
 }
+
+DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_char_code(duk_context *ctx) {
+	return duk__construct_from_codepoints(ctx, 0 /*nonbmp*/);
+}
+
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_string_constructor_from_code_point(duk_context *ctx) {
+	return duk__construct_from_codepoints(ctx, 1 /*nonbmp*/);
+}
+#endif
 
 /*
  *  toString(), valueOf()

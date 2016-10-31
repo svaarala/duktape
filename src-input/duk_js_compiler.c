@@ -136,7 +136,6 @@ DUK_LOCAL_DECL void duk__emit_invalid(duk_compiler_ctx *comp_ctx);
 /* ivalue/ispec helpers */
 DUK_LOCAL_DECL void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst);
 DUK_LOCAL_DECL void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst);
-DUK_LOCAL_DECL duk_bool_t duk__is_whole_get_int32(duk_double_t x, duk_int32_t *ival);
 DUK_LOCAL_DECL duk_reg_t duk__alloctemps(duk_compiler_ctx *comp_ctx, duk_small_int_t num);
 DUK_LOCAL_DECL duk_reg_t duk__alloctemp(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__settemp_checkmax(duk_compiler_ctx *comp_ctx, duk_reg_t temp_next);
@@ -1819,26 +1818,6 @@ DUK_LOCAL void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk
 	duk_copy(ctx, src->x2.valstack_idx, dst->x2.valstack_idx);
 }
 
-/* XXX: to util */
-DUK_LOCAL duk_bool_t duk__is_whole_get_int32(duk_double_t x, duk_int32_t *ival) {
-	duk_small_int_t c;
-	duk_int32_t t;
-
-	c = DUK_FPCLASSIFY(x);
-	if (c == DUK_FP_NORMAL || (c == DUK_FP_ZERO && !DUK_SIGNBIT(x))) {
-		/* Don't allow negative zero as it will cause trouble with
-		 * LDINT+LDINTX.  But positive zero is OK.
-		 */
-		t = (duk_int32_t) x;
-		if ((duk_double_t) t == x) {
-			*ival = t;
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 DUK_LOCAL duk_reg_t duk__alloctemps(duk_compiler_ctx *comp_ctx, duk_small_int_t num) {
 	duk_reg_t res;
 
@@ -2061,7 +2040,7 @@ duk_regconst_t duk__ispec_toregconst_raw(duk_compiler_ctx *comp_ctx,
 				 * Currently always prefer LDINT+LDINTX over a double constant.
 				 */
 
-				if (duk__is_whole_get_int32(dval, &ival)) {
+				if (duk_is_whole_get_int32_nonegzero(dval, &ival)) {
 					dest = (forced_reg >= 0 ? forced_reg : DUK__ALLOCTEMP(comp_ctx));
 					duk__emit_load_int32(comp_ctx, dest, ival);
 					return (duk_regconst_t) dest;
