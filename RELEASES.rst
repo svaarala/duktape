@@ -1836,7 +1836,8 @@ Planned
   and identifiers, no RegExp support yet (requires RegExp /u Unicode mode)
   (GH-1001)
 
-* Add support for ES6 String.prototype.codePointAt() (GH-1043)
+* Add support for ES6 String.prototype.codePointAt() and String.fromCodePoint()
+  (GH-1043, GH-1049)
 
 * Add TextEncoder and TextDecoder built-ins (the Encoding API) which allow
   Ecmascript code to read and write text stored in an ArrayBuffer or a plain
