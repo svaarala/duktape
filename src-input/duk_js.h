@@ -17,8 +17,8 @@
 #define DUK_EQUALS_FLAG_STRICT               (1 << 1)  /* use strict equality instead of non-strict equality */
 
 /* Flags for duk_js_compare_helper(). */
-#define DUK_COMPARE_FLAG_EVAL_LEFT_FIRST     (1 << 0)  /* eval left argument first */
-#define DUK_COMPARE_FLAG_NEGATE              (1 << 1)  /* negate result */
+#define DUK_COMPARE_FLAG_NEGATE              (1 << 0)  /* negate result */
+#define DUK_COMPARE_FLAG_EVAL_LEFT_FIRST     (1 << 1)  /* eval left argument first */
 
 /* conversions, coercions, comparison, etc */
 DUK_INTERNAL_DECL duk_bool_t duk_js_toboolean(duk_tval *tv);

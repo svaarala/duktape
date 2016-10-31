@@ -2885,6 +2885,8 @@ DUK_EXTERNAL duk_bool_t duk_is_nan(duk_context *ctx, duk_idx_t idx) {
 
 	tv = duk_get_tval_or_unused(ctx, idx);
 	DUK_ASSERT(tv != NULL);
+
+	/* XXX: for packed duk_tval an explicit "is number" check is unnecessary */
 	if (!DUK_TVAL_IS_NUMBER(tv)) {
 		return 0;
 	}

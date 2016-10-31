@@ -1,13 +1,12 @@
 /*
  *  Ecmascript specification algorithm and conversion helpers.
  *
- *  These helpers encapsulate the primitive Ecmascript operation
- *  semantics, and are used by the bytecode executor and the API
- *  (among other places).  Note that some primitives are only
- *  implemented as part of the API and have no "internal" helper.
- *  (This is the case when an internal helper would not really be
- *  useful; e.g. the operation is rare, uses value stack heavily,
- *  etc.)
+ *  These helpers encapsulate the primitive Ecmascript operation semantics,
+ *  and are used by the bytecode executor and the API (among other places).
+ *  Some primitives are only implemented as part of the API and have no
+ *  "internal" helper.  This is the case when an internal helper would not
+ *  really be useful; e.g. the operation is rare, uses value stack heavily,
+ *  etc.
  *
  *  The operation arguments depend on what is required to implement
  *  the operation:
@@ -62,6 +61,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	case DUK_TAG_NULL:
 		return 0;
 	case DUK_TAG_BOOLEAN:
+		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv) == 0 || DUK_TVAL_GET_BOOLEAN(tv) == 1);
 		return DUK_TVAL_GET_BOOLEAN(tv);
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
@@ -95,16 +95,23 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 	default: {
 		/* number */
 		duk_double_t d;
+#if defined(DUK_USE_PREFER_SIZE)
 		int c;
+#endif
 		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 		d = DUK_TVAL_GET_DOUBLE(tv);
+#if defined(DUK_USE_PREFER_SIZE)
 		c = DUK_FPCLASSIFY((double) d);
 		if (c == DUK_FP_ZERO || c == DUK_FP_NAN) {
 			return 0;
 		} else {
 			return 1;
 		}
+#else
+		DUK_ASSERT(duk_double_is_nan_or_zero(d) == 0 || duk_double_is_nan_or_zero(d) == 1);
+		return duk_double_is_nan_or_zero(d) ^ 1;
+#endif
 	}
 	}
 	DUK_UNREACHABLE();
@@ -160,8 +167,17 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
 
 	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
+#if defined(DUK_USE_PREFER_SIZE)
 	d = duk_get_number(ctx, -1);
 	duk_pop(ctx);
+#else
+	thr->valstack_top--;
+	DUK_ASSERT(DUK_TVAL_IS_NUMBER(thr->valstack_top));
+	DUK_ASSERT(DUK_TVAL_IS_DOUBLE(thr->valstack_top));  /* no fastint conversion in numconv now */
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(thr->valstack_top));
+	d = DUK_TVAL_GET_DOUBLE(thr->valstack_top);  /* assumes not a fastint */
+	DUK_TVAL_SET_UNDEFINED(thr->valstack_top);
+#endif
 
 	return d;
 }
@@ -240,23 +256,33 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 
 /* exposed, used by e.g. duk_bi_date.c */
 DUK_INTERNAL duk_double_t duk_js_tointeger_number(duk_double_t x) {
+#if defined(DUK_USE_PREFER_SIZE)
 	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
 
-	if (c == DUK_FP_NAN) {
+	if (DUK_UNLIKELY(c == DUK_FP_NAN)) {
 		return 0.0;
-	} else if (c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
-		/* XXX: FP_ZERO check can be removed, the else clause handles it
-		 * correctly (preserving sign).
-		 */
+	} else if (DUK_UNLIKELY(c == DUK_FP_INFINITE)) {
 		return x;
 	} else {
-		duk_small_int_t s = (duk_small_int_t) DUK_SIGNBIT(x);
-		x = DUK_FLOOR(DUK_FABS(x));  /* truncate towards zero */
-		if (s) {
-			x = -x;
-		}
-		return x;
+		/* Finite, including neg/pos zero.  Neg zero sign must be
+		 * preserved.
+		 */
+		return duk_double_trunc_towards_zero(x);
 	}
+#else  /* DUK_USE_PREFER_SIZE */
+	/* NaN and Infinity have the same exponent so it's a cheap
+	 * initial check for the rare path.
+	 */
+	if (DUK_UNLIKELY(duk_double_is_nan_or_inf(x))) {
+		if (duk_double_is_nan(x)) {
+			return 0.0;
+		} else {
+			return x;
+		}
+	} else {
+		return duk_double_trunc_towards_zero(x);
+	}
+#endif  /* DUK_USE_PREFER_SIZE */
 }
 
 DUK_INTERNAL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
@@ -271,20 +297,23 @@ DUK_INTERNAL duk_double_t duk_js_tointeger(duk_hthread *thr, duk_tval *tv) {
 
 /* combined algorithm matching E5 Sections 9.5 and 9.6 */
 DUK_LOCAL duk_double_t duk__toint32_touint32_helper(duk_double_t x, duk_bool_t is_toint32) {
-	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
-	duk_small_int_t s;
+#if defined (DUK_USE_PREFER_SIZE)
+	duk_small_int_t c;
+#endif
 
+#if defined (DUK_USE_PREFER_SIZE)
+	c = (duk_small_int_t) DUK_FPCLASSIFY(x);
 	if (c == DUK_FP_NAN || c == DUK_FP_ZERO || c == DUK_FP_INFINITE) {
 		return 0.0;
 	}
-
+#else
+	if (duk_double_is_nan_zero_inf(x)) {
+		return 0.0;
+	}
+#endif
 
 	/* x = sign(x) * floor(abs(x)), i.e. truncate towards zero, keep sign */
-	s = (duk_small_int_t) DUK_SIGNBIT(x);
-	x = DUK_FLOOR(DUK_FABS(x));
-	if (s) {
-		x = -x;
-	}
+	x = duk_double_trunc_towards_zero(x);
 
 	/* NOTE: fmod(x) result sign is same as sign of x, which
 	 * differs from what Javascript wants (see Section 9.6).
@@ -295,7 +324,7 @@ DUK_LOCAL duk_double_t duk__toint32_touint32_helper(duk_double_t x, duk_bool_t i
 	if (x < 0.0) {
 		x += DUK_DOUBLE_2TO32;
 	}
-	/* -> x in [0, 2**32[ */
+	DUK_ASSERT(x >= 0 && x < DUK_DOUBLE_2TO32);  /* -> x in [0, 2**32[ */
 
 	if (is_toint32) {
 		if (x >= DUK_DOUBLE_2TO31) {
@@ -351,57 +380,12 @@ DUK_INTERNAL duk_uint16_t duk_js_touint16(duk_hthread *thr, duk_tval *tv) {
 
 /*
  *  ToString()  (E5 Section 9.8)
- *
- *  ==> implemented in the API.
- */
-
-/*
  *  ToObject()  (E5 Section 9.9)
- *
- *  ==> implemented in the API.
- */
-
-/*
  *  CheckObjectCoercible()  (E5 Section 9.10)
- *
- *  Note: no API equivalent now.
- */
-
-#if 0  /* unused */
-DUK_INTERNAL void duk_js_checkobjectcoercible(duk_hthread *thr, duk_tval *tv_x) {
-	duk_small_uint_t tag = DUK_TVAL_GET_TAG(tv_x);
-
-	/* Note: this must match ToObject() behavior */
-
-	if (tag == DUK_TAG_UNDEFINED ||
-	    tag == DUK_TAG_NULL ||
-	    tag == DUK_TAG_POINTER ||
-	    tag == DUK_TAG_BUFFER) {
-		DUK_ERROR_TYPE(thr, "not object coercible");
-	}
-}
-#endif
-
-/*
  *  IsCallable()  (E5 Section 9.11)
  *
- *  XXX: API equivalent is a separate implementation now, and this has
- *  currently no callers.
+ *  ==> implemented in the API.
  */
-
-#if 0  /* unused */
-DUK_INTERNAL duk_bool_t duk_js_iscallable(duk_tval *tv_x) {
-	duk_hobject *obj;
-
-	if (!DUK_TVAL_IS_OBJECT(tv_x)) {
-		return 0;
-	}
-	obj = DUK_TVAL_GET_OBJECT(tv_x);
-	DUK_ASSERT(obj != NULL);
-
-	return DUK_HOBJECT_IS_CALLABLE(obj);
-}
-#endif
 
 /*
  *  Loose equality, strict equality, and SameValue (E5 Sections 11.9.1, 11.9.4,
@@ -474,8 +458,8 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 		 *
 		 *     signbit(x) == signbit(y)
 		 */
-		duk_small_int_t sx = (DUK_SIGNBIT(x) ? 1 : 0);
-		duk_small_int_t sy = (DUK_SIGNBIT(y) ? 1 : 0);
+		duk_small_int_t sx = DUK_SIGNBIT(x) ? 1 : 0;
+		duk_small_int_t sy = DUK_SIGNBIT(y) ? 1 : 0;
 		return (sx == sy);
 	}
 
@@ -502,14 +486,12 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 			 *
 			 *     signbit(x) == signbit(y)
 			 */
-			duk_small_int_t sx = (DUK_SIGNBIT(x) ? 1 : 0);
-			duk_small_int_t sy = (DUK_SIGNBIT(y) ? 1 : 0);
-			return (sx == sy);
+			return duk_double_same_sign(x, y);
 		}
 		return 1;
 	} else {
 		/* IEEE requires that zeros compare the same regardless
-		 * of their signed, so if both x and y are zeroes, they
+		 * of their sign, so if both x and y are zeroes, they
 		 * are caught above.
 		 */
 		DUK_ASSERT(!(DUK_FPCLASSIFY(x) == DUK_FP_ZERO && DUK_FPCLASSIFY(y) == DUK_FP_ZERO));
@@ -553,15 +535,19 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	else
 #endif
 	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		/* Catches both doubles and cases where only one argument is a fastint */
+		duk_double_t d1, d2;
+
+		/* Catches both doubles and cases where only one argument is
+		 * a fastint so can't assume a double.
+		 */
+		d1 = DUK_TVAL_GET_NUMBER(tv_x);
+		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
 			/* SameValue */
-			return duk__js_samevalue_number(DUK_TVAL_GET_NUMBER(tv_x),
-			                                DUK_TVAL_GET_NUMBER(tv_y));
+			return duk__js_samevalue_number(d1, d2);
 		} else {
 			/* equals and strict equals */
-			return duk__js_equals_number(DUK_TVAL_GET_NUMBER(tv_x),
-			                             DUK_TVAL_GET_NUMBER(tv_y));
+			return duk__js_equals_number(d1, d2);
 		}
 	} else if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
 		switch (DUK_TVAL_GET_TAG(tv_x)) {
@@ -627,6 +613,8 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 *  Since comparison is symmetric, we use a "swap trick" to reduce
 	 *  code size.
 	 */
+
+	/* XXX: here getting a type mask would be useful */
 
 	/* Undefined/null are considered equal (e.g. "null == undefined" -> true). */
 	if ((DUK_TVAL_IS_UNDEFINED(tv_x) && DUK_TVAL_IS_NULL(tv_y)) ||
@@ -778,56 +766,139 @@ DUK_INTERNAL duk_small_int_t duk_js_buffer_compare(duk_heap *heap, duk_hbuffer *
 }
 #endif
 
+#if defined(DUK_USE_FASTINT)
+DUK_LOCAL duk_bool_t duk__compare_fastint(duk_bool_t retval, duk_int64_t v1, duk_int64_t v2) {
+	DUK_ASSERT(retval == 0 || retval == 1);
+	if (v1 < v2) {
+		return retval ^ 1;
+	} else {
+		return retval;
+	}
+}
+#endif
+
+#if defined(DUK_USE_PARANOID_MATH)
+DUK_LOCAL duk_bool_t duk__compare_number(duk_bool_t retval, duk_double_t d1, duk_double_t d2) {
+	duk_small_int_t c1, s1, c2, s2;
+
+	DUK_ASSERT(retval == 0 || retval == 1);
+	c1 = (duk_small_int_t) DUK_FPCLASSIFY(d1);
+	s1 = (duk_small_int_t) DUK_SIGNBIT(d1);
+	c2 = (duk_small_int_t) DUK_FPCLASSIFY(d2);
+	s2 = (duk_small_int_t) DUK_SIGNBIT(d2);
+
+	if (c1 == DUK_FP_NAN || c2 == DUK_FP_NAN) {
+		return 0;  /* Always false, regardless of negation. */
+	}
+
+	if (c1 == DUK_FP_ZERO && c2 == DUK_FP_ZERO) {
+		/* For all combinations: +0 < +0, +0 < -0, -0 < +0, -0 < -0,
+		 * steps e, f, and g.
+		 */
+		return retval;  /* false */
+	}
+
+	if (d1 == d2) {
+		return retval;  /* false */
+	}
+
+	if (c1 == DUK_FP_INFINITE && s1 == 0) {
+		/* x == +Infinity */
+		return retval;  /* false */
+	}
+
+	if (c2 == DUK_FP_INFINITE && s2 == 0) {
+		/* y == +Infinity */
+		return retval ^ 1;  /* true */
+	}
+
+	if (c2 == DUK_FP_INFINITE && s2 != 0) {
+		/* y == -Infinity */
+		return retval;  /* false */
+	}
+
+	if (c1 == DUK_FP_INFINITE && s1 != 0) {
+		/* x == -Infinity */
+		return retval ^ 1;  /* true */
+	}
+
+	if (d1 < d2) {
+		return retval ^ 1;  /* true */
+	}
+
+	return retval;  /* false */
+}
+#else  /* DUK_USE_PARANOID_MATH */
+DUK_LOCAL duk_bool_t duk__compare_number(duk_bool_t retval, duk_double_t d1, duk_double_t d2) {
+	/* This comparison tree relies doesn't match the exact steps in
+	 * E5 Section 11.8.5 but should produce the same results.  The
+	 * steps rely on exact IEEE semantics for NaNs, etc.
+	 */
+
+	DUK_ASSERT(retval == 0 || retval == 1);
+	if (d1 < d2) {
+		/* In no case should both (d1 < d2) and (d2 < d1) be true.
+		 * It's possible that neither is true though, and that's
+		 * handled below.
+		 */
+		DUK_ASSERT(!(d2 < d1));
+
+		/* - d1 < d2, both d1/d2 are normals (not Infinity, not NaN)
+		 * - d2 is +Infinity, d1 != +Infinity and NaN
+		 * - d1 is -Infinity, d2 != -Infinity and NaN
+		 */
+		return retval ^ 1;
+	} else {
+		if (d2 < d1) {
+			/* - !(d1 < d2), both d1/d2 are normals (not Infinity, not NaN)
+			 * - d1 is +Infinity, d2 != +Infinity and NaN
+			 * - d2 is -Infinity, d1 != -Infinity and NaN
+			 */
+			return retval;
+		} else {
+			/* - d1 and/or d2 is NaN
+			 * - d1 and d2 are both +/- 0
+			 * - d1 == d2 (including infinities)
+			 */
+			if (duk_double_is_nan(d1) || duk_double_is_nan(d2)) {
+				/* Note: undefined from Section 11.8.5 always
+				 * results in false return (see e.g. Section
+				 * 11.8.3) - hence special treatment here.
+				 */
+				return 0;  /* zero regardless of negation */
+			} else {
+				return retval;
+			}
+		}
+	}
+}
+#endif  /* DUK_USE_PARANOID_MATH */
+
 DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_double_t d1, d2;
-	duk_small_int_t c1, c2;
-	duk_small_int_t s1, s2;
 	duk_small_int_t rc;
 	duk_bool_t retval;
 
+	DUK_ASSERT(DUK_COMPARE_FLAG_NEGATE == 1);  /* Rely on this flag being lowest. */
+	retval = flags & DUK_COMPARE_FLAG_NEGATE;
+	DUK_ASSERT(retval == 0 || retval == 1);
+
 	/* Fast path for fastints */
 #if defined(DUK_USE_FASTINT)
-	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
-		duk_int64_t v1 = DUK_TVAL_GET_FASTINT(tv_x);
-		duk_int64_t v2 = DUK_TVAL_GET_FASTINT(tv_y);
-		if (v1 < v2) {
-			/* 'lt is true' */
-			retval = 1;
-		} else {
-			retval = 0;
-		}
-		if (flags & DUK_COMPARE_FLAG_NEGATE) {
-			retval ^= 1;
-		}
-		return retval;
+	if (DUK_LIKELY(DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y))) {
+		return duk__compare_fastint(retval,
+		                            DUK_TVAL_GET_FASTINT(tv_x),
+		                            DUK_TVAL_GET_FASTINT(tv_y));
 	}
 #endif  /* DUK_USE_FASTINT */
 
 	/* Fast path for numbers (one of which may be a fastint) */
-#if 1  /* XXX: make fast paths optional for size minimization? */
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		d1 = DUK_TVAL_GET_NUMBER(tv_x);
-		d2 = DUK_TVAL_GET_NUMBER(tv_y);
-		c1 = DUK_FPCLASSIFY(d1);
-		c2 = DUK_FPCLASSIFY(d2);
-
-		if (c1 == DUK_FP_NORMAL && c2 == DUK_FP_NORMAL) {
-			/* XXX: this is a very narrow check, and doesn't cover
-			 * zeroes, subnormals, infinities, which compare normally.
-			 */
-
-			if (d1 < d2) {
-				/* 'lt is true' */
-				retval = 1;
-			} else {
-				retval = 0;
-			}
-			if (flags & DUK_COMPARE_FLAG_NEGATE) {
-				retval ^= 1;
-			}
-			return retval;
-		}
+#if !defined(DUK_USE_PREFER_SIZE)
+	if (DUK_LIKELY(DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y))) {
+		return duk__compare_number(retval,
+		                           DUK_TVAL_GET_NUMBER(tv_x),
+		                           DUK_TVAL_GET_NUMBER(tv_y));
 	}
 #endif
 
@@ -855,16 +926,15 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 		DUK_ASSERT(h2 != NULL);
 
 		rc = duk_js_string_compare(h1, h2);
+		duk_pop_2(ctx);
 		if (rc < 0) {
-			goto lt_true;
+			return retval ^ 1;
 		} else {
-			goto lt_false;
+			return retval;
 		}
 	} else {
-		/* Ordering should not matter (E5 Section 11.8.5, step 3.a) but
-		 * preserve it just in case.
-		 */
-
+		/* Ordering should not matter (E5 Section 11.8.5, step 3.a). */
+#if 0
 		if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
 			d1 = duk_to_number(ctx, -2);
 			d2 = duk_to_number(ctx, -1);
@@ -872,84 +942,28 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 			d2 = duk_to_number(ctx, -1);
 			d1 = duk_to_number(ctx, -2);
 		}
+#endif
+		d1 = duk_to_number(ctx, -2);
+		d2 = duk_to_number(ctx, -1);
 
-		c1 = (duk_small_int_t) DUK_FPCLASSIFY(d1);
-		s1 = (duk_small_int_t) DUK_SIGNBIT(d1);
-		c2 = (duk_small_int_t) DUK_FPCLASSIFY(d2);
-		s2 = (duk_small_int_t) DUK_SIGNBIT(d2);
+		/* We want to duk_pop_2(ctx); because the values are numbers
+		 * no decref check is needed.
+		 */
+#if defined(DUK_USE_PREFER_SIZE)
+		duk_pop_2(ctx);
+#else
+		DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -2)));
+		DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -1)));
+		DUK_ASSERT(duk_get_top(ctx) >= 2);
+		((duk_hthread *) ctx)->valstack_top -= 2;
+		tv_x = ((duk_hthread *) ctx)->valstack_top;
+		tv_y = tv_x + 1;
+		DUK_TVAL_SET_UNDEFINED(tv_x);  /* Value stack policy */
+		DUK_TVAL_SET_UNDEFINED(tv_y);
+#endif
 
-		if (c1 == DUK_FP_NAN || c2 == DUK_FP_NAN) {
-			goto lt_undefined;
-		}
-
-		if (c1 == DUK_FP_ZERO && c2 == DUK_FP_ZERO) {
-			/* For all combinations: +0 < +0, +0 < -0, -0 < +0, -0 < -0,
-			 * steps e, f, and g.
-			 */
-			goto lt_false;
-		}
-
-		if (d1 == d2) {
-			goto lt_false;
-		}
-
-		if (c1 == DUK_FP_INFINITE && s1 == 0) {
-			/* x == +Infinity */
-			goto lt_false;
-		}
-
-		if (c2 == DUK_FP_INFINITE && s2 == 0) {
-			/* y == +Infinity */
-			goto lt_true;
-		}
-
-		if (c2 == DUK_FP_INFINITE && s2 != 0) {
-			/* y == -Infinity */
-			goto lt_false;
-		}
-
-		if (c1 == DUK_FP_INFINITE && s1 != 0) {
-			/* x == -Infinity */
-			goto lt_true;
-		}
-
-		if (d1 < d2) {
-			goto lt_true;
-		}
-
-		goto lt_false;
+		return duk__compare_number(retval, d1, d2);
 	}
-
- lt_undefined:
-	/* Note: undefined from Section 11.8.5 always results in false
-	 * return (see e.g. Section 11.8.3) - hence special treatment here.
-	 */
-	retval = 0;
-	goto cleanup;
-
- lt_true:
-	if (flags & DUK_COMPARE_FLAG_NEGATE) {
-		retval = 0;
-		goto cleanup;
-	} else {
-		retval = 1;
-		goto cleanup;
-	}
-	/* never here */
-
- lt_false:
-	if (flags & DUK_COMPARE_FLAG_NEGATE) {
-		retval = 1;
-		goto cleanup;
-	} else {
-		retval = 0;
-		goto cleanup;
-	}
-	/* never here */
-
- cleanup:
-	duk_pop_2(ctx);
-	return retval;
 }
 
 /*

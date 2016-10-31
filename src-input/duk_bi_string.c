@@ -1304,31 +1304,29 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 	DUK_ASSERT(h_input != NULL);
 	input_blen = DUK_HSTRING_GET_BYTELEN(h_input);
 
-	/* Not strictly correct but pretty close: duk_to_int() clamps so we
-	 * can check for infinity (almost correctly) against DUK_INT_MAX.
-	 * +Infinity must be rejected even if input string length is 0.
+	/* Count is ToNumber() coerced; +Infinity must be always rejected
+	 * (even if input string is zero length), as well as negative values
+	 * and -Infinity.  -Infinity doesn't require an explicit check
+	 * because duk_get_int() clamps it to DUK_INT_MIN which gets rejected
+	 * as a negative value (regardless of input string length).
 	 */
 	d = duk_to_number(ctx, 0);
-	if (duk_is_posinf(d)) {
-		/* Positive infinity needs to be rejected even with input
-		 * size 0.  Negative infinity doesn't need special handling
-		 * because it clamps to DUK_INT_MIN below and is rejected
-		 * even is input size is 0.
-		 */
+	if (duk_double_is_posinf(d)) {
 		goto fail_range;
 	}
 	count_signed = duk_get_int(ctx, 0);
 	if (count_signed < 0) {
-		/* Covers -Infinity. */
 		goto fail_range;
 	}
 	count = (duk_uint_t) count_signed;
 
+	/* Overflow check for result length. */
 	result_len = count * input_blen;
 	if (count != 0 && result_len / count != input_blen) {
-		/* Overflow. */
 		goto fail_range;
 	}
+
+	/* Temporary fixed buffer, later converted to string. */
 	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, result_len);
 	src = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 
@@ -1342,10 +1340,8 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 	/* Take advantage of already copied pieces to speed up the process
 	 * especially for small repeated strings.
 	 */
-
 	p = buf;
 	p_end = p + result_len;
-
 	copy_size = input_blen;
 	for (;;) {
 		duk_size_t remain = (duk_size_t) (p_end - p);
@@ -1367,6 +1363,15 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 		src = (const duk_uint8_t *) buf;  /* Use buf as source for larger copies. */
 	}
 #endif  /* DUK_USE_PREFER_SIZE */
+
+	/* XXX: It would be useful to be able to create a duk_hstring with
+	 * a certain byte size whose data area wasn't initialized and which
+	 * wasn't in the string table yet.  This would allow a string to be
+	 * constructed directly without a buffer temporary and when it was
+	 * finished, it could be injected into the string table.  Currently
+	 * this isn't possible because duk_hstrings are only tracked by the
+	 * intern table (they are not in heap_allocated).
+	 */
 
 	duk_buffer_to_string(ctx, -1);
 	return 1;
