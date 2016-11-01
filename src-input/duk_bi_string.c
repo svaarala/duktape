@@ -1283,6 +1283,99 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_trim(duk_context *ctx) {
 	return 1;
 }
 
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
+	duk_hstring *h_input;
+	duk_size_t input_blen;
+	duk_size_t result_len;
+	duk_int_t count_signed;
+	duk_uint_t count;
+	const duk_uint8_t *src;
+	duk_uint8_t *buf;
+	duk_uint8_t *p;
+	duk_double_t d;
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_uint_t copy_size;
+	duk_uint8_t *p_end;
+#endif
+
+	DUK_ASSERT_TOP(ctx, 1);
+	h_input = duk_push_this_coercible_to_string(ctx);
+	DUK_ASSERT(h_input != NULL);
+	input_blen = DUK_HSTRING_GET_BYTELEN(h_input);
+
+	/* Not strictly correct but pretty close: duk_to_int() clamps so we
+	 * can check for infinity (almost correctly) against DUK_INT_MAX.
+	 * +Infinity must be rejected even if input string length is 0.
+	 */
+	d = duk_to_number(ctx, 0);
+	if (duk_is_posinf(d)) {
+		/* Positive infinity needs to be rejected even with input
+		 * size 0.  Negative infinity doesn't need special handling
+		 * because it clamps to DUK_INT_MIN below and is rejected
+		 * even is input size is 0.
+		 */
+		goto fail_range;
+	}
+	count_signed = duk_get_int(ctx, 0);
+	if (count_signed < 0) {
+		/* Covers -Infinity. */
+		goto fail_range;
+	}
+	count = (duk_uint_t) count_signed;
+
+	result_len = count * input_blen;
+	if (count != 0 && result_len / count != input_blen) {
+		/* Overflow. */
+		goto fail_range;
+	}
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, result_len);
+	src = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
+
+#if defined(DUK_USE_PREFER_SIZE)
+	p = buf;
+	while (count-- > 0) {
+		DUK_MEMCPY((void *) p, (const void *) src, input_blen);  /* copy size may be zero */
+		p += input_blen;
+	}
+#else  /* DUK_USE_PREFER_SIZE */
+	/* Take advantage of already copied pieces to speed up the process
+	 * especially for small repeated strings.
+	 */
+
+	p = buf;
+	p_end = p + result_len;
+
+	copy_size = input_blen;
+	for (;;) {
+		duk_size_t remain = (duk_size_t) (p_end - p);
+		DUK_DDD(DUK_DDDPRINT("remain=%ld, copy_size=%ld, input_blen=%ld, result_len=%ld",
+		                     (long) remain, (long) copy_size, (long) input_blen,
+		                     (long) result_len));
+		if (remain <= copy_size) {
+			/* If result_len is zero, this case is taken and does
+			 * a zero size copy.
+			 */
+			DUK_MEMCPY((void *) p, (const void *) src, remain);
+			break;
+		} else {
+			DUK_MEMCPY((void *) p, (const void *) src, copy_size);
+			p += copy_size;
+			copy_size *= 2;
+		}
+
+		src = (const duk_uint8_t *) buf;  /* Use buf as source for larger copies. */
+	}
+#endif  /* DUK_USE_PREFER_SIZE */
+
+	duk_buffer_to_string(ctx, -1);
+	return 1;
+
+ fail_range:
+	DUK_DCERROR_RANGE_INVALID_ARGS((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_ES6 */
+
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_context *ctx) {
 	duk_hstring *h1;
 	duk_hstring *h2;

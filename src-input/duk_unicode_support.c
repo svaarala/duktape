@@ -250,8 +250,17 @@ DUK_INTERNAL duk_small_int_t duk_unicode_decode_xutf8(duk_hthread *thr, const du
 
 	while (n > 0) {
 		DUK_ASSERT(p >= ptr_start && p < ptr_end);
-		res = res << 6;
-		res += (duk_uint32_t) ((*p++) & 0x3f);
+		ch = (duk_uint_fast8_t) (*p++);
+#if 0
+		if (ch & 0xc0 != 0x80) {
+			/* not a continuation byte */
+			p--;
+			*ptr = p;
+			*out_cp = DUK_UNICODE_CP_REPLACEMENT_CHARACTER;
+			return 1;
+		}
+#endif
+		res = (res << 6) + (duk_uint32_t) (ch & 0x3f);
 		n--;
 	}
 

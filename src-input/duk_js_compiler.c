@@ -742,7 +742,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	                     (long) funcs_count, (long) sizeof(duk_hobject *),
 	                     (long) code_size, (long) data_size));
 
-	duk_push_fixed_buffer(ctx, data_size);
+	duk_push_fixed_buffer_nozero(ctx, data_size);
 	h_data = (duk_hbuffer_fixed *) duk_get_hbuffer(ctx, -1);
 	DUK_ASSERT(h_data != NULL);
 

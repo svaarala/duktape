@@ -627,8 +627,9 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 		p++;
 	}
 
+	/* XXX: this is not very nice; unnecessary copy is made. */
 	src_len = (duk_size_t) (p - js_ctx->p);
-	buf = (duk_uint8_t *) duk_push_fixed_buffer(ctx, src_len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, src_len);
 	DUK_ASSERT(buf != NULL);
 	DUK_MEMCPY((void *) buf, (const void *) js_ctx->p, src_len);
 	duk_hex_decode(ctx, -1);
