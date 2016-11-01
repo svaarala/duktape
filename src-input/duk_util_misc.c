@@ -220,3 +220,44 @@ DUK_INTERNAL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len) {
 	}
 }
 #endif
+
+/*
+ *  Miscellaneous coercion / clamping helpers.
+ */
+
+/* Check whether a duk_double_t is a whole number in the 32-bit range (reject
+ * negative zero), and if so, return a duk_int32_t.
+ * For compiler use: don't allow negative zero as it will cause trouble with
+ * LDINT+LDINTX, positive zero is OK.
+ */
+DUK_INTERNAL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival) {
+	duk_int32_t t;
+
+	t = (duk_int32_t) x;
+	if (!((duk_double_t) t == x)) {
+		return 0;
+	}
+	if (t == 0) {
+		duk_double_union du;
+		du.d = x;
+		if (DUK_DBLUNION_HAS_SIGNBIT(&du)) {
+			return 0;
+		}
+	}
+	*ival = t;
+	return 1;
+}
+
+/* Check whether a duk_double_t is a whole number in the 32-bit range, and if
+ * so, return a duk_int32_t.
+ */
+DUK_INTERNAL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival) {
+	duk_int32_t t;
+
+	t = (duk_int32_t) x;
+	if (!((duk_double_t) t == x)) {
+		return 0;
+	}
+	*ival = t;
+	return 1;
+}

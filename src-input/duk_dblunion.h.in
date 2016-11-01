@@ -375,4 +375,10 @@ typedef union duk_double_union duk_double_union;
 /* Reverse operation is the same. */
 #define DUK_DBLUNION_DOUBLE_NTOH(u) DUK_DBLUNION_DOUBLE_HTON((u))
 
+/* Sign check. */
+#define DUK_DBLUNION_HAS_SIGNBIT(u) (((u)->ui[DUK_DBL_IDX_UI0] & 0x80000000UL))
+
+/* Sign bit as 1 (negative) or 0 (positive). */
+#define DUK_DBLUNION_GET_SIGNBIT(u) (((u)->ui[DUK_DBL_IDX_UI0] >> 31U))
+
 #endif  /* DUK_DBLUNION_H_INCLUDED */
