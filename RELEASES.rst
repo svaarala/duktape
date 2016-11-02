@@ -1843,6 +1843,9 @@ Planned
   (which is difficult to version and work with) to an object with named
   properties; the properties are not under versioning guarantees (GH-1125)
 
+* Incompatible change: remove support for extended UTF-8 for strings, i.e.
+  codepoints above U+10FFFF (GH-983)
+
 * Add support for dropping built-in bindings entirely when they are disabled
   in configuration, e.g. the Proxy and buffer object bindings will be absent
   instead of being replaced by functions throwing an error; this is more
