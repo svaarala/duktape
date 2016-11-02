@@ -2,6 +2,8 @@
 Regular expressions
 ===================
 
+**FIXME: extended UTF-8 and bytecode change.**
+
 This document describes the Duktape ``RegExp`` built-in implementation.
 
 Overview
