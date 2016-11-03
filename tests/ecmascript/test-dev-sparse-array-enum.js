@@ -1,13 +1,8 @@
 /*
- *  Array enumeration order is not strictly specified.  This test case
- *  compares behavior against the currently desired semantics:
- *
- *    - If dense, enumerate array keys first, then other keys
- *
- *    - When converting to sparse, re-add keys so that array keys
- *      are first (i.e. preserve order when abandoning array part)
- *
- *    - If sparse, maintain key insertion order only
+ *  Array for-in enumeration order is not strictly specified in ES5.
+ *  That is also the case for ES6 and ES7.  However, Duktape 2.x follows
+ *  ES6 [[OwnPropertyKeys]] order also in for-in and Object.keys() so
+ *  test for the custom behavior.
  */
 
 /*---
@@ -42,17 +37,17 @@ array keys
 2
 3
 4
-foo
 10000
+foo
 array keys
 0
 1
 2
 3
 4
-foo
-10000
 10
+10000
+foo
 ===*/
 
 var a;

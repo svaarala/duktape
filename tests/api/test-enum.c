@@ -2,16 +2,16 @@
 *** test_1 (duk_safe_call)
 object with own properties only, enum with get_value=0
 key: '1'
+key: '2'
 key: 'foo'
 key: 'bar'
 key: 'quux'
-key: '2'
 object with own properties only, enum with get_value=1
 key: '1', value: '1'
+key: '2', value: '5'
 key: 'foo', value: '2'
 key: 'bar', value: '3'
 key: 'quux', value: '4'
-key: '2', value: '5'
 object with inherited, enumerable properties, enum with get_value=1
 key: 'foo', value: 'bar'
 key: 'parent', value: 'inherited'
@@ -23,11 +23,11 @@ key: 'enumerable_prop', value: '123'
 key: 'nonenumerable_prop', value: '234'
 object with string and array index keys, enum with get_value=1
 - enum array indices only, not sorted
-key: '999', value: 'val2'
 key: '1', value: 'val3'
+key: '2', value: 'val6'
 key: '123', value: 'val4'
 key: '234', value: 'val5'
-key: '2', value: 'val6'
+key: '999', value: 'val2'
 - enum array indices only, sorted
 key: '1', value: 'val3'
 key: '2', value: 'val6'
@@ -94,6 +94,12 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_pop(ctx);
 	duk_pop(ctx);
 
+	/* Duktape 2.x ES6-based enumeration order ensures array indices are
+	 * sorted even when not explicitly requested.  This only applies to
+	 * each inheritance level (e.g. own properties) separately.  In
+	 * practice array indices will be sorted because array indices are
+	 * very rarely inherited.
+	 */
 	printf("object with string and array index keys, enum with get_value=1\n");
 	duk_eval_string(ctx, "({ foo: 'val1', 999: 'val2', 1: 'val3', 123: 'val4', 234: 'val5', 2: 'val6', bar: 'val7' })");
 	printf("- enum array indices only, not sorted\n");
