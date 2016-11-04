@@ -1277,8 +1277,10 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
  *  Array index: E5 Section 15.4
  *  Array length: E5 Section 15.4.5.1 steps 3.c - 3.d (array length write)
  *
- *  The DUK_HSTRING_GET_ARRIDX_SLOW() and DUK_HSTRING_GET_ARRIDX_FAST() macros
- *  call duk_js_to_arrayindex_string_helper().
+ *  duk_js_to_arrayindex_string_helper() computes the array index from
+ *  string contents alone.  Depending on options it's only called during
+ *  string intern (and value stored to duk_hstring) or it's called also
+ *  at runtime.
  */
 
 DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {

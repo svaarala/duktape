@@ -37,7 +37,9 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	duk_hstring *res = NULL;
 	duk_uint8_t *data;
 	duk_size_t alloc_size;
+#if !defined(DUK_USE_HSTRING_ARRIDX)
 	duk_uarridx_t dummy;
+#endif
 	duk_uint32_t clen;
 
 #if defined(DUK_USE_STRLEN16)
@@ -80,7 +82,11 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 	}
 
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
+#if defined(DUK_USE_HSTRING_ARRIDX)
+	if (duk_js_to_arrayindex_raw_string(str, blen, &res->arridx)) {
+#else
 	if (duk_js_to_arrayindex_raw_string(str, blen, &dummy)) {
+#endif
 		DUK_HSTRING_SET_ARRIDX(res);
 	}
 
