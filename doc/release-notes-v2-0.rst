@@ -976,6 +976,31 @@ To upgrade:
 * If you're using the user InitJS option, call sites need to be modified to
   run the init code explicitly on heap/thread creation.
 
+Enumeration order changes
+-------------------------
+
+Enumeration order for ``Object.getOwnPropertyNames()`` has been changed to
+match ES6/ES7 ``[[OwnPropertyKeys]]`` enumeration order, which is:
+
+* Array indices in ascending order
+
+* Normal (non-array-index) property keys in insertion order
+
+* Symbols in insertion order
+
+While not required by ES6/ES7, the same enumeration order is also used in
+Duktape 2.x for ``for-in``, ``Object.keys()``, and ``duk_enum()``.  A related
+change is that ``duk_enum()`` flags ``DUK_ENUM_ARRAY_INDICES_ONLY`` and
+``DUK_ENUM_SORT_ARRAY_INDICES`` can now be used independently.
+
+The revised enumeration order makes enumeration behavior more predictable
+and matches other modern engines.  In particular, sparse arrays (arrays
+without an internal array part) now enumerate identically to dense arrays.
+
+To upgrade:
+
+* Check application code for enumeration assumptions.
+
 Other incompatible changes
 --------------------------
 
