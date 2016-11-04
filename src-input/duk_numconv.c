@@ -1777,7 +1777,9 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	duk_small_int_t allow_empty = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO);
 	duk_small_int_t allow_leading_zero = (flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO);
 	duk_small_int_t allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
+#if 0
 	duk_small_int_t allow_auto_oct_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT);
+#endif
 
 	DUK_DDD(DUK_DDDPRINT("parse number: %!T, radix=%ld, flags=0x%08lx",
 	                     (duk_tval *) duk_get_tval(ctx, -1),
@@ -1856,18 +1858,21 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	}
 	if (ch == (duk_small_int_t) '0') {
 		duk_small_int_t detect_radix = 0;
-		ch = p[1];
-		if (allow_auto_hex_int && (ch == (duk_small_int_t) 'x' || ch == (duk_small_int_t) 'X')) {
+		ch = DUK_LOWERCASE_CHAR_ASCII(p[1]);  /* 'x' or 'X' -> 'x' */
+		if (allow_auto_hex_int && ch == DUK_ASC_LC_X) {
 			DUK_DDD(DUK_DDDPRINT("detected 0x/0X hex prefix, changing radix and preventing fractions and exponent"));
 			detect_radix = 16;
 			allow_empty = 0;  /* interpret e.g. '0x' and '0xg' as a NaN (= parse error) */
 			p += 2;
-		} else if (allow_auto_oct_int && (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9')) {
+		}
+#if 0  /* Auto octal not needed at the moment. */
+		else if (allow_auto_oct_int && (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9')) {
 			DUK_DDD(DUK_DDDPRINT("detected 0n oct prefix, changing radix and preventing fractions and exponent"));
 			detect_radix = 8;
 			allow_empty = 1;  /* interpret e.g. '09' as '0', not NaN */
 			p += 1;
 		}
+#endif
 		if (detect_radix > 0) {
 			radix = detect_radix;
 			allow_expt = 0;
