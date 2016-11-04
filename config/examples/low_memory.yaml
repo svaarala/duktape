@@ -45,6 +45,8 @@ DUK_USE_STRTAB_CHAIN: true
 DUK_USE_STRTAB_PROBE: false
 DUK_USE_STRTAB_CHAIN_SIZE: 128
 
+DUK_USE_HSTRING_ARRIDX: false
+
 # Consider using pointer compression, see doc/low-memory.rst.
 #DUK_USE_REFCOUNT16: true
 #DUK_USE_STRHASH16: true
