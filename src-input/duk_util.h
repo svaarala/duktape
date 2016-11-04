@@ -537,8 +537,15 @@ DUK_INTERNAL_DECL void duk_byteswap_bytes(duk_uint8_t *p, duk_small_uint_t len);
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32_nonegzero(duk_double_t x, duk_int32_t *ival);
 DUK_INTERNAL_DECL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival);
-DUK_INTERNAL_DECL duk_bool_t duk_is_anyinf(duk_double_t x);
-DUK_INTERNAL_DECL duk_bool_t duk_is_posinf(duk_double_t x);
-DUK_INTERNAL_DECL duk_bool_t duk_is_neginf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_anyinf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_posinf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_neginf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_nan(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_nan_or_zero(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_nan_or_inf(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_is_nan_zero_inf(duk_double_t x);
+DUK_INTERNAL_DECL duk_small_uint_t duk_double_signbit(duk_double_t x);
+DUK_INTERNAL_DECL duk_double_t duk_double_trunc_towards_zero(duk_double_t x);
+DUK_INTERNAL_DECL duk_bool_t duk_double_same_sign(duk_double_t x, duk_double_t y);
 
 #endif  /* DUK_UTIL_H_INCLUDED */

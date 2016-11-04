@@ -54,8 +54,20 @@ DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 	 * -0 as Ecmascript requires.
 	 */
 	if (x == 0 && y == 0) {
+		duk_double_union du1, du2;
+		du1.d = x;
+		du2.d = y;
+
+		/* Already checked to be zero so these must hold, and allow us
+		 * to check for "x is -0 or y is -0" by ORing the high parts
+		 * for comparison.
+		 */
+		DUK_ASSERT(du1.ui[DUK_DBL_IDX_UI0] == 0 || du1.ui[DUK_DBL_IDX_UI0] == 0x80000000UL);
+		DUK_ASSERT(du2.ui[DUK_DBL_IDX_UI0] == 0 || du2.ui[DUK_DBL_IDX_UI0] == 0x80000000UL);
+
 		/* XXX: what's the safest way of creating a negative zero? */
-		if (DUK_SIGNBIT(x) != 0 || DUK_SIGNBIT(y) != 0) {
+		if ((du1.ui[DUK_DBL_IDX_UI0] | du2.ui[DUK_DBL_IDX_UI0]) != 0) {
+			/* Enter here if either x or y (or both) is -0. */
 			return -0.0;
 		} else {
 			return +0.0;

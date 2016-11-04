@@ -262,20 +262,126 @@ DUK_INTERNAL duk_bool_t duk_is_whole_get_int32(duk_double_t x, duk_int32_t *ival
 	return 1;
 }
 
-DUK_INTERNAL duk_bool_t duk_is_anyinf(duk_double_t x) {
+/*
+ *  IEEE double checks
+ */
+
+DUK_INTERNAL duk_bool_t duk_double_is_anyinf(duk_double_t x) {
 	duk_double_union du;
 	du.d = x;
 	return DUK_DBLUNION_IS_ANYINF(&du);
 }
 
-DUK_INTERNAL duk_bool_t duk_is_posinf(duk_double_t x) {
+DUK_INTERNAL duk_bool_t duk_double_is_posinf(duk_double_t x) {
 	duk_double_union du;
 	du.d = x;
 	return DUK_DBLUNION_IS_POSINF(&du);
 }
 
-DUK_INTERNAL duk_bool_t duk_is_neginf(duk_double_t x) {
+DUK_INTERNAL duk_bool_t duk_double_is_neginf(duk_double_t x) {
 	duk_double_union du;
 	du.d = x;
 	return DUK_DBLUNION_IS_NEGINF(&du);
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_nan(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	/* Assumes we're dealing with a Duktape internal NaN which is
+	 * NaN normalized if duk_tval requires it.
+	 */
+	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
+	return DUK_DBLUNION_IS_NAN(&du);
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_nan_or_zero(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	/* Assumes we're dealing with a Duktape internal NaN which is
+	 * NaN normalized if duk_tval requires it.
+	 */
+	DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
+	return DUK_DBLUNION_IS_NAN(&du) || DUK_DBLUNION_IS_ANYZERO(&du);
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_nan_or_inf(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	/* If exponent is 0x7FF the argument is either a NaN or an
+	 * infinity.  We don't need to check any other fields.
+	 */
+#if defined(DUK_USE_64BIT_OPS)
+#if defined(DUK_USE_DOUBLE_ME)
+	return (du.ull[DUK_DBL_IDX_ULL0] & 0x000000007ff00000ULL) == 0x000000007ff00000ULL;
+#else
+	return (du.ull[DUK_DBL_IDX_ULL0] & 0x7ff0000000000000ULL) == 0x7ff0000000000000ULL;
+#endif
+#else
+	return (du.ui[DUK_DBL_IDX_UI0] & 0x7ff00000UL) == 0x7ff00000UL;
+#endif
+}
+
+DUK_INTERNAL duk_bool_t duk_double_is_nan_zero_inf(duk_double_t x) {
+	duk_double_union du;
+#if defined(DUK_USE_64BIT_OPS)
+	duk_uint64_t t;
+#else
+	duk_uint32_t t;
+#endif
+	du.d = x;
+#if defined(DUK_USE_64BIT_OPS)
+#if defined(DUK_USE_DOUBLE_ME)
+	t = du.ull[DUK_DBL_IDX_ULL0] & 0x000000007ff00000ULL;
+	if (t == 0x0000000000000000ULL) {
+		t = du.ull[DUK_DBL_IDX_ULL0] & 0x0000000080000000ULL;
+		return t == 0;
+	}
+	if (t == 0x000000007ff00000UL) {
+		return 1;
+	}
+#else
+	t = du.ull[DUK_DBL_IDX_ULL0] & 0x7ff0000000000000ULL;
+	if (t == 0x0000000000000000ULL) {
+		t = du.ull[DUK_DBL_IDX_ULL0] & 0x8000000000000000ULL;
+		return t == 0;
+	}
+	if (t == 0x7ff0000000000000ULL) {
+		return 1;
+	}
+#endif
+#else
+	t = du.ui[DUK_DBL_IDX_UI0] & 0x7ff00000UL;
+	if (t == 0x00000000UL) {
+		return DUK_DBLUNION_IS_ANYZERO(&du);
+	}
+	if (t == 0x7ff00000UL) {
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+DUK_INTERNAL duk_small_uint_t duk_double_signbit(duk_double_t x) {
+	duk_double_union du;
+	du.d = x;
+	return (duk_small_uint_t) DUK_DBLUNION_GET_SIGNBIT(&du);
+}
+
+DUK_INTERNAL duk_double_t duk_double_trunc_towards_zero(duk_double_t x) {
+	/* XXX: optimize */
+	duk_small_int_t s = duk_double_signbit(x);
+	x = DUK_FLOOR(DUK_FABS(x));  /* truncate towards zero */
+	if (s) {
+		x = -x;
+	}
+	return x;
+}
+
+DUK_INTERNAL duk_bool_t duk_double_same_sign(duk_double_t x, duk_double_t y) {
+	duk_double_union du1;
+	duk_double_union du2;
+	du1.d = x;
+	du2.d = y;
+
+	return (((du1.ui[DUK_DBL_IDX_UI0] ^ du2.ui[DUK_DBL_IDX_UI0]) & 0x80000000UL) == 0);
 }

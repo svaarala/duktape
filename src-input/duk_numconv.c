@@ -2239,6 +2239,10 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	/*
 	 *  Convert binary digits into an IEEE double.  Need to handle
 	 *  denormals and rounding correctly.
+	 *
+	 *  Some call sites currently assume the result is always a
+	 *  non-fastint double.  If this is changed, check all call
+	 *  sites.
 	 */
 
 	duk__dragon4_ctx_to_double(nc_ctx, &res);
