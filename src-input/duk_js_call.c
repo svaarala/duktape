@@ -175,8 +175,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
 	                               DUK_BIDX_OBJECT_PROTOTYPE);
 	DUK_ASSERT(i_arg >= 0);
-	arg = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(arg != NULL);
+	arg = duk_known_hobject(ctx, -1);
 
 	i_map = duk_push_object_helper(ctx,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |

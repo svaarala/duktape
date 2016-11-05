@@ -485,8 +485,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h),
 	               comp_flags);
-	func = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
-	DUK_ASSERT(func != NULL);
+	func = (duk_hcompfunc *) duk_known_hobject(ctx, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
 	/* [ source template ] */
@@ -526,8 +525,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
 			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 			                                    act_lex_env);
-			new_env = duk_require_hobject(ctx, -1);
-			DUK_ASSERT(new_env != NULL);
+			new_env = duk_known_hobject(ctx, -1);
 			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO",
 			                     (duk_heaphdr *) new_env));
 

@@ -926,8 +926,7 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	duk_size_t i, n;
 	duk_uint_fast8_t c_prev, c;
 
-	h = duk_get_hstring(ctx, idx_pattern);
-	DUK_ASSERT(h != NULL);
+	h = duk_known_hstring(ctx, idx_pattern);
 	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
 	n = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 
@@ -1106,7 +1105,7 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 
 	/* [ ... escape_source bytecode ] */
 
-	h_bc = duk_get_hstring(ctx, -1);
+	h_bc = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_bc != NULL);
 	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h_bc) >= 1);          /* always at least the header */
 	DUK_ASSERT(DUK_HSTRING_GET_CHARLEN(h_bc) >= 1);
@@ -1116,8 +1115,7 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 	/* [ ... escaped_source bytecode ] */
 
 	duk_push_object(ctx);
-	h = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h != NULL);
+	h = duk_known_hobject(ctx, -1);
 	duk_insert(ctx, -3);
 
 	/* [ ... regexp_object escaped_source bytecode ] */

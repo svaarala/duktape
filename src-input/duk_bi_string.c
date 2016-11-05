@@ -579,8 +579,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 			duk_get_prop_index(ctx, -1, 0);
 			DUK_ASSERT(duk_is_string(ctx, -1));
-			h_match = duk_get_hstring(ctx, -1);
-			DUK_ASSERT(h_match != NULL);
+			h_match = duk_known_hstring(ctx, -1);
 			duk_pop(ctx);  /* h_match is borrowed, remains reachable through match_obj */
 
 			if (DUK_HSTRING_GET_BYTELEN(h_match) == 0) {
@@ -616,8 +615,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 			p = p_start;
 
-			h_search = duk_get_hstring(ctx, 0);
-			DUK_ASSERT(h_search != NULL);
+			h_search = duk_known_hstring(ctx, 0);
 			q_start = DUK_HSTRING_GET_DATA(h_search);
 			q_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_search);
 
@@ -629,8 +627,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				DUK_ASSERT(p + q_blen <= DUK_HSTRING_GET_DATA(h_input) + DUK_HSTRING_GET_BYTELEN(h_input));
 				if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 					duk_dup_0(ctx);
-					h_match = duk_get_hstring(ctx, -1);
-					DUK_ASSERT(h_match != NULL);
+					h_match = duk_known_hstring(ctx, -1);
 #ifdef DUK_USE_REGEXP_SUPPORT
 					match_caps = 0;
 #endif
@@ -788,8 +785,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 						if (duk_is_string(ctx, -1)) {
 							duk_hstring *h_tmp_str;
 
-							h_tmp_str = duk_get_hstring(ctx, -1);
-							DUK_ASSERT(h_tmp_str != NULL);
+							h_tmp_str = duk_known_hstring(ctx, -1);
 
 							DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_tmp_str);
 						} else {
@@ -976,8 +972,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 			p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
 			p = p_start + prev_match_end_boff;
 
-			h_sep = duk_get_hstring(ctx, 0);
-			DUK_ASSERT(h_sep != NULL);
+			h_sep = duk_known_hstring(ctx, 0);
 			q_start = DUK_HSTRING_GET_DATA(h_sep);
 			q_blen = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sep);
 			q_clen = (duk_size_t) DUK_HSTRING_GET_CHARLEN(h_sep);

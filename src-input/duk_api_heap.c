@@ -176,8 +176,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 
 	/* [ ... new_glob new_env ] */
 
-	h_env = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h_env != NULL);
+	h_env = duk_known_hobject(ctx, -1);
 
 	h_prev_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_env;

@@ -187,7 +187,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	DUK_ASSERT(enum_target != NULL);
 
 	duk_push_object_internal(ctx);
-	res = duk_require_hobject(ctx, -1);
+	res = duk_known_hobject(ctx, -1);
 
 	DUK_DDD(DUK_DDDPRINT("created internal object"));
 
@@ -624,8 +624,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_sma
 
 	/* [enum_target enum res] */
 
-	e = duk_require_hobject(ctx, -2);
-	DUK_ASSERT(e != NULL);
+	e = duk_known_hobject(ctx, -2);
 
 	idx = 0;
 	for (i = DUK__ENUM_START_INDEX; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(e); i++) {

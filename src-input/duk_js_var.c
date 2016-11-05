@@ -131,8 +131,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_push_compiledfunction(ctx);
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
-	fun_clos = (duk_hcompfunc *) duk_get_hcompfunc(ctx, -2);
-	DUK_ASSERT(fun_clos != NULL);
+	fun_clos = (duk_hcompfunc *) duk_known_hcompfunc(ctx, -2);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun_clos));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) == NULL);
@@ -502,8 +501,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
 	                              -1);  /* no prototype, updated below */
-	env = duk_require_hobject(ctx, -1);
-	DUK_ASSERT(env != NULL);
+	env = duk_known_hobject(ctx, -1);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, env, parent);  /* parent env is the prototype */
 
 	/* open scope information, for compiled functions only */

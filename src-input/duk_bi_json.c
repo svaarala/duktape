@@ -1380,8 +1380,7 @@ DUK_LOCAL void duk__enc_double(duk_json_enc_ctx *js_ctx) {
 			/* [ ... number ] -> [ ... string ] */
 			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
 		}
-		h_str = duk_get_hstring(ctx, -1);
-		DUK_ASSERT(h_str != NULL);
+		h_str = duk_known_hstring(ctx, -1);
 		DUK__EMIT_HSTR(js_ctx, h_str);
 		return;
 	}
@@ -1702,8 +1701,7 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	 * with overflow in a loop check object.
 	 */
 
-	h_target = duk_get_hobject(ctx, -1);  /* object or array */
-	DUK_ASSERT(h_target != NULL);
+	h_target = duk_known_hobject(ctx, -1);  /* object or array */
 
 	n = js_ctx->recursion_depth;
 	if (DUK_UNLIKELY(n > DUK_JSON_ENC_LOOPARRAY)) {
@@ -1753,8 +1751,7 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 
 	/* Loop check. */
 
-	h_target = duk_get_hobject(ctx, *entry_top - 1);  /* original target at entry_top - 1 */
-	DUK_ASSERT(h_target != NULL);
+	h_target = duk_known_hobject(ctx, *entry_top - 1);  /* original target at entry_top - 1 */
 
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
@@ -1822,8 +1819,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 		                     (duk_tval *) duk_get_tval(ctx, idx_obj),
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
-		h_key = duk_get_hstring(ctx, -1);
-		DUK_ASSERT(h_key != NULL);
+		h_key = duk_known_hstring(ctx, -1);
 
 		prev_size = DUK_BW_GET_SIZE(js_ctx->thr, &js_ctx->bw);
 		if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
@@ -2995,14 +2991,12 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		DUK_ASSERT(nspace >= 0 && nspace <= 10);
 
 		duk_push_lstring(ctx, spaces, (duk_size_t) nspace);
-		js_ctx->h_gap = duk_get_hstring(ctx, -1);
-		DUK_ASSERT(js_ctx->h_gap != NULL);
+		js_ctx->h_gap = duk_known_hstring(ctx, -1);
 	} else if (duk_is_string(ctx, idx_space)) {
 		/* XXX: substring in-place at idx_place? */
 		duk_dup(ctx, idx_space);
 		duk_substring(ctx, -1, 0, 10);  /* clamp to 10 chars */
-		js_ctx->h_gap = duk_get_hstring(ctx, -1);
-		DUK_ASSERT(js_ctx->h_gap != NULL);
+		js_ctx->h_gap = duk_known_hstring(ctx, -1);
 	} else {
 		/* nop */
 	}

@@ -57,8 +57,7 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		/* XXX: helper; rely on Boolean.prototype as being non-writable, non-configurable */
 		duk_push_this(ctx);
-		h_this = duk_get_hobject(ctx, -1);
-		DUK_ASSERT(h_this != NULL);
+		h_this = duk_known_hobject(ctx, -1);
 		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_this) == thr->builtins[DUK_BIDX_BOOLEAN_PROTOTYPE]);
 
 		DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_BOOLEAN);

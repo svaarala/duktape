@@ -128,8 +128,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 
 	/* [ ... func_template ] */
 
-	h_templ = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h_templ != NULL);
+	h_templ = (duk_hcompfunc *) duk_known_hobject(ctx, -1);
 	duk_js_push_closure(thr,
 	                   h_templ,
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],

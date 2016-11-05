@@ -19,8 +19,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	duk_require_callable(ctx, 0);
 
 	duk_push_thread(ctx);
-	new_thr = (duk_hthread *) duk_get_hobject(ctx, -1);
-	DUK_ASSERT(new_thr != NULL);
+	new_thr = (duk_hthread *) duk_known_hobject(ctx, -1);
 	new_thr->state = DUK_HTHREAD_STATE_INACTIVE;
 
 	/* push initial function call to new thread stack; this is

@@ -567,6 +567,7 @@ DUK_LOCAL void duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx)
 
 	DUK_BW_PUSH_AS_STRING(lex_ctx->thr, &lex_ctx->bw);
 	duk_replace(ctx, valstack_idx);
+	/* XXX: return hstring *? */
 }
 
 /*
@@ -1179,7 +1180,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 				DUK__APPENDBUFFER(lex_ctx, x);
 			}
 			duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-			out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+			out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 
 			/* second, parse flags */
 
@@ -1194,7 +1195,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 				DUK__ADVANCECHARS(lex_ctx, 1);
 			}
 			duk__internbuffer(lex_ctx, lex_ctx->slot2_idx);
-			out_token->str2 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
+			out_token->str2 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
 
 			DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
@@ -1369,7 +1370,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		DUK__INITBUFFER(lex_ctx);
 		duk__lexer_parse_string_literal(lex_ctx, out_token, x /*quote*/, strict_mode);
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+		out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 
 		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
@@ -1470,9 +1471,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		}
 
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-		out_token->str1 = duk_get_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+		out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 		str = out_token->str1;
-		DUK_ASSERT(str != NULL);
 		out_token->t_nores = DUK_TOK_IDENTIFIER;
 
 		DUK__INITBUFFER(lex_ctx);  /* free some memory */

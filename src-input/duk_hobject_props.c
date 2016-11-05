@@ -148,8 +148,7 @@ DUK_LOCAL duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_t
 	DUK_ASSERT(out_h != NULL);
 
 	duk_push_tval(ctx, tv);
-	duk_to_string(ctx, -1);
-	h = duk_get_hstring(ctx, -1);
+	h = duk_to_hstring(ctx, -1);
 	DUK_ASSERT(h != NULL);
 	*out_h = h;
 
@@ -4450,8 +4449,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 #endif  /* DUK_USE_ES6_PROXY */
 
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
+		key = duk_to_hstring(ctx, -1);
 		DUK_ASSERT(key != NULL);
 
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag ? DUK_DELPROP_FLAG_THROW : 0);
@@ -4463,8 +4461,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		DUK_ASSERT(h != NULL);
 
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
+		key = duk_to_hstring(ctx, -1);
 		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -4485,8 +4482,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
 		DUK_ASSERT(h != NULL);
 
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
+		key = duk_to_hstring(ctx, -1);
 		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -4504,8 +4500,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * reject if match any of them.
 		 */
 
-		duk_to_string(ctx, -1);
-		key = duk_get_hstring(ctx, -1);
+		key = duk_to_hstring(ctx, -1);
 		DUK_ASSERT(key != NULL);
 
 		if (duk__key_is_lightfunc_ownprop(thr, key)) {
@@ -4810,8 +4805,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 	DUK_ASSERT(thr->heap != NULL);
 
 	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-	(void) duk_to_string(ctx, 1);
-	key = duk_require_hstring(ctx, 1);
+	key = duk_to_hstring(ctx, 1);
 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);

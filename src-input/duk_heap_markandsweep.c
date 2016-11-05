@@ -947,8 +947,7 @@ DUK_LOCAL int duk__protected_compact_object(duk_context *ctx, void *udata) {
 	/* XXX: for threads, compact value stack, call stack, catch stack? */
 
 	DUK_UNREF(udata);
-	obj = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(obj != NULL);
+	obj = duk_known_hobject(ctx, -1);
 	duk_hobject_compact_props((duk_hthread *) ctx, obj);
 	return 0;
 }

@@ -2028,7 +2028,8 @@ Planned
   internal duk_dup() variants (GH-990); allow stripping of (almost) all
   built-ins for low memory builds (GH-989); remove internal accessor setup
   helper and use duk_def_prop() instead (GH-1010); minor IEEE double handling
-  optimizations (GH-1051); precomputed duk_hstring array index (GH-1056)
+  optimizations (GH-1051); precomputed duk_hstring array index (GH-1056);
+  internal value stack access improvements (GH-1058)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than

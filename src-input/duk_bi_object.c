@@ -161,8 +161,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *
 				continue;
 			}
 
-			key = duk_get_hstring(ctx, 3);
-			DUK_ASSERT(key != NULL);
+			key = duk_known_hstring(ctx, 3);
 
 			duk_hobject_define_property_helper(ctx,
 			                                   defprop_flags,
