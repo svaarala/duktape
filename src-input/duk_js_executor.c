@@ -4796,7 +4796,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * ToUint32() which is odd but happens now as a side effect of
 			 * 'arr_idx' type.
 			 */
-			duk_hobject_set_length(thr, duk_get_hobject(ctx, obj_idx), (duk_uint32_t) arr_idx);
+			duk_hobject_set_length(thr, duk_known_hobject(ctx, obj_idx), (duk_uint32_t) arr_idx);
 			break;
 		}
 

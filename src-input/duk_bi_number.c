@@ -75,8 +75,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 
 	/* XXX: helper */
 	duk_push_this(ctx);
-	h_this = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h_this != NULL);
+	h_this = duk_known_hobject(ctx, -1);
 	DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_NUMBER);
 
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_this) == thr->builtins[DUK_BIDX_NUMBER_PROTOTYPE]);

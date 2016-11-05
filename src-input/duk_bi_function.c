@@ -69,8 +69,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
 	               comp_flags);
-	func = (duk_hcompfunc *) duk_get_hobject(ctx, -1);
-	DUK_ASSERT(func != NULL);
+	func = (duk_hcompfunc *) duk_known_hobject(ctx, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
 	/* [ body formals source template ] */
@@ -329,8 +328,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	                       DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),
 	                       DUK_BIDX_FUNCTION_PROTOTYPE);
-	h_bound = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h_bound != NULL);
+	h_bound = duk_known_hobject(ctx, -1);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 	duk_dup_m2(ctx);  /* func */

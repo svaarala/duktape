@@ -65,8 +65,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
 	                       DUK_BIDX_GLOBAL);
-	h1 = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h1 != NULL);
+	h1 = duk_known_hobject(ctx, -1);
 #elif defined(DUK_USE_ROM_GLOBAL_CLONE)
 	/* Clone the properties of the ROM-based global object to create a
 	 * fully RAM-based global object.  Uses more memory than the inherit
@@ -76,8 +75,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
 	                       DUK_BIDX_OBJECT_PROTOTYPE);
-	h1 = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h1 != NULL);
+	h1 = duk_known_hobject(ctx, -1);
 	h2 = thr->builtins[DUK_BIDX_GLOBAL];
 	DUK_ASSERT(h2 != NULL);
 
@@ -126,8 +124,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
 	                       -1);  /* no prototype */
-	h1 = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h1 != NULL);
+	h1 = duk_known_hobject(ctx, -1);
 	duk_dup_m2(ctx);
 	duk_dup_top(ctx);  /* -> [ ... new_global new_globalenv new_global new_global ] */
 	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
@@ -267,8 +264,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* XXX: set magic directly here? (it could share the c_nargs arg) */
 			duk_push_c_function_noexotic(ctx, c_func, c_nargs);
 
-			h = duk_require_hobject(ctx, -1);
-			DUK_ASSERT(h != NULL);
+			h = duk_known_hobject(ctx, -1);
 
 			/* Currently all built-in native functions are strict.
 			 * duk_push_c_function() now sets strict flag, so
@@ -311,8 +307,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 		}
 
-		h = duk_require_hobject(ctx, -1);
-		DUK_ASSERT(h != NULL);
+		h = duk_known_hobject(ctx, -1);
 		DUK_HOBJECT_SET_CLASS_NUMBER(h, class_num);
 
 		if (i < DUK_NUM_BUILTINS) {
@@ -384,13 +379,12 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		duk_small_uint_t num;
 
 		DUK_DDD(DUK_DDDPRINT("initializing built-in object at index %ld", (long) i));
-		h = duk_require_hobject(ctx, i);
-		DUK_ASSERT(h != NULL);
+		h = duk_known_hobject(ctx, i);
 
 		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
 		if (t != DUK__NO_BIDX_MARKER) {
 			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %ld", (long) t));
-			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, duk_require_hobject(ctx, t));
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, duk_known_hobject(ctx, t));
 		}
 
 		t = (duk_small_uint_t) duk_bd_decode(bd, DUK__BIDX_BITS);
@@ -542,8 +536,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 
 			duk__push_stridx_or_string(ctx, bd);
-			h_key = duk_get_hstring(ctx, -1);
-			DUK_ASSERT(h_key != NULL);
+			h_key = duk_known_hstring(ctx, -1);
 			DUK_UNREF(h_key);
 			natidx = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
 
@@ -595,7 +588,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) name ] */
 
 			duk_push_c_function_noconstruct_noexotic(ctx, c_func, c_nargs);
-			h_func = duk_require_hnatfunc(ctx, -1);
+			h_func = duk_known_hnatfunc(ctx, -1);
 			DUK_UNREF(h_func);
 
 			/* Currently all built-in native functions are strict.
@@ -668,8 +661,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	duk_xdef_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
 #endif
 
-	h = duk_require_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
-	DUK_ASSERT(h != NULL);
+	h = duk_known_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
 	DUK_HOBJECT_CLEAR_EXTENSIBLE(h);
 
 #if !defined(DUK_USE_ES6_OBJECT_PROTO_PROPERTY)
@@ -796,7 +788,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	DUK_DD(DUK_DDPRINT("compact built-ins"));
 	for (i = 0; i < DUK_NUM_ALL_BUILTINS; i++) {
-		duk_hobject_compact_props(thr, duk_require_hobject(ctx, i));
+		duk_hobject_compact_props(thr, duk_known_hobject(ctx, i));
 	}
 
 	DUK_D(DUK_DPRINT("INITBUILTINS END"));

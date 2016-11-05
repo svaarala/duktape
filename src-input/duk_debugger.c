@@ -1463,8 +1463,7 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	if (duk_is_object(ctx, -1)) {
 		duk_enum(ctx, -1, 0 /*enum_flags*/);
 		while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
-			varname = duk_get_hstring(ctx, -1);
-			DUK_ASSERT(varname != NULL);
+			varname = duk_known_hstring(ctx, -1);
 
 			duk_js_getvar_activation(thr, curr_act, varname, 0 /*throw_flag*/);
 			/* [ ... func varmap enum key value this ] */

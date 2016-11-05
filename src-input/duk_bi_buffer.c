@@ -241,8 +241,7 @@ DUK_LOCAL duk_hbufobj *duk__push_arraybuffer_with_length(duk_context *ctx, duk_u
 	duk_hbufobj *h_bufobj;
 
 	(void) duk_push_fixed_buffer(ctx, (duk_size_t) len);
-	h_val = (duk_hbuffer *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_val != NULL);
+	h_val = (duk_hbuffer *) duk_known_hbuffer(ctx, -1);
 
 	h_bufobj = duk_push_bufobj_raw(ctx,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -568,7 +567,7 @@ DUK_LOCAL duk_hbuffer *duk__hbufobj_fixed_from_argvalue(duk_context *ctx) {
 		DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
 	}
 	DUK_ASSERT(duk_is_buffer(ctx, -1));
-	return duk_get_hbuffer(ctx, -1);
+	return duk_known_hbuffer(ctx, -1);
 }
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
@@ -623,8 +622,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_constructor(duk_context *ctx) {
 		goto fail_length;
 	}
 	(void) duk_push_fixed_buffer(ctx, (duk_size_t) len);
-	h_val = (duk_hbuffer *) duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_val != NULL);
+	h_val = (duk_hbuffer *) duk_known_hbuffer(ctx, -1);
 
 #if !defined(DUK_USE_ZERO_BUFFER_DATA)
 	/* Khronos/ES6 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
@@ -1600,8 +1598,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	}
 
 	duk_hbufobj_promote_plain(ctx, 0);
-	h_obj = duk_require_hobject(ctx, 0);
-	DUK_ASSERT(h_obj != NULL);
+	h_obj = duk_known_hobject(ctx, 0);
 
 	/* XXX: V8 throws a TypeError for negative values.  Would it
 	 * be more useful to interpret negative offsets here from the
@@ -2018,8 +2015,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 		           (const void *) (DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this) + start_offset),
 		           copy_length);
 
-		h_val = duk_get_hbuffer(ctx, -1);
-		DUK_ASSERT(h_val != NULL);
+		h_val = duk_known_hbuffer(ctx, -1);
 
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
@@ -2225,8 +2221,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_concat(duk_context *ctx) {
 		duk_pop(ctx);
 	}
 
-	h_val = duk_get_hbuffer(ctx, -1);
-	DUK_ASSERT(h_val != NULL);
+	h_val = duk_known_hbuffer(ctx, -1);
 
 	duk__set_bufobj_buffer(ctx, h_bufres, h_val);
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufres);

@@ -1797,6 +1797,60 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 	DUK_UNREACHABLE();
 }
 
+
+/*
+ *  duk_known_xxx() helpers
+ *
+ *  Used internally when we're 100% sure that a certain index is valid and
+ *  contains an object of a certain type.  For example, if we duk_push_object()
+ *  we can then safely duk_known_hobject(ctx, -1).  These helpers just assert
+ *  for the index and type, and if the assumptions are not valid, memory unsafe
+ *  behavior happens.
+ */
+
+DUK_LOCAL duk_heaphdr *duk__known_heaphdr(duk_context *ctx, duk_idx_t idx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	duk_heaphdr *h;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	if (idx < 0) {
+		tv = thr->valstack_top + idx;
+	} else {
+		tv = thr->valstack_bottom + idx;
+	}
+	DUK_ASSERT(tv >= thr->valstack_bottom);
+	DUK_ASSERT(tv < thr->valstack_top);
+	h = DUK_TVAL_GET_HEAPHDR(tv);
+	DUK_ASSERT(h != NULL);
+	return h;
+}
+
+DUK_INTERNAL duk_hstring *duk_known_hstring(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(duk_get_hstring(ctx, idx) != NULL);
+	return (duk_hstring *) duk__known_heaphdr(ctx, idx);
+}
+
+DUK_INTERNAL duk_hobject *duk_known_hobject(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(duk_get_hobject(ctx, idx) != NULL);
+	return (duk_hobject *) duk__known_heaphdr(ctx, idx);
+}
+
+DUK_INTERNAL duk_hbuffer *duk_known_hbuffer(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(duk_get_hbuffer(ctx, idx) != NULL);
+	return (duk_hbuffer *) duk__known_heaphdr(ctx, idx);
+}
+
+DUK_INTERNAL duk_hcompfunc *duk_known_hcompfunc(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(duk_get_hcompfunc(ctx, idx) != NULL);
+	return (duk_hcompfunc *) duk__known_heaphdr(ctx, idx);
+}
+
+DUK_INTERNAL duk_hnatfunc *duk_known_hnatfunc(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(duk_get_hnatfunc(ctx, idx) != NULL);
+	return (duk_hnatfunc *) duk__known_heaphdr(ctx, idx);
+}
+
 DUK_INTERNAL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t length) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h;
@@ -2144,7 +2198,7 @@ DUK_INTERNAL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx) {
 	(void) duk_safe_to_string(ctx, idx);
 	DUK_ASSERT(duk_is_string(ctx, idx));
 	DUK_ASSERT(duk_get_hstring(ctx, idx) != NULL);
-	return duk_get_hstring(ctx, idx);
+	return duk_known_hstring(ctx, idx);
 }
 #endif
 
@@ -2541,8 +2595,7 @@ DUK_LOCAL void duk__push_func_from_lightfunc(duk_context *ctx, duk_c_function fu
 	duk_push_lightfunc_name_raw(ctx, func, lf_flags);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
-	nf = duk_get_hnatfunc(ctx, -1);
-	DUK_ASSERT(nf != NULL);
+	nf = duk_known_hnatfunc(ctx, -1);
 	nf->magic = (duk_int16_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
 
 	/* Enable DUKFUNC exotic behavior once properties are set up. */
@@ -2663,8 +2716,7 @@ DUK_INTERNAL duk_hobject *duk_to_hobject(duk_context *ctx, duk_idx_t idx) {
 	duk_hobject *ret;
 	DUK_ASSERT_CTX_VALID(ctx);
 	duk_to_object(ctx, idx);
-	ret = duk_get_hobject(ctx, idx);
-	DUK_ASSERT(ret != NULL);
+	ret = duk_known_hobject(ctx, idx);
 	return ret;
 }
 
@@ -3365,15 +3417,10 @@ DUK_INTERNAL duk_hobject *duk_push_this_coercible_to_object(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
-	duk_hstring *h;
-
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	duk__push_this_helper(ctx, 1 /*check_object_coercible*/);
-	duk_to_string(ctx, -1);
-	h = duk_get_hstring(ctx, -1);
-	DUK_ASSERT(h != NULL);
-	return h;
+	return duk_to_hstring(ctx, -1);
 }
 
 DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx) {
@@ -3611,8 +3658,7 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	ret = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
-	h = duk_get_hobject(ctx, -1);
-	DUK_ASSERT(h != NULL);
+	h = duk_known_hobject(ctx, -1);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
 	return ret;

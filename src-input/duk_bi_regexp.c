@@ -150,7 +150,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
 	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_BYTECODE);
-	h_bc = duk_get_hstring(ctx, -1);
+	h_bc = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_bc != NULL);
 	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h_bc) >= 1);
 	DUK_ASSERT(DUK_HSTRING_GET_CHARLEN(h_bc) >= 1);

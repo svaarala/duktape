@@ -41,7 +41,7 @@ DUK_INTERNAL void duk_bw_init_pushbuf(duk_hthread *thr, duk_bufwriter_ctx *bw_ct
 	ctx = (duk_context *) thr;
 
 	(void) duk_push_dynamic_buffer(ctx, buf_size);
-	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_get_hbuffer(ctx, -1);
+	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_known_hbuffer(ctx, -1);
 	duk__bw_update_ptrs(thr, bw_ctx, 0, buf_size);
 }
 
