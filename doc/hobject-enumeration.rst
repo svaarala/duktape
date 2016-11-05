@@ -2,9 +2,7 @@
 Object enumeration issues
 =========================
 
-.. note:: This document is quite incomplete.  Tests should be expanded
-          so that the same enumeration test is executed at least in
-          Rhino and V8.
+This document provides some design notes for pre-ES6 and ES6/ES7 enumeration.
 
 Key order during enumeration
 ============================
@@ -21,7 +19,7 @@ However, some existing code apparently relies on some ordering behavior:
     order in which they were defined. Because of this the Chrome team has
     deemed this to be a bug and will be fixing it.
 
-Apparently the behavior relied on is roughly:
+User code seems to rely roughly on the following order:
 
 * For arrays, return all used array index keys in ascending order first
 
@@ -31,8 +29,80 @@ Apparently the behavior relied on is roughly:
 * The properties of the object itself are enumerated first, followed by
   its prototype's properties, and so on
 
-ES6 has specific enumeration requirements which aren't yet implemented
-by Duktape (as of version 2.0).
+ES5 doesn't guarantee a specific ordering for enumeration.  ES6 and ES7
+also don't guarantee a specific ordering for ``for-in`` and ``Object.keys()``
+but does guarantee ordering for e.g. ``Object.getOwnPropertyNames()``.
+
+Specification (E6 and E7)
+=========================
+
+The situation seems unchanged from ES5 for ``for-in`` and ``Object.keys()``:
+
+* For-in:
+
+  - ES6 http://www.ecma-international.org/ecma-262/6.0/#sec-runtime-semantics-forin-div-ofheadevaluation-tdznames-expr-iterationkind
+    algorithm step 7 is taken (iterationKind is "enumerate"), target is
+    ToObject() coerced and ``[[Enumerate]]`` is applied.
+    http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-enumerate
+    states "The mechanics and order of enumerating the properties is not
+    specified but must conform to the rules specified below.".
+
+  - ES7 calls ``EnumerateObjectProperties()``,
+    http://www.ecma-international.org/ecma-262/7.0/#sec-enumerate-object-properties,
+    which has the same requirements as ES6:
+    "The mechanics and order of enumerating the properties is not specified
+    but must conform to the rules specified below.".
+
+* Object.keys():
+
+  - ES6 http://www.ecma-international.org/ecma-262/6.0/#sec-object.keys
+    states: "If an implementation defines a specific order of enumeration for
+    the for-in statement, the same order must be used for the elements of the
+    array returned in step 4."  The algorithm references EnumerableOwnNames,
+    http://www.ecma-international.org/ecma-262/6.0/#sec-enumerableownnames,
+    which states "The order of elements in the returned list is the same as the
+    enumeration order that is used by a for-in statement.".
+
+  - ES7 calls ``EnumerableOwnNames()``,
+    http://www.ecma-international.org/ecma-262/7.0/#sec-enumerableownnames,
+    whose step 5 says "Order the elements of names so they are in the same
+    relative order as would be produced by the Iterator that would be returned
+    if the EnumerateObjectProperties internal method was invoked with O.".
+    So the guarantees are the same as for ``for-in`` in ES7 too.
+
+There are differences to ES5 in the following:
+
+* ``Object.getOwnPropertyNames()`` (a binding already present in ES5)
+
+  - ES5 has no guarantees for key ordering:
+    http://www.ecma-international.org/ecma-262/5.1/#sec-15.2.3.4;
+    the section just states "For each named own property P of O".
+
+  - ES6 relies on ``GetOwnPropertyKeys()`` operation:
+    http://www.ecma-international.org/ecma-262/6.0/#sec-object.getownpropertynames
+    which in turn calls ``[[OwnPropertyKeys]]``
+    For ordinary objects, ES6 ``[[OwnPropertyKeys]]`` provides the ordering
+    often referred to as "the ES6 enumeration order",
+    http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys:
+
+    + For each own property key P of O that is an integer index, in ascending
+      numeric index order ...
+
+    + For each own property key P of O that is a String but is not an integer
+      index, in property creation order ...
+
+    + For each own property key P of O that is a Symbol, in property creation
+      order ...
+
+  - ES7 matches ES6 and invokes ``GetOwnPropertyKeys()``.
+
+* ``Object.getOwnPropertySymbols()`` is new in ES6 and has the same ordering
+  guarantees as above.  In practice, because it only returns symbols, the
+  symbols must be returned in insertion order.
+
+The ``[[OwnPropertyKeys]]`` ordering is what's typically referred to as the
+"ES6 enumeration order".  Most engines, including Duktape 2.x, use it also for
+``for-in`` and ``Object.keys()`` even if it's not required for them.
 
 Specification (E5)
 ==================
