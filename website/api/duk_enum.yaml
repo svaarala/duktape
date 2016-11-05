@@ -12,42 +12,54 @@ summary: |
   is not an object, throws an error.</p>
 
   <p>Enumeration flags:</p>
-  <ul>
-  <li><code>DUK_ENUM_INCLUDE_NONENUMERABLE</code>: enumerate also non-enumerable
-      properties (by default only enumerable properties are enumerated)</li>
-  <li><code>DUK_ENUM_INCLUDE_INTERNAL</code>: enumerate also internal properties
-      (by default internal properties are not enumerated)</li>
-  <li><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code>: enumerate only an object's "own"
-      properties (by default also inherited properties are enumerated) </li>
-  <li><code>DUK_ENUM_ARRAY_INDICES_ONLY</code>: enumerate only array indices,
-      i.e. property names of the form "0", "1", "2", etc.</li>
-  <li><code>DUK_ENUM_SORT_ARRAY_INDICES</code>: guarantee that array indices are
-      sorted by their numeric value, only use with <code>DUK_ENUM_ARRAY_INDICES_ONLY</code>;
-      this is quite slow</li>
-  </ul>
+  <table>
+  <tr>
+  <td>DUK_ENUM_INCLUDE_NONENUMERABLE</td>
+  <td>Enumerate also non-enumerable properties, by default only enumerable
+      properties are enumerated</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_INCLUDE_INTERNAL</td>
+  <td>Enumerate also internal properties, by default internal properties
+      are not enumerated</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_OWN_PROPERTIES_ONLY</td>
+  <td>Enumerate only an object's "own" properties, by default also inherited
+      properties are enumerated</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_ARRAY_INDICES_ONLY</td>
+  <td>Enumerate only array indices, i.e. property names of the form "0", "1",
+      "2", etc</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_SORT_ARRAY_INDICES</td>
+  <td>Apply the ES6 [[OwnPropertyKeys]] enumeration order over the whole
+      enumeration result rather than per inheritance level, this has the
+      effect of sorting array indices (even when inherited)</td>
+  </tr>
+  </table>
 
-  <p>Without any flags, enumeration follows the Ecmascript default enumeration
-  semantics, as in the expression:</p>
-  <pre class="ecmascript-code">
-  for (key in obj) {
-      print(key, obj[i]);
-  }
-  </pre>
+  <p>Without any flags the enumeration behaves like <code>for-in</code>:
+  own and inherited enumerable properties are included, and enumeration
+  order follows the
+  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">Ecmascript ES6 [[OwnPropertyKeys]]</a>
+  enumeration order, applied for each inheritance level.</p>
 
   <p>Once the enumerator has been created, use
   <code><a href="#duk_next">duk_next()</a></code> to extract keys (or key/value
   pairs) from the enumerator.</p>
 
   <div class="note">
-  Array indices are usually enumerated in a sorted order even without the
-  <code>DUK_ENUM_SORT_ARRAY_INDICES</code> flag.  This is not the case
-  for "sparse arrays" which contain a lot of gaps (unused indices).
-  Duktape represents such arrays internally using a key-value representation
-  instead of a plain array, which affects key enumeration order.
-  The criteria for switching from a dense to a sparse array are internal details
-  and potentially version dependent.  With the <code>DUK_ENUM_SORT_ARRAY_INDICES</code>
-  flag the array indices will be sorted even for sparse arrays, at the
-  cost of an explicit key sorting pass.
+  The ES6 [[OwnPropertyKeys]] enumeration order is:
+  (1) array indices in ascending order, (2) non-array-index keys in their
+  insertion order, and (3) symbols in their insertion order.  This rule
+  is applied separately for each inheritance level, so that if array index
+  keys are inherited, they will appear out-of-order in the result.  For
+  most practical code this is not an issue because array indices are very
+  rarely inherited.  You can force the whole enumeration sequence to be
+  sorted using <code>DUK_ENUM_SORT_ARRAY_INDICES</code>.
   </div>
 
 example: |
