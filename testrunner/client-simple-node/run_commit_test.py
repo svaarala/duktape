@@ -741,7 +741,8 @@ def context_helper_hello_ram(archopt):
     kb_rom = test([
         '-DDUK_USE_ROM_OBJECTS',
         '-DDUK_USE_ROM_STRINGS',
-        '-DDUK_USE_ROM_GLOBAL_INHERIT'
+        '-DDUK_USE_ROM_GLOBAL_INHERIT',
+        '-UDUK_USE_HSTRING_ARRIDX'
     ])
 
     set_output_description('%s %s %s (kB)' % (kb_default, kb_nobufobj, kb_rom))

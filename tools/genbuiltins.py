@@ -2979,6 +2979,9 @@ def main():
         gc_src.emitLine('#if !defined(DUK_USE_ROM_STRINGS)')
         gc_src.emitLine('#error DUK_USE_ROM_OBJECTS requires DUK_USE_ROM_STRINGS')
         gc_src.emitLine('#endif')
+        gc_src.emitLine('#if defined(DUK_USE_HSTRING_ARRIDX)')
+        gc_src.emitLine('#error DUK_USE_HSTRING_ARRIDX is currently incompatible with ROM built-ins')
+        gc_src.emitLine('#endif')
     else:
         gc_src.emitLine('#error ROM support not enabled, rerun configure.py with --rom-support')
     gc_src.emitLine('#else  /* DUK_USE_ROM_OBJECTS */')

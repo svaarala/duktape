@@ -1295,7 +1295,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 	duk_uint8_t *p;
 	duk_double_t d;
 #if !defined(DUK_USE_PREFER_SIZE)
-	duk_uint_t copy_size;
+	duk_size_t copy_size;
 	duk_uint8_t *p_end;
 #endif
 

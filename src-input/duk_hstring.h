@@ -134,15 +134,20 @@
 /* marker value; in E5 2^32-1 is not a valid array index (2^32-2 is highest valid) */
 #define DUK_HSTRING_NO_ARRAY_INDEX  (0xffffffffUL)
 
-/* get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
+#if defined(DUK_USE_HSTRING_ARRIDX)
+#define DUK_HSTRING_GET_ARRIDX_FAST(h)  ((h)->arridx)
+#define DUK_HSTRING_GET_ARRIDX_SLOW(h)  ((h)->arridx)
+#else
+/* Get array index related to string (or return DUK_HSTRING_NO_ARRAY_INDEX);
  * avoids helper call if string has no array index value.
  */
 #define DUK_HSTRING_GET_ARRIDX_FAST(h)  \
 	(DUK_HSTRING_HAS_ARRIDX((h)) ? duk_js_to_arrayindex_string_helper((h)) : DUK_HSTRING_NO_ARRAY_INDEX)
 
-/* slower but more compact variant */
+/* Slower but more compact variant. */
 #define DUK_HSTRING_GET_ARRIDX_SLOW(h)  \
 	(duk_js_to_arrayindex_string_helper((h)))
+#endif
 
 /*
  *  Misc
@@ -165,6 +170,11 @@ struct duk_hstring {
 	/* If 16-bit hash is in use, stuff it into duk_heaphdr_string flags. */
 #else
 	duk_uint32_t hash;
+#endif
+
+	/* precomputed array index (or DUK_HSTRING_NO_ARRAY_INDEX) */
+#if defined(DUK_USE_HSTRING_ARRIDX)
+	duk_uarridx_t arridx;
 #endif
 
 	/* length in bytes (not counting NUL term) */
