@@ -146,10 +146,10 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <pre class="c-code">
 /* Enumeration flags for duk_enum() */
 #define DUK_ENUM_INCLUDE_NONENUMERABLE    (1 &lt;&lt; 0)    /* enumerate non-numerable properties in addition to enumerable */
-#define DUK_ENUM_INCLUDE_INTERNAL         (1 &lt;&lt; 1)    /* enumerate internal properties (regardless of enumerability) */
+#define DUK_ENUM_INCLUDE_INTERNAL         (1 &lt;&lt; 1)    /* enumerate internal properties */
 #define DUK_ENUM_OWN_PROPERTIES_ONLY      (1 &lt;&lt; 2)    /* don't walk prototype chain, only check own properties */
 #define DUK_ENUM_ARRAY_INDICES_ONLY       (1 &lt;&lt; 3)    /* only enumerate array indices */
-#define DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices, use with DUK_ENUM_ARRAY_INDICES_ONLY */
+#define DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices (applied to full enumeration result, including inherited array indices) */
 #define DUK_ENUM_NO_PROXY_BEHAVIOR        (1 &lt;&lt; 5)    /* enumerate a proxy object itself without invoking proxy behavior */
 </pre>
 

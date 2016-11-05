@@ -112,3 +112,14 @@ ES6.  The following traps are implemented:</p>
 
 <p>Duktape implements Khronos typed array support which is a subset of ES6
 typed arrays.</p>
+
+<h2 id="es6-enum-order">Enumeration order</h2>
+
+<p><code>Object.getOwnPropertyNames()</code> follows the
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">ES6 [[OwnPropertyKeys]]</a>
+enumeration order: (1) array indices in ascending order, (2) other properties
+in insertion order, (3) symbols in insertion order.  While ES6 or ES7 doesn't
+require it, Duktape follows this same order also for <code>for-in</code>,
+<code>Object.keys()</code>, and <code>duk_enum()</code> in general.  As in V8,
+the rule is applied for every "inheritance level" in turn, i.e. inherited
+non-duplicate properties always follow child properties.</p>
