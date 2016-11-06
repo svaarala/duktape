@@ -1843,6 +1843,11 @@ Planned
   Ecmascript code to read and write text stored in an ArrayBuffer or a plain
   buffer (GH-975)
 
+* Respect ES6 enumeration order (array index keys, other keys in insertion
+  order) for Object.getOwnPropertyNames(), also use the same order in
+  for-in, Object.keys(), and duk_enum() even though that's not strictly
+  required by ES6 or ES7 (GH-1054)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),

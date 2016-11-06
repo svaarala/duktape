@@ -322,9 +322,9 @@ enumeration order for sparse arrays
 0,1,2
 0,1,2,length,foo
 0,1,2,foo
-length,0,1,2,foo
+0,1,2,length,foo
 0,1,2,foo
-length,0,1,2,foo,bar
+0,1,2,length,foo,bar
 0,1,2,foo,bar
 ===*/
 
@@ -338,19 +338,14 @@ length,0,1,2,foo,bar
  * 0,1,2,length.  When that array becomes sparse, Duktape 1.x would still
  * enumerate it as 0,1,2,length because .length was stored explicitly and
  * could thus be moved to the entry part.  Duktape 2.x has a virtual Array
- * .length and the sparse array will thus enumerate as length,0,1,2.
+ * .length and, without any changes, the sparse array would thus enumerate
+ * as length,0,1,2.
  *
- *     ((o) Duktape 1.5.0 (v1.4.0-421-g8e90d3d-dirty)
- *     duk> a = [1,2,3]; a[100] = 1; a.length = 3;
- *     = 3
- *     duk> Object.getOwnPropertyNames(a)
- *     = 0,1,2,length
- *
- *     ((o) Duktape [linenoise] 1.99.99 (v1.5.0-168-g86373ab-dirty)
- *     duk> a = [1,2,3]; a[100] = 1; a.length = 3;
- *     = 3
- *     duk> Object.getOwnPropertyNames(a)
- *     = length,0,1,2
+ * However, Duktape 2.x has an explicit post-enumeration sorting step to
+ * achieve ES6 [[OwnPropertyKeys]] key order which fixes this internal order.
+ * The end result is: array index keys first, then keys in insertion order;
+ * .length is "inserted" during duk_harray creation so it first in the
+ * key part but follows array indices.
  */
 
 function sparseArrayEnumTest() {

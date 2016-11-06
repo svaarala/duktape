@@ -1,10 +1,14 @@
 /*
- *  Enumeration order for abandoned array part changed in Duktape 2.x.
- *  This testcase illustrates the change.  The change is related to array
- *  instance .length which is non-enumerable, so that the change only affects
- *  Object.getOwnPropertyNames() and duk_enum() calls which request enumeration
- *  of non-enumerable properties.
+ *  Enumeration order for abandoned array part changed in Duktape 2.x with
+ *  the introduction of duk_harray and ES6 [[OwnPropertyKeys]] enumeration
+ *  order which is applied to e.g. for-in (this is not required by ES6).
  */
+
+/*---
+{
+    "custom": true
+}
+---*/
 
 /*===
 with array part
@@ -14,18 +18,18 @@ with array part
 - length
 - myProperty
 without array part
-- length
 - 0
 - 1
 - 2
+- length
 - myProperty
 array index added after abandoning array part
-- length
 - 0
 - 1
 - 2
-- myProperty
 - 3
+- length
+- myProperty
 ===*/
 
 function test() {
@@ -41,14 +45,15 @@ function test() {
     arr[100] = 'dummy';  // abandon array part
     arr.length = 3;
 
-    // When array part is not present, the virtual .length property enumerates
-    // first, followed by index properties moved into the entry part, followed
-    // by other properties (and any array index writes which happen after the
-    // array part is abandoned.
-    //
     // In Duktape 1.x the .length property is concrete and would be enumerated
     // after the index properties moved into the entry part.  Array indexes
     // added after array part abandonment would still appear last.
+    //
+    // In Duktape 2.x the duk_harray "natural" enum order for a sparse array
+    // would be: .length (virtual), array indexes moved into entries, other
+    // properties, and finally array index properties added after array became
+    // sparse.  However, there's an ES6 sort step for enumeration which fixes
+    // the enumeration order to the same as for dense arrays.
 
     print('without array part');
     Object.getOwnPropertyNames(arr).forEach(function (k) { print('-', k); });

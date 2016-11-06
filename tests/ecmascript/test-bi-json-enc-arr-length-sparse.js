@@ -1,16 +1,16 @@
+/*===
+0
+1
+3
+100
+[1,2,null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"foo"]
+===*/
+
 /*---
 {
     "custom": true
 }
 ---*/
-
-/*===
-0
-1
-100
-3
-[1,2,null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"foo"]
-===*/
 
 function sparseArrayLengthTest() {
     var arr, k;
@@ -18,7 +18,10 @@ function sparseArrayLengthTest() {
     // sparse array test
     arr = [1, 2];
     arr[100] = 'foo';  // becomes sparse
-    arr[3] = 4;        // will enumerate "incorrectly"
+    arr[3] = 4;        // in Duktape 1.x would enumerate "incorrectly",
+                       // Duktape 2.x adheres to ES6 [[OwnPropertyKeys]]
+                       // enum order (even when ES6 doesn't require it
+                       // for the for-in statement)
 
     // custom behavior here
     for (k in arr) {

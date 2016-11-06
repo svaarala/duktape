@@ -575,7 +575,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx)
 
 #if defined(DUK_USE_OBJECT_BUILTIN) || defined(DUK_USE_REFLECT_BUILTIN)
 /* Shared helper for Object.getOwnPropertyNames() and Object.keys().
- * Magic: 0=getOwnPropertyNames, 1=Object.keys.
+ * Magic: 0=Object.getOwnPropertyNames() or Reflect.ownKeys(), 1=Object.keys().
  */
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
