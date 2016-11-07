@@ -1015,6 +1015,15 @@ Other incompatible changes
   previously an error was thrown.  This situation never occurs for standard
   Ecmascript strings or valid UTF-8 strings.
 
+* Legacy octal literal handling has been improved to match more closely with
+  ES6 Annex B.  Octal look-alike decimal literals like "0778" and "0778.123"
+  are now allowed.
+
+* Legacy octal escape handling in string literals has been improved to match
+  more closely with ES6 Annex B and other engines: "\078" is not accepted and
+  is the same as "\u00078", "\8" and "\9" are accepted as literal "8" and "9"
+  (even in strict mode).
+
 Known issues
 ============
 
