@@ -38,6 +38,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Harold Brenes (https://github.com/harold-b)
 * Oliver Crow (https://github.com/ocrow)
 * Jakub Chłapiński (https://github.com/jchlapinski)
+* Brett Vickers (https://github.com/beevik)
 
 Other contributions
 ===================
