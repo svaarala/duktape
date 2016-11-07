@@ -1836,6 +1836,8 @@ Planned
   and identifiers, no RegExp support yet (requires RegExp /u Unicode mode)
   (GH-1001)
 
+* Add support for ES6 octal (0o123) and binary (0b100001) literals (GH-1057)
+
 * Add support for ES6 String.prototype.codePointAt(), String.fromCodePoint(),
   and String.prototype.repeat() (GH-1043, GH-1049, GH-1050)
 
@@ -1941,6 +1943,14 @@ Planned
 * Change default built-in PRNG algorithm to xoroshiro128+ with SplitMix64
   seed mixing; previous algorithm (Shamir's three-op algorithm) is still
   used for low memory targets and targets without 64-bit types (GH-970)
+
+* Change parsing of legacy octal literals so that 077 is parsed as octal
+  (= 63) but 078 is parsed as decimal (78) rather than causing a SyntaxError;
+  this aligns better with behavior of other engines (GH-1057)
+
+* Change parsing of octal escapes in string literals to better align with
+  ES6 and other engines; "\078" is now accepted and is the same as
+  "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
 
 * Fix String.fromCharCode() behavior for non-BMP characters when standard
   behavior is enabled (DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT disabled):
