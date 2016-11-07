@@ -331,7 +331,6 @@ def create_matrix(fn_duk):
         '-DDUK_OPT_NO_STRICT_DECL',
         '-DDUK_OPT_NO_REGEXP_SUPPORT',
         '-DDUK_OPT_NO_ES6_REGEXP_SYNTAX',
-        '-DDUK_OPT_NO_OCTAL_SUPPORT',
         '-DDUK_OPT_NO_SOURCE_NONBMP',
         '-DDUK_OPT_STRICT_UTF8_SOURCE',
         '-DDUK_OPT_NO_SECTION_B',
