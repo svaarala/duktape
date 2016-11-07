@@ -1992,6 +1992,8 @@ Planned
   DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
   macros have been replaced in duk_config.h (GH-897)
 
+* Fix ARM64 platform detection for some Android targets (GH-1062)
+
 * Fix AmigaOS3 portability issue by enabling math function replacements
   automatically for AmigaOS on M68K, regardless of OS version or compiler
   (GH-932)
