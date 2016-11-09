@@ -2,8 +2,6 @@
  *  String.prototype.repeat()
  */
 
-print=console.log
-
 /*===
 xxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

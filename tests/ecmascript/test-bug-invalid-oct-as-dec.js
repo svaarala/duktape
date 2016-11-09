@@ -1,23 +1,17 @@
-/*---
-{
-    "nonstandard": true
-}
----*/
-
 /*===
 63
 78
 88
 99
 63
-7
-0
-0
+78
+88
+99
 ===*/
 
-/* Both V8 and Rhino allow "invalid" octal constants to be parsed as decimal
- * values; we currently don't, but this might not be the desired behavior.
- * This bug testcases demonstrates the difference.
+/* Both V8, Spidermonkey, and Rhino allow "invalid" octal constants to be
+ * parsed as decimal values.  Since this seems like dominant real world
+ * behavior, Duktape also allows it.
  */
 
 function octalTest() {
@@ -37,16 +31,16 @@ function octalTest() {
     }
 
     // In source code, invalid octals are parsed as decimal (e.g. 088 -> 88)
-    // by V8 and Rhino
+    // by V8 and Rhino.
 
     e('077');
     e('078');
     e('088');
     e('099');
 
-    // In parseInt(), Rhino and V8 differ.  V8 probably has most useful behavior,
-    // parsing '088' and '099' as 0 (treating 88 and 99 as garbage), and '078'
-    // as 7 (treating the trailing '8' as garbage).
+    // Older V8 versions would parseInt('088') as 0 and parseInt('078') as 7,
+    // treating the non-octal parts as garbage.  Newer V8 parses all the cases
+    // as decimal, i.e. 88 and 78, and parseInt('077') is also 77 (not 63).
 
     p('077');
     p('078');

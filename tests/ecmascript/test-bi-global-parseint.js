@@ -417,12 +417,12 @@ try {
 
 /*===
 leading zeroes
-83
-83
--83
-10
-10
--10
+123
+123
+-123
+129
+129
+-129
 57005
 57005
 -57005
@@ -432,22 +432,18 @@ leading zeroes
 ===*/
 
 /* Leading zeroes.
- *
- * Note that V8 and Rhino use a leading zero (not followed by 'x' or 'X') to
- * indicate an automatic radix 8 (octal).  This doesn't seem spec compliant,
- * but Duktape now behaves the same way for code compatibility.
  */
 
 print('leading zeroes');
 
 function leadingZeroTest() {
-    // V8 will yield +/- 83 for this; standard is +/- 123
+    // Old V8 will yield +/- 83 for this; standard is +/- 123
     print(g.parseInt('000123'));
     print(g.parseInt('+000123'));
     print(g.parseInt('-000123'));
 
-    // V8 will yield +/- 10 for this (012 = 10 octal, 9 is garbage),
-    // standard is +/- 129
+    // Old V8 will yield +/- 10 for this (012 = 10 octal, 9 is garbage),
+    // standard is +/- 129.
     print(g.parseInt('000129'));
     print(g.parseInt('+000129'));
     print(g.parseInt('-000129'));

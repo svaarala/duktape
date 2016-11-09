@@ -166,6 +166,15 @@
 #define DUK_ASC_DEL              0x7f
 
 /*
+ *  Miscellaneous
+ */
+
+/* Uppercase A is 0x41, lowercase a is 0x61; OR 0x20 to convert uppercase
+ * to lowercase.
+ */
+#define DUK_LOWERCASE_CHAR_ASCII(x)  ((x) | 0x20)
+
+/*
  *  Unicode tables
  */
 

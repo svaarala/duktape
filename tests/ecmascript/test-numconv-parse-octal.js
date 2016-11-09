@@ -6,10 +6,10 @@
 
 /*===
 63
-SyntaxError
-SyntaxError
-SyntaxError
-SyntaxError
+88
+99
+789
+7789
 63
 SyntaxError
 SyntaxError
@@ -47,11 +47,11 @@ function octalTest() {
     /*
      *  Technically a leading zero digit indicates octal and if the
      *  number doesn't comply with octal syntax, a SyntaxError should
-     *  happen: a valid numeric literal cannot be followed by a digit,
-     *  after "longest match" semantics are applied.
+     *  happen in ES5: a valid numeric literal cannot be followed by a
+     *  digit, after "longest match" semantics are applied.
      *
      *  In practice, at least V8 and Rhino will parse offending octal
-     *  literals in decimal.
+     *  literals in decimal, and ES6 formalizes this behavior.
      */
 
     e('077');

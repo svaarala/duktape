@@ -805,7 +805,7 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 				adv = 0;
 				break;
 			}
-			default:
+			default: {
 				if (duk_unicode_is_line_terminator(x)) {
 					/* line continuation */
 					if (x == 0x000d && DUK__L2() == 0x000a) {
@@ -815,52 +815,60 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 				} else if (DUK__ISDIGIT(x)) {
 					/*
 					 *  Octal escape or zero escape:
-					 *    \0                                     (lookahead not DecimalDigit)
-					 *    \1 ... \7                              (lookahead not DecimalDigit)
-					 *    \ZeroToThree OctalDigit                (lookahead not DecimalDigit)
+					 *    \0                                     (lookahead not OctalDigit)
+					 *    \1 ... \7                              (lookahead not OctalDigit)
+					 *    \ZeroToThree OctalDigit                (lookahead not OctalDigit)
 					 *    \FourToSeven OctalDigit                (no lookahead restrictions)
 					 *    \ZeroToThree OctalDigit OctalDigit     (no lookahead restrictions)
 					 *
 					 *  Zero escape is part of the standard syntax.  Octal escapes are
 					 *  defined in E5 Section B.1.2, and are only allowed in non-strict mode.
-					 *  Any other productions starting with a decimal digit are invalid.
+					 *  Any other productions starting with a decimal digit are invalid
+					 *  but are in practice treated like identity escapes.
+					 *
+					 *  Parse octal (up to 3 digits) from the lookup window.
 					 */
 
-					if (x == '0' && !DUK__ISDIGIT(DUK__L2())) {
-						/* Zero escape (also allowed in non-strict mode) */
-						DUK_ASSERT(adv == 2);
-						emitcp = 0;
-#if defined(DUK_USE_OCTAL_SUPPORT)
-					} else if (strict_mode) {
-						/* No other escape beginning with a digit in strict mode */
-						goto fail_escape;
-					} else if (DUK__ISDIGIT03(x) && DUK__ISOCTDIGIT(DUK__L2()) && DUK__ISOCTDIGIT(DUK__L3())) {
-						/* Three digit octal escape, digits validated. */
-						adv = 4;
-						emitcp = (duk__hexval(x) << 6) +
-						         (duk__hexval(DUK__L2()) << 3) +
-						         duk__hexval(DUK__L3());
-					} else if (((DUK__ISDIGIT03(x) && !DUK__ISDIGIT(DUK__L3())) || DUK__ISDIGIT47(x)) &&
-					           DUK__ISOCTDIGIT(DUK__L2())) {
-						/* Two digit octal escape, digits validated.
-						 *
-						 * The if-condition is a bit tricky.  We could catch e.g.
-						 * '\039' in the three-digit escape and fail it there (by
-					         * validating the digits), but we want to avoid extra
-						 * additional validation code.
+					duk_codepoint_t tmp;
+					duk_small_uint_t lookup_idx;
+
+					emitcp = 0;
+					for (lookup_idx = 1; lookup_idx <= 3; lookup_idx++) {
+						DUK_DDD(DUK_DDDPRINT("lookup_idx=%ld, emitcp=%ld", (long) lookup_idx, (long) emitcp));
+						tmp = DUK__LOOKUP(lex_ctx, lookup_idx);
+						if (tmp < DUK_ASC_0 || tmp > DUK_ASC_7) {
+							/* No more valid digits. */
+							break;
+						}
+						tmp = (emitcp << 3) + (tmp - DUK_ASC_0);
+						if (tmp > 0xff) {
+							/* Three digit octal escapes above \377 (= 0xff)
+							 * are not allowed.
+							 */
+							break;
+						}
+						emitcp = tmp;
+					}
+					DUK_DDD(DUK_DDDPRINT("final lookup_idx=%ld, emitcp=%ld", (long) lookup_idx, (long) emitcp));
+
+					adv = lookup_idx;
+					if (lookup_idx == 1) {
+						/* \8 or \9 -> treat as literal, accept also
+						 * in strict mode.
 						 */
-						adv = 3;
-						emitcp = (duk__hexval(x) << 3) +
-						         duk__hexval(DUK__L2());
-					} else if (DUK__ISDIGIT(x) && !DUK__ISDIGIT(DUK__L2())) {
-						/* One digit octal escape, digit validated. */
-						DUK_ASSERT(adv == 2);
-						emitcp = duk__hexval(x);
-#else
-					/* fall through to error */
-#endif
+						DUK_DDD(DUK_DDDPRINT("\\8 or \\9 -> treat as literal, accept in strict mode too"));
+						emitcp = x;
+						adv++;  /* correction to above, eat offending character */
+					} else if (lookup_idx == 2 && emitcp == 0) {
+						/* Zero escape, also allowed in non-strict mode. */
+						DUK_DDD(DUK_DDDPRINT("\\0 -> accept in strict mode too"));
 					} else {
-						goto fail_escape;
+						/* Valid octal, only accept in non-strict mode. */
+						DUK_DDD(DUK_DDDPRINT("octal literal %ld -> accept only in non-strict-mode", (long) emitcp));
+						DUK_ASSERT(emitcp >= 0 && emitcp <= 0xff);
+						if (strict_mode) {
+							goto fail_escape;
+						}
 					}
 				} else if (x < 0) {
 					goto fail_unterminated;
@@ -868,6 +876,7 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 					/* escaped NonEscapeCharacter */
 					DUK__APPENDBUFFER(lex_ctx, x);
 				}
+			}  /* end default clause */
 			}  /* end switch */
 
 			/* Shared handling for single codepoint escapes. */
@@ -1513,19 +1522,19 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		/* Note: decimal number may start with a period, but must be followed by a digit */
 
 		/*
-		 *  DecimalLiteral, HexIntegerLiteral, OctalIntegerLiteral
-		 *  "pre-parsing", followed by an actual, accurate parser step.
+		 *  Pre-parsing for decimal, hex, octal (both legacy and ES6),
+		 *  and binary literals, followed by an actual parser step
+		 *  provided by numconv.
 		 *
 		 *  Note: the leading sign character ('+' or '-') is -not- part of
 		 *  the production in E5 grammar, and that the a DecimalLiteral
-		 *  starting with a '0' must be followed by a non-digit.  Leading
-		 *  zeroes are syntax errors and must be checked for.
+		 *  starting with a '0' must be followed by a non-digit.
 		 *
 		 *  XXX: the two step parsing process is quite awkward, it would
 		 *  be more straightforward to allow numconv to parse the longest
 		 *  valid prefix (it already does that, it only needs to indicate
 		 *  where the input ended).  However, the lexer decodes characters
-		 *  using a lookup window, so this is not a trivial change.
+		 *  using a limited lookup window, so this is not a trivial change.
 		 */
 
 		/* XXX: because of the final check below (that the literal is not
@@ -1535,39 +1544,58 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		 */
 
 		duk_double_t val;
-		duk_bool_t int_only = 0;
-		duk_bool_t allow_hex = 0;
+		duk_bool_t legacy_oct = 0;
 		duk_small_int_t state;  /* 0=before period/exp,
 		                         * 1=after period, before exp
 		                         * 2=after exp, allow '+' or '-'
 		                         * 3=after exp and exp sign
 		                         */
 		duk_small_uint_t s2n_flags;
-		duk_codepoint_t y;
+		duk_codepoint_t y, z;
+		duk_small_uint_t s2n_radix = 10;
+		duk_small_uint_t pre_adv = 0;
 
 		DUK__INITBUFFER(lex_ctx);
 		y = DUK__L1();
-		if (x == DUK_ASC_0 && (y == DUK_ASC_LC_X || y == DUK_ASC_UC_X)) {
-			DUK__APPENDBUFFER(lex_ctx, x);
-			DUK__APPENDBUFFER(lex_ctx, y);
-			DUK__ADVANCECHARS(lex_ctx, 2);
-			int_only = 1;
-			allow_hex = 1;
-#if defined(DUK_USE_OCTAL_SUPPORT)
-		} else if (!strict_mode && x == DUK_ASC_0 && DUK__ISDIGIT(y)) {
-			/* Note: if DecimalLiteral starts with a '0', it can only be
-			 * followed by a period or an exponent indicator which starts
-			 * with 'e' or 'E'.  Hence the if-check above ensures that
-			 * OctalIntegerLiteral is the only valid NumericLiteral
-			 * alternative at this point (even if y is, say, '9').
-			 */
 
-			DUK__APPENDBUFFER(lex_ctx, x);
-			DUK__ADVANCECHARS(lex_ctx, 1);
-			int_only = 1;
-#endif
+		if (x == DUK_ASC_0) {
+			z = DUK_LOWERCASE_CHAR_ASCII(y);
+
+			pre_adv = 2;  /* default for 0xNNN, 0oNNN, 0bNNN. */
+			if (z == DUK_ASC_LC_X) {
+				s2n_radix = 16;
+			} else if (z == DUK_ASC_LC_O) {
+				s2n_radix = 8;
+			} else if (z == DUK_ASC_LC_B) {
+				s2n_radix = 2;
+			} else {
+				pre_adv = 0;
+				if (DUK__ISDIGIT(y)) {
+					if (strict_mode) {
+						/* Reject octal like \07 but also octal-lookalike
+						 * decimal like \08 in strict mode.
+						 */
+						goto fail_number_literal;
+					} else {
+						/* Legacy OctalIntegerLiteral or octal-lookalice
+						 * decimal.  Deciding between the two happens below
+						 * in digit scanning.
+						 */
+						DUK__APPENDBUFFER(lex_ctx, x);
+						pre_adv = 1;
+						legacy_oct = 1;
+						s2n_radix = 8;  /* tentative unless conflicting digits found */
+					}
+				}
+			}
 		}
 
+		DUK__ADVANCECHARS(lex_ctx, pre_adv);
+
+		/* XXX: we could parse integers here directly, and fall back
+		 * to numconv only when encountering a fractional expression
+		 * or when an octal literal turned out to be decimal (0778 etc).
+		 */
 		state = 0;
 		for (;;) {
 			x = DUK__L0();  /* re-lookup curr char on first round */
@@ -1575,20 +1603,30 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 				/* Note: intentionally allow leading zeroes here, as the
 				 * actual parser will check for them.
 				 */
+				if (state == 0 && legacy_oct && (x == DUK_ASC_8 || x == DUK_ASC_9)) {
+					/* Started out as an octal-lookalike
+					 * but interpreted as decimal, e.g.
+					 * '0779' -> 779.  This also means
+					 * that fractions are allowed, e.g.
+					 * '0779.123' is allowed but '0777.123'
+					 * is not!
+					 */
+					s2n_radix = 10;
+				}
 				if (state == 2) {
 					state = 3;
 				}
-			} else if (allow_hex && DUK__ISHEXDIGIT(x)) {
+			} else if (s2n_radix == 16 && DUK__ISHEXDIGIT(x)) {
 				/* Note: 'e' and 'E' are also accepted here. */
 				;
 			} else if (x == DUK_ASC_PERIOD) {
-				if (state >= 1 || int_only) {
+				if (state >= 1 || s2n_radix != 10) {
 					break;
 				} else {
 					state = 1;
 				}
 			} else if (x == DUK_ASC_LC_E || x == DUK_ASC_UC_E) {
-				if (state >= 2 || int_only) {
+				if (state >= 2 || s2n_radix != 10) {
 					break;
 				} else {
 					state = 2;
@@ -1609,17 +1647,19 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		/* XXX: better coercion */
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 
-		s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
-		            DUK_S2N_FLAG_ALLOW_FRAC |
-		            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
-		            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
-#if defined(DUK_USE_OCTAL_SUPPORT)
-		            (strict_mode ? 0 : DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT) |
-#endif
-		            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+		if (s2n_radix != 10) {
+			/* For bases other than 10, integer only. */
+			s2n_flags = DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
+		} else {
+			s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
+			            DUK_S2N_FLAG_ALLOW_FRAC |
+			            DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+			            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
+			            DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
+		}
 
 		duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
-		duk_numconv_parse((duk_context *) lex_ctx->thr, 10 /*radix*/, s2n_flags);
+		duk_numconv_parse((duk_context *) lex_ctx->thr, s2n_radix, s2n_flags);
 		val = duk_to_number((duk_context *) lex_ctx->thr, -1);
 		if (DUK_ISNAN(val)) {
 			goto fail_number_literal;
