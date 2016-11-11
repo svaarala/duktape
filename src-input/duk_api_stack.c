@@ -816,16 +816,16 @@ DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
  *  Basic stack manipulation: swap, dup, insert, replace, etc
  */
 
-DUK_EXTERNAL void duk_swap(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
+DUK_EXTERNAL void duk_swap(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2) {
 	duk_tval *tv1;
 	duk_tval *tv2;
 	duk_tval tv_tmp;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	tv1 = duk_require_tval(ctx, index1);
+	tv1 = duk_require_tval(ctx, idx1);
 	DUK_ASSERT(tv1 != NULL);
-	tv2 = duk_require_tval(ctx, index2);
+	tv2 = duk_require_tval(ctx, idx2);
 	DUK_ASSERT(tv2 != NULL);
 
 	/* If tv1==tv2 this is a NOP, no check is needed */
@@ -4670,14 +4670,14 @@ DUK_EXTERNAL duk_ret_t duk_uri_error_stash(duk_context *ctx, const char *fmt, ..
  *  Comparison
  */
 
-DUK_EXTERNAL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
+DUK_EXTERNAL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1, *tv2;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	tv1 = duk_get_tval(ctx, index1);
-	tv2 = duk_get_tval(ctx, index2);
+	tv1 = duk_get_tval(ctx, idx1);
+	tv2 = duk_get_tval(ctx, idx2);
 	if ((tv1 == NULL) || (tv2 == NULL)) {
 		return 0;
 	}
@@ -4688,13 +4688,13 @@ DUK_EXTERNAL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t
 	return duk_js_equals(thr, tv1, tv2);
 }
 
-DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
+DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2) {
 	duk_tval *tv1, *tv2;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	tv1 = duk_get_tval(ctx, index1);
-	tv2 = duk_get_tval(ctx, index2);
+	tv1 = duk_get_tval(ctx, idx1);
+	tv2 = duk_get_tval(ctx, idx2);
 	if ((tv1 == NULL) || (tv2 == NULL)) {
 		return 0;
 	}
@@ -4703,11 +4703,26 @@ DUK_EXTERNAL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t index1, du
 	return duk_js_strict_equals(tv1, tv2);
 }
 
+DUK_EXTERNAL_DECL duk_bool_t duk_samevalue(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2) {
+	duk_tval *tv1, *tv2;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv1 = duk_get_tval(ctx, idx1);
+	tv2 = duk_get_tval(ctx, idx2);
+	if ((tv1 == NULL) || (tv2 == NULL)) {
+		return 0;
+	}
+
+	/* No coercions or other side effects, so safe */
+	return duk_js_samevalue(tv1, tv2);
+}
+
 /*
  *  instanceof
  */
 
-DUK_EXTERNAL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t index1, duk_idx_t index2) {
+DUK_EXTERNAL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2) {
 	duk_tval *tv1, *tv2;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4718,9 +4733,9 @@ DUK_EXTERNAL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t index1, duk_i
 	 * be somewhat inconsistent if rval would be allowed to be
 	 * non-existent without a TypeError.
 	 */
-	tv1 = duk_require_tval(ctx, index1);
+	tv1 = duk_require_tval(ctx, idx1);
 	DUK_ASSERT(tv1 != NULL);
-	tv2 = duk_require_tval(ctx, index2);
+	tv2 = duk_require_tval(ctx, idx2);
 	DUK_ASSERT(tv2 != NULL);
 
 	return duk_js_instanceof((duk_hthread *) ctx, tv1, tv2);

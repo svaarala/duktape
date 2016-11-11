@@ -586,6 +586,14 @@ objects:
           native: duk_bi_object_constructor_keys_shared
           length: 1
           magic: 1
+      - key: "is"
+        value:
+          type: function
+          native: duk_bi_object_constructor_is
+          length: 2
+          nargs: 2
+        es6: true
+        present_if: DUK_USE_ES6
 
   - id: bi_object_prototype
     class: Object

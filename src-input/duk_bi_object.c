@@ -88,6 +88,14 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_context *ctx) {
 }
 #endif
 
+#if defined(DUK_USE_OBJECT_BUILTIN) && defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is(duk_context *ctx) {
+	DUK_ASSERT_TOP(ctx, 2);
+	duk_push_boolean(ctx, duk_samevalue(ctx, 0, 1));
+	return 1;
+}
+#endif
+
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 	duk_tval *tv;
