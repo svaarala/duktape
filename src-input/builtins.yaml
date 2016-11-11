@@ -520,6 +520,14 @@ objects:
           native: duk_bi_object_constructor_keys_shared
           length: 1
           magic: 0
+      - key: "assign"
+        value:
+          type: function
+          native: duk_bi_object_constructor_assign
+          length: 2
+          varargs: true
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "create"
         value:
           type: function

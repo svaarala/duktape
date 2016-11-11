@@ -52,6 +52,42 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor(duk_context *ctx) {
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN */
 
+#if defined(DUK_USE_OBJECT_BUILTIN) && defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_context *ctx) {
+	duk_idx_t nargs;
+	duk_int_t idx;
+
+	nargs = duk_get_top(ctx);
+	if (nargs < 1) {
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	}
+
+	duk_to_object(ctx, 0);
+	for (idx = 1; idx < nargs; idx++) {
+		/* E7 19.1.2.1 (step 4a) */
+		if (duk_is_null_or_undefined(ctx, idx)) {
+			continue;
+		}
+
+		/* duk_enum() respects ES6+ [[OwnPropertyKeys]] ordering, which is
+		 * convenient here.
+		 */
+		duk_to_object(ctx, idx);
+		duk_enum(ctx, idx, DUK_ENUM_OWN_PROPERTIES_ONLY);
+		while (duk_next(ctx, -1, 1 /*get_value*/)) {
+			/* [ target ... enum key value ] */
+			duk_put_prop(ctx, 0);
+			/* [ target ... enum ] */
+		}
+
+		duk_pop(ctx);
+	}
+
+	duk_set_top(ctx, 1);
+	return 1;
+}
+#endif
+
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
 	duk_tval *tv;
