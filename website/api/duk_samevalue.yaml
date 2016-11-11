@@ -1,0 +1,24 @@
+name: duk_samevalue
+
+proto: |
+  duk_bool_t duk_samevalue(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
+
+stack: |
+  [ ... val1! ... val2! ... ]
+
+summary: |
+  <p>Compare values at <code>idx1</code> and <code>idx2</code> for equality.
+  Returns 1 if values are considered equal using Ecmascript
+  <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-9.12">SameValue</a>
+  algorithm (<code>Object.is()</code> in ES6) semantics, otherwise returns 0.
+  Also returns 0 if either index is invalid.</p>
+
+example: |
+  if (duk_samevalue(ctx, -3, -7)) {
+      printf("values at indices -3 and -7 are SameValue() equal\n");
+  }
+
+tags:
+  - compare
+
+introduced: 2.0.0
