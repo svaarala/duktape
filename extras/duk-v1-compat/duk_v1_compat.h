@@ -3,6 +3,11 @@
 
 #include "duktape.h"
 
+/* Straight flag rename */
+#if !defined(DUK_ENUM_INCLUDE_INTERNAL)
+#define DUK_ENUM_INCLUDE_INTERNAL DUK_ENUM_INCLUDE_HIDDEN
+#endif
+
 /* Flags for duk_push_string_file_raw() */
 #define DUK_STRING_PUSH_SAFE              (1 << 0)    /* no error if file does not exist */
 

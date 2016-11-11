@@ -119,7 +119,7 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 		        "try{"
 		            "return E('jx',v);"
 		        "}catch(e){"
-		            "return ''+v;"
+		            "return String(v);"  /* String() allows symbols, ToString() internal algorithm doesn't. */
 		        "}"
 		    "};"
 		"})(Duktape.enc)");
