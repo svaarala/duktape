@@ -215,43 +215,6 @@
 #undef DUK_F_USE_REPL_ALL
 #endif
 
-/* Some math functions are C99 only: fmin(), fmax(), round() at least.
- * This is also an issue with some embedded environments using uclibc
- * where uclibc has been configured not to provide some functions.
- * For now, use replacements whenever using uclibc.
- */
-#define DUK_F_MISSING_FMIN_FMAX
-#if defined(DUK_F_UCLIBC)
-/* uclibc may be missing these */
-#elif defined(DUK_F_AMIGAOS) && defined(DUK_F_VBCC)
-/* vbcc + AmigaOS may be missing these */
-#elif defined(DUK_F_MINT)
-/* mint clib is missing these */
-#elif !defined(DUK_F_C99) && !defined(DUK_F_CPP11)
-/* build is not C99 or C++11, play it safe */
-#else
-/* C99 or C++11, no known issues */
-#undef DUK_F_MISSING_FMIN_FMAX
-#endif
-
-#if !defined(DUK_FMIN)
-#if defined(DUK_F_MISSING_FMIN_FMAX)
-#define DUK_USE_REPL_FMIN
-#define DUK_FMIN             duk_repl_fmin
-#else
-#define DUK_FMIN             fmin
-#endif
-#endif
-
-#if !defined(DUK_FMAX)
-#if defined(DUK_F_MISSING_FMIN_FMAX)
-#define DUK_USE_REPL_FMAX
-#define DUK_FMAX             duk_repl_fmax
-#else
-#define DUK_FMAX             fmax
-#endif
-#endif
-
 /* These functions don't currently need replacement but are wrapped for
  * completeness.  Because these are used as function pointers, they need
  * to be defined as concrete C functions (not macros).
