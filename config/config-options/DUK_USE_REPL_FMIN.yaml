@@ -1,0 +1,9 @@
+define: DUK_USE_REPL_FMIN
+introduced: 2.0.0
+default: false
+tags:
+  - portability
+description: >
+  Provide a built-in replacement for fmin(), duk_repl_fmin.
+
+  When enabled, define DUK_FMIN as duk_repl_fmin.
