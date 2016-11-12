@@ -2025,6 +2025,9 @@ Planned
 
 * Fix incorrect duk_hbufferobject size in Duktape.info() (GH-804)
 
+* Miscellaneous portability improvements: simplified DUK_FMIN() and DUK_FMAX()
+  handling (GH-1071)
+
 * Internal performance improvement: rework bytecode format to use an 8-bit
   opcode field (and 8-bit A, B, and C fields) to speed up opcode dispatch
   by around 20-25% and avoid a two-level dispatch for EXTRA opcodes; the
