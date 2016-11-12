@@ -73,11 +73,7 @@ DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 			return +0.0;
 		}
 	}
-#ifdef DUK_USE_MATH_FMIN
 	return DUK_FMIN(x, y);
-#else
-	return (x < y ? x : y);
-#endif
 }
 
 DUK_LOCAL double duk__fmax_fixed(double x, double y) {
@@ -91,11 +87,7 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 			return -0.0;
 		}
 	}
-#ifdef DUK_USE_MATH_FMAX
 	return DUK_FMAX(x, y);
-#else
-	return (x > y ? x : y);
-#endif
 }
 
 DUK_LOCAL double duk__round_fixed(double x) {
