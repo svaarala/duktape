@@ -109,6 +109,12 @@ To upgrade:
   - Finally, you can remove your custom header and add the equivalent options
     to ``tools/configure.py`` when possible.
 
+Config option changes
+---------------------
+
+There are several new config options and some existing config options have
+been removed.
+
 Built-ins disabled in configuration are now absent
 --------------------------------------------------
 
