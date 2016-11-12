@@ -73,7 +73,7 @@ DUK_LOCAL double duk__fmin_fixed(double x, double y) {
 			return +0.0;
 		}
 	}
-	return DUK_FMIN(x, y);
+	return duk_double_fmin(x, y);
 }
 
 DUK_LOCAL double duk__fmax_fixed(double x, double y) {
@@ -87,7 +87,7 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 			return -0.0;
 		}
 	}
-	return DUK_FMAX(x, y);
+	return duk_double_fmax(x, y);
 }
 
 DUK_LOCAL double duk__round_fixed(double x) {
@@ -280,7 +280,7 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN) {
 			found_nan = 1;
 		} else {
-			max = DUK_FMAX(max, t);
+			max = duk_double_fmax(max, t);
 		}
 	}
 
