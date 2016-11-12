@@ -108,6 +108,7 @@ DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_accept_mask(duk_context *ctx,
 DUK_INTERNAL_DECL void *duk_get_voidptr(duk_context *ctx, duk_idx_t idx);
 #endif
 
+DUK_INTERNAL_DECL duk_double_t duk_known_number(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_known_hstring(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hobject *duk_known_hobject(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hbuffer *duk_known_hbuffer(duk_context *ctx, duk_idx_t idx);

@@ -1808,10 +1808,9 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
  *  behavior happens.
  */
 
-DUK_LOCAL duk_heaphdr *duk__known_heaphdr(duk_context *ctx, duk_idx_t idx) {
+DUK_LOCAL duk_tval *duk__known_tval(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	duk_heaphdr *h;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	if (idx < 0) {
@@ -1821,9 +1820,26 @@ DUK_LOCAL duk_heaphdr *duk__known_heaphdr(duk_context *ctx, duk_idx_t idx) {
 	}
 	DUK_ASSERT(tv >= thr->valstack_bottom);
 	DUK_ASSERT(tv < thr->valstack_top);
+	return tv;
+}
+
+DUK_LOCAL duk_heaphdr *duk__known_heaphdr(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+	duk_heaphdr *h;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	tv = duk__known_tval(ctx, idx);
 	h = DUK_TVAL_GET_HEAPHDR(tv);
 	DUK_ASSERT(h != NULL);
 	return h;
+}
+
+DUK_INTERNAL duk_double_t duk_known_number(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT(duk_is_string(ctx, idx) != NULL);
+	tv = duk__known_tval(ctx, idx);
+	return DUK_TVAL_GET_NUMBER(tv);
 }
 
 DUK_INTERNAL duk_hstring *duk_known_hstring(duk_context *ctx, duk_idx_t idx) {
