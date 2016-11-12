@@ -80,3 +80,25 @@ DUK_INTERNAL int duk_repl_isinf(double x) {
 	return (c == DUK_FP_INFINITE);
 }
 #endif
+
+#if defined(DUK_USE_REPL_FMIN)
+DUK_INTERNAL double duk_repl_fmin(double x, double y) {
+	/* Doesn't replicate fmin() behavior exactly: for fmin() if one
+	 * argument is a NaN, the other argument should be returned.
+	 * Duktape doesn't rely on this behavior so the replacement can
+	 * be simplified.
+	 */
+	return (x < y ? x : y);
+}
+#endif
+
+#if defined(DUK_USE_REPL_FMAX)
+DUK_INTERNAL double duk_repl_fmax(double x, double y) {
+	/* Doesn't replicate fmax() behavior exactly: for fmax() if one
+	 * argument is a NaN, the other argument should be returned.
+	 * Duktape doesn't rely on this behavior so the replacement can
+	 * be simplified.
+	 */
+	return (x > y ? x : y);
+}
+#endif
