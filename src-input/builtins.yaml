@@ -2309,6 +2309,14 @@ objects:
           magic:
             type: math_onearg
             funcname: "floor"  # BI_MATH_FLOOR_IDX
+      - key: "hypot"
+        value:
+          type: function
+          native: duk_bi_math_object_hypot
+          length: 2
+          varargs: true
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "log"
         value:
           type: function

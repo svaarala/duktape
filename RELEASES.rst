@@ -1841,6 +1841,8 @@ Planned
 * Add support for ES6 String.prototype.codePointAt(), String.fromCodePoint(),
   and String.prototype.repeat() (GH-1043, GH-1049, GH-1050)
 
+* Add support for ES6 Math.hypot() (GH-1069)
+
 * Add support for ES6 Object.assign() (GH-1064)
 
 * Add support for ES6 Object.is() and duk_samevalue() API call (GH-1068)

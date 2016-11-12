@@ -354,6 +354,48 @@ prE(Math.floor(0.5)); print(zeroSign(Math.floor(0.5)));
 prE(Math.floor(1));
 
 /*===
+hypot
+0
+NaN
+NaN
+NaN
+Infinity
+Infinity
+NaN
+Infinity
+NaN
+NaN
+NaN
+0
+5
+5
+7.0710678118654755
+7.0710678118654755
+812
+===*/
+
+print('hypot');
+
+prE(Math.hypot());
+prE(Math.hypot(NaN, 1));
+prE(Math.hypot(1, NaN));
+prE(Math.hypot(NaN, NaN));
+prE(Math.hypot(Infinity, NaN));
+prE(Math.hypot(NaN, -Infinity));
+prE(Math.hypot(1, 2, NaN));
+prE(Math.hypot(1, 2, NaN, Infinity));
+prE(Math.hypot(1, 2, 'pig'));
+prE(Math.hypot('pig', 'cow'));
+prE(Math.hypot('pig', 'cow', 'ape'));
+prE(Math.hypot(-0));
+
+prE(Math.hypot(3, 4));
+prE(Math.hypot('3', '4'));
+prE(Math.hypot(3, 4, 5));
+prE(Math.hypot('3', '4', '5'));
+prE(Math.hypot(-812));
+
+/*===
 log
 4812184
 NaN
