@@ -25,11 +25,5 @@ DUK_INTERNAL_DECL int duk_repl_isnan(double x);
 #if defined(DUK_USE_REPL_ISINF)
 DUK_INTERNAL_DECL int duk_repl_isinf(double x);
 #endif
-#if defined(DUK_USE_REPL_FMIN)
-DUK_INTERNAL_DECL double duk_repl_fmin(double x, double y);
-#endif
-#if defined(DUK_USE_REPL_FMAX)
-DUK_INTERNAL_DECL double duk_repl_fmax(double x, double y);
-#endif
 
 #endif  /* DUK_REPLACEMENTS_H_INCLUDED */

@@ -1,9 +1,0 @@
-define: DUK_USE_REPL_FMAX
-introduced: 2.0.0
-default: false
-tags:
-  - portability
-description: >
-  Provide a built-in replacement for fmax(), duk_repl_fmax.
-
-  When enabled, define DUK_FMAX as duk_repl_fmax.

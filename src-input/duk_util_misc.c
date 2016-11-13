@@ -385,3 +385,21 @@ DUK_INTERNAL duk_bool_t duk_double_same_sign(duk_double_t x, duk_double_t y) {
 
 	return (((du1.ui[DUK_DBL_IDX_UI0] ^ du2.ui[DUK_DBL_IDX_UI0]) & 0x80000000UL) == 0);
 }
+
+DUK_INTERNAL duk_double_t duk_double_fmin(duk_double_t x, duk_double_t y) {
+	/* Doesn't replicate fmin() behavior exactly: for fmin() if one
+	 * argument is a NaN, the other argument should be returned.
+	 * Duktape doesn't rely on this behavior so the replacement can
+	 * be simplified.
+	 */
+	return (x < y ? x : y);
+}
+
+DUK_INTERNAL duk_double_t duk_double_fmax(duk_double_t x, duk_double_t y) {
+	/* Doesn't replicate fmax() behavior exactly: for fmax() if one
+	 * argument is a NaN, the other argument should be returned.
+	 * Duktape doesn't rely on this behavior so the replacement can
+	 * be simplified.
+	 */
+	return (x > y ? x : y);
+}
