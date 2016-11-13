@@ -2048,7 +2048,8 @@ Planned
   opcode handler optimizations (GH-903); refcount optimizations (GH-443,
   GH-973, GH-1042); minor RegExp compile/execute optimizations (GH-974,
   GH-1033); minor IEEE double handling optimizations (GH-1051); precomputed
-  duk_hstring array index (GH-1056)
+  duk_hstring array index (GH-1056); duk_get_{type,type_mask}() optimization
+  (GH-1077)
 
 * Miscellaneous footprint improvements: RegExp compiler/executor (GH-977);
   internal duk_dup() variants (GH-990); allow stripping of (almost) all
