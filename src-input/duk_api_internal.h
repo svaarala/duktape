@@ -36,6 +36,9 @@ DUK_INTERNAL_DECL void duk_dup_m2(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_m3(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_m4(duk_context *ctx);
 
+DUK_INTERNAL_DECL duk_int_t duk_get_type_tval(duk_tval *tv);
+DUK_INTERNAL_DECL duk_uint_t duk_get_type_mask_tval(duk_tval *tv);
+
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL_DECL const char *duk_get_type_name(duk_context *ctx, duk_idx_t idx);
 #endif

@@ -31,6 +31,35 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
  *  Misc helpers
  */
 
+#if !defined(DUK_USE_PACKED_TVAL)
+DUK_LOCAL const duk_uint_t duk__type_from_tag[] = {
+	DUK_TYPE_NUMBER,
+	DUK_TYPE_NUMBER,  /* fastint */
+	DUK_TYPE_UNDEFINED,
+	DUK_TYPE_NULL,
+	DUK_TYPE_BOOLEAN,
+	DUK_TYPE_POINTER,
+	DUK_TYPE_LIGHTFUNC,
+	DUK_TYPE_NONE,
+	DUK_TYPE_STRING,
+	DUK_TYPE_OBJECT,
+	DUK_TYPE_BUFFER,
+};
+DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
+	DUK_TYPE_MASK_NUMBER,
+	DUK_TYPE_MASK_NUMBER,  /* fastint */
+	DUK_TYPE_MASK_UNDEFINED,
+	DUK_TYPE_MASK_NULL,
+	DUK_TYPE_MASK_BOOLEAN,
+	DUK_TYPE_MASK_POINTER,
+	DUK_TYPE_MASK_LIGHTFUNC,
+	DUK_TYPE_MASK_NONE,
+	DUK_TYPE_MASK_STRING,
+	DUK_TYPE_MASK_OBJECT,
+	DUK_TYPE_MASK_BUFFER,
+};
+#endif  /* !DUK_USE_PACKED_TVAL */
+
 /* Check that there's room to push one value. */
 #if defined(DUK_USE_VALSTACK_UNSAFE)
 /* Faster but value stack overruns are memory unsafe. */
@@ -2744,14 +2773,10 @@ DUK_LOCAL duk_bool_t duk__obj_flag_any_default_false(duk_context *ctx, duk_idx_t
 	return 0;
 }
 
-DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t idx) {
-	duk_tval *tv;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	tv = duk_get_tval_or_unused(ctx, idx);
+DUK_INTERNAL duk_int_t duk_get_type_tval(duk_tval *tv) {
 	DUK_ASSERT(tv != NULL);
 
+#if defined(DUK_USE_PACKED_TVAL)
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNUSED:
 		return DUK_TYPE_NONE;
@@ -2780,7 +2805,22 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t idx) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_NUMBER;
 	}
-	DUK_UNREACHABLE();
+#else  /* DUK_USE_PACKED_TVAL */
+	DUK_ASSERT(DUK_TVAL_GET_TAG(tv) >= DUK_TAG_MIN && DUK_TVAL_GET_TAG(tv) <= DUK_TAG_MAX);
+	DUK_ASSERT(sizeof(duk__type_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
+	return (duk_int_t) duk__type_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
+#endif  /* DUK_USE_PACKED_TVAL */
+}
+
+DUK_EXTERNAL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval_or_unused(ctx, idx);
+	DUK_ASSERT(tv != NULL);
+
+	return duk_get_type_tval(tv);
 }
 
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
@@ -2838,14 +2878,10 @@ DUK_EXTERNAL duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t idx, duk_int_
 	return (duk_get_type(ctx, idx) == type) ? 1 : 0;
 }
 
-DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t idx) {
-	duk_tval *tv;
-
-	DUK_ASSERT_CTX_VALID(ctx);
-
-	tv = duk_get_tval_or_unused(ctx, idx);
+DUK_INTERNAL duk_uint_t duk_get_type_mask_tval(duk_tval *tv) {
 	DUK_ASSERT(tv != NULL);
 
+#if defined(DUK_USE_PACKED_TVAL)
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_UNUSED:
 		return DUK_TYPE_MASK_NONE;
@@ -2874,7 +2910,22 @@ DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t idx) {
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		return DUK_TYPE_MASK_NUMBER;
 	}
-	DUK_UNREACHABLE();
+#else  /* DUK_USE_PACKED_TVAL */
+	DUK_ASSERT(DUK_TVAL_GET_TAG(tv) >= DUK_TAG_MIN && DUK_TVAL_GET_TAG(tv) <= DUK_TAG_MAX);
+	DUK_ASSERT(sizeof(duk__type_mask_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
+	return (duk_int_t) duk__type_mask_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
+#endif  /* DUK_USE_PACKED_TVAL */
+}
+
+DUK_EXTERNAL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval_or_unused(ctx, idx);
+	DUK_ASSERT(tv != NULL);
+
+	return duk_get_type_mask_tval(tv);
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t mask) {

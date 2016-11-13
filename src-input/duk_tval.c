@@ -97,7 +97,7 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked(duk_tva
 	duk_double_union du;
 	duk_uint64_t t;
 
-	DUK_ASSERT(tv->t == DUK__TAG_NUMBER || tv->t == DUK_TAG_FASTINT);
+	DUK_ASSERT(tv->t == DUK_TAG_NUMBER || tv->t == DUK_TAG_FASTINT);
 
 	if (tv->t == DUK_TAG_FASTINT) {
 		if (tv->v.fi >= 0) {
