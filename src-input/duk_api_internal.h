@@ -28,6 +28,18 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
                                    duk_size_t min_new_size,
                                    duk_small_uint_t flags);
 
+#define DUK_TYPE_MASK_ALL \
+	(DUK_TYPE_MASK_NONE | \
+	 DUK_TYPE_MASK_UNDEFINED | \
+	 DUK_TYPE_MASK_NULL | \
+	 DUK_TYPE_MASK_BOOLEAN | \
+	 DUK_TYPE_MASK_NUMBER | \
+	 DUK_TYPE_MASK_STRING | \
+	 DUK_TYPE_MASK_OBJECT | \
+	 DUK_TYPE_MASK_BUFFER | \
+	 DUK_TYPE_MASK_POINTER | \
+	 DUK_TYPE_MASK_LIGHTFUNC)
+
 DUK_INTERNAL_DECL void duk_dup_0(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_1(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_2(duk_context *ctx);
@@ -116,6 +128,8 @@ DUK_INTERNAL_DECL duk_hobject *duk_known_hobject(duk_context *ctx, duk_idx_t idx
 DUK_INTERNAL_DECL duk_hbuffer *duk_known_hbuffer(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_known_hcompfunc(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_known_hnatfunc(duk_context *ctx, duk_idx_t idx);
+
+DUK_INTERNAL_DECL duk_double_t duk_to_number_tval(duk_context *ctx, duk_tval *tv);
 
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hobject *duk_to_hobject(duk_context *ctx, duk_idx_t idx);

@@ -513,9 +513,45 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 #endif  /* DUK_USE_PARANOID_MATH */
 }
 
+DUK_LOCAL duk_bool_t duk__js_equals_handle_number(duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
+	duk_double_t d1, d2;
+
+	/* Catches both doubles and cases where only one argument is
+	 * a fastint so can't assume a double.
+	 */
+	d1 = DUK_TVAL_GET_NUMBER(tv_x);
+	d2 = DUK_TVAL_GET_NUMBER(tv_y);
+	if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
+		/* SameValue */
+		return duk__js_samevalue_number(d1, d2);
+	} else {
+		/* equals and strict equals */
+		return duk__js_equals_number(d1, d2);
+	}
+}
+
+/* Helper for combining two type masks so that types of two duk_tvals can be
+ * checked with a single TEST opcode.  Inverted mask is useful for checking
+ * that both arguments match their type expectations.
+ */
+#define DUK__MASK_SHIFT 16
+#define DUK__MASK_COMBINE(m1,m2) (((m1) << DUK__MASK_SHIFT) + (m2))
+
+#define DUK__SWAPVALS() do { \
+		duk_tval *tv_tmp; \
+		tv_tmp = tv_x; tv_x = tv_y; tv_y = tv_tmp; \
+		types_mask = (types_mask >> 16) | (types_mask << 16); \
+	} while (0)
+
 DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_tval *tv_tmp;
+	duk_uint_t type_mask_x;
+	duk_uint_t type_mask_y;
+	duk_uint_t types_mask;
+
+	/* XXX: extended mask with fastint separated would make some of the
+	 * fastint vs. number cases faster.
+	 */
 
 	/* If flags != 0 (strict or SameValue), thr can be NULL.  For loose
 	 * equals comparison it must be != NULL.
@@ -529,32 +565,28 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 *  representation, need the awkward if + switch.
 	 */
 
+
 #if defined(DUK_USE_FASTINT)
-	if (DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y)) {
+	/* Fastint-to-fastint comparison is performance critical for loops. */
+	if (DUK_LIKELY(DUK_TVAL_IS_FASTINT(tv_x) && DUK_TVAL_IS_FASTINT(tv_y))) {
 		if (DUK_TVAL_GET_FASTINT(tv_x) == DUK_TVAL_GET_FASTINT(tv_y)) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
-	else
 #endif
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		duk_double_t d1, d2;
 
-		/* Catches both doubles and cases where only one argument is
-		 * a fastint so can't assume a double.
-		 */
-		d1 = DUK_TVAL_GET_NUMBER(tv_x);
-		d2 = DUK_TVAL_GET_NUMBER(tv_y);
-		if (DUK_UNLIKELY((flags & DUK_EQUALS_FLAG_SAMEVALUE) != 0)) {
-			/* SameValue */
-			return duk__js_samevalue_number(d1, d2);
-		} else {
-			/* equals and strict equals */
-			return duk__js_equals_number(d1, d2);
-		}
-	} else if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
+	/* Number to number comparison is also handled specially because it's
+	 * common and because fastints and numbers have a different internal
+	 * tag (so that the "equal tags" check below wouldn't handle it
+	 * correctly).
+	 */
+	if (DUK_LIKELY(DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_NUMBER(tv_y))) {
+		return duk__js_equals_handle_number(tv_x, tv_y, flags);
+	}
+
+	if (DUK_TVAL_GET_TAG(tv_x) == DUK_TVAL_GET_TAG(tv_y)) {
 		switch (DUK_TVAL_GET_TAG(tv_x)) {
 		case DUK_TAG_UNDEFINED:
 		case DUK_TAG_NULL: {
@@ -600,7 +632,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_y));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_x));
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_y));
-			DUK_UNREACHABLE();
+			DUK_UNREACHABLE();  /* handled specifically above */
 			return 0;
 		}
 		}
@@ -609,39 +641,36 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	if ((flags & (DUK_EQUALS_FLAG_STRICT | DUK_EQUALS_FLAG_SAMEVALUE)) != 0) {
 		return 0;
 	}
-
 	DUK_ASSERT(flags == 0);  /* non-strict equality from here on */
 
+	type_mask_x = duk_get_type_mask_tval(tv_x);
+	type_mask_y = duk_get_type_mask_tval(tv_y);
+	types_mask = DUK__MASK_COMBINE(type_mask_x, type_mask_y);  /* mask for tv_x is shifted */
+
 	/*
-	 *  Types are different; various cases for non-strict comparison
+	 *  Types are different; various cases for non-strict comparison.
+	 *  The order doesn't match the Ecmascript specification but that's
+	 *  OK as long as the end result is the same.
 	 *
-	 *  Since comparison is symmetric, we use a "swap trick" to reduce
-	 *  code size.
+	 *  Since comparison is symmetric, we can use a "swap trick" to reduce
+	 *  code size for low footprint targets.
 	 */
 
-	/* XXX: here getting a type mask would be useful */
-
-	/* Undefined/null are considered equal (e.g. "null == undefined" -> true). */
-	if ((DUK_TVAL_IS_UNDEFINED(tv_x) && DUK_TVAL_IS_NULL(tv_y)) ||
-	    (DUK_TVAL_IS_NULL(tv_x) && DUK_TVAL_IS_UNDEFINED(tv_y))) {
-		return 1;
-	}
-
 	/* Number/string -> coerce string to number (e.g. "'1.5' == 1.5" -> true). */
-	if (DUK_TVAL_IS_NUMBER(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
-		/* the next 'if' is guaranteed to match after swap */
-		tv_tmp = tv_x;
-		tv_x = tv_y;
-		tv_y = tv_tmp;
-	}
-	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_NUMBER(tv_y)) {
-		/* XXX: this is possible without resorting to the value stack */
+	if ((types_mask & ~DUK__MASK_COMBINE(DUK_TYPE_MASK_NUMBER, DUK_TYPE_MASK_STRING)) == 0) {
+#if defined(DUK_USE_PREFER_SIZE)
+		DUK__SWAPVALS();
+#else
 		duk_double_t d1, d2;
-		d2 = DUK_TVAL_GET_NUMBER(tv_y);
-		duk_push_tval(ctx, tv_x);
-		duk_to_number(ctx, -1);
-		d1 = duk_require_number(ctx, -1);
-		duk_pop(ctx);
+		d1 = DUK_TVAL_GET_NUMBER(tv_x);
+		d2 = duk_to_number_tval(ctx, tv_y);
+		return duk__js_equals_number(d1, d2);
+#endif
+	}
+	if ((types_mask & ~DUK__MASK_COMBINE(DUK_TYPE_MASK_STRING, DUK_TYPE_MASK_NUMBER)) == 0) {
+		duk_double_t d1, d2;
+		d1 = DUK_TVAL_GET_NUMBER(tv_y);
+		d2 = duk_to_number_tval(ctx, tv_x);
 		return duk__js_equals_number(d1, d2);
 	}
 
@@ -649,47 +678,69 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 * compared to a pointer, the final comparison after coercion now always
 	 * yields false (as pointer vs. number compares to false), but this is
 	 * not special cased.
+	 *
+	 * ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1.
 	 */
-	if (DUK_TVAL_IS_BOOLEAN(tv_x)) {
-		tv_tmp = tv_x;
-		tv_x = tv_y;
-		tv_y = tv_tmp;
+	if (types_mask & DUK__MASK_COMBINE(DUK_TYPE_MASK_BOOLEAN, 0)) {
+#if defined(DUK_USE_PREFER_SIZE)
+		DUK__SWAPVALS();
+#else
+		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_x) == 0 || DUK_TVAL_GET_BOOLEAN(tv_x) == 1);
+		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_x));
+		duk_push_tval(ctx, tv_y);
+		goto recursive_call;
+#endif
 	}
-	if (DUK_TVAL_IS_BOOLEAN(tv_y)) {
-		/* ToNumber(bool) is +1.0 or 0.0.  Tagged boolean value is always 0 or 1. */
-		duk_bool_t rc;
+	if (types_mask & DUK__MASK_COMBINE(0, DUK_TYPE_MASK_BOOLEAN)) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
 		duk_push_tval(ctx, tv_x);
 		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
-		rc = duk_js_equals_helper(thr,
-		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
-		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
-		                          0 /*flags:nonstrict*/);
-		duk_pop_2(ctx);
-		return rc;
+		goto recursive_call;
 	}
 
 	/* String-number/object -> coerce object to primitive (apparently without hint), then try again. */
-	if ((DUK_TVAL_IS_STRING(tv_x) || DUK_TVAL_IS_NUMBER(tv_x)) && DUK_TVAL_IS_OBJECT(tv_y)) {
-		tv_tmp = tv_x;
-		tv_x = tv_y;
-		tv_y = tv_tmp;
+	if ((types_mask & ~DUK__MASK_COMBINE(DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_NUMBER,
+	                                     DUK_TYPE_MASK_OBJECT)) == 0) {
+#if defined(DUK_USE_PREFER_SIZE)
+		DUK__SWAPVALS();
+#else
+		duk_push_tval(ctx, tv_x);
+		duk_push_tval(ctx, tv_y);
+		duk_to_primitive(ctx, -1, DUK_HINT_NONE);  /* apparently no hint? */
+		goto recursive_call;
+#endif
 	}
-	if (DUK_TVAL_IS_OBJECT(tv_x) && (DUK_TVAL_IS_STRING(tv_y) || DUK_TVAL_IS_NUMBER(tv_y))) {
-		duk_bool_t rc;
+	if ((types_mask & ~DUK__MASK_COMBINE(DUK_TYPE_MASK_OBJECT,
+	                                     DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_NUMBER)) == 0) {
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
 		duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* apparently no hint? */
-		rc = duk_js_equals_helper(thr,
-		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
-		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
-		                          0 /*flags:nonstrict*/);
-		duk_pop_2(ctx);
-		return rc;
+		goto recursive_call;
+	}
+
+	/* Undefined/null are considered equal (e.g. "null == undefined" -> true).
+	 * Equal types (null == null, undefined == undefined) already handled above
+	 * but would also match here.
+	 */
+	if ((types_mask & ~DUK__MASK_COMBINE(DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL,
+	                                     DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL)) == 0) {
+		return 1;
 	}
 
 	/* Nothing worked -> not equal. */
 	return 0;
+
+ recursive_call:
+	/* Shared code path to call the helper again with arguments on stack top. */
+	{
+		duk_bool_t rc;
+		rc = duk_js_equals_helper(thr,
+		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
+		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
+		                          0 /*flags:nonstrict*/);
+		duk_pop_2(ctx);
+		return rc;
+	}
 }
 
 /*
