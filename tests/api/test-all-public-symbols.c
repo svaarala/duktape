@@ -248,6 +248,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_require_undefined(ctx, 0);
 	(void) duk_require_valid_index(ctx, 0);
 	(void) duk_resize_buffer(ctx, 0, 0);
+	(void) duk_resume(ctx, NULL);
 	(void) duk_safe_call(ctx, NULL, NULL, 0, 0);
 	(void) duk_safe_to_lstring(ctx, 0, NULL);
 	(void) duk_safe_to_string(ctx, 0);
@@ -260,6 +261,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_steal_buffer(ctx, 0, NULL);
 	(void) duk_strict_equals(ctx, 0, 0);
 	(void) duk_substring(ctx, 0, 0, 0);
+	(void) duk_suspend(ctx, NULL);
 	(void) duk_swap_top(ctx, 0);
 	(void) duk_swap(ctx, 0, 0);
 	(void) duk_throw(ctx);
