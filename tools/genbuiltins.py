@@ -2474,7 +2474,7 @@ def rom_emit_object_initializer_types_and_macros(genc):
     genc.emitLine('#error invalid endianness defines')
     genc.emitLine('#endif')
     genc.emitLine('#else  /* DUK_USE_PACKED_TVAL */')
-    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK__TAG_NUMBER, 0, hostbytes }')  # bytes already in host order
+    genc.emitLine('#define DUK__TVAL_NUMBER(hostbytes) { DUK_TAG_NUMBER, 0, hostbytes }')  # bytes already in host order
     genc.emitLine('#define DUK__TVAL_UNDEFINED() { DUK_TAG_UNDEFINED, 0, {0,0,0,0,0,0,0,0} }')
     genc.emitLine('#define DUK__TVAL_NULL() { DUK_TAG_NULL, 0, {0,0,0,0,0,0,0,0} }')
     genc.emitLine('#define DUK__TVAL_BOOLEAN(bval) { DUK_TAG_BOOLEAN, 0, (bval), 0 }')
