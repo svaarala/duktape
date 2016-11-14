@@ -1761,26 +1761,6 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	const duk_uint8_t *p;
 	duk_small_int_t ch;
 
-	/* This seems to waste a lot of stack frame entries, but good compilers
-	 * will compute these as needed below.  Some of these initial flags are
-	 * also modified in the code below, so they can't all be removed.
-	 */
-	duk_small_int_t trim_white = (flags & DUK_S2N_FLAG_TRIM_WHITE);
-	duk_small_int_t allow_expt = (flags & DUK_S2N_FLAG_ALLOW_EXP);
-	duk_small_int_t allow_garbage = (flags & DUK_S2N_FLAG_ALLOW_GARBAGE);
-	duk_small_int_t allow_plus = (flags & DUK_S2N_FLAG_ALLOW_PLUS);
-	duk_small_int_t allow_minus = (flags & DUK_S2N_FLAG_ALLOW_MINUS);
-	duk_small_int_t allow_infinity = (flags & DUK_S2N_FLAG_ALLOW_INF);
-	duk_small_int_t allow_frac = (flags & DUK_S2N_FLAG_ALLOW_FRAC);
-	duk_small_int_t allow_naked_frac = (flags & DUK_S2N_FLAG_ALLOW_NAKED_FRAC);
-	duk_small_int_t allow_empty_frac = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_FRAC);
-	duk_small_int_t allow_empty = (flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO);
-	duk_small_int_t allow_leading_zero = (flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO);
-	duk_small_int_t allow_auto_hex_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT);
-#if 0
-	duk_small_int_t allow_auto_oct_int = (flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT);
-#endif
-
 	DUK_DDD(DUK_DDDPRINT("parse number: %!T, radix=%ld, flags=0x%08lx",
 	                     (duk_tval *) duk_get_tval(ctx, -1),
 	                     (long) radix, (unsigned long) flags));
@@ -1805,7 +1785,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	 *  is done here too.
 	 */
 
-	if (trim_white) {
+	if (flags & DUK_S2N_FLAG_TRIM_WHITE) {
 		/* Leading / trailing whitespace is sometimes accepted and
 		 * sometimes not.  After white space trimming, all valid input
 		 * characters are pure ASCII.
@@ -1819,13 +1799,13 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	neg = 0;
 	ch = *p;
 	if (ch == (duk_small_int_t) '+') {
-		if (!allow_plus) {
+		if ((flags & DUK_S2N_FLAG_ALLOW_PLUS) == 0) {
 			DUK_DDD(DUK_DDDPRINT("parse failed: leading plus sign not allowed"));
 			goto parse_fail;
 		}
 		p++;
 	} else if (ch == (duk_small_int_t) '-') {
-		if (!allow_minus) {
+		if ((flags & DUK_S2N_FLAG_ALLOW_MINUS) == 0) {
 			DUK_DDD(DUK_DDDPRINT("parse failed: leading minus sign not allowed"));
 			goto parse_fail;
 		}
@@ -1833,8 +1813,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 		neg = 1;
 	}
 
-	ch = *p;
-	if (allow_infinity && ch == (duk_small_int_t) 'I') {
+	if ((flags & DUK_S2N_FLAG_ALLOW_INF) && DUK_STRNCMP((const char *) p, "Infinity", 8) == 0) {
 		/* Don't check for Infinity unless the context allows it.
 		 * 'Infinity' is a valid integer literal in e.g. base-36:
 		 *
@@ -1842,44 +1821,49 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 		 *   1461559270678
 		 */
 
-		const duk_uint8_t *q;
-
-		/* borrow literal Infinity from builtin string */
-		q = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(DUK_HTHREAD_STRING_INFINITY(thr));
-		if (DUK_STRNCMP((const char *) p, (const char *) q, 8) == 0) {
-			if (!allow_garbage && (p[8] != (duk_uint8_t) 0)) {
-				DUK_DDD(DUK_DDDPRINT("parse failed: trailing garbage after matching 'Infinity' not allowed"));
-				goto parse_fail;
-			} else {
-				res = DUK_DOUBLE_INFINITY;
-				goto negcheck_and_ret;
-			}
+		if ((flags & DUK_S2N_FLAG_ALLOW_GARBAGE) == 0 && p[8] != DUK_ASC_NUL) {
+			DUK_DDD(DUK_DDDPRINT("parse failed: trailing garbage after matching 'Infinity' not allowed"));
+			goto parse_fail;
+		} else {
+			res = DUK_DOUBLE_INFINITY;
+			goto negcheck_and_ret;
 		}
 	}
+	ch = *p;
 	if (ch == (duk_small_int_t) '0') {
 		duk_small_int_t detect_radix = 0;
 		ch = DUK_LOWERCASE_CHAR_ASCII(p[1]);  /* 'x' or 'X' -> 'x' */
-		if (allow_auto_hex_int && ch == DUK_ASC_LC_X) {
+		if ((flags & DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT) && ch == DUK_ASC_LC_X) {
 			DUK_DDD(DUK_DDDPRINT("detected 0x/0X hex prefix, changing radix and preventing fractions and exponent"));
 			detect_radix = 16;
-			allow_empty = 0;  /* interpret e.g. '0x' and '0xg' as a NaN (= parse error) */
-			p += 2;
-		}
-#if 0  /* Auto octal not needed at the moment. */
-		else if (allow_auto_oct_int && (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9')) {
+#if 0
+		} else if ((flags & DUK_S2N_FLAG_ALLOW_AUTO_LEGACY_OCT_INT) &&
+		           (ch >= (duk_small_int_t) '0' && ch <= (duk_small_int_t) '9')) {
 			DUK_DDD(DUK_DDDPRINT("detected 0n oct prefix, changing radix and preventing fractions and exponent"));
 			detect_radix = 8;
-			allow_empty = 1;  /* interpret e.g. '09' as '0', not NaN */
+
+			/* NOTE: if this legacy octal case is added back, it has
+			 * different flags and 'p' advance so this needs to be
+			 * reworked.
+			 */
+			flags |= DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO;  /* interpret e.g. '09' as '0', not NaN */
 			p += 1;
-		}
 #endif
+		} else if ((flags & DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT) && ch == DUK_ASC_LC_O) {
+			DUK_DDD(DUK_DDDPRINT("detected 0o oct prefix, changing radix and preventing fractions and exponent"));
+			detect_radix = 8;
+		} else if ((flags & DUK_S2N_FLAG_ALLOW_AUTO_BIN_INT) && ch == DUK_ASC_LC_B) {
+			DUK_DDD(DUK_DDDPRINT("detected 0b bin prefix, changing radix and preventing fractions and exponent"));
+			detect_radix = 2;
+		}
 		if (detect_radix > 0) {
 			radix = detect_radix;
-			allow_expt = 0;
-			allow_frac = 0;
-			allow_naked_frac = 0;
-			allow_empty_frac = 0;
-			allow_leading_zero = 1;  /* allow e.g. '0x0009' and '00077' */
+			/* Clear empty as zero flag: interpret e.g. '0x' and '0xg' as a NaN (= parse error) */
+			flags &= ~(DUK_S2N_FLAG_ALLOW_EXP | DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
+			           DUK_S2N_FLAG_ALLOW_FRAC | DUK_S2N_FLAG_ALLOW_NAKED_FRAC |
+			           DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO);
+			flags |= DUK_S2N_FLAG_ALLOW_LEADING_ZERO;  /* allow e.g. '0x0009' and '0b00010001' */
+			p += 2;
 		}
 	}
 
@@ -1957,7 +1941,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 			 * is checked for after the loop.
 			 */
 			if (dig_frac >= 0 || dig_expt >= 0) {
-				if (allow_garbage) {
+				if (flags & DUK_S2N_FLAG_ALLOW_GARBAGE) {
 					DUK_DDD(DUK_DDDPRINT("garbage termination (invalid period)"));
 					break;
 				} else {
@@ -1966,11 +1950,11 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 				}
 			}
 
-			if (!allow_frac) {
+			if ((flags & DUK_S2N_FLAG_ALLOW_FRAC) == 0) {
 				/* Some contexts don't allow fractions at all; this can't be a
 				 * post-check because the state ('f' and expt) would be incorrect.
 				 */
-				if (allow_garbage) {
+				if (flags & DUK_S2N_FLAG_ALLOW_GARBAGE) {
 					DUK_DDD(DUK_DDDPRINT("garbage termination (invalid first period)"));
 					break;
 				} else {
@@ -1984,7 +1968,8 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 		} else if (ch == (duk_small_int_t) 0) {
 			DUK_DDD(DUK_DDDPRINT("NUL termination"));
 			break;
-		} else if (allow_expt && dig_expt < 0 && (ch == (duk_small_int_t) 'e' || ch == (duk_small_int_t) 'E')) {
+		} else if ((flags & DUK_S2N_FLAG_ALLOW_EXP) &&
+		           dig_expt < 0 && (ch == (duk_small_int_t) 'e' || ch == (duk_small_int_t) 'E')) {
 			/* Note: we don't parse back exponent notation for anything else
 			 * than radix 10, so this is not an ambiguous check (e.g. hex
 			 * exponent values may have 'e' either as a significand digit
@@ -2019,7 +2004,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 		DUK_ASSERT((dig >= 0 && dig <= 35) || dig == 255);
 
 		if (dig >= radix) {
-			if (allow_garbage) {
+			if (flags & DUK_S2N_FLAG_ALLOW_GARBAGE) {
 				DUK_DDD(DUK_DDDPRINT("garbage termination"));
 				break;
 			} else {
@@ -2081,7 +2066,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	/* Leading zero. */
 
 	if (dig_lzero > 0 && dig_whole > 1) {
-		if (!allow_leading_zero) {
+		if ((flags & DUK_S2N_FLAG_ALLOW_LEADING_ZERO) == 0) {
 			DUK_DDD(DUK_DDDPRINT("parse failed: leading zeroes not allowed in integer part"));
 			goto parse_fail;
 		}
@@ -2096,14 +2081,14 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 			goto parse_fail;
 		} else if (dig_frac > 0) {
 			/* ".123" */
-			if (!allow_naked_frac) {
+			if ((flags & DUK_S2N_FLAG_ALLOW_NAKED_FRAC) == 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: fraction part not allowed without "
 				                     "leading integer digit(s)"));
 				goto parse_fail;
 			}
 		} else {
 			/* empty ("") is allowed in some formats (e.g. Number(''), as zero */
-			if (!allow_empty) {
+			if ((flags & DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO) == 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: empty string not allowed (as zero)"));
 				goto parse_fail;
 			}
@@ -2111,7 +2096,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	} else {
 		if (dig_frac == 0) {
 			/* "123." is allowed in some formats */
-			if (!allow_empty_frac) {
+			if ((flags & DUK_S2N_FLAG_ALLOW_EMPTY_FRAC) == 0) {
 				DUK_DDD(DUK_DDDPRINT("parse failed: empty fractions"));
 				goto parse_fail;
 			}
@@ -2129,7 +2114,7 @@ DUK_INTERNAL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk
 	 */
 
 	if (dig_expt == 0) {
-		if (!allow_garbage) {
+		if ((flags & DUK_S2N_FLAG_ALLOW_GARBAGE) == 0) {
 			DUK_DDD(DUK_DDDPRINT("parse failed: empty exponent"));
 			goto parse_fail;
 		}

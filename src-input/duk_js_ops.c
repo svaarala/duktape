@@ -151,6 +151,8 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 	duk_small_uint_t s2n_flags;
 	duk_double_t d;
 
+	DUK_ASSERT(duk_is_string(ctx, -1));
+
 	/* Quite lenient, e.g. allow empty as zero, but don't allow trailing
 	 * garbage.
 	 */
@@ -164,9 +166,12 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 	            DUK_S2N_FLAG_ALLOW_EMPTY_FRAC |
 	            DUK_S2N_FLAG_ALLOW_EMPTY_AS_ZERO |
 	            DUK_S2N_FLAG_ALLOW_LEADING_ZERO |
-	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT;
+	            DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT |
+	            DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT |
+	            DUK_S2N_FLAG_ALLOW_AUTO_BIN_INT;
 
 	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
+
 #if defined(DUK_USE_PREFER_SIZE)
 	d = duk_get_number(ctx, -1);
 	duk_pop(ctx);
