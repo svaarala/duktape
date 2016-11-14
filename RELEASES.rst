@@ -1958,6 +1958,10 @@ Planned
   ES6 and other engines; "\078" is now accepted and is the same as
   "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
 
+* Fix Object.prototype.__proto__ handling to use ToObject() coercion rather
+  than requiring an object; this matches ES6 requirements and allows e.g.
+  the expression (123).__proto__ to work (GH-1080)
+
 * Fix String.fromCharCode() behavior for non-BMP characters when standard
   behavior is enabled (DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT disabled):
   use ToUint16() + CESU-8 rather than ToUint32() + CESU-8 which produces
