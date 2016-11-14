@@ -379,11 +379,12 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	duk_tval *tv;
 
 	if (duk_get_current_magic(ctx) == 0) {
+		DUK_ASSERT_TOP(ctx, 0);
+		duk_push_this_coercible_to_object(ctx);
 		tv = DUK_HTHREAD_THIS_PTR(thr);
-	} else {
-		DUK_ASSERT(duk_get_top(ctx) >= 1);
-		tv = DUK_GET_TVAL_POSIDX(ctx, 0);
 	}
+	DUK_ASSERT(duk_get_top(ctx) >= 1);
+	tv = DUK_GET_TVAL_POSIDX(ctx, 0);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_BUFFER:
