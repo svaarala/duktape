@@ -27,6 +27,9 @@ boolean undefined undefined
 number undefined undefined
 string undefined undefined
 object 123 321
+true
+TypeError
+TypeError
 ===*/
 
 function test() {
@@ -120,7 +123,30 @@ function test() {
         print('no setter');
     }
 
-    // TODO: coercion order tests (side effect / error message if multiple errors)
+    // The __proto__ getter uses ToObject() coercion for its argument so that
+    // e.g. (123).__proto__ is allowed.  This differs from Object.getPrototypeOf()
+    // in ES5.  However, ES6 updates Object.getPrototypeOf() to use ToObject()
+    // coercion too.  Null and undefined are rejected as base values.
+
+    try {
+        print((123).__proto__ === Number.prototype);
+    } catch (e) {
+        print(e.stack || e);
+    }
+
+    try {
+        print(null.__proto__ === Number.prototype);
+    } catch (e) {
+        print(e.name);
+    }
+
+    try {
+        print((void 0).__proto__ === Number.prototype);
+    } catch (e) {
+        print(e.name);
+    }
+
+    // XXX: coercion order tests (side effect / error message if multiple errors)
 }
 
 try {
