@@ -2277,6 +2277,14 @@ objects:
           magic:
             type: math_twoarg
             funcname: "atan2"  # BI_MATH_ATAN2_IDX
+      - key: "cbrt"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "cbrt"  # BI_MATH_CBRT_IDX
       - key: "ceil"
         value:
           type: function

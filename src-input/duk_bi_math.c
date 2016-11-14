@@ -90,6 +90,30 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 	return duk_double_fmax(x, y);
 }
 
+DUK_LOCAL double duk__cbrt_fixed(double x) {
+	/* cbrt() is C99.  To avoid hassling embedders with the need to provide a
+	 * cube root function, we can get by with pow().  The result is not
+	 * identical, but that's OK: ES6 says it's implementation-dependent.
+	 */
+
+	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
+
+#if defined(DUK_CBRT)
+	/* cbrt() matches ES6 requirements. */
+	return DUK_CBRT(x);
+#else
+	/* pow() does not, however. */
+	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE || c == DUK_FP_ZERO) {
+		return x;
+	}
+	if (DUK_SIGNBIT(x)) {
+		return -DUK_POW(-x, 1.0 / 3.0);
+	} else {
+		return DUK_POW(x, 1.0 / 3.0);
+	}
+#endif
+}
+
 DUK_LOCAL double duk__round_fixed(double x) {
 	/* Numbers half-way between integers must be rounded towards +Infinity,
 	 * e.g. -3.5 must be rounded to -3 (not -4).  When rounded to zero, zero
@@ -192,7 +216,8 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	duk__round_fixed,
 	duk__sin,
 	duk__sqrt,
-	duk__tan
+	duk__tan,
+	duk__cbrt_fixed,
 #else
 	DUK_FABS,
 	DUK_ACOS,
@@ -207,6 +232,7 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	DUK_SIN,
 	DUK_SQRT,
 	DUK_TAN
+	duk__cbrt_fixed,
 #endif
 };
 
@@ -246,6 +272,19 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
 	arg2 = duk_to_number(ctx, 1);
 	fun = duk__two_arg_funcs[fun_idx];
 	duk_push_number(ctx, (duk_double_t) fun((double) arg1, (double) arg2));
+	return 1;
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
+	return duk__math_minmax(ctx, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
+	return duk__math_minmax(ctx, DUK_DOUBLE_INFINITY, duk__fmin_fixed);
+}
+
+DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
+	duk_push_number(ctx, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx));
 	return 1;
 }
 
@@ -315,19 +354,6 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	duk_push_number(ctx, (duk_double_t) DUK_SQRT(sum) * max);
 	return 1;
 }
-#endif
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
-	return duk__math_minmax(ctx, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
-	return duk__math_minmax(ctx, DUK_DOUBLE_INFINITY, duk__fmin_fixed);
-}
-
-DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
-	duk_push_number(ctx, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx));
-	return 1;
-}
+#endif  /* DUK_USE_ES6 */
 
 #endif  /* DUK_USE_MATH_BUILTIN */

@@ -68,6 +68,7 @@ rejected_plain_identifiers_list = [
     'exp',
     'log',
     'sqrt',
+    'cbrt',
 
     # memory functions
     'malloc',

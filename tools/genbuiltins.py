@@ -1201,7 +1201,8 @@ math_onearg_magic = {
     'round': 9,  # BI_MATH_ROUND_IDX
     'sin': 10,   # BI_MATH_SIN_IDX
     'sqrt': 11,  # BI_MATH_SQRT_IDX
-    'tan': 12    # BI_MATH_TAN_IDX
+    'tan': 12,   # BI_MATH_TAN_IDX
+    'cbrt': 13   # BI_MATH_CBRT_IDX
 }
 math_twoarg_magic = {
     'atan2': 0,  # BI_MATH_ATAN2_IDX
