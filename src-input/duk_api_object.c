@@ -382,6 +382,13 @@ DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_i
 	duk_def_prop(ctx, obj_idx, DUK_DEFPROP_HAVE_SETTER | DUK_DEFPROP_HAVE_GETTER | DUK_DEFPROP_FORCE);  /* attributes always 0 */
 }
 
+/* Object.getOwnPropertyDescriptor() equivalent C binding. */
+DUK_EXTERNAL void duk_get_prop_desc(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags) {
+	DUK_UNREF(flags);  /* no flags defined yet */
+
+	duk_hobject_object_get_own_property_descriptor(ctx, obj_idx);  /* [ ... key ] -> [ ... desc ] */
+}
+
 /* Object.defineProperty() equivalent C binding. */
 DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;

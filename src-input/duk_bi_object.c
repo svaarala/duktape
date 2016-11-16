@@ -603,8 +603,9 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_property(duk_context *ct
 
 #if defined(DUK_USE_OBJECT_BUILTIN) || defined(DUK_USE_REFLECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_get_own_property_descriptor(duk_context *ctx) {
-	/* XXX: no need for indirect call */
-	return duk_hobject_object_get_own_property_descriptor(ctx);
+	/* [ obj key ] */
+	duk_hobject_object_get_own_property_descriptor(ctx, -2);
+	return 1;
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */
 

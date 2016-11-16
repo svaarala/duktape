@@ -908,7 +908,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
                                               duk_bool_t throw_flag);
 
 /* Object built-in methods */
-DUK_INTERNAL_DECL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_hobject_object_get_own_property_descriptor(duk_context *ctx, duk_idx_t obj_idx);
 DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_frozen);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags);
