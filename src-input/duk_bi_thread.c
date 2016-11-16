@@ -169,7 +169,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom + 1 < thr->valstack_top);
 	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[1]);  /* side effects */
-	DUK_TVAL_CHKFAST_INPLACE(&thr->heap->lj.value1);
+	DUK_TVAL_CHKFAST_INPLACE_SLOW(&thr->heap->lj.value1);
 
 	thr->heap->lj.iserror = is_error;
 
@@ -288,7 +288,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	/* lj value1: value */
 	DUK_ASSERT(thr->valstack_bottom < thr->valstack_top);
 	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, &thr->valstack_bottom[0]);  /* side effects */
-	DUK_TVAL_CHKFAST_INPLACE(&thr->heap->lj.value1);
+	DUK_TVAL_CHKFAST_INPLACE_SLOW(&thr->heap->lj.value1);
 
 	thr->heap->lj.iserror = is_error;
 

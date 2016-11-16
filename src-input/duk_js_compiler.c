@@ -1861,7 +1861,7 @@ DUK_LOCAL duk_regconst_t duk__getconst(duk_compiler_ctx *comp_ctx) {
 
 #if defined(DUK_USE_FASTINT)
 	/* Explicit check for fastint downgrade. */
-	DUK_TVAL_CHKFAST_INPLACE(tv1);
+	DUK_TVAL_CHKFAST_INPLACE_SLOW(tv1);
 #endif
 
 	/* Sanity workaround for handling functions with a large number of
