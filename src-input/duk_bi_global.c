@@ -601,6 +601,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 
 	radix = duk_to_int32(ctx, 1);
 
+	/* While parseInt() recognizes 0xdeadbeef, it doesn't recognize
+	 * ES6 0o123 or 0b10001.
+	 */
 	s2n_flags = DUK_S2N_FLAG_TRIM_WHITE |
 	            DUK_S2N_FLAG_ALLOW_GARBAGE |
 	            DUK_S2N_FLAG_ALLOW_PLUS |

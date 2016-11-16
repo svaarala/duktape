@@ -75,10 +75,20 @@
  */
 #define DUK_S2N_FLAG_ALLOW_AUTO_HEX_INT   (1 << 11)
 
-/* Allow automatic detection of octal base, overrides radix
- * argument and forces integer mode.
+/* Allow automatic detection of legacy octal base ("0n"),
+ * overrides radix argument and forces integer mode.
  */
-#define DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT   (1 << 12)
+#define DUK_S2N_FLAG_ALLOW_AUTO_LEGACY_OCT_INT   (1 << 12)
+
+/* Allow automatic detection of ES6 octal base ("0o123"),
+ * overrides radix argument and forces integer mode.
+ */
+#define DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT   (1 << 13)
+
+/* Allow automatic detection of ES6 binary base ("0b10001"),
+ * overrides radix argument and forces integer mode.
+ */
+#define DUK_S2N_FLAG_ALLOW_AUTO_BIN_INT   (1 << 14)
 
 /*
  *  Prototypes
