@@ -1797,6 +1797,10 @@ Planned
   duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
   duk_put_global_lstring() (GH-946, GH-953)
 
+* Add duk_get_prop_desc() API call which pushes a property descriptor object
+  for a target object and key, similar to Object.getOwnPropertyDescriptor()
+  (GH-1087)
+
 * Add duk_suspend() and duk_resume() which allow a native thread running a
   Duktape/C function to be suspended temporarily (e.g. when a native system
   call blocks) so that other native threads may execute while the thread is
