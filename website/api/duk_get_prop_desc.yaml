@@ -1,0 +1,43 @@
+name: duk_get_prop_desc
+
+proto: |
+  void duk_get_prop_desc(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
+
+stack: |
+  [ ... obj! ... key! ] -> [ ... obj! ... desc! ]  (if property exists)
+  [ ... obj! ... key! ] -> [ ... obj! ... undefined! ]  (if property doesn't exist)
+
+summary: |
+  <p>Equivalent of <code>Object.getOwnPropertyDescriptor()</code> in the C API:
+  pushes a property descriptor object for a named property of the object at
+  <code>obj_idx</code>.  If the target is not an object (or the index is invalid)
+  an error is thrown.</p>
+
+  <p>No flags are defined yet, use 0 for <code>flags</code>.</p>
+
+example: |
+  duk_idx_t obj_idx = /* ... */;
+
+  /* Check if property "my_prop" is a getter. */
+
+  duk_push_string(ctx, "my_prop");
+  duk_get_prop_desc(ctx, obj_idx, 0 /*flags*/);
+  if (duk_is_object(ctx, -1)) {
+    /* Property found. */
+    if (duk_has_prop_string(ctx, -1, "get")) {
+      printf("my_prop is a getter\n");
+    } else {
+      printf("my_prop is not a getter\n");
+    }
+  } else {
+    printf("my_prop not found\n");
+  }
+
+tags:
+  - property
+  - sandbox
+
+seealso:
+  - duk_def_prop
+
+introduced: 2.0.0

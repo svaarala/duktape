@@ -158,4 +158,7 @@ tags:
   - property
   - sandbox
 
+seealso:
+  - duk_get_prop_desc
+
 introduced: 1.1.0
