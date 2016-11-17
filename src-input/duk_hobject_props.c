@@ -4790,10 +4790,10 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 /*
  *  Object.getOwnPropertyDescriptor()  (E5 Sections 15.2.3.3, 8.10.4)
  *
- *  This is an actual function call.
+ *  [ ... key ] -> [ ... desc/undefined ]
  */
 
-DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_context *ctx) {
+DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_context *ctx, duk_idx_t obj_idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -4804,8 +4804,8 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	obj = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-	key = duk_to_hstring(ctx, 1);
+	obj = duk_require_hobject_promote_mask(ctx, obj_idx, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	key = duk_to_hstring(ctx, -1);
 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
@@ -4815,14 +4815,13 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 	rc = duk_hobject_get_own_propdesc(thr, obj, key, &pd, DUK_GETDESC_FLAG_PUSH_VALUE);
 	if (!rc) {
 		duk_push_undefined(ctx);
-
-		/* [obj key undefined] */
-		return 1;
+		duk_remove(ctx, -2);
+		return;
 	}
 
 	duk_push_object(ctx);
 
-	/* [obj key value desc] */
+	/* [ ... key value desc ] */
 
 	if (DUK_PROPDESC_IS_ACCESSOR(&pd)) {
 		/* If a setter/getter is missing (undefined), the descriptor must
@@ -4841,20 +4840,20 @@ DUK_INTERNAL duk_ret_t duk_hobject_object_get_own_property_descriptor(duk_contex
 		}
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
 	} else {
-		duk_dup_m2(ctx);  /* [obj key value desc value] */
+		duk_dup_m2(ctx);
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_VALUE);
 		duk_push_boolean(ctx, DUK_PROPDESC_IS_WRITABLE(&pd));
 		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_WRITABLE);
-
-		/* [obj key value desc] */
 	}
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_ENUMERABLE(&pd));
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_CONFIGURABLE(&pd));
 	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
 
-	/* [obj key value desc] */
-	return 1;
+	/* [ ... key value desc ] */
+
+	duk_replace(ctx, -3);
+	duk_pop(ctx);  /* -> [ ... desc ] */
 }
 
 /*
