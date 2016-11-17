@@ -1598,7 +1598,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		tv_funret = thr->valstack_top - 1;
 #if defined(DUK_USE_FASTINT)
 		/* Explicit check for fastint downgrade. */
-		DUK_TVAL_CHKFAST_INPLACE(tv_funret);
+		DUK_TVAL_CHKFAST_INPLACE_FAST(tv_funret);
 #endif
 		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
 	} else {
@@ -1663,7 +1663,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			tv_funret = thr->valstack_top - 1;
 #if defined(DUK_USE_FASTINT)
 			/* Explicit check for fastint downgrade. */
-			DUK_TVAL_CHKFAST_INPLACE(tv_funret);
+			DUK_TVAL_CHKFAST_INPLACE_FAST(tv_funret);
 #endif
 			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
 		}
@@ -1787,7 +1787,7 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, &thr->heap->lj.value1);  /* side effects */
 #if defined(DUK_USE_FASTINT)
 	/* Explicit check for fastint downgrade. */
-	DUK_TVAL_CHKFAST_INPLACE(tv_ret);
+	DUK_TVAL_CHKFAST_INPLACE_FAST(tv_ret);
 #endif
 	duk_set_top(ctx, idx_func + 1);  /* XXX: could be eliminated with valstack adjust */
 

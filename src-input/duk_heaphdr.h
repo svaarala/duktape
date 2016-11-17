@@ -574,7 +574,7 @@ struct duk_heaphdr_string {
 #define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; duk_tval tv__tmp; tv__dst = (tvptr_dst); \
 		DUK_TVAL_SET_TVAL(&tv__tmp, tv__dst); \
-		DUK_TVAL_SET_NUMBER_CHKFAST(tv__dst, (newval)); \
+		DUK_TVAL_SET_NUMBER_CHKFAST_FAST(tv__dst, (newval)); \
 		DUK_TVAL_DECREF((thr), &tv__tmp);  /* side effects */ \
 	} while (0)
 #define DUK_TVAL_SET_DOUBLE_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
@@ -800,7 +800,7 @@ struct duk_heaphdr_string {
 	} while (0)
 #define DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF_ALT0(thr,tvptr_dst,newval) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
-		DUK_TVAL_SET_NUMBER_CHKFAST(tv__dst, (newval)); \
+		DUK_TVAL_SET_NUMBER_CHKFAST_FAST(tv__dst, (newval)); \
 		DUK_UNREF((thr)); \
 	} while (0)
 #define DUK_TVAL_SET_DOUBLE_UPDREF_ALT0(thr,tvptr_dst,newval) do { \

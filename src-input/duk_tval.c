@@ -19,7 +19,7 @@
  *  See doc/fastint.rst for details.
  */
 
-DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast(duk_tval *tv, duk_double_t x) {
+DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast_fast(duk_tval *tv, duk_double_t x) {
 	duk_double_union du;
 	duk_int64_t i;
 	duk_small_int_t expt;
@@ -60,6 +60,10 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast(duk_tval *tv, du
 
 	DUK_TVAL_SET_DOUBLE(tv, x);
 	return;
+}
+
+DUK_INTERNAL DUK_NOINLINE void duk_tval_set_number_chkfast_slow(duk_tval *tv, duk_double_t x) {
+	duk_tval_set_number_chkfast_fast(tv, x);
 }
 
 /*

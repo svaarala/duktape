@@ -2,7 +2,7 @@
 *** test_1 (duk_safe_call)
 after definition, top=0
 object
-tweak,adjust,frobnicate,FLAG_FOO,FLAG_BAR,FLAG_QUUX,meaning
+tweak,adjust,frobnicate,FLAG_FOO,FLAG_BAR,FLAG_QUUX,meaning,nonFast
 1
 2
 4
@@ -13,6 +13,8 @@ adjust, top=3
 4
 frobnicate, top=6
 5
+true
+true
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -50,6 +52,7 @@ static const duk_number_list_entry my_consts[] = {
 	{ "FLAG_BAR", (duk_double_t) (1 << 1) },
 	{ "FLAG_QUUX", (duk_double_t) (1 << 2) },
 	{ "meaning", (duk_double_t) 42.0 },
+	{ "nonFast", (duk_double_t) 42.1 },
 	{ NULL, 0.0 }
 };
 
@@ -83,6 +86,12 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	    "print(MyModule.tweak(1, 2, 3, 4, 5, 6));\n"
 	    "print(MyModule.adjust(1, 2, 3, 4, 5, 6));\n"
 	    "print(MyModule.frobnicate(1, 2, 3, 4, 5, 6));\n"
+	);
+
+	/* Fastint compatible values are fastint downgraded. */
+	duk_eval_string_noresult(ctx,
+	    "print(Duktape.info(MyModule.meaning)[1] === Duktape.info(MyModule.FLAG_FOO)[1])\n"  /* match: both are fastints */
+	    "print(Duktape.info(MyModule.meaning)[1] !== Duktape.info(MyModule.nonFast)[1])\n"   /* no match: nonFast is not fastint */
 	);
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));

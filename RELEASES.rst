@@ -1959,6 +1959,8 @@ Planned
   ES6 and other engines; "\078" is now accepted and is the same as
   "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
 
+* Add a fastint check for duk_put_number_list() values (GH-1086)
+
 * Fix Object.prototype.__proto__ handling to use ToObject() coercion rather
   than requiring an object; this matches ES6 requirements and allows e.g.
   the expression (123).__proto__ to work (GH-1080)

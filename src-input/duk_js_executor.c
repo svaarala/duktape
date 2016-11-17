@@ -547,7 +547,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 		DUK_ASSERT(DUK_DBLUNION_IS_NORMALIZED(&du));
 #if defined(DUK_USE_FASTINT)
 		tv = DUK_GET_TVAL_POSIDX(ctx, idx_dst);
-		DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF(thr, tv, du.d);
+		DUK_TVAL_SET_NUMBER_CHKFAST_UPDREF(thr, tv, du.d);  /* always 'fast', i.e. inlined */
 		return;
 #endif
 	} else {
@@ -1531,7 +1531,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 	DUK_ASSERT(entry_thread != NULL);
 	DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
 	tv1 = thr->valstack_top - 1;
-	DUK_TVAL_CHKFAST_INPLACE(tv1);  /* fastint downgrade check for return values */
+	DUK_TVAL_CHKFAST_INPLACE_FAST(tv1);  /* fastint downgrade check for return values */
 
 	/*
 	 *  Four possible outcomes:
