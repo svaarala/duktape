@@ -2040,6 +2040,10 @@ Planned
 
 * Fix incorrect duk_hbufferobject size in Duktape.info() (GH-804)
 
+* Fix a few incorrect asserts in refcount code; the asserts didn't check for
+  NULL and cause memory unsafe behavior, but the code itself is correct
+  (GH-1090)
+
 * Miscellaneous portability improvements: remove dependency on fmin() and
   fmax() (GH-1072)
 

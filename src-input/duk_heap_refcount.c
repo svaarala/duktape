@@ -85,10 +85,10 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		if (p_flag[n] & DUK_PROPDESC_FLAG_ACCESSOR) {
 			duk_hobject *h_getset;
 			h_getset = p_val[n].a.get;
-			DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
+			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
 			h_getset = p_val[n].a.set;
-			DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
+			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_getset);
 		} else {
 			duk_tval *tv_val;
