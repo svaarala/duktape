@@ -1,71 +1,94 @@
-==========
-Test cases
-==========
+=========
+Testcases
+=========
 
-Introduction
-============
+There are two main testcase sets for Duktape:
 
-There are two separate test case sets for Duktape:
+* Ecmascript testcases (``tests/ecmascript``) for testing Ecmascript
+  compliance, "real world" behavior, and Duktape specific behavior.
 
-1. Ecmascript test cases for testing Ecmascript compliance
+* API testcases (``tests/api``) for testing the Duktape specific C API.
 
-2. Duktape API test cases for testing that the exposed user API works
+Testcases are written using an "expected string" approach: a testcase file
+describes the expected output using a custom markup (described below) and also
+contains the Ecmascript or C code that is intended to produce that output.
+A test runner compares actual output to expected; known issue files are used
+to document "known bad" outputs.
 
-Ecmascript test cases
-=====================
+This document describes the testcase formats and current test tools.
 
-How to test?
-------------
+Ecmascript testcase format
+==========================
 
-There are many unit testing frameworks for Ecmascript such as `Jasmine`_
-(see also `List of unit testing frameworks`_).  However, when testing an
-Ecmascript *implementation*, a testing framework cannot always assume
-that even simple language features like functions or exceptions work
-correctly.
+Testcases are plain Ecmascript (``.js``) files with custom markup inside
+comments for providing test metadata, expected output, and include files.
+A testcase is "prepared" before execution using ``util/runtest.py``:
 
-How to do automatic testing then?
+* Testcase metadata and expected string are parsed from inside custom markup.
 
-.. _Jasmine: http://pivotal.github.com/jasmine/
-.. _List of unit testing frameworks: http://en.wikipedia.org/wiki/List_of_unit_testing_frameworks#JavaScript
+* A minified prologue is injected to provide a global ``Test`` object.
+  The prologue also harmonizes the execution environment so that e.g.
+  ``print()`` and ``console.log()`` are available so that the prepared
+  test can be executed using Duktape, V8, etc.
 
-The current solution is to run an Ecmascript test case file with a command
-line interpreter and compare the resulting ``stdout`` text to expected.
-Control information, including expected ``stdout`` results, are embedded
-into Ecmascript comments which the test runner parses.
+* Include files are located, minified, and included into the prepared test.
+  All utilities included must work in both strict and non-strict contexts
+  because testcases may be either strict or non-strict programs.
 
-The intent of the test cases is to test various features of the implementation
-against the specification *and real world behavior*.  Thus, the tests are
-*not* intended to be strict conformance tests: implementation specific
-features and internal behavior are also covered by tests.  However, whenever
-possible, test output can be compared to output of other Ecmascript engines,
-currently: Rhino, NodeJS (V8), and Smjs.
+* A ``"use strict";`` declaration is prepended (even before the prologue)
+  if test metadata indicates it is needed.  This is needed when the testcase
+  is exercising strict program code behavior.
 
-Test case scripts write their output using the ``print()`` function.  If
-``print()`` is not available for a particular interpretation (as is the case
-with NodeJS), a prologue defining it is injected.
+The prologue and include files are minified to one-liners so that they don't
+offset the line numbers of the testcase.  This is important for tests that
+exercise traceback line numbers for example.
 
-Test case format
-----------------
+Include files are specified using the following syntax::
 
-Test cases are plain Ecmascript files ending with the extension ``.js`` with
-special markup inside comments.
+  /*@include util-buffer.js@*/
 
-Example::
+Testcase metadata is provided as JSON or YAML inside a comment block.  If
+multiple blocks are present they are merged, with the last occurrence of a
+key overwriting previous occurrences::
+
+  /*---
+  {
+      "custom": true
+  }
+  ---*/
+
+  // or
+
+  /*---
+  custom: true
+  ---*/
+
+The metadata keys change over time; current keys are described below.
+Metadata is optional.
+
+Finally, the expected output is specified using the following syntax::
+
+  /*===
+  hello world
+  ===*/
+
+  print('hello world');
+
+There's also a single-line shorthand::
+
+  print('hello world');  //>hello world
+
+Full testcase example::
 
   /*
    *  Example test.
-   *
-   *  Expected result is delimited as follows; the expected response
-   *  here is "hello world\n".
    */
 
   /*@include util-foo.js@*/
 
   /*---
-  {
-     "slow": false,
-     "_comment": "optional metadata is encoded as a single JSON object"
-  }
+  # Optional metadata is encoded in JSON or YAML.
+  slow: false
   ---*/
 
   /*===
@@ -85,80 +108,95 @@ Example::
   /* there can be multiple "expected" blocks (but only one metadata block) */
   print("second test");
 
-The ``/*@include ... @*/`` line is replaced with another Ecmascript file which
-is automatically minified to a one-liner.  This ensures that utilities can be
-included without changing line numbers in the testcase, which is important for
-tests checking for linenumbers in stack traces etc.  The utilities may be used
-both in strict and non-strict programs so they must be compatible with both
-(it's probably easiest to make helpers 'use strict' so they'll be strict in
-both cases).
+  /* Shorthand can also be used. */
+  print("shorthand");  //>shorthand
 
-The metadata block and all metadata keys are optional.  Boolean flags
-default to false if metadata block or the key is not present.  Current
-metadata keys:
+Ecmascript testcase metadata keys
+=================================
 
-* ``slow``: if true, test is slow and increased timelimits are applied
-  to avoid incorrect timeout errors.
+Metadata keys are added and removed as necessary so this list may be
+out-of-date; see ``util/runtest.py`` for current keys.  All keys are
+optional:
 
-* ``skip``: if true, test is not finished yet, and a failure is not
-  counted towards failcount.
++----------------------+------------------------------------------------------+
+| Key                  | Description                                          |
++======================+======================================================+
+| comment              | Optional string to comment on the testcase briefly.  |
++----------------------+------------------------------------------------------+
+| slow                 | If true, test is (very) slow and increased time      |
+|                      | limits may be necessary to avoid test timeouts.      |
++----------------------+------------------------------------------------------+
+| skip                 | If true, test is skipped without causing a test      |
+|                      | failure.  Useful for unfinished tests and tests      |
+|                      | that need to be executed manually.                   |
++----------------------+------------------------------------------------------+
+| custom               | If true, some implementation dependent behavior      |
+|                      | is expected and comparison to other Ecmascript       |
+|                      | engines is not relevant.  The behavior may either    |
+|                      | be entirely Duktape specific (e.g. relying on JX     |
+|                      | format) or specific behavior not required by the     |
+|                      | Ecmascript specification (e.g. additional enumeration|
+|                      | guarantees).                                         |
++----------------------+------------------------------------------------------+
+| nonstandard          | If true, expected behavior is not standards          |
+|                      | compliant but matches "real world" expectations.     |
++----------------------+------------------------------------------------------+
+| endianness           | If set, indicates that the testcase requires a       |
+|                      | specific endianness, needed for e.g. some TypedArray |
+|                      | testcases.  Values: ``little``, ``big``, ``mixed``.  |
++----------------------+------------------------------------------------------+
+| use_strict           | Testcase is a strict mode program.  When preparing   |
+|                      | the test, prepend a ``"use strict";`` declaration as |
+|                      | very first statement of the test, before the test    |
+|                      | prologue.                                            |
++----------------------+------------------------------------------------------+
+| intended_uncaught    | Testcase intentionally fails by throwing an uncaught |
+|                      | error (which may even be a SyntaxError).  This is    |
+|                      | needed to test some program level behavior.          |
++----------------------+------------------------------------------------------+
 
-* ``custom``: if true, some implementation dependent features are tested,
-  and comparison to other Ecmascript engines is not relevant.
+Ecmascript testcase known issues
+================================
 
-* ``nonstandard``: if true, expected behavior is not standards conformant
-  but matches real world expectations (different from a purely Duktape
-  specific features).
+Sometimes testcases fail due to known bugs or environment specific differences
+such as endianness.  Known issue files describe the "known bad" testcase
+output and describes the reason for the failure.  This allows a failing test
+to be flagged as a "known issue" rather than a failure.
 
-* ``endianness``: if set, indicates that testcase requires a specific
-  endianness.  Needed for e.g. some TypedArray testcases.  Values:
-  "little", "big", "mixed".
+Known issue files have a YAML metadata block, followed by ``---``, followed by
+the "known bad" verbatim testcase output::
 
-* ``comment``: optional string to comment on testcase very shortly.
+  summary: wurld is printed instead of world
+  ---
+  hello wurld
 
-Testcases used to be executable directly prior to Duktape 1.1.  With the
-include mechanism testcases need to be "prepared" before execution, but it
-can be done with a simple utility and the resulting prepped testcases are
-independent of the rest of the testing framework.
+The "known bad" output can also be provided as an MD5 hash which is useful if
+the full output is very large and uninteresting::
 
-Known issues
-------------
+  summary: wurld is printed instead of world
+  md5: 49a9895803ec23a6b41dd346c32203b7
 
-There are several testcases that won't pass at a given time but with the
-bugs considered known issues (perhaps even permanently).  Earlier these
-were part of the testcase metadata, but since the known issues status is
-not really testcase related, it is now stored in a separate testcase status
-file, ``doc/testcase-known-issues.yaml``.
+Each known issue file describes a single known failure for a specific testcase.
+A certain testcase may have several known issue files, for different Duktape
+versions, different config options, different environments, etc.  The current
+naming convention is just a numbered sequence based on the testcase name::
 
-The YAML file is a list of items with the keys:
+  # For test-dev-hello-world.js:
+  test-dev-hello-world-1.txt
+  test-dev-hello-world-2.txt
+  test-dev-hello-world-3.txt
+  ...
 
-* ``test``: testcase name, e.g. ``test-dev-mandel2-func.js``.
-
-* ``specialoptions``: if true, expected behavior requires special feature
-  options to be given and the test case is expected to fail without them.
-  If set to a string, the string also indicates that special feature options
-  are needed, and can explain the options.
-
-* ``knownissue``: if true, the test is categorized as failure but is shown
-  as a known issue which does not need immediate fixing (i.e. they are not
-  release blockers).  Bugs marked as known issues may be difficult to fix,
-  may be low priority, or it may uncertain what the desired behavior is.
-  If set to a string, the string can summarize the issue and is shown in
-  test case output.
-
-* ``comment``: optional string to comment on testcase status, failure
-  reason, etc.
-
-Practices
----------
+Ecmascript testcase best practices
+==================================
 
 Indentation
-:::::::::::
+-----------
 
-Indent with space, 4 spaces.
+Indent with 4 spaces, no tabs.
 
 Verifying exception type
-::::::::::::::::::::::::
+------------------------
 
 Since Ecmascript doesn't require specific error messages for errors
 thrown, the messages should not be inspected or printed out in test
@@ -180,7 +218,7 @@ prints::
 
 When an error is not supposed to occur in a successful test run, the
 exception message can (and should) be printed, as it makes it easier
-to resolve a failing test case.  This can be done most easily as::
+to resolve a failing testcase.  This can be done most easily as::
 
   try {
       null.foo = 1;
@@ -190,42 +228,34 @@ to resolve a failing test case.  This can be done most easily as::
 
 This is portable and prints a stack trace when available.
 
-Test cases
-----------
+Printing tracebacks, pointers, etc
+----------------------------------
 
-Test cases filenames consist of lowercase words delimited by dashes, e.g.::
+While it should be generally avoided, in some testcases it's necessary to
+print out tracebacks, JX-serialize pointers, etc.  When doing so:
 
-  test-stmt-trycatch.js
+* Replace filenames and line numbers in tracebacks with e.g. ``FILE:LINE``.
+  Otherwise the test output will include temporary file names and it won't
+  be possible to describe a stable expected output.
 
-The first part of each test case is ``test``.  The second part indicates a
-major test category.  The test categories are not very strictly defined, and
-there is currently no tracking of specification coverage.
+* Replace pointers with e.g. ``PTR``.  Pointer format is platform dependent
+  and can include ``0x12345678``, ``0x123456789abcdef``, and ``12345678``.
 
-For example, the following prefix are used:
+There are utility includes to perform these replacements.
 
-* ``test-dev-``: development time test cases which demonstrate a particular
-  issue and may not be very well documented.
+API testcase format
+===================
 
-* ``test-bug-``: illustrate a particular development time bug which has usually
-  already been fixed.
-
-* ``test-bi-xxx-``: builtin tests for "xxx", e.g. ``test-bi-string-`` prefix
-  is for String built-in tests.
-
-Duktape API test cases
-======================
-
-Test case format
-----------------
-
-Test case files are C files with a ``test()`` function.  The test function
+Testcase files are C files with a ``test()`` function.  The test function
 gets as its argument an already initialized ``duk_context *`` and print out
-text to ``stdout``.  The test case can assume ``duktape.h`` and common headers
+text to ``stdout``.  The testcase can assume ``duktape.h`` and common headers
 like ``stdio.h`` have been included.  There are also some predefined macros
 (like ``TEST_SAFE_CALL()`` and ``TEST_PCALL()``) to minimize duplication in
-test case code.
+testcase code.
 
-Expected output and metadata is defined as for Ecmascript test cases.
+Expected output and metadata is defined as for Ecmascript testcases.  However,
+the expected output shorthand syntax (``//>output``) cannot be used because
+it's not portable C89.
 
 Example::
 
@@ -240,47 +270,33 @@ Example::
       printf("Hello world from C!\n");
   }
 
-Known issues
-------------
+API testcase known issues
+=========================
 
-As for Ecmascript testcases, known issue status is stored in
-``doc/testcase-known-issues.yaml``.
+As for Ecmascript testcases, known issues are documented using known issue
+files providing the "known bad" output.  The format is the same as for
+Ecmascript tests.
 
-Test runner
-===========
+Test tools
+==========
 
-The current test runner is a NodeJS program which handles both Ecmascript
-and API testcases.  See ``runtests/runtests.js``.
+* ``util/runtest.py``: prepares and executes a single testcase, and prints
+  out a readable result summary.  Optionally writes JSON test result file,
+  prepared testcase, and various other outputs to specified files.  The tool
+  can also be used to just prepare a test.  The runtest.py tool can be used
+  both manually and as part of running a test suite.
 
-Remote tests can be executed with a shell script wrapper which copies the
-test case over with scp and then executes it with ssh.  For instance::
+* ``util/prep_test.py``: earlier version of ``runtest.py``, used by
+  runtests.js and likely be to deprecated.
 
-  #!/bin/sh
+* ``runtests/runtests.js``: original Node.js based test runner which is
+  likely to be rewritten as a Python program.
 
-  TESTCASE=""
-  while [ "$1" ]
-  do
-      # Parse whatever options may be present, assume last argument is
-      # testcase.
-      case "$1" in
-          --restrict-memory)
-              shift
-              ;;
-          *)
-              TESTCASE=$1
-              shift
-              ;;
-      esac
-  done
-
-  scp "$TESTCASE" user@192.168.100.20:/tmp >/dev/null
-  ssh user@192.168.100.20 "./duk /tmp/`basename $TESTCASE`"
-
-Exit code should be passed through if possible.  Be careful about normalizing
-newlines (plain LF) if something in the process uses CR LF.
+* ``testrunner/``: distributed test runner for Github commit/pull webhook
+  tests.
 
 Future work
 ===========
 
-* Put test cases in a directory hierarchy instead (``test/stmt/trycatch.js``),
+* Put testcases in a directory hierarchy instead (``test/stmt/trycatch.js``),
   perhaps scales better (at the expense of adding hassle to e.g. grepping).
