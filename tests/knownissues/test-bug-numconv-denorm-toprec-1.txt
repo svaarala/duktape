@@ -1,0 +1,4 @@
+summary: in a denormal corner case toPrecision() can output a zero leading digit
+---
+1e-323
+0.9881312916824930884e-323

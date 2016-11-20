@@ -1,0 +1,12 @@
+summary: DataView .buffer property misleading when DataView argument is not an ArrayBuffer (custom behavior)
+---
+[object ArrayBuffer]
+true
+[object DataView]
+false
+[object Uint16Array]
+false
+[object ArrayBuffer]
+false
+[object Uint8Array]
+false

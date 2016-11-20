@@ -1,0 +1,103 @@
+summary: requires DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+---
+basic tests
+TypeError: cannot read property 'value' of undefined
+call types
+entry undefined
+in ecmaNoTail undefined
+after ecmaNoTail undefined
+in ecmaTail2, ecmaTail1 undefined
+in ecmaTail2, ecmaTail2 undefined
+3 in ecmaTail1, ecmaTail1 undefined
+3 in ecmaTail1, ecmaTail2 undefined
+2 in ecmaTail1, ecmaTail1 undefined
+2 in ecmaTail1, ecmaTail2 undefined
+1 in ecmaTail1, ecmaTail1 undefined
+1 in ecmaTail1, ecmaTail2 undefined
+0 in ecmaTail1, ecmaTail1 undefined
+0 in ecmaTail1, ecmaTail2 undefined
+after ecmaNoTail, ecmaTail1 undefined
+after ecmaNoTail, ecmaTail2 undefined
+in nativeCall undefined
+after nativeCall undefined
+in nonStrictEvalCall undefined
+after nonStrictEvalCall undefined
+in strictEvalCall undefined
+after strictEvalCall undefined
+in boundNonStrictCall undefined
+after boundNonStrictCall undefined
+TypeError
+TypeError
+multiple occurrences in callstack
+f called undefined undefined undefined
+g called undefined undefined undefined
+h called undefined undefined undefined
+g called undefined undefined undefined
+f called undefined undefined undefined
+h called undefined undefined undefined
+after undefined undefined undefined
+f called undefined undefined undefined
+g called undefined undefined undefined
+h called undefined undefined undefined
+g called undefined undefined undefined
+f called undefined undefined undefined
+h called undefined undefined undefined
+Error
+after undefined undefined undefined
+recursion
+rec 5 undefined
+rec 4 undefined
+rec 3 undefined
+rec 2 undefined
+rec 1 undefined
+rec 0 undefined
+15
+undefined
+coroutine overwrite test
+co1 entry1 (before f) undefined undefined
+co2 entry2 (before f) undefined undefined
+co1 f (before g) undefined undefined
+co1 g undefined undefined
+co2 f (before g) undefined undefined
+co1 f (after g) undefined undefined
+co1 entry1 (after f) undefined undefined
+co2 g undefined undefined
+co2 f (after g) undefined undefined
+co2 entry2 (after f) undefined undefined
+coroutine gc
+f started undefined undefined
+g called undefined undefined
+canary finalized
+after undefined undefined
+unwind gc test
+1
+f caller: undefined
+g caller: undefined
+h caller: undefined
+0
+f caller: undefined
+g caller: undefined
+h caller: undefined
+f_fin true
+g_fin true
+h_fin true
+force gc
+f_fin true
+g_fin true
+h_fin true
+1
+f caller: undefined
+g caller: undefined
+h caller: undefined
+0
+f caller: undefined
+g caller: undefined
+h caller: undefined
+Error
+f_fin true
+g_fin true
+h_fin true
+force gc
+f_fin true
+g_fin true
+h_fin true

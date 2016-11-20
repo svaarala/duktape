@@ -1,0 +1,6 @@
+summary: requires leniency for non-standard regexps
+description: >
+  \1 inside a regexp character class is invalid in ES5, but accepted by some engines.
+---
+SyntaxError
+SyntaxError: invalid regexp escape

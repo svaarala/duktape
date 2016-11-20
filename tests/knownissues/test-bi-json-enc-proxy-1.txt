@@ -1,0 +1,8 @@
+summary: JSON enumeration behavior for Proxy targets is incomplete and uses 'enumerate' trap instead of 'ownKeys' trap
+---
+{"foo":234}
+{"foo":345}
+enumerate should not be called
+{"quux":"key-quux"}
+enumerate should not be called
+{"quux":"key-quux"}

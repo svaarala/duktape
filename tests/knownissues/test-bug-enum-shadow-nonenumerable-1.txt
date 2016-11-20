@@ -1,0 +1,11 @@
+summary: enumeration semantics corner case for shadowing
+description: >
+  Corner case enumeration semantics, not sure what correct behavior is
+  (test262 ch12/12.6/12.6.4/12.6.4-2).
+---
+test1
+foo
+bar
+y enums "prop": true
+test2
+child enums "prop": true
