@@ -24,12 +24,12 @@ function test() {
     print(typeof pd.value, pd.writable, pd.enumerable, pd.configurable);
     print(Math.log10.length);
 
-    printExact(Math.log10(NaN));
+    printExact(Math.log10(0 / 0));
     printExact(Math.log10(-1));
     printExact(Math.log10(0));
     printExact(Math.log10(-0));
     printExact(Math.log10(1));
-    printExact(Math.log10(Infinity));
+    printExact(Math.log10(1 / 0));
 
     printExact(Math.log10(10));
     printExact(Math.log10(1000));

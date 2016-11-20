@@ -28,9 +28,10 @@ function test() {
 
     printExact(Math.cbrt(0));
     printExact(Math.cbrt(-0));
-    printExact(Math.cbrt(Infinity));
-    printExact(Math.cbrt(-Infinity));
-    printExact(Math.cbrt(NaN));
+    printExact(Math.cbrt(1 / 0));
+    printExact(Math.cbrt(-1 / 0));
+    printExact(Math.cbrt(0 / 0));
+
     printExact(Math.cbrt(8));
     printExact(Math.cbrt(64));
     printExact(Math.cbrt(1000));
