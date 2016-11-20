@@ -273,7 +273,13 @@
 #if defined(DUK_F_C99) || defined(DUK_F_CPP11) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
 #if !defined(DUK_CBRT)
 #define DUK_CBRT             cbrt
-#endif  /* DUK_CBRT */
+#endif
+#if !defined(DUK_LOG2)
+#define DUK_LOG2             log2
+#endif
+#if !defined(DUK_LOG10)
+#define DUK_LOG10            log10
+#endif
 #endif  /* DUK_F_C99 */
 
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,

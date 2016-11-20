@@ -114,6 +114,22 @@ DUK_LOCAL double duk__cbrt_fixed(double x) {
 #endif
 }
 
+DUK_LOCAL double duk__log2_fixed(double x) {
+#if defined(DUK_LOG2)
+	return DUK_LOG2(x);
+#else
+	return DUK_LOG(x) / DUK_LOG(2.0);
+#endif
+}
+
+DUK_LOCAL double duk__log10_fixed(double x) {
+#if defined(DUK_LOG10)
+	return DUK_LOG10(x);
+#else
+	return DUK_LOG(x) / DUK_LOG(10.0);
+#endif
+}
+
 DUK_LOCAL double duk__round_fixed(double x) {
 	/* Numbers half-way between integers must be rounded towards +Infinity,
 	 * e.g. -3.5 must be rounded to -3 (not -4).  When rounded to zero, zero
@@ -218,6 +234,8 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	duk__sqrt,
 	duk__tan,
 	duk__cbrt_fixed,
+	duk__log2_fixed,
+	duk__log10_fixed
 #else
 	DUK_FABS,
 	DUK_ACOS,
@@ -231,8 +249,10 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	duk__round_fixed,
 	DUK_SIN,
 	DUK_SQRT,
-	DUK_TAN
+	DUK_TAN,
 	duk__cbrt_fixed,
+	duk__log2_fixed,
+	duk__log10_fixed
 #endif
 };
 

@@ -2285,6 +2285,8 @@ objects:
           magic:
             type: math_onearg
             funcname: "cbrt"  # BI_MATH_CBRT_IDX
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "ceil"
         value:
           type: function
@@ -2333,6 +2335,26 @@ objects:
           magic:
             type: math_onearg
             funcname: "log"  # BI_MATH_LOG_IDX
+      - key: "log2"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "log2"  # BI_MATH_LOG2_IDX
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "log10"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "log10"  # BI_MATH_LOG10_IDX
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "max"
         value:
           type: function
