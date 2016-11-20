@@ -2412,6 +2412,16 @@ objects:
           magic:
             type: math_onearg
             funcname: "tan"  # BI_MATH_TAN_IDX
+      - key: "trunc"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "trunc"  # BI_MATH_TRUNC_IDX
+        es6: true
+        present_if: DUK_USE_ES6
 
   - id: bi_json
     class: JSON

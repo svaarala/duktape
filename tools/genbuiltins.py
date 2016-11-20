@@ -1205,6 +1205,7 @@ math_onearg_magic = {
     'cbrt': 13,   # BI_MATH_CBRT_IDX
     'log2': 14,   # BI_MATH_LOG2_IDX
     'log10': 15,  # BI_MATH_LOG10_IDX
+    'trunc': 16,  # BI_MATH_TRUNC_IDX
 }
 math_twoarg_magic = {
     'atan2': 0,  # BI_MATH_ATAN2_IDX

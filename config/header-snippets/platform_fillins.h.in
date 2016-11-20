@@ -280,6 +280,9 @@
 #if !defined(DUK_LOG10)
 #define DUK_LOG10            log10
 #endif
+#if !defined(DUK_TRUNC)
+#define DUK_TRUNC            trunc
+#endif
 #endif  /* DUK_F_C99 */
 
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,

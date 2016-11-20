@@ -90,18 +90,18 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 	return duk_double_fmax(x, y);
 }
 
-DUK_LOCAL double duk__cbrt_fixed(double x) {
+DUK_LOCAL double duk__cbrt(double x) {
 	/* cbrt() is C99.  To avoid hassling embedders with the need to provide a
 	 * cube root function, we can get by with pow().  The result is not
 	 * identical, but that's OK: ES6 says it's implementation-dependent.
 	 */
 
-	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
-
 #if defined(DUK_CBRT)
 	/* cbrt() matches ES6 requirements. */
 	return DUK_CBRT(x);
 #else
+	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);
+
 	/* pow() does not, however. */
 	if (c == DUK_FP_NAN || c == DUK_FP_INFINITE || c == DUK_FP_ZERO) {
 		return x;
@@ -114,7 +114,7 @@ DUK_LOCAL double duk__cbrt_fixed(double x) {
 #endif
 }
 
-DUK_LOCAL double duk__log2_fixed(double x) {
+DUK_LOCAL double duk__log2(double x) {
 #if defined(DUK_LOG2)
 	return DUK_LOG2(x);
 #else
@@ -122,11 +122,19 @@ DUK_LOCAL double duk__log2_fixed(double x) {
 #endif
 }
 
-DUK_LOCAL double duk__log10_fixed(double x) {
+DUK_LOCAL double duk__log10(double x) {
 #if defined(DUK_LOG10)
 	return DUK_LOG10(x);
 #else
 	return DUK_LOG(x) / DUK_LOG(10.0);
+#endif
+}
+
+DUK_LOCAL double duk__trunc(double x) {
+#if defined(DUK_TRUNC)
+	return DUK_TRUNC(x);
+#else
+	return x >= 0.0 ? DUK_FLOOR(x) : DUK_CEIL(x);
 #endif
 }
 
@@ -233,9 +241,10 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	duk__sin,
 	duk__sqrt,
 	duk__tan,
-	duk__cbrt_fixed,
-	duk__log2_fixed,
-	duk__log10_fixed
+	duk__cbrt,
+	duk__log2,
+	duk__log10,
+	duk__trunc
 #else
 	DUK_FABS,
 	DUK_ACOS,
@@ -250,9 +259,10 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	DUK_SIN,
 	DUK_SQRT,
 	DUK_TAN,
-	duk__cbrt_fixed,
-	duk__log2_fixed,
-	duk__log10_fixed
+	duk__cbrt,
+	duk__log2,
+	duk__log10,
+	duk__trunc
 #endif
 };
 
