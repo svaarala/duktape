@@ -35,9 +35,12 @@ function boundTest() {
 try {
     print('non-bound');
     nonBoundTest();
-
+} catch (e) {
+    print(e.stack || e);
+}
+try {
     print('bound');
     boundTest();
 } catch (e) {
-    print(e.stack || e);
+    print(e);  // don't print stack to keep testcase stable with current issue
 }

@@ -47,3 +47,16 @@ function safeEscapeString(s) {
 function safePrintString(s) {
     print(safeEscapeString(s));
 }
+
+function sanitizeTraceback(x) {
+    x = x.replace(/\(.*?test-.*?\.js:/g, '(TESTCASE:');
+    x = x.replace(/:\d+/g, ':NNN');
+    x = x.replace(/\/\*/g, '(*').replace(/\*\u002f/g, '*)');
+    x = x.replace(/light_[0-9a-fA-F]+_/g, 'light_PTR_', x);
+    x = x.replace(/LIGHT_[0-9a-fA-F]+_/g, 'LIGHT_PTR_', x);
+    return x;
+}
+
+function sanitizePointers(x) {
+    return x.replace(/\((?:0x)?[0-9a-fA-F]+\)/g, '(PTR)');
+}

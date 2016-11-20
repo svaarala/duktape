@@ -1,10 +1,5 @@
 /*
  *  Brute force tzoffset test for Finnish locale.
- *
- *  Right now (2014-08-09) the only discrepancy to V8 is the year 1970.
- *  That discrepancy is caused by Duktape using an equivalent year for
- *  the year 1970.  If that behavior is removed, the test should pass
- *  with no diff.
  */
 
 /*===

@@ -15,6 +15,7 @@
  */
 
 /*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*---
 {
@@ -84,15 +85,6 @@ function testTypedJx(func, name) {
         print(name + ':', e.name);
         //print('*** ' + e);
     }
-}
-
-function sanitizeTraceback(x) {
-    x = x.replace(/\/tmp\/.*?:/g, 'TESTCASE:');
-    x = x.replace(/:\d+/g, ':NNN')
-    x = x.replace(/\/\*/g, '(*').replace(/\*\//g, '*)');
-    x = x.replace(/light_[0-9a-fA-F]+_/g, 'light_PTR_', x);
-    x = x.replace(/LIGHT_[0-9a-fA-F]+_/g, 'LIGHT_PTR_', x);
-    return x;
 }
 
 /*===
@@ -691,19 +683,20 @@ try {
 
 /*===
 toPointer() test
-pointer null
-object null
+pointer true
+object true
 ===*/
 
 function toPointerTest() {
     var lfunc = Math.cos;
     var t;
 
+    // result is 'null' for lightfuncs
     t = Duktape.Pointer(lfunc);
-    print(typeof t, t);
+    print(typeof t, String(t) === 'null');
 
     t = new Duktape.Pointer(lfunc);
-    print(typeof t, t);
+    print(typeof t, String(t) === 'null');
 }
 
 try {
@@ -1737,7 +1730,6 @@ SyntaxError: function false
 TypeError: function false
 URIError: function false
 Proxy: function false
-Duktape.Buffer: function false
 Duktape.Pointer: function false
 Duktape.Thread: function false
 Duktape.Logger: function false
@@ -1787,7 +1779,6 @@ function exemptBuiltinsTest() {
     print('URIError:', f(URIError));
     print('Proxy:', f(Proxy));
 
-    print('Duktape.Buffer:', f(Duktape.Buffer));
     print('Duktape.Pointer:', f(Duktape.Pointer));
     print('Duktape.Thread:', f(Duktape.Thread));
     print('Duktape.Logger:', f(Duktape.Logger));
@@ -2742,8 +2733,8 @@ try {
 
 /*===
 Duktape.Pointer built-in test
-Duktape.Pointer: pointer (null)
-new Duktape.Pointer: object (null)
+true
+true
 toString: TypeError
 valueOf: TypeError
 ===*/
@@ -2751,8 +2742,8 @@ valueOf: TypeError
 function duktapePointerBuiltinTest() {
     var lfunc = Math.cos;
 
-    testTypedJx(function () { return Duktape.Pointer(lfunc); }, 'Duktape.Pointer');
-    testTypedJx(function () { return new Duktape.Pointer(lfunc); }, 'new Duktape.Pointer');
+    print(String(Duktape.Pointer(lfunc)) === 'null');
+    print(String(new Duktape.Pointer(lfunc)) === 'null');
     testTypedJx(function () { return Duktape.Pointer.prototype.toString.call(lfunc); }, 'toString');
     testTypedJx(function () { return Duktape.Pointer.prototype.toString.call(lfunc); }, 'valueOf');
 }

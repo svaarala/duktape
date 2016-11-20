@@ -1584,7 +1584,7 @@ unary arith in range
 -0 0
 unary out of range
 -0 0
-+0 0 fastint
++0 0
 ===*/
 
 function unaryArithmeticTest() {

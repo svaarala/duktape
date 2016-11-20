@@ -16,31 +16,12 @@
  *
  */
 
-var t;
-
 /*===
 xxx xxx
  string
  string
  string
  string
-===*/
-
-/* greedy matching, (x*) will match 'xxx', outer quantifier will repeat once */
-t = /(x*)*/.exec('xxx');
-print(t[0], t[1]);
-
-/* here x* should match zero times, leaving (x*) capture the empty string */
-t = /(x*)*/.exec('y');
-print(t[0], typeof t[0]);
-print(t[1], typeof t[1]);
-
-/* same as above */
-t = /(x*)*/.exec('');
-print(t[0], typeof t[0]);
-print(t[1], typeof t[1]);
-
-/*===
 xyz string
 xyz string
 null object
@@ -49,22 +30,46 @@ xyz string
 null object
 ===*/
 
-t = /(?:(?=x)){1000}xyz/.exec('xyz');
-print(t[0], typeof t[0]);
+function test() {
+    var t;
 
-t = /(?:(?=x)){1000}xyz/.exec('xyyxyz');
-print(t[0], typeof t[0]);
+    /* greedy matching, (x*) will match 'xxx', outer quantifier will repeat once */
+    t = /(x*)*/.exec('xxx');
+    print(t[0], t[1]);
 
-t = /(?:(?=x)){1000}xyz/.exec('xyy');
-print(t, typeof t);
+    /* here x* should match zero times, leaving (x*) capture the empty string */
+    t = /(x*)*/.exec('y');
+    print(t[0], typeof t[0]);
+    print(t[1], typeof t[1]);
 
-t = /(?:(?=x))+xyz/.exec('xyz');
-print(t[0], typeof t[0]);
+    /* same as above */
+    t = /(x*)*/.exec('');
+    print(t[0], typeof t[0]);
+    print(t[1], typeof t[1]);
 
-t = /(?:(?=x))+xyz/.exec('xyyxyz');
-print(t[0], typeof t[0]);
+    t = /(?:(?=x)){1000}xyz/.exec('xyz');
+    print(t[0], typeof t[0]);
 
-t = /(?:(?=x))+xyz/.exec('xy');
-print(t, typeof t);
+    t = /(?:(?=x)){1000}xyz/.exec('xyyxyz');
+    print(t[0], typeof t[0]);
 
-/* XXX: check behavior against E5 specification, both Rhino and Smjs fail */
+    t = /(?:(?=x)){1000}xyz/.exec('xyy');
+    print(t, typeof t);
+
+    t = /(?:(?=x))+xyz/.exec('xyz');
+    print(t[0], typeof t[0]);
+
+    t = /(?:(?=x))+xyz/.exec('xyyxyz');
+    print(t[0], typeof t[0]);
+
+    t = /(?:(?=x))+xyz/.exec('xy');
+    print(t, typeof t);
+
+    /* XXX: check behavior against E5 specification, both Rhino and Smjs fail */
+}
+
+try {
+    test();
+} catch (e) {
+    print(e);  // avoid .stack for now, as test fails
+}

@@ -7,6 +7,12 @@
  * function prologue.  Nothing gets output before that finishes.
  */
 
+/*---
+{
+    "intended_uncaught": true
+}
+---*/
+
 /* XXX: how to better test this so that the TypeError could be
  * actually checked for?
  */
