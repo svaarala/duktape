@@ -265,6 +265,26 @@
 #define DUK_SQRT             sqrt
 #endif
 
+/* The functions below exist only in C99/C++11 or later and need a workaround
+ * for platforms that don't include them.  MSVC isn't detected as C99, but
+ * these functions also exist in MSVC 2013 and later so include a clause for
+ * that too.
+ */
+#if defined(DUK_F_C99) || defined(DUK_F_CPP11) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
+#if !defined(DUK_CBRT)
+#define DUK_CBRT             cbrt
+#endif
+#if !defined(DUK_LOG2)
+#define DUK_LOG2             log2
+#endif
+#if !defined(DUK_LOG10)
+#define DUK_LOG10            log10
+#endif
+#if !defined(DUK_TRUNC)
+#define DUK_TRUNC            trunc
+#endif
+#endif  /* DUK_F_C99 */
+
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,
  * see test-bug-netbsd-math-pow.js.  Use NetBSD specific workaround.
  * (This might be a wider problem; if so, generalize the define name.)

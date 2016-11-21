@@ -1189,19 +1189,23 @@ def load_metadata(opts, rom=False, build_info=None, active_opts=None):
 
 # Magic values for Math built-in.
 math_onearg_magic = {
-    'fabs': 0,   # BI_MATH_FABS_IDX
-    'acos': 1,   # BI_MATH_ACOS_IDX
-    'asin': 2,   # BI_MATH_ASIN_IDX
-    'atan': 3,   # BI_MATH_ATAN_IDX
-    'ceil': 4,   # BI_MATH_CEIL_IDX
-    'cos': 5,    # BI_MATH_COS_IDX
-    'exp': 6,    # BI_MATH_EXP_IDX
-    'floor': 7,  # BI_MATH_FLOOR_IDX
-    'log': 8,    # BI_MATH_LOG_IDX
-    'round': 9,  # BI_MATH_ROUND_IDX
-    'sin': 10,   # BI_MATH_SIN_IDX
-    'sqrt': 11,  # BI_MATH_SQRT_IDX
-    'tan': 12    # BI_MATH_TAN_IDX
+    'fabs': 0,    # BI_MATH_FABS_IDX
+    'acos': 1,    # BI_MATH_ACOS_IDX
+    'asin': 2,    # BI_MATH_ASIN_IDX
+    'atan': 3,    # BI_MATH_ATAN_IDX
+    'ceil': 4,    # BI_MATH_CEIL_IDX
+    'cos': 5,     # BI_MATH_COS_IDX
+    'exp': 6,     # BI_MATH_EXP_IDX
+    'floor': 7,   # BI_MATH_FLOOR_IDX
+    'log': 8,     # BI_MATH_LOG_IDX
+    'round': 9,   # BI_MATH_ROUND_IDX
+    'sin': 10,    # BI_MATH_SIN_IDX
+    'sqrt': 11,   # BI_MATH_SQRT_IDX
+    'tan': 12,    # BI_MATH_TAN_IDX
+    'cbrt': 13,   # BI_MATH_CBRT_IDX
+    'log2': 14,   # BI_MATH_LOG2_IDX
+    'log10': 15,  # BI_MATH_LOG10_IDX
+    'trunc': 16,  # BI_MATH_TRUNC_IDX
 }
 math_twoarg_magic = {
     'atan2': 0,  # BI_MATH_ATAN2_IDX

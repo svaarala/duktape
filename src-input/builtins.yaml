@@ -2277,6 +2277,16 @@ objects:
           magic:
             type: math_twoarg
             funcname: "atan2"  # BI_MATH_ATAN2_IDX
+      - key: "cbrt"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "cbrt"  # BI_MATH_CBRT_IDX
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "ceil"
         value:
           type: function
@@ -2325,6 +2335,26 @@ objects:
           magic:
             type: math_onearg
             funcname: "log"  # BI_MATH_LOG_IDX
+      - key: "log2"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "log2"  # BI_MATH_LOG2_IDX
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "log10"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "log10"  # BI_MATH_LOG10_IDX
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "max"
         value:
           type: function
@@ -2382,6 +2412,16 @@ objects:
           magic:
             type: math_onearg
             funcname: "tan"  # BI_MATH_TAN_IDX
+      - key: "trunc"
+        value:
+          type: function
+          native: duk_bi_math_object_onearg_shared
+          length: 1
+          magic:
+            type: math_onearg
+            funcname: "trunc"  # BI_MATH_TRUNC_IDX
+        es6: true
+        present_if: DUK_USE_ES6
 
   - id: bi_json
     class: JSON

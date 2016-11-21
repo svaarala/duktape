@@ -21,6 +21,10 @@
 - define: DUK_EXP
 - define: DUK_LOG
 - define: DUK_SQRT
+- define: DUK_CBRT
+- define: DUK_LOG2
+- define: DUK_LOG10
+- define: DUK_TRUNC
 
 # Memory allocation
 - define: DUK_ANSI_MALLOC
