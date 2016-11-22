@@ -13,14 +13,8 @@
 done
 ===*/
 
-var dot64M = '.';
-while (dot64M.length < 64 * 1024 * 1024) {
-    //print(dot64M.length);
-    dot64M = dot64M + dot64M;
-}
-
 function build(n) {
-    var any = dot64M.substr(0, n);
+    var any = '.'.repeat(n);
     var re_str = '^(?:' + any + ')+x$';
     var input = any + any + 'x';
     return { re_str: re_str, input: input };
@@ -36,7 +30,7 @@ function test() {
         }
 
         print(v);
-        for (i = -100; i <= 3; i++) {
+        for (i = -20; i <= 3; i++) {
             if (v + i < 1) { continue; }
             //print(v, v.toString(16), i);
             var t = build(v + i);
