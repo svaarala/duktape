@@ -1966,6 +1966,10 @@ Planned
 
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
+* Remove an unintended fastint downgrade check for unary minus executor
+  opcode (fastint downgrade check is intended to be applied to unary plus
+  only) (GH-903)
+
 * Fix a few bugs in object property handling (delete property and
   Object.defineProperty()) where an object property table resize triggered
   by a finalizer of a previous value could cause memory unsafe behavior
