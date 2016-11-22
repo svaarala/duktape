@@ -2031,6 +2031,8 @@ Planned
   automatically for AmigaOS on M68K, regardless of OS version or compiler
   (GH-932)
 
+* Fix Cygwin warning about shadowed 'accept' variable (GH-1098)
+
 * Fix two-argument Math function (like Math.atan2()) argument coercion
   order; the order was not guaranteed but specification requires left-to-right
   ordering (GH-943)
