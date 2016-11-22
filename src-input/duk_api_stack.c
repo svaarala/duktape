@@ -456,7 +456,7 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t idx) {
 			DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ(thr, tv);
 		} while (tv != tv_end);
 		thr->valstack_top = tv_end;
-		DUK_REFZERO_CHECK(thr);
+		DUK_REFZERO_CHECK_FAST(thr);
 #else  /* DUK_USE_REFERENCE_COUNTING */
 		duk_uidx_t count;
 		duk_tval *tv_end;
@@ -4448,7 +4448,7 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 		DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ(thr, tv);
 	}
 	thr->valstack_top = tv;
-	DUK_REFZERO_CHECK(thr);
+	DUK_REFZERO_CHECK_FAST(thr);
 #else
 	tv = thr->valstack_top;
 	while (count > 0) {

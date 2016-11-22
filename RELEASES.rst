@@ -1966,6 +1966,11 @@ Planned
 
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
+* Fix a few bugs in object property handling (delete property and
+  Object.defineProperty()) where an object property table resize triggered
+  by a finalizer of a previous value could cause memory unsafe behavior
+  (GH-1096)
+
 * Fix Object.prototype.__proto__ handling to use ToObject() coercion rather
   than requiring an object; this matches ES6 requirements and allows e.g.
   the expression (123).__proto__ to work (GH-1080)
