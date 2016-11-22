@@ -16,6 +16,15 @@
 #endif
 
 /*
+ *  Some useful constants
+ */
+
+#define DUK_DOUBLE_2TO32     4294967296.0
+#define DUK_DOUBLE_2TO31     2147483648.0
+#define DUK_DOUBLE_LOG2E     1.4426950408889634
+#define DUK_DOUBLE_LOG10E    0.4342944819032518
+
+/*
  *  Endian conversion
  */
 

@@ -90,6 +90,7 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 	return duk_double_fmax(x, y);
 }
 
+#if defined(DUK_USE_ES6)
 DUK_LOCAL double duk__cbrt(double x) {
 	/* cbrt() is C99.  To avoid hassling embedders with the need to provide a
 	 * cube root function, we can get by with pow().  The result is not
@@ -118,7 +119,7 @@ DUK_LOCAL double duk__log2(double x) {
 #if defined(DUK_LOG2)
 	return DUK_LOG2(x);
 #else
-	return DUK_LOG(x) / DUK_LOG(2.0);
+	return DUK_LOG(x) * DUK_DOUBLE_LOG2E;
 #endif
 }
 
@@ -126,7 +127,7 @@ DUK_LOCAL double duk__log10(double x) {
 #if defined(DUK_LOG10)
 	return DUK_LOG10(x);
 #else
-	return DUK_LOG(x) / DUK_LOG(10.0);
+	return DUK_LOG(x) * DUK_DOUBLE_LOG10E;
 #endif
 }
 
@@ -134,9 +135,13 @@ DUK_LOCAL double duk__trunc(double x) {
 #if defined(DUK_TRUNC)
 	return DUK_TRUNC(x);
 #else
+	/* Handles -0 correctly: -0.0 matches 'x >= 0.0' but floor()
+	 * is required to return -0 when the argument is -0.
+	 */
 	return x >= 0.0 ? DUK_FLOOR(x) : DUK_CEIL(x);
 #endif
 }
+#endif  /* DUK_USE_ES6 */
 
 DUK_LOCAL double duk__round_fixed(double x) {
 	/* Numbers half-way between integers must be rounded towards +Infinity,
@@ -241,11 +246,13 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	duk__sin,
 	duk__sqrt,
 	duk__tan,
+#if defined(DUK_USE_ES6)
 	duk__cbrt,
 	duk__log2,
 	duk__log10,
 	duk__trunc
-#else
+#endif
+#else  /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
 	DUK_FABS,
 	DUK_ACOS,
 	DUK_ASIN,
@@ -259,11 +266,13 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 	DUK_SIN,
 	DUK_SQRT,
 	DUK_TAN,
+#if defined(DUK_USE_ES6)
 	duk__cbrt,
 	duk__log2,
 	duk__log10,
 	duk__trunc
 #endif
+#endif  /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
 };
 
 /* order must match constants in genbuiltins.py */

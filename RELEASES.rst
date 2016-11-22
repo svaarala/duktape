@@ -1847,7 +1847,7 @@ Planned
   and String.prototype.repeat() (GH-1043, GH-1049, GH-1050)
 
 * Add support for ES6 Math.hypot(), Math.cbrt(), Math.log2(), Math.log10(),
-  Math.trunc() (GH-1069, GH-1093)
+  Math.trunc() (GH-1069, GH-1093, GH-1095)
 
 * Add support for ES6 Object.assign() (GH-1064)
 
