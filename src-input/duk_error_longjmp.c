@@ -43,6 +43,14 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	                   (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
 	                   &thr->heap->lj.value1, &thr->heap->lj.value2));
 
+	/* Perform a refzero check before throwing: this catches cases where
+	 * some internal code uses no-refzero (NORZ) macro variants but an
+	 * error occurs before it has the chance to DUK_REFZERO_CHECK_xxx()
+	 * explicitly.  Refzero'ed objects would otherwise remain pending
+	 * until the next refzero (which is not a big issue but still).
+	 */
+	DUK_REFZERO_CHECK_SLOW(thr);
+
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
 	/* If we don't have a jmpbuf_ptr, there is little we can do except
 	 * cause a fatal error.  The caller's expectation is that we never
