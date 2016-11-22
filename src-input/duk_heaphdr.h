@@ -518,10 +518,13 @@ struct duk_heaphdr_string {
 /* Free pending refzero entries; quick check to avoid call because often
  * the queue is empty.
  */
-#define DUK_REFZERO_CHECK(thr) do { \
+#define DUK_REFZERO_CHECK_FAST(thr) do { \
 		if ((thr)->heap->refzero_list != NULL) { \
 			duk_refzero_free_pending((thr)); \
 		} \
+	} while (0)
+#define DUK_REFZERO_CHECK_SLOW(thr) do { \
+		duk_refzero_free_pending((thr)); \
 	} while (0)
 
 /*
@@ -767,7 +770,8 @@ struct duk_heaphdr_string {
 #define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr,h)  do {} while (0) /* nop */
-#define DUK_REFZERO_CHECK(thr)                 do {} while (0) /* nop */
+#define DUK_REFZERO_CHECK_FAST(thr)            do {} while (0) /* nop */
+#define DUK_REFZERO_CHECK_SLOW(thr)            do {} while (0) /* nop */
 
 #define DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0(thr,tvptr_dst) do { \
 		duk_tval *tv__dst; tv__dst = (tvptr_dst); \
@@ -872,6 +876,7 @@ struct duk_heaphdr_string {
 	} while (0)
 
 #define DUK_TVAL_SET_UNDEFINED_UPDREF         DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0
+#define DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ    DUK_TVAL_SET_UNDEFINED_UPDREF_ALT0
 #define DUK_TVAL_SET_UNUSED_UPDREF            DUK_TVAL_SET_UNUSED_UPDREF_ALT0
 #define DUK_TVAL_SET_NULL_UPDREF              DUK_TVAL_SET_NULL_UPDREF_ALT0
 #define DUK_TVAL_SET_BOOLEAN_UPDREF           DUK_TVAL_SET_BOOLEAN_UPDREF_ALT0
