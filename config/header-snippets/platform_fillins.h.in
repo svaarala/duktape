@@ -101,13 +101,6 @@
 #define DUK_MEMZERO(p,n) DUK_MEMSET((p), 0, (n))
 #endif
 
-#if !defined(DUK_DOUBLE_2TO32)
-#define DUK_DOUBLE_2TO32     4294967296.0
-#endif
-#if !defined(DUK_DOUBLE_2TO31)
-#define DUK_DOUBLE_2TO31     2147483648.0
-#endif
-
 #if !defined(DUK_DOUBLE_INFINITY)
 #undef DUK_USE_COMPUTED_INFINITY
 #if defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION < 40600)

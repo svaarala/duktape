@@ -173,5 +173,3 @@
 # Double constants
 - define: DUK_DOUBLE_NAN  # FIXME: document DUK_USE_COMPUTED_NAN
 - define: DUK_DOUBLE_INFINITY  # FIXME: document DUK_USE_COMPUTED_INFINITY
-- define: DUK_DOUBLE_2TO32     # FIXME: make internal, no portability issue
-- define: DUK_DOUBLE_2TO31     # FIXME: make internal, no portability issue
