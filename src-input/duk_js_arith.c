@@ -4,6 +4,58 @@
 
 #include "duk_internal.h"
 
+/* Ecmascript modulus ('%') does not match IEEE 754 "remainder" operation
+ * (implemented by remainder() in C99) but does seem to match ANSI C fmod().
+ * Compare E5 Section 11.5.3 and "man fmod".
+ */
+DUK_INTERNAL double duk_js_arith_mod(double d1, double d2) {
+#if defined(DUK_USE_POW_WORKAROUNDS)
+	/* Specific fixes to common fmod() implementation issues:
+	 * - test-bug-mingw-math-issues.js
+	 */
+	if (DUK_ISINF(d2)) {
+		if (DUK_ISINF(d1)) {
+			return DUK_DOUBLE_NAN;
+		} else {
+			return d1;
+		}
+	} else if (d1 == 0.0) {
+		/* d1 +/-0 is returned as is (preserving sign) except when
+		 * d2 is zero or NaN.
+		 */
+		if (d2 == 0.0 || DUK_ISNAN(d2)) {
+			return DUK_DOUBLE_NAN;
+		} else {
+			return d1;
+		}
+	}
+#else
+	/* Some ISO C assumptions. */
+	DUK_ASSERT(DUK_FMOD(1.0, DUK_DOUBLE_INFINITY) == 1.0);
+	DUK_ASSERT(DUK_FMOD(-1.0, DUK_DOUBLE_INFINITY) == -1.0);
+	DUK_ASSERT(DUK_FMOD(1.0, -DUK_DOUBLE_INFINITY) == 1.0);
+	DUK_ASSERT(DUK_FMOD(-1.0, -DUK_DOUBLE_INFINITY) == -1.0);
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY)));
+	DUK_ASSERT(DUK_FMOD(0.0, 1.0) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, 1.0)) == 0);
+	DUK_ASSERT(DUK_FMOD(-0.0, 1.0) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, 1.0)) != 0);
+	DUK_ASSERT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
+	DUK_ASSERT(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, DUK_DOUBLE_INFINITY)) != 0);
+	DUK_ASSERT(DUK_FMOD(0.0, -DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(0.0, DUK_DOUBLE_INFINITY)) == 0);
+	DUK_ASSERT(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY) == 0.0 && DUK_SIGNBIT(DUK_FMOD(-0.0, -DUK_DOUBLE_INFINITY)) != 0);
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(0.0, 0.0)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-0.0, 0.0)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(0.0, -0.0)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-0.0, -0.0)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(0.0, DUK_DOUBLE_NAN)));
+	DUK_ASSERT(DUK_ISNAN(DUK_FMOD(-0.0, DUK_DOUBLE_NAN)));
+#endif
+
+	return (duk_double_t) DUK_FMOD((double) d1, (double) d2);
+}
+
 /* Shared helper for Math.pow() and exponentiation operator. */
 DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 	/* The ANSI C pow() semantics differ from Ecmascript.
@@ -24,10 +76,11 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 	if (DUK_FABS(x) == 1.0 && cy == DUK_FP_INFINITE) {
 		goto ret_nan;
 	}
-#if defined(DUK_USE_POW_NETBSD_WORKAROUND)
-	/* See test-bug-netbsd-math-pow.js: NetBSD 6.0 on x86 (at least) does not
-	 * correctly handle some cases where x=+/-0.  Specific fixes to these
-	 * here.
+
+#if defined(DUK_USE_POW_WORKAROUNDS)
+	/* Specific fixes to common pow() implementation issues:
+	 *   - test-bug-netbsd-math-pow.js: NetBSD 6.0 on x86 (at least)
+	 *   - test-bug-mingw-math-issues.js
 	 */
 	cx = (duk_small_int_t) DUK_FPCLASSIFY(x);
 	if (cx == DUK_FP_ZERO && y < 0.0) {
@@ -42,7 +95,7 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 		} else {
 			/* Math.pow(-0,y) where y<0 should be:
 			 *   - -Infinity if y<0 and an odd integer
-			 *   - Infinity otherwise
+			 *   - Infinity if y<0 but not an odd integer
 			 * NetBSD pow() returns -Infinity for all finite y<0.  The
 			 * if-clause also catches y == -Infinity (which works even
 			 * without the fix).
@@ -61,8 +114,22 @@ DUK_INTERNAL double duk_js_arith_pow(double x, double y) {
 				return DUK_DOUBLE_INFINITY;
 			}
 		}
+	} else if (cx == DUK_FP_NAN) {
+		if (y == 0.0) {
+			/* NaN ** +/- 0 should always be 1, but is NaN on
+			 * at least some Cygwin/MinGW versions.
+			 */
+			return 1.0;
+		}
 	}
+#else
+	/* Some ISO C assumptions. */
+	DUK_ASSERT(DUK_POW(DUK_DOUBLE_NAN, 0.0) == 1.0);
+	DUK_ASSERT(DUK_ISINF(DUK_POW(0.0, -1.0)) && DUK_SIGNBIT(DUK_POW(0.0, -1.0)) == 0);
+	DUK_ASSERT(DUK_ISINF(DUK_POW(-0.0, -2.0)) && DUK_SIGNBIT(DUK_POW(-0.0, -2.0)) == 0);
+	DUK_ASSERT(DUK_ISINF(DUK_POW(-0.0, -3.0)) && DUK_SIGNBIT(DUK_POW(-0.0, -3.0)) != 0);
 #endif
+
 	return DUK_POW(x, y);
 
  ret_nan:

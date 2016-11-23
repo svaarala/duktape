@@ -225,7 +225,34 @@ DUK_LOCAL double duk__sqrt(double x) {
 DUK_LOCAL double duk__tan(double x) {
 	return DUK_TAN(x);
 }
-DUK_LOCAL double duk__atan2(double x, double y) {
+DUK_LOCAL double duk__atan2_fixed(double x, double y) {
+#if defined(DUK_USE_ATAN2_WORKAROUNDS)
+	/* Specific fixes to common atan2() implementation issues:
+	 * - test-bug-mingw-math-issues.js
+	 */
+	if (DUK_ISINF(x) && DUK_ISINF(y)) {
+		if (DUK_SIGNBIT(x)) {
+			if (DUK_SIGNBIT(y)) {
+				return -2.356194490192345;
+			} else {
+				return -0.7853981633974483;
+			}
+		} else {
+			if (DUK_SIGNBIT(y)) {
+				return 2.356194490192345;
+			} else {
+				return 0.7853981633974483;
+			}
+		}
+	}
+#else
+	/* Some ISO C assumptions. */
+	DUK_ASSERT(DUK_ATAN2(DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY) == 0.7853981633974483);
+	DUK_ASSERT(DUK_ATAN2(-DUK_DOUBLE_INFINITY, DUK_DOUBLE_INFINITY) == -0.7853981633974483);
+	DUK_ASSERT(DUK_ATAN2(DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY) == 2.356194490192345);
+	DUK_ASSERT(DUK_ATAN2(-DUK_DOUBLE_INFINITY, -DUK_DOUBLE_INFINITY) == -2.356194490192345);
+#endif
+
 	return DUK_ATAN2(x, y);
 }
 #endif  /* DUK_USE_AVOID_PLATFORM_FUNCPTRS */
@@ -278,10 +305,10 @@ DUK_LOCAL const duk__one_arg_func duk__one_arg_funcs[] = {
 /* order must match constants in genbuiltins.py */
 DUK_LOCAL const duk__two_arg_func duk__two_arg_funcs[] = {
 #if defined(DUK_USE_AVOID_PLATFORM_FUNCPTRS)
-	duk__atan2,
+	duk__atan2_fixed,
 	duk_js_arith_pow
 #else
-	DUK_ATAN2,
+	duk__atan2_fixed,
 	duk_js_arith_pow
 #endif
 };

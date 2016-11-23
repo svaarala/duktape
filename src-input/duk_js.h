@@ -43,6 +43,7 @@ DUK_INTERNAL_DECL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x);
 
 /* arithmetic */
 DUK_INTERNAL_DECL double duk_js_arith_pow(double x, double y);
+DUK_INTERNAL_DECL double duk_js_arith_mod(double x, double y);
 
 #define duk_js_equals(thr,tv_x,tv_y) \
 	duk_js_equals_helper((thr), (tv_x), (tv_y), 0)
