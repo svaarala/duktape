@@ -2151,7 +2151,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				duk_double_t d1 = DUK_TVAL_GET_NUMBER(tv1);
 				duk_double_t d2 = DUK_TVAL_GET_NUMBER(tv2);
 				duk_double_t d3;
-				duk_bool_t accept = 1;
+				duk_bool_t accept_fold = 1;
 
 				DUK_DDD(DUK_DDDPRINT("arith inline check: d1=%lf, d2=%lf, op=%ld",
 				                     (double) d1, (double) d2, (long) x->op));
@@ -2164,10 +2164,10 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 					d3 = (duk_double_t) duk_js_arith_pow((double) d1, (double) d2);
 					break;
 				}
-				default: accept = 0; break;
+				default: accept_fold = 0; break;
 				}
 
-				if (accept) {
+				if (accept_fold) {
 					duk_double_union du;
 					du.d = d3;
 					DUK_DBLUNION_NORMALIZE_NAN_CHECK(&du);
