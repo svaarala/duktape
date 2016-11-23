@@ -1030,6 +1030,9 @@ Other incompatible changes
   is the same as "\u00078", "\8" and "\9" are accepted as literal "8" and "9"
   (even in strict mode).
 
+* The NetBSD pow() workaround option ``DUK_USE_POW_NETBSD_WORKAROUND`` has been
+  generalized and renamed to ``DUK_USE_POW_WORKAROUNDS``.
+
 Known issues
 ============
 

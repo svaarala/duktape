@@ -59,13 +59,20 @@ DUKTAPE_CMDLINE_SOURCES = \
 	examples/alloc-logging/duk_alloc_logging.c \
 	examples/alloc-torture/duk_alloc_torture.c \
 	examples/alloc-hybrid/duk_alloc_hybrid.c \
-	examples/debug-trans-socket/duk_trans_socket_unix.c \
 	extras/print-alert/duk_print_alert.c \
 	extras/console/duk_console.c \
 	extras/logging/duk_logging.c \
 	extras/module-duktape/duk_module_duktape.c
-LINENOISE_SOURCES = \
-	linenoise/linenoise.c
+ifdef SYSTEMROOT  # Windows
+DUKTAPE_CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_windows.c
+else
+DUKTAPE_CMDLINE_SOURCES += examples/debug-trans-socket/duk_trans_socket_unix.c
+endif
+ifdef SYSTEMROOT  # Windows
+LINENOISE_SOURCES =
+else
+LINENOISE_SOURCES = linenoise/linenoise.c
+endif
 
 # Configure.py options for a few configuration profiles needed.
 CONFIGOPTS_NONDEBUG=--option-file util/makeduk_base.yaml
@@ -90,7 +97,11 @@ CCOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_CONSOLE_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_LOGGING_SUPPORT
 CCOPTS_SHARED += -DDUK_CMDLINE_MODULE_SUPPORT
+ifdef SYSTEMROOT  # Windows
+# Skip fancy (linenoise)
+else
 CCOPTS_SHARED += -DDUK_CMDLINE_FANCY
+endif
 CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_LOGGING
 CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_TORTURE
 CCOPTS_SHARED += -DDUK_CMDLINE_ALLOC_HYBRID
@@ -140,7 +151,11 @@ CCOPTS_AJDUK += -UDUK_CMDLINE_FANCY -DDUK_CMDLINE_AJSHEAP -D_POSIX_C_SOURCE=2008
 CCOPTS_AJDUK += -UDUK_CMDLINE_LOGGING_SUPPORT  # extras/logger init writes to Duktape.Logger, problem with ROM build
 CCOPTS_AJDUK += -UDUK_CMDLINE_MODULE_SUPPORT  # extras/module-duktape init writes to Duktape.Logger, problem with ROM build
 
+ifdef SYSTEMROOT  # Windows
+CCLIBS  = -lm -lws2_32
+else
 CCLIBS	= -lm
+endif
 
 # Emscripten options:
 #   - --memory-init-file 0 to avoid a separate memory init file (this is

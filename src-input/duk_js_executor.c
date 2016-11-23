@@ -73,15 +73,7 @@ DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, d
  */
 
 DUK_LOCAL DUK__INLINE_PERF duk_double_t duk__compute_mod(duk_double_t d1, duk_double_t d2) {
-	/*
-	 *  Ecmascript modulus ('%') does not match IEEE 754 "remainder"
-	 *  operation (implemented by remainder() in C99) but does seem
-	 *  to match ANSI C fmod().
-	 *
-	 *  Compare E5 Section 11.5.3 and "man fmod".
-	 */
-
-	return (duk_double_t) DUK_FMOD((double) d1, (double) d2);
+	return (duk_double_t) duk_js_arith_mod((double) d1, (double) d2);
 }
 
 #if defined(DUK_USE_ES7_EXP_OPERATOR)

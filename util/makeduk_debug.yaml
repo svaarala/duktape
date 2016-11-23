@@ -5,5 +5,5 @@ DUK_USE_DEBUG: true
 DUK_USE_DEBUG_LEVEL: 0
 #DUK_USE_DEBUG_LEVEL: 1
 DUK_USE_DEBUG_WRITE:
-  verbatim: "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stderr, \"D%ld %s:%ld (%s): %s\\n\", (long) (level), (file), (long) (line), (func), (msg));} while(0)"
+  verbatim: "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stderr, \"D%ld %s:%ld (%s): %s\\n\", (long) (level), (file), (long) (line), (func), (msg)); fflush(stderr);} while(0)"
 DUK_USE_ASSERTIONS: true

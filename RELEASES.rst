@@ -2033,6 +2033,9 @@ Planned
 
 * Fix Cygwin warning about shadowed 'accept' variable (GH-1098)
 
+* Fix Cygwin/MinGW math issues related to pow2() and atan2() semantics
+  (GH-1099)
+
 * Fix two-argument Math function (like Math.atan2()) argument coercion
   order; the order was not guaranteed but specification requires left-to-right
   ordering (GH-943)

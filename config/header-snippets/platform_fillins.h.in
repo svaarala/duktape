@@ -279,12 +279,21 @@
 #endif  /* DUK_F_C99 */
 
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,
- * see test-bug-netbsd-math-pow.js.  Use NetBSD specific workaround.
- * (This might be a wider problem; if so, generalize the define name.)
+ * see test-bug-netbsd-math-pow.js.  MinGW has similar (but different)
+ * issues, see test-bug-mingw-math-issues.js.  Enable pow() workarounds
+ * for these targets.
  */
-#undef DUK_USE_POW_NETBSD_WORKAROUND
-#if defined(DUK_F_NETBSD)
-#define DUK_USE_POW_NETBSD_WORKAROUND
+#undef DUK_USE_POW_WORKAROUNDS
+#if defined(DUK_F_NETBSD) || defined(DUK_F_MINGW)
+#define DUK_USE_POW_WORKAROUNDS
+#endif
+
+/* Similar workarounds for atan2() semantics issues.  MinGW issues are
+ * documented in test-bug-mingw-math-issues.js.
+ */
+#undef DUK_USE_ATAN2_WORKAROUNDS
+#if defined(DUK_F_MINGW)
+#define DUK_USE_ATAN2_WORKAROUNDS
 #endif
 
 /* Rely as little as possible on compiler behavior for NaN comparison,
