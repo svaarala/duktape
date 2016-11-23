@@ -8,7 +8,7 @@
 DUK_USE_TARGET_INFO: "\"duk command built from Duktape repo\""
 
 DUK_USE_FATAL_HANDLER:
-  verbatim: "#define DUK_USE_FATAL_HANDLER(udata,msg) do { const char *fatal_msg = (msg); fprintf(stderr, \"*** FATAL ERROR: %s\\n\", fatal_msg ? fatal_msg : \"no message\"); *((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)"
+  verbatim: "#define DUK_USE_FATAL_HANDLER(udata,msg) do { const char *fatal_msg = (msg); fprintf(stderr, \"*** FATAL ERROR: %s\\n\", fatal_msg ? fatal_msg : \"no message\"); fflush(stderr); *((volatile unsigned int *) 0) = (unsigned int) 0xdeadbeefUL; abort(); } while(0)"
 DUK_USE_SELF_TESTS: true
 
 #DUK_USE_ASSERTIONS: true
