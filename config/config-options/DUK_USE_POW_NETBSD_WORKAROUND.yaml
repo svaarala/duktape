@@ -1,5 +1,6 @@
 define: DUK_USE_POW_NETBSD_WORKAROUND
 introduced: 1.0.0
+removed: 2.0.0
 default: false
 tags:
   - portability
