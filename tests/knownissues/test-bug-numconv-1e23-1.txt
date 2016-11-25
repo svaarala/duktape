@@ -1,0 +1,5 @@
+summary: corner case in floating point parse rounding
+---
+1.0000000000000001e+23
+1.0000000000000001e+23
+1.0000000000000001e+23

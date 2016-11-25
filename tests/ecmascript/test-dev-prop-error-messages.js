@@ -3,6 +3,7 @@
  */
 
 /*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*---
 {
@@ -93,7 +94,7 @@ function test() {
             null[v] = 123;
         } catch (e) {
             tmp = Duktape.enc('jx', String(e));  // JX encode to get ASCII
-            tmp = tmp.replace(/\(0x[0-9a-fA-F]+\)/, '(PTR)');  // replace pointer for expect string
+            tmp = sanitizePointers(tmp);
             print(tmp);
         }
     });

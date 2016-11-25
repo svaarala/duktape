@@ -477,7 +477,7 @@ cp 116 t
 eval 1 9
 json 1 9
 cp 117 u
-eval 1 117
+eval SyntaxError
 json SyntaxError
 cp 118 v
 eval 1 11
@@ -486,7 +486,7 @@ cp 119 w
 eval 1 119
 json SyntaxError
 cp 120 x
-eval 1 120
+eval SyntaxError
 json SyntaxError
 cp 121 y
 eval 1 121

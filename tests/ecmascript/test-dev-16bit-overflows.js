@@ -8,15 +8,11 @@
  *  Specific tests here also need different options, e.g. to test property
  *  64k limit you must define OBJSIZES16 but not BUFLEN16 (see discussion
  *  below).
- *
- *  For now, this must be executed and the output inspected manually.  The
- *  "skip" metadata property is set because of this.
  */
 
 /*---
 {
-    "custom": true,
-    "skip": true
+    "custom": true
 }
 ---*/
 

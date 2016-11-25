@@ -1,0 +1,10 @@
+summary: array length above 2^32-1 not supported
+---
+array
+RangeError
+4294967295 undefined
+RangeError
+4294967293 undefined undefined undefined undefined
+4294967295 foo bar
+non-array
+RangeError: invalid length

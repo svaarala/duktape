@@ -1,0 +1,40 @@
+summary: requires DUK_USE_LIGHTFUNC_BUILTINS
+---
+Object.defineProperty
+pd_in
+typeof get: function
+isLightFunc get: false
+typeof set: function
+isLightFunc set: false
+get(=Math.min)(9,-3,11,4): -3
+set(=Math.max)(9,-3,11,4): 11
+pd_out
+typeof get: function
+isLightFunc get: false
+typeof set: function
+isLightFunc set: false
+get(=Math.min)(9,-3,11,4): -3
+set(=Math.max)(9,-3,11,4): 11
+pd_in.get == pd_out.get: true
+pd_in.get === pd_out.get: true
+pd_in.set == pd_out.set: true
+pd_in.set === pd_out.set: true
+Object.defineProperties
+pd_in
+typeof get: function
+isLightFunc get: false
+typeof set: function
+isLightFunc set: false
+get(=Math.min)(9,-3,11,4): -3
+set(=Math.max)(9,-3,11,4): 11
+pd_out
+typeof get: function
+isLightFunc get: false
+typeof set: function
+isLightFunc set: false
+get(=Math.min)(9,-3,11,4): -3
+set(=Math.max)(9,-3,11,4): 11
+pd_in.get == pd_out.get: true
+pd_in.get === pd_out.get: true
+pd_in.set == pd_out.set: true
+pd_in.set === pd_out.set: true

@@ -114,7 +114,7 @@ print('basic tests');
 try {
     basicTest();
 } catch (e) {
-    print(e.stack || e);
+    print(e);  // avoid .stack as the test fails normally
 }
 
 /*===

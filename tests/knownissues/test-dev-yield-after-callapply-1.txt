@@ -1,0 +1,4 @@
+summary: yield() not allowed when function called via Function.prototype.(call|apply)()
+---
+TypeError
+TypeError

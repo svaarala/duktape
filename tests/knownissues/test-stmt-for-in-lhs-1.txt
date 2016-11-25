@@ -1,0 +1,38 @@
+summary: for-in allows some invalid left-hand-side expressions which cause a runtime ReferenceError instead of a compile-time SyntaxError (e.g. 'for (a+b in [0,1]) {...}')
+---
+i: 1
+0 no error
+i: 1
+1 no error
+obj.foo: 1
+2 no error
+obj.bar: 1
+3 no error
+i: 1
+4 no error
+obj.foo: 1
+5 no error
+obj.bar: 1
+6 no error
+7 ReferenceError
+8 ReferenceError
+9 ReferenceError
+10 ReferenceError
+11 ReferenceError
+rhs
+lhs
+12 ReferenceError
+rhs
+should get here
+13 no error
+14 ReferenceError
+15 ReferenceError
+16 ReferenceError
+17 ReferenceError
+18 ReferenceError
+19 ReferenceError
+20 ReferenceError
+21 ReferenceError
+22 ReferenceError
+23 ReferenceError
+24 ReferenceError

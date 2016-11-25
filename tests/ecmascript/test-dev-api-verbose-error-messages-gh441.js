@@ -3,6 +3,7 @@
  */
 
 /*@include util-buffer.js@*/
+/*@include util-string.js@*/
 
 /*===
 TypeError: string required, found none (stack index 0)
@@ -27,8 +28,7 @@ TypeError: RegExp required, found 123 (stack index -1)
 
 function test() {
     function cleanPrint(v) {
-        print(String(v).replace(/[^\u0020-\u007e]/g, function (v) { return '<' + v.charCodeAt(0) + '>'; })
-                       .replace(/\(0x.*?\)/g, '(PTR)'));
+        print(sanitizePointers(String(v).replace(/[^\u0020-\u007e]/g, function (v) { return '<' + v.charCodeAt(0) + '>'; })));
     }
 
     // Duktape.enc() requires first arg to be string

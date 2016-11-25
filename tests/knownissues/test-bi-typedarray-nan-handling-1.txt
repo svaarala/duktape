@@ -1,0 +1,10 @@
+summary: NaN sign bit depends on platform
+---
+NaN handling test
+through dataview
+sign: 0
+expt: 2047
+mantissa is non-zero
+through float64array
+read back value: NaN
+read back value is NaN: true

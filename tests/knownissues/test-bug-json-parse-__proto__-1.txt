@@ -1,0 +1,30 @@
+summary: when ES6 __proto__ enabled, JSON.parse() parses '__proto__' property incorrectly when a specially crafted reviver is used
+---
+basic case
+[object Object]
+object
+true
+false
+true
+[object Object]
+reviver case
+reviver: __proto__
+reviver: 
+[object Object]
+object
+true
+false
+true
+[object Object]
+complex reviver case
+reviver: foo [object Object] bar
+before: this.__proto__: [object Object]
+after: this.__proto__: undefined
+reviver: __proto__ undefined [object Object]
+reviver:  [object Object] 
+
+object
+true
+true
+true
+undefined

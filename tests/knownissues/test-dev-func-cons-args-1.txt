@@ -1,0 +1,19 @@
+summary: corner cases for 'new Function()' when arguments and code are given as strings
+---
+6
+6
+6
+6
+SyntaxError
+SyntaxError
+function () {if (1) {print('foo')}}
+foo
+foo
+OBJ1
+OBJ2
+OBJ3
+7
+undefined
+foo
+foo 1
+foo 1 2

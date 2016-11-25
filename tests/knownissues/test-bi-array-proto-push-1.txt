@@ -1,0 +1,23 @@
+summary: array length above 2^32-1 not supported
+---
+basic
+object number 2 number:1,number:2 --> object 1,2 --> object number 2 number:1,number:2
+object number 2 number:1,number:2 --> number 3 --> object number 3 number:1,number:2,number:3
+object number 2 number:1,number:2 --> number 5 --> object number 5 number:1,number:2,number:3,number:4,number:5
+object number 2 number:1,number:2 --> number 4 --> object number 4 number:1,number:2,object:3,4,object:5,6
+object string 5 nonexistent,nonexistent,nonexistent,nonexistent,nonexistent --> number 5 --> object number 5 nonexistent,nonexistent,nonexistent,nonexistent,nonexistent
+4294967295
+RangeError: invalid length
+coercion
+undefined --> TypeError --> undefined
+null --> TypeError --> null
+boolean undefined undefined --> number 0 --> boolean undefined undefined
+boolean undefined undefined --> number 0 --> boolean undefined undefined
+number undefined undefined --> number 0 --> number undefined undefined
+string number 3 string:f,string:o,string:o --> TypeError --> string number 3 string:f,string:o,string:o
+object number 2 number:1,number:2 --> object 1,2 --> object number 2 number:1,number:2
+object undefined undefined --> number 0 --> object number 0
+object number 2 string:foo,string:bar --> number 2 --> object number 2 string:foo,string:bar
+non-extensible
+object number 3 number:1,number:2,number:3 --> TypeError --> object number 3 number:1,number:2,number:3
+object number 3 string:foo,string:bar,string:quux --> TypeError --> object number 3 string:foo,string:bar,string:quux

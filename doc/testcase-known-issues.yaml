@@ -3,129 +3,170 @@
 -
   test: "test-bi-date-tzoffset-brute-fi.js"
   knownissue: "year 1970 deviates from expected, Duktape uses equiv. year for 1970 on purpose at the moment"
+  # Moved
 -
   test: "test-bi-global-parseint.js"
   knownissue: "rounding differences for parsing integers larger than 2^53"
+  # Moved
 -
   test: "test-bi-json-dec-types.js"
   knownissue: "'\\x' should be allowed by eval() but not by JSON.parse(), Duktape rejects '\\x' in both"
+  # No longer relevant
 -
   test: "test-bi-json-enc-proplist-dups.js"
   knownissue: "JSON.stringify() can be given a property list to serialize; duplicates should be eliminated but Duktape (and other engines) will happily serialize a property multiple times"
+  # Moved
 -
   test: "test-bi-number-proto-toexponential.js"
   knownissue: "corner case rounding errors in toExponential()"
+  # Moved
 -
   test: "test-bi-number-proto-tostring.js"
   knownissue: "expect strings to be checked, but probably Duktape rounding issues"
+  # Moved
 -
   test: "test-bi-regexp-gh39.js"
   knownissue: "requires leniency for non-standard regexps"
+  # Moved
 -
   test: "test-bug-date-timeval-edges.js"
   knownissue: "test case depends on current timezone offset"
+  # Moved
 -
   test: "test-bug-enum-shadow-nonenumerable.js"
   knownissue: "corner case enumeration semantics, not sure what correct behavior is (test262 ch12/12.6/12.6.4/12.6.4-2)"
+  # Moved
 -
   test: "test-bug-invalid-oct-as-dec.js"
   knownissue: "V8/Rhino parse invalid octal constants as decimal values, Duktape doesn't at the moment"
+  # No longer relevant
 -
   test: "test-bug-json-parse-__proto__.js"
   knownissue: "when ES6 __proto__ enabled, JSON.parse() parses '__proto__' property incorrectly when a specially crafted reviver is used"
+  # Moved
 -
   test: "test-bug-numconv-1e23.js"
   knownissue: "corner case in floating point parse rounding"
+  # Moved
 -
   test: "test-bug-numconv-denorm-toprec.js"
   knownissue: "in a denormal corner case toPrecision() can output a zero leading digit"
+  # Moved
 -
   test: "test-bug-tonumber-u0000.js"
   knownissue: "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string"
+  # Moved
 -
   test: "test-dev-bound-thread-start-func.js"
   knownissue: "initial function of a new coroutine cannot be bound"
+  # Moved
 -
   test: "test-dev-func-cons-args.js"
   knownissue: "corner cases for 'new Function()' when arguments and code are given as strings"
+  # Moved
 -
   test: "test-dev-yield-after-callapply.js"
   knownissue: "yield() not allowed when function called via Function.prototype.(call|apply)()"
+  # Moved
 -
   test: "test-lex-unterminated-hex-uni-escape.js"
   knownissue: "unterminated hex escapes should be parsed leniently, e.g. '\\uX' -> 'uX' but Duktape now refuses to parse them"
+  # Moved
 -
   test: "test-numconv-parse-misc.js"
   knownissue: "rounding corner case for 1e+23 (parses/prints as 1.0000000000000001e+23)"
+  # Moved
 -
   test: "test-numconv-tostring-gen.js"
   knownissue: "rounding corner cases in number-to-string coercion"
+  # Moved
 -
   test: "test-numconv-tostring-misc.js"
   knownissue: "rounding corner case, 1e+23 string coerces to 1.0000000000000001e+23"
+  # Moved
 -
   test: "test-regexp-empty-quantified.js"
   knownissue: "a suitable empty quantified (e.g. '(x*)*') causes regexp parsing to terminate due to step limit"
+  # Moved
 -
   test: "test-regexp-invalid-charclass.js"
   knownissue: "some invalid character classes are accepted (e.g. '[\\d-z]' and '[z-x]')"
+  # Moved
 -
   test: "test-stmt-for-in-lhs.js"
   knownissue: "for-in allows some invalid left-hand-side expressions which cause a runtime ReferenceError instead of a compile-time SyntaxError (e.g. 'for (a+b in [0,1]) {...}')"
+  # Moved
 -
   test: "test-bi-array-proto-push.js"
   knownissue: "array length above 2^32-1 not supported"
+  # Moved
 -
   test: "test-bi-array-push-maxlen.js"
   knownissue: "array length above 2^32-1 not supported"
+  # Moved
 -
   test: "test-bug-dataview-buffer-prop.js"
   knownissue: "DataView .buffer property misleading when DataView argument is not an ArrayBuffer (custom behavior)"
+  # Moved
 -
   test: "test-bi-json-enc-proxy.js"
   knownissue: "JSON enumeration behavior for Proxy targets is incomplete and uses 'enumerate' trap instead of 'ownKeys' trap"
+  # Moved
 -
   test: "test-bi-proxy-object-tostring.js"
   knownissue: "Object class handling for Proxy objects is incomplete"
+  # Moved
 
 # Ecmascript testcases that need special options or environment to work
 
 -
   test: "test-bi-date-local-parts-fi.js"
   specialoptions: "test case has been written for Finnish locale"
+  # No longer relevant; tests run in TZ=Europe/Helsinki
 -
   test: "test-bi-date-tzoffset-basic-fi.js"
   specialoptions: "test case has been written for Finnish locale"
+  # No longer relevant; tests run in TZ=Europe/Helsinki
 -
   test: "test-bi-date-tzoffset-brute-fi.js"
   specialoptions: "test case has been written for Finnish locale"
+  # No longer relevant; tests run in TZ=Europe/Helsinki
 -
   test: "test-bi-duktape-json-lightfunc.js"
   specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
+  # No longer relevant
 -
   test: "test-bi-function-nonstd-caller-prop.js"
   specialoptions: "DUK_USE_NONSTD_FUNC_CALLER_PROPERTY"
+  # Moved
 -
   test: "test-dev-16bit-overflows.js"
   specialoptions: "requires 16-bit field options"
+  # Moved
 -
   test: "test-dev-lightfunc-accessor.js"
   specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
+  # Moved
 -
   test: "test-dev-lightfunc-finalizer.js"
   specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
+  # Moved
 -
   test: "test-dev-lightfunc.js"
   specialoptions: "DUK_USE_LIGHTFUNC_BUILTINS"
+  # Moved
 -
   test: "test-dev-logicalnot-refcount.js"
   specialoptions: "requires refcounting"
+  # No longer relevant (at least with current test runs)
 -
   test: "test-dev-nonstd-setget-key-argument.js"
   specialoptions: "should work with default options, but will break with DUK_USE_NONSTD_GETTER_KEY_ARGUMENT or DUK_USE_NONSTD_SETTER_KEY_ARGUMENT"
+  # No longer relevant (at least with current test runs)
 -
   test: "test-bi-typedarray-nan-handling.js"
   specialoptions: "NaN sign is platform dependent"
+  # No longer relevant (at least with current test runs)
 
 # API testcase (tests/api/) known issues
 

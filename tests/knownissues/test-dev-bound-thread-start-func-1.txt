@@ -1,0 +1,6 @@
+summary: initial function of a new coroutine cannot be bound
+---
+non-bound
+func called: 321
+bound
+TypeError: invalid initial thread state/stack

@@ -3,7 +3,7 @@
 78
 88
 99
-63
+77
 78
 88
 99
@@ -41,6 +41,7 @@ function octalTest() {
     // Older V8 versions would parseInt('088') as 0 and parseInt('078') as 7,
     // treating the non-octal parts as garbage.  Newer V8 parses all the cases
     // as decimal, i.e. 88 and 78, and parseInt('077') is also 77 (not 63).
+    // This seems to be ES6 behavior and Duktape also follows it.
 
     p('077');
     p('078');

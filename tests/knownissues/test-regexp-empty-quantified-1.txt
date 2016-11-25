@@ -1,0 +1,3 @@
+summary: a suitable empty quantified (e.g. '(x*)*') causes regexp parsing to terminate due to step limit
+---
+RangeError: regexp executor recursion limit
