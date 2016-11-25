@@ -1217,14 +1217,14 @@ Debugger.prototype.sendBasicInfoRequest = function () {
 
 Debugger.prototype.sendGetVarRequest = function (varname, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_GETVAR, varname, (typeof level === 'number' ? level : -1), DVAL_EOM ]).then(function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETVAR, (typeof level === 'number' ? level : -1), varname, DVAL_EOM ]).then(function (msg) {
         return { found: msg[1] === 1, value: msg[2] };
     });
 };
 
 Debugger.prototype.sendPutVarRequest = function (varname, varvalue, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_PUTVAR, varname, varvalue, (typeof level === 'number' ? level : -1), DVAL_EOM ]);
+    return this.sendRequest([ DVAL_REQ, CMD_PUTVAR, (typeof level === 'number' ? level : -1), varname, varvalue, DVAL_EOM ]);
 };
 
 Debugger.prototype.sendInvalidCommandTestRequest = function () {
@@ -1321,7 +1321,13 @@ Debugger.prototype.sendResumeRequest = function () {
 
 Debugger.prototype.sendEvalRequest = function (evalInput, level) {
     var _this = this;
-    return this.sendRequest([ DVAL_REQ, CMD_EVAL, evalInput, (typeof level === 'number' ? level : -1), DVAL_EOM ]).then(function (msg) {
+    // Use explicit level if given.  If no level is given, use null if the call
+    // stack is empty, -1 otherwise.  This works well when we're paused and the
+    // callstack information is not liable to change before we do an Eval.
+    if (typeof level !== 'number') {
+        level = this.callstack && this.callstack.length > 0 ? -1 : null;
+    }
+    return this.sendRequest([ DVAL_REQ, CMD_EVAL, level, evalInput, DVAL_EOM ]).then(function (msg) {
         return { error: msg[1] === 1 /*error*/, value: msg[2] };
     });
 };
@@ -1401,7 +1407,7 @@ Debugger.prototype.sendDumpHeapRequest = function () {
 Debugger.prototype.sendGetBytecodeRequest = function () {
     var _this = this;
 
-    return this.sendRequest([ DVAL_REQ, CMD_GETBYTECODE, DVAL_EOM ]).then(function (msg) {
+    return this.sendRequest([ DVAL_REQ, CMD_GETBYTECODE, -1 /* level; could be other than -1 too */, DVAL_EOM ]).then(function (msg) {
         var idx = 1;
         var nconst;
         var nfunc;
