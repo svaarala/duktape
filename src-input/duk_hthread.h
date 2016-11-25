@@ -182,6 +182,16 @@
 	} while (0)
 
 /*
+ *  Assertion helpers.
+ */
+
+#define DUK_ASSERT_STRIDX_VALID(val) \
+	DUK_ASSERT((duk_uint_t) (val) < DUK_HEAP_NUM_STRINGS)
+
+#define DUK_ASSERT_BIDX_VALID(val) \
+	DUK_ASSERT((duk_uint_t) (val) < DUK_NUM_BUILTINS)
+
+/*
  *  Misc
  */
 

@@ -304,8 +304,7 @@ DUK_LOCAL void duk__dec_req_stridx(duk_json_dec_ctx *js_ctx, duk_small_uint_t st
 	 * have internal NULs.
 	 */
 
-	DUK_ASSERT_DISABLE(stridx >= 0);  /* unsigned */
-	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_STRIDX_VALID(stridx);
 	h = DUK_HTHREAD_GET_STRING(js_ctx->thr, stridx);
 	DUK_ASSERT(h != NULL);
 
@@ -1078,8 +1077,7 @@ DUK_LOCAL void duk__emit_cstring(duk_json_enc_ctx *js_ctx, const char *str) {
 DUK_LOCAL void duk__emit_stridx(duk_json_enc_ctx *js_ctx, duk_small_uint_t stridx) {
 	duk_hstring *h;
 
-	DUK_ASSERT_DISABLE(stridx >= 0);  /* unsigned */
-	DUK_ASSERT(stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_STRIDX_VALID(stridx);
 	h = DUK_HTHREAD_GET_STRING(js_ctx->thr, stridx);
 	DUK_ASSERT(h != NULL);
 

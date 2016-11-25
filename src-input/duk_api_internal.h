@@ -218,9 +218,9 @@ DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx
  * Both 'ctx' and 'idx' are evaluted multiple times, but only for asserts.
  */
 #define DUK_ASSERT_VALID_NEGIDX(ctx,idx) \
-	(DUK_ASSERT_EXPR((idx) < 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
+	(DUK_ASSERT_EXPR((duk_int_t) (idx) < 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
 #define DUK_ASSERT_VALID_POSIDX(ctx,idx) \
-	(DUK_ASSERT_EXPR((idx) >= 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
+	(DUK_ASSERT_EXPR((duk_int_t) (idx) >= 0), DUK_ASSERT_EXPR(duk_is_valid_index((ctx), (idx))))
 #define DUK_GET_TVAL_NEGIDX(ctx,idx) \
 	(DUK_ASSERT_VALID_NEGIDX((ctx),(idx)), ((duk_hthread *) (ctx))->valstack_top + (idx))
 #define DUK_GET_TVAL_POSIDX(ctx,idx) \

@@ -2878,7 +2878,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			tv = DUK__REGP_BC(ins);
 			stridx = duk_js_typeof_stridx(tv);
-			DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+			DUK_ASSERT_STRIDX_VALID(stridx);
 			h_str = DUK_HTHREAD_GET_STRING(thr, stridx);
 			tv = DUK__REGP_A(ins);
 			DUK_TVAL_SET_STRING_UPDREF(thr, tv, h_str);
@@ -2915,7 +2915,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				/* unresolvable, no stack changes */
 				stridx = DUK_STRIDX_LC_UNDEFINED;
 			}
-			DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+			DUK_ASSERT_STRIDX_VALID(stridx);
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 			duk_push_hstring_stridx(ctx, stridx);
 			DUK__REPLACE_TOP_A_BREAK();
