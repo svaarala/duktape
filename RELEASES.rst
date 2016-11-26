@@ -1970,6 +1970,8 @@ Planned
   opcode (fastint downgrade check is intended to be applied to unary plus
   only) (GH-903)
 
+* Add an fmod() self test (GH-1108)
+
 * Fix a few bugs in object property handling (delete property and
   Object.defineProperty()) where an object property table resize triggered
   by a finalizer of a previous value could cause memory unsafe behavior
