@@ -2806,7 +2806,7 @@ DUK_INTERNAL duk_int_t duk_get_type_tval(duk_tval *tv) {
 		return DUK_TYPE_NUMBER;
 	}
 #else  /* DUK_USE_PACKED_TVAL */
-	DUK_ASSERT(DUK_TVAL_GET_TAG(tv) >= DUK_TAG_MIN && DUK_TVAL_GET_TAG(tv) <= DUK_TAG_MAX);
+	DUK_ASSERT(DUK_TVAL_IS_VALID_TAG(tv));
 	DUK_ASSERT(sizeof(duk__type_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
 	return (duk_int_t) duk__type_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
 #endif  /* DUK_USE_PACKED_TVAL */
@@ -2911,7 +2911,7 @@ DUK_INTERNAL duk_uint_t duk_get_type_mask_tval(duk_tval *tv) {
 		return DUK_TYPE_MASK_NUMBER;
 	}
 #else  /* DUK_USE_PACKED_TVAL */
-	DUK_ASSERT(DUK_TVAL_GET_TAG(tv) >= DUK_TAG_MIN && DUK_TVAL_GET_TAG(tv) <= DUK_TAG_MAX);
+	DUK_ASSERT(DUK_TVAL_IS_VALID_TAG(tv));
 	DUK_ASSERT(sizeof(duk__type_mask_from_tag) / sizeof(duk_uint_t) == DUK_TAG_MAX - DUK_TAG_MIN + 1);
 	return (duk_int_t) duk__type_mask_from_tag[DUK_TVAL_GET_TAG(tv) - DUK_TAG_MIN];
 #endif  /* DUK_USE_PACKED_TVAL */

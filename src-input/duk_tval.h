@@ -63,6 +63,9 @@ typedef struct {
 #define DUK_XTAG_BOOLEAN_FALSE    0xfff50000UL
 #define DUK_XTAG_BOOLEAN_TRUE     0xfff50001UL
 
+#define DUK_TVAL_IS_VALID_TAG(tv) \
+	(DUK_TVAL_GET_TAG((tv)) - DUK_TAG_MIN <= DUK_TAG_MAX - DUK_TAG_MIN)
+
 /* DUK_TVAL_UNUSED initializer for duk_tval_unused, works for any endianness. */
 #define DUK_TVAL_UNUSED_INITIALIZER() \
 	{ DUK_TAG_UNUSED, DUK_TAG_UNUSED, DUK_TAG_UNUSED, DUK_TAG_UNUSED }
@@ -346,6 +349,9 @@ typedef struct {
 #define DUK_TAG_OBJECT                9
 #define DUK_TAG_BUFFER                10
 #define DUK_TAG_MAX                   10
+
+#define DUK_TVAL_IS_VALID_TAG(tv) \
+	(DUK_TVAL_GET_TAG((tv)) - DUK_TAG_MIN <= DUK_TAG_MAX - DUK_TAG_MIN)
 
 /* DUK_TAG_NUMBER is intentionally first, as it is the default clause in code
  * to support the 8-byte representation.  Further, it is a non-heap-allocated

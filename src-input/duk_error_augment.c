@@ -67,8 +67,7 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT_DISABLE(stridx_cb >= 0);  /* unsigned */
-	DUK_ASSERT(stridx_cb < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_STRIDX_VALID(stridx_cb);
 
 	if (DUK_HEAP_HAS_ERRHANDLER_RUNNING(thr->heap)) {
 		DUK_DD(DUK_DDPRINT("recursive call to error handler, ignore"));

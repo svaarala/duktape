@@ -82,8 +82,8 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_context *ctx, duk_bool_t 
 			    i32 < 0 || i32 > 0x10ffffL) {
 				DUK_DCERROR_RANGE_INVALID_ARGS((duk_hthread *) ctx);
 			}
+			DUK_ASSERT(i32 >= 0 && i32 <= 0x10ffffL);
 			cp = (duk_ucodepoint_t) i32;
-			DUK_ASSERT(cp >= 0 && cp <= 0x10ffffL);
 			DUK_BW_WRITE_ENSURE_CESU8(thr, bw, cp);
 		} else {
 #if defined(DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT)
