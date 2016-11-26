@@ -807,6 +807,18 @@ To upgrade:
           /* ... */
       }
 
+Debugger command callstack index changes
+----------------------------------------
+
+Debug command callstack indexes have been made mandatory where appropriate to
+simplify the protocol.  Affected commands are: GetVar, PutVar, GetLocals, and
+Eval.
+
+To upgrade:
+
+* Review debug client handling of callstack indices when sending affected
+  commands.
+
 Debugger print/alert and logger forwarding removed
 --------------------------------------------------
 
