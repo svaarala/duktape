@@ -819,6 +819,17 @@ types in the text)::
     <obj: field name>      e.g. <obj: target>
     <heapptr: field name>  e.g. <heapptr: target>
 
+These additional notations are used::
+
+    # Alternatives, e.g. one integer or two strings:
+    (<int: foo> | <str: bar> <str: quux>)
+
+    # Repetition, e.g. 0-N integers:
+    [<int: foo>]*
+
+    # Repetition, e.g. 1-N values, each string or integer:
+    [<str: foo> | <int: bar>]+
+
 When a field does not relate to an Ecmascript value exactly, e.g. the field
 is a debugger control field, typing can be loose.  For example, a boolean
 field can be represented sometimes as integer dvalue and an arbitrary binary
@@ -1764,7 +1775,7 @@ Eval request (0x1e)
 
 Format::
 
-    REQ <int: 0x1e> <int: level | null> <str: expression> EOM
+    REQ <int: 0x1e> (<int: level> | <null>) <str: expression> EOM
     REP <int: 0=success, 1=error> <tval: value> EOM
 
 Example::
@@ -1876,7 +1887,7 @@ GetBytecode request (0x21)
 
 Format::
 
-    REQ <int: 0x21> [<int: level | obj: target | heapptr: target>] EOM
+    REQ <int: 0x21> (<int: level> | <obj: target> | <heapptr: target>) EOM
     REP <int: numconsts> (<tval: const>){numconsts}
         <int: numfuncs> (<tval: func>){numfuncs}
         <str: bytecode> EOM
@@ -1955,7 +1966,7 @@ GetHeapObjInfo (0x23)
 
 Format::
 
-    REQ <int: 0x23> <tval: heapptr|object|pointer> EOM
+    REQ <int: 0x23> (<heapptr: target> | <object: target> | <pointer: target>) EOM
     REP [<int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>]]* EOM
 
 Example::
@@ -2001,7 +2012,7 @@ GetObjPropDesc (0x24)
 Format::
 
     REQ <int: 0x24> <obj: target> <str: key> EOM
-    REP <int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>] EOM
+    REP <int: flags> (<str: key> | <int: key>) (<tval: value> | <obj: getter> <obj: setter>) EOM
 
 Example::
 
@@ -2080,7 +2091,7 @@ GetObjPropDescRange (0x25)
 Format::
 
     REQ <int: 0x25> <obj: target> <int: idx_start> <int: idx_end> EOM
-    REP [<int: flags> <str/int: key> [<tval: value> | <obj: getter> <obj: setter>]]* EOM
+    REP [<int: flags> (<str: key> | <int: key>) (<tval: value> | <obj: getter> <obj: setter>)]* EOM
 
 Example::
 

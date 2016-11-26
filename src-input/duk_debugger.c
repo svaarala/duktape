@@ -1155,6 +1155,16 @@ DUK_LOCAL void duk__debug_skip_to_eom(duk_hthread *thr) {
 	}
 }
 
+DUK_LOCAL duk_int32_t duk__debug_read_validate_csindex(duk_hthread *thr) {
+	duk_int32_t level;
+	level = duk_debug_read_int(thr);
+	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+		return 0;  /* zero indicates failure */
+	}
+	return level;
+}
+
 /*
  *  Simple commands
  */
@@ -1291,10 +1301,8 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command GetVar"));
 
-	level = duk_debug_read_int(thr);  /* callstack index */
-	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-		DUK_D(DUK_DPRINT("invalid callstack index for GetVar"));
-		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+	level = duk__debug_read_validate_csindex(thr);
+	if (level == 0) {
 		return;
 	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
@@ -1334,10 +1342,8 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command PutVar"));
 
-	level = duk_debug_read_int(thr);  /* callstack index */
-	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-		DUK_D(DUK_DPRINT("invalid callstack index for PutVar"));
-		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+	level = duk__debug_read_validate_csindex(thr);
+	if (level == 0) {
 		return;
 	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
@@ -1426,10 +1432,8 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 
 	DUK_UNREF(heap);
 
-	level = duk_debug_read_int(thr);  /* callstack index */
-	if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-		DUK_D(DUK_DPRINT("invalid callstack index for GetLocals"));
-		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+	level = duk__debug_read_validate_csindex(thr);
+	if (level == 0) {
 		return;
 	}
 	duk_debug_write_reply(thr);
@@ -1470,7 +1474,6 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_int_t num_eval_args;
 	duk_bool_t direct_eval;
 	duk_int32_t level;
-	duk_tval* tv;
 
 	DUK_UNREF(heap);
 
@@ -1494,10 +1497,8 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		(void) duk_debug_read_byte(thr);
 	} else {
 		direct_eval = 1;
-		level = (duk_int32_t) DUK_TVAL_GET_NUMBER(tv);  /* callstack index */
-		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack index for Eval"));
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+		level = duk__debug_read_validate_csindex(thr);
+		if (level == 0) {
 			return;
 		}
 	}
