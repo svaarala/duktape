@@ -1721,7 +1721,7 @@ Planned
   version incompatible protocol changes in the 2.0.0 release (GH-756)
 
 * Incompatible change: make callstack level mandatory for most debugger
-  commands which accept one (GH-747)
+  commands which accept one (GH-747, GH-1109)
 
 * Incompatible change: require a DUK_USE_DEBUG_WRITE() macro for handling
   debug writes when DUK_USE_DEBUG is enabled; this avoids a platform I/O
