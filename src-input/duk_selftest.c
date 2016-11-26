@@ -18,7 +18,7 @@ typedef union {
 
 /* Self test failed.  Expects a local variable 'error_count' to exist. */
 #define DUK__FAILED(msg)  do { \
-		DUK_D(DUK_DPRINT("self test failed: " #msg)); \
+		DUK_D(DUK_DPRINT("self test failed: " #msg " at " DUK_FILE_MACRO ":" DUK_MACRO_STRINGIFY(DUK_LINE_MACRO))); \
 		error_count++; \
 	} while (0)
 
@@ -376,6 +376,47 @@ DUK_LOCAL duk_uint_t duk__selftest_double_rounding(void) {
 }
 
 /*
+ *  fmod(): often a portability issue in embedded or bare platform targets.
+ *  Check for at least minimally correct behavior.  Unlike some other math
+ *  functions (like cos()) Duktape relies on fmod() internally too.
+ */
+
+DUK_LOCAL duk_uint_t duk__selftest_fmod(void) {
+	duk_uint_t error_count = 0;
+	duk__test_double_union u1, u2;
+
+	/* fmod() with integer argument and exponent 2^32 is used by e.g.
+	 * ToUint32() and some Duktape internals.
+	 */
+	u1.d = DUK_FMOD(10.0, 4294967296.0);
+	u2.d = 10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	u1.d = DUK_FMOD(4294967306.0, 4294967296.0);
+	u2.d = 10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	u1.d = DUK_FMOD(73014444042.0, 4294967296.0);
+	u2.d = 10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	/* C99 behavior is for fmod() result sign to mathc argument sign. */
+	u1.d = DUK_FMOD(-10.0, 4294967296.0);
+	u2.d = -10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	u1.d = DUK_FMOD(-4294967306.0, 4294967296.0);
+	u2.d = -10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	u1.d = DUK_FMOD(-73014444042.0, 4294967296.0);
+	u2.d = -10.0;
+	DUK__DBLUNION_CMP_TRUE(&u1, &u2);
+
+	return error_count;
+}
+
+/*
  *  Struct size/alignment if platform requires it
  *
  *  There are some compiler specific struct padding pragmas etc in use, this
@@ -563,6 +604,7 @@ DUK_INTERNAL duk_uint_t duk_selftest_run_tests(duk_alloc_function alloc_func,
 	error_count += duk__selftest_double_aliasing();
 	error_count += duk__selftest_double_zero_sign();
 	error_count += duk__selftest_double_rounding();
+	error_count += duk__selftest_fmod();
 	error_count += duk__selftest_struct_align();
 	error_count += duk__selftest_64bit_arithmetic();
 	error_count += duk__selftest_cast_double_to_small_uint();
