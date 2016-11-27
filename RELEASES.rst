@@ -1865,6 +1865,14 @@ Planned
   for-in, Object.keys(), and duk_enum() even though that's not strictly
   required by ES6 or ES7 (GH-1054)
 
+* Follow ES7 behavior when a Proxy instance is used as a for-in target:
+  the "ownKeys" trap is invoked instead of the "enumerate" trap, and the
+  "enumerate" trap is thus obsoleted entirely (GH-1115)
+
+* Add enumerability check for properties enumerated using Proxy "ownKeys"
+  trap; because "getOwnPropertyDescriptor" trap is not yet supported, the
+  check is always made against the target object (GH-1115)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
