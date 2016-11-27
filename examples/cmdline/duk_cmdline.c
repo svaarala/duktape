@@ -358,7 +358,7 @@ static const char *linenoise_completion_script =
 	"    // access.  Look up all the components (starting from the global\n"
 	"    // object now) except the last; treat the last component as a\n"
 	"    // partial name and use it as a filter for possible properties.\n"
-	"    var match, propseq, obj, i, partial, names, name;\n"
+	"    var match, propseq, obj, i, partial, names, name, sanity;\n"
 	"\n"
 	"    if (!input) { return; }\n"
 	"    match = /^.*?((?:\\w+\\.)*\\w*)$/.exec(input);\n"
@@ -373,9 +373,12 @@ static const char *linenoise_completion_script =
 	"    if (obj === void 0 || obj === null) { return; }\n"
 	"\n"
 	"    partial = propseq[propseq.length - 1];\n"
+	"    sanity = 1000;\n"
 	"    while (obj != null) {\n"
+	"        if (--sanity < 0) { throw new Error('sanity'); }\n"
 	"        names = Object.getOwnPropertyNames(Object(obj));\n"
 	"        for (i = 0; i < names.length; i++) {\n"
+	"            if (--sanity < 0) { throw new Error('sanity'); }\n"
 	"            name = names[i];\n"
 	"            if (Number(name) >= 0) { continue; }  // ignore array keys\n"
 	"            if (name.substring(0, partial.length) !== partial) { continue; }\n"
@@ -389,7 +392,7 @@ static const char *linenoise_completion_script =
 static const char *linenoise_hints_script =
 	"(function linenoiseHints(input) {\n"
 	"    // Similar to completions but different handling for final results.\n"
-	"    var match, propseq, obj, i, partial, names, name, res, found, first;\n"
+	"    var match, propseq, obj, i, partial, names, name, res, found, first, sanity;\n"
 	"\n"
 	"    if (!input) { return; }\n"
 	"    match = /^.*?((?:\\w+\\.)*\\w*)$/.exec(input);\n"
@@ -406,10 +409,13 @@ static const char *linenoise_hints_script =
 	"    partial = propseq[propseq.length - 1];\n"
 	"    res = [];\n"
 	"    found = Object.create(null);  // keys already handled\n"
+	"    sanity = 1000;\n"
 	"    while (obj != null) {\n"
+	"        if (--sanity < 0) { throw new Error('sanity'); }\n"
 	"        names = Object.getOwnPropertyNames(Object(obj));\n"
 	"        first = true;\n"
 	"        for (i = 0; i < names.length; i++) {\n"
+	"            if (--sanity < 0) { throw new Error('sanity'); }\n"
 	"            name = names[i];\n"
 	"            if (Number(name) >= 0) { continue; }  // ignore array keys\n"
 	"            if (name.substring(0, partial.length) !== partial) { continue; }\n"
@@ -1014,7 +1020,7 @@ static void debugger_detached(duk_context *ctx, void *udata) {
 	/* Ensure socket is closed even when detach is initiated by Duktape
 	 * rather than debug client.
 	 */
-        duk_trans_socket_finish();
+	duk_trans_socket_finish();
 
 	if (debugger_reattach) {
 		/* For automatic reattach testing. */
