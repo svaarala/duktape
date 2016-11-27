@@ -84,12 +84,12 @@ ES6.  The following traps are implemented:</p>
 <tr><td class="propname">preventExtension</td><td>no</td><td></td></tr>
 <tr><td class="propname">getOwnPropertyDescriptor</td><td>no</td><td></td></tr>
 <tr><td class="propname">defineProperty</td><td>no</td><td></td></tr>
-<tr><td class="propname">has</td><td>yes</td><td><code>Object.hasOwnProperty()</code> does not invoke the trap at the moment, <code>key in obj</code> does</td></tr>
+<tr><td class="propname">has</td><td>yes</td><td><code>Object.hasOwnProperty()</code> does not invoke the trap at the moment, <code>key in obj</code> does.</td></tr>
 <tr><td class="propname">get</td><td>yes</td><td></td></tr>
 <tr><td class="propname">set</td><td>yes</td><td></td></tr>
 <tr><td class="propname">deleteProperty</td><td>yes</td><td></td></tr>
-<tr><td class="propname">enumerate</td><td>yes</td><td></td></tr>
-<tr><td class="propname">ownKeys</td><td>yes</td><td><code>Object.keys()</code> enumerability check limitation, trap result validation (non-configurable properties, non-extensible target) not done</td></tr>
+<tr><td class="propname">enumerate</td><td>no (*)</td><td>The "enumerate" trap was removed in ES7 and for-in uses "ownKeys" trap; Duktape 1.x supports "enumerate" trap in for-in.</td></tr>
+<tr><td class="propname">ownKeys</td><td>yes</td><td>Some trap result validation (non-configurable properties, non-extensible target) not yet implemented.</td></tr>
 <tr><td class="propname">apply</td><td>no</td><td></td></tr>
 <tr><td class="propname">construct</td><td>no</td><td></td></tr>
 </tbody>
@@ -99,11 +99,6 @@ ES6.  The following traps are implemented:</p>
 <ul>
 <li>Only about half of the ES6 traps have been implemented.  This causes odd behavior
     if you e.g. call <code>Object.defineProperty()</code> on a proxy object.</li>
-<li><code>Object.keys()</code> invokes the <code>ownKeys</code> trap, cleans up the trap
-    result to a gap-free string list, but does not check that the property names returned
-    by the trap are enumerable.  <code>Object.keys()</code> and <code>Object.getOwnPropertyNames()</code>
-    thus currently return the same value for a proxy object implementing the <code>ownKeys</code>
-    trap.</li>
 <li>Proxy trap results are not validated, e.g. <code>ownKeys</code> trap result validation
     steps described in <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots-ownpropertykeys">[[OwnPropertyKeys]] ()</a>
     for non-configurable target properties and/or non-extensible target object are not
