@@ -17,9 +17,17 @@ summary: |
   string, at least on Linux).  The returned pointer can be dereferenced and a
   NUL terminator character is guaranteed.</p>
 
-  <p>Unlike <code>sprintf()</code> the string formatting is safe.  Concretely,
-  the implementation will try increasing temporary buffer sizes until a
-  large enough buffer is found for the temporary formatted value.</p>
+  <p>Unlike <code>sprintf()</code> the string formatting is safe with respect
+  to result length.  Concretely, the implementation will try increasing temporary
+  buffer sizes until a large enough buffer is found for the temporary formatted
+  value.</p>
+
+  <div class="note">
+  There may be platform specific behavior for some format specifiers.  For
+  example, the behavior of <code>%s</code> with a <code>NULL</code> argument
+  has officially undefined behavior, so actual behavior may vary across
+  platforms and may even be memory unsafe.
+  </div>
 
 example: |
   duk_push_sprintf(ctx, "meaning of life: %d, name: %s", 42, "Zaphod");
