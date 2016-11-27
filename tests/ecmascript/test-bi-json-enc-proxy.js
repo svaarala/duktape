@@ -46,9 +46,7 @@ getOwnPropertyDescriptor for nonEnumerable
 {"foo":"key-foo","quux":"key-quux","baz":"key-baz"}
 ===*/
 
-/* Proxy 'ownKeys' trap is consulted, 'enumerate' trap is NOT consulted.
- * This has been verified to match Firefox behavior.
- */
+/* Proxy 'ownKeys' trap is consulted. */
 
 function jsonStringifyOwnKeysProxyTest() {
     var target, proxy, obj;
@@ -86,6 +84,7 @@ function jsonStringifyOwnKeysProxyTest() {
     // out what 'ownKeys' result keys are enumerable.
 
     target = { foo: 123, bar: 234, quux: 345, nonEnumerable: 456 };
+    Object.defineProperty(target, 'nonEnumerable', { enumerable: false });
     proxy = new Proxy(target, {
         getOwnPropertyDescriptor: function (targ, key) {
             print('getOwnPropertyDescriptor for ' + key);

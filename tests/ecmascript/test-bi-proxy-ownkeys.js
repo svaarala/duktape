@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6) 'enumerate' and 'ownKeys'.
+ *  Proxy (ES6) 'ownKeys'.
  */
 
 function objDump(obj) {
@@ -13,14 +13,15 @@ function objDump(obj) {
         keys = [ e.name ];
     }
 
-    // Enumerate on proxy object triggers 'enumerate' trap.
+    // Enumerate on proxy object triggers 'ownKeys' trap in ES7
+    // ('enumerate' trap in ES6).
     print('enum keys:', keys.join(' '));
 
     // Object.keys() on proxy object triggers 'ownKeys' trap.
     // If no such trap exists, enumerable property names of the *proxy*
     // object are listed (not the proxy target).
     try {
-        print('Object.keys:', Duktape.enc('jx', Object.keys(obj)));
+        print('Object.keys:', JSON.stringify(Object.keys(obj)));
     } catch (e) {
         print('Object.keys:', e.name);
     }
@@ -29,7 +30,7 @@ function objDump(obj) {
     // trap.  If no such trap exists, property names (enumerable or not)
     // of the *proxy* object are listed (not the proxy target).
     try {
-        print('Object.getOwnPropertyNames:', Duktape.enc('jx', Object.getOwnPropertyNames(obj)));
+        print('Object.getOwnPropertyNames:', JSON.stringify(Object.getOwnPropertyNames(obj)));
     } catch (e) {
         print('Object.getOwnPropertyNames:', e.name);
     }
@@ -47,17 +48,16 @@ proxy.foo: 1
 enum keys: string:foo string:bar string:quux
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-enumerate: true true
-enum keys: string:foo string:bar string:quux string:nonEnum
+enum keys: string:foo string:bar string:quux
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux","nonEnum"]
-enumerate: true true
-enum keys: string:nosuch1 string:nosuch2
+enum keys: string:foo string:bar string:quux
 Object.keys: ["foo","bar","quux"]
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-enum keys: string:foo string:bar string:quux string:enumProp
 ownKeys: true true
-Object.keys: ["foo","enumProp","nonEnumProp"]
+enum keys: string:foo string:enumProp
+ownKeys: true true
+Object.keys: ["foo","enumProp"]
 ownKeys: true true
 Object.getOwnPropertyNames: ["foo","enumProp","nonEnumProp"]
 ===*/
@@ -85,33 +85,29 @@ function basicEnumerationTest() {
     print('proxy.foo:', proxy.foo);
     objDump(proxy);
 
-    // Proxy which returns Object.getOwnPropertyNames() from 'enumerate' trap.
+    // Proxy which returns Object.getOwnPropertyNames() from 'getKeys' trap.
     // This causes enumeration to enumerate 'through' to the target object,
     // except that also non-enumerable properties get enumerated.
-    // Object.keys() and Object.getOwnPropertyNames() operate directly on
-    // the proxy target.
 
     target = { foo: 1, bar: 2, quux: [ 1, 2, 3 ] };
     Object.defineProperty(target, 'nonEnum', {
         value: 'nonenumerable', writable: true, enumerable: false, configurable: true
     });
     handler = {
-        enumerate: function (targ) {
-            print('enumerate:', this === handler, targ === target);
+        getKeys: function (targ) {
+            print('getKeys:', this === handler, targ === target);
             return Object.getOwnPropertyNames(targ);
         }
     };
     proxy = new Proxy(target, handler);
     objDump(proxy);
 
-    // Proxy which fabricates non-existent keys in 'enumerate'.
-    // Object.keys() and Object.getOwnPropertyNames()
-    // operate on the proxy target and see the actual keys.
+    // Proxy which fabricates non-existent keys in 'getKeys'.
 
     target = { foo: 1, bar: 2, quux: [ 1, 2, 3 ] };
     handler = {
-        enumerate: function (targ) {
-            print('enumerate:', this === handler, targ === target);
+        getKeys: function (targ) {
+            print('getKeys:', this === handler, targ === target);
             return [ 'nosuch1', 'nosuch2' ];
         }
     };
@@ -159,59 +155,59 @@ try {
 
 /*===
 trap result test
-fake trap result: undefined
+fake trap result: 0
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: null
+fake trap result: 1
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: true
+fake trap result: 2
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: false
+fake trap result: 3
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: 123
+fake trap result: 4
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: "foo"
+fake trap result: 5
 enum keys: TypeError
 Object.keys: TypeError
 Object.getOwnPropertyNames: TypeError
-fake trap result: ["foo","bar","quux"]
-enum keys: string:foo string:bar string:quux
-Object.keys: ["foo","bar","quux"]
+fake trap result: 6
+enum keys: 
+Object.keys: []
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-fake trap result: {"0":"foo","1":"bar","2":"quux","3":"baz",length:3}
-enum keys: string:foo string:bar string:quux
-Object.keys: ["foo","bar","quux"]
+fake trap result: 7
+enum keys: 
+Object.keys: []
 Object.getOwnPropertyNames: ["foo","bar","quux"]
-fake trap result: ["foo",undefined,null,true,false,123,"quux"]
-enum keys: string:foo string:quux
-Object.keys: ["foo","quux"]
-Object.getOwnPropertyNames: ["foo","quux"]
-fake trap result: {"0":"foo","1":123,"3":"quux",length:5}
-enum keys: string:foo string:quux
-Object.keys: ["foo","quux"]
-Object.getOwnPropertyNames: ["foo","quux"]
-fake trap result: ["foo-gappy",undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,"bar-gappy",undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,"quux-gappy",undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined]
-enum keys: string:foo-gappy string:bar-gappy string:quux-gappy
-Object.keys: ["foo-gappy","bar-gappy","quux-gappy"]
-Object.getOwnPropertyNames: ["foo-gappy","bar-gappy","quux-gappy"]
-fake trap result: {"0":"foo","1":"bar","2":"quux"}
+fake trap result: 8
+enum keys: TypeError
+Object.keys: TypeError
+Object.getOwnPropertyNames: TypeError
+fake trap result: 9
+enum keys: TypeError
+Object.keys: TypeError
+Object.getOwnPropertyNames: TypeError
+fake trap result: 10
+enum keys: TypeError
+Object.keys: TypeError
+Object.getOwnPropertyNames: TypeError
+fake trap result: 11
 enum keys: 
 Object.keys: []
 Object.getOwnPropertyNames: []
 ===*/
 
 /* Check handling of various trap result checks: return value must be an object
- * but not necessarily an array, handling of gaps, handling of non-string values,
- * handling of missing 'length', etc.
+ * but not necessarily an array.  In ES7 gaps, non-string/symbol values, etc.
+ * cause a TypeError.
  */
 
 function trapResultTest() {
@@ -230,15 +226,16 @@ function trapResultTest() {
         { '0': 'foo', '1': 'bar', '2': 'quux' },                             // object without 'length'
     ];
 
-    results.forEach(function (trapResult) {
+    results.forEach(function (trapResult, idx) {
         var target = {
         };
         var proxy;
 
-        print('fake trap result:', Duktape.enc('jx', trapResult))
+        print('fake trap result:', idx);
+        // print(Duktape.enc('jx', trapResult));
 
         proxy = new Proxy(target, {
-            enumerate: function (targ) { return trapResult; },
+            enumerate: function (targ) { print('"enumerate" trap called, not intended in ES7'); return trapResult; },
             ownKeys: function (targ) { return trapResult; }
         });
 
