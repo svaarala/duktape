@@ -370,7 +370,17 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* these non-standard properties are copied for convenience */
 	/* XXX: 'copy properties' API call? */
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
+	duk_push_string(ctx, "bound ");  /* ES6 19.2.3.2. */
+	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_NAME);
+	if (!duk_is_string(ctx, -1)) {
+		/* ES6 has requirement to check that .name of target is a string
+		 * (also must check for Symbol); if not, targetName should be the
+		 * empty string.  ES6 19.2.3.2.
+		 */
+		duk_pop(ctx);
+		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+	}
+	duk_concat(ctx, 2);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
 	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
