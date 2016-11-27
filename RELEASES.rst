@@ -1970,6 +1970,10 @@ Planned
   ES6 and other engines; "\078" is now accepted and is the same as
   "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
 
+* Change bound function .name property handling to match ES6 requirements;
+  for a target function with name "foo", bound function name is "bound foo"
+  (GH-1113)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor
