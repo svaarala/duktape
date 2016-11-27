@@ -1287,14 +1287,24 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 }
 
 /*
- *  indexOf(), lastIndexOf()
+ *  indexOf(), lastIndexOf(), includes()
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
+	/*
+	 *  magic == +1: Array.prototype.indexOf()
+	 *  magic == +2: Array.prototype.includes()
+	 *  magic == -1: Array.prototype.lastIndexOf()
+	 */
+
+	duk_small_int_t magic;
 	duk_idx_t nargs;
 	duk_int_t i, len;
 	duk_int_t from_idx;
-	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
+	duk_small_int_t idx_step;  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
+
+	magic = duk_get_current_magic(ctx);
+	idx_step = magic >= 0 ? 1 : -1;
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
 	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
@@ -1326,7 +1336,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	 */
 
 	if (nargs >= 2) {
-		/* indexOf: clamp fromIndex to [-len, len]
+		/* indexOf/includes: clamp fromIndex to [-len, len]
 		 * (if fromIndex == len, for-loop terminates directly)
 		 *
 		 * lastIndexOf: clamp fromIndex to [-len - 1, len - 1]
@@ -1360,10 +1370,21 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	for (i = from_idx; i >= 0 && i < len; i += idx_step) {
 		DUK_ASSERT_TOP(ctx, 4);
 
-		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
+		/* NOTE: indexOf() and lastIndexOf() skip over nonexistent items;
+		 * ES6 includes() does not.
+		 */
+		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i) || magic == 2) {
+			duk_bool_t found;
+
 			DUK_ASSERT_TOP(ctx, 5);
-			if (duk_strict_equals(ctx, 0, 4)) {
-				duk_push_int(ctx, i);
+			found = magic == 2 ? duk_samevalue(ctx, 0, 4) :
+			        duk_strict_equals(ctx, 0, 4);
+			if (found) {
+				if (magic == 2) {
+					duk_push_true(ctx);
+				} else {
+					duk_push_int(ctx, i);
+				}
 				return 1;
 			}
 		}
@@ -1372,7 +1393,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	}
 
  not_found:
-	duk_push_int(ctx, -1);
+	if (magic == 2) {
+		duk_push_false(ctx);
+	} else {
+		duk_push_int(ctx, -1);
+	}
 	return 1;
 }
 
