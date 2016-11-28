@@ -431,8 +431,8 @@ strings:
     es6: true
   #- str: "defineProperty"
   #  es6: true
-  - str: "enumerate"
-    es6: true
+  #- str: "enumerate"   # obsoleted in ES7
+  #  es6: true
   - str: "ownKeys"
     es6: true
   #- str: "apply"

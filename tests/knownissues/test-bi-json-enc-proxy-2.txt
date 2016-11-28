@@ -1,0 +1,8 @@
+summary: Proxy getOwnPropertyDescriptor trap is unimplemented
+---
+{"foo":234}
+{"foo":345}
+ownKeys should be called
+{"foo":"key-foo","quux":"key-quux"}
+ownKeys should be called
+{"foo":"key-foo","quux":"key-quux"}

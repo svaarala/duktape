@@ -1045,6 +1045,11 @@ Other incompatible changes
 * The NetBSD pow() workaround option ``DUK_USE_POW_NETBSD_WORKAROUND`` has been
   generalized and renamed to ``DUK_USE_POW_WORKAROUNDS``.
 
+* When using a Proxy as a for-in target the "ownKeys" trap is invoked instead
+  of the "enumerate" trap in ES7.  Duktape now follows this behavior.  The
+  "enumerate" trap has been obsoleted.  Key enumerability is also now checked
+  when "ownKeys" trap is used in Object.keys() and for-in.
+
 Known issues
 ============
 

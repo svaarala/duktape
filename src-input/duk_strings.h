@@ -80,6 +80,9 @@
 #define DUK_STR_SETTER_UNDEFINED                 "setter undefined"
 #define DUK_STR_INVALID_DESCRIPTOR               "invalid descriptor"
 
+/* Proxy */
+#define DUK_STR_INVALID_TRAP_RESULT              "invalid trap result"
+
 /* Variables */
 
 /* Lexer */

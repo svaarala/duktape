@@ -630,7 +630,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	duk_hobject *h_proxy_target;
 	duk_hobject *h_proxy_handler;
 	duk_hobject *h_trap_result;
-	duk_uarridx_t i, len, idx;
 #endif
 	duk_small_uint_t enum_flags;
 
@@ -642,6 +641,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	DUK_UNREF(obj);
 
 #if defined(DUK_USE_ES6_PROXY)
+	/* XXX: better sharing of code between proxy target call sites */
 	if (DUK_LIKELY(!duk_hobject_proxy_check(thr,
 	                                        obj,
 	                                        &h_proxy_target,
@@ -669,38 +669,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	h_trap_result = duk_require_hobject(ctx, -1);
 	DUK_UNREF(h_trap_result);
 
-	len = (duk_uarridx_t) duk_get_length(ctx, -1);
-	idx = 0;
-	duk_push_array(ctx);
-	for (i = 0; i < len; i++) {
-		/* [ obj trap_result res_arr ] */
-		if (duk_get_prop_index(ctx, -2, i) && duk_is_string(ctx, -1)) {
-			/* XXX: for Object.keys() we should check enumerability of key */
-			/* [ obj trap_result res_arr propname ] */
-			duk_put_prop_index(ctx, -2, idx);
-			idx++;
-		} else {
-			duk_pop(ctx);
-		}
-	}
-
-	/* XXX: missing trap result validation for non-configurable target keys
-	 * (must be present), for non-extensible target all target keys must be
-	 * present and no extra keys can be present.
-	 * http://www.ecma-international.org/ecma-262/6.0/#sec-proxy-object-internal-methods-and-internal-slots-ownpropertykeys
-	 */
-
-	/* XXX: for Object.keys() the [[OwnPropertyKeys]] result (trap result)
-	 * should be filtered so that only enumerable keys remain.  Enumerability
-	 * should be checked with [[GetOwnProperty]] on the original object
-	 * (i.e., the proxy in this case).  If the proxy has a getOwnPropertyDescriptor
-	 * trap, it should be triggered for every property.  If the proxy doesn't have
-	 * the trap, enumerability should be checked against the target object instead.
-	 * We don't do any of this now, so Object.keys() and Object.getOwnPropertyNames()
-	 * return the same result now for proxy traps.  We still do clean up the trap
-	 * result, so that Object.keys() and Object.getOwnPropertyNames() will return a
-	 * clean array of strings without gaps.
-	 */
+	duk_proxy_ownkeys_postprocess(ctx, h_proxy_target, duk_get_current_magic(ctx) /*enumerable_only*/);
 	return 1;
 
  skip_proxy:
