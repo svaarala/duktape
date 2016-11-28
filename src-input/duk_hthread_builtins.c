@@ -17,8 +17,6 @@
 #define DUK__NUM_NORMAL_PROPS_BITS       6
 #define DUK__NUM_FUNC_PROPS_BITS         6
 #define DUK__PROP_FLAGS_BITS             3
-#define DUK__STRING_LENGTH_BITS          8
-#define DUK__STRING_CHAR_BITS            7
 #define DUK__LENGTH_PROP_BITS            3
 #define DUK__NARGS_BITS                  3
 #define DUK__PROP_TYPE_BITS              3
@@ -173,16 +171,14 @@ DUK_LOCAL void duk__push_stridx(duk_context *ctx, duk_bitdecoder_ctx *bd) {
 	duk_push_hstring_stridx(ctx, n);
 }
 DUK_LOCAL void duk__push_string(duk_context *ctx, duk_bitdecoder_ctx *bd) {
-	duk_small_uint_t n;
-	duk_small_uint_t i;
-	duk_uint8_t *p;
+	/* XXX: built-ins data could provide a maximum length that is
+	 * actually needed; bitpacked max length is now 256 bytes.
+	 */
+	duk_uint8_t tmp[DUK_BD_BITPACKED_STRING_MAXLEN];
+	duk_small_uint_t len;
 
-	n = (duk_small_uint_t) duk_bd_decode(bd, DUK__STRING_LENGTH_BITS);
-	p = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, n);
-	for (i = 0; i < n; i++) {
-		*p++ = (duk_uint8_t) duk_bd_decode(bd, DUK__STRING_CHAR_BITS);
-	}
-	(void) duk_buffer_to_string(ctx, -1);
+	len = duk_bd_decode_bitpacked_string(bd, tmp);
+	duk_push_lstring(ctx, (const char *) tmp, (duk_size_t) len);
 }
 DUK_LOCAL void duk__push_stridx_or_string(duk_context *ctx, duk_bitdecoder_ctx *bd) {
 	if (duk_bd_decode_flag(bd)) {

@@ -54,6 +54,8 @@ struct duk_bitdecoder_ctx {
 	duk_small_int_t currbits;
 };
 
+#define DUK_BD_BITPACKED_STRING_MAXLEN 256
+
 /*
  *  Bitstream encoder
  */
@@ -509,6 +511,7 @@ DUK_INTERNAL_DECL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 DUK_INTERNAL_DECL duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
 DUK_INTERNAL_DECL duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx);
 DUK_INTERNAL_DECL duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value);
+DUK_INTERNAL_DECL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx *bd, duk_uint8_t *out);
 
 DUK_INTERNAL_DECL void duk_be_encode(duk_bitencoder_ctx *ctx, duk_uint32_t data, duk_small_int_t bits);
 DUK_INTERNAL_DECL void duk_be_finish(duk_bitencoder_ctx *ctx);
