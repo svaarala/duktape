@@ -4,14 +4,6 @@
 
 #include "duk_internal.h"
 
-/* Constants for built-in string data depacking. */
-#define DUK__BITPACK_LETTER_LIMIT  26
-#define DUK__BITPACK_UNDERSCORE    26
-#define DUK__BITPACK_FF            27
-#define DUK__BITPACK_SWITCH1       29
-#define DUK__BITPACK_SWITCH        30
-#define DUK__BITPACK_SEVENBIT      31
-
 #if defined(DUK_USE_ROM_STRINGS)
 /* Fixed seed value used with ROM strings. */
 #define DUK__FIXED_HASH_SEED       0xabcd1234
@@ -381,7 +373,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_bitdecoder_ctx bd_ctx;
 	duk_bitdecoder_ctx *bd = &bd_ctx;  /* convenience */
-	duk_small_uint_t i, j;
+	duk_small_uint_t i;
 
 	DUK_MEMZERO(&bd_ctx, sizeof(bd_ctx));
 	bd->data = (const duk_uint8_t *) duk_strings_data;
@@ -391,38 +383,8 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		duk_uint8_t tmp[DUK_STRDATA_MAX_STRLEN];
 		duk_hstring *h;
 		duk_small_uint_t len;
-		duk_small_uint_t mode;
-		duk_small_uint_t t;
 
-		len = duk_bd_decode(bd, 5);
-		mode = 32;  /* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
-		for (j = 0; j < len; j++) {
-			t = duk_bd_decode(bd, 5);
-			if (t < DUK__BITPACK_LETTER_LIMIT) {
-				t = t + DUK_ASC_UC_A + mode;
-			} else if (t == DUK__BITPACK_UNDERSCORE) {
-				t = DUK_ASC_UNDERSCORE;
-			} else if (t == DUK__BITPACK_FF) {
-				/* Internal keys are prefixed with 0xFF in the stringtable
-				 * (which makes them invalid UTF-8 on purpose).
-				 */
-				t = 0xff;
-			} else if (t == DUK__BITPACK_SWITCH1) {
-				t = duk_bd_decode(bd, 5);
-				DUK_ASSERT_DISABLE(t >= 0);  /* unsigned */
-				DUK_ASSERT(t <= 25);
-				t = t + DUK_ASC_UC_A + (mode ^ 32);
-			} else if (t == DUK__BITPACK_SWITCH) {
-				mode = mode ^ 32;
-				t = duk_bd_decode(bd, 5);
-				DUK_ASSERT_DISABLE(t >= 0);
-				DUK_ASSERT(t <= 25);
-				t = t + DUK_ASC_UC_A + mode;
-			} else if (t == DUK__BITPACK_SEVENBIT) {
-				t = duk_bd_decode(bd, 7);
-			}
-			tmp[j] = (duk_uint8_t) t;
-		}
+		len = duk_bd_decode_bitpacked_string(bd, tmp);
 
 		/* No need to length check string: it will never exceed even
 		 * the 16-bit length maximum.

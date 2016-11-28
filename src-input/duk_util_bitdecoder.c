@@ -68,3 +68,63 @@ DUK_INTERNAL duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_smal
 		return def_value;
 	}
 }
+
+/* Decode a bit packed string from a custom format used by genbuiltins.py.
+ * This function is here because it's used for both heap and thread inits.
+ * Caller must supply the output buffer whose size is NOT checked!
+ */
+
+#define DUK__BITPACK_LETTER_LIMIT  26
+#define DUK__BITPACK_LOOKUP1       26
+#define DUK__BITPACK_LOOKUP2       27
+#define DUK__BITPACK_SWITCH1       28
+#define DUK__BITPACK_SWITCH        29
+#define DUK__BITPACK_UNUSED1       30
+#define DUK__BITPACK_EIGHTBIT      31
+
+DUK_LOCAL const duk_uint8_t duk__bitpacked_lookup[16] = {
+	DUK_ASC_0, DUK_ASC_1, DUK_ASC_2, DUK_ASC_3,
+	DUK_ASC_4, DUK_ASC_5, DUK_ASC_6, DUK_ASC_7,
+	DUK_ASC_8, DUK_ASC_9, DUK_ASC_UNDERSCORE, DUK_ASC_SPACE,
+	0xff, 0x80, DUK_ASC_DOUBLEQUOTE, DUK_ASC_LCURLY
+};
+
+DUK_INTERNAL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx *bd, duk_uint8_t *out) {
+	duk_small_uint_t len;
+	duk_small_uint_t mode;
+	duk_small_uint_t t;
+	duk_small_uint_t i;
+
+	len = duk_bd_decode(bd, 5);
+	if (len == 31) {
+		len = duk_bd_decode(bd, 8);  /* Support up to 256 bytes; rare. */
+	}
+
+	mode = 32;  /* 0 = uppercase, 32 = lowercase (= 'a' - 'A') */
+	for (i = 0; i < len; i++) {
+		t = duk_bd_decode(bd, 5);
+		if (t < DUK__BITPACK_LETTER_LIMIT) {
+			t = t + DUK_ASC_UC_A + mode;
+		} else if (t == DUK__BITPACK_LOOKUP1) {
+			t = duk__bitpacked_lookup[duk_bd_decode(bd, 3)];
+		} else if (t == DUK__BITPACK_LOOKUP2) {
+			t = duk__bitpacked_lookup[8 + duk_bd_decode(bd, 3)];
+		} else if (t == DUK__BITPACK_SWITCH1) {
+			t = duk_bd_decode(bd, 5);
+			DUK_ASSERT_DISABLE(t >= 0);  /* unsigned */
+			DUK_ASSERT(t <= 25);
+			t = t + DUK_ASC_UC_A + (mode ^ 32);
+		} else if (t == DUK__BITPACK_SWITCH) {
+			mode = mode ^ 32;
+			t = duk_bd_decode(bd, 5);
+			DUK_ASSERT_DISABLE(t >= 0);
+			DUK_ASSERT(t <= 25);
+			t = t + DUK_ASC_UC_A + mode;
+		} else if (t == DUK__BITPACK_EIGHTBIT) {
+			t = duk_bd_decode(bd, 8);
+		}
+		out[i] = (duk_uint8_t) t;
+	}
+
+	return len;
+}
