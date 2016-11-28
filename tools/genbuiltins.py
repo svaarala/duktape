@@ -1353,8 +1353,6 @@ NATIDX_BITS = 8
 NUM_NORMAL_PROPS_BITS = 6
 NUM_FUNC_PROPS_BITS = 6
 PROP_FLAGS_BITS = 3
-STRING_LENGTH_BITS = 8
-STRING_CHAR_BITS = 7
 LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
@@ -1411,111 +1409,124 @@ for i,v in enumerate(class_names):
 def class_to_number(x):
     return class2num[x]
 
+# Bitpack a string into a format shared by heap and thread init data.
+def bitpack_string(be, s, stats=None):
+    # Strings are encoded as follows: a string begins in lowercase
+    # mode and recognizes the following 5-bit symbols:
+    #
+    #    0-25    'a' ... 'z' or 'A' ... 'Z' depending on uppercase mode
+    #    26-31   special controls, see code below
+
+    LOOKUP1 = 26
+    LOOKUP2 = 27
+    SWITCH1 = 28
+    SWITCH = 29
+    UNUSED1 = 30
+    EIGHTBIT = 31
+    LOOKUP = '0123456789_ \xff\x80"{'  # special characters
+    assert(len(LOOKUP) == 16)
+
+    # support up to 256 byte strings now, cases above ~30 bytes are very
+    # rare, so favor short strings in encoding
+    if len(s) <= 30:
+        be.bits(len(s), 5)
+    else:
+        be.bits(31, 5)
+        be.bits(len(s), 8)
+
+    # 5-bit character, mode specific
+    mode = 'lowercase'
+
+    for idx, c in enumerate(s):
+        # This encoder is not that optimal, but good enough for now.
+
+        islower = (ord(c) >= ord('a') and ord(c) <= ord('z'))
+        isupper = (ord(c) >= ord('A') and ord(c) <= ord('Z'))
+        islast = (idx == len(s) - 1)
+        isnextlower = False
+        isnextupper = False
+        if not islast:
+            c2 = s[idx+1]
+            isnextlower = (ord(c2) >= ord('a') and ord(c2) <= ord('z'))
+            isnextupper = (ord(c2) >= ord('A') and ord(c2) <= ord('Z'))
+
+        # XXX: Add back special handling for hidden or other symbols?
+
+        if islower and mode == 'lowercase':
+            be.bits(ord(c) - ord('a'), 5)
+            if stats is not None: stats['n_optimal'] += 1
+        elif isupper and mode == 'uppercase':
+            be.bits(ord(c) - ord('A'), 5)
+            if stats is not None: stats['n_optimal'] += 1
+        elif islower and mode == 'uppercase':
+            if isnextlower:
+                be.bits(SWITCH, 5)
+                be.bits(ord(c) - ord('a'), 5)
+                mode = 'lowercase'
+                if stats is not None: stats['n_switch'] += 1
+            else:
+                be.bits(SWITCH1, 5)
+                be.bits(ord(c) - ord('a'), 5)
+                if stats is not None: stats['n_switch1'] += 1
+        elif isupper and mode == 'lowercase':
+            if isnextupper:
+                be.bits(SWITCH, 5)
+                be.bits(ord(c) - ord('A'), 5)
+                mode = 'uppercase'
+                if stats is not None: stats['n_switch'] += 1
+            else:
+                be.bits(SWITCH1, 5)
+                be.bits(ord(c) - ord('A'), 5)
+                if stats is not None: stats['n_switch1'] += 1
+        elif c in LOOKUP:
+            idx = LOOKUP.find(c)
+            if idx >= 8:
+                be.bits(LOOKUP2, 5)
+                be.bits(idx - 8, 3)
+                if stats is not None: stats['n_lookup2'] += 1
+            else:
+                be.bits(LOOKUP1, 5)
+                be.bits(idx, 3)
+                if stats is not None: stats['n_lookup1'] += 1
+        elif ord(c) >= 0 and ord(c) <= 255:
+            logger.debug('eightbit encoding for %d (%s)' % (ord(c), c))
+            be.bits(EIGHTBIT, 5)
+            be.bits(ord(c), 8)
+            if stats is not None: stats['n_eightbit'] += 1
+        else:
+            raise Exception('internal error in bitpacking a string')
+
 # Generate bit-packed RAM string init data.
 def gen_ramstr_initdata_bitpacked(meta):
     be = dukutil.BitEncoder()
 
-    # Strings are encoded as follows: a string begins in lowercase
-    # mode and recognizes the following 5-bit symbols:
-    #
-    #    0-25    'a' ... 'z'
-    #    26         '_'
-    #    27      0x00 (actually decoded to 0xff, internal marker)
-    #    28         reserved
-    #    29      switch to uppercase for one character
-    #            (next 5-bit symbol must be in range 0-25)
-    #    30      switch to uppercase
-    #    31      read a 7-bit character verbatim
-    #
-    # Uppercase mode is the same except codes 29 and 30 switch to
-    # lowercase.
-
-    UNDERSCORE = 26
-    ZERO = 27
-    SWITCH1 = 29
-    SWITCH = 30
-    SEVENBIT = 31
-
     maxlen = 0
-    n_optimal = 0
-    n_switch1 = 0
-    n_switch = 0
-    n_sevenbit = 0
+    stats = {
+        'n_optimal': 0,
+        'n_lookup1': 0,
+        'n_lookup2': 0,
+        'n_switch1': 0,
+        'n_switch': 0,
+        'n_eightbit': 0
+    }
 
     for s_obj in meta['strings_stridx']:
         s = s_obj['str']
-
-        be.bits(len(s), 5)
-
         if len(s) > maxlen:
             maxlen = len(s)
-
-        # 5-bit character, mode specific
-        mode = 'lowercase'
-
-        for idx, c in enumerate(s):
-            # This encoder is not that optimal, but good enough for now.
-
-            islower = (ord(c) >= ord('a') and ord(c) <= ord('z'))
-            isupper = (ord(c) >= ord('A') and ord(c) <= ord('Z'))
-            islast = (idx == len(s) - 1)
-            isnextlower = False
-            isnextupper = False
-            if not islast:
-                c2 = s[idx+1]
-                isnextlower = (ord(c2) >= ord('a') and ord(c2) <= ord('z'))
-                isnextupper = (ord(c2) >= ord('A') and ord(c2) <= ord('Z'))
-
-            if c == '_':
-                be.bits(UNDERSCORE, 5)
-                n_optimal += 1
-            elif c == '\xff':
-                # A 0xff prefix (never part of valid UTF-8) is used for internal properties.
-                # It is encoded as 0x00 in generated init data for technical reasons: it
-                # keeps lookup table elements 7 bits instead of 8 bits.
-                be.bits(ZERO, 5)
-                n_optimal += 1
-            elif islower and mode == 'lowercase':
-                be.bits(ord(c) - ord('a'), 5)
-                n_optimal += 1
-            elif isupper and mode == 'uppercase':
-                be.bits(ord(c) - ord('A'), 5)
-                n_optimal += 1
-            elif islower and mode == 'uppercase':
-                if isnextlower:
-                    be.bits(SWITCH, 5)
-                    be.bits(ord(c) - ord('a'), 5)
-                    mode = 'lowercase'
-                    n_switch += 1
-                else:
-                    be.bits(SWITCH1, 5)
-                    be.bits(ord(c) - ord('a'), 5)
-                    n_switch1 += 1
-            elif isupper and mode == 'lowercase':
-                if isnextupper:
-                    be.bits(SWITCH, 5)
-                    be.bits(ord(c) - ord('A'), 5)
-                    mode = 'uppercase'
-                    n_switch += 1
-                else:
-                    be.bits(SWITCH1, 5)
-                    be.bits(ord(c) - ord('A'), 5)
-                    n_switch1 += 1
-            else:
-                assert(ord(c) >= 0 and ord(c) <= 127)
-                be.bits(SEVENBIT, 5)
-                be.bits(ord(c), 7)
-                n_sevenbit += 1
-                #logger.debug('sevenbit for: %r' % c)
+        bitpack_string(be, s, stats)
 
     # end marker not necessary, C code knows length from define
 
     res = be.getByteString()
 
     logger.debug(('%d ram strings, %d bytes of string init data, %d maximum string length, ' + \
-                 'encoding: optimal=%d,switch1=%d,switch=%d,sevenbit=%d') % \
+                 'encoding: optimal=%d,lookup1=%d,lookup2=%d,switch1=%d,switch=%d,eightbit=%d') % \
                  (len(meta['strings_stridx']), len(res), maxlen, \
-                 n_optimal, n_switch1, n_switch, n_sevenbit))
+                 stats['n_optimal'],
+                 stats['n_lookup1'], stats['n_lookup2'],
+                 stats['n_switch1'], stats['n_switch'],
+                 stats['n_eightbit']))
 
     return res, maxlen
 
@@ -1599,9 +1610,7 @@ def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_
             be.bits(stridx, STRIDX_BITS)
         else:
             be.bits(1, 1)  # marker: raw bytes
-            be.bits(len(strval), STRING_LENGTH_BITS)
-            for i in xrange(len(strval)):
-                be.bits(ord(strval[i]), STRING_CHAR_BITS)
+            bitpack_string(be, strval)
     def _natidx(native_name):
         natidx = natfunc_name_to_natidx[native_name]
         be.bits(natidx, NATIDX_BITS)
@@ -1703,9 +1712,7 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
             be.bits(stridx, STRIDX_BITS)
         else:
             be.bits(1, 1)  # marker: raw bytes
-            be.bits(len(strval), STRING_LENGTH_BITS)
-            for i in xrange(len(strval)):
-                be.bits(ord(strval[i]), STRING_CHAR_BITS)
+            bitpack_string(be, strval)
     def _natidx(native_name):
         if native_name is None:
             natidx = 0  # 0 is NULL in the native functions table, denotes missing function
@@ -1845,12 +1852,9 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
                 be.bits(PROP_TYPE_STRIDX, PROP_TYPE_BITS)
                 _stridx(val)
             else:
-                # Not in string table -> encode as raw 7-bit value
-
+                # Not in string table, bitpack string value as is.
                 be.bits(PROP_TYPE_STRING, PROP_TYPE_BITS)
-                be.bits(len(val), STRING_LENGTH_BITS)
-                for i in xrange(len(val)):
-                    be.bits(ord(val[i]), STRING_CHAR_BITS)
+                bitpack_string(be, val)
         elif isinstance(val, dict):
             if val['type'] == 'object':
                 be.bits(PROP_TYPE_BUILTIN, PROP_TYPE_BITS)
