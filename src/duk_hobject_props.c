@@ -4197,7 +4197,16 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 		DUK_TVAL_SET_UNUSED_UPDREF(thr, tv);  /* side effects */
 		goto success;
 	} else {
+		duk_hobject *h_get = NULL;
+		duk_hobject *h_set = NULL;
+		duk_tval tv_tmp;
+
 		DUK_ASSERT(desc.a_idx < 0);
+
+		/* Set property slot to an empty state.  Careful not to invoke
+		 * any side effects while using desc.e_idx so that it doesn't
+		 * get invalidated by a finalizer mutating our object.
+		 */
 
 		/* remove hash entry (no decref) */
 #if defined(DUK_USE_HOBJECT_HASH_PART)
@@ -4219,21 +4228,17 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 		DUK_DDD(DUK_DDDPRINT("before removing value, e_idx %ld, key %p, key at slot %p",
 		                     (long) desc.e_idx, (void *) key, (void *) DUK_HOBJECT_E_GET_KEY(thr->heap, obj, desc.e_idx)));
 		DUK_DDD(DUK_DDDPRINT("removing value at e_idx %ld", (long) desc.e_idx));
+		DUK_MEMSET((void *) &tv_tmp, 0, sizeof(tv_tmp));
+		DUK_TVAL_SET_UNDEFINED(&tv_tmp);
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, desc.e_idx)) {
-			duk_hobject *tmp;
-
-			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, desc.e_idx);
+			h_get = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, desc.e_idx);
+			h_set = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, desc.e_idx, NULL);
-			DUK_UNREF(tmp);
-			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);  /* side effects */
-
-			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, desc.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, desc.e_idx, NULL);
-			DUK_UNREF(tmp);
-			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);  /* side effects */
 		} else {
 			tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, desc.e_idx);
-			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv);
+			DUK_TVAL_SET_UNDEFINED(tv);
 		}
 #if 0
 		/* Not strictly necessary because if key == NULL, flag MUST be ignored. */
@@ -4246,7 +4251,14 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobject *o
 		DUK_DDD(DUK_DDDPRINT("removing key at e_idx %ld", (long) desc.e_idx));
 		DUK_ASSERT(key == DUK_HOBJECT_E_GET_KEY(thr->heap, obj, desc.e_idx));
 		DUK_HOBJECT_E_SET_KEY(thr->heap, obj, desc.e_idx, NULL);
-		DUK_HSTRING_DECREF(thr, key);  /* side effects */
+
+		/* Do decrefs only with safe pointers to avoid side effects
+		 * disturbing e_idx.
+		 */
+		DUK_TVAL_DECREF(thr, &tv_tmp);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_get);
+		DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_set);
+		DUK_HSTRING_DECREF(thr, key);
 		goto success;
 	}
 
@@ -5420,6 +5432,7 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 		} else {
 			duk_bool_t rc;
 			duk_tval *tv1;
+			duk_tval tv_tmp;
 
 			/* curr is data, desc is accessor */
 			if (!(curr.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) && !force_flag) {
@@ -5439,9 +5452,12 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
 
+			/* Avoid side effects that might disturb curr.e_idx until
+			 * we're done editing the slot.
+			 */
 			tv1 = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx);
-			/* XXX: just decref */
-			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
+			DUK_TVAL_SET_TVAL(&tv_tmp, tv1);
+			DUK_TVAL_SET_UNDEFINED(tv1);
 
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, curr.e_idx, NULL);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, curr.e_idx, NULL);
@@ -5450,6 +5466,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			DUK_DDD(DUK_DDDPRINT("flags after data->accessor conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(thr->heap, obj, curr.e_idx)));
+
+			DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 
 			/* re-lookup to update curr.flags
 			 * XXX: would be faster to update directly
@@ -5466,7 +5484,8 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 		if (curr.flags & DUK_PROPDESC_FLAG_ACCESSOR) {
 			duk_bool_t rc;
-			duk_hobject *tmp;
+			duk_hobject *h_get;
+			duk_hobject *h_set;
 
 			/* curr is accessor, desc is data */
 			if (!(curr.flags & DUK_PROPDESC_FLAG_CONFIGURABLE) && !force_flag) {
@@ -5478,15 +5497,14 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			DUK_DDD(DUK_DDDPRINT("convert property to data property"));
 
+			/* Avoid side effects that might disturb curr.e_idx until
+			 * we're done editing the slot.
+			 */
 			DUK_ASSERT(DUK_HOBJECT_E_SLOT_IS_ACCESSOR(thr->heap, obj, curr.e_idx));
-			tmp = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, curr.e_idx);
-			DUK_UNREF(tmp);
+			h_get = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, curr.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_GETTER(thr->heap, obj, curr.e_idx, NULL);
-			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);  /* side effects */
-			tmp = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, curr.e_idx);
-			DUK_UNREF(tmp);
+			h_set = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, curr.e_idx);
 			DUK_HOBJECT_E_SET_VALUE_SETTER(thr->heap, obj, curr.e_idx, NULL);
-			DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);  /* side effects */
 
 			DUK_TVAL_SET_UNDEFINED(DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, obj, curr.e_idx));
 			DUK_HOBJECT_E_SLOT_CLEAR_WRITABLE(thr->heap, obj, curr.e_idx);
@@ -5494,6 +5512,9 @@ void duk_hobject_define_property_helper(duk_context *ctx,
 
 			DUK_DDD(DUK_DDDPRINT("flags after accessor->data conversion: 0x%02lx",
 			                     (unsigned long) DUK_HOBJECT_E_GET_FLAGS(thr->heap, obj, curr.e_idx)));
+
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_get);  /* side effects */
+			DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_set);  /* side effects */
 
 			/* re-lookup to update curr.flags
 			 * XXX: would be faster to update directly
