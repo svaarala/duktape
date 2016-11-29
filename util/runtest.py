@@ -58,7 +58,7 @@ re_expect = re.compile(r'/\*===\n^((?:.|\r|\n)*?)^===\*/|//>(.*?)$', re.MULTILIN
 re_knownissue = re.compile(r'((?:.|\n)*)\n---\n((?:.|\n)*)|((?:.|\n)*)', re.MULTILINE)
 
 # Parse an include line.
-re_include = re.compile('^/\*@include\s+(.*?)\s*@\*/\s*$', re.MULTILINE)
+re_include = re.compile('^/\*@include\s+(.*?)\s*@\*/$', re.MULTILINE)
 
 # Parse a single line comment.  Doesn't account for e.g. Regexps that may
 # contain two successive slashes, so careful when using the built-in hacky
