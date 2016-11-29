@@ -671,18 +671,15 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 	if (!duk_is_undefined(ctx, idx_fn)) {
 		duk_double_t d;
 
-		/* no need to check callable; duk_call() will do that */
+		/* No need to check callable; duk_call() will do that. */
 		duk_dup(ctx, idx_fn);    /* -> [ ... x y fn ] */
 		duk_insert(ctx, -3);     /* -> [ ... fn x y ] */
 		duk_call(ctx, 2);        /* -> [ ... res ] */
 
-		/* The specification is a bit vague what to do if the return
-		 * value is not a number.  Other implementations seem to
-		 * tolerate non-numbers but e.g. V8 won't apparently do a
-		 * ToNumber().
+		/* ES5 is a bit vague about what to do if the return value is
+		 * not a number.  ES6 provides a concrete description:
+		 * http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare.
 		 */
-
-		/* XXX: best behavior for real world compatibility? */
 
 		d = duk_to_number(ctx, -1);
 		if (d < 0.0) {
@@ -690,6 +687,9 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		} else if (d > 0.0) {
 			ret = 1;
 		} else {
+			/* Because NaN compares to false, NaN is handled here
+			 * without an explicit check above.
+			 */
 			ret = 0;
 		}
 
