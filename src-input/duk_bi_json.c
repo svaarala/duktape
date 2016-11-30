@@ -2472,7 +2472,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				goto abort_fastpath;
 			}
 
-			arr_len = (duk_uint_fast32_t) duk_hobject_get_length(js_ctx->thr, obj);
+			arr_len = (duk_uint_fast32_t) ((duk_harray *) obj)->length;
 			asize = (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(obj);
 			/* Array part may be larger than 'length'; if so, iterate
 			 * only up to array 'length'.  Array part may also be smaller

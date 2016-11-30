@@ -585,11 +585,11 @@ DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	 */
 	DUK_BW_RESET_SIZE(thr, &func->bw_code);
 
-	duk_hobject_set_length_zero(thr, func->h_consts);
+	duk_set_length(ctx, func->consts_idx, 0);
 	/* keep func->h_funcs; inner functions are not reparsed to avoid O(depth^2) parsing */
 	func->fnum_next = 0;
-	/* duk_hobject_set_length_zero(thr, func->h_funcs); */
-	duk_hobject_set_length_zero(thr, func->h_labelnames);
+	/* duk_set_length(ctx, func->funcs_idx, 0); */
+	duk_set_length(ctx, func->labelnames_idx, 0);
 	duk_hbuffer_reset(thr, func->h_labelinfos);
 	/* keep func->h_argnames; it is fixed for all passes */
 
@@ -2760,13 +2760,9 @@ DUK_LOCAL void duk__lookup_active_label(duk_compiler_ctx *comp_ctx, duk_hstring 
 DUK_LOCAL void duk__reset_labels_to_length(duk_compiler_ctx *comp_ctx, duk_int_t len) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
-	duk_size_t new_size;
 
-	/* XXX: duk_set_length */
-	new_size = sizeof(duk_labelinfo) * (duk_size_t) len;
-	duk_push_int(ctx, len);
-	duk_put_prop_stridx(ctx, comp_ctx->curr_func.labelnames_idx, DUK_STRIDX_LENGTH);
-	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
+	duk_set_length(ctx, comp_ctx->curr_func.labelnames_idx, (duk_size_t) len);
+	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, sizeof(duk_labelinfo) * (duk_size_t) len);
 }
 
 /*

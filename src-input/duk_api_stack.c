@@ -1827,15 +1827,25 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 	case DUK_TAG_BOOLEAN:
 	case DUK_TAG_POINTER:
 		return 0;
+#if defined(DUK_USE_PREFER_SIZE)
+	/* All of these types (besides object) have a virtual, non-configurable
+	 * .length property which is within size_t range so we can just look it
+	 * up without specific type checks.
+	 */
+	case DUK_TAG_STRING:
+	case DUK_TAG_BUFFER:
+	case DUK_TAG_LIGHTFUNC: {
+		duk_size_t ret;
+		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
+		ret = (duk_size_t) duk_to_number_m1(ctx);
+		duk_pop(ctx);
+		return ret;
+	}
+#else  /* DUK_USE_PREFER_SIZE */
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
 		return (duk_size_t) DUK_HSTRING_GET_CHARLEN(h);
-	}
-	case DUK_TAG_OBJECT: {
-		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(h != NULL);
-		return (duk_size_t) duk_hobject_get_length((duk_hthread *) ctx, h);
 	}
 	case DUK_TAG_BUFFER: {
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv);
@@ -1846,6 +1856,12 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 		duk_small_uint_t lf_flags;
 		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
 		return (duk_size_t) DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
+	}
+#endif  /* DUK_USE_PREFER_SIZE */
+	case DUK_TAG_OBJECT: {
+		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		return (duk_size_t) duk_hobject_get_length((duk_hthread *) ctx, h);
 	}
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
@@ -1858,7 +1874,6 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_UNREACHABLE();
 }
-
 
 /*
  *  duk_known_xxx() helpers
@@ -1913,18 +1928,12 @@ DUK_INTERNAL duk_hnatfunc *duk_known_hnatfunc(duk_context *ctx, duk_idx_t idx) {
 	return (duk_hnatfunc *) duk__known_heaphdr(ctx, idx);
 }
 
-DUK_INTERNAL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t length) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h;
-
+DUK_EXTERNAL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t len) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	h = duk_get_hobject(ctx, idx);
-	if (!h) {
-		return;
-	}
-
-	duk_hobject_set_length(thr, h, (duk_uint32_t) length);  /* XXX: typing */
+	idx = duk_normalize_index(ctx, idx);
+	duk_push_uint(ctx, (duk_uint_t) len);
+	duk_put_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
 }
 
 /*

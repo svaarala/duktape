@@ -4745,26 +4745,7 @@ DUK_INTERNAL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, 
  *  Internal helpers for managing object 'length'
  */
 
-/* XXX: awkward helpers */
-
-DUK_INTERNAL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length) {
-	duk_context *ctx = (duk_context *) thr;
-	duk_push_hobject(ctx, obj);
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
-	duk_push_u32(ctx, length);
-	(void) duk_hobject_putprop(thr,
-	                           DUK_GET_TVAL_NEGIDX(ctx, -3),
-	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
-	                           DUK_GET_TVAL_NEGIDX(ctx, -1),
-	                           0);
-	duk_pop_3(ctx);
-}
-
-DUK_INTERNAL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj) {
-	duk_hobject_set_length(thr, obj, 0);
-}
-
-DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
+DUK_INTERNAL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_double_t val;
 
@@ -4785,9 +4766,11 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 	val = duk_to_number_m1(ctx);
 	duk_pop_3(ctx);
 
-	/* XXX: better check */
-	if (val >= 0.0 && val < DUK_DOUBLE_2TO32) {
-		return (duk_uint32_t) val;
+	/* This isn't part of Ecmascript semantics; return a value within
+	 * duk_size_t range, or 0 otherwise.
+	 */
+	if (val >= 0.0 && val <= (duk_double_t) DUK_SIZE_MAX) {
+		return (duk_size_t) val;
 	}
 	return 0;
 }
