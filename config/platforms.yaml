@@ -8,6 +8,10 @@ autodetect:
     check: DUK_F_APPLE
     include: platform_apple.h.in
   -
+    name: Orbis
+    check: DUK_F_ORBIS
+    include: platform_orbis.h.in
+  -
     name: OpenBSD
     check: DUK_F_OPENBSD
     include: platform_openbsd.h.in
