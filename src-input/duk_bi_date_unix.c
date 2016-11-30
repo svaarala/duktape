@@ -44,7 +44,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(duk_context *ctx) {
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */
 
-#if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R)
+#if defined(DUK_USE_DATE_TZO_GMTIME) || defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME_S)
 /* Get local time offset (in seconds) for a certain (UTC) instant 'd'. */
 DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	time_t t, t1, t2;
@@ -134,6 +134,9 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 #if defined(DUK_USE_DATE_TZO_GMTIME_R)
 	(void) gmtime_r(&t, &tms[0]);
 	(void) localtime_r(&t, &tms[1]);
+#elif defined(DUK_USE_DATE_TZO_GMTIME_S)
+	(void) gmtime_s(&t, &tms[0]);
+	(void) localtime_s(&t, &tms[1]);
 #elif defined(DUK_USE_DATE_TZO_GMTIME)
 	tm_ptr = gmtime(&t);
 	DUK_MEMCPY((void *) &tms[0], tm_ptr, sizeof(struct tm));

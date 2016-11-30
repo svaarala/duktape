@@ -31,7 +31,7 @@ DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_time(duk_context *ctx);
 #if defined(DUK_USE_DATE_NOW_WINDOWS)
 DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx);
 #endif
-#if defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME)
+#if defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME_S) || defined(DUK_USE_DATE_TZO_GMTIME)
 DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d);
 #endif
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
