@@ -1882,6 +1882,9 @@ Planned
   duk_components_to_time()) to allow C code to conveniently work with the
   same time provider as seen by Ecmascript code (GH-771)
 
+* Add duk_push_bare_object() API call which pushes an object without an
+  internal prototype, equivalent to Object.create(null) (GH-1126)
+
 * Add ability to perform an indirect debugger Eval with non-empty callstack by
   sending null for the callstack level (GH-747)
 

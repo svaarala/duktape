@@ -154,7 +154,6 @@ DUK_INTERNAL_DECL void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
 DUK_INTERNAL_DECL void duk_push_hobject_bidx(duk_context *ctx, duk_small_int_t builtin_idx);
 DUK_INTERNAL_DECL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx);
 DUK_INTERNAL_DECL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_hobject *proto);
-DUK_INTERNAL_DECL duk_idx_t duk_push_object_internal(duk_context *ctx);
 DUK_INTERNAL_DECL duk_idx_t duk_push_compiledfunction(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);
 DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk_c_function func, duk_int_t nargs);

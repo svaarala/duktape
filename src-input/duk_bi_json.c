@@ -2907,7 +2907,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	DUK_BW_INIT_PUSHBUF(thr, &js_ctx->bw, DUK__JSON_STRINGIFY_BUFSIZE);
 
-	js_ctx->idx_loop = duk_push_object_internal(ctx);
+	js_ctx->idx_loop = duk_push_bare_object(ctx);
 	DUK_ASSERT(js_ctx->idx_loop >= 0);
 
 	/* [ ... buf loop ] */

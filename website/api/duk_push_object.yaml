@@ -28,4 +28,7 @@ tags:
   - stack
   - object
 
+seealso:
+  - duk_push_bare_object
+
 introduced: 1.0.0

@@ -276,7 +276,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	enum_target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(enum_target != NULL);
 
-	duk_push_object_internal(ctx);
+	duk_push_bare_object(ctx);
 	res = duk_known_hobject(ctx, -1);
 
 	/* [enum_target res] */

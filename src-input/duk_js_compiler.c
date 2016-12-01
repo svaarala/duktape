@@ -555,7 +555,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	func->h_argnames = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 6);
 	DUK_ASSERT(func->h_argnames != NULL);
 
-	duk_push_object_internal(ctx);
+	duk_push_bare_object(ctx);
 	func->varmap_idx = entry_top + 7;
 	func->h_varmap = DUK_GET_HOBJECT_POSIDX(ctx, entry_top + 7);
 	DUK_ASSERT(func->h_varmap != NULL);
@@ -581,7 +581,7 @@ DUK_LOCAL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx) {
 	/* keep func->h_argnames; it is fixed for all passes */
 
 	/* truncated in case pass 3 needed */
-	duk_push_object_internal(ctx);
+	duk_push_bare_object(ctx);
 	duk_replace(ctx, func->varmap_idx);
 	func->h_varmap = DUK_GET_HOBJECT_POSIDX(ctx, func->varmap_idx);
 	DUK_ASSERT(func->h_varmap != NULL);

@@ -177,6 +177,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_pop_n(ctx, 0);
 	(void) duk_pop(ctx);
 	(void) duk_push_array(ctx);
+	(void) duk_push_bare_object(ctx);
 	(void) duk_push_boolean(ctx, 0);
 	(void) duk_push_buffer_object(ctx, 0, 0, 0, 0);
 	(void) duk_push_buffer(ctx, 0, 0);
