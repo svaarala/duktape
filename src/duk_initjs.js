@@ -23,8 +23,9 @@
         def(D.Logger, 'clog', new D.Logger('C'));
     }
 
-    // Tracking table for CommonJS module loading.
+    // Tracking table for CommonJS module loading.  Use a bare object to
+    // avoid Object.prototype properties being confused with module names.
     if (true) {
-        def(D, 'modLoaded', {});
+        def(D, 'modLoaded', Object.create(null));
     }
 })(this, Duktape);
