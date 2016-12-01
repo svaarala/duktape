@@ -3529,7 +3529,7 @@ DUK_LOCAL void duk__push_stash(duk_context *ctx) {
 	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE)) {
 		DUK_DDD(DUK_DDDPRINT("creating heap/global/thread stash on first use"));
 		duk_pop(ctx);
-		duk_push_object_internal(ctx);
+		duk_push_bare_object(ctx);
 		duk_dup_top(ctx);
 		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
 	}
@@ -4357,7 +4357,8 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	return ret;
 }
 
-DUK_INTERNAL duk_idx_t duk_push_object_internal(duk_context *ctx) {
+/* Push object with no prototype, i.e. a "bare" object. */
+DUK_EXTERNAL duk_idx_t duk_push_bare_object(duk_context *ctx) {
 	return duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
