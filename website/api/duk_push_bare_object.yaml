@@ -1,0 +1,28 @@
+name: duk_push_bare_object
+
+proto: |
+  duk_idx_t duk_push_bare_object(duk_context *ctx);
+
+stack: |
+  [ ... ] -> [ ... obj! ]
+
+summary: |
+  <p>Similar to <code><a href="#duk_push_object">duk_push_object()</a></code>
+  but the pushed object doesn't inherit from any other object, i.e. its internal
+  prototype is <code>null</code>.  This call is equivalent to
+  <code>Object.create(null)</code>.  Returns non-negative index (relative to
+  stack bottom) of the pushed object.</p>
+
+example: |
+  duk_idx_t obj_idx;
+
+  obj_idx = duk_push_bare_object(ctx);
+
+tags:
+  - stack
+  - object
+
+seealso:
+  - duk_push_object
+
+introduced: 2.0.0
