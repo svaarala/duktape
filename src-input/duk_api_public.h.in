@@ -773,6 +773,12 @@ DUK_EXTERNAL_DECL duk_bool_t duk_put_global_string(duk_context *ctx, const char 
 DUK_EXTERNAL_DECL duk_bool_t duk_put_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
 
 /*
+ *  Inspection
+ */
+
+DUK_EXTERNAL_DECL void duk_inspect_value(duk_context *ctx, duk_idx_t idx);
+
+/*
  *  Object prototype
  */
 

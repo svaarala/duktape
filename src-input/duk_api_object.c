@@ -107,6 +107,7 @@ DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_context *ctx, duk_idx_t obj_idx, d
 	 */
 	DUK_ASSERT((idx_key == -2 && (idx_key ^ 1) == -1) ||
 	           (idx_key == -1 && (idx_key ^ 1) == -2));
+	/* XXX: Direct access; faster validation. */
 	tv_obj = duk_require_tval(ctx, obj_idx);
 	tv_key = duk_require_tval(ctx, idx_key);
 	tv_val = duk_require_tval(ctx, idx_key ^ 1);
