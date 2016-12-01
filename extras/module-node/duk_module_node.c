@@ -288,7 +288,7 @@ void duk_module_node_init(duk_context *ctx) {
 
 	/* Initialize the require cache to a fresh object. */
 	duk_push_global_stash(ctx);
-	duk_push_object(ctx);
+	duk_push_bare_object(ctx);
 	duk_put_prop_string(ctx, -2, "\xff" "requireCache");
 	duk_pop(ctx);
 

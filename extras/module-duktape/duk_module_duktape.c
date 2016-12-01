@@ -441,7 +441,7 @@ void duk_module_duktape_init(duk_context *ctx) {
 		"var D=Object.defineProperty;"
 		"D(req,'name',{value:'require'});"
 		"D(this,'require',{value:req,writable:true,configurable:true});"
-		"D(Duktape,'modLoaded',{value:{},writable:true,configurable:true});"
+		"D(Duktape,'modLoaded',{value:Object.create(null),writable:true,configurable:true});"
 		"})");
 	duk_push_c_function(ctx, duk__require, 1 /*nargs*/);
 	duk_call(ctx, 1);
