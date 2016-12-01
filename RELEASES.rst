@@ -1926,10 +1926,12 @@ Planned
   (GH-767)
 
 * Add an extra module (extras/module-duktape) providing a Duktape 1.x
-  compatible module loading framework (Duktape.modSearch etc) (GH-821)
+  compatible module loading framework (Duktape.modSearch etc) (GH-821,
+  GH-1127)
 
 * Add an extra module (extras/module-node) providing a Node.js-like module
-  loading framework supporting require.cache, module.loaded, etc. (GH-796)
+  loading framework supporting require.cache, module.loaded, etc. (GH-796,
+  GH-1127)
 
 * Add an extra module (extras/minimal-printf) providing minimal,
   Duktape-optimized sprintf(), snprintf(), vsnprintf(), and sscanf()
