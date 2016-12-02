@@ -1184,6 +1184,37 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	}
 }
 
+/* Internal helper: create a gap of 'count' elements at 'idx_base' and return a
+ * pointer to the gap.  Values in the gap are garbage and MUST be initialized by
+ * the caller before any side effects may occur.  The caller must ensure there's
+ * enough stack reserve for 'count' values.
+ */
+DUK_INTERNAL duk_tval *duk_create_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv_src;
+	duk_tval *tv_dst;
+	duk_size_t gap_bytes;
+	duk_size_t copy_bytes;
+
+	/* Caller is responsible for ensuring there's enough preallocated
+	 * value stack.
+	 */
+	DUK_ASSERT(count >= 0);
+	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack_top) >= (duk_size_t) count);
+
+	tv_src = thr->valstack_bottom + idx_base;
+	gap_bytes = (duk_size_t) count * sizeof(duk_tval);
+	tv_dst = (duk_tval *) (void *) ((duk_uint8_t *) tv_src + gap_bytes);
+	copy_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) tv_src);
+	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_top + gap_bytes);
+	DUK_MEMMOVE((void *) tv_dst, (const void *) tv_src, copy_bytes);
+
+	/* Values in the gap are left as garbage: caller must fill them in
+	 * and INCREF them before any side effects.
+	 */
+	return tv_src;
+}
+
 /*
  *  Get/opt/require
  */
@@ -4264,7 +4295,7 @@ DUK_INTERNAL duk_hobject *duk_push_object_helper(duk_context *ctx, duk_uint_t ho
 	/* object is now reachable */
 
 	if (prototype_bidx >= 0) {
-		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[prototype_bidx]);
+		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, h, thr->builtins[prototype_bidx]);
 	} else {
 		DUK_ASSERT(prototype_bidx == -1);
 		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
@@ -4281,8 +4312,7 @@ DUK_INTERNAL duk_hobject *duk_push_object_helper_proto(duk_context *ctx, duk_uin
 
 	h = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
 	DUK_ASSERT(h != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, h, proto);
 	return h;
 }
 
@@ -4315,8 +4345,7 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
 	obj = duk_harray_alloc(thr, flags);
 	DUK_ASSERT(obj != NULL);
 
-	/* XXX: since prototype is NULL, could save a check */
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
 
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
@@ -4357,6 +4386,14 @@ DUK_INTERNAL duk_harray *duk_push_harray_with_size(duk_context *ctx, duk_uint32_
 	                          0);
 	a->length = size;
 	return a;
+}
+
+DUK_INTERNAL duk_tval *duk_push_harray_with_size_outptr(duk_context *ctx, duk_uint32_t size) {
+	duk_harray *a;
+
+	a = duk_push_harray_with_size(ctx, size);
+	DUK_ASSERT(a != NULL);
+	return DUK_HOBJECT_A_GET_BASE(((duk_hthread *) ctx)->heap, (duk_hobject *) a);
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
@@ -4404,9 +4441,8 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 		duk_hthread_copy_builtin_objects(thr, obj);
 	}
 
-	/* default prototype (Note: 'obj' must be reachable) */
-	/* XXX: since prototype is NULL, could save a check */
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
+	/* default prototype */
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
 	/* Initial stack size satisfies the stack spare constraints so there
 	 * is no need to require stack here.
@@ -4446,7 +4482,36 @@ DUK_INTERNAL duk_hcompfunc *duk_push_hcompfunc(duk_context *ctx) {
 	DUK_HOBJECT_INCREF(thr, obj);
 	thr->valstack_top++;
 
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	/* default prototype */
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) obj) == NULL);
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+
+	return obj;
+}
+
+DUK_INTERNAL duk_hboundfunc *duk_push_hboundfunc(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hboundfunc *obj;
+	duk_tval *tv_slot;
+
+	DUK__CHECK_SPACE();
+	obj = duk_hboundfunc_alloc(thr->heap,
+	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                           DUK_HOBJECT_FLAG_BOUNDFUNC |
+	                           DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
+	if (!obj) {
+		DUK_ERROR_ALLOC_FAILED(thr);
+	}
+
+	tv_slot = thr->valstack_top++;
+	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
+	DUK_HOBJECT_INCREF(thr, obj);
+
+	/* Prototype is left as NULL because the caller always sets it (and
+	 * it depends on the target function).
+	 */
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) obj) == NULL);
 
 	return obj;
 }
@@ -4488,8 +4553,8 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 	thr->valstack_top++;
 
-	/* default prototype (Note: 'obj' must be reachable) */
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	/* default prototype */
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	return ret;
 
@@ -4597,7 +4662,7 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 	obj = duk_hbufobj_alloc(thr, hobject_flags_and_class);
 	DUK_ASSERT(obj != NULL);
 
-	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
+	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
 	DUK_ASSERT_HBUFOBJ_VALID(obj);
 
 	tv_slot = thr->valstack_top;
@@ -5371,7 +5436,6 @@ DUK_EXTERNAL void duk_pop_3(duk_context *ctx) {
 /* XXX: pack index range? array index offset? */
 DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	duk_hthread *thr;
-	duk_harray *a;
 	duk_tval *tv_src;
 	duk_tval *tv_dst;
 	duk_tval *tv_curr;
@@ -5394,18 +5458,14 @@ DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) DUK_VALSTACK_DEFAULT_MAX);
 	DUK_ASSERT((duk_size_t) count <= DUK_SIZE_MAX / sizeof(duk_tval));  /* no wrapping */
 
-	a = duk_push_harray_with_size(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
-	DUK_ASSERT(a != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE((duk_hobject *) a) == (duk_uint32_t) count);
-	DUK_ASSERT(count == 0 || DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a) != NULL);
-	DUK_ASSERT((duk_idx_t) a->length == count);
+	tv_dst = duk_push_harray_with_size_outptr(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
+	DUK_ASSERT(count == 0 || tv_dst != NULL);
 
 	/* Copy value stack values directly to the array part without
 	 * any refcount updates: net refcount changes are zero.
 	 */
 
 	tv_src = thr->valstack_top - count - 1;
-	tv_dst = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
 	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, (size_t) count * sizeof(duk_tval));
 
 	/* Overwrite result array to final value stack location and wipe
@@ -5915,4 +5975,22 @@ DUK_INTERNAL void duk_push_symbol_descriptive_string(duk_context *ctx, duk_hstri
 	duk_push_lstring(ctx, (const char *) p, (duk_size_t) (q - p));
 	duk_push_string(ctx, ")");
 	duk_concat(ctx, 3);
+}
+
+/*
+ *  duk_tval slice copy
+ */
+
+DUK_INTERNAL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_size_t count) {
+	duk_tval *tv;
+
+	DUK_UNREF(thr);
+	DUK_ASSERT(count * sizeof(duk_tval) >= count);  /* no wrap */
+	DUK_MEMCPY((void *) tv_dst, (const void *) tv_src, count * sizeof(duk_tval));
+
+	tv = tv_dst;
+	while (count-- > 0) {
+		DUK_TVAL_INCREF(thr, tv);
+		tv++;
+	}
 }

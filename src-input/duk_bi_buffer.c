@@ -1263,7 +1263,6 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tostring(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_hbufobj *h_this;
-	duk_harray *h_arr;
 	duk_uint8_t *buf;
 	duk_uint_t i, n;
 	duk_tval *tv;
@@ -1286,11 +1285,9 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_BUFFER);
 	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_TYPE);
 
+	/* XXX: uninitialized would be OK */
 	DUK_ASSERT_DISABLE((duk_size_t) h_this->length <= (duk_size_t) DUK_UINT32_MAX);
-	h_arr = duk_push_harray_with_size(ctx, (duk_uint32_t) h_this->length);  /* XXX: needs revision with >4G buffers */
-	DUK_ASSERT(h_arr != NULL);
-	DUK_ASSERT(h_arr->length == h_this->length);
-	tv = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
+	tv = duk_push_harray_with_size_outptr(ctx, (duk_uint32_t) h_this->length);  /* XXX: needs revision with >4G buffers */
 
 	DUK_ASSERT(h_this->buf != NULL);
 	buf = DUK_HBUFOBJ_GET_SLICE_BASE(thr->heap, h_this);

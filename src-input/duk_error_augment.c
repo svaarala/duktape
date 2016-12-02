@@ -146,7 +146,6 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	duk_activation *act;
 	duk_small_uint_t depth;
 	duk_int_t arr_size;
-	duk_harray *a;
 	duk_tval *tv;
 	duk_hstring *s;
 	duk_uint32_t u32;
@@ -186,11 +185,10 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		arr_size += 2;
 	}
 
+	/* XXX: uninitialized would be OK */
 	DUK_D(DUK_DPRINT("preallocated _Tracedata to %ld items", (long) arr_size));
-	a = duk_push_harray_with_size(ctx, (duk_uint32_t) arr_size);  /* XXX: call which returns array part pointer directly */
-	DUK_ASSERT(a != NULL);
-	tv = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
-	DUK_ASSERT(tv != NULL || arr_size == 0);
+	tv = duk_push_harray_with_size_outptr(ctx, (duk_uint32_t) arr_size);
+	DUK_ASSERT(arr_size == 0 || tv != NULL);
 
 	/* Compiler SyntaxErrors (and other errors) come first, and are
 	 * blamed by default (not flagged "noblame").
@@ -264,8 +262,15 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		tv++;
 	}
 
-	DUK_ASSERT((duk_uint32_t) (tv - DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a)) == a->length);
-	DUK_ASSERT(a->length == (duk_uint32_t) arr_size);
+#if defined(DUK_USE_ASSERTIONS)
+	{
+		duk_harray *a;
+		a = (duk_harray *) duk_known_hobject(ctx, -1);
+		DUK_ASSERT(a != NULL);
+		DUK_ASSERT((duk_uint32_t) (tv - DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a)) == a->length);
+		DUK_ASSERT(a->length == (duk_uint32_t) arr_size);
+	}
+#endif
 
 	/* [ ... error c_filename? arr ] */
 

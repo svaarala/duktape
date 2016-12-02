@@ -72,6 +72,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc_unchecked(duk_heap *heap, duk_uint_t
 	/* different memory layout, alloc size, and init */
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_COMPFUNC) == 0);
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_NATFUNC) == 0);
+	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_BOUNDFUNC) == 0);
 
 	res = (duk_hobject *) DUK_ALLOC_ZEROED(heap, sizeof(duk_hobject));
 	if (DUK_UNLIKELY(res == NULL)) {
@@ -117,6 +118,27 @@ DUK_INTERNAL duk_hnatfunc *duk_hnatfunc_alloc(duk_hthread *thr, duk_uint_t hobje
 	res = (duk_hnatfunc *) duk__hobject_alloc_init(thr, hobject_flags, sizeof(duk_hnatfunc));
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	res->func = NULL;
+#endif
+
+	return res;
+}
+
+DUK_INTERNAL duk_hboundfunc *duk_hboundfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+	duk_hboundfunc *res;
+
+	res = (duk_hboundfunc *) DUK_ALLOC(heap, sizeof(duk_hboundfunc));
+	if (!res) {
+		return NULL;
+	}
+	DUK_MEMZERO(res, sizeof(duk_hboundfunc));
+
+	duk__init_object_parts(heap, hobject_flags, &res->obj);
+
+	DUK_TVAL_SET_UNDEFINED(&res->target);
+	DUK_TVAL_SET_UNDEFINED(&res->this_binding);
+
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
+	res->args = NULL;
 #endif
 
 	return res;
