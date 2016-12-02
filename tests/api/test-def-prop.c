@@ -207,6 +207,10 @@ my_key_1 present: 1
 my_key_1 present: 0
 final top: 1
 ==> rc=0, result='undefined'
+*** test_key_coercion (duk_safe_call)
+json result: {"123":"integer key"}
+final top: 1
+==> rc=0, result='undefined'
 ===*/
 
 static void dump_object(duk_context *ctx, duk_idx_t idx) {
@@ -1028,6 +1032,23 @@ static duk_ret_t test_force_nondeletable(duk_context *ctx, void *udata) {
 	return test_force_nondeletable_raw(ctx, 1);
 }
 
+/* In Duktape 1.x the key argument was required to be string without coercion.
+ * In Duktape 2.x the key is ToString (later, ToPropertyKey) coerced.
+ */
+static duk_ret_t test_key_coercion(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_push_object(ctx);
+	duk_push_int(ctx, 123);
+	duk_push_string(ctx, "integer key");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_SET_ENUMERABLE);
+	duk_json_encode(ctx, -1);
+	printf("json result: %s\n", duk_to_string(ctx, -1));
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	/* Behaviors matching Object.defineProperty() */
 	TEST_SAFE_CALL(test_value_only);
@@ -1072,4 +1093,7 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_force_array_smaller_nonwritablelength);
 	TEST_SAFE_CALL(test_fail_nondeletable);
 	TEST_SAFE_CALL(test_force_nondeletable);
+
+	/* Key coercion. */
+	TEST_SAFE_CALL(test_key_coercion);
 }

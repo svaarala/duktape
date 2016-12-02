@@ -1803,6 +1803,9 @@ Planned
   duk_del_prop_lstring(), duk_has_prop_lstring(), duk_get_global_lstring(),
   duk_put_global_lstring() (GH-946, GH-953)
 
+* Add a ToString (later, ToPropertyKey) coercion to duk_def_prop() key
+  argument to allow e.g. numbers to be used in the key slot (GH-836, GH-1130)
+
 * Add duk_get_prop_desc() API call which pushes a property descriptor object
   for a target object and key, similar to Object.getOwnPropertyDescriptor()
   (GH-1087)

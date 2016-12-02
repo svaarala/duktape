@@ -1032,6 +1032,10 @@ Other incompatible changes
   other API calls.  A NULL pointer not causes memory unsafe behavior, as with
   all other API calls.
 
+* ``duk_def_prop()`` now ToString() coerces its argument rather than requiring
+  the key to be a string.  This allows e.g. numbers to be used as property
+  keys.
+
 * ``duk_char_code_at()`` and ``String.charCodeAt()`` now return 0xFFFD (Unicode
   replacement character) if the string cannot be decoded as extended UTF-8,
   previously an error was thrown.  This situation never occurs for standard
