@@ -438,7 +438,8 @@ DUK_EXTERNAL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t f
 	} else {
 		idx_value = (duk_idx_t) -1;
 	}
-	key = duk_require_hstring(ctx, idx_base);
+	key = duk_to_hstring(ctx, idx_base);  /* XXX: later should accept symbols */
+	DUK_ASSERT(key != NULL);
 
 	duk_require_valid_index(ctx, idx_base);
 
