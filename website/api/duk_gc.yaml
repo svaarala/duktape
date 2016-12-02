@@ -5,8 +5,13 @@ proto: |
 
 summary: |
   <p>Force a mark-and-sweep garbage collection round.  If mark-and-sweep is
-  disabled in the Duktape build, the call is a no-op.  The flags field is a
-  placeholder; no flags are defined at the moment.</p>
+  disabled in the Duktape build, the call is a no-op.</p>
+
+  <p>The following flags are defined:</p>
+  <table>
+  <tr><th>Define</th><th>Description</th></tr>
+  <tr><td>DUK_GC_COMPACT</td><td>Force object property table compaction</td></tr>
+  </table>
 
   <p>You may want to call this function twice to ensure even objects with
   finalizers are collected.  Currently it takes two mark-and-sweep rounds

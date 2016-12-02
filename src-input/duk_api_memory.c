@@ -79,22 +79,19 @@ DUK_EXTERNAL void duk_get_memory_functions(duk_context *ctx, duk_memory_function
 }
 
 DUK_EXTERNAL void duk_gc(duk_context *ctx, duk_uint_t flags) {
-#ifdef DUK_USE_MARK_AND_SWEEP
+#if defined(DUK_USE_MARK_AND_SWEEP)
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_heap *heap;
+	duk_small_uint_t ms_flags;
 
-	DUK_UNREF(flags);
-
-	/* NULL accepted */
-	if (!ctx) {
-		return;
-	}
 	DUK_ASSERT_CTX_VALID(ctx);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 
 	DUK_D(DUK_DPRINT("mark-and-sweep requested by application"));
-	duk_heap_mark_and_sweep(heap, 0);
+	DUK_ASSERT(DUK_GC_COMPACT == DUK_MS_FLAG_EMERGENCY);  /* Compact flag is 1:1 with emergency flag which forces compaction. */
+	ms_flags = (duk_small_uint_t) flags;
+	duk_heap_mark_and_sweep(heap, ms_flags);
 #else
 	DUK_D(DUK_DPRINT("mark-and-sweep requested by application but mark-and-sweep not enabled, ignoring"));
 	DUK_UNREF(ctx);
