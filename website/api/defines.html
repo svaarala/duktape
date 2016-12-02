@@ -2,7 +2,9 @@
 
 <p>This section summarizes some commonly needed header definitions in
 <code>duktape.h</code>.  It is not exhaustive and the excerpts have been
-reorganized for readability; when in doubt, consult the header directly.</p>
+reorganized for readability.  Don't rely on the specific define values
+shown below for e.g. flags fields.  When in doubt, consult the header
+directly.</p>
 
 <h2>Duktape version</h2>
 
@@ -165,17 +167,6 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <pre class="c-code">
 /* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 &lt;&lt; 0)    /* create a new global environment */
-</pre>
-
-<h2>Log levels</h2>
-<pre class="c-code">
-/* Log levels */
-#define  DUK_LOG_TRACE                    0
-#define  DUK_LOG_DEBUG                    1
-#define  DUK_LOG_INFO                     2
-#define  DUK_LOG_WARN                     3
-#define  DUK_LOG_ERROR                    4
-#define  DUK_LOG_FATAL                    5
 </pre>
 
 <h2>Misc defines</h2>
