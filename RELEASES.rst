@@ -1782,6 +1782,9 @@ Planned
   [[DefaultValue]] specification algorithm removed in ES6 (it was folded
   to ToPrimitive()), use duk_to_primitive() instead (GH-984)
 
+* Incompatible change: duk_gc() no longer allows a NULL context pointer
+  for consistency with other API calls (GH-1129)
+
 * Add support for dropping built-in bindings entirely when they are disabled
   in configuration, e.g. the Proxy and buffer object bindings will be absent
   instead of being replaced by functions throwing an error; this is more
@@ -1884,6 +1887,9 @@ Planned
 
 * Add duk_push_bare_object() API call which pushes an object without an
   internal prototype, equivalent to Object.create(null) (GH-1126)
+
+* Add DUK_GC_COMPACT flag to duk_gc() to force object property table
+  compaction (GH-778, GH-1129)
 
 * Add ability to perform an indirect debugger Eval with non-empty callstack by
   sending null for the callstack level (GH-747)
