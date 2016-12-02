@@ -182,3 +182,49 @@ DUK_EXTERNAL void duk_inspect_value(duk_context *ctx, duk_idx_t idx) {
 	    "bcbytes" "\x00" "dbytes" "\x00" "tstate" "\x00" "variant" "\x00" "\x00",
 	    (duk_int_t *) &vals);
 }
+
+DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_activation *act;
+	duk_uint_fast32_t pc;
+	duk_uint_fast32_t line;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* -1             = top callstack entry, callstack[callstack_top - 1]
+	 * -callstack_top = bottom callstack entry, callstack[0]
+	 */
+	if (level >= 0 || -level > (duk_int_t) thr->callstack_top) {
+		duk_push_undefined(ctx);
+		return;
+	}
+	duk_push_bare_object(ctx);
+	DUK_ASSERT(level >= -((duk_int_t) thr->callstack_top) && level <= -1);
+
+	act = thr->callstack + thr->callstack_top + level;
+	/* Relevant PC is just before current one because PC is
+	 * post-incremented.  This should match what error augment
+	 * code does.
+	 */
+	pc = duk_hthread_get_act_prev_pc(thr, act);
+
+	duk_push_tval(ctx, &act->tv_func);
+
+	duk_push_uint(ctx, (duk_uint_t) pc);
+	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_PC);
+
+#if defined(DUK_USE_PC2LINE)
+	line = duk_hobject_pc2line_query(ctx, -1, pc);
+#else
+	line = 0;
+#endif
+	duk_push_uint(ctx, (duk_uint_t) line);
+	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_LINE_NUMBER);
+
+	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_LC_FUNCTION);
+	/* Providing access to e.g. act->lex_env would be dangerous: these
+	 * internal structures must never be accessible to the application.
+	 * Duktape relies on them having consistent data, and this consistency
+	 * is only asserted for, not checked for.
+	 */
+}
