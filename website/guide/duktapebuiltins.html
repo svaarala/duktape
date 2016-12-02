@@ -562,10 +562,11 @@ ordinary function and as a constructor.  The behavior is the same in both
 cases:</p>
 <ul>
 <li>The first argument is checked to be a function (if not, a <code>TypeError</code>
-    is thrown).  The return value is a new thread whose initial function is
-    recorded to be the argument function (this function will start executing
-    when the new thread is first resumed).  The internal prototype of the
-    newly created Thread will be the <code>Duktape.Thread.prototype</code> object.</li>
+    is thrown).  The function must be an Ecmascript function (bound or non-bound).
+    The return value is a new thread whose initial function is recorded to be the
+    argument function (this function will start executing when the new thread is
+    first resumed).  The internal prototype of the newly created Thread will be the
+    <code>Duktape.Thread.prototype</code> object.</li>
 </ul>
 
 <h2>Duktape.Thread.prototype</h2>
