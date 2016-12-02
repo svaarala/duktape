@@ -216,6 +216,9 @@ struct duk_time_components {
 /* Flags for duk_push_thread_raw() */
 #define DUK_THREAD_NEW_GLOBAL_ENV         (1 << 0)    /* create a new global environment */
 
+/* Flags for duk_gc() */
+#define DUK_GC_COMPACT                    (1 << 0)    /* compact heap objects */
+
 /* Error codes (must be 8 bits at most, see duk_error.h) */
 #define DUK_ERR_NONE                      0    /* no error (e.g. from duk_get_error_code()) */
 #define DUK_ERR_ERROR                     1    /* Error */
