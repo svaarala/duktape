@@ -13,6 +13,10 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 	duk_hthread *new_thr;
 	duk_hobject *func;
 
+	/* Check that the argument is callable; this is not 100% because we
+	 * don't allow native functions to be a thread's initial function.
+	 * Resume will reject such functions in any case.
+	 */
 	/* XXX: need a duk_require_func_promote_lfunc() */
 	func = duk_require_hobject_promote_lfunc(ctx, 0);
 	DUK_ASSERT(func != NULL);
@@ -50,8 +54,6 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_constructor(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hthread *thr_resume;
-	duk_tval *tv;
-	duk_hobject *func;
 	duk_hobject *caller_func;
 	duk_small_int_t is_error;
 
@@ -107,26 +109,27 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 		 * tip-top shape (longjmp handler will assert for these).
 		 */
 	} else {
+		duk_hobject *h_fun;
+
 		DUK_ASSERT(thr_resume->state == DUK_HTHREAD_STATE_INACTIVE);
 
+		/* The initial function must be an Ecmascript function (but
+		 * can be bound).  We must make sure of that before we longjmp
+		 * because an error in the RESUME handler call processing will
+		 * not be handled very cleanly.
+		 */
 		if ((thr_resume->callstack_top != 0) ||
 		    (thr_resume->valstack_top - thr_resume->valstack != 1)) {
-			goto state_invalid_initial;
-		}
-		tv = &thr_resume->valstack_top[-1];
-		DUK_ASSERT(tv >= thr_resume->valstack && tv < thr_resume->valstack_top);
-		if (!DUK_TVAL_IS_OBJECT(tv)) {
-			goto state_invalid_initial;
-		}
-		func = DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(func != NULL);
-		if (!DUK_HOBJECT_IS_COMPFUNC(func)) {
-			/* Note: cannot be a bound function either right now,
-			 * this would be easy to relax though.
-			 */
-			goto state_invalid_initial;
+			goto state_error;
 		}
 
+		duk_push_tval(ctx, DUK_GET_TVAL_NEGIDX((duk_context *) thr_resume, -1));
+		duk_resolve_nonbound_function(ctx);
+		h_fun = duk_require_hobject(ctx, -1);  /* reject lightfuncs on purpose */
+		if (!DUK_HOBJECT_IS_CALLABLE(h_fun) || !DUK_HOBJECT_IS_COMPFUNC(h_fun)) {
+			goto state_error;
+		}
+		duk_pop(ctx);
 	}
 
 	/*
@@ -177,13 +180,8 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
 	return 0;  /* never here */
 
- state_invalid_initial:
-	DUK_ERROR_TYPE(thr, "invalid initial thread state/stack");
-	return 0;  /* never here */
-
  state_error:
-	DUK_ERROR_TYPE(thr, "invalid state");
-	return 0;  /* never here */
+	DUK_DCERROR_TYPE_INVALID_STATE(thr);
 }
 #endif
 
@@ -297,8 +295,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	return 0;  /* never here */
 
  state_error:
-	DUK_ERROR_TYPE(thr, "invalid state");
-	return 0;  /* never here */
+	DUK_DCERROR_TYPE_INVALID_STATE(thr);
 }
 #endif
 

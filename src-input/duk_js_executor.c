@@ -1095,8 +1095,6 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1) != NULL &&
 		           DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1)) &&
 		           ((duk_hnatfunc *) DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 1))->func == duk_bi_thread_resume);
-		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2) != NULL &&
-		           DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack + thr->callstack_top - 2)));      /* an Ecmascript function */
 		DUK_ASSERT_DISABLE((thr->callstack + thr->callstack_top - 2)->idx_retval >= 0);                              /* unsigned */
 
 		tv = &thr->heap->lj.value2;  /* resumee */
@@ -1115,9 +1113,6 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		           (DUK_ACT_GET_FUNC(resumee->callstack + resumee->callstack_top - 1) != NULL &&
 		            DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(resumee->callstack + resumee->callstack_top - 1)) &&
 		            ((duk_hnatfunc *) DUK_ACT_GET_FUNC(resumee->callstack + resumee->callstack_top - 1))->func == duk_bi_thread_yield));
-		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
-		           (DUK_ACT_GET_FUNC(resumee->callstack + resumee->callstack_top - 2) != NULL &&
-		            DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(resumee->callstack + resumee->callstack_top - 2))));      /* an Ecmascript function */
 		DUK_ASSERT_DISABLE(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
 		           (resumee->callstack + resumee->callstack_top - 2)->idx_retval >= 0);                              /* idx_retval unsigned */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
@@ -1196,7 +1191,11 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			                                      1,              /* num_stack_args */
 			                                      call_flags);    /* call_flags */
 			if (setup_rc == 0) {
-				/* Shouldn't happen but check anyway. */
+				/* This shouldn't happen; Duktape.Thread.resume()
+				 * should make sure of that.  If it does happen
+				 * this internal error will propagate out of the
+				 * executor which can be quite misleading.
+				 */
 				DUK_ERROR_INTERNAL(thr);
 			}
 
