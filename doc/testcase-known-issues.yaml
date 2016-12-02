@@ -57,10 +57,6 @@
   knownissue: "'\\u0000' should ToNumber() coerce to NaN, but now coerces to zero like an empty string"
   # Moved
 -
-  test: "test-dev-bound-thread-start-func.js"
-  knownissue: "initial function of a new coroutine cannot be bound"
-  # Moved
--
   test: "test-dev-func-cons-args.js"
   knownissue: "corner cases for 'new Function()' when arguments and code are given as strings"
   # Moved
