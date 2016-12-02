@@ -42,5 +42,5 @@ try {
     print('bound');
     boundTest();
 } catch (e) {
-    print(e);  // don't print stack to keep testcase stable with current issue
+    print(e.stack || e);
 }
