@@ -155,6 +155,12 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 #define DUK_ENUM_NO_PROXY_BEHAVIOR        (1 &lt;&lt; 5)    /* enumerate a proxy object itself without invoking proxy behavior */
 </pre>
 
+<h2>Garbage collection flags for duk_gc()</h2>
+<pre class="c-code">
+/* Flags for duk_gc() */
+#define DUK_GC_COMPACT                    (1 &lt;&lt; 0)    /* compact heap objects */
+</pre>
+
 <h2>Coercion hints</h2>
 <pre class="c-code">
 /* Coercion hints */
