@@ -625,12 +625,11 @@ DUK_EXTERNAL void duk_get_prototype(duk_context *ctx, duk_idx_t idx) {
 	obj = duk_require_hobject(ctx, idx);
 	DUK_ASSERT(obj != NULL);
 
-	/* XXX: shared helper for duk_push_hobject_or_undefined()? */
 	proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, obj);
 	if (proto) {
 		duk_push_hobject(ctx, proto);
 	} else {
-		duk_push_undefined(ctx);
+		duk_push_null(ctx);
 	}
 }
 
@@ -643,7 +642,8 @@ DUK_EXTERNAL void duk_set_prototype(duk_context *ctx, duk_idx_t idx) {
 
 	obj = duk_require_hobject(ctx, idx);
 	DUK_ASSERT(obj != NULL);
-	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_UNDEFINED |
+	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_UNDEFINED |  /* FIXME: don't accept undefined anymore? */
+	                               DUK_TYPE_MASK_NULL |
 	                               DUK_TYPE_MASK_OBJECT);
 	proto = duk_get_hobject(ctx, -1);
 	/* proto can also be NULL here (allowed explicitly) */
