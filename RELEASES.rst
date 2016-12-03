@@ -2008,6 +2008,11 @@ Planned
 
 * Add an fmod() self test (GH-1108)
 
+* Fix duk_hcompfunc 'data' field != NULL assumptions which might lead to
+  memory unsafe behavior if Duktape ran out of memory when creating a
+  duk_hcompfunc during compilation or function instantiation (GH-1144,
+  GH-1132)
+
 * Fix a few bugs in object property handling (delete property and
   Object.defineProperty()) where an object property table resize triggered
   by a finalizer of a previous value could cause memory unsafe behavior
@@ -2117,7 +2122,7 @@ Planned
   GH-973, GH-1042); minor RegExp compile/execute optimizations (GH-974,
   GH-1033); minor IEEE double handling optimizations (GH-1051); precomputed
   duk_hstring array index (GH-1056); duk_get_{type,type_mask}() optimization
-  (GH-1077)
+  (GH-1077); explicit lexenv/varenv fields in duk_hcompfunc struct (GH-1132)
 
 * Miscellaneous footprint improvements: RegExp compiler/executor (GH-977);
   internal duk_dup() variants (GH-990); allow stripping of (almost) all
@@ -2125,7 +2130,8 @@ Planned
   helper and use duk_def_prop() instead (GH-1010); minor IEEE double handling
   optimizations (GH-1051); precomputed duk_hstring array index (GH-1056);
   internal value stack access improvements (GH-1058); shared bitpacked string
-  format for heap and thread initialization data (GH-1119)
+  format for heap and thread initialization data (GH-1119); explicit
+  lexenv/varenv fields in duk_hcompfunc struct (GH-1132)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
