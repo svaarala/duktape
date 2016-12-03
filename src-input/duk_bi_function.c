@@ -95,24 +95,26 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 
 	/*
 	 *  E5 Section 15.3.4.2 places few requirements on the output of
-	 *  this function:
+	 *  this function: the result is implementation dependent, must
+	 *  follow FunctionDeclaration syntax (in particular, must have a
+	 *  name even for anonymous functions or functions with empty name).
+	 *  The output does NOT need to compile into anything useful.
 	 *
-	 *    - The result is an implementation dependent representation
-	 *      of the function; in particular
+	 *  E6 Section 19.2.3.5 changes the requirements completely: the
+	 *  result must either eval() to a functionally equivalent object
+	 *  OR eval() to a SyntaxError.
 	 *
-	 *    - The result must follow the syntax of a FunctionDeclaration.
-	 *      In particular, the function must have a name (even in the
-	 *      case of an anonymous function or a function with an empty
-	 *      name).
+	 *  We opt for the SyntaxError approach for now, with a syntax that
+	 *  mimics V8's native function syntax:
 	 *
-	 *    - Note in particular that the output does NOT need to compile
-	 *      into anything useful.
+	 *      'function cos() { [native code] }'
+	 *
+	 *  but extended with [ecmascript code], [bound code], and
+	 *  [lightfunc code].
 	 */
 
-
-	/* XXX: faster internal way to get this */
 	duk_push_this(ctx);
-	tv = duk_get_tval(ctx, -1);
+	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	DUK_ASSERT(tv != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -120,10 +122,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 		const char *func_name;
 
 		/* Function name: missing/undefined is mapped to empty string,
-		 * otherwise coerce to string.
-		 */
-		/* XXX: currently no handling for non-allowed identifier characters,
-		 * e.g. a '{' in the function name.
+		 * otherwise coerce to string.  No handling for invalid identifier
+		 * characters or e.g. '{' in the function name.  This doesn't
+		 * really matter as long as a SyntaxError results.  Technically
+		 * if the name contained a suitable prefix followed by '//' it
+		 * might cause the result to parse without error.
 		 */
 		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);
 		if (duk_is_undefined(ctx, -1)) {
@@ -133,15 +136,12 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 			DUK_ASSERT(func_name != NULL);
 		}
 
-		/* Indicate function type in the function body using a dummy
-		 * directive.
-		 */
 		if (DUK_HOBJECT_IS_COMPFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() {\"ecmascript\"}", (const char *) func_name);
+			duk_push_sprintf(ctx, "function %s() { [ecmascript code] }", (const char *) func_name);
 		} else if (DUK_HOBJECT_IS_NATFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() {\"native\"}", (const char *) func_name);
+			duk_push_sprintf(ctx, "function %s() { [native code] }", (const char *) func_name);
 		} else if (DUK_HOBJECT_IS_BOUNDFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() {\"bound\"}", (const char *) func_name);
+			duk_push_sprintf(ctx, "function %s() { [bound code] }", (const char *) func_name);
 		} else {
 			goto type_error;
 		}

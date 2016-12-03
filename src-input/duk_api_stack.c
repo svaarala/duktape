@@ -4843,7 +4843,7 @@ DUK_INTERNAL void duk_push_lightfunc_tostring(duk_context *ctx, duk_tval *tv) {
 
 	duk_push_string(ctx, "function ");
 	duk_push_lightfunc_name_raw(ctx, func, lf_flags);
-	duk_push_string(ctx, "() {\"light\"}");
+	duk_push_string(ctx, "() { [lightfunc code] }");
 	duk_concat(ctx, 3);
 }
 
