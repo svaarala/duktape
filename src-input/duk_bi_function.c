@@ -302,6 +302,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
  * merges argument lists etc here.
  */
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_bound;
 	duk_hobject *h_target;
 	duk_idx_t nargs;
@@ -349,8 +350,15 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
-	/* bound function 'length' property is interesting */
 	h_target = duk_get_hobject(ctx, -2);
+
+	/* internal prototype must be copied from the target */
+	if (h_target != NULL) {
+		/* For lightfuncs Function.prototype is used and is already in place. */
+		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h_bound, DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_target));
+	}
+
+	/* bound function 'length' property is interesting */
 	if (h_target == NULL ||  /* lightfunc */
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
 		/* For lightfuncs, simply read the virtual property. */
