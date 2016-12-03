@@ -2433,6 +2433,10 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | (not present yet)               | ``duk_hcompfunc``         | Ecmascript function data area, including bytecode.      |
 +---------------------------------+---------------------------+---------------------------------------------------------+
+| ``lex_env``                     | ``duk_hcompfunc``         | Function lexical environment.                           |
++---------------------------------+---------------------------+---------------------------------------------------------+
+| ``var_env``                     | ``duk_hcompfunc``         | Function variable environment.                          |
++---------------------------------+---------------------------+---------------------------------------------------------+
 | ``nregs``                       | ``duk_hcompfunc``         | Number of bytecode executor registers.                  |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``nargs``                       | ``duk_hcompfunc``         | Number of stack arguments.                              |

@@ -251,21 +251,6 @@ user documentation for the exposed parts):
 +---------------+---------------------------------------------------------+
 | ``fileName``  | See function templates.                                 |
 +---------------+---------------------------------------------------------+
-| ``_Lexenv``   | Together with DUK_HOBJECT_FLAG_NEWENV, controls the     |
-|               | initialization of variable/lexical environment when a   |
-|               | function call occurs.                                   |
-|               |                                                         |
-|               | The DUK_HOBJECT_FLAG_NEWENV is set for ordinary         |
-|               | functions, which always get a new environment record    |
-|               | when they are called.  The flag is cleared for global   |
-|               | code and eval code, which "share" an existing           |
-|               | environment record.                                     |
-|               |                                                         |
-|               | If _Varenv is missing, it defaults to _Lexenv (which is |
-|               | very often the case).                                   |
-+---------------+---------------------------------------------------------+
-| ``_Varenv``   | See ``_Lexenv``.                                        |
-+---------------+---------------------------------------------------------+
 | ``_Varmap``   | See function templates.                                 |
 +---------------+---------------------------------------------------------+
 | ``_Formals``  | See function templates.                                 |
