@@ -1996,6 +1996,10 @@ Planned
   for a target function with name "foo", bound function name is "bound foo"
   (GH-1113)
 
+* Change bound function internal prototype handling to match ES6 requirements;
+  bound function internal prototype is copied from the target function
+  instead of always being Function.prototype (GH-1135)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor
