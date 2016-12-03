@@ -337,24 +337,22 @@ void duk_js_push_closure(duk_hthread *thr,
 	/*
 	 *  "length" maps to number of formals (E5 Section 13.2) for function
 	 *  declarations/expressions (non-bound functions).  Note that 'nargs'
-	 *  is NOT necessarily equal to the number of arguments.
+	 *  is NOT necessarily equal to the number of arguments.  Use length
+	 *  of _Formals; if missing, assume nargs matches .length.
 	 */
 
 	/* [ ... closure template ] */
 
-	len_value = 0;
-
-	/* XXX: use helper for size optimization */
-	if (duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS)) {
+	/* XXX: these lookups should be just own property lookups instead of
+	 * looking up the inheritance chain.
+	 */
+	if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FORMALS)) {
 		/* [ ... closure template formals ] */
-		DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH));
-		DUK_ASSERT(duk_get_length(ctx, -1) <= DUK_UINT_MAX);  /* formal arg limits */
 		len_value = (duk_uint_t) duk_get_length(ctx, -1);  /* could access duk_harray directly, not important */
+		DUK_DD(DUK_DDPRINT("closure length from _Formals -> %ld", (long) len_value));
 	} else {
-		/* XXX: what to do if _Formals is not empty but compiler has
-		 * optimized it away -- read length from an explicit property
-		 * then?
-		 */
+		len_value = fun_temp->nargs;
+		DUK_DD(DUK_DDPRINT("closure length defaulted from nargs -> %ld", (long) len_value));
 	}
 	duk_pop(ctx);
 

@@ -658,6 +658,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	duk_instr_t *p_instr;
 	duk_compiler_instr *q_instr;
 	duk_tval *tv;
+	duk_bool_t keep_varmap;
+	duk_bool_t keep_formals;
 
 	DUK_DDD(DUK_DDDPRINT("converting duk_compiler_func to function/template"));
 
@@ -792,6 +794,25 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	duk_pop(ctx);  /* 'data' (and everything in it) is reachable through h_res now */
 
 	/*
+	 *  Init non-property result fields
+	 *
+	 *  'nregs' controls how large a register frame is allocated.
+	 *
+	 *  'nargs' controls how many formal arguments are written to registers:
+	 *  r0, ... r(nargs-1).  The remaining registers are initialized to
+	 *  undefined.
+	 */
+
+	DUK_ASSERT(func->temp_max >= 0);
+	h_res->nregs = (duk_uint16_t) func->temp_max;
+	h_res->nargs = (duk_uint16_t) duk_hobject_get_length(thr, func->h_argnames);
+	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	h_res->start_line = (duk_uint32_t) func->min_line;
+	h_res->end_line = (duk_uint32_t) func->max_line;
+#endif
+
+	/*
 	 *  Init object properties
 	 *
 	 *  Properties should be added in decreasing order of access frequency.
@@ -807,14 +828,20 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	 * after a cleanup.  When debugging is enabled, we always need the varmap to
 	 * be able to lookup variables at any point.
 	 */
+
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	if (1) {
+	DUK_DD(DUK_DDPRINT("keeping _Varmap because debugger support is enabled"));
+	keep_varmap = 1;
 #else
-	if (func->id_access_slow ||     /* directly uses slow accesses */
-	    func->may_direct_eval ||    /* may indirectly slow access through a direct eval */
-	    funcs_count > 0) {          /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
+	keep_varmap =
+	    func->id_access_slow ||   /* directly uses slow accesses */
+	    func->may_direct_eval ||  /* may indirectly slow access through a direct eval */
+	    funcs_count > 0;          /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
 #endif
+
+	if (keep_varmap) {
 		duk_int_t num_used;
+		DUK_DD(DUK_DDPRINT("keeping _Varmap"));
 		duk_dup(ctx, func->varmap_idx);
 		num_used = duk__cleanup_varmap(comp_ctx);
 		DUK_DDD(DUK_DDDPRINT("cleaned up varmap: %!T (num_used=%ld)",
@@ -823,20 +850,35 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		if (num_used > 0) {
 			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 		} else {
-			DUK_DDD(DUK_DDDPRINT("varmap is empty after cleanup -> no need to add"));
+			DUK_DD(DUK_DDPRINT("varmap is empty after cleanup -> no need to add"));
 			duk_pop(ctx);
 		}
 	}
 
-	/* _Formals: omitted if function is guaranteed not to need a (non-strict) arguments object */
-	if (1) {
-		/* XXX: Add a proper condition.  If formals list is omitted, recheck
-		 * handling for 'length' in duk_js_push_closure(); it currently relies
-		 * on _Formals being set.  Removal may need to be conditional to debugging
-		 * being enabled/disabled too.
-		 */
+	/* _Formals: omitted if function is guaranteed not to need a (non-strict)
+	 * arguments object, and _Formals.length matches nargs exactly.
+	 *
+	 * Non-arrow functions can't see an outer function's 'argument' binding
+	 * (because they have their own), but arrow functions can.  When arrow
+	 * functions are added, this condition would need to be added:
+	 *     inner_arrow_funcs_count > 0   inner arrow functions may access 'arguments'
+	 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	DUK_DD(DUK_DDPRINT("keeping _Formals because debugger support is enabled"));
+	keep_formals = 1;
+#else
+	keep_formals =
+	    func->id_access_arguments ||   /* accesses 'arguments', main reason to keep, could check strictness too */
+	    func->may_direct_eval ||       /* direct eval -> may access 'arguments' via eval */
+	    duk_get_length(ctx, func->argnames_idx) != (duk_size_t) h_res->nargs;  /* nargs not enough for closure .length */
+#endif
+
+	if (keep_formals) {
+		DUK_DD(DUK_DDPRINT("keeping _Formals"));
 		duk_dup(ctx, func->argnames_idx);
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+	} else {
+		DUK_DD(DUK_DDPRINT("omitting _Formals, nargs matches _Formals.length, so no properties added"));
 	}
 
 	/* name */
@@ -919,25 +961,6 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		duk_push_hstring(ctx, comp_ctx->h_filename);
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
-
-	/*
-	 *  Init remaining result fields
-	 *
-	 *  'nregs' controls how large a register frame is allocated.
-	 *
-	 *  'nargs' controls how many formal arguments are written to registers:
-	 *  r0, ... r(nargs-1).  The remaining registers are initialized to
-	 *  undefined.
-	 */
-
-	DUK_ASSERT(func->temp_max >= 0);
-	h_res->nregs = (duk_uint16_t) func->temp_max;
-	h_res->nargs = (duk_uint16_t) duk_hobject_get_length(thr, func->h_argnames);
-	DUK_ASSERT(h_res->nregs >= h_res->nargs);  /* pass2 allocation handles this */
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
-	h_res->start_line = (duk_uint32_t) func->min_line;
-	h_res->end_line = (duk_uint32_t) func->max_line;
-#endif
 
 	DUK_DD(DUK_DDPRINT("converted function: %!ixT",
 	                   (duk_tval *) duk_get_tval(ctx, -1)));
