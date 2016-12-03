@@ -1058,6 +1058,10 @@ Other incompatible changes
   "enumerate" trap has been obsoleted.  Key enumerability is also now checked
   when "ownKeys" trap is used in Object.keys() and for-in.
 
+* Bound function internal prototype is copied from the target function to match
+  ES6 requirements; in ES5 (and Duktape 1.x) bound function internal prototype
+  is always set to Function.prototype.
+
 Known issues
 ============
 
