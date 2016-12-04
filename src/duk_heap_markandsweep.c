@@ -80,18 +80,23 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 		duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(heap, f));
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(heap, f);
-		while (tv < tv_end) {
-			duk__mark_tval(heap, tv);
-			tv++;
-		}
+		if (DUK_HCOMPILEDFUNCTION_GET_DATA(heap, f) != NULL) {
+			tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(heap, f);
+			tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(heap, f);
+			while (tv < tv_end) {
+				duk__mark_tval(heap, tv);
+				tv++;
+			}
 
-		fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
-		fn_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
-		while (fn < fn_end) {
-			duk__mark_heaphdr(heap, (duk_heaphdr *) *fn);
-			fn++;
+			fn = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(heap, f);
+			fn_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(heap, f);
+			while (fn < fn_end) {
+				duk__mark_heaphdr(heap, (duk_heaphdr *) *fn);
+				fn++;
+			}
+		} else {
+			/* May happen in some out-of-memory corner cases. */
+			DUK_D(DUK_DPRINT("duk_hcompiledfunction 'data' is NULL, skipping marking"));
 		}
 	} else if (DUK_HOBJECT_IS_NATIVEFUNCTION(h)) {
 		duk_hnativefunction *f = (duk_hnativefunction *) h;

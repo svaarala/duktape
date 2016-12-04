@@ -89,20 +89,23 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		DUK_ASSERT(DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
+		if (DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f) != NULL) {
+			tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
+			tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
+			while (tv < tv_end) {
+				duk_tval_decref(thr, tv);
+				tv++;
+			}
 
-		tv = DUK_HCOMPILEDFUNCTION_GET_CONSTS_BASE(thr->heap, f);
-		tv_end = DUK_HCOMPILEDFUNCTION_GET_CONSTS_END(thr->heap, f);
-		while (tv < tv_end) {
-			duk_tval_decref(thr, tv);
-			tv++;
-		}
-
-		funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
-		funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
-		while (funcs < funcs_end) {
-			duk_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
-			funcs++;
+			funcs = DUK_HCOMPILEDFUNCTION_GET_FUNCS_BASE(thr->heap, f);
+			funcs_end = DUK_HCOMPILEDFUNCTION_GET_FUNCS_END(thr->heap, f);
+			while (funcs < funcs_end) {
+				duk_heaphdr_decref(thr, (duk_heaphdr *) *funcs);
+				funcs++;
+			}
+		} else {
+			/* May happen in some out-of-memory corner cases. */
+			DUK_D(DUK_DPRINT("duk_hcompiledfunction 'data' is NULL, skipping decref"));
 		}
 
 		duk_heaphdr_decref(thr, (duk_heaphdr *) DUK_HCOMPILEDFUNCTION_GET_DATA(thr->heap, f));
