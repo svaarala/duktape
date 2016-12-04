@@ -11,9 +11,7 @@ var isMixedDouble;
 // Detect plain buffer, in Duktape 2.x plain buffers mimic ArrayBuffer so check
 // indirectly via the API type tag.
 function isPlainBuffer(x) {
-    var tag;
-    tag = Duktape.info(x)[0];  // api tag, 7=plain buffer, 6=object
-    return tag === 7;
+    return Duktape.info(x).type === 7;  // api tag, 7=plain buffer, 6=object
 }
 
 // Create a plain buffer, (a) of a specified size, (b) copying a string's
@@ -268,10 +266,6 @@ function stringToBuffer(str) {
     // Node.js Buffer constructor currently uses string bytes 1:1.
     // Return an ArrayBuffer for now.
     return new Uint8Array(new Buffer(str)).buffer;
-}
-
-function isPlainBuffer(x) {
-    return Duktape.info(x)[0] === 7;   // tag 7: plain buffer
 }
 
 function printableNodejsBuffer(buf) {

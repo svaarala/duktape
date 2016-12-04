@@ -18,6 +18,8 @@
  *      4294967295
  */
 
+/*@include util-object.js@*/
+
 /*---
 {
     "custom": true,
@@ -83,21 +85,18 @@ function printFastint(v) {
         else { prefix = '-'; }
     }
 
-    // Duktape.info() for a non-heap-allocated type has public type tag
-    // followed by internal type tag.  The internal type tag depends on
-    // the duk_tval unpacked/packed layout.  This is pretty fragile but
-    // useful for this testcase.
+    // The internal type tag depends on the duk_tval unpacked/packed layout.
 
     if (typeof Duktape !== 'object') {
         isfast = ' NOT-DUKTAPE';
-    } else if (Duktape.info(true)[1] >= 0xfff0) {
+    } else if (getValueInternalTag(true) >= 0xfff0) {
         // packed duk_tval
-        if (Duktape.info(v)[1] === 0xfff1) {
+        if (getValueInternalTag(v) === 0xfff1) {
             isfast = ' fastint';
         }
-    } else if (Duktape.info(true)[1] === 4) {
+    } else if (getValueInternalTag(true) === 4) {
         // non-packed duk_tval
-        if (Duktape.info(v)[1] === 1) {
+        if (getValueInternalTag(v) === 1) {
             isfast = ' fastint';
         }
     } else {

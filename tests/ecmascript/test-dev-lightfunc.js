@@ -16,6 +16,7 @@
 
 /*@include util-buffer.js@*/
 /*@include util-string.js@*/
+/*@include util-object.js@*/
 
 /*---
 {
@@ -68,7 +69,7 @@ function sanitizeLfunc(x) {
 }
 
 function isLightFunc(x) {
-    return Duktape.info(x)[0] == 9;  // tag
+    return valueIsLightFunc(x);
 }
 
 function printTypedJx(v, name) {
@@ -89,24 +90,11 @@ function testTypedJx(func, name) {
 
 /*===
 light func support test
-info.length: 2
-typeof: function
-9
+true
 ===*/
 
 function lightFuncSupportTest() {
-    /* Duktape.info() can be used to detect that light functions are
-     * supported.
-     */
-
-    var fun = getLightFunc();
-    var info = Duktape.info(fun);
-
-    /* Value is primitive (no prop allocations etc) but still callable. */
-    print('info.length:', info.length);
-    print('typeof:', typeof fun);
-    print(Duktape.enc('jx', Duktape.info(fun)[0]));
-    // fun[1] is internal type tag which we don't want to test here
+    print(valueIsLightFunc(getLightFunc()));
 }
 
 try {
@@ -1142,24 +1130,24 @@ function boundFunctionTest() {
 
     var F = Math.max;  // length 2, varargs
     print('F:', sanitizeLfunc(String(F)));
-    print('F type tag:', Duktape.info(F)[0]);
+    print('F type tag:', getValuePublicType(F));
 
     // 'G' will be a full Function object but will still have a lightfunc
     // 'name' as a result of ToObject coercion, which is intentional but
     // somewhat confusing.  This would be fixable in the ToObject() coercion.
     var G = F.bind('myThis', 234);  // bound once
     print('G:', sanitizeLfunc(String(G)));
-    print('G type tag:', Duktape.info(G)[0]);
+    print('G type tag:', getValuePublicType(G));
     print('G.length:', G.length);  // length 1, one argument was bound
 
     var H = G.bind('foo', 345);  // bound twice
     print('H:', sanitizeLfunc(String(H)));
-    print('H type tag:', Duktape.info(H)[0]);
+    print('H type tag:', getValuePublicType(H));
     print('H.length:', H.length);  // length 0, two arguments are bound
 
     var I = H.bind('foo', 345);  // bound three times
     print('I:', sanitizeLfunc(String(I)));
-    print('I type tag:', Duktape.info(I)[0]);
+    print('I type tag:', getValuePublicType(I));
     print('I.length:', I.length);  // length 0, doesn't become negative
 
     // Another simple test
@@ -1506,7 +1494,7 @@ function propertyAccessorThisBindingTest() {
             print('this == lightFunc:', this == lightFunc);
             print('this === lightFunc:', this === lightFunc);
             print('this.name:', sanitizeLfunc(this.name));
-            print('type tag:', Duktape.info(this)[0]);
+            print('type tag:', getValuePublicType(this));
             return 'getter retval';
         },
         set: function () {
@@ -1516,7 +1504,7 @@ function propertyAccessorThisBindingTest() {
             print('this == lightFunc:', this == lightFunc);
             print('this === lightFunc:', this === lightFunc);
             print('this.name:', sanitizeLfunc(this.name));
-            print('type tag:', Duktape.info(this)[0]);
+            print('type tag:', getValuePublicType(this));
         },
         enumerable: false,
         configurable: true
@@ -1529,7 +1517,7 @@ function propertyAccessorThisBindingTest() {
             print('this == lightFunc:', this == lightFunc);
             print('this === lightFunc:', this === lightFunc);
             print('this.name:', sanitizeLfunc(this.name));
-            print('type tag:', Duktape.info(this)[0]);
+            print('type tag:', getValuePublicType(this));
             return 'getter retval';
         },
         set: function () {
@@ -1538,7 +1526,7 @@ function propertyAccessorThisBindingTest() {
             print('this == lightFunc:', this == lightFunc);
             print('this === lightFunc:', this === lightFunc);
             print('this.name:', sanitizeLfunc(this.name));
-            print('type tag:', Duktape.info(this)[0]);
+            print('type tag:', getValuePublicType(this));
         },
         enumerable: false,
         configurable: true
@@ -2402,7 +2390,7 @@ function duktapeBuiltinTest() {
     var lfunc = Math.cos;
 
     // avoid printing internal tag type
-    testTypedJx(function () { return Duktape.info(lfunc)[0]; }, 'info');
+    testTypedJx(function () { return getValuePublicType(lfunc); }, 'info');
 
     // doesn't really make sense
     testTypedJx(function () { return Duktape.act(lfunc); }, 'act');
@@ -2986,8 +2974,8 @@ function objectValueOfTest() {
     t = lfunc.valueOf();
     print(typeof lfunc, typeof t);
     print(lfunc === t);
-    print(Duktape.info(lfunc)[0]);  // tag 9: lightfunc
-    print(Duktape.info(t)[0]);      // tag 6: object
+    print(getValuePublicType(lfunc));  // tag 9: lightfunc
+    print(getValuePublicType(t));      // tag 6: object
 }
 
 try {

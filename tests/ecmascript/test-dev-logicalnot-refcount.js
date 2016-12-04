@@ -1,3 +1,5 @@
+/*@include util-object.js@*/
+
 /*---
 {
     "custom": true
@@ -5,9 +7,9 @@
 ---*/
 
 /*===
-2
 3
-2
+4
+3
 false
 ===*/
 
@@ -21,11 +23,11 @@ var z = 1;
 function test() {
     var tmp;
 
-    print(Duktape.info(dummy)[2]);
+    print(getObjectRefcount(dummy));
     tmp = dummy;
-    print(Duktape.info(dummy)[2]);
+    print(getObjectRefcount(dummy));
     tmp = !z;
-    print(Duktape.info(dummy)[2]);
+    print(getObjectRefcount(dummy));
     print(tmp);
 }
 

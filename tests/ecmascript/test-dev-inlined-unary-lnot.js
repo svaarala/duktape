@@ -2,6 +2,8 @@
  *  Some tests for unary logical not inline optimizations.
  */
 
+/*@include util-object.js@*/
+
 /*===
 comparison
 -Infinity false
@@ -76,9 +78,7 @@ function test() {
 }
 
 function getBytecodeSize(f) {
-    var info = Duktape.info(f);
-    //print(info[9]);
-    return info[9];  // function data size: bytecode, consts, inner funcs
+    return getObjectBytecodeSize(f);
 }
 
 try {

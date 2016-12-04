@@ -90,8 +90,8 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	/* Fastint compatible values are fastint downgraded. */
 	duk_eval_string_noresult(ctx,
-	    "print(Duktape.info(MyModule.meaning)[1] === Duktape.info(MyModule.FLAG_FOO)[1])\n"  /* match: both are fastints */
-	    "print(Duktape.info(MyModule.meaning)[1] !== Duktape.info(MyModule.nonFast)[1])\n"   /* no match: nonFast is not fastint */
+	    "print(Duktape.info(MyModule.meaning).itag === Duktape.info(MyModule.FLAG_FOO).itag)\n"  /* match: both are fastints */
+	    "print(Duktape.info(MyModule.meaning).itag !== Duktape.info(MyModule.nonFast).itag)\n"   /* no match: nonFast is not fastint */
 	);
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
