@@ -125,23 +125,26 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
+		if (DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL) {
+			tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
+			tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
+			while (tv < tv_end) {
+				DUK_TVAL_DECREF_NORZ(thr, tv);
+				tv++;
+			}
 
-		tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
-		tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
-		while (tv < tv_end) {
-			DUK_TVAL_DECREF_NORZ(thr, tv);
-			tv++;
-		}
-
-		funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, f);
-		funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, f);
-		while (funcs < funcs_end) {
-			duk_hobject *h_func;
-			h_func = *funcs;
-			DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_func));
-			DUK_HCOMPFUNC_DECREF_NORZ(thr, (duk_hcompfunc *) h_func);
-			funcs++;
+			funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, f);
+			funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, f);
+			while (funcs < funcs_end) {
+				duk_hobject *h_func;
+				h_func = *funcs;
+				DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_func));
+				DUK_HCOMPFUNC_DECREF_NORZ(thr, (duk_hcompfunc *) h_func);
+				funcs++;
+			}
+		} else {
+			/* May happen in some out-of-memory corner cases. */
+			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping decref"));
 		}
 
 		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));

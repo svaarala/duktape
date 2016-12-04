@@ -74,8 +74,14 @@ DUK_LOCAL void duk__inc_data_inner_refcounts(duk_hthread *thr, duk_hcompfunc *f)
 	duk_tval *tv, *tv_end;
 	duk_hobject **funcs, **funcs_end;
 
-	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL);  /* compiled functions must be created 'atomically' */
 	DUK_UNREF(thr);
+
+	/* If function creation fails due to out-of-memory, the data buffer
+	 * pointer may be NULL in some cases.  That's actually possible for
+	 * GC code, but shouldn't be possible here because the incomplete
+	 * function will be unwound from the value stack and never instantiated.
+	 */
+	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL);
 
 	tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
 	tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
