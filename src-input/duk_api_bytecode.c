@@ -205,12 +205,15 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 				 */
 				varname = DUK_TVAL_GET_STRING(tv_val);
 				DUK_ASSERT(varname != NULL);
+				DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(varname) >= 1);  /* won't be confused with terminator */
 
 				DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
 				p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
 				p = duk__dump_hstring_raw(p, varname);
 			}
 		}
+	} else {
+		DUK_DD(DUK_DDPRINT("dumping function without _Formals, emit empty list"));
 	}
 	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
 	DUK_RAW_WRITE_U32_BE(p, 0);  /* end of _Formals */
@@ -625,6 +628,11 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_compact(ctx, -1);
 	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 
+	/* If _Formals wasn't present in the original function, the list
+	 * here will be empty.  Same happens if _Formals was present but
+	 * had zero length.  We can omit _Formals from the result if its
+	 * length is zero and matches nargs.
+	 */
 	duk_push_array(ctx);  /* _Formals */
 	for (arr_idx = 0; ; arr_idx++) {
 		/* XXX: awkward */
@@ -635,8 +643,12 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		}
 		duk_put_prop_index(ctx, -2, arr_idx);
 	}
-	duk_compact(ctx, -1);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+	if (arr_idx == 0 && h_fun->nargs == 0) {
+		duk_pop(ctx);
+	} else {
+		duk_compact(ctx, -1);
+		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+	}
 
 	/* Return with final function pushed on stack top. */
 	DUK_DD(DUK_DDPRINT("final loaded function: %!iT", duk_get_tval(ctx, -1)));

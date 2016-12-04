@@ -144,11 +144,16 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	duk_push_hobject(ctx, func);
 	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FORMALS);
 	formals = duk_get_hobject(ctx, -1);
-	n_formals = 0;
 	if (formals) {
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);
-		n_formals = (duk_idx_t) duk_require_int(ctx, -1);
-		duk_pop(ctx);
+		n_formals = (duk_idx_t) duk_get_length(ctx, -1);
+	} else {
+		/* This shouldn't happen without tampering of internal
+		 * properties: if a function accesses 'arguments', _Formals
+		 * is kept.  Check for the case anyway in case internal
+		 * properties have been modified manually.
+		 */
+		DUK_D(DUK_DPRINT("_Formals is undefined when creating arguments, use n_formals == 0"));
+		n_formals = 0;
 	}
 	duk_remove(ctx, -2);  /* leave formals on stack for later use */
 	i_formals = duk_require_top_index(ctx);

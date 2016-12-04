@@ -2131,7 +2131,8 @@ Planned
   optimizations (GH-1051); precomputed duk_hstring array index (GH-1056);
   internal value stack access improvements (GH-1058); shared bitpacked string
   format for heap and thread initialization data (GH-1119); explicit
-  lexenv/varenv fields in duk_hcompfunc struct (GH-1132)
+  lexenv/varenv fields in duk_hcompfunc struct (GH-1132); omit duk_hcompfunc
+  _Formals array when it is safe to do so (GH-1141)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
