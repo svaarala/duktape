@@ -667,8 +667,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 	/* Valstack should suffice here, required on function valstack init */
 
-	(void) duk_push_compiledfunction(ctx);
-	h_res = (duk_hcompfunc *) DUK_GET_HOBJECT_NEGIDX(ctx, -1);  /* XXX: specific getter */
+	h_res = duk_push_compiledfunction(ctx);
 	DUK_ASSERT(h_res != NULL);
 
 	if (func->is_function) {

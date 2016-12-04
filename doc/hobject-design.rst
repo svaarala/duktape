@@ -1643,9 +1643,10 @@ double brackets are omitted from the specification property names
 | HasInstance       | Not stored, implicit in algorithms.                  |
 |                   |                                                      |
 +-------------------+------------------------------------------------------+
-| Scope             | Internal properties ``_Lexenv`` and ``_Varenv``.     |
-|                   | (Unlike E5, global and eval code are also compiled   |
-|                   | into functions, hence two scope fields are needed.)  |
+| Scope             | Internal ``duk_hcompfunc`` fields ``lex_env`` and    |
+|                   | ``var_env``.  Unlike E5, global and eval code are    |
+|                   | also compiled into functions, hence two scope fields |
+|                   | are needed.)                                         |
 +-------------------+------------------------------------------------------+
 | FormalParameters  | Internal property ``_Formals``.                      |
 |                   |                                                      |

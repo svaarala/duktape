@@ -590,8 +590,8 @@ detailed properties vary a bit between the two.
 
 More concretely:
 
-* The ``DUK_HOBJECT_FLAG_NEWENV`` object level flag, and the internal
-  properties ``_Lexenv`` and ``_Varenv`` control activation record
+* The ``DUK_HOBJECT_FLAG_NEWENV`` object level flag, and the ``lex_env``
+  and ``var_env`` fields of ``duk_hcompfunc`` control activation record
   lexical and variable environment initialization as described below.
 
 * The internal property ``_Varmap`` contains a mapping from an
@@ -606,35 +606,6 @@ More concretely:
   represents a named function expression.  For such functions, the function
   name (stored in ``name``) needs to be bound in an environment record just
   outside a function activation's environment record.
-
-To minimize book-keeping in common cases, the following short cuts
-are supported:
-
-* If both scope references are missing:
-
-  + Assume that the function has an empty declarative environment record,
-    whose parent is the global environment record.
-
-  + For variable lookups this means that we proceed directly to the global
-    environment record.
-
-  + For variable declarations this means that a declarative environment
-    record needs to be created on demand.
-
-* If ``_Varenv`` is missing:
-
-  + Assume that ``_Varenv`` has the same value as ``_Lexenv``.
-
-  + This is very common, and saves one (unnecessary) reference.
-
-  + Note: it would be more logical to allow ``_Lexenv`` to be missing
-    and default it to ``_Varenv``; however, dynamic variable
-    declarations are comparatively rare so the defaulting is more
-    useful this way around
-
-* If ``_Varmap`` is missing:
-
-  + Assume that the function has no register-mapped variables.
 
 * The compiler attempts to drop any fields not required from compiled
   objects.  In many common cases (even when dynamic variables accesses
@@ -651,11 +622,6 @@ Notes:
 * Environment record initialization is done only when (if) it is actually
   needed (e.g. for a function declaration).  It is not created
   unnecessarily when a function is called.
-
-* The default behavior for ``_Lexenv`` and ``_Varenv`` allows them to
-  be omitted in a large number of cases (for instance, many functions
-  are declared in the global scope, and for many compiled eval
-  functions the values are the same).
 
 * The ``DUK_HOBJECT_FLAG_NEWENV`` is set for ordinary functions, which
   always get a new environment record for variable declaration and

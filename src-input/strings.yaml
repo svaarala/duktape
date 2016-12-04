@@ -767,12 +767,6 @@ strings:
   - str: "\u00ffVarmap"
     duktape: true
     internal: true
-  - str: "\u00ffLexenv"
-    duktape: true
-    internal: true
-  - str: "\u00ffVarenv"
-    duktape: true
-    internal: true
   - str: "\u00ffSource"
     duktape: true
     internal: true
@@ -798,6 +792,9 @@ strings:
     duktape: true
     internal: true
   - str: "\u00ffCallee"
+    duktape: true
+    internal: true
+  - str: "\u00ffVarenv"
     duktape: true
     internal: true
 

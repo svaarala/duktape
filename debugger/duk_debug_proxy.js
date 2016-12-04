@@ -937,7 +937,7 @@ TargetConnHandler.prototype.trialParseDvalue = function trialParseDvalue() {
                 if (avail >= 2 + len) {
                     v = new Uint8Array(len);
                     v.set(buf.subarray(2, 2 + len));
-                    v = { type: 'heapptr', pointer: Duktape.enc('hex', plainof(v)) };
+                    v = { type: 'heapptr', pointer: Duktape.enc('hex', plainOf(v)) };
                     consume(2 + len);
                 }
             }

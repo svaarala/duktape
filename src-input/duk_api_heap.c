@@ -161,22 +161,18 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	 *  same (initial) built-ins.
 	 */
 
-	(void) duk_push_object_helper(ctx,
-	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-	                              -1);  /* no prototype, updated below */
+	h_env = duk_push_object_helper(ctx,
+	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
+	                               -1);  /* no prototype, updated below */
+	DUK_ASSERT(h_env != NULL);
 
 	duk_dup_m2(ctx);
 	duk_dup_m3(ctx);
-
-	/* [ ... new_glob new_env new_glob new_glob ] */
-
 	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ ... new_glob new_env ] */
-
-	h_env = duk_known_hobject(ctx, -1);
 
 	h_prev_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_env;

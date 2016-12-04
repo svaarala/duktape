@@ -59,21 +59,21 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 
 #if defined(DUK_USE_ROM_GLOBAL_INHERIT)
 	/* Inherit from ROM-based global object: less RAM usage, less transparent. */
-	duk_push_object_helper(ctx,
-	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
-	                       DUK_BIDX_GLOBAL);
-	h1 = duk_known_hobject(ctx, -1);
+	h1 = duk_push_object_helper(ctx,
+	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
+	                            DUK_BIDX_GLOBAL);
+	DUK_ASSERT(h1 != NULL);
 #elif defined(DUK_USE_ROM_GLOBAL_CLONE)
 	/* Clone the properties of the ROM-based global object to create a
 	 * fully RAM-based global object.  Uses more memory than the inherit
 	 * model but more compliant.
 	 */
-	duk_push_object_helper(ctx,
-	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
-	                       DUK_BIDX_OBJECT_PROTOTYPE);
-	h1 = duk_known_hobject(ctx, -1);
+	h1 = duk_push_object_helper(ctx,
+	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
+	                            DUK_BIDX_OBJECT_PROTOTYPE);
+	DUK_ASSERT(h1 != NULL);
 	h2 = thr->builtins[DUK_BIDX_GLOBAL];
 	DUK_ASSERT(h2 != NULL);
 
@@ -118,11 +118,11 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	 * needed so that the global scope points to the newly created RAM-based
 	 * global object.
 	 */
-	duk_push_object_helper(ctx,
-	                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-	                       -1);  /* no prototype */
-	h1 = duk_known_hobject(ctx, -1);
+	h1 = duk_push_object_helper(ctx,
+	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
+	                            -1);  /* no prototype */
+	DUK_ASSERT(h1 != NULL);
 	duk_dup_m2(ctx);
 	duk_dup_top(ctx);  /* -> [ ... new_global new_globalenv new_global new_global ] */
 	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
@@ -297,9 +297,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		} else if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
 			duk_push_array(ctx);
 		} else {
-			duk_push_object_helper(ctx,
-			                       DUK_HOBJECT_FLAG_EXTENSIBLE,
-			                       -1);  /* no prototype or class yet */
+			(void) duk_push_object_helper(ctx,
+			                              DUK_HOBJECT_FLAG_EXTENSIBLE,
+			                              -1);  /* no prototype or class yet */
 
 		}
 

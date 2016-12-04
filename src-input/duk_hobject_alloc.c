@@ -86,6 +86,8 @@ DUK_INTERNAL duk_hcompfunc *duk_hcompfunc_alloc(duk_heap *heap, duk_uint_t hobje
 	res->funcs = NULL;
 	res->bytecode = NULL;
 #endif
+	res->lex_env = NULL;
+	res->var_env = NULL;
 #endif
 
 	return res;

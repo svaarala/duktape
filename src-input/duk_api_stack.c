@@ -480,7 +480,7 @@ DUK_EXTERNAL duk_idx_t duk_get_top_index(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom) - 1;
 	if (DUK_UNLIKELY(ret < 0)) {
 		/* Return invalid index; if caller uses this without checking
 		 * in another API call, the index won't map to a valid stack
@@ -491,13 +491,26 @@ DUK_EXTERNAL duk_idx_t duk_get_top_index(duk_context *ctx) {
 	return ret;
 }
 
+/* Internal variant: call assumes there is at least one element on the value
+ * stack frame; this is only asserted for.
+ */
+DUK_INTERNAL duk_idx_t duk_get_top_index_unsafe(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_idx_t ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom) - 1;
+	return ret;
+}
+
 DUK_EXTERNAL duk_idx_t duk_require_top_index(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	ret = ((duk_idx_t) (thr->valstack_top - thr->valstack_bottom)) - 1;
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom) - 1;
 	if (DUK_UNLIKELY(ret < 0)) {
 		DUK_ERROR_RANGE_INDEX(thr, -1);
 		return 0;  /* unreachable */
@@ -3661,11 +3674,10 @@ DUK_EXTERNAL const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...
 	return ret;
 }
 
-DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
+DUK_INTERNAL duk_hobject *duk_push_object_helper(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_small_int_t prototype_bidx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_slot;
 	duk_hobject *h;
-	duk_idx_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(prototype_bidx == -1 ||
@@ -3686,7 +3698,6 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, h);
 	DUK_HOBJECT_INCREF(thr, h);  /* no side effects */
-	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 	thr->valstack_top++;
 
 	/* object is now reachable */
@@ -3698,30 +3709,30 @@ DUK_INTERNAL duk_idx_t duk_push_object_helper(duk_context *ctx, duk_uint_t hobje
 		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
 	}
 
-	return ret;
+	return h;
 }
 
-DUK_INTERNAL duk_idx_t duk_push_object_helper_proto(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_hobject *proto) {
+DUK_INTERNAL duk_hobject *duk_push_object_helper_proto(duk_context *ctx, duk_uint_t hobject_flags_and_class, duk_hobject *proto) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t ret;
 	duk_hobject *h;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	ret = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
-	h = duk_known_hobject(ctx, -1);
+	h = duk_push_object_helper(ctx, hobject_flags_and_class, -1);
+	DUK_ASSERT(h != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h) == NULL);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, proto);
-	return ret;
+	return h;
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_object(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	return duk_push_object_helper(ctx,
+	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              DUK_BIDX_OBJECT_PROTOTYPE);
+	return duk_get_top_index_unsafe(ctx);
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
@@ -3851,10 +3862,9 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	return ret;
 }
 
-DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
+DUK_INTERNAL duk_hcompfunc *duk_push_compiledfunction(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hcompfunc *obj;
-	duk_idx_t ret;
 	duk_tval *tv_slot;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -3882,13 +3892,12 @@ DUK_INTERNAL duk_idx_t duk_push_compiledfunction(duk_context *ctx) {
 	tv_slot = thr->valstack_top;
 	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) obj);
 	DUK_HOBJECT_INCREF(thr, obj);
-	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 	thr->valstack_top++;
 
 	/* default prototype (Note: 'obj' must be reachable) */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
-	return ret;
+	return obj;
 }
 
 DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags) {
@@ -4190,7 +4199,6 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 
 DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_idx_t ret;
 	duk_hobject *proto;
 #ifdef DUK_USE_AUGMENT_ERROR_CREATE
 	duk_bool_t noblame_fileline;
@@ -4209,10 +4217,10 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 
 	/* error gets its 'name' from the prototype */
 	proto = duk_error_prototype_from_code(thr, err_code);
-	ret = duk_push_object_helper_proto(ctx,
-	                                   DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                   DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
-	                                   proto);
+	(void) duk_push_object_helper_proto(ctx,
+	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
+	                                    proto);
 
 	/* ... and its 'message' from an instance property */
 	if (fmt) {
@@ -4237,7 +4245,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	duk_err_augment_error_create(thr, thr, filename, line, noblame_fileline);  /* may throw an error */
 #endif
 
-	return ret;
+	return duk_get_top_index_unsafe(ctx);
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_error_object_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...) {
@@ -4359,10 +4367,11 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 
 /* Push object with no prototype, i.e. a "bare" object. */
 DUK_EXTERNAL duk_idx_t duk_push_bare_object(duk_context *ctx) {
-	return duk_push_object_helper(ctx,
+	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
+	return duk_get_top_index_unsafe(ctx);
 }
 
 DUK_INTERNAL void duk_push_hstring(duk_context *ctx, duk_hstring *h) {

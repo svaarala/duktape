@@ -521,13 +521,12 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			act_lex_env = act->lex_env;
 			act = NULL;  /* invalidated */
 
-			(void) duk_push_object_helper_proto(ctx,
-			                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                                    act_lex_env);
-			new_env = duk_known_hobject(ctx, -1);
-			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO",
-			                     (duk_heaphdr *) new_env));
+			new_env = duk_push_object_helper_proto(ctx,
+			                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
+			                                       act_lex_env);
+			DUK_ASSERT(new_env != NULL);
+			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
 			outer_lex_env = new_env;
 			outer_var_env = new_env;
