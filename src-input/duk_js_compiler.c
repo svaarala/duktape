@@ -60,7 +60,11 @@
 #define DUK__MAX_TEMPS                    0xffffL
 
 /* Initial bytecode size allocation. */
+#if defined(DUK_USE_PREFER_SIZE)
+#define DUK__BC_INITIAL_INSTS             16
+#else
 #define DUK__BC_INITIAL_INSTS             256
+#endif
 
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
@@ -660,6 +664,9 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	duk_tval *tv;
 	duk_bool_t keep_varmap;
 	duk_bool_t keep_formals;
+#if !defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_size_t formals_length;
+#endif
 
 	DUK_DDD(DUK_DDDPRINT("converting duk_compiler_func to function/template"));
 
@@ -823,25 +830,31 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 	/* [ ... res ] */
 
-	/* _Varmap: omitted if function is guaranteed not to do slow path identifier
-	 * accesses or if it would turn out to be empty of actual register mappings
-	 * after a cleanup.  When debugging is enabled, we always need the varmap to
-	 * be able to lookup variables at any point.
+	/* _Varmap: omitted if function is guaranteed not to do a slow path
+	 * identifier access that might be caught by locally declared variables.
+	 * The varmap can also be omitted if it turns out empty of actual
+	 * register mappings after a cleanup.  When debugging is enabled, we
+	 * always need the varmap to be able to lookup variables at any point.
 	 */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	DUK_DD(DUK_DDPRINT("keeping _Varmap because debugger support is enabled"));
 	keep_varmap = 1;
 #else
-	keep_varmap =
-	    func->id_access_slow ||   /* directly uses slow accesses */
-	    func->may_direct_eval ||  /* may indirectly slow access through a direct eval */
-	    funcs_count > 0;          /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
+	if (func->id_access_slow_own ||   /* directly uses slow accesses that may match own variables */
+	    func->id_access_arguments ||  /* accesses 'arguments' directly */
+	    func->may_direct_eval ||      /* may indirectly slow access through a direct eval */
+	    funcs_count > 0) {            /* has inner functions which may slow access (XXX: this can be optimized by looking at the inner functions) */
+		DUK_DD(DUK_DDPRINT("keeping _Varmap because of direct eval, slow path access that may match local variables, or presence of inner functions"));
+		keep_varmap = 1;
+	} else {
+		DUK_DD(DUK_DDPRINT("dropping _Varmap"));
+		keep_varmap = 0;
+	}
 #endif
 
 	if (keep_varmap) {
 		duk_int_t num_used;
-		DUK_DD(DUK_DDPRINT("keeping _Varmap"));
 		duk_dup(ctx, func->varmap_idx);
 		num_used = duk__cleanup_varmap(comp_ctx);
 		DUK_DDD(DUK_DDDPRINT("cleaned up varmap: %!T (num_used=%ld)",
@@ -867,18 +880,29 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	DUK_DD(DUK_DDPRINT("keeping _Formals because debugger support is enabled"));
 	keep_formals = 1;
 #else
-	keep_formals =
-	    func->id_access_arguments ||   /* accesses 'arguments', main reason to keep, could check strictness too */
-	    func->may_direct_eval ||       /* direct eval -> may access 'arguments' via eval */
-	    duk_get_length(ctx, func->argnames_idx) != (duk_size_t) h_res->nargs;  /* nargs not enough for closure .length */
+	formals_length = duk_get_length(ctx, func->argnames_idx);
+	if (formals_length != (duk_size_t) h_res->nargs) {
+		/* Nargs not enough for closure .length: keep _Formals regardless
+		 * of its length.  Shouldn't happen in practice at the moment.
+		 */
+		DUK_DD(DUK_DDPRINT("keeping _Formals because _Formals.length != nargs"));
+		keep_formals = 1;
+	} else if ((func->id_access_arguments || func->may_direct_eval) &&
+	           (formals_length > 0)) {
+		/* Direct eval (may access 'arguments') or accesses 'arguments'
+		 * explicitly: keep _Formals unless it is zero length.
+		 */
+		DUK_DD(DUK_DDPRINT("keeping _Formals because of direct eval or explicit access to 'arguments', and _Formals.length != 0"));
+		keep_formals = 1;
+	} else {
+		DUK_DD(DUK_DDPRINT("omitting _Formals, nargs matches _Formals.length, so no properties added"));
+		keep_formals = 0;
+	}
 #endif
 
 	if (keep_formals) {
-		DUK_DD(DUK_DDPRINT("keeping _Formals"));
 		duk_dup(ctx, func->argnames_idx);
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
-	} else {
-		DUK_DD(DUK_DDPRINT("omitting _Formals, nargs matches _Formals.length, so no properties added"));
 	}
 
 	/* name */
@@ -2430,7 +2454,7 @@ DUK_LOCAL duk_reg_t duk__lookup_active_register_binding(duk_compiler_ctx *comp_c
 
 	if (comp_ctx->curr_func.with_depth > 0) {
 		DUK_DDD(DUK_DDDPRINT("identifier lookup inside a 'with' -> fall back to slow path"));
-		goto slow_path;
+		goto slow_path_own;
 	}
 
 	/*
@@ -2447,16 +2471,33 @@ DUK_LOCAL duk_reg_t duk__lookup_active_register_binding(duk_compiler_ctx *comp_c
 		duk_pop(ctx);
 	} else {
 		duk_pop(ctx);
-		goto slow_path;
+		if (comp_ctx->curr_func.catch_depth > 0 || comp_ctx->curr_func.with_depth > 0) {
+			DUK_DDD(DUK_DDDPRINT("slow path access from inside a try-catch or with needs _Varmap"));
+			goto slow_path_own;
+		} else {
+			/* In this case we're doing a variable lookup that doesn't
+			 * match our own variables, so _Varmap won't be needed at
+			 * run time.
+			 */
+			DUK_DDD(DUK_DDDPRINT("slow path access outside of try-catch and with, no need for _Varmap"));
+			goto slow_path_notown;
+		}
 	}
 
 	DUK_DDD(DUK_DDDPRINT("identifier lookup -> reg %ld", (long) ret));
 	return ret;
 
- slow_path:
-	DUK_DDD(DUK_DDDPRINT("identifier lookup -> slow path"));
+ slow_path_notown:
+	DUK_DDD(DUK_DDDPRINT("identifier lookup -> slow path, not own variable"));
 
 	comp_ctx->curr_func.id_access_slow = 1;
+	return (duk_reg_t) -1;
+
+ slow_path_own:
+	DUK_DDD(DUK_DDDPRINT("identifier lookup -> slow path, may be own variable"));
+
+	comp_ctx->curr_func.id_access_slow = 1;
+	comp_ctx->curr_func.id_access_slow_own = 1;
 	return (duk_reg_t) -1;
 }
 
@@ -7166,6 +7207,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 	func->may_direct_eval = 0;
 	func->id_access_arguments = 0;
 	func->id_access_slow = 0;
+	func->id_access_slow_own = 0;
 	func->reg_stmt_value = reg_stmt_value;
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	func->min_line = DUK_INT_MAX;
@@ -7255,6 +7297,7 @@ DUK_LOCAL void duk__parse_func_body(duk_compiler_ctx *comp_ctx, duk_bool_t expec
 		/* XXX: init or assert catch depth etc -- all values */
 		func->id_access_arguments = 0;
 		func->id_access_slow = 0;
+		func->id_access_slow_own = 0;
 
 		/*
 		 *  Check function name validity now that we know strictness.
