@@ -108,11 +108,11 @@ eval:
 top after eval: 1
 ==> rc=1, result='TypeError: not extensible'
 *** test_putprop_shorthand_a_safecall (duk_safe_call)
-{"foo":123,"bar":123,"2001":234,"nul\u0000key":345}
+{"2001":234,"foo":123,"bar":123,"nul\u0000key":345}
 final top: 1
 ==> rc=0, result='undefined'
 *** test_putprop_shorthand_a (duk_pcall)
-{"foo":123,"bar":123,"2001":234,"nul\u0000key":345}
+{"2001":234,"foo":123,"bar":123,"nul\u0000key":345}
 final top: 1
 ==> rc=0, result='undefined'
 ===*/

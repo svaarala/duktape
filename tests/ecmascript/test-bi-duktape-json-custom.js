@@ -492,10 +492,10 @@ try {
 
 /*===
 avoid key quotes
-jx {$:true,_:true,a:true,z:true,A:true,Z:true,"0":false,"9":false,"":false}
-jc {"$":true,"_":true,"a":true,"z":true,"A":true,"Z":true,"0":false,"9":false,"":false}
-jx {$$:true,__:true,a$:true,z_:true,A0:true,Z9:true,"0$":false,"1_":false,"2a":false,"3z":false,"4A":false,"5A":false,"60":false,"79":false}
-jc {"$$":true,"__":true,"a$":true,"z_":true,"A0":true,"Z9":true,"0$":false,"1_":false,"2a":false,"3z":false,"4A":false,"5A":false,"60":false,"79":false}
+jx {"0":false,"9":false,$:true,_:true,a:true,z:true,A:true,Z:true,"":false}
+jc {"0":false,"9":false,"$":true,"_":true,"a":true,"z":true,"A":true,"Z":true,"":false}
+jx {"60":false,"79":false,$$:true,__:true,a$:true,z_:true,A0:true,Z9:true,"0$":false,"1_":false,"2a":false,"3z":false,"4A":false,"5A":false}
+jc {"60":false,"79":false,"$$":true,"__":true,"a$":true,"z_":true,"A0":true,"Z9":true,"0$":false,"1_":false,"2a":false,"3z":false,"4A":false,"5A":false}
 jx {test:true,test_key:true,_test_key:true,$test_key:true}
 jc {"test":true,"test_key":true,"_test_key":true,"$test_key":true}
 jx {"%foo":false,"foo%":false,"foo-bar":false,"foo bar":false}
