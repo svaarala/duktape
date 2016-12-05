@@ -26,7 +26,7 @@ final top: 0
 *** test_array_length_overwrite_bigger_noforce (duk_safe_call)
 ==> rc=1, result='TypeError: not configurable'
 *** test_array_length_overwrite_bigger_force (duk_safe_call)
-["foo","bar","quux",null,null]
+["foo","bar","quux",undefined,undefined]
 final top: 0
 ==> rc=0, result='undefined'
 *** test_array_length_overwrite_smaller_noforce (duk_safe_call)

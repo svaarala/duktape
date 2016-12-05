@@ -2503,10 +2503,15 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				}
 
 				/* Ordinary gap, undefined encodes to 'null' in
-				 * standard JSON (and no JX/JC support here now).
+				 * standard JSON, but JX/JC use their form for
+				 * undefined to better preserve the typing.
 				 */
 				DUK_D(DUK_DPRINT("gap in array, no conflicting inherited property, remain on fast path"));
+#if defined(DUK_USE_JX)
+				DUK__EMIT_STRIDX(js_ctx, js_ctx->stridx_custom_undefined);
+#else
 				DUK__EMIT_STRIDX(js_ctx, DUK_STRIDX_LC_NULL);
+#endif
 				/* fall through */
 
 			 elem_done:
@@ -2861,6 +2866,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 * combinations properly.
 	 */
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
+	js_ctx->stridx_custom_undefined = DUK_STRIDX_LC_NULL;  /* standard JSON; array gaps */
 #if defined(DUK_USE_JX)
 	if (flags & DUK_JSON_FLAG_EXT_CUSTOM) {
 		js_ctx->stridx_custom_undefined = DUK_STRIDX_LC_UNDEFINED;
