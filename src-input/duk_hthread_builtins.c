@@ -14,8 +14,8 @@
 #define DUK__BIDX_BITS                   7
 #define DUK__STRIDX_BITS                 9  /* XXX: try to optimize to 8 (would now be possible, <200 used) */
 #define DUK__NATIDX_BITS                 8
-#define DUK__NUM_NORMAL_PROPS_BITS       6
-#define DUK__NUM_FUNC_PROPS_BITS         6
+#define DUK__NUM_NORMAL_PROPS_BITS       8
+#define DUK__NUM_FUNC_PROPS_BITS         8
 #define DUK__PROP_FLAGS_BITS             3
 #define DUK__LENGTH_PROP_BITS            3
 #define DUK__NARGS_BITS                  3
