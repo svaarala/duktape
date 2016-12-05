@@ -1346,19 +1346,12 @@ ACCESSOR_PROPERTY_ATTRIBUTES = 'c'
 DEFAULT_DATA_PROPERTY_ATTRIBUTES = 'wc'
 
 # Encoding constants (must match duk_hthread_builtins.c).
-CLASS_BITS = 5
-BIDX_BITS = 7
-STRIDX_BITS = 9   # would be nice to optimize to 8
-NATIDX_BITS = 8
 PROP_FLAGS_BITS = 3
 LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
 
 NARGS_VARARGS_MARKER = 0x07
-NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_NONE
-NO_BIDX_MARKER = 0x7f
-NO_STRIDX_MARKER = 0xff
 
 PROP_TYPE_DOUBLE = 0
 PROP_TYPE_STRING = 1
@@ -1378,16 +1371,16 @@ PROPDESC_FLAG_ACCESSOR =     (1 << 3)  # unused now
 # Class names, numeric indices must match duk_hobject.h class numbers.
 class_names = [
     'Unused',
-    'Arguments',
+    'Object',
     'Array',
+    'Function',
+    'Arguments',
     'Boolean',
     'Date',
     'Error',
-    'Function',
     'JSON',
     'Math',
     'Number',
-    'Object',
     'RegExp',
     'String',
     'global',
@@ -1395,7 +1388,8 @@ class_names = [
     'DecEnv',
     'Buffer',
     'Pointer',
-    'Thread',
+    'Thread'
+    # Remaining class names are not currently needed.
 ]
 class2num = {}
 for i,v in enumerate(class_names):
@@ -1517,6 +1511,7 @@ def gen_ramstr_initdata_bitpacked(meta):
     if be._varuint_count > 0:
         logger.debug('Varuint distribution:')
         logger.debug(json.dumps(be._varuint_dist[0:1024]))
+        logger.debug('Varuint encoding categories: %r' % be._varuint_cats)
         logger.debug('Varuint efficiency: %f bits/value' % (float(be._varuint_bits) / float(be._varuint_count)))
     res = be.getByteString()
 
@@ -1601,22 +1596,20 @@ def encode_property_flags(flags):
 def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx):
     def _stridx(strval):
         stridx = string_to_stridx[strval]
-        be.bits(stridx, STRIDX_BITS)
+        be.varuint(stridx)
     def _stridx_or_string(strval):
-        # XXX: could share the built-in strings decoder, would save ~200 bytes.
         stridx = string_to_stridx.get(strval)
         if stridx is not None:
-            be.bits(0, 1)  # marker: stridx
-            be.bits(stridx, STRIDX_BITS)
+            be.varuint(stridx + 1)
         else:
-            be.bits(1, 1)  # marker: raw bytes
+            be.varuint(0)
             bitpack_string(be, strval)
     def _natidx(native_name):
         natidx = natfunc_name_to_natidx[native_name]
-        be.bits(natidx, NATIDX_BITS)
+        be.varuint(natidx)
 
     class_num = class_to_number(bi['class'])
-    be.bits(class_num, CLASS_BITS)
+    be.varuint(class_num)
 
     props = [x for x in bi['properties']]  # clone
 
@@ -1693,53 +1686,53 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
     count_function_props = 0
 
     def _bidx(bi_id):
+        be.varuint(objid_to_bidx[bi_id])
+    def _bidx_or_none(bi_id):
         if bi_id is None:
-            be.bits(NO_BIDX_MARKER, BIDX_BITS)
+            be.varuint(0)
         else:
-            be.bits(objid_to_bidx[bi_id], BIDX_BITS)
+            be.varuint(objid_to_bidx[bi_id] + 1)
     def _stridx(strval):
         stridx = string_to_stridx[strval]
-        be.bits(stridx, STRIDX_BITS)
+        be.varuint(stridx)
     def _stridx_or_string(strval):
-        # XXX: could share the built-in strings decoder, would save ~200 bytes.
         stridx = string_to_stridx.get(strval)
         if stridx is not None:
-            be.bits(0, 1)  # marker: stridx
-            be.bits(stridx, STRIDX_BITS)
+            be.varuint(stridx + 1)
         else:
-            be.bits(1, 1)  # marker: raw bytes
+            be.varuint(0)
             bitpack_string(be, strval)
     def _natidx(native_name):
         if native_name is None:
             natidx = 0  # 0 is NULL in the native functions table, denotes missing function
         else:
             natidx = natfunc_name_to_natidx[native_name]
-        be.bits(natidx, NATIDX_BITS)
+        be.varuint(natidx)
     props = [x for x in bi['properties']]  # clone
 
     # internal prototype: not an actual property so not in property list
     if bi.has_key('internal_prototype'):
-        _bidx(bi['internal_prototype'])
+        _bidx_or_none(bi['internal_prototype'])
     else:
-        _bidx(None)
+        _bidx_or_none(None)
 
     # external prototype: encoded specially, steal from property list
     prop_proto = steal_prop(props, 'prototype')
     if prop_proto is not None:
         assert(prop_proto['value']['type'] == 'object')
         assert(prop_proto['attributes'] == '')
-        _bidx(prop_proto['value']['id'])
+        _bidx_or_none(prop_proto['value']['id'])
     else:
-        _bidx(None)
+        _bidx_or_none(None)
 
     # external constructor: encoded specially, steal from property list
     prop_constr = steal_prop(props, 'constructor')
     if prop_constr is not None:
         assert(prop_constr['value']['type'] == 'object')
         assert(prop_constr['attributes'] == 'wc')
-        _bidx(prop_constr['value']['id'])
+        _bidx_or_none(prop_constr['value']['id'])
     else:
-        _bidx(None)
+        _bidx_or_none(None)
 
     # name: encoded specially for function objects, so steal and ignore here
     if bi['class'] == 'Function':
@@ -1982,6 +1975,7 @@ def gen_ramobj_initdata_bitpacked(meta, native_funcs, natfunc_name_to_natidx, do
     if be._varuint_count > 0:
         logger.debug('varuint distribution:')
         logger.debug(json.dumps(be._varuint_dist[0:1024]))
+        logger.debug('Varuint encoding categories: %r' % be._varuint_cats)
         logger.debug('Varuint efficiency: %f bits/value' % (float(be._varuint_bits) / float(be._varuint_count)))
     romobj_init_data = be.getByteString()
     #logger.debug(repr(romobj_init_data))
