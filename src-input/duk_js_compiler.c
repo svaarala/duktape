@@ -888,8 +888,9 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	}
 
 	/* _Source */
-#if defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY)
-	if (0) {
+	/* FIXME: implement */
+#if  1 /* FIXME: defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY) */
+	if (1) {
 		/* XXX: Currently function source code is not stored, as it is not
 		 * required by the standard.  Source code should not be stored by
 		 * default (user should enable it explicitly), and the source should
@@ -928,10 +929,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		 *    'function a(foo,bar) { print(foo); }'
 		 */
 
-#if 0
 		duk_push_string(ctx, "XXX");
 		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
-#endif
 	}
 #endif  /* DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY */
 
