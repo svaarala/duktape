@@ -8,7 +8,7 @@
  * When reading past bitstream end, zeroes are shifted in.  The result
  * is signed to match duk_bd_decode_flagged.
  */
-DUK_INTERNAL duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
+DUK_INTERNAL duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits) {
 	duk_small_int_t shift;
 	duk_uint32_t mask;
 	duk_uint32_t tmp;
@@ -53,19 +53,41 @@ DUK_INTERNAL duk_int32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t 
 	return tmp;
 }
 
-DUK_INTERNAL duk_small_int_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
-	return (duk_small_int_t) duk_bd_decode(ctx, 1);
+DUK_INTERNAL duk_small_uint_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
+	return (duk_small_uint_t) duk_bd_decode(ctx, 1);
 }
 
 /* Decode a one-bit flag, and if set, decode a value of 'bits', otherwise return
  * default value.  Return value is signed so that negative marker value can be
  * used by caller as a "not present" value.
  */
-DUK_INTERNAL duk_int32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value) {
+DUK_INTERNAL duk_uint32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_uint32_t def_value) {
 	if (duk_bd_decode_flag(ctx)) {
-		return (duk_int32_t) duk_bd_decode(ctx, bits);
+		return duk_bd_decode(ctx, bits);
 	} else {
 		return def_value;
+	}
+}
+
+/* Shared varint encoding.  Match dukutil.py BitEncode.varuint(). */
+DUK_INTERNAL duk_uint32_t duk_bd_decode_varuint(duk_bitdecoder_ctx *ctx) {
+	duk_small_uint_t t;
+
+	/* Numbers 0-3 dominate input heavily, so use an initial flag byte for
+	 * them, encoding into 3 bits.  Other numbers are most often in [4,63]
+	 * so encode that range efficiently with 7 bits.  Reserve a few special
+	 * values for rare long encodings.
+	 */
+	if (duk_bd_decode_flag(ctx)) {
+		t = duk_bd_decode(ctx, 6);
+		if (t == 0) {
+			return duk_bd_decode(ctx, 16);
+		} else if (t == 1) {
+			return duk_bd_decode(ctx, 32);
+		}
+		return (t - 2) + 4;  /* Covers [4,65] */
+	} else {
+		return duk_bd_decode(ctx, 2);
 	}
 }
 

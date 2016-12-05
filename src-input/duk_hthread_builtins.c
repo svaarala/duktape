@@ -14,14 +14,10 @@
 #define DUK__BIDX_BITS                   7
 #define DUK__STRIDX_BITS                 9  /* XXX: try to optimize to 8 (would now be possible, <200 used) */
 #define DUK__NATIDX_BITS                 8
-#define DUK__NUM_NORMAL_PROPS_BITS       8
-#define DUK__NUM_FUNC_PROPS_BITS         8
 #define DUK__PROP_FLAGS_BITS             3
 #define DUK__LENGTH_PROP_BITS            3
 #define DUK__NARGS_BITS                  3
 #define DUK__PROP_TYPE_BITS              3
-#define DUK__MAGIC_BITS                  16
-#define DUK__ACCESSOR_MAGIC_BITS         2      /* just a few shared accessors now */
 
 #define DUK__NARGS_VARARGS_MARKER        0x07
 #define DUK__NO_CLASS_MARKER             0x00   /* 0 = DUK_HOBJECT_CLASS_NONE */
@@ -292,7 +288,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			/* Cast converts magic to 16-bit signed value */
-			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0 /*def_value*/);
+			magic = (duk_int16_t) duk_bd_decode_varuint(bd);
 			((duk_hnatfunc *) h)->magic = magic;
 		} else if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
 			duk_push_array(ctx);
@@ -406,7 +402,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		}
 
 		/* normal valued properties */
-		num = (duk_small_uint_t) duk_bd_decode(bd, DUK__NUM_NORMAL_PROPS_BITS);
+		num = (duk_small_uint_t) duk_bd_decode_varuint(bd);
 		DUK_DDD(DUK_DDDPRINT("built-in object %ld, %ld normal valued properties", (long) i, (long) num));
 		for (j = 0; j < num; j++) {
 			duk_small_uint_t defprop_flags;
@@ -479,7 +475,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			case DUK__PROP_TYPE_ACCESSOR: {
 				duk_small_uint_t natidx_getter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
 				duk_small_uint_t natidx_setter = (duk_small_uint_t) duk_bd_decode(bd, DUK__NATIDX_BITS);
-				duk_small_uint_t accessor_magic = (duk_small_uint_t) duk_bd_decode(bd, DUK__ACCESSOR_MAGIC_BITS);
+				duk_small_uint_t accessor_magic = (duk_small_uint_t) duk_bd_decode_varuint(bd);
 				duk_c_function c_func_getter;
 				duk_c_function c_func_setter;
 
@@ -517,7 +513,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		}
 
 		/* native function properties */
-		num = (duk_small_uint_t) duk_bd_decode(bd, DUK__NUM_FUNC_PROPS_BITS);
+		num = (duk_small_uint_t) duk_bd_decode_varuint(bd);
 		DUK_DDD(DUK_DDDPRINT("built-in object %ld, %ld function valued properties", (long) i, (long) num));
 		for (j = 0; j < num; j++) {
 			duk_hstring *h_key;
@@ -549,7 +545,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			                     (c_nargs == DUK_VARARGS ? (long) -1 : (long) c_nargs)));
 
 			/* Cast converts magic to 16-bit signed value */
-			magic = (duk_int16_t) duk_bd_decode_flagged(bd, DUK__MAGIC_BITS, 0);
+			magic = (duk_int16_t) duk_bd_decode_varuint(bd);
 
 #if defined(DUK_USE_LIGHTFUNC_BUILTINS)
 			lightfunc_eligible =
