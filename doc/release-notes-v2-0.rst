@@ -1062,6 +1062,10 @@ Other incompatible changes
   ES6 requirements; in ES5 (and Duktape 1.x) bound function internal prototype
   is always set to Function.prototype.
 
+* Function.prototype.toString() output has been changed to match ES6
+  requirements.  For example ``function foo() {"ecmascript"}`` is now
+  ``function foo() { [ecmascript code] }``.
+
 Known issues
 ============
 
