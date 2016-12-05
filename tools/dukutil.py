@@ -11,12 +11,14 @@ class BitEncoder:
 
     _bits = None
     _varuint_dist = None
+    _varuint_cats = None
     _varuint_count = None
     _varuint_bits = None
 
     def __init__(self):
         self._bits = []
         self._varuint_dist = [ 0 ] * 65536
+        self._varuint_cats = [0] * 5
         self._varuint_count = 0
         self._varuint_bits = 0
 
@@ -39,24 +41,31 @@ class BitEncoder:
             self._varuint_dist[x] += 1
         self._varuint_count += 1
 
-        if x <= 3:
-            self.bits(0, 1)
-            self.bits(x, 2)
-            self._varuint_bits += 3
-        elif x <= 65:
-            self.bits(1, 1)
-            self.bits(x - 4 + 2, 6)
-            self._varuint_bits += 7
-        elif x <= 65535:
-            self.bits(1, 1)
-            self.bits(0, 6)
-            self.bits(x, 16)
-            self._varuint_bits += 7 + 16
+        if x == 0:
+            self.bits(0, 2)
+            self._varuint_bits += 2
+            self._varuint_cats[0] += 1
+        elif x <= 4:
+            self.bits(1, 2)
+            self.bits(x - 1, 2)
+            self._varuint_bits += 2 + 2
+            self._varuint_cats[1] += 1
+        elif x <= 36:
+            self.bits(2, 2)
+            self.bits(x - 5, 5)
+            self._varuint_bits += 2 + 5
+            self._varuint_cats[2] += 1
+        elif x <= 163:
+            self.bits(3, 2)
+            self.bits(x - 37 + 1, 7)
+            self._varuint_bits += 2 + 7
+            self._varuint_cats[3] += 1
         else:
-            self.bits(1, 1)
-            self.bits(1, 6)
-            self.bits(x, 32)
-            self._varuint_bits += 7 + 32
+            self.bits(3, 2)
+            self.bits(0, 7)
+            self.bits(x, 20)
+            self._varuint_bits += 2 + 7 + 20
+            self._varuint_cats[4] += 1
 
     def getNumBits(self):
         "Get current number of encoded bits."

@@ -2013,7 +2013,7 @@ Planned
 * Add an fmod() self test (GH-1108)
 
 * Reduce RAM built-ins initdata limitations for custom bindings by using a
-  shared varuint encoding in the bit-packed initdata stream (GH-1151)
+  shared varuint encoding in the bit-packed initdata stream (GH-1151, GH-1152)
 
 * Fix JSON stringify fastpath handling of array gaps in JX and JC; they
   incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
