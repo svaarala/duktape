@@ -1350,14 +1350,10 @@ CLASS_BITS = 5
 BIDX_BITS = 7
 STRIDX_BITS = 9   # would be nice to optimize to 8
 NATIDX_BITS = 8
-NUM_NORMAL_PROPS_BITS = 8
-NUM_FUNC_PROPS_BITS = 8
 PROP_FLAGS_BITS = 3
 LENGTH_PROP_BITS = 3
 NARGS_BITS = 3
 PROP_TYPE_BITS = 3
-MAGIC_BITS = 16
-ACCESSOR_MAGIC_BITS = 2
 
 NARGS_VARARGS_MARKER = 0x07
 NO_CLASS_MARKER = 0x00   # 0 = DUK_HOBJECT_CLASS_NONE
@@ -1518,6 +1514,10 @@ def gen_ramstr_initdata_bitpacked(meta):
 
     # end marker not necessary, C code knows length from define
 
+    if be._varuint_count > 0:
+        logger.debug('Varuint distribution:')
+        logger.debug(json.dumps(be._varuint_dist[0:1024]))
+        logger.debug('Varuint efficiency: %f bits/value' % (float(be._varuint_bits) / float(be._varuint_count)))
     res = be.getByteString()
 
     logger.debug(('%d ram strings, %d bytes of string init data, %d maximum string length, ' + \
@@ -1683,13 +1683,9 @@ def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_
 
         # Convert signed magic to 16-bit unsigned for encoding
         magic = resolve_magic(bi.get('magic'), objid_to_bidx) & 0xffff
-        if magic != 0:
-            assert(magic >= 0)
-            assert(magic < (1 << MAGIC_BITS))
-            be.bits(1, 1)
-            be.bits(magic, MAGIC_BITS)
-        else:
-            be.bits(0, 1)
+        assert(magic >= 0)
+        assert(magic <= 0xffff)
+        be.varuint(magic)
 
 # Generate RAM object initdata for an object's properties.
 def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_to_natidx, objid_to_bidx, double_byte_order):
@@ -1778,7 +1774,7 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
         else:
             values.append(prop)
 
-    be.bits(len(values), NUM_NORMAL_PROPS_BITS)
+    be.varuint(len(values))
 
     for valspec in values:
         count_normal_props += 1
@@ -1881,7 +1877,7 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
                     assert(getter_magic == setter_magic)
                 _natidx(getter_natfun)
                 _natidx(setter_natfun)
-                be.bits(getter_magic, ACCESSOR_MAGIC_BITS)
+                be.varuint(getter_magic)
             elif val['type'] == 'lightfunc':
                 logger.warning('RAM init data format doesn\'t support "lightfunc" now, value replaced with "undefined": %r' % valspec)
                 be.bits(PROP_TYPE_UNDEFINED, PROP_TYPE_BITS)
@@ -1890,7 +1886,7 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
         else:
             raise Exception('unsupported value: %s' % repr(val))
 
-    be.bits(len(functions), NUM_FUNC_PROPS_BITS)
+    be.varuint(len(functions))
 
     for funprop in functions:
         count_function_props += 1
@@ -1918,13 +1914,9 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
         # (there are quite a lot of function properties)
         # Convert signed magic to 16-bit unsigned for encoding
         magic = resolve_magic(funobj.get('magic'), objid_to_bidx) & 0xffff
-        if magic != 0:
-            assert(magic >= 0)
-            assert(magic < (1 << MAGIC_BITS))
-            be.bits(1, 1)
-            be.bits(magic, MAGIC_BITS)
-        else:
-            be.bits(0, 1)
+        assert(magic >= 0)
+        assert(magic <= 0xffff)
+        be.varuint(magic)
 
     return count_normal_props, count_function_props
 
@@ -1987,6 +1979,10 @@ def gen_ramobj_initdata_bitpacked(meta, native_funcs, natfunc_name_to_natidx, do
         count_normal_props += count_obj_normal
         count_function_props += count_obj_func
 
+    if be._varuint_count > 0:
+        logger.debug('varuint distribution:')
+        logger.debug(json.dumps(be._varuint_dist[0:1024]))
+        logger.debug('Varuint efficiency: %f bits/value' % (float(be._varuint_bits) / float(be._varuint_count)))
     romobj_init_data = be.getByteString()
     #logger.debug(repr(romobj_init_data))
     #logger.debug(len(romobj_init_data))
