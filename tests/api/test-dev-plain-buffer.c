@@ -144,15 +144,15 @@ flag index: 2, top: 2
 - byteLength: 16
 - byteOffset: 0
 - BYTES_PER_ELEMENT: 1
-- constructor: function ArrayBuffer() {"native"}
-- slice: function slice() {"native"}
+- constructor: function ArrayBuffer() { [native code] }
+- slice: function slice() { [native code] }
 - __proto__: [object Object]
-- toString: function toString() {"native"}
-- toLocaleString: function toLocaleString() {"native"}
-- valueOf: function valueOf() {"native"}
-- hasOwnProperty: function hasOwnProperty() {"native"}
-- isPrototypeOf: function isPrototypeOf() {"native"}
-- propertyIsEnumerable: function propertyIsEnumerable() {"native"}
+- toString: function toString() { [native code] }
+- toLocaleString: function toLocaleString() { [native code] }
+- valueOf: function valueOf() { [native code] }
+- hasOwnProperty: function hasOwnProperty() { [native code] }
+- isPrototypeOf: function isPrototypeOf() { [native code] }
+- propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
 flag index: 3, top: 2
 - 0: 100
 - 1: 101

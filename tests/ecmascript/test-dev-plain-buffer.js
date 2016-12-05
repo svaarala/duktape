@@ -1098,7 +1098,7 @@ TypeError
 TypeError
 undefined
 undefined
-function dummy() {"ecmascript"}
+function dummy() { [ecmascript code] }
 - enc
 |6162636465666768696a6b6c6d6e6f70|
 {"_buf":"6162636465666768696a6b6c6d6e6f70"}

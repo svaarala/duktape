@@ -2000,6 +2000,10 @@ Planned
   bound function internal prototype is copied from the target function
   instead of always being Function.prototype (GH-1135)
 
+* Change Function.prototype.toString() output to match ES6 requirements;
+  the output no longer parses with eval() but causes a SyntaxError instead
+  (GH-1141)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor

@@ -45,7 +45,7 @@ true
 true
 812
 [object Object]
-function () {"native"}
+function () { [native code] }
 false
 true
 name,fileName,length,prototype,test

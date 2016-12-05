@@ -1,6 +1,6 @@
 /*===
 duk_is_object(1) = 1
-.toString rc=1 -> function toString() {"native"}
+.toString rc=1 -> function toString() { [native code] }
 json encoded: {"meaningOfLife":42}
 top=2
 ===*/
