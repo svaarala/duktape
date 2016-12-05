@@ -79,16 +79,16 @@
 
 /* E5 Section 8.6.2 + custom classes */
 #define DUK_HOBJECT_CLASS_NONE                 0
-#define DUK_HOBJECT_CLASS_ARGUMENTS            1
+#define DUK_HOBJECT_CLASS_OBJECT               1
 #define DUK_HOBJECT_CLASS_ARRAY                2
-#define DUK_HOBJECT_CLASS_BOOLEAN              3
-#define DUK_HOBJECT_CLASS_DATE                 4
-#define DUK_HOBJECT_CLASS_ERROR                5
-#define DUK_HOBJECT_CLASS_FUNCTION             6
-#define DUK_HOBJECT_CLASS_JSON                 7
-#define DUK_HOBJECT_CLASS_MATH                 8
-#define DUK_HOBJECT_CLASS_NUMBER               9
-#define DUK_HOBJECT_CLASS_OBJECT               10
+#define DUK_HOBJECT_CLASS_FUNCTION             3
+#define DUK_HOBJECT_CLASS_ARGUMENTS            4
+#define DUK_HOBJECT_CLASS_BOOLEAN              5
+#define DUK_HOBJECT_CLASS_DATE                 6
+#define DUK_HOBJECT_CLASS_ERROR                7
+#define DUK_HOBJECT_CLASS_JSON                 8
+#define DUK_HOBJECT_CLASS_MATH                 9
+#define DUK_HOBJECT_CLASS_NUMBER               10
 #define DUK_HOBJECT_CLASS_REGEXP               11
 #define DUK_HOBJECT_CLASS_STRING               12
 #define DUK_HOBJECT_CLASS_GLOBAL               13
