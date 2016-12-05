@@ -2012,8 +2012,8 @@ Planned
 
 * Add an fmod() self test (GH-1108)
 
-* Reduce RAM built-ins initdata limitations for custom bindings by bumping
-  bit count for normal and function properties from 6 to 8 (GH-FIXME)
+* Reduce RAM built-ins initdata limitations for custom bindings by using a
+  shared varuint encoding in the bit-packed initdata stream (GH-1151)
 
 * Fix JSON stringify fastpath handling of array gaps in JX and JC; they
   incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
