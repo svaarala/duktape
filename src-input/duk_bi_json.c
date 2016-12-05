@@ -2402,6 +2402,15 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				if (!k) {
 					continue;
 				}
+				if (DUK_HSTRING_HAS_ARRIDX(k)) {
+					/* If an object has array index keys we would need
+					 * to sort them into the ES6 enumeration order to
+					 * be consistent with the slow path.  Abort the fast
+					 * path and handle in the slow path for now.
+					 */
+					DUK_DD(DUK_DDPRINT("property key is an array index, abort fast path"));
+					goto abort_fastpath;
+				}
 				if (!DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(js_ctx->thr->heap, obj, i)) {
 					continue;
 				}
