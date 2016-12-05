@@ -2012,6 +2012,10 @@ Planned
 
 * Add an fmod() self test (GH-1108)
 
+* Fix JSON stringify fastpath handling of array gaps in JX and JC; they
+  incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
+  and '{"_undef":true}' as intended (GH-859, GH-1149)
+
 * Fix duk_hcompfunc 'data' field != NULL assumptions which might lead to
   memory unsafe behavior if Duktape ran out of memory when creating a
   duk_hcompfunc during compilation or function instantiation (GH-1144,
