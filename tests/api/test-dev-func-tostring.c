@@ -1,13 +1,13 @@
 /*
- *  Test the updated Function .toString() format in Duktape 1.5.0.
+ *  Test the current Function .toString() format.
  *
  *  Cover a few cases which cannot be exercised using Ecmascript code alone.
  */
 
 /*===
 *** test_1 (duk_safe_call)
-function light_PTR() {"light"}
-function dummy {() {"native"}
+function light_PTR() { [lightfunc code] }
+function dummy {() { [native code] }
 final top: 0
 ==> rc=0, result='undefined'
 ===*/

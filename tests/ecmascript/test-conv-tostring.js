@@ -18,7 +18,7 @@
 3 string false
 4 string 123
 5 string foo
-6 string function myfunc() {"ecmascript"}
+6 string function myfunc() { [ecmascript code] }
 7 string [object Object]
 8 TypeError
 9 string foo

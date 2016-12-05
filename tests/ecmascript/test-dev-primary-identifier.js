@@ -6,10 +6,10 @@
 foo
 foo
 234
-function inner() {"ecmascript"}
+function inner() { [ecmascript code] }
 123
 234
-function inner() {"ecmascript"}
+function inner() { [ecmascript code] }
 123
 ===*/
 

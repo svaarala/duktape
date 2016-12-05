@@ -490,9 +490,9 @@ try {
 
 /*===
 arithmetic test
-string: testfunction light_PTR_0511() {"light"}function light_PTR_0a11() {"light"}
-string: function light_PTR_0511() {"light"}function light_PTR_0a11() {"light"}
-string: function foo() {"ecmascript"}function bar() {"ecmascript"}
+string: testfunction light_PTR_0511() { [lightfunc code] }function light_PTR_0a11() { [lightfunc code] }
+string: function light_PTR_0511() { [lightfunc code] }function light_PTR_0a11() { [lightfunc code] }
+string: function foo() { [ecmascript code] }function bar() { [ecmascript code] }
 ===*/
 
 function arithmeticTest() {
@@ -514,9 +514,9 @@ try {
 
 /*===
 toString() test
-function light_PTR_002f() {"light"}
-function light_PTR_002f() {"light"}
-function light_PTR_002f() {"light"}
+function light_PTR_002f() { [lightfunc code] }
+function light_PTR_002f() { [lightfunc code] }
+function light_PTR_002f() { [lightfunc code] }
 true
 true
 ===*/
@@ -643,8 +643,8 @@ try {
 
 /*===
 toBuffer() test
-object: function light_PTR_0511() {"light"}
-object: function light_PTR_0a11() {"light"}
+object: function light_PTR_0511() { [lightfunc code] }
+object: function light_PTR_0a11() { [lightfunc code] }
 ===*/
 
 function toBufferTest() {
@@ -1120,15 +1120,15 @@ try {
 
 /*===
 bound function test
-F: function light_PTR_002f() {"light"}
+F: function light_PTR_002f() { [lightfunc code] }
 F type tag: 9
-G: function light_PTR_002f() {"bound"}
+G: function bound light_PTR_002f() { [bound code] }
 G type tag: 6
 G.length: 1
-H: function light_PTR_002f() {"bound"}
+H: function bound bound light_PTR_002f() { [bound code] }
 H type tag: 6
 H.length: 0
-I: function light_PTR_002f() {"bound"}
+I: function bound bound bound light_PTR_002f() { [bound code] }
 I type tag: 6
 I.length: 0
 G(123): 234
@@ -1189,8 +1189,8 @@ toString coerced object (return "length")
 read from length -> 2
 read from testWritable -> 123
 read from testNonWritable -> 234
-read from call -> function light_PTR_001f() {"light"}
-read from apply -> function light_PTR_0022() {"light"}
+read from call -> function light_PTR_001f() { [lightfunc code] }
+read from apply -> function light_PTR_0022() { [lightfunc code] }
 read from nonexistent -> undefined
 ===*/
 
@@ -2393,7 +2393,7 @@ act: undefined undefined
 gc: boolean true
 fin-get: TypeError
 fin-set: TypeError
-encdec-hex: string "function light_PTR_0511() {\"light\"}"
+encdec-hex: string "function light_PTR_0511() { [lightfunc code] }"
 dec-hex: TypeError
 compact: function {_func:true}
 ===*/
@@ -2456,9 +2456,9 @@ try {
 
 /*===
 Function built-in test
-Function: function {_func:true}
-new Function: function {_func:true}
-toString: string "function light_PTR_0511() {\"light\"}"
+Function: SyntaxError
+new Function: SyntaxError
+toString: string "function light_PTR_0511() { [lightfunc code] }"
 valueOf: function {_func:true}
 ===*/
 
@@ -2490,8 +2490,8 @@ parseInt: number NaN
 parseFloat: number NaN
 isNaN: boolean true
 isFinite: boolean false
-decodeURI: string "function light_PTR_0511() {\"light\"}"
-decodeURIComponent: string "function light_PTR_0511() {\"light\"}"
+decodeURI: string "function light_PTR_0511() { [lightfunc code] }"
+decodeURIComponent: string "function light_PTR_0511() { [lightfunc code] }"
 encodeURI: string "string"
 encodeURIComponent: string "string"
 escape: string "string"
@@ -2555,7 +2555,7 @@ Duktape.Logger: TypeError
 new Duktape.Logger: object {}
 fmt: TypeError
 raw: TypeError
-TIMESTAMP INF test: My light func is: function light_PTR_0511() {"light"}
+TIMESTAMP INF test: My light func is: function light_PTR_0511() { [lightfunc code] }
 ===*/
 
 function duktapeLoggerBuiltinTest() {
@@ -2686,7 +2686,7 @@ isSealed: boolean true
 isFrozen: boolean true
 isExtensible: boolean false
 toString: string "[object Function]"
-toLocaleString: string "function light_PTR_0511() {\"native\"}"
+toLocaleString: string "function light_PTR_0511() { [native code] }"
 valueOf: function {_func:true}
 isPrototypeOf: boolean false
 ===*/
@@ -2759,26 +2759,26 @@ try {
 Proxy built-in test
 get
 this: object false [object Object]
-target: function false function light_PTR_0511() {"native"}
+target: function false function light_PTR_0511() { [native code] }
 key: string name
 proxy.name: light_PTR_0511
 get
 this: object false [object Object]
-target: function false function light_PTR_0511() {"native"}
+target: function false function light_PTR_0511() { [native code] }
 key: string length
 proxy.length: 1
 get
 this: object false [object Object]
-target: function false function light_PTR_0511() {"native"}
+target: function false function light_PTR_0511() { [native code] }
 key: string nonExistent
 proxy.nonExistent: dummy
 get
-this: function false function light_PTR_0511() {"native"}
+this: function false function light_PTR_0511() { [native code] }
 target: object false [object Object]
 key: string foo
 proxy.foo: bar
 get
-this: function false function light_PTR_0511() {"native"}
+this: function false function light_PTR_0511() { [native code] }
 target: object false [object Object]
 key: string nonExistent
 proxy.nonExistent: dummy
@@ -2865,30 +2865,30 @@ try {
 
 /*===
 String built-in test
-String: string "function light_PTR_0511() {\"light\"}"
-new String: string "function light_PTR_0511() {\"light\"}"
+String: string "function light_PTR_0511() { [lightfunc code] }"
+new String: string "function light_PTR_0511() { [lightfunc code] }"
 new String: string "object"
 fromCharCode: string "\x00"
 toString: TypeError
 valueOf: TypeError
 charAt: string "f"
 charCodeAt: number 102
-concat: string "function light_PTR_0511() {\"light\"}function light_PTR_0511() {\"light\"}"
+concat: string "function light_PTR_0511() { [lightfunc code] }function light_PTR_0511() { [lightfunc code] }"
 indexOf: number 0
 lastIndexOf: number 0
 localeCompare: number 0
 match: object null
 replace: string "undefined"
 search: number -1
-slice: string "function light_PTR_0511() {\"light\"}"
+slice: string "function light_PTR_0511() { [lightfunc code] }"
 split: object ["",""]
-substring: string "function light_PTR_0511() {\"light\"}"
-toLowerCase: string "function light_PTR_0511() {\"light\"}"
-toLocaleLowerCase: string "function light_PTR_0511() {\"light\"}"
-toUpperCase: string "FUNCTION LIGHT_PTR_0511() {\"LIGHT\"}"
-toLocaleUpperCase: string "FUNCTION LIGHT_PTR_0511() {\"LIGHT\"}"
-trim: string "function light_PTR_0511() {\"light\"}"
-substr: string "function light_PTR_0511() {\"light\"}"
+substring: string "function light_PTR_0511() { [lightfunc code] }"
+toLowerCase: string "function light_PTR_0511() { [lightfunc code] }"
+toLocaleLowerCase: string "function light_PTR_0511() { [lightfunc code] }"
+toUpperCase: string "FUNCTION LIGHT_PTR_0511() { [LIGHTFUNC CODE] }"
+toLocaleUpperCase: string "FUNCTION LIGHT_PTR_0511() { [LIGHTFUNC CODE] }"
+trim: string "function light_PTR_0511() { [lightfunc code] }"
+substr: string "function light_PTR_0511() { [lightfunc code] }"
 ===*/
 
 function stringBuiltinTest() {

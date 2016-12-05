@@ -928,7 +928,7 @@ static duk_ret_t test_to_object(duk_context *ctx, void *udata) {
 
 /*===
 *** test_to_buffer (duk_safe_call)
-function light_PTR_4232() {"light"}
+function light_PTR_4232() { [lightfunc code] }
 final top: 1
 ==> rc=0, result='undefined'
 ===*/
