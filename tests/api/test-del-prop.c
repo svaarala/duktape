@@ -90,12 +90,12 @@ final top: 3
 ==> rc=1, result='RangeError: invalid stack index -2147483648'
 *** test_delproplstring_a_safecall (duk_safe_call)
 delete obj.nul<NUL>key -> rc=1
-{"foo":"fooval","bar":"barval","123":"123val"}
+{"123":"123val","foo":"fooval","bar":"barval"}
 final top: 3
 ==> rc=0, result='undefined'
 *** test_delproplstring_a (duk_pcall)
 delete obj.nul<NUL>key -> rc=1
-{"foo":"fooval","bar":"barval","123":"123val"}
+{"123":"123val","foo":"fooval","bar":"barval"}
 final top: 3
 ==> rc=0, result='undefined'
 ===*/
