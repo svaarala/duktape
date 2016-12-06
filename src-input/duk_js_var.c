@@ -109,10 +109,18 @@ DUK_LOCAL const duk_uint16_t duk__closure_copy_proplist[] = {
 	/* order: most frequent to least frequent */
 	DUK_STRIDX_INT_VARMAP,
 	DUK_STRIDX_INT_FORMALS,
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	DUK_STRIDX_NAME,
+#endif
+#if defined(DUK_USE_PC2LINE)
 	DUK_STRIDX_INT_PC2LINE,
+#endif
+#if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
 	DUK_STRIDX_FILE_NAME,
+#endif
+#if defined(DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY)
 	DUK_STRIDX_INT_SOURCE
+#endif
 };
 
 DUK_INTERNAL
@@ -193,6 +201,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		DUK_HOBJECT_SET_NOTAIL(&fun_clos->obj);
 	}
 	/* DUK_HOBJECT_FLAG_NEWENV: handled below */
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
 		/* Although NAMEBINDING is not directly needed for using
 		 * function instances, it's needed by bytecode dump/load
@@ -200,6 +209,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		 */
 		DUK_HOBJECT_SET_NAMEBINDING(&fun_clos->obj);
 	}
+#endif
 	if (DUK_HOBJECT_HAS_CREATEARGS(&fun_temp->obj)) {
 		DUK_HOBJECT_SET_CREATEARGS(&fun_clos->obj);
 	}
@@ -226,6 +236,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (DUK_HOBJECT_HAS_NEWENV(&fun_temp->obj)) {
 		DUK_HOBJECT_SET_NEWENV(&fun_clos->obj);
 
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 		if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
 			duk_hobject *proto;
 			duk_hobject *new_env;
@@ -238,8 +249,6 @@ void duk_js_push_closure(duk_hthread *thr,
 			 *  a) { funcname: <func>, __prototype: outer_lex_env }
 			 *  b) { funcname: <func>, __prototype:  <globalenv> }  (if outer_lex_env missing)
 			 */
-
-			DUK_ASSERT(duk_has_prop_stridx(ctx, -1, DUK_STRIDX_NAME));  /* required if NAMEBINDING set */
 
 			if (outer_lex_env) {
 				proto = outer_lex_env;
@@ -257,10 +266,16 @@ void duk_js_push_closure(duk_hthread *thr,
 			/* It's important that duk_xdef_prop() is a 'raw define' so that any
 			 * properties in an ancestor are never an issue (they should never be
 			 * e.g. non-writable, but just in case).
+			 *
+			 * Because template objects are not visible to user code, the case
+			 * where .name is missing shouldn't happen in practice.  It it does,
+			 * the name 'undefined' gets bound and maps to the closure (which is
+			 * a bit odd, but safe).
 			 */
-			duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
-			duk_dup_m4(ctx);                                     /* -> [ ... closure template env funcname closure ] */
-			duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);     /* -> [ ... closure template env ] */
+			(void) duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
+			/* -> [ ... closure template env funcname ] */
+			duk_dup_m4(ctx);                                           /* -> [ ... closure template env funcname closure ] */
+			duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);           /* -> [ ... closure template env ] */
 			/* env[funcname] = closure */
 
 			/* [ ... closure template env ] */
@@ -272,7 +287,10 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_pop(ctx);
 
 			/* [ ... closure template ] */
-		} else {
+		}
+		else
+#endif  /* DUK_USE_FUNC_NAME_PROPERTY */
+		{
 			/*
 			 *  Other cases (function declaration, anonymous function expression,
 			 *  strict direct eval code).  The "outer" environment will be whatever
@@ -313,7 +331,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	/*
 	 *  Copy some internal properties directly
 	 *
-	 *  The properties will be writable and configurable, but not enumerable.
+	 *  The properties will be non-writable and non-enumerable, but
+	 *  configurable.
 	 */
 
 	/* [ ... closure template ] */
@@ -327,7 +346,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		if (duk_get_prop_stridx_short(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> found", (long) stridx));
-			duk_xdef_prop_stridx_short(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx_short(ctx, -3, stridx, DUK_PROPDESC_FLAGS_C);
 		} else {
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> not found", (long) stridx));
 			duk_pop(ctx);
@@ -357,7 +376,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_pop(ctx);
 
 	duk_push_uint(ctx, len_value);  /* [ ... closure template len_value ] */
-	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
 
 	/*
 	 *  "prototype" is, by default, a fresh object with the "constructor"
@@ -407,27 +426,25 @@ void duk_js_push_closure(duk_hthread *thr,
 	}
 
 	/*
-	 *  "name" is a non-standard property found in at least V8, Rhino, smjs.
-	 *  For Rhino and smjs it is non-writable, non-enumerable, and non-configurable;
-	 *  for V8 it is writable, non-enumerable, non-configurable.  It is also defined
-	 *  for an anonymous function expression in which case the value is an empty string.
-	 *  We could also leave name 'undefined' for anonymous functions but that would
-	 *  differ from behavior of other engines, so use an empty string.
-	 *
-	 *  XXX: make optional?  costs something per function.
+	 *  "name" used to be non-standard but is now defined by ES6.
+	 *  In ES6/ES7 the .name property is configurable.
 	 */
 
 	/* [ ... closure template ] */
 
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
+	/* XXX: look for own property only */
 	if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME)) {
 		/* [ ... closure template name ] */
 		DUK_ASSERT(duk_is_string(ctx, -1));
 	} else {
 		/* [ ... closure template undefined ] */
+		/* XXX: anonymous function name? empty string in e.g. V8 */
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	}
-	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
+	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
+#endif
 
 	/*
 	 *  Compact the closure, in most cases no properties will be added later.
@@ -449,7 +466,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH) != 0);
 	DUK_ASSERT(add_auto_proto == 0 || duk_has_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE) != 0);
-	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_NAME) != 0);  /* non-standard */
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
+	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_NAME) != 0);
+#endif
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||
 	           duk_has_prop_stridx(ctx, -2, DUK_STRIDX_CALLER) != 0);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||

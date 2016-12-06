@@ -2665,8 +2665,10 @@ DUK_LOCAL void duk__push_func_from_lightfunc(duk_context *ctx, duk_c_function fu
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 	}
 
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	duk_push_lightfunc_name_raw(ctx, func, lf_flags);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+#endif
 
 	nf = duk_known_hnatfunc(ctx, -1);
 	nf->magic = (duk_int16_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);

@@ -269,11 +269,15 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * function.
 			 */
 			duk__push_stridx_or_string(ctx, bd);
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 			duk_xdef_prop_stridx_short(ctx,
 			                           -2,
 			                           DUK_STRIDX_NAME,
 			                           (i == DUK_BIDX_FUNCTION_PROTOTYPE) ?
 			                               DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE);
+#else
+			duk_pop(ctx);  /* Not very ideal but good enough for now. */
+#endif
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
@@ -324,7 +328,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_xdef_prop_stridx_short(ctx,
 			                           -2,
 			                           DUK_STRIDX_LENGTH,
-			                           DUK_PROPDESC_FLAGS_NONE);
+			                           DUK_PROPDESC_FLAGS_NONE);  /* XXX */
 		}
 
 		/* enable exotic behaviors last */
@@ -604,7 +608,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) name func ] */
 
 			duk_push_int(ctx, c_length);
-			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* XXX */
 
 			duk_dup_m2(ctx);
 			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);

@@ -172,6 +172,10 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				h_func = duk_get_hobject(ctx, -2);  /* NULL for lightfunc */
 
+				/* These may be systematically omitted by Duktape
+				 * with certain config options, but allow user to
+				 * set them on a case-by-case basis.
+				 */
 				duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
 				duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_FILE_NAME);
 
