@@ -2126,7 +2126,7 @@ Planned
   build is slightly smaller (GH-903)
 
 * Internal performance improvement: add optional fast path for dense arrays in
-  Array.prototype operations like push() and pop() (GH-584)
+  Array.prototype operations like push() and pop() (GH-584, GH-1154)
 
 * Miscellaneous performance improvements: avoid one extra shift when computing
   reg/const pointers in the bytecode executor (GH-674); avoid value stack for
