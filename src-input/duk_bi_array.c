@@ -523,6 +523,8 @@ DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr
 	len += n;
 	h_arr->length = len;
 
+	DUK_ASSERT((duk_uint_t) len == len);
+	duk_push_uint(ctx, (duk_uint_t) len);
 	return 1;
 }
 #endif  /* DUK_USE_ARRAY_FASTPATH */
