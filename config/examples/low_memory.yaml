@@ -87,6 +87,10 @@ DUK_USE_REGEXP_CANON_WORKAROUND: false
 #DUK_USE_ROM_GLOBAL_INHERIT: true  # select inherit or clone; inherit recommended
 #DUK_USE_ROM_GLOBAL_CLONE: false
 
+# Function footprint size reduction.
+DUK_USE_FUNC_NAME_PROPERTY: true  # compliance
+DUK_USE_FUNC_FILENAME_PROPERTY: false  # non-standard, can be removed
+
 # Consider these; disabled by default because they don't impact E5 compliance.
 DUK_USE_COROUTINE_SUPPORT: false
 DUK_USE_SOURCE_NONBMP: false  # <300 bytes footprint
