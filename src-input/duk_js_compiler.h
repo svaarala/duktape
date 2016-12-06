@@ -130,7 +130,7 @@ struct duk_compiler_func {
 	duk_hobject *h_argnames;            /* array of formal argument names (-> _Formals) */
 	duk_hobject *h_varmap;              /* variable map for pass 2 (identifier -> register number or null (unmapped)) */
 
-	/* value stack indices for tracking objects */
+	/* Value stack indices for tracking objects. */
 	/* code_idx: not needed */
 	duk_idx_t consts_idx;
 	duk_idx_t funcs_idx;
@@ -140,24 +140,24 @@ struct duk_compiler_func {
 	duk_idx_t argnames_idx;
 	duk_idx_t varmap_idx;
 
-	/* temp reg handling */
+	/* Temp reg handling. */
 	duk_reg_t temp_first;               /* first register that is a temporary (below: variables) */
 	duk_reg_t temp_next;                /* next temporary register to allocate */
 	duk_reg_t temp_max;                 /* highest value of temp_reg (temp_max - 1 is highest used reg) */
 
-	/* shuffle registers if large number of regs/consts */
+	/* Shuffle registers if large number of regs/consts. */
 	duk_reg_t shuffle1;
 	duk_reg_t shuffle2;
 	duk_reg_t shuffle3;
 
-	/* stats for current expression being parsed */
+	/* Stats for current expression being parsed. */
 	duk_int_t nud_count;
 	duk_int_t led_count;
 	duk_int_t paren_level;              /* parenthesis count, 0 = top level */
 	duk_bool_t expr_lhs;                /* expression is left-hand-side compatible */
 	duk_bool_t allow_in;                /* current paren level allows 'in' token */
 
-	/* misc */
+	/* Misc. */
 	duk_int_t stmt_next;                /* statement id allocation (running counter) */
 	duk_int_t label_next;               /* label id allocation (running counter) */
 	duk_int_t catch_depth;              /* catch stack depth */
@@ -170,22 +170,23 @@ struct duk_compiler_func {
 	duk_int_t max_line;
 #endif
 
-	/* status booleans */
-	duk_bool_t is_function;             /* is an actual function (not global/eval code) */
-	duk_bool_t is_eval;                 /* is eval code */
-	duk_bool_t is_global;               /* is global code */
-	duk_bool_t is_setget;               /* is a setter/getter */
-	duk_bool_t is_decl;                 /* is a function declaration (as opposed to function expression) */
-	duk_bool_t is_strict;               /* function is strict */
-	duk_bool_t is_notail;               /* function must not be tail called */
-	duk_bool_t in_directive_prologue;   /* parsing in "directive prologue", recognize directives */
-	duk_bool_t in_scanning;             /* parsing in "scanning" phase (first pass) */
-	duk_bool_t may_direct_eval;         /* function may call direct eval */
-	duk_bool_t id_access_arguments;     /* function refers to 'arguments' identifier */
-	duk_bool_t id_access_slow;          /* function makes one or more slow path accesses */
-	duk_bool_t is_arguments_shadowed;   /* argument/function declaration shadows 'arguments' */
-	duk_bool_t needs_shuffle;           /* function needs shuffle registers */
-	duk_bool_t reject_regexp_in_adv;    /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
+	/* Status booleans. */
+	duk_uint8_t is_function;             /* is an actual function (not global/eval code) */
+	duk_uint8_t is_eval;                 /* is eval code */
+	duk_uint8_t is_global;               /* is global code */
+	duk_uint8_t is_setget;               /* is a setter/getter */
+	duk_uint8_t is_decl;                 /* is a function declaration (as opposed to function expression) */
+	duk_uint8_t is_strict;               /* function is strict */
+	duk_uint8_t is_notail;               /* function must not be tail called */
+	duk_uint8_t in_directive_prologue;   /* parsing in "directive prologue", recognize directives */
+	duk_uint8_t in_scanning;             /* parsing in "scanning" phase (first pass) */
+	duk_uint8_t may_direct_eval;         /* function may call direct eval */
+	duk_uint8_t id_access_arguments;     /* function refers to 'arguments' identifier */
+	duk_uint8_t id_access_slow;          /* function makes one or more slow path accesses that won't match own static variables */
+	duk_uint8_t id_access_slow_own;      /* function makes one or more slow path accesses that may match own static variables */
+	duk_uint8_t is_arguments_shadowed;   /* argument/function declaration shadows 'arguments' */
+	duk_uint8_t needs_shuffle;           /* function needs shuffle registers */
+	duk_uint8_t reject_regexp_in_adv;    /* reject RegExp literal on next advance() call; needed for handling IdentifierName productions */
 };
 
 struct duk_compiler_ctx {
