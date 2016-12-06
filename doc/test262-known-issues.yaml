@@ -83,6 +83,9 @@
   test: "ch15/15.4/15.4.4/15.4.4.15/15.4.4.15-8-9"
   diagnosed: "probably Duktape bug: long array corner cases (C typing?)"
 -
+  test: "ch15/15.4/15.4.4/15.4.4.6/S15.4.4.6_A4_T1"
+  diagnosed: "Array .pop() fast path (can be disabled) ignores inherited array index properties"
+-
   test: "ch15/15.5/15.5.4/15.5.4.7/S15.5.4.7_A1_T11"
   knownissue: "test case relies on locale specific Date format, Duktape uses ISO 8601 for Date toString()"
 -
