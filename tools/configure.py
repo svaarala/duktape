@@ -520,6 +520,18 @@ def main():
     copy_and_cquote(license_file, os.path.join(tempdir, 'LICENSE.txt.tmp'))
     copy_and_cquote(authors_file, os.path.join(tempdir, 'AUTHORS.rst.tmp'))
 
+    # Scan used stridx, bidx, config options, etc.
+
+    res = exec_get_stdout([
+        sys.executable,
+        os.path.join(script_path, 'scan_used_stridx_bidx.py')
+    ] + glob.glob(os.path.join(srcdir, '*.c')) \
+      + glob.glob(os.path.join(srcdir, '*.h')) \
+      + glob.glob(os.path.join(srcdir, '*.h.in'))
+    )
+    with open(os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
+        f.write(res)
+
     # Create a duk_config.h.
     # XXX: might be easier to invoke genconfig directly, but there are a few
     # options which currently conflict (output file, git commit info, etc).
@@ -572,7 +584,8 @@ def main():
         sys.executable, os.path.join(script_path, 'genconfig.py'),
         '--output', os.path.join(tempdir, 'duk_config.h.tmp'),
         '--output-active-options', os.path.join(tempdir, 'duk_config_active_options.json'),
-        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch
+        '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
+        '--used-stridx-metadata', os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp')
     ]
     cmd += forward_genconfig_options()
     cmd += [
@@ -616,16 +629,6 @@ def main():
     #
     # There are currently no profile specific variants of strings/builtins, but
     # this will probably change when functions are added/removed based on profile.
-
-    res = exec_get_stdout([
-        sys.executable,
-        os.path.join(script_path, 'scan_used_stridx_bidx.py')
-    ] + glob.glob(os.path.join(srcdir, '*.c')) \
-      + glob.glob(os.path.join(srcdir, '*.h')) \
-      + glob.glob(os.path.join(srcdir, '*.h.in'))
-    )
-    with open(os.path.join(tempdir, 'duk_used_stridx_bidx_defs.json.tmp'), 'wb') as f:
-        f.write(res)
 
     cmd = [
         sys.executable,
