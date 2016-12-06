@@ -1319,6 +1319,32 @@ def generate_duk_config_header(opts, meta_dir):
     return remove_duplicate_newlines(ret.join()), active_opts
 
 #
+#  Misc
+#
+
+# Validate DUK_USE_xxx config options found in source code against known
+# config metadata.  Also warn about non-removed config options that are
+# not found in the source.
+def validate_config_options_in_source(fn):
+    with open(fn, 'rb') as f:
+        doc = json.loads(f.read())
+
+    defs_used = {}
+
+    for opt in doc.get('used_duk_use_options'):
+        defs_used[opt] = True
+        if opt == 'DUK_USE_xxx' or opt == 'DUK_USE_XXX':
+            continue  # allow common placeholders
+        meta = use_defs.get(opt)
+        if meta is None:
+            raise Exception('unknown config option in source code: %r' % opt)
+
+    for meta in use_defs_list:
+        if not defs_used.has_key(meta['define']):
+            if not meta.has_key('removed'):
+                logger.info('config option %r not found in source code' % meta['define'])
+
+#
 #  Main
 #
 
@@ -1393,6 +1419,7 @@ def add_genconfig_optparse_options(parser, direct=False):
     parser.add_option('--use-cpp-warning', dest='use_cpp_warning', action='store_true', default=False, help='emit a (non-portable) #warning when appropriate')
 
     if direct:
+        parser.add_option('--used-stridx-metadata', dest='used_stridx_metadata', default=None, help='metadata for used stridx, bidx, DUK_USE_xxx')
         parser.add_option('--git-commit', dest='git_commit', default=None, help='git commit hash to be included in header comments')
         parser.add_option('--git-describe', dest='git_describe', default=None, help='git describe string to be included in header comments')
         parser.add_option('--git-branch', dest='git_branch', default=None, help='git branch string to be included in header comments')
@@ -1444,6 +1471,9 @@ def genconfig(opts, args):
     logger.debug('%s, scanned%d DUK_USE_XXX, %d helper snippets' % \
         (metadata_src_text, len(use_defs.keys()), len(helper_snippets)))
     logger.debug('Tags: %r' % use_tags_list)
+
+    if opts.used_stridx_metadata is not None:
+        validate_config_options_in_source(opts.used_stridx_metadata)
 
     if len(args) == 0:
         raise Exception('missing command')
