@@ -54,10 +54,10 @@ coercion
 TypeError
 TypeError
 TypeError
-TypeError
-TypeError
-TypeError
-TypeError
+object
+object
+object
+object
 object
 object
 object
@@ -71,7 +71,7 @@ function coercionTest() {
 
         try {
             if (is_noarg) {
-                t = Object.getOwnPropertyNames(o);
+                t = Object.getOwnPropertyNames();
             } else {
                 t = Object.getOwnPropertyNames(o);
             }

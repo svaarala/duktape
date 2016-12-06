@@ -73,10 +73,10 @@ try {
 coercion
 TypeError
 TypeError
-TypeError
-TypeError
-TypeError
-TypeError
+boolean foo undefined ok
+boolean foo undefined ok
+number foo undefined ok
+string foo undefined ok
 object foo undefined ok
 object foo object 1
 function foo undefined ok

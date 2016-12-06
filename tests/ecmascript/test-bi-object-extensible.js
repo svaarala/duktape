@@ -47,54 +47,55 @@ try {
 
 /*===
 isExtensible 0
-TypeError
+false
 isExtensible 1
-TypeError
+false
 isExtensible 2
-TypeError
+false
 isExtensible 3
-TypeError
+false
 isExtensible 4
-TypeError
+false
 isExtensible 5
-TypeError
+false
 isExtensible 6
+true
 isExtensible 7
+true
 preventExtensions 0
-TypeError
+undefined
 preventExtensions 1
-TypeError
+null
 preventExtensions 2
-TypeError
+true
 preventExtensions 3
-TypeError
+false
 preventExtensions 4
-TypeError
+123
 preventExtensions 5
-TypeError
+foo
 preventExtensions 6
+1,2,3
 preventExtensions 7
+[object Object]
 ===*/
 
 function coercionTest() {
+    // Note: ES5 behavior was to throw a TypeError for non-object values.  ES6
+    // changes this to treat them as already non-extensible objects instead.
+    // This goes for undefined and null too, even though they are not normally
+    // object coercible!
+
     var values = [ undefined, null, true, false, 123, 'foo', [1,2,3], { foo: 1, bar: 1 } ];
 
     for (i = 0; i < values.length; i++) {
         print('isExtensible', i);
-        try {
-            Object.isExtensible(values[i]);
-        } catch (e) {
-            print(e.name);
-        }
+        print(Object.isExtensible(values[i]));
     }
 
     for (i = 0; i < values.length; i++) {
         print('preventExtensions', i);
-        try {
-            Object.preventExtensions(values[i]);
-        } catch (e) {
-            print(e.name);
-        }
+        print(Object.preventExtensions(values[i]));
     }
 }
 

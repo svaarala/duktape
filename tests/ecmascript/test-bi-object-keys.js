@@ -54,10 +54,10 @@ coercion
 TypeError
 TypeError
 TypeError
-TypeError
-TypeError
-TypeError
-TypeError
+object 0
+object 0
+object 0
+object 3
 object 2
 object 2
 ===*/

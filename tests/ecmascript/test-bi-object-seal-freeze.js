@@ -212,81 +212,81 @@ try {
 
 /*===
 0 0
-TypeError
+ok
 0 1
-TypeError
+ok
 0 2
-TypeError
+ok
 0 3
-TypeError
+ok
 0 4
-TypeError
+ok
 0 5
-TypeError
+ok
 0 6
 ok
 0 7
 ok
 1 0
-TypeError
+ok
 1 1
-TypeError
+ok
 1 2
-TypeError
+ok
 1 3
-TypeError
+ok
 1 4
-TypeError
+ok
 1 5
-TypeError
+ok
 1 6
 ok
 1 7
 ok
 2 0
-TypeError
+ok
 2 1
-TypeError
+ok
 2 2
-TypeError
+ok
 2 3
-TypeError
+ok
 2 4
-TypeError
+ok
 2 5
-TypeError
+ok
 2 6
 ok
 2 7
 ok
 3 0
-TypeError
+ok
 3 1
-TypeError
+ok
 3 2
-TypeError
+ok
 3 3
-TypeError
+ok
 3 4
-TypeError
+ok
 3 5
-TypeError
+ok
 3 6
 ok
 3 7
 ok
 4 0
-TypeError
+ok
 4 1
-TypeError
+ok
 4 2
-TypeError
+ok
 4 3
-TypeError
+ok
 4 4
-TypeError
+ok
 4 5
-TypeError
+ok
 4 6
 ok
 4 7
