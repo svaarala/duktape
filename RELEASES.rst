@@ -2079,6 +2079,15 @@ Planned
   the output no longer parses with eval() but causes a SyntaxError instead
   (GH-1141)
 
+* Make function instance .name and .length properties configurable (but
+  non-writable and non-enumerable) to match ES6 requirements; also change
+  .fileName to follow the same attribute convention (GH-1153)
+
+* Make Error instance .fileName and .lineNumber properties configurable
+  but non-writable and non-enumerable to match function instance property
+  behavior; this only matters when tracebacks are disabled and concrete
+  error instance properties are in use (GH-1153)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor
@@ -2231,7 +2240,8 @@ Planned
   _Varmap in more cases when it is safe to do so (GH-1146); reduce initial
   bytecode allocation in Ecmascript compiler for low memory targets (GH-1146);
   packed arguments for some internal helper calls (GH-1158, GH-1172); misc
-  internal helpers to reduce call site size (GH-1166, GH-1173)
+  internal helpers to reduce call site size (GH-1166, GH-1173); config options
+  for function .name and .fileName control (GH-1153)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
