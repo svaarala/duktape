@@ -163,6 +163,10 @@
   test: "test-bi-typedarray-nan-handling.js"
   specialoptions: "NaN sign is platform dependent"
   # No longer relevant (at least with current test runs)
+-
+  test: "test-dev-func-varmap-drop.js"
+  specialoptions: "debugger support must be disabled"
+  # Moved
 
 # API testcase (tests/api/) known issues
 

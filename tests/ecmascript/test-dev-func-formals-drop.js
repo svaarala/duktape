@@ -5,6 +5,12 @@
  *  is always kept.
  */
 
+/*---
+{
+    "custom": true
+}
+---*/
+
 /*===
 3
 foo bar quux

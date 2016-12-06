@@ -1,0 +1,57 @@
+summary: debugger support enabled; affects _Varmap behavior
+---
+- pr(arg)
+hello
+prop count diff: 1
+- Math.PI
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- direct eval
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- inner function
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 1
+- try-catch without a slow path access in catch clause
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- try-catch with a slow path access in catch clause
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- with statement without a slow path access
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- with statement with a slow path access
+3.141592653589793
+prop count diff: 1
+3.141592653589793
+prop count diff: 0
+- arguments object access
+3.141592653589793
+object
+prop count diff: 1
+3.141592653589793
+object
+prop count diff: 0
+- test eval creating a local variable for a function without _Varmap
+123
+prop count diff: 1
+123
+prop count diff: 0
+- inner function without varmap, access outer function variables
+123
+prop count diff: 1
+123
+prop count diff: 1

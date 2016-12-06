@@ -57,5 +57,5 @@ function f(x) {
 try {
     f(1);
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }
