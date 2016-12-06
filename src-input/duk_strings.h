@@ -26,6 +26,7 @@
 #define DUK_STR_UNSUPPORTED                      "unsupported"
 #define DUK_STR_INVALID_COUNT                    "invalid count"
 #define DUK_STR_INVALID_ARGS                     "invalid args"
+#define DUK_STR_INVALID_STATE                    "invalid state"
 #define DUK_STR_INVALID_INPUT                    "invalid input"
 #define DUK_STR_INVALID_LENGTH                   "invalid length"
 #define DUK_STR_NOT_CONSTRUCTABLE                "not constructable"

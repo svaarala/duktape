@@ -222,6 +222,13 @@
 		DUK_ERROR_TYPE_INVALID_ARGS((thr)); \
 		return 0; \
 	} while (0)
+#define DUK_ERROR_TYPE_INVALID_STATE(thr) do { \
+		duk_err_type_invalid_state((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
+	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_STATE(thr) do { \
+		DUK_ERROR_TYPE_INVALID_STATE((thr)); \
+		return 0; \
+	} while (0)
 #define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
 		duk_err_type_invalid_trap_result((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
@@ -288,12 +295,19 @@
 #define DUK_ERROR_TYPE_INVALID_ARGS(thr) do { \
 		duk_err_type((thr)); \
 	} while (0)
-#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
-		duk_err_type((thr)); \
-	} while (0)
 #define DUK_DCERROR_TYPE_INVALID_ARGS(thr) do { \
 		DUK_UNREF((thr)); \
 		return DUK_RET_TYPE_ERROR; \
+	} while (0)
+#define DUK_ERROR_TYPE_INVALID_STATE(thr) do { \
+		duk_err_type((thr)); \
+	} while (0)
+#define DUK_DCERROR_TYPE_INVALID_STATE(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_TYPE_ERROR; \
+	} while (0)
+#define DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr) do { \
+		duk_err_type((thr)); \
 	} while (0)
 #define DUK_ERROR_TYPE(thr,msg) do { \
 		duk_err_type((thr)); \
@@ -436,6 +450,7 @@ DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_range_index(duk_hthread *thr, const 
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_range_push_beyond(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_range(duk_hthread *thr, const char *filename, duk_int_t linenumber, const char *message));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_args(duk_hthread *thr, const char *filename, duk_int_t linenumber));
+DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_state(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_type_invalid_trap_result(duk_hthread *thr, const char *filename, duk_int_t linenumber));
 #else  /* DUK_VERBOSE_ERRORS */
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_error(duk_hthread *thr));

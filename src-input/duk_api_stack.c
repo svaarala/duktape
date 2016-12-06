@@ -4503,6 +4503,34 @@ DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 }
 #endif  /* !DUK_USE_PREFER_SIZE */
 
+/* Unsafe internal variant which assumes there are enough values on the value
+ * stack so that a top check can be skipped safely.
+ */
+#if defined(DUK_USE_PREFER_SIZE)
+DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
+	DUK_ASSERT_CTX_VALID(ctx);
+	duk_pop_n(ctx, 1);
+}
+#else
+DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_top != thr->valstack_bottom);
+
+	tv = --thr->valstack_top;  /* tv points to element just below prev top */
+	DUK_ASSERT(tv >= thr->valstack_bottom);
+#ifdef DUK_USE_REFERENCE_COUNTING
+	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
+#else
+	DUK_TVAL_SET_UNDEFINED(tv);
+#endif
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+}
+#endif  /* !DUK_USE_PREFER_SIZE */
+
 DUK_EXTERNAL void duk_pop_2(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	duk_pop_n(ctx, 2);

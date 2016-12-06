@@ -211,7 +211,10 @@ DUK_INTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
 
+DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_context *ctx);
+
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_unsafe(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_pop_unsafe(duk_context *ctx);
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

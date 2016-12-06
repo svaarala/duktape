@@ -576,3 +576,33 @@ DUK_EXTERNAL void duk_set_magic(duk_context *ctx, duk_idx_t idx, duk_int_t magic
 	DUK_ASSERT(nf != NULL);
 	nf->magic = (duk_int16_t) magic;
 }
+
+/*
+ *  Misc helpers
+ */
+
+DUK_INTERNAL void duk_resolve_nonbound_function(duk_context *ctx) {
+	duk_uint_t sanity;
+	duk_tval *tv;
+
+	sanity = DUK_HOBJECT_BOUND_CHAIN_SANITY;
+	do {
+		tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+		if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+			/* Lightweight function: never bound, so terminate. */
+			break;
+		} else if (DUK_TVAL_IS_OBJECT(tv)) {
+			duk_hobject *func;
+
+			func = DUK_TVAL_GET_OBJECT(tv);
+			DUK_ASSERT(func != NULL);
+			if (!DUK_HOBJECT_IS_CALLABLE(func) || !DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
+				break;
+			}
+			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
+			duk_replace(ctx, -2);
+		} else {
+			break;
+		}
+	} while (--sanity > 0);
+}
