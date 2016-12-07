@@ -1961,7 +1961,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
 	                                 DUK_TYPE_MASK_LIGHTFUNC |
 	                                 DUK_TYPE_MASK_BUFFER)) {
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_JSON);
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_TO_JSON);
 		if (duk_is_callable(ctx, -1)) {  /* toJSON() can also be a lightfunc */
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
 			/* XXX: duk_dup_unvalidated(ctx, -2) etc. */
@@ -2038,7 +2038,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 #endif
 		case DUK_HOBJECT_CLASS_BOOLEAN: {
 			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 			duk_remove(ctx, -2);
 			break;
 		}
@@ -2789,7 +2789,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 
 		duk_push_object(ctx);
 		duk_dup_m2(ctx);  /* -> [ ... val root val ] */
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
+		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
 
 		DUK_DDD(DUK_DDDPRINT("start reviver walk, root=%!T, name=%!T",
@@ -3091,7 +3091,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	idx_holder = duk_push_object(ctx);
 	duk_dup(ctx, idx_value);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_EMPTY_STRING);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_EMPTY_STRING);
 
 	DUK_DDD(DUK_DDDPRINT("before: flags=0x%08lx, loop=%!T, replacer=%!O, "
 	                     "proplist=%!T, gap=%!O, holder=%!T",

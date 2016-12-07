@@ -29,7 +29,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	if (!duk_is_undefined(ctx, 0)) {
 		duk_to_string(ctx, 0);
 		duk_dup_0(ctx);  /* [ message error message ] */
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* Augment the error if called as a normal function.  __FILE__ and __LINE__
@@ -53,7 +53,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 
 	/* [ ... this ] */
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME);
 	if (duk_is_undefined(ctx, -1)) {
 		duk_pop(ctx);
 		duk_push_string(ctx, "Error");
@@ -67,7 +67,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	 * accident or are they actually needed?  The first ToString()
 	 * could conceivably return 'undefined'.
 	 */
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE);
+	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_MESSAGE);
 	if (duk_is_undefined(ctx, -1)) {
 		duk_pop(ctx);
 		duk_push_string(ctx, "");
@@ -131,7 +131,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 	DUK_UNREF(thr);
 
 	duk_push_this(ctx);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TRACEDATA);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TRACEDATA);
 	idx_td = duk_get_top_index(ctx);
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_NEWLINE_4SPACE);
@@ -172,8 +172,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				h_func = duk_get_hobject(ctx, -2);  /* NULL for lightfunc */
 
-				duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
-				duk_get_prop_stridx(ctx, -3, DUK_STRIDX_FILE_NAME);
+				duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
+				duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_FILE_NAME);
 
 #if defined(DUK_USE_PC2LINE)
 				line = duk_hobject_pc2line_query(ctx, -4, (duk_uint_fast32_t) pc);

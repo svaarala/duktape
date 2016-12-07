@@ -322,8 +322,8 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 			/* Anything else is not constructable. */
 			goto not_constructable;
 		}
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
-		duk_remove(ctx, -2);                                  /* -> [... target] */
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
+		duk_remove(ctx, -2);                                        /* -> [... target] */
 	}
 	DUK_ASSERT(duk_is_callable(ctx, -1));
 	DUK_ASSERT(duk_is_lightfunc(ctx, -1) ||
@@ -342,7 +342,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 
 	/* [... constructor arg1 ... argN final_cons fallback] */
 
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE);
+	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE);
 	proto = duk_get_hobject(ctx, -1);
 	if (!proto) {
 		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
@@ -599,7 +599,7 @@ DUK_INTERNAL void duk_resolve_nonbound_function(duk_context *ctx) {
 			if (!DUK_HOBJECT_IS_CALLABLE(func) || !DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
 				break;
 			}
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);
 			duk_replace(ctx, -2);
 		} else {
 			break;

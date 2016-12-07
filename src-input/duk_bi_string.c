@@ -41,7 +41,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 
 		/* String object internal value is immutable */
 		duk_dup_0(ctx);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	}
 	/* Note: unbalanced stack on purpose */
 
@@ -140,7 +140,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_to_string(duk_context *ctx) {
 			goto type_error;
 		}
 
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 		DUK_ASSERT(duk_is_string(ctx, -1));
 
 		return 1;
@@ -507,7 +507,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 		if (is_global) {
 			/* start match from beginning */
 			duk_push_int(ctx, 0);
-			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+			duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
 #else  /* DUK_USE_REGEXP_SUPPORT */
 		DUK_DCERROR_UNSUPPORTED(thr);
@@ -572,7 +572,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				break;
 			}
 
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INDEX);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(ctx, -1));
 			match_start_coff = duk_get_int(ctx, -1);
 			duk_pop(ctx);
@@ -588,13 +588,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				 */
 				duk_uint32_t last_index;
 
-				duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+				duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 				last_index = (duk_uint32_t) duk_get_uint(ctx, -1);
 				DUK_DDD(DUK_DDDPRINT("empty match, bump lastIndex: %ld -> %ld",
 				                     (long) last_index, (long) (last_index + 1)));
 				duk_pop(ctx);
 				duk_push_int(ctx, last_index + 1);
-				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+				duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 			}
 
 			DUK_ASSERT(duk_get_length(ctx, -1) <= DUK_INT_MAX);  /* string limits */
@@ -935,7 +935,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 			}
 			matched = 1;
 
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INDEX);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INDEX);
 			DUK_ASSERT(duk_is_number(ctx, -1));
 			match_start_coff = duk_get_int(ctx, -1);
 			match_start_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_start_coff);
@@ -947,7 +947,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 				break;
 			}
 
-			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+			duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 			DUK_ASSERT(duk_is_number(ctx, -1));
 			match_end_coff = duk_get_int(ctx, -1);
 			match_end_boff = duk_heap_strcache_offset_char2byte(thr, h_input, match_end_coff);
@@ -956,7 +956,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 			/* empty match -> bump and continue */
 			if (prev_match_end_boff == match_end_boff) {
 				duk_push_int(ctx, match_end_coff + 1);
-				duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+				duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 				duk_pop(ctx);
 				continue;
 			}
@@ -1182,7 +1182,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 		return 1;
 	}
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INDEX);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INDEX);
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	return 1;
 }
@@ -1216,7 +1216,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	/* [ regexp string ] */
 
 	duk_push_int(ctx, 0);
-	duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+	duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 	duk_push_array(ctx);
 
 	/* [ regexp string res_arr ] */
@@ -1236,7 +1236,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 			break;
 		}
 
-		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+		duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		DUK_ASSERT(duk_is_number(ctx, -1));
 		this_index = duk_get_int(ctx, -1);
 		duk_pop(ctx);
@@ -1244,7 +1244,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 		if (this_index == prev_last_index) {
 			this_index++;
 			duk_push_int(ctx, this_index);
-			duk_put_prop_stridx(ctx, 0, DUK_STRIDX_LAST_INDEX);
+			duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LAST_INDEX);
 		}
 		prev_last_index = this_index;
 

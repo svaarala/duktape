@@ -258,7 +258,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			 * properties in an ancestor are never an issue (they should never be
 			 * e.g. non-writable, but just in case).
 			 */
-			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
+			duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);       /* -> [ ... closure template env funcname ] */
 			duk_dup_m4(ctx);                                     /* -> [ ... closure template env funcname closure ] */
 			duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);     /* -> [ ... closure template env ] */
 			/* env[funcname] = closure */
@@ -324,10 +324,10 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	for (i = 0; i < (duk_small_uint_t) (sizeof(duk__closure_copy_proplist) / sizeof(duk_uint16_t)); i++) {
 		duk_small_int_t stridx = (duk_small_int_t) duk__closure_copy_proplist[i];
-		if (duk_get_prop_stridx(ctx, -1, stridx)) {
+		if (duk_get_prop_stridx_short(ctx, -1, stridx)) {
 			/* [ ... closure template val ] */
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> found", (long) stridx));
-			duk_xdef_prop_stridx(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
+			duk_xdef_prop_stridx_short(ctx, -3, stridx, DUK_PROPDESC_FLAGS_WC);
 		} else {
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> not found", (long) stridx));
 			duk_pop(ctx);
@@ -346,7 +346,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	/* XXX: these lookups should be just own property lookups instead of
 	 * looking up the inheritance chain.
 	 */
-	if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FORMALS)) {
+	if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_FORMALS)) {
 		/* [ ... closure template formals ] */
 		len_value = (duk_uint_t) duk_get_length(ctx, -1);  /* could access duk_harray directly, not important */
 		DUK_DD(DUK_DDPRINT("closure length from _Formals -> %ld", (long) len_value));
@@ -357,7 +357,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	duk_pop(ctx);
 
 	duk_push_uint(ctx, len_value);  /* [ ... closure template len_value ] */
-	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 	/*
 	 *  "prototype" is, by default, a fresh object with the "constructor"
@@ -378,9 +378,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (add_auto_proto) {
 		duk_push_object(ctx);  /* -> [ ... closure template newobj ] */
 		duk_dup_m3(ctx);       /* -> [ ... closure template newobj closure ] */
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* -> [ ... closure template newobj ] */
 		duk_compact(ctx, -1);  /* compact the prototype */
-		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
+		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);     /* -> [ ... closure template ] */
 	}
 
 	/*
@@ -400,7 +400,7 @@ void duk_js_push_closure(duk_hthread *thr,
 #ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value"));
 		duk_push_null(ctx);
-		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
 #else
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property not used"));
 #endif
@@ -419,7 +419,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	/* [ ... closure template ] */
 
-	if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME)) {
+	if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME)) {
 		/* [ ... closure template name ] */
 		DUK_ASSERT(duk_is_string(ctx, -1));
 	} else {
@@ -427,7 +427,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		duk_pop(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	}
-	duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
+	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);  /* -> [ ... closure template ] */
 
 	/*
 	 *  Compact the closure, in most cases no properties will be added later.
@@ -507,11 +507,11 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 		duk_push_hthread(ctx, thr);
-		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
+		duk_xdef_prop_stridx_short_wec(ctx, -2, DUK_STRIDX_INT_THREAD);
 		duk_push_hobject(ctx, func);
-		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
+		duk_xdef_prop_stridx_short_wec(ctx, -2, DUK_STRIDX_INT_CALLEE);
 		duk_push_size_t(ctx, idx_bottom);
-		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
+		duk_xdef_prop_stridx_short_wec(ctx, -2, DUK_STRIDX_INT_REGBASE);
 	}
 
 	return env;
@@ -598,19 +598,19 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	{
 		/* [... env] */
 
-		if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_CALLEE)) {
+		if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_CALLEE)) {
 			DUK_ASSERT(duk_is_object(ctx, -1));
 			DUK_ASSERT(duk_get_hobject(ctx, -1) == (duk_hobject *) func);
 		}
 		duk_pop(ctx);
 
-		if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_THREAD)) {
+		if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_THREAD)) {
 			DUK_ASSERT(duk_is_object(ctx, -1));
 			DUK_ASSERT(duk_get_hobject(ctx, -1) == (duk_hobject *) thr);
 		}
 		duk_pop(ctx);
 
-		if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_REGBASE)) {
+		if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_REGBASE)) {
 			DUK_ASSERT(duk_is_number(ctx, -1));
 			DUK_ASSERT(duk_get_number(ctx, -1) == (double) regbase);
 		}
@@ -643,7 +643,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 		/* [... env] */
 
-		if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_CALLEE)) {
+		if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_CALLEE)) {
 			DUK_DDD(DUK_DDDPRINT("env has no callee property, nothing to close; re-delete the control properties just in case"));
 			duk_pop(ctx);
 			goto skip_varmap;
@@ -651,7 +651,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 		/* [... env callee] */
 
-		if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VARMAP)) {
+		if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VARMAP)) {
 			DUK_DDD(DUK_DDDPRINT("callee has no varmap property, nothing to close; delete the control properties"));
 			duk_pop_2(ctx);
 			goto skip_varmap;
@@ -702,9 +702,9 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 
 	/* [... env] */
 
-	duk_del_prop_stridx(ctx, -1, DUK_STRIDX_INT_CALLEE);
-	duk_del_prop_stridx(ctx, -1, DUK_STRIDX_INT_THREAD);
-	duk_del_prop_stridx(ctx, -1, DUK_STRIDX_INT_REGBASE);
+	duk_del_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_CALLEE);
+	duk_del_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_THREAD);
+	duk_del_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_REGBASE);
 
 	duk_pop(ctx);
 

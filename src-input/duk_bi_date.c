@@ -899,7 +899,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk
 		DUK_ERROR_TYPE(thr, "expected Date");
 	}
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 	d = duk_to_number(ctx, -1);
 	duk_pop(ctx);
 
@@ -945,7 +945,7 @@ DUK_LOCAL duk_ret_t duk__set_this_timeval_from_dparts(duk_context *ctx, duk_doub
 	d = duk_bi_date_get_timeval_from_dparts(dparts, flags);
 	duk_push_number(ctx, d);  /* -> [ ... this timeval_new ] */
 	duk_dup_top(ctx);         /* -> [ ... this timeval_new timeval_new ] */
-	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE);
+	duk_put_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_VALUE);
 
 	/* stack top: new time value, return 1 to allow tail calls */
 	return 1;
@@ -1431,7 +1431,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 	if (nargs == 0 || !is_cons) {
 		d = duk__timeclip(DUK_USE_DATE_GET_NOW(ctx));
 		duk_push_number(ctx, d);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		if (!is_cons) {
 			/* called as a normal function: return new Date().toString() */
 			duk_to_string(ctx, -1);
@@ -1445,7 +1445,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 		}
 		d = duk__timeclip(duk_to_number(ctx, 0));
 		duk_push_number(ctx, d);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		return 1;
 	}
 
@@ -1559,7 +1559,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_to_json(duk_context *ctx) {
 	}
 	duk_pop(ctx);
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_TO_ISO_STRING);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_TO_ISO_STRING);
 	duk_dup_m2(ctx);  /* -> [ O toIsoString O ] */
 	duk_call_method(ctx, 0);
 	return 1;
@@ -1703,7 +1703,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_prototype_set_time(duk_context *ctx) {
 	d = duk__timeclip(duk_to_number(ctx, 0));
 	duk_push_number(ctx, d);
 	duk_dup_top(ctx);
-	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE); /* -> [ timeval this timeval ] */
+	duk_put_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_VALUE); /* -> [ timeval this timeval ] */
 
 	return 1;
 }

@@ -459,7 +459,7 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 
 	duk_require_stack(ctx, DUK__VALSTACK_PROXY_LOOKUP);
 	duk_push_hobject(ctx, h_handler);
-	if (duk_get_prop_stridx(ctx, -1, stridx_trap)) {
+	if (duk_get_prop_stridx_short(ctx, -1, stridx_trap)) {
 		/* -> [ ... handler trap ] */
 		duk_insert(ctx, -2);  /* -> [ ... trap handler ] */
 
@@ -4845,23 +4845,23 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_context *ct
 		} else {
 			duk_push_undefined(ctx);
 		}
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_GET);
+		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_GET);
 		if (pd.set) {
 			duk_push_hobject(ctx, pd.set);
 		} else {
 			duk_push_undefined(ctx);
 		}
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_SET);
+		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_SET);
 	} else {
 		duk_dup_m2(ctx);
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_VALUE);
+		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_VALUE);
 		duk_push_boolean(ctx, DUK_PROPDESC_IS_WRITABLE(&pd));
-		duk_put_prop_stridx(ctx, -2, DUK_STRIDX_WRITABLE);
+		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_WRITABLE);
 	}
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_ENUMERABLE(&pd));
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_ENUMERABLE);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_ENUMERABLE);
 	duk_push_boolean(ctx, DUK_PROPDESC_IS_CONFIGURABLE(&pd));
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_CONFIGURABLE);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_CONFIGURABLE);
 
 	/* [ ... key value desc ] */
 
@@ -4905,6 +4905,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 	DUK_ASSERT(out_idx_value != NULL);
 	DUK_ASSERT(out_getter != NULL);
 	DUK_ASSERT(out_setter != NULL);
+	DUK_ASSERT(idx_in <= 0x7fffL);  /* short variants would be OK, but not used to avoid shifts */
 
 	/* Must be an object, otherwise TypeError (E5.1 Section 8.10.5, step 1). */
 	idx_in = duk_require_normalize_index(ctx, idx_in);

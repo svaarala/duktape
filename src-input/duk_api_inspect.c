@@ -211,7 +211,7 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level)
 	duk_push_tval(ctx, &act->tv_func);
 
 	duk_push_uint(ctx, (duk_uint_t) pc);
-	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_PC);
+	duk_put_prop_stridx_short(ctx, -3, DUK_STRIDX_PC);
 
 #if defined(DUK_USE_PC2LINE)
 	line = duk_hobject_pc2line_query(ctx, -1, pc);
@@ -219,9 +219,9 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level)
 	line = 0;
 #endif
 	duk_push_uint(ctx, (duk_uint_t) line);
-	duk_put_prop_stridx(ctx, -3, DUK_STRIDX_LINE_NUMBER);
+	duk_put_prop_stridx_short(ctx, -3, DUK_STRIDX_LINE_NUMBER);
 
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_LC_FUNCTION);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_FUNCTION);
 	/* Providing access to e.g. act->lex_env would be dangerous: these
 	 * internal structures must never be accessible to the application.
 	 * Duktape relies on them having consistent data, and this consistency

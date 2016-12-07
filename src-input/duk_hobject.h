@@ -111,7 +111,7 @@
 #define DUK_HOBJECT_CLASS_BUFOBJ_MAX           28
 #define DUK_HOBJECT_CLASS_MAX                  28
 
-/* class masks */
+/* Class masks. */
 #define DUK_HOBJECT_CMASK_ALL                  ((1UL << (DUK_HOBJECT_CLASS_MAX + 1)) - 1UL)
 #define DUK_HOBJECT_CMASK_NONE                 (1UL << DUK_HOBJECT_CLASS_NONE)
 #define DUK_HOBJECT_CMASK_ARGUMENTS            (1UL << DUK_HOBJECT_CLASS_ARGUMENTS)
@@ -180,7 +180,7 @@
                                                         DUK_HOBJECT_FLAG_COMPFUNC | \
                                                         DUK_HOBJECT_FLAG_NATFUNC)
 
-/* object has any exotic behavior(s) */
+/* Object has any exotic behavior(s). */
 #define DUK_HOBJECT_EXOTIC_BEHAVIOR_FLAGS      (DUK_HOBJECT_FLAG_EXOTIC_ARRAY | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ | \
@@ -189,7 +189,7 @@
                                                 DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 #define DUK_HOBJECT_HAS_EXOTIC_BEHAVIOR(h)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_EXOTIC_BEHAVIOR_FLAGS)
 
-/* object has any virtual properties (not counting Proxy behavior) */
+/* Object has any virtual properties (not counting Proxy behavior). */
 #define DUK_HOBJECT_VIRTUAL_PROPERTY_FLAGS     (DUK_HOBJECT_FLAG_EXOTIC_ARRAY | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ | \
                                                 DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC | \
@@ -256,7 +256,9 @@
 #define DUK_HOBJECT_CLEAR_EXOTIC_DUKFUNC(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC)
 #define DUK_HOBJECT_CLEAR_EXOTIC_PROXYOBJ(h)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
-/* flags used for property attributes in duk_propdesc and packed flags */
+/* Flags used for property attributes in duk_propdesc and packed flags.
+ * Must fit into 8 bits.
+ */
 #define DUK_PROPDESC_FLAG_WRITABLE              (1 << 0)    /* E5 Section 8.6.1 */
 #define DUK_PROPDESC_FLAG_ENUMERABLE            (1 << 1)    /* E5 Section 8.6.1 */
 #define DUK_PROPDESC_FLAG_CONFIGURABLE          (1 << 2)    /* E5 Section 8.6.1 */
@@ -269,12 +271,12 @@
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE | \
                                                  DUK_PROPDESC_FLAG_ACCESSOR)
 
-/* additional flags which are passed in the same flags argument as property
+/* Additional flags which are passed in the same flags argument as property
  * flags but are not stored in object properties.
  */
 #define DUK_PROPDESC_FLAG_NO_OVERWRITE          (1 << 4)    /* internal define property: skip write silently if exists */
 
-/* convenience */
+/* Convenience defines for property attributes. */
 #define DUK_PROPDESC_FLAGS_NONE                 0
 #define DUK_PROPDESC_FLAGS_W                    (DUK_PROPDESC_FLAG_WRITABLE)
 #define DUK_PROPDESC_FLAGS_E                    (DUK_PROPDESC_FLAG_ENUMERABLE)
@@ -286,7 +288,7 @@
                                                  DUK_PROPDESC_FLAG_ENUMERABLE | \
                                                  DUK_PROPDESC_FLAG_CONFIGURABLE)
 
-/* flags for duk_hobject_get_own_propdesc() and variants */
+/* Flags for duk_hobject_get_own_propdesc() and variants. */
 #define DUK_GETDESC_FLAG_PUSH_VALUE          (1 << 0)  /* push value to stack */
 #define DUK_GETDESC_FLAG_IGNORE_PROTOLOOP    (1 << 1)  /* don't throw for prototype loop */
 

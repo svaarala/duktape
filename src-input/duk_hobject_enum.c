@@ -287,11 +287,11 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	 * real object to check against.
 	 */
 	duk_push_hobject(ctx, enum_target);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_TARGET);
 
 	/* Initialize index so that we skip internal control keys. */
 	duk_push_int(ctx, DUK__ENUM_START_INDEX);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_NEXT);
 
 	/*
 	 *  Proxy object handling
@@ -315,7 +315,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	 */
 	DUK_DDD(DUK_DDDPRINT("proxy enumeration"));
 	duk_push_hobject(ctx, h_proxy_handler);
-	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_OWN_KEYS)) {
+	if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_OWN_KEYS)) {
 		/* No need to replace the 'enum_target' value in stack, only the
 		 * enum_target reference.  This also ensures that the original
 		 * enum target is reachable, which keeps the proxy and the proxy
@@ -326,7 +326,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 		enum_target = h_proxy_target;
 
 		duk_push_hobject(ctx, enum_target);  /* -> [ ... enum_target res handler undefined target ] */
-		duk_put_prop_stridx(ctx, -4, DUK_STRIDX_INT_TARGET);
+		duk_put_prop_stridx_short(ctx, -4, DUK_STRIDX_INT_TARGET);
 
 		duk_pop_2(ctx);  /* -> [ ... enum_target res ] */
 		goto skip_proxy;
@@ -645,7 +645,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	e = duk_require_hobject(ctx, -1);
 
 	/* XXX use get tval ptr, more efficient */
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_NEXT);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_NEXT);
 	idx = (duk_uint_fast32_t) duk_require_uint(ctx, -1);
 	duk_pop(ctx);
 	DUK_DDD(DUK_DDDPRINT("enumeration: index is: %ld", (long) idx));
@@ -655,7 +655,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	 * be the proxy, and checking key existence against the proxy is not
 	 * required (or sensible, as the keys may be fully virtual).
 	 */
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);
 	enum_target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(enum_target != NULL);
 #if defined(DUK_USE_ES6_PROXY)
@@ -699,7 +699,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	DUK_DDD(DUK_DDDPRINT("enumeration: updating next index to %ld", (long) idx));
 
 	duk_push_u32(ctx, (duk_uint32_t) idx);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_INT_NEXT);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_NEXT);
 
 	/* [... enum] */
 

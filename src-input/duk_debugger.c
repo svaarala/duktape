@@ -1047,9 +1047,9 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 
 	if (duk_is_error(ctx, -1)) {
 		/* Error instance, use augmented error data directly */
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_FILE_NAME);
 		duk__debug_write_hstring_safe_top(thr);
-		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER);
+		duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LINE_NUMBER);
 		duk_debug_write_uint(thr, duk_get_uint(ctx, -1));
 	} else {
 		/* For anything other than an Error instance, we calculate the error
@@ -1403,9 +1403,9 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			 * value stack operations.
 			 */
 			duk_push_tval(ctx, &curr_act->tv_func);
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_FILE_NAME);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_FILE_NAME);
 			duk__debug_write_hstring_safe_top(thr);
-			duk_get_prop_stridx(ctx, -2, DUK_STRIDX_NAME);
+			duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
 			duk__debug_write_hstring_safe_top(thr);
 			pc = duk_hthread_get_act_curr_pc(thr, curr_act);
 			if (i != curr_thr->callstack_top - 1 && pc > 0) {
@@ -1447,7 +1447,7 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	 */
 
 	duk_push_tval(ctx, &curr_act->tv_func);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VARMAP);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VARMAP);
 	if (duk_is_object(ctx, -1)) {
 		duk_enum(ctx, -1, 0 /*enum_flags*/);
 		while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {

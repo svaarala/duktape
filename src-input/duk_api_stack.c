@@ -2647,11 +2647,11 @@ DUK_LOCAL void duk__push_func_from_lightfunc(duk_context *ctx, duk_c_function fu
 	if ((duk_idx_t) lf_len != nargs) {
 		/* Explicit length is only needed if it differs from 'nargs'. */
 		duk_push_int(ctx, (duk_int_t) lf_len);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	duk_push_lightfunc_name_raw(ctx, func, lf_flags);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 	nf = duk_known_hnatfunc(ctx, -1);
 	nf->magic = (duk_int16_t) DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags);
@@ -2763,7 +2763,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 	 * ideal, but a write to the internal value is not affected by them.
 	 */
 	duk_dup(ctx, idx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 
  replace_value:
 	duk_replace(ctx, idx);
@@ -3555,12 +3555,12 @@ DUK_EXTERNAL void duk_push_global_object(duk_context *ctx) {
 /* XXX: size optimize */
 DUK_LOCAL void duk__push_stash(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE)) {
+	if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE)) {
 		DUK_DDD(DUK_DDDPRINT("creating heap/global/thread stash on first use"));
 		duk_pop(ctx);
 		duk_push_bare_object(ctx);
 		duk_dup_top(ctx);
-		duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
+		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
 	}
 	duk_remove(ctx, -2);
 }
@@ -4189,7 +4189,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 		DUK_ASSERT(h_bufobj->is_view == 0);
 		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 		duk_compact(ctx, -1);
 	}
 
@@ -4241,7 +4241,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	/* ... and its 'message' from an instance property */
 	if (fmt) {
 		duk_push_vsprintf(ctx, fmt, ap);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	} else {
 		/* If no explicit message given, put error code into message field
 		 * (as a number).  This is not fully in keeping with the Ecmascript
@@ -4250,7 +4250,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 		 * probably more useful than having a separate 'code' property.
 		 */
 		duk_push_int(ctx, err_code);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_MESSAGE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* XXX: .code = err_code disabled, not sure if useful */
@@ -4398,7 +4398,7 @@ DUK_INTERNAL void duk_push_hstring(duk_context *ctx, duk_hstring *h) {
 	duk_push_tval(ctx, &tv);
 }
 
-DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_int_t stridx) {
+DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_uint_t stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);

@@ -800,7 +800,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 
 			/* Set .buffer to the argument ArrayBuffer. */
 			duk_dup_0(ctx);
-			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 			duk_compact(ctx, -1);
 			return 1;
 		} else if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
@@ -901,7 +901,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 
 	/* Set .buffer */
 	duk_dup_m2(ctx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 	duk_compact(ctx, -1);
 
 	/* Copy values, the copy method depends on the arguments.
@@ -1069,7 +1069,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 	 */
 
 	duk_dup_0(ctx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 	duk_compact(ctx, -1);
 
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
@@ -1227,7 +1227,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 
 	duk_push_object(ctx);
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_BUFFER);
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_TYPE);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_TYPE);
 
 	DUK_ASSERT_DISABLE((duk_size_t) h_this->length <= (duk_size_t) DUK_UINT32_MAX);
 	h_arr = duk_push_harray_with_size(ctx, (duk_uint32_t) h_this->length);  /* XXX: needs revision with >4G buffers */
@@ -1240,7 +1240,7 @@ DUK_INTERNAL duk_ret_t duk_bi_nodejs_buffer_tojson(duk_context *ctx) {
 	for (i = 0, n = h_this->length; i < n; i++) {
 		DUK_TVAL_SET_U32(tv + i, (duk_uint32_t) buf[i]);  /* no need for decref or incref */
 	}
-	duk_put_prop_stridx(ctx, -2, DUK_STRIDX_DATA);
+	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_DATA);
 
 	return 1;
 }
@@ -2033,8 +2033,8 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 		 */
 
 		duk_push_this(ctx);
-		if (duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LC_BUFFER)) {
-			duk_xdef_prop_stridx(ctx, -3, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
+		if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_LC_BUFFER)) {
+			duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
 			duk_pop(ctx);
 		} else {
 			duk_pop_2(ctx);

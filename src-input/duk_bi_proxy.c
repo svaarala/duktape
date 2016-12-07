@@ -116,11 +116,11 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 
 	/* Proxy target */
 	duk_dup_0(ctx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
 	/* Proxy handler */
 	duk_dup_1(ctx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_HANDLER, DUK_PROPDESC_FLAGS_NONE);
 
 	return 1;  /* replacement handler */
 

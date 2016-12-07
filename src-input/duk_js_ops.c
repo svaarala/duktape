@@ -1047,7 +1047,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 		/* [ ... lval rval ] */
 
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_TARGET);         /* -> [ ... lval rval new_rval ] */
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);         /* -> [ ... lval rval new_rval ] */
 		duk_replace(ctx, -1);                                        /* -> [ ... lval new_rval ] */
 		func = duk_require_hobject(ctx, -1);
 
@@ -1097,7 +1097,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	}
 	DUK_ASSERT(val != NULL);  /* Loop doesn't actually rely on this. */
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
 	proto = duk_require_hobject(ctx, -1);
 	duk_pop(ctx);  /* -> [ ... lval rval ] */
 

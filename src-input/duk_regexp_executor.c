@@ -718,7 +718,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	h_input = duk_get_hstring(ctx, -1);
 	DUK_ASSERT(h_input != NULL);
 
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
+	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_BYTECODE);  /* [ ... re_obj input ] -> [ ... re_obj input bc ] */
 	h_bytecode = duk_require_hstring(ctx, -1);  /* no regexp instance should exist without a non-configurable bytecode property */
 	DUK_ASSERT(h_bytecode != NULL);
 
@@ -797,7 +797,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 
 	/* [ ... re_obj input bc saved_buf ] */
 
-	duk_get_prop_stridx(ctx, -4, DUK_STRIDX_LAST_INDEX);  /* -> [ ... re_obj input bc saved_buf lastIndex ] */
+	duk_get_prop_stridx_short(ctx, -4, DUK_STRIDX_LAST_INDEX);  /* -> [ ... re_obj input bc saved_buf lastIndex ] */
 	(void) duk_to_int(ctx, -1);  /* ToInteger(lastIndex) */
 	d = duk_get_number(ctx, -1);  /* integer, but may be +/- Infinite, +/- zero (not NaN, though) */
 	duk_pop(ctx);
@@ -934,10 +934,10 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_u32(ctx, char_offset);
-		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INDEX);
+		duk_xdef_prop_stridx_short_wec(ctx, -2, DUK_STRIDX_INDEX);
 
 		duk_dup_m4(ctx);
-		duk_xdef_prop_stridx_wec(ctx, -2, DUK_STRIDX_INPUT);
+		duk_xdef_prop_stridx_short_wec(ctx, -2, DUK_STRIDX_INPUT);
 
 		for (i = 0; i < re_ctx.nsaved; i += 2) {
 			/* Captures which are undefined have NULL pointers and are returned
@@ -971,7 +971,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		if (global) {
 			/* global regexp: lastIndex updated on match */
 			duk_push_u32(ctx, char_end_offset);
-			duk_put_prop_stridx(ctx, -6, DUK_STRIDX_LAST_INDEX);
+			duk_put_prop_stridx_short(ctx, -6, DUK_STRIDX_LAST_INDEX);
 		} else {
 			/* non-global regexp: lastIndex never updated on match */
 			;
@@ -990,7 +990,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		/* [ ... re_obj input bc saved_buf res_obj ] */
 
 		duk_push_int(ctx, 0);
-		duk_put_prop_stridx(ctx, -6, DUK_STRIDX_LAST_INDEX);
+		duk_put_prop_stridx_short(ctx, -6, DUK_STRIDX_LAST_INDEX);
 	}
 
 	/* [ ... re_obj input bc saved_buf res_obj ] */

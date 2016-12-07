@@ -142,7 +142,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	DUK_ASSERT(i_argbase >= 0);
 
 	duk_push_hobject(ctx, func);
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FORMALS);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_FORMALS);
 	formals = duk_get_hobject(ctx, -1);
 	if (formals) {
 		n_formals = (duk_idx_t) duk_get_length(ctx, -1);
@@ -383,11 +383,11 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
 
 	/* [ ... arg1 ... argN envobj argobj ] */
 
-	duk_xdef_prop_stridx(ctx,
-	                     -2,
-	                     DUK_STRIDX_LC_ARGUMENTS,
-	                     DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
-	                                                    DUK_PROPDESC_FLAGS_WE);  /* non-strict: non-deletable, writable */
+	duk_xdef_prop_stridx_short(ctx,
+	                           -2,
+	                           DUK_STRIDX_LC_ARGUMENTS,
+	                           DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
+	                                                          DUK_PROPDESC_FLAGS_WE);  /* non-strict: non-deletable, writable */
 	/* [ ... arg1 ... argN envobj ] */
 }
 
@@ -470,7 +470,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 
 		/* XXX: duk_get_length? */
 		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _Args ] */
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _Args length ] */
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _Args length ] */
 		len = (duk_idx_t) duk_require_int(ctx, -1);
 		duk_pop(ctx);
 		for (i = 0; i < len; i++) {

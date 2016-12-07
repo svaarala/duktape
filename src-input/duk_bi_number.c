@@ -24,7 +24,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 		DUK_DDD(DUK_DDDPRINT("unacceptable this value: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
 		DUK_ERROR_TYPE((duk_hthread *) ctx, "number expected");
 	}
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDD(DUK_DDDPRINT("number object: %!T, internal value: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
@@ -83,7 +83,7 @@ DUK_INTERNAL duk_ret_t duk_bi_number_constructor(duk_context *ctx) {
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_this));
 
 	duk_dup_0(ctx);  /* -> [ val obj val ] */
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	return 0;  /* no return value -> don't replace created value */
 }
 
