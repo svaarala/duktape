@@ -1785,6 +1785,10 @@ Planned
 * Incompatible change: duk_gc() no longer allows a NULL context pointer
   for consistency with other API calls (GH-1129)
 
+* Incompatible change: Duktape.info() output has been changed from an array
+  (which is difficult to version and work with) to an object with named
+  properties; the properties are not under versioning guarantees (GH-1125)
+
 * Add support for dropping built-in bindings entirely when they are disabled
   in configuration, e.g. the Proxy and buffer object bindings will be absent
   instead of being replaced by functions throwing an error; this is more
