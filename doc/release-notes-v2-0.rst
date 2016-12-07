@@ -1066,6 +1066,12 @@ Other incompatible changes
   requirements.  For example ``function foo() {"ecmascript"}`` is now
   ``function foo() { [ecmascript code] }``.
 
+* Duktape.info() now returns an object rather than an array.  The object has
+  named properties like ``.type`` and ``.enext`` for the internal fields which
+  is easier to version and work with.  The names of the properties are not
+  under version guarantees and may change in an incompatible fashion in even a
+  minor release.
+
 Known issues
 ============
 
