@@ -1906,7 +1906,7 @@ Planned
   fully implemented and not part of the documented public API (GH-762)
 
 * Allow a bound Ecmascript function as an argument to new Duktape.Thread()
-  (GH-1134)
+  (GH-1134, GH-1157)
 
 * Minor changes to error messages for errors thrown by Duktape internals
   (GH-827, GH-839, GH-840, GH-1016)
