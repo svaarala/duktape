@@ -1,0 +1,55 @@
+name: duk_inspect_callstack_entry
+
+proto: |
+  void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level);
+
+
+stack: |
+  [ ... ] -> [ ... info! ]
+
+summary: |
+  <p>Inspect callstack entry at <code>level</code> and push an object
+  containing Duktape specific internal information about the entry.
+  The level argument must be negative and mimics the value stack
+  index convention: -1 is the most recent (innermost) call, -2 is its
+  caller, and so on.  If the level argument is invalid (e.g. outside of
+  current callstack) <code>undefined</code> is pushed instead.</p>
+
+  <div include="inspect-versioning-guarantees.html" />
+
+  <p>The following table summarizes current properties.</p>
+
+  <table>
+  <thead>
+  <tr><th>Property</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+  <tr>
+  <td class="propname">function</td>
+  <td>Function being executed.  Note that this is a potential sandboxing
+      concern if exposed to untrusted code.</td>
+  </tr>
+  <tr>
+  <td class="propname">pc</td>
+  <td>Program counter for Ecmascript functions.  Zero if executing a native
+      function.</td>
+  </tr>
+  <tr>
+  <td class="propname">lineNumber</td>
+  <td>Line number for Ecmascript functions.  Zero if executing a native
+      function or if pc-to-line translation data is not available.</td>
+  </tr>
+  </tbody>
+  </table>
+
+example: |
+  duk_inspect_callstack_entry(ctx, -3);
+  duk_get_prop_string(ctx, -1, "lineNumber");
+  printf("immediate caller is executing on line %ld\n", (long) duk_to_int(ctx, -1));
+  duk_pop_2(ctx);
+
+tags:
+  - stack
+  - inspect
+
+introduced: 2.0.0

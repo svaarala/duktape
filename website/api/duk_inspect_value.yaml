@@ -11,17 +11,11 @@ summary: |
   specific internal information about the object.  If the value stack index
   is invalid, pushes an object describing a "none" value.</p>
 
-  <p>The result object is not under versioning guarantees so its properties
-  may change even in minor releases (but not patch releases).  This is a
-  practical compromise: internals change quite frequently, so the choices are
-  either to make no versioning guarantees or avoid exposing internals at all.
-  As such, calling code should never rely on having a certain set of fields
-  available, and it may be necessary to check <code>DUK_VERSION</code> when
-  interpreting the result fields.</p>
+  <div include="inspect-versioning-guarantees.html" />
 
-  <p>The following table summarizes current values.  Memory byte sizes don't
-  include any heap overhead which may vary between 0-16 bytes (or more) depending
-  on the allocation functions being used.</p>
+  <p>The following table summarizes current properties.  Memory byte sizes
+  don't include any heap overhead which may vary between 0-16 bytes (or more)
+  depending on the allocation functions being used.</p>
 
   <table>
   <thead>
@@ -113,8 +107,8 @@ summary: |
 example: |
   duk_inspect_value(ctx, -3);
   duk_get_prop_string(ctx, -1, "refc");
-  printf("refcount: %ld\n", (long) duk_to_int(ctx, -1));
-  duk_pop(ctx);
+  printf("refcount of value at -3: %ld\n", (long) duk_to_int(ctx, -1));
+  duk_pop_2(ctx);
 
 tags:
   - stack
