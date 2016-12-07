@@ -400,6 +400,7 @@ def main():
         'duk_api_codec.c',
         'duk_api_compile.c',
         'duk_api_bytecode.c',
+        'duk_api_inspect.c',
         'duk_api_memory.c',
         'duk_api_object.c',
         'duk_api_string.c',

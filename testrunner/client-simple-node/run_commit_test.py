@@ -564,8 +564,8 @@ def context_linux_x86_packed_tval():
         os.path.join(cwd, 'dist', 'duk'),
         '-e',
         'var arr = Duktape.compact([1,2,3]); ' +
-            'print(Duktape.info(true)[1] >= 0xf000); ' +  # packed internal tag
-            'print(Duktape.info(arr)[4] <= 40)'           # array size (1 element + .length property)
+            'print(Duktape.info(true).itag >= 0xf000); ' +  # packed internal tag
+            'print(Duktape.info(arr).pbytes <= 40)'           # array size (1 element + .length property)
     ]);
     return res['stdout'] == 'true\ntrue\n'
 

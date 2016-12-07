@@ -8,15 +8,13 @@
  *  and will not match the original values.
  */
 
+/*@include util-object.js@*/
+
 /*---
 {
     "custom": true
 }
 ---*/
-
-function isLightFunc(x) {
-    return Duktape.info(x)[0] == 9;  // tag
-}
 
 /*===
 Object.defineProperty
@@ -90,9 +88,9 @@ function lightfuncAsAccessorTest() {
 
     print('pd_in');
     print('typeof get:', typeof pd_in.get);
-    print('isLightFunc get:', isLightFunc(pd_in.get));
+    print('isLightFunc get:', valueIsLightFunc(pd_in.get));
     print('typeof set:', typeof pd_in.set);
-    print('isLightFunc set:', isLightFunc(pd_in.set));
+    print('isLightFunc set:', valueIsLightFunc(pd_in.set));
     print('get(=Math.min)(9,-3,11,4):', pd_in.get(9, -3, 11, 4));
     print('set(=Math.max)(9,-3,11,4):', pd_in.set(9, -3, 11, 4));
 
@@ -101,9 +99,9 @@ function lightfuncAsAccessorTest() {
 
     print('pd_out');
     print('typeof get:', typeof pd_out.get);
-    print('isLightFunc get:', isLightFunc(pd_out.get));
+    print('isLightFunc get:', valueIsLightFunc(pd_out.get));
     print('typeof set:', typeof pd_out.set);
-    print('isLightFunc set:', isLightFunc(pd_out.set));
+    print('isLightFunc set:', valueIsLightFunc(pd_out.set));
     print('get(=Math.min)(9,-3,11,4):', pd_out.get(9, -3, 11, 4));
     print('set(=Math.max)(9,-3,11,4):', pd_out.set(9, -3, 11, 4));
 
@@ -131,9 +129,9 @@ function lightfuncAsAccessorTest() {
 
     print('pd_in');
     print('typeof get:', typeof pd_in.get);
-    print('isLightFunc get:', isLightFunc(pd_in.get));
+    print('isLightFunc get:', valueIsLightFunc(pd_in.get));
     print('typeof set:', typeof pd_in.set);
-    print('isLightFunc set:', isLightFunc(pd_in.set));
+    print('isLightFunc set:', valueIsLightFunc(pd_in.set));
     print('get(=Math.min)(9,-3,11,4):', pd_in.get(9, -3, 11, 4));
     print('set(=Math.max)(9,-3,11,4):', pd_in.set(9, -3, 11, 4));
 
@@ -142,9 +140,9 @@ function lightfuncAsAccessorTest() {
 
     print('pd_out');
     print('typeof get:', typeof pd_out.get);
-    print('isLightFunc get:', isLightFunc(pd_out.get));
+    print('isLightFunc get:', valueIsLightFunc(pd_out.get));
     print('typeof set:', typeof pd_out.set);
-    print('isLightFunc set:', isLightFunc(pd_out.set));
+    print('isLightFunc set:', valueIsLightFunc(pd_out.set));
     print('get(=Math.min)(9,-3,11,4):', pd_out.get(9, -3, 11, 4));
     print('set(=Math.max)(9,-3,11,4):', pd_out.set(9, -3, 11, 4));
 

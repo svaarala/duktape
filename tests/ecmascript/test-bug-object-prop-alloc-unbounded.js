@@ -34,6 +34,8 @@
  *  so this is not a major issue performance-wise.
  */
 
+/*@include util-object.js@*/
+
 /*===
 without compaction
 entry count < 100: true
@@ -46,7 +48,7 @@ entry count < 100: true
 function objectEntryPartResizeTest(doCompact) {
     var sparse = { 0: 0 };
     var i;
-    var t, entryCount, entryNext;
+    var t, entrySize, entryNext;
 
     for (i = 1; i < 10000; i++) {
         sparse[i] = i;
@@ -70,24 +72,16 @@ function objectEntryPartResizeTest(doCompact) {
      * when adding a new key, and is not necessarily 1 here.
      */
 
-    t = Duktape.info(sparse);
-    //print(t);
-    entryCount = t[5];  // version dependent, property entry allocated count
-    entryNext = t[6];   // version dependent, property entry next index
-    //print('entry next:', entryNext);
-    //print('entry count:', entryCount);
-    print('entry count < 100:', (entryCount < 100));
+    entrySize = getObjectEntrySize(sparse);
+    entryNext = getObjectEntryNext(sparse);
+    print('entry count < 100:', (entrySize < 100));
 
     /* With the bug present, a compaction "fixes" the object. */
     Duktape.compact(sparse);
 
-    t = Duktape.info(sparse);
-    //print(t);
-    entryCount = t[5];  // version dependent, property entry allocated count
-    entryNext = t[6];   // version dependent, property entry next index
-    //print('entry next:', entryNext);
-    //print('entry count:', entryCount);
-    print('entry count < 100:', (entryCount < 100));
+    entrySize = getObjectEntrySize(sparse);
+    entryNext = getObjectEntryNext(sparse);
+    print('entry count < 100:', (entrySize < 100));
 }
 
 try {

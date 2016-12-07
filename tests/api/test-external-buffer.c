@@ -16,12 +16,6 @@ final top: 1
 ==> rc=1, result='TypeError: wrong buffer type'
 *** test_3 (duk_safe_call)
 ==> rc=1, result='TypeError: buffer required, found [object Object] (stack index -1)'
-*** test_4 (duk_safe_call)
-["censoredtag","censoredpointer","censoredrefcount","censoredheapsize"]
-["censoredtag","censoredpointer","censoredrefcount","censoredheapsize",256]
-["censoredtag","censoredpointer","censoredrefcount","censoredheapsize",16]
-final top: 0
-==> rc=0, result='undefined'
 ===*/
 
 unsigned char global_buffer[256];
@@ -115,41 +109,9 @@ static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-/* Check Duktape.info() for external buffers. */
-static duk_ret_t test_4(duk_context *ctx, void *udata) {
-	unsigned char buf[16];
-
-	(void) udata;
-
-	/* Censor refcount too because e.g. in shuffle torture test the
-	 * refcount will be different than otherwise.
-	 */
-	duk_eval_string(ctx,
-		"(function (b1, b2, b3) {\n"
-		"    [ b1, b2, b3 ].forEach(function (b) {\n"
-		"        var t = Duktape.info(b);\n"
-		"        t[0] = 'censoredtag';\n"
-		"        t[1] = 'censoredpointer';\n"
-		"        t[2] = 'censoredrefcount';\n"
-		"        t[3] = 'censoredheapsize';\n"
-		"        print(Duktape.enc('jx', t));\n"
-		"    });\n"
-		"})");
-	duk_push_fixed_buffer(ctx, 1024);
-	duk_push_dynamic_buffer(ctx, 256);
-	duk_push_external_buffer(ctx);
-	duk_config_buffer(ctx, -1, (void *) buf, 16);
-	duk_call(ctx, 3 /*nargs*/);
-	duk_pop(ctx);
-
-	printf("final top: %ld\n", (long) duk_get_top(ctx));
-	return 0;
-}
-
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2a);
 	TEST_SAFE_CALL(test_2b);
 	TEST_SAFE_CALL(test_3);
-	TEST_SAFE_CALL(test_4);
 }

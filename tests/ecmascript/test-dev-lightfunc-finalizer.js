@@ -11,15 +11,13 @@
  *  This testcase demonstrates that lightfunc finalizers don't work.
  */
 
+/*@include util-object.js@*/
+
 /*---
 {
     "custom": true
 }
 ---*/
-
-function isLightFunc(x) {
-    return Duktape.info(x)[0] == 9;  // tag
-}
 
 /*===
 true
@@ -30,7 +28,7 @@ function lightfuncFinalizerTest() {
     var lfunc = Math.max;
 
     // Verify built-ins are lightfuncs
-    print(isLightFunc(lfunc));
+    print(valueIsLightFunc(lfunc));
 
     // Attempt to set a finalizer on the lightfunc directly fails.
     try {
@@ -43,7 +41,7 @@ function lightfuncFinalizerTest() {
     // Finalizer can be set to Function.prototype but it won't get called
     // because lightfuncs are primitive values without a refcount field.
     Duktape.fin(Function.prototype, function (v) {
-        if (isLightFunc(v)) {
+        if (valueIsLightFunc(v)) {
             print('inherited finalizer for lightfunc');
         }
     });

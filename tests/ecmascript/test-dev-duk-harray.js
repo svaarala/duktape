@@ -404,13 +404,10 @@ function arrayPrototypeTest() {
     print(arr.length, arr[0], arr[1], arr[2], arr[3]);
 
     // Array.prototype is dense by default; make it sparse.
-    //print(Duktape.enc('jx', Duktape.info(Array.prototype)));
     Array.prototype[1000] = 'dummy';
-    //print(Duktape.enc('jx', Duktape.info(Array.prototype)));
     arr = [];
     print(arr[1000]);
     Array.prototype.length = 0;
-    //print(Duktape.enc('jx', Duktape.info(Array.prototype)));
     print(arr[1000]);
 }
 

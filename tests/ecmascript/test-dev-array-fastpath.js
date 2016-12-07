@@ -24,7 +24,6 @@ function pushPopTest() {
     print(arr.length);
 
     // XXX: At the moment there's no shrink check in the fast path.
-    //print(Duktape.info(arr));
 }
 
 try {
