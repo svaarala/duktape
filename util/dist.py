@@ -308,6 +308,7 @@ def main():
         'duk_api_debug.c',
         'duk_api_heap.c',
         'duk_api_internal.h',
+        'duk_api_inspect.c',
         'duk_api_memory.c',
         'duk_api_object.c',
         'duk_api_public.h.in',
