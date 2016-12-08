@@ -1066,6 +1066,11 @@ Other incompatible changes
   requirements.  For example ``function foo() {"ecmascript"}`` is now
   ``function foo() { [ecmascript code] }``.
 
+* Object constructor methods like Object.keys(), Object.freeze(), etc now
+  follow more lenient ES6 coercion semantics: non-object arguments are either
+  coerced to objects or treated like non-extensible objects with no own
+  properties.
+
 * Duktape.info() now returns an object rather than an array.  The object has
   named properties like ``.type`` and ``.enext`` for the internal fields which
   is easier to version and work with.  The names of the properties are not

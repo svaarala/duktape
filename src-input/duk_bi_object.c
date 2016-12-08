@@ -57,10 +57,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_int_t idx;
 
-	nargs = duk_get_top(ctx);
-	if (nargs < 1) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
+	nargs = duk_get_top_require_min(ctx, 1 /*min_top*/);
 
 	duk_to_object(ctx, 0);
 	for (idx = 1; idx < nargs; idx++) {
@@ -79,8 +76,9 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_assign(duk_context *ctx) {
 			duk_put_prop(ctx, 0);
 			/* [ target ... enum ] */
 		}
-
-		duk_pop(ctx);
+		/* Could pop enumerator, but unnecessary because of duk_set_top()
+		 * below.
+		 */
 	}
 
 	duk_set_top(ctx, 1);
@@ -98,24 +96,15 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is(duk_context *ctx) {
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_create(duk_context *ctx) {
-	duk_tval *tv;
-	duk_hobject *proto = NULL;
+	duk_hobject *proto;
 
 	DUK_ASSERT_TOP(ctx, 2);
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	duk_hbufobj_promote_plain(ctx, 0);
 #endif
-	tv = duk_get_tval(ctx, 0);
-	DUK_ASSERT(tv != NULL);
-	if (DUK_TVAL_IS_NULL(tv)) {
-		DUK_ASSERT(proto == NULL);
-	} else if (DUK_TVAL_IS_OBJECT(tv)) {
-		proto = DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(proto != NULL);
-	} else {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
+	proto = duk_require_hobject_accept_mask(ctx, 0, DUK_TYPE_MASK_NULL);
+	DUK_ASSERT(proto != NULL || duk_is_null(ctx, 0));
 
 	(void) duk_push_object_helper_proto(ctx,
 	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -302,8 +291,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 		 * is considered to be already sealed and frozen.
 		 */
 		h = duk_get_hobject(ctx, 0);
-		duk_push_boolean(ctx, (h == NULL) ?
-		                      1 :
+		duk_push_boolean(ctx, (h == NULL) ||
 		                      duk_hobject_object_is_sealed_frozen_helper((duk_hthread *) ctx, h, is_frozen /*is_frozen*/));
 	}
 	return 1;
@@ -393,7 +381,6 @@ DUK_INTERNAL duk_ret_t duk_bi_object_getprototype_shared(duk_context *ctx) {
 	if (magic == 0) {
 		DUK_ASSERT_TOP(ctx, 0);
 		duk_push_this_coercible_to_object(ctx);
-		tv = DUK_HTHREAD_THIS_PTR(thr);
 	}
 	DUK_ASSERT(duk_get_top(ctx) >= 1);
 	if (magic < 2) {
@@ -651,7 +638,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_extensible(duk_context *ctx)
 		h = duk_require_hobject_accept_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	}
 
-	duk_push_boolean(ctx, h != NULL && DUK_HOBJECT_HAS_EXTENSIBLE(h));
+	duk_push_boolean(ctx, (h != NULL) && DUK_HOBJECT_HAS_EXTENSIBLE(h));
 	return 1;
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */

@@ -374,6 +374,22 @@ DUK_EXTERNAL duk_idx_t duk_get_top(duk_context *ctx) {
 	return (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 }
 
+/* Internal helper to get current top but to require a minimum top value
+ * (TypeError if not met).
+ */
+DUK_INTERNAL duk_idx_t duk_get_top_require_min(duk_context *ctx, duk_idx_t min_top) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_idx_t ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	if (ret < min_top) {
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+	}
+	return ret;
+}
+
 /* Set stack top within currently allocated range, but don't reallocate.
  * This is performance critical especially for call handling, so whenever
  * changing, profile and look at generated code.
