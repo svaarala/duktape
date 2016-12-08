@@ -2126,6 +2126,10 @@ Planned
   NULL and cause memory unsafe behavior, but the code itself is correct
   (GH-1090)
 
+* Fix memory unsafe handling of Object.isPrototypeOf() when the argument
+  given has no prototype (e.g. argument is Object.prototype) (GH-1162,
+  GH-1163)
+
 * Miscellaneous portability improvements: remove dependency on fmin() and
   fmax() (GH-1072)
 
