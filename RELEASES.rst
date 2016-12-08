@@ -1630,6 +1630,52 @@ Released
   __attribute__ ((unused)) for internal function declarations (GH-916,
   GH-942)
 
+1.5.2 (2016-12-09)
+------------------
+
+* Fix genconfig.py forced option boolean comparison; for forced numeric option
+  value 0 genconfig would emit "#undef XXX" (instead of "#define XXX 0") and
+  for forced numeric option value 1 it would emit "#define XXX" (instead of
+  "#define XXX 1") (GH-954)
+
+* Fix incorrect value stack handling in duk_put_prop_(l)string() and
+  duk_put_prop_index() when the target object and the property value
+  are in the same value stack slot (which is unusual but conceptually
+  clear) (GH-959)
+
+* Fix incorrect buffer zeroing assumption in regexp executor, triggered
+  when DUK_USE_ZERO_BUFFER_DATA is not set (default is set) (GH-978)
+
+* Fix incorrect evaluation order of X <op>= Y expressions when the RHS
+  (Y) mutates the value of X (GH-992)
+
+* Fix String.fromCharCode() behavior for non-BMP characters when standard
+  behavior is enabled (DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT disabled):
+  use ToUint16() + CESU-8 rather than ToUint32() + CESU-8 which produces
+  two codepoints for non-BMP characters (GH-1046)
+
+* Fix a few bugs in object property handling (delete property and
+  Object.defineProperty()) where an object property table resize triggered
+  by a finalizer of a previous value could cause memory unsafe behavior
+  (GH-1096)
+
+* Add an extra module (extras/module-duktape) providing a Duktape 1.x
+  compatible module loading framework (Duktape.modSearch etc) (GH-821,
+  GH-1127)
+
+* Fix duk_hcompfunc 'data' field != NULL assumptions which might lead to
+  memory unsafe behavior if Duktape ran out of memory when creating a
+  duk_hcompfunc during compilation or function instantiation (GH-1144,
+  GH-1132)
+
+* Fix JSON stringify fastpath handling of array gaps in JX and JC; they
+  incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
+  and '{"_undef":true}' as intended (GH-859, GH-1149)
+
+* Fix memory unsafe handling of Object.isPrototypeOf() when the argument
+  given has no prototype (e.g. argument is Object.prototype) (GH-1162,
+  GH-1163)
+
 Planned
 =======
 
