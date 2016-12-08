@@ -46,6 +46,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_compile_string_filename(ctx, 0, "dummy");
 	(void) duk_compile_string(ctx, 0, "dummy");
 	(void) duk_compile(ctx, 0);
+	(void) duk_components_to_time(ctx, NULL);
 	(void) duk_concat(ctx, 0);
 	(void) duk_config_buffer(ctx, 0, NULL, 0);
 	(void) duk_copy(ctx, 0, 0);
@@ -68,8 +69,10 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_dup(ctx, 0);
 	(void) duk_enum(ctx, 0, 0);
 	(void) duk_equals(ctx, 0, 0);
-	duk_error_va(ctx, 0, NULL, NULL);
+	duk_error_va(ctx, 0, "dummy", NULL);
 	duk_error(ctx, 0, "dummy");  /* (void) cast won't work without variadic macros */
+	duk_eval_error(ctx, "dummy");
+	duk_eval_error_va(ctx, "dummy", NULL);
 	(void) duk_eval_lstring_noresult(ctx, "dummy", 0);
 	(void) duk_eval_lstring(ctx, "dummy", 0);
 	(void) duk_eval_noresult(ctx);
@@ -80,6 +83,8 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_free_raw(ctx, NULL);
 	(void) duk_free(ctx, NULL);
 	(void) duk_gc(ctx, 0);
+	duk_generic_error(ctx, "dummy");
+	duk_generic_error_va(ctx, "dummy", NULL);
 	(void) duk_get_boolean(ctx, 0);
 	(void) duk_get_buffer_data(ctx, 0, NULL);
 	(void) duk_get_buffer(ctx, 0, NULL);
@@ -96,8 +101,10 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_get_lstring(ctx, 0, NULL);
 	(void) duk_get_magic(ctx, 0);
 	(void) duk_get_memory_functions(ctx, NULL);
+	(void) duk_get_now(ctx);
 	(void) duk_get_number(ctx, 0);
 	(void) duk_get_pointer(ctx, 0);
+	(void) duk_get_prop_desc(ctx, 0, 0);
 	(void) duk_get_prop_index(ctx, 0, 0);
 	(void) duk_get_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_get_prop_string(ctx, 0, "dummy");
@@ -116,6 +123,8 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_hex_decode(ctx, 0);
 	(void) duk_hex_encode(ctx, 0);
 	(void) duk_insert(ctx, 0);
+	(void) duk_inspect_value(ctx, 0);
+	(void) duk_inspect_callstack_entry(ctx, 0);
 	(void) duk_instanceof(ctx, 0, 0);
 	(void) duk_is_array(ctx, 0);
 	(void) duk_is_boolean(ctx, 0);
@@ -221,8 +230,12 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_put_prop_lstring(ctx, 0, "dummy", 0);
 	(void) duk_put_prop_string(ctx, 0, "dummy");
 	(void) duk_put_prop(ctx, 0);
+	duk_range_error(ctx, "dummy");
+	duk_range_error_va(ctx, "dummy", NULL);
 	(void) duk_realloc_raw(ctx, NULL, 0);
 	(void) duk_realloc(ctx, NULL, 0);
+	duk_reference_error(ctx, "dummy");
+	duk_reference_error_va(ctx, "dummy", NULL);
 	(void) duk_remove(ctx, 0);
 	(void) duk_replace(ctx, 0);
 	(void) duk_require_boolean(ctx, 0);
@@ -265,7 +278,10 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_suspend(ctx, NULL);
 	(void) duk_swap_top(ctx, 0);
 	(void) duk_swap(ctx, 0, 0);
+	duk_syntax_error(ctx, "dummy");
+	duk_syntax_error_va(ctx, "dummy", NULL);
 	(void) duk_throw(ctx);
+	(void) duk_time_to_components(ctx, 0.0, NULL);
 	(void) duk_to_boolean(ctx, 0);
 	(void) duk_to_buffer(ctx, 0, NULL);
 	(void) duk_to_dynamic_buffer(ctx, 0, NULL);
@@ -284,6 +300,10 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_to_uint(ctx, 0);
 	(void) duk_to_undefined(ctx, 0);
 	(void) duk_trim(ctx, 0);
+	duk_type_error(ctx, "dummy");
+	duk_type_error_va(ctx, "dummy", NULL);
+	duk_uri_error(ctx, "dummy");
+	duk_uri_error_va(ctx, "dummy", NULL);
 	(void) duk_xcopy_top(ctx, NULL, 0);
 	(void) duk_xmove_top(ctx, NULL, 0);
 

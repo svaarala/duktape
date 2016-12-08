@@ -1898,6 +1898,12 @@ Planned
 * Add DUK_GC_COMPACT flag to duk_gc() to force object property table
   compaction (GH-778, GH-1129)
 
+* Add duk_inspect_value() to provide internal information about an argument
+  value; the output matches Duktape.info() (GH-1125)
+
+* Add duk_inspect_callstack_entry() to provide internal information about a
+  callstack entry; the output matches Duktape.act() (GH-1128)
+
 * Add ability to perform an indirect debugger Eval with non-empty callstack by
   sending null for the callstack level (GH-747)
 

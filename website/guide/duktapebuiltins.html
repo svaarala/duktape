@@ -188,17 +188,30 @@ print(result.foo);  // prints 123
 <h3 id="builtin-duktape-info">info()</h3>
 
 <p><code>Duktape.info()</code> returns an object exposing internal information
-related to its argument value.  The returned properties are version specific;
-they are mainly useful for debugging and diagnosis.  See
-<code><a href="api.html#duk_inspect_value">duk_inspect_value()</a></code> for
-description of current fields.</p>
+related to its argument value.  See
+<code><a href="api.html#duk_inspect_value">duk_inspect_value()</a></code>
+for description of current fields.</p>
+
+<div class="note">
+The properties of the result object are not under versioning guarantees and may
+change in an incompatible fashion even in minor versions (but not patch versions).
+</div>
 
 <h3 id="builtin-duktape-act">act()</h3>
 
 <p>Get information about a call stack entry.  Takes a single number argument
-indicating depth in the call stack: -1 is the top entry, -2 is the one below
-that etc.  Returns an object describing the call stack entry, or <code>undefined</code>
-if the entry doesn't exist.  Example:</p>
+indicating depth in the call stack: -1 is the top (innermost) entry, -2 is the
+one below that etc.  Returns an object describing the call stack entry, or
+<code>undefined</code> if the entry doesn't exist.  See
+<code><a href="api.html#duk_inspect_callstack_entry">duk_inspect_callstack_entry()</a></code>
+for description of current fields.</p>
+
+<div class="note">
+The properties of the result object are not under versioning guarantees and may
+change in an incompatible fashion even in minor versions (but not patch versions).
+</div>
+
+<p>Example:</p>
 <pre class="ecmascript-code">
 function dump() {
     var i, t;
@@ -238,10 +251,6 @@ function getCurrentLine() {
 }
 print('running on line:', getCurrentLine());
 </pre>
-
-<div class="note">
-The properties provided for call stack entries may change between versions.
-</div>
 
 <h3 id="builtin-duktape-gc">gc()</h3>
 

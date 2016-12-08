@@ -1,0 +1,9 @@
+<div class="note">
+The result object is not under versioning guarantees so its properties
+may change even in minor releases (but not patch releases).  This is a
+practical compromise: internals change quite frequently, so the choices are
+either to make no versioning guarantees or avoid exposing internals at all.
+As such, calling code should never rely on having a certain set of fields
+available, and it may be necessary to check <code>DUK_VERSION</code> when
+interpreting the result fields.
+</div>
