@@ -8,8 +8,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, d
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(h != NULL);
-	/* allow 'p' to be NULL; then the result is always false */
+
+	/* False if the object is NULL or the prototype 'p' is NULL.
+	 * In particular, false if both are NULL (don't compare equal).
+	 */
+	if (h == NULL || p == NULL) {
+		return 0;
+	}
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
