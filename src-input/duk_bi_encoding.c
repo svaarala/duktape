@@ -490,11 +490,9 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_shared_getter(duk_context *c
 		duk_push_string(ctx, "utf-8");
 		break;
 	case 1:
-		duk_push_boolean(ctx, dec_ctx->fatal);
-		break;
+		return duk_push_boolean(ctx, dec_ctx->fatal);
 	default:
-		duk_push_boolean(ctx, dec_ctx->ignore_bom);
-		break;
+		return duk_push_boolean(ctx, dec_ctx->ignore_bom);
 	}
 
 	return 1;

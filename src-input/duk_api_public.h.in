@@ -449,11 +449,14 @@ DUK_EXTERNAL_DECL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_
  *  Note: duk_dup() is technically a push.
  */
 
+/* FIXME: change the undefined, null, etc pushers to 'return 1' to facilitate
+ * C tail calls?
+ */
 DUK_EXTERNAL_DECL void duk_push_undefined(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_null(duk_context *ctx);
-DUK_EXTERNAL_DECL void duk_push_boolean(duk_context *ctx, duk_bool_t val);
-DUK_EXTERNAL_DECL void duk_push_true(duk_context *ctx);
-DUK_EXTERNAL_DECL void duk_push_false(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_ret_t duk_push_boolean(duk_context *ctx, duk_bool_t val);
+DUK_EXTERNAL_DECL duk_ret_t duk_push_true(duk_context *ctx);
+DUK_EXTERNAL_DECL duk_ret_t duk_push_false(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_number(duk_context *ctx, duk_double_t val);
 DUK_EXTERNAL_DECL void duk_push_nan(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_int(duk_context *ctx, duk_int_t val);

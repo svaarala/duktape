@@ -5919,8 +5919,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_
 
 	ret = duk_hobject_get_own_propdesc(thr, h_obj, h_v, &desc, 0 /*flags*/);  /* don't push value */
 
-	duk_push_boolean(ctx, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
-	return 1;
+	return duk_push_boolean(ctx, ret && ((desc.flags & required_desc_flags) == required_desc_flags));
 }
 
 /*

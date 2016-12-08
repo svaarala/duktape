@@ -3219,7 +3219,7 @@ DUK_EXTERNAL void duk_push_null(duk_context *ctx) {
 	DUK_TVAL_SET_NULL(tv_slot);
 }
 
-DUK_EXTERNAL void duk_push_boolean(duk_context *ctx, duk_bool_t val) {
+DUK_EXTERNAL duk_ret_t duk_push_boolean(duk_context *ctx, duk_bool_t val) {
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 	duk_small_int_t b;
@@ -3230,9 +3230,10 @@ DUK_EXTERNAL void duk_push_boolean(duk_context *ctx, duk_bool_t val) {
 	b = (val ? 1 : 0);  /* ensure value is 1 or 0 (not other non-zero) */
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_BOOLEAN(tv_slot, b);
+	return 1;
 }
 
-DUK_EXTERNAL void duk_push_true(duk_context *ctx) {
+DUK_EXTERNAL duk_ret_t duk_push_true(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 
@@ -3241,9 +3242,10 @@ DUK_EXTERNAL void duk_push_true(duk_context *ctx) {
 	DUK__CHECK_SPACE();
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_BOOLEAN_TRUE(tv_slot);
+	return 1;
 }
 
-DUK_EXTERNAL void duk_push_false(duk_context *ctx) {
+DUK_EXTERNAL duk_ret_t duk_push_false(duk_context *ctx) {
 	duk_hthread *thr;
 	duk_tval *tv_slot;
 
@@ -3252,6 +3254,7 @@ DUK_EXTERNAL void duk_push_false(duk_context *ctx) {
 	DUK__CHECK_SPACE();
 	tv_slot = thr->valstack_top++;
 	DUK_TVAL_SET_BOOLEAN_FALSE(tv_slot);
+	return 1;
 }
 
 /* normalize NaN which may not match our canonical internal NaN */

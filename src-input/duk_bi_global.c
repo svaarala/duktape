@@ -668,14 +668,12 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_context *ctx) {
 	duk_double_t d = duk_to_number(ctx, 0);
-	duk_push_boolean(ctx, DUK_ISNAN(d));
-	return 1;
+	return duk_push_boolean(ctx, DUK_ISNAN(d));
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_context *ctx) {
 	duk_double_t d = duk_to_number(ctx, 0);
-	duk_push_boolean(ctx, DUK_ISFINITE(d));
-	return 1;
+	return duk_push_boolean(ctx, DUK_ISFINITE(d));
 }
 
 /*
