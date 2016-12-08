@@ -36,10 +36,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_get(duk_context *ctx) {
 	duk_tval *tv_key;
 	duk_idx_t nargs;
 
-	nargs = duk_get_top(ctx);
-	if (nargs < 2) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
+	nargs = duk_get_top_require_min(ctx, 2 /*min_top*/);
 	(void) duk_require_hobject(ctx, 0);
 	(void) duk_to_string(ctx, 1);
 	if (nargs >= 3 && !duk_strict_equals(ctx, 0, 2)) {
@@ -86,10 +83,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_object_set(duk_context *ctx) {
 	duk_idx_t nargs;
 	duk_bool_t ret;
 
-	nargs = duk_get_top(ctx);
-	if (nargs < 3) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
+	nargs = duk_get_top_require_min(ctx, 3 /*min_top*/);
 	(void) duk_require_hobject(ctx, 0);
 	(void) duk_to_string(ctx, 1);
 	if (nargs >= 4 && !duk_strict_equals(ctx, 0, 3)) {
