@@ -585,7 +585,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_keys_shared
           length: 1
-          magic: 1
+          magic: 2
       - key: "is"
         value:
           type: function
@@ -2822,7 +2822,7 @@ objects:
           type: function
           native: duk_bi_object_constructor_keys_shared
           length: 1
-          magic: 0
+          magic: 1
         es6: true
       - key: "preventExtensions"
         value:

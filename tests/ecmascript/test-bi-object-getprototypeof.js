@@ -33,10 +33,10 @@ firstarg
 TypeError
 TypeError
 TypeError
-TypeError
-TypeError
-TypeError
-TypeError
+ok
+ok
+ok
+ok
 ok
 ok
 ok
