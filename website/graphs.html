@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Duktape graphs</title>
+<body>
+
+<h1>Graphs</h1>
+
+<p>Graphs are over merges (not individual commits), master HEAD is on the
+right.  GCC -Os with symbol pruning is used to compile a "hello world"
+example and an amalgamated duktape.c.  X axis is pull count, Y axis is
+executable size measured using the "size" command.</p>
+
+<h2>x64</h2>
+<img src="duk-graph-size-x64.png" alt="low-memory x64 size" />
+
+<h2>x86</h2>
+<img src="duk-graph-size-x86.png" alt="low-memory x86 size" />
+
+<h2>x32</h2>
+<img src="duk-graph-size-x32.png" alt="low-memory x32 size" />
+
+</body>
+</head>
+</html>
