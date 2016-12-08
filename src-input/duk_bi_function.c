@@ -135,6 +135,13 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 			func_name = duk_to_string(ctx, -1);
 			DUK_ASSERT(func_name != NULL);
 		}
+		/* Leave func_name on value stack for reachability. */
+
+		if (duk_get_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE)) {
+			/* If function has _Source, use it as is. */
+			return 1;
+		}
+		/* No need to duk_pop() here; save footprint. */
 
 		if (DUK_HOBJECT_IS_COMPFUNC(obj)) {
 			duk_push_sprintf(ctx, "function %s() { [ecmascript code] }", (const char *) func_name);
