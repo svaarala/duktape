@@ -14,7 +14,7 @@
 #if defined(DUK_USE_DUKTAPE_BUILTIN)
 
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
-	duk_inspect_value(ctx, -1);
+	(void) duk_inspect_value(ctx, -1);
 	return 1;
 }
 
@@ -22,7 +22,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 	duk_int_t level;
 
 	level = duk_to_int(ctx, 0);
-	duk_inspect_callstack_entry(ctx, level);
+	(void) duk_inspect_callstack_entry(ctx, level);
 	return 1;
 }
 
