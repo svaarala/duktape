@@ -1727,9 +1727,13 @@ Planned
   Buffer.prototype.toString() does UTF-8 decoding (previously buffer data
   was copied into internal string representation as is) (GH-1020)
 
-* Incompatible change: ES6 argument policy for Object.keys() etc. Instead of
-  throwing a TypeError, they now either coerce to an object or treat the
-  primitive as a non-extensible object with no properties (GH-1028)
+* Incompatible change: change Object constructor argument coercion policy
+  to match ES6 requirements for .keys(), .getOwnPropertyNames(),
+  .getOwnPropertyDescriptor(), .getPrototypeOf(), .freeze(), .isFrozen(),
+  .seal(), .isSealed(), .preventExtensions(), and .isExtensible();
+  instead of rejecting non-objects with a TypeError, they are now coerced
+  to objects or treated as non-extensible objects with no own properties
+  (GH-1028, GH-1164)
 
 * Incompatible change: plain pointer values now test true in instanceof
   (plainPointer instanceof Duktape.Pointer === true) (GH-864)
