@@ -1,5 +1,6 @@
 define: DUK_USE_MARK_AND_SWEEP
 introduced: 1.0.0
+removed: 2.0.0
 default: true
 tags:
   - gc
@@ -14,3 +15,5 @@ description: >
   won't be collected because they're always in a reference cycle with their
   default prototype object.  Unreachable objects are collected if you break
   reference cycles manually (and are always freed when a heap is destroyed).
+
+  NOTE: Removed in Duktape 2.0.0 because mark-and-sweep is no longer optional.
