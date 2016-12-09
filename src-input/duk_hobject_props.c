@@ -1926,7 +1926,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			                     (duk_tval *) duk_get_tval(ctx, -2),
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 			/* [... old_result result] -> [... result] */
-			duk_remove(ctx, -2);
+			duk_remove_m2(ctx);
 		}
 	}
 
@@ -2500,7 +2500,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 				/* no need for 'caller' post-check, because 'key' must be an array index */
 
-				duk_remove(ctx, -2);  /* [key result] -> [result] */
+				duk_remove_m2(ctx);  /* [key result] -> [result] */
 				return 1;
 			}
 
@@ -2771,7 +2771,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 #endif   /* !DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
 
-	duk_remove(ctx, -2);  /* [key result] -> [result] */
+	duk_remove_m2(ctx);  /* [key result] -> [result] */
 
 	DUK_DDD(DUK_DDDPRINT("-> %!T (found)", (duk_tval *) duk_get_tval(ctx, -1)));
 	return 1;
@@ -4828,7 +4828,7 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_context *ct
 	rc = duk_hobject_get_own_propdesc(thr, obj, key, &pd, DUK_GETDESC_FLAG_PUSH_VALUE);
 	if (!rc) {
 		duk_push_undefined(ctx);
-		duk_remove(ctx, -2);
+		duk_remove_m2(ctx);
 		return;
 	}
 

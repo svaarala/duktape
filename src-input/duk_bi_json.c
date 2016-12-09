@@ -1968,7 +1968,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			duk_dup_m2(ctx);          /* -> [ ... key val toJSON val ] */
 			duk_dup_m4(ctx);          /* -> [ ... key val toJSON val key ] */
 			duk_call_method(ctx, 1);  /* -> [ ... key val val' ] */
-			duk_remove(ctx, -2);      /* -> [ ... key val' ] */
+			duk_remove_m2(ctx);       /* -> [ ... key val' ] */
 		} else {
 			duk_pop(ctx);             /* -> [ ... key val ] */
 		}
@@ -1986,7 +1986,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key ] */
 		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key val ] */
 		duk_call_method(ctx, 2);                    /* -> [ ... key val val' ] */
-		duk_remove(ctx, -2);                        /* -> [ ... key val' ] */
+		duk_remove_m2(ctx);                         /* -> [ ... key val' ] */
 	}
 
 	/* [ ... key val ] */
@@ -2039,7 +2039,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		case DUK_HOBJECT_CLASS_BOOLEAN: {
 			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
 			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
-			duk_remove(ctx, -2);
+			duk_remove_m2(ctx);
 			break;
 		}
 		default: {
@@ -2797,7 +2797,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
 		duk__dec_reviver_walk(js_ctx);  /* [ ... val root "" ] -> [ ... val val' ] */
-		duk_remove(ctx, -2);            /* -> [ ... val' ] */
+		duk_remove_m2(ctx);             /* -> [ ... val' ] */
 	} else {
 		DUK_DDD(DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
 		                     (duk_tval *) duk_get_tval(ctx, idx_reviver)));

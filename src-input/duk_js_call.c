@@ -155,7 +155,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		DUK_D(DUK_DPRINT("_Formals is undefined when creating arguments, use n_formals == 0"));
 		n_formals = 0;
 	}
-	duk_remove(ctx, -2);  /* leave formals on stack for later use */
+	duk_remove_m2(ctx);  /* leave formals on stack for later use */
 	i_formals = duk_require_top_index(ctx);
 
 	DUK_ASSERT(n_formals >= 0);
@@ -350,7 +350,7 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	/* [ args(n) [crud] formals arguments map mappednames ] */
 
 	duk_pop_2(ctx);
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 
 	/* [ args [crud] arguments ] */
 }

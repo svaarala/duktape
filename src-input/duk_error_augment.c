@@ -292,7 +292,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* [ ... error c_filename? arr ] */
 
 	if (c_filename) {
-		duk_remove(ctx, -2);
+		duk_remove_m2(ctx);
 	}
 
 	/* [ ... error arr ] */

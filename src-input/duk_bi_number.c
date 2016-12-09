@@ -28,7 +28,7 @@ DUK_LOCAL duk_double_t duk__push_this_number_plain(duk_context *ctx) {
 	DUK_ASSERT(duk_is_number(ctx, -1));
 	DUK_DDD(DUK_DDDPRINT("number object: %!T, internal value: %!T",
 	                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 
  done:
 	return duk_get_number(ctx, -1);
