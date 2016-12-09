@@ -30,7 +30,7 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_prototype_tostring_shared(duk_context *ctx
 		DUK_ASSERT(h != NULL);
 
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_BOOLEAN) {
-			duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 			DUK_ASSERT(duk_is_boolean(ctx, -1));
 			goto type_ok;
 		}
@@ -63,7 +63,7 @@ DUK_INTERNAL duk_ret_t duk_bi_boolean_constructor(duk_context *ctx) {
 		DUK_HOBJECT_SET_CLASS_NUMBER(h_this, DUK_HOBJECT_CLASS_BOOLEAN);
 
 		duk_dup_0(ctx);  /* -> [ val obj val ] */
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* XXX: proper flags? */
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);  /* XXX: proper flags? */
 	}  /* unbalanced stack */
 
 	return 1;

@@ -861,7 +861,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		                     (duk_tval *) duk_get_tval(ctx, -1), (long) num_used));
 
 		if (num_used > 0) {
-			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 		} else {
 			DUK_DD(DUK_DDPRINT("varmap is empty after cleanup -> no need to add"));
 			duk_pop(ctx);
@@ -902,13 +902,13 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 	if (keep_formals) {
 		duk_dup(ctx, func->argnames_idx);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/* name */
 	if (func->h_name) {
 		duk_push_hstring(ctx, func->h_name);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/* _Source */
@@ -954,7 +954,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 #if 0
 		duk_push_string(ctx, "XXX");
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 #endif
 	}
 #endif  /* DUK_USE_NONSTD_FUNC_SOURCE_PROPERTY */
@@ -968,7 +968,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 
 		DUK_ASSERT(code_count <= DUK_COMPILER_MAX_BYTECODE_LENGTH);
 		duk_hobject_pc2line_pack(thr, q_instr, (duk_uint_fast32_t) code_count);  /* -> pushes fixed buffer */
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 
 		/* XXX: if assertions enabled, walk through all valid PCs
 		 * and check line mapping.
@@ -983,7 +983,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 		 */
 
 		duk_push_hstring(ctx, comp_ctx->h_filename);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	DUK_DD(DUK_DDPRINT("converted function: %!ixT",
@@ -6322,7 +6322,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 				duk_hstring *h_funcname;
 
 				duk_get_prop_index(ctx, comp_ctx->curr_func.funcs_idx, fnum * 3);
-				duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);  /* -> [ ... func name ] */
+				duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME);  /* -> [ ... func name ] */
 				h_funcname = duk_known_hstring(ctx, -1);
 
 				DUK_DDD(DUK_DDDPRINT("register function declaration %!O in pass 1, fnum %ld",

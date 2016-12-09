@@ -43,7 +43,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_pattern) == DUK_HOBJECT_CLASS_REGEXP) {
 		if (duk_is_undefined(ctx, 1)) {
 			duk_bool_t flag_g, flag_i, flag_m;
-			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
+			duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_SOURCE);
 			flag_g = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_GLOBAL, NULL);
 			flag_i = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_IGNORE_CASE, NULL);
 			flag_m = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_MULTILINE, NULL);
@@ -148,8 +148,8 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_to_string(duk_context *ctx) {
 
 	/* [ regexp ] */
 
-	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_SOURCE);
-	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_BYTECODE);
+	duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_SOURCE);
+	duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_INT_BYTECODE);
 	h_bc = duk_require_hstring(ctx, -1);
 	DUK_ASSERT(h_bc != NULL);
 	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h_bc) >= 1);

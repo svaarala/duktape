@@ -29,7 +29,7 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_constructor(duk_context *ctx) {
 
 		/* Pointer object internal value is immutable */
 		duk_dup_0(ctx);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_NONE);
 	}
 	/* Note: unbalanced stack on purpose */
 
@@ -59,7 +59,7 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_prototype_tostring_shared(duk_context *ctx
 			goto type_error;
 		}
 
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_VALUE);
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
 	} else {
 		goto type_error;
 	}

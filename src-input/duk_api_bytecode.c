@@ -565,7 +565,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* Setup function properties. */
 	tmp32 = DUK_RAW_READ_U32_BE(p);
 	duk_push_u32(ctx, tmp32);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 	p = duk__load_string_raw(ctx, p);  /* -> [ func funcname ] */
 	func_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
@@ -599,19 +599,19 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	if (need_pop) {
 		duk_pop(ctx);
 	}
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 	p = duk__load_string_raw(ctx, p);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
 	duk_push_object(ctx);
 	duk_dup_m2(ctx);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
 	duk_compact(ctx, -1);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
 
 	p = duk__load_buffer_raw(ctx, p);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
 
 	duk_push_object(ctx);  /* _Varmap */
 	for (;;) {
@@ -626,7 +626,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		duk_put_prop(ctx, -3);
 	}
 	duk_compact(ctx, -1);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 
 	/* If _Formals wasn't present in the original function, the list
 	 * here will be empty.  Same happens if _Formals was present but
@@ -647,7 +647,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		duk_pop(ctx);
 	} else {
 		duk_compact(ctx, -1);
-		duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	}
 
 	/* Return with final function pushed on stack top. */

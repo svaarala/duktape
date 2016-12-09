@@ -57,12 +57,12 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 		 * be deleted.
 		 */
 		duk_set_top(ctx, 2);
-		(void) duk_put_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
+		(void) duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 		return 0;
 	} else {
 		/* Get. */
 		DUK_ASSERT(duk_get_top(ctx) == 1);
-		duk_get_prop_stridx(ctx, 0, DUK_STRIDX_INT_FINALIZER);
+		duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_INT_FINALIZER);
 		return 1;
 	}
 }

@@ -36,7 +36,7 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 	 * a Proxy.
 	 */
 
-	duk_get_prop_stridx(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
+	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
 	if (!duk_is_callable(ctx, -1)) {
 		DUK_DDD(DUK_DDDPRINT("-> no finalizer or finalizer not callable"));
 		return 0;

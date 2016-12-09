@@ -302,7 +302,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_is_sealed_frozen_shared(duk_con
 DUK_INTERNAL duk_ret_t duk_bi_object_prototype_to_locale_string(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 0);
 	(void) duk_push_this_coercible_to_object(ctx);
-	duk_get_prop_stridx(ctx, 0, DUK_STRIDX_TO_STRING);
+	duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_TO_STRING);
 #if 0  /* This is mentioned explicitly in the E5.1 spec, but duk_call_method() checks for it in practice. */
 	duk_require_callable(ctx, 1);
 #endif
@@ -687,7 +687,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	}
 
 	duk_push_hobject(ctx, h_proxy_handler);
-	if (!duk_get_prop_stridx(ctx, -1, DUK_STRIDX_OWN_KEYS)) {
+	if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_OWN_KEYS)) {
 		/* Careful with reachability here: don't pop 'obj' before pushing
 		 * proxy target.
 		 */

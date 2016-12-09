@@ -169,8 +169,8 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 
 	duk_dup_m2(ctx);
 	duk_dup_m3(ctx);
-	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ ... new_glob new_env ] */
 

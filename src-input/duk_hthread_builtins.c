@@ -114,8 +114,8 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	DUK_ASSERT(h1 != NULL);
 	duk_dup_m2(ctx);
 	duk_dup_top(ctx);  /* -> [ ... new_global new_globalenv new_global new_global ] */
-	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
 
 	duk_hobject_compact_props(thr, h1);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL_ENV] != NULL);
@@ -269,11 +269,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 * function.
 			 */
 			duk__push_stridx_or_string(ctx, bd);
-			duk_xdef_prop_stridx(ctx,
-			                     -2,
-			                     DUK_STRIDX_NAME,
-			                     (i == DUK_BIDX_FUNCTION_PROTOTYPE) ?
-			                         DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx,
+			                           -2,
+			                           DUK_STRIDX_NAME,
+			                           (i == DUK_BIDX_FUNCTION_PROTOTYPE) ?
+			                               DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE);
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
@@ -321,10 +321,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			DUK_ASSERT(class_num != DUK_HOBJECT_CLASS_ARRAY);  /* .length is virtual */
 			duk_push_int(ctx, len);
-			duk_xdef_prop_stridx(ctx,
-			                     -2,
-			                     DUK_STRIDX_LENGTH,
-			                     DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx,
+			                           -2,
+			                           DUK_STRIDX_LENGTH,
+			                           DUK_PROPDESC_FLAGS_NONE);
 		}
 
 		/* enable exotic behaviors last */
@@ -604,10 +604,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) name func ] */
 
 			duk_push_int(ctx, c_length);
-			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
 
 			duk_dup_m2(ctx);
-			duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 
 			/* XXX: other properties of function instances; 'arguments', 'caller'. */
 
@@ -649,8 +649,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 */
 
 #if defined(DUK_USE_DATE_BUILTIN)
-	duk_get_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
-	duk_xdef_prop_stridx(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
+	duk_get_prop_stridx_short(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_UTC_STRING);
+	duk_xdef_prop_stridx_short(ctx, DUK_BIDX_DATE_PROTOTYPE, DUK_STRIDX_TO_GMT_STRING, DUK_PROPDESC_FLAGS_WC);
 #endif
 
 	h = duk_known_hobject(ctx, DUK_BIDX_DOUBLE_ERROR);
@@ -772,7 +772,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	                DUK_USE_OS_STRING
 			" "
 	                DUK_USE_COMPILER_STRING);
-	duk_xdef_prop_stridx(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, DUK_BIDX_DUKTAPE, DUK_STRIDX_ENV, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Since built-ins are not often extended, compact them.

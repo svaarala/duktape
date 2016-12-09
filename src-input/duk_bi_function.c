@@ -128,7 +128,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 		 * if the name contained a suitable prefix followed by '//' it
 		 * might cause the result to parse without error.
 		 */
-		duk_get_prop_stridx(ctx, -1, DUK_STRIDX_NAME);
+		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME);
 		if (duk_is_undefined(ctx, -1)) {
 			func_name = "";
 		} else {
@@ -222,6 +222,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 		DUK_DDD(DUK_DDDPRINT("argArray is an object"));
 
 		/* XXX: make this an internal helper */
+		DUK_ASSERT(idx_args >= 0 && idx_args <= 0x7fffL);  /* short variants would work, but avoid shifting */
 		duk_get_prop_stridx(ctx, idx_args, DUK_STRIDX_LENGTH);
 		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
 		duk_pop(ctx);
@@ -333,10 +334,10 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 	duk_dup_m2(ctx);  /* func */
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_dup_0(ctx);   /* thisArg */
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
 
 	duk_push_array(ctx);
 
@@ -346,7 +347,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		duk_dup(ctx, 1 + i);
 		duk_put_prop_index(ctx, -2, i);
 	}
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_ARGS, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
@@ -363,14 +364,14 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	    DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
 		/* For lightfuncs, simply read the virtual property. */
 		duk_int_t tmp;
-		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH);
+		duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH);
 		tmp = duk_to_int(ctx, -1) - (nargs - 1);  /* step 15.a */
 		duk_pop(ctx);
 		duk_push_int(ctx, (tmp < 0 ? 0 : tmp));
 	} else {
 		duk_push_int(ctx, 0);
 	}
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
 
 	/* caller and arguments must use the same thrower, [[ThrowTypeError]] */
 	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER);
@@ -379,7 +380,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	/* these non-standard properties are copied for convenience */
 	/* XXX: 'copy properties' API call? */
 	duk_push_string(ctx, "bound ");  /* ES6 19.2.3.2. */
-	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_NAME);
+	duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME);
 	if (!duk_is_string(ctx, -1)) {
 		/* ES6 has requirement to check that .name of target is a string
 		 * (also must check for Symbol); if not, targetName should be the
@@ -389,9 +390,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	}
 	duk_concat(ctx, 2);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
-	duk_get_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME);
-	duk_xdef_prop_stridx(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
 
 	/* The 'strict' flag is copied to get the special [[Get]] of E5.1
 	 * Section 15.3.5.4 to apply when a 'caller' value is a strict bound
