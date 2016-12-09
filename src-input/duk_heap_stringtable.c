@@ -10,14 +10,12 @@
 #define DUK__DELETED_MARKER(heap)             DUK_STRTAB_DELETED_MARKER((heap))
 #endif
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 #define DUK__PREVENT_MS_SIDE_EFFECTS(heap) do { \
 		(heap)->mark_and_sweep_base_flags |= \
 		        DUK_MS_FLAG_NO_STRINGTABLE_RESIZE |  /* avoid recursive string table call */ \
 		        DUK_MS_FLAG_NO_FINALIZERS |          /* avoid pressure to add/remove strings, invalidation of call data argument, etc. */ \
 		        DUK_MS_FLAG_NO_OBJECT_COMPACTION;    /* avoid array abandoning which interns strings */ \
 	} while (0)
-#endif
 
 /*
  *  Create a hstring and insert into the heap.  The created object
@@ -687,11 +685,9 @@ DUK_LOCAL duk_bool_t duk__resize_strtab_raw_probe(duk_heap *heap, duk_uint32_t n
 	 *  string table.  Call site must prevent these.
 	 */
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	DUK_ASSERT(heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE);
 	DUK_ASSERT(heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_FINALIZERS);
 	DUK_ASSERT(heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_OBJECT_COMPACTION);
-#endif
 
 #if defined(DUK_USE_HEAPPTR16)
 	new_entries = (duk_uint16_t *) DUK_ALLOC(heap, sizeof(duk_uint16_t) * new_size);
@@ -839,20 +835,16 @@ DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap) {
 DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen, duk_uint32_t strhash) {
 	duk_hstring *res;
 	const duk_uint8_t *extdata;
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
-#endif
 
 	/* Prevent any side effects on the string table and the caller provided
 	 * str/blen arguments while interning is in progress.  For example, if
 	 * the caller provided str/blen from a dynamic buffer, a finalizer might
 	 * resize that dynamic buffer, invalidating the call arguments.
 	 */
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	DUK_ASSERT((heap->mark_and_sweep_base_flags & DUK_MS_FLAG_NO_STRINGTABLE_RESIZE) == 0);
 	prev_mark_and_sweep_base_flags = heap->mark_and_sweep_base_flags;
 	DUK__PREVENT_MS_SIDE_EFFECTS(heap);
-#endif
 
 #if defined(DUK_USE_STRTAB_PROBE)
 	if (duk__recheck_strtab_size_probe(heap, heap->st_used + 1)) {
@@ -897,9 +889,7 @@ DUK_LOCAL duk_hstring *duk__do_intern(duk_heap *heap, const duk_uint8_t *str, du
 	 */
 
  done:
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
-#endif
 	return res;
 
  failed:
@@ -1038,7 +1028,7 @@ DUK_INTERNAL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h) {
 }
 #endif
 
-#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
+#if defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 DUK_INTERNAL void duk_heap_force_strtab_resize(duk_heap *heap) {
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
 	/* Force a resize so that DELETED entries are eliminated.

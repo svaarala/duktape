@@ -4,9 +4,9 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 
-#ifndef DUK_USE_DOUBLE_LINKED_HEAP
+#if !defined(DUK_USE_DOUBLE_LINKED_HEAP)
 #error internal error, reference counting requires a double linked heap
 #endif
 
@@ -429,7 +429,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	 *  a voluntary mark-and-sweep.
 	 */
 
-#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_VOLUNTARY_GC)
+#if defined(DUK_USE_VOLUNTARY_GC)
 	/* 'count' is more or less comparable to normal trigger counter update
 	 * which happens in memory block (re)allocation.
 	 */
@@ -442,7 +442,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		DUK_UNREF(rc);
 		DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %ld", (long) rc));
 	}
-#endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
+#endif  /* DUK_USE_VOLUNTARY_GC */
 }
 
 /*

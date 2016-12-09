@@ -111,7 +111,6 @@
  * GC is skipped because there is no thread do it with yet (happens
  * only during init phases).
  */
-#if defined(DUK_USE_MARK_AND_SWEEP)
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              12800L  /* 50x heap size */
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
@@ -120,7 +119,6 @@
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT              256L    /* 1x heap size */
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_ADD               1024L
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
-#endif
 #endif
 
 /* Stringcache is used for speeding up char-offset-to-byte-offset
@@ -384,7 +382,6 @@ struct duk_heap {
 	duk_heaphdr *refzero_list_tail;
 #endif
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	/* mark-and-sweep control */
 #if defined(DUK_USE_VOLUNTARY_GC)
 	duk_int_t mark_and_sweep_trigger_counter;
@@ -396,7 +393,6 @@ struct duk_heap {
 
 	/* work list for objects to be finalized (by mark-and-sweep) */
 	duk_heaphdr *finalize_list;
-#endif
 
 	/* longjmp state */
 	duk_ljstate lj;
@@ -547,7 +543,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *t
 #if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_INTERNAL_DECL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
 #endif
-#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_MS_STRINGTABLE_RESIZE)
+#if defined(DUK_USE_MS_STRINGTABLE_RESIZE)
 DUK_INTERNAL_DECL void duk_heap_force_strtab_resize(duk_heap *heap);
 #endif
 DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap);
@@ -600,9 +596,7 @@ DUK_INTERNAL_DECL void duk_heaphdr_decref_norz(duk_hthread *thr, duk_heaphdr *h)
 /* no refcounting */
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 DUK_INTERNAL_DECL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags);
-#endif
 
 DUK_INTERNAL_DECL duk_uint32_t duk_heap_hashstring(duk_heap *heap, const duk_uint8_t *str, duk_size_t len);
 

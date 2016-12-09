@@ -148,7 +148,6 @@ DUK_LOCAL void duk__free_refzero_list(duk_heap *heap) {
 }
 #endif
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
@@ -162,7 +161,6 @@ DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 		curr = next;
 	}
 }
-#endif
 
 DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	/* strings are only tracked by stringtable */
@@ -184,9 +182,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_ASSERT(heap->refzero_list == NULL);  /* refzero not running -> must be empty */
 #endif
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep not running -> must be empty */
-#endif
 
 	/* XXX: here again finalizer thread is the heap_thread which needs
 	 * to be coordinated with finalizer thread fixes.
@@ -292,7 +288,6 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	 * XXX: this perhaps requires an execution time limit.
 	 */
 	DUK_D(DUK_DPRINT("execute finalizers before freeing heap"));
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	/* Run mark-and-sweep a few times just in case (unreachable object
 	 * finalizers run already here).  The last round must rescue objects
 	 * from the previous round without running any more finalizers.  This
@@ -307,7 +302,6 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk_heap_mark_and_sweep(heap, 0);
 	DUK_D(DUK_DPRINT("forced gc #3 in heap destruction (don't run finalizers)"));
 	duk_heap_mark_and_sweep(heap, DUK_MS_FLAG_SKIP_FINALIZERS);  /* skip finalizers; queue finalizable objects to heap_allocated */
-#endif
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 	DUK_HEAP_SET_FINALIZER_NORESCUE(heap);  /* rescue no longer supported */
@@ -326,10 +320,8 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	duk__free_refzero_list(heap);
 #endif
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	DUK_D(DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", (void *) heap));
 	duk__free_markandsweep_finalize_list(heap);
-#endif
 
 	DUK_D(DUK_DPRINT("freeing string table of heap: %p", (void *) heap));
 	duk__free_stringtable(heap);
@@ -798,9 +790,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->refzero_list = NULL;
 	res->refzero_list_tail = NULL;
 #endif
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	res->finalize_list = NULL;
-#endif
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;

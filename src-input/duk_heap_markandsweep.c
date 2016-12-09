@@ -4,8 +4,6 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_MARK_AND_SWEEP
-
 DUK_LOCAL_DECL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h);
 DUK_LOCAL_DECL void duk__mark_tval(duk_heap *heap, duk_tval *tv);
 
@@ -1434,9 +1432,3 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 
 	return 0;  /* OK */
 }
-
-#else  /* DUK_USE_MARK_AND_SWEEP */
-
-/* no mark-and-sweep gc */
-
-#endif  /* DUK_USE_MARK_AND_SWEEP */
