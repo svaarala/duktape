@@ -3712,9 +3712,7 @@ Improve garbage collection behavior during paused state
 
 Current behavior: garbage generated during paused state (refzero or objects
 in reference loops) will both be left in the heap and collected eventually
-by mark-and-sweep.  When mark-and-sweep is disabled such garbage will remain
-until heap destruction (so the debugger paused state works quite poorly when
-mark-and-sweep is entirely left out of config).
+by mark-and-sweep.
 
 Various improvements are possible, see discussion in
 https://github.com/svaarala/duktape/pull/617.
