@@ -31,7 +31,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx) {
 	DUK_ASSERT(rc == 0 || rc == 1);
 	/* a value is left on stack regardless of rc */
 
-	duk_remove(ctx, -2);  /* remove key */
+	duk_remove_m2(ctx);  /* remove key */
 	return rc;  /* 1 if property found, 0 otherwise */
 }
 
@@ -584,7 +584,7 @@ DUK_EXTERNAL duk_bool_t duk_get_global_string(duk_context *ctx, const char *key)
 
 	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
 	ret = duk_get_prop_string(ctx, -1, key);
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 	return ret;
 }
 
@@ -599,7 +599,7 @@ DUK_EXTERNAL duk_bool_t duk_get_global_lstring(duk_context *ctx, const char *key
 
 	duk_push_hobject(ctx, thr->builtins[DUK_BIDX_GLOBAL]);
 	ret = duk_get_prop_lstring(ctx, -1, key, key_len);
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 	return ret;
 }
 

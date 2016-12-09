@@ -357,7 +357,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	}
 	/* [ ... enum_target res trap_result keys_array ] */
 	duk_pop_2(ctx);
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 
 	/* [ ... res ] */
 
@@ -595,7 +595,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 
 	/* [enum_target res] */
 
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 
 	/* [res] */
 
@@ -709,10 +709,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 			duk_push_hobject(ctx, enum_target);
 			duk_dup_m2(ctx);       /* -> [... enum key enum_target key] */
 			duk_get_prop(ctx, -2); /* -> [... enum key enum_target val] */
-			duk_remove(ctx, -2);   /* -> [... enum key val] */
+			duk_remove_m2(ctx);    /* -> [... enum key val] */
 			duk_remove(ctx, -3);   /* -> [... key val] */
 		} else {
-			duk_remove(ctx, -2);   /* -> [... key] */
+			duk_remove_m2(ctx);    /* -> [... key] */
 		}
 		return 1;
 	} else {
@@ -775,7 +775,7 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_sma
 	}
 
 	/* [enum_target enum res] */
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 
 	/* [enum_target res] */
 

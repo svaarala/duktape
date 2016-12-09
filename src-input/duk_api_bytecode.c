@@ -690,7 +690,7 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 
 	DUK_DD(DUK_DDPRINT("serialized result: %!T", duk_get_tval(ctx, -1)));
 
-	duk_remove(ctx, -2);  /* [ ... func buf ] -> [ ... buf ] */
+	duk_remove_m2(ctx);  /* [ ... func buf ] -> [ ... buf ] */
 }
 
 DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
@@ -726,7 +726,7 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 		goto format_error;
 	}
 
-	duk_remove(ctx, -2);  /* [ ... buf func ] -> [ ... func ] */
+	duk_remove_m2(ctx);  /* [ ... buf func ] -> [ ... func ] */
 	return;
 
  format_error:

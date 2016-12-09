@@ -123,7 +123,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	if (flags & DUK_COMPILE_NOSOURCE) {
 		;
 	} else {
-		duk_remove(ctx, -2);
+		duk_remove_m2(ctx);
 	}
 
 	/* [ ... func_template ] */
@@ -134,7 +134,7 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
 	                   thr->builtins[DUK_BIDX_GLOBAL_ENV],
 	                   1 /*add_auto_proto*/);
-	duk_remove(ctx, -2);   /* -> [ ... closure ] */
+	duk_remove_m2(ctx);   /* -> [ ... closure ] */
 
 	/* [ ... closure ] */
 

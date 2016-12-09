@@ -1079,6 +1079,10 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t idx) {
 #endif
 }
 
+DUK_INTERNAL_DECL void duk_remove_m2(duk_context *ctx) {
+	duk_remove(ctx, -2);
+}
+
 /*
  *  Stack slice primitives
  */
@@ -3562,7 +3566,7 @@ DUK_LOCAL void duk__push_stash(duk_context *ctx) {
 		duk_dup_top(ctx);
 		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
 	}
-	duk_remove(ctx, -2);
+	duk_remove_m2(ctx);
 }
 
 DUK_EXTERNAL void duk_push_heap_stash(duk_context *ctx) {
@@ -3671,7 +3675,7 @@ DUK_EXTERNAL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va
 	 */
 	res = duk_push_lstring(ctx, (const char *) buf, (duk_size_t) len);  /* [ buf? res ] */
 	if (pushed_buf) {
-		duk_remove(ctx, -2);
+		duk_remove_m2(ctx);
 	}
 	return res;
 }
@@ -5051,7 +5055,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 			 */
 			duk_push_tval(ctx, tv);
 			duk_push_sprintf(ctx, "(%s)", duk_to_string(ctx, -1));
-			duk_remove(ctx, -2);
+			duk_remove_m2(ctx);
 			break;
 		}
 		default: {

@@ -323,7 +323,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 			goto not_constructable;
 		}
 		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);  /* -> [... cons target] */
-		duk_remove(ctx, -2);                                        /* -> [... target] */
+		duk_remove_m2(ctx);                                         /* -> [... target] */
 	}
 	DUK_ASSERT(duk_is_callable(ctx, -1));
 	DUK_ASSERT(duk_is_lightfunc(ctx, -1) ||
@@ -403,7 +403,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	 */
 
 	if (duk_is_object(ctx, -1)) {
-		duk_remove(ctx, -2);
+		duk_remove_m2(ctx);
 	} else {
 		duk_pop(ctx);
 	}
