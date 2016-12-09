@@ -2216,7 +2216,8 @@ Planned
   lexenv/varenv fields in duk_hcompfunc struct (GH-1132); omit duk_hcompfunc
   _Formals array when it is safe to do so (GH-1141); omit duk_hcompfunc
   _Varmap in more cases when it is safe to do so (GH-1146); reduce initial
-  bytecode allocation in Ecmascript compiler for low memory targets (GH-1146)
+  bytecode allocation in Ecmascript compiler for low memory targets (GH-1146);
+  packed arguments for some internal helper calls (GH-1158)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
