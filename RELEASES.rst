@@ -2082,6 +2082,11 @@ Planned
 * Reduce RAM built-ins initdata limitations for custom bindings by using a
   shared varuint encoding in the bit-packed initdata stream (GH-1151, GH-1152)
 
+* Remove support for refcounting-only (= no mark-and-sweep) memory management
+  option as too error prone: without mark-and-sweep garbage containing
+  reference loops or created during debugger paused state (with or without
+  reference loops) would "leak" until heap destruction (GH-1168)
+
 * Fix JSON stringify fastpath handling of array gaps in JX and JC; they
   incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
   and '{"_undef":true}' as intended (GH-859, GH-1149)
