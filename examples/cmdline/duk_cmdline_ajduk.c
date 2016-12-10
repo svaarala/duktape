@@ -2,7 +2,7 @@
  *  'ajduk' specific functionality, examples for low memory techniques
  */
 
-#ifdef DUK_CMDLINE_AJSHEAP
+#if defined(DUK_CMDLINE_AJSHEAP)
 
 #include <stdio.h>
 #include <stdlib.h>

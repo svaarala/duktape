@@ -121,7 +121,7 @@ static int debugger_reattach = 0;
 
 static void print_greet_line(void) {
 	printf("((o) Duktape%s %d.%d.%d (%s)\n",
-#ifdef DUK_CMDLINE_LINENOISE
+#if defined(DUK_CMDLINE_LINENOISE)
 	       " [linenoise]",
 #else
 	       "",
