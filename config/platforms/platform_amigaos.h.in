@@ -11,7 +11,7 @@
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
 #include <time.h>
-#ifndef UINTPTR_MAX
+#if !defined(UINTPTR_MAX)
 #define UINTPTR_MAX UINT_MAX
 #endif
 #else
