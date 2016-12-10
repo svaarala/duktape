@@ -1192,7 +1192,8 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 
 	retval = duk_hobject_hasprop(thr,
 	                             DUK_GET_TVAL_NEGIDX(ctx, -1),
-	                             DUK_GET_TVAL_NEGIDX(ctx, -2));
+	                             DUK_GET_TVAL_NEGIDX(ctx, -2),
+	                             0 /*flags*/);
 
 	duk_pop_2(ctx);
 	return retval;

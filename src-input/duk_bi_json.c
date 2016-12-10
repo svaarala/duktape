@@ -1947,7 +1947,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_holder));
 	tv_key = DUK_GET_TVAL_NEGIDX(ctx, -1);
 	DUK_ASSERT(DUK_TVAL_IS_STRING(tv_key));
-	(void) duk_hobject_getprop(thr, tv_holder, tv_key);
+	(void) duk_hobject_getprop(thr, tv_holder, tv_key, 0 /*flags*/);  /* FIXME: allow internal? */
 
 	/* -> [ ... key val ] */
 

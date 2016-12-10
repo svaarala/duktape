@@ -3504,7 +3504,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			tv_obj = DUK__REGCONSTP_B(ins);
 			tv_key = DUK__REGCONSTP_C(ins);
-			rc = duk_hobject_getprop(thr, tv_obj, tv_key);  /* -> [val] */
+			rc = duk_hobject_getprop(thr, tv_obj, tv_key, 0 /*flags*/);  /* -> [val] */
 			DUK_UNREF(rc);  /* ignore */
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
@@ -3527,7 +3527,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			DUK_ASSERT(tv_val != NULL);
 			tv_obj = DUK__REGCONSTP_B(ins);
 			tv_key = DUK__REGCONSTP_C(ins);
-			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, DUK__STRICT());
+			DUK_ASSERT(DUK_PROP_FLAG_THROW == 1);  /* DUK__STRICT() -> throw flag */
+			DUK_ASSERT(DUK__STRICT() == 0 || DUK__STRICT() == 1);
+			rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, DUK__STRICT() /*flags*/);
 			DUK_UNREF(rc);  /* ignore */
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
@@ -3553,7 +3555,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		 * B -> object reg/const (may be const e.g. in "'foo'[1]") \
 		 * C -> key reg/const \
 		 */ \
-		(void) duk_hobject_getprop(thr, (barg), (carg)); \
+		(void) duk_hobject_getprop(thr, (barg), (carg), 0 /*flags*/); \
 		DUK__REPLACE_TOP_A_BREAK(); \
 	}
 #define DUK__PUTPROP_BODY(aarg,barg,carg) { \
@@ -3564,7 +3566,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		 * Note: intentional difference to register arrangement \
 		 * of e.g. GETPROP; 'A' must contain a register-only value. \
 		 */ \
-		(void) duk_hobject_putprop(thr, (aarg), (barg), (carg), DUK__STRICT()); \
+		DUK_ASSERT(DUK_PROP_FLAG_THROW == 1);  /* DUK__STRICT() -> throw flag */ \
+		DUK_ASSERT(DUK__STRICT() == 0 || DUK__STRICT() == 1); \
+		(void) duk_hobject_putprop(thr, (aarg), (barg), (carg), DUK__STRICT() /*flags*/); \
 		break; \
 	}
 #define DUK__DELPROP_BODY(barg,carg) { \
@@ -3573,7 +3577,9 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		 * C -> key reg/const \
 		 */ \
 		duk_bool_t rc; \
-		rc = duk_hobject_delprop(thr, (barg), (carg), DUK__STRICT()); \
+		DUK_ASSERT(DUK_PROP_FLAG_THROW == 1);  /* DUK__STRICT() -> throw flag */\
+		DUK_ASSERT(DUK__STRICT() == 0 || DUK__STRICT() == 1); \
+		rc = duk_hobject_delprop(thr, (barg), (carg), DUK__STRICT() /*flags*/); \
 		DUK_ASSERT(rc == 0 || rc == 1); \
 		DUK__REPLACE_BOOL_A_BREAK(rc); \
 	}
