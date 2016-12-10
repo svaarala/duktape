@@ -16,8 +16,8 @@ to call Ecmascript functions from C code and vice versa.
 Main features:
 
 * Embeddable, portable, compact
-* Ecmascript E5/E5.1 compliant, some features implemented from
-  Ecmascript 2015 (E6) and Ecmascript 2016 (E7)
+* Ecmascript E5/E5.1 compliant, with some semantics updated from ES6+
+* Partial support for Ecmascript 2015 (E6) and Ecmascript 2016 (E7)
 * Khronos/ES6 TypedArray and Node.js Buffer bindings
 * WHATWG Encoding API living standard
 * Built-in debugger
