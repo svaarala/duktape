@@ -17,12 +17,8 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property existence check is equivalent to the Ecmascript expression:</p>
-  <pre class="ecmascript-code">
-  key in obj
-  </pre>
-
-  <p>For semantics, see
+  <p>The property existence check is equivalent to the Ecmascript expression
+  <code>res = key in obj</code>.  For semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.8.7">The in operator</a>,
   and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.6">[[HasProperty]] (P)</a>.
@@ -35,6 +31,9 @@ summary: |
       an internal fast path for arrays and numeric indices which avoids an
       explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
+
+  <p>If the target is a Proxy object which implements the <code>has</code> trap,
+  the trap is invoked and the API call return value matches the trap return value.</p>
 
   <div class="note">
   Instead of accepting any

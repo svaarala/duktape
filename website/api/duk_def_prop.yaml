@@ -18,6 +18,11 @@ summary: |
   <code>TypeError</code> is thrown.  If the target is not an object (or the
   index is invalid) an error is thrown.</p>
 
+  <p>If the target is a Proxy object which implements the <code>defineProperty</code>
+  trap, the trap should be invoked.  However, Duktape doesn't currently support
+  the <code>defineProperty</code> trap.  When support is added, this API call will
+  start invoking the trap.</p>
+
   <p>The flags field provides "have" flags to indicate what property attributes
   are changed (this models the partial property descriptors allowed by
   <code>Object.defineProperty()</code>).  Values for the writable, configurable,
