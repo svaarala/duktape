@@ -23,12 +23,9 @@ summary: |
   <li>If <code>obj_idx</code> is invalid, throws an error.</li>
   </ul>
 
-  <p>The property read is equivalent to the Ecmascript expression:</p>
-  <pre class="ecmascript-code">
-  obj[key]
-  </pre>
-
-  <p>For semantics, see
+  <p>The property read is equivalent to the Ecmascript expression
+  <code>res = obj[key]</code> with the exception that the presence or absence of the
+  property is indicated by the call return value.  For precise semantics, see
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.2.1">Property Accessors</a>,
   <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.1">GetValue (V)</a>,
   and <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.12.3">[[Get]] (P)</a>.
@@ -41,6 +38,12 @@ summary: |
       an internal fast path for arrays and numeric indices which avoids an
       explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
+
+  <p>If the target is a Proxy object which implements the <code>get</code> trap,
+  the trap is invoked and the API call always returns 1 (i.e. property present): the
+  absence/presence of properties is not indicated by the <code>get</code> Proxy
+  trap.  Thus, the API call return value may be of limited use if the target
+  object is potentially a Proxy.</p>
 
   <p>If the key is a fixed string you can avoid one API call and use the
   <code><a href="#duk_get_prop_string">duk_get_prop_string()</a></code> variant.
