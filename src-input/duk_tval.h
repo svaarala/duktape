@@ -596,9 +596,11 @@ DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv
 #define DUK_TVAL_SET_BOOLEAN_FALSE(tv)       DUK_TVAL_SET_BOOLEAN((tv), 0)
 
 /* Lightfunc flags packing and unpacking. */
-/* Sign extend: 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss## */
+/* Sign extend: 0x0000##00 -> 0x##000000 -> sign extend to 0xssssss##.
+ * Avoid signed shifts due to portability limitations.
+ */
 #define DUK_LFUNC_FLAGS_GET_MAGIC(lf_flags) \
-	((((duk_int32_t) (lf_flags)) << 16) >> 24)
+	((duk_int32_t) (duk_int8_t) (((duk_uint16_t) (lf_flags)) >> 8))
 #define DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags) \
 	(((lf_flags) >> 4) & 0x0f)
 #define DUK_LFUNC_FLAGS_GET_NARGS(lf_flags) \
