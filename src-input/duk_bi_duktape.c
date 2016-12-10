@@ -27,7 +27,6 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
-#ifdef DUK_USE_MARK_AND_SWEEP
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_small_uint_t flags;
 	duk_bool_t rc;
@@ -40,10 +39,6 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
 	 */
 	duk_push_boolean(ctx, !rc);
 	return 1;
-#else
-	DUK_UNREF(ctx);
-	return 0;
-#endif
 }
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)

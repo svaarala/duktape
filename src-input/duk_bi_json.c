@@ -3032,9 +3032,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	if (js_ctx->h_replacer == NULL &&  /* replacer is a mutation risk */
 	    js_ctx->idx_proplist == -1) {  /* proplist is very rare */
 		duk_int_t pcall_rc;
-#ifdef DUK_USE_MARK_AND_SWEEP
 		duk_small_uint_t prev_mark_and_sweep_base_flags;
-#endif
 
 		DUK_DD(DUK_DDPRINT("try JSON.stringify() fast path"));
 
@@ -3055,19 +3053,16 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 		duk_dup(ctx, idx_value);
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 		/* Must prevent finalizers which may have arbitrary side effects. */
 		prev_mark_and_sweep_base_flags = thr->heap->mark_and_sweep_base_flags;
 		thr->heap->mark_and_sweep_base_flags |=
 			DUK_MS_FLAG_NO_FINALIZERS |         /* avoid attempts to add/remove object keys */
 		        DUK_MS_FLAG_NO_OBJECT_COMPACTION;   /* avoid attempt to compact any objects */
-#endif
 
 		pcall_rc = duk_safe_call(ctx, duk__json_stringify_fast, (void *) js_ctx /*udata*/, 1 /*nargs*/, 0 /*nret*/);
 
-#if defined(DUK_USE_MARK_AND_SWEEP)
 		thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
-#endif
+
 		if (pcall_rc == DUK_EXEC_SUCCESS) {
 			DUK_DD(DUK_DDPRINT("fast path successful"));
 			DUK_BW_PUSH_AS_STRING(thr, &js_ctx->bw);

@@ -4343,7 +4343,6 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	 */
 
 #if defined(DUK_USE_ASSERTIONS)
-#if defined(DUK_USE_MARK_AND_SWEEP)
 	{
 		/* One particular problem case is where an object has been
 		 * queued for finalization but the finalizer hasn't been
@@ -4356,7 +4355,6 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 			DUK_ASSERT(curr != (duk_heaphdr *) ptr);
 		}
 	}
-#endif
 #endif
 
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);

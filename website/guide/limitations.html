@@ -179,8 +179,10 @@ var fn = function myfunc() {
 }
 </pre>
 
-<p>These issues can be avoided by compiling Duktape with mark-and-sweep
-enabled (which is the default).</p>
+<p>Since Duktape 2.x mark-and-sweep is always enabled so that objects
+participating in reference loops are eventually freed.  You can disable
+periodic "voluntary" (non-emergency) mark-and-sweep via config options
+to reduce collection pauses in time sensitive environments.</p>
 
 <h2>Non-standard function 'caller' property limitations</h2>
 
@@ -210,11 +212,6 @@ case for further details.</p>
 Duktape is paused, there are a few current limitations:</p>
 
 <ul>
-<li>When Duktape is built with reference counting only (mark-and-sweep left
-    out of config options), garbage created during the debugger paused state
-    will be left in the Duktape heap and freed only when the heap is destroyed.
-    The option to build with reference counting only is not recommended and will
-    most likely be removed in future versions.</li>
 <li>Because garbage collection is disabled during the paused state, calls to
     <code>Duktape.gc()</code> and <code>duk_gc()</code> will be silently
     ignored.</li>

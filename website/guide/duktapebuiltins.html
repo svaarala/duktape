@@ -254,11 +254,11 @@ print('running on line:', getCurrentLine());
 
 <h3 id="builtin-duktape-gc">gc()</h3>
 
-<p>Trigger a forced mark-and-sweep collection.  If mark-and-sweep is disabled,
-this call is a no-op.</p>
+<p>Trigger a forced mark-and-sweep collection.  The call takes an optional
+integer flags field, see <code>duktape.h</code> for constants.</p>
 
 <!-- Return value is undocumented for now, which is probably good for now.
-     Not sure what the best return value would be.  Arguments are undocumented.
+     Not sure what the best return value would be.
 -->
 
 <h3 id="builtin-duktape-compact">compact()</h3>

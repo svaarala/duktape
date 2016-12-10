@@ -511,9 +511,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
                                             duk_uint32_t new_h_size,
                                             duk_bool_t abandon_array) {
 	duk_context *ctx = (duk_context *) thr;
-#ifdef DUK_USE_MARK_AND_SWEEP
 	duk_small_uint_t prev_mark_and_sweep_base_flags;
-#endif
 	duk_uint32_t new_alloc_size;
 	duk_uint32_t new_e_size_adjusted;
 	duk_uint8_t *new_p;
@@ -619,12 +617,10 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	 *  would be enough to restrict it only for the current object.
 	 */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 	prev_mark_and_sweep_base_flags = thr->heap->mark_and_sweep_base_flags;
 	thr->heap->mark_and_sweep_base_flags |=
 	        DUK_MS_FLAG_NO_FINALIZERS |         /* avoid attempts to add/remove object keys */
 	        DUK_MS_FLAG_NO_OBJECT_COMPACTION;   /* avoid attempt to compact the current object */
-#endif
 
 	new_alloc_size = DUK_HOBJECT_P_COMPUTE_SIZE(new_e_size_adjusted, new_a_size, new_h_size);
 	DUK_DDD(DUK_DDDPRINT("new hobject allocation size is %ld", (long) new_alloc_size));
@@ -920,9 +916,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 
 	DUK_DDD(DUK_DDDPRINT("resize result: %!O", (duk_heaphdr *) obj));
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
-#endif
 
 	/*
 	 *  Post resize assertions.
@@ -948,9 +942,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 		DUK_HSTRING_DECREF(thr, new_e_k[i]);  /* side effects */
 	}
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
-#endif
 
 	DUK_ERROR_ALLOC_FAILED(thr);
 }

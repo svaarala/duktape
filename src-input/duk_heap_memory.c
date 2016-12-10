@@ -12,7 +12,7 @@
  *  inlined in size optimized builds).
  */
 
-#if defined(DUK_USE_MARK_AND_SWEEP) && defined(DUK_USE_VOLUNTARY_GC)
+#if defined(DUK_USE_VOLUNTARY_GC)
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
 		(heap)->mark_and_sweep_trigger_counter--; \
 		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
@@ -35,13 +35,12 @@ DUK_LOCAL void duk__run_voluntary_gc(duk_heap *heap) {
 }
 #else
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  /* no voluntary gc */
-#endif  /* DUK_USE_MARK_AND_SWEEP && DUK_USE_VOLUNTARY_GC */
+#endif  /* DUK_USE_VOLUNTARY_GC */
 
 /*
  *  Allocate memory with garbage collection
  */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	void *res;
 	duk_bool_t rc;
@@ -119,18 +118,6 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	DUK_D(DUK_DPRINT("duk_heap_mem_alloc() failed even after gc, alloc size %ld", (long) size));
 	return NULL;
 }
-#else  /* DUK_USE_MARK_AND_SWEEP */
-/*
- *  Compared to a direct macro expansion this wrapper saves a few
- *  instructions because no heap dereferencing is required.
- */
-DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
-	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT_DISABLE(size >= 0);
-
-	return heap->alloc_func(heap->heap_udata, size);
-}
-#endif  /* DUK_USE_MARK_AND_SWEEP */
 
 DUK_INTERNAL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
 	void *res;
@@ -150,7 +137,6 @@ DUK_INTERNAL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
  *  Reallocate memory with garbage collection
  */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
 	void *res;
 	duk_bool_t rc;
@@ -227,16 +213,6 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 	DUK_D(DUK_DPRINT("duk_heap_mem_realloc() failed even after gc, alloc size %ld", (long) newsize));
 	return NULL;
 }
-#else  /* DUK_USE_MARK_AND_SWEEP */
-/* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
-	DUK_ASSERT(heap != NULL);
-	/* ptr may be NULL */
-	DUK_ASSERT_DISABLE(newsize >= 0);
-
-	return heap->realloc_func(heap->heap_udata, ptr, newsize);
-}
-#endif  /* DUK_USE_MARK_AND_SWEEP */
 
 /*
  *  Reallocate memory with garbage collection, using a callback to provide
@@ -244,7 +220,6 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
  *  (e.g. finalizers) might change the original pointer.
  */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
 	void *res;
 	duk_bool_t rc;
@@ -340,18 +315,11 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 	DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() failed even after gc, alloc size %ld", (long) newsize));
 	return NULL;
 }
-#else  /* DUK_USE_MARK_AND_SWEEP */
-/* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
-	return heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
-}
-#endif  /* DUK_USE_MARK_AND_SWEEP */
 
 /*
  *  Free memory
  */
 
-#ifdef DUK_USE_MARK_AND_SWEEP
 DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	DUK_ASSERT(heap != NULL);
 	/* ptr may be NULL */
@@ -370,15 +338,3 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	heap->mark_and_sweep_trigger_counter--;
 #endif
 }
-#else
-/* saves a few instructions to have this wrapper (see comment on duk_heap_mem_alloc) */
-DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
-	DUK_ASSERT(heap != NULL);
-	/* ptr may be NULL */
-
-	/* Note: must behave like a no-op with NULL and any pointer
-	 * returned from malloc/realloc with zero size.
-	 */
-	heap->free_func(heap->heap_udata, ptr);
-}
-#endif

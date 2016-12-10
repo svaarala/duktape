@@ -177,7 +177,7 @@ for more practical details.</p>
 <!-- XXX: this might be more suited to the Wiki -->
 <h3>Memory management alternatives</h3>
 
-<p>There are three supported memory management alternatives:</p>
+<p>There are two supported memory management alternatives:</p>
 <ul>
 <li><b>Reference counting and mark-and-sweep (default)</b>: heap objects are
     freed immediately when they become unreachable except for objects
@@ -190,31 +190,16 @@ for more practical details.</p>
     memory usage variance than in the default case.  The frequency of voluntary,
     stop the world mark-and-sweep collections is also higher than in the default
     case where reference counting is expected to handle almost all memory
-    management.</li>
-<li><b>Reference counting only</b>: reduces code footprint and eliminates
-    garbage collection pauses, but has major limitations and is not recommended.
-    Objects in unreachable reference cycles are not collected until the Duktape
-    heap is destroyed.  Garbage created during debugger paused state is also not
-    collected until heap destruction.  This option will most likely be removed
-    in Duktape 2.x.</li>
+    management.  Voluntary (non-emergency) mark-and-sweep can be disabled via
+    config options.</li>
 </ul>
 
-<p>When using only reference counting it is important to avoid creating
-unreachable reference cycles.  Reference cycles are usually easy to avoid in
-application code e.g. by using only forward pointers in data structures.  Even
-if reference cycles are necessary, garbage collection can be allowed to work
-simply by breaking the cycles before deleting the final references to such objects.
-For example, if you have a tree structure where nodes maintain references to
-both children and parents (creating reference cycles for each node) you could
-walk the tree and set the parent reference to <code>null</code> before deleting
-the final reference to the tree.</p>
-
-<p>Unfortunately every Ecmascript function instance is required to be in a
+<p>Reference counting relies on mark-and-sweep to handle reference cycles.
+For example, every Ecmascript function instance is required to be in a
 reference loop with an automatic prototype object created for the function.
 You can break this loop manually if you wish.  For internal technical reasons,
 named function expressions are also in a reference loop; this loop cannot be
-broken from user code and only mark-and-sweep can collect such functions.
-See <a href="#limitations">Limitations</a>.</p>
+broken from user code and only mark-and-sweep can collect such functions.</p>
 
 <h2>Compiling</h2>
 

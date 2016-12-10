@@ -18,11 +18,11 @@ Duktape memory management is based on the following basic concepts:
 * **Heap element tracking**.
   Actual memory management happens on the heap level.  Heap elements
   are tracked after being allocated, which allows unreachable elements
-  to be freed by reference counting and/or mark-and-sweep garbage collection.
+  to be freed by reference counting or mark-and-sweep garbage collection.
   Freeing a heap causes all related allocations to be freed, regardless of
   their reference count or reachability.
 
-* **Reference counting and/or mark-and-sweep**.
+* **Reference counting and mark-and-sweep**.
   These algorithms are used to detect which heap elements can be
   freed.  A finalizer method may be executed when an element is
   about to be freed by reference counting or mark-and-sweep.

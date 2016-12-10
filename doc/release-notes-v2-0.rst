@@ -1077,6 +1077,11 @@ Other incompatible changes
   under version guarantees and may change in an incompatible fashion in even a
   minor release.
 
+* Memory management without mark-and-sweep is no longer supported; relying on
+  only refcounting was error prone because reference cycles or debugger use
+  could result in leaked garbage that would only get collected on heap
+  destruction.
+
 Known issues
 ============
 
