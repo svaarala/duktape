@@ -636,7 +636,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 		}
 	}
 
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 
 	return ret;
 }
@@ -993,7 +993,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_boo
 	 *  Compact the function template.
 	 */
 
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 
 	/*
 	 *  Debug dumping
@@ -6333,7 +6333,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 				duk_push_int(ctx, (duk_int_t) (DUK_DECL_TYPE_FUNC + (fnum << 8)));
 				duk_put_prop_index(ctx, comp_ctx->curr_func.decls_idx, n + 1);
 
-				duk_pop_n(ctx, 2);
+				duk_pop_2(ctx);
 			}
 
 			/* no statement value (unlike function expression) */

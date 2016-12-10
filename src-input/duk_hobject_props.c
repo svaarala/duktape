@@ -149,7 +149,7 @@ DUK_LOCAL duk_uint32_t duk__push_tval_to_hstring_arr_idx(duk_context *ctx, duk_t
 	DUK_ASSERT(out_h != NULL);
 
 	duk_push_tval(ctx, tv);
-	h = duk_to_hstring(ctx, -1);
+	h = duk_to_hstring_m1(ctx);
 	DUK_ASSERT(h != NULL);
 	*out_h = h;
 
@@ -3757,7 +3757,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 						 * pointer checks we do here.
 						 */
 						duk_push_tval(ctx, tv_val);
-						(void) duk_to_number(ctx, -1);
+						(void) duk_to_number_m1(ctx);
 
 						if (h_bufobj->buf != NULL && DUK_HBUFOBJ_VALID_BYTEOFFSET_EXCL(h_bufobj, byte_off + elem_size)) {
 							data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h_bufobj->buf) + h_bufobj->offset + byte_off;
@@ -4454,7 +4454,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		}
 #endif  /* DUK_USE_ES6_PROXY */
 
-		key = duk_to_hstring(ctx, -1);
+		key = duk_to_hstring_m1(ctx);
 		DUK_ASSERT(key != NULL);
 
 		rc = duk_hobject_delprop_raw(thr, obj, key, throw_flag ? DUK_DELPROP_FLAG_THROW : 0);
@@ -4466,7 +4466,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		DUK_ASSERT(h != NULL);
 
-		key = duk_to_hstring(ctx, -1);
+		key = duk_to_hstring_m1(ctx);
 		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -4487,7 +4487,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hbuffer *h = DUK_TVAL_GET_BUFFER(tv_obj);
 		DUK_ASSERT(h != NULL);
 
-		key = duk_to_hstring(ctx, -1);
+		key = duk_to_hstring_m1(ctx);
 		DUK_ASSERT(key != NULL);
 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -4505,7 +4505,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 * reject if match any of them.
 		 */
 
-		key = duk_to_hstring(ctx, -1);
+		key = duk_to_hstring_m1(ctx);
 		DUK_ASSERT(key != NULL);
 
 		if (duk__key_is_lightfunc_ownprop(thr, key)) {
@@ -4757,7 +4757,7 @@ DUK_INTERNAL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk
 	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
 	                           DUK_GET_TVAL_NEGIDX(ctx, -1),
 	                           0);
-	duk_pop_n(ctx, 3);
+	duk_pop_3(ctx);
 }
 
 DUK_INTERNAL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj) {
@@ -4782,8 +4782,8 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 	(void) duk_hobject_getprop(thr,
 	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
 	                           DUK_GET_TVAL_NEGIDX(ctx, -1));
-	val = duk_to_number(ctx, -1);
-	duk_pop_n(ctx, 3);
+	val = duk_to_number_m1(ctx);
+	duk_pop_3(ctx);
 
 	/* XXX: better check */
 	if (val >= 0.0 && val < DUK_DOUBLE_2TO32) {
@@ -4810,7 +4810,7 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_context *ct
 	DUK_ASSERT(thr->heap != NULL);
 
 	obj = duk_require_hobject_promote_mask(ctx, obj_idx, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-	key = duk_to_hstring(ctx, -1);
+	key = duk_to_hstring_m1(ctx);
 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);

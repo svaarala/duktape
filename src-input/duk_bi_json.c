@@ -2018,7 +2018,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		switch (c) {
 		case DUK_HOBJECT_CLASS_NUMBER: {
 			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
-			duk_to_number(ctx, -1);
+			duk_to_number_m1(ctx);
 			/* The coercion potentially invokes user .valueOf() and .toString()
 			 * but can't result in a function value because ToPrimitive() would
 			 * reject such a result: test-dev-json-stringify-coercion-1.js.

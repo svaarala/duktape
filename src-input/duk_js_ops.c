@@ -639,7 +639,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		duk_double_t d1, d2;
 		d2 = DUK_TVAL_GET_NUMBER(tv_y);
 		duk_push_tval(ctx, tv_x);
-		duk_to_number(ctx, -1);
+		duk_to_number_m1(ctx);
 		d1 = duk_require_number(ctx, -1);
 		duk_pop(ctx);
 		return duk__js_equals_number(d1, d2);
@@ -941,15 +941,15 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 		/* Ordering should not matter (E5 Section 11.8.5, step 3.a). */
 #if 0
 		if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
-			d1 = duk_to_number(ctx, -2);
-			d2 = duk_to_number(ctx, -1);
+			d1 = duk_to_number_m2(ctx);
+			d2 = duk_to_number_m1(ctx);
 		} else {
-			d2 = duk_to_number(ctx, -1);
-			d1 = duk_to_number(ctx, -2);
+			d2 = duk_to_number_m1(ctx);
+			d1 = duk_to_number_m2(ctx);
 		}
 #endif
-		d1 = duk_to_number(ctx, -2);
-		d2 = duk_to_number(ctx, -1);
+		d1 = duk_to_number_m2(ctx);
+		d2 = duk_to_number_m1(ctx);
 
 		/* We want to duk_pop_2(ctx); because the values are numbers
 		 * no decref check is needed.

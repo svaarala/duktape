@@ -900,7 +900,7 @@ DUK_LOCAL duk_double_t duk__push_this_get_timeval_tzoffset(duk_context *ctx, duk
 	}
 
 	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
-	d = duk_to_number(ctx, -1);
+	d = duk_to_number_m1(ctx);
 	duk_pop(ctx);
 
 	if (DUK_ISNAN(d)) {

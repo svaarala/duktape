@@ -520,6 +520,10 @@ DUK_EXTERNAL void duk_compact(duk_context *ctx, duk_idx_t obj_idx) {
 	}
 }
 
+DUK_INTERNAL void duk_compact_m1(duk_context *ctx) {
+	duk_compact(ctx, -1);
+}
+
 /* XXX: the duk_hobject_enum.c stack APIs should be reworked */
 
 DUK_EXTERNAL void duk_enum(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t enum_flags) {

@@ -683,7 +683,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		 * http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare.
 		 */
 
-		d = duk_to_number(ctx, -1);
+		d = duk_to_number_m1(ctx);
 		if (d < 0.0) {
 			ret = -1;
 		} else if (d > 0.0) {
@@ -704,7 +704,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 
 	/* XXX: any special handling for plain array; causes repeated coercion now? */
 	h1 = duk_to_hstring(ctx, -2);
-	h2 = duk_to_hstring(ctx, -1);
+	h2 = duk_to_hstring_m1(ctx);
 	DUK_ASSERT(h1 != NULL);
 	DUK_ASSERT(h2 != NULL);
 
