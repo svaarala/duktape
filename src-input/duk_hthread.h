@@ -5,7 +5,7 @@
  *  which mostly operate on the topmost frame of the value stack.
  */
 
-#ifndef DUK_HTHREAD_H_INCLUDED
+#if !defined(DUK_HTHREAD_H_INCLUDED)
 #define DUK_HTHREAD_H_INCLUDED
 
 /*
@@ -215,7 +215,7 @@ struct duk_activation {
 	duk_hobject *func;      /* borrowed: function being executed; for bound function calls, this is the final, real function, NULL for lightfuncs */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
 	duk_hobject *lex_env;   /* current lexical environment (may be NULL if delayed) */
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	/* Previous value of 'func' caller, restored when unwound.  Only in use
 	 * when 'func' is non-strict.
 	 */

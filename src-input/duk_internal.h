@@ -5,7 +5,7 @@
  *  have not been designed to be individually included.
  */
 
-#ifndef DUK_INTERNAL_H_INCLUDED
+#if !defined(DUK_INTERNAL_H_INCLUDED)
 #define DUK_INTERNAL_H_INCLUDED
 
 /*

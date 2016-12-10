@@ -23,7 +23,7 @@ DUK_INTERNAL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t
 		 * endian access even on big endian architectures, which is
 		 * OK as long as it is consistent for a build.
 		 */
-#ifdef DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS
+#if defined(DUK_USE_HASHBYTES_UNALIGNED_U32_ACCESS)
 		duk_uint32_t k = *((const duk_uint32_t *) (const void *) data);
 #else
 		duk_uint32_t k = ((duk_uint32_t) data[0]) |

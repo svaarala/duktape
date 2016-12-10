@@ -147,7 +147,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 	}
 #endif
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("RESUME ERROR: thread=%!T, value=%!T",
 		                     (duk_tval *) duk_get_tval(ctx, 0),
@@ -264,7 +264,7 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 	}
 #endif
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	if (is_error) {
 		DUK_DDD(DUK_DDDPRINT("YIELD ERROR: value=%!T",
 		                     (duk_tval *) duk_get_tval(ctx, 0)));

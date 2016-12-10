@@ -2,7 +2,7 @@
  *  Lexer defines.
  */
 
-#ifndef DUK_LEXER_H_INCLUDED
+#if !defined(DUK_LEXER_H_INCLUDED)
 #define DUK_LEXER_H_INCLUDED
 
 typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct);
@@ -426,7 +426,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
                                       duk_token *out_token,
                                       duk_bool_t strict_mode,
                                       duk_bool_t regexp_mode);
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL_DECL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token *out_token);
 DUK_INTERNAL_DECL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range_callback gen_range, void *userdata);
 #endif  /* DUK_USE_REGEXP_SUPPORT */

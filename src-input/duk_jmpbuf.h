@@ -8,7 +8,7 @@
  *  http://en.wikipedia.org/wiki/Setjmp.h#Member_types
  */
 
-#ifndef DUK_JMPBUF_H_INCLUDED
+#if !defined(DUK_JMPBUF_H_INCLUDED)
 #define DUK_JMPBUF_H_INCLUDED
 
 #if defined(DUK_USE_CPP_EXCEPTIONS)

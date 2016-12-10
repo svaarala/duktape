@@ -538,7 +538,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	 *  Pre resize assertions.
 	 */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	/* XXX: pre-checks (such as no duplicate keys) */
 #endif
 
@@ -790,7 +790,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 			DUK_TVAL_SET_UNUSED(tv);
 		}
 	} else {
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		/* caller must have decref'd values above new_a_size (if that is necessary) */
 		if (!abandon_array) {
 			for (i = new_a_size; i < DUK_HOBJECT_GET_ASIZE(obj); i++) {
@@ -922,7 +922,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	 *  Post resize assertions.
 	 */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	/* XXX: post-checks (such as no duplicate keys) */
 #endif
 	return;
@@ -1273,7 +1273,7 @@ DUK_LOCAL duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(obj) <= DUK_HOBJECT_GET_ESIZE(obj));
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	/* key must not already exist in entry part */
 	{
 		duk_uint_fast32_t i;
@@ -2656,7 +2656,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_pop(ctx);                     /* [key undefined] -> [key] */
 			duk_push_hobject(ctx, desc.get);
 			duk_push_tval(ctx, tv_obj);       /* note: original, uncoerced base */
-#ifdef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
+#if defined(DUK_USE_NONSTD_GETTER_KEY_ARGUMENT)
 			duk_dup_m3(ctx);
 			duk_call_method(ctx, 1);          /* [key getter this key] -> [key retval] */
 #else
@@ -3651,7 +3651,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_push_hobject(ctx, setter);
 			duk_push_tval(ctx, tv_obj);  /* note: original, uncoerced base */
 			duk_push_tval(ctx, tv_val);  /* [key setter this val] */
-#ifdef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
+#if defined(DUK_USE_NONSTD_SETTER_KEY_ARGUMENT)
 			duk_dup_m4(ctx);
 			duk_call_method(ctx, 2);     /* [key setter this val key] -> [key retval] */
 #else

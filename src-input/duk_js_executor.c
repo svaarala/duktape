@@ -2212,7 +2212,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 #define DUK__REGCONSTP_C(ins)  ((((ins) & DUK__RCBIT_C) ? consts : thr->valstack_bottom) + DUK_DEC_C((ins)))
 #endif  /* DUK_USE_EXEC_REGCONST_OPTIMIZE */
 
-#ifdef DUK_USE_VERBOSE_EXECUTOR_ERRORS
+#if defined(DUK_USE_VERBOSE_EXECUTOR_ERRORS)
 #define DUK__INTERNAL_ERROR(msg)  do { \
 		DUK_ERROR_ERROR(thr, (msg)); \
 	} while (0)
@@ -2425,11 +2425,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	/* 'fun' is quite rarely used, so no local for it */
 #endif
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 	duk_int_t int_ctr;
 #endif
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_size_t valstack_top_base;    /* valstack top, should match before interpreting each op (no leftovers) */
 #endif
 
@@ -2523,7 +2523,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 		}
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		valstack_top_base = (duk_size_t) (thr->valstack_top - thr->valstack);
 #endif
 
@@ -5028,7 +5028,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 	}
 	DUK_UNREACHABLE();
 
-#ifndef DUK_USE_VERBOSE_EXECUTOR_ERRORS
+#if !defined(DUK_USE_VERBOSE_EXECUTOR_ERRORS)
  internal_error:
 	DUK_ERROR_INTERNAL(thr);
 #endif

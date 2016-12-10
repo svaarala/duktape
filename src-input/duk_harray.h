@@ -6,7 +6,7 @@
  *  duk_harray.  However, duk_harrays may not always have an array part.
  */
 
-#ifndef DUK_HARRAY_H_INCLUDED
+#if !defined(DUK_HARRAY_H_INCLUDED)
 #define DUK_HARRAY_H_INCLUDED
 
 #define DUK_ASSERT_HARRAY_VALID(h) do { \

@@ -51,7 +51,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	struct tm tms[2];
-#ifdef DUK_USE_DATE_TZO_GMTIME
+#if defined(DUK_USE_DATE_TZO_GMTIME)
 	struct tm *tm_ptr;
 #endif
 

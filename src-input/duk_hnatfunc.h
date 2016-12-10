@@ -2,7 +2,7 @@
  *  Heap native function representation.
  */
 
-#ifndef DUK_HNATFUNC_H_INCLUDED
+#if !defined(DUK_HNATFUNC_H_INCLUDED)
 #define DUK_HNATFUNC_H_INCLUDED
 
 #define DUK_HNATFUNC_NARGS_VARARGS  ((duk_int16_t) -1)

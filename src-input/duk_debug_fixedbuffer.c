@@ -5,7 +5,7 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 
 DUK_INTERNAL void duk_fb_put_bytes(duk_fixedbuffer *fb, const duk_uint8_t *buffer, duk_size_t length) {
 	duk_size_t avail;

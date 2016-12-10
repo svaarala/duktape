@@ -29,7 +29,7 @@
  *  parts are resized together, and makes property access a bit complicated.
  */
 
-#ifndef DUK_HOBJECT_H_INCLUDED
+#if !defined(DUK_HOBJECT_H_INCLUDED)
 #define DUK_HOBJECT_H_INCLUDED
 
 /* Object flag.  There are currently 25 flag bits available.  Make sure

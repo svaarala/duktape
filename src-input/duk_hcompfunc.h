@@ -5,7 +5,7 @@
  *  bytecode, constants, and inner functions.
  */
 
-#ifndef DUK_HCOMPFUNC_H_INCLUDED
+#if !defined(DUK_HCOMPFUNC_H_INCLUDED)
 #define DUK_HCOMPFUNC_H_INCLUDED
 
 /*

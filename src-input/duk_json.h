@@ -2,7 +2,7 @@
  *  Defines for JSON, especially duk_bi_json.c.
  */
 
-#ifndef DUK_JSON_H_INCLUDED
+#if !defined(DUK_JSON_H_INCLUDED)
 #define DUK_JSON_H_INCLUDED
 
 /* Encoding/decoding flags */

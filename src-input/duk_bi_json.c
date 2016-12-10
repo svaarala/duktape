@@ -30,7 +30,7 @@
 
 DUK_LOCAL_DECL void duk__dec_syntax_error(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx);
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 DUK_LOCAL_DECL duk_uint8_t duk__dec_peek(duk_json_dec_ctx *js_ctx);
 #endif
 DUK_LOCAL_DECL duk_uint8_t duk__dec_get(duk_json_dec_ctx *js_ctx);
@@ -38,7 +38,7 @@ DUK_LOCAL_DECL duk_uint8_t duk__dec_get_nonwhite(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL duk_uint_fast32_t duk__dec_decode_hex_escape(duk_json_dec_ctx *js_ctx, duk_small_uint_t n);
 DUK_LOCAL_DECL void duk__dec_req_stridx(duk_json_dec_ctx *js_ctx, duk_small_uint_t stridx);
 DUK_LOCAL_DECL void duk__dec_string(duk_json_dec_ctx *js_ctx);
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 DUK_LOCAL_DECL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__dec_pointer(duk_json_dec_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__dec_buffer(duk_json_dec_ctx *js_ctx);
@@ -243,7 +243,7 @@ DUK_LOCAL void duk__dec_eat_white(duk_json_dec_ctx *js_ctx) {
 	js_ctx->p = p;
 }
 
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 DUK_LOCAL duk_uint8_t duk__dec_peek(duk_json_dec_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx->p <= js_ctx->p_end);
 	return *js_ctx->p;
@@ -352,7 +352,7 @@ DUK_LOCAL duk_small_int_t duk__dec_string_escape(duk_json_dec_ctx *js_ctx, duk_u
 		cp = duk__dec_decode_hex_escape(js_ctx, 4);
 		break;
 	}
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 	case DUK_ASC_UC_U: {
 		if (js_ctx->flag_ext_custom) {
 			cp = duk__dec_decode_hex_escape(js_ctx, 8);
@@ -486,7 +486,7 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 	DUK_UNREACHABLE();
 }
 
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 /* Decode a plain string consisting entirely of identifier characters.
  * Used to parse plain keys (e.g. "foo: 123").
  */
@@ -532,7 +532,7 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 }
 #endif  /* DUK_USE_JX */
 
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -586,7 +586,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 }
 #endif  /* DUK_USE_JX */
 
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -776,7 +776,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 
 		if (x == DUK_ASC_DOUBLEQUOTE) {
 			duk__dec_string(js_ctx);
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 		} else if (js_ctx->flag_ext_custom &&
 		           duk_unicode_is_identifier_start((duk_codepoint_t) x)) {
 			duk__dec_plain_string(js_ctx);
@@ -897,7 +897,7 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 	if (x == DUK_ASC_DOUBLEQUOTE) {
 		duk__dec_string(js_ctx);
 	} else if ((x >= DUK_ASC_0 && x <= DUK_ASC_9) || (x == DUK_ASC_MINUS)) {
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 		if (js_ctx->flag_ext_custom && x == DUK_ASC_MINUS && duk__dec_peek(js_ctx) == DUK_ASC_UC_I) {
 			duk__dec_req_stridx(js_ctx, DUK_STRIDX_MINUS_INFINITY);  /* "-Infinity", '-' has been eaten */
 			duk_push_number(ctx, -DUK_DOUBLE_INFINITY);
@@ -918,7 +918,7 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 	} else if (x == DUK_ASC_LC_N) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_NULL);
 		duk_push_null(ctx);
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_LC_U) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_UNDEFINED);
 		duk_push_undefined(ctx);
@@ -1108,7 +1108,7 @@ DUK_LOCAL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uin
 	 *   (nybble_count << 16) | (escape_char1) | (escape_char2)
 	 */
 
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 	if (DUK_LIKELY(cp < 0x100UL)) {
 		if (DUK_UNLIKELY(js_ctx->flag_ext_custom)) {
 			tmp = DUK__MKESC(2, DUK_ASC_BACKSLASH, DUK_ASC_LC_X);
@@ -1120,7 +1120,7 @@ DUK_LOCAL duk_uint8_t *duk__emit_esc_auto_fast(duk_json_enc_ctx *js_ctx, duk_uin
 	if (DUK_LIKELY(cp < 0x10000UL)) {
 		tmp = DUK__MKESC(4, DUK_ASC_BACKSLASH, DUK_ASC_LC_U);
 	} else {
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 		if (DUK_LIKELY(js_ctx->flag_ext_custom)) {
 			tmp = DUK__MKESC(8, DUK_ASC_BACKSLASH, DUK_ASC_UC_U);
 		} else
@@ -1314,7 +1314,7 @@ DUK_LOCAL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_st
 					p = p_tmp + 1;
 				}
 
-#ifdef DUK_USE_NONSTD_JSON_ESC_U2028_U2029
+#if defined(DUK_USE_NONSTD_JSON_ESC_U2028_U2029)
 				if (js_ctx->flag_ascii_only || cp == 0x2028 || cp == 0x2029) {
 #else
 				if (js_ctx->flag_ascii_only) {
@@ -1520,8 +1520,8 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 	 * variants is to be as useful to a programmer as possible.
 	 */
 
-	/* The #ifdef clutter here needs to handle the three cases:
-	 * (1) JX+JC, (2) JX only, (3) JC only.
+	/* The #if defined() clutter here needs to handle the three
+	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
 	 */
 
 	/* Note: space must cater for both JX and JC. */
@@ -1575,8 +1575,8 @@ DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
 
 	DUK_MEMZERO(buf, sizeof(buf));
 
-	/* The #ifdef clutter here needs to handle the three cases:
-	 * (1) JX+JC, (2) JX only, (3) JC only.
+	/* The #if defined() clutter here needs to handle the three
+	 * cases: (1) JX+JC, (2) JX only, (3) JC only.
 	 */
 #if defined(DUK_USE_JX) && defined(DUK_USE_JC)
 	if (js_ctx->flag_ext_custom)
@@ -2721,7 +2721,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	duk_json_dec_ctx js_ctx_alloc;
 	duk_json_dec_ctx *js_ctx = &js_ctx_alloc;
 	duk_hstring *h_text;
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top = duk_get_top(ctx);
 #endif
 
@@ -2737,7 +2737,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 
 	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	/* nothing now */
 #endif
 	js_ctx->recursion_limit = DUK_USE_JSON_DEC_RECLIMIT;
@@ -2848,7 +2848,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	js_ctx->h_replacer = NULL;
 	js_ctx->h_gap = NULL;
 #endif
@@ -2861,17 +2861,17 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	js_ctx->flags = flags;
 	js_ctx->flag_ascii_only = flags & DUK_JSON_FLAG_ASCII_ONLY;
 	js_ctx->flag_avoid_key_quotes = flags & DUK_JSON_FLAG_AVOID_KEY_QUOTES;
-#ifdef DUK_USE_JX
+#if defined(DUK_USE_JX)
 	js_ctx->flag_ext_custom = flags & DUK_JSON_FLAG_EXT_CUSTOM;
 #endif
-#ifdef DUK_USE_JC
+#if defined(DUK_USE_JC)
 	js_ctx->flag_ext_compatible = flags & DUK_JSON_FLAG_EXT_COMPATIBLE;
 #endif
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 	js_ctx->flag_ext_custom_or_compatible = flags & (DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_EXT_COMPATIBLE);
 #endif
 
-	/* The #ifdef clutter here handles the JX/JC enable/disable
+	/* The #if defined() clutter here handles the JX/JC enable/disable
 	 * combinations properly.
 	 */
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)

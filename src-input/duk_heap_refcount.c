@@ -176,7 +176,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) DUK_ACT_GET_FUNC(act));
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->var_env);
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->lex_env);
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->prev_caller);
 #endif
 		}

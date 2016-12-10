@@ -397,7 +397,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		duk_xdef_prop_stridx_thrower(ctx, -2, DUK_STRIDX_CALLER);
 		duk_xdef_prop_stridx_thrower(ctx, -2, DUK_STRIDX_LC_ARGUMENTS);
 	} else {
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 		DUK_DDD(DUK_DDDPRINT("function is non-strict and non-standard 'caller' property in use, add initial 'null' value"));
 		duk_push_null(ctx);
 		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_CALLER, DUK_PROPDESC_FLAGS_NONE);
@@ -594,7 +594,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	duk_push_hobject(ctx, env);
 
 	/* assertions: env must be closed in the same thread as where it runs */
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	{
 		/* [... env] */
 

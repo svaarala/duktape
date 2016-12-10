@@ -3,7 +3,7 @@
  *  to the public API.
  */
 
-#ifndef DUK_API_INTERNAL_H_INCLUDED
+#if !defined(DUK_API_INTERNAL_H_INCLUDED)
 #define DUK_API_INTERNAL_H_INCLUDED
 
 /* duk_push_sprintf constants */

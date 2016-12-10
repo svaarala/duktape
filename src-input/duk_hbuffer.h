@@ -9,7 +9,7 @@
  *  The data pointer for a variable size buffer of zero size may be NULL.
  */
 
-#ifndef DUK_HBUFFER_H_INCLUDED
+#if !defined(DUK_HBUFFER_H_INCLUDED)
 #define DUK_HBUFFER_H_INCLUDED
 
 /*

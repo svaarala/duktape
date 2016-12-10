@@ -2,7 +2,7 @@
  *  Unicode helpers
  */
 
-#ifndef DUK_UNICODE_H_INCLUDED
+#if !defined(DUK_UNICODE_H_INCLUDED)
 #define DUK_UNICODE_H_INCLUDED
 
 /*
@@ -178,19 +178,19 @@
  *  Unicode tables
  */
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 #include "duk_unicode_ids_noa.h"
 #else
 #include "duk_unicode_ids_noabmp.h"
 #endif
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 #include "duk_unicode_ids_m_let_noa.h"
 #else
 #include "duk_unicode_ids_m_let_noabmp.h"
 #endif
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 #include "duk_unicode_idp_m_ids_noa.h"
 #else
 #include "duk_unicode_idp_m_ids_noabmp.h"

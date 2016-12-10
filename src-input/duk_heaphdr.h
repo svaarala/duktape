@@ -3,7 +3,7 @@
  *  Access all fields through the accessor macros.
  */
 
-#ifndef DUK_HEAPHDR_H_INCLUDED
+#if !defined(DUK_HEAPHDR_H_INCLUDED)
 #define DUK_HEAPHDR_H_INCLUDED
 
 /*
@@ -152,7 +152,7 @@ struct duk_heaphdr_string {
 #define DUK_HEAPHDR_PREDEC_REFCOUNT(h)  (--(h)->h_refcount)  /* result: updated refcount */
 #endif
 #else
-/* refcount macros not defined without refcounting, caller must #ifdef now */
+/* refcount macros not defined without refcounting, caller must #if defined() now */
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
 /*
@@ -278,7 +278,7 @@ struct duk_heaphdr_string {
  *  it is not required for INCREF, but it is included just in case.
  *
  *  Note that 'raw' macros such as DUK_HEAPHDR_GET_REFCOUNT() are not
- *  defined without DUK_USE_REFERENCE_COUNTING, so caller must #ifdef
+ *  defined without DUK_USE_REFERENCE_COUNTING, so caller must #if defined()
  *  around them.
  */
 

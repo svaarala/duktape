@@ -1,4 +1,4 @@
-#ifndef DUK_DEBUGGER_H_INCLUDED
+#if !defined(DUK_DEBUGGER_H_INCLUDED)
 #define DUK_DEBUGGER_H_INCLUDED
 
 /* Debugger protocol version is defined in the public API header. */

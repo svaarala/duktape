@@ -127,7 +127,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_ACT_GET_FUNC(act));
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->var_env);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->lex_env);
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->prev_caller);
 #endif
 		}
@@ -243,7 +243,7 @@ DUK_LOCAL void duk__mark_roots_heap(duk_heap *heap) {
  *  freed in mark-and-sweep.
  */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_LOCAL void duk__mark_refzero_list(duk_heap *heap) {
 	duk_heaphdr *hdr;
 
@@ -340,7 +340,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 	duk_heaphdr *hdr;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count_finalize_list = 0;
 #endif
 
@@ -350,12 +350,12 @@ DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 	while (hdr) {
 		duk__mark_heaphdr(heap, hdr);
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		count_finalize_list++;
 #endif
 	}
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	if (count_finalize_list > 0) {
 		DUK_D(DUK_DPRINT("marked %ld objects on the finalize_list as reachable (previous finalizer run skipped)",
 		                 (long) count_finalize_list));
@@ -378,7 +378,7 @@ DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
  *  intended behavior.
  */
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr, duk_size_t *count) {
 #else
 DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr) {
@@ -393,14 +393,14 @@ DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_HEAPHDR_CLEAR_REACHABLE(hdr);  /* done so that duk__mark_heaphdr() works correctly */
 	duk__mark_heaphdr(heap, hdr);
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	(*count)++;
 #endif
 }
 
 DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 	duk_heaphdr *hdr;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count;
 #endif
 
@@ -409,14 +409,14 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 	while (DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap)) {
 		DUK_DD(DUK_DDPRINT("recursion limit reached, doing heap scan to continue from temproots"));
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		count = 0;
 #endif
 		DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap);
 
 		hdr = heap->heap_allocated;
 		while (hdr) {
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 			duk__handle_temproot(heap, hdr, &count);
 #else
 			duk__handle_temproot(heap, hdr);
@@ -425,10 +425,10 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 		}
 
 		/* must also check refzero_list */
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		hdr = heap->refzero_list;
 		while (hdr) {
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 			duk__handle_temproot(heap, hdr, &count);
 #else
 			duk__handle_temproot(heap, hdr);
@@ -437,7 +437,7 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
 		}
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		DUK_DD(DUK_DDPRINT("temproot mark heap scan processed %ld temp roots", (long) count));
 #endif
 	}
@@ -452,7 +452,7 @@ DUK_LOCAL void duk__mark_temproots_by_heap_scan(duk_heap *heap) {
  *  identically to duk__sweep_heap().
  */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 	duk_hthread *thr;
 	duk_heaphdr *hdr;
@@ -489,7 +489,7 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
  *  Clear (reachable) flags of refzero work list.
  */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_LOCAL void duk__clear_refzero_list_flags(duk_heap *heap) {
 	duk_heaphdr *hdr;
 
@@ -655,7 +655,7 @@ DUK_LOCAL void duk__sweep_stringtable_chain(duk_heap *heap, duk_size_t *out_coun
 DUK_LOCAL void duk__sweep_stringtable_probe(duk_heap *heap, duk_size_t *out_count_keep) {
 	duk_hstring *h;
 	duk_uint_fast32_t i;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count_free = 0;
 #endif
 	duk_size_t count_keep = 0;
@@ -676,7 +676,7 @@ DUK_LOCAL void duk__sweep_stringtable_probe(duk_heap *heap, duk_size_t *out_coun
 			continue;
 		}
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		count_free++;
 #endif
 
@@ -710,7 +710,7 @@ DUK_LOCAL void duk__sweep_stringtable_probe(duk_heap *heap, duk_size_t *out_coun
 		duk_free_hstring(heap, (duk_hstring *) h);
 	}
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	DUK_D(DUK_DPRINT("mark-and-sweep sweep stringtable: %ld freed, %ld kept",
 	                 (long) count_free, (long) count_keep));
 #endif
@@ -726,7 +726,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 	duk_heaphdr *prev;  /* last element that was left in the heap */
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count_free = 0;
 	duk_size_t count_finalize = 0;
 	duk_size_t count_rescue = 0;
@@ -765,7 +765,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);
 				DUK_DDD(DUK_DDDPRINT("object has finalizer, move to finalization work list: %p", (void *) curr));
 
-#ifdef DUK_USE_DOUBLE_LINKED_HEAP
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 				if (heap->finalize_list) {
 					DUK_HEAPHDR_SET_PREV(heap, heap->finalize_list, curr);
 				}
@@ -774,7 +774,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				DUK_HEAPHDR_SET_NEXT(heap, curr, heap->finalize_list);
 				DUK_ASSERT_HEAPHDR_LINKS(heap, curr);
 				heap->finalize_list = curr;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 				count_finalize++;
 #endif
 			} else {
@@ -791,7 +791,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 					DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 					DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);
 					DUK_DD(DUK_DDPRINT("object rescued during mark-and-sweep finalization: %p", (void *) curr));
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 					count_rescue++;
 #endif
 				} else {
@@ -808,7 +808,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				if (prev) {
 					DUK_HEAPHDR_SET_NEXT(heap, prev, curr);
 				}
-#ifdef DUK_USE_DOUBLE_LINKED_HEAP
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 				DUK_HEAPHDR_SET_PREV(heap, curr, prev);
 #endif
 				DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
@@ -850,7 +850,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 			 * and are handled above.
 			 */
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 			count_free++;
 #endif
 
@@ -869,7 +869,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 	}
 	DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	DUK_D(DUK_DPRINT("mark-and-sweep sweep objects (non-string): %ld freed, %ld kept, %ld rescued, %ld queued for finalization",
 	                 (long) count_free, (long) count_keep, (long) count_rescue, (long) count_finalize));
 #endif
@@ -884,7 +884,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count = 0;
 #endif
 	duk_hthread *thr;
@@ -927,7 +927,7 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
 
 		curr = next;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		count++;
 #endif
 	}
@@ -935,7 +935,7 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 	/* finalize_list will always be processed completely */
 	heap->finalize_list = NULL;
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	DUK_D(DUK_DPRINT("mark-and-sweep finalize objects: %ld finalizers called", (long) count));
 #endif
 }
@@ -957,13 +957,13 @@ DUK_LOCAL int duk__protected_compact_object(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaphdr *start, duk_size_t *p_count_check, duk_size_t *p_count_compact, duk_size_t *p_count_bytes_saved) {
 #else
 DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_heaphdr *start) {
 #endif
 	duk_heaphdr *curr;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t old_size, new_size;
 #endif
 	duk_hobject *obj;
@@ -979,7 +979,7 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 		}
 		obj = (duk_hobject *) curr;
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		old_size = DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
 		                                      DUK_HOBJECT_GET_ASIZE(obj),
 		                                      DUK_HOBJECT_GET_HSIZE(obj));
@@ -990,20 +990,20 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 		/* XXX: disable error handlers for duration of compaction? */
 		duk_safe_call((duk_context *) thr, duk__protected_compact_object, NULL, 1, 0);
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		new_size = DUK_HOBJECT_P_COMPUTE_SIZE(DUK_HOBJECT_GET_ESIZE(obj),
 		                                      DUK_HOBJECT_GET_ASIZE(obj),
 		                                      DUK_HOBJECT_GET_HSIZE(obj));
 #endif
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		(*p_count_compact)++;
 		(*p_count_bytes_saved) += (duk_size_t) (old_size - new_size);
 #endif
 
 	 next:
 		curr = DUK_HEAPHDR_GET_NEXT(heap, curr);
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 		(*p_count_check)++;
 #endif
 	}
@@ -1011,7 +1011,7 @@ DUK_LOCAL void duk__compact_object_list(duk_heap *heap, duk_hthread *thr, duk_he
 
 DUK_LOCAL void duk__compact_objects(duk_heap *heap) {
 	/* XXX: which lists should participate?  to be finalized? */
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_size_t count_check = 0;
 	duk_size_t count_compact = 0;
 	duk_size_t count_bytes_saved = 0;
@@ -1023,21 +1023,21 @@ DUK_LOCAL void duk__compact_objects(duk_heap *heap) {
 	thr = duk__get_temp_hthread(heap);
 	DUK_ASSERT(thr != NULL);
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk__compact_object_list(heap, thr, heap->heap_allocated, &count_check, &count_compact, &count_bytes_saved);
 	duk__compact_object_list(heap, thr, heap->finalize_list, &count_check, &count_compact, &count_bytes_saved);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__compact_object_list(heap, thr, heap->refzero_list, &count_check, &count_compact, &count_bytes_saved);
 #endif
 #else
 	duk__compact_object_list(heap, thr, heap->heap_allocated);
 	duk__compact_object_list(heap, thr, heap->finalize_list);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__compact_object_list(heap, thr, heap->refzero_list);
 #endif
 #endif
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	DUK_D(DUK_DPRINT("mark-and-sweep compact objects: %ld checked, %ld compaction attempts, %ld bytes saved by compaction",
 	                 (long) count_check, (long) count_compact, (long) count_bytes_saved));
 #endif
@@ -1047,7 +1047,7 @@ DUK_LOCAL void duk__compact_objects(duk_heap *heap) {
  *  Assertion helpers.
  */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 	duk_heaphdr *hdr;
 
@@ -1060,7 +1060,7 @@ DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	hdr = heap->refzero_list;
 	while (hdr) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(hdr));
@@ -1072,7 +1072,7 @@ DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 }
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
 	duk_heaphdr *hdr = heap->heap_allocated;
 	while (hdr) {
@@ -1165,7 +1165,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	duk_hthread *thr;
 	duk_size_t count_keep_obj;
 	duk_size_t count_keep_str;
-#ifdef DUK_USE_VOLUNTARY_GC
+#if defined(DUK_USE_VOLUNTARY_GC)
 	duk_size_t tmp;
 #endif
 
@@ -1183,7 +1183,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 		DUK_D(DUK_DPRINT("gc skipped because we don't have a temp thread"));
 
 		/* reset voluntary gc trigger count */
-#ifdef DUK_USE_VOLUNTARY_GC
+#if defined(DUK_USE_VOLUNTARY_GC)
 		heap->mark_and_sweep_trigger_counter = DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP;
 #endif
 		return 0;  /* OK */
@@ -1214,12 +1214,12 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  Assertions before
 	 */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.
 	 */
@@ -1250,7 +1250,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 */
 
 	duk__mark_roots_heap(heap);               /* main reachability roots */
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__mark_refzero_list(heap);             /* refzero_list treated as reachability roots */
 #endif
 	duk__mark_temproots_by_heap_scan(heap);   /* temproots */
@@ -1277,7 +1277,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 
 	/* XXX: more emergency behavior, e.g. find smaller hash sizes etc */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__finalize_refcounts(heap);
 #endif
 	duk__sweep_heap(heap, flags, &count_keep_obj);
@@ -1401,12 +1401,12 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  Assertions after
 	 */
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
 	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap));
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.
 	 */
@@ -1418,7 +1418,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  Reset trigger counter
 	 */
 
-#ifdef DUK_USE_VOLUNTARY_GC
+#if defined(DUK_USE_VOLUNTARY_GC)
 	tmp = (count_keep_obj + count_keep_str) / 256;
 	heap->mark_and_sweep_trigger_counter = (duk_int_t) (
 	    (tmp * DUK_HEAP_MARK_AND_SWEEP_TRIGGER_MULT) +

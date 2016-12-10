@@ -20,7 +20,7 @@
  *  works poorly with threading.
  */
 
-#ifndef DUK_DEBUG_H_INCLUDED
+#if !defined(DUK_DEBUG_H_INCLUDED)
 #define DUK_DEBUG_H_INCLUDED
 
 #if defined(DUK_USE_DEBUG)
@@ -158,7 +158,7 @@ DUK_INTERNAL_DECL duk_int_t duk_debug_snprintf(char *str, duk_size_t size, const
 #endif
 DUK_INTERNAL_DECL void duk_debug_format_funcptr(char *buf, duk_size_t buf_size, duk_uint8_t *fptr, duk_size_t fptr_size);
 
-#ifdef DUK_USE_VARIADIC_MACROS
+#if defined(DUK_USE_VARIADIC_MACROS)
 DUK_INTERNAL_DECL void duk_debug_log(duk_int_t level, const char *file, duk_int_t line, const char *func, const char *fmt, ...);
 #else  /* DUK_USE_VARIADIC_MACROS */
 /* parameter passing, not thread safe */

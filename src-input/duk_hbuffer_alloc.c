@@ -73,7 +73,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 		if (size > 0) {
 			DUK_ASSERT(!(flags & DUK_BUF_FLAG_EXTERNAL));  /* alloc external with size zero */
 			DUK_DDD(DUK_DDDPRINT("dynamic buffer with nonzero size, alloc actual buffer"));
-#ifdef DUK_USE_ZERO_BUFFER_DATA
+#if defined(DUK_USE_ZERO_BUFFER_DATA)
 			ptr = DUK_ALLOC_ZEROED(heap, size);
 #else
 			ptr = DUK_ALLOC(heap, size);

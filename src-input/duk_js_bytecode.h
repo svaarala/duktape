@@ -2,7 +2,7 @@
  *  Ecmascript bytecode
  */
 
-#ifndef DUK_JS_BYTECODE_H_INCLUDED
+#if !defined(DUK_JS_BYTECODE_H_INCLUDED)
 #define DUK_JS_BYTECODE_H_INCLUDED
 
 /*
