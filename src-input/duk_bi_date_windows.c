@@ -35,7 +35,7 @@ DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 }
 #endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
-#ifdef DUK_USE_DATE_NOW_WINDOWS
+#if defined(DUK_USE_DATE_NOW_WINDOWS)
 DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx

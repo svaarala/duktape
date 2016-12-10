@@ -2241,3 +2241,5 @@ Planned
 * Internal change: rework tagged value (duk_tval) fastint/integer handling
   macros to avoid multiple evaluation of argument(s) and for easier mixing
   of fastint and non-fastint aware code (GH-702)
+
+* Internal change: source code policy changes (GH-1169)

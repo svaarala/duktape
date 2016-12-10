@@ -36,7 +36,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_constructor_shared(duk_context *ctx) {
 	 * are not desirable in this case.
 	 */
 
-#ifdef DUK_USE_AUGMENT_ERROR_CREATE
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	if (!duk_is_constructor_call(ctx)) {
 		duk_err_augment_error_create(thr, thr, NULL, 0, 1 /*noblame_fileline*/);
 	}

@@ -1,4 +1,4 @@
-#ifndef DUK_TRANS_DVALUE_H_INCLUDED
+#if !defined(DUK_TRANS_DVALUE_H_INCLUDED)
 #define DUK_TRANS_DVALUE_H_INCLUDED
 
 #include "duktape.h"

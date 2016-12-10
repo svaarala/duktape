@@ -209,7 +209,7 @@ A few notes on how fastints are used internally, what macros are used, etc.
 Fastint aware vs. unware code
 -----------------------------
 
-Fastint support is optional and added between ifdefs::
+Fastint support is optional and added between ``#if defined()`` guards::
 
   #if defined(DUK_USE_FASTINT)
   ...
@@ -354,9 +354,9 @@ that the value is fastint compatible) uses::
 
 The macros are also available when fastints are disabled, and will just
 write a double with no checks or additional overhead.  This is just a
-convenience to reduce the number of ifdefs in call sites.  For example,
-``DUK_TVAL_SET_FASTINT_U32`` coerces the uint32 argument to a double
-when fastints are disabled.
+convenience to reduce the number of ``#if defined()`` guards in call sites.
+For example, ``DUK_TVAL_SET_FASTINT_U32`` coerces the uint32 argument to a
+double when fastints are disabled.
 
 In-place double-to-fastint downgrade check
 ------------------------------------------

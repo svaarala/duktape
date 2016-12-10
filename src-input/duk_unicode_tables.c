@@ -16,7 +16,7 @@
  *  is described in tools/extract_chars.py.
  */
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 /* IdentifierStart production with ASCII excluded */
 /* duk_unicode_ids_noa[] */
 #include "duk_unicode_ids_noa.c"
@@ -26,7 +26,7 @@
 #include "duk_unicode_ids_noabmp.c"
 #endif
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 /* IdentifierStart production with Letter and ASCII excluded */
 /* duk_unicode_ids_m_let_noa[] */
 #include "duk_unicode_ids_m_let_noa.c"
@@ -36,7 +36,7 @@
 #include "duk_unicode_ids_m_let_noabmp.c"
 #endif
 
-#ifdef DUK_USE_SOURCE_NONBMP
+#if defined(DUK_USE_SOURCE_NONBMP)
 /* IdentifierPart production with IdentifierStart and ASCII excluded */
 /* duk_unicode_idp_m_ids_noa[] */
 #include "duk_unicode_idp_m_ids_noa.c"

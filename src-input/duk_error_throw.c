@@ -20,7 +20,7 @@
  *  then stops at the second level.
  */
 
-#ifdef DUK_USE_VERBOSE_ERRORS
+#if defined(DUK_USE_VERBOSE_ERRORS)
 DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code, const char *msg, const char *filename, duk_int_t line) {
 #else
 DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
@@ -28,7 +28,7 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	duk_context *ctx = (duk_context *) thr;
 	duk_bool_t double_error = thr->heap->handling_error;
 
-#ifdef DUK_USE_VERBOSE_ERRORS
+#if defined(DUK_USE_VERBOSE_ERRORS)
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%ld, msg=%s, filename=%s, line=%ld",
 	                   (long) code, (const char *) msg,
 	                   (const char *) filename, (long) line));
@@ -84,7 +84,7 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		/* XXX: unnecessary '%s' formatting here, but cannot use
 		 * 'msg' as a format string directly.
 		 */
-#ifdef DUK_USE_VERBOSE_ERRORS
+#if defined(DUK_USE_VERBOSE_ERRORS)
 		duk_push_error_object_raw(ctx,
 		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 		                          filename,

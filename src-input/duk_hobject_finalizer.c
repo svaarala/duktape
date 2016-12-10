@@ -57,7 +57,7 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_ret_t rc;
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
 #endif
 
@@ -68,7 +68,7 @@ DUK_INTERNAL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj) 
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, 1);
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
 	/*

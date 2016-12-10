@@ -2,7 +2,7 @@
  *  Ecmascript compiler.
  */
 
-#ifndef DUK_JS_COMPILER_H_INCLUDED
+#if !defined(DUK_JS_COMPILER_H_INCLUDED)
 #define DUK_JS_COMPILER_H_INCLUDED
 
 /* ecmascript compiler limits */

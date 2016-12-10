@@ -22,7 +22,7 @@ DUK_LOCAL_DECL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_functi
  *  Global state for working around missing variadic macros
  */
 
-#ifndef DUK_USE_VARIADIC_MACROS
+#if !defined(DUK_USE_VARIADIC_MACROS)
 DUK_EXTERNAL const char *duk_api_global_filename = NULL;
 DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
 #endif
@@ -561,7 +561,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	duk_ptrdiff_t old_bottom_offset;
 	duk_ptrdiff_t old_top_offset;
 	duk_ptrdiff_t old_end_offset_post;
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	duk_ptrdiff_t old_end_offset_pre;
 	duk_tval *old_valstack_pre;
 	duk_tval *old_valstack_post;
@@ -582,7 +582,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	/* get pointer offsets for tweaking below */
 	old_bottom_offset = (((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack));
 	old_top_offset = (((duk_uint8_t *) thr->valstack_top) - ((duk_uint8_t *) thr->valstack));
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	old_end_offset_pre = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* not very useful, used for debugging */
 	old_valstack_pre = thr->valstack;
 #endif
@@ -628,7 +628,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 
 	/* success, fixup pointers */
 	old_end_offset_post = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* must be computed after realloc */
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	old_valstack_post = thr->valstack;
 #endif
 	thr->valstack = new_valstack;
@@ -644,7 +644,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
 	/* useful for debugging */
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 	if (old_end_offset_pre != old_end_offset_post) {
 		DUK_D(DUK_DPRINT("valstack was resized during valstack_resize(), probably by mark-and-sweep; "
 		                 "end offset changed: %lu -> %lu",
@@ -1043,7 +1043,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *p;
 	duk_tval *q;
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk_tval tv_tmp;
 #endif
 	duk_size_t nbytes;
@@ -1063,7 +1063,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t idx) {
 	 * => [ ... | x | x | q ]         [ ... ]
 	 */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	/* use a temp: decref only when valstack reachable values are correct */
 	DUK_TVAL_SET_TVAL(&tv_tmp, p);
 #endif
@@ -1074,7 +1074,7 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t idx) {
 	DUK_TVAL_SET_UNDEFINED(q);
 	thr->valstack_top--;
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_TVAL_DECREF(thr, &tv_tmp);  /* side effects */
 #endif
 }
@@ -4220,7 +4220,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *proto;
-#ifdef DUK_USE_AUGMENT_ERROR_CREATE
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	duk_bool_t noblame_fileline;
 #endif
 
@@ -4230,7 +4230,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	DUK_UNREF(line);
 
 	/* Error code also packs a tracedata related flag. */
-#ifdef DUK_USE_AUGMENT_ERROR_CREATE
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	noblame_fileline = err_code & DUK_ERRCODE_FLAG_NOBLAME_FILELINE;
 #endif
 	err_code = err_code & (~DUK_ERRCODE_FLAG_NOBLAME_FILELINE);
@@ -4260,7 +4260,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	/* XXX: .code = err_code disabled, not sure if useful */
 
 	/* Creation time error augmentation */
-#ifdef DUK_USE_AUGMENT_ERROR_CREATE
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	/* filename may be NULL in which case file/line is not recorded */
 	duk_err_augment_error_create(thr, thr, filename, line, noblame_fileline);  /* may throw an error */
 #endif
@@ -4512,7 +4512,7 @@ DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 
 	tv = --thr->valstack_top;  /* tv points to element just below prev top */
 	DUK_ASSERT(tv >= thr->valstack_bottom);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 #else
 	DUK_TVAL_SET_UNDEFINED(tv);
@@ -4540,7 +4540,7 @@ DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
 
 	tv = --thr->valstack_top;  /* tv points to element just below prev top */
 	DUK_ASSERT(tv >= thr->valstack_bottom);
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 #else
 	DUK_TVAL_SET_UNDEFINED(tv);

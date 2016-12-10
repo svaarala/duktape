@@ -36,7 +36,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *thr, d
 }
 
 DUK_INTERNAL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p) {
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 	duk_hobject *tmp;
 
 	DUK_ASSERT(h);

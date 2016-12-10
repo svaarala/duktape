@@ -16,7 +16,7 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 
 /*
  *  Helpers for UTF-8 handling
@@ -477,7 +477,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			 * slightly higher code footprint.
 			 */
 			duk_uint32_t idx_start, idx_count;
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 			duk_uint32_t idx_end, idx;
 #endif
 			duk_uint8_t **range_save;
@@ -502,7 +502,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			                                                           sizeof(duk_uint8_t *) * idx_count);
 			DUK_ASSERT(range_save != NULL);
 			DUK_MEMCPY(range_save, re_ctx->saved + idx_start, sizeof(duk_uint8_t *) * idx_count);
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 			idx_end = idx_start + idx_count;
 			for (idx = idx_start; idx < idx_end; idx++) {
 				re_ctx->saved[idx] = NULL;
@@ -907,7 +907,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	/* [ ... re_obj input bc saved_buf ] */
 
 	if (match) {
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		duk_hobject *h_res;
 #endif
 		duk_uint32_t char_end_offset = 0;
@@ -924,7 +924,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 
 		duk_push_array(ctx);
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		h_res = duk_require_hobject(ctx, -1);
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(h_res));
 		DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_ARRAY(h_res));

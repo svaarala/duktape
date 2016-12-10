@@ -1,10 +1,10 @@
-#ifndef DUK_NUMCONV_H_INCLUDED
-#define DUK_NUMCONV_H_INCLUDED
-
 /*
  *  Number-to-string conversion.  The semantics of these is very tightly
  *  bound with the Ecmascript semantics required for call sites.
  */
+
+#if !defined(DUK_NUMCONV_H_INCLUDED)
+#define DUK_NUMCONV_H_INCLUDED
 
 /* Output a specified number of digits instead of using the shortest
  * form.  Used for toPrecision() and toFixed().

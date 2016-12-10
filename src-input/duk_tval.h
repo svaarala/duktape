@@ -16,7 +16,7 @@
  *  avoid evaluating their argument more than once.
  */
 
-#ifndef DUK_TVAL_H_INCLUDED
+#if !defined(DUK_TVAL_H_INCLUDED)
 #define DUK_TVAL_H_INCLUDED
 
 /* sanity */

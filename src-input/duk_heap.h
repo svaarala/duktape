@@ -5,7 +5,7 @@
  *  strings for one or more threads.
  */
 
-#ifndef DUK_HEAP_H_INCLUDED
+#if !defined(DUK_HEAP_H_INCLUDED)
 #define DUK_HEAP_H_INCLUDED
 
 /* alloc function typedefs in duktape.h */
@@ -566,7 +566,7 @@ DUK_INTERNAL_DECL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
 DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 DUK_INTERNAL_DECL void duk_refzero_free_pending(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr);
 #if 0  /* Not needed: fast path handles inline; slow path uses duk_heaphdr_decref() which is needed anyway. */

@@ -7,8 +7,8 @@
  *  a high chance the string could be reused.  Also, using macros allows
  *  a call site express the exact string needed, but the macro may map to an
  *  approximate string to reduce unique string count.  Macros can also be
- *  more easily tuned for low memory targets than #ifdefs throughout the
- *  code base.
+ *  more easily tuned for low memory targets than #if defined()s throughout
+ *  the code base.
  *
  *  Because format strings behave differently in the call site (they need to
  *  be followed by format arguments), they use a special prefix DUK_STR_FMT_.
@@ -18,7 +18,7 @@
  *  them anyway, and such strings won't end up unnecessarily in a symbol table.
  */
 
-#ifndef DUK_ERRMSG_H_INCLUDED
+#if !defined(DUK_ERRMSG_H_INCLUDED)
 #define DUK_ERRMSG_H_INCLUDED
 
 /* Mostly API and built-in method related */

@@ -20,7 +20,7 @@
 
 #include "duk_internal.h"
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 
 /*
  *  Helper macros

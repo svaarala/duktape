@@ -105,10 +105,10 @@ struct duk_time_components {
  */
 
 /* Duktape version, (major * 10000) + (minor * 100) + patch.  Allows C code
- * to #ifdef against Duktape API version.  The same value is also available
- * to Ecmascript code in Duktape.version.  Unofficial development snapshots
- * have 99 for patch level (e.g. 0.10.99 would be a development version
- * after 0.10.0 but before the next official release).
+ * to #if (DUK_VERSION >= NNN) against Duktape API version.  The same value
+ * is also available to Ecmascript code in Duktape.version.  Unofficial
+ * development snapshots have 99 for patch level (e.g. 0.10.99 would be a
+ * development version after 0.10.0 but before the next official release).
  */
 #define DUK_VERSION                       19999L
 
@@ -252,7 +252,7 @@ struct duk_time_components {
  *  which is ugly and not thread safe.
  */
 
-#ifndef DUK_API_VARIADIC_MACROS
+#if !defined(DUK_API_VARIADIC_MACROS)
 DUK_EXTERNAL_DECL const char *duk_api_global_filename;
 DUK_EXTERNAL_DECL duk_int_t duk_api_global_line;
 #endif

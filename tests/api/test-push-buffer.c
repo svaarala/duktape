@@ -41,7 +41,7 @@ dynamic size buffer, close to maximum size_t (should fail)
 ==> rc=1, result='RangeError: buffer too long'
 ===*/
 
-#ifndef  SIZE_MAX
+#if !defined(SIZE_MAX)
 #define  SIZE_MAX  ((size_t) -1)
 #endif
 

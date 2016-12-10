@@ -14,7 +14,7 @@
  *  really a practical issue.
  */
 
-#ifndef DUK_HSTRING_H_INCLUDED
+#if !defined(DUK_HSTRING_H_INCLUDED)
 #define DUK_HSTRING_H_INCLUDED
 
 /* Impose a maximum string length for now.  Restricted artificially to

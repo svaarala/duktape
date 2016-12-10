@@ -6,7 +6,7 @@
  *  that user code would accidentally catch this exception.
  */
 
-#ifndef DUK_EXCEPTION_H_INCLUDED
+#if !defined(DUK_EXCEPTION_H_INCLUDED)
 #define DUK_EXCEPTION_H_INCLUDED
 
 #if defined(DUK_USE_CPP_EXCEPTIONS)

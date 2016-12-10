@@ -130,10 +130,10 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	while (idx > new_top) {
 		duk_activation *act;
 		duk_hobject *func;
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		duk_hobject *tmp;
 #endif
-#ifdef DUK_USE_DEBUGGER_SUPPORT
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
 		duk_heap *heap;
 #endif
 
@@ -144,7 +144,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		act = thr->callstack + idx;
 		/* With lightfuncs, act 'func' may be NULL */
 
-#ifdef DUK_USE_NONSTD_FUNC_CALLER_PROPERTY
+#if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 		/*
 		 *  Restore 'caller' property for non-strict callee functions.
 		 */
@@ -277,20 +277,20 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		 *  However, the pointers are NULL so this is not an issue.
 		 */
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		tmp = act->var_env;
 #endif
 		act->var_env = NULL;
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
 
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		tmp = act->lex_env;
 #endif
 		act->lex_env = NULL;
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 #endif
@@ -298,11 +298,11 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		/* Note: this may cause a corner case situation where a finalizer
 		 * may see a currently reachable activation whose 'func' is NULL.
 		 */
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		tmp = DUK_ACT_GET_FUNC(act);
 #endif
 		act->func = NULL;
-#ifdef DUK_USE_REFERENCE_COUNTING
+#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 		act = thr->callstack + idx;  /* avoid side effect issues */
 		DUK_UNREF(act);

@@ -200,7 +200,7 @@ def createCombined(files, prologue_filename, line_directives):
             if included.has_key(incpath):
                 # We suppress duplicate includes, both internal and
                 # external, based on the assumption that includes are
-                # not behind #ifdef checks.  This is the case for
+                # not behind #if defined() checks.  This is the case for
                 # Duktape (except for the include files excluded).
                 emit('/* #include %s -> already included */' % incpath)
                 continue

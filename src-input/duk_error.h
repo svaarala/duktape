@@ -13,7 +13,7 @@
  *  avoid fatal errors without context in non-debug builds.
  */
 
-#ifndef DUK_ERROR_H_INCLUDED
+#if !defined(DUK_ERROR_H_INCLUDED)
 #define DUK_ERROR_H_INCLUDED
 
 /*

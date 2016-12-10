@@ -32,7 +32,7 @@ DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_he
 DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
 
-#ifdef DUK_USE_DOUBLE_LINKED_HEAP
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 	if (heap->heap_allocated) {
 		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, heap->heap_allocated) == NULL);
 		DUK_HEAPHDR_SET_PREV(heap, heap->heap_allocated, hdr);
@@ -43,7 +43,7 @@ DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphd
 	heap->heap_allocated = hdr;
 }
 
-#ifdef DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 	duk_hthread *curr_thr;
 

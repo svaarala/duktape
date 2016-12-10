@@ -2,7 +2,7 @@
  *  Regular expression structs, constants, and bytecode defines.
  */
 
-#ifndef DUK_REGEXP_H_INCLUDED
+#if !defined(DUK_REGEXP_H_INCLUDED)
 #define DUK_REGEXP_H_INCLUDED
 
 /* maximum bytecode copies for {n,m} quantifiers */

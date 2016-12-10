@@ -251,7 +251,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substring(duk_context *ctx) {
 	return 1;
 }
 
-#ifdef DUK_USE_SECTION_B
+#if defined(DUK_USE_SECTION_B)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 	duk_hstring *h;
 	duk_int_t start_pos, end_pos;
@@ -470,13 +470,13 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 	duk_hobject *h_re;
 	duk_bufwriter_ctx bw_alloc;
 	duk_bufwriter_ctx *bw;
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 	duk_bool_t is_regexp;
 	duk_bool_t is_global;
 #endif
 	duk_bool_t is_repl_func;
 	duk_uint32_t match_start_coff, match_start_boff;
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 	duk_int_t match_caps;
 #endif
 	duk_uint32_t prev_match_end_boff;
@@ -500,7 +500,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 	h_re = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP);
 	if (h_re) {
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 1;
 		is_global = duk_get_prop_stridx_boolean(ctx, 0, DUK_STRIDX_GLOBAL, NULL);
 
@@ -514,7 +514,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 	} else {
 		duk_to_string(ctx, 0);
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 0;
 		is_global = 0;
 #endif
@@ -562,7 +562,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 		DUK_ASSERT_TOP(ctx, 4);
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		if (is_regexp) {
 			duk_dup_0(ctx);
 			duk_dup_2(ctx);
@@ -607,7 +607,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			const duk_uint8_t *q_start;               /* match string */
 			duk_size_t q_blen;
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 			DUK_ASSERT(!is_global);  /* single match always */
 #endif
 
@@ -628,7 +628,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 				if (DUK_MEMCMP((const void *) p, (const void *) q_start, (size_t) q_blen) == 0) {
 					duk_dup_0(ctx);
 					h_match = duk_known_hstring(ctx, -1);
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 					match_caps = 0;
 #endif
 					goto found;
@@ -669,7 +669,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			duk_dup_1(ctx);
 			idx_args = duk_get_top(ctx);
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 			if (is_regexp) {
 				duk_int_t idx;
 				duk_require_stack(ctx, match_caps + 2);
@@ -702,7 +702,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			while (r < r_end) {
 				duk_int_t ch1;
 				duk_int_t ch2;
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 				duk_int_t ch3;
 #endif
 				duk_size_t left;
@@ -750,7 +750,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 					continue;
 				}
 				default: {
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 					duk_int_t capnum, captmp, capadv;
 					/* XXX: optional check, match_caps is zero if no regexp,
 					 * so dollar will be interpreted literally anyway.
@@ -813,7 +813,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 		duk_pop(ctx);  /* pop regexp res_obj or match string */
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		if (!is_global) {
 #else
 		{  /* unconditionally; is_global==0 */
@@ -846,7 +846,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 	duk_hstring *h_sep;
 	duk_uint32_t limit;
 	duk_uint32_t arr_idx;
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 	duk_bool_t is_regexp;
 #endif
 	duk_bool_t matched;  /* set to 1 if any match exists (needed for empty input special case) */
@@ -886,7 +886,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 		duk_put_prop_index(ctx, 3, 0);
 		return 1;
 	} else if (duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_REGEXP) != NULL) {
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		duk_push_hobject_bidx(ctx, DUK_BIDX_REGEXP_CONSTRUCTOR);
 		duk_dup_0(ctx);
 		duk_new(ctx, 1);  /* [ ... RegExp val ] -> [ ... res ] */
@@ -898,7 +898,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 #endif
 	} else {
 		duk_to_string(ctx, 0);
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		is_regexp = 0;
 #endif
 	}
@@ -924,7 +924,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 
 		DUK_ASSERT_TOP(ctx, 4);
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		if (is_regexp) {
 			duk_dup_0(ctx);
 			duk_dup_2(ctx);
@@ -1058,7 +1058,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 			goto hit_limit;
 		}
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		if (is_regexp) {
 			duk_size_t i, len;
 
@@ -1108,7 +1108,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 	return 1;
 
  hit_limit:
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 	if (is_regexp) {
 		duk_pop(ctx);
 	}
@@ -1121,7 +1121,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
  *  Various
  */
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_LOCAL void duk__to_regexp_helper(duk_context *ctx, duk_idx_t idx, duk_bool_t force_new) {
 	duk_hobject *h;
 
@@ -1147,7 +1147,7 @@ DUK_LOCAL void duk__to_regexp_helper(duk_context *ctx, duk_idx_t idx, duk_bool_t
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
@@ -1188,7 +1188,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_search(duk_context *ctx) {
 }
 #endif  /* DUK_USE_REGEXP_SUPPORT */
 
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_match(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_bool_t global;

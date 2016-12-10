@@ -2,7 +2,7 @@
  *  Heap Buffer object representation.  Used for all Buffer variants.
  */
 
-#ifndef DUK_HBUFOBJ_H_INCLUDED
+#if !defined(DUK_HBUFOBJ_H_INCLUDED)
 #define DUK_HBUFOBJ_H_INCLUDED
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)

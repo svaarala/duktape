@@ -3,7 +3,7 @@
  *  header declarations emitted by genbuiltins.py.
  */
 
-#ifndef DUK_BUILTIN_PROTOS_H_INCLUDED
+#if !defined(DUK_BUILTIN_PROTOS_H_INCLUDED)
 #define DUK_BUILTIN_PROTOS_H_INCLUDED
 
 /* Buffer size needed for ISO 8601 formatting.

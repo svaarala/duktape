@@ -511,7 +511,7 @@ DUK_LOCAL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx) {
 	entry_top = duk_get_top(ctx);
 
 	DUK_MEMZERO(func, sizeof(*func));  /* intentional overlap with earlier memzero */
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	func->h_name = NULL;
 	func->h_consts = NULL;
 	func->h_funcs = NULL;
@@ -3328,7 +3328,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		goto plain_value;
 	}
 	case DUK_TOK_REGEXP: {
-#ifdef DUK_USE_REGEXP_SUPPORT
+#if defined(DUK_USE_REGEXP_SUPPORT)
 		duk_reg_t reg_temp;
 		duk_regconst_t rc_re_bytecode;  /* const */
 		duk_regconst_t rc_re_source;    /* const */
@@ -6824,11 +6824,11 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 	duk_regconst_t rc_name;
 	duk_small_uint_t declvar_flags;
 	duk_uarridx_t i;
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
 #endif
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 	entry_top = duk_get_top(ctx);
 #endif
 
@@ -7725,7 +7725,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	 */
 
 	func = &comp_ctx->curr_func;
-#ifdef DUK_USE_EXPLICIT_NULL_INIT
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	comp_ctx->thr = NULL;
 	comp_ctx->h_filename = NULL;
 	comp_ctx->prev_token.str1 = NULL;

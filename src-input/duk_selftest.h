@@ -2,7 +2,7 @@
  *  Selftest code
  */
 
-#ifndef DUK_SELFTEST_H_INCLUDED
+#if !defined(DUK_SELFTEST_H_INCLUDED)
 #define DUK_SELFTEST_H_INCLUDED
 
 #if defined(DUK_USE_SELF_TESTS)

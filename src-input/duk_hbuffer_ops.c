@@ -57,7 +57,7 @@ DUK_INTERNAL void duk_hbuffer_resize(duk_hthread *thr, duk_hbuffer_dynamic *buf,
 		prev_size = DUK_HBUFFER_DYNAMIC_GET_SIZE(buf);
 		if (new_size > prev_size) {
 			DUK_ASSERT(new_size - prev_size > 0);
-#ifdef DUK_USE_ZERO_BUFFER_DATA
+#if defined(DUK_USE_ZERO_BUFFER_DATA)
 			DUK_MEMZERO((void *) ((char *) res + prev_size),
 			            (duk_size_t) (new_size - prev_size));
 #endif

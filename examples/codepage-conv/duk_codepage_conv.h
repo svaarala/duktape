@@ -1,4 +1,4 @@
-#ifndef DUK_CODEPAGE_CONV_H_INCLUDED
+#if !defined(DUK_CODEPAGE_CONV_H_INCLUDED)
 #define DUK_CODEPAGE_CONV_H_INCLUDED
 
 #include "duktape.h"

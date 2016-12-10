@@ -55,7 +55,7 @@ DUK_INTERNAL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size) {
 		}
 
 		/* prediction: portable variant using doubles if 64-bit values not available */
-#ifdef DUK_USE_64BIT_OPS
+#if defined(DUK_USE_64BIT_OPS)
 		curr = (duk_uint32_t) ((((duk_uint64_t) curr) * ((duk_uint64_t) DUK__HASH_SIZE_RATIO)) >> 10);
 #else
 		/* 32-bit x 11-bit = 43-bit, fits accurately into a double */

@@ -2,7 +2,7 @@
  *  Forward declarations for all Duktape structures.
  */
 
-#ifndef DUK_FORWDECL_H_INCLUDED
+#if !defined(DUK_FORWDECL_H_INCLUDED)
 #define DUK_FORWDECL_H_INCLUDED
 
 /*
@@ -44,7 +44,7 @@ struct duk_strcache;
 struct duk_ljstate;
 struct duk_strtab_entry;
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 struct duk_fixedbuffer;
 #endif
 
@@ -100,7 +100,7 @@ typedef struct duk_strcache duk_strcache;
 typedef struct duk_ljstate duk_ljstate;
 typedef struct duk_strtab_entry duk_strtab_entry;
 
-#ifdef DUK_USE_DEBUG
+#if defined(DUK_USE_DEBUG)
 typedef struct duk_fixedbuffer duk_fixedbuffer;
 #endif
 

@@ -59,7 +59,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	 *  First attempt
 	 */
 
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every alloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first alloc attempt fails"));
@@ -73,7 +73,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
  skip_attempt:
 #endif
 
@@ -156,7 +156,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 	 *  First attempt
 	 */
 
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails"));
@@ -170,7 +170,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
  skip_attempt:
 #endif
 
@@ -238,7 +238,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 	 *  First attempt
 	 */
 
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
 	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails"));
@@ -252,7 +252,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
-#ifdef DUK_USE_GC_TORTURE
+#if defined(DUK_USE_GC_TORTURE)
  skip_attempt:
 #endif
 
@@ -276,12 +276,12 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 	for (i = 0; i < DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_LIMIT; i++) {
 		duk_small_uint_t flags;
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		void *ptr_pre;  /* ptr before mark-and-sweep */
 		void *ptr_post;
 #endif
 
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		ptr_pre = cb(heap, ud);
 #endif
 		flags = 0;
@@ -291,7 +291,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 
 		rc = duk_heap_mark_and_sweep(heap, flags);
 		DUK_UNREF(rc);
-#ifdef DUK_USE_ASSERTIONS
+#if defined(DUK_USE_ASSERTIONS)
 		ptr_post = cb(heap, ud);
 		if (ptr_pre != ptr_post) {
 			/* useful for debugging */
@@ -334,7 +334,7 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	 * need to put in NULLs at every turn to ensure the object is always in
 	 * consistent state for a mark-and-sweep.
 	 */
-#ifdef DUK_USE_VOLUNTARY_GC
+#if defined(DUK_USE_VOLUNTARY_GC)
 	heap->mark_and_sweep_trigger_counter--;
 #endif
 }

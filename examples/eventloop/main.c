@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 #include <signal.h>
 #endif
 
@@ -25,7 +25,7 @@ extern duk_ret_t eventloop_run(duk_context *ctx, void *udata);
 
 static int c_evloop = 0;
 
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 static void my_sighandler(int x) {
 	fprintf(stderr, "Got signal %d\n", x);
 	fflush(stderr);
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
 	const char *filename = NULL;
 	int i;
 
-#ifndef NO_SIGNAL
+#if !defined(NO_SIGNAL)
 	set_sigint_handler();
 
 	/* This is useful at the global level; libraries should avoid SIGPIPE though */
