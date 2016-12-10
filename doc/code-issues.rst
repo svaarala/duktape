@@ -364,7 +364,7 @@ convention is::
 
   /* duk_foo.h */
 
-  #ifndef DUK_FOO_H_INCLUDED
+  #if !defined(DUK_FOO_H_INCLUDED)
   #define DUK_FOO_H_INCLUDED
 
   ...
