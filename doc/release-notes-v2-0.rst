@@ -2,6 +2,8 @@
 Duktape 2.0 release notes
 =========================
 
+FIXME: extended utf-8
+
 Release overview
 ================
 

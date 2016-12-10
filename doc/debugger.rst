@@ -3300,12 +3300,13 @@ Variable size integer encoding
 
 The debug protocol exchanges a lot of small and large integers.  The
 extended UTF-8 encoding was used first which is consistent with other
-variable length integer encoding in Duktape.
+variable length integer encoding in Duktape; the internal extended UTF-8
+format was removed in Duktape 2.0.
 
-However, when the current tag initial byte (IB) was added, it became very
-natural to use the tag byte to encode small integers and to encode the
-byte length of larger integers.  This representation is actually quite
-similar to CBOR: https://tools.ietf.org/html/rfc7049.
+When the current tag initial byte (IB) was added, it became very natural
+to use the tag byte to encode small integers and to encode the byte length
+of larger integers.  This representation is actually quite similar to CBOR:
+https://tools.ietf.org/html/rfc7049.
 
 Accessors and proxies vs. variable get/set
 ------------------------------------------
