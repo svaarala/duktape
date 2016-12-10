@@ -1242,7 +1242,7 @@ duk_bool_t duk__getvar_helper(duk_hthread *thr,
 
 			DUK_TVAL_SET_OBJECT(&tv_tmp_obj, ref.holder);
 			DUK_TVAL_SET_STRING(&tv_tmp_key, name);
-			(void) duk_hobject_getprop(thr, &tv_tmp_obj, &tv_tmp_key);  /* [this value] */
+			(void) duk_hobject_getprop(thr, &tv_tmp_obj, &tv_tmp_key, &tv_tmp_obj);  /* [this value] */
 
 			/* ref.value, ref.this.binding invalidated here by getprop call */
 
@@ -1361,7 +1361,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 			DUK_TVAL_SET_OBJECT(&tv_tmp_obj, ref.holder);
 			DUK_TVAL_SET_STRING(&tv_tmp_key, name);
-			(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, strict);
+			(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, &tv_tmp_obj, strict);
 
 			/* ref.value and ref.this_binding invalidated here */
 		}
@@ -1385,7 +1385,7 @@ void duk__putvar_helper(duk_hthread *thr,
 
 	DUK_TVAL_SET_OBJECT(&tv_tmp_obj, thr->builtins[DUK_BIDX_GLOBAL]);
 	DUK_TVAL_SET_STRING(&tv_tmp_key, name);
-	(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, 0);  /* 0 = no throw */
+	(void) duk_hobject_putprop(thr, &tv_tmp_obj, &tv_tmp_key, val, &tv_tmp_obj, 0 /*throw_flag*/);
 
 	/* NB: 'val' may be invalidated here because put_value may realloc valstack,
 	 * caller beware.

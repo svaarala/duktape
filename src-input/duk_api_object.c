@@ -27,7 +27,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx) {
 	tv_obj = duk_require_tval(ctx, obj_idx);
 	tv_key = duk_require_tval(ctx, -1);
 
-	rc = duk_hobject_getprop(thr, tv_obj, tv_key);
+	rc = duk_hobject_getprop(thr, tv_obj, tv_key, tv_obj);
 	DUK_ASSERT(rc == 0 || rc == 1);
 	/* a value is left on stack regardless of rc */
 
@@ -117,7 +117,7 @@ DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_context *ctx, duk_idx_t obj_idx, d
 	tv_val = duk_require_tval(ctx, idx_key ^ 1);
 	throw_flag = duk_is_strict_call(ctx);
 
-	rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, throw_flag);
+	rc = duk_hobject_putprop(thr, tv_obj, tv_key, tv_val, tv_obj, throw_flag);
 	DUK_ASSERT(rc == 0 || rc == 1);
 
 	duk_pop_2(ctx);  /* remove key and value */

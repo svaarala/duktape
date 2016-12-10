@@ -2272,25 +2272,27 @@ DUK_LOCAL duk_bool_t duk__putprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
  *  GETPROP: Ecmascript property read.
  */
 
-DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key) {
+DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_recv) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_obj_copy;
 	duk_tval tv_key_copy;
+	duk_tval tv_recv_copy;
 	duk_hobject *curr = NULL;
 	duk_hstring *key = NULL;
 	duk_uint32_t arr_idx = DUK__NO_ARRAY_INDEX;
 	duk_propdesc desc;
 	duk_uint_t sanity;
 
-	DUK_DDD(DUK_DDDPRINT("getprop: thr=%p, obj=%p, key=%p (obj -> %!T, key -> %!T)",
-	                     (void *) thr, (void *) tv_obj, (void *) tv_key,
-	                     (duk_tval *) tv_obj, (duk_tval *) tv_key));
+	DUK_DDD(DUK_DDDPRINT("getprop: thr=%p, obj=%p, key=%p, recv=%p (obj -> %!T, key -> %!T, recv -> %!T)",
+	                     (void *) thr, (void *) tv_obj, (void *) tv_key, (void *) tv_recv,
+	                     (duk_tval *) tv_obj, (duk_tval *) tv_key, (duk_tval *) tv_recv));
 
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
+	DUK_ASSERT(tv_recv != NULL);
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
@@ -2305,8 +2307,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	DUK_TVAL_SET_TVAL(&tv_obj_copy, tv_obj);
 	DUK_TVAL_SET_TVAL(&tv_key_copy, tv_key);
+	DUK_TVAL_SET_TVAL(&tv_recv_copy, tv_recv);
 	tv_obj = &tv_obj_copy;
 	tv_key = &tv_key_copy;
+	tv_recv = &tv_recv_copy;
 
 	/*
 	 *  Coercion and fast path processing
@@ -2655,7 +2659,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 			duk_pop(ctx);                     /* [key undefined] -> [key] */
 			duk_push_hobject(ctx, desc.get);
-			duk_push_tval(ctx, tv_obj);       /* note: original, uncoerced base */
+			duk_push_tval(ctx, tv_recv);      /* note: original, uncoerced base */
 #ifdef DUK_USE_NONSTD_GETTER_KEY_ARGUMENT
 			duk_dup_m3(ctx);
 			duk_call_method(ctx, 1);          /* [key getter this key] -> [key retval] */
@@ -3288,11 +3292,12 @@ DUK_LOCAL duk_bool_t duk__handle_put_array_length(duk_hthread *thr, duk_hobject 
  *      (We currently make a copy of all of the input values to avoid issues.)
  */
 
-DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_bool_t throw_flag) {
+DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, duk_tval *tv_key, duk_tval *tv_val, duk_tval *tv_recv, duk_bool_t throw_flag) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_tval tv_obj_copy;
 	duk_tval tv_key_copy;
 	duk_tval tv_val_copy;
+	duk_tval tv_recv_copy;
 	duk_hobject *orig = NULL;  /* NULL if tv_obj is primitive */
 	duk_hobject *curr;
 	duk_hstring *key = NULL;
@@ -3304,10 +3309,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	duk_uint_t sanity;
 	duk_uint32_t new_array_length = 0;  /* 0 = no update */
 
-	DUK_DDD(DUK_DDDPRINT("putprop: thr=%p, obj=%p, key=%p, val=%p, throw=%ld "
-	                     "(obj -> %!T, key -> %!T, val -> %!T)",
-	                     (void *) thr, (void *) tv_obj, (void *) tv_key, (void *) tv_val,
-	                     (long) throw_flag, (duk_tval *) tv_obj, (duk_tval *) tv_key, (duk_tval *) tv_val));
+	DUK_DDD(DUK_DDDPRINT("putprop: thr=%p, obj=%p, key=%p, val=%p, recv=%p, throw=%ld "
+	                     "(obj -> %!T, key -> %!T, val -> %!T, recv -> %!T)",
+	                     (void *) thr, (void *) tv_obj, (void *) tv_key, (void *) tv_val, (void *) tv_recv,
+	                     (long) throw_flag, (duk_tval *) tv_obj, (duk_tval *) tv_key, (duk_tval *) tv_val, (duk_tval *) tv_recv));
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -3315,6 +3320,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_ASSERT(tv_obj != NULL);
 	DUK_ASSERT(tv_key != NULL);
 	DUK_ASSERT(tv_val != NULL);
+	DUK_ASSERT(tv_recv != NULL);
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
@@ -3329,9 +3335,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_TVAL_SET_TVAL(&tv_obj_copy, tv_obj);
 	DUK_TVAL_SET_TVAL(&tv_key_copy, tv_key);
 	DUK_TVAL_SET_TVAL(&tv_val_copy, tv_val);
+	DUK_TVAL_SET_TVAL(&tv_recv_copy, tv_recv);
 	tv_obj = &tv_obj_copy;
 	tv_key = &tv_key_copy;
 	tv_val = &tv_val_copy;
+	tv_recv = &tv_recv_copy;
 
 	/*
 	 *  Coercion and fast path processing.
@@ -3649,15 +3657,15 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 				goto fail_no_setter;
 			}
 			duk_push_hobject(ctx, setter);
-			duk_push_tval(ctx, tv_obj);  /* note: original, uncoerced base */
-			duk_push_tval(ctx, tv_val);  /* [key setter this val] */
+			duk_push_tval(ctx, tv_recv);  /* note: original, uncoerced base */
+			duk_push_tval(ctx, tv_val);   /* [key setter this val] */
 #ifdef DUK_USE_NONSTD_SETTER_KEY_ARGUMENT
 			duk_dup_m4(ctx);
-			duk_call_method(ctx, 2);     /* [key setter this val key] -> [key retval] */
+			duk_call_method(ctx, 2);      /* [key setter this val key] -> [key retval] */
 #else
-			duk_call_method(ctx, 1);     /* [key setter this val] -> [key retval] */
+			duk_call_method(ctx, 1);      /* [key setter this val] -> [key retval] */
 #endif
-			duk_pop(ctx);                /* ignore retval -> [key] */
+			duk_pop(ctx);                 /* ignore retval -> [key] */
 			goto success_no_arguments_exotic;
 		}
 
@@ -4756,6 +4764,7 @@ DUK_INTERNAL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk
 	                           DUK_GET_TVAL_NEGIDX(ctx, -3),
 	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
 	                           DUK_GET_TVAL_NEGIDX(ctx, -1),
+	                           DUK_GET_TVAL_NEGIDX(ctx, -3),
 	                           0);
 	duk_pop_n(ctx, 3);
 }
@@ -4781,7 +4790,8 @@ DUK_INTERNAL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_LENGTH);
 	(void) duk_hobject_getprop(thr,
 	                           DUK_GET_TVAL_NEGIDX(ctx, -2),
-	                           DUK_GET_TVAL_NEGIDX(ctx, -1));
+	                           DUK_GET_TVAL_NEGIDX(ctx, -1),
+							   DUK_GET_TVAL_NEGIDX(ctx, -2));
 	val = duk_to_number(ctx, -1);
 	duk_pop_n(ctx, 3);
 
