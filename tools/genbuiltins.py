@@ -14,8 +14,8 @@
 #
 #  Both of these have practical complications like endianness differences,
 #  pointer compression variants, object property table layout variants,
-#  and so on.  Multiple #ifdef'd initializer sections are emitted to cover
-#  all supported alternatives.
+#  and so on.  Multiple #if defined()'d initializer sections are emitted
+#  to cover all supported alternatives.
 #
 
 import logging
@@ -345,7 +345,7 @@ def metadata_prepare_objects_bidx(meta):
     # and need to be present in thr->builtins[].  The list is already
     # stripped of built-in objects which are not needed based on config.
     # Ideally we'd scan the actually needed indices from the source
-    # but since some usage is inside #ifdefs that's not trivial.
+    # but since some usage is inside #if defined()s that's not trivial.
     for obj in objlist:
         if obj.get('bidx', False):
             obj['bidx_used'] = True
@@ -3000,7 +3000,7 @@ def main():
 
     gc_hdr = dukutil.GenerateC()
     gc_hdr.emitHeader('genbuiltins.py')
-    gc_hdr.emitLine('#ifndef DUK_BUILTINS_H_INCLUDED')
+    gc_hdr.emitLine('#if !defined(DUK_BUILTINS_H_INCLUDED)')
     gc_hdr.emitLine('#define DUK_BUILTINS_H_INCLUDED')
     gc_hdr.emitLine('')
     gc_hdr.emitLine('#if defined(DUK_USE_ROM_STRINGS)')
