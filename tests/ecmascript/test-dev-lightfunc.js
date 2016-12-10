@@ -1662,11 +1662,11 @@ Error: for traceback
     at light_PTR_0212 light strict preventsyield
     at duktapeActTest (TESTCASE:NNN)
     at global (TESTCASE:NNN) preventsyield
--1 ["lineNumber","pc","function"] light_PTR_0011
--2 ["lineNumber","pc","function"] callback
--3 ["lineNumber","pc","function"] light_PTR_0212
--4 ["lineNumber","pc","function"] duktapeActTest
--5 ["lineNumber","pc","function"] global
+-1 ["pc","lineNumber","function"] light_PTR_0011
+-2 ["pc","lineNumber","function"] callback
+-3 ["pc","lineNumber","function"] light_PTR_0212
+-4 ["pc","lineNumber","function"] duktapeActTest
+-5 ["pc","lineNumber","function"] global
 ===*/
 
 function duktapeActTest() {
