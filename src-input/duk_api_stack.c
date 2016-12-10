@@ -7,6 +7,9 @@
  *  in duk_api_internal.h, with semantics similar to the public API.
  */
 
+/* FIXME: separate tag mask space for internal tags -> allows fastint matching */
+/* FIXME: variant of that with a symbol tag? */
+
 /* XXX: repetition of stack pre-checks -> helper or macro or inline */
 /* XXX: shared api error strings, and perhaps even throw code for rare cases? */
 
@@ -60,12 +63,15 @@ DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
 };
 #endif  /* !DUK_USE_PACKED_TVAL */
 
+/* Assert that there's room for one value. */
+#define DUK__ASSERT_SPACE() do { \
+		DUK_ASSERT(!(thr->valstack_top >= thr->valstack_end)); \
+	} while (0)
+
 /* Check that there's room to push one value. */
 #if defined(DUK_USE_VALSTACK_UNSAFE)
 /* Faster but value stack overruns are memory unsafe. */
-#define DUK__CHECK_SPACE() do { \
-		DUK_ASSERT(!(thr->valstack_top >= thr->valstack_end)); \
-	} while (0)
+#define DUK__CHECK_SPACE() DUK__ASSERT_SPACE()
 #else
 #define DUK__CHECK_SPACE() do { \
 		if (DUK_UNLIKELY(thr->valstack_top >= thr->valstack_end)) { \
@@ -2074,6 +2080,35 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t idx) {
 	tv = DUK_GET_TVAL_POSIDX(ctx, idx);
 	DUK_TVAL_SET_NUMBER_UPDREF(thr, tv, d);  /* side effects */
 	return d;
+}
+
+DUK_INTERNAL duk_double_t duk_to_number_tval(duk_context *ctx, duk_tval *tv) {
+#if defined(DUK_USE_PREFER_SIZE)
+	duk_double_t res;
+	duk_push_tval(ctx, tv);
+	res = duk_to_number(ctx, -1);
+	duk_pop(ctx);
+	return res;
+#else
+	duk_hthread *thr;
+	duk_double_t res;
+	duk_tval *tv_dst;
+
+	thr = (duk_hthread *) ctx;
+	DUK__ASSERT_SPACE();
+
+	tv_dst = ((duk_hthread *) ctx)->valstack_top++;
+	DUK_TVAL_SET_TVAL(tv_dst, tv);
+	DUK_TVAL_INCREF((duk_hthread *) ctx, tv_dst);  /* decref not necessary */
+	res = duk_to_number(ctx, -1);  /* invalidates tv_dst */
+
+	tv_dst = --((duk_hthread *) ctx)->valstack_top;
+	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_dst));
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv_dst));  /* plain number */
+	DUK_TVAL_SET_UNDEFINED(tv_dst);  /* valstack init policy */
+
+	return res;
+#endif
 }
 
 /* XXX: combine all the integer conversions: they share everything

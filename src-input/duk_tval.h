@@ -41,6 +41,7 @@ typedef struct {
 } duk_tval_unused;
 
 /* tags */
+#define DUK_TAG_MIN               0x7ff8UL
 #define DUK_TAG_NORMALIZED_NAN    0x7ff8UL   /* the NaN variant we use */
 /* avoid tag 0xfff0, no risk of confusion with negative infinity */
 #define DUK_TAG_MIN               0xfff1UL
