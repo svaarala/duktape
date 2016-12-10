@@ -341,6 +341,16 @@ def checkNoSymbolVisibility(lines, idx, filename):
 
     raise Exception('missing symbol visibility macro')
 
+def checkIfdefIfndef(lines, idx, filename):
+    line = lines[idx]
+
+    if not line.startswith('#if'):
+        return
+    if line.startswith('#ifdef'):
+        raise Exception('#ifdef found, #if defined is preferred')
+    if line.startswith('#ifndef'):
+        raise Exception('#ifndef found, #if !defined is preferred')
+
 def checkCppComment(lines, idx, filename):
     line = lines[idx]
     m = re_cpp_comment.match(line)
@@ -408,6 +418,7 @@ def main():
     parser.add_option('--check-tab-indent', dest='check_tab_indent', action='store_true', default=False, help='Check for tab indent')
     parser.add_option('--check-nonleading-tab', dest='check_nonleading_tab', action='store_true', default=False, help='Check for non-leading tab characters')
     parser.add_option('--check-cpp-comment', dest='check_cpp_comment', action='store_true', default=False, help='Check for c++ comments ("// ...")')
+    parser.add_option('--check-ifdef-ifndef', dest='check_ifdef_ifndef', action='store_true', default=False, help='Check for #ifdef and #ifndef (prefer #if defined and #if !defined)')
     parser.add_option('--fail-on-errors', dest='fail_on_errors', action='store_true', default=False, help='Fail on errors (exit code != 0)')
 
     (opts, args) = parser.parse_args()
@@ -423,6 +434,8 @@ def main():
         checkersRaw.append(checkNonAscii)
     if opts.check_no_symbol_visibility:
         checkersRaw.append(checkNoSymbolVisibility)
+    if opts.check_ifdef_ifndef:
+        checkersRaw.append(checkIfdefIfndef)
 
     checkersNoCCommentsOrLiterals = []
     if opts.check_cpp_comment:

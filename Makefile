@@ -912,6 +912,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-nonleading-tab \
 		--check-cpp-comment \
+		--check-ifdef-ifndef \
 		--dump-vim-commands \
 		src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 	@$(PYTHON) util/check_code_policy.py \
@@ -945,6 +946,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-nonleading-tab \
 		--check-cpp-comment \
+		--check-ifdef-ifndef \
 		--dump-vim-commands \
 		examples/*/*.c examples/*/*.h \
 		extras/*/*.c extras/*/*.h
@@ -956,6 +958,7 @@ codepolicycheck:
 		--check-trailing-whitespace \
 		--check-mixed-indent \
 		--check-nonleading-tab \
+		--check-ifdef-ifndef \
 		--dump-vim-commands \
 		config/architectures/* config/compilers/* config/platforms/* \
 		config/feature-options/*.yaml \
