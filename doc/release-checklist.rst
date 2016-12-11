@@ -41,10 +41,9 @@ Checklist for ordinary releases
 
   - Check year range
 
-  - Also check ``tools/create_spdx_license.py``
+  - Also check ``util/create_spdx_license.py``
 
-* Ensure RELEASES.rst is up-to-date (must be done before candidate tar.xz
-  build because dist package contains RELEASES.rst)
+* Ensure RELEASES.rst is up-to-date
 
   - New release is in place
 
