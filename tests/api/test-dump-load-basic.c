@@ -193,9 +193,9 @@ static duk_ret_t test_large_func(duk_context *ctx, void *udata) {
 
 /*===
 *** test_properties (duk_safe_call)
-.length: {"value":3,"writable":false,"enumerable":false,"configurable":false}
-.name: {"value":"test","writable":false,"enumerable":false,"configurable":false}
-.fileName: {"value":"fakeFilename.js","writable":true,"enumerable":false,"configurable":true}
+.length: {"value":3,"writable":false,"enumerable":false,"configurable":true}
+.name: {"value":"test","writable":false,"enumerable":false,"configurable":true}
+.fileName: {"value":"fakeFilename.js","writable":false,"enumerable":false,"configurable":true}
 .prototype: {"value":{},"writable":true,"enumerable":false,"configurable":false}
 ._Formals: {value:["a","b","c"],writable:false,enumerable:false,configurable:false}
 ._Varmap: {value:{a:0,b:1,c:2,x:3},writable:false,enumerable:false,configurable:false}
