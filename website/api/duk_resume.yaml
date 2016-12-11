@@ -4,7 +4,7 @@ proto: |
   void duk_resume(duk_context *ctx, const duk_thread_state *state);
 
 stack: |
-  [ ... state(N)! ] -> [ ... ] (number of popped stack entries may vary between versions)
+  [ ... state(N)! ] -> [ ... ] (number of popped stack entries may vary)
 
 summary: |
   <p>Resume Duktape execution previously suspended using
@@ -22,4 +22,4 @@ tags:
 seealso:
   - duk_suspend
 
-introduced: 2.0.0
+introduced: 1.6.0
