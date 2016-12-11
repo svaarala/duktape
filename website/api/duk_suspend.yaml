@@ -4,7 +4,7 @@ proto: |
   void duk_suspend(duk_context *ctx, duk_thread_state *state);
 
 stack: |
-  [ ... ] -> [ ... state(N)! ] (number of pushed stack entries may vary between versions)
+  [ ... ] -> [ ... state(N)! ] (number of pushed stack entries may vary)
 
 summary: |
   <p>Suspend the current call stack so that another native thread may operate
@@ -15,7 +15,7 @@ summary: |
   <code><a href="#duk_resume">duk_resume()</a></code>; if execution is not
   resumed later some internal book-keeping will be left in an inconsistent
   state.  The native call stack of the current native thread (which calls
-  <code>duk_suspend()</code> must not be unwound while Duktape execution
+  <code>duk_suspend()</code>) must not be unwound while Duktape execution
   is suspended.</p>
 
   <div class="note">
@@ -74,4 +74,4 @@ tags:
 seealso:
   - duk_resume
 
-introduced: 2.0.0
+introduced: 1.6.0
