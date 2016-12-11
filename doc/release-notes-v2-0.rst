@@ -564,6 +564,20 @@ To upgrade:
       rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
       #endif
 
+duk_put_function_list() and duk_put_number_list() replaced by duk_def_prop_list()
+---------------------------------------------------------------------------------
+
+The ``duk_put_function_list()`` and ``duk_put_number_list()`` calls have been
+replaced with the more flexible and more easily versionable
+``duk_def_prop_list()`` call.
+
+To upgrade:
+
+* Replace call sites with ``duk_def_prop_list()`` API calls.
+
+* Alternatively, include extras/duk-v1-compat into your compilation to add back
+  the removed API calls.
+
 Duktape specific error codes removed from API
 ---------------------------------------------
 
