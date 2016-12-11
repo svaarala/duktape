@@ -262,7 +262,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_substr(duk_context *ctx) {
 	 * ("undefined" and "null").
 	 */
 	duk_push_this(ctx);
-	h = duk_to_hstring(ctx, -1);
+	h = duk_to_hstring_m1(ctx);
 	DUK_ASSERT(h != NULL);
 	len = (duk_int_t) DUK_HSTRING_GET_CHARLEN(h);
 
@@ -690,7 +690,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 			/* [ ... replacer match [captures] match_char_offset input ] */
 
 			duk_call(ctx, duk_get_top(ctx) - idx_args);
-			h_repl = duk_to_hstring(ctx, -1);  /* -> [ ... repl_value ] */
+			h_repl = duk_to_hstring_m1(ctx);  /* -> [ ... repl_value ] */
 			DUK_ASSERT(h_repl != NULL);
 
 			DUK_BW_WRITE_ENSURE_HSTRING(thr, bw, h_repl);

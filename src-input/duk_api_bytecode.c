@@ -607,7 +607,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_push_object(ctx);
 	duk_dup_m2(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
 
 	p = duk__load_buffer_raw(ctx, p);
@@ -625,7 +625,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		duk_push_u32(ctx, tmp32);
 		duk_put_prop(ctx, -3);
 	}
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 
 	/* If _Formals wasn't present in the original function, the list
@@ -646,7 +646,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	if (arr_idx == 0 && h_fun->nargs == 0) {
 		duk_pop(ctx);
 	} else {
-		duk_compact(ctx, -1);
+		duk_compact_m1(ctx);
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	}
 

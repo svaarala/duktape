@@ -173,8 +173,8 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 	} else {
 		duk_double_t d1, d2;
 
-		d1 = duk_to_number(ctx, -2);
-		d2 = duk_to_number(ctx, -1);
+		d1 = duk_to_number_m2(ctx);
+		d2 = duk_to_number_m1(ctx);
 		DUK_ASSERT(duk_is_number(ctx, -2));
 		DUK_ASSERT(duk_is_number(ctx, -1));
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
@@ -293,8 +293,8 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 	} else {
 		duk_push_tval(ctx, tv_x);
 		duk_push_tval(ctx, tv_y);
-		d1 = duk_to_number(ctx, -2);  /* side effects */
-		d2 = duk_to_number(ctx, -1);
+		d1 = duk_to_number_m2(ctx);  /* side effects */
+		d2 = duk_to_number_m1(ctx);
 		DUK_ASSERT(duk_is_number(ctx, -2));
 		DUK_ASSERT(duk_is_number(ctx, -1));
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
@@ -731,7 +731,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr,
 	 * not intuitive.
 	 */
 
-	x = duk_to_number(ctx, -2);
+	x = duk_to_number_m2(ctx);
 	if (op & 0x01) {
 		y = x - 1.0;
 	} else {
@@ -3514,7 +3514,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 * not intuitive.
 			 */
 
-			x = duk_to_number(ctx, -1);
+			x = duk_to_number_m1(ctx);
 			duk_pop(ctx);
 			if (ins & DUK_BC_INCDECP_FLAG_DEC) {
 				y = x - 1.0;

@@ -2076,6 +2076,13 @@ DUK_EXTERNAL duk_double_t duk_to_number(duk_context *ctx, duk_idx_t idx) {
 	return d;
 }
 
+DUK_INTERNAL duk_double_t duk_to_number_m1(duk_context *ctx) {
+	return duk_to_number(ctx, -1);
+}
+DUK_INTERNAL duk_double_t duk_to_number_m2(duk_context *ctx) {
+	return duk_to_number(ctx, -2);
+}
+
 /* XXX: combine all the integer conversions: they share everything
  * but the helper function for coercion.
  */
@@ -2490,6 +2497,10 @@ DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx) {
 	ret = duk_get_hstring(ctx, idx);
 	DUK_ASSERT(ret != NULL);
 	return ret;
+}
+
+DUK_INTERNAL duk_hstring *duk_to_hstring_m1(duk_context *ctx) {
+	return duk_to_hstring(ctx, -1);
 }
 
 /* Convert a plain buffer or any buffer object into a string, using the buffer
@@ -3433,7 +3444,7 @@ DUK_INTERNAL duk_hstring *duk_push_uint_to_hstring(duk_context *ctx, duk_uint_t 
 
 	/* XXX: this could be a direct DUK_SPRINTF to a buffer followed by duk_push_string() */
 	duk_push_uint(ctx, (duk_uint_t) i);
-	h_tmp = duk_to_hstring(ctx, -1);
+	h_tmp = duk_to_hstring_m1(ctx);
 	DUK_ASSERT(h_tmp != NULL);
 	return h_tmp;
 }
@@ -3504,7 +3515,7 @@ DUK_INTERNAL duk_hstring *duk_push_this_coercible_to_string(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	duk__push_this_helper(ctx, 1 /*check_object_coercible*/);
-	return duk_to_hstring(ctx, -1);
+	return duk_to_hstring_m1(ctx);
 }
 
 DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx) {
@@ -4194,7 +4205,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
-		duk_compact(ctx, -1);
+		duk_compact_m1(ctx);
 	}
 
 	return;

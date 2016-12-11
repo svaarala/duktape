@@ -156,7 +156,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 			duk_require_stack(ctx, 5);
 			duk_get_prop_index(ctx, idx_td, i);
 			duk_get_prop_index(ctx, idx_td, i + 1);
-			d = duk_to_number(ctx, -1);
+			d = duk_to_number_m1(ctx);
 			pc = (duk_int_t) DUK_FMOD(d, DUK_DOUBLE_2TO32);
 			flags = (duk_int_t) DUK_FLOOR(d / DUK_DOUBLE_2TO32);
 			t = (duk_small_int_t) duk_get_type(ctx, -2);
@@ -234,7 +234,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 					                 (const char *) ((flags & DUK_ACT_FLAG_PREVENT_YIELD) ? str_prevyield : str_empty));
 				}
 				duk_replace(ctx, -5);   /* [ ... v1 v2 name filename str ] -> [ ... str v2 name filename ] */
-				duk_pop_n(ctx, 3);      /* -> [ ... str ] */
+				duk_pop_3(ctx);         /* -> [ ... str ] */
 			} else if (t == DUK_TYPE_STRING) {
 				/*
 				 *  __FILE__ / __LINE__ entry, here 'pc' is line number directly.

@@ -1660,7 +1660,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 
 		duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
 		duk_numconv_parse((duk_context *) lex_ctx->thr, s2n_radix, s2n_flags);
-		val = duk_to_number((duk_context *) lex_ctx->thr, -1);
+		val = duk_to_number_m1((duk_context *) lex_ctx->thr);
 		if (DUK_ISNAN(val)) {
 			goto fail_number_literal;
 		}

@@ -120,7 +120,13 @@ DUK_INTERNAL_DECL duk_hcompfunc *duk_known_hcompfunc(duk_context *ctx, duk_idx_t
 DUK_INTERNAL_DECL duk_hnatfunc *duk_known_hnatfunc(duk_context *ctx, duk_idx_t idx);
 
 DUK_INTERNAL_DECL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx);
+
+DUK_INTERNAL_DECL duk_hstring *duk_to_hstring_m1(duk_context *ctx);
+
 DUK_INTERNAL_DECL duk_hobject *duk_to_hobject(duk_context *ctx, duk_idx_t idx);
+
+DUK_INTERNAL_DECL duk_double_t duk_to_number_m1(duk_context *ctx);
+DUK_INTERNAL_DECL duk_double_t duk_to_number_m2(duk_context *ctx);
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)  /* only needed by debugger for now */
 DUK_INTERNAL_DECL duk_hstring *duk_safe_to_hstring(duk_context *ctx, duk_idx_t idx);
@@ -267,6 +273,8 @@ DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_context *ctx);
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_require_min(duk_context *ctx, duk_idx_t min_top);
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_unsafe(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_pop_unsafe(duk_context *ctx);
+
+DUK_INTERNAL_DECL void duk_compact_m1(duk_context *ctx);
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

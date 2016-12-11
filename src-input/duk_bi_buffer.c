@@ -509,10 +509,10 @@ DUK_INTERNAL void duk_hbufobj_validated_write(duk_context *ctx, duk_hbufobj *h_b
 		du.ui[0] = (duk_uint32_t) duk_to_int32(ctx, -1);
 		break;
 	case DUK_HBUFOBJ_ELEM_FLOAT32:
-		du.f[0] = (duk_float_t) duk_to_number(ctx, -1);
+		du.f[0] = (duk_float_t) duk_to_number_m1(ctx);
 		break;
 	case DUK_HBUFOBJ_ELEM_FLOAT64:
-		du.d = (duk_double_t) duk_to_number(ctx, -1);
+		du.d = (duk_double_t) duk_to_number_m1(ctx);
 		break;
 	default:
 		DUK_UNREACHABLE();
@@ -801,7 +801,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 			/* Set .buffer to the argument ArrayBuffer. */
 			duk_dup_0(ctx);
 			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
-			duk_compact(ctx, -1);
+			duk_compact_m1(ctx);
 			return 1;
 		} else if (DUK_HOBJECT_IS_BUFOBJ(h_obj)) {
 			/* TypedArray (or other non-ArrayBuffer duk_hbufobj).
@@ -902,7 +902,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	/* Set .buffer */
 	duk_dup_m2(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 
 	/* Copy values, the copy method depends on the arguments.
 	 *
@@ -1070,7 +1070,7 @@ DUK_INTERNAL duk_ret_t duk_bi_dataview_constructor(duk_context *ctx) {
 
 	duk_dup_0(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
-	duk_compact(ctx, -1);
+	duk_compact_m1(ctx);
 
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 	return 1;
