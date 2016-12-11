@@ -1587,6 +1587,95 @@ Released
 
 * Internal footprint improvement: reduce error call site size (GH-661)
 
+1.5.1 (2016-08-30)
+------------------
+
+* Fix a harmless compilation warning related to a shadowed variable (GH-793,
+  GH-794)
+
+* Fix incorrect duk_hbufferobject size in Duktape.info() (GH-804)
+
+* Fix compilation error triggered when using pointer compression and the
+  default string table implementation (probe-based rather than chained)
+  (GH-850)
+
+* Fix potential memory unsafe behavior when duk_push_(l)string() data pointer
+  is from a dynamic/external buffer (or any other relocatable data source)
+  and a finalizer side effect resizes/reconfigures the buffer, invalidating
+  the pointer before string table code has time to copy the data (GH-884)
+
+* Fix lightfunc constructor call handling: lightfuncs were incorrectly
+  rejected as constructors, now allowed as both direct constructors and
+  via a bound function chain (GH-895)
+
+* Fix direct references to __FILE__ and __LINE__ in the public header to use
+  DUK_FILE_MACRO and DUK_LINE_MACRO, which matters if the standard file/line
+  macros have been replaced in duk_config.h (GH-897)
+
+* Fix AmigaOS3 portability issue by enabling math function replacements
+  automatically for AmigaOS on M68K, regardless of OS version or compiler
+  (GH-932)
+
+* Fix clang compile warning for unused duk_err_unsupported_defmsg() (GH-764)
+
+* Reduce harmless "unused function" warnings for GCC and Clang by using
+  __attribute__ ((unused)) for internal function declarations (GH-916,
+  GH-942)
+
+1.5.2 (2016-12-09)
+------------------
+
+* Fix genconfig.py forced option boolean comparison; for forced numeric option
+  value 0 genconfig would emit "#undef XXX" (instead of "#define XXX 0") and
+  for forced numeric option value 1 it would emit "#define XXX" (instead of
+  "#define XXX 1") (GH-954)
+
+* Fix incorrect value stack handling in duk_put_prop_(l)string() and
+  duk_put_prop_index() when the target object and the property value
+  are in the same value stack slot (which is unusual but conceptually
+  clear) (GH-959)
+
+* Fix incorrect buffer zeroing assumption in regexp executor, triggered
+  when DUK_USE_ZERO_BUFFER_DATA is not set (default is set) (GH-978)
+
+* Fix incorrect evaluation order of X <op>= Y expressions when the RHS
+  (Y) mutates the value of X (GH-992)
+
+* Fix String.fromCharCode() behavior for non-BMP characters when standard
+  behavior is enabled (DUK_USE_NONSTD_STRING_FROMCHARCODE_32BIT disabled):
+  use ToUint16() + CESU-8 rather than ToUint32() + CESU-8 which produces
+  two codepoints for non-BMP characters (GH-1046)
+
+* Fix a few bugs in object property handling (delete property and
+  Object.defineProperty()) where an object property table resize triggered
+  by a finalizer of a previous value could cause memory unsafe behavior
+  (GH-1096)
+
+* Add an extra module (extras/module-duktape) providing a Duktape 1.x
+  compatible module loading framework (Duktape.modSearch etc) (GH-821,
+  GH-1127)
+
+* Fix duk_hcompfunc 'data' field != NULL assumptions which might lead to
+  memory unsafe behavior if Duktape ran out of memory when creating a
+  duk_hcompfunc during compilation or function instantiation (GH-1144,
+  GH-1132)
+
+* Fix JSON stringify fastpath handling of array gaps in JX and JC; they
+  incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
+  and '{"_undef":true}' as intended (GH-859, GH-1149)
+
+* Fix memory unsafe handling of Object.isPrototypeOf() when the argument
+  given has no prototype (e.g. argument is Object.prototype) (GH-1162,
+  GH-1163)
+
+1.6.0 (2016-12-12)
+------------------
+
+* Add duk_suspend() and duk_resume() which allow a native thread running a
+  Duktape/C function to be suspended temporarily (e.g. when a native system
+  call blocks) so that other native threads may execute while the thread is
+  blocked (GH-893, GH-909)
+
 Planned
 =======
 
