@@ -1676,6 +1676,14 @@ Released
   given has no prototype (e.g. argument is Object.prototype) (GH-1162,
   GH-1163)
 
+1.6.0 (2016-12-12)
+------------------
+
+* Add duk_suspend() and duk_resume() which allow a native thread running a
+  Duktape/C function to be suspended temporarily (e.g. when a native system
+  call blocks) so that other native threads may execute while the thread is
+  blocked (GH-893, GH-909)
+
 Planned
 =======
 
