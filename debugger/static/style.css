@@ -95,10 +95,11 @@
 	color: #9999ff;
 }
 
-#left-area button {
+#left-area .button {
 	display: inline-block;
-	width: 100%;
-	min-width: 8em;
+	text-align: center;
+	width: 95%;
+	min-width: 6em;
 	background: #226622;
 	color: #ffffff;
 	font: 16pt sans-serif;
@@ -109,18 +110,18 @@
 	border: 2px solid #000000;
 	border-radius: 4px;
 }
-#left-area button a {
+#left-area .button a {
 	color: #ffffff;
 	text-decoration: none;
 }
-#left-area button:hover {
+#left-area .button:hover {
 	background: #55aa55;
 }
-#left-area button:disabled {
+#left-area .button:disabled {
 	background: #555555;
 	color: #888888;
 }
-#left-area button:disabled a {
+#left-area .button:disabled a {
 	background: #555555;
 	color: #888888;
 }
