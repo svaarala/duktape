@@ -10,6 +10,9 @@ Main changes in this release (see RELEASES.rst for full details):
 * Improve buffer bindings: plain buffers now behave like ArrayBuffers,
   and Duktape.Buffer has been removed with ArrayBuffer taking its place.
 
+* Many built-in behaviors have been aligned with ES6 or ES7, so there are
+  small behavioral changes throughout.
+
 * FIXME
 
 The release has API incompatible changes, see upgrading notes below.
@@ -1086,6 +1089,11 @@ Other incompatible changes
   follow more lenient ES6 coercion semantics: non-object arguments are either
   coerced to objects or treated like non-extensible objects with no own
   properties.
+
+* RegExp.prototype follows ES6 behavior more closely: it is no longer a RegExp
+  instance, .source, .global, .ignoreCase, and .multiline are now inherited
+  getters, etc.  However, leniency to allow e.g. RegExp.prototype.source (from
+  ES2017 draft) is supported for real world code compatibility.
 
 * Duktape.info() now returns an object rather than an array.  The object has
   named properties like ``.type`` and ``.enext`` for the internal fields which
