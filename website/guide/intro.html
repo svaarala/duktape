@@ -47,11 +47,17 @@ where appropriate:</p>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript&#x00ae; Language Specification 5.1 Edition</a></li>
 </ul>
 
-<p>Some features from Ecmascript 2015 (E6) and Ecmascript 2016 (E7) are implemented:</p>
+<p>Duktape tracks the latest Ecmascript specification for semantics and
+built-ins (however support for ES6 and later is still incomplete), see:</p>
 <ul>
 <li><a href="http://www.ecma-international.org/ecma-262/6.0/">ECMAScript&#x00ae; 2015 Language Specification</a></li>
 <li><a href="http://www.ecma-international.org/ecma-262/7.0/">ECMAScript&#x00ae; 2016 Language Specification</a></li>
 </ul>
+
+<p>In some specific cases Duktape may follow a specification draft,
+see work in progress in <a href="https://github.com/tc39/ecma262">TC39/ecma262</a>.
+This is done when a feature in the latest specifications conflicts
+with real world code (see e.g. <a href="https://github.com/tc39/ecma262/pull/263">RegExp.prototype issues</a>).</p>
 
 <p>TypedArray support is based on Khronos TypedArray specification with some
 ambiguous semantics resolved based on ES6 TypedArray (and comparison to other

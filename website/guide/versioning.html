@@ -11,18 +11,27 @@
 
 <p>The "public API" to which these rules apply include:</p>
 <ul>
-<li>The Duktape API calls documented on duktape.org, except those tagged
-    <code>experimental</code>.  API calls implemented as macros are part of
-    the public API, but any internal calls the macros make are not.  Changing
-    an API call from a function call to a macro (or vice versa) is considered
-    a compatible change (but is not done in patch releases).</li>
+<li>The Duktape API calls documented on duktape.org; except those tagged
+    <code>experimental</code>.</li>
 <li>The global environment visible to Ecmascript code, including the <code>Duktape</code>
-    object and other Ecmascript extensions, as documented on duktape.org.</li>
+    object and other Ecmascript extensions, as documented on duktape.org;
+    except changes needed to align with latest Ecmascript specifications.</li>
 </ul>
 
-<p>The following are not part of the "public API":</p>
+<p>The following are not part of the "public API" versioning guarantees:</p>
 <ul>
 <li>Duktape API calls tagged <code>experimental</code>.</li>
+<li>Internal calls made by API macros.  While API calls implemented as macros
+    are part of the public API, any internal calls the macros make are not,
+    even if their symbol visibility is public.</li>
+<li>Changing an API call from a function call to a macro (or vice versa).
+    These are considered compatible changes (but are not done in patch releases).</li>
+<li>Aligning with latest Ecmascript specifications.  Duktape tracks the latest
+    Ecmascript specification (currently ES7 a.k.a. ES2016).  Backwards
+    incompatible changes required to align with the latest specifications may
+    be done in minor versions too (but not in patch versions unless necessary
+    to fix a bug).  Typically such changes are relatively minor, for example
+    argument coercion or property inheritance changes.</li>
 <li>Specific behavior which is explicitly noted to potentially change even in
     minor versions, for example:
     <ul>
@@ -31,11 +40,10 @@
         guaranteed, but otherwise behavior may vary between versions.</li>
     </ul>
 </li>
-<li>Feature options.  Incompatible feature option changes are not made in patch
-    releases, but can be made in minor releases (contrary to semantic versioning
-    guarantees). Such changes are noted in release notes, and the goal is to cause
-    a compile error when a no-longer-supported feature option is used so that any
-    incorrect assumptions can be fixed.</li>
+<li>Duktape config options.  Incompatible config option changes are not made in
+    patch releases, but can be made in minor releases.  The goal is to cause a
+    compile error (if possible) when a no-longer-supported feature option is
+    used so that any incorrect assumptions can be fixed.</li>
 <li>Extras distributed with Duktape (<code>extras/</code> directory).</li>
 </ul>
 
@@ -45,6 +53,9 @@
     typing doesn't change, API call function/macro status doesn't change.</li>
 <li>Bytecode dump/load format doesn't change so that you can load bytecode
     dumped from an older version which only differs in patch version.</li>
+<li>Ecmascript semantics fixes are not included unless necessary to fix
+    a bug.</li>
+<li>Config options won't change in an incompatible manner.</li>
 </ul>
 
 <h2 id="experimental-features">Experimental features</h2>
