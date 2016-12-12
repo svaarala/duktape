@@ -107,9 +107,9 @@ debugCommandNames.forEach(function (k, i) {
 });
 
 // Duktape heaphdr type constants, must match C headers
-var DUK_HTYPE_STRING = 1;
-var DUK_HTYPE_OBJECT = 2;
-var DUK_HTYPE_BUFFER = 3;
+var DUK_HTYPE_STRING = 0;
+var DUK_HTYPE_OBJECT = 1;
+var DUK_HTYPE_BUFFER = 2;
 
 // Duktape internal class numbers, must match C headers
 var dukClassNameMeta = yaml.load('duk_classnames.yaml');
