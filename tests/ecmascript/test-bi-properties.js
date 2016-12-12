@@ -439,7 +439,7 @@ var obj_data = [
         obj: RegExp.prototype,
         name: 'RegExp.prototype',
         proto: 'Object.prototype',
-        class: 'RegExp',  // E5 Section 15.10.6
+        class: 'Object',  // 'RegExp' in E5 Section 15.10.6 -> changed to 'Object' in ES6
         props: [
             { key: 'constructor', 'attrs': 'wc' },
             { key: 'exec', 'attrs': 'wc' },
@@ -1084,7 +1084,7 @@ PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "RegExp.prototype" !sealed !frozen extensible
 PROTOTYPE: "Object.prototype"
-CLASS: RegExp
+CLASS: Object
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "exec" writable !enumerable configurable
 PROPERTY: "test" writable !enumerable configurable

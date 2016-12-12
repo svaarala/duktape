@@ -16,7 +16,8 @@ var r, t;
 
 true
 true
-TypeError
+SyntaxError
+no error
 Foo
 ===*/
 
@@ -58,7 +59,14 @@ try {
 }
 
 try {
-    t = RegExp(r, 1);
+    t = RegExp(r, 1);  // rejected in ES5 with TypeError, SyntaxError in ES6 because '1' is not a proper flag
+    print('no error');
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    t = RegExp(r, 'i');  // rejected in ES5 with TypeError, OK in ES6
     print('no error');
 } catch (e) {
     print(e.name);
@@ -78,7 +86,8 @@ try {
 
 /*===
 false
-TypeError
+SyntaxError
+no error
 Foo
 SyntaxError
 SyntaxError
@@ -95,7 +104,14 @@ try {
 }
 
 try {
-    t = new RegExp(r, 1);
+    t = new RegExp(r, 1);  // TypeError in ES5.1, SyntaxError in ES6 because '1' is not a valid flag
+    print('no error');
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    t = new RegExp(r, 'm');  // TypeError in ES5.1, OK in ES6
     print('no error');
 } catch (e) {
     print(e.name);

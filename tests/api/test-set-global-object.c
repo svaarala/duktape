@@ -69,7 +69,7 @@ ctx1
 object
 set proto foo to quux
 set proto bar to proto itself for comparison
-result: /(?:)/
+result: undefined
 ctx2
 object
 foo: quux
@@ -378,13 +378,15 @@ static duk_ret_t test_regexp_prototype_shared(duk_context *ctx_root, void *udata
 	duk_eval_string_noresult(ctx1, "var re1 = /foo/;\n");
 	duk_eval_string_noresult(ctx2, "var re2 = /bar/;\n");
 
+	/* avoid String coercing RegExp.prototype; it's a TypeError in ES6/ES7 */
+
 	(void) duk_peval_string(ctx1,
 		"print(name);\n"
 		"print(typeof getProto(re1));\n"
 		"print('set proto foo to quux');\n"
 		"getProto(re1).foo = 'quux';\n"
 		"print('set proto bar to proto itself for comparison');\n"
-		"getProto(re1).bar = getProto(re1);\n");
+		"getProto(re1).bar = getProto(re1); void 0;\n");
 	printf("result: %s\n", duk_safe_to_string(ctx1, -1));
 	duk_pop(ctx1);
 
