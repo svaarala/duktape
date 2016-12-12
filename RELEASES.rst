@@ -1945,6 +1945,11 @@ Planned
   trap; because "getOwnPropertyDescriptor" trap is not yet supported, the
   check is always made against the target object (GH-1115)
 
+* Align RegExp.prototype behavior more closely with ES6: .source, .global,
+  .ignoreCase, .multiline are now inherited getters; .flags, .sticky, and
+  .unicode have been added (they are inherited getters too); constructor
+  behavior has been revised for ES6 behavior (GH-1178)
+
 * Remove no longer needed platform wrappers in duk_config.h: DUK_ABORT(),
   DUK_EXIT(), DUK_PRINTF(), DUK_FPRINTF(), DUK_FOPEN(), DUK_FCLOSE(),
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
