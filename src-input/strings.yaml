@@ -306,7 +306,9 @@ strings:
   - str: "ignoreCase"
   - str: "multiline"
   - str: "lastIndex"
-  - str: "(?:)"
+  - str: "flags"
+#  - str: "unicode"
+#  - str: "sticky"
 
   # RegExp exec() results
   - str: "index"
@@ -1155,7 +1157,6 @@ special_define_names:
   "MAX_VALUE": "MAX_VALUE"
   "NEGATIVE_INFINITY": "NEGATIVE_INFINITY"
   "POSITIVE_INFINITY": "POSITIVE_INFINITY"
-  "(?:)": "ESCAPED_EMPTY_REGEXP"
   "Invalid Date": "INVALID_DATE"
 
   "decodeURIComponent": "DECODE_URI_COMPONENT"
