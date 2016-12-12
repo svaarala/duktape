@@ -3,26 +3,39 @@
  */
 
 /*===
-undefined
+
 still here
-undefinedfoo
+foo
 still here
-string ""
+TypeError
+still here
 ===*/
 
 function test() {
     // Caused an assert failure in Duktape 1.3.0 and prior, and with asserts
     // disabled memory unsafe behavior.
-    print(String.prototype.replace(RegExp.prototype));
+    try {
+        print(String.prototype.replace(RegExp.prototype));
+    } catch (e) {
+        print(e.name);
+    }
     print('still here');
 
     // Similar case
-    print('foo'.replace(RegExp.prototype));
+    try {
+        print('foo'.replace(RegExp.prototype));
+    } catch (e) {
+        print(e.name);
+    }
     print('still here');
 
-    // Ensure RegExp.prototype matches correctly (it's a RegExp instance too).
-    var m = RegExp.prototype.exec('foo');
-    print(typeof m[0], JSON.stringify(m[0]));
+    try {
+        var m = RegExp.prototype.exec('foo');
+        print(typeof m[0], JSON.stringify(m[0]));
+    } catch (e) {
+        print(e.name);
+    }
+    print('still here');
 }
 
 try {

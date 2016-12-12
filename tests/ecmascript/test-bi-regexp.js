@@ -51,10 +51,10 @@ try {
 
 /*===
 instance
-source true true
-global true true
-ignoreCase true true
-multiline true true
+source true false
+global true false
+ignoreCase true false
+multiline true false
 lastIndex true true
 ===*/
 
@@ -71,6 +71,10 @@ function regexpInstanceTest() {
     // own properties (not inherited).  Check for that, although it's quite
     // likely at least the the flag-related properties will be converted to
     // accessors at some point to save memory.
+    //
+    // ES6 actually changes .source, .global, .ignoreCase, and .multiline to
+    // inherited getters, check for that behavior.  .lastIndex remains own
+    // property.
 
     check('source');
     check('global');
