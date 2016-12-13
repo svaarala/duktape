@@ -334,8 +334,9 @@ void duk_logging_init(duk_context *ctx, duk_uint_t flags) {
 
 	/* [ ... func Duktape.Logger Duktape.Logger.prototype ] */
 
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "Logger");
-	duk_put_prop_string(ctx, -3, "name");
+	duk_def_prop(ctx, -4, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
 	duk_dup_top(ctx);
 	duk_put_prop_string(ctx, -2, "constructor");
