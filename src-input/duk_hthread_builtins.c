@@ -264,17 +264,12 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* XXX: function properties */
 
-			/* Built-in 'name' is not writable by default.  Function '.name'
-			 * is writable to allow user code to set a '.name' on a native
-			 * function.
-			 */
 			duk__push_stridx_or_string(ctx, bd);
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
 			duk_xdef_prop_stridx_short(ctx,
 			                           -2,
 			                           DUK_STRIDX_NAME,
-			                           (i == DUK_BIDX_FUNCTION_PROTOTYPE) ?
-			                               DUK_PROPDESC_FLAGS_W : DUK_PROPDESC_FLAGS_NONE);
+			                           DUK_PROPDESC_FLAGS_C);
 #else
 			duk_pop(ctx);  /* Not very ideal but good enough for now. */
 #endif
@@ -310,17 +305,14 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		}
 
 		if (len >= 0) {
-			/*
-			 *  For top-level objects, 'length' property has the following
-			 *  default attributes: non-writable, non-enumerable, non-configurable
-			 *  (E5 Section 15).
+			/* In ES2015+ built-in function object .length property
+			 * has property attributes C (configurable only):
+			 * http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-standard-built-in-objects
 			 *
-			 *  However, 'length' property for Array.prototype has attributes
-			 *  expected of an Array instance which are different: writable,
-			 *  non-enumerable, non-configurable (E5 Section 15.4.5.2).
-			 *
-			 *  Because Array .length is virtual, it's not encoded in the init
-			 *  data separately.
+			 * Array.prototype remains an Array instance in ES2015+
+			 * and its length has attributes W (writable only).
+			 * Because .length is now virtual for duk_harray, it is
+			 * not encoded explicitly in init data.
 			 */
 
 			DUK_ASSERT(class_num != DUK_HOBJECT_CLASS_ARRAY);  /* .length is virtual */
@@ -328,7 +320,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_xdef_prop_stridx_short(ctx,
 			                           -2,
 			                           DUK_STRIDX_LENGTH,
-			                           DUK_PROPDESC_FLAGS_NONE);  /* XXX */
+			                           DUK_PROPDESC_FLAGS_C);
 		}
 
 		/* enable exotic behaviors last */
@@ -608,10 +600,10 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* [ (builtin objects) name func ] */
 
 			duk_push_int(ctx, c_length);
-			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* XXX */
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
 
 			duk_dup_m2(ctx);
-			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+			duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
 
 			/* XXX: other properties of function instances; 'arguments', 'caller'. */
 
