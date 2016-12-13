@@ -2,6 +2,8 @@
  *  Heap stringtable handling, string interning.
  */
 
+/*FIXME*/
+
 #include "duk_internal.h"
 
 #if defined(DUK_USE_STRTAB_PROBE)
