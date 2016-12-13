@@ -1,0 +1,748 @@
+summary: requires DUK_USE_LIGHTFUNC_BUILTINS
+---
+light func support test
+false
+typeof test
+function
+property assignment test
+strPlainNonStrict: success
+strPlainStrict: TypeError
+strObjectNonStrict: success
+strObjectStrict: success
+strObjectNonextNonStrict: success
+strObjectNonextStrict: TypeError
+lfuncNonStrict1: success
+lfuncNonStrict2: success
+lfuncStrict1: TypeError
+lfuncStrict2: success
+instanceof test
+{} instanceof lightfunc: TypeError
+false
+{} instanceof func-wo-prototype: TypeError
+lightFunc instanceof Function: true
+lightFunc instanceof Number: false
+lightFunc instanceof Object: true
+comparison test
+0 0 true true
+0 1 false false
+0 2 false false
+0 3 true true
+0 4 false false
+0 5 false false
+0 6 false false
+1 0 false false
+1 1 true true
+1 2 false false
+1 3 false false
+1 4 true true
+1 5 false false
+1 6 false false
+2 0 false false
+2 1 false false
+2 2 true true
+2 3 false false
+2 4 false false
+2 5 true true
+2 6 false false
+3 0 true true
+3 1 false false
+3 2 false false
+3 3 true true
+3 4 false false
+3 5 false false
+3 6 false false
+4 0 false false
+4 1 true true
+4 2 false false
+4 3 false false
+4 4 true true
+4 5 false false
+4 6 false false
+5 0 false false
+5 1 false false
+5 2 true true
+5 3 false false
+5 4 false false
+5 5 true true
+5 6 false false
+6 0 false false
+6 1 false false
+6 2 false false
+6 3 false false
+6 4 false false
+6 5 false false
+6 6 true true
+arithmetic test
+string: testfunction cos() { [native code] }function sin() { [native code] }
+string: function cos() { [native code] }function sin() { [native code] }
+string: function foo() { [ecmascript code] }function bar() { [ecmascript code] }
+toString() test
+function max() { [native code] }
+function max() { [native code] }
+function max() { [native code] }
+true
+true
+toObject() test
+caching: true
+length: 2 2
+name: max max
+typeof: function function
+internal prototype is Function.prototype: true true
+external prototype is not set: true
+internal prototypes match: true
+external prototypes match (do not exist): true
+isExtensible: true true
+Math.max test: 9 9
+length: 1 1
+toBoolean() test
+true
+true
+toBuffer() test
+object: function cos() { [native code] }
+object: function sin() { [native code] }
+toPointer() test
+pointer false
+object false
+number coercion test
+NaN
+NaN
+0
+0
+0
+0
+0
+0
+call and apply test
+call
+321
+apply
+987
+this coercion test
+function false
+function false
+inherit from Function.prototype test
+testValue
+Object.prototype.toString() test
+[object Function]
+JSON/JX/JC test
+json
+undefined
+undefined
+jx
+{_func:true}
+{_func:true}
+jc
+{"_func":true}
+{"_func":true}
+json
+undefined
+undefined
+jx
+{_func:true}
+{_func:true}
+jc
+{"_func":true}
+{"_func":true}
+json
+{"array":[100,null,200,null,300]}
+{
+    "array": [
+        100,
+        null,
+        200,
+        null,
+        300
+    ]
+}
+jx
+{lf:{_func:true},nf:{_func:true},array:[100,{_func:true},200,{_func:true},300]}
+{
+    lf: {_func:true},
+    nf: {_func:true},
+    array: [
+        100,
+        {_func:true},
+        200,
+        {_func:true},
+        300
+    ]
+}
+jc
+{"lf":{"_func":true},"nf":{"_func":true},"array":[100,{"_func":true},200,{"_func":true},300]}
+{
+    "lf": {"_func":true},
+    "nf": {"_func":true},
+    "array": [
+        100,
+        {"_func":true},
+        200,
+        {"_func":true},
+        300
+    ]
+}
+json
+"toJsonRetval"
+"toJsonRetval"
+jx
+"toJsonRetval"
+"toJsonRetval"
+jc
+"toJsonRetval"
+"toJsonRetval"
+json
+"toJsonRetval"
+"toJsonRetval"
+jx
+"toJsonRetval"
+"toJsonRetval"
+jc
+"toJsonRetval"
+"toJsonRetval"
+json
+{"lf":"toJsonRetval","nf":"toJsonRetval","array":[100,"toJsonRetval",200,"toJsonRetval",300]}
+{
+    "lf": "toJsonRetval",
+    "nf": "toJsonRetval",
+    "array": [
+        100,
+        "toJsonRetval",
+        200,
+        "toJsonRetval",
+        300
+    ]
+}
+jx
+{lf:"toJsonRetval",nf:"toJsonRetval",array:[100,"toJsonRetval",200,"toJsonRetval",300]}
+{
+    lf: "toJsonRetval",
+    nf: "toJsonRetval",
+    array: [
+        100,
+        "toJsonRetval",
+        200,
+        "toJsonRetval",
+        300
+    ]
+}
+jc
+{"lf":"toJsonRetval","nf":"toJsonRetval","array":[100,"toJsonRetval",200,"toJsonRetval",300]}
+{
+    "lf": "toJsonRetval",
+    "nf": "toJsonRetval",
+    "array": [
+        100,
+        "toJsonRetval",
+        200,
+        "toJsonRetval",
+        300
+    ]
+}
+json
+0
+0
+jx
+0
+0
+jc
+0
+0
+json
+0
+0
+jx
+0
+0
+jc
+0
+0
+json
+{"lf":null,"nf":null,"array":[100,1,200,3,300]}
+{
+    "lf": null,
+    "nf": null,
+    "array": [
+        100,
+        1,
+        200,
+        3,
+        300
+    ]
+}
+jx
+{lf:NaN,nf:NaN,array:[100,1,200,3,300]}
+{
+    lf: NaN,
+    nf: NaN,
+    array: [
+        100,
+        1,
+        200,
+        3,
+        300
+    ]
+}
+jc
+{"lf":{"_nan":true},"nf":{"_nan":true},"array":[100,1,200,3,300]}
+{
+    "lf": {"_nan":true},
+    "nf": {"_nan":true},
+    "array": [
+        100,
+        1,
+        200,
+        3,
+        300
+    ]
+}
+bound function test
+F: function max() { [native code] }
+F type tag: 6
+G: function bound max() { [bound code] }
+G type tag: 6
+G.length: 1
+H: function bound bound max() { [bound code] }
+H type tag: 6
+H.length: 0
+I: function bound bound bound max() { [bound code] }
+I type tag: 6
+I.length: 0
+G(123): 234
+G(123,987): 987
+property get test
+length directly: 2
+toString coerced object (return "length")
+objLengthKey coerced to string: length
+toString coerced object (return "length")
+length through object coercion: 2
+read from length -> 2
+read from prototype -> undefined
+read from name -> max
+toString coerced object (return "length")
+toString coerced object (return "length")
+read from length -> 2
+read from testWritable -> 123
+read from testNonWritable -> 234
+read from call -> function call() { [native code] }
+read from apply -> function apply() { [native code] }
+read from nonexistent -> 123
+property put test
+write to length -> silent error
+write to prototype -> silent error
+write to name -> silent error
+toString coerced object (return "length")
+toString coerced object (return "length")
+write to length -> silent error
+write to testWritable -> silent error
+write to testNonWritable -> silent error
+write to call -> silent error
+write to apply -> silent error
+write to nonexistent -> silent error
+write to length -> TypeError
+never here: prototype
+write to name -> TypeError
+toString coerced object (return "length")
+toString coerced object (return "length")
+write to length -> TypeError
+never here: testWritable
+write to testNonWritable -> TypeError
+never here: call
+never here: apply
+never here: nonexistent
+property has test
+existence: length -> true
+existence: prototype -> true
+existence: name -> true
+toString coerced object (return "length")
+toString coerced object (return "length")
+existence: length -> true
+existence: testWritable -> true
+existence: testNonWritable -> true
+existence: call -> true
+existence: apply -> true
+existence: nonexistent -> true
+property delete test
+delete: length -> false
+delete: prototype -> true
+delete: name -> false
+toString coerced object (return "length")
+toString coerced object (return "length")
+delete: length -> false
+delete: testWritable -> true
+delete: testNonWritable -> true
+delete: call -> true
+delete: apply -> true
+delete: nonexistent -> true
+delete: length -> TypeError
+delete: prototype -> true
+delete: name -> TypeError
+toString coerced object (return "length")
+toString coerced object (return "length")
+delete: length -> TypeError
+delete: testWritable -> true
+delete: testNonWritable -> true
+delete: call -> true
+delete: apply -> true
+delete: nonexistent -> true
+non-strict: true
+strict: true
+property accessor this binding test
+getter, strict
+strict getter "this" binding test
+typeof this: function
+this == lightFunc: true
+this === lightFunc: true
+this.name: max
+type tag: 6
+getter retval
+setter, strict
+strict setter "this" binding test
+typeof this: function
+this == lightFunc: true
+this === lightFunc: true
+this.name: max
+type tag: 6
+getter, non-strict
+non-strict getter "this" binding test
+typeof this: function
+this == lightFunc: true
+this === lightFunc: true
+this.name: max
+type tag: 6
+getter retval
+setter, non-strict
+non-strict setter "this" binding test
+typeof this: function
+this == lightFunc: true
+this === lightFunc: true
+this.name: max
+type tag: 6
+property misc test
+isSealed: false
+isFrozen: false
+isExtensible: true
+for-in: "inheritTestProperty"
+Object.getOwnPropertyNames: "length"
+Object.getOwnPropertyNames: "name"
+lightFunc.name matches regexp: false
+censored lightFunc.name: max_
+traceback test
+URIError: invalid input
+    at [anon] (duk_bi_global.c:NNN) internal
+    at decodeURIComponent () native strict preventsyield
+    at tracebackTest (TESTCASE:NNN)
+    at global (TESTCASE:NNN) preventsyield
+Duktape.act() test
+Error: for traceback
+    at callback (TESTCASE:NNN) preventsyield
+    at forEach () native strict preventsyield
+    at duktapeActTest (TESTCASE:NNN)
+    at global (TESTCASE:NNN) preventsyield
+-1 ["pc","lineNumber","function"] act
+-2 ["pc","lineNumber","function"] callback
+-3 ["pc","lineNumber","function"] forEach
+-4 ["pc","lineNumber","function"] duktapeActTest
+-5 ["pc","lineNumber","function"] global
+exempt built-ins test
+Math.max (is lightfunc): function false
+eval: function false
+yield: function false
+resume: function false
+require: function false
+Object: function false
+Function: function false
+Array: function false
+String: function false
+Boolean: function false
+Number: function false
+Date: function false
+RegExp: function false
+Error: function false
+EvalError: function false
+RangeError: function false
+ReferenceError: function false
+SyntaxError: function false
+TypeError: function false
+URIError: function false
+Proxy: function false
+Duktape.Pointer: function false
+Duktape.Thread: function false
+Duktape.Logger: function false
+Duktape: object false
+Math: object false
+JSON: object false
+getOwnPropertyNames() test
+length,name
+length
+name
+getOwnPropertyDescriptor() test
+key: name
+value: string cos
+writable: boolean false
+enumerable: boolean false
+configurable: boolean false
+key: length
+value: number 1
+writable: boolean false
+enumerable: boolean false
+configurable: boolean false
+key: nonExistent
+no descriptor
+hasOwnProperty() test
+true
+true
+false
+false
+propertyIsEnumerable() test
+false
+false
+false
+false
+defineProperty() test
+nonexistent: success
+name: TypeError
+length: success
+defineProperties() test
+nonexistent: success
+name: TypeError
+length: success
+getPrototypeOf() test
+true
+true
+setPrototypeOf() test
+TypeError
+never here
+TypeError
+never here
+success
+success
+success
+success
+Array built-in test
+Array: object [{_func:true}]
+new Array: object [{_func:true}]
+isArray: boolean false
+toString: string "[object Function]"
+valueOf: function {_func:true}
+concat: object [{_func:true}]
+pop: TypeError
+push: TypeError
+sort: function {_func:true}
+splice: TypeError
+reverse: function {_func:true}
+shift: TypeError
+unshift: TypeError
+every: TypeError
+some: TypeError
+forEach: TypeError
+map: TypeError
+filter: TypeError
+reduce: TypeError
+reduceRight: TypeError
+Boolean built-in test
+Boolean: boolean true
+new Boolean: object true
+toString: TypeError
+valueOf: TypeError
+Duktape.Buffer built-in test
+Duktape.Buffer: TypeError
+new Duktape.buffer: TypeError
+toString: TypeError
+valueOf: TypeError
+Date built-in test
+Date: string "string"
+new Date: string "object"
+parse: number NaN
+UTC: number NaN
+now: string "number"
+toString: TypeError
+valueOf: TypeError
+toDateString: TypeError
+toTimeString: TypeError
+toLocaleString: TypeError
+toLocaleDateString: TypeError
+toLocaleTimeString: TypeError
+getTime: TypeError
+getFullYear: TypeError
+getUTCFullYear: TypeError
+getMonth: TypeError
+getUTCFullMonth: TypeError
+getDate: TypeError
+getUTCDate: TypeError
+getDay: TypeError
+getUTCDay: TypeError
+getHours: TypeError
+getUTCHours: TypeError
+getMinutes: TypeError
+getUTCMinutes: TypeError
+getSeconds: TypeError
+getUTCSeconds: TypeError
+getMilliseconds: TypeError
+getUTCMilliseconds: TypeError
+getTimezoneOffset: TypeError
+setTime: TypeError
+setMilliseconds: TypeError
+setUTCMilliseconds: TypeError
+setSeconds: TypeError
+setUTCSeconds: TypeError
+setMinutes: TypeError
+setUTCMinutes: TypeError
+setHours: TypeError
+setUTCHours: TypeError
+setDate: TypeError
+setUTCDate: TypeError
+setMonth: TypeError
+setUTCMonth: TypeError
+setFullYear: TypeError
+setUTCFullYear: TypeError
+toUTCString: TypeError
+toISOString: TypeError
+toJSON: TypeError
+setYear: TypeError
+getYear: TypeError
+Duktape built-in test
+info: number 6
+act: undefined undefined
+gc: boolean true
+fin-get: undefined undefined
+fin-set: undefined undefined
+encdec-hex: string "function cos() { [native code] }"
+dec-hex: TypeError
+compact: function {_func:true}
+Error built-in test
+Error: object {}
+new Error: object {}
+toString: string "cos"
+valueOf: function {_func:true}
+Function built-in test
+Function: SyntaxError
+new Function: SyntaxError
+toString: string "function cos() { [native code] }"
+valueOf: function {_func:true}
+global built-in test
+eval: function {_func:true}
+parseInt: number NaN
+parseFloat: number NaN
+isNaN: boolean true
+isFinite: boolean false
+decodeURI: string "function cos() { [native code] }"
+decodeURIComponent: string "function cos() { [native code] }"
+encodeURI: string "string"
+encodeURIComponent: string "string"
+escape: string "string"
+unescape: string "string"
+JSON built-in test
+parse: SyntaxError
+stringify: undefined undefined
+Duktape.Logger built-in test
+Duktape.Logger: TypeError
+new Duktape.Logger: object {}
+fmt: TypeError
+raw: TypeError
+TIMESTAMP INF test: My light func is: function cos() { [native code] }
+Math built-in test
+abs: number NaN
+acos: number NaN
+asin: number NaN
+atan: number NaN
+atan2: number NaN
+ceil: number NaN
+cos: number NaN
+exp: number NaN
+floor: number NaN
+log: number NaN
+max: number NaN
+min: number NaN
+pow: number NaN
+random: string "number"
+round: number NaN
+sin: number NaN
+sqrt: number NaN
+tan: number NaN
+Number built-in test
+Number: number NaN
+new Number: object NaN
+toString: TypeError
+toLocaleString: TypeError
+valueOf: TypeError
+toFixed: TypeError
+toExponential: TypeError
+toPrecision: TypeError
+Object built-in test
+Object: function {_func:true}
+new Object: function {_func:true}
+getPrototypeOf: function {_func:true}
+setPrototypeOf: function {_func:true}
+seal: function {_func:true}
+freeze: function {_func:true}
+preventExtensions: function {_func:true}
+isSealed: boolean true
+isFrozen: boolean true
+isExtensible: boolean false
+toString: string "[object Function]"
+toLocaleString: string "[object Function]"
+valueOf: function {_func:true}
+isPrototypeOf: boolean false
+Duktape.Pointer built-in test
+false
+false
+toString: TypeError
+valueOf: TypeError
+Proxy built-in test
+get
+this: object false [object Object]
+target: function false [object Function]
+key: string name
+proxy.name: cos
+get
+this: object false [object Object]
+target: function false [object Function]
+key: string length
+proxy.length: 1
+get
+this: object false [object Object]
+target: function false [object Function]
+key: string nonExistent
+proxy.nonExistent: dummy
+proxy.foo: bar
+proxy.nonExistent: undefined
+RegExp built-in test
+RegExp: object {}
+new RegExp: object {}
+exec: TypeError
+test: TypeError
+toString: TypeError
+valueOf: function {_func:true}
+String built-in test
+String: string "[object Function]"
+new String: string "[object Function]"
+new String: string "object"
+fromCharCode: string "\x00"
+toString: TypeError
+valueOf: TypeError
+charAt: string "["
+charCodeAt: number 91
+concat: string "[object Function][object Function]"
+indexOf: number 0
+lastIndexOf: number 0
+localeCompare: number 0
+match: object ["o"]
+replace: string "undefined"
+search: number 1
+slice: string "[object Function]"
+split: object ["",""]
+substring: string "[object Function]"
+toLowerCase: string "[object function]"
+toLocaleLowerCase: string "[object function]"
+toUpperCase: string "[OBJECT FUNCTION]"
+toLocaleUpperCase: string "[OBJECT FUNCTION]"
+trim: string "[object Function]"
+substr: string "[object Function]"
+Duktape.Thread built-in test
+TypeError
+TypeError
+Object .valueOf() test
+true
+function function
+true
+6
+6

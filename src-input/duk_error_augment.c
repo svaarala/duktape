@@ -417,8 +417,8 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 #if defined(DUK_USE_ASSERTIONS)
 	DUK_ASSERT(duk_get_top(ctx) == entry_top + 2);
 #endif
-	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_WC | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C | DUK_PROPDESC_FLAG_NO_OVERWRITE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LINE_NUMBER, DUK_PROPDESC_FLAGS_C | DUK_PROPDESC_FLAG_NO_OVERWRITE);
 }
 #endif  /* DUK_USE_AUGMENT_ERROR_CREATE && !DUK_USE_TRACEBACKS */
 

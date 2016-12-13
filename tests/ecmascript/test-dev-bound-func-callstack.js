@@ -37,8 +37,8 @@ function test() {
     func();
 
     var bound = func.bind(123);
-    bound.fileName = 'dummy.js';
-    bound.name = 'bound';
+    Object.defineProperty(bound, 'fileName', { value: 'dummy.js' });
+    Object.defineProperty(bound, 'name', { value: 'bound' });
     print('bound.fileName:', bound.fileName);
     print('bound.name:', bound.name);
 

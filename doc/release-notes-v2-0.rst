@@ -1066,6 +1066,22 @@ Other incompatible changes
   requirements.  For example ``function foo() {"ecmascript"}`` is now
   ``function foo() { [ecmascript code] }``.
 
+* Function ``.name`` and ``.length`` properties are now non-writable,
+  non-enumerable, but configurable, to match revised ES6 semantics.  Previously
+  the properties were also non-configurable.
+
+* Function ``.fileName`` property is now non-writable, non-enumerable, and
+  configurable.  Previously it was writable, non-enumerable, and configurable.
+  While this is not required by ES6 (as the property is non-standard), it has
+  been aligned with ``.name``.  Direct assignment to the property will be
+  rejected, but you can set it using e.g.
+  ``Object.defineProperty(func, 'fileName', { value: 'myFilename.js' });``.
+
+* Error instance ``.fileName`` and ``.lineNumber`` property attributes are
+  also non-writable, non-enumerable, but configurable.  This only matters when
+  tracebacks are disabled and concrete properties are used instead of the
+  inherited accessors.
+
 * Object constructor methods like Object.keys(), Object.freeze(), etc now
   follow more lenient ES6 coercion semantics: non-object arguments are either
   coerced to objects or treated like non-extensible objects with no own

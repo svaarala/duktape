@@ -1,13 +1,11 @@
 /*
- *  Function objects (E5 Section 15.3).
+ *  Function constructor
  */
-
-/* XXX: toString(), call(), apply() */
-/* XXX: property attributes */
 
 /*===
 constructor
 true true
+false false false
 true 1
 no args
 no args
@@ -24,11 +22,16 @@ foobarquux
 
 function functionConstructorTest() {
     var f;
+    var pd;
 
     /* Properties. */
 
     print('prototype' in Function, Function.prototype === Function.prototype);
+    pd = Object.getOwnPropertyDescriptor(Function, 'prototype');
+    print(pd.writable, pd.enumerable, pd.configurable);
     print('length' in Function, Function.length);
+    pd = Object.getOwnPropertyDescriptor(Function, 'length');
+//    print(pd.writable, pd.enumerable, pd.configurable);
 
     /* Test Function() called both as a function and as a constructor. */
 
@@ -65,58 +68,6 @@ function functionConstructorTest() {
 try {
     print('constructor');
     functionConstructorTest();
-} catch (e) {
-    print(e.stack || e);
-}
-
-/*===
-prototype
-[object Function]
-true
-true
-true 0
-true true
-undefined undefined
-===*/
-
-function functionPrototypeTest() {
-    var ret;
-
-    print(Object.prototype.toString.call(Function.prototype));
-    print(Object.getPrototypeOf(Function.prototype) === Object.prototype);
-    print(Object.isExtensible(Function.prototype));
-    print('length' in Function.prototype, Function.prototype.length);
-    print('constructor' in Function.prototype, Function.prototype.constructor === Function);
-
-    ret = Function.prototype('foo', 'bar');
-    print(typeof ret, ret);
-}
-
-try {
-    print('prototype');
-    functionPrototypeTest();
-} catch (e) {
-    print(e.stack || e);
-}
-
-/*===
-instance
-true true
-true true
-true 3
-===*/
-
-function functionInstanceTest() {
-    var f = function test(a, b, c) {};
-
-    print('prototype' in f, typeof f.prototype === 'object');
-    print('constructor' in f.prototype, f.prototype.constructor === f);
-    print('length' in f, f.length);
-}
-
-try {
-    print('instance');
-    functionInstanceTest();
 } catch (e) {
     print(e.stack || e);
 }

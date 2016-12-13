@@ -348,9 +348,15 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 	 */
 
 	p = duk__dump_uint32_prop(thr, p, bw_ctx, (duk_hobject *) func, DUK_STRIDX_LENGTH, (duk_uint32_t) func->nargs);
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	p = duk__dump_string_prop(thr, p, bw_ctx, (duk_hobject *) func, DUK_STRIDX_NAME);
+#endif
+#if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
 	p = duk__dump_string_prop(thr, p, bw_ctx, (duk_hobject *) func, DUK_STRIDX_FILE_NAME);
+#endif
+#if defined(DUK_USE_PC2LINE)
 	p = duk__dump_buffer_prop(thr, p, bw_ctx, (duk_hobject *) func, DUK_STRIDX_INT_PC2LINE);
+#endif
 	p = duk__dump_varmap(thr, p, bw_ctx, (duk_hobject *) func);
 	p = duk__dump_formals(thr, p, bw_ctx, (duk_hobject *) func);
 
@@ -565,8 +571,9 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* Setup function properties. */
 	tmp32 = DUK_RAW_READ_U32_BE(p);
 	duk_push_u32(ctx, tmp32);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
 
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	p = duk__load_string_raw(ctx, p);  /* -> [ func funcname ] */
 	func_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	DUK_ASSERT(func_env != NULL);
@@ -599,10 +606,13 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	if (need_pop) {
 		duk_pop(ctx);
 	}
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+#endif  /* DUK_USE_FUNC_NAME_PROPERTY */
 
+#if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
 	p = duk__load_string_raw(ctx, p);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
+#endif  /* DUK_USE_FUNC_FILENAME_PROPERTY */
 
 	duk_push_object(ctx);
 	duk_dup_m2(ctx);
@@ -610,8 +620,10 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_compact_m1(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
 
+#if defined(DUK_USE_PC2LINE)
 	p = duk__load_buffer_raw(ctx, p);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
+#endif  /* DUK_USE_PC2LINE */
 
 	duk_push_object(ctx);  /* _Varmap */
 	for (;;) {

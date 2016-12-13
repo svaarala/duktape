@@ -371,14 +371,14 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	} else {
 		duk_push_int(ctx, 0);
 	}
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_NONE);  /* attrs in E5 Section 15.3.5.1 */
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);  /* attrs in E6 Section 9.2.4 */
 
 	/* caller and arguments must use the same thrower, [[ThrowTypeError]] */
 	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER);
 	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS);
 
-	/* these non-standard properties are copied for convenience */
 	/* XXX: 'copy properties' API call? */
+#if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	duk_push_string(ctx, "bound ");  /* ES6 19.2.3.2. */
 	duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME);
 	if (!duk_is_string(ctx, -1)) {
@@ -390,9 +390,12 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
 	}
 	duk_concat(ctx, 2);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+#endif
+#if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
 	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_WC);
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
+#endif
 
 	/* The 'strict' flag is copied to get the special [[Get]] of E5.1
 	 * Section 15.3.5.4 to apply when a 'caller' value is a strict bound

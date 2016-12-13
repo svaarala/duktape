@@ -27,6 +27,9 @@ DUK_USE_ES6_PROXY: false
 # Don't support non-BMP characters in source code (UTF-8 otherwise OK).
 DUK_USE_SOURCE_NONBMP: false
 
+# Don't include even .name property for functions.
+DUK_USE_NAME_PROPERTY: false
+
 # Remove built-in bindings.
 DUK_USE_MATH_BUILTIN: false
 DUK_USE_DATE_BUILTIN: false
