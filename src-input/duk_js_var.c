@@ -109,9 +109,6 @@ DUK_LOCAL const duk_uint16_t duk__closure_copy_proplist[] = {
 	/* order: most frequent to least frequent */
 	DUK_STRIDX_INT_VARMAP,
 	DUK_STRIDX_INT_FORMALS,
-#if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	DUK_STRIDX_NAME,
-#endif
 #if defined(DUK_USE_PC2LINE)
 	DUK_STRIDX_INT_PC2LINE,
 #endif
@@ -142,8 +139,10 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(outer_lex_env != NULL);
 	DUK_UNREF(len_value);
 
-	fun_clos = duk_push_compiledfunction(ctx);
+	fun_clos = duk_push_hcompfunc(ctx);
 	DUK_ASSERT(fun_clos != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) fun_clos) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+
 	duk_push_hobject(ctx, &fun_temp->obj);  /* -> [ ... closure template ] */
 
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun_clos));
@@ -433,17 +432,20 @@ void duk_js_push_closure(duk_hthread *thr,
 	/* [ ... closure template ] */
 
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	/* XXX: look for own property only */
+	/* XXX: Look for own property only; doesn't matter much because
+	 * templates are bare objects.
+	 */
 	if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME)) {
 		/* [ ... closure template name ] */
 		DUK_ASSERT(duk_is_string(ctx, -1));
+		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
 	} else {
-		/* [ ... closure template undefined ] */
-		/* XXX: anonymous function name? empty string in e.g. V8 */
+		/* Anonymous functions don't have a .name in ES6, so don't set
+		 * it on the instance either.  The instance will then inherit
+		 * it from Function.prototype.name.
+		 */
 		duk_pop(ctx);
-		duk_push_hstring_empty(ctx);
 	}
-	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
 #endif
 
 	/*
@@ -466,9 +468,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
 	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_LENGTH) != 0);
 	DUK_ASSERT(add_auto_proto == 0 || duk_has_prop_stridx(ctx, -2, DUK_STRIDX_PROTOTYPE) != 0);
-#if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	DUK_ASSERT(duk_has_prop_stridx(ctx, -2, DUK_STRIDX_NAME) != 0);
-#endif
+	/* May be missing .name */
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||
 	           duk_has_prop_stridx(ctx, -2, DUK_STRIDX_CALLER) != 0);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(&fun_clos->obj) ||

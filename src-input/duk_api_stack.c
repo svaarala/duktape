@@ -3895,7 +3895,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 	return ret;
 }
 
-DUK_INTERNAL duk_hcompfunc *duk_push_compiledfunction(duk_context *ctx) {
+DUK_INTERNAL duk_hcompfunc *duk_push_hcompfunc(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hcompfunc *obj;
 	duk_tval *tv_slot;
@@ -3927,7 +3927,6 @@ DUK_INTERNAL duk_hcompfunc *duk_push_compiledfunction(duk_context *ctx) {
 	DUK_HOBJECT_INCREF(thr, obj);
 	thr->valstack_top++;
 
-	/* default prototype (Note: 'obj' must be reachable) */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	return obj;

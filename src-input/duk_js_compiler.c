@@ -645,7 +645,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
 	return ret;
 }
 
-/* convert duk_compiler_func into a function template, leaving the result
+/* Convert duk_compiler_func into a function template, leaving the result
  * on top of stack.
  */
 /* XXX: awkward and bloated asm -- use faster internal accesses */
@@ -681,8 +681,10 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 
 	/* Valstack should suffice here, required on function valstack init */
 
-	h_res = duk_push_compiledfunction(ctx);
+	h_res = duk_push_hcompfunc(ctx);
 	DUK_ASSERT(h_res != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_res) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) h_res, NULL);  /* Function templates are "bare objects". */
 
 	if (func->is_function) {
 		DUK_DDD(DUK_DDDPRINT("function -> set NEWENV"));
