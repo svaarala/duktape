@@ -1774,7 +1774,7 @@ objects:
         attributes: ""
 
   - id: bi_regexp_prototype
-    class: RegExp
+    class: Object  # Object in ES6; RegExp in ES5
     internal_prototype: bi_object_prototype
     bidx: true
     present_if: DUK_USE_REGEXP_SUPPORT
@@ -1786,36 +1786,7 @@ objects:
           id: bi_regexp_constructor
         attributes: "wc"
 
-      # RegExp internal value should match that of new RegExp() (E5 Sections 15.10.6
-      # and 15.10.7), i.e. a bytecode sequence that matches an empty string.
-      # The compiled regexp bytecode for that is embedded here, and must match the
-      # defines in duk_regexp.h.  The bytecode must provide the 0'th capture.
-      #
-      # Note that the property attributes are non-default.
-
-      # Compiled bytecode, must match duk_regexp.h.  Bytecode contains:
-      # 0=flags; 2=nsaved; 11,0=DUK_REOP_SAVE 0; 11,1=DUK_REOP_SAVE 1; 1=DUK_REOP_MATCH
-      - key: "\u00ffBytecode"
-        value: "\u0000\u0002\u000b\u0000\u000b\u0001\u0001"
-        attributes: ""
-        duktape: true
-
-      # An object created as new RegExp("") should have the escaped source
-      # "(?:)" (E5 Section 15.10.4.1).  However, at least V8 and Smjs seem
-      # to have an empty string here.
-      - key: "source"
-        value: "(?:)"
-        attributes: ""
-
-      - key: "global"
-        value: false
-        attributes: ""
-      - key: "ignoreCase"
-        value: false
-        attributes: ""
-      - key: "multiline"
-        value: false
-        attributes: ""
+      # In ES6 RegExp.prototype is no longer a RegExp instance.
 
       # "lastIndex" is writable, even in the RegExp.prototype object.
       # This matches at least V8.
@@ -1836,8 +1807,77 @@ objects:
       - key: "toString"
         value:
           type: function
-          native: duk_bi_regexp_prototype_to_string
+          native: duk_bi_regexp_prototype_tostring
           length: 0
+
+      # In ES6 .source, .global, .ignoreCase, etc are accessors.
+      # .flags is ES6 but must be present because the constructor now
+      # relies on its presence for e.g. new RegExp(/foo/gim).
+
+      - key: "flags"
+        value:
+          type: accessor
+          getter: duk_bi_regexp_prototype_flags
+          getter_nargs: 0
+          getter_magic: 0
+          # setter undefined
+        attributes: "c"
+        es6: true
+
+      - key: "source"
+        value:
+          type: accessor
+          getter: duk_bi_regexp_prototype_shared_getter
+          getter_nargs: 0
+          getter_magic: 16  # default case in shared getter (value quite arbitrary)
+          # setter undefined
+        attributes: "c"
+      - key: "global"
+        value:
+          type: accessor
+          getter: duk_bi_regexp_prototype_shared_getter
+          getter_nargs: 0
+          getter_magic: 0
+          # setter undefined
+        attributes: "c"
+      - key: "ignoreCase"
+        value:
+          type: accessor
+          getter: duk_bi_regexp_prototype_shared_getter
+          getter_nargs: 0
+          getter_magic: 1
+          # setter undefined
+        attributes: "c"
+      - key: "multiline"
+        value:
+          type: accessor
+          getter: duk_bi_regexp_prototype_shared_getter
+          getter_nargs: 0
+          getter_magic: 2
+          # setter undefined
+        attributes: "c"
+      # .sticky and .unicode commented out; don't provide until implemented
+      # to avoid interfering with application feature detection code
+      #- key: "sticky"
+      #  value:
+      #    type: accessor
+      #    getter: duk_bi_regexp_prototype_shared_getter
+      #    getter_nargs: 0
+      #    getter_magic: 3
+      #    # setter undefined
+      #  attributes: "c"
+      #  es6: true
+      #  present_if: DUK_USE_ES6
+      #- key: "unicode"
+      #  value:
+      #    type: accessor
+      #    getter: duk_bi_regexp_prototype_shared_getter
+      #    getter_nargs: 0
+      #    getter_magic: 4
+      #    # setter undefined
+      #  attributes: "c"
+      #  es6: true
+      #  present_if: DUK_USE_ES6
 
   - id: bi_error_constructor
     class: Function
