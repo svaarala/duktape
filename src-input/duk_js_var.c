@@ -441,7 +441,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		/* [ ... closure template undefined ] */
 		/* XXX: anonymous function name? empty string in e.g. V8 */
 		duk_pop(ctx);
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+		duk_push_hstring_empty(ctx);
 	}
 	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
 #endif

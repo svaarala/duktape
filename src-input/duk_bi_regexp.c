@@ -56,12 +56,12 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		}
 	} else {
 		if (duk_is_undefined(ctx, 0)) {
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_0(ctx);
 		}
 		if (duk_is_undefined(ctx, 1)) {
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_1(ctx);
 		}
@@ -158,7 +158,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_shared_getter(duk_context *ctx) {
 			 * result with the standard, unaugement RegExp.prototype
 			 * is empty.
 			 */
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			return 0;
 		}
