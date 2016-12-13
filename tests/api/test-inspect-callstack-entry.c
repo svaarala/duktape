@@ -80,8 +80,9 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 		"    print('exited func');\n"
 		"})");
 	duk_push_c_function(ctx, my_func, 0 /*nargs*/);
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "my_func");
-	duk_put_prop_string(ctx, -2, "name");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 	duk_call(ctx, 1);
 	duk_pop(ctx);
 

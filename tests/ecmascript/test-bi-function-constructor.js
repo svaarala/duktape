@@ -7,6 +7,7 @@ constructor
 true true
 false false false
 true 1
+false false true
 no args
 no args
 one arg foo
@@ -31,7 +32,7 @@ function functionConstructorTest() {
     print(pd.writable, pd.enumerable, pd.configurable);
     print('length' in Function, Function.length);
     pd = Object.getOwnPropertyDescriptor(Function, 'length');
-//    print(pd.writable, pd.enumerable, pd.configurable);
+    print(pd.writable, pd.enumerable, pd.configurable);
 
     /* Test Function() called both as a function and as a constructor. */
 

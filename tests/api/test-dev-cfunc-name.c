@@ -3,6 +3,9 @@
  *  You can set it yourself in Duktape 1.1 to get nicer tracebacks.
  *  In Duktape 1.0 Function.prototype.name is not writable so you can't
  *  do this.
+ *
+ *  In Duktape 2.x .name is non-writable but configurable to match ES6
+ *  requirements; duk_def_prop() can be used to set it.
  */
 
 /*===
@@ -51,8 +54,9 @@ static duk_ret_t test_with_name(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	duk_get_global_string(ctx, "MyFunc");
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "my_func");
-	duk_put_prop_string(ctx, -2, "name");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 	duk_pop(ctx);
 
 	duk_eval_string_noresult(ctx,

@@ -13,13 +13,16 @@
  *  while simultaneously allowing a Function instance's 'name' property
  *  to be set - but Ecmascript cannot express such an access control
  *  policy.
+ *
+ *  Duktape 2.x follows ES6 where .name is again non-writable, but is
+ *  configurable.  So duk_def_prop() can be used to set the name.
  */
 
 /*===
 *** test_1 (duk_safe_call)
-writable: true
+writable: false
 enumerable: false
-configurable: false
+configurable: true
 MyFunc.name: my_func_name
 final top: 0
 ==> rc=0, result='undefined'
@@ -41,8 +44,9 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		"print('configurable:', pd.configurable);\n");
 
 	duk_push_c_function(ctx, my_func, 0);
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "my_func_name");
-	duk_put_prop_string(ctx, -2, "name");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 	duk_put_global_string(ctx, "MyFunc");
 
 	duk_eval_string_noresult(ctx,

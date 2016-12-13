@@ -99,7 +99,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
+            { key: 'length', attrs: 'c', value: 1 },
             { key: 'prototype', attrs: '' },
             { key: 'getPrototypeOf', attrs: 'wc' },
             { key: 'getOwnPropertyDescriptor', attrs: 'wc' },
@@ -141,9 +141,8 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
-            { key: 'prototype', 'attrs': '' },
-            { key: 'length', 'attrs': '' },
+            { key: 'length', attrs: 'c', value: 1 },
+            { key: 'prototype', 'attrs': '' }
         ],
         noprops: [
         ],
@@ -154,7 +153,7 @@ var obj_data = [
         proto: 'Object.prototype',
         class: 'Function',  // E5 Section 15.3.4
         props: [
-            { key: 'length', 'attrs': '', value: 0 },  // E5 Section 15.3.4
+            { key: 'length', 'attrs': 'c', value: 0 },
             { key: 'constructor', 'attrs': 'wc' },
             { key: 'toString', 'attrs': 'wc' },
             { key: 'apply', 'attrs': 'wc' },
@@ -170,7 +169,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
+            { key: 'length', attrs: 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
             { key: 'isArray', 'attrs': 'wc' },
         ],
@@ -217,7 +216,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
+            { key: 'length', attrs: 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
             { key: 'fromCharCode', 'attrs': 'wc' },
         ],
@@ -262,7 +261,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
+            { key: 'length', attrs: 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -288,7 +287,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 1 },
+            { key: 'length', attrs: 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
             { key: 'MAX_VALUE', 'attrs': '' },
             { key: 'MIN_VALUE', 'attrs': '' },
@@ -360,7 +359,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 7 },  // E5 Section 15.9.4
+            { key: 'length', attrs: 'c', value: 7 },  // E5 Section 15.9.4
             { key: 'prototype', 'attrs': '' },
             { key: 'parse', 'attrs': 'wc' },
             { key: 'UTC', 'attrs': 'wc' },
@@ -429,7 +428,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', attrs: '', value: 2 },  // E5 Section 15.10.5
+            { key: 'length', attrs: 'c', value: 2 },  // E5 Section 15.10.5
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -456,7 +455,7 @@ var obj_data = [
         proto: 'Function.prototype',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -483,7 +482,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -509,7 +508,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -535,7 +534,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -561,7 +560,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -587,7 +586,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -613,7 +612,7 @@ var obj_data = [
         proto: 'Error',
         class: 'Function',
         props: [
-            { key: 'length', 'attrs': '', value: 1 },
+            { key: 'length', 'attrs': 'c', value: 1 },
             { key: 'prototype', 'attrs': '' },
         ],
         noprops: [
@@ -841,7 +840,7 @@ NOPROPERTY: "length"
 OBJECT: "Object" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 PROPERTY: "getPrototypeOf" writable !enumerable configurable
 PROPERTY: "getOwnPropertyDescriptor" writable !enumerable configurable
@@ -871,14 +870,13 @@ NOPROPERTY: "length"
 OBJECT: "Function" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
-PROPERTY: "length" !writable !enumerable !configurable
 
 OBJECT: "Function.prototype" !sealed !frozen extensible
 PROTOTYPE: "Object.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "constructor" writable !enumerable configurable
 PROPERTY: "toString" writable !enumerable configurable
 PROPERTY: "apply" writable !enumerable configurable
@@ -888,7 +886,7 @@ PROPERTY: "bind" writable !enumerable configurable
 OBJECT: "Array" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 PROPERTY: "isArray" writable !enumerable configurable
 
@@ -922,7 +920,7 @@ PROPERTY: "reduceRight" writable !enumerable configurable
 OBJECT: "String" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 PROPERTY: "fromCharCode" writable !enumerable configurable
 
@@ -954,7 +952,7 @@ PROPERTY: "trim" writable !enumerable configurable
 OBJECT: "Boolean" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "Boolean.prototype" !sealed !frozen extensible
@@ -968,7 +966,7 @@ NOPROPERTY: "length"
 OBJECT: "Number" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 PROPERTY: "MAX_VALUE" !writable !enumerable !configurable
 PROPERTY: "MIN_VALUE" !writable !enumerable !configurable
@@ -1022,7 +1020,7 @@ NOPROPERTY: "length"
 OBJECT: "Date" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 PROPERTY: "parse" writable !enumerable configurable
 PROPERTY: "UTC" writable !enumerable configurable
@@ -1079,7 +1077,7 @@ NOPROPERTY: "length"
 OBJECT: "RegExp" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "RegExp.prototype" !sealed !frozen extensible
@@ -1094,7 +1092,7 @@ NOPROPERTY: "length"
 OBJECT: "Error" !sealed !frozen extensible
 PROTOTYPE: "Function.prototype"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "Error.prototype" !sealed !frozen extensible
@@ -1109,7 +1107,7 @@ NOPROPERTY: "length"
 OBJECT: "EvalError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "EvalError.prototype" !sealed !frozen extensible
@@ -1123,7 +1121,7 @@ NOPROPERTY: "length"
 OBJECT: "RangeError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "RangeError.prototype" !sealed !frozen extensible
@@ -1137,7 +1135,7 @@ NOPROPERTY: "length"
 OBJECT: "ReferenceError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "ReferenceError.prototype" !sealed !frozen extensible
@@ -1151,7 +1149,7 @@ NOPROPERTY: "length"
 OBJECT: "SyntaxError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "SyntaxError.prototype" !sealed !frozen extensible
@@ -1165,7 +1163,7 @@ NOPROPERTY: "length"
 OBJECT: "TypeError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "TypeError.prototype" !sealed !frozen extensible
@@ -1179,7 +1177,7 @@ NOPROPERTY: "length"
 OBJECT: "URIError" !sealed !frozen extensible
 PROTOTYPE: "Error"
 CLASS: Function
-PROPERTY: "length" !writable !enumerable !configurable
+PROPERTY: "length" !writable !enumerable configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
 
 OBJECT: "URIError.prototype" !sealed !frozen extensible

@@ -40,12 +40,16 @@ all properties (including non-enumerable and inherited)
 "isPrototypeOf"
 "propertyIsEnumerable"
 ---
+function function false true
+function function false true
+function function false true
 ===*/
 
 function test() {
     var err;
     var k;
     var obj;
+    var pd;
 
     err = new Error('my message');
 
@@ -77,6 +81,14 @@ function test() {
         obj = Object.getPrototypeOf(obj);
     }
     print('---');
+
+    // Check a few Duktape 2.x property attributes.
+    pd = Object.getOwnPropertyDescriptor(Error.prototype, 'fileName');
+    print(typeof pd.get, typeof pd.set, pd.enumerable, pd.configurable);
+    pd = Object.getOwnPropertyDescriptor(Error.prototype, 'lineNumber');
+    print(typeof pd.get, typeof pd.set, pd.enumerable, pd.configurable);
+    pd = Object.getOwnPropertyDescriptor(Error.prototype, 'stack');
+    print(typeof pd.get, typeof pd.set, pd.enumerable, pd.configurable);
 }
 
 try {

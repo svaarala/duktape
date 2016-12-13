@@ -14,6 +14,12 @@ true 3
 false false true
 true test
 false false true
+""
+true true
+""
+true true
+"forcedName2"
+true true
 ===*/
 
 function functionInstanceTest() {
@@ -36,6 +42,23 @@ function functionInstanceTest() {
     print('name' in f, f.name);
     pd = Object.getOwnPropertyDescriptor(f, 'name');
     print(pd.writable, pd.enumerable, pd.configurable);
+
+    // Anonymous functions don't have an 'own' .name property but inherit
+    // an empty string name from Function.prototype.  The property .name in
+    // Function.prototype is not writable, but it is configurable, so that
+    // Object.defineProperty() can be used to add a name later on.
+
+    // XXX: not yet implemented, expect string for having a .name.
+
+    var anon = (1, 2, 3, function () {});
+    print(JSON.stringify(anon.name));  // inherited
+    print('name' in anon, anon.hasOwnProperty('name'));
+    anon.name = 'forcedName';  // ineffective, not configurable
+    print(JSON.stringify(anon.name));
+    print('name' in anon, anon.hasOwnProperty('name'));
+    Object.defineProperty(anon, 'name', { value: 'forcedName2' });
+    print(JSON.stringify(anon.name));
+    print('name' in anon, anon.hasOwnProperty('name'));
 }
 
 try {
