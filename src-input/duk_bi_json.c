@@ -3099,7 +3099,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	/* serialize the wrapper with empty string key */
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+	duk_push_hstring_empty(ctx);
 
 	/* [ ... buf loop (proplist) (gap) holder "" ] */
 

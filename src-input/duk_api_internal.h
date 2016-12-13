@@ -151,6 +151,7 @@ DUK_INTERNAL_DECL duk_hobject *duk_require_hobject_with_class(duk_context *ctx, 
 
 DUK_INTERNAL_DECL void duk_push_hstring(duk_context *ctx, duk_hstring *h);
 DUK_INTERNAL_DECL void duk_push_hstring_stridx(duk_context *ctx, duk_small_uint_t stridx);
+DUK_INTERNAL_DECL void duk_push_hstring_empty(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_push_hobject(duk_context *ctx, duk_hobject *h);
 DUK_INTERNAL_DECL void duk_push_hbuffer(duk_context *ctx, duk_hbuffer *h);
 #define duk_push_hthread(ctx,h) \

@@ -379,7 +379,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 		duk_get_prop_index(ctx, 1, (duk_uarridx_t) idx);
 		if (duk_is_null_or_undefined(ctx, -1)) {
 			duk_pop(ctx);
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			if (to_locale_string) {
 				duk_to_object(ctx, -1);

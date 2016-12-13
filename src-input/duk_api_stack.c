@@ -3641,8 +3641,8 @@ DUK_EXTERNAL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va
 	/* special handling of fmt==NULL */
 	if (!fmt) {
 		duk_hstring *h_str;
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
-		h_str = DUK_HTHREAD_STRING_EMPTY_STRING(thr);  /* rely on interning, must be this string */
+		duk_push_hstring_empty(ctx);
+		h_str = duk_known_hstring(ctx, -1);
 		return (const char *) DUK_HSTRING_GET_DATA(h_str);
 	}
 
@@ -4418,6 +4418,12 @@ DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_uint_t str
 	DUK_UNREF(thr);
 	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
+}
+
+DUK_INTERNAL void duk_push_hstring_empty(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
+	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, DUK_STRIDX_EMPTY_STRING));
 }
 
 DUK_INTERNAL void duk_push_hobject(duk_context *ctx, duk_hobject *h) {

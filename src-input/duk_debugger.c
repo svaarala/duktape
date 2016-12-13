@@ -385,7 +385,7 @@ DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
 	DUK__SET_CONN_BROKEN(thr, 1);
-	duk_push_hstring_stridx(thr, DUK_STRIDX_EMPTY_STRING);  /* always push some string */
+	duk_push_hstring_empty(ctx);  /* always push some string */
 	return duk_require_hstring(ctx, -1);
 }
 
