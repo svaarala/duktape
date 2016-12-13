@@ -2088,6 +2088,10 @@ Planned
   behavior; this only matters when tracebacks are disabled and concrete
   error instance properties are in use (GH-1153)
 
+* Change NativeError (TypeError, RangeError, etc) constructor to inherit
+  from the Error constructor rather than Function.prototype directly as
+  required by ES6 (GH-1182)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor

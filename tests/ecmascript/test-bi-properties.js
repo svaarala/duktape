@@ -480,7 +480,7 @@ var obj_data = [
     {
         obj: EvalError,
         name: 'EvalError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -506,7 +506,7 @@ var obj_data = [
     {
         obj: RangeError,
         name: 'RangeError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -532,7 +532,7 @@ var obj_data = [
     {
         obj: ReferenceError,
         name: 'ReferenceError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -558,7 +558,7 @@ var obj_data = [
     {
         obj: SyntaxError,
         name: 'SyntaxError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -584,7 +584,7 @@ var obj_data = [
     {
         obj: TypeError,
         name: 'TypeError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -610,7 +610,7 @@ var obj_data = [
     {
         obj: URIError,
         name: 'URIError',
-        proto: 'Function.prototype',
+        proto: 'Error',
         class: 'Function',
         props: [
             { key: 'length', 'attrs': '', value: 1 },
@@ -1107,7 +1107,7 @@ PROPERTY: "toString" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "EvalError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
@@ -1121,7 +1121,7 @@ PROPERTY: "message" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "RangeError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
@@ -1135,7 +1135,7 @@ PROPERTY: "message" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "ReferenceError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
@@ -1149,7 +1149,7 @@ PROPERTY: "message" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "SyntaxError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
@@ -1163,7 +1163,7 @@ PROPERTY: "message" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "TypeError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
@@ -1177,7 +1177,7 @@ PROPERTY: "message" writable !enumerable configurable
 NOPROPERTY: "length" 
 
 OBJECT: "URIError" !sealed !frozen extensible
-PROTOTYPE: "Function.prototype"
+PROTOTYPE: "Error"
 CLASS: Function
 PROPERTY: "length" !writable !enumerable !configurable
 PROPERTY: "prototype" !writable !enumerable !configurable
