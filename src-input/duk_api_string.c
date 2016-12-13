@@ -21,7 +21,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 			return;
 		}
 		DUK_ASSERT(count_in == 0);
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+		duk_push_hstring_empty(ctx);
 		return;
 	}
 	count = (duk_uint_t) count_in;

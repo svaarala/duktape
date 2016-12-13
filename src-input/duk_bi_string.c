@@ -25,7 +25,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 	 */
 
 	if (duk_get_top(ctx) == 0) {
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+		duk_push_hstring_empty(ctx);
 	} else {
 		duk_to_string(ctx, 0);
 	}

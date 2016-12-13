@@ -56,12 +56,12 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		}
 	} else {
 		if (duk_is_undefined(ctx, 0)) {
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_0(ctx);
 		}
 		if (duk_is_undefined(ctx, 1)) {
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);
+			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_1(ctx);
 		}
