@@ -2088,7 +2088,7 @@ Planned
 
 * Make function instance .name and .length properties configurable (but
   non-writable and non-enumerable) to match ES6 requirements; also change
-  .fileName to follow the same attribute convention (GH-1153)
+  .fileName to follow the same attribute convention (GH-1153, GH-1177)
 
 * Make Error instance .fileName and .lineNumber properties configurable
   but non-writable and non-enumerable to match function instance property

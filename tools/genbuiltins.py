@@ -391,8 +391,8 @@ def metadata_normalize_shorthand(meta):
         obj['class'] = 'Function'
         obj['callable'] = True
         obj['constructable'] = val.get('constructable', False)
-        props.append({ 'key': 'length', 'value': val['length'], 'attributes': '' })
-        props.append({ 'key': 'name', 'value': funprop['key'], 'attributes': '' })
+        props.append({ 'key': 'length', 'value': val['length'], 'attributes': 'c' })  # Configurable in ES6
+        props.append({ 'key': 'name', 'value': funprop['key'], 'attributes': 'c' })   # Configurable in ES6
         return obj
 
     def addAccessor(funprop, magic, nargs, length, name, native_func):
@@ -409,8 +409,8 @@ def metadata_normalize_shorthand(meta):
         obj['constructable'] = False
         # Shorthand accessors are minimal and have no .length or .name
         # right now.  Use longhand if these matter.
-        #props.append({ 'key': 'length', 'value': length, 'attributes': '' })
-        #props.append({ 'key': 'name', 'value': name, 'attributes': '' })
+        #props.append({ 'key': 'length', 'value': length, 'attributes': 'c' })
+        #props.append({ 'key': 'name', 'value': name, 'attributes': 'c' })
         return obj
 
     def decodeGetterShorthand(key, funprop):

@@ -243,8 +243,9 @@ static duk_ret_t my_setter(duk_context *ctx) {
 
 static void push_getter(duk_context *ctx) {
 	duk_push_c_function(ctx, my_getter, 0 /*nargs*/);
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "getter");
-	duk_put_prop_string(ctx, -2, "name");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 }
 
 static void push_getter_lightfunc(duk_context *ctx) {
@@ -253,8 +254,9 @@ static void push_getter_lightfunc(duk_context *ctx) {
 
 static void push_setter(duk_context *ctx) {
 	duk_push_c_function(ctx, my_setter, 1 /*nargs*/);
+	duk_push_string(ctx, "name");
 	duk_push_string(ctx, "setter");
-	duk_put_prop_string(ctx, -2, "name");
+	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 }
 
 static void push_setter_lightfunc(duk_context *ctx) {
