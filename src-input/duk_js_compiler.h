@@ -60,7 +60,7 @@ typedef struct {
 
 	/* XXX: can be optimized for smaller footprint esp. on 32-bit environments */
 	duk_small_uint_t t;          /* DUK_IVAL_XXX */
-	duk_small_uint_t op;         /* bytecode opcode (or extraop) for binary ops */
+	duk_small_uint_t op;         /* bytecode opcode for binary ops */
 	duk_ispec x1;
 	duk_ispec x2;
 } duk_ivalue;
@@ -174,8 +174,9 @@ struct duk_compiler_func {
 	duk_uint8_t is_function;             /* is an actual function (not global/eval code) */
 	duk_uint8_t is_eval;                 /* is eval code */
 	duk_uint8_t is_global;               /* is global code */
+	duk_uint8_t is_namebinding;          /* needs a name binding */
+	duk_uint8_t is_constructable;        /* result is constructable */
 	duk_uint8_t is_setget;               /* is a setter/getter */
-	duk_uint8_t is_decl;                 /* is a function declaration (as opposed to function expression) */
 	duk_uint8_t is_strict;               /* function is strict */
 	duk_uint8_t is_notail;               /* function must not be tail called */
 	duk_uint8_t in_directive_prologue;   /* parsing in "directive prologue", recognize directives */

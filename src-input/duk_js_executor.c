@@ -4659,10 +4659,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			}
 #endif
 
-			/* It would be tempting to use duk_def_prop() here, but
-			 * it would not work correctly if there are inherited
-			 * properties in Object.prototype which might e.g.
-			 * prevent a key from being added.
+			/* Use 'force' flag to duk_def_prop() to ensure that any
+			 * inherited properties don't prevent the operation.
+			 * With ES6 duplicate properties are allowed, so that we
+			 * must overwrite any previous data or accessor property.
 			 *
 			 * With ES6 computed property names the literal keys
 			 * may be arbitrary values and need to be ToPropertyKey()
@@ -4672,7 +4672,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 				/* XXX: faster initialization (direct access or better primitives) */
 				duk_dup(ctx, idx);
 				duk_dup(ctx, idx + 1);
-				duk_xdef_prop_wec(ctx, obj_idx);
+				duk_def_prop(ctx, obj_idx, DUK_DEFPROP_HAVE_VALUE |
+				                           DUK_DEFPROP_FORCE |
+				                           DUK_DEFPROP_SET_WRITABLE |
+				                           DUK_DEFPROP_SET_ENUMERABLE |
+				                           DUK_DEFPROP_SET_CONFIGURABLE);
 				idx += 2;
 			} while (idx < idx_end);
 			break;
@@ -4690,9 +4694,8 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 */
 
 			/* INITSET/INITGET are only used to initialize object literal keys.
-			 * The compiler ensures that there cannot be a previous data property
-			 * of the same name.  It also ensures that setter and getter can only
-			 * be initialized once (or not at all).
+			 * There may be a previous propery in ES6 because duplicate property
+			 * names are allowed.
 			 */
 
 			/* This could be made more optimal by accessing internals directly. */
@@ -4702,10 +4705,12 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_dup(ctx, (duk_idx_t) (idx + 1));  /* getter/setter */
 			if (is_set) {
 				defprop_flags = DUK_DEFPROP_HAVE_SETTER |
+				                DUK_DEFPROP_FORCE |
 				                DUK_DEFPROP_SET_ENUMERABLE |
 				                DUK_DEFPROP_SET_CONFIGURABLE;
 			} else {
 				defprop_flags = DUK_DEFPROP_HAVE_GETTER |
+				                DUK_DEFPROP_FORCE |
 				                DUK_DEFPROP_SET_ENUMERABLE |
 				                DUK_DEFPROP_SET_CONFIGURABLE;
 			}
