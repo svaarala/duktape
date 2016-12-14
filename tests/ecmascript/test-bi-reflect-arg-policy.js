@@ -48,7 +48,7 @@ true
 function () { [native code] }
 false
 true
-name,fileName,length,prototype,test
+fileName,length,prototype,test
 true
 false
 false

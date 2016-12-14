@@ -15,9 +15,9 @@ false false true
 true test
 false false true
 ""
-true true
+true false
 ""
-true true
+true false
 "forcedName2"
 true true
 ===*/
@@ -47,8 +47,6 @@ function functionInstanceTest() {
     // an empty string name from Function.prototype.  The property .name in
     // Function.prototype is not writable, but it is configurable, so that
     // Object.defineProperty() can be used to add a name later on.
-
-    // XXX: not yet implemented, expect string for having a .name.
 
     var anon = (1, 2, 3, function () {});
     print(JSON.stringify(anon.name));  // inherited

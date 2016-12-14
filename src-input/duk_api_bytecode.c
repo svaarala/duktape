@@ -429,12 +429,13 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* Push function object, init flags etc.  This must match
 	 * duk_js_push_closure() quite carefully.
 	 */
-	h_fun = duk_push_compiledfunction(ctx);
+	h_fun = duk_push_hcompfunc(ctx);
 	DUK_ASSERT(h_fun != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) h_fun));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, h_fun) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, h_fun) == NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
 	h_fun->nregs = DUK_RAW_READ_U16_BE(p);
 	h_fun->nargs = DUK_RAW_READ_U16_BE(p);

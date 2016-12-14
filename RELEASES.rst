@@ -2090,6 +2090,13 @@ Planned
   non-writable and non-enumerable) to match ES6 requirements; also change
   .fileName to follow the same attribute convention (GH-1153, GH-1177)
 
+* Remove anonymous function own .name property to match ES6 requirements;
+  anonymous functions inherit an empty string as their name from
+  Function.prototype.name (GH-1183)
+
+* Change functions created using new Function() to have the .name
+  "anonymous" to match ES6 requirements (GH-1183)
+
 * Make Error instance .fileName and .lineNumber properties configurable
   but non-writable and non-enumerable to match function instance property
   behavior; this only matters when tracebacks are disabled and concrete

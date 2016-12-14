@@ -69,6 +69,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
 	               comp_flags);
+
+	/* Force .name to 'anonymous' (ES6). */
+	duk_push_string(ctx, "anonymous");
+	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+
 	func = (duk_hcompfunc *) duk_known_hobject(ctx, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 
