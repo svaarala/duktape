@@ -19,6 +19,10 @@ seven args foo bar quux undefined undefined undefined undefined
 foobarquux
 foobarquux
 foobarquux
+string anonymous false false true
+number 0 false false true
+string anonymous false false true
+number 2 false false true
 ===*/
 
 function functionConstructorTest() {
@@ -56,14 +60,26 @@ function functionConstructorTest() {
     f = new Function('a', 'b', 'c', 'd', 'e', 'f', 'g', 'print("seven args", a, b, c, d, e, f, g);');
     f('foo', 'bar', 'quux');
 
-    /* Example from specification (E5.1, Section 15.3.2.1, NOTE at bottom). */
+    // Example from specification (E5.1, Section 15.3.2.1, NOTE at bottom).
 
-    f = new Function("a", "b", "c", "return a+b+c");
+    f = new Function('a', 'b', 'c', 'return a+b+c');
     print(f('foo', 'bar', 'quux', 'baz'));
-    f = new Function("a, b, c", "return a+b+c");
+    f = new Function('a, b, c', 'return a+b+c');
     print(f('foo', 'bar', 'quux', 'baz'));
-    f = new Function("a,b", "c", "return a+b+c");
+    f = new Function('a,b', 'c', 'return a+b+c');
     print(f('foo', 'bar', 'quux', 'baz'));
+
+    // In ES6 the resulting function must have a .name of 'anonymous'.
+    f = new Function('');
+    pd = Object.getOwnPropertyDescriptor(f, 'name');
+    print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
+    pd = Object.getOwnPropertyDescriptor(f, 'length');
+    print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
+    f = new Function('a', 'b', 'return a+b');
+    pd = Object.getOwnPropertyDescriptor(f, 'name');
+    print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
+    pd = Object.getOwnPropertyDescriptor(f, 'length');
+    print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
 }
 
 try {
