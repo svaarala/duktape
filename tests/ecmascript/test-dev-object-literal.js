@@ -122,20 +122,18 @@ try {
 
 /*===
 2
-SyntaxError
+2
 ===*/
 
-/* Duplicate keys */
+/* Duplicate keys were rejected in ES5, but ES6 allows them. */
 
 try {
-    /* in non-strict mode, latter key should be effective */
     print(eval("function func1() { return ({foo:1,foo:2}).foo; }; func1();"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* in strict mode, it is a syntax error to have duplicate keys (among other things) */
     print(eval("function func2() { 'use strict'; return ({foo:1,foo:2}).foo; }; func2();"));
 } catch (e) {
     print(e.name);
@@ -143,62 +141,53 @@ try {
 
 /*===
 2
-SyntaxError
-SyntaxError
-SyntaxError
-SyntaxError
-SyntaxError
-SyntaxError
+2
+getter
+undefined
+1
+1
+1
 ===*/
 
 /* Duplicate keys and mixed set/get/plain key handling */
 
 try {
-    /* duplicate plain keys are allowed in non-strict mode, and last
-     * occurrence matters.
-     */
     print(eval("({foo:1,foo:2}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* duplicate plain key in strict mode is a SyntaxError */
     print(eval("'use strict'; ({foo:1,foo:2}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* getter after plain not allowed */
     print(eval("({foo:1, get foo() { return 'getter'}}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* setter after plain not allowed */
     print(eval("({foo:1, set foo(v) {}}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* plain after getter not allowed */
     print(eval("({get foo() { return 'getter' }, foo:1}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* plain after setter not allowed */
     print(eval("({set foo(v) {}, foo:1}).foo"));
 } catch (e) {
     print(e.name);
 }
 
 try {
-    /* plain after getter and setter not allowed */
     print(eval("({get foo() { return 'getter' }, set foo(v) {}, foo:1}).foo"));
 } catch (e) {
     print(e.name);

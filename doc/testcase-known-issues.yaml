@@ -112,6 +112,10 @@
   test: "test-bi-proxy-object-tostring.js"
   knownissue: "Object class handling for Proxy objects is incomplete"
   # Moved
+-
+  test: "test-dev-object-literal-method-computed.js"
+  knownissue: "computed name for object literal method shorthand not yet implemented"
+  # Moved
 
 # Ecmascript testcases that need special options or environment to work
 

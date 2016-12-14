@@ -1,0 +1,6 @@
+summary: computed name for object literal method shorthand not yet implemented
+---
+computed name for method shorthand failed (not yet supported?)
+SyntaxError
+computed name for method shorthand failed (not yet supported?)
+SyntaxError
