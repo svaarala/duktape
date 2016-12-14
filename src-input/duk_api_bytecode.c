@@ -278,7 +278,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 	DUK_RAW_WRITE_U32_BE(p, 0);
 	DUK_RAW_WRITE_U32_BE(p, 0);
 #endif
-	tmp32 = ((duk_heaphdr *) func)->h_flags & DUK_HEAPHDR_FLAGS_FLAG_MASK;
+	tmp32 = DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) func);  /* masks flags, only duk_hobject flags */
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
 
 	/* Bytecode instructions: endian conversion needed unless
@@ -448,7 +448,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 	/* duk_hcompfunc flags; quite version specific */
 	tmp32 = DUK_RAW_READ_U32_BE(p);
-	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) h_fun, tmp32);
+	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) h_fun, tmp32);  /* masks flags to only change duk_hobject flags */
 
 	/* standard prototype */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &h_fun->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
@@ -615,11 +615,16 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
 #endif  /* DUK_USE_FUNC_FILENAME_PROPERTY */
 
-	duk_push_object(ctx);
-	duk_dup_m2(ctx);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
-	duk_compact_m1(ctx);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
+	if (DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_fun)) {
+		/* Restore empty external .prototype only for constructable
+		 * functions.
+		 */
+		duk_push_object(ctx);
+		duk_dup_m2(ctx);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
+		duk_compact_m1(ctx);
+		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
+	}
 
 #if defined(DUK_USE_PC2LINE)
 	p = duk__load_buffer_raw(ctx, p);

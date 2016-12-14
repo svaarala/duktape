@@ -239,7 +239,7 @@ DUK_LOCAL_DECL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_sma
 DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_small_uint_t flags);
 
 #define DUK__FUNC_FLAG_DECL            (1 << 0)   /* Parsing a function declaration. */
-#define DUK__FUNC_FLAG_SETGET          (1 << 1)   /* Parsing a setter/getter. */
+#define DUK__FUNC_FLAG_GETSET          (1 << 1)   /* Parsing a getter/setter. */
 #define DUK__FUNC_FLAG_PUSHNAME_PASS1  (1 << 2)   /* Push function name when creating template (first pass only). */
 
 /*
@@ -714,7 +714,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 	}
 
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	force_no_namebind = (flags & DUK__FUNC_FLAG_SETGET);
+	force_no_namebind = (flags & DUK__FUNC_FLAG_GETSET);
 	if (func->is_function && !func->is_decl && func->h_name != NULL && !force_no_namebind) {
 		/* Object literal set/get functions have a name (property
 		 * name) but must not have a lexical name binding, see
@@ -733,6 +733,14 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 	if (func->is_notail) {
 		DUK_DDD(DUK_DDDPRINT("function is notail -> set NOTAIL"));
 		DUK_HOBJECT_SET_NOTAIL((duk_hobject *) h_res);
+	}
+
+	if (flags & DUK__FUNC_FLAG_GETSET) {
+		DUK_DDD(DUK_DDDPRINT("function is object literal getter/setter -> clear CONSTRUCTABLE"));
+		DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_res) == 0);
+	} else {
+		DUK_DDD(DUK_DDDPRINT("function is not object literal getter/setter -> set CONSTRUCTABLE"));
+		DUK_HOBJECT_SET_CONSTRUCTABLE((duk_hobject *) h_res);
 	}
 
 	/*
@@ -919,6 +927,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	if (func->h_name) {
 		duk_push_hstring(ctx, func->h_name);
+		DUK_DD(DUK_DDPRINT("setting function template .name to %!T", duk_get_tval(ctx, -1)));
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_NONE);
 	}
 #endif  /* DUK_USE_FUNC_NAME_PROPERTY */
@@ -3111,7 +3120,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 				}
 
 				/* curr_token = get/set name */
-				fnum = duk__parse_func_like_fnum(comp_ctx, DUK__FUNC_FLAG_SETGET);
+				fnum = duk__parse_func_like_fnum(comp_ctx, DUK__FUNC_FLAG_GETSET);
 
 				DUK_ASSERT(DUK__GETTEMP(comp_ctx) == temp_start);
 				reg_temp = DUK__ALLOCTEMP(comp_ctx);
@@ -7497,7 +7506,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 	DUK_ASSERT(comp_ctx->curr_func.is_function == 1);
 	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
-	DUK_ASSERT(comp_ctx->curr_func.is_setget == ((flags & DUK__FUNC_FLAG_SETGET) != 0));
+	DUK_ASSERT(comp_ctx->curr_func.is_setget == ((flags & DUK__FUNC_FLAG_GETSET) != 0));
 	DUK_ASSERT(comp_ctx->curr_func.is_decl == ((flags & DUK__FUNC_FLAG_DECL) != 0));
 
 	duk__update_lineinfo_currtoken(comp_ctx);
@@ -7515,7 +7524,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 	 *  strings and numbers (e.g. "{ get 1() { ... } }").
 	 */
 
-	if (flags & DUK__FUNC_FLAG_SETGET) {
+	if (flags & DUK__FUNC_FLAG_GETSET) {
 		/* PropertyName -> IdentifierName | StringLiteral | NumericLiteral */
 		if (comp_ctx->curr_token.t_nores == DUK_TOK_IDENTIFIER ||
 		    comp_ctx->curr_token.t == DUK_TOK_STRING) {
@@ -7539,15 +7548,16 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 			duk__advance(comp_ctx);
 		} else {
 			/* valstack will be unbalanced, which is OK */
-			DUK_ASSERT((flags & DUK__FUNC_FLAG_SETGET) == 0);
+			DUK_ASSERT((flags & DUK__FUNC_FLAG_GETSET) == 0);
+			DUK_ASSERT(comp_ctx->curr_func.h_name == NULL);
 			if (flags & DUK__FUNC_FLAG_DECL) {
 				DUK_ERROR_SYNTAX(thr, DUK_STR_FUNC_NAME_REQUIRED);
 			}
 		}
 	}
 
-	DUK_DDD(DUK_DDDPRINT("function name: %!O",
-	                     (duk_heaphdr *) comp_ctx->curr_func.h_name));
+	DUK_DD(DUK_DDPRINT("function name: %!O",
+	                   (duk_heaphdr *) comp_ctx->curr_func.h_name));
 
 	/*
 	 *  Formal argument list
@@ -7651,7 +7661,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
 	comp_ctx->curr_func.is_function = 1;
 	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
-	comp_ctx->curr_func.is_setget = (flags & DUK__FUNC_FLAG_SETGET) ? 1 : 0;
+	comp_ctx->curr_func.is_setget = (flags & DUK__FUNC_FLAG_GETSET) ? 1 : 0;
 	comp_ctx->curr_func.is_decl = (flags & DUK__FUNC_FLAG_DECL) ? 1 : 0;
 
 	/*
