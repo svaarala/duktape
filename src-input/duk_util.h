@@ -134,8 +134,13 @@ struct duk_bufwriter_ctx {
 	duk_hbuffer_dynamic *buf;
 };
 
+#if defined(DUK_USE_PREFER_SIZE)
 #define DUK_BW_SPARE_ADD           64
 #define DUK_BW_SPARE_SHIFT         4    /* 2^4 -> 1/16 = 6.25% spare */
+#else
+#define DUK_BW_SPARE_ADD           64
+#define DUK_BW_SPARE_SHIFT         2    /* 2^2 -> 1/4 = 25% spare */
+#endif
 
 /* Initialization and finalization (compaction), converting to other types. */
 
