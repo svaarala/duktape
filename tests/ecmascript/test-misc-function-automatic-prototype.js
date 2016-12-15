@@ -1,8 +1,9 @@
 /*
  *  A newly created function always has a fresh object as its
- *  prototype.
+ *  prototype.  ES5 Sections 15.3.2.1, 15.3.5.2, 15.3.4.5.
  *
- *  E5 Sections 15.3.2.1, 15.3.5.2, 15.3.4.5.
+ *  ES6 removes the .prototype from object literal getter/setter
+ *  notation.
  */
 
 var f, g;
@@ -13,8 +14,8 @@ object
 true
 object
 false
-object
-object
+undefined
+undefined
 ===*/
 
 f = function() { print("f"); };

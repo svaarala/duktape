@@ -161,12 +161,13 @@ struct duk_heaphdr_string {
  */
 
 #define DUK_HEAPHDR_GET_FLAGS_RAW(h)  ((h)->h_flags)
-
+#define DUK_HEAPHDR_SET_FLAGS_RAW(h,val)  do { \
+		(h)->h_flags = (val); } \
+	}
 #define DUK_HEAPHDR_GET_FLAGS(h)      ((h)->h_flags & DUK_HEAPHDR_FLAGS_FLAG_MASK)
 #define DUK_HEAPHDR_SET_FLAGS(h,val)  do { \
 		(h)->h_flags = ((h)->h_flags & ~(DUK_HEAPHDR_FLAGS_FLAG_MASK)) | (val); \
 	} while (0)
-
 #define DUK_HEAPHDR_GET_TYPE(h)       ((h)->h_flags & DUK_HEAPHDR_FLAGS_TYPE_MASK)
 #define DUK_HEAPHDR_SET_TYPE(h,val)   do { \
 		(h)->h_flags = ((h)->h_flags & ~(DUK_HEAPHDR_FLAGS_TYPE_MASK)) | (val); \

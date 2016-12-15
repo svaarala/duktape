@@ -40,7 +40,7 @@
 /*===
 *** test_basic (duk_safe_call)
 dump result type: 7
-ff000000000e0000000300000001000900000000000100000001180009800000000600000199000103020000049c00040500000505ae8001070380020803000502b00005040000020502000103b000010000000000a100000000057072696e74000000000568656c6c6f0140091eb851eb851f000000030000000000000000000300020000000100000001180c088001000234000200a1000000a2000000020000000561646465720000000f66616b6546696c656e616d652e6a730000000d03000000010000000c000000000000000178000000000000000179000000010000000000000001780000000179000000000000000000000006676c6f62616c0000000f66616b6546696c656e616d652e6a730000000e0e000000010000000c00000000000000000000000000
+ff000000000e0000000300000001000900000000000100000001180009800000000600000199000103020000049c00040500000505ae8001070380020803000502b00005040000020502000103b000010000000000a100000000057072696e74000000000568656c6c6f0140091eb851eb851f000000030000000000000000000300020000000100000001180c098001000234000200a1000000a2000000020000000561646465720000000f66616b6546696c656e616d652e6a730000000d03000000010000000c000000000000000178000000000000000179000000010000000000000001780000000179000000000000000000000006676c6f62616c0000000f66616b6546696c656e616d652e6a730000000e0e000000010000000c00000000000000000000000000
 load result type: 6
 hello 3 3.14
 call result type: 1
@@ -717,6 +717,86 @@ static duk_ret_t test_internal_prototype_lost(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/*===
+*** test_constructor_call (duk_safe_call)
+function
+object
+undefined undefined
+test called
+retval
+still here
+test called
+object
+still here
+function
+undefined
+foo getter called
+retval
+still here
+TypeError
+final top: 0
+==> rc=0, result='undefined'
+===*/
+
+/* Constructability is remembered across a dump/load even if the external
+ * .prototype is reset.  The .prototype is NOT recreated for non-constructable
+ * functions, e.g. ES6 object literal getters.
+ */
+static duk_ret_t test_constructor_call(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_eval_string(ctx,
+		"(function () {\n"
+		"    var f = function test() { print('test called'); return 'retval' };\n"
+		"    f.prototype.foo = 'bar';\n"
+		"    return f;\n"
+		"})()");
+	duk_dump_function(ctx);
+	duk_load_function(ctx);
+
+	duk_eval_string(ctx,
+		"(function (f) {\n"
+		"    print(typeof f);\n"
+		"    print(typeof f.prototype);\n"
+		"    print(typeof f.prototype.foo, f.prototype.foo);\n"
+		"    try { print(f()); print('still here'); } catch (e) { print(e.name); }\n"
+		"    try { print(typeof new f()); print('still here'); } catch (e) { print(e.name); }\n"
+		"})");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_pop(ctx);
+
+	/* In ES6 a getter shorthand in object literal is not constructable
+	 * and has no .prototype property.
+	 */
+
+	duk_eval_string(ctx,
+		"(function () {\n"
+		"    var obj = { get foo() { print('foo getter called'); return 'retval'; } };\n"
+		"    return Object.getOwnPropertyDescriptor(obj, 'foo').get;\n"
+		"})()");
+	duk_dump_function(ctx);
+	duk_load_function(ctx);
+
+	duk_eval_string(ctx,
+		"(function (f) {\n"
+		"    print(typeof f);\n"
+		"    print(typeof f.prototype);\n"
+		"    try { print(f()); print('still here'); } catch (e) { print(e.name); }\n"
+		"    try { print(typeof new f()); print('still here'); } catch (e) { print(e.name); }\n"
+		"})");
+	duk_dup(ctx, -2);
+	duk_call(ctx, 1);
+	duk_pop(ctx);
+
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_basic);
 	TEST_SAFE_CALL(test_mandel);
@@ -734,4 +814,6 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_bound_rejected);
 	TEST_SAFE_CALL(test_external_prototype_lost);
 	TEST_SAFE_CALL(test_internal_prototype_lost);
+
+	TEST_SAFE_CALL(test_constructor_call);
 }

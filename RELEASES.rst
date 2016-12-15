@@ -2106,6 +2106,9 @@ Planned
   from the Error constructor rather than Function.prototype directly as
   required by ES6 (GH-1182)
 
+* Change object literal getter/setter to match ES6 requirements: no automatic
+  .prototype property, and the functions are non-constructable (GH-1188)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor

@@ -178,43 +178,37 @@ void duk_js_push_closure(duk_hthread *thr,
 	 */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &fun_clos->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 
-	/*
-	 *  Init/assert flags, copying them where appropriate.  Some flags
-	 *  (like NEWENV) are processed separately below.
+	/* Copy duk_hobject flags as is from the template using a mask.
+	 * Leave out duk_heaphdr owned flags just in case (e.g. if there's
+	 * some GC flag or similar).  Some flags can then be adjusted
+	 * separately if necessary.
 	 */
 
-	/* XXX: copy flags using a mask */
+	/* DUK_HEAPHDR_SET_FLAGS() masks changes to non-duk_heaphdr flags only. */
+	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) fun_clos, DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) fun_temp));
+	DUK_DD(DUK_DDPRINT("fun_temp heaphdr flags: 0x%08lx, fun_clos heaphdr flags: 0x%08lx",
+	                   (unsigned long) DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) fun_temp),
+	                   (unsigned long) DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) fun_clos)));
 
 	DUK_ASSERT(DUK_HOBJECT_HAS_EXTENSIBLE(&fun_clos->obj));
-	DUK_HOBJECT_SET_CONSTRUCTABLE(&fun_clos->obj);  /* Note: not set in template (has no "prototype") */
-	DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&fun_clos->obj));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&fun_clos->obj));
 	/* DUK_HOBJECT_FLAG_ARRAY_PART: don't care */
-	if (DUK_HOBJECT_HAS_STRICT(&fun_temp->obj)) {
-		DUK_HOBJECT_SET_STRICT(&fun_clos->obj);
-	}
-	if (DUK_HOBJECT_HAS_NOTAIL(&fun_temp->obj)) {
-		DUK_HOBJECT_SET_NOTAIL(&fun_clos->obj);
-	}
 	/* DUK_HOBJECT_FLAG_NEWENV: handled below */
-#if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
-		/* Although NAMEBINDING is not directly needed for using
-		 * function instances, it's needed by bytecode dump/load
-		 * so copy it too.
-		 */
-		DUK_HOBJECT_SET_NAMEBINDING(&fun_clos->obj);
-	}
-#endif
-	if (DUK_HOBJECT_HAS_CREATEARGS(&fun_temp->obj)) {
-		DUK_HOBJECT_SET_CREATEARGS(&fun_clos->obj);
-	}
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(&fun_clos->obj));
+
+	if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj)) {
+		/* If the template is not constructable don't add an automatic
+		 * .prototype property.  This is in practice only the case for
+		 * object literal getter/setter functions, ES6 requires that
+		 * they are not constructable and that they have no .prototype.
+		 */
+		add_auto_proto = 0;
+	}
 
 	/*
 	 *  Setup environment record properties based on the template and
@@ -232,11 +226,9 @@ void duk_js_push_closure(duk_hthread *thr,
 	 *  This is relatively complex, see doc/identifier-handling.rst.
 	 */
 
-	if (DUK_HOBJECT_HAS_NEWENV(&fun_temp->obj)) {
-		DUK_HOBJECT_SET_NEWENV(&fun_clos->obj);
-
+	if (DUK_HOBJECT_HAS_NEWENV(&fun_clos->obj)) {
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-		if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_temp->obj)) {
+		if (DUK_HOBJECT_HAS_NAMEBINDING(&fun_clos->obj)) {
 			duk_hobject *proto;
 			duk_hobject *new_env;
 
@@ -438,12 +430,14 @@ void duk_js_push_closure(duk_hthread *thr,
 	if (duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME)) {
 		/* [ ... closure template name ] */
 		DUK_ASSERT(duk_is_string(ctx, -1));
+		DUK_DD(DUK_DDPRINT("setting function instance name to %!T", duk_get_tval(ctx, -1)));
 		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
 	} else {
 		/* Anonymous functions don't have a .name in ES6, so don't set
 		 * it on the instance either.  The instance will then inherit
 		 * it from Function.prototype.name.
 		 */
+		DUK_DD(DUK_DDPRINT("not setting function instance .name"));
 		duk_pop(ctx);
 	}
 #endif
