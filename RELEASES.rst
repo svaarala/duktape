@@ -1900,8 +1900,11 @@ Planned
   won't backtrack on e.g. an invalid hex escape and treat it literally
   (GH-926)
 
-* Add support for ES6 computed property names in object literals, e.g.
-  "{ [1+2]: 'three' }" (GH-985)
+* Add support for ES6 computed property names in object literals
+  ({ [1+2]: 'three' }), identifier shorthand ({ foo, bar }), and method
+  definition shorthand ({ func(a,b) { return a+b; } }); however, computed
+  name for method definition ({ ['foo' + 'bar'](a,b) { ... } }) is not
+  yet supported (GH-985, GH-1190)
 
 * Add support for ES7 exponentiation and exponentiation assignment operators,
   e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
@@ -2108,6 +2111,9 @@ Planned
 
 * Change object literal getter/setter to match ES6 requirements: no automatic
   .prototype property, and the functions are non-constructable (GH-1188)
+
+* Allow duplicate property names in object literals as required by ES6
+  (GH-1190)
 
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 

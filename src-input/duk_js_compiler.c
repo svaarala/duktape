@@ -107,7 +107,7 @@ DUK_LOCAL_DECL void duk__advance(duk_compiler_ctx *ctx);
 DUK_LOCAL_DECL void duk__init_func_valstack_slots(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__reset_func_for_pass2(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ctx, duk_reg_t *out_stmt_value_reg);
-DUK_LOCAL_DECL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_small_uint_t flags);
+DUK_LOCAL_DECL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx);
 DUK_LOCAL_DECL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx);
 
 /* code emission */
@@ -138,6 +138,10 @@ DUK_LOCAL_DECL void duk__emit_if_true_skip(duk_compiler_ctx *comp_ctx, duk_regco
 DUK_LOCAL_DECL void duk__emit_invalid(duk_compiler_ctx *comp_ctx);
 
 /* ivalue/ispec helpers */
+DUK_LOCAL_DECL void duk__ivalue_regconst(duk_ivalue *x, duk_regconst_t regconst);
+DUK_LOCAL_DECL void duk__ivalue_plain_fromstack(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
+DUK_LOCAL_DECL void duk__ivalue_var_fromstack(duk_compiler_ctx *comp_ctx, duk_ivalue *x);
+DUK_LOCAL_DECL void duk__ivalue_var_hstring(duk_compiler_ctx *comp_ctx, duk_ivalue *x, duk_hstring *h);
 DUK_LOCAL_DECL void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst);
 DUK_LOCAL_DECL void duk__copy_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *src, duk_ivalue *dst);
 DUK_LOCAL_DECL duk_reg_t duk__alloctemps(duk_compiler_ctx *comp_ctx, duk_small_int_t num);
@@ -214,7 +218,6 @@ DUK_LOCAL_DECL void duk__exprtop_toplain_ignore(duk_compiler_ctx *comp_ctx, duk_
 DUK_LOCAL_DECL duk_int_t duk__parse_arguments(duk_compiler_ctx *comp_ctx, duk_ivalue *res);
 DUK_LOCAL_DECL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res);
 DUK_LOCAL_DECL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res);
-DUK_LOCAL_DECL duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *comp_ctx, duk_small_uint_t new_key_flags);
 
 /* statement parsing */
 DUK_LOCAL_DECL void duk__parse_var_decl(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_uint_t expr_flags, duk_reg_t *out_reg_varbind, duk_regconst_t *out_rc_varname);
@@ -239,8 +242,10 @@ DUK_LOCAL_DECL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_sma
 DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_small_uint_t flags);
 
 #define DUK__FUNC_FLAG_DECL            (1 << 0)   /* Parsing a function declaration. */
-#define DUK__FUNC_FLAG_GETSET          (1 << 1)   /* Parsing a getter/setter. */
-#define DUK__FUNC_FLAG_PUSHNAME_PASS1  (1 << 2)   /* Push function name when creating template (first pass only). */
+#define DUK__FUNC_FLAG_GETSET          (1 << 1)   /* Parsing an object literal getter/setter. */
+#define DUK__FUNC_FLAG_METDEF          (1 << 2)   /* Parsing an object literal method definition shorthand. */
+#define DUK__FUNC_FLAG_PUSHNAME_PASS1  (1 << 3)   /* Push function name when creating template (first pass only). */
+#define DUK__FUNC_FLAG_USE_PREVTOKEN   (1 << 4)   /* Use prev_token to start function parsing (workaround for object literal). */
 
 /*
  *  Parser control values for tokens.  The token table is ordered by the
@@ -649,7 +654,7 @@ DUK_LOCAL duk_int_t duk__cleanup_varmap(duk_compiler_ctx *comp_ctx) {
  * on top of stack.
  */
 /* XXX: awkward and bloated asm -- use faster internal accesses */
-DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_small_uint_t flags) {
+DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_compiler_func *func = &comp_ctx->curr_func;
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
@@ -671,7 +676,6 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 #if !defined(DUK_USE_DEBUGGER_SUPPORT)
 	duk_size_t formals_length;
 #endif
-	duk_small_uint_t force_no_namebind;
 
 	DUK_DDD(DUK_DDDPRINT("converting duk_compiler_func to function/template"));
 
@@ -714,8 +718,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 	}
 
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	force_no_namebind = (flags & DUK__FUNC_FLAG_GETSET);
-	if (func->is_function && !func->is_decl && func->h_name != NULL && !force_no_namebind) {
+	if (func->is_function && func->is_namebinding && func->h_name != NULL) {
 		/* Object literal set/get functions have a name (property
 		 * name) but must not have a lexical name binding, see
 		 * test-bug-getset-func-name.js.
@@ -735,11 +738,8 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx, duk_sma
 		DUK_HOBJECT_SET_NOTAIL((duk_hobject *) h_res);
 	}
 
-	if (flags & DUK__FUNC_FLAG_GETSET) {
-		DUK_DDD(DUK_DDDPRINT("function is object literal getter/setter -> clear CONSTRUCTABLE"));
-		DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_res) == 0);
-	} else {
-		DUK_DDD(DUK_DDDPRINT("function is not object literal getter/setter -> set CONSTRUCTABLE"));
+	if (func->is_constructable) {
+		DUK_DDD(DUK_DDDPRINT("function is constructable -> set CONSTRUCTABLE"));
 		DUK_HOBJECT_SET_CONSTRUCTABLE((duk_hobject *) h_res);
 	}
 
@@ -1865,6 +1865,30 @@ DUK_LOCAL void duk__dump_ivalue(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
 #define DUK__DUMP_IVALUE(comp_ctx,x) do {} while (0)
 #endif
 
+DUK_LOCAL void duk__ivalue_regconst(duk_ivalue *x, duk_regconst_t regconst) {
+	x->t = DUK_IVAL_PLAIN;
+	x->x1.t = DUK_ISPEC_REGCONST;
+	x->x1.regconst = (duk_regconst_t) regconst;
+}
+
+DUK_LOCAL void duk__ivalue_plain_fromstack(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
+	x->t = DUK_IVAL_PLAIN;
+	x->x1.t = DUK_ISPEC_VALUE;
+	duk_replace((duk_context *) comp_ctx->thr, x->x1.valstack_idx);
+}
+
+DUK_LOCAL void duk__ivalue_var_fromstack(duk_compiler_ctx *comp_ctx, duk_ivalue *x) {
+	x->t = DUK_IVAL_VAR;
+	x->x1.t = DUK_ISPEC_VALUE;
+	duk_replace((duk_context *) comp_ctx->thr, x->x1.valstack_idx);
+}
+
+DUK_LOCAL_DECL void duk__ivalue_var_hstring(duk_compiler_ctx *comp_ctx, duk_ivalue *x, duk_hstring *h) {
+	DUK_ASSERT(h != NULL);
+	duk_push_hstring((duk_context *) comp_ctx->thr, h);
+	duk__ivalue_var_fromstack(comp_ctx, x);
+}
+
 DUK_LOCAL void duk__copy_ispec(duk_compiler_ctx *comp_ctx, duk_ispec *src, duk_ispec *dst) {
 	duk_context *ctx = (duk_context *) comp_ctx->thr;
 
@@ -2278,9 +2302,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 		DUK_ASSERT(DUK__ISREG(dest));
 		duk__emit_a_b_c(comp_ctx, x->op | DUK__EMIT_FLAG_BC_REGCONST, (duk_regconst_t) dest, arg1, arg2);
 
-		x->t = DUK_IVAL_PLAIN;
-		x->x1.t = DUK_ISPEC_REGCONST;
-		x->x1.regconst = (duk_regconst_t) dest;
+		duk__ivalue_regconst(x, (duk_regconst_t) dest);
 		return;
 	}
 	case DUK_IVAL_PROP: {
@@ -2318,9 +2340,7 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 		                arg1,
 		                arg2);
 
-		x->t = DUK_IVAL_PLAIN;
-		x->x1.t = DUK_ISPEC_REGCONST;
-		x->x1.regconst = (duk_regconst_t) dest;
+		duk__ivalue_regconst(x, (duk_regconst_t) dest);
 		return;
 	}
 	case DUK_IVAL_VAR: {
@@ -2333,15 +2353,11 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 
 		duk_dup(ctx, x->x1.valstack_idx);
 		if (duk__lookup_lhs(comp_ctx, &reg_varbind, &rc_varname)) {
-			x->t = DUK_IVAL_PLAIN;
-			x->x1.t = DUK_ISPEC_REGCONST;
-			x->x1.regconst = (duk_regconst_t) reg_varbind;
+			duk__ivalue_regconst(x, (duk_regconst_t) reg_varbind);
 		} else {
 			dest = (forced_reg >= 0 ? forced_reg : DUK__ALLOCTEMP(comp_ctx));
 			duk__emit_a_bc(comp_ctx, DUK_OP_GETVAR, (duk_regconst_t) dest, rc_varname);
-			x->t = DUK_IVAL_PLAIN;
-			x->x1.t = DUK_ISPEC_REGCONST;
-			x->x1.regconst = (duk_regconst_t) dest;
+			duk__ivalue_regconst(x, (duk_regconst_t) dest);
 		}
 		return;
 	}
@@ -2409,8 +2425,7 @@ duk_regconst_t duk__ivalue_toregconst_raw(duk_compiler_ctx *comp_ctx,
 
 	/* then to a register */
 	reg = duk__ispec_toregconst_raw(comp_ctx, &x->x1, forced_reg, flags);
-	x->x1.t = DUK_ISPEC_REGCONST;
-	x->x1.regconst = reg;
+	duk__ivalue_regconst(x, (duk_regconst_t) reg);
 
 	return reg;
 }
@@ -2904,83 +2919,66 @@ DUK_LOCAL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 
 	DUK__SETTEMP(comp_ctx, temp_start);
 
-	res->t = DUK_IVAL_PLAIN;
-	res->x1.t = DUK_ISPEC_REGCONST;
-	res->x1.regconst = (duk_regconst_t) reg_obj;
+	duk__ivalue_regconst(res, (duk_regconst_t) reg_obj);
 	return;
 
  syntax_error:
 	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_ARRAY_LITERAL);
 }
 
-/* duplicate/invalid key checks; returns 1 if syntax error */
-DUK_LOCAL duk_bool_t duk__nud_object_literal_key_check(duk_compiler_ctx *comp_ctx, duk_small_uint_t new_key_flags) {
-	duk_hthread *thr = comp_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
-	duk_small_uint_t key_flags;
+typedef struct {
+	duk_reg_t reg_obj;
+	duk_reg_t temp_start;
+	duk_small_uint_t num_pairs;
+} duk__objlit_state;
 
-	/* [ ... key_obj key ] */
+DUK_LOCAL void duk__objlit_flush_keys(duk_compiler_ctx *comp_ctx, duk__objlit_state *st) {
+	if (st->num_pairs > 0) {
+		/* - A is a source register (it's not a write target, but used
+		 *   to identify the target object) but can be shuffled.
+		 * - B cannot be shuffled normally because it identifies a range
+		 *   of registers, the emitter has special handling for this
+		 *   (the "no shuffle" flag must not be set).
+		 * - C is a non-register number and cannot be shuffled, but
+		 *   never needs to be.
+		 */
+		DUK_ASSERT(st->num_pairs > 0);
+		duk__emit_a_b_c(comp_ctx,
+		                DUK_OP_MPUTOBJ |
+		                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
+		                    DUK__EMIT_FLAG_A_IS_SOURCE,
+		                st->reg_obj,
+		                st->temp_start,
+		                st->num_pairs * 2);
+		st->num_pairs = 0;
+		DUK__SETTEMP(comp_ctx, st->temp_start);
+	}
+}
 
-	DUK_ASSERT(duk_is_string(ctx, -1));
-
-	/*
-	 *  'key_obj' tracks keys encountered so far by associating an
-	 *  integer with flags with already encountered keys.  The checks
-	 *  below implement E5 Section 11.1.5, step 4 for production:
-	 *
-	 *    PropertyNameAndValueList: PropertyNameAndValueList , PropertyAssignment
-	 */
-
-	duk_dup_top(ctx);       /* [ ... key_obj key key ] */
-	duk_get_prop(ctx, -3);  /* [ ... key_obj key val ] */
-	key_flags = duk_to_int(ctx, -1);
-	duk_pop(ctx);           /* [ ... key_obj key ] */
-
-	if (new_key_flags & DUK__OBJ_LIT_KEY_PLAIN) {
-		if ((key_flags & DUK__OBJ_LIT_KEY_PLAIN) && comp_ctx->curr_func.is_strict) {
-			/* step 4.a */
-			DUK_DDD(DUK_DDDPRINT("duplicate key: plain key appears twice in strict mode"));
-			return 1;
-		}
-		if (key_flags & (DUK__OBJ_LIT_KEY_GET | DUK__OBJ_LIT_KEY_SET)) {
-			/* step 4.c */
-			DUK_DDD(DUK_DDDPRINT("duplicate key: plain key encountered after setter/getter"));
-			return 1;
-		}
+DUK_LOCAL duk_bool_t duk__objlit_load_key(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_token *tok, duk_reg_t reg_temp) {
+	if (tok->t_nores == DUK_TOK_IDENTIFIER || tok->t_nores == DUK_TOK_STRING) {
+		/* same handling for identifiers and strings */
+		DUK_ASSERT(tok->str1 != NULL);
+		duk_push_hstring((duk_context *) comp_ctx->thr, tok->str1);
+	} else if (tok->t == DUK_TOK_NUMBER) {
+		/* numbers can be loaded as numbers and coerced on the fly */
+		duk_push_number((duk_context *) comp_ctx->thr, tok->num);
 	} else {
-		if (key_flags & DUK__OBJ_LIT_KEY_PLAIN) {
-			/* step 4.b */
-			DUK_DDD(DUK_DDDPRINT("duplicate key: getter/setter encountered after plain key"));
-			return 1;
-		}
-		if (key_flags & new_key_flags) {
-			/* step 4.d */
-			DUK_DDD(DUK_DDDPRINT("duplicate key: getter/setter encountered twice"));
-			return 1;
-		}
+		return 1;  /* error */
 	}
 
-	new_key_flags |= key_flags;
-	DUK_DDD(DUK_DDDPRINT("setting/updating key %!T flags: 0x%08lx -> 0x%08lx",
-	                     (duk_tval *) duk_get_tval(ctx, -1),
-	                     (unsigned long) key_flags,
-	                     (unsigned long) new_key_flags));
-	duk_dup_top(ctx);
-	duk_push_int(ctx, new_key_flags);   /* [ ... key_obj key key flags ] */
-	duk_put_prop(ctx, -4);              /* [ ... key_obj key ] */
-
+	duk__ivalue_plain_fromstack(comp_ctx, res);
+	DUK__SETTEMP(comp_ctx, reg_temp + 1);
+	duk__ivalue_toforcedreg(comp_ctx, res, reg_temp);
+	DUK__SETTEMP(comp_ctx, reg_temp + 1);
 	return 0;
 }
 
 DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 	duk_hthread *thr = comp_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
-	duk_reg_t reg_obj;                /* result reg */
-	duk_reg_t reg_key;                /* temp reg for key literal */
+	duk__objlit_state st;
 	duk_reg_t reg_temp;               /* temp reg */
-	duk_reg_t temp_start;             /* temp reg value for start of loop */
 	duk_small_uint_t max_init_pairs;  /* max # of key-value pairs initialized in one MPUTOBJ set */
-	duk_small_uint_t num_pairs;       /* number of pairs in current MPUTOBJ set */
 	duk_bool_t first;                 /* first value: comma must not precede the value */
 	duk_bool_t is_set, is_get;        /* temps */
 
@@ -2988,12 +2986,11 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 
 	max_init_pairs = DUK__MAX_OBJECT_INIT_PAIRS;  /* XXX: depend on available temps? */
 
-	reg_obj = DUK__ALLOCTEMP(comp_ctx);
-	duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, reg_obj);  /* XXX: patch initial size hint afterwards? */
-	temp_start = DUK__GETTEMP(comp_ctx);
+	st.reg_obj = DUK__ALLOCTEMP(comp_ctx);    /* target object */
+	st.temp_start = DUK__GETTEMP(comp_ctx);   /* start of MPUTOBJ argument list */
+	st.num_pairs = 0;                         /* number of key/value pairs emitted for current MPUTOBJ set */
 
-	/* temp object for tracking / detecting duplicate keys */
-	duk_push_object(ctx);
+	duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, st.reg_obj);  /* XXX: patch initial size hint afterwards? */
 
 	/*
 	 *  Emit initializers in sets of maximum max_init_pairs keys.
@@ -3004,223 +3001,186 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 
 	first = 1;
 	for (;;) {
-		num_pairs = 0;
-		DUK__SETTEMP(comp_ctx, temp_start);
+		/*
+		 *  ES5 and ES6+ provide a lot of different PropertyDefinition
+		 *  formats, see http://www.ecma-international.org/ecma-262/6.0/#sec-object-initializer.
+		 *
+		 *  PropertyName can be IdentifierName (includes reserved words), a string
+		 *  literal, or a number literal.  Note that IdentifierName allows 'get' and
+		 *  'set' too, so we need to look ahead to the next token to distinguish:
+		 *
+		 *     { get : 1 }
+		 *
+		 *  and
+		 *
+		 *     { get foo() { return 1 } }
+		 *     { get get() { return 1 } }    // 'get' as getter propertyname
+		 *
+		 *  Finally, a trailing comma is allowed.
+		 *
+		 *  Key name is coerced to string at compile time (and ends up as a
+		 *  a string constant) even for numeric keys (e.g. "{1:'foo'}").
+		 *  These could be emitted using e.g. LDINT, but that seems hardly
+		 *  worth the effort and would increase code size.
+		 */
+
+		DUK_DDD(DUK_DDDPRINT("object literal loop, curr_token->t = %ld",
+		                     (long) comp_ctx->curr_token.t));
 
 		if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
 			break;
 		}
 
-		for (;;) {
-			/*
-			 *  Three possible element formats:
-			 *    1) PropertyName : AssignmentExpression
-			 *    2) get PropertyName () { FunctionBody }
-			 *    3) set PropertyName ( PropertySetParameterList ) { FunctionBody }
-			 *
-			 *  PropertyName can be IdentifierName (includes reserved words), a string
-			 *  literal, or a number literal.  Note that IdentifierName allows 'get' and
-			 *  'set' too, so we need to look ahead to the next token to distinguish:
-			 *
-			 *     { get : 1 }
-			 *
-			 *  and
-			 *
-			 *     { get foo() { return 1 } }
-			 *     { get get() { return 1 } }    // 'get' as getter propertyname
-			 *
-			 *  Finally, a trailing comma is allowed.
-			 *
-			 *  Key name is coerced to string at compile time (and ends up as a
-			 *  a string constant) even for numeric keys (e.g. "{1:'foo'}").
-			 *  These could be emitted using e.g. LDINT, but that seems hardly
-			 *  worth the effort and would increase code size.
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("object literal inner loop, curr_token->t = %ld",
-			                     (long) comp_ctx->curr_token.t));
-
-			if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
-				/* the outer loop will recheck and exit */
-				break;
+		if (first) {
+			first = 0;
+		} else {
+			if (comp_ctx->curr_token.t != DUK_TOK_COMMA) {
+				goto syntax_error;
 			}
-			if (num_pairs >= max_init_pairs) {
-				/* MPUTOBJ emitted by outer loop */
-				break;
-			}
-
-			if (first) {
-				first = 0;
-			} else {
-				if (comp_ctx->curr_token.t != DUK_TOK_COMMA) {
-					goto syntax_error;
-				}
-				duk__advance(comp_ctx);
-				if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
-					/* trailing comma followed by rcurly */
-					break;
-				}
-			}
-
-			/* advance to get one step of lookup */
 			duk__advance(comp_ctx);
-
-			/* NOTE: "get" and "set" are not officially ReservedWords and the lexer
-			 * currently treats them always like ordinary identifiers (DUK_TOK_GET
-			 * and DUK_TOK_SET are unused).  They need to be detected based on the
-			 * identifier string content.
-			 */
-
-			is_get = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
-			          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_GET(thr));
-			is_set = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
-			          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_SET(thr));
-			if ((is_get || is_set) && comp_ctx->curr_token.t != DUK_TOK_COLON) {
-				/* getter/setter */
-				duk_int_t fnum;
-
-				if (comp_ctx->curr_token.t_nores == DUK_TOK_IDENTIFIER ||
-				    comp_ctx->curr_token.t_nores == DUK_TOK_STRING) {
-					/* same handling for identifiers and strings */
-					DUK_ASSERT(comp_ctx->curr_token.str1 != NULL);
-					duk_push_hstring(ctx, comp_ctx->curr_token.str1);
-				} else if (comp_ctx->curr_token.t == DUK_TOK_NUMBER) {
-					duk_push_number(ctx, comp_ctx->curr_token.num);
-					duk_to_string(ctx, -1);
-				} else {
-					goto syntax_error;
-				}
-
-				DUK_ASSERT(duk_is_string(ctx, -1));
-				if (duk__nud_object_literal_key_check(comp_ctx,
-				                                      (is_get ? DUK__OBJ_LIT_KEY_GET : DUK__OBJ_LIT_KEY_SET))) {
-					goto syntax_error;
-				}
-				reg_key = duk__getconst(comp_ctx);
-
-				if (num_pairs > 0) {
-					/* - A is a source register (it's not a write target, but used
-					 *   to identify the target object) but can be shuffled.
-					 * - B cannot be shuffled normally because it identifies a range
-					 *   of registers, the emitter has special handling for this
-					 *   (the "no shuffle" flag must not be set).
-					 * - C is a non-register number and cannot be shuffled, but
-					 *   never needs to be.
-					 */
-					DUK_ASSERT(num_pairs > 0);
-					duk__emit_a_b_c(comp_ctx,
-					                DUK_OP_MPUTOBJ |
-					                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
-					                    DUK__EMIT_FLAG_A_IS_SOURCE,
-					                reg_obj,
-					                temp_start,
-					                num_pairs * 2);
-					num_pairs = 0;
-					DUK__SETTEMP(comp_ctx, temp_start);
-				}
-
-				/* curr_token = get/set name */
-				fnum = duk__parse_func_like_fnum(comp_ctx, DUK__FUNC_FLAG_GETSET);
-
-				DUK_ASSERT(DUK__GETTEMP(comp_ctx) == temp_start);
-				reg_temp = DUK__ALLOCTEMP(comp_ctx);
-				duk__emit_a_bc(comp_ctx,
-				               DUK_OP_LDCONST,
-				               (duk_regconst_t) reg_temp,
-				               (duk_regconst_t) reg_key);
-				reg_temp = DUK__ALLOCTEMP(comp_ctx);
-				duk__emit_a_bc(comp_ctx,
-				               DUK_OP_CLOSURE,
-				               (duk_regconst_t) reg_temp,
-				               (duk_regconst_t) fnum);
-
-				/* Slot C is used in a non-standard fashion (range of regs),
-				 * emitter code has special handling for it (must not set the
-				 * "no shuffle" flag).
-				 */
-				duk__emit_a_bc(comp_ctx,
-				              (is_get ? DUK_OP_INITGET : DUK_OP_INITSET) | DUK__EMIT_FLAG_A_IS_SOURCE,
-				              reg_obj,
-				              temp_start);   /* temp_start+0 = key, temp_start+1 = closure */
-
-				DUK__SETTEMP(comp_ctx, temp_start);
-			} else {
-				duk_bool_t skip_key_load = 0;
-
-				reg_temp = DUK__ALLOCTEMP(comp_ctx);
-
-				/* normal key/value */
-				if (comp_ctx->prev_token.t_nores == DUK_TOK_IDENTIFIER ||
-				    comp_ctx->prev_token.t_nores == DUK_TOK_STRING) {
-					/* Same handling for identifiers and strings. */
-					DUK_ASSERT(comp_ctx->prev_token.str1 != NULL);
-					duk_push_hstring(ctx, comp_ctx->prev_token.str1);
-				} else if (comp_ctx->prev_token.t == DUK_TOK_NUMBER) {
-					duk_push_number(ctx, comp_ctx->prev_token.num);
-					duk_to_string(ctx, -1);
-				} else if (comp_ctx->prev_token.t == DUK_TOK_LBRACKET) {
-					/* ES6 computed property name.  Executor ToPropertyKey()
-					 * coerces the key at runtime.
-					 */
-					duk__expr_toforcedreg(comp_ctx, res, DUK__BP_FOR_EXPR, reg_temp);
-					DUK__SETTEMP(comp_ctx, reg_temp + 1);
-					duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
-					skip_key_load = 1;
-				} else {
-					goto syntax_error;
-				}
-
-				if (!skip_key_load) {
-					DUK_ASSERT(duk_is_string(ctx, -1));
-					if (duk__nud_object_literal_key_check(comp_ctx, DUK__OBJ_LIT_KEY_PLAIN)) {
-						goto syntax_error;
-					}
-					reg_key = duk__getconst(comp_ctx);
-
-					duk__emit_a_bc(comp_ctx,
-					               DUK_OP_LDCONST,
-					               (duk_regconst_t) reg_temp,
-					               (duk_regconst_t) reg_key);
-				}
-
-				duk__advance_expect(comp_ctx, DUK_TOK_COLON);
-
-				reg_temp = DUK__ALLOCTEMP(comp_ctx);  /* alloc temp just in case, to update max temp */
-				DUK__SETTEMP(comp_ctx, reg_temp);
-				duk__expr_toforcedreg(comp_ctx, res, DUK__BP_COMMA /*rbp_flags*/, reg_temp /*forced_reg*/);
-				DUK__SETTEMP(comp_ctx, reg_temp + 1);
-
-				num_pairs++;
+			if (comp_ctx->curr_token.t == DUK_TOK_RCURLY) {
+				/* trailing comma followed by rcurly */
+				break;
 			}
 		}
 
-		if (num_pairs > 0) {
-			/* See MPUTOBJ comments above. */
-			DUK_ASSERT(num_pairs > 0);
-			duk__emit_a_b_c(comp_ctx,
-			                DUK_OP_MPUTOBJ |
-			                    DUK__EMIT_FLAG_NO_SHUFFLE_C |
-			                    DUK__EMIT_FLAG_A_IS_SOURCE,
-			                reg_obj,
-			                temp_start,
-			                num_pairs * 2);
+		/* Advance to get one step of lookup. */
+		duk__advance(comp_ctx);
 
-			/* num_pairs and temp_start reset at top of outer loop */
+		/* Flush current MPUTOBJ if enough many pairs gathered. */
+		if (st.num_pairs >= max_init_pairs) {
+			duk__objlit_flush_keys(comp_ctx, &st);
+			DUK_ASSERT(st.num_pairs == 0);
 		}
-	}
+
+		/* Reset temp register state and reserve reg_temp and
+		 * reg_temp + 1 for handling the current property.
+		 */
+		DUK__SETTEMP(comp_ctx, st.temp_start + 2 * st.num_pairs);
+		reg_temp = DUK__ALLOCTEMPS(comp_ctx, 2);
+
+		/* NOTE: "get" and "set" are not officially ReservedWords and the lexer
+		 * currently treats them always like ordinary identifiers (DUK_TOK_GET
+		 * and DUK_TOK_SET are unused).  They need to be detected based on the
+		 * identifier string content.
+		 */
+
+		is_get = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
+		          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_GET(thr));
+		is_set = (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
+		          comp_ctx->prev_token.str1 == DUK_HTHREAD_STRING_SET(thr));
+		if ((is_get || is_set) && comp_ctx->curr_token.t != DUK_TOK_COLON) {
+			/* getter/setter */
+			duk_int_t fnum;
+
+			duk__objlit_flush_keys(comp_ctx, &st);
+			DUK_ASSERT(DUK__GETTEMP(comp_ctx) == st.temp_start);  /* 2 regs are guaranteed to be allocated w.r.t. temp_max */
+
+			if (duk__objlit_load_key(comp_ctx, res, &comp_ctx->curr_token, reg_temp) != 0) {
+				goto syntax_error;
+			}
+
+			/* curr_token = get/set name */
+			fnum = duk__parse_func_like_fnum(comp_ctx, DUK__FUNC_FLAG_GETSET);
+
+			duk__emit_a_bc(comp_ctx,
+			               DUK_OP_CLOSURE,
+			               (duk_regconst_t) (st.temp_start + 1),
+			               (duk_regconst_t) fnum);
+
+			/* Slot C is used in a non-standard fashion (range of regs),
+			 * emitter code has special handling for it (must not set the
+			 * "no shuffle" flag).
+			 */
+			duk__emit_a_bc(comp_ctx,
+			              (is_get ? DUK_OP_INITGET : DUK_OP_INITSET) | DUK__EMIT_FLAG_A_IS_SOURCE,
+			              st.reg_obj,
+			              st.temp_start);   /* temp_start+0 = key, temp_start+1 = closure */
+
+			DUK_ASSERT(st.num_pairs == 0);  /* temp state is reset on next loop */
+#if defined(DUK_USE_ES6)
+		} else if (comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER &&
+		           (comp_ctx->curr_token.t == DUK_TOK_COMMA || comp_ctx->curr_token.t == DUK_TOK_RCURLY)) {
+			duk_bool_t load_rc;
+
+			load_rc = duk__objlit_load_key(comp_ctx, res, &comp_ctx->prev_token, reg_temp);
+			DUK_UNREF(load_rc);
+			DUK_ASSERT(load_rc == 0);  /* always succeeds because token is identifier */
+
+			duk__ivalue_var_hstring(comp_ctx, res, comp_ctx->prev_token.str1);
+			DUK_ASSERT(DUK__GETTEMP(comp_ctx) == reg_temp + 1);
+			duk__ivalue_toforcedreg(comp_ctx, res, reg_temp + 1);
+
+			st.num_pairs++;
+		} else if ((comp_ctx->prev_token.t == DUK_TOK_IDENTIFIER ||
+		            comp_ctx->prev_token.t == DUK_TOK_STRING ||
+		            comp_ctx->prev_token.t == DUK_TOK_NUMBER) &&
+		           comp_ctx->curr_token.t == DUK_TOK_LPAREN) {
+			duk_int_t fnum;
+
+			/* Parsing-wise there's a small hickup here: the token parsing
+			 * state is one step too advanced for the function parse helper
+			 * compared to other cases.  The current solution is an extra
+			 * flag to indicate whether function parsing should use the
+			 * current or the previous token to starting parsing from.
+			 */
+
+			if (duk__objlit_load_key(comp_ctx, res, &comp_ctx->prev_token, reg_temp) != 0) {
+				goto syntax_error;
+			}
+
+			fnum = duk__parse_func_like_fnum(comp_ctx, DUK__FUNC_FLAG_USE_PREVTOKEN | DUK__FUNC_FLAG_METDEF);
+
+			duk__emit_a_bc(comp_ctx,
+			               DUK_OP_CLOSURE,
+			               (duk_regconst_t) (reg_temp + 1),
+			               (duk_regconst_t) fnum);
+
+			st.num_pairs++;
+#endif  /* DUK_USE_ES6 */
+		} else {
+#if defined(DUK_USE_ES6)
+			if (comp_ctx->prev_token.t == DUK_TOK_LBRACKET) {
+				/* ES6 computed property name.  Executor ToPropertyKey()
+				 * coerces the key at runtime.
+				 */
+				DUK__SETTEMP(comp_ctx, reg_temp);
+				duk__expr_toforcedreg(comp_ctx, res, DUK__BP_FOR_EXPR, reg_temp);
+				duk__advance_expect(comp_ctx, DUK_TOK_RBRACKET);
+
+				/* XXX: If next token is '(' we're dealing with
+				 * the method shorthand with a computed name,
+				 * e.g. { [Symbol.for('foo')](a,b) {} }.  This
+				 * form is not yet supported and causes a
+				 * SyntaxError on the DUK_TOK_COLON check below.
+				 */
+			}
+			else
+#endif  /* DUK_USE_ES6 */
+			{
+				if (duk__objlit_load_key(comp_ctx, res, &comp_ctx->prev_token, reg_temp) != 0) {
+					goto syntax_error;
+				}
+			}
+
+			duk__advance_expect(comp_ctx, DUK_TOK_COLON);
+
+			DUK__SETTEMP(comp_ctx, reg_temp + 1);
+			duk__expr_toforcedreg(comp_ctx, res, DUK__BP_COMMA /*rbp_flags*/, reg_temp + 1 /*forced_reg*/);
+
+			st.num_pairs++;
+		}
+	}  /* property loop */
+
+	/* Flush remaining properties. */
+	duk__objlit_flush_keys(comp_ctx, &st);
+	DUK_ASSERT(st.num_pairs == 0);
+	DUK_ASSERT(DUK__GETTEMP(comp_ctx) == st.temp_start);
 
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RCURLY);
 	duk__advance(comp_ctx);
 
-	DUK__SETTEMP(comp_ctx, temp_start);
-
-	res->t = DUK_IVAL_PLAIN;
-	res->x1.t = DUK_ISPEC_REGCONST;
-	res->x1.regconst = (duk_regconst_t) reg_obj;
-
-	DUK_DDD(DUK_DDDPRINT("final tracking object: %!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
-	duk_pop(ctx);
+	duk__ivalue_regconst(res, (duk_regconst_t) st.reg_obj);
 	return;
 
  syntax_error:
@@ -3317,16 +3277,11 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__emit_bc(comp_ctx,
 		             DUK_OP_LDTHIS,
 		             (duk_regconst_t) reg_temp);
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_temp;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		return;
 	}
 	case DUK_TOK_IDENTIFIER: {
-		res->t = DUK_IVAL_VAR;
-		res->x1.t = DUK_ISPEC_VALUE;
-		duk_push_hstring(ctx, tk->str1);
-		duk_replace(ctx, res->x1.valstack_idx);
+		duk__ivalue_var_hstring(comp_ctx, res, tk->str1);
 		return;
 	}
 	case DUK_TOK_NULL: {
@@ -3382,9 +3337,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		                rc_re_bytecode /*b*/,
 		                rc_re_source /*c*/);
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_temp;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		return;
 #else  /* DUK_USE_REGEXP_SUPPORT */
 		goto syntax_error;
@@ -3463,9 +3416,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 		DUK_DDD(DUK_DDDPRINT("end parsing new expression"));
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_target;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_target);
 		return;
 	}
 
@@ -3497,9 +3448,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		               (duk_regconst_t) reg_temp /*a*/,
 		               (duk_regconst_t) fnum /*bc*/);
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_temp;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		return;
 	}
 
@@ -3543,9 +3492,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				               (duk_regconst_t) reg_temp,
 				               (duk_regconst_t) rc_varname);
 			}
-			res->t = DUK_IVAL_PLAIN;
-			res->x1.t = DUK_ISPEC_REGCONST;
-			res->x1.regconst = (duk_regconst_t) reg_temp;
+			duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		} else if (res->t == DUK_IVAL_PROP) {
 			duk_reg_t reg_temp;
 			duk_reg_t reg_obj;
@@ -3561,9 +3508,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			                (duk_regconst_t) reg_obj,
 			                rc_key);
 
-			res->t = DUK_IVAL_PLAIN;
-			res->x1.t = DUK_ISPEC_REGCONST;
-			res->x1.regconst = (duk_regconst_t) reg_temp;
+			duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		} else {
 			/* non-Reference deletion is always 'true', even in strict mode */
 			duk_push_true(ctx);
@@ -3598,9 +3543,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 				               DUK_OP_TYPEOFID,
 				               reg_temp,
 				               rc_varname);
-				res->t = DUK_IVAL_PLAIN;
-				res->x1.t = DUK_ISPEC_REGCONST;
-				res->x1.regconst = (duk_regconst_t) reg_temp;
+				duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 				return;
 			}
 		}
@@ -3715,9 +3658,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		             args,
 		             reg_res,
 		             (duk_regconst_t) reg_src);
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_res;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_res);
 		return;
 	}
 
@@ -3785,19 +3726,15 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			duk__emit_op_only(comp_ctx,
 			                  DUK_OP_INVLHS);
 		}
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_res;
 		DUK__SETTEMP(comp_ctx, reg_res + 1);
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_res);
 		return;
 	}
 
  plain_value:
 	{
 		/* Stack top contains plain value */
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_VALUE;
-		duk_replace(ctx, res->x1.valstack_idx);
+		duk__ivalue_plain_fromstack(comp_ctx, res);
 		return;
 	}
 
@@ -3992,9 +3929,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		               (duk_regconst_t) reg_cs /*basereg*/);
 		DUK__SETTEMP(comp_ctx, reg_cs + 1);    /* result in csreg */
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_cs;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_cs);
 		return;
 	}
 
@@ -4159,9 +4094,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		duk__patch_jump_here(comp_ctx, pc_jump2);
 
 		DUK__SETTEMP(comp_ctx, reg_temp + 1);
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_temp;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		return;
 	}
 
@@ -4342,9 +4275,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		duk__expr_toforcedreg(comp_ctx, res, args_rbp /*rbp_flags*/, reg_temp /*forced_reg*/);
 		duk__patch_jump_here(comp_ctx, pc_jump);
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_temp;
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_temp);
 		return;
 	}
 
@@ -4644,9 +4575,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			                rc_key,
 			                rc_res);
 
-			res->t = DUK_IVAL_PLAIN;
-			res->x1.t = DUK_ISPEC_REGCONST;
-			res->x1.regconst = rc_res;
+			duk__ivalue_regconst(res, (duk_regconst_t) rc_res);
 		} else {
 			/* No support for lvalues returned from new or function call expressions.
 			 * However, these must NOT cause compile-time SyntaxErrors, but run-time
@@ -4672,9 +4601,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 
 			duk__emit_op_only(comp_ctx, DUK_OP_INVLHS);
 
-			res->t = DUK_IVAL_PLAIN;
-			res->x1.t = DUK_ISPEC_REGCONST;
-			res->x1.regconst = rc_res;
+			duk__ivalue_regconst(res, (duk_regconst_t) rc_res);
 		}
 
 		return;
@@ -4754,10 +4681,8 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			                  DUK_OP_INVLHS);
 		}
 
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_REGCONST;
-		res->x1.regconst = (duk_regconst_t) reg_res;
 		DUK__SETTEMP(comp_ctx, reg_res + 1);
+		duk__ivalue_regconst(res, (duk_regconst_t) reg_res);
 		return;
 	}
 
@@ -4853,10 +4778,8 @@ DUK_LOCAL void duk__expr(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_small_
 		if (!(rbp_flags & DUK__EXPR_FLAG_ALLOW_EMPTY)) {
 			DUK_ERROR_SYNTAX(thr, DUK_STR_EMPTY_EXPR_NOT_ALLOWED);
 		}
-		res->t = DUK_IVAL_PLAIN;
-		res->x1.t = DUK_ISPEC_VALUE;
 		duk_push_undefined(ctx);
-		duk_replace(ctx, res->x1.valstack_idx);
+		duk__ivalue_plain_fromstack(comp_ctx, res);
 		goto cleanup;
 	}
 
@@ -7501,13 +7424,14 @@ DUK_LOCAL void duk__parse_func_formals(duk_compiler_ctx *comp_ctx) {
 DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_uint_t flags) {
 	duk_hthread *thr = comp_ctx->thr;
 	duk_context *ctx = (duk_context *) thr;
+	duk_token *tok;
+	duk_bool_t no_advance;
 
 	DUK_ASSERT(comp_ctx->curr_func.num_formals == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_function == 1);
 	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_setget == ((flags & DUK__FUNC_FLAG_GETSET) != 0));
-	DUK_ASSERT(comp_ctx->curr_func.is_decl == ((flags & DUK__FUNC_FLAG_DECL) != 0));
 
 	duk__update_lineinfo_currtoken(comp_ctx);
 
@@ -7522,34 +7446,43 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 	 *  be an Identifer (excludes reserved words).  For setter/getter
 	 *  it is a PropertyName which allows reserved words and also
 	 *  strings and numbers (e.g. "{ get 1() { ... } }").
+	 *
+	 *  Function parsing may start either from prev_token or curr_token
+	 *  (object literal method definition uses prev_token for example).
+	 *  This is dealt with for the initial token.
 	 */
+
+	no_advance = (flags & DUK__FUNC_FLAG_USE_PREVTOKEN);
+	if (no_advance) {
+		tok = &comp_ctx->prev_token;
+	} else {
+		tok = &comp_ctx->curr_token;
+	}
 
 	if (flags & DUK__FUNC_FLAG_GETSET) {
 		/* PropertyName -> IdentifierName | StringLiteral | NumericLiteral */
-		if (comp_ctx->curr_token.t_nores == DUK_TOK_IDENTIFIER ||
-		    comp_ctx->curr_token.t == DUK_TOK_STRING) {
-			duk_push_hstring(ctx, comp_ctx->curr_token.str1);       /* keep in valstack */
-		} else if (comp_ctx->curr_token.t == DUK_TOK_NUMBER) {
-			duk_push_number(ctx, comp_ctx->curr_token.num);
+		if (tok->t_nores == DUK_TOK_IDENTIFIER || tok->t == DUK_TOK_STRING) {
+			duk_push_hstring(ctx, tok->str1);       /* keep in valstack */
+		} else if (tok->t == DUK_TOK_NUMBER) {
+			duk_push_number(ctx, tok->num);
 			duk_to_string(ctx, -1);
 		} else {
 			DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_GETSET_NAME);
 		}
 		comp_ctx->curr_func.h_name = duk_known_hstring(ctx, -1);  /* borrowed reference */
-		duk__advance(comp_ctx);
 	} else {
 		/* Function name is an Identifier (not IdentifierName), but we get
 		 * the raw name (not recognizing keywords) here and perform the name
 		 * checks only after pass 1.
 		 */
-		if (comp_ctx->curr_token.t_nores == DUK_TOK_IDENTIFIER) {
-			duk_push_hstring(ctx, comp_ctx->curr_token.str1);       /* keep in valstack */
+		if (tok->t_nores == DUK_TOK_IDENTIFIER) {
+			duk_push_hstring(ctx, tok->str1);       /* keep in valstack */
 			comp_ctx->curr_func.h_name = duk_known_hstring(ctx, -1);  /* borrowed reference */
-			duk__advance(comp_ctx);
 		} else {
 			/* valstack will be unbalanced, which is OK */
 			DUK_ASSERT((flags & DUK__FUNC_FLAG_GETSET) == 0);
 			DUK_ASSERT(comp_ctx->curr_func.h_name == NULL);
+			no_advance = 1;
 			if (flags & DUK__FUNC_FLAG_DECL) {
 				DUK_ERROR_SYNTAX(thr, DUK_STR_FUNC_NAME_REQUIRED);
 			}
@@ -7558,6 +7491,10 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 
 	DUK_DD(DUK_DDPRINT("function name: %!O",
 	                   (duk_heaphdr *) comp_ctx->curr_func.h_name));
+
+	if (!no_advance) {
+		duk__advance(comp_ctx);
+	}
 
 	/*
 	 *  Formal argument list
@@ -7588,7 +7525,7 @@ DUK_LOCAL void duk__parse_func_like_raw(duk_compiler_ctx *comp_ctx, duk_small_ui
 	 *  to the parent function table.
 	 */
 
-	duk__convert_to_func_template(comp_ctx, flags);  /* -> [ ... func funcname? ] */
+	duk__convert_to_func_template(comp_ctx);  /* -> [ ... func ] */
 }
 
 /* Parse an inner function, adding the function template to the current function's
@@ -7657,12 +7594,20 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
 	/* inherit initial strictness from parent */
 	comp_ctx->curr_func.is_strict = old_func.is_strict;
 
+	/* XXX: It might be better to just store the flags into the curr_func
+	 * struct and use them as is without this flag interpretation step
+	 * here.
+	 */
 	DUK_ASSERT(comp_ctx->curr_func.is_notail == 0);
 	comp_ctx->curr_func.is_function = 1;
 	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
-	comp_ctx->curr_func.is_setget = (flags & DUK__FUNC_FLAG_GETSET) ? 1 : 0;
-	comp_ctx->curr_func.is_decl = (flags & DUK__FUNC_FLAG_DECL) ? 1 : 0;
+	comp_ctx->curr_func.is_setget = (flags & DUK__FUNC_FLAG_GETSET);
+	comp_ctx->curr_func.is_namebinding = !(flags & (DUK__FUNC_FLAG_GETSET |
+	                                                DUK__FUNC_FLAG_METDEF |
+	                                                DUK__FUNC_FLAG_DECL));  /* no name binding for: declarations, objlit getset, objlit method def */
+	comp_ctx->curr_func.is_constructable = !(flags & (DUK__FUNC_FLAG_GETSET |
+	                                                  DUK__FUNC_FLAG_METDEF));  /* not constructable: objlit getset, objlit method def */
 
 	/*
 	 *  Parse inner function
@@ -7836,7 +7781,6 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 
 	func->is_strict = is_strict;
 	func->is_setget = 0;
-	func->is_decl = 0;
 
 	if (is_funcexpr) {
 		func->is_function = 1;
@@ -7861,7 +7805,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	 *  Convert duk_compiler_func to a function template
 	 */
 
-	duk__convert_to_func_template(comp_ctx, 0 /*flags*/);
+	duk__convert_to_func_template(comp_ctx);
 
 	/*
 	 *  Wrapping duk_safe_call() will mangle the stack, just return stack top

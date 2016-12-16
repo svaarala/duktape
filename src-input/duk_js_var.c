@@ -203,9 +203,8 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj)) {
 		/* If the template is not constructable don't add an automatic
-		 * .prototype property.  This is in practice only the case for
-		 * object literal getter/setter functions, ES6 requires that
-		 * they are not constructable and that they have no .prototype.
+		 * .prototype property.  This is the case for e.g. ES6 object
+		 * literal getters/setters and method definitions.
 		 */
 		add_auto_proto = 0;
 	}

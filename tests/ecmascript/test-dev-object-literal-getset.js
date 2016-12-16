@@ -6,18 +6,27 @@
 /*===
 true myFunc
 false undefined
+GET
+object globalName
 123
 TypeError
 true fooBar
 false undefined
+SET
+object globalName
 setter called
 undefined
 TypeError
 ===*/
 
+(new Function('return this'))().myName = 'globalName';  // ensure set to global even with 'nodejs' command line tool
+
 function test() {
-    var tmp = { get myFunc() { return 123; },
-                set fooBar(v) { print('setter called') } };
+    var myName = 'localName';
+
+    var tmp = { get myFunc() { print('GET'); print(typeof this, this.myName); return 123; },
+                set fooBar(v) { print('SET'); print(typeof this, this.myName); print('setter called') },
+                myName: 'objectName' };
     var fun;
 
     fun = Object.getOwnPropertyDescriptor(tmp, 'myFunc').get;
