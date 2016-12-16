@@ -2951,8 +2951,8 @@ DUK_LOCAL void duk__objlit_flush_keys(duk_compiler_ctx *comp_ctx, duk__objlit_st
 		                st->temp_start,
 		                st->num_pairs * 2);
 		st->num_pairs = 0;
-		DUK__SETTEMP(comp_ctx, st->temp_start);
 	}
+	DUK__SETTEMP(comp_ctx, st->temp_start);
 }
 
 DUK_LOCAL duk_bool_t duk__objlit_load_key(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_token *tok, duk_reg_t reg_temp) {
@@ -3075,6 +3075,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 
 			duk__objlit_flush_keys(comp_ctx, &st);
 			DUK_ASSERT(DUK__GETTEMP(comp_ctx) == st.temp_start);  /* 2 regs are guaranteed to be allocated w.r.t. temp_max */
+			reg_temp = DUK__ALLOCTEMPS(comp_ctx, 2);
 
 			if (duk__objlit_load_key(comp_ctx, res, &comp_ctx->curr_token, reg_temp) != 0) {
 				goto syntax_error;
@@ -7602,7 +7603,7 @@ DUK_LOCAL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, duk_sm
 	comp_ctx->curr_func.is_function = 1;
 	DUK_ASSERT(comp_ctx->curr_func.is_eval == 0);
 	DUK_ASSERT(comp_ctx->curr_func.is_global == 0);
-	comp_ctx->curr_func.is_setget = (flags & DUK__FUNC_FLAG_GETSET);
+	comp_ctx->curr_func.is_setget = ((flags & DUK__FUNC_FLAG_GETSET) != 0);
 	comp_ctx->curr_func.is_namebinding = !(flags & (DUK__FUNC_FLAG_GETSET |
 	                                                DUK__FUNC_FLAG_METDEF |
 	                                                DUK__FUNC_FLAG_DECL));  /* no name binding for: declarations, objlit getset, objlit method def */
