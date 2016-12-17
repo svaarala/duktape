@@ -780,6 +780,29 @@ $(document).ready(function () {
         // nop
     });
 
+    // Function keys
+    $('body').keydown(function(e){
+        //alert("keydown: "+e.which);
+        switch (e.which) {
+        case 116:  // F5: step into
+            socket.emit('stepinto', {});
+            e.preventDefault();
+            return;
+        case 117:  // F6: step over
+            socket.emit('stepover', {});
+            e.preventDefault();
+            return;
+        case 118:  // F7: step out (= step return)
+            socket.emit('stepout', {});
+            e.preventDefault();
+            return;
+        case 119:  // F8: resume
+            socket.emit('resume', {});
+            e.preventDefault();
+            return;
+        }
+    });
+
     forceButtonUpdate = true;
     doUiUpdate();
 });
