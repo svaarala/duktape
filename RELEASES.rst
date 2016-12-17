@@ -2115,6 +2115,9 @@ Planned
 * Allow duplicate property names in object literals as required by ES6
   (GH-1190)
 
+* Change typed array constructor chain to match ES6, e.g. Uint8Array
+  constructor inherits from intrinsic %TypedArray% constructor (GH-1191)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor
