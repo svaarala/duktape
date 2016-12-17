@@ -360,7 +360,7 @@ def metadata_prepare_objects_bidx(meta):
         else:
             meta['objects'].append(obj)
 
-# Normalize metadata property shorthand.  For example, if a proprety value
+# Normalize metadata property shorthand.  For example, if a property value
 # is a shorthand function, create a function object and change the property
 # to point to that function object.
 def metadata_normalize_shorthand(meta):
@@ -614,7 +614,7 @@ def metadata_normalize_ram_function_names(meta):
         if name_prop is None:
             num_added += 1
             logger.debug('Adding missing "name" property for function %s' % o['id'])
-            o['properties'].append({ 'key': 'name', 'value': '', 'attributes': '' })
+            o['properties'].append({ 'key': 'name', 'value': '', 'attributes': 'c' })
 
     if num_added > 0:
         logger.debug('Added missing "name" property for %d functions' % num_added)
@@ -1340,8 +1340,8 @@ def steal_prop(props, key):
 # XXX: Reserved word stridxs could be made to match token numbers
 #      directly so that a duk_stridx2token[] would not be needed.
 
-# Default property attributes, see E5 Section 15 beginning.
-LENGTH_PROPERTY_ATTRIBUTES = ''
+# Default property attributes.
+LENGTH_PROPERTY_ATTRIBUTES = 'c'
 ACCESSOR_PROPERTY_ATTRIBUTES = 'c'
 DEFAULT_DATA_PROPERTY_ATTRIBUTES = 'wc'
 
@@ -1739,9 +1739,7 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
         prop_name = steal_prop(props, 'name')
         assert(prop_name is not None)
         assert(isinstance(prop_name['value'], str))
-        # Function.prototype.name has special handling in duk_hthread_builtins.c
-        assert((bi['id'] != 'bi_function_prototype' and prop_name['attributes'] == '') or \
-               (bi['id'] == 'bi_function_prototype' and prop_name['attributes'] == 'w'))
+        assert(prop_name['attributes'] == 'c')
 
     # length: encoded specially, so steal and ignore
     prop_proto = steal_prop(props, 'length')
