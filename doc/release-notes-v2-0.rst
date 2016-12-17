@@ -1044,6 +1044,9 @@ Other incompatible changes
   previously an error was thrown.  This situation never occurs for standard
   Ecmascript strings or valid UTF-8 strings.
 
+* ``duk_get_length()`` now allows the ``size_t`` rather than the unsigned 32-bit
+  integer range for the target value's ``.length``.
+
 * Legacy octal literal handling has been improved to match more closely with
   ES6 Annex B.  Octal look-alike decimal literals like "0778" and "0778.123"
   are now allowed.
