@@ -1800,8 +1800,22 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
+			} else if (arr_idx != DUK__NO_ARRAY_INDEX) {
+				/* index is exotic but out of bounds -> no property */
+				/* FIXME: technically "not found" but because we don't want to walk the parent,
+				 * pretend the value is undefined for now.  Fix either in [[Get]], or add another
+				 * internal flag to indicate DUK_PROPDESC_FLAG_BLOCK which hasprop can check.
+				 */
+				if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
+					duk_push_undefined(ctx);
+				}
+				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_VIRTUAL;
+				return 1;
+#if 0
+				return 0;  /* not found */
+#endif
 			} else {
-				/* index is above internal buffer length -> property is fully normal */
+				/* index is not exotic -> property is fully normal */
 				DUK_DDD(DUK_DDDPRINT("array index outside buffer -> normal property"));
 			}
 		} else if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
@@ -1841,6 +1855,21 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
 			return 1;  /* cannot be arguments exotic */
+		} else if (key == DUK_HTHREAD_STRING_MINUS_ZERO(thr)) {
+			/* Buffer object "-0" is considered an exotic index
+			 * but is always considered to be out of bounds (and
+			 * thus treated differently from the zero index).
+			 */
+			/* FIXME: technically "not found" but because we don't want to walk the parent,
+			 * pretend the value is undefined for now.  Fix either in [[Get]], or add another
+			 * internal flag to indicate DUK_PROPDESC_FLAG_BLOCK which hasprop can check.
+			 */
+			/* FIXME: share code with OOB index check above */
+			if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
+				duk_push_undefined(ctx);
+			}
+			out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE | DUK_PROPDESC_FLAG_VIRTUAL;
+			return 1;
 		}
 	}
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
@@ -2181,6 +2210,10 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 		return 0;
 	}
 
+	/* XXX: the string '-0' should be detected as a virtual index and
+	 * always considered out-of-bounds.
+	 */
+
 	/* If index is not valid, idx will be DUK__NO_ARRAY_INDEX which
 	 * is 0xffffffffUL.  We don't need to check for that explicitly
 	 * because 0xffffffffUL will never be inside bufobj length.
@@ -2188,6 +2221,11 @@ DUK_LOCAL duk_bool_t duk__getprop_fastpath_bufobj_tval(duk_hthread *thr, duk_hob
 
 	/* Careful with wrapping (left shifting idx would be unsafe). */
 	if (idx >= (h_bufobj->length >> h_bufobj->shift)) {
+		if (idx != DUK__NO_ARRAY_INDEX) {
+			DUK_D(DUK_DPRINT("bufobj access out-of-bounds (but index property), read undefined"));
+			duk_push_undefined(ctx);
+			return 1;  /* FIXME: technically caller would want to return 0 from getprop; fix */
+		}
 		return 0;
 	}
 	DUK_ASSERT(idx != DUK__NO_ARRAY_INDEX);
@@ -2424,6 +2462,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			return 1;
 		}
 #endif
+		/* FIXME: check that "-0" is handled correctly if the fast path
+		 * doesn't catch it.  It's OK if it goes through the slow path.
+		 */
 
 #if defined(DUK_USE_ES6_PROXY)
 		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(curr))) {
@@ -2534,15 +2575,26 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			pop_count = 1;
 		}
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX &&
-		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
-			duk_pop_n(ctx, pop_count);
-			duk_push_uint(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h))[arr_idx]);
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
+			if (arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+				duk_pop_n(ctx, pop_count);
+				duk_push_uint(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h))[arr_idx]);
 
-			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is an index inside buffer length "
-			                     "after coercion -> return byte as number)",
-			                     (duk_tval *) duk_get_tval(ctx, -1)));
-			return 1;
+				DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is an index inside buffer length "
+				                     "after coercion -> return byte as number)",
+				                     (duk_tval *) duk_get_tval(ctx, -1)));
+				return 1;
+			} else {
+				/* Plain buffer mimics typed array behavior, terminate
+				 * lookup even though index property is not present.
+				 */
+				duk_pop_n(ctx, pop_count);
+				duk_push_undefined(ctx);
+
+				DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is an index out-of-bounds -> undefined",
+				                     (duk_tval *) duk_get_tval(ctx, -1)));
+				return 0;  /* FIXME: does this matter internally? */
+			}
 		}
 
 		if (pop_count == 0) {
@@ -2821,6 +2873,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 		arr_idx = duk__push_tval_to_hstring_arr_idx(ctx, tv_key, &key);
 		if (duk__key_is_plain_buf_ownprop(thr, DUK_TVAL_GET_BUFFER(tv_obj), key, arr_idx)) {
 			rc = 1;
+			goto pop_and_return;
+		}
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
+			/* Don't traverse to parent for buffer objects. */
+			rc = 0;
 			goto pop_and_return;
 		}
 		obj = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
@@ -3524,31 +3581,37 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			pop_count = 1;
 		}
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX &&
-		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
-			duk_uint8_t *data;
-			DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
-			data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
+			if (arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+				duk_uint8_t *data;
+				DUK_DDD(DUK_DDDPRINT("writing to buffer data at index %ld", (long) arr_idx));
+				data = (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h);
 
-			/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
-			 * as input is within duk_int_t range (capped outside it).
-			 */
+				/* XXX: duk_to_int() ensures we'll get 8 lowest bits as
+				 * as input is within duk_int_t range (capped outside it).
+				 */
 #if defined(DUK_USE_FASTINT)
-			/* Buffer writes are often integers. */
-			if (DUK_TVAL_IS_FASTINT(tv_val)) {
-				data[arr_idx] = (duk_uint8_t) DUK_TVAL_GET_FASTINT_U32(tv_val);
-			}
-			else
+				/* Buffer writes are often integers. */
+				if (DUK_TVAL_IS_FASTINT(tv_val)) {
+					data[arr_idx] = (duk_uint8_t) DUK_TVAL_GET_FASTINT_U32(tv_val);
+				}
+				else
 #endif
-			{
-				duk_push_tval(ctx, tv_val);
-				data[arr_idx] = (duk_uint8_t) duk_to_uint32(ctx, -1);
-				pop_count++;
-			}
+				{
+					duk_push_tval(ctx, tv_val);
+					data[arr_idx] = (duk_uint8_t) duk_to_uint32(ctx, -1);
+					pop_count++;
+				}
 
-			duk_pop_n(ctx, pop_count);
-			DUK_DDD(DUK_DDDPRINT("result: success (buffer data write)"));
-			return 1;
+				duk_pop_n(ctx, pop_count);
+				DUK_DDD(DUK_DDDPRINT("result: success (buffer data write)"));
+				return 1;
+			} else {
+				/* Don't look up inherited properties, write is ignored. */
+				duk_pop_n(ctx, pop_count);
+				DUK_DDD(DUK_DDDPRINT("result: success (buffer write ignored: number index, out of bounds)"));
+				return 1;
+			}
 		}
 
 		if (pop_count == 0) {
@@ -3765,6 +3828,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 						} else {
 							DUK_D(DUK_DPRINT("bufobj access out of underlying buffer, ignoring (write skipped)"));
 						}
+						duk_pop(ctx);
+						goto success_no_arguments_exotic;
+					} else if (arr_idx != DUK__NO_ARRAY_INDEX) {
+						DUK_D(DUK_DPRINT("bufobj access out of bounds, ignoring (write skipped)"));
 						duk_pop(ctx);
 						goto success_no_arguments_exotic;
 					}
@@ -4496,9 +4563,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 		arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
-		if (arr_idx != DUK__NO_ARRAY_INDEX &&
-		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
-			goto fail_not_configurable;
+		if (arr_idx != DUK__NO_ARRAY_INDEX) {
+			if (arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
+				goto fail_not_configurable;
+			} else {
+				/* FIXME */
+			}
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
 		/* Lightfunc virtual properties are non-configurable, so
