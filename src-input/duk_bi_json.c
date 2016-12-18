@@ -2136,12 +2136,11 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		}
 		break;
 	}
-	/* Because plain buffers mimic ArrayBuffers, they are supported even
-	 * without JX/JX support enabled.  Because JSON only serializes
+	/* Because plain buffers mimics Uint8Array, they have enumerable
+	 * index properties [0,byteLength[.  Because JSON only serializes
 	 * enumerable own properties, no properties can be serialized for
 	 * plain buffers (all virtual properties are non-enumerable).  However,
 	 * there may be a .toJSON() method which was already handled above.
-	 * Thus, we serialize to '{}' here.
 	 */
 	case DUK_TAG_BUFFER: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
@@ -2150,7 +2149,11 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			break;
 		}
 #endif
-		DUK__EMIT_2(js_ctx, DUK_ASC_LCURLY, DUK_ASC_RCURLY);
+		/* Could implement a fast path, but object coerce and
+		 * serialize the result for now.
+		 */
+		duk_to_object(ctx, -1);
+		duk__enc_object(js_ctx);
 		break;
 	}
 	case DUK_TAG_LIGHTFUNC: {
@@ -2617,16 +2620,16 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		/* Plain buffers are treated like ArrayBuffers: because they
-		 * have no enumerable own properties they normally serialize
-		 * to '{}'.  However, there can be a replacer (not relevant
-		 * here) or a .toJSON() method (which we need to check for
-		 * explicitly).
+		/* Plain buffers are treated like Uint8Arrays: they have
+		 * enumerable indices.  Other virtual properties are not
+		 * enumerable, and inherited properties are not serialized.
+		 * However, there can be a replacer (not relevant here) or
+		 * a .toJSON() method (which we need to check for explicitly).
 		 */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk_hobject_hasprop_raw(js_ctx->thr,
-		                            js_ctx->thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE],
+		                            js_ctx->thr->builtins[DUK_BIDX_UINT8ARRAY_PROTOTYPE],
 		                            DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr))) {
 			DUK_DD(DUK_DDPRINT("value is a plain buffer and there's an inherited .toJSON, abort fast path"));
 			goto abort_fastpath;
@@ -2639,8 +2642,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 			break;
 		}
 #endif
-		DUK__EMIT_2(js_ctx, DUK_ASC_LCURLY, DUK_ASC_RCURLY);
-		break;
+		/* Could implement a fast path, but abort fast path for now. */
+		DUK_DD(DUK_DDPRINT("value is a plain buffer and serializing as plain JSON, abort fast path"));
+		goto abort_fastpath;
 	}
 	case DUK_TAG_POINTER: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)

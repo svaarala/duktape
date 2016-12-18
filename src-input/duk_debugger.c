@@ -2255,7 +2255,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk__debug_getinfo_prop_uint(thr, "slice_length", h_bufobj->length);
 			duk__debug_getinfo_prop_uint(thr, "elem_shift", (duk_uint_t) h_bufobj->shift);
 			duk__debug_getinfo_prop_uint(thr, "elem_type", (duk_uint_t) h_bufobj->elem_type);
-			duk__debug_getinfo_prop_bool(thr, "is_view", (duk_uint_t) h_bufobj->is_view);
+			duk__debug_getinfo_prop_bool(thr, "is_typedarray", (duk_uint_t) h_bufobj->is_typedarray);
 			if (h_bufobj->buf != NULL) {
 				duk__debug_getinfo_flags_key(thr, "buffer");
 				duk_debug_write_heapptr(thr, (duk_heaphdr *) h_bufobj->buf);

@@ -26,13 +26,6 @@
  */
 #define DUK__ENUM_START_INDEX  2
 
-DUK_LOCAL const duk_uint16_t duk__bufobj_virtual_props[] = {
-	DUK_STRIDX_LENGTH,
-	DUK_STRIDX_BYTE_LENGTH,
-	DUK_STRIDX_BYTE_OFFSET,
-	DUK_STRIDX_BYTES_PER_ELEMENT
-};
-
 #if 0
 /* Current implementation suffices for ES6 for now because there's no symbol
  * sorting, so commented out for now.
@@ -410,6 +403,8 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 #else
 		if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr)) {
 #endif
+			duk_bool_t have_length = 1;
+
 			/* String and buffer enumeration behavior is identical now,
 			 * so use shared handler.
 			 */
@@ -424,14 +419,14 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				duk_hbufobj *h_bufobj;
 				DUK_ASSERT(DUK_HOBJECT_IS_BUFOBJ(curr));
 				h_bufobj = (duk_hbufobj *) curr;
-				if (h_bufobj == NULL ||
-				   (DUK_HOBJECT_GET_CLASS_NUMBER(curr) == DUK_HOBJECT_CLASS_ARRAYBUFFER &&
-				    ((enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) == 0))) {
+
+				if (h_bufobj == NULL || !h_bufobj->is_typedarray) {
 					/* Zero length seems like a good behavior for neutered buffers.
-					 * ArrayBuffer index properties are non-enumerable, so use len = 0
-					 * to ensure they're not enumerated (unless requested explicitly).
+					 * ArrayBuffer (non-view) and DataView don't have index properties
+					 * or .length property.
 					 */
 					len = 0;
+					have_length = 0;
 				} else {
 					/* There's intentionally no check for
 					 * current underlying buffer length.
@@ -460,25 +455,8 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			 * properties are requested.
 			 */
 
-			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
-				duk_uint_fast32_t n;
-
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-				if (DUK_HOBJECT_IS_BUFOBJ(curr)) {
-					n = sizeof(duk__bufobj_virtual_props) / sizeof(duk_uint16_t);
-				}
-				else
-#endif
-				{
-					DUK_ASSERT(DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(curr));
-					DUK_ASSERT(duk__bufobj_virtual_props[0] == DUK_STRIDX_LENGTH);
-					n = 1;  /* only 'length' */
-				}
-
-				for (i = 0; i < n; i++) {
-					duk__add_enum_key_stridx(ctx, duk__bufobj_virtual_props[i]);
-				}
-
+			if (have_length && (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE)) {
+				duk__add_enum_key_stridx(ctx, DUK_STRIDX_LENGTH);
 			}
 		} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(curr)) {
 			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {

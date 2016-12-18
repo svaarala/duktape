@@ -125,6 +125,7 @@ DUK_INTERNAL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_f
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	res->buf = NULL;
+	res->buf_prop = NULL;
 #endif
 
 	DUK_ASSERT_HBUFOBJ_VALID(res);

@@ -402,7 +402,9 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	 *  object instance or not.
 	 */
 
-	if (duk_is_object(ctx, -1)) {
+	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	                                 DUK_TYPE_MASK_BUFFER |
+	                                 DUK_TYPE_MASK_LIGHTFUNC)) {
 		duk_remove_m2(ctx);
 	} else {
 		duk_pop(ctx);

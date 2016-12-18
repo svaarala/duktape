@@ -3209,7 +3209,6 @@ objects:
         value: "ArrayBuffer"
         attributes: "c"
         es6: true
-
       - key: "isView"
         value:
           type: function
@@ -3218,25 +3217,6 @@ objects:
           varargs: false
         typedarray: true
         es6: true
-
-      # Duktape custom: allocate a plain buffer, return value is always a
-      # freshly allocated fixed plain buffer.
-      - key: "allocPlain"
-        value:
-          type: function
-          native: duk_bi_arraybuffer_allocplain
-          length: 1
-          varargs: false
-        duktape: true
-
-      # Get plain buffer underlying a buffer object.
-      - key: "plainOf"
-        value:
-          type: function
-          native: duk_bi_arraybuffer_plainof
-          length: 1
-          varargs: false
-        duktape: true
 
       #- key:  # @@species
       #    type: symbol
@@ -3251,9 +3231,18 @@ objects:
     typedarray: true
     es6: true
     bidx: true
-    # Present even when DUK_USE_BUFFEROBJECT_SUPPORT is disabled.
+    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
+      - key: "byteLength"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_bytelength_getter  # XXX: more lenient than required by spec now
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
       - key: "constructor"
         value:
           type: object
@@ -3261,8 +3250,6 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
-        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
-
       - key: "slice"
         value:
           type: function
@@ -3272,7 +3259,6 @@ objects:
           magic: 2  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         typedarray: true
         es6: true
-        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
       #- key:  # @@toStringTag
       #    type: symbol
@@ -3327,6 +3313,33 @@ objects:
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
+      - key: "byteLength"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_bytelength_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
+      - key: "byteOffset"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_byteoffset_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
+      - key: "buffer"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_buffer_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
       - key: "constructor"
         value:
           type: object
@@ -3582,6 +3595,7 @@ objects:
     native: duk_bi_typedarray_constructor
     callable: true
     constructable: false
+    nargs: 0
     magic: 0
     typedarray: true
     es6: true
@@ -3622,9 +3636,38 @@ objects:
     typedarray: true
     es6: true
     bidx: true
-    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
+    # Present even when DUK_USE_BUFFEROBJECT_SUPPORT is disabled
+    # to support plain buffers.
 
     properties:
+      - key: "byteLength"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_bytelength_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
+      - key: "byteOffset"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_byteoffset_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
+      - key: "buffer"
+        value:
+          type: accessor
+          getter: duk_bi_typedarray_buffer_getter
+          getter_nargs: 0
+          getter_magic: 0
+        attributes: ""
+        typedarray: true
+        es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT  # missing without bufferobject support
       - key: "set"
         value:
           type: function
@@ -3633,6 +3676,7 @@ objects:
           varargs: false
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       - key: "subarray"
         value:
           type: function
@@ -3642,6 +3686,7 @@ objects:
           magic: 1  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         typedarray: true
         es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
       #- key:  # @@iterator
       #    type: symbol
@@ -3649,12 +3694,14 @@ objects:
       #    string: "Symbol.iterator"
       #  value: XXX
       #  es6: true
+      #  present_if: DUK_USE_BUFFEROBJECT_SUPPORT
       #- key:  # @@toStringTag
       #    type: symbol
       #    variant: wellknown
       #    string: "Symbol.toStringTag"
       #  value: XXX
       #  es6: true
+      #  present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
   - id: bi_int8array_constructor
     class: Function
@@ -3718,6 +3765,11 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 1
+        attributes: ""
+        typedarray: true
+        es6: true
 
   - id: bi_uint8array_constructor
     class: Function
@@ -3758,6 +3810,25 @@ objects:
         typedarray: true
         es6: true
 
+      # Duktape custom: allocate a plain buffer, return value is always
+      # a freshly allocated fixed plain buffer.
+      - key: "allocPlain"
+        value:
+          type: function
+          native: duk_bi_uint8array_allocplain
+          length: 1
+          varargs: false
+        duktape: true
+
+      # Duktape custom: get plain buffer underlying a buffer object.
+      - key: "plainOf"
+        value:
+          type: function
+          native: duk_bi_uint8array_plainof
+          length: 1
+          varargs: false
+        duktape: true
+
       #- key:  # @@species
       #    type: symbol
       #    variant: wellknown
@@ -3771,7 +3842,8 @@ objects:
     typedarray: true
     es6: true
     bidx: true
-    present_if: DUK_USE_BUFFEROBJECT_SUPPORT
+    # Present even when DUK_USE_BUFFEROBJECT_SUPPORT is disabled
+    # to support plain buffers.
 
     properties:
       - key: "constructor"
@@ -3779,6 +3851,12 @@ objects:
           type: object
           id: bi_uint8array_constructor
         attributes: "wc"
+        typedarray: true
+        es6: true
+        present_if: DUK_USE_BUFFEROBJECT_SUPPORT  # missing without bufferobject support
+      - key: "BYTES_PER_ELEMENT"
+        value: 1
+        attributes: ""
         typedarray: true
         es6: true
 
@@ -3844,6 +3922,11 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 1
+        attributes: ""
+        typedarray: true
+        es6: true
 
   - id: bi_int16array_constructor
     class: Function
@@ -3905,6 +3988,11 @@ objects:
           type: object
           id: bi_int16array_constructor
         attributes: "wc"
+        typedarray: true
+        es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 2
+        attributes: ""
         typedarray: true
         es6: true
 
@@ -3970,6 +4058,11 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 2
+        attributes: ""
+        typedarray: true
+        es6: true
 
   - id: bi_int32array_constructor
     class: Function
@@ -4031,6 +4124,11 @@ objects:
           type: object
           id: bi_int32array_constructor
         attributes: "wc"
+        typedarray: true
+        es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 4
+        attributes: ""
         typedarray: true
         es6: true
 
@@ -4096,6 +4194,11 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 4
+        attributes: ""
+        typedarray: true
+        es6: true
 
   - id: bi_float32array_constructor
     class: Function
@@ -4159,6 +4262,11 @@ objects:
         attributes: "wc"
         typedarray: true
         es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 4
+        attributes: ""
+        typedarray: true
+        es6: true
 
   - id: bi_float64array_constructor
     class: Function
@@ -4220,6 +4328,11 @@ objects:
           type: object
           id: bi_float64array_constructor
         attributes: "wc"
+        typedarray: true
+        es6: true
+      - key: "BYTES_PER_ELEMENT"
+        value: 8
+        attributes: ""
         typedarray: true
         es6: true
 
@@ -4824,7 +4937,7 @@ objects:
           native: duk_bi_buffer_slice_shared
           length: 2
           varargs: false
-          magic: 4  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
+          magic: 5  # magic: 0x01=isView, 0x02=create copy, 0x04=Node.js Buffer special
         nodejs_buffer: true
       - key: "write"
         value:
