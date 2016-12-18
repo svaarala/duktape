@@ -339,8 +339,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	h_trap_result = duk_require_hobject(ctx, -1);
 	DUK_UNREF(h_trap_result);
 
-	/* XXX: more filter flags? */
-	duk_proxy_ownkeys_postprocess(ctx, h_proxy_target, (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) ? 0 : 1 /*enumerable_only*/);
+	duk_proxy_ownkeys_postprocess(ctx, h_proxy_target, enum_flags);
 	/* -> [ ... enum_target res trap_result keys_array ] */
 
 	/* Copy cleaned up trap result keys into the enumerator object. */
@@ -529,9 +528,19 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			    !DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(thr->heap, curr, i)) {
 				continue;
 			}
-			if (!(enum_flags & DUK_ENUM_INCLUDE_INTERNAL) &&
-			    DUK_HSTRING_HAS_INTERNAL(k)) {
-				continue;
+			if (DUK_HSTRING_HAS_SYMBOL(k)) {
+				if (!(enum_flags & DUK_ENUM_INCLUDE_HIDDEN) &&
+				    DUK_HSTRING_HAS_HIDDEN(k)) {
+					continue;
+				}
+				if (!(enum_flags & DUK_ENUM_INCLUDE_SYMBOLS)) {
+					continue;
+				}
+			} else {
+				DUK_ASSERT(!DUK_HSTRING_HAS_HIDDEN(k));  /* would also have symbol flag */
+				if (enum_flags & DUK_ENUM_EXCLUDE_STRINGS) {
+					continue;
+				}
 			}
 			if (DUK_HSTRING_HAS_ARRIDX(k)) {
 				/* This in currently only possible if the

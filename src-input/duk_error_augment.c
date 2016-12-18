@@ -379,7 +379,7 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 			/* [ ... error func ] */
 
 			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_FILE_NAME);
-			if (!duk_is_string(ctx, -1)) {
+			if (!duk_is_string_notsymbol(ctx, -1)) {
 				duk_pop_2(ctx);
 				continue;
 			}

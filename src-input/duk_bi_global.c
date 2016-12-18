@@ -442,8 +442,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	 *  activation doesn't exist, call must be indirect.
 	 */
 
-	h = duk_get_hstring(ctx, 0);
+	h = duk_get_hstring_notsymbol(ctx, 0);
 	if (!h) {
+		/* Symbol must be returned as is, like any non-string values. */
 		return 1;  /* return arg as-is */
 	}
 
@@ -596,7 +597,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 	duk_small_uint_t s2n_flags;
 
 	DUK_ASSERT_TOP(ctx, 2);
-	duk_to_string(ctx, 0);
+	duk_to_string(ctx, 0);  /* Reject symbols. */
 
 	radix = duk_to_int32(ctx, 1);
 
@@ -642,7 +643,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 	duk_int32_t radix;
 
 	DUK_ASSERT_TOP(ctx, 1);
-	duk_to_string(ctx, 0);
+	duk_to_string(ctx, 0);  /* Reject symbols. */
 
 	radix = 10;
 

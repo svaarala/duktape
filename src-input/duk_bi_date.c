@@ -1438,12 +1438,14 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_context *ctx) {
 		}
 		return 1;
 	} else if (nargs == 1) {
+		const char *str;
 		duk_to_primitive(ctx, 0, DUK_HINT_NONE);
-		if (duk_is_string(ctx, 0)) {
-			duk__parse_string(ctx, duk_to_string(ctx, 0));
+		str = duk_get_string_notsymbol(ctx, 0);
+		if (str) {
+			duk__parse_string(ctx, str);
 			duk_replace(ctx, 0);  /* may be NaN */
 		}
-		d = duk__timeclip(duk_to_number(ctx, 0));
+		d = duk__timeclip(duk_to_number(ctx, 0));  /* symbols fail here */
 		duk_push_number(ctx, d);
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		return 1;

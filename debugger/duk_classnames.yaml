@@ -14,6 +14,7 @@ class_names:
   - RegExp
   - String
   - global
+  - Symbol
   - ObjEnv
   - DecEnv
   - Pointer

@@ -28,9 +28,14 @@ function test() {
     print('date:', dt.toISOString());
 
     // Using ArrayBuffer()
-    buf = new ArrayBuffer(1);
+    buf = new ArrayBuffer(6);
     buf[0] = 0xff;
-    key = bufferToString(buf) + 'Value';
+    buf[1] = 'V'.charCodeAt(0);
+    buf[2] = 'a'.charCodeAt(0);
+    buf[3] = 'l'.charCodeAt(0);
+    buf[4] = 'u'.charCodeAt(0);
+    buf[5] = 'e'.charCodeAt(0);
+    key = bufferToString(buf);
     print('using ArrayBuffer, date \\xFFValue:', dt[key]);
 
     // Using Duktape.dec()
@@ -41,5 +46,5 @@ function test() {
 try {
     test();
 } catch (e) {
-    print(e);
+    print(e.stack || e);
 }

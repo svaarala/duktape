@@ -405,10 +405,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 			if (!key) {
 				continue;
 			}
-			if (!st->internal &&
-			    DUK_HSTRING_GET_BYTELEN(key) > 0 &&
-			    DUK_HSTRING_GET_DATA(key)[0] == 0xff) {
-				/* XXX: use DUK_HSTRING_FLAG_INTERNAL? */
+			if (!st->internal && DUK_HSTRING_HAS_HIDDEN(key)) {
 				continue;
 			}
 			DUK__COMMA();

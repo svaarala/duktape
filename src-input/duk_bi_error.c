@@ -190,7 +190,7 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 				/* When looking for .fileName/.lineNumber, blame first
 				 * function which has a .fileName.
 				 */
-				if (duk_is_string(ctx, -1)) {
+				if (duk_is_string_notsymbol(ctx, -1)) {
 					if (output_type == DUK__OUTPUT_TYPE_FILENAME) {
 						return 1;
 					} else if (output_type == DUK__OUTPUT_TYPE_LINENUMBER) {
@@ -201,10 +201,10 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				/* XXX: Change 'anon' handling here too, to use empty string for anonymous functions? */
 				/* XXX: Could be improved by coercing to a readable duk_tval (especially string escaping) */
-				h_name = duk_get_hstring(ctx, -2);  /* may be NULL */
+				h_name = duk_get_hstring_notsymbol(ctx, -2);  /* may be NULL */
 				funcname = (h_name == NULL || h_name == DUK_HTHREAD_STRING_EMPTY_STRING(thr)) ?
 				           "[anon]" : (const char *) DUK_HSTRING_GET_DATA(h_name);
-				filename = duk_get_string(ctx, -1);
+				filename = duk_get_string_notsymbol(ctx, -1);
 				filename = filename ? filename : "";
 				DUK_ASSERT(funcname != NULL);
 				DUK_ASSERT(filename != NULL);
@@ -240,6 +240,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 				duk_replace(ctx, -5);   /* [ ... v1 v2 name filename str ] -> [ ... str v2 name filename ] */
 				duk_pop_3(ctx);         /* -> [ ... str ] */
 			} else if (t == DUK_TYPE_STRING) {
+				const char *str_file;
+
 				/*
 				 *  __FILE__ / __LINE__ entry, here 'pc' is line number directly.
 				 *  Sometimes __FILE__ / __LINE__ is reported as the source for
@@ -261,8 +263,14 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 					}
 				}
 
+				/* Tracedata is trusted but avoid any risk of using a NULL
+				 * for %s format because it has undefined behavior.  Symbols
+				 * don't need to be explicitly rejected as they pose no memory
+				 * safety issues.
+				 */
+				str_file = (const char *) duk_get_string(ctx, -2);
 				duk_push_sprintf(ctx, "at [anon] (%s:%ld) internal",
-				                 (const char *) duk_get_string(ctx, -2), (long) pc);
+				                 (const char *) (str_file ? str_file : "null"), (long) pc);
 				duk_replace(ctx, -3);  /* [ ... v1 v2 str ] -> [ ... str v2 ] */
 				duk_pop(ctx);          /* -> [ ... str ] */
 			} else {

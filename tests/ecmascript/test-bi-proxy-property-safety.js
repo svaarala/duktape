@@ -54,12 +54,10 @@ function proxyPropertyTest(key) {
 }
 
 function proxyInternalKeysSandboxTest() {
-    var pfx = bufferToString(Duktape.dec('hex', 'ff'));
-
     print('_Target');
-    proxyPropertyTest(pfx + 'Target');
+    proxyPropertyTest(bufferToString(Duktape.dec('hex', 'ff546172676574')));
     print('_Handler');
-    proxyPropertyTest(pfx + 'Handler');
+    proxyPropertyTest(bufferToString(Duktape.dec('hex', 'ff48616e646c6572')));
 }
 
 try {

@@ -560,14 +560,14 @@ DUK_LOCAL void duk__appendbuffer_ascii(duk_lexer_ctx *lex_ctx, duk_codepoint_t x
  *  (in practice, slot1 or slot2).
  */
 
-DUK_LOCAL void duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx) {
+DUK_LOCAL duk_hstring *duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx) {
 	duk_context *ctx = (duk_context *) lex_ctx->thr;
 
 	DUK_ASSERT(valstack_idx == lex_ctx->slot1_idx || valstack_idx == lex_ctx->slot2_idx);
 
 	DUK_BW_PUSH_AS_STRING(lex_ctx->thr, &lex_ctx->bw);
 	duk_replace(ctx, valstack_idx);
-	/* XXX: return hstring *? */
+	return duk_known_hstring(ctx, valstack_idx);
 }
 
 /*
@@ -1188,8 +1188,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 				}
 				DUK__APPENDBUFFER(lex_ctx, x);
 			}
-			duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-			out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+			out_token->str1 = duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 
 			/* second, parse flags */
 
@@ -1203,8 +1202,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 				DUK__APPENDBUFFER(lex_ctx, x);
 				DUK__ADVANCECHARS(lex_ctx, 1);
 			}
-			duk__internbuffer(lex_ctx, lex_ctx->slot2_idx);
-			out_token->str2 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
+			out_token->str2 = duk__internbuffer(lex_ctx, lex_ctx->slot2_idx);
 
 			DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
@@ -1479,8 +1477,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			first = 0;
 		}
 
-		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-		out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+		out_token->str1 = duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 		str = out_token->str1;
 		out_token->t_nores = DUK_TOK_IDENTIFIER;
 
@@ -1645,7 +1642,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		}
 
 		/* XXX: better coercion */
-		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
+		(void) duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
 
 		if (s2n_radix != 10) {
 			/* For bases other than 10, integer only. */

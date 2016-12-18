@@ -73,7 +73,8 @@
 /* The low 8 bits map directly to duk_hobject.h DUK_PROPDESC_FLAG_xxx.
  * The remaining flags are specific to the debugger.
  */
-#define DUK_DBG_PROPFLAG_INTERNAL        (1 << 8)
+#define DUK_DBG_PROPFLAG_SYMBOL          (1 << 8)
+#define DUK_DBG_PROPFLAG_HIDDEN          (1 << 9)
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL void duk_debug_do_detach(duk_heap *heap);

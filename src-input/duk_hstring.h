@@ -40,15 +40,17 @@
 
 #define DUK_HSTRING_FLAG_ASCII                      DUK_HEAPHDR_USER_FLAG(0)  /* string is ASCII, clen == blen */
 #define DUK_HSTRING_FLAG_ARRIDX                     DUK_HEAPHDR_USER_FLAG(1)  /* string is a valid array index */
-#define DUK_HSTRING_FLAG_INTERNAL                   DUK_HEAPHDR_USER_FLAG(2)  /* string is internal */
-#define DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(3)  /* string is a reserved word (non-strict) */
-#define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(4)  /* string is a reserved word (strict) */
-#define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(5)  /* string is 'eval' or 'arguments' */
-#define DUK_HSTRING_FLAG_EXTDATA                    DUK_HEAPHDR_USER_FLAG(6)  /* string data is external (duk_hstring_external) */
+#define DUK_HSTRING_FLAG_SYMBOL                     DUK_HEAPHDR_USER_FLAG(2)  /* string is a symbol (invalid utf-8) */
+#define DUK_HSTRING_FLAG_HIDDEN                     DUK_HEAPHDR_USER_FLAG(3)  /* string is a hidden symbol (implies symbol, Duktape 1.x internal string) */
+#define DUK_HSTRING_FLAG_RESERVED_WORD              DUK_HEAPHDR_USER_FLAG(4)  /* string is a reserved word (non-strict) */
+#define DUK_HSTRING_FLAG_STRICT_RESERVED_WORD       DUK_HEAPHDR_USER_FLAG(5)  /* string is a reserved word (strict) */
+#define DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS          DUK_HEAPHDR_USER_FLAG(6)  /* string is 'eval' or 'arguments' */
+#define DUK_HSTRING_FLAG_EXTDATA                    DUK_HEAPHDR_USER_FLAG(7)  /* string data is external (duk_hstring_external) */
 
 #define DUK_HSTRING_HAS_ASCII(x)                    DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
 #define DUK_HSTRING_HAS_ARRIDX(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_HAS_INTERNAL(x)                 DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_HAS_SYMBOL(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_HAS_HIDDEN(x)                   DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
 #define DUK_HSTRING_HAS_RESERVED_WORD(x)            DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_HAS_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_HAS_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
@@ -56,7 +58,8 @@
 
 #define DUK_HSTRING_SET_ASCII(x)                    DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
 #define DUK_HSTRING_SET_ARRIDX(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_SET_INTERNAL(x)                 DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_SET_SYMBOL(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_SET_HIDDEN(x)                   DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
 #define DUK_HSTRING_SET_RESERVED_WORD(x)            DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_SET_STRICT_RESERVED_WORD(x)     DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_SET_EVAL_OR_ARGUMENTS(x)        DUK_HEAPHDR_SET_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)
@@ -64,7 +67,8 @@
 
 #define DUK_HSTRING_CLEAR_ASCII(x)                  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ASCII)
 #define DUK_HSTRING_CLEAR_ARRIDX(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_ARRIDX)
-#define DUK_HSTRING_CLEAR_INTERNAL(x)               DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_INTERNAL)
+#define DUK_HSTRING_CLEAR_SYMBOL(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_SYMBOL)
+#define DUK_HSTRING_CLEAR_HIDDEN(x)                 DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_HIDDEN)
 #define DUK_HSTRING_CLEAR_RESERVED_WORD(x)          DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_RESERVED_WORD)
 #define DUK_HSTRING_CLEAR_STRICT_RESERVED_WORD(x)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_STRICT_RESERVED_WORD)
 #define DUK_HSTRING_CLEAR_EVAL_OR_ARGUMENTS(x)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(x)->hdr, DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS)

@@ -32,6 +32,9 @@ strings:
     class_name: true
   - str: "String"
     class_name: true
+  - str: "Symbol"
+    class_name: true
+    es6: true
   - str: "Boolean"
     class_name: true
   - str: "Number"
@@ -369,6 +372,8 @@ strings:
   - str: "boolean"
   - str: "number"
   - str: "string"
+  - str: "symbol"
+    es6: true
   - str: "object"    # also returned for typeof null
   - str: "function"
 
@@ -470,6 +475,12 @@ strings:
     es6: true
   - str: "setPrototypeOf"
     es6: true
+
+  # Well-known symbols
+  - str:
+      type: symbol
+      variant: wellknown
+      string: "Symbol.toPrimitive"
 
   # Misc
   - str: "setPrototypeOf"
@@ -728,7 +739,10 @@ strings:
     duktape: true
   #- str: "code"
   #  duktape: true
-  - str: "\u00ffTracedata"
+  - str:
+      type: symbol
+      variant: hidden
+      string: "Tracedata"
     duktape: true
     internal: true
 
@@ -745,9 +759,14 @@ strings:
     duktape: true
 
   # internal property for primitive value (Boolean, Number, String)
-  - str: "\u00ffValue"
+  - str:
+      type: symbol
+      variant: hidden
+      string: "Value"
     duktape: true
     internal: true
+
+  # FIXME...
 
   # internal properties for enumerator objects
   - str: "\u00ffTarget"
@@ -1120,6 +1139,8 @@ special_define_names:
   "Function": "UC_FUNCTION"
   "string": "LC_STRING"
   "String": "UC_STRING"
+  "symbol": "LC_SYMBOL"
+  "Symbol": "UC_SYMBOL"
   "arguments": "LC_ARGUMENTS"
   "Arguments": "UC_ARGUMENTS"
   "buffer": "LC_BUFFER"

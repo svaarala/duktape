@@ -14,8 +14,8 @@
 |efbfbd616263|
 4 "\ufffdabc"
 |efbfbd616263|
-4 "\xffabc"
-|ff616263|
+4 "\xfeabc"
+|fe616263|
 ===*/
 
 function test() {
@@ -72,8 +72,11 @@ function test() {
     // The active slice of any buffer or buffer object argumented is
     // interpreted as bytes (even for e.g. Uint32Array) and copied 1:1 into
     // the internal string representation.
-
-    b = new Uint8Array([ 0xff, 0x61, 0x62, 0x63 ]);
+    //
+    // Note that specific initial bytes are reserved for symbols; e.g. if
+    // initial byte is 0xff the string coercion will actually create a
+    // symbol because symbols and strings share the same internal representation.
+    b = new Uint8Array([ 0xfe, 0x61, 0x62, 0x63 ]);
     s = String.fromBuffer(b);
     print(s.length, Duktape.enc('jx', s));
     print(Duktape.enc('jx', stringToBuffer(s)));

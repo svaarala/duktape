@@ -992,8 +992,8 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	 */
 
 	/* TypeError if fails */
-	h_pattern = duk_require_hstring(ctx, -2);
-	h_flags = duk_require_hstring(ctx, -1);
+	h_pattern = duk_require_hstring_notsymbol(ctx, -2);
+	h_flags = duk_require_hstring_notsymbol(ctx, -1);
 
 	/*
 	 *  Create normalized 'source' property (E5 Section 15.10.3).

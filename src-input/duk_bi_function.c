@@ -26,7 +26,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 
 	nargs = duk_get_top(ctx);
 	for (i = 0; i < nargs; i++) {
-		duk_to_string(ctx, i);
+		duk_to_string(ctx, i);  /* Rejects Symbols during coercion. */
 	}
 
 	if (nargs == 0) {
@@ -64,7 +64,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	comp_flags = DUK_JS_COMPILE_FLAG_FUNCEXPR;
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
-	h_sourcecode = duk_require_hstring(ctx, -2);
+	h_sourcecode = duk_require_hstring(ctx, -2);  /* no symbol check needed; -2 is concat'd code */
 	duk_js_compile(thr,
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
@@ -386,7 +386,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
 	duk_push_string(ctx, "bound ");  /* ES6 19.2.3.2. */
 	duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME);
-	if (!duk_is_string(ctx, -1)) {
+	if (!duk_is_string_notsymbol(ctx, -1)) {
 		/* ES6 has requirement to check that .name of target is a string
 		 * (also must check for Symbol); if not, targetName should be the
 		 * empty string.  ES6 19.2.3.2.

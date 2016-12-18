@@ -59,11 +59,13 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_0(ctx);
+			duk_to_string(ctx, -1);  /* Rejects Symbols. */
 		}
 		if (duk_is_undefined(ctx, 1)) {
 			duk_push_hstring_empty(ctx);
 		} else {
 			duk_dup_1(ctx);
+			duk_to_string(ctx, -1);  /* Rejects Symbols. */
 		}
 
 		/* [ ... pattern flags ] */

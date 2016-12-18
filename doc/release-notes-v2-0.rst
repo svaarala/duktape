@@ -1022,6 +1022,36 @@ To upgrade:
 
 * Check application code for enumeration assumptions.
 
+Symbol support related changes
+------------------------------
+
+Small changes related to adding symbol support:
+
+* Symbols are represented as strings with an invalid UTF-8 representation (like
+  internal keys in Duktape 1.x), and they behave like strings in the C API just
+  like internal keys did in Duktape 1.x.  For example,  ``duk_is_string()`` is
+  true for symbols.
+
+* Symbol support is currently **experimental**.  The core semantics have been
+  implemented but it's likely some of the internal details will change in future
+  releases.  The C API may also need changes (for example to the typing model)
+  in future releases; in its current form symbols behave just like internal
+  strings in the C API.
+
+* Being experimental, the ``Symbol`` built-in is disabled by default; enable via
+  config option ``DUK_USE_SYMBOL_BUILTIN``.  Symbols can be created from C code
+  even when the ``Symbol`` built-in is disabled, and symbol semantics (like
+  ``typeof`` and coercion behavior) are currently enabled.
+
+* Internal properties are now called "hidden symbols" and adopt some ES6 Symbol
+  behaviors, e.g. ``typeof internalKey === 'symbol`` and ``"" + internalKey``
+  is now a TypeError.  Internal keys are different from normal ES6 Symbols in
+  that they can't be enumerated from Ecmascript code even with
+  ``Object.getOwnPropertySymbols()``.
+
+* The ``DUK_ENUM_INCLUDE_INTERNAL`` C API flag has been renamed
+  ``DUK_ENUM_INCLUDE_HIDDEN``.
+
 Other incompatible changes
 --------------------------
 

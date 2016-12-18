@@ -425,6 +425,13 @@ struct duk_heap {
 #endif
 #endif
 
+	/* counter for unique local symbol creation */
+	/* XXX: When 64-bit types are available, it would be more efficient to
+	 * use a duk_uint64_t at least for incrementing but maybe also for
+	 * string formatting in the Symbol constructor.
+	 */
+	duk_uint32_t sym_counter[2];
+
 	/* For manual debugging: instruction count based on executor and
 	 * interrupt counter book-keeping.  Inspect debug logs to see how
 	 * they match up.

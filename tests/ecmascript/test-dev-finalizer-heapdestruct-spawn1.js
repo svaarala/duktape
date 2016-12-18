@@ -36,6 +36,7 @@ object true
 object true
 object true
 object true
+object true
 ===*/
 
 function mkObj() {
