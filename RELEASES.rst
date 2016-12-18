@@ -1891,6 +1891,9 @@ Planned
   genbuiltins.py to reduce code footprint for ROM-based built-ins and custom
   bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)
 
+* Add experimental support for ES6 Symbol built-in (disabled by default,
+  enable using DUK_USE_SYMBOL_BUILTIN) (GH-982)
+
 * Allow ES6 Annex B unescaped right bracket (']') in regular expressions
   (non-standard before ES6 Annex B), left bracket ('[') not yet supported
   because it needs backtracking (GH-871)
