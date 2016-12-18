@@ -1976,6 +1976,9 @@ Planned
 * Add duk_inspect_callstack_entry() to provide internal information about a
   callstack entry; the output matches Duktape.act() (GH-1128)
 
+* Add duk_set_length() API call and change duk_get_length() limits from
+  uint32 to size_t supported range (GH-1123)
+
 * Add ability to perform an indirect debugger Eval with non-empty callstack by
   sending null for the callstack level (GH-747)
 

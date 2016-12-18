@@ -59,13 +59,13 @@ void test(duk_context *ctx) {
 	duk_put_prop_string(ctx, -2, "length");
 
 	/* 8 */
-	duk_push_object(ctx);  /* length: outside 32-bit range but within range after ToInteger() */
-	duk_push_number(ctx, 4294967295.9);
+	duk_push_object(ctx);  /* length: just within 32-bit range */
+	duk_push_number(ctx, (duk_double_t) 0xffffffffUL);
 	duk_put_prop_string(ctx, -2, "length");
 
 	/* 9 */
-	duk_push_object(ctx);  /* length: outside 32-bit range */
-	duk_push_number(ctx, 4294967296);
+	duk_push_object(ctx);  /* length: outside size_t range */
+	duk_push_number(ctx, (duk_double_t) DUK_SIZE_MAX + 1.0);
 	duk_put_prop_string(ctx, -2, "length");
 
 	/* 10 */

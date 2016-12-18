@@ -887,9 +887,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_delprop_raw(duk_hthread *thr, duk_hobje
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobject *obj, duk_hstring *key);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
-DUK_INTERNAL_DECL void duk_hobject_set_length(duk_hthread *thr, duk_hobject *obj, duk_uint32_t length);  /* XXX: duk_uarridx_t? */
-DUK_INTERNAL_DECL void duk_hobject_set_length_zero(duk_hthread *thr, duk_hobject *obj);
-DUK_INTERNAL_DECL duk_uint32_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);  /* XXX: duk_uarridx_t? */
+DUK_INTERNAL_DECL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
 
 /* helpers for defineProperty() and defineProperties() */
 DUK_INTERNAL_DECL

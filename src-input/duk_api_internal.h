@@ -258,9 +258,6 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_builtin(duk_context *ctx, duk_idx_t 
 
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx);  /* [] -> [] */
 
-/* Set object 'length'. */
-DUK_INTERNAL_DECL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t length);
-
 DUK_INTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
 #if 0
 DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
