@@ -41,6 +41,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Brett Vickers (https://github.com/beevik)
 * Dominik Okwieka (https://github.com/okitec)
 * Remko Tronçon (https://el-tramo.be)
+* Neil Kolban (https://github.com/nkolban)
 
 Other contributions
 ===================
