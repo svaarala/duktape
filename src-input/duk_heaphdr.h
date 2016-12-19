@@ -80,6 +80,8 @@ struct duk_heaphdr_string {
 #else
 	duk_size_t h_refcount;
 #endif
+#else
+	duk_uint16_t h_strextra16;
 #endif
 };
 
@@ -709,6 +711,9 @@ struct duk_heaphdr_string {
 #endif
 
 #else  /* DUK_USE_REFERENCE_COUNTING */
+
+#define DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv)     0
+#define DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(h)   0
 
 #define DUK_TVAL_INCREF_FAST(thr,v)            do {} while (0) /* nop */
 #define DUK_TVAL_DECREF_FAST(thr,v)            do {} while (0) /* nop */
