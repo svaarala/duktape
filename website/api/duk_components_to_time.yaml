@@ -14,7 +14,6 @@ summary: |
   <li>There's no special handling of two-digit years.  For example,
       <code>Date.UTC(99, 0, 1)</code> gets interpreted as 1999-01-01.
       If <code>comp-&gt;time</code> is 99, it's interpreted as the year 99.</li>
-  <li>The month component is one-based, not zero-based.</li>
   <li>The milliseconds component is allowed fractions (sub-millisecond
       resolution) so that the resulting time value may have fractions.</li>
   </ul>
@@ -31,8 +30,8 @@ example: |
 
   memset((void *) &comp, 0, sizeof(comp));  /* good practice even if fully initialized */
   comp.year = 2016;
-  comp.month = 1;  /* 1-based, 1=January */
-  comp.day = 2;    /* 1-based */
+  comp.month = 0;  /* 0-based, 1=January */
+  comp.day = 2;    /* 1-based: second of January */
   comp.hour = 3;
   comp.minute = 4;
   comp.second = 5;
