@@ -21,6 +21,8 @@ summary: |
   this differs from how buffer data pointers are handled (for technical reasons).
   </div>
 
+  <div include="symbols-are-strings.html" />
+
 example: |
   const char *buf;
 

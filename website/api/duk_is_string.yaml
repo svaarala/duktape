@@ -10,6 +10,8 @@ summary: |
   <p>Returns 1 if value at <code>idx</code> is a string, otherwise
   returns 0.  If <code>idx</code> is invalid, also returns 0.</p>
 
+  <div include="symbols-are-strings.html" />
+
 example: |
   if (duk_is_string(ctx, -3)) {
       /* ... */

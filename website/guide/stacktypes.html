@@ -10,7 +10,7 @@
 <tr><td><a href="#type-null">null</a></td><td>DUK_TYPE_NULL</td><td>DUK_TYPE_MASK_NULL</td><td><code>null</code></td></tr>
 <tr><td><a href="#type-boolean">boolean</a></td><td>DUK_TYPE_BOOLEAN</td><td>DUK_TYPE_MASK_BOOLEAN</td><td><code>true</code> and <code>false</code></td></tr>
 <tr><td><a href="#type-number">number</a></td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
-<tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string</td></tr>
+<tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string or (plain) Symbol</td></tr>
 <tr><td><a href="#type-object">object</a></td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
 <tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external; mimics an ArrayBuffer</td></tr>
 <tr><td><a href="#type-pointer">pointer</a></td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
@@ -172,17 +172,18 @@ come out.  Don't rely on NaNs preserving their exact form.</p>
 
 <h2 id="type-string">String</h2>
 
-<p>The <b>string</b> type is an arbitrary byte sequence of a certain length which
-may contain internal NUL (0x00) values.  Strings are always automatically NUL
-terminated for C coding convenience.  The NUL terminator is not counted as part
-of the string length.  For instance, the string <code>"foo"</code> has byte length 3
-and is stored in memory as <code>{ 'f', 'o', 'o', '\0' }</code>.  Because of the
-guaranteed NUL termination, strings can always be pointed to using a simple
-<code>const char *</code> as long as internal NULs are not an issue; if they are,
-the explicit byte length of the string can be queried with the API.  Calling code
-can refer directly to the string data held by Duktape.  Such string data
-pointers are valid (and stable) for as long as a string is reachable in the
-Duktape heap.</p>
+<p>The <b>string</b> stack type is used to represent both plain strings and
+plain Symbols (introduced in ES2015).  A string is an arbitrary byte sequence
+of a certain length which may contain internal NUL (0x00) values.  Strings are
+always automatically NUL terminated for C coding convenience.  The NUL terminator
+is not counted as part of the string length.  For instance, the string
+<code>"foo"</code> has byte length 3 and is stored in memory as
+<code>{ 'f', 'o', 'o', '\0' }</code>.  Because of the guaranteed NUL termination,
+strings can always be pointed to using a simple <code>const char *</code> as long
+as internal NULs are not an issue for the application; if they are, the explicit
+byte length of the string can be queried with the API.  Calling code can refer
+directly to the string data held by Duktape.  Such string data pointers are valid
+(and stable) for as long as a string is reachable in the Duktape heap.</p>
 
 <p>Strings are <a href="http://en.wikipedia.org/wiki/String_interning">interned</a>
 for efficiency: only a single copy of a certain string ever exists at a time.
@@ -212,13 +213,7 @@ characters as-is which is convenient for C code.  For example:</p>
 can be represented with UTF-8, and codepoints above that up to full 32 bits
 can be represented with
 <a href="http://en.wikipedia.org/wiki/UTF-8#Extending_from_31_bit_to_36_bit_range">extended UTF-8</a>.
-Non-standard strings are used for storing internal object properties; using a
-non-standard string ensures that such properties never conflict with properties
-accessible using standard Ecmascript strings.  Non-standard strings can be given
-to Ecmascript built-in functions, but since behavior may not be exactly
-specified, results may vary.</p>
-
-<p>The extended UTF-8 encoding used by Duktape is described in the table below.
+The extended UTF-8 encoding used by Duktape is described in the table below.
 The leading byte is shown in binary (with "x" marking data bits) while
 continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</p>
 
@@ -241,8 +236,22 @@ continuation bytes are marked with "C" (indicating the bit sequence 10xxxxxx):</
 the leading byte will be <code>0xFE</code> which conflicts with Unicode byte order
 marker encoding.  This is not a practical concern in Duktape's internal use.</p>
 
-<p>The leading <code>0xFF</code> byte never appears in Duktape's extended UTF-8
-encoding, and is used to implement <a href="#internalproperties">internal properties</a>.</p>
+<p>Finally, invalid extended UTF-8 byte sequences are used for special purposes
+such as representing Symbol values.  Invalid extened UTF-8/CESU-8 byte sequences
+never conflict with standard Ecmascript strings (which are CESU-8) and will remain
+cleanly separated within object property tables.  For more information see
+<a href="#symbols">Symbols</a> and
+<a href="https://github.com/svaarala/duktape/blob/master/doc/symbols.rst">symbols.rst</a>.</p>
+
+<p>Strings with invalid extended UTF-8 sequences can be pushed on the value stack
+from C code and also passed to Ecmascript functions, with two caveats:</p>
+<ul>
+<li>If the invalid byte sequence matches the internal format used to represent
+    Symbols, the value will appear as a Symbol rather than a string for Ecmascript
+    code.  For example, <code>typeof val</code> will be <code>symbol</code>.</li>
+<li>Behavior of string operations on invalid byte sequences if not well defined
+    and results may vary, and change even in minor Duktape version updates.</li>
+</ul>
 
 <h2 id="type-object">Object</h2>
 

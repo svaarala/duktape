@@ -19,9 +19,20 @@ summary: |
       properties are enumerated</td>
   </tr>
   <tr>
-  <td>DUK_ENUM_INCLUDE_INTERNAL</td>
-  <td>Enumerate also internal properties, by default internal properties
-      are not enumerated</td>
+  <td>DUK_ENUM_INCLUDE_HIDDEN</td>
+  <td>Enumerate also hidden Symbols, by default hidden Symbols are not
+      enumerated.  Use together with <code>DUK_ENUM_INCLUDE_SYMBOLS</code>.
+      In Duktape 1.x this flag was called <code>DUK_ENUM_INCLUDE_INTERNAL</code>.</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_INCLUDE_SYMBOLS</td>
+  <td>Include Symbols in the enumeration result.  Hidden Symbols are not
+      included unless <code>DUK_ENUM_INCLUDE_HIDDEN</code> is specified.</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_EXCLUDE_STRINGS</td>
+  <td>Exclude strings from the enumeration result.  By default strings are
+      included.</td>
   </tr>
   <tr>
   <td>DUK_ENUM_OWN_PROPERTIES_ONLY</td>
@@ -38,6 +49,10 @@ summary: |
   <td>Apply the ES6 [[OwnPropertyKeys]] enumeration order over the whole
       enumeration result rather than per inheritance level, this has the
       effect of sorting array indices (even when inherited)</td>
+  </tr>
+  <tr>
+  <td>DUK_ENUM_NO_PROXY_BEHAVIOR</td>
+  <td>Enumerate a Proxy object itself without invoking Proxy behaviors.</td>
   </tr>
   </table>
 

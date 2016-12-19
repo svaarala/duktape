@@ -11,6 +11,8 @@ summary: |
   <code>DUK_TYPE_xxx</code> or <code>DUK_TYPE_NONE</code> if <code>idx</code>
   is invalid.</p>
 
+  <div include="symbols-are-strings.html" />
+
 example: |
   if (duk_get_type(ctx, -3) == DUK_TYPE_NUMBER) {
       printf("value is a number\n");

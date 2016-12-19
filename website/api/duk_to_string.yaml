@@ -15,6 +15,10 @@ summary: |
   <div include="ref-custom-type-coercion.html" />
 
   <div class="note">
+  ToString() coercion for a Symbol value causes a TypeError.
+  </div>
+
+  <div class="note">
   In Duktape 2.x plain buffers mimic ArrayBuffer objects and will usually
   ToString() coerce to "[object ArrayBuffer]".  To convert buffer or buffer
   object contents into a string, use

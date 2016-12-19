@@ -11,6 +11,8 @@ summary: |
   but throws an error if the value at <code>idx</code> is not a string
   or if the index is invalid.</p>
 
+  <div include="symbols-are-strings.html" />
+
 example: |
   const char *buf;
 
