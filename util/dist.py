@@ -370,6 +370,7 @@ def main():
         'duk_heap_markandsweep.c',
         'duk_heap_memory.c',
         'duk_heap_misc.c',
+        'duk_heap_propcache.c',
         'duk_heap_refcount.c',
         'duk_heap_stringcache.c',
         'duk_heap_stringtable.c',
