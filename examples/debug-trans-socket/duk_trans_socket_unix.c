@@ -11,20 +11,20 @@
  * on all platforms.  The default implementation is to use "poll()"
  * but we can switch that by defining "USE_SELECT" within this
  * file.  For example:
- * 
+ *
  * #define USE_SELECT
- * 
+ *
  * If set, instead of leveraging "poll()", this code will leverage
  * "select()".   Discussions on "poll()" vs "select()" can be read
  * about here: https://daniel.haxx.se/docs/poll-vs-select.html
- * 
+ *
  */
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#ifndef USE_SELECT
+#if !defined USE_SELECT
 #include <poll.h>
 #endif
 #include <errno.h>
@@ -269,7 +269,7 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 }
 
 duk_size_t duk_trans_socket_peek_cb(void *udata) {
-#ifdef USE_SELECT
+#if defined USE_SELECT
 	fd_set rfds;
 #else
 	struct pollfd fds[1];
@@ -286,7 +286,7 @@ duk_size_t duk_trans_socket_peek_cb(void *udata) {
 	if (client_sock < 0) {
 		return 0;
 	}
-#ifdef USE_SELECT
+#if defined USE_SELECT
 	FD_ZERO(&rfds);
 	FD_SET(client_sock, &rfds);
 	struct timeval tm;
