@@ -1965,7 +1965,7 @@ Planned
 
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
-  same time provider as seen by Ecmascript code (GH-771)
+  same time provider as seen by Ecmascript code (GH-771, GH-1209)
 
 * Add duk_push_bare_object() API call which pushes an object without an
   internal prototype, equivalent to Object.create(null) (GH-1126)
