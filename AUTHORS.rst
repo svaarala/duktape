@@ -78,6 +78,7 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * Michael Drake (https://github.com/tlsa)
 * https://github.com/chris-y
 * Laurent Zubiaur (https://github.com/lzubiaur)
+* Neil Kolban (https://github.com/nkolban)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
