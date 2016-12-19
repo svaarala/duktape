@@ -22,6 +22,9 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(h != NULL);
 
+	/* FIXME: heap ref only */
+	duk_propcache_invalidate_heap(heap);
+
 	DUK_FREE(heap, DUK_HOBJECT_GET_PROPS(heap, h));
 
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
@@ -680,7 +683,8 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_heap);
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
-	DUK__DUMPSZ(duk_strcache);
+	DUK__DUMPSZ(duk_strcache_entry);
+	DUK__DUMPSZ(duk_propcache_entry);
 	DUK__DUMPSZ(duk_ljstate);
 	DUK__DUMPSZ(duk_fixedbuffer);
 	DUK__DUMPSZ(duk_bitdecoder_ctx);
@@ -935,6 +939,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	}
 #endif
 #endif  /* DUK_USE_ROM_STRINGS */
+	res->propcache_generation = 1;  /* invalidate entries with 0 generation */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	res->dbg_read_cb = NULL;
 	res->dbg_write_cb = NULL;

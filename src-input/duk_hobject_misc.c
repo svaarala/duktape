@@ -43,10 +43,12 @@ DUK_INTERNAL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject
 	tmp = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
 	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
 	DUK_HOBJECT_INCREF_ALLOWNULL(thr, p);  /* avoid problems if p == h->prototype */
+	duk_propcache_invalidate(thr);  /* must be done just before finalizers */
 	DUK_HOBJECT_DECREF_ALLOWNULL(thr, tmp);
 #else
 	DUK_ASSERT(h);
 	DUK_UNREF(thr);
 	DUK_HOBJECT_SET_PROTOTYPE(thr->heap, h, p);
+	duk_propcache_invalidate(thr);
 #endif
 }

@@ -1139,6 +1139,8 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(heap->heap_thread->valstack != NULL);
 
+	/* FIXME: property cache invalidation or comment why not needed. */
+
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
 	                 (unsigned long) flags, (unsigned long) (flags | heap->ms_base_flags)));
 
