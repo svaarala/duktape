@@ -2242,6 +2242,9 @@ Planned
   given has no prototype (e.g. argument is Object.prototype) (GH-1162,
   GH-1163)
 
+* Fix compile error when using 16-bit fields and disabling refcounting at
+  the same time (GH-1207)
+
 * Miscellaneous portability improvements: remove dependency on fmin() and
   fmax() (GH-1072); remove signed shifts in lightfunc handling (GH-1172)
 
