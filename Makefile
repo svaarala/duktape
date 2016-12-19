@@ -82,6 +82,7 @@ CONFIGOPTS_NONDEBUG_SIZE=--option-file config/examples/low_memory.yaml
 CONFIGOPTS_NONDEBUG_AJDUK=--option-file util/makeduk_base.yaml --option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h
 CONFIGOPTS_NONDEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
 CONFIGOPTS_NONDEBUG_AJDUK_ROM=--rom-support --rom-auto-lightfunc --builtin-file util/example_user_builtins1.yaml --builtin-file util/example_user_builtins2.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX -DDUK_USE_ASSERTIONS -UDUK_USE_DEBUG
+CONFIGOPTS_NONDEBUG_AJDUK_NOREFC=--option-file util/makeduk_base.yaml --option-file util/makeduk_ajduk.yaml --fixup-file util/makeduk_ajduk_fixup.h -UDUK_USE_REFERENCE_COUNTING -UDUK_USE_DOUBLE_LINKED_HEAP
 CONFIGOPTS_DEBUG=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml
 CONFIGOPTS_DEBUG_SCANBUILD=--option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml --option-file util/makeduk_scanbuild.yaml
 CONFIGOPTS_DEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/makeduk_base.yaml --option-file util/makeduk_debug.yaml -DDUK_USE_ROM_STRINGS -DDUK_USE_ROM_OBJECTS -DDUK_USE_ROM_GLOBAL_INHERIT -UDUK_USE_HSTRING_ARRIDX
@@ -304,6 +305,9 @@ prep/ajduk-nondebug: prep
 prep/ajduk-nondebug-rom: prep
 	@rm -rf ./prep/ajduk-nondebug-rom
 	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-rom --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_ROM) --line-directives
+prep/ajduk-nondebug-norefc: prep
+	@rm -rf ./prep/ajduk-nondebug-norefc
+	$(PYTHON) tools/configure.py --output-directory ./prep/ajduk-nondebug-norefc --source-directory src-input --config-metadata config $(CONFIGOPTS_NONDEBUG_AJDUK_NOREFC) --line-directives
 
 # Library targets.
 libduktape.so.1.0.0: prep/nondebug
@@ -414,6 +418,17 @@ ajduk-rom: alljoyn-js ajtcl linenoise prep/ajduk-nondebug-rom
 		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ -Iprep/ajduk-nondebug-rom \
 		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
 		prep/ajduk-nondebug-rom/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
+		examples/cmdline/duk_cmdline_ajduk.c \
+		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
+		-lm -lpthread
+	@echo "*** SUCCESS:"
+	@ls -l $@
+	-@size $@
+ajduk-norefc: alljoyn-js ajtcl linenoise prep/ajduk-nondebug-norefc
+	$(CC) -o $@ \
+		-Ialljoyn-js/src -Iajtcl/inc/ -Iajtcl/src/target/linux/ -Iprep/ajduk-nondebug-norefc \
+		$(CCOPTS_NONDEBUG) $(CCOPTS_AJDUK) \
+		prep/ajduk-nondebug-norefc/duktape.c $(DUKTAPE_CMDLINE_SOURCES) \
 		examples/cmdline/duk_cmdline_ajduk.c \
 		alljoyn-js/src/ajs_heap.c ajtcl/src/aj_debug.c ajtcl/src/target/linux/aj_target_util.c \
 		-lm -lpthread

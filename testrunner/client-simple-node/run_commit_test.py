@@ -427,6 +427,15 @@ def context_linux_x86_ajduk():
     ])
     return 'hello world!\n' in res['stdout']
 
+def context_linux_x86_ajduk_norefc():
+    cwd = os.getcwd()
+    execute([ 'make', 'ajduk-norefc' ])
+    res = execute([
+        os.path.join(cwd, 'ajduk-norefc'),
+        '-e', 'print("hello world!");'
+    ])
+    return 'hello world!\n' in res['stdout']
+
 def context_linux_x86_ajduk_rombuild():
     cwd = os.getcwd()
 
@@ -920,6 +929,7 @@ context_handlers = {
     'linux-x64-cpp-exceptions': context_linux_x64_cpp_exceptions,
 
     'linux-x86-ajduk': context_linux_x86_ajduk,
+    'linux-x86-ajduk-norefc': context_linux_x86_ajduk_norefc,
     'linux-x86-ajduk-rombuild': context_linux_x86_ajduk_rombuild,
 
     'linux-x64-v8-bench-pass': context_linux_x64_v8_bench_pass,
