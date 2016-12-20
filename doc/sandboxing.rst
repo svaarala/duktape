@@ -25,6 +25,11 @@ carefully written with these sandboxing goals in mind.
 
 This document describes best practices for Duktape sandboxing.
 
+There's a YAML config file with some useful default options for sandboxing,
+and comments on what options you might consider:
+
+* ``config/examples/security_sensitive.yaml``
+
 .. note:: This document described the current status of sandboxing features
           which is not yet a complete solution.
 
@@ -88,12 +93,12 @@ Verbose error messages may cause sandboxing security issues:
 * When ``DUK_USE_PARANOID_ERRORS`` is not set, offending object/key is
   summarized in an error message of some rejected property operations.
   If object keys contain potentially sensitive information, you should
-  enable this option.
+  enable this option.  Disable ``DUK_USE_PARANOID_ERRORS``.
 
 * When stack traces are enabled an attacker may gain useful information from
   the stack traces.  Further, access to the internal ``_Tracedata`` property
   provides access to call chain functions even when references to them are not
-  available directly.
+  available directly.  Disable ``DUK_USE_TRACEBACKS``.
 
 Replace the global object
 -------------------------
@@ -124,30 +129,32 @@ Risky bindings:
   finalizers are a sandboxing risk.  It's also possible to override or unset a
   finalizer which the sandbox relies on.
 
-* Since Duktape 2.x buffer bindings no longer provide a way create "internal"
-  strings which allow access to internal properties.  See separate section on
-  internal properties.
+* Since Duktape 2.x buffer bindings no longer provide a way create hidden
+  Symbols (called "internal strings" in Duktape 1.x) which allow access to
+  internal properties.  See separate section on internal properties.
 
 You should also:
 
-* Remove the ``require`` module loading function in the global object.
-  If you need module loading in the sandbox, it's better to write a specific,
+* Remove the ``require`` module loading function in the global object
+  (since Duktape 2.x it's no longer present by default).  If you need
+  module loading in the sandbox, it's better to write a specific,
   constrained module loader for that environment.
 
 Restrict access to internal properties
 --------------------------------------
 
-Internal properties are intended to be used by Duktape and user C code
-to store "hidden properties" in objects.  The mechanism currently relies on
-using strings whose internal representation contains invalid UTF-8/CESU-8 data,
-in concrete terms, a 0xFF prefix.  These are called "internal strings".  Since
+Internal properties are used by Duktape and user C code to store "hidden
+properties" in objects.  The mechanism currently relies on "hidden Symbols"
+(called "internal keys" or "internal strings" in Duktape 1.x).  These are
+strings whose internal representation contains invalid UTF-8/CESU-8 data
+(see ``doc/symbols.rst`` for description of the current formats).  Because
 all standard Ecmascript strings are represented as CESU-8, such strings cannot
 normally be created by Ecmascript code.  The properties are also never
-enumerated or otherwise exposed to Ecmascript code, so that the only way to
-access them from Ecmascript code is to have access to an "internal string"
-acting as the property key.
+enumerated or otherwise exposed to Ecmascript code (not even by
+``Object.getOwnPropertySymbols()``) so that the only way to access them from
+Ecmascript code is to have access to a hidden Symbol acting as the property key.
 
-C code can create internal keys very easily, which can provide a way to access
+C code can create hidden Symbols very easily, which can provide a way to access
 internal properties.  For example::
 
     // Assume an application native binding returns an internal key pushed
@@ -165,18 +172,18 @@ be modified, concrete security issues may arise.  For instance, if an internal
 property stores a raw pointer to a native handle (such as a ``FILE *``),
 changing its value can lead to a potentially exploitable segfault.
 
-Since Duktape 2.x Ecmascript code cannot create internal keys using standard
-Ecmascript code and the built-in bindings alone.  To prevent access to internal
-keys, ensure that no native bindings provided by the sandboxing environment
+Since Duktape 2.x Ecmascript code cannot create hidden Symbols using standard
+Ecmascript code and the built-in bindings alone.  To prevent access to hidden
+Symbols, ensure that no native bindings provided by the sandboxing environment
 accidentally return such strings.  The easiest way to ensure this is to make
 sure all strings pushed on the value stack are properly CESU-8 encoded.
 
 It's also good practice to ensure that sandboxed code has minimal access to
-objects with potentially dangerous keys like raw pointers.
+objects with potentially dangerous properties like raw pointers.
 
-.. note:: There's a future work issue, potentially included in Duktape 2.x,
+.. note:: There's a future work issue, potentially included in Duktape 3.x,
           for preventing access to internal properties from Ecmascript code
-          even when using the correct internal key.
+          even when using the correct hidden Symbol as a lookup key.
 
 Restrict access to function instances
 -------------------------------------
@@ -234,9 +241,9 @@ string methods with a plain base value::
 
     print("foo".toUpperCase());
 
-Duktape 1.0 will use the original built-in prototype functions in these
-inheritance situations.  There is currently no way to replace these built-ins
-so that the replacements would be used for instead (see
+Duktape uses the original built-in prototype functions in these inheritance
+situations.  There is currently no way to replace these built-ins so that the
+replacements would be used for instead (see
 ``test-dev-sandbox-prototype-limitation.js``).
 
 As a result, sandboxed code will always have access to the built-in prototype
@@ -261,7 +268,7 @@ objects which participate in implicit inheritance:
   through explicit construction (if constructors visible) or implicitly
   through internal errors, e.g. ``/foo\123/`` which throws a SyntaxError
 
-* ``ArrayBuffer.prototype``: through buffer values (if available); since
+* ``Uint8Array.prototype``: through buffer values (if available); since
   there is no buffer literal, user cannot construct buffer values directly
 
 * ``Duktape.Pointer.prototype`` through pointer values (if available); since
@@ -367,7 +374,7 @@ vulnerabilities.  To avoid such issues:
   must match; patch version may vary as bytecode format doesn't change in
   patch versions.
 
-* Ensure integrity of bytecode being loaded e.g. by checksumming.
+* Ensure integrity of bytecode being loaded e.g. by checksumming or signing.
 
 * If bytecode is transported over the network or other unsafe media,
   use cryptographic means (keyed hashing, signatures, or similar) to
