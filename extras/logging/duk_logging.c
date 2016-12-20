@@ -182,9 +182,9 @@ static duk_ret_t duk__logger_prototype_log_shared(duk_context *ctx) {
 	now = duk_get_now(ctx);
 	duk_time_to_components(ctx, now, &comp);
 	sprintf((char *) date_buf, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-	        (int) comp.year, (int) comp.month, (int) comp.day,
-	        (int) comp.hour, (int) comp.minute, (int) comp.second,
-	        (int) comp.millisecond);
+	        (int) comp.year, (int) comp.month + 1, (int) comp.day,
+	        (int) comp.hours, (int) comp.minutes, (int) comp.seconds,
+	        (int) comp.milliseconds);
 
 	date_len = strlen((const char *) date_buf);
 

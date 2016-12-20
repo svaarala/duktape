@@ -90,14 +90,14 @@ struct duk_number_list_entry {
 };
 
 struct duk_time_components {
-	duk_uint_t year;            /* year, e.g. 2016, Ecmascript year range */
-	duk_uint_t month;           /* month: 1-12 */
-	duk_uint_t day;             /* day: 1-31 */
-	duk_uint_t hour;            /* hour: 0-59 */
-	duk_uint_t minute;          /* minute: 0-59 */
-	duk_uint_t second;          /* second: 0-59 (in POSIX time no leap second) */
-	duk_uint_t weekday;         /* weekday: 0-6, 0=Sunday, 1=Monday, ..., 6=Saturday */
-	duk_double_t millisecond;   /* may contain sub-millisecond fractions */
+	duk_double_t year;          /* year, e.g. 2016, Ecmascript year range */
+	duk_double_t month;         /* month: 1-12 */
+	duk_double_t day;           /* day: 1-31 */
+	duk_double_t hours;         /* hour: 0-59 */
+	duk_double_t minutes;       /* minute: 0-59 */
+	duk_double_t seconds;       /* second: 0-59 (in POSIX time no leap second) */
+	duk_double_t milliseconds;  /* may contain sub-millisecond fractions */
+	duk_double_t weekday;       /* weekday: 0-6, 0=Sunday, 1=Monday, ..., 6=Saturday */
 };
 
 /*
