@@ -20,9 +20,8 @@ summary: |
 
   <p>Like the Ecmascript primitives, the components can exceed their natural
   range and are normalized.  For example, specifying <code>comp-&gt;minutes</code>
-  as 120 is interpreted as adding 2 hours to the time value.  Note, however,
-  that components other than milliseconds are <code>duk_uint_t</code> so they
-  may wrap for very large values.</p>
+  as 120 is interpreted as adding 2 hours to the time value.  The components are
+  expressed as IEEE doubles to allow large and negative values to be used.</p>
 
 example: |
   duk_time_components comp;
@@ -32,11 +31,11 @@ example: |
   comp.year = 2016;
   comp.month = 0;  /* 0-based, 1=January */
   comp.day = 2;    /* 1-based: second of January */
-  comp.hour = 3;
-  comp.minute = 4;
-  comp.second = 5;
+  comp.hours = 3;
+  comp.minutes = 4;
+  comp.seconds = 5;
+  comp.milliseconds = 6.0;  /* allows sub-millisecond resolution */
   comp.weekday = 0;  /* ignored */
-  comp.millisecond = 6.0;  /* duk_double_t typing, to allow sub-millisecond resolution */
 
   time = duk_components_to_time(ctx, &comp);
   printf("2016-01-02 03:04:05.006Z -> %lf\n", (double) time);

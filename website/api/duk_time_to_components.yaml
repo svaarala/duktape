@@ -25,15 +25,16 @@ example: |
   };
 
   /* Note that month is zero-based to match the Ecmascript API, so for
-   * human readable printing add 1 to the month.
+   * human readable printing add 1 to the month.  Time components are
+   * IEEE doubles to match Ecmascript Date behavior.
    */
   duk_time_components(ctx, time, &comp);
   printf("Datetime: %04d-%02d-%02d %02d:%02d:%02d.%03dZ\n",
-         (int) comp.year, (int) (comp.month + 1), (int) comp.day,
-         (int) comp.hour, (int) comp.minute, (int) comp.second,
-         (int) comp.millisecond);
+         (int) comp.year, (int) comp.month + 1, (int) comp.day,
+         (int) comp.hours, (int) comp.minutes, (int) comp.seconds,
+         (int) comp.milliseconds);
 
-  printf("Weekday is: %s\n", weekdays[comp.weekday]);  /* 0=Sunday */
+  printf("Weekday is: %s\n", weekdays[(int) comp.weekday]);  /* 0=Sunday */
 
 tags:
   - time
