@@ -35,9 +35,10 @@ summary: |
       transitory objects (see
       <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-8.7.2">PutValue (V, W)</a>,
       step 7 of the special [[Put]] variant).</li>
-  <li>The <code>key</code> argument is internally coerced to a string.  There is
-      an internal fast path for arrays and numeric indices which avoids an
-      explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
+  <li>The <code>key</code> argument is internally coerced using ToPropertyKey()
+      coercion which results in a string or a Symbol.  There is an internal
+      fast path for arrays and numeric indices which avoids an explicit string
+      coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
 
   <p>If the target is a Proxy object which implements the <code>set</code> trap,

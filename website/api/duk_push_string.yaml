@@ -17,7 +17,14 @@ summary: |
   to the stack and <code>NULL</code> is returned.  This behavior differs from
   <code><a href="#duk_push_lstring">duk_push_lstring</a></code> on purpose.</p>
 
-  <p>C code should normally only push valid CESU-8 strings to the stack.</p>
+  <div class="note">
+  C code should normally only push valid CESU-8 strings to the stack.
+  Some invalid CESU-8/UTF-8 byte sequences are reserved for special
+  uses such as representing Symbol values.  When you push such an invalid
+  byte sequence, the value on the value stack will behave like a string for
+  C code but will appear as a <code>Symbol</code> for Ecmascript code.
+  See <a href="guide.html#symbols">Symbols</a> for more discussion.
+  </div>
 
   <p>If input string might contain internal NUL characters, use
   <code><a href="#duk_push_lstring">duk_push_lstring()</a></code> instead.</p>

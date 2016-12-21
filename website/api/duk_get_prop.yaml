@@ -34,9 +34,10 @@ summary: |
   <li>The target value is automatically coerced to an object.  For instance,
       a string is converted to a <code>String</code> and you can access its
       <code>"length"</code> property.</li>
-  <li>The <code>key</code> argument is internally coerced to a string.  There is
-      an internal fast path for arrays and numeric indices which avoids an
-      explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
+  <li>The <code>key</code> argument is internally coerced using ToPropertyKey()
+      coercion which results in a string or a Symbol.  There is an internal
+      fast path for arrays and numeric indices which avoids an explicit string
+      coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
 
   <p>If the target is a Proxy object which implements the <code>get</code> trap,

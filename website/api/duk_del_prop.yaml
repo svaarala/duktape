@@ -33,9 +33,10 @@ summary: |
   <ul>
   <li>The target value is automatically coerced to an object.  However, this
       object is a temporary one, so deleting its properties is not very useful.</li>
-  <li>The <code>key</code> argument is internally coerced to a string.  There is
-      an internal fast path for arrays and numeric indices which avoids an
-      explicit string coercion, so use a numeric <code>key</code> when applicable.</li>
+  <li>The <code>key</code> argument is internally coerced using ToPropertyKey()
+      coercion which results in a string or a Symbol.  There is an internal
+      fast path for arrays and numeric indices which avoids an explicit string
+      coercion, so use a numeric <code>key</code> when applicable.</li>
   </ul>
 
   <p>If the target is a Proxy object which implements the <code>deleteProperty</code>
