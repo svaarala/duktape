@@ -119,7 +119,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_context *ctx, duk_bool_t 
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe, extended UTF-8 or CESU-8 encoded. */
 	return 1;
 }
 
@@ -842,7 +842,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 4);
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe if inputs are safe. */
 	return 1;
 }
 
@@ -1382,7 +1382,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 	 * intern table (they are not in heap_allocated).
 	 */
 
-	duk_buffer_to_string(ctx, -1);
+	duk_buffer_to_string(ctx, -1);  /* Safe if input is safe. */
 	return 1;
 
  fail_range:

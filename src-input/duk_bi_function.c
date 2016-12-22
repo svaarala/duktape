@@ -30,11 +30,11 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	}
 
 	if (nargs == 0) {
-		duk_push_string(ctx, "");
-		duk_push_string(ctx, "");
+		duk_push_hstring_empty(ctx);
+		duk_push_hstring_empty(ctx);
 	} else if (nargs == 1) {
 		/* XXX: cover this with the generic >1 case? */
-		duk_push_string(ctx, "");
+		duk_push_hstring_empty(ctx);
 	} else {
 		duk_insert(ctx, 0);   /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
 		duk_push_string(ctx, ",");

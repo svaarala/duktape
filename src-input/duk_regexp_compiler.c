@@ -958,7 +958,9 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	}
 
 	DUK_BW_SETPTR_AND_COMPACT(thr, bw, q);
-	(void) duk_buffer_to_string(ctx, -1);  /* -> [ ... escaped_source ] */
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe if input is safe. */
+
+	/* [ ... escaped_source ] */
 }
 
 /*
@@ -1071,7 +1073,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	/* [ ... pattern flags escaped_source buffer ] */
 
 	DUK_BW_COMPACT(thr, &re_ctx.bw);
-	(void) duk_buffer_to_string(ctx, -1);  /* coerce to string */
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe because flags is at most 7 bit. */
 
 	/* [ ... pattern flags escaped_source bytecode ] */
 

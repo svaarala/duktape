@@ -70,7 +70,7 @@ DUK_INTERNAL duk_ret_t duk_bi_error_prototype_to_string(duk_context *ctx) {
 	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_MESSAGE);
 	if (duk_is_undefined(ctx, -1)) {
 		duk_pop(ctx);
-		duk_push_string(ctx, "");
+		duk_push_hstring_empty(ctx);
 	} else {
 		duk_to_string(ctx, -1);
 	}

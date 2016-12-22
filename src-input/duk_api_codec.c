@@ -403,7 +403,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx) {
 
 	duk__base64_encode_helper((const duk_uint8_t *) src, srclen, dst);
 
-	ret = duk_buffer_to_string(ctx, -1);
+	ret = duk_buffer_to_string(ctx, -1);  /* Safe, result is ASCII. */
 	duk_replace(ctx, idx);
 	return ret;
 
@@ -507,7 +507,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx) {
 	 * caller coerce to string if necessary?
 	 */
 
-	ret = duk_buffer_to_string(ctx, -1);
+	ret = duk_buffer_to_string(ctx, -1);  /* Safe, result is ASCII. */
 	duk_replace(ctx, idx);
 	return ret;
 }
