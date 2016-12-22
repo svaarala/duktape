@@ -506,7 +506,7 @@ function jsonTest() {
             return {
                 bufferLength: this.length,
                 plain: isPlainBuffer(this),
-                data: bufferToString(this)
+                data: bufferToStringRaw(this)
             };
         };
         print(JSON.stringify(pb, repl));
@@ -1186,7 +1186,7 @@ function duktapeMethodTest() {
     pb[3] = t.charCodeAt(3);
     pb[4] = t.charCodeAt(4);
     pb[5] = t.charCodeAt(5);
-    print(bufferToString(Duktape.dec('hex', pb)));  // hex decode '666f6f' to buffer containing 'foo'
+    print(bufferToStringRaw(Duktape.dec('hex', pb)));  // hex decode '666f6f' to buffer containing 'foo'
     ab = new ArrayBuffer(6);
     ab[0] = t.charCodeAt(0);
     ab[1] = t.charCodeAt(1);
@@ -1194,7 +1194,7 @@ function duktapeMethodTest() {
     ab[3] = t.charCodeAt(3);
     ab[4] = t.charCodeAt(4);
     ab[5] = t.charCodeAt(5);
-    print(bufferToString(Duktape.dec('hex', ab)));
+    print(bufferToStringRaw(Duktape.dec('hex', ab)));
 
     // Duktape.dec() outputs a plain buffer.
     pb = createPlainBuffer(4);
@@ -1206,7 +1206,7 @@ function duktapeMethodTest() {
     t = Duktape.enc('hex', pb);
     print(typeof t, t);
     t = Duktape.dec('hex', t);
-    print(bufferToString(t));
+    print(bufferToStringRaw(t));
     print(isPlainBuffer(t));
     ab = new ArrayBuffer(4);
     ab[0] = 0x61;
@@ -1217,7 +1217,7 @@ function duktapeMethodTest() {
     t = Duktape.enc('hex', ab);
     print(typeof t, t);
     t = Duktape.dec('hex', t);
-    print(bufferToString(t));
+    print(bufferToStringRaw(t));
     print(isPlainBuffer(t));
 
     // compact() is a no-op and returns input value
@@ -1542,16 +1542,16 @@ function nodejsBufferPrototypeMethodTest() {
 
     resetValues();
     print('- write');
-    print(Duktape.enc('jx', pb), bufferToString(pb));
+    print(Duktape.enc('jx', pb), bufferToStringRaw(pb));
     print(Buffer.prototype.write.call(pb, 'FOO', 3));
-    print(Duktape.enc('jx', pb), bufferToString(pb));
+    print(Duktape.enc('jx', pb), bufferToStringRaw(pb));
     print(Buffer.prototype.write.call(pb, 'BARQUUX', 7, 2));
-    print(Duktape.enc('jx', pb), bufferToString(pb));
-    print(Duktape.enc('jx', ab), bufferToString(ab));
+    print(Duktape.enc('jx', pb), bufferToStringRaw(pb));
+    print(Duktape.enc('jx', ab), bufferToStringRaw(ab));
     print(Buffer.prototype.write.call(ab, 'FOO', 3));
-    print(Duktape.enc('jx', ab), bufferToString(ab));
+    print(Duktape.enc('jx', ab), bufferToStringRaw(ab));
     print(Buffer.prototype.write.call(ab, 'BARQUUX', 7, 2));
-    print(Duktape.enc('jx', ab), bufferToString(ab));
+    print(Duktape.enc('jx', ab), bufferToStringRaw(ab));
 
     // Spot check one read method
     resetValues();

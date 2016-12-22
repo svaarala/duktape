@@ -1,7 +1,7 @@
 /*
- *  String.fromBuffer() provided by the "duk" command.
+ *  String.fromBufferRaw() provided by the "duk" command.
  *
- *  NOTE: String.fromBuffer() is -not- part of the default built-ins.  It is
+ *  NOTE: String.fromBufferRaw() is -not- part of the default built-ins.  It is
  *  provided by "duk" command to support testcases which need to deal with
  *  the internal string representation.
  */
@@ -85,7 +85,7 @@ function test() {
         new Uint16Array([ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]).subarray(3, 7)
     ].forEach(function (v) {
         try {
-            var p = String.fromBuffer(v);
+            var p = String.fromBufferRaw(v);
             print(Duktape.enc('jx', p));
             print(typeof p, safeEscapeString(p));
             print(Duktape.enc('jx', stringToBuffer(p)));

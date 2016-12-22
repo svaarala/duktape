@@ -92,9 +92,9 @@ function nonBmpTest() {
     for (i = 0; i < buffers.length; i++) {
         buf = buffers[i];
 
-        t = Duktape.enc('jx', { string: bufferToString(buf) });
+        t = Duktape.enc('jx', { string: bufferToStringRaw(buf) });
         safePrint(t);
-        t = JSON.stringify({ string: bufferToString(buf) });
+        t = JSON.stringify({ string: bufferToStringRaw(buf) });
         safePrint(t);
         codepointDump(t);
     }

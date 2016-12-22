@@ -55,9 +55,9 @@ function proxyPropertyTest(key) {
 
 function proxyInternalKeysSandboxTest() {
     print('_Target');
-    proxyPropertyTest(bufferToString(Duktape.dec('hex', 'ff546172676574')));
+    proxyPropertyTest(bufferToStringRaw(Duktape.dec('hex', 'ff546172676574')));
     print('_Handler');
-    proxyPropertyTest(bufferToString(Duktape.dec('hex', 'ff48616e646c6572')));
+    proxyPropertyTest(bufferToStringRaw(Duktape.dec('hex', 'ff48616e646c6572')));
 }
 
 try {

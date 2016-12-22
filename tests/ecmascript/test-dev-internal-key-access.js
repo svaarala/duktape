@@ -35,11 +35,11 @@ function test() {
     buf[3] = 'l'.charCodeAt(0);
     buf[4] = 'u'.charCodeAt(0);
     buf[5] = 'e'.charCodeAt(0);
-    key = bufferToString(buf);
+    key = bufferToStringRaw(buf);
     print('using ArrayBuffer, date \\xFFValue:', dt[key]);
 
     // Using Duktape.dec()
-    key = bufferToString(Duktape.dec('hex', 'ff56616c7565'));  // \xFFValue
+    key = bufferToStringRaw(Duktape.dec('hex', 'ff56616c7565'));  // \xFFValue
     print('using Duktape.dec, date \\xFFValue:', dt[key]);
 }
 

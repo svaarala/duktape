@@ -22,7 +22,7 @@ function encPrint(x) {
 }
 
 function decPrint(x) {
-    print(bufferToString(Duktape.dec('base64', x)));
+    print(bufferToStringRaw(Duktape.dec('base64', x)));
 }
 
 /*===
@@ -71,7 +71,7 @@ Zm9v4Yi0
 // U+1234 -> 0xe1 0x88 0xb4
 encPrint('foo\u1234');
 
-t = bufferToString(Duktape.dec('base64', 'Zm9v4Yi0'));
+t = bufferToStringRaw(Duktape.dec('base64', 'Zm9v4Yi0'));
 print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3));
 
 /*===

@@ -9,6 +9,8 @@
  *  prefix byte by repeating something.
  */
 
+/*@include util-buffer.js@*/
+
 /*---
 {
     "custom": true
@@ -34,7 +36,7 @@ function test() {
     }
 
     // Internal prefix 0xFE is just repeated, unaffected.
-    str = String.fromBuffer(new Uint8Array([ 0xfe, 0x41, 0x42, 0x43 ]));
+    str = bufferToStringRaw(new Uint8Array([ 0xfe, 0x41, 0x42, 0x43 ]));
     print(str.length);
     dump(str);
     res = str.repeat(3);

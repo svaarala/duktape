@@ -3,6 +3,7 @@
  */
 
 /*@include util-symbol.js@*/
+/*@include util-buffer.js@*/
 
 /*===
 symbol enumeration
@@ -32,10 +33,10 @@ function symbolEnumerationTest() {
     var obj = {};
     var ancestor = {};
     if (typeof Duktape === 'object') {
-        var internalKey1 = String.fromBuffer(Duktape.dec('hex', 'ff696e68456e756d53796d48696464656e'));  // _InhEnumSymHidden
-        var internalKey2 = String.fromBuffer(Duktape.dec('hex', 'ff696e684e6f6e456e756d53796d48696464656e'));  // _InhNonEnumSymHidden
-        var internalKey3 = String.fromBuffer(Duktape.dec('hex', 'ff4f776e456e756d53796d48696464656e'));  // _OwnEnumSymHidden
-        var internalKey4 = String.fromBuffer(Duktape.dec('hex', 'ff4f776e4e6f6e456e756d53796d48696464656e'));  // _OwnNonEnumSymHidden
+        var internalKey1 = bufferToStringRaw(Duktape.dec('hex', 'ff696e68456e756d53796d48696464656e'));  // _InhEnumSymHidden
+        var internalKey2 = bufferToStringRaw(Duktape.dec('hex', 'ff696e684e6f6e456e756d53796d48696464656e'));  // _InhNonEnumSymHidden
+        var internalKey3 = bufferToStringRaw(Duktape.dec('hex', 'ff4f776e456e756d53796d48696464656e'));  // _OwnEnumSymHidden
+        var internalKey4 = bufferToStringRaw(Duktape.dec('hex', 'ff4f776e4e6f6e456e756d53796d48696464656e'));  // _OwnNonEnumSymHidden
     } else {
         // For manual testing with e.g. Node.js; output will naturally differ for these.
         var internalKey1 = 'fake1';

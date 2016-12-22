@@ -316,7 +316,7 @@ SyntaxError
 
 function characterEscapeEncodeTest() {
     function mk(hex) {
-        return bufferToString(Duktape.dec('hex', hex));
+        return bufferToStringRaw(Duktape.dec('hex', hex));
     }
 
     var values = [
@@ -758,7 +758,7 @@ function invalidXutf8Test() {
     // Because standard JSON does not escape non-ASCII codepoints, hex
     // encode its output
     values.forEach(function (v) {
-        var t = bufferToString(Duktape.dec('hex', v));
+        var t = bufferToStringRaw(Duktape.dec('hex', v));
         print(v);
         print('json ', Duktape.enc('hex', JSON.stringify(t)));
         print('jx', encJx(t));

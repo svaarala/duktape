@@ -23,7 +23,7 @@ false
 function bufferCopyTest() {
     // Create a plain buffer.
     var buf = Duktape.dec('hex', '41424344');  // ABCD
-    print(typeof buf, buf, isPlainBuffer(buf), bufferToString(buf));
+    print(typeof buf, buf, isPlainBuffer(buf), bufferToStringRaw(buf));
 
     // Plain buffer mimics ArrayBuffer so use .slice() to create a copy.
     // When called with a plain buffer the slice will also be a plain
@@ -33,18 +33,18 @@ function bufferCopyTest() {
     // var copy = ArrayBuffer.createPlain(buf);
 
     var copy = buf.slice();
-    print(typeof copy, copy, isPlainBuffer(copy), bufferToString(buf));
+    print(typeof copy, copy, isPlainBuffer(copy), bufferToStringRaw(buf));
     print(copy === buf);
 
     // Demonstrate independence.
     copy[0] = ('X').charCodeAt(0);
-    print('buf:', bufferToString(buf));
-    print('copy:', bufferToString(copy));
+    print('buf:', bufferToStringRaw(buf));
+    print('copy:', bufferToStringRaw(copy));
 
     // If argument to .slice() is Object coerced, the result is also a
     // full ArrayBuffer object.
     var copy = Object(buf).slice();
-    print(typeof copy, copy, isPlainBuffer(copy), bufferToString(buf));
+    print(typeof copy, copy, isPlainBuffer(copy), bufferToStringRaw(buf));
     print(copy === buf);
 }
 

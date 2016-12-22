@@ -15,5 +15,5 @@ var t;
 
 print(Duktape.enc('hex', 'foo\u1234'));
 
-t = bufferToString(Duktape.dec('hex', '666f6fe188b4'));
+t = bufferToStringRaw(Duktape.dec('hex', '666f6fe188b4'));
 print(t.charCodeAt(0), t.charCodeAt(1), t.charCodeAt(2), t.charCodeAt(3));

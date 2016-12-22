@@ -43,7 +43,7 @@ function testOne(blen) {
         }
     }
 
-    str = bufferToString(buf);
+    str = bufferToStringRaw(buf);
     if (str.length != clen) {
         throw new Error('mismatch: ' + str.length + ' vs ' + clen);
     }
