@@ -118,17 +118,15 @@ DUK_INTERNAL void duk_default_fatal_handler(void *udata, const char *msg) {
 	DUK_D(DUK_DPRINT("custom default fatal error handler called: %s", msg ? msg : "NULL"));
 	DUK_USE_FATAL_HANDLER(udata, msg);
 #else
-	/* Since we don't want to rely on stdio being available, we'll just
-	 * cause a segfault on purpose: it's a portable way to usually cause
-	 * a process to finish, and when used with valgrind it also gives us
-	 * a nice stack trace.  For better behavior application code should
-	 * provide a fatal error handler.
+	/* Default behavior is to abort() on error.  There's no printout
+	 * which makes this awkward, so it's always recommended to use an
+	 * explicit fatal error handler.
 	 */
 	DUK_D(DUK_DPRINT("built-in default fatal error handler called: %s", msg ? msg : "NULL"));
-	DUK_CAUSE_SEGFAULT();  /* SCANBUILD: "Dereference of null pointer", normal */
+	DUK_ABORT();
 #endif
 
-	DUK_D(DUK_DPRINT("fatal error handler returned or segfault didn't succeed, enter forever loop"));
+	DUK_D(DUK_DPRINT("fatal error handler returned, enter forever loop"));
 	for (;;) {
 		/* Loop forever to ensure we don't return. */
 	}

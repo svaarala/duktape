@@ -6,8 +6,8 @@ tags:
 warn_if_missing: true
 description: >
   Provide a custom default fatal error handler to replace the built-in one
-  (which causes an intentional segfault and forever loops).  The default
-  fatal error gets called when (1) a fatal error occurs and application code
+  (which calls abort() without any error message).  The default fatal error
+  handler gets called when (1) a fatal error occurs and application code
   didn't register a fatal error handler in heap creation or (2) a context-free
   fatal error happens, concretely e.g. an assertion failure.
 

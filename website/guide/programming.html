@@ -725,7 +725,7 @@ heap-associated fatal error handler which is in direct application control.</p>
 <div class="note">
 The built-in default fatal error handler will write a debug log message
 (but <b>won't</b> write anything to <code>stdout</code> to <code>stderr</code>),
-and will then cause an <b>intentional segfault</b>; if that fails, it enters an
+and will then call <code>abort()</code>; if that fails, it enters an
 infinite loop to ensure execution doesn't resume after a fatal error.  It is
 <b>strongly recommended</b> to both (1) provide a custom fatal error handler
 in heap creation and (2) replace the built-in default fatal error handler using
