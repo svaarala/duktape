@@ -2285,7 +2285,7 @@ Planned
   packed arguments for some internal helper calls (GH-1158, GH-1172); misc
   internal helpers to reduce call site size (GH-1166, GH-1173); config options
   for function .name and .fileName control (GH-1153); internal helper
-  duk_push_hstring_empty() (GH-1186)
+  duk_push_hstring_empty() (GH-1186, GH-1220)
 
 * Internal change: rework shared internal string handling so that shared
   strings are plain string constants used in macro values, rather than
