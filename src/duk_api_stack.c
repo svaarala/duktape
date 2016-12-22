@@ -2805,6 +2805,35 @@ DUK_EXTERNAL duk_bool_t duk_is_buffer(duk_context *ctx, duk_idx_t index) {
 	return duk__tag_check(ctx, index, DUK_TAG_BUFFER);
 }
 
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+DUK_EXTERNAL duk_bool_t duk_is_buffer_data(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval(ctx, idx);
+	if (tv == NULL) {
+		return 0;
+	}
+	if (DUK_TVAL_IS_BUFFER(tv)) {
+		return 1;
+	} else if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (DUK_HOBJECT_IS_BUFFEROBJECT(h)) {
+			return 1;
+		}
+	}
+	return 0;
+}
+#else  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+DUK_EXTERNAL duk_bool_t duk_is_buffer_data(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	return duk_is_buffer(ctx, idx);
+}
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+
 DUK_EXTERNAL duk_bool_t duk_is_pointer(duk_context *ctx, duk_idx_t index) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__tag_check(ctx, index, DUK_TAG_POINTER);
