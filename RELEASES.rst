@@ -1964,6 +1964,9 @@ Planned
   DUK_FREAD(), DUK_FWRITE(), DUK_FSEEK(), DUK_FTELL(), DUK_FFLUSH(),
   DUK_FPUTC(), DUK_STDOUT, DUK_STDERR, DUK_STDIN, duk_file (GH-787, GH-761)
 
+* Add duk_is_buffer_data() API call to reliably test whether a value stack
+  entry is a plain buffer or any buffer object (GH-1221)
+
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
   same time provider as seen by Ecmascript code (GH-771, GH-1209, GH-1211)
