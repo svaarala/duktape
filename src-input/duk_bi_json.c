@@ -475,7 +475,7 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 #endif  /* DUK_USE_JSON_DECSTRING_FASTPATH */
 
 	DUK_BW_SETPTR_AND_COMPACT(js_ctx->thr, bw, q);
-	(void) duk_buffer_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe if input string is safe. */
 
 	/* [ ... str ] */
 

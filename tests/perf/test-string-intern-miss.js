@@ -9,7 +9,7 @@ if (typeof print !== 'function') { print = console.log; }
 function test() {
     var buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(2048);
     var i;
-    var bufferToString = String.fromBuffer || String;
+    var bufferToString = String.fromBufferRaw || String;
 
     for (i = 0; i < buf.length; i++) {
         buf[i] = i;

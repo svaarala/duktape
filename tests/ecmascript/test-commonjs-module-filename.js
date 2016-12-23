@@ -38,7 +38,7 @@ function test() {
     // Replace Duktape.Logger.prototype.raw to censor timestamps.
 
     Duktape.Logger.prototype.raw = function (buf) {
-        print(bufferToString(buf).replace(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.*?Z/, 'TIME'));
+        print(bufferToStringRaw(buf).replace(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.*?Z/, 'TIME'));
     };
 
     // Default behavior, module wrapper .fileName is resolved module ID,

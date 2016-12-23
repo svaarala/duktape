@@ -155,7 +155,7 @@ function printEnc(x) {
 
 function printDec(x) {
     print(typeof x);
-    x = bufferToString(x);
+    x = bufferToStringRaw(x);
     var res = [];
     for (var i = 0; i < x.length; i++) {
         res.push(x.charCodeAt(i));

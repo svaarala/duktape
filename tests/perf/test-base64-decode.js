@@ -6,19 +6,21 @@ function test() {
     var i, n, buf;
 
     print('build');
-    buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(1024);
+    buf = new Uint8Array(1024);
     for (i = 0; i < 1024; i++) {
-        buf[i] = Math.random() * 256;
-        if (i == 0 && (buf[i] == 0xff || (buf[i] & 0xc0) == 0x80)) { buf[i] &= 0x7f; }  // avoid symbols
+        buf[i] = Math.random() * 128;  // restrict to ASCII
     }
-    tmp1 = (String.fromBuffer || String)(buf);
+    tmp1 = new TextDecoder().decode(buf);
+    print(tmp1.length);
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }
     tmp2 = tmp2.join('');
-    tmp2 = Duktape.enc('base64', tmp2);
-
     print(tmp2.length);
+
+    tmp2 = Duktape.enc('base64', tmp2);
+    print(tmp2.length);
+
     print('run');
     for (i = 0; i < 2000; i++) {
         // Assigning to 'res' avoids garbage collection of result; this is

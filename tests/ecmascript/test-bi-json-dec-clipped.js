@@ -53,7 +53,7 @@ function jsonClipTest(input, parser) {
                 if (j >= 0) {
                     buf = createPlainBuffer(1);
                     buf[0] = j;
-                    t = t + bufferToString(buf);
+                    t = t + bufferToStringRaw(buf);
                 }
                 if (parser === 'json') {
                     t = JSON.parse(t);

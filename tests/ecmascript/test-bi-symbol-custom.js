@@ -2,6 +2,8 @@
  *  Some Duktape specific Symbol tests.
  */
 
+/*@include util-buffer.js@*/
+
 /*===
 TypeError
 TypeError
@@ -18,7 +20,7 @@ function test() {
     // Because Symbols fail with TypeError in string concatenation, this
     // Duktape 1.x idiom to create an internal string no longer works.
     try {
-        print(Duktape.enc('jx', String.fromBuffer(Duktape.dec('hex', 'ff')) + 'Value'));
+        print(Duktape.enc('jx', bufferToStringRaw(Duktape.dec('hex', 'ff')) + 'Value'));
     } catch (e) {
         print(e.name);
     }

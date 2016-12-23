@@ -14,7 +14,7 @@
 
 function raw_replacement(msg) {
     // Timestamp is non-predictable
-    msg = bufferToString(msg);  // arg is a buffer
+    msg = bufferToStringRaw(msg);  // arg is a buffer
     msg = msg.replace(/^\S+/, 'TIMESTAMP');
     print(msg);
 }
@@ -465,7 +465,7 @@ function lengthTest() {
     // Replace raw() with something that just prints the result length.
 
     function raw_printlen(msg) {
-        print(bufferToString(msg).length);
+        print(bufferToStringRaw(msg).length);
     }
     Duktape.Logger.prototype.raw = raw_printlen;
 

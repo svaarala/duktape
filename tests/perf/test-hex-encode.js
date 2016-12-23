@@ -6,17 +6,18 @@ function test() {
     var i, n, buf;
 
     print('build');
-    buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(1024);
+    buf = new Uint8Array(1024);
     for (i = 0; i < 1024; i++) {
-        buf[i] = Math.random() * 256;
+        buf[i] = Math.random() * 128;  // restrict to ASCII
     }
-    tmp1 = (String.fromBuffer || String)(buf);
+    tmp1 = new TextDecoder().decode(buf);
+    print(tmp1.length);
     for (i = 0; i < 1024; i++) {
         tmp2.push(tmp1);
     }
-    tmp2 = (ArrayBuffer.allocPlain || Duktape.Buffer)(tmp2.join(''));
-
+    tmp2 = new TextEncoder().encode(tmp2.join(''));
     print(tmp2.length);
+
     print('run');
     for (i = 0; i < 5000; i++) {
         // Assigning to 'res' avoids garbage collection of result; this is

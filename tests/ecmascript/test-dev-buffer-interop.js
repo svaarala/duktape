@@ -26,9 +26,9 @@ function plainBufferTest() {
     // plain buffer, mimics ArrayBuffer
 
     a = Duktape.dec('hex', '41424344');
-    print(typeof a, a, bufferToString(a));
+    print(typeof a, a, bufferToStringRaw(a));
     b = Object(a);
-    print(typeof b, b, bufferToString(b));
+    print(typeof b, b, bufferToStringRaw(b));
     c = a.valueOf();  // .valueOf returns Object(plainBuffer) now
     d = b.valueOf();
     print(typeof c, typeof d);

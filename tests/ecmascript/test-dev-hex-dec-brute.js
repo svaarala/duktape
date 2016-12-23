@@ -97,7 +97,7 @@ function testLengths() {
                 failure++;
             }
             try {
-                res2 = Duktape.enc('jx', Duktape.dec('hex', bufferToString(buf)));
+                res2 = Duktape.enc('jx', Duktape.dec('hex', bufferToStringRaw(buf)));
             } catch (e) {
                 res2 = e.name;
             }

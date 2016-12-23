@@ -2404,7 +2404,7 @@ function duktapeBuiltinTest() {
     // attempt to set finalizer
     testTypedJx(function () { return Duktape.fin(lfunc, function () {}); }, 'fin-set');
 
-    testTypedJx(function () { return sanitizeLfunc(bufferToString(Duktape.dec('hex', Duktape.enc('hex', lfunc)))); }, 'encdec-hex');
+    testTypedJx(function () { return sanitizeLfunc(bufferToStringRaw(Duktape.dec('hex', Duktape.enc('hex', lfunc)))); }, 'encdec-hex');
     testTypedJx(function () { return Duktape.dec('hex', lfunc); }, 'dec-hex');
 
     // attempt to compact is a no-op
@@ -2561,7 +2561,7 @@ function duktapeLoggerBuiltinTest() {
 
     old_raw = Duktape.Logger.prototype.old_raw;
     Duktape.Logger.prototype.raw = function (buf) {
-        var msg = sanitizeLfunc(bufferToString(buf));
+        var msg = sanitizeLfunc(bufferToStringRaw(buf));
         msg = msg.replace(/^\S+/, 'TIMESTAMP');
         print(msg);
     };

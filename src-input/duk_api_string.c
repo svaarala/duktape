@@ -98,7 +98,7 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_context *ctx, duk_idx_t count_in,
 
 	/* [ ... buf ] */
 
-	(void) duk_buffer_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe if inputs are safe. */
 
 	/* [ ... res ] */
 	return;
@@ -184,7 +184,7 @@ DUK_EXTERNAL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_f
 	}
 
 	DUK_BW_COMPACT(thr, bw);
-	(void) duk_buffer_to_string(ctx, -1);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe, extended UTF-8 encoded. */
 	duk_replace(ctx, idx);
 }
 

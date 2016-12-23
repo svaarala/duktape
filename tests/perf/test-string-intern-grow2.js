@@ -4,7 +4,7 @@ function test() {
     var buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(2048);
     var i, j;
     var arr;
-    var bufferToString = String.fromBuffer || String;
+    var bufferToString = String.fromBufferRaw || String;
 
     for (i = 0; i < buf.length; i++) {
         buf[i] = i;

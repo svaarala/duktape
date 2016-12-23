@@ -20,7 +20,7 @@ function moduleLogNameTest() {
         return 'var logger = new Duktape.Logger(); logger.info("hello from module");';
     };
     Duktape.Logger.prototype.raw = function (buf) {
-        var str = bufferToString(buf);
+        var str = bufferToStringRaw(buf);
         str = str.replace(/^\S+/, 'TIMESTAMP');
         print(str);
     };

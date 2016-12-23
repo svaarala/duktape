@@ -253,10 +253,10 @@ function printBuffer(b) {
 // using String(plainBuffer) in Duktape 2.x; this helper hides the mechanism
 // needed, as it may change later.
 
-function bufferToString(buf) {
+function bufferToStringRaw(buf) {
     // Prefer the cleaner, explicit custom method.  This is provided by "duk"
     // and is NOT a part of the default Ecmascript built-ins!
-    return String.fromBuffer(buf);
+    return String.fromBufferRaw(buf);
 }
 
 // Convert any string into a buffer, interpreting the internal string
