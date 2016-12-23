@@ -41,7 +41,7 @@ function test() {
     dump(str);
     res = str.repeat(3);
     print(res.length);
-    print(Duktape.enc('jx', ArrayBuffer.allocPlain(res)));
+    print(Duktape.enc('jx', Uint8Array.allocPlain(res)));
 }
 
 try {

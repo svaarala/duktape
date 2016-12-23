@@ -1,5 +1,5 @@
 /*
- *  Duktape custom: AllocBuffer.plainOf()
+ *  Duktape custom: Uint8Array.plainOf()
  */
 
 /*---
@@ -44,10 +44,11 @@ false
 
 function test() {
     var arrayBuf = new ArrayBuffer(4);
-    arrayBuf[0] = 0xff;
-    arrayBuf[1] = 0xee;
-    arrayBuf[2] = 0xdd;
-    arrayBuf[3] = 0xcc;
+    var u8Buf = new Uint8Array(arrayBuf);
+    u8Buf[0] = 0xff;
+    u8Buf[1] = 0xee;
+    u8Buf[2] = 0xdd;
+    u8Buf[3] = 0xcc;
 
     [
         // All of these are rejected
@@ -70,7 +71,7 @@ function test() {
         new Uint16Array([ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]).subarray(3, 7)
     ].forEach(function (v) {
         try {
-            var p = ArrayBuffer.plainOf(v);
+            var p = Uint8Array.plainOf(v);
             print(Duktape.enc('jx', p));
             print(p === v);
         } catch (e) {

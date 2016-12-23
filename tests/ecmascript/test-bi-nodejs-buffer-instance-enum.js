@@ -40,10 +40,6 @@ string 7
 string 8
 string 9
 string length
-string byteLength
-string byteOffset
-string BYTES_PER_ELEMENT
-string buffer
 ===*/
 
 function enumeratingAndKeysTest() {
@@ -68,9 +64,9 @@ function enumeratingAndKeysTest() {
         print(typeof k, k);
     });
 
-    // In ES6 (and Node.js) .byteOffset etc are inherited accessors and not
-    // shown here.  Current Duktape implementation is to treat them as virtual
-    // own properties so they show up here.
+    // In ES6 (and Node.js) .byteOffset, .buffer etc are inherited accessors and
+    // not shown here.  Also .length should be an inherited getter, but is
+    // currently a virtual own property and shows up here.
 
     print('Object.getOwnPropertyNames');
     Object.getOwnPropertyNames(b).forEach(function (k) {

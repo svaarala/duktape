@@ -16,26 +16,26 @@ function str(x) {
 }
 
 /*===
-string NONE object 0 0 0 1
-undefined undefined object 0 0 0 1
-object null object 0 0 0 1
-boolean true object 1 1 0 1
-boolean false object 0 0 0 1
-string foo object 0 0 0 1
-string 123 object 123 123 0 1
-object 123 object 123 123 0 1
-object [object Object] object 0 0 0 1
-function [function] object 0 0 0 1
-object [object Object] object 321 321 0 1
+string NONE object undefined 0 undefined undefined
+undefined undefined object undefined 0 undefined undefined
+object null object undefined 0 undefined undefined
+boolean true object undefined 1 undefined undefined
+boolean false object undefined 0 undefined undefined
+string foo object undefined 0 undefined undefined
+string 123 object undefined 123 undefined undefined
+object 123 object undefined 123 undefined undefined
+object [object Object] object undefined 0 undefined undefined
+function [function] object undefined 0 undefined undefined
+object [object Object] object undefined 321 undefined undefined
 number -Infinity RangeError
 number -1000000000 RangeError
 number -1 RangeError
-number 0 object 0 0 0 1
-number 1 object 1 1 0 1
-number 100 object 100 100 0 1
-number 1000000 object 1000000 1000000 0 1
+number 0 object undefined 0 undefined undefined
+number 1 object undefined 1 undefined undefined
+number 100 object undefined 100 undefined undefined
+number 1000000 object undefined 1000000 undefined undefined
 number Infinity RangeError
-number NaN object 0 0 0 1
+number NaN object undefined 0 undefined undefined
 ===*/
 
 function arrayBufferConstructorTest() {
@@ -63,7 +63,7 @@ function arrayBufferConstructorTest() {
 
             if (typeof b.byteLength === 'number') {
                 for (var i = 0; i < b.byteLength; i++) {
-                    if (b[i] != 0) {
+                    if (new Uint8Array(b)[i] != 0) {
                         throw new Error('arraybuffer not zeroed as expected, non-zero byte at index: ' + i);
                     }
                 }

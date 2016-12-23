@@ -10,7 +10,7 @@
 
 /*===
 [object ArrayBuffer]
-16 16 0
+undefined 16 undefined
 [object Uint32Array]
 4 16 0
 [object Uint32Array]

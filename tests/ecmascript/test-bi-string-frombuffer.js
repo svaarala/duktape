@@ -58,10 +58,11 @@ string "<U+0004><U+0000><U+0005><U+0000><U+0006><U+0000><U+0007><U+0000>"
 
 function test() {
     var arrayBuf = new ArrayBuffer(4);
-    arrayBuf[0] = 0xfe;  // avoid 0xFF -> interpreted as a symbol
-    arrayBuf[1] = 0xee;
-    arrayBuf[2] = 0xdd;
-    arrayBuf[3] = 0xcc;
+    var u8 = new Uint8Array(arrayBuf);
+    u8[0] = 0xfe;  // avoid 0xFF -> interpreted as a symbol
+    u8[1] = 0xee;
+    u8[2] = 0xdd;
+    u8[3] = 0xcc;
 
     [
         // All of these are rejected

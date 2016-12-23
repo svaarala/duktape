@@ -22,7 +22,7 @@ false
 4 string false
 5 object false
 6 object false
-7 object false
+7 object true
 8 object true
 9 object false
 10 object true

@@ -44,7 +44,7 @@ function test() {
     // representation to the buffer.
 
     s = '\xfffoo';
-    b = ArrayBuffer.allocPlain(s);
+    b = Uint8Array.allocPlain(s);
     print(Duktape.enc('jx', b));
 }
 

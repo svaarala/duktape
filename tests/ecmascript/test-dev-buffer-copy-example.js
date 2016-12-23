@@ -11,28 +11,26 @@
 ---*/
 
 /*===
-object [object ArrayBuffer] true ABCD
-object [object ArrayBuffer] true ABCD
+object [object Uint8Array] true ABCD
+object [object Uint8Array] true ABCD
 false
 buf: ABCD
 copy: XBCD
-object [object ArrayBuffer] false ABCD
-false
 ===*/
 
 function bufferCopyTest() {
     // Create a plain buffer.
-    var buf = Duktape.dec('hex', '41424344');  // ABCD
+    var buf = createPlainBuffer('ABCD');
     print(typeof buf, buf, isPlainBuffer(buf), bufferToStringRaw(buf));
 
-    // Plain buffer mimics ArrayBuffer so use .slice() to create a copy.
-    // When called with a plain buffer the slice will also be a plain
-    // buffer.
+    // Plain buffer mimics Uint8Array so it can be used as an initializer
+    // for e.g. new Uint8Array().  The result will be an Uint8Array object
+    // but can be converted to a plain buffer using Uint8Array.plainOf().
     //
-    // A Duktape specific alternative would be:
-    // var copy = ArrayBuffer.createPlain(buf);
+    // A Duktape specific alternative which creates a plain buffer directly:
+    // var copy = Uint8Array.createPlain(buf);
 
-    var copy = buf.slice();
+    var copy = Uint8Array.plainOf(new Uint8Array(buf));
     print(typeof copy, copy, isPlainBuffer(copy), bufferToStringRaw(buf));
     print(copy === buf);
 
@@ -40,12 +38,6 @@ function bufferCopyTest() {
     copy[0] = ('X').charCodeAt(0);
     print('buf:', bufferToStringRaw(buf));
     print('copy:', bufferToStringRaw(copy));
-
-    // If argument to .slice() is Object coerced, the result is also a
-    // full ArrayBuffer object.
-    var copy = Object(buf).slice();
-    print(typeof copy, copy, isPlainBuffer(copy), bufferToStringRaw(buf));
-    print(copy === buf);
 }
 
 try {

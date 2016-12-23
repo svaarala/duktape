@@ -1346,7 +1346,7 @@ try {
 /*===
 number argument
 object [object Float32Array] 16 64 0
-object [object ArrayBuffer] 64 64 0
+object [object ArrayBuffer] undefined 64 undefined
 ===*/
 
 function numberArgumentTest() {
@@ -1371,7 +1371,7 @@ try {
 
 /*===
 ArrayBuffer argument
-object [object ArrayBuffer] 20 20 0
+object [object ArrayBuffer] undefined 20 undefined
 object [object Uint32Array] 5 20 0
 true
 RangeError
@@ -1703,16 +1703,16 @@ try {
 /*===
 plain buffer argument
 object true |00666f6fff| |00666f6fff| object false false
-|ff666f6fff| |ff666f6fff| [object ArrayBuffer]
-RangeError
-object true |00666f6fffab| |00666f6fffab| object false false
-|ffff6f6fffab| |ffff6f6fffab| [object ArrayBuffer]
+|00666f6fff| |ff666f6fff| [object ArrayBuffer]
+object true |00666f6fff| |000066006f006f00ff00| object false false
+|00666f6fff| |ffff66006f006f00ff00| [object ArrayBuffer]
+object true |00666f6fffab| |000066006f006f00ff00ab00| object false false
+|00666f6fffab| |ffff66006f006f00ff00ab00| [object ArrayBuffer]
 ===*/
 
 /* Plain buffer behavior for typed array constructor has changed over time.
- * In Duktape 2.x a plain buffer is treated like ArrayBuffer, i.e. the view
- * is constructed over the plain buffer.  The .buffer property is set to an
- * object coerced version of the plain buffer (at least for now).
+ * In Duktape 2.x a plain buffer is treated like Uint8Array, i.e. the plain
+ * buffer is treated like an initializer and a copy is made.
  */
 
 function plainBufferArgumentTest() {
@@ -1720,24 +1720,21 @@ function plainBufferArgumentTest() {
 
     function test(buf, view) {
         print(typeof buf, isPlainBuffer(buf), Duktape.enc('jx', buf), Duktape.enc('jx', view), typeof view.buffer, isPlainBuffer(view.buffer), buf === view.buffer);
-        view[0] = 0xffffffff;  // demonstrate view shares underlying buffer; endian neutral value
+        view[0] = 0xffffffff;  // demonstrate view underlying buffer is independent; endian neutral value
         print(Duktape.enc('jx', buf), Duktape.enc('jx', view), Object.prototype.toString.call(view.buffer));
     }
 
-    // Plain buffer treated like ArrayBuffer.
+    // Plain buffer treated like Uint8Array.
 
     buf = Duktape.dec('hex', '00666f6fff');
     view = new Uint8Array(buf);
     test(buf, view);
 
-    try {
-        // Fails because input is not a multiple of 2 bytes.
-        buf = Duktape.dec('hex', '00666f6fff');
-        view = new Int16Array(buf);
-        test(buf, view);
-    } catch (e) {
-        print(e.name);
-    }
+    // Input is not even length, but treated as an initializer so it
+    // doesn't cause an error.
+    buf = Duktape.dec('hex', '00666f6fff');
+    view = new Int16Array(buf);
+    test(buf, view);
 
     buf = Duktape.dec('hex', '00666f6fffab');
     view = new Int16Array(buf);

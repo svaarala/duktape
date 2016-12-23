@@ -11,14 +11,14 @@
 
 /*===
 index: 0
-json fast: {}
-json slow: {}
+json fast: {"0":0,"1":0,"2":0,"3":0}
+json slow: {"0":0,"1":0,"2":0,"3":0}
 jx fast: |00000000|
 jx slow: |00000000|
 jc fast: {"_buf":"00000000"}
 jc slow: {"_buf":"00000000"}
-json fast: {"buffer":{}}
-json slow: {"buffer":{}}
+json fast: {"buffer":{"0":0,"1":0,"2":0,"3":0}}
+json slow: {"buffer":{"0":0,"1":0,"2":0,"3":0}}
 jx fast: {buffer:|00000000|}
 jx slow: {buffer:|00000000|}
 jc fast: {"buffer":{"_buf":"00000000"}}

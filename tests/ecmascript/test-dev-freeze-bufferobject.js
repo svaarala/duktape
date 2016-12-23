@@ -8,7 +8,7 @@
 /*@include util-buffer.js@*/
 
 /*===
-0 [object ArrayBuffer] TypeError
+0 [object Uint8Array] TypeError
 1 [object ArrayBuffer] TypeError
 2 [object Uint8Array] TypeError
 3 [object Float32Array] TypeError

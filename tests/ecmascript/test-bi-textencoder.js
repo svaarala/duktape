@@ -88,7 +88,7 @@ argument coercion and validation
 5 [object String] 5 |64756d6d79|
 6 [object String] 5 |64756d6d79|
 7 [object Number] 3 |313233|
-8 [object ArrayBuffer] 20 |5b6f626a6563742041727261794275666665725d|
+8 [object Uint8Array] 19 |5b6f626a6563742055696e743841727261795d|
 9 [object ArrayBuffer] 20 |5b6f626a6563742041727261794275666665725d|
 10 [object Float32Array] 21 |5b6f626a65637420466c6f6174333241727261795d|
 11 [object Uint8Array] 10 |00000000000000000000|

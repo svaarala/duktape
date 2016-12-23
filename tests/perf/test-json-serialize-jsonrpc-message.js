@@ -8,7 +8,7 @@ function test() {
     var bytes;
     var ign;
 
-    bytes = (ArrayBuffer.allocPlain || Duktape.Buffer)(4096);
+    bytes = (Uint8Array.allocPlain || Duktape.Buffer)(4096);
     for (i = 0; i < bytes.length; i++) {
         bytes[i] = i;
     }

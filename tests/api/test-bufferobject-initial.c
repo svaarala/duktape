@@ -12,7 +12,7 @@
 /*===
 *** test_to_buffer_1 (duk_safe_call)
 0: 66 6f 6f 62 61 72
-1: 40 41 42 43 44 45 46 47 48 49
+1: 00 00 00 00 00 00 00 00 00 00
 2: 60 61 62 63 64 65 66 67 68 69
 3: 60 00 61 00 62 00 63 00 64 00
 final top: 8
@@ -27,6 +27,10 @@ static duk_ret_t test_to_buffer_1(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	duk_eval_string(ctx, "new Buffer('foobar')");
+	/* This is ineffective in Duktape 2.x because ArrayBuffers don't
+	 * have virtual index properties anymore (= standard behavior).
+	 * So the arraybuffer bytes remain zero.
+	 */
 	duk_eval_string(ctx,
 		"(function () {\n"
 		"    var b = new ArrayBuffer(10);\n"
@@ -60,7 +64,7 @@ static duk_ret_t test_to_buffer_1(duk_context *ctx, void *udata) {
 		 */
 
 		duk_eval_string(ctx,
-			"(function (v) { return ArrayBuffer.plainOf(v); })");
+			"(function (v) { return Uint8Array.plainOf(v); })");
 		duk_dup(ctx, i);
 		duk_call(ctx, 1);
 

@@ -14,10 +14,10 @@ index 9, ToString(result): 'foo', type: 5 -> 5
 index 10, ToString(result): '[object Object]', type: 6 -> 5
 index 11, ToString(result): '123.456', type: 6 -> 4
 index 12, ToString(result): '[object Thread]', type: 6 -> 5
-index 13, ToString(result): '[object ArrayBuffer]', type: 7 -> 5
-index 14, ToString(result): '[object ArrayBuffer]', type: 7 -> 5
-index 15, ToString(result): '[object ArrayBuffer]', type: 7 -> 5
-index 16, ToString(result): '[object ArrayBuffer]', type: 7 -> 5
+index 13, ToString(result): '[object Uint8Array]', type: 7 -> 5
+index 14, ToString(result): '[object Uint8Array]', type: 7 -> 5
+index 15, ToString(result): '[object Uint8Array]', type: 7 -> 5
+index 16, ToString(result): '[object Uint8Array]', type: 7 -> 5
 index 17, ToString(result): 'null', type: 8 -> 8
 index 18, ToString(result): '0xdeadbeef', type: 8 -> 8
 ==> rc=0, result='undefined'

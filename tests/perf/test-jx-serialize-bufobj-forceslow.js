@@ -2,7 +2,7 @@ if (typeof print !== 'function') { print = console.log; }
 
 function build() {
     var obj = {};
-    var ab = new ArrayBuffer(32);
+    var ab = new Uint8Array(32);
     var vw = new Uint32Array(ab, 4, 3);
     var i;
     for (i = 0; i < ab.length; i++) {

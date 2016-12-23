@@ -34,10 +34,6 @@ Object.getOwnPropertyNames: 5
 Object.getOwnPropertyNames: 6
 Object.getOwnPropertyNames: 7
 Object.getOwnPropertyNames: length
-Object.getOwnPropertyNames: byteLength
-Object.getOwnPropertyNames: byteOffset
-Object.getOwnPropertyNames: BYTES_PER_ELEMENT
-Object.getOwnPropertyNames: buffer
 ===*/
 
 /* Test enum with one non-8-bit view. */

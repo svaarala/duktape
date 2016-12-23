@@ -125,6 +125,10 @@ function typedArrayInstancePropertiesTest() {
         '0', '1', '2'          // '0' and '1' from TypedArray, '2' doesn't exist
     ];
 
+    // This now tests that e.g. 'BYTES_PER_ELEMENT' is somewhere in the
+    // inheritance chain.  Could also check whether the property is own
+    // or inherited.
+
     views.forEach(function (viewname) {
         props.forEach(function (propname) {
             try {

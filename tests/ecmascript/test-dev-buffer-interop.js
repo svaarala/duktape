@@ -6,8 +6,8 @@
 
 /*===
 plain buffer test
-object [object ArrayBuffer] ABCD
-object [object ArrayBuffer] ABCD
+object [object Uint8Array] ABCD
+object [object Uint8Array] ABCD
 object object
 false
 true
@@ -23,7 +23,7 @@ ABCDEFGH
 function plainBufferTest() {
     var a, b, c, d, e, f;
 
-    // plain buffer, mimics ArrayBuffer
+    // plain buffer, mimics Uint8Array
 
     a = Duktape.dec('hex', '41424344');
     print(typeof a, a, bufferToStringRaw(a));
@@ -68,7 +68,7 @@ Node.js Buffer constructor interop
 {type:"Buffer",data:[102,111,111]}
 false 97 102
 {type:"Buffer",data:[1,255]}
-false 2 1
+true 2 2
 {type:"Buffer",data:[239,123]}
 {type:"Buffer",data:[3]}
 ===*/
@@ -78,8 +78,9 @@ false 2 1
 function nodejsBufferConstructorTest() {
     var b;
     var t;
+    var u8;
 
-    // A plain buffer is treated like an ArrayBuffer: a copy is made.
+    // A plain buffer is treated like an Uint8Array: a copy is made.
     // (XXX: newer Node.js Buffer binding will create a Node.js buffer
     // which shares the same underlying buffer).
 
@@ -89,17 +90,17 @@ function nodejsBufferConstructorTest() {
     b[0] = 0x61;  // 'a'
     print(b[0] === t[0], b[0], t[0]);
 
-    // An ArrayBuffer can be used as an input to create a Node.js Buffer; it
-    // is interpreted as an Array-like input.  A copy (not slice) is made.
-    // (XXX: newer Node.js Buffer behavior.)
+    // An ArrayBuffer can be used as an input to create a Node.js Buffer.
+    // In newer Node.js it is used without making a copy.
 
     t = new ArrayBuffer(2);
-    t[0] = 0x01;
-    t[1] = 0xff;
+    u8 = new Uint8Array(t);
+    u8[0] = 0x01;
+    u8[1] = 0xff;
     b = new Buffer(t);
     print(Duktape.enc('jx', b));
     b[0] = 0x02;
-    print(b[0] === t[0], b[0], t[0]);
+    print(b[0] === u8[0], b[0], u8[0]);
 
     // A TypedArray can be used as an input to create a Node.js Buffer; it
     // is interpreted as an Array-like input.
@@ -130,13 +131,15 @@ fooABCbcde
 
 function nodejsConcatTest() {
     var res;
-    var b1, b2, b3;
+    var b1, b2, b3, u8;
 
     // Concat accepts all view/buffer types.  View/slice offsets are
     // respected, e.g. b4 first byte is skipped below.
 
     b1 = new Buffer('foo');
-    b2 = new ArrayBuffer(3); b2[0] = 0x41; b2[1] = 0x42; b2[2] = 0x43;
+    b2 = new ArrayBuffer(3);
+    u8 = new Uint8Array(b2);
+    u8[0] = 0x41; u8[1] = 0x42; u8[2] = 0x43;
     b3 = new Uint8Array([ 0x61, 0x62, 0x63, 0x64, 0x65 ]).subarray(1);
 
     res = Buffer.concat([ b1, b2, b3 ]);

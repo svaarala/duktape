@@ -14,13 +14,12 @@
 
 /*---
 {
-    "custom": true,
     "endianness": "little"
 }
 ---*/
 
 /*===
-ArrayBuffer join: 0 - 1 - 2 - 3 - 4 - 5 - 6 - 7 - 8 - 9 - 10 - 11 - 12 - 13 - 14 - 15
+ArrayBuffer join: 
 Uint16Array join: 0 - 31337 - 62674 - 28475 - 59812 - 25613 - 56950 - 22751
 Uint16Array reverse
 Uint16Array join: 22751 - 56950 - 25613 - 59812 - 28475 - 62674 - 31337 - 0
