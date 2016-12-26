@@ -19,11 +19,11 @@ summary: |
   </div>
 
   <div class="note">
-  In Duktape 2.x plain buffers mimic ArrayBuffer objects and will usually
-  ToString() coerce to "[object ArrayBuffer]".  To convert buffer or buffer
+  In Duktape 2.x plain buffers mimic Uint8Array objects and will usually
+  ToString() coerce to "[object Uint8Array]".  To convert buffer or buffer
   object contents into a string, use
-  <code><a href="#duk_buffer_to_string">duk_buffer_to_string()</code>
-  (new in Duktape 2.0).</a>.
+  <code><a href="#duk_buffer_to_string">duk_buffer_to_string()</a></code>
+  (new in Duktape 2.0).
   </div>
 
 example: |

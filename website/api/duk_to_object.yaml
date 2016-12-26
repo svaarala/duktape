@@ -23,7 +23,7 @@ summary: |
   <p>Custom type behavior: see
   <a href="http://duktape.org/guide.html#typealgorithms">Type algorithms</a>.
   Note in particular that plain buffer values coerce into equivalent
-  ArrayBuffer objects.</p>
+  Uint8Array objects.</p>
 
 example: |
   duk_to_object(ctx, -3);

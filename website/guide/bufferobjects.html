@@ -16,7 +16,7 @@
 <td>No<br />Duktape&nbsp;specific</td>
 <td>1.0</td>
 <td>Plain, primitive buffer value (not an object), similar to how a plain string relates to a String object.
-    Behaves like an ArrayBuffer instance where possible, object coerces to an actual <code>ArrayBuffer</code>.</td>
+    Behaves like an Uint8Array instance where possible, object coerces to an actual <code>Uint8Array</code>.</td>
 </tr>
 <tr>
 <td>ArrayBuffer object</td>
@@ -34,8 +34,8 @@
 <td>Node.js Buffer object</td>
 <td>No<br />Node.js-like</td>
 <td>1.3</td>
-<td>Object with <a href="https://nodejs.org/api/buffer.html">Node.js Buffer API</a>.
-    References an underlying plain buffer.</td>
+<td>Object with <a href="https://nodejs.org/api/buffer.html">Node.js Buffer API</a>,
+    inherits from Uint8Array.prototype.  References an underlying plain buffer.</td>
 </tr>
 </table>
 
@@ -46,11 +46,11 @@ for a detailed discussion, including a
 <h2>Plain buffers</h2>
 
 <p>Plain buffers are a non-standard memory efficient way of representing
-buffer data.  Plain buffers mimic ArrayBuffer objects so that they inherit
-from <code>ArrayBuffer.prototype</code>, are accepted as typed array
+buffer data.  Plain buffers mimic Uint8Array objects so that they inherit
+from <code>Uint8Array.prototype</code>, are accepted as typed array
 constructor arguments, and so on.  While plain buffers don't have a property
 table and can't hold properties of their own, they have the following
-virtual properties (example values are for a 24-byte buffer):</p>
+virtual or inherited properties (example values are for a 24-byte buffer):</p>
 
 <table>
 <thead>
@@ -87,6 +87,14 @@ virtual properties (example values are for a 24-byte buffer):</p>
 <td class="propname">BYTES_PER_ELEMENT</td>
 <td>1</td>
 <td>Always 1, present to match typed arrays.</td>
+</tr>
+<tr>
+<td class="propname">buffer</td>
+<td>&nbsp;</td>
+<td>Getter property which returns a new ArrayBuffer instance backing to the
+    plain buffer without making a copy.  Because plain buffers don't have a
+    property table, a new ArrayBuffer is created on every property read.
+    Absent if buffer object support is disabled in Duktape configuration.</td>
 </tr>
 </tbody>
 </table>

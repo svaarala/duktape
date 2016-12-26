@@ -12,7 +12,7 @@
 <tr><td><a href="#type-number">number</a></td><td>DUK_TYPE_NUMBER</td><td>DUK_TYPE_MASK_NUMBER</td><td>IEEE double</td></tr>
 <tr><td><a href="#type-string">string</a></td><td>DUK_TYPE_STRING</td><td>DUK_TYPE_MASK_STRING</td><td>immutable (plain) string or (plain) Symbol</td></tr>
 <tr><td><a href="#type-object">object</a></td><td>DUK_TYPE_OBJECT</td><td>DUK_TYPE_MASK_OBJECT</td><td>object with properties</td></tr>
-<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external; mimics an ArrayBuffer</td></tr>
+<tr><td><a href="#type-buffer">buffer</a></td><td>DUK_TYPE_BUFFER</td><td>DUK_TYPE_MASK_BUFFER</td><td>mutable (plain) byte buffer, fixed/dynamic/external; mimics an Uint8Array</td></tr>
 <tr><td><a href="#type-pointer">pointer</a></td><td>DUK_TYPE_POINTER</td><td>DUK_TYPE_MASK_POINTER</td><td>opaque pointer (void *)</td></tr>
 <tr><td><a href="#type-lightfunc">lightfunc</a></td><td>DUK_TYPE_LIGHTFUNC</td><td>DUK_TYPE_MASK_LIGHTFUNC</td><td>plain Duktape/C function pointer (non-object); mimics a Function</td></tr>
 </table>
@@ -265,7 +265,7 @@ and an arbitrary value (including <b>undefined</b>).</p>
 <h2 id="type-buffer">Buffer</h2>
 
 <p>The plain <b>buffer</b> type is a raw buffer for user data.  It's much
-more memory efficient than standard buffer object types like ArrayBuffer
+more memory efficient than standard buffer object types like Uint8Array
 or Node.js Buffer.  There are three plain buffer sub-types:</p>
 <table>
 <tr>
@@ -321,9 +321,9 @@ so user code is responsible for managing its life cycle.  User code must also
 make sure that no external buffer value is accessed when the external buffer
 is no longer (or not yet) valid.</p>
 
-<p>Plain buffers mimic ArrayBuffer objects to a large extent, so they are
+<p>Plain buffers mimic Uint8Array objects to a large extent, so they are
 a non-standard, memory efficient alternative to working with e.g. ArrayBuffer
-or typed arrays.  The standard buffer objects are implemented on top of plain
+and typed arrays.  The standard buffer objects are implemented on top of plain
 buffers, so that e.g. an ArrayBuffer will be backed by a plain buffer.  See
 <a href="#bufferobjects">Buffer objects</a> for more discussion.</p>
 

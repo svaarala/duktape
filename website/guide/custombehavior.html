@@ -208,22 +208,12 @@ details on the fast path behavior:
 <h2 id="typedarray-custombehavior">TypedArray binding</h2>
 
 <p>Duktape provides a Khronos/ES6 TypedArray binding.  The scope of the
-binding is the Khronos specification, not the full ES6 specification.
+binding is the Khronos specification, not (yet) the full ES6 specification.
 There are some differences to Khronos/ES6, including:</p>
 <ul>
-<li>Interoperability with other buffer types: Node.js Buffer is usually
-    allowed wherever an ArrayBuffer or a view object would be allowed.</li>
 <li>Small differences in argument coercion e.g. for offset and length
     values.</li>
-<li>ArrayBuffer has numeric indices (behaving like Uint8Array), and
-    additional <code>length</code> (matching <code>byteLength</code>),
-    <code>byteOffset</code> (= 0), and <code>BYTES_PER_ELEMENT</code> (= 1)
-    properties.  This allows more compact (non-standard) code to be written
-    for dealing with buffers.</li>
-<li>TypedArray <code>subarray()</code> returns a typed array object whose
-    internal prototype is copied from the argument rather than being set
-    to the default prototype for that view, such as <code>Uint8Array.prototype</code>.</li>
-<li>The plain buffer custom type behaves mostly like an ArrayBuffer object
+<li>The plain buffer custom type behaves mostly like an Uint8Array object
     for Ecmascript code, but has a separate type in the Duktape C API.</li>
 </ul>
 
@@ -255,10 +245,4 @@ differences include:</p>
     <a href="http://unicode.org/review/pr-121.html">Unicode Technical Committee Recommended Practice for Replacement Characters</a>
     which matches WHATWG Encoding API specification but differs from Node.js
     (at least up to version v6.9.1).</li>
-<li>Node.js Buffer has additional <code>byteLength</code> (matching
-    <code>length</code>), <code>byteOffset</code> (= 0), and
-    <code>BYTES_PER_ELEMENT</code> (= 1) properties.</li>
-<li>Node.js Buffer internal class is "Buffer" so
-    <code>Object.prototype.toString.call(buf)</code> outputs
-    <code>[object Buffer]</code> rather than <code>[object Object]</code>.</li>
 </ul>
