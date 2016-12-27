@@ -2162,6 +2162,13 @@ Planned
   rather than accept such ArrayBuffers without actually respecting the
   view offset/length (GH-1197)
 
+* Fix duk_push_buffer_object() ArrayBuffer .byteLength to use 0 and .byteOffset
+  to use view's (byteOffset + byteLength), so that accesses to the ArrayBuffer
+  at the view's .byteOffset match the view at index 0 as normally expected;
+  previously .byteOffset and .byteLength were copied from the view as is which
+  makes the ArrayBuffer indices behave inconsistently with respect to the
+  view's .byteOffset (GH-1229)
+
 * Fix JSON stringify fastpath handling of array gaps in JX and JC; they
   incorrectly stringified as 'null' (like in JSON) instead of 'undefined'
   and '{"_undef":true}' as intended (GH-859, GH-1149)
