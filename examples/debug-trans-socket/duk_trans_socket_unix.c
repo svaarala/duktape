@@ -3,21 +3,12 @@
  *
  *  Provides a TCP server socket which a debug client can connect to.
  *  After that data is just passed through.
+ *
+ *  On some UNIX systems poll() may not be available but select() is.
+ *  The default is to use poll(), but you can switch to select() by
+ *  defining USE_SELECT.  See https://daniel.haxx.se/docs/poll-vs-select.html.
  */
 
-/*
- *  The select() vs poll() story.  The two system calls called
- *  "select()" and "poll()" are similar but not necessarily available
- *  on all platforms.  The default implementation is to use "poll()"
- *  but we can switch that by defining "USE_SELECT" within this
- *  file.  For example:
- *
- *  #define USE_SELECT
- *
- *  If set, instead of leveraging "poll()", this code will leverage
- *  "select()".   Discussions on "poll()" vs "select()" can be read
- *  about here: https://daniel.haxx.se/docs/poll-vs-select.html
- */
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -25,7 +16,7 @@
 #include <unistd.h>
 #if !defined(USE_SELECT)
 #include <poll.h>
-#endif /* ! USE_SELECT */
+#endif  /* !USE_SELECT */
 #include <errno.h>
 #include "duktape.h"
 
@@ -269,11 +260,13 @@ duk_size_t duk_trans_socket_write_cb(void *udata, const char *buffer, duk_size_t
 
 duk_size_t duk_trans_socket_peek_cb(void *udata) {
 #if defined(USE_SELECT)
+	struct timeval tm;
 	fd_set rfds;
-#else /* USE_SELECT */
+	int select_rc;
+#else
 	struct pollfd fds[1];
 	int poll_rc;
-#endif /* USE_SELECT */
+#endif
 
 	(void) udata;  /* not needed by the example */
 
@@ -288,17 +281,15 @@ duk_size_t duk_trans_socket_peek_cb(void *udata) {
 #if defined(USE_SELECT)
 	FD_ZERO(&rfds);
 	FD_SET(client_sock, &rfds);
-	struct timeval tm;
 	tm.tv_sec = tm.tv_usec = 0;
-	int select_rc = select(client_sock + 1, &rfds, NULL, NULL, &tm);
+	select_rc = select(client_sock + 1, &rfds, NULL, NULL, &tm);
 	if (select_rc == 0) {
 		return 0;
-	}
-	if (select_rc == 1) {
+	} else if (select_rc == 1) {
 		return 1;
 	}
 	goto fail;
-#else /* USE_SELECT */
+#else  /* USE_SELECT */
 	fds[0].fd = client_sock;
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
@@ -319,7 +310,7 @@ duk_size_t duk_trans_socket_peek_cb(void *udata) {
 	} else {
 		return 1;  /* something to read */
 	}
-#endif /* USE_SELECT */
+#endif  /* USE_SELECT */
  fail:
 	if (client_sock >= 0) {
 		(void) close(client_sock);
