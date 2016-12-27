@@ -150,12 +150,12 @@ false false false false false true false false false false false false false -> 
 [object ArrayBuffer]
 [object ArrayBuffer] false false false
 [object ArrayBuffer]
-object [object ArrayBuffer] 22 16 22 1 undefined
+object [object ArrayBuffer] 38 0 38 1 undefined
 false false true false false false false false false false false false false -> ArrayBuffer
 false false true false false false false false false false false false false -> ArrayBuffer.prototype
-22
-16
-22
+38
+0
+38
 1
 undefined
 123 123
@@ -195,7 +195,7 @@ static duk_ret_t test_view_buffer_prop(duk_context *ctx) {
 		"    print(v.buffer.BYTES_PER_ELEMENT);\n"
 		"    print(v.buffer.buffer);\n"
 		"    v[3] = 123;  /* check that backing buffer and slice matches */\n"
-		"    print(v[3], new Uint8Array(v.buffer)[3]);\n"
+		"    print(v[3], new Uint8Array(v.buffer)[v.byteOffset + 3]);\n"
 		"})");
 	duk_dup(ctx, -2);
 	duk_call(ctx, 1);
@@ -373,7 +373,7 @@ final top: 2
 ==> rc=1, result='TypeError: invalid call args'
 ===*/
 
-/* If 'flags' is given as zero, it will match a DUK_BUFOBJ_DUKTAPEBUFFER.
+/* If 'flags' is given as zero, it will match a DUK_BUFOBJ_ARRAYBUFFER.
  * So this test succeeds which is intentional.
  */
 static duk_ret_t test_invalid_flags1(duk_context *ctx) {
