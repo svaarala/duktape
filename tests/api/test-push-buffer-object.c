@@ -46,10 +46,10 @@ static void register_dump_buffer_info(duk_context *ctx) {
 object [object Uint8Array] 32 128 32 1 object
 true false false false true false false false false false false false -> Buffer,Uint8Array
 true false false false false false false false false false false false -> Buffer.prototype
-object [object ArrayBuffer] 32 128 32 1 undefined
+object [object ArrayBuffer] undefined undefined 32 undefined undefined
 false true false false false false false false false false false false -> ArrayBuffer
 false true false false false false false false false false false false -> ArrayBuffer.prototype
-object [object DataView] 32 128 32 1 object
+object [object DataView] undefined 128 32 undefined object
 false false true false false false false false false false false false -> DataView
 false false true false false false false false false false false false -> DataView.prototype
 object [object Int8Array] 32 128 32 1 object
@@ -144,15 +144,15 @@ false false false false true false false false false false false false -> Uint8A
 22
 1
 [object ArrayBuffer]
-[object ArrayBuffer] false false false
+function undefined false false
 [object ArrayBuffer]
-object [object ArrayBuffer] 22 16 22 1 undefined
+object [object ArrayBuffer] undefined undefined 22 undefined undefined
 false true false false false false false false false false false false -> ArrayBuffer
 false true false false false false false false false false false false -> ArrayBuffer.prototype
+undefined
+undefined
 22
-16
-22
-1
+undefined
 undefined
 123 123
 extbuf[16 + 3] = 123
@@ -163,6 +163,8 @@ final top: 1
 /* The basic test ensures all typed array views get a .buffer property.
  * Test the .buffer reference in more detail: check that property
  * attributes are correct, check that it backs to the same slice, etc.
+ *
+ * In ES6 .buffer is inherited from %TypedArrayPrototype% and is a getter.
  */
 static duk_ret_t test_view_buffer_prop(duk_context *ctx, void *udata) {
 	unsigned char extbuf[256];
@@ -183,8 +185,8 @@ static duk_ret_t test_view_buffer_prop(duk_context *ctx, void *udata) {
 		"    print(v.byteLength);\n"
 		"    print(v.BYTES_PER_ELEMENT);\n"
 		"    print(v.buffer);\n"
-		"    pd = Object.getOwnPropertyDescriptor(v, 'buffer');\n"
-		"    print(pd.value, pd.writable, pd.enumerable, pd.configurable);\n"
+		"    pd = Object.getOwnPropertyDescriptor(v.__proto__.__proto__, 'buffer');\n"
+		"    print(typeof pd.get, typeof pd.set, pd.enumerable, pd.configurable);\n"
 		"    print(Object.prototype.toString.call(v.buffer));\n"
 		"    dumpBufferInfo(v.buffer);\n"
 		"    print(v.buffer.length);\n"  /* some of these are Duktape custom */

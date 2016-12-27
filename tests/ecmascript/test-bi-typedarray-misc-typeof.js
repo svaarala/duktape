@@ -20,7 +20,7 @@ typeof test
 ===*/
 
 function typeofTest() {
-    var objs = getTestObjectList();
+    var objs = getBufferTestObjectList();
     objs.forEach(function (b) {
         print(Object.prototype.toString.call(b), typeof b);
     });

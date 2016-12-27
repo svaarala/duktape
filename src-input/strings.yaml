@@ -651,12 +651,12 @@ strings:
     typed_array: true
   - str: "length"
     typed_array: true
-  - str: "byteLength"
-    typed_array: true
-  - str: "byteOffset"
-    typed_array: true
-  - str: "BYTES_PER_ELEMENT"
-    typed_array: true
+  #- str: "byteLength"
+  #  typed_array: true
+  #- str: "byteOffset"
+  #  typed_array: true
+  #- str: "BYTES_PER_ELEMENT"
+  #  typed_array: true
 
   # TypedArray TypedArray (e.g. Uint8Array)
   - str: "set"

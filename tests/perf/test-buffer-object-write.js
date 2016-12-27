@@ -1,7 +1,7 @@
 if (typeof print !== 'function') { print = console.log; }
 
 function test() {
-    var b = new (Duktape.Buffer || ArrayBuffer)(4096);
+    var b = new (Uint8Array || Duktape.Buffer)(4096);
     var i;
 
     print(typeof b);

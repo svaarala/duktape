@@ -191,34 +191,38 @@ function encDecTest() {
 
     // ArrayBuffer input
     var ab = new ArrayBuffer(3);
-    ab[0] = 'f'.charCodeAt(0);
-    ab[1] = 'o'.charCodeAt(0);
-    ab[2] = 'o'.charCodeAt(0);
+    var u8 = new Uint8Array(ab);
+    u8[0] = 'f'.charCodeAt(0);
+    u8[1] = 'o'.charCodeAt(0);
+    u8[2] = 'o'.charCodeAt(0);
     printEnc(Duktape.enc('base64', ab));
     var ab = new ArrayBuffer(4);
-    ab[0] = 'Z'.charCodeAt(0);
-    ab[1] = 'm'.charCodeAt(0);
-    ab[2] = '9'.charCodeAt(0);
-    ab[3] = 'v'.charCodeAt(0);
+    var u8 = new Uint8Array(ab);
+    u8[0] = 'Z'.charCodeAt(0);
+    u8[1] = 'm'.charCodeAt(0);
+    u8[2] = '9'.charCodeAt(0);
+    u8[3] = 'v'.charCodeAt(0);
     printDec(Duktape.dec('base64', ab));
 
     // Uint8Array slice input
     var ab = new ArrayBuffer(6);
-    ab[0] = '!'.charCodeAt(0);
-    ab[1] = '!'.charCodeAt(0);
-    ab[2] = 'f'.charCodeAt(0);
-    ab[3] = 'o'.charCodeAt(0);
-    ab[4] = 'o'.charCodeAt(0);
-    ab[5] = '!'.charCodeAt(0);
+    var u8 = new Uint8Array(ab);
+    u8[0] = '!'.charCodeAt(0);
+    u8[1] = '!'.charCodeAt(0);
+    u8[2] = 'f'.charCodeAt(0);
+    u8[3] = 'o'.charCodeAt(0);
+    u8[4] = 'o'.charCodeAt(0);
+    u8[5] = '!'.charCodeAt(0);
     printEnc(Duktape.enc('base64', new Uint8Array(ab).subarray(2, 5)));
     var ab = new ArrayBuffer(7);
-    ab[0] = '_'.charCodeAt(0);
-    ab[1] = '_'.charCodeAt(0);
-    ab[2] = 'Z'.charCodeAt(0);
-    ab[3] = 'm'.charCodeAt(0);
-    ab[4] = '9'.charCodeAt(0);
-    ab[5] = 'v'.charCodeAt(0);
-    ab[6] = '_'.charCodeAt(0);
+    var u8 = new Uint8Array(ab);
+    u8[0] = '_'.charCodeAt(0);
+    u8[1] = '_'.charCodeAt(0);
+    u8[2] = 'Z'.charCodeAt(0);
+    u8[3] = 'm'.charCodeAt(0);
+    u8[4] = '9'.charCodeAt(0);
+    u8[5] = 'v'.charCodeAt(0);
+    u8[6] = '_'.charCodeAt(0);
     printDec(Duktape.dec('base64', new Uint8Array(ab).subarray(2, 6)));
 }
 

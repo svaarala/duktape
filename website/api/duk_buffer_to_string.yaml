@@ -20,7 +20,7 @@ summary: |
 
   <div class="note">
   Since Duktape 2.0 the <code>duk_to_string()</code> coercion for a buffer
-  value is typically something like "[object ArrayBuffer]", which is not
+  value is typically something like "[object Uint8Array]", which is not
   usually intended.
   </div>
 

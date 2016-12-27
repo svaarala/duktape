@@ -13,10 +13,10 @@ summary: |
 
   <p>Any standard type other than an object is a primitive type.  The custom
   plain pointer type is also considered a primitive type.  However, the custom
-  plain buffer type (which behaves like an ArrayBuffer object in most situations) and
+  plain buffer type (which behaves like an Uint8Array object in most situations) and
   lightfunc type (which behaves like a Function object in most situations) are not
   considered a primitive type.  This matches the behavior of <code>duk_to_primitive()</code>
-  which (usually) coerces e.g. a plain buffer to the string <code>[object ArrayBuffer]</code>.</p>
+  which (usually) coerces e.g. a plain buffer to the string <code>[object Uint8Array]</code>.</p>
 
 example: |
   if (duk_is_primitive(ctx, -3)) {

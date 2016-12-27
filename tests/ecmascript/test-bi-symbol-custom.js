@@ -25,9 +25,9 @@ function test() {
         print(e.name);
     }
 
-    // ArrayBuffer.allocPlain() rejects symbols with TypeError.
+    // Uint8Array.allocPlain() rejects symbols with TypeError.
     try {
-        ArrayBuffer.allocPlain(Symbol.for('foo'));
+        Uint8Array.allocPlain(Symbol.for('foo'));
     } catch (e) {
         print(e.name);
     }

@@ -483,6 +483,21 @@ struct duk_heaphdr_string {
 			DUK_HOBJECT_DECREF_NORZ((thr), (h)); \
 		} \
 	} while (0)
+#define DUK_HBUFFER_INCREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HBUFFER_INCREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HBUFFER_DECREF_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HBUFFER_DECREF((thr), (h)); \
+		} \
+	} while (0)
+#define DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr,h) do { \
+		if ((h) != NULL) { \
+			DUK_HBUFFER_DECREF_NORZ((thr), (h)); \
+		} \
+	} while (0)
 #define DUK_HTHREAD_INCREF_ALLOWNULL(thr,h) do { \
 		if ((h) != NULL) { \
 			DUK_HTHREAD_INCREF((thr), (h)); \
@@ -776,6 +791,9 @@ struct duk_heaphdr_string {
 #define DUK_HOBJECT_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
 #define DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr,h)  do {} while (0) /* nop */
+#define DUK_HBUFFER_INCREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
+#define DUK_HBUFFER_DECREF_ALLOWNULL(thr,h)    do {} while (0) /* nop */
+#define DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr,h)  do {} while (0) /* nop */
 
 #define DUK_REFZERO_CHECK_FAST(thr)            do {} while (0) /* nop */
 #define DUK_REFZERO_CHECK_SLOW(thr)            do {} while (0) /* nop */

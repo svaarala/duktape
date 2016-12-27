@@ -107,17 +107,17 @@ function test() {
     // The only easy solution in this case is to make an actual copy.
 
     b1 = new ArrayBuffer(16);
-    for (i = 0; i < b1.byteLength; i++) { b1[i] = 0x11; }
-    for (i = 0; i < b1.byteLength; i++) { print('b1', i, b1[i]); }
+    for (i = 0; i < b1.byteLength; i++) { new Uint8Array(b1)[i] = 0x11; }
+    for (i = 0; i < b1.byteLength; i++) { print('b1', i, new Uint8Array(b1)[i]); }
     v1 = new Int8Array(b1, 7, 4);    // source: bytes [7,11[
     v2 = new Uint32Array(b1);        // target: bytes [0,16[
     v1[0] = -1;
     v1[1] = 1;
     v1[2] = 0x7f;
     v1[3] = -0x80;
-    for (i = 0; i < b1.byteLength; i++) { print('b1', i, b1[i]); }
+    for (i = 0; i < b1.byteLength; i++) { print('b1', i, new Uint8Array(b1)[i]); }
     v2.set(v1);
-    for (i = 0; i < b1.byteLength; i++) { print('b1', i, b1[i]); }
+    for (i = 0; i < b1.byteLength; i++) { print('b1', i, new Uint8Array(b1)[i]); }
 
     // b1:
     // 11111111 11111111 11111111 11111111     initial state

@@ -168,6 +168,13 @@ var result = Duktape.dec('base64', 'Zm9v');
 print(typeof result, result);  // prints 'object foo'
 </pre>
 
+<p>If you prefer a full <code>Uint8Array</code> over a plain buffer, you can
+coerce the result as follows:</p>
+<pre class="ecmascript-code">
+var result = Object(Duktape.dec('base64', 'Zm9v'));
+print(typeof result, result);  // prints 'object foo'
+</pre>
+
 <p>If you wish to get back a string value, you can coerce the plain buffer to
 a string e.g. as follows:</p>
 <pre class="ecmascript-code">

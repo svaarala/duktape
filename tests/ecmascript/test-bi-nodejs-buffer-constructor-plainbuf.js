@@ -21,15 +21,14 @@ function nodejsBufferPlainBufTest() {
     var plain = createPlainBuffer(100);
     print(typeof plain, plain.length);
 
-    // XXX: as an initial first step treat like ArrayBuffer (= make a copy).
-    // However, Node.js Buffer now accepts an ArrayBuffer and creates a new
-    // Node.js buffer which *shares* the ArrayBuffer; to be updated.
+    // Plain buffers mimic Uint8Array, which gets treated as an initializer.
+    // In other words, a copy is made.
     var buf = new Buffer(plain);
     print(typeof buf, buf.length);
 
     print(plain[10]);
-    plain[10] = 0xa5;
-    print(buf[10]);  // demonstrates underlying buffer is the same
+    plain[10] = 0xa5;  // not visible in 'buf'
+    print(buf[10]);
 }
 
 try {

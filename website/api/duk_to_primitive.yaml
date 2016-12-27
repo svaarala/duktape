@@ -19,8 +19,8 @@ summary: |
 
   <p>Custom type coercion:</p>
   <ul>
-  <li>Buffer value (plain): treated like an ArrayBuffer and usually
-      coerces to the string <code>[object ArrayBuffer]</code></li>
+  <li>Buffer value (plain): treated like an Uint8Array and usually
+      coerces to the string <code>[object Uint8Array]</code></li>
   <li>Pointer value (plain): keep existing value</li>
   <li>Pointer object: coerces to the underlying plain pointer value</li>
   <li>Lightfunc value (plain): treated like a Function and usually

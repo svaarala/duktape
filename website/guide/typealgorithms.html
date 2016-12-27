@@ -40,7 +40,7 @@ objects are compared by object reference (like any other objects).</p>
 for standard types.  Custom type behavior is as follows:</p>
 <ul>
 <li>Buffer: plain buffers are compared by their heap pointer (reference), no
-    content comparison is done.  This matches ArrayBuffer behavior.</li>
+    content comparison is done.  This matches Uint8Array behavior.</li>
 <li>Pointer: comparison against any other type returns false.  Comparison to a
     pointer returns true if and only if the pointer values are the same.  Note
     in particular that comparing a number to a pointer returns false.  This seems
@@ -148,30 +148,30 @@ for standard types.  Custom type behavior is as follows:</p>
 <tr><th> </th><th>buffer</th><th>pointer</th><th>lightfunc</th></tr>
 </thead>
 <tbody>
-<tr><th>DefaultValue</th><td>Usually <code>"[object ArrayBuffer]"</code>; like ArrayBuffer</td><td>TypeError</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code> (toString/valueOf)</td></tr>
-<tr><th>ToPrimitive</th><td>Usually <code>"[object ArrayBuffer]"</code>; like ArrayBuffer</td><td>identity</td><td><code>
+<tr><th>DefaultValue</th><td>Usually <code>"[object Uint8Array]"</code>; like Uint8Array</td><td>TypeError</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code> (toString/valueOf)</td></tr>
+<tr><th>ToPrimitive</th><td>Usually <code>"[object Uint8Array]"</code>; like Uint8Array</td><td>identity</td><td><code>
 "light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code> (toString/valueOf)</td></tr>
 <tr><th>ToBoolean</th><td>true</td><td>false for NULL pointer, true otherwise</td><td>true</td></tr>
-<tr><th>ToNumber</th><td>ToNumber(String(buffer)), usually ToNumber("[object ArrayBuffer]") = NaN</td><td>0 for NULL pointer, 1 otherwise</td><td>NaN</td></tr>
+<tr><th>ToNumber</th><td>ToNumber(String(buffer)), usually ToNumber("[object Uint8Array]") = NaN</td><td>0 for NULL pointer, 1 otherwise</td><td>NaN</td></tr>
 <tr><th>ToInteger</th><td>same as ToNumber; usually 0</td><td>same as ToNumber</td><td>0</td></tr>
 <tr><th>ToInt32</th><td>same as ToNumber; usually 0</td><td>same as ToNumber</td><td>0</td></tr>
 <tr><th>ToUint32</th><td>same as ToNumber; usually 0</td><td>same as ToNumber</td><td>0</td></tr>
 <tr><th>ToUint16</th><td>same as ToNumber; usually 0</td><td>same as ToNumber</td><td>0</td></tr>
-<tr><th>ToString</th><td>Usually <code>[object ArrayBuffer]</code>; like ArrayBuffer</td><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code></td></tr>
-<tr><th>ToObject</th><td>ArrayBuffer object (backs to argument plain buffer)</td><td>Pointer object</td><td>Function object</td></tr>
+<tr><th>ToString</th><td>Usually <code>[object Uint8Array]</code>; like Uint8Array</td><td><code>sprintf()</code> with <code>%p</code> format (platform specific)</td><td><code>"light_&lt;PTR&gt;_&lt;FLAGS&gt;"</code></td></tr>
+<tr><th>ToObject</th><td>Uint8Array object (backs to argument plain buffer)</td><td>Pointer object</td><td>Function object</td></tr>
 <tr><th>CheckObjectCoercible</th><td>allow (no error)</td><td>allow (no error)</td><td>allow (no error)</td></tr>
 <tr><th>IsCallable</th><td>false</td><td>false</td><td>true</td></tr>
 <tr><th>SameValue</th><td>(covered above)</td><td>(covered above)</td><td>(covered above)</td></tr>
 </tbody>
 </table>
 
-<p>When a buffer is string coerced it behaves like an ArrayBuffer, with the
-result usually being <code>"[object ArrayBuffer]"</code>.  This behavior was
+<p>When a buffer is string coerced it behaves like an Uint8Array, with the
+result usually being <code>"[object Uint8Array]"</code>.  This behavior was
 changed in Duktape 2.0.  To create a string from buffer contents you can use
 e.g. the Node.js Buffer binding or the Encoding API.</p>
 
-<p>When a buffer is object coerced a new ArrayBuffer object is created, with
-the ArrayBuffer backing to the plain buffer (no copy is made).</p>
+<p>When a buffer is object coerced a new Uint8Array object is created, with
+a new ArrayBuffer backing to the plain buffer (no copy is made).</p>
 
 <p>When a lightfunc is coerced with ToPrimitive() it behaves like an ordinary
 function: it gets coerced with <code>Function.prototype.toString()</code> with
@@ -244,7 +244,7 @@ is extended to custom types as follows:</p>
 <ul>
 <li>As for standard types, object values are first coerced with <code>ToPrimitive()</code>;
     plain buffers and lightfuncs are normally coerced with <code>ToString()</code>.
-    For plain buffers the result is usually <code>"[object ArrayBuffer]"</code>
+    For plain buffers the result is usually <code>"[object Uint8Array]"</code>
     and for lightfuncs <code>"[object Function]"</code>.</li>
 <li>Pointer values fall into the default number addition case.  They are coerced
     with <code>ToNumber()</code> and then added as numbers.  NULL pointers coerce to
@@ -252,22 +252,22 @@ is extended to custom types as follows:</p>
 </ul>
 
 <p>Addition is not generally useful for custom types.  For example, if two plain
-buffers are added, the result is usually <code>"[object ArrayBuffer][object ArrayBuffer]"</code>,
-which matches how standard addition behaves for two ArrayBuffer instances.</p>
+buffers are added, the result is usually <code>"[object Uint8Array][object Uint8Array]"</code>,
+which matches how standard addition behaves for two Uint8Array instances.</p>
 
 <h2>Property access</h2>
 
 <p>If a plain buffer or pointer is used as a property access base value,
 properties are looked up from the (initial) built-in prototype object
-(<code>ArrayBuffer.prototype</code> or <code>Duktape.Pointer.prototype</code>).
+(<code>Uint8Array.prototype</code> or <code>Duktape.Pointer.prototype</code>).
 This mimics the behavior of standard types.</p>
 
 <p>For example:</p>
 <pre>
 duk&gt; buf = Duktape.dec('hex', '414243');  // plain buffer
 = ABC
-duk&gt; buf.slice();
-= function slice() {"native"}
+duk&gt; buf.subarray();
+= function subarray() {"native"}
 duk&gt; typeof buf.toString();
 = string
 </pre>

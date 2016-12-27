@@ -34,7 +34,7 @@ function test() {
         Math.cos, function foo() {},
         new ArrayBuffer(10),
         new Uint32Array(4),
-        ArrayBuffer.allocPlain(10),
+        Uint8Array.allocPlain(10),
         Duktape.Pointer('foo'), new Duktape.Pointer('foo'),
         new Duktape.Thread(function () {})
     ].forEach(function (v, idx) {

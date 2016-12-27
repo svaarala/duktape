@@ -2454,7 +2454,7 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
 		break;
 	}
 	case DUK_TAG_BUFFER: {
-		stridx = DUK_STRIDX_ARRAY_BUFFER;
+		stridx = DUK_STRIDX_UINT8_ARRAY;
 		break;
 	}
 #if defined(DUK_USE_FASTINT)
@@ -2593,7 +2593,7 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t idx) {
 		goto skip_replace;
 #endif
 	}
-	case DUK_TAG_BUFFER:
+	case DUK_TAG_BUFFER: /* Go through Uint8Array.prototype.toString() for coercion. */
 	case DUK_TAG_OBJECT: {
 		/* Plain buffers: go through ArrayBuffer.prototype.toString()
 		 * for coercion.
@@ -2897,16 +2897,17 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		 * is not fully transparent behavior (ToObject() should be a
 		 * nop for an object).  This behavior matches lightfuncs which
 		 * also coerce to an equivalent Function object.  There are
-		 * also downsides to defining ToObject(plainBuffer) as a no-op.
+		 * also downsides to defining ToObject(plainBuffer) as a no-op;
+		 * for example duk_to_hobject() could result in a NULL pointer.
 		 */
 		duk_hbuffer *h_buf;
 
 		h_buf = DUK_TVAL_GET_BUFFER(tv);
 		DUK_ASSERT(h_buf != NULL);
-		duk_hbufobj_push_arraybuffer_from_plain(thr, h_buf);
+		duk_hbufobj_push_uint8array_from_plain(thr, h_buf);
 		goto replace_value;
 	}
-#endif
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	case DUK_TAG_POINTER: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER);
@@ -3083,8 +3084,8 @@ DUK_INTERNAL duk_small_uint_t duk_get_class_number(duk_context *ctx, duk_idx_t i
 		DUK_ASSERT(obj != NULL);
 		return DUK_HOBJECT_GET_CLASS_NUMBER(obj);
 	case DUK_TAG_BUFFER:
-		/* Buffers behave like ArrayBuffer objects. */
-		return DUK_HOBJECT_CLASS_ARRAYBUFFER;
+		/* Buffers behave like Uint8Array objects. */
+		return DUK_HOBJECT_CLASS_UINT8ARRAY;
 	case DUK_TAG_LIGHTFUNC:
 		/* Lightfuncs behave like Function objects. */
 		return DUK_HOBJECT_CLASS_FUNCTION;
@@ -4312,14 +4313,14 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
  * duk_bi_buffer.c.  Look for overlap and refactor.
  */
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-#define DUK__PACK_ARGS(classnum,protobidx,elemtype,elemshift,isview) \
-	(((classnum) << 24) | ((protobidx) << 16) | ((elemtype) << 8) | ((elemshift) << 4) | (isview))
+#define DUK__PACK_ARGS(classnum,protobidx,elemtype,elemshift,istypedarray) \
+	(((classnum) << 24) | ((protobidx) << 16) | ((elemtype) << 8) | ((elemshift) << 4) | (istypedarray))
 
 static const duk_uint32_t duk__bufobj_flags_lookup[] = {
 	/* Node.js Buffers are Uint8Array instances which inherit from Buffer.prototype. */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_ARRAYBUFFER,       DUK_BIDX_ARRAYBUFFER_PROTOTYPE,       DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_ARRAYBUFFER */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_NODEJS_BUFFER_PROTOTYPE,     DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_NODEJS_BUFFER */
-	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_DATAVIEW */
+	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_DATAVIEW,          DUK_BIDX_DATAVIEW_PROTOTYPE,          DUK_HBUFOBJ_ELEM_UINT8,        0, 0),  /* DUK_BUFOBJ_DATAVIEW */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_INT8ARRAY,         DUK_BIDX_INT8ARRAY_PROTOTYPE,         DUK_HBUFOBJ_ELEM_INT8,         0, 1),  /* DUK_BUFOBJ_INT8ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8ARRAY,        DUK_BIDX_UINT8ARRAY_PROTOTYPE,        DUK_HBUFOBJ_ELEM_UINT8,        0, 1),  /* DUK_BUFOBJ_UINT8ARRAY */
 	DUK__PACK_ARGS(DUK_HOBJECT_CLASS_UINT8CLAMPEDARRAY, DUK_BIDX_UINT8CLAMPEDARRAY_PROTOTYPE, DUK_HBUFOBJ_ELEM_UINT8CLAMPED, 0, 1),  /* DUK_BUFOBJ_UINT8CLAMPEDARRAY */
@@ -4389,33 +4390,39 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	h_bufobj->length = uint_length;
 	h_bufobj->shift = (tmp >> 4) & 0x0f;
 	h_bufobj->elem_type = (tmp >> 8) & 0xff;
-	h_bufobj->is_view = tmp & 0x0f;
+	h_bufobj->is_typedarray = tmp & 0x0f;
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 
 	/* TypedArray views need an automatic ArrayBuffer which must be
-	 * provided as .buffer property of the view.  Just create a new
-	 * ArrayBuffer sharing the same underlying buffer.
+	 * provided as .buffer property of the view.  The ArrayBuffer is
+	 * referenced via duk_hbufobj->buf_prop and an inherited .buffer
+	 * accessor returns it.
 	 */
 	if (flags & DUK_BUFOBJ_CREATE_ARRBUF) {
-		h_bufobj = duk_push_bufobj_raw(ctx,
+		duk_hbufobj *h_arrbuf;
+
+		h_arrbuf = duk_push_bufobj_raw(ctx,
 		                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                               DUK_HOBJECT_FLAG_BUFOBJ |
 		                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
 		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
+		DUK_ASSERT(h_arrbuf != NULL);
 
-		DUK_ASSERT(h_bufobj != NULL);
-
-		h_bufobj->buf = h_val;
+		h_arrbuf->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
-		h_bufobj->offset = uint_offset;
-		h_bufobj->length = uint_length;
-		DUK_ASSERT(h_bufobj->shift == 0);
-		h_bufobj->elem_type = DUK_HBUFOBJ_ELEM_UINT8;
-		DUK_ASSERT(h_bufobj->is_view == 0);
-		DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
+		h_arrbuf->offset = uint_offset;
+		h_arrbuf->length = uint_length;
+		DUK_ASSERT(h_arrbuf->shift == 0);
+		h_arrbuf->elem_type = DUK_HBUFOBJ_ELEM_UINT8;
+		DUK_ASSERT(h_arrbuf->is_typedarray == 0);
+		DUK_ASSERT_HBUFOBJ_VALID(h_arrbuf);
+		DUK_ASSERT(h_arrbuf->buf_prop == NULL);
 
-		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LC_BUFFER, DUK_PROPDESC_FLAGS_NONE);
-		duk_compact_m1(ctx);
+		DUK_ASSERT(h_bufobj->buf_prop == NULL);
+		h_bufobj->buf_prop = (duk_hobject *) h_arrbuf;
+		DUK_HBUFOBJ_INCREF(thr, h_arrbuf);  /* Now reachable and accounted for. */
+
+		duk_pop(ctx);
 	}
 
 	return;
@@ -4548,6 +4555,22 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 	thr->valstack_top++;
 
 	return (void *) buf_data;
+}
+
+DUK_INTERNAL void *duk_push_fixed_buffer_nozero(duk_context *ctx, duk_size_t len) {
+	return duk_push_buffer_raw(ctx, len, DUK_BUF_FLAG_NOZERO);
+}
+
+DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_context *ctx, duk_size_t len) {
+	void *ptr;
+	ptr = duk_push_buffer_raw(ctx, len, 0);
+#if !defined(DUK_USE_ZERO_BUFFER_DATA)
+	/* Khronos/ES6 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
+	 * is not set.
+	 */
+	DUK_MEMZERO((void *) ptr, (size_t) len);
+#endif
+	return ptr;
 }
 
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
@@ -5265,7 +5288,7 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval 
 			break;
 		}
 		case DUK_TAG_BUFFER: {
-			/* While plain buffers mimics ArrayBuffers, they summarize differently.
+			/* While plain buffers mimic Uint8Arrays, they summarize differently.
 			 * This is useful so that the summarized string accurately reflects the
 			 * internal type which may matter for figuring out bugs etc.
 			 */

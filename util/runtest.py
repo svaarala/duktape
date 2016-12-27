@@ -219,7 +219,7 @@ def get_diff(a, b):
         if windows:
             cmd = [ 'fc', path_to_platform(fn_a), path_to_platform(fn_b) ]
         else:
-            cmd = [ 'diff', '-u', fn_a, fn_b ]
+            cmd = [ 'diff', '--text', '-u', fn_a, fn_b ]
 
         #print('Executing: %r' % cmd)
         proc = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

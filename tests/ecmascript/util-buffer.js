@@ -8,7 +8,7 @@ var isBigEndian;
 var isLittleEndian;
 var isMixedDouble;
 
-// Detect plain buffer, in Duktape 2.x plain buffers mimic ArrayBuffer so check
+// Detect plain buffer, in Duktape 2.x plain buffers mimic Uint8Array so check
 // indirectly via the API type tag.
 function isPlainBuffer(x) {
     return Duktape.info(x).type === 7;  // api tag, 7=plain buffer, 6=object
@@ -23,13 +23,23 @@ function createPlainBuffer(arg) {
     var res;
     var plain, sliceOffset, sliceLength;
     var i, limit;
+    var u8;
 
     if (typeof arg === 'number' ||
         typeof arg === 'string' ||
-        arg instanceof ArrayBuffer ||  // matches plain buffers too
+        arg instanceof Uint8Array ||  // matches plain buffers too
         arg instanceof Buffer) {
         // Semantics are compatible.
-        res = ArrayBuffer.allocPlain(arg);
+        res = Uint8Array.allocPlain(arg);
+    } else if (arg instanceof ArrayBuffer) {
+        sliceOffset = 0;
+        sliceLength = arg.byteLength;
+        u8 = new Uint8Array(arg);
+
+        res = Uint8Array.allocPlain(sliceLength);
+        for (i = 0; i < sliceLength; i++) {
+            res[i] = u8[i];
+        }
     } else if (arg instanceof Uint8Array ||
                arg instanceof Uint8ClampedArray ||
                arg instanceof Int8Array ||
@@ -40,16 +50,16 @@ function createPlainBuffer(arg) {
                arg instanceof Float32Array ||
                arg instanceof Float64Array ||
                arg instanceof DataView) {
-        // Current ArrayBuffer.allocPlain() cannot be used here as is because
+        // Current Uint8Array.allocPlain() cannot be used here as is because
         // it interprets typed array views as initializers, not byte for byte.
-        plain = ArrayBuffer.plainOf(arg.buffer);  // get underlying buffer
+        plain = Uint8Array.plainOf(arg.buffer);  // get underlying buffer
         if (plain === null) {
             throw new Error('createPlainBuffer() argument invalid');
         }
         sliceOffset = arg.byteOffset;
         sliceLength = arg.byteLength;
 
-        res = ArrayBuffer.allocBuffer(sliceLength);
+        res = Uint8Array.allocPlain(sliceLength);
         for (i = 0; i < sliceLength; i++) {
             res[i] = plain[i + sliceOffset];
         }
@@ -79,9 +89,9 @@ function getPlainBuffer(buf) {
         buf instanceof Float32Array ||
         buf instanceof Float64Array ||
         buf instanceof DataView) {
-        // Duktape 2.x: plain buffer mimics ArrayBuffer and is covered by
-        // 'plain instanceof ArrayBuffer' above.
-        res = ArrayBuffer.plainOf(buf);
+        // Duktape 2.x: plain buffer mimics Uint8Array and is covered by
+        // 'buf instanceof Uint8Array' above.
+        res = Uint8Array.plainOf(buf);
     } else {
         throw new Error('getPlainBuffer() argument invalid');
     }
@@ -178,7 +188,7 @@ function dumpOwnNonIndexProperties(x, dumpValue) {
 
 // Get a list of test objects shared by multiple tests.  Includes all
 // object types from typedarray spec.
-function getTestObjectList() {
+function getBufferTestObjectList() {
     var buf = new ArrayBuffer(16);
     var values = [
         buf,
@@ -216,6 +226,8 @@ function printableBufferRaw(b) {
     var i, n;
 
     if (isPlainBuffer(b)) {
+        slice_start = 0;
+        slice_end = b.length;
     } else if (Object.prototype.toString.call(b) === '[object ArrayBuffer]') {
         slice_start = 0;
         slice_end = b.byteLength;

@@ -13,7 +13,7 @@
  */
 
 /* When testing manually, increase to e.g. 100. */
-#define TEST_COUNT 3
+#define TEST_COUNT 4
 
 /*===
 *** test_side_effect (duk_safe_call)
@@ -24,6 +24,9 @@ resized
 finalizer
 resized
 ...2
+finalizer
+resized
+...3
 finalizer
 resized
 final top: 0
@@ -110,7 +113,7 @@ static duk_ret_t test_side_effect(duk_context *ctx, void *udata) {
 			 * them explicitly at some pointer to avoid looping forever.
 			 * The limit here allows a failure to be detected in e.g. 1.5.0.
 			 */
-			if (count_intern >= 50000) {
+			if (count_intern >= 100000) {
 				duk_gc(ctx, 0);
 			}
 		}

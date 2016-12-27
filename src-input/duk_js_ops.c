@@ -76,7 +76,7 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 		return 1;
 	}
 	case DUK_TAG_BUFFER: {
-		/* Mimic ArrayBuffer semantics: objects coerce true, regardless
+		/* Mimic Uint8Array semantics: objects coerce true, regardless
 		 * of buffer length (zero or not) or context.
 		 */
 		return 1;
@@ -584,7 +584,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 			return DUK_TVAL_GET_HEAPHDR(tv_x) == DUK_TVAL_GET_HEAPHDR(tv_y);
 		}
 		case DUK_TAG_BUFFER: {
-			/* In Duktape 2.x plain buffers mimic ArrayBuffer objects
+			/* In Duktape 2.x plain buffers mimic Uint8Array objects
 			 * so always compare by heap pointer.  In Duktape 1.x
 			 * strict comparison would compare heap pointers and
 			 * non-strict would compare contents.
@@ -1105,7 +1105,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		DUK_ASSERT(val != NULL);
 		break;
 	case DUK_TAG_BUFFER:
-		val = thr->builtins[DUK_BIDX_ARRAYBUFFER_PROTOTYPE];
+		val = thr->builtins[DUK_BIDX_UINT8ARRAY_PROTOTYPE];
 		DUK_ASSERT(val != NULL);
 		break;
 	case DUK_TAG_POINTER:
@@ -1286,7 +1286,7 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
 	case DUK_TAG_BUFFER: {
 		/* Implementation specific.  In Duktape 1.x this would be
 		 * 'buffer', in Duktape 2.x changed to 'object' because plain
-		 * buffers now mimic ArrayBuffer objects.
+		 * buffers now mimic Uint8Array objects.
 		 */
 		stridx = DUK_STRIDX_LC_OBJECT;
 		break;

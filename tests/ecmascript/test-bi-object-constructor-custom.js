@@ -27,15 +27,15 @@ function constructorAsFunctionTest() {
     t = Object(ptr_plain);  // coerce plain pointer to full Pointer object
     print(typeof t, t instanceof Duktape.Pointer, typeof t.valueOf());
 
-    // Plain buffers are treated like ArrayBuffers (wherever possible),
+    // Plain buffers are treated like Uint8Arrays (wherever possible),
     // so that:
     //   - typeof plainBuffer == 'object'
     //   - plainBuffer.valueOf() returns Object-coerced version of buffer
-    //     (a full ArrayBuffer object with same backing)
+    //     (a full Uint8Array object with same backing)
 
-    print(typeof buf_plain, buf_plain instanceof ArrayBuffer);
-    t = Object(buf_plain);  // coerce plain buffer to an ArrayBuffer object
-    print(typeof t, t instanceof ArrayBuffer, typeof t.valueOf());
+    print(typeof buf_plain, buf_plain instanceof Uint8Array);
+    t = Object(buf_plain);  // coerce plain buffer to an Uint8Array object
+    print(typeof t, t instanceof Uint8Array, typeof t.valueOf());
 }
 
 try {
@@ -63,9 +63,9 @@ function constructorTest() {
     t = new Object(ptr_plain);
     print(typeof t, t instanceof Duktape.Pointer, typeof t.valueOf());
 
-    print(typeof buf_plain, buf_plain instanceof ArrayBuffer);
+    print(typeof buf_plain, buf_plain instanceof Uint8Array);
     t = new Object(buf_plain);
-    print(typeof t, t instanceof ArrayBuffer, typeof t.valueOf());
+    print(typeof t, t instanceof Uint8Array, typeof t.valueOf());
 }
 
 try {

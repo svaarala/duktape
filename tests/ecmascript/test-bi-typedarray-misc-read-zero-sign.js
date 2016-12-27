@@ -13,8 +13,8 @@
 
 /*===
 zero sign test
-[object ArrayBuffer] number +0
-[object DataView] number +0
+[object ArrayBuffer] number -0
+[object DataView] number -0
 [object Int8Array] number +0
 [object Uint8Array] number +0
 [object Uint8ClampedArray] number +0
@@ -27,11 +27,10 @@ zero sign test
 ===*/
 
 function zeroSignTest() {
-    var objs = getTestObjectList();
+    var objs = getBufferTestObjectList();
 
-    // Behavior for ArrayBuffer and DataView (virtual indices backed by an
-    // Uint8 view) is Duktape specific.  V8, for instance, will create concrete
-    // properties which appears to preserve sign.
+    // Because ArrayBuffer and DataView don't have virtual index properties,
+    // the negative zero creates a concrete property and preserves the sign.
 
     objs.forEach(function (b) {
         b[0] = -0;

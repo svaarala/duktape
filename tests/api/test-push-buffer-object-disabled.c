@@ -38,7 +38,8 @@ static duk_ret_t test__helper(duk_context *ctx, duk_uint_t flags) {
 	int i;
 
 	/* Even with bufferobject support disabled it's possible to work
-	 * with plain buffers.  However, you can't create actual ArrayBuffers.
+	 * with plain buffers.  However, you can't create actual ArrayBuffers
+	 * or typed arrays.
 	 */
 
 	printf("push plain buffer\n");

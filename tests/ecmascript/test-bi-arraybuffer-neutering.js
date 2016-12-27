@@ -26,13 +26,7 @@ function neuteredTest() {
     b = new ArrayBuffer(8); neuter(b);
     print(b.byteLength);
 
-    // Duktape specific .length and .byteOffset should also read as zero.
-
-    b = new ArrayBuffer(8); neuter(b);
-    print(b.length);
-    print(b.byteOffset);
-
-    // ArrayBufferView byteOffset and byteLength must read as zero if the
+    // Typed array byteOffset and byteLength must read as zero if the
     // referenced ArrayBuffer (note: not the same as duk_hbufferobject
     // internal 'buf' reference!) has been neutered.
 

@@ -516,6 +516,8 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__buf:");
 		duk__print_hbuffer(st, (duk_hbuffer *) b->buf);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__buf_prop:");
+		duk__print_hobject(st, (duk_hobject *) b->buf_prop);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__offset:%ld", (long) b->offset);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__length:%ld", (long) b->length);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__shift:%ld", (long) b->shift);

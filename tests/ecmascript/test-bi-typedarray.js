@@ -22,74 +22,29 @@
 /*===
 prototype chain and own property test
 [object ArrayBuffer] -> ArrayBuffer.prototype -> Object.prototype
-BYTES_PER_ELEMENT 1
-byteLength 16
-byteOffset 0
-length 16
 [object DataView] -> DataView.prototype -> Object.prototype
-BYTES_PER_ELEMENT 1
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
-length 16
 [object Int8Array] -> Int8Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 1
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 16
 [object Uint8Array] -> Uint8Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 1
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 16
 [object Uint8ClampedArray] -> Uint8ClampedArray.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 1
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 16
 [object Int16Array] -> Int16Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 2
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 8
 [object Uint16Array] -> Uint16Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 2
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 8
 [object Int32Array] -> Int32Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 4
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 4
 [object Uint32Array] -> Uint32Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 4
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 4
 [object Float32Array] -> Float32Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 4
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 4
 [object Float64Array] -> Float64Array.prototype -> TypedArray.prototype -> Object.prototype
-BYTES_PER_ELEMENT 8
-buffer [object ArrayBuffer]
-byteLength 16
-byteOffset 0
 length 2
 ===*/
 
 function prototypeChainAndOwnPropertyTest() {
-    var objs = getTestObjectList();
+    var objs = getBufferTestObjectList();
 
     objs.forEach(function (b) {
         printPrototypeChain(b);

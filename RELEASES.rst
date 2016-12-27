@@ -1702,18 +1702,23 @@ Planned
   has been removed (GH-875, GH-1005)
 
 * Incompatible change: rework buffer types and their Ecmascript and C API
-  behavior: plain buffers now behave like ArrayBuffers and inherit from
-  ArrayBuffer.prototype; there are a lot of associated small changes in
-  how built-ins behave for plain buffer arguments (GH-864)
+  behavior: plain buffers now behave like Uint8Arrays and inherit from
+  Uint8Array.prototype; there are a lot of associated small changes in
+  how built-ins behave for plain buffer arguments, for example, enumeration,
+  Object.prototype.toString() output, JSON serialization (GH-864, GH-1197)
+
+* Incompatible change: allow a plain buffer or a lightfunc as a constructor
+  "replacement object" return value (GH-1197)
 
 * Incompatible change: plain buffers now test false in duk_is_primitive()
   which is more consistent with how they behave in Ecmascript coercions
   (GH-864)
 
-* Incompatible change: ArrayBuffer and plain buffer numeric indices are
-  present but not enumerable, so that they won't be enumerated by for-in,
-  Object.keys(), or JSON (but are enumerated by Object.getOwnPropertyNames()
-  and duk_enum() when requesting non-enumerable keys) (GH-867)
+* Incompatible change: ArrayBuffer no longer has non-standard properties
+  (.length, .byteOffset, virtual index properties) (GH-867, GH-1197)
+
+* Incompatible change: DataView no longer has non-standard properties
+  (.length, virtual index properties) (GH-1197)
 
 * Incompatible change: typed array .subarray() and Node.js buffer .slice()
   result internal prototype is now the default prototype of the result
@@ -1725,7 +1730,7 @@ Planned
   (GH-864)
 
 * Incompatible change: when DUK_USE_BUFFEROBJECT_SUPPORT is disabled, don't
-  support coercing plain buffers to ArrayBuffers, or any other buffer object
+  support coercing plain buffers to Uint8Arrays, or any other buffer object
   operations (including all ArrayBuffer, typed array, and Node.js Buffer
   methods); this reduces code footprint by around 1.2 kB (GH-889)
 
@@ -2128,6 +2133,10 @@ Planned
 * Change typed array constructor chain to match ES6, e.g. Uint8Array
   constructor inherits from intrinsic %TypedArray% constructor (GH-1191)
 
+* Move typed array properties .byteLength, .byteOffset, and .buffer to
+  prototype objects and make them (inherited) accessors to better match
+  ES6 requirements; .length remains a virtual own property (GH-1197)
+
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
 * Remove an unintended fastint downgrade check for unary minus executor
@@ -2143,6 +2152,14 @@ Planned
   option as too error prone: without mark-and-sweep garbage containing
   reference loops or created during debugger paused state (with or without
   reference loops) would "leak" until heap destruction (GH-1168)
+
+* Disable JSON stringify fastpath for plain buffers for now so that the
+  virtual index properties get serialized correctly; fastpath to be added
+  back separately (GH-1197)
+
+* Reject ArrayBuffers with a view offset/length in Node.js Buffer .slice()
+  rather than accept such ArrayBuffers without actually respecting the
+  view offset/length (GH-1197)
 
 * Fix JSON stringify fastpath handling of array gaps in JX and JC; they
   incorrectly stringified as 'null' (like in JSON) instead of 'undefined'

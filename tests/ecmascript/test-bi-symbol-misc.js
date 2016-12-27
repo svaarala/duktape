@@ -145,9 +145,9 @@ function symbolMiscTest() {
         print(e.name);
     }
 
-    // ArrayBuffer.allocPlain() accepts strings but not symbols.
+    // Uint8Array.allocPlain() accepts strings but not symbols.
     try {
-        ArrayBuffer.allocPlain(Symbol.for('foo'));
+        Uint8Array.allocPlain(Symbol.for('foo'));
     } catch (e) {
         //print(e.stack);
         print(e.name);

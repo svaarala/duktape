@@ -1,5 +1,5 @@
 /*
- *  Duktape custom: AllocBuffer.allocPlain()
+ *  Duktape custom: Uint8Array.allocPlain()
  */
 
 /*@include util-buffer.js@*/
@@ -39,10 +39,11 @@ TypeError: invalid args
 
 function test() {
     var arrayBuf = new ArrayBuffer(4);
-    arrayBuf[0] = 0xff;
-    arrayBuf[1] = 0xee;
-    arrayBuf[2] = 0xdd;
-    arrayBuf[3] = 0xcc;
+    var u8 = new Uint8Array(arrayBuf);
+    u8[0] = 0xff;
+    u8[1] = 0xee;
+    u8[2] = 0xdd;
+    u8[3] = 0xcc;
 
     [
         // All of these are rejected
@@ -60,7 +61,9 @@ function test() {
         // Buffer objects in general are copied as is, with their .length
         // used as the result length and items (not bytes!) copied.  For
         // e.g. Uint32Array this means only low byte of each 32-bit entry
-        // gets used.
+        // gets used.  ArrayBuffer doesn't have a standard .length field
+        // (Duktape 1.x provided .length; Duktape 2.x does not) so the outcome
+        // is an empty plain buffer.
         arrayBuf,
         new Buffer('abcd'),
         new Uint8Array([ 0, 1, 2, 0xfe, 0xff ]),
@@ -79,7 +82,7 @@ function test() {
         { 0: 100, 1: 101 }
     ].forEach(function (v) {
         try {
-            print(Duktape.enc('jx', ArrayBuffer.allocPlain(v)));
+            print(Duktape.enc('jx', Uint8Array.allocPlain(v)));
         } catch (e) {
             print(e);
         }

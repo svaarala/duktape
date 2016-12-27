@@ -116,10 +116,13 @@
   test: "test-dev-object-literal-method-computed.js"
   knownissue: "computed name for object literal method shorthand not yet implemented"
   # Moved
-
 -
   test: "test-bi-symbol-coercion.js"
   knownissue: "no @@toPrimitive coercion yet"
+  # Moved
+-
+  test: "test-bi-typedarray-misc-inherited-accessors.js"
+  knownissue: "typed array .length etc not yet inherited accessors (ES6 requirement)"
   # Moved
 
 # Ecmascript testcases that need special options or environment to work

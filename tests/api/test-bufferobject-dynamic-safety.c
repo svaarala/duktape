@@ -54,7 +54,7 @@ static void setup_typedarray(duk_context *ctx, duk_idx_t idx, const char *name) 
 	idx = duk_require_normalize_index(ctx, idx);
 	duk_push_sprintf(ctx,
 		"(function (plain_buffer) {\n"
-		"    return new %s(Object(plain_buffer));\n"
+		"    return new %s(plain_buffer.buffer);\n"
 		"})\n", name);
 	duk_eval(ctx);
 	duk_dup(ctx, idx);
@@ -65,7 +65,7 @@ static void setup_typedarray_slice(duk_context *ctx, duk_idx_t idx, const char *
 	idx = duk_require_normalize_index(ctx, idx);
 	duk_push_sprintf(ctx,
 		"(function (plain_buffer, start, length) {\n"
-		"    return new %s(Object(plain_buffer), start, length);\n"
+		"    return new %s(plain_buffer.buffer, start, length);\n"
 		"})\n", name);
 	duk_eval(ctx);
 	duk_dup(ctx, idx);
@@ -122,14 +122,14 @@ length 100
 final top: 2
 ==> rc=0, result='undefined'
 *** test_arraybuffer_indexed_1a (duk_safe_call)
-length 100
+length undefined
 1
 2
 3
 0 1
 99 2
 100 3
-length 100
+length undefined
 10
 11
 12
@@ -137,8 +137,8 @@ length 100
 14
 0 10
 94 11
-95 0
-99 0
+95 12
+99 13
 100 14
 final top: 2
 ==> rc=0, result='undefined'

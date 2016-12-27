@@ -106,6 +106,8 @@ buffer length: 4
 4 bytes: 11223344
 4 bytes: 11223344
 4 bytes: 1122ff44
+4 bytes: 41424344
+4 bytes: 4142ff44
 string length: 0, encoding: undefined
 0 bytes: 
 0 bytes: 
@@ -285,6 +287,24 @@ function constructorTest() {
     b2 = newBuffer(b1);
     b2[2] = 0xff;  // independent copy
     printNodejsBuffer(b1);
+    printNodejsBuffer(b2);
+
+    /*
+     *  ArrayBuffer argument
+     *
+     *  Revised Node.js Buffer semantics are to create a Buffer which shares
+     *  the ArrayBuffer backing store (no copy is made).
+     */
+
+    b1 = new ArrayBuffer(4);
+    u8 = new Uint8Array(b1);
+    u8[0] = 0x41;
+    u8[1] = 0x42;
+    u8[2] = 0x43;
+    u8[3] = 0x44;
+    b2 = new Buffer(b1);
+    printNodejsBuffer(b2);
+    u8[2] = 0xff;
     printNodejsBuffer(b2);
 
     /*

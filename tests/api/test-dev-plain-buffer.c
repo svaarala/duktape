@@ -91,7 +91,7 @@ static duk_ret_t test_to_buffer(duk_context *ctx, void *udata) {
 
 /*===
 *** test_to_string (duk_safe_call)
-duk_to_string: '[object ArrayBuffer]'
+duk_to_string: '[object Uint8Array]'
 final top: 1
 ==> rc=0, result='undefined'
 ===*/
@@ -108,7 +108,7 @@ static duk_ret_t test_to_string(duk_context *ctx, void *udata) {
 	}
 
 	/* duk_to_string() coerces the buffer to a string, which usually
-	 * results in [object ArrayBuffer], just like for an ArrayBuffer
+	 * results in [object Uint8Array], just like for an Uint8Array
 	 * object.  This is a change from Duktape 1.x behavior; in 1.x
 	 * a plain buffer would be coerced to a string with the buffer
 	 * bytes (like duk_buffer_to_string()).
@@ -122,7 +122,39 @@ static duk_ret_t test_to_string(duk_context *ctx, void *udata) {
 /*===
 *** test_enum (duk_safe_call)
 flag index: 0, top: 2
+- 0: 100
+- 1: 101
+- 2: 102
+- 3: 103
+- 4: 104
+- 5: 105
+- 6: 106
+- 7: 107
+- 8: 108
+- 9: 109
+- 10: 110
+- 11: 111
+- 12: 112
+- 13: 113
+- 14: 114
+- 15: 115
 flag index: 1, top: 2
+- 0: 100
+- 1: 101
+- 2: 102
+- 3: 103
+- 4: 104
+- 5: 105
+- 6: 106
+- 7: 107
+- 8: 108
+- 9: 109
+- 10: 110
+- 11: 111
+- 12: 112
+- 13: 113
+- 14: 114
+- 15: 115
 flag index: 2, top: 2
 - 0: 100
 - 1: 101
@@ -141,11 +173,13 @@ flag index: 2, top: 2
 - 14: 114
 - 15: 115
 - length: 16
+- constructor: function Uint8Array() { [native code] }
+- BYTES_PER_ELEMENT: 1
 - byteLength: 16
 - byteOffset: 0
-- BYTES_PER_ELEMENT: 1
-- constructor: function ArrayBuffer() { [native code] }
-- slice: function slice() { [native code] }
+- buffer: [object ArrayBuffer]
+- set: function set() { [native code] }
+- subarray: function subarray() { [native code] }
 - __proto__: [object Object]
 - toString: function toString() { [native code] }
 - toLocaleString: function toLocaleString() { [native code] }
@@ -171,9 +205,6 @@ flag index: 3, top: 2
 - 14: 114
 - 15: 115
 - length: 16
-- byteLength: 16
-- byteOffset: 0
-- BYTES_PER_ELEMENT: 1
 final top: 1
 ==> rc=0, result='undefined'
 ===*/

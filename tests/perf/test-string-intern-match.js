@@ -7,7 +7,7 @@
 if (typeof print !== 'function') { print = console.log; }
 
 function test() {
-    var buf = (ArrayBuffer.allocPlain || Duktape.Buffer)(2048);
+    var buf = (Uint8Array.allocPlain || Duktape.Buffer)(2048);
     var ref;
     var i;
     var bufferToString = String.fromBufferRaw || String;
