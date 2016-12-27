@@ -952,6 +952,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 
 		if (!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2)) {
 			rc = duk_js_string_compare(h1, h2);
+			duk_pop_2(ctx);
 			if (rc < 0) {
 				return retval ^ 1;
 			} else {
