@@ -3981,6 +3981,10 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  Just create a new
 	 * ArrayBuffer sharing the same underlying buffer.
+	 *
+	 * The ArrayBuffer offset is always set to zero, so that if one
+	 * accesses the ArrayBuffer at the view's .byteOffset, the value
+	 * matches the view at index 0.
 	 */
 	if (flags & DUK_BUFOBJ_CREATE_ARRBUF) {
 		h_bufobj = duk_push_bufferobject_raw(ctx,
@@ -3993,8 +3997,8 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
-		h_bufobj->offset = uint_offset;
-		h_bufobj->length = uint_length;
+		h_bufobj->offset = 0;
+		h_bufobj->length = uint_offset + uint_length;  /* Wrap checked above. */
 		DUK_ASSERT(h_bufobj->shift == 0);
 		h_bufobj->elem_type = DUK_HBUFFEROBJECT_ELEM_UINT8;
 		DUK_ASSERT(h_bufobj->is_view == 0);
