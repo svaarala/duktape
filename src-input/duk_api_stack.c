@@ -4377,7 +4377,7 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	DUK_ASSERT(uint_added >= uint_offset && uint_added >= uint_length);
 
 	DUK_ASSERT_DISABLE(flags >= 0);  /* flags is unsigned */
-	lookupidx = flags & 0x0f;  /* 4 low bits */
+	lookupidx = flags;
 	if (lookupidx >= sizeof(duk__bufobj_flags_lookup) / sizeof(duk_uint32_t)) {
 		goto arg_error;
 	}
@@ -4407,39 +4407,9 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	/* TypedArray views need an automatic ArrayBuffer which must be
 	 * provided as .buffer property of the view.  The ArrayBuffer is
 	 * referenced via duk_hbufobj->buf_prop and an inherited .buffer
-	 * accessor returns it.
-	 *
-	 * The ArrayBuffer offset is always set to zero, so that if one
-	 * accesses the ArrayBuffer at the view's .byteOffset, the value
-	 * matches the view at index 0.
+	 * accessor returns it.  The ArrayBuffer is created lazily on first
+	 * access so we don't need to do anything more here.
 	 */
-	if (flags & DUK_BUFOBJ_CREATE_ARRBUF) {
-		duk_hbufobj *h_arrbuf;
-
-		h_arrbuf = duk_push_bufobj_raw(ctx,
-		                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                               DUK_HOBJECT_FLAG_BUFOBJ |
-		                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
-		                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
-		DUK_ASSERT(h_arrbuf != NULL);
-
-		h_arrbuf->buf = h_val;
-		DUK_HBUFFER_INCREF(thr, h_val);
-		h_arrbuf->offset = 0;
-		h_arrbuf->length = uint_offset + uint_length;  /* Wrap checked above. */
-		DUK_ASSERT(h_arrbuf->shift == 0);
-		h_arrbuf->elem_type = DUK_HBUFOBJ_ELEM_UINT8;
-		DUK_ASSERT(h_arrbuf->is_typedarray == 0);
-		DUK_ASSERT_HBUFOBJ_VALID(h_arrbuf);
-		DUK_ASSERT(h_arrbuf->buf_prop == NULL);
-
-		DUK_ASSERT(h_bufobj->buf_prop == NULL);
-		h_bufobj->buf_prop = (duk_hobject *) h_arrbuf;
-		DUK_HBUFOBJ_INCREF(thr, h_arrbuf);  /* Now reachable and accounted for. */
-
-		duk_pop(ctx);
-	}
-
 	return;
 
  range_error:

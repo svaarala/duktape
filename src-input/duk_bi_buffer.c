@@ -721,7 +721,6 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	duk_tval *tv;
 	duk_hobject *h_obj;
 	duk_hbufobj *h_bufobj = NULL;
-	duk_hbufobj *h_bufarr = NULL;
 	duk_hbufobj *h_bufarg = NULL;
 	duk_hbuffer *h_val;
 	duk_small_uint_t magic;
@@ -934,15 +933,17 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 
 	/* ArrayBuffer argument is handled specially above; the rest of the
 	 * argument variants are handled by shared code below.
+	 *
+	 * ArrayBuffer in h_bufobj->buf_prop is intentionally left unset.
+	 * It will be automatically created by the .buffer accessor on
+	 * first access.
 	 */
 
-	/* Push a new ArrayBuffer (becomes view .buffer) */
-	h_bufarr = duk__push_arraybuffer_with_length(ctx, byte_length);
-	DUK_ASSERT(h_bufarr != NULL);
-	h_val = h_bufarr->buf;
+	/* Push the resulting view object on top of a plain fixed buffer. */
+	(void) duk_push_fixed_buffer(ctx, byte_length);
+	h_val = duk_known_hbuffer(ctx, -1);
 	DUK_ASSERT(h_val != NULL);
 
-	/* Push the resulting view object and attach the ArrayBuffer. */
 	h_bufobj = duk_push_bufobj_raw(ctx,
 	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                               DUK_HOBJECT_FLAG_BUFOBJ |
@@ -957,12 +958,6 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_constructor(duk_context *ctx) {
 	h_bufobj->elem_type = (duk_uint8_t) elem_type;
 	h_bufobj->is_typedarray = 1;
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
-
-	/* Set .buffer */
-	DUK_ASSERT(h_bufobj->buf_prop == NULL);
-	h_bufobj->buf_prop = (duk_hobject *) h_bufarr;
-	DUK_ASSERT(h_bufarr != NULL);
-	DUK_HBUFOBJ_INCREF(thr, h_bufarr);
 
 	/* Copy values, the copy method depends on the arguments.
 	 *
@@ -2878,30 +2873,63 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
  */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+DUK_LOCAL duk_hbufobj *duk__autospawn_arraybuffer(duk_context *ctx, duk_hbuffer *h_buf) {
+	duk_hbufobj *h_res;
+
+	h_res = duk_push_bufobj_raw(ctx,
+	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                            DUK_HOBJECT_FLAG_BUFOBJ |
+	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
+	                            DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
+	DUK_ASSERT(h_res != NULL);
+	DUK_UNREF(h_res);
+
+	duk__set_bufobj_buffer(ctx, h_res, h_buf);
+	DUK_ASSERT_HBUFOBJ_VALID(h_res);
+	DUK_ASSERT(h_res->buf_prop == NULL);
+	return h_res;
+}
+
 DUK_INTERNAL duk_ret_t duk_bi_typedarray_buffer_getter(duk_context *ctx) {
 	duk_hbufobj *h_bufobj;
 
 	h_bufobj = (duk_hbufobj *) duk__getrequire_bufobj_this(ctx, DUK__BUFOBJ_FLAG_THROW /*flags*/);
 	DUK_ASSERT(h_bufobj != NULL);
 	if (DUK_HEAPHDR_IS_BUFFER((duk_heaphdr *) h_bufobj)) {
-		duk_hbufobj *h_res;
-		duk_hbuffer *h_buf;
-
-		h_buf = (duk_hbuffer *) h_bufobj;
-		h_res = duk_push_bufobj_raw(ctx,
-		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                            DUK_HOBJECT_FLAG_BUFOBJ |
-		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
-		                            DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
-		DUK_ASSERT(h_res != NULL);
-		DUK_UNREF(h_res);
-
-		duk__set_bufobj_buffer(ctx, h_res, h_buf);
-		DUK_ASSERT_HBUFOBJ_VALID(h_res);
-
-		DUK_DD(DUK_DDPRINT("autospawned .buffer ArrayBuffer: %!iT", duk_get_tval(ctx, -1)));
+		DUK_DD(DUK_DDPRINT("autospawn ArrayBuffer for plain buffer"));
+		(void) duk__autospawn_arraybuffer(ctx, (duk_hbuffer *) h_bufobj);
 		return 1;
 	} else {
+		if (h_bufobj->buf_prop == NULL &&
+		    DUK_HOBJECT_GET_CLASS_NUMBER((duk_hobject *) h_bufobj) != DUK_HOBJECT_CLASS_ARRAYBUFFER &&
+		    h_bufobj->buf != NULL) {
+			duk_hbufobj *h_arrbuf;
+
+			DUK_DD(DUK_DDPRINT("autospawn ArrayBuffer for typed array or DataView"));
+			h_arrbuf = duk__autospawn_arraybuffer(ctx, h_bufobj->buf);
+
+			if (h_bufobj->buf_prop == NULL) {
+				/* Must recheck buf_prop, in case ArrayBuffer
+				 * alloc had a side effect which already filled
+				 * it!
+				 */
+
+				/* Set ArrayBuffer's .byteOffset and .byteLength based
+				 * on the view so that Arraybuffer[view.byteOffset]
+				 * matches view[0].
+				 */
+				h_arrbuf->offset = 0;
+				DUK_ASSERT(h_bufobj->offset + h_bufobj->length >= h_bufobj->offset);  /* Wrap check on creation. */
+				h_arrbuf->length = h_bufobj->offset + h_bufobj->length;
+				DUK_ASSERT(h_arrbuf->buf_prop == NULL);
+
+				DUK_ASSERT(h_bufobj->buf_prop == NULL);
+				h_bufobj->buf_prop = (duk_hobject *) h_arrbuf;
+				DUK_HBUFOBJ_INCREF(thr, h_arrbuf);  /* Now reachable and accounted for. */
+			}
+
+			/* Left on stack; pushed for the second time below (OK). */
+		}
 		if (h_bufobj->buf_prop) {
 			duk_push_hobject(ctx, h_bufobj->buf_prop);
 			return 1;
