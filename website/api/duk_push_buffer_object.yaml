@@ -33,7 +33,10 @@ summary: |
   <p>When anything other than an <code>ArrayBuffer</code> is pushed, an
   <code>ArrayBuffer</code> backing the view is automatically created.
   It is accessible through the <code>buffer</code> property of the view
-  object.</p>
+  object.  The ArrayBuffer's internal byteOffset will be zero so that
+  the ArrayBuffer's index byteOffset matches the view's index 0.  The
+  ArrayBuffer's byteLength will be byteLength will be <code>byte_offset +
+  byte_length</code> so that the view range is valid for the ArrayBuffer.</p>
 
   <p>The underlying plain buffer should normally cover the range indicated by
   the <code>byte_offset</code> and <code>byte_length</code> arguments, but
