@@ -4397,6 +4397,10 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 	 * provided as .buffer property of the view.  The ArrayBuffer is
 	 * referenced via duk_hbufobj->buf_prop and an inherited .buffer
 	 * accessor returns it.
+	 *
+	 * The ArrayBuffer offset is always set to zero, so that if one
+	 * accesses the ArrayBuffer at the view's .byteOffset, the value
+	 * matches the view at index 0.
 	 */
 	if (flags & DUK_BUFOBJ_CREATE_ARRBUF) {
 		duk_hbufobj *h_arrbuf;
@@ -4410,8 +4414,8 @@ DUK_EXTERNAL void duk_push_buffer_object(duk_context *ctx, duk_idx_t idx_buffer,
 
 		h_arrbuf->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
-		h_arrbuf->offset = uint_offset;
-		h_arrbuf->length = uint_length;
+		h_arrbuf->offset = 0;
+		h_arrbuf->length = uint_offset + uint_length;  /* Wrap checked above. */
 		DUK_ASSERT(h_arrbuf->shift == 0);
 		h_arrbuf->elem_type = DUK_HBUFOBJ_ELEM_UINT8;
 		DUK_ASSERT(h_arrbuf->is_typedarray == 0);
