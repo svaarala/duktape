@@ -1898,7 +1898,7 @@ Planned
   bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)
 
 * Add experimental support for ES6 Symbol built-in (disabled by default,
-  enable using DUK_USE_SYMBOL_BUILTIN) (GH-982)
+  enable using DUK_USE_SYMBOL_BUILTIN) (GH-982, GH-1227)
 
 * Allow ES6 Annex B unescaped right bracket (']') in regular expressions
   (non-standard before ES6 Annex B), left bracket ('[') not yet supported
@@ -1974,7 +1974,8 @@ Planned
 
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
-  same time provider as seen by Ecmascript code (GH-771, GH-1209, GH-1211)
+  same time provider as seen by Ecmascript code (GH-771, GH-1209, GH-1211,
+  GH-1226)
 
 * Add duk_push_bare_object() API call which pushes an object without an
   internal prototype, equivalent to Object.create(null) (GH-1126)
