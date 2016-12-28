@@ -73,11 +73,14 @@ DUK_LOCAL_DECL void duk__enc_double(duk_json_enc_ctx *js_ctx);
 DUK_LOCAL_DECL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv);
 #endif
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
-DUK_LOCAL_DECL void duk__enc_buffer(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
+DUK_LOCAL_DECL void duk__enc_buffer_jx_jc(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
 DUK_LOCAL_DECL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_LOCAL_DECL void duk__enc_bufobj(duk_json_enc_ctx *js_ctx, duk_hbufobj *h_bufobj);
 #endif
+#endif
+#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
+DUK_LOCAL_DECL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuffer *h);
 #endif
 DUK_LOCAL_DECL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth);
 
@@ -1558,12 +1561,59 @@ DUK_LOCAL void duk__enc_buffer_data(duk_json_enc_ctx *js_ctx, duk_uint8_t *buf_d
 	DUK_BW_SET_PTR(thr, &js_ctx->bw, q);
 }
 
-DUK_LOCAL void duk__enc_buffer(duk_json_enc_ctx *js_ctx, duk_hbuffer *h) {
+DUK_LOCAL void duk__enc_buffer_jx_jc(duk_json_enc_ctx *js_ctx, duk_hbuffer *h) {
 	duk__enc_buffer_data(js_ctx,
 	                     (duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(js_ctx->thr->heap, h),
 	                     (duk_size_t) DUK_HBUFFER_GET_SIZE(h));
 }
 #endif  /* DUK_USE_JX || DUK_USE_JC */
+
+#if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
+DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuffer *h) {
+	duk_size_t i, n;
+	const duk_uint8_t *buf;
+	duk_uint8_t *q;
+
+	n = DUK_HBUFFER_GET_SIZE(h);
+	if (n == 0) {
+		DUK__EMIT_2(js_ctx, DUK_ASC_LCURLY, DUK_ASC_RCURLY);
+		return;
+	}
+
+	DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);
+
+	/* Maximum encoded length with 32-bit index: 1 + 10 + 2 + 3 + 1 + 1 = 18,
+	 * with 64-bit index: 1 + 20 + 2 + 3 + 1 + 1 = 28.  32 has some spare.
+	 *
+	 * Note that because the output buffer is reallocated from time to time,
+	 * side effects (such as finalizers) affecting the buffer 'h' must be
+	 * disabled.  This is the case in the JSON.stringify() fast path.
+	 */
+
+	buf = (const duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(js_ctx->thr->heap, h);
+	if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+		for (i = 0; i < n; i++) {
+			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth + 1);
+			q = DUK_BW_ENSURE_GETPTR(js_ctx->thr, &js_ctx->bw, 32);
+			q += DUK_SPRINTF((char *) q, "\"%lu\": %u,", (unsigned long) i, (unsigned int) buf[i]);
+			DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
+		}
+	} else {
+		q = DUK_BW_GET_PTR(js_ctx->thr, &js_ctx->bw);
+		for (i = 0; i < n; i++) {
+			q = DUK_BW_ENSURE_RAW(js_ctx->thr, &js_ctx->bw, 32, q);
+			q += DUK_SPRINTF((char *) q, "\"%lu\":%u,", (unsigned long) i, (unsigned int) buf[i]);
+		}
+		DUK_BW_SET_PTR(js_ctx->thr, &js_ctx->bw, q);
+	}
+	DUK__UNEMIT_1(js_ctx);  /* eat trailing comma */
+
+	if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
+		duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth);
+	}
+	DUK__EMIT_1(js_ctx, DUK_ASC_RCURLY);
+}
+#endif  /* DUK_USE_JSON_STRINGIFY_FASTPATH */
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 DUK_LOCAL void duk__enc_pointer(duk_json_enc_ctx *js_ctx, void *ptr) {
@@ -2145,12 +2195,13 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	case DUK_TAG_BUFFER: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
-			duk__enc_buffer(js_ctx, DUK_TVAL_GET_BUFFER(tv));
+			duk__enc_buffer_jx_jc(js_ctx, DUK_TVAL_GET_BUFFER(tv));
 			break;
 		}
 #endif
-		/* Could implement a fast path, but object coerce and
-		 * serialize the result for now.
+
+		/* Could implement a fastpath, but the fast path would need
+		 * to handle realloc side effects correctly.
 		 */
 		duk_to_object(ctx, -1);
 		duk__enc_object(js_ctx);
@@ -2638,13 +2689,16 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 		if (js_ctx->flag_ext_custom_or_compatible) {
-			duk__enc_buffer(js_ctx, DUK_TVAL_GET_BUFFER(tv));
+			duk__enc_buffer_jx_jc(js_ctx, DUK_TVAL_GET_BUFFER(tv));
 			break;
 		}
 #endif
-		/* Could implement a fast path, but abort fast path for now. */
-		DUK_DD(DUK_DDPRINT("value is a plain buffer and serializing as plain JSON, abort fast path"));
-		goto abort_fastpath;
+
+		/* Plain buffers mimic Uint8Arrays, and have enumerable index
+		 * properties.
+		 */
+		duk__enc_buffer_json_fastpath(js_ctx, DUK_TVAL_GET_BUFFER(tv));
+		break;
 	}
 	case DUK_TAG_POINTER: {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
