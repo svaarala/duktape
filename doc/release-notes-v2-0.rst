@@ -1025,7 +1025,7 @@ Small changes related to adding symbol support:
 * Symbols are represented as strings with an invalid UTF-8 representation (like
   internal keys in Duktape 1.x), and they behave like strings in the C API just
   like internal keys did in Duktape 1.x.  For example,  ``duk_is_string()`` is
-  true for symbols.
+  true for symbols.  Symbols can be distinguished using ``duk_is_symbol()``.
 
 * Symbol support is currently **experimental**.  The core semantics have been
   implemented but it's likely some of the internal details will change in future
