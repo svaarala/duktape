@@ -1898,7 +1898,8 @@ Planned
   bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)
 
 * Add experimental support for ES6 Symbol built-in (disabled by default,
-  enable using DUK_USE_SYMBOL_BUILTIN) (GH-982, GH-1227)
+  enable using DUK_USE_SYMBOL_BUILTIN), duk_is_symbol() API call (GH-982,
+  GH-1227, GH-1237)
 
 * Allow ES6 Annex B unescaped right bracket (']') in regular expressions
   (non-standard before ES6 Annex B), left bracket ('[') not yet supported
