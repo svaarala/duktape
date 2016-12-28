@@ -206,16 +206,16 @@ DUK_INTERNAL_DECL const char *duk_push_string_tval_readable_error(duk_context *c
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx);     /* [] -> [val] */
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx_short_raw(duk_context *ctx, duk_uint_t packed_args);
 #define duk_get_prop_stridx_short(ctx,obj_idx,stridx) \
-	(DUK_ASSERT_EXPR((obj_idx) >= -0x8000L && (obj_idx) <= 0x7fffL), \
-	 DUK_ASSERT_EXPR((stridx) >= 0 && (stridx) <= 0xffffL), \
+	(DUK_ASSERT_EXPR((duk_int_t) (obj_idx) >= -0x8000L && (duk_int_t) (obj_idx) <= 0x7fffL), \
+	 DUK_ASSERT_EXPR((duk_int_t) (stridx) >= 0 && (duk_int_t) (stridx) <= 0xffffL), \
 	 duk_get_prop_stridx_short_raw((ctx), (((duk_uint_t) (obj_idx)) << 16) + ((duk_uint_t) (stridx))))
 DUK_INTERNAL_DECL duk_bool_t duk_get_prop_stridx_boolean(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_bool_t *out_has_prop);  /* [] -> [] */
 
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx);     /* [val] -> [] */
 DUK_INTERNAL_DECL duk_bool_t duk_put_prop_stridx_short_raw(duk_context *ctx, duk_uint_t packed_args);
 #define duk_put_prop_stridx_short(ctx,obj_idx,stridx) \
-	(DUK_ASSERT_EXPR((obj_idx) >= -0x8000L && (obj_idx) <= 0x7fffL), \
-	 DUK_ASSERT_EXPR((stridx) >= 0 && (stridx) <= 0xffffL), \
+	(DUK_ASSERT_EXPR((duk_int_t) (obj_idx) >= -0x8000L && (duk_int_t) (obj_idx) <= 0x7fffL), \
+	 DUK_ASSERT_EXPR((duk_int_t) (stridx) >= 0 && (duk_int_t) (stridx) <= 0xffffL), \
 	 duk_put_prop_stridx_short_raw((ctx), (((duk_uint_t) (obj_idx)) << 16) + ((duk_uint_t) (stridx))))
 
 DUK_INTERNAL_DECL duk_bool_t duk_del_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx);     /* [] -> [] */
@@ -250,9 +250,9 @@ DUK_INTERNAL_DECL void duk_xdef_prop_index(duk_context *ctx, duk_idx_t obj_idx, 
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_small_uint_t desc_flags);  /* [val] -> [] */
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_short_raw(duk_context *ctx, duk_uint_t packed_args);
 #define duk_xdef_prop_stridx_short(ctx,obj_idx,stridx,desc_flags) \
-	(DUK_ASSERT_EXPR((obj_idx) >= -0x80L && (obj_idx) <= 0x7fL), \
-	 DUK_ASSERT_EXPR((stridx) >= 0 && (stridx) <= 0xffffL), \
-	 DUK_ASSERT_EXPR((desc_flags) >= 0 && (desc_flags) <= 0xffL), \
+	(DUK_ASSERT_EXPR((duk_int_t) (obj_idx) >= -0x80L && (duk_int_t) (obj_idx) <= 0x7fL), \
+	 DUK_ASSERT_EXPR((duk_int_t) (stridx) >= 0 && (duk_int_t) (stridx) <= 0xffffL), \
+	 DUK_ASSERT_EXPR((duk_int_t) (desc_flags) >= 0 && (duk_int_t) (desc_flags) <= 0xffL), \
 	 duk_xdef_prop_stridx_short_raw((ctx), (((duk_uint_t) (obj_idx)) << 24) + (((duk_uint_t) (stridx)) << 8) + (duk_uint_t) (desc_flags)))
 
 #define duk_xdef_prop_wec(ctx,obj_idx) \

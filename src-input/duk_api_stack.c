@@ -4662,7 +4662,7 @@ DUK_INTERNAL void duk_push_hstring(duk_context *ctx, duk_hstring *h) {
 DUK_INTERNAL void duk_push_hstring_stridx(duk_context *ctx, duk_small_uint_t stridx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	DUK_UNREF(thr);
-	DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+	DUK_ASSERT_STRIDX_VALID(stridx);
 	duk_push_hstring(ctx, DUK_HTHREAD_GET_STRING(thr, stridx));
 }
 

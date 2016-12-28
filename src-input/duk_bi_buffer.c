@@ -2935,7 +2935,8 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_bytelength_getter(duk_context *ctx) {
 		duk_hbuffer *h_buf;
 
 		h_buf = (duk_hbuffer *) h_bufobj;
-		duk_push_uint(ctx, DUK_HBUFFER_GET_SIZE(h_buf));
+		DUK_ASSERT(DUK_HBUFFER_GET_SIZE(h_buf) <= DUK_UINT_MAX);  /* Buffer limits. */
+		duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h_buf));
 	} else {
 		/* If neutered must return 0; length is zeroed during
 		 * neutering.
