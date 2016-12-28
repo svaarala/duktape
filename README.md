@@ -143,13 +143,17 @@ Branch policy
   on to active development of the next major release.  For example,
   `v1-maintenance` was created when 1.5.0 was released (last planned 1.x
   release) and development of 2.0.0 (with API incompatible changes) started
-  on master.  If a 1.6.0 is made, it will be made from `v1-maintenance`.
+  on master.  The 1.6.0 and 1.7.0 releases were made from `v1-maintenance`
+  for example.
 
 Versioning
 ----------
 
-Duktape uses [Semantic Versioning](http://semver.org/), see
-[Versioning](http://duktape.org/guide.html#versioning).
+Duktape uses [Semantic Versioning](http://semver.org/).
+Because Duktape tracks the latest Ecmascript specification versions,
+compliance fixes are made in minor versions even when they are technically
+not backwards compatible.  See
+[Versioning](http://duktape.org/guide.html#versioning) for details.
 
 Reporting bugs
 --------------
