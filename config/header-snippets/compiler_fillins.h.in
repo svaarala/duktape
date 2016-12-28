@@ -66,6 +66,9 @@
 #if !defined(DUK_UNLIKELY)
 #define DUK_UNLIKELY(x)  (x)
 #endif
+#if !defined(DUK_UNPREDICTABLE)
+#define DUK_UNPREDICTABLE(x)  (x)
+#endif
 
 #if !defined(DUK_NOINLINE)
 #define DUK_NOINLINE       /*nop*/
