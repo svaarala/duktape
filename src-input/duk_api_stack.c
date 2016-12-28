@@ -3277,6 +3277,17 @@ DUK_EXTERNAL duk_bool_t duk_is_lightfunc(duk_context *ctx, duk_idx_t idx) {
 	return duk__tag_check(ctx, idx, DUK_TAG_LIGHTFUNC);
 }
 
+DUK_EXTERNAL duk_bool_t duk_is_symbol(duk_context *ctx, duk_idx_t idx) {
+	duk_hstring *h;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	h = duk_get_hstring(ctx, idx);
+	if (h != NULL && DUK_HSTRING_HAS_SYMBOL(h)) {
+		return 1;
+	}
+	return 0;
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t idx) {
 	duk_hobject *obj;
 
