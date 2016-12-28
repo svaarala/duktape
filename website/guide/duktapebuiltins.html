@@ -1,7 +1,7 @@
 <h1 id="duktapebuiltins">Duktape built-ins</h1>
 
-<p>This section describes Duktape-specific built-in objects, methods, and
-values.</p>
+<p>This section summarizes Duktape-specific and non-Ecmascript built-in
+objects, methods, and values.</p>
 
 <h2>Additional global object properties</h2>
 
@@ -14,6 +14,12 @@ values.</p>
 <tbody>
 <tr><td class="propname"><a href="#builtin-duktape">Duktape</a></td>
     <td>The Duktape built-in object.  Contains miscellaneous implementation specific stuff.</td></tr>
+<tr><td class="propname"><a href="#builtin-textencoder">TextEncoder</a></td>
+    <td>TextEncoder() from <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>.
+        Converts a string into a buffer using UTF-8 encoding.</td></td>
+<tr><td class="propname"><a href="#builtin-textdecoder">TextDecoder</a></td>
+    <td>TextDecoder() from <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>.
+        Converts a buffer into a string using UTF-8 encoding.</td></td>
 </tbody>
 </table>
 
@@ -382,3 +388,33 @@ cases:</p>
 <tr><td colspan="2">No properties at the moment.</td></tr>
 </tbody>
 </table>
+
+<h2 id="builtin-textencoder">TextEncoder</h2>
+
+<p>TextEncoder() is part of the <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>
+and provides a clean way of encoding a string into a buffer (Uint8Array)
+using UTF-8 encoding.  Surrogate pairs are combined during the process.
+For example:</p>
+
+<pre class="ecmascript-code">
+var str = '\u{1f4a9}';                   // non-BMP codepoint
+print(str.length);                       // length is 2, represented as a surrogate pair
+var u8 = new TextEncoder().encode(str);
+print(u8.length);                        // length is 4, a single UTF-8 codepoint
+print(Duktape.enc('jx', u8));            // |f09f92a9|, UTF-8 bytes F0 9F 92 A9
+</pre>
+
+<h2 id="builtin-textdecoder">TextDecoder</h2>
+
+<p>TextDecoder() is part of the <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>
+and provides a clean way of decoding a buffer into a string using UTF-8
+encoding.  Non-BMP codepoints are represented as surrogate pairs in the
+resulting string.  For example:</p>
+
+<pre class="ecmascript-code">
+var u8 = new Uint8Array([ 0xf0, 0x9f, 0x92, 0xa9 ]);  // a single non-BMP codepoint
+var str = new TextDecoder().decode(u8);
+print(str.length);                       // length is 2, represented as a surrogate pair
+print(str.charCodeAt(0));                // 55357, high surrogate
+print(str.charCodeAt(1));                // 56489, low surrogate
+</pre>
