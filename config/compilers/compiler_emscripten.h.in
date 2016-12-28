@@ -9,6 +9,11 @@
 #define DUK_USE_BRANCH_HINTS
 #define DUK_LIKELY(x)    __builtin_expect((x), 1)
 #define DUK_UNLIKELY(x)  __builtin_expect((x), 0)
+#if defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_unpredictable)
+#define DUK_UNPREDICTABLE()  do { __builtin_unpredictable(); } while (0)
+#endif
+#endif
 
 #if defined(DUK_F_C99) || defined(DUK_F_CPP11)
 #define DUK_NOINLINE        __attribute__((noinline))
