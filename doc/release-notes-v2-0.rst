@@ -233,6 +233,14 @@ changes below.  Here's a summary of changes:
   there is no property table for plain buffers, each ``.buffer`` access creates
   a new ArrayBuffer instance.
 
+* When ``duk_push_buffer_object()`` creates an automatic ArrayBuffer for a
+  view (such as Uint8Array), the ArrayBuffer's .byteOffset will be set to 0
+  and its .byteLength will be set to view.byteOffset + view.byteLength.  This
+  ensures that accessing the ArrayBuffer at view.byteOffset returns the same
+  value as when accessing view at index 0, which is the common relationship.
+  Up to Duktape 1.6.x the ArrayBuffer's .byteOffset and .byteLength would be
+  the same as the view's.
+
 * Non-standard properties, such as virtual indices and ``.length`` have been
   removed from ArrayBuffer and DataView.  The ``.byteOffset``, ``.byteLength``,
   ``.BYTES_PER_ELEMENT``, and ``.buffer`` properties of view objects are now
