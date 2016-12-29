@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6) 'has'.
+ *  Proxy (ES2015) 'has'.
  */
 
 function propDump(obj, prop) {
@@ -100,7 +100,7 @@ function basicExistenceTest() {
 
     // Proxy target, check key coercion.
     // For 'x in y', 'x' is string coerced before HasProperty() internal
-    // algorithm is invoked so in ES6 the key is always a string (!).
+    // algorithm is invoked so in ES2015 the key is always a string (!).
 
     target = [ 'foo', 'bar', 'quux' ];
     handler = {

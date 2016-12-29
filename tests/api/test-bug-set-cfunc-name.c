@@ -14,7 +14,7 @@
  *  to be set - but Ecmascript cannot express such an access control
  *  policy.
  *
- *  Duktape 2.x follows ES6 where .name is again non-writable, but is
+ *  Duktape 2.x follows ES2015 where .name is again non-writable, but is
  *  configurable.  So duk_def_prop() can be used to set the name.
  */
 

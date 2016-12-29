@@ -739,7 +739,7 @@ final top: 0
 
 /* Constructability is remembered across a dump/load even if the external
  * .prototype is reset.  The .prototype is NOT recreated for non-constructable
- * functions, e.g. ES6 object literal getters.
+ * functions, e.g. ES2015 object literal getters.
  */
 static duk_ret_t test_constructor_call(duk_context *ctx, void *udata) {
 	(void) udata;
@@ -769,7 +769,7 @@ static duk_ret_t test_constructor_call(duk_context *ctx, void *udata) {
 
 	duk_pop(ctx);
 
-	/* In ES6 a getter shorthand in object literal is not constructable
+	/* In ES2015 a getter shorthand in object literal is not constructable
 	 * and has no .prototype property.
 	 */
 

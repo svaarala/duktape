@@ -1,5 +1,5 @@
 /*
- *  ES6 method definition in object literal, with computed name.
+ *  ES2015 method definition in object literal, with computed name.
  */
 
 /*===

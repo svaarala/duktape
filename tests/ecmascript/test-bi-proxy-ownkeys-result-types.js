@@ -1,5 +1,5 @@
 /*
- *  ES6 Section 7.3.17, step 8.b requires a TypeError if the return value for
+ *  ES2015 Section 7.3.17, step 8.b requires a TypeError if the return value for
  *  'ownKeys' trap contains non-string/non-symbol values.
  */
 

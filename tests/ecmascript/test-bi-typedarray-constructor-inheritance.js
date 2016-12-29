@@ -1,5 +1,5 @@
 /*
- *  Typed array constructors inherit from %TypedArray% in ES6.
+ *  Typed array constructors inherit from %TypedArray% in ES2015.
  */
 
 /*===

@@ -1,5 +1,5 @@
 /*
- *  ES6 Proxy handlers can also be native Duktape/C functions.
+ *  ES2015 Proxy handlers can also be native Duktape/C functions.
  *
  *  Just a very basic test to ensure proxy handlers work as expected.
  */

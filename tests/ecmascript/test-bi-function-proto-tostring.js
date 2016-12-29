@@ -3,10 +3,10 @@
  *  output must parse as FunctionDeclaration but doesn't need to compile
  *  into useful code.
  *
- *  ES6 requires that the source code eval()s to an equivalent object or,
+ *  ES2015 requires that the source code eval()s to an equivalent object or,
  *  if that's not possible, evals to a SyntaxError.
  *
- *  Duktape 2.x follows the ES6 requirements.
+ *  Duktape 2.x follows the ES2015 requirements.
  */
 
 /*===

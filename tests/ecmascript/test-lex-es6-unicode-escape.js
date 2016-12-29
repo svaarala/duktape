@@ -1,12 +1,6 @@
 /*
- *  ES6 \u{H+} Unicode escape in string literals and identifier names.
+ *  ES2015 \u{H+} Unicode escape in string literals and identifier names.
  */
-
-if (typeof print === 'undefined') {
-    print = function () {
-        console.log(Array.prototype.map.call(arguments, String).join(' '));
-    }
-}
 
 function safeEscape(v) {
     return Array.prototype.map.call(v, function (v) {

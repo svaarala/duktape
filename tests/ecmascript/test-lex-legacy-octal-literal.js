@@ -67,7 +67,7 @@ try {
 }
 
 // Legacy octal must not be parsed in strict mode code; E5 Section 7.8.3.
-// Also required by ES6.
+// Also required by ES2015.
 try {
     print(eval("(function() { 'use strict'; return 077; })();"));
 } catch (e) {

@@ -1,5 +1,5 @@
 /*
- *  ES6 octal literal
+ *  ES2015 octal literal
  */
 
 /*===

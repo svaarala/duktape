@@ -1,5 +1,5 @@
 /*
- *  In ES6 all ArrayBuffer and typed array properties like .length, .byteLength
+ *  In ES2015 all ArrayBuffer and typed array properties like .length, .byteLength
  *  are inherited accessors.  At least up to Duktape 2.0 they are virtual "own"
  *  properties.
  */

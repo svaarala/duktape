@@ -1962,7 +1962,7 @@ function coercionTest() {
         0.0 / 0.0   // NaN
     ];
 
-    // ES6 coercion:
+    // ES2015 coercion:
     //    - http://www.ecma-international.org/ecma-262/6.0/index.html#table-49
     //    - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-touint8clamp (Uint8ClampedArray)
 

@@ -2775,7 +2775,7 @@ proxy.nonExistent: dummy
 function proxyBuiltinTest() {
     var lfunc = Math.cos;
 
-    // Proxy as a target object; ES6 requires that must be an Object and a
+    // Proxy as a target object; ES2015 requires that must be an Object and a
     // lightfunc pretends to be an object.  So, it must be possible to use
     // lightfunc as a target.  Currently Proxy will just coerce the lightfunc
     // to a full Function silently.
@@ -2793,7 +2793,7 @@ function proxyBuiltinTest() {
     print('proxy.length:', proxy.length);
     print('proxy.nonExistent:', proxy.nonExistent);
 
-    // Proxy as a handler value; ES6 requires it must be an Object and a
+    // Proxy as a handler value; ES2015 requires it must be an Object and a
     // lightfunc pretends to be an object.  The traps must be placed in
     // Function.prototype for it to actually work - so this is not a very
     // useful thing.  Currently Proxy will just coerce the lightfunc to a

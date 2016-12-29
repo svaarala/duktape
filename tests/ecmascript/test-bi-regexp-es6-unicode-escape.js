@@ -1,5 +1,5 @@
 /*
- *  ES6 \u{H+} Unicode escape in RegExps.
+ *  ES2015 \u{H+} Unicode escape in RegExps.
  */
 
 /*---
@@ -7,12 +7,6 @@
     "custom": true
 }
 ---*/
-
-if (typeof print === 'undefined') {
-    print = function () {
-        console.log(Array.prototype.map.call(arguments, String).join(' '));
-    }
-}
 
 /*===
 regexp test

@@ -64,7 +64,7 @@ function enumeratingAndKeysTest() {
         print(typeof k, k);
     });
 
-    // In ES6 (and Node.js) .byteOffset, .buffer etc are inherited accessors and
+    // In ES2015 (and Node.js) .byteOffset, .buffer etc are inherited accessors and
     // not shown here.  Also .length should be an inherited getter, but is
     // currently a virtual own property and shows up here.
 

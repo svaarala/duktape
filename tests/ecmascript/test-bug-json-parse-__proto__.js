@@ -1,7 +1,7 @@
 /*
  *  Bug in test262 test case: ch15/15.12/15.12.2/S15.12.2_A1
  *
- *  Duktape does not parse __proto__ as a concrete property when ES6
+ *  Duktape does not parse __proto__ as a concrete property when ES2015
  *  __proto__ property is enabled, but rather sets the object prototype.
  */
 

@@ -1,5 +1,5 @@
 /*
- *  Object.prototype.__proto__ (ES6)
+ *  Object.prototype.__proto__ (ES2015)
  */
 
 /*===
@@ -42,7 +42,7 @@ function test() {
 
     // Rhino and V8 print true above (Object.prototype.__proto__ exists) but
     // the descriptor here will be undefined for some reason!
-    // ES6 requires that the property be configurable but not enumerable.
+    // ES2015 requires that the property be configurable but not enumerable.
     pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
     if (pd) {
         print('__proto__ property descriptor:', 'enumerable:', pd.enumerable,
@@ -76,23 +76,23 @@ function test() {
         b.__proto__ = a;
         print('never here');
     } catch (e) {
-        // Rhino throws InternalError, ES6 specifies TypeError
+        // Rhino throws InternalError, ES2015 specifies TypeError
         print(e.name, a.foo, a.bar, b.foo, b.bar);
     }
 
     // Setting a prototype to null.
     // NOTE: evaluating a.__proto__ afterwards yields undefined (instead of null):
     // 'a' no longer inherits from Object.prototype and thus has no __proto__
-    // accessor property.  This is the ES6 behavior right now, but e.g. Rhino
+    // accessor property.  This is the ES2015 behavior right now, but e.g. Rhino
     // disagrees.
     a = { foo: 123 };
     print('before:', a.__proto__ === Object.prototype, a.foo, a.bar, typeof a.toString);
     a.__proto__ = null;
     print('after:', a.__proto__ === null, a.foo, a.bar, typeof a.toString);
-    print('__proto__ in a:', '__proto__' in a);  // false in Duktape/ES6, true in Rhino/V8
+    print('__proto__ in a:', '__proto__' in a);  // false in Duktape/ES2015, true in Rhino/V8
 
     // Attempt to set prototype to something else than null/object:
-    // ES6: ignore silently
+    // ES2015: ignore silently
     [ undefined, true, false, 123, 'foo' ].forEach(function (x) {
         try {
             a = { foo: 123 };
@@ -106,7 +106,7 @@ function test() {
     });
 
     // Attempt to set prototype with 'this' binding not an object (call setter directly):
-    // ES6: TypeError for undefined and null (not object coercible), ignore for others
+    // ES2015: TypeError for undefined and null (not object coercible), ignore for others
     pd = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
     setter = pd ? pd.set : null;
     if (setter) {
@@ -125,7 +125,7 @@ function test() {
 
     // The __proto__ getter uses ToObject() coercion for its argument so that
     // e.g. (123).__proto__ is allowed.  This differs from Object.getPrototypeOf()
-    // in ES5.  However, ES6 updates Object.getPrototypeOf() to use ToObject()
+    // in ES5.  However, ES2015 updates Object.getPrototypeOf() to use ToObject()
     // coercion too.  Null and undefined are rejected as base values.
 
     try {

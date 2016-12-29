@@ -1,5 +1,5 @@
 /*
- *  ES6 binary literal
+ *  ES2015 binary literal
  */
 
 /*===

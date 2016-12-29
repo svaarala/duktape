@@ -59,14 +59,14 @@ try {
 }
 
 try {
-    t = RegExp(r, 1);  // rejected in ES5 with TypeError, SyntaxError in ES6 because '1' is not a proper flag
+    t = RegExp(r, 1);  // rejected in ES5 with TypeError, SyntaxError in ES2015 because '1' is not a proper flag
     print('no error');
 } catch (e) {
     print(e.name);
 }
 
 try {
-    t = RegExp(r, 'i');  // rejected in ES5 with TypeError, OK in ES6
+    t = RegExp(r, 'i');  // rejected in ES5 with TypeError, OK in ES2015
     print('no error');
 } catch (e) {
     print(e.name);
@@ -104,14 +104,14 @@ try {
 }
 
 try {
-    t = new RegExp(r, 1);  // TypeError in ES5.1, SyntaxError in ES6 because '1' is not a valid flag
+    t = new RegExp(r, 1);  // TypeError in ES5.1, SyntaxError in ES2015 because '1' is not a valid flag
     print('no error');
 } catch (e) {
     print(e.name);
 }
 
 try {
-    t = new RegExp(r, 'm');  // TypeError in ES5.1, OK in ES6
+    t = new RegExp(r, 'm');  // TypeError in ES5.1, OK in ES2015
     print('no error');
 } catch (e) {
     print(e.name);

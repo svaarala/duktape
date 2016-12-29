@@ -3,12 +3,6 @@
  *  http://www.ecma-international.org/ecma-262/7.0/#sec-object.assign
  */
 
-if (typeof print === 'undefined') {
-    print = function() {
-        console.log([].map.call(arguments, function (v) { return String(v); }).join(' '));
-    };
-}
-
 /*===
 basic tests
 true

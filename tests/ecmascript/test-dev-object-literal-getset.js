@@ -1,5 +1,5 @@
 /*
- *  In ES6 object literal get/set properties have a few special requirements:
+ *  In ES2015 object literal get/set properties have a few special requirements:
  *  they are not constructable and they have no .prototype.
  */
 

@@ -1,6 +1,6 @@
 /*
- *  Bound function internal prototype is copied from the target in ES6.
- *  In ES5 it is always Function.prototype.  Test for ES6 behavior.
+ *  Bound function internal prototype is copied from the target in ES2015.
+ *  In ES5 it is always Function.prototype.  Test for ES2015 behavior.
  */
 
 /*===

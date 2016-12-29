@@ -438,7 +438,7 @@ var obj_data = [
         obj: RegExp.prototype,
         name: 'RegExp.prototype',
         proto: 'Object.prototype',
-        class: 'Object',  // 'RegExp' in E5 Section 15.10.6 -> changed to 'Object' in ES6
+        class: 'Object',  // 'RegExp' in E5 Section 15.10.6 -> changed to 'Object' in ES2015
         props: [
             { key: 'constructor', 'attrs': 'wc' },
             { key: 'exec', 'attrs': 'wc' },

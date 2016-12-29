@@ -200,7 +200,7 @@ NaN 0
 
 /* Test the ArrayBuffer argument coercion.
  *
- * Currently Duktape doesn't follow ES6 ToLength() (which *clamps* to
+ * Currently Duktape doesn't follow ES2015 ToLength() (which *clamps* to
  * [0,2^53-1]).
  */
 
@@ -224,7 +224,7 @@ function arrayBufferArgumentTest() {
         true,
         false,
 
-        // ES6 requires that ToNumber(arg) match ToLength(ToNumber(arg))
+        // ES2015 requires that ToNumber(arg) match ToLength(ToNumber(arg))
         // (using SameValueZero which ignores zero sign).  In other words,
         // fractional input values cause a RangeError.  V8 doesn't follow
         // this behavior but truncates instead.
@@ -240,7 +240,7 @@ function arrayBufferArgumentTest() {
         -1,
         -1.5,
 
-        // Negative zero is explicitly allowed by ES6, the SameValueZero()
+        // Negative zero is explicitly allowed by ES2015, the SameValueZero()
         // comparison ignores zero sign.
 
         -0,
@@ -261,7 +261,7 @@ function arrayBufferArgumentTest() {
 
         // For now there's an internal maximum buffer length in Duktape.
         // It is triggered at least by 2^32 so test for that.  Exceeding
-        // the limit causes a RangeError.  ES6 doesn't specify what to do
+        // the limit causes a RangeError.  ES2015 doesn't specify what to do
         // if an internal limit is reached but a RangeError seems suitable
         // and matches V8.
 

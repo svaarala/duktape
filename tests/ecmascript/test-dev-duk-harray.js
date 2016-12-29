@@ -342,7 +342,7 @@ enumeration order for sparse arrays
  * as length,0,1,2.
  *
  * However, Duktape 2.x has an explicit post-enumeration sorting step to
- * achieve ES6 [[OwnPropertyKeys]] key order which fixes this internal order.
+ * achieve ES2015 [[OwnPropertyKeys]] key order which fixes this internal order.
  * The end result is: array index keys first, then keys in insertion order;
  * .length is "inserted" during duk_harray creation so it first in the
  * key part but follows array indices.

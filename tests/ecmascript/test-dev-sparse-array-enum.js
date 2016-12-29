@@ -1,8 +1,8 @@
 /*
  *  Array for-in enumeration order is not strictly specified in ES5.
- *  That is also the case for ES6 and ES7.  However, Duktape 2.x follows
- *  ES6 [[OwnPropertyKeys]] order also in for-in and Object.keys() so
- *  test for the custom behavior.
+ *  That is also the case for ES2015 and ES2016.  However, Duktape 2.x
+ *  follows ES2015 [[OwnPropertyKeys]] order also in for-in and Object.keys()
+ *  so test for the custom behavior.
  */
 
 /*---

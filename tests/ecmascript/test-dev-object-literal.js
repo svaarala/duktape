@@ -125,7 +125,7 @@ try {
 2
 ===*/
 
-/* Duplicate keys were rejected in ES5, but ES6 allows them. */
+/* Duplicate keys were rejected in ES5, but ES2015 allows them. */
 
 try {
     print(eval("function func1() { return ({foo:1,foo:2}).foo; }; func1();"));

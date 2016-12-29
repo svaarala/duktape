@@ -54,7 +54,7 @@ function symbolCoercionTest() {
     print(o1 == o2, o1 === o2);
 
     // ToString coercion is a TypeError.  We need an internal operation that
-    // invokes the conceptual ToString() operation directly.  Note that in ES6
+    // invokes the conceptual ToString() operation directly.  Note that in ES2015
     // String(x) doesn't do that: it has specific support for (plain) Symbols.
     // Use parseFloat() here, it ToString() coerces its argument before parsing.
     try {
@@ -85,7 +85,7 @@ function symbolCoercionTest() {
         print(e.name);
     }
 
-    // In ES6 String() is not a direct call to the internal ToString()
+    // In ES2015 String() is not a direct call to the internal ToString()
     // algorithm.  Instead, it has special support for plain symbols while
     // other values get a straight ToString() coercion.
     try {

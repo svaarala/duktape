@@ -1,5 +1,5 @@
 /*
- *  The current ES6 Proxy subset behavior is skipped entirely for Duktape
+ *  The current ES2015 Proxy subset behavior is skipped entirely for Duktape
  *  internal keys.  Any property read/write/delete operations on internal
  *  keys behave as if the proxy handler did not exist, so that the operations
  *  are applied to the target object instead.

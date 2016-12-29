@@ -3,7 +3,7 @@
  *
  *  Note: for a fully implemented Proxy getting at the Proxy object properties
  *  (instead of the target object properties) is not easy.  Right now Duktape's
- *  Proxy is a subset of the ES6 Proxy, and it's possible to access properties
+ *  Proxy is a subset of the ES2015 Proxy, and it's possible to access properties
  *  of the Proxy itself using e.g. Object.getOwnPropertyDescriptor() to check for
  *  property attributes.  Once that behavior is fixed, this test will fail and
  *  can maybe be reimplemented using the C API.

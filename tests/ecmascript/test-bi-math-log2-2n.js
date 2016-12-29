@@ -1,5 +1,5 @@
 /*
- *  While not required by ES6, Math.log2(2^N) should return exactly N, at least
+ *  While not required by ES2015, Math.log2(2^N) should return exactly N, at least
  *  with common C99 log2() implementations.
  */
 

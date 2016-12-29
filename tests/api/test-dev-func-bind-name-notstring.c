@@ -23,7 +23,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_push_int(ctx, 123);
 	duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_FORCE);
 
-	/* ES6 19.2.3.2 requires that a non-string .name is ignored and
+	/* ES2015 19.2.3.2 requires that a non-string .name is ignored and
 	 * treated like an empty string.  The bound function .name is
 	 * then required to be 'bound ' + .name.
 	 */

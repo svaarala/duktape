@@ -1,5 +1,5 @@
 /*
- *  ES6 IdentifierName in object literal.
+ *  ES2015 IdentifierName in object literal.
  */
 
 /*===

@@ -1,4 +1,4 @@
-summary: when ES6 __proto__ enabled, JSON.parse() parses '__proto__' property incorrectly when a specially crafted reviver is used
+summary: when ES2015 __proto__ enabled, JSON.parse() parses '__proto__' property incorrectly when a specially crafted reviver is used
 ---
 basic case
 [object Object]
