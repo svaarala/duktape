@@ -359,7 +359,7 @@ Module loading APIs or "formats":
 
   - https://nodejs.org/api/modules.html
 
-* ES6:
+* ES2015:
 
   - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-modules
 

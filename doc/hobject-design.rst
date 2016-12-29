@@ -2145,8 +2145,8 @@ properties built-in functions get.
 Design notes and future work
 ============================
 
-ES6 Proxy objects or Lua-like metatables
-----------------------------------------
+ES2015 Proxy objects or Lua-like metatables
+-------------------------------------------
 
 It would be nice to have a Lua metatable like mechanism for creating
 custom object behavior extensions and full object virtualization,
@@ -2155,7 +2155,7 @@ There is a similar mechanism in Ecmascript 6 called "Proxy object":
 
 * http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-object-internal-methods-and-internal-slots
 
-The ES6 Proxy object is of course a natural target for implementation,
+The ES2015 Proxy object is of course a natural target for implementation,
 but it's not clear what the underlying mechanism should be: should the
 Proxy object mechanism be the internal mechanism, or should there be some
 other implementation specific mechanism underneath which is used to provide
@@ -2195,10 +2195,10 @@ Some notes:
   + Getting object ``[[Class]]``
   + Garbage collection => finalizer
 
-ES6 features
-------------
+ES2015 features
+---------------
 
-There are many ES6 features which may need changes to the basic object model.
+There are many ES2015 features which may need changes to the basic object model.
 
 For instance, there are keyed collections:
 
@@ -2233,7 +2233,7 @@ The HTML5 WindowProxy object seems to require behavior outside E5.
 
 See: http://www.w3.org/TR/html5/browsers.html#windowproxy.
 
-The ES6 Proxy object probably addresses this.
+The ES2015 Proxy object probably addresses this.
 
 Script origin for security checks
 ---------------------------------

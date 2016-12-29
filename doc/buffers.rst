@@ -18,7 +18,7 @@ type so various approaches are used:
   - http://blogs.msdn.com/b/ie/archive/2011/12/01/working-with-binary-data-using-typed-arrays.aspx
   - https://www.inkling.com/read/javascript-definitive-guide-david-flanagan-6th/chapter-22/typed-arrays-and-arraybuffers
 
-* ES6 has adopted the Khronos specification, with more specific semantics:
+* ES2015 has adopted the Khronos specification, with more specific semantics:
 
   - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-arraybuffer-constructor
   - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-typedarray-constructors
@@ -39,7 +39,7 @@ type so various approaches are used:
   - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-float32array
   - http://www.ecma-international.org/ecma-262/6.0/index.html#sec-float64array
 
-  ES6 spec:
+  ES2015 spec:
 
   - http:/www.ecma-international.org/ecma-262/6.0/index.html/
 
@@ -161,7 +161,7 @@ integers of multiple sizes, IEEE floats, or IEEE doubles.  All accesses to
 the underlying buffer are byte-based, and no alignment is required by Duktape;
 however, Khronos TypedArray specification restricts creation of
 non-element-aligned views.  All multi-byte elements are accessed in the host
-endianness (this is required by the Khronos/ES6 TypedArray specification).
+endianness (this is required by the ES2015 TypedArray specification).
 
 A ``duk_hbufobj`` acts as a both a buffer representation (providing Node.js
 Buffer and ArrayBuffer) and a view representation (prodiving e.g. DataView,
@@ -244,7 +244,7 @@ Notes:
   ArrayBuffer they are used on must also be a multiple of the element
   size (i.e. views must be naturally aligned).  These requirements are not
   very useful from Duktape point of view but they are required by the
-  Khronos/ES6 specifications.
+  ES2015 specification.
 
   (It would be trivial to use a specific endianness or allow unaligned
   views because Duktape works with the values byte-by-byte anyway.)
@@ -319,7 +319,7 @@ TypedArray:
 * Float64Array.prototype
 
 None of the prototype objects are mandated by the Khronos specification but
-are present in ES6.
+are present in ES2015.
 
 Conversions between buffer values
 ---------------------------------
@@ -527,7 +527,7 @@ Khronos typed array notes
 The Khronos typed array specification is related to HTML canvas and WebGL
 programming.  Some of the design choices are affected by this, e.g. the
 endianness handling and clamped byte write support.  The Khronos specification
-has been refined and merged into ES6 so this specification has an official
+has been refined and merged into ES2015 so this specification has an official
 status now.
 
 Specification notes
@@ -865,8 +865,8 @@ The ``set()`` and ``subarray()`` methods are inherited from the intermediate
 prototype object.  This reduces property count by about 16 at the cost of one
 additional object.
 
-ES6 makes this the standard model; the TypedArreay prototype is referred to
-as %TypedArrayPrototype% intrinsic object in the ES6 specification.
+ES2015 makes this the standard model; the TypedArreay prototype is referred to
+as %TypedArrayPrototype% intrinsic object in the ES2015 specification.
 
 View/slice notes
 ----------------
@@ -939,8 +939,8 @@ there must be no side effects between the check and the operation:
 Future work
 ===========
 
-Missing ES6 features
---------------------
+Missing ES2015 features
+-----------------------
 
 General semantics:
 
@@ -1189,7 +1189,7 @@ the required behavior (e.g. zero .byteLength) but not all (e.g. zero
 .byteOffset).  So an explicit neutered check, or a change in data structures,
 may be necessary.
 
-In ES6 neutering seems to be covered under the name "detached buffer" and
+In ES2015 neutering seems to be covered under the name "detached buffer" and
 many operations on detached buffers (like reads and writes) throw a TypeError
 which is close to what current code is doing:
 
@@ -1207,7 +1207,7 @@ This should be relatively straightforward to do, and perhaps useful.
 Allow non-aligned views
 -----------------------
 
-The Khronos/ES6 alignment limitation is not necessary with Duktape because
+The ES2015 alignment limitation is not necessary with Duktape because
 all element accesses are ultimately done using byte-by-byte reads without
 making any alignment assumptions.
 

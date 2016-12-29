@@ -10,8 +10,8 @@ Main changes in this release (see RELEASES.rst for full details):
 * Improve buffer bindings: plain buffers now behave like Uint8Arrays,
   and Duktape.Buffer has been removed with Uint8Array taking its place.
 
-* Many built-in behaviors have been aligned with ES6 or ES7, so there are
-  small behavioral changes throughout.
+* Many built-in behaviors have been aligned with ES2015 or ES2016, so
+  there are small behavioral changes throughout.
 
 * FIXME
 
@@ -244,8 +244,8 @@ changes below.  Here's a summary of changes:
 * Non-standard properties, such as virtual indices and ``.length`` have been
   removed from ArrayBuffer and DataView.  The ``.byteOffset``, ``.byteLength``,
   ``.BYTES_PER_ELEMENT``, and ``.buffer`` properties of view objects are now
-  inherited getters to match ES6.  The ``.length`` property remains a virtual
-  own property, however (it is a getter in ES6).
+  inherited getters to match ES2015.  The ``.length`` property remains a virtual
+  own property, however (it is a getter in ES2015).
 
 * Default Ecmascript built-ins no longer provide the ability to do a 1:1
   buffer-to-string coercion where the buffer bytes are used directly as the
@@ -648,7 +648,7 @@ duk_to_defaultvalue() removed
 
 The ``duk_to_defaultvalue()`` API call was rather technical: it invoked the
 internal ``[[DefaultValue]]`` algorithm which is used in ES5.1 as part of
-the ToPrimitive() coercion (``duk_to_primitive()``).  ES6 no longer specifies
+the ToPrimitive() coercion (``duk_to_primitive()``).  ES2015 no longer specifies
 ``[[DefaultValue]]`` which has been folded into ToPrimitive().  The API call
 thus no longer makes much sense.
 
@@ -658,7 +658,7 @@ To upgrade:
   most cases replace it with ``duk_to_primitive()``.  The main difference
   is that ``duk_to_primitive()`` accepts all argument types (returning
   those considered primitive as is) while ``duk_to_defaultvalue()`` rejects
-  primitive value arguments.  See the ES5.1/ES6 specifications for exact
+  primitive value arguments.  See the ES5.1/ES2015 specifications for exact
   differences between the two.
 
 * Here's an example replacement.  Replace this::
@@ -996,7 +996,7 @@ Enumeration order changes
 -------------------------
 
 Enumeration order for ``Object.getOwnPropertyNames()`` has been changed to
-match ES6/ES7 ``[[OwnPropertyKeys]]`` enumeration order, which is:
+match ES2015/ES2016 ``[[OwnPropertyKeys]]`` enumeration order, which is:
 
 * Array indices in ascending order
 
@@ -1004,7 +1004,7 @@ match ES6/ES7 ``[[OwnPropertyKeys]]`` enumeration order, which is:
 
 * Symbols in insertion order
 
-While not required by ES6/ES7, the same enumeration order is also used in
+While not required by ES2015/ES2016, the same enumeration order is also used in
 Duktape 2.x for ``for-in``, ``Object.keys()``, and ``duk_enum()``.  A related
 change is that ``duk_enum()`` flags ``DUK_ENUM_ARRAY_INDICES_ONLY`` and
 ``DUK_ENUM_SORT_ARRAY_INDICES`` can now be used independently.
@@ -1038,9 +1038,9 @@ Small changes related to adding symbol support:
   even when the ``Symbol`` built-in is disabled, and symbol semantics (like
   ``typeof`` and coercion behavior) are currently enabled.
 
-* Internal properties are now called "hidden symbols" and adopt some ES6 Symbol
+* Internal properties are now called "hidden symbols" and adopt some ES2015 Symbol
   behaviors, e.g. ``typeof internalKey === 'symbol`` and ``"" + internalKey``
-  is now a TypeError.  Internal keys are different from normal ES6 Symbols in
+  is now a TypeError.  Internal keys are different from normal ES2015 Symbols in
   that they can't be enumerated from Ecmascript code even with
   ``Object.getOwnPropertySymbols()``.
 
@@ -1073,11 +1073,11 @@ Other incompatible changes
   integer range for the target value's ``.length``.
 
 * Legacy octal literal handling has been improved to match more closely with
-  ES6 Annex B.  Octal look-alike decimal literals like "0778" and "0778.123"
+  ES2015 Annex B.  Octal look-alike decimal literals like "0778" and "0778.123"
   are now allowed.
 
 * Legacy octal escape handling in string literals has been improved to match
-  more closely with ES6 Annex B and other engines: "\078" is not accepted and
+  more closely with ES2015 Annex B and other engines: "\078" is not accepted and
   is the same as "\u00078", "\8" and "\9" are accepted as literal "8" and "9"
   (even in strict mode).
 
@@ -1085,25 +1085,25 @@ Other incompatible changes
   generalized and renamed to ``DUK_USE_POW_WORKAROUNDS``.
 
 * When using a Proxy as a for-in target the "ownKeys" trap is invoked instead
-  of the "enumerate" trap in ES7.  Duktape now follows this behavior.  The
+  of the "enumerate" trap in ES2016.  Duktape now follows this behavior.  The
   "enumerate" trap has been obsoleted.  Key enumerability is also now checked
   when "ownKeys" trap is used in Object.keys() and for-in.
 
 * Bound function internal prototype is copied from the target function to match
-  ES6 requirements; in ES5 (and Duktape 1.x) bound function internal prototype
+  ES2015 requirements; in ES5 (and Duktape 1.x) bound function internal prototype
   is always set to Function.prototype.
 
-* Function.prototype.toString() output has been changed to match ES6
+* Function.prototype.toString() output has been changed to match ES2015
   requirements.  For example ``function foo() {"ecmascript"}`` is now
   ``function foo() { [ecmascript code] }``.
 
 * Function ``.name`` and ``.length`` properties are now non-writable,
-  non-enumerable, but configurable, to match revised ES6 semantics.  Previously
+  non-enumerable, but configurable, to match revised ES2015 semantics.  Previously
   the properties were also non-configurable.
 
 * Function ``.fileName`` property is now non-writable, non-enumerable, and
   configurable.  Previously it was writable, non-enumerable, and configurable.
-  While this is not required by ES6 (as the property is non-standard), it has
+  While this is not required by ES2015 (as the property is non-standard), it has
   been aligned with ``.name``.  Direct assignment to the property will be
   rejected, but you can set it using e.g.
   ``Object.defineProperty(func, 'fileName', { value: 'myFilename.js' });``.
@@ -1114,11 +1114,11 @@ Other incompatible changes
   inherited accessors.
 
 * Object constructor methods like Object.keys(), Object.freeze(), etc now
-  follow more lenient ES6 coercion semantics: non-object arguments are either
+  follow more lenient ES2015 coercion semantics: non-object arguments are either
   coerced to objects or treated like non-extensible objects with no own
   properties.
 
-* RegExp.prototype follows ES6 behavior more closely: it is no longer a RegExp
+* RegExp.prototype follows ES2015 behavior more closely: it is no longer a RegExp
   instance, .source, .global, .ignoreCase, and .multiline are now inherited
   getters, etc.  However, leniency to allow e.g. RegExp.prototype.source (from
   ES2017 draft) is supported for real world code compatibility.

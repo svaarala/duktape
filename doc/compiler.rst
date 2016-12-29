@@ -11,7 +11,7 @@ Assorted lexer and compiler design notes are covered in separate sections in
 no specific order (these are raw notes collected on the first implementation
 pass).  Future work lists known areas for improvement (not exhaustively).
 
-The document does not cover the changes needed to support new ES6 constructs
+The document does not cover the changes needed to support new ES2015 constructs
 like destructuring assignment; the main change will be the addition of some
 form of an intermediate representation (IR), perhaps a statement level
 expression tree or a full expression tree.  Having an IR will also enable
@@ -65,7 +65,7 @@ Code and memory footprint concern originally lead to the decision to avoid
 a comprehensive intermediate representation in the compiler; a limited
 intermediate value concept is used instead.  This complicates compilation
 somewhat but reduces memory footprint.  A more comprehensive intermediate
-representation will be needed in future versions to fully support ES6.
+representation will be needed in future versions to fully support ES2015.
 
 Lexer
 -----
@@ -927,10 +927,10 @@ Recursion controls placed in these key functions should suffice to guarantee
 an upper limit on C recursion, although it is difficult to estimate how much
 stack is consumed before the limit is reached.
 
-ES6 constructs need an intermediate representation
---------------------------------------------------
+ES2015 constructs need an intermediate representation
+-----------------------------------------------------
 
-ES6 constructs such as destructuring assignment will need an intermediate
+ES2015 constructs such as destructuring assignment will need an intermediate
 representation (or at least a much larger fragment of the expression tree)
 to compile in a reasonable manner.
 
@@ -1372,8 +1372,8 @@ The following is not a candidate for a tail call because of a catcher::
 Detecting anything other than the very basic case is probably not worth the
 complexity, especially because E5.1 does not require efficient tail calls at
 all (in fact, as of this writing, neither V8 nor Rhino support tail calls).
-ES6 *does* require tail calls and provides specific guarantees for them.
-Adding support for ES6 tail calls will require compiler changes.
+ES2015 *does* require tail calls and provides specific guarantees for them.
+Adding support for ES2015 tail calls will require compiler changes.
 
 The current approach is very simplistic and only detects the most common
 cases.  First, it is only applied to compiling function code, not global or
@@ -1580,7 +1580,7 @@ name through a constant.  There is a run-time penalty for this to
 the slow path primitives (GETVAR, PUTVAR, etc).  The latter is a limitation
 in the current lexical environment model, where an identifier is either
 bound as a normal property of the lexical environment object, or is bound
-to a *function-wide* register.  (This will need to change anyway for ES6
+to a *function-wide* register.  (This will need to change anyway for ES2015
 where "let" statements are supported.)
 
 Compiling "with" statements
@@ -2545,7 +2545,7 @@ Current handling for "catch" variables creates an explicit lexical environment
 object and uses slow path for accessing the variable.  This is far from optimal
 but requires more compiler state to be solved better.
 
-Similarly the ES6 "let" binding needs efficient support to be useful.
+Similarly the ES2015 "let" binding needs efficient support to be useful.
 
 Improve line number assignment
 ------------------------------
@@ -2780,7 +2780,7 @@ with a large number of constants.
 
 A better solution would be to use a faster search structure for detecting
 shared constants, e.g. a hash map with more flexible keys than in Ecmascript
-objects (perhaps one of the ES6 maps).
+objects (perhaps one of the ES2015 maps).
 
 Better switch-case handling
 ---------------------------
