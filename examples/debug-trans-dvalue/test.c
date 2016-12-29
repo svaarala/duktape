@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 		"\n"
 		"print('Hello world!');\n"
 		"[ undefined, null, true, false, 123, -123, 123.1, 0, -0, 1/0, 0/0, -1/0, \n"
-		"  'foo', ArrayBuffer.allocPlain('bar'), Duktape.Pointer('dummy'), Math.cos, \n"
+		"  'foo', Uint8Array.allocPlain('bar'), Duktape.Pointer('dummy'), Math.cos, \n"
 		"].forEach(function (val) {\n"
 		"    print(val);\n"
 		"    evalMe = val;\n"
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
 		"for (i = 0; i < 10; i++) {\n"
 		"    print(i, str);\n"
 		"    evalMe = str;\n"
-		"    evalMe = ArrayBuffer.allocPlain(str);\n"
+		"    evalMe = Uint8Array.allocPlain(str);\n"
 		"    str = str + str;\n"
 		"}\n"
 	);

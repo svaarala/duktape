@@ -1696,8 +1696,8 @@ Planned
 
 * Incompatible change: remove Duktape.Buffer custom built-in, ArrayBuffer
   now serves its place; the following new bindings provide functionality
-  roughly equivalent to Duktape.Buffer: ArrayBuffer.allocPlain() and
-  ArrayBuffer.plainOf(), however, the ability of doing a 1:1 buffer-to-string
+  roughly equivalent to Duktape.Buffer: Uint8Array.allocPlain() and
+  Uint8Array.plainOf(), however, the ability of doing a 1:1 buffer-to-string
   coercion (using buffer data directly as the internal string representation)
   has been removed (GH-875, GH-1005)
 

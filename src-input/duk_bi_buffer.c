@@ -1178,7 +1178,7 @@ DUK_INTERNAL duk_ret_t duk_bi_arraybuffer_isview(duk_context *ctx) {
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
- *  ArrayBuffer.allocPlain()
+ *  Uint8Array.allocPlain()
  */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
@@ -1189,7 +1189,7 @@ DUK_INTERNAL duk_ret_t duk_bi_uint8array_allocplain(duk_context *ctx) {
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 
 /*
- *  ArrayBuffer.plainOf()
+ *  Uint8Array.plainOf()
  */
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)

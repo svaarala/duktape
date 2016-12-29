@@ -9,8 +9,8 @@ if (typeof Duktape === 'object' && typeof Duktape.Buffer === 'undefined') {
     (function () {
         function isBufferOrView(v) {
             return v instanceof Buffer ||
-                   v instanceof ArrayBuffer ||  // also matches plain buffer in 2.x
-                   v instanceof Uint8Array ||
+                   v instanceof ArrayBuffer ||
+                   v instanceof Uint8Array ||  // also matches plain buffer in 2.x
                    v instanceof Uint8ClampedArray ||
                    v instanceof Int8Array ||
                    v instanceof Uint16Array ||
@@ -28,18 +28,18 @@ if (typeof Duktape === 'object' && typeof Duktape.Buffer === 'undefined') {
                 // the ArrayBuffer shares the argument's storage with any slice
                 //offset/length lost.
                 if (isBufferOrView(arg)) {
-                    return Object(ArrayBuffer.plainOf(arg));
+                    return Object(Uint8Array.plainOf(arg));
                 } else {
-                    return Object(ArrayBuffer.allocPlain(arg));
+                    return Object(Uint8Array.allocPlain(arg));
                 }
             } else {
                 // Normal call; result is a plain buffer.  For a buffer argument the
                 // underlying buffer is returned (shared, not copy).  Otherwise a
                 // new plain buffer is created.
                 if (isBufferOrView(arg)) {
-                    return ArrayBuffer.plainOf(arg);
+                    return Uint8Array.plainOf(arg);
                 } else {
-                    return ArrayBuffer.allocPlain(arg);
+                    return Uint8Array.allocPlain(arg);
                 }
             }
         };
