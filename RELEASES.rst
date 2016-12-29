@@ -1931,6 +1931,8 @@ Planned
 * Add support for ES6 octal (0o123) and binary (0b100001) in source code
   literals and ToNumber() coercion (e.g. "+'0o123'") (GH-1057, GH-1084)
 
+* Add support for ES6 Array.prototype.includes() (GH-1114)
+
 * Add support for ES6 String.prototype.codePointAt(), String.fromCodePoint(),
   and String.prototype.repeat() (GH-1043, GH-1049, GH-1050)
 

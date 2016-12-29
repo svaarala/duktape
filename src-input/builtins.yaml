@@ -912,6 +912,17 @@ objects:
           length: 1
           varargs: true
         present_if: DUK_USE_ARRAY_BUILTIN
+      - key: "includes"
+        value:
+          type: function
+          native: duk_bi_array_prototype_indexof_shared
+          length: 1
+          varargs: true
+          magic: 2  # magic: includes()
+        es6: true
+        present_if:
+          - DUK_USE_ARRAY_BUILTIN
+          - DUK_USE_ES6
       - key: "indexOf"
         value:
           type: function
