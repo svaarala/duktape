@@ -46,7 +46,7 @@ summary: |
   </tr>
   <tr>
   <td>DUK_ENUM_SORT_ARRAY_INDICES</td>
-  <td>Apply the ES6 [[OwnPropertyKeys]] enumeration order over the whole
+  <td>Apply the ES2015 [[OwnPropertyKeys]] enumeration order over the whole
       enumeration result rather than per inheritance level, this has the
       effect of sorting array indices (even when inherited)</td>
   </tr>
@@ -59,7 +59,7 @@ summary: |
   <p>Without any flags the enumeration behaves like <code>for-in</code>:
   own and inherited enumerable properties are included, and enumeration
   order follows the
-  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">Ecmascript ES6 [[OwnPropertyKeys]]</a>
+  <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys">Ecmascript ES2015 [[OwnPropertyKeys]]</a>
   enumeration order, applied for each inheritance level.</p>
 
   <p>Once the enumerator has been created, use
@@ -67,7 +67,7 @@ summary: |
   pairs) from the enumerator.</p>
 
   <div class="note">
-  The ES6 [[OwnPropertyKeys]] enumeration order is:
+  The ES2015 [[OwnPropertyKeys]] enumeration order is:
   (1) array indices in ascending order, (2) non-array-index keys in their
   insertion order, and (3) symbols in their insertion order.  This rule
   is applied separately for each inheritance level, so that if array index

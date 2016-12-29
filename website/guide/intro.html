@@ -40,15 +40,15 @@ Ecmascript throughout to refer to the language implemented by Duktape.</p>
 
 <h2>Conformance</h2>
 
-<p>Duktape conforms to ES5.0/ES5.1 with semantics updated from ES6 or later
-where appropriate:</p>
+<p>Duktape conforms to ES5.0/ES5.1 with semantics updated from ES2015 or
+later where appropriate:</p>
 <ul>
 <li><a href="http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%205th%20edition%20December%202009.pdf">ECMAScript Language Specification 5th Edition</a></li>
 <li><a href="http://www.ecma-international.org/ecma-262/5.1/">ECMAScript&#x00ae; Language Specification 5.1 Edition</a></li>
 </ul>
 
 <p>Duktape tracks the latest Ecmascript specification for semantics and
-built-ins (however support for ES6 and later is still incomplete), see:</p>
+built-ins (however support for ES2015 and later is still incomplete), see:</p>
 <ul>
 <li><a href="http://www.ecma-international.org/ecma-262/6.0/">ECMAScript&#x00ae; 2015 Language Specification</a></li>
 <li><a href="http://www.ecma-international.org/ecma-262/7.0/">ECMAScript&#x00ae; 2016 Language Specification</a></li>
@@ -59,9 +59,8 @@ see work in progress in <a href="https://github.com/tc39/ecma262">TC39/ecma262</
 This is done when a feature in the latest specifications conflicts
 with real world code (see e.g. <a href="https://github.com/tc39/ecma262/pull/263">RegExp.prototype issues</a>).</p>
 
-<p>TypedArray support is based on Khronos TypedArray specification with some
-ambiguous semantics resolved based on ES6 TypedArray (and comparison to other
-engines):</p>
+<p>TypedArray support is based on ES2016 TypedArray; initial implementation
+was based on Khronos TypedArray specification:</p>
 <ul>
 <li><a href="https://www.khronos.org/registry/typedarray/specs/latest/">Typed Array Specification (Editor's Draft 18 July 2013)</a> (Note: link is to latest)</li>
 <li><code>svn co -r 30720 https://cvs.khronos.org/svn/repos/registry/trunk/public/typedarray</code></li>
@@ -77,13 +76,13 @@ engines):</p>
 <p>Besides standard Ecmascript features, Duktape has the following additional
 features (some are visible to applications, while others are internal):</p>
 <ul>
-<li>Khronos/ES6 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
+<li>ES2015 <a href="https://www.khronos.org/registry/typedarray/specs/latest/">TypedArray</a>
     and <a href="https://nodejs.org/docs/v6.9.1/api/buffer.html">Node.js Buffer</a> bindings,
     plain buffer type (lightweight Uint8Array)</li>
-<li>From Ecmascript 2015 (E6): <code>setPrototypeOf</code>/<code>__proto__</code>,
+<li>From Ecmascript 2015 (ES6): <code>setPrototypeOf</code>/<code>__proto__</code>,
     a subset of <code>Proxy</code> objects, <code>Reflect</code>, computed property names,
     and minimal <code>const</code> support</li>
-<li>From Ecmascript 2016 (E7): exponentiation operator (<code>**</code>, <code>**=</code>)</li>
+<li>From Ecmascript 2016 (ES7): exponentiation operator (<code>**</code>, <code>**=</code>)</li>
 <li><a href="https://encoding.spec.whatwg.org/#api">Encoding API</a> bindings based on the WHATWG Encoding Living Standard</li>
 <li>Duktape specific built-ins: provided by the <code>Duktape</code> global object</li>
 <li>Extended types: custom "buffer" and "pointer" types, extended string type
@@ -107,8 +106,8 @@ features (some are visible to applications, while others are internal):</p>
 
 <p><b>Compliance</b>.  Ecmascript E5/E5.1 and real world compliance.
 Ecmascript compliance requires regular expression and Unicode support.
-When possible, implement features from the upcoming Ecmascript E6
-specification to minimize Duktape custom features.</p>
+When possible, implement features from latest or draft Ecmascript
+specifications to minimize Duktape custom features.</p>
 
 <p><b>Portability</b>.  Minimal system dependencies are nice when porting,
 so Duktape depends on very few system libraries.  For example, number
