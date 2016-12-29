@@ -936,7 +936,7 @@ def generateGuide():
 	navlinks.append(['#gettingstarted', 'Getting started'])
 	navlinks.append(['#programming', 'Programming model'])
 	navlinks.append(['#stacktypes', 'Stack types'])
-	navlinks.append(['#ctypes', 'C types'])
+	navlinks.append(['#ctypes', 'API C types'])
 	navlinks.append(['#typealgorithms', 'Type algorithms'])
 	navlinks.append(['#duktapebuiltins', 'Duktape built-ins'])
 	navlinks.append(['#postes5features', 'Post-ES5 features'])
