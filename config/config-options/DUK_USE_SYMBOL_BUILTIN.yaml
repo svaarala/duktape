@@ -2,8 +2,7 @@ define: DUK_USE_SYMBOL_BUILTIN
 introduced: 2.0.0
 default: false
 tags:
-  - ecmascript
-  - ecmascript6
+  - ecmascript2015
 description: >
   Provide ES6 Symbol built-ins (experimental in Duktape 2.0.0).
 

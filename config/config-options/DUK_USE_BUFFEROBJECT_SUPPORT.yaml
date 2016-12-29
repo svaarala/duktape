@@ -2,7 +2,7 @@ define: DUK_USE_BUFFEROBJECT_SUPPORT
 introduced: 1.3.0
 default: true
 tags:
-  - ecmascript6
+  - ecmascript2015
 description: >
   Enable support for Khronos/ES6 typed arrays and Node.js Buffer objects.
 

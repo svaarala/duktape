@@ -2,7 +2,7 @@ define: DUK_USE_ES6_UNICODE_ESCAPE
 introduced: 2.0.0
 default: true
 tags:
-  - ecmascript6
+  - ecmascript2015
 description: >
   Enable support for ES6 Unicode escape syntax ("\u{12345}") in source code
   and RegExps.

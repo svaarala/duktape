@@ -2,7 +2,7 @@
 # doc/low-memory.rst:
 #
 #   - Strips verbose errors etc
-#   - Strips some ES6 features like Proxy support (re-enable if needed)
+#   - Strips some ES2015 features like Proxy support (re-enable if needed)
 #   - Strips some Duktape custom feature like JX/JC; keeps e.g. RegExp
 #     and other standard parts
 #   - Strips some commonly unnecessary API calls like bytecode dump/load
@@ -64,7 +64,7 @@ DUK_USE_HSTRING_ARRIDX: false
 #DUK_USE_EXTSTR_INTERN_CHECK
 #DUK_USE_EXTSTR_FREE
 
-# Consider removing Node.js Buffer and Khronos/ES6 typed array support if not
+# Consider removing Node.js Buffer and ES2015 typed array support if not
 # needed (about 10 kB code footprint difference on x64)
 DUK_USE_BUFFEROBJECT_SUPPORT: false
 
