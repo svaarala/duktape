@@ -331,6 +331,7 @@ def main():
         'duk_bi_number.c',
         'duk_bi_object.c',
         'duk_bi_pointer.c',
+        'duk_bi_promise.c',
         'duk_bi_protos.h',
         'duk_bi_proxy.c',
         'duk_bi_reflect.c',
