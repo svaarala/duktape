@@ -4667,10 +4667,10 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 			/* Use 'force' flag to duk_def_prop() to ensure that any
 			 * inherited properties don't prevent the operation.
-			 * With ES6 duplicate properties are allowed, so that we
+			 * With ES2015 duplicate properties are allowed, so that we
 			 * must overwrite any previous data or accessor property.
 			 *
-			 * With ES6 computed property names the literal keys
+			 * With ES2015 computed property names the literal keys
 			 * may be arbitrary values and need to be ToPropertyKey()
 			 * coerced at runtime.
 			 */
@@ -4700,7 +4700,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			 */
 
 			/* INITSET/INITGET are only used to initialize object literal keys.
-			 * There may be a previous propery in ES6 because duplicate property
+			 * There may be a previous propery in ES2015 because duplicate property
 			 * names are allowed.
 			 */
 

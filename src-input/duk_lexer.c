@@ -652,7 +652,7 @@ DUK_LOCAL duk_bool_t duk__is_hex_digit(duk_codepoint_t x) {
  * source and RegExp parsing.
  */
 DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bool_t allow_es6) {
-	duk_small_int_t digits;  /* Initial value 2 or 4 for fixed length escapes, 0 for ES6 \u{H+}. */
+	duk_small_int_t digits;  /* Initial value 2 or 4 for fixed length escapes, 0 for ES2015 \u{H+}. */
 	duk_codepoint_t escval;
 	duk_codepoint_t x;
 	duk_small_int_t adv;
@@ -1519,7 +1519,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		/* Note: decimal number may start with a period, but must be followed by a digit */
 
 		/*
-		 *  Pre-parsing for decimal, hex, octal (both legacy and ES6),
+		 *  Pre-parsing for decimal, hex, octal (both legacy and ES2015),
 		 *  and binary literals, followed by an actual parser step
 		 *  provided by numconv.
 		 *
@@ -1907,7 +1907,7 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 		 * cannot be escaped as '\$'; it needs to be escaped e.g. as '\u0024'.
 		 * Many other implementations (including V8 and Rhino, for instance) do
 		 * accept '\$' as a valid identity escape, which is quite pragmatic, and
-		 * ES6 Annex B relaxes the rules to allow these (and other) real world forms.
+		 * ES2015 Annex B relaxes the rules to allow these (and other) real world forms.
 		 */
 
 		advtok = DUK__ADVTOK(2, DUK_RETOK_ATOM_CHAR);  /* default: char escape (two chars) */
@@ -1983,11 +1983,11 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			}
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 		} else if (y >= 0) {
-			/* For ES6 Annex B, accept any source character as identity
+			/* For ES2015 Annex B, accept any source character as identity
 			 * escape except 'c' which is used for control characters.
 			 * http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns
 			 * Careful not to match end-of-buffer (<0) here.
-			 * This is not yet full ES6 Annex B because cases above
+			 * This is not yet full ES2015 Annex B because cases above
 			 * (like hex escape) won't backtrack.
 			 */
 			DUK_ASSERT(y != DUK_ASC_LC_C);  /* covered above */
@@ -2181,7 +2181,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 			 *  range for it.
 			 */
 
-			/* XXX: ES6 surrogate pair handling. */
+			/* XXX: ES2015 surrogate pair handling. */
 
 			x = DUK__L1();
 
@@ -2269,7 +2269,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				}
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 			} else if (x >= 0) {
-				/* IdentityEscape: ES6 Annex B allows almost all
+				/* IdentityEscape: ES2015 Annex B allows almost all
 				 * source characters here.  Match anything except
 				 * EOF here.
 				 */

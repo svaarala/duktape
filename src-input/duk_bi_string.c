@@ -88,7 +88,7 @@ DUK_LOCAL duk_ret_t duk__construct_from_codepoints(duk_context *ctx, duk_bool_t 
 		 */
 
 		if (nonbmp) {
-			/* ES6 requires that (1) SameValue(cp, ToInteger(cp)) and
+			/* ES2015 requires that (1) SameValue(cp, ToInteger(cp)) and
 			 * (2) cp >= 0 and cp <= 0x10ffff.  This check does not
 			 * implement the steps exactly but the outcome should be
 			 * the same.

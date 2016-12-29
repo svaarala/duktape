@@ -70,7 +70,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
 	               comp_flags);
 
-	/* Force .name to 'anonymous' (ES6). */
+	/* Force .name to 'anonymous' (ES2015). */
 	duk_push_string(ctx, "anonymous");
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
 
@@ -384,12 +384,12 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 
 	/* XXX: 'copy properties' API call? */
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	duk_push_string(ctx, "bound ");  /* ES6 19.2.3.2. */
+	duk_push_string(ctx, "bound ");  /* ES2015 19.2.3.2. */
 	duk_get_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME);
 	if (!duk_is_string_notsymbol(ctx, -1)) {
-		/* ES6 has requirement to check that .name of target is a string
+		/* ES2015 has requirement to check that .name of target is a string
 		 * (also must check for Symbol); if not, targetName should be the
-		 * empty string.  ES6 19.2.3.2.
+		 * empty string.  ES2015 19.2.3.2.
 		 */
 		duk_pop(ctx);
 		duk_push_hstring_empty(ctx);

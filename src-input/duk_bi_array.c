@@ -679,7 +679,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		duk_call(ctx, 2);        /* -> [ ... res ] */
 
 		/* ES5 is a bit vague about what to do if the return value is
-		 * not a number.  ES6 provides a concrete description:
+		 * not a number.  ES2015 provides a concrete description:
 		 * http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare.
 		 */
 

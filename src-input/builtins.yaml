@@ -65,7 +65,7 @@
 #      - type: symbol
 #      - variant: global, hidden, wellknown
 #      - string: symbol string without any prefix
-#      - NOTE: ES6 well-known symbols are local symbols with 'string' as
+#      - NOTE: ES2015 well-known symbols are local symbols with 'string' as
 #        their description, and a fixed suffix never overlapping with
 #        runtime local symbols
 #      - NOTE: "hidden symbols" are Duktape specific internal properties
@@ -275,7 +275,7 @@ objects:
         # Remains present even when disabled: needed for error augmentation internally.
         #present_if: DUK_USE_DUKTAPE_BUILTIN
 
-      # ES6
+      # ES2015
       - key: "Proxy"
         value:
           type: object
@@ -643,7 +643,7 @@ objects:
           setter_nargs: 1
           getter_magic: 0
           setter_magic: 0
-        attributes: "c"  # configurable in ES6, also V8
+        attributes: "c"  # configurable in ES2015, also V8
         es6: true  # also non-standard legacy
         present_if: DUK_USE_OBJECT_BUILTIN
 
@@ -733,7 +733,7 @@ objects:
         attributes: "wc"
         present_if: DUK_USE_FUNCTION_BUILTIN
 
-      # In ES6 Function.prototype.name is not writable, but is configurable.
+      # In ES2015 Function.prototype.name is not writable, but is configurable.
       - key: "name"
         value: ""
         attributes: "c"
@@ -769,7 +769,7 @@ objects:
           varargs: true
         present_if: DUK_USE_FUNCTION_BUILTIN
 
-      # ES6
+      # ES2015
       #- key:  # @@hasInstance
       #    type: symbol
       #    variant: wellknown
@@ -1842,7 +1842,7 @@ objects:
       #  es6: true
 
   - id: bi_regexp_prototype
-    class: Object  # Object in ES6; RegExp in ES5
+    class: Object  # Object in ES2015; RegExp in ES5
     internal_prototype: bi_object_prototype
     bidx: true
     present_if: DUK_USE_REGEXP_SUPPORT
@@ -1854,7 +1854,7 @@ objects:
           id: bi_regexp_constructor
         attributes: "wc"
 
-      # In ES6 RegExp.prototype is no longer a RegExp instance.
+      # In ES2015 RegExp.prototype is no longer a RegExp instance.
 
       # "lastIndex" is writable, even in the RegExp.prototype object.
       # This matches at least V8.
@@ -1878,8 +1878,8 @@ objects:
           native: duk_bi_regexp_prototype_tostring
           length: 0
 
-      # In ES6 .source, .global, .ignoreCase, etc are accessors.
-      # .flags is ES6 but must be present because the constructor now
+      # In ES2015 .source, .global, .ignoreCase, etc are accessors.
+      # .flags is ES2015 but must be present because the constructor now
       # relies on its presence for e.g. new RegExp(/foo/gim).
 
       - key: "flags"
@@ -2866,7 +2866,7 @@ objects:
         duktape: true
 
   #
-  #  ES6
+  #  ES2015
   #
 
   - id: bi_proxy_constructor

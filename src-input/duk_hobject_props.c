@@ -138,7 +138,7 @@ DUK_LOCAL duk_uint32_t duk__tval_fastint_to_arr_idx(duk_tval *tv) {
 #endif  /* DUK_USE_FASTINT */
 
 /* Convert a duk_tval on the value stack (in a trusted index we don't validate)
- * to a string or symbol using ES6 ToPropertyKey():
+ * to a string or symbol using ES2015 ToPropertyKey():
  * http://www.ecma-international.org/ecma-262/6.0/#sec-topropertykey.
  *
  * Also check if it's a valid array index and return that (or DUK__NO_ARRAY_INDEX
@@ -154,7 +154,7 @@ DUK_LOCAL duk_uint32_t duk__to_property_key(duk_context *ctx, duk_idx_t idx, duk
 	DUK_ASSERT(duk_is_valid_index(ctx, idx));
 	DUK_ASSERT(idx < 0);
 
-	/* XXX: The revised ES6 ToPropertyKey() handling (ES5.1 was just
+	/* XXX: The revised ES2015 ToPropertyKey() handling (ES5.1 was just
 	 * ToString()) involves a ToPrimitive(), a symbol check, and finally
 	 * a ToString().  Figure out the best way to have a good fast path
 	 * but still be compliant and share code.
@@ -463,7 +463,7 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 		duk_hstring *h_key = (duk_hstring *) DUK_TVAL_GET_STRING(tv_key);
 		DUK_ASSERT(h_key != NULL);
 		if (DUK_HSTRING_HAS_HIDDEN(h_key)) {
-			/* Symbol accesses must go through proxy lookup in ES6.
+			/* Symbol accesses must go through proxy lookup in ES2015.
 			 * Hidden symbols behave like Duktape 1.x internal keys
 			 * and currently won't.
 			 */
@@ -2349,7 +2349,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_int_t pop_count;
 
 		if (DUK_HSTRING_HAS_SYMBOL(h)) {
-			/* Symbols (ES6 or hidden) don't have virtual properties. */
+			/* Symbols (ES2015 or hidden) don't have virtual properties. */
 			DUK_DDD(DUK_DDDPRINT("base object is a symbol, start lookup from symbol prototype"));
 			curr = thr->builtins[DUK_BIDX_SYMBOL_PROTOTYPE];
 			break;
@@ -3374,7 +3374,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_ASSERT(key != NULL);
 
 		if (DUK_HSTRING_HAS_SYMBOL(h)) {
-			/* Symbols (ES6 or hidden) don't have virtual properties. */
+			/* Symbols (ES2015 or hidden) don't have virtual properties. */
 			curr = thr->builtins[DUK_BIDX_SYMBOL_PROTOTYPE];
 			goto lookup;
 		}
@@ -4989,7 +4989,7 @@ void duk_hobject_prepare_property_descriptor(duk_context *ctx,
 
 /*
  *  Object.defineProperty() related helper (E5 Section 15.2.3.6).
- *  Also handles ES6 Reflect.defineProperty().
+ *  Also handles ES2015 Reflect.defineProperty().
  *
  *  Inlines all [[DefineOwnProperty]] exotic behaviors.
  *

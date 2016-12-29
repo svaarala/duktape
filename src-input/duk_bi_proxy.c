@@ -1,5 +1,5 @@
 /*
- *  Proxy built-in (ES6)
+ *  Proxy built-in (ES2015)
  */
 
 #include "duk_internal.h"
@@ -93,7 +93,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	duk_require_constructor_call(ctx);
 
 	/* Reject a proxy object as the target because it would need
-	 * special handler in property lookups.  (ES6 has no such restriction)
+	 * special handler in property lookups.  (ES2015 has no such restriction)
 	 */
 	h_target = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 	DUK_ASSERT(h_target != NULL);
@@ -102,7 +102,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	}
 
 	/* Reject a proxy object as the handler because it would cause
-	 * potentially unbounded recursion.  (ES6 has no such restriction)
+	 * potentially unbounded recursion.  (ES2015 has no such restriction)
 	 *
 	 * There's little practical reason to use a lightfunc or a plain
 	 * buffer as the handler table: one could only provide traps via
@@ -116,7 +116,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 		goto fail_args;
 	}
 
-	/* XXX: the returned value is exotic in ES6, but we use a
+	/* XXX: the returned value is exotic in ES2015, but we use a
 	 * simple object here with no prototype.  Without a prototype,
 	 * ToPrimitive() coercion fails which is a bit confusing.
 	 * No callable check/handling in the current Proxy subset.

@@ -94,11 +94,11 @@ DUK_LOCAL double duk__fmax_fixed(double x, double y) {
 DUK_LOCAL double duk__cbrt(double x) {
 	/* cbrt() is C99.  To avoid hassling embedders with the need to provide a
 	 * cube root function, we can get by with pow().  The result is not
-	 * identical, but that's OK: ES6 says it's implementation-dependent.
+	 * identical, but that's OK: ES2015 says it's implementation-dependent.
 	 */
 
 #if defined(DUK_CBRT)
-	/* cbrt() matches ES6 requirements. */
+	/* cbrt() matches ES2015 requirements. */
 	return DUK_CBRT(x);
 #else
 	duk_small_int_t c = (duk_small_int_t) DUK_FPCLASSIFY(x);

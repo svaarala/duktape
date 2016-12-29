@@ -203,7 +203,7 @@ void duk_js_push_closure(duk_hthread *thr,
 
 	if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(&fun_clos->obj)) {
 		/* If the template is not constructable don't add an automatic
-		 * .prototype property.  This is the case for e.g. ES6 object
+		 * .prototype property.  This is the case for e.g. ES2015 object
 		 * literal getters/setters and method definitions.
 		 */
 		add_auto_proto = 0;
@@ -416,8 +416,8 @@ void duk_js_push_closure(duk_hthread *thr,
 	}
 
 	/*
-	 *  "name" used to be non-standard but is now defined by ES6.
-	 *  In ES6/ES7 the .name property is configurable.
+	 *  "name" used to be non-standard but is now defined by ES2015.
+	 *  In ES2015/ES2016 the .name property is configurable.
 	 */
 
 	/* [ ... closure template ] */
@@ -432,7 +432,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		DUK_DD(DUK_DDPRINT("setting function instance name to %!T", duk_get_tval(ctx, -1)));
 		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);  /* -> [ ... closure template ] */
 	} else {
-		/* Anonymous functions don't have a .name in ES6, so don't set
+		/* Anonymous functions don't have a .name in ES2015, so don't set
 		 * it on the instance either.  The instance will then inherit
 		 * it from Function.prototype.name.
 		 */

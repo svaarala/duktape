@@ -3000,7 +3000,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	first = 1;
 	for (;;) {
 		/*
-		 *  ES5 and ES6+ provide a lot of different PropertyDefinition
+		 *  ES5 and ES2015+ provide a lot of different PropertyDefinition
 		 *  formats, see http://www.ecma-international.org/ecma-262/6.0/#sec-object-initializer.
 		 *
 		 *  PropertyName can be IdentifierName (includes reserved words), a string
@@ -3140,7 +3140,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 		} else {
 #if defined(DUK_USE_ES6)
 			if (comp_ctx->prev_token.t == DUK_TOK_LBRACKET) {
-				/* ES6 computed property name.  Executor ToPropertyKey()
+				/* ES2015 computed property name.  Executor ToPropertyKey()
 				 * coerces the key at runtime.
 				 */
 				DUK__SETTEMP(comp_ctx, reg_temp);
