@@ -178,7 +178,8 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
 	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
-	return 0;  /* never here */
+	DUK_UNREACHABLE();
+	/* Never here, fall through to error (from compiler point of view). */
 
  state_error:
 	DUK_DCERROR_TYPE_INVALID_STATE(thr);
@@ -292,7 +293,8 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 
 	DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* call is from executor, so we know we have a jmpbuf */
 	duk_err_longjmp(thr);  /* execution resumes in bytecode executor */
-	return 0;  /* never here */
+	DUK_UNREACHABLE();
+	/* Never here, fall through to error (from compiler point of view). */
 
  state_error:
 	DUK_DCERROR_TYPE_INVALID_STATE(thr);

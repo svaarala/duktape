@@ -29,11 +29,11 @@ build_script:
 
   # Prep a few variants of headers and sources.
 
-  - cmd: python tools\configure.py --output-directory prep-nondll --source-directory src-input --config-metadata config
+  - cmd: python tools\configure.py --line-directives --output-directory prep-nondll --source-directory src-input --config-metadata config
   - cmd: dir prep-nondll
-  - cmd: python tools\configure.py --output-directory prep-dll --source-directory src-input --config-metadata config --dll
+  - cmd: python tools\configure.py --line-directives --output-directory prep-dll --source-directory src-input --config-metadata config --dll
   - cmd: dir prep-dll
-  - cmd: python tools\configure.py --output-directory prep-cpp --source-directory src-input --config-metadata config -DDUK_USE_CPP_EXCEPTIONS
+  - cmd: python tools\configure.py --line-directives --output-directory prep-cpp --source-directory src-input --config-metadata config -DDUK_USE_CPP_EXCEPTIONS
   - cmd: dir prep-cpp
 
   # --- Visual Studio 2015 ---

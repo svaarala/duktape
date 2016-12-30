@@ -1007,9 +1007,16 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 * sequence (unless e.g. virtual memory addresses cause also the
 	 * heap object pointer to be the same).
 	 */
-	res->rnd_state[1] ^= (duk_uint64_t) (void *) res;
+	{
+		duk_uint64_t tmp_u64;
+		tmp_u64 = 0;
+		DUK_MEMCPY((void *) &tmp_u64,
+		           (const void *) &res,
+		           (size_t) (sizeof(void *) >= sizeof(duk_uint64_t) ? sizeof(duk_uint64_t) : sizeof(void *)));
+		res->rnd_state[1] ^= tmp_u64;
+	}
 	do {
-		duk_small_int_t i;
+		duk_small_uint_t i;
 		for (i = 0; i < 10; i++) {
 			/* Throw away a few initial random numbers just in
 			 * case.  Probably unnecessary due to SplitMix64

@@ -11,7 +11,7 @@
 #define DUK_UNLIKELY(x)  __builtin_expect((x), 0)
 #if defined(__clang__) && defined(__has_builtin)
 #if __has_builtin(__builtin_unpredictable)
-#define DUK_UNPREDICTABLE()  do { __builtin_unpredictable(); } while (0)
+#define DUK_UNPREDICTABLE(x)  __builtin_unpredictable((x))
 #endif
 #endif
 

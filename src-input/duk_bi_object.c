@@ -739,7 +739,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 	DUK_UNREF(h_trap_result);
 
 	magic = duk_get_current_magic(ctx);
-	DUK_ASSERT(magic >= 0 && magic < sizeof(duk__object_keys_enum_flags) / sizeof(duk_small_uint_t));
+	DUK_ASSERT(magic >= 0 && magic < (duk_int_t) (sizeof(duk__object_keys_enum_flags) / sizeof(duk_small_uint_t)));
 	enum_flags = duk__object_keys_enum_flags[magic];
 
 	duk_proxy_ownkeys_postprocess(ctx, h_proxy_target, enum_flags);
@@ -750,7 +750,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 
 	DUK_ASSERT_TOP(ctx, 1);
 	magic = duk_get_current_magic(ctx);
-	DUK_ASSERT(magic >= 0 && magic < sizeof(duk__object_keys_enum_flags) / sizeof(duk_small_uint_t));
+	DUK_ASSERT(magic >= 0 && magic < (duk_int_t) (sizeof(duk__object_keys_enum_flags) / sizeof(duk_small_uint_t)));
 	enum_flags = duk__object_keys_enum_flags[magic];
 	return duk_hobject_get_enumerated_keys(ctx, enum_flags);
 }
