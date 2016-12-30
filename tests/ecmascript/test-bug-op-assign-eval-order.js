@@ -17,8 +17,6 @@ Read x: 50
 Final x: 50
 ===*/
 
-if (typeof print === 'undefined') { print = console.log; }
-
 var obj = {};
 var my_x;
 Object.defineProperty(obj, 'x', {

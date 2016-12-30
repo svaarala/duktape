@@ -40,7 +40,7 @@ function proxyTest() {
     proxy[0] = 123;
     print(pb[0]);
 
-    // Proxy as a handler value; ES6 requires it must be an Object and a
+    // Proxy as a handler value; ES2015 requires it must be an Object and a
     // plain buffer pretends to be an object.  The traps must be placed in
     // Uint8Array.prototype for it to actually work - so this is not a very
     // useful thing in practice.  Currently Proxy will just coerce the plain

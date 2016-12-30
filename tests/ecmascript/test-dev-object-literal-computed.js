@@ -1,5 +1,5 @@
 /*
- *  ES6 computed property name.
+ *  ES2015 computed property name.
  */
 
 /*===
@@ -30,7 +30,7 @@ function computedPropertyName() {
         print(e.stack || e);
     }
 
-    // Expression values are ToPropertyKey() coerced in order.  Before ES6
+    // Expression values are ToPropertyKey() coerced in order.  Before ES2015
     // Symbols that means ToString() in practice.
     try {
         res = eval('({ [ { valueOf: function () { print("valueOf 1"); return "valueof1"; }, toString: function () { print("toString 1"); return "tostring1"; } } ]: "value1", [ { valueOf: function () { print("valueOf 2"); return "valueof2"; }, toString: function () { print("toString 2"); return "tostring2"; } } ]: "value2" })');

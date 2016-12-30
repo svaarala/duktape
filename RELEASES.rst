@@ -311,11 +311,11 @@ Released
   (Duktape.modSearch)
 
 * Add Object.setPrototypeOf() and Object.prototype.__proto__, both borrowed
-  from ES6 draft, to improve internal prototype handling
+  from ES2015 draft, to improve internal prototype handling
 
-* Add proxy objects borrowed from ES6 draft to allow property virtualization,
-  subset limited to the following traps: has, get, set, deleteProperty,
-  enumerate, ownKeys
+* Add proxy objects borrowed from ES2015 draft to allow property
+  virtualization, subset limited to the following traps: has, get, set,
+  deleteProperty, enumerate, ownKeys
 
 * Add property name as a non-standard setter/getter argument to make it
   possible to share a single setter/getter pair for multiple properties
@@ -1002,7 +1002,7 @@ Released
 
 * Add support for Node.js Buffer API (GH-152)
 
-* Add support for Khronos/ES6 TypedArray API (subset of ES6 API) (GH-151)
+* Add support for Khronos/ES2015 TypedArray API (subset of ES2015 API) (GH-151)
 
 * Add duk_push_external_buffer(), duk_is_external_buffer(), and
   duk_config_buffer() which provide support for external buffers, i.e. buffer
@@ -1252,7 +1252,7 @@ Released
 
 * Zero buffer data in ArrayBuffer and typed array constructors even when
   DUK_USE_ZERO_BUFFER_DATA is not set (default is set) to respect explicit
-  zeroing guarantee of Khronos/ES6 (GH-484)
+  zeroing guarantee of Khronos/ES2015 (GH-484)
 
 * Add duk_require_function() and duk_require_callable() (GH-441)
 
@@ -1443,10 +1443,10 @@ Released
   which reduces low memory startup size using default RAM-based built-ins
   from 27kB to 24kB (GH-642)
 
-* Allow ES6 unescaped curly braces ('{' and '}') in regular expressions
-  (non-standard before ES6 Annex B) when no valid quantifier can be parsed;
-  this improves compatibility with existing Javascript code which often assumes
-  support for literal curly braces (GH-142, GH-513, GH-547, GH-565)
+* Allow ES2015 unescaped curly braces ('{' and '}') in regular expressions
+  (non-standard before ES2015 Annex B) when no valid quantifier can be parsed;
+  this improves compatibility with existing Javascript code which often
+  assumes support for literal curly braces (GH-142, GH-513, GH-547, GH-565)
 
 * Change Function object .toString() output to be Emscripten compatible:
   anonymous functions won't get an automatic "anon" name, and the function
@@ -1741,7 +1741,7 @@ Planned
   was copied into internal string representation as is) (GH-1020)
 
 * Incompatible change: change Object constructor argument coercion policy
-  to match ES6 requirements for .keys(), .getOwnPropertyNames(),
+  to match ES2015 requirements for .keys(), .getOwnPropertyNames(),
   .getOwnPropertyDescriptor(), .getPrototypeOf(), .freeze(), .isFrozen(),
   .seal(), .isSealed(), .preventExtensions(), and .isExtensible();
   instead of rejecting non-objects with a TypeError, they are now coerced
@@ -1847,7 +1847,7 @@ Planned
   tools/configure.py instead (GH-929)
 
 * Incompatible change: remove duk_to_defaultvalue() which invoked the
-  [[DefaultValue]] specification algorithm removed in ES6 (it was folded
+  [[DefaultValue]] specification algorithm removed in ES2015 (it was folded
   to ToPrimitive()), use duk_to_primitive() instead (GH-984)
 
 * Incompatible change: duk_gc() no longer allows a NULL context pointer
@@ -1897,60 +1897,61 @@ Planned
   genbuiltins.py to reduce code footprint for ROM-based built-ins and custom
   bindings; footprint reduction is around 14-15kB on 32-bit targets (GH-872)
 
-* Add experimental support for ES6 Symbol built-in (disabled by default,
+* Add experimental support for ES2015 Symbol built-in (disabled by default,
   enable using DUK_USE_SYMBOL_BUILTIN), duk_is_symbol() API call (GH-982,
   GH-1227, GH-1237)
 
-* Allow ES6 Annex B unescaped right bracket (']') in regular expressions
-  (non-standard before ES6 Annex B), left bracket ('[') not yet supported
+* Allow ES2015 Annex B unescaped right bracket (']') in regular expressions
+  (non-standard before ES2015 Annex B), left bracket ('[') not yet supported
   because it needs backtracking (GH-871)
 
-* Allow ES6 Annex B identity escapes, i.e. allow identity escapes also for
+* Allow ES2015 Annex B identity escapes, i.e. allow identity escapes also for
   identifier part characters; the support is not yet complete as Duktape
   won't backtrack on e.g. an invalid hex escape and treat it literally
   (GH-926)
 
-* Add support for ES6 computed property names in object literals
+* Add support for ES2015 computed property names in object literals
   ({ [1+2]: 'three' }), identifier shorthand ({ foo, bar }), and method
   definition shorthand ({ func(a,b) { return a+b; } }); however, computed
   name for method definition ({ ['foo' + 'bar'](a,b) { ... } }) is not
   yet supported (GH-985, GH-1190, GH-1193)
 
-* Add support for ES7 exponentiation and exponentiation assignment operators,
-  e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an Ecmascript call to
-  Math.pow() while also being more readable (GH-987, GH-997)
+* Add support for ES2016 exponentiation and exponentiation assignment
+  operators, e.g. "2 ** 10" evaluates to 1024, avoiding the cost of an
+  Ecmascript call to Math.pow() while also being more readable (GH-987,
+  GH-997)
 
-* Add a Reflect built-in, provides Reflect.construct() etc. from ES6; some
-  features like constructor retargeting require ES6+ semantics and are thus not
-  yet supported (GH-1025)
+* Add a Reflect built-in, provides Reflect.construct() etc. from ES2015; some
+  features like constructor retargeting require ES2015+ semantics and are thus
+  not yet supported (GH-1025)
 
-* Add support for ES6 \u{H+} escape syntax for source code string literals
+* Add support for ES2015 \u{H+} escape syntax for source code string literals
   and identifiers, no RegExp support yet (requires RegExp /u Unicode mode)
   (GH-1001)
 
-* Add support for ES6 octal (0o123) and binary (0b100001) in source code
+* Add support for ES2015 octal (0o123) and binary (0b100001) in source code
   literals and ToNumber() coercion (e.g. "+'0o123'") (GH-1057, GH-1084)
 
-* Add support for ES6 String.prototype.codePointAt(), String.fromCodePoint(),
+* Add support for ES2015 String.prototype.codePointAt(), String.fromCodePoint(),
   and String.prototype.repeat() (GH-1043, GH-1049, GH-1050)
 
-* Add support for ES6 Math.hypot(), Math.cbrt(), Math.log2(), Math.log10(),
+* Add support for ES2015 Math.hypot(), Math.cbrt(), Math.log2(), Math.log10(),
   Math.trunc() (GH-1069, GH-1093, GH-1095)
 
-* Add support for ES6 Object.assign() (GH-1064)
+* Add support for ES2015 Object.assign() (GH-1064)
 
-* Add support for ES6 Object.is() and duk_samevalue() API call (GH-1068)
+* Add support for ES2015 Object.is() and duk_samevalue() API call (GH-1068)
 
 * Add TextEncoder and TextDecoder built-ins (the Encoding API) which allow
   Ecmascript code to read and write text stored in an ArrayBuffer or a plain
   buffer (GH-975)
 
-* Respect ES6 enumeration order (array index keys, other keys in insertion
+* Respect ES2015 enumeration order (array index keys, other keys in insertion
   order) for Object.getOwnPropertyNames(), also use the same order in
   for-in, Object.keys(), and duk_enum() even though that's not strictly
-  required by ES6 or ES7 (GH-1054)
+  required by ES2015 or ES2016 (GH-1054)
 
-* Follow ES7 behavior when a Proxy instance is used as a for-in target:
+* Follow ES2016 behavior when a Proxy instance is used as a for-in target:
   the "ownKeys" trap is invoked instead of the "enumerate" trap, and the
   "enumerate" trap is thus obsoleted entirely (GH-1115)
 
@@ -1958,10 +1959,10 @@ Planned
   trap; because "getOwnPropertyDescriptor" trap is not yet supported, the
   check is always made against the target object (GH-1115)
 
-* Align RegExp.prototype behavior more closely with ES6: .source, .global,
+* Align RegExp.prototype behavior more closely with ES2015: .source, .global,
   .ignoreCase, .multiline are now inherited getters; .flags, .sticky, and
   .unicode have been added (they are inherited getters too); constructor
-  behavior has been revised for ES6 behavior; however, leniency to allow
+  behavior has been revised for ES2015 behavior; however, leniency to allow
   e.g. RegExp.prototype.source (from ES2017 draft) is supported for real
   world code compatibility (GH-1178)
 
@@ -2091,31 +2092,31 @@ Planned
   this aligns better with behavior of other engines (GH-1057)
 
 * Change parsing of octal escapes in string literals to better align with
-  ES6 and other engines; "\078" is now accepted and is the same as
+  ES2015 and other engines; "\078" is now accepted and is the same as
   "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
 
-* Change bound function .name property handling to match ES6 requirements;
+* Change bound function .name property handling to match ES2015 requirements;
   for a target function with name "foo", bound function name is "bound foo"
   (GH-1113)
 
-* Change bound function internal prototype handling to match ES6 requirements;
+* Change bound function internal prototype handling to match ES2015 requirements;
   bound function internal prototype is copied from the target function
   instead of always being Function.prototype (GH-1135)
 
-* Change Function.prototype.toString() output to match ES6 requirements;
+* Change Function.prototype.toString() output to match ES2015 requirements;
   the output no longer parses with eval() but causes a SyntaxError instead
   (GH-1141)
 
 * Make function instance .name and .length properties configurable (but
-  non-writable and non-enumerable) to match ES6 requirements; also change
+  non-writable and non-enumerable) to match ES2015 requirements; also change
   .fileName to follow the same attribute convention (GH-1153, GH-1177)
 
-* Remove anonymous function own .name property to match ES6 requirements;
+* Remove anonymous function own .name property to match ES2015 requirements;
   anonymous functions inherit an empty string as their name from
   Function.prototype.name (GH-1183)
 
 * Change functions created using new Function() to have the .name
-  "anonymous" to match ES6 requirements (GH-1183)
+  "anonymous" to match ES2015 requirements (GH-1183)
 
 * Make Error instance .fileName and .lineNumber properties configurable
   but non-writable and non-enumerable to match function instance property
@@ -2124,20 +2125,20 @@ Planned
 
 * Change NativeError (TypeError, RangeError, etc) constructor to inherit
   from the Error constructor rather than Function.prototype directly as
-  required by ES6 (GH-1182)
+  required by ES2015 (GH-1182)
 
-* Change object literal getter/setter to match ES6 requirements: no automatic
+* Change object literal getter/setter to match ES2015 requirements: no automatic
   .prototype property, and the functions are non-constructable (GH-1188)
 
-* Allow duplicate property names in object literals as required by ES6
+* Allow duplicate property names in object literals as required by ES2015
   (GH-1190)
 
-* Change typed array constructor chain to match ES6, e.g. Uint8Array
+* Change typed array constructor chain to match ES2015, e.g. Uint8Array
   constructor inherits from intrinsic %TypedArray% constructor (GH-1191)
 
 * Move typed array properties .byteLength, .byteOffset, and .buffer to
   prototype objects and make them (inherited) accessors to better match
-  ES6 requirements; .length remains a virtual own property (GH-1197)
+  ES2015 requirements; .length remains a virtual own property (GH-1197)
 
 * Add a fastint check for duk_put_number_list() values (GH-1086)
 
@@ -2185,7 +2186,7 @@ Planned
   (GH-1096)
 
 * Fix Object.prototype.__proto__ handling to use ToObject() coercion rather
-  than requiring an object; this matches ES6 requirements and allows e.g.
+  than requiring an object; this matches ES2015 requirements and allows e.g.
   the expression (123).__proto__ to work (GH-1080)
 
 * Fix String.fromCharCode() behavior for non-BMP characters when standard

@@ -15,8 +15,6 @@ Read x: 50
 Final x: 50
 ===*/
 
-if (typeof print === 'undefined') { print = console.log; }
-
 // Slow path variable LHS.  Use 'with' statement to record side effects.
 function slowPathVariableLhsTest() {
     var obj = {};
@@ -91,7 +89,7 @@ done
 ===*/
 
 // Function as LHS; RHS must be evaluated but a runtime error occurs.
-// V8 seems to skip RHS evaluation (maybe this has changed in ES6?).
+// V8 seems to skip RHS evaluation (maybe this has changed in ES2015?).
 
 function functionLhsTest() {
     function dummy() {}

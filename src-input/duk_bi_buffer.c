@@ -1,5 +1,5 @@
 /*
- *  Khronos/ES6 TypedArray and Node.js Buffer built-ins
+ *  ES2015 TypedArray and Node.js Buffer built-ins
  */
 
 #include "duk_internal.h"
@@ -2846,7 +2846,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_writefield(duk_context *ctx) {
 	 */
 	if (magic_typedarray) {
 		/* For TypedArrays 'undefined' return value is specified
-		 * by ES6 (matches V8).
+		 * by ES2015 (matches V8).
 		 */
 		return 0;
 	}

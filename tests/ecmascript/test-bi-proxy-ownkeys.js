@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6) 'ownKeys'.
+ *  Proxy (ES2015) 'ownKeys'.
  */
 
 function objDump(obj) {
@@ -13,8 +13,8 @@ function objDump(obj) {
         keys = [ e.name ];
     }
 
-    // Enumerate on proxy object triggers 'ownKeys' trap in ES7
-    // ('enumerate' trap in ES6).
+    // Enumerate on proxy object triggers 'ownKeys' trap in ES2016
+    // ('enumerate' trap in ES2015).
     print('enum keys:', keys.join(' '));
 
     // Object.keys() on proxy object triggers 'ownKeys' trap.
@@ -119,7 +119,7 @@ function basicEnumerationTest() {
     // (and only sees enumerable properties).  Object.keys() and
     // Object.getOwnPropertyNames() use the 'ownKeys' trap.
     //
-    // NOTE: ES6 algorithm for Object.keys() is that the trap result list is
+    // NOTE: ES2015 algorithm for Object.keys() is that the trap result list is
     // processed to check whether or not each key is enumerable (the check
     // uses [[GetOwnProperty]]).  Duktape omits this step now, so
     // Object.keys() and Object.getOwnPropertyNames() return the same result
@@ -205,7 +205,7 @@ Object.getOwnPropertyNames: []
 ===*/
 
 /* Check handling of various trap result checks: return value must be an object
- * but not necessarily an array.  In ES7 gaps, non-string/symbol values, etc.
+ * but not necessarily an array.  In ES2016 gaps, non-string/symbol values, etc.
  * cause a TypeError.
  */
 
@@ -234,7 +234,7 @@ function trapResultTest() {
         // print(Duktape.enc('jx', trapResult));
 
         proxy = new Proxy(target, {
-            enumerate: function (targ) { print('"enumerate" trap called, not intended in ES7'); return trapResult; },
+            enumerate: function (targ) { print('"enumerate" trap called, not intended in ES2016'); return trapResult; },
             ownKeys: function (targ) { return trapResult; }
         });
 

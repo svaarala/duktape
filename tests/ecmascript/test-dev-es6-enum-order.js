@@ -1,11 +1,11 @@
 /*
- *  Some ES6 (and ES7) enumeration order tests
+ *  Some ES2015 (and ES2016) enumeration order tests
  *
  *  https://github.com/svaarala/duktape/pull/1054
  *
- *  Duktape 2.x applies the ES6 [[OwnPropertyKeys]] enumeration order also
- *  in for-in, Object.keys(), and duk.enum(), even though neither ES6 nor
- *  ES7 requires it.
+ *  Duktape 2.x applies the ES2015 [[OwnPropertyKeys]] enumeration order also
+ *  in for-in, Object.keys(), and duk.enum(), even though neither ES2015 nor
+ *  ES2016 requires it.
  */
 
 /*---

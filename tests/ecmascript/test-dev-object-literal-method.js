@@ -1,5 +1,5 @@
 /*
- *  ES6 method definition in object literal.
+ *  ES2015 method definition in object literal.
  */
 
 /*===
@@ -31,8 +31,6 @@ undefined
 456
 567
 ===*/
-
-print=console.log;
 
 (new Function('return this'))().myName = 'globalName';  // ensure set to global even with 'nodejs' command line tool
 
@@ -87,7 +85,7 @@ function test() {
     print(JSON.stringify(obj));
     print(obj.foo(2,3));
 
-    // Method definitions have a .name property (ES7) but they don't get a
+    // Method definitions have a .name property (ES2016) but they don't get a
     // name binding, i.e. they don't see their own name when called.  They
     // also don't get a .prototype object and are not constructable.
 

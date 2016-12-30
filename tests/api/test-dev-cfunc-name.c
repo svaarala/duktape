@@ -4,7 +4,7 @@
  *  In Duktape 1.0 Function.prototype.name is not writable so you can't
  *  do this.
  *
- *  In Duktape 2.x .name is non-writable but configurable to match ES6
+ *  In Duktape 2.x .name is non-writable but configurable to match ES2015
  *  requirements; duk_def_prop() can be used to set it.
  */
 

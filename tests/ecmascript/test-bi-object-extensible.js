@@ -81,7 +81,7 @@ preventExtensions 7
 ===*/
 
 function coercionTest() {
-    // Note: ES5 behavior was to throw a TypeError for non-object values.  ES6
+    // Note: ES5 behavior was to throw a TypeError for non-object values.  ES2015
     // changes this to treat them as already non-extensible objects instead.
     // This goes for undefined and null too, even though they are not normally
     // object coercible!

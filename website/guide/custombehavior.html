@@ -61,7 +61,7 @@ function test() {
 <p>These declarations are also referred to as "function statements", and appear
 quite often in real world code (including the test262 test suite), so they are
 allowed by Duktape.  Unfortunately there are several semantics used by different
-Javascript engines (<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-block-level-function-declarations-web-legacy-compatibility-semantics">ES6</a>
+Javascript engines (<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-block-level-function-declarations-web-legacy-compatibility-semantics">ES2015</a>
 unfortunately doesn't specify semantics for function statements either).
 Duktape follows the V8 behavior for function statements:</p>
 <ul>
@@ -95,7 +95,7 @@ binding in any of the points A, B, or C.</p>
 E5.1 specification (Section 15.10.1 Patterns)</a>.  As a result there's quite
 a lot of code that won't work with strict Ecmascript E5.1 regexp syntax.  Much
 of the additional syntax expected of web browser engines is documented in
-<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns">ES6 Annex B.1.4 Regular Expression Patterns</a>.
+<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-regular-expressions-patterns">ES2015 Annex B.1.4 Regular Expression Patterns</a>.
 However, note that features in
 <a href="http://www.ecma-international.org/ecma-262/6.0/#sec-additional-ecmascript-features-for-web-browsers">Annex B Additional ECMAScript Features for Web Browsers</a> are
 not recommended for new code:
@@ -106,18 +106,18 @@ are discouraged from implementing these features unless the implementation
 is part of a web browser or is required to run the same legacy ECMAScript
 code that web browsers encounter."</p>
 
-<p>Duktape also allows some ES6 Annex B syntax to better support existing
+<p>Duktape also allows some ES2015 Annex B syntax to better support existing
 code.  You can turn this non-standard behavior off using config options if
 you prefer.  Some examples of additional syntax supported:</p>
 
 <pre>
-  /{(\d+)}/    // unescaped left curly, digits, unescaped right curly; ES6 Annex B
+  /{(\d+)}/    // unescaped left curly, digits, unescaped right curly; ES2015 Annex B
   /\{(\d+)\}/  // same, ES5 compliant
 
-  /]/          // unescaped right bracket; ES6 Annex B
+  /]/          // unescaped right bracket; ES2015 Annex B
   /\]/         // same, ES5 compliant
 
-  /\$/         // literal dollar using escape; ES6 Annex B
+  /\$/         // literal dollar using escape; ES2015 Annex B
   /\u0024/     // same, ES5 compliant
 </pre>
 
@@ -166,11 +166,11 @@ for more discussion.  The strict standards compliant behavior can be enabled
 by disabling the config options <code>DUK_USE_NONSTD_GETTER_KEY_ARGUMENT</code>
 and <code>DUK_USE_NONSTD_SETTER_KEY_ARGUMENT</code>.</p>
 
-<h2>Object.setPrototypeOf and Object.prototype.__proto__ (ES6)</h2>
+<h2>Object.setPrototypeOf and Object.prototype.__proto__ (ES2015)</h2>
 
 <p>See <a href="#es6-proto">Object.setPrototypeOf and Object.prototype.__proto__</a>.</p>
 
-<h2>Proxy object (ES6)</h2>
+<h2>Proxy object (ES2015)</h2>
 
 <p>See <a href="#es6-proxy">Proxy object (subset)</a>.</p>
 
@@ -207,15 +207,12 @@ details on the fast path behavior:
 
 <h2 id="typedarray-custombehavior">TypedArray binding</h2>
 
-<p>Duktape provides a Khronos/ES6 TypedArray binding.  The scope of the
-binding is the Khronos specification, not (yet) the full ES6 specification.
-There are some differences to Khronos/ES6, including:</p>
-<ul>
-<li>Small differences in argument coercion e.g. for offset and length
-    values.</li>
-<li>The plain buffer custom type behaves mostly like an Uint8Array object
-    for Ecmascript code, but has a separate type in the Duktape C API.</li>
-</ul>
+<p>Duktape provides the ES2015 TypedArray binding, with some details yet
+to be fixed, e.g. small differences in argument coercion e.g. for offset
+and length values.</p>
+
+<p>The plain buffer custom type behaves mostly like an Uint8Array object
+for Ecmascript code, but has a separate type in the Duktape C API.</p>
 
 <h2 id="nodejsbuffer-custombehavior">Node.js Buffer binding</h2>
 

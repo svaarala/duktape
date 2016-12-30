@@ -1,4 +1,4 @@
-summary: typed array .length not yet an inherited accessor (ES6 requirement)
+summary: typed array .length not yet an inherited accessor (ES2015 requirement)
 ---
 [object ArrayBuffer]
 length false false undefined undefined

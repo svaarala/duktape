@@ -72,7 +72,7 @@ function regexpInstanceTest() {
     // likely at least the the flag-related properties will be converted to
     // accessors at some point to save memory.
     //
-    // ES6 actually changes .source, .global, .ignoreCase, and .multiline to
+    // ES2015 actually changes .source, .global, .ignoreCase, and .multiline to
     // inherited getters, check for that behavior.  .lastIndex remains own
     // property.
 

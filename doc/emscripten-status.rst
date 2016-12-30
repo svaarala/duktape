@@ -27,7 +27,7 @@ following additional options:
 
 Changes in Duktape versions:
 
-* Since Duktape 1.3 there is support for Khronos/ES6 TypedArrays which allow
+* Since Duktape 1.3 there is support for ES2015 TypedArrays which allow
   Emscripten to run better than with Duktape 1.2, and also allows use of
   Emscripten fastcomp.
 

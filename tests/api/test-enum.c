@@ -94,7 +94,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_pop(ctx);
 	duk_pop(ctx);
 
-	/* Duktape 2.x ES6-based enumeration order ensures array indices are
+	/* Duktape 2.x ES2015-based enumeration order ensures array indices are
 	 * sorted even when not explicitly requested.  This only applies to
 	 * each inheritance level (e.g. own properties) separately.  In
 	 * practice array indices will be sorted because array indices are

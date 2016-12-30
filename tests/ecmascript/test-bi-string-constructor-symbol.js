@@ -1,5 +1,5 @@
 /*
- *  String(symbol) has special behavior in ES6, Section 21.1.1.1:
+ *  String(symbol) has special behavior in ES2015, Section 21.1.1.1:
  *
  *      ... If NewTarget is undefined and Type(value) is Symbol,
  *      return SymbolDescriptiveString(value).

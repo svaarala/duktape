@@ -120,7 +120,7 @@ try {
 }
 
 try {
-    // 088 is an invalid NumericLiteral in ES5; ES6 allows it to be parsed
+    // 088 is an invalid NumericLiteral in ES5; ES2015 allows it to be parsed
     // as decimal and both V8 and Spidermonkey do so.
     print(eval("088"));
 } catch (e) {

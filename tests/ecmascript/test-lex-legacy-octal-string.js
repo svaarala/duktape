@@ -2,12 +2,6 @@
  *  Legacy octal escape in string literal.
  */
 
-/*
-print=function () {
-    console.log(Array.prototype.map.call(arguments, function (v) { return String(v); }).join(' '));
-}
-*/
-
 function safeString(v) {
     return v.replace(/[^\u0020-u007e]/g, function (c) { return '<' + c.charCodeAt(0).toString(16) + '>'; });
 }
@@ -237,8 +231,8 @@ try {
 9
 ===*/
 
-// Behavior for \8 and \9 is interesting.  Reading ES6 and ES7, they should
-// never be allowed: NonEscapeCharacter excludes EscapeCharacter, which
+// Behavior for \8 and \9 is interesting.  Reading ES2015 and ES2016, they
+// should never be allowed: NonEscapeCharacter excludes EscapeCharacter, which
 // includes all digits (\0 to \9); \0 has a specific upper level rule to
 // allow it.  However, both Spidermonkey and V8 accept \8 and \9 as literal
 // '8' and '9', even in strict mode.  Test for that behavior.

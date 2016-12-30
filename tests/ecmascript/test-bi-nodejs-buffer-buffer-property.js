@@ -14,7 +14,7 @@ function test() {
     // Property exists.
     print('buffer' in buf);
 
-    // In ES6 this is false (also in Node.js v6.9.1) because the .buffer
+    // In ES2015 this is false (also in Node.js v6.9.1) because the .buffer
     // property is an inherited accessor.
     print(Object.getOwnPropertyDescriptor(buf, 'buffer') != null);
 

@@ -164,7 +164,7 @@ final top: 1
  * Test the .buffer reference in more detail: check that property
  * attributes are correct, check that it backs to the same slice, etc.
  *
- * In ES6 .buffer is inherited from %TypedArrayPrototype% and is a getter.
+ * In ES2015 .buffer is inherited from %TypedArrayPrototype% and is a getter.
  */
 static duk_ret_t test_view_buffer_prop(duk_context *ctx, void *udata) {
 	unsigned char extbuf[256];

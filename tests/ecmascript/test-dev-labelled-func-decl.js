@@ -10,7 +10,7 @@ SyntaxError
 
 function test() {
     // A function declaration as part of a labelled statement is not technically
-    // "at the top level" so it should be rejected.  ES6 Annex B allows this
+    // "at the top level" so it should be rejected.  ES2015 Annex B allows this
     // for non-strict functions though, and Duktape follows that for real world
     // compatibility.
     try {

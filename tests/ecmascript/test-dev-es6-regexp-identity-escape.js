@@ -1,5 +1,5 @@
 /*
- *  ES6 Annex B allows regexp identity escape for any source code character
+ *  ES2015 Annex B allows regexp identity escape for any source code character
  *  except 'c'.  With DUK_USE_ES6_REGEXP_SYNTAX Duktape does too; test for
  *  a few basic cases.
  */

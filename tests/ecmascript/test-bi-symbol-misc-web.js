@@ -14,7 +14,7 @@ true
 ===*/
 
 function miscSymbolTest() {
-    // Symbols can appear in object literals using ES6 computed property names.
+    // Symbols can appear in object literals using ES2015 computed property names.
     var obj = {
         foo: 'bar',
         [ Symbol.for('bar') ]: 'quux'

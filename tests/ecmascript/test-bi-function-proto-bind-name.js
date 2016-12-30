@@ -1,5 +1,5 @@
 /*
- *  ES6 19.2.3.2 specifies how a bound function .name is set.
+ *  ES2015 19.2.3.2 specifies how a bound function .name is set.
  */
 
 /*===

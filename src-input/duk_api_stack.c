@@ -2062,7 +2062,7 @@ DUK_EXTERNAL void duk_to_primitive(duk_context *ctx, duk_idx_t idx, duk_int_t hi
 
 	class_number = duk_get_class_number(ctx, idx);
 
-	/* XXX: Symbol objects normally coerce via the ES6-revised ToPrimitive()
+	/* XXX: Symbol objects normally coerce via the ES2015-revised ToPrimitive()
 	 * algorithm which consults value[@@toPrimitive] and avoids calling
 	 * .valueOf() and .toString().  Before that is implemented, special
 	 * case Symbol objects to behave as if they had the default @@toPrimitive
@@ -2442,10 +2442,10 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
 		classnum = DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		stridx = DUK_HOBJECT_CLASS_NUMBER_TO_STRIDX(classnum);
 
-		/* XXX: This is not entirely correct anymore; in ES6 the
+		/* XXX: This is not entirely correct anymore; in ES2015 the
 		 * default lookup should use @@toStringTag to come up with
 		 * e.g. [object Symbol], [object Uint8Array], etc.  See
-		 * ES6 Section 19.1.3.6.  The downside of implementing that
+		 * ES2015 Section 19.1.3.6.  The downside of implementing that
 		 * directly is that the @@toStringTag lookup may have side
 		 * effects, so all call sites must be checked for that.
 		 * Some may need a side-effect free lookup, e.g. avoiding
@@ -4580,7 +4580,7 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_context *ctx, duk_size_t len) 
 	void *ptr;
 	ptr = duk_push_buffer_raw(ctx, len, 0);
 #if !defined(DUK_USE_ZERO_BUFFER_DATA)
-	/* Khronos/ES6 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
+	/* ES2015 requires zeroing even when DUK_USE_ZERO_BUFFER_DATA
 	 * is not set.
 	 */
 	DUK_MEMZERO((void *) ptr, (size_t) len);

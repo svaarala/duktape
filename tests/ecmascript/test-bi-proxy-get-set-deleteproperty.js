@@ -1,5 +1,5 @@
 /*
- *  Proxy (ES6) 'get', 'set', and 'deleteProperty' traps
+ *  Proxy (ES2015) 'get', 'set', and 'deleteProperty' traps
  */
 
 /*===
@@ -342,7 +342,7 @@ accessor6: TypeError
 accessor7: TypeError
 ===*/
 
-/* If a hook exists and is successfully called, ES6 specifies interesting
+/* If a hook exists and is successfully called, ES2015 specifies interesting
  * post-hook behavior where a TypeError may be raised if the hook return
  * value conflicts in some way with a property of the same name in the
  * target object.

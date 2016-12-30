@@ -15,7 +15,7 @@ var i;
  *     <ZWJ>
  *     <ZWNJ>
  *
- *  However, with ES6 Annex B support this is accepted by Duktape (matching
+ *  However, with ES2015 Annex B support this is accepted by Duktape (matching
  *  both Rhino and V8).
  */
 

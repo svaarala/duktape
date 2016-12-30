@@ -31,7 +31,7 @@ function test() {
     var i;
 
     // In Duktape 2.0 .byteLength is a virtual own property which is not
-    // ES6 compliant, where it is required to be an inherited accessor.
+    // ES2015 compliant, where it is required to be an inherited accessor.
 
     [ 'length', 'byteLength', 'byteOffset', 'BYTES_PER_ELEMENT',
       '0', '9', '10' ].forEach(function (v) {

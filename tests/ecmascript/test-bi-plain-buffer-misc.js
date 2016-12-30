@@ -60,7 +60,7 @@ function miscTest() {
     t[0] = 0x77777777;  // endian neutral; demonstrate separate underlying buffer
     print(pb[0], t[0]);
 
-    // DataView now rejects a plain buffer; ES6 DataView only accepts an
+    // DataView now rejects a plain buffer; ES2015 DataView only accepts an
     // ArrayBuffer argument.
     resetValues();
     try {

@@ -13,7 +13,7 @@ algorithms for dealing with objects, in particular for object property access.
 These algorithms are based on the algorithm descriptions in the E5
 specification, which have been refined towards the practical implementation
 needs e.g. by combining multiple algorithms, inlining calls, and inlining
-"exotic behaviors" (term borrowed from ES6).
+"exotic behaviors" (term borrowed from ES2015).
 
 The intent is to describe versions of the conceptual algorithms most suited
 for implementation, without actually going into implementation level details.
@@ -490,11 +490,11 @@ Document                                   Description
 Future work
 ===========
 
-* Add ES6 Proxy object or a Lua metatable-like mechanism and integrate it
+* Add ES2015 Proxy object or a Lua metatable-like mechanism and integrate it
   into the Ecmascript algorithms in a natural way (``[[Get]]``, ``[[GetOwnProperty]]``,
   ``[[HasProperty]]``, and ``[[DefineOwnProperty]]`` most likely).
 
-* Integrate other ES6 features into the basic object representation, with
+* Integrate other ES2015 features into the basic object representation, with
   possible some impact on these algorithms.
 
 * Array fast path improvements for both reading of non-existent elements

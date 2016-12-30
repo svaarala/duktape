@@ -103,7 +103,7 @@ NaN nz
 NaN nz
 ===*/
 
-/* In ES6 0o123, and 0b10001 are recognized.  Whitespace is also allowed.
+/* In ES2015 0o123, and 0b10001 are recognized.  Whitespace is also allowed.
  * Note that whitespace is trimmed so these forms cannot be recognized
  * by just peeking at the first few characters.
  */

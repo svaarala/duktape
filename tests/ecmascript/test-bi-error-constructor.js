@@ -10,7 +10,7 @@ bar
 ===*/
 
 function test() {
-    // Error constructor inheritance chains were changed in ES6.
+    // Error constructor inheritance chains were changed in ES2015.
     // E.g. TypeError constructor internal prototype is the Error
     // constructor rather than Function.prototype directly.
 

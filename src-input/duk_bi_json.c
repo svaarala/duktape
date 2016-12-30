@@ -2427,7 +2427,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				}
 				if (DUK_HSTRING_HAS_ARRIDX(k)) {
 					/* If an object has array index keys we would need
-					 * to sort them into the ES6 enumeration order to
+					 * to sort them into the ES2015 enumeration order to
 					 * be consistent with the slow path.  Abort the fast
 					 * path and handle in the slow path for now.
 					 */

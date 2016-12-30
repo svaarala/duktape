@@ -1,5 +1,5 @@
 /*
- *  Test for currently supported ES6 Section B.1.4 syntax, enabled by
+ *  Test for currently supported ES2015 Section B.1.4 syntax, enabled by
  *  DUK_USE_ES6_REGEXP_SYNTAX.
  */
 

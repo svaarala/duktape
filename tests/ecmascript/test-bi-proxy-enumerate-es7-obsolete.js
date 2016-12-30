@@ -1,5 +1,5 @@
 /*
- *  In ES7 the 'enumerate' trap is obsolete and is not called in any situation.
+ *  In ES2016 the 'enumerate' trap is obsolete and is not called in any situation.
  *  For-in enumeration uses the 'ownKeys' trap.
  *
  *  for-in uses EnumerateObjectProperties:
@@ -13,7 +13,7 @@
  *  Proxy [[OwnPropertyKeys]] calls the 'ownKeys' rather than 'enumerate' trap:
  *      - http://www.ecma-international.org/ecma-262/7.0/#sec-proxy-object-internal-methods-and-internal-slots-ownpropertykeys
  *
- *  There's no reference to a "enumerate" trap anywhere in ES7 specification.
+ *  There's no reference to a "enumerate" trap anywhere in ES2016 specification.
  *  MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/enumerate.
  */
 

@@ -2,8 +2,7 @@ define: DUK_USE_ES7_EXP_OPERATOR
 introduced: 2.0.0
 default: true
 tags:
-  - ecmascript
-  - ecmascript7
+  - ecmascript2016
 description: >
   Support the ES7 exponentiation operator (** and **=).  This is optional
   because the operator pulls in pow() which may have a significant footprint

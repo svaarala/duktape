@@ -31,7 +31,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		/* Called as a function, pattern has [[Class]] "RegExp" and
 		 * flags is undefined -> return object as is.
 		 */
-		/* XXX: ES6 has a NewTarget SameValue() check which is not
+		/* XXX: ES2015 has a NewTarget SameValue() check which is not
 		 * yet implemented.
 		 */
 		duk_dup_0(ctx);
@@ -47,11 +47,11 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_constructor(duk_context *ctx) {
 		duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_SOURCE);
 		if (duk_is_undefined(ctx, 1)) {
 			/* In ES5 one would need to read the flags individually;
-			 * in ES6 just read .flags.
+			 * in ES2015 just read .flags.
 			 */
 			duk_get_prop_stridx(ctx, 0, DUK_STRIDX_FLAGS);
 		} else {
-			/* In ES6 allowed; overrides argument RegExp flags. */
+			/* In ES2015 allowed; overrides argument RegExp flags. */
 			duk_dup_1(ctx);
 		}
 	} else {
@@ -117,7 +117,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_test(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_tostring(duk_context *ctx) {
-	/* This must be generic in ES6 and later. */
+	/* This must be generic in ES2015 and later. */
 	DUK_ASSERT_TOP(ctx, 0);
 	duk_push_this(ctx);
 	duk_push_string(ctx, "/");
@@ -129,7 +129,7 @@ DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_tostring(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_regexp_prototype_flags(duk_context *ctx) {
-	/* .flags is ES6 but present even when ES6 bindings are
+	/* .flags is ES2015 but present even when ES2015 bindings are
 	 * disabled because the constructor relies on it.
 	 */
 	duk_uint8_t buf[8];  /* enough for all flags + NUL */

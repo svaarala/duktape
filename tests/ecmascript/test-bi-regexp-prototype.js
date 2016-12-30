@@ -1,7 +1,7 @@
 /*
  *  RegExp.prototype
  *
- *  Changed in ES6 in many ways, check for ES6 behavior with some draft ES2017
+ *  Changed in ES2015 in many ways, check for ES2015 behavior with some draft ES2017
  *  behavior for accepting RegExp.prototype as a 'this' binding.
  */
 
@@ -53,14 +53,14 @@ gim
 function test() {
     print(Object.prototype.toString.call(RegExp));
 
-    // In ES6 RegExp.prototype is no longer a regexp instance.
+    // In ES2015 RegExp.prototype is no longer a regexp instance.
     print(Object.prototype.toString.call(RegExp.prototype));
 
     // In ES2015 and ES2016 the .source, .flags etc accessors will TypeError
     // if called with RegExp.prototype or any other non-RegExp-instance.
     // Draft ES2017 changes that so that RegExp.prototype gets special
     // treatment, to fix real world issues with the ES2015/ES2016 behavior.
-    // Test for draft ES8 behavior (also implemented by V8 and Firefox).
+    // Test for draft ES2017 behavior (also implemented by V8 and Firefox).
     try {
         print(RegExp.prototype.toString());
     } catch (e) {
@@ -139,7 +139,7 @@ function test() {
     pd = Object.getOwnPropertyDescriptor(RegExp.prototype, 'unicode');
     print(typeof pd);
 
-    // If a new RegExp is created from an existing one, ES6 reads .flags
+    // If a new RegExp is created from an existing one, ES2015 reads .flags
     // and uses it as an argument.
     y = new RegExp(x);
     print(y.flags);

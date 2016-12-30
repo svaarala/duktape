@@ -38,7 +38,7 @@ function functionInstanceTest() {
     pd = Object.getOwnPropertyDescriptor(f, 'length');
     print(pd.writable, pd.enumerable, pd.configurable);
 
-    // Name added in ES6.
+    // Name added in ES2015.
     print('name' in f, f.name);
     pd = Object.getOwnPropertyDescriptor(f, 'name');
     print(pd.writable, pd.enumerable, pd.configurable);

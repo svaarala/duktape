@@ -1,5 +1,5 @@
 /*
- *  'Reflect' built-in (ES7 Section 26.1)
+ *  'Reflect' built-in (ES2016 Section 26.1)
  *  http://www.ecma-international.org/ecma-262/7.0/#sec-reflect-object
  *
  *  Many Reflect built-in functions are provided by shared helpers in

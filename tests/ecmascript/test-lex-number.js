@@ -42,7 +42,7 @@ false
 SyntaxError
 ===*/
 
-/* Specific requirement for parsing in ES6 Section 11.8.3. */
+/* Specific requirement for parsing in ES2015 Section 11.8.3. */
 
 try {
     print(eval('3 in {}'));

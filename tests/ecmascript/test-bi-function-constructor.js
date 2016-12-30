@@ -69,7 +69,7 @@ function functionConstructorTest() {
     f = new Function('a,b', 'c', 'return a+b+c');
     print(f('foo', 'bar', 'quux', 'baz'));
 
-    // In ES6 the resulting function must have a .name of 'anonymous'.
+    // In ES2015 the resulting function must have a .name of 'anonymous'.
     f = new Function('');
     pd = Object.getOwnPropertyDescriptor(f, 'name');
     print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);

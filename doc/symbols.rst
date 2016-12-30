@@ -1,11 +1,11 @@
-==========================
-ES6 Symbols in Duktape 2.x
-==========================
+=============================
+ES2015 Symbols in Duktape 2.x
+=============================
 
 Overview
 ========
 
-Duktape 2.x adds ES6 Symbol support.  Duktape 1.x internal keys are unified
+Duktape 2.x adds ES2015 Symbol support.  Duktape 1.x internal keys are unified
 with the Symbol concept, and are considered a custom "hidden symbol" type
 which is not normally visible to Ecmascript code.  C code can access hidden
 symbols, however.
@@ -29,7 +29,7 @@ Representation basics:
 
 Behavior basics:
 
-* Symbols are visible to Ecmascript code as required by ES6 and later.
+* Symbols are visible to Ecmascript code as required by ES2015 and later.
   Hidden symbols are not visible through e.g.
   ``Object.getOwnPropertySymbols()``.  They can only be accessed if a
   reference to the hidden symbol string is somehow available, e.g. via a
@@ -57,7 +57,7 @@ Duktape custom hidden Symbols have an initial 0xFF byte prefix, which matches
 the existing convention for Duktape 1.x internal keys.  While all bytes in the
 range [0xC0,0xFE] are valid initial bytes for Duktape's extended UTF-8 flavor,
 the continuation bytes [0x80,0xBF] are never a valid first byte so they are used
-for ES6 symbols (and reserved for other future uses) in Duktape 2.x.
+for ES2015 symbols (and reserved for other future uses) in Duktape 2.x.
 
 +-----------------------------------------------+-----------------------------------------------------------------+
 | Internal string format                        | Description                                                     |
@@ -85,7 +85,7 @@ for ES6 symbols (and reserved for other future uses) in Duktape 2.x.
 |                                               | each such symbol unique.  The unique suffix is arbitrary but    |
 |                                               | must not contain the 0xFF byte.                                 |
 +-----------------------------------------------+-----------------------------------------------------------------+
-| <81> <ff> uniqueSuffix <ff>                   | Local symbol with undefined description.  ES6 differentiates    |
+| <81> <ff> uniqueSuffix <ff>                   | Local symbol with undefined description.  ES2015 differentiates |
 |                                               | internally between symbols with an empty string description vs. |
 |                                               | symbols with an undefined description.                          |
 +-----------------------------------------------+-----------------------------------------------------------------+
@@ -107,22 +107,22 @@ for ES6 symbols (and reserved for other future uses) in Duktape 2.x.
 Useful comparisons (``p`` is pointer to string data) for internal use only:
 
 * ``p[0] == 0xff || (p[0] & 0xc0) == 0x80``: some kind of Symbol, either Duktape
-  hidden Symbol or an ES6 Symbol.
+  hidden Symbol or an ES2015 Symbol.
 
 * ``p[0] == 0xff``: hidden symbol, user or Duktape
 
-* ``(p[0] & 0xc0) == 0x80``: ES6 Symbol, visible to Ecmascript code
+* ``(p[0] & 0xc0) == 0x80``: ES2015 Symbol, visible to Ecmascript code
 
 Global symbols
 ==============
 
 Global symbols are the same across separate global environments and even across
-Duktape heaps.  ES6 Section 19.4.2.1:
+Duktape heaps.  ES2015 Section 19.4.2.1:
 
     The GlobalSymbolRegistry is a List that is globally available.
     It is shared by all Code Realms.
 
-and ES6 Section 8.2:
+and ES2015 Section 8.2:
 
     Before it is evaluated, all ECMAScript code must be associated with a Realm.
     Conceptually, a realm consists of a set of intrinsic objects, an ECMAScript
@@ -138,7 +138,7 @@ Well-known symbols
 ==================
 
 Well-known symbols (such as ``Symbol.iterator``) are distinct from any local or
-global symbols.  ES6 Section 6.1.5.1:
+global symbols.  ES2015 Section 6.1.5.1:
 
     Well-known symbols are built-in Symbol values that are explicitly referenced
     by algorithms of this specification. They are typically used as the keys of
@@ -212,7 +212,7 @@ Best naming for Duktape internal keys
 With https://github.com/svaarala/duktape/pull/979 Duktape internal properties
 would become unreachable from Ecmascript code, even if you construct the
 internal string using a buffer and then try to use it as an object key.
-This offers more protection for sandboxing than ES6 Symbols which can be
+This offers more protection for sandboxing than ES2015 Symbols which can be
 enumerated.
 
 Current naming for Duktape 1.x internal keys is "hidden symbols".  Some

@@ -168,6 +168,8 @@ Miscellaneous
 Suggested options
 =================
 
+NOTE: This list is not exhaustive, see ``config/examples/low_memory.yaml``.
+
 * Use the default memory management settings: although reference counting
   increases heap header size, it also reduces memory usage fluctuation
   which is often more important than absolute footprint.
@@ -205,7 +207,7 @@ Suggested options
 
   - ``#undef DUK_USE_JSON_EATWHITE_FASTPATH``
 
-* If you don't need Node.js Buffer and Khronos/ES6 typed array support, use:
+* If you don't need Node.js Buffer and ES2015 typed array support, use:
 
   - ``#undef DUK_USE_BUFFEROBJECT_SUPPORT``
 
@@ -215,7 +217,8 @@ Suggested options
 
   - ``#undef DUK_USE_JC``
 
-* Features borrowed from Ecmascript E6 can usually be disabled:
+* Features borrowed from Ecmascript E6 can usually be disabled
+  (not exhaustive):
 
   - ``#undef DUK_USE_ES6_OBJECT_SETPROTOTYPEOF``
 

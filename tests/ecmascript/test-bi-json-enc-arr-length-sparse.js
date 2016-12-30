@@ -19,8 +19,8 @@ function sparseArrayLengthTest() {
     arr = [1, 2];
     arr[100] = 'foo';  // becomes sparse
     arr[3] = 4;        // in Duktape 1.x would enumerate "incorrectly",
-                       // Duktape 2.x adheres to ES6 [[OwnPropertyKeys]]
-                       // enum order (even when ES6 doesn't require it
+                       // Duktape 2.x adheres to ES2015 [[OwnPropertyKeys]]
+                       // enum order (even when ES2015 doesn't require it
                        // for the for-in statement)
 
     // custom behavior here

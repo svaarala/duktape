@@ -1,7 +1,7 @@
 /*
  *  Enumeration order for abandoned array part changed in Duktape 2.x with
- *  the introduction of duk_harray and ES6 [[OwnPropertyKeys]] enumeration
- *  order which is applied to e.g. for-in (this is not required by ES6).
+ *  the introduction of duk_harray and ES2015 [[OwnPropertyKeys]] enumeration
+ *  order which is applied to e.g. for-in (this is not required by ES2015).
  */
 
 /*---
@@ -52,7 +52,7 @@ function test() {
     // In Duktape 2.x the duk_harray "natural" enum order for a sparse array
     // would be: .length (virtual), array indexes moved into entries, other
     // properties, and finally array index properties added after array became
-    // sparse.  However, there's an ES6 sort step for enumeration which fixes
+    // sparse.  However, there's an ES2015 sort step for enumeration which fixes
     // the enumeration order to the same as for dense arrays.
 
     print('without array part');

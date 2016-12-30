@@ -1,5 +1,5 @@
 /*
- *  Compare function behavior, specified more concretely in ES6.
+ *  Compare function behavior, specified more concretely in ES2015.
  */
 
 /*===

@@ -26,7 +26,7 @@ function functionPrototypeTest() {
     ret = Function.prototype('foo', 'bar');
     print(typeof ret, ret);
 
-    // ES6 added '.name'.  Function.prototype provides an empty default name.
+    // ES2015 added '.name'.  Function.prototype provides an empty default name.
     // It is not writable, but it is configurable so that Object.defineProperty()
     // can be used to set the name of an anonymous function.
     pd = Object.getOwnPropertyDescriptor(Function.prototype, 'name');

@@ -1117,7 +1117,7 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 
 	/* [ ... regexp_object escaped_source ] */
 
-	/* In ES6 .source, and the .global, .multiline, etc flags are
+	/* In ES2015 .source, and the .global, .multiline, etc flags are
 	 * inherited getters.  Store the escaped source as an internal
 	 * property for the getter.
 	 */

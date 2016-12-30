@@ -922,7 +922,7 @@ DUK_INTERNAL_DECL duk_hstring *duk_hobject_get_internal_value_string(duk_heap *h
 /* hobject management functions */
 DUK_INTERNAL_DECL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj);
 
-/* ES6 proxy */
+/* ES2015 proxy */
 #if defined(DUK_USE_ES6_PROXY)
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
 DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target(duk_hthread *thr, duk_hobject *obj);

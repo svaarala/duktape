@@ -1,5 +1,5 @@
 /*
- *  ES5 prohibits duplicate keys in object literals.  ES6 allows them:
+ *  ES5 prohibits duplicate keys in object literals.  ES2015 allows them:
  *  last occurrence wins, and side effects must occur.
  */
 

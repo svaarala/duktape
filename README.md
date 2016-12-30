@@ -16,9 +16,10 @@ to call Ecmascript functions from C code and vice versa.
 Main features:
 
 * Embeddable, portable, compact
-* Ecmascript E5/E5.1 compliant, with some semantics updated from ES6+
-* Partial support for Ecmascript 2015 (E6) and Ecmascript 2016 (E7)
-* Khronos/ES6 TypedArray and Node.js Buffer bindings
+* Ecmascript E5/E5.1 compliant, with some semantics updated from ES2015+
+* Partial support for Ecmascript 2015 (E6) and Ecmascript 2016 (E7),
+  [Post-ES5 feature status](http://wiki.duktape.org/PostEs5Features.html)
+* ES2015 TypedArray and Node.js Buffer bindings
 * WHATWG Encoding API living standard
 * Built-in debugger
 * Built-in regular expression engine

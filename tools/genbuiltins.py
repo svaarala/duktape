@@ -423,8 +423,8 @@ def metadata_normalize_shorthand(meta):
         obj['callable'] = True
         obj['constructable'] = val.get('constructable', False)
         fun_name = val.get('name', funprop['key'])
-        props.append({ 'key': 'length', 'value': val['length'], 'attributes': 'c' })  # Configurable in ES6
-        props.append({ 'key': 'name', 'value': fun_name, 'attributes': 'c' })   # Configurable in ES6
+        props.append({ 'key': 'length', 'value': val['length'], 'attributes': 'c' })  # Configurable in ES2015
+        props.append({ 'key': 'name', 'value': fun_name, 'attributes': 'c' })   # Configurable in ES2015
         return obj
 
     def addAccessor(funprop, magic, nargs, length, name, native_func):

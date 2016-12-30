@@ -19,7 +19,7 @@ true true
 ===*/
 
 //  - The given byteOffset must be a multiple of the element size of the specific type, otherwise an exception is raised.
-//  - ES6 agrees: Section 22.2.1.4, Step 10: http://www.ecma-international.org/ecma-262/6.0/index.html#sec-%typedarray%-buffer-byteoffset-length
+//  - ES2015 agrees: Section 22.2.1.4, Step 10: http://www.ecma-international.org/ecma-262/6.0/index.html#sec-%typedarray%-buffer-byteoffset-length
 
 function basicViewTest() {
     var b = new ArrayBuffer(16);

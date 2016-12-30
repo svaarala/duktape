@@ -378,7 +378,7 @@ static duk_ret_t test_regexp_prototype_shared(duk_context *ctx_root, void *udata
 	duk_eval_string_noresult(ctx1, "var re1 = /foo/;\n");
 	duk_eval_string_noresult(ctx2, "var re2 = /bar/;\n");
 
-	/* avoid String coercing RegExp.prototype; it's a TypeError in ES6/ES7 */
+	/* avoid String coercing RegExp.prototype; it's a TypeError in ES2015/ES2016 */
 
 	(void) duk_peval_string(ctx1,
 		"print(name);\n"

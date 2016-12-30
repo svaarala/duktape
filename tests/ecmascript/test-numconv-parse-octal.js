@@ -51,7 +51,7 @@ function octalTest() {
      *  digit, after "longest match" semantics are applied.
      *
      *  In practice, at least V8 and Rhino will parse offending octal
-     *  literals in decimal, and ES6 formalizes this behavior.
+     *  literals in decimal, and ES2015 formalizes this behavior.
      */
 
     e('077');
