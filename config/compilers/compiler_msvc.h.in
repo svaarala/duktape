@@ -70,3 +70,6 @@
 #define DUK_SNPRINTF     _snprintf
 #define DUK_VSNPRINTF    _vsnprintf
 #endif
+
+/* Avoid warning when doing DUK_UNREF(some_function). */
+#define DUK_UNREF(x)  do { __pragma(warning(suppress:4100 4101 4550 4551)) (x); } while (0)
