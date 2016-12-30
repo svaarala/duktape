@@ -54,6 +54,7 @@
 #endif
 #if defined(DUK_CMDLINE_LINENOISE)
 #include "linenoise.h"
+#include <stdint.h>  /* Assume C99/C++11 with linenoise. */
 #endif
 #if defined(DUK_CMDLINE_PRINTALERT_SUPPORT)
 #include "duk_print_alert.h"
@@ -465,7 +466,7 @@ static char *linenoise_hints(const char *buf, int *color, int *bold) {
 		*color = 31;  /* red */
 		*bold = 1;
 		duk_pop_2(ctx);
-		return (char *) res;
+		return (char *) (uintptr_t) res;  /* uintptr_t cast to avoid const discard warning. */
 	}
 
 	if (duk_is_object(ctx, -1)) {
@@ -488,7 +489,7 @@ static char *linenoise_hints(const char *buf, int *color, int *bold) {
 		duk_pop(ctx);
 
 		duk_pop_2(ctx);
-		return (char *) res;
+		return (char *) (uintptr_t) res;  /* uintptr_t cast to avoid const discard warning. */
 	}
 
 	duk_pop_2(ctx);
