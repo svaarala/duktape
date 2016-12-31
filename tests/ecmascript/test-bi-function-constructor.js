@@ -23,6 +23,8 @@ string anonymous false false true
 number 0 false false true
 string anonymous false false true
 number 2 false false true
+hello
+object
 ===*/
 
 function functionConstructorTest() {
@@ -80,6 +82,11 @@ function functionConstructorTest() {
     print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
     pd = Object.getOwnPropertyDescriptor(f, 'length');
     print(typeof pd.value, pd.value, pd.writable, pd.enumerable, pd.configurable);
+
+    // Function is constructable.
+    var fn = new Function('print("hello");');
+    x = new fn();
+    print(typeof x);
 }
 
 try {

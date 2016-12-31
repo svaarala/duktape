@@ -7778,21 +7778,26 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	 *  on flags.
 	 */
 
+	DUK_ASSERT(func->is_setget == 0);
 	func->is_strict = is_strict;
-	func->is_setget = 0;
+	DUK_ASSERT(func->is_notail == 0);
 
 	if (is_funcexpr) {
 		func->is_function = 1;
-		func->is_eval = 0;
-		func->is_global = 0;
+		DUK_ASSERT(func->is_eval == 0);
+		DUK_ASSERT(func->is_global == 0);
+		func->is_namebinding = 1;
+		func->is_constructable = 1;
 
 		duk__advance(comp_ctx);  /* init 'curr_token' */
 		duk__advance_expect(comp_ctx, DUK_TOK_FUNCTION);
 		(void) duk__parse_func_like_raw(comp_ctx, 0 /*flags*/);
 	} else {
-		func->is_function = 0;
+		DUK_ASSERT(func->is_function == 0);
 		func->is_eval = is_eval;
 		func->is_global = !is_eval;
+		DUK_ASSERT(func->is_namebinding == 0);
+		DUK_ASSERT(func->is_constructable == 0);
 
 		duk__parse_func_body(comp_ctx,
 		                     1,             /* expect_eof */

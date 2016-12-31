@@ -1903,7 +1903,7 @@ Ecmascript 2015+ and real world compatibility:
   ({ [1+2]: 'three' }), identifier shorthand ({ foo, bar }), and method
   definition shorthand ({ func(a,b) { return a+b; } }); however, computed
   name for method definition ({ ['foo' + 'bar'](a,b) { ... } }) is not
-  yet supported (GH-985, GH-1190, GH-1193)
+  yet supported (GH-985, GH-1190, GH-1193, GH-1246)
 
 * Add support for ES2016 exponentiation and exponentiation assignment
   operators, e.g. "2 \*\* 10" evaluates to 1024, avoiding the cost of an
