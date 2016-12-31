@@ -61,7 +61,7 @@ def main():
                     tofix_count += 1
                     diagnosed_errors.append(line + '   // diagnosed: ' + kn['diagnosed'])
                 elif kn.has_key('knownissue'):
-                    # don't bump tofix_count, as testcase expected result is not certain
+                    # Don't bump tofix_count, as testcase expected result is not certain
                     known_errors.append(line + '   // KNOWN: ' + kn['knownissue'])
                 else:
                     tofix_count += 1
@@ -81,8 +81,11 @@ def main():
     print('=== CATEGORISED ERRORS ===')
     print('')
 
-    for i in known_errors:
-        print(i)
+    # With ES2015+ semantic changes to ES5 there are too many known
+    # issues to print by default.
+    #for i in known_errors:
+    #    print(i)
+
     for i in diagnosed_errors:
         print(i)
     for i in unknown_errors:
@@ -111,6 +114,7 @@ def main():
     # To fix count
 
     print('')
+    print('KNOWN ISSUE COUNT: ' + str(len(known_errors)))
     print('TO-FIX COUNT: ' + str(tofix_count))
     print('  = test case failures which need fixing (Duktape bugs, uninvestigated)')
 

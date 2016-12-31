@@ -541,3 +541,584 @@
 -
   test: "intl402/ch13/13.3/13.3.0_7"
   knownissue: "Intl module not part of E5.1"
+-
+  test: "intl402/ch13/13.1/13.1.1_L15"
+  knownissue: "Intl module not part of E5.1"
+-
+  test: "intl402/ch13/13.3/13.3.1_L15"
+  knownissue: "Intl module not part of E5.1"
+-
+  test: "intl402/ch13/13.3/13.3.2_L15"
+  knownissue: "Intl module not part of E5.1"
+-
+  test: "intl402/ch13/13.3/13.3.3_L15"
+  knownissue: "Intl module not part of E5.1"
+
+# Known issues from aligning ES5 built-in behavior with ES2015+.  For example,
+# .length properties are configurable in ES2015+ (non-configurable in ES5)
+# which breaks a lot of tests.
+
+-
+  test: "ch11/11.1/11.1.5/11.1.5-4-4-a-1-s"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-b-1"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-b-2"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-c-1"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-c-2"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-d-1"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-d-2"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-d-3"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.1/11.1.5/11.1.5_4-4-d-4"
+  knownissue: "duplicate property names allowed in ES2015+"
+-
+  test: "ch11/11.4/11.4.1/11.4.1-5-a-28-s"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch13/13.2/13.2-15-1"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.2/15.1.2.1/S15.1.2.1_A4.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.2/15.1.2.2/S15.1.2.2_A9.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.2/15.1.2.3/S15.1.2.3_A7.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.2/15.1.2.4/S15.1.2.4_A2.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.2/15.1.2.5/S15.1.2.5_A2.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.3/15.1.3.1/S15.1.3.1_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.3/15.1.3.2/S15.1.3.2_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.3/15.1.3.3/S15.1.3.3_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.1/15.1.3/15.1.3.4/S15.1.3.4_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.2/S15.2.4.2_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.3/S15.2.4.3_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.4/S15.2.4.4_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.5/S15.2.4.5_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.6/S15.2.4.6_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.4/15.2.4.7/S15.2.4.7_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.4/15.3.4.2/S15.3.4.2_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.4/15.3.4.3/S15.3.4.3_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.4/15.3.4.4/S15.3.4.4_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.5/S15.3.5.1_A2_T1"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.5/S15.3.5.1_A2_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.5/S15.3.5.1_A2_T3"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.3/S15.4.3_A2.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.10/S15.4.4.10_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.11/S15.4.4.11_A7.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.12/S15.4.4.12_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.13/S15.4.4.13_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.2/S15.4.4.2_A4.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.3/S15.4.4.3_A4.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.4/S15.4.4.4_A4.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.5/S15.4.4.5_A6.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.6/S15.4.4.6_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.7/S15.4.4.7_A6.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.8/S15.4.4.8_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.4/15.4.4/15.4.4.9/S15.4.4.9_A5.2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.10/S15.5.4.10_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.11/S15.5.4.11_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.12/S15.5.4.12_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.13/S15.5.4.13_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.14/S15.5.4.14_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.15/S15.5.4.15_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.16/S15.5.4.16_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.17/S15.5.4.17_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.18/S15.5.4.18_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.19/S15.5.4.19_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.4/S15.5.4.4_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.5/S15.5.4.5_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.6/S15.5.4.6_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.7/S15.5.4.7_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.8/S15.5.4.8_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.5/15.5.4/15.5.4.9/S15.5.4.9_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.4/15.9.4.2/S15.9.4.2_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.4/15.9.4.3/S15.9.4.3_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.1/S15.9.5.1_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.10/S15.9.5.10_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.11/S15.9.5.11_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.12/S15.9.5.12_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.13/S15.9.5.13_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.14/S15.9.5.14_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.15/S15.9.5.15_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.16/S15.9.5.16_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.17/S15.9.5.17_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.18/S15.9.5.18_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.19/S15.9.5.19_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.2/S15.9.5.2_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.20/S15.9.5.20_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.21/S15.9.5.21_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.22/S15.9.5.22_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.23/S15.9.5.23_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.24/S15.9.5.24_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.25/S15.9.5.25_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.26/S15.9.5.26_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.27/S15.9.5.27_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.28/S15.9.5.28_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.29/S15.9.5.29_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.3/S15.9.5.3_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.30/S15.9.5.30_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.31/S15.9.5.31_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.32/S15.9.5.32_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.33/S15.9.5.33_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.34/S15.9.5.34_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.35/S15.9.5.35_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.36/S15.9.5.36_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.37/S15.9.5.37_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.38/S15.9.5.38_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.39/S15.9.5.39_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.4/S15.9.5.4_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.40/S15.9.5.40_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.41/S15.9.5.41_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.42/S15.9.5.42_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.5/S15.9.5.5_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.6/S15.9.5.6_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.7/S15.9.5.7_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.8/S15.9.5.8_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.9/15.9.5/15.9.5.9/S15.9.5.9_A3_T2"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.10/15.10.3/S15.10.3.1_A2_T1"
+  knownissue: "RegExp constructor behavior changed in ES2015+"
+-
+  test: "ch15/15.10/15.10.3/S15.10.3.1_A2_T2"
+  knownissue: "RegExp constructor behavior changed in ES2015+"
+-
+  test: "ch15/15.10/15.10.4/S15.10.4.1_A2_T1"
+  knownissue: "RegExp constructor behavior changed in ES2015+"
+-
+  test: "ch15/15.10/15.10.4/S15.10.4.1_A2_T2"
+  knownissue: "RegExp constructor behavior changed in ES2015+"
+-
+  test: "ch15/15.10/15.10.4/15.10.4.1/15.10.4.1-1"
+  knownissue: "RegExp constructor behavior changed in ES2015+"
+-
+  test: "ch15/15.10/15.10.6/15.10.6"
+  knownissue: "RegExp prototype no longer a RegExp instance in ES2015+"
+-
+  test: "ch15/15.10/15.10.6/15.10.6.2/S15.10.6.2_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.10/15.10.6/15.10.6.3/S15.10.6.3_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.10/15.10.6/15.10.6.4/S15.10.6.4_A9"
+  knownissue: ".length is configurable in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.1/15.10.7.1-2"
+  knownissue: "RegExp.prototype.source is a configurable getter in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.1/S15.10.7.1_A8"
+  knownissue: "RegExp instances no longer have an own .source property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.1/S15.10.7.1_A9"
+  knownissue: "RegExp instances no longer have an own .source property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.1/S15.10.7.1_A10"
+  knownissue: "RegExp instances no longer have an own .source property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.2/15.10.7.2-2"
+  knownissue: "RegExp.prototype.global is an accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.2/S15.10.7.2_A8"
+  knownissue: "RegExp instances no longer have an own .global property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.2/S15.10.7.2_A9"
+  knownissue: "RegExp instances no longer have an own .global property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.2/S15.10.7.2_A10"
+  knownissue: "RegExp instances no longer have an own .global property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.2/15.10.7.2-1"
+  knownissue: "RegExp.prototype.global is a configurable accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.3/15.10.7.3-1"
+  knownissue: "RegExp.prototype.ignoreCase is an accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.3/15.10.7.3-2"
+  knownissue: "RegExp.prototype.ignoreCase is an accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.3/S15.10.7.3_A8"
+  knownissue: "RegExp instances no longer have an own .ignoreCase property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.3/S15.10.7.3_A9"
+  knownissue: "RegExp instances no longer have an own .ignoreCase property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.3/S15.10.7.3_A10"
+  knownissue: "RegExp instances no longer have an own .ignoreCase property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.4/15.10.7.4-1"
+  knownissue: "RegExp.prototype.multiline is an accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.4/15.10.7.4-2"
+  knownissue: "RegExp.prototype.multiline is an accessor in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.4/S15.10.7.4_A8"
+  knownissue: "RegExp instances no longer have an own .multiline property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.4/S15.10.7.4_A9"
+  knownissue: "RegExp instances no longer have an own .multiline property in ES2015+"
+-
+  test: "ch15/15.10/15.10.7/15.10.7.4/S15.10.7.4_A10"
+  knownissue: "RegExp instances no longer have an own .multiline property in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.10/15.2.3.10-1"
+  knownissue: "Object.preventExtensions(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.10/15.2.3.10-1-1"
+  knownissue: "Object.preventExtensions(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.10/15.2.3.10-1-2"
+  knownissue: "Object.preventExtensions(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.10/15.2.3.10-1-3"
+  knownissue: "Object.preventExtensions(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.10/15.2.3.10-1-4"
+  knownissue: "Object.preventExtensions('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.11/15.2.3.11-1"
+  knownissue: "Object.isSealed(0) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.12/15.2.3.12-1"
+  knownissue: "Object.isFrozen(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.12/15.2.3.12-1-1"
+  knownissue: "Object.isFrozen(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.12/15.2.3.12-1-2"
+  knownissue: "Object.isFrozen(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.12/15.2.3.12-1-3"
+  knownissue: "Object.isFrozen(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.12/15.2.3.12-1-4"
+  knownissue: "Object.isFrozen('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.13/15.2.3.13-1"
+  knownissue: "Object.isExtensible(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.13/15.2.3.13-1-1"
+  knownissue: "Object.isExtensible(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.13/15.2.3.13-1-2"
+  knownissue: "Object.isExtensible(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.13/15.2.3.13-1-3"
+  knownissue: "Object.isExtensible(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.13/15.2.3.13-1-4"
+  knownissue: "Object.isExtensible('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.14/15.2.3.14-1-1"
+  knownissue: "Object.keys(0) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.14/15.2.3.14-1-2"
+  knownissue: "Object.keys(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.14/15.2.3.14-1-3"
+  knownissue: "Object.keys('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-1-3"
+  knownissue: "Object.getPrototypeOf(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-1-4"
+  knownissue: "Object.getPrototypeOf('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-1"
+  knownissue: "Object.getPrototypeOf(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-12"
+  knownissue: "EvalError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-13"
+  knownissue: "RangeError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-14"
+  knownissue: "ReferenceError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-15"
+  knownissue: "SyntaxError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-16"
+  knownissue: "TypeError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.2/15.2.3.2-2-17"
+  knownissue: "URIError prototype is Error (not Function.prototype) in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-1-3"
+  knownissue: "Object.getOwnPropertyDescriptor(true, 'foo') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-1-4"
+  knownissue: "Object.getOwnPropertyDescriptor(-2, 'foo') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-1"
+  knownissue: "Object.getOwnPropertyDescriptor(undefined, 'foo') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-186"
+  knownissue: "Function.length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-187"
+  knownissue: "function constructed using Function() has configurable .length in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-191"
+  knownissue: "String.length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-194"
+  knownissue: "Boolean.length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-201"
+  knownissue: "Number.length is configurable in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-212"
+  knownissue: "RegExp.prototype.source is a configurable accessor in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-213"
+  knownissue: "RegExp.prototype.global is a configurable accessor in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-214"
+  knownissue: "RegExp.prototype.ignoreCase is a configurable accessor in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.3/15.2.3.3-4-215"
+  knownissue: "RegExp.prototype.multiline is a configurable accessor in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.4/15.2.3.4-1-4"
+  knownissue: "Object.getOwnPropertyNames(true) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.4/15.2.3.4-1-5"
+  knownissue: "Object.getOwnPropertyNames('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.4/15.2.3.4-1"
+  knownissue: "Object.getOwnPropertyNames(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.8/15.2.3.8-1"
+  knownissue: "Object.seal(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.8/15.2.3.8-1-1"
+  knownissue: "Object.seal(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.8/15.2.3.8-1-2"
+  knownissue: "Object.seal(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.8/15.2.3.8-1-3"
+  knownissue: "Object.seal(false) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.8/15.2.3.8-1-4"
+  knownissue: "Object.seal('abc') allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.9/15.2.3.9-1"
+  knownissue: "Object.freeze(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.9/15.2.3.9-1-1"
+  knownissue: "Object.freeze(undefined) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.9/15.2.3.9-1-2"
+  knownissue: "Object.freeze(null) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.9/15.2.3.9-1-3"
+  knownissue: "Object.freeze(true) and Object.freeze(false) allowed in ES2015+"
+-
+  test: "ch15/15.2/15.2.3/15.2.3.9/15.2.3.9-1-4"
+  knownissue: "Object.freeze('abc') allowed in ES2015+"
+-
+  test: "ch15/15.3/15.3.3/15.3.3.2/15.3.3.2-1"
+  knownissue: "Function.length is configurable in ES2015+"
+-
+  test: "ch15/15.3/15.3.4/15.3.4.5/15.3.4.5-15-2"
+  knownissue: ".length is configurable in ES2015+"
