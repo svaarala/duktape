@@ -7,23 +7,42 @@ Release overview
 
 Main changes in this release (see RELEASES.rst for full details):
 
-* Improve buffer bindings: plain buffers now behave like Uint8Arrays,
-  and Duktape.Buffer has been removed with Uint8Array taking its place.
+* New tools/configure.py frontend tool replaces genconfig.py for configuring
+  and preparing Duktape sources for build.
 
-* Many built-in behaviors have been aligned with ES2015 or ES2016, so
-  there are small behavioral changes throughout.
+* Buffer handling has been simplified: Duktape.Buffer has been removed and is
+  replaced by Uint8Array, plain buffers now behave like Uint8Array objects.
+  Node.js Buffer behavior aligned with more recent Node.js Buffer API.
 
-* FIXME
+* Implement more ES2015 and ES2016 functionality, and align some ES5.1
+  semantics with ES2015/ES2016.  Implement WHATWG Encoding API with
+  TextEncoder() and TextDecoder() bindings.
+
+* Some incompatible API changes, and several API additions.  API and config
+  changes to avoid I/O dependencies (such as printf() and fopen()) in core
+  Duktape code to simplify porting.
+
+* More configuration flexibility in dropping Duktape specific functionality
+  from build, e.g. coroutines and finalization.
+
+* Disabled Ecmascript bindings are no longer present (instead of being present
+  but throwing a TypeError).
+
+* Built-in functionality moved to optional extras: print/alert bindings,
+  logging, and module loader.  New optional extras include a Node.js-like
+  module loader and a 'console' binding.
+
+* Bug fixes, performance and footprint improvements.
 
 The release has API incompatible changes, see upgrading notes below.
 
-Upgrading from Duktape 1.5.x
-============================
+Upgrading from Duktape 1.x
+==========================
 
 There are API incompatible changes in this release.  Whenever possible the
 incompatible changes cause a compilation error (or warning) so that fixing
 call sites should be straightforward.  Below are instructions on how to
-migrate from 1.5.x to 2.0.0.  There are also bug fixes and other minor
+migrate from 1.x to 2.0.0.  There are also bug fixes and other minor
 behavioral changes which may affect some applications, see ``RELEASES.rst``
 for details.
 
@@ -42,7 +61,7 @@ and 2.x in the same application.  For example::
     rc = duk_safe_call(ctx, my_safe_call, 1 /*nargs*/, 1 /*nrets*/);
     #endif
 
-If you're developing against Duktape master before 2.x release, ``DUK_VERSION``
+If you're developing against Duktape master before 2.0 release, ``DUK_VERSION``
 is set to 19999 so that you can use::
 
     #if (DUK_VERSION >= 19999)
@@ -68,7 +87,7 @@ Or you can detect features specifically::
 DUK_OPT_xxx feature option support removed
 ------------------------------------------
 
-Duktape 2.x no longer supports ``DUK_OPT_xxx`` options given via the compiler
+Duktape 2.0 no longer supports ``DUK_OPT_xxx`` options given via the compiler
 command line.  Instead, all options are encoded in ``duk_config.h``.
 
 To use custom Duktape options, use the ``tools/configure.py`` tool to create
@@ -92,7 +111,7 @@ See http://wiki.duktape.org/Configuring.html for details and examples.
 
 To upgrade:
 
-* If you're using the Duktape default configuration (and no ``DUK_OPT_xxx``)
+* If you're using the Duktape default configuration and no ``DUK_OPT_xxx``
   compiler options, no actions are needed.
 
 * Otherwise, remove ``DUK_OPT_xxx`` options from the compilation command and
@@ -109,14 +128,19 @@ To upgrade:
     ``DUK_OPT_HAVE_CUSTOM_H``, use ``--fixup-line '#include "duk_custom.h"'``
     in ``tools/configure.py`` options.
 
-  - Finally, you can remove your custom header and add the equivalent options
-    to ``tools/configure.py`` when possible.
+  - Finally, you can in some cases remove your custom header and use
+    equivalent config options for ``tools/configure.py``.
 
 Config option changes
 ---------------------
 
 There are several new config options and some existing config options have
 been removed.
+
+To upgrade:
+
+* Review any ``DUK_OPT_xxx`` or ``DUK_USE_xxx`` options in use against
+  ``config/config-options/*.yaml``.
 
 Built-ins disabled in configuration are now absent
 --------------------------------------------------
@@ -167,8 +191,8 @@ There are some tooling changes in this release:
 
 * The tooling includes a new ``tools/configure.py`` tool which creates
   a ``duk_config.h`` and matching prepared sources simultaneously.  This
-  allows use of ROM built-ins from the distributable (previously required a
-  manual ``dist.py --rom-support ...`` command.
+  allows use of ROM built-ins from the distributable.  Previously ROM
+  built-ins required a manual ``dist.py --rom-support ...`` command.
 
 * The ``make_dist.py`` utility in Duktape main repo has been renamed to
   ``dist.py`` and no longer supports ``--rom-support``,
@@ -185,18 +209,19 @@ To upgrade:
 * If you're just using the default sources and ``duk_config.h`` in the
   distributable, no changes are needed.
 
-* If you're using ``genconfig.py``, check the path; correct path is now
-  ``tools/genconfig.py``.  Consider replacing genconfig.py with configure.py.
+* If you're using ``genconfig.py`` considering using ``tools/configure.py``
+  instead.  If you keep on using ``genconfig.py``, update path to
+  ``tools/genconfig.py``.
 
 * If you're using ROM built-ins via ``make_dist.py``, change your build to
-  use ``tools/configure.py`` instead, and rename ``--user-builtins-metadata``
-  options to ``--builtin-file``.
+  use ``tools/configure.py`` instead, and change ``--user-builtins-metadata``
+  option argument(s) to ``--builtin-file``.
 
 Dist package file changes
 -------------------------
 
 * Configuration metadata is now in unpacked form in ``dist/config`` to match
-  the Duktape master repo and make config files more convenient to patch.
+  the Duktape master repo and to make config files more convenient to patch.
   The ``dist/tools/genconfig.py`` tool no longer accepts a tar.gz metadata
   argument.
 
@@ -218,15 +243,16 @@ Dist package file changes
 Buffer behavior changes
 -----------------------
 
-There are a lot of buffer behavior changes in the 2.x release; see detailed
-changes below.  Here's a summary of changes:
+There are a lot of buffer behavior changes in the 2.0 release; see detailed
+changes below and in RELEASES.rst.  Here's a summary of changes:
 
 * ``Duktape.Buffer`` has been removed.  Plain buffers now behave like
   ``Uint8Array`` instances to the extent possible.  They don't have a property
-  table, however, which causes some limitations.  There are many small changes
-  to how plain buffers are treated by standard built-ins as a result.  For
-  example, string coercion (``String(plainBuffer)``) now mimics Uint8Array and
-  usually results in the string ``[object Uint8Array]``.
+  table, however, which causes some limitations.  Plain buffers ToObject()
+  coerce to an actual Uint8Array object with the same backing buffer.  There
+  are many small changes to how plain buffers are treated by standard built-ins
+  as a result.  For example, string coercion (``String(plainBuffer)``) now
+  mimics Uint8Array and usually results in the string ``[object Uint8Array]``.
 
 * Plain buffers have an inherited ``.buffer`` getter property which returns an
   ArrayBuffer object backing to the same underlying plain buffer.  Because
@@ -237,9 +263,9 @@ changes below.  Here's a summary of changes:
   view (such as Uint8Array), the ArrayBuffer's .byteOffset will be set to 0
   and its .byteLength will be set to view.byteOffset + view.byteLength.  This
   ensures that accessing the ArrayBuffer at view.byteOffset returns the same
-  value as when accessing view at index 0, which is the common relationship.
-  Up to Duktape 1.6.x the ArrayBuffer's .byteOffset and .byteLength would be
-  the same as the view's.
+  value as when accessing view at index 0, which is the usual relationship
+  between a view and its backing ArrayBuffer.  Up to Duktape 1.6.x the
+  ArrayBuffer's .byteOffset and .byteLength would be the same as the view's.
 
 * Non-standard properties, such as virtual indices and ``.length`` have been
   removed from ArrayBuffer and DataView.  The ``.byteOffset``, ``.byteLength``,
@@ -289,7 +315,15 @@ To upgrade:
     v0.12.1 and v6.9.1 in general.
 
 * If you're using plain buffers, review their usage especially in Ecmascript
-  code.
+  code, in particular:
+
+  - Because plain buffers now mimic Uint8Array (a view), they are treated as
+    initializer values when used as typed array constructor arguments.  For
+    example, ``new Uint32Array(plainBuffer)`` will create a new Uint32Array
+    rather than a view into the plain buffer.
+
+  - To create a view into the plain buffer, use the same approach as with a
+    Uint8Array, e.g. ``new Uint32Array(plainBuffer.buffer)``.
 
 * Regardless of buffer type(s) in use:
 
@@ -320,8 +354,8 @@ Some detailed changes, not exhaustive; see ``RELEASES.rst`` and
 
 - ``plainBuffer instanceof Uint8Array`` is true.
 
-* Plain buffer Object.prototype.toString() now usually (assuming no overridden
-  .toString()) yields ``[object Uint8Array]`` instead of ``[object Buffer]``.
+* Plain buffer Object.prototype.toString() now usually, assuming no overridden
+  .toString(), yields ``[object Uint8Array]`` instead of ``[object Buffer]``.
 
 * Plain buffer inherits from Uint8Array.prototype instead of
   Duktape.Buffer.prototype.
@@ -358,7 +392,7 @@ Some detailed changes, not exhaustive; see ``RELEASES.rst`` and
 
 * ``new ArrayBuffer(plainBuffer)`` no longer creates a new ArrayBuffer with
   the same underlying plain buffer; instead, the plain buffer gets coerced to
-  zero and creates a zero-length ArrayBuffer.  This matches how an ArrayBuffer
+  zero and creates a zero-length ArrayBuffer.  This matches how a Uint8Array
   argument is handled in ``new ArrayBuffer()``.
 
 - ``new Buffer(plainBuffer)`` no longer special cases plain buffer and gets
@@ -403,6 +437,8 @@ Some detailed changes, not exhaustive; see ``RELEASES.rst`` and
 
 * Node.js ``Buffer`` and ``Buffer.prototype`` methods now accept plain buffers.
 
+* A plain buffer is accepted as a constructor "replacement value".
+
 Pointer behavior changes
 ------------------------
 
@@ -434,6 +470,8 @@ There are very minor changes to lightfunc value behavior:
   the change was made to match plain buffer behavior.  Note that because
   lightfuncs themselves are considered strict functions, this only happens
   when the call target is not a lightfunc but the "this" binding is.
+
+* A lightfunc is accepted as a constructor "replacement value".
 
 To upgrade:
 
@@ -835,6 +873,36 @@ To upgrade:
   or logging yourself and using AppNotify (``duk_debugger_notify()``) to
   forward print/alert or logger text.
 
+Internal duk_harray affects debugger array inspection
+-----------------------------------------------------
+
+Duktape 2.x introduces an internal ``duk_harray`` type to represent arrays.
+The array ``.length`` property is no longer stored in the property table of
+the array but is a C struct field in ``duk_harray`` and the property visible
+to Ecmascript code is virtual.
+
+As a result, array ``.length`` is not visible when inspecting ordinary array
+properties using e.g. GetObjPropDesc or GetObjPropDescRange.  Instead, array
+``.length`` is an artificial property ``"length"`` returned by GetHeapObjInfo.
+
+To upgrade:
+
+* If the debug client uses array ``.length`` for e.g. UI purposes, ensure
+  the artificial property ``"length"`` is used instead.
+
+Other debugger changes
+----------------------
+
+* Artificial properties renamed for consistency with internal renaming:
+
+  - ``compiledfunction`` -> ``compfunc``
+
+  - ``nativefunction`` -> ``natfunc``
+
+  - ``bufferobject`` -> ``bufobj``
+
+  - ``bound`` -> ``boundfunc``
+
 Debug print config options changed
 ----------------------------------
 
@@ -877,36 +945,6 @@ To upgrade:
 
   - Convert debug level options from ``DUK_USE_{D,DD,DDD}PRINT`` to the
     equivalent ``DUK_USE_DEBUG_LEVEL`` (0, 1, or 2).
-
-Internal duk_harray affects debugger array inspection
------------------------------------------------------
-
-Duktape 2.x introduces an internal ``duk_harray`` type to represent arrays.
-The array ``.length`` property is no longer stored in the property table of
-the array but is a C struct field in ``duk_harray`` and the property visible
-to Ecmascript code is virtual.
-
-As a result, array ``.length`` is not visible when inspecting ordinary array
-properties using e.g. GetObjPropDesc or GetObjPropDescRange.  Instead, array
-``.length`` is an artificial property ``"length"`` returned by GetHeapObjInfo.
-
-To upgrade:
-
-* If the debug client uses array ``.length`` for e.g. UI purposes, ensure
-  the artificial property ``"length"`` is used instead.
-
-Other debugger changes
-----------------------
-
-* Artificial properties renamed for consistency with internal renaming:
-
-  - ``compiledfunction`` -> ``compfunc``
-
-  - ``nativefunction`` -> ``natfunc``
-
-  - ``bufferobject`` -> ``bufobj``
-
-  - ``bound`` -> ``boundfunc``
 
 Fatal error and panic handling reworked
 ---------------------------------------
@@ -1050,6 +1088,8 @@ Small changes related to adding symbol support:
 Other incompatible changes
 --------------------------
 
+Incompatible changes (not exhaustive, also see RELEASES.rst):
+
 * Normal and constructor function call argument limit is now 255, down from
   the previous 511.
 
@@ -1060,9 +1100,9 @@ Other incompatible changes
   other API calls.  A NULL pointer not causes memory unsafe behavior, as with
   all other API calls.
 
-* ``duk_def_prop()`` now ToString() coerces its argument rather than requiring
-  the key to be a string.  This allows e.g. numbers to be used as property
-  keys.
+* ``duk_def_prop()`` now ToPropertyKey() coerces its argument rather than
+  requiring the key to be a string.  This allows e.g. numbers to be used as
+  property keys.
 
 * ``duk_char_code_at()`` and ``String.charCodeAt()`` now return 0xFFFD (Unicode
   replacement character) if the string cannot be decoded as extended UTF-8,
