@@ -2157,7 +2157,6 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 		if (x < 0) {
 			goto fail_unterm_charclass;
 		} else if (x == DUK_ASC_RBRACKET) {
-			DUK_ASSERT(!dash);  /* lookup should prevent this */
 			if (start >= 0) {
 				gen_range(userdata, start, start, 0);
 			}
