@@ -130,6 +130,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_is_boolean(ctx, 0);
 	(void) duk_is_bound_function(ctx, 0);
 	(void) duk_is_buffer(ctx, 0);
+	(void) duk_is_buffer_data(ctx, 0);
 	(void) duk_is_callable(ctx, 0);
 	(void) duk_is_c_function(ctx, 0);
 	(void) duk_is_constructor_call(ctx);
@@ -152,6 +153,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_is_reference_error(ctx, 0);
 	(void) duk_is_strict_call(ctx);
 	(void) duk_is_string(ctx, 0);
+	(void) duk_is_symbol(ctx, 0);
 	(void) duk_is_syntax_error(ctx, 0);
 	(void) duk_is_thread(ctx, 0);
 	(void) duk_is_type_error(ctx, 0);
@@ -269,6 +271,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_samevalue(ctx, 0, 0);
 	(void) duk_set_finalizer(ctx, 0);
 	(void) duk_set_global_object(ctx);
+	(void) duk_set_length(ctx, 0, 0);
 	(void) duk_set_magic(ctx, 0, 0);
 	(void) duk_set_prototype(ctx, 0);
 	(void) duk_set_top(ctx, 0);
