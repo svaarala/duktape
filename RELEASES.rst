@@ -1684,7 +1684,7 @@ Released
   call blocks) so that other native threads may execute while the thread is
   blocked (GH-893, GH-909)
 
-2.0.0 (2016-12-31)
+2.0.0 (2017-01-02)
 ------------------
 
 Tooling:
