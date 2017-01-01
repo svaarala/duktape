@@ -592,6 +592,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
  *  Parsing of ints and floats
  */
 
+#if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 	duk_int32_t radix;
 	duk_small_uint_t s2n_flags;
@@ -637,7 +638,9 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_int(duk_context *ctx) {
 	duk_push_nan(ctx);
 	return 1;
 }
+#endif  /* DUK_USE_GLOBAL_BUILTIN */
 
+#if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 	duk_small_uint_t s2n_flags;
 	duk_int32_t radix;
@@ -662,27 +665,33 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_parse_float(duk_context *ctx) {
 	duk_numconv_parse(ctx, radix, s2n_flags);
 	return 1;
 }
+#endif  /* DUK_USE_GLOBAL_BUILTIN */
 
 /*
  *  Number checkers
  */
 
+#if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_nan(duk_context *ctx) {
 	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISNAN(d));
 	return 1;
 }
+#endif  /* DUK_USE_GLOBAL_BUILTIN */
 
+#if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_is_finite(duk_context *ctx) {
 	duk_double_t d = duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, DUK_ISFINITE(d));
 	return 1;
 }
+#endif  /* DUK_USE_GLOBAL_BUILTIN */
 
 /*
  *  URI handling
  */
 
+#if defined(DUK_USE_GLOBAL_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_global_object_decode_uri(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_decode_uri, (const void *) duk__decode_uri_reserved_table);
 }
@@ -708,3 +717,4 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_unescape(duk_context *ctx) {
 	return duk__transform_helper(ctx, duk__transform_callback_unescape, (const void *) NULL);
 }
 #endif  /* DUK_USE_SECTION_B */
+#endif  /* DUK_USE_GLOBAL_BUILTIN */

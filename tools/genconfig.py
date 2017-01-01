@@ -1342,7 +1342,7 @@ def validate_config_options_in_source(fn):
     for meta in use_defs_list:
         if not defs_used.has_key(meta['define']):
             if not meta.has_key('removed'):
-                logger.info('config option %r not found in source code' % meta['define'])
+                logger.debug('config option %r not found in source code' % meta['define'])
 
 #
 #  Main
