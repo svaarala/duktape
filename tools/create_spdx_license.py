@@ -143,7 +143,7 @@ def main():
     creation_date = Literal(now.isoformat() + 'Z', datatype=XSD.dateTime)
     duktape_org = Literal('Organization: duktape.org')
     mit_license = URIRef('http://spdx.org/licenses/MIT')
-    duktape_copyright = Literal('Copyright 2013-2016 Duktape authors (see AUTHORS.rst in the Duktape distributable)')
+    duktape_copyright = Literal('Copyright 2013-2017 Duktape authors (see AUTHORS.rst in the Duktape distributable)')
 
     g = rdflib.Graph()
 
