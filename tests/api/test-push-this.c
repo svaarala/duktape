@@ -39,7 +39,7 @@ void test(duk_context *ctx) {
 	duk_push_object(ctx);
 	duk_push_array(ctx);
 	duk_push_fixed_buffer(ctx, 16);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);

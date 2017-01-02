@@ -15,7 +15,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	duk_set_top(ctx, 0);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 	duk_push_pointer(ctx, (void *) NULL);
 	printf("pointer: %p\n", duk_require_pointer(ctx, 0));
 	printf("pointer: %p\n", duk_require_pointer(ctx, 1));

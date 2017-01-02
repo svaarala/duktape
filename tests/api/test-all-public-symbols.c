@@ -168,6 +168,18 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_new(ctx, 0);
 	(void) duk_next(ctx, 0, 0);
 	(void) duk_normalize_index(ctx, 0);
+	(void) duk_opt_boolean(ctx, 0, 0);
+	(void) duk_opt_number(ctx, 0, 0.0);
+	(void) duk_opt_int(ctx, 0, 0);
+	(void) duk_opt_uint(ctx, 0, 0);
+	(void) duk_opt_string(ctx, 0, NULL);
+	(void) duk_opt_lstring(ctx, 0, NULL, NULL, 0);
+	(void) duk_opt_buffer(ctx, 0, NULL, NULL, 0);
+	(void) duk_opt_buffer_data(ctx, 0, NULL, NULL, 0);
+	(void) duk_opt_pointer(ctx, 0, NULL);
+	(void) duk_opt_c_function(ctx, 0, NULL);
+	(void) duk_opt_context(ctx, 0, NULL);
+	(void) duk_opt_heapptr(ctx, 0, NULL);
 	(void) duk_pcall_method(ctx, 0);
 	(void) duk_pcall_prop(ctx, 0, 0);
 	(void) duk_pcall(ctx, 0);

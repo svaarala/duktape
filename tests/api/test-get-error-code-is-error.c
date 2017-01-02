@@ -75,7 +75,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_push_dynamic_buffer(ctx, 0);
 	duk_push_dynamic_buffer(ctx, 1024);
 	duk_push_pointer(ctx, (void *) NULL);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	/* Some errors */
 	duk_eval_string(ctx, "new Error('error')");

@@ -60,7 +60,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		ptr[i] = (char) ('a' + i);
 	}
 	duk_push_pointer(ctx, (void *) NULL);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);

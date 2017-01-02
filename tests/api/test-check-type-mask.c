@@ -35,7 +35,7 @@ void test(duk_context *ctx) {
 	duk_push_c_function(ctx, my_c_func, DUK_VARARGS);
 	duk_push_fixed_buffer(ctx, 1024);
 	duk_push_dynamic_buffer(ctx, 1024);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n + 1; i++) {  /* end on invalid index on purpose */

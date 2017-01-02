@@ -14,6 +14,7 @@ index 10: number 123456789.000000, FP_NAN=0, FP_INFINITE=0, FP_ZERO=0, FP_SUBNOR
 index 11: number inf, FP_NAN=0, FP_INFINITE=1, FP_ZERO=0, FP_SUBNORMAL=0, FP_NORMAL=0, signbit=0
 index 12: number nan, FP_NAN=1, FP_INFINITE=0, FP_ZERO=0, FP_SUBNORMAL=0, FP_NORMAL=0, signbit=0
 index 13: number nan, FP_NAN=1, FP_INFINITE=0, FP_ZERO=0, FP_SUBNORMAL=0, FP_NORMAL=0, signbit=0
+index 14: number nan, FP_NAN=1, FP_INFINITE=0, FP_ZERO=0, FP_SUBNORMAL=0, FP_NORMAL=0, signbit=0
 ===*/
 
 void test(duk_context *ctx) {
@@ -36,7 +37,7 @@ void test(duk_context *ctx) {
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
-	for (i = 0; i < n; i++) {
+	for (i = 0; i <= n; i++) {
 		double d = duk_get_number(ctx, i);
 		int c = fpclassify(d);
 		printf("index %ld: number %lf, FP_NAN=%d, FP_INFINITE=%d, FP_ZERO=%d, FP_SUBNORMAL=%d, FP_NORMAL=%d, signbit=%d\n",
