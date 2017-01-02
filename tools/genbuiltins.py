@@ -3116,7 +3116,7 @@ def main():
             'plain': t1, 'base64': t2, 'define': s['define']
         })
     meta = {
-        'comment': 'Metadata for Duktape build',
+        'comment': 'Metadata for Duktape sources',
         'duk_version': ver,
         'duk_version_string': '%d.%d.%d' % (ver / 10000, (ver / 100) % 100, ver % 100),
         'git_commit': build_info['git_commit'],
