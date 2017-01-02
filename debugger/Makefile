@@ -54,7 +54,7 @@ node_modules:
 	npm install
 
 duk_debug_meta.json:
-	python ../tools/merge_debug_meta.py --output $@ \
+	python2 ../tools/merge_debug_meta.py --output $@ \
 		--class-names duk_classnames.yaml \
 		--opcodes duk_opcodes.yaml \
 		--debug-commands duk_debugcommands.yaml \
