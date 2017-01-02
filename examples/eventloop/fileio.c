@@ -56,7 +56,7 @@ void fileio_push_file_buffer(duk_context *ctx, const char *filename) {
 void fileio_push_file_string(duk_context *ctx, const char *filename) {
 	fileio_push_file_buffer(ctx, filename);
 	if (duk_is_buffer(ctx, -1)) {
-		duk_to_string(ctx, -1);
+		duk_buffer_to_string(ctx, -1);
 	}
 }
 

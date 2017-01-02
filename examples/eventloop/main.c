@@ -56,6 +56,19 @@ static void print_error(duk_context *ctx, FILE *f) {
 	duk_pop(ctx);
 }
 
+static duk_ret_t native_print(duk_context *ctx) {
+	duk_push_string(ctx, " ");
+	duk_insert(ctx, 0);
+	duk_join(ctx, duk_get_top(ctx) - 1);
+	printf("%s\n", duk_safe_to_string(ctx, -1));
+	return 0;
+}
+
+static void print_register(duk_context *ctx) {
+	duk_push_c_function(ctx, native_print, DUK_VARARGS);
+	duk_put_global_string(ctx, "print");
+}
+
 duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 	int comp_flags = 0;
 	int rc;
@@ -209,6 +222,7 @@ int main(int argc, char *argv[]) {
 
 	ctx = duk_create_heap_default();
 
+	print_register(ctx);
 	poll_register(ctx);
 	ncurses_register(ctx);
 	socket_register(ctx);
