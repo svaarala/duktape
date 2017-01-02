@@ -101,7 +101,7 @@ DUK_INTERNAL_DECL duk_hthread *duk_get_hthread(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_get_hcompfunc(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_get_hnatfunc(duk_context *ctx, duk_idx_t idx);
 
-DUK_INTERNAL_DECL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, duk_bool_t throw_flag, duk_bool_t *out_found);
+DUK_INTERNAL_DECL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len, duk_bool_t throw_flag, duk_bool_t *out_isbuffer);
 
 DUK_INTERNAL_DECL duk_hobject *duk_get_hobject_with_class(duk_context *ctx, duk_idx_t idx, duk_small_uint_t classnum);
 
