@@ -32,9 +32,6 @@ Checklist for ordinary releases
 
   - Verify by running Duktape cmdline and evaluating ``Duktape.version``
 
-  - Check dist-files/Makefile.sharedlibrary; currently duplicates version
-    number and needs to be fixed manually
-
 * Check dist-files/README.rst
 
 * Ensure LICENSE.txt is up-to-date
@@ -56,8 +53,8 @@ Checklist for ordinary releases
 * Compilation tests:
 
   - Clean compile for command line tool with (a) no options and (b) common
-    debug options (DUK_USE_DEBUG, DUK_USE_DEBUG_LEVEL=0, DUK_USE_SELF_TESTS,
-    DUK_USE_ASSERTIONS)
+    debug options (DUK_USE_DEBUG, DUK_USE_DEBUG_LEVEL=0, DUK_USE_DEBUG_PRINT=...,
+    DUK_USE_SELF_TESTS, DUK_USE_ASSERTIONS)
 
   - Compile both from ``src`` and ``src-separate``.
 
@@ -104,16 +101,6 @@ Checklist for ordinary releases
     + Linux SH4 gcc
 
   - Check ``make duk-clang``, covers ``-Wcast-align``
-
-* Compile command line tool as a Windows DLL, checks Windows symbol visibility
-  macros::
-
-    > cd dist
-    > python2 tools/configure --output-directory prep --source-directory src-input \
-      --config-metadata config --dll
-    > cl /W3 /O2 /Iprep /LD prep\duktape.c
-    > cl /W3 /O2 /Iprep /Feduk.exe examples\cmdline\duk_cmdline.c duktape.lib
-    > duk.exe
 
 * Test genconfig manually using metadata from the distributable
 
@@ -168,14 +155,6 @@ Checklist for ordinary releases
   - On x86-64:
 
     - make apitest
-
-  - Test with and without ``DUK_USE_UNION_INITIALIZERS``
-
-* Compile option matrix test
-
-  - Run 1000 iterations of ``util/matrix_compile.py`` which compiles and runs
-    random combinations of feature options and compilers (gcc, g++, clang) on
-    x86, x64, and x32
 
 * Regfuzz
 
