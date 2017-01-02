@@ -76,7 +76,7 @@ similar to Lua <code>lua_dump()</code>. See
 <h2>Metatables</h2>
 
 <p>There is no equivalent of Lua metatables in Ecmascript E5/E5.1, but
-<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-objects">Ecmascript E6 Proxy objects</a>
+<a href="http://www.ecma-international.org/ecma-262/6.0/index.html#sec-proxy-objects">Ecmascript ES2015 Proxy objects</a>
 provide similar functionality.  To allow property virtualization better than available in
 E5/E5.1, Duktape implements an <a href="#es6-proxy">ES2015 Proxy subset</a>.</p>
 
@@ -105,7 +105,7 @@ coroutines cannot yield from inside constructor calls or getter/setter calls.</p
 <h2>Multiple return values</h2>
 
 <p>Lua supports multiple return values, Duktape (or Ecmascript) currently
-doesn't.  This may change with Ecmascript E6, which has a syntax for
+doesn't.  This may change with Ecmascript ES2015, which has a syntax for
 multiple value returns.  The Duktape/C API reserves return values above 1
 so that they may be later used for multiple return values.</p>
 
