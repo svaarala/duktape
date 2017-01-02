@@ -1,24 +1,24 @@
 /*===
 top: 18
-index 0: value 0
-index 1: value 0
-index 2: value 0
-index 3: value 0
-index 4: value 0
-index 5: value 0
-index 6: value 0
-index 7: value 0
-index 8: value 0
+index 0: value 123
+index 1: value 123
+index 2: value 123
+index 3: value 123
+index 4: value 123
+index 5: value 123
+index 6: value DUK_INT_MIN
+index 7: value DUK_INT_MIN
+index 8: value -3
 index 9: value 0
 index 10: value 0
 index 11: value 3
 index 12: value 123456789
-index 13: value 4294967294
-index 14: value DUK_UINT_MAX
-index 15: value DUK_UINT_MAX
+index 13: value DUK_INT_MAX
+index 14: value DUK_INT_MAX
+index 15: value DUK_INT_MAX
 index 16: value 0
-index 17: value 0
-index 18: value 0
+index 17: value 123
+index 18: value 123
 ===*/
 
 void test(duk_context *ctx) {
@@ -46,15 +46,17 @@ void test(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i <= n; i++) {
-		duk_uint_t v;
+		duk_int_t v;
 
-		v = duk_get_uint(ctx, i);
+		v = duk_get_int_default(ctx, i, 123);
 
 		printf("index %ld: value ", (long) i);
-		if (v == DUK_UINT_MAX) {
-			printf("DUK_UINT_MAX");
+		if (v == DUK_INT_MIN) {
+			printf("DUK_INT_MIN");
+		} else if (v == DUK_INT_MAX) {
+			printf("DUK_INT_MAX");
 		} else {
-			printf("%lu", (unsigned long) v);
+			printf("%ld", (long) v);
 		}
 		printf("\n");
 	}
