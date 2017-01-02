@@ -1,17 +1,17 @@
 /*===
 top: 11
-index 0: boolean 0
-index 1: boolean 0
+index 0: boolean 123
+index 1: boolean 123
 index 2: boolean 1
 index 3: boolean 0
-index 4: boolean 0
-index 5: boolean 0
-index 6: boolean 0
-index 7: boolean 0
-index 8: boolean 0
-index 9: boolean 0
-index 10: boolean 0
-index 11: boolean 0
+index 4: boolean 123
+index 5: boolean 123
+index 6: boolean 123
+index 7: boolean 123
+index 8: boolean 123
+index 9: boolean 123
+index 10: boolean 123
+index 11: boolean 123
 ===*/
 
 void test(duk_context *ctx) {
@@ -32,6 +32,6 @@ void test(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i <= n; i++) {  /* End out-of-bounds on purpose. */
-		printf("index %ld: boolean %d\n", (long) i, (int) duk_get_boolean(ctx, i));
+		printf("index %ld: boolean %d\n", (long) i, (int) duk_opt_boolean(ctx, i, 123));
 	}
 }

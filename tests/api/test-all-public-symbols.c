@@ -168,6 +168,11 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_new(ctx, 0);
 	(void) duk_next(ctx, 0, 0);
 	(void) duk_normalize_index(ctx, 0);
+	(void) duk_opt_boolean(ctx, 0, 0);
+	(void) duk_opt_number(ctx, 0, 0);
+	(void) duk_opt_int(ctx, 0, 0);
+	(void) duk_opt_uint(ctx, 0, 0);
+	/*FIXME*/
 	(void) duk_pcall_method(ctx, 0);
 	(void) duk_pcall_prop(ctx, 0, 0);
 	(void) duk_pcall(ctx, 0);
