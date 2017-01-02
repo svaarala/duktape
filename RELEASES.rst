@@ -2369,5 +2369,9 @@ Planned
 2.1.0 (XXXX-XX-XX)
 ------------------
 
+* Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
+  property is first read, reducing memory usage in common cases where the view
+  is constructed directly without needing the ArrayBuffer object (GH-1225)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
