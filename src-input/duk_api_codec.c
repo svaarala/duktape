@@ -18,7 +18,10 @@ DUK_LOCAL const duk_uint8_t *duk__prep_codec_arg(duk_context *ctx, duk_idx_t idx
 
 	DUK_ASSERT(duk_is_valid_index(ctx, idx));  /* checked by caller */
 
-	ptr = duk_get_buffer_data_raw(ctx, idx, out_len, 0 /*throw_flag*/, &isbuffer);
+	/* FIXME: with def_ptr set to a stack related pointer, isbuffer could
+	 * be removed?
+	 */
+	ptr = duk_get_buffer_data_raw(ctx, idx, out_len, NULL /*def_ptr*/, 0 /*def_len*/, 0 /*throw_flag*/, &isbuffer);
 	if (isbuffer) {
 		DUK_ASSERT(*out_len == 0 || ptr != NULL);
 		return (const duk_uint8_t *) ptr;
