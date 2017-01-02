@@ -18,7 +18,7 @@ DUK_USE_DEBUG_WRITE:
   verbatim: "#define DUK_USE_DEBUG_WRITE(level,file,line,func,msg) do {fprintf(stdout, \\"D%ld %s:%ld (%s): %s\\\\n\\", (long) (level), (file), (long) (line), (func), (msg));} while (0)"
 EOF
 
-TESTCODE="for (var arr=[]; arr.length < 1e6; arr.push(1)); Duktape.compact(arr); var estimate = Duktape.info(arr)[4] / arr.length; print('duk_tval size approximation:', estimate);"
+TESTCODE="for (var arr=[]; arr.length < 1e6; arr.push(1)); Duktape.compact(arr); var estimate = Duktape.info(arr).pbytes / arr.length; print('duk_tval size approximation:', estimate);"
 
 for compiler in gcc clang; do
 	for archopt in -m64 -m32; do
