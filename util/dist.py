@@ -95,6 +95,7 @@ def delete_matching_files(dirpath, cb):
         if os.path.isfile(os.path.join(dirpath, fn)) and cb(fn):
             logger.debug('Deleting %r' % os.path.join(dirpath, fn))
             os.unlink(os.path.join(dirpath, fn))
+            #print('Deleting matching file: %r' % fn)
 
 def glob_files(pattern):
     return glob.glob(pattern)
@@ -795,6 +796,7 @@ def main():
     # Clean up remaining temp files.
 
     delete_matching_files(dist, lambda x: x[-4:] == '.tmp')
+    delete_matching_files(os.path.join(dist, 'tools'), lambda x: x[-4:] == '.pyc')
 
     # Create SPDX license once all other files are in place (and cleaned).
 
