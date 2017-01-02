@@ -27,7 +27,7 @@ Main features:
 * Minimal platform dependencies
 * Combined reference counting and mark-and-sweep garbage collection with finalization
 * Custom features like co-routines
-* Property virtualization using a subset of Ecmascript E6 Proxy object
+* Property virtualization using a subset of Ecmascript E2015 Proxy object
 * Bytecode dump/load for caching compiled functions
 * Distributable includes an optional logging framework, CommonJS-based module
   loading implementations, etc

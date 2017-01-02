@@ -217,7 +217,7 @@ NOTE: This list is not exhaustive, see ``config/examples/low_memory.yaml``.
 
   - ``#undef DUK_USE_JC``
 
-* Features borrowed from Ecmascript E6 can usually be disabled
+* Features borrowed from Ecmascript ES2015 can usually be disabled
   (not exhaustive):
 
   - ``#undef DUK_USE_ES6_OBJECT_SETPROTOTYPEOF``
