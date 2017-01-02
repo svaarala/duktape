@@ -525,20 +525,6 @@ apitest: apiprep
 	@echo "### apitest"
 	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --num-threads 1 --log-file=/tmp/duk-api-test.log tests/api/
 
-# Matrix tests.
-.PHONY: matrix10
-matrix10: dist
-	cd dist; $(PYTHON) ../util/matrix_compile.py --count=10
-.PHONY: matrix100
-matrix100: dist
-	cd dist; $(PYTHON) ../util/matrix_compile.py --count=100
-.PHONY: matrix1000
-matrix1000: dist
-	cd dist; $(PYTHON) ../util/matrix_compile.py --count=1000
-.PHONY: matrix10000
-matrix10000: dist
-	cd dist; $(PYTHON) ../util/matrix_compile.py --count=10000
-
 # Dukweb.js test.
 .PHONY: dukwebtest
 dukwebtest: dukweb.js jquery-1.11.0.js
