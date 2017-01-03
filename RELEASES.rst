@@ -2557,6 +2557,12 @@ Planned
 
 * Add shebang support to module-node (GH-1452)
 
+* Add duk_opt_xxx() API calls which behave like duk_require_xxx() but allow a
+  default value to be used when the index doesn't exist or the value is
+  undefined (null is rejected with TypeError to mimic ES2015 optional
+  arguments); for example: "int port = duk_opt_int(ctx, -3, 80);"
+  (GH-1458)
+
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)
