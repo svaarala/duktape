@@ -2369,6 +2369,11 @@ Planned
 2.1.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_opt_xxx() API calls which behave like duk_get_xxx() but allow a
+  custom default value to be given if the value has unexpected type or the
+  index is invalid; for example: "int port = duk_opt_int(ctx, -3, 80);"
+  (GH-1263, GH-1264)
+
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
   "new Function('return this')()"; implemented based on
