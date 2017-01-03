@@ -499,6 +499,7 @@ def main():
 
     copy_files([
         'console-minimal.js',
+        'global.js',
         'object-prototype-definegetter.js',
         'object-prototype-definesetter.js',
         'object-assign.js',

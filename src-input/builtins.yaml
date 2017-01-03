@@ -168,6 +168,16 @@ objects:
     bidx: true
 
     properties:
+      # 'global' binding giving easy to access to the global object.
+      # Not yet standard, see https://github.com/tc39/proposal-global.
+      - key: "global"
+        value:
+          type: object
+          id: bi_global
+        attributes: "wc"
+        # This could be stripped when DUK_USE_GLOBAL_BUILTIN is disabled
+        # but keep for now (the property is quite fundamental).
+
       - key: "NaN"
         value:
           type: double

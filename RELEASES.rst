@@ -2369,6 +2369,11 @@ Planned
 2.1.0 (XXXX-XX-XX)
 ------------------
 
+* Add a "global" property to the global object to provide easy access to the
+  global object itself without needing idioms like
+  "new Function('return this')()"; implemented based on
+  https://github.com/tc39/proposal-global (GH-1259, GH-1260)
+
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)
