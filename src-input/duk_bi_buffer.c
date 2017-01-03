@@ -248,26 +248,6 @@ DUK_LOCAL void duk__set_bufobj_buffer(duk_context *ctx, duk_hbufobj *h_bufobj, d
 	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
 }
 
-DUK_LOCAL duk_hbufobj *duk__push_arraybuffer_with_length(duk_context *ctx, duk_uint_t len) {
-	duk_hbuffer *h_val;
-	duk_hbufobj *h_bufobj;
-
-	(void) duk_push_fixed_buffer_zero(ctx, (duk_size_t) len);
-	h_val = (duk_hbuffer *) duk_known_hbuffer(ctx, -1);
-
-	h_bufobj = duk_push_bufobj_raw(ctx,
-	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                               DUK_HOBJECT_FLAG_BUFOBJ |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAYBUFFER),
-	                               DUK_BIDX_ARRAYBUFFER_PROTOTYPE);
-	DUK_ASSERT(h_bufobj != NULL);
-
-	duk__set_bufobj_buffer(ctx, h_bufobj, h_val);
-	DUK_ASSERT_HBUFOBJ_VALID(h_bufobj);
-
-	return h_bufobj;
-}
-
 /* Shared offset/length coercion helper. */
 DUK_LOCAL void duk__resolve_offset_opt_length(duk_context *ctx,
                                               duk_hbufobj *h_bufarg,
