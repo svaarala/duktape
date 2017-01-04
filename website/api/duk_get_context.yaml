@@ -44,4 +44,7 @@ tags:
   - stack
   - borrowed
 
+seealso:
+  - duk_get_context_default
+
 introduced: 1.0.0

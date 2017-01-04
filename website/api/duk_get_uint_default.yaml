@@ -1,0 +1,23 @@
+name: duk_get_uint_default
+
+proto: |
+  duk_uint_t duk_get_uint_default(duk_context *ctx, duk_idx_t idx, duk_uint_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_uint">duk_get_uint()</a></code>
+  but with an explicit default value, returned when the value is not a
+  number or the index is invalid.</p>
+
+example: |
+  unsigned int count = (unsigned int) duk_get_uint_default(ctx, 1, 3);  /* default: 3 */
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_uint
+
+introduced: 2.1.0

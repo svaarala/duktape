@@ -30,6 +30,8 @@ example: |
 
 seealso:
   - duk_get_lstring
+  - duk_get_string_default
+  - duk_get_lstring_default
 
 tags:
   - stack

@@ -17,7 +17,7 @@ summary: |
 example: |
   duk_context *target_ctx;
 
-  target_ctx = duk_get_context(ctx, 2, default_ctx);
+  target_ctx = duk_opt_context(ctx, 2, default_ctx);
 
 tags:
   - stack

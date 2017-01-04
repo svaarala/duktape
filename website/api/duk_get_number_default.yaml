@@ -1,0 +1,23 @@
+name: duk_get_number_default
+
+proto: |
+  duk_double_t duk_get_number_default(duk_context *ctx, duk_idx_t idx, duk_double_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_number">duk_get_number()</a></code>
+  but with an explicit default value, returned when the value is not a
+  number or the index is invalid.</p>
+
+example: |
+  duk_double_t backoff_multiplier = duk_get_number_default(ctx, 2, 1.5);  /* default: 1.5 */
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_number
+
+introduced: 2.1.0

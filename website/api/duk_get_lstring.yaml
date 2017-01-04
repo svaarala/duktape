@@ -31,6 +31,8 @@ example: |
 
 seealso:
   - duk_get_string
+  - duk_get_lstring_default
+  - duk_get_string_default
 
 tags:
   - stack

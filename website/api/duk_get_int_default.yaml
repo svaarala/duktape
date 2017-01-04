@@ -1,0 +1,23 @@
+name: duk_get_int_default
+
+proto: |
+  duk_int_t duk_get_int_default(duk_context *ctx, duk_idx_t idx, duk_int_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_int">duk_get_int()</a></code>
+  but with an explicit default value, returned when the value is not a
+  number or the index is invalid.</p>
+
+example: |
+  int port = (int) duk_get_int_default(ctx, 1, 80);  /* default: 80 */
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_int
+
+introduced: 2.1.0

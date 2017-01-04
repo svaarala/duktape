@@ -33,7 +33,7 @@ example: |
   duk_size_t sz;
   char buf[256];
 
-  /* Use a buffer given at index 2, or default to 'buf'. */
+  /* Use a buffer or buffer object given at index 2, or default to 'buf'. */
   ptr = duk_opt_buffer_data(ctx, 2, &sz, (void *) buf, sizeof(buf));
 
 tags:

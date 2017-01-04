@@ -23,4 +23,7 @@ tags:
   - stack
   - function
 
+seealso:
+  - duk_get_c_function_default
+
 introduced: 1.0.0

@@ -1,0 +1,29 @@
+name: duk_get_lstring_default
+
+proto: |
+  const char *duk_get_lstring_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len, const char *def_ptr, duk_size_t def_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_lstring">duk_get_lstring()</a></code>
+  but with an explicit default value, returned when the value is not a
+  string or the index is invalid.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  const char *str;
+  duk_size_t len;
+
+  str = duk_get_lstring_default(ctx, -3, &len, "foo" "\x00" "bar", 7);
+
+seealso:
+  - duk_get_string_default
+
+tags:
+  - stack
+  - string
+
+introduced: 2.1.0

@@ -23,4 +23,7 @@ example: |
 tags:
   - stack
 
+seealso:
+  - duk_get_boolean_default
+
 introduced: 1.0.0

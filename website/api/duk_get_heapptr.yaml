@@ -47,5 +47,6 @@ tags:
 seealso:
   - duk_require_heapptr
   - duk_push_heapptr
+  - duk_get_heapptr_default
 
 introduced: 1.1.0

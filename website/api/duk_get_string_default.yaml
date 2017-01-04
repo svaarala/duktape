@@ -1,0 +1,26 @@
+name: duk_get_string_default
+
+proto: |
+  const char *duk_get_string_default(duk_context *ctx, duk_idx_t idx, const char *def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_string">duk_get_string()</a></code>
+  but with an explicit default value, returned when the value is not a
+  string or the index is invalid.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  const char *host = duk_get_string_default(ctx, 3, "localhost");
+
+seealso:
+  - duk_get_lstring_default
+
+tags:
+  - stack
+  - string
+
+introduced: 2.1.0

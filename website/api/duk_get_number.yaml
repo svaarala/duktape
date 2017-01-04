@@ -17,4 +17,7 @@ example: |
 tags:
   - stack
 
+seealso:
+  - duk_get_number_default
+
 introduced: 1.0.0

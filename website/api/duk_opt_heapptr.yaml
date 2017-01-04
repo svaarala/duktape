@@ -1,7 +1,7 @@
 name: duk_opt_heapptr
 
 proto: |
-  void *duk_opt_heapptr(duk_context *ctx, duk_idx_t idx);
+  void *duk_opt_heapptr(duk_context *ctx, duk_idx_t idx, void *def_value);
 
 stack: |
   [ ... val! ... ]

@@ -1,0 +1,28 @@
+name: duk_get_context_default
+
+proto: |
+  duk_context *duk_get_context_default(duk_context *ctx, duk_idx_t idx, duk_context *def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_context">duk_get_context()</a></code>
+  but with an explicit default value, returned when the value is not a
+  Duktape thread or the index is invalid.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  duk_context *target_ctx;
+
+  target_ctx = duk_get_context_default(ctx, 2, default_ctx);
+
+tags:
+  - stack
+  - borrowed
+
+seealso:
+  - duk_get_context
+
+introduced: 2.1.0

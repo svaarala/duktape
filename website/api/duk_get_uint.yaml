@@ -40,4 +40,7 @@ example: |
 tags:
   - stack
 
+seealso:
+  - duk_get_uint_default
+
 introduced: 1.0.0
