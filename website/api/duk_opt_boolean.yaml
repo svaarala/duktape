@@ -1,0 +1,22 @@
+name: duk_opt_boolean
+
+proto: |
+  duk_bool_t duk_opt_boolean(duk_context *ctx, duk_idx_t idx, duk_bool_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the boolean value at <code>idx</code> without modifying or coercing
+  the value.  Returns 1 if the value is <code>true</code>, 0 if the value is
+  <code>false</code>.  If the value is <code>undefined</code> or the index is
+  invalid, <code>def_value</code> default value is returned.  In other cases
+  (<code>null</code> or non-matching type) throws an error.</p>
+
+example: |
+  duk_bool_t flag_xyz = duk_opt_boolean(ctx, 2, 1);  /* default: true */
+
+tags:
+  - stack
+
+introduced: 2.1.0

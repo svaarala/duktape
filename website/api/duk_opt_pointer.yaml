@@ -1,0 +1,24 @@
+name: duk_opt_pointer
+
+proto: |
+  void *duk_opt_pointer(duk_context *ctx, duk_idx_t idx, void *def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the pointer value at <code>idx</code> as <code>void *</code> without
+  modifying or coercing the value.  If the value is <code>undefined</code> or
+  the index is invalid, <code>def_value</code> default value is returned.
+  In other cases (<code>null</code> or non-matching type) throws an error.</p>
+
+example: |
+  void *ptr;
+
+  ptr = duk_opt_pointer(ctx, -3, (void *) 0x12345678);
+  printf("my pointer is: %p\n", ptr);
+
+tags:
+  - stack
+
+introduced: 2.1.0

@@ -1,0 +1,47 @@
+name: duk_opt_buffer_data
+
+proto: |
+  void *duk_opt_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the data pointer for a plain buffer or a buffer object (ArrayBuffer,
+  Node.js Buffer, DataView, or TypedArray view) value at <code>idx</code> without
+  modifying or coercing the value.  Return a non-<code>NULL</code> pointer if the
+  value is a valid buffer with a non-zero size.  For a zero-size buffer, may return
+  a <code>NULL</code> or a non-<code>NULL</code> pointer.  If <code>out_size</code>
+  is non-<code>NULL</code>, the size of the buffer is written to <code>*out_size</code>.
+  If the value is <code>undefined</code> or the index is invalid, <code>def_ptr</code>
+  default value is returned and the <code>def_len</code> default length is written
+  to <code>*out_size</code> (if <code>out_size</code> is non-<code>NULL</code>).
+  In other cases (<code>null</code> and non-matching type) throws an error.
+  Also throws if the value is a buffer object whose "backing buffer" doesn't
+  fully cover the buffer object's apparent size.</p>
+
+  <p>The data area indicated by the return pointer and length is the full
+  buffer for a plain buffer value, and the active "slice" for a buffer object.
+  The length returned is expressed in bytes (instead of elements), so that you
+  can always access <code>ptr[0]</code> to <code>ptr[len - 1]</code>.
+  See <a href="#duk_get_buffer_data">duk_get_buffer_data()</a> for examples.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  void *ptr;
+  duk_size_t sz;
+  char buf[256];
+
+  /* Use a buffer given at index 2, or default to 'buf'. */
+  ptr = duk_opt_buffer_data(ctx, 2, &sz, (void *) buf, sizeof(buf));
+
+tags:
+  - stack
+  - buffer
+  - bufferobject
+
+seealso:
+  - duk_opt_buffer
+
+introduced: 2.1.0

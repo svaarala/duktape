@@ -19,6 +19,7 @@ example: |
 tags:
   - stack
   - buffer
+  - bufferobject
 
 seealso:
   - duk_is_buffer

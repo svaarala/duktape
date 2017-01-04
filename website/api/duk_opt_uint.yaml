@@ -1,0 +1,23 @@
+name: duk_opt_uint
+
+proto: |
+  duk_uint_t duk_opt_uint(duk_context *ctx, duk_idx_t idx, duk_uint_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the number at <code>idx</code> and convert it to a C <code>duk_uint_t</code>
+  by first clamping the value between [0, DUK_UINT_MAX] and then
+  truncating towards zero.  The value on the stack is not modified.
+  If the value is <code>undefined</code> or the index is invalid,
+  <code>def_value</code> default value is returned.  In other cases
+  (<code>null</code> or non-matching type) throws an error.</p>
+
+example: |
+  unsigned int count = (unsigned int) duk_opt_uint(ctx, 1, 3);  /* default: 3 */
+
+tags:
+  - stack
+
+introduced: 2.1.0

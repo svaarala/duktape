@@ -9,7 +9,8 @@ stack: |
 summary: |
   <p>Like <code><a href="#duk_get_buffer_data">duk_get_buffer_data()</a></code>,
   but throws an error if the value at <code>idx</code> is not a plain buffer
-  or a buffer object or if the index is invalid.</p>
+  or a buffer object, the value is a buffer object whose "backing buffer" doesn't
+  fully cover the buffer object's apparent size, or the index is invalid.</p>
 
 example: |
   void *ptr;

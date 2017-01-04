@@ -11,6 +11,8 @@ summary: |
   but throws an error if the value at <code>idx</code> is not a string
   or if the index is invalid.</p>
 
+  <div include="string-non-null-zero-length.html" />
+
   <div include="symbols-are-strings.html" />
 
 example: |
@@ -18,6 +20,9 @@ example: |
 
   buf = duk_require_string(ctx, -3);
   printf("value is a string: %s\n", buf);
+
+seealso:
+  - duk_require_lstring
 
 tags:
   - stack
