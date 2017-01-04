@@ -2378,5 +2378,7 @@ Planned
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)
 
+* Add a JSON.stringify() fast path for plain buffers (GH-1238)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
