@@ -1366,10 +1366,10 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_repeat(duk_context *ctx) {
 		} else {
 			DUK_MEMCPY((void *) p, (const void *) src, copy_size);
 			p += copy_size;
-			copy_size *= 2;
 		}
 
 		src = (const duk_uint8_t *) buf;  /* Use buf as source for larger copies. */
+		copy_size = (duk_size_t) (p - buf);
 	}
 #endif  /* DUK_USE_PREFER_SIZE */
 

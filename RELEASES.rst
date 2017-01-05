@@ -2366,6 +2366,9 @@ Planned
 1.7.0 (XXXX-XX-XX)
 ------------------
 
+2.0.1 (XXXX-XX-XX)
+------------------
+
 2.1.0 (XXXX-XX-XX)
 ------------------
 
@@ -2379,6 +2382,9 @@ Planned
   is constructed directly without needing the ArrayBuffer object (GH-1225)
 
 * Add a JSON.stringify() fast path for plain buffers (GH-1238)
+
+* Fix memory unsafe behavior in Duktape 2.0.0 String.prototype.repeat()
+  (GH-1270)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
