@@ -2386,5 +2386,8 @@ Planned
 * Fix memory unsafe behavior in Duktape 2.0.0 String.prototype.repeat()
   (GH-1270)
 
+* Fix incorrect exponentation operator behavior which happened at least on
+  Linux gcc 4.8.4 with -O2 (not -Os) (GH-1272)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
