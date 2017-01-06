@@ -276,7 +276,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 			break;
 		}
 		default: {
-			DUK_UNREACHABLE();
+			/* Possible with DUK_OP_EXP. */
 			goto skip_fastint;
 		}
 		}
