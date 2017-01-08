@@ -2383,6 +2383,10 @@ Planned
 
 * Add a JSON.stringify() fast path for plain buffers (GH-1238)
 
+* Fix duk_hstring array index check integer overflow, which caused certain
+  integer strings (such as '7394299990') to be incorrectly treated as array
+  indices (GH-1273)
+
 * Fix memory unsafe behavior in Duktape 2.0.0 String.prototype.repeat()
   (GH-1270)
 
