@@ -536,6 +536,9 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 
 	DUK_STATS_INC(thr->heap, stats_object_realloc_props);
 
+	/* Invalidate property cache.  FIXME: also at the end? */
+	duk_propcache_invalidate(thr);
+
 	/*
 	 *  Pre resize assertions.
 	 */
@@ -2692,10 +2695,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 */
 		duk_tval *storage;
 		storage = duk_propcache_lookup(thr, curr, key);
+		DUK_D(DUK_DPRINT("propcache GETPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
 		if (storage) {
-			DUK_D(DUK_DPRINT("cached lookup %!O -> %!T", key, storage));
-			duk_pop(ctx);
+			DUK_D(DUK_DPRINT("cached GETPROP lookup %!O -> %!T", key, storage));
 			duk_push_tval(ctx, storage);
+			duk_remove(ctx, -2);  /* FIXME: careful with order */
 			/* FIXME: assume no post process? */
 			return 1;
 		}
@@ -2825,9 +2829,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 #endif   /* !DUK_USE_NONSTD_FUNC_CALLER_PROPERTY */
 
-	if (orig_base && arr_idx == DUK__NO_ARRAY_INDEX) {  /* FIXME: condition */
+	if (orig_base && arr_idx == DUK__NO_ARRAY_INDEX && desc.e_idx >= 0) {  /* FIXME: condition */
 		/* FIXME: other conditions, e.g. not a getter */
-		duk_propcache_insert(thr, orig_base, key, DUK_GET_TVAL_NEGIDX(ctx, -1));
+		/* FIXME: note that caching is based on orig_base, but storage location is in 'curr'! */
+		duk_tval *tv_storage;
+		tv_storage = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, curr, desc.e_idx);
+		DUK_D(DUK_DPRINT("insert propcache GETPROP %!O", key));
+		duk_propcache_insert(thr, orig_base, key, tv_storage);
 	}
 
 	duk_remove_m2(ctx);  /* [key result] -> [result] */
@@ -3353,6 +3361,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	duk_tval tv_key_copy;
 	duk_tval tv_val_copy;
 	duk_hobject *orig = NULL;  /* NULL if tv_obj is primitive */
+	duk_hobject *orig_base;
 	duk_hobject *curr;
 	duk_hstring *key = NULL;
 	duk_propdesc desc;
@@ -3378,7 +3387,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	DUK_STATS_INC(thr->heap, stats_putprop_all);
 
+	/* FIXME... with storage location caching, only need to invalidate
+	 * if new properties are established (may shadow existing chains)?
+	 */
+#if 0
 	duk_propcache_invalidate(thr);
+#endif
 
 	/*
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
@@ -3677,6 +3691,23 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
  lookup:
 
+	DUK_ASSERT(curr != NULL);
+	orig_base = curr;
+
+	{
+		/* FIXME: when base is primitive, we cache the "wrong" property,
+		 * which is fine.
+		 */
+		duk_tval *storage;
+		storage = duk_propcache_lookup(thr, orig_base, key);
+		DUK_D(DUK_DPRINT("propcache PUTPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
+		if (storage) {
+			DUK_D(DUK_DPRINT("cached PUTPROP lookup %!O -> old value %!T", key, storage));
+			DUK_TVAL_SET_TVAL_UPDREF(thr, storage, tv_val);
+			goto success_no_arguments_exotic;
+		}
+	}
+
 	/*
 	 *  Check whether the property already exists in the prototype chain.
 	 *  Note that the actual write goes into the original base object
@@ -3901,6 +3932,14 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	if (desc.e_idx >= 0) {
 		tv = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, orig, desc.e_idx);
+
+		/* FIXME argument exotic condition... */
+		if (1) {  /* FIXME: condition */
+			/* FIXME: other conditions, e.g. not a getter */
+			DUK_D(DUK_DPRINT("insert propcache PUTPROP %!O", key));
+			duk_propcache_insert(thr, orig_base, key, tv);
+		}
+
 		DUK_DDD(DUK_DDDPRINT("previous entry value: %!iT", (duk_tval *) tv));
 		DUK_TVAL_SET_TVAL_UPDREF(thr, tv, tv_val);  /* side effects; e_idx may be invalidated */
 		/* don't touch property attributes or hash part */
@@ -4102,6 +4141,12 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 
  write_to_entry_part:
+
+	/* Must invalidate: new property may affect existing inheritance
+	 * chains.
+	 */
+	duk_propcache_invalidate(thr);
+
 
 	/*
 	 *  Write to entry part

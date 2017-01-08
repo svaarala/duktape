@@ -308,7 +308,7 @@ struct duk_propcache_entry {
 	/* All references are borrowed. */
 	duk_hobject *obj_lookup;
 	duk_hstring *key_lookup;
-	duk_tval value;
+	duk_tval *val_storage;
 	duk_uint32_t generation;
 };
 

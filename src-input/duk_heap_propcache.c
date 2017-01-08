@@ -5,6 +5,7 @@ DUK_LOCAL DUK_NOINLINE void duk__propcache_scrub(duk_heap *heap) {
 	 * to zero, and the generation count is then bumped once more
 	 * to one to invalidate the scrubbed entries.
 	 */
+	DUK_D(DUK_DPRINT("INVALIDATE propcache"));
 	DUK_MEMZERO((void *) heap->propcache, sizeof(heap->propcache));
 	heap->propcache_generation++;
 }
@@ -33,10 +34,15 @@ DUK_INTERNAL duk_tval *duk_propcache_lookup(duk_hthread *thr, duk_hobject *obj, 
 	prophash = duk__compute_prophash(obj, key);
 	ent = thr->heap->propcache + prophash;
 
+	DUK_D(DUK_DPRINT("lookup, prophash %lu, gen %lu, ent->gen %lu, ent->obj %p, ent->key %p, ent->val %p",
+	                 (unsigned long) prophash, (unsigned long) thr->heap->propcache_generation,
+	                 (unsigned long) ent->generation, (void *) ent->obj_lookup,
+	                 (void *) ent->key_lookup, (void *) ent->val_storage));
+
 	if (ent->generation == thr->heap->propcache_generation &&
 	    ent->obj_lookup == obj &&
 	    ent->key_lookup == key) {
-		return &ent->value;
+		return ent->val_storage;  /* Storage location. */
 	}
 
 	return NULL;
@@ -51,5 +57,5 @@ DUK_INTERNAL void duk_propcache_insert(duk_hthread *thr, duk_hobject *obj, duk_h
 	ent->generation = thr->heap->propcache_generation;
 	ent->obj_lookup = obj;
 	ent->key_lookup = key;
-	DUK_TVAL_SET_TVAL(&ent->value, tv);
+	ent->val_storage = tv;
 }
