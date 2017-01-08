@@ -81,12 +81,16 @@ duk_hstring *duk__alloc_init_hstring(duk_heap *heap,
 
 	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
 #if defined(DUK_USE_HSTRING_ARRIDX)
-	if (duk_js_to_arrayindex_raw_string(str, blen, &res->arridx)) {
-#else
-	if (duk_js_to_arrayindex_raw_string(str, blen, &dummy)) {
-#endif
+	res->arridx = duk_js_to_arrayindex_string(str, blen);
+	if (res->arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
 		DUK_HSTRING_SET_ARRIDX(res);
 	}
+#else
+	dummy = duk_js_to_arrayindex_string(str, blen);
+	if (dummy != DUK_HSTRING_NO_ARRAY_INDEX) {
+		DUK_HSTRING_SET_ARRIDX(res);
+	}
+#endif
 
 	/* All strings beginning with specific (invalid UTF-8) byte prefixes
 	 * are treated as symbols.

@@ -146,11 +146,11 @@
  * avoids helper call if string has no array index value.
  */
 #define DUK_HSTRING_GET_ARRIDX_FAST(h)  \
-	(DUK_HSTRING_HAS_ARRIDX((h)) ? duk_js_to_arrayindex_string_helper((h)) : DUK_HSTRING_NO_ARRAY_INDEX)
+	(DUK_HSTRING_HAS_ARRIDX((h)) ? duk_js_to_arrayindex_hstring_fast_known((h)) : DUK_HSTRING_NO_ARRAY_INDEX)
 
 /* Slower but more compact variant. */
 #define DUK_HSTRING_GET_ARRIDX_SLOW(h)  \
-	(duk_js_to_arrayindex_string_helper((h)))
+	(duk_js_to_arrayindex_hstring_fast((h)))
 #endif
 
 /*
