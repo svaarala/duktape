@@ -11,8 +11,8 @@
  *
  *  All heap objects share the same flags and refcount fields.  Objects other
  *  than strings also need to have a single or double linked list pointers
- *  for insertion into the "heap allocated" list.  Strings are held in the
- *  heap-wide string table so they don't need link pointers.
+ *  for insertion into the "heap allocated" list.  Strings have single linked
+ *  list pointers for string table chaining.
  *
  *  Technically, 'h_refcount' must be wide enough to guarantee that it cannot
  *  wrap (otherwise objects might be freed incorrectly after wrapping).  This
@@ -24,6 +24,8 @@
  *  Heap header size on 32-bit platforms: 8 bytes without reference counting,
  *  16 bytes with reference counting.
  */
+
+/* XXX: macro for shared header fields (avoids some padding issues) */
 
 struct duk_heaphdr {
 	duk_uint32_t h_flags;
@@ -83,6 +85,9 @@ struct duk_heaphdr_string {
 #else
 	duk_uint16_t h_strextra16;
 #endif
+
+	duk_hstring *h_next;
+	/* No 'h_prev' pointer for strings. */
 };
 
 #define DUK_HEAPHDR_FLAGS_TYPE_MASK      0x00000003UL
@@ -240,7 +245,9 @@ struct duk_heaphdr_string {
 	} while (0)
 #endif
 
-#define DUK_HEAPHDR_STRING_INIT_NULLS(h)  /* currently nop */
+#define DUK_HEAPHDR_STRING_INIT_NULLS(h)  do { \
+		(h)->h_next = NULL; \
+	} while (0)
 
 /*
  *  Type tests

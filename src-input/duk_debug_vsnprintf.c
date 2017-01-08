@@ -837,7 +837,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 
 			if (ch == DUK_ASC_STAR) {
 				/* unsupported: would consume multiple args */
-				goto error;
+				goto format_error;
 			} else if (ch == DUK_ASC_PERCENT) {
 				duk_fb_put_byte(&fb, (duk_uint8_t) DUK_ASC_PERCENT);
 				break;
@@ -889,7 +889,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 				fmtlen = (duk_size_t) (p - p_begfmt);
 				if (fmtlen >= sizeof(fmtbuf)) {
 					/* format is too large, abort */
-					goto error;
+					goto format_error;
 				}
 				DUK_MEMZERO(fmtbuf, sizeof(fmtbuf));
 				DUK_MEMCPY(fmtbuf, p_begfmt, fmtlen);
@@ -964,7 +964,7 @@ DUK_INTERNAL duk_int_t duk_debug_vsnprintf(char *str, duk_size_t size, const cha
 	}
 	goto done;
 
- error:
+ format_error:
 	duk_fb_put_cstring(&fb, "FMTERR");
 	/* fall through */
 

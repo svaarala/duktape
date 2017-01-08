@@ -210,13 +210,13 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 					t <<= 6;
 				} else {
 					DUK_ASSERT(x == -1);
-					goto error;
+					goto decode_error;
 				}
 			} else {
 				DUK_ASSERT(x >= 0 && x <= 63);
 				if (n_equal > 0) {
 					/* Don't allow actual chars after equal sign. */
-					goto error;
+					goto decode_error;
 				}
 				t = (t << 6) + x;
 			}
@@ -242,7 +242,7 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 						/* XX== */
 						dst -= 2;
 					} else {
-						goto error;  /* invalid padding */
+						goto decode_error;  /* invalid padding */
 					}
 
 					/* Continue parsing after padding, allows concatenated,
@@ -266,13 +266,13 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 		 * (e.g. "xxxxyy" instead of "xxxxyy==".  Currently not
 		 * accepted.
 		 */
-		goto error;
+		goto decode_error;
 	}
 
 	*out_dst_final = dst;
 	return 1;
 
- error:
+ decode_error:
 	return 0;
 }
 #else  /* DUK_USE_BASE64_FASTPATH */
@@ -314,12 +314,12 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 			/* allow basic ASCII whitespace */
 			continue;
 		} else {
-			goto error;
+			goto decode_error;
 		}
 
 		if (n_equal > 0) {
 			/* Don't allow mixed padding and actual chars. */
-			goto error;
+			goto decode_error;
 		}
 		t = (t << 6) + y;
 	 skip_add:
@@ -338,7 +338,7 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 				} else if (n_equal == 2) {
 					dst -= 2;
 				} else {
-					goto error;  /* invalid padding */
+					goto decode_error;  /* invalid padding */
 				}
 
 				/* Here we can choose either to end parsing and ignore
@@ -361,13 +361,13 @@ DUK_LOCAL duk_bool_t duk__base64_decode_helper(const duk_uint8_t *src, duk_size_
 		 * (e.g. "xxxxyy" instead of "xxxxyy==".  Currently not
 		 * accepted.
 		 */
-		goto error;
+		goto decode_error;
 	}
 
 	*out_dst_final = dst;
 	return 1;
 
- error:
+ decode_error:
 	return 0;
 }
 #endif  /* DUK_USE_BASE64_FASTPATH */

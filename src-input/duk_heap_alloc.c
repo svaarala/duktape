@@ -164,7 +164,7 @@ DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 
 DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	/* strings are only tracked by stringtable */
-	duk_heap_free_strtab(heap);
+	duk_heap_strtable_free(heap);
 }
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
@@ -265,7 +265,7 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("free heap: %p", (void *) heap));
 
 #if defined(DUK_USE_DEBUG)
-	duk_heap_dump_strtab(heap);
+	duk_heap_strtable_dump(heap);
 #endif
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
@@ -384,9 +384,9 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 		 */
 		DUK_ASSERT(len <= 0xffffUL);
 		DUK_DDD(DUK_DDDPRINT("intern built-in string %ld", (long) i));
-		h = duk_heap_string_intern(heap, tmp, len);
+		h = duk_heap_strtable_intern(heap, tmp, len);
 		if (!h) {
-			goto error;
+			goto failed;
 		}
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h));
 
@@ -421,7 +421,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 
 	return 1;
 
- error:
+ failed:
 	return 0;
 }
 #endif  /* DUK_USE_ROM_STRINGS */
@@ -584,9 +584,6 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_propvalue);
 	DUK__DUMPSZ(duk_propdesc);
 	DUK__DUMPSZ(duk_heap);
-#if defined(DUK_USE_STRTAB_CHAIN)
-	DUK__DUMPSZ(duk_strtab_entry);
-#endif
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
 	DUK__DUMPSZ(duk_strcache);
@@ -695,8 +692,15 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
                          void *heap_udata,
                          duk_fatal_function fatal_func) {
 	duk_heap *res = NULL;
+	duk_uint32_t st_initsize;
 
 	DUK_D(DUK_DPRINT("allocate heap"));
+
+	/*
+	 *  Random config sanity asserts
+	 */
+
+	DUK_ASSERT(DUK_USE_STRTAB_MINSIZE >= 64);
 
 	/*
 	 *  Debug dump type sizes
@@ -774,7 +778,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	res = (duk_heap *) alloc_func(heap_udata, sizeof(duk_heap));
 	if (!res) {
-		goto error;
+		goto failed;
 	}
 
 	/*
@@ -795,14 +799,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
-#if defined(DUK_USE_STRTAB_CHAIN)
-	/* nothing to NULL */
-#elif defined(DUK_USE_STRTAB_PROBE)
-#if defined(DUK_USE_HEAPPTR16)
-	res->strtable16 = (duk_uint16_t *) NULL;
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+	res->strtable16 = NULL;
 #else
-	res->strtable = (duk_hstring **) NULL;
-#endif
+	res->strtable = NULL;
 #endif
 #if defined(DUK_USE_ROM_STRINGS)
 	/* no res->strs[] */
@@ -839,7 +839,6 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #if defined(DUK_USE_HEAPPTR16)
 	/* XXX: zero assumption */
 	res->heapptr_null16 = DUK_USE_HEAPPTR_ENC16(res->heap_udata, (void *) NULL);
-	res->heapptr_deleted16 = DUK_USE_HEAPPTR_ENC16(res->heap_udata, (void *) DUK_STRTAB_DELETED_MARKER(res));
 #endif
 
 	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
@@ -874,67 +873,43 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value1);
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value2);
 
-#if (DUK_STRTAB_INITIAL_SIZE < DUK_UTIL_MIN_HASH_PRIME)
-#error initial heap stringtable size is defined incorrectly
-#endif
-
 	/*
 	 *  Init stringtable: fixed variant
 	 */
 
-#if defined(DUK_USE_STRTAB_CHAIN)
-	DUK_MEMZERO(res->strtable, sizeof(duk_strtab_entry) * DUK_STRTAB_CHAIN_SIZE);
-#if defined(DUK_USE_EXPLICIT_NULL_INIT)
-	{
-		duk_small_uint_t i;
-	        for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
-#if defined(DUK_USE_HEAPPTR16)
-			res->strtable[i].u.str16 = res->heapptr_null16;
+	st_initsize = DUK_USE_STRTAB_MINSIZE;
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+	res->strtable16 = (duk_uint16_t *) alloc_func(heap_udata, sizeof(duk_uint16_t) * st_initsize);
+	if (res->strtable16 == NULL) {
+		goto failed;
+	}
 #else
-			res->strtable[i].u.str = NULL;
+	res->strtable = (duk_hstring **) alloc_func(heap_udata, sizeof(duk_hstring *) * st_initsize);
+	if (res->strtable == NULL) {
+		goto failed;
+	}
 #endif
-	        }
-	}
-#endif  /* DUK_USE_EXPLICIT_NULL_INIT */
-#endif  /* DUK_USE_STRTAB_CHAIN */
+	res->st_size = st_initsize;
+	res->st_mask = st_initsize - 1;
+#if (DUK_USE_STRTAB_MINSIZE != DUK_USE_STRTAB_MAXSIZE)
+	DUK_ASSERT(res->st_count == 0);
+#endif
 
-	/*
-	 *  Init stringtable: probe variant
-	 */
-
-#if defined(DUK_USE_STRTAB_PROBE)
-#if defined(DUK_USE_HEAPPTR16)
-	res->strtable16 = (duk_uint16_t *) alloc_func(heap_udata, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
-	if (!res->strtable16) {
-		goto error;
-	}
-#else  /* DUK_USE_HEAPPTR16 */
-	res->strtable = (duk_hstring **) alloc_func(heap_udata, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
-	if (!res->strtable) {
-		goto error;
-	}
-#endif  /* DUK_USE_HEAPPTR16 */
-	res->st_size = DUK_STRTAB_INITIAL_SIZE;
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+	/* zero assumption */
+	DUK_MEMZERO(res->strtable16, sizeof(duk_uint16_t) * st_initsize);
+#else
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	{
 		duk_small_uint_t i;
-		DUK_ASSERT(res->st_size == DUK_STRTAB_INITIAL_SIZE);
-	        for (i = 0; i < DUK_STRTAB_INITIAL_SIZE; i++) {
-#if defined(DUK_USE_HEAPPTR16)
-			res->strtable16[i] = res->heapptr_null16;
-#else
+	        for (i = 0; i < st_initsize; i++) {
 			res->strtable[i] = NULL;
-#endif
 	        }
 	}
-#else  /* DUK_USE_EXPLICIT_NULL_INIT */
-#if defined(DUK_USE_HEAPPTR16)
-	DUK_MEMZERO(res->strtable16, sizeof(duk_uint16_t) * DUK_STRTAB_INITIAL_SIZE);
 #else
-	DUK_MEMZERO(res->strtable, sizeof(duk_hstring *) * DUK_STRTAB_INITIAL_SIZE);
-#endif
+	DUK_MEMZERO(res->strtable, sizeof(duk_hstring *) * st_initsize);
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */
-#endif  /* DUK_USE_STRTAB_PROBE */
+#endif  /* DUK_USE_STRTAB_PTRCOMP */
 
 	/*
 	 *  Init stringcache
@@ -961,7 +936,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_DD(DUK_DDPRINT("HEAP: INIT STRINGS"));
 	if (!duk__init_heap_strings(res)) {
-		goto error;
+		goto failed;
 	}
 
 	/*
@@ -970,7 +945,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP THREAD"));
 	if (!duk__init_heap_thread(res)) {
-		goto error;
+		goto failed;
 	}
 
 	/*
@@ -981,8 +956,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_ASSERT(res->heap_thread != NULL);
 	res->heap_object = duk_hobject_alloc(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
-	if (!res->heap_object) {
-		goto error;
+	if (res->heap_object == NULL) {
+		goto failed;
 	}
 	DUK_HOBJECT_INCREF(res->heap_thread, res->heap_object);
 
@@ -1035,7 +1010,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	DUK_D(DUK_DPRINT("allocated heap: %p", (void *) res));
 	return res;
 
- error:
+ failed:
 	DUK_D(DUK_DPRINT("heap allocation failed"));
 
 	if (res) {

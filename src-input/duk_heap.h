@@ -75,11 +75,25 @@
  *  field and the GC caller can impose further flags.
  */
 
-#define DUK_MS_FLAG_EMERGENCY                (1 << 0)   /* emergency mode: try extra hard */
-#define DUK_MS_FLAG_NO_STRINGTABLE_RESIZE    (1 << 1)   /* don't resize stringtable (but may sweep it); needed during stringtable resize */
-#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 2)   /* don't compact objects; needed during object property allocation resize */
-#define DUK_MS_FLAG_NO_FINALIZERS            (1 << 3)   /* don't run finalizers; leave finalizable objects in finalize_list for next round */
-#define DUK_MS_FLAG_SKIP_FINALIZERS          (1 << 4)   /* don't run finalizers; queue finalizable objects back to heap_allocated */
+/* Emergency mode: try extra hard, even at the cost of performance. */
+#define DUK_MS_FLAG_EMERGENCY                (1 << 0)
+
+/* Don't compact objects; needed during object property table resize
+ * to prevent a recursive resize.  It would suffice to protect only the
+ * current object being resized, but this is not yet implemented.
+ */
+#define DUK_MS_FLAG_NO_OBJECT_COMPACTION     (1 << 1)
+
+/* Don't run finalizers, leave finalizable objects in finalize_list for
+ * next mark-and-sweep round.  Finalizers may have arbitrary side effects.
+ */
+#define DUK_MS_FLAG_NO_FINALIZERS            (1 << 2)
+
+/* Don't run finalizers, queue finalizable objects back to heap_allocated.
+ * This is used during heap destruction to deal with finalizers that keep
+ * on creating more finalizable garbage.
+ */
+#define DUK_MS_FLAG_SKIP_FINALIZERS          (1 << 3)
 
 /*
  *  Thread switching
@@ -129,31 +143,6 @@
 
 /* helper to insert a (non-string) heap object into heap allocated list */
 #define DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap,hdr)     duk_heap_insert_into_heap_allocated((heap),(hdr))
-
-/*
- *  Stringtable
- */
-
-/* initial stringtable size, must be prime and higher than DUK_UTIL_MIN_HASH_PRIME */
-#define DUK_STRTAB_INITIAL_SIZE            17
-
-/* indicates a deleted string; any fixed non-NULL, non-hstring pointer works */
-#define DUK_STRTAB_DELETED_MARKER(heap)    ((duk_hstring *) heap)
-
-/* resizing parameters */
-#define DUK_STRTAB_MIN_FREE_DIVISOR        4                /* load factor max 75% */
-#define DUK_STRTAB_MIN_USED_DIVISOR        4                /* load factor min 25% */
-#define DUK_STRTAB_GROW_ST_SIZE(n)         ((n) + (n))      /* used entries + approx 100% -> reset load to 50% */
-
-#define DUK_STRTAB_U32_MAX_STRLEN          10               /* 4'294'967'295 */
-#define DUK_STRTAB_HIGHEST_32BIT_PRIME     0xfffffffbUL
-
-/* probe sequence (open addressing) */
-#define DUK_STRTAB_HASH_INITIAL(hash,h_size)    ((hash) % (h_size))
-#define DUK_STRTAB_HASH_PROBE_STEP(hash)        DUK_UTIL_GET_HASH_PROBE_STEP((hash))
-
-/* fixed top level hashtable size (separate chaining) */
-#define DUK_STRTAB_CHAIN_SIZE              DUK_USE_STRTAB_CHAIN_SIZE
 
 /*
  *  Built-in strings
@@ -227,7 +216,7 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
  *  Memory constants
  */
 
-#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_LIMIT           5   /* Retry allocation after mark-and-sweep for this
+#define DUK_HEAP_ALLOC_FAIL_MARKANDSWEEP_LIMIT           10  /* Retry allocation after mark-and-sweep for this
                                                               * many times.  A single mark-and-sweep round is
                                                               * not guaranteed to free all unreferenced memory
                                                               * because of finalization (in fact, ANY number of
@@ -318,29 +307,6 @@ struct duk_ljstate {
 };
 
 /*
- *  Stringtable entry for fixed size stringtable
- */
-
-struct duk_strtab_entry {
-#if defined(DUK_USE_HEAPPTR16)
-	/* A 16-bit listlen makes sense with 16-bit heap pointers: there
-	 * won't be space for 64k strings anyway.
-	 */
-	duk_uint16_t listlen;  /* if 0, 'str16' used, if > 0, 'strlist16' used */
-	union {
-		duk_uint16_t strlist16;
-		duk_uint16_t str16;
-	} u;
-#else
-	duk_size_t listlen;  /* if 0, 'str' used, if > 0, 'strlist' used */
-	union {
-		duk_hstring **strlist;
-		duk_hstring *str;
-	} u;
-#endif
-};
-
-/*
  *  Main heap structure
  */
 
@@ -360,7 +326,6 @@ struct duk_heap {
 	/* Precomputed pointers when using 16-bit heap pointer packing. */
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t heapptr_null16;
-	duk_uint16_t heapptr_deleted16;
 #endif
 
 	/* Fatal error handling, called e.g. when a longjmp() is needed but
@@ -479,22 +444,17 @@ struct duk_heap {
 #endif
 
 	/* string intern table (weak refs) */
-#if defined(DUK_USE_STRTAB_PROBE)
-#if defined(DUK_USE_HEAPPTR16)
+#if defined(DUK_USE_STRTAB_PTRCOMP)
 	duk_uint16_t *strtable16;
 #else
 	duk_hstring **strtable;
 #endif
-	duk_uint32_t st_size;     /* alloc size in elements */
-	duk_uint32_t st_used;     /* used elements (includes DELETED) */
+	duk_uint32_t st_mask;    /* mask for lookup, st_size - 1 */
+	duk_uint32_t st_size;    /* stringtable size */
+#if (DUK_USE_STRTAB_MINSIZE != DUK_USE_STRTAB_MAXSIZE)
+	duk_uint32_t st_count;   /* string count for resize load factor checks */
 #endif
-
-	/* XXX: static alloc is OK until separate chaining stringtable
-	 * resizing is implemented.
-	 */
-#if defined(DUK_USE_STRTAB_CHAIN)
-	duk_strtab_entry strtable[DUK_STRTAB_CHAIN_SIZE];
-#endif
+	duk_bool_t st_resizing;  /* string table is being resized; avoid recursive resize */
 
 	/* string access cache (codepoint offset -> byte offset) for fast string
 	 * character looping; 'weak' reference which needs special handling in GC.
@@ -537,25 +497,18 @@ DUK_INTERNAL_DECL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, d
 DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
 #endif
 
-#if 0  /*unused*/
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
-#endif
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t len);
-#if 0  /*unused*/
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_lookup_u32(duk_heap *heap, duk_uint32_t val);
-#endif
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32(duk_heap *heap, duk_uint32_t val);
-DUK_INTERNAL_DECL duk_hstring *duk_heap_string_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uint8_t *str, duk_uint32_t blen);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_checked(duk_hthread *thr, const duk_uint8_t *str, duk_uint32_t len);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32(duk_heap *heap, duk_uint32_t val);
+DUK_INTERNAL_DECL duk_hstring *duk_heap_strtable_intern_u32_checked(duk_hthread *thr, duk_uint32_t val);
 #if defined(DUK_USE_REFERENCE_COUNTING)
-DUK_INTERNAL_DECL void duk_heap_string_remove(duk_heap *heap, duk_hstring *h);
+DUK_INTERNAL_DECL void duk_heap_strtable_unlink(duk_heap *heap, duk_hstring *h);
 #endif
-#if defined(DUK_USE_MS_STRINGTABLE_RESIZE)
-DUK_INTERNAL_DECL void duk_heap_force_strtab_resize(duk_heap *heap);
-#endif
-DUK_INTERNAL void duk_heap_free_strtab(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_heap_strtable_unlink_prev(duk_heap *heap, duk_hstring *h, duk_hstring *prev);
+DUK_INTERNAL_DECL void duk_heap_strtable_force_resize(duk_heap *heap);
+DUK_INTERNAL void duk_heap_strtable_free(duk_heap *heap);
 #if defined(DUK_USE_DEBUG)
-DUK_INTERNAL void duk_heap_dump_strtab(duk_heap *heap);
+DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap);
 #endif
 
 DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);

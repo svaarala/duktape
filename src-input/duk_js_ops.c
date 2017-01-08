@@ -1358,7 +1358,8 @@ DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_string(const duk_uint8_t *str, d
 					goto parse_fail;
 				}
 				res = 0xfffffffaUL + dig;
-				DUK_ASSERT(res >= 0xfffffffaUL && res <= 0xffffffffUL);
+				DUK_ASSERT(res >= 0xfffffffaUL);
+				DUK_ASSERT_DISABLE(res <= 0xffffffffUL);  /* range */
 			} else {
 				res = res * 10U + dig;
 				if (DUK_UNLIKELY(res == 0)) {

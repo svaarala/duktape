@@ -487,7 +487,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 
 #define DUK__RZ_STRING() do { \
 		duk_heap_strcache_string_remove(thr->heap, (duk_hstring *) h); \
-		duk_heap_string_remove(heap, (duk_hstring *) h); \
+		duk_heap_strtable_unlink(heap, (duk_hstring *) h); \
 		duk_free_hstring(heap, (duk_hstring *) h); \
 	} while (0)
 #define DUK__RZ_BUFFER() do { \

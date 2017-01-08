@@ -745,7 +745,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 				goto abandon_error;
 			}
 			DUK_ASSERT_VALSTACK_SPACE(thr, 1);
-			key = duk_heap_string_intern_u32(thr->heap, i);
+			key = duk_heap_strtable_intern_u32(thr->heap, i);
 			if (!key) {
 				goto abandon_error;
 			}

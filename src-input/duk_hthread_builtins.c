@@ -695,12 +695,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 			" "
 			/* Low memory options */
-#if defined(DUK_USE_STRTAB_CHAIN)
-			"c"  /* chain */
-#elif defined(DUK_USE_STRTAB_PROBE)
-			"p"  /* probe */
-#else
-			"?"
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+			"s"
 #endif
 #if !defined(DUK_USE_HEAPPTR16) && !defined(DUK_DATAPTR16) && !defined(DUK_FUNCPTR16)
 			"n"

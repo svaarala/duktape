@@ -494,7 +494,7 @@ DUK_INTERNAL_DECL const duk_int8_t duk_base64_dectab[256];
 #endif  /* !DUK_SINGLE_FILE */
 
 /* Note: assumes that duk_util_probe_steps size is 32 */
-#if defined(DUK_USE_HOBJECT_HASH_PART) || defined(DUK_USE_STRTAB_PROBE)
+#if defined(DUK_USE_HOBJECT_HASH_PART)
 #if !defined(DUK_SINGLE_FILE)
 DUK_INTERNAL_DECL duk_uint8_t duk_util_probe_steps[32];
 #endif  /* !DUK_SINGLE_FILE */
@@ -504,7 +504,7 @@ DUK_INTERNAL_DECL duk_uint8_t duk_util_probe_steps[32];
 DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_size_t len, duk_uint32_t seed);
 #endif
 
-#if defined(DUK_USE_HOBJECT_HASH_PART) || defined(DUK_USE_STRTAB_PROBE)
+#if defined(DUK_USE_HOBJECT_HASH_PART)
 DUK_INTERNAL_DECL duk_uint32_t duk_util_get_hash_prime(duk_uint32_t size);
 #endif
 

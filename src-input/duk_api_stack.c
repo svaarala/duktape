@@ -3630,7 +3630,7 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk
 		DUK_ERROR_RANGE(thr, DUK_STR_STRING_TOO_LONG);
 	}
 
-	h = duk_heap_string_intern_checked(thr, (const duk_uint8_t *) str, (duk_uint32_t) len);
+	h = duk_heap_strtable_intern_checked(thr, (const duk_uint8_t *) str, (duk_uint32_t) len);
 	DUK_ASSERT(h != NULL);
 
 	tv_slot = thr->valstack_top++;
