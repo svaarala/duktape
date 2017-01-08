@@ -1315,7 +1315,7 @@ DUK_INTERNAL duk_hstring *duk_js_typeof(duk_hthread *thr, duk_tval *tv_x) {
  */
 
 DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {
-	duk_uarridx_t res, new_res;
+	duk_uarridx_t res;
 
 	if (blen == 0 || blen > 10) {
 		goto parse_fail;
@@ -1333,23 +1333,25 @@ DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *
 	while (blen-- > 0) {
 		duk_uint8_t c = *str++;
 		if (c >= DUK_ASC_0 && c <= DUK_ASC_9) {
-			/* Careful overflow handling.  When multiplying by 10
-			 * the largest integer that won't overflow is 429496729
-			 * (0x19999999); *10 is 4294967290 (0xfffffffa).  Adding
-			 * a 9 would then overflow.  So 429496728 is safe without
-			 * explicit overflow check.
+			/* Careful overflow handling.  When multiplying by 10:
+			 * - 0x19999998 x 10 = 0xfffffff0: no overflow, and adding
+			 *   0...9 is safe.
+			 * - 0x19999999 x 10 = 0xfffffffa: no overflow, adding
+			 *   0...5 is safe, 6...9 overflows.
+			 * - 0x1999999a x 10 = 0x100000004: always overflow.
 			 */
-			if (DUK_UNLIKELY(res > 429496728)) {
-				/* Subtract 0x18000000, accumulate, and add back
-				 * 10*0x18000000 == 0xf0000000.  Check for overflow
-				 * in the addition.
-				 */
-				DUK_ASSERT(res >= 0x18000000UL);
-				new_res = (res - 0x18000000UL) * 10U + (duk_uint32_t) (c - DUK_ASC_0);
-				res = new_res + 0xf0000000UL;
-				if (res < new_res) {
+			if (DUK_UNLIKELY(res >= 0x19999999UL)) {
+				if (res >= 0x1999999aUL) {
+					/* Always overflow. */
 					goto parse_fail;
 				}
+				DUK_ASSERT(res == 0x19999999UL);
+				c -= DUK_ASC_0;
+				if (c >= 6) {
+					goto parse_fail;
+				}
+				res = 0xfffffffaUL + c;
+				DUK_ASSERT(res >= 0xfffffffaUL && res <= 0xffffffffUL);
 			} else {
 				res = res * 10U + (duk_uint32_t) (c - DUK_ASC_0);
 			}
