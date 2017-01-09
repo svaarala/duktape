@@ -41,9 +41,17 @@ DUK_USE_JC: false
 #DUK_USE_REGEXP_SUPPORT: false
 DUK_USE_DEBUG_BUFSIZE: 2048
 DUK_USE_LIGHTFUNC_BUILTINS: true
-DUK_USE_STRTAB_CHAIN: true
-DUK_USE_STRTAB_PROBE: false
-DUK_USE_STRTAB_CHAIN_SIZE: 128
+
+# Using the same minsize and maxsize drops code footprint by around 400 bytes
+# (string table resize code is omitted).  Enabling DUK_USE_STRTAB_PTRCOMP
+# saves some RAM (two bytes per strtab entry) at the cost of 200-300 bytes of
+# code footprint.
+DUK_USE_STRTAB_MINSIZE: 128
+DUK_USE_STRTAB_MAXSIZE: 128
+DUK_USE_STRTAB_SHRINK_LIMIT: 0         # doesn't matter if minsize==masize
+DUK_USE_STRTAB_GROW_LIMIT: 65536       # -""-
+DUK_USE_STRTAB_RESIZE_CHECK_MASK: 255  # -""-
+#DUK_USE_STRTAB_PTRCOMP: true  # sometimes useful with pointer compression
 
 DUK_USE_HSTRING_ARRIDX: false
 

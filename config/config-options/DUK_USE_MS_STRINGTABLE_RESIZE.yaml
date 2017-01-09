@@ -1,5 +1,6 @@
 define: DUK_USE_MS_STRINGTABLE_RESIZE
 introduced: 1.0.0
+removed: 2.1.0
 default: true
 tags:
   - gc

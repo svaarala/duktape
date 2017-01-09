@@ -1,5 +1,6 @@
 define: DUK_USE_STRTAB_CHAIN
 introduced: 1.1.0
+removed: 2.1.0
 related:
   - DUK_USE_STRTAB_CHAIN_SIZE
 default: false
