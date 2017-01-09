@@ -6171,6 +6171,7 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 	duk_small_uint_t stmt_flags = 0;
 	duk_int_t label_id = -1;
 	duk_small_uint_t tok;
+	duk_bool_t test_func_decl;
 
 	DUK__RECURSION_INCREASE(comp_ctx, thr);
 
@@ -6236,17 +6237,15 @@ DUK_LOCAL void duk__parse_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res, duk_
 		 *  for function statements are modelled after V8, see
 		 *  test-dev-func-decl-outside-top.js.
 		 */
-
+		test_func_decl = allow_source_elem;
 #if defined(DUK_USE_NONSTD_FUNC_STMT)
 		/* Lenient: allow function declarations outside top level in
 		 * non-strict mode but reject them in strict mode.
 		 */
-		if (allow_source_elem || !comp_ctx->curr_func.is_strict)
-#else  /* DUK_USE_NONSTD_FUNC_STMT */
-		/* Strict: never allow function declarations outside top level. */
-		if (allow_source_elem)
+		test_func_decl = test_func_decl || !comp_ctx->curr_func.is_strict;
 #endif  /* DUK_USE_NONSTD_FUNC_STMT */
-		{
+		/* Strict: never allow function declarations outside top level. */
+		if (test_func_decl) {
 			/* FunctionDeclaration: not strictly a statement but handled as such.
 			 *
 			 * O(depth^2) parse count for inner functions is handled by recording a
