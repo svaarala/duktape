@@ -1317,32 +1317,30 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
  *
  *  Array index: E5 Section 15.4
  *  Array length: E5 Section 15.4.5.1 steps 3.c - 3.d (array length write)
- *
- *  duk_js_to_arrayindex_string_helper() computes the array index from
- *  string contents alone.  Depending on options it's only called during
- *  string intern (and value stored to duk_hstring) or it's called also
- *  at runtime.
  */
 
-DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *str, duk_uint32_t blen, duk_uarridx_t *out_idx) {
+/* Compure array index from string context, or return a "not array index"
+ * indicator.
+ */
+DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_string(const duk_uint8_t *str, duk_uint32_t blen) {
 	duk_uarridx_t res;
 
-	if (blen == 0 || blen > 10) {
-		goto parse_fail;
-	}
-	if (str[0] == DUK_ASC_0 && blen > 1) {
-		goto parse_fail;
-	}
-
-	/* Accept 32-bit decimal integers, no leading zeroes, signs, etc.
-	 * Leading zeroes are not accepted (zero index "0" is an exception
-	 * handled above).
+	/* Only strings with byte length 1-10 can be 32-bit array indices.
+	 * Leading zeroes (except '0' alone), plus/minus signs are not allowed.
+	 * We could do a lot of prechecks here, but since most strings won't
+	 * start with any digits, it's simpler to just parse the number and
+	 * fail quickly.
 	 */
 
 	res = 0;
-	while (blen-- > 0) {
-		duk_uint8_t c = *str++;
-		if (c >= DUK_ASC_0 && c <= DUK_ASC_9) {
+	if (blen == 0) {
+		goto parse_fail;
+	}
+	do {
+		duk_uarridx_t dig;
+		dig = (duk_uarridx_t) (*str++) - DUK_ASC_0;
+
+		if (dig <= 9U) {
 			/* Careful overflow handling.  When multiplying by 10:
 			 * - 0x19999998 x 10 = 0xfffffff0: no overflow, and adding
 			 *   0...9 is safe.
@@ -1356,41 +1354,71 @@ DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *
 					goto parse_fail;
 				}
 				DUK_ASSERT(res == 0x19999999UL);
-				c -= DUK_ASC_0;
-				if (c >= 6) {
+				if (dig >= 6U) {
 					goto parse_fail;
 				}
-				res = 0xfffffffaUL + c;
+				res = 0xfffffffaUL + dig;
 				DUK_ASSERT(res >= 0xfffffffaUL && res <= 0xffffffffUL);
 			} else {
-				res = res * 10U + (duk_uint32_t) (c - DUK_ASC_0);
+				res = res * 10U + dig;
+				if (DUK_UNLIKELY(res == 0)) {
+					/* If 'res' is 0, previous 'res' must
+					 * have been 0 and we scanned in a zero.
+					 * This is only allowed if blen == 1,
+					 * i.e. the exact string '0'.
+					 */
+					if (blen == (duk_uint32_t) 1) {
+						return 0;
+					}
+					goto parse_fail;
+				}
 			}
 		} else {
+			/* Because 'dig' is unsigned, catches both values
+			 * above '9' and below '0'.
+			 */
 			goto parse_fail;
 		}
-	}
+	} while (--blen > 0);
 
-	*out_idx = res;
-	return 1;
+	return res;
 
  parse_fail:
-	*out_idx = DUK_HSTRING_NO_ARRAY_INDEX;
-	return 0;
+	return DUK_HSTRING_NO_ARRAY_INDEX;
 }
 
-/* Called by duk_hstring.h macros */
-DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_string_helper(duk_hstring *h) {
+#if !defined(DUK_USE_HSTRING_ARRIDX)
+/* Get array index for a string which is known to be an array index.  This helper
+ * is needed when duk_hstring doesn't concretely store the array index, but strings
+ * are flagged as array indices at intern time.
+ */
+DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast_known(duk_hstring *h) {
+	const duk_uint8_t *p;
 	duk_uarridx_t res;
-	duk_small_int_t rc;
+	duk_uint8_t t;
 
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HSTRING_HAS_ARRIDX(h));
+
+	p = DUK_HSTRING_GET_DATA(h);
+	res = 0;
+	for (;;) {
+		t = *p++;
+		if (DUK_UNLIKELY(t == 0)) {
+			/* Scanning to NUL is always safe for interned strings. */
+			break;
+		}
+		DUK_ASSERT(t >= DUK_ASC_0 && t <= DUK_ASC_9);
+		res = res * 10U + (t - DUK_ASC_0);
+	}
+	return res;
+}
+
+DUK_INTERNAL duk_uarridx_t duk_js_to_arrayindex_hstring_fast(duk_hstring *h) {
+	DUK_ASSERT(h != NULL);
 	if (!DUK_HSTRING_HAS_ARRIDX(h)) {
 		return DUK_HSTRING_NO_ARRAY_INDEX;
 	}
-
-	rc = duk_js_to_arrayindex_raw_string(DUK_HSTRING_GET_DATA(h),
-	                                     DUK_HSTRING_GET_BYTELEN(h),
-	                                     &res);
-	DUK_UNREF(rc);
-	DUK_ASSERT(rc != 0);
-	return res;
+	return duk_js_to_arrayindex_hstring_fast_known(h);
 }
+#endif  /* DUK_USE_HSTRING_ARRIDX */
