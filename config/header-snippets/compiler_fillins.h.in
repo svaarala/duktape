@@ -38,7 +38,8 @@
 /* Macro for suppressing warnings for potentially unreferenced variables.
  * The variables can be actually unreferenced or unreferenced in some
  * specific cases only; for instance, if a variable is only debug printed,
- * it is unreferenced when debug printing is disabled.
+ * it is unreferenced when debug printing is disabled.  May cause warnings
+ * for volatile arguments.
  */
 #define DUK_UNREF(x)  do { (void) (x); } while (0)
 #endif
