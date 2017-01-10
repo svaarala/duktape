@@ -87,7 +87,7 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 16,     300,  AJS_POOL_BORROW,  0 },
 	{ 20,     300,  AJS_POOL_BORROW,  0 },
 	{ 24,     300,  AJS_POOL_BORROW,  0 },
-	{ 28,     150,  AJS_POOL_BORROW,  0 },
+	{ 28,     250,  AJS_POOL_BORROW,  0 },
 	{ 32,     150,  AJS_POOL_BORROW,  0 },
 	{ 40,     150,  AJS_POOL_BORROW,  0 },
 	{ 48,     50,   AJS_POOL_BORROW,  0 },
@@ -95,14 +95,17 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 56,     50,   AJS_POOL_BORROW,  0 },
 	{ 60,     50,   AJS_POOL_BORROW,  0 },
 	{ 64,     50,   AJS_POOL_BORROW,  0 },
+	{ 96,     50,   AJS_POOL_BORROW,  0 },
 	{ 128,    80,   AJS_POOL_BORROW,  0 },
+	{ 200,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
 	{ 256,    16,   AJS_POOL_BORROW,  0 },
+	{ 288,    1,    AJS_POOL_BORROW,  0 },
 	{ 320,    1,    AJS_POOL_BORROW,  0 },
-	{ 392,    1,    AJS_POOL_BORROW,  0 },  /* duk_hthread, with heap ptr compression, ROM strings+objects */
+	{ 396,    1,    AJS_POOL_BORROW,  0 },  /* duk_hthread, with heap ptr compression, ROM strings+objects */
+	{ 400,    1,    AJS_POOL_BORROW,  0 },  /* duk_hthread, with heap ptr compression, RAM strings+objects */
+	{ 536,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
 	{ 512,    16,   AJS_POOL_BORROW,  0 },
-	{ 964,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, ROM strings+objects */
 	{ 1024,   6,    AJS_POOL_BORROW,  0 },
-	{ 1344,   1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
 	{ 2048,   5,    AJS_POOL_BORROW,  0 },
 	{ 4096,   3,    0,                0 },
 	{ 8192,   3,    0,                0 },
