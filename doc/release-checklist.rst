@@ -135,6 +135,8 @@ Checklist for ordinary releases
 
   - DUK_USE_MARKANDSWEEP_FINALIZER_TORTURE + DUK_USE_GC_TORTURE
 
+  - DUK_USE_STRTAB_TORTURE
+
 * Memory usage testing
 
   - Leaks are mostly detected by Valgrind, but bugs in valstack or object

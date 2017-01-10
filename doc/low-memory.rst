@@ -321,14 +321,15 @@ system RAM):
 
   - **UNIMPLEMENTED AT THE MOMENT**
 
-* Enable a low memory optimized string table variant which uses a fixed size
-  top level hash table and array chaining to resolve collisions.  This makes
-  memory behavior more predictable and avoids a large continuous allocation
-  used by the default string table:
+* Configure string table parameters.  Often in low memory targets it's
+  preferable to use a fixed size, i.e. set the minimum and maximum size
+  to the same value.  For example:
 
-  - ``#define DUK_USE_STRTAB_CHAIN``
+  - ``#define DUK_USE_STRTAB_MINSIZE 128``
 
-  - ``#define DUK_USE_STRTAB_CHAIN_SIZE 128`` (other values possible also)
+  - ``#define DUK_USE_STRTAB_MAXSIZE 128``
+
+  - ``#define DUK_USE_STRTAB_PTRCOMP``
 
 * Use "external" strings to allocate most strings from flash (there are
   multiple strategies for this, see separate section):
@@ -903,15 +904,6 @@ Strings
 * 16-bit fields for string char and byte length
 
 * 16-bit string hash
-
-* Rework string table to avoid current issues: (1) large reallocations,
-  (2) rehashing needs both old and new string table as it's not in-place.
-  Multiple options, including:
-
-  - Separate chaining (open hashing, closed addressing) with a fixed or
-    bounded top level hash table
-
-  - Various tree structures like red-black trees
 
 * Compressed pointers
 
