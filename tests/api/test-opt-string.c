@@ -21,23 +21,23 @@ static void dump(const unsigned char *buf) {
 }
 
 /*===
-*** test_get_string (duk_safe_call)
+*** test_opt_string (duk_safe_call)
 top: 10
-index 0: null
-index 1: null
-index 2: null
-index 3: null
+index 0: [64 65 66 61 75 6c 74]
+index 1: [64 65 66 61 75 6c 74]
+index 2: [64 65 66 61 75 6c 74]
+index 3: [64 65 66 61 75 6c 74]
 index 4: []
 index 5: [66 6f 6f]
 index 6: [66 6f 6f]
 index 7: [e1 88 b4 78 79 7a]
-index 8: null
-index 9: null
-index 10: null
+index 8: [64 65 66 61 75 6c 74]
+index 9: [64 65 66 61 75 6c 74]
+index 10: [64 65 66 61 75 6c 74]
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_get_string(duk_context *ctx, void *udata) {
+static duk_ret_t test_opt_string(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
 
 	(void) udata;
@@ -57,23 +57,23 @@ static duk_ret_t test_get_string(duk_context *ctx, void *udata) {
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i <= n; i++) {
 		printf("index %ld: ", (long) i);
-		dump((const unsigned char *) duk_get_string(ctx, i));
+		dump((const unsigned char *) duk_opt_string(ctx, i, "default"));
 	}
 
 	return 0;
 }
 
 /*===
-*** test_get_lstring (duk_safe_call)
+*** test_opt_lstring (duk_safe_call)
 top: 10
-index 0: length 0: null
-index 0: null
-index 1: length 0: null
-index 1: null
-index 2: length 0: null
-index 2: null
-index 3: length 0: null
-index 3: null
+index 0: length 7: [64 65 66 61 75 6c 74 21]
+index 0: [64 65 66 61 75 6c 74 21]
+index 1: length 7: [64 65 66 61 75 6c 74 21]
+index 1: [64 65 66 61 75 6c 74 21]
+index 2: length 7: [64 65 66 61 75 6c 74 21]
+index 2: [64 65 66 61 75 6c 74 21]
+index 3: length 7: [64 65 66 61 75 6c 74 21]
+index 3: [64 65 66 61 75 6c 74 21]
 index 4: length 0: []
 index 4: []
 index 5: length 3: [66 6f 6f]
@@ -82,16 +82,14 @@ index 6: length 7: [66 6f 6f]
 index 6: [66 6f 6f]
 index 7: length 6: [e1 88 b4 78 79 7a]
 index 7: [e1 88 b4 78 79 7a]
-index 8: length 0: null
-index 8: null
-index 9: length 0: null
-index 9: null
-index 10: length 0: null
-index 10: null
+index 8: length 7: [64 65 66 61 75 6c 74 21]
+index 8: [64 65 66 61 75 6c 74 21]
+index 9: length 7: [64 65 66 61 75 6c 74 21]
+index 9: [64 65 66 61 75 6c 74 21]
 ==> rc=0, result='undefined'
 ===*/
 
-static duk_ret_t test_get_lstring(duk_context *ctx, void *udata) {
+static duk_ret_t test_opt_lstring(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
 
 	(void) udata;
@@ -109,17 +107,17 @@ static duk_ret_t test_get_lstring(duk_context *ctx, void *udata) {
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
-	for (i = 0; i <= n; i++) {
+	for (i = 0; i < n; i++) {
 		const char *buf;
 		size_t len;
 
 		len = (size_t) 0xdeadbeefUL;
-		buf = duk_get_lstring(ctx, i, &len);
+		buf = duk_opt_lstring(ctx, i, &len, "default!", 7);
 		printf("index %ld: length %lu: ",
 		       (long) i, (unsigned long) len);
 		dump((const unsigned char *) buf);
 
-		buf = duk_get_lstring(ctx, i, NULL);
+		buf = duk_opt_lstring(ctx, i, NULL, "default!", 7);
 		printf("index %ld: ", (long) i);
 		dump((const unsigned char *) buf);
 	}
@@ -128,6 +126,6 @@ static duk_ret_t test_get_lstring(duk_context *ctx, void *udata) {
 }
 
 void test(duk_context *ctx) {
-	TEST_SAFE_CALL(test_get_string);
-	TEST_SAFE_CALL(test_get_lstring);
+	TEST_SAFE_CALL(test_opt_string);
+	TEST_SAFE_CALL(test_opt_lstring);
 }

@@ -135,5 +135,5 @@ void test(duk_context *ctx) {
 	res = test_vsprintf_null(ctx, 2, 3, 5); PRINTRESTOP();
 
 	duk_push_pointer(ctx, (void *) 0); PRINTTOP();
-	duk_push_pointer(ctx, (void *) 0xdeadbeef); PRINTTOP();
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL); PRINTTOP();
 }

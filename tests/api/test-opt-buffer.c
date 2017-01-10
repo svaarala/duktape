@@ -1,30 +1,33 @@
 /*===
 *** test_basic (duk_safe_call)
 top: 18
-index 0: length 0
-index 1: length 0
-index 2: length 0
-index 3: length 0
-index 4: length 0
-index 5: length 0
-index 6: length 0
-index 7: length 0
+index 0: length 2271560481, ptr-is-NULL 0
+index 1: length 2271560481, ptr-is-NULL 0
+index 2: length 2271560481, ptr-is-NULL 0
+index 3: length 2271560481, ptr-is-NULL 0
+index 4: length 2271560481, ptr-is-NULL 0
+index 5: length 2271560481, ptr-is-NULL 0
+index 6: length 2271560481, ptr-is-NULL 0
+index 7: length 2271560481, ptr-is-NULL 0
 index 8: length 0
 index 9: length 1024, ptr-is-NULL 0
 index 10: length 0
 index 11: length 2048, ptr-is-NULL 0
-index 12: length 0
-index 13: length 0
-index 14: length 0
-index 15: length 0
-index 16: length 0
-index 17: length 0
+index 12: length 2271560481, ptr-is-NULL 0
+index 13: length 2271560481, ptr-is-NULL 0
+index 14: length 2271560481, ptr-is-NULL 0
+index 15: length 2271560481, ptr-is-NULL 0
+index 16: length 2271560481, ptr-is-NULL 0
+index 17: length 2271560481, ptr-is-NULL 0
+manual test: ptr=123456789, len=987654321
 final top: 18
 ==> rc=0, result='undefined'
 ===*/
 
 static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_idx_t i, n;
+	void *buf;
+	duk_size_t len;
 
 	(void) udata;
 
@@ -50,11 +53,8 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i < n; i++) {
-		void *buf;
-		duk_size_t len;
-
 		len = (duk_size_t) 0xdeadbeefUL;
-		buf = duk_get_buffer(ctx, i, &len);
+		buf = duk_opt_buffer(ctx, i, &len, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 		if (len == 0) {
 			/* avoid printing 'buf' if len is zero, as it is not predictable */
 			printf("index %ld: length 0\n", (long) i);
@@ -63,6 +63,9 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 			       (long) i, (unsigned long) len, (buf == NULL ? 1 : 0));
 		}
 	}
+
+	buf = duk_opt_buffer(ctx, 0, &len, (void *) 123456789UL, (duk_size_t) 987654321UL);
+	printf("manual test: ptr=%lu, len=%lu\n", (unsigned long) buf, (unsigned long) len);
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
@@ -82,7 +85,7 @@ static duk_ret_t test_null_ptr(duk_context *ctx, void *udata) {
 
 	duk_push_fixed_buffer(ctx, 1024);
 
-	p = duk_get_buffer(ctx, -1, NULL);
+	p = duk_opt_buffer(ctx, -1, NULL, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 	if (p) {
 		printf("p is not NULL\n");
 	} else {
@@ -95,7 +98,7 @@ static duk_ret_t test_null_ptr(duk_context *ctx, void *udata) {
 
 /*===
 *** test_invalid_index (duk_safe_call)
-p is NULL
+p is not NULL, sz=2271560481
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
@@ -107,7 +110,7 @@ static duk_ret_t test_invalid_index(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	sz = (duk_size_t) 0xdeadbeefUL;
-	p = duk_get_buffer(ctx, -1, &sz);
+	p = duk_opt_buffer(ctx, -1, &sz, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 	if (p) {
 		printf("p is not NULL, sz=%ld\n", (long) sz);
 	} else {
@@ -120,7 +123,7 @@ static duk_ret_t test_invalid_index(duk_context *ctx, void *udata) {
 
 /*===
 *** test_buffer_object (duk_safe_call)
-p is NULL
+p is not NULL, sz=2271560481
 ==> rc=0, result='undefined'
 ===*/
 
@@ -130,12 +133,12 @@ static duk_ret_t test_buffer_object(duk_context *ctx, void *udata) {
 
 	(void) udata;
 
-	/* duk_get_buffer() doesn't accept a buffer object */
+	/* duk_opt_buffer() doesn't accept a buffer object */
 
 	duk_set_top(ctx, 0);
 	duk_eval_string(ctx, "new ArrayBuffer(16)");
 	sz = (duk_size_t) 0xdeadbeefUL;
-	p = duk_get_buffer(ctx, -1, &sz);
+	p = duk_opt_buffer(ctx, -1, &sz, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 	if (p) {
 		printf("p is not NULL, sz=%ld\n", (long) sz);
 	} else {

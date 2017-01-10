@@ -142,7 +142,7 @@ static duk_ret_t test_2g(duk_context *ctx, void *udata) {
 static duk_ret_t test_2h(duk_context *ctx, void *udata) {
 	(void) udata;
 	duk_set_top(ctx, 0);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 	duk_to_object(ctx, 0);
 	printf("index 0 OK\n");
 	return 0;

@@ -80,7 +80,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		ptr[i] = (char) ('a' + i);
 	}
 	duk_push_pointer(ctx, (void *) NULL);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
@@ -89,7 +89,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		duk_size_t sz;
 
 		duk_dup(ctx, i);
-		sz = (duk_size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeefUL;
 		p = (const unsigned char *) duk_to_lstring(ctx, -1, &sz);
 		printf("index %ld, string: '", (long) i);
 		for (j = 0; j < sz; j++) {
@@ -103,7 +103,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		duk_pop(ctx);
 
 		duk_dup(ctx, i);
-		sz = (duk_size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeefUL;
 		p = (const unsigned char *) duk_to_lstring(ctx, -1, NULL);
 		printf("index %ld, string: '%s'\n", (long) i, (const char *) p);
 		duk_pop(ctx);

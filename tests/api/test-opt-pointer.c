@@ -1,15 +1,15 @@
 /*===
 top: 9
-index 0, pointer (nil)
-index 1, pointer (nil)
-index 2, pointer (nil)
-index 3, pointer (nil)
-index 4, pointer (nil)
-index 5, pointer (nil)
-index 6, pointer (nil)
+index 0, pointer 0x87654321
+index 1, pointer 0x87654321
+index 2, pointer 0x87654321
+index 3, pointer 0x87654321
+index 4, pointer 0x87654321
+index 5, pointer 0x87654321
+index 6, pointer 0x87654321
 index 7, pointer (nil)
 index 8, pointer 0xdeadbeef
-index 9, pointer (nil)
+index 9, pointer 0x87654321
 ===*/
 
 void test(duk_context *ctx) {
@@ -28,7 +28,7 @@ void test(duk_context *ctx) {
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
 	for (i = 0; i <= n; i++) {
-		void *ptr = duk_get_pointer(ctx, i);
+		void *ptr = duk_opt_pointer(ctx, i, (void *) 0x87654321UL);
 		printf("index %ld, pointer %p\n", (long) i, ptr);
 	}
 }

@@ -96,7 +96,7 @@ void test(duk_context *ctx) {
 	buf3[0] = 'b';  buf3[1] = 'a'; buf3[2] = 'r';
 
 	duk_push_pointer(ctx, NULL);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	for (i = 0; i < n; i++) {
