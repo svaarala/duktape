@@ -2372,6 +2372,10 @@ Planned
 2.1.0 (XXXX-XX-XX)
 ------------------
 
+* Replace heap string table algorithms (chain and probe) with a single
+  algorithm based on single linked chaining of duk_hstrings, with the same
+  algorithm serving both default and low memory environments (GH-1277)
+
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
   "new Function('return this')()"; implemented based on
@@ -2395,6 +2399,10 @@ Planned
 
 * Fix incorrect exponentiation operator behavior which happened at least on
   Linux gcc 4.8.4 with -O2 (not -Os) (GH-1272)
+
+* Internal change: duk_hstring now has a 'next' heap pointer for string table
+  chaining; this affects string allocation sizes which may matter for manually
+  tuned memory pools (GH-1277)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
