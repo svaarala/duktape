@@ -1338,6 +1338,10 @@ def validate_config_options_in_source(fn):
         meta = use_defs.get(opt)
         if meta is None:
             raise Exception('unknown config option in source code: %r' % opt)
+        if meta.get('removed', None) is not None:
+            #logger.info('removed config option in source code: %r' % opt)
+            #raise Exception('removed config option in source code: %r' % opt)
+            pass
 
     for meta in use_defs_list:
         if not defs_used.has_key(meta['define']):
