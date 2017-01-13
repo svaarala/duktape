@@ -2374,7 +2374,7 @@ Planned
 
 * Replace heap string table algorithms (chain and probe) with a single
   algorithm based on single linked chaining of duk_hstrings, with the same
-  algorithm serving both default and low memory environments (GH-1277)
+  algorithm serving both default and low memory environments (GH-1277, GH-1283)
 
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
