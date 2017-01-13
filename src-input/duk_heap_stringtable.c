@@ -150,9 +150,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
                                                    const duk_uint8_t *extdata) {
 	duk_hstring *res;
 	const duk_uint8_t *data;
-#if !defined(DUK_USE_HSTRING_ARRIDX)
 	duk_uarridx_t arridx;
-#endif
 	duk_uint32_t clen;
 
 	DUK_ASSERT(heap != NULL);
