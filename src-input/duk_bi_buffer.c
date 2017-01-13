@@ -1681,7 +1681,7 @@ DUK_INTERNAL duk_ret_t duk_bi_typedarray_set(duk_context *ctx) {
 	}
 
 	duk_hbufobj_promote_plain(ctx, 0);
-	h_obj = duk_known_hobject(ctx, 0);
+	h_obj = duk_require_hobject(ctx, 0);
 
 	/* XXX: V8 throws a TypeError for negative values.  Would it
 	 * be more useful to interpret negative offsets here from the
