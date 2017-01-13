@@ -150,7 +150,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 
 	if (DUK_HBUFFER_FIXED_GET_SIZE(buf) <= sizeof(duk_uint32_t)) {
 		DUK_DD(DUK_DDPRINT("pc2line lookup failed: buffer is smaller than minimal header"));
-		goto error;
+		goto pc2line_error;
 	}
 
 	hdr = (duk_uint32_t *) (void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, buf);
@@ -159,7 +159,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 		/* Note: pc is unsigned and cannot be negative */
 		DUK_DD(DUK_DDPRINT("pc2line lookup failed: pc out of bounds (pc=%ld, limit=%ld)",
 		                   (long) pc, (long) pc_limit));
-		goto error;
+		goto pc2line_error;
 	}
 
 	curr_line = hdr[1 + hdr_index * 2];
@@ -167,7 +167,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	if ((duk_size_t) start_offset > DUK_HBUFFER_FIXED_GET_SIZE(buf)) {
 		DUK_DD(DUK_DDPRINT("pc2line lookup failed: start_offset out of bounds (start_offset=%ld, buffer_size=%ld)",
 		                   (long) start_offset, (long) DUK_HBUFFER_GET_SIZE((duk_hbuffer *) buf)));
-		goto error;
+		goto pc2line_error;
 	}
 
 	/*
@@ -218,7 +218,7 @@ DUK_LOCAL duk_uint_fast32_t duk__hobject_pc2line_query_raw(duk_hthread *thr, duk
 	DUK_DDD(DUK_DDDPRINT("pc2line lookup result: pc %ld -> line %ld", (long) pc, (long) curr_line));
 	return curr_line;
 
- error:
+ pc2line_error:
 	DUK_D(DUK_DPRINT("pc2line conversion failed for pc=%ld", (long) pc));
 	return 0;
 }

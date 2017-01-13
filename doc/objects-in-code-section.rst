@@ -100,6 +100,13 @@ duk_hstring
   - Current solution is for ROM pointers to be compressed specially,
     see discussion below.
 
+* With Duktape 2.1 ``duk_hstring`` values have a ``h_next`` link pointer
+  for a revised string table structure.
+
+  - This link pointer is unused for ROM strings.  It can be used for string
+    data if the structure that follows is empty (assumes no arridx, and no
+    clen field).
+
 duk_hobject
 -----------
 

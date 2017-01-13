@@ -1736,82 +1736,29 @@ DUK_LOCAL void duk__debug_dump_heap_allocated(duk_hthread *thr, duk_heap *heap) 
 	}
 }
 
-#if defined(DUK_USE_STRTAB_CHAIN)
-DUK_LOCAL void duk__debug_dump_strtab_chain(duk_hthread *thr, duk_heap *heap) {
-	duk_uint_fast32_t i, j;
-	duk_strtab_entry *e;
-#if defined(DUK_USE_HEAPPTR16)
-	duk_uint16_t *lst;
-#else
-	duk_hstring **lst;
-#endif
-	duk_hstring *h;
-
-	for (i = 0; i < DUK_STRTAB_CHAIN_SIZE; i++) {
-		e = heap->strtable + i;
-		if (e->listlen > 0) {
-#if defined(DUK_USE_HEAPPTR16)
-			lst = (duk_uint16_t *) DUK_USE_HEAPPTR_DEC16(heap->heap_udata, e->u.strlist16);
-#else
-			lst = e->u.strlist;
-#endif
-			DUK_ASSERT(lst != NULL);
-
-			for (j = 0; j < e->listlen; j++) {
-#if defined(DUK_USE_HEAPPTR16)
-				h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, lst[j]);
-#else
-				h = lst[j];
-#endif
-				if (h != NULL) {
-					duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
-				}
-			}
-		} else {
-#if defined(DUK_USE_HEAPPTR16)
-			h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, e->u.str16);
-#else
-			h = e->u.str;
-#endif
-			if (h != NULL) {
-				duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
-			}
-		}
-	}
-}
-#endif  /* DUK_USE_STRTAB_CHAIN */
-
-#if defined(DUK_USE_STRTAB_PROBE)
-DUK_LOCAL void duk__debug_dump_strtab_probe(duk_hthread *thr, duk_heap *heap) {
+DUK_LOCAL void duk__debug_dump_strtab(duk_hthread *thr, duk_heap *heap) {
 	duk_uint32_t i;
 	duk_hstring *h;
 
 	for (i = 0; i < heap->st_size; i++) {
-#if defined(DUK_USE_HEAPPTR16)
-		h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+		h = DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, heap->strtable16[i]);
 #else
 		h = heap->strtable[i];
 #endif
-		if (h == NULL || h == DUK_STRTAB_DELETED_MARKER(heap)) {
-			continue;
+		while (h != NULL) {
+			duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
+			h = h->hdr.h_next;
 		}
-
-		duk__debug_dump_heaphdr(thr, heap, (duk_heaphdr *) h);
 	}
 }
-#endif  /* DUK_USE_STRTAB_PROBE */
 
 DUK_LOCAL void duk__debug_handle_dump_heap(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command DumpHeap"));
 
 	duk_debug_write_reply(thr);
 	duk__debug_dump_heap_allocated(thr, heap);
-#if defined(DUK_USE_STRTAB_CHAIN)
-	duk__debug_dump_strtab_chain(thr, heap);
-#endif
-#if defined(DUK_USE_STRTAB_PROBE)
-	duk__debug_dump_strtab_probe(thr, heap);
-#endif
+	duk__debug_dump_strtab(thr, heap);
 	duk_debug_write_eom(thr);
 }
 #endif  /* DUK_USE_DEBUGGER_DUMPHEAP */

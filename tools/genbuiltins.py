@@ -2257,14 +2257,14 @@ def rom_emit_strings_source(genc, meta):
     genc.emitLine('#endif')
     genc.emitLine('#if defined(DUK_USE_HSTRING_CLEN)')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen) }, (clen) }')
+    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), NULL }, (clen) }')
     genc.emitLine('#else  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen) } }')
+    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), NULL } }')
     genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
     genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags), (refcount) }, (hash32), (blen), (clen) }')
+    genc.emitLine('\t{ { (heaphdr_flags), (refcount), NULL }, (hash32), (blen), (clen) }')
     genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
     # Emit string initializers.

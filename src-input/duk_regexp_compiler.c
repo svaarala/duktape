@@ -864,34 +864,34 @@ DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h)
 		switch (c) {
 		case (duk_uint8_t) 'g': {
 			if (flags & DUK_RE_FLAG_GLOBAL) {
-				goto error;
+				goto flags_error;
 			}
 			flags |= DUK_RE_FLAG_GLOBAL;
 			break;
 		}
 		case (duk_uint8_t) 'i': {
 			if (flags & DUK_RE_FLAG_IGNORE_CASE) {
-				goto error;
+				goto flags_error;
 			}
 			flags |= DUK_RE_FLAG_IGNORE_CASE;
 			break;
 		}
 		case (duk_uint8_t) 'm': {
 			if (flags & DUK_RE_FLAG_MULTILINE) {
-				goto error;
+				goto flags_error;
 			}
 			flags |= DUK_RE_FLAG_MULTILINE;
 			break;
 		}
 		default: {
-			goto error;
+			goto flags_error;
 		}
 		}
 	}
 
 	return flags;
 
- error:
+ flags_error:
 	DUK_ERROR_SYNTAX(thr, DUK_STR_INVALID_REGEXP_FLAGS);
 	return 0;  /* never here */
 }

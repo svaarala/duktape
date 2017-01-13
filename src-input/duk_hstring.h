@@ -165,30 +165,26 @@ struct duk_hstring {
 	 */
 	duk_heaphdr_string hdr;
 
-	/* Note: we could try to stuff a partial hash (e.g. 16 bits) into the
-	 * shared heap header.  Good hashing needs more hash bits though.
-	 */
-
-	/* string hash */
+	/* String hash. */
 #if defined(DUK_USE_STRHASH16)
 	/* If 16-bit hash is in use, stuff it into duk_heaphdr_string flags. */
 #else
 	duk_uint32_t hash;
 #endif
 
-	/* precomputed array index (or DUK_HSTRING_NO_ARRAY_INDEX) */
+	/* Precomputed array index (or DUK_HSTRING_NO_ARRAY_INDEX). */
 #if defined(DUK_USE_HSTRING_ARRIDX)
 	duk_uarridx_t arridx;
 #endif
 
-	/* length in bytes (not counting NUL term) */
+	/* Length in bytes (not counting NUL term). */
 #if defined(DUK_USE_STRLEN16)
 	/* placed in duk_heaphdr_string */
 #else
 	duk_uint32_t blen;
 #endif
 
-	/* length in codepoints (must be E5 compatible) */
+	/* Length in codepoints (must be E5 compatible). */
 #if defined(DUK_USE_STRLEN16)
 #if defined(DUK_USE_HSTRING_CLEN)
 	duk_uint16_t clen16;
@@ -200,7 +196,7 @@ struct duk_hstring {
 #endif
 
 	/*
-	 *  String value of 'blen+1' bytes follows (+1 for NUL termination
+	 *  String data of 'blen+1' bytes follows (+1 for NUL termination
 	 *  convenience for C API).  No alignment needs to be guaranteed
 	 *  for strings, but fields above should guarantee alignment-by-4
 	 *  (but not alignment-by-8).

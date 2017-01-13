@@ -242,6 +242,9 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
  */
 
 DUK_LOCAL void duk__add_enum_key(duk_context *ctx, duk_hstring *k) {
+	/* 'k' may be unreachable on entry so must push without any
+	 * potential for GC.
+	 */
 	duk_push_hstring(ctx, k);
 	duk_push_true(ctx);
 	duk_put_prop(ctx, -3);
@@ -442,7 +445,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				/* This is a bit fragile: the string is not
 				 * reachable until it is pushed by the helper.
 				 */
-				k = duk_heap_string_intern_u32_checked(thr, i);
+				k = duk_heap_strtable_intern_u32_checked(thr, i);
 				DUK_ASSERT(k);
 
 				duk__add_enum_key(ctx, k);
@@ -476,7 +479,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			if (DUK_TVAL_IS_UNUSED(tv)) {
 				continue;
 			}
-			k = duk_heap_string_intern_u32_checked(thr, i);  /* Fragile reachability. */
+			k = duk_heap_strtable_intern_u32_checked(thr, i);  /* Fragile reachability. */
 			DUK_ASSERT(k);
 
 			duk__add_enum_key(ctx, k);

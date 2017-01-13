@@ -98,7 +98,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 	const duk_uint8_t *p_found;
 
 	if (char_offset > DUK_HSTRING_GET_CHARLEN(h)) {
-		goto error;
+		goto scan_error;
 	}
 
 	/*
@@ -237,7 +237,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 		 * string is not valid UTF-8 data, and clen/blen are not consistent
 		 * with the scanning algorithm.
 		 */
-		goto error;
+		goto scan_error;
 	}
 
 	DUK_ASSERT(p_found >= p_start);
@@ -292,7 +292,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 
 	return byte_offset;
 
- error:
+ scan_error:
 	DUK_ERROR_INTERNAL(thr);
 	return 0;
 }

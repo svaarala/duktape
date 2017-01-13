@@ -224,9 +224,9 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 	DUK_ASSERT(end_byte_offset - start_byte_offset <= DUK_UINT32_MAX);  /* Guaranteed by string limits. */
 
 	/* No size check is necessary. */
-	res = duk_heap_string_intern_checked(thr,
-	                                     DUK_HSTRING_GET_DATA(h) + start_byte_offset,
-	                                     (duk_uint32_t) (end_byte_offset - start_byte_offset));
+	res = duk_heap_strtable_intern_checked(thr,
+	                                       DUK_HSTRING_GET_DATA(h) + start_byte_offset,
+	                                       (duk_uint32_t) (end_byte_offset - start_byte_offset));
 
 	duk_push_hstring(ctx, res);
 	duk_replace(ctx, idx);

@@ -523,8 +523,8 @@ The current specific heap element types are:
 * ``duk_hstring`` (heap type ``DUK_HTYPE_STRING``):
 
   + Fixed size allocation consisting of a header with string
-    data following the header.  Header does not contain next/previous
-    pointers (uses ``duk_heaphdr_string``).
+    data following the header.  Header only contains a 'next'
+    pointer (uses ``duk_heaphdr_string``).
 
   + No references to other heap elements.
 
@@ -1004,8 +1004,7 @@ The C recursion level is fixed.
 The ``h_prev``/``h_next`` fields of the ``duk_heaphdr`` structure, normally
 used for the "heap allocated" list, are used for the "refzero" work list.
 Because ``duk_hstring``\ s do not have embedded references so they are freed
-directly when their reference count drops to zero.  This is fortunate, because
-strings don't have ``h_prev``/``h_next`` fields at all.
+directly when their reference count drops to zero.
 
 *Finalization* of an object whose refcount becomes zero is very useful for
 e.g. freeing any native resources or handles associated with an object.
@@ -1060,11 +1059,9 @@ resized.
 Mark-and-sweep flags
 --------------------
 
-Mark-and-sweep control flags are defined in ``duk_heap.h``:
+Mark-and-sweep control flags are defined in ``duk_heap.h``, e.g.:
 
 * ``DUK_MS_FLAG_EMERGENCY``
-
-* ``DUK_MS_FLAG_NO_STRINGTABLE_RESIZE``
 
 * ``DUK_MS_FLAG_NO_FINALIZERS``
 
@@ -1089,32 +1086,7 @@ To protect against such side effects, the critical algorithms:
 * Examine the allocation result and act accordingly
 
 It is important not to throw an error without restoring the base flags field.
-
-The concrete flags used are:
-
-* String table resize:
-
-  + ``DUK_MS_FLAG_NO_STRINGTABLE_RESIZE``: prevents another stringtable
-    resize attempt when one is already running
-
-  + ``DUK_MS_FLAG_NO_FINALIZERS``: prevent finalizers from adding new
-    interned strings to the string table, possibly requiring a resize
-
-  + ``DUK_MS_FLAG_NO_OBJECT_COMPACTION``: prevent object compaction,
-    because object compaction may lead to an array part being abandoned,
-    which leads to string interning of array keys.
-
-* Object property allocation resize:
-
-  + ``DUK_MS_FLAG_NO_FINALIZERS``: prevent finalizers from manipulating
-    the properties of any object.  It would suffice to protect only the
-    object being resized, but a finalizer may potentially operate on any
-    set of objects; hence no finalizers are executed at all.
-
-  + ``DUK_MS_FLAG_NO_OBJECT_COMPACTION``: prevent objects from being
-    compacted (i.e., resized).  It would suffice to protect only the
-    object being resized from a recursive resize; this is currently not
-    done, however, but would be easy to fix.
+See ``duk_heap.h`` for the flag details.
 
 Heap header flags
 -----------------

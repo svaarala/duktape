@@ -143,6 +143,7 @@ DUK_LOCAL duk_codepoint_t duk__utf8_decode_next(duk__decode_context *dec_ctx, du
 	}
 }
 
+#if defined(DUK_USE_ENCODING_BUILTINS)
 DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 	duk__encode_context *enc_ctx;
 
@@ -197,6 +198,7 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 	 */
 	enc_ctx->out += duk_unicode_encode_xutf8(codepoint, enc_ctx->out);
 }
+#endif  /* DUK_USE_ENCODING_BUILTINS */
 
 /* Shared helper for buffer-to-string using a TextDecoder() compatible UTF-8
  * decoder.

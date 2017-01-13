@@ -171,7 +171,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 		 * an mktime() error return is the cast above.  See e.g.:
 		 * http://pubs.opengroup.org/onlinepubs/009695299/functions/mktime.html
 		 */
-		goto error;
+		goto mktime_error;
 	}
 	DUK_DDD(DUK_DDDPRINT("t1=%ld (utc), t2=%ld (local)", (long) t1, (long) t2));
 
@@ -187,7 +187,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 #endif
 	return (duk_int_t) difftime(t2, t1);
 
- error:
+ mktime_error:
 	/* XXX: return something more useful, so that caller can throw? */
 	DUK_D(DUK_DPRINT("mktime() failed, d=%lf", (double) d));
 	return 0;
