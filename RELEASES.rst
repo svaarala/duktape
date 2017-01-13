@@ -2390,6 +2390,9 @@ Planned
 * Improve duk_hstring array index handling performance when
   DUK_USE_HSTRING_ARRIDX is disabled (GH-1274)
 
+* Fix argument validation bug in typedarray .set() which would cause a segfault
+  for e.g. new Float64Array(2).set(undefined) (GH-1285, GH-1286)
+
 * Fix duk_hstring array index check integer overflow, which caused certain
   integer strings (such as '7394299990') to be incorrectly treated as array
   indices (GH-1273, GH-1276)
