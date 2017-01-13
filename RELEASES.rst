@@ -2376,6 +2376,10 @@ Planned
   algorithm based on single linked chaining of duk_hstrings, with the same
   algorithm serving both default and low memory environments (GH-1277)
 
+* Replace object property table hash algorithm with a faster algorithm
+  which uses a 2^N size and a bit mask instead of a prime size and a MOD;
+  use a hash table more eagerly than before (GH-1284)
+
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
   "new Function('return this')()"; implemented based on
