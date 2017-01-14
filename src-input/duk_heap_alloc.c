@@ -680,6 +680,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_activation);
 	DUK__DUMPSZ(duk_catcher);
 	DUK__DUMPSZ(duk_strcache);
+	DUK__DUMPSZ(duk_slotcache_entry);
 	DUK__DUMPSZ(duk_ljstate);
 	DUK__DUMPSZ(duk_fixedbuffer);
 	DUK__DUMPSZ(duk_bitdecoder_ctx);
@@ -1050,6 +1051,12 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 		}
 	}
 #endif
+
+	/*
+	 *  Init slotcache
+	 */
+
+	/* Nothing to init now. */
 
 	/* XXX: error handling is incomplete.  It would be cleanest if
 	 * there was a setjmp catchpoint, so that all init code could

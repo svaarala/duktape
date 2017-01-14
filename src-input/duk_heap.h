@@ -146,6 +146,11 @@
 #define DUK_HEAP_REMOVE_FROM_FINALIZE_LIST(heap,hdr)      duk_heap_remove_from_finalize_list((heap), (hdr))
 #endif
 
+/* Slotcache is used to speeding up object property lookups without
+ * caching a property value.
+ */
+#define DUK_HEAP_SLOTCACHE_SIZE                           8192
+
 /*
  *  Built-in strings
  */
@@ -283,6 +288,15 @@ struct duk_strcache {
 	duk_hstring *h;
 	duk_uint32_t bidx;
 	duk_uint32_t cidx;
+};
+
+/*
+ *  Property slot cache.  Best effort data structure to cache property
+ *  table slots for recently accessed object/key combinations.
+ */
+
+struct duk_slotcache_entry {
+	duk_uint8_t slot;
 };
 
 /*
@@ -535,6 +549,11 @@ struct duk_heap {
 	 */
 	duk_strcache strcache[DUK_HEAP_STRCACHE_SIZE];
 
+	/* Property slot cache, global structure for speeding up commonly
+	 * referenced property access.
+	 */
+	duk_slotcache_entry slotcache[DUK_HEAP_SLOTCACHE_SIZE];
+
 	/* Built-in strings. */
 #if defined(DUK_USE_ROM_STRINGS)
 	/* No field needed when strings are in ROM. */
@@ -594,6 +613,9 @@ DUK_INTERNAL void duk_heap_strtable_dump(duk_heap *heap);
 
 DUK_INTERNAL_DECL void duk_heap_strcache_string_remove(duk_heap *heap, duk_hstring *h);
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *thr, duk_hstring *h, duk_uint_fast32_t char_offset);
+
+DUK_INTERNAL_DECL duk_uint32_t duk_heap_slotcache_lookup(duk_heap *heap, duk_hobject *obj, duk_hstring *key);
+DUK_INTERNAL_DECL void duk_heap_slotcache_insert(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_uint32_t slot);
 
 #if defined(DUK_USE_PROVIDE_DEFAULT_ALLOC_FUNCTIONS)
 DUK_INTERNAL_DECL void *duk_default_alloc_function(void *udata, duk_size_t size);
