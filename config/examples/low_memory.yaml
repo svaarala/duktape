@@ -55,6 +55,10 @@ DUK_USE_STRTAB_RESIZE_CHECK_MASK: 255  # -""-
 
 DUK_USE_HSTRING_ARRIDX: false
 
+# Only add a hash table for quite large objects to conserve memory.  Even
+# lower memory targets usually drop hash part support entirely.
+DUK_USE_HOBJECT_HASH_PROP_LIMIT: 64
+
 # Consider using pointer compression, see doc/low-memory.rst.
 #DUK_USE_REFCOUNT16: true
 #DUK_USE_STRHASH16: true
