@@ -423,7 +423,6 @@ def main():
         'duk_util_bufwriter.c',
         'duk_util.h',
         'duk_util_hashbytes.c',
-        'duk_util_hashprime.c',
         'duk_util_misc.c',
         'duk_util_tinyrandom.c',
         'strings.yaml',

@@ -32,8 +32,8 @@
 #if !defined(DUK_HOBJECT_H_INCLUDED)
 #define DUK_HOBJECT_H_INCLUDED
 
-/* Object flag.  There are currently 25 flag bits available.  Make sure
- * this stays in sync with debugger object inspection code.
+/* Object flags.  Make sure this stays in sync with debugger object
+ * inspection code.
  */
 
 /* XXX: some flags are object subtype specific (e.g. common to all function
@@ -651,21 +651,8 @@
 #if defined(DUK_USE_OBJSIZES16)
 #define DUK_HOBJECT_MAX_PROPERTIES       0x0000ffffUL
 #else
-#define DUK_HOBJECT_MAX_PROPERTIES       0x7fffffffUL   /* 2**31-1 ~= 2G properties */
+#define DUK_HOBJECT_MAX_PROPERTIES       0x3fffffffUL   /* 2**30-1 ~= 1G properties */
 #endif
-
-/* higher value conserves memory; also note that linear scan is cache friendly */
-#define DUK_HOBJECT_E_USE_HASH_LIMIT     32
-
-/* hash size relative to entries size: for value X, approx. hash_prime(e_size + e_size / X) */
-#define DUK_HOBJECT_H_SIZE_DIVISOR       4  /* hash size approx. 1.25 times entries size */
-
-/* if new_size < L * old_size, resize without abandon check; L = 3-bit fixed point, e.g. 9 -> 9/8 = 112.5% */
-#define DUK_HOBJECT_A_FAST_RESIZE_LIMIT  9  /* 112.5%, i.e. new size less than 12.5% higher -> fast resize */
-
-/* if density < L, abandon array part, L = 3-bit fixed point, e.g. 2 -> 2/8 = 25% */
-/* limit is quite low: one array entry is 8 bytes, one normal entry is 4+1+8+4 = 17 bytes (with hash entry) */
-#define DUK_HOBJECT_A_ABANDON_LIMIT      2  /* 25%, i.e. less than 25% used -> abandon */
 
 /* internal align target for props allocation, must be 2*n for some n */
 #if (DUK_USE_ALIGN_BY == 4)
@@ -677,18 +664,6 @@
 #else
 #error invalid DUK_USE_ALIGN_BY
 #endif
-
-/* controls for minimum entry part growth */
-#define DUK_HOBJECT_E_MIN_GROW_ADD       16
-#define DUK_HOBJECT_E_MIN_GROW_DIVISOR   8  /* 2^3 -> 1/8 = 12.5% min growth */
-
-/* controls for minimum array part growth */
-#define DUK_HOBJECT_A_MIN_GROW_ADD       16
-#define DUK_HOBJECT_A_MIN_GROW_DIVISOR   8  /* 2^3 -> 1/8 = 12.5% min growth */
-
-/* probe sequence */
-#define DUK_HOBJECT_HASH_INITIAL(hash,h_size)  ((hash) % (h_size))
-#define DUK_HOBJECT_HASH_PROBE_STEP(hash)      DUK_UTIL_GET_HASH_PROBE_STEP((hash))
 
 /*
  *  PC-to-line constants

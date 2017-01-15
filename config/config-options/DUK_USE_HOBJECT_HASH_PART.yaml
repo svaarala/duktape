@@ -9,5 +9,3 @@ description: >
   enabled unless the target is very low on memory.
 
   If DUK_USE_OBJSIZES16 is defined, this option must not be defined.
-
-# FIXME: expose property limit for hash table as a DUK_USE_xxx flag?

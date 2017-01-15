@@ -505,7 +505,6 @@ def main():
         'duk_util_bitencoder.c',
         'duk_util.h',
         'duk_util_hashbytes.c',
-        'duk_util_hashprime.c',
         'duk_util_misc.c',
         'duk_util_tinyrandom.c',
         'duk_util_bufwriter.c',
@@ -896,7 +895,6 @@ def main():
             'duk_error_macros.c',
             'duk_unicode_support.c',
             'duk_util_misc.c',
-            'duk_util_hashprime.c',
             'duk_hobject_class.c'
         ]
 

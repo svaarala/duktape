@@ -52,10 +52,6 @@
 
 #define DUK__NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
 
-/* hash probe sequence */
-#define DUK__HASH_INITIAL(hash,h_size)  DUK_HOBJECT_HASH_INITIAL((hash),(h_size))
-#define DUK__HASH_PROBE_STEP(hash)      DUK_HOBJECT_HASH_PROBE_STEP((hash))
-
 /* marker values for hash part */
 #define DUK__HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
 #define DUK__HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
@@ -218,14 +214,26 @@ DUK_LOCAL duk_bool_t duk__key_is_plain_buf_ownprop(duk_hthread *thr, duk_hbuffer
 DUK_LOCAL duk_uint32_t duk__get_default_h_size(duk_uint32_t e_size) {
 	DUK_ASSERT(e_size <= DUK_HOBJECT_MAX_PROPERTIES);
 
-	if (e_size >= DUK_HOBJECT_E_USE_HASH_LIMIT) {
+	if (e_size >= DUK_USE_HOBJECT_HASH_PROP_LIMIT) {
 		duk_uint32_t res;
+		duk_uint32_t tmp;
 
-		/* result: hash_prime(floor(1.2 * e_size)) */
-		res = duk_util_get_hash_prime(e_size + e_size / DUK_HOBJECT_H_SIZE_DIVISOR);
-
-		/* if fails, e_size will be zero = not an issue, except performance-wise */
-		DUK_ASSERT(res == 0 || res > e_size);
+		/* Hash size should be 2^N where N is chosen so that 2^N is
+		 * larger than e_size.  Extra shifting is used to ensure hash
+		 * is relatively sparse.
+		 */
+		tmp = e_size;
+		res = 2;  /* Result will be 2 ** (N + 1). */
+		while (tmp >= 0x40) {
+			tmp >>= 6;
+			res <<= 6;
+		}
+		while (tmp != 0) {
+			tmp >>= 1;
+			res <<= 1;
+		}
+		DUK_ASSERT((DUK_HOBJECT_MAX_PROPERTIES << 2U) > DUK_HOBJECT_MAX_PROPERTIES);  /* Won't wrap, even shifted by 2. */
+		DUK_ASSERT(res > e_size);
 		return res;
 	} else {
 		return 0;
@@ -239,7 +247,7 @@ DUK_LOCAL duk_uint32_t duk__get_min_grow_e(duk_uint32_t e_size) {
 
 	DUK_ASSERT(e_size <= DUK_HOBJECT_MAX_PROPERTIES);
 
-	res = (e_size + DUK_HOBJECT_E_MIN_GROW_ADD) / DUK_HOBJECT_E_MIN_GROW_DIVISOR;
+	res = (e_size + DUK_USE_HOBJECT_ENTRY_MINGROW_ADD) / DUK_USE_HOBJECT_ENTRY_MINGROW_DIVISOR;
 	DUK_ASSERT(res >= 1);  /* important for callers */
 	return res;
 }
@@ -250,7 +258,7 @@ DUK_LOCAL duk_uint32_t duk__get_min_grow_a(duk_uint32_t a_size) {
 
 	DUK_ASSERT((duk_size_t) a_size <= DUK_HOBJECT_MAX_PROPERTIES);
 
-	res = (a_size + DUK_HOBJECT_A_MIN_GROW_ADD) / DUK_HOBJECT_A_MIN_GROW_DIVISOR;
+	res = (a_size + DUK_USE_HOBJECT_ARRAY_MINGROW_ADD) / DUK_USE_HOBJECT_ARRAY_MINGROW_DIVISOR;
 	DUK_ASSERT(res >= 1);  /* important for callers */
 	return res;
 }
@@ -325,7 +333,7 @@ DUK_LOCAL duk_bool_t duk__abandon_array_density_check(duk_uint32_t a_used, duk_u
 	 *  of the check, but may confuse debugging.
 	 */
 
-	return (a_used < DUK_HOBJECT_A_ABANDON_LIMIT * (a_size >> 3));
+	return (a_used < DUK_USE_HOBJECT_ARRAY_ABANDON_LIMIT * (a_size >> 3));
 }
 
 /* Fast check for extending array: check whether or not a slow density check is required. */
@@ -351,7 +359,7 @@ DUK_LOCAL duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx
 	 *    arr_idx > limit'' * ((old_size + 7) / 8)
 	 */
 
-	return (arr_idx > DUK_HOBJECT_A_FAST_RESIZE_LIMIT * ((old_size + 7) >> 3));
+	return (arr_idx > DUK_USE_HOBJECT_ARRAY_FAST_RESIZE_LIMIT * ((old_size + 7) >> 3));
 }
 
 /*
@@ -851,6 +859,8 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 	if (DUK_UNLIKELY(new_h_size > 0)) {
+		duk_uint32_t mask;
+
 		DUK_ASSERT(new_h != NULL);
 
 		/* fill new_h with u32 0xff = UNUSED */
@@ -859,13 +869,15 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 		DUK_MEMSET(new_h, 0xff, sizeof(duk_uint32_t) * new_h_size);
 
 		DUK_ASSERT(new_e_next <= new_h_size);  /* equality not actually possible */
+
+		mask = new_h_size - 1;
 		for (i = 0; i < new_e_next; i++) {
 			duk_hstring *key = new_e_k[i];
 			duk_uint32_t j, step;
 
 			DUK_ASSERT(key != NULL);
-			j = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size);
-			step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+			j = DUK_HSTRING_GET_HASH(key) & mask;
+			step = 1;  /* Cache friendly but clustering prone. */
 
 			for (;;) {
 				DUK_ASSERT(new_h[j] != DUK__HASH_DELETED);  /* should never happen */
@@ -875,10 +887,9 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 					break;
 				}
 				DUK_DDD(DUK_DDDPRINT("rebuild miss %ld, step %ld", (long) j, (long) step));
-				j = (j + step) % new_h_size;
+				j = (j + step) & mask;
 
-				/* guaranteed to finish */
-				DUK_ASSERT(j != (duk_uint32_t) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), new_h_size));
+				/* Guaranteed to finish (hash is larger than #props). */
 			}
 		}
 	} else {
@@ -1122,7 +1133,7 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
 	}
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
-	if (e_size >= DUK_HOBJECT_E_USE_HASH_LIMIT) {
+	if (e_size >= DUK_USE_HOBJECT_HASH_PROP_LIMIT) {
 		h_size = duk__get_default_h_size(e_size);
 	} else {
 		h_size = 0;
@@ -1183,13 +1194,15 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 		duk_uint32_t n;
 		duk_uint32_t i, step;
 		duk_uint32_t *h_base;
+		duk_uint32_t mask;
 
 		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_existing_entry() using hash part for lookup"));
 
 		h_base = DUK_HOBJECT_H_GET_BASE(heap, obj);
 		n = DUK_HOBJECT_GET_HSIZE(obj);
-		i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n);
-		step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+		mask = n - 1;
+		i = DUK_HSTRING_GET_HASH(key) & mask;
+		step = 1;  /* Cache friendly but clustering prone. */
 
 		for (;;) {
 			duk_uint32_t t;
@@ -1217,10 +1230,9 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 				DUK_DDD(DUK_DDDPRINT("lookup miss i=%ld, t=%ld",
 				                     (long) i, (long) t));
 			}
-			i = (i + step) % n;
+			i = (i + step) & mask;
 
-			/* guaranteed to finish, as hash is never full */
-			DUK_ASSERT(i != (duk_uint32_t) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n));
+			/* Guaranteed to finish (hash is larger than #props). */
 		}
 	}
 #endif  /* DUK_USE_HOBJECT_HASH_PART */
@@ -1325,13 +1337,14 @@ DUK_LOCAL duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj
 
 #if defined(DUK_USE_HOBJECT_HASH_PART)
 	if (DUK_UNLIKELY(DUK_HOBJECT_GET_HSIZE(obj) > 0)) {
-		duk_uint32_t n;
+		duk_uint32_t n, mask;
 		duk_uint32_t i, step;
 		duk_uint32_t *h_base = DUK_HOBJECT_H_GET_BASE(thr->heap, obj);
 
 		n = DUK_HOBJECT_GET_HSIZE(obj);
-		i = DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), n);
-		step = DUK__HASH_PROBE_STEP(DUK_HSTRING_GET_HASH(key));
+		mask = n - 1;
+		i = DUK_HSTRING_GET_HASH(key) & mask;
+		step = 1;  /* Cache friendly but clustering prone. */
 
 		for (;;) {
 			duk_uint32_t t = h_base[i];
@@ -1346,10 +1359,9 @@ DUK_LOCAL duk_bool_t duk__alloc_entry_checked(duk_hthread *thr, duk_hobject *obj
 				break;
 			}
 			DUK_DDD(DUK_DDDPRINT("duk__alloc_entry_checked() miss %ld", (long) i));
-			i = (i + step) % n;
+			i = (i + step) & mask;
 
-			/* guaranteed to find an empty slot */
-			DUK_ASSERT(i != (duk_uint32_t) DUK__HASH_INITIAL(DUK_HSTRING_GET_HASH(key), DUK_HOBJECT_GET_HSIZE(obj)));
+			/* Guaranteed to finish (hash is larger than #props). */
 		}
 	}
 #endif  /* DUK_USE_HOBJECT_HASH_PART */
