@@ -1684,6 +1684,18 @@ Released
   call blocks) so that other native threads may execute while the thread is
   blocked (GH-893, GH-909)
 
+1.6.1 (2017-01-15)
+------------------
+
+* Fix compile error when using 16-bit fields and disabling refcounting at
+  the same time (GH-1207)
+
+* Fix an incorrect assert in RegExp code for character class dashes (GH-1250)
+
+* Fix duk_hstring array index check integer overflow, which caused certain
+  integer strings (such as '7394299990') to be incorrectly treated as array
+  indices (GH-1273, GH-1276)
+
 2.0.0 (2017-01-02)
 ------------------
 
@@ -2322,6 +2334,8 @@ Other bug fixes:
 
 * Fix compile error when using 16-bit fields and disabling refcounting at
   the same time (GH-1207)
+
+* Fix an incorrect assert in RegExp code for character class dashes (GH-1250)
 
 Miscellaneous:
 
