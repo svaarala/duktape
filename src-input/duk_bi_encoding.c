@@ -362,7 +362,6 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 1);
 	if (duk_is_undefined(ctx, 0)) {
 		len = 0;
-		final_len = len;
 	} else {
 		duk_hstring *h_input;
 
@@ -420,6 +419,8 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 		final_len = (duk_size_t) (enc_ctx.out - output);
 		duk_resize_buffer(ctx, -1, final_len);
 		/* 'output' and 'enc_ctx.out' are potentially invalidated by the resize. */
+	} else {
+		final_len = 0;
 	}
 
 	/* Standard WHATWG output is a Uint8Array.  Here the Uint8Array will
