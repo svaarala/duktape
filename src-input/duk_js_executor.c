@@ -4996,22 +4996,18 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_UNUSED252:
 		case DUK_OP_UNUSED253:
 		case DUK_OP_UNUSED254:
-		case DUK_OP_UNUSED255: {
-			/* Force all case clauses to map to an actual handler
-			 * so that the compiler can emit a jump without a bounds
-			 * check: the switch argument is a duk_uint8_t so that
-			 * the compiler may be able to figure it out.  This is
-			 * a small detail and obviously compiler dependent.
-			 */
-			volatile duk_small_int_t dummy_volatile;
-			dummy_volatile = 0;
-			DUK_UNREF(dummy_volatile);
-			DUK_D(DUK_DPRINT("invalid opcode: %ld - %!I", (long) op, ins));
-			DUK__INTERNAL_ERROR("invalid opcode");
-			break;
-		}
+		case DUK_OP_UNUSED255:
+		/* Force all case clauses to map to an actual handler
+		 * so that the compiler can emit a jump without a bounds
+		 * check: the switch argument is a duk_uint8_t so that
+		 * the compiler may be able to figure it out.  This is
+		 * a small detail and obviously compiler dependent.
+		 */
+		/* default: clause omitted on purpose */
+#else
+		default:
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
-		default: {
+		{
 			/* Default case catches invalid/unsupported opcodes. */
 			DUK_D(DUK_DPRINT("invalid opcode: %ld - %!I", (long) op, ins));
 			DUK__INTERNAL_ERROR("invalid opcode");
