@@ -707,6 +707,8 @@ struct duk_propdesc {
 struct duk_hobject {
 	duk_heaphdr hdr;
 
+	/* FIXME: 16-bit hash part? */
+
 	/*
 	 *  'props' contains {key,value,flags} entries, optional array entries, and
 	 *  an optional hash lookup table for non-array entries in a single 'sliced'
