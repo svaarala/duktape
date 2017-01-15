@@ -2418,7 +2418,7 @@ Planned
 * Fix memory unsafe behavior in Duktape 2.0.0 String.prototype.repeat()
   (GH-1270)
 
-* Fix memory unsafe behavior in new TextEncoder().encode('') (applied to an
+* Fix incorrect behavior for new TextEncoder().encode('') (applied to an
   empty string) which manifested at least on MSVC (GH-1293, GH-1294)
 
 * Fix incorrect exponentiation operator behavior which happened at least on
