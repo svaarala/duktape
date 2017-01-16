@@ -29,6 +29,9 @@
 #define DUK_ALWAYS_INLINE   inline __attribute__((always_inline))
 #endif
 
+/* DUK_HOT */
+/* DUK_COLD */
+
 #if defined(DUK_F_DLL_BUILD) && defined(DUK_F_WINDOWS)
 #snippet "msvc_visibility.h.in"
 #else
