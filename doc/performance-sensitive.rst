@@ -33,6 +33,30 @@ several reasons:
   is better.  Note that ``-O3`` is not always better because the code is
   larger and may not fit in caches as well as with ``-O2``.
 
+Profile guided optimization (PGO)
+=================================
+
+Duktape source files contain some performance attributes like forced inline
+forced noinline, and hot/cold attributes.
+
+A better alternative is to use profile guided optimization (PGO) which is
+highly recommended for performance sensitive environments.  For example,
+GCC -O2 with PGO can be around 20% faster than GCC -O2 without PGO.
+
+See for example the following:
+
+* http://stackoverflow.com/questions/13881292/gcc-profile-guided-optimization-pgo
+
+* https://msdn.microsoft.com/en-us/library/e7k32f4k.aspx
+
+With GCC PGO is relatively simple:
+
+* Use ``-fprofile-generate`` to compile Duktape and your application.
+
+* Execute the result with representative (this is important) source files.
+
+* Use ``-fprofile-use`` to recompile Duktape and your application.
+
 Suggested feature options
 =========================
 

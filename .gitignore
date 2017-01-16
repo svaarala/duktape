@@ -3,6 +3,7 @@
 *.o
 *.strip
 *.pyc
+/*.gcda
 /_*
 /duk.*
 /duk

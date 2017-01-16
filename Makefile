@@ -89,6 +89,13 @@ CONFIGOPTS_DEBUG_ROM=--rom-support --rom-auto-lightfunc --option-file util/maked
 CONFIGOPTS_EMDUK=-UDUK_USE_FASTINT -UDUK_USE_PACKED_TVAL
 CONFIGOPTS_DUKWEB=--option-file util/dukweb_base.yaml --fixup-file util/dukweb_fixup.h
 
+# Profile guided optimization test set.
+PGO_TEST_SET=\
+	tests/ecmascript/test-dev-mandel2-func.js \
+	tests/ecmascript/test-dev-totp.js \
+	tests/perf/test-fib.js \
+	tests/ecmascript/test-regexp-ipv6-regexp.js
+
 # Compiler setup for Linux.
 CC	= gcc
 GXX	= g++
@@ -193,6 +200,7 @@ checksetup:
 # which we don't want to delete by default with 'clean'.
 .PHONY:	clean
 clean:
+	@rm -f *.gcda
 	@rm -rf dist/
 	@rm -rf prep/
 	@rm -rf site/
@@ -326,6 +334,18 @@ duk: linenoise prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
+duk-pgo:
+	@echo "Compiling with -fprofile-generate..."
+	@rm -f *.gcda
+	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+	@echo "Generating profile..."
+	@echo "XXX: profile is pretty dummy now, some benchmark run would be much better"
+	./$@ $(PGO_TEST_SET)
+	@rm -f $@
+	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@echo "Recompiling with -fprofile-use..."
 duk-perf: linenoise prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
@@ -350,10 +370,36 @@ duk.O2: linenoise prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
+duk-pgo.O2: linenoise prep/nondebug
+	@echo "Compiling with -fprofile-generate..."
+	@rm -f *.gcda
+	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+	@echo "Generating profile..."
+	@echo "XXX: profile is pretty dummy now, some benchmark run would be much better"
+	./$@ $(PGO_TEST_SET)
+	@rm -f $@
+	@echo "Recompiling with -fprofile-use..."
+	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
 duk-perf.O2: linenoise prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
+duk-perf-pgo.O2: linenoise prep/nondebug-perf
+	@echo "Compiling with -fprofile-generate..."
+	@rm -f *.gcda
+	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
+	@ls -l $@
+	-@size $@
+	@echo "Generating profile..."
+	@echo "XXX: profile is pretty dummy now, some benchmark run would be much better"
+	./$@ $(PGO_TEST_SET)
+	@rm -f $@
+	@echo "Recompiling with -fprofile-use..."
+	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-use prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 duk.O3: linenoise prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O3 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
