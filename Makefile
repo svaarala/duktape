@@ -90,11 +90,26 @@ CONFIGOPTS_EMDUK=-UDUK_USE_FASTINT -UDUK_USE_PACKED_TVAL
 CONFIGOPTS_DUKWEB=--option-file util/dukweb_base.yaml --fixup-file util/dukweb_fixup.h
 
 # Profile guided optimization test set.
+# FIXME
 PGO_TEST_SET=\
 	tests/ecmascript/test-dev-mandel2-func.js \
 	tests/ecmascript/test-dev-totp.js \
 	tests/perf/test-fib.js \
-	tests/ecmascript/test-regexp-ipv6-regexp.js
+	tests/ecmascript/test-regexp-ipv6-regexp.js \
+	tests/octane/octane/base.js \
+	tests/octane/octane/box2d.js \
+	tests/octane/octane/code-load.js \
+	tests/octane/octane/crypto.js \
+	tests/octane/octane/deltablue.js \
+	tests/octane/octane/earley-boyer.js \
+	tests/octane/octane/gbemu-part1.js \
+	tests/octane/octane/gbemu-part2.js \
+	tests/octane/octane/navier-stokes.js \
+	tests/octane/octane/pdfjs.js \
+	tests/octane/octane/raytrace.js \
+	tests/octane/octane/richards.js \
+	tests/octane/octane/splay.js \
+	tests/octane/duktape_harness.js
 
 # Compiler setup for Linux.
 CC	= gcc
@@ -378,7 +393,7 @@ duk.O2: linenoise prep/nondebug
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-pgo.O2: linenoise prep/nondebug
+duk-pgo.O2: linenoise octane-setup prep/nondebug
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -396,7 +411,7 @@ duk-perf.O2: linenoise prep/nondebug-perf
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
 	@ls -l $@
 	-@size $@
-duk-perf-pgo.O2: linenoise prep/nondebug-perf
+duk-perf-pgo.O2: linenoise octane-setup prep/nondebug-perf
 	@echo "Compiling with -fprofile-generate..."
 	@rm -f *.gcda
 	$(CC) -o $@ -Iprep/nondebug-perf $(CCOPTS_NONDEBUG) -O2 -fprofile-generate prep/nondebug-perf/duktape.c $(DUKTAPE_CMDLINE_SOURCES) $(LINENOISE_SOURCES) $(CCLIBS)
@@ -898,6 +913,8 @@ ajtcl:
 # Duktape binary releases are in a separate repo.
 duktape-releases:
 	$(GIT) clone https://github.com/svaarala/duktape-releases.git
+octane-setup:
+	cd tests/octane; make octane
 
 # Reference documents.
 references/ECMA-262\ 5th\ edition\ December\ 2009.pdf:
