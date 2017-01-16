@@ -80,6 +80,13 @@
 #define DUK_ALWAYS_INLINE  /*nop*/
 #endif
 
+#if !defined(DUK_HOT)
+#define DUK_HOT            /*nop*/
+#endif
+#if !defined(DUK_COLD)
+#define DUK_COLD           /*nop*/
+#endif
+
 #if !defined(DUK_EXTERNAL_DECL)
 #define DUK_EXTERNAL_DECL  extern
 #endif

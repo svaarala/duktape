@@ -2424,6 +2424,9 @@ Planned
 * Fix incorrect exponentiation operator behavior which happened at least on
   Linux gcc 4.8.4 with -O2 (not -Os) (GH-1272)
 
+* Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
+  functions (GH-1297)
+
 * Internal change: duk_hstring now has a 'next' heap pointer for string table
   chaining; this affects string allocation sizes which may matter for manually
   tuned memory pools (GH-1277)

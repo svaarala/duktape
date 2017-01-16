@@ -33,6 +33,12 @@
 #define DUK_ALWAYS_INLINE   inline __attribute__((always_inline))
 #endif
 
+#if (defined(DUK_F_C99) || defined(DUK_F_CPP11)) && \
+    defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40300)
+#define DUK_HOT             __attribute__((hot))
+#define DUK_COLD            __attribute__((cold))
+#endif
+
 #if defined(DUK_F_DLL_BUILD) && defined(DUK_F_WINDOWS)
 #snippet "msvc_visibility.h.in"
 #elif defined(DUK_F_GCC_VERSION) && (DUK_F_GCC_VERSION >= 40000)
