@@ -4,6 +4,10 @@
 
 #include "duk_internal.h"
 
+/*
+ *  duk_hstring charCodeAt, with and without surrogate awareness
+ */
+
 DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos, duk_bool_t surrogate_aware) {
 	duk_uint32_t boff;
 	const duk_uint8_t *p, *p_start, *p_end;
@@ -51,13 +55,84 @@ DUK_INTERNAL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk
 	return cp1;
 }
 
-#if !defined(DUK_USE_HSTRING_CLEN)
-DUK_INTERNAL duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
-	if (DUK_HSTRING_HAS_ASCII(h)) {
+/*
+ *  duk_hstring charlen access
+ */
+
+#if defined(DUK_USE_HSTRING_CLEN)
+DUK_LOCAL DUK_COLD duk_size_t duk__hstring_get_charlen_slowpath(duk_hstring *h) {
+	duk_size_t res;
+
+	DUK_ASSERT(h->clen == 0);  /* Checked by caller. */
+
+#if defined(DUK_USE_ROM_STRINGS)
+	/* ROM strings have precomputed clen, but if the computed clen is zero
+	 * we can still come here and can't write anything.
+	 */
+	if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) {
+		return 0;
+	}
+#endif
+
+	res = duk_unicode_unvalidated_utf8_length(DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+#if defined(DUK_USE_STRLEN16)
+	DUK_ASSERT(res <= 0xffffUL);  /* Bytelength checked during interning. */
+	h->clen16 = (duk_uint16_t) res;
+#else
+	h->clen = res;
+#endif
+	if (DUK_LIKELY(res == DUK_HSTRING_GET_BYTELEN(h))) {
+		DUK_HSTRING_SET_ASCII(h);
+	}
+	return res;
+}
+#else  /* DUK_USE_HSTRING_CLEN */
+DUK_LOCAL duk_size_t duk__hstring_get_charlen_slowpath(duk_hstring *h) {
+	if (DUK_LIKELY(DUK_HSTRING_HAS_ASCII(h))) {
 		/* Most practical strings will go here. */
 		return DUK_HSTRING_GET_BYTELEN(h);
 	} else {
-		return duk_unicode_unvalidated_utf8_length(DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+		/* ASCII flag is lazy, so set it here. */
+		duk_size_t res;
+
+		/* XXX: here we could use the strcache to speed up the
+		 * computation (matters for 'i < str.length' loops).
+		 */
+
+		res = duk_unicode_unvalidated_utf8_length(DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+
+#if defined(DUK_USE_ROM_STRINGS)
+		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) {
+			/* For ROM strings, can't write anything; ASCII flag
+			 * is preset so we don't need to update it.
+			 */
+			return res;
+		}
+#endif
+		if (DUK_LIKELY(res == DUK_HSTRING_GET_BYTELEN(h))) {
+			DUK_HSTRING_SET_ASCII(h);
+		}
+		return res;
 	}
 }
-#endif  /* !DUK_USE_HSTRING_CLEN */
+#endif  /* DUK_USE_HSTRING_CLEN */
+
+#if defined(DUK_USE_HSTRING_CLEN)
+DUK_INTERNAL DUK_HOT duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
+#if defined(DUK_USE_STRLEN16)
+	if (DUK_LIKELY(h->clen16 != 0)) {
+		return h->clen16;
+	}
+#else
+	if (DUK_LIKELY(h->clen != 0)) {
+		return h->clen;
+	}
+#endif
+	return duk__hstring_get_charlen_slowpath(h);
+}
+#else  /* DUK_USE_HSTRING_CLEN */
+DUK_INTERNAL DUK_HOT duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
+	/* Always use slow path. */
+	return duk__hstring_get_charlen_slowpath(h);
+}
+#endif  /* DUK_USE_HSTRING_CLEN */

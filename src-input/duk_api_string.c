@@ -194,6 +194,7 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 	duk_hstring *res;
 	duk_size_t start_byte_offset;
 	duk_size_t end_byte_offset;
+	duk_size_t charlen;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -201,8 +202,9 @@ DUK_EXTERNAL void duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t star
 	h = duk_require_hstring(ctx, idx);
 	DUK_ASSERT(h != NULL);
 
-	if (end_offset >= DUK_HSTRING_GET_CHARLEN(h)) {
-		end_offset = DUK_HSTRING_GET_CHARLEN(h);
+	charlen = DUK_HSTRING_GET_CHARLEN(h);
+	if (end_offset >= charlen) {
+		end_offset = charlen;
 	}
 	if (start_offset > end_offset) {
 		start_offset = end_offset;
