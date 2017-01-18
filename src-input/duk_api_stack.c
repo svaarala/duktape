@@ -686,25 +686,15 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	return 1;
 }
 
-DUK_INTERNAL
-duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
-                                   duk_size_t min_new_size,
-                                   duk_small_uint_t flags) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_do_resize(duk_context *ctx,
+                                                                   duk_size_t min_new_size,
+                                                                   duk_small_uint_t flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_size_t old_size;
 	duk_size_t new_size;
-	duk_bool_t is_shrink = 0;
-	duk_small_uint_t shrink_flag = (flags & DUK_VSRESIZE_FLAG_SHRINK);
+	duk_bool_t is_shrink;
 	duk_small_uint_t compact_flag = (flags & DUK_VSRESIZE_FLAG_COMPACT);
 	duk_small_uint_t throw_flag = (flags & DUK_VSRESIZE_FLAG_THROW);
-
-	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%lu, curr_size=%ld, curr_top=%ld, "
-	                     "curr_bottom=%ld, shrink=%d, compact=%d, throw=%d",
-	                     (unsigned long) min_new_size,
-	                     (long) (thr->valstack_end - thr->valstack),
-	                     (long) (thr->valstack_top - thr->valstack),
-	                     (long) (thr->valstack_bottom - thr->valstack),
-	                     (int) shrink_flag, (int) compact_flag, (int) throw_flag));
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -721,11 +711,8 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 
 	if (min_new_size <= old_size) {
 		is_shrink = 1;
-		if (!shrink_flag ||
-		    old_size - min_new_size < DUK_VALSTACK_SHRINK_THRESHOLD) {
-			DUK_DDD(DUK_DDDPRINT("no need to grow or shrink valstack"));
-			return 1;
-		}
+	} else {
+		is_shrink = 0;
 	}
 
 	new_size = min_new_size;
@@ -784,6 +771,44 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
 
 	DUK_DDD(DUK_DDDPRINT("valstack resize successful"));
 	return 1;
+}
+
+DUK_INTERNAL duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
+                                                duk_size_t min_new_size,
+                                                duk_small_uint_t flags) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_size_t old_size;
+
+	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%lu, curr_size=%ld, curr_top=%ld, "
+	                     "curr_bottom=%ld, flags=%lx",
+	                     (unsigned long) min_new_size,
+	                     (long) (thr->valstack_end - thr->valstack),
+	                     (long) (thr->valstack_top - thr->valstack),
+	                     (long) (thr->valstack_bottom - thr->valstack),
+	                     (unsigned long) flags));
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
+
+#if defined(DUK_USE_PREFER_SIZE)
+	old_size = (duk_size_t) (thr->valstack_end - thr->valstack);
+#else
+	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
+	old_size = thr->valstack_size;
+#endif
+
+	if (DUK_LIKELY(min_new_size <= old_size)) {
+		if (DUK_LIKELY((flags & DUK_VSRESIZE_FLAG_SHRINK) == 0 ||
+		               old_size - min_new_size < DUK_VALSTACK_SHRINK_THRESHOLD)) {
+			DUK_DDD(DUK_DDDPRINT("no need to grow or shrink valstack"));
+			return 1;
+		}
+	}
+
+	return duk__valstack_do_resize(ctx, min_new_size, flags);
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {

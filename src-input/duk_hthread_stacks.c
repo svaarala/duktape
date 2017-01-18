@@ -22,8 +22,7 @@
 
 #include "duk_internal.h"
 
-/* check that there is space for at least one new entry */
-DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_callstack_grow(duk_hthread *thr) {
 	duk_activation *new_ptr;
 	duk_size_t old_size;
 	duk_size_t new_size;
@@ -31,10 +30,6 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);   /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
-
-	if (thr->callstack_top < thr->callstack_size) {
-		return;
-	}
 
 	old_size = thr->callstack_size;
 	new_size = old_size + DUK_CALLSTACK_GROW_STEP;
@@ -63,17 +58,25 @@ DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
 	/* note: any entries above the callstack top are garbage and not zeroed */
 }
 
-DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
+/* check that there is space for at least one new entry */
+DUK_INTERNAL void duk_hthread_callstack_grow(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);   /* avoid warning (unsigned) */
+	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
+
+	if (DUK_LIKELY(thr->callstack_top < thr->callstack_size)) {
+		return;
+	}
+	duk__hthread_do_callstack_grow(thr);
+}
+
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_callstack_shrink(duk_hthread *thr) {
 	duk_size_t new_size;
 	duk_activation *p;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
-
-	if (thr->callstack_size - thr->callstack_top < DUK_CALLSTACK_SHRINK_THRESHOLD) {
-		return;
-	}
 
 	new_size = thr->callstack_top + DUK_CALLSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->callstack_top);
@@ -99,6 +102,18 @@ DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	}
 
 	/* note: any entries above the callstack top are garbage and not zeroed */
+}
+
+DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
+	DUK_ASSERT(thr->callstack_size >= thr->callstack_top);
+
+	if (DUK_LIKELY(thr->callstack_size - thr->callstack_top < DUK_CALLSTACK_SHRINK_THRESHOLD)) {
+		return;
+	}
+
+	duk__hthread_do_callstack_shrink(thr);
 }
 
 DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
@@ -328,7 +343,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	 */
 }
 
-DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_catchstack_grow(duk_hthread *thr) {
 	duk_catcher *new_ptr;
 	duk_size_t old_size;
 	duk_size_t new_size;
@@ -336,10 +351,6 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->catchstack_top);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
-
-	if (thr->catchstack_top < thr->catchstack_size) {
-		return;
-	}
 
 	old_size = thr->catchstack_size;
 	new_size = old_size + DUK_CATCHSTACK_GROW_STEP;
@@ -368,17 +379,25 @@ DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
 	/* note: any entries above the catchstack top are garbage and not zeroed */
 }
 
-DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
+DUK_INTERNAL void duk_hthread_catchstack_grow(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_DISABLE(thr->catchstack_top);  /* avoid warning (unsigned) */
+	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
+
+	if (DUK_LIKELY(thr->catchstack_top < thr->catchstack_size)) {
+		return;
+	}
+
+	duk__hthread_do_catchstack_grow(thr);
+}
+
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_catchstack_shrink(duk_hthread *thr) {
 	duk_size_t new_size;
 	duk_catcher *p;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->catchstack_top >= 0);  /* avoid warning (unsigned) */
 	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
-
-	if (thr->catchstack_size - thr->catchstack_top < DUK_CATCHSTACK_SHRINK_THRESHOLD) {
-		return;
-	}
 
 	new_size = thr->catchstack_top + DUK_CATCHSTACK_SHRINK_SPARE;
 	DUK_ASSERT(new_size >= thr->catchstack_top);
@@ -404,6 +423,18 @@ DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	}
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */
+}
+
+DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_DISABLE(thr->catchstack_top >= 0);  /* avoid warning (unsigned) */
+	DUK_ASSERT(thr->catchstack_size >= thr->catchstack_top);
+
+	if (DUK_LIKELY(thr->catchstack_size - thr->catchstack_top < DUK_CATCHSTACK_SHRINK_THRESHOLD)) {
+		return;
+	}
+
+	duk__hthread_do_catchstack_shrink(thr);
 }
 
 DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {

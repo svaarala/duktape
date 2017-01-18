@@ -63,7 +63,7 @@ DUK_INTERNAL duk_uint8_t *duk_bw_resize(duk_hthread *thr, duk_bufwriter_ctx *bw_
 	curr_off = (duk_size_t) (bw_ctx->p - bw_ctx->p_base);
 	add_sz = (curr_off >> DUK_BW_SPARE_SHIFT) + DUK_BW_SPARE_ADD;
 	new_sz = curr_off + sz + add_sz;
-	if (new_sz < curr_off) {
+	if (DUK_UNLIKELY(new_sz < curr_off)) {
 		/* overflow */
 		DUK_ERROR_RANGE(thr, DUK_STR_BUFFER_TOO_LONG);
 		return NULL;  /* not reachable */
