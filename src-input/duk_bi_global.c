@@ -511,7 +511,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 		this_to_global = 0;
 
 		if (DUK_HOBJECT_HAS_STRICT((duk_hobject *) func)) {
-			duk_hobject *new_env;
+			duk_hdecenv *new_env;
 			duk_hobject *act_lex_env;
 
 			DUK_DDD(DUK_DDDPRINT("direct eval call to a strict function -> "
@@ -522,15 +522,19 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			act_lex_env = act->lex_env;
 			act = NULL;  /* invalidated */
 
-			new_env = duk_push_object_helper_proto(ctx,
-			                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-			                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-			                                       act_lex_env);
+			new_env = duk_hdecenv_alloc(thr->heap,
+			                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+			                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 			DUK_ASSERT(new_env != NULL);
+			duk_push_hobject(ctx, (duk_hobject *) new_env);
+
+			DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
+			DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act_lex_env);
+			DUK_HOBJECT_INCREF_ALLOWNULL(thr, act_lex_env);
 			DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
-			outer_lex_env = new_env;
-			outer_var_env = new_env;
+			outer_lex_env = (duk_hobject *) new_env;
+			outer_var_env = (duk_hobject *) new_env;
 
 			duk_insert(ctx, 0);  /* stash to bottom of value stack to keep new_env reachable for duration of eval */
 
@@ -560,7 +564,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	/* Eval code doesn't need an automatic .prototype object. */
 	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env, 0 /*add_auto_proto*/);
 
-	/* [ source template closure ] */
+	/* [ env? source template closure ] */
 
 	if (this_to_global) {
 		DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
@@ -579,11 +583,11 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	                     (duk_heaphdr *) outer_var_env,
 	                     duk_get_tval(ctx, -1)));
 
-	/* [ source template closure this ] */
+	/* [ env? source template closure this ] */
 
 	duk_call_method(ctx, 0);
 
-	/* [ source template result ] */
+	/* [ env? source template result ] */
 
 	return 1;
 }

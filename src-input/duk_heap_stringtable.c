@@ -674,6 +674,7 @@ DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_ui
 	duk_hstring *curr;
 
 	DUK_ASSERT(heap != NULL);
+	DUK_UNREF(heap);
 
 	lookup_hash = (blen << 4);
 	if (blen > 0) {

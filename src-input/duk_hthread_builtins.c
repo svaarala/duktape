@@ -35,12 +35,13 @@
 #if defined(DUK_USE_ROM_GLOBAL_CLONE) || defined(DUK_USE_ROM_GLOBAL_INHERIT)
 DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	duk_context *ctx;
-	duk_hobject *h1;
+	duk_hobject *h_global;
 #if defined(DUK_USE_ROM_GLOBAL_CLONE)
-	duk_hobject *h2;
+	duk_hobject *h_oldglobal;
 	duk_uint8_t *props;
 	duk_size_t alloc_size;
 #endif
+	duk_hobject *h_objenv;
 
 	ctx = (duk_context *) thr;
 
@@ -48,29 +49,29 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 
 #if defined(DUK_USE_ROM_GLOBAL_INHERIT)
 	/* Inherit from ROM-based global object: less RAM usage, less transparent. */
-	h1 = duk_push_object_helper(ctx,
-	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
-	                            DUK_BIDX_GLOBAL);
-	DUK_ASSERT(h1 != NULL);
+	h_global = duk_push_object_helper(ctx,
+	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
+	                                  DUK_BIDX_GLOBAL);
+	DUK_ASSERT(h_global != NULL);
 #elif defined(DUK_USE_ROM_GLOBAL_CLONE)
 	/* Clone the properties of the ROM-based global object to create a
 	 * fully RAM-based global object.  Uses more memory than the inherit
 	 * model but more compliant.
 	 */
-	h1 = duk_push_object_helper(ctx,
-	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
-	                            DUK_BIDX_OBJECT_PROTOTYPE);
-	DUK_ASSERT(h1 != NULL);
-	h2 = thr->builtins[DUK_BIDX_GLOBAL];
-	DUK_ASSERT(h2 != NULL);
+	h_global = duk_push_object_helper(ctx,
+	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
+	                                  DUK_BIDX_OBJECT_PROTOTYPE);
+	DUK_ASSERT(h_global != NULL);
+	h_oldglobal = thr->builtins[DUK_BIDX_GLOBAL];
+	DUK_ASSERT(h_oldglobal != NULL);
 
 	/* Copy the property table verbatim; this handles attributes etc.
 	 * For ROM objects it's not necessary (or possible) to update
 	 * refcounts so leave them as is.
 	 */
-	alloc_size = DUK_HOBJECT_P_ALLOC_SIZE(h2);
+	alloc_size = DUK_HOBJECT_P_ALLOC_SIZE(h_oldglobal);
 	DUK_ASSERT(alloc_size > 0);
 	props = DUK_ALLOC(thr->heap, alloc_size);
 	if (DUK_UNLIKELY(props == NULL)) {
@@ -78,54 +79,56 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 		DUK_ERROR_ALLOC_FAILED(thr);
 		return;
 	}
-	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h2) != NULL);
-	DUK_MEMCPY((void *) props, (const void *) DUK_HOBJECT_GET_PROPS(thr->heap, h2), alloc_size);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal) != NULL);
+	DUK_MEMCPY((void *) props, (const void *) DUK_HOBJECT_GET_PROPS(thr->heap, h_oldglobal), alloc_size);
 
 	/* XXX: keep property attributes or tweak them here?
 	 * Properties will now be non-configurable even when they're
 	 * normally configurable for the global object.
 	 */
 
-	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h1) == NULL);
-	DUK_HOBJECT_SET_PROPS(thr->heap, h1, props);
-	DUK_HOBJECT_SET_ESIZE(h1, DUK_HOBJECT_GET_ESIZE(h2));
-	DUK_HOBJECT_SET_ENEXT(h1, DUK_HOBJECT_GET_ENEXT(h2));
-	DUK_HOBJECT_SET_ASIZE(h1, DUK_HOBJECT_GET_ASIZE(h2));
-	DUK_HOBJECT_SET_HSIZE(h1, DUK_HOBJECT_GET_HSIZE(h2));
+	DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, h_global) == NULL);
+	DUK_HOBJECT_SET_PROPS(thr->heap, h_global, props);
+	DUK_HOBJECT_SET_ESIZE(h_global, DUK_HOBJECT_GET_ESIZE(h_oldglobal));
+	DUK_HOBJECT_SET_ENEXT(h_global, DUK_HOBJECT_GET_ENEXT(h_oldglobal));
+	DUK_HOBJECT_SET_ASIZE(h_global, DUK_HOBJECT_GET_ASIZE(h_oldglobal));
+	DUK_HOBJECT_SET_HSIZE(h_global, DUK_HOBJECT_GET_HSIZE(h_oldglobal));
 #else
-#error internal error in defines
+#error internal error in config defines
 #endif
 
-	duk_hobject_compact_props(thr, h1);
+	duk_hobject_compact_props(thr, h_global);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
-	DUK_ASSERT(!DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE((duk_heaphdr *) thr->builtins[DUK_BIDX_GLOBAL]));  /* no need to decref */
-	thr->builtins[DUK_BIDX_GLOBAL] = h1;
-	DUK_HOBJECT_INCREF(thr, h1);
-	DUK_D(DUK_DPRINT("duplicated global object: %!O", h1));
-
+	DUK_ASSERT(!DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE((duk_heaphdr *) thr->builtins[DUK_BIDX_GLOBAL]));  /* no need to decref: ROM object */
+	thr->builtins[DUK_BIDX_GLOBAL] = h_global;
+	DUK_HOBJECT_INCREF(thr, h_global);
+	DUK_D(DUK_DPRINT("duplicated global object: %!O", h_global));
 
 	/* Create a fresh object environment for the global scope.  This is
 	 * needed so that the global scope points to the newly created RAM-based
 	 * global object.
 	 */
-	h1 = duk_push_object_helper(ctx,
-	                            DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-	                            -1);  /* no prototype */
-	DUK_ASSERT(h1 != NULL);
-	duk_dup_m2(ctx);
-	duk_dup_top(ctx);  /* -> [ ... new_global new_globalenv new_global new_global ] */
-	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+	h_objenv = (duk_hobject *) duk_hobjenv_alloc(thr->heap,
+	                                             DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+	DUK_ASSERT(h_objenv != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h_objenv) == NULL);
+	duk_push_hobject(ctx, h_objenv);
 
-	duk_hobject_compact_props(thr, h1);
+	DUK_ASSERT(h_global != NULL);
+	((duk_hobjenv *) h_objenv)->target = h_global;
+	DUK_HOBJECT_INCREF(thr, h_global);
+	DUK_ASSERT(((duk_hobjenv *) h_objenv)->has_this == 0);
+
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL_ENV] != NULL);
-	DUK_ASSERT(!DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE((duk_heaphdr *) thr->builtins[DUK_BIDX_GLOBAL_ENV]));  /* no need to decref */
-	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h1;
-	DUK_HOBJECT_INCREF(thr, h1);
-	DUK_D(DUK_DPRINT("duplicated global env: %!O", h1));
+	DUK_ASSERT(!DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE((duk_heaphdr *) thr->builtins[DUK_BIDX_GLOBAL_ENV]));  /* no need to decref: ROM object */
+	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_objenv;
+	DUK_HOBJECT_INCREF(thr, h_objenv);
+	DUK_D(DUK_DPRINT("duplicated global env: %!O", h_objenv));
 
-	duk_pop_2(ctx);
+	DUK_ASSERT_HOBJENV_VALID((duk_hobjenv *) h_objenv);
+
+	duk_pop_2(ctx);  /* Pop global object and global env. */
 }
 #endif  /* DUK_USE_ROM_GLOBAL_CLONE || DUK_USE_ROM_GLOBAL_INHERIT */
 
@@ -290,7 +293,29 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			((duk_hnatfunc *) h)->magic = magic;
 		} else if (class_num == DUK_HOBJECT_CLASS_ARRAY) {
 			duk_push_array(ctx);
+		} else if (class_num == DUK_HOBJECT_CLASS_OBJENV) {
+			duk_hobjenv *env;
+			duk_hobject *global;
+
+			DUK_ASSERT(i == DUK_BIDX_GLOBAL_ENV);
+			DUK_ASSERT(DUK_BIDX_GLOBAL_ENV > DUK_BIDX_GLOBAL);
+
+			env = duk_hobjenv_alloc(thr->heap,
+	                                        DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+			DUK_ASSERT(env->target == NULL);
+			duk_push_hobject(ctx, (duk_hobject *) env);
+
+			global = duk_known_hobject(ctx, DUK_BIDX_GLOBAL);
+			DUK_ASSERT(global != NULL);
+			env->target = global;
+			DUK_HOBJECT_INCREF(thr, global);
+			DUK_ASSERT(env->has_this == 0);
+
+			DUK_ASSERT_HOBJENV_VALID(env);
 		} else {
+			DUK_ASSERT(class_num != DUK_HOBJECT_CLASS_DECENV);
+
 			(void) duk_push_object_helper(ctx,
 			                              DUK_HOBJECT_FLAG_EXTENSIBLE,
 			                              -1);  /* no prototype or class yet */
@@ -347,7 +372,6 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		           DUK_HOBJECT_HAS_NEWENV(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NAMEBINDING(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(h));
-		DUK_ASSERT(!DUK_HOBJECT_HAS_ENVRECCLOSED(h));
 		/* DUK_HOBJECT_FLAG_EXOTIC_ARRAY varies */
 		/* DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h));

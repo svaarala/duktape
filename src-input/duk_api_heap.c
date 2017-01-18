@@ -134,7 +134,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *h_glob;
 	duk_hobject *h_prev_glob;
-	duk_hobject *h_env;
+	duk_hobjenv *h_env;
 	duk_hobject *h_prev_env;
 
 	DUK_D(DUK_DPRINT("replace global object with: %!T", duk_get_tval(ctx, -1)));
@@ -161,29 +161,30 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	 *  same (initial) built-ins.
 	 */
 
-	h_env = duk_push_object_helper(ctx,
-	                               DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-	                               -1);  /* no prototype, updated below */
+	h_env = duk_hobjenv_alloc(thr->heap,
+	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
 	DUK_ASSERT(h_env != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_env) == NULL);
 
-	duk_dup_m2(ctx);
-	duk_dup_m3(ctx);
-	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);
+	DUK_ASSERT(h_env->target == NULL);
+	DUK_ASSERT(h_glob != NULL);
+	h_env->target = h_glob;
+	DUK_HOBJECT_INCREF(thr, h_glob);
+	DUK_ASSERT(h_env->has_this == 0);
 
-	/* [ ... new_glob new_env ] */
+	/* [ ... new_glob ] */
 
 	h_prev_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
-	thr->builtins[DUK_BIDX_GLOBAL_ENV] = h_env;
-	DUK_HOBJECT_INCREF(thr, h_env);
+	thr->builtins[DUK_BIDX_GLOBAL_ENV] = (duk_hobject *) h_env;
+	DUK_HOBJECT_INCREF(thr, (duk_hobject *) h_env);
 	DUK_HOBJECT_DECREF_ALLOWNULL(thr, h_prev_env);  /* side effects */
 	DUK_UNREF(h_env);  /* without refcounts */
 	DUK_UNREF(h_prev_env);
 
-	/* [ ... new_glob new_env ] */
+	/* [ ... new_glob ] */
 
-	duk_pop_2(ctx);
+	duk_pop(ctx);
 
 	/* [ ... ] */
 }

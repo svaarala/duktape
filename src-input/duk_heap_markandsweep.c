@@ -113,6 +113,15 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+	} else if (DUK_HOBJECT_IS_DECENV(h)) {
+		duk_hdecenv *e = (duk_hdecenv *) h;
+		DUK_ASSERT_HDECENV_VALID(e);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) e->thread);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) e->varmap);
+	} else if (DUK_HOBJECT_IS_OBJENV(h)) {
+		duk_hobjenv *e = (duk_hobjenv *) h;
+		DUK_ASSERT_HOBJENV_VALID(e);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) e->target);
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;

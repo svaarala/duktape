@@ -1903,7 +1903,6 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"newenv",
 	"namebinding",
 	"createargs",
-	"envrecclosed",
 	"exotic_array",
 	"exotic_stringobj",
 	"exotic_arguments",
@@ -1925,7 +1924,6 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_NEWENV,
 	DUK_HOBJECT_FLAG_NAMEBINDING,
 	DUK_HOBJECT_FLAG_CREATEARGS,
-	DUK_HOBJECT_FLAG_ENVRECCLOSED,
 	DUK_HOBJECT_FLAG_EXOTIC_ARRAY,
 	DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ,
 	DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS,
@@ -2191,6 +2189,26 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk_hthread *h_thr;
 			h_thr = (duk_hthread *) h_obj;
 			DUK_UNREF(h_thr);
+		}
+
+		if (DUK_HOBJECT_IS_DECENV(h_obj)) {
+			duk_hdecenv *h_env;
+			h_env = (duk_hdecenv *) h_obj;
+
+			duk__debug_getinfo_flags_key(thr, "thread");
+			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->thread));
+			duk__debug_getinfo_flags_key(thr, "varmap");
+			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->varmap));
+			duk__debug_getinfo_prop_uint(thr, "regbase", (duk_uint_t) h_env->regbase);
+		}
+
+		if (DUK_HOBJECT_IS_OBJENV(h_obj)) {
+			duk_hobjenv *h_env;
+			h_env = (duk_hobjenv *) h_obj;
+
+			duk__debug_getinfo_flags_key(thr, "target");
+			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->target));
+			duk__debug_getinfo_prop_bool(thr, "has_this", h_env->has_this);
 		}
 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)

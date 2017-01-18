@@ -6,10 +6,15 @@
  *  in "heap allocated" list and has a refcount of zero, so caller must careful.
  */
 
+/* XXX: In most cases there's no need for plain allocation without pushing
+ * to the value stack.  Maybe rework contract?
+ */
+
 #include "duk_internal.h"
 
 DUK_LOCAL void duk__init_object_parts(duk_heap *heap, duk_hobject *obj, duk_uint_t hobject_flags) {
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
+	DUK_HOBJECT_SET_PROTOTYPE(heap, obj, NULL);
 	DUK_HOBJECT_SET_PROPS(heap, obj, NULL);
 #endif
 
@@ -212,6 +217,53 @@ DUK_INTERNAL duk_harray *duk_harray_alloc(duk_heap *heap, duk_uint_t hobject_fla
 	duk__init_object_parts(heap, &res->obj, hobject_flags);
 
 	DUK_ASSERT(res->length == 0);
+
+	return res;
+}
+
+/*
+ *  Allocate a new environment
+ */
+
+DUK_INTERNAL duk_hdecenv *duk_hdecenv_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+	duk_hdecenv *res;
+
+	res = (duk_hdecenv *) DUK_ALLOC(heap, sizeof(duk_hdecenv));
+	if (DUK_UNLIKELY(res == NULL)) {
+		return NULL;
+	}
+	DUK_MEMZERO(res, sizeof(duk_hdecenv));
+
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
+
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
+	res->thread = NULL;
+	res->varmap = NULL;
+#endif
+
+	DUK_ASSERT(res->thread == NULL);
+	DUK_ASSERT(res->varmap == NULL);
+	DUK_ASSERT(res->regbase == 0);
+
+	return res;
+}
+
+DUK_INTERNAL duk_hobjenv *duk_hobjenv_alloc(duk_heap *heap, duk_uint_t hobject_flags) {
+	duk_hobjenv *res;
+
+	res = (duk_hobjenv *) DUK_ALLOC(heap, sizeof(duk_hobjenv));
+	if (DUK_UNLIKELY(res == NULL)) {
+		return NULL;
+	}
+	DUK_MEMZERO(res, sizeof(duk_hobjenv));
+
+	duk__init_object_parts(heap, &res->obj, hobject_flags);
+
+#if defined(DUK_USE_EXPLICIT_NULL_INIT)
+	res->target = NULL;
+#endif
+
+	DUK_ASSERT(res->target == NULL);
 
 	return res;
 }
