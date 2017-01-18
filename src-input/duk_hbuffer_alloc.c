@@ -41,7 +41,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 	}
 
 	res = (duk_hbuffer *) DUK_ALLOC(heap, alloc_size);
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		goto alloc_error;
 	}
 
@@ -78,7 +78,7 @@ DUK_INTERNAL duk_hbuffer *duk_hbuffer_alloc(duk_heap *heap, duk_size_t size, duk
 #else
 			ptr = DUK_ALLOC(heap, size);
 #endif
-			if (!ptr) {
+			if (DUK_UNLIKELY(ptr == NULL)) {
 				/* Because size > 0, NULL check is correct */
 				goto alloc_error;
 			}
