@@ -21,6 +21,5 @@ tags:
 seealso:
   - duk_eval_string_noresult
   - duk_eval_lstring_noresult
-  - duk_eval_file_noresult
 
 introduced: 1.0.0
