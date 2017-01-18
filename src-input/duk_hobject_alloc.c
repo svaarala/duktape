@@ -57,7 +57,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_f
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_THREAD) == 0);
 
 	res = (duk_hobject *) DUK_ALLOC(heap, sizeof(duk_hobject));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_hobject));
@@ -71,7 +71,7 @@ DUK_INTERNAL duk_hcompfunc *duk_hcompfunc_alloc(duk_heap *heap, duk_uint_t hobje
 	duk_hcompfunc *res;
 
 	res = (duk_hcompfunc *) DUK_ALLOC(heap, sizeof(duk_hcompfunc));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_hcompfunc));
@@ -97,7 +97,7 @@ DUK_INTERNAL duk_hnatfunc *duk_hnatfunc_alloc(duk_heap *heap, duk_uint_t hobject
 	duk_hnatfunc *res;
 
 	res = (duk_hnatfunc *) DUK_ALLOC(heap, sizeof(duk_hnatfunc));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_hnatfunc));
@@ -116,7 +116,7 @@ DUK_INTERNAL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_f
 	duk_hbufobj *res;
 
 	res = (duk_hbufobj *) DUK_ALLOC(heap, sizeof(duk_hbufobj));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_hbufobj));
@@ -145,7 +145,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_f
 	duk_hthread *res;
 
 	res = (duk_hthread *) DUK_ALLOC(heap, sizeof(duk_hthread));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_hthread));
@@ -204,7 +204,7 @@ DUK_INTERNAL duk_harray *duk_harray_alloc(duk_heap *heap, duk_uint_t hobject_fla
 	duk_harray *res;
 
 	res = (duk_harray *) DUK_ALLOC(heap, sizeof(duk_harray));
-	if (!res) {
+	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
 	DUK_MEMZERO(res, sizeof(duk_harray));

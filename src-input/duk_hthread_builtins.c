@@ -73,7 +73,8 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	alloc_size = DUK_HOBJECT_P_ALLOC_SIZE(h2);
 	DUK_ASSERT(alloc_size > 0);
 	props = DUK_ALLOC(thr->heap, alloc_size);
-	if (!props) {
+	if (DUK_UNLIKELY(props == NULL)) {
+		/* XXX: just use DUK_ALLOC_CHECKED()? */
 		DUK_ERROR_ALLOC_FAILED(thr);
 		return;
 	}
