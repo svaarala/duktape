@@ -476,7 +476,7 @@ DUK_LOCAL void duk__strtable_shrink_inplace(duk_heap *heap) {
  */
 
 #if defined(DUK__STRTAB_RESIZE_CHECK)
-DUK_LOCAL void duk__strtable_resize_check(duk_heap *heap) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) {
 	duk_uint32_t load_factor;  /* fixed point */
 
 	DUK_ASSERT(heap != NULL);

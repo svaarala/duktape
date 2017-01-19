@@ -2429,8 +2429,8 @@ Planned
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
   functions (GH-1297)
 
-* Miscellaneous performance improvements: more likely/unlike attributes
-  (GH-1308)
+* Miscellaneous performance improvements: more likely/unlike attributes and
+  hot/cold function splits (GH-1308, GH-1309)
 
 * Internal change: duk_hstring now has a 'next' heap pointer for string table
   chaining; this affects string allocation sizes which may matter for manually
