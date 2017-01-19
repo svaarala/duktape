@@ -29,3 +29,4 @@ test: octane
 
 octane:
 	git clone https://github.com/chromium/octane.git
+	touch $@

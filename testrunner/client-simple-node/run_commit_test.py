@@ -274,6 +274,20 @@ def context_linux_x64_v8_bench_pass():
     execute([ os.path.join(cwd, 'duk'), os.path.join('tests', 'google-v8-benchmark-v7', 'combined.js') ])
     return True
 
+def context_linux_x64_octane():
+    cwd = os.getcwd()
+    execute([ 'make', 'duk.O2' ])
+    os.chdir(os.path.join(cwd, 'tests', 'octane'))
+    scores = []
+    for i in xrange(5):
+        res = execute([ 'make', 'test' ])
+        m = re.match(r'.*?SCORE (\d+)', res['stdout'], re.DOTALL)
+        if m is not None:
+            scores.append(float(m.group(1)))
+        print('scores so far: min=%f, max=%f, avg=%f: %r' % (min(scores), max(scores), sum(scores) / float(len(scores)), scores))
+    print('TESTRUNNER_DESCRIPTION: %.1f (%d-%d)' % (float(sum(scores) / float(len(scores))), int(min(scores)), int(max(scores))))
+    return True
+
 def context_linux_x64_duk_clang():
     cwd = os.getcwd()
     execute([ 'make', 'duk-clang' ])
@@ -933,6 +947,7 @@ context_handlers = {
     'linux-x86-ajduk-rombuild': context_linux_x86_ajduk_rombuild,
 
     'linux-x64-v8-bench-pass': context_linux_x64_v8_bench_pass,
+    'linux-x64-octane': context_linux_x64_octane,
 
     'linux-x64-duk-dddprint': context_linux_x64_duk_dddprint,
     'linux-x64-duk-separate-src': context_linux_x64_duk_separate_src,
