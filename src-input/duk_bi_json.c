@@ -2164,7 +2164,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			goto pop2_undef;
 		}
 		duk__enc_quote_string(js_ctx, h);
@@ -2261,7 +2261,7 @@ DUK_LOCAL duk_bool_t duk__enc_allow_into_proplist(duk_tval *tv) {
 		duk_hstring *h;
 		h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			return 0;
 		}
 		return 1;
@@ -2330,7 +2330,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		duk_hstring *h;
 		h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			goto emit_undefined;
 		}
 		duk__enc_quote_string(js_ctx, h);
@@ -2495,7 +2495,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 					DUK_DD(DUK_DDPRINT("property is an accessor, abort fast path"));
 					goto abort_fastpath;
 				}
-				if (DUK_HSTRING_HAS_SYMBOL(k)) {
+				if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(k))) {
 					continue;
 				}
 

@@ -2362,7 +2362,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv_obj);
 		duk_int_t pop_count;
 
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			/* Symbols (ES2015 or hidden) don't have virtual properties. */
 			DUK_DDD(DUK_DDDPRINT("base object is a symbol, start lookup from symbol prototype"));
 			curr = thr->builtins[DUK_BIDX_SYMBOL_PROTOTYPE];
@@ -3387,7 +3387,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
 		DUK_ASSERT(key != NULL);
 
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			/* Symbols (ES2015 or hidden) don't have virtual properties. */
 			curr = thr->builtins[DUK_BIDX_SYMBOL_PROTOTYPE];
 			goto lookup;

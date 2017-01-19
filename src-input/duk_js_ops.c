@@ -218,7 +218,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 	case DUK_TAG_STRING: {
 		/* For Symbols ToNumber() is always a TypeError. */
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CANNOT_NUMBER_COERCE_SYMBOL);
 		}
 		duk_push_hstring(ctx, h);
@@ -950,7 +950,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 		DUK_ASSERT(h1 != NULL);
 		DUK_ASSERT(h2 != NULL);
 
-		if (!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2)) {
+		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2))) {
 			rc = duk_js_string_compare(h1, h2);
 			duk_pop_2(ctx);
 			if (rc < 0) {
@@ -1267,7 +1267,7 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
 		/* All internal keys are identified as Symbols. */
 		str = DUK_TVAL_GET_STRING(tv_x);
 		DUK_ASSERT(str != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(str)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(str))) {
 			stridx = DUK_STRIDX_LC_SYMBOL;
 		} else {
 			stridx = DUK_STRIDX_LC_STRING;
