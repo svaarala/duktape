@@ -2457,6 +2457,9 @@ Planned
   handling performance for the majority of strings whose .length is never
   read (GH-1303)
 
+* Improve lexical scope handling performance by adding internal duk_hdecenv
+  and duk_hobjenv structures (previously generic objects were used) (GH-1310)
+
 * Fix a duk_push_heapptr() finalize_list assertion issue caused by the
   internal heap->finalize_list being (intentionally) out-of-sync during
   mark-and-sweep finalizer execution; this has no functional impact but
