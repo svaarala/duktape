@@ -43,6 +43,8 @@ function lightfuncFinalizerTest() {
     Duktape.fin(Function.prototype, function (v) {
         if (valueIsLightFunc(v)) {
             print('inherited finalizer for lightfunc');
+        } else {
+            //print('inherited finalizer, not for lightfunc: ' + v);
         }
     });
 

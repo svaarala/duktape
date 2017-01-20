@@ -2,7 +2,7 @@
  *  Duktape 0.11.0 bug: if a Proxy is reachable at heap destruction and the
  *  target object has a finalizer, the finalizer will be executed both for
  *  the target object and the Proxy object.  Normal run-time refcount and
- *  mark-and-sweep finalizer code will not finalize a Proxy.
+ *  mark-and-sweep triggered finalizer code will not finalize a Proxy.
  *
  *  See: https://github.com/svaarala/duktape/issues/45
  */

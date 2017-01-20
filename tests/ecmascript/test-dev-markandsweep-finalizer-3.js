@@ -1,9 +1,9 @@
 /*
- *  If a mark-and-sweep finalizer creates a new reachable object, the object
- *  must not be collected even though it has not been marked reachable.
- *  This is handled correctly by the implementation: finalizers run after
- *  the sweep pass has been completed and new elements and references created
- *  by the finalizer are considered in the next pass.
+ *  If a mark-and-sweep triggered finalizer creates a new reachable object,
+ *  the object must not be collected even though it has not been marked
+ *  reachable.  This is handled correctly by the implementation: finalizers
+ *  run after the sweep pass has been completed and new elements and references
+ *  created by the finalizer are considered in the next pass.
  */
 
 /*===

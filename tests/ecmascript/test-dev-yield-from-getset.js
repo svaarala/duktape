@@ -39,11 +39,13 @@ function test_set() {
 try {
     test_get();
 } catch (e) {
+    //print(e.stack);
     print(e.name);
 }
 
 try {
     test_set();
 } catch (e) {
+    //print(e.stack);
     print(e.name);
 }
