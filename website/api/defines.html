@@ -90,13 +90,13 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 <h2>Error codes</h2>
 <pre class="c-code">
 #define DUK_ERR_NONE                 0    /* no error (e.g. from duk_get_error_code()) */
-#define DUK_ERR_ERROR                100  /* Error */
-#define DUK_ERR_EVAL_ERROR           101  /* EvalError */
-#define DUK_ERR_RANGE_ERROR          102  /* RangeError */
-#define DUK_ERR_REFERENCE_ERROR      103  /* ReferenceError */
-#define DUK_ERR_SYNTAX_ERROR         104  /* SyntaxError */
-#define DUK_ERR_TYPE_ERROR           105  /* TypeError */
-#define DUK_ERR_URI_ERROR            106  /* URIError */
+#define DUK_ERR_ERROR                1    /* Error */
+#define DUK_ERR_EVAL_ERROR           2    /* EvalError */
+#define DUK_ERR_RANGE_ERROR          3    /* RangeError */
+#define DUK_ERR_REFERENCE_ERROR      4    /* ReferenceError */
+#define DUK_ERR_SYNTAX_ERROR         5    /* SyntaxError */
+#define DUK_ERR_TYPE_ERROR           6    /* TypeError */
+#define DUK_ERR_URI_ERROR            7    /* URIError */
 </pre>
 
 <h2>Return codes from Duktape/C functions</h2>
