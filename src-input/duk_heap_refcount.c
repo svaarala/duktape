@@ -347,6 +347,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
+#if 0
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
@@ -364,6 +365,8 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 			} else {
 				DUK_DDD(DUK_DDDPRINT("-> object refcount still zero after finalization, object will be freed"));
 			}
+#endif
+			rescued = 1;
 		}
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
@@ -397,7 +400,9 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
+#if 0
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));
+#endif
 			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
 			h2 = heap->heap_allocated;
 			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
