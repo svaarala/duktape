@@ -10,7 +10,6 @@ DUK_INTERNAL void duk_hthread_terminate(duk_hthread *thr) {
 	/* Order of unwinding is important */
 
 	duk_hthread_catchstack_unwind(thr, 0);
-
 	duk_hthread_callstack_unwind(thr, 0);  /* side effects, possibly errors */
 
 	thr->valstack_bottom = thr->valstack;

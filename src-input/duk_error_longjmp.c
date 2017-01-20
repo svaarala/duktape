@@ -38,18 +38,37 @@ DUK_LOCAL void duk__uncaught_error_aware(duk_hthread *thr) {
 
 DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
 
 	DUK_DD(DUK_DDPRINT("longjmp error: type=%d iserror=%d value1=%!T value2=%!T",
 	                   (int) thr->heap->lj.type, (int) thr->heap->lj.iserror,
 	                   &thr->heap->lj.value1, &thr->heap->lj.value2));
 
-	/* Perform a refzero check before throwing: this catches cases where
-	 * some internal code uses no-refzero (NORZ) macro variants but an
-	 * error occurs before it has the chance to DUK_REFZERO_CHECK_xxx()
-	 * explicitly.  Refzero'ed objects would otherwise remain pending
-	 * until the next refzero (which is not a big issue but still).
+	/* Prevent finalizer execution during error handling.  All error
+	 * handling sites will process pending finalizers once error handling
+	 * is complete and we're ready for the side effects.  Does not prevent
+	 * refzero freeing or mark-and-sweep during error handling.
+	 *
+	 * NOTE: when we come here some calling code may have used DECREF
+	 * NORZ macros without an explicit DUK_REFZERO_CHECK_xxx() call.
+	 * We don't want to do it here because it would just check for
+	 * pending finalizers and we prevent that explicitly.  Instead,
+	 * the error catcher will run the finalizers once error handling
+	 * is complete.
 	 */
-	DUK_REFZERO_CHECK_SLOW(thr);
+
+	DUK_ASSERT_LJSTATE_SET(thr->heap);
+
+	thr->heap->pf_prevent_count++;
+	DUK_ASSERT(thr->heap->pf_prevent_count != 0);  /* Wrap. */
+
+#if defined(DUK_USE_ASSERTIONS)
+	/* XXX: set this immediately when longjmp state is set */
+	DUK_ASSERT(thr->heap->error_not_allowed == 0);  /* Detect error within critical section. */
+	thr->heap->error_not_allowed = 1;
+#endif
+
+	DUK_DD(DUK_DDPRINT("about to longjmp, pf_prevent_count=%ld", (long) thr->heap->pf_prevent_count));
 
 #if !defined(DUK_USE_CPP_EXCEPTIONS)
 	/* If we don't have a jmpbuf_ptr, there is little we can do except

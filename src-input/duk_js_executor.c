@@ -884,8 +884,8 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 
 	duk__set_catcher_regs(thr, cat_idx, tv_val_unstable, lj_type);
 
-	duk_hthread_catchstack_unwind(thr, cat_idx + 1);
-	duk_hthread_callstack_unwind(thr, thr->catchstack[cat_idx].callstack_index + 1);
+	duk_hthread_catchstack_unwind_norz(thr, cat_idx + 1);
+	duk_hthread_callstack_unwind_norz(thr, thr->catchstack[cat_idx].callstack_index + 1);
 
 	DUK_ASSERT(thr->callstack_top >= 1);
 	DUK_ASSERT(thr->callstack_curr != NULL);
@@ -936,6 +936,12 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 		DUK_UNREF(act);  /* unreferenced without assertions */
 
+		/* XXX: If an out-of-memory happens here, longjmp state asserts
+		 * will be triggered at present and a try-catch fails to catch.
+		 * That's not sandboxing fatal (C API protected calls are what
+		 * matters), and script catch code can immediately throw anyway
+		 * for almost any operation.
+		 */
 		new_env = duk_hdecenv_alloc(thr,
 		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
@@ -950,6 +956,7 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		 * record regbases etc.
 		 */
 
+		/* XXX: duk_xdef_prop() may cause an out-of-memory, see above. */
 		DUK_ASSERT(thr->catchstack[cat_idx].h_varname != NULL);
 		duk_push_hstring(ctx, thr->catchstack[cat_idx].h_varname);
 		duk_push_tval(ctx, thr->valstack + thr->catchstack[cat_idx].idx_base);
@@ -982,8 +989,8 @@ DUK_LOCAL void duk__handle_finally(duk_hthread *thr, duk_size_t cat_idx, duk_tva
 
 	duk__set_catcher_regs(thr, cat_idx, tv_val_unstable, lj_type);
 
-	duk_hthread_catchstack_unwind(thr, cat_idx + 1);  /* cat_idx catcher is kept, even for finally */
-	duk_hthread_callstack_unwind(thr, thr->catchstack[cat_idx].callstack_index + 1);
+	duk_hthread_catchstack_unwind_norz(thr, cat_idx + 1);  /* cat_idx catcher is kept, even for finally */
+	duk_hthread_callstack_unwind_norz(thr, thr->catchstack[cat_idx].callstack_index + 1);
 
 	DUK_ASSERT(thr->callstack_top >= 1);
 	DUK_ASSERT(thr->callstack_curr != NULL);
@@ -1017,7 +1024,7 @@ DUK_LOCAL void duk__handle_label(duk_hthread *thr, duk_size_t cat_idx, duk_small
 	act->curr_pc = thr->catchstack[cat_idx].pc_base + (lj_type == DUK_LJ_TYPE_CONTINUE ? 1 : 0);
 	act = NULL;  /* invalidated */
 
-	duk_hthread_catchstack_unwind(thr, cat_idx + 1);  /* keep label catcher */
+	duk_hthread_catchstack_unwind_norz(thr, cat_idx + 1);  /* keep label catcher */
 	/* no need to unwind callstack */
 
 	/* valstack should not need changes */
@@ -1046,7 +1053,7 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_siz
 	tv1 = resumer->valstack + resumer->callstack[act_idx].idx_retval;  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv_val_unstable);  /* side effects */
 
-	duk_hthread_callstack_unwind(resumer, act_idx + 1);  /* unwind to 'resume' caller */
+	duk_hthread_callstack_unwind_norz(resumer, act_idx + 1);  /* unwind to 'resume' caller */
 
 	/* no need to unwind catchstack */
 	duk__reconfig_valstack_ecma_return(resumer, act_idx);
@@ -1173,7 +1180,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			tv2 = &thr->heap->lj.value1;
 			DUK_TVAL_SET_TVAL_UPDREF(thr, tv, tv2);  /* side effects */
 
-			duk_hthread_callstack_unwind(resumee, act_idx + 1);  /* unwind to 'yield' caller */
+			duk_hthread_callstack_unwind_norz(resumee, act_idx + 1);  /* unwind to 'yield' caller */
 
 			/* no need to unwind catchstack */
 
@@ -1373,9 +1380,9 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			 * final catcher unwind everything
 			 */
 #if 0
-			duk_hthread_catchstack_unwind(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
-			duk_hthread_callstack_unwind(thr, entry_callstack_index + 1);
-
+			duk_hthread_catchstack_unwind_norz(thr, (cat - thr->catchstack) + 1);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
+			duk_hthread_callstack_unwind_norz(thr, entry_callstack_index + 1);
+			DUK_REFZERO_CHECK_SLOW(thr);
 #endif
 			DUK_D(DUK_DPRINT("-> throw propagated up to entry level, rethrow and exit bytecode executor"));
 			retval = DUK__LONGJMP_RETHROW;
@@ -1643,8 +1650,8 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 		                     (long) (thr->callstack_curr - 1)->idx_retval,
 		                     (duk_tval *) (thr->valstack + (thr->callstack_curr - 1)->idx_retval)));
 
-		duk_hthread_catchstack_unwind(thr, new_cat_top);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
-		duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
+		duk_hthread_catchstack_unwind_norz(thr, new_cat_top);  /* leave 'cat' as top catcher (also works if catchstack exhausted) */
+		duk_hthread_callstack_unwind_norz(thr, thr->callstack_top - 1);
 		duk__reconfig_valstack_ecma_return(thr, thr->callstack_top - 1);
 
 		DUK_DD(DUK_DDPRINT("-> return not intercepted, restart execution in caller"));
@@ -1761,8 +1768,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 			    (line != thr->heap->dbg_step_startline)) {
 				DUK_D(DUK_DPRINT("STEP STATE TRIGGERED PAUSE at line %ld",
 				                 (long) line));
-
-				DUK_HEAP_SET_PAUSED(thr->heap);
+				duk_debug_set_paused(thr->heap);
 			}
 
 			/* Check for breakpoints only on line transition.
@@ -1788,8 +1794,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 				if (act->prev_line != bp->line && line == bp->line) {
 					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
 					                 (duk_heaphdr *) bp->filename, (long) bp->line));
-
-					DUK_HEAP_SET_PAUSED(thr->heap);
+					duk_debug_set_paused(thr->heap);
 				}
 			}
 		} else {
@@ -1876,7 +1881,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 * above, so we must recheck attach status.
 	 */
 
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (duk_debug_is_attached(thr->heap)) {
 		act = thr->callstack_curr;  /* relookup, may have changed */
 		DUK_ASSERT(act != NULL);
 		if (act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE ||
@@ -2130,7 +2135,7 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 	    (thr->heap->dbg_step_thread != thr ||
 	     thr->heap->dbg_step_csindex != thr->callstack_top - 1)) {
 		DUK_D(DUK_DPRINT("STEP INTO ACTIVE, FORCE PAUSED"));
-		DUK_HEAP_SET_PAUSED(thr->heap);
+		duk_debug_set_paused(thr->heap);
 	}
 
 	/* Force interrupt right away if we're paused or in "checked mode".
@@ -2319,15 +2324,27 @@ DUK_LOCAL void duk__handle_executor_error(duk_heap *heap,
 
 	lj_ret = duk__handle_longjmp(heap->curr_thread, entry_thread, entry_callstack_top);
 
+	/* Error handling complete, remove side effect protections.
+	 */
+#if defined(DUK_USE_ASSERTIONS)
+	DUK_ASSERT(heap->error_not_allowed == 1);
+	heap->error_not_allowed = 0;
+#endif
+	DUK_ASSERT(heap->pf_prevent_count > 0);
+	heap->pf_prevent_count--;
+	DUK_DD(DUK_DDPRINT("executor error handled, pf_prevent_count updated to %ld", (long) heap->pf_prevent_count));
+
 	if (lj_ret == DUK__LONGJMP_RESTART) {
 		/* Restart bytecode execution, possibly with a changed thread. */
-		;
+		DUK_REFZERO_CHECK_SLOW(heap->curr_thread);
 	} else {
-		/* Rethrow error to calling state. */
-		DUK_ASSERT(lj_ret == DUK__LONGJMP_RETHROW);
+		/* If an error is propagated, don't run refzero checks here.
+		 * The next catcher will deal with that.  Pf_prevent_count
+		 * will be re-bumped by the longjmp.
+		 */
 
-		/* Longjmp handling has restored jmpbuf_ptr. */
-		DUK_ASSERT(heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);
+		DUK_ASSERT(lj_ret == DUK__LONGJMP_RETHROW);  /* Rethrow error to calling state. */
+		DUK_ASSERT(heap->lj.jmpbuf_ptr == entry_jmpbuf_ptr);  /* Longjmp handling has restored jmpbuf_ptr. */
 
 		/* Thread may have changed, e.g. YIELD converted to THROW. */
 		duk_err_longjmp(heap->curr_thread);
@@ -2540,6 +2557,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)));
 
+	DUK_GC_TORTURE(thr->heap);
+
 	thr->ptr_curr_pc = &curr_pc;
 
 	/* Relookup and initialize dispatch loop variables.  Debugger check. */
@@ -2561,7 +2580,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		DUK_ASSERT(consts != NULL);
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) && !thr->heap->dbg_processing) {
+		if (duk_debug_is_attached(thr->heap) && !thr->heap->dbg_processing) {
 			duk__executor_recheck_debugger(thr, act, fun);
 			act = thr->callstack_curr;  /* relookup after side effects (no side effects currently however) */
 			DUK_ASSERT(act != NULL);
@@ -3924,6 +3943,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			thr->valstack_top++;
 			DUK__RETURN_SHARED();
 		}
+		/* This will be unused without refcounting. */
 		case DUK_OP_RETCONST: {
 			duk_tval *tv;
 
@@ -3941,6 +3961,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			tv = DUK__CONSTP_BC(ins);
 			DUK_TVAL_SET_TVAL(thr->valstack_top, tv);
 #if defined(DUK_USE_REFERENCE_COUNTING)
+			/* Without refcounting only RETCONSTN is used. */
 			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv));  /* no INCREF for this constant */
 #endif
 			thr->valstack_top++;
@@ -4380,7 +4401,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 				duk_push_tval(ctx, thr->valstack + cat->idx_base);
 
-				duk_err_setup_heap_ljstate(thr, (duk_small_int_t) cont_type);
+				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, thr->valstack + cat->idx_base);
+				/* No debugger Throw notify check on purpose (rethrow). */
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 				duk_err_longjmp(thr);
@@ -4417,7 +4439,10 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
 #endif
 
-			duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
+			duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, DUK_GET_TVAL_NEGIDX(ctx, -1));
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+			duk_err_check_debugger_integration(thr);
+#endif
 
 			DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
 			duk_err_longjmp(thr);
@@ -4954,7 +4979,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * from precompiled bytecode.
 			 */
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-			if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+			if (duk_debug_is_attached(thr->heap)) {
 				DUK_D(DUK_DPRINT("DEBUGGER statement encountered, halt execution"));
 				DUK__SYNC_AND_NULL_CURR_PC();
 				duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);

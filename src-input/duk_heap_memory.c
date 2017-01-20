@@ -5,33 +5,28 @@
 #include "duk_internal.h"
 
 /*
- *  Helpers
- *
- *  The fast path checks are done within a macro to ensure "inlining"
- *  while the slow path actions use a helper (which won't typically be
- *  inlined in size optimized builds).
+ *  Voluntary GC check
  */
 
 #if defined(DUK_USE_VOLUNTARY_GC)
-#define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
-		if (DUK_UNLIKELY(--(heap)->mark_and_sweep_trigger_counter < 0)) { \
-			duk__run_voluntary_gc(heap); \
-		} \
-	} while (0)
+DUK_LOCAL DUK_INLINE void duk__check_voluntary_gc(duk_heap *heap) {
+	if (DUK_UNLIKELY(--(heap)->ms_trigger_counter < 0)) {
+#if defined(DUK_USE_DEBUG)
+		if (heap->ms_prevent_count == 0) {
+			DUK_D(DUK_DPRINT("triggering voluntary mark-and-sweep"));
+		} else {
+			DUK_DD(DUK_DDPRINT("gc blocked -> skip voluntary mark-and-sweep now"));
+		}
+#endif
 
-DUK_LOCAL void duk__run_voluntary_gc(duk_heap *heap) {
-	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-		DUK_DD(DUK_DDPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now"));
-	} else {
-		duk_small_uint_t flags;
-		duk_bool_t rc;
-
-		DUK_D(DUK_DPRINT("triggering voluntary mark-and-sweep"));
-		flags = 0;
-		rc = duk_heap_mark_and_sweep(heap, flags);
-		DUK_UNREF(rc);
+		/* Prevention checks in the call target handle cases where
+		 * voluntary GC is not allowed.  The voluntary GC trigger
+		 * counter is only rewritten if mark-and-sweep actually runs.
+		 */
+		duk_heap_mark_and_sweep(heap, DUK_MS_FLAG_VOLUNTARY /*flags*/);
 	}
 }
+#define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { duk__check_voluntary_gc((heap)); } while (0)
 #else
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  /* no voluntary gc */
 #endif  /* DUK_USE_VOLUNTARY_GC */
@@ -42,7 +37,6 @@ DUK_LOCAL void duk__run_voluntary_gc(duk_heap *heap) {
 
 DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	void *res;
-	duk_bool_t rc;
 	duk_small_int_t i;
 
 	DUK_ASSERT(heap != NULL);
@@ -60,7 +54,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 
 #if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every alloc (except when mark-and-sweep is running) */
-	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count == 0) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first alloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
@@ -78,16 +72,22 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 
 	DUK_D(DUK_DPRINT("first alloc attempt failed, attempt to gc and retry"));
 
+#if 0
 	/*
 	 *  Avoid a GC if GC is already running.  This can happen at a late
 	 *  stage in a GC when we try to e.g. resize the stringtable
 	 *  or compact objects.
+	 *
+	 *  NOTE: explicit handling isn't actually be needed: if the GC is
+	 *  not allowed, duk_heap_mark_and_sweep() will reject it for every
+	 *  attempt in the loop below, resulting in a NULL same as here.
 	 */
 
-	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count != 0) {
 		DUK_D(DUK_DPRINT("duk_heap_mem_alloc() failed, gc in progress (gc skipped), alloc size %ld", (long) size));
 		return NULL;
 	}
+#endif
 
 	/*
 	 *  Retry with several GC attempts.  Initial attempts are made without
@@ -103,8 +103,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 			flags |= DUK_MS_FLAG_EMERGENCY;
 		}
 
-		rc = duk_heap_mark_and_sweep(heap, flags);
-		DUK_UNREF(rc);
+		duk_heap_mark_and_sweep(heap, flags);
 
 		res = heap->alloc_func(heap->heap_udata, size);
 		if (res) {
@@ -162,7 +161,6 @@ DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_
 
 DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize) {
 	void *res;
-	duk_bool_t rc;
 	duk_small_int_t i;
 
 	DUK_ASSERT(heap != NULL);
@@ -181,7 +179,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 
 #if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
-	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count == 0) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
@@ -199,14 +197,16 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 
 	DUK_D(DUK_DPRINT("first realloc attempt failed, attempt to gc and retry"));
 
+#if 0
 	/*
 	 *  Avoid a GC if GC is already running.  See duk_heap_mem_alloc().
 	 */
 
-	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count != 0) {
 		DUK_D(DUK_DPRINT("duk_heap_mem_realloc() failed, gc in progress (gc skipped), alloc size %ld", (long) newsize));
 		return NULL;
 	}
+#endif
 
 	/*
 	 *  Retry with several GC attempts.  Initial attempts are made without
@@ -222,8 +222,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 			flags |= DUK_MS_FLAG_EMERGENCY;
 		}
 
-		rc = duk_heap_mark_and_sweep(heap, flags);
-		DUK_UNREF(rc);
+		duk_heap_mark_and_sweep(heap, flags);
 
 		res = heap->realloc_func(heap->heap_udata, ptr, newsize);
 		if (res || newsize == 0) {
@@ -245,7 +244,6 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 
 DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize) {
 	void *res;
-	duk_bool_t rc;
 	duk_small_int_t i;
 
 	DUK_ASSERT(heap != NULL);
@@ -263,7 +261,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 
 #if defined(DUK_USE_GC_TORTURE)
 	/* simulate alloc failure on every realloc (except when mark-and-sweep is running) */
-	if (!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count == 0) {
 		DUK_DDD(DUK_DDDPRINT("gc torture enabled, pretend that first indirect realloc attempt fails"));
 		res = NULL;
 		DUK_UNREF(res);
@@ -281,14 +279,16 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 
 	DUK_D(DUK_DPRINT("first indirect realloc attempt failed, attempt to gc and retry"));
 
+#if 0
 	/*
 	 *  Avoid a GC if GC is already running.  See duk_heap_mem_alloc().
 	 */
 
-	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+	if (heap->ms_prevent_count != 0) {
 		DUK_D(DUK_DPRINT("duk_heap_mem_realloc_indirect() failed, gc in progress (gc skipped), alloc size %ld", (long) newsize));
 		return NULL;
 	}
+#endif
 
 	/*
 	 *  Retry with several GC attempts.  Initial attempts are made without
@@ -312,8 +312,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 			flags |= DUK_MS_FLAG_EMERGENCY;
 		}
 
-		rc = duk_heap_mark_and_sweep(heap, flags);
-		DUK_UNREF(rc);
+		duk_heap_mark_and_sweep(heap, flags);
 #if defined(DUK_USE_ASSERTIONS)
 		ptr_post = cb(heap, ud);
 		if (ptr_pre != ptr_post) {
@@ -352,12 +351,8 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	 */
 	heap->free_func(heap->heap_udata, ptr);
 
-	/* Count free operations toward triggering a GC but never actually trigger
-	 * a GC from a free.  Otherwise code which frees internal structures would
-	 * need to put in NULLs at every turn to ensure the object is always in
-	 * consistent state for a mark-and-sweep.
+	/* Never perform a GC (even voluntary) in a memory free, otherwise
+	 * all call sites doing frees would need to deal with the side effects.
+	 * No need to update voluntary GC counter either.
 	 */
-#if defined(DUK_USE_VOLUNTARY_GC)
-	heap->mark_and_sweep_trigger_counter--;
-#endif
 }

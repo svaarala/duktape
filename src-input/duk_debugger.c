@@ -66,7 +66,6 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	/* heap->dbg_detached_cb: keep */
 	/* heap->dbg_udata: keep */
 	/* heap->dbg_processing: keep on purpose to avoid debugger re-entry in detaching state */
-	DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = 0;
@@ -74,6 +73,8 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	heap->dbg_step_csindex = 0;
 	heap->dbg_step_startline = 0;
 	heap->dbg_have_next_byte = 0;
+	duk_debug_clear_paused(heap);  /* XXX: some overlap with field inits above */
+	heap->dbg_state_dirty = 0;     /* XXX: clear_paused sets dirty; rework? */
 
 	/* Ensure there are no stale active breakpoint pointers.
 	 * Breakpoint list is currently kept - we could empty it
@@ -92,7 +93,10 @@ DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 	duk_context *ctx;
 
 	thr = heap->heap_thread;
-	DUK_ASSERT(thr != NULL);
+	if (thr == NULL) {
+		DUK_ASSERT(heap->dbg_detached_cb == NULL);
+		return;
+	}
 	ctx = (duk_context *) thr;
 
 	/* Safe to call multiple times. */
@@ -126,6 +130,9 @@ DUK_INTERNAL void duk_debug_do_detach(duk_heap *heap) {
  */
 DUK_LOCAL void duk__debug_null_most_callbacks(duk_hthread *thr) {
 	duk_heap *heap;
+
+	DUK_ASSERT(thr != NULL);
+
 	heap = thr->heap;
 	DUK_D(DUK_DPRINT("transport read/write error, NULL all callbacks expected detached"));
 	heap->dbg_read_cb = NULL;
@@ -1214,7 +1221,11 @@ DUK_LOCAL void duk__debug_handle_trigger_status(duk_hthread *thr, duk_heap *heap
 DUK_LOCAL void duk__debug_handle_pause(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command Pause"));
 
-	DUK_HEAP_SET_PAUSED(heap);
+	if (duk_debug_is_paused(heap)) {
+		DUK_D(DUK_DPRINT("Pause requested when already paused, ignore"));
+	} else {
+		duk_debug_set_paused(heap);
+	}
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
@@ -1222,7 +1233,7 @@ DUK_LOCAL void duk__debug_handle_pause(duk_hthread *thr, duk_heap *heap) {
 DUK_LOCAL void duk__debug_handle_resume(duk_hthread *thr, duk_heap *heap) {
 	DUK_D(DUK_DPRINT("debug command Resume"));
 
-	DUK_HEAP_CLEAR_PAUSED(heap);
+	duk_debug_clear_paused(heap);
 	duk_debug_write_reply(thr);
 	duk_debug_write_eom(thr);
 }
@@ -1244,7 +1255,7 @@ DUK_LOCAL void duk__debug_handle_step(duk_hthread *thr, duk_heap *heap, duk_int3
 
 	line = duk_debug_curr_line(thr);
 	if (line > 0) {
-		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
+		duk_debug_clear_paused(heap);  /* XXX: overlap with fields below; separate macro/helper? */
 		heap->dbg_step_type = step_type;
 		heap->dbg_step_thread = thr;
 		heap->dbg_step_csindex = thr->callstack_top - 1;
@@ -2648,10 +2659,11 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
-	DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
+	DUK_ASSERT(duk_debug_is_attached(thr->heap));
 	DUK_ASSERT(thr->heap->dbg_processing == 0);
+	DUK_ASSERT(!duk_debug_is_paused(thr->heap));
 
-	DUK_HEAP_SET_PAUSED(thr->heap);
+	duk_debug_set_paused(thr->heap);
 
 	act = thr->callstack_curr;
 
@@ -2686,8 +2698,8 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 
 	thr->heap->dbg_state_dirty = 1;
 	while (DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap)) {
-		DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
-		DUK_ASSERT(thr->heap->dbg_processing);
+		DUK_ASSERT(duk_debug_is_attached(thr->heap));
+		DUK_ASSERT(thr->heap->dbg_processing == 0);
 		duk_debug_process_messages(thr, 0 /*no_block*/);
 	}
 
@@ -2749,7 +2761,7 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap));
+	DUK_ASSERT(duk_debug_is_attached(thr->heap));
 	DUK_ASSERT_DISABLE(breakpoint_index >= 0);  /* unsigned */
 
 	if (breakpoint_index >= heap->dbg_breakpoint_count) {
@@ -2776,6 +2788,55 @@ DUK_INTERNAL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_
 	/* Breakpoint entries above the used area are left as garbage. */
 
 	return 1;
+}
+
+/*
+ *  Misc state management
+ */
+
+DUK_INTERNAL duk_bool_t duk_debug_is_attached(duk_heap *heap) {
+	return (heap->dbg_read_cb != NULL);
+}
+
+DUK_INTERNAL duk_bool_t duk_debug_is_paused(duk_heap *heap) {
+	return (DUK_HEAP_HAS_DEBUGGER_PAUSED(heap) != 0);
+}
+
+DUK_INTERNAL void duk_debug_set_paused(duk_heap *heap) {
+	if (duk_debug_is_paused(heap)) {
+		DUK_D(DUK_DPRINT("trying to set paused state when already paused, ignoring"));
+	} else {
+		DUK_HEAP_SET_DEBUGGER_PAUSED(heap);
+		heap->dbg_state_dirty = 1;
+		duk_debug_clear_step_state(heap);
+		DUK_ASSERT(heap->ms_running == 0);  /* debugger can't be triggered within mark-and-sweep */
+		heap->ms_running = 1;  /* prevent mark-and-sweep, prevent refzero queueing */
+		heap->ms_prevent_count++;
+		DUK_ASSERT(heap->ms_prevent_count != 0);  /* Wrap. */
+		DUK_ASSERT(heap->heap_thread != NULL);
+	}
+}
+
+DUK_INTERNAL void duk_debug_clear_paused(duk_heap *heap) {
+	if (duk_debug_is_paused(heap)) {
+		DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap);
+		heap->dbg_state_dirty = 1;
+		duk_debug_clear_step_state(heap);
+		DUK_ASSERT(heap->ms_running == 1);
+		DUK_ASSERT(heap->ms_prevent_count > 0);
+		heap->ms_prevent_count--;
+		heap->ms_running = 0;
+		DUK_ASSERT(heap->heap_thread != NULL);
+	} else {
+		DUK_D(DUK_DPRINT("trying to clear paused state when not paused, ignoring"));
+	}
+}
+
+DUK_INTERNAL void duk_debug_clear_step_state(duk_heap *heap) {
+	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
+	heap->dbg_step_thread = NULL;
+	heap->dbg_step_csindex = 0;
+	heap->dbg_step_startline = 0;
 }
 
 #else  /* DUK_USE_DEBUGGER_SUPPORT */

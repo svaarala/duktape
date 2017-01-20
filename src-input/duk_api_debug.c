@@ -84,16 +84,16 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 
 	/* Start in paused state. */
 	heap->dbg_processing = 0;
-	DUK_HEAP_SET_DEBUGGER_PAUSED(heap);
-	heap->dbg_state_dirty = 1;
+	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
-	heap->dbg_step_type = 0;
+	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
 	heap->dbg_step_thread = NULL;
 	heap->dbg_step_csindex = 0;
 	heap->dbg_step_startline = 0;
 	heap->dbg_exec_counter = 0;
 	heap->dbg_last_counter = 0;
 	heap->dbg_last_time = 0.0;
+	duk_debug_set_paused(heap);  /* XXX: overlap with fields above */
 
 	/* Send version identification and flush right afterwards.  Note that
 	 * we must write raw, unframed bytes here.
@@ -133,7 +133,7 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
 
-	if (!DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (!duk_debug_is_attached(thr->heap)) {
 		return;
 	}
 	if (thr->callstack_top > 0 || thr->heap->dbg_processing) {
@@ -166,7 +166,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 		DUK_ERROR_RANGE(thr, "not enough stack values for notify");
 		return ret;  /* unreachable */
 	}
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+	if (duk_debug_is_attached(thr->heap)) {
 		duk_debug_write_notify(thr, DUK_DBG_CMD_APPNOTIFY);
 		for (idx = top - nvalues; idx < top; idx++) {
 			duk_tval *tv = DUK_GET_TVAL_POSIDX(ctx, idx);
@@ -179,7 +179,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues)
 		 * a transport error was not indicated by the transport write
 		 * callback.  This is not a 100% guarantee of course.
 		 */
-		if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
+		if (duk_debug_is_attached(thr->heap)) {
 			ret = 1;
 		}
 	}
@@ -198,15 +198,19 @@ DUK_EXTERNAL void duk_debugger_pause(duk_context *ctx) {
 	DUK_D(DUK_DPRINT("application called duk_debugger_pause()"));
 
 	/* Treat like a debugger statement: ignore when not attached. */
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap)) {
-		DUK_HEAP_SET_PAUSED(thr->heap);
+	if (duk_debug_is_attached(thr->heap)) {
+		if (duk_debug_is_paused(thr->heap)) {
+			DUK_D(DUK_DPRINT("duk_debugger_pause() called when already paused; ignoring"));
+		} else {
+			duk_debug_set_paused(thr->heap);
 
-		/* Pause on the next opcode executed.  This is always safe to do even
-		 * inside the debugger message loop: the interrupt counter will be reset
-		 * to its proper value when the message loop exits.
-		 */
-		thr->interrupt_init = 1;
-		thr->interrupt_counter = 0;
+			/* Pause on the next opcode executed.  This is always safe to do even
+			 * inside the debugger message loop: the interrupt counter will be reset
+			 * to its proper value when the message loop exits.
+			 */
+			thr->interrupt_init = 1;
+			thr->interrupt_counter = 0;
+		}
 	}
 }
 

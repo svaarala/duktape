@@ -1,5 +1,9 @@
 /*
  *  Reference counting implementation.
+ *
+ *  INCREF/DECREF, finalization and freeing of objects whose refcount reaches
+ *  zero (refzero).  These operations are very performance sensitive, so
+ *  various small tricks are used in an attempt to maximize speed.
  */
 
 #include "duk_internal.h"
@@ -11,36 +15,6 @@
 #endif
 
 /*
- *  Misc
- */
-
-DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
-	/* Tail insert: don't disturb head in case refzero is running. */
-
-	if (heap->refzero_list != NULL) {
-		duk_heaphdr *hdr_prev;
-
-		hdr_prev = heap->refzero_list_tail;
-		DUK_ASSERT(hdr_prev != NULL);
-		DUK_ASSERT(DUK_HEAPHDR_GET_NEXT(heap, hdr_prev) == NULL);
-
-		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
-		DUK_HEAPHDR_SET_PREV(heap, hdr, hdr_prev);
-		DUK_HEAPHDR_SET_NEXT(heap, hdr_prev, hdr);
-		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
-		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr_prev);
-		heap->refzero_list_tail = hdr;
-	} else {
-		DUK_ASSERT(heap->refzero_list_tail == NULL);
-		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
-		DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
-		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
-		heap->refzero_list = hdr;
-		heap->refzero_list_tail = hdr;
-	}
-}
-
-/*
  *  Heap object refcount finalization.
  *
  *  When an object is about to be freed, all other objects it refers to must
@@ -48,16 +22,18 @@ DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
  *  allocations (mark-and-sweep shares these helpers), it just manipulates
  *  the refcounts.
  *
- *  Note that any of the decref's may cause a refcount to drop to zero, BUT
- *  it will not be processed inline.  If refcount finalization is triggered
- *  by refzero processing, the objects will be just queued to the refzero
- *  list and processed later which eliminates C recursion.  If refcount
- *  finalization is triggered by mark-and-sweep, any refzero situations are
- *  ignored because mark-and-sweep will deal with them.  NORZ variants can
- *  be used here in both cases.
+ *  Note that any of the DECREFs may cause a refcount to drop to zero.  If so,
+ *  the object won't be refzero processed inline, but will just be queued to
+ *  refzero_list and processed by an earlier caller working on refzero_list,
+ *  eliminating C recursion from even long refzero cascades.  If refzero
+ *  finalization is triggered by mark-and-sweep, refzero conditions are ignored
+ *  (objects are not even queued to refzero_list) because mark-and-sweep deals
+ *  with them; refcounts are still updated so that they remain in sync with
+ *  actual references.
  */
 
-DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) {
+DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject *h) {
+	duk_hthread *thr;
 	duk_uint_fast32_t i;
 	duk_uint_fast32_t n;
 	duk_propvalue *p_val;
@@ -66,22 +42,27 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 	duk_uint8_t *p_flag;
 	duk_hobject *h_proto;
 
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(h);
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h) == DUK_HTYPE_OBJECT);
 
-	p_key = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, h);
-	p_val = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, h);
-	p_flag = DUK_HOBJECT_E_GET_FLAGS_BASE(thr->heap, h);
+	thr = heap->heap_thread;
+	DUK_ASSERT(thr != NULL);
+
+	p_key = DUK_HOBJECT_E_GET_KEY_BASE(heap, h);
+	p_val = DUK_HOBJECT_E_GET_VALUE_BASE(heap, h);
+	p_flag = DUK_HOBJECT_E_GET_FLAGS_BASE(heap, h);
 	n = DUK_HOBJECT_GET_ENEXT(h);
 	while (n-- > 0) {
 		duk_hstring *key;
 
 		key = p_key[n];
-		if (!key) {
+		if (DUK_UNLIKELY(key == NULL)) {
 			continue;
 		}
 		DUK_HSTRING_DECREF_NORZ(thr, key);
-		if (p_flag[n] & DUK_PROPDESC_FLAG_ACCESSOR) {
+		if (DUK_UNLIKELY(p_flag[n] & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			duk_hobject *h_getset;
 			h_getset = p_val[n].a.get;
 			DUK_ASSERT(h_getset == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_getset));
@@ -96,7 +77,7 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		}
 	}
 
-	p_tv = DUK_HOBJECT_A_GET_BASE(thr->heap, h);
+	p_tv = DUK_HOBJECT_A_GET_BASE(heap, h);
 	n = DUK_HOBJECT_GET_ASIZE(h);
 	while (n-- > 0) {
 		duk_tval *tv_val;
@@ -104,9 +85,9 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		DUK_TVAL_DECREF_NORZ(thr, tv_val);
 	}
 
-	/* hash part is a 'weak reference' and does not contribute */
+	/* Hash part is a 'weak reference' and doesn't contribute to refcounts. */
 
-	h_proto = (duk_hobject *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
+	h_proto = (duk_hobject *) DUK_HOBJECT_GET_PROTOTYPE(heap, h);
 	DUK_ASSERT(h_proto == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_proto));
 	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_proto);
 
@@ -133,19 +114,20 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
-		if (DUK_HCOMPFUNC_GET_DATA(thr->heap, f) != NULL) {
-			tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, f);
-			tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, f);
+		if (DUK_LIKELY(DUK_HCOMPFUNC_GET_DATA(heap, f) != NULL)) {
+			tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
+			tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);
 			while (tv < tv_end) {
 				DUK_TVAL_DECREF_NORZ(thr, tv);
 				tv++;
 			}
 
-			funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(thr->heap, f);
-			funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(thr->heap, f);
+			funcs = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, f);
+			funcs_end = DUK_HCOMPFUNC_GET_FUNCS_END(heap, f);
 			while (funcs < funcs_end) {
 				duk_hobject *h_func;
 				h_func = *funcs;
+				DUK_ASSERT(h_func != NULL);
 				DUK_ASSERT(DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_func));
 				DUK_HCOMPFUNC_DECREF_NORZ(thr, (duk_hcompfunc *) h_func);
 				funcs++;
@@ -155,9 +137,9 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping decref"));
 		}
 
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(thr->heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(heap, f));
+		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(heap, f));
 	} else if (DUK_HOBJECT_IS_DECENV(h)) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
 		DUK_ASSERT_HDECENV_VALID(e);
@@ -215,253 +197,257 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 	}
 }
 
-DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr) {
-	DUK_ASSERT(hdr);
+DUK_INTERNAL void duk_heaphdr_refcount_finalize_norz(duk_heap *heap, duk_heaphdr *hdr) {
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
+	DUK_ASSERT(hdr != NULL);
 
-	if (DUK_HEAPHDR_GET_TYPE(hdr) == DUK_HTYPE_OBJECT) {
-		duk__refcount_finalize_hobject(thr, (duk_hobject *) hdr);
+	if (DUK_HEAPHDR_IS_OBJECT(hdr)) {
+		duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) hdr);
 	}
 	/* DUK_HTYPE_BUFFER: nothing to finalize */
 	/* DUK_HTYPE_STRING: nothing to finalize */
 }
 
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-#if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
-DUK_LOCAL duk_ret_t duk__refcount_fake_finalizer(duk_context *ctx) {
-	DUK_UNREF(ctx);
-	DUK_D(DUK_DPRINT("fake refcount torture finalizer executed"));
-#if 0
-	DUK_DD(DUK_DDPRINT("fake torture finalizer for: %!T", duk_get_tval(ctx, 0)));
-#endif
-	/* Require a lot of stack to force a value stack grow/shrink. */
-	duk_require_stack(ctx, 100000);
-
-	/* XXX: do something to force a callstack grow/shrink, perhaps
-	 * just a manual forced resize?
-	 */
-	return 0;
-}
-
-DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject *obj) {
-	duk_context *ctx;
-	duk_int_t rc;
-
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(obj != NULL);
-	ctx = (duk_context *) thr;
-
-	/* Avoid fake finalization for the duk__refcount_fake_finalizer function
-	 * itself, otherwise we're in infinite recursion.
-	 */
-	if (DUK_HOBJECT_HAS_NATFUNC(obj)) {
-		if (((duk_hnatfunc *) obj)->func == duk__refcount_fake_finalizer) {
-			DUK_DD(DUK_DDPRINT("avoid fake torture finalizer for duk__refcount_fake_finalizer itself"));
-			return;
-		}
-	}
-	/* Avoid fake finalization when callstack limit has been reached.
-	 * Otherwise a callstack limit error will be created, then refzero'ed,
-	 * and we're in an infinite loop.
-	 */
-	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit ||
-	    thr->callstack_size + 2 * DUK_CALLSTACK_GROW_STEP >= thr->callstack_max /*approximate*/) {
-		DUK_D(DUK_DPRINT("call recursion depth reached, avoid fake torture finalizer"));
-		return;
-	}
-
-	/* Run fake finalizer.  Avoid creating new refzero queue entries
-	 * so that we are not forced into a forever loop.
-	 */
-	duk_push_c_function(ctx, duk__refcount_fake_finalizer, 1 /*nargs*/);
-	duk_push_hobject(ctx, obj);
-	rc = duk_pcall(ctx, 1);
-	DUK_UNREF(rc);  /* ignored */
-	duk_pop(ctx);
-}
-#endif  /* DUK_USE_REFZERO_FINALIZER_TORTURE */
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
-
 /*
- *  Refcount memory freeing loop.
+ *  Refzero processing for duk_hobject: queue a refzero'ed object to either
+ *  finalize_list or refzero_list and process the relevent list(s) if
+ *  necessary.
  *
- *  Frees objects in the refzero_pending list until the list becomes
- *  empty.  When an object is freed, its references get decref'd and
- *  may cause further objects to be queued for freeing.
+ *  Refzero_list is single linked, with only 'prev' pointers set and valid.
+ *  All 'next' pointers are intentionally left as garbage.  This doesn't
+ *  matter because refzero_list is processed to completion before any other
+ *  code (like mark-and-sweep) might walk the list.
+ *
+ *  In more detail:
+ *
+ *  - On first insert refzero_list is NULL and the new object becomes the
+ *    first and only element on the list; duk__refcount_free_pending() is
+ *    called and it starts processing the list from the initial element,
+ *    i.e. the list tail.
+ *
+ *  - As each object is refcount finalized, new objects may be queued to
+ *    refzero_list head.  Their 'next' pointers are left as garbage, but
+ *    'prev' points are set correctly, with the element at refzero_list
+ *    having a NULL 'prev' pointer.  The fact that refzero_list is non-NULL
+ *    is used to reject (1) recursive duk__refcount_free_pending() and
+ *    (2) finalize_list processing calls.
+ *
+ *  - When we're done with the current object, read its 'prev' pointer and
+ *    free the object.  If 'prev' is NULL, we've reached head of list and are
+ *    done: set refzero_list to NULL and process pending finalizers.  Otherwise
+ *    continue processing the list.
+ *
+ *  A refzero cascade is free of side effects because it only involves
+ *  queueing more objects and freeing memory; finalizer execution is blocked
+ *  in the code path queueing objects to finalize_list.  As a result the
+ *  initial refzero call (which triggers duk__refcount_free_pending()) must
+ *  check finalize_list so that finalizers are executed snappily.
+ *
+ *  If finalize_list processing starts first, refzero may occur while we're
+ *  processing finalizers.  That's fine: that particular refzero cascade is
+ *  handled to completion without side effects.  Once the cascade is complete,
+ *  we'll run pending finalizers but notice that we're already doing that and
+ *  return.
  *
  *  This could be expanded to allow incremental freeing: just bail out
- *  early and resume at a future alloc/decref/refzero.
+ *  early and resume at a future alloc/decref/refzero.  However, if that
+ *  were done, the list structure would need to be kept consistent at all
+ *  times, mark-and-sweep would need to handle refzero_list, etc.
  */
 
-DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
-	duk_heaphdr *h1, *h2;
-	duk_heap *heap;
+DUK_LOCAL void duk__refcount_free_pending(duk_heap *heap) {
+	duk_heaphdr *curr;
 #if defined(DUK_USE_DEBUG)
 	duk_int_t count = 0;
 #endif
 
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->heap != NULL);
-	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 
-	/*
-	 *  Detect recursive invocation
-	 */
+	curr = heap->refzero_list;
+	DUK_ASSERT(curr != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, curr) == NULL);  /* We're called on initial insert only. */
+	/* curr->next is GARBAGE. */
 
-	if (heap->refzero_free_running) {
-		DUK_DDD(DUK_DDDPRINT("refzero free running, skip run"));
-		return;
-	}
+	do {
+		duk_heaphdr *prev;
 
-	/*
-	 *  Churn refzero_list until empty
-	 */
-
-	DUK_ASSERT(heap->refzero_free_running == 0);
-	heap->refzero_free_running = 1;
-
-	while (heap->refzero_list) {
-		duk_hobject *obj;
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-		duk_bool_t rescued = 0;
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
-
-		/*
-		 *  Pick an object from the head (don't remove yet).
-		 */
-
-		h1 = heap->refzero_list;
-		obj = (duk_hobject *) h1;
-		DUK_DD(DUK_DDPRINT("refzero processing %p: %!O", (void *) h1, (duk_heaphdr *) h1));
-		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
-
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-#if defined(DUK_USE_REFZERO_FINALIZER_TORTURE)
-		/* Torture option to shake out finalizer side effect issues:
-		 * make a bogus function call for every finalizable object,
-		 * essentially simulating the case where everything has a
-		 * finalizer.
-		 */
-		DUK_DD(DUK_DDPRINT("refzero torture enabled, fake finalizer"));
-		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
-		DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
-		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) != 0);  /* No wrapping; always true because initial refcount was 0. */
-		duk__refcount_run_torture_finalizer(thr, obj);  /* must never longjmp */
-		DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
-		DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
-#endif  /* DUK_USE_REFZERO_FINALIZER_TORTURE */
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
-
-		/*
-		 *  Finalizer check.
-		 *
-		 *  Note: running a finalizer may have arbitrary side effects, e.g.
-		 *  queue more objects on refzero_list (tail), or even trigger a
-		 *  mark-and-sweep.
-		 *
-		 *  Note: quick reject check should match vast majority of
-		 *  objects and must be safe (not throw any errors, ever).
-		 *
-		 *  An object may have FINALIZED here if it was finalized by mark-and-sweep
-		 *  on a previous run and refcount then decreased to zero.  We won't run the
-		 *  finalizer again here.
-		 *
-		 *  A finalizer is looked up from the object and up its prototype chain
-		 *  (which allows inherited finalizers), but using a duk_hobject flag
-		 *  to avoid actual property table lookups.
-		 */
-
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-		if (DUK_UNLIKELY(duk_hobject_has_finalizer_fast(thr, obj))) {
-			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
-
-			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
-			DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
-			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) != 0);  /* No wrapping; always true because initial refcount was 0. */
-
-			duk_hobject_run_finalizer(thr, obj);  /* must never longjmp */
-			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));  /* duk_hobject_run_finalizer() sets */
-
-			DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
-			DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
-
-			if (DUK_HEAPHDR_GET_REFCOUNT(h1) != 0) {
-				DUK_DDD(DUK_DDDPRINT("-> object refcount after finalization non-zero, object will be rescued"));
-				rescued = 1;
-			} else {
-				DUK_DDD(DUK_DDDPRINT("-> object refcount still zero after finalization, object will be freed"));
-			}
-		}
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
-
-		/* Refzero head is still the same.  This is the case even if finalizer
-		 * inserted more refzero objects; they are inserted to the tail.
-		 */
-		DUK_ASSERT(h1 == heap->refzero_list);
-		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
-
-		/*
-		 *  Remove the object from the refzero list.  This cannot be done
-		 *  before a possible finalizer has been executed; the finalizer
-		 *  may trigger a mark-and-sweep, and mark-and-sweep must be able
-		 *  to traverse a complete refzero_list.
-		 */
-
-		h2 = DUK_HEAPHDR_GET_NEXT(heap, h1);
-		if (h2 != NULL) {
-			DUK_HEAPHDR_SET_PREV(heap, h2, NULL);
-			heap->refzero_list = h2;
-		} else {
-			heap->refzero_list = NULL;
-			heap->refzero_list_tail = NULL;
-		}
-
-		/*
-		 *  Rescue or free.
-		 */
-
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-		if (DUK_UNLIKELY(rescued)) {
-			/* yes -> move back to heap allocated */
-			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
-			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
-			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));
-			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
-			h2 = heap->heap_allocated;
-			DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);  /* Policy for head of list. */
-			if (h2 != NULL) {
-				DUK_HEAPHDR_SET_PREV(heap, h2, h1);
-			}
-			DUK_HEAPHDR_SET_NEXT(heap, h1, h2);
-			DUK_ASSERT_HEAPHDR_LINKS(heap, h1);
-			DUK_ASSERT_HEAPHDR_LINKS(heap, h2);
-			heap->heap_allocated = h1;
-		} else
-#endif  /* DUK_USE_FINALIZER_SUPPORT */
-		{
-			/* no -> decref members, then free */
-			duk__refcount_finalize_hobject(thr, obj);
-			DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h1) == DUK_HTYPE_OBJECT);  /* currently, always the case */
-			duk_free_hobject(heap, (duk_hobject *) h1);
-		}
+		DUK_DDD(DUK_DDDPRINT("refzero processing %p: %!O", (void *) curr, (duk_heaphdr *) curr));
 
 #if defined(DUK_USE_DEBUG)
 		count++;
 #endif
+
+		DUK_ASSERT(curr != NULL);
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);  /* currently, always the case */
+		/* FINALIZED may be set; don't care about flags here. */
+
+		/* Refcount finalize 'curr'.  Refzero_list must be non-NULL
+		 * here to prevent recursive entry to duk__refcount_free_pending().
+		 */
+		DUK_ASSERT(heap->refzero_list != NULL);
+		duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) curr);
+
+		prev = DUK_HEAPHDR_GET_PREV(heap, curr);
+		DUK_ASSERT((prev == NULL && heap->refzero_list == curr) || \
+		           (prev != NULL && heap->refzero_list != curr));
+		/* prev->next is intentionally not updated and is garbage. */
+
+		duk_free_hobject(heap, (duk_hobject *) curr);  /* Invalidates 'curr'. */
+
+		curr = prev;
+	} while (curr != NULL);
+
+	heap->refzero_list = NULL;
+
+	DUK_DD(DUK_DDPRINT("refzero processed %ld objects", (long) count));
+}
+
+DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobject *obj, duk_bool_t skip_free_pending) {
+	duk_heaphdr *hdr;
+	duk_heaphdr *root;
+
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
+	DUK_ASSERT(obj != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) obj) == DUK_HTYPE_OBJECT);
+
+	hdr = (duk_heaphdr *) obj;
+
+	DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, hdr);
+
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	/* This finalizer check MUST BE side effect free.  It should also be
+	 * as fast as possible because it's applied to every object freed.
+	 */
+	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) hdr))) {
+		/* Special case: FINALIZED may be set if mark-and-sweep queued
+		 * object for finalization, the finalizer was executed (and
+		 * FINALIZED set), mark-and-sweep hasn't yet processed the
+		 * object again, but its refcount drops to zero.  Free without
+		 * running the finalizer again.
+		 */
+		if (DUK_HEAPHDR_HAS_FINALIZED(hdr)) {
+			DUK_D(DUK_DPRINT("refzero'd object has finalizer and FINALIZED is set -> free"));
+		} else {
+			/* Set FINALIZABLE flag so that all objects on finalize_list
+			 * will have it set and are thus detectable based on the
+			 * flag alone.
+			 */
+			DUK_HEAPHDR_SET_FINALIZABLE(hdr);
+			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
+
+			DUK_HEAP_INSERT_INTO_FINALIZE_LIST(heap, hdr);
+
+			/* Process finalizers unless skipping is explicitly
+			 * requested (NORZ) or refzero_list is being processed
+			 * (avoids side effects during a refzero cascade).
+			 * If refzero_list is processed, the initial refzero
+			 * call will run pending finalizers when refzero_list
+			 * is done.
+			 */
+			if (!skip_free_pending && heap->refzero_list == NULL) {
+				duk_heap_process_finalize_list(heap);
+			}
+			return;
+		}
 	}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
-	DUK_ASSERT(heap->refzero_free_running == 1);
-	heap->refzero_free_running = 0;
+	/* No need to finalize, free object via refzero_list. */
 
-	DUK_DDD(DUK_DDDPRINT("refzero processed %ld objects", (long) count));
+	root = heap->refzero_list;
+
+	DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
+	/* 'next' is left as GARBAGE. */
+	heap->refzero_list = hdr;
+
+	if (root == NULL) {
+		/* Object is now queued.  Refzero_list was NULL so
+		 * no-one is currently processing it; do it here.
+		 * With refzero processing just doing a cascade of
+		 * free calls, we can process it directly even when
+		 * NORZ macros are used: there are no side effects.
+		 */
+		duk__refcount_free_pending(heap);
+		DUK_ASSERT(heap->refzero_list == NULL);
+
+		/* Process finalizers only after the entire cascade
+		 * is finished.  In most cases there's nothing to
+		 * finalize, so fast path check to avoid a call.
+		 */
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+		if (!skip_free_pending && DUK_UNLIKELY(heap->finalize_list != NULL)) {
+			duk_heap_process_finalize_list(heap);
+		}
+#endif
+	} else {
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, root) == NULL);
+		DUK_HEAPHDR_SET_PREV(heap, root, hdr);
+
+		/* Object is now queued.  Because refzero_list was
+		 * non-NULL, it's already being processed by someone
+		 * in the C call stack, so we're done.
+		 */
+	}
+}
+
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+DUK_INTERNAL DUK_ALWAYS_INLINE void duk_refzero_check_fast(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(thr->heap->refzero_list == NULL);  /* Processed to completion inline. */
+
+	if (DUK_UNLIKELY(thr->heap->finalize_list != NULL)) {
+		duk_heap_process_finalize_list(thr->heap);
+	}
+}
+
+DUK_INTERNAL void duk_refzero_check_slow(duk_hthread *thr) {
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+	DUK_ASSERT(thr->heap->refzero_list == NULL);  /* Processed to completion inline. */
+
+	if (DUK_UNLIKELY(thr->heap->finalize_list != NULL)) {
+		duk_heap_process_finalize_list(thr->heap);
+	}
+}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
+
+/*
+ *  Refzero processing for duk_hstring.
+ */
+
+DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hstring(duk_heap *heap, duk_hstring *str) {
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
+	DUK_ASSERT(str != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) str) == DUK_HTYPE_STRING);
+
+	duk_heap_strcache_string_remove(heap, str);
+	duk_heap_strtable_unlink(heap, str);
+	duk_free_hstring(heap, str);
+}
+
+/*
+ *  Refzero processing for duk_hbuffer.
+ */
+
+DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hbuffer(duk_heap *heap, duk_hbuffer *buf) {
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(heap->heap_thread != NULL);
+	DUK_ASSERT(buf != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) buf) == DUK_HTYPE_BUFFER);
+
+	DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, (duk_heaphdr *) buf);
+	duk_free_hbuffer(heap, buf);
 }
 
 /*
  *  Incref and decref functions.
  *
  *  Decref may trigger immediate refzero handling, which may free and finalize
- *  an arbitrary number of objects.
+ *  an arbitrary number of objects (a "DECREF cascade").
  *
  *  Refzero handling is skipped entirely if (1) mark-and-sweep is running or
  *  (2) execution is paused in the debugger.  The objects are left in the heap,
@@ -474,46 +460,67 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
  *  mark-and-sweep also calls finalizers which would use the ordinary decref
  *  macros anyway.
  *
- *  The DUK__RZ_SUPPRESS_CHECK() must be enabled also when mark-and-sweep
- *  support has been disabled: the flag is also used in heap destruction when
- *  running finalizers for remaining objects, and the flag prevents objects
- *  from being moved around in heap linked lists.
+ *  We can't process refzeros (= free objects) when the debugger is running
+ *  as the debugger might make an object unreachable but still continue
+ *  inspecting it (or even cause it to be pushed back).  So we must rely on
+ *  mark-and-sweep to collect them.
+ *
+ *  The DUK__RZ_SUPPRESS_CHECK() condition is also used in heap destruction
+ *  when running finalizers for remaining objects: the flag prevents objects
+ *  from being moved around in heap linked lists while that's being done.
+ *
+ *  The suppress condition is important to performance.
  */
 
-/* The suppress condition is important to performance.  The flags being tested
- * are in the same duk_heap field so a single TEST instruction (on x86) tests
- * for them.
- */
+#define DUK__RZ_SUPPRESS_ASSERT1() do { \
+		DUK_ASSERT(thr != NULL); \
+		DUK_ASSERT(thr->heap != NULL); \
+		/* When mark-and-sweep runs, heap_thread must exist. */ \
+		DUK_ASSERT(thr->heap->ms_running == 0 || thr->heap->heap_thread != NULL); \
+		/* When mark-and-sweep runs, the 'thr' argument always matches heap_thread. \
+		 * This could be used to e.g. suppress check against 'thr' directly (and \
+		 * knowing it would be heap_thread); not really used now. \
+		 */ \
+		DUK_ASSERT(thr->heap->ms_running == 0 || thr == thr->heap->heap_thread); \
+		/* We may be called when the heap is initializing and we process \
+		 * refzeros normally, but mark-and-sweep and finalizers are prevented \
+		 * if that's the case. \
+		 */ \
+		DUK_ASSERT(thr->heap->heap_initializing == 0 || thr->heap->ms_prevent_count > 0); \
+		DUK_ASSERT(thr->heap->heap_initializing == 0 || thr->heap->pf_prevent_count > 0); \
+	} while (0)
+
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-#define DUK__RZ_SUPPRESS_COND() \
-	(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap) || DUK_HEAP_IS_PAUSED(heap))
+#define DUK__RZ_SUPPRESS_ASSERT2() do { \
+		/* When debugger is paused, ms_running is set. */ \
+		DUK_ASSERT(!DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) || thr->heap->ms_running != 0); \
+	} while (0)
+#define DUK__RZ_SUPPRESS_COND()  (heap->ms_running != 0)
 #else
-#define DUK__RZ_SUPPRESS_COND() \
-	(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap))
-#endif
+#define DUK__RZ_SUPPRESS_ASSERT2() do { } while (0)
+#define DUK__RZ_SUPPRESS_COND()  (heap->ms_running != 0)
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
 #define DUK__RZ_SUPPRESS_CHECK() do { \
+		DUK__RZ_SUPPRESS_ASSERT1(); \
+		DUK__RZ_SUPPRESS_ASSERT2(); \
 		if (DUK_UNLIKELY(DUK__RZ_SUPPRESS_COND())) { \
-			DUK_DDD(DUK_DDDPRINT("refzero handling suppressed when mark-and-sweep running, object: %p", (void *) h)); \
+			DUK_DDD(DUK_DDDPRINT("refzero handling suppressed (not even queued) when mark-and-sweep running, object: %p", (void *) h)); \
 			return; \
 		} \
 	} while (0)
 
 #define DUK__RZ_STRING() do { \
-		duk_heap_strcache_string_remove(thr->heap, (duk_hstring *) h); \
-		duk_heap_strtable_unlink(heap, (duk_hstring *) h); \
-		duk_free_hstring(heap, (duk_hstring *) h); \
+		duk__refcount_refzero_hstring(heap, (duk_hstring *) h); \
 	} while (0)
 #define DUK__RZ_BUFFER() do { \
-		duk_heap_remove_any_from_heap_allocated(heap, (duk_heaphdr *) h); \
-		duk_free_hbuffer(heap, (duk_hbuffer *) h); \
+		duk__refcount_refzero_hbuffer(heap, (duk_hbuffer *) h); \
 	} while (0)
 #define DUK__RZ_OBJECT() do { \
-		duk_heap_remove_any_from_heap_allocated(heap, (duk_heaphdr *) h); \
-		duk__queue_refzero(heap, (duk_heaphdr *) h); \
-		if (!skip_free_pending) { \
-			duk_refzero_free_pending(thr); \
-		} \
+		duk__refcount_refzero_hobject(heap, (duk_hobject *) h, skip_free_pending); \
 	} while (0)
+
+/* XXX: test the effect of inlining here vs. NOINLINE in refzero helpers */
 #if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
 #define DUK__RZ_INLINE DUK_ALWAYS_INLINE
 #else
@@ -583,42 +590,39 @@ DUK_LOCAL DUK__RZ_INLINE void duk__heaphdr_refzero_helper(duk_hthread *thr, duk_
 		DUK__RZ_OBJECT();
 		break;
 
-	case DUK_HTYPE_BUFFER:
+	default:
 		/* Buffers have no internal references.  However, a dynamic
 		 * buffer has a separate allocation for the buffer.  This is
 		 * freed by duk_heap_free_heaphdr_raw().
 		 */
 
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(h) == DUK_HTYPE_BUFFER);
 		DUK__RZ_BUFFER();
 		break;
-
-	default:
-		DUK_D(DUK_DPRINT("invalid heap type in decref: %ld", (long) DUK_HEAPHDR_GET_TYPE(h)));
-		DUK_UNREACHABLE();
 	}
 }
 
-DUK_INTERNAL void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_heaphdr_refzero(duk_hthread *thr, duk_heaphdr *h) {
 	duk__heaphdr_refzero_helper(thr, h, 0 /*skip_free_pending*/);
 }
 
-DUK_INTERNAL void duk_heaphdr_refzero_norz(duk_hthread *thr, duk_heaphdr *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_heaphdr_refzero_norz(duk_hthread *thr, duk_heaphdr *h) {
 	duk__heaphdr_refzero_helper(thr, h, 1 /*skip_free_pending*/);
 }
 
-DUK_INTERNAL void duk_hstring_refzero(duk_hthread *thr, duk_hstring *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_hstring_refzero(duk_hthread *thr, duk_hstring *h) {
 	duk__hstring_refzero_helper(thr, h);
 }
 
-DUK_INTERNAL void duk_hbuffer_refzero(duk_hthread *thr, duk_hbuffer *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_hbuffer_refzero(duk_hthread *thr, duk_hbuffer *h) {
 	duk__hbuffer_refzero_helper(thr, h);
 }
 
-DUK_INTERNAL void duk_hobject_refzero(duk_hthread *thr, duk_hobject *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_hobject_refzero(duk_hthread *thr, duk_hobject *h) {
 	duk__hobject_refzero_helper(thr, h, 0 /*skip_free_pending*/);
 }
 
-DUK_INTERNAL void duk_hobject_refzero_norz(duk_hthread *thr, duk_hobject *h) {
+DUK_INTERNAL DUK_NOINLINE void duk_hobject_refzero_norz(duk_hthread *thr, duk_hobject *h) {
 	duk__hobject_refzero_helper(thr, h, 1 /*skip_free_pending*/);
 }
 

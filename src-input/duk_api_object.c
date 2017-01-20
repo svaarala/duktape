@@ -726,6 +726,11 @@ DUK_EXTERNAL void duk_set_finalizer(duk_context *ctx, duk_idx_t idx) {
 	 * a very quick finalizer check by walking the prototype chain
 	 * and checking the flag alone.  (Note that this means that just
 	 * setting _Finalizer on an object won't affect finalizer checks.)
+	 *
+	 * NOTE: if the argument is a Proxy object, this flag will be set
+	 * on the Proxy, not the target.  As a result, the target won't get
+	 * a finalizer flag and the Proxy also won't be finalized as there's
+	 * an explicit Proxy check in finalization now.
 	 */
 	if (callable) {
 		DUK_HOBJECT_SET_HAVE_FINALIZER(h);

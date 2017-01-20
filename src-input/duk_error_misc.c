@@ -61,11 +61,16 @@ DUK_INTERNAL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_er
 }
 
 /*
- *  Exposed helper for setting up heap longjmp state.
+ *  Helper for debugger throw notify and pause-on-uncaught integration.
  */
 
-DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type) {
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
+#if defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
+DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_bool_t fatal;
+	duk_tval *tv_obj;
+
 	/* If something is thrown with the debugger attached and nobody will
 	 * catch it, execution is paused before the longjmp, turning over
 	 * control to the debug client.  This allows local state to be examined
@@ -73,53 +78,100 @@ DUK_INTERNAL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t l
 	 * message loop is active (e.g. for Eval).
 	 */
 
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(thr->heap != NULL);
+
 	/* XXX: Allow customizing the pause and notify behavior at runtime
 	 * using debugger runtime flags.  For now the behavior is fixed using
 	 * config options.
 	 */
-#if defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
-	if (DUK_HEAP_IS_DEBUGGER_ATTACHED(thr->heap) &&
-	    !thr->heap->dbg_processing &&
-	    lj_type == DUK_LJ_TYPE_THROW) {
-		duk_context *ctx = (duk_context *) thr;
-		duk_bool_t fatal;
-		duk_hobject *h_obj;
 
-		/* Don't intercept a DoubleError, we may have caused the initial double
-		 * fault and attempting to intercept it will cause us to be called
-		 * recursively and exhaust the C stack.
-		 */
-		h_obj = duk_get_hobject(ctx, -1);
-		if (h_obj == thr->builtins[DUK_BIDX_DOUBLE_ERROR]) {
-			DUK_D(DUK_DPRINT("built-in DoubleError instance thrown, not intercepting"));
-			goto skip_throw_intercept;
-		}
+	if (!duk_debug_is_attached(thr->heap) ||
+	    thr->heap->dbg_processing ||
+	    thr->heap->lj.type != DUK_LJ_TYPE_THROW ||
+	    thr->heap->creating_error) {
+		DUK_D(DUK_DPRINT("skip debugger error integration; not attached, debugger processing, not THROW, or error thrown while creating error"));
+		return;
+	}
 
-		DUK_D(DUK_DPRINT("throw with debugger attached, report to client"));
+	/* Don't intercept a DoubleError, we may have caused the initial double
+	 * fault and attempting to intercept it will cause us to be called
+	 * recursively and exhaust the C stack.  (This should no longer happen
+	 * for the initial throw because DoubleError path doesn't do a debugger
+	 * integration check, but it might happen for rethrows.)
+	 */
+	tv_obj = &thr->heap->lj.value1;
+	if (DUK_TVAL_IS_OBJECT(tv_obj) && DUK_TVAL_GET_OBJECT(tv_obj) == thr->builtins[DUK_BIDX_DOUBLE_ERROR]) {
+		DUK_D(DUK_DPRINT("built-in DoubleError instance (re)thrown, not intercepting"));
+		return;
+	}
 
-		fatal = !duk__have_active_catcher(thr);
+	fatal = !duk__have_active_catcher(thr);
+
+	/* Debugger code expects the value at stack top.  This also serves
+	 * as a backup: we need to store/restore the longjmp state because
+	 * when the debugger is paused Eval commands may be executed and
+	 * they can arbitrarily clobber the longjmp state.
+	 */
+	duk_push_tval(ctx, tv_obj);
+
+	/* Store and reset longjmp state. */
+	DUK_ASSERT_LJSTATE_SET(thr->heap);
+	DUK_TVAL_DECREF_NORZ(thr, tv_obj);
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value2));  /* Always for THROW type. */
+	DUK_TVAL_SET_UNDEFINED(tv_obj);
+	thr->heap->lj.type = DUK_LJ_TYPE_UNKNOWN;
+	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
 
 #if defined(DUK_USE_DEBUGGER_THROW_NOTIFY)
-		/* Report it to the debug client */
-		duk_debug_send_throw(thr, fatal);
+	/* Report it to the debug client */
+	DUK_D(DUK_DPRINT("throw with debugger attached, report to client"));
+	duk_debug_send_throw(thr, fatal);
 #endif
 
 #if defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
-		if (fatal) {
-			DUK_D(DUK_DPRINT("throw will be fatal, halt before longjmp"));
-			duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
-		}
-#endif
+	if (fatal) {
+		DUK_D(DUK_DPRINT("throw will be fatal, halt before longjmp"));
+		duk_debug_halt_execution(thr, 1 /*use_prev_pc*/);
 	}
+#endif
 
- skip_throw_intercept:
+	/* Restore longjmp state. */
+	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
+	thr->heap->lj.type = DUK_LJ_TYPE_THROW;
+	tv_obj = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value1));
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value2));
+	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, tv_obj);
+	DUK_TVAL_INCREF(thr, tv_obj);
+	DUK_ASSERT_LJSTATE_SET(thr->heap);
+
+	duk_pop(ctx);
+}
+#else  /* DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT */
+DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
+	DUK_UNREF(thr);
+}
 #endif  /* DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT */
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
-	thr->heap->lj.type = lj_type;
+/*
+ *  Helpers for setting up heap longjmp state.
+ */
 
-	DUK_ASSERT(thr->valstack_top > thr->valstack);
-	DUK_TVAL_SET_TVAL_UPDREF(thr, &thr->heap->lj.value1, thr->valstack_top - 1);  /* side effects */
+DUK_INTERNAL void duk_err_setup_ljstate1(duk_hthread *thr, duk_small_uint_t lj_type, duk_tval *tv_val) {
+	duk_heap *heap;
 
-	duk_pop((duk_context *) thr);
+	DUK_ASSERT(thr != NULL);
+	heap = thr->heap;
+	DUK_ASSERT(heap != NULL);
+	DUK_ASSERT(tv_val != NULL);
+
+	DUK_ASSERT_LJSTATE_UNSET(heap);
+
+	heap->lj.type = lj_type;
+	DUK_TVAL_SET_TVAL(&heap->lj.value1, tv_val);
+	DUK_TVAL_INCREF(thr, tv_val);
+
+	DUK_ASSERT_LJSTATE_SET(heap);
 }

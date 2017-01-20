@@ -379,9 +379,11 @@ DUK_INTERNAL_DECL void duk_hthread_terminate(duk_hthread *thr);
 
 DUK_INTERNAL_DECL void duk_hthread_callstack_grow(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_callstack_shrink_check(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_callstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
 DUK_INTERNAL_DECL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_grow(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */

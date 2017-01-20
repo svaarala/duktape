@@ -475,7 +475,10 @@ DUK_NORETURN(DUK_INTERNAL_DECL void duk_err_longjmp(duk_hthread *thr));
 
 DUK_NORETURN(DUK_INTERNAL_DECL void duk_default_fatal_handler(void *udata, const char *msg));
 
-DUK_INTERNAL_DECL void duk_err_setup_heap_ljstate(duk_hthread *thr, duk_small_int_t lj_type);
+DUK_INTERNAL_DECL void duk_err_setup_ljstate1(duk_hthread *thr, duk_small_uint_t lj_type, duk_tval *tv_val);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+DUK_INTERNAL_DECL void duk_err_check_debugger_integration(duk_hthread *thr);
+#endif
 
 DUK_INTERNAL_DECL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_errcode_t err_code);
 

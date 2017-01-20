@@ -1998,6 +1998,8 @@ DUK_LOCAL duk_bool_t duk__const_needs_refcount(duk_compiler_ctx *comp_ctx, duk_r
 	duk_pop(ctx);
 	return ret;
 #else
+	DUK_UNREF(comp_ctx);
+	DUK_UNREF(rc);
 	DUK_ASSERT((rc & DUK__CONST_MARKER) == 0);  /* caller removes const marker */
 	return 0;
 #endif
