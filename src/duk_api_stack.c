@@ -4162,11 +4162,104 @@ DUK_EXTERNAL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_sm
 	return (void *) buf_data;
 }
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
+	duk_heaphdr *h;
+	duk_heaphdr *curr;
+	duk_hthread *thr;
+	duk_bool_t found = 0;
+
+	thr = (duk_hthread *) ctx;
+	h = (duk_heaphdr *) ptr;
+	if (h == NULL) {
+		/* Allowed. */
+		return;
+	}
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+
+	/* One particular problem case is where an object has been
+	 * queued for finalization but the finalizer hasn't yet been
+	 * executed.
+	 *
+	 * Corner case: we're running in a finalizer for object X, and
+	 * user code calls duk_push_heapptr() for X itself.  In this
+	 * case X will be in finalize_list, and we can detect the case
+	 * by seeing that X's FINALIZED flag is set (which is done before
+	 * the finalizer starts executing).
+	 */
+	for (curr = thr->heap->finalize_list;
+	     curr != NULL;
+	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+		if (curr == h) {
+			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
+				/* Object is currently being finalized. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			} else {
+				DUK_ASSERT(0);
+			}
+		}
+	}
+
+	/* Also check for the refzero_list; must not be there unless it is
+	 * being finalized when duk_push_heapptr() is called.
+	 *
+	 * Corner case: similar to finalize_list.
+	 */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	for (curr = thr->heap->refzero_list;
+	     curr != NULL;
+	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+		if (curr == h) {
+			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
+				/* Object is currently being finalized. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			} else {
+				DUK_ASSERT(0);
+			}
+		}
+	}
+#endif
+
+	/* If not present in finalize_list or refzero_list, the pointer
+	 * must be either in heap_allocated or the string table.
+	 */
+	if (DUK_HEAPHDR_GET_TYPE(h) == DUK_HTYPE_STRING) {
+		/* String table assert check omitted from 1.x branch
+		 * backport.
+		 */
+	} else {
+		for (curr = thr->heap->heap_allocated;
+		     curr != NULL;
+		     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+			if (curr == h) {
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			}
+		}
+		DUK_ASSERT(found != 0);
+	}
+}
+#endif  /* DUK_USE_ASSERTIONS */
+
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* Reviving an object using a heap pointer is a dangerous API
+	 * operation: if the application doesn't guarantee that the
+	 * pointer target is always reachable, difficult-to-diagnose
+	 * problems may ensue.  Try to validate the 'ptr' argument to
+	 * the extent possible.
+	 */
+
+#if defined(DUK_USE_ASSERTIONS)
+	duk__validate_push_heapptr(ctx, ptr);
+#endif
 
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
 

@@ -904,6 +904,10 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 			 */
 			duk_hobject_run_finalizer(thr, (duk_hobject *) curr);  /* must never longjmp */
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(curr));
+
+			/* XXX: could clear FINALIZED already here; now cleared in
+			 * next mark-and-sweep.
+			 */
 		} else {
 			/* Used during heap destruction: don't actually run finalizers
 			 * because we're heading into forced finalization.  Instead,
