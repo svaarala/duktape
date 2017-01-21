@@ -60,12 +60,17 @@ finalizer are also silently ignored.</p>
 <li>Finalizers are also executed for all remaining objects, regardless of
     their reachability status, when a Duktape heap is destroyed.</li>
 <li>A finalizer is called exactly once, at the latest when the heap is
-    destroyed, unless the object is rescued by the finalizer by making
-    it reachable again.  An object may be rescued an arbitrary number of
-    times; the finalizer is called exactly once for each "rescue cycle".
-    Even with this guarantee in place, it's best practice for a finalizer
-    to be re-entrant and carefully avoid e.g. freeing a native resource
-    multiple times if re-entered.</li>
+    destroyed, unless the object is rescued by making it reachable again.
+    An object may be rescued by its own finalizer, or by another object's
+    finalizer when mark-and-sweep finalizes an object.  For example, if
+    <code>X.ref = Y</code>, and both X and Y become unreachable, it's
+    possible for Y's finalizer to run, and later on X's finalizer to rescue
+    both X and Y.</li>
+<li>An object may be rescued an arbitrary number of times; the finalizer
+    is called exactly once for each "rescue cycle".  Even with this
+    guarantee in place, it's best practice for a finalizer to be re-entrant
+    and carefully avoid e.g. freeing a native resource multiple times if
+    re-entered.</li>
 <li>A finalizer is not executed for a Proxy object, but is executed for
     the plain target object.  This ensures that a finalizer isn't executed
     multiple times when Proxy objects are created.</li>
