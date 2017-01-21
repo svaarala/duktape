@@ -2408,6 +2408,10 @@ Planned
 * Improve duk_hstring array index handling performance when
   DUK_USE_HSTRING_ARRIDX is disabled (GH-1274)
 
+* Fix a few incorrect asserts related to reference count triggered finalizer
+  execution; the functionality itself was correct in these cases but a few
+  asserts were too strict (GH-1318)
+
 * Fix argument validation bug in typedarray .set() which would cause a segfault
   for e.g. new Float64Array(2).set(undefined) (GH-1285, GH-1286)
 
