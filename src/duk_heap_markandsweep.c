@@ -488,7 +488,7 @@ DUK_LOCAL void duk__clear_refzero_list_flags(duk_heap *heap) {
 	while (hdr) {
 		DUK_HEAPHDR_CLEAR_REACHABLE(hdr);
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
+		/* DUK_HEAPHDR_HAS_FINALIZED may or may not be set. */
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
@@ -1055,7 +1055,11 @@ DUK_LOCAL void duk__assert_heaphdr_flags(duk_heap *heap) {
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(hdr));
-		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
+		/* DUK_HEAPHDR_HAS_FINALIZED may be set if we're doing a
+		 * refzero finalization and mark-and-sweep gets triggered
+		 * during the finalizer.
+		 */
+		/* DUK_HEAPHDR_HAS_FINALIZED may or may not be set. */
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 #endif  /* DUK_USE_REFERENCE_COUNTING */
