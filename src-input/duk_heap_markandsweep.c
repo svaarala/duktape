@@ -641,14 +641,14 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 
-		if (DUK_HEAPHDR_HAS_REACHABLE(curr)) {
+		if (DUK_LIKELY(DUK_HEAPHDR_HAS_REACHABLE(curr))) {
 			/*
 			 *  Reachable object, keep
 			 */
 
 			DUK_DDD(DUK_DDDPRINT("sweep, reachable: %p", (void *) curr));
 
-			if (DUK_HEAPHDR_HAS_FINALIZABLE(curr)) {
+			if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZABLE(curr))) {
 				/*
 				 *  If object has been marked finalizable, move it to the
 				 *  "to be finalized" work list.  It will be collected on
@@ -661,7 +661,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				DUK_DDD(DUK_DDDPRINT("object has finalizer, move to finalization work list: %p", (void *) curr));
 
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
-				if (heap->finalize_list) {
+				if (heap->finalize_list != NULL) {
 					DUK_HEAPHDR_SET_PREV(heap, heap->finalize_list, curr);
 				}
 				DUK_HEAPHDR_SET_PREV(heap, curr, NULL);
@@ -677,7 +677,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				 *  Object will be kept; queue object back to heap_allocated (to tail)
 				 */
 
-				if (DUK_HEAPHDR_HAS_FINALIZED(curr)) {
+				if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZED(curr))) {
 					/*
 					 *  Object's finalizer was executed on last round, and
 					 *  object has been happily rescued.
@@ -697,11 +697,12 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 					count_keep++;
 				}
 
-				if (!heap->heap_allocated) {
-					heap->heap_allocated = curr;
-				}
-				if (prev) {
+				if (prev != NULL) {
+					DUK_ASSERT(heap->heap_allocated != NULL);
 					DUK_HEAPHDR_SET_NEXT(heap, prev, curr);
+				} else {
+					DUK_ASSERT(heap->heap_allocated == NULL);
+					heap->heap_allocated = curr;
 				}
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
 				DUK_HEAPHDR_SET_PREV(heap, curr, prev);
@@ -759,7 +760,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 			curr = next;
 		}
 	}
-	if (prev) {
+	if (prev != NULL) {
 		DUK_HEAPHDR_SET_NEXT(heap, prev, NULL);
 	}
 	DUK_ASSERT_HEAPHDR_LINKS(heap, prev);

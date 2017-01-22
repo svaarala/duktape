@@ -15,7 +15,7 @@
  */
 
 DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
-	/* tail insert: don't disturb head in case refzero is running */
+	/* Tail insert: don't disturb head in case refzero is running. */
 
 	if (heap->refzero_list != NULL) {
 		duk_heaphdr *hdr_prev;
@@ -346,7 +346,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		 */
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-		if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
+		if (DUK_UNLIKELY(duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr)))) {
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
@@ -371,6 +371,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		 * inserted more refzero objects; they are inserted to the tail.
 		 */
 		DUK_ASSERT(h1 == heap->refzero_list);
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);
 
 		/*
 		 *  Remove the object from the refzero list.  This cannot be done
@@ -380,8 +381,8 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		 */
 
 		h2 = DUK_HEAPHDR_GET_NEXT(heap, h1);
-		if (h2) {
-			DUK_HEAPHDR_SET_PREV(heap, h2, NULL);  /* not strictly necessary */
+		if (h2 != NULL) {
+			DUK_HEAPHDR_SET_PREV(heap, h2, NULL);
 			heap->refzero_list = h2;
 		} else {
 			heap->refzero_list = NULL;
@@ -393,15 +394,15 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		 */
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-		if (rescued) {
+		if (DUK_UNLIKELY(rescued)) {
 			/* yes -> move back to heap allocated */
 			DUK_DD(DUK_DDPRINT("object rescued during refcount finalization: %p", (void *) h1));
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(h1));
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));
 			DUK_HEAPHDR_CLEAR_FINALIZED(h1);
 			h2 = heap->heap_allocated;
-			DUK_HEAPHDR_SET_PREV(heap, h1, NULL);
-			if (h2) {
+			DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, h1) == NULL);  /* Policy for head of list. */
+			if (h2 != NULL) {
 				DUK_HEAPHDR_SET_PREV(heap, h2, h1);
 			}
 			DUK_HEAPHDR_SET_NEXT(heap, h1, h2);
@@ -433,7 +434,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	 * which happens in memory block (re)allocation.
 	 */
 	heap->mark_and_sweep_trigger_counter -= count;
-	if (heap->mark_and_sweep_trigger_counter <= 0) {
+	if (DUK_UNLIKELY(heap->mark_and_sweep_trigger_counter <= 0)) {
 		duk_bool_t rc;
 		duk_small_uint_t flags = 0;  /* not emergency */
 		DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
