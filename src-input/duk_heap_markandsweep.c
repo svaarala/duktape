@@ -800,6 +800,12 @@ DUK_LOCAL void duk__run_object_finalizers(duk_heap *heap, duk_small_uint_t flags
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(curr));  /* No finalizers for ROM objects */
 
+		/* Keep heap->finalize_list up-to-date during the list walk.
+		 * This has no functional impact, but does matter e.g. for
+		 * duk_push_heapptr() asserts when assertions are enabled.
+		 */
+		heap->finalize_list = curr;
+
 		if (DUK_LIKELY((flags & DUK_MS_FLAG_SKIP_FINALIZERS) == 0)) {
 			/* Run the finalizer, duk_hobject_run_finalizer() sets FINALIZED.
 			 * Next mark-and-sweep will collect the object unless it has
