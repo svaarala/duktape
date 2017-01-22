@@ -552,6 +552,12 @@ DUK_INTERNAL void duk_heaphdr_incref(duk_heaphdr *h) {
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
 	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
 
+#if defined(DUK_USE_ROM_OBJECTS)
+	if (DUK_HEAPHDR_HAS_READONLY(h)) {
+		return;
+	}
+#endif
+
 	DUK_HEAPHDR_PREINC_REFCOUNT(h);
 }
 #endif
