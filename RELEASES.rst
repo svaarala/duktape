@@ -2413,6 +2413,11 @@ Planned
   finalized, and must otherwise be in either the string table (for strings)
   or heap_allocated (non-strings) (GH-1317)
 
+* Fix a duk_push_heapptr() finalize_list assertion issue caused by the
+  internal heap->finalize_list being (intentionally) out-of-sync during
+  mark-and-sweep finalizer execution; this has no functional impact but
+  breaks duk_push_heapptr() asserts in certain conditions (GH-1321)
+
 * Fix a few incorrect asserts related to reference count triggered finalizer
   execution; the functionality itself was correct in these cases but a few
   asserts were too strict (GH-1318)
