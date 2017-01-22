@@ -2408,6 +2408,11 @@ Planned
 * Improve duk_hstring array index handling performance when
   DUK_USE_HSTRING_ARRIDX is disabled (GH-1274)
 
+* Improve duk_push_heapptr() assert validation to include checks that the
+  pointer is only allowed in finalize_list or refzero_list if currently being
+  finalized, and must otherwise be in either the string table (for strings)
+  or heap_allocated (non-strings) (GH-1317)
+
 * Fix a few incorrect asserts related to reference count triggered finalizer
   execution; the functionality itself was correct in these cases but a few
   asserts were too strict (GH-1318)

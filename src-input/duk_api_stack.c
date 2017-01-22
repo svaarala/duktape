@@ -4561,6 +4561,106 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_context *ctx, duk_size_t len) 
 	return ptr;
 }
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
+	duk_heaphdr *h;
+	duk_heaphdr *curr;
+	duk_hthread *thr;
+	duk_bool_t found = 0;
+
+	thr = (duk_hthread *) ctx;
+	h = (duk_heaphdr *) ptr;
+	if (h == NULL) {
+		/* Allowed. */
+		return;
+	}
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
+
+	/* One particular problem case is where an object has been
+	 * queued for finalization but the finalizer hasn't yet been
+	 * executed.
+	 *
+	 * Corner case: we're running in a finalizer for object X, and
+	 * user code calls duk_push_heapptr() for X itself.  In this
+	 * case X will be in finalize_list, and we can detect the case
+	 * by seeing that X's FINALIZED flag is set (which is done before
+	 * the finalizer starts executing).
+	 */
+	for (curr = thr->heap->finalize_list;
+	     curr != NULL;
+	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+		if (curr == h) {
+			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
+				/* Object is currently being finalized. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			} else {
+				DUK_ASSERT(0);
+			}
+		}
+	}
+
+	/* Also check for the refzero_list; must not be there unless it is
+	 * being finalized when duk_push_heapptr() is called.
+	 *
+	 * Corner case: similar to finalize_list.
+	 */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	for (curr = thr->heap->refzero_list;
+	     curr != NULL;
+	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+		if (curr == h) {
+			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
+				/* Object is currently being finalized. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			} else {
+				DUK_ASSERT(0);
+			}
+		}
+	}
+#endif
+
+	/* If not present in finalize_list or refzero_list, the pointer
+	 * must be either in heap_allocated or the string table.
+	 */
+	if (DUK_HEAPHDR_GET_TYPE(h) == DUK_HTYPE_STRING) {
+		duk_uint32_t i;
+		duk_hstring *str;
+		duk_heap *heap = thr->heap;
+
+		DUK_ASSERT(found == 0);
+		for (i = 0; i < heap->st_size; i++) {
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+			str = DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, heap->strtable16[i]);
+#else
+			str = heap->strtable[i];
+#endif
+			while (str != NULL) {
+				if (str == (duk_hstring *) h) {
+					DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+					found = 1;
+					break;
+				}
+				str = str->hdr.h_next;
+			}
+		}
+		DUK_ASSERT(found != 0);
+	} else {
+		for (curr = thr->heap->heap_allocated;
+		     curr != NULL;
+		     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
+			if (curr == h) {
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			}
+		}
+		DUK_ASSERT(found != 0);
+	}
+}
+#endif  /* DUK_USE_ASSERTIONS */
+
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
@@ -4575,18 +4675,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	 */
 
 #if defined(DUK_USE_ASSERTIONS)
-	{
-		/* One particular problem case is where an object has been
-		 * queued for finalization but the finalizer hasn't been
-		 * executed.
-		 */
-		duk_heaphdr *curr;
-		for (curr = thr->heap->finalize_list;
-		     curr != NULL;
-		     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
-			DUK_ASSERT(curr != (duk_heaphdr *) ptr);
-		}
-	}
+	duk__validate_push_heapptr(ctx, ptr);
 #endif
 
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
