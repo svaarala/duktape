@@ -1448,4 +1448,71 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_locale_compare(duk_context *ctx) 
 	return 1;
 }
 
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_context *ctx) {
+	duk_int_t magic;
+	duk_hstring *h;
+	duk_hstring *h_search;
+	duk_size_t blen_search;
+	const duk_uint8_t *p_cmp_start;
+	duk_bool_t result;
+
+	h = duk_push_this_coercible_to_string(ctx);
+	DUK_ASSERT(h != NULL);
+
+	if (duk_get_class_number(ctx, 0) == DUK_HOBJECT_CLASS_REGEXP) {
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	}
+	h_search = duk_to_hstring(ctx, 0);
+
+	magic = duk_get_current_magic(ctx);
+
+	p_cmp_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	blen_search = DUK_HSTRING_GET_BYTELEN(h_search);
+
+	if (duk_is_undefined(ctx, 1)) {
+		if (magic) {
+			p_cmp_start += DUK_HSTRING_GET_BYTELEN(h) - blen_search;
+		} else {
+			/* p_cmp_start already OK */
+		}
+	} else {
+		duk_int_t len;
+		duk_int_t pos;
+
+		DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= DUK_INT_MAX);
+		len = (duk_int_t) DUK_HSTRING_GET_CHARLEN(h);
+		pos = duk_to_int_clamped(ctx, 1, 0, len);
+		DUK_ASSERT(pos >= 0 && pos <= len);
+
+		if (magic) {
+			p_cmp_start -= blen_search;  /* Conceptually subtracted last, but do already here. */
+		}
+		DUK_ASSERT(pos >= 0 && pos <= len);
+
+		p_cmp_start += duk_heap_strcache_offset_char2byte((duk_hthread *) ctx, h, pos);
+	}
+
+	/* The main comparison can be done using a memcmp() rather than
+	 * doing codepoint comparisons: for CESU-8 strings there is a
+	 * canonical representation for every codepoint.  But we do need
+	 * to deal with the char/byte offset translation to find the
+	 * comparison range.
+	 */
+
+	result = 0;
+	if (p_cmp_start >= DUK_HSTRING_GET_DATA(h) &&
+	    p_cmp_start + blen_search <= DUK_HSTRING_GET_DATA(h) + DUK_HSTRING_GET_BYTELEN(h)) {
+		if (DUK_MEMCMP((const void *) p_cmp_start,
+		               (const void *) DUK_HSTRING_GET_DATA(h_search),
+		               (size_t) blen_search) == 0) {
+			result = 1;
+		}
+	}
+
+	duk_push_boolean(ctx, result);
+	return 1;
+}
+#endif  /* DUK_USE_ES6 */
+
 #endif  /* DUK_USE_STRING_BUILTIN */
