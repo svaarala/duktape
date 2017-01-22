@@ -2428,6 +2428,9 @@ Planned
 * Fix incorrect exponentiation operator behavior which happened at least on
   Linux gcc 4.8.4 with -O2 (not -Os) (GH-1272)
 
+* Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
+  was enabled (GH-1320)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
