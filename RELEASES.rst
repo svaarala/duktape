@@ -2394,6 +2394,8 @@ Planned
   which uses a 2^N size and a bit mask instead of a prime size and a MOD;
   use a hash table more eagerly than before (GH-1284)
 
+* Add ES2015 String.prototype.{startsWith,endsWith} (GH-1324)
+
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
   "new Function('return this')()"; implemented based on
