@@ -1255,6 +1255,15 @@ objects:
         present_if:
           - DUK_USE_ES6
           - DUK_USE_STRING_BUILTIN
+      - key: "includes"
+        value:
+          type: function
+          native: duk_bi_string_prototype_includes
+          length: 1
+          nargs: 2
+        present_if:
+          - DUK_USE_ES6
+          - DUK_USE_STRING_BUILTIN
 
       # Non-standard extension: E5 Section B.2.3
 
