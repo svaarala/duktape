@@ -671,6 +671,12 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) >= 1); \
 	} while (0)
 #if defined(DUK_USE_ROM_OBJECTS)
+#define DUK__INCREF_SHARED() do { \
+		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) { \
+			return; \
+		} \
+		DUK_HEAPHDR_PREINC_REFCOUNT((duk_heaphdr *) h); \
+	} while (0)
 #define DUK__DECREF_SHARED() do { \
 		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) { \
 			return; \
@@ -680,6 +686,9 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 		} \
 	} while (0)
 #else
+#define DUK__INCREF_SHARED() do { \
+		DUK_HEAPHDR_PREINC_REFCOUNT((duk_heaphdr *) h); \
+	} while (0)
 #define DUK__DECREF_SHARED() do { \
 		if (DUK_HEAPHDR_PREDEC_REFCOUNT((duk_heaphdr *) h) != 0) { \
 			return; \
@@ -696,7 +705,7 @@ DUK_INTERNAL void duk_heaphdr_incref(duk_heaphdr *h) {
 	DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
 	DUK_ASSERT_DISABLE(DUK_HEAPHDR_GET_REFCOUNT(h) >= 0);
 
-	DUK_HEAPHDR_PREINC_REFCOUNT(h);
+	DUK__INCREF_SHARED();
 }
 
 DUK_INTERNAL void duk_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
