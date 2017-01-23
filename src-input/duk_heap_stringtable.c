@@ -681,26 +681,29 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 
 #if defined(DUK_USE_ROM_STRINGS)
 DUK_LOCAL duk_hstring *duk__strtab_romstring_lookup(duk_heap *heap, const duk_uint8_t *str, duk_size_t blen, duk_uint32_t strhash) {
-	duk_small_uint_t i;
+	duk_size_t lookup_hash;
+	duk_hstring *curr;
 
 	DUK_ASSERT(heap != NULL);
 
-	/* XXX: This is VERY inefficient now, and should be e.g. a
-	 * binary search or perfect hash, to be fixed.
-	 */
-	for (i = 0; i < (duk_small_uint_t) (sizeof(duk_rom_strings) / sizeof(duk_hstring *)); i++) {
-		duk_hstring *romstr;
-
-		romstr = (duk_hstring *) DUK_LOSE_CONST(duk_rom_strings[i]);
-
-		if (strhash == DUK_HSTRING_GET_HASH(romstr) &&
-		    blen == DUK_HSTRING_GET_BYTELEN(romstr) &&
-		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(romstr), blen) == 0) {
-			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
-			                     romstr, (unsigned long) strhash, (unsigned long) DUK_HSTRING_GET_HASH(romstr)));
-			return romstr;
-		}
+	lookup_hash = (blen << 4);
+	if (blen > 0) {
+		lookup_hash += str[0];
 	}
+	lookup_hash &= 0xff;
+
+	curr = DUK_LOSE_CONST(duk_rom_strings_lookup[lookup_hash]);
+	while (curr != NULL) {
+		if (strhash == DUK_HSTRING_GET_HASH(curr) &&
+		    blen == DUK_HSTRING_GET_BYTELEN(curr) &&
+		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(curr), blen) == 0) {
+			DUK_DDD(DUK_DDDPRINT("intern check: rom string: %!O, computed hash 0x%08lx, rom hash 0x%08lx",
+			                     curr, (unsigned long) strhash, (unsigned long) DUK_HSTRING_GET_HASH(curr)));
+			return curr;
+		}
+		curr = curr->hdr.h_next;
+	}
+
 	return NULL;
 }
 #endif  /* DUK_USE_ROM_STRINGS */

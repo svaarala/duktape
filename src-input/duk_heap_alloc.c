@@ -348,15 +348,19 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	 */
 
 #if defined(DUK_USE_ASSERTIONS)
-	for (i = 0; i < sizeof(duk_rom_strings) / sizeof(const duk_hstring *); i++) {
-		duk_uint32_t hash;
+	for (i = 0; i < sizeof(duk_rom_strings_lookup) / sizeof(const duk_hstring *); i++) {
 		const duk_hstring *h;
-		h = duk_rom_strings[i];
-		DUK_ASSERT(h != NULL);
-		hash = duk_heap_hashstring(heap, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
-		DUK_DD(DUK_DDPRINT("duk_rom_strings[%d] -> hash 0x%08lx, computed 0x%08lx",
-		                   (int) i, (unsigned long) DUK_HSTRING_GET_HASH(h), (unsigned long) hash));
-		DUK_ASSERT(hash == (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
+		duk_uint32_t hash;
+
+		h = duk_rom_strings_lookup[i];
+		while (h != NULL) {
+			hash = duk_heap_hashstring(heap, (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h), DUK_HSTRING_GET_BYTELEN(h));
+			DUK_DD(DUK_DDPRINT("duk_rom_strings_lookup[%d] -> hash 0x%08lx, computed 0x%08lx",
+			                   (int) i, (unsigned long) DUK_HSTRING_GET_HASH(h), (unsigned long) hash));
+			DUK_ASSERT(hash == (duk_uint32_t) DUK_HSTRING_GET_HASH(h));
+
+			h = (const duk_hstring *) h->hdr.h_next;
+		}
 	}
 #endif
 	return 1;
