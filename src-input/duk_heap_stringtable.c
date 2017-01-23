@@ -150,9 +150,7 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
                                                    const duk_uint8_t *extdata) {
 	duk_hstring *res;
 	const duk_uint8_t *data;
-#if !defined(DUK_USE_HSTRING_ARRIDX)
-	duk_uarridx_t dummy;
-#endif
+	duk_uarridx_t arridx;
 	duk_uint32_t clen;
 
 	DUK_ASSERT(heap != NULL);
@@ -208,55 +206,49 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		data = (const duk_uint8_t *) data_tmp;
 	}
 
+	/* Because 'data' is NUL-terminated, we don't need a
+	 * blen > 0 check here.  For NUL (0x00) the symbol
+	 * checks will be false.  Note that 0x80-0xBF is not
+	 * counted towards clen, but 0xFF is.
+	 */
+	if (DUK_UNLIKELY(data[0] >= 0x80U)) {
+		if (data[0] == 0xffU) {
+			DUK_HSTRING_SET_SYMBOL(res);
+			DUK_HSTRING_SET_HIDDEN(res);
+		} else if (data[0] <= 0xbf) {
+			/* Check equivalent to: (data[0] & 0xc0U) == 0x80U. */
+			DUK_HSTRING_SET_SYMBOL(res);
+		}
+	}
+
 	DUK_HSTRING_SET_BYTELEN(res, blen);
 	DUK_HSTRING_SET_HASH(res, strhash);
 
-	DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
-#if defined(DUK_USE_HSTRING_ARRIDX)
-	res->arridx = duk_js_to_arrayindex_string(data, blen);
-	if (res->arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
-#else
-	dummy = duk_js_to_arrayindex_string(data, blen);
-	if (dummy != DUK_HSTRING_NO_ARRAY_INDEX) {
-#endif
-		/* Array index strings cannot be symbol strings,
-		 * and they're always pure ASCII so blen == clen.
-		 */
-		DUK_HSTRING_SET_ARRIDX(res);
-		DUK_HSTRING_SET_ASCII(res);
-		DUK_ASSERT(duk_unicode_unvalidated_utf8_length(data, (duk_size_t) blen) == blen);
-		clen = blen;
-	} else {
-		/* Because 'data' is NUL-terminated, we don't need a
-		 * blen > 0 check here.  For NUL (0x00) the symbol
-		 * checks will be false.
-		 */
-		if (DUK_UNLIKELY(data[0] >= 0x80U)) {
-			if (data[0] == 0xffU) {
-				DUK_HSTRING_SET_SYMBOL(res);
-				DUK_HSTRING_SET_HIDDEN(res);
-			} else if (data[0] <= 0xbf) {
-				/* Check equivalent to: (data[0] & 0xc0U) == 0x80U. */
-				DUK_HSTRING_SET_SYMBOL(res);
-			}
-		}
+	clen = (duk_uint32_t) duk_unicode_unvalidated_utf8_length(data, (duk_size_t) blen);
+	DUK_ASSERT(clen <= blen);
 
-		clen = (duk_uint32_t) duk_unicode_unvalidated_utf8_length(data, (duk_size_t) blen);
-		DUK_ASSERT(clen <= blen);
-
-		/* Using an explicit 'ASCII' flag has larger footprint (one call site
-		 * only) but is quite useful for the case when there's no explicit
-		 * 'clen' in duk_hstring.
-		 */
-		DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
-		if (DUK_LIKELY(clen == blen)) {
-			/* ASCII strings can't be symbol strings. */
-			DUK_HSTRING_SET_ASCII(res);
-		}
-	}
 #if defined(DUK_USE_HSTRING_CLEN)
 	DUK_HSTRING_SET_CHARLEN(res, clen);
 #endif
+
+	DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
+	if (DUK_LIKELY(clen == blen)) {
+		/* Only pure ASCII strings can be array index strings.
+		 *
+		 * Using an explicit 'ASCII' flag has larger footprint (one
+		 * call site only) but is quite useful for the case when
+		 * there's no explicit 'clen' in duk_hstring.
+		 */
+		DUK_ASSERT(!DUK_HSTRING_HAS_ARRIDX(res));
+		arridx = duk_js_to_arrayindex_string(data, blen);
+		if (arridx != DUK_HSTRING_NO_ARRAY_INDEX) {
+			DUK_HSTRING_SET_ARRIDX(res);
+		}
+		DUK_HSTRING_SET_ASCII(res);
+#if defined(DUK_USE_HSTRING_ARRIDX)
+		res->arridx = arridx;
+#endif
+	}
 
 	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, clen=%ld, has_arridx=%ld, has_extdata=%ld",
 	                     (unsigned long) DUK_HSTRING_GET_HASH(res),

@@ -2388,7 +2388,7 @@ Planned
 
 * Replace heap string table algorithms (chain and probe) with a single
   algorithm based on single linked chaining of duk_hstrings, with the same
-  algorithm serving both default and low memory environments (GH-1277)
+  algorithm serving both default and low memory environments (GH-1277, GH-1283)
 
 * Replace object property table hash algorithm with a faster algorithm
   which uses a 2^N size and a bit mask instead of a prime size and a MOD;
