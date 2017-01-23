@@ -101,7 +101,7 @@ function test() {
     print('\ucafefoo'.endsWith('', 100));
     print(''.endsWith('', 10));
 
-    // The 'this' binding is object coercbility checked (undefined, null rejected),
+    // The 'this' binding is object coercibility checked (undefined, null rejected),
     // otherwise ToString coerced.
     print('this binding coercion');
     [ void 0, null, true, false, 123, 'foo', { foo: 123 }, [ 1, 2, 3 ] ].forEach(function (v, i) {
