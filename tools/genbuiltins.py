@@ -44,6 +44,9 @@ DUK__FIXED_HASH_SEED = 0xabcd1234
 # Must match DUK_USE_ROM_PTRCOMP_FIRST (generated header checks).
 ROMPTR_FIRST = 0xf800  # 2048 should be enough; now around ~1000 used
 
+# ROM string table size
+ROMSTR_LOOKUP_SIZE = 256
+
 #
 #  Miscellaneous helpers
 #
@@ -2256,87 +2259,118 @@ def rom_emit_strings_source(genc, meta):
     genc.emitLine('#error currently assumes DUK_USE_HEAPPTR16 and DUK_USE_REFCOUNT16 are both defined')
     genc.emitLine('#endif')
     genc.emitLine('#if defined(DUK_USE_HSTRING_CLEN)')
-    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), NULL }, (clen) }')
+    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) \\')
+    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) }, (clen) }')
     genc.emitLine('#else  /* DUK_USE_HSTRING_CLEN */')
-    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), NULL } }')
+    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) \\')
+    genc.emitLine('\t{ { (heaphdr_flags) | ((hash16) << 16), (refcount), (blen), (duk_hstring *) DUK_LOSE_CONST((next)) } }')
     genc.emitLine('#endif  /* DUK_USE_HSTRING_CLEN */')
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
-    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen) \\')
-    genc.emitLine('\t{ { (heaphdr_flags), (refcount), NULL }, (hash32), (blen), (clen) }')
+    genc.emitLine('#define DUK__STRINIT(heaphdr_flags,refcount,hash32,hash16,blen,clen,next) \\')
+    genc.emitLine('\t{ { (heaphdr_flags), (refcount), DUK_LOSE_CONST((next)) }, (hash32), (blen), (clen) }')
     genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
-    # Emit string initializers.
-    genc.emitLine('')
+    # Organize ROM strings into a chained ROM string table.  The ROM string
+    # h_next link pointer is used for chaining just like for RAM strings but
+    # in a separate string table.
+    #
+    # To avoid dealing with the different possible string hash algorithms,
+    # use a much more trivial lookup key for ROM strings for now.
+    romstr_hash = []
+    while len(romstr_hash) < ROMSTR_LOOKUP_SIZE:
+        romstr_hash.append([])
+    for str_index,v in enumerate(strs):
+        if len(v) > 0:
+            rom_lookup_hash = ord(v[0]) + (len(v) << 4)
+        else:
+            rom_lookup_hash = 0 + (len(v) << 4)
+        rom_lookup_hash = rom_lookup_hash & 0xff
+        romstr_hash[rom_lookup_hash].append(v)
+
+    romstr_next = {}   # string -> the string's 'next' link
+    for lst in romstr_hash:
+        prev = None
+        #print(repr(lst))
+        for v in lst:
+            if prev is not None:
+                romstr_next[prev] = v
+            prev = v
+
+    chain_lens = {}
+    for lst in romstr_hash:
+        chainlen = len(lst)
+        if not chain_lens.has_key(chainlen):
+            chain_lens[chainlen] = 0
+        chain_lens[chainlen] += 1
+    tmp = []
+    for k in sorted(chain_lens.keys()):
+        tmp.append('%d: %d' % (k, chain_lens[k]))
+    logger.info('ROM string table chain lengths: %s' % ', '.join(tmp))
+
     bi_str_map = {}   # string -> initializer variable name
     for str_index,v in enumerate(strs):
         bi_str_map[v] = 'duk_str_%d' % str_index
 
-        tmp = 'DUK_INTERNAL const duk_romstr_%d duk_str_%d = {' % (len(v), str_index)
-        flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY' ]
-        is_arridx = string_is_arridx(v)
+    # Emit string initializers.  Emit the strings in an order which avoids
+    # forward declarations for the h_next link pointers; const forward
+    # declarations are a problem in C++.
+    genc.emitLine('')
+    for lst in romstr_hash:
+        for v in reversed(lst):
+            tmp = 'DUK_INTERNAL const duk_romstr_%d %s = {' % (len(v), bi_str_map[v])
+            flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY' ]
+            is_arridx = string_is_arridx(v)
 
-        blen = len(v)
-        clen = rom_charlen(v)
+            blen = len(v)
+            clen = rom_charlen(v)
 
-        if blen == clen:
-            flags.append('DUK_HSTRING_FLAG_ASCII')
-        if is_arridx:
-            flags.append('DUK_HSTRING_FLAG_ARRIDX')
-        if len(v) >= 1 and v[0] in [ '\x80', '\x81', '\xff' ]:
-            flags.append('DUK_HSTRING_FLAG_SYMBOL')
-        if len(v) >= 1 and v[0] in [ '\xff' ]:
-            flags.append('DUK_HSTRING_FLAG_HIDDEN')
-        if v in [ 'eval', 'arguments' ]:
-            flags.append('DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS')
-        if reserved_words.has_key(v):
-            flags.append('DUK_HSTRING_FLAG_RESERVED_WORD')
-        if strict_reserved_words.has_key(v):
-            flags.append('DUK_HSTRING_FLAG_STRICT_RESERVED_WORD')
+            if blen == clen:
+                flags.append('DUK_HSTRING_FLAG_ASCII')
+            if is_arridx:
+                flags.append('DUK_HSTRING_FLAG_ARRIDX')
+            if len(v) >= 1 and v[0] in [ '\x80', '\x81', '\xff' ]:
+                flags.append('DUK_HSTRING_FLAG_SYMBOL')
+            if len(v) >= 1 and v[0] in [ '\xff' ]:
+                flags.append('DUK_HSTRING_FLAG_HIDDEN')
+            if v in [ 'eval', 'arguments' ]:
+                flags.append('DUK_HSTRING_FLAG_EVAL_OR_ARGUMENTS')
+            if reserved_words.has_key(v):
+                flags.append('DUK_HSTRING_FLAG_RESERVED_WORD')
+            if strict_reserved_words.has_key(v):
+                flags.append('DUK_HSTRING_FLAG_STRICT_RESERVED_WORD')
 
-        tmp += 'DUK__STRINIT(%s,%d,%s,%s,%d,%d),' % \
-            ('|'.join(flags), 1, rom_get_strhash32_macro(v), \
-             rom_get_strhash16_macro(v), blen, clen)
+            h_next = 'NULL'
+            if romstr_next.has_key(v):
+                h_next = '&' + bi_str_map[romstr_next[v]]
 
-        tmpbytes = []
-        for c in v:
-            if ord(c) < 128:
-                tmpbytes.append('%d' % ord(c))
-            else:
-                tmpbytes.append('%dU' % ord(c))
-        tmpbytes.append('%d' % 0)  # NUL term
-        tmp += '{' + ','.join(tmpbytes) + '}'
-        tmp += '};'
-        genc.emitLine(tmp)
+            tmp += 'DUK__STRINIT(%s,%d,%s,%s,%d,%d,%s),' % \
+                ('|'.join(flags), 1, rom_get_strhash32_macro(v), \
+                 rom_get_strhash16_macro(v), blen, clen, h_next)
 
-    # Emit an array of ROM strings, used for string interning.
-    #
-    # XXX: String interning now simply walks through the list checking if
-    # an incoming string is present in ROM.  It would be better to use
-    # binary search (or perhaps even a perfect hash) for this lookup.
-    # To support binary search we could emit the list in string hash
-    # order, but because there are multiple different hash variants
-    # there would need to be multiple lists.  We could also order the
-    # strings based on the string data which is independent of the string
-    # hash and still possible to binary search relatively efficiently.
+            tmpbytes = []
+            for c in v:
+                if ord(c) < 128:
+                    tmpbytes.append('%d' % ord(c))
+                else:
+                    tmpbytes.append('%dU' % ord(c))
+            tmpbytes.append('%d' % 0)  # NUL term
+            tmp += '{' + ','.join(tmpbytes) + '}'
+            tmp += '};'
+            genc.emitLine(tmp)
+
+    # Emit the ROM string lookup table used by string interning.
     #
     # cdecl> explain const int * const foo;
     # declare foo as const pointer to const int
     genc.emitLine('')
-    genc.emitLine('DUK_INTERNAL const duk_hstring * const duk_rom_strings[%d] = {'% len(strs))
+    genc.emitLine('DUK_INTERNAL const duk_hstring * const duk_rom_strings_lookup[%d] = {'% len(romstr_hash))
     tmp = []
     linecount = 0
-    for str_index,v in enumerate(strs):
-        if str_index > 0:
-            tmp.append(', ')
-        if linecount >= 6:
-            linecount = 0
-            tmp.append('\n')
-        tmp.append('(const duk_hstring *) &duk_str_%d' % str_index)
-        linecount += 1
-    for line in ''.join(tmp).split('\n'):
-        genc.emitLine(line)
+    for lst in romstr_hash:
+        if len(lst) == 0:
+            genc.emitLine('\tNULL,')
+        else:
+            genc.emitLine('\t(const duk_hstring *) &%s,' % bi_str_map[lst[0]])
     genc.emitLine('};')
 
     # Emit an array of duk_hstring pointers indexed using DUK_STRIDX_xxx.
@@ -2356,7 +2390,7 @@ def rom_emit_strings_source(genc, meta):
 # Emit ROM strings header.
 def rom_emit_strings_header(genc, meta):
     genc.emitLine('#if !defined(DUK_SINGLE_FILE)')  # C++ static const workaround
-    genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings[%d];'% len(meta['strings']))
+    genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_lookup[%d];' % ROMSTR_LOOKUP_SIZE)
     genc.emitLine('DUK_INTERNAL_DECL const duk_hstring * const duk_rom_strings_stridx[%d];' % len(meta['strings_stridx']))
     genc.emitLine('#endif')
 
