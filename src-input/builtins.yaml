@@ -1235,6 +1235,26 @@ objects:
         present_if:
           - DUK_USE_ES6
           - DUK_USE_STRING_BUILTIN
+      - key: "startsWith"
+        value:
+          type: function
+          native: duk_bi_string_prototype_startswith_endswith
+          length: 1
+          nargs: 2
+          magic: 0  # 0=startsWith
+        present_if:
+          - DUK_USE_ES6
+          - DUK_USE_STRING_BUILTIN
+      - key: "endsWith"
+        value:
+          type: function
+          native: duk_bi_string_prototype_startswith_endswith
+          length: 1
+          nargs: 2
+          magic: 1  # 1=endsWith
+        present_if:
+          - DUK_USE_ES6
+          - DUK_USE_STRING_BUILTIN
 
       # Non-standard extension: E5 Section B.2.3
 
