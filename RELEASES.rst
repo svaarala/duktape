@@ -2417,6 +2417,9 @@ Planned
   finalized, and must otherwise be in either the string table (for strings)
   or heap_allocated (non-strings) (GH-1317)
 
+* Minor improvements to heap object queue handling code: improve pointer
+  compression performance a little, more assertion coverage (GH-1323)
+
 * Fix a duk_push_heapptr() finalize_list assertion issue caused by the
   internal heap->finalize_list being (intentionally) out-of-sync during
   mark-and-sweep finalizer execution; this has no functional impact but

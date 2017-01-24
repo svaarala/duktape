@@ -5,19 +5,28 @@
 #include "duk_internal.h"
 
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_REFERENCE_COUNTING)
-/* arbitrary remove only works with double linked heap, and is only required by
+/* Arbitrary remove only works with double linked heap, and is only required by
  * reference counting so far.
  */
 DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
+	duk_heaphdr *prev;
+	duk_heaphdr *next;
+
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
 
-	if (DUK_HEAPHDR_GET_PREV(heap, hdr)) {
-		DUK_HEAPHDR_SET_NEXT(heap, DUK_HEAPHDR_GET_PREV(heap, hdr), DUK_HEAPHDR_GET_NEXT(heap, hdr));
+	/* Read/write only once to minimize pointer compression calls. */
+	prev = DUK_HEAPHDR_GET_PREV(heap, hdr);
+	next = DUK_HEAPHDR_GET_NEXT(heap, hdr);
+
+	if (prev != NULL) {
+		DUK_ASSERT(heap->heap_allocated != hdr);
+		DUK_HEAPHDR_SET_NEXT(heap, prev, next);
 	} else {
-		heap->heap_allocated = DUK_HEAPHDR_GET_NEXT(heap, hdr);
+		DUK_ASSERT(heap->heap_allocated == hdr);
+		heap->heap_allocated = next;
 	}
-	if (DUK_HEAPHDR_GET_NEXT(heap, hdr)) {
-		DUK_HEAPHDR_SET_PREV(heap, DUK_HEAPHDR_GET_NEXT(heap, hdr), DUK_HEAPHDR_GET_PREV(heap, hdr));
+	if (next != NULL) {
+		DUK_HEAPHDR_SET_PREV(heap, next, prev);
 	} else {
 		;
 	}
