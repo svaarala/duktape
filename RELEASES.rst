@@ -2396,7 +2396,7 @@ Planned
   use a hash table more eagerly than before (GH-1284)
 
 * Add ES2015 String.prototype.{startsWith,endsWith,includes}() (GH-1324,
-  GH-1325)
+  GH-1325, GH-1328)
 
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
