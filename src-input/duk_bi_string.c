@@ -1483,7 +1483,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_startswith_endswith(duk_context *
 	DUK_ASSERT(h != NULL);
 
 	h_search = duk__str_tostring_notregexp(ctx, 0);
-	DUK_ASSERT(h_search = NULL);
+	DUK_ASSERT(h_search != NULL);
 
 	magic = duk_get_current_magic(ctx);
 
@@ -1546,7 +1546,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_includes(duk_context *ctx) {
 	DUK_ASSERT(h != NULL);
 
 	h_search = duk__str_tostring_notregexp(ctx, 0);
-	DUK_ASSERT(h_search = NULL);
+	DUK_ASSERT(h_search != NULL);
 
 	len = (duk_int_t) DUK_HSTRING_GET_CHARLEN(h);
 	pos = duk_to_int_clamped(ctx, 1, 0, len);
