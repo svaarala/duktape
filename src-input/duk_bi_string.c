@@ -454,7 +454,6 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_caseconv_shared(duk_context *ctx)
  */
 
 DUK_INTERNAL duk_ret_t duk_bi_string_prototype_indexof_shared(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hstring *h_this;
 	duk_hstring *h_search;
 	duk_int_t clen_this;
