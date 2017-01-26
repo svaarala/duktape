@@ -2374,13 +2374,46 @@ Miscellaneous:
 
 * Internal change: source code policy changes (GH-1169)
 
+2.0.1 (2017-01-27)
+------------------
+
+* Fix memory unsafe behavior in Duktape 2.0.0 String.prototype.repeat()
+  (GH-1270)
+
+* Fix incorrect exponentiation operator behavior which happened at least on
+  Linux gcc 4.8.4 with -O2 (not -Os) (GH-1272)
+
+* Fix duk_hstring array index check integer overflow, which caused certain
+  integer strings (such as '7394299990') to be incorrectly treated as array
+  indices (GH-1273, GH-1276)
+
+* Fix argument validation bug in typedarray .set() which would cause a segfault
+  for e.g. new Float64Array(2).set(undefined) (GH-1285, GH-1286)
+
+* Fix incorrect behavior for new TextEncoder().encode('') (applied to an
+  empty string) which manifested at least on MSVC (GH-1293, GH-1294)
+
+* Fix a few incorrect asserts related to reference count triggered finalizer
+  execution; the functionality itself was correct in these cases but a few
+  asserts were too strict (GH-1318)
+
+* Improve duk_push_heapptr() assert validation to include checks that the
+  pointer is only allowed in finalize_list or refzero_list if currently being
+  finalized, and must otherwise be in either the string table (for strings)
+  or heap_allocated (non-strings) (GH-1317)
+
+* Fix a duk_push_heapptr() finalize_list assertion issue caused by the
+  internal heap->finalize_list being (intentionally) out-of-sync during
+  mark-and-sweep finalizer execution; this has no functional impact but
+  breaks duk_push_heapptr() asserts in certain conditions (GH-1321)
+
+* Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
+  was enabled (GH-1320)
+
 Planned
 =======
 
 1.7.0 (XXXX-XX-XX)
-------------------
-
-2.0.1 (XXXX-XX-XX)
 ------------------
 
 2.1.0 (XXXX-XX-XX)
