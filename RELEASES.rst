@@ -2481,6 +2481,8 @@ Planned
 * Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
   was enabled (GH-1320)
 
+* Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
