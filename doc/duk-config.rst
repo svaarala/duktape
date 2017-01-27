@@ -110,6 +110,10 @@ a final header.  Documentation is generated based on config option metadata.
 Metadata is expressed as YAML files for easy editing and good diff/merge
 behavior.
 
+This document doesn't cover all available tool options; use
+``python tools/genconfig.py --help`` or ``python tools/configure.py --help``
+for a full list of current options.
+
 Generating an autodetect duk_config.h
 -------------------------------------
 
