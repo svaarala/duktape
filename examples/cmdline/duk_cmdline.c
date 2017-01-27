@@ -239,8 +239,9 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 	if (src_data != NULL && src_len >= 2 && src_data[0] == (char) 0xff) {
 		/* Bytecode. */
-		duk_push_lstring(ctx, src_data, src_len);
-		duk_to_buffer(ctx, -1, NULL);
+		void *buf;
+		buf = duk_push_fixed_buffer(ctx, src_len);
+		memcpy(buf, (const void *) src_data, src_len);
 		duk_load_function(ctx);
 	} else {
 		/* Source code. */
