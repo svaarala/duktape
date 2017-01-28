@@ -2404,6 +2404,8 @@ def rom_emit_object_initializer_types_and_macros(genc):
                   'struct duk_romarr { duk_harray hdr; };')
     genc.emitLine('typedef struct duk_romfun duk_romfun; ' + \
                   'struct duk_romfun { duk_hnatfunc hdr; };')
+    genc.emitLine('typedef struct duk_romobjenv duk_romobjenv; ' + \
+                  'struct duk_romobjenv { duk_hobjenv hdr; };')
 
     # For ROM pointer compression we'd need a -compile time- variant.
     # The current portable solution is to just assign running numbers
@@ -2426,6 +2428,8 @@ def rom_emit_object_initializer_types_and_macros(genc):
     genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (length), 0 /*length_nonwritable*/ } }')
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
     genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+    genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) \\')
+    genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), 0, 0, (props_enc16) }, (iproto_enc16), (esize), (enext), (asize) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }')
     genc.emitLine('#else  /* DUK_USE_HEAPPTR16 */')
     genc.emitLine('#define DUK__ROMOBJ_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize) \\')
     genc.emitLine('\t{ { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) } }')
@@ -2433,6 +2437,8 @@ def rom_emit_object_initializer_types_and_macros(genc):
     genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (length), 0 /*length_nonwritable*/ } }')
     genc.emitLine('#define DUK__ROMFUN_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,nativefunc,nargs,magic) \\')
     genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (nativefunc), (duk_int16_t) (nargs), (duk_int16_t) (magic) } }')
+    genc.emitLine('#define DUK__ROMOBJENV_INIT(heaphdr_flags,refcount,props,props_enc16,iproto,iproto_enc16,esize,enext,asize,hsize,target,has_this) \\')
+    genc.emitLine('\t{ { { { (heaphdr_flags), (refcount), NULL, NULL }, (duk_uint8_t *) DUK_LOSE_CONST(props), (duk_hobject *) DUK_LOSE_CONST(iproto), (esize), (enext), (asize), (hsize) }, (duk_hobject *) DUK_LOSE_CONST(target), (has_this) } }')
     genc.emitLine('#endif  /* DUK_USE_HEAPPTR16 */')
 
     # Initializer typedef for a dummy function pointer.  ROM support assumes
@@ -2712,6 +2718,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
             genc.emitLine('DUK_EXTERNAL_DECL const duk_romfun duk_obj_%d;' % idx)
         elif obj.get('class') == 'Array':
             genc.emitLine('DUK_EXTERNAL_DECL const duk_romarr duk_obj_%d;' % idx)
+        elif obj.get('class') == 'ObjEnv':
+            genc.emitLine('DUK_EXTERNAL_DECL const duk_romobjenv duk_obj_%d;' % idx)
         else:
             genc.emitLine('DUK_EXTERNAL_DECL const duk_romobj duk_obj_%d;' % idx)
     genc.emitLine('')
@@ -2729,6 +2737,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
             tmp = 'DUK_EXTERNAL const duk_romfun duk_obj_%d = ' % idx
         elif obj.get('class') == 'Array':
             tmp = 'DUK_EXTERNAL const duk_romarr duk_obj_%d = ' % idx
+        elif obj.get('class') == 'ObjEnv':
+            tmp = 'DUK_EXTERNAL const duk_romobjenv duk_obj_%d = ' % idx
         else:
             tmp = 'DUK_EXTERNAL const duk_romobj duk_obj_%d = ' % idx
 
@@ -2787,6 +2797,12 @@ def rom_emit_objects(genc, meta, bi_str_map):
             tmp += 'DUK__ROMARR_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d);' % \
                 ('|'.join(flags), refcount, props, props_enc16, \
                  iproto, iproto_enc16, e_size, e_next, a_size, h_size, arrlen)
+        elif obj.get('class') == 'ObjEnv':
+            objenv_target = '&%s' % bi_obj_map[obj['objenv_target']]
+            objenv_has_this = obj['objenv_has_this']
+            tmp += 'DUK__ROMOBJENV_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d,%s,%d);' % \
+                ('|'.join(flags), refcount, props, props_enc16, \
+                 iproto, iproto_enc16, e_size, e_next, a_size, h_size, objenv_target, objenv_has_this)
         else:
             tmp += 'DUK__ROMOBJ_INIT(%s,%d,%s,%d,%s,%d,%d,%d,%d,%d);' % \
                 ('|'.join(flags), refcount, props, props_enc16, \
