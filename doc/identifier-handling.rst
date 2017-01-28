@@ -428,23 +428,12 @@ a variable.  However, this approach does not allow validation of the
 resulting value stack index (e.g. to verify that it is indeed inside the
 activation record's frame).
 
-The internal object is initialized with:
-
-* Object class set to ``DUK_HOBJECT_CLASS_DECENV``
-
-* Object flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` cleared (assuming the
-  environment is open)
-
-* Internal prototype referring to outer environment record
-
-* Internal control properties: ``_Callee``, ``_Thread``, ``_Regbase``
-
 When a declarative environment is "closed", identifiers bound to
-activation registers are copied  to the internal environment record
-object as plain properties (with the help of the callee's ``_Varmap``)
-and the environment record's internal control properties are deleted.
-The flag ``DUK_HOBJECT_FLAG_ENVRECCLOSED`` is set to allow open scope
-lookups to be skipped in later lookups.
+activation registers are copied to the internal environment record
+object as plain properties (with the help of the callee's ``_Varmap``).
+The internal control fields are updated to indicate that the environment
+is closed, so that later lookups can skip open scope lookups which would
+now reference stale value stack indices.
 
 The variables mapped as properties have their attributes set as follows:
 
@@ -518,9 +507,10 @@ This could happen in this example::
     }
   }
 
-The objects could be roughly as follows (leading underscore indicates
-an internal value not visible to the program, ``__prototype`` denotes
-internal prototype)::
+The objects could be roughly as follows; leading underscore indicates
+an internal value not visible to the program, double leading underscore
+indicates internal properties stored directly in internal structures
+outside the property table, e.g. ``__prototype`` denotes internal prototype::
 
   global_object = {
     "NaN": NaN,
@@ -544,16 +534,16 @@ internal prototype)::
   record1 = {
     // Flag DUK_HOBJECT_CLASS_OBJENV set
     "__prototype": null,
-    "_Target": global_object,    // identifies binding target
+    "__target": global_object,    // identifies binding target
+    "__has_this": false
   }
 
   record2 = {
     // Flag DUK_HOBJECT_CLASS_DECENV set
-    // Flag DUK_HOBJECT_CLASS_ENVRECCLOSED not set (still open)
     "__prototype": record1,
-    "_Callee": func,     // provides access to _Varmap (name-to-reg)
-    "_Thread": thread,   // identifies valstack
-    "_Regbase": 100,     // identifies valstack base for regs
+    "__varmap": varmap,  // _Varmap of target function (name-to-reg)
+    "__thread": thread,  // identifies valstack
+    "__regbase": 100,   // identifies valstack base for regs
     "quux": "a non-register binding"
 
     // var "foo" resides in value stack absolute index 100 + 0 = 100,
@@ -563,7 +553,8 @@ internal prototype)::
   record3 = {
     // Flag DUK_HOBJECT_CLASS_OBJENV set
     "__prototype": record2,
-    "_Target": with_object
+    "__target": with_object,
+    "__has_this": true
   }
 
 Once again, the compiler strives to avoid creating explicit environment
