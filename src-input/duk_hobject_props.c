@@ -1761,6 +1761,8 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 		DUK_DDD(DUK_DDDPRINT("string object exotic property get for key: %!O, arr_idx: %ld",
 		                     (duk_heaphdr *) key, (long) arr_idx));
 
+		/* XXX: charlen; avoid multiple lookups? */
+
 		if (arr_idx != DUK__NO_ARRAY_INDEX) {
 			duk_hstring *h_val;
 

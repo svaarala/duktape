@@ -3095,8 +3095,11 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	}
 
 	if (js_ctx->h_gap != NULL) {
-		/* if gap is empty, behave as if not given at all */
-		if (DUK_HSTRING_GET_CHARLEN(js_ctx->h_gap) == 0) {
+		/* If gap is empty, behave as if not given at all.  Check
+		 * against byte length because character length is more
+		 * expensive.
+		 */
+		if (DUK_HSTRING_GET_BYTELEN(js_ctx->h_gap) == 0) {
 			js_ctx->h_gap = NULL;
 		}
 	}

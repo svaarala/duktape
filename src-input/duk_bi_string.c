@@ -776,6 +776,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 					/* Use match charlen instead of bytelen, just in case the input and
 					 * match codepoint encodings would have different lengths.
 					 */
+					/* XXX: charlen computed here, and also in char2byte helper. */
 					match_end_boff = duk_heap_strcache_offset_char2byte(thr,
 					                                                    h_input,
 					                                                    match_start_coff + DUK_HSTRING_GET_CHARLEN(h_match));
@@ -1128,7 +1129,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_split(duk_context *ctx) {
 	DUK_DDD(DUK_DDDPRINT("split trailer; prev_end b=%ld,c=%ld",
 	                     (long) prev_match_end_boff, (long) prev_match_end_coff));
 
-	if (DUK_HSTRING_GET_CHARLEN(h_input) > 0 || !matched) {
+	if (DUK_HSTRING_GET_BYTELEN(h_input) > 0 || !matched) {
 		/* Add trailer if:
 		 *   a) non-empty input
 		 *   b) empty input and no (zero size) match found (step 11)

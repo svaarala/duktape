@@ -79,7 +79,7 @@
         */
 #define DUK_HSTRING_IS_ASCII(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == DUK_HSTRING_GET_CHARLEN((x)))
 #endif
-#define DUK_HSTRING_IS_ASCII(x)                     DUK_HSTRING_HAS_ASCII((x))
+#define DUK_HSTRING_IS_ASCII(x)                     DUK_HSTRING_HAS_ASCII((x))  /* lazily set! */
 #define DUK_HSTRING_IS_EMPTY(x)                     (DUK_HSTRING_GET_BYTELEN((x)) == 0)
 
 #if defined(DUK_USE_STRHASH16)
@@ -100,7 +100,7 @@
 		(x)->hdr.h_strextra16 = (v); \
 	} while (0)
 #if defined(DUK_USE_HSTRING_CLEN)
-#define DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen16)
+#define DUK_HSTRING_GET_CHARLEN(x)                  duk_hstring_get_charlen((x))
 #define DUK_HSTRING_SET_CHARLEN(x,v) do { \
 		(x)->clen16 = (v); \
 	} while (0)
@@ -115,7 +115,7 @@
 #define DUK_HSTRING_SET_BYTELEN(x,v) do { \
 		(x)->blen = (v); \
 	} while (0)
-#define DUK_HSTRING_GET_CHARLEN(x)                  ((x)->clen)
+#define DUK_HSTRING_GET_CHARLEN(x)                  duk_hstring_get_charlen((x))
 #define DUK_HSTRING_SET_CHARLEN(x,v) do { \
 		(x)->clen = (v); \
 	} while (0)
@@ -221,9 +221,6 @@ struct duk_hstring_external {
  */
 
 DUK_INTERNAL_DECL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos, duk_bool_t surrogate_aware);
-
-#if !defined(DUK_USE_HSTRING_CLEN)
 DUK_INTERNAL_DECL duk_size_t duk_hstring_get_charlen(duk_hstring *h);
-#endif
 
 #endif  /* DUK_HSTRING_H_INCLUDED */

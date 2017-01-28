@@ -766,8 +766,6 @@ strings:
     duktape: true
     internal: true
 
-  # FIXME...
-
   # internal properties for enumerator objects
   - str: "\u00ffTarget"
     duktape: true

@@ -818,6 +818,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 		char_offset = (duk_uint32_t) 0;
 	}
 
+	DUK_ASSERT(char_offset <= DUK_HSTRING_GET_CHARLEN(h_input));
 	sp = re_ctx.input + duk_heap_strcache_offset_char2byte(thr, h_input, char_offset);
 
 	/*

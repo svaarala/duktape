@@ -2453,6 +2453,10 @@ Planned
 * Minor improvements to heap object queue handling code: improve pointer
   compression performance a little, more assertion coverage (GH-1323)
 
+* Make duk_hstring character length (clen) lazily computed to improve string
+  handling performance for the majority of strings whose .length is never
+  read (GH-1303)
+
 * Fix a duk_push_heapptr() finalize_list assertion issue caused by the
   internal heap->finalize_list being (intentionally) out-of-sync during
   mark-and-sweep finalizer execution; this has no functional impact but
