@@ -12,9 +12,45 @@ def main():
 
     re_line = re.compile(r'^(\S+)\s*:\s*(.*?)$')
     re_part = re.compile(r'\S+')
-    first = True
+
+    colors = True
+
+    headings = []
+    testnames = []
+    results = []
+    baseline = []
+
+    # Column index (positive or negative) for baseline engine.
+    baseline_column = 1  # Second engine is baseline by default, e.g. duk.O2 vs duk.O2.master
 
     with open(sys.argv[1], 'rb') as f_in, open(sys.argv[2], 'wb') as f_out:
+        for line in f_in:
+            line = line.strip()
+            m = re_line.match(line)
+            if m is None:
+                continue
+
+            testname = m.group(1)
+            testnames.append(testname)
+
+            parts = re_part.findall(m.group(2))
+
+            if len(headings) == 0:
+                for idx in xrange(0, len(parts), 2):
+                    headings.append(parts[idx])
+
+            result = []
+            for idx in xrange(1, len(parts), 2):
+                try:
+                    result.append(float(parts[idx]))
+                except ValueError:
+                    result.append(None)
+            baseline.append(result[baseline_column])
+            results.append(result)
+
+        #print(repr(headings))
+        #print(repr(results))
+
         f_out.write('<!DOCTYPE html>\n')
         f_out.write('<html>\n')
         f_out.write('<head>\n')
@@ -27,27 +63,68 @@ tr:nth-child(odd) { background: #eeeeee; }
         f_out.write('</head>\n')
         f_out.write('<body>\n')
         f_out.write('<table>\n')
-        for line in f_in:
-            line = line.strip()
-            m = re_line.match(line)
-            if m is None:
-                continue
 
-            testname = m.group(1)
-            parts = re_part.findall(m.group(2))
+        f_out.write('<tr>')
+        f_out.write('<th></th>')
+        for h in headings:
+            f_out.write('<th>' + h + '</th>')
+        f_out.write('</tr>\n')
 
-            if first:
-                first = False
-                f_out.write('<tr>')
-                f_out.write('<th></th>')
-                for idx in xrange(0, len(parts), 2):
-                    f_out.write('<th>' + parts[idx] + '</th>')
-                f_out.write('</tr>\n')
-
+        for idx,result in enumerate(results):
             f_out.write('<tr>')
-            f_out.write('<td>' + testname + '</td>')
-            for idx in xrange(1, len(parts), 2):
-                f_out.write('<td>' + parts[idx] + '</td>')
+            f_out.write('<td>' + testnames[idx] + '</td>')
+            for column,t in enumerate(result):
+                wraptag = None
+                wrapchars = None
+                icon = None
+
+                style = 'background-color: #ffffff'
+
+                if baseline[idx] is not None and baseline[idx] > 0 and t is not None:
+                    factor = t / baseline[idx]
+                    if factor < 0.90:
+                        style = 'background-color: #88ff88; font-weight: bold'
+                        wraptag = 'strong'
+                        icon = '&#9650;'
+                    elif factor < 0.93:
+                        style = 'background-color: #ddffdd'
+                        wraptag = 'strong'
+                        icon = '&#8657;'
+                    elif factor < 0.97:
+                        style = 'background-color: #eeffee'
+                    elif factor > 1.10:
+                        style = 'background-color: #ff8888; font-weight: bold'
+                        wraptag = 'em'
+                        wrapchars = '()'
+                        icon = '&#9660;'
+                    elif factor > 1.07:
+                        style = 'background-color: #ffdddd'
+                        wraptag = 'em'
+                        wrapchars = '()'
+                        icon = '&#8659;'
+                    elif factor > 1.03:
+                        style = 'background-color: #ffeeee'
+                        wrapchars = '()'
+                    else:
+                        pass
+
+                if column == baseline_column:
+                    style = 'background-color: #eeeeee'
+
+                if t is None:
+                    text = '-'
+                else:
+                    text = '%.2f' % t
+
+                # style doesn't survive in GFM; em/strong does
+                if wrapchars is not None:
+                    text = '%s%s%s' % (wrapchars[0], text, wrapchars[1])
+                if wraptag is not None:
+                    text = '<%s>%s</%s>' % (wraptag, text, wraptag)
+                if icon is not None:
+                    text = '%s %s' % (text, icon)
+
+                f_out.write('<td style="%s">%s</td>' % (style, text))
             f_out.write('</tr>\n')
 
         f_out.write('</table>\n')
