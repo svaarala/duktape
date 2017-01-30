@@ -7,7 +7,8 @@ dist:
 	tar cvfz testrunner-server-node.tar.gz \
 		server-node/*.js \
 		server-node/package.json \
-		server-node/config.yaml.template
+		server-node/config.yaml.template \
+		server-node/style.css
 	tar cvfz testrunner-client-simple-node.tar.gz \
 		client-simple-node/*.js \
 		client-simple-node/*.sh \

@@ -21,6 +21,7 @@ function makeIndexHandler(state) {
             out.push('<html>');
             out.push('<head>');
             out.push('<title>Duktape testrunner</title>');
+            out.push('<link rel="stylesheet" type="text/css" href="style.css">');
             out.push('</head>');
             out.push('<body>');
             out.push('<h1>Duktape testrunner</h1>');
@@ -31,18 +32,22 @@ function makeIndexHandler(state) {
         }).then(function (docs) {
             out.push('<h2>Simple jobs</h2>');
             out.push('<table>');
-            out.push('<tr><th>Repo</th><th>Commit hash</th><th>Committer</th><th>Runs</th></tr>');
+            out.push('<tr><th>Repo</th><th>Commit hash</th><th>Committer</th><th>Context</th><th>Started</th><th>Finished</th></tr>');
             docs.forEach(function (d) {
-                out.push('<tr>');
-                out.push('<td>' + d.repo_full + '</td>');
-                out.push('<td>' + d.sha + '</td>');
-                out.push('<td>' + d.committer + '</td>');
-                out.push('<td>');
-                d.runs.forEach(function (r) {
-                    out.push(' ' + r.context + '/' + r.start_time + '/' + r.end_time);
+                var runs = d.runs || [];
+                if (runs.length === 0) {
+                    runs.push({ context: 'none (no runs)' });
+                }
+                runs.forEach(function (r) {
+                    out.push('<tr>');
+                    out.push('<td>' + d.repo_full + '</td>');
+                    out.push('<td>' + d.sha + '</td>');
+                    out.push('<td>' + d.committer + '</td>');
+                    out.push('<td>' + r.context + '</td>');
+                    out.push('<td>' + (r.start_time ? new Date(r.start_time) : '') + '</td>');
+                    out.push('<td>' + (r.end_time ? new Date(r.end_time) : '') + '</td>');
+                    out.push('</tr>');
                 });
-                out.push('</td>');
-                out.push('</tr>');
             });
             out.push('</table>');
 
@@ -73,7 +78,7 @@ function makeIndexHandler(state) {
         }).catch(function (err) {
             res.send('ERROR: ' + err);
         });
-    }
+    };
 }
 
 function makeDataFileHandler(state) {
@@ -96,8 +101,23 @@ function makeDataFileHandler(state) {
             res.status(500);
             res.send('ERROR: ' + err);
         });
-    }
+    };
+}
+
+function makeStaticFileHandler(state, fn, contentType) {
+    return function (req, res) {
+        Promise.resolve().then(function () {
+            var data = fs.readFileSync(fn);
+            res.setHeader('content-type', contentType || 'application/octet-stream');
+            res.setHeader('content-length', data.length);
+            res.send(data);
+        }).catch(function (err) {
+            res.status(500);
+            res.send('ERROR: ' + err);
+        });
+    };
 }
 
 exports.makeIndexHandler = makeIndexHandler;
 exports.makeDataFileHandler = makeDataFileHandler;
+exports.makeStaticFileHandler = makeStaticFileHandler;
