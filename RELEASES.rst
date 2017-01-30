@@ -2458,7 +2458,8 @@ Planned
   read (GH-1303, GH-1358)
 
 * Improve lexical scope handling performance by adding internal duk_hdecenv
-  and duk_hobjenv structures (previously generic objects were used) (GH-1310)
+  and duk_hobjenv structures (previously generic objects were used) (GH-1310,
+  GH-1339)
 
 * Remove voluntary GC check from refzero processing; the check is not really
   necessary because all free operations decrement the voluntary GC counter and
@@ -2518,7 +2519,7 @@ Planned
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
   functions (GH-1297)
 
-* Miscellaneous compiler warning fices (GH-1358)
+* Miscellaneous compiler warning fixes (GH-1358)
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309)
