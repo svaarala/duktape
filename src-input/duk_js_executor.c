@@ -907,7 +907,7 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 	 */
 
 	if (DUK_CAT_HAS_CATCH_BINDING_ENABLED(&thr->catchstack[cat_idx])) {
-		duk_hobject *new_env;
+		duk_hdecenv *new_env;
 		duk_hobject *act_lex_env;
 
 		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding"));
@@ -935,11 +935,15 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		act_lex_env = act->lex_env;
 		act = NULL;  /* invalidated */
 
-		new_env = duk_push_object_helper_proto(ctx,
-		                                       DUK_HOBJECT_FLAG_EXTENSIBLE |
-		                                       DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV),
-		                                       act_lex_env);
+		new_env = duk_hdecenv_alloc(thr->heap,
+		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 		DUK_ASSERT(new_env != NULL);
+		duk_push_hobject(ctx, (duk_hobject *) new_env);
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
+		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act_lex_env);
+		DUK_HOBJECT_INCREF_ALLOWNULL(thr, act_lex_env);
+
 		DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
 		/* Note: currently the catch binding is handled without a register
@@ -954,8 +958,8 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
 
 		act = thr->callstack + thr->callstack_top - 1;
-		act->lex_env = new_env;
-		DUK_HOBJECT_INCREF(thr, new_env);  /* reachable through activation */
+		act->lex_env = (duk_hobject *) new_env;
+		DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);  /* reachable through activation */
 
 		DUK_CAT_SET_LEXENV_ACTIVE(&thr->catchstack[cat_idx]);
 
@@ -3974,6 +3978,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
 			duk_catcher *cat;
+			duk_hobjenv *env;
 			duk_tval *tv1;
 			duk_small_uint_fast_t a;
 			duk_small_uint_fast_t bc;
@@ -4026,6 +4031,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			/* XXX: refactor out? */
 
 			if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
+				duk_hobject *target;
+
 				DUK_DDD(DUK_DDDPRINT("need to initialize a with binding object"));
 
 				if (act->lex_env == NULL) {
@@ -4040,20 +4047,24 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				DUK_ASSERT(act->lex_env != NULL);
 				DUK_ASSERT(act->var_env != NULL);
 
-				(void) duk_push_object_helper(ctx,
-				                              DUK_HOBJECT_FLAG_EXTENSIBLE |
-				                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV),
-				                              -1);  /* no prototype, updated below */
+				env = duk_hobjenv_alloc(thr->heap,
+				                        DUK_HOBJECT_FLAG_EXTENSIBLE |
+				                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+				duk_push_hobject(ctx, (duk_hobject *) env);  /* Push to stabilize against side effects. */
 
 				duk_push_tval(ctx, DUK__REGP(bc));
-				duk_to_object(ctx, -1);
-				duk_dup_top(ctx);
+				target = duk_to_hobject(ctx, -1);
+				DUK_ASSERT(target != NULL);
 
-				/* [ ... env target ] */
-				/* [ ... env target target ] */
+				/* always provideThis=true */
+				env->target = target;
+				DUK_HOBJECT_INCREF(thr, target);
+				env->has_this = 1;
 
-				duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-				duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+				DUK_ASSERT_HOBJENV_VALID(env);
+
+				duk_pop(ctx);
 
 				/* [ ... env ] */
 
@@ -4102,6 +4113,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				DUK_ASSERT(new_env != NULL);
 
 				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
+				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
 				DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);  /* side effects */
 
 				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */

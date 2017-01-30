@@ -160,6 +160,16 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
 		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+	} else if (DUK_HOBJECT_IS_DECENV(h)) {
+		duk_hdecenv *e = (duk_hdecenv *) h;
+		DUK_ASSERT_HDECENV_VALID(e);
+		DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, e->thread);
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, e->varmap);
+	} else if (DUK_HOBJECT_IS_OBJENV(h)) {
+		duk_hobjenv *e = (duk_hobjenv *) h;
+		DUK_ASSERT_HOBJENV_VALID(e);
+		DUK_ASSERT(e->target != NULL);  /* Required for object environments. */
+		DUK_HOBJECT_DECREF_NORZ(thr, e->target);
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;

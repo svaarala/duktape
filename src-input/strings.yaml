@@ -810,10 +810,10 @@ strings:
   - str: "\u00ffMap"
     duktape: true
     internal: true
-  - str: "\u00ffCallee"
+  - str: "\u00ffVarenv"
     duktape: true
     internal: true
-  - str: "\u00ffVarenv"
+  - str: "\u00ffCallee"
     duktape: true
     internal: true
 
@@ -830,25 +830,6 @@ strings:
     duktape: true
     internal: true
   - str: "\u00ffHandler"   # [[ProxyHandler]]
-    duktape: true
-    internal: true
-
-  # internal properties for declarative environment records
-  - str: "\u00ffCallee"    # to access varmap
-    duktape: true
-    internal: true
-  - str: "\u00ffThread"    # to identify valstack
-    duktape: true
-    internal: true
-  - str: "\u00ffRegbase"   # to determine absolute valstack index
-    duktape: true
-    internal: true
-
-  # internal properties for object environment records
-  - str: "\u00ffTarget"    # target object
-    duktape: true
-    internal: true
-  - str: "\u00ffThis"      # implicit this binding value
     duktape: true
     internal: true
 

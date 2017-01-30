@@ -343,6 +343,8 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 	duk_small_uint_t i;
 #endif
 
+	DUK_UNREF(heap);
+
 	/* With ROM-based strings, heap->strs[] and thr->strs[] are omitted
 	 * so nothing to initialize for strs[].
 	 */
@@ -576,6 +578,8 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 	DUK__DUMPSZ(duk_harray);
 	DUK__DUMPSZ(duk_hcompfunc);
 	DUK__DUMPSZ(duk_hnatfunc);
+	DUK__DUMPSZ(duk_hdecenv);
+	DUK__DUMPSZ(duk_hobjenv);
 	DUK__DUMPSZ(duk_hthread);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	DUK__DUMPSZ(duk_hbufobj);

@@ -52,7 +52,7 @@
 #define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(11)  /* function: create new environment when called (see duk_hcompfunc) */
 #define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(12)  /* function: create binding for func name (function templates only, used for named function expressions) */
 #define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(13)  /* function: create an arguments object on function call */
-#define DUK_HOBJECT_FLAG_ENVRECCLOSED          DUK_HEAPHDR_USER_FLAG(14)  /* envrec: (declarative) record is closed */
+#define DUK_HOBJECT_FLAG_ENVRECCLOSED          /* 14: unused */
 #define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(15)  /* 'Array' object, array length and index exotic behavior */
 #define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(16)  /* 'String' object, array index exotic behavior */
 #define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(17)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
@@ -211,7 +211,6 @@
 #define DUK_HOBJECT_HAS_NEWENV(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_HAS_NAMEBINDING(h)         DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_HAS_CREATEARGS(h)          DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
-#define DUK_HOBJECT_HAS_ENVRECCLOSED(h)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ENVRECCLOSED)
 #define DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -231,7 +230,6 @@
 #define DUK_HOBJECT_SET_NEWENV(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_SET_NAMEBINDING(h)         DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_SET_CREATEARGS(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
-#define DUK_HOBJECT_SET_ENVRECCLOSED(h)        DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ENVRECCLOSED)
 #define DUK_HOBJECT_SET_EXOTIC_ARRAY(h)        DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_SET_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_SET_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -251,7 +249,6 @@
 #define DUK_HOBJECT_CLEAR_NEWENV(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_CLEAR_NAMEBINDING(h)       DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_CLEAR_CREATEARGS(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
-#define DUK_HOBJECT_CLEAR_ENVRECCLOSED(h)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_ENVRECCLOSED)
 #define DUK_HOBJECT_CLEAR_EXOTIC_ARRAY(h)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_CLEAR_EXOTIC_STRINGOBJ(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_CLEAR_EXOTIC_ARGUMENTS(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -829,6 +826,8 @@ DUK_INTERNAL_DECL duk_hnatfunc *duk_hnatfunc_alloc(duk_heap *heap, duk_uint_t ho
 DUK_INTERNAL_DECL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 #endif
 DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hdecenv *duk_hdecenv_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobjenv *duk_hobjenv_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 
 /* resize */
 DUK_INTERNAL_DECL void duk_hobject_realloc_props(duk_hthread *thr,
