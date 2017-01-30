@@ -145,9 +145,7 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	while (idx > new_top) {
 		duk_activation *act;
 		duk_hobject *func;
-#if defined(DUK_USE_REFERENCE_COUNTING)
 		duk_hobject *tmp;
-#endif
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		duk_heap *heap;
 #endif
@@ -236,29 +234,18 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		}
 		/* func is NULL for lightfunc */
 
+		/* Catch sites are required to clean up their environments
+		 * in FINALLY part before propagating, so this should
+		 * always hold here.
+		 */
 		DUK_ASSERT(act->lex_env == act->var_env);
+
 		if (act->var_env != NULL) {
 			DUK_DDD(DUK_DDDPRINT("closing var_env record %p -> %!O",
 			                     (void *) act->var_env, (duk_heaphdr *) act->var_env));
 			duk_js_close_environment_record(thr, act->var_env);
 			act = thr->callstack + idx;  /* avoid side effect issues */
 		}
-
-#if 0
-		if (act->lex_env != NULL) {
-			if (act->lex_env == act->var_env) {
-				/* common case, already closed, so skip */
-				DUK_DD(DUK_DDPRINT("lex_env and var_env are the same and lex_env "
-				                   "already closed -> skip closing lex_env"));
-				;
-			} else {
-				DUK_DD(DUK_DDPRINT("closing lex_env record %p -> %!O",
-				                   (void *) act->lex_env, (duk_heaphdr *) act->lex_env));
-				duk_js_close_environment_record(thr, act->lex_env);
-				act = thr->callstack + idx;  /* avoid side effect issues */
-			}
-		}
-#endif
 
 	 skip_env_close:
 
@@ -272,44 +259,22 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 		}
 
 		/*
-		 *  Reference count updates
-		 *
-		 *  Note: careful manipulation of refcounts.  The top is
-		 *  not updated yet, so all the activations are reachable
-		 *  for mark-and-sweep (which may be triggered by decref).
-		 *  However, the pointers are NULL so this is not an issue.
+		 *  Reference count updates, using NORZ macros so we don't
+		 *  need to handle side effects.
 		 */
 
-#if defined(DUK_USE_REFERENCE_COUNTING)
-		tmp = act->var_env;
-#endif
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, act->var_env);
 		act->var_env = NULL;
-#if defined(DUK_USE_REFERENCE_COUNTING)
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, tmp);
-		act = thr->callstack + idx;  /* avoid side effect issues */
-#endif
-
-#if defined(DUK_USE_REFERENCE_COUNTING)
-		tmp = act->lex_env;
-#endif
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, act->lex_env);
 		act->lex_env = NULL;
-#if defined(DUK_USE_REFERENCE_COUNTING)
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, tmp);
-		act = thr->callstack + idx;  /* avoid side effect issues */
-#endif
 
 		/* Note: this may cause a corner case situation where a finalizer
 		 * may see a currently reachable activation whose 'func' is NULL.
 		 */
-#if defined(DUK_USE_REFERENCE_COUNTING)
 		tmp = DUK_ACT_GET_FUNC(act);
-#endif
-		act->func = NULL;
-#if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, tmp);
-		act = thr->callstack + idx;  /* avoid side effect issues */
-		DUK_UNREF(act);
-#endif
+		DUK_UNREF(tmp);
+		act->func = NULL;
 	}
 
 	thr->callstack_top = new_top;
@@ -486,6 +451,7 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 			env = act->lex_env;             /* current lex_env of the activation (created for catcher) */
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
 			act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);  /* prototype is lex_env before catcher created */
+			DUK_HOBJECT_INCREF(thr, act->lex_env);
 			DUK_HOBJECT_DECREF(thr, env);
 
 			/* There is no need to decref anything else than 'env': if 'env'
