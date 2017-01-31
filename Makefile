@@ -971,7 +971,7 @@ codepolicycheck:
 		--check-mixed-indent \
 		--check-tab-indent \
 		--dump-vim-commands \
-		src-input/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*/*.py tests/perf/*.py
+		src-input/*.py tools/*.py util/*.py debugger/*/*.py examples/*/*.py testrunner/*.py tests/perf/*.py
 	@$(PYTHON) util/check_code_policy.py \
 		$(CODEPOLICYOPTS) \
 		--check-debug-log-calls \
