@@ -2488,6 +2488,9 @@ Planned
 * Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
   was enabled (GH-1320)
 
+* Fix bug in global object environment "provideThis" attribute when using ROM
+  objects and DUK_USE_ROM_GLOBAL_INHERIT (GH-1340, GH-1310)
+
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
