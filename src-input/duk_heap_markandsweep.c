@@ -1184,6 +1184,11 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	duk_size_t tmp;
 #endif
 
+	if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+		DUK_D(DUK_DPRINT("refuse to do a recursive mark-and-sweep"));
+		return 0;
+	}
+
 	/* XXX: thread selection for mark-and-sweep is currently a hack.
 	 * If we don't have a thread, the entire mark-and-sweep is now
 	 * skipped (although we could just skip finalizations).
