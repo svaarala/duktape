@@ -434,12 +434,17 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	 */
 	heap->mark_and_sweep_trigger_counter -= count;
 	if (heap->mark_and_sweep_trigger_counter <= 0) {
-		duk_bool_t rc;
-		duk_small_uint_t flags = 0;  /* not emergency */
-		DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
-		rc = duk_heap_mark_and_sweep(heap, flags);
-		DUK_UNREF(rc);
-		DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %ld", (long) rc));
+		if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
+			DUK_D(DUK_DPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now"));
+		} else {
+			duk_bool_t rc;
+			duk_small_uint_t flags = 0;  /* not emergency */
+
+			DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
+			rc = duk_heap_mark_and_sweep(heap, flags);
+			DUK_UNREF(rc);
+			DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %ld", (long) rc));
+		}
 	}
 #endif  /* DUK_USE_VOLUNTARY_GC */
 }
