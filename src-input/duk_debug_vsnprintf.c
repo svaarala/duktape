@@ -750,6 +750,10 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	}
 #if defined(DUK_USE_FASTINT)
 	case DUK_TAG_FASTINT:
+		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
+		duk_fb_sprintf(fb, "%.18gF", (double) DUK_TVAL_GET_NUMBER(tv));
+		break;
 #endif
 	default: {
 		/* IEEE double is approximately 16 decimal digits; print a couple extra */

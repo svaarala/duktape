@@ -6957,6 +6957,9 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 		                     (duk_tval *) duk_get_tval(ctx, -2),
 		                     (duk_tval *) duk_get_tval(ctx, -1)));
 
+#if defined(DUK_USE_FASTINT)
+		DUK_ASSERT(DUK_TVAL_IS_NULL(duk_get_tval(ctx, -1)) || DUK_TVAL_IS_FASTINT(duk_get_tval(ctx, -1)));
+#endif
 		duk_put_prop(ctx, comp_ctx->curr_func.varmap_idx);  /* [ ... name reg/null ] -> [ ... ] */
 	}
 
