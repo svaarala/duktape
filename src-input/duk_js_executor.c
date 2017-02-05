@@ -3665,9 +3665,15 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 			act = thr->callstack + thr->callstack_top - 1;
 			if (duk_js_declvar_activation(thr, act, name, tv1, prop_flags, is_func_decl)) {
-				/* already declared, must update binding value */
-				tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
-				duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
+				if (is_undef_value) {
+					/* Already declared but no initializer value
+					 * (e.g. 'var xyz;'), no-op.
+					 */
+				} else {
+					/* Already declared, update value. */
+					tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
+					duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
+				}
 			}
 
 			duk_pop(ctx);
