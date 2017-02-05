@@ -2460,6 +2460,15 @@ Planned
 * Improve lexical scope handling performance by adding internal duk_hdecenv
   and duk_hobjenv structures (previously generic objects were used) (GH-1310)
 
+* Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
+  could cause a recursive entry into mark-and-sweep (leading to memory unsafe
+  behavior) if the voluntary GC trigger counter dropped to zero during
+  mark-and-sweep finalizer execution (GH-1347)
+
+* Fix a garbage collection bug where a call into duk_gc() from a mark-and-sweep
+  triggered finalizer could cause recursive entry into mark-and-sweep (leading
+  memory unsafe behavior) (GH-1347)
+
 * Fix a duk_push_heapptr() finalize_list assertion issue caused by the
   internal heap->finalize_list being (intentionally) out-of-sync during
   mark-and-sweep finalizer execution; this has no functional impact but
