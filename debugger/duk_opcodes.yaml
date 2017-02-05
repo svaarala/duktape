@@ -705,8 +705,6 @@ opcodes:
       - mask: 0x800
         name: accessor
       - mask: 0x1000
-        name: undef_value
-      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_CR
     args:
@@ -723,8 +721,6 @@ opcodes:
       - mask: 0x800
         name: accessor
       - mask: 0x1000
-        name: undef_value
-      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_RC
     args:
@@ -741,8 +737,6 @@ opcodes:
       - mask: 0x800
         name: accessor
       - mask: 0x1000
-        name: undef_value
-      - mask: 0x2000
         name: func_decl
   - name: DECLVAR_CC
     args:
@@ -759,8 +753,6 @@ opcodes:
       - mask: 0x800
         name: accessor
       - mask: 0x1000
-        name: undef_value
-      - mask: 0x2000
         name: func_decl
   - name: REGEXP_RR
     args:
