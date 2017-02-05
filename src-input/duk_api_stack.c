@@ -2222,6 +2222,16 @@ DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t idx, 
 
 	tv = duk_require_tval(ctx, idx);
 	DUK_ASSERT(tv != NULL);
+
+#if defined(DUK_USE_FASTINT)
+	/* If argument is a fastint, guarantee that it remains one.
+	 * There's no downgrade check for other cases.
+	 */
+	if (DUK_TVAL_IS_FASTINT(tv)) {
+		/* XXX: Unnecessary conversion back and forth. */
+		return (duk_double_t) DUK_TVAL_GET_FASTINT(tv);
+	}
+#endif
 	d = coerce_func(thr, tv);
 
 	/* XXX: fastint? */
@@ -2233,8 +2243,8 @@ DUK_LOCAL duk_double_t duk__to_int_uint_helper(duk_context *ctx, duk_idx_t idx, 
 }
 
 DUK_EXTERNAL duk_int_t duk_to_int(duk_context *ctx, duk_idx_t idx) {
-	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
-	 * API return value coercion: custom
+	/* Value coercion (in stack): ToInteger(), E5 Section 9.4,
+	 * API return value coercion: custom.
 	 */
 	DUK_ASSERT_CTX_VALID(ctx);
 	(void) duk__to_int_uint_helper(ctx, idx, duk_js_tointeger);
@@ -2242,8 +2252,8 @@ DUK_EXTERNAL duk_int_t duk_to_int(duk_context *ctx, duk_idx_t idx) {
 }
 
 DUK_EXTERNAL duk_uint_t duk_to_uint(duk_context *ctx, duk_idx_t idx) {
-	/* Value coercion (in stack): ToInteger(), E5 Section 9.4
-	 * API return value coercion: custom
+	/* Value coercion (in stack): ToInteger(), E5 Section 9.4,
+	 * API return value coercion: custom.
 	 */
 	DUK_ASSERT_CTX_VALID(ctx);
 	(void) duk__to_int_uint_helper(ctx, idx, duk_js_tointeger);
