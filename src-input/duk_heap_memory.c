@@ -14,8 +14,7 @@
 
 #if defined(DUK_USE_VOLUNTARY_GC)
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
-		(heap)->mark_and_sweep_trigger_counter--; \
-		if ((heap)->mark_and_sweep_trigger_counter <= 0) { \
+		if (--(heap)->mark_and_sweep_trigger_counter < 0) { \
 			duk__run_voluntary_gc(heap); \
 		} \
 	} while (0)
