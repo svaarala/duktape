@@ -127,10 +127,9 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	                       -1);  /* no prototype */
 	h1 = duk_get_hobject(ctx, -1);
 	DUK_ASSERT(h1 != NULL);
-	duk_dup(ctx, -2);
-	duk_dup(ctx, -1);  /* -> [ ... new_global new_globalenv new_global new_global ] */
-	duk_xdef_prop_stridx(thr, -3, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
-	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_THIS, DUK_PROPDESC_FLAGS_NONE);  /* always provideThis=true */
+	duk_dup(ctx, -2); /* -> [ ... new_global new_globalenv new_global ] */
+	duk_xdef_prop_stridx(thr, -2, DUK_STRIDX_INT_TARGET, DUK_PROPDESC_FLAGS_NONE);
+	/* provideThis=false */
 
 	duk_hobject_compact_props(thr, h1);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL_ENV] != NULL);
