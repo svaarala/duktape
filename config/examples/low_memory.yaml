@@ -113,3 +113,7 @@ DUK_USE_ES6_UNICODE_ESCAPE: false
 DUK_USE_REFLECT_BUILTIN: false
 DUK_USE_ES6: false
 DUK_USE_SYMBOL_BUILTIN: false
+
+# Consider switching alignment to align-by-1 for more compact struct layouts
+# if the architecture supports it.
+#DUK_USE_ALIGN_BY: 1
