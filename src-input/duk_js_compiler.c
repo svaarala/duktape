@@ -7025,8 +7025,7 @@ DUK_LOCAL void duk__init_varmap_and_prologue_for_pass2(duk_compiler_ctx *comp_ct
 				duk_push_null(ctx);
 
 				declvar_flags = DUK_PROPDESC_FLAG_WRITABLE |
-			                        DUK_PROPDESC_FLAG_ENUMERABLE |
-				                DUK_BC_DECLVAR_FLAG_UNDEF_VALUE;
+			                        DUK_PROPDESC_FLAG_ENUMERABLE;
 				if (configurable_bindings) {
 					declvar_flags |= DUK_PROPDESC_FLAG_CONFIGURABLE;
 				}

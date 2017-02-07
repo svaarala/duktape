@@ -461,8 +461,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_BC_TRYCATCH_FLAG_WITH_BINDING   (1 << 3)
 
 /* DUK_OP_DECLVAR flags in A; bottom bits are reserved for propdesc flags (DUK_PROPDESC_FLAG_XXX) */
-#define DUK_BC_DECLVAR_FLAG_UNDEF_VALUE     (1 << 4)  /* use 'undefined' for value automatically */
-#define DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1 << 5)  /* function declaration */
+#define DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1 << 4)  /* function declaration */
 
 /* Misc constants and helper macros. */
 #define DUK_BC_LDINT_BIAS           (1L << 15)

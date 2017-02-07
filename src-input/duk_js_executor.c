@@ -3636,14 +3636,12 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_hstring *name;
 			duk_small_uint_t prop_flags;
 			duk_bool_t is_func_decl;
-			duk_bool_t is_undef_value;
 
 			tv1 = DUK__REGCONSTP_B(ins);
 			DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
 			name = DUK_TVAL_GET_STRING(tv1);
 			DUK_ASSERT(name != NULL);
 
-			is_undef_value = ((a & DUK_BC_DECLVAR_FLAG_UNDEF_VALUE) != 0);
 			is_func_decl = ((a & DUK_BC_DECLVAR_FLAG_FUNC_DECL) != 0);
 
 			/* XXX: declvar takes an duk_tval pointer, which is awkward and
@@ -3655,19 +3653,25 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 */
 			prop_flags = a & DUK_PROPDESC_FLAGS_MASK;
 
-			if (is_undef_value) {
+			if (is_func_decl) {
+				duk_push_tval(ctx, DUK__REGCONSTP_C(ins));
+			} else {
 				DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));  /* valstack policy */
 				thr->valstack_top++;
-			} else {
-				duk_push_tval(ctx, DUK__REGCONSTP_C(ins));
 			}
 			tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 
 			act = thr->callstack + thr->callstack_top - 1;
 			if (duk_js_declvar_activation(thr, act, name, tv1, prop_flags, is_func_decl)) {
-				/* already declared, must update binding value */
-				tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
-				duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
+				if (is_func_decl) {
+					/* Already declared, update value. */
+					tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
+					duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
+				} else {
+					/* Already declared but no initializer value
+					 * (e.g. 'var xyz;'), no-op.
+					 */
+				}
 			}
 
 			duk_pop(ctx);

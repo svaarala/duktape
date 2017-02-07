@@ -2500,6 +2500,11 @@ Planned
 * Fix bug in global object environment "provideThis" attribute when using ROM
   objects and DUK_USE_ROM_GLOBAL_INHERIT (GH-1340, GH-1310)
 
+* Fix bug in global/eval code variable redeclaration handling where a
+  plain 'var X;' redeclaration for an existing binding caused 'undefined' to
+  overwrite the existing binding rather than being treated as a no-op
+  (GH-1351, GH-1354)
+
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
