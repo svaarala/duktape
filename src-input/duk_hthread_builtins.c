@@ -108,7 +108,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	 * needed so that the global scope points to the newly created RAM-based
 	 * global object.
 	 */
-	h_objenv = (duk_hobject *) duk_hobjenv_alloc(thr->heap,
+	h_objenv = (duk_hobject *) duk_hobjenv_alloc(thr,
 	                                             DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
 	DUK_ASSERT(h_objenv != NULL);
@@ -300,7 +300,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_ASSERT(i == DUK_BIDX_GLOBAL_ENV);
 			DUK_ASSERT(DUK_BIDX_GLOBAL_ENV > DUK_BIDX_GLOBAL);
 
-			env = duk_hobjenv_alloc(thr->heap,
+			env = duk_hobjenv_alloc(thr,
 	                                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
 			DUK_ASSERT(env->target == NULL);

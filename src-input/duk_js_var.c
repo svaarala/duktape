@@ -247,7 +247,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			}
 
 			/* -> [ ... closure template env ] */
-			new_env = duk_hdecenv_alloc(thr->heap,
+			new_env = duk_hdecenv_alloc(thr,
 			                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 			                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 			DUK_ASSERT(new_env != NULL);
@@ -516,7 +516,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 		parent = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	}
 
-	env = duk_hdecenv_alloc(thr->heap,
+	env = duk_hdecenv_alloc(thr,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 	DUK_ASSERT(env != NULL);

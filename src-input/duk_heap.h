@@ -213,6 +213,13 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 #define DUK_FREE(heap,ptr)                              duk_heap_mem_free((heap), (ptr))
 
 /*
+ *  Checked allocation, relative to a thread
+ */
+
+#define DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))
+#define DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size))
+
+/*
  *  Memory constants
  */
 
@@ -522,6 +529,8 @@ DUK_INTERNAL_DECL void duk_default_free_function(void *udata, void *ptr);
 
 DUK_INTERNAL_DECL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size);
 DUK_INTERNAL_DECL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size);
+DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size);
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize);
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
 DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);

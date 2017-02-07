@@ -14,7 +14,7 @@
 
 #if defined(DUK_USE_VOLUNTARY_GC)
 #define DUK__VOLUNTARY_PERIODIC_GC(heap)  do { \
-		if (--(heap)->mark_and_sweep_trigger_counter < 0) { \
+		if (DUK_UNLIKELY(--(heap)->mark_and_sweep_trigger_counter < 0)) { \
 			duk__run_voluntary_gc(heap); \
 		} \
 	} while (0)
@@ -68,7 +68,7 @@ DUK_INTERNAL void *duk_heap_mem_alloc(duk_heap *heap, duk_size_t size) {
 	}
 #endif
 	res = heap->alloc_func(heap->heap_udata, size);
-	if (res || size == 0) {
+	if (DUK_LIKELY(res || size == 0)) {
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
@@ -132,6 +132,30 @@ DUK_INTERNAL void *duk_heap_mem_alloc_zeroed(duk_heap *heap, duk_size_t size) {
 	return res;
 }
 
+DUK_INTERNAL void *duk_heap_mem_alloc_checked(duk_hthread *thr, duk_size_t size) {
+	void *res;
+
+	DUK_ASSERT(thr != NULL);
+	res = duk_heap_mem_alloc(thr->heap, size);
+	if (DUK_LIKELY(res != NULL || size == 0)) {
+		return res;
+	}
+	DUK_ERROR_ALLOC_FAILED(thr);
+	return NULL;
+}
+
+DUK_INTERNAL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_size_t size) {
+	void *res;
+
+	DUK_ASSERT(thr != NULL);
+	res = duk_heap_mem_alloc_zeroed(thr->heap, size);
+	if (DUK_LIKELY(res != NULL || size == 0)) {
+		return res;
+	}
+	DUK_ERROR_ALLOC_FAILED(thr);
+	return NULL;
+}
+
 /*
  *  Reallocate memory with garbage collection
  */
@@ -165,7 +189,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t ne
 	}
 #endif
 	res = heap->realloc_func(heap->heap_udata, ptr, newsize);
-	if (res || newsize == 0) {
+	if (DUK_LIKELY(res || newsize == 0)) {
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
@@ -247,7 +271,7 @@ DUK_INTERNAL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr 
 	}
 #endif
 	res = heap->realloc_func(heap->heap_udata, cb(heap, ud), newsize);
-	if (res || newsize == 0) {
+	if (DUK_LIKELY(res || newsize == 0)) {
 		/* for zero size allocations NULL is allowed */
 		return res;
 	}
