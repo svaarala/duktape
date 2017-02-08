@@ -113,7 +113,8 @@
 #define DUK_DOUBLE_INFINITY  (__builtin_inf())
 #elif defined(INFINITY)
 #define DUK_DOUBLE_INFINITY  ((double) INFINITY)
-#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC) && \
+      !defined(DUK_F_OLD_SOLARIS) && !defined(DUK_F_AIX)
 #define DUK_DOUBLE_INFINITY  (1.0 / 0.0)
 #else
 /* In VBCC (1.0 / 0.0) results in a warning and 0.0 instead of infinity.
@@ -129,7 +130,8 @@
 #undef DUK_USE_COMPUTED_NAN
 #if defined(NAN)
 #define DUK_DOUBLE_NAN       NAN
-#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC)
+#elif !defined(DUK_F_VBCC) && !defined(DUK_F_MSVC) && !defined(DUK_F_BCC) && \
+      !defined(DUK_F_OLD_SOLARIS) && !defined(DUK_F_AIX)
 #define DUK_DOUBLE_NAN       (0.0 / 0.0)
 #else
 /* In VBCC (0.0 / 0.0) results in a warning and 0.0 instead of NaN.
@@ -177,6 +179,9 @@
  * example, fpclassify() can incorrectly classify certain NaN formats.
  * To be safe, use replacements.
  */
+#define DUK_F_USE_REPL_ALL
+#elif defined(DUK_F_AIX)
+/* Older versions may be missing isnan(), etc. */
 #define DUK_F_USE_REPL_ALL
 #endif
 

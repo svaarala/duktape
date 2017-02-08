@@ -1,6 +1,9 @@
 /* Intel x86 (32-bit), x64 (64-bit) or x32 (64-bit but 32-bit pointers),
  * define only one of DUK_F_X86, DUK_F_X64, DUK_F_X32.
  * https://sites.google.com/site/x32abi/
+ *
+ * With DUK_F_OLD_SOLARIS the <sys/isa_defs.h> header must be included
+ * before this.
  */
 #if defined(__amd64__) || defined(__amd64) || \
     defined(__x86_64__) || defined(__x86_64) || \

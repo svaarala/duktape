@@ -56,6 +56,14 @@ autodetect:
     check: DUK_F_SUN
     include: platform_solaris.h.in
   -
+    name: AIX
+    check: DUK_F_AIX
+    include: platform_aix.h.in
+  -
+    name: HPUX
+    check: DUK_F_HPUX
+    include: platform_hpux.h.in
+  -
     name: Generic POSIX
     check: DUK_F_POSIX
     include: platform_posix.h.in
