@@ -2511,6 +2511,8 @@ Planned
 
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
+* Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal

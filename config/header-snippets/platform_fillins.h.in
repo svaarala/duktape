@@ -266,9 +266,9 @@
 /* The functions below exist only in C99/C++11 or later and need a workaround
  * for platforms that don't include them.  MSVC isn't detected as C99, but
  * these functions also exist in MSVC 2013 and later so include a clause for
- * that too.
+ * that too.  Android doesn't have log2; disable all of these for Android.
  */
-#if defined(DUK_F_C99) || defined(DUK_F_CPP11) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
+#if (defined(DUK_F_C99) || defined(DUK_F_CPP11) || (defined(_MSC_VER) && (_MSC_VER >= 1800))) && !defined(DUK_F_ANDROID)
 #if !defined(DUK_CBRT)
 #define DUK_CBRT             cbrt
 #endif
@@ -281,7 +281,7 @@
 #if !defined(DUK_TRUNC)
 #define DUK_TRUNC            trunc
 #endif
-#endif  /* DUK_F_C99 */
+#endif  /* DUK_F_C99 etc */
 
 /* NetBSD 6.0 x86 (at least) has a few problems with pow() semantics,
  * see test-bug-netbsd-math-pow.js.  MinGW has similar (but different)
