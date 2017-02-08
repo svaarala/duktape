@@ -940,8 +940,6 @@ The algorithm is as follows:
    e. Free any auxiliary references (such as object properties) contained
       in ``O``, and finally ``O`` itself.
 
-2. Check for a voluntary mark-and-sweep.
-
 Notes:
 
 * "Churning" the work list requires that the type of a heap element can be
@@ -1494,11 +1492,12 @@ point arithmetic)::
 
   // MULT and ADD are tuning parameters
 
-The trigger count is decreased on every memory (re)allocation, and for every
-object processed by the refzero algorithm.  If the trigger reaches zero when
-memory is about to be (re)allocated, a voluntary mark-and-sweep pass is done.
-When ``MULT`` is 1 and ``ADD`` is 0, a voluntary sweep is done when the number
-of "operations" matches the previous heap object/string count.
+The trigger count is decreased on every memory (re)allocation and free, to
+roughly measure allocation activity.  If the trigger count is below zero when
+memory is about to be (re)allocated, a a voluntary mark-and-sweep pass is
+done.  When ``MULT`` is 1 and ``ADD`` is 0, a voluntary sweep is done when
+the number of alloc/free operations matches the previous heap object/string
+count.
 
 When reference counting is enabled, ``MULT`` can be quite large (e.g. 10)
 because only circular references need to be swept.  When reference counting
