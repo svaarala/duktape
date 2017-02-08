@@ -2521,6 +2521,9 @@ Planned
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309)
 
+* Miscellaneous footprint improvements: more compact duk_hobject allocation
+  (GH-1357)
+
 * Internal change: duk_hstring now has a 'next' heap pointer for string table
   chaining; this affects string allocation sizes which may matter for manually
   tuned memory pools (GH-1277)

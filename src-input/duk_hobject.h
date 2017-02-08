@@ -815,19 +815,18 @@ DUK_INTERNAL_DECL duk_uint8_t duk_class_number_to_stridx[32];
  */
 
 /* alloc and init */
-DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-#if 0  /* unused */
-DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc_checked(duk_hthread *thr, duk_uint_t hobject_flags);
-#endif
-DUK_INTERNAL_DECL duk_harray *duk_harray_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-DUK_INTERNAL_DECL duk_hcompfunc *duk_hcompfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-DUK_INTERNAL_DECL duk_hnatfunc *duk_hnatfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc_unchecked(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_harray *duk_harray_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hcompfunc *duk_hcompfunc_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hnatfunc *duk_hnatfunc_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-DUK_INTERNAL_DECL duk_hbufobj *duk_hbufobj_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hbufobj *duk_hbufobj_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 #endif
-DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-DUK_INTERNAL_DECL duk_hdecenv *duk_hdecenv_alloc(duk_heap *heap, duk_uint_t hobject_flags);
-DUK_INTERNAL_DECL duk_hobjenv *duk_hobjenv_alloc(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hdecenv *duk_hdecenv_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hobjenv *duk_hobjenv_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 
 /* resize */
 DUK_INTERNAL_DECL void duk_hobject_realloc_props(duk_hthread *thr,

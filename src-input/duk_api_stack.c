@@ -3972,10 +3972,8 @@ DUK_INTERNAL duk_hobject *duk_push_object_helper(duk_context *ctx, duk_uint_t ho
 
 	DUK__CHECK_SPACE();
 
-	h = duk_hobject_alloc(thr->heap, hobject_flags_and_class);
-	if (DUK_UNLIKELY(h == NULL)) {
-		DUK_ERROR_ALLOC_FAILED(thr);
-	}
+	h = duk_hobject_alloc(thr, hobject_flags_and_class);
+	DUK_ASSERT(h != NULL);
 
 	DUK_DDD(DUK_DDDPRINT("created object with flags: 0x%08lx", (unsigned long) h->hdr.h_flags));
 
@@ -4033,10 +4031,8 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
 	        DUK_HOBJECT_FLAG_EXOTIC_ARRAY |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY);
 
-	obj = duk_harray_alloc(thr->heap, flags);
-	if (DUK_UNLIKELY(obj == NULL)) {
-		DUK_ERROR_ALLOC_FAILED(thr);
-	}
+	obj = duk_harray_alloc(thr, flags);
+	DUK_ASSERT(obj != NULL);
 
 	/* XXX: since prototype is NULL, could save a check */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[DUK_BIDX_ARRAY_PROTOTYPE]);
@@ -4092,13 +4088,11 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	DUK__CHECK_SPACE();
 
-	obj = duk_hthread_alloc(thr->heap,
+	obj = duk_hthread_alloc(thr,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
-	if (DUK_UNLIKELY(obj == NULL)) {
-		DUK_ERROR_ALLOC_FAILED(thr);
-	}
+	DUK_ASSERT(obj != NULL);
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
 #if defined(DUK_USE_ROM_STRINGS)
 	/* Nothing to initialize, strs[] is in ROM. */
@@ -4157,7 +4151,7 @@ DUK_INTERNAL duk_hcompfunc *duk_push_hcompfunc(duk_context *ctx) {
 	 * DUK_HOBJECT_FLAG_CONSRUCTABLE flag cleared here.
 	 */
 
-	obj = duk_hcompfunc_alloc(thr->heap,
+	obj = duk_hcompfunc_alloc(thr,
 	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                          DUK_HOBJECT_FLAG_COMPFUNC |
 	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
@@ -4199,10 +4193,8 @@ DUK_LOCAL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function fu
 		goto api_error;
 	}
 
-	obj = duk_hnatfunc_alloc(thr->heap, flags);
-	if (DUK_UNLIKELY(obj == NULL)) {
-		DUK_ERROR_ALLOC_FAILED(thr);
-	}
+	obj = duk_hnatfunc_alloc(thr, flags);
+	DUK_ASSERT(obj != NULL);
 
 	obj->func = func;
 	obj->nargs = func_nargs;
@@ -4319,10 +4311,8 @@ DUK_INTERNAL duk_hbufobj *duk_push_bufobj_raw(duk_context *ctx, duk_uint_t hobje
 
 	DUK__CHECK_SPACE();
 
-	obj = duk_hbufobj_alloc(thr->heap, hobject_flags_and_class);
-	if (DUK_UNLIKELY(obj == NULL)) {
-		DUK_ERROR_ALLOC_FAILED(thr);
-	}
+	obj = duk_hbufobj_alloc(thr, hobject_flags_and_class);
+	DUK_ASSERT(obj != NULL);
 
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) obj, thr->builtins[prototype_bidx]);
 	DUK_ASSERT_HBUFOBJ_VALID(obj);

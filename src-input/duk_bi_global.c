@@ -522,7 +522,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			act_lex_env = act->lex_env;
 			act = NULL;  /* invalidated */
 
-			new_env = duk_hdecenv_alloc(thr->heap,
+			new_env = duk_hdecenv_alloc(thr,
 			                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 			                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 			DUK_ASSERT(new_env != NULL);

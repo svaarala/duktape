@@ -586,7 +586,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		 */
 		duk_hdecenv *new_env;
 
-		new_env = duk_hdecenv_alloc(thr->heap,
+		new_env = duk_hdecenv_alloc(thr,
 		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 		DUK_ASSERT(new_env != NULL);

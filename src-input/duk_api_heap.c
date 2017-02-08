@@ -161,7 +161,7 @@ DUK_EXTERNAL void duk_set_global_object(duk_context *ctx) {
 	 *  same (initial) built-ins.
 	 */
 
-	h_env = duk_hobjenv_alloc(thr->heap,
+	h_env = duk_hobjenv_alloc(thr,
 	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
 	DUK_ASSERT(h_env != NULL);

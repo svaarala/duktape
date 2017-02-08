@@ -935,7 +935,7 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		act_lex_env = act->lex_env;
 		act = NULL;  /* invalidated */
 
-		new_env = duk_hdecenv_alloc(thr->heap,
+		new_env = duk_hdecenv_alloc(thr,
 		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 		DUK_ASSERT(new_env != NULL);
@@ -4051,9 +4051,10 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				DUK_ASSERT(act->lex_env != NULL);
 				DUK_ASSERT(act->var_env != NULL);
 
-				env = duk_hobjenv_alloc(thr->heap,
+				env = duk_hobjenv_alloc(thr,
 				                        DUK_HOBJECT_FLAG_EXTENSIBLE |
 				                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+				DUK_ASSERT(env != NULL);
 				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
 				duk_push_hobject(ctx, (duk_hobject *) env);  /* Push to stabilize against side effects. */
 

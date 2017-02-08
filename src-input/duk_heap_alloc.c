@@ -436,11 +436,11 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 
 	DUK_DD(DUK_DDPRINT("heap init: alloc heap thread"));
-	thr = duk_hthread_alloc(heap,
-	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                        DUK_HOBJECT_FLAG_THREAD |
-	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
-	if (!thr) {
+	thr = duk_hthread_alloc_unchecked(heap,
+	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_FLAG_THREAD |
+	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
+	if (thr == NULL) {
 		DUK_D(DUK_DPRINT("failed to alloc heap_thread"));
 		return 0;
 	}
@@ -962,8 +962,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP OBJECT"));
 	DUK_ASSERT(res->heap_thread != NULL);
-	res->heap_object = duk_hobject_alloc(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
+	res->heap_object = duk_hobject_alloc_unchecked(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT));
 	if (res->heap_object == NULL) {
 		goto failed;
 	}
