@@ -284,7 +284,9 @@ DUK_LOCAL void duk__refcount_run_torture_finalizer(duk_hthread *thr, duk_hobject
 DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	duk_heaphdr *h1, *h2;
 	duk_heap *heap;
+#if defined(DUK_USE_DEBUG)
 	duk_int_t count = 0;
+#endif
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -428,36 +430,13 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 			duk_free_hobject(heap, (duk_hobject *) h1);
 		}
 
+#if defined(DUK_USE_DEBUG)
 		count++;
+#endif
 	}
 	DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap);
 
 	DUK_DDD(DUK_DDDPRINT("refzero processed %ld objects", (long) count));
-
-	/*
-	 *  Once the whole refzero cascade has been freed, check for
-	 *  a voluntary mark-and-sweep.
-	 */
-
-#if defined(DUK_USE_VOLUNTARY_GC)
-	/* 'count' is more or less comparable to normal trigger counter update
-	 * which happens in memory block (re)allocation.
-	 */
-	heap->mark_and_sweep_trigger_counter -= count;
-	if (DUK_UNLIKELY(heap->mark_and_sweep_trigger_counter <= 0)) {
-		if (DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap)) {
-			DUK_D(DUK_DPRINT("mark-and-sweep in progress -> skip voluntary mark-and-sweep now"));
-		} else {
-			duk_bool_t rc;
-			duk_small_uint_t flags = 0;  /* not emergency */
-
-			DUK_D(DUK_DPRINT("refcount triggering mark-and-sweep"));
-			rc = duk_heap_mark_and_sweep(heap, flags);
-			DUK_UNREF(rc);
-			DUK_D(DUK_DPRINT("refcount triggered mark-and-sweep => rc %ld", (long) rc));
-		}
-	}
-#endif  /* DUK_USE_VOLUNTARY_GC */
 }
 
 /*

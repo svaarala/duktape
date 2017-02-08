@@ -2460,10 +2460,14 @@ Planned
 * Improve lexical scope handling performance by adding internal duk_hdecenv
   and duk_hobjenv structures (previously generic objects were used) (GH-1310)
 
+* Remove voluntary GC check from refzero processing; the check is not really
+  necessary because all free operations decrement the voluntary GC counter and
+  all allocs/reallocs check for voluntary GC (GH-1355)
+
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
   behavior) if the voluntary GC trigger counter dropped to zero during
-  mark-and-sweep finalizer execution (GH-1347)
+  mark-and-sweep finalizer execution (GH-1347, GH-1355)
 
 * Fix a garbage collection bug where a call into duk_gc() from a mark-and-sweep
   triggered finalizer could cause recursive entry into mark-and-sweep (leading
