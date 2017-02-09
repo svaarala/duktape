@@ -2091,9 +2091,9 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 		                           duk__debug_getinfo_hstring_keys,
 		                           duk__debug_getinfo_hstring_masks,
 		                           DUK_HEAPHDR_GET_FLAGS_RAW(h));
-		duk__debug_getinfo_prop_uint(thr, "bytelen", DUK_HSTRING_GET_BYTELEN(h_str));
-		duk__debug_getinfo_prop_uint(thr, "charlen", DUK_HSTRING_GET_CHARLEN(h_str));
-		duk__debug_getinfo_prop_uint(thr, "hash", DUK_HSTRING_GET_HASH(h_str));
+		duk__debug_getinfo_prop_uint(thr, "bytelen", (duk_uint_t) DUK_HSTRING_GET_BYTELEN(h_str));
+		duk__debug_getinfo_prop_uint(thr, "charlen", (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h_str));
+		duk__debug_getinfo_prop_uint(thr, "hash", (duk_uint_t) DUK_HSTRING_GET_HASH(h_str));
 		duk__debug_getinfo_flags_key(thr, "data");
 		duk_debug_write_hstring(thr, h_str);
 		break;

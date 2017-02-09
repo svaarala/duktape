@@ -292,7 +292,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_char_code_at(duk_context *ctx) {
 	pos = duk_to_int_clamped_raw(ctx,
 	                             0 /*index*/,
 	                             0 /*min(incl)*/,
-	                             DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl)*/,
+	                             (duk_int_t) DUK_HSTRING_GET_CHARLEN(h) - 1 /*max(incl)*/,
 	                             &clamped /*out_clamped*/);
 #if defined(DUK_USE_ES6)
 	magic = duk_get_current_magic(ctx);
@@ -779,7 +779,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_prototype_replace(duk_context *ctx) {
 					/* XXX: charlen computed here, and also in char2byte helper. */
 					match_end_boff = duk_heap_strcache_offset_char2byte(thr,
 					                                                    h_input,
-					                                                    match_start_coff + DUK_HSTRING_GET_CHARLEN(h_match));
+					                                                    match_start_coff + (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h_match));
 
 					tmp_sz = (duk_size_t) (DUK_HSTRING_GET_BYTELEN(h_input) - match_end_boff);
 					DUK_BW_WRITE_ENSURE_BYTES(thr, bw, DUK_HSTRING_GET_DATA(h_input) + match_end_boff, tmp_sz);
