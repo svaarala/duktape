@@ -234,11 +234,11 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		duk_small_int_t len = -1;  /* must be signed */
 
 		class_num = (duk_small_uint_t) duk_bd_decode_varuint(bd);
-		len = (duk_small_int_t) duk_bd_decode_flagged(bd, DUK__LENGTH_PROP_BITS, (duk_int32_t) -1 /*def_value*/);
+		len = (duk_small_int_t) duk_bd_decode_flagged_signed(bd, DUK__LENGTH_PROP_BITS, (duk_int32_t) -1 /*def_value*/);
 
 		if (class_num == DUK_HOBJECT_CLASS_FUNCTION) {
 			duk_small_uint_t natidx;
-			duk_int_t c_nargs;  /* must hold DUK_VARARGS */
+			duk_small_int_t c_nargs;  /* must hold DUK_VARARGS */
 			duk_c_function c_func;
 			duk_int16_t magic;
 
@@ -250,7 +250,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			c_func = duk_bi_native_functions[natidx];
 			DUK_ASSERT(c_func != NULL);
 
-			c_nargs = (duk_small_uint_t) duk_bd_decode_flagged(bd, DUK__NARGS_BITS, len /*def_value*/);
+			c_nargs = (duk_small_int_t) duk_bd_decode_flagged_signed(bd, DUK__NARGS_BITS, len /*def_value*/);
 			if (c_nargs == DUK__NARGS_VARARGS_MARKER) {
 				c_nargs = DUK_VARARGS;
 			}

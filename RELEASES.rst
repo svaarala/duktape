@@ -2455,7 +2455,7 @@ Planned
 
 * Make duk_hstring character length (clen) lazily computed to improve string
   handling performance for the majority of strings whose .length is never
-  read (GH-1303)
+  read (GH-1303, GH-1358)
 
 * Improve lexical scope handling performance by adding internal duk_hdecenv
   and duk_hobjenv structures (previously generic objects were used) (GH-1310)
@@ -2517,6 +2517,8 @@ Planned
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
   functions (GH-1297)
+
+* Miscellaneous compiler warning fices (GH-1358)
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309)

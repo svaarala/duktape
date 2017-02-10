@@ -503,6 +503,7 @@ DUK_INTERNAL_DECL duk_uint32_t duk_util_hashbytes(const duk_uint8_t *data, duk_s
 DUK_INTERNAL_DECL duk_uint32_t duk_bd_decode(duk_bitdecoder_ctx *ctx, duk_small_int_t bits);
 DUK_INTERNAL_DECL duk_small_uint_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx);
 DUK_INTERNAL_DECL duk_uint32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_uint32_t def_value);
+DUK_INTERNAL_DECL duk_int32_t duk_bd_decode_flagged_signed(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value);
 DUK_INTERNAL_DECL duk_uint32_t duk_bd_decode_varuint(duk_bitdecoder_ctx *ctx);
 DUK_INTERNAL_DECL duk_small_uint_t duk_bd_decode_bitpacked_string(duk_bitdecoder_ctx *bd, duk_uint8_t *out);
 

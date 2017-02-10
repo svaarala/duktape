@@ -110,7 +110,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_heap_strcache_offset_char2byte(duk_hthread *t
 		return char_offset;
 	}
 
-	char_length = DUK_HSTRING_GET_CHARLEN(h);
+	char_length = (duk_uint_fast32_t) DUK_HSTRING_GET_CHARLEN(h);
 	DUK_ASSERT(char_offset <= char_length);
 
 	if (DUK_LIKELY(DUK_HSTRING_IS_ASCII(h))) {

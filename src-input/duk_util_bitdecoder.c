@@ -58,8 +58,7 @@ DUK_INTERNAL duk_small_uint_t duk_bd_decode_flag(duk_bitdecoder_ctx *ctx) {
 }
 
 /* Decode a one-bit flag, and if set, decode a value of 'bits', otherwise return
- * default value.  Return value is signed so that negative marker value can be
- * used by caller as a "not present" value.
+ * default value.
  */
 DUK_INTERNAL duk_uint32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_uint32_t def_value) {
 	if (duk_bd_decode_flag(ctx)) {
@@ -67,6 +66,11 @@ DUK_INTERNAL duk_uint32_t duk_bd_decode_flagged(duk_bitdecoder_ctx *ctx, duk_sma
 	} else {
 		return def_value;
 	}
+}
+
+/* Signed variant, allows negative marker value. */
+DUK_INTERNAL duk_int32_t duk_bd_decode_flagged_signed(duk_bitdecoder_ctx *ctx, duk_small_int_t bits, duk_int32_t def_value) {
+	return (duk_int32_t) duk_bd_decode_flagged(ctx, bits, (duk_uint32_t) def_value);
 }
 
 /* Shared varint encoding.  Match dukutil.py BitEncode.varuint(). */

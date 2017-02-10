@@ -79,7 +79,7 @@ DUK_LOCAL DUK_COLD duk_size_t duk__hstring_get_charlen_slowpath(duk_hstring *h) 
 	DUK_ASSERT(res <= 0xffffUL);  /* Bytelength checked during interning. */
 	h->clen16 = (duk_uint16_t) res;
 #else
-	h->clen = res;
+	h->clen = (duk_uint32_t) res;
 #endif
 	if (DUK_LIKELY(res == DUK_HSTRING_GET_BYTELEN(h))) {
 		DUK_HSTRING_SET_ASCII(h);
