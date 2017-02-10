@@ -1494,6 +1494,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	/* Read callstack index, if non-null. */
 	if (duk_debug_peek_byte(thr) == DUK_DBG_IB_NULL) {
 		direct_eval = 0;
+		level = -1;  /* Not needed, but silences warning. */
 		(void) duk_debug_read_byte(thr);
 	} else {
 		direct_eval = 1;

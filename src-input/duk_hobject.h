@@ -691,7 +691,7 @@ union duk_propvalue {
 
 struct duk_propdesc {
 	/* read-only values 'lifted' for ease of use */
-	duk_small_int_t flags;
+	duk_small_uint_t flags;
 	duk_hobject *get;
 	duk_hobject *set;
 

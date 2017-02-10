@@ -2249,15 +2249,31 @@ DUK_LOCAL void duk__ivalue_toplain_raw(duk_compiler_ctx *comp_ctx, duk_ivalue *x
 				DUK_DDD(DUK_DDDPRINT("arith inline check: d1=%lf, d2=%lf, op=%ld",
 				                     (double) d1, (double) d2, (long) x->op));
 				switch (x->op) {
-				case DUK_OP_ADD: d3 = d1 + d2; break;
-				case DUK_OP_SUB: d3 = d1 - d2; break;
-				case DUK_OP_MUL: d3 = d1 * d2; break;
-				case DUK_OP_DIV: d3 = d1 / d2; break;
+				case DUK_OP_ADD: {
+					d3 = d1 + d2;
+					break;
+				}
+				case DUK_OP_SUB: {
+					d3 = d1 - d2;
+					break;
+				}
+				case DUK_OP_MUL: {
+					d3 = d1 * d2;
+					break;
+				}
+				case DUK_OP_DIV: {
+					d3 = d1 / d2;
+					break;
+				}
 				case DUK_OP_EXP: {
 					d3 = (duk_double_t) duk_js_arith_pow((double) d1, (double) d2);
 					break;
 				}
-				default: accept_fold = 0; break;
+				default: {
+					d3 = 0.0;  /* Won't be used, but silence MSVC /W4 warning. */
+					accept_fold = 0;
+					break;
+				}
 				}
 
 				if (accept_fold) {
@@ -7780,7 +7796,7 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	 */
 
 	DUK_ASSERT(func->is_setget == 0);
-	func->is_strict = is_strict;
+	func->is_strict = (duk_uint8_t) is_strict;
 	DUK_ASSERT(func->is_notail == 0);
 
 	if (is_funcexpr) {
@@ -7795,8 +7811,9 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 		(void) duk__parse_func_like_raw(comp_ctx, 0 /*flags*/);
 	} else {
 		DUK_ASSERT(func->is_function == 0);
-		func->is_eval = is_eval;
-		func->is_global = !is_eval;
+		DUK_ASSERT(is_eval == 0 || is_eval == 1);
+		func->is_eval = (duk_uint8_t) is_eval;
+		func->is_global = (duk_uint8_t) !is_eval;
 		DUK_ASSERT(func->is_namebinding == 0);
 		DUK_ASSERT(func->is_constructable == 0);
 

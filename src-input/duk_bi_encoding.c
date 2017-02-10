@@ -461,8 +461,8 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_context *ctx) {
 	 * initialized explicitly.
 	 */
 	dec_ctx = (duk__decode_context *) duk_push_fixed_buffer(ctx, sizeof(duk__decode_context));
-	dec_ctx->fatal = fatal;
-	dec_ctx->ignore_bom = ignore_bom;
+	dec_ctx->fatal = (duk_uint8_t) fatal;
+	dec_ctx->ignore_bom = (duk_uint8_t) ignore_bom;
 	duk__utf8_decode_init(dec_ctx);  /* Initializes remaining fields. */
 
 	duk_put_prop_string(ctx, -2, "\xff" "Context");
