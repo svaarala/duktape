@@ -1144,7 +1144,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
+	/* Note: heap->refzero_free_running may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.
 	 */
 	duk__assert_valid_refcounts(heap);
@@ -1318,7 +1318,7 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	DUK_ASSERT(heap->mark_and_sweep_recursion_depth == 0);
 	duk__assert_heaphdr_flags(heap);
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	/* Note: DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap) may be true; a refcount
+	/* Note: heap->refzero_free_running may be true; a refcount
 	 * finalizer may trigger a mark-and-sweep.
 	 */
 	duk__assert_valid_refcounts(heap);
