@@ -2522,7 +2522,8 @@ Planned
 * Miscellaneous compiler warning fixes (GH-1358)
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
-  hot/cold function splits (GH-1308, GH-1309)
+  hot/cold function splits (GH-1308, GH-1309), integer refzero-free-running
+  flag (instead of a flag bit) (GH-1362)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
   (GH-1357)
