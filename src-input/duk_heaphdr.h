@@ -290,6 +290,14 @@ struct duk_heaphdr_string {
  *  Note that 'raw' macros such as DUK_HEAPHDR_GET_REFCOUNT() are not
  *  defined without DUK_USE_REFERENCE_COUNTING, so caller must #if defined()
  *  around them.
+ *
+ *  NORZ variants perform refcount operations and may queue an object to be
+ *  refcount finalized (heap->refzero_list), but won't actually process the
+ *  queue.  Calling code must always call DUK_REFZERO_CHECK_xxx() after a
+ *  sequence of NORZ macro calls, otherwise the queue may be left unprocessed
+ *  until the next such call.  If an error thrown, DUK_REFZERO_CHECK_xxx()
+ *  is always called so that NORZ/DUK_REFZERO_CHECK_xxx() can be used without
+ *  a catch point.
  */
 
 #if defined(DUK_USE_REFERENCE_COUNTING)

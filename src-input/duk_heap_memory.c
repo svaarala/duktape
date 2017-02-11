@@ -352,12 +352,9 @@ DUK_INTERNAL void duk_heap_mem_free(duk_heap *heap, void *ptr) {
 	 */
 	heap->free_func(heap->heap_udata, ptr);
 
-	/* Count free operations toward triggering a GC but never actually trigger
-	 * a GC from a free.  Otherwise code which frees internal structures would
-	 * need to put in NULLs at every turn to ensure the object is always in
-	 * consistent state for a mark-and-sweep.
+	/* Don't update the voluntary GC counter or trigger a GC from a free.
+	 * This ensures that code freeing internal structures can be made side
+	 * effect free.  Also DECREF_NORZ macros, which free strings and buffers
+	 * immediately, are then side effect free.
 	 */
-#if defined(DUK_USE_VOLUNTARY_GC)
-	heap->mark_and_sweep_trigger_counter--;
-#endif
 }
