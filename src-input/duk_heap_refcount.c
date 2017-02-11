@@ -297,7 +297,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	 *  Detect recursive invocation
 	 */
 
-	if (DUK_HEAP_HAS_REFZERO_FREE_RUNNING(heap)) {
+	if (heap->refzero_free_running) {
 		DUK_DDD(DUK_DDDPRINT("refzero free running, skip run"));
 		return;
 	}
@@ -306,7 +306,9 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	 *  Churn refzero_list until empty
 	 */
 
-	DUK_HEAP_SET_REFZERO_FREE_RUNNING(heap);
+	DUK_ASSERT(heap->refzero_free_running == 0);
+	heap->refzero_free_running = 1;
+
 	while (heap->refzero_list) {
 		duk_hobject *obj;
 #if defined(DUK_USE_FINALIZER_SUPPORT)
@@ -434,7 +436,9 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		count++;
 #endif
 	}
-	DUK_HEAP_CLEAR_REFZERO_FREE_RUNNING(heap);
+
+	DUK_ASSERT(heap->refzero_free_running == 1);
+	heap->refzero_free_running = 0;
 
 	DUK_DDD(DUK_DDDPRINT("refzero processed %ld objects", (long) count));
 }
