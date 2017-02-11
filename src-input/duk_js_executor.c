@@ -908,7 +908,6 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 
 	if (DUK_CAT_HAS_CATCH_BINDING_ENABLED(&thr->catchstack[cat_idx])) {
 		duk_hdecenv *new_env;
-		duk_hobject *act_lex_env;
 
 		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding"));
 
@@ -931,19 +930,12 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 		DUK_UNREF(act);  /* unreferenced without assertions */
 
-		act = thr->callstack + thr->callstack_top - 1;
-		act_lex_env = act->lex_env;
-		act = NULL;  /* invalidated */
-
 		new_env = duk_hdecenv_alloc(thr,
 		                            DUK_HOBJECT_FLAG_EXTENSIBLE |
 		                            DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_DECENV));
 		DUK_ASSERT(new_env != NULL);
 		duk_push_hobject(ctx, (duk_hobject *) new_env);
 		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
-		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act_lex_env);
-		DUK_HOBJECT_INCREF_ALLOWNULL(thr, act_lex_env);
-
 		DUK_DDD(DUK_DDDPRINT("new_env allocated: %!iO", (duk_heaphdr *) new_env));
 
 		/* Note: currently the catch binding is handled without a register
@@ -958,8 +950,12 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_size_t cat_idx, duk_tval 
 		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_W);  /* writable, not configurable */
 
 		act = thr->callstack + thr->callstack_top - 1;
+		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) new_env, act->lex_env);
 		act->lex_env = (duk_hobject *) new_env;
 		DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);  /* reachable through activation */
+		/* Net refcount change to act->lex_env is 0: incref for new_env's
+		 * prototype, decref for act->lex_env overwrite.
+		 */
 
 		DUK_CAT_SET_LEXENV_ACTIVE(&thr->catchstack[cat_idx]);
 
@@ -3982,7 +3978,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
 			duk_catcher *cat;
-			duk_hobjenv *env;
 			duk_tval *tv1;
 			duk_small_uint_fast_t a;
 			duk_small_uint_fast_t bc;
@@ -4028,107 +4023,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			a = DUK_DEC_A(ins);
 			bc = DUK_DEC_BC(ins);
 
-			act = thr->callstack + thr->callstack_top - 1;
-			DUK_ASSERT(thr->callstack_top >= 1);
-
-			/* 'with' target must be created first, in case we run out of memory */
-			/* XXX: refactor out? */
-
-			if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
-				duk_hobject *target;
-
-				DUK_DDD(DUK_DDDPRINT("need to initialize a with binding object"));
-
-				if (act->lex_env == NULL) {
-					DUK_ASSERT(act->var_env == NULL);
-					DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
-
-					/* must relookup act in case of side effects */
-					duk_js_init_activation_environment_records_delayed(thr, act);
-					act = thr->callstack + thr->callstack_top - 1;
-					DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
-				}
-				DUK_ASSERT(act->lex_env != NULL);
-				DUK_ASSERT(act->var_env != NULL);
-
-				env = duk_hobjenv_alloc(thr,
-				                        DUK_HOBJECT_FLAG_EXTENSIBLE |
-				                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
-				DUK_ASSERT(env != NULL);
-				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
-				duk_push_hobject(ctx, (duk_hobject *) env);  /* Push to stabilize against side effects. */
-
-				duk_push_tval(ctx, DUK__REGP(bc));
-				target = duk_to_hobject(ctx, -1);
-				DUK_ASSERT(target != NULL);
-
-				/* always provideThis=true */
-				env->target = target;
-				DUK_HOBJECT_INCREF(thr, target);
-				env->has_this = 1;
-
-				DUK_ASSERT_HOBJENV_VALID(env);
-
-				duk_pop(ctx);
-
-				/* [ ... env ] */
-
-				DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iT",
-				                     (duk_tval *) duk_get_tval(ctx, -1)));
-			}
-
-			/* allocate catcher and populate it (should be atomic) */
-
-			duk_hthread_catchstack_grow(thr);
-			cat = thr->catchstack + thr->catchstack_top;
-			DUK_ASSERT(thr->catchstack_top + 1 <= thr->catchstack_size);
-			thr->catchstack_top++;
-
-			cat->flags = DUK_CAT_TYPE_TCF;
-			cat->h_varname = NULL;
-
-			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH) {
-				cat->flags |= DUK_CAT_FLAG_CATCH_ENABLED;
-			}
-			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY) {
-				cat->flags |= DUK_CAT_FLAG_FINALLY_ENABLED;
-			}
-			if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
-				DUK_DDD(DUK_DDDPRINT("catch binding flag set to catcher"));
-				cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
-				tv1 = DUK__REGP(bc);
-				DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
-
-				/* borrowed reference; although 'tv1' comes from a register,
-				 * its value was loaded using LDCONST so the constant will
-				 * also exist and be reachable.
-				 */
-				cat->h_varname = DUK_TVAL_GET_STRING(tv1);
-			} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
-				/* env created above to stack top */
-				duk_hobject *new_env;
-
-				DUK_DDD(DUK_DDDPRINT("lexenv active flag set to catcher"));
-				cat->flags |= DUK_CAT_FLAG_LEXENV_ACTIVE;
-
-				DUK_DDD(DUK_DDDPRINT("activating object env: %!iT",
-				                     (duk_tval *) duk_get_tval(ctx, -1)));
-				DUK_ASSERT(act->lex_env != NULL);
-				new_env = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
-				DUK_ASSERT(new_env != NULL);
-
-				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
-				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) new_env) == NULL);
-				DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);  /* side effects */
-
-				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
-				act->lex_env = new_env;
-				DUK_HOBJECT_INCREF(thr, new_env);
-				duk_pop(ctx);
-			} else {
-				;
-			}
-
 			/* Registers 'bc' and 'bc + 1' are written in longjmp handling
 			 * and if their previous values (which are temporaries) become
 			 * unreachable -and- have a finalizer, there'll be a function
@@ -4141,18 +4035,112 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * error handling, so there's no side effect problem even if the
 			 * error value has a finalizer.
 			 */
+			duk_dup(ctx, bc);  /* Stabilize value. */
 			duk_to_undefined(ctx, bc);
 			duk_to_undefined(ctx, bc + 1);
 
-			cat = thr->catchstack + thr->catchstack_top - 1;  /* relookup (side effects) */
+			/* Ensure a catchstack entry is available.  One entry
+			 * is guaranteed even if side effects cause function
+			 * calls and the catchstack is shrunk because some
+			 * spare room is left behind by a shrink operation.
+			 */
+			duk_hthread_catchstack_grow(thr);
+
+			/* Allocate catcher and populate it.  Doesn't have to
+			 * be fully atomic, but the catcher must be in a
+			 * consistent state if side effects (such as finalizer
+			 * calls) occur.
+			 */
+
+			DUK_ASSERT(thr->catchstack_top + 1 <= thr->catchstack_size);
+			cat = thr->catchstack + thr->catchstack_top;
+			thr->catchstack_top++;
+
+			cat->flags = DUK_CAT_TYPE_TCF;
+			cat->h_varname = NULL;
 			cat->callstack_index = thr->callstack_top - 1;
 			cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
 			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + bc;
+
+			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH) {
+				cat->flags |= DUK_CAT_FLAG_CATCH_ENABLED;
+			}
+			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY) {
+				cat->flags |= DUK_CAT_FLAG_FINALLY_ENABLED;
+			}
+			if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
+				DUK_DDD(DUK_DDDPRINT("catch binding flag set to catcher"));
+				cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
+				tv1 = DUK_GET_TVAL_NEGIDX(thr, -1);
+				DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
+
+				/* borrowed reference; although 'tv1' comes from a register,
+				 * its value was loaded using LDCONST so the constant will
+				 * also exist and be reachable.
+				 */
+				cat->h_varname = DUK_TVAL_GET_STRING(tv1);
+			} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
+				duk_hobjenv *env;
+				duk_hobject *target;
+
+				/* Delayed env initialization for activation (if needed). */
+				act = thr->callstack + thr->callstack_top - 1;
+				DUK_ASSERT(thr->callstack_top >= 1);
+				if (act->lex_env == NULL) {
+					DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
+					DUK_ASSERT(act->var_env == NULL);
+
+					duk_js_init_activation_environment_records_delayed(thr, act);
+					act = thr->callstack + thr->callstack_top - 1;  /* relookup, side effects */
+					DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
+				}
+				DUK_ASSERT(act->lex_env != NULL);
+				DUK_ASSERT(act->var_env != NULL);
+
+				/* Coerce 'with' target. */
+				target = duk_to_hobject(ctx, -1);
+				DUK_ASSERT(target != NULL);
+
+				/* Create an object environment; it is not pushed
+				 * so avoid side effects very carefully until it is
+				 * referenced.
+				 */
+				env = duk_hobjenv_alloc(thr,
+				                        DUK_HOBJECT_FLAG_EXTENSIBLE |
+				                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+				DUK_ASSERT(env != NULL);
+				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+				env->target = target;  /* always provideThis=true */
+				DUK_HOBJECT_INCREF(thr, target);
+				env->has_this = 1;
+				DUK_ASSERT_HOBJENV_VALID(env);
+				DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iO", env));
+
+				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
+				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+				DUK_ASSERT(act->lex_env != NULL);
+				DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, act->lex_env);
+				act->lex_env = (duk_hobject *) env;  /* Now reachable. */
+				DUK_HOBJECT_INCREF(thr, (duk_hobject *) env);
+				/* Net refcount change to act->lex_env is 0: incref for env's
+				 * prototype, decref for act->lex_env overwrite.
+				 */
+
+				/* Set catcher lex_env active (affects unwind)
+				 * only when the whole setup is complete.
+				 */
+				cat = thr->catchstack + thr->catchstack_top - 1;
+				cat->flags |= DUK_CAT_FLAG_LEXENV_ACTIVE;
+			} else {
+				;
+			}
 
 			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, callstack_index=%ld, pc_base=%ld, "
 			                     "idx_base=%ld, h_varname=%!O",
 			                     (unsigned long) cat->flags, (long) cat->callstack_index,
 			                     (long) cat->pc_base, (long) cat->idx_base, (duk_heaphdr *) cat->h_varname));
+
+			duk_pop(ctx);
 
 			curr_pc += 2;  /* skip jump slots */
 			break;
@@ -4222,6 +4210,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				DUK_ASSERT(prev_env != NULL);
 				act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, prev_env);
 				DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
+				DUK_HOBJECT_INCREF(thr, act->lex_env);
 				DUK_HOBJECT_DECREF(thr, prev_env);  /* side effects */
 			}
 
