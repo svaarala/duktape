@@ -2514,6 +2514,8 @@ Planned
 
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
+* Portability improvements for Solaris, HPUX, and AIX (GH-1356)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
