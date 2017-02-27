@@ -2510,6 +2510,10 @@ Planned
   overwrite the existing binding rather than being treated as a no-op
   (GH-1351, GH-1354)
 
+* Fix stale activation ('act') pointer in pre/post inc/dec handling which could
+  lead to memory unsafe behavior if the argument ToNumber() coercion had side
+  effects causing a callstack resize (GH-1370, GH-1371)
+
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
