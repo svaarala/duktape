@@ -748,11 +748,13 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr,
 
 	if (op & 0x02) {
 		duk_push_number(ctx, y);  /* -> [ ... x this y ] */
+		act = thr->callstack + thr->callstack_top - 1;
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(ctx, -1), is_strict);
 		duk_pop_2(ctx);  /* -> [ ... x ] */
 	} else {
 		duk_pop_2(ctx);  /* -> [ ... ] */
 		duk_push_number(ctx, y);  /* -> [ ... y ] */
+		act = thr->callstack + thr->callstack_top - 1;
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(ctx, -1), is_strict);
 	}
 
