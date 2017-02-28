@@ -3764,6 +3764,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			if (act->lex_env == NULL) {
 				DUK_ASSERT(act->var_env == NULL);
 				duk_js_init_activation_environment_records_delayed(thr, act);
+				act = thr->callstack + thr->callstack_top - 1;
 			}
 			DUK_ASSERT(act->lex_env != NULL);
 			DUK_ASSERT(act->var_env != NULL);
@@ -4105,11 +4106,11 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 
 				DUK_DDD(DUK_DDDPRINT("activating object env: %!iT",
 				                     (duk_tval *) duk_get_tval(ctx, -1)));
-				DUK_ASSERT(act->lex_env != NULL);
 				new_env = DUK_GET_HOBJECT_NEGIDX(ctx, -1);
 				DUK_ASSERT(new_env != NULL);
 
 				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */
+				DUK_ASSERT(act->lex_env != NULL);
 				DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, new_env, act->lex_env);  /* side effects */
 
 				act = thr->callstack + thr->callstack_top - 1;  /* relookup (side effects) */

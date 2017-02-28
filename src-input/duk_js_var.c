@@ -535,7 +535,10 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *func;
 	duk_hobject *env;
+	duk_size_t act_off;
 
+	DUK_ASSERT(act != NULL);
+	act_off = (duk_size_t) ((duk_uint8_t *) act - (duk_uint8_t *) thr->callstack);
 	func = DUK_ACT_GET_FUNC(act);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound functions are never in act 'func' */
@@ -550,6 +553,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 
 	env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
 	DUK_ASSERT(env != NULL);
+	act = (duk_activation *) ((duk_uint8_t *) thr->callstack + act_off);
 
 	DUK_DDD(DUK_DDDPRINT("created delayed fresh env: %!ipO", (duk_heaphdr *) env));
 #if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
@@ -1797,6 +1801,10 @@ duk_bool_t duk_js_declvar_activation(duk_hthread *thr,
                                      duk_bool_t is_func_decl) {
 	duk_hobject *env;
 	duk_tval tv_val_copy;
+	duk_size_t act_off;
+
+	DUK_ASSERT(act != NULL);
+	act_off = (duk_size_t) ((duk_uint8_t *) act - (duk_uint8_t *) thr->callstack);
 
 	/*
 	 *  Make a value copy of the input val.  This ensures that
@@ -1813,6 +1821,7 @@ duk_bool_t duk_js_declvar_activation(duk_hthread *thr,
 	if (!act->var_env) {
 		DUK_ASSERT(act->lex_env == NULL);
 		duk_js_init_activation_environment_records_delayed(thr, act);
+		act = (duk_activation *) ((duk_uint8_t *) thr->callstack + act_off);
 	}
 	DUK_ASSERT(act->lex_env != NULL);
 	DUK_ASSERT(act->var_env != NULL);

@@ -518,7 +518,6 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                     "var_env and lex_env to a fresh env, "
 			                     "this_binding to caller's this_binding"));
 
-			act = thr->callstack + thr->callstack_top + level;  /* caller */
 			act_lex_env = act->lex_env;
 			act = NULL;  /* invalidated */
 

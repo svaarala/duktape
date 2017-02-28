@@ -1019,6 +1019,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_pop_3(ctx);
 		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
+		act = thr->callstack + thr->callstack_top - 1;
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hthread_get_act_curr_pc(thr, act));
 	}
 
@@ -1059,6 +1060,7 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		duk_push_tval(ctx, &act->tv_func);
 		duk_get_prop_string(ctx, -1, "fileName");
 		duk__debug_write_hstring_safe_top(thr);
+		act = thr->callstack + thr->callstack_top - 1;
 		pc = duk_hthread_get_act_prev_pc(thr, act);
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
 	}
