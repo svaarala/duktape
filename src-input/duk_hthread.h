@@ -134,8 +134,6 @@
 #endif
 #endif  /* DUK_USE_ROM_STRINGS */
 
-#define DUK_HTHREAD_GET_CURRENT_ACTIVATION(thr)  (&(thr)->callstack[(thr)->callstack_top - 1])
-
 /* values for the state field */
 #define DUK_HTHREAD_STATE_INACTIVE     1   /* thread not currently running */
 #define DUK_HTHREAD_STATE_RUNNING      2   /* thread currently running (only one at a time) */
@@ -317,8 +315,9 @@ struct duk_hthread {
 
 	/* Call stack.  [0,callstack_top[ is GC reachable. */
 	duk_activation *callstack;
+	duk_activation *callstack_curr;         /* current activation (or NULL if none) */
 	duk_size_t callstack_size;              /* allocation size */
-	duk_size_t callstack_top;               /* next to use, highest used is top - 1 */
+	duk_size_t callstack_top;               /* next to use, highest used is top - 1 (or none if top == 0) */
 	duk_size_t callstack_preventcount;      /* number of activation records in callstack preventing a yield */
 
 	/* Catch stack.  [0,catchstack_top[ is GC reachable. */
@@ -385,7 +384,6 @@ DUK_INTERNAL_DECL void duk_hthread_catchstack_grow(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
-DUK_INTERNAL_DECL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr);
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */

@@ -472,7 +472,7 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	act = duk_hthread_get_current_activation(thr);
+	act = thr->callstack_curr;
 	if (act != NULL) {
 		return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
 	}
@@ -505,12 +505,13 @@ DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	act = duk_hthread_get_current_activation(thr);
-	if (act == NULL) {
+	act = thr->callstack_curr;
+	if (act != NULL) {
+		return ((act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
+	} else {
 		/* Strict by default. */
 		return 1;
 	}
-	return ((act->flags & DUK_ACT_FLAG_STRICT) != 0 ? 1 : 0);
 }
 
 /*
@@ -526,7 +527,7 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
-	act = duk_hthread_get_current_activation(thr);
+	act = thr->callstack_curr;
 	if (act) {
 		func = DUK_ACT_GET_FUNC(act);
 		if (!func) {

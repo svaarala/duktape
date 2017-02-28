@@ -569,7 +569,9 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
 		return;
 	}
 
-	act_callee = thr->callstack + thr->callstack_top - 1;
+	DUK_ASSERT(thr->callstack_top > 0);
+	act_callee = thr->callstack_curr;
+	DUK_ASSERT(act_callee != NULL);
 	act_caller = (thr->callstack_top >= 2 ? act_callee - 1 : NULL);
 
 	/* XXX: check .caller writability? */
@@ -1326,7 +1328,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 
 	duk_hthread_callstack_grow(thr);
 
-	if (thr->callstack_top > 0) {
+	act = thr->callstack_curr;
+	if (act != NULL) {
 		/*
 		 *  Update idx_retval of current activation.
 		 *
@@ -1337,12 +1340,13 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		 *  the Ecmascript call's idx_retval must be set for things to work.
 		 */
 
-		(thr->callstack + thr->callstack_top - 1)->idx_retval = entry_valstack_bottom_index + idx_func;
+		act->idx_retval = entry_valstack_bottom_index + idx_func;
 	}
 
 	DUK_ASSERT(thr->callstack_top < thr->callstack_size);
 	act = thr->callstack + thr->callstack_top;
 	thr->callstack_top++;
+	thr->callstack_curr = act;
 	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 	DUK_ASSERT(thr->valstack_top > thr->valstack_bottom);  /* at least effective 'this' */
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
@@ -1433,7 +1437,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	if (func) {
 		duk__update_func_caller_prop(thr, func);
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
 	}
 #endif
 
@@ -1479,7 +1483,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 
 				/* [ ... func this arg1 ... argN envobj ] */
 
-				act = thr->callstack + thr->callstack_top - 1;
+				act = thr->callstack_curr;
 				act->lex_env = env;
 				act->var_env = env;
 				DUK_HOBJECT_INCREF(thr, env);
@@ -1531,7 +1535,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  new value stack bottom, and call the target.
 	 */
 
-	act = thr->callstack + thr->callstack_top - 1;
+	act = thr->callstack_curr;
 	if (func != NULL && DUK_HOBJECT_IS_COMPFUNC(func)) {
 		/*
 		 *  Ecmascript call
@@ -1573,7 +1577,6 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		/* Unwind. */
 
 		DUK_ASSERT(thr->catchstack_top >= entry_catchstack_top);  /* may need unwind */
-		DUK_ASSERT(thr->callstack_top == entry_callstack_top + 1);
 		DUK_ASSERT(thr->callstack_top == entry_callstack_top + 1);
 		duk_hthread_catchstack_unwind(thr, entry_catchstack_top);
 		duk_hthread_catchstack_shrink_check(thr);
@@ -2449,7 +2452,8 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_top >= 1);
 		DUK_ASSERT((call_flags & DUK_CALL_FLAG_IS_RESUME) == 0);
 
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
+		DUK_ASSERT(act != NULL);
 		if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 			/* See: test-bug-tailcall-preventyield-assert.c. */
 			DUK_DDD(DUK_DDDPRINT("tail call prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
@@ -2503,9 +2507,10 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		duk_hthread_callstack_unwind(thr, thr->callstack_top - 1);
 
 		/* Then reuse the unwound activation; callstack was not shrunk so there is always space */
+		DUK_ASSERT(thr->callstack_top < thr->callstack_size);
+		act = thr->callstack + thr->callstack_top;
 		thr->callstack_top++;
-		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
-		act = thr->callstack + thr->callstack_top - 1;
+		thr->callstack_curr = act;
 
 		/* Start filling in the activation */
 		act->func = func;  /* don't want an intermediate exposed state with func == NULL */
@@ -2522,7 +2527,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_TVAL_SET_OBJECT(&act->tv_func, func);  /* borrowed, no refcount */
 #if defined(DUK_USE_REFERENCE_COUNTING)
 		DUK_HOBJECT_INCREF(thr, func);
-		act = thr->callstack + thr->callstack_top - 1;  /* side effects (currently none though) */
+		act = thr->callstack_curr;  /* side effects (currently none though) */
 #endif
 
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
@@ -2534,7 +2539,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		 * is in use.
 		 */
 		duk__update_func_caller_prop(thr, func);
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
 #endif
 
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
@@ -2591,7 +2596,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 			DUK_DDD(DUK_DDDPRINT("update to current activation idx_retval"));
 			DUK_ASSERT(thr->callstack_top < thr->callstack_size);
 			DUK_ASSERT(thr->callstack_top >= 1);
-			act = thr->callstack + thr->callstack_top - 1;
+			act = thr->callstack_curr;
 			DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act)));
 			act->idx_retval = entry_valstack_bottom_index + idx_func;
@@ -2600,6 +2605,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_top < thr->callstack_size);
 		act = thr->callstack + thr->callstack_top;
 		thr->callstack_top++;
+		thr->callstack_curr = act;
 		DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
@@ -2632,7 +2638,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 		duk__update_func_caller_prop(thr, func);
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
 #endif
 	}
 
@@ -2691,7 +2697,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* [ ... arg1 ... argN envobj ] */
 
-	act = thr->callstack + thr->callstack_top - 1;
+	act = thr->callstack_curr;
 	act->lex_env = env;
 	act->var_env = env;
 	DUK_HOBJECT_INCREF(thr, act->lex_env);

@@ -21,6 +21,7 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	DUK_ASSERT(thr->valstack_bottom == NULL);
 	DUK_ASSERT(thr->valstack_top == NULL);
 	DUK_ASSERT(thr->callstack == NULL);
+	DUK_ASSERT(thr->callstack_curr == NULL);
 	DUK_ASSERT(thr->catchstack == NULL);
 
 	/* valstack */
@@ -50,6 +51,7 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	DUK_MEMZERO(thr->callstack, alloc_size);
 	thr->callstack_size = DUK_CALLSTACK_INITIAL_SIZE;
 	DUK_ASSERT(thr->callstack_top == 0);
+	DUK_ASSERT(thr->callstack_curr == NULL);
 
 	/* catchstack */
 	alloc_size = sizeof(duk_catcher) * DUK_CATCHSTACK_INITIAL_SIZE;
