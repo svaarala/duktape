@@ -1433,8 +1433,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	if (func) {
 		duk__update_func_caller_prop(thr, func);
+		act = thr->callstack + thr->callstack_top - 1;
 	}
-	act = thr->callstack + thr->callstack_top - 1;
 #endif
 
 	/* [ ... func this arg1 ... argN ] */
@@ -1494,6 +1494,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			DUK_ASSERT(!DUK_HOBJECT_HAS_CREATEARGS(func));
 
 			duk__handle_oldenv_for_call(thr, func, act);
+			/* No need to re-lookup 'act' at present: no side effects. */
 
 			DUK_ASSERT(act->lex_env != NULL);
 			DUK_ASSERT(act->var_env != NULL);
@@ -1530,6 +1531,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  new value stack bottom, and call the target.
 	 */
 
+	act = thr->callstack + thr->callstack_top - 1;
 	if (func != NULL && DUK_HOBJECT_IS_COMPFUNC(func)) {
 		/*
 		 *  Ecmascript call
@@ -2659,6 +2661,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		 */
 
 		duk__handle_oldenv_for_call(thr, func, act);
+		/* No need to re-lookup 'act' at present: no side effects. */
 
 		DUK_ASSERT(act->lex_env != NULL);
 		DUK_ASSERT(act->var_env != NULL);

@@ -3762,6 +3762,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			if (act->lex_env == NULL) {
 				DUK_ASSERT(act->var_env == NULL);
 				duk_js_init_activation_environment_records_delayed(thr, act);
+				act = thr->callstack + thr->callstack_top - 1;
 			}
 			DUK_ASSERT(act->lex_env != NULL);
 			DUK_ASSERT(act->var_env != NULL);
@@ -4086,8 +4087,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				duk_hobject *target;
 
 				/* Delayed env initialization for activation (if needed). */
-				act = thr->callstack + thr->callstack_top - 1;
 				DUK_ASSERT(thr->callstack_top >= 1);
+				act = thr->callstack + thr->callstack_top - 1;
 				if (act->lex_env == NULL) {
 					DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 					DUK_ASSERT(act->var_env == NULL);
