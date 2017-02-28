@@ -3747,6 +3747,7 @@ DUK_LOCAL DUK_NOINLINE void duk__js_execute_bytecode_inner(duk_hthread *entry_th
 			duk_push_number(ctx, y);
 			tv1 = DUK_GET_TVAL_NEGIDX(ctx, -1);
 			DUK_ASSERT(tv1 != NULL);
+			act = thr->callstack + thr->callstack_top - 1;
 			duk_js_putvar_activation(thr, act, name, tv1, DUK__STRICT());
 			duk_pop(ctx);
 
