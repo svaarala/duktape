@@ -1423,7 +1423,11 @@ DUK_LOCAL void duk__enc_fastint_tval(duk_json_enc_ctx *js_ctx, duk_tval *tv) {
 	 * "long long" type exists.  Could also rely on C99 directly but that
 	 * won't work for older MSVC.
 	 */
+#if defined(__MINGW32__) || defined(__MINGW64__)
+	DUK_SPRINTF((char *) buf, "%I64d", (long long) v);
+#else
 	DUK_SPRINTF((char *) buf, "%lld", (long long) v);
+#endif
 	DUK__EMIT_CSTR(js_ctx, (const char *) buf);
 }
 #endif
