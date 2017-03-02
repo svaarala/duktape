@@ -1046,19 +1046,29 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		duk__debug_write_hstring_safe_top(thr);
 		duk_get_prop_stridx(ctx, -2, DUK_STRIDX_LINE_NUMBER);
 		duk_debug_write_uint(thr, duk_get_uint(ctx, -1));
+		duk_pop_2(ctx);
 	} else {
-		/* For anything other than an Error instance, we calculate the error
-		 * location directly from the current activation.
+		/* For anything other than an Error instance, we calculate the
+		 * error location directly from the current activation if one
+		 * exists.
 		 */
-		act = thr->callstack + thr->callstack_top - 1;
-		duk_push_tval(ctx, &act->tv_func);
-		duk_get_prop_string(ctx, -1, "fileName");
-		duk__debug_write_hstring_safe_top(thr);
-		act = thr->callstack + thr->callstack_top - 1;
-		pc = duk_hthread_get_act_prev_pc(thr, act);
-		duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
+		if (thr->callstack_top > 0) {
+			act = thr->callstack + thr->callstack_top - 1;
+			duk_push_tval(ctx, &act->tv_func);
+			duk_get_prop_string(ctx, -1, "fileName");
+			duk__debug_write_hstring_safe_top(thr);
+			act = thr->callstack + thr->callstack_top - 1;
+			pc = duk_hthread_get_act_prev_pc(thr, act);
+			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
+			duk_pop_2(ctx);
+		} else {
+			/* Can happen if duk_throw() is called on an empty
+			 * callstack.
+			 */
+			duk_debug_write_cstring(thr, "");
+			duk_debug_write_uint(thr, 0);
+		}
 	}
-	duk_pop_2(ctx);  /* shared pop */
 
 	duk_debug_write_eom(thr);
 }
