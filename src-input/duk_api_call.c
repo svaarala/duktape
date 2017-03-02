@@ -473,8 +473,10 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	act = duk_hthread_get_current_activation(thr);
-	DUK_ASSERT(act != NULL);  /* because callstack_top > 0 */
-	return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
+	if (act != NULL) {
+		return ((act->flags & DUK_ACT_FLAG_CONSTRUCT) != 0 ? 1 : 0);
+	}
+	return 0;
 }
 
 /* XXX: Make this obsolete by adding a function flag for rejecting a
