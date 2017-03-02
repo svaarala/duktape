@@ -2513,6 +2513,8 @@ Planned
 * Fix some stale activation ('act') pointer handling which could lead to
   memory unsafe behavior in some cases (GH-1370, GH-1371, GH-1373)
 
+* Fix duk_is_constructor_call() for an empty callstack (GH-1376)
+
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
