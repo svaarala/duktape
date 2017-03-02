@@ -33,16 +33,6 @@ DUK_INTERNAL void duk_hthread_terminate(duk_hthread *thr) {
 	 */
 }
 
-DUK_INTERNAL duk_activation *duk_hthread_get_current_activation(duk_hthread *thr) {
-	DUK_ASSERT(thr != NULL);
-
-	if (thr->callstack_top > 0) {
-		return thr->callstack + thr->callstack_top - 1;
-	} else {
-		return NULL;
-	}
-}
-
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk_activation *act) {
 	duk_instr_t *bcode;
@@ -88,7 +78,9 @@ DUK_INTERNAL void duk_hthread_sync_currpc(duk_hthread *thr) {
 	if (thr->ptr_curr_pc != NULL) {
 		/* ptr_curr_pc != NULL only when bytecode executor is active. */
 		DUK_ASSERT(thr->callstack_top > 0);
-		act = thr->callstack + thr->callstack_top - 1;
+		DUK_ASSERT(thr->callstack_curr != NULL);
+		act = thr->callstack_curr;
+		DUK_ASSERT(act != NULL);
 		act->curr_pc = *thr->ptr_curr_pc;
 	}
 }
@@ -101,7 +93,9 @@ DUK_INTERNAL void duk_hthread_sync_and_null_currpc(duk_hthread *thr) {
 	if (thr->ptr_curr_pc != NULL) {
 		/* ptr_curr_pc != NULL only when bytecode executor is active. */
 		DUK_ASSERT(thr->callstack_top > 0);
-		act = thr->callstack + thr->callstack_top - 1;
+		DUK_ASSERT(thr->callstack_curr != NULL);
+		act = thr->callstack_curr;
+		DUK_ASSERT(act != NULL);
 		act->curr_pc = *thr->ptr_curr_pc;
 		thr->ptr_curr_pc = NULL;
 	}

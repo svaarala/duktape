@@ -2536,7 +2536,8 @@ Planned
   flag (instead of a flag bit) (GH-1362)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
-  (GH-1357)
+  (GH-1357), explicit thr->callstack_curr field for current activation
+  (GH-1372)
 
 * Internal change: duk_hstring now has a 'next' heap pointer for string table
   chaining; this affects string allocation sizes which may matter for manually

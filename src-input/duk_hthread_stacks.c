@@ -55,6 +55,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_callstack_grow(duk_hthread 
 	thr->callstack = new_ptr;
 	thr->callstack_size = new_size;
 
+	if (thr->callstack_top > 0) {
+		thr->callstack_curr = thr->callstack + thr->callstack_top - 1;
+	} else {
+		thr->callstack_curr = NULL;
+	}
+
 	/* note: any entries above the callstack top are garbage and not zeroed */
 }
 
@@ -93,6 +99,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_callstack_shrink(duk_hthrea
 	if (p) {
 		thr->callstack = p;
 		thr->callstack_size = new_size;
+
+		if (thr->callstack_top > 0) {
+			thr->callstack_curr = thr->callstack + thr->callstack_top - 1;
+		} else {
+			thr->callstack_curr = NULL;
+		}
 	} else {
 		/* Because new_size != 0, if condition doesn't need to be
 		 * (p != NULL || new_size == 0).
@@ -278,14 +290,19 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	}
 
 	thr->callstack_top = new_top;
+	if (new_top > 0) {
+		thr->callstack_curr = thr->callstack + new_top - 1;
+	} else {
+		thr->callstack_curr = NULL;
+	}
 
 	/*
 	 *  We could clear the book-keeping variables for the topmost activation,
 	 *  but don't do so now.
 	 */
 #if 0
-	if (thr->callstack_top > 0) {
-		duk_activation *act = thr->callstack + thr->callstack_top - 1;
+	if (thr->callstack_curr != NULL) {
+		duk_activation *act = thr->callstack_curr;
 		act->idx_retval = 0;
 	}
 #endif

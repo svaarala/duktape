@@ -973,7 +973,7 @@ DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
 	duk_uint_fast32_t line;
 	duk_uint_fast32_t pc;
 
-	act = duk_hthread_get_current_activation(thr);  /* may be NULL */
+	act = thr->callstack_curr;
 	if (act == NULL) {
 		return 0;
 	}
@@ -1004,13 +1004,13 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_debug_write_int(thr, (DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) ? 1 : 0));
 
 	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* unsigned */
-	if (thr->callstack_top == 0) {
+	act = thr->callstack_curr;
+	if (act == NULL) {
 		duk_debug_write_undefined(thr);
 		duk_debug_write_undefined(thr);
 		duk_debug_write_int(thr, 0);
 		duk_debug_write_int(thr, 0);
 	} else {
-		act = thr->callstack + thr->callstack_top - 1;
 		duk_push_tval(ctx, &act->tv_func);
 		duk_get_prop_string(ctx, -1, "fileName");
 		duk__debug_write_hstring_safe_top(thr);
@@ -1019,7 +1019,7 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_pop_3(ctx);
 		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
-		act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hthread_get_act_curr_pc(thr, act));
 	}
 
@@ -1058,12 +1058,12 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		 * error location directly from the current activation if one
 		 * exists.
 		 */
-		if (thr->callstack_top > 0) {
-			act = thr->callstack + thr->callstack_top - 1;
+		act = thr->callstack_curr;
+		if (act != NULL) {
 			duk_push_tval(ctx, &act->tv_func);
 			duk_get_prop_string(ctx, -1, "fileName");
 			duk__debug_write_hstring_safe_top(thr);
-			act = thr->callstack + thr->callstack_top - 1;
+			act = thr->callstack_curr;
 			pc = duk_hthread_get_act_prev_pc(thr, act);
 			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
 			duk_pop_2(ctx);
@@ -2651,7 +2651,7 @@ DUK_INTERNAL void duk_debug_halt_execution(duk_hthread *thr, duk_bool_t use_prev
 
 	DUK_HEAP_SET_PAUSED(thr->heap);
 
-	act = duk_hthread_get_current_activation(thr);
+	act = thr->callstack_curr;
 
 	/* NOTE: act may be NULL if an error is thrown outside of any activation,
 	 * which may happen in the case of, e.g. syntax errors.

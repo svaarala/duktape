@@ -161,6 +161,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 	res->valstack_bottom = NULL;
 	res->valstack_top = NULL;
 	res->callstack = NULL;
+	res->callstack_curr = NULL;
 	res->catchstack = NULL;
 	res->resumer = NULL;
 	res->compile_ctx = NULL,
