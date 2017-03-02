@@ -2515,6 +2515,9 @@ Planned
 
 * Fix duk_is_constructor_call() for an empty callstack (GH-1376)
 
+* Fix debugger Throw notify handling for an empty callstack (e.g. error
+  thrown by duk_throw() with nothing on the callstack) (GH-1377)
+
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
