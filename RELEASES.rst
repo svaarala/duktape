@@ -2529,11 +2529,15 @@ Planned
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
   functions (GH-1297)
 
+* Don't decrease voluntary GC trigger counter for internal memory free
+  operations (only allocations) (GH-1361)
+
 * Miscellaneous compiler warning fixes (GH-1358)
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309, GH-1312), integer
-  refzero-free-running flag (instead of a flag bit) (GH-1362)
+  refzero-free-running flag (instead of a flag bit) (GH-1362), faster refzero
+  queueing / free pending check (GH-1361)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
   (GH-1357), explicit thr->callstack_curr field for current activation
