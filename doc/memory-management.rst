@@ -1492,9 +1492,9 @@ point arithmetic)::
 
   // MULT and ADD are tuning parameters
 
-The trigger count is decreased on every memory (re)allocation and free, to
-roughly measure allocation activity.  If the trigger count is below zero when
-memory is about to be (re)allocated, a a voluntary mark-and-sweep pass is
+The trigger count is decreased on every memory (re)allocation (but not free),
+to roughly measure allocation activity.  If the trigger count is below zero
+when memory is about to be (re)allocated, a a voluntary mark-and-sweep pass is
 done.  When ``MULT`` is 1 and ``ADD`` is 0, a voluntary sweep is done when
 the number of alloc/free operations matches the previous heap object/string
 count.
