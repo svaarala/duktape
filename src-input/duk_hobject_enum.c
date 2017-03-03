@@ -509,7 +509,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			    !DUK_HOBJECT_E_SLOT_IS_ENUMERABLE(thr->heap, curr, i)) {
 				continue;
 			}
-			if (DUK_HSTRING_HAS_SYMBOL(k)) {
+			if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(k))) {
 				if (!(enum_flags & DUK_ENUM_INCLUDE_HIDDEN) &&
 				    DUK_HSTRING_HAS_HIDDEN(k)) {
 					continue;

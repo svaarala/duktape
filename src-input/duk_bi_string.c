@@ -131,7 +131,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 		duk_push_hstring_empty(ctx);
 	} else {
 		h = duk_to_hstring_acceptsymbol(ctx, 0);
-		if (DUK_HSTRING_HAS_SYMBOL(h) && !duk_is_constructor_call(ctx)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h) && !duk_is_constructor_call(ctx))) {
 			duk_push_symbol_descriptive_string(ctx, h);
 			duk_replace(ctx, 0);
 		}

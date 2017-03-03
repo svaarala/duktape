@@ -1598,7 +1598,7 @@ DUK_INTERNAL duk_hstring *duk_get_hstring(duk_context *ctx, duk_idx_t idx) {
 
 DUK_INTERNAL duk_hstring *duk_get_hstring_notsymbol(duk_context *ctx, duk_idx_t idx) {
 	duk_hstring *res = (duk_hstring *) duk__get_tagged_heaphdr_raw(ctx, idx, DUK_TAG_STRING);
-	if (res && DUK_HSTRING_HAS_SYMBOL(res)) {
+	if (DUK_UNLIKELY(res && DUK_HSTRING_HAS_SYMBOL(res))) {
 		return NULL;
 	}
 	return res;
@@ -1920,7 +1920,7 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 	case DUK_TAG_STRING: {
 		duk_hstring *h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			return 0;
 		}
 		return (duk_size_t) DUK_HSTRING_GET_CHARLEN(h);
@@ -2461,7 +2461,7 @@ DUK_INTERNAL void duk_push_class_string_tval(duk_context *ctx, duk_tval *tv) {
 		duk_hstring *h;
 		h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			stridx = DUK_STRIDX_UC_SYMBOL;
 		} else {
 			stridx = DUK_STRIDX_UC_STRING;
@@ -2699,7 +2699,7 @@ DUK_INTERNAL duk_hstring *duk_to_hstring_acceptsymbol(duk_context *ctx, duk_idx_
 	duk_hstring *ret;
 	DUK_ASSERT_CTX_VALID(ctx);
 	ret = duk_get_hstring(ctx, idx);
-	if (ret && DUK_HSTRING_HAS_SYMBOL(ret)) {
+	if (DUK_UNLIKELY(ret && DUK_HSTRING_HAS_SYMBOL(ret))) {
 		return ret;
 	}
 	return duk_to_hstring(ctx, idx);
@@ -2910,7 +2910,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		duk_hstring *h;
 		h = DUK_TVAL_GET_STRING(tv);
 		DUK_ASSERT(h != NULL);
-		if (DUK_HSTRING_HAS_SYMBOL(h)) {
+		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 			        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_SYMBOL);
 			proto = DUK_BIDX_SYMBOL_PROTOTYPE;
@@ -3317,7 +3317,10 @@ DUK_EXTERNAL duk_bool_t duk_is_symbol(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	h = duk_get_hstring(ctx, idx);
-	if (h != NULL && DUK_HSTRING_HAS_SYMBOL(h)) {
+	/* Use DUK_LIKELY() here because caller may be more likely to type
+	 * check an expected symbol than not.
+	 */
+	if (DUK_LIKELY(h != NULL && DUK_HSTRING_HAS_SYMBOL(h))) {
 		return 1;
 	}
 	return 0;
