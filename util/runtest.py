@@ -32,6 +32,7 @@ import platform
 import md5
 import json
 import yaml
+import xml.etree.ElementTree as ET
 
 #
 #  Platform detection
@@ -160,6 +161,8 @@ def blue(text):
     return ansi_color(text, '0;37;44')
 def yellow(text):
     return ansi_color(text, '0;33;40')
+def grey(text):
+    return ansi_color(text, '6;37;40')
 
 # Parse lines.  Split a text input into lines using LF as the line separator.
 # Assume last line is terminated with a LF and ignore an "empty line" that
@@ -199,6 +202,72 @@ def clip_lines(lines, start_idx, end_idx, column_limit=None):
 # Remove carriage returns.
 def remove_cr(data):
     return data.replace('\r', '')
+
+#
+#  Valgrind result processing
+#
+
+def parse_massif_result(f, res):
+    # Allocated bytes.
+    re_heap_b = re.compile(r'^mem_heap_B=(\d+)$')
+
+    # Allocation overhead.  Matters for desktop environments, for efficient
+    # zero overhead pool allocators this is not usually a concern (the waste
+    # in a pool allocator behaves very differently than a libc allocator).
+    re_heap_extra_b = re.compile(r'^mem_heap_extra_B=(\d+)$')
+
+    # Stacks.
+    re_stacks_b = re.compile(r'^mem_stacks_B=(\d+)$')
+
+    peak_heap = 0
+    peak_stack = 0
+
+    for line in f:
+        line = line.strip()
+        #print(line)
+        m1 = re_heap_b.match(line)
+        m2 = re_heap_extra_b.match(line)
+        m3 = re_stacks_b.match(line)
+
+        heap = None
+        if m1 is not None:
+            heap = int(m1.group(1))
+        stack = None
+        if m3 is not None:
+            stack = int(m3.group(1))
+
+        if heap is not None:
+            peak_heap = max(peak_heap, heap)
+        if stack is not None:
+            peak_stack = max(peak_stack, stack)
+
+    res['massif_peak_heap_bytes'] = peak_heap
+    res['massif_peak_stack_bytes'] = peak_stack
+
+def parse_memcheck_result(f, res):
+    try:
+        tree = ET.parse(f)
+    except ET.ParseError:
+        res['errors'].append('memcheck-parse-failed')
+        return
+    root = tree.getroot()
+    if root.tag != 'valgrindoutput':
+        raise Exception('invalid valgrind xml format')
+
+    def parse_error(node):
+        err = {}
+        for child in node.findall('kind'):
+            err['kind'] = child.text
+        for child in node.findall('xwhat'):
+            for child2 in child.findall('text'):
+                err['text'] = child2.text
+
+        res['errors'].append(err['kind'])
+        # XXX: make res['errors'] structured rather than text list?
+        # 'err' is now ignored.
+
+    for child in root.findall('error'):
+        parse_error(child)
 
 #
 #  Test execution and result interpretation helpers.
@@ -384,13 +453,13 @@ def parse_known_issue(data):
 def find_known_issues():
     for dirname in [
         os.path.join(os.path.dirname(testcase_filename), '..', 'knownissues'),
-        os.path.join(os.path.dirname(script_path), '..', 'tests', 'knownissues'),
-        os.path.join(os.path.dirname(entry_cwd), 'tests', 'knownissues')
+        os.path.join(script_path, '..', 'tests', 'knownissues'),
+        os.path.join(entry_cwd, 'tests', 'knownissues')
     ]:
         #print('Find known issues, try: %r' % dirname)
         if os.path.isdir(dirname):
             return dirname
-    raise Exception('failed to locate testcases')
+    raise Exception('failed to locate known issues')
 
 # Check known issues against output data.
 def check_known_issues(dirname, output):
@@ -423,20 +492,35 @@ def execute_ecmascript_testcase(res, data, name):
     test_fn = os.path.abspath(os.path.join(tempdir, name))
     write_file(test_fn, data)
 
+    valgrind_output = None
+
     cmd = []
     try:
         start_time = time.time()
         try:
             if opts.valgrind:
                 res['valgrind'] = True
-                cmd += [ 'valgrind', path_to_platform(opts.duk) ]
+                res['valgrind_tool'] = opts.valgrind_tool
+                cmd += [ 'valgrind' ]
+                cmd += [ '--tool=' + opts.valgrind_tool ]
+
+                valgrind_output = os.path.abspath(os.path.join(tempdir, 'valgrind.out'))
+                if opts.valgrind_tool == 'massif':
+                    cmd += [ '--massif-out-file=' + path_to_platform(valgrind_output) ]
+                    #cmd += [ '--peak-inaccuracy=0.0' ]
+                    #cmd += [ '--stacks=yes' ]
+                elif opts.valgrind_tool == 'memcheck':
+                    cmd += [ '--xml=yes', '--xml-file=' + path_to_platform(valgrind_output) ]
+                else:
+                    raise Exception('invalid valgrind tool %r' % opts.valgrind_tool)
+                cmd += [ path_to_platform(os.path.abspath(opts.duk)) ]
             else:
-                cmd += [ opts.duk ]
-            cmd += [ path_to_platform(test_fn) ]
+                cmd += [ os.path.abspath(opts.duk) ]
+            cmd += [ path_to_platform(os.path.abspath(test_fn)) ]
             res['command'] = cmd
 
             #print('Executing: %r' % cmd)
-            proc = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            proc = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=os.path.abspath(tempdir))
 
             timeout_sec = opts.timeout
             def kill_proc(p):
@@ -458,6 +542,16 @@ def execute_ecmascript_testcase(res, data, name):
             if opts.valgrind:
                 res['valgrind_output'] = ret[1]
                 res['stderr'] = ''  # otherwise interpreted as an error
+                if valgrind_output is not None and os.path.exists(valgrind_output):
+                    with open(valgrind_output, 'rb') as f:
+                        res['valgrind_output'] += f.read()
+                    with open(valgrind_output, 'rb') as f:
+                        if opts.valgrind_tool == 'massif':
+                            parse_massif_result(f, res)
+                        elif opts.valgrind_tool == 'memcheck':
+                            parse_memcheck_result(f, res)
+                else:
+                    res['errors'].append('no-valgrind-output')
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             print('Command execution failed for %r:\n%s' % (cmd, traceback.format_exc(exc_traceback)))
@@ -477,7 +571,7 @@ def execute_api_testcase(data):
 def interpret_test_result(doc, expect):
     meta = doc['metadata']
 
-    errors = []
+    errors = doc['errors']
 
     known_meta = check_known_issues(opts.known_issues, doc['stdout'])
 
@@ -506,6 +600,8 @@ def interpret_test_result(doc, expect):
         success = False
         doc['knownissue'] = known_meta.get('summary', 'no summary')
         doc['knownissue_meta'] = known_meta
+    if len(errors) > 0:
+        success = False
 
     doc['success'] = success
     doc['errors'] = errors
@@ -519,40 +615,69 @@ def interpret_test_result(doc, expect):
 def print_summary(doc):
     meta = doc['metadata']
 
-    parts = []
-    test_time = '[%.1f sec]' % float(doc['duration'])
+    def fmt_time(x):
+        if x >= 60:
+            return '%.1f m' % (float(x) / 60.0)
+        else:
+            return '%.1f s' % float(x)
 
+    def fmt_size(x):
+        if x < 1024 * 1024:
+            return '%.2f k' % (float(x) / 1024.0)
+        else:
+            return '%.2f M' % (float(x) / (1024.0 * 1024.0))
+
+    parts = []
+    issues = []
+    test_result = '???'
+    test_name = doc['testcase_name'].ljust(50)
     print_diff = True  # print diff if it is nonzero
 
+    test_time = fmt_time(doc['duration'])
+    test_time = '[%s]' % (test_time.rjust(6))
+
     if doc['skipped']:
-        parts += [ 'SKIPPED', doc['testcase_name'] ]
+        test_result = 'SKIPPED'
     elif doc['success']:
         if doc['timeout']:
-            parts += [ red('TIMEOUT'), doc['testcase_name'] ]
+            test_result = red('TIMEOUT')
         else:
-            parts += [ green('SUCCESS'), doc['testcase_name'] ]
+            test_result = green('SUCCESS')
     else:
         if doc['timeout']:
-            parts += [ red('TIMEOUT'), doc['testcase_name'] ]
+            test_result = red('TIMEOUT')
         elif doc['knownissue'] != '':
-            parts += [ blue('KNOWN  '), doc['testcase_name'] ]
+            test_result = blue('KNOWN  ')
             print_diff = False
         else:
-            parts += [ red('FAILURE'), doc['testcase_name'] ]
+            test_result = red('FAILURE')
 
-        parts += [ '[%d diff lines]' % count_lines(doc['diff_expect']) ]
+        issues += [ '[%d diff lines]' % count_lines(doc['diff_expect']) ]
         if doc['knownissue'] != '':
-            parts += [ '[known: ' + doc['knownissue'] + ']' ]
+            issues += [ '[known: ' + doc['knownissue'] + ']' ]
 
     if len(doc['errors']) > 0:
-        parts += [ '[errors: ' + ','.join(doc['errors']) + ']' ]
+        issues += [ '[errors: ' + ','.join(doc['errors']) + ']' ]
 
-    if doc['duration'] >= 30.0:
+    parts += [ test_result, test_name ]
+
+    if doc['duration'] >= 60.0:
         parts += [ blue(test_time) ]
     elif doc['duration'] >= 5.0:
         parts += [ yellow(test_time) ]
     else:
         parts += [ test_time ]
+
+    if doc.has_key('massif_peak_heap_bytes'):
+        tmp = []
+        tmp += [ '%s heap' % fmt_size(doc['massif_peak_heap_bytes']) ]
+        #tmp += [ '%s stack' % fmt_size(doc['massif_peak_stack_bytes']) ]
+        parts += [ '[%s]' % (', '.join(tmp).rjust(14)) ]
+
+    if doc.has_key('valgrind_tool'):
+        parts += [ grey('[%s]' % doc['valgrind_tool']) ]
+
+    parts += issues
 
     print(' '.join(parts))
 
@@ -604,6 +729,9 @@ def main():
     parser.add_option('--duk', dest='duk', default=None, help='Path to "duk" command, default is autodetect')
     parser.add_option('--timeout', dest='timeout', type='int', default=15*60, help='Test execution timeout (seconds), default 15min')
     parser.add_option('--valgrind', dest='valgrind', action='store_true', default=False, help='Run test inside valgrind')
+    parser.add_option('--valgrind-tool', dest='valgrind_tool', default=None, help='Valgrind tool to use (implies --valgrind)')
+    parser.add_option('--memcheck', dest='memcheck', default=False, action='store_true', help='Shorthand for --valgrind-tool memcheck')
+    parser.add_option('--massif', dest='massif', default=False, action='store_true', help='Shorthand for --valgrind-tool massif')
     parser.add_option('--prepare-only', dest='prepare_only', action='store_true', default=False, help='Only prepare a testcase without running it')
     parser.add_option('--clip-lines', dest='clip_lines', type='int', default=10, help='Number of lines for stderr/diff summaries')
     parser.add_option('--clip-columns', dest='clip_columns', type='int', default=80, help='Number of columns for stderr/diff summaries')
@@ -623,6 +751,16 @@ def main():
     if opts.known_issues is None:
         opts.known_issues = find_known_issues()
         #print('Autodetect known issues directory: %r' % opts.known_issues)
+    if opts.memcheck:
+        opts.valgrind = True
+        opts.valgrind_tool = 'memcheck'
+    if opts.massif:
+        opts.valgrind = True
+        opts.valgrind_tool = 'massif'
+    if opts.valgrind_tool is not None:
+        opts.valgrind = True
+    if opts.valgrind and opts.valgrind_tool is None:
+        opts.valgrind_tool = 'memcheck'
 
     # Create a temporary directory for anything test related, automatic
     # atexit deletion.  Plumbed through globals to minimize argument passing.
