@@ -28,7 +28,7 @@ autodetect:
     check: DUK_F_AMIGAOS
     include: platform_amigaos.h.in
   -
-    name: Durango
+    name: Durango (XboxOne)
     check: DUK_F_DURANGO
     include: platform_durango.h.in
   -
