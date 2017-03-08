@@ -37,6 +37,9 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
 DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d);
 #endif
+#if defined(DUK_USE_DATE_TZO_WINDOWS_NO_DST)
+DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_t d);
+#endif
 #if defined(DUK_USE_DATE_PRS_STRPTIME)
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, const char *str);
 #endif
