@@ -5497,6 +5497,38 @@ DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	thr->valstack_top = tv_dst + 1;
 }
 
+DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
+	duk_uint_t mask;
+	duk_idx_t len;
+	duk_idx_t i;
+
+	idx = duk_require_normalize_index(ctx, idx);
+
+	mask = duk_get_type_mask(ctx, idx);
+	if (mask & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) {
+		len = 0;
+	} else if (mask & DUK_TYPE_MASK_OBJECT) {
+		/* XXX: ToUint32() coercion is used in ES5.1 for
+		 * Function.prototype.call() and .apply().  ES2015
+		 * updates this to ToLength() which is not implemented yet.
+		 */
+		/* XXX: direct array handling */
+		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
+		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
+		duk_pop(ctx);
+
+		duk_require_stack(ctx, len);
+		for (i = 0; i < len; i++) {
+			duk_get_prop_index(ctx, idx, i);
+		}
+	} else {
+		DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	}
+
+	DUK_ASSERT(len >= 0);
+	return len;
+}
+
 #if 0
 /* XXX: unpack to position? */
 DUK_INTERNAL void duk_unpack(duk_context *ctx) {

@@ -20,6 +20,8 @@
 #      - native: native function name
 #      - callable: true
 #      - constructable: true/false, depending on function
+#      - special_call: true/false, used for .call(), .apply(), etc which
+#        need special casing in runtime call handling
 #    - To disable an object without removing its metadata, you can
 #      use 'disable: true'.
 #    - If the object is dependent on Duktape configuration, you can make the
@@ -41,9 +43,9 @@
 #        + e: enumerable
 #        + c: configurable
 #        + a: accessor (determined automatically, not necessary to give explicitly)
-#    - autoLightfunc: if true (which is default), function property may be
+#    - auto_lightfunc: if true (which is default), function property may be
 #      automatically converted to a lightfunc if other automatic lightfunc
-#      conversion criteria are met; use "autoLightfunc: false" to prevent
+#      conversion criteria are met; use "auto_lightfunc: false" to prevent
 #      lightfunc conversion
 #    - May also have feature tags like "es6: true" to indicate property
 #      is related to a specific standard
@@ -108,6 +110,7 @@
 #      - varargs: if true, function is vararg (nargs = DUK_VARARGS)
 #      - magic: magic value for function (see below)
 #      - name: optional, provides .name property (non-writable, non-enumerable, non-configurable)
+#      - special_call: recognized in shorthand
 #    - Accessor (setter/getter) shorthand:
 #      - type: accessor
 #      - getter: native function name
@@ -413,7 +416,7 @@ objects:
           type: function
           native: duk_bi_global_object_eval
           length: 1
-        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseInt"
         value:
@@ -764,14 +767,19 @@ objects:
           type: function
           native: duk_bi_function_prototype_apply
           length: 2
-          magic: 0
+          magic: 1  # see duk_js_call.c
+          special_call: true
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "call"
         value:
           type: function
           native: duk_bi_function_prototype_call
           length: 1
+          magic: 0  # see duk_js_call.c
           varargs: true
+          special_call: true
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_FUNCTION_BUILTIN
       - key: "bind"
         value:
@@ -2807,7 +2815,7 @@ objects:
           native: duk_bi_thread_yield
           length: 2
         duktape: true
-        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_COROUTINE_SUPPORT
       - key: "resume"
         value:
@@ -2815,7 +2823,7 @@ objects:
           native: duk_bi_thread_resume
           length: 3
         duktape: true
-        autoLightfunc: false  # automatic lightfunc conversion clashes with internal implementation
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_COROUTINE_SUPPORT
       - key: "current"
         value:
@@ -2981,16 +2989,17 @@ objects:
       - key: "apply"
         value:
           type: function
-          native: duk_bi_function_prototype_apply
+          native: duk_bi_reflect_apply
           length: 3
-          magic: 1
+          magic: 2  # see duk_js_call.c
+          special_call: true
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         es6: true
       - key: "construct"
         value:
           type: function
-          native: duk_bi_function_prototype_apply
+          native: duk_bi_reflect_construct
           length: 2
-          magic: 2
           varargs: true
         es6: true
       - key: "defineProperty"

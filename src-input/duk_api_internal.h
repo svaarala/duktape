@@ -277,6 +277,7 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_builtin(duk_context *ctx, duk_idx_t 
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_context *ctx, duk_idx_t obj_idx, duk_small_uint_t stridx);  /* [] -> [] */
 
 DUK_INTERNAL_DECL void duk_pack(duk_context *ctx, duk_idx_t count);
+DUK_INTERNAL_DECL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx);
 #if 0
 DUK_INTERNAL_DECL void duk_unpack(duk_context *ctx);
 #endif

@@ -582,14 +582,22 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 				(c_length <= DUK_LFUNC_LENGTH_MAX) &&
 				(magic >= DUK_LFUNC_MAGIC_MIN && magic <= DUK_LFUNC_MAGIC_MAX);
 
-			if (h_key == DUK_HTHREAD_STRING_EVAL(thr) ||
-			    h_key == DUK_HTHREAD_STRING_YIELD(thr) ||
-			    h_key == DUK_HTHREAD_STRING_RESUME(thr)) {
-				/* These functions have trouble working as lightfuncs.
-				 * Some of them have specific asserts and some may have
-			         * additional properties (e.g. 'require.id' may be written).
-				 */
-				DUK_D(DUK_DPRINT("reject as lightfunc: key=%!O, i=%d, j=%d", (duk_heaphdr *) h_key, (int) i, (int) j));
+			/* These functions have trouble working as lightfuncs.
+			 * Some of them have specific asserts and some may have
+		         * additional properties (e.g. 'require.id' may be written).
+			 */
+			if (c_func == duk_bi_global_object_eval) {
+				lightfunc_eligible = 0;
+			}
+#if defined(DUK_USE_COROUTINE_SUPPORT)
+			if (c_func == duk_bi_thread_yield ||
+			    c_func == duk_bi_thread_resume) {
+				lightfunc_eligible = 0;
+			}
+#endif
+			if (c_func == duk_bi_function_prototype_call ||
+			    c_func == duk_bi_function_prototype_apply ||
+			    c_func == duk_bi_reflect_apply) {
 				lightfunc_eligible = 0;
 			}
 
@@ -611,6 +619,13 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			duk_push_c_function_builtin_noconstruct(ctx, c_func, c_nargs);
 			h_func = duk_known_hnatfunc(ctx, -1);
 			DUK_UNREF(h_func);
+
+			/* Special call handling, not described in init data. */
+			if (c_func == duk_bi_function_prototype_call ||
+			    c_func == duk_bi_function_prototype_apply ||
+			    c_func == duk_bi_reflect_apply) {
+				DUK_HOBJECT_SET_SPECIAL_CALL((duk_hobject *) h_func);
+			}
 
 			/* Currently all built-in native functions are strict.
 			 * This doesn't matter for many functions, but e.g.

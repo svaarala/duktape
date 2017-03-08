@@ -497,22 +497,17 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
 
 DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
                                                 duk_idx_t idx_func,
-                                                duk_idx_t *p_num_stack_args,   /* may be changed by call */
                                                 duk_bool_t is_constructor_call) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_idx_t num_stack_args;
 	duk_tval *tv_func;
 	duk_hobject *func;
 	duk_idx_t len;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(p_num_stack_args != NULL);
 
 	/* On entry, item at idx_func is a bound, non-lightweight function,
 	 * but we don't rely on that below.
 	 */
-
-	num_stack_args = *p_num_stack_args;
 
 	tv_func = duk_require_tval(ctx, idx_func);
 	DUK_ASSERT(tv_func != NULL);
@@ -531,8 +526,8 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 			len = h_bound->nargs;
 			DUK_ASSERT(len == 0 || tv_args != NULL);
 
-			DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%ld: %!T",
-			                     (void *) DUK_TVAL_GET_OBJECT(tv_func), (long) num_stack_args, tv_func));
+			DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p: %!T",
+			                     (void *) DUK_TVAL_GET_OBJECT(tv_func), tv_func));
 
 			/* [ ... func this arg1 ... argN ] */
 
@@ -551,15 +546,14 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 
 			tv_gap = duk_create_gap(ctx, idx_func + 2, len);
 			duk_copy_tvals_incref(thr, tv_gap, tv_args, len);
-			num_stack_args += len;  /* must be updated to work properly (e.g. creation of 'arguments') */
 
 			/* [ ... func this <bound args> arg1 ... argN ] */
 
 			duk_push_tval(ctx, &h_bound->target);
 			duk_replace(ctx, idx_func);  /* replace in stack */
 
-			DUK_DDD(DUK_DDDPRINT("bound function handled, num_stack_args=%ld, idx_func=%ld, curr func=%!T",
-			                     (long) num_stack_args, (long) idx_func, duk_get_tval(ctx, idx_func)));
+			DUK_DDD(DUK_DDDPRINT("bound function handled, idx_func=%ld, curr func=%!T",
+			                     (long) idx_func, duk_get_tval(ctx, idx_func)));
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
 		/* Lightweight function: never bound, so terminate. */
@@ -582,9 +576,111 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		           DUK_HOBJECT_HAS_NATFUNC(func));
 	}
 #endif
+}
 
-	/* write back */
-	*p_num_stack_args = num_stack_args;
+/*
+ *  Helper for inline handling of .call() and .apply().
+ */
+
+DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hobject *func) {
+	duk_context *ctx = (duk_context *) thr;
+#if defined(DUK_USE_ASSERTIONS)
+	duk_c_function natfunc;
+#endif
+
+#if defined(DUK_USE_ASSERTIONS)
+	natfunc = ((duk_hnatfunc *) func)->func;
+	DUK_ASSERT(natfunc != NULL);
+#endif
+
+	/* Handle .call() and .apply() based on them having the
+	 * DUK_HOBJECT_FLAG_SPECIAL_CALL flag; their magic value
+	 * is used for switch-case.
+	 *
+	 * NOTE: duk_unpack_array_like() reserves value stack space
+	 * for the result values (unlike most other value stack calls).
+	 */
+	switch (((duk_hnatfunc *) func)->magic) {
+	case 0: {  /* 0=Function.prototype.call() */
+		/* Value stack:
+		 * idx_func + 0: Function.prototype.call()
+		 * idx_func + 1: this binding for .call (target function)
+		 * idx_func + 2: 1st argument to .call, desired 'this' binding
+		 * idx_func + 3: 2nd argument to .call, desired 1st argument for ultimate target
+		 * ...
+		 *
+		 * Remove idx_func + 0 to get:
+		 * idx_func + 0: target function
+		 * idx_func + 1: this binding
+		 * idx_func + 2: call arguments
+		 * ...
+		 */
+		DUK_ASSERT(natfunc == duk_bi_function_prototype_call);
+		while (duk_get_top(ctx) < idx_func + 3) {
+			duk_push_undefined(ctx);
+		}
+		duk_remove(ctx, idx_func);
+		break;
+	}
+	case 1: {  /* 1=Function.prototype.apply() */
+		/* Value stack:
+		 * idx_func + 0: Function.prototype.apply()
+		 * idx_func + 1: this binding for .apply (target function)
+		 * idx_func + 2: 1st argument to .apply, desired 'this' binding
+		 * idx_func + 3: 2nd argument to .apply, argArray
+		 * [anything after this MUST be ignored]
+		 *
+		 * Remove idx_func + 0 and unpack the argArray to get:
+		 * idx_func + 0: target function
+		 * idx_func + 1: this binding
+		 * idx_func + 2: call arguments
+		 * ...
+		 */
+		DUK_ASSERT(natfunc == duk_bi_function_prototype_apply);
+		while (duk_get_top(ctx) < idx_func + 3) {
+			duk_push_undefined(ctx);
+		}
+		while (duk_get_top(ctx) > idx_func + 4) {
+			duk_pop(ctx);
+		}
+		duk_remove(ctx, idx_func);
+		if (duk_is_valid_index(ctx, idx_func + 2)) {
+			(void) duk_unpack_array_like(ctx, idx_func + 2);
+			duk_remove(ctx, idx_func + 2);
+		}
+		break;
+	}
+	default: {  /* 2=Reflect.apply() */
+		/* Value stack:
+		 * idx_func + 0: Reflect.apply()
+		 * idx_func + 1: this binding for .apply (ignored, usually Reflect)
+		 * idx_func + 2: 1st argument to .apply, target function
+		 * idx_func + 3: 2nd argument to .apply, desired 'this' binding
+		 * idx_func + 4: 3rd argument to .apply, argArray
+		 * [anything after this MUST be ignored]
+		 *
+		 * Remove idx_func + 0 and idx_func + 1, and unpack the argArray to get:
+		 * idx_func + 0: target function
+		 * idx_func + 1: this binding
+		 * idx_func + 2: call arguments
+		 * ...
+		 */
+		DUK_ASSERT(natfunc == duk_bi_reflect_apply);
+		while (duk_get_top(ctx) < idx_func + 4) {
+			duk_push_undefined(ctx);
+		}
+		while (duk_get_top(ctx) > idx_func + 5) {
+			duk_pop(ctx);
+		}
+		duk_remove(ctx, idx_func);
+		duk_remove(ctx, idx_func);
+		if (duk_is_valid_index(ctx, idx_func + 2)) {
+			(void) duk_unpack_array_like(ctx, idx_func + 2);
+			duk_remove(ctx, idx_func + 2);
+		}
+		break;
+	}
+	}
 }
 
 /*
@@ -784,6 +880,7 @@ DUK_LOCAL void duk__coerce_effective_this_binding(duk_hthread *thr,
  *  Shared helper for non-bound func lookup.
  *
  *  Returns duk_hobject * to the final non-bound function (NULL for lightfunc).
+ *  Also handles .call() and .apply() inline.
  */
 
 DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
@@ -802,11 +899,19 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 
 		if (DUK_TVAL_IS_OBJECT(tv_func)) {
 			func = DUK_TVAL_GET_OBJECT(tv_func);
-			if (!DUK_HOBJECT_IS_CALLABLE(func)) {
+			if (DUK_UNLIKELY(!DUK_HOBJECT_IS_CALLABLE(func))) {
 				goto not_callable_error;
 			}
+			if (DUK_LIKELY(!DUK_HOBJECT_HAS_BOUNDFUNC(func) && !DUK_HOBJECT_HAS_SPECIAL_CALL(func))) {
+				/* Common case, so test for using a single bitfield test. */
+				break;
+			}
+
 			if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
-				duk__handle_bound_chain_for_call(thr, idx_func, out_num_stack_args, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_CALL(func));
+				DUK_ASSERT(!DUK_HOBJECT_IS_NATFUNC(func));
+
+				duk__handle_bound_chain_for_call(thr, idx_func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 
 				/* The final object may be a normal function or a lightfunc.
 				 * We need to re-lookup tv_func because it may have changed
@@ -815,15 +920,27 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 				 */
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(duk_require_tval(ctx, idx_func)) ||
 				           DUK_TVAL_IS_LIGHTFUNC(duk_require_tval(ctx, idx_func)));
-				continue;
+			} else {
+				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_CALL(func));
+				DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
+
+				duk__handle_callapply_for_call(thr, idx_func, func);
 			}
+			/* Retry loop. */
 		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
 			func = NULL;
+			break;
 		} else {
 			goto not_callable_error;
 		}
-		break;
 	}
+
+	/* Recompute num_stack_args.
+	 * XXX: the whole num_stack_args tracking could be removed
+	 * from the call site.
+	 */
+	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	*out_num_stack_args = duk_get_top(ctx) - (idx_func + 2);
 
 	DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_func) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_func))) ||
 	           DUK_TVAL_IS_LIGHTFUNC(tv_func));
@@ -1220,6 +1337,7 @@ DUK_INTERNAL void duk_handle_call_unprotected(duk_hthread *thr,
 	duk__handle_call_inner(thr, num_stack_args, call_flags, idx_func);
 }
 
+/* XXX: idx_func and num_stack_args are redundant */
 DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
                                       duk_idx_t num_stack_args,
                                       duk_small_uint_t call_flags,
