@@ -320,11 +320,17 @@ DUK_INTERNAL void duk_hthread_activation_unwind_norz(duk_hthread *thr) {
 	thr->callstack_curr = act->parent;
 	thr->callstack_top--;
 
+	/* Ideally we'd restore value stack reserve here to caller's value.
+	 * This doesn't work for current unwind call sites however, because
+	 * the current (unwound) value stack top may be above the reserve.
+	 * Thus value stack reserve is restored by the call sites.
+	 */
+
 	/* XXX: inline for performance builds? */
 	duk_hthread_activation_free(thr, act);
 
-	/* We could clear the book-keeping variables like idx_retval for the
-	 * topmost activation, but don't do so now as it's not necessary.
+	/* We could clear the book-keeping variables like retval_byteoff for
+	 * the topmost activation, but don't do so now as it's not necessary.
 	 */
 }
 
@@ -361,19 +367,23 @@ DUK_INTERNAL duk_activation *duk_hthread_get_activation_for_level(duk_hthread *t
 DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
 	duk_size_t alloc_size;
 	duk_tval *new_ptr;
+	duk_ptrdiff_t alloc_end_off;
 	duk_ptrdiff_t end_off;
 	duk_ptrdiff_t bottom_off;
 	duk_ptrdiff_t top_off;
 
 	if (thr->valstack == NULL) {
+		DUK_D(DUK_DPRINT("skip valstack torture realloc, valstack is NULL"));
 		return;
 	}
 
+	alloc_end_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_alloc_end - (duk_uint8_t *) thr->valstack);
 	end_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 	bottom_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
 	top_off = (duk_ptrdiff_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack);
-	alloc_size = (duk_size_t) end_off;
+	alloc_size = (duk_size_t) alloc_end_off;
 	if (alloc_size == 0) {
+		DUK_D(DUK_DPRINT("skip valstack torture realloc, alloc_size is zero"));
 		return;
 	}
 
@@ -383,10 +393,10 @@ DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
 		DUK_MEMSET((void *) thr->valstack, 0x55, alloc_size);
 		DUK_FREE_CHECKED(thr, (void *) thr->valstack);
 		thr->valstack = new_ptr;
+		thr->valstack_alloc_end = (duk_tval *) ((duk_uint8_t *) new_ptr + alloc_end_off);
 		thr->valstack_end = (duk_tval *) ((duk_uint8_t *) new_ptr + end_off);
 		thr->valstack_bottom = (duk_tval *) ((duk_uint8_t *) new_ptr + bottom_off);
 		thr->valstack_top = (duk_tval *) ((duk_uint8_t *) new_ptr + top_off);
-		/* No change in size. */
 	} else {
 		DUK_D(DUK_DPRINT("failed to realloc valstack for torture, ignore"));
 	}

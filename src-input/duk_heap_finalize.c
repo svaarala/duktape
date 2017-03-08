@@ -53,7 +53,7 @@ DUK_LOCAL void duk__run_global_torture_finalizer(duk_hthread *thr) {
 	 * +5 headroom is conservative.
 	 */
 	if (thr->heap->call_recursion_depth + 5 >= thr->heap->call_recursion_limit ||
-	    thr->callstack_top + 5 >= DUK_CALLSTACK_DEFAULT_MAX) {
+	    thr->callstack_top + 5 >= DUK_USE_CALLSTACK_LIMIT) {
 		DUK_D(DUK_DPRINT("skip global torture finalizer, too little headroom for call recursion or call stack size"));
 		return;
 	}

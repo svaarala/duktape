@@ -541,61 +541,71 @@ DUK_EXTERNAL duk_idx_t duk_require_top_index(duk_context *ctx) {
  *
  *  This resizing happens above the current "top": the value stack can be
  *  grown or shrunk, but the "top" is not affected.  The value stack cannot
- *  be resized to a size below the current "top".
+ *  be resized to a size below the current reserve.
  *
  *  The low level reallocation primitive must carefully recompute all value
  *  stack pointers, and must also work if ALL pointers are NULL.  The resize
  *  is quite tricky because the valstack realloc may cause a mark-and-sweep,
  *  which may run finalizers.  Running finalizers may resize the valstack
  *  recursively (the same value stack we're working on).  So, after realloc
- *  returns, we know that the valstack "top" should still be the same (there
- *  should not be live values above the "top"), but its underlying size and
- *  pointer may have changed.
+ *  returns, we know that the valstack bottom, top, and reserve should still
+ *  be the same (there should not be live values above the "top"), but its
+ *  underlying size, alloc_end, and base pointer may have changed.
+ *
+ *  'new_size' is known to be <= DUK_USE_VALSTACK_LIMIT, which ensures that
+ *  size_t and pointer arithmetic won't wrap in duk__resize_valstack().
  */
 
-/* XXX: perhaps refactor this to allow caller to specify some parameters, or
- * at least a 'compact' flag which skips any spare or round-up .. useful for
- * emergency gc.
+/* Low level valstack resize primitive, used for both grow and shrink.  All
+ * adjustments for spares etc have already been done.  Doesn't throw but does
+ * have allocation side effects.
  */
-
-DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_ptrdiff_t old_bottom_offset;
-	duk_ptrdiff_t old_top_offset;
-	duk_ptrdiff_t old_end_offset_post;
-#if defined(DUK_USE_DEBUG)
-	duk_ptrdiff_t old_end_offset_pre;
-	duk_tval *old_valstack_pre;
-	duk_tval *old_valstack_post;
-#endif
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr, duk_size_t new_size) {
+	duk_tval *pre_valstack;
+	duk_tval *pre_bottom;
+	duk_tval *pre_top;
+	duk_tval *pre_end;
+	duk_tval *pre_alloc_end;
+	duk_ptrdiff_t ptr_diff;
 	duk_tval *new_valstack;
 	duk_size_t new_alloc_size;
+	duk_tval *tv_prev_alloc_end;
 	duk_tval *p;
 
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_HTHREAD_VALID(thr);
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
+	DUK_ASSERT(thr->valstack_alloc_end >= thr->valstack_end);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) <= new_size);  /* can't resize below 'top' */
-	DUK_ASSERT(new_size <= DUK_VALSTACK_DEFAULT_MAX);  /* valstack limit caller has check, prevents wrapping */
+	DUK_ASSERT(new_size <= DUK_USE_VALSTACK_LIMIT);  /* valstack limit caller has check, prevents wrapping */
 	DUK_ASSERT(new_size <= DUK_SIZE_MAX / sizeof(duk_tval));  /* specific assert for wrapping */
 
-	/* get pointer offsets for tweaking below */
-	old_bottom_offset = (((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack));
-	old_top_offset = (((duk_uint8_t *) thr->valstack_top) - ((duk_uint8_t *) thr->valstack));
-#if defined(DUK_USE_DEBUG)
-	old_end_offset_pre = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* not very useful, used for debugging */
-	old_valstack_pre = thr->valstack;
+	/* Pre-realloc pointer copies for asserts and debug logs. */
+	pre_valstack = thr->valstack;
+	pre_bottom = thr->valstack_bottom;
+	pre_top = thr->valstack_top;
+	pre_end = thr->valstack_end;
+	pre_alloc_end = thr->valstack_alloc_end;
+
+	DUK_UNREF(pre_valstack);
+	DUK_UNREF(pre_bottom);
+	DUK_UNREF(pre_top);
+	DUK_UNREF(pre_end);
+	DUK_UNREF(pre_alloc_end);
+
+	/* If finalizer torture enabled, force base pointer change every time
+	 * when it would be allowed.
+	 */
+#if defined(DUK_USE_FINALIZER_TORTURE)
+	if (thr->heap->pf_prevent_count == 0) {
+		duk_hthread_valstack_torture_realloc(thr);
+	}
 #endif
 
-	/* Allocate a new valstack.
-	 *
-	 * Note: cannot use a plain DUK_REALLOC() because a mark-and-sweep may
-	 * invalidate the original thr->valstack base pointer inside the realloc
-	 * process.  See doc/memory-management.rst.
+	/* Allocate a new valstack using DUK_REALLOC_DIRECT() to deal with
+	 * a side effect changing the base pointer.
 	 */
-
 	new_alloc_size = sizeof(duk_tval) * new_size;
 	new_valstack = (duk_tval *) DUK_REALLOC_INDIRECT(thr->heap, duk_hthread_get_valstack_ptr, (void *) thr, new_alloc_size);
 	if (DUK_UNLIKELY(new_valstack == NULL)) {
@@ -608,69 +618,78 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 		return 0;
 	}
 
-	/* Note: the realloc may have triggered a mark-and-sweep which may
-	 * have resized our valstack internally.  However, the mark-and-sweep
-	 * MUST NOT leave the stack bottom/top in a different state.  Particular
-	 * assumptions and facts:
-	 *
-	 *   - The thr->valstack pointer may be different after realloc,
-	 *     and the offset between thr->valstack_end <-> thr->valstack
-	 *     may have changed.
-	 *   - The offset between thr->valstack_bottom <-> thr->valstack
-	 *     and thr->valstack_top <-> thr->valstack MUST NOT have changed,
-	 *     because mark-and-sweep must adhere to a strict stack policy.
-	 *     In other words, logical bottom and top MUST NOT have changed.
-	 *   - All values above the top are unreachable but are initialized
-	 *     to UNDEFINED, up to the post-realloc valstack_end.
-	 *   - 'old_end_offset' must be computed after realloc to be correct.
+	/* Debug log any changes in pointer(s) by side effects.  These don't
+	 * necessarily imply any incorrect behavior, but should be rare in
+	 * practice.
 	 */
-
-	DUK_ASSERT((((duk_uint8_t *) thr->valstack_bottom) - ((duk_uint8_t *) thr->valstack)) == old_bottom_offset);
-	DUK_ASSERT((((duk_uint8_t *) thr->valstack_top) - ((duk_uint8_t *) thr->valstack)) == old_top_offset);
-
-	/* success, fixup pointers */
-	old_end_offset_post = (((duk_uint8_t *) thr->valstack_end) - ((duk_uint8_t *) thr->valstack));  /* must be computed after realloc */
 #if defined(DUK_USE_DEBUG)
-	old_valstack_post = thr->valstack;
+	if (thr->valstack != pre_valstack) {
+		DUK_D(DUK_DPRINT("valstack base pointer changed during valstack resize: %p -> %p",
+		                 (void *) pre_valstack, (void *) thr->valstack));
+	}
+	if (thr->valstack_bottom != pre_bottom) {
+		DUK_D(DUK_DPRINT("valstack bottom pointer changed during valstack resize: %p -> %p",
+		                 (void *) pre_bottom, (void *) thr->valstack_bottom));
+	}
+	if (thr->valstack_top != pre_top) {
+		DUK_D(DUK_DPRINT("valstack top pointer changed during valstack resize: %p -> %p",
+		                 (void *) pre_top, (void *) thr->valstack_top));
+	}
+	if (thr->valstack_end != pre_end) {
+		DUK_D(DUK_DPRINT("valstack end pointer changed during valstack resize: %p -> %p",
+		                 (void *) pre_end, (void *) thr->valstack_end));
+	}
+	if (thr->valstack_alloc_end != pre_alloc_end) {
+		DUK_D(DUK_DPRINT("valstack alloc_end pointer changed during valstack resize: %p -> %p",
+		                 (void *) pre_alloc_end, (void *) thr->valstack_alloc_end));
+	}
 #endif
-	thr->valstack = new_valstack;
-	thr->valstack_end = new_valstack + new_size;
-#if !defined(DUK_USE_PREFER_SIZE)
-	thr->valstack_size = new_size;
-#endif
-	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_bottom_offset);
-	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + old_top_offset);
 
+	/* Assertions: offsets for bottom, top, and end (reserve) must not
+	 * have changed even with side effects because they are always
+	 * restored in unwind.  For alloc_end there's no guarantee: it may
+	 * have grown or shrunk (but remain above 'end').
+	 */
+	DUK_ASSERT(thr->valstack_bottom - thr->valstack == pre_bottom - pre_valstack);
+	DUK_ASSERT(thr->valstack_top - thr->valstack == pre_top - pre_valstack);
+	DUK_ASSERT(thr->valstack_end - thr->valstack == pre_end - pre_valstack);
+	DUK_ASSERT(thr->valstack_alloc_end >= thr->valstack_end);
+
+	/* Write new pointers.  Most pointers can be handled as a pointer
+	 * difference.
+	 */
+	ptr_diff = (duk_ptrdiff_t) ((duk_uint8_t *) new_valstack - (duk_uint8_t *) thr->valstack);
+	tv_prev_alloc_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_alloc_end + ptr_diff);
+	thr->valstack = new_valstack;
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_bottom + ptr_diff);
+	thr->valstack_top = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_top + ptr_diff);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack_end + ptr_diff);
+	thr->valstack_alloc_end = (duk_tval *) (void *) ((duk_uint8_t *) new_valstack + new_alloc_size);
+
+	/* Assertions: pointer sanity after pointer updates. */
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
+	DUK_ASSERT(thr->valstack_alloc_end >= thr->valstack_end);
 
-	/* useful for debugging */
-#if defined(DUK_USE_DEBUG)
-	if (old_end_offset_pre != old_end_offset_post) {
-		DUK_D(DUK_DPRINT("valstack was resized during valstack_resize(), probably by mark-and-sweep; "
-		                 "end offset changed: %lu -> %lu",
-		                 (unsigned long) old_end_offset_pre,
-		                 (unsigned long) old_end_offset_post));
-	}
-	if (old_valstack_pre != old_valstack_post) {
-		DUK_D(DUK_DPRINT("valstack pointer changed during valstack_resize(), probably by mark-and-sweep: %p -> %p",
-		                 (void *) old_valstack_pre,
-		                 (void *) old_valstack_post));
-	}
-#endif
+	DUK_D(DUK_DPRINT("resized valstack %lu -> %lu elements (%lu -> %lu bytes): "
+	                 "base=%p -> %p, bottom=%p -> %p (%ld), top=%p -> %p (%ld), "
+	                 "end=%p -> %p (%ld), alloc_end=%p -> %p (%ld);"
+	                 " tv_prev_alloc_end=%p (-> %ld inits; <0 means shrink)",
+	                 (unsigned long) (pre_alloc_end - pre_valstack),
+	                 (unsigned long) new_size,
+	                 (unsigned long) ((duk_uint8_t *) pre_alloc_end - (duk_uint8_t *) pre_valstack),
+	                 (unsigned long) new_alloc_size,
+	                 (void *) pre_valstack, (void *) thr->valstack,
+	                 (void *) pre_bottom, (void *) thr->valstack_bottom, (long) (thr->valstack_bottom - thr->valstack),
+	                 (void *) pre_top, (void *) thr->valstack_top, (long) (thr->valstack_top - thr->valstack),
+	                 (void *) pre_end, (void *) thr->valstack_end, (long) (thr->valstack_end - thr->valstack),
+	                 (void *) pre_alloc_end, (void *) thr->valstack_alloc_end, (long) (thr->valstack_alloc_end - thr->valstack),
+	                 (void *) tv_prev_alloc_end, (long) (thr->valstack_alloc_end - tv_prev_alloc_end)));
 
-	DUK_DD(DUK_DDPRINT("resized valstack to %lu elements (%lu bytes), bottom=%ld, top=%ld, "
-	                   "new pointers: start=%p end=%p bottom=%p top=%p",
-	                   (unsigned long) new_size, (unsigned long) new_alloc_size,
-	                   (long) (thr->valstack_bottom - thr->valstack),
-	                   (long) (thr->valstack_top - thr->valstack),
-	                   (void *) thr->valstack, (void *) thr->valstack_end,
-	                   (void *) thr->valstack_bottom, (void *) thr->valstack_top));
-
-	/* Init newly allocated slots (only). */
-	p = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + old_end_offset_post);
-	while (p < thr->valstack_end) {
+	/* If allocation grew, init any new slots to 'undefined'. */
+	p = tv_prev_alloc_end;
+	while (p < thr->valstack_alloc_end) {
 		/* Never executed if new size is smaller. */
 		DUK_TVAL_SET_UNDEFINED(p);
 		p++;
@@ -679,7 +698,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	/* Assert for value stack initialization policy. */
 #if defined(DUK_USE_ASSERTIONS)
 	p = thr->valstack_top;
-	while (p < thr->valstack_end) {
+	while (p < thr->valstack_alloc_end) {
 		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(p));
 		p++;
 	}
@@ -688,135 +707,154 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	return 1;
 }
 
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_do_resize(duk_context *ctx,
-                                                                   duk_size_t min_new_size,
-                                                                   duk_small_uint_t flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_size_t old_size;
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_grow_check_resize(duk_hthread *thr, duk_size_t min_bytes, duk_bool_t throw_on_error) {
+	duk_size_t min_size;
 	duk_size_t new_size;
-	duk_bool_t is_shrink;
-	duk_small_uint_t compact_flag = (flags & DUK_VSRESIZE_FLAG_COMPACT);
-	duk_small_uint_t throw_flag = (flags & DUK_VSRESIZE_FLAG_THROW);
 
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
-	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
+	DUK_ASSERT(min_bytes / sizeof(duk_tval) * sizeof(duk_tval) == min_bytes);
+	min_size = min_bytes / sizeof(duk_tval);  /* from bytes to slots */
 
-#if defined(DUK_USE_PREFER_SIZE)
-	old_size = (duk_size_t) (thr->valstack_end - thr->valstack);
+#if defined(DUK_USE_VALSTACK_GROW_SHIFT)
+	/* New size is minimum size plus a proportional spare, e.g. shift of
+	 * 2 means a 25% spare.
+	 */
+	new_size = min_size + (min_size >> DUK_USE_VALSTACK_GROW_SHIFT);
 #else
-	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
-	old_size = thr->valstack_size;
+	/* New size is tight with no spare.  This is sometimes preferred in
+	 * low memory environments.
+	 */
+	new_size = min_size;
 #endif
 
-	if (min_new_size <= old_size) {
-		is_shrink = 1;
-	} else {
-		is_shrink = 0;
-	}
-
-	new_size = min_new_size;
-	if (!compact_flag) {
-		if (is_shrink) {
-			/* shrink case; leave some spare */
-			new_size += DUK_VALSTACK_SHRINK_SPARE;
-		}
-
-		/* round up roughly to next 'grow step' */
-		new_size = (new_size / DUK_VALSTACK_GROW_STEP + 1) * DUK_VALSTACK_GROW_STEP;
-	}
-
-	DUK_DD(DUK_DDPRINT("want to %s valstack: %lu -> %lu elements (min_new_size %lu)",
-	                   (const char *) (new_size > old_size ? "grow" : "shrink"),
-	                   (unsigned long) old_size, (unsigned long) new_size,
-	                   (unsigned long) min_new_size));
-
-	if (DUK_UNLIKELY(new_size > DUK_VALSTACK_DEFAULT_MAX)) {
+	if (DUK_UNLIKELY(new_size > DUK_USE_VALSTACK_LIMIT)) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
-		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account).
+		 * plan limit accordingly.
 		 */
-		if (throw_flag) {
+		if (throw_on_error) {
 			DUK_ERROR_RANGE(thr, DUK_STR_VALSTACK_LIMIT);
-		} else {
-			return 0;
 		}
+		return 0;
 	}
 
-	/*
-	 *  When resizing the valstack, a mark-and-sweep may be triggered for
-	 *  the allocation of the new valstack.  If the mark-and-sweep needs
-	 *  to use our thread for something, it may cause *the same valstack*
-	 *  to be resized recursively.  This happens e.g. when mark-and-sweep
-	 *  finalizers are called.  This is taken into account carefully in
-	 *  duk__resize_valstack().
-	 *
-	 *  'new_size' is known to be <= DUK_VALSTACK_DEFAULT_MAX, which
-	 *  ensures that size_t and pointer arithmetic won't wrap in
-	 *  duk__resize_valstack().
-	 */
-
-	if (DUK_UNLIKELY(!duk__resize_valstack(ctx, new_size))) {
-		if (is_shrink) {
-			DUK_DD(DUK_DDPRINT("valstack resize failed, but is a shrink, ignore"));
-			return 1;
-		}
-
-		DUK_DD(DUK_DDPRINT("valstack resize failed"));
-
-		if (throw_flag) {
+	if (duk__resize_valstack(thr, new_size) == 0) {
+		if (throw_on_error) {
 			DUK_ERROR_ALLOC_FAILED(thr);
-		} else {
-			return 0;
 		}
+		return 0;
 	}
 
-	DUK_DDD(DUK_DDDPRINT("valstack resize successful"));
+	thr->valstack_end = thr->valstack + min_size;
+	DUK_ASSERT(thr->valstack_alloc_end >= thr->valstack_end);
+
 	return 1;
 }
 
-DUK_INTERNAL duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
-                                                duk_size_t min_new_size,
-                                                duk_small_uint_t flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_size_t old_size;
+/* Hot, inlined value stack grow check.  Because value stack almost never
+ * grows, the actual resize call is in a NOINLINE helper.
+ */
+DUK_INTERNAL DUK_INLINE void duk_valstack_grow_check_throw(duk_hthread *thr, duk_size_t min_bytes) {
+	duk_tval *tv;
 
-	DUK_DDD(DUK_DDDPRINT("check valstack resize: min_new_size=%lu, curr_size=%ld, curr_top=%ld, "
-	                     "curr_bottom=%ld, flags=%lx",
-	                     (unsigned long) min_new_size,
-	                     (long) (thr->valstack_end - thr->valstack),
-	                     (long) (thr->valstack_top - thr->valstack),
-	                     (long) (thr->valstack_bottom - thr->valstack),
-	                     (unsigned long) flags));
-
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
-	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
-
-#if defined(DUK_USE_PREFER_SIZE)
-	old_size = (duk_size_t) (thr->valstack_end - thr->valstack);
-#else
-	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
-	old_size = thr->valstack_size;
-#endif
-
-	if (DUK_LIKELY(min_new_size <= old_size)) {
-		if (DUK_LIKELY((flags & DUK_VSRESIZE_FLAG_SHRINK) == 0 ||
-		               old_size - min_new_size < DUK_VALSTACK_SHRINK_THRESHOLD)) {
-			DUK_DDD(DUK_DDDPRINT("no need to grow or shrink valstack"));
-			return 1;
-		}
+	tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + min_bytes);
+	if (DUK_LIKELY(thr->valstack_end >= tv)) {
+		return;
 	}
+	if (DUK_LIKELY(thr->valstack_alloc_end >= tv)) {
+		/* Values in [valstack_top,valstack_alloc_end[ are initialized
+		 * to 'undefined' so we can just move the end pointer.
+		 */
+		thr->valstack_end = tv;
+		return;
+	}
+	(void) duk__valstack_grow_check_resize(thr, min_bytes, 1 /*throw_on_error*/);
+}
 
-	return duk__valstack_do_resize(ctx, min_new_size, flags);
+/* Hot, inlined value stack grow check which doesn't throw. */
+DUK_INTERNAL DUK_INLINE duk_bool_t duk_valstack_grow_check_nothrow(duk_hthread *thr, duk_size_t min_bytes) {
+	duk_tval *tv;
+
+	tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + min_bytes);
+	if (DUK_LIKELY(thr->valstack_end >= tv)) {
+		return 1;
+	}
+	if (DUK_LIKELY(thr->valstack_alloc_end >= tv)) {
+		thr->valstack_end = tv;
+		return 1;
+	}
+	return duk__valstack_grow_check_resize(thr, min_bytes, 0 /*throw_on_error*/);
+}
+
+/* Value stack shrink check, called from mark-and-sweep. */
+DUK_INTERNAL void duk_valstack_shrink_check_nothrow(duk_hthread *thr, duk_bool_t snug) {
+	duk_size_t alloc_bytes;
+	duk_size_t reserve_bytes;
+	duk_size_t shrink_bytes;
+
+	alloc_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_alloc_end - (duk_uint8_t *) thr->valstack);
+	reserve_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+	DUK_ASSERT(alloc_bytes >= reserve_bytes);
+
+	/* We're free to shrink the value stack allocation down to
+	 * reserve_bytes but not more.  If 'snug' (emergency GC)
+	 * shrink whatever we can.  Otherwise only shrink if the new
+	 * size would be considerably smaller.
+	 */
+
+#if defined(DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT)
+	if (snug) {
+		shrink_bytes = reserve_bytes;
+	} else {
+		duk_size_t proportion, spare;
+
+		/* Require that value stack shrinks by at least X% of its
+		 * current size.  For example, shift of 2 means at least
+		 * 25%.  The proportion is computed as bytes and may not
+		 * be a multiple of sizeof(duk_tval); that's OK here.
+		 */
+		proportion = alloc_bytes >> DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT;
+		if (alloc_bytes - reserve_bytes < proportion) {
+			/* Too little would be freed, do nothing. */
+			return;
+		}
+
+		/* Keep a spare after shrinking.  The spare is again a
+		 * proportion of the current size (the proportion should
+		 * of course be smaller than the check proportion above).
+		 */
+#if defined(DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT)
+		DUK_ASSERT(DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT > DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT);
+		spare = alloc_bytes >> DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT;
+#else
+		spare = 0;
+#endif
+		shrink_bytes = reserve_bytes +
+		               spare / sizeof(duk_tval) * sizeof(duk_tval);  /* multiple of duk_tval */
+	}
+#else  /* DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT */
+	/* Always snug, useful in some low memory environments. */
+	DUK_UNREF(snug);
+	shrink_bytes = reserve_bytes;
+#endif  /* DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT */
+
+	DUK_D(DUK_DPRINT("valstack shrink check: alloc_bytes=%ld, reserve_bytes=%ld, shrink_bytes=%ld (unvalidated)",
+	                 (long) alloc_bytes, (long) reserve_bytes, (long) shrink_bytes));
+	DUK_ASSERT(shrink_bytes >= reserve_bytes);
+	if (shrink_bytes >= alloc_bytes) {
+		/* Skip if shrink target is same as current one (or higher,
+		 * though that shouldn't happen in practice).
+		 */
+		return;
+	}
+	DUK_ASSERT(shrink_bytes / sizeof(duk_tval) * sizeof(duk_tval) == shrink_bytes);
+
+	DUK_D(DUK_DPRINT("valstack shrink check: decided to shrink, snug: %ld", (long) snug));
+
+	duk__resize_valstack(thr, shrink_bytes / sizeof(duk_tval));
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_size_t min_new_size;
+	duk_size_t min_new_bytes;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -828,17 +866,14 @@ DUK_EXTERNAL duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 		extra = 0;
 	}
 
-	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
-	return duk_valstack_resize_raw(ctx,
-	                               min_new_size,         /* min_new_size */
-	                               0 /* no shrink */ |   /* flags */
-	                               0 /* no compact */ |
-	                               0 /* no throw */);
+	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack) +
+	                sizeof(duk_tval) * (extra + DUK_VALSTACK_INTERNAL_EXTRA);
+	return duk_valstack_grow_check_nothrow((duk_hthread *) ctx, min_new_bytes);
 }
 
 DUK_EXTERNAL void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_size_t min_new_size;
+	duk_size_t min_new_bytes;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
@@ -850,17 +885,14 @@ DUK_EXTERNAL void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 		extra = 0;
 	}
 
-	min_new_size = (thr->valstack_top - thr->valstack) + extra + DUK_VALSTACK_INTERNAL_EXTRA;
-	(void) duk_valstack_resize_raw(ctx,
-	                               min_new_size,  /* min_new_size */
-	                               0 /* no shrink */ |   /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
+	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack) +
+	                sizeof(duk_tval) * (extra + DUK_VALSTACK_INTERNAL_EXTRA);
+	duk_valstack_grow_check_throw((duk_hthread *) ctx, min_new_bytes);
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 	duk_hthread *thr;
-	duk_size_t min_new_size;
+	duk_size_t min_new_bytes;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
@@ -872,17 +904,14 @@ DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 		top = 0;
 	}
 
-	min_new_size = (thr->valstack_bottom - thr->valstack) + top + DUK_VALSTACK_INTERNAL_EXTRA;
-	return duk_valstack_resize_raw(ctx,
-	                               min_new_size,  /* min_new_size */
-	                               0 /* no shrink */ |   /* flags */
-	                               0 /* no compact */ |
-	                               0 /* no throw */);
+	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack) +
+	                sizeof(duk_tval) * (top + DUK_VALSTACK_INTERNAL_EXTRA);
+	return duk_valstack_grow_check_nothrow((duk_hthread *) ctx, min_new_bytes);
 }
 
 DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 	duk_hthread *thr;
-	duk_size_t min_new_size;
+	duk_size_t min_new_bytes;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
@@ -894,12 +923,9 @@ DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 		top = 0;
 	}
 
-	min_new_size = (thr->valstack_bottom - thr->valstack) + top + DUK_VALSTACK_INTERNAL_EXTRA;
-	(void) duk_valstack_resize_raw(ctx,
-	                               min_new_size,  /* min_new_size */
-	                               0 /* no shrink */ |   /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
+	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack) +
+	                sizeof(duk_tval) * (top + DUK_VALSTACK_INTERNAL_EXTRA);
+	duk_valstack_grow_check_throw((duk_hthread *) ctx, min_new_bytes);
 }
 
 /*
@@ -1139,7 +1165,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 		return;
 	}
 	if (DUK_UNLIKELY((count < 0) ||
-	                 (count > (duk_idx_t) DUK_VALSTACK_DEFAULT_MAX))) {
+	                 (count > (duk_idx_t) DUK_USE_VALSTACK_LIMIT))) {
 		/* Maximum value check ensures 'nbytes' won't wrap below. */
 		DUK_ERROR_RANGE_INVALID_COUNT(to_thr);
 		return;
@@ -5466,10 +5492,10 @@ DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	}
 
 	/* Wrapping is controlled by the check above: value stack top can be
-	 * at most DUK_VALSTACK_DEFAULT_MAX which is low enough so that
+	 * at most DUK_USE_VALSTACK_LIMIT which is low enough so that
 	 * multiplying with sizeof(duk_tval) won't wrap.
 	 */
-	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) DUK_VALSTACK_DEFAULT_MAX);
+	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) DUK_USE_VALSTACK_LIMIT);
 	DUK_ASSERT((duk_size_t) count <= DUK_SIZE_MAX / sizeof(duk_tval));  /* no wrapping */
 
 	tv_dst = duk_push_harray_with_size_outptr(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */
@@ -5578,7 +5604,7 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
 		 */
 		idx = duk_normalize_index(ctx, idx);
 		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
-		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
+		len = duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
 		duk_pop(ctx);
 		DUK_DDD(DUK_DDDPRINT("slow path for %ld elements", (long) len));
 
@@ -5586,7 +5612,6 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
 		for (i = 0; i < len; i++) {
 			duk_get_prop_index(ctx, idx, (duk_uarridx_t) i);
 		}
-		DUK_ASSERT(len >= 0);
 		return len;
 	} else if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
 		return 0;

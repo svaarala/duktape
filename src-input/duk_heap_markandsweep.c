@@ -647,7 +647,6 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 #endif
 	duk_size_t count_keep = 0;
 
-	DUK_UNREF(flags);
 	DUK_DD(DUK_DDPRINT("duk__sweep_heap: %p", (void *) heap));
 
 	prev = NULL;
@@ -725,6 +724,18 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 				DUK_ASSERT_HEAPHDR_LINKS(heap, prev);
 				DUK_ASSERT_HEAPHDR_LINKS(heap, curr);
 				prev = curr;
+			}
+
+			/*
+			 *  Shrink check for value stacks here.  We're inside
+			 *  ms_prevent_count protection which prevents recursive
+			 *  mark-and-sweep and refzero finalizers, so there are
+			 *  no side effects that would affect the heap lists.
+			 */
+			if (DUK_HEAPHDR_IS_OBJECT(curr) && DUK_HOBJECT_IS_THREAD((duk_hobject *) curr)) {
+				duk_hthread *thr_curr = (duk_hthread *) curr;
+				DUK_DD(DUK_DDPRINT("value stack shrink check for thread: %!O", curr));
+				duk_valstack_shrink_check_nothrow(thr_curr, flags & DUK_MS_FLAG_EMERGENCY /*snug*/);
 			}
 
 			DUK_HEAPHDR_CLEAR_REACHABLE(curr);

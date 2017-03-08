@@ -15,18 +15,12 @@
  */
 #define DUK_ERRCODE_FLAG_NOBLAME_FILELINE  (1L << 24)
 
-/* Valstack resize flags */
-#define DUK_VSRESIZE_FLAG_SHRINK           (1 << 0)
-#define DUK_VSRESIZE_FLAG_COMPACT          (1 << 1)
-#define DUK_VSRESIZE_FLAG_THROW            (1 << 2)
-
 /* Current convention is to use duk_size_t for value stack sizes and global indices,
  * and duk_idx_t for local frame indices.
  */
-DUK_INTERNAL_DECL
-duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
-                                   duk_size_t min_new_size,
-                                   duk_small_uint_t flags);
+DUK_INTERNAL_DECL void duk_valstack_grow_check_throw(duk_hthread *thr, duk_size_t min_bytes);
+DUK_INTERNAL_DECL duk_bool_t duk_valstack_grow_check_nothrow(duk_hthread *thr, duk_size_t min_bytes);
+DUK_INTERNAL_DECL void duk_valstack_shrink_check_nothrow(duk_hthread *thr, duk_bool_t snug);
 
 DUK_INTERNAL_DECL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_size_t count);
 

@@ -36,8 +36,8 @@ DUK_LOCAL_DECL void duk__handle_call_error(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
                                            duk_size_t entry_callstack_top,
 #endif
-                                           duk_size_t entry_valstack_bottom,
-                                           duk_size_t entry_valstack_end,
+                                           duk_size_t entry_valstack_bottom_byteoff,
+                                           duk_size_t entry_valstack_end_byteoff,
                                            duk_int_t entry_call_recursion_depth,
                                            duk_hthread *entry_curr_thread,
                                            duk_uint_fast8_t entry_thread_state,
@@ -48,7 +48,7 @@ DUK_LOCAL_DECL void duk__handle_safe_call_inner(duk_hthread *thr,
                                                 duk_safe_call_function func,
                                                 void *udata,
 #if defined(DUK_USE_ASSERTIONS)
-                                                duk_size_t entry_valstack_bottom,
+                                                duk_size_t entry_valstack_bottom_byteoff,
                                                 duk_size_t entry_callstack_top,
 #endif
                                                 duk_idx_t idx_retbase,
@@ -60,7 +60,7 @@ DUK_LOCAL_DECL void duk__handle_safe_call_error(duk_hthread *thr,
 #endif
                                                 duk_idx_t idx_retbase,
                                                 duk_idx_t num_stack_rets,
-                                                duk_size_t entry_valstack_bottom,
+                                                duk_size_t entry_valstack_bottom_byteoff,
                                                 duk_jmpbuf *old_jmpbuf_ptr);
 DUK_LOCAL_DECL void duk__handle_safe_call_shared(duk_hthread *thr,
                                                  duk_idx_t idx_retbase,
@@ -125,7 +125,7 @@ DUK_LOCAL DUK_NOINLINE void duk__call_callstack_limit_check_slowpath(duk_hthread
 	 */
 #if defined(DUK_USE_AUGMENT_ERROR_THROW) || defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	if (thr->heap->augmenting_error) {
-		if (thr->callstack_top < DUK_CALLSTACK_DEFAULT_MAX + DUK__CALL_RELAX_COUNT) {
+		if (thr->callstack_top < DUK_USE_CALLSTACK_LIMIT + DUK__CALL_RELAX_COUNT) {
 			DUK_D(DUK_DPRINT("call stack limit reached but augmenting error and within relaxed limit"));
 			return;
 		}
@@ -144,7 +144,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE void duk__call_callstack_limit_check(duk_hthread *th
 	/* This check is forcibly inlined because it's very cheap and almost
 	 * always passes.  The slow path is forcibly noinline.
 	 */
-	if (DUK_LIKELY(thr->callstack_top < DUK_CALLSTACK_DEFAULT_MAX)) {
+	if (DUK_LIKELY(thr->callstack_top < DUK_USE_CALLSTACK_LIMIT)) {
 		return;
 	}
 
@@ -1020,69 +1020,6 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 }
 
 /*
- *  Value stack resize and stack top adjustment helper.
- *
- *  XXX: This should all be merged to duk_valstack_resize_raw().
- */
-
-DUK_LOCAL void duk__adjust_valstack_and_top(duk_hthread *thr,
-                                            duk_idx_t num_stack_args,
-                                            duk_idx_t idx_args,
-                                            duk_idx_t nregs,
-                                            duk_idx_t nargs,
-                                            duk_hobject *func) {
-	duk_context *ctx = (duk_context *) thr;
-	duk_size_t vs_min_size;
-	duk_bool_t adjusted_top = 0;
-
-	vs_min_size = (thr->valstack_bottom - thr->valstack) +  /* bottom of current func */
-	              idx_args;                                 /* bottom of new func */
-
-	if (nregs >= 0) {
-		DUK_ASSERT(nargs >= 0);
-		DUK_ASSERT(nregs >= nargs);
-		vs_min_size += nregs;
-	} else {
-		/* 'func' wants stack "as is" */
-		vs_min_size += num_stack_args;  /* num entries of new func at entry */
-	}
-	if (func == NULL || DUK_HOBJECT_IS_NATFUNC(func)) {
-		vs_min_size += DUK_VALSTACK_API_ENTRY_MINIMUM;  /* Duktape/C API guaranteed entries (on top of args) */
-	}
-	vs_min_size += DUK_VALSTACK_INTERNAL_EXTRA;             /* + spare */
-
-	/* XXX: We can't resize the value stack to a size smaller than the
-	 * current top, so the order of the resize and adjusting the stack
-	 * top depends on the current vs. final size of the value stack.
-	 * The operations could be combined to avoid this, but the proper
-	 * fix is to only grow the value stack on a function call, and only
-	 * shrink it (without throwing if the shrink fails) on function
-	 * return.
-	 */
-
-	if (vs_min_size < (duk_size_t) (thr->valstack_top  - thr->valstack)) {
-		DUK_DDD(DUK_DDDPRINT(("final size smaller, set top before resize")));
-
-		DUK_ASSERT(nregs >= 0);  /* can't happen when keeping current stack size */
-		duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
-		duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
-		adjusted_top = 1;
-	}
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               vs_min_size,
-	                               DUK_VSRESIZE_FLAG_THROW);       /* flags: no shrink or compact */
-
-	if (!adjusted_top) {
-		if (nregs >= 0) {
-			DUK_ASSERT(nregs >= nargs);
-			duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
-			duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
-		}
-	}
-}
-
-/*
  *  Manipulate value stack so that exactly 'num_stack_rets' return
  *  values are at 'idx_retbase' in every case, assuming there are
  *  'rc' return values on top of stack.
@@ -1215,8 +1152,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	duk_size_t entry_callstack_top;
 #endif
 	duk_activation *entry_act;
-	duk_size_t entry_valstack_bottom;
-	duk_size_t entry_valstack_end;
+	duk_size_t entry_valstack_bottom_byteoff;
+	duk_size_t entry_valstack_end_byteoff;
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
@@ -1250,13 +1187,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
 	entry_callstack_top = thr->callstack_top;
 #endif
-	entry_valstack_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
-#if defined(DUK_USE_PREFER_SIZE)
-	entry_valstack_end = (duk_size_t) (thr->valstack_end - thr->valstack);
-#else
-	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
-	entry_valstack_end = thr->valstack_size;
-#endif
+	entry_valstack_bottom_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
+	entry_valstack_end_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
@@ -1265,7 +1197,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	DUK_DD(DUK_DDPRINT("duk_handle_call_protected: thr=%p, num_stack_args=%ld, "
 	                   "call_flags=0x%08lx (constructor=%ld), "
 	                   "valstack_top=%ld, idx_func=%ld, idx_args=%ld, rec_depth=%ld/%ld, "
-	                   "entry_act=%p, entry_valstack_bottom=%ld, entry_call_recursion_depth=%ld, "
+	                   "entry_act=%p, entry_valstack_bottom_byteoff=%ld, entry_valstack_end_byteoff=%ld, "
+	                   "entry_call_recursion_depth=%ld, "
 	                   "entry_curr_thread=%p, entry_thread_state=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
@@ -1277,7 +1210,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 	                   (long) thr->heap->call_recursion_depth,
 	                   (long) thr->heap->call_recursion_limit,
 	                   (void *) entry_act,
-	                   (long) entry_valstack_bottom,
+	                   (long) entry_valstack_bottom_byteoff,
+	                   (long) entry_valstack_end_byteoff,
 	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
@@ -1315,8 +1249,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
 		                       entry_callstack_top,
 #endif
-		                       entry_valstack_bottom,
-		                       entry_valstack_end,
+		                       entry_valstack_bottom_byteoff,
+		                       entry_valstack_end_byteoff,
 		                       entry_call_recursion_depth,
 		                       entry_curr_thread,
 		                       entry_thread_state,
@@ -1343,8 +1277,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
 			                       entry_callstack_top,
 #endif
-			                       entry_valstack_bottom,
-			                       entry_valstack_end,
+			                       entry_valstack_bottom_byteoff,
+			                       entry_valstack_end_byteoff,
 			                       entry_call_recursion_depth,
 			                       entry_curr_thread,
 			                       entry_thread_state,
@@ -1366,8 +1300,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_protected(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
 			                       entry_callstack_top,
 #endif
-			                       entry_valstack_bottom,
-			                       entry_valstack_end,
+			                       entry_valstack_bottom_byteoff,
+			                       entry_valstack_end_byteoff,
 			                       entry_call_recursion_depth,
 			                       entry_curr_thread,
 			                       entry_thread_state,
@@ -1402,14 +1336,16 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	duk_activation *entry_act;
 	duk_size_t entry_callstack_top;
 #endif
-	duk_size_t entry_valstack_bottom;
-	duk_size_t entry_valstack_end;
+	duk_size_t entry_valstack_bottom_byteoff;
+	duk_size_t entry_valstack_end_byteoff;
 	duk_int_t entry_call_recursion_depth;
 	duk_hthread *entry_curr_thread;
 	duk_uint_fast8_t entry_thread_state;
 	duk_instr_t **entry_ptr_curr_pc;
 	duk_idx_t nargs;            /* # argument registers target function wants (< 0 => "as is") */
 	duk_idx_t nregs;            /* # total registers target function wants on entry (< 0 => "as is") */
+	duk_size_t vs_min_regs;     /* temporary */
+	duk_size_t vs_min_bytes;    /* minimum value stack size (bytes) for handling call */
 	duk_hobject *func;          /* 'func' on stack (borrowed reference) */
 	duk_tval *tv_func;          /* duk_tval ptr for 'func' on stack (borrowed reference) or tv_func_copy */
 	duk_tval tv_func_copy;      /* to avoid relookups */
@@ -1437,13 +1373,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	entry_act = thr->callstack_curr;
 	entry_callstack_top = thr->callstack_top;
 #endif
-	entry_valstack_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
-#if defined(DUK_USE_PREFER_SIZE)
-	entry_valstack_end = (duk_size_t) (thr->valstack_end - thr->valstack);
-#else
-	DUK_ASSERT((duk_size_t) (thr->valstack_end - thr->valstack) == thr->valstack_size);
-	entry_valstack_end = thr->valstack_size;
-#endif
+	entry_valstack_bottom_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
+	entry_valstack_end_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 	entry_call_recursion_depth = thr->heap->call_recursion_depth;
 	entry_curr_thread = thr->heap->curr_thread;  /* Note: may be NULL if first call */
 	entry_thread_state = thr->state;
@@ -1458,7 +1389,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	DUK_DD(DUK_DDPRINT("duk__handle_call_inner: thr=%p, num_stack_args=%ld, "
 	                   "call_flags=0x%08lx (constructor=%ld), "
 	                   "valstack_top=%ld, idx_func=%ld, idx_args=%ld, rec_depth=%ld/%ld, "
-	                   "entry_valstack_bottom=%ld, entry_call_recursion_depth=%ld, "
+	                   "entry_valstack_bottom_byteoff=%ld, entry_valstack_end_byteoff=%ld, "
+	                   "entry_call_recursion_depth=%ld, "
 	                   "entry_curr_thread=%p, entry_thread_state=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
@@ -1469,7 +1401,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	                   (long) (idx_func + 2),
 	                   (long) thr->heap->call_recursion_depth,
 	                   (long) thr->heap->call_recursion_limit,
-	                   (long) entry_valstack_bottom,
+	                   (long) entry_valstack_bottom_byteoff,
+	                   (long) entry_valstack_end_byteoff,
 	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
@@ -1544,7 +1477,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	/* [ ... func this arg1 ... argN ] */
 
 	/*
-	 *  Setup a preliminary activation and figure out nargs/nregs.
+	 *  Setup a preliminary activation and figure out nargs/nregs and
+	 *  value stack minimum size.
 	 *
 	 *  Don't touch valstack_bottom or valstack_top yet so that Duktape API
 	 *  calls work normally.
@@ -1559,16 +1493,16 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	act = thr->callstack_curr;
 	if (act != NULL) {
 		/*
-		 *  Update idx_retval of current activation.
+		 *  Update return value stack index of current activation.
 		 *
 		 *  Although it might seem this is not necessary (bytecode executor
 		 *  does this for Ecmascript-to-Ecmascript calls; other calls are
 		 *  handled here), this turns out to be necessary for handling yield
 		 *  and resume.  For them, an Ecmascript-to-native call happens, and
-		 *  the Ecmascript call's idx_retval must be set for things to work.
+		 *  the Ecmascript call's retval_byteoff must be set for things to work.
 		 */
 
-		act->idx_retval = entry_valstack_bottom + idx_func;
+		act->retval_byteoff = entry_valstack_bottom_byteoff + idx_func * sizeof(duk_tval);
 	}
 
 	new_act->parent = act;
@@ -1599,6 +1533,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	nargs = 0; DUK_UNREF(nargs);
 	nregs = 0; DUK_UNREF(nregs);
 
+	/* start of arguments: idx_func + 2. */
 	if (DUK_LIKELY(func != NULL)) {
 		if (DUK_HOBJECT_HAS_STRICT(func)) {
 			act->flags |= DUK_ACT_FLAG_STRICT;
@@ -1606,7 +1541,9 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 			nargs = ((duk_hcompfunc *) func)->nargs;
 			nregs = ((duk_hcompfunc *) func)->nregs;
+			DUK_ASSERT(nregs >= 0);
 			DUK_ASSERT(nregs >= nargs);
+			vs_min_regs = nregs + DUK_VALSTACK_INTERNAL_EXTRA;
 		} else {
 			/* True because of call target lookup checks. */
 			DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
@@ -1617,6 +1554,11 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 			 */
 			nargs = ((duk_hnatfunc *) func)->nargs;
 			nregs = nargs;
+			if (nargs >= 0) {
+				vs_min_regs = nregs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA;
+			} else {
+				vs_min_regs = num_stack_args + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA;
+			}
 		}
 	} else {
 		duk_small_uint_t lf_flags;
@@ -1626,11 +1568,16 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		nargs = DUK_LFUNC_FLAGS_GET_NARGS(lf_flags);
 		if (nargs == DUK_LFUNC_NARGS_VARARGS) {
 			nargs = -1;  /* vararg */
+			vs_min_regs = num_stack_args + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA;
+		} else {
+			vs_min_regs = nregs + DUK_VALSTACK_API_ENTRY_MINIMUM + DUK_VALSTACK_INTERNAL_EXTRA;
 		}
 		nregs = nargs;
 
 		act->flags |= DUK_ACT_FLAG_STRICT;
 	}
+
+	vs_min_bytes = entry_valstack_bottom_byteoff + sizeof(duk_tval) * (idx_func + 2 + vs_min_regs);
 
 	act->func = func;  /* NULL for lightfunc */
 	act->var_env = NULL;
@@ -1642,10 +1589,11 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	act->prev_line = 0;
 #endif
-	act->idx_bottom = entry_valstack_bottom + idx_func + 2;
-#if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-	act->idx_retval = 0;
+	act->bottom_byteoff = entry_valstack_bottom_byteoff + sizeof(duk_tval) * (idx_func + 2);
+#if 0
+	act->retval_byteoff = 0;   /* topmost activation retval_byteoff is considered garbage, no need to init */
 #endif
+	act->reserve_byteoff = 0;  /* filled in below */
 	DUK_TVAL_SET_TVAL(&act->tv_func, tv_func);  /* borrowed, no refcount */
 
 	/* XXX: remove the preventcount and make yield walk the callstack?
@@ -1700,8 +1648,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 				 * We need to initialize it right now.
 				 */
 
-				/* third arg: absolute index (to entire valstack) of idx_bottom of new activation */
-				env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
+				/* third arg: absolute index (to entire valstack) of bottom_byteoff of new activation */
+				env = duk_create_activation_environment_record(thr, func, act->bottom_byteoff);
 				DUK_ASSERT(env != NULL);
 
 				/* [ ... func this arg1 ... argN envobj ] */
@@ -1739,23 +1687,20 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	/* [ ... func this arg1 ... argN ] */
 
 	/*
-	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs'
+	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs',
+	 *  ensure value stack size matches target requirements.
 	 *
-	 *  Value stack may either grow or shrink, depending on the
-	 *  number of func registers and the number of actual arguments.
-	 *  If nregs >= 0, func wants args clamped to 'nargs'; else it
-	 *  wants all args (= 'num_stack_args').
+	 *  Value stack can only grow here.
 	 */
 
-	/* XXX: optimize value stack operation */
-	/* XXX: don't want to shrink allocation here */
-
-	duk__adjust_valstack_and_top(thr,
-	                             num_stack_args,
-	                             idx_func + 2,
-	                             nregs,
-	                             nargs,
-	                             func);
+	duk_valstack_grow_check_throw(ctx, vs_min_bytes);
+	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+	if (nregs >= 0) {
+		/* XXX: optimized operation for setting top and wiping */
+		DUK_ASSERT(nregs >= nargs);
+		duk_set_top(ctx, idx_func + 2 + nargs);  /* clamp anything above nargs */
+		duk_set_top(ctx, idx_func + 2 + nregs);  /* extend with undefined */
+	}
 
 	/*
 	 *  Determine call type, then finalize activation, shift to
@@ -1809,7 +1754,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_curr == entry_act);
 		DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 
-		thr->valstack_bottom = thr->valstack + entry_valstack_bottom;
+		thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
 		/* keep current valstack_top */
 		DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 		DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
@@ -1873,7 +1818,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_ASSERT(thr->callstack_curr == entry_act);
 		DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 
-		thr->valstack_bottom = thr->valstack + entry_valstack_bottom;
+		thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
 		/* keep current valstack_top */
 		DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 		DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
@@ -1901,23 +1846,14 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 
 	/* [ ... retval ] */
 
-	/* Ensure there is internal valstack spare before we exit; this may
-	 * throw an alloc error.  The same guaranteed size must be available
-	 * as before the call.  This is not optimal now: we store the valstack
-	 * allocated size during entry; this value may be higher than the
-	 * minimal guarantee for an application.
-	 */
+	/* Restore caller's value stack reserve (cannot fail). */
+	DUK_ASSERT((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff >= (duk_uint8_t *) thr->valstack_top);
+	DUK_ASSERT((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff <= (duk_uint8_t *) thr->valstack_alloc_end);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff);
 
-	/* XXX: we should never shrink here; when we error out later, we'd
-	 * need to potentially grow the value stack in error unwind which could
-	 * cause another error.
+	/* XXX: Trial value stack shrink would be OK here, but we'd need
+	 * to prevent side effects of the potential realloc.
 	 */
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               entry_valstack_end,                    /* same as during entry */
-	                               DUK_VSRESIZE_FLAG_SHRINK |             /* flags */
-	                               DUK_VSRESIZE_FLAG_COMPACT |
-	                               DUK_VSRESIZE_FLAG_THROW);
 
 	/* Restore entry thread executor curr_pc stack frame pointer. */
 	thr->ptr_curr_pc = entry_ptr_curr_pc;
@@ -1977,8 +1913,8 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 #if defined(DUK_USE_ASSERTIONS)
                                       duk_size_t entry_callstack_top,
 #endif
-                                      duk_size_t entry_valstack_bottom,
-                                      duk_size_t entry_valstack_end,
+                                      duk_size_t entry_valstack_bottom_byteoff,
+                                      duk_size_t entry_valstack_end_byteoff,
                                       duk_int_t entry_call_recursion_depth,
                                       duk_hthread *entry_curr_thread,
                                       duk_uint_fast8_t entry_thread_state,
@@ -2026,7 +1962,7 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 	}
 	DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 
-	thr->valstack_bottom = thr->valstack + entry_valstack_bottom;
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
 	tv_ret = thr->valstack_bottom + idx_func;  /* XXX: byte offset? */
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, &thr->heap->lj.value1);  /* side effects */
 #if defined(DUK_USE_FASTINT)
@@ -2037,26 +1973,10 @@ DUK_LOCAL void duk__handle_call_error(duk_hthread *thr,
 
 	/* [ ... errobj ] */
 
-	/* Ensure there is internal valstack spare before we exit; this may
-	 * throw an alloc error.  The same guaranteed size must be available
-	 * as before the call.  This is not optimal now: we store the valstack
-	 * allocated size during entry; this value may be higher than the
-	 * minimal guarantee for an application.
-	 */
-
-	/* XXX: this needs to be reworked so that we never shrink the value
-	 * stack on function entry so that we never need to grow it here.
-	 * Needing to grow here is a sandboxing issue because we need to
-	 * allocate which may cause an error in the error handling path
-	 * and thus propagate an error out of a protected call.
-	 */
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               entry_valstack_end,                    /* same as during entry */
-	                               DUK_VSRESIZE_FLAG_SHRINK |             /* flags */
-	                               DUK_VSRESIZE_FLAG_COMPACT |
-	                               DUK_VSRESIZE_FLAG_THROW);
-
+	/* Restore caller's value stack reserve (cannot fail). */
+	DUK_ASSERT((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff >= (duk_uint8_t *) thr->valstack_top);
+	DUK_ASSERT((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff <= (duk_uint8_t *) thr->valstack_alloc_end);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_end_byteoff);
 
 	/* These are just convenience "wiping" of state.  Side effects should
 	 * not be an issue here: thr->heap and thr->heap->lj have a stable
@@ -2141,7 +2061,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
                                             duk_idx_t num_stack_rets) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_activation *entry_act;
-	duk_size_t entry_valstack_bottom;
+	duk_size_t entry_valstack_bottom_byteoff;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_size_t entry_callstack_top;
 #endif
@@ -2159,7 +2079,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 
 	/* Note: careful with indices like '-x'; if 'x' is zero, it refers to bottom */
 	entry_act = thr->callstack_curr;
-	entry_valstack_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
+	entry_valstack_bottom_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
 #if defined(DUK_USE_ASSERTIONS)
 	entry_callstack_top = thr->callstack_top;
 #endif
@@ -2172,7 +2092,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	/* Note: cannot portably debug print a function pointer, hence 'func' not printed! */
 	DUK_DD(DUK_DDPRINT("duk_handle_safe_call: thr=%p, num_stack_args=%ld, num_stack_rets=%ld, "
 	                   "valstack_top=%ld, idx_retbase=%ld, rec_depth=%ld/%ld, "
-	                   "entry_act=%p, entry_valstack_bottom=%ld, entry_call_recursion_depth=%ld, "
+	                   "entry_act=%p, entry_valstack_bottom_byteoff=%ld, entry_call_recursion_depth=%ld, "
 	                   "entry_curr_thread=%p, entry_thread_state=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
@@ -2182,7 +2102,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	                   (long) thr->heap->call_recursion_depth,
 	                   (long) thr->heap->call_recursion_limit,
 	                   (void *) entry_act,
-	                   (long) entry_valstack_bottom,
+	                   (long) entry_valstack_bottom_byteoff,
 	                   (long) entry_call_recursion_depth,
 	                   (void *) entry_curr_thread,
 	                   (long) entry_thread_state));
@@ -2214,7 +2134,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		                            func,
 		                            udata,
 #if defined(DUK_USE_ASSERTIONS)
-		                            entry_valstack_bottom,
+		                            entry_valstack_bottom_byteoff,
 		                            entry_callstack_top,
 #endif
 		                            idx_retbase,
@@ -2238,7 +2158,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #endif
 		                            idx_retbase,
 		                            num_stack_rets,
-		                            entry_valstack_bottom,
+		                            entry_valstack_bottom_byteoff,
 		                            old_jmpbuf_ptr);
 
 		retval = DUK_EXEC_ERROR;
@@ -2262,7 +2182,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #endif
 			                            idx_retbase,
 			                            num_stack_rets,
-			                            entry_valstack_bottom,
+			                            entry_valstack_bottom_byteoff,
 			                            old_jmpbuf_ptr);
 			retval = DUK_EXEC_ERROR;
 		}
@@ -2280,7 +2200,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #endif
 			                            idx_retbase,
 			                            num_stack_rets,
-			                            entry_valstack_bottom,
+			                            entry_valstack_bottom_byteoff,
 			                            old_jmpbuf_ptr);
 			retval = DUK_EXEC_ERROR;
 		}
@@ -2309,7 +2229,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
                                            duk_safe_call_function func,
                                            void *udata,
 #if defined(DUK_USE_ASSERTIONS)
-                                           duk_size_t entry_valstack_bottom,
+                                           duk_size_t entry_valstack_bottom_byteoff,
                                            duk_size_t entry_callstack_top,
 #endif
                                            duk_idx_t idx_retbase,
@@ -2380,7 +2300,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	/* we're running inside the caller's activation, so no change in call/catch stack or valstack bottom */
 	DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
-	DUK_ASSERT((duk_size_t) (thr->valstack_bottom - thr->valstack) == entry_valstack_bottom);
+	DUK_ASSERT((duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack) == entry_valstack_bottom_byteoff);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 
@@ -2400,6 +2320,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
 
 	DUK_REFZERO_CHECK_FAST(thr);
+
 	return;
 
  thread_state_error:
@@ -2414,7 +2335,7 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
 #endif
                                            duk_idx_t idx_retbase,
                                            duk_idx_t num_stack_rets,
-                                           duk_size_t entry_valstack_bottom,
+                                           duk_size_t entry_valstack_bottom_byteoff,
                                            duk_jmpbuf *old_jmpbuf_ptr) {
 	duk_context *ctx;
 
@@ -2448,7 +2369,7 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
 	}
 	DUK_ASSERT(thr->callstack_top == entry_callstack_top);
 
-	thr->valstack_bottom = thr->valstack + entry_valstack_bottom;
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
 
 	/* [ ... | (crud) ] */
 
@@ -2565,7 +2486,7 @@ DUK_LOCAL void duk__handle_safe_call_shared(duk_hthread *thr,
  *      varargs through the 'arguments' object)
  *
  *  The callstack of the target contains an earlier Ecmascript call in case
- *  of an Ecmascript-to-Ecmascript call (whose idx_retval is updated), or
+ *  of an Ecmascript-to-Ecmascript call (whose retval_byteoff is updated), or
  *  is empty in case of an initial Duktape.Thread.resume().
  *
  *  The first thing to do here is to figure out whether an ecma-to-ecma
@@ -2578,13 +2499,14 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
                                                    duk_idx_t num_stack_args,
                                                    duk_small_uint_t call_flags) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_size_t entry_valstack_bottom;
-	duk_idx_t idx_func;     /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
-	duk_idx_t idx_args;     /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
-	duk_idx_t nargs;        /* # argument registers target function wants (< 0 => never for ecma calls) */
-	duk_idx_t nregs;        /* # total registers target function wants on entry (< 0 => never for ecma calls) */
-	duk_hobject *func;      /* 'func' on stack (borrowed reference) */
-	duk_tval tv_func_ignore;  /* duk_tval for 'func' on stack */
+	duk_size_t entry_valstack_bottom_byteoff;
+	duk_idx_t idx_func;      /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
+	duk_idx_t idx_args;      /* valstack index of start of args (arg1) (relative to entry valstack_bottom) */
+	duk_idx_t nargs;         /* # argument registers target function wants (< 0 => never for ecma calls) */
+	duk_idx_t nregs;         /* # total registers target function wants on entry (< 0 => never for ecma calls) */
+	duk_size_t vs_min_bytes; /* minimum value stack size (bytes) for handling call */
+	duk_hobject *func;       /* 'func' on stack (borrowed reference) */
+	duk_tval tv_func_ignore; /* duk_tval for 'func' on stack */
 	duk_activation *act;
 	duk_activation *new_act;
 	duk_hobject *env;
@@ -2638,14 +2560,13 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	}
 #endif  /* DUK_USE_ASSERTIONS */
 
-	entry_valstack_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
 	/* XXX: rework */
 	idx_func = duk_normalize_index(thr, -num_stack_args - 2);
 	idx_args = idx_func + 2;
 
 	DUK_DD(DUK_DDPRINT("handle_ecma_call_setup: thr=%p, "
 	                   "num_stack_args=%ld, call_flags=0x%08lx (resume=%ld, tailcall=%ld), "
-	                   "idx_func=%ld, idx_args=%ld, entry_valstack_bottom=%ld",
+	                   "idx_func=%ld, idx_args=%ld, entry_valstack_bottom_byteoff=%ld",
 	                   (void *) thr,
 	                   (long) num_stack_args,
 	                   (unsigned long) call_flags,
@@ -2653,7 +2574,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	                   (long) ((call_flags & DUK_CALL_FLAG_IS_TAILCALL) != 0 ? 1 : 0),
 	                   (long) idx_func,
 	                   (long) idx_args,
-	                   (long) entry_valstack_bottom));
+	                   (long) entry_valstack_bottom_byteoff));
 
 	if (DUK_UNLIKELY(idx_func < 0 || idx_args < 0)) {
 		/* XXX: assert? compiler is responsible for this never happening */
@@ -2698,7 +2619,11 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	nargs = ((duk_hcompfunc *) func)->nargs;
 	nregs = ((duk_hcompfunc *) func)->nregs;
+	DUK_ASSERT(nregs >= 0);
 	DUK_ASSERT(nregs >= nargs);
+
+	entry_valstack_bottom_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack);
+	vs_min_bytes = entry_valstack_bottom_byteoff + sizeof(duk_tval) * (idx_args + nregs + DUK_VALSTACK_INTERNAL_EXTRA);
 
 	/* [ ... func this arg1 ... argN ] */
 
@@ -2712,7 +2637,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 *
 	 *    - Check stack size for call handling
 	 *    - Grow call stack if necessary (non-tail-calls)
-	 *    - Update current activation (idx_retval) if necessary
+	 *    - Update current activation (retval_byteoff) if necessary
 	 *      (non-tail, non-resume calls)
 	 *    - Move start of args (idx_args) to valstack bottom
 	 *      (tail calls)
@@ -2817,11 +2742,12 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(DUK_ACT_GET_FUNC(act) == func);      /* already updated */
 		DUK_ASSERT(act->var_env == NULL);
 		DUK_ASSERT(act->lex_env == NULL);
-		act->idx_bottom = entry_valstack_bottom;  /* tail call -> reuse current "frame" */
+		act->bottom_byteoff = entry_valstack_bottom_byteoff;  /* tail call -> reuse current "frame" */
 		DUK_ASSERT(nregs >= 0);
-#if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-		act->idx_retval = 0;
+#if 0  /* topmost activation retval_byteoff is considered garbage, no need to init */
+		act->retval_byteoff = 0;
 #endif
+		act->reserve_byteoff = 0;  /* filled in below */
 
 		/*
 		 *  Manipulate valstack so that args are on the current bottom and the
@@ -2864,11 +2790,11 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		if (call_flags & DUK_CALL_FLAG_IS_RESUME) {
 			DUK_DDD(DUK_DDDPRINT("is resume -> no update to current activation (may not even exist)"));
 		} else {
-			DUK_DDD(DUK_DDDPRINT("update to current activation idx_retval"));
+			DUK_DDD(DUK_DDDPRINT("update to current activation retval_byteoff"));
 			DUK_ASSERT(thr->callstack_top >= 1);
 			DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 			DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act)));
-			act->idx_retval = entry_valstack_bottom + idx_func;
+			act->retval_byteoff = entry_valstack_bottom_byteoff + sizeof(duk_tval) * idx_func;
 		}
 
 		new_act->parent = act;
@@ -2896,11 +2822,12 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 		act->prev_line = 0;
 #endif
-		act->idx_bottom = entry_valstack_bottom + idx_args;
+		act->bottom_byteoff = entry_valstack_bottom_byteoff + sizeof(duk_tval) * idx_args;
 		DUK_ASSERT(nregs >= 0);
-#if 0  /* topmost activation idx_retval is considered garbage, no need to init */
-		act->idx_retval = 0;
+#if 0  /* topmost activation retval_byteoff is considered garbage, no need to init */
+		act->retval_byteoff = 0;
 #endif
+		act->reserve_byteoff = 0;  /* filled in below */
 		DUK_TVAL_SET_OBJECT(&act->tv_func, func);  /* borrowed, no refcount */
 
 		DUK_HOBJECT_INCREF(thr, func);  /* act->func */
@@ -2951,8 +2878,8 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		goto env_done;
 	}
 
-	/* third arg: absolute index (to entire valstack) of idx_bottom of new activation */
-	env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
+	/* third arg: absolute offset (to entire valstack) of bottom of new activation */
+	env = duk_create_activation_environment_record(thr, func, act->bottom_byteoff);
 	DUK_ASSERT(env != NULL);
 
 	/* [ ... arg1 ... argN envobj ] */
@@ -2978,12 +2905,15 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 *  Setup value stack: clamp to 'nargs', fill up to 'nregs'
 	 */
 
-	duk__adjust_valstack_and_top(thr,
-	                             num_stack_args,
-	                             idx_args,
-	                             nregs,
-	                             nargs,
-	                             func);
+	duk_valstack_grow_check_throw(ctx, vs_min_bytes);
+	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
+	DUK_ASSERT(nargs >= 0);
+	DUK_ASSERT(nregs >= 0);
+	DUK_ASSERT(nregs >= nargs);
+
+	/* XXX: optimized operation for setting top and wiping */
+	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
+	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
 
 	/*
 	 *  Shift to new valstack_bottom.

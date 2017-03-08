@@ -504,7 +504,7 @@ void duk_js_push_closure(duk_hthread *thr,
 DUK_INTERNAL
 duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
                                                       duk_hobject *func,
-                                                      duk_size_t idx_bottom) {
+                                                      duk_size_t bottom_byteoff) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hdecenv *env;
 	duk_hobject *parent;
@@ -534,7 +534,7 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 
 	DUK_ASSERT(env->thread == NULL);
 	DUK_ASSERT(env->varmap == NULL);
-	DUK_ASSERT(env->regbase == 0);
+	DUK_ASSERT(env->regbase_byteoff == 0);
 	if (DUK_HOBJECT_IS_COMPFUNC(func)) {
 		duk_hobject *varmap;
 		duk_tval *tv;
@@ -548,12 +548,12 @@ duk_hobject *duk_create_activation_environment_record(duk_hthread *thr,
 			DUK_HOBJECT_INCREF(thr, varmap);
 			env->thread = thr;
 			DUK_HTHREAD_INCREF(thr, thr);
-			env->regbase = idx_bottom;
+			env->regbase_byteoff = bottom_byteoff;
 		} else {
 			/* If function has no _Varmap, leave the environment closed. */
 			DUK_ASSERT(env->thread == NULL);
 			DUK_ASSERT(env->varmap == NULL);
-			DUK_ASSERT(env->regbase == 0);
+			DUK_ASSERT(env->regbase_byteoff == 0);
 		}
 	}
 
@@ -579,7 +579,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	DUK_ASSERT(act->lex_env == NULL);
 	DUK_ASSERT(act->var_env == NULL);
 
-	env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
+	env = duk_create_activation_environment_record(thr, func, act->bottom_byteoff);
 	DUK_ASSERT(env != NULL);
 	/* 'act' is a stable pointer, so still OK. */
 
@@ -664,7 +664,7 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	 * then realloc with hash part if large enough).
 	 */
 	for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ENEXT(varmap); i++) {
-		duk_size_t regbase;
+		duk_size_t regbase_byteoff;
 
 		key = DUK_HOBJECT_E_GET_KEY(thr->heap, varmap, i);
 		DUK_ASSERT(key != NULL);   /* assume keys are compact in _Varmap */
@@ -680,15 +680,15 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 		regnum = (duk_uint_t) DUK_TVAL_GET_NUMBER(tv);
 #endif
 
-		regbase = ((duk_hdecenv *) env)->regbase;
-		DUK_ASSERT(thr->valstack + regbase + regnum >= thr->valstack);
-		DUK_ASSERT(thr->valstack + regbase + regnum < thr->valstack_top);
+		regbase_byteoff = ((duk_hdecenv *) env)->regbase_byteoff;
+		DUK_ASSERT((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum >= (duk_uint8_t *) thr->valstack);
+		DUK_ASSERT((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum < (duk_uint8_t *) thr->valstack_top);
 
 		/* If property already exists, overwrites silently.
 		 * Property is writable, but not deletable (not configurable
 		 * in terms of property attributes).
 		 */
-		duk_push_tval(ctx, thr->valstack + regbase + regnum);
+		duk_push_tval(ctx, (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + regbase_byteoff + sizeof(duk_tval) * regnum));
 		DUK_DDD(DUK_DDDPRINT("closing identifier %!O -> reg %ld, value %!T",
 		                     (duk_heaphdr *) key,
 		                     (long) regnum,
@@ -736,7 +736,6 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
                                          duk__id_lookup_result *out) {
 	duk_tval *tv;
 	duk_size_t reg_rel;
-	duk_size_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -767,8 +766,7 @@ duk_bool_t duk__getid_open_decl_env_regs(duk_hthread *thr,
 #endif
 	DUK_ASSERT_DISABLE(reg_rel >= 0);  /* unsigned */
 
-	idx = env->regbase + reg_rel;
-	tv = env->thread->valstack + idx;
+	tv = (duk_tval *) (void *) ((duk_uint8_t *) env->thread->valstack + env->regbase_byteoff + sizeof(duk_tval) * reg_rel);
 	DUK_ASSERT(tv >= env->thread->valstack && tv < env->thread->valstack_end);  /* XXX: more accurate? */
 
 	out->value = tv;
@@ -789,7 +787,6 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	duk_hobject *func;
 	duk_hobject *varmap;
 	duk_size_t reg_rel;
-	duk_size_t idx;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(name != NULL);
@@ -822,9 +819,8 @@ duk_bool_t duk__getid_activation_regs(duk_hthread *thr,
 	DUK_ASSERT_DISABLE(reg_rel >= 0);
 	DUK_ASSERT(reg_rel < ((duk_hcompfunc *) func)->nregs);
 
-	idx = act->idx_bottom + reg_rel;
-	DUK_ASSERT(idx >= act->idx_bottom);
-	tv = thr->valstack + idx;
+	tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->bottom_byteoff);
+	tv += reg_rel;
 
 	out->value = tv;
 	out->attrs = DUK_PROPDESC_FLAGS_W;  /* registers are mutable, non-deletable */

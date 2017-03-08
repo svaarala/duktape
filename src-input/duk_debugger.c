@@ -2212,7 +2212,7 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->thread));
 			duk__debug_getinfo_flags_key(thr, "varmap");
 			duk_debug_write_heapptr(thr, (duk_heaphdr *) (h_env->varmap));
-			duk__debug_getinfo_prop_uint(thr, "regbase", (duk_uint_t) h_env->regbase);
+			duk__debug_getinfo_prop_uint(thr, "regbase", (duk_uint_t) h_env->regbase_byteoff);
 		}
 
 		if (DUK_HOBJECT_IS_OBJENV(h_obj)) {

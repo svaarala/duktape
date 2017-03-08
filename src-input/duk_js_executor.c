@@ -801,7 +801,6 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_return(duk_hthread *thr) {
 	DUK_ASSERT(act != NULL);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(act) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act)));
-	DUK_ASSERT_DISABLE(act->idx_retval >= 0);  /* unsigned */
 
 	/* Clamp so that values at 'clamp_top' and above are wiped and won't
 	 * retain reachable garbage.  Then extend to 'nregs' because we're
@@ -810,20 +809,16 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_return(duk_hthread *thr) {
 
 	h_func = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 
-	thr->valstack_bottom = thr->valstack + act->idx_bottom;
-	DUK_ASSERT(act->idx_retval >= act->idx_bottom);
-	clamp_top = (duk_idx_t) (act->idx_retval - act->idx_bottom + 1);  /* +1 = one retval */
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->bottom_byteoff);
+	DUK_ASSERT(act->retval_byteoff >= act->bottom_byteoff);
+	clamp_top = (duk_idx_t) ((act->retval_byteoff - act->bottom_byteoff + sizeof(duk_tval)) / sizeof(duk_tval));  /* +1 = one retval */
 	duk_set_top((duk_context *) thr, clamp_top);
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               (thr->valstack_bottom - thr->valstack) +  /* bottom of current func */
-	                                   h_func->nregs +                       /* reg count */
-	                                   DUK_VALSTACK_INTERNAL_EXTRA,          /* + spare */
-	                               DUK_VSRESIZE_FLAG_SHRINK |                /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
-
 	duk_set_top((duk_context *) thr, h_func->nregs);
+
+	DUK_ASSERT((duk_uint8_t *) thr->valstack_end >= (duk_uint8_t *) thr->valstack + act->reserve_byteoff);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->reserve_byteoff);
+
+	/* XXX: a best effort shrink check would be OK here */
 }
 
 /* Reconfigure value stack for an Ecmascript catcher.  Use topmost catcher
@@ -832,6 +827,7 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_return(duk_hthread *thr) {
 DUK_LOCAL void duk__reconfig_valstack_ecma_catcher(duk_hthread *thr, duk_activation *act) {
 	duk_catcher *cat;
 	duk_hcompfunc *h_func;
+	duk_size_t idx_bottom;
 	duk_idx_t clamp_top;
 
 	DUK_ASSERT(thr != NULL);
@@ -843,22 +839,17 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_catcher(duk_hthread *thr, duk_activat
 
 	h_func = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 
-	thr->valstack_bottom = thr->valstack + act->idx_bottom;
-	DUK_ASSERT(cat->idx_base >= act->idx_bottom);
-	clamp_top = (duk_idx_t) (cat->idx_base - act->idx_bottom + 2);  /* +2 = catcher value, catcher lj_type */
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->bottom_byteoff);
+	idx_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
+	DUK_ASSERT(cat->idx_base >= idx_bottom);
+	clamp_top = (duk_idx_t) (cat->idx_base - idx_bottom + 2);  /* +2 = catcher value, catcher lj_type */
 	duk_set_top((duk_context *) thr, clamp_top);
-	act = NULL;
-	cat = NULL;
-
-	(void) duk_valstack_resize_raw((duk_context *) thr,
-	                               (thr->valstack_bottom - thr->valstack) +  /* bottom of current func */
-	                                   h_func->nregs +                       /* reg count */
-	                                   DUK_VALSTACK_INTERNAL_EXTRA,          /* + spare */
-	                               DUK_VSRESIZE_FLAG_SHRINK |                /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
-
 	duk_set_top((duk_context *) thr, h_func->nregs);
+
+	DUK_ASSERT((duk_uint8_t *) thr->valstack_end >= (duk_uint8_t *) thr->valstack + act->reserve_byteoff);
+	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->reserve_byteoff);
+
+	/* XXX: a best effort shrink check would be OK here */
 }
 
 /* Set catcher regs: idx_base+0 = value, idx_base+1 = lj_type.
@@ -1071,7 +1062,7 @@ DUK_LOCAL void duk__handle_yield(duk_hthread *thr, duk_hthread *resumer, duk_tva
 	DUK_ASSERT(DUK_ACT_GET_FUNC(act_resumer) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(act_resumer)));  /* resume caller must be an ecmascript func */
 
-	tv1 = resumer->valstack + act_resumer->idx_retval;  /* return value from Duktape.Thread.resume() */
+	tv1 = (duk_tval *) (void *) ((duk_uint8_t *) resumer->valstack + act_resumer->retval_byteoff);  /* return value from Duktape.Thread.resume() */
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv_val_unstable);  /* side effects */  /* XXX: avoid side effects */
 
 	duk__reconfig_valstack_ecma_return(resumer);
@@ -1131,7 +1122,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL &&
 		           DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)) &&
 		           ((duk_hnatfunc *) DUK_ACT_GET_FUNC(thr->callstack_curr))->func == duk_bi_thread_resume);
-		DUK_ASSERT_DISABLE(thr->callstack_curr->parent->idx_retval >= 0);                                              /* unsigned */
 
 		tv = &thr->heap->lj.value2;  /* resumee */
 		DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv));
@@ -1149,8 +1139,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		           (DUK_ACT_GET_FUNC(resumee->callstack_curr) != NULL &&
 		            DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(resumee->callstack_curr)) &&
 		            ((duk_hnatfunc *) DUK_ACT_GET_FUNC(resumee->callstack_curr))->func == duk_bi_thread_yield));
-		DUK_ASSERT_DISABLE(resumee->state != DUK_HTHREAD_STATE_YIELDED ||
-		                   resumee->callstack_curr->parent->idx_retval >= 0);                                                  /* idx_retval unsigned */
 		DUK_ASSERT(resumee->state != DUK_HTHREAD_STATE_INACTIVE ||
 		           resumee->callstack_top == 0);                                                                     /* INACTIVE: no activation, single function value on valstack */
 
@@ -1195,9 +1183,8 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 			DUK_ASSERT(act_resumee != NULL);
 			act_resumee = act_resumee->parent;      /* Ecmascript call site for yield() */
 			DUK_ASSERT(act_resumee != NULL);
-			DUK_ASSERT_DISABLE(act_resumee->idx_retval >= 0);  /* unsigned */
 
-			tv = resumee->valstack + act_resumee->idx_retval;  /* return value from Duktape.Thread.yield() */
+			tv = (duk_tval *) (void *) ((duk_uint8_t *) resumee->valstack + act_resumee->retval_byteoff);  /* return value from Duktape.Thread.yield() */
 			DUK_ASSERT(tv >= resumee->valstack && tv < resumee->valstack_top);
 			tv2 = &thr->heap->lj.value1;
 			DUK_TVAL_SET_TVAL_UPDREF(thr, tv, tv2);  /* side effects */  /* XXX: avoid side effects */
@@ -1289,7 +1276,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		           ((duk_hnatfunc *) DUK_ACT_GET_FUNC(thr->callstack_curr))->func == duk_bi_thread_yield);
 		DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL &&
 		           DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));                              /* an Ecmascript function */
-		DUK_ASSERT_DISABLE(thr->callstack_curr->parent->idx_retval >= 0);                                              /* unsigned */
 
 		resumer = thr->resumer;
 
@@ -1303,7 +1289,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		           ((duk_hnatfunc *) DUK_ACT_GET_FUNC(resumer->callstack_curr))->func == duk_bi_thread_resume);
 		DUK_ASSERT(DUK_ACT_GET_FUNC(resumer->callstack_curr->parent) != NULL &&
 		           DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(resumer->callstack_curr->parent)));                            /* an Ecmascript function */
-		DUK_ASSERT_DISABLE(resumer->callstack_curr->parent->idx_retval >= 0);                                            /* unsigned */
 
 		if (thr->heap->lj.iserror) {
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
@@ -1632,22 +1617,18 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 		 * match entry_act check).
 		 */
 
-		DUK_DDD(DUK_DDDPRINT("return to Ecmascript caller, idx_retval=%ld, lj_value1=%!T",
-					(long) (thr->callstack_curr->parent->idx_retval),
-					(duk_tval *) &thr->heap->lj.value1));
+		DUK_DDD(DUK_DDDPRINT("return to Ecmascript caller, retval_byteoff=%ld, lj_value1=%!T",
+		                     (long) (thr->callstack_curr->parent->retval_byteoff),
+		                     (duk_tval *) &thr->heap->lj.value1));
 
 		DUK_ASSERT(thr->callstack_curr != NULL);
 		DUK_ASSERT(thr->callstack_curr->parent != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));   /* must be ecmascript */
 
-		tv1 = thr->valstack + thr->callstack_curr->parent->idx_retval;
+		tv1 = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + thr->callstack_curr->parent->retval_byteoff);
 		DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
 		tv2 = thr->valstack_top - 1;
 		DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv2);  /* side effects */
-
-		DUK_DDD(DUK_DDDPRINT("return value at idx_retval=%ld is %!T",
-		                     (long) (thr->callstack_curr->parent->idx_retval),
-		                     (duk_tval *) (thr->valstack + thr->callstack_curr->parent->idx_retval)));
 
 		/* Catch stack unwind happens inline in callstack unwind. */
 		duk_hthread_activation_unwind_norz(thr);
@@ -1669,7 +1650,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 			((duk_hnatfunc *) DUK_ACT_GET_FUNC(thr->resumer->callstack_curr))->func == duk_bi_thread_resume);  /* Duktape.Thread.resume() */
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr->parent) != NULL &&
 			DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->resumer->callstack_curr->parent)));  /* an Ecmascript function */
-	DUK_ASSERT_DISABLE(thr->resumer->callstack_curr->parent->idx_retval >= 0);                  /* unsigned */
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_RUNNING);
 	DUK_ASSERT(thr->resumer->state == DUK_HTHREAD_STATE_RESUMED);
 
