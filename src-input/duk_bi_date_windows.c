@@ -109,9 +109,9 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_do
 	FILETIME ft2;
 
 	/* Do the same computation as duk_bi_date_get_local_tzoffset_windows
-	 * but without accounting for daylight savings time. Use this on
+	 * but without accounting for daylight savings time.  Use this on
 	 * Windows platforms (like Durango) that don't support the
-	 * SystemTimeToTzSpecificLocalTime call.
+	 * SystemTimeToTzSpecificLocalTime() call.
 	 */
 
 	duk__set_systime_jan1970(&st1);
