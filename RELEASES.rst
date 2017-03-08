@@ -2531,6 +2531,9 @@ Planned
 
 * Miscellaneous compiler warning fixes (GH-1358)
 
+* Use _snprintf() prior to MSVC 2015 in extras/module-duktape (GH-1369,
+  GH-1385)
+
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309, GH-1312), integer
   refzero-free-running flag (instead of a flag bit) (GH-1362)
