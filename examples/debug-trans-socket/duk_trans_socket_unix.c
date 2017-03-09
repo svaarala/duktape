@@ -19,6 +19,7 @@
 #endif  /* !USE_SELECT */
 #include <errno.h>
 #include "duktape.h"
+#include "duk_trans_socket.h"
 
 #if !defined(DUK_DEBUG_PORT)
 #define DUK_DEBUG_PORT 9091

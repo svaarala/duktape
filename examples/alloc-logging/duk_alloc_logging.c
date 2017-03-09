@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "duk_alloc_logging.h"
 
 #define  ALLOC_LOG_FILE  "/tmp/duk-alloc-log.txt"
 

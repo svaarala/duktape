@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "duk_alloc_torture.h"
 
 #define  RED_ZONE_SIZE  16
 #define  RED_ZONE_BYTE  0x5a
