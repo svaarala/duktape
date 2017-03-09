@@ -2813,6 +2813,12 @@ Planned
 
 * TBD
 
+2.2.0 (XXXX-XX-XX)
+------------------
+
+* Internal change: duk_catcher structs are now in a single linked list attached
+  to a duk_activation instead of being a separate thr->catchstack (GH-1449)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
