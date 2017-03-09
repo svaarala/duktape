@@ -2520,6 +2520,8 @@ Planned
 
 * Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
 
+* Fix duk_error_raw() compile warning with -Wmissing-prototypes (GH-1390)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)

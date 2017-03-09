@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "duk_alloc_hybrid.h"
 
 /* Define to enable some debug printfs. */
 /* #define DUK_ALLOC_HYBRID_DEBUG */

@@ -123,6 +123,7 @@ CCOPTS_SHARED += -Wall -Wextra -Wunused-result -Wdeclaration-after-statement -Wu
 CCOPTS_SHARED += -Wcast-qual
 CCOPTS_SHARED += -Wshadow
 CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an error
+CCOPTS_SHARED += -Wmissing-prototypes
 # -Wfloat-equal is too picky, there's no apparent way to compare floats
 # (even when you know it's safe) without triggering warnings
 CCOPTS_SHARED += -I./linenoise
