@@ -12,22 +12,25 @@
 #if defined(DUK_USE_DEBUGGER_SUPPORT) && \
     (defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT))
 DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
-	/*
-	 * XXX: As noted above, a protected API call won't be counted as a
-	 * catcher. This is usually convenient, e.g. in the case of a top-
-	 * level duk_pcall(), but may not always be desirable. Perhaps add an
-	 * argument to treat them as catchers?
+	/* As noted above, a protected API call won't be counted as a
+	 * catcher.  This is usually convenient, e.g. in the case of a top-
+	 * level duk_pcall(), but may not always be desirable.  Perhaps add
+	 * an argument to treat them as catchers?
 	 */
 
 	duk_size_t i;
+	duk_activation *act;
+	duk_catcher *cat;
 
 	DUK_ASSERT(thr != NULL);
 
 	while (thr != NULL) {
-		for (i = 0; i < thr->catchstack_top; i++) {
-			duk_catcher *cat = thr->catchstack + i;
-			if (DUK_CAT_HAS_CATCH_ENABLED(cat)) {
-				return 1;  /* all we need to know */
+		for (i = 0; i < thr->callstack_top; i++) {
+			act = thr->callstack + i;
+			for (cat = act->cat; cat != NULL; cat = cat->parent) {
+				if (DUK_CAT_HAS_CATCH_ENABLED(cat)) {
+					return 1;  /* all we need to know */
+				}
 			}
 		}
 		thr = thr->resumer;

@@ -220,10 +220,14 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 
 /*
  *  Checked allocation, relative to a thread
+ *
+ *  DUK_FREE_CHECKED() doesn't actually throw, but accepts a 'thr' argument
+ *  for convenience.
  */
 
 #define DUK_ALLOC_CHECKED(thr,size)                     duk_heap_mem_alloc_checked((thr), (size))
 #define DUK_ALLOC_CHECKED_ZEROED(thr,size)              duk_heap_mem_alloc_checked_zeroed((thr), (size))
+#define DUK_FREE_CHECKED(thr,ptr)                       duk_heap_mem_free((thr)->heap, (ptr))
 
 /*
  *  Memory constants

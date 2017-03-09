@@ -927,7 +927,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	 *  All done, switch properties ('p') allocation to new one.
 	 */
 
-	DUK_FREE(thr->heap, DUK_HOBJECT_GET_PROPS(thr->heap, obj));  /* NULL obj->p is OK */
+	DUK_FREE_CHECKED(thr, DUK_HOBJECT_GET_PROPS(thr->heap, obj));  /* NULL obj->p is OK */
 	DUK_HOBJECT_SET_PROPS(thr->heap, obj, new_p);
 	DUK_HOBJECT_SET_ESIZE(obj, new_e_size_adjusted);
 	DUK_HOBJECT_SET_ENEXT(obj, new_e_next);
@@ -970,7 +970,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
  alloc_failed:
 	DUK_D(DUK_DPRINT("object property table resize failed"));
 
-	DUK_FREE(thr->heap, new_p);  /* OK for NULL. */
+	DUK_FREE_CHECKED(thr, new_p);  /* OK for NULL. */
 
 	thr->heap->pf_prevent_count--;
 	thr->heap->ms_base_flags = prev_ms_base_flags;

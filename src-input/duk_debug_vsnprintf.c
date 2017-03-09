@@ -534,21 +534,30 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 #endif
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
+		DUK__COMMA(); duk_fb_sprintf(fb, "__ptr_curr_pc:%p", (void *) t->ptr_curr_pc);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__heap:%p", (void *) t->heap);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__strict:%ld", (long) t->strict);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%ld", (long) t->state);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%ld", (long) t->unused1);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%ld", (long) t->unused2);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_max:%ld", (long) t->valstack_max);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_max:%ld", (long) t->callstack_max);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_max:%ld", (long) t->catchstack_max);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%ld", (void *) t->valstack_end, (long) (t->valstack_end - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%ld", (void *) t->valstack_bottom, (long) (t->valstack_bottom - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%ld", (void *) t->valstack_top, (long) (t->valstack_top - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack:%p", (void *) t->catchstack);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_size:%ld", (long) t->catchstack_size);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__catchstack_top:%ld", (long) t->catchstack_top);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack:%p", (void *) t->callstack);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_curr:%p", (void *) t->callstack_curr);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_size:%ld", (long) t->callstack_size);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_top:%ld", (long) t->callstack_top);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_preventcount:%ld", (long) t->callstack_preventcount);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__compile_ctx:%p", (void *) t->compile_ctx);
+#if defined(DUK_USE_INTERRUPT_COUNTER)
+		DUK__COMMA(); duk_fb_sprintf(fb, "__interrupt_counter:%ld", (long) t->interrupt_counter);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__interrupt_init:%ld", (long) t->interrupt_init);
+#endif
+
 		/* XXX: print built-ins array? */
 
 	}

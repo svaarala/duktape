@@ -174,13 +174,12 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) act->prev_caller);
 #endif
+#if 0  /* nothing now */
+			for (cat = act->cat; cat != NULL; cat = cat->parent) {
+			}
+#endif
 		}
 
-#if 0  /* nothing now */
-		for (i = 0; i < (duk_uint_fast32_t) t->catchstack_top; i++) {
-			duk_catcher *cat = t->catchstack + i;
-		}
-#endif
 
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 			DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) t->builtins[i]);

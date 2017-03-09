@@ -125,13 +125,11 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->prev_caller);
 #endif
-		}
-
 #if 0  /* nothing now */
-		for (i = 0; i < (duk_uint_fast32_t) t->catchstack_top; i++) {
-			duk_catcher *cat = t->catchstack + i;
-		}
+			for (cat = act->cat; cat != NULL; cat = cat->parent) {
+			}
 #endif
+		}
 
 		duk__mark_heaphdr(heap, (duk_heaphdr *) t->resumer);
 
@@ -749,7 +747,7 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 DUK_LOCAL int duk__protected_compact_object(duk_context *ctx, void *udata) {
 	duk_hobject *obj;
-	/* XXX: for threads, compact value stack, call stack, catch stack? */
+	/* XXX: for threads, compact stacks? */
 
 	DUK_UNREF(udata);
 	obj = duk_known_hobject(ctx, -1);
@@ -1018,7 +1016,6 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(heap->heap_thread->valstack != NULL);
 	DUK_ASSERT(heap->heap_thread->callstack != NULL);
-	DUK_ASSERT(heap->heap_thread->catchstack != NULL);
 
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
 	                 (unsigned long) flags, (unsigned long) (flags | heap->ms_base_flags)));

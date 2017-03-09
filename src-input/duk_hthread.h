@@ -38,12 +38,6 @@
 #define DUK_CALLSTACK_INITIAL_SIZE      8
 #define DUK_CALLSTACK_DEFAULT_MAX       10000L
 
-#define DUK_CATCHSTACK_GROW_STEP         4      /* roughly 64 bytes */
-#define DUK_CATCHSTACK_SHRINK_THRESHOLD  8      /* roughly 128 bytes */
-#define DUK_CATCHSTACK_SHRINK_SPARE      4      /* roughly 64 bytes */
-#define DUK_CATCHSTACK_INITIAL_SIZE      4
-#define DUK_CATCHSTACK_DEFAULT_MAX       10000L
-
 /*
  *  Activation defines
  */
@@ -66,6 +60,8 @@
 /*
  *  Catcher defines
  */
+
+/* XXX: remove catcher type entirely */
 
 /* flags field: LLLLLLFT, L = label (24 bits), F = flags (4 bits), T = type (4 bits) */
 #define DUK_CAT_TYPE_MASK            0x0000000fUL
@@ -213,6 +209,8 @@ struct duk_activation {
 	duk_hobject *func;      /* borrowed: function being executed; for bound function calls, this is the final, real function, NULL for lightfuncs */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
 	duk_hobject *lex_env;   /* current lexical environment (may be NULL if delayed) */
+	duk_catcher *cat;       /* current catcher (or NULL) */
+
 #if defined(DUK_USE_NONSTD_FUNC_CALLER_PROPERTY)
 	/* Previous value of 'func' caller, restored when unwound.  Only in use
 	 * when 'func' is non-strict.
@@ -259,14 +257,16 @@ struct duk_activation {
 	 */
 };
 
-/* Note: it's nice if size is 2^N (not 4x4 = 16 bytes on 32 bit) */
 struct duk_catcher {
+	duk_catcher *parent;            /* previous (parent) catcher (or NULL if none) */
 	duk_hstring *h_varname;         /* borrowed reference to catch variable name (or NULL if none) */
 	                                /* (reference is valid as long activation exists) */
 	duk_instr_t *pc_base;           /* resume execution from pc_base or pc_base+1 (points to 'func' bytecode, stable pointer) */
-	duk_size_t callstack_index;     /* callstack index of related activation */
 	duk_size_t idx_base;            /* idx_base and idx_base+1 get completion value and type */
 	duk_uint32_t flags;             /* type and control flags, label number */
+	/* XXX: could pack 'flags' and 'idx_base' to same value in practice,
+	 * on 32-bit targets this would make duk_catcher 16 bytes.
+	 */
 };
 
 struct duk_hthread {
@@ -294,11 +294,10 @@ struct duk_hthread {
 	/* Sanity limits for stack sizes. */
 	duk_size_t valstack_max;
 	duk_size_t callstack_max;
-	duk_size_t catchstack_max;
 
-	/* XXX: Valstack, callstack, and catchstack are currently assumed
-	 * to have non-NULL pointers.  Relaxing this would not lead to big
-	 * benefits (except perhaps for terminated threads).
+	/* XXX: Valstack and callstack are currently assumed to have non-NULL
+	 * pointers.  Relaxing this would not lead to big benefits (except
+	 * perhaps for terminated threads).
 	 */
 
 	/* Value stack: these are expressed as pointers for faster stack manipulation.
@@ -319,11 +318,6 @@ struct duk_hthread {
 	duk_size_t callstack_size;              /* allocation size */
 	duk_size_t callstack_top;               /* next to use, highest used is top - 1 (or none if top == 0) */
 	duk_size_t callstack_preventcount;      /* number of activation records in callstack preventing a yield */
-
-	/* Catch stack.  [0,catchstack_top[ is GC reachable. */
-	duk_catcher *catchstack;
-	duk_size_t catchstack_size;             /* allocation size */
-	duk_size_t catchstack_top;              /* next to use, highest used is top - 1 */
 
 	/* Yield/resume book-keeping. */
 	duk_hthread *resumer;                   /* who resumed us (if any) */
@@ -381,20 +375,16 @@ DUK_INTERNAL_DECL void duk_hthread_callstack_grow(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_callstack_shrink_check(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_callstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
 DUK_INTERNAL_DECL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
-DUK_INTERNAL_DECL void duk_hthread_catchstack_grow(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
-DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
+DUK_INTERNAL_DECL void duk_hthread_catcher_unwind_norz(duk_hthread *thr, duk_activation *act);
+DUK_INTERNAL_DECL void duk_hthread_catcher_unwind_nolexenv_norz(duk_hthread *thr, duk_activation *act);
 
 #if defined(DUK_USE_FINALIZER_TORTURE)
 DUK_INTERNAL_DECL void duk_hthread_valstack_torture_realloc(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_callstack_torture_realloc(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_catchstack_torture_realloc(duk_hthread *thr);
 #endif
 
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
-DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk_activation *act);
