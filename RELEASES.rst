@@ -2526,7 +2526,7 @@ Planned
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
 
-* Portability improvements for Durango (XboxOne) (GH-1386, GH-1387)
+* Portability improvements for Durango (XboxOne) (GH-1386, GH-1387, GH-1389)
 
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
