@@ -14,6 +14,15 @@ summary: |
   and must have been reachable for Duktape garbage collection up to this call.
   If <code>ptr</code> is <code>NULL</code>, <code>undefined</code> is pushed.</p>
 
+  <div class="note">
+  It's not safe to rely on finalizer calls to indicate that an object has become
+  unreachable.  When an object becomes unreachable, it is queued to be finalized,
+  and it takes some time before the finalization happens.  In this state it's no
+  longer safe to call duk_push_heapptr() for the object waiting for finalization.
+  The application must ensure on its own that the object is reachable all the way
+  between duk_get_heapptr() and duk_push_heapptr().
+  </div>
+
 example: |
   void *ptr;
   duk_idx_t idx;
