@@ -5883,6 +5883,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
 	if (throw_flag) {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_EXTENSIBLE);
 	}
+	DUK_REFZERO_CHECK_SLOW(thr);
 	return 0;
 
  fail_virtual:  /* just use the same "not configurable" error message" */
@@ -5890,6 +5891,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
 	if (throw_flag) {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
+	DUK_REFZERO_CHECK_SLOW(thr);
 	return 0;
 }
 

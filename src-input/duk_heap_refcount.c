@@ -14,7 +14,7 @@
  *  Misc
  */
 
-DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_LOCAL DUK_INLINE void duk__queue_refzero(duk_hthread *thr, duk_heap *heap, duk_heaphdr *hdr, duk_bool_t skip_free_pending) {
 	/* Tail insert: don't disturb head in case refzero is running. */
 
 	if (heap->refzero_list != NULL) {
@@ -30,6 +30,10 @@ DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
 		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr_prev);
 		heap->refzero_list_tail = hdr;
+
+		/* Free-pending already running (or NORZ macros prevented it
+		 * from starting), no check.
+		 */
 	} else {
 		DUK_ASSERT(heap->refzero_list_tail == NULL);
 		DUK_HEAPHDR_SET_NEXT(heap, hdr, NULL);
@@ -37,7 +41,30 @@ DUK_LOCAL void duk__queue_refzero(duk_heap *heap, duk_heaphdr *hdr) {
 		DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
 		heap->refzero_list = hdr;
 		heap->refzero_list_tail = hdr;
+
+		if (skip_free_pending) {
+			/* NORZ macro used, do nothing. */
+		} else {
+			/* XXX: with some rework of duk_refzero_free_pending(),
+			 * the heap->refzero_free_running check could be omitted
+			 * from this (common) path.
+			 */
+			duk_refzero_free_pending(thr);
+		}
 	}
+
+	/* NOTE: the free-pending check is only done when the queue is
+	 * initially empty.  When using normal (non-NORZ) macros this
+	 * works out because duk_refzero_free_pending() processes the
+	 * refzero_list to completion (NULL again).
+	 *
+	 * When using NORZ macros refzero_list may become non-NULL and
+	 * only an explicit DUK_REFZERO_CHECK_xxx() or heap destruction
+	 * will process the refzero_list.  So it's important that any
+	 * NORZ macro is paired with an explicit DUK_REFZERO_CHECK_xxx().
+	 * The error handling path also has a forced check, so NORZ call
+	 * sites -don't- need to catch errors to work correctly.
+	 */
 }
 
 /*
@@ -147,9 +174,9 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping decref"));
 		}
 
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(thr->heap, f));
-		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) DUK_HCOMPFUNC_GET_VARENV(thr->heap, f));
+		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
 	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
 		duk_hnatfunc *f = (duk_hnatfunc *) h;
 		DUK_UNREF(f);
@@ -202,6 +229,11 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 		DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, (duk_hthread *) t->resumer);
 	}
+
+	/* No DUK_REFZERO_CHECK_xxx() here on purpose: caller is responsible
+	 * for doing it.  Inside duk_refzero_free_pending() an explicit check
+	 * is not necessary as heap->refzero_list is processed to completion.
+	 */
 }
 
 DUK_INTERNAL void duk_heaphdr_refcount_finalize(duk_hthread *thr, duk_heaphdr *hdr) {
@@ -437,6 +469,8 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 #endif
 	}
 
+	DUK_ASSERT(heap->refzero_list == NULL);
+	DUK_ASSERT(heap->refzero_list_tail == NULL);
 	DUK_ASSERT(heap->refzero_free_running == 1);
 	heap->refzero_free_running = 0;
 
@@ -495,10 +529,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 	} while (0)
 #define DUK__RZ_OBJECT() do { \
 		duk_heap_remove_any_from_heap_allocated(heap, (duk_heaphdr *) h); \
-		duk__queue_refzero(heap, (duk_heaphdr *) h); \
-		if (!skip_free_pending) { \
-			duk_refzero_free_pending(thr); \
-		} \
+		duk__queue_refzero(thr, heap, (duk_heaphdr *) h, skip_free_pending); \
 	} while (0)
 #if defined(DUK_USE_FAST_REFCOUNT_DEFAULT)
 #define DUK__RZ_INLINE DUK_ALWAYS_INLINE

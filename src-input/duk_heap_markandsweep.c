@@ -492,6 +492,10 @@ DUK_LOCAL void duk__finalize_refcounts(duk_heap *heap) {
 
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
+
+	/* We don't DUK_REFZERO_CHECK_xxx() here because refzero queueing is
+	 * disabled while mark-and-sweep runs.
+	 */
 }
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 

@@ -47,7 +47,7 @@ DUK_INTERNAL void duk_err_longjmp(duk_hthread *thr) {
 	 * some internal code uses no-refzero (NORZ) macro variants but an
 	 * error occurs before it has the chance to DUK_REFZERO_CHECK_xxx()
 	 * explicitly.  Refzero'ed objects would otherwise remain pending
-	 * until the next refzero (which is not a big issue but still).
+	 * until the next forced DUK_REFZERO_CHECK_xxx().
 	 */
 	DUK_REFZERO_CHECK_SLOW(thr);
 

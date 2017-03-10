@@ -701,6 +701,10 @@ DUK_INTERNAL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject 
 	((duk_hdecenv *) env)->thread = NULL;
 	((duk_hdecenv *) env)->varmap = NULL;
 
+	/* No DUK_REFZERO_CHECK_xxx() on purpose, caller is responsible for
+	 * doing it.
+	 */
+
 	DUK_DDD(DUK_DDDPRINT("env after closing: %!O", (duk_heaphdr *) env));
 }
 

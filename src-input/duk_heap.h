@@ -114,8 +114,7 @@
 /* Mark-and-sweep interval is relative to combined count of objects and
  * strings kept in the heap during the latest mark-and-sweep pass.
  * Fixed point .8 multiplier and .0 adder.  Trigger count (interval) is
- * decreased by each (re)allocation attempt (regardless of size), and each
- * refzero processed object.
+ * decreased by each (re)allocation attempt (regardless of size).
  *
  * 'SKIP' indicates how many (re)allocations to wait until a retry if
  * GC is skipped because there is no thread do it with yet (happens
