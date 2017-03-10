@@ -218,7 +218,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	 */
 	duk_push_string(ctx, "(function(exports,require,module,__filename,__dirname){");
 	duk_dup(ctx, -2);  /* source */
-	duk_push_string(ctx, "})");
+	duk_push_string(ctx, "\n})");  /* Newline allows module last line to contain a // comment. */
 	duk_concat(ctx, 3);
 
 	/* [ ... module source func_src ] */

@@ -36,6 +36,8 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
 		duk_push_string(ctx, "module.exports = { module: module, __filename: __filename, wasLoaded: module.loaded };");
 	} else if (strcmp(module_id, "badger.js") == 0) {
 		duk_push_string(ctx, "exports.foo = 123; exports.bar = 234;");
+	} else if (strcmp(module_id, "comment.js") == 0) {
+		duk_push_string(ctx, "exports.foo = 123; exports.bar = 234; // comment");
 	} else {
 		duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot find module: %s", module_id);
 	}
