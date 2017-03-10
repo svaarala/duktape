@@ -2522,6 +2522,9 @@ Planned
 
 * Fix duk_error_raw() compile warning with -Wmissing-prototypes (GH-1390)
 
+* Fix module-duktape and module-node handling of a module source which has
+  a // comment on the last line without a trailing newline (GH-1394, GH-1395)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
