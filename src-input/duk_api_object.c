@@ -712,9 +712,26 @@ DUK_EXTERNAL void duk_get_finalizer(duk_context *ctx, duk_idx_t idx) {
 }
 
 DUK_EXTERNAL void duk_set_finalizer(duk_context *ctx, duk_idx_t idx) {
+	duk_hobject *h;
+	duk_bool_t callable;
+
 	DUK_ASSERT_CTX_VALID(ctx);
 
+	h = duk_require_hobject(ctx, idx);  /* Get before 'put' so that 'idx' is correct. */
+	callable = duk_is_callable(ctx, -1);
 	duk_put_prop_stridx(ctx, idx, DUK_STRIDX_INT_FINALIZER);
+
+	/* In addition to setting the finalizer property, keep a "have
+	 * finalizer" flag in duk_hobject in sync so that refzero can do
+	 * a very quick finalizer check by walking the prototype chain
+	 * and checking the flag alone.  (Note that this means that just
+	 * setting _Finalizer on an object won't affect finalizer checks.)
+	 */
+	if (callable) {
+		DUK_HOBJECT_SET_HAVE_FINALIZER(h);
+	} else {
+		DUK_HOBJECT_CLEAR_HAVE_FINALIZER(h);
+	}
 }
 #else  /* DUK_USE_FINALIZER_SUPPORT */
 DUK_EXTERNAL void duk_get_finalizer(duk_context *ctx, duk_idx_t idx) {

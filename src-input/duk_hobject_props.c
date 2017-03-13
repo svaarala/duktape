@@ -2003,7 +2003,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 		}
 
 		/* not found in 'curr', next in prototype chain; impose max depth */
-		if (sanity-- == 0) {
+		if (DUK_UNLIKELY(sanity-- == 0)) {
 			if (flags & DUK_GETDESC_FLAG_IGNORE_PROTOLOOP) {
 				/* treat like property not found */
 				break;
@@ -2012,7 +2012,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 			}
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
-	} while (curr);
+	} while (curr != NULL);
 
 	/* out_desc is left untouched (possibly garbage), caller must use return
 	 * value to determine whether out_desc can be looked up
@@ -2703,11 +2703,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* XXX: option to pretend property doesn't exist if sanity limit is
 		 * hit might be useful.
 		 */
-		if (sanity-- == 0) {
+		if (DUK_UNLIKELY(sanity-- == 0)) {
 			DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
-	} while (curr);
+	} while (curr != NULL);
 
 	/*
 	 *  Not found
@@ -3803,11 +3803,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* XXX: option to pretend property doesn't exist if sanity limit is
 		 * hit might be useful.
 		 */
-		if (sanity-- == 0) {
+		if (DUK_UNLIKELY(sanity-- == 0)) {
 			DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 		}
 		curr = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, curr);
-	} while (curr);
+	} while (curr != NULL);
 
 	/*
 	 *  Property not found in prototype chain.
@@ -4792,6 +4792,34 @@ DUK_INTERNAL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *ob
 	if (val >= 0.0 && val <= (duk_double_t) DUK_SIZE_MAX) {
 		return (duk_size_t) val;
 	}
+	return 0;
+}
+
+/*
+ *  Fast finalizer check for an object.  Walks the prototype chain, checking
+ *  for finalizer presence using DUK_HOBJECT_FLAG_HAVE_FINALIZER which is kept
+ *  in sync with the actual property when setting/removing the finalizer.
+ */
+
+DUK_INTERNAL duk_bool_t duk_hobject_has_finalizer_fast(duk_hthread *thr, duk_hobject *obj) {
+	duk_uint_t sanity;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+	DUK_UNREF(thr);
+
+	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
+	do {
+		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_HAVE_FINALIZER(obj))) {
+			return 1;
+		}
+		if (DUK_UNLIKELY(sanity-- == 0)) {
+			DUK_D(DUK_DPRINT("prototype loop when checking for finalizer existence; returning false"));
+			return 0;
+		}
+		obj = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, obj);
+	} while (obj != NULL);
+
 	return 0;
 }
 

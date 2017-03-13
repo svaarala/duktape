@@ -293,16 +293,15 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 	hdr = heap->heap_allocated;
 	while (hdr) {
 		/* A finalizer is looked up from the object and up its prototype chain
-		 * (which allows inherited finalizers).  A prototype loop must not cause
-		 * an error to be thrown here; duk_hobject_hasprop_raw() will ignore a
-		 * prototype loop silently and indicate that the property doesn't exist.
+		 * (which allows inherited finalizers).  The finalizer is checked for
+		 * using a duk_hobject flag which is kept in sync with the presence and
+		 * callability of a _Finalizer hidden symbol.
 		 */
 
 		if (!DUK_HEAPHDR_HAS_REACHABLE(hdr) &&
 		    DUK_HEAPHDR_GET_TYPE(hdr) == DUK_HTYPE_OBJECT &&
 		    !DUK_HEAPHDR_HAS_FINALIZED(hdr) &&
-		    duk_hobject_hasprop_raw(thr, (duk_hobject *) hdr, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
-
+		    duk_hobject_has_finalizer_fast(thr, (duk_hobject *) hdr)) {
 			/* heaphdr:
 			 *  - is not reachable
 			 *  - is an object

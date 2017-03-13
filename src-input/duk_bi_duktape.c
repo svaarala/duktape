@@ -49,15 +49,16 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 		 * undefined; this does not remove the property at the moment.
 		 * The value could be type checked to be either a function
 		 * or something else; if something else, the property could
-		 * be deleted.
+		 * be deleted.  Must use duk_set_finalizer() to keep
+		 * DUK_HOBJECT_FLAG_HAVE_FINALIZER in sync.
 		 */
 		duk_set_top(ctx, 2);
-		(void) duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_INT_FINALIZER);
+		duk_set_finalizer(ctx, 0);
 		return 0;
 	} else {
 		/* Get. */
 		DUK_ASSERT(duk_get_top(ctx) == 1);
-		duk_get_prop_stridx_short(ctx, 0, DUK_STRIDX_INT_FINALIZER);
+		duk_get_finalizer(ctx, 0);
 		return 1;
 	}
 }

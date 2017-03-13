@@ -52,7 +52,7 @@
 #define DUK_HOBJECT_FLAG_NEWENV                DUK_HEAPHDR_USER_FLAG(11)  /* function: create new environment when called (see duk_hcompfunc) */
 #define DUK_HOBJECT_FLAG_NAMEBINDING           DUK_HEAPHDR_USER_FLAG(12)  /* function: create binding for func name (function templates only, used for named function expressions) */
 #define DUK_HOBJECT_FLAG_CREATEARGS            DUK_HEAPHDR_USER_FLAG(13)  /* function: create an arguments object on function call */
-#define DUK_HOBJECT_FLAG_ENVRECCLOSED          /* 14: unused */
+#define DUK_HOBJECT_FLAG_HAVE_FINALIZER        DUK_HEAPHDR_USER_FLAG(14)  /* object has a callable finalizer property */
 #define DUK_HOBJECT_FLAG_EXOTIC_ARRAY          DUK_HEAPHDR_USER_FLAG(15)  /* 'Array' object, array length and index exotic behavior */
 #define DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ      DUK_HEAPHDR_USER_FLAG(16)  /* 'String' object, array index exotic behavior */
 #define DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS      DUK_HEAPHDR_USER_FLAG(17)  /* 'Arguments' object and has arguments exotic behavior (non-strict callee) */
@@ -211,6 +211,7 @@
 #define DUK_HOBJECT_HAS_NEWENV(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_HAS_NAMEBINDING(h)         DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_HAS_CREATEARGS(h)          DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
+#define DUK_HOBJECT_HAS_HAVE_FINALIZER(h)      DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_HAVE_FINALIZER)
 #define DUK_HOBJECT_HAS_EXOTIC_ARRAY(h)        DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -230,6 +231,7 @@
 #define DUK_HOBJECT_SET_NEWENV(h)              DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_SET_NAMEBINDING(h)         DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_SET_CREATEARGS(h)          DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
+#define DUK_HOBJECT_SET_HAVE_FINALIZER(h)      DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_HAVE_FINALIZER)
 #define DUK_HOBJECT_SET_EXOTIC_ARRAY(h)        DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_SET_EXOTIC_STRINGOBJ(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_SET_EXOTIC_ARGUMENTS(h)    DUK_HEAPHDR_SET_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -249,6 +251,7 @@
 #define DUK_HOBJECT_CLEAR_NEWENV(h)            DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NEWENV)
 #define DUK_HOBJECT_CLEAR_NAMEBINDING(h)       DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NAMEBINDING)
 #define DUK_HOBJECT_CLEAR_CREATEARGS(h)        DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_CREATEARGS)
+#define DUK_HOBJECT_CLEAR_HAVE_FINALIZER(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_HAVE_FINALIZER)
 #define DUK_HOBJECT_CLEAR_EXOTIC_ARRAY(h)      DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARRAY)
 #define DUK_HOBJECT_CLEAR_EXOTIC_STRINGOBJ(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ)
 #define DUK_HOBJECT_CLEAR_EXOTIC_ARGUMENTS(h)  DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS)
@@ -863,6 +866,7 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobje
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast(duk_hthread *thr, duk_hobject *obj);
 
 /* helpers for defineProperty() and defineProperties() */
 DUK_INTERNAL_DECL

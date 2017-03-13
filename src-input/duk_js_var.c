@@ -1059,11 +1059,11 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 			goto fail_not_found;
 		}
 
-                if (sanity-- == 0) {
+                if (DUK_UNLIKELY(sanity-- == 0)) {
                         DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
                 }
 		env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);
-	};
+	}
 
 	/*
 	 *  Not found (even in global object)

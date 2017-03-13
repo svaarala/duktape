@@ -356,11 +356,12 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		 *  finalizer again here.
 		 *
 		 *  A finalizer is looked up from the object and up its prototype chain
-		 *  (which allows inherited finalizers).
+		 *  (which allows inherited finalizers), but using a duk_hobject flag
+		 *  to avoid actual property table lookups.
 		 */
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-		if (DUK_UNLIKELY(duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_FINALIZER(thr)))) {
+		if (DUK_UNLIKELY(duk_hobject_has_finalizer_fast(thr, obj))) {
 			DUK_DDD(DUK_DDDPRINT("object has a finalizer, run it"));
 
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
