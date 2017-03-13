@@ -2390,6 +2390,8 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``createargs``                  | ``duk_hobject``           | DUK_HOBJECT_FLAG_CREATEARGS                             |
 +---------------------------------+---------------------------+---------------------------------------------------------+
+| ``have_finalizer``              | ``duk_hobject``           | DUK_HOBJECT_FLAG_HAVE_FINALIZER                         |
++---------------------------------+---------------------------+---------------------------------------------------------+
 | ``exotic_array``                | ``duk_hobject``           | DUK_HOBJECT_FLAG_EXOTIC_ARRAY                           |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``exotic_stringobj``            | ``duk_hobject``           | DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ                       |
