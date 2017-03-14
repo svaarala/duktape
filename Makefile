@@ -126,6 +126,7 @@ CCOPTS_SHARED += -Wunreachable-code  # on some compilers unreachable code is an 
 CCOPTS_SHARED += -Wmissing-prototypes
 # -Wfloat-equal is too picky, there's no apparent way to compare floats
 # (even when you know it's safe) without triggering warnings
+CCOPTS_SHARED += -fmax-errors=3  # prevent floods of errors if e.g. parenthesis missing
 CCOPTS_SHARED += -I./linenoise
 CCOPTS_SHARED += -I./examples/alloc-logging
 CCOPTS_SHARED += -I./examples/alloc-torture
