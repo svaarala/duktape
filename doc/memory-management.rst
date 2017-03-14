@@ -79,8 +79,8 @@ Heap element
 
   Only ``duk_hobject`` contains further internal references to other heap
   elements.  These references are kept in the object property table and the
-  object internal prototype pointer.  Currently only ``duk_hobject`` may
-  have a finalizer.
+  object internal prototype pointer.  Currently only ``duk_hobject`` or its
+  subtypes may have a finalizer.
 
   Heap elements have a **stable pointer** which means that the (main) heap
   element is not relocated during its lifetime.  Auxiliary allocations
@@ -351,7 +351,7 @@ ownership relationships::
 
                  * "heap allocated"
                  * "refzero work list"
-                 * "mark-and-sweep finalization work list"
+                 * "finalization work list"
 
                  +-------------+  h_next  +-------------+  h_next
          .------>| duk_hobject |<-------->| duk_hbuffer |<--------> ...
@@ -828,44 +828,32 @@ The ``DECREF`` algorithm is a bit more complicated:
       analysis and have correct reference counts at the end of the
       mark-and-sweep algorithm.)
 
-   b. If the target is a string:
-
-      1. Remove the string from the string table.
-
-      2. Remove any references to the string from the "string access cache"
-         (which accelerates character index to byte index conversions).
-         Note that this is a special, internal "weak" reference.
-
-      3. Free the string.  There are no auxiliary allocations to free
-         for strings.
-
-      4. Return.
+   b. If the target is a string, remove the string from the string table,
+      remove any weak references (e.g. from string access cache), and
+      then free the string structure.
 
    c. If the target is a buffer:
 
-      1. Remove the buffer from the "heap allocated" list.
-
-      2. If the buffer is dynamic, free the auxiliary buffer (which is
-         allocated separately).
-
-      3. Free the buffer.
-
-      4. Return.
+      1. Remove the buffer from the "heap allocated" list, free any related
+         allocations (if the buffer is dynamic, the separately allocated
+         buffer), and then free the buffer structure.
 
    d. Else the target is an object:
 
-      1. Move the object from the "heap allocated" list to the "refzero" work
-         list.  Note that this prevents the mark-and-sweep algorithm from
-         freeing the object (the "sweep" phase does not affect objects in the
-         "refzero" work list).
+      1. This case is relatively complicated, see code for details:
 
-      2. If the "refzero" algorithm is already running, return.
+         * If the object doesn't have a finalizer, queue it to "refzero list".
+           If no-one is processing refzero_list now, process it until it
+           becomes empty; new objects may be queued as previous ones are
+           refcount finalized and freed.  When the list is empty, run any
+           pending finalizers queued up during the process.  If a previous
+           call is already processing the list, just queue the object and
+           finish.
 
-      3. Else, call the "refzero" algorithm to free pending objects.
-         The refzero algorithm returns when the entire work list has
-         been successfully cleared.
-
-      4. Return.
+         * If the object has a finalizer, queue it to finalize_list.  If
+           no-one is processing the refzero_list or finalize_list, process
+           the finalize_list directly.  Otherwise just queue the object and
+           finish.
 
 The REFZERO algorithm
 ---------------------
@@ -875,109 +863,7 @@ algorithm may run at any given time.  The "refzero" work list model is used
 to avoid an unbounded C call stack depth caused by a cascade of reference
 counts which drop to zero.
 
-The algorithm is as follows:
-
-1. While the "refzero" work list is not empty:
-
-   a. Let ``O`` be the element at the head of the work list.
-      Note:
-
-      * ``O`` is always an object, because only objects are placed in the work list.
-
-      * ``O`` must not be removed from the work list yet.  ``O`` must be on the
-        work list in case a finalizer is executed, so that a mark-and-sweep
-        triggered by the finalizer works correctly (concretely: to be able to
-        clear the ``DUK_HEAPHDR_FLAG_REACHABLE`` of the object.)
-
-   b. If ``O`` is an object (this is always the case, currently), and has a
-      finalizer (i.e. has a ``_Finalizer`` internal property):
-
-      1. Create a ``setjmp()`` catchpoint.
-
-      2. Increase the reference count of ``O`` temporarily by one (back to 1).
-
-      3. Note: the presence of ``O`` in the "refzero" work list is enough to
-         guarantee that the mark-and-sweep algorithm will not free the object
-         despite it not being reachable.
-
-      4. Call the finalizer method.  Ignore the return value and a possible
-         error thrown by the finalizer (except for debug logging an error).
-         Any error or other ``longjmp()`` is caught by the  ``setjmp()``
-         catchpoint.  Note:
-
-         * The thread used for finalization is currently the thread which
-           executed ``DECREF``.  *This is liable to be changed later.*
-
-      5. Regardless of how the finalizer finishes, decrease the reference
-         count of ``O`` by one.
-
-      6. If the reference count of ``O`` is non-zero, the object has been
-         "rescued" and:
-
-         a. Place the object back into the "heap allocated" list (and debug
-            log the object as "rescued").
-
-         b. Continue the while-loop with the next object.
-
-   c. Remove ``O`` from the work list.
-
-   d. Call ``DECREF`` for any references that ``O`` contains (this is
-      called "refcount finalization" in the source).  Concretely:
-
-      * String: no internal references.
-
-      * Buffer: no internal references.
-
-      * Object: properties contain references; specific sub-types (like
-        ``duk_hthread``) contain further references.
-
-      * Note: this step is recursive with respect to ``DECREF`` but not
-        the "refzero" algorithm: a ``DECREF`` is executed inside a
-        ``DECREF`` which started the "refzero" algorithm, but the inner
-        ``DECREF`` doesn't restart the "refzero" algorithm.  Recursion is
-        thus limited to two levels.
-
-   e. Free any auxiliary references (such as object properties) contained
-      in ``O``, and finally ``O`` itself.
-
-Notes:
-
-* "Churning" the work list requires that the type of a heap element can be
-  determined by looking at the heap header.
-
-  + This is one of the rare places where this would be necessary: usually the
-    tagged type of a ``duk_tval`` is sufficient to type an arbitrary value,
-    and when following pointer references from one heap element to another,
-    the pointers themselves are typed.
-
-  + Right now, this type determination is not actually needed because only
-    object (``duk_hobject``) values will be placed in the work list.
-
-* The finalizer thread selection is not a trivial issue, especially for
-  mark-and-sweep.  See discussion under mark-and-sweep.
-
-* Because the reference count is artifially increased by one during finalization,
-  the object being finalized cannot encounter a "refcount drops to zero"
-  situation while being finalized (assuming of course that all ``INCREF`` and
-  ``DECREF`` calls are properly "nested").
-
-* If mark-and-sweep is triggered during finalization, the target may or
-  may not be reachable, but will have a non-zero reference count in
-  either case due to the artificial ``INCREF`` in the finalization
-  algorithm.  The reference count is inconsistent with the actual reference
-  count in the reachability graph but this is not an issue for mark-and-sweep.
-  In any case, mark-and-sweep will not free any object in the "refzero" work
-  list, regardless of its reachability status, so mark-and-sweep during
-  REFZERO is not a problem.
-
-* Although finalization increases C call stack size, another finalization
-  triggered by reference counting cannot occur while finalization for one
-  object is in progress: any objects whose refcounts drop to zero during
-  finalization are simply placed in the refzero work list and dealt with
-  when the object being finalization has been fully processed.  However,
-  there can still be **two** active finalizers at the same time, one initiated
-  by reference counting and another by a mark-and-sweep triggered inside
-  REFZERO.
+See code for details, also see ``doc/side-effects.rst``.
 
 Background on the refzero algorithm, limiting C recursion depth
 ---------------------------------------------------------------
@@ -1012,10 +898,7 @@ which is called just before the object is freed either by reference counting
 or by the mark-and-sweep collector.  The finalizer gets a reference to the
 object in question, and may "rescue" the reference.
 
-Mark-and-sweep may be triggered during the "refzero" algorithm, currently
-only by finalization.  If mark-and-sweep is triggered, it must not touch any
-object in the "refzero" work list (i.e. any object whose reference count is
-zero, but which has not yet been processed).
+There are many side effects to consider, see ``doc/side-effects.rst``.
 
 Mark-and-sweep
 ==============
@@ -1066,20 +949,20 @@ Mark-and-sweep control flags are defined in ``duk_heap.h``, e.g.:
 * ``DUK_MS_FLAG_NO_OBJECT_COMPACTION``
   
 In addition to the explicitly requested flags, the bit mask in
-``mark_and_sweep_base_flags`` in ``duk_heap`` is bitwise ORed into the
-requested flags to form effective flags.  The flags added to the "base
-flags" control restrictions on mark-and-sweep side effects, and are used
-for certain critical sections.
+``ms_base_flags`` in ``duk_heap`` is bitwise ORed into the requested flags
+to form effective flags.  The flags added to the "base flags" control
+restrictions on mark-and-sweep side effects, and are used for certain
+critical sections.
 
 To protect against such side effects, the critical algorithms:
 
-* Store the original value of ``heap->mark_and_sweep_base_flags``
+* Store the original value of ``heap->ms_base_flags``
 
-* Set the suitable restriction flags into ``heap->mark_and_sweep_base_flags``
+* Set the suitable restriction flags into ``heap->ms_base_flags``
 
 * Attempt the allocation / reallocation operation, *without throwing errors*
 
-* Restore the ``heap->mark_and_sweep_base_flags`` to its previous value
+* Restore the ``heap->ms_base_flags`` to its previous value
 
 * Examine the allocation result and act accordingly
 
@@ -1125,9 +1008,9 @@ either in "normal" mode or "emergency" mode.  Emergency mode is used if
 a normal mark-and-sweep pass did not resolve the allocation failure; the
 emergency mode is a more aggressive attempt to free memory.  Mark-and-sweep
 is controlled by a set of flags.  The effective flags set is a bitwise OR
-of explicit flags and "base flags" stored in ``heap->mark_and_sweep_base_flags``.
+of explicit flags and "base flags" stored in ``heap->ms_base_flags``.
 The "base flags" essentially prohibit specific garbage collection operations
-(like finalizers) when a certain critical code section is active.
+when a certain critical code section is active.
 
 The mark-and-sweep algorithm is as follows:
 
@@ -1254,30 +1137,7 @@ The mark-and-sweep algorithm is as follows:
    a. Compact and rehash the string table.  This can be controlled by build
       flags as it may not be appropriate in all environments.
 
-8. Run finalizers:
-
-   a. While the "to be finalized" work queue is not empty:
-
-      1. Select object from head of the list.
-
-      2. Set up a ``setjmp()`` catchpoint.
-
-      3. Execute finalizer.  Note:
-
-         * The thread used for this is the currently running thread
-           (``heap->curr_thread``), or if no thread is running,
-           ``heap->heap_thread``.  This is liable to change in the future.
-
-      4. Ignore finalizer result (except for logging errors).
-
-      5. Mark the object ``FINALIZED``.
-
-      6. Move the object back to the "heap allocated" list.  The object will
-         be collected on the next pass if it is still unreachable.  (Regardless
-         of actual reachability, the ``REACHABLE`` flag of the object is clear
-         at this point.)
-
-9. Finish.
+8. Finish.
 
    a. All ``TEMPROOT`` and ``REACHABLE`` flags are clear at this point.
 
@@ -1288,6 +1148,10 @@ The mark-and-sweep algorithm is as follows:
    c. The "to be finalized" list is empty.
 
    d. No object in the "refzero" work list has been freed.
+
+9. Execute pending finalizers unless finalizer execution is prevented or an
+   earlier call site is already finalizing objects (currently mark-and-sweep
+   is not allowed during finalization, but that may change).
 
 Notes:
 
@@ -1308,22 +1172,18 @@ Notes:
 
   + Another mark-and-sweep cannot execute.
 
-  + A ``DECREF`` resulting in a zero reference count is not processed at all.
-    The object is not placed into the "refzero" work list, as mark-and-sweep
-    is assumed to be a comprehensive pass, including running finalizers.
+  + A ``DECREF`` resulting in a zero reference count is not processed at all
+    (other than updating the refcount).  The object is not placed into the
+    "refzero" work list, as mark-and-sweep is assumed to be a comprehensive
+    pass, including running finalizers.
 
 * Finalizers are executed after the sweep phase to ensure that finalizers
-  have as much available memory as possible.  Since mark-and-sweep is
-  running, if a finalizer runs out of memory, no memory can be reclaimed
-  as recursive mark-and-sweep is explicitly blocked.  This is probably a
-  very minor issue in practice.
-
-* Finalizers could be executed from their work list after the mark-and-sweep
-  has finished to allow mark-and-sweep to run if mark-and-sweep is required
-  by a finalizer.  The mark-and-sweep could then append more objects to be
-  finalized into the "to be finalized" work list; this is not a problem.
-  However, since finalizers are used with a rather limited scope, this is not
-  currently done.
+  have as much available memory as possible.  While finalizers execute outside
+  the mark-and-sweep algorithm (since Duktape 2.1), mark-and-sweep is
+  explicitly prevented during finalization because it may cause incorrect
+  rescue/free decisions when the finalize_list is only partially processed.
+  As a result, no memory can be reclaimed while the finalize_list is being
+  processed.  This is probably a very minor issue in practice.
 
 * The sweep phase is divided into two separate scans: one to adjust refcounts
   and one to actually free the objects.  If these were performed in a single
@@ -1341,14 +1201,9 @@ Notes:
     ``REACHABLE`` flag set at the end of the algorithm.  At first it might seem
     that this can never happen if reference counts are correct: all objects in
     the "refzero" work list are unreachable by definition.  However, this is not
-    the case for objects with finalizers.
-
-  + A finalizer call made by the "refzero" algorithm makes the object reachable
-    again (through the finalizer thread value stack; the finalizer method itself
-    can also create reachable references for the target).  If a mark-and-sweep
-    is triggered during finalization, the target will be marked ``REACHABLE``
-    during the mark phase.  Thus, ``REACHABLE`` flags of "refzero" work list
-    elements must be cleared explicitly after or during the sweep phase.
+    the case for objects with finalizers.  (As of Duktape 2.1 refzero_list is
+    freed inline without side effects, so it's always NULL when mark-and-sweep
+    runs.)
 
 Note that there is a small "hole" in the reclamation right now, when
 mark-and-sweep finalizers are used:
@@ -1382,35 +1237,9 @@ phase:
   mark-and-sweep is expected to deal with the object directly.
 
 If the "refzero" algorithm is triggered first (with some objects in the
-"refzero" work list), mark-and-sweep may be triggered while the "refzero"
-algorithm is running.  In more detail:
-
-* A ``DECREF`` happens while neither mark-and-sweep nor "refzero" algorithm
-  is running.
-
-* A reference count reaches zero, and the object is placed on the "refzero"
-  work list and the "refzero" algorithm is invoked.
-
-* The "refzero" algorithm cannot trigger another "refzero" algorithm to
-  execute recursively.  Instead, the work list is churned until it becomes
-  empty.  Any objects whose reference count reaches zero are added to the
-  work list, though, so will be processed eventually.
-
-* The "refzero" algorithm may trigger a mark-and-sweep while it is running,
-  e.g. by running a finalizer which runs out of memory:
-
-  + This mark-and-sweep will mark any elements in the "refzero" work list
-    but will not free them.
-
-  + While the mark-and-sweep is running, no new elements are placed into
-    the "refzero" work list, even if their reference count reaches zero.
-    Instead, the mark-and-sweep algorithm is assumed to deal with them.
-
-  + The mark-and-sweep algorithm may also execute finalizers, so two
-    finalizers (but no more) can be running simultaneously, though on
-    different objects.
-
-  + Another recursive mark-and-sweep run cannot happen.
+"refzero" work list), since Duktape 2.1 mark-and-sweep is not triggered while
+the refzero_list is being processed as refzero_list handling is side effect
+free.
 
 Finalizer behavior
 ==================
@@ -1446,15 +1275,9 @@ General notes:
   error, this is only debug logged but is considered to be a successful
   finalization.
 
-* The thread running a finalizer is not very logical right now and is liable
-  to change:
-
-  + Reference counting: the thread which executed ``DECREF`` is used as the
-    finalizer thread.
-
-  + Mark-and-sweep: the thread which caused mark-and-sweep is used as the
-    finalizer thread; if there is no active thread, ``heap->heap_thread``
-    is used instead.
+* Finalizers are always executed using ``heap->heap_thread`` in Duktape 2.1.
+  Before Duktape 2.0 the thread used depended on whether the object was
+  finalized via refcounting or mark-and-sweep.
 
 * The finalizer may technically launch other threads and do arbitrary things
   in general, but it is a good practice to make the finalizer very simple and
@@ -1464,18 +1287,6 @@ General notes:
 * A finalizer should not be able to terminate any threads in the active call
   stack, in particular the thread which triggered a finalization or the
   finalizer thread (if these are different).
-
-Finalizer thread selection is currently not optimal; there are several
-approaches:
-
-* The thread triggering mark-and-sweep is not a good thread for finalization,
-  as it may be from a different conceptual virtual machine, and may thus have
-  a different global context (global object) than where the finalized object
-  was created.
-
-* A heap-level dedicated finalizer thread has a similar problem: the finalizer
-  will run in a different global context than where the finalized object was
-  created.
 
 Voluntary mark-and-sweep interval
 =================================
