@@ -1916,6 +1916,7 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"newenv",
 	"namebinding",
 	"createargs",
+	"have_finalizer"
 	"exotic_array",
 	"exotic_stringobj",
 	"exotic_arguments",
@@ -1937,6 +1938,7 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_NEWENV,
 	DUK_HOBJECT_FLAG_NAMEBINDING,
 	DUK_HOBJECT_FLAG_CREATEARGS,
+	DUK_HOBJECT_FLAG_HAVE_FINALIZER,
 	DUK_HOBJECT_FLAG_EXOTIC_ARRAY,
 	DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ,
 	DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS,

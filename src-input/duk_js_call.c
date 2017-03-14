@@ -495,7 +495,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		                     (long) num_stack_args, (long) idx_func, duk_get_tval(ctx, idx_func)));
 	} while (--sanity > 0);
 
-	if (sanity == 0) {
+	if (DUK_UNLIKELY(sanity == 0)) {
 		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 

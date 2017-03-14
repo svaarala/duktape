@@ -2537,7 +2537,8 @@ Planned
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309, GH-1312), integer
-  refzero-free-running flag (instead of a flag bit) (GH-1362)
+  refzero-free-running flag (instead of a flag bit) (GH-1362), faster GC
+  finalizer existence check using DUK_HOBJECT_FLAG_HAVE_FINALIZER (GH-1398)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
   (GH-1357), explicit thr->callstack_curr field for current activation

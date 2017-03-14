@@ -212,7 +212,7 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 				DUK_ASSERT(thr != NULL);
 				DUK_ASSERT(curr != NULL);
 
-				if (duk_hobject_hasprop_raw(thr, (duk_hobject *) curr, DUK_HTHREAD_STRING_INT_FINALIZER(thr))) {
+				if (duk_hobject_has_finalizer_fast(thr, (duk_hobject *) curr)) {
 					if (!DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) curr)) {
 						DUK_ASSERT(DUK_HEAP_HAS_FINALIZER_NORESCUE(heap));  /* maps to finalizer 2nd argument */
 						duk_hobject_run_finalizer(thr, (duk_hobject *) curr);

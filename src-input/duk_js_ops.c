@@ -1080,7 +1080,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		/* func support for [[HasInstance]] checked in the beginning of the loop */
 	} while (--sanity > 0);
 
-	if (sanity == 0) {
+	if (DUK_UNLIKELY(sanity == 0)) {
 		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
 	}
 
@@ -1166,7 +1166,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		val = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, val);
 	} while (--sanity > 0);
 
-	if (sanity == 0) {
+	if (DUK_UNLIKELY(sanity == 0)) {
 		DUK_ERROR_RANGE(thr, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
 	}
 	DUK_UNREACHABLE();

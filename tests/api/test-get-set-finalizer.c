@@ -26,7 +26,7 @@ after explicit gc
 read finalizer: undefined
 ==> rc=0, result='undefined'
 *** test_set_nonobject (duk_safe_call)
-==> rc=1, result='TypeError: cannot write property '?Finalizer' of 123'
+==> rc=1, result='TypeError: object required, found 123 (stack index -2)'
 *** test_finalizer_loop (duk_safe_call)
 before pop
 after pop

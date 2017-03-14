@@ -279,6 +279,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 	DUK_RAW_WRITE_U32_BE(p, 0);
 #endif
 	tmp32 = DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) func);  /* masks flags, only duk_hobject flags */
+	tmp32 &= ~(DUK_HOBJECT_FLAG_HAVE_FINALIZER);  /* finalizer flag is lost */
 	DUK_RAW_WRITE_U32_BE(p, tmp32);
 
 	/* Bytecode instructions: endian conversion needed unless

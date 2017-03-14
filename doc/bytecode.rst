@@ -280,6 +280,12 @@ Custom external prototype is lost
 A custom external prototype (``.prototype`` property) is lost, and a
 default empty prototype is created on bytecode load.
 
+Finalizer on the function is lost
+---------------------------------
+
+A finalizer on the function being serialized is lost, no finalizer will
+exist on bytecode load.
+
 Only specific function object properties are kept
 -------------------------------------------------
 
