@@ -11,3 +11,4 @@ test:
 	./test 'assert(typeof Duktape.modSearch === "undefined");'
 	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 123;" }; assert(require("dummy").foo === 123);'
 	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 234;" }; delete Duktape; assert(typeof Duktape === "undefined"); assert(require("dummy").foo === 234);'
+	./test 'Duktape.modSearch = function myModSearch(id) { return "exports.foo = 234; // comment" }; delete Duktape; assert(typeof Duktape === "undefined"); assert(require("dummy").foo === 234);'

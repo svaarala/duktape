@@ -15,3 +15,4 @@ test:
 	./test 'var ape = require("ape"); assert(ape.module.loaded === true && ape.wasLoaded === false, "module.loaded");'
 	./test 'var ape = require("ape"); assert(ape.__filename === "ape.js", "__filename");'
 	./test 'var badger = require("badger"); assert(badger.foo === 123 && badger.bar === 234, "exports.foo assignment");'
+	./test 'var comment = require("comment"); assert(comment.foo === 123 && comment.bar === 234, "last line with // comment");'

@@ -346,7 +346,7 @@ static duk_ret_t duk__require(duk_context *ctx) {
 	 * (Note capitalization: .filename matches Node.js while .fileName is
 	 * used elsewhere in Duktape.)
 	 */
-	duk_push_string(ctx, "})");
+	duk_push_string(ctx, "\n})");  /* Newline allows module last line to contain a // comment. */
 	duk_concat(ctx, 3);
 	if (!duk_get_prop_string(ctx, DUK__IDX_MODULE, "filename")) {
 		/* module.filename for .fileName, default to resolved ID if
