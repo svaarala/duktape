@@ -335,6 +335,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 		DUK_DD(DUK_DDPRINT("refzero torture enabled, fake finalizer"));
 		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
 		DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) != 0);  /* No wrapping; always true because initial refcount was 0. */
 		duk__refcount_run_torture_finalizer(thr, obj);  /* must never longjmp */
 		DUK_HEAPHDR_PREDEC_REFCOUNT(h1);  /* remove artificial bump */
 		DUK_ASSERT_DISABLE(h1->h_refcount >= 0);  /* refcount is unsigned, so always true */
@@ -366,6 +367,7 @@ DUK_INTERNAL void duk_refzero_free_pending(duk_hthread *thr) {
 
 			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) == 0);
 			DUK_HEAPHDR_PREINC_REFCOUNT(h1);  /* bump refcount to prevent refzero during finalizer processing */
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h1) != 0);  /* No wrapping; always true because initial refcount was 0. */
 
 			duk_hobject_run_finalizer(thr, obj);  /* must never longjmp */
 			DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZED(h1));  /* duk_hobject_run_finalizer() sets */
@@ -619,6 +621,7 @@ DUK_INTERNAL void duk_tval_incref(duk_tval *tv) {
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(h));
 		DUK_ASSERT_DISABLE(h->h_refcount >= 0);
 		DUK_HEAPHDR_PREINC_REFCOUNT(h);
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(h) != 0);  /* No wrapping. */
 	}
 }
 
@@ -676,6 +679,7 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 			return; \
 		} \
 		DUK_HEAPHDR_PREINC_REFCOUNT((duk_heaphdr *) h); \
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) != 0);  /* No wrapping. */ \
 	} while (0)
 #define DUK__DECREF_SHARED() do { \
 		if (DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) h)) { \
@@ -688,6 +692,7 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 #else
 #define DUK__INCREF_SHARED() do { \
 		DUK_HEAPHDR_PREINC_REFCOUNT((duk_heaphdr *) h); \
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT((duk_heaphdr *) h) != 0);  /* No wrapping. */ \
 	} while (0)
 #define DUK__DECREF_SHARED() do { \
 		if (DUK_HEAPHDR_PREDEC_REFCOUNT((duk_heaphdr *) h) != 0) { \

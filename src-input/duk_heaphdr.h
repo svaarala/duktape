@@ -321,6 +321,7 @@ struct duk_heaphdr_string {
 			DUK_ASSERT(duk__h != NULL); \
 			DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 			DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) != 0);  /* No wrapping. */ \
 		} \
 	} while (0)
 #define DUK_TVAL_DECREF_FAST(thr,tv) do { \
@@ -355,6 +356,7 @@ struct duk_heaphdr_string {
 		DUK_ASSERT(DUK_HEAPHDR_HTYPE_VALID(duk__h)); \
 		if (DUK_HEAPHDR_NEEDS_REFCOUNT_UPDATE(duk__h)) { \
 			DUK_HEAPHDR_PREINC_REFCOUNT(duk__h); \
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(duk__h) != 0);  /* No wrapping. */ \
 		} \
 	} while (0)
 #define DUK_HEAPHDR_DECREF_FAST_RAW(thr,h,rzcall,rzcast) do { \
