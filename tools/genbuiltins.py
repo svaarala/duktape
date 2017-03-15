@@ -1425,7 +1425,6 @@ class_names = [
     'Symbol',
     'ObjEnv',
     'DecEnv',
-    'Buffer',
     'Pointer',
     'Thread'
     # Remaining class names are not currently needed.
