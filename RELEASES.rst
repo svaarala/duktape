@@ -2536,6 +2536,8 @@ Planned
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
   functions (GH-1297)
 
+* Add assertion coverage for INCREF refcount wrapping (GH-1400)
+
 * Miscellaneous compiler warning fixes (GH-1358)
 
 * Miscellaneous performance improvements: more likely/unlike attributes and
