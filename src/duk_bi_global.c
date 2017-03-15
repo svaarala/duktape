@@ -1193,7 +1193,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_require(duk_context *ctx) {
 	 * (Note capitalization: .filename matches Node.js while .fileName is
 	 * used elsewhere in Duktape.)
 	 */
-	duk_push_string(ctx, "})");
+	duk_push_string(ctx, "\n})");  /* Newline allows module last line to contain a // comment. */
 	duk_concat(ctx, 3);
 	if (!duk_get_prop_stridx(ctx, DUK__IDX_MODULE, DUK_STRIDX_FILENAME)) {
 		/* module.filename for .fileName, default to resolved ID if
