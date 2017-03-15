@@ -273,7 +273,7 @@ system RAM):
 * Enable other 16-bit fields to reduce header size; these are typically
   used together (all or none):
 
-  - ``#define DUK_USE_REFCOUNT16``
+  - ``#define DUK_USE_REFCOUNT16`` (and ``#undef DUK_USE_REFCOUNT32``)
 
   - ``#define DUK_USE_STRHASH16``
 

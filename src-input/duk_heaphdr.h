@@ -15,11 +15,12 @@
  *  list pointers for string table chaining.
  *
  *  Technically, 'h_refcount' must be wide enough to guarantee that it cannot
- *  wrap (otherwise objects might be freed incorrectly after wrapping).  This
- *  means essentially that the refcount field must be as wide as data pointers.
- *  On 64-bit platforms this means that the refcount needs to be 64 bits even
- *  if an 'int' is 32 bits.  This is a bit unfortunate, and compromising on
- *  this might be reasonable in the future.
+ *  wrap; otherwise objects might be freed incorrectly after wrapping.  The
+ *  default refcount field is 32 bits even on 64-bit systems: while that's in
+ *  theory incorrect, the Duktape heap needs to be larger than 64GB for the
+ *  count to actually wrap (assuming 16-byte duk_tvals).  This is very unlikely
+ *  to ever be an issue, but if it is, disabling DUK_USE_REFCOUNT32 causes
+ *  Duktape to use size_t for refcounts which should always be safe.
  *
  *  Heap header size on 32-bit platforms: 8 bytes without reference counting,
  *  16 bytes with reference counting.
@@ -32,7 +33,9 @@ struct duk_heaphdr {
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #if defined(DUK_USE_REFCOUNT16)
-	duk_uint16_t h_refcount16;
+	duk_uint16_t h_refcount;
+#elif defined(DUK_USE_REFCOUNT32)
+	duk_uint32_t h_refcount;
 #else
 	duk_size_t h_refcount;
 #endif
@@ -77,8 +80,10 @@ struct duk_heaphdr_string {
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #if defined(DUK_USE_REFCOUNT16)
-	duk_uint16_t h_refcount16;
+	duk_uint16_t h_refcount;
 	duk_uint16_t h_strextra16;  /* round out to 8 bytes */
+#elif defined(DUK_USE_REFCOUNT32)
+	duk_uint32_t h_refcount;
 #else
 	duk_size_t h_refcount;
 #endif
@@ -143,21 +148,13 @@ struct duk_heaphdr_string {
 #endif
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-#if defined(DUK_USE_REFCOUNT16)
-#define DUK_HEAPHDR_GET_REFCOUNT(h)   ((h)->h_refcount16)
-#define DUK_HEAPHDR_SET_REFCOUNT(h,val)  do { \
-		(h)->h_refcount16 = (val); \
-	} while (0)
-#define DUK_HEAPHDR_PREINC_REFCOUNT(h)  (++(h)->h_refcount16)  /* result: updated refcount */
-#define DUK_HEAPHDR_PREDEC_REFCOUNT(h)  (--(h)->h_refcount16)  /* result: updated refcount */
-#else
 #define DUK_HEAPHDR_GET_REFCOUNT(h)   ((h)->h_refcount)
 #define DUK_HEAPHDR_SET_REFCOUNT(h,val)  do { \
 		(h)->h_refcount = (val); \
+		DUK_ASSERT((h)->h_refcount == (val));  /* No truncation. */ \
 	} while (0)
 #define DUK_HEAPHDR_PREINC_REFCOUNT(h)  (++(h)->h_refcount)  /* result: updated refcount */
 #define DUK_HEAPHDR_PREDEC_REFCOUNT(h)  (--(h)->h_refcount)  /* result: updated refcount */
-#endif
 #else
 /* refcount macros not defined without refcounting, caller must #if defined() now */
 #endif  /* DUK_USE_REFERENCE_COUNTING */

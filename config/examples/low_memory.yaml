@@ -61,6 +61,7 @@ DUK_USE_HOBJECT_HASH_PROP_LIMIT: 64
 
 # Consider using pointer compression, see doc/low-memory.rst.
 #DUK_USE_REFCOUNT16: true
+#DUK_USE_REFCOUNT32: false
 #DUK_USE_STRHASH16: true
 #DUK_USE_STRLEN16: true
 #DUK_USE_BUFLEN16: true

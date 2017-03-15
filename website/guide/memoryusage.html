@@ -33,3 +33,9 @@ a lot of small allocations.</p>
 <a href="https://github.com/svaarala/duktape/blob/master/doc/low-memory.rst">low-memory.rst</a>
 for more discussion on what low memory features exists and how to tune the
 memory pools for low memory systems.</p>
+
+<p>With default options Duktape uses a 32-bit refcount field which may
+technically wrap on 64-bit systems with very large memory sizes.  In
+practice this is unlikely to happen and requires the Duktape heap to be
+larger than 64GB.  Disable <code>DUK_USE_REFCOUNT32</code> to use
+<code>size_t</code> for refcount fields.</p>
