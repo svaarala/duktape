@@ -2530,6 +2530,10 @@ Planned
 * Fix module-duktape and module-node handling of a module source which has
   a // comment on the last line without a trailing newline (GH-1394, GH-1395)
 
+* Fix incorrect internal class number of Duktape.Thread.prototype; this had a
+  cosmetic effect for Object.prototype.toString.call(Duktape.Thread.prototype)
+  (GH-1402)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
