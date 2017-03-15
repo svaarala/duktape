@@ -67,11 +67,13 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 
 	duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_GET_PROTOTYPE(heap, h));
 
-	/* XXX: rearrange bits to allow a switch case to be used here? */
-	/* XXX: add a fast path for objects (and arrays)? */
-	/* DUK_HOBJECT_IS_ARRAY(h): needs no special handling now as there are
-	 * no extra fields in need of marking.
+	/* Fast path for objects which don't have a subclass struct, or have a
+	 * subclass struct but nothing that needs marking in the subclass struct.
 	 */
+	if (DUK_HOBJECT_HAS_FASTREFS(h)) {
+		return;
+	}
+
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
@@ -103,10 +105,6 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			/* May happen in some out-of-memory corner cases. */
 			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping marking"));
 		}
-	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
-		duk_hnatfunc *f = (duk_hnatfunc *) h;
-		DUK_UNREF(f);
-		/* nothing to mark */
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
@@ -154,6 +152,13 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		for (i = 0; i < DUK_NUM_BUILTINS; i++) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) t->builtins[i]);
 		}
+	} else {
+		/* We may come here if the object should have a FASTREFS flag
+		 * but it's missing for some reason.  Assert for never getting
+		 * here; however, other than performance, this is harmless.
+		 */
+		DUK_D(DUK_DPRINT("missing FASTREFS flag for: %!iO", h));
+		DUK_ASSERT(0);
 	}
 }
 

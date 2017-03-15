@@ -2852,6 +2852,7 @@ DUK_LOCAL void duk__push_func_from_lightfunc(duk_context *ctx, duk_c_function fu
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
@@ -2902,6 +2903,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 	}
 	case DUK_TAG_BOOLEAN: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_FASTREFS |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_BOOLEAN);
 		proto = DUK_BIDX_BOOLEAN_PROTOTYPE;
 		goto create_object;
@@ -2912,10 +2914,12 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		DUK_ASSERT(h != NULL);
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+			        DUK_HOBJECT_FLAG_FASTREFS |
 			        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_SYMBOL);
 			proto = DUK_BIDX_SYMBOL_PROTOTYPE;
 		} else {
 			flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+			        DUK_HOBJECT_FLAG_FASTREFS |
 			        DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
 			        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
 			proto = DUK_BIDX_STRING_PROTOTYPE;
@@ -2945,6 +2949,7 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	case DUK_TAG_POINTER: {
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_FASTREFS |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER);
 		proto = DUK_BIDX_POINTER_PROTOTYPE;
 		goto create_object;
@@ -2973,7 +2978,8 @@ DUK_EXTERNAL void duk_to_object(duk_context *ctx, duk_idx_t idx) {
 		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-		               DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER);
+		        DUK_HOBJECT_FLAG_FASTREFS |
+		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_NUMBER);
 		proto = DUK_BIDX_NUMBER_PROTOTYPE;
 		goto create_object;
 	}
@@ -3376,10 +3382,15 @@ DUK_EXTERNAL duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t idx) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t idx) {
+	duk_hobject *obj;
+
 	DUK_ASSERT_CTX_VALID(ctx);
-	return duk__obj_flag_any_default_false(ctx,
-	                                       idx,
-	                                       DUK_HOBJECT_FLAG_THREAD);
+
+	obj = duk_get_hobject(ctx, idx);
+	if (obj) {
+		return (DUK_HOBJECT_GET_CLASS_NUMBER(obj) == DUK_HOBJECT_CLASS_THREAD ? 1 : 0);
+	}
+	return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t idx) {
@@ -4016,6 +4027,7 @@ DUK_EXTERNAL duk_idx_t duk_push_object(duk_context *ctx) {
 
 	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              DUK_BIDX_OBJECT_PROTOTYPE);
 	return duk_get_top_index_unsafe(ctx);
@@ -4031,6 +4043,7 @@ DUK_EXTERNAL duk_idx_t duk_push_array(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_ARRAY_PART |
 	        DUK_HOBJECT_FLAG_EXOTIC_ARRAY |
 	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARRAY);
@@ -4094,7 +4107,6 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags) {
 
 	obj = duk_hthread_alloc(thr,
 	                        DUK_HOBJECT_FLAG_EXTENSIBLE |
-	                        DUK_HOBJECT_FLAG_THREAD |
 	                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
 	DUK_ASSERT(obj != NULL);
 	obj->state = DUK_HTHREAD_STATE_INACTIVE;
@@ -4229,6 +4241,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
@@ -4246,6 +4259,7 @@ DUK_INTERNAL void duk_push_c_function_noexotic(duk_context *ctx, duk_c_function 
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
@@ -4261,6 +4275,7 @@ DUK_INTERNAL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx, duk
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
 	        DUK_HOBJECT_FLAG_STRICT |
@@ -4462,6 +4477,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	proto = duk_error_prototype_from_code(thr, err_code);
 	(void) duk_push_object_helper_proto(ctx,
 	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                    DUK_HOBJECT_FLAG_FASTREFS |
 	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ERROR),
 	                                    proto);
 
@@ -4712,6 +4728,7 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 DUK_EXTERNAL duk_idx_t duk_push_bare_object(duk_context *ctx) {
 	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
 	return duk_get_top_index_unsafe(ctx);

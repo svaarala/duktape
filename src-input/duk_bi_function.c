@@ -332,6 +332,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	/* create bound function object */
 	h_bound = duk_push_object_helper(ctx,
 	                                 DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                 DUK_HOBJECT_FLAG_FASTREFS |
 	                                 DUK_HOBJECT_FLAG_BOUNDFUNC |
 	                                 DUK_HOBJECT_FLAG_CONSTRUCTABLE |
 	                                 DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION),

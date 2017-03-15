@@ -194,7 +194,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&fun_clos->obj));
 	DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(&fun_clos->obj));
 	DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(&fun_clos->obj));
-	DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(&fun_clos->obj));
+	DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(&fun_clos->obj));
 	/* DUK_HOBJECT_FLAG_ARRAY_PART: don't care */
 	/* DUK_HOBJECT_FLAG_NEWENV: handled below */
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARRAY(&fun_clos->obj));

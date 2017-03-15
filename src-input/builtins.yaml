@@ -2791,7 +2791,7 @@ objects:
         present_if: DUK_USE_COROUTINE_SUPPORT
 
   - id: bi_thread_prototype
-    class: Thread
+    class: Object
     internal_prototype: bi_object_prototype
     duktape: true
     bidx: true

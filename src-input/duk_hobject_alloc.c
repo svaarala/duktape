@@ -72,7 +72,6 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc_unchecked(duk_heap *heap, duk_uint_t
 	/* different memory layout, alloc size, and init */
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_COMPFUNC) == 0);
 	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_NATFUNC) == 0);
-	DUK_ASSERT((hobject_flags & DUK_HOBJECT_FLAG_THREAD) == 0);
 
 	res = (duk_hobject *) DUK_ALLOC_ZEROED(heap, sizeof(duk_hobject));
 	if (DUK_UNLIKELY(res == NULL)) {
@@ -81,6 +80,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc_unchecked(duk_heap *heap, duk_uint_t
 
 	duk__init_object_parts(heap, hobject_flags, res);
 
+	DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(res));
 	return res;
 }
 

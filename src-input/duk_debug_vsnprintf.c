@@ -425,6 +425,9 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		}
 	}
 	if (st->internal) {
+		if (DUK_HOBJECT_IS_ARRAY(h)) {
+			DUK__COMMA(); duk_fb_sprintf(fb, "__array:true");
+		}
 		if (DUK_HOBJECT_HAS_EXTENSIBLE(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__extensible:true");
 		}
@@ -443,7 +446,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		if (DUK_HOBJECT_HAS_BUFOBJ(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__bufobj:true");
 		}
-		if (DUK_HOBJECT_HAS_THREAD(h)) {
+		if (DUK_HOBJECT_IS_THREAD(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__thread:true");
 		}
 		if (DUK_HOBJECT_HAS_ARRAY_PART(h)) {
