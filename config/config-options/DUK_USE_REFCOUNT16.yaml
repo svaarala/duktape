@@ -4,5 +4,6 @@ default: false
 tags:
   - lowmemory
   - experimental
+  - gc
 description: >
   Use a 16-bit reference count field (for low memory environments).
