@@ -176,16 +176,19 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 
 	arg = duk_push_object_helper(ctx,
 	                             DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                             DUK_HOBJECT_FLAG_FASTREFS |
 	                             DUK_HOBJECT_FLAG_ARRAY_PART |
 	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
 	                             DUK_BIDX_OBJECT_PROTOTYPE);
 	DUK_ASSERT(arg != NULL);
 	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
 	(void) duk_push_object_helper(ctx,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
 	i_arg = duk_get_top(ctx) - 3;

@@ -51,6 +51,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	/* Inherit from ROM-based global object: less RAM usage, less transparent. */
 	h_global = duk_push_object_helper(ctx,
 	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_FLAG_FASTREFS |
 	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
 	                                  DUK_BIDX_GLOBAL);
 	DUK_ASSERT(h_global != NULL);
@@ -61,6 +62,7 @@ DUK_LOCAL void duk__duplicate_ram_global_object(duk_hthread *thr) {
 	 */
 	h_global = duk_push_object_helper(ctx,
 	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                  DUK_HOBJECT_FLAG_FASTREFS |
 	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_GLOBAL),
 	                                  DUK_BIDX_OBJECT_PROTOTYPE);
 	DUK_ASSERT(h_global != NULL);
@@ -313,6 +315,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_ASSERT(class_num != DUK_HOBJECT_CLASS_DECENV);
 
 			(void) duk_push_object_helper(ctx,
+			                              DUK_HOBJECT_FLAG_FASTREFS |
 			                              DUK_HOBJECT_FLAG_EXTENSIBLE,
 			                              -1);  /* no prototype or class yet */
 
@@ -361,7 +364,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_COMPFUNC(h));
 		/* DUK_HOBJECT_FLAG_NATFUNC varies */
-		DUK_ASSERT(!DUK_HOBJECT_HAS_THREAD(h));
+		DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(h));
 		DUK_ASSERT(!DUK_HOBJECT_HAS_ARRAY_PART(h) || class_num == DUK_HOBJECT_CLASS_ARRAY);
 		/* DUK_HOBJECT_FLAG_STRICT varies */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_NATFUNC(h) ||  /* all native functions have NEWENV */

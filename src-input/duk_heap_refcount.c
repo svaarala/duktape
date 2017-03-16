@@ -64,11 +64,10 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 	duk_tval *p_tv;
 	duk_hstring **p_key;
 	duk_uint8_t *p_flag;
+	duk_hobject *h_proto;
 
 	DUK_ASSERT(h);
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h) == DUK_HTYPE_OBJECT);
-
-	/* XXX: better to get base and walk forwards? */
 
 	p_key = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, h);
 	p_val = DUK_HOBJECT_E_GET_VALUE_BASE(thr->heap, h);
@@ -107,19 +106,26 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 
 	/* hash part is a 'weak reference' and does not contribute */
 
-	{
-		duk_hobject *h_proto;
-		h_proto = (duk_hobject *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
-		DUK_ASSERT(h_proto == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_proto));
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_proto);
+	h_proto = (duk_hobject *) DUK_HOBJECT_GET_PROTOTYPE(thr->heap, h);
+	DUK_ASSERT(h_proto == NULL || DUK_HEAPHDR_IS_OBJECT((duk_heaphdr *) h_proto));
+	DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, h_proto);
+
+	/* XXX: Object subclass tests are quite awkward at present, ideally
+	 * we should be able to switch-case here with a dense index (subtype
+	 * number or something).  For now, fast path plain objects and arrays
+	 * and bit test the rest individually.
+	 */
+
+	if (DUK_HOBJECT_HAS_FASTREFS(h)) {
+		/* Plain object or array, nothing more to do.  While a
+		 * duk_harray has additional fields, none of them need
+		 * DECREF updates.
+		 */
+		return;
 	}
 
-	/* XXX: rearrange bits to allow a switch case to be used here? */
-	/* XXX: add a fast path for objects (and arrays)? */
+	/* Slow path: special object, start bit checks from most likely. */
 
-	/* DUK_HOBJECT_IS_ARRAY(h): needs no special handling now as there are
-	 * no extra fields in need of decref.
-	 */
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
@@ -150,16 +156,6 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_LEXENV(thr->heap, f));
 		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_heaphdr *) DUK_HCOMPFUNC_GET_VARENV(thr->heap, f));
 		DUK_HEAPHDR_DECREF_ALLOWNULL(thr, (duk_hbuffer *) DUK_HCOMPFUNC_GET_DATA(thr->heap, f));
-	} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
-		duk_hnatfunc *f = (duk_hnatfunc *) h;
-		DUK_UNREF(f);
-		/* nothing to finalize */
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
-		duk_hbufobj *b = (duk_hbufobj *) h;
-		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
-		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_DECENV(h)) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
 		DUK_ASSERT_HDECENV_VALID(e);
@@ -170,6 +166,12 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		DUK_ASSERT_HOBJENV_VALID(e);
 		DUK_ASSERT(e->target != NULL);  /* Required for object environments. */
 		DUK_HOBJECT_DECREF_NORZ(thr, e->target);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+		duk_hbufobj *b = (duk_hbufobj *) h;
+		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
+		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_tval *tv;
@@ -201,6 +203,13 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		}
 
 		DUK_HTHREAD_DECREF_NORZ_ALLOWNULL(thr, (duk_hthread *) t->resumer);
+	} else {
+		/* We may come here if the object should have a FASTREFS flag
+		 * but it's missing for some reason.  Assert for never getting
+		 * here; however, other than performance, this is harmless.
+		 */
+		DUK_D(DUK_DPRINT("missing FASTREFS flag for: %!iO", h));
+		DUK_ASSERT(0);
 	}
 }
 

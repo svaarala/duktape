@@ -143,6 +143,7 @@ DUK_INTERNAL duk_ret_t duk_bi_string_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		/* String object internal value is immutable */
 		flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+		        DUK_HOBJECT_FLAG_FASTREFS |
 		        DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ |
 		        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_STRING);
 		duk_push_object_helper(ctx, flags, DUK_BIDX_STRING_PROTOTYPE);

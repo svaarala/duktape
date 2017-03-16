@@ -2470,6 +2470,10 @@ Planned
   larger than 64GB; disable DUK_USE_REFCOUNT32 to use size_t for refcounts
   (GH-1399, GH-1401)
 
+* Duktape.Thread.prototype internal class is now Object rather than Thread;
+  this is cosmetic and affects e.g. Object.prototype.toString.call() output
+  for Duktape.Thread.prototype (but not Thread instances) (GH-1403)
+
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
   behavior) if the voluntary GC trigger counter dropped to zero during
@@ -2555,7 +2559,8 @@ Planned
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309, GH-1312), integer
   refzero-free-running flag (instead of a flag bit) (GH-1362), faster GC
-  finalizer existence check using DUK_HOBJECT_FLAG_HAVE_FINALIZER (GH-1398)
+  finalizer existence check using DUK_HOBJECT_FLAG_HAVE_FINALIZER (GH-1398);
+  faster skipping of sub-struct checks in DECREF/mark-and-sweep (GH-1403)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
   (GH-1357), explicit thr->callstack_curr field for current activation

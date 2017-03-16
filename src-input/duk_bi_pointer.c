@@ -24,6 +24,7 @@ DUK_INTERNAL duk_ret_t duk_bi_pointer_constructor(duk_context *ctx) {
 	if (duk_is_constructor_call(ctx)) {
 		(void) duk_push_object_helper(ctx,
 		                              DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                              DUK_HOBJECT_FLAG_FASTREFS |
 		                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_POINTER),
 		                              DUK_BIDX_POINTER_PROTOTYPE);
 

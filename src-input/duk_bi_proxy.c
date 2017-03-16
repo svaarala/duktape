@@ -123,6 +123,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	 */
 	(void) duk_push_object_helper_proto(ctx,
 	                                    DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                                    DUK_HOBJECT_FLAG_FASTREFS |
 	                                    DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ |
 	                                    DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                                    NULL);
