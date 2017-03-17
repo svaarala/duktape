@@ -2542,6 +2542,10 @@ Planned
   cosmetic effect for Object.prototype.toString.call(Duktape.Thread.prototype)
   (GH-1402)
 
+* Fix missing INCREF/DECREF for a thread's .resumer field which caused a
+  mismatch between stored and computed refcounts (with assertions); the
+  mismatch doesn't have functional effects however (GH-1407)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
