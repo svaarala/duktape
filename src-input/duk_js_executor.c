@@ -1147,7 +1147,9 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 			 *  which we simply ignore.
 			 */
 
+			DUK_ASSERT(resumee->resumer == NULL);
 			resumee->resumer = thr;
+			DUK_HTHREAD_INCREF(thr, thr);
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
@@ -1177,7 +1179,9 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 			duk__reconfig_valstack_ecma_return(resumee, act_idx);
 
+			DUK_ASSERT(resumee->resumer == NULL);
 			resumee->resumer = thr;
+			DUK_HTHREAD_INCREF(thr, thr);
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
@@ -1213,7 +1217,9 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 				DUK_ERROR_INTERNAL(thr);
 			}
 
+			DUK_ASSERT(resumee->resumer == NULL);
 			resumee->resumer = thr;
+			DUK_HTHREAD_INCREF(thr, thr);
 			resumee->state = DUK_HTHREAD_STATE_RUNNING;
 			thr->state = DUK_HTHREAD_STATE_RESUMED;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumee);
@@ -1270,6 +1276,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		if (thr->heap->lj.iserror) {
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
+			DUK_HTHREAD_DECREF_NORZ(thr, resumer);
 			resumer->state = DUK_HTHREAD_STATE_RUNNING;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 			thr = resumer;
@@ -1285,6 +1292,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 
 			thr->state = DUK_HTHREAD_STATE_YIELDED;
 			thr->resumer = NULL;
+			DUK_HTHREAD_DECREF_NORZ(thr, resumer);
 			resumer->state = DUK_HTHREAD_STATE_RUNNING;
 			DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 #if 0
@@ -1402,6 +1410,7 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 		DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
 
 		thr->resumer = NULL;
+		DUK_HTHREAD_DECREF_NORZ(thr, resumer);
 		resumer->state = DUK_HTHREAD_STATE_RUNNING;
 		DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 		thr = resumer;
@@ -1665,6 +1674,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr,
 	DUK_ASSERT(thr->state == DUK_HTHREAD_STATE_TERMINATED);
 
 	thr->resumer = NULL;
+	DUK_HTHREAD_DECREF(thr, resumer);
 	resumer->state = DUK_HTHREAD_STATE_RUNNING;
 	DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 #if 0
