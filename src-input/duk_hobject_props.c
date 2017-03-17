@@ -759,9 +759,11 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 			}
 			duk_push_hstring(ctx, key);  /* keep key reachable for GC etc; guaranteed not to fail */
 
-			/* key is now reachable in the valstack */
+			/* Key is now reachable in the valstack, don't INCREF
+			 * the new allocation yet (we'll steal the refcounts
+			 * from the value stack once all keys are done).
+			 */
 
-			DUK_HSTRING_INCREF(thr, key);   /* second incref for the entry reference */
 			new_e_k[new_e_next] = key;
 			tv2 = &new_e_pv[new_e_next].v;  /* array entries are all plain values */
 			DUK_TVAL_SET_TVAL(tv2, tv1);
@@ -775,8 +777,9 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 			 */
 		}
 
+		/* Steal refcounts from value stack. */
 		DUK_DDD(DUK_DDDPRINT("abandon array: pop %ld key temps from valstack", (long) new_e_next));
-		duk_pop_n(ctx, new_e_next);
+		duk_pop_n_nodecref_unsafe(ctx, new_e_next);
 	}
 
 	/*
@@ -967,19 +970,15 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	return;
 
 	/*
-	 *  Abandon array failed, need to decref keys already inserted
-	 *  into the beginning of new_e_k before unwinding valstack.
+	 *  Abandon array failed.  We don't need to DECREF anything
+	 *  because the references in the new allocation are not
+	 *  INCREF'd until abandon is complete.  The string interned
+	 *  keys are on the value stack and are handled normally by
+	 *  unwind.
 	 */
 
  abandon_error:
 	DUK_D(DUK_DPRINT("hobject resize failed during abandon array, decref keys"));
-	i = new_e_next;
-	while (i > 0) {
-		i--;
-		DUK_ASSERT(new_e_k != NULL);
-		DUK_ASSERT(new_e_k[i] != NULL);
-		DUK_HSTRING_DECREF(thr, new_e_k[i]);  /* side effects */
-	}
 
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
 

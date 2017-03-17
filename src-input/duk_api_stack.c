@@ -4792,28 +4792,16 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 #endif
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 
 	if (DUK_UNLIKELY(count < 0)) {
 		DUK_ERROR_RANGE_INVALID_COUNT(thr);
 		return;
 	}
 
-	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	if (DUK_UNLIKELY((duk_size_t) (thr->valstack_top - thr->valstack_bottom) < (duk_size_t) count)) {
 		DUK_ERROR_RANGE_INVALID_COUNT(thr);
 	}
-
-	/*
-	 *  Must be very careful here, every DECREF may cause reallocation
-	 *  of our valstack.
-	 */
-
-	/* XXX: inlined DECREF macro would be nice here: no NULL check,
-	 * refzero queueing but no refzero algorithm run (= no pointer
-	 * instability), inline code.
-	 */
-
-	/* XXX: optimize loops */
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	tv = thr->valstack_top;
@@ -4838,6 +4826,70 @@ DUK_EXTERNAL void duk_pop_n(duk_context *ctx, duk_idx_t count) {
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 }
+
+DUK_INTERNAL void duk_pop_n_unsafe(duk_context *ctx, duk_idx_t count) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	duk_tval *tv_end;
+#endif
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(count >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) count);
+
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	tv = thr->valstack_top;
+	tv_end = tv - count;
+	while (tv != tv_end) {
+		tv--;
+		DUK_ASSERT(tv >= thr->valstack_bottom);
+		DUK_TVAL_SET_UNDEFINED_UPDREF_NORZ(thr, tv);
+	}
+	thr->valstack_top = tv;
+	DUK_REFZERO_CHECK_FAST(thr);
+#else
+	tv = thr->valstack_top;
+	while (count > 0) {
+		count--;
+		tv--;
+		DUK_ASSERT(tv >= thr->valstack_bottom);
+		DUK_TVAL_SET_UNDEFINED(tv);
+	}
+	thr->valstack_top = tv;
+#endif
+
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+}
+
+/* Pop N elements without DECREF (in effect "stealing" the refcounts). */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+DUK_INTERNAL void duk_pop_n_nodecref_unsafe(duk_context *ctx, duk_idx_t count) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(count >= 0);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) count);
+
+	tv = thr->valstack_top;
+	while (count > 0) {
+		count--;
+		tv--;
+		DUK_ASSERT(tv >= thr->valstack_bottom);
+		DUK_TVAL_SET_UNDEFINED(tv);
+	}
+	thr->valstack_top = tv;
+
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+}
+#else  /* DUK_USE_REFERENCE_COUNTING */
+DUK_INTERNAL void duk_pop_n_nodecref_unsafe(duk_context *ctx, duk_idx_t count) {
+	duk_pop_n_unsafe(ctx, count);
+}
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 /* Popping one element is called so often that when footprint is not an issue,
  * compile a specialized function for it.
@@ -4875,16 +4927,17 @@ DUK_EXTERNAL void duk_pop(duk_context *ctx) {
 #if defined(DUK_USE_PREFER_SIZE)
 DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
-	duk_pop_n(ctx, 1);
+	duk_pop_n_unsafe(ctx, 1);
 }
 #else
 DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
-	DUK_ASSERT_CTX_VALID(ctx);
 
-	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr->valstack_top != thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) 1);
 
 	tv = --thr->valstack_top;  /* tv points to element just below prev top */
 	DUK_ASSERT(tv >= thr->valstack_bottom);
@@ -4893,6 +4946,7 @@ DUK_INTERNAL void duk_pop_unsafe(duk_context *ctx) {
 #else
 	DUK_TVAL_SET_UNDEFINED(tv);
 #endif
+
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 }
 #endif  /* !DUK_USE_PREFER_SIZE */
