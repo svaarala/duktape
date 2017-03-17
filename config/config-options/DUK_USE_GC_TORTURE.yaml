@@ -7,8 +7,8 @@ tags:
   - development
   - torture
 description: >
-  Development time option: force full mark-and-sweep on every allocation to
-  stress test memory management.
+  Development time option: force full mark-and-sweep on every allocation and
+  in other chosen places to stress test memory management.
 
   Using a low value (e.g. 3) for DUK_USE_MARK_AND_SWEEP_RECLIMIT is also
   recommended.
