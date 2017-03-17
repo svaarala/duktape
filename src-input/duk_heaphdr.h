@@ -32,6 +32,12 @@ struct duk_heaphdr {
 	duk_uint32_t h_flags;
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_ASSERTIONS)
+	/* When assertions enabled, used by mark-and-sweep for refcount
+	 * validation.  Largest reasonable type; also detects overflows.
+	 */
+	duk_size_t h_assert_refcount;
+#endif
 #if defined(DUK_USE_REFCOUNT16)
 	duk_uint16_t h_refcount;
 #elif defined(DUK_USE_REFCOUNT32)
@@ -39,7 +45,7 @@ struct duk_heaphdr {
 #else
 	duk_size_t h_refcount;
 #endif
-#endif
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 #if defined(DUK_USE_HEAPPTR16)
 	duk_uint16_t h_next16;
@@ -79,6 +85,12 @@ struct duk_heaphdr_string {
 	duk_uint32_t h_flags;
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
+#if defined(DUK_USE_ASSERTIONS)
+	/* When assertions enabled, used by mark-and-sweep for refcount
+	 * validation.  Largest reasonable type; also detects overflows.
+	 */
+	duk_size_t h_assert_refcount;
+#endif
 #if defined(DUK_USE_REFCOUNT16)
 	duk_uint16_t h_refcount;
 	duk_uint16_t h_strextra16;  /* round out to 8 bytes */
@@ -89,7 +101,7 @@ struct duk_heaphdr_string {
 #endif
 #else
 	duk_uint16_t h_strextra16;
-#endif
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 	duk_hstring *h_next;
 	/* No 'h_prev' pointer for strings. */

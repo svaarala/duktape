@@ -257,6 +257,14 @@
 #define DUK_HOBJECT_CLEAR_EXOTIC_DUKFUNC(h)    DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC)
 #define DUK_HOBJECT_CLEAR_EXOTIC_PROXYOBJ(h)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
+/* Object can/cannot use FASTREFS, i.e. has no strong reference fields beyond
+ * duk_hobject base header.
+ */
+#define DUK_HOBJECT_PROHIBITS_FASTREFS(h) \
+	(DUK_HOBJECT_IS_COMPFUNC((h)) || DUK_HOBJECT_IS_DECENV((h)) || DUK_HOBJECT_IS_OBJENV((h)) || \
+	 DUK_HOBJECT_IS_BUFOBJ((h)) || DUK_HOBJECT_IS_THREAD((h)))
+#define DUK_HOBJECT_ALLOWS_FASTREFS(h) (!DUK_HOBJECT_PROHIBITS_FASTREFS((h)))
+
 /* Flags used for property attributes in duk_propdesc and packed flags.
  * Must fit into 8 bits.
  */
