@@ -640,12 +640,14 @@ def print_summary(doc):
         test_result = 'SKIPPED'
     elif doc['success']:
         if doc['timeout']:
-            test_result = red('TIMEOUT')
+            test_result = yellow('TIMEOUT')
+            print_diff = False
         else:
             test_result = green('SUCCESS')
     else:
         if doc['timeout']:
-            test_result = red('TIMEOUT')
+            test_result = yellow('TIMEOUT')
+            print_diff = False
         elif doc['knownissue'] != '':
             test_result = blue('KNOWN  ')
             print_diff = False
