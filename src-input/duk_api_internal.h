@@ -281,6 +281,8 @@ DUK_INTERNAL_DECL void duk_resolve_nonbound_function(duk_context *ctx);
 
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_require_min(duk_context *ctx, duk_idx_t min_top);
 DUK_INTERNAL_DECL duk_idx_t duk_get_top_index_unsafe(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_pop_n_unsafe(duk_context *ctx, duk_idx_t count);
+DUK_INTERNAL_DECL void duk_pop_n_nodecref_unsafe(duk_context *ctx, duk_idx_t count);
 DUK_INTERNAL_DECL void duk_pop_unsafe(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_compact_m1(duk_context *ctx);
