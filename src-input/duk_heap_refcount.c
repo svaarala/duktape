@@ -662,7 +662,7 @@ DUK_INTERNAL void duk_tval_decref_norz(duk_hthread *thr, duk_tval *tv) {
 		}
 		duk_heaphdr_refzero_norz(thr, h);
 #else
-		duk_heaphdr_decref(thr, h);
+		duk_heaphdr_decref_norz(thr, h);
 #endif
 	}
 }
