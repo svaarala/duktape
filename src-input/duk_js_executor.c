@@ -1439,6 +1439,8 @@ duk_small_uint_t duk__handle_longjmp(duk_hthread *thr,
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value1);  /* side effects */
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, &thr->heap->lj.value2);  /* side effects */
 
+	DUK_GC_TORTURE(thr->heap);
+
  just_return:
 	return retval;
 
@@ -2351,6 +2353,8 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 	DUK_ASSERT(DUK_ACT_GET_FUNC(exec_thr->callstack_curr) != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(exec_thr->callstack_curr)));
 
+	DUK_GC_TORTURE(exec_thr->heap);
+
 	entry_thread = exec_thr;
 	heap = entry_thread->heap;
 	entry_callstack_top = entry_thread->callstack_top;
@@ -2480,6 +2484,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 	DUK_ASSERT(sizeof(duk_tval) == 16);
 #endif
 #endif
+
+	DUK_GC_TORTURE(entry_thread->heap);
 
 	/*
 	 *  Restart execution by reloading thread state.

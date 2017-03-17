@@ -1,5 +1,5 @@
 /*
- *  Hobject property set/get functionality.
+ *  duk_hobject property access functionality.
  *
  *  This is very central functionality for size, performance, and compliance.
  *  It is also rather intricate; see hobject-algorithms.rst for discussion on
@@ -38,10 +38,6 @@
 /*
  *  XXX: array indices are mostly typed as duk_uint32_t here; duk_uarridx_t
  *  might be more appropriate.
- */
-
-/*
- *  XXX: duk_uint_fast32_t should probably be used in many places here.
  */
 
 #include "duk_internal.h"
@@ -699,7 +695,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	                     (void *) new_a, (void *) new_h));
 
 	/*
-	 *  Migrate array to start of entries if requested.
+	 *  Migrate array part to start of entries if requested.
 	 *
 	 *  Note: from an enumeration perspective the order of entry keys matters.
 	 *  Array keys should appear wherever they appeared before the array abandon
