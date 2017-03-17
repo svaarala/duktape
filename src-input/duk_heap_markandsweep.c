@@ -71,8 +71,10 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	 * subclass struct but nothing that needs marking in the subclass struct.
 	 */
 	if (DUK_HOBJECT_HAS_FASTREFS(h)) {
+		DUK_ASSERT(DUK_HOBJECT_ALLOWS_FASTREFS(h));
 		return;
 	}
+	DUK_ASSERT(DUK_HOBJECT_PROHIBITS_FASTREFS(h));
 
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
@@ -175,6 +177,9 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		DUK_DDD(DUK_DDDPRINT("readonly object %p, skip", (void *) h));
 		return;
 	}
+#endif
+#if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
+	h->h_assert_refcount++;  /* Comparison refcount: bump even if already reachable. */
 #endif
 	if (DUK_HEAPHDR_HAS_REACHABLE(h)) {
 		DUK_DDD(DUK_DDDPRINT("already marked reachable, skip"));
@@ -405,6 +410,9 @@ DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr) {
 	DUK_DDD(DUK_DDDPRINT("found a temp root: %p", (void *) hdr));
 	DUK_HEAPHDR_CLEAR_TEMPROOT(hdr);
 	DUK_HEAPHDR_CLEAR_REACHABLE(hdr);  /* done so that duk__mark_heaphdr() works correctly */
+#if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
+	hdr->h_assert_refcount--;  /* Same node visited twice. */
+#endif
 	duk__mark_heaphdr(heap, hdr);
 
 #if defined(DUK_USE_DEBUG)
@@ -1024,6 +1032,85 @@ DUK_LOCAL void duk__assert_valid_refcounts(duk_heap *heap) {
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 	}
 }
+
+DUK_LOCAL void duk__clear_assert_refcounts(duk_heap *heap) {
+	duk_heaphdr *curr;
+	duk_uint32_t i;
+
+	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		curr->h_assert_refcount = 0;
+	}
+	for (curr = heap->finalize_list; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		curr->h_assert_refcount = 0;
+	}
+	for (curr = heap->refzero_list; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		curr->h_assert_refcount = 0;
+	}
+
+	for (i = 0; i < heap->st_size; i++) {
+		duk_hstring *h;
+
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+		h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
+#else
+		h = heap->strtable[i];
+#endif
+		while (h != NULL) {
+			((duk_heaphdr *) h)->h_assert_refcount = 0;
+			h = h->hdr.h_next;
+		}
+	}
+}
+
+DUK_LOCAL void duk__check_refcount_heaphdr(duk_heaphdr *hdr) {
+	duk_bool_t count_ok;
+
+	/* The refcount check only makes sense for reachable objects on
+	 * heap_allocated or string table, after the sweep phase.  Prior to
+	 * sweep phase refcounts will include references that are not visible
+	 * via reachability roots.
+	 *
+	 * Because we're called after the sweep phase, all heap objects on
+	 * heap_allocated are reachable.  REACHABLE flags have already been
+	 * cleared so we can't check them.
+	 */
+
+	/* ROM objects have intentionally incorrect refcount (1), but we won't
+	 * check them.
+	 */
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(hdr));
+
+	count_ok = ((duk_size_t) DUK_HEAPHDR_GET_REFCOUNT(hdr) == hdr->h_assert_refcount);
+	if (!count_ok) {
+		DUK_D(DUK_DPRINT("refcount mismatch for: %p: header=%ld counted=%ld --> %!iO",
+		                 (void *) hdr, (long) DUK_HEAPHDR_GET_REFCOUNT(hdr),
+		                 (long) hdr->h_assert_refcount, hdr));
+		DUK_ASSERT(0);
+	}
+}
+
+DUK_LOCAL void duk__check_assert_refcounts(duk_heap *heap) {
+	duk_heaphdr *curr;
+	duk_uint32_t i;
+
+	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		duk__check_refcount_heaphdr(curr);
+	}
+
+	for (i = 0; i < heap->st_size; i++) {
+		duk_hstring *h;
+
+#if defined(DUK_USE_STRTAB_PTRCOMP)
+		h = DUK_USE_HEAPPTR_DEC16(heap->heap_udata, heap->strtable16[i]);
+#else
+		h = heap->strtable[i];
+#endif
+		while (h != NULL) {
+			duk__check_refcount_heaphdr((duk_heaphdr *) h);
+			h = h->hdr.h_next;
+		}
+	}
+}
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 #endif  /* DUK_USE_ASSERTIONS */
 
@@ -1177,6 +1264,9 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 	 *  previous run had finalizer skip flag.
 	 */
 
+#if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
+	duk__clear_assert_refcounts(heap);
+#endif
 	duk__mark_roots_heap(heap);               /* main reachability roots */
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__mark_refzero_list(heap);             /* refzero_list treated as reachability roots */
@@ -1210,6 +1300,9 @@ DUK_INTERNAL duk_bool_t duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t
 #endif
 	duk__sweep_heap(heap, flags, &count_keep_obj);
 	duk__sweep_stringtable(heap, &count_keep_str);
+#if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
+	duk__check_assert_refcounts(heap);
+#endif
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	duk__clear_refzero_list_flags(heap);
 #endif

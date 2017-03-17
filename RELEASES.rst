@@ -2474,6 +2474,10 @@ Planned
   this is cosmetic and affects e.g. Object.prototype.toString.call() output
   for Duktape.Thread.prototype (but not Thread instances) (GH-1403)
 
+* When assertions are enabled, compute comparison refcounts during
+  mark-and-sweep and assert for matching refcounts for objects surviving
+  the sweep phase (GH-1406)
+
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
   behavior) if the voluntary GC trigger counter dropped to zero during

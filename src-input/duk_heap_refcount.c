@@ -121,8 +121,10 @@ DUK_LOCAL void duk__refcount_finalize_hobject(duk_hthread *thr, duk_hobject *h) 
 		 * duk_harray has additional fields, none of them need
 		 * DECREF updates.
 		 */
+		DUK_ASSERT(DUK_HOBJECT_ALLOWS_FASTREFS(h));
 		return;
 	}
+	DUK_ASSERT(DUK_HOBJECT_PROHIBITS_FASTREFS(h));
 
 	/* Slow path: special object, start bit checks from most likely. */
 
