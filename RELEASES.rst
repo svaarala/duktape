@@ -2549,6 +2549,10 @@ Planned
   mismatch between stored and computed refcounts (with assertions); the
   mismatch doesn't have functional effects however (GH-1407)
 
+* Fix incorrect duk_tval_decref_norz() handling (called duk_heaphdr_decref()
+  rather than duk_heaphdr_decref_norz()); however, this function is unused
+  unless fast refcount handling is disabled explicitly (GH-1410)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
