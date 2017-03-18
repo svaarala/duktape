@@ -728,6 +728,11 @@ DUK_INTERNAL void duk_heaphdr_decref(duk_hthread *thr, duk_heaphdr *h) {
 	DUK__DECREF_ASSERTS();
 	DUK__DECREF_SHARED();
 	duk_heaphdr_refzero(thr, h);
+
+	/* Forced mark-and-sweep when GC torture enabled; this could happen
+	 * on any DECREF (but not DECREF_NORZ).
+	 */
+	DUK_GC_TORTURE(thr->heap);
 }
 DUK_INTERNAL void duk_heaphdr_decref_norz(duk_hthread *thr, duk_heaphdr *h) {
 	DUK__DECREF_ASSERTS();

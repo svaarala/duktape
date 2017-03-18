@@ -131,6 +131,13 @@
 #define DUK_HEAP_MARK_AND_SWEEP_TRIGGER_SKIP              256L
 #endif
 
+/* GC torture. */
+#if defined(DUK_USE_GC_TORTURE)
+#define DUK_GC_TORTURE(heap) do { duk_heap_mark_and_sweep((heap), 0); } while (0)
+#else
+#define DUK_GC_TORTURE(heap) do { } while (0)
+#endif
+
 /* Stringcache is used for speeding up char-offset-to-byte-offset
  * translations for non-ASCII strings.
  */
