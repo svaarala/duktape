@@ -17,6 +17,7 @@
  */
 
 DUK_LOCAL_DECL duk_idx_t duk__push_c_function_raw(duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_uint_t flags);
+DUK_LOCAL const char *duk__push_string_tval_readable(duk_context *ctx, duk_tval *tv, duk_bool_t error_aware);
 
 /*
  *  Global state for working around missing variadic macros
@@ -2680,6 +2681,22 @@ DUK_EXTERNAL const char *duk_to_string(duk_context *ctx, duk_idx_t idx) {
  skip_replace:
 	DUK_ASSERT(duk_is_string(ctx, idx));
 	return duk_require_string(ctx, idx);
+}
+
+DUK_EXTERNAL void duk_safe_push_summary(duk_context *ctx, duk_idx_t idx, duk_uint_t flags) {
+	duk_tval *tv;
+	duk_bool_t error_aware = 0;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval_or_unused(ctx, idx);
+	DUK_ASSERT(tv != NULL);
+
+	if (flags & DUK_SUMMARY_ERROR_AWARE) {
+		error_aware = 1;
+	}
+
+	duk__push_string_tval_readable(ctx, tv, error_aware);
 }
 
 DUK_INTERNAL duk_hstring *duk_to_hstring(duk_context *ctx, duk_idx_t idx) {
