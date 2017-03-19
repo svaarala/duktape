@@ -19,6 +19,10 @@ summary: |
   is suspended.</p>
 
   <div class="note">
+  This API call must not be used directly or indirectly from a finalizer.
+  </div>
+
+  <div class="note">
   Duktape does not provide any locking for ensuring only one native thread
   accesses a certain Duktape heap at a time.  Application code must provide
   such mechanisms.
