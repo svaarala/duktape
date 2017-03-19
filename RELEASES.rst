@@ -1696,6 +1696,69 @@ Released
   integer strings (such as '7394299990') to be incorrectly treated as array
   indices (GH-1273, GH-1276)
 
+1.7.0 (2017-03-20)
+------------------
+
+* Fix duk_push_buffer_object() ArrayBuffer .byteLength to use 0 and .byteOffset
+  to use view's (byteOffset + byteLength), so that accesses to the ArrayBuffer
+  at the view's .byteOffset match the view at index 0 as normally expected;
+  previously .byteOffset and .byteLength were copied from the view as is which
+  makes the ArrayBuffer indices behave inconsistently with respect to the
+  view's .byteOffset (GH-1229)
+
+* Add duk_is_buffer_data() API call to reliably test whether a value stack
+  entry is a plain buffer or any buffer object (GH-1221)
+
+* Improve duk_push_heapptr() assert validation to include checks that the
+  pointer is only allowed in finalize_list or refzero_list if currently being
+  finalized, and must otherwise be in either the string table (for strings)
+  or heap_allocated (non-strings) (GH-1317)
+
+* Fix an incorrect assert in RegExp code for character class dashes (GH-1250)
+
+* Fix duk_hstring array index check integer overflow, which caused certain
+  integer strings (such as '7394299990') to be incorrectly treated as array
+  indices (GH-1273, GH-1276)
+
+* Fix a few incorrect asserts related to reference count triggered finalizer
+  execution; the functionality itself was correct in these cases but a few
+  asserts were too strict (GH-1318)
+
+* Fix a duk_push_heapptr() finalize_list assertion issue caused by the
+  internal heap->finalize_list being (intentionally) out-of-sync during
+  mark-and-sweep finalizer execution; this has no functional impact but
+  breaks duk_push_heapptr() asserts in certain conditions (GH-1321)
+
+* Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
+  was enabled (GH-1320)
+
+* Fix -Wshift-sign-overflow warnings on some Clang versions for signed left
+  shifts whose result was used as unsigned (GH-812, GH-813)
+
+* Fix bug in global object environment "provideThis" attribute when using ROM
+  objects and DUK_USE_ROM_GLOBAL_INHERIT (GH-1340, GH-1310)
+
+* Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
+  could cause a recursive entry into mark-and-sweep (leading to memory unsafe
+  behavior) if the voluntary GC trigger counter dropped to zero during
+  mark-and-sweep finalizer execution (GH-1347, GH-1355)
+
+* Fix bug in global/eval code variable redeclaration handling where a
+  plain 'var X;' redeclaration for an existing binding caused 'undefined' to
+  overwrite the existing binding rather than being treated as a no-op
+  (GH-1351, GH-1354)
+
+* Fix some stale activation ('act') pointer handling which could lead to
+  memory unsafe behavior in some cases (GH-1370, GH-1371, GH-1373)
+
+* Fix duk_is_constructor_call() for an empty callstack (GH-1376)
+
+* Fix debugger Throw notify handling for an empty callstack (e.g. error
+  thrown by duk_throw() with nothing on the callstack) (GH-1377)
+
+* Fix module-duktape and module-node handling of a module source which has
+  a // comment on the last line without a trailing newline (GH-1394, GH-1395)
+
 2.0.0 (2017-01-02)
 ------------------
 
@@ -2412,9 +2475,6 @@ Miscellaneous:
 
 Planned
 =======
-
-1.7.0 (XXXX-XX-XX)
-------------------
 
 2.1.0 (XXXX-XX-XX)
 ------------------
