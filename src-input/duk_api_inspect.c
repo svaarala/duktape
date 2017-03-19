@@ -54,7 +54,7 @@ DUK_LOCAL void duk__inspect_multiple_uint(duk_context *ctx, const char *fmt, duk
 #define DUK__IDX_TSTATE   12
 #define DUK__IDX_VARIANT  13
 
-DUK_EXTERNAL void duk_inspect_value(duk_context *ctx, duk_idx_t idx) {
+DUK_EXTERNAL duk_bool_t duk_inspect_value(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
 	duk_heaphdr *h;
@@ -181,9 +181,11 @@ DUK_EXTERNAL void duk_inspect_value(duk_context *ctx, duk_idx_t idx) {
 	    "pbytes" "\x00" "esize" "\x00" "enext" "\x00" "asize" "\x00" "hsize" "\x00"
 	    "bcbytes" "\x00" "dbytes" "\x00" "tstate" "\x00" "variant" "\x00" "\x00",
 	    (duk_int_t *) &vals);
+
+	return vals[DUK__IDX_TYPE] != DUK_TYPE_NONE;  /* 1 if value present, 0 if not */
 }
 
-DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level) {
+DUK_EXTERNAL duk_bool_t duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_activation *act;
 	duk_uint_fast32_t pc;
@@ -196,7 +198,7 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level)
 	 */
 	if (level >= 0 || -level > (duk_int_t) thr->callstack_top) {
 		duk_push_undefined(ctx);
-		return;
+		return 0;
 	}
 	duk_push_bare_object(ctx);
 	DUK_ASSERT(level >= -((duk_int_t) thr->callstack_top) && level <= -1);
@@ -227,4 +229,6 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level)
 	 * Duktape relies on them having consistent data, and this consistency
 	 * is only asserted for, not checked for.
 	 */
+
+	return 1;
 }
