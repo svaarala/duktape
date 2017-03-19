@@ -1351,7 +1351,8 @@ DUK_INTERNAL duk_small_int_t duk_js_to_arrayindex_raw_string(const duk_uint8_t *
 					goto parse_fail;
 				}
 				res = 0xfffffffaUL + c;
-				DUK_ASSERT(res >= 0xfffffffaUL && res <= 0xffffffffUL);
+				DUK_ASSERT(res >= 0xfffffffaUL);
+				DUK_ASSERT_DISABLE(res <= 0xffffffffUL);  /* range */
 			} else {
 				res = res * 10U + (duk_uint32_t) (c - DUK_ASC_0);
 			}
