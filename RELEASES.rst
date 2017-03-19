@@ -2483,6 +2483,10 @@ Planned
 
 * More assertion coverage for GC (GH-1411)
 
+* Avoid relying on the value stack when handling a double error (error which
+  happened during handling of a previous error); this is cleaner but relying
+  on value stack space should also be OK (GH-1415)
+
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
   behavior) if the voluntary GC trigger counter dropped to zero during
