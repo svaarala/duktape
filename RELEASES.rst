@@ -2473,6 +2473,51 @@ Miscellaneous:
 * Fix ROM pointer duk_heaphdr_incref() handling when slow refcount default
   was enabled (GH-1320)
 
+2.0.2 (2017-03-20)
+------------------
+
+* Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
+
+* Portability improvements for Solaris, HPUX, and AIX (GH-1356)
+
+* Fix 'duk' command line bytecode load error (GH-1333, GH-1334)
+
+* Fix bug in global object environment "provideThis" attribute when using ROM
+  objects and DUK_USE_ROM_GLOBAL_INHERIT (GH-1340, GH-1310)
+
+* Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
+  could cause a recursive entry into mark-and-sweep (leading to memory unsafe
+  behavior) if the voluntary GC trigger counter dropped to zero during
+  mark-and-sweep finalizer execution (GH-1347, GH-1355)
+
+* Fix bug in global/eval code variable redeclaration handling where a
+  plain 'var X;' redeclaration for an existing binding caused 'undefined' to
+  overwrite the existing binding rather than being treated as a no-op
+  (GH-1351, GH-1354)
+
+* Fix some stale activation ('act') pointer handling which could lead to
+  memory unsafe behavior in some cases (GH-1370, GH-1371, GH-1373)
+
+* Fix duk_is_constructor_call() for an empty callstack (GH-1376)
+
+* Fix debugger Throw notify handling for an empty callstack (e.g. error
+  thrown by duk_throw() with nothing on the callstack) (GH-1377)
+
+* Fix module-duktape and module-node handling of a module source which has
+  a // comment on the last line without a trailing newline (GH-1394, GH-1395)
+
+* Fix incorrect internal class number of Duktape.Thread.prototype; this had a
+  cosmetic effect for Object.prototype.toString.call(Duktape.Thread.prototype)
+  (GH-1402)
+
+* Fix missing INCREF/DECREF for a thread's .resumer field which caused a
+  mismatch between stored and computed refcounts (with assertions); the
+  mismatch doesn't have functional effects however (GH-1407)
+
+* Fix incorrect duk_tval_decref_norz() handling (called duk_heaphdr_decref()
+  rather than duk_heaphdr_decref_norz()); however, this function is unused
+  unless fast refcount handling is disabled explicitly (GH-1410)
+
 Planned
 =======
 
