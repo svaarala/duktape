@@ -4,6 +4,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install python-yaml
   - sudo apt-get install tidy
+  - sudo apt-get install valgrind
 #compiler:
 #  - clang
 #  - gcc
@@ -14,3 +15,4 @@ script:
   - make tidy-site
   - make apitest
   - make qecmatest
+  - make injectiontest
