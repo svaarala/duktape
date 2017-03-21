@@ -16,11 +16,14 @@ summary: |
   resumed later some internal book-keeping will be left in an inconsistent
   state.  The native call stack of the current native thread (which calls
   <code>duk_suspend()</code>) must not be unwound while Duktape execution
-  is suspended.</p>
+  is suspended; when the call returns, calling code typically switches to
+  another native thread or performs a native C stack switch.</p>
 
-  <div class="note">
-  This API call must not be used directly or indirectly from a finalizer.
-  </div>
+  <p>This API call must not be used directly or indirectly from:</p>
+  <ul>
+  <li>A finalizer call</li>
+  <li>A Duktape.errCreate() error augmentation call</li>
+  </ul>
 
   <div class="note">
   Duktape does not provide any locking for ensuring only one native thread
