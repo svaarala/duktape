@@ -2592,6 +2592,10 @@ Planned
   happened during handling of a previous error); this is cleaner but relying
   on value stack space should also be OK (GH-1415)
 
+* Reject plain arguments to configure.py, they were previously ignored which
+  allowed typos like "-DFOO bar" to be accepted silently (here as "-DFOO" and
+  an ignored pain "bar" argument) (GH-1425)
+
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
   behavior) if the voluntary GC trigger counter dropped to zero during

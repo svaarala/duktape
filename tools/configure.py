@@ -255,6 +255,8 @@ def main():
     parser.add_option('--verbose', dest='verbose', action='store_true', default=False, help='Show verbose debug messages')
 
     (opts, args) = parser.parse_args()
+    if len(args) > 0:
+        raise Exception('unexpected arguments: %r' % args)
 
     if opts.obsolete_builtin_metadata is not None:
         raise Exception('--user-builtin-metadata has been removed, use --builtin-file instead')
