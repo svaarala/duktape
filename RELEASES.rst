@@ -2668,7 +2668,10 @@ Planned
   rather than duk_heaphdr_decref_norz()); however, this function is unused
   unless fast refcount handling is disabled explicitly (GH-1410)
 
-* Avoid log2(), log10(), cbrt(), and trunc() on Android (GH-1325, GH-1341)
+* Fix alignment increase warning with clang (GH-1430, GH-1431)
+
+* Avoid log2(), log10(), cbrt(), and trunc() on Android and Atari MiNT
+  (GH-1325, GH-1341, GH-1430, GH-1431)
 
 * Portability improvements for Solaris, HPUX, and AIX (GH-1356)
 

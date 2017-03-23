@@ -580,7 +580,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 
 	env = duk_create_activation_environment_record(thr, func, act->idx_bottom);
 	DUK_ASSERT(env != NULL);
-	act = (duk_activation *) ((duk_uint8_t *) thr->callstack + act_off);
+	act = (duk_activation *) (void *) ((duk_uint8_t *) thr->callstack + act_off);
 
 	DUK_DDD(DUK_DDDPRINT("created delayed fresh env: %!ipO", (duk_heaphdr *) env));
 #if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
@@ -1744,7 +1744,7 @@ duk_bool_t duk_js_declvar_activation(duk_hthread *thr,
 	if (!act->var_env) {
 		DUK_ASSERT(act->lex_env == NULL);
 		duk_js_init_activation_environment_records_delayed(thr, act);
-		act = (duk_activation *) ((duk_uint8_t *) thr->callstack + act_off);
+		act = (duk_activation *) (void *) ((duk_uint8_t *) thr->callstack + act_off);
 	}
 	DUK_ASSERT(act->lex_env != NULL);
 	DUK_ASSERT(act->var_env != NULL);
