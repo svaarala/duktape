@@ -2670,6 +2670,9 @@ Planned
 
 * Fix alignment increase warning with clang (GH-1430, GH-1431)
 
+* Fix incorrect assert for RETCONSTN opcode when refcounting is disabled,
+  actual behavior is correct however (GH-1432, GH-1433)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android and Atari MiNT
   (GH-1325, GH-1341, GH-1430, GH-1431)
 
