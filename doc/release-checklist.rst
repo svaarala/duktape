@@ -34,6 +34,8 @@ Checklist for ordinary releases
 
 * Check dist-files/README.rst
 
+  - Update release specific release notes link
+
 * Ensure LICENSE.txt is up-to-date
 
   - Check year range
