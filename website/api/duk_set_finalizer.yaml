@@ -13,6 +13,10 @@ summary: |
   as if no finalizer was set.  To delete a finalizer from an object, set it
   to <code>undefined</code>.</p>
 
+  <div class="note">
+  Finalizer on a Proxy object is currently unsupported.
+  </div>
+
 example: |
   duk_ret_t my_finalizer(duk_context *ctx) {
       /* Object being finalized is at stack index 0. */

@@ -163,7 +163,7 @@ g = null;            // collected immediately, finalizer runs
 h.prototype.constructor = null;
 h = null;            // collected immediately, finalizer runs
 
-// no-op with refcount only, with mark-and-sweep finalizer for 'f' runs
+// mark-and-sweep triggers finalizer for 'f'
 Duktape.gc();
 </pre>
 

@@ -62,8 +62,8 @@ finalizer are also silently ignored.</p>
 <li>A finalizer is called exactly once, at the latest when the heap is
     destroyed, unless the object is rescued by making it reachable again.
     An object may be rescued by its own finalizer, or by another object's
-    finalizer when mark-and-sweep finalizes an object.  For example, if
-    <code>X.ref = Y</code>, and both X and Y become unreachable, it's
+    finalizer when mark-and-sweep finalizes a set of objects.  For example,
+    if <code>X.ref = Y</code>, and both X and Y become unreachable, it's
     possible for Y's finalizer to run, and later on X's finalizer to rescue
     both X and Y.</li>
 <li>An object may be rescued an arbitrary number of times; the finalizer
