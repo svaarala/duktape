@@ -3940,7 +3940,9 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK__SYNC_AND_NULL_CURR_PC();
 			tv = DUK__CONSTP_BC(ins);
 			DUK_TVAL_SET_TVAL(thr->valstack_top, tv);
+#if defined(DUK_USE_REFERENCE_COUNTING)
 			DUK_ASSERT(!DUK_TVAL_IS_HEAP_ALLOCATED(tv));  /* no INCREF for this constant */
+#endif
 			thr->valstack_top++;
 			DUK__RETURN_SHARED();
 		}
