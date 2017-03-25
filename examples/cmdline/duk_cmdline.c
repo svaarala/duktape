@@ -245,7 +245,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 		duk_load_function(ctx);
 	} else {
 		/* Source code. */
-		comp_flags = 0;
+		comp_flags = DUK_COMPILE_SHEBANG;
 		duk_compile_lstring_filename(ctx, comp_flags, src_data, src_len);
 	}
 
