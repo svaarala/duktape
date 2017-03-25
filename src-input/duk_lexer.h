@@ -32,7 +32,7 @@ typedef void (*duk_re_range_callback)(void *user, duk_codepoint_t r1, duk_codepo
 
 #define DUK_LEXER_GETPOINT(ctx,pt)    duk_lexer_getpoint((ctx), (pt))
 
-/* currently 6 characters of lookup are actually needed (duk_lexer.c) */
+/* Currently 6 characters of lookup are actually needed (duk_lexer.c). */
 #define DUK_LEXER_WINDOW_SIZE                     6
 #if defined(DUK_USE_LEXER_SLIDING_WINDOW)
 #define DUK_LEXER_BUFFER_SIZE                     64
@@ -410,6 +410,8 @@ struct duk_lexer_ctx {
 
 	duk_int_t token_count;                         /* number of tokens parsed */
 	duk_int_t token_limit;                         /* maximum token count before error (sanity backstop) */
+
+	duk_small_uint_t flags;                        /* lexer flags, use compiler flag defines for now */
 };
 
 /*

@@ -7855,6 +7855,7 @@ DUK_INTERNAL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer
 	DUK_LEXER_INITCTX(&comp_stk.comp_ctx_alloc.lex);
 	comp_stk.comp_ctx_alloc.lex.input = src_buffer;
 	comp_stk.comp_ctx_alloc.lex.input_length = src_length;
+	comp_stk.comp_ctx_alloc.lex.flags = flags;  /* Forward flags directly for now. */
 
 	/* [ ... filename ] */
 

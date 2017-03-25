@@ -195,7 +195,8 @@ struct duk_time_components {
 #define DUK_COMPILE_NORESULT              (1 << 7)    /* (internal) omit eval result */
 #define DUK_COMPILE_NOSOURCE              (1 << 8)    /* (internal) no source string on stack */
 #define DUK_COMPILE_STRLEN                (1 << 9)    /* (internal) take strlen() of src_buffer (avoids double evaluation in macro) */
-#define DUK_COMPILE_NOFILENAME            (1 << 10)    /* (internal) no filename on stack */
+#define DUK_COMPILE_NOFILENAME            (1 << 10)   /* (internal) no filename on stack */
+#define DUK_COMPILE_SHEBANG               (1 << 11)   /* allow shebang ('#! ...') comment on first line of source */
 
 /* Flags for duk_def_prop() and its variants */
 #define DUK_DEFPROP_WRITABLE              (1 << 0)    /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
