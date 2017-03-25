@@ -2538,10 +2538,11 @@ Planned
 
 * Add ES2015 Annex B HTML comment syntax (GH-1435, GH-1436, GH-1438)
 
-* Add a "global" property to the global object to provide easy access to the
-  global object itself without needing idioms like
-  "new Function('return this')()"; implemented based on
-  https://github.com/tc39/proposal-global (GH-1259, GH-1260)
+* Add an experimental "global" property to the global object to provide easy
+  access to the global object itself without needing idioms like
+  "new Function('return this')()"; experimental, implemented based on
+  https://github.com/tc39/proposal-global, enable using DUK_USE_GLOBAL_BINDING
+  (GH-1259, GH-1260, GH-1441)
 
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view

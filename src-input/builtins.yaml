@@ -177,6 +177,7 @@ objects:
         attributes: "wc"
         # This could be stripped when DUK_USE_GLOBAL_BUILTIN is disabled
         # but keep for now (the property is quite fundamental).
+        present_if: DUK_USE_GLOBAL_BINDING
 
       - key: "NaN"
         value:
