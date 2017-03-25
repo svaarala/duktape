@@ -1256,7 +1256,21 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		advtok = DUK__ADVTOK(1, DUK_TOK_COMMA);
 		break;
 	case DUK_ASC_LANGLE:  /* '<' */
-		if (DUK__L1() == DUK_ASC_LANGLE && DUK__L2() == DUK_ASC_EQUALS) {
+		if (DUK__L1() == DUK_ASC_EXCLAMATION && DUK__L2() == DUK_ASC_MINUS && DUK__L3() == DUK_ASC_MINUS) {
+			/*
+			 *  ES6: B.1.3, handle "<!--" SingleLineHTMLOpenComment
+			 */
+
+			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but it is unnecessary */
+			for (;;) {
+				x = DUK__L0();
+				if (x < 0 || duk_unicode_is_line_terminator(x)) {
+					break;
+				}
+				DUK__ADVANCECHARS(lex_ctx, 1);
+			}
+			goto restart;  /* line terminator will be handled on next round */
+		} else if (DUK__L1() == DUK_ASC_LANGLE && DUK__L2() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ALSHIFT_EQ);
 		} else if (DUK__L1() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_LE);
@@ -1309,7 +1323,29 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		}
 		break;
 	case DUK_ASC_MINUS:  /* '-' */
-		if (DUK__L1() == DUK_ASC_MINUS) {
+		if (got_lineterm && DUK__L1() == DUK_ASC_MINUS && DUK__L2() == DUK_ASC_RANGLE) {
+			/*
+			 *  ES6: B.1.3, handle "-->" SingleLineHTMLCloseComment
+			 *  Only allowed:
+			 *  - on new line
+			 *  - preceded only by whitespace
+			 *  - preceded by end of multiline comment and optional whitespace
+			 *
+			 * Since whitespace generates no tokens, and multiline comments
+			 * are treated as a line ending, consulting `got_lineterm` is
+			 * sufficient to test for these three options.
+			 */
+
+			/* DUK__ADVANCECHARS(lex_ctx, 3) would be correct here, but it is unnecessary */
+			for (;;) {
+				x = DUK__L0();
+				if (x < 0 || duk_unicode_is_line_terminator(x)) {
+					break;
+				}
+				DUK__ADVANCECHARS(lex_ctx, 1);
+			}
+			goto restart;  /* line terminator will be handled on next round */
+		} else if (DUK__L1() == DUK_ASC_MINUS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_DECREMENT);
 		} else if (DUK__L1() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_SUB_EQ);
