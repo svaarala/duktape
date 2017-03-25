@@ -1077,7 +1077,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			 *  code point).
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but not unnecessary */
+			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but not necessary */
 			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
 		} else if (DUK__L1() == DUK_ASC_STAR) {
@@ -1263,15 +1263,19 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		advtok = DUK__ADVTOK(1, DUK_TOK_COMMA);
 		break;
 	case DUK_ASC_LANGLE:  /* '<' */
+#if defined(DUK_USE_HTML_COMMENTS)
 		if (DUK__L1() == DUK_ASC_EXCLAMATION && DUK__L2() == DUK_ASC_MINUS && DUK__L3() == DUK_ASC_MINUS) {
 			/*
 			 *  ES6: B.1.3, handle "<!--" SingleLineHTMLOpenComment
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but not unnecessary */
+			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but not necessary */
 			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
-		} else if (DUK__L1() == DUK_ASC_LANGLE && DUK__L2() == DUK_ASC_EQUALS) {
+		}
+		else
+#endif  /* DUK_USE_HTML_COMMENTS */
+		if (DUK__L1() == DUK_ASC_LANGLE && DUK__L2() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ALSHIFT_EQ);
 		} else if (DUK__L1() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_LE);
@@ -1324,6 +1328,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		}
 		break;
 	case DUK_ASC_MINUS:  /* '-' */
+#if defined(DUK_USE_HTML_COMMENTS)
 		if (got_lineterm && DUK__L1() == DUK_ASC_MINUS && DUK__L2() == DUK_ASC_RANGLE) {
 			/*
 			 *  ES6: B.1.3, handle "-->" SingleLineHTMLCloseComment
@@ -1337,10 +1342,12 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			 * sufficient to test for these three options.
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 3) would be correct here, but not unnecessary */
+			/* DUK__ADVANCECHARS(lex_ctx, 3) would be correct here, but not necessary */
 			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
-		} else if (DUK__L1() == DUK_ASC_MINUS) {
+		} else
+#endif  /* DUK_USE_HTML_COMMENTS */
+		if (DUK__L1() == DUK_ASC_MINUS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_DECREMENT);
 		} else if (DUK__L1() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_SUB_EQ);
