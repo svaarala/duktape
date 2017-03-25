@@ -15,14 +15,25 @@ summary: |
   internal limit errors, etc).</p>
 
   <p>The following flags may be given:</p>
-  <ul>
-  <li><code>DUK_COMPILE_EVAL</code>: compile the input as eval code instead of
-      as an Ecmascript program</li>
-  <li><code>DUK_COMPILE_FUNCTION</code>: compile the input as a function instead
-      of as an Ecmascript program</li>
-  <li><code>DUK_COMPILE_STRICT</code>: force the input to be compiled in strict
-      mode</li>
-  </ul>
+  <table>
+  <tr>
+  <td>DUK_COMPILE_EVAL</td>
+  <td>Compile the input as eval code instead of as an Ecmascript program</td>
+  </tr>
+  <tr>
+  <td>DUK_COMPILE_FUNCTION</td>
+  <td>Compile the input as a function instead of as an Ecmascript program</td>
+  </tr>
+  <tr>
+  <td>DUK_COMPILE_STRICT</td>
+  <td>Force the input to be compiled in strict mode</td>
+  </tr>
+  <tr>
+  <td>DUK_COMPILE_SHEBANG</td>
+  <td>Allow non-standard shebang comment (<code>#! ...</code>) on first line
+      of the input</td>
+  </tr>
+  </table>
 
   <p>The source code being compiled may be:</p>
 
