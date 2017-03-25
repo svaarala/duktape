@@ -919,6 +919,19 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 	return;
 }
 
+/* Skip to end-of-line (or end-of-file), used for single line comments. */
+DUK_LOCAL void duk__lexer_skip_to_endofline(duk_lexer_ctx *lex_ctx) {
+	for (;;) {
+		duk_codepoint_t x;
+
+		x = DUK__L0();
+		if (x < 0 || duk_unicode_is_line_terminator(x)) {
+			break;
+		}
+		DUK__ADVANCECHARS(lex_ctx, 1);
+	}
+}
+
 /*
  *  Parse Ecmascript source InputElementDiv or InputElementRegExp
  *  (E5 Section 7), skipping whitespace, comments, and line terminators.
@@ -1064,14 +1077,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			 *  code point).
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but it unnecessary */
-			for (;;) {
-				x = DUK__L0();
-				if (x < 0 || duk_unicode_is_line_terminator(x)) {
-					break;
-				}
-				DUK__ADVANCECHARS(lex_ctx, 1);
-			}
+			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but not unnecessary */
+			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
 		} else if (DUK__L1() == DUK_ASC_STAR) {
 			/*
@@ -1261,14 +1268,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			 *  ES6: B.1.3, handle "<!--" SingleLineHTMLOpenComment
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but it is unnecessary */
-			for (;;) {
-				x = DUK__L0();
-				if (x < 0 || duk_unicode_is_line_terminator(x)) {
-					break;
-				}
-				DUK__ADVANCECHARS(lex_ctx, 1);
-			}
+			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but not unnecessary */
+			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
 		} else if (DUK__L1() == DUK_ASC_LANGLE && DUK__L2() == DUK_ASC_EQUALS) {
 			advtok = DUK__ADVTOK(3, DUK_TOK_ALSHIFT_EQ);
@@ -1336,14 +1337,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			 * sufficient to test for these three options.
 			 */
 
-			/* DUK__ADVANCECHARS(lex_ctx, 3) would be correct here, but it is unnecessary */
-			for (;;) {
-				x = DUK__L0();
-				if (x < 0 || duk_unicode_is_line_terminator(x)) {
-					break;
-				}
-				DUK__ADVANCECHARS(lex_ctx, 1);
-			}
+			/* DUK__ADVANCECHARS(lex_ctx, 3) would be correct here, but not unnecessary */
+			duk__lexer_skip_to_endofline(lex_ctx);
 			goto restart;  /* line terminator will be handled on next round */
 		} else if (DUK__L1() == DUK_ASC_MINUS) {
 			advtok = DUK__ADVTOK(2, DUK_TOK_DECREMENT);
