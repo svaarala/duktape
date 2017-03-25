@@ -2536,6 +2536,8 @@ Planned
 * Add ES2015 String.prototype.{startsWith,endsWith,includes}() (GH-1324,
   GH-1325, GH-1328)
 
+* Add ES2015 Annex B HTML comment syntax (GH-1435, GH-1436, GH-1438)
+
 * Add a "global" property to the global object to provide easy access to the
   global object itself without needing idioms like
   "new Function('return this')()"; implemented based on
