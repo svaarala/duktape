@@ -160,6 +160,9 @@ Checklist for ordinary releases
 
     - make apitest
 
+    - -Werror is no longer enabled so check apitest output for any test
+      case warnings (or enable -Werror manually in runtests.js)
+
 * Regfuzz
 
   - On x86-64, with DUK_USE_ASSERTIONS

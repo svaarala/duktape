@@ -271,7 +271,7 @@ function executeTest(options, callback) {
                 '-Wl,-rpath,.',
                 '-pedantic', '-ansi', '-std=c99', '-Wall', '-Wdeclaration-after-statement', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
                 '-g', '-ggdb',
-                '-Werror',
+                //'-Werror',  // Would be nice but GCC differences break tests too easily
                 //'-m32',
                 'runtests/api_testcase_main.c',
                 tempSource,

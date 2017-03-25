@@ -542,7 +542,7 @@ checkalign:
 
 # Overall test target, not very useful.
 .PHONY: test
-test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest emscripteninceptiontest test262test
+test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest test262test
 
 # Runtests-based Ecmascript and API tests.
 .PHONY:	runtestsdeps
@@ -650,7 +650,7 @@ emscriptenmandeltest: emscripten duk
 # Duktape.
 .PHONY: emscripteninceptiontest
 emscripteninceptiontest: emscripten prep/nondebug duk
-	@echo "### emscripteniceptiontest"
+	@echo "### emscripteninceptiontest"
 	@rm -f /tmp/duk-emcc-test*
 	@echo "NOTE: this emscripten test is incomplete (compiles Duktape and hello.c and runs it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
