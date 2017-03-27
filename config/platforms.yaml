@@ -32,6 +32,7 @@ autodetect:
     check: DUK_F_DURANGO
     include: platform_durango.h.in
   -
+    # For Cygwin POSIX target, __CYGWIN__ will be set but _WIN32 etc won't.
     name: Windows
     check: DUK_F_WINDOWS
     include: platform_windows.h.in

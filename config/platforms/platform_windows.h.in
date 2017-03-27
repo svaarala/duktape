@@ -57,3 +57,12 @@
 #if !defined(DUK_USE_BYTEORDER)
 #define DUK_USE_BYTEORDER 1
 #endif
+
+/* Use __builtin_setjmp() for MinGW to avoid issues described in:
+ * http://www.agardner.me/golang/windows/cgo/64-bit/setjmp/longjmp/2016/02/29/go-windows-setjmp-x86.html.
+ */
+#if defined(DUK_F_MINGW)
+#define DUK_JMPBUF_TYPE       jmp_buf
+#define DUK_SETJMP(jb)        __builtin_setjmp((jb))
+#define DUK_LONGJMP(jb)       __builtin_longjmp((jb), 1)
+#endif
