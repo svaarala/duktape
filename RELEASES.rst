@@ -2521,6 +2521,13 @@ Miscellaneous:
 Planned
 =======
 
+1.8.0 (XXXX-XX-XX)
+------------------
+
+* Mix in current time to PRNG init in Duktape 1.x too; prior to this change
+  only the allocated duk_heap pointer was used for PRNG init, leading to the
+  same sequence being used on some platforms (GH-1446)
+
 2.1.0 (XXXX-XX-XX)
 ------------------
 
