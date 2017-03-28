@@ -885,11 +885,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->hash_seed = (duk_uint32_t) DUK__FIXED_HASH_SEED;
 #else  /* DUK_USE_ROM_STRINGS */
 	res->hash_seed = (duk_uint32_t) (duk_intptr_t) res;
-	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 #if !defined(DUK_USE_STRHASH_DENSE)
 	res->hash_seed ^= 5381;  /* Bernstein hash init value is normally 5381; XOR it in in case pointer low bits are 0 */
 #endif
 #endif  /* DUK_USE_ROM_STRINGS */
+	res->rnd_state = (duk_uint32_t) (duk_intptr_t) res;
 
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
 	res->lj.jmpbuf_ptr = NULL;
@@ -997,6 +997,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	if (!duk__init_heap_thread(res)) {
 		goto error;
 	}
+
+	DUK_ASSERT(res->heap_thread != NULL);
+	res->rnd_state ^= (duk_uint32_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
 
 	/*
 	 *  Init the heap object
