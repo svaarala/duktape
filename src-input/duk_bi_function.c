@@ -61,7 +61,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 3);
 
 	/* strictness is not inherited, intentional */
-	comp_flags = DUK_JS_COMPILE_FLAG_FUNCEXPR;
+	comp_flags = DUK_COMPILE_FUNCEXPR;
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
 	h_sourcecode = duk_require_hstring(ctx, -2);  /* no symbol check needed; -2 is concat'd code */
