@@ -113,6 +113,9 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	if (flags & DUK_COMPILE_STRICT) {
 		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
 	}
+	if (flags & DUK_COMPILE_SHEBANG) {
+		comp_flags |= DUK_JS_COMPILE_FLAG_SHEBANG;
+	}
 
 	/* [ ... source? filename ] */
 

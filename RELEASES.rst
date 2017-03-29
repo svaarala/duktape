@@ -2551,6 +2551,10 @@ Planned
   https://github.com/tc39/proposal-global, enable using DUK_USE_GLOBAL_BINDING
   (GH-1259, GH-1260, GH-1441)
 
+* Add non-standard shebang (#! ...) command syntax, allowed on first line of
+  source if DUK_COMPILE_SHEBANG option is given to duk_compile() (GH-1380,
+  GH-1346)
+
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)

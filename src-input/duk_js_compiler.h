@@ -225,6 +225,7 @@ struct duk_compiler_ctx {
 #define DUK_JS_COMPILE_FLAG_EVAL      (1 << 0)  /* source is eval code (not global) */
 #define DUK_JS_COMPILE_FLAG_STRICT    (1 << 1)  /* strict outer context */
 #define DUK_JS_COMPILE_FLAG_FUNCEXPR  (1 << 2)  /* source is a function expression (used for Function constructor) */
+#define DUK_JS_COMPILE_FLAG_SHEBANG   (1 << 3)  /* allow shebang comment on first line */
 
 DUK_INTERNAL_DECL void duk_js_compile(duk_hthread *thr, const duk_uint8_t *src_buffer, duk_size_t src_length, duk_small_uint_t flags);
 
