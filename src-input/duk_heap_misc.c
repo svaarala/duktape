@@ -4,15 +4,48 @@
 
 #include "duk_internal.h"
 
-#if defined(DUK_USE_DOUBLE_LINKED_HEAP) && defined(DUK_USE_REFERENCE_COUNTING)
-/* Arbitrary remove only works with double linked heap, and is only required by
- * reference counting so far.
- */
-DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
+DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
+	duk_heaphdr *root;
+
+	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
+
+	root = heap->heap_allocated;
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+	if (root != NULL) {
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, root) == NULL);
+		DUK_HEAPHDR_SET_PREV(heap, root, hdr);
+	}
+	DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
+#endif
+	DUK_HEAPHDR_SET_NEXT(heap, hdr, root);
+	DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
+	DUK_ASSERT_HEAPHDR_LINKS(heap, root);
+	heap->heap_allocated = hdr;
+}
+
+#if defined(DUK_USE_REFERENCE_COUNTING)
+DUK_INTERNAL void duk_heap_remove_from_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
 	duk_heaphdr *prev;
 	duk_heaphdr *next;
 
+	/* Strings are in string table. */
+	DUK_ASSERT(hdr != NULL);
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
+
+	/* Target 'hdr' must be in heap_allocated (not e.g. finalize_list).
+	 * If not, heap lists will become corrupted so assert early for it.
+	 */
+#if defined(DUK_USE_ASSERTIONS)
+	{
+		duk_heaphdr *tmp;
+		for (tmp = heap->heap_allocated; tmp != NULL; tmp = DUK_HEAPHDR_GET_NEXT(heap, tmp)) {
+			if (tmp == hdr) {
+				break;
+			}
+		}
+		DUK_ASSERT(tmp == hdr);
+	}
+#endif
 
 	/* Read/write only once to minimize pointer compression calls. */
 	prev = DUK_HEAPHDR_GET_PREV(heap, hdr);
@@ -30,27 +63,73 @@ DUK_INTERNAL void duk_heap_remove_any_from_heap_allocated(duk_heap *heap, duk_he
 	} else {
 		;
 	}
-
-	/* The prev/next pointers of the removed duk_heaphdr are left as garbage.
-	 * It's up to the caller to ensure they're written before inserting the
-	 * object back.
-	 */
 }
-#endif
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
-DUK_INTERNAL void duk_heap_insert_into_heap_allocated(duk_heap *heap, duk_heaphdr *hdr) {
-	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) != DUK_HTYPE_STRING);
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+DUK_INTERNAL void duk_heap_insert_into_finalize_list(duk_heap *heap, duk_heaphdr *hdr) {
+	duk_heaphdr *root;
 
+	root = heap->finalize_list;
 #if defined(DUK_USE_DOUBLE_LINKED_HEAP)
-	if (heap->heap_allocated) {
-		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, heap->heap_allocated) == NULL);
-		DUK_HEAPHDR_SET_PREV(heap, heap->heap_allocated, hdr);
-	}
 	DUK_HEAPHDR_SET_PREV(heap, hdr, NULL);
+	if (root != NULL) {
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, root) == NULL);
+		DUK_HEAPHDR_SET_PREV(heap, root, hdr);
+	}
 #endif
-	DUK_HEAPHDR_SET_NEXT(heap, hdr, heap->heap_allocated);
-	heap->heap_allocated = hdr;
+	DUK_HEAPHDR_SET_NEXT(heap, hdr, root);
+	DUK_ASSERT_HEAPHDR_LINKS(heap, hdr);
+	DUK_ASSERT_HEAPHDR_LINKS(heap, root);
+	heap->finalize_list = hdr;
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
+
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+DUK_INTERNAL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr *hdr) {
+#if defined(DUK_USE_DOUBLE_LINKED_HEAP)
+	duk_heaphdr *next;
+	duk_heaphdr *prev;
+
+	next = DUK_HEAPHDR_GET_NEXT(heap, hdr);
+	prev = DUK_HEAPHDR_GET_PREV(heap, hdr);
+	if (next != NULL) {
+		DUK_ASSERT(DUK_HEAPHDR_GET_PREV(heap, next) == hdr);
+		DUK_HEAPHDR_SET_PREV(heap, next, prev);
+	}
+	if (prev == NULL) {
+		DUK_ASSERT(hdr == heap->finalize_list);
+		heap->finalize_list = next;
+	} else {
+		DUK_ASSERT(hdr != heap->finalize_list);
+		DUK_HEAPHDR_SET_NEXT(heap, prev, next);
+	}
+#else
+	duk_heaphdr *next;
+	duk_heaphdr *curr;
+
+	/* Random removal is expensive: we need to locate the previous element
+	 * because we don't have a 'prev' pointer.
+	 */
+	curr = heap->finalize_list;
+	if (curr == hdr) {
+		heap->finalize_list = DUK_HEAPHDR_GET_NEXT(heap, curr);
+	} else {
+		DUK_ASSERT(hdr != heap->finalize_list);
+		for (;;) {
+			DUK_ASSERT(curr != NULL);  /* Caller responsibility. */
+
+			next = DUK_HEAPHDR_GET_NEXT(heap, curr);
+			if (next == hdr) {
+				next = DUK_HEAPHDR_GET_NEXT(heap, hdr);
+				DUK_HEAPHDR_SET_NEXT(heap, curr, next);
+				break;
+			}
+		}
+	}
+#endif
+}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {

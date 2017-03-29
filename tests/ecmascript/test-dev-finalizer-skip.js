@@ -1,11 +1,14 @@
 /*
  *  Test that finalizers are executed correctly if they are skipped by
  *  one GC round.
+ *
+ *  Marked 'skip' because no longer relevant in Duktape 2.1.
  */
 
 /*---
 {
-    "custom": true
+    "custom": true,
+    "skip": true
 }
 ---*/
 
@@ -36,8 +39,6 @@ try {
 
     // Mark-and-sweep without finalizers.  (1 << 3) = 8 is a flag from
     // duk_heap.h (this is a fragile dependency):
-    //
-    // #define DUK_MS_FLAG_NO_FINALIZERS            (1 << 3)   /* don't run finalizers; leave finalizable objects in finalize_list for next round */
 
     print('gc without finalizers');
     Duktape.gc(8);

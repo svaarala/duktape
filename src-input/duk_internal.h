@@ -55,6 +55,7 @@ DUK_USE_USER_DECLARE()
 #include "duk_js_compiler.h"
 #include "duk_regexp.h"
 #include "duk_heaphdr.h"
+#include "duk_refcount.h"
 #include "duk_api_internal.h"
 #include "duk_hstring.h"
 #include "duk_hobject.h"

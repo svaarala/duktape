@@ -646,6 +646,16 @@
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype_updref((thr), (h), (p))
 
 /*
+ *  Finalizer check
+ */
+
+#if defined(DUK_USE_HEAPPTR16)
+#define DUK_HOBJECT_HAS_FINALIZER_FAST(heap,h) duk_hobject_has_finalizer_fast_raw((heap), (h))
+#else
+#define DUK_HOBJECT_HAS_FINALIZER_FAST(heap,h) duk_hobject_has_finalizer_fast_raw((h))
+#endif
+
+/*
  *  Resizing and hash behavior
  */
 
@@ -873,7 +883,11 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_hasprop_raw(duk_hthread *thr, duk_hobje
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal(duk_hthread *thr, duk_hobject *obj, duk_hstring *key, duk_small_uint_t flags);
 DUK_INTERNAL_DECL void duk_hobject_define_property_internal_arridx(duk_hthread *thr, duk_hobject *obj, duk_uarridx_t arr_idx, duk_small_uint_t flags);
 DUK_INTERNAL_DECL duk_size_t duk_hobject_get_length(duk_hthread *thr, duk_hobject *obj);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast(duk_hthread *thr, duk_hobject *obj);
+#if defined(DUK_USE_HEAPPTR16)
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_heap *heap, duk_hobject *obj);
+#else
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj);
+#endif
 
 /* helpers for defineProperty() and defineProperties() */
 DUK_INTERNAL_DECL
@@ -919,11 +933,6 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_b
 
 /* macros */
 DUK_INTERNAL_DECL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
-
-/* finalization */
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-DUK_INTERNAL_DECL void duk_hobject_run_finalizer(duk_hthread *thr, duk_hobject *obj);
-#endif
 
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)

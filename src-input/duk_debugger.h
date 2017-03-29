@@ -140,6 +140,12 @@ DUK_INTERNAL_DECL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bo
 
 DUK_INTERNAL_DECL duk_small_int_t duk_debug_add_breakpoint(duk_hthread *thr, duk_hstring *filename, duk_uint32_t line);
 DUK_INTERNAL_DECL duk_bool_t duk_debug_remove_breakpoint(duk_hthread *thr, duk_small_uint_t breakpoint_index);
-#endif
+
+DUK_INTERNAL_DECL duk_bool_t duk_debug_is_attached(duk_heap *heap);
+DUK_INTERNAL_DECL duk_bool_t duk_debug_is_paused(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_debug_set_paused(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_debug_clear_paused(duk_heap *heap);
+DUK_INTERNAL_DECL void duk_debug_clear_step_state(duk_heap *heap);
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
 #endif  /* DUK_DEBUGGER_H_INCLUDED */

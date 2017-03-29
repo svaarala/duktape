@@ -544,6 +544,11 @@ checkalign:
 .PHONY: test
 test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest test262test
 
+# Error injection tests.
+.PHONY: injectiontest
+injectiontest:
+	bash util/error_inject_test.sh
+
 # Runtests-based Ecmascript and API tests.
 .PHONY:	runtestsdeps
 runtestsdeps:	runtests/node_modules UglifyJS2

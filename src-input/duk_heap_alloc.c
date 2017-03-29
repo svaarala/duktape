@@ -92,11 +92,9 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
 	case DUK_HTYPE_OBJECT:
 		duk_free_hobject(heap, (duk_hobject *) hdr);
 		break;
-	case DUK_HTYPE_BUFFER:
-		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
-		break;
 	default:
-		DUK_UNREACHABLE();
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(hdr) == DUK_HTYPE_BUFFER);
+		duk_free_hbuffer(heap, (duk_hbuffer *) hdr);
 	}
 
 }
@@ -132,23 +130,8 @@ DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
 	}
 }
 
-#if defined(DUK_USE_REFERENCE_COUNTING)
-DUK_LOCAL void duk__free_refzero_list(duk_heap *heap) {
-	duk_heaphdr *curr;
-	duk_heaphdr *next;
-
-	curr = heap->refzero_list;
-	while (curr) {
-		DUK_DDD(DUK_DDDPRINT("FINALFREE (refzero_list): %!iO",
-		                     (duk_heaphdr *) curr));
-		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
-		duk_heap_free_heaphdr_raw(heap, curr);
-		curr = next;
-	}
-}
-#endif
-
-DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+DUK_LOCAL void duk__free_finalize_list(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
 
@@ -161,6 +144,7 @@ DUK_LOCAL void duk__free_markandsweep_finalize_list(duk_heap *heap) {
 		curr = next;
 	}
 }
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
 
 DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 	/* strings are only tracked by stringtable */
@@ -169,7 +153,6 @@ DUK_LOCAL void duk__free_stringtable(duk_heap *heap) {
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
-	duk_hthread *thr;
 	duk_heaphdr *curr;
 	duk_uint_t round_no;
 	duk_size_t count_all;
@@ -177,25 +160,31 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 	duk_size_t curr_limit;
 
 	DUK_ASSERT(heap != NULL);
-	DUK_ASSERT(heap->heap_thread != NULL);
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_ASSERT(heap->refzero_list == NULL);  /* refzero not running -> must be empty */
 #endif
-	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep not running -> must be empty */
+	DUK_ASSERT(heap->finalize_list == NULL);  /* mark-and-sweep last pass */
 
-	/* XXX: here again finalizer thread is the heap_thread which needs
-	 * to be coordinated with finalizer thread fixes.
-	 */
-	thr = heap->heap_thread;
-	DUK_ASSERT(thr != NULL);
+	if (heap->heap_thread == NULL) {
+		/* May happen when heap allocation fails right off.  There
+		 * cannot be any finalizable objects in this case.
+		 */
+		DUK_D(DUK_DPRINT("no heap_thread in heap destruct, assume no finalizable objects"));
+		return;
+	}
 
-	/* Prevent mark-and-sweep for the pending finalizers, also prevents
-	 * refzero handling from moving objects away from the heap_allocated
-	 * list.  (The flag meaning is slightly abused here.)
+	/* Prevent finalize_list processing and mark-and-sweep entirely.
+	 * Setting ms_running = 1 also prevents refzero handling from moving
+	 * objects away from the heap_allocated list (the flag name is a bit
+	 * misleading here).
 	 */
-	DUK_ASSERT(!DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
-	DUK_HEAP_SET_MARKANDSWEEP_RUNNING(heap);
+	DUK_ASSERT(heap->pf_prevent_count == 0);
+	heap->pf_prevent_count = 1;
+	DUK_ASSERT(heap->ms_running == 0);
+	heap->ms_running = 1;
+	DUK_ASSERT(heap->ms_prevent_count == 0);
+	heap->ms_prevent_count = 1;  /* Bump, because mark-and-sweep assumes it's bumped when ms_running is set. */
 
 	curr_limit = 0;  /* suppress warning, not used */
 	for (round_no = 0; ; round_no++) {
@@ -204,18 +193,17 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 		count_finalized = 0;
 		while (curr) {
 			count_all++;
-			if (DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT) {
+			if (DUK_HEAPHDR_IS_OBJECT(curr)) {
 				/* Only objects in heap_allocated may have finalizers.  Check that
 				 * the object itself has a _Finalizer property (own or inherited)
 				 * so that we don't execute finalizers for e.g. Proxy objects.
 				 */
-				DUK_ASSERT(thr != NULL);
 				DUK_ASSERT(curr != NULL);
 
-				if (duk_hobject_has_finalizer_fast(thr, (duk_hobject *) curr)) {
+				if (DUK_HOBJECT_HAS_FINALIZER_FAST(heap, (duk_hobject *) curr)) {
 					if (!DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) curr)) {
 						DUK_ASSERT(DUK_HEAP_HAS_FINALIZER_NORESCUE(heap));  /* maps to finalizer 2nd argument */
-						duk_hobject_run_finalizer(thr, (duk_hobject *) curr);
+						duk_heap_run_finalizer(heap, (duk_hobject *) curr);
 						count_finalized++;
 					}
 				}
@@ -256,8 +244,10 @@ DUK_LOCAL void duk__free_run_finalizers(duk_heap *heap) {
 		}
 	}
 
-	DUK_ASSERT(DUK_HEAP_HAS_MARKANDSWEEP_RUNNING(heap));
-	DUK_HEAP_CLEAR_MARKANDSWEEP_RUNNING(heap);
+	DUK_ASSERT(heap->ms_running == 1);
+	heap->ms_running = 0;
+	DUK_ASSERT(heap->pf_prevent_count == 1);
+	heap->pf_prevent_count = 0;
 }
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
@@ -279,32 +269,47 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 #endif
 
 	/* Execute finalizers before freeing the heap, even for reachable
-	 * objects, and regardless of whether or not mark-and-sweep is
-	 * enabled.  This gives finalizers the chance to free any native
+	 * objects.  This gives finalizers the chance to free any native
 	 * resources like file handles, allocations made outside Duktape,
 	 * etc.  This is quite tricky to get right, so that all finalizer
 	 * guarantees are honored.
 	 *
-	 * XXX: this perhaps requires an execution time limit.
-	 */
-	DUK_D(DUK_DPRINT("execute finalizers before freeing heap"));
-	/* Run mark-and-sweep a few times just in case (unreachable object
+	 * Run mark-and-sweep a few times just in case (unreachable object
 	 * finalizers run already here).  The last round must rescue objects
 	 * from the previous round without running any more finalizers.  This
 	 * ensures rescued objects get their FINALIZED flag cleared so that
 	 * their finalizer is called once more in forced finalization to
 	 * satisfy finalizer guarantees.  However, we don't want to run any
-	 * more finalizer because that'd required one more loop, and so on.
+	 * more finalizers because that'd required one more loop, and so on.
+	 *
+	 * XXX: this perhaps requires an execution time limit.
 	 */
+	DUK_D(DUK_DPRINT("execute finalizers before freeing heap"));
+	DUK_ASSERT(heap->pf_skip_finalizers == 0);
 	DUK_D(DUK_DPRINT("forced gc #1 in heap destruction"));
 	duk_heap_mark_and_sweep(heap, 0);
 	DUK_D(DUK_DPRINT("forced gc #2 in heap destruction"));
 	duk_heap_mark_and_sweep(heap, 0);
 	DUK_D(DUK_DPRINT("forced gc #3 in heap destruction (don't run finalizers)"));
-	duk_heap_mark_and_sweep(heap, DUK_MS_FLAG_SKIP_FINALIZERS);  /* skip finalizers; queue finalizable objects to heap_allocated */
+	heap->pf_skip_finalizers = 1;
+	duk_heap_mark_and_sweep(heap, 0);  /* Skip finalizers; queue finalizable objects to heap_allocated. */
+
+	/* There are never objects in refzero_list at this point, or at any
+	 * point beyond a DECREF (even a DECREF_NORZ).  Since Duktape 2.1
+	 * refzero_list processing is side effect free, so it is always
+	 * processed to completion by a DECREF initially triggering a zero
+	 * refcount.
+	 */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	DUK_ASSERT(heap->refzero_list == NULL);  /* Always processed to completion inline. */
+#endif
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	DUK_ASSERT(heap->finalize_list == NULL);  /* Last mark-and-sweep with skip_finalizers. */
+#endif
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-	DUK_HEAP_SET_FINALIZER_NORESCUE(heap);  /* rescue no longer supported */
+	DUK_D(DUK_DPRINT("run finalizers for remaining finalizable objects"));
+	DUK_HEAP_SET_FINALIZER_NORESCUE(heap);  /* Rescue no longer supported. */
 	duk__free_run_finalizers(heap);
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
@@ -312,16 +317,17 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	 * are on the heap allocated list.
 	 */
 
-	DUK_D(DUK_DPRINT("freeing heap objects of heap: %p", (void *) heap));
+	DUK_D(DUK_DPRINT("freeing heap_allocated of heap: %p", (void *) heap));
 	duk__free_allocated(heap);
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-	DUK_D(DUK_DPRINT("freeing refzero list of heap: %p", (void *) heap));
-	duk__free_refzero_list(heap);
+	DUK_ASSERT(heap->refzero_list == NULL);  /* Always processed to completion inline. */
 #endif
 
-	DUK_D(DUK_DPRINT("freeing mark-and-sweep finalize list of heap: %p", (void *) heap));
-	duk__free_markandsweep_finalize_list(heap);
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	DUK_D(DUK_DPRINT("freeing finalize_list of heap: %p", (void *) heap));
+	duk__free_finalize_list(heap);
+#endif
 
 	DUK_D(DUK_DPRINT("freeing string table of heap: %p", (void *) heap));
 	duk__free_stringtable(heap);
@@ -435,7 +441,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_strings(duk_heap *heap) {
 DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 	duk_hthread *thr;
 
-	DUK_DD(DUK_DDPRINT("heap init: alloc heap thread"));
+	DUK_D(DUK_DPRINT("heap init: alloc heap thread"));
 	thr = duk_hthread_alloc_unchecked(heap,
 	                                  DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                  DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_THREAD));
@@ -459,6 +465,7 @@ DUK_LOCAL duk_bool_t duk__init_heap_thread(duk_heap *heap) {
 
 	/* 'thr' is now reachable */
 
+	DUK_D(DUK_DPRINT("heap init: init heap thread stacks"));
 	if (!duk_hthread_init_stacks(heap, thr)) {
 		return 0;
 	}
@@ -709,6 +716,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 	DUK_ASSERT(DUK_USE_STRTAB_MINSIZE >= 64);
 
+	DUK_ASSERT((DUK_HTYPE_STRING & 0x01U) == 0);
+	DUK_ASSERT((DUK_HTYPE_BUFFER & 0x01U) == 0);
+	DUK_ASSERT((DUK_HTYPE_OBJECT & 0x01U) == 1);  /* DUK_HEAPHDR_IS_OBJECT() relies ont his. */
+
 	/*
 	 *  Debug dump type sizes
 	 */
@@ -724,9 +735,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 #if defined(DUK_USE_SELF_TESTS)
+	DUK_D(DUK_DPRINT("run self tests"));
 	if (duk_selftest_run_tests(alloc_func, realloc_func, free_func, heap_udata) > 0) {
 		fatal_func(heap_udata, "self test(s) failed");
 	}
+	DUK_D(DUK_DPRINT("self tests passed"));
 #endif
 
 	/*
@@ -783,6 +796,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *  Use a raw call, all macros expect the heap to be initialized
 	 */
 
+#if defined(DUK_USE_INJECT_HEAP_ALLOC_ERROR) && (DUK_USE_INJECT_HEAP_ALLOC_ERROR == 1)
+	goto failed;
+#endif
+	DUK_D(DUK_DPRINT("alloc duk_heap object"));
 	res = (duk_heap *) alloc_func(heap_udata, sizeof(duk_heap));
 	if (!res) {
 		goto failed;
@@ -793,6 +810,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 */
 
 	DUK_MEMZERO(res, sizeof(*res));
+#if defined(DUK_USE_ASSERTIONS)
+	res->heap_initializing = 1;
+#endif
 
 	/* explicit NULL inits */
 #if defined(DUK_USE_EXPLICIT_NULL_INIT)
@@ -800,9 +820,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->heap_allocated = NULL;
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	res->refzero_list = NULL;
-	res->refzero_list_tail = NULL;
 #endif
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	res->finalize_list = NULL;
+#endif
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
@@ -843,12 +864,21 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->heap_udata = heap_udata;
 	res->fatal_func = fatal_func;
 
-#if defined(DUK_USE_HEAPPTR16)
-	/* XXX: zero assumption */
-	res->heapptr_null16 = DUK_USE_HEAPPTR_ENC16(res->heap_udata, (void *) NULL);
-#endif
+	/* XXX: for now there's a pointer packing zero assumption, i.e.
+	 * NULL <=> compressed pointer 0.  If this is removed, may need
+	 * to precompute e.g. null16 here.
+	 */
 
-	/* res->mark_and_sweep_trigger_counter == 0 -> now causes immediate GC; which is OK */
+	/* res->ms_trigger_counter == 0 -> now causes immediate GC; which is OK */
+
+	/* Prevent mark-and-sweep and finalizer execution until heap is completely
+	 * initialized.
+	 */
+	DUK_ASSERT(res->ms_prevent_count == 0);
+	DUK_ASSERT(res->pf_prevent_count == 0);
+	res->ms_prevent_count = 1;
+	res->pf_prevent_count = 1;
+	DUK_ASSERT(res->ms_running == 0);
 
 	res->call_recursion_depth = 0;
 	res->call_recursion_limit = DUK_USE_NATIVE_CALL_RECLIMIT;
@@ -876,9 +906,11 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->lj.jmpbuf_ptr = NULL;
 #endif
 	DUK_ASSERT(res->lj.type == DUK_LJ_TYPE_UNKNOWN);  /* zero */
-
+	DUK_ASSERT(res->lj.iserror == 0);
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value1);
 	DUK_TVAL_SET_UNDEFINED(&res->lj.value2);
+
+	DUK_ASSERT_LJSTATE_UNSET(res);
 
 	/*
 	 *  Init stringtable: fixed variant
@@ -941,7 +973,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *  Init built-in strings
 	 */
 
-	DUK_DD(DUK_DDPRINT("HEAP: INIT STRINGS"));
+#if defined(DUK_USE_INJECT_HEAP_ALLOC_ERROR) && (DUK_USE_INJECT_HEAP_ALLOC_ERROR == 2)
+	goto failed;
+#endif
+	DUK_D(DUK_DPRINT("heap init: initialize heap strings"));
 	if (!duk__init_heap_strings(res)) {
 		goto failed;
 	}
@@ -950,7 +985,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *  Init the heap thread
 	 */
 
-	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP THREAD"));
+#if defined(DUK_USE_INJECT_HEAP_ALLOC_ERROR) && (DUK_USE_INJECT_HEAP_ALLOC_ERROR == 3)
+	goto failed;
+#endif
+	DUK_D(DUK_DPRINT("heap init: initialize heap thread"));
 	if (!duk__init_heap_thread(res)) {
 		goto failed;
 	}
@@ -959,7 +997,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	 *  Init the heap object
 	 */
 
-	DUK_DD(DUK_DDPRINT("HEAP: INIT HEAP OBJECT"));
+#if defined(DUK_USE_INJECT_HEAP_ALLOC_ERROR) && (DUK_USE_INJECT_HEAP_ALLOC_ERROR == 4)
+	goto failed;
+#endif
+	DUK_D(DUK_DPRINT("heap init: initialize heap object"));
 	DUK_ASSERT(res->heap_thread != NULL);
 	res->heap_object = duk_hobject_alloc_unchecked(res, DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                                                    DUK_HOBJECT_FLAG_FASTREFS |
@@ -1012,7 +1053,21 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 
 	/*
-	 *  All done
+	 *  Allow finalizer and mark-and-sweep processing.
+	 */
+
+	DUK_D(DUK_DPRINT("heap init: allow finalizer/mark-and-sweep processing"));
+	DUK_ASSERT(res->ms_prevent_count == 1);
+	DUK_ASSERT(res->pf_prevent_count == 1);
+	res->ms_prevent_count = 0;
+	res->pf_prevent_count = 0;
+	DUK_ASSERT(res->ms_running == 0);
+#if defined(DUK_USE_ASSERTIONS)
+	res->heap_initializing = 0;
+#endif
+
+	/*
+	 *  All done.
 	 */
 
 	DUK_D(DUK_DPRINT("allocated heap: %p", (void *) res));
@@ -1021,14 +1076,26 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
  failed:
 	DUK_D(DUK_DPRINT("heap allocation failed"));
 
-	if (res) {
-		/* assumes that allocated pointers and alloc funcs are valid
-		 * if res exists
+	if (res != NULL) {
+		/* Assumes that allocated pointers and alloc funcs are valid
+		 * if res exists.
 		 */
+		DUK_ASSERT(res->ms_prevent_count == 1);
+		DUK_ASSERT(res->pf_prevent_count == 1);
+		DUK_ASSERT(res->ms_running == 0);
+		if (res->heap_thread != NULL) {
+			res->ms_prevent_count = 0;
+			res->pf_prevent_count = 0;
+		}
+#if defined(DUK_USE_ASSERTIONS)
+		res->heap_initializing = 0;
+#endif
+
 		DUK_ASSERT(res->alloc_func != NULL);
 		DUK_ASSERT(res->realloc_func != NULL);
 		DUK_ASSERT(res->free_func != NULL);
 		duk_heap_free(res);
 	}
+
 	return NULL;
 }

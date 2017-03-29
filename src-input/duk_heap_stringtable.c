@@ -4,15 +4,6 @@
 
 #include "duk_internal.h"
 
-/* Avoid finalizers during string table resize because a finalizer may e.g.
- * resize a dynamic buffer whose data area is used as the source for a string
- * intern operation.  String table traffic (interning strings) is fine.
- */
-#define DUK__PREVENT_MS_SIDE_EFFECTS(heap) do { \
-		(heap)->mark_and_sweep_base_flags |= \
-		        DUK_MS_FLAG_NO_FINALIZERS; \
-	} while (0)
-
 /* Resize checks not needed if minsize == maxsize, typical for low memory
  * targets.
  */
@@ -556,7 +547,6 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 #else
 	duk_hstring **slot;
 #endif
-	duk_small_uint_t prev_mark_and_sweep_base_flags;
 
 	DUK_DDD(DUK_DDDPRINT("do_intern: heap=%p, str=%p, blen=%lu, strhash=%lx, st_size=%lu, st_count=%lu, load=%lf",
 	                     (void *) heap, (const void *) str, (unsigned long) blen, (unsigned long) strhash,
@@ -570,10 +560,13 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	 * the caller provided str/blen from a dynamic buffer, a finalizer
 	 * might resize or modify that dynamic buffer, invalidating the call
 	 * arguments.
+	 *
+	 * While finalizers must be prevented, mark-and-sweep itself is fine.
+	 * Recursive string table resize is prevented explicitly here.
 	 */
 
-	prev_mark_and_sweep_base_flags = heap->mark_and_sweep_base_flags;
-	DUK__PREVENT_MS_SIDE_EFFECTS(heap);
+	heap->pf_prevent_count++;
+	DUK_ASSERT(heap->pf_prevent_count != 0);  /* Wrap. */
 
 #if defined(DUK_USE_STRTAB_TORTURE) && defined(DUK__STRTAB_RESIZE_CHECK)
 	duk__strtable_resize_torture(heap);
@@ -617,8 +610,8 @@ DUK_LOCAL duk_hstring *duk__strtable_do_intern(duk_heap *heap, const duk_uint8_t
 	/* Allow side effects again: GC must be avoided until duk_hstring
 	 * result (if successful) has been INCREF'd.
 	 */
-
-	heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
+	DUK_ASSERT(heap->pf_prevent_count > 0);
+	heap->pf_prevent_count--;
 
 	/* Alloc error handling. */
 

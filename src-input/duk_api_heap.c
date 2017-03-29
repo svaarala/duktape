@@ -8,7 +8,7 @@ typedef struct duk_internal_thread_state duk_internal_thread_state;
 
 struct duk_internal_thread_state {
 	duk_ljstate lj;
-	duk_bool_t handling_error;
+	duk_bool_t creating_error;
 	duk_hthread *curr_thread;
 	duk_int_t call_recursion_depth;
 };
@@ -89,14 +89,27 @@ DUK_EXTERNAL void duk_suspend(duk_context *ctx, duk_thread_state *state) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(state != NULL);  /* unvalidated */
 
+	/* Currently not supported when called from within a finalizer.
+	 * If that is done, the finalizer will remain running indefinitely,
+	 * preventing other finalizers from executing.  The assert is a bit
+	 * wider, checking that it would be OK to run pending finalizers.
+	 */
+	DUK_ASSERT(thr->heap->pf_prevent_count == 0);
+
+	/* Currently not supported to duk_suspend() from an errCreate()
+	 * call.
+	 */
+	DUK_ASSERT(thr->heap->creating_error == 0);
+
 	heap = thr->heap;
 	lj = &heap->lj;
 
 	duk_push_tval(ctx, &lj->value1);
 	duk_push_tval(ctx, &lj->value2);
 
+	/* XXX: creating_error == 0 is asserted above, so no need to store. */
 	DUK_MEMCPY((void *) &snapshot->lj, (const void *) lj, sizeof(duk_ljstate));
-	snapshot->handling_error = heap->handling_error;
+	snapshot->creating_error = heap->creating_error;
 	snapshot->curr_thread = heap->curr_thread;
 	snapshot->call_recursion_depth = heap->call_recursion_depth;
 
@@ -104,7 +117,7 @@ DUK_EXTERNAL void duk_suspend(duk_context *ctx, duk_thread_state *state) {
 	lj->type = DUK_LJ_TYPE_UNKNOWN;
 	DUK_TVAL_SET_UNDEFINED(&lj->value1);
 	DUK_TVAL_SET_UNDEFINED(&lj->value2);
-	heap->handling_error = 0;
+	heap->creating_error = 0;
 	heap->curr_thread = NULL;
 	heap->call_recursion_depth = 0;
 }
@@ -119,10 +132,16 @@ DUK_EXTERNAL void duk_resume(duk_context *ctx, const duk_thread_state *state) {
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(state != NULL);  /* unvalidated */
 
+	/* Shouldn't be necessary if duk_suspend() is called before
+	 * duk_resume(), but assert in case API sequence is incorrect.
+	 */
+	DUK_ASSERT(thr->heap->pf_prevent_count == 0);
+	DUK_ASSERT(thr->heap->creating_error == 0);
+
 	heap = thr->heap;
 
 	DUK_MEMCPY((void *) &heap->lj, (const void *) &snapshot->lj, sizeof(duk_ljstate));
-	heap->handling_error = snapshot->handling_error;
+	heap->creating_error = snapshot->creating_error;
 	heap->curr_thread = snapshot->curr_thread;
 	heap->call_recursion_depth = snapshot->call_recursion_depth;
 

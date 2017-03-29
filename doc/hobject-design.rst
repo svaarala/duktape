@@ -1163,11 +1163,10 @@ Some complications:
   "emergency GC" compaction.  This needs to be prevented for the current
   object (or in general, for any object being concurrently resized).
 
-  The current solution is to use the ``heap->mark_and_sweep_base_flags``
-  mechanism to prevent finalizers from running (= prevents attempts to add,
-  remove, or modify properties in the middle of a resize) and to prevent
-  object compaction (so that a certain object won't be resized when it is
-  already being resized).
+  The current solution is to prevent finalizers from running (which prevents
+  attempts to add, remove, or modify properties in the middle of a resize)
+  and to prevent object compaction (so that a certain object won't be resized
+  when it is already being resized).
 
 Enumeration
 ===========

@@ -222,9 +222,13 @@ resources must thus be visible to the garbage collector and correctly reference
 counted at nearly all times.  The current approach to deal with this is to use
 the current thread's value stack to stash token values, intermediate values,
 identifier names, etc.  Slots are allocated from the value stack as necessary.
-This is a bit complicated but the alternatives are not simple either.  (One
-alternative would be to make the compiler state a traversable object type for
-the garbage collector.)
+This is a bit complicated; some alternatives:
+
+* Finalization (and possibly mark-and-sweep) could be prevented during
+  compilation.
+
+* Make the compiler state a traversable object type visible to garbage
+  collection.
 
 Ivalue example
 --------------

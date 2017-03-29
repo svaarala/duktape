@@ -77,6 +77,7 @@ DUK_INTERNAL duk_hobject *duk_hobject_alloc_unchecked(duk_heap *heap, duk_uint_t
 	if (DUK_UNLIKELY(res == NULL)) {
 		return NULL;
 	}
+	DUK_ASSERT(!DUK_HOBJECT_IS_THREAD(res));
 
 	duk__init_object_parts(heap, hobject_flags, res);
 

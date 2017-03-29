@@ -128,7 +128,7 @@ DUK_INTERNAL void duk_hthread_callstack_shrink_check(duk_hthread *thr) {
 	duk__hthread_do_callstack_shrink(thr);
 }
 
-DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+DUK_INTERNAL void duk_hthread_callstack_unwind_norz(duk_hthread *thr, duk_size_t new_top) {
 	duk_size_t idx;
 
 	DUK_DDD(DUK_DDDPRINT("unwind callstack top of thread %p from %ld to %ld",
@@ -224,8 +224,12 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 			/* Pause for all step types: step into, step over, step out.
 			 * This is the only place explicitly handling a step out.
 			 */
-			DUK_HEAP_SET_PAUSED(heap);
-			DUK_ASSERT(heap->dbg_step_thread == NULL);
+			if (duk_debug_is_paused(heap)) {
+				DUK_D(DUK_DPRINT("step pause trigger but already paused, ignoring"));
+			} else {
+				duk_debug_set_paused(heap);
+				DUK_ASSERT(heap->dbg_step_thread == NULL);
+			}
 		}
 #endif
 
@@ -311,11 +315,11 @@ DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_
 	 * Also topmost activation idx_retval is garbage (not zeroed), and must
 	 * be ignored.
 	 */
+}
 
-	/* Check for pending refzero entries, many places in the unwind
-	 * use NORZ macros.
-	 */
-	DUK_REFZERO_CHECK_SLOW(thr);
+DUK_INTERNAL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+	duk_hthread_callstack_unwind_norz(thr, new_top);
+	DUK_REFZERO_CHECK_FAST(thr);
 }
 
 DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__hthread_do_catchstack_grow(duk_hthread *thr) {
@@ -412,7 +416,7 @@ DUK_INTERNAL void duk_hthread_catchstack_shrink_check(duk_hthread *thr) {
 	duk__hthread_do_catchstack_shrink(thr);
 }
 
-DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+DUK_INTERNAL void duk_hthread_catchstack_unwind_norz(duk_hthread *thr, duk_size_t new_top) {
 	duk_size_t idx;
 
 	DUK_DDD(DUK_DDDPRINT("unwind catchstack top of thread %p from %ld to %ld",
@@ -469,7 +473,7 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 			DUK_ASSERT(env != NULL);        /* must be, since env was created when catcher was created */
 			act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, env);  /* prototype is lex_env before catcher created */
 			DUK_HOBJECT_INCREF(thr, act->lex_env);
-			DUK_HOBJECT_DECREF(thr, env);
+			DUK_HOBJECT_DECREF_NORZ(thr, env);
 
 			/* There is no need to decref anything else than 'env': if 'env'
 			 * becomes unreachable, refzero will handle decref'ing its prototype.
@@ -480,4 +484,9 @@ DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new
 	thr->catchstack_top = new_top;
 
 	/* note: any entries above the catchstack top are garbage and not zeroed */
+}
+
+DUK_INTERNAL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top) {
+	duk_hthread_catchstack_unwind_norz(thr, new_top);
+	DUK_REFZERO_CHECK_FAST(thr);
 }

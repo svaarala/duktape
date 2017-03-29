@@ -2580,6 +2580,37 @@ Planned
   necessary because all free operations decrement the voluntary GC counter and
   all allocs/reallocs check for voluntary GC (GH-1355)
 
+* Remove voluntary GC trigger counter decrement from memory free calls; the
+  decrement is unnecessary because alloc and free calls are ultimately in a
+  rough balance and it suffices to update the counter in allocation only
+  (GH-1427)
+
+* Rework zero refcount (refzero) handling: memory frees triggered by a cascade
+  of zero refcounts are now never postponed for objects that don't have a
+  finalizer (and freeing the cascade has no side effects other than freeing
+  blocks of memory) (GH-1427)
+
+* Rework finalizer handling: always use the heap thread (heap->heap_thread)
+  for finalizer calls, regardless of whether finalization is refcount or
+  mark-and-sweep triggered; previously the current thread would be used for
+  refcount finalization and current thread or heap thread (if no current
+  thread exists) for mark-and-sweep finalization (GH-1427)
+
+* Rework finalizer handling: if a mark-and-sweep triggered finalizer removes
+  the object from a reference cycle so that its refcount is zero after
+  finalizer execution, the object gets freed immediately rather than waiting
+  for mark-and-sweep to confirm its status (GH-1427)
+
+* Rework finalizer handling: finalizer execution is now outside of refzero
+  processing and mark-and-sweep; however, mark-and-sweep is still disabled
+  while finalizers are being executed to avoid incorrect rescue decisions
+  caused by a partially processed finalize_list (GH-1427)
+
+* Improve side effect protections: prevent finalizer execution between an
+  error throw point and its catch point; add asserts for catching any cases
+  where an error would be thrown when handling a previously thrown error
+  (GH-1427)
+
 * Use a 32-bit refcount field by default (even on 64-bit systems) which saves
   8 bytes for each heap object and can only wrap if the Duktape heap is
   larger than 64GB; disable DUK_USE_REFCOUNT32 to use size_t for refcounts
@@ -2596,7 +2627,8 @@ Planned
 * Avoid a harmless GC refcount assert when abandoning an object's array part
   (GH-1408)
 
-* More assertion coverage for GC (GH-1411)
+* More assertion and torture test coverage for GC, finalizers, and error
+  handling (GH-1411, GH-1427)
 
 * Avoid relying on the value stack when handling a double error (error which
   happened during handling of a previous error); this is cleaner but relying
@@ -2605,6 +2637,15 @@ Planned
 * Reject plain arguments to configure.py, they were previously ignored which
   allowed typos like "-DFOO bar" to be accepted silently (here as "-DFOO" and
   an ignored pain "bar" argument) (GH-1425)
+
+* Fix unintuitive refcount triggered finalizer behavior where a finalizer loop
+  would happen if the finalizer created a (garbage) object referencing the
+  object being finalized (GH-1396, GH-1427)
+
+* Fix out-of-memory handling for object property table resize, previously
+  an out-of-memory during property table resize could leave internal state
+  in a state which prevented mark-and-sweep from fully working afterwards
+  (GH-1427)
 
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe

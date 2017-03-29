@@ -16,7 +16,7 @@
  *
  *  If an error occurs while we're dealing with the current error, we might
  *  enter an infinite recursion loop.  This is prevented by detecting a
- *  "double fault" through the heap->handling_error flag; the recursion
+ *  "double fault" through the heap->creating_error flag; the recursion
  *  then stops at the second level.
  */
 
@@ -26,7 +26,6 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code,
 DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
 	duk_context *ctx = (duk_context *) thr;
-	duk_bool_t double_error = thr->heap->handling_error;
 
 #if defined(DUK_USE_VERBOSE_ERRORS)
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%ld, msg=%s, filename=%s, line=%ld",
@@ -39,7 +38,11 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(ctx != NULL);
 
-	thr->heap->handling_error = 1;
+	/* Even though nested call is possible because we throw an error when
+	 * trying to create an error, the potential errors must happen before
+	 * the longjmp state is configured.
+	 */
+	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
 
 	/* Sync so that augmentation sees up-to-date activations, NULL
 	 * thr->ptr_curr_pc so that it's not used if side effects occur
@@ -55,34 +58,39 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 	 *  to avoid further trouble.
 	 */
 
-	if (DUK_UNLIKELY(double_error)) {
+	if (thr->heap->creating_error) {
+		duk_tval tv_val;
 		duk_hobject *h_err;
-		duk_tval *tv_dst;
 
-		thr->heap->lj.type = DUK_LJ_TYPE_THROW;
-
-		tv_dst = &thr->heap->lj.value1;
-		DUK_TVAL_DECREF_NORZ(thr, tv_dst);  /* XXX: shouldn't be necessary without side effects */
+#if 0  /* XXX: not always true because the second throw may come from a different coroutine */
+		DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11);
+#endif
+		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;
+		thr->heap->creating_error = 0;
 
 		h_err = thr->builtins[DUK_BIDX_DOUBLE_ERROR];
 		if (h_err != NULL) {
 			DUK_D(DUK_DPRINT("double fault detected -> use built-in fixed 'double error' instance"));
-			DUK_TVAL_SET_OBJECT(tv_dst, h_err);
-			DUK_HOBJECT_INCREF(thr, h_err);
+			DUK_TVAL_SET_OBJECT(&tv_val, h_err);
 		} else {
 			DUK_D(DUK_DPRINT("double fault detected; there is no built-in fixed 'double error' instance "
 			                 "-> use the error code as a number"));
-			DUK_TVAL_SET_I32(tv_dst, (duk_int32_t) code);
+			DUK_TVAL_SET_I32(&tv_val, (duk_int32_t) code);
 		}
 
-		DUK_D(DUK_DPRINT("double error: skip throw augmenting to avoid further trouble"));
+		duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, &tv_val);
+
+		/* No augmentation to avoid any allocations or side effects. */
 	} else {
 		/* Allow headroom for calls during error handling (see GH-191).
 		 * We allow space for 10 additional recursions, with one extra
 		 * for, e.g. a print() call at the deepest level.
 		 */
+#if 0  /* XXX: not always true, second throw may come from a different coroutine */
 		DUK_ASSERT(thr->callstack_max == DUK_CALLSTACK_DEFAULT_MAX);
+#endif
 		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX + DUK_CALLSTACK_GROW_STEP + 11;
+		thr->heap->creating_error = 1;
 
 		duk_require_stack(ctx, 1);
 
@@ -116,16 +124,24 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		duk_err_augment_error_throw(thr);
 #endif
 
-		duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
-	}
+		duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, DUK_GET_TVAL_NEGIDX(ctx, -1));
+		thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;
+		thr->heap->creating_error = 0;
 
-	thr->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;  /* reset callstack limit */
+		/* Error is now created and we assume no errors can occur any
+		 * more.  Check for debugger Throw integration only when the
+		 * error is complete.  If we enter debugger message loop,
+		 * creating_error must be 0 so that errors can be thrown in
+		 * the paused state, e.g. in Eval commands.
+		 */
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+		duk_err_check_debugger_integration(thr);
+#endif
+	}
 
 	/*
 	 *  Finally, longjmp
 	 */
-
-	thr->heap->handling_error = 0;
 
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT, %!iT (after throw augment)",
 	                     (duk_tval *) &thr->heap->lj.value1, (duk_tval *) &thr->heap->lj.value2));

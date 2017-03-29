@@ -122,7 +122,9 @@ in garbage collection like actual objects.
 Hypothetically, even if lightfuncs were garbage collected somehow, they
 don't have space for a virtual ``_Finalizer`` property.  It would be
 possible to set a finalizer on ``Function.prototype`` though and let that
-finalize the lightfuncs.
+finalize the lightfuncs.  But because lightfuncs are not really objects,
+it's not clear when the finalizer should be called (e.g. every time a
+lightfunc ``duk_tval`` is DECREF'd?).
 
 Implementation notes
 ====================

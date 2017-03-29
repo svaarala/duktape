@@ -4607,45 +4607,46 @@ DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
 	 * by seeing that X's FINALIZED flag is set (which is done before
 	 * the finalizer starts executing).
 	 */
+#if defined(DUK_USE_FINALIZER_SUPPORT)
 	for (curr = thr->heap->finalize_list;
 	     curr != NULL;
 	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
-		if (curr == h) {
-			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
-				/* Object is currently being finalized. */
-				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
-				found = 1;
-			} else {
-				DUK_ASSERT(0);
-			}
-		}
-	}
-
-	/* Also check for the refzero_list; must not be there unless it is
-	 * being finalized when duk_push_heapptr() is called.
-	 *
-	 * Corner case: similar to finalize_list.
-	 */
-#if defined(DUK_USE_REFERENCE_COUNTING)
-	for (curr = thr->heap->refzero_list;
-	     curr != NULL;
-	     curr = DUK_HEAPHDR_GET_NEXT(thr->heap, curr)) {
-		if (curr == h) {
-			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
-				/* Object is currently being finalized. */
-				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
-				found = 1;
-			} else {
-				DUK_ASSERT(0);
-			}
-		}
-	}
+		/* FINALIZABLE is set for all objects on finalize_list
+		 * except for an object being finalized right now.  So
+		 * can't assert here.
+		 */
+#if 0
+		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 #endif
 
-	/* If not present in finalize_list or refzero_list, the pointer
+		if (curr == h) {
+			if (DUK_HEAPHDR_HAS_FINALIZED((duk_heaphdr *) h)) {
+				/* Object is currently being finalized. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+			} else {
+#if 1
+				DUK_ASSERT(0);
+#else  /* Enable when duk_push_heapptr() allowed for object on finalize_list. */
+				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
+				found = 1;
+#endif
+			}
+		}
+	}
+#endif  /* DUK_USE_FINALIZER_SUPPORT */
+
+#if defined(DUK_USE_REFERENCE_COUNTING)
+	/* Because refzero_list is now processed to completion inline with
+	 * no side effects, it's always empty here.
+	 */
+	DUK_ASSERT(thr->heap->refzero_list == NULL);
+#endif
+
+	/* If not present in finalize_list (or refzero_list), it
 	 * must be either in heap_allocated or the string table.
 	 */
-	if (DUK_HEAPHDR_GET_TYPE(h) == DUK_HTYPE_STRING) {
+	if (DUK_HEAPHDR_IS_STRING(h)) {
 		duk_uint32_t i;
 		duk_hstring *str;
 		duk_heap *heap = thr->heap;
@@ -4684,6 +4685,7 @@ DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
 DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
+	duk_tval *tv;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -4698,29 +4700,75 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 	duk__validate_push_heapptr(ctx, ptr);
 #endif
 
+	DUK__CHECK_SPACE();
+
 	ret = (duk_idx_t) (thr->valstack_top - thr->valstack_bottom);
+	tv = thr->valstack_top++;
 
 	if (ptr == NULL) {
-		goto push_undefined;
+		DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv));
+		return ret;
 	}
+
+	DUK_ASSERT_HEAPHDR_VALID((duk_heaphdr *) ptr);
+
+#if 0
+	/* If the argument is on finalize_list it has technically been
+	 * unreachable before duk_push_heapptr() but it's still safe to
+	 * push it.  Starting from Duktape 2.1 allow application code to
+	 * do so.  There are two main cases:
+	 *
+	 *   (1) The object is on the finalize_list and we're called by
+	 *       the finalizer for the object being finalized.  In this
+	 *       case do nothing: finalize_list handling will deal with
+	 *       the object queueing.  This is detected by the object not
+	 *       having a FINALIZABLE flag despite being on the finalize_list;
+	 *       the flag is cleared for the object being finalized only.
+	 *
+	 *   (2) The object is on the finalize_list but is not currently
+	 *       being processed.  In this case the object can be queued
+	 *       back to heap_allocated with a few flags cleared, in effect
+	 *       cancelling the finalizer.
+	 */
+	if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZABLE((duk_heaphdr *) ptr))) {
+		duk_heaphdr *curr;
+
+		DUK_D(DUK_DPRINT("duk_push_heapptr() with a pointer on finalize_list, autorescue"));
+
+		curr = (duk_heaphdr *) ptr;
+		DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
+
+		/* Because FINALIZED is set prior to finalizer call, will be
+		 * set for the object being currently finalized, but not for
+		 * other objects on finalize_list.
+		 */
+		DUK_HEAPHDR_CLEAR_FINALIZED(curr);
+
+		/* Dequeue object from finalize_list and queue it back to
+		 * heap_allocated.
+		 */
+		DUK_HEAP_REMOVE_FROM_FINALIZE_LIST(thr->heap, curr);
+		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(thr->heap, curr);
+
+		/* Continue with the rest. */
+	}
+#endif
 
 	switch (DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
 	case DUK_HTYPE_STRING:
-		duk_push_hstring(ctx, (duk_hstring *) ptr);
+		DUK_TVAL_SET_STRING(tv, (duk_hstring *) ptr);
 		break;
 	case DUK_HTYPE_OBJECT:
-		duk_push_hobject(ctx, (duk_hobject *) ptr);
-		break;
-	case DUK_HTYPE_BUFFER:
-		duk_push_hbuffer(ctx, (duk_hbuffer *) ptr);
+		DUK_TVAL_SET_OBJECT(tv, (duk_hobject *) ptr);
 		break;
 	default:
-		goto push_undefined;
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr) == DUK_HTYPE_BUFFER);
+		DUK_TVAL_SET_BUFFER(tv, (duk_hbuffer *) ptr);
+		break;
 	}
-	return ret;
 
- push_undefined:
-	duk_push_undefined(ctx);
+	DUK_HEAPHDR_INCREF(thr, (duk_heaphdr *) ptr);
+
 	return ret;
 }
 
@@ -5042,6 +5090,7 @@ DUK_INTERNAL void duk_unpack(duk_context *ctx) {
 
 DUK_EXTERNAL void duk_throw_raw(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv_val;
 
 	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
@@ -5068,7 +5117,11 @@ DUK_EXTERNAL void duk_throw_raw(duk_context *ctx) {
 #endif
 	DUK_DDD(DUK_DDDPRINT("THROW ERROR (API): %!dT (after throw augment)", (duk_tval *) duk_get_tval(ctx, -1)));
 
-	duk_err_setup_heap_ljstate(thr, DUK_LJ_TYPE_THROW);
+	tv_val = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, tv_val);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_err_check_debugger_integration(thr);
+#endif
 
 	/* thr->heap->lj.jmpbuf_ptr is checked by duk_err_longjmp() so we don't
 	 * need to check that here.  If the value is NULL, a fatal error occurs

@@ -1123,7 +1123,7 @@ static duk_context *create_duktape_heap(int alloc_provider, int debugger, int aj
 	if (!ctx) {
 		fprintf(stderr, "Failed to create Duktape heap\n");
 		fflush(stderr);
-		exit(-1);
+		exit(1);
 	}
 
 #if defined(DUK_CMDLINE_AJSHEAP)
