@@ -1,5 +1,5 @@
 /*
- *  Finalizer handling
+ *  Finalizer handling.
  */
 
 #include "duk_internal.h"
@@ -71,7 +71,11 @@ DUK_LOCAL void duk__run_global_torture_finalizer(duk_hthread *thr) {
  *
  *  An object may be placed on finalize_list by either refcounting or
  *  mark-and-sweep.  The refcount of objects placed by refcounting will be
- *  zero; the refcount of objects placed by mark-and-sweep is > 0.
+ *  zero; the refcount of objects placed by mark-and-sweep is > 0.  In both
+ *  cases the refcount is bumped by 1 artificially so that a REFZERO event
+ *  can never happen while an object is waiting for finalization.  Without
+ *  this bump a REFZERO could now happen because user code may call
+ *  duk_push_heapptr() and then pop a value even when it's on finalize_list.
  *
  *  List processing assumes refcounts are kept up-to-date at all times, so
  *  that once the finalizer returns, a zero refcount is a reliable reason to
@@ -190,12 +194,6 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 		 */
 		DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 
-		/* XXX: Instead of an artificial refcount bump, could also
-		 * push/pop the object for reachability.  This doesn't really
-		 * matter much because the object is still on finalize_list
-		 * and treated as reachable by mark-and-sweep.
-		 */
-
 		if (DUK_LIKELY(!heap->pf_skip_finalizers)) {
 			/* Run the finalizer, duk_heap_run_finalizer() sets
 			 * and checks for FINALIZED to prevent the finalizer
@@ -207,12 +205,12 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			duk_bool_t had_zero_refcount;
 #endif
 
-			/* Ensure object's refcount is >0 throughout so it
-			 * won't be refzero processed prematurely.
+			/* The object's refcount is >0 throughout so it won't be
+			 * refzero processed prematurely.
 			 */
 #if defined(DUK_USE_REFERENCE_COUNTING)
-			had_zero_refcount = (DUK_HEAPHDR_GET_REFCOUNT(curr) == 0);
-			DUK_HEAPHDR_PREINC_REFCOUNT(curr);
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);
+			had_zero_refcount = (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1);  /* Preincremented on finalize_list insert. */
 #endif
 
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
@@ -223,10 +221,8 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			 */
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
-			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);  /* ref on value stack at least */
-			DUK_HEAPHDR_PREDEC_REFCOUNT(curr);
-			DUK_DD(DUK_DDPRINT("refcount after finalizer: %ld", (long) DUK_HEAPHDR_GET_REFCOUNT(curr)));
-			if (DUK_HEAPHDR_GET_REFCOUNT(curr) == 0) {
+			DUK_DD(DUK_DDPRINT("refcount after finalizer (includes bump): %ld", (long) DUK_HEAPHDR_GET_REFCOUNT(curr)));
+			if (DUK_HEAPHDR_GET_REFCOUNT(curr) == 1) {  /* Only artificial bump in refcount? */
 #if defined(DUK_USE_DEBUG)
 				if (had_zero_refcount) {
 					DUK_DD(DUK_DDPRINT("finalized object's refcount is zero -> free immediately (refcount queued)"));
@@ -280,19 +276,22 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 			 * next mark-and-sweep round can make a rescue/free
 			 * decision.
 			 */
+			DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);
+			DUK_HEAPHDR_PREDEC_REFCOUNT(curr);  /* Remove artificial refcount bump. */
 			DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 			DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
 		} else {
+			/* No need to remove the refcount bump here. */
 			DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);  /* currently, always the case */
 			DUK_DD(DUK_DDPRINT("refcount finalize after finalizer call: %!O", curr));
 			duk_hobject_refcount_finalize_norz(heap, (duk_hobject *) curr);
 			duk_free_hobject(heap, (duk_hobject *) curr);
 			DUK_DD(DUK_DDPRINT("freed hobject after finalization: %p", (void *) curr));
 		}
-#else
+#else  /* DUK_USE_REFERENCE_COUNTING */
 		DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(heap, curr);
-#endif
+#endif  /* DUK_USE_REFERENCE_COUNTING */
 
 #if defined(DUK_USE_DEBUG)
 		count++;
