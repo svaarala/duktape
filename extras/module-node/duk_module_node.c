@@ -204,6 +204,8 @@ static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata) {
 #else
 static duk_int_t duk__eval_module_source(duk_context *ctx) {
 #endif
+	const char *src;
+
 	/*
 	 *  Stack: [ ... module source ]
 	 */
@@ -217,9 +219,11 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	 * e.g. Node.js.
 	 */
 	duk_push_string(ctx, "(function(exports,require,module,__filename,__dirname){");
-	duk_dup(ctx, -2);  /* source */
+	src = duk_require_string(ctx, -2);
+	duk_push_string(ctx, (src[0] == '#' && src[1] == '!') ? "//" : "");  /* Shebang support. */
+	duk_dup(ctx, -3);  /* source */
 	duk_push_string(ctx, "\n})");  /* Newline allows module last line to contain a // comment. */
-	duk_concat(ctx, 3);
+	duk_concat(ctx, 4);
 
 	/* [ ... module source func_src ] */
 
