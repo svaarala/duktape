@@ -243,3 +243,15 @@ differences include:</p>
     which matches WHATWG Encoding API specification but differs from Node.js
     (at least up to version v6.9.1).</li>
 </ul>
+
+<h2>Shebang comment support</h2>
+
+<p><code>duk_compile()</code> flag <code>DUK_COMPILE_SHEBANG</code> allows shebang
+comment parsing: <code>#!</code> on the first column of the first line causes the
+line to be treated as a comment.  For example:</p>
+<pre>
+#!/usr/bin/duk
+print('Hello world!');
+</pre>
+
+<p>The feature can be disabled by undefining <code>DUK_USE_SHEBANG_COMMENTS</code>.</p>
