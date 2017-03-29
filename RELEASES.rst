@@ -2555,6 +2555,8 @@ Planned
   source if DUK_COMPILE_SHEBANG option is given to duk_compile() (GH-1380,
   GH-1346)
 
+* Add shebang support to module-node (GH-1452)
+
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)
