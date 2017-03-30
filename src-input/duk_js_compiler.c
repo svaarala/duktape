@@ -7720,9 +7720,9 @@ DUK_LOCAL duk_ret_t duk__js_compile_raw(duk_context *ctx, void *udata) {
 	DUK_ASSERT(lex_pt != NULL);
 
 	flags = comp_stk->flags;
-	is_eval = (flags & DUK_JS_COMPILE_FLAG_EVAL ? 1 : 0);
-	is_strict = (flags & DUK_JS_COMPILE_FLAG_STRICT ? 1 : 0);
-	is_funcexpr = (flags & DUK_JS_COMPILE_FLAG_FUNCEXPR ? 1 : 0);
+	is_eval = (flags & DUK_COMPILE_EVAL ? 1 : 0);
+	is_strict = (flags & DUK_COMPILE_STRICT ? 1 : 0);
+	is_funcexpr = (flags & DUK_COMPILE_FUNCEXPR ? 1 : 0);
 
 	h_filename = duk_get_hstring(ctx, -1);  /* may be undefined */
 

@@ -13,7 +13,6 @@ struct duk__compile_raw_args {
 
 /* Eval is just a wrapper now. */
 DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
-	duk_uint_t comp_flags;
 	duk_int_t rc;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -27,9 +26,7 @@ DUK_EXTERNAL duk_int_t duk_eval_raw(duk_context *ctx, const char *src_buffer, du
 
 	/* [ ... source? filename? ] (depends on flags) */
 
-	comp_flags = flags;
-	comp_flags |= DUK_COMPILE_EVAL;
-	rc = duk_compile_raw(ctx, src_buffer, src_length, comp_flags);  /* may be safe, or non-safe depending on flags */
+	rc = duk_compile_raw(ctx, src_buffer, src_length, flags | DUK_COMPILE_EVAL);  /* may be safe, or non-safe depending on flags */
 
 	/* [ ... closure/error ] */
 
@@ -62,7 +59,6 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__compile_raw_args *comp_args;
 	duk_uint_t flags;
-	duk_small_uint_t comp_flags;
 	duk_hcompfunc *h_templ;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -101,25 +97,13 @@ DUK_LOCAL duk_ret_t duk__do_compile(duk_context *ctx, void *udata) {
 	}
 	DUK_ASSERT(comp_args->src_buffer != NULL);
 
-	/* XXX: unnecessary translation of flags */
-	comp_flags = 0;
-	if (flags & DUK_COMPILE_EVAL) {
-		comp_flags |= DUK_JS_COMPILE_FLAG_EVAL;
-	}
 	if (flags & DUK_COMPILE_FUNCTION) {
-		comp_flags |= DUK_JS_COMPILE_FLAG_EVAL |
-		              DUK_JS_COMPILE_FLAG_FUNCEXPR;
-	}
-	if (flags & DUK_COMPILE_STRICT) {
-		comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
-	}
-	if (flags & DUK_COMPILE_SHEBANG) {
-		comp_flags |= DUK_JS_COMPILE_FLAG_SHEBANG;
+		flags |= DUK_COMPILE_EVAL | DUK_COMPILE_FUNCEXPR;
 	}
 
 	/* [ ... source? filename ] */
 
-	duk_js_compile(thr, comp_args->src_buffer, comp_args->src_length, comp_flags);
+	duk_js_compile(thr, comp_args->src_buffer, comp_args->src_length, flags);
 
 	/* [ ... source? func_template ] */
 

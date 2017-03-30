@@ -1073,7 +1073,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 #if defined(DUK_USE_SHEBANG_COMMENTS)
 	case DUK_ASC_HASH:  /* '#' */
 		if (DUK__L1() == DUK_ASC_EXCLAMATION && lex_ctx->window[0].offset == 0 &&
-		    (lex_ctx->flags & DUK_JS_COMPILE_FLAG_SHEBANG)) {
+		    (lex_ctx->flags & DUK_COMPILE_SHEBANG)) {
 			/* "Shebang" comment ('#! ...') on first line. */
 			/* DUK__ADVANCECHARS(lex_ctx, 2) would be correct here, but not necessary */
 			duk__lexer_skip_to_endofline(lex_ctx);

@@ -462,7 +462,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 
 	/* [ source ] */
 
-	comp_flags = DUK_JS_COMPILE_FLAG_EVAL;
+	comp_flags = DUK_COMPILE_EVAL;
 	act_eval = thr->callstack_curr;  /* this function */
 	DUK_ASSERT(act_eval != NULL);
 	if (thr->callstack_top >= (duk_size_t) -level) {
@@ -475,7 +475,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			/* Only direct eval inherits strictness from calling code
 			 * (E5.1 Section 10.1.1).
 			 */
-			comp_flags |= DUK_JS_COMPILE_FLAG_STRICT;
+			comp_flags |= DUK_COMPILE_STRICT;
 		}
 	} else {
 		DUK_ASSERT((act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0);

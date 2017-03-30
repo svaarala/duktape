@@ -2752,12 +2752,12 @@ Planned
 * Miscellaneous performance improvements: more likely/unlike attributes and
   hot/cold function splits (GH-1308, GH-1309, GH-1312), integer
   refzero-free-running flag (instead of a flag bit) (GH-1362), faster GC
-  finalizer existence check using DUK_HOBJECT_FLAG_HAVE_FINALIZER (GH-1398);
+  finalizer existence check using DUK_HOBJECT_FLAG_HAVE_FINALIZER (GH-1398),
   faster skipping of sub-struct checks in DECREF/mark-and-sweep (GH-1403)
 
 * Miscellaneous footprint improvements: more compact duk_hobject allocation
   (GH-1357), explicit thr->callstack_curr field for current activation
-  (GH-1372)
+  (GH-1372), avoid DUK_COMPILE_xxx flag translation internally (GH-1450)
 
 * Internal change: duk_hstring now has a 'next' heap pointer for string table
   chaining; this affects string allocation sizes which may matter for manually
