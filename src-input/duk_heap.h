@@ -546,6 +546,9 @@ DUK_INTERNAL_DECL void duk_heap_remove_from_heap_allocated(duk_heap *heap, duk_h
 DUK_INTERNAL_DECL void duk_heap_insert_into_finalize_list(duk_heap *heap, duk_heaphdr *hdr);
 DUK_INTERNAL_DECL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr *hdr);
 #endif
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL_DECL duk_bool_t duk_heap_in_heap_allocated(duk_heap *heap, duk_heaphdr *ptr);
+#endif
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL_DECL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr);
 #endif

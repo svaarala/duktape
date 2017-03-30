@@ -131,6 +131,20 @@ DUK_INTERNAL void duk_heap_remove_from_finalize_list(duk_heap *heap, duk_heaphdr
 }
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
+#if defined(DUK_USE_ASSERTIONS)
+DUK_INTERNAL duk_bool_t duk_heap_in_heap_allocated(duk_heap *heap, duk_heaphdr *ptr) {
+	duk_heaphdr *curr;
+	DUK_ASSERT(heap != NULL);
+
+	for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+		if (curr == ptr) {
+			return 1;
+		}
+	}
+	return 0;
+}
+#endif  /* DUK_USE_ASSERTIONS */
+
 #if defined(DUK_USE_INTERRUPT_COUNTER)
 DUK_INTERNAL void duk_heap_switch_thread(duk_heap *heap, duk_hthread *new_thr) {
 	duk_hthread *curr_thr;
