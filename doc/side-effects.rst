@@ -390,6 +390,10 @@ DECREF
 * When mark-and-sweep is running, DECREF adjusts target refcount but won't
   do anything else.
 
+* All objects on finalize_list have an artificial +1 refcount bump, so that
+  they can never trigger refzero processing (assuming refcounts are correct).
+  This allows refzero code to assume a refzero object is on heap_allocated.
+
 duk__refcount_free_pending()
 
 * As of Duktape 2.1 no side effects, just frees objects without a finalizer
