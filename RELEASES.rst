@@ -2730,6 +2730,9 @@ Planned
 * Fix incorrect assert for RETCONSTN opcode when refcounting is disabled,
   actual behavior is correct however (GH-1432, GH-1433)
 
+* Fix potentially stale duk_tval pointer in duk_inspect_value(), also affects
+  Duktape.info() (GH-1453)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android and Atari MiNT
   (GH-1325, GH-1341, GH-1430, GH-1431)
 
