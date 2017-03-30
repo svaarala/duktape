@@ -319,18 +319,7 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 	 * artificial +1 refcount bump.
 	 */
 #if defined(DUK_USE_ASSERTIONS)
-	{
-		duk_heaphdr *curr;
-		duk_bool_t found = 0;
-
-		for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
-			if (curr == (duk_heaphdr *) obj) {
-				found = 1;
-				break;
-			}
-		}
-		DUK_ASSERT(found != 0);
-	}
+	DUK_ASSERT(duk_heap_in_heap_allocated(heap, (duk_heaphdr *) obj));
 #endif
 
 	DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, hdr);

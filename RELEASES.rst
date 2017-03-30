@@ -2594,7 +2594,7 @@ Planned
 * Rework zero refcount (refzero) handling: memory frees triggered by a cascade
   of zero refcounts are now never postponed for objects that don't have a
   finalizer (and freeing the cascade has no side effects other than freeing
-  blocks of memory) (GH-1427)
+  blocks of memory) (GH-1427, GH-1454)
 
 * Rework finalizer handling: always use the heap thread (heap->heap_thread)
   for finalizer calls, regardless of whether finalization is refcount or
