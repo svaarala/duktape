@@ -2634,7 +2634,7 @@ Planned
   (GH-1408)
 
 * More assertion and torture test coverage for GC, finalizers, and error
-  handling (GH-1411, GH-1427)
+  handling (GH-1411, GH-1427, GH-709)
 
 * Avoid relying on the value stack when handling a double error (error which
   happened during handling of a previous error); this is cleaner but relying
