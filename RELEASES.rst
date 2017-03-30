@@ -2612,6 +2612,11 @@ Planned
   while finalizers are being executed to avoid incorrect rescue decisions
   caused by a partially processed finalize_list (GH-1427, GH-1451)
 
+* Rework mark-and-sweep: include finalize_list in TEMPROOT marking; with
+  duk_push_heapptr() allowed it's possible for application code to create
+  a reference from heap_allocated to finalize_list and thus TEMPROOT flags
+  for objects on finalize_list (GH-1455)
+
 * Improve side effect protections: prevent finalizer execution between an
   error throw point and its catch point; add asserts for catching any cases
   where an error would be thrown when handling a previously thrown error
