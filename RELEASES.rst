@@ -2610,7 +2610,7 @@ Planned
 * Rework finalizer handling: finalizer execution is now outside of refzero
   processing and mark-and-sweep; however, mark-and-sweep is still disabled
   while finalizers are being executed to avoid incorrect rescue decisions
-  caused by a partially processed finalize_list (GH-1427)
+  caused by a partially processed finalize_list (GH-1427, GH-1451)
 
 * Improve side effect protections: prevent finalizer execution between an
   error throw point and its catch point; add asserts for catching any cases

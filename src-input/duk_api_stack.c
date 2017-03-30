@@ -4747,6 +4747,10 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 		/* Dequeue object from finalize_list and queue it back to
 		 * heap_allocated.
 		 */
+#if defined(DUK_USE_REFERENCE_COUNTING)
+		DUK_ASSERT(DUK_HEAPHDR_GET_REFCOUNT(curr) >= 1);  /* Preincremented on finalize_list insert. */
+		DUK_HEAPHDR_PREDEC_REFCOUNT(curr);
+#endif
 		DUK_HEAP_REMOVE_FROM_FINALIZE_LIST(thr->heap, curr);
 		DUK_HEAP_INSERT_INTO_HEAP_ALLOCATED(thr->heap, curr);
 

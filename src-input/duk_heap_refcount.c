@@ -314,6 +314,25 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 
 	hdr = (duk_heaphdr *) obj;
 
+	/* Refzero'd objects must be in heap_allocated.  They can't be in
+	 * finalize_list because all objects on finalize_list have an
+	 * artificial +1 refcount bump.
+	 */
+#if defined(DUK_USE_ASSERTIONS)
+	{
+		duk_heaphdr *curr;
+		duk_bool_t found = 0;
+
+		for (curr = heap->heap_allocated; curr != NULL; curr = DUK_HEAPHDR_GET_NEXT(heap, curr)) {
+			if (curr == (duk_heaphdr *) obj) {
+				found = 1;
+				break;
+			}
+		}
+		DUK_ASSERT(found != 0);
+	}
+#endif
+
 	DUK_HEAP_REMOVE_FROM_HEAP_ALLOCATED(heap, hdr);
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
@@ -337,6 +356,15 @@ DUK_LOCAL DUK_INLINE void duk__refcount_refzero_hobject(duk_heap *heap, duk_hobj
 			DUK_HEAPHDR_SET_FINALIZABLE(hdr);
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(hdr));
 
+#if defined(DUK_USE_REFERENCE_COUNTING)
+			/* Bump refcount on finalize_list insert so that a
+			 * refzero can never occur when an object is waiting
+			 * for its finalizer call.  Refzero might otherwise
+			 * now happen because we allow duk_push_heapptr() for
+			 * objects pending finalization.
+			 */
+			DUK_HEAPHDR_PREINC_REFCOUNT(hdr);
+#endif
 			DUK_HEAP_INSERT_INTO_FINALIZE_LIST(heap, hdr);
 
 			/* Process finalizers unless skipping is explicitly
