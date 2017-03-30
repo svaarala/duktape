@@ -386,6 +386,12 @@ DUK_INTERNAL_DECL void duk_hthread_catchstack_shrink_check(duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
 DUK_INTERNAL_DECL void duk_hthread_catchstack_unwind(duk_hthread *thr, duk_size_t new_top);
 
+#if defined(DUK_USE_FINALIZER_TORTURE)
+DUK_INTERNAL_DECL void duk_hthread_valstack_torture_realloc(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_callstack_torture_realloc(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_catchstack_torture_realloc(duk_hthread *thr);
+#endif
+
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 DUK_INTERNAL_DECL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
