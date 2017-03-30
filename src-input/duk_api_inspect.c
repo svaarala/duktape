@@ -66,17 +66,18 @@ DUK_EXTERNAL void duk_inspect_value(duk_context *ctx, duk_idx_t idx) {
 
 	DUK_UNREF(thr);
 
-	tv = duk_get_tval_or_unused(ctx, idx);
-	h = (DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv) : NULL);
-
 	/* Assume two's complement and set everything to -1. */
 	DUK_MEMSET((void *) &vals, (int) 0xff, sizeof(vals));
 	DUK_ASSERT(vals[DUK__IDX_TYPE] == -1);  /* spot check one */
 
-	duk_push_bare_object(ctx);
+	tv = duk_get_tval_or_unused(ctx, idx);
+	h = (DUK_TVAL_IS_HEAP_ALLOCATED(tv) ? DUK_TVAL_GET_HEAPHDR(tv) : NULL);
 
 	vals[DUK__IDX_TYPE] = duk_get_type_tval(tv);
 	vals[DUK__IDX_ITAG] = (duk_uint_t) DUK_TVAL_GET_TAG(tv);
+
+	duk_push_bare_object(ctx);  /* Invalidates 'tv'. */
+	tv = NULL;
 
 	if (h == NULL) {
 		goto finish;
