@@ -4625,12 +4625,11 @@ DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
 				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
 				found = 1;
 			} else {
-#if 1
-				DUK_ASSERT(0);
-#else  /* Enable when duk_push_heapptr() allowed for object on finalize_list. */
+				/* Not being finalized but on finalize_list,
+				 * allowed since Duktape 2.1.
+				 */
 				DUK_ASSERT(found == 0);  /* Would indicate corrupted lists. */
 				found = 1;
-#endif
 			}
 		}
 	}
@@ -4712,7 +4711,6 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 
 	DUK_ASSERT_HEAPHDR_VALID((duk_heaphdr *) ptr);
 
-#if 0
 	/* If the argument is on finalize_list it has technically been
 	 * unreachable before duk_push_heapptr() but it's still safe to
 	 * push it.  Starting from Duktape 2.1 allow application code to
@@ -4738,9 +4736,9 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 		curr = (duk_heaphdr *) ptr;
 		DUK_HEAPHDR_CLEAR_FINALIZABLE(curr);
 
-		/* Because FINALIZED is set prior to finalizer call, will be
-		 * set for the object being currently finalized, but not for
-		 * other objects on finalize_list.
+		/* Because FINALIZED is set prior to finalizer call, it will
+		 * be set for the object being currently finalized, but not
+		 * for other objects on finalize_list.
 		 */
 		DUK_HEAPHDR_CLEAR_FINALIZED(curr);
 
@@ -4756,7 +4754,6 @@ DUK_EXTERNAL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr) {
 
 		/* Continue with the rest. */
 	}
-#endif
 
 	switch (DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) ptr)) {
 	case DUK_HTYPE_STRING:

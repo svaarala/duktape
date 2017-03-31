@@ -4,32 +4,52 @@ proto: |
   duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr);
 
 stack: |
-  [ ... ] -> [ ... obj! ]
+  [ ... ] -> [ ... obj! ]  (if ptr != NULL)
+  [ ... ] -> [ ... undefined! ]  (if ptr == NULL)
 
 summary: |
-  <p>Push a Duktape heap allocated object into the value stack based on a borrowed
-  void pointer reference.
-  The argument <code>ptr</code> must be obtained using
-  <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code> (or its variants)
-  and must have been reachable for Duktape garbage collection up to this call.
-  If <code>ptr</code> is <code>NULL</code>, <code>undefined</code> is pushed.</p>
+  <p>Push a Duktape heap object into the value stack using a borrowed pointer
+  reference from <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code>
+  or its variants.  If <code>ptr</code> is <code>NULL</code>,
+  <code>undefined</code> is pushed.</p>
+
+  <p>The caller is responsible for ensuring that the argument <code>ptr</code>
+  is still valid (not freed by Duktape garbage collection) when it is pushed.
+  There are two basic ways to ensure this:</p>
+  <ul>
+  <li><b>Strong backing reference:</b> ensure that the related heap object is
+      always reachable for Duktape garbage collection between duk_get_heapptr()
+      and duk_push_heapptr().  For example, ensure that the related object has
+      been written to a stash while the borrowed void pointer is being used.
+      In essence, the application is holding a borrowed reference which is
+      backed by a strongly referenced value.  This was the only supported
+      approach before Duktape 2.1.</li>
+  <li><b>Weak reference + finalizer</b>: add a (preferably native) finalizer
+      for the related heap object and stop using the void pointer at the latest
+      when the finalizer is called (assuming the object is not rescued by the
+      finalizer).  Starting from Duktape 2.1 duk_push_heapptr() is allowed for
+      unreachable objects pending finalization, all the way up to the actual
+      finalizer call; the object will be rescued and the finalizer call
+      automatically cancelled.  This approach allows an application to hold
+      weak references to the related objects.  However, see limitations below.</li>
+  </ul>
 
   <div class="note">
-  It's not safe to rely on finalizer calls to indicate that an object has become
-  unreachable.  When an object becomes unreachable, it is queued to be finalized,
-  and it takes some time before the finalization happens.  In this state it's no
-  longer safe to call duk_push_heapptr() for the object waiting for finalization.
-  The application must ensure on its own that the object is reachable all the way
-  between duk_get_heapptr() and duk_push_heapptr().
+  Finalizer calls may silently fail e.g. due to out-of-memory.  When relying on
+  finalizer calls to indicate an end of pointer validity, a missed finalizer
+  call may cause a dangling pointer to be given to duk_push_heapptr().
+  There's currently no workaround for this situation, so if out-of-memory
+  conditions are to be expected, the finalizer-based approach may not work
+  reliably.  Future work is to ensure that an object is not freed without
+  at least a successful entry into a native finalizer function, see
+  <a href="https://github.com/svaarala/duktape/issues/1456">https://github.com/svaarala/duktape/issues/1456</a>.
   </div>
 
 example: |
   void *ptr;
   duk_idx_t idx;
 
-  /* 'ptr' originally obtained using duk_get_heapptr() earlier, with the original
-   * value reachable by Duktape GC all the way to here:
-   */
+  /* 'ptr' originally obtained using duk_get_heapptr() earlier: */
 
   idx = duk_push_heapptr(ctx, ptr);
 

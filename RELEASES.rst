@@ -2622,6 +2622,12 @@ Planned
   where an error would be thrown when handling a previously thrown error
   (GH-1427)
 
+* Allow duk_push_heapptr() for a heap object which has become unreachable,
+  has been queued to finalize_list, but hasn't yet been finalized; in this
+  case duk_push_heapptr() cancels the finalization and moves the object back
+  to the main heap_allocated list, in effect automatically rescuing the object
+  without finalizer interaction (GH-1442)
+
 * Use a 32-bit refcount field by default (even on 64-bit systems) which saves
   8 bytes for each heap object and can only wrap if the Duktape heap is
   larger than 64GB; disable DUK_USE_REFCOUNT32 to use size_t for refcounts
