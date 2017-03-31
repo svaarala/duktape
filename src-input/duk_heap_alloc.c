@@ -823,6 +823,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #endif
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 	res->finalize_list = NULL;
+#if defined(DUK_USE_ASSERTIONS)
+	res->currently_finalizing = NULL;
+#endif
 #endif
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
