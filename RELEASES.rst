@@ -2608,9 +2608,9 @@ Planned
   for mark-and-sweep to confirm its status (GH-1427)
 
 * Rework finalizer handling: finalizer execution is now outside of refzero
-  processing and mark-and-sweep; however, mark-and-sweep is still disabled
-  while finalizers are being executed to avoid incorrect rescue decisions
-  caused by a partially processed finalize_list (GH-1427, GH-1451)
+  processing and mark-and-sweep, and mark-and-sweep (but not recursive
+  finalizer handling) is allowed during finalizer execution (GH-1427, GH-1451,
+  GH-1457)
 
 * Rework mark-and-sweep: include finalize_list in TEMPROOT marking; with
   duk_push_heapptr() allowed it's possible for application code to create
