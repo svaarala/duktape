@@ -124,6 +124,7 @@ DUK_INTERNAL duk_ret_t duk_bi_symbol_tostring_shared(duk_context *ctx) {
 		duk_push_symbol_descriptive_string(ctx, h_str);
 	} else {
 		/* .valueOf() */
+		duk_push_hstring(ctx, h_str);
 	}
 	return 1;
 }
