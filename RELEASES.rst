@@ -2744,6 +2744,9 @@ Planned
 * Fix potentially stale duk_tval pointer in duk_inspect_value(), also affects
   Duktape.info() (GH-1453)
 
+* Fix Symbol Object .valueOf() which returned the Symbol Object rather than
+  the underlying plain Symbol (GH-1459)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android and Atari MiNT
   (GH-1325, GH-1341, GH-1430, GH-1431)
 
