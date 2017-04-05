@@ -2020,6 +2020,8 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			} else if (DUK__L2() == DUK_ASC_COLON) {
 				/* (?: */
 				advtok = DUK__ADVTOK(3, DUK_RETOK_ATOM_START_NONCAPTURE_GROUP);
+			} else {
+				goto fail_group;
 			}
 		} else {
 			/* ( */
@@ -2085,6 +2087,10 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 
  fail_escape:
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_ESCAPE);
+	return;
+
+ fail_group:
+	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_REGEXP_GROUP);
 	return;
 
 #if !defined(DUK_USE_ES6_REGEXP_SYNTAX)
