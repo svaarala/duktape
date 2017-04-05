@@ -2754,6 +2754,8 @@ Planned
 
 * Portability improvements for Durango (XboxOne) (GH-1386, GH-1387, GH-1389)
 
+* Portability improvements for Nspire (GH-1461)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
