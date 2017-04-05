@@ -1790,6 +1790,9 @@ DUK_INTERNAL void duk_lexer_parse_re_token(duk_lexer_ctx *lex_ctx, duk_re_token 
 			} else if (DUK__L2() == ':') {
 				/* (?: */
 				advtok = DUK__ADVTOK(3, DUK_RETOK_ATOM_START_NONCAPTURE_GROUP);
+			} else {
+				DUK_ERROR_SYNTAX(lex_ctx->thr, "invalid regexp group");
+				return;
 			}
 		} else {
 			/* ( */
