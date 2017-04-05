@@ -1,3 +1,7 @@
+#if defined(DUK_COMPILING_DUKTAPE) && !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE    /* e.g. strptime */
+#endif
+
 #define DUK_USE_DATE_NOW_GETTIMEOFDAY
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
