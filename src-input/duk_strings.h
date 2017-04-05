@@ -136,6 +136,7 @@
 #define DUK_STR_INVALID_REGEXP_ESCAPE            "invalid regexp escape"
 #define DUK_STR_INVALID_BACKREFS                 "invalid backreference(s)"
 #define DUK_STR_INVALID_REGEXP_CHARACTER         "invalid regexp character"
+#define DUK_STR_INVALID_REGEXP_GROUP             "invalid regexp group"
 #define DUK_STR_UNTERMINATED_CHARCLASS           "unterminated character class"
 #define DUK_STR_INVALID_RANGE                    "invalid range"
 
