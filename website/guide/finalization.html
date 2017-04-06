@@ -78,7 +78,7 @@ finalizer are also silently ignored.</p>
 
 <p>Together these guarantee that a finalizer gets executed at some point
 before a heap is destroyed, which allows native resources (such as sockets
-and files) to be freed reliably.  There are two exceptions to this guarantee,
+and files) to be freed reliably.  There are a few exceptions to this guarantee,
 see below for more discussion:</p>
 <ul>
 <li>Heap destruction finalizer sanity limit may cause a finalizer not to
@@ -86,6 +86,12 @@ see below for more discussion:</p>
 <li>When a script timeout is being propagated out of the current callstack,
     Ecmascript finalizers will immediately rethrow the script timeout error.
     Duktape/C finalizers will execute normally.</li>
+<li>If Duktape runs out of memory (despite emergency GC) when trying to call a
+    finalizer, the call error is silently ignored and the finalizer will be
+    skipped.</li>
+<li>When an object is finalized by mark-and-sweep but becomes unreachable
+    before the next mark-and-sweep round has a change to detect the rescue,
+    the object's finalizer will not be executed.</li>
 </ul>
 
 <p>When the Duktape heap is being destroyed there are a few limitations for
