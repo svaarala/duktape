@@ -1150,18 +1150,18 @@ The mark-and-sweep algorithm is as follows:
    d. No object in the "refzero" work list has been freed.
 
 9. Execute pending finalizers unless finalizer execution is prevented or an
-   earlier call site is already finalizing objects (currently mark-and-sweep
-   is not allowed during finalization, but that may change).
+   earlier call site is already finalizing objects.  Finalizer execution is
+   outside of mark-and-sweep prevention lock, so mark-and-sweep may run while
+   finalizers are being processed.  However, rescue decisions are postponed
+   until the finalize_list is empty to avoid incorrect rescue decisions caused
+   by finalize_list being treated as a reachability root.
 
 Notes:
 
 * Elements on the refzero list are considered reachability roots, as we need
   to preserve both the object itself (which happens automatically because we
-  don't sweep the refzero_list) and its children.  If the refzero list elements
-  were not considered reachability roots, their children might be swept by the
-  sweep phase.  This would be problematic for processing the objects in the
-  refzero list, regardless of whether they have a finalizer or not, as some
-  references would be dangling pointers.
+  don't sweep the refzero_list) and its children.  (This is no longer relevant
+  because refzero_list is always NULL when mark-and-sweep runs.)
 
 * Elements marked FINALIZABLE are considered reachability roots to ensure
   that their children (e.g. property values) are not swept during the
@@ -1178,12 +1178,10 @@ Notes:
     pass, including running finalizers.
 
 * Finalizers are executed after the sweep phase to ensure that finalizers
-  have as much available memory as possible.  While finalizers execute outside
-  the mark-and-sweep algorithm (since Duktape 2.1), mark-and-sweep is
-  explicitly prevented during finalization because it may cause incorrect
-  rescue/free decisions when the finalize_list is only partially processed.
-  As a result, no memory can be reclaimed while the finalize_list is being
-  processed.  This is probably a very minor issue in practice.
+  have as much available memory as possible.  Since Duktape 2.1 mark-and-sweep
+  runs outside the mark-and-sweep algorithm, and mark-and-sweep may run while
+  finalizers are being processed, with the limitation that rescue decisions
+  are postponed until finalize_list is empty.
 
 * The sweep phase is divided into two separate scans: one to adjust refcounts
   and one to actually free the objects.  If these were performed in a single
@@ -1204,23 +1202,6 @@ Notes:
     the case for objects with finalizers.  (As of Duktape 2.1 refzero_list is
     freed inline without side effects, so it's always NULL when mark-and-sweep
     runs.)
-
-Note that there is a small "hole" in the reclamation right now, when
-mark-and-sweep finalizers are used:
-
-* If a finalizer executed by mark-and-sweep removes a reference to another
-  object (not the object being finalized), causing the target object's
-  reference count to drop to zero, the object is *not* placed in the
-  "refzero" work list, as mark-and-sweep is still running.
-
-* As a result, the object will be unreachable and will not be freed by
-  the reference count algorithm, regardless of whether the object was part
-  of a reference loop.  Instead, the next mark-and-sweep will free the object.
-  If the object has a finalizer, the finalizer will be called later than
-  would be preferable.
-
-* This is not ideal but will not result in memory leaks, so it's not really
-  worth fixing right now.
 
 Interactions between reference counting and mark-and-sweep
 ==========================================================
@@ -1344,65 +1325,7 @@ error handling a bit easier.
 Side effects of memory management
 ---------------------------------
 
-Automatic memory management may be triggered by various operations, and has
-a wide variety of side effects which must be taken into account by calling
-code.  This affects internal code in particular, which must be very careful
-not to reference dangling pointers, deal with valstack and object property
-allocation resizes, etc.
-
-The fundamental triggers for memory management side effects are:
-
-* An attempt to ``alloc`` or ``realloc`` memory may trigger a garbage
-  collection.  A collection is triggered by an out-of-memory condition,
-  but a voluntary garbage collection also occurs periodically.  A ``free``
-  operation cannot, at the moment, trigger a collection.
-
-* An explicit request for garbage collection.
-
-* A ``DECREF`` operation which drops the target heap element reference
-  count to zero triggers the element (and possibly a bunch of other
-  elements) to be freed, and may invoke a number of finalizers.  Also,
-  a mark-and-sweep may be triggered (e.g. by finalizers or voluntarily).
-
-The following primitives do not trigger any side effects:
-
-* An ``INCREF`` operation never causes a side effect.
-
-* A ``free`` operation never causes a side effect.
-
-Because of finalizers, the side effects of a ``DECREF`` and a mark-and-sweep
-are potentially the same as running arbitrary C or Ecmascript code,
-including:
-
-* Calling (further) finalizer functions (= running arbitrary Ecmascript and C code).
-
-* Resizing object allocations, value stacks, catch stacks, call stacks, buffers,
-  object property allocations, etc.
-
-* Compacting object property allocations, abandoning array parts.
-
-* In particular:
-
-  + Any ``duk_tval`` pointers referring any value stack may be invalidated,
-    because any value stack may be resized.  Value stack indices are OK.
-
-  + Any ``duk_tval`` pointers referring any object property values may be
-    invalidated, because any property allocation may be resized.  Also,
-    any indices to object property slots may be invalidated due to
-    "compaction" which happens during a property allocation resize.
-
-  + Heap element pointers are stable, so they are never affected.
-
-The side effects can be avoided by many techniques:
-
-* Refer to value stack using a numeric index.
-
-* Make a copy of an ``duk_tval`` to a C local to ensure the value can still
-  be used after a side effect occurs.  If the value is primitive, it will
-  OK in any case.  If the value is a heap reference, the reference uses a
-  stable pointer which is OK as long as the target is still reachable.
-
-* Re-lookup object property slots after a potential side effect.
+See ``doc/side-effects.rst``.
 
 Misc notes
 ==========
