@@ -214,6 +214,20 @@ Checklist for ordinary releases
 
   - Test JSON proxy
 
+* Prepare an update pull for compat-table
+
+  - Fork and branch
+
+  - Compile "duk", Duktape.version must match upcoming release
+
+  - Go through data-*.js files, and copy previous results directly, e.g.
+    "duktape20: false," -> add line "duktape21: false,"
+
+  - Run "nodejs duktape.js" in compat-table, and update data files to match
+    new results
+
+  - Rerun "nodejs build.js", and finalize the pull
+
 * Release notes (``doc/release-notes-*.rst``)
 
   - Write new release notes for release; needs known issues output from at
