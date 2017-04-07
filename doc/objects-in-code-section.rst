@@ -59,7 +59,8 @@ duk_heaphdr
   - Mark-and-sweep: cannot mark object reachable, temproot, etc.  Built-in
     strings/objects must not be marked "visited".
 
-  - No finalizer support: cannot mark finalizable, finalized.
+  - No finalizer support: cannot mark finalizable, finalized.  Also no need
+    for finalization because ROM objects don't need to be freed.
 
 * Can't update refcount.
 

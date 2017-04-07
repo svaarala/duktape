@@ -489,7 +489,10 @@ DUK_LOCAL void duk__clear_finalize_list_flags(duk_heap *heap) {
 	hdr = heap->finalize_list;
 	while (hdr) {
 		DUK_HEAPHDR_CLEAR_REACHABLE(hdr);
-		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(hdr));  /* Currently true, may change if mark-and-sweep during finalization allowed. */
+#if defined(DUK_USE_ASSERTIONS)
+		DUK_ASSERT(DUK_HEAPHDR_HAS_FINALIZABLE(hdr) || \
+		           (heap->currently_finalizing == hdr));
+#endif
 		/* DUK_HEAPHDR_FLAG_FINALIZED may be set. */
 		DUK_ASSERT(!DUK_HEAPHDR_HAS_TEMPROOT(hdr));
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
@@ -603,25 +606,25 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 		next = DUK_HEAPHDR_GET_NEXT(heap, curr);
 
-		if (DUK_LIKELY(DUK_HEAPHDR_HAS_REACHABLE(curr))) {
+		if (DUK_HEAPHDR_HAS_REACHABLE(curr)) {
 			/*
-			 *  Reachable object, keep.
+			 *  Reachable object:
+			 *    - If FINALIZABLE -> actually unreachable (but marked
+			 *      artificially reachable), queue to finalize_list.
+			 *    - If !FINALIZABLE but FINALIZED -> rescued after
+			 *      finalizer execution.
+			 *    - Otherwise just a normal, reachable object.
+			 *
+			 *  Objects which are kept are queued to heap_allocated
+			 *  tail (we're essentially filtering heap_allocated in
+			 *  practice).
 			 */
-
-			DUK_DDD(DUK_DDDPRINT("sweep, reachable: %p", (void *) curr));
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 			if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZABLE(curr))) {
-				/*
-				 *  If object has been marked finalizable, move it to the
-				 *  "to be finalized" work list.  It will be collected on
-				 *  the next mark-and-sweep if it is still unreachable
-				 *  after running the finalizer.
-				 */
-
 				DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
 				DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);
-				DUK_DDD(DUK_DDDPRINT("object has finalizer, move to finalization work list: %p", (void *) curr));
+				DUK_DD(DUK_DDPRINT("sweep; reachable, finalizable --> move to finalize_list: %p", (void *) curr));
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 				DUK_HEAPHDR_PREINC_REFCOUNT(curr);  /* Bump refcount so that refzero never occurs when pending a finalizer call. */
@@ -634,28 +637,24 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 			else
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 			{
-				/*
-				 *  Object will be kept; queue object back to heap_allocated (to tail).
-				 */
-
 				if (DUK_UNLIKELY(DUK_HEAPHDR_HAS_FINALIZED(curr))) {
-					/*
-					 *  Object's finalizer was executed on last round, and
-					 *  object has been happily rescued.
-					 */
-
 					DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZABLE(curr));
 					DUK_ASSERT(DUK_HEAPHDR_GET_TYPE(curr) == DUK_HTYPE_OBJECT);
-					DUK_DD(DUK_DDPRINT("object rescued during mark-and-sweep finalization: %p", (void *) curr));
-#if defined(DUK_USE_DEBUG)
-					count_rescue++;
-#endif
-				} else {
-					/*
-					 *  Plain, boring reachable object.
-					 */
 
-					DUK_DD(DUK_DDPRINT("keep object: %!iO", curr));
+					if (flags & DUK_MS_FLAG_POSTPONE_RESCUE) {
+						DUK_DD(DUK_DDPRINT("sweep; reachable, finalized, but postponing rescue decisions --> keep object (with FINALIZED set): %!iO", curr));
+						count_keep++;
+					} else {
+						DUK_DD(DUK_DDPRINT("sweep; reachable, finalized --> rescued after finalization: %p", (void *) curr));
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+						DUK_HEAPHDR_CLEAR_FINALIZED(curr);
+#endif
+#if defined(DUK_USE_DEBUG)
+						count_rescue++;
+#endif
+					}
+				} else {
+					DUK_DD(DUK_DDPRINT("sweep; reachable --> keep: %!iO", curr));
 					count_keep++;
 				}
 
@@ -675,21 +674,22 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 			}
 
 			DUK_HEAPHDR_CLEAR_REACHABLE(curr);
-#if defined(DUK_USE_FINALIZER_SUPPORT)
-			DUK_HEAPHDR_CLEAR_FINALIZED(curr);
-#endif
+			/* Keep FINALIZED if set, used if rescue decisions are postponed. */
 			/* Keep FINALIZABLE for objects on finalize_list. */
-
 			DUK_ASSERT(!DUK_HEAPHDR_HAS_REACHABLE(curr));
-			DUK_ASSERT(!DUK_HEAPHDR_HAS_FINALIZED(curr));
-
-			curr = next;
 		} else {
 			/*
-			 *  Unreachable object, free
+			 *  Unreachable object:
+			 *    - If FINALIZED, object was finalized but not
+			 *      rescued.  This doesn't affect freeing.
+			 *    - Otherwise normal unreachable object.
+			 *
+			 *  There's no guard preventing a FINALIZED object
+			 *  from being freed while finalizers execute: the
+			 *  artificial finalize_list reachability roots can't
+			 *  cause an incorrect free decision (but can cause
+			 *  an incorrect rescue decision).
 			 */
-
-			DUK_DDD(DUK_DDDPRINT("sweep, not reachable: %p", (void *) curr));
 
 #if defined(DUK_USE_REFERENCE_COUNTING)
 			/* Non-zero refcounts should not happen because we refcount
@@ -702,8 +702,11 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 #if defined(DUK_USE_DEBUG)
 			if (DUK_HEAPHDR_HAS_FINALIZED(curr)) {
-				DUK_DDD(DUK_DDDPRINT("finalized object not rescued: %p", (void *) curr));
+				DUK_DD(DUK_DDPRINT("sweep; unreachable, finalized --> finalized object not rescued: %p", (void *) curr));
+			} else {
+				DUK_DD(DUK_DDPRINT("sweep; not reachable --> free: %p", (void *) curr));
 			}
+
 #endif
 
 			/* Note: object cannot be a finalizable unreachable object, as
@@ -721,10 +724,11 @@ DUK_LOCAL void duk__sweep_heap(duk_heap *heap, duk_int_t flags, duk_size_t *out_
 
 			/* Free object and all auxiliary (non-heap) allocs. */
 			duk_heap_free_heaphdr_raw(heap, curr);
-
-			curr = next;
 		}
+
+		curr = next;
 	}
+
 	if (prev != NULL) {
 		DUK_HEAPHDR_SET_NEXT(heap, prev, NULL);
 	}
@@ -1020,6 +1024,11 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	                 (unsigned long) flags, (unsigned long) (flags | heap->ms_base_flags)));
 
 	flags |= heap->ms_base_flags;
+#if defined(DUK_USE_FINALIZER_SUPPORT)
+	if (heap->finalize_list != NULL) {
+		flags |= DUK_MS_FLAG_POSTPONE_RESCUE;
+	}
+#endif
 
 	/*
 	 *  Assertions before
@@ -1203,22 +1212,17 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 *  for finalize_list.
 	 *
 	 *  As of Duktape 2.1 finalization happens outside mark-and-sweep
-	 *  protection.  Even so, mark-and-sweep is prevented while finalizers
-	 *  run: if mark-and-sweep runs when the finalize_list has only been
-	 *  partially processed, incorrect rescue decisions are made because
-	 *  finalize_list is considered a reachability root.  As a side effect:
+	 *  protection.  Mark-and-sweep is allowed while the finalize_list
+	 *  is being processed, but no rescue decisions are done while the
+	 *  process is on-going.  This avoids incorrect rescue decisions
+	 *  if an object is considered reachable (and thus rescued) because
+	 *  of a reference via finalize_list (which is considered a reachability
+	 *  root).  When finalize_list is being processed, reachable objects
+	 *  with FINALIZED set will just keep their FINALIZED flag for later
+	 *  mark-and-sweep processing.
 	 *
-	 *    * An out-of-memory error inside a finalizer will not
-	 *      cause a mark-and-sweep and may cause the finalizer
-	 *      to fail unnecessarily.
-	 *
-	 *  This is not optimal, but since the sweep for this phase has
-	 *  already happened, this is probably good enough for now.
-	 *
-	 *  There are at least two main fixes to this limitation: (1) a better
-	 *  notion of reachability for rescue/free decisions, and (2) skipping
-	 *  rescue/free decisions when mark-and-sweep runs and finalize_list
-	 *  is not empty.
+	 *  This could also be handled (a bit better) by having a more refined
+	 *  notion of reachability for rescue/free decisions.
 	 *
 	 *  XXX: avoid finalizer execution when doing emergency GC?
 	 */

@@ -418,9 +418,12 @@ Mark-and-sweep
 
 * Executes finalizers after mark-and-sweep is complete (unless prevented),
   which has arbitrary code execution side effects.  Finalizer execution
-  happens outside of mark-and-sweep protection, but currently finalizer
-  execution explicitly prevents mark-and-sweep to avoid incorrect rescue/free
-  decisions when the finalize_list is only partially processed.
+  happens outside of mark-and-sweep protection, and may trigger mark-and-sweep.
+  However, when mark-and-sweep runs with finalize_list != NULL, rescue
+  decisions are postponed to avoid incorrect rescue decisions caused by
+  finalize_list being (artificially) treated as a reachability root; in
+  concrete terms, FINALIZED flags are not cleared so they'll be rechecked
+  later.
 
 Error throw
 
