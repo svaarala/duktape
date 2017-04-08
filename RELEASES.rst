@@ -2626,7 +2626,7 @@ Planned
 * Improve side effect protections: prevent finalizer execution between an
   error throw point and its catch point; add asserts for catching any cases
   where an error would be thrown when handling a previously thrown error
-  (GH-1427)
+  (GH-314, GH-1311, GH-1427)
 
 * Allow duk_push_heapptr() for a heap object which has become unreachable,
   has been queued to finalize_list, but hasn't yet been finalized; in this
@@ -2668,7 +2668,7 @@ Planned
 * Fix out-of-memory handling for object property table resize, previously
   an out-of-memory during property table resize could leave internal state
   in a state which prevented mark-and-sweep from fully working afterwards
-  (GH-1427)
+  (GH-1426, GH-1427)
 
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe
