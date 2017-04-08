@@ -41,6 +41,7 @@ DUK_USE_USER_DECLARE()
  *  dependencies.
  */
 
+#include "duk_dblunion.h"
 #include "duk_replacements.h"
 #include "duk_jmpbuf.h"
 #include "duk_exception.h"

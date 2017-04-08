@@ -104,11 +104,11 @@ def cstring(x):
     return '"' + x + '"'  # good enough for now
 
 # Get Duktape version number as an integer.  DUK_VERSION is grepped from
-# duk_api_public.h.in: it is needed for the public API and we want to avoid
+# duktape.h.in: it is needed for the public API and we want to avoid
 # defining it in multiple places.
 def get_duk_version():
     r = re.compile(r'^#define\s+DUK_VERSION\s+(.*?)L?\s*$')
-    with open(os.path.join('src-input', 'duk_api_public.h.in'), 'rb') as f:
+    with open(os.path.join('src-input', 'duktape.h.in'), 'rb') as f:
         for line in f:
             m = r.match(line)
             if m is not None:
@@ -164,7 +164,7 @@ def create_dist_directories(dist):
 # works from there.
 
 def check_cwd_duktape_repo_root():
-    if not (os.path.isfile(os.path.join('src-input', 'duk_api_public.h.in')) and \
+    if not (os.path.isfile(os.path.join('src-input', 'duktape.h.in')) and \
             os.path.isfile(os.path.join('config', 'platforms.yaml'))):
         sys.stderr.write('\n')
         sys.stderr.write('*** Working directory must be Duktape repo checkout root!\n')
@@ -312,7 +312,6 @@ def main():
         'duk_api_inspect.c',
         'duk_api_memory.c',
         'duk_api_object.c',
-        'duk_api_public.h.in',
         'duk_api_stack.c',
         'duk_api_string.c',
         'duk_api_time.c',
@@ -340,7 +339,7 @@ def main():
         'duk_bi_symbol.c',
         'duk_bi_thread.c',
         'duk_bi_thrower.c',
-        'duk_dblunion.h.in',
+        'duk_dblunion.h',
         'duk_debug_fixedbuffer.c',
         'duk_debugger.c',
         'duk_debugger.h',

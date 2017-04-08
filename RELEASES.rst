@@ -2531,6 +2531,10 @@ Planned
 2.1.0 (XXXX-XX-XX)
 ------------------
 
+* Reorganize duktape.h #define/#include order so that duk_config.h now sees
+  DUK_VERSION which allows e.g. application config fixups to react to Duktape
+  version (GH-789, GH-1470)
+
 * Replace heap string table algorithms (chain and probe) with a single
   algorithm based on single linked chaining of duk_hstrings, with the same
   algorithm serving both default and low memory environments; improve ROM
