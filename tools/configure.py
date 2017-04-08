@@ -130,7 +130,7 @@ def create_targz(dstfile, filelist):
 def cstring(x):
     return '"' + x + '"'  # good enough for now
 
-# DUK_VERSION is grepped from duk_api_public.h.in: it is needed for the
+# DUK_VERSION is grepped from duktape.h.in: it is needed for the
 # public API and we want to avoid defining it in two places.
 def get_duk_version(apiheader_filename):
     r = re.compile(r'^#define\s+DUK_VERSION\s+(.*?)L?\s*$')
@@ -312,7 +312,7 @@ def main():
             duk_dist_meta = json.loads(f.read())
 
     duk_version, duk_major, duk_minor, duk_patch, duk_version_formatted = \
-        get_duk_version(os.path.join(srcdir, 'duk_api_public.h.in'))
+        get_duk_version(os.path.join(srcdir, 'duktape.h.in'))
 
     git_commit = None
     git_branch = None
@@ -432,6 +432,7 @@ def main():
         'duk_bi_symbol.c',
         'duk_bi_thread.c',
         'duk_bi_thrower.c',
+        'duk_dblunion.h',
         'duk_debug_fixedbuffer.c',
         'duk_debug.h',
         'duk_debug_macros.c',
@@ -611,8 +612,6 @@ def main():
         '@DUK_SINGLE_FILE@': '#define DUK_SINGLE_FILE',
         '@LICENSE_TXT@': read_file(os.path.join(tempdir, 'LICENSE.txt.tmp'), strip_last_nl=True),
         '@AUTHORS_RST@': read_file(os.path.join(tempdir, 'AUTHORS.rst.tmp'), strip_last_nl=True),
-        '@DUK_API_PUBLIC_H@': read_file(os.path.join(srcdir, 'duk_api_public.h.in'), strip_last_nl=True),
-        '@DUK_DBLUNION_H@': read_file(os.path.join(srcdir, 'duk_dblunion.h.in'), strip_last_nl=True),
         '@DUK_VERSION_FORMATTED@': duk_version_formatted,
         '@GIT_COMMIT@': git_commit,
         '@GIT_COMMIT_CSTRING@': git_commit_cstring,
