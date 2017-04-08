@@ -9,6 +9,10 @@ Main changes in this release (see RELEASES.rst for full details):
 
 * TBD.
 
+* DUK_VERSION is now visible to duk_config.h so it's possible for duk_config.h
+  to support multiple Duktape versions.  For example, some config options may be
+  disabled prior to a certain patch level.
+
 Upgrading from Duktape 2.0
 ==========================
 

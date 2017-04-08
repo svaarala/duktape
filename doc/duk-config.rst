@@ -21,6 +21,10 @@ create both a config header and prepared Duktape sources for build**.  This
 document describes genconfig.py usage but you should normally use configure.py
 wherever genconfig.py is used.
 
+The ``DUK_VERSION`` define is available for duk_config.h, so that application
+configuration snippets can react to Duktape version if necessary (e.g. enable
+features only for a newer version).
+
 While an external config header provides much more flexibility it also needs
 a bit more thought especially when adapting Duktape to an exotic environment.
 This document describes various approaches on creating a config header and

@@ -343,7 +343,7 @@ Checklist for ordinary releases
     from 1000 to 1099.  This ensures that any forks off the trunk will have a
     version number easy to distinguish as an unofficial release.
 
-  - ``src/duk_api_public.h.in``
+  - ``src/duktape.h.in``
 
 Checklist for maintenance releases
 ==================================
