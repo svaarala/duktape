@@ -1,0 +1,40 @@
+name: duk_opt_buffer
+
+proto: |
+  void *duk_opt_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the data pointer for a (plain) buffer value at <code>idx</code> without
+  modifying or coercing the value.  Returns a non-<code>NULL</code> pointer if the value
+  is a valid buffer with a non-zero size.  For a zero-size buffer, may return a
+  <code>NULL</code> or a non-<code>NULL</code> pointer.  If <code>out_size</code> is
+  non-<code>NULL</code>, the size of the buffer is written to <code>*out_size</code>.
+  If the value is <code>undefined</code> or the index is invalid, <code>def_ptr</code>
+  default value is returned and the <code>def_len</code> default length is written
+  to <code>*out_size</code> (if <code>out_size</code> is non-<code>NULL</code>).
+  In other cases (<code>null</code> and non-matching type) throws an error.</p>
+
+  <div include="default-pointer-validity.html" />
+
+  <div include="buffer-null-pointer-ambiguity.html" />
+
+example: |
+  void *ptr;
+  duk_size_t sz;
+  char buf[256];
+
+  /* Use a buffer given at index 2, or default to 'buf'. */
+  ptr = duk_opt_buffer(ctx, 2, &sz, (void *) buf, sizeof(buf));
+  printf("buf=%p, size=%lu\n", ptr, (unsigned long) sz);
+
+tags:
+  - stack
+  - buffer
+
+seealso:
+  - duk_opt_buffer_data
+
+introduced: 2.1.0

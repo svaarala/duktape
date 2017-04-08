@@ -1,0 +1,37 @@
+name: duk_opt_lstring
+
+proto: |
+  const char *duk_opt_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len, const char *def_ptr, duk_size_t def_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get character data pointer and length for a string at <code>idx</code>
+  without modifying or coercing the value.  Returns a non-<code>NULL</code>
+  pointer to the read-only, NUL-terminated string data, and writes the
+  string byte length to <code>*out_len</code> (if <code>out_len</code> is
+  non-<code>NULL</code>).  If the value is <code>undefined</code> or the index
+  is invalid, <code>def_ptr</code> default value is returned and the
+  <code>def_len</code> default length is written to <code>*out_len</code>
+  (if <code>out_len</code> is non-<code>NULL</code>).  In other cases
+  (<code>null</code> or non-matching type) throws an error.</p>
+
+  <div include="string-non-null-zero-length.html" />
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  const char *str;
+  duk_size_t len;
+
+  str = duk_opt_lstring(ctx, -3, &len, "foo" "\x00" "bar", 7);
+
+seealso:
+  - duk_opt_string
+
+tags:
+  - stack
+  - string
+
+introduced: 2.1.0

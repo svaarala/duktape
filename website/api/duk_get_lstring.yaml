@@ -18,21 +18,22 @@ summary: |
   <p>To get the string character length (instead of byte length), use
   <code><a href="#duk_get_length">duk_get_length()</a></code>.</p>
 
-  <div class="note">
-  A non-<code>NULL</code> return value is guaranteed even for zero length strings;
-  this differs from how buffer data pointers are handled (for technical reasons).
-  </div>
+  <div include="string-non-null-zero-length.html" />
 
 example: |
-  const char *buf;
+  const char *str;
   duk_size_t len;
 
-  buf = duk_get_lstring(ctx, -3, &len);
-  if (buf) {
+  str = duk_get_lstring(ctx, -3, &len);
+  if (str) {
       printf("value is a string, %lu bytes\n", (unsigned long) len);
   }
 
+seealso:
+  - duk_get_string
+
 tags:
   - stack
+  - string
 
 introduced: 1.0.0

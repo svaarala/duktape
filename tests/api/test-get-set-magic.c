@@ -63,7 +63,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_pop(ctx);
 
 	/* 0xdeadbeef gets truncated to 0xffffbeef == -16657 */
-	duk_set_magic(ctx, -2, 0xdeadbeef);
+	duk_set_magic(ctx, -2, 0xdeadbeefUL);
 	printf("magic: %ld\n", (long) duk_get_magic(ctx, -2));
 	duk_dup(ctx, -2);
 	duk_call(ctx, 0);

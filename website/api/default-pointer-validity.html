@@ -1,0 +1,10 @@
+<div class="note">
+Default pointer values given to duk_opt_xxx() are not tracked by Duktape,
+e.g. duk_opt_string() does not make a copy of the default string argument.
+The caller is responsible for ensuring that the default pointer remains
+valid for its intended use.  For example, duk_opt_string(ctx, 3, "localhost")
+works fine because a string constant is always valid, but if the argument is
+a libc allocated string, caller must ensure the pointer returned from
+duk_opt_string() is not used beyond the lifetime of the libc allocated
+string (in case the return value was the default).
+</div>

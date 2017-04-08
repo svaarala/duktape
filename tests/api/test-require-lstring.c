@@ -31,19 +31,19 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 	duk_push_lstring(ctx, "foo\0bar", 7);
 	duk_push_string(ctx, "");
 
-	sz = (duk_size_t) 0xdeadbeef;
+	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_require_lstring(ctx, 0, &sz);
 	dump_string_size(p, sz);
 
-	sz = (duk_size_t) 0xdeadbeef;
+	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_require_lstring(ctx, 0, NULL);
 	dump_string(p);
 
-	sz = (duk_size_t) 0xdeadbeef;
+	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_require_lstring(ctx, 1, &sz);
 	dump_string_size(p, sz);
 
-	sz = (duk_size_t) 0xdeadbeef;
+	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_require_lstring(ctx, 1, NULL);
 	dump_string(p);
 	return 0;

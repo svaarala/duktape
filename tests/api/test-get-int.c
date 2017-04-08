@@ -11,6 +11,8 @@ NaN coerces to zero
 number: 0
 non-number coerces to zero
 number: 0
+invalid index returns zero
+number: 0
 ===*/
 
 void test(duk_context *ctx) {
@@ -66,4 +68,7 @@ void test(duk_context *ctx) {
 	duk_push_string(ctx, "123");
 	printf("number: %ld\n", (long) duk_get_int(ctx, -1));
 	duk_pop(ctx);
+
+	printf("invalid index returns zero\n");
+	printf("number: %ld\n", (long) duk_get_int(ctx, 100));
 }

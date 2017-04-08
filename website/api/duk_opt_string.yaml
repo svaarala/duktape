@@ -1,0 +1,37 @@
+name: duk_opt_string
+
+proto: |
+  const char *duk_opt_string(duk_context *ctx, duk_idx_t idx, const char *def_ptr);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get character data pointer for a string at <code>idx</code> without
+  modifying or coercing the value.  Returns a non-<code>NULL</code> pointer to
+  the read-only, NUL-terminated string data.  If the value is
+  <code>undefined</code> or the index is invalid, <code>def_ptr</code>
+  default value is returned.  In other cases (<code>null</code> or non-matching
+  type) throws an error.</p>
+
+  <p>To get the string byte length explicitly (which is useful if the string
+  contains embedded NUL characters), use
+  <code><a href="#duk_opt_lstring">duk_opt_lstring()</a></code>.</p>
+
+  <div include="string-non-null-zero-length.html" />
+
+  <div include="default-pointer-validity.html" />
+
+  <div include="symbols-are-strings.html" />
+
+example: |
+  const char *host = duk_opt_string(ctx, 3, "localhost");
+
+seealso:
+  - duk_opt_lstring
+
+tags:
+  - stack
+  - string
+
+introduced: 2.1.0

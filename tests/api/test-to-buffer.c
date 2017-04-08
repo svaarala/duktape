@@ -99,7 +99,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 		buf[i] = i;
 	}
 	duk_push_pointer(ctx, (void *) NULL);
-	duk_push_pointer(ctx, (void *) 0xdeadbeef);
+	duk_push_pointer(ctx, (void *) 0xdeadbeefUL);
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
@@ -110,7 +110,7 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 		duk_dup(ctx, i);
 		t1 = duk_get_type(ctx, -1);
-		sz = (duk_size_t) 0xdeadbeef;
+		sz = (duk_size_t) 0xdeadbeefUL;
 		ptr = duk_to_buffer(ctx, -1, &sz);
 		t2 = duk_get_type(ctx, -1);
 		printf("index %ld, type %ld -> %ld, ptr-is-NULL %d, size %lu\n",

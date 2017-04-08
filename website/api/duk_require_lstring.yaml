@@ -11,12 +11,17 @@ summary: |
   but throws an error if the value at <code>idx</code> is not a string
   or if the index is invalid.</p>
 
+  <div include="string-non-null-zero-length.html" />
+
 example: |
   const char *buf;
   duk_size_t len;
 
   buf = duk_require_lstring(ctx, -3, &len);
   printf("value is a string, %lu bytes\n", (unsigned long) len);
+
+seealso:
+  - duk_require_string
 
 tags:
   - stack

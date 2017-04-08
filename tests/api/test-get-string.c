@@ -33,6 +33,7 @@ index 6: [66 6f 6f]
 index 7: [e1 88 b4 78 79 7a]
 index 8: null
 index 9: null
+index 10: null
 ==> rc=0, result='undefined'
 ===*/
 
@@ -54,7 +55,7 @@ static duk_ret_t test_get_string(duk_context *ctx, void *udata) {
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
-	for (i = 0; i < n; i++) {
+	for (i = 0; i <= n; i++) {
 		printf("index %ld: ", (long) i);
 		dump((const unsigned char *) duk_get_string(ctx, i));
 	}
@@ -85,6 +86,8 @@ index 8: length 0: null
 index 8: null
 index 9: length 0: null
 index 9: null
+index 10: length 0: null
+index 10: null
 ==> rc=0, result='undefined'
 ===*/
 
@@ -106,11 +109,11 @@ static duk_ret_t test_get_lstring(duk_context *ctx, void *udata) {
 
 	n = duk_get_top(ctx);
 	printf("top: %ld\n", (long) n);
-	for (i = 0; i < n; i++) {
+	for (i = 0; i <= n; i++) {
 		const char *buf;
 		size_t len;
 
-		len = (size_t) 0xdeadbeef;
+		len = (size_t) 0xdeadbeefUL;
 		buf = duk_get_lstring(ctx, i, &len);
 		printf("index %ld: length %lu: ",
 		       (long) i, (unsigned long) len);

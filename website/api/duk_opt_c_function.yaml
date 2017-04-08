@@ -1,0 +1,26 @@
+name: duk_opt_c_function
+
+proto: |
+  duk_c_function duk_opt_c_function(duk_context *ctx, duk_idx_t idx, duk_c_function def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the Duktape/C function pointer (a <code>duk_c_function</code>) from an
+  Ecmascript function object associated with a Duktape/C function.  If the
+  value is <code>undefined</code> or the index is invalid, <code>def_value</code>
+  default value is returned.  In other cases (<code>null</code> or non-matching
+  type) throws an error.</p>
+
+example: |
+  duk_c_function funcptr;
+
+  /* Native callback, default to nop_callback. */
+  funcptr = duk_opt_c_function(ctx, -3, nop_callback);
+
+tags:
+  - stack
+  - function
+
+introduced: 2.1.0

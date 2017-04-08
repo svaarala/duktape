@@ -276,7 +276,7 @@ static duk_ret_t test_2a(duk_context *ctx, void *udata) {
 	duk_set_top(ctx, 0); duk_push_string(ctx, "foo\x00" "bar"); test__require_calls(ctx);
 	duk_set_top(ctx, 0); duk_push_fixed_buffer(ctx, 16); test__require_calls(ctx);
 	duk_set_top(ctx, 0); duk_push_pointer(ctx, NULL); test__require_calls(ctx);
-	duk_set_top(ctx, 0); duk_push_pointer(ctx, (void *) 0xdeadbeef); test__require_calls(ctx);
+	duk_set_top(ctx, 0); duk_push_pointer(ctx, (void *) 0xdeadbeefUL); test__require_calls(ctx);
 	duk_set_top(ctx, 0); duk_push_object(ctx); test__require_calls(ctx);
 	duk_set_top(ctx, 0); duk_push_array(ctx); test__require_calls(ctx);
 	duk_set_top(ctx, 0); duk_push_c_function(ctx, dummy_func, 0); test__require_calls(ctx);

@@ -1,0 +1,21 @@
+name: duk_opt_number
+
+proto: |
+  duk_double_t duk_opt_number(duk_context *ctx, duk_idx_t idx, duk_double_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Get the number value at <code>idx</code> without modifying or coercing
+  the value.  If the value is <code>undefined</code> or the index is invalid,
+  <code>def_value</code> default value is returned.  In other cases
+  (<code>null</code> or non-matching type) throws an error.</p>
+
+example: |
+  double backoff_multiplier = (double) duk_opt_number(ctx, 2, 1.5);  /* default: 1.5 */
+
+tags:
+  - stack
+
+introduced: 2.1.0

@@ -3,6 +3,7 @@ There is no reliable way to distinguish a zero-size buffer from a non-buffer
 based on the return values alone: a <code>NULL</code> with zero size is returned
 for a non-buffer.  The same values may be returned for a zero-size buffer (although
 it is also possible that a non-<code>NULL</code> pointer is returned).  Use
-<code><a href="#duk_is_buffer_data">duk_is_buffer_data()</a></code> when type
-checking a buffer or a buffer object.
+<code><a href="#duk_is_buffer">duk_is_buffer()</a></code> or
+<code><a href="#duk_is_buffer_data">duk_is_buffer_data()</a></code> or
+when type checking a buffer or a buffer object.
 </div>

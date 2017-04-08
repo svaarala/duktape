@@ -130,7 +130,7 @@ static duk_ret_t test_buffer_object(duk_context *ctx, void *udata) {
 
 	(void) udata;
 
-	/* duk_get_buffer_data() doesn't accept a buffer object */
+	/* duk_get_buffer() doesn't accept a buffer object */
 
 	duk_set_top(ctx, 0);
 	duk_eval_string(ctx, "new ArrayBuffer(16)");

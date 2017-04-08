@@ -405,7 +405,7 @@ static duk_ret_t test_invalid_flags2(duk_context *ctx, void *udata) {
 	(void) udata;
 
 	duk_push_fixed_buffer(ctx, 256);
-	duk_push_buffer_object(ctx, -1, 7, 512, (duk_uint_t) 0xdeadbeef /* ERROR: bogus type */);
+	duk_push_buffer_object(ctx, -1, 7, 512, (duk_uint_t) 0xdeadbeefUL /* ERROR: bogus type */);
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
