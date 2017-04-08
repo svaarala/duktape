@@ -39,7 +39,7 @@ VALGRIND:=$(shell command -v valgrind 2>/dev/null)
 PYTHON:=$(shell { command -v python2 || command -v python; } 2>/dev/null)
 
 # Scrape version from the public header; convert from e.g. 10203 -> '1.2.3'
-DUK_VERSION:=$(shell cat src-input/duk_api_public.h.in | grep define | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
+DUK_VERSION:=$(shell cat src-input/duktape.h.in | grep 'define ' | grep DUK_VERSION | tr -s ' ' ' ' | cut -d ' ' -f 3 | tr -d 'L')
 DUK_MAJOR:=$(shell echo "$(DUK_VERSION) / 10000" | bc)
 DUK_MINOR:=$(shell echo "$(DUK_VERSION) % 10000 / 100" | bc)
 DUK_PATCH:=$(shell echo "$(DUK_VERSION) % 100" | bc)
