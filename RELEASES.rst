@@ -2158,6 +2158,10 @@ Other C API changes:
 * Add duk_is_buffer_data() API call to reliably test whether a value stack
   entry is a plain buffer or any buffer object (GH-1221)
 
+* Add duk_def_prop_list() with a flexible and more easily versionably
+  macro-based initializers syntax; this API call will eventually replace
+  duk_put_function_list() and duk_put_number_list() (GH-130, GH-575)
+
 * Add time functions to the C API (duk_get_now(), duk_time_to_components(),
   duk_components_to_time()) to allow C code to conveniently work with the
   same time provider as seen by Ecmascript code (GH-771, GH-1209, GH-1211,
