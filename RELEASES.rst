@@ -2567,6 +2567,10 @@ Planned
   arguments); for example: "int port = duk_opt_int(ctx, -3, 80);"
   (GH-1458)
 
+* Add duk_get_xxx_default() API calls which behave like duk_get_xxx() but
+  allow an explicit default value to be specified; for example:
+  "int port = duk_get_int_default(ctx, -3, 80);" (GH-1472)
+
 * Spawn the ArrayBuffer object backing a typed array lazily when its .buffer
   property is first read, reducing memory usage in common cases where the view
   is constructed directly without needing the ArrayBuffer object (GH-1225)
