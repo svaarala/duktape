@@ -7,8 +7,9 @@
 # octane/zlib-data.js: -""-
 # octane/regexp.js: checksum error
 
+OCTANEBASE= \
+	octane/base.js
 TESTS= \
-	octane/base.js \
 	octane/box2d.js \
 	octane/code-load.js \
 	octane/crypto.js \
@@ -22,10 +23,26 @@ TESTS= \
 	octane/richards.js \
 	octane/splay.js
 
+ENGINE=../../duk.O2
+#ENGINE=jerry
+#ENGINE=mujs
+
+.PHONY: all
+all: test
+
+.PHONY: check-engine
+check-engine:
+	if [ ! -f $(ENGINE) ]; then echo "*** Expected $(ENGINE) to exist"; exit 1; fi
+
 .PHONY: test
-test: octane
-	if [ ! -f "../../duk.O2" ]; then echo "*** Expected ../../duk.O2 to exist"; exit 1; fi
-	../../duk.O2 $(TESTS) duktape_harness.js
+test: check-engine octane
+	$(ENGINE) $(OCTANEBASE) $(TESTS) duktape_harness.js
+
+# Useful for comparison to other engines when the set of successful sub-tests
+# isn't the same; run what can be run.
+.PHONY: test-individual
+test-individual: octane
+	for i in $(TESTS); do echo "*** $$i" ; $(ENGINE) mujs_tweaks.js $(OCTANEBASE) $$i duktape_harness.js; done
 
 octane:
 	git clone https://github.com/chromium/octane.git
