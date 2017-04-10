@@ -1,5 +1,11 @@
 var globalObject = new Function('return this')();
 
+// With MuJS globalObject is undefined for some reason, but 'this' appears
+// to match global object.
+if (globalObject === undefined) {
+    globalObject = this;
+}
+
 if (typeof globalObject.print !== 'function') {
   globalObject.print = globalObject.console.log;
 }
