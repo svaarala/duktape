@@ -1,6 +1,7 @@
 <h1 id="portability">Portability</h1>
 
-<p>Duktape is widely portable to platforms with at least a C89 compiler.
+<p>Duktape is widely portable to platforms with at least a C89 compiler
+(with a few exceptions like requiring snprintf() and vsnprintf()).
 Because Duktape has very limited dependency on platform functions, it's
 possible to Duktape to very exotic platforms.  One major platform dependency
 is the Date built-in which may need a custom provider for an exotic platform.</p>
