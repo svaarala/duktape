@@ -2769,6 +2769,9 @@ Planned
 
 * Portability improvements for Nspire (GH-1461)
 
+* Portability improvements for MIPS platforms, change alignment requirement
+  of MIPS32 from 4 to 8 (GH-1478, GH-1479)
+
 * Compiler warning fix for using DUK_UNREF() on a volatile argument (GH-1282)
 
 * Add DUK_HOT() and DUK_COLD() macros, and use them for a few internal
