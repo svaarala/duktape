@@ -1,0 +1,23 @@
+name: duk_get_boolean_default
+
+proto: |
+  duk_bool_t duk_get_boolean_default(duk_context *ctx, duk_idx_t idx, duk_bool_t def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_boolean">duk_get_boolean()</a></code>
+  but with an explicit default value, returned when the value is not a
+  boolean or the index is invalid.</p>
+
+example: |
+  duk_bool_t flag_xyz = duk_get_boolean_default(ctx, 2, 1);  /* default: true */
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_boolean
+
+introduced: 2.1.0

@@ -1,25 +1,25 @@
 /*===
 *** test_basic (duk_safe_call)
 top: 18
-index 0: value 123, DUK_UINT_MAX=0
+index 0: value 123
 index 1: TypeError: number required, found null (stack index 1)
 index 2: TypeError: number required, found true (stack index 2)
 index 3: TypeError: number required, found false (stack index 3)
 index 4: TypeError: number required, found 'foo' (stack index 4)
 index 5: TypeError: number required, found '123' (stack index 5)
-index 6: value 0, DUK_UINT_MAX=0
-index 7: value 0, DUK_UINT_MAX=0
-index 8: value 0, DUK_UINT_MAX=0
-index 9: value 0, DUK_UINT_MAX=0
-index 10: value 0, DUK_UINT_MAX=0
-index 11: value 3, DUK_UINT_MAX=0
-index 12: value 123456789, DUK_UINT_MAX=0
-index 13: value 4294967294, DUK_UINT_MAX=0
-index 14: value 4294967295, DUK_UINT_MAX=1
-index 15: value 4294967295, DUK_UINT_MAX=1
-index 16: value 0, DUK_UINT_MAX=0
+index 6: value 0
+index 7: value 0
+index 8: value 0
+index 9: value 0
+index 10: value 0
+index 11: value 3
+index 12: value 123456789
+index 13: value 4294967294
+index 14: value DUK_UINT_MAX
+index 15: value DUK_UINT_MAX
+index 16: value 0
 index 17: TypeError: number required, found [object Object] (stack index 17)
-index 18: value 123, DUK_UINT_MAX=0
+index 18: value 123
 ==> rc=0, result='undefined'
 ===*/
 
@@ -28,9 +28,14 @@ static duk_ret_t safe_helper(duk_context *ctx, void *udata) {
 	duk_uint_t v = duk_opt_uint(ctx, idx, 123);
 	(void) udata;
 
-	printf("index %ld: value %lu, DUK_UINT_MAX=%d\n",
-	       (long) idx, (unsigned long) v,
-	       (v == DUK_UINT_MAX));
+	printf("index %ld: value ", (long) idx);
+	if (v == DUK_UINT_MAX) {
+		printf("DUK_UINT_MAX");
+	} else {
+		printf("%lu", (unsigned long) v);
+	}
+	printf("\n");
+
 	return 0;
 }
 

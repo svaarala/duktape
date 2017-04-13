@@ -1,0 +1,28 @@
+name: duk_get_heapptr_default
+
+proto: |
+  void *duk_get_heapptr_default(duk_context *ctx, duk_idx_t idx, void *def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_heapptr">duk_get_heapptr()</a></code>
+  but with an explicit default value, returned when the value is not a
+  boolean or the index is invalid.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  void *ptr;
+
+  ptr = duk_get_heapptr_default(ctx, 2, default_ptr);
+
+tags:
+  - stack
+  - borrowed
+
+seealso:
+  - duk_get_heapptr
+
+introduced: 2.1.0

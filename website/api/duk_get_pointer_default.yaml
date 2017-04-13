@@ -1,0 +1,26 @@
+name: duk_get_pointer_default
+
+proto: |
+  void *duk_get_pointer_default(duk_context *ctx, duk_idx_t idx, void *def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_pointer">duk_get_pointer()</a></code>
+  but with an explicit default value, returned when the value is not a
+  pointer or the index is invalid.</p>
+
+example: |
+  void *ptr;
+
+  ptr = duk_get_pointer_default(ctx, -3, (void *) 0x12345678);
+  printf("my pointer is: %p\n", ptr);
+
+tags:
+  - stack
+
+seealso:
+  - duk_get_pointer
+
+introduced: 2.1.0

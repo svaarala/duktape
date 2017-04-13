@@ -1,0 +1,32 @@
+name: duk_get_buffer_default
+
+proto: |
+  void *duk_get_buffer_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_buffer">duk_get_buffer()</a></code>
+  but with an explicit default value, returned when the value is not a
+  buffer or the index is invalid.</p>
+
+  <div include="default-pointer-validity.html" />
+
+example: |
+  void *ptr;
+  duk_size_t sz;
+  char buf[256];
+
+  /* Use a buffer given at index 2, or default to 'buf'. */
+  ptr = duk_get_buffer_data_default(ctx, 2, &sz, (void *) buf, sizeof(buf));
+
+tags:
+  - stack
+  - buffer
+
+seealso:
+  - duk_get_buffer
+  - duk_get_buffer_data_default
+
+introduced: 2.1.0

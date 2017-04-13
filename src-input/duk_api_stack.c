@@ -1238,6 +1238,12 @@ DUK_EXTERNAL duk_bool_t duk_get_boolean(duk_context *ctx, duk_idx_t idx) {
 	return duk__get_boolean_raw(ctx, idx, 0);  /* default: false */
 }
 
+DUK_EXTERNAL duk_bool_t duk_get_boolean_default(duk_context *ctx, duk_idx_t idx, duk_bool_t def_value) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	return duk__get_boolean_raw(ctx, idx, def_value);
+}
+
 DUK_EXTERNAL duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
@@ -1298,6 +1304,10 @@ DUK_EXTERNAL duk_double_t duk_get_number(duk_context *ctx, duk_idx_t idx) {
 	return duk__get_number_raw(ctx, idx, DUK_DOUBLE_NAN);  /* default: NaN */
 }
 
+DUK_EXTERNAL duk_double_t duk_get_number_default(duk_context *ctx, duk_idx_t idx, duk_double_t def_value) {
+	return duk__get_number_raw(ctx, idx, def_value);
+}
+
 DUK_EXTERNAL duk_double_t duk_require_number(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv;
@@ -1341,6 +1351,18 @@ DUK_EXTERNAL duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	return (duk_uint_t) duk__api_coerce_d2ui(ctx, idx, 0 /*def_value*/, 0 /*require*/);
+}
+
+DUK_EXTERNAL duk_int_t duk_get_int_default(duk_context *ctx, duk_idx_t idx, duk_int_t def_value) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	return (duk_int_t) duk__api_coerce_d2i(ctx, idx, def_value, 0 /*require*/);
+}
+
+DUK_EXTERNAL duk_uint_t duk_get_uint_default(duk_context *ctx, duk_idx_t idx, duk_uint_t def_value) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	return (duk_uint_t) duk__api_coerce_d2ui(ctx, idx, def_value, 0 /*require*/);
 }
 
 DUK_EXTERNAL duk_int_t duk_require_int(duk_context *ctx, duk_idx_t idx) {
@@ -1455,6 +1477,41 @@ DUK_EXTERNAL const char *duk_opt_string(duk_context *ctx, duk_idx_t idx, const c
 	return duk_require_string(ctx, idx);
 }
 
+DUK_EXTERNAL const char *duk_get_lstring_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len, const char *def_ptr, duk_size_t def_len) {
+	duk_hstring *h;
+	const char *ret;
+	duk_size_t len;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	h = duk_get_hstring(ctx, idx);
+	if (h != NULL) {
+		len = DUK_HSTRING_GET_BYTELEN(h);
+		ret = (const char *) DUK_HSTRING_GET_DATA(h);
+	} else {
+		len = def_len;
+		ret = def_ptr;
+	}
+
+	if (out_len != NULL) {
+		*out_len = len;
+	}
+	return ret;
+}
+
+DUK_EXTERNAL const char *duk_get_string_default(duk_context *ctx, duk_idx_t idx, const char *def_value) {
+	duk_hstring *h;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	h = duk_get_hstring(ctx, idx);
+	if (h != NULL) {
+		return (const char *) DUK_HSTRING_GET_DATA(h);
+	} else {
+		return def_value;
+	}
+}
+
 DUK_INTERNAL const char *duk_get_string_notsymbol(duk_context *ctx, duk_idx_t idx) {
 	duk_hstring *h;
 
@@ -1511,6 +1568,10 @@ DUK_EXTERNAL void *duk_opt_pointer(duk_context *ctx, duk_idx_t idx, void *def_va
 		return def_value;
 	}
 	return duk_require_pointer(ctx, idx);
+}
+
+DUK_EXTERNAL void *duk_get_pointer_default(duk_context *ctx, duk_idx_t idx, void *def_value) {
+	return duk__get_pointer_raw(ctx, idx, def_value);
 }
 
 DUK_EXTERNAL void *duk_require_pointer(duk_context *ctx, duk_idx_t idx) {
@@ -1605,6 +1666,12 @@ DUK_EXTERNAL void *duk_opt_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *o
 	return duk_require_buffer(ctx, idx, out_size);
 }
 
+DUK_EXTERNAL void *duk_get_buffer_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len) {
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	return duk__get_buffer_helper(ctx, idx, out_size, def_ptr, def_len, 0 /*throw_flag*/);
+}
+
 DUK_EXTERNAL void *duk_require_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
@@ -1681,6 +1748,10 @@ DUK_INTERNAL void *duk_get_buffer_data_raw(duk_context *ctx, duk_idx_t idx, duk_
 
 DUK_EXTERNAL void *duk_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size) {
 	return duk_get_buffer_data_raw(ctx, idx, out_size, NULL /*def_ptr*/, 0 /*def_size*/, 0 /*throw_flag*/, NULL);
+}
+
+DUK_EXTERNAL void *duk_get_buffer_data_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_size) {
+	return duk_get_buffer_data_raw(ctx, idx, out_size, def_ptr, def_size, 0 /*throw_flag*/, NULL);
 }
 
 DUK_EXTERNAL void *duk_opt_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_size) {
@@ -1862,6 +1933,19 @@ DUK_EXTERNAL duk_c_function duk_opt_c_function(duk_context *ctx, duk_idx_t idx, 
 	return duk_require_c_function(ctx, idx);
 }
 
+DUK_EXTERNAL duk_c_function duk_get_c_function_default(duk_context *ctx, duk_idx_t idx, duk_c_function def_value) {
+	duk_c_function ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	ret = duk_get_c_function(ctx, idx);
+	if (ret != NULL) {
+		return ret;
+	}
+
+	return def_value;
+}
+
 DUK_EXTERNAL duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_c_function ret;
@@ -1912,6 +1996,19 @@ DUK_EXTERNAL duk_context *duk_opt_context(duk_context *ctx, duk_idx_t idx, duk_c
 	return duk_require_context(ctx, idx);
 }
 
+DUK_EXTERNAL_DECL duk_context *duk_get_context_default(duk_context *ctx, duk_idx_t idx, duk_context *def_value) {
+	duk_context *ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	ret = duk_get_context(ctx, idx);
+	if (ret != NULL) {
+		return ret;
+	}
+
+	return def_value;
+}
+
 DUK_EXTERNAL void *duk_get_heapptr(duk_context *ctx, duk_idx_t idx) {
 	duk_tval *tv;
 	void *ret;
@@ -1936,6 +2033,19 @@ DUK_EXTERNAL void *duk_opt_heapptr(duk_context *ctx, duk_idx_t idx, void *def_va
 		return def_value;
 	}
 	return duk_require_heapptr(ctx, idx);
+}
+
+DUK_EXTERNAL_DECL void *duk_get_heapptr_default(duk_context *ctx, duk_idx_t idx, void *def_value) {
+	void *ret;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	ret = duk_get_heapptr(ctx, idx);
+	if (ret != NULL) {
+		return ret;
+	}
+
+	return def_value;
 }
 
 DUK_EXTERNAL void *duk_require_heapptr(duk_context *ctx, duk_idx_t idx) {

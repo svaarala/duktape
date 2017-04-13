@@ -1,0 +1,27 @@
+name: duk_get_c_function_default
+
+proto: |
+  duk_c_function duk_get_c_function_default(duk_context *ctx, duk_idx_t idx, duk_c_function def_value);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Like <code><a href="#duk_get_c_function">duk_get_c_function()</a></code>
+  but with an explicit default value, returned when the value is not a
+  Duktape/C function or the index is invalid.</p>
+
+example: |
+  duk_c_function funcptr;
+
+  /* Native callback, default to nop_callback. */
+  funcptr = duk_get_c_function_default(ctx, -3, nop_callback);
+
+tags:
+  - stack
+  - function
+
+seealso:
+  - duk_get_c_function
+
+introduced: 2.1.0
