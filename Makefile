@@ -540,37 +540,34 @@ checkalign:
 	@cp util/check_align.sh /tmp
 	@cd /tmp; sh check_align.sh
 
-# Overall test target, not very useful.
+# Overall quick test target.
 .PHONY: test
-test: qecmatest apitest regfuzztest underscoretest lodashtest emscriptentest test262test
+test: apitest ecmatest
+	@echo ""
+	@echo "### Tests successful!"
 
-# Error injection tests.
-.PHONY: injectiontest
-injectiontest:
-	bash util/error_inject_test.sh
+# Set of miscellaneous tests for release.
+.PHONY: releasetest
+releasetest: xmldoctest closuretest bluebirdtest luajstest jsinterpretertest lodashtest underscoretest emscriptenluatest emscriptenduktest emscripteninceptiontest emscriptenmandeltest emscriptentest errorinjecttest
+	@echo ""
+	@echo "### Release tests successful!"  # These tests now have output checks.
 
 # Runtests-based Ecmascript and API tests.
 .PHONY:	runtestsdeps
 runtestsdeps:	runtests/node_modules UglifyJS2
 runtests/node_modules:
-	echo "Installing required NodeJS modules for runtests"
-	cd runtests; npm install
+	@echo "Installing required NodeJS modules for runtests"
+	@cd runtests; npm install
 .PHONY:	ecmatest
 ecmatest: runtestsdeps duk
 	@echo "### ecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
-.PHONY:	ecmatestd
-ecmatestd: runtestsdeps dukd
-	@echo "### ecmatestd"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 .PHONY:	qecmatest
-qecmatest: runtestsdeps duk
-	@echo "### qecmatest"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --num-threads 4  --log-file=/tmp/duk-test.log tests/ecmascript/
-.PHONY:	qecmatestd
-qecmatestd: runtestsdeps dukd
-	@echo "### qecmatestd"
-	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/dukd --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
+qecmatest: ecmatest
+.PHONY: ecmatest-comparison
+ecmatest-comparison: runtestsdeps duk
+	@echo "### ecmatest"
+	"$(NODE)" runtests/runtests.js $(RUNTESTSOPTS) --run-duk --cmd-duk=$(shell pwd)/duk --report-diff-to-other --run-nodejs --run-rhino --num-threads 4 --log-file=/tmp/duk-test.log tests/ecmascript/
 .PHONY: apiprep
 apiprep: runtestsdeps libduktape.so.1.0.0
 .PHONY:	apitest
@@ -615,7 +612,8 @@ regfuzztest: regfuzz-0.1.tar.gz duk
 # expect string etc.
 .PHONY: lodashtest
 lodashtest: lodash duk
-	./duk lodash/lodash.js tests/lodash/basic.js
+	./duk lodash/lodash.js tests/lodash/basic.js | tee /tmp/duk-lodash-test.out
+	if [ `md5sum /tmp/duk-lodash-test.out | cut -f 1 -d ' '` != "318977a4e39deb7c97c87b9b55ea9a80" ]; then false; fi
 .PHONY: test262test
 test262test: test262-es5-tests duk
 	@echo "### test262test"
@@ -635,34 +633,34 @@ test262cat: test262-es5-tests
 emscriptentest: emscripten duk
 	@echo "### emscriptentest"
 	@rm -f /tmp/duk-emcc-test*
-	@echo "NOTE: this emscripten test is incomplete (compiles helloworld.c and runs it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) tests/emscripten/helloworld.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js
+	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "59ca0efa9f5633cb0371bbc0355478d8" ]; then false; fi
 .PHONY: emscriptenmandeltest
 emscriptenmandeltest: emscripten duk
 	@echo "### emscriptenmandeltest"
 	@rm -f /tmp/duk-emcc-test*
-	@echo "NOTE: this emscripten test is incomplete (compiles mandelbrot.c and runs it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) tests/emscripten/mandelbrot.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js
+	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
 # Compile Duktape and hello.c using Emscripten and execute the result with
 # Duktape.
 .PHONY: emscripteninceptiontest
 emscripteninceptiontest: emscripten prep/nondebug duk
 	@echo "### emscripteninceptiontest"
 	@rm -f /tmp/duk-emcc-test*
-	@echo "NOTE: this emscripten test is incomplete (compiles Duktape and hello.c and runs it, no checks yet)"
 	emscripten/emcc $(EMCCOPTS) -Iprep/nondebug prep/nondebug/duktape.c examples/hello/hello.c -o /tmp/duk-emcc-test.js
 	cat /tmp/duk-emcc-test.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-test-fixed.js
 	@ls -l /tmp/duk-emcc-test*
 	#./duk /tmp/duk-emcc-test-fixed.js
-	./duk /tmp/duk-emcc-test.js
+	./duk /tmp/duk-emcc-test.js | tee /tmp/duk-emcc-test.out
+	if [ `md5sum /tmp/duk-emcc-test.out | cut -f 1 -d ' '` != "8521f9d969cdc0a2fa26661a151cef04" ]; then false; fi
 # Compile Duktape with Emscripten and execute it with NodeJS.
 .PHONY: emscriptenduktest
 emscriptenduktest: emscripten prep/emduk
@@ -672,8 +670,10 @@ emscriptenduktest: emscripten prep/emduk
 	"$(NODE)" /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
 		'print(Duktape.version, Duktape.env);' \
-		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)'
-	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())"
+		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee /tmp/duk-emcc-duktest-1.out
+	if [ `md5sum /tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "0b6d5de1fce7d18c787f6b1078ea5708" ]; then false; fi
+	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee /tmp/duk-emcc-duktest-2.out
+	if [ `md5sum /tmp/duk-emcc-duktest-2.out | cut -f 1 -d ' '` != "c78521c68b60065e6ed0652bebd7af0b" ]; then false; fi
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
 	ldblib.c ldebug.c ldo.c ldump.c lfunc.c lgc.c linit.c liolib.c \
 	llex.c lmathlib.c lmem.c loadlib.c lobject.c lopcodes.c loslib.c \
@@ -688,7 +688,8 @@ emscriptenluatest: emscripten duk lua-5.2.3
 	cat /tmp/duk-emcc-luatest.js | $(PYTHON) util/fix_emscripten.py > /tmp/duk-emcc-luatest-fixed.js
 	@ls -l /tmp/duk-emcc-luatest*
 	#./duk /tmp/duk-emcc-luatest-fixed.js
-	./duk /tmp/duk-emcc-luatest.js
+	./duk /tmp/duk-emcc-luatest.js | tee /tmp/duk-emcc-luatest.out
+	if [ `md5sum /tmp/duk-emcc-luatest.out | cut -f 1 -d ' '` != "280db36b7805a00f887d559c1ba8285d" ]; then false; fi
 .PHONY: jsinterpretertest
 jsinterpretertest: JS-Interpreter duk
 	@echo "### jsinterpretertest"
@@ -696,14 +697,16 @@ jsinterpretertest: JS-Interpreter duk
 	echo "window = {};" > /tmp/duk-jsint-test.js
 	cat JS-Interpreter/acorn.js JS-Interpreter/interpreter.js >> /tmp/duk-jsint-test.js
 	cat tests/jsinterpreter/addition.js >> /tmp/duk-jsint-test.js
-	./duk /tmp/duk-jsint-test.js
+	./duk /tmp/duk-jsint-test.js | tee /tmp/duk-jsint-test.out
+	if [ `md5sum /tmp/duk-jsint-test.out | cut -f 1 -d ' '` != "9ae0ea9e3c9c6e1b9b6252c8395efdc1" ]; then false; fi
 .PHONY: luajstest
 luajstest: luajs duk
 	@rm -f /tmp/duk-luajs-mandel.js /tmp/duk-luajs-test.js
 	luajs/lua2js tests/luajs/mandel.lua /tmp/duk-luajs-mandel.js
 	echo "console = { log: function() { print(Array.prototype.join.call(arguments, ' ')); } };" > /tmp/duk-luajs-test.js
 	cat luajs/lua.js /tmp/duk-luajs-mandel.js >> /tmp/duk-luajs-test.js
-	./duk /tmp/duk-luajs-test.js
+	./duk /tmp/duk-luajs-test.js | tee /tmp/duk-luajs-test.out
+	if [ `md5sum /tmp/duk-luajs-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
 .PHONY: bluebirdtest
 bluebirdtest: bluebird.js duk
 	@rm -f /tmp/duk-bluebird-test.js
@@ -711,13 +714,16 @@ bluebirdtest: bluebird.js duk
 	echo "var myPromise = new Promise(function(resolve, reject) { setTimeout(function () { resolve('resolved 123') }, 1000); });" >> /tmp/duk-bluebird-test.js
 	echo "myPromise.then(function (v) { print('then:', v); });" >> /tmp/duk-bluebird-test.js
 	echo "fakeEventLoop();" >> /tmp/duk-bluebird-test.js
-	./duk /tmp/duk-bluebird-test.js
+	./duk /tmp/duk-bluebird-test.js | tee /tmp/duk-bluebird-test.out
+	if [ `md5sum /tmp/duk-bluebird-test.out | cut -f 1 -d ' '` != "6edf907604d970db7f6f4ca6991127db" ]; then false; fi
 .PHONY: closuretest
 closuretest: compiler.jar duk
 	@echo "### closuretest"
 	@rm -f /tmp/duk-closure-test*
 	$(JAVA) -jar compiler.jar tests/ecmascript/test-dev-mandel2-func.js > /tmp/duk-closure-test.js
-	./duk /tmp/duk-closure-test.js
+	./duk /tmp/duk-closure-test.js | tee /tmp/duk-closure-test.out
+	if [ `md5sum /tmp/duk-closure-test.out | cut -f 1 -d ' '` != "a0b2daf2e979e192d9838d976920f213" ]; then false; fi
+.PHONY: xmldoctest
 xmldoctest: sax-js xmldoc duk
 	@echo "### xmldoctest"
 	@rm -f /tmp/duk-xmldoc-test*
@@ -726,7 +732,14 @@ xmldoctest: sax-js xmldoc duk
 	cat xmldoc/lib/xmldoc.js >> /tmp/duk-xmldoc-test.js
 	echo ";" >> /tmp/duk-xmldoc-test.js  # missing end semicolon causes automatic semicolon problem
 	cat tests/xmldoc/basic.js >> /tmp/duk-xmldoc-test.js
-	./duk /tmp/duk-xmldoc-test.js
+	./duk /tmp/duk-xmldoc-test.js | tee /tmp/duk-xmldoc-test.out
+	if [ `md5sum /tmp/duk-xmldoc-test.out | cut -f 1 -d ' '` != "798cab55f8c62f3cf24f277a8192518a" ]; then false; fi
+.PHONY: errorinjecttest
+errorinjecttest:
+	bash util/error_inject_test.sh
+.PHONY: checklisttest
+checklisttest:
+	bash util/checklist_compile_test.sh
 
 # Third party download/unpack targets, libraries etc.
 linenoise:
