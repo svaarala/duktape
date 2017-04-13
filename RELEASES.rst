@@ -2518,19 +2518,6 @@ Miscellaneous:
   rather than duk_heaphdr_decref_norz()); however, this function is unused
   unless fast refcount handling is disabled explicitly (GH-1410)
 
-Planned
-=======
-
-1.8.0 (XXXX-XX-XX)
-------------------
-
-* Mix in current time to PRNG init in Duktape 1.x too; prior to this change
-  only the allocated duk_heap pointer was used for PRNG init, leading to the
-  same sequence being used on some platforms (GH-1446)
-
-2.0.3 (XXXX-XX-XX)
-------------------
-
 2.1.0 (2017-04-15)
 ------------------
 
@@ -2811,5 +2798,22 @@ Planned
   chaining; this affects string allocation sizes which may matter for manually
   tuned memory pools (GH-1277)
 
+Planned
+=======
+
+1.8.0 (XXXX-XX-XX)
+------------------
+
+* Mix in current time to PRNG init in Duktape 1.x too; prior to this change
+  only the allocated duk_heap pointer was used for PRNG init, leading to the
+  same sequence being used on some platforms (GH-1446)
+
+2.0.3 (XXXX-XX-XX)
+------------------
+
+* TBD
+
 3.0.0 (XXXX-XX-XX)
 ------------------
+
+* TBD
