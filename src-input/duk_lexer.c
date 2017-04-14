@@ -744,6 +744,68 @@ DUK_LOCAL duk_codepoint_t duk__lexer_parse_escape(duk_lexer_ctx *lex_ctx, duk_bo
 	DUK_ERROR_SYNTAX(lex_ctx->thr, DUK_STR_INVALID_ESCAPE);
 }
 
+/* Parse legacy octal escape of the form \N{1,3}, e.g. \0, \5, \0377.  Maximum
+ * allowed value is \0377 (U+00FF), longest match is used.  Used for both string
+ * RegExp octal escape parsing.  Window[0] must be the slash '\' and the first
+ * digit must already be validated to be in [0-9] by the caller.
+ */
+DUK_LOCAL duk_codepoint_t duk__lexer_parse_legacy_octal(duk_lexer_ctx *lex_ctx, duk_small_int_t *out_adv, duk_bool_t reject_annex_b) {
+	duk_codepoint_t cp;
+	duk_small_uint_t lookup_idx;
+	duk_small_int_t adv;
+	duk_codepoint_t tmp;
+
+	DUK_ASSERT(out_adv != NULL);
+	DUK_ASSERT(DUK__LOOKUP(lex_ctx, 0) == DUK_ASC_BACKSLASH);
+	DUK_ASSERT(DUK__LOOKUP(lex_ctx, 1) >= DUK_ASC_0 && DUK__LOOKUP(lex_ctx, 1) <= DUK_ASC_9);
+
+	cp = 0;
+	for (lookup_idx = 1; lookup_idx <= 3; lookup_idx++) {
+		DUK_DDD(DUK_DDDPRINT("lookup_idx=%ld, cp=%ld", (long) lookup_idx, (long) cp));
+		tmp = DUK__LOOKUP(lex_ctx, lookup_idx);
+		if (tmp < DUK_ASC_0 || tmp > DUK_ASC_7) {
+			/* No more valid digits. */
+			break;
+		}
+		tmp = (cp << 3) + (tmp - DUK_ASC_0);
+		if (tmp > 0xff) {
+			/* Three digit octal escapes above \377 (= 0xff)
+			 * are not allowed.
+			 */
+			break;
+		}
+		cp = tmp;
+	}
+	DUK_DDD(DUK_DDDPRINT("final lookup_idx=%ld, cp=%ld", (long) lookup_idx, (long) cp));
+
+	adv = lookup_idx;
+	if (lookup_idx == 1) {
+		DUK_DDD(DUK_DDDPRINT("\\8 or \\9 -> treat as literal, accept in strict mode too"));
+		DUK_ASSERT(tmp == DUK_ASC_8 || tmp == DUK_ASC_9);
+		cp = tmp;
+		adv++;  /* correction to above, eat offending character */
+	} else if (lookup_idx == 2 && cp == 0) {
+		/* Note: 'foo\0bar' is OK in strict mode, but 'foo\00bar' is not.
+		 * It won't be interpreted as 'foo\u{0}0bar' but as a SyntaxError.
+		 */
+		DUK_DDD(DUK_DDDPRINT("\\0 -> accept in strict mode too"));
+	} else {
+		/* This clause also handles non-shortest zero, e.g. \00. */
+		if (reject_annex_b) {
+			DUK_DDD(DUK_DDDPRINT("non-zero octal literal %ld -> reject in strict-mode", (long) cp));
+			cp = -1;
+		} else {
+			DUK_DDD(DUK_DDDPRINT("non-zero octal literal %ld -> accepted", (long) cp));
+			DUK_ASSERT(cp >= 0 && cp <= 0xff);
+		}
+	}
+
+	*out_adv = adv;
+
+	DUK_ASSERT((cp >= 0 && cp <= 0xff) || (cp == -1 && reject_annex_b));
+	return cp;
+}
+
 /* XXX: move strict mode to lex_ctx? */
 DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token *out_token, duk_small_int_t quote, duk_bool_t strict_mode) {
 	duk_small_int_t adv;
@@ -829,46 +891,9 @@ DUK_LOCAL void duk__lexer_parse_string_literal(duk_lexer_ctx *lex_ctx, duk_token
 					 *  Parse octal (up to 3 digits) from the lookup window.
 					 */
 
-					duk_codepoint_t tmp;
-					duk_small_uint_t lookup_idx;
-
-					emitcp = 0;
-					for (lookup_idx = 1; lookup_idx <= 3; lookup_idx++) {
-						DUK_DDD(DUK_DDDPRINT("lookup_idx=%ld, emitcp=%ld", (long) lookup_idx, (long) emitcp));
-						tmp = DUK__LOOKUP(lex_ctx, lookup_idx);
-						if (tmp < DUK_ASC_0 || tmp > DUK_ASC_7) {
-							/* No more valid digits. */
-							break;
-						}
-						tmp = (emitcp << 3) + (tmp - DUK_ASC_0);
-						if (tmp > 0xff) {
-							/* Three digit octal escapes above \377 (= 0xff)
-							 * are not allowed.
-							 */
-							break;
-						}
-						emitcp = tmp;
-					}
-					DUK_DDD(DUK_DDDPRINT("final lookup_idx=%ld, emitcp=%ld", (long) lookup_idx, (long) emitcp));
-
-					adv = lookup_idx;
-					if (lookup_idx == 1) {
-						/* \8 or \9 -> treat as literal, accept also
-						 * in strict mode.
-						 */
-						DUK_DDD(DUK_DDDPRINT("\\8 or \\9 -> treat as literal, accept in strict mode too"));
-						emitcp = x;
-						adv++;  /* correction to above, eat offending character */
-					} else if (lookup_idx == 2 && emitcp == 0) {
-						/* Zero escape, also allowed in non-strict mode. */
-						DUK_DDD(DUK_DDDPRINT("\\0 -> accept in strict mode too"));
-					} else {
-						/* Valid octal, only accept in non-strict mode. */
-						DUK_DDD(DUK_DDDPRINT("octal literal %ld -> accept only in non-strict-mode", (long) emitcp));
-						DUK_ASSERT(emitcp >= 0 && emitcp <= 0xff);
-						if (strict_mode) {
-							goto fail_escape;
-						}
+					emitcp = duk__lexer_parse_legacy_octal(lex_ctx, &adv, strict_mode /*reject_annex_b*/);
+					if (emitcp < 0) {
+						goto fail_escape;
 					}
 				} else if (x < 0) {
 					goto fail_unterminated;
@@ -2315,12 +2340,24 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 				                            sizeof(duk_unicode_re_ranges_not_wordchar) / sizeof(duk_uint16_t));
 				ch = -1;
 			} else if (DUK__ISDIGIT(x)) {
-				/* DecimalEscape, only \0 is allowed, no leading zeroes are allowed */
+				/* DecimalEscape, only \0 is allowed, no leading
+				 * zeroes are allowed.
+				 *
+				 * ES2015 Annex B also allows (maximal match) legacy
+				 * octal escapes up to \377 and \8 and \9 are
+				 * accepted as literal '8' and '9', also in strict mode.
+				 */
+
+#if defined(DUK_USE_ES6_REGEXP_SYNTAX)
+				ch = duk__lexer_parse_legacy_octal(lex_ctx, &adv, 0 /*reject_annex_b*/);
+				DUK_ASSERT(ch >= 0);  /* no rejections */
+#else
 				if (x == DUK_ASC_0 && !DUK__ISDIGIT(DUK__L2())) {
 					ch = 0x0000;
 				} else {
 					goto fail_escape;
 				}
+#endif
 #if defined(DUK_USE_ES6_REGEXP_SYNTAX)
 			} else if (x >= 0) {
 				/* IdentityEscape: ES2015 Annex B allows almost all
