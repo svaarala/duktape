@@ -2767,6 +2767,9 @@ Planned
 * Fix RegExp group parsing to reject invalid groups like /(?Xabc)/, previously
   they were accepted silently (GH-1463)
 
+* Fix potentially stale duk_tval pointer in Proxy deleteProperty handling
+  (GH-1482)
+
 * Avoid log2(), log10(), cbrt(), and trunc() on Android and Atari MiNT
   (GH-1325, GH-1341, GH-1430, GH-1431)
 
