@@ -4420,10 +4420,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 			/* Note: proxy handling must happen before key is string coerced. */
 
 			if (duk__proxy_check_prop(thr, obj, DUK_STRIDX_DELETE_PROPERTY, tv_key, &h_target)) {
-				/* -> [ ... trap handler ] */
+				/* -> [ ... obj key trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'deleteProperty' for key %!T", (duk_tval *) tv_key));
 				duk_push_hobject(ctx, h_target);  /* target */
-				duk_push_tval(ctx, tv_key);       /* P */
+				duk_dup_m4(ctx);  /* P */
 				duk_call_method(ctx, 2 /*nargs*/);
 				tmp_bool = duk_to_boolean(ctx, -1);
 				duk_pop(ctx);
@@ -4434,6 +4434,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 				/* Target object must be checked for a conflicting
 				 * non-configurable property.
 				 */
+				tv_key = DUK_GET_TVAL_NEGIDX(ctx, -1);
 				arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
 				DUK_ASSERT(key != NULL);
 
