@@ -2549,6 +2549,9 @@ Planned
 
 * Add ES2015 Annex B HTML comment syntax (GH-1435, GH-1436, GH-1438)
 
+* Allow ES2015 Annex B legacy octal escapes (\1 to \377) and literal digits
+  (\8 and \9) for RegExp character classes (GH-1275, GH-1483)
+
 * Add an experimental "global" property to the global object to provide easy
   access to the global object itself without needing idioms like
   "new Function('return this')()"; experimental, implemented based on
