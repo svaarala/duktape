@@ -114,7 +114,7 @@ static duk_ret_t test_invalid_index(duk_context *ctx, void *udata) {
 	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_get_buffer_default(ctx, -1, &sz, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 	if (p) {
-		printf("p is not NULL, sz=%ld\n", (long) sz);
+		printf("p is not NULL, sz=%lu\n", (unsigned long) sz);
 	} else {
 		printf("p is NULL\n");
 	}
@@ -142,7 +142,7 @@ static duk_ret_t test_buffer_object(duk_context *ctx, void *udata) {
 	sz = (duk_size_t) 0xdeadbeefUL;
 	p = duk_get_buffer_default(ctx, -1, &sz, (void *) 0x12345678UL, (duk_size_t) 0x87654321UL);
 	if (p) {
-		printf("p is not NULL, sz=%ld\n", (long) sz);
+		printf("p is not NULL, sz=%lu\n", (unsigned long) sz);
 	} else {
 		printf("p is NULL\n");
 	}

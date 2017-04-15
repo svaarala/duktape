@@ -2528,7 +2528,10 @@ Planned
   only the allocated duk_heap pointer was used for PRNG init, leading to the
   same sequence being used on some platforms (GH-1446)
 
-2.1.0 (XXXX-XX-XX)
+2.0.3 (XXXX-XX-XX)
+------------------
+
+2.1.0 (2017-04-15)
 ------------------
 
 * Reorganize duktape.h #define/#include order so that duk_config.h now sees

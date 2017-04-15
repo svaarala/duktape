@@ -269,7 +269,7 @@ function executeTest(options, callback) {
                 '-L.',
                 '-Iprep/nondebug',  // this particularly is awkward
                 '-Wl,-rpath,.',
-                '-pedantic', '-ansi', '-std=c99', '-Wall', '-Wdeclaration-after-statement', '-fstrict-aliasing', '-D__POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
+                '-pedantic', '-ansi', '-std=c99', '-Wall', '-Wdeclaration-after-statement', '-fstrict-aliasing', '-D_POSIX_C_SOURCE=200809L', '-D_GNU_SOURCE', '-D_XOPEN_SOURCE', '-Os', '-fomit-frame-pointer',
                 '-g', '-ggdb',
                 //'-Werror',  // Would be nice but GCC differences break tests too easily
                 //'-m32',

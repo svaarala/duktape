@@ -290,7 +290,7 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 #if 0
 	/* Manual test for bytecode dump/load cycle: dump and load before
-	 * execution.  Enable manually, then run "make qecmatest" for a
+	 * execution.  Enable manually, then run "make ecmatest" for a
 	 * reasonably good coverage of different functions and programs.
 	 */
 	duk_dump_function(ctx);

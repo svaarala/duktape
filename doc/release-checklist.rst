@@ -70,14 +70,6 @@ Checklist for ordinary releases
 
   - Platform / compiler combinations (incomplete, should be automated):
 
-    + Linux x86-64 gcc
-
-    + Linux x86-64 gcc + -m32
-
-    + Linux x86-64 clang
-
-    + Linux x86-64 clang + -m32
-
     + FreeBSD clang
 
     + FreeBSD clang + -m32
@@ -115,13 +107,13 @@ Checklist for ordinary releases
 
   - On x86-64 (exercise 16-byte duk_tval):
 
-    - make qecmatest   # quick test
+    - make ecmatest
 
-    - VALGRIND_WRAP=1 make qecmatest  # valgrind test
+    - VALGRIND_WRAP=1 make ecmatest  # valgrind test
 
   - On x86-32 (exercise 8-byte duk_tval)
 
-    - make qecmatest   # quick test
+    - make ecmatest
 
   - Run testcases on all endianness targets
 
@@ -177,35 +169,15 @@ Checklist for ordinary releases
 
   - Run with assertions enabled at least on x86-64
 
-* emscripten (run emscripten-generated code with Duktape)
+* Assorted release tests driven by Makefile
 
-  - on x86-64
+  - on x86-65
 
-    - make emscriptentest
+    - make clean releasetest
 
-* emscripten (compile Duktape with emscripten, run with Node)
+  - Run with assertions enabled at least on x86-64
 
-  - on x86-64
-
-    - make emscriptenduktest
-
-* emscripten (compile Duktape with emscripten, run with Duktape)
-
-  - on x86-64
-
-    - make emscripteninceptiontest
-
-* JS-Interpreter
-
-  - on x86-64
-
-    - make jsinterpretertest
-
-* lua.js
-
-  - on x86-64
-
-    - make luajstest
+  - Makefile should now error out if any test fails
 
 * Debugger test
 

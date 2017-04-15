@@ -51,7 +51,7 @@ parser.add_option('--repo-full-name', dest='repo_full_name', help='Full name of 
 parser.add_option('--repo-clone-url', dest='repo_clone_url', help='Repo HTTPS clone URI, e.g. "https://github.com/svaarala/duktape.git"')
 parser.add_option('--commit-name', dest='commit_name', help='Commit SHA hash or tag name')
 parser.add_option('--fetch-ref', dest='fetch_ref', default=None, help='Ref to fetch before checkout out SHA (e.g. +refs/pull/NNN/head)')
-parser.add_option('--context', dest='context', help='Context identifying test type, e.g. "linux-x64-qecmatest"')
+parser.add_option('--context', dest='context', help='Context identifying test type, e.g. "linux-x64-ecmatest"')
 parser.add_option('--temp-dir', dest='temp_dir', help='Automatic temp dir created by testclient, automatically deleted (recursively) by testclient when test is done')
 parser.add_option('--repo-snapshot-dir', dest='repo_snapshot_dir', help='Directory for repo tar.gz snapshots for faster test init')
 
@@ -190,7 +190,7 @@ def genconfig_dist_src(genconfig_opts):
 def context_codepolicycheck():
     return execute([ 'make', 'codepolicycheck' ], env=newenv(TRAVIS=1), catch=True)['success']
 
-def context_helper_x64_qecmatest(env=None, genconfig_opts=[], valgrind=False):
+def context_helper_x64_ecmatest(env=None, genconfig_opts=[], valgrind=False):
     cwd = os.getcwd()
     execute([ 'make', 'dist' ])
     genconfig_dist_src(genconfig_opts)
@@ -212,17 +212,17 @@ def context_helper_x64_qecmatest(env=None, genconfig_opts=[], valgrind=False):
         os.path.join(cwd, 'tests', 'ecmascript')
     ], env=env, catch=True)['success']
 
-def context_linux_x64_qecmatest():
-    return context_helper_x64_qecmatest(env=newenv())
+def context_linux_x64_ecmatest():
+    return context_helper_x64_ecmatest(env=newenv())
 
-def context_linux_arm_qecmatest():
-    return context_helper_x64_qecmatest(env=newenv())  # no difference to x64 now
+def context_linux_arm_ecmatest():
+    return context_helper_x64_ecmatest(env=newenv())  # no difference to x64 now
 
-def context_linux_x64_qecmatest_assert():
-    return context_helper_x64_qecmatest(env=newenv(), genconfig_opts=[ '-DDUK_USE_ASSERTIONS' ])
+def context_linux_x64_ecmatest_assert():
+    return context_helper_x64_ecmatest(env=newenv(), genconfig_opts=[ '-DDUK_USE_ASSERTIONS' ])
 
-def context_linux_x64_qecmatest_valgrind():
-    return context_helper_x64_qecmatest(env=newenv(), valgrind=True)
+def context_linux_x64_ecmatest_valgrind():
+    return context_helper_x64_ecmatest(env=newenv(), valgrind=True)
 
 def context_helper_x64_apitest(env=None, genconfig_opts=[], valgrind=False):
     cwd = os.getcwd()
@@ -910,10 +910,17 @@ context_handlers = {
     # Linux
 
     'codepolicycheck': context_codepolicycheck,
-    'linux-x64-qecmatest': context_linux_x64_qecmatest,
-    'linux-arm-qecmatest': context_linux_arm_qecmatest,
-    'linux-x64-qecmatest-assert': context_linux_x64_qecmatest_assert,
-    'linux-x64-qecmatest-valgrind': context_linux_x64_qecmatest_valgrind,
+    'linux-x64-ecmatest': context_linux_x64_ecmatest,
+    'linux-arm-ecmatest': context_linux_arm_ecmatest,
+    'linux-x64-ecmatest-assert': context_linux_x64_ecmatest_assert,
+    'linux-x64-ecmatest-valgrind': context_linux_x64_ecmatest_valgrind,
+
+    # old names
+    'linux-x64-qecmatest': context_linux_x64_ecmatest,
+    'linux-arm-qecmatest': context_linux_arm_ecmatest,
+    'linux-x64-qecmatest-assert': context_linux_x64_ecmatest_assert,
+    'linux-x64-qecmatest-valgrind': context_linux_x64_ecmatest_valgrind,
+
     # XXX: torture options
     'linux-x64-apitest': context_linux_x64_apitest,
     'linux-arm-apitest': context_linux_x64_apitest,
@@ -968,7 +975,8 @@ context_handlers = {
 
     # OS X: can currently share Linux handlers
 
-    'osx-x64-qecmatest': context_linux_x64_qecmatest,
+    'osx-x64-ecmatest': context_linux_x64_ecmatest,
+    'osx-x64-qecmatest': context_linux_x64_ecmatest,
     'osx-x64-duk-clang': context_linux_x64_duk_clang,
     'osx-x64-duk-gxx': context_linux_x64_duk_gxx,
     'osx-x64-gcc-minsize-makeduk': context_linux_x64_gcc_defsize_makeduk
