@@ -669,9 +669,8 @@ emscriptenduktest: emscripten prep/emduk
 	emscripten/emcc $(EMCCOPTS_DUKVM) -Iprep/emduk prep/emduk/duktape.c examples/eval/eval.c -o /tmp/duk-emcc-duktest.js
 	"$(NODE)" /tmp/duk-emcc-duktest.js \
 		'print("Hello from Duktape running inside Emscripten/NodeJS");' \
-		'print(Duktape.version, Duktape.env);' \
 		'for(i=0;i++<100;)print((i%3?"":"Fizz")+(i%5?"":"Buzz")||i)' | tee /tmp/duk-emcc-duktest-1.out
-	if [ `md5sum /tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "0b6d5de1fce7d18c787f6b1078ea5708" ]; then false; fi
+	if [ `md5sum /tmp/duk-emcc-duktest-1.out | cut -f 1 -d ' '` != "3c22acb0ec822d4c85f5d427e42826dc" ]; then false; fi
 	"$(NODE)" /tmp/duk-emcc-duktest.js "eval(new Buffer(Duktape.dec('base64', '$(MAND_BASE64)')).toString())" | tee /tmp/duk-emcc-duktest-2.out
 	if [ `md5sum /tmp/duk-emcc-duktest-2.out | cut -f 1 -d ' '` != "c78521c68b60065e6ed0652bebd7af0b" ]; then false; fi
 LUASRC=	lapi.c lauxlib.c lbaselib.c lbitlib.c lcode.c lcorolib.c lctype.c \
