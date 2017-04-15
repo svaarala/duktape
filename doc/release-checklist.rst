@@ -202,10 +202,11 @@ Checklist for ordinary releases
 
 * Release notes (``doc/release-notes-*.rst``)
 
-  - Write new release notes for release; needs known issues output from at
-    least API, Ecmascript, and test262 test runs
+  - Write new release notes for release
 
   - Ensure instructions for upgrading from last release are correct
+
+  - Detailed test outputs are no longer included
 
 * Git release and tag
 
