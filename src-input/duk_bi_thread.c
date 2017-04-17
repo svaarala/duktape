@@ -80,11 +80,12 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_resume(duk_context *ctx) {
 		goto state_error;
 	}
 	DUK_ASSERT(thr->callstack_curr != NULL);
+	DUK_ASSERT(thr->callstack_curr->parent != NULL);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL);  /* us */
 	DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)));
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr - 1) != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL);  /* caller */
 
-	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr - 1);
+	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
 		DUK_DD(DUK_DDPRINT("resume state invalid: caller must be Ecmascript code"));
 		goto state_error;
@@ -235,11 +236,12 @@ DUK_INTERNAL duk_ret_t duk_bi_thread_yield(duk_context *ctx) {
 		goto state_error;
 	}
 	DUK_ASSERT(thr->callstack_curr != NULL);
+	DUK_ASSERT(thr->callstack_curr->parent != NULL);
 	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr) != NULL);  /* us */
 	DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr)));
-	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr - 1) != NULL);  /* caller */
+	DUK_ASSERT(DUK_ACT_GET_FUNC(thr->callstack_curr->parent) != NULL);  /* caller */
 
-	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr - 1);
+	caller_func = DUK_ACT_GET_FUNC(thr->callstack_curr->parent);
 	if (!DUK_HOBJECT_IS_COMPFUNC(caller_func)) {
 		DUK_DD(DUK_DDPRINT("yield state invalid: caller must be Ecmascript code"));
 		goto state_error;

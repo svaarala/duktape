@@ -18,22 +18,19 @@ DUK_LOCAL duk_bool_t duk__have_active_catcher(duk_hthread *thr) {
 	 * an argument to treat them as catchers?
 	 */
 
-	duk_size_t i;
 	duk_activation *act;
 	duk_catcher *cat;
 
 	DUK_ASSERT(thr != NULL);
 
-	while (thr != NULL) {
-		for (i = 0; i < thr->callstack_top; i++) {
-			act = thr->callstack + i;
+	for (; thr != NULL; thr = thr->resumer) {
+		for (act = thr->callstack_curr; act != NULL; act = act->parent) {
 			for (cat = act->cat; cat != NULL; cat = cat->parent) {
 				if (DUK_CAT_HAS_CATCH_ENABLED(cat)) {
 					return 1;  /* all we need to know */
 				}
 			}
 		}
-		thr = thr->resumer;
 	}
 	return 0;
 }

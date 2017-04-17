@@ -109,6 +109,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk__mark_heaphdr(heap, (duk_heaphdr *) e->target);
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
+		duk_activation *act;
 		duk_tval *tv;
 
 		tv = t->valstack;
@@ -117,8 +118,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			tv++;
 		}
 
-		for (i = 0; i < (duk_uint_fast32_t) t->callstack_top; i++) {
-			duk_activation *act = t->callstack + i;
+		for (act = t->callstack_curr; act != NULL; act = act->parent) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_ACT_GET_FUNC(act));
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->var_env);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) act->lex_env);
@@ -1015,7 +1015,6 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 */
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(heap->heap_thread->valstack != NULL);
-	DUK_ASSERT(heap->heap_thread->callstack != NULL);
 
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) starting, requested flags: 0x%08lx, effective flags: 0x%08lx",
 	                 (unsigned long) flags, (unsigned long) (flags | heap->ms_base_flags)));

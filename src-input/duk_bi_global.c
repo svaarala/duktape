@@ -421,7 +421,6 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_hstring *h;
 	duk_activation *act_caller;
 	duk_activation *act_eval;
-	duk_activation *act;
 	duk_hcompfunc *func;
 	duk_hobject *outer_lex_env;
 	duk_hobject *outer_var_env;
@@ -465,11 +464,11 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	comp_flags = DUK_COMPILE_EVAL;
 	act_eval = thr->callstack_curr;  /* this function */
 	DUK_ASSERT(act_eval != NULL);
-	if (thr->callstack_top >= (duk_size_t) -level) {
+	act_caller = duk_hthread_get_activation_for_level(thr, level);
+	if (act_caller != NULL) {
 		/* Have a calling activation, check for direct eval (otherwise
 		 * assume indirect eval.
 		 */
-		act_caller = thr->callstack + thr->callstack_top + level;  /* caller */
 		if ((act_caller->flags & DUK_ACT_FLAG_STRICT) &&
 		    (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL)) {
 			/* Only direct eval inherits strictness from calling code
@@ -480,8 +479,6 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	} else {
 		DUK_ASSERT((act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) == 0);
 	}
-	act_caller = NULL;  /* avoid dereference after potential callstack realloc */
-	act_eval = NULL;
 
 	duk_push_hstring_stridx(ctx, DUK_STRIDX_INPUT);  /* XXX: copy from caller? */
 	duk_js_compile(thr,
@@ -494,21 +491,19 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	/* [ source template ] */
 
 	/* E5 Section 10.4.2 */
-	DUK_ASSERT(thr->callstack_top >= 1);
-	act = thr->callstack_curr;  /* this function */
-	if (act->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
+
+	if (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
 		DUK_ASSERT(thr->callstack_top >= 2);
-		act = thr->callstack + thr->callstack_top + level;  /* caller */
-		if (act->lex_env == NULL) {
-			DUK_ASSERT(act->var_env == NULL);
+		DUK_ASSERT(act_caller != NULL);
+		if (act_caller->lex_env == NULL) {
+			DUK_ASSERT(act_caller->var_env == NULL);
 			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 
 			/* this may have side effects, so re-lookup act */
-			duk_js_init_activation_environment_records_delayed(thr, act);
-			act = thr->callstack + thr->callstack_top + level;
+			duk_js_init_activation_environment_records_delayed(thr, act_caller);
 		}
-		DUK_ASSERT(act->lex_env != NULL);
-		DUK_ASSERT(act->var_env != NULL);
+		DUK_ASSERT(act_caller->lex_env != NULL);
+		DUK_ASSERT(act_caller->var_env != NULL);
 
 		this_to_global = 0;
 
@@ -520,8 +515,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                     "var_env and lex_env to a fresh env, "
 			                     "this_binding to caller's this_binding"));
 
-			act_lex_env = act->lex_env;
-			act = NULL;  /* invalidated */
+			act_lex_env = act_caller->lex_env;
 
 			new_env = duk_hdecenv_alloc(thr,
 			                            DUK_HOBJECT_FLAG_EXTENSIBLE |
@@ -546,8 +540,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 			                     "var_env and lex_env to caller's envs, "
 			                     "this_binding to caller's this_binding"));
 
-			outer_lex_env = act->lex_env;
-			outer_var_env = act->var_env;
+			outer_lex_env = act_caller->lex_env;
+			outer_var_env = act_caller->var_env;
 
 			/* compiler's responsibility */
 			DUK_ASSERT(!DUK_HOBJECT_HAS_NEWENV((duk_hobject *) func));
@@ -560,7 +554,6 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 		outer_lex_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 		outer_var_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	}
-	act = NULL;
 
 	/* Eval code doesn't need an automatic .prototype object. */
 	duk_js_push_closure(thr, func, outer_var_env, outer_lex_env, 0 /*add_auto_proto*/);
@@ -573,8 +566,8 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	} else {
 		duk_tval *tv;
 		DUK_ASSERT(thr->callstack_top >= 2);
-		act = thr->callstack + thr->callstack_top + level;  /* caller */
-		tv = thr->valstack + act->idx_bottom - 1;  /* this is just beneath bottom */
+		DUK_ASSERT(act_caller != NULL);
+		tv = thr->valstack + act_caller->idx_bottom - 1;  /* this is just beneath bottom */
 		DUK_ASSERT(tv >= thr->valstack);
 		duk_push_tval(ctx, tv);
 	}

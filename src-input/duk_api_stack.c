@@ -578,7 +578,7 @@ DUK_LOCAL duk_bool_t duk__resize_valstack(duk_context *ctx, duk_size_t new_size)
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack) <= new_size);  /* can't resize below 'top' */
-	DUK_ASSERT(new_size <= thr->valstack_max);  /* valstack limit caller has check, prevents wrapping */
+	DUK_ASSERT(new_size <= DUK_VALSTACK_DEFAULT_MAX);  /* valstack limit caller has check, prevents wrapping */
 	DUK_ASSERT(new_size <= DUK_SIZE_MAX / sizeof(duk_tval));  /* specific assert for wrapping */
 
 	/* get pointer offsets for tweaking below */
@@ -733,7 +733,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_do_resize(duk_context *
 	                   (unsigned long) old_size, (unsigned long) new_size,
 	                   (unsigned long) min_new_size));
 
-	if (DUK_UNLIKELY(new_size > thr->valstack_max)) {
+	if (DUK_UNLIKELY(new_size > DUK_VALSTACK_DEFAULT_MAX)) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
 		 * plan limit accordingly (taking DUK_VALSTACK_GROW_STEP into account).
 		 */
@@ -752,8 +752,9 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_do_resize(duk_context *
 	 *  finalizers are called.  This is taken into account carefully in
 	 *  duk__resize_valstack().
 	 *
-	 *  'new_size' is known to be <= valstack_max, which ensures that
-	 *  size_t and pointer arithmetic won't wrap in duk__resize_valstack().
+	 *  'new_size' is known to be <= DUK_VALSTACK_DEFAULT_MAX, which
+	 *  ensures that size_t and pointer arithmetic won't wrap in
+	 *  duk__resize_valstack().
 	 */
 
 	if (DUK_UNLIKELY(!duk__resize_valstack(ctx, new_size))) {
@@ -1134,7 +1135,7 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 		return;
 	}
 	if (DUK_UNLIKELY((count < 0) ||
-	                 (count > (duk_idx_t) to_thr->valstack_max))) {
+	                 (count > (duk_idx_t) DUK_VALSTACK_DEFAULT_MAX))) {
 		/* Maximum value check ensures 'nbytes' won't wrap below. */
 		DUK_ERROR_RANGE_INVALID_COUNT(to_thr);
 		return;
@@ -3991,15 +3992,13 @@ DUK_LOCAL void duk__push_this_helper(duk_context *ctx, duk_small_uint_t check_ob
 	duk_tval *tv_slot;
 
 	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* avoid warning (unsigned) */
 	thr = (duk_hthread *) ctx;
-	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 	DUK__CHECK_SPACE();
 
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));  /* because of valstack init policy */
 	tv_slot = thr->valstack_top++;
 
-	if (DUK_UNLIKELY(thr->callstack_top == 0)) {
+	if (DUK_UNLIKELY(thr->callstack_curr == NULL)) {
 		if (check_object_coercible) {
 			goto type_error;
 		}
@@ -4062,7 +4061,7 @@ DUK_INTERNAL duk_tval *duk_get_borrowed_this_tval(duk_context *ctx) {
 	thr = (duk_hthread *) ctx;
 
 	DUK_ASSERT(thr->callstack_top > 0);  /* caller required to know */
-	DUK_ASSERT(thr->callstack_curr != NULL);
+	DUK_ASSERT(thr->callstack_curr != NULL);  /* caller required to know */
 	DUK_ASSERT(thr->valstack_bottom > thr->valstack);  /* consequence of above */
 	DUK_ASSERT(thr->valstack_bottom - 1 >= thr->valstack);  /* 'this' binding exists */
 
@@ -4075,8 +4074,6 @@ DUK_EXTERNAL void duk_push_current_function(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
-	DUK_ASSERT(thr->callstack_top <= thr->callstack_size);
 
 	act = thr->callstack_curr;
 	if (act != NULL) {
@@ -5301,10 +5298,10 @@ DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 	}
 
 	/* Wrapping is controlled by the check above: value stack top can be
-	 * at most thr->valstack_max which is low enough so that multiplying
-	 * with sizeof(duk_tval) won't wrap.
+	 * at most DUK_VALSTACK_DEFAULT_MAX which is low enough so that
+	 * multiplying with sizeof(duk_tval) won't wrap.
 	 */
-	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) thr->valstack_max);
+	DUK_ASSERT(count >= 0 && count <= (duk_idx_t) DUK_VALSTACK_DEFAULT_MAX);
 	DUK_ASSERT((duk_size_t) count <= DUK_SIZE_MAX / sizeof(duk_tval));  /* no wrapping */
 
 	a = duk_push_harray_with_size(ctx, (duk_uint32_t) count);  /* XXX: uninitialized would be OK */

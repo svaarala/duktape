@@ -35,17 +35,19 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_activation *act;
-		duk_catcher *cat;
-		duk_size_t i;
 
 		DUK_FREE(heap, t->valstack);
 
 		/* Don't free h->resumer because it exists in the heap.
 		 * Callstack entries also contain function pointers which
-		 * are not freed for the same reason.
+		 * are not freed for the same reason.  They are decref
+		 * finalized and the targets are freed if necessary based
+		 * on their refcount (or reachability).
 		 */
-		for (i = t->callstack_top; i > 0; i--) {
-			act = t->callstack + i;
+		for (act = t->callstack_curr; act != NULL;) {
+			duk_activation *act_next;
+			duk_catcher *cat;
+
 			for (cat = act->cat; cat != NULL;) {
 				duk_catcher *cat_next;
 
@@ -53,8 +55,11 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 				DUK_FREE(heap, (void *) cat);
 				cat = cat_next;
 			}
+
+			act_next = act->parent;
+			DUK_FREE(heap, (void *) act);
+			act = act_next;
 		}
-		DUK_FREE(heap, t->callstack);
 
 		/* XXX: with 'caller' property the callstack would need
 		 * to be unwound to update the 'caller' properties of
@@ -330,6 +335,19 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	/* Note: heap->heap_thread, heap->curr_thread, and heap->heap_object
 	 * are on the heap allocated list.
 	 */
+
+#if 0  /* XXX: move to helper, add catcher freelist */
+	{
+		duk_activation *act;
+		duk_activation *act_next;
+
+		for (act = heap->activation_free; act != NULL;) {
+			act_next = act->parent;
+			DUK_FREE(heap, (void *) act);
+			act = act_next;
+		}
+	}
+#endif
 
 	DUK_D(DUK_DPRINT("freeing heap_allocated of heap: %p", (void *) heap));
 	duk__free_allocated(heap);
@@ -840,6 +858,9 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 #if defined(DUK_USE_ASSERTIONS)
 	res->currently_finalizing = NULL;
 #endif
+#endif
+#if 0
+	res->activation_free = NULL;
 #endif
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;

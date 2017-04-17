@@ -15,10 +15,9 @@
  */
 
 #define DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED            (1 << 0)  /* mark-and-sweep marking reached a recursion limit and must use multi-pass marking */
-#define DUK_HEAP_FLAG_ERRHANDLER_RUNNING                       (1 << 1)  /* an error handler (user callback to augment/replace error) is running */
-#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 2)  /* executor interrupt running (used to avoid nested interrupts) */
-#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1 << 3)  /* heap destruction ongoing, finalizer rescue no longer possible */
-#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1 << 4)  /* debugger is paused: talk with debug client until step/resume */
+#define DUK_HEAP_FLAG_INTERRUPT_RUNNING                        (1 << 1)  /* executor interrupt running (used to avoid nested interrupts) */
+#define DUK_HEAP_FLAG_FINALIZER_NORESCUE                       (1 << 2)  /* heap destruction ongoing, finalizer rescue no longer possible */
+#define DUK_HEAP_FLAG_DEBUGGER_PAUSED                          (1 << 3)  /* debugger is paused: talk with debug client until step/resume */
 
 #define DUK__HEAP_HAS_FLAGS(heap,bits)               ((heap)->flags & (bits))
 #define DUK__HEAP_SET_FLAGS(heap,bits)  do { \
@@ -29,19 +28,16 @@
 	} while (0)
 
 #define DUK_HEAP_HAS_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_HAS_ERRHANDLER_RUNNING(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_HAS_INTERRUPT_RUNNING(heap)               DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_HAS_FINALIZER_NORESCUE(heap)              DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 #define DUK_HEAP_HAS_DEBUGGER_PAUSED(heap)                 DUK__HEAP_HAS_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 #define DUK_HEAP_SET_MARKANDSWEEP_RECLIMIT_REACHED(heap)   DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_SET_ERRHANDLER_RUNNING(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_SET_INTERRUPT_RUNNING(heap)               DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_SET_FINALIZER_NORESCUE(heap)              DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 #define DUK_HEAP_SET_DEBUGGER_PAUSED(heap)                 DUK__HEAP_SET_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
 
 #define DUK_HEAP_CLEAR_MARKANDSWEEP_RECLIMIT_REACHED(heap) DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_MARKANDSWEEP_RECLIMIT_REACHED)
-#define DUK_HEAP_CLEAR_ERRHANDLER_RUNNING(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_ERRHANDLER_RUNNING)
 #define DUK_HEAP_CLEAR_INTERRUPT_RUNNING(heap)             DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_INTERRUPT_RUNNING)
 #define DUK_HEAP_CLEAR_FINALIZER_NORESCUE(heap)            DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_FINALIZER_NORESCUE)
 #define DUK_HEAP_CLEAR_DEBUGGER_PAUSED(heap)               DUK__HEAP_CLEAR_FLAGS((heap), DUK_HEAP_FLAG_DEBUGGER_PAUSED)
@@ -363,6 +359,11 @@ struct duk_heap {
 #endif
 #endif
 
+#if 0
+	/* Freelist for duk_activations. */
+	duk_activation *activation_free;
+#endif
+
 	/* Voluntary mark-and-sweep trigger counter.  Intentionally signed
 	 * because we continue decreasing the value when voluntary GC cannot
 	 * run.
@@ -426,6 +427,14 @@ struct duk_heap {
 	 */
 	duk_bool_t creating_error;
 
+	/* Marker for indicating we're calling a user error augmentation
+	 * (errCreate/errThrow) function.  Errors created/thrown during
+	 * such a call are not augmented.
+	 */
+#if defined(DUK_USE_AUGMENT_ERROR_THROW) || defined(DUK_USE_AUGMENT_ERROR_CREATE)
+	duk_bool_t augmenting_error;
+#endif
+
 	/* Longjmp state. */
 	duk_ljstate lj;
 
@@ -488,8 +497,7 @@ struct duk_heap {
 	duk_bool_t dbg_force_restart;           /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
 	duk_bool_t dbg_detaching;               /* debugger detaching; used to avoid calling detach handler recursively */
 	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
-	duk_hthread *dbg_step_thread;           /* borrowed; NULL if no step state (NULLed in unwind) */
-	duk_size_t dbg_step_csindex;            /* callstack index */
+	duk_activation *dbg_step_act;           /* activation related to step into/over/out */
 	duk_uint32_t dbg_step_startline;        /* starting line number */
 	duk_breakpoint dbg_breakpoints[DUK_HEAP_MAX_BREAKPOINTS];  /* breakpoints: [0,breakpoint_count[ gc reachable */
 	duk_small_uint_t dbg_breakpoint_count;
