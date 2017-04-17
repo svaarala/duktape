@@ -71,10 +71,11 @@ The most extensive type of side effect is arbitrary code execution, caused
 by e.g. a finalizer or a Proxy trap call (and a number of indirect causes).
 The potential side effects are very wide:
 
-* Because a call is made, value, call, and catch stacks may be grown (but
+* Because a call is made, value stacks and call stacks may be grown (but
   not shrunk) and their base pointers may change.  As a result, any duk_tval
-  pointers to the value stack, duk_activation pointers to the call stack, and
-  duk_catcher pointers to the catch stack are (potentially) invalidated.
+  pointers to the value stack and duk_activation pointers to the call stack
+  are (potentially) invalidated.  Since Duktape 2.2 duk_catchers are separately
+  allocated and have a stable pointer.
 
 * An error throw may happen, clobbering heap longjmp state.  This is a
   problem particularly in error handling where we're dealing with a previous
@@ -153,9 +154,9 @@ Other side effects don't happen with current mark-and-sweep implementation.
 For example, the following don't happen (but could, if mark-and-sweep scope
 and side effect lockouts are changed):
 
-* Thread value stack, call stack, and catch stack are never reallocated
-  and all pointers to duk_tvals, duk_activations, and duk_catchers remain
-  valid.  (This could easily change if mark-and-sweep were to "compact"
+* Thread value stack and call stack are never reallocated and all pointers to
+  duk_tvals and duk_activations remain valid; duk_catcher pointers are stable
+  in Duktape 2.2.  (This could easily change if mark-and-sweep were to "compact"
   the stacks in an emergency GC.)
 
 The mark-and-sweep side effects listed above are not fundamental to the

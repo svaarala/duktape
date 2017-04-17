@@ -403,9 +403,10 @@ ownership relationships::
            |
            +-->  value stack
            |
-           +-->  call stack
+           +-->  call stack -->  duk_activations (array)
+           |                       |
+           |                       `--> duk_catchers (linked list)
            |
-           +-->  catch stack
            |                          +-------------+
            `-->  resumer -----------> | duk_hthread |
               (another duk_hthread    +-------------+
@@ -461,9 +462,7 @@ thread (if any).  All heap element references ultimately reside in:
 
 * Thread value stack
 
-* Thread call stack
-
-* Thread catch stack
+* Thread call stack (including catchers)
 
 * Thread resumer reference
 
@@ -553,8 +552,8 @@ The current specific heap element types are:
     further references to other heap elements.
 
   + For ``duk_hthread`` the heap header contains references to the
-    value stack, call stack, catch stack, etc, which provide references
-    to other heap elements.
+    value stack, call stack, etc, which provide references to other heap
+    elements.
 
 * ``duk_hbuffer`` (heap type ``DUK_HTYPE_BUFFER``):
 
