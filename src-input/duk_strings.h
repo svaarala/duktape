@@ -143,7 +143,6 @@
 /* Limits */
 #define DUK_STR_VALSTACK_LIMIT                   "valstack limit"
 #define DUK_STR_CALLSTACK_LIMIT                  "callstack limit"
-#define DUK_STR_CATCHSTACK_LIMIT                 "catchstack limit"
 #define DUK_STR_PROTOTYPE_CHAIN_LIMIT            "prototype chain limit"
 #define DUK_STR_BOUND_CHAIN_LIMIT                "function call bound chain limit"
 #define DUK_STR_C_CALLSTACK_LIMIT                "C call stack depth limit"

@@ -163,7 +163,6 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 	res->valstack_top = NULL;
 	res->callstack = NULL;
 	res->callstack_curr = NULL;
-	res->catchstack = NULL;
 	res->resumer = NULL;
 	res->compile_ctx = NULL,
 #if defined(DUK_USE_HEAPPTR16)
@@ -184,7 +183,6 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 	res->heap = heap;
 	res->valstack_max = DUK_VALSTACK_DEFAULT_MAX;
 	res->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;
-	res->catchstack_max = DUK_CATCHSTACK_DEFAULT_MAX;
 
 	return res;
 }

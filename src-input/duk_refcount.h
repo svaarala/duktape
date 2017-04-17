@@ -661,6 +661,33 @@
 
 #endif  /* DUK_USE_REFERENCE_COUNTING */
 
+/*
+ *  Some convenience macros that don't have optimized implementations now.
+ */
+
+#define DUK_TVAL_SET_TVAL_UPDREF_NORZ(thr,tv_dst,tv_src) do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_tval *duk__dst = (tv_dst); \
+		duk_tval *duk__src = (tv_src); \
+		DUK_UNREF(duk__thr); \
+		DUK_TVAL_DECREF_NORZ(thr, duk__dst); \
+		DUK_TVAL_SET_TVAL(duk__dst, duk__src); \
+		DUK_TVAL_INCREF(thr, duk__dst); \
+	} while (0)
+
+#define DUK_TVAL_SET_U32_UPDREF_NORZ(thr,tv_dst,val) do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_tval *duk__dst = (tv_dst); \
+		duk_uint32_t duk__val = (duk_uint32_t) (val); \
+		DUK_UNREF(duk__thr); \
+		DUK_TVAL_DECREF_NORZ(thr, duk__dst); \
+		DUK_TVAL_SET_U32(duk__dst, duk__val); \
+	} while (0)
+
+/*
+ *  Prototypes
+ */
+
 #if defined(DUK_USE_REFERENCE_COUNTING)
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL_DECL void duk_refzero_check_slow(duk_hthread *thr);

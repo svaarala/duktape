@@ -34,13 +34,27 @@ DUK_INTERNAL void duk_free_hobject(duk_heap *heap, duk_hobject *h) {
 		/* Currently nothing to free */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
+		duk_activation *act;
+		duk_catcher *cat;
+		duk_size_t i;
+
 		DUK_FREE(heap, t->valstack);
-		DUK_FREE(heap, t->callstack);
-		DUK_FREE(heap, t->catchstack);
+
 		/* Don't free h->resumer because it exists in the heap.
 		 * Callstack entries also contain function pointers which
 		 * are not freed for the same reason.
 		 */
+		for (i = t->callstack_top; i > 0; i--) {
+			act = t->callstack + i;
+			for (cat = act->cat; cat != NULL;) {
+				duk_catcher *cat_next;
+
+				cat_next = cat->parent;
+				DUK_FREE(heap, (void *) cat);
+				cat = cat_next;
+			}
+		}
+		DUK_FREE(heap, t->callstack);
 
 		/* XXX: with 'caller' property the callstack would need
 		 * to be unwound to update the 'caller' properties of

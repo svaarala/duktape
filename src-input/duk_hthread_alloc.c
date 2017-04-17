@@ -22,7 +22,6 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	DUK_ASSERT(thr->valstack_top == NULL);
 	DUK_ASSERT(thr->callstack == NULL);
 	DUK_ASSERT(thr->callstack_curr == NULL);
-	DUK_ASSERT(thr->catchstack == NULL);
 
 	/* valstack */
 	alloc_size = sizeof(duk_tval) * DUK_VALSTACK_INITIAL_SIZE;
@@ -53,26 +52,14 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	DUK_ASSERT(thr->callstack_top == 0);
 	DUK_ASSERT(thr->callstack_curr == NULL);
 
-	/* catchstack */
-	alloc_size = sizeof(duk_catcher) * DUK_CATCHSTACK_INITIAL_SIZE;
-	thr->catchstack = (duk_catcher *) DUK_ALLOC(heap, alloc_size);
-	if (!thr->catchstack) {
-		goto fail;
-	}
-	DUK_MEMZERO(thr->catchstack, alloc_size);
-	thr->catchstack_size = DUK_CATCHSTACK_INITIAL_SIZE;
-	DUK_ASSERT(thr->catchstack_top == 0);
-
 	return 1;
 
  fail:
 	DUK_FREE(heap, thr->valstack);
 	DUK_FREE(heap, thr->callstack);
-	DUK_FREE(heap, thr->catchstack);
 
 	thr->valstack = NULL;
 	thr->callstack = NULL;
-	thr->catchstack = NULL;
 	return 0;
 }
 
@@ -88,10 +75,4 @@ DUK_INTERNAL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud) {
 	duk_hthread *thr = (duk_hthread *) ud;
 	DUK_UNREF(heap);
 	return (void *) thr->callstack;
-}
-
-DUK_INTERNAL void *duk_hthread_get_catchstack_ptr(duk_heap *heap, void *ud) {
-	duk_hthread *thr = (duk_hthread *) ud;
-	DUK_UNREF(heap);
-	return (void *) thr->catchstack;
 }

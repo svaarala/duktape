@@ -41,7 +41,7 @@ DUK_EXTERNAL void duk_free(duk_context *ctx, void *ptr) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	DUK_FREE(thr->heap, ptr);
+	DUK_FREE_CHECKED(thr, ptr);
 }
 
 DUK_EXTERNAL void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size) {
