@@ -359,9 +359,12 @@ struct duk_heap {
 #endif
 #endif
 
-#if 0
-	/* Freelist for duk_activations. */
+	/* Freelist for duk_activations and duk_catchers. */
+#if defined(DUK_USE_CACHE_ACTIVATION)
 	duk_activation *activation_free;
+#endif
+#if defined(DUK_USE_CACHE_CATCHER)
+	duk_catcher *catcher_free;
 #endif
 
 	/* Voluntary mark-and-sweep trigger counter.  Intentionally signed
@@ -605,6 +608,8 @@ DUK_INTERNAL_DECL void *duk_heap_mem_alloc_checked_zeroed(duk_hthread *thr, duk_
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc(duk_heap *heap, void *ptr, duk_size_t newsize);
 DUK_INTERNAL_DECL void *duk_heap_mem_realloc_indirect(duk_heap *heap, duk_mem_getptr cb, void *ud, duk_size_t newsize);
 DUK_INTERNAL_DECL void duk_heap_mem_free(duk_heap *heap, void *ptr);
+
+DUK_INTERNAL_DECL void duk_heap_free_freelists(duk_heap *heap);
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
 DUK_INTERNAL_DECL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj);

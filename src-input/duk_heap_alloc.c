@@ -131,6 +131,62 @@ DUK_INTERNAL void duk_heap_free_heaphdr_raw(duk_heap *heap, duk_heaphdr *hdr) {
  *  after this call.
  */
 
+#if defined(DUK_USE_CACHE_ACTIVATION)
+DUK_LOCAL duk_size_t duk__heap_free_activation_freelist(duk_heap *heap) {
+	duk_activation *act;
+	duk_activation *act_next;
+	duk_size_t count_act = 0;
+
+	for (act = heap->activation_free; act != NULL;) {
+		act_next = act->parent;
+		DUK_FREE(heap, (void *) act);
+		act = act_next;
+#if defined(DUK_USE_DEBUG)
+		count_act++;
+#endif
+	}
+	heap->activation_free = NULL;  /* needed when called from mark-and-sweep */
+	return count_act;
+}
+#endif  /* DUK_USE_CACHE_ACTIVATION */
+
+#if defined(DUK_USE_CACHE_CATCHER)
+DUK_LOCAL duk_size_t duk__heap_free_catcher_freelist(duk_heap *heap) {
+	duk_catcher *cat;
+	duk_catcher *cat_next;
+	duk_size_t count_cat = 0;
+
+	for (cat = heap->catcher_free; cat != NULL;) {
+		cat_next = cat->parent;
+		DUK_FREE(heap, (void *) cat);
+		cat = cat_next;
+#if defined(DUK_USE_DEBUG)
+		count_cat++;
+#endif
+	}
+	heap->catcher_free = NULL;  /* needed when called from mark-and-sweep */
+
+	return count_cat;
+}
+#endif  /* DUK_USE_CACHE_CATCHER */
+
+DUK_INTERNAL void duk_heap_free_freelists(duk_heap *heap) {
+	duk_size_t count_act = 0;
+	duk_size_t count_cat = 0;
+
+#if defined(DUK_USE_CACHE_ACTIVATION)
+	count_act = duk__heap_free_activation_freelist(heap);
+#endif
+#if defined(DUK_USE_CACHE_CATCHER)
+	count_cat = duk__heap_free_catcher_freelist(heap);
+#endif
+	DUK_UNREF(count_act);
+	DUK_UNREF(count_cat);
+
+	DUK_D(DUK_DPRINT("freed %ld activation freelist entries, %ld catcher freelist entries",
+	                 (long) count_act, (long) count_cat));
+}
+
 DUK_LOCAL void duk__free_allocated(duk_heap *heap) {
 	duk_heaphdr *curr;
 	duk_heaphdr *next;
@@ -336,18 +392,8 @@ DUK_INTERNAL void duk_heap_free(duk_heap *heap) {
 	 * are on the heap allocated list.
 	 */
 
-#if 0  /* XXX: move to helper, add catcher freelist */
-	{
-		duk_activation *act;
-		duk_activation *act_next;
-
-		for (act = heap->activation_free; act != NULL;) {
-			act_next = act->parent;
-			DUK_FREE(heap, (void *) act);
-			act = act_next;
-		}
-	}
-#endif
+	DUK_D(DUK_DPRINT("freeing temporary freelists"));
+	duk_heap_free_freelists(heap);
 
 	DUK_D(DUK_DPRINT("freeing heap_allocated of heap: %p", (void *) heap));
 	duk__free_allocated(heap);
@@ -860,9 +906,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->currently_finalizing = NULL;
 #endif
 #endif
-#if 0
 	res->activation_free = NULL;
-#endif
+	res->catcher_free = NULL;
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
