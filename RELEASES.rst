@@ -794,7 +794,7 @@ Released
 * Fix assignment evaluation order issue which affected expressions like
   "a[i] = b[i++]" (GH-118)
 
-* Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
+* Fix incorrect parsing of zero escape in regexp class ("[\\0]") (GH-122)
 
 * Fix tail call issue in return comma expression when a function call
   in the comma expression was followed by a constant value or a register
@@ -886,7 +886,7 @@ Released
 * Fix value stack setup bug which caused a segfault with large number of
   arguments (GH-107)
 
-* Fix incorrect parsing of zero escape in regexp class ("[\0]") (GH-122)
+* Fix incorrect parsing of zero escape in regexp class ("[\\0]") (GH-122)
 
 * Fix assignment evaluation order issue which affected expressions like
   "a[i] = b[i++]" (GH-118)
@@ -2034,8 +2034,8 @@ Ecmascript 2015+ and real world compatibility:
   this aligns better with behavior of other engines (GH-1057)
 
 * Change parsing of octal escapes in string literals to better align with
-  ES2015 and other engines; "\078" is now accepted and is the same as
-  "\u00078", "\8" and "\9" are accepted as literal "8" and "9"  (GH-1057)
+  ES2015 and other engines; "\\078" is now accepted and is the same as
+  "\\u00078", "\\8" and "\\9" are accepted as literal "8" and "9"  (GH-1057)
 
 * Change bound function .name property handling to match ES2015 requirements;
   for a target function with name "foo", bound function name is "bound foo"
@@ -2539,8 +2539,8 @@ Miscellaneous:
 
 * Add ES2015 Annex B HTML comment syntax (GH-1435, GH-1436, GH-1438)
 
-* Allow ES2015 Annex B legacy octal escapes (\1 to \377) and literal digits
-  (\8 and \9) for RegExp character classes (GH-1275, GH-1483)
+* Allow ES2015 Annex B legacy octal escapes (\\1 to \\377) and literal digits
+  (\\8 and \\9) for RegExp character classes (GH-1275, GH-1483)
 
 * Add an experimental "global" property to the global object to provide easy
   access to the global object itself without needing idioms like
