@@ -2840,6 +2840,9 @@ Planned
   to a duk_activation instead of being a separate, monolithic
   thr->catchstack (GH-1449)
 
+* Internal change: simple freelists for duk_activation and duk_catcher
+  (GH-1491)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
