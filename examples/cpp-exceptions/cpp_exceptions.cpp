@@ -93,7 +93,7 @@ duk_ret_t test2(duk_context *ctx) {
 }
 duk_ret_t test2_safecall(duk_context *ctx, void *udata) {
 	(void) udata;
-	test2(ctx);
+	return test2(ctx);
 }
 
 /*
