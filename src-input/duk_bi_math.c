@@ -355,6 +355,10 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
 }
 
 #if defined(DUK_USE_ES6)
+DUK_LOCAL duk_double_t duk__to_number_fabs(duk_context *ctx, duk_idx_t idx) {
+	return DUK_FABS(duk_to_number(ctx, idx));
+}
+
 DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	/*
 	 *  E6 Section 20.2.2.18: Math.hypot
@@ -374,6 +378,7 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	duk_double_t sum, summand;
 	duk_double_t comp, prelim;
 	duk_double_t t;
+	duk_double_t res;
 
 	nargs = duk_get_top(ctx);
 
@@ -381,8 +386,8 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	max = 0.0;
 	found_nan = 0;
 	for (i = 0; i < nargs; i++) {
-		t = DUK_FABS(duk_to_number(ctx, i));
-		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN) {
+		t = duk__to_number_fabs(ctx, i);
+		if (DUK_ISNAN(t)) {
 			found_nan = 1;
 		} else {
 			max = duk_double_fmax(max, t);
@@ -391,15 +396,15 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 
 	/* Early return cases. */
 	if (max == DUK_DOUBLE_INFINITY) {
-		duk_push_number(ctx, DUK_DOUBLE_INFINITY);
-		return 1;
+		res = DUK_DOUBLE_INFINITY;
+		goto done;
 	} else if (found_nan) {
-		duk_push_number(ctx, DUK_DOUBLE_NAN);
-		return 1;
+		res = DUK_DOUBLE_NAN;
+		goto done;
 	} else if (max == 0.0) {
-		duk_push_number(ctx, 0.0);
 		/* Otherwise we'd divide by zero. */
-		return 1;
+		res = max;
+		goto done;
 	}
 
 	/* Use Kahan summation and normalize to the highest value to minimize
@@ -410,14 +415,18 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	sum = 0.0;
 	comp = 0.0;
 	for (i = 0; i < nargs; i++) {
-		t = DUK_FABS(duk_get_number(ctx, i)) / max;
+		DUK_ASSERT(duk_is_number(ctx, i));  /* coercion above guarantees */
+		t = duk__to_number_fabs(ctx, i) / max;
 		summand = (t * t) - comp;
 		prelim = sum + summand;
 		comp = (prelim - sum) - summand;
 		sum = prelim;
 	}
+	res = (duk_double_t) DUK_SQRT(sum) * max;
+	goto done;
 
-	duk_push_number(ctx, (duk_double_t) DUK_SQRT(sum) * max);
+ done:
+	duk_push_number(ctx, res);
 	return 1;
 }
 #endif  /* DUK_USE_ES6 */
