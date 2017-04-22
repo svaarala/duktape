@@ -71,11 +71,12 @@ The most extensive type of side effect is arbitrary code execution, caused
 by e.g. a finalizer or a Proxy trap call (and a number of indirect causes).
 The potential side effects are very wide:
 
-* Because a call is made, value stacks and call stacks may be grown (but
-  not shrunk) and their base pointers may change.  As a result, any duk_tval
-  pointers to the value stack and duk_activation pointers to the call stack
-  are (potentially) invalidated.  Since Duktape 2.2 duk_catchers are separately
-  allocated and have a stable pointer.
+* Because a call is made, the value stack may be grown (but not shrunk) and
+  its base pointer may change.  As a result, any duk_tval pointers to the
+  value stack are (potentially) invalidated.  Since Duktape 2.2 duk_activation
+  and duk_catcher structs are allocated separately and have a stable pointer.
+  Before Duktape 2.2 duk_activations were held in a call stack and duk_catchers
+  in a catch stack, and their pointers might be invalidated by side effects.
 
 * An error throw may happen, clobbering heap longjmp state.  This is a
   problem particularly in error handling where we're dealing with a previous
@@ -154,10 +155,10 @@ Other side effects don't happen with current mark-and-sweep implementation.
 For example, the following don't happen (but could, if mark-and-sweep scope
 and side effect lockouts are changed):
 
-* Thread value stack and call stack are never reallocated and all pointers to
-  duk_tvals and duk_activations remain valid; duk_catcher pointers are stable
-  in Duktape 2.2.  (This could easily change if mark-and-sweep were to "compact"
-  the stacks in an emergency GC.)
+* Thread value stack is never reallocated and all pointers to duk_tvals remain
+  valid; duk_activation and duk_catcher pointers are stable in Duktape 2.2.
+  (This could easily change if mark-and-sweep were to "compact" the value stack
+  in an emergency GC.)
 
 The mark-and-sweep side effects listed above are not fundamental to the
 engine and could be removed if they became inconvenient.  For example, it's
