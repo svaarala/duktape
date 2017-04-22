@@ -941,6 +941,7 @@ site: duktape-releases dukweb.js jquery-1.11.0.js
 	mkdir site
 	-cd duktape-releases/; git pull --rebase  # get binaries up-to-date, but allow errors for offline use
 	cd website/; $(PYTHON) buildsite.py ../site/
+	for i in site/*.html; do echo "tidy checking $$i"; tidy -q -e -xml -utf8 $$i; done
 	@rm -rf /tmp/site/
 	cp -r site /tmp/  # useful for quick preview
 .PHONY:	dist-site
