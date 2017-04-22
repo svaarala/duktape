@@ -107,7 +107,7 @@ def validateAndParseHtml(data):
 	ign_soup = BeautifulSoup(data, 'xml')
 
 	# then parse as lenient html, no xml tags etc
-	soup = BeautifulSoup(data)
+	soup = BeautifulSoup(data, 'lxml')
 
 	return soup
 
@@ -448,7 +448,7 @@ def transformColorizeCode(soup, cssClass, sourceLang):
 		origTitle = elem.get('title', None)
 
 		# source-highlight generates <pre><tt>...</tt></pre>, get rid of <tt>
-		new_elem = BeautifulSoup(colorized).tt    # XXX: parse just a fragment - how?
+		new_elem = BeautifulSoup(colorized, 'lxml').tt    # XXX: parse just a fragment - how?
 		new_elem.name = 'pre'
 		new_elem['class'] = cssClass
 
@@ -465,7 +465,7 @@ def transformFancyStacks(soup):
 			# hack for leading empty line
 			input_str = input_str[1:]
 
-		new_elem = BeautifulSoup(renderFancyStack(input_str)).div  # XXX: fragment?
+		new_elem = BeautifulSoup(renderFancyStack(input_str), 'lxml').div  # XXX: fragment?
 		elem.replace_with(new_elem)
 
 def transformRemoveClass(soup, cssClass):
@@ -490,7 +490,7 @@ def transformReadIncludes(soup, includeDirs):
 			raise Exception('cannot find include file: ' + repr(filename))
 
 		if filename.endswith('.html'):
-			new_elem = BeautifulSoup(d).div
+			new_elem = BeautifulSoup(d, 'lxml').div
 			elem.replace_with(new_elem)
 		else:
 			elem.string = d
@@ -872,7 +872,7 @@ def generateDownloadPage(releases_filename):
 	if fancy_releaselog:
 		# fancy releaselog
 		rel_data = rst2Html(os.path.abspath(os.path.join('..', 'RELEASES.rst')))
-		rel_soup = BeautifulSoup(rel_data)
+		rel_soup = BeautifulSoup(rel_data, 'lxml')
 		released = rel_soup.select('#released')[0]
 		# massage the rst2html generated HTML to be more suitable
 		for elem in released.select('h1'):
