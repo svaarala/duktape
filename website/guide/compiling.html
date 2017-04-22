@@ -157,7 +157,10 @@ for more practical details.</p>
     exceptions for long control transfers and allows scope-based resource
     management (automatic destructors, etc; sometimes referred to as
     <a href="https://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization">RAII</a>)
-    in Duktape/C functions to work as expected.</li>
+    in Duktape/C functions to work as expected.  With MSVC be careful to
+    avoid the <code>/EHsc</code> exception model (use e.g. <code>/EHs</code>
+    instead) because the "c" option causes MSVC to assume extern
+    C functions cannot throw C++ exceptions.</li>
 <li><b>Windows DLL build</b>.  Windows DLL build requires some
     <code>declspec()</code> declarations for DLL library symbols.  Use the
     <code>--dll</code> option when running <code>configure.py</code> to
@@ -333,4 +336,14 @@ won't work in Duktape/C functions because Duktape uses
 <code>longjmp()</code> for internal long control transfers, bypassing
 C++ stack unwind mechanisms.  You can use <code>DUK_USE_CPP_EXCEPTIONS</code>
 to cause Duktape to use C++ exceptions for internal long control transfers,
-which allows scope-based resource management to work in Duktape/C functions.</p>
+which allows scope-based resource management to work in Duktape/C functions.
+With MSVC be careful to avoid the <code>/EHsc</code> exception model (use e.g.
+<code>/EHs</code> instead) because the "c" option causes MSVC to assume extern
+C functions cannot throw C++ exceptions.  When using MSVC and CMake you can use
+e.g.:</p>
+
+<pre>
+if (MSVC)
+    string( REPLACE "/EHsc" "/EHs" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
+endif()
+</pre>
