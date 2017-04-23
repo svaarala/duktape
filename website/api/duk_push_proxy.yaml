@@ -1,0 +1,26 @@
+name: duk_push_proxy
+
+proto: |
+  duk_idx_t duk_push_proxy(duk_context *ctx);
+
+stack: |
+  [ ... target! handler! ] -> [ ... proxy! ]
+
+summary: |
+  <p>Push a new Proxy object for target and handler table given on the value
+  stack, equivalent to <code>new Proxy(target, handler)</code>.</p>
+
+example: |
+  duk_idx_t proxy_idx;
+
+  duk_push_object(ctx);  /* target */
+  duk_push_object(ctx);  /* handler */
+  duk_push_c_function(ctx, my_get, 3);  /* 'get' trap */
+  duk_put_prop_string(ctx, -2, "get");
+  proxy_idx = duk_push_proxy(ctx);  /* [ target handler ] -> [ proxy ] */
+
+tags:
+  - stack
+  - object
+
+introduced: 2.2.0
