@@ -166,6 +166,7 @@
 #define DUK_HOBJECT_IS_NATFUNC(h)              DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_NATFUNC)
 #define DUK_HOBJECT_IS_BUFOBJ(h)               DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_BUFOBJ)
 #define DUK_HOBJECT_IS_THREAD(h)               (DUK_HOBJECT_GET_CLASS_NUMBER((h)) == DUK_HOBJECT_CLASS_THREAD)
+#define DUK_HOBJECT_IS_PROXY(h)                DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ((h))
 
 #define DUK_HOBJECT_IS_NONBOUND_FUNCTION(h)    DUK_HEAPHDR_CHECK_FLAG_BITS(&(h)->hdr, \
                                                         DUK_HOBJECT_FLAG_COMPFUNC | \
@@ -262,7 +263,7 @@
  */
 #define DUK_HOBJECT_PROHIBITS_FASTREFS(h) \
 	(DUK_HOBJECT_IS_COMPFUNC((h)) || DUK_HOBJECT_IS_DECENV((h)) || DUK_HOBJECT_IS_OBJENV((h)) || \
-	 DUK_HOBJECT_IS_BUFOBJ((h)) || DUK_HOBJECT_IS_THREAD((h)))
+	 DUK_HOBJECT_IS_BUFOBJ((h)) || DUK_HOBJECT_IS_THREAD((h)) || DUK_HOBJECT_IS_PROXY((h)))
 #define DUK_HOBJECT_ALLOWS_FASTREFS(h) (!DUK_HOBJECT_PROHIBITS_FASTREFS((h)))
 
 /* Flags used for property attributes in duk_propdesc and packed flags.
@@ -847,6 +848,7 @@ DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_u
 DUK_INTERNAL_DECL duk_hthread *duk_hthread_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hdecenv *duk_hdecenv_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hobjenv *duk_hobjenv_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hproxy *duk_hproxy_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 
 /* resize */
 DUK_INTERNAL_DECL void duk_hobject_realloc_props(duk_hthread *thr,
@@ -922,8 +924,8 @@ DUK_INTERNAL_DECL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *
 
 /* ES2015 proxy */
 #if defined(DUK_USE_ES6_PROXY)
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
-DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target(duk_hthread *thr, duk_hobject *obj);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_proxy_check(duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler);
+DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj);
 #endif
 
 /* enumeration */

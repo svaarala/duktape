@@ -1153,7 +1153,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 		DUK_ASSERT(val != NULL);
 #if defined(DUK_USE_ES6_PROXY)
-		val = duk_hobject_resolve_proxy_target(thr, val);
+		val = duk_hobject_resolve_proxy_target(val);
 #endif
 
 		if (skip_first) {

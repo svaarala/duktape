@@ -532,6 +532,12 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__shift:%ld", (long) b->shift);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__elemtype:%ld", (long) b->elem_type);
 #endif
+	} else if (st->internal && DUK_HOBJECT_IS_PROXY(h)) {
+		duk_hproxy *p = (duk_hproxy *) h;
+		DUK__COMMA(); duk_fb_sprintf(fb, "__target:");
+		duk__print_hobject(st, p->target);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__handler:");
+		duk__print_hobject(st, p->handler);
 	} else if (st->internal && DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__ptr_curr_pc:%p", (void *) t->ptr_curr_pc);

@@ -713,8 +713,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_keys_shared(duk_context *ctx) {
 
 #if defined(DUK_USE_ES6_PROXY)
 	/* XXX: better sharing of code between proxy target call sites */
-	if (DUK_LIKELY(!duk_hobject_proxy_check(thr,
-	                                        obj,
+	if (DUK_LIKELY(!duk_hobject_proxy_check(obj,
 	                                        &h_proxy_target,
 	                                        &h_proxy_handler))) {
 		goto skip_proxy;

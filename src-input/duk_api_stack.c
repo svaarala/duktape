@@ -4845,6 +4845,96 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_context *ctx, duk_size_t len) 
 	return ptr;
 }
 
+#if defined(DUK_USE_ES6_PROXY)
+DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *h_target;
+	duk_hobject *h_handler;
+	duk_hproxy *h_proxy;
+	duk_tval *tv_slot;
+	duk_uint_t flags;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	/* DUK__CHECK_SPACE() unnecessary because the Proxy is written to
+	 * value stack in-place.
+	 */
+#if 0
+	DUK__CHECK_SPACE();
+#endif
+
+	/* Reject a proxy object as the target because it would need
+	 * special handling in property lookups.  (ES2015 has no such
+	 * restriction.)
+	 */
+	h_target = duk_require_hobject_promote_mask(ctx, -2, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	DUK_ASSERT(h_target != NULL);
+	if (DUK_HOBJECT_IS_PROXY(h_target)) {
+		goto fail_args;
+	}
+
+	/* Reject a proxy object as the handler because it would cause
+	 * potentially unbounded recursion.  (ES2015 has no such
+	 * restriction.)
+	 *
+	 * There's little practical reason to use a lightfunc or a plain
+	 * buffer as the handler table: one could only provide traps via
+	 * their prototype objects (Function.prototype and ArrayBuffer.prototype).
+	 * Even so, as lightfuncs and plain buffers mimic their object
+	 * counterparts, they're promoted and accepted here.
+	 */
+	h_handler = duk_require_hobject_promote_mask(ctx, -1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	DUK_ASSERT(h_handler != NULL);
+	if (DUK_HOBJECT_IS_PROXY(h_handler)) {
+		goto fail_args;
+	}
+
+	/* XXX: Proxy object currently has no prototype, so ToPrimitive()
+	 * coercion fails which is a bit confusing.  No callable check/handling
+	 * in the current Proxy subset.
+	 */
+
+	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ |
+	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT);
+
+	h_proxy = duk_hproxy_alloc(thr, flags);
+	DUK_ASSERT(h_proxy != NULL);
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_proxy) == NULL);
+
+	/* Initialize Proxy target and handler references; avoid INCREF
+	 * by stealing the value stack refcounts via direct value stack
+	 * manipulation.  INCREF is needed for the Proxy itself however.
+	 */
+	DUK_ASSERT(h_target != NULL);
+	h_proxy->target = h_target;
+	DUK_ASSERT(h_handler != NULL);
+	h_proxy->handler = h_handler;
+	DUK_ASSERT_HPROXY_VALID(h_proxy);
+
+	DUK_ASSERT(duk_get_hobject(ctx, -2) == h_target);
+	DUK_ASSERT(duk_get_hobject(ctx, -1) == h_handler);
+	tv_slot = thr->valstack_top - 2;
+	DUK_ASSERT(tv_slot >= thr->valstack_bottom);
+	DUK_TVAL_SET_OBJECT(tv_slot, (duk_hobject *) h_proxy);
+	DUK_HOBJECT_INCREF(thr, (duk_hobject *) h_proxy);
+	tv_slot++;
+	DUK_TVAL_SET_UNDEFINED(tv_slot);  /* [ ... target handler ] -> [ ... proxy undefined ] */
+	thr->valstack_top = tv_slot;      /* -> [ ... proxy ] */
+
+	DUK_DD(DUK_DDPRINT("created Proxy: %!iT", duk_get_tval(ctx, -1)));
+
+	return (duk_idx_t) (thr->valstack_top - thr->valstack_bottom - 1);
+
+ fail_args:
+	DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+}
+#else  /* DUK_USE_ES6_PROXY */
+DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_context *ctx) {
+	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+}
+#endif  /* DUK_USE_ES6_PROXY */
+
 #if defined(DUK_USE_ASSERTIONS)
 DUK_LOCAL void duk__validate_push_heapptr(duk_context *ctx, void *ptr) {
 	duk_heaphdr *h;

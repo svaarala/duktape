@@ -413,15 +413,17 @@ DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
 #endif
 	DUK_HEAPHDR_SET_FINALIZED((duk_heaphdr *) obj);  /* ensure never re-entered until rescue cycle complete */
 
-	if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) {
+#if defined(DUK_USE_ES6_PROXY)
+	if (DUK_HOBJECT_IS_PROXY(obj)) {
 		/* This may happen if duk_set_finalizer() or Duktape.fin() is
 		 * called for a Proxy object.  In such cases the fast finalizer
 		 * flag will be set on the Proxy, not the target, and neither
 		 * will be finalized.
 		 */
-		DUK_D(DUK_DPRINT("object is a proxy, skip finalizer call"));
+		DUK_D(DUK_DPRINT("object is a Proxy, skip finalizer call"));
 		return;
 	}
+#endif  /* DUK_USE_ES6_PROXY */
 
 	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */
 	rc = duk_safe_call(ctx, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */

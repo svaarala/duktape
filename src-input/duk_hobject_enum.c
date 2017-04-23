@@ -297,8 +297,7 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 	if (DUK_LIKELY((enum_flags & DUK_ENUM_NO_PROXY_BEHAVIOR) != 0)) {
 		goto skip_proxy;
 	}
-	if (DUK_LIKELY(!duk_hobject_proxy_check(thr,
-	                                        enum_target,
+	if (DUK_LIKELY(!duk_hobject_proxy_check(enum_target,
 	                                        &h_proxy_target,
 	                                        &h_proxy_handler))) {
 		goto skip_proxy;
@@ -649,7 +648,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 	enum_target = duk_require_hobject(ctx, -1);
 	DUK_ASSERT(enum_target != NULL);
 #if defined(DUK_USE_ES6_PROXY)
-	check_existence = (!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(enum_target));
+	check_existence = (!DUK_HOBJECT_IS_PROXY(enum_target));
 #else
 	check_existence = 1;
 #endif
