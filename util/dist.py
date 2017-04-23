@@ -381,6 +381,7 @@ def main():
         'duk_hobject_misc.c',
         'duk_hobject_pc2line.c',
         'duk_hobject_props.c',
+        'duk_hproxy.h',
         'duk_hstring.h',
         'duk_hstring_misc.c',
         'duk_hthread_alloc.c',
