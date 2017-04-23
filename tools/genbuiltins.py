@@ -2317,7 +2317,7 @@ def rom_emit_strings_source(genc, meta):
     for lst in romstr_hash:
         for v in reversed(lst):
             tmp = 'DUK_INTERNAL const duk_romstr_%d %s = {' % (len(v), bi_str_map[v])
-            flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY' ]
+            flags = [ 'DUK_HTYPE_STRING', 'DUK_HEAPHDR_FLAG_READONLY', 'DUK_HEAPHDR_FLAG_REACHABLE' ]
             is_arridx = string_is_arridx(v)
 
             blen = len(v)
@@ -2741,7 +2741,7 @@ def rom_emit_objects(genc, meta, bi_str_map):
         else:
             tmp = 'DUK_EXTERNAL const duk_romobj duk_obj_%d = ' % idx
 
-        flags = [ 'DUK_HTYPE_OBJECT', 'DUK_HEAPHDR_FLAG_READONLY' ]
+        flags = [ 'DUK_HTYPE_OBJECT', 'DUK_HEAPHDR_FLAG_READONLY', 'DUK_HEAPHDR_FLAG_REACHABLE' ]
         if isfunc:
             flags.append('DUK_HOBJECT_FLAG_NATFUNC')
             flags.append('DUK_HOBJECT_FLAG_STRICT')
