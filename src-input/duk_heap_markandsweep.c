@@ -169,21 +169,21 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		return;
 	}
 
-	/* XXX: just mark all READONLY objects reachable so they can be skipped here? */
-#if defined(DUK_USE_ROM_OBJECTS)
-	if (DUK_HEAPHDR_HAS_READONLY(h)) {
-		DUK_DDD(DUK_DDDPRINT("readonly object %p, skip", (void *) h));
-		return;
-	}
-#endif
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(h) || DUK_HEAPHDR_HAS_REACHABLE(h));
+
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
-	h->h_assert_refcount++;  /* Comparison refcount: bump even if already reachable. */
+	if (!DUK_HEAPHDR_HAS_READONLY(h)) {
+		h->h_assert_refcount++;  /* Comparison refcount: bump even if already reachable. */
+	}
 #endif
 	if (DUK_HEAPHDR_HAS_REACHABLE(h)) {
 		DUK_DDD(DUK_DDDPRINT("already marked reachable, skip"));
 		return;
 	}
 #if defined(DUK_USE_ROM_OBJECTS)
+	/* READONLY objects always have REACHABLE set, so the check above
+	 * will prevent READONLY objects from being marked here.
+	 */
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(h));
 #endif
 
