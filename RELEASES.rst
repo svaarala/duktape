@@ -2816,6 +2816,9 @@ Planned
 2.2.0 (XXXX-XX-XX)
 ------------------
 
+* Add duk_push_proxy() API call which allows a Proxy to be created from C
+  code (GH-1500, GH-837)
+
 * Fix callstack limit bumping for errThrow augmentation calls, the limit might
   be bumped and unbumped for different Duktape threads if coroutines were
   resumed/yielded in the process; this is relatively harmless but might cause
@@ -2823,7 +2826,7 @@ Planned
   (GH-1490)
 
 * Add an internal type for representing Proxy instances (duk_hproxy) to
-  simplify Proxy operations and improve performance (GH-1500)
+  simplify Proxy operations and improve performance (GH-1500, GH-1136)
 
 * Internal change: duk_activation structs are now in a single linked list
   attached to a duk_hthread instead of being a separate, monolithic
