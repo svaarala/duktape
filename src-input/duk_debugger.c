@@ -69,8 +69,7 @@ DUK_LOCAL void duk__debug_do_detach1(duk_heap *heap, duk_int_t reason) {
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = 0;
-	heap->dbg_step_thread = NULL;
-	heap->dbg_step_csindex = 0;
+	heap->dbg_step_act = NULL;
 	heap->dbg_step_startline = 0;
 	heap->dbg_have_next_byte = 0;
 	duk_debug_clear_paused(heap);  /* XXX: some overlap with field inits above */
@@ -1010,7 +1009,6 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 	duk_debug_write_notify(thr, DUK_DBG_CMD_STATUS);
 	duk_debug_write_int(thr, (DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) ? 1 : 0));
 
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);  /* unsigned */
 	act = thr->callstack_curr;
 	if (act == NULL) {
 		duk_debug_write_undefined(thr);
@@ -1026,7 +1024,6 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_pop_3(ctx);
 		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
-		act = thr->callstack_curr;
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hthread_get_act_curr_pc(thr, act));
 	}
 
@@ -1070,7 +1067,6 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 			duk_push_tval(ctx, &act->tv_func);
 			duk_get_prop_string(ctx, -1, "fileName");
 			duk__debug_write_hstring_safe_top(thr);
-			act = thr->callstack_curr;
 			pc = duk_hthread_get_act_prev_pc(thr, act);
 			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
 			duk_pop_2(ctx);
@@ -1174,6 +1170,9 @@ DUK_LOCAL void duk__debug_skip_to_eom(duk_hthread *thr) {
 	}
 }
 
+/* Read and validate a call stack index.  If index is invalid, write out an
+ * error message and return zero.
+ */
 DUK_LOCAL duk_int32_t duk__debug_read_validate_csindex(duk_hthread *thr) {
 	duk_int32_t level;
 	level = duk_debug_read_int(thr);
@@ -1182,6 +1181,21 @@ DUK_LOCAL duk_int32_t duk__debug_read_validate_csindex(duk_hthread *thr) {
 		return 0;  /* zero indicates failure */
 	}
 	return level;
+}
+
+/* Read a call stack index and lookup the corresponding duk_activation.
+ * If index is invalid, write out an error message and return NULL.
+ */
+DUK_LOCAL duk_activation *duk__debug_read_level_get_activation(duk_hthread *thr) {
+	duk_activation *act;
+	duk_int32_t level;
+
+	level = duk_debug_read_int(thr);
+	act = duk_hthread_get_activation_for_level(thr, level);
+	if (act == NULL) {
+		duk_debug_write_error_eom(thr, DUK_DBG_ERR_NOTFOUND, "invalid callstack index");
+	}
+	return act;
 }
 
 /*
@@ -1257,8 +1271,7 @@ DUK_LOCAL void duk__debug_handle_step(duk_hthread *thr, duk_heap *heap, duk_int3
 	if (line > 0) {
 		duk_debug_clear_paused(heap);  /* XXX: overlap with fields below; separate macro/helper? */
 		heap->dbg_step_type = step_type;
-		heap->dbg_step_thread = thr;
-		heap->dbg_step_csindex = thr->callstack_top - 1;
+		heap->dbg_step_act = thr->callstack_curr;
 		heap->dbg_step_startline = line;
 		heap->dbg_state_dirty = 1;
 	} else {
@@ -1317,33 +1330,21 @@ DUK_LOCAL void duk__debug_handle_del_break(duk_hthread *thr, duk_heap *heap) {
 
 DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 	duk_context *ctx = (duk_context *) thr;
+	duk_activation *act;
 	duk_hstring *str;
 	duk_bool_t rc;
-	duk_int32_t level;
 
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command GetVar"));
 
-	level = duk__debug_read_validate_csindex(thr);
-	if (level == 0) {
+	act = duk__debug_read_level_get_activation(thr);
+	if (act == NULL) {
 		return;
 	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
 	DUK_ASSERT(str != NULL);
 
-	if (thr->callstack_top > 0) {
-		rc = duk_js_getvar_activation(thr,
-		                              thr->callstack + thr->callstack_top + level,
-		                              str,
-		                              0);
-	} else {
-		/* No activation, no variable access.  Could also pretend
-		 * we're in the global program context and read stuff off
-		 * the global object.
-		 */
-		DUK_D(DUK_DPRINT("callstack empty, no activation -> ignore getvar"));
-		rc = 0;
-	}
+	rc = duk_js_getvar_activation(thr, act, str, 0);
 
 	duk_debug_write_reply(thr);
 	if (rc) {
@@ -1358,15 +1359,15 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
+	duk_activation *act;
 	duk_hstring *str;
 	duk_tval *tv;
-	duk_int32_t level;
 
 	DUK_UNREF(heap);
 	DUK_D(DUK_DPRINT("debug command PutVar"));
 
-	level = duk__debug_read_validate_csindex(thr);
-	if (level == 0) {
+	act = duk__debug_read_level_get_activation(thr);
+	if (act == NULL) {
 		return;
 	}
 	str = duk_debug_read_hstring(thr);  /* push to stack */
@@ -1377,15 +1378,7 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 		return;
 	}
 
-	if (thr->callstack_top > 0) {
-		duk_js_putvar_activation(thr,
-		                         thr->callstack + thr->callstack_top + level,
-		                         str,
-		                         tv,
-		                         0);
-	} else {
-		DUK_D(DUK_DPRINT("callstack empty, no activation -> ignore putvar"));
-	}
+	duk_js_putvar_activation(thr, act, str, tv, 0);
 
 	/* XXX: Current putvar implementation doesn't have a success flag,
 	 * add one and send to debug client?
@@ -1400,18 +1393,13 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 	duk_activation *curr_act;
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
-	duk_size_t i;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_UNREF(heap);
 
 	duk_debug_write_reply(thr);
 	while (curr_thr != NULL) {
-		i = curr_thr->callstack_top;
-		while (i > 0) {
-			i--;
-			curr_act = curr_thr->callstack + i;
-
+		for (curr_act = curr_thr->callstack_curr; curr_act != NULL; curr_act = curr_act->parent) {
 			/* PC/line semantics here are:
 			 *   - For callstack top we're conceptually between two
 			 *     opcodes and current PC indicates next line to
@@ -1431,7 +1419,7 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
 			duk__debug_write_hstring_safe_top(thr);
 			pc = duk_hthread_get_act_curr_pc(thr, curr_act);
-			if (i != curr_thr->callstack_top - 1 && pc > 0) {
+			if (curr_act != curr_thr->callstack_curr && pc > 0) {
 				pc--;
 			}
 			line = duk_hobject_pc2line_query(ctx, -3, pc);
@@ -1449,19 +1437,17 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 
 DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_activation *curr_act;
-	duk_int32_t level;
+	duk_activation *act;
 	duk_hstring *varname;
 
 	DUK_UNREF(heap);
 
-	level = duk__debug_read_validate_csindex(thr);
-	if (level == 0) {
+	act = duk__debug_read_level_get_activation(thr);
+	if (act == NULL) {
 		return;
 	}
-	duk_debug_write_reply(thr);
 
-	curr_act = thr->callstack + thr->callstack_top + level;
+	duk_debug_write_reply(thr);
 
 	/* XXX: several nice-to-have improvements here:
 	 *   - Use direct reads avoiding value stack operations
@@ -1469,14 +1455,14 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	 *   - If side effects are possible, add error catching
 	 */
 
-	duk_push_tval(ctx, &curr_act->tv_func);
+	duk_push_tval(ctx, &act->tv_func);
 	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VARMAP);
 	if (duk_is_object(ctx, -1)) {
 		duk_enum(ctx, -1, 0 /*enum_flags*/);
 		while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
 			varname = duk_known_hstring(ctx, -1);
 
-			duk_js_getvar_activation(thr, curr_act, varname, 0 /*throw_flag*/);
+			duk_js_getvar_activation(thr, act, varname, 0 /*throw_flag*/);
 			/* [ ... func varmap enum key value this ] */
 			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -3));
 			duk_debug_write_tval(thr, duk_get_tval(ctx, -2));
@@ -1541,19 +1527,21 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	/* [ ... eval "eval" eval_input level ] */
 
 	call_flags = 0;
-	if (direct_eval && thr->callstack_top >= (duk_size_t) -level) {
+	if (direct_eval) {
 		duk_activation *act;
 		duk_hobject *fun;
 
-		act = thr->callstack + thr->callstack_top + level;
-		fun = DUK_ACT_GET_FUNC(act);
-		if (fun != NULL && DUK_HOBJECT_IS_COMPFUNC(fun)) {
-			/* Direct eval requires that there's a current
-			 * activation and it is an Ecmascript function.
-			 * When Eval is executed from e.g. cooperate API
-			 * call we'll need to do an indirect eval instead.
-			 */
-			call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
+		act = duk_hthread_get_activation_for_level(thr, level);
+		if (act != NULL) {
+			fun = DUK_ACT_GET_FUNC(act);
+			if (fun != NULL && DUK_HOBJECT_IS_COMPFUNC(fun)) {
+				/* Direct eval requires that there's a current
+				 * activation and it is an Ecmascript function.
+				 * When Eval is executed from e.g. cooperate API
+				 * call we'll need to do an indirect eval instead.
+				 */
+				call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
+			}
 		}
 	}
 
@@ -1820,11 +1808,10 @@ DUK_LOCAL void duk__debug_handle_get_bytecode(duk_hthread *thr, duk_heap *heap) 
 	}
 
 	if (fun == NULL) {
-		if (level >= 0 || -level > (duk_int32_t) thr->callstack_top) {
-			DUK_D(DUK_DPRINT("invalid callstack index for GetBytecode"));
+		act = duk_hthread_get_activation_for_level(thr, level);
+		if (act == NULL) {
 			goto fail_index;
 		}
-		act = thr->callstack + thr->callstack_top + level;
 		fun = (duk_hcompfunc *) DUK_ACT_GET_FUNC(act);
 	}
 
@@ -2834,8 +2821,7 @@ DUK_INTERNAL void duk_debug_clear_paused(duk_heap *heap) {
 
 DUK_INTERNAL void duk_debug_clear_step_state(duk_heap *heap) {
 	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
-	heap->dbg_step_thread = NULL;
-	heap->dbg_step_csindex = 0;
+	heap->dbg_step_act = NULL;
 	heap->dbg_step_startline = 0;
 }
 

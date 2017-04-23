@@ -540,15 +540,11 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__state:%ld", (long) t->state);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__unused1:%ld", (long) t->unused1);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%ld", (long) t->unused2);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_max:%ld", (long) t->valstack_max);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_max:%ld", (long) t->callstack_max);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%ld", (void *) t->valstack_end, (long) (t->valstack_end - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%ld", (void *) t->valstack_bottom, (long) (t->valstack_bottom - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%ld", (void *) t->valstack_top, (long) (t->valstack_top - t->valstack));
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack:%p", (void *) t->callstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_curr:%p", (void *) t->callstack_curr);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_size:%ld", (long) t->callstack_size);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_top:%ld", (long) t->callstack_top);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_preventcount:%ld", (long) t->callstack_preventcount);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__resumer:"); duk__print_hobject(st, (duk_hobject *) t->resumer);

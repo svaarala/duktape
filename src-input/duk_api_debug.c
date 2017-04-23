@@ -87,8 +87,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_context *ctx,
 	heap->dbg_state_dirty = 0;
 	heap->dbg_force_restart = 0;
 	heap->dbg_step_type = DUK_STEP_TYPE_NONE;
-	heap->dbg_step_thread = NULL;
-	heap->dbg_step_csindex = 0;
+	heap->dbg_step_act = NULL;
 	heap->dbg_step_startline = 0;
 	heap->dbg_exec_counter = 0;
 	heap->dbg_last_counter = 0;
@@ -136,7 +135,7 @@ DUK_EXTERNAL void duk_debugger_cooperate(duk_context *ctx) {
 	if (!duk_debug_is_attached(thr->heap)) {
 		return;
 	}
-	if (thr->callstack_top > 0 || thr->heap->dbg_processing) {
+	if (thr->callstack_curr != NULL || thr->heap->dbg_processing) {
 		/* Calling duk_debugger_cooperate() while Duktape is being
 		 * called into is not supported.  This is not a 100% check
 		 * but prevents any damage in most cases.

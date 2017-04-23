@@ -192,17 +192,17 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level)
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	/* -1             = top callstack entry, callstack[callstack_top - 1]
-	 * -callstack_top = bottom callstack entry, callstack[0]
+	/* -1   = top callstack entry
+	 * -2   = caller of level -1
+	 * etc
 	 */
-	if (level >= 0 || -level > (duk_int_t) thr->callstack_top) {
+	act = duk_hthread_get_activation_for_level(thr, level);
+	if (act == NULL) {
 		duk_push_undefined(ctx);
 		return;
 	}
 	duk_push_bare_object(ctx);
-	DUK_ASSERT(level >= -((duk_int_t) thr->callstack_top) && level <= -1);
 
-	act = thr->callstack + thr->callstack_top + level;
 	/* Relevant PC is just before current one because PC is
 	 * post-incremented.  This should match what error augment
 	 * code does.

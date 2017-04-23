@@ -470,7 +470,6 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	act = thr->callstack_curr;
 	if (act != NULL) {
@@ -503,7 +502,6 @@ DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	act = thr->callstack_curr;
 	if (act != NULL) {
@@ -525,7 +523,6 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_context *ctx) {
 
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_DISABLE(thr->callstack_top >= 0);
 
 	act = thr->callstack_curr;
 	if (act) {

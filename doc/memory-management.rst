@@ -403,7 +403,7 @@ ownership relationships::
            |
            +-->  value stack
            |
-           +-->  call stack -->  duk_activations (array)
+           +-->  call stack -->  duk_activations (linked list)
            |                       |
            |                       `--> duk_catchers (linked list)
            |

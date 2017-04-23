@@ -63,8 +63,8 @@ changes:
 
 * A setjmp catchpoint is needed for protected calls.
 
-* The call stack is resized if necessary, and an activation record
-  (``duk_activation``) is set up for the new call.
+* An activation record, ``duk_activation``, is allocated and set up for the
+  new call.
 
 * The value stack is resized if necessary, and a fresh value stack frame
   is established for the call.  The calling value stack frame and the target
@@ -380,7 +380,7 @@ Misc notes
 
 * The value stack doesn't hold all the internal state relevant for an
   activation.  Some state, such as active environment records (``lex_env``
-  and ``var_env``) are held in the ``duk_activation`` call stack structure.
+  and ``var_env``) are held in the ``duk_activation`` activation structure.
 
 Value stack management
 ======================

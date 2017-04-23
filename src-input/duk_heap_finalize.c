@@ -17,11 +17,10 @@ DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_context *ctx) {
 	/* Require a lot of stack to force a value stack grow/shrink. */
 	duk_require_stack(ctx, 100000);
 
-	/* Force a reallocation with pointer change for value and call
-	 * stacks to maximize side effects.
+	/* Force a reallocation with pointer change for value stack
+	 * to maximize side effects.
 	 */
 	duk_hthread_valstack_torture_realloc((duk_hthread *) ctx);
-	duk_hthread_callstack_torture_realloc((duk_hthread *) ctx);
 
 	/* Inner function call, error throw. */
 	duk_eval_string_noresult(ctx,
@@ -49,12 +48,13 @@ DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_context *ctx) {
 DUK_LOCAL void duk__run_global_torture_finalizer(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 
-	/* Avoid fake finalization when callstack limit has been reached.
-	 * Otherwise a callstack limit error will be created, then refzero'ed.
+	/* Avoid fake finalization when callstack limit is near.  Otherwise
+	 * a callstack limit error will be created, then refzero'ed.  The
+	 * +5 headroom is conservative.
 	 */
-	if (thr->heap->call_recursion_depth >= thr->heap->call_recursion_limit ||
-	    thr->callstack_size + 2 * DUK_CALLSTACK_GROW_STEP >= thr->callstack_max /*approximate*/) {
-		DUK_D(DUK_DPRINT("skip global torture finalizer because of call recursion or call stack size limit"));
+	if (thr->heap->call_recursion_depth + 5 >= thr->heap->call_recursion_limit ||
+	    thr->callstack_top + 5 >= DUK_CALLSTACK_DEFAULT_MAX) {
+		DUK_D(DUK_DPRINT("skip global torture finalizer, too little headroom for call recursion or call stack size"));
 		return;
 	}
 
@@ -143,7 +143,6 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
 	DUK_ASSERT(heap->heap_thread->valstack != NULL);
-	DUK_ASSERT(heap->heap_thread->callstack != NULL);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_ASSERT(heap->refzero_list == NULL);
 #endif

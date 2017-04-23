@@ -41,7 +41,6 @@ try {
 
     function f() { f(); }
     f();
-}
-catch(e) {
+} catch(e) {
     print(e);
 }

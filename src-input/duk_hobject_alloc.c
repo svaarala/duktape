@@ -177,13 +177,12 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 		}
 	}
 #endif
-	/* when nothing is running, API calls are in non-strict mode */
+	/* When nothing is running, API calls are in non-strict mode. */
 	DUK_ASSERT(res->strict == 0);
 
 	res->heap = heap;
-	res->valstack_max = DUK_VALSTACK_DEFAULT_MAX;
-	res->callstack_max = DUK_CALLSTACK_DEFAULT_MAX;
 
+	/* XXX: Any reason not to merge duk_hthread_alloc.c here? */
 	return res;
 }
 

@@ -32,10 +32,6 @@
 
 #define DUK_VALSTACK_DEFAULT_MAX        1000000L
 
-#define DUK_CALLSTACK_GROW_STEP         8       /* roughly 256 bytes */
-#define DUK_CALLSTACK_SHRINK_THRESHOLD  16      /* roughly 512 bytes */
-#define DUK_CALLSTACK_SHRINK_SPARE      8       /* roughly 256 bytes */
-#define DUK_CALLSTACK_INITIAL_SIZE      8
 #define DUK_CALLSTACK_DEFAULT_MAX       10000L
 
 /*
@@ -199,13 +195,10 @@
  *  Struct defines
  */
 
-/* XXX: for a memory-code tradeoff, remove 'func' and make it's access either a function
- * or a macro.  This would make the activation 32 bytes long on 32-bit platforms again.
- */
-
-/* Note: it's nice if size is 2^N (at least for 32-bit platforms). */
+/* Fields are ordered for alignment/packing. */
 struct duk_activation {
 	duk_tval tv_func;       /* borrowed: full duk_tval for function being executed; for lightfuncs */
+	duk_activation *parent; /* previous (parent) activation (or NULL if none) */
 	duk_hobject *func;      /* borrowed: function being executed; for bound function calls, this is the final, real function, NULL for lightfuncs */
 	duk_hobject *var_env;   /* current variable environment (may be NULL if delayed) */
 	duk_hobject *lex_env;   /* current lexical environment (may be NULL if delayed) */
@@ -219,10 +212,6 @@ struct duk_activation {
 #endif
 
 	duk_instr_t *curr_pc;   /* next instruction to execute (points to 'func' bytecode, stable pointer), NULL for native calls */
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
-	duk_uint32_t prev_line; /* needed for stepping */
-#endif
-	duk_small_uint_t flags;
 
 	/* idx_bottom and idx_retval are only used for book-keeping of
 	 * Ecmascript-initiated calls, to allow returning to an Ecmascript
@@ -253,8 +242,14 @@ struct duk_activation {
 	/* Current 'this' binding is the value just below idx_bottom.
 	 * Previously, 'this' binding was handled with an index to the
 	 * (calling) valstack.  This works for everything except tail
-	 * calls, which must not "cumulate" valstack temps.
+	 * calls, which must not "accumulate" valstack temps.
 	 */
+
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	duk_uint32_t prev_line; /* needed for stepping */
+#endif
+
+	duk_small_uint_t flags;
 };
 
 struct duk_catcher {
@@ -291,10 +286,6 @@ struct duk_hthread {
 	duk_uint8_t unused1;
 	duk_uint8_t unused2;
 
-	/* Sanity limits for stack sizes. */
-	duk_size_t valstack_max;
-	duk_size_t callstack_max;
-
 	/* XXX: Valstack and callstack are currently assumed to have non-NULL
 	 * pointers.  Relaxing this would not lead to big benefits (except
 	 * perhaps for terminated threads).
@@ -312,11 +303,11 @@ struct duk_hthread {
 	duk_size_t valstack_size;               /* cached: valstack_end - valstack (in entries, not bytes) */
 #endif
 
-	/* Call stack.  [0,callstack_top[ is GC reachable. */
-	duk_activation *callstack;
+	/* Call stack, represented as a linked list starting from the current
+	 * activation (or NULL if nothing is active).
+	 */
 	duk_activation *callstack_curr;         /* current activation (or NULL if none) */
-	duk_size_t callstack_size;              /* allocation size */
-	duk_size_t callstack_top;               /* next to use, highest used is top - 1 (or none if top == 0) */
+	duk_size_t callstack_top;               /* number of activation records in callstack (0 if none) */
 	duk_size_t callstack_preventcount;      /* number of activation records in callstack preventing a yield */
 
 	/* Yield/resume book-keeping. */
@@ -371,20 +362,22 @@ DUK_INTERNAL_DECL void duk_hthread_create_builtin_objects(duk_hthread *thr);
 DUK_INTERNAL_DECL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr);
 DUK_INTERNAL_DECL void duk_hthread_terminate(duk_hthread *thr);
 
-DUK_INTERNAL_DECL void duk_hthread_callstack_grow(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_callstack_shrink_check(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_callstack_unwind_norz(duk_hthread *thr, duk_size_t new_top);
-DUK_INTERNAL_DECL void duk_hthread_callstack_unwind(duk_hthread *thr, duk_size_t new_top);
+DUK_INTERNAL_DECL duk_activation *duk_hthread_activation_alloc(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_activation_free(duk_hthread *thr, duk_activation *act);
+DUK_INTERNAL_DECL void duk_hthread_activation_unwind_norz(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_activation_unwind_reuse_norz(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_activation *duk_hthread_get_activation_for_level(duk_hthread *thr, duk_int_t level);
+
+DUK_INTERNAL_DECL duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr);
+DUK_INTERNAL_DECL void duk_hthread_catcher_free(duk_hthread *thr, duk_catcher *cat);
 DUK_INTERNAL_DECL void duk_hthread_catcher_unwind_norz(duk_hthread *thr, duk_activation *act);
 DUK_INTERNAL_DECL void duk_hthread_catcher_unwind_nolexenv_norz(duk_hthread *thr, duk_activation *act);
 
 #if defined(DUK_USE_FINALIZER_TORTURE)
 DUK_INTERNAL_DECL void duk_hthread_valstack_torture_realloc(duk_hthread *thr);
-DUK_INTERNAL_DECL void duk_hthread_callstack_torture_realloc(duk_hthread *thr);
 #endif
 
 DUK_INTERNAL_DECL void *duk_hthread_get_valstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
-DUK_INTERNAL_DECL void *duk_hthread_get_callstack_ptr(duk_heap *heap, void *ud);  /* indirect allocs */
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 DUK_INTERNAL_DECL duk_uint_fast32_t duk_hthread_get_act_curr_pc(duk_hthread *thr, duk_activation *act);

@@ -68,12 +68,12 @@
 
 #define DUK__RECURSION_INCREASE(comp_ctx,thr)  do { \
 		DUK_DDD(DUK_DDDPRINT("RECURSION INCREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
-		duk__recursion_increase((comp_ctx)); \
+		duk__comp_recursion_increase((comp_ctx)); \
 	} while (0)
 
 #define DUK__RECURSION_DECREASE(comp_ctx,thr)  do { \
 		DUK_DDD(DUK_DDDPRINT("RECURSION DECREASE: %s:%ld", (const char *) DUK_FILE_MACRO, (long) DUK_LINE_MACRO)); \
-		duk__recursion_decrease((comp_ctx)); \
+		duk__comp_recursion_decrease((comp_ctx)); \
 	} while (0)
 
 /* Value stack slot limits: these are quite approximate right now, and
@@ -403,7 +403,7 @@ DUK_LOCAL const duk_uint8_t duk__token_lbp[] = {
  *  Misc helpers
  */
 
-DUK_LOCAL void duk__recursion_increase(duk_compiler_ctx *comp_ctx) {
+DUK_LOCAL void duk__comp_recursion_increase(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(comp_ctx->recursion_depth >= 0);
 	if (comp_ctx->recursion_depth >= comp_ctx->recursion_limit) {
@@ -412,7 +412,7 @@ DUK_LOCAL void duk__recursion_increase(duk_compiler_ctx *comp_ctx) {
 	comp_ctx->recursion_depth++;
 }
 
-DUK_LOCAL void duk__recursion_decrease(duk_compiler_ctx *comp_ctx) {
+DUK_LOCAL void duk__comp_recursion_decrease(duk_compiler_ctx *comp_ctx) {
 	DUK_ASSERT(comp_ctx != NULL);
 	DUK_ASSERT(comp_ctx->recursion_depth > 0);
 	comp_ctx->recursion_depth--;
