@@ -7,13 +7,17 @@
  *  of the Proxy itself using e.g. Object.getOwnPropertyDescriptor() to check for
  *  property attributes.  Once that behavior is fixed, this test will fail and
  *  can maybe be reimplemented using the C API.
+ *
+ *  Skipped since Duktape 2.2: with duk_hproxy proxy target and handler are
+ *  struct fields rather than internal properties.
  */
 
 /*@include util-buffer.js@*/
 
 /*---
 {
-    "custom": true
+    "custom": true,
+    "skip": true
 }
 ---*/
 

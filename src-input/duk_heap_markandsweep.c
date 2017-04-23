@@ -66,6 +66,8 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_tval *tv, *tv_end;
 		duk_hobject **fn, **fn_end;
 
+		DUK_ASSERT_HCOMPFUNC_VALID(f);
+
 		/* 'data' is reachable through every compiled function which
 		 * contains a reference.
 		 */
@@ -95,6 +97,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
+		DUK_ASSERT_HBUFOBJ_VALID(b);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
@@ -107,10 +110,19 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		duk_hobjenv *e = (duk_hobjenv *) h;
 		DUK_ASSERT_HOBJENV_VALID(e);
 		duk__mark_heaphdr(heap, (duk_heaphdr *) e->target);
+#if defined(DUK_USE_ES6_PROXY)
+	} else if (DUK_HOBJECT_IS_PROXY(h)) {
+		duk_hproxy *p = (duk_hproxy *) h;
+		DUK_ASSERT_HPROXY_VALID(p);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) p->target);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) p->handler);
+#endif  /* DUK_USE_ES6_PROXY */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_activation *act;
 		duk_tval *tv;
+
+		DUK_ASSERT_HTHREAD_VALID(t);
 
 		tv = t->valstack;
 		while (tv < t->valstack_top) {
@@ -151,9 +163,13 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 	DUK_DDD(DUK_DDDPRINT("duk__mark_heaphdr %p, type %ld",
 	                     (void *) h,
 	                     (h != NULL ? (long) DUK_HEAPHDR_GET_TYPE(h) : (long) -1)));
+
+	/* XXX: add non-null variant? */
 	if (h == NULL) {
 		return;
 	}
+
+	/* XXX: just mark all READONLY objects reachable so they can be skipped here? */
 #if defined(DUK_USE_ROM_OBJECTS)
 	if (DUK_HEAPHDR_HAS_READONLY(h)) {
 		DUK_DDD(DUK_DDDPRINT("readonly object %p, skip", (void *) h));
@@ -167,6 +183,10 @@ DUK_LOCAL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h) {
 		DUK_DDD(DUK_DDDPRINT("already marked reachable, skip"));
 		return;
 	}
+#if defined(DUK_USE_ROM_OBJECTS)
+	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY(h));
+#endif
+
 	DUK_HEAPHDR_SET_REACHABLE(h);
 
 	if (heap->ms_recursion_depth >= DUK_USE_MARK_AND_SWEEP_RECLIMIT) {

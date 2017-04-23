@@ -622,6 +622,7 @@ DUK_LOCAL void duk__dump_type_sizes(void) {
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	DUK__DUMPSZ(duk_hbufobj);
 #endif
+	DUK__DUMPSZ(duk_hproxy);
 	DUK__DUMPSZ(duk_hbuffer);
 	DUK__DUMPSZ(duk_hbuffer_fixed);
 	DUK__DUMPSZ(duk_hbuffer_dynamic);

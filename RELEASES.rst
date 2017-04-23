@@ -2822,6 +2822,9 @@ Planned
   an errThrow augmentation call to fail due to callstack limit being reached
   (GH-1490)
 
+* Add an internal type for representing Proxy instances (duk_hproxy) to
+  simplify Proxy operations and improve performance (GH-1500)
+
 * Internal change: duk_activation structs are now in a single linked list
   attached to a duk_hthread instead of being a separate, monolithic
   thr->callstack (GH-1487)

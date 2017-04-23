@@ -170,6 +170,7 @@
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack_top); \
 		DUK_ASSERT_CTX_VSSIZE((ctx)); \
 	} while (0)
+#define DUK_ASSERT_HTHREAD_VALID(h) DUK_ASSERT_CTX_VALID((h))
 
 /*
  *  Assertion helpers.

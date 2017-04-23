@@ -114,6 +114,8 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 		duk_tval *tv, *tv_end;
 		duk_hobject **funcs, **funcs_end;
 
+		DUK_ASSERT_HCOMPFUNC_VALID(f);
+
 		if (DUK_LIKELY(DUK_HCOMPFUNC_GET_DATA(heap, f) != NULL)) {
 			tv = DUK_HCOMPFUNC_GET_CONSTS_BASE(heap, f);
 			tv_end = DUK_HCOMPFUNC_GET_CONSTS_END(heap, f);
@@ -153,13 +155,23 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 		duk_hbufobj *b = (duk_hbufobj *) h;
+		DUK_ASSERT_HBUFOBJ_VALID(b);
 		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
 		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+#if defined(DUK_USE_ES6_PROXY)
+	} else if (DUK_HOBJECT_IS_PROXY(h)) {
+		duk_hproxy *p = (duk_hproxy *) h;
+		DUK_ASSERT_HPROXY_VALID(p);
+		DUK_HOBJECT_DECREF_NORZ(thr, p->target);
+		DUK_HOBJECT_DECREF_NORZ(thr, p->handler);
+#endif  /* DUK_USE_ES6_PROXY */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
 		duk_activation *act;
 		duk_tval *tv;
+
+		DUK_ASSERT_HTHREAD_VALID(t);
 
 		tv = t->valstack;
 		while (tv < t->valstack_top) {

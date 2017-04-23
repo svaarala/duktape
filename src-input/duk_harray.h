@@ -1,5 +1,5 @@
 /*
- *  Heap Array object representation.  Used for actual Array instances.
+ *  Array object representation, used for actual Array instances.
  *
  *  All objects with the exotic array behavior (which must coincide with having
  *  internal class array) MUST be duk_harrays.  No other object can be a

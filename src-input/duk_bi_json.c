@@ -2406,7 +2406,7 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		 * but does at the moment, probably not worth fixing.
 		 */
 		if (duk_hobject_hasprop_raw(js_ctx->thr, obj, DUK_HTHREAD_STRING_TO_JSON(js_ctx->thr)) ||
-		    DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj)) {
+		    DUK_HOBJECT_IS_PROXY(obj)) {
 			DUK_DD(DUK_DDPRINT("object has a .toJSON property or object is a Proxy, abort fast path"));
 			goto abort_fastpath;
 		}

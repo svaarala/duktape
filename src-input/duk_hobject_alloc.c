@@ -234,3 +234,15 @@ DUK_INTERNAL duk_hobjenv *duk_hobjenv_alloc(duk_hthread *thr, duk_uint_t hobject
 
 	return res;
 }
+
+DUK_INTERNAL duk_hproxy *duk_hproxy_alloc(duk_hthread *thr, duk_uint_t hobject_flags) {
+	duk_hproxy *res;
+
+	res = (duk_hproxy *) duk__hobject_alloc_init(thr, hobject_flags, sizeof(duk_hproxy));
+
+	/* Leave ->target and ->handler uninitialized, as caller will always
+	 * explicitly initialize them before any side effects are possible.
+	 */
+
+	return res;
+}

@@ -363,13 +363,9 @@ DUK_LOCAL duk_bool_t duk__abandon_array_slow_check_required(duk_uint32_t arr_idx
  */
 
 #if defined(DUK_USE_ES6_PROXY)
-DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler) {
-	duk_tval *tv_target;
-	duk_tval *tv_handler;
-	duk_hobject *h_target;
-	duk_hobject *h_handler;
+DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hobject *obj, duk_hobject **out_target, duk_hobject **out_handler) {
+	duk_hproxy *h_proxy;
 
-	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(out_target != NULL);
 	DUK_ASSERT(out_handler != NULL);
@@ -377,31 +373,16 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *o
 	/* Caller doesn't need to check exotic proxy behavior (but does so for
 	 * some fast paths).
 	 */
-	if (DUK_LIKELY(!DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+	if (DUK_LIKELY(!DUK_HOBJECT_IS_PROXY(obj))) {
 		return 0;
 	}
+	h_proxy = (duk_hproxy *) obj;
+	DUK_ASSERT_HPROXY_VALID(h_proxy);
 
-	tv_handler = duk_hobject_find_existing_entry_tval_ptr(thr->heap, obj, DUK_HTHREAD_STRING_INT_HANDLER(thr));
-	if (!tv_handler) {
-		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REVOKED);
-		return 0;
-	}
-	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_handler));
-	h_handler = DUK_TVAL_GET_OBJECT(tv_handler);
-	DUK_ASSERT(h_handler != NULL);
-	*out_handler = h_handler;
-	tv_handler = NULL;  /* avoid issues with relocation */
-
-	tv_target = duk_hobject_find_existing_entry_tval_ptr(thr->heap, obj, DUK_HTHREAD_STRING_INT_TARGET(thr));
-	if (!tv_target) {
-		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REVOKED);
-		return 0;
-	}
-	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_target));
-	h_target = DUK_TVAL_GET_OBJECT(tv_target);
-	DUK_ASSERT(h_target != NULL);
-	*out_target = h_target;
-	tv_target = NULL;  /* avoid issues with relocation */
+	DUK_ASSERT(h_proxy->handler != NULL);
+	DUK_ASSERT(h_proxy->target != NULL);
+	*out_handler = h_proxy->handler;
+	*out_target = h_proxy->target;
 
 	return 1;
 }
@@ -411,25 +392,21 @@ DUK_INTERNAL duk_bool_t duk_hobject_proxy_check(duk_hthread *thr, duk_hobject *o
  * If a Proxy is revoked, an error is thrown.
  */
 #if defined(DUK_USE_ES6_PROXY)
-DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hthread *thr, duk_hobject *obj) {
-	duk_hobject *h_target;
-	duk_hobject *h_handler;
-
-	DUK_ASSERT(thr != NULL);
+DUK_INTERNAL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj) {
 	DUK_ASSERT(obj != NULL);
 
 	/* Resolve Proxy targets until Proxy chain ends.  No explicit check for
-	 * a Proxy loop: user code cannot create such a loop without tweaking
-	 * internal properties directly.
+	 * a Proxy loop: user code cannot create such a loop (it would only be
+	 * possible by editing duk_hproxy references directly).
 	 */
 
-	while (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
-		if (duk_hobject_proxy_check(thr, obj, &h_target, &h_handler)) {
-			DUK_ASSERT(h_target != NULL);
-			obj = h_target;
-		} else {
-			break;
-		}
+	while (DUK_HOBJECT_IS_PROXY(obj)) {
+		duk_hproxy *h_proxy;
+
+		h_proxy = (duk_hproxy *) obj;
+		DUK_ASSERT_HPROXY_VALID(h_proxy);
+		obj = h_proxy->target;
+		DUK_ASSERT(obj != NULL);
 	}
 
 	DUK_ASSERT(obj != NULL);
@@ -447,7 +424,7 @@ DUK_LOCAL duk_bool_t duk__proxy_check_prop(duk_hthread *thr, duk_hobject *obj, d
 	DUK_ASSERT(tv_key != NULL);
 	DUK_ASSERT(out_target != NULL);
 
-	if (!duk_hobject_proxy_check(thr, obj, out_target, &h_handler)) {
+	if (!duk_hobject_proxy_check(obj, out_target, &h_handler)) {
 		return 0;
 	}
 	DUK_ASSERT(*out_target != NULL);
@@ -2048,7 +2025,7 @@ DUK_LOCAL duk_tval *duk__getprop_shallow_fastpath_array_tval(duk_hthread *thr, d
 	     !DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
 	     !DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj) &&
 	     !DUK_HOBJECT_IS_BUFOBJ(obj) &&
-	     !DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+	     !DUK_HOBJECT_IS_PROXY(obj))) {
 		/* Must have array part and no conflicting exotic behaviors.
 		 * Doesn't need to have array special behavior, e.g. Arguments
 		 * object has array part.
@@ -2456,7 +2433,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 #endif
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(curr))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(curr))) {
 			duk_hobject *h_target;
 
 			if (duk__proxy_check_prop(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
@@ -2863,7 +2840,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_UNREF(arr_idx);
 
 #if defined(DUK_USE_ES6_PROXY)
-	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+	if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(obj))) {
 		duk_hobject *h_target;
 		duk_bool_t tmp_bool;
 
@@ -3451,7 +3428,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 #endif
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(orig))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(orig))) {
 			duk_hobject *h_target;
 			duk_bool_t tmp_bool;
 
@@ -4423,7 +4400,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 		DUK_ASSERT(obj != NULL);
 
 #if defined(DUK_USE_ES6_PROXY)
-		if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(obj))) {
+		if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(obj))) {
 			duk_hobject *h_target;
 			duk_bool_t tmp_bool;
 

@@ -825,14 +825,6 @@ strings:
     duktape: true
     internal: true
 
-  # internal properties for Proxy objects
-  - str: "\u00ffTarget"    # [[ProxyTarget]]
-    duktape: true
-    internal: true
-  - str: "\u00ffHandler"   # [[ProxyHandler]]
-    duktape: true
-    internal: true
-
   # fake filename for compiled functions
   - str: "compile"    # used as a filename for functions created with Function constructor
     duktape: true
