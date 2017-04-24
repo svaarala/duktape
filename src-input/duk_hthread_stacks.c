@@ -57,47 +57,90 @@ DUK_INTERNAL void duk_hthread_catcher_unwind_nolexenv_norz(duk_hthread *thr, duk
 	duk_hthread_catcher_free(thr, cat);
 }
 
-DUK_INTERNAL duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr) {
+DUK_LOCAL
+#if defined(DUK_USE_CACHE_CATCHER)
+DUK_NOINLINE
+#endif
+duk_catcher *duk__hthread_catcher_alloc_slow(duk_hthread *thr) {
 	duk_catcher *cat;
-
-	DUK_ASSERT(thr != NULL);
 
 	cat = (duk_catcher *) DUK_ALLOC_CHECKED(thr, sizeof(duk_catcher));
 	DUK_ASSERT(cat != NULL);
 	return cat;
 }
 
+#if defined(DUK_USE_CACHE_CATCHER)
+DUK_INTERNAL DUK_INLINE duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr) {
+	duk_catcher *cat;
+
+	DUK_ASSERT(thr != NULL);
+
+	cat = thr->heap->catcher_free;
+	if (DUK_LIKELY(cat != NULL)) {
+		thr->heap->catcher_free = cat->parent;
+		return cat;
+	}
+
+	return duk__hthread_catcher_alloc_slow(thr);
+}
+#else  /* DUK_USE_CACHE_CATCHER */
+DUK_INTERNAL duk_catcher *duk_hthread_catcher_alloc(duk_hthread *thr) {
+	return duk__hthread_catcher_alloc_slow(thr);
+}
+#endif  /* DUK_USE_CACHE_CATCHER */
+
 DUK_INTERNAL void duk_hthread_catcher_free(duk_hthread *thr, duk_catcher *cat) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(cat != NULL);
 
+#if defined(DUK_USE_CACHE_CATCHER)
+	/* Unconditional caching for now; freed in mark-and-sweep. */
+	cat->parent = thr->heap->catcher_free;
+	thr->heap->catcher_free = cat;
+#else
 	DUK_FREE_CHECKED(thr, (void *) cat);
+#endif
 }
 
-DUK_INTERNAL duk_activation *duk_hthread_activation_alloc(duk_hthread *thr) {
-	duk_activation *act;
-
-	DUK_ASSERT(thr != NULL);
-
-#if 0
-	/* XXX: inline the check part? */
-	act = thr->heap->activation_free;
-	if (DUK_LIKELY(act != NULL)) {
-		thr->heap->activation_free = act->parent;
-		return act;
-	}
+DUK_LOCAL
+#if defined(DUK_USE_CACHE_ACTIVATION)
+DUK_NOINLINE
 #endif
+duk_activation *duk__hthread_activation_alloc_slow(duk_hthread *thr) {
+	duk_activation *act;
 
 	act = (duk_activation *) DUK_ALLOC_CHECKED(thr, sizeof(duk_activation));
 	DUK_ASSERT(act != NULL);
 	return act;
 }
 
+#if defined(DUK_USE_CACHE_ACTIVATION)
+DUK_INTERNAL DUK_INLINE duk_activation *duk_hthread_activation_alloc(duk_hthread *thr) {
+	duk_activation *act;
+
+	DUK_ASSERT(thr != NULL);
+
+	act = thr->heap->activation_free;
+	if (DUK_LIKELY(act != NULL)) {
+		thr->heap->activation_free = act->parent;
+		return act;
+	}
+
+	return duk__hthread_activation_alloc_slow(thr);
+}
+#else  /* DUK_USE_CACHE_ACTIVATION */
+DUK_INTERNAL duk_activation *duk_hthread_activation_alloc(duk_hthread *thr) {
+	return duk__hthread_activation_alloc_slow(thr);
+}
+#endif  /* DUK_USE_CACHE_ACTIVATION */
+
+
 DUK_INTERNAL void duk_hthread_activation_free(duk_hthread *thr, duk_activation *act) {
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(act != NULL);
 
-#if 0
+#if defined(DUK_USE_CACHE_ACTIVATION)
+	/* Unconditional caching for now; freed in mark-and-sweep. */
 	act->parent = thr->heap->activation_free;
 	thr->heap->activation_free = act;
 #else

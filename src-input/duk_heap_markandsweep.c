@@ -1075,6 +1075,15 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	heap->ms_running = 1;
 
 	/*
+	 *  Free activation/catcher freelists on every mark-and-sweep for now.
+	 *  This is an initial rough draft; ideally we'd keep count of the
+	 *  freelist size and free only excess entries.
+	 */
+
+	DUK_D(DUK_DPRINT("freeing temporary freelists"));
+	duk_heap_free_freelists(heap);
+
+	/*
 	 *  Mark roots, hoping that recursion limit is not normally hit.
 	 *  If recursion limit is hit, run additional reachability rounds
 	 *  starting from "temproots" until marking is complete.
