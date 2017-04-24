@@ -2828,6 +2828,10 @@ Planned
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
 
+* Internal change: set REACHABLE for all READONLY objects (relevant when
+  using ROM built-ins) so that mark-and-sweep doesn't need an explicit
+  READONLY check (GH-1502)
+
 * Internal change: duk_activation structs are now in a single linked list
   attached to a duk_hthread instead of being a separate, monolithic
   thr->callstack (GH-1487)

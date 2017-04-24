@@ -157,12 +157,18 @@
 	DUK_ASSERT((duk_size_t) (((duk_hthread *) (ctx))->valstack_end - ((duk_hthread *) (ctx))->valstack) == \
 		((duk_hthread *) (ctx))->valstack_size)
 #endif
+/* Assertions for internals. */
+#define DUK_ASSERT_HTHREAD_VALID(thr) do { \
+		DUK_ASSERT((thr) != NULL); \
+		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) (thr)) == DUK_HTYPE_OBJECT); \
+		DUK_ASSERT(DUK_HOBJECT_IS_THREAD((duk_hobject *) (thr))); \
+		DUK_ASSERT((thr)->unused1 == 0); \
+		DUK_ASSERT((thr)->unused2 == 0); \
+	} while (0)
+/* Assertions for public API calls; a bit stronger. */
 #define DUK_ASSERT_CTX_VALID(ctx) do { \
 		DUK_ASSERT((ctx) != NULL); \
-		DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) (ctx)) == DUK_HTYPE_OBJECT); \
-		DUK_ASSERT(DUK_HOBJECT_IS_THREAD((duk_hobject *) (ctx))); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->unused1 == 0); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->unused2 == 0); \
+		DUK_ASSERT_HTHREAD_VALID((duk_hthread *) (ctx)); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack != NULL); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack); \
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack); \
@@ -170,7 +176,6 @@
 		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack_top); \
 		DUK_ASSERT_CTX_VSSIZE((ctx)); \
 	} while (0)
-#define DUK_ASSERT_HTHREAD_VALID(h) DUK_ASSERT_CTX_VALID((h))
 
 /*
  *  Assertion helpers.
