@@ -906,8 +906,12 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->currently_finalizing = NULL;
 #endif
 #endif
+#if defined(DUK_USE_CACHE_ACTIVATION)
 	res->activation_free = NULL;
+#endif
+#if defined(DUK_USE_CACHE_CATCHER)
 	res->catcher_free = NULL;
+#endif
 	res->heap_thread = NULL;
 	res->curr_thread = NULL;
 	res->heap_object = NULL;
@@ -938,7 +942,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->dbg_write_flush_cb = NULL;
 	res->dbg_request_cb = NULL;
 	res->dbg_udata = NULL;
-	res->dbg_step_thread = NULL;
+	res->dbg_step_act = NULL;
 #endif
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */
 
