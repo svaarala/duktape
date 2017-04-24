@@ -59,6 +59,10 @@ DUK_USE_HSTRING_ARRIDX: false
 # lower memory targets usually drop hash part support entirely.
 DUK_USE_HOBJECT_HASH_PROP_LIMIT: 64
 
+# Disable freelist caching.
+DUK_USE_CACHE_ACTIVATION: false
+DUK_USE_CACHE_CATCHER: false
+
 # Consider using pointer compression, see doc/low-memory.rst.
 #DUK_USE_REFCOUNT16: true
 #DUK_USE_REFCOUNT32: false
