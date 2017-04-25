@@ -2828,6 +2828,10 @@ Planned
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
 
+* Add an internal type for representing bound functions (duk_hboundfunc) and
+  "collapse" bound function chains so that the target of a duk_hboundfunc is
+  always a non-bound function (GH-1503)
+
 * Fix missing duk_require_stack() in bound function call handling which caused
   calls to bound functions with a lot of bound arguments to fail with a value
   stack limit error (GH-1504)
