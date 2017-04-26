@@ -2828,6 +2828,10 @@ Planned
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
 
+* Fix missing duk_require_stack() in bound function call handling which caused
+  calls to bound functions with a lot of bound arguments to fail with a value
+  stack limit error (GH-1504)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
