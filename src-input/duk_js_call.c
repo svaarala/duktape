@@ -564,6 +564,8 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _Args length ] */
 		len = (duk_idx_t) duk_require_int(ctx, -1);
 		duk_pop(ctx);
+
+		duk_require_stack(ctx, len);
 		for (i = 0; i < len; i++) {
 			/* XXX: very slow - better to bulk allocate a gap, and copy
 			 * from args_array directly (we know it has a compact array
