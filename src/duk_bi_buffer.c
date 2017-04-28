@@ -2026,7 +2026,7 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 	res_proto = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_this);  /* may be NULL */
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, (duk_hobject *) h_bufobj, res_proto);
 
-	h_bufobj->length = slice_length;
+	DUK_ASSERT(h_bufobj->length == 0);
 	h_bufobj->shift = h_this->shift;  /* inherit */
 	h_bufobj->elem_type = h_this->elem_type;  /* inherit */
 	h_bufobj->is_view = magic & 0x01;
@@ -2058,12 +2058,14 @@ DUK_INTERNAL duk_ret_t duk_bi_buffer_slice_shared(duk_context *ctx) {
 
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
+		h_bufobj->length = slice_length;
 		DUK_ASSERT(h_bufobj->offset == 0);
 
 		duk_pop(ctx);  /* reachable so pop OK */
 	} else {
 		h_bufobj->buf = h_val;
 		DUK_HBUFFER_INCREF(thr, h_val);
+		h_bufobj->length = slice_length;
 		h_bufobj->offset = (duk_uint_t) (h_this->offset + start_offset);
 
 		/* Copy the .buffer property, needed for TypedArray.prototype.subarray().
