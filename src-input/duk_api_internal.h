@@ -24,7 +24,7 @@ DUK_INTERNAL_DECL void duk_valstack_shrink_check_nothrow(duk_hthread *thr, duk_b
 
 DUK_INTERNAL_DECL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_size_t count);
 
-DUK_INTERNAL_DECL duk_tval *duk_create_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count);
+DUK_INTERNAL_DECL duk_tval *duk_reserve_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count);
 
 DUK_INTERNAL_DECL void duk_set_top_and_wipe(duk_context *ctx, duk_idx_t top, duk_idx_t idx_wipe_start);
 

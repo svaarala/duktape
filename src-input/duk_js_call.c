@@ -546,7 +546,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 
 			duk_require_stack(ctx, len);
 
-			tv_gap = duk_create_gap(ctx, idx_func + 2, len);
+			tv_gap = duk_reserve_gap(ctx, idx_func + 2, len);
 			duk_copy_tvals_incref(thr, tv_gap, tv_args, len);
 
 			/* [ ... func this <bound args> arg1 ... argN ] */
