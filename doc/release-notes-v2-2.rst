@@ -9,7 +9,7 @@ Main changes in this release (see RELEASES.rst for full details):
 
 * TBD.
 
-Upgrading from Duktape 2.0
+Upgrading from Duktape 2.1
 ==========================
 
 No action (other than recompiling) should be needed for most users to upgrade
@@ -36,3 +36,9 @@ from Duktape v2.1.x.  Note the following:
   ``duk_def_prop()``.  The inherited getters can also be replaced if necessary.
   The intermediate prototype doesn't have a named global binding, but you can
   access it by reading the prototype of a pushed function.
+
+* The bound 'this', bound arguments, and target of a duk_hboundfunc are no
+  longer internal properties (but duk_hboundfunc struct members).  The 'this'
+  binding, target, and bound argument count are now visible as artificial
+  properties; the bound argument values are not visible in the debugger
+  protocol for now.
