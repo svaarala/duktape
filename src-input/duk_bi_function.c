@@ -220,8 +220,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_context *ctx) {
 DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hboundfunc *h_bound;
-	duk_hobject *h_target;
-	duk_idx_t nargs;
+	duk_idx_t nargs;  /* bound args, not counting 'this' binding */
 	duk_idx_t bound_nargs;
 	duk_int_t bound_len;
 	duk_tval *tv_prevbound;
@@ -236,27 +235,25 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	/* Vararg function, careful arg handling, e.g. thisArg may not
 	 * be present.
 	 */
-	nargs = duk_get_top(ctx);  /* = 1 + arg count */
-	if (nargs == 0) {
-		duk_push_undefined(ctx);
+	nargs = duk_get_top(ctx) - 1;  /* actual args, not counting 'this' binding */
+	if (nargs < 0) {
 		nargs++;
+		duk_push_undefined(ctx);
 	}
-	DUK_ASSERT(nargs >= 1);
+	DUK_ASSERT(nargs >= 0);
 
 	/* Limit 'nargs' for bound functions to guarantee arithmetic
 	 * below will never wrap.
 	 */
-	if (nargs - 1 > (duk_idx_t) DUK_HBOUNDFUNC_MAX_ARGS) {
+	if (nargs > (duk_idx_t) DUK_HBOUNDFUNC_MAX_ARGS) {
 		DUK_DCERROR_RANGE_INVALID_COUNT(thr);
 	}
 
 	duk_push_this(ctx);
 	duk_require_callable(ctx, -1);
-	h_target = duk_get_hobject(ctx, -1);
-	/* h_target may be NULL for lightfuncs. */
 
-	/* [ thisArg arg1 ... argN func ]  (thisArg+args == nargs total) */
-	DUK_ASSERT_TOP(ctx, nargs + 1);
+	/* [ thisArg arg1 ... argN func ]  (thisArg+args == nargs+1 total) */
+	DUK_ASSERT_TOP(ctx, nargs + 2);
 
 	/* Create bound function object. */
 	h_bound = duk_push_hboundfunc(ctx);
@@ -275,13 +272,17 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	 */
 	tv_prevbound = NULL;
 	n_prevbound = 0;
-	tv_tmp = DUK_GET_TVAL_NEGIDX(ctx, -2);
-	DUK_TVAL_SET_TVAL(&h_bound->target, tv_tmp);
 	tv_tmp = DUK_GET_TVAL_POSIDX(ctx, 0);
 	DUK_TVAL_SET_TVAL(&h_bound->this_binding, tv_tmp);
+	tv_tmp = DUK_GET_TVAL_NEGIDX(ctx, -2);
+	DUK_TVAL_SET_TVAL(&h_bound->target, tv_tmp);
 
-	if (h_target != NULL) {
+	if (DUK_TVAL_IS_OBJECT(tv_tmp)) {
+		duk_hobject *h_target;
 		duk_hobject *bound_proto;
+
+		h_target = DUK_TVAL_GET_OBJECT(tv_tmp);
+		DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(h_target));
 
 		/* Internal prototype must be copied from the target.
 		 * For lightfuncs Function.prototype is used and is already
@@ -323,6 +324,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		/* Lightfuncs are always strict. */
 		duk_hobject *bound_proto;
 
+		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_tmp));
 		DUK_HOBJECT_SET_STRICT((duk_hobject *) h_bound);
 		bound_proto = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
 		DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) h_bound, bound_proto);
@@ -331,7 +333,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	DUK_TVAL_INCREF(thr, &h_bound->target);  /* old values undefined, no decref needed */
 	DUK_TVAL_INCREF(thr, &h_bound->this_binding);
 
-	bound_nargs = n_prevbound + (nargs - 1);
+	bound_nargs = n_prevbound + nargs;
 	if (bound_nargs > (duk_idx_t) DUK_HBOUNDFUNC_MAX_ARGS) {
 		DUK_DCERROR_RANGE_INVALID_COUNT(thr);
 	}
@@ -343,22 +345,29 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	h_bound->nargs = bound_nargs;
 
 	duk_copy_tvals_incref(thr, tv_res, tv_prevbound, n_prevbound);
-	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(ctx, 1), nargs - 1);
+	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(ctx, 1), nargs);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
-	/* bound function 'length' property is interesting */
-	bound_len = 0;
-	if (h_target == NULL ||  /* lightfunc */
-	    DUK_HOBJECT_GET_CLASS_NUMBER(h_target) == DUK_HOBJECT_CLASS_FUNCTION) {
-		/* For lightfuncs, simply read the virtual property. */
-		duk_int_t tmp;
-		duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH);
-		tmp = duk_to_int(ctx, -1) - (nargs - 1);  /* step 15.a */
-		duk_pop(ctx);
-		bound_len = (tmp >= 0 ? tmp : 0);
+	/* Bound function 'length' property is interesting.
+	 * For lightfuncs, simply read the virtual property.
+	 */
+	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH);
+	bound_len = duk_get_int(ctx, -1);  /* ES2015: no coercion */
+	if (bound_len < nargs) {
+		bound_len = 0;
+	} else {
+		bound_len -= nargs;
 	}
-	duk_push_int(ctx, bound_len);
+	if (sizeof(duk_int_t) > 4 && bound_len > (duk_int_t) DUK_UINT32_MAX) {
+		bound_len = (duk_int_t) DUK_UINT32_MAX;
+	}
+	duk_pop(ctx);
+	DUK_ASSERT(bound_len >= 0);
+	tv_tmp = thr->valstack_top++;
+	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv_tmp));
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv_tmp));
+	DUK_TVAL_SET_U32(tv_tmp, (duk_uint32_t) bound_len);  /* in-place update, fastint */
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);  /* attrs in E6 Section 9.2.4 */
 
 	/* XXX: could these be virtual? */
