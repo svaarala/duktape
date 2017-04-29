@@ -173,10 +173,14 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) != NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_clos) != NULL);
 
-	/* XXX: could also copy from template, but there's no way to have any
+	/* XXX: Could also copy from template, but there's no way to have any
 	 * other value here now (used code has no access to the template).
+	 * Prototype is set by duk_push_hcompfunc().
 	 */
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, &fun_clos->obj) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+#if 0
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &fun_clos->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+#endif
 
 	/* Copy duk_hobject flags as is from the template using a mask.
 	 * Leave out duk_heaphdr owned flags just in case (e.g. if there's

@@ -483,17 +483,16 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
 }
 
 /*
- *  Helper for handling a "bound function" chain when a call is being made.
+ *  Helper for handling a bound function when a call is being made.
  *
- *  Follows the bound function chain until a non-bound function is found.
+ *  Assumes that bound function chains have been "collapsed" so that either
+ *  the target is non-bound or there is one bound function that points to a
+ *  nonbound target.
+ *
  *  Prepends the bound arguments to the value stack (at idx_func + 2),
  *  updating 'num_stack_args' in the process.  The 'this' binding is also
  *  updated if necessary (at idx_func + 1).  Note that for constructor calls
  *  the 'this' binding is never updated by [[BoundThis]].
- *
- *  XXX: bound function chains could be collapsed at bound function creation
- *  time so that each bound function would point directly to a non-bound
- *  function.  This would make call time handling much easier.
  */
 
 DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
@@ -504,7 +503,7 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	duk_idx_t num_stack_args;
 	duk_tval *tv_func;
 	duk_hobject *func;
-	duk_uint_t sanity;
+	duk_idx_t len;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(p_num_stack_args != NULL);
@@ -515,81 +514,59 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 
 	num_stack_args = *p_num_stack_args;
 
-	sanity = DUK_HOBJECT_BOUND_CHAIN_SANITY;
-	do {
-		duk_idx_t i, len;
+	tv_func = duk_require_tval(ctx, idx_func);
+	DUK_ASSERT(tv_func != NULL);
 
-		tv_func = duk_require_tval(ctx, idx_func);
-		DUK_ASSERT(tv_func != NULL);
+	if (DUK_TVAL_IS_OBJECT(tv_func)) {
+		func = DUK_TVAL_GET_OBJECT(tv_func);
 
-		if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
-			/* Lightweight function: never bound, so terminate. */
-			break;
-		} else if (DUK_TVAL_IS_OBJECT(tv_func)) {
-			func = DUK_TVAL_GET_OBJECT(tv_func);
-			if (!DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
-				/* Normal non-bound function. */
-				break;
+		/* XXX: separate helper function, out of fast path? */
+		if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
+			duk_hboundfunc *h_bound;
+			duk_tval *tv_args;
+			duk_tval *tv_gap;
+
+			h_bound = (duk_hboundfunc *) func;
+			tv_args = h_bound->args;
+			len = h_bound->nargs;
+			DUK_ASSERT(len == 0 || tv_args != NULL);
+
+			DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%ld: %!T",
+			                     (void *) DUK_TVAL_GET_OBJECT(tv_func), (long) num_stack_args, tv_func));
+
+			/* [ ... func this arg1 ... argN ] */
+
+			if (is_constructor_call) {
+				/* See: tests/ecmascript/test-spec-bound-constructor.js */
+				DUK_DDD(DUK_DDDPRINT("constructor call: don't update this binding"));
+			} else {
+				/* XXX: duk_replace_tval */
+				duk_push_tval(ctx, &h_bound->this_binding);
+				duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
 			}
-		} else {
-			/* Function.prototype.bind() should never let this happen,
-			 * ugly error message is enough.
-			 */
-			DUK_ERROR_INTERNAL(thr);
+
+			/* [ ... func this arg1 ... argN ] */
+
+			duk_require_stack(ctx, len);
+
+			tv_gap = duk_create_gap(ctx, idx_func + 2, len);
+			duk_copy_tvals_incref(thr, tv_gap, tv_args, len);
+			num_stack_args += len;  /* must be updated to work properly (e.g. creation of 'arguments') */
+
+			/* [ ... func this <bound args> arg1 ... argN ] */
+
+			duk_push_tval(ctx, &h_bound->target);
+			duk_replace(ctx, idx_func);  /* replace in stack */
+
+			DUK_DDD(DUK_DDDPRINT("bound function handled, num_stack_args=%ld, idx_func=%ld, curr func=%!T",
+			                     (long) num_stack_args, (long) idx_func, duk_get_tval(ctx, idx_func)));
 		}
-		DUK_ASSERT(DUK_TVAL_GET_OBJECT(tv_func) != NULL);
-
-		/* XXX: this could be more compact by accessing the internal properties
-		 * directly as own properties (they cannot be inherited, and are not
-		 * externally visible).
-		 */
-
-		DUK_DDD(DUK_DDDPRINT("bound function encountered, ptr=%p, num_stack_args=%ld: %!T",
-		                     (void *) DUK_TVAL_GET_OBJECT(tv_func), (long) num_stack_args, tv_func));
-
-		/* [ ... func this arg1 ... argN ] */
-
-		if (is_constructor_call) {
-			/* See: tests/ecmascript/test-spec-bound-constructor.js */
-			DUK_DDD(DUK_DDDPRINT("constructor call: don't update this binding"));
-		} else {
-			duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_THIS);
-			duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
-		}
-
-		/* [ ... func this arg1 ... argN ] */
-
-		/* XXX: duk_get_length? */
-		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_ARGS);  /* -> [ ... func this arg1 ... argN _Args ] */
-		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_LENGTH);          /* -> [ ... func this arg1 ... argN _Args length ] */
-		len = (duk_idx_t) duk_require_int(ctx, -1);
-		duk_pop(ctx);
-
-		duk_require_stack(ctx, len);
-		for (i = 0; i < len; i++) {
-			/* XXX: very slow - better to bulk allocate a gap, and copy
-			 * from args_array directly (we know it has a compact array
-			 * part, etc).
-			 */
-
-			/* [ ... func this <some bound args> arg1 ... argN _Args ] */
-			duk_get_prop_index(ctx, -1, i);
-			duk_insert(ctx, idx_func + 2 + i);  /* idx_args = idx_func + 2 */
-		}
-		num_stack_args += len;  /* must be updated to work properly (e.g. creation of 'arguments') */
-		duk_pop(ctx);
-
-		/* [ ... func this <bound args> arg1 ... argN ] */
-
-		duk_get_prop_stridx(ctx, idx_func, DUK_STRIDX_INT_TARGET);
-		duk_replace(ctx, idx_func);  /* replace in stack */
-
-		DUK_DDD(DUK_DDDPRINT("bound function handled, num_stack_args=%ld, idx_func=%ld, curr func=%!T",
-		                     (long) num_stack_args, (long) idx_func, duk_get_tval(ctx, idx_func)));
-	} while (--sanity > 0);
-
-	if (DUK_UNLIKELY(sanity == 0)) {
-		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
+		/* Lightweight function: never bound, so terminate. */
+		;
+	} else {
+		/* Shouldn't happen, so ugly error is enough. */
+		DUK_ERROR_INTERNAL(thr);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %!T", duk_get_tval(ctx, idx_func)));
@@ -735,6 +712,8 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
  *  The current this value in the valstack (at idx_this) represents either:
  *    - the caller's requested 'this' binding; or
  *    - a 'this' binding accumulated from the bound function chain
+ *      (since Duktape 2.2 the target of a duk_hboundfunc is always
+ *      non-bound, i.e. chains are collapsed on creation)
  *
  *  The final 'this' binding for the target function may still be
  *  different, and is determined as described in E5 Section 10.4.3.
@@ -810,7 +789,7 @@ DUK_LOCAL void duk__coerce_effective_this_binding(duk_hthread *thr,
 DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
                                                  duk_idx_t idx_func,
                                                  duk_idx_t *out_num_stack_args,
-                                                 duk_tval **out_tv_func,
+                                                 duk_tval *out_tv_func,
                                                  duk_small_uint_t call_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_func;
@@ -852,7 +831,7 @@ DUK_LOCAL duk_hobject *duk__nonbound_func_lookup(duk_context *ctx,
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 	                            DUK_HOBJECT_IS_NATFUNC(func)));
 
-	*out_tv_func = tv_func;
+	DUK_TVAL_SET_TVAL(out_tv_func, tv_func);
 	return func;
 
  not_callable_error:
@@ -1360,24 +1339,25 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	thr->heap->call_recursion_depth++;
 
 	/*
-	 *  Check the function type, handle bound function chains, and prepare
+	 *  Check the function type, handle bound functions, and prepare
 	 *  parameters for the rest of the call handling.  Also figure out the
 	 *  effective 'this' binding, which replaces the current value at
 	 *  idx_func + 1.
 	 *
-	 *  If the target function is a 'bound' one, follow the chain of 'bound'
-	 *  functions until a non-bound function is found.  During this process,
-	 *  bound arguments are 'prepended' to existing ones, and the "this"
-	 *  binding is overridden.  See E5 Section 15.3.4.5.1.
+	 *  If the target function is a 'bound' one, resolve the non-bound
+	 *  target.  Since Duktape 2.2 bound function chains are collapsed on
+	 *  creation, so the target of a duk_hboundfunc is always non-bound.
+	 *  During this process, bound arguments are 'prepended' to existing
+	 *  ones, and the "this" binding is overridden.  See E5 Section
+	 *  15.3.4.5.1 for the conceptual algorithm.
 	 *
-	 *  Lightfunc detection happens here too.  Note that lightweight functions
-	 *  can be wrapped by (non-lightweight) bound functions so we must resolve
-	 *  the bound function chain first.
+	 *  Lightfunc detection happens here too.  Note that lightweight
+	 *  functions can be wrapped by (non-lightweight) bound functions so
+	 *  we must resolve a possible bound function first.
 	 */
 
-	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
-	DUK_TVAL_SET_TVAL(&tv_func_copy, tv_func);
-	tv_func = &tv_func_copy;  /* local copy to avoid relookups */
+	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func_copy, call_flags);
+	tv_func = &tv_func_copy;
 
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
@@ -1530,7 +1510,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  Delayed creation (on demand) is handled in duk_js_var.c.
 	 */
 
-	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function chain has already been resolved */
+	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function has already been resolved */
 
 	if (DUK_LIKELY(func != NULL)) {
 		if (DUK_LIKELY(DUK_HOBJECT_HAS_NEWENV(func))) {
@@ -2430,7 +2410,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	duk_idx_t nargs;        /* # argument registers target function wants (< 0 => never for ecma calls) */
 	duk_idx_t nregs;        /* # total registers target function wants on entry (< 0 => never for ecma calls) */
 	duk_hobject *func;      /* 'func' on stack (borrowed reference) */
-	duk_tval *tv_func;      /* duk_tval ptr for 'func' on stack (borrowed reference) */
+	duk_tval tv_func_ignore;  /* duk_tval for 'func' on stack */
 	duk_activation *act;
 	duk_activation *new_act;
 	duk_hobject *env;
@@ -2507,29 +2487,31 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	}
 
 	/*
-	 *  Check the function type, handle bound function chains, and prepare
-	 *  parameters for the rest of the call handling.  Also figure out the
-	 *  effective 'this' binding, which replaces the current value at
-	 *  idx_func + 1.
+	 *  Check the function type, handle bound functions, and prepare
+	 *  parameters for the rest of the call handling.  Also figure out
+	 *  the effective 'this' binding, which replaces the current value
+	 *  at idx_func + 1.
 	 *
-	 *  If the target function is a 'bound' one, follow the chain of 'bound'
-	 *  functions until a non-bound function is found.  During this process,
-	 *  bound arguments are 'prepended' to existing ones, and the "this"
-	 *  binding is overridden.  See E5 Section 15.3.4.5.1.
+	 *  If the target function is a 'bound' one, resolve the non-bound
+	 *  target.  Since Duktape 2.2 bound function chains are collapsed on
+	 *  creation, so the target of a duk_hboundfunc is always non-bound.
+	 *  During this process, bound arguments are 'prepended' to existing
+	 *  ones, and the "this" binding is overridden.  See E5 Section
+	 *  15.3.4.5.1 for the conceptual algorithm.
 	 *
 	 *  If the final target function cannot be handled by an ecma-to-ecma
 	 *  call, return to the caller with a return value indicating this case.
-	 *  The bound chain is resolved and the caller can resume with a plain
-	 *  function call.
+	 *  The bound function has been resolved and the caller can resume with
+	 *  a plain function call.
 	 */
 
-	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func, call_flags);
+	func = duk__nonbound_func_lookup(ctx, idx_func, &num_stack_args, &tv_func_ignore, call_flags);
 	if (func == NULL || !DUK_HOBJECT_IS_COMPFUNC(func)) {
 		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc/nativefunc, cannot do ecma-to-ecma call"));
 		thr->ptr_curr_pc = entry_ptr_curr_pc;
 		return 0;
 	}
-	/* XXX: tv_func is not actually needed */
+	/* tv_func_ignore is not actually needed */
 
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
@@ -2770,7 +2752,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 
 	/* XXX: unify handling with native call. */
 
-	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function chain has already been resolved */
+	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));  /* bound function has already been resolved */
 
 	if (!DUK_HOBJECT_HAS_NEWENV(func)) {
 		/* use existing env (e.g. for non-strict eval); cannot have

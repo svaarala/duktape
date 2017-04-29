@@ -5,7 +5,9 @@
 #include "duk_internal.h"
 
 DUK_LOCAL_DECL void duk__mark_heaphdr(duk_heap *heap, duk_heaphdr *h);
+DUK_LOCAL_DECL void duk__mark_heaphdr_nonnull(duk_heap *heap, duk_heaphdr *h);
 DUK_LOCAL_DECL void duk__mark_tval(duk_heap *heap, duk_tval *tv);
+DUK_LOCAL_DECL void duk__mark_tvals(duk_heap *heap, duk_tval *tv, duk_idx_t count);
 
 /*
  *  Marking functions for heap types: mark children recursively.
@@ -35,7 +37,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 		if (key == NULL) {
 			continue;
 		}
-		duk__mark_heaphdr(heap, (duk_heaphdr *) key);
+		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) key);
 		if (DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, h, i)) {
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)->a.get);
 			duk__mark_heaphdr(heap, (duk_heaphdr *) DUK_HOBJECT_E_GET_VALUE_PTR(heap, h, i)->a.set);
@@ -61,6 +63,7 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	}
 	DUK_ASSERT(DUK_HOBJECT_PROHIBITS_FASTREFS(h));
 
+	/* XXX: reorg, more common first */
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
@@ -87,20 +90,13 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 			fn = DUK_HCOMPFUNC_GET_FUNCS_BASE(heap, f);
 			fn_end = DUK_HCOMPFUNC_GET_FUNCS_END(heap, f);
 			while (fn < fn_end) {
-				duk__mark_heaphdr(heap, (duk_heaphdr *) *fn);
+				duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) *fn);
 				fn++;
 			}
 		} else {
 			/* May happen in some out-of-memory corner cases. */
 			DUK_D(DUK_DPRINT("duk_hcompfunc 'data' is NULL, skipping marking"));
 		}
-#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
-		duk_hbufobj *b = (duk_hbufobj *) h;
-		DUK_ASSERT_HBUFOBJ_VALID(b);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
-#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
 	} else if (DUK_HOBJECT_IS_DECENV(h)) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
 		DUK_ASSERT_HDECENV_VALID(e);
@@ -109,13 +105,26 @@ DUK_LOCAL void duk__mark_hobject(duk_heap *heap, duk_hobject *h) {
 	} else if (DUK_HOBJECT_IS_OBJENV(h)) {
 		duk_hobjenv *e = (duk_hobjenv *) h;
 		DUK_ASSERT_HOBJENV_VALID(e);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) e->target);
+		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) e->target);
+#if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
+	} else if (DUK_HOBJECT_IS_BUFOBJ(h)) {
+		duk_hbufobj *b = (duk_hbufobj *) h;
+		DUK_ASSERT_HBUFOBJ_VALID(b);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf);
+		duk__mark_heaphdr(heap, (duk_heaphdr *) b->buf_prop);
+#endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
+		duk_hboundfunc *f = (duk_hboundfunc *) h;
+		DUK_ASSERT_HBOUNDFUNC_VALID(f);
+		duk__mark_tval(heap, &f->target);
+		duk__mark_tval(heap, &f->this_binding);
+		duk__mark_tvals(heap, f->args, f->nargs);
 #if defined(DUK_USE_ES6_PROXY)
 	} else if (DUK_HOBJECT_IS_PROXY(h)) {
 		duk_hproxy *p = (duk_hproxy *) h;
 		DUK_ASSERT_HPROXY_VALID(p);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) p->target);
-		duk__mark_heaphdr(heap, (duk_heaphdr *) p->handler);
+		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) p->target);
+		duk__mark_heaphdr_nonnull(heap, (duk_heaphdr *) p->handler);
 #endif  /* DUK_USE_ES6_PROXY */
 	} else if (DUK_HOBJECT_IS_THREAD(h)) {
 		duk_hthread *t = (duk_hthread *) h;
@@ -224,8 +233,33 @@ DUK_LOCAL void duk__mark_tval(duk_heap *heap, duk_tval *tv) {
 		return;
 	}
 	if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
-		duk__mark_heaphdr(heap, DUK_TVAL_GET_HEAPHDR(tv));
+		duk_heaphdr *h;
+		h = DUK_TVAL_GET_HEAPHDR(tv);
+		DUK_ASSERT(h != NULL);
+		duk__mark_heaphdr_nonnull(heap, h);
 	}
+}
+
+DUK_LOCAL void duk__mark_tvals(duk_heap *heap, duk_tval *tv, duk_idx_t count) {
+	DUK_ASSERT(count == 0 || tv != NULL);
+
+	while (count-- > 0) {
+		if (DUK_TVAL_IS_HEAP_ALLOCATED(tv)) {
+			duk_heaphdr *h;
+			h = DUK_TVAL_GET_HEAPHDR(tv);
+			DUK_ASSERT(h != NULL);
+			duk__mark_heaphdr_nonnull(heap, h);
+		}
+		tv++;
+	}
+}
+
+/* Mark any duk_heaphdr type, caller guarantees a non-NULL pointer. */
+DUK_LOCAL void duk__mark_heaphdr_nonnull(duk_heap *heap, duk_heaphdr *h) {
+	/* For now, just call the generic handler.  Change when call sites
+	 * are changed too.
+	 */
+	duk__mark_heaphdr(heap, h);
 }
 
 /*
@@ -318,7 +352,7 @@ DUK_LOCAL void duk__mark_finalizable(duk_heap *heap) {
 	hdr = heap->heap_allocated;
 	while (hdr != NULL) {
 		if (DUK_HEAPHDR_HAS_FINALIZABLE(hdr)) {
-			duk__mark_heaphdr(heap, hdr);
+			duk__mark_heaphdr_nonnull(heap, hdr);
 		}
 
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
@@ -343,7 +377,7 @@ DUK_LOCAL void duk__mark_finalize_list(duk_heap *heap) {
 
 	hdr = heap->finalize_list;
 	while (hdr != NULL) {
-		duk__mark_heaphdr(heap, hdr);
+		duk__mark_heaphdr_nonnull(heap, hdr);
 		hdr = DUK_HEAPHDR_GET_NEXT(heap, hdr);
 #if defined(DUK_USE_DEBUG)
 		count_finalize_list++;
@@ -381,6 +415,8 @@ DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr, duk_size_t
 #else
 DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr) {
 #endif
+	DUK_ASSERT(hdr != NULL);
+
 	if (!DUK_HEAPHDR_HAS_TEMPROOT(hdr)) {
 		DUK_DDD(DUK_DDDPRINT("not a temp root: %p", (void *) hdr));
 		return;
@@ -392,7 +428,7 @@ DUK_LOCAL void duk__handle_temproot(duk_heap *heap, duk_heaphdr *hdr) {
 #if defined(DUK_USE_ASSERTIONS) && defined(DUK_USE_REFERENCE_COUNTING)
 	hdr->h_assert_refcount--;  /* Same node visited twice. */
 #endif
-	duk__mark_heaphdr(heap, hdr);
+	duk__mark_heaphdr_nonnull(heap, hdr);
 
 #if defined(DUK_USE_DEBUG)
 	(*count)++;

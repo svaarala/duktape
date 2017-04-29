@@ -718,7 +718,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t
 DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *e;
-	duk_harray *a;
 	duk_hstring **keys;
 	duk_tval *tv;
 	duk_uint_fast32_t count;
@@ -741,11 +740,9 @@ DUK_INTERNAL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_sma
 	DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(e) >= DUK__ENUM_START_INDEX);
 	count = (duk_uint32_t) (DUK_HOBJECT_GET_ENEXT(e) - DUK__ENUM_START_INDEX);
 
-	a = duk_push_harray_with_size(ctx, count);
-	DUK_ASSERT(a != NULL);
-	DUK_ASSERT(DUK_HOBJECT_GET_ASIZE((duk_hobject *) a) == count);
-	DUK_ASSERT(a->length == count);
-	tv = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) a);
+	/* XXX: uninit would be OK */
+	tv = duk_push_harray_with_size_outptr(ctx, count);
+	DUK_ASSERT(count == 0 || tv != NULL);
 
 	/* Fill result array, no side effects. */
 

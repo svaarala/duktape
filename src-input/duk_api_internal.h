@@ -28,6 +28,10 @@ duk_bool_t duk_valstack_resize_raw(duk_context *ctx,
                                    duk_size_t min_new_size,
                                    duk_small_uint_t flags);
 
+DUK_INTERNAL_DECL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst, duk_tval *tv_src, duk_size_t count);
+
+DUK_INTERNAL_DECL duk_tval *duk_create_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count);
+
 DUK_INTERNAL_DECL void duk_dup_0(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_1(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_2(duk_context *ctx);
@@ -180,6 +184,7 @@ DUK_INTERNAL_DECL void duk_push_c_function_noconstruct_noexotic(duk_context *ctx
  */
 DUK_INTERNAL_DECL duk_harray *duk_push_harray(duk_context *ctx);
 DUK_INTERNAL_DECL duk_harray *duk_push_harray_with_size(duk_context *ctx, duk_uint32_t size);
+DUK_INTERNAL_DECL duk_tval *duk_push_harray_with_size_outptr(duk_context *ctx, duk_uint32_t size);
 
 DUK_INTERNAL_DECL void duk_push_string_funcptr(duk_context *ctx, duk_uint8_t *ptr, duk_size_t sz);
 DUK_INTERNAL_DECL void duk_push_lightfunc_name_raw(duk_context *ctx, duk_c_function func, duk_small_uint_t lf_flags);

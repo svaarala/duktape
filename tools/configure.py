@@ -447,6 +447,7 @@ def main():
         'duk_error_throw.c',
         'duk_forwdecl.h',
         'duk_harray.h',
+        'duk_hboundfunc.h',
         'duk_hbuffer_alloc.c',
         'duk_hbuffer.h',
         'duk_hbuffer_ops.c',

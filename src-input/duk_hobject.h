@@ -259,11 +259,13 @@
 #define DUK_HOBJECT_CLEAR_EXOTIC_PROXYOBJ(h)   DUK_HEAPHDR_CLEAR_FLAG_BITS(&(h)->hdr, DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ)
 
 /* Object can/cannot use FASTREFS, i.e. has no strong reference fields beyond
- * duk_hobject base header.
+ * duk_hobject base header.  This is used just for asserts so doesn't need to
+ * be optimized.
  */
 #define DUK_HOBJECT_PROHIBITS_FASTREFS(h) \
 	(DUK_HOBJECT_IS_COMPFUNC((h)) || DUK_HOBJECT_IS_DECENV((h)) || DUK_HOBJECT_IS_OBJENV((h)) || \
-	 DUK_HOBJECT_IS_BUFOBJ((h)) || DUK_HOBJECT_IS_THREAD((h)) || DUK_HOBJECT_IS_PROXY((h)))
+	 DUK_HOBJECT_IS_BUFOBJ((h)) || DUK_HOBJECT_IS_THREAD((h)) || DUK_HOBJECT_IS_PROXY((h)) || \
+	 DUK_HOBJECT_IS_BOUNDFUNC((h)))
 #define DUK_HOBJECT_ALLOWS_FASTREFS(h) (!DUK_HOBJECT_PROHIBITS_FASTREFS((h)))
 
 /* Flags used for property attributes in duk_propdesc and packed flags.
@@ -609,9 +611,6 @@
  */
 #define DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY      10000L
 
-/* Maximum traversal depth for "bound function" chains. */
-#define DUK_HOBJECT_BOUND_CHAIN_SANITY          10000L
-
 /*
  *  Ecmascript [[Class]]
  */
@@ -643,8 +642,21 @@
 	} while (0)
 #endif
 
-/* note: this updates refcounts */
+/* Set prototype, DECREF earlier value, INCREF new value (tolerating NULLs). */
 #define DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr,h,p)       duk_hobject_set_prototype_updref((thr), (h), (p))
+
+/* Set initial prototype, assume NULL previous prototype, INCREF new value,
+ * tolerate NULL.
+ */
+#define DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr,h,proto) do { \
+		duk_hthread *duk__thr = (thr); \
+		duk_hobject *duk__obj = (h); \
+		duk_hobject *duk__proto = (proto); \
+		DUK_UNREF(duk__thr); \
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(duk__thr->heap, duk__obj) == NULL); \
+		DUK_HOBJECT_SET_PROTOTYPE(duk__thr->heap, duk__obj, duk__proto); \
+		DUK_HOBJECT_INCREF_ALLOWNULL(duk__thr, duk__proto); \
+	} while (0)
 
 /*
  *  Finalizer check
@@ -841,6 +853,7 @@ DUK_INTERNAL_DECL duk_hobject *duk_hobject_alloc(duk_hthread *thr, duk_uint_t ho
 DUK_INTERNAL_DECL duk_harray *duk_harray_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hcompfunc *duk_hcompfunc_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 DUK_INTERNAL_DECL duk_hnatfunc *duk_hnatfunc_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
+DUK_INTERNAL_DECL duk_hboundfunc *duk_hboundfunc_alloc(duk_heap *heap, duk_uint_t hobject_flags);
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 DUK_INTERNAL_DECL duk_hbufobj *duk_hbufobj_alloc(duk_hthread *thr, duk_uint_t hobject_flags);
 #endif

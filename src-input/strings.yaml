@@ -795,17 +795,6 @@ strings:
 
   # internal properties for thread objects
 
-  # internal properties for bound function objects
-  - str: "\u00ffTarget"  # [[TargetFunction]]
-    duktape: true
-    internal: true
-  - str: "\u00ffThis"    # [[BoundThis]]
-    duktape: true
-    internal: true
-  - str: "\u00ffArgs"    # [[BoundArguments]]
-    duktape: true
-    internal: true
-
   # internal properties for argument objects
   - str: "\u00ffMap"
     duktape: true

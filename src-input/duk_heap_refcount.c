@@ -32,6 +32,15 @@
  *  actual references.
  */
 
+DUK_LOCAL void duk__decref_tvals_norz(duk_hthread *thr, duk_tval *tv, duk_idx_t count) {
+	DUK_ASSERT(count == 0 || tv != NULL);
+
+	while (count-- > 0) {
+		DUK_TVAL_DECREF_NORZ(thr, tv);
+		tv++;
+	}
+}
+
 DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject *h) {
 	duk_hthread *thr;
 	duk_uint_fast32_t i;
@@ -109,6 +118,7 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 
 	/* Slow path: special object, start bit checks from most likely. */
 
+	/* XXX: reorg, more common first */
 	if (DUK_HOBJECT_IS_COMPFUNC(h)) {
 		duk_hcompfunc *f = (duk_hcompfunc *) h;
 		duk_tval *tv, *tv_end;
@@ -159,6 +169,12 @@ DUK_INTERNAL void duk_hobject_refcount_finalize_norz(duk_heap *heap, duk_hobject
 		DUK_HBUFFER_DECREF_NORZ_ALLOWNULL(thr, (duk_hbuffer *) b->buf);
 		DUK_HOBJECT_DECREF_NORZ_ALLOWNULL(thr, (duk_hobject *) b->buf_prop);
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
+	} else if (DUK_HOBJECT_IS_BOUNDFUNC(h)) {
+		duk_hboundfunc *f = (duk_hboundfunc *) h;
+		DUK_ASSERT_HBOUNDFUNC_VALID(f);
+		DUK_TVAL_DECREF_NORZ(thr, &f->target);
+		DUK_TVAL_DECREF_NORZ(thr, &f->this_binding);
+		duk__decref_tvals_norz(thr, f->args, f->nargs);
 #if defined(DUK_USE_ES6_PROXY)
 	} else if (DUK_HOBJECT_IS_PROXY(h)) {
 		duk_hproxy *p = (duk_hproxy *) h;

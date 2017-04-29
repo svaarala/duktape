@@ -1302,7 +1302,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 #if defined(DUK_USE_HTML_COMMENTS)
 		if (DUK__L1() == DUK_ASC_EXCLAMATION && DUK__L2() == DUK_ASC_MINUS && DUK__L3() == DUK_ASC_MINUS) {
 			/*
-			 *  ES6: B.1.3, handle "<!--" SingleLineHTMLOpenComment
+			 *  ES2015: B.1.3, handle "<!--" SingleLineHTMLOpenComment
 			 */
 
 			/* DUK__ADVANCECHARS(lex_ctx, 4) would be correct here, but not necessary */
@@ -1367,7 +1367,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 #if defined(DUK_USE_HTML_COMMENTS)
 		if (got_lineterm && DUK__L1() == DUK_ASC_MINUS && DUK__L2() == DUK_ASC_RANGLE) {
 			/*
-			 *  ES6: B.1.3, handle "-->" SingleLineHTMLCloseComment
+			 *  ES2015: B.1.3, handle "-->" SingleLineHTMLCloseComment
 			 *  Only allowed:
 			 *  - on new line
 			 *  - preceded only by whitespace

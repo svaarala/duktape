@@ -451,8 +451,11 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	tmp32 = DUK_RAW_READ_U32_BE(p);
 	DUK_HEAPHDR_SET_FLAGS((duk_heaphdr *) h_fun, tmp32);  /* masks flags to only change duk_hobject flags */
 
-	/* standard prototype */
+	/* standard prototype (no need to set here, already set) */
+	DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) h_fun) == thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+#if 0
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, &h_fun->obj, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
+#endif
 
 	/* assert just a few critical flags */
 	DUK_ASSERT(DUK_HEAPHDR_GET_TYPE((duk_heaphdr *) h_fun) == DUK_HTYPE_OBJECT);
@@ -699,7 +702,7 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 
 	/* Bound functions don't have all properties so we'd either need to
 	 * lookup the non-bound target function or reject bound functions.
-	 * For now, bound functions are rejected.
+	 * For now, bound functions are rejected with TypeError.
 	 */
 	func = duk_require_hcompfunc(ctx, -1);
 	DUK_ASSERT(func != NULL);

@@ -171,6 +171,10 @@
 #define DUK_ERROR_INTERNAL(thr) do { \
 		duk_err_error_internal((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
+#define DUK_DCERROR_INTERNAL(thr) do { \
+		DUK_ERROR_INTERNAL((thr)); \
+		return 0; \
+	} while (0)
 #define DUK_ERROR_ALLOC_FAILED(thr) do { \
 		duk_err_error_alloc_failed((thr), DUK_FILE_MACRO, (duk_int_t) DUK_LINE_MACRO); \
 	} while (0)
@@ -195,6 +199,10 @@
 	} while (0)
 #define DUK_ERROR_RANGE_INVALID_COUNT(thr) do { \
 		DUK_ERROR_RANGE((thr), DUK_STR_INVALID_COUNT); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_COUNT(thr) do { \
+		DUK_ERROR_RANGE_INVALID_COUNT((thr)); \
+		return 0; \
 	} while (0)
 #define DUK_ERROR_RANGE_INVALID_LENGTH(thr) do { \
 		DUK_ERROR_RANGE((thr), DUK_STR_INVALID_LENGTH); \
@@ -251,6 +259,10 @@
 #define DUK_ERROR_INTERNAL(thr) do { \
 		duk_err_error((thr)); \
 	} while (0)
+#define DUK_DCERROR_INTERNAL(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_ERROR; \
+	} while (0)
 #define DUK_ERROR_ALLOC_FAILED(thr) do { \
 		duk_err_error((thr)); \
 	} while (0)
@@ -275,6 +287,10 @@
 	} while (0)
 #define DUK_ERROR_RANGE_INVALID_COUNT(thr) do { \
 		duk_err_range((thr)); \
+	} while (0)
+#define DUK_DCERROR_RANGE_INVALID_COUNT(thr) do { \
+		DUK_UNREF((thr)); \
+		return DUK_RET_RANGE_ERROR; \
 	} while (0)
 #define DUK_ERROR_RANGE_INVALID_LENGTH(thr) do { \
 		duk_err_range((thr)); \

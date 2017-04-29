@@ -1023,8 +1023,8 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	duk_hobject *val;
 	duk_hobject *proto;
 	duk_tval *tv;
-	duk_uint_t sanity;
 	duk_bool_t skip_first;
+	duk_uint_t sanity;
 
 	/*
 	 *  Get the values onto the stack first.  It would be possible to cover
@@ -1039,49 +1039,38 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	duk_push_tval(ctx, tv_x);
 	duk_push_tval(ctx, tv_y);
 	func = duk_require_hobject(ctx, -1);
+	DUK_ASSERT(func != NULL);
 
 	/*
 	 *  For bound objects, [[HasInstance]] just calls the target function
 	 *  [[HasInstance]].  If that is again a bound object, repeat until
 	 *  we find a non-bound Function object.
+	 *
+	 *  The bound function chain is now "collapsed" so there can be only
+	 *  one bound function in the chain.
 	 */
 
-	/* XXX: this bound function resolution also happens elsewhere,
-	 * move into a shared helper.
-	 */
-
-	sanity = DUK_HOBJECT_BOUND_CHAIN_SANITY;
-	do {
-		/* check func supports [[HasInstance]] (this is checked for every function
-		 * in the bound chain, including the final one)
+	if (!DUK_HOBJECT_IS_CALLABLE(func)) {
+		/*
+		 *  Note: of native Ecmascript objects, only Function instances
+		 *  have a [[HasInstance]] internal property.  Custom objects might
+		 *  also have it, but not in current implementation.
+		 *
+		 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
 		 */
+		DUK_ERROR_TYPE(thr, "invalid instanceof rval");
+	}
 
-		if (!DUK_HOBJECT_IS_CALLABLE(func)) {
-			/*
-			 *  Note: of native Ecmascript objects, only Function instances
-			 *  have a [[HasInstance]] internal property.  Custom objects might
-			 *  also have it, but not in current implementation.
-			 *
-			 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
-			 */
-			DUK_ERROR_TYPE(thr, "invalid instanceof rval");
-		}
+	if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
+		duk_push_tval(ctx, &((duk_hboundfunc *) func)->target);
+		duk_replace(ctx, -2);
+		func = duk_require_hobject(ctx, -1);  /* lightfunc throws */
 
-		if (!DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
-			break;
-		}
-
-		/* [ ... lval rval ] */
-
-		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_TARGET);         /* -> [ ... lval rval new_rval ] */
-		duk_replace(ctx, -1);                                        /* -> [ ... lval new_rval ] */
-		func = duk_require_hobject(ctx, -1);
-
-		/* func support for [[HasInstance]] checked in the beginning of the loop */
-	} while (--sanity > 0);
-
-	if (DUK_UNLIKELY(sanity == 0)) {
-		DUK_ERROR_RANGE(thr, DUK_STR_BOUND_CHAIN_LIMIT);
+		/* Rely on Function.prototype.bind() never creating bound
+		 * functions whose target is not proper.
+		 */
+		DUK_ASSERT(func != NULL);
+		DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
 	}
 
 	/*
@@ -1090,6 +1079,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	 *  to execute E5 Section 15.3.5.3.
 	 */
 
+	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
 
