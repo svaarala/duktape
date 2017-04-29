@@ -2832,6 +2832,8 @@ Planned
   calls to bound functions with a lot of bound arguments to fail with a value
   stack limit error (GH-1504)
 
+* Fix duk_hbufobj assert in shared slice() handling (GH-1506)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
