@@ -120,8 +120,8 @@ DUK_LOCAL_DECL void duk__emit_a_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t o
 DUK_LOCAL_DECL void duk__emit_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t b, duk_regconst_t c);
 #if 0  /* unused */
 DUK_LOCAL_DECL void duk__emit_a(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a);
-#endif
 DUK_LOCAL_DECL void duk__emit_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t b);
+#endif
 DUK_LOCAL_DECL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a, duk_regconst_t bc);
 DUK_LOCAL_DECL void duk__emit_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, duk_regconst_t bc);
 DUK_LOCAL_DECL void duk__emit_abc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op, duk_regconst_t abc);
@@ -1488,12 +1488,14 @@ DUK_LOCAL void duk__emit_a(duk_compiler_ctx *comp_ctx, int op_flags, int a) {
 }
 #endif
 
+#if 0  /* unused */
 DUK_LOCAL void duk__emit_b(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t b) {
 #if defined(DUK_USE_SHUFFLE_TORTURE)
 	op_flags |= DUK__EMIT_FLAG_NO_SHUFFLE_A | DUK__EMIT_FLAG_NO_SHUFFLE_C;
 #endif
 	duk__emit_a_b_c(comp_ctx, op_flags, 0, b, 0);
 }
+#endif
 
 DUK_LOCAL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_flags, duk_regconst_t a, duk_regconst_t bc) {
 	duk_instr_t ins;
@@ -6072,9 +6074,9 @@ DUK_LOCAL void duk__parse_try_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *res) 
 		duk__advance_expect(comp_ctx, DUK_TOK_LCURLY);
 		duk__parse_stmts(comp_ctx, 0 /*allow_source_elem*/, 0 /*expect_eof*/);
 		/* the DUK_TOK_RCURLY is eaten by duk__parse_stmts() */
-		duk__emit_b(comp_ctx,
-		            DUK_OP_ENDFIN,
-		            reg_catch);  /* rethrow */
+		duk__emit_abc(comp_ctx,
+		              DUK_OP_ENDFIN,
+		              reg_catch);  /* rethrow */
 	}
 
 	if (!(trycatch_flags & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH) &&

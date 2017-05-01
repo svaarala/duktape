@@ -927,18 +927,14 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 
 		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding"));
 
-		/* Note: 'act' is dangerous here because it may get invalidate at many
-		 * points, so we re-lookup it multiple times.
-		 */
 		DUK_ASSERT(thr->callstack_top >= 1);
-		DUK_ASSERT(act == thr->callstack_curr);  /* still valid from above */
+		DUK_ASSERT(act == thr->callstack_curr);
 		DUK_ASSERT(act != NULL);
 
 		if (act->lex_env == NULL) {
 			DUK_ASSERT(act->var_env == NULL);
 			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 
-			/* this may have side effects, so re-lookup act */
 			duk_js_init_activation_environment_records_delayed(thr, act);
 			DUK_ASSERT(act == thr->callstack_curr);
 			DUK_ASSERT(act != NULL);
@@ -4305,8 +4301,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_ENDFIN: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_activation *act;
-			duk_catcher *cat;
 			duk_tval *tv1;
+			duk_uint_t reg_catch;
 			duk_small_uint_t cont_type;
 			duk_small_uint_t ret_result;
 
@@ -4316,21 +4312,18 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK_ASSERT(thr->callstack_top >= 1);
 			act = thr->callstack_curr;
 			DUK_ASSERT(act != NULL);
-			cat = act->cat;
-			DUK_ASSERT(cat != NULL);
+			reg_catch = DUK_DEC_ABC(ins);
 
 			/* CATCH flag may be enabled or disabled here; it may be enabled if
 			 * the statement has a catch block but the try block does not throw
 			 * an error.
 			 */
-			DUK_ASSERT(!DUK_CAT_HAS_FINALLY_ENABLED(cat));  /* cleared before entering finally */
-			/* XXX: assert idx_base */
 
 			DUK_DDD(DUK_DDDPRINT("ENDFIN: completion value=%!T, type=%!T",
-			                     (duk_tval *) (thr->valstack + cat->idx_base + 0),
-			                     (duk_tval *) (thr->valstack + cat->idx_base + 1)));
+			                     (duk_tval *) (thr->valstack_bottom + reg_catch + 0),
+			                     (duk_tval *) (thr->valstack_bottom + reg_catch + 1)));
 
-			tv1 = thr->valstack + cat->idx_base + 1;  /* type */
+			tv1 = thr->valstack_bottom + reg_catch + 1;  /* type */
 			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 #if defined(DUK_USE_FASTINT)
 			DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
@@ -4338,6 +4331,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #else
 			cont_type = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
 #endif
+
+			tv1--;  /* value */
 
 			switch (cont_type) {
 			case DUK_LJ_TYPE_NORMAL: {
@@ -4350,15 +4345,14 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			}
 			case DUK_LJ_TYPE_RETURN: {
 				DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'return' complation -> dismantle "
-				                     "catcher, handle return, lj.value1=%!T", thr->valstack + cat->idx_base));
+				                     "catcher, handle return, lj.value1=%!T", tv1));
 
 				/* Not necessary to unwind catch stack: return handling will
 				 * do it.  The finally flag of 'cat' is no longer set.  The
 				 * catch flag may be set, but it's not checked by return handling.
 				 */
-				DUK_ASSERT(!DUK_CAT_HAS_FINALLY_ENABLED(cat));  /* cleared before entering finally */
 
-				duk_push_tval(ctx, thr->valstack + cat->idx_base);
+				duk_push_tval(ctx, tv1);
 				ret_result = duk__handle_return(thr, entry_act);
 				if (ret_result == DUK__RETHAND_RESTART) {
 					goto restart_execution;
@@ -4379,7 +4373,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				 * not checked by break/continue handling.
 				 */
 
-				tv1 = thr->valstack + cat->idx_base;
 				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
 #if defined(DUK_USE_FASTINT)
 				DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
@@ -4396,9 +4389,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				                     "dismantle catcher, re-throw error",
 				                     (long) cont_type));
 
-				duk_push_tval(ctx, thr->valstack + cat->idx_base);
-
-				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, thr->valstack + cat->idx_base);
+				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, tv1);
 				/* No debugger Throw notify check on purpose (rethrow). */
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */

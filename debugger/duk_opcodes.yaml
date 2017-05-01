@@ -850,6 +850,8 @@ opcodes:
   - name: ENDTRY
   - name: ENDCATCH
   - name: ENDFIN
+    args:
+      - ABC_R
   - name: THROW
     args:
       - BC_R
