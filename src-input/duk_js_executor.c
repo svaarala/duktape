@@ -927,18 +927,14 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 
 		DUK_DDD(DUK_DDDPRINT("catcher has an automatic catch binding"));
 
-		/* Note: 'act' is dangerous here because it may get invalidate at many
-		 * points, so we re-lookup it multiple times.
-		 */
 		DUK_ASSERT(thr->callstack_top >= 1);
-		DUK_ASSERT(act == thr->callstack_curr);  /* still valid from above */
+		DUK_ASSERT(act == thr->callstack_curr);
 		DUK_ASSERT(act != NULL);
 
 		if (act->lex_env == NULL) {
 			DUK_ASSERT(act->var_env == NULL);
 			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
 
-			/* this may have side effects, so re-lookup act */
 			duk_js_init_activation_environment_records_delayed(thr, act);
 			DUK_ASSERT(act == thr->callstack_curr);
 			DUK_ASSERT(act != NULL);
