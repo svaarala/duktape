@@ -4389,9 +4389,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				                     "dismantle catcher, re-throw error",
 				                     (long) cont_type));
 
-				duk_push_tval(ctx, tv1);
-
-				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, thr->valstack_top - 1);
+				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, tv1);
 				/* No debugger Throw notify check on purpose (rethrow). */
 
 				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
