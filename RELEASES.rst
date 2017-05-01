@@ -2838,6 +2838,9 @@ Planned
 
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
+* Fix internal debug print opcode name list which was out of sync with previous
+  changes (GH-1509)
+
 * Simplify handling of ENDFIN opcode a bit (GH-1508)
 
 * Internal change: set REACHABLE for all READONLY objects (relevant when
