@@ -2838,6 +2838,8 @@ Planned
 
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
+* Simplify handling of ENDFIN opcode a bit (GH-1508)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
