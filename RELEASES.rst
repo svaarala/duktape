@@ -2858,6 +2858,9 @@ Planned
 * Internal change: simple freelists for duk_activation and duk_catcher
   (GH-1491)
 
+* Miscellaneous performance improvements: move rare/large opcodes into
+  NOINLINE helpers (GH-1510)
+
 3.0.0 (XXXX-XX-XX)
 ------------------
 
