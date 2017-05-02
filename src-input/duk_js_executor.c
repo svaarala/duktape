@@ -17,8 +17,10 @@ DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, du
 /* Forced inline declaration, only applied for performance oriented build. */
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 #define DUK__INLINE_PERF
+#define DUK__NOINLINE_PERF
 #else
 #define DUK__INLINE_PERF DUK_ALWAYS_INLINE
+#define DUK__NOINLINE_PERF DUK_NOINLINE
 #endif
 
 /* Replace value stack top to value at 'tv_ptr'.  Optimize for
@@ -1490,9 +1492,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
  * handling because it has a measurable performance impact in ordinary
  * environments and an extreme impact in Emscripten (GH-342).
  */
-DUK_LOCAL void duk__handle_break_or_continue(duk_hthread *thr,
-                                             duk_uint_t label_id,
-                                             duk_small_uint_t lj_type) {
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_break_or_continue(duk_hthread *thr,
+                                                                duk_uint_t label_id,
+                                                                duk_small_uint_t lj_type) {
 	duk_activation *act;
 	duk_catcher *cat;
 
@@ -1901,7 +1903,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 }
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
 
-DUK_LOCAL DUK_NOINLINE DUK_COLD duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
+DUK_LOCAL DUK__NOINLINE_PERF DUK_COLD duk_small_uint_t duk__executor_interrupt(duk_hthread *thr) {
 	duk_int_t ctr;
 	duk_activation *act;
 	duk_hcompfunc *fun;
@@ -2147,6 +2149,494 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 	}
 }
 #endif  /* DUK_USE_DEBUGGER_SUPPORT */
+
+/*
+ *  Opcode handlers for opcodes with a lot of code and which are relatively
+ *  rare; NOINLINE to reduce amount of code in main bytecode dispatcher.
+ */
+
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initset_initget(duk_hthread *thr, duk_instr_t ins) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_bool_t is_set = (DUK_DEC_OP(ins) == DUK_OP_INITSET);
+	duk_uint_fast_t idx;
+	duk_uint_t defprop_flags;
+
+	/* A -> object register (acts as a source)
+	 * BC -> BC+0 contains key, BC+1 closure (value)
+	 */
+
+	/* INITSET/INITGET are only used to initialize object literal keys.
+	 * There may be a previous propery in ES2015 because duplicate property
+	 * names are allowed.
+	 */
+
+	/* This could be made more optimal by accessing internals directly. */
+
+	idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
+	duk_dup(ctx, (duk_idx_t) (idx + 0));  /* key */
+	duk_dup(ctx, (duk_idx_t) (idx + 1));  /* getter/setter */
+	if (is_set) {
+	        defprop_flags = DUK_DEFPROP_HAVE_SETTER |
+	                        DUK_DEFPROP_FORCE |
+	                        DUK_DEFPROP_SET_ENUMERABLE |
+	                        DUK_DEFPROP_SET_CONFIGURABLE;
+	} else {
+	        defprop_flags = DUK_DEFPROP_HAVE_GETTER |
+	                        DUK_DEFPROP_FORCE |
+	                        DUK_DEFPROP_SET_ENUMERABLE |
+	                        DUK_DEFPROP_SET_CONFIGURABLE;
+	}
+	duk_def_prop(ctx, (duk_idx_t) DUK_DEC_A(ins), defprop_flags);
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_instr_t ins, duk_instr_t *curr_pc) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_activation *act;
+	duk_catcher *cat;
+	duk_tval *tv1;
+	duk_small_uint_fast_t a;
+	duk_small_uint_fast_t bc;
+
+	/* A -> flags
+	 * BC -> reg_catch; base register for two registers used both during
+	 *       trycatch setup and when catch is triggered
+	 *
+	 *      If DUK_BC_TRYCATCH_FLAG_CATCH_BINDING set:
+	 *          reg_catch + 0: catch binding variable name (string).
+	 *          Automatic declarative environment is established for
+	 *          the duration of the 'catch' clause.
+	 *
+	 *      If DUK_BC_TRYCATCH_FLAG_WITH_BINDING set:
+	 *          reg_catch + 0: with 'target value', which is coerced to
+	 *          an object and then used as a bindind object for an
+	 *          environment record.  The binding is initialized here, for
+	 *          the 'try' clause.
+	 *
+	 * Note that a TRYCATCH generated for a 'with' statement has no
+	 * catch or finally parts.
+	 */
+
+	/* XXX: TRYCATCH handling should be reworked to avoid creating
+	 * an explicit scope unless it is actually needed (e.g. function
+	 * instances or eval is executed inside the catch block).  This
+	 * rework is not trivial because the compiler doesn't have an
+	 * intermediate representation.  When the rework is done, the
+	 * opcode format can also be made more straightforward.
+	 */
+
+	/* XXX: side effect handling is quite awkward here */
+
+	DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%ld, have_catch=%ld, "
+	                     "have_finally=%ld, catch_binding=%ld, with_binding=%ld (flags=0x%02lx)",
+	                     (long) DUK_DEC_BC(ins),
+	                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
+	                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
+	                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
+	                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
+	                     (unsigned long) DUK_DEC_A(ins)));
+
+	a = DUK_DEC_A(ins);
+	bc = DUK_DEC_BC(ins);
+
+	/* Registers 'bc' and 'bc + 1' are written in longjmp handling
+	 * and if their previous values (which are temporaries) become
+	 * unreachable -and- have a finalizer, there'll be a function
+	 * call during error handling which is not supported now (GH-287).
+	 * Ensure that both 'bc' and 'bc + 1' have primitive values to
+	 * guarantee no finalizer calls in error handling.  Scrubbing also
+	 * ensures finalizers for the previous values run here rather than
+	 * later.  Error handling related values are also written to 'bc'
+	 * and 'bc + 1' but those values never become unreachable during
+	 * error handling, so there's no side effect problem even if the
+	 * error value has a finalizer.
+	 */
+	duk_dup(ctx, bc);  /* Stabilize value. */
+	duk_to_undefined(ctx, bc);
+	duk_to_undefined(ctx, bc + 1);
+
+	/* Allocate catcher and populate it.  Doesn't have to
+	 * be fully atomic, but the catcher must be in a
+	 * consistent state if side effects (such as finalizer
+	 * calls) occur.
+	 */
+
+	cat = duk_hthread_catcher_alloc(thr);
+	DUK_ASSERT(cat != NULL);
+
+	cat->flags = DUK_CAT_TYPE_TCF;
+	cat->h_varname = NULL;
+	cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
+	cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + bc;
+
+	act = thr->callstack_curr;
+	DUK_ASSERT(act != NULL);
+	cat->parent = act->cat;
+	act->cat = cat;
+
+	if (a & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH) {
+		cat->flags |= DUK_CAT_FLAG_CATCH_ENABLED;
+	}
+	if (a & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY) {
+		cat->flags |= DUK_CAT_FLAG_FINALLY_ENABLED;
+	}
+	if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
+		DUK_DDD(DUK_DDDPRINT("catch binding flag set to catcher"));
+		cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
+		tv1 = DUK_GET_TVAL_NEGIDX(thr, -1);
+		DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
+
+		/* borrowed reference; although 'tv1' comes from a register,
+		 * its value was loaded using LDCONST so the constant will
+		 * also exist and be reachable.
+		 */
+		cat->h_varname = DUK_TVAL_GET_STRING(tv1);
+	} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
+		duk_hobjenv *env;
+		duk_hobject *target;
+
+		/* Delayed env initialization for activation (if needed). */
+		DUK_ASSERT(thr->callstack_top >= 1);
+		DUK_ASSERT(act == thr->callstack_curr);
+		DUK_ASSERT(act != NULL);
+		if (act->lex_env == NULL) {
+			DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
+			DUK_ASSERT(act->var_env == NULL);
+
+			duk_js_init_activation_environment_records_delayed(thr, act);
+			DUK_ASSERT(act == thr->callstack_curr);
+			DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
+		}
+		DUK_ASSERT(act->lex_env != NULL);
+		DUK_ASSERT(act->var_env != NULL);
+
+		/* Coerce 'with' target. */
+		target = duk_to_hobject(ctx, -1);
+		DUK_ASSERT(target != NULL);
+
+		/* Create an object environment; it is not pushed
+		 * so avoid side effects very carefully until it is
+		 * referenced.
+		 */
+		env = duk_hobjenv_alloc(thr,
+		                        DUK_HOBJECT_FLAG_EXTENSIBLE |
+		                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
+		DUK_ASSERT(env != NULL);
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+		env->target = target;  /* always provideThis=true */
+		DUK_HOBJECT_INCREF(thr, target);
+		env->has_this = 1;
+		DUK_ASSERT_HOBJENV_VALID(env);
+		DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iO", env));
+
+		DUK_ASSERT(act == thr->callstack_curr);
+		DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
+		DUK_ASSERT(act->lex_env != NULL);
+		DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, act->lex_env);
+		act->lex_env = (duk_hobject *) env;  /* Now reachable. */
+		DUK_HOBJECT_INCREF(thr, (duk_hobject *) env);
+		/* Net refcount change to act->lex_env is 0: incref for env's
+		 * prototype, decref for act->lex_env overwrite.
+		 */
+
+		/* Set catcher lex_env active (affects unwind)
+		 * only when the whole setup is complete.
+		 */
+		cat = act->cat;  /* XXX: better to relookup? not mandatory because 'cat' is stable */
+		cat->flags |= DUK_CAT_FLAG_LEXENV_ACTIVE;
+	} else {
+		;
+	}
+
+	DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, pc_base=%ld, "
+	                     "idx_base=%ld, h_varname=%!O",
+	                     (unsigned long) cat->flags,
+	                     (long) cat->pc_base, (long) cat->idx_base, (duk_heaphdr *) cat->h_varname));
+
+	duk_pop(ctx);
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_instr_t ins) {
+	duk_activation *act;
+	duk_catcher *cat;
+	duk_tval *tv1;
+	duk_instr_t *pc_base;
+
+	DUK_UNREF(ins);
+
+	DUK_ASSERT(thr->callstack_top >= 1);
+	act = thr->callstack_curr;
+	DUK_ASSERT(act != NULL);
+	cat = act->cat;
+	DUK_ASSERT(cat != NULL);
+	DUK_ASSERT(DUK_CAT_GET_TYPE(act->cat) == DUK_CAT_TYPE_TCF);
+
+	DUK_DDD(DUK_DDDPRINT("ENDTRY: clearing catch active flag (regardless of whether it was set or not)"));
+	DUK_CAT_CLEAR_CATCH_ENABLED(cat);
+
+	pc_base = cat->pc_base;
+
+	if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
+		DUK_DDD(DUK_DDDPRINT("ENDTRY: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
+
+		tv1 = thr->valstack + cat->idx_base;
+		DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
+		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
+		tv1 = NULL;
+
+		tv1 = thr->valstack + cat->idx_base + 1;
+		DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
+		DUK_TVAL_SET_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
+		tv1 = NULL;
+
+		DUK_CAT_CLEAR_FINALLY_ENABLED(cat);
+	} else {
+		DUK_DDD(DUK_DDDPRINT("ENDTRY: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)"));
+
+		duk_hthread_catcher_unwind_norz(thr, act);  /* lexenv may be set for 'with' binding */
+		/* no need to unwind callstack */
+	}
+
+	return pc_base + 1;  /* new curr_pc value */
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endcatch(duk_hthread *thr, duk_instr_t ins) {
+	duk_activation *act;
+	duk_catcher *cat;
+	duk_tval *tv1;
+	duk_instr_t *pc_base;
+
+	DUK_UNREF(ins);
+
+	DUK_ASSERT(thr->callstack_top >= 1);
+	act = thr->callstack_curr;
+	DUK_ASSERT(act != NULL);
+	cat = act->cat;
+	DUK_ASSERT(cat != NULL);
+	DUK_ASSERT(!DUK_CAT_HAS_CATCH_ENABLED(cat));  /* cleared before entering catch part */
+
+	if (DUK_CAT_HAS_LEXENV_ACTIVE(cat)) {
+		duk_hobject *prev_env;
+
+		/* 'with' binding has no catch clause, so can't be here unless a normal try-catch */
+		DUK_ASSERT(DUK_CAT_HAS_CATCH_BINDING_ENABLED(cat));
+		DUK_ASSERT(act->lex_env != NULL);
+
+		DUK_DDD(DUK_DDDPRINT("ENDCATCH: popping catcher part lexical environment"));
+
+		prev_env = act->lex_env;
+		DUK_ASSERT(prev_env != NULL);
+		act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, prev_env);
+		DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
+		DUK_HOBJECT_INCREF(thr, act->lex_env);
+		DUK_HOBJECT_DECREF(thr, prev_env);  /* side effects */
+
+		DUK_ASSERT(act == thr->callstack_curr);
+		DUK_ASSERT(act != NULL);
+	}
+
+	pc_base = cat->pc_base;
+
+	if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
+		DUK_DDD(DUK_DDDPRINT("ENDCATCH: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
+
+		tv1 = thr->valstack + cat->idx_base;
+		DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
+		DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
+		tv1 = NULL;
+
+		tv1 = thr->valstack + cat->idx_base + 1;
+		DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
+		DUK_TVAL_SET_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
+		tv1 = NULL;
+
+		DUK_CAT_CLEAR_FINALLY_ENABLED(cat);
+	} else {
+		DUK_DDD(DUK_DDDPRINT("ENDCATCH: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)"));
+
+		duk_hthread_catcher_unwind_norz(thr, act);
+		/* no need to unwind callstack */
+	}
+
+	return pc_base + 1;  /* new curr_pc value */
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread *thr, duk_instr_t ins, duk_activation *entry_act) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_activation *act;
+	duk_tval *tv1;
+	duk_uint_t reg_catch;
+	duk_small_uint_t cont_type;
+	duk_small_uint_t ret_result;
+
+
+	DUK_ASSERT(thr->callstack_top >= 1);
+	act = thr->callstack_curr;
+	DUK_ASSERT(act != NULL);
+	reg_catch = DUK_DEC_ABC(ins);
+
+	/* CATCH flag may be enabled or disabled here; it may be enabled if
+	 * the statement has a catch block but the try block does not throw
+	 * an error.
+	 */
+
+	DUK_DDD(DUK_DDDPRINT("ENDFIN: completion value=%!T, type=%!T",
+	                     (duk_tval *) (thr->valstack_bottom + reg_catch + 0),
+	                     (duk_tval *) (thr->valstack_bottom + reg_catch + 1)));
+
+	tv1 = thr->valstack_bottom + reg_catch + 1;  /* type */
+	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
+#if defined(DUK_USE_FASTINT)
+	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
+	cont_type = (duk_small_uint_t) DUK_TVAL_GET_FASTINT_U32(tv1);
+#else
+	cont_type = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
+#endif
+
+	tv1--;  /* value */
+
+	switch (cont_type) {
+	case DUK_LJ_TYPE_NORMAL: {
+		DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'normal' (non-abrupt) completion -> "
+		                     "dismantle catcher, resume execution after ENDFIN"));
+
+		duk_hthread_catcher_unwind_norz(thr, act);
+		/* no need to unwind callstack */
+		return 0;  /* restart execution */
+	}
+	case DUK_LJ_TYPE_RETURN: {
+		DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'return' complation -> dismantle "
+		                     "catcher, handle return, lj.value1=%!T", tv1));
+
+		/* Not necessary to unwind catch stack: return handling will
+		 * do it.  The finally flag of 'cat' is no longer set.  The
+		 * catch flag may be set, but it's not checked by return handling.
+		 */
+
+		duk_push_tval(ctx, tv1);
+		ret_result = duk__handle_return(thr, entry_act);
+		if (ret_result == DUK__RETHAND_RESTART) {
+			return 0;  /* restart execution */
+		}
+		DUK_ASSERT(ret_result == DUK__RETHAND_FINISHED);
+
+		DUK_DDD(DUK_DDDPRINT("exiting executor after ENDFIN and RETURN (pseudo) longjmp type"));
+		return 1;  /* exit executor */
+	}
+	case DUK_LJ_TYPE_BREAK:
+	case DUK_LJ_TYPE_CONTINUE: {
+		duk_uint_t label_id;
+		duk_small_uint_t lj_type;
+
+		/* Not necessary to unwind catch stack: break/continue
+		 * handling will do it.  The finally flag of 'cat' is
+		 * no longer set.  The catch flag may be set, but it's
+		 * not checked by break/continue handling.
+		 */
+
+		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
+#if defined(DUK_USE_FASTINT)
+		DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
+		label_id = (duk_small_uint_t) DUK_TVAL_GET_FASTINT_U32(tv1);
+#else
+		label_id = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
+#endif
+		lj_type = cont_type;
+		duk__handle_break_or_continue(thr, label_id, lj_type);
+		return 0;  /* restart execution */
+	}
+	default: {
+		DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%ld -> "
+		                     "dismantle catcher, re-throw error",
+		                     (long) cont_type));
+
+		duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, tv1);
+		/* No debugger Throw notify check on purpose (rethrow). */
+
+		DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
+		duk_err_longjmp(thr);
+		DUK_UNREACHABLE();
+	}
+	}
+
+	DUK_UNREACHABLE();
+	return 0;
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_initenum(duk_hthread *thr, duk_instr_t ins) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_small_uint_t b;
+	duk_small_uint_t c;
+
+	/*
+	 *  Enumeration semantics come from for-in statement, E5 Section 12.6.4.
+	 *  If called with 'null' or 'undefined', this opcode returns 'null' as
+	 *  the enumerator, which is special cased in NEXTENUM.  This simplifies
+	 *  the compiler part
+	 */
+
+	/* B -> register for writing enumerator object
+	 * C -> value to be enumerated (register)
+	 */
+	b = DUK_DEC_B(ins);
+	c = DUK_DEC_C(ins);
+
+	if (duk_is_null_or_undefined(ctx, (duk_idx_t) c)) {
+		duk_push_null(ctx);
+		duk_replace(ctx, (duk_idx_t) b);
+	} else {
+		duk_dup(ctx, (duk_idx_t) c);
+		duk_to_object(ctx, -1);
+		duk_hobject_enumerator_create(ctx, 0 /*enum_flags*/);  /* [ ... val ] --> [ ... enum ] */
+		duk_replace(ctx, (duk_idx_t) b);
+	}
+}
+
+DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthread *thr, duk_instr_t ins) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_small_uint_t b;
+	duk_small_uint_t c;
+	duk_small_uint_t pc_skip = 0;
+
+	/*
+	 *  NEXTENUM checks whether the enumerator still has unenumerated
+	 *  keys.  If so, the next key is loaded to the target register
+	 *  and the next instruction is skipped.  Otherwise the next instruction
+	 *  will be executed, jumping out of the enumeration loop.
+	 */
+
+	/* B -> target register for next key
+	 * C -> enum register
+	 */
+	b = DUK_DEC_B(ins);
+	c = DUK_DEC_C(ins);
+
+	DUK_DDD(DUK_DDDPRINT("NEXTENUM: b->%!T, c->%!T",
+	                     (duk_tval *) duk_get_tval(ctx, (duk_idx_t) b),
+	                     (duk_tval *) duk_get_tval(ctx, (duk_idx_t) c)));
+
+	if (duk_is_object(ctx, (duk_idx_t) c)) {
+		/* XXX: assert 'c' is an enumerator */
+		duk_dup(ctx, (duk_idx_t) c);
+		if (duk_hobject_enumerator_next(ctx, 0 /*get_value*/)) {
+			/* [ ... enum ] -> [ ... next_key ] */
+			DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ",
+			                     (duk_tval *) duk_get_tval(ctx, -1)));
+			pc_skip = 1;
+		} else {
+			/* [ ... enum ] -> [ ... ] */
+			DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
+			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));  /* valstack policy */
+			thr->valstack_top++;
+		}
+		duk_replace(ctx, (duk_idx_t) b);
+	} else {
+		/* 'null' enumerator case -> behave as with an empty enumerator */
+		DUK_ASSERT(duk_is_null(ctx, (duk_idx_t) c));
+		DUK_DDD(DUK_DDDPRINT("enum is null, execute jump slot"));
+	}
+
+	return pc_skip;
+}
 
 /*
  *  Ecmascript bytecode executor.
@@ -4027,380 +4517,31 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 		/* XXX: move to helper, too large to be inline here */
 		case DUK_OP_TRYCATCH: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_activation *act;
-			duk_catcher *cat;
-			duk_tval *tv1;
-			duk_small_uint_fast_t a;
-			duk_small_uint_fast_t bc;
-
-			/* A -> flags
-			 * BC -> reg_catch; base register for two registers used both during
-			 *       trycatch setup and when catch is triggered
-			 *
-			 *      If DUK_BC_TRYCATCH_FLAG_CATCH_BINDING set:
-			 *          reg_catch + 0: catch binding variable name (string).
-			 *          Automatic declarative environment is established for
-			 *          the duration of the 'catch' clause.
-			 *
-			 *      If DUK_BC_TRYCATCH_FLAG_WITH_BINDING set:
-			 *          reg_catch + 0: with 'target value', which is coerced to
-			 *          an object and then used as a bindind object for an
-			 *          environment record.  The binding is initialized here, for
-			 *          the 'try' clause.
-			 *
-			 * Note that a TRYCATCH generated for a 'with' statement has no
-			 * catch or finally parts.
-			 */
-
-			/* XXX: TRYCATCH handling should be reworked to avoid creating
-			 * an explicit scope unless it is actually needed (e.g. function
-			 * instances or eval is executed inside the catch block).  This
-			 * rework is not trivial because the compiler doesn't have an
-			 * intermediate representation.  When the rework is done, the
-			 * opcode format can also be made more straightforward.
-			 */
-
-			/* XXX: side effect handling is quite awkward here */
-
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH: reg_catch=%ld, have_catch=%ld, "
-			                     "have_finally=%ld, catch_binding=%ld, with_binding=%ld (flags=0x%02lx)",
-			                     (long) DUK_DEC_BC(ins),
-			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH ? 1 : 0),
-			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY ? 1 : 0),
-			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING ? 1 : 0),
-			                     (long) (DUK_DEC_A(ins) & DUK_BC_TRYCATCH_FLAG_WITH_BINDING ? 1 : 0),
-			                     (unsigned long) DUK_DEC_A(ins)));
-
-			a = DUK_DEC_A(ins);
-			bc = DUK_DEC_BC(ins);
-
-			/* Registers 'bc' and 'bc + 1' are written in longjmp handling
-			 * and if their previous values (which are temporaries) become
-			 * unreachable -and- have a finalizer, there'll be a function
-			 * call during error handling which is not supported now (GH-287).
-			 * Ensure that both 'bc' and 'bc + 1' have primitive values to
-			 * guarantee no finalizer calls in error handling.  Scrubbing also
-			 * ensures finalizers for the previous values run here rather than
-			 * later.  Error handling related values are also written to 'bc'
-			 * and 'bc + 1' but those values never become unreachable during
-			 * error handling, so there's no side effect problem even if the
-			 * error value has a finalizer.
-			 */
-			duk_dup(ctx, bc);  /* Stabilize value. */
-			duk_to_undefined(ctx, bc);
-			duk_to_undefined(ctx, bc + 1);
-
-			/* Allocate catcher and populate it.  Doesn't have to
-			 * be fully atomic, but the catcher must be in a
-			 * consistent state if side effects (such as finalizer
-			 * calls) occur.
-			 */
-
-			cat = duk_hthread_catcher_alloc(thr);
-			DUK_ASSERT(cat != NULL);
-
-			cat->flags = DUK_CAT_TYPE_TCF;
-			cat->h_varname = NULL;
-			cat->pc_base = (duk_instr_t *) curr_pc;  /* pre-incremented, points to first jump slot */
-			cat->idx_base = (duk_size_t) (thr->valstack_bottom - thr->valstack) + bc;
-
-			act = thr->callstack_curr;
-			DUK_ASSERT(act != NULL);
-			cat->parent = act->cat;
-			act->cat = cat;
-
-			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_CATCH) {
-				cat->flags |= DUK_CAT_FLAG_CATCH_ENABLED;
-			}
-			if (a & DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY) {
-				cat->flags |= DUK_CAT_FLAG_FINALLY_ENABLED;
-			}
-			if (a & DUK_BC_TRYCATCH_FLAG_CATCH_BINDING) {
-				DUK_DDD(DUK_DDDPRINT("catch binding flag set to catcher"));
-				cat->flags |= DUK_CAT_FLAG_CATCH_BINDING_ENABLED;
-				tv1 = DUK_GET_TVAL_NEGIDX(thr, -1);
-				DUK_ASSERT(DUK_TVAL_IS_STRING(tv1));
-
-				/* borrowed reference; although 'tv1' comes from a register,
-				 * its value was loaded using LDCONST so the constant will
-				 * also exist and be reachable.
-				 */
-				cat->h_varname = DUK_TVAL_GET_STRING(tv1);
-			} else if (a & DUK_BC_TRYCATCH_FLAG_WITH_BINDING) {
-				duk_hobjenv *env;
-				duk_hobject *target;
-
-				/* Delayed env initialization for activation (if needed). */
-				DUK_ASSERT(thr->callstack_top >= 1);
-				DUK_ASSERT(act == thr->callstack_curr);
-				DUK_ASSERT(act != NULL);
-				if (act->lex_env == NULL) {
-					DUK_DDD(DUK_DDDPRINT("delayed environment initialization"));
-					DUK_ASSERT(act->var_env == NULL);
-
-					duk_js_init_activation_environment_records_delayed(thr, act);
-					DUK_ASSERT(act == thr->callstack_curr);
-					DUK_UNREF(act);  /* 'act' is no longer accessed, scanbuild fix */
-				}
-				DUK_ASSERT(act->lex_env != NULL);
-				DUK_ASSERT(act->var_env != NULL);
-
-				/* Coerce 'with' target. */
-				target = duk_to_hobject(ctx, -1);
-				DUK_ASSERT(target != NULL);
-
-				/* Create an object environment; it is not pushed
-				 * so avoid side effects very carefully until it is
-				 * referenced.
-				 */
-				env = duk_hobjenv_alloc(thr,
-				                        DUK_HOBJECT_FLAG_EXTENSIBLE |
-				                        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJENV));
-				DUK_ASSERT(env != NULL);
-				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
-				env->target = target;  /* always provideThis=true */
-				DUK_HOBJECT_INCREF(thr, target);
-				env->has_this = 1;
-				DUK_ASSERT_HOBJENV_VALID(env);
-				DUK_DDD(DUK_DDDPRINT("environment for with binding: %!iO", env));
-
-				DUK_ASSERT(act == thr->callstack_curr);
-				DUK_ASSERT(DUK_HOBJECT_GET_PROTOTYPE(thr->heap, (duk_hobject *) env) == NULL);
-				DUK_ASSERT(act->lex_env != NULL);
-				DUK_HOBJECT_SET_PROTOTYPE(thr->heap, (duk_hobject *) env, act->lex_env);
-				act->lex_env = (duk_hobject *) env;  /* Now reachable. */
-				DUK_HOBJECT_INCREF(thr, (duk_hobject *) env);
-				/* Net refcount change to act->lex_env is 0: incref for env's
-				 * prototype, decref for act->lex_env overwrite.
-				 */
-
-				/* Set catcher lex_env active (affects unwind)
-				 * only when the whole setup is complete.
-				 */
-				cat = act->cat;  /* XXX: better to relookup? not mandatory because 'cat' is stable */
-				cat->flags |= DUK_CAT_FLAG_LEXENV_ACTIVE;
-			} else {
-				;
-			}
-
-			DUK_DDD(DUK_DDDPRINT("TRYCATCH catcher: flags=0x%08lx, pc_base=%ld, "
-			                     "idx_base=%ld, h_varname=%!O",
-			                     (unsigned long) cat->flags,
-			                     (long) cat->pc_base, (long) cat->idx_base, (duk_heaphdr *) cat->h_varname));
-
-			duk_pop(ctx);
-
+			duk__handle_op_trycatch(thr, ins, curr_pc);
 			curr_pc += 2;  /* skip jump slots */
 			break;
 		}
 
 		case DUK_OP_ENDTRY: {
-			duk_activation *act;
-			duk_catcher *cat;
-			duk_tval *tv1;
-			duk_instr_t *pc_base;
-
-			DUK_ASSERT(thr->callstack_top >= 1);
-			act = thr->callstack_curr;
-			DUK_ASSERT(act != NULL);
-			cat = act->cat;
-			DUK_ASSERT(cat != NULL);
-			DUK_ASSERT(DUK_CAT_GET_TYPE(act->cat) == DUK_CAT_TYPE_TCF);
-
-			DUK_DDD(DUK_DDDPRINT("ENDTRY: clearing catch active flag (regardless of whether it was set or not)"));
-			DUK_CAT_CLEAR_CATCH_ENABLED(cat);
-
-			pc_base = cat->pc_base;
-
-			if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
-				DUK_DDD(DUK_DDDPRINT("ENDTRY: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
-
-				tv1 = thr->valstack + cat->idx_base;
-				DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-				DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
-				tv1 = NULL;
-
-				tv1 = thr->valstack + cat->idx_base + 1;
-				DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-				DUK_TVAL_SET_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-				tv1 = NULL;
-
-				DUK_CAT_CLEAR_FINALLY_ENABLED(cat);
-			} else {
-				DUK_DDD(DUK_DDDPRINT("ENDTRY: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)"));
-
-				duk_hthread_catcher_unwind_norz(thr, act);  /* lexenv may be set for 'with' binding */
-				/* no need to unwind callstack */
-			}
-
-			curr_pc = pc_base + 1;
+			curr_pc = duk__handle_op_endtry(thr, ins);
 			break;
 		}
 
 		case DUK_OP_ENDCATCH: {
-			duk_activation *act;
-			duk_catcher *cat;
-			duk_tval *tv1;
-			duk_instr_t *pc_base;
-
-			DUK_ASSERT(thr->callstack_top >= 1);
-			act = thr->callstack_curr;
-			DUK_ASSERT(act != NULL);
-			cat = act->cat;
-			DUK_ASSERT(cat != NULL);
-			DUK_ASSERT(!DUK_CAT_HAS_CATCH_ENABLED(cat));  /* cleared before entering catch part */
-
-			if (DUK_CAT_HAS_LEXENV_ACTIVE(cat)) {
-				duk_hobject *prev_env;
-
-				/* 'with' binding has no catch clause, so can't be here unless a normal try-catch */
-				DUK_ASSERT(DUK_CAT_HAS_CATCH_BINDING_ENABLED(cat));
-				DUK_ASSERT(act->lex_env != NULL);
-
-				DUK_DDD(DUK_DDDPRINT("ENDCATCH: popping catcher part lexical environment"));
-
-				prev_env = act->lex_env;
-				DUK_ASSERT(prev_env != NULL);
-				act->lex_env = DUK_HOBJECT_GET_PROTOTYPE(thr->heap, prev_env);
-				DUK_CAT_CLEAR_LEXENV_ACTIVE(cat);
-				DUK_HOBJECT_INCREF(thr, act->lex_env);
-				DUK_HOBJECT_DECREF(thr, prev_env);  /* side effects */
-
-				DUK_ASSERT(act == thr->callstack_curr);
-				DUK_ASSERT(act != NULL);
-			}
-
-			pc_base = cat->pc_base;
-
-			if (DUK_CAT_HAS_FINALLY_ENABLED(cat)) {
-				DUK_DDD(DUK_DDDPRINT("ENDCATCH: finally part is active, jump through 2nd jump slot with 'normal continuation'"));
-
-				tv1 = thr->valstack + cat->idx_base;
-				DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-				DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv1);  /* side effects */
-				tv1 = NULL;
-
-				tv1 = thr->valstack + cat->idx_base + 1;
-				DUK_ASSERT(tv1 >= thr->valstack && tv1 < thr->valstack_top);
-				DUK_TVAL_SET_U32_UPDREF(thr, tv1, (duk_uint32_t) DUK_LJ_TYPE_NORMAL);  /* side effects */
-				tv1 = NULL;
-
-				DUK_CAT_CLEAR_FINALLY_ENABLED(cat);
-			} else {
-				DUK_DDD(DUK_DDDPRINT("ENDCATCH: no finally part, dismantle catcher, jump through 2nd jump slot (to end of statement)"));
-
-				duk_hthread_catcher_unwind_norz(thr, act);
-				/* no need to unwind callstack */
-			}
-
-			curr_pc = pc_base + 1;
+			duk__handle_op_endcatch(thr, ins);
 			break;
 		}
 
 		case DUK_OP_ENDFIN: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_activation *act;
-			duk_tval *tv1;
-			duk_uint_t reg_catch;
-			duk_small_uint_t cont_type;
-			duk_small_uint_t ret_result;
-
 			/* Sync and NULL early. */
 			DUK__SYNC_AND_NULL_CURR_PC();
 
-			DUK_ASSERT(thr->callstack_top >= 1);
-			act = thr->callstack_curr;
-			DUK_ASSERT(act != NULL);
-			reg_catch = DUK_DEC_ABC(ins);
-
-			/* CATCH flag may be enabled or disabled here; it may be enabled if
-			 * the statement has a catch block but the try block does not throw
-			 * an error.
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("ENDFIN: completion value=%!T, type=%!T",
-			                     (duk_tval *) (thr->valstack_bottom + reg_catch + 0),
-			                     (duk_tval *) (thr->valstack_bottom + reg_catch + 1)));
-
-			tv1 = thr->valstack_bottom + reg_catch + 1;  /* type */
-			DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
-#if defined(DUK_USE_FASTINT)
-			DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
-			cont_type = (duk_small_uint_t) DUK_TVAL_GET_FASTINT_U32(tv1);
-#else
-			cont_type = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
-#endif
-
-			tv1--;  /* value */
-
-			switch (cont_type) {
-			case DUK_LJ_TYPE_NORMAL: {
-				DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'normal' (non-abrupt) completion -> "
-				                     "dismantle catcher, resume execution after ENDFIN"));
-
-				duk_hthread_catcher_unwind_norz(thr, act);
-				/* no need to unwind callstack */
-				goto restart_execution;
-			}
-			case DUK_LJ_TYPE_RETURN: {
-				DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with 'return' complation -> dismantle "
-				                     "catcher, handle return, lj.value1=%!T", tv1));
-
-				/* Not necessary to unwind catch stack: return handling will
-				 * do it.  The finally flag of 'cat' is no longer set.  The
-				 * catch flag may be set, but it's not checked by return handling.
-				 */
-
-				duk_push_tval(ctx, tv1);
-				ret_result = duk__handle_return(thr, entry_act);
-				if (ret_result == DUK__RETHAND_RESTART) {
-					goto restart_execution;
-				}
-				DUK_ASSERT(ret_result == DUK__RETHAND_FINISHED);
-
-				DUK_DDD(DUK_DDDPRINT("exiting executor after ENDFIN and RETURN (pseudo) longjmp type"));
+			if (duk__handle_op_endfin(thr, ins, entry_act) != 0) {
 				return;
 			}
-			case DUK_LJ_TYPE_BREAK:
-			case DUK_LJ_TYPE_CONTINUE: {
-				duk_uint_t label_id;
-				duk_small_uint_t lj_type;
 
-				/* Not necessary to unwind catch stack: break/continue
-				 * handling will do it.  The finally flag of 'cat' is
-				 * no longer set.  The catch flag may be set, but it's
-				 * not checked by break/continue handling.
-				 */
-
-				DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv1));
-#if defined(DUK_USE_FASTINT)
-				DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv1));
-				label_id = (duk_small_uint_t) DUK_TVAL_GET_FASTINT_U32(tv1);
-#else
-				label_id = (duk_small_uint_t) DUK_TVAL_GET_NUMBER(tv1);
-#endif
-				lj_type = cont_type;
-				duk__handle_break_or_continue(thr, label_id, lj_type);
-				goto restart_execution;
-			}
-			default: {
-				DUK_DDD(DUK_DDDPRINT("ENDFIN: finally part finishing with abrupt completion, lj_type=%ld -> "
-				                     "dismantle catcher, re-throw error",
-				                     (long) cont_type));
-
-				duk_err_setup_ljstate1(thr, (duk_small_int_t) cont_type, tv1);
-				/* No debugger Throw notify check on purpose (rethrow). */
-
-				DUK_ASSERT(thr->heap->lj.jmpbuf_ptr != NULL);  /* always in executor */
-				duk_err_longjmp(thr);
-				DUK_UNREACHABLE();
-			}
-			}
-
-			/* Must restart in all cases because we NULLed thr->ptr_curr_pc. */
-			DUK_UNREACHABLE();
-			break;
+			/* Must restart because we NULLed out curr_pc. */
+			goto restart_execution;
 		}
 
 		case DUK_OP_THROW: {
@@ -4754,37 +4895,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 		case DUK_OP_INITSET:
 		case DUK_OP_INITGET: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_bool_t is_set = (op == DUK_OP_INITSET);
-			duk_uint_fast_t idx;
-			duk_uint_t defprop_flags;
-
-			/* A -> object register (acts as a source)
-			 * BC -> BC+0 contains key, BC+1 closure (value)
-			 */
-
-			/* INITSET/INITGET are only used to initialize object literal keys.
-			 * There may be a previous propery in ES2015 because duplicate property
-			 * names are allowed.
-			 */
-
-			/* This could be made more optimal by accessing internals directly. */
-
-			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
-			duk_dup(ctx, (duk_idx_t) (idx + 0));  /* key */
-			duk_dup(ctx, (duk_idx_t) (idx + 1));  /* getter/setter */
-			if (is_set) {
-				defprop_flags = DUK_DEFPROP_HAVE_SETTER |
-				                DUK_DEFPROP_FORCE |
-				                DUK_DEFPROP_SET_ENUMERABLE |
-				                DUK_DEFPROP_SET_CONFIGURABLE;
-			} else {
-				defprop_flags = DUK_DEFPROP_HAVE_GETTER |
-				                DUK_DEFPROP_FORCE |
-				                DUK_DEFPROP_SET_ENUMERABLE |
-				                DUK_DEFPROP_SET_CONFIGURABLE;
-			}
-			duk_def_prop(ctx, (duk_idx_t) DUK_DEC_A(ins), defprop_flags);
+			duk__handle_op_initset_initget(thr, ins);
 			break;
 		}
 
@@ -4884,73 +4995,12 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		}
 
 		case DUK_OP_INITENUM: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-
-			/*
-			 *  Enumeration semantics come from for-in statement, E5 Section 12.6.4.
-			 *  If called with 'null' or 'undefined', this opcode returns 'null' as
-			 *  the enumerator, which is special cased in NEXTENUM.  This simplifies
-			 *  the compiler part
-			 */
-
-			/* B -> register for writing enumerator object
-			 * C -> value to be enumerated (register)
-			 */
-
-			if (duk_is_null_or_undefined(ctx, (duk_idx_t) c)) {
-				duk_push_null(ctx);
-				duk_replace(ctx, (duk_idx_t) b);
-			} else {
-				duk_dup(ctx, (duk_idx_t) c);
-				duk_to_object(ctx, -1);
-				duk_hobject_enumerator_create(ctx, 0 /*enum_flags*/);  /* [ ... val ] --> [ ... enum ] */
-				duk_replace(ctx, (duk_idx_t) b);
-			}
+			duk__handle_op_initenum(thr, ins);
 			break;
 		}
 
 		case DUK_OP_NEXTENUM: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t b = DUK_DEC_B(ins);
-			duk_small_uint_fast_t c = DUK_DEC_C(ins);
-
-			/*
-			 *  NEXTENUM checks whether the enumerator still has unenumerated
-			 *  keys.  If so, the next key is loaded to the target register
-			 *  and the next instruction is skipped.  Otherwise the next instruction
-			 *  will be executed, jumping out of the enumeration loop.
-			 */
-
-			/* B -> target register for next key
-			 * C -> enum register
-			 */
-
-			DUK_DDD(DUK_DDDPRINT("NEXTENUM: b->%!T, c->%!T",
-			                     (duk_tval *) duk_get_tval(ctx, (duk_idx_t) b),
-			                     (duk_tval *) duk_get_tval(ctx, (duk_idx_t) c)));
-
-			if (duk_is_object(ctx, (duk_idx_t) c)) {
-				/* XXX: assert 'c' is an enumerator */
-				duk_dup(ctx, (duk_idx_t) c);
-				if (duk_hobject_enumerator_next(ctx, 0 /*get_value*/)) {
-					/* [ ... enum ] -> [ ... next_key ] */
-					DUK_DDD(DUK_DDDPRINT("enum active, next key is %!T, skip jump slot ",
-					                     (duk_tval *) duk_get_tval(ctx, -1)));
-					curr_pc++;
-				} else {
-					/* [ ... enum ] -> [ ... ] */
-					DUK_DDD(DUK_DDDPRINT("enum finished, execute jump slot"));
-					DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));  /* valstack policy */
-					thr->valstack_top++;
-				}
-				duk_replace(ctx, (duk_idx_t) b);
-			} else {
-				/* 'null' enumerator case -> behave as with an empty enumerator */
-				DUK_ASSERT(duk_is_null(ctx, (duk_idx_t) c));
-				DUK_DDD(DUK_DDDPRINT("enum is null, execute jump slot"));
-			}
+			curr_pc += duk__handle_op_nextenum(thr, ins);
 			break;
 		}
 
