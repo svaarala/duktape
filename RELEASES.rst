@@ -2518,6 +2518,30 @@ Miscellaneous:
   rather than duk_heaphdr_decref_norz()); however, this function is unused
   unless fast refcount handling is disabled explicitly (GH-1410)
 
+2.0.3 (2017-05-04)
+------------------
+
+* Fix incorrect assert for RETCONSTN opcode when refcounting is disabled,
+  actual behavior is correct however (GH-1432, GH-1433)
+
+* Fix potentially stale duk_tval pointer in duk_inspect_value(), also affects
+  Duktape.info() (GH-1453)
+
+* Fix Symbol Object .valueOf() which returned the Symbol Object rather than
+  the underlying plain Symbol (GH-1459)
+
+* Fix RegExp group parsing to reject invalid groups like /(?Xabc)/, previously
+  they were accepted silently (GH-1463)
+
+* Fix potentially stale duk_tval pointer in Proxy deleteProperty handling
+  (GH-1482)
+
+* Fix missing duk_require_stack() in bound function call handling which caused
+  calls to bound functions with a lot of bound arguments to fail with a value
+  stack limit error (GH-1504)
+
+* Fix duk_hbufobj assert in shared slice() handling (GH-1506)
+
 2.1.0 (2017-04-15)
 ------------------
 
