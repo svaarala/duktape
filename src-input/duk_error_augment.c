@@ -231,7 +231,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
 	depth = DUK_USE_TRACEBACK_DEPTH;
 	if (depth > thr_callstack->callstack_top) {
-		depth = thr_callstack->callstack_top;
+		depth = (duk_small_uint_t) thr_callstack->callstack_top;
 	}
 	for (act = thr_callstack->callstack_curr; depth-- > 0; act = act->parent) {
 		duk_uint32_t pc;

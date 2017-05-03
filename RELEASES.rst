@@ -2841,6 +2841,8 @@ Planned
 * Fix internal debug print opcode name list which was out of sync with previous
   changes (GH-1509)
 
+* Fix MSVC cast warning in error augmentation code (GH-1511)
+
 * Simplify handling of ENDFIN opcode a bit (GH-1508)
 
 * Internal change: set REACHABLE for all READONLY objects (relevant when
