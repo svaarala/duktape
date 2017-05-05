@@ -171,8 +171,6 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 
 				/* [ ... v1(func) v2(pc+flags) ] */
 
-				h_func = duk_get_hobject(ctx, -2);  /* NULL for lightfunc */
-
 				/* These may be systematically omitted by Duktape
 				 * with certain config options, but allow user to
 				 * set them on a case-by-case basis.
@@ -209,6 +207,8 @@ DUK_LOCAL duk_ret_t duk__error_getter_helper(duk_context *ctx, duk_small_int_t o
 				filename = filename ? filename : "";
 				DUK_ASSERT(funcname != NULL);
 				DUK_ASSERT(filename != NULL);
+
+				h_func = duk_get_hobject(ctx, -4);  /* NULL for lightfunc */
 
 				if (h_func == NULL) {
 					duk_push_sprintf(ctx, "at %s light%s%s%s%s%s",

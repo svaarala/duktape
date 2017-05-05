@@ -728,7 +728,7 @@ objects:
     internal_prototype: bi_object_prototype
     native: duk_bi_function_prototype
     callable: true
-    constructable: false  # Note: differs from other global Function classed objects (matches e.g. V8 behavior).
+    constructable: false
     bidx: true
     nargs: 0  # given explicitly because .length is optional
     # Present even when DUK_USE_FUNCTION_BUILTIN disabled.
@@ -788,6 +788,40 @@ objects:
       #    string: "Symbol.hasInstance"
       #  value: XXX
       #  es6: true
+
+  # Duktape specific %NativeFunctionPrototype% which provides some getters.
+  #
+  - id: bi_native_function_prototype
+    class: Object
+    internal_prototype: bi_function_prototype
+    native: duk_bi_function_prototype
+    bidx: true
+    duktape: true
+    # Present even when DUK_USE_FUNCTION_BUILTIN disabled.
+
+    properties:
+      - key: "length"
+        value:
+          type: accessor
+          getter: duk_bi_native_function_length
+          getter_nargs: 0
+          getter_magic: 0
+          # Setter undefined: direct write fails (defineProperty() works).
+          # This mimics ES2015 function (own property) .length which is
+          # not writable but configurable.
+        attributes: "c"
+        #present_if: DUK_USE_FUNCTION_BUILTIN  # Kept to guarantee a .length for lightfuncs
+      - key: "name"
+        value:
+          type: accessor
+          getter: duk_bi_native_function_name
+          getter_nargs: 0
+          getter_magic: 0
+          # Setter undefined: direct write fails (defineProperty() works).
+          # This mimics ES2015 function (own property) .name which is
+          # not writable but configurable.
+        attributes: "c"
+        #present_if: DUK_USE_FUNCTION_BUILTIN  # Kept to guarantee a .name for lightfuncs
 
   - id: bi_array_constructor
     class: Function

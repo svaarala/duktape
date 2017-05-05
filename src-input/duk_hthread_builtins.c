@@ -221,6 +221,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 	 *  into thr->builtins[].  These are objects referenced in some way
 	 *  from thr->builtins[] roots but which don't need to be indexed by
 	 *  Duktape through thr->builtins[] (e.g. user custom objects).
+	 *
+	 *  Internal prototypes will be incorrect (NULL) at this stage.
 	 */
 
 	duk_require_stack(ctx, DUK_NUM_ALL_BUILTINS);
@@ -254,8 +256,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			}
 
 			/* XXX: set magic directly here? (it could share the c_nargs arg) */
-			duk_push_c_function_noexotic(ctx, c_func, c_nargs);
-
+			(void) duk_push_c_function_builtin(ctx, c_func, c_nargs);
 			h = duk_known_hobject(ctx, -1);
 
 			/* Currently all built-in native functions are strict.
@@ -380,7 +381,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 	/*
 	 *  Then decode the builtins init data (see genbuiltins.py) to
-	 *  init objects
+	 *  init objects.  Internal prototypes are set at this stage,
+	 *  with thr->builtins[] populated.
 	 */
 
 	DUK_DD(DUK_DDPRINT("initialize built-in object properties"));
@@ -396,6 +398,13 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			t--;
 			DUK_DDD(DUK_DDDPRINT("set internal prototype: built-in %ld", (long) t));
 			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, duk_known_hobject(ctx, t));
+		} else if (DUK_HOBJECT_IS_NATFUNC(h)) {
+			/* Standard native built-ins cannot inherit from
+			 * %NativeFunctionPrototype%, they are required to
+			 * inherit from Function.prototype directly.
+			 */
+			DUK_ASSERT(thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE] != NULL);
+			DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE]);
 		}
 
 		t = (duk_small_uint_t) duk_bd_decode_varuint(bd);
@@ -504,13 +513,13 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 				c_func_getter = duk_bi_native_functions[natidx_getter];
 				if (c_func_getter != NULL) {
-					duk_push_c_function_noconstruct_noexotic(ctx, c_func_getter, 0);  /* always 0 args */
+					duk_push_c_function_builtin_noconstruct(ctx, c_func_getter, 0);  /* always 0 args */
 					duk_set_magic(ctx, -1, (duk_int_t) accessor_magic);
 					defprop_flags |= DUK_DEFPROP_HAVE_GETTER;
 				}
 				c_func_setter = duk_bi_native_functions[natidx_setter];
 				if (c_func_setter != NULL) {
-					duk_push_c_function_noconstruct_noexotic(ctx, c_func_setter, 1);  /* always 1 arg */
+					duk_push_c_function_builtin_noconstruct(ctx, c_func_setter, 1);  /* always 1 arg */
 					duk_set_magic(ctx, -1, (duk_int_t) accessor_magic);
 					defprop_flags |= DUK_DEFPROP_HAVE_SETTER;
 				}
@@ -599,7 +608,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* [ (builtin objects) name ] */
 
-			duk_push_c_function_noconstruct_noexotic(ctx, c_func, c_nargs);
+			duk_push_c_function_builtin_noconstruct(ctx, c_func, c_nargs);
 			h_func = duk_known_hnatfunc(ctx, -1);
 			DUK_UNREF(h_func);
 
