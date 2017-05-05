@@ -19,6 +19,7 @@
 #define DUK__SER_STRING  0x00
 #define DUK__SER_NUMBER  0x01
 #define DUK__BYTECODE_INITIAL_ALLOC 256
+#define DUK__NO_FORMALS  0xffffffffUL
 
 /*
  *  Dump/load helpers, xxx_raw() helpers do no buffer checks
@@ -183,40 +184,44 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 
 	tv = duk_hobject_find_existing_entry_tval_ptr(thr->heap, (duk_hobject *) func, DUK_HTHREAD_STRING_INT_FORMALS(thr));
 	if (tv != NULL && DUK_TVAL_IS_OBJECT(tv)) {
-		duk_hobject *h;
-		duk_uint_fast32_t i;
+		duk_harray *h;
+		duk_uint32_t i;
 
-		h = DUK_TVAL_GET_OBJECT(tv);
-		DUK_ASSERT(h != NULL);
-
-		/* We know _Formals is dense and all entries will be in the
-		 * array part.  GC and finalizers shouldn't affect _Formals
-		 * so side effects should be fine.
+		/* Here we rely on _Formals being a dense array containing
+		 * strings.  This should be the case unless _Formals has been
+		 * tweaked by the application (which we don't support right
+		 * now).
 		 */
-		for (i = 0; i < (duk_uint_fast32_t) DUK_HOBJECT_GET_ASIZE(h); i++) {
+		h = (duk_harray *) DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		DUK_ASSERT(DUK_HOBJECT_IS_ARRAY((duk_hobject *) h));
+		DUK_ASSERT(h->length <= DUK_HOBJECT_GET_ASIZE((duk_hobject *) h));
+
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+		DUK_ASSERT(h->length != DUK__NO_FORMALS);  /* limits */
+		DUK_RAW_WRITE_U32_BE(p, h->length);
+
+		for (i = 0; i < h->length; i++) {
 			duk_tval *tv_val;
 			duk_hstring *varname;
 
-			tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, h, i);
+			tv_val = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, (duk_hobject *) h, i);
 			DUK_ASSERT(tv_val != NULL);
-			if (DUK_TVAL_IS_STRING(tv_val)) {
-				/* Array is dense and contains only strings, but ASIZE may
-				 * be larger than used part and there are UNUSED entries.
-				 */
-				varname = DUK_TVAL_GET_STRING(tv_val);
-				DUK_ASSERT(varname != NULL);
-				DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(varname) >= 1);  /* won't be confused with terminator */
+			DUK_ASSERT(DUK_TVAL_IS_STRING(tv_val));
 
-				DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
-				p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
-				p = duk__dump_hstring_raw(p, varname);
-			}
+			varname = DUK_TVAL_GET_STRING(tv_val);
+			DUK_ASSERT(varname != NULL);
+			DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(varname) >= 1);
+
+			DUK_ASSERT(DUK_HSTRING_MAX_BYTELEN <= 0x7fffffffUL);  /* ensures no overflow */
+			p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4 + DUK_HSTRING_GET_BYTELEN(varname), p);
+			p = duk__dump_hstring_raw(p, varname);
 		}
 	} else {
-		DUK_DD(DUK_DDPRINT("dumping function without _Formals, emit empty list"));
+		DUK_DD(DUK_DDPRINT("dumping function without _Formals, emit marker to indicate missing _Formals"));
+		p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
+		DUK_RAW_WRITE_U32_BE(p, DUK__NO_FORMALS);  /* marker: no formals */
 	}
-	p = DUK_BW_ENSURE_RAW(thr, bw_ctx, 4, p);
-	DUK_RAW_WRITE_U32_BE(p, 0);  /* end of _Formals */
 	return p;
 }
 
@@ -394,6 +399,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_idx_t idx_base;
 	duk_tval *tv1;
 	duk_uarridx_t arr_idx;
+	duk_uarridx_t arr_limit;
 	duk_hobject *func_env;
 	duk_bool_t need_pop;
 
@@ -659,26 +665,20 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	duk_compact_m1(ctx);
 	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 
-	/* If _Formals wasn't present in the original function, the list
-	 * here will be empty.  Same happens if _Formals was present but
-	 * had zero length.  We can omit _Formals from the result if its
-	 * length is zero and matches nargs.
+	/* _Formals may have been missing in the original function, which is
+	 * handled using a marker length.
 	 */
-	duk_push_array(ctx);  /* _Formals */
-	for (arr_idx = 0; ; arr_idx++) {
-		/* XXX: awkward */
-		p = duk__load_string_raw(ctx, p);
-		if (duk_get_length(ctx, -1) == 0) {
-			duk_pop(ctx);
-			break;
+	arr_limit = DUK_RAW_READ_U32_BE(p);
+	if (arr_limit != DUK__NO_FORMALS) {
+		duk_push_array(ctx);  /* _Formals */
+		for (arr_idx = 0; arr_idx < arr_limit; arr_idx++) {
+			p = duk__load_string_raw(ctx, p);
+			duk_put_prop_index(ctx, -2, arr_idx);
 		}
-		duk_put_prop_index(ctx, -2, arr_idx);
-	}
-	if (arr_idx == 0 && h_fun->nargs == 0) {
-		duk_pop(ctx);
-	} else {
 		duk_compact_m1(ctx);
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+	} else {
+		DUK_DD(DUK_DDPRINT("no _Formals in dumped function"));
 	}
 
 	/* Return with final function pushed on stack top. */
