@@ -2856,6 +2856,10 @@ Planned
   "collapse" bound function chains so that the target of a duk_hboundfunc is
   always a non-bound function (GH-1503)
 
+* Fix incorrect .length behavior for function templates loaded by
+  duk_load_function(), caused by not distinguishing between a missing and a
+  zero length _Formals array (GH-1513, GH-1516)
+
 * Fix missing duk_require_stack() in bound function call handling which caused
   calls to bound functions with a lot of bound arguments to fail with a value
   stack limit error (GH-1504)
