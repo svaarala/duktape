@@ -2840,14 +2840,16 @@ Planned
 2.2.0 (XXXX-XX-XX)
 ------------------
 
+* Change Duktape/C function inheritance for user functions pushed using
+  duk_push_c_function() and duk_push_c_lightfunc(), they now inherit from an
+  intermediate prototype object (function -> %NativeFunctionPrototype% ->
+  Function.prototype) which provides .name and .length getters; the virtual
+  .name and .length properties of Duktape/C and lightfuncs have been removed;
+  this change also allows .name and .length to be overridden using
+  duk_def_prop() or Object.defineProperty() (GH-1493, GH-1494, GH-1515)
+
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837)
-
-* Fix callstack limit bumping for errThrow augmentation calls, the limit might
-  be bumped and unbumped for different Duktape threads if coroutines were
-  resumed/yielded in the process; this is relatively harmless but might cause
-  an errThrow augmentation call to fail due to callstack limit being reached
-  (GH-1490)
 
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
@@ -2855,6 +2857,12 @@ Planned
 * Add an internal type for representing bound functions (duk_hboundfunc) and
   "collapse" bound function chains so that the target of a duk_hboundfunc is
   always a non-bound function (GH-1503)
+
+* Fix callstack limit bumping for errThrow augmentation calls, the limit might
+  be bumped and unbumped for different Duktape threads if coroutines were
+  resumed/yielded in the process; this is relatively harmless but might cause
+  an errThrow augmentation call to fail due to callstack limit being reached
+  (GH-1490)
 
 * Fix incorrect .length behavior for function templates loaded by
   duk_load_function(), caused by not distinguishing between a missing and a
