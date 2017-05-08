@@ -1349,10 +1349,11 @@ def resolve_magic(elem, objid_to_bidx):
 
 # Helper to find a property from a property list, remove it from the
 # property list, and return the removed property.
-def steal_prop(props, key):
+def steal_prop(props, key, allow_accessor=True):
     for idx,prop in enumerate(props):
         if prop['key'] == key:
-            return props.pop(idx)
+            if not (isinstance(prop['value'], dict) and prop['value']['type'] == 'accessor') or allow_accessor:
+                return props.pop(idx)
     return None
 
 #
@@ -1653,8 +1654,8 @@ def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_
 
     prop_proto = steal_prop(props, 'prototype')
     prop_constr = steal_prop(props, 'constructor')
-    prop_name = steal_prop(props, 'name')
-    prop_length = steal_prop(props, 'length')
+    prop_name = steal_prop(props, 'name', allow_accessor=False)
+    prop_length = steal_prop(props, 'length', allow_accessor=False)
 
     length = -1  # default value -1 signifies varargs
     if prop_length is not None:
@@ -1774,13 +1775,13 @@ def gen_ramobj_initdata_for_props(meta, be, bi, string_to_stridx, natfunc_name_t
 
     # name: encoded specially for function objects, so steal and ignore here
     if bi['class'] == 'Function':
-        prop_name = steal_prop(props, 'name')
+        prop_name = steal_prop(props, 'name', allow_accessor=False)
         assert(prop_name is not None)
         assert(isinstance(prop_name['value'], str))
         assert(prop_name['attributes'] == 'c')
 
     # length: encoded specially, so steal and ignore
-    prop_proto = steal_prop(props, 'length')
+    prop_proto = steal_prop(props, 'length', allow_accessor=False)
 
     # Date.prototype.toGMTString needs special handling and is handled
     # directly in duk_hthread_builtins.c; so steal and ignore here.

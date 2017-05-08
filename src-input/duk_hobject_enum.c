@@ -460,10 +460,6 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 			if (have_length && (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE)) {
 				duk__add_enum_key_stridx(ctx, DUK_STRIDX_LENGTH);
 			}
-		} else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(curr)) {
-			if (enum_flags & DUK_ENUM_INCLUDE_NONENUMERABLE) {
-				duk__add_enum_key_stridx(ctx, DUK_STRIDX_LENGTH);
-			}
 		}
 
 		/*

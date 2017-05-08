@@ -1918,7 +1918,6 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"exotic_array",
 	"exotic_stringobj",
 	"exotic_arguments",
-	"exotic_dukfunc",
 	"exotic_proxyobj"
 	/* NULL not needed here */
 };
@@ -1940,7 +1939,6 @@ DUK_LOCAL duk_uint_t duk__debug_getinfo_hobject_masks[] = {
 	DUK_HOBJECT_FLAG_EXOTIC_ARRAY,
 	DUK_HOBJECT_FLAG_EXOTIC_STRINGOBJ,
 	DUK_HOBJECT_FLAG_EXOTIC_ARGUMENTS,
-	DUK_HOBJECT_FLAG_EXOTIC_DUKFUNC,
 	DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ,
 	0  /* terminator */
 };

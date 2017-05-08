@@ -479,3 +479,65 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	return 1;
 }
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
+
+/* %NativeFunctionPrototype% .length getter. */
+DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_context *ctx) {
+	duk_tval *tv;
+	duk_hnatfunc *h;
+	duk_int16_t func_nargs;
+
+	tv = duk_get_borrowed_this_tval(ctx);
+	DUK_ASSERT(tv != NULL);
+
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		h = (duk_hnatfunc *) DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (!DUK_HOBJECT_IS_NATFUNC((duk_hobject *) h)) {
+			goto fail_type;
+		}
+		func_nargs = h->nargs;
+		duk_push_int(ctx, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_int_t lf_flags;
+		duk_int_t lf_len;
+
+		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
+		lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
+		duk_push_int(ctx, lf_len);
+	} else {
+		goto fail_type;
+	}
+	return 1;
+
+ fail_type:
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+}
+
+/* %NativeFunctionPrototype% .name getter. */
+DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_context *ctx) {
+	duk_tval *tv;
+	duk_hnatfunc *h;
+
+	tv = duk_get_borrowed_this_tval(ctx);
+	DUK_ASSERT(tv != NULL);
+
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		h = (duk_hnatfunc *) DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (!DUK_HOBJECT_IS_NATFUNC((duk_hobject *) h)) {
+			goto fail_type;
+		}
+#if 0
+		duk_push_hnatfunc_name(ctx, h);
+#endif
+		duk_push_hstring_empty(ctx);
+	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		duk_push_lightfunc_name(ctx, tv);
+	} else {
+		goto fail_type;
+	}
+	return 1;
+
+ fail_type:
+	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+}

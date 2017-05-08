@@ -476,9 +476,6 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_arguments:true");
 		}
-		if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(h)) {
-			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_dukfunc:true");
-		}
 		if (DUK_HOBJECT_IS_BUFOBJ(h)) {
 			DUK__COMMA(); duk_fb_sprintf(fb, "__exotic_bufobj:true");
 		}

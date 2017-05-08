@@ -176,13 +176,6 @@ DUK_LOCAL duk_uint32_t duk__push_tval_to_property_key(duk_context *ctx, duk_tval
 	return duk__to_property_key(ctx, -1, out_h);
 }
 
-/* String is an own (virtual) property of a lightfunc. */
-DUK_LOCAL duk_bool_t duk__key_is_lightfunc_ownprop(duk_hthread *thr, duk_hstring *key) {
-	DUK_UNREF(thr);
-	return (key == DUK_HTHREAD_STRING_LENGTH(thr) ||
-	        key == DUK_HTHREAD_STRING_NAME(thr));
-}
-
 /* String is an own (virtual) property of a plain buffer. */
 DUK_LOCAL duk_bool_t duk__key_is_plain_buf_ownprop(duk_hthread *thr, duk_hbuffer *buf, duk_hstring *key, duk_uint32_t arr_idx) {
 	DUK_UNREF(thr);
@@ -1836,23 +1829,6 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 		}
 	}
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
-	else if (DUK_HOBJECT_HAS_EXOTIC_DUKFUNC(obj)) {
-		DUK_DDD(DUK_DDDPRINT("duktape/c object exotic property get for key: %!O, arr_idx: %ld",
-		                     (duk_heaphdr *) key, (long) arr_idx));
-
-		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
-			DUK_DDD(DUK_DDDPRINT("-> found, key is 'length', length exotic behavior"));
-
-			if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
-				duk_int16_t func_nargs = ((duk_hnatfunc *) obj)->nargs;
-				duk_push_int(ctx, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
-			}
-			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* not enumerable */
-
-			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments exotic */
-		}
-	}
 
 	/* Array properties have exotic behavior but they are concrete,
 	 * so no special handling here.
@@ -2585,25 +2561,10 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 
 	case DUK_TAG_LIGHTFUNC: {
-		duk_int_t lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv_obj);
-
-		/* Must coerce key: if key is an object, it may coerce to e.g. 'length'. */
-		arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
-
-		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
-			duk_int_t lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
-			duk_pop(ctx);
-			duk_push_int(ctx, lf_len);
-			return 1;
-		} else if (key == DUK_HTHREAD_STRING_NAME(thr)) {
-			duk_pop(ctx);
-			duk_push_lightfunc_name(ctx, tv_obj);
-			return 1;
-		}
-
+		/* Lightfuncs inherit getter .name and .length from %NativeFunctionPrototype%. */
 		DUK_DDD(DUK_DDDPRINT("base object is a lightfunc, start lookup from function prototype"));
-		curr = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
-		goto lookup;  /* avoid double coercion */
+		curr = thr->builtins[DUK_BIDX_NATIVE_FUNCTION_PROTOTYPE];
+		break;
 	}
 
 #if defined(DUK_USE_FASTINT)
@@ -2623,7 +2584,6 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 	DUK_ASSERT(key == NULL);
 	arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
 	DUK_ASSERT(key != NULL);
-
 	/*
 	 *  Property lookup
 	 */
@@ -2816,17 +2776,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_hasprop(duk_hthread *thr, duk_tval *tv_obj, 
 		obj = thr->builtins[DUK_BIDX_UINT8ARRAY_PROTOTYPE];
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
 		arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
-		if (duk__key_is_lightfunc_ownprop(thr, key)) {
-			rc = 1;
-			goto pop_and_return;
-		}
 
-		/* If not found, resume existence check from Function.prototype.
+		/* If not found, resume existence check from %NativeFunctionPrototype%.
 		 * We can just substitute the value in this case; nothing will
 		 * need the original base value (as would be the case with e.g.
 		 * setters/getters.
 		 */
-		obj = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
+		obj = thr->builtins[DUK_BIDX_NATIVE_FUNCTION_PROTOTYPE];
 	} else {
 		/* Note: unconditional throw */
 		DUK_DDD(DUK_DDDPRINT("base object is not an object -> reject"));
@@ -3574,20 +3530,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 	}
 
 	case DUK_TAG_LIGHTFUNC: {
-		/* All lightfunc own properties are non-writable and the lightfunc
-		 * is considered non-extensible.  However, the write may be captured
-		 * by an inherited setter which means we can't stop the lookup here.
+		/* Lightfuncs have no own properties and are considered non-extensible.
+		 * However, the write may be captured by an inherited setter which
+		 * means we can't stop the lookup here.
 		 */
-
-		arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
-
-		if (duk__key_is_lightfunc_ownprop(thr, key)) {
-			goto fail_not_writable;
-		}
-
 		DUK_DDD(DUK_DDDPRINT("base object is a lightfunc, start lookup from function prototype"));
-		curr = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
-		goto lookup;  /* avoid double coercion */
+		curr = thr->builtins[DUK_BIDX_NATIVE_FUNCTION_PROTOTYPE];
+		break;
 	}
 
 #if defined(DUK_USE_FASTINT)
@@ -4495,16 +4444,13 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 			goto fail_not_configurable;
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_obj)) {
-		/* Lightfunc virtual properties are non-configurable, so
-		 * reject if match any of them.
+		/* Lightfunc has no virtual properties since Duktape 2.2
+		 * so success.  Still must coerce key for side effects.
 		 */
 
 		arr_idx = duk__to_property_key(ctx, -1, &key);
 		DUK_ASSERT(key != NULL);
-
-		if (duk__key_is_lightfunc_ownprop(thr, key)) {
-			goto fail_not_configurable;
-		}
+		DUK_UNREF(key);
 	}
 
 	/* non-object base, no offending virtual property */
