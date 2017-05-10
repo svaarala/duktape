@@ -2858,6 +2858,9 @@ Planned
   "collapse" bound function chains so that the target of a duk_hboundfunc is
   always a non-bound function (GH-1503)
 
+* Fix Reflect.construct() handling for four or more arguments (GH-1517,
+  GH-1518)
+
 * Fix callstack limit bumping for errThrow augmentation calls, the limit might
   be bumped and unbumped for different Duktape threads if coroutines were
   resumed/yielded in the process; this is relatively harmless but might cause
