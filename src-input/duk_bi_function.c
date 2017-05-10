@@ -202,6 +202,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
 			/* XXX: [[Construct]] newTarget currently unsupported */
 			DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
 		}
+		duk_set_top(ctx, 2);  /* chop off extra arguments: [ constructor argArray ] */
 		idx_args = 1;
 		break;
 	}
