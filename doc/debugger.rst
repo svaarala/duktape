@@ -2400,6 +2400,8 @@ The following list describes artificial keys included in Duktape 1.5.0, see
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``exotic_proxyobj``             | ``duk_hobject``           | DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ                        |
 +---------------------------------+---------------------------+---------------------------------------------------------+
+| ``special_call``                | ``duk_hobject``           | DUK_HOBJECT_FLAG_SPECIAL_CALL                           |
++---------------------------------+---------------------------+---------------------------------------------------------+
 | ``class_number``                | ``duk_hobject``           | Duktape internal class number (same as object dvalue).  |
 +---------------------------------+---------------------------+---------------------------------------------------------+
 | ``class_name``                  | ``duk_hobject``           | String class name, e.g. ``"ArrayBuffer"``.              |
