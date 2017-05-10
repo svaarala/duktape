@@ -61,10 +61,6 @@
   knownissue: "corner cases for 'new Function()' when arguments and code are given as strings"
   # Moved
 -
-  test: "test-dev-yield-after-callapply.js"
-  knownissue: "yield() not allowed when function called via Function.prototype.(call|apply)()"
-  # Moved
--
   test: "test-lex-unterminated-hex-uni-escape.js"
   knownissue: "unterminated hex escapes should be parsed leniently, e.g. '\\uX' -> 'uX' but Duktape now refuses to parse them"
   # Moved
