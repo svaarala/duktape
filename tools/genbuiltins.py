@@ -425,6 +425,7 @@ def metadata_normalize_shorthand(meta):
         obj['class'] = 'Function'
         obj['callable'] = True
         obj['constructable'] = val.get('constructable', False)
+        obj['special_call'] = val.get('special_call', False)
         fun_name = val.get('name', funprop['key'])
         props.append({ 'key': 'length', 'value': val['length'], 'attributes': 'c' })  # Configurable in ES2015
         props.append({ 'key': 'name', 'value': fun_name, 'attributes': 'c' })   # Configurable in ES2015
@@ -442,6 +443,7 @@ def metadata_normalize_shorthand(meta):
         obj['class'] = 'Function'
         obj['callable'] = True
         obj['constructable'] = False
+        assert(obj.get('special_call', False) == False)
         # Shorthand accessors are minimal and have no .length or .name
         # right now.  Use longhand if these matter.
         #props.append({ 'key': 'length', 'value': length, 'attributes': 'c' })
@@ -512,7 +514,7 @@ def metadata_normalize_shorthand(meta):
 
     def clonePropShared(prop):
         res = {}
-        for k in [ 'key', 'attributes', 'autoLightfunc' ]:
+        for k in [ 'key', 'attributes', 'auto_lightfunc' ]:
             if prop.has_key(k):
                 res[k] = prop[k]
         return res
@@ -745,7 +747,7 @@ def metadata_convert_lightfuncs(meta):
                 if p2['key'] not in [ 'length', 'name' ]:
                     reasons.append('nonallowed-property')
 
-            if not p.get('autoLightfunc', True):
+            if not p.get('auto_lightfunc', True):
                 logger.debug('Automatic lightfunc conversion rejected for key %s, explicitly requested in metadata' % p['key'])
                 reasons.append('no-auto-lightfunc')
 
@@ -1712,6 +1714,7 @@ def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_
             be.bits(1, 1)    # flag: constructable
         else:
             be.bits(0, 1)    # flag: not constructable
+        # DUK_HOBJECT_FLAG_SPECIAL_CALL is handled at runtime without init data.
 
         # Convert signed magic to 16-bit unsigned for encoding
         magic = resolve_magic(bi.get('magic'), objid_to_bidx) & 0xffff
@@ -2751,6 +2754,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
             flags.append('DUK_HOBJECT_FLAG_CONSTRUCTABLE')
         if obj.get('class') == 'Array':
             flags.append('DUK_HOBJECT_FLAG_EXOTIC_ARRAY')
+        if obj.get('special_call', False):
+            flags.append('DUK_HOBJECT_FLAG_SPECIAL_CALL')
         flags.append('DUK_HOBJECT_CLASS_AS_FLAGS(%d)' % class_to_number(obj['class']))  # XXX: use constant, not number
 
         refcount = 1  # refcount is faked to be always 1
