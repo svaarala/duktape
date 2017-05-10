@@ -10,10 +10,11 @@ var res;
 /*===
 123
 123
+123
 ===*/
 
 /* Calling via Function.prototype.call() or Function.prototype.apply()
- * currently prevents a yield.
+ * no longer prevents a yield in Duktape 2.2.
  */
 
 function innerfunc() {
@@ -21,13 +22,15 @@ function innerfunc() {
 }
 
 function coroutine1() {
-    // This is a native call so the current (naive) handling prevents a later yield
     innerfunc.call();
 }
 
 function coroutine2() {
-    // Same here
     innerfunc.apply();
+}
+
+function coroutine3() {
+    Reflect.apply(innerfunc);
 }
 
 try {
@@ -40,6 +43,14 @@ try {
 
 try {
     thread = new Duktape.Thread(coroutine2);
+    res = Duktape.Thread.resume(thread, 0);
+    print(res);
+} catch (e) {
+    print(e.name);
+}
+
+try {
+    thread = new Duktape.Thread(coroutine3);
     res = Duktape.Thread.resume(thread, 0);
     print(res);
 } catch (e) {
