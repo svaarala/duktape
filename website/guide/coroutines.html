@@ -42,9 +42,14 @@ they are present anywhere in the yielding coroutine's call stack:</p>
 <li>a getter/setter call</li>
 <li>a proxy trap call</li>
 <li>an <code>eval()</code> call</li>
-<li><code>Function.prototype.call()</code> or <code>Function.prototype.apply()</code></li>
 <li>a finalizer call</li>
 </ul>
+
+<div class="note">
+Since Duktape 2.2 <code>Function.prototype.call()</code>,
+<code>Function.prototype.apply()</code>, and <code>Reflect.apply()</code>
+no longer prevent a yield.
+</div>
 
 <p>See <a href="http://wiki.duktape.org/HowtoCoroutines.html">How to use coroutines</a>
 for examples.</p>
