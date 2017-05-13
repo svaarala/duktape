@@ -1014,9 +1014,7 @@ DUK_LOCAL void duk__adjust_valstack_and_top(duk_hthread *thr,
 
 	(void) duk_valstack_resize_raw((duk_context *) thr,
 	                               vs_min_size,
-	                               DUK_VSRESIZE_FLAG_SHRINK |      /* flags */
-	                               0 /* no compact */ |
-	                               DUK_VSRESIZE_FLAG_THROW);
+	                               DUK_VSRESIZE_FLAG_THROW);       /* flags: no shrink or compact */
 
 	if (!adjusted_top) {
 		if (nregs >= 0) {
