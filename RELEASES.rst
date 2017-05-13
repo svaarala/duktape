@@ -2848,6 +2848,15 @@ Planned
   this change also allows .name and .length to be overridden using
   duk_def_prop() or Object.defineProperty() (GH-1493, GH-1494, GH-1515)
 
+* Handle Function.prototype.call(), Function.prototype.apply(), and
+  Reflect.apply() inline in call handling; as a side effect .call() and
+  .apply() no longer appear in the call stack (tracebacks etc) (GH-1421)
+
+* Function.prototype.call(), Function.prototype.apply(), and Reflect.apply()
+  can be used in tailcalls (e.g. 'return func.call(null, 123);'), don't grow
+  the native C stack when doing an Ecmascript-to-Ecmascript call, and no
+  longer prevent coroutine yielding (GH-1421)
+
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837)
 
