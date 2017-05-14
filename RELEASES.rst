@@ -2850,7 +2850,8 @@ Planned
 
 * Handle Function.prototype.call(), Function.prototype.apply(), and
   Reflect.apply() inline in call handling; as a side effect .call() and
-  .apply() no longer appear in the call stack (tracebacks etc) (GH-1421)
+  .apply() no longer appear in the call stack (tracebacks etc) (GH-1421,
+  GH-1522)
 
 * Function.prototype.call(), Function.prototype.apply(), and Reflect.apply()
   can be used in tailcalls (e.g. 'return func.call(null, 123);'), don't grow
