@@ -42,7 +42,7 @@ DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, du
 	} while (0)
 
 /* XXX: candidate of being an internal shared API call */
-#if !defined(DUK_USE_EXEC_PREFER_SIZE)
+#if 0  /* unused */
 DUK_LOCAL void duk__push_tvals_incref_only(duk_hthread *thr, duk_tval *tv_src, duk_small_uint_fast_t count) {
 	duk_tval *tv_dst;
 	duk_size_t copy_size;
@@ -1602,7 +1602,8 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 	}
 
 	if (act == entry_act) {
-		/* Return to the bytecode executor caller who will unwind stacks.
+		/* Return to the bytecode executor caller who will unwind stacks
+		 * and handle constructor post-processing.
 		 * Return value is already on the stack top: [ ... retval ].
 		 */
 
@@ -1614,7 +1615,6 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 		/* There is a caller; it MUST be an Ecmascript caller (otherwise it would
 		 * match entry_act check).
 		 */
-
 		DUK_DDD(DUK_DDDPRINT("return to Ecmascript caller, retval_byteoff=%ld, lj_value1=%!T",
 		                     (long) (thr->callstack_curr->parent->retval_byteoff),
 		                     (duk_tval *) &thr->heap->lj.value1));
@@ -1623,6 +1623,10 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 		DUK_ASSERT(thr->callstack_curr->parent != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));   /* must be ecmascript */
 
+		if (thr->callstack_curr->flags & DUK_ACT_FLAG_CONSTRUCT) {
+			duk_call_construct_postprocess((duk_context *) thr);  /* side effects */
+		}
+
 		tv1 = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + thr->callstack_curr->parent->retval_byteoff);
 		DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);
 		tv2 = thr->valstack_top - 1;
@@ -1630,6 +1634,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 
 		/* Catch stack unwind happens inline in callstack unwind. */
 		duk_hthread_activation_unwind_norz(thr);
+
 		duk__reconfig_valstack_ecma_return(thr);
 
 		DUK_DD(DUK_DDPRINT("-> return not intercepted, restart execution in caller"));
@@ -2446,7 +2451,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_endfin(duk_hthread 
 	duk_small_uint_t cont_type;
 	duk_small_uint_t ret_result;
 
-
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);
 	DUK_ASSERT(thr->callstack_top >= 1);
 	act = thr->callstack_curr;
 	DUK_ASSERT(act != NULL);
@@ -4358,6 +4363,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		 * for potential out-of-memory situations which will then \
 		 * propagate out of the executor longjmp handler. \
 		 */ \
+		DUK_ASSERT(thr->ptr_curr_pc == NULL); \
 		ret_result = duk__handle_return(thr, entry_act); \
 		if (ret_result == DUK__RETHAND_RESTART) { \
 			goto restart_execution; \
@@ -4743,14 +4749,10 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_context *ctx = (duk_context *) thr;
 			duk_small_uint_fast_t a = DUK_DEC_A(ins);
 			duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
-#if defined(DUK_USE_EXEC_PREFER_SIZE)
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			duk_hcompfunc *fun;
 #endif
-#else
-			duk_small_uint_fast_t count;
-			duk_tval *tv_src;
-#endif
+			duk_idx_t num_stack_args;
 
 			/* A -> num args (N)
 			 * BC -> target register and start reg: constructor, arg1, ..., argN
@@ -4765,13 +4767,18 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * when it augments the created error.
 			 */
 
-#if defined(DUK_USE_EXEC_PREFER_SIZE)
-			/* This alternative relies on our being allowed to trash anything
-			 * above 'bc' so we can just reuse the argument registers which
-			 * means smaller value stack use.  Footprint is a bit smaller.
-			 */
 			duk_set_top(ctx, (duk_idx_t) (bc + a + 1));
-			duk_new(ctx, (duk_idx_t) a);  /* [... constructor arg1 ... argN] -> [retval] */
+			duk_push_object(ctx);  /* default instance; internal proto updated by call handling */
+			duk_insert(ctx, bc + 1);
+			if (duk_handle_ecma_call_setup(thr, a, DUK_CALL_FLAG_CONSTRUCTOR_CALL)) {
+				/* curr_pc synced by duk_handle_ecma_call_setup() */
+				goto restart_execution;
+			}
+
+			/* Recompute argument count: bound function handling may have shifted. */
+			num_stack_args = duk_get_top(ctx) - (bc + 2);
+			DUK_DDD(DUK_DDDPRINT("recomputed arg count: %ld\n", (long) num_stack_args));
+			duk_handle_call_unprotected(thr, num_stack_args, DUK_CALL_FLAG_CONSTRUCTOR_CALL /*call_flags*/);
 
 			/* The return value is already in its correct place at the stack,
 			 * i.e. it has replaced the 'constructor' at index bc.  Just reset
@@ -4782,18 +4789,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			fun = DUK__FUN();
 #endif
 			duk_set_top(ctx, (duk_idx_t) fun->nregs);
-#else  /* DUK_USE_EXEC_PREFER_SIZE */
-			/* Faster alternative is to duplicate the values to avoid a resize.
-			 * This depends on the relative size between the value stack and
-			 * the argument count, though.
-			 */
-			count = a + 1;
-			duk_require_stack(ctx, count);
-			tv_src = DUK_GET_TVAL_POSIDX(ctx, bc);
-			duk__push_tvals_incref_only(thr, tv_src, count);
-			duk_new(ctx, (duk_idx_t) a);  /* [... constructor arg1 ... argN] -> [retval] */
-			duk_replace(ctx, bc);
-#endif  /* DUK_USE_EXEC_PREFER_SIZE */
 
 			/* When debugger is enabled, we need to recheck the activation
 			 * status after returning.  This is now handled by call handling

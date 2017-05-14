@@ -125,7 +125,7 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 		return DUK_EXEC_ERROR;  /* unreachable */
 	}
 
-	/* awkward; we assume there is space for this */
+	/* Rely on the internal value stack reserve for these operations. */
 	duk_push_undefined(ctx);
 	duk_insert(ctx, idx_func + 1);
 
@@ -230,205 +230,21 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 }
 
 DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
-	/*
-	 *  There are two [[Construct]] operations in the specification:
-	 *
-	 *    - E5 Section 13.2.2: for Function objects
-	 *    - E5 Section 15.3.4.5.2: for "bound" Function objects
-	 *
-	 *  The chain of bound functions is resolved in Section 15.3.4.5.2,
-	 *  with arguments "piling up" until the [[Construct]] internal
-	 *  method is called on the final, actual Function object.  Note
-	 *  that the "prototype" property is looked up *only* from the
-	 *  final object, *before* calling the constructor.
-	 *
-	 *  Since Duktape 2.2 bound functions are represented with the
-	 *  duk_hboundfunc internal type, and bound function chains are
-	 *  collapsed when a bound function is created.  As a result, the
-	 *  direct target of a duk_hboundfunc is always non-bound and the
-	 *  this/argument lists have been resolved.
-	 *
-	 *  When constructing new Array instances, an unnecessary object is
-	 *  created and discarded now: the standard [[Construct]] creates an
-	 *  object, and calls the Array constructor.  The Array constructor
-	 *  returns an Array instance, which is used as the result value for
-	 *  the "new" operation; the object created before the Array constructor
-	 *  call is discarded.
-	 *
-	 *  This would be easy to fix, e.g. by knowing that the Array constructor
-	 *  will always create a replacement object and skip creating the fallback
-	 *  object in that case.
-	 *
-	 *  Note: functions called via "new" need to know they are called as a
-	 *  constructor.  For instance, built-in constructors behave differently
-	 *  depending on how they are called.
-	 */
-
-	/* XXX: merge this with duk_js_call.c, as this function implements
-	 * core semantics (or perhaps merge the two files altogether).
-	 */
-
 	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *proto;
-	duk_hobject *cons;
-	duk_hobject *fallback;
-	duk_idx_t idx_cons;
-	duk_small_uint_t call_flags;
+	duk_idx_t idx_func;
 
 	DUK_ASSERT_CTX_VALID(ctx);
 
-	/* [... constructor arg1 ... argN] */
-
-	idx_cons = duk_require_normalize_index(ctx, -nargs - 1);
-
-	DUK_DDD(DUK_DDDPRINT("top=%ld, nargs=%ld, idx_cons=%ld",
-	                     (long) duk_get_top(ctx), (long) nargs, (long) idx_cons));
-
-	/* XXX: code duplication */
-
-	/*
-	 *  Figure out the final, non-bound constructor, to get "prototype"
-	 *  property.
-	 */
-
-	duk_dup(ctx, idx_cons);
-	duk_resolve_nonbound_function(ctx);
-	duk_require_callable(ctx, -1);
-	cons = duk_get_hobject(ctx, -1);
-
-	/* Result is a lightfunc or a callable actual function. */
-	DUK_ASSERT(cons == NULL || DUK_HOBJECT_IS_CALLABLE(cons));
-	if (cons != NULL && !DUK_HOBJECT_HAS_CONSTRUCTABLE(cons)) {
-		/* Check constructability from the final, non-bound object.
-		 * The constructable flag is 1:1 for the bound function and
-		 * its target so this should be sufficient.  Lightfuncs are
-		 * always constructable.
-		 */
-		goto not_constructable;
+	idx_func = duk_get_top(ctx) - nargs - 1;
+	if (idx_func < 0 || nargs < 0) {
+		/* note that we can't reliably pop anything here */
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
 
-	DUK_ASSERT(duk_is_callable(ctx, -1));
-	DUK_ASSERT(duk_is_lightfunc(ctx, -1) ||
-	           (duk_get_hobject(ctx, -1) != NULL && !DUK_HOBJECT_HAS_BOUNDFUNC(duk_get_hobject(ctx, -1))));
+	duk_push_object(ctx);  /* default instance; internal proto updated by call handling */
+	duk_insert(ctx, idx_func + 1);
 
-	/* [... constructor arg1 ... argN final_cons] */
-
-	/*
-	 *  Create "fallback" object to be used as the object instance,
-	 *  unless the constructor returns a replacement value.
-	 *  Its internal prototype needs to be set based on "prototype"
-	 *  property of the constructor.
-	 */
-
-	duk_push_object(ctx);  /* class Object, extensible */
-
-	/* [... constructor arg1 ... argN final_cons fallback] */
-
-	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE);
-	proto = duk_get_hobject(ctx, -1);
-	if (!proto) {
-		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
-		                     "-> leave standard Object prototype as fallback prototype"));
-	} else {
-		DUK_DDD(DUK_DDDPRINT("constructor has 'prototype' property with object value "
-		                     "-> set fallback prototype to that value: %!iO", (duk_heaphdr *) proto));
-		fallback = duk_known_hobject(ctx, -2);
-		DUK_ASSERT(fallback != NULL);
-		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
-	}
-	duk_pop(ctx);
-
-#if 0  /* XXX: smaller alternative */
-	if (duk_is_object(ctx, -1)) {
-		DUK_DDD(DUK_DDDPRINT("constructor has 'prototype' property with object value "
-		                     "-> set fallback prototype to that value: %!iT", duk_get_tval(ctx, -1)));
-		duk_set_prototype(ctx, -2);
-	} else {
-		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
-		                     "-> leave standard Object prototype as fallback prototype"));
-		duk_pop(ctx);
-	}
-#endif
-
-	/* [... constructor arg1 ... argN final_cons fallback] */
-
-	/*
-	 *  Manipulate value stack for the call.
-	 */
-
-	duk_dup_top(ctx);
-	duk_insert(ctx, idx_cons + 1);  /* use fallback as 'this' value */
-	duk_insert(ctx, idx_cons);      /* also stash it before constructor,
-	                                 * in case we need it (as the fallback value)
-	                                 */
-	duk_pop(ctx);                   /* pop final_cons */
-
-
-	/* [... fallback constructor fallback(this) arg1 ... argN];
-	 * Note: idx_cons points to first 'fallback', not 'constructor'.
-	 */
-
-	DUK_DDD(DUK_DDDPRINT("before call, idx_cons+1 (constructor) -> %!T, idx_cons+2 (fallback/this) -> %!T, "
-	                     "nargs=%ld, top=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, idx_cons + 1),
-	                     (duk_tval *) duk_get_tval(ctx, idx_cons + 2),
-	                     (long) nargs,
-	                     (long) duk_get_top(ctx)));
-
-	/*
-	 *  Call the constructor function (called in "constructor mode").
-	 */
-
-	call_flags = DUK_CALL_FLAG_CONSTRUCTOR_CALL;  /* not protected, respect reclimit, is a constructor call */
-
-	duk_handle_call_unprotected(thr,           /* thread */
-	                            nargs,         /* num_stack_args */
-	                            call_flags);   /* call_flags */
-
-	/* [... fallback retval] */
-
-	DUK_DDD(DUK_DDDPRINT("constructor call finished, fallback=%!iT, retval=%!iT",
-	                     (duk_tval *) duk_get_tval(ctx, -2),
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
-
-	/*
-	 *  Determine whether to use the constructor return value as the created
-	 *  object instance or not.
-	 */
-
-	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
-	                                 DUK_TYPE_MASK_BUFFER |
-	                                 DUK_TYPE_MASK_LIGHTFUNC)) {
-		duk_remove_m2(ctx);
-	} else {
-		duk_pop(ctx);
-	}
-
-	/*
-	 *  Augment created errors upon creation (not when they are thrown or
-	 *  rethrown).  __FILE__ and __LINE__ are not desirable here; the call
-	 *  stack reflects the caller which is correct.
-	 */
-
-#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-	duk_hthread_sync_currpc(thr);
-	duk_err_augment_error_create(thr, thr, NULL, 0, 1 /*noblame_fileline*/);
-#endif
-
-	/* [... retval] */
-
-	return;
-
- not_constructable:
-#if defined(DUK_USE_VERBOSE_ERRORS)
-#if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, -1));
-#else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_readable(ctx, -1));
-#endif
-#else
-	DUK_ERROR_TYPE(thr, "not constructable");
-#endif
+	duk_handle_call_unprotected((duk_hthread *) ctx, nargs, DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 }
 
 DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx, void *udata) {
@@ -447,11 +263,8 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	/* For now, just use duk_safe_call() to wrap duk_new().  We can't
-	 * simply use a protected duk_handle_call() because there's post
-	 * processing which might throw.  It should be possible to ensure
-	 * the post processing never throws (except in internal errors and
-	 * out of memory etc which are always allowed) and then remove this
-	 * wrapper.
+	 * simply use a protected duk_handle_call() because pushing the
+	 * default instance might throw.
 	 */
 
 	rc = duk_safe_call(ctx, duk__pnew_helper, (void *) &nargs /*udata*/, nargs + 1 /*nargs*/, 1 /*nrets*/);
