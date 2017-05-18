@@ -3973,6 +3973,7 @@ DUK_EXTERNAL const char *duk_push_lstring(duk_context *ctx, const char *str, duk
 	 * a bit dubious.  This is unlike duk_push_string() which pushes a
 	 * 'null' if the input string is a NULL.
 	 */
+	/* FIXME: NULL handling is different from duk_push_string() */
 	if (!str) {
 		len = 0;
 	}
@@ -3998,6 +3999,7 @@ DUK_EXTERNAL const char *duk_push_string(duk_context *ctx, const char *str) {
 	if (str) {
 		return duk_push_lstring(ctx, str, DUK_STRLEN(str));
 	} else {
+		/* FIXME: NULL handling is different from duk_push_string() */
 		duk_push_null(ctx);
 		return NULL;
 	}
