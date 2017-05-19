@@ -2910,7 +2910,8 @@ Planned
   (GH-1491)
 
 * Miscellaneous performance improvements: move rare/large opcodes into
-  NOINLINE helpers (GH-1510)
+  NOINLINE helpers (GH-1510), duk_harray fast path for internal array
+  unpack for bound functions, .call, and .apply (GH-1525)
 
 3.0.0 (XXXX-XX-XX)
 ------------------

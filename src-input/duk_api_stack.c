@@ -5498,48 +5498,99 @@ DUK_INTERNAL void duk_pack(duk_context *ctx, duk_idx_t count) {
 }
 
 DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
-	duk_uint_t mask;
-	duk_idx_t len;
-	duk_idx_t i;
+	duk_hthread *thr;
+	duk_tval *tv;
 
-	idx = duk_require_normalize_index(ctx, idx);
+	thr = (duk_hthread *) ctx;
 
-	mask = duk_get_type_mask(ctx, idx);
-	if (mask & (DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_UNDEFINED)) {
-		len = 0;
-	} else if (mask & DUK_TYPE_MASK_OBJECT) {
-		/* XXX: ToUint32() coercion is used in ES5.1 for
-		 * Function.prototype.call() and .apply().  ES2015
-		 * updates this to ToLength() which is not implemented yet.
+	tv = duk_require_tval(ctx, idx);
+	if (DUK_LIKELY(DUK_TVAL_IS_OBJECT(tv))) {
+		duk_hobject *h;
+		duk_uint32_t len;
+		duk_uint32_t i;
+
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+
+#if defined(DUK_USE_ARRAY_FASTPATH)  /* close enough */
+		if (DUK_LIKELY(DUK_HOBJECT_IS_ARRAY(h) &&
+		               ((duk_harray *) h)->length <= DUK_HOBJECT_GET_ASIZE(h))) {
+			duk_harray *h_arr;
+			duk_tval *tv_src;
+			duk_tval *tv_dst;
+
+			h_arr = (duk_harray *) h;
+			len = h_arr->length;
+			duk_require_stack(ctx, len);
+
+			/* The potential allocation in duk_require_stack() may
+			 * run a finalizer which modifies the argArray so that
+			 * e.g. becomes sparse.  So, we need to recheck that the
+			 * array didn't change size and that there's still a
+			 * valid backing array part.
+			 *
+			 * XXX: alternatively, could prevent finalizers for the
+			 * duration.
+			 */
+			if (DUK_UNLIKELY(len != h_arr->length ||
+			                 h_arr->length > DUK_HOBJECT_GET_ASIZE((duk_hobject *) h_arr))) {
+				goto skip_fast;
+			}
+
+			/* Main fast path: arguments array is almost always
+			 * an actual array (though it might also be an arguments
+			 * object).
+			 */
+
+			DUK_DDD(DUK_DDDPRINT("fast path for %ld elements", (long) h_arr->length));
+			tv_src = DUK_HOBJECT_A_GET_BASE(thr->heap, h);
+			tv_dst = thr->valstack_top;
+			while (len-- > 0) {
+				DUK_ASSERT(tv_dst < thr->valstack_end);
+				if (DUK_UNLIKELY(DUK_TVAL_IS_UNUSED(tv_src))) {
+					/* Gaps are very unlikely.  Skip over them,
+					 * without an ancestor lookup (technically
+					 * not compliant).
+					 */
+					DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv_dst));  /* valstack policy */
+				} else {
+					DUK_TVAL_SET_TVAL(tv_dst, tv_src);
+					DUK_TVAL_INCREF(thr, tv_dst);
+				}
+				tv_src++;
+				tv_dst++;
+			}
+			DUK_ASSERT(tv_dst <= thr->valstack_end);
+			thr->valstack_top = tv_dst;
+			return h_arr->length;
+		}
+	 skip_fast:
+#endif  /* DUK_USE_ARRAY_FASTPATH */
+
+		/* Slow path: actual lookups.  The initial 'length' lookup
+		 * decides the output length, regardless of side effects that
+		 * may resize or change the argArray while we read the
+		 * indices.
 		 */
-		/* XXX: direct array handling */
+		idx = duk_normalize_index(ctx, idx);
 		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
 		len = (duk_idx_t) duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
 		duk_pop(ctx);
+		DUK_DDD(DUK_DDDPRINT("slow path for %ld elements", (long) len));
 
 		duk_require_stack(ctx, len);
 		for (i = 0; i < len; i++) {
-			duk_get_prop_index(ctx, idx, i);
+			duk_get_prop_index(ctx, idx, (duk_uarridx_t) i);
 		}
-	} else {
-		DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+		DUK_ASSERT(len >= 0);
+		return len;
+	} else if (DUK_TVAL_IS_UNDEFINED(tv) || DUK_TVAL_IS_NULL(tv)) {
+		return 0;
 	}
 
-	DUK_ASSERT(len >= 0);
-	return len;
+	DUK_ERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	return 0;
 }
-
-#if 0
-/* XXX: unpack to position? */
-DUK_INTERNAL void duk_unpack(duk_context *ctx) {
-	/* - dense with length <= a_part
-	 * - dense with length > a_part
-	 * - sparse
-	 * - array-like but not actually an array?
-	 * - how to deal with 'unused' values (gaps); inherit or ignore?
-	 */
-}
-#endif
 
 /*
  *  Error throwing
