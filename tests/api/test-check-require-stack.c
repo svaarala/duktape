@@ -37,7 +37,7 @@ static duk_ret_t test_1(duk_context *ctx) {
 /* demonstrate how using one large duk_check_stack() before such
  * a loop works.
  */
-static duk_ret_t check_1(duk_context *ctx) {
+static duk_ret_t check_1_inner(duk_context *ctx) {
 	int i;
 	duk_ret_t rc;
 
@@ -49,6 +49,20 @@ static duk_ret_t check_1(duk_context *ctx) {
 	}
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t check_1(duk_context *ctx) {
+	int i;
+
+	/* dummy filler */
+	for (i = 0; i < 10000; i++) {
+		duk_require_stack(ctx, 1);
+		duk_push_uint(ctx, 123);
+	}
+
+	duk_push_c_function(ctx, check_1_inner, 0);
+	duk_call(ctx, 0);
+
 	return 0;
 }
 
@@ -81,7 +95,7 @@ static duk_ret_t check_3(duk_context *ctx) {
 }
 
 /* same as check_1 but with duk_require_stack() */
-static duk_ret_t require_1(duk_context *ctx) {
+static duk_ret_t require_1_inner(duk_context *ctx) {
 	int i;
 
 	duk_require_stack(ctx, 1000);
@@ -91,6 +105,20 @@ static duk_ret_t require_1(duk_context *ctx) {
 	}
 
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+static duk_ret_t require_1(duk_context *ctx) {
+	int i;
+
+	/* dummy filler */
+	for (i = 0; i < 10000; i++) {
+		duk_require_stack(ctx, 1);
+		duk_push_uint(ctx, 123);
+	}
+
+	duk_push_c_function(ctx, require_1_inner, 0);
+	duk_call(ctx, 0);
+
 	return 0;
 }
 
