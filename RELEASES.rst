@@ -2885,6 +2885,11 @@ Planned
   calls to bound functions with a lot of bound arguments to fail with a value
   stack limit error (GH-1504)
 
+* Fix duk_check_stack_top() and duk_require_stack_top() internal value stack
+  reserve calculation which failed to take into account call stack entries
+  below the current call, leading potentially to a smaller reserve than
+  requested (GH-1536)
+
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
 * Fix internal debug print opcode name list which was out of sync with previous
