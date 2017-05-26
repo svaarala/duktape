@@ -759,9 +759,11 @@ DUK_EXTERNAL void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
+	duk_hthread *thr;
 	duk_size_t min_new_size;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
 
 	if (DUK_UNLIKELY(top < 0)) {
 		/* Clamping to zero makes the API more robust to calling code
@@ -770,7 +772,7 @@ DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 		top = 0;
 	}
 
-	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
+	min_new_size = (thr->valstack_bottom - thr->valstack) + top + DUK_VALSTACK_INTERNAL_EXTRA;
 	return duk_valstack_resize_raw(ctx,
 	                               min_new_size,  /* min_new_size */
 	                               0 /* no shrink */ |   /* flags */
@@ -779,9 +781,11 @@ DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 }
 
 DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
+	duk_hthread *thr;
 	duk_size_t min_new_size;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
 
 	if (DUK_UNLIKELY(top < 0)) {
 		/* Clamping to zero makes the API more robust to calling code
@@ -790,7 +794,7 @@ DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 		top = 0;
 	}
 
-	min_new_size = top + DUK_VALSTACK_INTERNAL_EXTRA;
+	min_new_size = (thr->valstack_bottom - thr->valstack) + top + DUK_VALSTACK_INTERNAL_EXTRA;
 	(void) duk_valstack_resize_raw(ctx,
 	                               min_new_size,  /* min_new_size */
 	                               0 /* no shrink */ |   /* flags */
