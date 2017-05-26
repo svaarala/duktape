@@ -25,6 +25,8 @@ function test() {
     var i;
     var f = func;  // eliminate slow path lookup from results
 
+    var t1 = Date.now();
+
     for (i = 0; i < 1e7; i++) {
         f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
@@ -37,6 +39,9 @@ function test() {
         f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     }
+
+    var t2 = Date.now();
+    print((1e7 * 10 / (t2 - t1)) + ' calls per millisecond');
 }
 
 try {
