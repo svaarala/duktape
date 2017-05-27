@@ -1,0 +1,13 @@
+define: DUK_USE_VALSTACK_GROW_SHIFT
+introduced: 2.2.0
+default: 2
+tags:
+  - performance
+  - lowmemory
+description: >
+  When growing the value stack, shift minimum size right by this amount to
+  come up with a spare which is allocated on top of the minimum required
+  size.  The spare increases memory usage a bit, but reduces value stack
+  reallocations when the minimum size grows.  A value of 2 means that a
+  25% spare is used.  Undefine to remove any spare, value stack is then
+  always grown by the minimum amount possible.
