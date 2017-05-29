@@ -78,6 +78,9 @@ The potential side effects are very wide:
   Before Duktape 2.2 duk_activations were held in a call stack and duk_catchers
   in a catch stack, and their pointers might be invalidated by side effects.
 
+* Value stack allocated size may grow or shrink.  However, value stack bottom,
+  top, and reserved space won't change.
+
 * An error throw may happen, clobbering heap longjmp state.  This is a
   problem particularly in error handling where we're dealing with a previous
   throw.  A long control transfer may skip intended cleanup code.
