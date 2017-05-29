@@ -2868,6 +2868,11 @@ Planned
   "collapse" bound function chains so that the target of a duk_hboundfunc is
   always a non-bound function (GH-1503)
 
+* Make call stack and value stack limits configurable via config options
+  (DUK_USE_CALLSTACK_LIMIT, DUK_USE_VALSTACK_LIMIT) (GH-1526)
+
+* Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
+
 * Fix Reflect.construct() handling for four or more arguments (GH-1517,
   GH-1518)
 
