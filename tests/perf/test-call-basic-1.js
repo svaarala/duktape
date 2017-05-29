@@ -9,18 +9,23 @@ function test() {
 
     function f() { return; }
 
-    for (i = 0; i < 1e7; i++) {
-        f();
-        f();
-        f();
-        f();
-        f();
-        f();
-        f();
-        f();
-        f();
-        f();
+    var t1 = Date.now();
+
+    for (i = 0; i < 1e6; i++) {
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
+        f(); f(); f(); f(); f(); f(); f(); f(); f(); f();
     }
+
+    var t2 = Date.now();
+    print((1e6 * 100 / (t2 - t1)) + ' calls per millisecond');
 }
 
 try {

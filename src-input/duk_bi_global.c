@@ -567,7 +567,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 		duk_tval *tv;
 		DUK_ASSERT(thr->callstack_top >= 2);
 		DUK_ASSERT(act_caller != NULL);
-		tv = thr->valstack + act_caller->idx_bottom - 1;  /* this is just beneath bottom */
+		tv = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act_caller->bottom_byteoff - sizeof(duk_tval));  /* this is just beneath bottom */
 		DUK_ASSERT(tv >= thr->valstack);
 		duk_push_tval(ctx, tv);
 	}

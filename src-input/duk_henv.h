@@ -28,7 +28,7 @@ struct duk_hdecenv {
 	 */
 	duk_hthread *thread;
 	duk_hobject *varmap;
-	duk_size_t regbase;
+	duk_size_t regbase_byteoff;
 };
 
 struct duk_hobjenv {

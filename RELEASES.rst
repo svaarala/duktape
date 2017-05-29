@@ -2899,6 +2899,10 @@ Planned
 
 * Simplify handling of ENDFIN opcode a bit (GH-1508)
 
+* Rework value stack grow/shrink handling; value stack is now grown when
+  calling a function or reserving value stack space explicitly and only
+  shrunk in mark-and-sweep (GH-1526)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)

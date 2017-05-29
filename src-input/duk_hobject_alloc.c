@@ -181,6 +181,7 @@ DUK_INTERNAL duk_hthread *duk_hthread_alloc_unchecked(duk_heap *heap, duk_uint_t
 	res->heap = NULL;
 	res->valstack = NULL;
 	res->valstack_end = NULL;
+	res->valstack_alloc_end = NULL;
 	res->valstack_bottom = NULL;
 	res->valstack_top = NULL;
 	res->callstack_curr = NULL;
@@ -238,7 +239,7 @@ DUK_INTERNAL duk_hdecenv *duk_hdecenv_alloc(duk_hthread *thr, duk_uint_t hobject
 
 	DUK_ASSERT(res->thread == NULL);
 	DUK_ASSERT(res->varmap == NULL);
-	DUK_ASSERT(res->regbase == 0);
+	DUK_ASSERT(res->regbase_byteoff == 0);
 
 	return res;
 }

@@ -512,7 +512,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		duk_hdecenv *e = (duk_hdecenv *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__thread:"); duk__print_hobject(st, (duk_hobject *) e->thread);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__varmap:"); duk__print_hobject(st, (duk_hobject *) e->varmap);
-		DUK__COMMA(); duk_fb_sprintf(fb, "__regbase:%ld", (long) e->regbase);
+		DUK__COMMA(); duk_fb_sprintf(fb, "__regbase_byteoff:%ld", (long) e->regbase_byteoff);
 	} else if (st->internal && DUK_HOBJECT_IS_OBJENV(h)) {
 		duk_hobjenv *e = (duk_hobjenv *) h;
 		DUK__COMMA(); duk_fb_sprintf(fb, "__target:"); duk__print_hobject(st, (duk_hobject *) e->target);
@@ -545,6 +545,7 @@ DUK_LOCAL void duk__print_hobject(duk__dprint_state *st, duk_hobject *h) {
 		DUK__COMMA(); duk_fb_sprintf(fb, "__unused2:%ld", (long) t->unused2);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack:%p", (void *) t->valstack);
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_end:%p/%ld", (void *) t->valstack_end, (long) (t->valstack_end - t->valstack));
+		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_alloc_end:%p/%ld", (void *) t->valstack_alloc_end, (long) (t->valstack_alloc_end - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_bottom:%p/%ld", (void *) t->valstack_bottom, (long) (t->valstack_bottom - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__valstack_top:%p/%ld", (void *) t->valstack_top, (long) (t->valstack_top - t->valstack));
 		DUK__COMMA(); duk_fb_sprintf(fb, "__callstack_curr:%p", (void *) t->callstack_curr);

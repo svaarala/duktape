@@ -18,21 +18,21 @@ DUK_INTERNAL duk_bool_t duk_hthread_init_stacks(duk_heap *heap, duk_hthread *thr
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->valstack == NULL);
 	DUK_ASSERT(thr->valstack_end == NULL);
+	DUK_ASSERT(thr->valstack_alloc_end == NULL);
 	DUK_ASSERT(thr->valstack_bottom == NULL);
 	DUK_ASSERT(thr->valstack_top == NULL);
 	DUK_ASSERT(thr->callstack_curr == NULL);
 
 	/* valstack */
+	DUK_ASSERT(DUK_VALSTACK_API_ENTRY_MINIMUM <= DUK_VALSTACK_INITIAL_SIZE);
 	alloc_size = sizeof(duk_tval) * DUK_VALSTACK_INITIAL_SIZE;
 	thr->valstack = (duk_tval *) DUK_ALLOC(heap, alloc_size);
 	if (!thr->valstack) {
 		goto fail;
 	}
 	DUK_MEMZERO(thr->valstack, alloc_size);
-	thr->valstack_end = thr->valstack + DUK_VALSTACK_INITIAL_SIZE;
-#if !defined(DUK_USE_PREFER_SIZE)
-	thr->valstack_size = DUK_VALSTACK_INITIAL_SIZE;
-#endif
+	thr->valstack_end = thr->valstack + DUK_VALSTACK_API_ENTRY_MINIMUM;
+	thr->valstack_alloc_end = thr->valstack + DUK_VALSTACK_INITIAL_SIZE;
 	thr->valstack_bottom = thr->valstack;
 	thr->valstack_top = thr->valstack;
 

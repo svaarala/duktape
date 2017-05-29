@@ -85,13 +85,12 @@ DUK_INTERNAL_DECL duk_bool_t duk_js_delvar_activation(duk_hthread *thr, duk_acti
 DUK_INTERNAL_DECL duk_bool_t duk_js_declvar_activation(duk_hthread *thr, duk_activation *act, duk_hstring *name, duk_tval *val, duk_small_int_t prop_flags, duk_bool_t is_func_decl);
 DUK_INTERNAL_DECL void duk_js_init_activation_environment_records_delayed(duk_hthread *thr, duk_activation *act);
 DUK_INTERNAL_DECL void duk_js_close_environment_record(duk_hthread *thr, duk_hobject *env);
-DUK_INTERNAL_DECL duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t idx_bottom);
-DUK_INTERNAL_DECL
-void duk_js_push_closure(duk_hthread *thr,
-                         duk_hcompfunc *fun_temp,
-                         duk_hobject *outer_var_env,
-                         duk_hobject *outer_lex_env,
-                         duk_bool_t add_auto_proto);
+DUK_INTERNAL_DECL duk_hobject *duk_create_activation_environment_record(duk_hthread *thr, duk_hobject *func, duk_size_t bottom_byteoff);
+DUK_INTERNAL_DECL void duk_js_push_closure(duk_hthread *thr,
+                                           duk_hcompfunc *fun_temp,
+                                           duk_hobject *outer_var_env,
+                                           duk_hobject *outer_lex_env,
+                                           duk_bool_t add_auto_proto);
 
 /* call handling */
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_protected(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
