@@ -26,6 +26,8 @@ DUK_INTERNAL_DECL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst,
 
 DUK_INTERNAL_DECL duk_tval *duk_create_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count);
 
+DUK_INTERNAL_DECL void duk_set_top_and_wipe(duk_context *ctx, duk_idx_t top, duk_idx_t idx_wipe_start);
+
 DUK_INTERNAL_DECL void duk_dup_0(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_1(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_2(duk_context *ctx);
