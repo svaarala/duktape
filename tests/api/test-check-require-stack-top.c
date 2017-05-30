@@ -12,6 +12,10 @@ final top: 1000
 rc=0
 final top: 0
 ==> rc=0, result='undefined'
+*** check_4 (duk_safe_call)
+rc=0
+final top: 0
+==> rc=0, result='undefined'
 *** require_1 (duk_safe_call)
 final top: 1000
 ==> rc=0, result='undefined'
@@ -19,6 +23,8 @@ final top: 1000
 final top: 1000
 ==> rc=0, result='undefined'
 *** require_3 (duk_safe_call)
+==> rc=1, result='RangeError: valstack limit'
+*** require_4 (duk_safe_call)
 ==> rc=1, result='RangeError: valstack limit'
 ===*/
 
@@ -102,6 +108,19 @@ static duk_ret_t check_3(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* try to extend value stack too much; value is high enough to wrap */
+static duk_ret_t check_4(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	rc = duk_check_stack_top(ctx, DUK_IDX_MAX);
+	printf("rc=%d\n", (int) rc);  /* should print 0: fail */
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 /* same as check_1 but with duk_require_stack_top() */
 static duk_ret_t require_1_inner(duk_context *ctx) {
 	int i;
@@ -158,12 +177,24 @@ static duk_ret_t require_3(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+/* same as check_4 but with duk_require_stack_top */
+static duk_ret_t require_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	duk_require_stack_top(ctx, DUK_IDX_MAX);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(check_1);
 	TEST_SAFE_CALL(check_2);
 	TEST_SAFE_CALL(check_3);
+	TEST_SAFE_CALL(check_4);
 	TEST_SAFE_CALL(require_1);
 	TEST_SAFE_CALL(require_2);
 	TEST_SAFE_CALL(require_3);
+	TEST_SAFE_CALL(require_4);
 }

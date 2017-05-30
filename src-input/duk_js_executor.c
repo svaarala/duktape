@@ -812,8 +812,7 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_return(duk_hthread *thr) {
 	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->bottom_byteoff);
 	DUK_ASSERT(act->retval_byteoff >= act->bottom_byteoff);
 	clamp_top = (duk_idx_t) ((act->retval_byteoff - act->bottom_byteoff + sizeof(duk_tval)) / sizeof(duk_tval));  /* +1 = one retval */
-	duk_set_top((duk_context *) thr, clamp_top);
-	duk_set_top((duk_context *) thr, h_func->nregs);
+	duk_set_top_and_wipe((duk_context *) thr, h_func->nregs, clamp_top);
 
 	DUK_ASSERT((duk_uint8_t *) thr->valstack_end >= (duk_uint8_t *) thr->valstack + act->reserve_byteoff);
 	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->reserve_byteoff);
@@ -843,8 +842,7 @@ DUK_LOCAL void duk__reconfig_valstack_ecma_catcher(duk_hthread *thr, duk_activat
 	idx_bottom = (duk_size_t) (thr->valstack_bottom - thr->valstack);
 	DUK_ASSERT(cat->idx_base >= idx_bottom);
 	clamp_top = (duk_idx_t) (cat->idx_base - idx_bottom + 2);  /* +2 = catcher value, catcher lj_type */
-	duk_set_top((duk_context *) thr, clamp_top);
-	duk_set_top((duk_context *) thr, h_func->nregs);
+	duk_set_top_and_wipe((duk_context *) thr, h_func->nregs, clamp_top);
 
 	DUK_ASSERT((duk_uint8_t *) thr->valstack_end >= (duk_uint8_t *) thr->valstack + act->reserve_byteoff);
 	thr->valstack_end = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + act->reserve_byteoff);

@@ -492,6 +492,24 @@ DUK_EXTERNAL void duk_set_top(duk_context *ctx, duk_idx_t idx) {
 	}
 }
 
+/* Internal helper: set top to 'top', and set [idx_wipe_start,top[ to
+ * 'undefined' (doing nothing if idx_wipe_start == top).  Indices are
+ * positive and within value stack reserve.  This is used by call handling.
+ */
+DUK_INTERNAL void duk_set_top_and_wipe(duk_context *ctx, duk_idx_t top, duk_idx_t idx_wipe_start) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+
+	DUK_ASSERT(top >= 0);
+	DUK_ASSERT(idx_wipe_start >= 0);
+	DUK_ASSERT(idx_wipe_start <= top);
+	DUK_ASSERT(thr->valstack_bottom + top <= thr->valstack_end);
+	DUK_ASSERT(thr->valstack_bottom + idx_wipe_start <= thr->valstack_end);
+	DUK_UNREF(thr);
+
+	duk_set_top(ctx, idx_wipe_start);
+	duk_set_top(ctx, top);
+}
+
 DUK_EXTERNAL duk_idx_t duk_get_top_index(duk_context *ctx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_idx_t ret;
@@ -707,7 +725,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr
 	return 1;
 }
 
-DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_grow_check_resize(duk_hthread *thr, duk_size_t min_bytes, duk_bool_t throw_on_error) {
+DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_grow(duk_hthread *thr, duk_size_t min_bytes, duk_bool_t throw_on_error) {
 	duk_size_t min_size;
 	duk_size_t new_size;
 
@@ -726,7 +744,7 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_grow_check_resize(duk_h
 	new_size = min_size;
 #endif
 
-	if (DUK_UNLIKELY(new_size > DUK_USE_VALSTACK_LIMIT)) {
+	if (DUK_UNLIKELY(new_size > DUK_USE_VALSTACK_LIMIT || new_size < min_size /*wrap*/)) {
 		/* Note: may be triggered even if minimal new_size would not reach the limit,
 		 * plan limit accordingly.
 		 */
@@ -766,7 +784,7 @@ DUK_INTERNAL DUK_INLINE void duk_valstack_grow_check_throw(duk_hthread *thr, duk
 		thr->valstack_end = tv;
 		return;
 	}
-	(void) duk__valstack_grow_check_resize(thr, min_bytes, 1 /*throw_on_error*/);
+	(void) duk__valstack_grow(thr, min_bytes, 1 /*throw_on_error*/);
 }
 
 /* Hot, inlined value stack grow check which doesn't throw. */
@@ -781,7 +799,7 @@ DUK_INTERNAL DUK_INLINE duk_bool_t duk_valstack_grow_check_nothrow(duk_hthread *
 		thr->valstack_end = tv;
 		return 1;
 	}
-	return duk__valstack_grow_check_resize(thr, min_bytes, 0 /*throw_on_error*/);
+	return duk__valstack_grow(thr, min_bytes, 0 /*throw_on_error*/);
 }
 
 /* Value stack shrink check, called from mark-and-sweep. */
@@ -859,11 +877,16 @@ DUK_EXTERNAL duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
-	if (DUK_UNLIKELY(extra < 0)) {
-		/* Clamping to zero makes the API more robust to calling code
-		 * calculation errors.
-		 */
-		extra = 0;
+	if (DUK_UNLIKELY(extra < 0 || extra > DUK_USE_VALSTACK_LIMIT)) {
+		if (extra < 0) {
+			/* Clamping to zero makes the API more robust to calling code
+			 * calculation errors.
+			 */
+			extra = 0;
+		} else {
+			/* Cause grow check to fail without wrapping arithmetic. */
+			extra = DUK_USE_VALSTACK_LIMIT;
+		}
 	}
 
 	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack) +
@@ -878,11 +901,16 @@ DUK_EXTERNAL void duk_require_stack(duk_context *ctx, duk_idx_t extra) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
-	if (DUK_UNLIKELY(extra < 0)) {
-		/* Clamping to zero makes the API more robust to calling code
-		 * calculation errors.
-		 */
-		extra = 0;
+	if (DUK_UNLIKELY(extra < 0 || extra > DUK_USE_VALSTACK_LIMIT)) {
+		if (extra < 0) {
+			/* Clamping to zero makes the API more robust to calling code
+			 * calculation errors.
+			 */
+			extra = 0;
+		} else {
+			/* Cause grow check to fail without wrapping arithmetic. */
+			extra = DUK_USE_VALSTACK_LIMIT;
+		}
 	}
 
 	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) thr->valstack) +
@@ -897,11 +925,16 @@ DUK_EXTERNAL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 
-	if (DUK_UNLIKELY(top < 0)) {
-		/* Clamping to zero makes the API more robust to calling code
-		 * calculation errors.
-		 */
-		top = 0;
+	if (DUK_UNLIKELY(top < 0 || top > DUK_USE_VALSTACK_LIMIT)) {
+		if (top < 0) {
+			/* Clamping to zero makes the API more robust to calling code
+			 * calculation errors.
+			 */
+			top = 0;
+		} else {
+			/* Cause grow check to fail without wrapping arithmetic. */
+			top = DUK_USE_VALSTACK_LIMIT;
+		}
 	}
 
 	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack) +
@@ -916,11 +949,16 @@ DUK_EXTERNAL void duk_require_stack_top(duk_context *ctx, duk_idx_t top) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	thr = (duk_hthread *) ctx;
 
-	if (DUK_UNLIKELY(top < 0)) {
-		/* Clamping to zero makes the API more robust to calling code
-		 * calculation errors.
-		 */
-		top = 0;
+	if (DUK_UNLIKELY(top < 0 || top > DUK_USE_VALSTACK_LIMIT)) {
+		if (top < 0) {
+			/* Clamping to zero makes the API more robust to calling code
+			 * calculation errors.
+			 */
+			top = 0;
+		} else {
+			/* Cause grow check to fail without wrapping arithmetic. */
+			top = DUK_USE_VALSTACK_LIMIT;
+		}
 	}
 
 	min_new_bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_bottom - (duk_uint8_t *) thr->valstack) +

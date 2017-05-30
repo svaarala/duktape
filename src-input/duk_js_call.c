@@ -1696,10 +1696,8 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	duk_valstack_grow_check_throw(ctx, vs_min_bytes);
 	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 	if (nregs >= 0) {
-		/* XXX: optimized operation for setting top and wiping */
 		DUK_ASSERT(nregs >= nargs);
-		duk_set_top(ctx, idx_func + 2 + nargs);  /* clamp anything above nargs */
-		duk_set_top(ctx, idx_func + 2 + nregs);  /* extend with undefined */
+		duk_set_top_and_wipe(ctx, idx_func + 2 + nregs, idx_func + 2 + nargs);
 	}
 
 	/*
@@ -2490,9 +2488,9 @@ DUK_LOCAL void duk__handle_safe_call_shared(duk_hthread *thr,
  *  is empty in case of an initial Duktape.Thread.resume().
  *
  *  The first thing to do here is to figure out whether an ecma-to-ecma
- *  call is actually possible.  It's not always the case if the target is
- *  a bound function; the final function may be native.  In that case,
- *  return an error so caller can fall back to a normal call path.
+ *  call is actually possible.  It's not always the case, e.g. if the final
+ *  target function is native.  In that case, return an error so caller can
+ *  fall back to a normal call path.
  */
 
 DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
@@ -2702,9 +2700,15 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		duk_hthread_activation_unwind_reuse_norz(thr);
 		DUK_ASSERT(act == thr->callstack_curr);
 
-		/* Then reuse the unwound activation. */
+		/* XXX: We could restore the caller's value stack reserve
+		 * here, as if we did an actual unwind-and-call.  Without
+		 * the restoration, value stack reserve may remain higher
+		 * than would otherwise be possible until we return to a
+		 * non-tailcall.
+		 */
 
-		/* Start filling in the activation */
+		/* Then reuse the unwound activation. */
+		DUK_ASSERT(act->parent == thr->callstack_curr);
 		act->cat = NULL;
 		act->var_env = NULL;
 		act->lex_env = NULL;
@@ -2911,9 +2915,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_ASSERT(nregs >= 0);
 	DUK_ASSERT(nregs >= nargs);
 
-	/* XXX: optimized operation for setting top and wiping */
-	duk_set_top(ctx, idx_args + nargs);  /* clamp anything above nargs */
-	duk_set_top(ctx, idx_args + nregs);  /* extend with undefined */
+	duk_set_top_and_wipe(ctx, idx_args + nregs, idx_args + nargs);
 
 	/*
 	 *  Shift to new valstack_bottom.
