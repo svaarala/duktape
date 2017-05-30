@@ -2708,7 +2708,6 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		 */
 
 		/* Then reuse the unwound activation. */
-		DUK_ASSERT(act->parent == thr->callstack_curr);
 		act->cat = NULL;
 		act->var_env = NULL;
 		act->lex_env = NULL;
