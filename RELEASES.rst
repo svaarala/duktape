@@ -2873,6 +2873,9 @@ Planned
 
 * Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
 
+* Fix potential segfault in debugger GetHeapObjInfo command, caused by
+  key/mask list being out of sync (GH-1540)
+
 * Fix Reflect.construct() handling for four or more arguments (GH-1517,
   GH-1518)
 
