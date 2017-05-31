@@ -1927,7 +1927,7 @@ DUK_LOCAL const char * const duk__debug_getinfo_hobject_keys[] = {
 	"newenv",
 	"namebinding",
 	"createargs",
-	"have_finalizer"
+	"have_finalizer",
 	"exotic_array",
 	"exotic_stringobj",
 	"exotic_arguments",
@@ -1997,7 +1997,7 @@ DUK_LOCAL void duk__debug_getinfo_bitmask(duk_hthread *thr, const char * const *
 
 	for (;;) {
 		mask = *masks++;
-		if (!mask) {
+		if (mask == 0) {
 			break;
 		}
 		key = *keys++;
@@ -2078,6 +2078,10 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 
 	DUK_D(DUK_DPRINT("debug command GetHeapObjInfo"));
 	DUK_UNREF(heap);
+
+	DUK_ASSERT(sizeof(duk__debug_getinfo_hstring_keys) / sizeof(const char *) == sizeof(duk__debug_getinfo_hstring_masks) / sizeof(duk_uint_t) - 1);
+	DUK_ASSERT(sizeof(duk__debug_getinfo_hobject_keys) / sizeof(const char *) == sizeof(duk__debug_getinfo_hobject_masks) / sizeof(duk_uint_t) - 1);
+	DUK_ASSERT(sizeof(duk__debug_getinfo_hbuffer_keys) / sizeof(const char *) == sizeof(duk__debug_getinfo_hbuffer_masks) / sizeof(duk_uint_t) - 1);
 
 	h = duk_debug_read_any_ptr(thr);
 	if (!h) {
