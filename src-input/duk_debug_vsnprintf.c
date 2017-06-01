@@ -764,7 +764,7 @@ DUK_LOCAL void duk__print_tval(duk__dprint_state *st, duk_tval *tv) {
 	case DUK_TAG_FASTINT:
 		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv));
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
-		duk_fb_sprintf(fb, "%.18gF", (double) DUK_TVAL_GET_NUMBER(tv));
+		duk_fb_sprintf(fb, "%.18g_F", (double) DUK_TVAL_GET_NUMBER(tv));
 		break;
 #endif
 	default: {
