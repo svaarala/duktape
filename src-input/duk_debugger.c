@@ -2199,6 +2199,19 @@ DUK_LOCAL void duk__debug_handle_get_heap_obj_info(duk_hthread *thr, duk_heap *h
 			}
 		}
 
+		if (DUK_HOBJECT_IS_BOUNDFUNC(h_obj)) {
+			duk_hboundfunc *h_bfun;
+			h_bfun = (duk_hboundfunc *) h_obj;
+
+			duk__debug_getinfo_flags_key(thr, "target");
+			duk_debug_write_tval(thr, &h_bfun->target);
+			duk__debug_getinfo_flags_key(thr, "this_binding");
+			duk_debug_write_tval(thr, &h_bfun->this_binding);
+			duk__debug_getinfo_flags_key(thr, "nargs");
+			duk_debug_write_int(thr, h_bfun->nargs);
+			/* h_bfun->args not exposed now */
+		}
+
 		if (DUK_HOBJECT_IS_THREAD(h_obj)) {
 			/* XXX: Currently no inspection of threads, e.g. value stack, call
 			 * stack, catch stack, etc.

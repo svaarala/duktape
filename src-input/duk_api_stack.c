@@ -1252,12 +1252,12 @@ DUK_EXTERNAL void duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, 
 	}
 }
 
-/* Internal helper: create a gap of 'count' elements at 'idx_base' and return a
+/* Internal helper: reserve a gap of 'count' elements at 'idx_base' and return a
  * pointer to the gap.  Values in the gap are garbage and MUST be initialized by
  * the caller before any side effects may occur.  The caller must ensure there's
  * enough stack reserve for 'count' values.
  */
-DUK_INTERNAL duk_tval *duk_create_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count) {
+DUK_INTERNAL duk_tval *duk_reserve_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_src;
 	duk_tval *tv_dst;
