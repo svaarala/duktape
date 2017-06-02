@@ -123,6 +123,9 @@
 -
   test: "test-expr-newtarget-eval-code.js"
   knownissue: "new.target eval handling limitations"
+-
+  test: "test-bi-proxy-construct-newtarget.js"
+  knownissue: "for Proxy without 'construct' trap, new.target evaluates to Proxy target rather than Proxy in target constructor"
 
 # Ecmascript testcases that need special options or environment to work
 

@@ -22,7 +22,10 @@
 19: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=1 dyn=1 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
 20: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=1 dyn=0 fix=0 ext=1 ptr=0 prim=0 objcoerc=1
 21: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=1 prim=1 objcoerc=1
-22: valididx=0 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=0
+22: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+23: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=0 call=1 construct=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+24: valididx=1 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=1 arr=0 fun=1 cfun=0 efun=0 bfun=0 call=1 construct=1 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=1
+25: valididx=0 und=0 null=0 noru=0 bool=0 num=0 nan=0 str=0 obj=0 arr=0 fun=0 cfun=0 efun=0 bfun=0 call=0 construct=0 thr=0 buf=0 dyn=0 fix=0 ext=0 ptr=0 prim=0 objcoerc=0
 ==> rc=0, result='undefined'
 ===*/
 
@@ -106,6 +109,15 @@ static duk_ret_t test_1(duk_context *ctx, void *udata) {
 
 	/* 21 */
 	duk_push_pointer(ctx, (void *) 0xf00);
+
+	/* 22 */
+	duk_eval_string(ctx, "new Proxy({}, {})");  /* non-callable proxy */
+
+	/* 23 */
+	duk_eval_string(ctx, "new Proxy(Math.sin, {})");  /* callable but not constructable proxy */
+
+	/* 24 */
+	duk_eval_string(ctx, "new Proxy(function dummy() {}, {})");  /* callable and constructable proxy */
 
 	/*
 	 *  call checkers for each
