@@ -86,10 +86,15 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t 
 	ft1.dwLowDateTime = tmp2.LowPart;
 	ft1.dwHighDateTime = tmp2.HighPart;
 	FileTimeToSystemTime((const FILETIME *) &ft1, &st2);
+#if defined(_DURANGO) || defined(_XBOX_ONE)
+	// XboxOne doesn't have 'SystemTimeToTzSpecificLocalTime' API
+	st3 = st2;
+#else
 	if (SystemTimeToTzSpecificLocalTime((LPTIME_ZONE_INFORMATION) NULL, &st2, &st3) == 0) {
 		DUK_D(DUK_DPRINT("SystemTimeToTzSpecificLocalTime() failed, return tzoffset 0"));
 		return 0;
 	}
+#endif
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
 
 	/* Positive if local time ahead of UTC. */

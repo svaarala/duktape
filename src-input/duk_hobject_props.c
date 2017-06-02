@@ -5618,7 +5618,7 @@ duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
 			a = (duk_harray *) obj;
 			DUK_DD(DUK_DDPRINT("Object.defineProperty() attribute update for duk_harray .length -> %02lx", (unsigned long) new_flags));
 			DUK_ASSERT_HARRAY_VALID(a);
-			if ((new_flags & DUK_PROPDESC_FLAGS_EC) != (curr.flags & DUK_PROPDESC_FLAGS_EC)) {
+			if ((new_flags & DUK_PROPDESC_FLAGS_EC) != ((duk_small_uint_t)curr.flags & DUK_PROPDESC_FLAGS_EC)) {
 				DUK_D(DUK_DPRINT("Object.defineProperty() attempt to change virtual array .length enumerable or configurable attribute, fail"));
 				goto fail_virtual;
 			}
