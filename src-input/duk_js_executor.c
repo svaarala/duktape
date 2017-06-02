@@ -1620,9 +1620,15 @@ DUK_LOCAL duk_small_uint_t duk__handle_return(duk_hthread *thr, duk_activation *
 		DUK_ASSERT(thr->callstack_curr->parent != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(DUK_ACT_GET_FUNC(thr->callstack_curr->parent)));   /* must be ecmascript */
 
-		if (thr->callstack_curr->flags & DUK_ACT_FLAG_CONSTRUCT) {
-			duk_call_construct_postprocess((duk_context *) thr);  /* side effects */
+#if defined(DUK_USE_ES6_PROXY)
+		if (thr->callstack_curr->flags & (DUK_ACT_FLAG_CONSTRUCT | DUK_ACT_FLAG_CONSTRUCT_PROXY)) {
+			duk_call_construct_postprocess((duk_context *) thr, thr->callstack_curr->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY);  /* side effects */
 		}
+#else
+		if (thr->callstack_curr->flags & DUK_ACT_FLAG_CONSTRUCT) {
+			duk_call_construct_postprocess((duk_context *) thr, 0);  /* side effects */
+		}
+#endif
 
 		tv1 = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + thr->callstack_curr->parent->retval_byteoff);
 		DUK_ASSERT(thr->valstack_top - 1 >= thr->valstack_bottom);

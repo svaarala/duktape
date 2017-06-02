@@ -3376,6 +3376,7 @@ DUK_LOCAL void duk__push_func_from_lightfunc(duk_context *ctx, duk_c_function fu
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_CALLABLE |
 	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
@@ -3875,9 +3876,7 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t idx) {
 	}
 	return duk__obj_flag_any_default_false(ctx,
 	                                       idx,
-	                                       DUK_HOBJECT_FLAG_COMPFUNC |
-	                                       DUK_HOBJECT_FLAG_NATFUNC |
-	                                       DUK_HOBJECT_FLAG_BOUNDFUNC);
+	                                       DUK_HOBJECT_FLAG_CALLABLE);
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_constructable(duk_context *ctx, duk_idx_t idx) {
@@ -4704,6 +4703,7 @@ DUK_INTERNAL duk_hcompfunc *duk_push_hcompfunc(duk_context *ctx) {
 
 	obj = duk_hcompfunc_alloc(thr,
 	                          DUK_HOBJECT_FLAG_EXTENSIBLE |
+	                          DUK_HOBJECT_FLAG_CALLABLE |
 	                          DUK_HOBJECT_FLAG_COMPFUNC |
 	                          DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (DUK_UNLIKELY(obj == NULL)) {
@@ -4734,6 +4734,7 @@ DUK_INTERNAL duk_hboundfunc *duk_push_hboundfunc(duk_context *ctx) {
 	                           DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                           DUK_HOBJECT_FLAG_BOUNDFUNC |
 	                           DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	                           DUK_HOBJECT_FLAG_CALLABLE |
 	                           DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION));
 	if (!obj) {
 		DUK_ERROR_ALLOC_FAILED(thr);
@@ -4804,6 +4805,7 @@ DUK_EXTERNAL duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_CALLABLE |
 	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
@@ -4824,6 +4826,7 @@ DUK_INTERNAL void duk_push_c_function_builtin(duk_context *ctx, duk_c_function f
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
 	        DUK_HOBJECT_FLAG_CONSTRUCTABLE |
+	        DUK_HOBJECT_FLAG_CALLABLE |
 	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
@@ -4841,6 +4844,7 @@ DUK_INTERNAL void duk_push_c_function_builtin_noconstruct(duk_context *ctx, duk_
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
+	        DUK_HOBJECT_FLAG_CALLABLE |
 	        DUK_HOBJECT_FLAG_FASTREFS |
 	        DUK_HOBJECT_FLAG_NATFUNC |
 	        DUK_HOBJECT_FLAG_NEWENV |
@@ -5197,13 +5201,22 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_context *ctx) {
 	}
 
 	/* XXX: Proxy object currently has no prototype, so ToPrimitive()
-	 * coercion fails which is a bit confusing.  No callable check/handling
-	 * in the current Proxy subset.
+	 * coercion fails which is a bit confusing.
 	 */
 
-	flags = DUK_HOBJECT_FLAG_EXTENSIBLE |
-	        DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ |
-	        DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT);
+	/* CALLABLE and CONSTRUCTABLE flags are copied from the (initial)
+	 * target, see ES2015 Sections 9.5.15 and 9.5.13.
+	 */
+	flags = DUK_HEAPHDR_GET_FLAGS((duk_heaphdr *) h_target) &
+	        (DUK_HOBJECT_FLAG_CALLABLE | DUK_HOBJECT_FLAG_CONSTRUCTABLE);
+	flags |= DUK_HOBJECT_FLAG_EXTENSIBLE |
+	         DUK_HOBJECT_FLAG_EXOTIC_PROXYOBJ;
+	if (flags & DUK_HOBJECT_FLAG_CALLABLE) {
+		flags |= DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_FUNCTION) |
+		         DUK_HOBJECT_FLAG_SPECIAL_CALL;
+	} else {
+		flags |= DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT);
+	}
 
 	h_proxy = duk_hproxy_alloc(thr, flags);
 	DUK_ASSERT(h_proxy != NULL);
@@ -5827,6 +5840,7 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
 	duk_tval *tv;
 
 	thr = (duk_hthread *) ctx;
+	DUK_UNREF(thr);
 
 	tv = duk_require_tval(ctx, idx);
 	if (DUK_LIKELY(DUK_TVAL_IS_OBJECT(tv))) {
@@ -5836,6 +5850,7 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
 
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
+		DUK_UNREF(h);
 
 #if defined(DUK_USE_ARRAY_FASTPATH)  /* close enough */
 		if (DUK_LIKELY(DUK_HOBJECT_IS_ARRAY(h) &&

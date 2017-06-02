@@ -76,7 +76,6 @@
 #define DUK_STR_CYCLIC_INPUT                     "cyclic input"
 
 /* Object property access */
-#define DUK_STR_PROXY_REVOKED                    "proxy revoked"
 #define DUK_STR_INVALID_BASE                     "invalid base value"
 #define DUK_STR_STRICT_CALLER_READ               "cannot read strict 'caller'"
 #define DUK_STR_PROXY_REJECTED                   "proxy rejected"
@@ -85,6 +84,7 @@
 #define DUK_STR_INVALID_DESCRIPTOR               "invalid descriptor"
 
 /* Proxy */
+#define DUK_STR_PROXY_REVOKED                    "proxy revoked"
 #define DUK_STR_INVALID_TRAP_RESULT              "invalid trap result"
 
 /* Variables */

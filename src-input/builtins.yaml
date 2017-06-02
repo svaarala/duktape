@@ -18,7 +18,7 @@
 #      - nargs: nargs (ignored if varargs true); if missing, default from 'length' property
 #      - magic: see below
 #      - native: native function name
-#      - callable: true
+#      - callable: true/false, depending on function
 #      - constructable: true/false, depending on function
 #      - special_call: true/false, used for .call(), .apply(), etc which
 #        need special casing in runtime call handling
@@ -103,6 +103,7 @@
 #    - Native function shorthand; alternative to defining a function as a
 #      native object and referencing it using an ID:
 #      - type: function (implicitly callable)
+#      - callable: default is true
 #      - constructable: default is false
 #      - native: native function name
 #      - length: function .length (optional, defaults to 0)
@@ -113,6 +114,8 @@
 #      - special_call: recognized in shorthand
 #    - Accessor (setter/getter) shorthand:
 #      - type: accessor
+#      - callable: default is true
+#      - constructable: default is false
 #      - getter: native function name
 #      - setter: native function name
 #      - getter_magic: magic value for getter

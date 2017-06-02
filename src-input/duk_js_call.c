@@ -491,17 +491,27 @@ DUK_LOCAL void duk__update_default_instance_proto(duk_context *ctx, duk_idx_t id
 }
 
 /* Postprocess: return value special handling, error augmentation. */
-DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx) {
+DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uint_t proxy_invariant) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 
 	/* Use either fallback (default instance) or retval depending
 	 * on retval type.  Needs to be called before unwind because
 	 * the default instance is read from the current (immutable)
 	 * 'this' binding.
+	 *
+	 * For Proxy 'construct' calls the return value must be an
+	 * Object (we accept object-like values like buffers and
+	 * lightfuncs too).  If not, TypeError.
 	 */
-	if (!duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
-	                                  DUK_TYPE_MASK_BUFFER |
-	                                  DUK_TYPE_MASK_LIGHTFUNC)) {
+	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	                                 DUK_TYPE_MASK_BUFFER |
+	                                 DUK_TYPE_MASK_LIGHTFUNC)) {
+		DUK_DDD(DUK_DDDPRINT("replacement value"));
+	} else {
+		if (DUK_UNLIKELY(proxy_invariant)) {
+			/* Proxy 'construct' return value invariant violated. */
+			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
+		}
 		/* XXX: direct value stack access */
 		duk_pop(ctx);
 		duk_push_this(ctx);
@@ -830,6 +840,118 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 }
 
 /*
+ *  Helper for Proxy handling.
+ */
+
+#if defined(DUK_USE_ES6_PROXY)
+DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hproxy *h_proxy, duk_small_uint_t *call_flags) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_bool_t rc;
+
+	/* Value stack:
+	 * idx_func + 0: Proxy object
+	 * idx_func + 1: this binding for call
+	 * idx_func + 2: 1st argument for call
+	 * idx_func + 3: 2nd argument for call
+	 * ...
+	 *
+	 * If Proxy doesn't have a trap for the call ('apply' or 'construct'),
+	 * replace Proxy object with target object.
+	 *
+	 * If we're dealing with a normal call and the Proxy has an 'apply'
+	 * trap, manipulate value stack to:
+	 *
+	 * idx_func + 0: trap
+	 * idx_func + 1: Proxy's handler
+	 * idx_func + 2: Proxy's target
+	 * idx_func + 3: this binding for call (from idx_func + 1)
+	 * idx_func + 4: call arguments packed to an array
+	 *
+	 * If we're dealing with a constructor call and the Proxy has a
+	 * 'construct' trap, manipulate value stack to:
+	 *
+	 * idx_func + 0: trap
+	 * idx_func + 1: Proxy's handler
+	 * idx_func + 2: Proxy's target
+	 * idx_func + 3: call arguments packed to an array
+	 * idx_func + 4: newTarget == Proxy object here
+	 *
+	 * As we don't yet have proper newTarget support, the newTarget at
+	 * idx_func + 3 is just the original constructor being called, i.e.
+	 * the Proxy object (not the target).  Note that the default instance
+	 * (original 'this' binding) is dropped and ignored.
+	 */
+
+	duk_push_hobject(ctx, h_proxy->handler);
+	rc = duk_get_prop_stridx_short(ctx, -1, (*call_flags & DUK_CALL_FLAG_CONSTRUCT) ? DUK_STRIDX_CONSTRUCT : DUK_STRIDX_APPLY);
+	if (rc == 0) {
+		/* Not found, continue to target.  If this is a construct
+		 * call, update default instance prototype using the Proxy,
+		 * not the target.
+		 */
+		if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
+			if (!(*call_flags & DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED)) {
+				*call_flags |= DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED;
+				duk__update_default_instance_proto(ctx, idx_func);
+			}
+		}
+		duk_pop_2(ctx);
+		duk_push_hobject(ctx, h_proxy->target);
+		duk_replace(ctx, idx_func);
+		return;
+	}
+
+	/* Here we must be careful not to replace idx_func while
+	 * h_proxy is still needed, otherwise h_proxy may become
+	 * dangling.  This could be improved e.g. using a
+	 * duk_pack_slice() with a freeform slice.
+	 */
+
+	/* Here:
+	 * idx_func + 0: Proxy object
+	 * idx_func + 1: this binding for call
+	 * idx_func + 2: 1st argument for call
+	 * idx_func + 3: 2nd argument for call
+	 * ...
+	 * idx_func + N: handler
+	 * idx_func + N + 1: trap
+	 */
+
+	duk_insert(ctx, idx_func + 1);
+	duk_insert(ctx, idx_func + 2);
+	duk_push_hobject(ctx, h_proxy->target);
+	duk_insert(ctx, idx_func + 3);
+	duk_pack(ctx, duk_get_top(ctx) - (idx_func + 5));
+
+	/* Here:
+	 * idx_func + 0: Proxy object
+	 * idx_func + 1: trap
+	 * idx_func + 2: Proxy's handler
+	 * idx_func + 3: Proxy's target
+	 * idx_func + 4: this binding for call
+	 * idx_func + 5: arguments array
+	 */
+	DUK_ASSERT(duk_get_top(ctx) == idx_func + 6);
+
+	if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
+		*call_flags |= DUK_CALL_FLAG_CONSTRUCT_PROXY;  /* Enable 'construct' trap return invariant check. */
+		*call_flags &= ~(DUK_CALL_FLAG_CONSTRUCT);     /* Resume as non-constructor call to the trap. */
+
+		/* 'apply' args: target, thisArg, argArray
+		 * 'construct' args: target, argArray, newTarget
+		 */
+		duk_remove(ctx, idx_func + 4);
+		duk_push_hobject(ctx, (duk_hobject *) h_proxy);
+	}
+
+	/* Finalize value stack layout by removing Proxy reference. */
+	duk_remove(ctx, idx_func);
+	h_proxy = NULL;  /* invalidated */
+	DUK_ASSERT(duk_get_top(ctx) == idx_func + 5);
+}
+#endif  /* DUK_USE_ES6_PROXY */
+
+/*
  *  Helper for setting up var_env and lex_env of an activation,
  *  assuming it does NOT have the DUK_HOBJECT_FLAG_NEWENV flag.
  */
@@ -952,6 +1074,10 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
  *  call and the effective 'this' binding.  Resolves bound functions and
  *  applies .call(), .apply(), and .construct() inline.
  *
+ *  Proxy traps are also handled inline so that if the target is a Proxy with
+ *  a 'call' or 'construct' trap, the trap handler is called with a modified
+ *  argument list.
+ *
  *  Once the bound function / .call() / .apply() / .construct() sequence has
  *  been resolved, the value at idx_func + 1 may need coercion described in
  *  E5 Section 10.4.3.
@@ -1018,18 +1144,19 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_co
 	DUK_UNREF(ctx);
 	DUK_UNREF(idx_func);
 	DUK_UNREF(out_func);
+	DUK_UNREF(call_flags);
 #else  /* DUK_USE_PREFER_SIZE */
 	duk_tval *tv_func;
 	duk_hobject *func;
 
-	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
+	if (DUK_UNLIKELY(call_flags & DUK_CALL_FLAG_CONSTRUCT)) {
 		return 0;
 	}
 
 	tv_func = DUK_GET_TVAL_POSIDX(ctx, idx_func);
 	DUK_ASSERT(tv_func != NULL);
 
-	if (DUK_TVAL_IS_OBJECT(tv_func)) {
+	if (DUK_LIKELY(DUK_TVAL_IS_OBJECT(tv_func))) {
 		func = DUK_TVAL_GET_OBJECT(tv_func);
 		if (DUK_HOBJECT_IS_CALLABLE(func) &&
 		    !DUK_HOBJECT_HAS_BOUNDFUNC(func) &&
@@ -1075,10 +1202,20 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 
 		if (DUK_TVAL_IS_OBJECT(tv_func)) {
 			func = DUK_TVAL_GET_OBJECT(tv_func);
-			if (DUK_UNLIKELY(!DUK_HOBJECT_IS_CALLABLE(func))) {
-				goto not_callable;
+
+			if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
+				if (DUK_UNLIKELY(!DUK_HOBJECT_HAS_CONSTRUCTABLE(func))) {
+					goto not_constructable;
+				}
+			} else {
+				if (DUK_UNLIKELY(!DUK_HOBJECT_IS_CALLABLE(func))) {
+					goto not_callable;
+				}
 			}
-			if (DUK_LIKELY(!DUK_HOBJECT_HAS_BOUNDFUNC(func) && !DUK_HOBJECT_HAS_SPECIAL_CALL(func))) {
+
+			if (DUK_LIKELY(!DUK_HOBJECT_HAS_BOUNDFUNC(func) &&
+			               !DUK_HOBJECT_HAS_SPECIAL_CALL(func) &&
+			               !DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(func))) {
 				/* Common case, so test for using a single bitfield test.
 				 * Break out to handle this coercion etc.
 				 */
@@ -1091,34 +1228,52 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_CALL(func));
 				DUK_ASSERT(!DUK_HOBJECT_IS_NATFUNC(func));
 
+				/* Callable/constructable flags are the same
+				 * for the bound function and its target, so
+				 * we don't need to check them here, we can
+				 * check them from the target only.
+				 */
 				duk__handle_bound_chain_for_call(thr, idx_func, *call_flags & DUK_CALL_FLAG_CONSTRUCT);
 
 				DUK_ASSERT(DUK_TVAL_IS_OBJECT(duk_require_tval(ctx, idx_func)) ||
 				           DUK_TVAL_IS_LIGHTFUNC(duk_require_tval(ctx, idx_func)));
 			} else {
 				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_CALL(func));
-				DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
-				DUK_ASSERT(!DUK_HOBJECT_HAS_CONSTRUCTABLE(func));
 
-				if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
-					/* None of the special calls (Function.prototype.apply(), eval,
-					 * etc) can be called as a constructor.
+#if defined(DUK_USE_ES6_PROXY)
+				if (DUK_HOBJECT_HAS_EXOTIC_PROXYOBJ(func)) {
+					/* If no trap, resume processing from Proxy trap.
+					 * If trap exists, helper converts call into a trap
+					 * call; this may change a constructor call into a
+					 * normal (non-constructor) trap call.  We must
+					 * continue processing even when a trap is found as
+					 * the trap may be bound.
 					 */
-					goto not_constructable;
+					duk__handle_proxy_for_call(thr, idx_func, (duk_hproxy *) func, call_flags);
 				}
-				if (duk__handle_specialfuncs_for_call(thr, idx_func, func, call_flags, first) != 0) {
-					/* Encountered native eval call, break out to handle
-					 * this coercion etc.
-					 */
-					break;
+				else
+#endif
+				{
+					DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
+					DUK_ASSERT(DUK_HOBJECT_HAS_CALLABLE(func));
+					DUK_ASSERT(!DUK_HOBJECT_HAS_CONSTRUCTABLE(func));
+					/* Constructable check already done above. */
+
+					if (duk__handle_specialfuncs_for_call(thr, idx_func, func, call_flags, first) != 0) {
+						/* Encountered native eval call, normal call
+						 * context.  Break out, handle this coercion etc.
+						 */
+						break;
+					}
 				}
 			}
 			/* Retry loop. */
 		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
-			/* Lightfuncs are strict, so no 'this' coercion.
-			 * Lightfuncs are also always constructable, so no
-			 * constructability check.  Finally, specialfuncs
-			 * cannot currently be lightfuncs.
+			/* Lightfuncs are:
+			 *   - Always strict, so no 'this' coercion.
+			 *   - Always callable.
+			 *   - Always constructable.
+			 *   - Never specialfuncs.
 			 */
 			func = NULL;
 			goto finished;
@@ -1136,15 +1291,11 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 		 */
 		duk__coerce_nonstrict_this_binding(ctx, idx_func + 1);
 	}
-
 	if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
-		/* Check for constructability and update
-		 * default instance prototype.
-		 */
-		if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(func)) {
-			goto not_constructable;
+		if (!(*call_flags & DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED)) {
+			*call_flags |= DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED;
+			duk__update_default_instance_proto(ctx, idx_func);
 		}
-		duk__update_default_instance_proto(ctx, idx_func);
 	}
 
  finished:
@@ -1283,6 +1434,7 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	duk_activation *act;
 	duk_tval *tv1, *tv2;
 	duk_idx_t idx_args;
+	duk_small_uint_t flags1, flags2;
 
 	DUK_UNREF(entry_valstack_end_byteoff);
 
@@ -1298,19 +1450,37 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	if (func == NULL || !DUK_HOBJECT_IS_COMPFUNC(func)) {
 		DUK_DDD(DUK_DDDPRINT("tail call prevented by target not being ecma function"));
 		return 0;
-	} else if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
+	}
+	if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 		DUK_DDD(DUK_DDDPRINT("tail call prevented by current activation having DUK_ACT_FLAG_PREVENT_YIELD"));
 		return 0;
-	} else if (((act->flags & DUK_ACT_FLAG_CONSTRUCT) && !(call_flags & DUK_CALL_FLAG_CONSTRUCT)) ||
-	           (!(act->flags & DUK_ACT_FLAG_CONSTRUCT) && (call_flags & DUK_CALL_FLAG_CONSTRUCT))) {
-		/* Cannot tailcall if mixing normal and constructor
-		 * calls.  Current function and potential tailcall
-		 * must have same return value handling (normal or
-		 * constructor special handling).
-		 */
+	}
+	/* Tailcall is only allowed if current and candidate
+	 * function have identical return value handling.  There
+	 * are three possible return value handling cases:
+	 *   1. Normal function call, no special return value handling.
+	 *   2. Constructor call, return value replacement object check.
+	 *   3. Proxy 'construct' trap call, return value invariant check.
+	 */
+	flags1 = ((act->flags & DUK_ACT_FLAG_CONSTRUCT) ? 1 : 0)
+#if defined(DUK_USE_ES6_PROXY)
+	         | ((act->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY) ? 2 : 0)
+#endif
+	         ;
+	flags2 = ((call_flags & DUK_CALL_FLAG_CONSTRUCT) ? 1 : 0)
+#if defined(DUK_USE_ES6_PROXY)
+	         | ((call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY) ? 2 : 0);
+#endif
+	         ;
+	if (flags1 != flags2) {
 		DUK_DDD(DUK_DDDPRINT("tail call prevented by incompatible return value handling"));
 		return 0;
-	} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
+	}
+	DUK_ASSERT(((act->flags & DUK_ACT_FLAG_CONSTRUCT) && (call_flags & DUK_CALL_FLAG_CONSTRUCT)) ||
+	           (!(act->flags & DUK_ACT_FLAG_CONSTRUCT) && !(call_flags & DUK_CALL_FLAG_CONSTRUCT)));
+	DUK_ASSERT(((act->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY) && (call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY)) ||
+	           (!(act->flags & DUK_ACT_FLAG_CONSTRUCT_PROXY) && !(call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY)));
+	if (DUK_HOBJECT_HAS_NOTAIL(func)) {
 		/* See: test-bug-tailcall-preventyield-assert.c. */
 		DUK_DDD(DUK_DDDPRINT("tail call prevented by function having a notail flag"));
 		return 0;
@@ -1375,6 +1545,11 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 		act->flags |= DUK_ACT_FLAG_CONSTRUCT;
 	}
+#if defined(DUK_USE_ES6_PROXY)
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY) {
+		act->flags |= DUK_ACT_FLAG_CONSTRUCT_PROXY;
+	}
+#endif
 
 	DUK_ASSERT(DUK_ACT_GET_FUNC(act) == func);      /* already updated */
 	DUK_ASSERT(act->var_env == NULL);
@@ -1490,6 +1665,11 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 		act->flags |= DUK_ACT_FLAG_CONSTRUCT;
 	}
+#if defined(DUK_USE_ES6_PROXY)
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY) {
+		act->flags |= DUK_ACT_FLAG_CONSTRUCT_PROXY;
+	}
+#endif
 	if (call_flags & DUK_CALL_FLAG_DIRECT_EVAL) {
 		act->flags |= DUK_ACT_FLAG_DIRECT_EVAL;
 	}
@@ -2032,9 +2212,15 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  Constructor call post processing.
 	 */
 
-	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
-		duk_call_construct_postprocess(ctx);
+#if defined(DUK_USE_ES6_PROXY)
+	if (call_flags & (DUK_CALL_FLAG_CONSTRUCT | DUK_CALL_FLAG_CONSTRUCT_PROXY)) {
+		duk_call_construct_postprocess(ctx, call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY);
 	}
+#else
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
+		duk_call_construct_postprocess(ctx, 0);
+	}
+#endif
 
 	/*
 	 *  Unwind, restore valstack bottom and other book-keeping.
