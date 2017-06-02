@@ -14,7 +14,7 @@ final top: 0
 ==> rc=0, result='undefined'
 *** test_pnew_2 (duk_safe_call)
 pnew returned: 1
-result: TypeError: function required, found null (stack index -1)
+result: TypeError: null not callable
 final top: 0
 ==> rc=0, result='undefined'
 ===*/
