@@ -1,0 +1,18 @@
+summary: new.target eval handling limitations
+---
+direct eval in program code
+undefined
+indirect eval in program code
+undefined
+direct eval in function code
+undefined
+false
+function
+true
+indirect eval in function code
+undefined
+eval-in-eval in function code
+undefined
+false
+function
+true
