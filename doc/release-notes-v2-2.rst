@@ -28,6 +28,10 @@ from Duktape v2.1.x.  Note the following:
   and can now be used in tailcall positions, e.g. in
   'return func.call(null, 1, 2);'.
 
+* Constructor calls, i.e. 'new Xyz()' or duk_new(), no longer prevent a yield,
+  don't consume native stack for Ecmascript-to-Ecmascript calls, and can now
+  be used in tailcalls.
+
 * Functions pushed using duk_push_c_function() and duk_push_c_lightfunc() now
   inherit from an intermediate prototype (func -> %NativeFunctionPrototype%
   -> Function.prototype) which provides ``.name`` and ``.length`` getters.
@@ -42,3 +46,10 @@ from Duktape v2.1.x.  Note the following:
   binding, target, and bound argument count are now visible as artificial
   properties; the bound argument values are not visible in the debugger
   protocol for now.
+
+Other minor differences:
+
+* When an Error instance is being constructed and Duktape.errCreate() is
+  called for the constructor return value, the call stack seen by errCreate()
+  now includes the constructor call (previously it was unwound before calling
+  errCreate()).  This affects e.g. any Duktape.act() calls in errCreate().
