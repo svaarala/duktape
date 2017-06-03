@@ -2858,6 +2858,12 @@ Planned
   the native C stack when doing an Ecmascript-to-Ecmascript call, and no
   longer prevent coroutine yielding (GH-1421)
 
+* Constructor calls (new Func()) can be used in tailcalls, don't grow
+  the native C stack when doing an Ecmascript-to-Ecmascript call, and no
+  longer prevent coroutine yielding (GH-1523)
+
+* Add duk_is_constructable() API call (GH-1523)
+
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837)
 
