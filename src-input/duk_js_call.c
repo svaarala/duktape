@@ -673,15 +673,18 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 }
 
 /*
- *  Helper for inline handling of .call() and .apply().
+ *  Helper for inline handling of .call(), .apply(), and .construct().
  */
 
-DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hobject *func) {
+DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hobject *func, duk_small_uint_t *call_flags) {
 	duk_context *ctx = (duk_context *) thr;
-	duk_tval *tv_args;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_c_function natfunc;
 #endif
+	duk_tval *tv_args;
+
+	DUK_ASSERT(func != NULL);
+	DUK_ASSERT((*call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) == 0);  /* Caller. */
 
 #if defined(DUK_USE_ASSERTIONS)
 	natfunc = ((duk_hnatfunc *) func)->func;
@@ -745,7 +748,8 @@ DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_fu
 		DUK_ASSERT(natfunc == duk_bi_function_prototype_apply);
 		goto apply_shared;
 	}
-	default: {  /* 2=Reflect.apply() */
+#if defined(DUK_USE_REFLECT_BUILTIN)
+	case 2: {  /* 2=Reflect.apply() */
 		/* Value stack:
 		 * idx_func + 0: Reflect.apply()  [already removed above]
 		 * idx_func + 1: this binding for .apply (ignored, usually Reflect)
@@ -764,6 +768,72 @@ DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_fu
 		duk_remove(ctx, idx_func);  /* remove Reflect.apply 'this' binding */
 		goto apply_shared;
 	}
+	case 3: {  /* 3=Reflect.construct() */
+		/* Value stack:
+		 * idx_func + 0: Reflect.construct()  [already removed above]
+		 * idx_func + 1: this binding for .construct (ignored, usually Reflect)
+		 * idx_func + 2: 1st argument to .construct, target function
+		 * idx_func + 3: 2nd argument to .construct, argArray
+		 * idx_func + 4: 3rd argument to .construct, newTarget
+		 * [anything after this MUST be ignored]
+		 *
+		 * Remove idx_func + 0 and idx_func + 1, unpack the argArray,
+		 * and insert default instance (prototype not yet updated), to get:
+		 * idx_func + 0: target function
+		 * idx_func + 1: this binding (default instance)
+		 * idx_func + 2: constructor call arguments
+		 * ...
+		 *
+		 * Call flags must be updated to reflect the fact that we're
+		 * now dealing with a constructor call, and e.g. the 'this'
+		 * binding cannot be overwritten if the target is bound.
+		 *
+		 * newTarget is checked but not yet passed onwards.
+		 */
+
+		duk_idx_t top;
+
+		DUK_ASSERT(natfunc == duk_bi_reflect_construct);
+		*call_flags |= DUK_CALL_FLAG_CONSTRUCTOR_CALL;
+		duk_remove(ctx, idx_func);  /* remove Reflect.construct 'this' binding */
+		top = duk_get_top(ctx);
+		if (top < idx_func + 1 || !duk_is_constructable(ctx, idx_func)) {
+			/* Target constructability must be checked before
+			 * unpacking argArray (which may cause side effects).
+			 * Just return; caller will throw the error.
+			 */
+			duk_set_top(ctx, idx_func + 2);  /* satisfy asserts */
+			break;
+		}
+		duk_push_object(ctx);
+		duk_insert(ctx, idx_func + 1);  /* default instance */
+
+		/* [ ... func default_instance argArray newTarget? ] */
+
+		top = duk_get_top(ctx);
+		if (top < idx_func + 3) {
+			/* argArray is a mandatory argument for Reflect.construct(). */
+			DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		}
+		if (top > idx_func + 3) {
+			if (!duk_strict_equals(ctx, idx_func, idx_func + 3)) {
+				/* XXX: [[Construct]] newTarget currently unsupported */
+				DUK_ERROR_UNSUPPORTED(thr);
+			}
+			duk_set_top(ctx, idx_func + 3);  /* remove any args beyond argArray */
+		}
+		DUK_ASSERT(duk_get_top(ctx) == idx_func + 3);
+		DUK_ASSERT(duk_is_valid_index(ctx, idx_func + 2));
+		(void) duk_unpack_array_like(ctx, idx_func + 2);  /* XXX: should also remove target to be symmetric with duk_pack()? */
+		duk_remove(ctx, idx_func + 2);
+		DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+		break;
+	}
+#endif  /* DUK_USE_REFLECT_BUILTIN */
+	default: {
+		DUK_ASSERT(0);
+		DUK_UNREACHABLE();
+	}
 	}
 
 	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
@@ -781,8 +851,14 @@ DUK_LOCAL void duk__handle_callapply_for_call(duk_hthread *thr, duk_idx_t idx_fu
 			duk_set_top(ctx, idx_func + 3);  /* remove any args beyond argArray */
 		}
 		DUK_ASSERT(duk_is_valid_index(ctx, idx_func + 2));
-		(void) duk_unpack_array_like(ctx, idx_func + 2);
-		duk_remove(ctx, idx_func + 2);
+		if (!duk_is_callable(ctx, idx_func)) {
+			/* Avoid unpack side effects if the target isn't callable.
+			 * Calling code will throw the actual error.
+			 */
+		} else {
+			(void) duk_unpack_array_like(ctx, idx_func + 2);
+			duk_remove(ctx, idx_func + 2);
+		}
 	}
 	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
 }
@@ -908,10 +984,15 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
 /*
  *  Shared helpers for resolving the final, non-bound target function of the
  *  call and the effective 'this' binding.  Resolves bound functions and
- *  applies .call() and .apply() inline.
+ *  applies .call(), .apply(), and .construct() inline.
  *
- *  Once the bound function / .call() / .apply() sequence has been resolved,
- *  the value at idx_func + 1 may need coercion described in E5 Section 10.4.3.
+ *  Once the bound function / .call() / .apply() / .construct() sequence has
+ *  been resolved, the value at idx_func + 1 may need coercion described in
+ *  E5 Section 10.4.3.
+ *
+ *  A call that begins as a non-constructor call may be converted into a
+ *  constructor call during the resolution process if Reflect.construct()
+ *  is invoked.  This is handled by updating the caller's call_flags.
  *
  *  For global and eval code (E5 Sections 10.4.1 and 10.4.2), we assume
  *  that the caller has provided the correct 'this' binding explicitly
@@ -1016,7 +1097,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
                                                                  duk_idx_t idx_func,
                                                                  duk_idx_t *out_num_stack_args,
                                                                  duk_tval *out_tv_func,
-                                                                 duk_small_uint_t call_flags) {
+                                                                 duk_small_uint_t *call_flags) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_func;
 	duk_hobject *func;
@@ -1046,7 +1127,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 					duk__coerce_nonstrict_this_binding(ctx, idx_func + 1);
 				}
 
-				if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+				if (*call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
 					/* Check for constructability and update
 					 * default instance prototype.
 					 */
@@ -1062,7 +1143,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 				DUK_ASSERT(!DUK_HOBJECT_HAS_SPECIAL_CALL(func));
 				DUK_ASSERT(!DUK_HOBJECT_IS_NATFUNC(func));
 
-				duk__handle_bound_chain_for_call(thr, idx_func, call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+				duk__handle_bound_chain_for_call(thr, idx_func, *call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL);
 
 				/* The final object may be a normal function or a lightfunc.
 				 * We need to re-lookup tv_func because it may have changed
@@ -1075,7 +1156,13 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_CALL(func));
 				DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
 
-				duk__handle_callapply_for_call(thr, idx_func, func);
+				if (*call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+					/* None of the special calls (Function.prototype.apply() etc)
+					 * can be called as a constructor.
+					 */
+					goto not_constructable;
+				}
+				duk__handle_callapply_for_call(thr, idx_func, func, call_flags);
 			}
 			/* Retry loop. */
 		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
@@ -1111,7 +1198,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 		DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 		                            DUK_HOBJECT_IS_NATFUNC(func)));
 		DUK_ASSERT(func == NULL || (DUK_HOBJECT_HAS_CONSTRUCTABLE(func) ||
-		                            (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) == 0));
+		                            (*call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) == 0));
 	}
 #endif
 
@@ -1121,7 +1208,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 	DUK_ASSERT(tv_func != NULL);
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(ctx, -1));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(ctx, idx_func));
 #else
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
 #endif
@@ -1134,9 +1221,9 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
  not_constructable:
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, -1));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_readable(ctx, -1));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_tval_readable(ctx, tv_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
@@ -1592,7 +1679,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));
-		func = duk__resolve_target_func_and_this_binding(ctx, idx_func, &num_stack_args, &tv_func_copy, call_flags);
+		func = duk__resolve_target_func_and_this_binding(ctx, idx_func, &num_stack_args, &tv_func_copy, &call_flags);
 	}
 	tv_func = &tv_func_copy;
 
@@ -2608,7 +2695,8 @@ DUK_LOCAL void duk__handle_safe_call_shared(duk_hthread *thr,
 
 DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
                                                    duk_idx_t num_stack_args,
-                                                   duk_small_uint_t call_flags) {
+                                                   duk_small_uint_t call_flags,
+                                                   duk_small_uint_t *out_call_flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_size_t entry_valstack_bottom_byteoff;
 	duk_idx_t idx_func;      /* valstack index of 'func' and retval (relative to entry valstack_bottom) */
@@ -2715,8 +2803,16 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));
-		func = duk__resolve_target_func_and_this_binding(ctx, idx_func, &num_stack_args, &tv_func_ignore, call_flags);
+		func = duk__resolve_target_func_and_this_binding(ctx, idx_func, &num_stack_args, &tv_func_ignore, &call_flags);
 	}
+
+	/* Call flags may have changed in resolution: if Reflect.construct()
+	 * was encountered we're now dealing with a constructor call which
+	 * affects 'this' binding handling.  If Ecma-to-Ecma call fails, the
+	 * ordinary call setup needs to receive the constructor flag.
+	 */
+	*out_call_flags = call_flags;
+
 	if (func == NULL || !DUK_HOBJECT_IS_COMPFUNC(func)) {
 		DUK_DDD(DUK_DDDPRINT("final target is a lightfunc/nativefunc, cannot do ecma-to-ecma call"));
 		thr->ptr_curr_pc = entry_ptr_curr_pc;

@@ -188,27 +188,9 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_apply(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_context *ctx) {
-	duk_idx_t nargs;
-	duk_idx_t len;
-
-	duk_require_constructable(ctx, 0);
-
-	nargs = duk_get_top(ctx);
-	if (nargs < 2) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
-	if (nargs >= 3 && !duk_strict_equals(ctx, 0, 2)) {
-		/* XXX: [[Construct]] newTarget currently unsupported */
-		DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
-	}
-	duk_set_top(ctx, 2);
-
-	len = duk_unpack_array_like(ctx, 1 /*idx_args*/);
-	duk_remove(ctx, 1);
-	DUK_ASSERT_TOP(ctx, len + 1);
-
-	duk_new(ctx, len);
-	return 1;
+	/* Like .call(), never actually called. */
+	DUK_UNREF(ctx);
+	return DUK_RET_TYPE_ERROR;
 }
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)

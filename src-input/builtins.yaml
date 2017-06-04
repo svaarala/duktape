@@ -3000,7 +3000,9 @@ objects:
           type: function
           native: duk_bi_reflect_construct
           length: 2
-          varargs: true
+          magic: 3  # see duk_js_call.c
+          special_call: true
+        auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         es6: true
       - key: "defineProperty"
         value:
