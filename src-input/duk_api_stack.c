@@ -3733,6 +3733,20 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t idx) {
 	                                       DUK_HOBJECT_FLAG_BOUNDFUNC);
 }
 
+DUK_EXTERNAL duk_bool_t duk_is_constructable(duk_context *ctx, duk_idx_t idx) {
+	duk_tval *tv;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+
+	tv = duk_get_tval_or_unused(ctx, idx);
+	if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		return 1;
+	}
+	return duk__obj_flag_any_default_false(ctx,
+	                                       idx,
+	                                       DUK_HOBJECT_FLAG_CONSTRUCTABLE);
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	return duk__obj_flag_any_default_false(ctx,
@@ -4866,7 +4880,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_hobject *proto;
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-	duk_bool_t noblame_fileline;
+	duk_small_uint_t augment_flags;
 #endif
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -4876,7 +4890,10 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 
 	/* Error code also packs a tracedata related flag. */
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-	noblame_fileline = err_code & DUK_ERRCODE_FLAG_NOBLAME_FILELINE;
+	augment_flags = 0;
+	if (err_code & DUK_ERRCODE_FLAG_NOBLAME_FILELINE) {
+		augment_flags = DUK_AUGMENT_FLAG_NOBLAME_FILELINE;
+	}
 #endif
 	err_code = err_code & (~DUK_ERRCODE_FLAG_NOBLAME_FILELINE);
 
@@ -4908,7 +4925,7 @@ DUK_EXTERNAL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx, duk_errcod
 	/* Creation time error augmentation */
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	/* filename may be NULL in which case file/line is not recorded */
-	duk_err_augment_error_create(thr, thr, filename, line, noblame_fileline);  /* may throw an error */
+	duk_err_augment_error_create(thr, thr, filename, line, augment_flags);  /* may throw an error */
 #endif
 
 	return duk_get_top_index_unsafe(ctx);

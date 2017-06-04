@@ -97,6 +97,7 @@ DUK_INTERNAL_DECL duk_int_t duk_handle_call_protected(duk_hthread *thr, duk_idx_
 DUK_INTERNAL_DECL void duk_handle_call_unprotected(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
 DUK_INTERNAL_DECL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
+DUK_INTERNAL_DECL void duk_call_construct_postprocess(duk_context *ctx);
 
 /* bytecode execution */
 DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *exec_thr);

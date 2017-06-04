@@ -483,6 +483,96 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
 }
 
 /*
+ *  Helpers for constructor call handling.
+ *
+ *  There are two [[Construct]] operations in the specification:
+ *
+ *    - E5 Section 13.2.2: for Function objects
+ *    - E5 Section 15.3.4.5.2: for "bound" Function objects
+ *
+ *  The chain of bound functions is resolved in Section 15.3.4.5.2,
+ *  with arguments "piling up" until the [[Construct]] internal
+ *  method is called on the final, actual Function object.  Note
+ *  that the "prototype" property is looked up *only* from the
+ *  final object, *before* calling the constructor.
+ *
+ *  Since Duktape 2.2 bound functions are represented with the
+ *  duk_hboundfunc internal type, and bound function chains are
+ *  collapsed when a bound function is created.  As a result, the
+ *  direct target of a duk_hboundfunc is always non-bound and the
+ *  this/argument lists have been resolved.
+ *
+ *  When constructing new Array instances, an unnecessary object is
+ *  created and discarded now: the standard [[Construct]] creates an
+ *  object, and calls the Array constructor.  The Array constructor
+ *  returns an Array instance, which is used as the result value for
+ *  the "new" operation; the object created before the Array constructor
+ *  call is discarded.
+ *
+ *  This would be easy to fix, e.g. by knowing that the Array constructor
+ *  will always create a replacement object and skip creating the fallback
+ *  object in that case.
+ */
+
+/* Update default instance prototype for constructor call. */
+DUK_LOCAL void duk__update_default_instance_proto(duk_context *ctx, duk_idx_t idx_func) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hobject *proto;
+	duk_hobject *fallback;
+
+	DUK_ASSERT(duk_is_constructable(ctx, idx_func));
+
+	duk_get_prop_stridx_short(ctx, idx_func, DUK_STRIDX_PROTOTYPE);
+	proto = duk_get_hobject(ctx, -1);
+	if (!proto) {
+		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
+		                     "-> leave standard Object prototype as fallback prototype"));
+	} else {
+		DUK_DDD(DUK_DDDPRINT("constructor has 'prototype' property with object value "
+		                     "-> set fallback prototype to that value: %!iO", (duk_heaphdr *) proto));
+		/* Original fallback (default instance) is untouched when
+		 * resolving bound functions etc.
+		 */
+		fallback = duk_known_hobject(ctx, idx_func + 1);
+		DUK_ASSERT(fallback != NULL);
+		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
+	}
+	duk_pop(ctx);
+}
+
+/* Postprocess: return value special handling, error augmentation. */
+DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+
+	/* Use either fallback (default instance) or retval depending
+	 * on retval type.  Needs to be called before unwind because
+	 * the default instance is read from the current (immutable)
+	 * 'this' binding.
+	 */
+	if (!duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	                                  DUK_TYPE_MASK_BUFFER |
+	                                  DUK_TYPE_MASK_LIGHTFUNC)) {
+		/* XXX: direct value stack access */
+		duk_pop(ctx);
+		duk_push_this(ctx);
+	}
+
+	DUK_UNREF(thr);
+#if defined(DUK_USE_AUGMENT_ERROR_CREATE)
+	/* Augment created errors upon creation, not when they are thrown or
+	 * rethrown.  __FILE__ and __LINE__ are not desirable here; the call
+	 * stack reflects the caller which is correct.  Skip topmost, unwound
+	 * activation when creating a traceback.  If thr->ptr_curr_pc was !=
+	 * NULL we'd need to sync the current PC so that the traceback comes
+	 * out right; however it is always synced here so just assert for it.
+	 */
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);
+	duk_err_augment_error_create(thr, thr, NULL, 0, DUK_AUGMENT_FLAG_NOBLAME_FILELINE |
+	                                                DUK_AUGMENT_FLAG_SKIP_ONE);
+#endif
+}
+
+/*
  *  Helper for handling a bound function when a call is being made.
  *
  *  Assumes that bound function chains have been "collapsed" so that either
@@ -876,7 +966,7 @@ DUK_LOCAL DUK_INLINE void duk__coerce_nonstrict_this_binding(duk_hthread *thr, d
 	}
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_context *ctx, duk_idx_t idx_func, duk_tval *out_tv_func, duk_hobject **out_func) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_context *ctx, duk_idx_t idx_func, duk_tval *out_tv_func, duk_hobject **out_func, duk_small_uint_t call_flags) {
 #if defined(DUK_USE_PREFER_SIZE)
 	DUK_UNREF(ctx);
 	DUK_UNREF(idx_func);
@@ -885,6 +975,10 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_co
 #else  /* DUK_USE_PREFER_SIZE */
 	duk_tval *tv_func;
 	duk_hobject *func;
+
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+		return 0;
+	}
 
 	tv_func = DUK_GET_TVAL_POSIDX(ctx, idx_func);
 	DUK_ASSERT(tv_func != NULL);
@@ -951,6 +1045,16 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 					 */
 					duk__coerce_nonstrict_this_binding(ctx, idx_func + 1);
 				}
+
+				if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+					/* Check for constructability and update
+					 * default instance prototype.
+					 */
+					if (!DUK_HOBJECT_HAS_CONSTRUCTABLE(func)) {
+						goto not_constructable;
+					}
+					duk__update_default_instance_proto(ctx, idx_func);
+				}
 				break;
 			}
 
@@ -975,7 +1079,10 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 			}
 			/* Retry loop. */
 		} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
-			/* Lightfuncs are strict, so no 'this' coercion. */
+			/* Lightfuncs are strict, so no 'this' coercion.
+			 * Lightfuncs are also always constructable, so no
+			 * constructability check.
+			 */
 			DUK_TVAL_SET_TVAL(out_tv_func, tv_func);
 			func = NULL;
 			break;
@@ -1003,6 +1110,8 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 		DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 		                            DUK_HOBJECT_IS_NATFUNC(func)));
+		DUK_ASSERT(func == NULL || (DUK_HOBJECT_HAS_CONSTRUCTABLE(func) ||
+		                            (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) == 0));
 	}
 #endif
 
@@ -1010,10 +1119,27 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 
  not_callable_error:
 	DUK_ASSERT(tv_func != NULL);
+#if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(ctx, -1));
 #else
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
+#endif
+#else
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
+#endif
+	DUK_UNREACHABLE();
+	return NULL;  /* never executed */
+
+ not_constructable:
+#if defined(DUK_USE_VERBOSE_ERRORS)
+#if defined(DUK_USE_PARANOID_ERRORS)
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, -1));
+#else
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_readable(ctx, -1));
+#endif
+#else
+	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
 #endif
 	DUK_UNREACHABLE();
 	return NULL;  /* never executed */
@@ -1462,7 +1588,7 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	 *  we must resolve a possible bound function first.
 	 */
 
-	if (duk__resolve_target_fastpath_check(ctx, idx_func, &tv_func_copy, &func)) {
+	if (duk__resolve_target_fastpath_check(ctx, idx_func, &tv_func_copy, &func, call_flags)) {
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));
@@ -1473,6 +1599,14 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 	                            DUK_HOBJECT_IS_NATFUNC(func)));
+
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+		/* Update default instance internal prototype based on the
+		 * .prototype property of the final, non-bound target
+		 * function.
+		 */
+		duk__update_default_instance_proto(ctx, idx_func);
+	}
 
 	/* [ ... func this arg1 ... argN ] */
 
@@ -1710,9 +1844,6 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		 *  Ecmascript call
 		 */
 
-		duk_tval *tv_ret;
-		duk_tval *tv_funret;
-
 		DUK_ASSERT(func != NULL);
 		DUK_ASSERT(DUK_HOBJECT_HAS_COMPFUNC(func));
 		act->curr_pc = DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, (duk_hcompfunc *) func);
@@ -1742,41 +1873,10 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 		DUK_DDD(DUK_DDDPRINT("entering bytecode execution"));
 		duk_js_execute_bytecode(thr);
 		DUK_DDD(DUK_DDDPRINT("returned from bytecode execution"));
-
-		/* Unwind. */
-
-		DUK_ASSERT(thr->callstack_curr != NULL);
-		DUK_ASSERT(thr->callstack_curr->parent == entry_act);
-		DUK_ASSERT(thr->callstack_top == entry_callstack_top + 1);
-		duk_hthread_activation_unwind_norz(thr);
-		DUK_ASSERT(thr->callstack_curr == entry_act);
-		DUK_ASSERT(thr->callstack_top == entry_callstack_top);
-
-		thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
-		/* keep current valstack_top */
-		DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
-		DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-		DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
-		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= idx_func + 1);
-
-		/* Return value handling. */
-
-		/* [ ... func this (crud) retval ] */
-
-		tv_ret = thr->valstack_bottom + idx_func;
-		tv_funret = thr->valstack_top - 1;
-#if defined(DUK_USE_FASTINT)
-		/* Explicit check for fastint downgrade. */
-		DUK_TVAL_CHKFAST_INPLACE_FAST(tv_funret);
-#endif
-		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
 	} else {
 		/*
 		 *  Native call.
 		 */
-
-		duk_tval *tv_ret;
-		duk_tval *tv_funret;
 
 		thr->valstack_bottom = thr->valstack_bottom + idx_func + 2;
 		/* keep current valstack_top */
@@ -1799,48 +1899,61 @@ DUK_LOCAL void duk__handle_call_inner(duk_hthread *thr,
 
 		/* Automatic error throwing, retval check. */
 
-		if (rc < 0) {
+		if (rc == 0) {
+			DUK_ASSERT(thr->valstack < thr->valstack_end);
+			DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(thr->valstack_top));
+			thr->valstack_top++;
+		} else if (rc == 1) {
+			;
+		} else if (rc < 0) {
 			duk_error_throw_from_negative_rc(thr, rc);
 			DUK_UNREACHABLE();
-		} else if (rc > 1) {
+		} else {
 			DUK_ERROR_TYPE(thr, "c function returned invalid rc");
 		}
-		DUK_ASSERT(rc == 0 || rc == 1);
+	}
+	DUK_ASSERT(thr->ptr_curr_pc == NULL);
 
-		/* Unwind. */
+	/* Constructor call post processing. */
 
-		DUK_ASSERT(thr->callstack_curr != NULL);
-		DUK_ASSERT(thr->callstack_curr->parent == entry_act);
-		DUK_ASSERT(thr->callstack_top == entry_callstack_top + 1);
-		duk_hthread_activation_unwind_norz(thr);
-		DUK_ASSERT(thr->callstack_curr == entry_act);
-		DUK_ASSERT(thr->callstack_top == entry_callstack_top);
-
-		thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
-		/* keep current valstack_top */
-		DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
-		DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
-		DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
-		DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= idx_func + 1);
-
-		/* Return value handling. */
-
-		/* XXX: should this happen in the callee's activation or after unwinding? */
-		tv_ret = thr->valstack_bottom + idx_func;
-		if (rc == 0) {
-			DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv_ret);  /* side effects */
-		} else {
-			/* [ ... func this (crud) retval ] */
-			tv_funret = thr->valstack_top - 1;
-#if defined(DUK_USE_FASTINT)
-			/* Explicit check for fastint downgrade. */
-			DUK_TVAL_CHKFAST_INPLACE_FAST(tv_funret);
-#endif
-			DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
-		}
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+		duk_call_construct_postprocess(ctx);
 	}
 
-	duk_set_top(ctx, idx_func + 1);  /* XXX: unnecessary, handle in adjust */
+	/* Unwind. */
+
+	DUK_ASSERT(thr->callstack_curr != NULL);
+	DUK_ASSERT(thr->callstack_curr->parent == entry_act);
+	DUK_ASSERT(thr->callstack_top == entry_callstack_top + 1);
+	duk_hthread_activation_unwind_norz(thr);
+	DUK_ASSERT(thr->callstack_curr == entry_act);
+	DUK_ASSERT(thr->callstack_top == entry_callstack_top);
+
+	thr->valstack_bottom = (duk_tval *) (void *) ((duk_uint8_t *) thr->valstack + entry_valstack_bottom_byteoff);
+	/* keep current valstack_top */
+	DUK_ASSERT(thr->valstack_bottom >= thr->valstack);
+	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
+	DUK_ASSERT(thr->valstack_end >= thr->valstack_top);
+	DUK_ASSERT(thr->valstack_top - thr->valstack_bottom >= idx_func + 1);
+
+	/* Return value handling. */
+
+	/* [ ... func this (crud) retval ] */
+
+	{
+		duk_tval *tv_ret;
+		duk_tval *tv_funret;
+
+		tv_ret = thr->valstack_bottom + idx_func;
+		tv_funret = thr->valstack_top - 1;
+#if defined(DUK_USE_FASTINT)
+		/* Explicit check for fastint downgrade. */
+		DUK_TVAL_CHKFAST_INPLACE_FAST(tv_funret);
+#endif
+		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
+	}
+
+	duk_set_top(ctx, idx_func + 1);
 
 	/* [ ... retval ] */
 
@@ -2598,7 +2711,7 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	 *  a plain function call.
 	 */
 
-	if (duk__resolve_target_fastpath_check(ctx, idx_func, &tv_func_ignore, &func)) {
+	if (duk__resolve_target_fastpath_check(ctx, idx_func, &tv_func_ignore, &func, call_flags)) {
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));
@@ -2614,6 +2727,10 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(func));
+
+	if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+		duk__update_default_instance_proto(ctx, idx_func);
+	}
 
 	nargs = ((duk_hcompfunc *) func)->nargs;
 	nregs = ((duk_hcompfunc *) func)->nregs;
@@ -2741,6 +2858,9 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
 		              DUK_ACT_FLAG_STRICT | DUK_ACT_FLAG_TAILCALLED :
 		              DUK_ACT_FLAG_TAILCALLED);
+		if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+			act->flags |= DUK_ACT_FLAG_CONSTRUCT;
+		}
 
 		DUK_ASSERT(DUK_ACT_GET_FUNC(act) == func);      /* already updated */
 		DUK_ASSERT(act->var_env == NULL);
@@ -2813,6 +2933,9 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		act->flags = (DUK_HOBJECT_HAS_STRICT(func) ?
 		              DUK_ACT_FLAG_STRICT :
 		              0);
+		if (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL) {
+			act->flags |= DUK_ACT_FLAG_CONSTRUCT;
+		}
 		act->func = func;
 		act->var_env = NULL;
 		act->lex_env = NULL;

@@ -141,10 +141,10 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
  */
 
 #if defined(DUK_USE_TRACEBACKS)
-DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
+DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
-	duk_small_uint_t depth;
+	duk_int_t depth;
 	duk_int_t arr_size;
 	duk_tval *tv;
 	duk_hstring *s;
@@ -171,8 +171,20 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* Preallocate array to correct size, so that we can just write out
 	 * the _Tracedata values into the array part.
 	 */
+	act = thr->callstack_curr;
 	depth = DUK_USE_TRACEBACK_DEPTH;
-	arr_size = (duk_int_t) (thr_callstack->callstack_top <= depth ? thr_callstack->callstack_top : depth) * 2;
+	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
+	if (depth > (duk_int_t) thr_callstack->callstack_top) {
+		depth = (duk_int_t) thr_callstack->callstack_top;
+	}
+	if (depth > 0) {
+		if (flags & DUK_AUGMENT_FLAG_SKIP_ONE) {
+			DUK_ASSERT(act != NULL);
+			act = act->parent;
+			depth--;
+		}
+	}
+	arr_size = depth * 2;
 	if (thr->compile_ctx != NULL && thr->compile_ctx->h_filename != NULL) {
 		arr_size += 2;
 	}
@@ -219,7 +231,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 		DUK_HSTRING_INCREF(thr, s);
 		tv++;
 
-		d = (noblame_fileline ? ((duk_double_t) DUK_TB_FLAG_NOBLAME_FILELINE) * DUK_DOUBLE_2TO32 : 0.0) +
+		d = ((flags & DUK_AUGMENT_FLAG_NOBLAME_FILELINE) ? ((duk_double_t) DUK_TB_FLAG_NOBLAME_FILELINE) * DUK_DOUBLE_2TO32 : 0.0) +
 		    (duk_double_t) c_line;
 		DUK_TVAL_SET_DOUBLE(tv, d);
 		tv++;
@@ -228,12 +240,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
 	/* Traceback depth doesn't take into account the filename/line
 	 * special handling above (intentional).
 	 */
-	DUK_ASSERT(thr_callstack->callstack_top <= DUK_INT_MAX);  /* callstack limits */
-	depth = DUK_USE_TRACEBACK_DEPTH;
-	if (depth > thr_callstack->callstack_top) {
-		depth = (duk_small_uint_t) thr_callstack->callstack_top;
-	}
-	for (act = thr_callstack->callstack_curr; depth-- > 0; act = act->parent) {
+	for (; depth-- > 0; act = act->parent) {
 		duk_uint32_t pc;
 		duk_tval *tv_src;
 
@@ -289,7 +296,7 @@ DUK_LOCAL void duk__add_traceback(duk_hthread *thr, duk_hthread *thr_callstack, 
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE) && !defined(DUK_USE_TRACEBACKS)
-DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
+DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_uint_t flags) {
 	duk_context *ctx;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_int_t entry_top;
@@ -314,7 +321,7 @@ DUK_LOCAL void duk__add_fileline(duk_hthread *thr, duk_hthread *thr_callstack, c
 		 */
 		duk_push_uint(ctx, (duk_uint_t) thr->compile_ctx->curr_token.start_line);
 		duk_push_hstring(ctx, thr->compile_ctx->h_filename);
-	} else if (c_filename && !noblame_fileline) {
+	} else if (c_filename && (flags & DUK_AUGMENT_FLAG_NOBLAME_FILELINE) == 0) {
 		/* C call site gets blamed next, unless flagged not to do so.
 		 * XXX: file/line is disabled in minimal builds, so disable this
 		 * too when appropriate.
@@ -447,7 +454,7 @@ DUK_LOCAL void duk__add_compiler_error_line(duk_hthread *thr) {
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_int_t noblame_fileline, duk_hobject *obj) {
+DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_hobject *obj, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_int_t entry_top;
@@ -471,13 +478,13 @@ DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *th
 	if (duk_hobject_hasprop_raw(thr, obj, DUK_HTHREAD_STRING_INT_TRACEDATA(thr))) {
 		DUK_DDD(DUK_DDDPRINT("error value already has a '_Tracedata' property, not modifying it"));
 	} else {
-		duk__add_traceback(thr, thr_callstack, c_filename, c_line, noblame_fileline);
+		duk__add_traceback(thr, thr_callstack, c_filename, c_line, flags);
 	}
 #else
 	/* Without tracebacks the concrete .fileName and .lineNumber need
 	 * to be added directly.
 	 */
-	duk__add_fileline(thr, thr_callstack, c_filename, c_line, noblame_fileline);
+	duk__add_fileline(thr, thr_callstack, c_filename, c_line, flags);
 #endif
 
 #if defined(DUK_USE_ASSERTIONS)
@@ -495,16 +502,14 @@ DUK_LOCAL void duk__err_augment_builtin_create(duk_hthread *thr, duk_hthread *th
  *  thr_callstack: thread which should be used for generating callstack etc.
  *  c_filename: C __FILE__ related to the error
  *  c_line: C __LINE__ related to the error
- *  noblame_fileline: if true, don't fileName/line as error source, otherwise use traceback
- *                    (needed because user code filename/line are reported but internal ones
- *                    are not)
- *
- *  XXX: rename noblame_fileline to flags field; combine it to some existing
- *  field (there are only a few call sites so this may not be worth it).
+ *  flags & DUK_AUGMENT_FLAG_NOBLAME_FILELINE:
+ *      if true, don't fileName/line as error source, otherwise use traceback
+ *      (needed because user code filename/line are reported but internal ones
+ *      are not)
  */
 
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
-DUK_INTERNAL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_bool_t noblame_fileline) {
+DUK_INTERNAL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *thr_callstack, const char *c_filename, duk_int_t c_line, duk_small_uint_t flags) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *obj;
 
@@ -541,7 +546,7 @@ DUK_INTERNAL void duk_err_augment_error_create(duk_hthread *thr, duk_hthread *th
 	}
 	if (DUK_HOBJECT_HAS_EXTENSIBLE(obj)) {
 		DUK_DDD(DUK_DDDPRINT("error meets criteria, built-in augment"));
-		duk__err_augment_builtin_create(thr, thr_callstack, c_filename, c_line, noblame_fileline, obj);
+		duk__err_augment_builtin_create(thr, thr_callstack, c_filename, c_line, obj, flags);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("error does not meet criteria, no built-in augment"));
 	}

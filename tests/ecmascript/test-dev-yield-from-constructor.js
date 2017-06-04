@@ -1,11 +1,14 @@
 /*
- *  Constructor calls currently prevent a yield.
+ *  Constructor calls prevent a yield until Duktape 2.2.
+ *  Test for Duktape 2.2 behavior.
  */
 
 /*===
 coroutine start
 123
-TypeError
+123
+coroutine end
+321
 ===*/
 
 var thr;
@@ -16,12 +19,15 @@ function Foo() {
 
 function coroutine() {
     print('coroutine start');
-    Foo();      // works, not a constructor call
-    new Foo();  // not allowed currently -> TypeError
+    Foo();
+    new Foo();
+    print('coroutine end');
+    return 321;
 }
 
 try {
     thr = new Duktape.Thread(coroutine);
+    print(Duktape.Thread.resume(thr));
     print(Duktape.Thread.resume(thr));
     print(Duktape.Thread.resume(thr));
 } catch (e) {

@@ -1,0 +1,9 @@
+summary: requires lowmem 16-bit field options
+---
+32768
+32767
+65535
+65536
+TypeError: undefined not callable
+TypeError: undefined not callable
+Reached: 65535

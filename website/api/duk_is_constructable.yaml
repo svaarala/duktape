@@ -1,0 +1,21 @@
+name: duk_is_constructable
+
+proto: |
+  duk_bool_t duk_is_constructable(duk_context *ctx, duk_idx_t idx);
+
+stack: |
+  [ ... val! ... ]
+
+summary: |
+  <p>Return 1 if value at <code>idx</code> is constructable, otherwise returns 0.
+  Also returns 0 if <code>idx</code> is invalid.</p>
+
+example: |
+  if (duk_is_constructable(ctx, -3)) {
+      /* ... */
+  }
+
+tags:
+  - stack
+
+introduced: 2.2.0
