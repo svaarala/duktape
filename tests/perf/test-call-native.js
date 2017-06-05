@@ -25,7 +25,7 @@ function test() {
     }
 
     var t2 = Date.now();
-    print((1e4 * 10 / (t2 - t1)) + ' calls per millisecond');
+    print((1e4 * 10 * arr.length / (t2 - t1)) + ' calls per millisecond');
 }
 
 try {
