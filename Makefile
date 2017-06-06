@@ -207,7 +207,13 @@ clean:
 	@rm -rf prep/
 	@rm -rf site/
 	@rm -f duk duk-rom dukd dukd-rom duk.O2 duk.O3 duk.O4
-	@rm -f duk-clang duk-g++ dukd-g++
+	@rm -f duk-pgo duk-pgo.O2
+	@rm -f duk-perf duk-perf.O2 duk-perf.O3 duk-perf.O4
+	@rm -f duk-perf-pgo duk-perf-pgo.O2 duk-perf-pgo.O3 duk-perf-pgo.O4
+	@rm -f duk-size
+	@rm -f duk-rom dukd-rom
+	@rm -f duk-clang duk-perf-clang
+	@rm -f duk-g++ dukd-g++ duk-perf-g++
 	@rm -f ajduk ajduk-rom ajdukd
 	@rm -f emduk emduk.js
 	@rm -f libduktape*.so*

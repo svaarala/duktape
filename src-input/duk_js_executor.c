@@ -1220,7 +1220,8 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 
 			setup_rc = duk_handle_ecma_call_setup(resumee,
 			                                      1,              /* num_stack_args */
-			                                      call_flags);    /* call_flags */
+			                                      call_flags,     /* call_flags */
+			                                      &call_flags);
 			if (setup_rc == 0) {
 				/* This shouldn't happen; Duktape.Thread.resume()
 				 * should make sure of that.  If it does happen
@@ -4704,8 +4705,13 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK_ASSERT((DUK_OP_TAILCALL & 0x01) == 1);
 			call_flags = (ins & (1UL << DUK_BC_SHIFT_OP)) ? DUK_CALL_FLAG_IS_TAILCALL : 0;
 
+			/* Attempt an Ecma-to-Ecma call setup.  If the call target
+			 * is Reflect.construct(), this may change into a
+			 * constructor call on the fly; call_flags will be modified
+			 * by the setup call if so.
+			 */
 			num_stack_args = nargs;
-			if (duk_handle_ecma_call_setup(thr, num_stack_args, call_flags)) {
+			if (duk_handle_ecma_call_setup(thr, num_stack_args, call_flags, &call_flags)) {
 				/* Ecma-to-ecma call possible, may or may not be a tail call.
 				 * Avoid C recursion by being clever.
 				 */
@@ -4724,7 +4730,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * but that requires no special handling.
 			 */
 
-			duk_handle_call_unprotected(thr, num_stack_args, 0 /*call_flags*/);
+			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
 
 			/* duk_js_call.c is required to restore the stack reserve
 			 * so we only need to reset the top.
@@ -4753,6 +4759,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_hcompfunc *fun;
 #endif
 			duk_idx_t num_stack_args;
+			duk_small_uint_t call_flags;
 
 			/* A -> num args (N)
 			 * BC -> target register and start reg: constructor, arg1, ..., argN
@@ -4770,7 +4777,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_set_top(ctx, (duk_idx_t) (bc + a + 1));
 			duk_push_object(ctx);  /* default instance; internal proto updated by call handling */
 			duk_insert(ctx, bc + 1);
-			if (duk_handle_ecma_call_setup(thr, a, DUK_CALL_FLAG_CONSTRUCTOR_CALL)) {
+			call_flags = DUK_CALL_FLAG_CONSTRUCTOR_CALL;
+			if (duk_handle_ecma_call_setup(thr, a, call_flags, &call_flags)) {
 				/* curr_pc synced by duk_handle_ecma_call_setup() */
 				goto restart_execution;
 			}
@@ -4778,7 +4786,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			/* Recompute argument count: bound function handling may have shifted. */
 			num_stack_args = duk_get_top(ctx) - (bc + 2);
 			DUK_DDD(DUK_DDDPRINT("recomputed arg count: %ld\n", (long) num_stack_args));
-			duk_handle_call_unprotected(thr, num_stack_args, DUK_CALL_FLAG_CONSTRUCTOR_CALL /*call_flags*/);
+			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
 
 			/* The return value is already in its correct place at the stack,
 			 * i.e. it has replaced the 'constructor' at index bc.  Just reset

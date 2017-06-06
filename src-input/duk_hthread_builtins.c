@@ -597,7 +597,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 #endif
 			if (c_func == duk_bi_function_prototype_call ||
 			    c_func == duk_bi_function_prototype_apply ||
-			    c_func == duk_bi_reflect_apply) {
+			    c_func == duk_bi_reflect_apply ||
+			    c_func == duk_bi_reflect_construct) {
 				lightfunc_eligible = 0;
 			}
 
@@ -620,10 +621,12 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			h_func = duk_known_hnatfunc(ctx, -1);
 			DUK_UNREF(h_func);
 
+			/* XXX: add into init data? */
 			/* Special call handling, not described in init data. */
 			if (c_func == duk_bi_function_prototype_call ||
 			    c_func == duk_bi_function_prototype_apply ||
-			    c_func == duk_bi_reflect_apply) {
+			    c_func == duk_bi_reflect_apply ||
+			    c_func == duk_bi_reflect_construct) {
 				DUK_HOBJECT_SET_SPECIAL_CALL((duk_hobject *) h_func);
 			}
 
