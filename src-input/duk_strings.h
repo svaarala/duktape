@@ -66,6 +66,7 @@
 #define DUK_STR_DECODE_FAILED                    "decode failed"
 #define DUK_STR_NO_SOURCECODE                    "no sourcecode"
 #define DUK_STR_RESULT_TOO_LONG                  "result too long"
+#define DUK_STR_INVALID_CFUNC_RC                 "invalid C function rc"
 
 /* JSON */
 #define DUK_STR_FMT_PTR                          "%p"
@@ -125,7 +126,7 @@
 #define DUK_STR_INVALID_GETSET_NAME              "invalid getter/setter name"
 #define DUK_STR_FUNC_NAME_REQUIRED               "function name required"
 
-/* Regexp */
+/* RegExp */
 #define DUK_STR_INVALID_QUANTIFIER               "invalid regexp quantifier"
 #define DUK_STR_INVALID_QUANTIFIER_NO_ATOM       "quantifier without preceding atom"
 #define DUK_STR_INVALID_QUANTIFIER_VALUES        "quantifier values invalid (qmin > qmax)"

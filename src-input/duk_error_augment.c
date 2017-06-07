@@ -126,7 +126,7 @@ DUK_LOCAL void duk__err_augment_user(duk_hthread *thr, duk_small_uint_t stridx_c
 	DUK_ASSERT(thr->heap->augmenting_error == 0);
 	thr->heap->augmenting_error = 1;
 
-	rc = duk_handle_call_protected(thr, 1, 0 /*call_flags*/);
+	rc = duk_pcall_method(ctx, 1);
 	DUK_UNREF(rc);  /* no need to check now: both success and error are OK */
 
 	DUK_ASSERT(thr->heap->augmenting_error == 1);
