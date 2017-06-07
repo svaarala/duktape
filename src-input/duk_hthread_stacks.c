@@ -387,7 +387,8 @@ DUK_INTERNAL void duk_hthread_valstack_torture_realloc(duk_hthread *thr) {
 		return;
 	}
 
-	new_ptr = (duk_tval *) DUK_ALLOC(thr->heap, alloc_size);
+	/* Use DUK_ALLOC_RAW() to avoid side effects. */
+	new_ptr = (duk_tval *) DUK_ALLOC_RAW(thr->heap, alloc_size);
 	if (new_ptr != NULL) {
 		DUK_MEMCPY((void *) new_ptr, (const void *) thr->valstack, alloc_size);
 		DUK_MEMSET((void *) thr->valstack, 0x55, alloc_size);
