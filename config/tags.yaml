@@ -15,6 +15,9 @@ ecmascript2016:
 ecmascript2017:
   title: Ecmascript 2017 (ES8) options
 
+ecmascript2018:
+  title: Ecmascript 2018 (ES9) options
+
 duktape:
   title: Duktape specific options
 
