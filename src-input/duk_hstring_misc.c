@@ -136,3 +136,19 @@ DUK_INTERNAL DUK_HOT duk_size_t duk_hstring_get_charlen(duk_hstring *h) {
 	return duk__hstring_get_charlen_slowpath(h);
 }
 #endif  /* DUK_USE_HSTRING_CLEN */
+
+DUK_INTERNAL duk_bool_t duk_hstring_equals_ascii_cstring(duk_hstring *h, const char *cstr) {
+	duk_size_t len;
+
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(cstr != NULL);
+
+	len = DUK_STRLEN(cstr);
+	if (len != DUK_HSTRING_GET_BYTELEN(h)) {
+		return 0;
+	}
+	if (DUK_MEMCMP((const void *) cstr, (const void *) DUK_HSTRING_GET_DATA(h), len) == 0) {
+		return 1;
+	}
+	return 0;
+}

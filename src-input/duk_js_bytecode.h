@@ -387,7 +387,7 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_DEBUGGER             191
 #define DUK_OP_NOP                  192
 #define DUK_OP_INVALID              193
-#define DUK_OP_UNUSED194            194
+#define DUK_OP_NEWTARGET            194
 #define DUK_OP_UNUSED195            195
 #define DUK_OP_UNUSED196            196
 #define DUK_OP_UNUSED197            197

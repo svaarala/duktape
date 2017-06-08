@@ -120,6 +120,9 @@
   test: "test-bi-typedarray-misc-inherited-accessors.js"
   knownissue: "typed array .length etc not yet inherited accessors (ES2015 requirement)"
   # Moved
+-
+  test: "test-expr-newtarget-eval-code.js"
+  knownissue: "new.target eval handling limitations"
 
 # Ecmascript testcases that need special options or environment to work
 

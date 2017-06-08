@@ -427,6 +427,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 	duk_bool_t this_to_global = 1;
 	duk_small_uint_t comp_flags;
 	duk_int_t level = -2;
+	duk_small_uint_t call_flags;
 
 	DUK_ASSERT(duk_get_top(ctx) == 1 || duk_get_top(ctx) == 2);  /* 2 when called by debugger */
 	DUK_ASSERT(thr->callstack_top >= 1);  /* at least this function exists */
@@ -579,7 +580,19 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 
 	/* [ env? source template closure this ] */
 
-	duk_call_method(ctx, 0);
+	call_flags = 0;
+	if (act_eval->flags & DUK_ACT_FLAG_DIRECT_EVAL) {
+		/* Set DIRECT_EVAL flag for the call; it's not strictly
+		 * needed for the 'inner' eval call (the eval body) but
+		 * current new.target implementation expects to find it
+		 * so it can traverse direct eval chains up to the real
+		 * calling function.
+		 */
+		call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
+	}
+	duk_handle_call_unprotected(thr,           /* thread */
+	                            0,             /* num_stack_args */
+	                            call_flags);   /* call_flags */
 
 	/* [ env? source template result ] */
 

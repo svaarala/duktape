@@ -108,6 +108,7 @@
 #define DUK_STR_CANNOT_DELETE_IDENTIFIER         "cannot delete identifier"
 #define DUK_STR_INVALID_EXPRESSION               "invalid expression"
 #define DUK_STR_INVALID_LVALUE                   "invalid lvalue"
+#define DUK_STR_INVALID_NEWTARGET                "invalid new.target"
 #define DUK_STR_EXPECTED_IDENTIFIER              "expected identifier"
 #define DUK_STR_EMPTY_EXPR_NOT_ALLOWED           "empty expression not allowed"
 #define DUK_STR_INVALID_FOR                      "invalid for statement"
