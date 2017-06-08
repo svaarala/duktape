@@ -187,6 +187,8 @@ flag index: 2, top: 2
 - hasOwnProperty: function hasOwnProperty() { [native code] }
 - isPrototypeOf: function isPrototypeOf() { [native code] }
 - propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
+- __defineGetter__: function __defineGetter__() { [native code] }
+- __defineSetter__: function __defineSetter__() { [native code] }
 flag index: 3, top: 2
 - 0: 100
 - 1: 101

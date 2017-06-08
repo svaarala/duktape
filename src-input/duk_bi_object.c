@@ -805,3 +805,26 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context 
 	return 1;
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */
+
+/*
+ *  __defineGetter__, __defineSetter__
+ */
+
+#if defined(DUK_USE_ES8)
+DUK_INTERNAL duk_ret_t duk_bi_object_prototype_defineaccessor(duk_context *ctx) {
+	duk_push_this(ctx);
+	duk_insert(ctx, 0);
+	duk_to_object(ctx, 0);
+	if (!duk_is_callable(ctx, 2)) {
+		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	}
+
+	/* [ ToObject(this) key getter/setter ] */
+
+	/* ToPropertyKey() coercion is not needed, duk_def_prop() does it. */
+	duk_def_prop(ctx, 0, DUK_DEFPROP_SET_ENUMERABLE |
+	                     DUK_DEFPROP_SET_CONFIGURABLE |
+	                     (duk_get_current_magic(ctx) ? DUK_DEFPROP_HAVE_SETTER : DUK_DEFPROP_HAVE_GETTER));
+	return 0;
+}
+#endif  /* DUK_USE_ES8 */
