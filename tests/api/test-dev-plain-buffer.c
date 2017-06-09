@@ -189,6 +189,8 @@ flag index: 2, top: 2
 - propertyIsEnumerable: function propertyIsEnumerable() { [native code] }
 - __defineGetter__: function __defineGetter__() { [native code] }
 - __defineSetter__: function __defineSetter__() { [native code] }
+- __lookupGetter__: function __lookupGetter__() { [native code] }
+- __lookupSetter__: function __lookupSetter__() { [native code] }
 flag index: 3, top: 2
 - 0: 100
 - 1: 101
