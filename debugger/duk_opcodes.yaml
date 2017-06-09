@@ -871,7 +871,7 @@ opcodes:
     args:
       - A_I
       - BC_R
-  - name: NEW
+  - name: CONSCALL
     args:
       - A_I
       - BC_R
