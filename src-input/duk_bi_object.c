@@ -807,7 +807,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_prevent_extensions(duk_context 
 #endif  /* DUK_USE_OBJECT_BUILTIN || DUK_USE_REFLECT_BUILTIN */
 
 /*
- *  __defineGetter__, __defineSetter__
+ *  __defineGetter__, __defineSetter__, __lookupGetter__, __lookupSetter__
  */
 
 #if defined(DUK_USE_ES8)
@@ -815,9 +815,7 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_defineaccessor(duk_context *ctx) 
 	duk_push_this(ctx);
 	duk_insert(ctx, 0);
 	duk_to_object(ctx, 0);
-	if (!duk_is_callable(ctx, 2)) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
-	}
+	duk_require_callable(ctx, 2);
 
 	/* [ ToObject(this) key getter/setter ] */
 
@@ -826,5 +824,36 @@ DUK_INTERNAL duk_ret_t duk_bi_object_prototype_defineaccessor(duk_context *ctx) 
 	                     DUK_DEFPROP_SET_CONFIGURABLE |
 	                     (duk_get_current_magic(ctx) ? DUK_DEFPROP_HAVE_SETTER : DUK_DEFPROP_HAVE_GETTER));
 	return 0;
+}
+DUK_INTERNAL duk_ret_t duk_bi_object_prototype_lookupaccessor(duk_context *ctx) {
+	duk_uint_t sanity;
+
+	duk_push_this(ctx);
+	duk_to_object(ctx, -1);
+
+	/* XXX: Prototype walk (with sanity) should be a core property
+	 * operation, could add a flag to e.g. duk_get_prop_desc().
+	 */
+
+	/* ToPropertyKey() coercion is not needed, duk_get_prop_desc() does it. */
+	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
+	while (!duk_is_undefined(ctx, -1)) {
+		/* [ key obj ] */
+		duk_dup(ctx, 0);
+		duk_get_prop_desc(ctx, 1, 0 /*flags*/);
+		if (!duk_is_undefined(ctx, -1)) {
+			duk_get_prop_stridx(ctx, -1, (duk_get_current_magic(ctx) != 0 ? DUK_STRIDX_SET : DUK_STRIDX_GET));
+			return 1;
+		}
+		duk_pop(ctx);
+
+		if (DUK_UNLIKELY(sanity-- == 0)) {
+			DUK_ERROR_RANGE((duk_hthread *) ctx, DUK_STR_PROTOTYPE_CHAIN_LIMIT);
+		}
+
+		duk_get_prototype(ctx, -1);
+		duk_remove(ctx, -2);
+	}
+	return 1;
 }
 #endif  /* DUK_USE_ES8 */

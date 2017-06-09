@@ -699,10 +699,8 @@ objects:
           length: 1
         present_if: DUK_USE_OBJECT_BUILTIN
 
-      # __defineGetter, __defineSetter__: ES2018 draft Annex B
+      # __defineGetter, __defineSetter__, __lookupGetter__, __lookupSetter__: ES2017 Annex B
       # https://tc39.github.io/ecma262/#sec-additional-properties-of-the-object.prototype-object
-      # https://tc39.github.io/ecma262/#sec-object.prototype.__defineGetter__
-      # https://tc39.github.io/ecma262/#sec-object.prototype.__defineSetter__
 
       - key: "__defineGetter__"
         value:
@@ -717,6 +715,20 @@ objects:
           native: duk_bi_object_prototype_defineaccessor
           length: 2
           magic: 1  # define setter
+        present_if: DUK_USE_ES8
+      - key: "__lookupGetter__"
+        value:
+          type: function
+          native: duk_bi_object_prototype_lookupaccessor
+          length: 1
+          magic: 0  # lookup getter
+        present_if: DUK_USE_ES8
+      - key: "__lookupSetter__"
+        value:
+          type: function
+          native: duk_bi_object_prototype_lookupaccessor
+          length: 1
+          magic: 1  # lookup setter
         present_if: DUK_USE_ES8
 
   - id: bi_function_constructor

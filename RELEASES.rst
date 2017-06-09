@@ -2848,8 +2848,9 @@ Planned
   this change also allows .name and .length to be overridden using
   duk_def_prop() or Object.defineProperty() (GH-1493, GH-1494, GH-1515)
 
-* Add Object.prototype.{__defineGetter__,__defineSetter__} from ES7, they
-  are also used by a lot of existing legacy code (GH-1531)
+* Add Object.prototype.{__defineGetter__,__defineSetter__} and
+  Object.prototype.{__lookupGetter__,__lookupSetter__} from ES2017 Annex B,
+  they are also used by a lot of existing legacy code (GH-1531, GH-1551)
 
 * Handle Function.prototype.call(), Function.prototype.apply(),
   Reflect.apply(), and Reflect.construct() inline in call handling; as a side

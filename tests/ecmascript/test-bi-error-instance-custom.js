@@ -41,6 +41,8 @@ all properties (including non-enumerable and inherited)
 "propertyIsEnumerable"
 "__defineGetter__"
 "__defineSetter__"
+"__lookupGetter__"
+"__lookupSetter__"
 ---
 function function false true
 function function false true
