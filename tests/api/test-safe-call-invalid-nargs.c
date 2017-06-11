@@ -6,7 +6,7 @@
 *** test_nargs_too_large (duk_safe_call)
 top before: 3
 ==> rc=1, result='TypeError: invalid args'
-*** test_nargs_negative (duk_safe_call)
+*** test_nargs_minus1 (duk_safe_call)
 top before: 3
 ==> rc=1, result='TypeError: invalid args'
 ===*/
@@ -32,7 +32,7 @@ static duk_ret_t test_nargs_too_large(duk_context *ctx, void *udata) {
 	return 0;
 }
 
-static duk_ret_t test_nargs_negative(duk_context *ctx, void *udata) {
+static duk_ret_t test_nargs_minus1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 
 	duk_push_null(ctx);
@@ -49,5 +49,5 @@ static duk_ret_t test_nargs_negative(duk_context *ctx, void *udata) {
 
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_nargs_too_large);
-	TEST_SAFE_CALL(test_nargs_negative);
+	TEST_SAFE_CALL(test_nargs_minus1);
 }

@@ -108,6 +108,7 @@ void test(duk_context *ctx) {
 
 	printf("spawn threads\n"); fflush(stdout);
 	my_lock();
+	duk_require_stack(ctx, NUM_THREADS);
 	for (i = 0; i < NUM_THREADS; i++) {
 		/* Each thread gets a Duktape thread which is passed as the
 		 * thread 'arg'.  We keep the mutex while we're creating
