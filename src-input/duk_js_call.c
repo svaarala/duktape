@@ -2873,10 +2873,19 @@ DUK_INTERNAL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr,
 		DUK_ASSERT(act != NULL);
 		if (act->flags & DUK_ACT_FLAG_PREVENT_YIELD) {
 			/* See: test-bug-tailcall-preventyield-assert.c. */
-			DUK_DDD(DUK_DDDPRINT("tail call prevented by current activation having DUK_ACT_FLAG_PREVENTYIELD"));
+			DUK_DDD(DUK_DDDPRINT("tail call prevented by current activation preventing a yield"));
+			use_tailcall = 0;
+		} else if (((act->flags & DUK_ACT_FLAG_CONSTRUCT) && !(call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL)) ||
+		           (!(act->flags & DUK_ACT_FLAG_CONSTRUCT) && (call_flags & DUK_CALL_FLAG_CONSTRUCTOR_CALL))) {
+			/* Cannot tailcall if mixing normal and constructor
+			 * calls.  Current function and potential tailcall
+			 * must have same return value handling (normal or
+			 * constructor special handling).
+			 */
+			DUK_DDD(DUK_DDDPRINT("tail call prevented by incompatible return value handling"));
 			use_tailcall = 0;
 		} else if (DUK_HOBJECT_HAS_NOTAIL(func)) {
-			DUK_D(DUK_DPRINT("tail call prevented by function having a notail flag"));
+			DUK_DDD(DUK_DDDPRINT("tail call prevented by function having a notail flag"));
 			use_tailcall = 0;
 		}
 	}
