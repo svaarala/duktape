@@ -2855,13 +2855,13 @@ Planned
 * Handle Function.prototype.call(), Function.prototype.apply(),
   Reflect.apply(), and Reflect.construct() inline in call handling; as a side
   effect .call(), .apply(), and .construct() no longer appear in the call stack
-  (tracebacks etc) (GH-1421, GH-1522, GH-1545)
+  (tracebacks etc) (GH-1421, GH-1522, GH-1545, GH-1557)
 
 * Function.prototype.call(), Function.prototype.apply(), Reflect.apply(),
   and Reflect.construct() can now be used in tailcalls (e.g.
   'return func.call(null, 123);'), don't grow the native C stack when doing an
   Ecmascript-to-Ecmascript call, and no longer prevent coroutine yielding
-  (GH-1421, GH-1545)
+  (GH-1421, GH-1545, GH-1557)
 
 * Constructor calls (new Func()) can be used in tailcalls, don't grow
   the native C stack when doing an Ecmascript-to-Ecmascript call, and no
