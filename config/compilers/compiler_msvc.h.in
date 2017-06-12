@@ -72,4 +72,13 @@
 #endif
 
 /* Avoid warning when doing DUK_UNREF(some_function). */
+#if defined(_MSC_VER) && (_MSC_VER < 1500)
+#pragma warning(disable: 4100 4101 4550 4551)
+#define DUK_UNREF(x)
+#else
 #define DUK_UNREF(x)  do { __pragma(warning(suppress:4100 4101 4550 4551)) (x); } while (0)
+#endif
+
+/* Older versions of MSVC don't support the LL/ULL suffix. */
+#define DUK_U64_CONSTANT(x) x##ui64
+#define DUK_I64_CONSTANT(x) x##i64

@@ -312,9 +312,9 @@ DUK_INTERNAL duk_bool_t duk_double_is_nan_or_inf(duk_double_t x) {
 	 */
 #if defined(DUK_USE_64BIT_OPS)
 #if defined(DUK_USE_DOUBLE_ME)
-	return (du.ull[DUK_DBL_IDX_ULL0] & 0x000000007ff00000ULL) == 0x000000007ff00000ULL;
+	return (du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x000000007ff00000)) == DUK_U64_CONSTANT(0x000000007ff00000);
 #else
-	return (du.ull[DUK_DBL_IDX_ULL0] & 0x7ff0000000000000ULL) == 0x7ff0000000000000ULL;
+	return (du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x7ff0000000000000)) == DUK_U64_CONSTANT(0x7ff0000000000000);
 #endif
 #else
 	return (du.ui[DUK_DBL_IDX_UI0] & 0x7ff00000UL) == 0x7ff00000UL;
@@ -331,21 +331,21 @@ DUK_INTERNAL duk_bool_t duk_double_is_nan_zero_inf(duk_double_t x) {
 	du.d = x;
 #if defined(DUK_USE_64BIT_OPS)
 #if defined(DUK_USE_DOUBLE_ME)
-	t = du.ull[DUK_DBL_IDX_ULL0] & 0x000000007ff00000ULL;
-	if (t == 0x0000000000000000ULL) {
-		t = du.ull[DUK_DBL_IDX_ULL0] & 0x0000000080000000ULL;
+	t = du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x000000007ff00000);
+	if (t == DUK_U64_CONSTANT(0x0000000000000000)) {
+		t = du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x0000000080000000);
 		return t == 0;
 	}
-	if (t == 0x000000007ff00000UL) {
+	if (t == DUK_U64_CONSTANT(0x000000007ff00000)) {
 		return 1;
 	}
 #else
-	t = du.ull[DUK_DBL_IDX_ULL0] & 0x7ff0000000000000ULL;
-	if (t == 0x0000000000000000ULL) {
-		t = du.ull[DUK_DBL_IDX_ULL0] & 0x8000000000000000ULL;
+	t = du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x7ff0000000000000);
+	if (t == DUK_U64_CONSTANT(0x0000000000000000)) {
+		t = du.ull[DUK_DBL_IDX_ULL0] & DUK_U64_CONSTANT(0x8000000000000000);
 		return t == 0;
 	}
-	if (t == 0x7ff0000000000000ULL) {
+	if (t == DUK_U64_CONSTANT(0x7ff0000000000000)) {
 		return 1;
 	}
 #endif

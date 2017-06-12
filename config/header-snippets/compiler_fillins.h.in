@@ -163,3 +163,10 @@
 #if 0  /* not defined by default */
 #undef DUK_USE_GCC_PRAGMAS
 #endif
+
+#if !defined(DUK_U64_CONSTANT)
+#define DUK_U64_CONSTANT(x) x##ULL
+#endif
+#if !defined(DUK_I64_CONSTANT)
+#define DUK_I64_CONSTANT(x) x##LL
+#endif

@@ -52,7 +52,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx) {
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
 	/* Difference is in 100ns units, convert to milliseconds w/o fractions */
-	return (duk_double_t) ((tmp1.QuadPart - tmp2.QuadPart) / 10000LL);
+	return (duk_double_t) (((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / DUK_I64_CONSTANT(10000));
 }
 #endif  /* DUK_USE_DATE_NOW_WINDOWS */
 
@@ -93,7 +93,7 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t 
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st3, &tmp3);
 
 	/* Positive if local time ahead of UTC. */
-	return (duk_int_t) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000000LL);  /* seconds */
+	return (duk_int_t) (((LONGLONG) tmp3.QuadPart - (LONGLONG) tmp2.QuadPart) / DUK_I64_CONSTANT(10000000));  /* seconds */
 }
 #endif  /* DUK_USE_DATE_TZO_WINDOWS */
 
