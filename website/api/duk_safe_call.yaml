@@ -11,7 +11,11 @@ summary: |
   frame (the call is not visible on the call stack).  <code>nargs</code>
   topmost values in the current value stack frame are identified as call
   arguments, and <code>nrets</code> return values are provided after the call
-  returns.  The <code>udata</code> (userdata) pointer is passed on to
+  returns.  Calling code must ensure value stack has reserve for <code>nrets</code>
+  using e.g. <code><a href="duk_check_stack()">duk_check_stack</a></code>, and
+  handling reservation errors.</p>
+
+  <p>The <code>udata</code> (userdata) pointer is passed on to
   <code>func</code> as is, and makes it easy to pass one or more C values to
   the target function without using the value stack.  Multiple values can be
   passed by packing them into a stack-allocated C struct and passing a pointer
@@ -27,7 +31,7 @@ summary: |
   <li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with
       <code>nrets</code> values, first of which is an error value and the rest are <code>undefined</code>.
       (In exceptional cases, e.g. when there are too few arguments on the value stack, the call
-      returns non-zero but may leave the stack in an inconsistent state.)</li>
+      may throw.)</li>
   </ul>
 
   <div class="note">

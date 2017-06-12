@@ -20,8 +20,7 @@ summary: |
       that one can check for success with a "zero or non-zero" check.)</li>
   <li><code>DUK_EXEC_ERROR</code>: call failed, <code>nargs</code> arguments are replaced with a
       single error value.  (In exceptional cases, e.g. when there are too few
-      arguments on the value stack, the call returns non-zero but may leave the stack
-      in an inconsistent state.)</li>
+      arguments on the value stack, the call may throw.)</li>
   </ul>
 
   <div class="note">

@@ -44,7 +44,7 @@ DUK_EXTERNAL void duk_call(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 1;
-	if (idx_func < 0 || nargs < 0) {
+	if (DUK_UNLIKELY(idx_func < 0 || nargs < 0)) {
 		/* note that we can't reliably pop anything here */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
@@ -71,7 +71,7 @@ DUK_EXTERNAL void duk_call_method(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
-	if (idx_func < 0 || nargs < 0) {
+	if (DUK_UNLIKELY(idx_func < 0 || nargs < 0)) {
 		/* note that we can't reliably pop anything here */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
@@ -110,7 +110,7 @@ DUK_EXTERNAL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 1;  /* must work for nargs <= 0 */
-	if (idx_func < 0 || nargs < 0) {
+	if (DUK_UNLIKELY(idx_func < 0 || nargs < 0)) {
 		/* We can't reliably pop anything here because the stack input
 		 * shape is incorrect.  So we throw an error; if the caller has
 		 * no catch point for this, a fatal error will occur.  Another
@@ -148,7 +148,7 @@ DUK_EXTERNAL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT(thr != NULL);
 
 	idx_func = duk_get_top(ctx) - nargs - 2;  /* must work for nargs <= 0 */
-	if (idx_func < 0 || nargs < 0) {
+	if (DUK_UNLIKELY(idx_func < 0 || nargs < 0)) {
 		/* See comments in duk_pcall(). */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		return DUK_EXEC_ERROR;  /* unreachable */
@@ -188,6 +188,7 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_context *ctx, void *udata) {
 }
 
 DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_idx, duk_idx_t nargs) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk__pcall_prop_args args;
 
 	/*
@@ -199,6 +200,10 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_idx, duk_i
 
 	args.obj_idx = obj_idx;
 	args.nargs = nargs;
+	if (DUK_UNLIKELY(nargs < 0)) {
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		return DUK_EXEC_ERROR;  /* unreachable */
+	}
 
 	/* Inputs: explicit arguments (nargs), +1 for key.  If the value stack
 	 * does not contain enough args, an error is thrown; this matches
@@ -214,7 +219,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
-	if (duk_get_top(ctx) < nargs || nrets < 0) {
+	if (DUK_UNLIKELY(duk_get_top(ctx) < nargs || nargs < 0 || nrets < 0)) {
 		/* See comments in duk_pcall(). */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		return DUK_EXEC_ERROR;  /* unreachable */
@@ -236,7 +241,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	idx_func = duk_get_top(ctx) - nargs - 1;
-	if (idx_func < 0 || nargs < 0) {
+	if (DUK_UNLIKELY(idx_func < 0 || nargs < 0)) {
 		/* note that we can't reliably pop anything here */
 		DUK_ERROR_TYPE_INVALID_ARGS(thr);
 	}
@@ -258,6 +263,7 @@ DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx, void *udata) {
 }
 
 DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
+	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_int_t rc;
 
 	DUK_ASSERT_CTX_VALID(ctx);
@@ -266,6 +272,11 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
 	 * simply use a protected duk_handle_call() because pushing the
 	 * default instance might throw.
 	 */
+
+	if (DUK_UNLIKELY(nargs < 0)) {
+		DUK_ERROR_TYPE_INVALID_ARGS(thr);
+		return DUK_EXEC_ERROR;  /* unreachable */
+	}
 
 	rc = duk_safe_call(ctx, duk__pnew_helper, (void *) &nargs /*udata*/, nargs + 1 /*nargs*/, 1 /*nrets*/);
 	return rc;
