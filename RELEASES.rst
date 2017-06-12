@@ -2889,6 +2889,10 @@ Planned
 
 * Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
 
+* Fix duk_pcall_prop(), duk_safe_call(), and duk_pnew() argument validation,
+  in some cases a negative nargs/nrets argument (which is always invalid)
+  could be accepted (GH-1553)
+
 * Fix potential segfault in debugger GetHeapObjInfo command, caused by
   key/mask list being out of sync (GH-1540)
 
