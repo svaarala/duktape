@@ -13,6 +13,8 @@ summary: |
   value indicates success and the eval result is left on the stack top.
   A non-zero return value indicates an error, and the error is left on the stack top.</p>
 
+  <p>If value stack top is too low (smaller than 1), an error is thrown.</p>
+
 example: |
   duk_push_string(ctx, "print('Hello world!'); syntax error here=");
   if (duk_peval(ctx) != 0) {

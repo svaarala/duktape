@@ -13,6 +13,8 @@ summary: |
   value indicates success and the compiled function is left on the stack top.
   A non-zero return value indicates an error, and the error is left on the stack top.</p>
 
+  <p>If value stack top is too low (smaller than 2), an error is thrown.</p>
+
 example: |
   duk_push_string(ctx, "print('program'); syntax error here=");
   duk_push_string(ctx, "hello-with-syntax-error");
