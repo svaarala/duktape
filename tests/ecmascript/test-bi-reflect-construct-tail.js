@@ -2,7 +2,10 @@
  *  In Duktape 2.2 Reflect.construct() is handled inline in call handling and
  *  doesn't involve a native call.  Ecmascript-to-Ecmascript Reflect.construct()
  *  calls are thus only limited by callstack limit (not recursion C limit).
- *  Reflect.construct() can be used in tailcall position.
+ *
+ *  Reflect.construct() can be used in tailcall position as long as the function
+ *  making the call is also a constructor function, so that both functions share
+ *  the same return value constructor postprocessing.
  */
 
 /*---
