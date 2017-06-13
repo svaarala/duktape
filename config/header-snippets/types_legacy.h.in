@@ -81,12 +81,15 @@ typedef unsigned long long duk_uint64_t;
 typedef signed long long duk_int64_t;
 #endif
 #endif
-#if !defined(DUK_F_HAVE_64BIT) && \
-    (defined(DUK_F_MINGW) || defined(DUK_F_MSVC))
-/* Both MinGW and MSVC have a 64-bit type. */
+#if !defined(DUK_F_HAVE_64BIT) && defined(DUK_F_MINGW)
 #define DUK_F_HAVE_64BIT
 typedef unsigned long duk_uint64_t;
 typedef signed long duk_int64_t;
+#endif
+#if !defined(DUK_F_HAVE_64BIT) && defined(DUK_F_MSVC)
+#define DUK_F_HAVE_64BIT
+typedef unsigned __int64 duk_uint64_t;
+typedef signed __int64 duk_int64_t;
 #endif
 #if !defined(DUK_F_HAVE_64BIT)
 /* cannot detect 64-bit type, not always needed so don't error */

@@ -60,9 +60,9 @@ DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 #if defined(DUK__RANDOM_XOROSHIRO128PLUS)
 DUK_LOCAL DUK_ALWAYS_INLINE duk_uint64_t duk__rnd_splitmix64(duk_uint64_t *x) {
 	duk_uint64_t z;
-	z = (*x += 0x9E3779B97F4A7C15ULL);
-	z = (z ^ (z >> 30U)) * 0xBF58476D1CE4E5B9ULL;
-	z = (z ^ (z >> 27U)) * 0x94D049BB133111EBULL;
+	z = (*x += DUK_U64_CONSTANT(0x9E3779B97F4A7C15));
+	z = (z ^ (z >> 30U)) * DUK_U64_CONSTANT(0xBF58476D1CE4E5B9);
+	z = (z ^ (z >> 27U)) * DUK_U64_CONSTANT(0x94D049BB133111EB);
 	return z ^ (z >> 31U);
 }
 
@@ -108,7 +108,7 @@ DUK_INTERNAL duk_double_t duk_util_tinyrandom_get_double(duk_hthread *thr) {
 	 * is the same so a direct assignment works.  For mixed endian the
 	 * 32-bit parts must be swapped.
 	 */
-	v = (0x3ffULL << 52U) | (duk__xoroshiro128plus((duk_uint64_t *) thr->heap->rnd_state) >> 12U);
+	v = (DUK_U64_CONSTANT(0x3ff) << 52U) | (duk__xoroshiro128plus((duk_uint64_t *) thr->heap->rnd_state) >> 12U);
 	du.ull[0] = v;
 #if defined(DUK_USE_DOUBLE_ME)
 	do {
