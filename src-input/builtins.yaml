@@ -2492,7 +2492,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "fabs"  # BI_MATH_FABS_IDX
+            funcname: "fabs"
       - key: "acos"
         value:
           type: function
@@ -2500,7 +2500,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "acos"  # BI_MATH_ACOS_IDX
+            funcname: "acos"
       - key: "asin"
         value:
           type: function
@@ -2508,7 +2508,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "asin"  # BI_MATH_ASIN_IDX
+            funcname: "asin"
       - key: "atan"
         value:
           type: function
@@ -2516,7 +2516,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "atan"  # BI_MATH_ATAN_IDX
+            funcname: "atan"
       - key: "atan2"
         value:
           type: function
@@ -2524,7 +2524,7 @@ objects:
           length: 2
           magic:
             type: math_twoarg
-            funcname: "atan2"  # BI_MATH_ATAN2_IDX
+            funcname: "atan2"
       - key: "cbrt"
         value:
           type: function
@@ -2532,7 +2532,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "cbrt"  # BI_MATH_CBRT_IDX
+            funcname: "cbrt"
         es6: true
         present_if: DUK_USE_ES6
       - key: "ceil"
@@ -2542,7 +2542,14 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "ceil"  # BI_MATH_CEIL_IDX
+            funcname: "ceil"
+      - key: "clz32"
+        value:
+          type: function
+          native: duk_bi_math_object_clz32
+          length: 1
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "cos"
         value:
           type: function
@@ -2550,7 +2557,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "cos"  # BI_MATH_COS_IDX
+            funcname: "cos"
       - key: "exp"
         value:
           type: function
@@ -2558,7 +2565,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "exp"  # BI_MATH_EXP_IDX
+            funcname: "exp"
       - key: "floor"
         value:
           type: function
@@ -2566,13 +2573,20 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "floor"  # BI_MATH_FLOOR_IDX
+            funcname: "floor"
       - key: "hypot"
         value:
           type: function
           native: duk_bi_math_object_hypot
           length: 2
           varargs: true
+        es6: true
+        present_if: DUK_USE_ES6
+      - key: "imul"
+        value:
+          type: function
+          native: duk_bi_math_object_imul
+          length: 2
         es6: true
         present_if: DUK_USE_ES6
       - key: "log"
@@ -2582,7 +2596,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "log"  # BI_MATH_LOG_IDX
+            funcname: "log"
       - key: "log2"
         value:
           type: function
@@ -2590,7 +2604,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "log2"  # BI_MATH_LOG2_IDX
+            funcname: "log2"
         es6: true
         present_if: DUK_USE_ES6
       - key: "log10"
@@ -2600,7 +2614,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "log10"  # BI_MATH_LOG10_IDX
+            funcname: "log10"
         es6: true
         present_if: DUK_USE_ES6
       - key: "max"
@@ -2622,7 +2636,7 @@ objects:
           length: 2
           magic:
             type: math_twoarg
-            funcname: "pow"  # BI_MATH_POW_IDX
+            funcname: "pow"
       - key: "random"
         value:
           type: function
@@ -2635,7 +2649,14 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "round"  # BI_MATH_ROUND_IDX
+            funcname: "round"
+      - key: "sign"
+        value:
+          type: function
+          native: duk_bi_math_object_sign
+          length: 1
+        es6: true
+        present_if: DUK_USE_ES6
       - key: "sin"
         value:
           type: function
@@ -2643,7 +2664,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "sin"  # BI_MATH_SIN_IDX
+            funcname: "sin"
       - key: "sqrt"
         value:
           type: function
@@ -2651,7 +2672,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "sqrt"  # BI_MATH_SQRT_IDX
+            funcname: "sqrt"
       - key: "tan"
         value:
           type: function
@@ -2659,7 +2680,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "tan"  # BI_MATH_TAN_IDX
+            funcname: "tan"
       - key: "trunc"
         value:
           type: function
@@ -2667,7 +2688,7 @@ objects:
           length: 1
           magic:
             type: math_onearg
-            funcname: "trunc"  # BI_MATH_TRUNC_IDX
+            funcname: "trunc"
         es6: true
         present_if: DUK_USE_ES6
       - key:
