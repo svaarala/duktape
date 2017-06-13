@@ -2852,6 +2852,8 @@ Planned
   Object.prototype.{__lookupGetter__,__lookupSetter__} from ES2017 Annex B,
   they are also used by a lot of existing legacy code (GH-1531, GH-1551)
 
+* Add ES2015 Math.clz32(), Math.imul(), and Math.sign() (GH-1561)
+
 * Handle Function.prototype.call(), Function.prototype.apply(),
   Reflect.apply(), and Reflect.construct() inline in call handling; as a side
   effect .call(), .apply(), and .construct() no longer appear in the call stack

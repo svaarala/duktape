@@ -422,4 +422,97 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 }
 #endif  /* DUK_USE_ES6 */
 
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_math_object_sign(duk_context *ctx) {
+	duk_double_t d;
+
+	d = duk_to_number(ctx, 0);
+	if (duk_double_is_nan(d)) {
+		DUK_ASSERT(duk_is_nan(ctx, -1));
+		return 1;  /* NaN input -> return NaN */
+	}
+	if (d == 0.0) {
+		/* Zero sign kept, i.e. -0 -> -0, +0 -> +0. */
+		return 1;
+	}
+	duk_push_int(ctx, (d > 0.0 ? 1 : -1));
+	return 1;
+}
+#endif  /* DUK_USE_ES6 */
+
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_math_object_clz32(duk_context *ctx) {
+	duk_uint32_t x;
+	duk_small_uint_t i;
+
+#if defined(DUK_USE_PREFER_SIZE)
+	duk_uint32_t mask;
+
+	x = duk_to_uint32(ctx, 0);
+	for (i = 0, mask = 0x80000000UL; mask != 0; mask >>= 1) {
+		if (x & mask) {
+			break;
+		}
+		i++;
+	}
+	DUK_ASSERT(i <= 32);
+	duk_push_uint(ctx, i);
+	return 1;
+#else  /* DUK_USE_PREFER_SIZE */
+	i = 0;
+	x = duk_to_uint32(ctx, 0);
+	if (x & 0xffff0000UL) {
+		x >>= 16;
+	} else {
+		i += 16;
+	}
+	if (x & 0x0000ff00UL) {
+		x >>= 8;
+	} else {
+		i += 8;
+	}
+	if (x & 0x000000f0UL) {
+		x >>= 4;
+	} else {
+		i += 4;
+	}
+	if (x & 0x0000000cUL) {
+		x >>= 2;
+	} else {
+		i += 2;
+	}
+	if (x & 0x00000002UL) {
+		x >>= 1;
+	} else {
+		i += 1;
+	}
+	if (x & 0x00000001UL) {
+		;
+	} else {
+		i += 1;
+	}
+	DUK_ASSERT(i <= 32);
+	duk_push_uint(ctx, i);
+	return 1;
+#endif  /* DUK_USE_PREFER_SIZE */
+}
+#endif  /* DUK_USE_ES6 */
+
+#if defined(DUK_USE_ES6)
+DUK_INTERNAL duk_ret_t duk_bi_math_object_imul(duk_context *ctx) {
+	duk_uint32_t x, y, z;
+
+	x = duk_to_uint32(ctx, 0);
+	y = duk_to_uint32(ctx, 1);
+	z = x * y;
+
+	/* While arguments are ToUint32() coerced and the multiplication
+	 * is unsigned as such, the final result is curiously interpreted
+	 * as a signed 32-bit value.
+	 */
+	duk_push_i32(ctx, (duk_int32_t) z);
+	return 1;
+}
+#endif  /* DUK_USE_ES6 */
+
 #endif  /* DUK_USE_MATH_BUILTIN */
