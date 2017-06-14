@@ -1110,8 +1110,8 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->rnd_state[0] = (duk_uint64_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
 	DUK_ASSERT(res->rnd_state[1] == 0);  /* Not filled here, filled in by seed preparation. */
 #if 0  /* Manual test values matching misc/xoroshiro128plus_test.c. */
-	res->rnd_state[0] = 0xdeadbeef12345678ULL;
-	res->rnd_state[1] = 0xcafed00d12345678ULL;
+	res->rnd_state[0] = DUK_U64_CONSTANT(0xdeadbeef12345678);
+	res->rnd_state[1] = DUK_U64_CONSTANT(0xcafed00d12345678);
 #endif
 	duk_util_tinyrandom_prepare_seed(res->heap_thread);
 	/* Mix in heap pointer: this ensures that if two Duktape heaps are

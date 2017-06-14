@@ -125,6 +125,6 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_do
 	FileTimeToSystemTime((const FILETIME *) &ft2, &st2);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
-	return (duk_int_t) (((LONGLONG) tmp2.QuadPart - (LONGLONG) tmp1.QuadPart) / 10000000LL);  /* seconds */
+	return (duk_int_t) (((LONGLONG) tmp2.QuadPart - (LONGLONG) tmp1.QuadPart) / DUK_I64_CONSTANT(10000000));  /* seconds */
 }
 #endif  /* DUK_USE_DATE_TZO_WINDOWS_NO_DST */

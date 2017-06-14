@@ -117,7 +117,7 @@ DUK_LOCAL duk_uint32_t duk__tval_fastint_to_arr_idx(duk_tval *tv) {
 	DUK_ASSERT(DUK_TVAL_IS_FASTINT(tv));
 
 	t = DUK_TVAL_GET_FASTINT(tv);
-	if ((t & ~0xffffffffULL) != 0) {
+	if ((t & ~DUK_U64_CONSTANT(0xffffffff)) != 0) {
 		/* Catches >0x100000000 and negative values. */
 		return DUK__NO_ARRAY_INDEX;
 	}
@@ -2901,7 +2901,7 @@ DUK_LOCAL duk_uint32_t duk__to_new_array_length_checked(duk_hthread *thr, duk_tv
 		/* Very common case. */
 		duk_int64_t fi;
 		fi = DUK_TVAL_GET_FASTINT(tv);
-		if (fi < 0 || fi > 0xffffffffLL) {
+		if (fi < 0 || fi > DUK_I64_CONSTANT(0xffffffff)) {
 			goto fail_range;
 		}
 		return (duk_uint32_t) fi;

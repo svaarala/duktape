@@ -129,7 +129,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 		v2 = DUK_TVAL_GET_FASTINT(tv_y);
 		v3 = v1 + v2;
 		v3_hi = (duk_int32_t) (v3 >> 32);
-		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
+		if (DUK_LIKELY(v3_hi >= DUK_I64_CONSTANT(-0x8000) && v3_hi <= DUK_I64_CONSTANT(0x7fff))) {
 			tv_z = thr->valstack_bottom + idx_z;
 			DUK_TVAL_SET_FASTINT_UPDREF(thr, tv_z, v3);  /* side effects */
 			return;
@@ -240,8 +240,8 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 			 * 32-bit inputs.  Avoid zero inputs to avoid
 			 * negative zero issues (-1 * 0 = -0, for instance).
 			 */
-			if (v1 >= -0x80000000LL && v1 <= 0x7fffffffLL && v1 != 0 &&
-			    v2 >= -0x80000000LL && v2 <= 0x7fffffffLL && v2 != 0) {
+			if (v1 >= DUK_I64_CONSTANT(-0x80000000) && v1 <= DUK_I64_CONSTANT(0x7fffffff) && v1 != 0 &&
+			    v2 >= DUK_I64_CONSTANT(-0x80000000) && v2 <= DUK_I64_CONSTANT(0x7fffffff) && v2 != 0) {
 				v3 = v1 * v2;
 			} else {
 				goto skip_fastint;
@@ -284,7 +284,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 		}
 
 		v3_hi = (duk_int32_t) (v3 >> 32);
-		if (DUK_LIKELY(v3_hi >= -0x8000LL && v3_hi <= 0x7fffLL)) {
+		if (DUK_LIKELY(v3_hi >= DUK_I64_CONSTANT(-0x8000) && v3_hi <= DUK_I64_CONSTANT(0x7fff))) {
 			tv_z = thr->valstack_bottom + idx_z;
 			DUK_TVAL_SET_FASTINT_UPDREF(thr, tv_z, v3);  /* side effects */
 			return;
