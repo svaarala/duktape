@@ -458,7 +458,7 @@ DUK_LOCAL duk_uint_t duk__selftest_64bit_arithmetic(void) {
 	/* Catch a double-to-int64 cast issue encountered in practice. */
 	d = 2147483648.0;
 	i = (duk_int64_t) d;
-	if (i != 0x80000000LL) {
+	if (i != DUK_I64_CONSTANT(0x80000000)) {
 		DUK__FAILED("casting 2147483648.0 to duk_int64_t failed");
 	}
 #else

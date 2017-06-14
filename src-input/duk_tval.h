@@ -131,7 +131,7 @@ typedef struct {
 	} while (0)
 #else
 #define DUK__TVAL_SET_I48(tv,i)  do { \
-		(tv)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_FASTINT) << 48) | (((duk_uint64_t) (i)) & 0x0000ffffffffffffULL); \
+		(tv)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_FASTINT) << 48) | (((duk_uint64_t) (i)) & DUK_U64_CONSTANT(0x0000ffffffffffff)); \
 	} while (0)
 #define DUK__TVAL_SET_U32(tv,i)  do { \
 		(tv)->ull[DUK_DBL_IDX_ULL0] = (((duk_uint64_t) DUK_TAG_FASTINT) << 48) | (duk_uint64_t) (i); \
@@ -621,8 +621,8 @@ DUK_INTERNAL_DECL duk_double_t duk_tval_get_number_unpacked_fastint(duk_tval *tv
 
 /* fastint constants etc */
 #if defined(DUK_USE_FASTINT)
-#define DUK_FASTINT_MIN           (-0x800000000000LL)
-#define DUK_FASTINT_MAX           0x7fffffffffffLL
+#define DUK_FASTINT_MIN           (DUK_I64_CONSTANT(-0x800000000000))
+#define DUK_FASTINT_MAX           (DUK_I64_CONSTANT(0x7fffffffffff))
 #define DUK_FASTINT_BITS          48
 
 DUK_INTERNAL_DECL void duk_tval_set_number_chkfast_fast(duk_tval *tv, duk_double_t x);

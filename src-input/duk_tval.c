@@ -35,9 +35,9 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast_fast(duk_tval *t
 	if (shift >= 0 && shift <= 46) {  /* exponents 1023 to 1069 */
 		duk_int64_t t;
 
-		if (((0x000fffffffffffffLL >> shift) & i) == 0) {
-			t = i | 0x0010000000000000LL;  /* implicit leading one */
-			t = t & 0x001fffffffffffffLL;
+		if (((DUK_I64_CONSTANT(0x000fffffffffffff) >> shift) & i) == 0) {
+			t = i | DUK_I64_CONSTANT(0x0010000000000000);  /* implicit leading one */
+			t = t & DUK_I64_CONSTANT(0x001fffffffffffff);
 			t = t >> (52 - shift);
 			if (i < 0) {
 				t = -t;
@@ -46,13 +46,13 @@ DUK_INTERNAL DUK_ALWAYS_INLINE void duk_tval_set_number_chkfast_fast(duk_tval *t
 			return;
 		}
 	} else if (shift == -1023) {  /* exponent 0 */
-		if (i >= 0 && (i & 0x000fffffffffffffLL) == 0) {
+		if (i >= 0 && (i & DUK_I64_CONSTANT(0x000fffffffffffff)) == 0) {
 			/* Note: reject negative zero. */
 			DUK_TVAL_SET_FASTINT(tv, (duk_int64_t) 0);
 			return;
 		}
 	} else if (shift == 47) {  /* exponent 1070 */
-		if (i < 0 && (i & 0x000fffffffffffffLL) == 0) {
+		if (i < 0 && (i & DUK_I64_CONSTANT(0x000fffffffffffff)) == 0) {
 			DUK_TVAL_SET_FASTINT(tv, (duk_int64_t) DUK_FASTINT_MIN);
 			return;
 		}
@@ -78,15 +78,15 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_packed(duk_tval 
 	t = (duk_uint64_t) DUK_DBLUNION_GET_UINT64(tv);
 	if ((t >> 48) != DUK_TAG_FASTINT) {
 		return tv->d;
-	} else if (t & 0x0000800000000000ULL) {
+	} else if (t & DUK_U64_CONSTANT(0x0000800000000000)) {
 		t = (duk_uint64_t) (-((duk_int64_t) t));  /* avoid unary minus on unsigned */
-		t = t & 0x0000ffffffffffffULL;  /* negative */
-		t |= 0xc330000000000000ULL;
+		t = t & DUK_U64_CONSTANT(0x0000ffffffffffff);  /* negative */
+		t |= DUK_U64_CONSTANT(0xc330000000000000);
 		DUK_DBLUNION_SET_UINT64(&du, t);
 		return du.d + 4503599627370496.0;  /* 1 << 52 */
 	} else if (t != 0) {
-		t &= 0x0000ffffffffffffULL;  /* positive */
-		t |= 0x4330000000000000ULL;
+		t &= DUK_U64_CONSTANT(0x0000ffffffffffff);  /* positive */
+		t |= DUK_U64_CONSTANT(0x4330000000000000);
 		DUK_DBLUNION_SET_UINT64(&du, t);
 		return du.d - 4503599627370496.0;  /* 1 << 52 */
 	} else {
@@ -105,11 +105,11 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked(duk_tva
 
 	if (tv->t == DUK_TAG_FASTINT) {
 		if (tv->v.fi >= 0) {
-			t = 0x4330000000000000ULL | (duk_uint64_t) tv->v.fi;
+			t = DUK_U64_CONSTANT(0x4330000000000000) | (duk_uint64_t) tv->v.fi;
 			DUK_DBLUNION_SET_UINT64(&du, t);
 			return du.d - 4503599627370496.0;  /* 1 << 52 */
 		} else {
-			t = 0xc330000000000000ULL | (duk_uint64_t) (-tv->v.fi);
+			t = DUK_U64_CONSTANT(0xc330000000000000) | (duk_uint64_t) (-tv->v.fi);
 			DUK_DBLUNION_SET_UINT64(&du, t);
 			return du.d + 4503599627370496.0;  /* 1 << 52 */
 		}
@@ -128,11 +128,11 @@ DUK_INTERNAL DUK_ALWAYS_INLINE duk_double_t duk_tval_get_number_unpacked_fastint
 	DUK_ASSERT(tv->t == DUK_TAG_FASTINT);
 
 	if (tv->v.fi >= 0) {
-		t = 0x4330000000000000ULL | (duk_uint64_t) tv->v.fi;
+		t = DUK_U64_CONSTANT(0x4330000000000000) | (duk_uint64_t) tv->v.fi;
 		DUK_DBLUNION_SET_UINT64(&du, t);
 		return du.d - 4503599627370496.0;  /* 1 << 52 */
 	} else {
-		t = 0xc330000000000000ULL | (duk_uint64_t) (-tv->v.fi);
+		t = DUK_U64_CONSTANT(0xc330000000000000) | (duk_uint64_t) (-tv->v.fi);
 		DUK_DBLUNION_SET_UINT64(&du, t);
 		return du.d + 4503599627370496.0;  /* 1 << 52 */
 	}

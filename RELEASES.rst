@@ -2927,6 +2927,9 @@ Planned
 
 * Fix MSVC cast warning in error augmentation code (GH-1511)
 
+* Improve support for old MSVC versions without __pragma(), long long, and
+  LL/ULL constants (GH-1559, GH-1562)
+
 * Simplify handling of ENDFIN opcode a bit (GH-1508)
 
 * Rework value stack grow/shrink handling; value stack is now grown when

@@ -986,6 +986,7 @@ codepolicycheck:
 		--check-nonleading-tab \
 		--check-cpp-comment \
 		--check-ifdef-ifndef \
+		--check-longlong-constants \
 		--dump-vim-commands \
 		src-input/*.c src-input/*.h src-input/*.h.in tests/api/*.c
 	@$(PYTHON) util/check_code_policy.py \
