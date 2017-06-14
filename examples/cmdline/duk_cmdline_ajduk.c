@@ -105,6 +105,7 @@ static const AJS_HeapConfig ajsheap_config[] = {
 	{ 400,    1,    AJS_POOL_BORROW,  0 },  /* duk_hthread, with heap ptr compression, RAM strings+objects */
 	{ 536,    1,    AJS_POOL_BORROW,  0 },  /* duk_heap, with heap ptr compression, RAM strings+objects */
 	{ 512,    16,   AJS_POOL_BORROW,  0 },
+	{ 768,    1,    AJS_POOL_BORROW,  0 },  /* initial value stack */
 	{ 1024,   6,    AJS_POOL_BORROW,  0 },
 	{ 2048,   5,    AJS_POOL_BORROW,  0 },
 	{ 4096,   3,    0,                0 },
