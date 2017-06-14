@@ -748,8 +748,8 @@ union duk_propvalue {
 struct duk_propdesc {
 	/* read-only values 'lifted' for ease of use */
 	duk_small_uint_t flags;
-	duk_hobject *get;
-	duk_hobject *set;
+	duk_hobject *get;  /* borrowed */
+	duk_hobject *set;  /* borrowed */
 
 	/* for updating (all are set to < 0 for virtual properties) */
 	duk_int_t e_idx;  /* prop index in 'entry part', < 0 if not there */

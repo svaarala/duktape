@@ -9,12 +9,12 @@
  * array of valid result keys (strings or symbols).  TypeError for invalid
  * values.  Flags are shared with duk_enum().
  */
-DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h_proxy_target, duk_uint_t flags) {
+DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hproxy *h_proxy, duk_uint_t flags) {
 	duk_uarridx_t i, len, idx;
 	duk_propdesc desc;
 
-	DUK_ASSERT_CTX_VALID(thr);
-	DUK_ASSERT(h_proxy_target != NULL);
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(h_proxy != NULL);
 
 	len = (duk_uarridx_t) duk_get_length(thr, -1);
 	idx = 0;
@@ -32,11 +32,13 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h
 		}
 
 		if (!(flags & DUK_ENUM_INCLUDE_NONENUMERABLE)) {
-			/* No support for 'getOwnPropertyDescriptor' trap yet,
-			 * so check enumerability always from target object
-			 * descriptor.
+			/* Check enumerability from Proxy so that a possible
+			 * getOwnPropertyDescriptor trap can be invoked.  It
+			 * would be tempting to cache the trap function but
+			 * it may be removed as a side effect of a previous
+			 * call so we must look it up every time.
 			 */
-			if (duk_hobject_get_own_propdesc(thr, h_proxy_target, duk_known_hstring(thr, -1), &desc, 0 /*flags*/)) {
+			if (duk_hobject_get_own_propdesc(thr, (duk_hobject *) h_proxy, duk_known_hstring(thr, -1), &desc, 0 /*flags*/)) {
 				if ((desc.flags & DUK_PROPDESC_FLAG_ENUMERABLE) == 0) {
 					DUK_DDD(DUK_DDDPRINT("ignore non-enumerable property: %!T", duk_get_tval(thr, -1)));
 					goto skip_key;
