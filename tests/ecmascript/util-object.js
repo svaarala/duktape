@@ -47,3 +47,50 @@ function getValuePublicType(val) {
 function getValueInternalTag(val) {
     return getDuktapeInfoField(val, 1, 'itag');
 }
+
+// String convert a descriptor object.
+function propDescToString(pd) {
+    function fmt(v) {
+        if (typeof v === 'function') {
+            return 'function';
+        }
+        return Duktape.enc('jx', v);
+    }
+
+    if (!pd) {
+        return 'none';
+    }
+
+    var res = [];
+    if (pd.value !== void 0) {
+        res.push('value=' + fmt(pd.value));
+    }
+    if (pd.get !== void 0) {
+        res.push('get=' + fmt(pd.get));
+    }
+    if (pd.set !== void 0) {
+        res.push('set=' + fmt(pd.set));
+    }
+    if (pd.writable !== void 0) {
+        res.push('writable=' + fmt(pd.writable));
+    }
+    if (pd.enumerable !== void 0) {
+        res.push('enumerable=' + fmt(pd.enumerable));
+    }
+    if (pd.configurable !== void 0) {
+        res.push('configurable=' + fmt(pd.configurable));
+    }
+
+    return res.join(',');
+}
+
+// Print a descriptor object.
+function printPropDesc(pd) {
+    print(propDescToString(pd));
+}
+
+// Print a key and a related property descriptor.
+function printKeyPropDesc(obj, key) {
+    var pd = Object.getOwnPropertyDescriptor(obj, key);
+    print('key: ' + key + ', desc: ' + propDescToString(pd));
+}
