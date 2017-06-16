@@ -2891,6 +2891,10 @@ Planned
 
 * Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
 
+* Fix incorrect lookahead in RegExp class range dash ('-') parsing which
+  caused RegExp classes ending in a dash (e.g. [abc-]) to be handled
+  incorrectly (GH-1569, GH-1570)
+
 * Fix duk_pcall_prop(), duk_safe_call(), and duk_pnew() argument validation,
   in some cases a negative nargs/nrets argument (which is always invalid)
   could be accepted (GH-1553)
