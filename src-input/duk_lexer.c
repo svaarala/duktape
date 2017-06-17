@@ -2243,7 +2243,7 @@ DUK_INTERNAL void duk_lexer_parse_re_ranges(duk_lexer_ctx *lex_ctx, duk_re_range
 			DUK__ADVANCECHARS(lex_ctx, 1);  /* eat ']' before finishing */
 			break;
 		} else if (x == DUK_ASC_MINUS) {
-			if (start >= 0 && !dash && DUK__L0() != DUK_ASC_RBRACKET) {
+			if (start >= 0 && !dash && DUK__L1() != DUK_ASC_RBRACKET) {
 				/* '-' as a range indicator */
 				dash = 1;
 				continue;
