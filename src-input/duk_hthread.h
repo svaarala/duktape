@@ -12,15 +12,19 @@
  *  Stack constants
  */
 
-#define DUK_VALSTACK_INITIAL_SIZE       128     /* roughly 1.0 kiB */
-#define DUK_VALSTACK_INTERNAL_EXTRA     64      /* internal extra elements assumed on function entry,
-                                                 * always added to user-defined 'extra' for e.g. the
-                                                 * duk_check_stack() call.
-                                                 */
+/* Initial valstack size, roughly 0.7kiB. */
+#define DUK_VALSTACK_INITIAL_SIZE       96
+
+/* Internal extra elements assumed on function entry, always added to
+ * user-defined 'extra' for e.g. the duk_check_stack() call.
+ */
+#define DUK_VALSTACK_INTERNAL_EXTRA     32
+
+/* Number of elements guaranteed to be user accessible (in addition to call
+ * arguments) on Duktape/C function entry.  This is the major public API
+ * commitment.
+ */
 #define DUK_VALSTACK_API_ENTRY_MINIMUM  DUK_API_ENTRY_STACK
-                                                /* number of elements guaranteed to be user accessible
-                                                 * (in addition to call arguments) on Duktape/C function entry.
-                                                 */
 
 /*
  *  Activation defines

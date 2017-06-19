@@ -37,6 +37,7 @@ DUK_INTERNAL_DECL void duk_dup_m3(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_m4(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_remove_m2(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_remove_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count);
 
 DUK_INTERNAL_DECL duk_int_t duk_get_type_tval(duk_tval *tv);
 DUK_INTERNAL_DECL duk_uint_t duk_get_type_mask_tval(duk_tval *tv);
@@ -291,6 +292,11 @@ DUK_INTERNAL_DECL void duk_pop_n_nodecref_unsafe(duk_context *ctx, duk_idx_t cou
 DUK_INTERNAL_DECL void duk_pop_unsafe(duk_context *ctx);
 
 DUK_INTERNAL_DECL void duk_compact_m1(duk_context *ctx);
+
+DUK_INTERNAL_DECL void duk_insert_undefined(duk_context *ctx, duk_idx_t idx);
+DUK_INTERNAL_DECL void duk_insert_undefined_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count);
+
+DUK_INTERNAL_DECL duk_int_t duk_pcall_method_flags(duk_context *ctx, duk_idx_t nargs, duk_small_uint_t call_flags);
 
 /* Raw internal valstack access macros: access is unsafe so call site
  * must have a guarantee that the index is valid.  When that is the case,

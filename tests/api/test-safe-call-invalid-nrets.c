@@ -5,15 +5,13 @@
 /*===
 *** test_nrets_too_large (duk_safe_call)
 top before: 3
-duk_safe_call rc: 0
-final top: 1025
-==> rc=0, result='undefined'
+==> rc=1, result='TypeError: invalid args'
 *** test_nrets_too_large_fixed (duk_safe_call)
 top before: 3
 duk_safe_call rc: 0
 final top: 1025
 ==> rc=0, result='undefined'
-*** test_nrets_negative (duk_safe_call)
+*** test_nrets_minus1 (duk_safe_call)
 top before: 3
 ==> rc=1, result='TypeError: invalid args'
 ===*/
@@ -63,7 +61,7 @@ static duk_ret_t test_nrets_too_large_fixed(duk_context *ctx, void *udata) {
 	printf("final top: %ld\n", (long) duk_get_top(ctx));
 	return 0;
 }
-static duk_ret_t test_nrets_negative(duk_context *ctx, void *udata) {
+static duk_ret_t test_nrets_minus1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 
 	duk_push_null(ctx);
@@ -81,5 +79,5 @@ static duk_ret_t test_nrets_negative(duk_context *ctx, void *udata) {
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_nrets_too_large);
 	TEST_SAFE_CALL(test_nrets_too_large_fixed);
-	TEST_SAFE_CALL(test_nrets_negative);
+	TEST_SAFE_CALL(test_nrets_minus1);
 }

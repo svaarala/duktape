@@ -6,10 +6,10 @@
 #define DUK_JS_H_INCLUDED
 
 /* Flags for call handling. */
-#define DUK_CALL_FLAG_CONSTRUCTOR_CALL       (1 << 0)  /* duk_handle_call_xxx: constructor call (i.e. called as 'new Foo()') */
-#define DUK_CALL_FLAG_IS_RESUME              (1 << 1)  /* duk_handle_ecma_call_setup: setup for a resume() */
-#define DUK_CALL_FLAG_IS_TAILCALL            (1 << 2)  /* duk_handle_ecma_call_setup: setup for a tail call */
-#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 3)  /* call is a direct eval call */
+#define DUK_CALL_FLAG_CONSTRUCTOR_CALL       (1 << 0)  /* duk_handle_call_unprotected: constructor call (i.e. called as 'new Foo()') */
+#define DUK_CALL_FLAG_IS_TAILCALL            (1 << 1)  /* duk_handle_call_unprotected: setup for a tail call */
+#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 2)  /* duk_handle_call_unprotected: call is a direct eval call */
+#define DUK_CALL_FLAG_ALLOW_ECMATOECMA       (1 << 3)  /* duk_handle_call_unprotected: ecma-to-ecma call with executor reuse is possible */
 
 /* Flags for duk_js_equals_helper(). */
 #define DUK_EQUALS_FLAG_SAMEVALUE            (1 << 0)  /* use SameValue instead of non-strict equality */
@@ -93,10 +93,9 @@ DUK_INTERNAL_DECL void duk_js_push_closure(duk_hthread *thr,
                                            duk_bool_t add_auto_proto);
 
 /* call handling */
-DUK_INTERNAL_DECL duk_int_t duk_handle_call_protected(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
-DUK_INTERNAL_DECL void duk_handle_call_unprotected(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags);
+DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected(duk_hthread *thr, duk_idx_t idx_func, duk_small_uint_t call_flags);
+DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
-DUK_INTERNAL_DECL duk_bool_t duk_handle_ecma_call_setup(duk_hthread *thr, duk_idx_t num_stack_args, duk_small_uint_t call_flags, duk_small_uint_t *out_call_flags);
 DUK_INTERNAL_DECL void duk_call_construct_postprocess(duk_context *ctx);
 
 /* bytecode execution */

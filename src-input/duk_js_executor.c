@@ -14,6 +14,18 @@ DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, du
  *  Misc helpers.
  */
 
+DUK_LOCAL duk_small_uint_t duk__call_flags_map[4] = {
+	DUK_CALL_FLAG_ALLOW_ECMATOECMA,
+
+	DUK_CALL_FLAG_ALLOW_ECMATOECMA |
+		DUK_CALL_FLAG_IS_TAILCALL,
+
+	DUK_CALL_FLAG_ALLOW_ECMATOECMA |
+		DUK_CALL_FLAG_CONSTRUCTOR_CALL,
+
+	0 /*UNUSED*/
+};
+
 /* Forced inline declaration, only applied for performance oriented build. */
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 #define DUK__INLINE_PERF
@@ -1205,6 +1217,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 			retval = DUK__LONGJMP_RESTART;
 			goto wipe_and_return;
 		} else {
+			/* Initial resume call. */
 			duk_small_uint_t call_flags;
 			duk_bool_t setup_rc;
 
@@ -1216,12 +1229,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 
 			/* resumee: [... initial_func undefined(= this) resume_value ] */
 
-			call_flags = DUK_CALL_FLAG_IS_RESUME;  /* is resume, not a tail call */
+			call_flags = DUK_CALL_FLAG_ALLOW_ECMATOECMA;  /* not tailcall, ecma-to-ecma (assumed to succeed) */
 
-			setup_rc = duk_handle_ecma_call_setup(resumee,
-			                                      1,              /* num_stack_args */
-			                                      call_flags,     /* call_flags */
-			                                      &call_flags);
+			setup_rc = duk_handle_call_unprotected_nargs(resumee, 1 /*nargs*/, call_flags);
 			if (setup_rc == 0) {
 				/* This shouldn't happen; Duktape.Thread.resume()
 				 * should make sure of that.  If it does happen
@@ -4610,7 +4620,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_context *ctx = (duk_context *) thr;
 			duk_small_uint_fast_t nargs;
 			duk_uint_fast_t idx;
-			duk_idx_t num_stack_args;
 			duk_small_uint_t call_flags;
 			duk_tval *tv_func;
 			duk_hobject *obj_func;
@@ -4618,18 +4627,20 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_hcompfunc *fun;
 #endif
 
-			/* Technically we should also check for the possibility of
-			 * a pure Ecmascript-to-Ecmascript call: while built-in eval()
-			 * is native, it's possible for the 'eval' identifier to be
-			 * shadowed.  In practice that would be rare and optimizing the
-			 * C call stack for that case is a bit pointless.
+			/* At present eval() is native call that is not handled
+			 * specially by call handling, so actual eval() calls
+			 * require native recursion, prevent yields, etc.  If
+			 * the ultimate call is not the native eval() function
+			 * but an Ecmascript function, native recursion is
+			 * avoided.
 			 */
 
 			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
 			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
 			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
 
-			call_flags = 0;
+			/* XXX: move this handling into call setup? */
+			call_flags = DUK_CALL_FLAG_ALLOW_ECMATOECMA;
 			tv_func = DUK_GET_TVAL_POSIDX(ctx, idx);
 			if (DUK_TVAL_IS_OBJECT(tv_func)) {
 				obj_func = DUK_TVAL_GET_OBJECT(tv_func);
@@ -4640,8 +4651,16 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 					call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
 				}
 			}
-			num_stack_args = nargs;
-			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
+
+			/* XXX: tailcall support */
+			if (duk_handle_call_unprotected(thr, idx, call_flags) != 0) {
+				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
+				/* curr_pc synced by duk_handle_call_unprotected() */
+				DUK_ASSERT(thr->ptr_curr_pc == NULL);
+				goto restart_execution;
+			} else {
+				/* Call was handled inline. */
+			}
 
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			fun = DUK__FUN();
@@ -4651,34 +4670,30 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		}
 
 		case DUK_OP_CALL:
-		case DUK_OP_TAILCALL: {
+		case DUK_OP_TAILCALL:
+		case DUK_OP_CONSCALL: {
 			/* DUK_OP_CALL: plain call, not tailcall compatible.
 			 *
 			 * DUK_OP_TAILCALL: plain call which is tailcall
 			 * compatible.  Tail call may not be possible due
 			 * to e.g. target not being an Ecmascript function.
 			 *
+			 * DUK_OP_CONSCALL: constructor call, not tailcall
+			 * compatible at present (easy to fix).
+			 *
 			 * Not a direct eval call.  Indirect eval calls don't
 			 * need special handling here.
-			 */
-
-			/* To determine whether to use an optimized Ecmascript-to-Ecmascript
-			 * call, we need to know whether the final, non-bound function is an
-			 * Ecmascript function.  Current implementation is to first try an
-			 * Ecma-to-Ecma call setup which also resolves the bound function
-			 * chain.  The setup attempt overwrites call target at DUK__REGP(idx)
-			 * and may also fudge the argument list.  However, it won't resolve
-			 * the effective 'this' binding if the setup fails.  This is somewhat
-			 * awkward, and the two call setup code paths should be merged.
 			 *
-			 * If an Ecma-to-Ecma call is not possible, the actual call handling
-			 * will do another (unnecessary) attempt to resolve the bound function.
+			 * When DUK_CALL_FLAG_ALLOW_ECMATOECMA is set, call
+			 * setup will just set up a new duk_activation and
+			 * indicate an Ecma-to-Ecma call is possible (return
+			 * value != 0) and we can reuse the executor without
+			 * a native recursion increase.
 			 */
 
 			duk_context *ctx = (duk_context *) thr;
 			duk_small_uint_fast_t nargs;
 			duk_uint_fast_t idx;
-			duk_idx_t num_stack_args;
 			duk_small_uint_t call_flags;
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			duk_hcompfunc *fun;
@@ -4691,46 +4706,36 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			/* XXX: in some cases it's faster NOT to reuse the value
 			 * stack but rather copy the arguments on top of the stack
 			 * (mainly when the calling value stack is large and the value
-			 * stack resize would be large).  See DUK_OP_NEW.
+			 * stack resize would be large).
 			 */
 
 			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
 			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
 			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
 
-			/* DUK_OP_CALL and DUK_OP_TAILCALL are consecutive
-			 * which allows a simple bit test.
-			 */
-			DUK_ASSERT((DUK_OP_CALL & 0x01) == 0);
-			DUK_ASSERT((DUK_OP_TAILCALL & 0x01) == 1);
-			call_flags = (ins & (1UL << DUK_BC_SHIFT_OP)) ? DUK_CALL_FLAG_IS_TAILCALL : 0;
+			/* Opcode number constraints allow simple bit test. */
+			DUK_ASSERT((DUK_OP_CALL & 0x03) == 0);
+			DUK_ASSERT((DUK_OP_TAILCALL & 0x03) == 1);
+			DUK_ASSERT((DUK_OP_CONSCALL & 0x03) == 2);
+			call_flags = duk__call_flags_map[(ins >> DUK_BC_SHIFT_OP) & 0x03U];
 
-			/* Attempt an Ecma-to-Ecma call setup.  If the call target
-			 * is Reflect.construct(), this may change into a
-			 * constructor call on the fly; call_flags will be modified
-			 * by the setup call if so.
+			/* Attempt an Ecma-to-Ecma call setup.  If the call
+			 * target is (directly or indirectly) Reflect.construct(),
+			 * the call may change into a constructor call on the fly.
 			 */
-			num_stack_args = nargs;
-			if (duk_handle_ecma_call_setup(thr, num_stack_args, call_flags, &call_flags)) {
-				/* Ecma-to-ecma call possible, may or may not be a tail call.
-				 * Avoid C recursion by being clever.
+			if (duk_handle_call_unprotected(thr, idx, call_flags) != 0) {
+				/* Ecma-to-ecma call possible, may or may not
+				 * be a tail call.  Avoid C recursion by
+				 * reusing current executor instance.
 				 */
 				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
-				/* curr_pc synced by duk_handle_ecma_call_setup() */
+				/* curr_pc synced by duk_handle_call_unprotected() */
+				DUK_ASSERT(thr->ptr_curr_pc == NULL);
 				goto restart_execution;
+			} else {
+				/* Call was handled inline. */
 			}
-
-			/* Recompute argument count: bound function handling may have shifted. */
-			num_stack_args = duk_get_top(ctx) - (idx + 2);
-			DUK_DDD(DUK_DDDPRINT("recomputed arg count: %ld\n", (long) num_stack_args));
-
-			/* Target is either a lightfunc or a function object.
-			 * We don't need to check for eval handling here: the
-			 * call may be an indirect eval ('myEval("something")')
-			 * but that requires no special handling.
-			 */
-
-			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
+			DUK_ASSERT(thr->ptr_curr_pc != NULL);
 
 			/* duk_js_call.c is required to restore the stack reserve
 			 * so we only need to reset the top.
@@ -4748,60 +4753,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * status after returning.  This is now handled by call handling
 			 * and heap->dbg_force_restart.
 			 */
-			break;
-		}
 
-		case DUK_OP_NEW: {
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t a = DUK_DEC_A(ins);
-			duk_small_uint_fast_t bc = DUK_DEC_BC(ins);
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-			duk_hcompfunc *fun;
-#endif
-			duk_idx_t num_stack_args;
-			duk_small_uint_t call_flags;
-
-			/* A -> num args (N)
-			 * BC -> target register and start reg: constructor, arg1, ..., argN
-			 */
-
-			/* duk_new() will call the constuctor using duk_handle_call().
-			 * A constructor call prevents a yield from inside the constructor,
-			 * even if the constructor is an Ecmascript function.
-			 */
-
-			/* Don't need to sync curr_pc here; duk_new() will do that
-			 * when it augments the created error.
-			 */
-
-			duk_set_top(ctx, (duk_idx_t) (bc + a + 1));
-			duk_push_object(ctx);  /* default instance; internal proto updated by call handling */
-			duk_insert(ctx, bc + 1);
-			call_flags = DUK_CALL_FLAG_CONSTRUCTOR_CALL;
-			if (duk_handle_ecma_call_setup(thr, a, call_flags, &call_flags)) {
-				/* curr_pc synced by duk_handle_ecma_call_setup() */
-				goto restart_execution;
-			}
-
-			/* Recompute argument count: bound function handling may have shifted. */
-			num_stack_args = duk_get_top(ctx) - (bc + 2);
-			DUK_DDD(DUK_DDDPRINT("recomputed arg count: %ld\n", (long) num_stack_args));
-			duk_handle_call_unprotected(thr, num_stack_args, call_flags);
-
-			/* The return value is already in its correct place at the stack,
-			 * i.e. it has replaced the 'constructor' at index bc.  Just reset
-			 * top and we're done.
-			 */
-
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-			fun = DUK__FUN();
-#endif
-			duk_set_top(ctx, (duk_idx_t) fun->nregs);
-
-			/* When debugger is enabled, we need to recheck the activation
-			 * status after returning.  This is now handled by call handling
-			 * and heap->dbg_force_restart.
-			 */
+			DUK_ASSERT(thr->ptr_curr_pc != NULL);
 			break;
 		}
 

@@ -15,6 +15,14 @@ Upgrading from Duktape 2.1
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
 
+* duk_safe_call() no longer automatically extends the value stack to ensure
+  there's space for 'nrets' return values.  This was not guaranteed by the
+  API and the check is mostly unnecessary overhead.  If a duk_safe_call()
+  call site now fails due to this change, simply ``duk_require_stack()``
+  to ensure that there's reserve for ``nargs - nrets`` more elements
+  (conceptually 'nargs' arguments are consumed, and 'nrets' result values
+  pushed).
+
 * Call stack (including both activation records and catcher records) is no
   longer a resized monolithic allocation which improves memory behavior for
   very low memory targets.  If you're using a pool allocator, you may need to

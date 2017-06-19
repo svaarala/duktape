@@ -622,6 +622,7 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			DUK_UNREF(h_func);
 
 			/* XXX: add into init data? */
+
 			/* Special call handling, not described in init data. */
 			if (c_func == duk_bi_function_prototype_call ||
 			    c_func == duk_bi_function_prototype_apply ||
