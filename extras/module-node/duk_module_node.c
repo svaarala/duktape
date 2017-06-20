@@ -274,27 +274,27 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	duk_push_string(ctx, currentPath);
 	duk_replace(ctx, -2);
 
-  /* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
-  if (len2 >= FILENAME_MAX)
-    duk_push_undefined(ctx); /* File name too long -> no __dirname. */
-  else {
-    /* Find the last separator (if any). */
-    char *lastSeparatorPos;
-    char *pos1 = strrchr(currentPath, '/');
-    char *pos2 = strrchr(currentPath, '\\');
-    if (pos1 == NULL)
-      lastSeparatorPos = pos2;
-    else if (pos2 == NULL)
-      lastSeparatorPos = pos1;
-    else
-      lastSeparatorPos = pos1 > pos2 ? pos1 : pos2;
+	/* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
+	if (len2 >= FILENAME_MAX)
+		duk_push_undefined(ctx); /* File name too long -> no __dirname. */
+	else {
+		/* Find the last separator (if any). */
+		char *lastSeparatorPos;
+		char *pos1 = strrchr(currentPath, '/');
+		char *pos2 = strrchr(currentPath, '\\');
+		if (pos1 == NULL)
+			lastSeparatorPos = pos2;
+		else if (pos2 == NULL)
+			lastSeparatorPos = pos1;
+		else
+			lastSeparatorPos = pos1 > pos2 ? pos1 : pos2;
 
-    if (lastSeparatorPos != NULL) {
-      *lastSeparatorPos = '\0';
-      duk_push_string(ctx, currentPath);
-    } else
-      duk_push_undefined(ctx);
-  }
+		if (lastSeparatorPos != NULL) {
+			*lastSeparatorPos = '\0';
+			duk_push_string(ctx, currentPath);
+		} else
+			duk_push_undefined(ctx);
+	}
 
 	duk_call(ctx, 5);
 
