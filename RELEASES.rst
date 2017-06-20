@@ -2877,7 +2877,7 @@ Planned
 * Add minimal new.target support, evaluates to undefined for non-constructor
   calls and final non-bound constructor function in constructor calls;
   explicit newTarget not yet supported and handling of new.target in eval()
-  code is not yet fully correct (GH-1544)
+  code is not yet fully correct (GH-1544, GH-1572)
 
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)

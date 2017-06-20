@@ -928,6 +928,7 @@ opcodes:
     args:
       - ABC_I
   - name: NEWTARGET
+    args:
       - BC_R
   - name: UNUSED195
   - name: UNUSED196
