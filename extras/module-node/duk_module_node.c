@@ -7,11 +7,11 @@
 #include "duktape.h"
 #include "duk_module_node.h"
 
-#ifndef _MSC_VER
-  #include <unistd.h>
+#if defined(_MSC_VER)
+	#include <windows.h>
+	#include <direct.h>
 #else
-  #include <windows.h>
-  #include <direct.h>
+	#include <unistd.h>
 #endif
 
 #include <string.h>
@@ -251,7 +251,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 
 	/* Make __filename an absolute path. */
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 	wchar_t widePath[FILENAME_MAX + 1];
 	::_wgetcwd(widePath, FILENAME_MAX);
 
@@ -276,7 +276,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 
   /* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
   if (len2 >= FILENAME_MAX)
-    duk_push_undefined(ctx); // File name too long -> no __dirname.
+    duk_push_undefined(ctx); /* File name too long -> no __dirname. */
   else {
     /* Find the last separator (if any). */
     char *lastSeparatorPos;
