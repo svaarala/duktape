@@ -590,9 +590,7 @@ DUK_INTERNAL duk_ret_t duk_bi_global_object_eval(duk_context *ctx) {
 		 */
 		call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
 	}
-	duk_handle_call_unprotected(thr,           /* thread */
-	                            0,             /* num_stack_args */
-	                            call_flags);   /* call_flags */
+	duk_handle_call_unprotected_nargs(thr, 0, call_flags);
 
 	/* [ env? source template result ] */
 

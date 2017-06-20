@@ -2877,7 +2877,7 @@ Planned
 * Add minimal new.target support, evaluates to undefined for non-constructor
   calls and final non-bound constructor function in constructor calls;
   explicit newTarget not yet supported and handling of new.target in eval()
-  code is not yet fully correct (GH-1544)
+  code is not yet fully correct (GH-1544, GH-1572)
 
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
@@ -2940,6 +2940,10 @@ Planned
   calling a function or reserving value stack space explicitly and only
   shrunk in mark-and-sweep (GH-1526)
 
+* Remove automatic value stack reserve check from duk_safe_call() to
+  ensure 'nrets' return values fit into the value stack; the check was not
+  guaranteed by the API and is mostly unnecessary (GH-1552)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
@@ -2954,6 +2958,9 @@ Planned
 
 * Internal change: simple freelists for duk_activation and duk_catcher
   (GH-1491)
+
+* Miscellaneous footprint improvements: rework call handling to improve
+  code sharing (GH-1552)
 
 * Miscellaneous performance improvements: move rare/large opcodes into
   NOINLINE helpers (GH-1510), duk_harray fast path for internal array

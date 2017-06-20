@@ -3409,7 +3409,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 
 		DUK_DDD(DUK_DDDPRINT("begin parsing new expression"));
 
-		reg_target = DUK__ALLOCTEMP(comp_ctx);
+		reg_target = DUK__ALLOCTEMPS(comp_ctx, 2);
 
 #if defined(DUK_USE_ES6)
 		if (comp_ctx->curr_token.t == DUK_TOK_PERIOD) {
@@ -3433,7 +3433,8 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 #endif  /* DUK_USE_ES6 */
 
 		duk__expr_toforcedreg(comp_ctx, res, DUK__BP_CALL /*rbp_flags*/, reg_target /*forced_reg*/);
-		DUK__SETTEMP(comp_ctx, reg_target + 1);
+		duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, reg_target + 1);  /* default instance */
+		DUK__SETTEMP(comp_ctx, reg_target + 2);
 
 		if (comp_ctx->curr_token.t == DUK_TOK_LPAREN) {
 			/* 'new' MemberExpression Arguments */
@@ -3451,7 +3452,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * is not allowed.
 		 */
 		duk__emit_a_bc(comp_ctx,
-		              DUK_OP_NEW | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+		              DUK_OP_CONSCALL | DUK__EMIT_FLAG_NO_SHUFFLE_A,
 		              nargs /*num_args*/,
 		              reg_target /*target*/);
 

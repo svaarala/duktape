@@ -1480,9 +1480,9 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	duk_small_uint_t call_flags;
 	duk_int_t call_ret;
 	duk_small_int_t eval_err;
-	duk_int_t num_eval_args;
 	duk_bool_t direct_eval;
 	duk_int32_t level;
+	duk_idx_t idx_func;
 
 	DUK_UNREF(heap);
 
@@ -1497,6 +1497,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	 */
 
 	/* nargs == 2 so we can pass a callstack index to eval(). */
+	idx_func = duk_get_top(ctx);
 	duk_push_c_function(ctx, duk_bi_global_object_eval, 2 /*nargs*/);
 	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
 
@@ -1518,13 +1519,10 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 	(void) duk_debug_read_hstring(thr);
 	if (direct_eval) {
-		num_eval_args = 2;
 		duk_push_int(ctx, level - 1);  /* compensate for eval() call */
-	} else {
-		num_eval_args = 1;
 	}
 
-	/* [ ... eval "eval" eval_input level ] */
+	/* [ ... eval "eval" eval_input level? ] */
 
 	call_flags = 0;
 	if (direct_eval) {
@@ -1545,7 +1543,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		}
 	}
 
-	call_ret = duk_handle_call_protected(thr, num_eval_args, call_flags);
+	call_ret = duk_pcall_method_flags(ctx, duk_get_top(ctx) - (idx_func + 2), call_flags);
 
 	if (call_ret == DUK_EXEC_SUCCESS) {
 		eval_err = 0;

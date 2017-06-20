@@ -369,9 +369,9 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_THROW                173
 #define DUK_OP_CSREG                174
 #define DUK_OP_EVALCALL             175
-#define DUK_OP_CALL                 176  /* must be even */
-#define DUK_OP_TAILCALL             177  /* must be odd */
-#define DUK_OP_NEW                  178
+#define DUK_OP_CALL                 176  /* op & 0x03 must be 0 */
+#define DUK_OP_TAILCALL             177  /* op & 0x03 must be 1 */
+#define DUK_OP_CONSCALL             178  /* op & 0x03 must be 2 */
 #define DUK_OP_NEWOBJ               179
 #define DUK_OP_NEWARR               180
 #define DUK_OP_MPUTOBJ              181

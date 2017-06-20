@@ -58,7 +58,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx) {
 
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
-DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
+DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	SYSTEMTIME st3;
@@ -98,7 +98,7 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t 
 #endif  /* DUK_USE_DATE_TZO_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS_NO_DST)
-DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_t d) {
+DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_t d) {
 	SYSTEMTIME st1;
 	SYSTEMTIME st2;
 	FILETIME ft1;

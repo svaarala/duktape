@@ -1095,6 +1095,26 @@ DUK_EXTERNAL void duk_insert(duk_context *ctx, duk_idx_t to_idx) {
 	}
 }
 
+DUK_INTERNAL void duk_insert_undefined(duk_context *ctx, duk_idx_t idx) {
+	DUK_ASSERT(idx >= 0);  /* Doesn't support negative indices. */
+	duk_push_undefined(ctx);
+	duk_insert(ctx, idx);
+}
+
+DUK_INTERNAL void duk_insert_undefined_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count) {
+	duk_tval *tv, *tv_end;
+
+	DUK_ASSERT(idx >= 0);  /* Doesn't support negative indices or count. */
+	DUK_ASSERT(count >= 0);
+
+	tv = duk_reserve_gap(ctx, idx, count);
+	tv_end = tv + count;
+	while (tv != tv_end) {
+		DUK_TVAL_SET_UNDEFINED(tv);
+		tv++;
+	}
+}
+
 DUK_EXTERNAL void duk_replace(duk_context *ctx, duk_idx_t to_idx) {
 	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv1;
@@ -1175,8 +1195,54 @@ DUK_EXTERNAL void duk_remove(duk_context *ctx, duk_idx_t idx) {
 #endif
 }
 
-DUK_INTERNAL_DECL void duk_remove_m2(duk_context *ctx) {
+DUK_INTERNAL void duk_remove_m2(duk_context *ctx) {
 	duk_remove(ctx, -2);
+}
+
+DUK_INTERNAL void duk_remove_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count) {
+#if defined(DUK_USE_PREFER_SIZE)
+	/* XXX: maybe too slow even when preferring size? */
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(count >= 0);
+	DUK_ASSERT(idx >= 0);
+
+	while (count-- > 0) {
+		duk_remove(ctx, idx);
+	}
+#else  /* DUK_USE_PREFER_SIZE */
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv_src;
+	duk_tval *tv_dst;
+	duk_tval *tv_newtop;
+	duk_tval *tv;
+	duk_size_t bytes;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(count >= 0);
+	DUK_ASSERT(idx >= 0);
+
+	tv_dst = thr->valstack_bottom + idx;
+	DUK_ASSERT(tv_dst <= thr->valstack_top);
+	tv_src = tv_dst + count;
+	DUK_ASSERT(tv_src <= thr->valstack_top);
+	bytes = (duk_size_t) ((duk_uint8_t *) thr->valstack_top - (duk_uint8_t *) tv_src);
+
+	for (tv = tv_dst; tv < tv_src; tv++) {
+		DUK_TVAL_DECREF_NORZ(thr, tv);
+	}
+
+	DUK_MEMMOVE((void *) tv_dst, (const void *) tv_src, bytes);
+
+	tv_newtop = thr->valstack_top - count;
+	for (tv = tv_newtop; tv < thr->valstack_top; tv++) {
+		DUK_TVAL_SET_UNDEFINED(tv);
+	}
+	thr->valstack_top = tv_newtop;
+
+	/* When not preferring size, only NORZ macros are used; caller
+	 * is expected to DUK_REFZERO_CHECK().
+	 */
+#endif  /* DUK_USE_PREFER_SIZE */
 }
 
 /*
@@ -2065,7 +2131,7 @@ DUK_EXTERNAL void duk_require_function(duk_context *ctx, duk_idx_t idx) {
 	}
 }
 
-DUK_INTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx) {
+DUK_INTERNAL void duk_require_constructable(duk_context *ctx, duk_idx_t idx) {
 	duk_hobject *h;
 
 	h = duk_require_hobject_accept_mask(ctx, idx, DUK_TYPE_MASK_LIGHTFUNC);

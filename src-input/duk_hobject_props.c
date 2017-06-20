@@ -48,17 +48,17 @@
 
 #define DUK__NO_ARRAY_INDEX             DUK_HSTRING_NO_ARRAY_INDEX
 
-/* marker values for hash part */
+/* Marker values for hash part. */
 #define DUK__HASH_UNUSED                DUK_HOBJECT_HASHIDX_UNUSED
 #define DUK__HASH_DELETED               DUK_HOBJECT_HASHIDX_DELETED
 
-/* valstack space that suffices for all local calls, including recursion
- * of other than Duktape calls (getters etc)
+/* Valstack space that suffices for all local calls, excluding any recursion
+ * into Ecmascript or Duktape/C calls (Proxy, getters, etc).
  */
 #define DUK__VALSTACK_SPACE             10
 
-/* valstack space allocated especially for proxy lookup which does a
- * recursive property lookup
+/* Valstack space allocated especially for proxy lookup which does a
+ * recursive property lookup.
  */
 #define DUK__VALSTACK_PROXY_LOOKUP      20
 
