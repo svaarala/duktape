@@ -7,6 +7,15 @@
 #include "duktape.h"
 #include "duk_module_node.h"
 
+#ifndef _MSC_VER
+  #include <unistd.h>
+#else
+  #include <windows.h>
+  #include <direct.h>
+#endif
+
+#include <string.h>
+
 #if DUK_VERSION >= 19999
 static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata);
 #else
@@ -177,10 +186,6 @@ static void duk__push_module_object(duk_context *ctx, const char *id, duk_bool_t
 		duk_pop(ctx);
 	}
 
-	/* Node.js uses the canonicalized filename of a module for both module.id
-	 * and module.filename.  We have no concept of a file system here, so just
-	 * use the module ID for both values.
-	 */
 	duk_push_string(ctx, id);
 	duk_dup(ctx, -1);
 	duk_put_prop_string(ctx, -3, "filename");
@@ -243,7 +248,54 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	(void) duk_get_prop_string(ctx, -4, "require");   /* require */
 	duk_dup(ctx, -5);                                 /* module */
 	(void) duk_get_prop_string(ctx, -6, "filename");  /* __filename */
-	duk_push_undefined(ctx);                          /* __dirname */
+
+	/* Make __filename an absolute path. */
+
+#ifdef _MSC_VER
+	wchar_t widePath[FILENAME_MAX + 1];
+	::_wgetcwd(widePath, FILENAME_MAX);
+
+	char currentPath[FILENAME_MAX + 1];
+	WideCharToMultiByte(CP_UTF8, 0, widePath, -1, &currentPath[0], FILENAME_MAX, NULL, NULL);
+#else
+	char currentPath[FILENAME_MAX + 1];
+	::getcwd(currentPath, FILENAME_MAX);
+#endif
+
+	const char *filename = duk_get_string(ctx, -1);
+	size_t len1 = strlen(currentPath);
+	size_t len2 = strlen(filename);
+	if (len1 + len2 + 1 < FILENAME_MAX) {
+		currentPath[len1++] = '/';
+		memcpy(&currentPath[len1], filename, len2);
+		currentPath[len1 + len2] = '\0';
+	}
+
+	duk_push_string(ctx, currentPath);
+	duk_replace(ctx, -2);
+
+  /* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
+  if (len2 >= FILENAME_MAX)
+    duk_push_undefined(ctx); // File name too long -> no __dirname.
+  else {
+    /* Find the last separator (if any). */
+    char *lastSeparatorPos;
+    char *pos1 = strrchr(currentPath, '/');
+    char *pos2 = strrchr(currentPath, '\\');
+    if (pos1 == NULL)
+      lastSeparatorPos = pos2;
+    else if (pos2 == NULL)
+      lastSeparatorPos = pos1;
+    else
+      lastSeparatorPos = pos1 > pos2 ? pos1 : pos2;
+
+    if (lastSeparatorPos != NULL) {
+      *lastSeparatorPos = '\0';
+      duk_push_string(ctx, currentPath);
+    } else
+      duk_push_undefined(ctx);
+  }
+
 	duk_call(ctx, 5);
 
 	/* [ ... module source result(ignore) ] */
