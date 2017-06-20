@@ -2960,7 +2960,7 @@ Planned
   (GH-1491)
 
 * Miscellaneous footprint improvements: rework call handling to improve
-  code sharing (GH-1552)
+  code sharing (GH-1552); optional lazy charlen (GH-1337)
 
 * Miscellaneous performance improvements: move rare/large opcodes into
   NOINLINE helpers (GH-1510), duk_harray fast path for internal array
