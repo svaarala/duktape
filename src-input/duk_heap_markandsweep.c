@@ -1090,6 +1090,9 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_getvar_all));
 	DUK_D(DUK_DPRINT("stats putvar: all=%ld",
 	                 (long) heap->stats_putvar_all));
+	DUK_D(DUK_DPRINT("stats propcache: invalidate=%ld, hit=%ld, miss=%ld, insert=%ld",
+	                 (long) heap->stats_propcache_invalidate, (long) heap->stats_propcache_hit,
+	                 (long) heap->stats_propcache_miss, (long) heap->stats_propcache_insert));
 }
 #endif  /* DUK_USE_DEBUG */
 

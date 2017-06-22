@@ -2695,11 +2695,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 */
 		duk_tval *storage;
 		storage = duk_propcache_lookup(thr, curr, key);
-		DUK_D(DUK_DPRINT("propcache GETPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
+		DUK_DD(DUK_DDPRINT("propcache GETPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
 		if (storage) {
-			DUK_D(DUK_DPRINT("cached GETPROP lookup %!O -> %!T", key, storage));
-			duk_push_tval(ctx, storage);
-			duk_remove(ctx, -2);  /* FIXME: careful with order */
+			DUK_DD(DDUK_DPRINT("cached GETPROP lookup %!O -> %!T", key, storage));
+			duk_push_tval(thr, storage);
+			duk_remove(thr, -2);  /* FIXME: careful with order */
 			/* FIXME: assume no post process? */
 			return 1;
 		}
@@ -2834,11 +2834,11 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* FIXME: note that caching is based on orig_base, but storage location is in 'curr'! */
 		duk_tval *tv_storage;
 		tv_storage = DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(thr->heap, curr, desc.e_idx);
-		DUK_D(DUK_DPRINT("insert propcache GETPROP %!O", key));
+		DUK_DD(DUK_DDPRINT("insert propcache GETPROP %!O", key));
 		duk_propcache_insert(thr, orig_base, key, tv_storage);
 	}
 
-	duk_remove_m2(ctx);  /* [key result] -> [result] */
+	duk_remove_m2(thr);  /* [key result] -> [result] */
 
 	DUK_DDD(DUK_DDDPRINT("-> %!T (found)", (duk_tval *) duk_get_tval(thr, -1)));
 	return 1;
@@ -3700,9 +3700,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		 */
 		duk_tval *storage;
 		storage = duk_propcache_lookup(thr, orig_base, key);
-		DUK_D(DUK_DPRINT("propcache PUTPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
+		DUK_DD(DUK_DDPRINT("propcache PUTPROP lookup: %!O %!O -> %p", orig_base, key, (void *) storage));
 		if (storage) {
-			DUK_D(DUK_DPRINT("cached PUTPROP lookup %!O -> old value %!T", key, storage));
+			DUK_DD(DUK_DDPRINT("cached PUTPROP lookup %!O -> old value %!T", key, storage));
 			DUK_TVAL_SET_TVAL_UPDREF(thr, storage, tv_val);
 			goto success_no_arguments_exotic;
 		}
@@ -3936,7 +3936,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 		/* FIXME argument exotic condition... */
 		if (1) {  /* FIXME: condition */
 			/* FIXME: other conditions, e.g. not a getter */
-			DUK_D(DUK_DPRINT("insert propcache PUTPROP %!O", key));
+			DUK_DD(DUK_DDPRINT("insert propcache PUTPROP %!O", key));
 			duk_propcache_insert(thr, orig_base, key, tv);
 		}
 

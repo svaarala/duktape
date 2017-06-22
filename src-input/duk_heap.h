@@ -617,6 +617,10 @@ struct duk_heap {
 	duk_int_t stats_putprop_proxy;
 	duk_int_t stats_getvar_all;
 	duk_int_t stats_putvar_all;
+	duk_int_t stats_propcache_invalidate;
+	duk_int_t stats_propcache_hit;
+	duk_int_t stats_propcache_miss;
+	duk_int_t stats_propcache_insert;
 #endif
 };
 
