@@ -2944,6 +2944,9 @@ Planned
   ensure 'nrets' return values fit into the value stack; the check was not
   guaranteed by the API and is mostly unnecessary (GH-1552)
 
+* Add some statistics dumps to mark-and-sweep with debug logging enabled
+  (GH-1579)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)

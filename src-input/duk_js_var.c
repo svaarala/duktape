@@ -1155,6 +1155,8 @@ duk_bool_t duk__getvar_helper(duk_hthread *thr,
 	duk_tval tv_tmp_key;
 	duk_bool_t parents;
 
+	DUK_STATS_INC(thr->heap, stats_getvar_all);
+
 	DUK_DDD(DUK_DDDPRINT("getvar: thr=%p, env=%p, act=%p, name=%!O "
 	                     "(env -> %!dO)",
 	                     (void *) thr, (void *) env, (void *) act,
@@ -1248,6 +1250,8 @@ void duk__putvar_helper(duk_hthread *thr,
 	duk_tval tv_tmp_obj;
 	duk_tval tv_tmp_key;
 	duk_bool_t parents;
+
+	DUK_STATS_INC(thr->heap, stats_putvar_all);
 
 	DUK_DDD(DUK_DDDPRINT("putvar: thr=%p, env=%p, act=%p, name=%!O, val=%p, strict=%ld "
 	                     "(env -> %!dO, val -> %!T)",

@@ -2269,6 +2269,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_STATS_INC(thr->heap, stats_getprop_all);
+
 	/*
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
 	 *  them being invalidated by a valstack resize.
@@ -2344,6 +2346,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_push_hstring(ctx, h);
 			duk_substring(ctx, -1, arr_idx, arr_idx + 1);  /* [str] -> [substr] */
 
+			DUK_STATS_INC(thr->heap, stats_getprop_stringidx);
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is string, key is an index inside string length "
 			                     "after coercion -> return char)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
@@ -2365,6 +2368,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			duk_pop(ctx);  /* [key] -> [] */
 			duk_push_uint(ctx, (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h));  /* [] -> [res] */
 
+			DUK_STATS_INC(thr->heap, stats_getprop_stringlen);
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is string, key is 'length' after coercion -> "
 			                     "return string length)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
@@ -2394,6 +2398,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is object, key is a number, array part "
 			                     "fast path)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
+			DUK_STATS_INC(thr->heap, stats_getprop_arrayidx);
 			return 1;
 		}
 #endif
@@ -2404,6 +2409,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is bufobj, key is a number, bufobj "
 			                     "fast path)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
+			DUK_STATS_INC(thr->heap, stats_getprop_bufobjidx);
 			return 1;
 		}
 #endif
@@ -2415,6 +2421,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			if (duk__proxy_check_prop(thr, curr, DUK_STRIDX_GET, tv_key, &h_target)) {
 				/* -> [ ... trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'get' for key %!T", (duk_tval *) tv_key));
+				DUK_STATS_INC(thr->heap, stats_getprop_proxy);
 				duk_push_hobject(ctx, h_target);  /* target */
 				duk_push_tval(ctx, tv_key);       /* P */
 				duk_push_tval(ctx, tv_obj);       /* Receiver: Proxy object */
@@ -2467,6 +2474,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 			arr_idx = duk__push_tval_to_property_key(ctx, tv_key, &key);
 			DUK_ASSERT(key != NULL);
 
+			DUK_STATS_INC(thr->heap, stats_getprop_arguments);
 			if (duk__check_arguments_map_for_get(thr, curr, key, &desc)) {
 				DUK_DDD(DUK_DDDPRINT("-> %!T (base is object with arguments exotic behavior, "
 				                     "key matches magically bound property -> skip standard "
@@ -2521,7 +2529,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		    arr_idx < DUK_HBUFFER_GET_SIZE(h)) {
 			duk_pop_n(ctx, pop_count);
 			duk_push_uint(ctx, ((duk_uint8_t *) DUK_HBUFFER_GET_DATA_PTR(thr->heap, h))[arr_idx]);
-
+			DUK_STATS_INC(thr->heap, stats_getprop_bufferidx);
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is an index inside buffer length "
 			                     "after coercion -> return byte as number)",
 			                     (duk_tval *) duk_get_tval(ctx, -1)));
@@ -2542,6 +2550,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_getprop(duk_hthread *thr, duk_tval *tv_obj, 
 		if (key == DUK_HTHREAD_STRING_LENGTH(thr)) {
 			duk_pop(ctx);  /* [key] -> [] */
 			duk_push_uint(ctx, (duk_uint_t) DUK_HBUFFER_GET_SIZE(h));  /* [] -> [res] */
+			DUK_STATS_INC(thr->heap, stats_getprop_bufferlen);
 
 			DUK_DDD(DUK_DDDPRINT("-> %!T (base is buffer, key is 'length' "
 			                     "after coercion -> return buffer length)",
@@ -3264,6 +3273,8 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_STATS_INC(thr->heap, stats_putprop_all);
+
 	/*
 	 *  Make a copy of tv_obj, tv_key, and tv_val to avoid any issues of
 	 *  them being invalidated by a valstack resize.
@@ -3372,6 +3383,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 #if defined(DUK_USE_ARRAY_PROP_FASTPATH)
 		if (duk__putprop_shallow_fastpath_array_tval(thr, orig, tv_key, tv_val) != 0) {
 			DUK_DDD(DUK_DDDPRINT("array fast path success"));
+			DUK_STATS_INC(thr->heap, stats_putprop_arrayidx);
 			return 1;
 		}
 #endif
@@ -3379,6 +3391,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
 		if (duk__putprop_fastpath_bufobj_tval(thr, orig, tv_key, tv_val) != 0) {
 			DUK_DDD(DUK_DDDPRINT("base is bufobj, key is a number, bufobj fast path"));
+			DUK_STATS_INC(thr->heap, stats_putprop_bufobjidx);
 			return 1;
 		}
 #endif
@@ -3391,6 +3404,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 			if (duk__proxy_check_prop(thr, orig, DUK_STRIDX_SET, tv_key, &h_target)) {
 				/* -> [ ... trap handler ] */
 				DUK_DDD(DUK_DDDPRINT("-> proxy object 'set' for key %!T", (duk_tval *) tv_key));
+				DUK_STATS_INC(thr->heap, stats_putprop_proxy);
 				duk_push_hobject(ctx, h_target);  /* target */
 				duk_push_tval(ctx, tv_key);       /* P */
 				duk_push_tval(ctx, tv_val);       /* V */
@@ -3500,6 +3514,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_putprop(duk_hthread *thr, duk_tval *tv_obj, 
 
 			duk_pop_n(ctx, pop_count);
 			DUK_DDD(DUK_DDDPRINT("result: success (buffer data write)"));
+			DUK_STATS_INC(thr->heap, stats_putprop_bufferidx);
 			return 1;
 		}
 
