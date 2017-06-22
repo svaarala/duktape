@@ -2889,6 +2889,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_UNREF(exc);
 #endif
 			DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 
 			duk__handle_executor_error(heap,
 			                           entry_act,
@@ -2902,6 +2903,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				what = "unknown";
 			}
 			DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
 				DUK_ERROR_FMT1(heap->curr_thread, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
@@ -2915,6 +2917,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			}
 		} catch (...) {
 			DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
 				DUK_ERROR_TYPE(heap->curr_thread, "caught invalid c++ exception (perhaps thrown by user code)");
@@ -3174,6 +3177,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #endif
 
 		ins = *curr_pc++;
+		DUK_STATS_INC(thr->heap, stats_exec_opcodes);
 
 		/* Typing: use duk_small_(u)int_fast_t when decoding small
 		 * opcode fields (op, A, B, C, BC) which fit into 16 bits

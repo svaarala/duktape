@@ -100,6 +100,18 @@
 #endif
 
 /*
+ *  Stats
+ */
+
+#if defined(DUK_USE_DEBUG)
+#define DUK_STATS_INC(heap,fieldname) do { \
+		(heap)->fieldname += 1; \
+	} while (0)
+#else
+#define DUK_STATS_INC(heap,fieldname) do {} while (0)
+#endif
+
+/*
  *  Other heap related defines
  */
 
@@ -544,6 +556,39 @@ struct duk_heap {
 #else
 	duk_hstring *strs[DUK_HEAP_NUM_STRINGS];
 #endif
+#endif
+
+	/* Stats. */
+#if defined(DUK_USE_DEBUG)
+	duk_int_t stats_exec_opcodes;
+	duk_int_t stats_exec_throw;
+	duk_int_t stats_call_all;
+	duk_int_t stats_call_tailcall;
+	duk_int_t stats_call_ecmatoecma;
+	duk_int_t stats_safecall_all;
+	duk_int_t stats_safecall_nothrow;
+	duk_int_t stats_safecall_throw;
+	duk_int_t stats_ms_try_count;
+	duk_int_t stats_ms_skip_count;
+	duk_int_t stats_ms_emergency_count;
+	duk_int_t stats_intern_hit;
+	duk_int_t stats_intern_miss;
+	duk_int_t stats_getprop_all;
+	duk_int_t stats_getprop_arrayidx;
+	duk_int_t stats_getprop_bufobjidx;
+	duk_int_t stats_getprop_bufferidx;
+	duk_int_t stats_getprop_bufferlen;
+	duk_int_t stats_getprop_stringidx;
+	duk_int_t stats_getprop_stringlen;
+	duk_int_t stats_getprop_proxy;
+	duk_int_t stats_getprop_arguments;
+	duk_int_t stats_putprop_all;
+	duk_int_t stats_putprop_arrayidx;
+	duk_int_t stats_putprop_bufobjidx;
+	duk_int_t stats_putprop_bufferidx;
+	duk_int_t stats_putprop_proxy;
+	duk_int_t stats_getvar_all;
+	duk_int_t stats_putvar_all;
 #endif
 };
 

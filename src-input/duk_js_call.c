@@ -1697,6 +1697,8 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	DUK_ASSERT(duk_is_valid_index(ctx, idx_func));
 	DUK_ASSERT(idx_func >= 0);
 
+	DUK_STATS_INC(thr->heap, stats_call_all);
+
 	/* If a tail call:
 	 *   - an Ecmascript activation must be on top of the callstack
 	 *   - there cannot be any catch stack entries that would catch
@@ -1825,6 +1827,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 
 	if (use_tailcall) {
 		idx_args = 0;
+		DUK_STATS_INC(thr->heap, stats_call_tailcall);
 	} else {
 		duk__call_setup_act_not_tailcall(thr,
 		                                 call_flags,
@@ -1906,6 +1909,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 
 		if (call_flags & DUK_CALL_FLAG_ALLOW_ECMATOECMA) {
 			DUK_DD(DUK_DDPRINT("avoid native call, use existing executor"));
+			DUK_STATS_INC(thr->heap, stats_call_ecmatoecma);
 			DUK_ASSERT((act->flags & DUK_ACT_FLAG_PREVENT_YIELD) == 0);
 			DUK_REFZERO_CHECK_FAST(thr);
 			DUK_ASSERT(thr->ptr_curr_pc == NULL);
@@ -2362,6 +2366,8 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(ctx != NULL);
 	DUK_ASSERT(duk_get_top(ctx) >= num_stack_args);  /* Caller ensures. */
 
+	DUK_STATS_INC(thr->heap, stats_safecall_all);
+
 	/* Value stack reserve handling: safe call assumes caller has reserved
 	 * space for nrets (assuming optimal unwind processing).  Value stack
 	 * reserve is not stored/restored as for normal calls because a safe
@@ -2435,6 +2441,8 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 		                            idx_retbase,
 		                            num_stack_rets);
 
+		DUK_STATS_INC(thr->heap, stats_safecall_nothrow);
+
 		/* Either pointer may be NULL (at entry), so don't assert */
 		thr->heap->lj.jmpbuf_ptr = old_jmpbuf_ptr;
 
@@ -2454,6 +2462,8 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 #endif
 		DUK_ASSERT((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack) >= entry_valstack_end_byteoff);
 
+		DUK_STATS_INC(thr->heap, stats_safecall_throw);
+
 		duk__handle_safe_call_error(thr,
 		                            entry_act,
 #if defined(DUK_USE_ASSERTIONS)
@@ -2472,6 +2482,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	catch (std::exception &exc) {
 		const char *what = exc.what();
 		DUK_ASSERT((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack) >= entry_valstack_end_byteoff);
+		DUK_STATS_INC(thr->heap, stats_safecall_throw);
 		if (!what) {
 			what = "unknown";
 		}
@@ -2497,6 +2508,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	} catch (...) {
 		DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
 		DUK_ASSERT((duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack) >= entry_valstack_end_byteoff);
+		DUK_STATS_INC(thr->heap, stats_safecall_throw);
 		try {
 			DUK_ERROR_TYPE(thr, "caught invalid c++ exception (perhaps thrown by user code)");
 		} catch (duk_internal_exception exc) {

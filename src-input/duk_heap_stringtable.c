@@ -725,6 +725,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
 		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
+			DUK_STATS_INC(heap, stats_intern_hit);
 			return h;
 		}
 		h = h->hdr.h_next;
@@ -738,12 +739,14 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 #if defined(DUK_USE_ROM_STRINGS)
 	h = duk__strtab_romstring_lookup(heap, str, blen, strhash);
 	if (h != NULL) {
+		DUK_STATS_INC(heap, stats_intern_hit);
 		return h;
 	}
 #endif
 
 	/* Not found in string table; insert. */
 
+	DUK_STATS_INC(heap, stats_intern_miss);
 	h = duk__strtable_do_intern(heap, str, blen, strhash);
 	return h;  /* may be NULL */
 }
