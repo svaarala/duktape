@@ -432,27 +432,36 @@ RateLimited.prototype.trigger = function () {
 function SourceFileManager(directories) {
     this.directories = directories;
     this.extensions = { '.js': true, '.jsm': true };
-    this.files;
+    this.fileMap = {};  // filename as seen by debug target -> file path
+    this.files = [];    // filenames as seen by debug target
 }
 
 SourceFileManager.prototype.scan = function () {
     var _this = this;
-    var fileMap = {};   // absFn -> true
+    var fileMap = {};   // relative path -> file path
     var files;
 
     this.directories.forEach(function (dir) {
         console.log('Scanning source files: ' + dir);
         try {
             recursiveReadSync(dir).forEach(function (fn) {
-                var absFn = path.normalize(path.join(dir, fn));   // './foo/bar.js' -> 'foo/bar.js'
-                var ent;
+                // Example: dir     ../../tests
+                //          normFn  ../../tests/foo/bar.js
+                //          relFn   foo/bar.js
+                var normDir = path.normalize(dir);
+                var normFn = path.normalize(fn);
+                var relFn = path.relative(normDir, normFn);
 
-                if (fs.existsSync(absFn) &&
-                    fs.lstatSync(absFn).isFile() &&
-                    _this.extensions[path.extname(fn)]) {
+                if (fs.existsSync(normFn) && fs.lstatSync(normFn).isFile() &&
+                    _this.extensions[path.extname(normFn)]) {
                     // We want the fileMap to contain the filename relative to
-                    // the search dir root.
-                    fileMap[fn] = true;
+                    // the search dir root.  First directory containing a
+                    // certail relFn wins.
+                    if (relFn in fileMap) {
+                        console.log('Found', relFn, 'multiple times, first match wins');
+                    } else {
+                        fileMap[relFn] = normFn;
+                    }
                 }
             });
         } catch (e) {
@@ -463,6 +472,8 @@ SourceFileManager.prototype.scan = function () {
     files = Object.keys(fileMap);
     files.sort();
     this.files = files;
+
+    this.fileMap = fileMap;
 
     console.log('Found ' + files.length + ' source files in ' + this.directories.length + ' search directories');
 };
@@ -480,6 +491,9 @@ SourceFileManager.prototype.search = function (fileName) {
     // assigned by selecting a file from a dropdown populated by scanning
     // the filesystem for available sources and there's no way of knowing
     // if the debug target uses the exact same name.
+    //
+    // We intentionally allow any files from the search paths, not just
+    // those scanned to this.fileMap.
 
     function tryLookup() {
         var i, fn, data;
