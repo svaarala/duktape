@@ -280,7 +280,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 				idx_last = idx;
 			} else {
 				idx++;
-				duk_pop(ctx);
+				duk_pop_undefined(ctx);
 #if defined(DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER)
 				/* According to E5.1 Section 15.4.4.4 nonexistent trailing
 				 * elements do not affect 'length' of the result.  Test262
@@ -294,7 +294,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 #endif
 			}
 		}
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 	}
 
 	/* The E5.1 Section 15.4.4.4 algorithm doesn't set the length explicitly
@@ -333,7 +333,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 	 */
 	duk_set_top(ctx, 1);
 	if (duk_is_undefined(ctx, 0)) {
-		duk_pop(ctx);
+		duk_pop_undefined(ctx);
 		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);
 	} else {
 		duk_to_string(ctx, 0);
@@ -378,7 +378,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 
 		duk_get_prop_index(ctx, 1, (duk_uarridx_t) idx);
 		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_pop(ctx);
+			duk_pop_nodecref_unsafe(ctx);
 			duk_push_hstring_empty(ctx);
 		} else {
 			if (to_locale_string) {
@@ -695,7 +695,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 			ret = 0;
 		}
 
-		duk_pop(ctx);
+		duk_pop_nodecref_unsafe(ctx);
 		DUK_DDD(DUK_DDDPRINT("-> result %ld (from comparefn, after coercion)", (long) ret));
 		return ret;
 	}
@@ -712,7 +712,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 	goto pop_ret;
 
  pop_ret:
-	duk_pop_2(ctx);
+	duk_pop_2_unsafe(ctx);
 	DUK_DDD(DUK_DDDPRINT("-> result %ld", (long) ret));
 	return ret;
 }
@@ -734,14 +734,14 @@ DUK_LOCAL void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) 
 		duk_put_prop_index(ctx, idx_obj, (duk_uarridx_t) l);
 	} else {
 		duk_del_prop_index(ctx, idx_obj, (duk_uarridx_t) l);
-		duk_pop(ctx);
+		duk_pop_undefined(ctx);
 	}
 
 	if (have_l) {
 		duk_put_prop_index(ctx, idx_obj, (duk_uarridx_t) r);
 	} else {
 		duk_del_prop_index(ctx, idx_obj, (duk_uarridx_t) r);
-		duk_pop(ctx);
+		duk_pop_undefined(ctx);
 	}
 }
 
@@ -892,7 +892,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
 	}
 
 	DUK_ASSERT_TOP(ctx, 3);
-	duk_pop(ctx);
+	duk_pop_nodecref_unsafe(ctx);
 	return 1;  /* return ToObject(this) */
 }
 
@@ -985,7 +985,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 		if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (act_start + i))) {
 			duk_xdef_prop_index_wec(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
 		} else {
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 		}
 	}
 	duk_push_u32(ctx, (duk_uint32_t) del_count);
@@ -1007,7 +1007,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 			if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (i + del_count))) {
 				duk_put_prop_index(ctx, -4, (duk_uarridx_t) (i + item_count));
 			} else {
-				duk_pop(ctx);
+				duk_pop_undefined(ctx);
 				duk_del_prop_index(ctx, -3, (duk_uarridx_t) (i + item_count));
 			}
 		}
@@ -1035,7 +1035,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 			if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (i + del_count))) {
 				duk_put_prop_index(ctx, -4, (duk_uarridx_t) (i + item_count));
 			} else {
-				duk_pop(ctx);
+				duk_pop_undefined(ctx);
 				duk_del_prop_index(ctx, -3, (duk_uarridx_t) (i + item_count));
 			}
 		}
@@ -1102,21 +1102,21 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
 			duk_put_prop_index(ctx, -4, (duk_uarridx_t) lower);
 		} else {
 			duk_del_prop_index(ctx, -4, (duk_uarridx_t) lower);
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 		}
 
 		if (have_lower) {
 			duk_put_prop_index(ctx, -3, (duk_uarridx_t) upper);
 		} else {
 			duk_del_prop_index(ctx, -3, (duk_uarridx_t) upper);
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 		}
 
 		DUK_ASSERT_TOP(ctx, 2);
 	}
 
 	DUK_ASSERT_TOP(ctx, 2);
-	duk_pop(ctx);  /* -> [ ToObject(this) ] */
+	duk_pop_unsafe(ctx);  /* -> [ ToObject(this) ] */
 	return 1;
 }
 
@@ -1169,7 +1169,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 			duk_xdef_prop_index_wec(ctx, 4, idx);
 			res_length = idx + 1;
 		} else {
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 		}
 		idx++;
 		DUK_ASSERT_TOP(ctx, 5);
@@ -1212,7 +1212,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
 		} else {
 			/* fromPresent = false */
 			duk_del_prop_index(ctx, 0, (duk_uarridx_t) (i - 1));
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 		}
 	}
 	duk_del_prop_index(ctx, 0, (duk_uarridx_t) (len - 1));
@@ -1266,7 +1266,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 		} else {
 			/* fromPresent = false */
 			/* [ ... ToObject(this) ToUint32(length) val ] */
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 			duk_del_prop_index(ctx, -2, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		}
 		DUK_ASSERT_TOP(ctx, nargs + 2);
@@ -1368,7 +1368,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 			}
 		}
 
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 	}
 
  not_found:
@@ -1438,7 +1438,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			 * counted towards result 'length'.
 			 */
 #endif
-			duk_pop(ctx);
+			duk_pop_undefined(ctx);
 			continue;
 		}
 
@@ -1490,7 +1490,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			DUK_UNREACHABLE();
 			break;
 		}
-		duk_pop_2(ctx);
+		duk_pop_2_unsafe(ctx);
 
 		DUK_ASSERT_TOP(ctx, 5);
 	}

@@ -517,7 +517,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 				DUK_DDD(DUK_DDDPRINT("match: keep wiped/resaved values [%ld,%ld] (captures [%ld,%ld])",
 				                     (long) idx_start, (long) (idx_start + idx_count - 1),
 			                             (long) (idx_start / 2), (long) ((idx_start + idx_count - 1) / 2)));
-				duk_pop((duk_context *) re_ctx->thr);
+				duk_pop_unsafe((duk_context *) re_ctx->thr);
 				sp = sub_sp;
 				goto match;
 			}
@@ -529,7 +529,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_MEMCPY((void *) (re_ctx->saved + idx_start),
 			           (const void *) range_save,
 			           sizeof(duk_uint8_t *) * idx_count);
-			duk_pop((duk_context *) re_ctx->thr);
+			duk_pop_unsafe((duk_context *) re_ctx->thr);
 			goto fail;
 		}
 		case DUK_REOP_LOOKPOS:
@@ -574,7 +574,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			sub_sp = duk__match_regexp(re_ctx, pc + skip, sp);
 			if (sub_sp) {
 				/* match: keep saves */
-				duk_pop((duk_context *) re_ctx->thr);
+				duk_pop_unsafe((duk_context *) re_ctx->thr);
 				sp = sub_sp;
 				goto match;
 			}
@@ -586,7 +586,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			DUK_MEMCPY((void *) re_ctx->saved,
 			           (const void *) full_save,
 			           sizeof(duk_uint8_t *) * re_ctx->nsaved);
-			duk_pop((duk_context *) re_ctx->thr);
+			duk_pop_unsafe((duk_context *) re_ctx->thr);
 			goto fail;
 		}
 		case DUK_REOP_BACKREFERENCE: {
@@ -799,7 +799,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 	duk_get_prop_stridx_short(ctx, -4, DUK_STRIDX_LAST_INDEX);  /* -> [ ... re_obj input bc saved_buf lastIndex ] */
 	(void) duk_to_int(ctx, -1);  /* ToInteger(lastIndex) */
 	d = duk_get_number(ctx, -1);  /* integer, but may be +/- Infinite, +/- zero (not NaN, though) */
-	duk_pop(ctx);
+	duk_pop_nodecref_unsafe(ctx);
 
 	if (global) {
 		if (d < 0.0 || d > (double) DUK_HSTRING_GET_CHARLEN(h_input)) {
@@ -999,7 +999,7 @@ DUK_LOCAL void duk__regexp_match_helper(duk_hthread *thr, duk_small_int_t force_
 
 	/* [ ... res_obj re_obj input bc saved_buf ] */
 
-	duk_pop_n(ctx, 4);
+	duk_pop_n_unsafe(ctx, 4);
 
 	/* [ ... res_obj ] */
 

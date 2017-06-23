@@ -285,7 +285,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			DUK_HCOMPFUNC_SET_VARENV(thr->heap, fun_clos, (duk_hobject *) new_env);
 			DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);
 			DUK_HOBJECT_INCREF(thr, (duk_hobject *) new_env);
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 
 			/* [ ... closure template ] */
 		}
@@ -350,7 +350,7 @@ void duk_js_push_closure(duk_hthread *thr,
 			duk_xdef_prop_stridx_short(ctx, -3, stridx, DUK_PROPDESC_FLAGS_C);
 		} else {
 			DUK_DDD(DUK_DDDPRINT("copying property, stridx=%ld -> not found", (long) stridx));
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 		}
 	}
 
@@ -374,7 +374,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		len_value = fun_temp->nargs;
 		DUK_DD(DUK_DDPRINT("closure length defaulted from nargs -> %ld", (long) len_value));
 	}
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 
 	duk_push_uint(ctx, len_value);  /* [ ... closure template len_value ] */
 	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
@@ -448,7 +448,7 @@ void duk_js_push_closure(duk_hthread *thr,
 		 * it from Function.prototype.name.
 		 */
 		DUK_DD(DUK_DDPRINT("not setting function instance .name"));
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 	}
 #endif
 
@@ -488,7 +488,7 @@ void duk_js_push_closure(duk_hthread *thr,
 	                     (duk_tval *) duk_get_tval(ctx, -1),
 	                     (duk_tval *) duk_get_tval(ctx, -2)));
 
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 
 	/* [ ... closure ] */
 }
@@ -599,7 +599,7 @@ void duk_js_init_activation_environment_records_delayed(duk_hthread *thr,
 	DUK_HOBJECT_INCREF(thr, env);  /* XXX: incref by count (here 2 times) */
 	DUK_HOBJECT_INCREF(thr, env);
 
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 }
 
 /*
@@ -1709,7 +1709,7 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 	duk_push_hstring(ctx, name);
 	duk_push_tval(ctx, val);
 	duk_xdef_prop(ctx, -3, prop_flags);  /* [holder name val] -> [holder] */
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 
 	return 0;
 

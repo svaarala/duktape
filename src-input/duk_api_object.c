@@ -32,6 +32,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx) {
 	/* a value is left on stack regardless of rc */
 
 	duk_remove_m2(ctx);  /* remove key */
+	DUK_ASSERT(duk_is_undefined(ctx, -1) || rc == 1);
 	return rc;  /* 1 if property found, 0 otherwise */
 }
 
