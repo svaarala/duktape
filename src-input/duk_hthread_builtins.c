@@ -624,7 +624,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			/* XXX: add into init data? */
 
 			/* Special call handling, not described in init data. */
-			if (c_func == duk_bi_function_prototype_call ||
+			if (c_func == duk_bi_global_object_eval ||
+			    c_func == duk_bi_function_prototype_call ||
 			    c_func == duk_bi_function_prototype_apply ||
 			    c_func == duk_bi_reflect_apply ||
 			    c_func == duk_bi_reflect_construct) {

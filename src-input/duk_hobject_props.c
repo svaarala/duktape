@@ -4473,7 +4473,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	goto done_rc;
 
  done_rc:
-	duk_set_top(ctx, entry_top);
+	duk_set_top_unsafe(ctx, entry_top);
 	return rc;
 
  fail_invalid_base_uncond:
@@ -4492,7 +4492,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	if (throw_flag) {
 		DUK_ERROR_TYPE(thr, DUK_STR_PROXY_REJECTED);
 	}
-	duk_set_top(ctx, entry_top);
+	duk_set_top_unsafe(ctx, entry_top);
 	return 0;
 #endif
 
@@ -4500,7 +4500,7 @@ DUK_INTERNAL duk_bool_t duk_hobject_delprop(duk_hthread *thr, duk_tval *tv_obj, 
 	if (throw_flag) {
 		DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONFIGURABLE);
 	}
-	duk_set_top(ctx, entry_top);
+	duk_set_top_unsafe(ctx, entry_top);
 	return 0;
 }
 

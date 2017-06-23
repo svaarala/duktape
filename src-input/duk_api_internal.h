@@ -26,6 +26,7 @@ DUK_INTERNAL_DECL void duk_copy_tvals_incref(duk_hthread *thr, duk_tval *tv_dst,
 
 DUK_INTERNAL_DECL duk_tval *duk_reserve_gap(duk_context *ctx, duk_idx_t idx_base, duk_idx_t count);
 
+DUK_INTERNAL_DECL void duk_set_top_unsafe(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_set_top_and_wipe(duk_context *ctx, duk_idx_t top, duk_idx_t idx_wipe_start);
 
 DUK_INTERNAL_DECL void duk_dup_0(duk_context *ctx);
@@ -36,8 +37,10 @@ DUK_INTERNAL_DECL void duk_dup_m2(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_m3(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_dup_m4(duk_context *ctx);
 
+DUK_INTERNAL_DECL void duk_remove_unsafe(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_remove_m2(duk_context *ctx);
 DUK_INTERNAL_DECL void duk_remove_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count);
+DUK_INTERNAL_DECL void duk_remove_n_unsafe(duk_context *ctx, duk_idx_t idx, duk_idx_t count);
 
 DUK_INTERNAL_DECL duk_int_t duk_get_type_tval(duk_tval *tv);
 DUK_INTERNAL_DECL duk_uint_t duk_get_type_mask_tval(duk_tval *tv);

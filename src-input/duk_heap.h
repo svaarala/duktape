@@ -561,6 +561,7 @@ struct duk_heap {
 	/* Stats. */
 #if defined(DUK_USE_DEBUG)
 	duk_int_t stats_exec_opcodes;
+	duk_int_t stats_exec_interrupt;
 	duk_int_t stats_exec_throw;
 	duk_int_t stats_call_all;
 	duk_int_t stats_call_tailcall;

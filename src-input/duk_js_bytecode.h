@@ -161,20 +161,20 @@ typedef duk_uint32_t duk_instr_t;
 /* Opcodes. */
 #define DUK_OP_LDREG                0
 #define DUK_OP_STREG                1
-#define DUK_OP_LDCONST              2
-#define DUK_OP_LDINT                3
-#define DUK_OP_LDINTX               4
-#define DUK_OP_LDTHIS               5
-#define DUK_OP_LDUNDEF              6
-#define DUK_OP_LDNULL               7
-#define DUK_OP_LDTRUE               8
-#define DUK_OP_LDFALSE              9
-#define DUK_OP_BNOT                 10
-#define DUK_OP_LNOT                 11
-#define DUK_OP_UNM                  12
-#define DUK_OP_UNP                  13
-#define DUK_OP_TYPEOF               14
-#define DUK_OP_TYPEOFID             15
+#define DUK_OP_JUMP                 2
+#define DUK_OP_LDCONST              3
+#define DUK_OP_LDINT                4
+#define DUK_OP_LDINTX               5
+#define DUK_OP_LDTHIS               6
+#define DUK_OP_LDUNDEF              7
+#define DUK_OP_LDNULL               8
+#define DUK_OP_LDTRUE               9
+#define DUK_OP_LDFALSE              10
+#define DUK_OP_GETVAR               11
+#define DUK_OP_BNOT                 12
+#define DUK_OP_LNOT                 13
+#define DUK_OP_UNM                  14
+#define DUK_OP_UNP                  15
 #define DUK_OP_EQ                   16
 #define DUK_OP_EQ_RR                16
 #define DUK_OP_EQ_CR                17
@@ -344,62 +344,62 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_REGEXP_CR            149
 #define DUK_OP_REGEXP_RC            150
 #define DUK_OP_REGEXP_CC            151
-#define DUK_OP_CSVAR                152
-#define DUK_OP_CSVAR_RR             152
-#define DUK_OP_CSVAR_CR             153
-#define DUK_OP_CSVAR_RC             154
-#define DUK_OP_CSVAR_CC             155
-#define DUK_OP_CLOSURE              156
-#define DUK_OP_GETVAR               157
-#define DUK_OP_PUTVAR               158
-#define DUK_OP_DELVAR               159
-#define DUK_OP_JUMP                 160
-#define DUK_OP_RETREG               161
-#define DUK_OP_RETUNDEF             162
-#define DUK_OP_RETCONST             163
-#define DUK_OP_RETCONSTN            164  /* return const without incref (e.g. number) */
-#define DUK_OP_LABEL                165
-#define DUK_OP_ENDLABEL             166
-#define DUK_OP_BREAK                167
-#define DUK_OP_CONTINUE             168
-#define DUK_OP_TRYCATCH             169
-#define DUK_OP_ENDTRY               170
-#define DUK_OP_ENDCATCH             171
-#define DUK_OP_ENDFIN               172
-#define DUK_OP_THROW                173
-#define DUK_OP_CSREG                174
-#define DUK_OP_EVALCALL             175
-#define DUK_OP_CALL                 176  /* op & 0x03 must be 0 */
-#define DUK_OP_TAILCALL             177  /* op & 0x03 must be 1 */
-#define DUK_OP_CONSCALL             178  /* op & 0x03 must be 2 */
-#define DUK_OP_NEWOBJ               179
-#define DUK_OP_NEWARR               180
-#define DUK_OP_MPUTOBJ              181
-#define DUK_OP_MPUTOBJI             182
-#define DUK_OP_INITSET              183
-#define DUK_OP_INITGET              184
-#define DUK_OP_MPUTARR              185
-#define DUK_OP_MPUTARRI             186
-#define DUK_OP_SETALEN              187
-#define DUK_OP_INITENUM             188
-#define DUK_OP_NEXTENUM             189
-#define DUK_OP_INVLHS               190
-#define DUK_OP_DEBUGGER             191
-#define DUK_OP_NOP                  192
-#define DUK_OP_INVALID              193
-#define DUK_OP_NEWTARGET            194
-#define DUK_OP_UNUSED195            195
-#define DUK_OP_UNUSED196            196
-#define DUK_OP_UNUSED197            197
-#define DUK_OP_UNUSED198            198
-#define DUK_OP_UNUSED199            199
-#define DUK_OP_UNUSED200            200
-#define DUK_OP_UNUSED201            201
-#define DUK_OP_UNUSED202            202
-#define DUK_OP_UNUSED203            203
-#define DUK_OP_UNUSED204            204
-#define DUK_OP_UNUSED205            205
-#define DUK_OP_UNUSED206            206
+#define DUK_OP_CLOSURE              152
+#define DUK_OP_TYPEOF               153
+#define DUK_OP_TYPEOFID             154
+#define DUK_OP_PUTVAR               155
+#define DUK_OP_DELVAR               156
+#define DUK_OP_RETREG               157
+#define DUK_OP_RETUNDEF             158
+#define DUK_OP_RETCONST             159
+#define DUK_OP_RETCONSTN            160  /* return const without incref (e.g. number) */
+#define DUK_OP_LABEL                161
+#define DUK_OP_ENDLABEL             162
+#define DUK_OP_BREAK                163
+#define DUK_OP_CONTINUE             164
+#define DUK_OP_TRYCATCH             165
+#define DUK_OP_ENDTRY               166
+#define DUK_OP_ENDCATCH             167
+#define DUK_OP_ENDFIN               168
+#define DUK_OP_THROW                169
+#define DUK_OP_INVLHS               170
+#define DUK_OP_CSREG                171
+#define DUK_OP_CSVAR                172
+#define DUK_OP_CSVAR_RR             172
+#define DUK_OP_CSVAR_CR             173
+#define DUK_OP_CSVAR_RC             174
+#define DUK_OP_CSVAR_CC             175
+#define DUK_OP_CALL0                176  /* DUK_OP_CALL0 & 0x0F must be zero. */
+#define DUK_OP_CALL1                177
+#define DUK_OP_CALL2                178
+#define DUK_OP_CALL3                179
+#define DUK_OP_CALL4                180
+#define DUK_OP_CALL5                181
+#define DUK_OP_CALL6                182
+#define DUK_OP_CALL7                183
+#define DUK_OP_CALL8                184
+#define DUK_OP_CALL9                185
+#define DUK_OP_CALL10               186
+#define DUK_OP_CALL11               187
+#define DUK_OP_CALL12               188
+#define DUK_OP_CALL13               189
+#define DUK_OP_CALL14               190
+#define DUK_OP_CALL15               191
+#define DUK_OP_NEWOBJ               192
+#define DUK_OP_NEWARR               193
+#define DUK_OP_MPUTOBJ              194
+#define DUK_OP_MPUTOBJI             195
+#define DUK_OP_INITSET              196
+#define DUK_OP_INITGET              197
+#define DUK_OP_MPUTARR              198
+#define DUK_OP_MPUTARRI             199
+#define DUK_OP_SETALEN              200
+#define DUK_OP_INITENUM             201
+#define DUK_OP_NEXTENUM             202
+#define DUK_OP_NEWTARGET            203
+#define DUK_OP_DEBUGGER             204
+#define DUK_OP_NOP                  205
+#define DUK_OP_INVALID              206
 #define DUK_OP_UNUSED207            207
 #define DUK_OP_UNUSED208            208
 #define DUK_OP_UNUSED209            209
@@ -454,14 +454,24 @@ typedef duk_uint32_t duk_instr_t;
 /* XXX: Allocate flags from opcode field?  Would take 16 opcode slots
  * but avoids shuffling in more cases.  Maybe not worth it.
  */
-/* DUK_OP_TRYCATCH flags in A */
+/* DUK_OP_TRYCATCH flags in A. */
 #define DUK_BC_TRYCATCH_FLAG_HAVE_CATCH     (1 << 0)
 #define DUK_BC_TRYCATCH_FLAG_HAVE_FINALLY   (1 << 1)
 #define DUK_BC_TRYCATCH_FLAG_CATCH_BINDING  (1 << 2)
 #define DUK_BC_TRYCATCH_FLAG_WITH_BINDING   (1 << 3)
 
-/* DUK_OP_DECLVAR flags in A; bottom bits are reserved for propdesc flags (DUK_PROPDESC_FLAG_XXX) */
+/* DUK_OP_DECLVAR flags in A; bottom bits are reserved for propdesc flags
+ * (DUK_PROPDESC_FLAG_XXX).
+ */
 #define DUK_BC_DECLVAR_FLAG_FUNC_DECL       (1 << 4)  /* function declaration */
+
+/* DUK_OP_CALLn flags, part of opcode field.  Three lowest bits must match
+ * DUK_CALL_FLAG_xxx directly.
+ */
+#define DUK_BC_CALL_FLAG_TAILCALL           (1 << 0)
+#define DUK_BC_CALL_FLAG_CONSTRUCT          (1 << 1)
+#define DUK_BC_CALL_FLAG_CALLED_AS_EVAL     (1 << 2)
+#define DUK_BC_CALL_FLAG_INDIRECT           (1 << 3)
 
 /* Misc constants and helper macros. */
 #define DUK_BC_LDINT_BIAS           (1L << 15)
