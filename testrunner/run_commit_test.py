@@ -336,6 +336,7 @@ def context_linux_x64_gcc_defsize_fltoetc():
         execute([
             'gcc', '-oduk',
             '-Os', '-fomit-frame-pointer',
+            '-fno-stack-protector',
             '-flto', '-fno-asynchronous-unwind-tables',
             '-ffunction-sections', '-Wl,--gc-sections',
             '-I' + os.path.join('dist', 'src'),
@@ -369,6 +370,7 @@ def context_helper_minsize_fltoetc(archopt, strip):
         execute([
             'gcc', '-oduk', archopt,
             '-Os', '-fomit-frame-pointer',
+            '-fno-stack-protector',
             '-flto', '-fno-asynchronous-unwind-tables',
             '-ffunction-sections', '-Wl,--gc-sections',
             '-I' + os.path.join('prep'),
@@ -709,6 +711,7 @@ def context_helper_hello_ram(archopt):
         execute([
             'gcc', '-ohello', archopt,
             '-Os', '-fomit-frame-pointer',
+            '-fno-stack-protector',
             '-flto', '-fno-asynchronous-unwind-tables',
             '-ffunction-sections', '-Wl,--gc-sections',
             '-I' + os.path.join('prep'),
@@ -794,6 +797,7 @@ def mandel_test(archopt, genconfig_opts):
     execute([
         'gcc', '-oduk', archopt,
         '-Os', '-fomit-frame-pointer',
+        '-fno-stack-protector',
         '-flto', '-fno-asynchronous-unwind-tables',
         '-ffunction-sections', '-Wl,--gc-sections',
         '-DDUK_CMDLINE_PRINTALERT_SUPPORT',
