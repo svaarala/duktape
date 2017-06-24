@@ -178,7 +178,7 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 
 #if defined(DUK_USE_PREFER_SIZE)
 	d = duk_get_number(ctx, -1);
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 #else
 	thr->valstack_top--;
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(thr->valstack_top));
@@ -236,7 +236,7 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		DUK_ASSERT(duk_get_tval(ctx, -1) != NULL);
 		d = duk_js_tonumber(thr, duk_get_tval(ctx, -1));
 
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 		return d;
 	}
 	case DUK_TAG_POINTER: {
@@ -707,7 +707,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
 		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
 		                          0 /*flags:nonstrict*/);
-		duk_pop_2(ctx);
+		duk_pop_2_unsafe(ctx);
 		return rc;
 	}
 }
@@ -952,7 +952,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 
 		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2))) {
 			rc = duk_js_string_compare(h1, h2);
-			duk_pop_2(ctx);
+			duk_pop_2_unsafe(ctx);
 			if (rc < 0) {
 				return retval ^ 1;
 			} else {
@@ -978,11 +978,11 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	d1 = duk_to_number_m2(ctx);
 	d2 = duk_to_number_m1(ctx);
 
-	/* We want to duk_pop_2(ctx); because the values are numbers
+	/* We want to duk_pop_2_unsafe(ctx); because the values are numbers
 	 * no decref check is needed.
 	 */
 #if defined(DUK_USE_PREFER_SIZE)
-	duk_pop_2(ctx);
+	duk_pop_2_nodecref_unsafe(ctx);
 #else
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -2)));
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -1)));
@@ -1115,7 +1115,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 
 	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
 	proto = duk_require_hobject(ctx, -1);
-	duk_pop(ctx);  /* -> [ ... lval rval ] */
+	duk_pop_unsafe(ctx);  /* -> [ ... lval rval ] */
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
@@ -1162,11 +1162,11 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	DUK_UNREACHABLE();
 
  pop_and_false:
-	duk_pop_2(ctx);
+	duk_pop_2_unsafe(ctx);
 	return 0;
 
  pop_and_true:
-	duk_pop_2(ctx);
+	duk_pop_2_unsafe(ctx);
 	return 1;
 }
 
@@ -1211,7 +1211,7 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	                             DUK_GET_TVAL_NEGIDX(ctx, -1),
 	                             DUK_GET_TVAL_NEGIDX(ctx, -2));
 
-	duk_pop_2(ctx);
+	duk_pop_2_unsafe(ctx);
 	return retval;
 }
 

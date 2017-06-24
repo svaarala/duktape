@@ -221,7 +221,10 @@ struct duk_hstring_external {
  */
 
 DUK_INTERNAL_DECL duk_ucodepoint_t duk_hstring_char_code_at_raw(duk_hthread *thr, duk_hstring *h, duk_uint_t pos, duk_bool_t surrogate_aware);
-DUK_INTERNAL_DECL duk_size_t duk_hstring_get_charlen(duk_hstring *h);
 DUK_INTERNAL_DECL duk_bool_t duk_hstring_equals_ascii_cstring(duk_hstring *h, const char *cstr);
+DUK_INTERNAL_DECL duk_size_t duk_hstring_get_charlen(duk_hstring *h);
+#if !defined(DUK_USE_HSTRING_LAZY_CLEN)
+DUK_INTERNAL_DECL void duk_hstring_init_charlen(duk_hstring *h);
+#endif
 
 #endif  /* DUK_HSTRING_H_INCLUDED */

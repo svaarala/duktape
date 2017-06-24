@@ -140,7 +140,7 @@ CCOPTS_SHARED += -I./extras/module-duktape
 #CCOPTS_SHARED += -mx32                            # force X32 compilation on a 64-bit host
 
 CCOPTS_NONDEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)
-CCOPTS_NONDEBUG += -Os -fomit-frame-pointer
+CCOPTS_NONDEBUG += -Os -fomit-frame-pointer -fno-stack-protector
 CCOPTS_NONDEBUG += -g -ggdb
 
 CCOPTS_DEBUG = $(CCOPTS_SHARED) $(CCOPTS_FEATURES)

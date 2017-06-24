@@ -201,7 +201,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
 
 		du.d = d1 + d2;
-		duk_pop_2(ctx);
+		duk_pop_2_unsafe(ctx);
 		duk_push_number(ctx, du.d);  /* will NaN normalize result */
 	}
 	duk_replace(ctx, (duk_idx_t) idx_z);  /* side effects */
@@ -319,7 +319,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_binary_op(duk_hthread *thr, duk_tv
 		DUK_ASSERT(duk_is_number(ctx, -1));
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d1);
 		DUK_ASSERT_DOUBLE_IS_NORMALIZED(d2);
-		duk_pop_2(ctx);
+		duk_pop_2_unsafe(ctx);
 	}
 
 	switch (opcode_shifted) {
@@ -409,7 +409,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_binary_op(duk_hthread *thr, duk_
 		duk_push_tval(ctx, tv_y);
 		i1 = duk_to_int32(ctx, -2);
 		i2 = duk_to_int32(ctx, -1);
-		duk_pop_2(ctx);
+		duk_pop_2_unsafe(ctx);
 	}
 
 	switch (opcode_shifted) {
@@ -764,9 +764,9 @@ DUK_LOCAL DUK__INLINE_PERF void duk__prepost_incdec_var_helper(duk_hthread *thr,
 		duk_push_number(ctx, y);  /* -> [ ... x this y ] */
 		DUK_ASSERT(act == thr->callstack_curr);
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(ctx, -1), is_strict);
-		duk_pop_2(ctx);  /* -> [ ... x ] */
+		duk_pop_2_unsafe(ctx);  /* -> [ ... x ] */
 	} else {
-		duk_pop_2(ctx);  /* -> [ ... ] */
+		duk_pop_2_unsafe(ctx);  /* -> [ ... ] */
 		duk_push_number(ctx, y);  /* -> [ ... y ] */
 		DUK_ASSERT(act == thr->callstack_curr);
 		duk_js_putvar_activation(thr, act, name, DUK_GET_TVAL_NEGIDX(ctx, -1), is_strict);
@@ -983,7 +983,7 @@ DUK_LOCAL void duk__handle_catch(duk_hthread *thr, duk_tval *tv_val_unstable, du
 
 		DUK_CAT_SET_LEXENV_ACTIVE(cat);
 
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 
 		DUK_DDD(DUK_DDDPRINT("new_env finished: %!iO", (duk_heaphdr *) new_env));
 	}
@@ -2346,7 +2346,7 @@ DUK_LOCAL DUK__NOINLINE_PERF void duk__handle_op_trycatch(duk_hthread *thr, duk_
 	                     (unsigned long) cat->flags,
 	                     (long) cat->pc_base, (long) cat->idx_base, (duk_heaphdr *) cat->h_varname));
 
-	duk_pop(ctx);
+	duk_pop_unsafe(ctx);
 }
 
 DUK_LOCAL DUK__NOINLINE_PERF duk_instr_t *duk__handle_op_endtry(duk_hthread *thr, duk_instr_t ins) {
@@ -2889,6 +2889,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			DUK_UNREF(exc);
 #endif
 			DUK_DDD(DUK_DDDPRINT("longjmp caught by bytecode executor"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 
 			duk__handle_executor_error(heap,
 			                           entry_act,
@@ -2902,6 +2903,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 				what = "unknown";
 			}
 			DUK_D(DUK_DPRINT("unexpected c++ std::exception (perhaps thrown by user code)"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
 				DUK_ERROR_FMT1(heap->curr_thread, DUK_ERR_TYPE_ERROR, "caught invalid c++ std::exception '%s' (perhaps thrown by user code)", what);
@@ -2915,6 +2917,7 @@ DUK_INTERNAL void duk_js_execute_bytecode(duk_hthread *exec_thr) {
 			}
 		} catch (...) {
 			DUK_D(DUK_DPRINT("unexpected c++ exception (perhaps thrown by user code)"));
+			DUK_STATS_INC(exec_thr->heap, stats_exec_throw);
 			try {
 				DUK_ASSERT(heap->curr_thread != NULL);
 				DUK_ERROR_TYPE(heap->curr_thread, "caught invalid c++ exception (perhaps thrown by user code)");
@@ -3174,6 +3177,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #endif
 
 		ins = *curr_pc++;
+		DUK_STATS_INC(thr->heap, stats_exec_opcodes);
 
 		/* Typing: use duk_small_(u)int_fast_t when decoding small
 		 * opcode fields (op, A, B, C, BC) which fit into 16 bits
@@ -3440,7 +3444,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
 				stridx = duk_js_typeof_stridx(tv);
 				tv = NULL;  /* no longer needed */
-				duk_pop_2(ctx);
+				duk_pop_2_unsafe(ctx);
 			} else {
 				/* unresolvable, no stack changes */
 				stridx = DUK_STRIDX_LC_UNDEFINED;
@@ -4051,7 +4055,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 */
 
 			x = duk_to_number_m1(ctx);
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 			if (ins & DUK_BC_INCDECP_FLAG_DEC) {
 				y = x - 1.0;
 			} else {
@@ -4067,7 +4071,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK_UNREF(rc);  /* ignore */
 			tv_obj = NULL;  /* invalidated */
 			tv_key = NULL;  /* invalidated */
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 
 			z = (ins & DUK_BC_INCDECP_FLAG_POST) ? x : y;
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
@@ -4200,7 +4204,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				}
 			}
 
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 			break;
 		}
 
@@ -4320,7 +4324,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			act = thr->callstack_curr;
 			DUK_ASSERT(act != NULL);
 			(void) duk_js_getvar_activation(thr, act, name, 1 /*throw*/);  /* -> [... val this] */
-			duk_pop(ctx);  /* 'this' binding is not needed here */
+			duk_pop_unsafe(ctx);  /* 'this' binding is not needed here */
 			DUK__REPLACE_TOP_A_BREAK();
 		}
 

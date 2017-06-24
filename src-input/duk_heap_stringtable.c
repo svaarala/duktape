@@ -237,6 +237,12 @@ DUK_LOCAL duk_hstring *duk__strtable_alloc_hstring(duk_heap *heap,
 		 * The flag is set lazily for RAM strings.
 		 */
 		DUK_ASSERT(!DUK_HSTRING_HAS_ASCII(res));
+
+#if defined(DUK_USE_HSTRING_LAZY_CLEN)
+		/* Charlen initialized to 0, updated on-the-fly. */
+#else
+		duk_hstring_init_charlen(res);  /* Also sets ASCII flag. */
+#endif
 	}
 
 	DUK_DDD(DUK_DDDPRINT("interned string, hash=0x%08lx, blen=%ld, has_arridx=%ld, has_extdata=%ld",
@@ -719,6 +725,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
 		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
+			DUK_STATS_INC(heap, stats_intern_hit);
 			return h;
 		}
 		h = h->hdr.h_next;
@@ -732,12 +739,14 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 #if defined(DUK_USE_ROM_STRINGS)
 	h = duk__strtab_romstring_lookup(heap, str, blen, strhash);
 	if (h != NULL) {
+		DUK_STATS_INC(heap, stats_intern_hit);
 		return h;
 	}
 #endif
 
 	/* Not found in string table; insert. */
 
+	DUK_STATS_INC(heap, stats_intern_miss);
 	h = duk__strtable_do_intern(heap, str, blen, strhash);
 	return h;  /* may be NULL */
 }

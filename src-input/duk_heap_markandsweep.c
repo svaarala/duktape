@@ -1046,6 +1046,45 @@ DUK_LOCAL void duk__check_assert_refcounts(duk_heap *heap) {
 #endif  /* DUK_USE_ASSERTIONS */
 
 /*
+ *  Stats dump.
+ */
+
+#if defined(DUK_USE_DEBUG)
+DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
+	DUK_D(DUK_DPRINT("stats executor: opcodes=%ld, throw=%ld",
+	                 (long) heap->stats_exec_opcodes, (long) heap->stats_exec_throw));
+	DUK_D(DUK_DPRINT("stats call: all=%ld, tailcall=%ld, ecmatoecma=%ld",
+	                 (long) heap->stats_call_all, (long) heap->stats_call_tailcall,
+	                 (long) heap->stats_call_ecmatoecma));
+	DUK_D(DUK_DPRINT("stats safecall: all=%ld, nothrow=%ld, throw=%ld",
+	                 (long) heap->stats_safecall_all, (long) heap->stats_safecall_nothrow,
+	                 (long) heap->stats_safecall_throw));
+	DUK_D(DUK_DPRINT("stats mark-and-sweep: try_count=%ld, skip_count=%ld, emergency_count=%ld",
+	                 (long) heap->stats_ms_try_count, (long) heap->stats_ms_skip_count,
+	                 (long) heap->stats_ms_emergency_count));
+	DUK_D(DUK_DPRINT("stats string intern: hit=%ld, miss=%ld",
+	                 (long) heap->stats_intern_hit, (long) heap->stats_intern_miss));
+	DUK_D(DUK_DPRINT("stats getprop: all=%ld, arrayidx=%ld, bufobjidx=%ld, "
+	                 "bufferidx=%ld, bufferlen=%ld, stringidx=%ld, stringlen=%ld, "
+	                 "proxy=%ld, arguments=%ld",
+	                 (long) heap->stats_getprop_all, (long) heap->stats_getprop_arrayidx,
+	                 (long) heap->stats_getprop_bufobjidx, (long) heap->stats_getprop_bufferidx,
+	                 (long) heap->stats_getprop_bufferlen, (long) heap->stats_getprop_stringidx,
+	                 (long) heap->stats_getprop_stringlen, (long) heap->stats_getprop_proxy,
+	                 (long) heap->stats_getprop_arguments));
+	DUK_D(DUK_DPRINT("stats putprop: all=%ld, arrayidx=%ld, bufobjidx=%ld, "
+	                 "bufferidx=%ld, proxy=%ld",
+	                 (long) heap->stats_putprop_all, (long) heap->stats_putprop_arrayidx,
+	                 (long) heap->stats_putprop_bufobjidx, (long) heap->stats_putprop_bufferidx,
+	                 (long) heap->stats_putprop_proxy));
+	DUK_D(DUK_DPRINT("stats getvar: all=%ld",
+	                 (long) heap->stats_getvar_all));
+	DUK_D(DUK_DPRINT("stats putvar: all=%ld",
+	                 (long) heap->stats_putvar_all));
+}
+#endif  /* DUK_USE_DEBUG */
+
+/*
  *  Main mark-and-sweep function.
  *
  *  'flags' represents the features requested by the caller.  The current
@@ -1060,6 +1099,13 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	duk_size_t tmp;
 #endif
 
+	DUK_STATS_INC(heap, stats_ms_try_count);
+#if defined(DUK_USE_DEBUG)
+	if (flags & DUK_MS_FLAG_EMERGENCY) {
+		DUK_STATS_INC(heap, stats_ms_emergency_count);
+	}
+#endif
+
 	/* If debugger is paused, garbage collection is disabled by default.
 	 * This is achieved by bumping ms_prevent_count when becoming paused.
 	 */
@@ -1071,6 +1117,7 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 	 */
 	if (heap->ms_prevent_count != 0) {
 		DUK_DD(DUK_DDPRINT("reject recursive mark-and-sweep"));
+		DUK_STATS_INC(heap, stats_ms_skip_count);
 		return;
 	}
 	DUK_ASSERT(heap->ms_running == 0);  /* ms_prevent_count is bumped when ms_running is set */
@@ -1270,6 +1317,14 @@ DUK_INTERNAL void duk_heap_mark_and_sweep(duk_heap *heap, duk_small_uint_t flags
 #else
 	DUK_D(DUK_DPRINT("garbage collect (mark-and-sweep) finished: %ld objects kept, %ld strings kept, no voluntary trigger",
 	                 (long) count_keep_obj, (long) count_keep_str));
+#endif
+
+	/*
+	 *  Stats dump
+	 */
+
+#if defined(DUK_USE_DEBUG)
+	duk__dump_stats(heap);
 #endif
 
 	/*
