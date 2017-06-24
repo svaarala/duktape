@@ -15,6 +15,9 @@ opcodes:
     args:
       - A_R
       - BC_R
+  - name: JUMP
+    args:
+      - ABC_JUMP
   - name: LDCONST
     args:
       - A_R
@@ -42,6 +45,10 @@ opcodes:
   - name: LDFALSE
     args:
       - BC_R
+  - name: GETVAR
+    args:
+      - A_R
+      - BC_C
   - name: BNOT
     args:
       - A_R
@@ -58,14 +65,6 @@ opcodes:
     args:
       - A_R
       - BC_R
-  - name: TYPEOF
-    args:
-      - A_R
-      - BC_R
-  - name: TYPEOFID
-    args:
-      - A_R
-      - BC_C
   - name: EQ_RR
     args:
       - A_R
@@ -563,7 +562,7 @@ opcodes:
       - A_R
       - B_R
       - C_R
-  - name: DELPROP_CR   # unused now
+  - name: DELPROP_CR
     args:
       - A_R
       - B_C
@@ -573,7 +572,7 @@ opcodes:
       - A_R
       - B_R
       - C_C
-  - name: DELPROP_CC   # unused now
+  - name: DELPROP_CC
     args:
       - A_R
       - B_C
@@ -774,27 +773,15 @@ opcodes:
       - A_R
       - B_C
       - C_C
-  - name: CSVAR_RR
-    args:
-      - A_R
-      - B_R
-  - name: CSVAR_CR
-    args:
-      - A_R
-      - B_C
-  - name: CSVAR_RC
-    args:
-      - A_R
-      - B_R
-  - name: CSVAR_CC
-    args:
-      - A_R
-      - B_C
   - name: CLOSURE
     args:
       - A_R
       - BC_I
-  - name: GETVAR
+  - name: TYPEOF
+    args:
+      - A_R
+      - BC_R
+  - name: TYPEOFID
     args:
       - A_R
       - BC_C
@@ -806,9 +793,6 @@ opcodes:
     args:
       - A_R
       - BC_C
-  - name: JUMP
-    args:
-      - ABC_JUMP
   - name: RETREG
     args:
       - BC_R
@@ -855,23 +839,88 @@ opcodes:
   - name: THROW
     args:
       - BC_R
+  - name: INVLHS
   - name: CSREG
     args:
       - A_R
       - BC_R
-  - name: EVALCALL
+  - name: CSVAR_RR
+    args:
+      - A_R
+      - B_R
+  - name: CSVAR_CR
+    args:
+      - A_R
+      - B_C
+  - name: CSVAR_RC
+    args:
+      - A_R
+      - B_R
+  - name: CSVAR_CC
+    args:
+      - A_R
+      - B_C
+  - name: CALL0
     args:
       - A_I
       - BC_R
-  - name: CALL
+  - name: CALL1
     args:
       - A_I
       - BC_R
-  - name: TAILCALL
+  - name: CALL2
     args:
       - A_I
       - BC_R
-  - name: CONSCALL
+  - name: CALL3
+    args:
+      - A_I
+      - BC_R
+  - name: CALL4
+    args:
+      - A_I
+      - BC_R
+  - name: CALL5
+    args:
+      - A_I
+      - BC_R
+  - name: CALL6
+    args:
+      - A_I
+      - BC_R
+  - name: CALL7
+    args:
+      - A_I
+      - BC_R
+  - name: CALL8
+    args:
+      - A_I
+      - BC_R
+  - name: CALL9
+    args:
+      - A_I
+      - BC_R
+  - name: CALL10
+    args:
+      - A_I
+      - BC_R
+  - name: CALL11
+    args:
+      - A_I
+      - BC_R
+  - name: CALL12
+    args:
+      - A_I
+      - BC_R
+  - name: CALL13
+    args:
+      - A_I
+      - BC_R
+  - name: CALL14
+    args:
+      - A_I
+      - BC_R
+  - name: CALL15
     args:
       - A_I
       - BC_R
@@ -921,27 +970,16 @@ opcodes:
     args:
       - B_R
       - C_R
-  - name: INVLHS
-  - name: DEBUGGER
-  - name: NOP
-  - name: INVALID
-    args:
-      - ABC_I
   - name: NEWTARGET
     args:
       - BC_R
-  - name: UNUSED195
-  - name: UNUSED196
-  - name: UNUSED197
-  - name: UNUSED198
-  - name: UNUSED199
-  - name: UNUSED200
-  - name: UNUSED201
-  - name: UNUSED202
-  - name: UNUSED203
-  - name: UNUSED204
-  - name: UNUSED205
-  - name: UNUSED206
+  - name: DEBUGGER
+  - name: NOP
+    args:
+      - ABC_I
+  - name: INVALID
+    args:
+      - ABC_I
   - name: UNUSED207
   - name: UNUSED208
   - name: UNUSED209
