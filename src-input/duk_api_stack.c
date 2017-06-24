@@ -5617,22 +5617,20 @@ DUK_LOCAL DUK_ALWAYS_INLINE void duk__pop_2_unsafe_raw(duk_context *ctx) {
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 	DUK_ASSERT((duk_size_t) (thr->valstack_top - thr->valstack_bottom) >= (duk_size_t) 2);
 
-	tv = thr->valstack_top;
-	tv--;
+	tv = --thr->valstack_top;
 	DUK_ASSERT(tv >= thr->valstack_bottom);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 #else
 	DUK_TVAL_SET_UNDEFINED(tv);
 #endif
-	tv--;
+	tv = --thr->valstack_top;
 	DUK_ASSERT(tv >= thr->valstack_bottom);
 #if defined(DUK_USE_REFERENCE_COUNTING)
 	DUK_TVAL_SET_UNDEFINED_UPDREF(thr, tv);  /* side effects */
 #else
 	DUK_TVAL_SET_UNDEFINED(tv);
 #endif
-	thr->valstack_top = tv;
 
 	DUK_ASSERT(thr->valstack_top >= thr->valstack_bottom);
 }
