@@ -7,14 +7,9 @@
 #include "duktape.h"
 #include "duk_module_node.h"
 
-#if defined(_MSC_VER)
-	#include <windows.h>
-	#include <direct.h>
-#else
-	#include <unistd.h>
-#endif
-
 #include <string.h>
+
+static NormalizeFunction normalizeFilename = NULL;
 
 #if DUK_VERSION >= 19999
 static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata);
@@ -249,39 +244,24 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	duk_dup(ctx, -5);                                 /* module */
 	(void) duk_get_prop_string(ctx, -6, "filename");  /* __filename */
 
-	/* Make __filename an absolute path. */
-
-#if defined(_MSC_VER)
-	wchar_t widePath[FILENAME_MAX + 1];
-	::_wgetcwd(widePath, FILENAME_MAX);
-
-	char currentPath[FILENAME_MAX + 1];
-	WideCharToMultiByte(CP_UTF8, 0, widePath, -1, &currentPath[0], FILENAME_MAX, NULL, NULL);
-#else
-	char currentPath[FILENAME_MAX + 1];
-	::getcwd(currentPath, FILENAME_MAX);
-#endif
-
-	const char *filename = duk_get_string(ctx, -1);
-	size_t len1 = strlen(currentPath);
-	size_t len2 = strlen(filename);
-	if (len1 + len2 + 1 < FILENAME_MAX) {
-		currentPath[len1++] = '/';
-		memcpy(&currentPath[len1], filename, len2);
-		currentPath[len1 + len2] = '\0';
-	}
-
-	duk_push_string(ctx, currentPath);
-	duk_replace(ctx, -2);
+	/* Let the application normalize the path on the TOS (e.g. make it an absolute file name) */
+	if (normalizeFilename != NULL)
+		normalizeFilename(ctx);
 
 	/* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
-	if (len2 >= FILENAME_MAX)
+	const char *source = duk_get_string(ctx, -1);
+	size_t len = strlen(source);
+
+	if (len >= FILENAME_MAX)
 		duk_push_undefined(ctx); /* File name too long -> no __dirname. */
 	else {
-		/* Find the last separator (if any). */
+		/* Find the last path separator (if any). */
+		char filename[FILENAME_MAX + 1];
+		memcpy(filename, source, len + 1);
+
 		char *lastSeparatorPos;
-		char *pos1 = strrchr(currentPath, '/');
-		char *pos2 = strrchr(currentPath, '\\');
+		char *pos1 = strrchr(filename, '/');
+		char *pos2 = strrchr(filename, '\\');
 		if (pos1 == NULL)
 			lastSeparatorPos = pos2;
 		else if (pos2 == NULL)
@@ -291,7 +271,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 
 		if (lastSeparatorPos != NULL) {
 			*lastSeparatorPos = '\0';
-			duk_push_string(ctx, currentPath);
+			duk_push_string(ctx, filename);
 		} else
 			duk_push_undefined(ctx);
 	}
@@ -332,7 +312,9 @@ duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *path) {
 #endif
 }
 
-void duk_module_node_init(duk_context *ctx) {
+void duk_module_node_init(duk_context *ctx, NormalizeFunction normalize) {
+  normalizeFilename = normalize;
+
 	/*
 	 *  Stack: [ ... options ] => [ ... ]
 	 */
