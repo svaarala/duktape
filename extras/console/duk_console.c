@@ -22,14 +22,11 @@
  * to a custom backend.
  */
 
-/* XXX: For now output is not flushed, add a flush flag, or maybe add flush
- * to info level and above only.
- */
-
 /* XXX: Init console object using duk_def_prop() when that call is available. */
 
 static duk_ret_t duk__console_log_helper(duk_context *ctx, const char *error_name) {
 	duk_idx_t i, n;
+	duk_bool_t console_flush;
 
 	n = duk_get_top(ctx);
 
@@ -60,7 +57,16 @@ static duk_ret_t duk__console_log_helper(duk_context *ctx, const char *error_nam
 		duk_get_prop_string(ctx, -1, "stack");
 	}
 
-	printf("%s\n", duk_to_string(ctx, -1));
+	/* Retrieve the setting of the flush flag. */
+	duk_push_global_stash(ctx);
+	duk_get_prop_string(ctx, -1, "\xff" "console:flush");
+	console_flush = duk_get_boolean(ctx, -1);
+	duk_pop_2(ctx);
+
+	fprintf(stdout, "%s\n", duk_to_string(ctx, -1));
+	if (console_flush) {
+		fflush(stdout);
+	}
 	return 0;
 }
 
@@ -157,4 +163,10 @@ void duk_console_init(duk_context *ctx, duk_uint_t flags) {
 			"})();"
 		);
 	}
+
+	/* Store the setting of the flush flag. */
+	duk_push_global_stash(ctx);
+	duk_push_boolean(ctx, (flags & DUK_CONSOLE_FLUSH) == DUK_CONSOLE_FLUSH);
+	duk_put_prop_string(ctx, -2, "\xff" "console:flush");
+	duk_pop(ctx);
 }
