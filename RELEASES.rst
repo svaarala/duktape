@@ -2947,6 +2947,8 @@ Planned
 * Add some statistics dumps to mark-and-sweep with debug logging enabled
   (GH-1579)
 
+* Add DUK_CONSOLE_FLUSH flag to extras/duktape-console (GH-1587, GH-1588)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
