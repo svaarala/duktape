@@ -44,6 +44,7 @@ and agreed to irrevocably license their contributions under the Duktape
 * Romero Malaquias (rbsm@ic.ufal.br)
 * Michael Drake <michael.drake@codethink.co.uk>
 * Steven Don (https://github.com/shdon)
+* Simon Stone (https://github.com/sstone1)
 
 Other contributions
 ===================
@@ -82,7 +83,6 @@ bugs, provided ideas, etc; roughly in order of appearance):
 * https://github.com/chris-y
 * Laurent Zubiaur (https://github.com/lzubiaur)
 * Neil Kolban (https://github.com/nkolban)
-* Simon Stone (https://github.com/sstone1)
 
 If you are accidentally missing from this list, send me an e-mail
 (``sami.vaarala@iki.fi``) and I'll fix the omission.
