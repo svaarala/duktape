@@ -2869,6 +2869,8 @@ Planned
   the native C stack when doing an Ecmascript-to-Ecmascript call, and no
   longer prevent coroutine yielding (GH-1523)
 
+* Increase maximum call argument count from 255 to ~64k (GH-1292, GH-1586)
+
 * Add duk_is_constructable() API call (GH-1523)
 
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
