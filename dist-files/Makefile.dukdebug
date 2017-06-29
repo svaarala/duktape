@@ -6,7 +6,7 @@ DUKTAPE_SOURCES = prep/duktape.c
 
 # Windows (MinGW): use examples/debug-trans-socket/duk_trans_socket_windows.c
 # and link with -lws2_32.
-DUKTAPE_CMDLINE_SOURCES = \
+CMDLINE_SOURCES = \
 	examples/cmdline/duk_cmdline.c \
 	examples/debug-trans-socket/duk_trans_socket_unix.c
 
@@ -16,9 +16,19 @@ CCOPTS += -I./prep -I./examples/debug-trans-socket
 CCOPTS += -DDUK_CMDLINE_DEBUGGER_SUPPORT     # enable --debugger in ./duk
 CCLIBS	= -lm
 
+# Enable a few optional modules.
+CCOPTS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I./extras/print-alert
+CMDLINE_SOURCES += extras/print-alert/duk_print_alert.c
+CCOPTS += -DDUK_CMDLINE_CONSOLE_SUPPORT -I./extras/console
+CMDLINE_SOURCES += extras/console/duk_console.c
+CCOPTS += -DDUK_CMDLINE_LOGGING_SUPPORT -I./extras/logging
+CMDLINE_SOURCES += extras/logging/duk_logging.c
+CCOPTS += -DDUK_CMDLINE_MODULE_SUPPORT -I./extras/module-duktape
+CMDLINE_SOURCES += extras/module-duktape/duk_module_duktape.c
+
 # Use tools/configure.py to prepare Duktape config header and sources with
 # custom configuration.
-duk:	$(DUKTAPE_CMDLINE_SOURCES)
+duk:	$(CMDLINE_SOURCES)
 	@rm -rf prep
 	python2 tools/configure.py \
 		--source-directory src-input \
@@ -28,4 +38,4 @@ duk:	$(DUKTAPE_CMDLINE_SOURCES)
 		-DDUK_USE_INTERRUPT_COUNTER \
 		-DDUK_USE_DEBUGGER_DUMPHEAP \
 		-DDUK_USE_DEBUGGER_INSPECT
-	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(DUKTAPE_CMDLINE_SOURCES) $(CCLIBS)
+	$(CC) -o $@ $(DEFINES) $(CCOPTS) $(DUKTAPE_SOURCES) $(CMDLINE_SOURCES) $(CCLIBS)
