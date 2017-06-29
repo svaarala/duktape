@@ -1,7 +1,7 @@
 /*
- *  The built-in eval() is not tailcalled.  In Duktape 2.x tailcalls are also
- *  disabled if an unrelated function is bound to the identifier 'eval'.  This
- *  is an artifact of the implementation.
+ *  The built-in eval() is not tailcalled.  In Duktape 2.1 and 2.0 tailcalls
+ *  are also disabled if an unrelated function is bound to the identifier
+ *  'eval'.  This is an artifact of the implementation, fixed in Duktape 2.2.
  */
 
 /*---
@@ -13,7 +13,8 @@
 /*===
 Reached 1000000
 done
-RangeError
+Reached 1000000
+done
 ===*/
 
 function test() {
@@ -42,7 +43,7 @@ function test() {
         print(e.name);
     }
 
-    // This won't, because of the identifier 'eval' in use.
+    // This won't in Duktape 2.0 and 2.1, but will in Duktape 2.2.
     try {
         print(eval(0));
     } catch (e) {

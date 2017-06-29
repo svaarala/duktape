@@ -12,12 +12,16 @@
 function
 255 normal called-with-255-arguments
 255 constr called-with-255-arguments
-256 normal RangeError
-256 constr RangeError
-511 normal RangeError
-511 constr RangeError
-512 normal RangeError
-512 constr RangeError
+256 normal called-with-256-arguments
+256 constr called-with-256-arguments
+511 normal called-with-511-arguments
+511 constr called-with-511-arguments
+512 normal called-with-512-arguments
+512 constr called-with-512-arguments
+60000 normal called-with-60000-arguments
+60000 constr called-with-60000-arguments
+66000 normal RangeError
+66000 constr RangeError
 ===*/
 
 function createCall(count, isConstructor) {
@@ -66,6 +70,12 @@ function test() {
 
     f(512, false);
     f(512, true);
+
+    // Close to ~64k is the limit in Duktape 2.2, test with 60000.
+    f(60000, false);
+    f(60000, true);
+    f(66000, false);
+    f(66000, true);
 }
 
 try {

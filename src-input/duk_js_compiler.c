@@ -1210,7 +1210,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 	duk_int_t b_out = -1;
 	duk_int_t c_out = -1;
 	duk_int_t tmp;
-	duk_small_int_t op = op_flags & 0xff;
+	duk_small_uint_t op = op_flags & 0xffU;
 
 	DUK_DDD(DUK_DDDPRINT("emit: op_flags=%04lx, a=%ld, b=%ld, c=%ld",
 	                     (unsigned long) op_flags, (long) a, (long) b, (long) c));
@@ -1255,7 +1255,7 @@ DUK_LOCAL void duk__emit_a_b_c(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_f
 			 * consecutive.
 			 */
 			DUK_ASSERT((comp_ctx->curr_func.shuffle1 == 0 && comp_ctx->curr_func.shuffle2 == 0) ||
-			           comp_ctx->curr_func.shuffle2 == comp_ctx->curr_func.shuffle1 + 1);
+			           (comp_ctx->curr_func.shuffle2 == comp_ctx->curr_func.shuffle1 + 1));
 			if (op == DUK_OP_CSVAR) {
 				/* For CSVAR the limit is one smaller because output shuffle
 				 * must be able to express 'a + 1' in BC.
@@ -1526,6 +1526,13 @@ DUK_LOCAL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_fl
 		duk__emit(comp_ctx, ins);
 	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
 		goto error_outofregs;
+	} else if ((op_flags & 0xf0U) == DUK_OP_CALL0) {
+		comp_ctx->curr_func.needs_shuffle = 1;
+		tmp = comp_ctx->curr_func.shuffle1;
+		duk__emit_load_int32_noshuffle(comp_ctx, tmp, a);
+		op_flags |= DUK_BC_CALL_FLAG_INDIRECT;
+		ins = DUK_ENC_OP_A_BC(op_flags & 0xff, tmp, bc);
+		duk__emit(comp_ctx, ins);
 	} else if (a <= DUK_BC_BC_MAX) {
 		comp_ctx->curr_func.needs_shuffle = 1;
 		tmp = comp_ctx->curr_func.shuffle1;
@@ -3452,7 +3459,7 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		 * is not allowed.
 		 */
 		duk__emit_a_bc(comp_ctx,
-		              DUK_OP_CONSCALL | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+		              DUK_OP_CALL0 | DUK_BC_CALL_FLAG_CONSTRUCT,
 		              nargs /*num_args*/,
 		              reg_target /*target*/);
 
@@ -3892,7 +3899,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		/* function call */
 		duk_reg_t reg_cs = DUK__ALLOCTEMPS(comp_ctx, 2);
 		duk_int_t nargs;
-		duk_small_uint_t call_op = DUK_OP_CALL;
+		duk_small_uint_t call_op = DUK_OP_CALL0;
 
 		/* XXX: attempt to get the call result to "next temp" whenever
 		 * possible to avoid unnecessary register shuffles.
@@ -3923,7 +3930,7 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 				DUK_DDD(DUK_DDDPRINT("function call with identifier 'eval' "
 				                     "-> using EVALCALL, marking function "
 				                     "as may_direct_eval"));
-				call_op = DUK_OP_EVALCALL;
+				call_op |= DUK_BC_CALL_FLAG_CALLED_AS_EVAL;
 				comp_ctx->curr_func.may_direct_eval = 1;
 			}
 
@@ -3966,12 +3973,12 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 		DUK__SETTEMP(comp_ctx, reg_cs + 2);
 		nargs = duk__parse_arguments(comp_ctx, res);  /* parse args starting from "next temp" */
 
-		/* Tailcalls are handled by back-patching the opcode to TAILCALL to the
-		 * already emitted instruction later (in return statement parser).
+		/* Tailcalls are handled by back-patching the already emitted opcode
+		 * later in return statement parser.
 		 */
 
 		duk__emit_a_bc(comp_ctx,
-		               call_op | DUK__EMIT_FLAG_NO_SHUFFLE_A,
+		               call_op,
 		               (duk_regconst_t) nargs /*numargs*/,
 		               (duk_regconst_t) reg_cs /*basereg*/);
 		DUK__SETTEMP(comp_ctx, reg_cs + 1);    /* result in csreg */
@@ -5822,7 +5829,7 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		pc_after_expr = duk__get_current_pc(comp_ctx);
 
 		/* Tail call check: if last opcode emitted was CALL, and
-		 * the context allows it, change the CALL to TAILCALL.
+		 * the context allows it, add a tailcall flag to the CALL.
 		 * This doesn't guarantee that a tail call will be allowed at
 		 * runtime, so the RETURN must still be emitted.  (Duktape
 		 * 0.10.0 avoided this and simulated a RETURN if a tail call
@@ -5868,13 +5875,13 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 
 			ins = instr->ins;
 			op = (duk_small_uint_t) DUK_DEC_OP(ins);
-			if (op == DUK_OP_CALL &&
+			if ((op & ~0x0fU) == DUK_OP_CALL0 &&
 			    DUK__ISTEMP(comp_ctx, rc_val) /* see above */) {
 				DUK_DDD(DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
 				                     "and last instruction is a CALL "
 				                     "-> change to TAILCALL"));
-				ins = (ins & ~DUK_BC_SHIFTED_MASK_OP) | (DUK_OP_TAILCALL << DUK_BC_SHIFT_OP);
+				ins |= DUK_ENC_OP(DUK_BC_CALL_FLAG_TAILCALL);
 				instr->ins = ins;
 			}
 		}

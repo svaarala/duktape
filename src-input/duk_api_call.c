@@ -319,7 +319,7 @@ DUK_EXTERNAL void duk_new(duk_context *ctx, duk_idx_t nargs) {
 	duk_push_object(ctx);  /* default instance; internal proto updated by call handling */
 	duk_insert(ctx, idx_func + 1);
 
-	duk_handle_call_unprotected(thr, idx_func, DUK_CALL_FLAG_CONSTRUCTOR_CALL);
+	duk_handle_call_unprotected(thr, idx_func, DUK_CALL_FLAG_CONSTRUCT);
 }
 
 DUK_LOCAL duk_ret_t duk__pnew_helper(duk_context *ctx, void *udata) {

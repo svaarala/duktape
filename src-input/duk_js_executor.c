@@ -14,18 +14,6 @@ DUK_LOCAL_DECL void duk__js_execute_bytecode_inner(duk_hthread *entry_thread, du
  *  Misc helpers.
  */
 
-DUK_LOCAL duk_small_uint_t duk__call_flags_map[4] = {
-	DUK_CALL_FLAG_ALLOW_ECMATOECMA,
-
-	DUK_CALL_FLAG_ALLOW_ECMATOECMA |
-		DUK_CALL_FLAG_IS_TAILCALL,
-
-	DUK_CALL_FLAG_ALLOW_ECMATOECMA |
-		DUK_CALL_FLAG_CONSTRUCTOR_CALL,
-
-	0 /*UNUSED*/
-};
-
 /* Forced inline declaration, only applied for performance oriented build. */
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
 #define DUK__INLINE_PERF
@@ -2633,6 +2621,37 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthrea
 }
 
 /*
+ *  Call handling helpers.
+ */
+
+DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, duk_idx_t nargs, duk_small_uint_t call_flags) {
+	duk_context *ctx = (duk_context *) thr;
+	duk_bool_t rc;
+
+	duk_set_top_unsafe(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
+
+	/* Attempt an Ecma-to-Ecma call setup.  If the call
+	 * target is (directly or indirectly) Reflect.construct(),
+	 * the call may change into a constructor call on the fly.
+	 */
+	rc = duk_handle_call_unprotected(thr, idx, call_flags);
+	if (rc != 0) {
+		/* Ecma-to-ecma call possible, may or may not
+		 * be a tail call.  Avoid C recursion by
+		 * reusing current executor instance.
+		 */
+		DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
+		/* curr_pc synced by duk_handle_call_unprotected() */
+		DUK_ASSERT(thr->ptr_curr_pc == NULL);
+		return rc;
+	} else {
+		/* Call was handled inline. */
+	}
+	DUK_ASSERT(thr->ptr_curr_pc != NULL);
+	return rc;
+}
+
+/*
  *  Ecmascript bytecode executor.
  *
  *  Resume execution for the current thread from its current activation.
@@ -2753,11 +2772,11 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthrea
 	} while (0)
 
 #if defined(DUK_USE_EXEC_PREFER_SIZE)
-#define DUK__LOOKUP_INDIRECT_INDEX(idx) do { \
+#define DUK__LOOKUP_INDIRECT(idx) do { \
 		(idx) = (duk_uint_fast_t) duk_get_uint(ctx, (idx)); \
 	} while (0)
 #elif defined(DUK_USE_FASTINT)
-#define DUK__LOOKUP_INDIRECT_INDEX(idx) do { \
+#define DUK__LOOKUP_INDIRECT(idx) do { \
 		duk_tval *tv_ind; \
 		tv_ind = DUK__REGP((idx)); \
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind)); \
@@ -2765,7 +2784,7 @@ DUK_LOCAL DUK__NOINLINE_PERF duk_small_uint_t duk__handle_op_nextenum(duk_hthrea
 		(idx) = (duk_uint_fast_t) DUK_TVAL_GET_FASTINT_U32(tv_ind); \
 	} while (0)
 #else
-#define DUK__LOOKUP_INDIRECT_INDEX(idx) do { \
+#define DUK__LOOKUP_INDIRECT(idx) do { \
 		duk_tval *tv_ind; \
 		tv_ind = DUK__REGP(idx); \
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_ind)); \
@@ -3055,7 +3074,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		DUK_ASSERT(consts != NULL);
 
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-		if (duk_debug_is_attached(thr->heap) && !thr->heap->dbg_processing) {
+		if (DUK_UNLIKELY(duk_debug_is_attached(thr->heap) && !thr->heap->dbg_processing)) {
 			duk__executor_recheck_debugger(thr, act, fun);
 			DUK_ASSERT(act == thr->callstack_curr);
 			DUK_ASSERT(act != NULL);
@@ -3106,6 +3125,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			/* Trigger at zero or below */
 			duk_small_uint_t exec_int_ret;
 
+			DUK_STATS_INC(thr->heap, stats_exec_interrupt);
+
 			/* Write curr_pc back for the debugger. */
 			{
 				duk_activation *act;
@@ -3115,7 +3136,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 				act->curr_pc = (duk_instr_t *) curr_pc;
 			}
 
-			/* Force restart caused by a function return; must recheck
+			/* Forced restart caused by a function return; must recheck
 			 * debugger breakpoints before checking line transitions,
 			 * see GH-303.  Restart and then handle interrupt_counter
 			 * zero again.
@@ -4617,127 +4638,47 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			break;
 		}
 
-		case DUK_OP_EVALCALL: {
-			/* Eval call or a normal call made using the identifier 'eval'.
-			 * Eval calls are never handled as tail calls for simplicity.
-			 */
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t nargs;
-			duk_uint_fast_t idx;
-			duk_small_uint_t call_flags;
-			duk_tval *tv_func;
-			duk_hobject *obj_func;
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-			duk_hcompfunc *fun;
-#endif
 
-			/* At present eval() is native call that is not handled
-			 * specially by call handling, so actual eval() calls
-			 * require native recursion, prevent yields, etc.  If
-			 * the ultimate call is not the native eval() function
-			 * but an Ecmascript function, native recursion is
-			 * avoided.
-			 */
+		/* XXX: in some cases it's faster NOT to reuse the value
+		 * stack but rather copy the arguments on top of the stack
+		 * (mainly when the calling value stack is large and the value
+		 * stack resize would be large).
+		 */
 
-			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
-			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
-			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
-
-			/* XXX: move this handling into call setup? */
-			call_flags = DUK_CALL_FLAG_ALLOW_ECMATOECMA;
-			tv_func = DUK_GET_TVAL_POSIDX(ctx, idx);
-			if (DUK_TVAL_IS_OBJECT(tv_func)) {
-				obj_func = DUK_TVAL_GET_OBJECT(tv_func);
-				DUK_ASSERT(obj_func != NULL);
-				if (DUK_HOBJECT_IS_NATFUNC(obj_func) &&
-				    ((duk_hnatfunc *) obj_func)->func == duk_bi_global_object_eval) {
-					DUK_DDD(DUK_DDDPRINT("call target is eval, call identifier was 'eval' -> direct eval"));
-					call_flags |= DUK_CALL_FLAG_DIRECT_EVAL;
-				}
-			}
-
-			/* XXX: tailcall support */
-			if (duk_handle_call_unprotected(thr, idx, call_flags) != 0) {
-				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
-				/* curr_pc synced by duk_handle_call_unprotected() */
-				DUK_ASSERT(thr->ptr_curr_pc == NULL);
-				goto restart_execution;
-			} else {
-				/* Call was handled inline. */
-			}
-
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-			fun = DUK__FUN();
-#endif
-			duk_set_top(ctx, (duk_idx_t) fun->nregs);
-			break;
-		}
-
-		case DUK_OP_CALL:
-		case DUK_OP_TAILCALL:
-		case DUK_OP_CONSCALL: {
-			/* DUK_OP_CALL: plain call, not tailcall compatible.
+		case DUK_OP_CALL0:
+		case DUK_OP_CALL1:
+		case DUK_OP_CALL2:
+		case DUK_OP_CALL3:
+		case DUK_OP_CALL4:
+		case DUK_OP_CALL5:
+		case DUK_OP_CALL6:
+		case DUK_OP_CALL7: {
+			/* Opcode packs 4 flag bits: 1 for indirect, 3 map
+			 * 1:1 to three lowest call handling flags.
 			 *
-			 * DUK_OP_TAILCALL: plain call which is tailcall
-			 * compatible.  Tail call may not be possible due
-			 * to e.g. target not being an Ecmascript function.
-			 *
-			 * DUK_OP_CONSCALL: constructor call, not tailcall
-			 * compatible at present (easy to fix).
-			 *
-			 * Not a direct eval call.  Indirect eval calls don't
-			 * need special handling here.
-			 *
-			 * When DUK_CALL_FLAG_ALLOW_ECMATOECMA is set, call
-			 * setup will just set up a new duk_activation and
-			 * indicate an Ecma-to-Ecma call is possible (return
-			 * value != 0) and we can reuse the executor without
-			 * a native recursion increase.
-			 */
-
-			duk_context *ctx = (duk_context *) thr;
-			duk_small_uint_fast_t nargs;
-			duk_uint_fast_t idx;
-			duk_small_uint_t call_flags;
-#if !defined(DUK_USE_EXEC_FUN_LOCAL)
-			duk_hcompfunc *fun;
-#endif
-
-			/* A -> nargs
+			 * A -> nargs or register with nargs (indirect)
 			 * BC -> base register for call (base -> func, base+1 -> this, base+2 -> arg1 ... base+2+N-1 -> argN)
 			 */
 
-			/* XXX: in some cases it's faster NOT to reuse the value
-			 * stack but rather copy the arguments on top of the stack
-			 * (mainly when the calling value stack is large and the value
-			 * stack resize would be large).
-			 */
+			duk_context *ctx = (duk_context *) thr;
+			duk_idx_t nargs;
+			duk_idx_t idx;
+			duk_small_uint_t call_flags;
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			duk_hcompfunc *fun;
+#endif
 
-			nargs = (duk_small_uint_fast_t) DUK_DEC_A(ins);
-			idx = (duk_uint_fast_t) DUK_DEC_BC(ins);
-			duk_set_top(ctx, (duk_idx_t) (idx + nargs + 2));   /* [ ... func this arg1 ... argN ] */
+			DUK_ASSERT((DUK_OP_CALL0 & 0x0fU) == 0);
+			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) == 0);
 
-			/* Opcode number constraints allow simple bit test. */
-			DUK_ASSERT((DUK_OP_CALL & 0x03) == 0);
-			DUK_ASSERT((DUK_OP_TAILCALL & 0x03) == 1);
-			DUK_ASSERT((DUK_OP_CONSCALL & 0x03) == 2);
-			call_flags = duk__call_flags_map[(ins >> DUK_BC_SHIFT_OP) & 0x03U];
+			nargs = (duk_idx_t) DUK_DEC_A(ins);
+			call_flags = (ins & 0x07U) | DUK_CALL_FLAG_ALLOW_ECMATOECMA;
+			idx = (duk_idx_t) DUK_DEC_BC(ins);
 
-			/* Attempt an Ecma-to-Ecma call setup.  If the call
-			 * target is (directly or indirectly) Reflect.construct(),
-			 * the call may change into a constructor call on the fly.
-			 */
-			if (duk_handle_call_unprotected(thr, idx, call_flags) != 0) {
-				/* Ecma-to-ecma call possible, may or may not
-				 * be a tail call.  Avoid C recursion by
-				 * reusing current executor instance.
-				 */
-				DUK_DDD(DUK_DDDPRINT("ecma-to-ecma call setup possible, restart execution"));
+			if (duk__executor_handle_call(thr, idx, nargs, call_flags)) {
 				/* curr_pc synced by duk_handle_call_unprotected() */
 				DUK_ASSERT(thr->ptr_curr_pc == NULL);
 				goto restart_execution;
-			} else {
-				/* Call was handled inline. */
 			}
 			DUK_ASSERT(thr->ptr_curr_pc != NULL);
 
@@ -4747,18 +4688,53 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #if !defined(DUK_USE_EXEC_FUN_LOCAL)
 			fun = DUK__FUN();
 #endif
-			duk_set_top(ctx, (duk_idx_t) fun->nregs);
+			duk_set_top_unsafe(ctx, (duk_idx_t) fun->nregs);
 
 			/* No need to reinit setjmp() catchpoint, as call handling
 			 * will store and restore our state.
-			 */
-
-			/* When debugger is enabled, we need to recheck the activation
+			 *
+			 * When debugger is enabled, we need to recheck the activation
 			 * status after returning.  This is now handled by call handling
 			 * and heap->dbg_force_restart.
 			 */
+			break;
+		}
 
+		case DUK_OP_CALL8:
+		case DUK_OP_CALL9:
+		case DUK_OP_CALL10:
+		case DUK_OP_CALL11:
+		case DUK_OP_CALL12:
+		case DUK_OP_CALL13:
+		case DUK_OP_CALL14:
+		case DUK_OP_CALL15: {
+			/* Indirect variant. */
+			duk_context *ctx = (duk_context *) thr;
+			duk_idx_t nargs;
+			duk_idx_t idx;
+			duk_small_uint_t call_flags;
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			duk_hcompfunc *fun;
+#endif
+
+			DUK_ASSERT((DUK_OP_CALL0 & 0x0fU) == 0);
+			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) != 0);
+
+			nargs = (duk_idx_t) DUK_DEC_A(ins);
+			DUK__LOOKUP_INDIRECT(nargs);
+			call_flags = (ins & 0x07U) | DUK_CALL_FLAG_ALLOW_ECMATOECMA;
+			idx = (duk_idx_t) DUK_DEC_BC(ins);
+
+			if (duk__executor_handle_call(thr, idx, nargs, call_flags)) {
+				DUK_ASSERT(thr->ptr_curr_pc == NULL);
+				goto restart_execution;
+			}
 			DUK_ASSERT(thr->ptr_curr_pc != NULL);
+
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			fun = DUK__FUN();
+#endif
+			duk_set_top_unsafe(ctx, (duk_idx_t) fun->nregs);
 			break;
 		}
 
@@ -4793,7 +4769,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTOBJI) {
-				DUK__LOOKUP_INDIRECT_INDEX(idx);
+				DUK__LOOKUP_INDIRECT(idx);
 			}
 
 			count = (duk_small_uint_fast_t) DUK_DEC_C(ins);
@@ -4857,7 +4833,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 
 			idx = (duk_uint_fast_t) DUK_DEC_B(ins);
 			if (DUK_DEC_OP(ins) == DUK_OP_MPUTARRI) {
-				DUK__LOOKUP_INDIRECT_INDEX(idx);
+				DUK__LOOKUP_INDIRECT(idx);
 			}
 
 			count = (duk_small_uint_fast_t) DUK_DEC_C(ins);
@@ -4971,7 +4947,9 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		}
 
 		case DUK_OP_NOP: {
-			/* nop */
+			/* Nop, ignored, but ABC fields may carry a value e.g.
+			 * for indirect opcode handling.
+			 */
 			break;
 		}
 
@@ -5030,20 +5008,6 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #if !defined(DUK_USE_ES6)
 		case DUK_OP_NEWTARGET:
 #endif
-		case DUK_OP_UNUSED195:
-		case DUK_OP_UNUSED196:
-		case DUK_OP_UNUSED197:
-		case DUK_OP_UNUSED198:
-		case DUK_OP_UNUSED199:
-		case DUK_OP_UNUSED200:
-		case DUK_OP_UNUSED201:
-		case DUK_OP_UNUSED202:
-		case DUK_OP_UNUSED203:
-		case DUK_OP_UNUSED204:
-		case DUK_OP_UNUSED205:
-		case DUK_OP_UNUSED206:
-		case DUK_OP_UNUSED207:
-		case DUK_OP_UNUSED208:
 		case DUK_OP_UNUSED209:
 		case DUK_OP_UNUSED210:
 		case DUK_OP_UNUSED211:

@@ -1051,8 +1051,9 @@ DUK_LOCAL void duk__check_assert_refcounts(duk_heap *heap) {
 
 #if defined(DUK_USE_DEBUG)
 DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
-	DUK_D(DUK_DPRINT("stats executor: opcodes=%ld, throw=%ld",
-	                 (long) heap->stats_exec_opcodes, (long) heap->stats_exec_throw));
+	DUK_D(DUK_DPRINT("stats executor: opcodes=%ld, interrupt=%ld, throw=%ld",
+	                 (long) heap->stats_exec_opcodes, (long) heap->stats_exec_interrupt,
+	                 (long) heap->stats_exec_throw));
 	DUK_D(DUK_DPRINT("stats call: all=%ld, tailcall=%ld, ecmatoecma=%ld",
 	                 (long) heap->stats_call_all, (long) heap->stats_call_tailcall,
 	                 (long) heap->stats_call_ecmatoecma));

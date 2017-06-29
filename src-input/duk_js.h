@@ -5,11 +5,12 @@
 #if !defined(DUK_JS_H_INCLUDED)
 #define DUK_JS_H_INCLUDED
 
-/* Flags for call handling. */
-#define DUK_CALL_FLAG_CONSTRUCTOR_CALL       (1 << 0)  /* duk_handle_call_unprotected: constructor call (i.e. called as 'new Foo()') */
-#define DUK_CALL_FLAG_IS_TAILCALL            (1 << 1)  /* duk_handle_call_unprotected: setup for a tail call */
-#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 2)  /* duk_handle_call_unprotected: call is a direct eval call */
-#define DUK_CALL_FLAG_ALLOW_ECMATOECMA       (1 << 3)  /* duk_handle_call_unprotected: ecma-to-ecma call with executor reuse is possible */
+/* Flags for call handling.  Lowest flags must match bytecode DUK_BC_CALL_FLAG_xxx 1:1. */
+#define DUK_CALL_FLAG_TAILCALL               (1 << 0)  /* setup for a tail call */
+#define DUK_CALL_FLAG_CONSTRUCT              (1 << 1)  /* constructor call (i.e. called as 'new Foo()') */
+#define DUK_CALL_FLAG_CALLED_AS_EVAL         (1 << 2)  /* call was made using the identifier 'eval' */
+#define DUK_CALL_FLAG_ALLOW_ECMATOECMA       (1 << 3)  /* ecma-to-ecma call with executor reuse is possible */
+#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 4)  /* call is a direct eval call */
 
 /* Flags for duk_js_equals_helper(). */
 #define DUK_EQUALS_FLAG_SAMEVALUE            (1 << 0)  /* use SameValue instead of non-strict equality */

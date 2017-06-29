@@ -20,7 +20,7 @@ normal -> normal, using apply
 normal -> normal, using Reflect.apply
 - tailcall
 constructor -> constructor, using new
-- not a tailcall
+- tailcall
 constructor -> constructor, using Reflect.construct
 - tailcall
 normal -> constructor call, using new
@@ -81,9 +81,8 @@ function test() {
     function nnrapply_b() { return Reflect.apply(nnrapply_a, null, []); }
     nnrapply_b();
 
-    // Constructor -> constructor tail call.  This works now with
-    // Reflect.construct() but with with 'new Xxx()' but this is
-    // easy to fix.
+    // Constructor -> constructor tail call.  This works with both
+    // Reflect.construct() and 'new Xxx()'.
     print('constructor -> constructor, using new');
     function cc_a() { check(); }
     function cc_b() { return new cc_a(); }

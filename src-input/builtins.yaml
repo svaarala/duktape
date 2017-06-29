@@ -416,6 +416,8 @@ objects:
           type: function
           native: duk_bi_global_object_eval
           length: 1
+          magic: 15  # see duk_js_call.c
+          special_call: true
         auto_lightfunc: false  # automatic lightfunc conversion clashes with internal implementation
         present_if: DUK_USE_GLOBAL_BUILTIN
       - key: "parseInt"
