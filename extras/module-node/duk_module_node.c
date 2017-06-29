@@ -7,6 +7,10 @@
 #include "duktape.h"
 #include "duk_module_node.h"
 
+#include <string.h>
+
+static NormalizeFunction normalizeFilename = NULL;
+
 #if DUK_VERSION >= 19999
 static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata);
 #else
@@ -177,10 +181,6 @@ static void duk__push_module_object(duk_context *ctx, const char *id, duk_bool_t
 		duk_pop(ctx);
 	}
 
-	/* Node.js uses the canonicalized filename of a module for both module.id
-	 * and module.filename.  We have no concept of a file system here, so just
-	 * use the module ID for both values.
-	 */
 	duk_push_string(ctx, id);
 	duk_dup(ctx, -1);
 	duk_put_prop_string(ctx, -3, "filename");
@@ -243,7 +243,39 @@ static duk_int_t duk__eval_module_source(duk_context *ctx) {
 	(void) duk_get_prop_string(ctx, -4, "require");   /* require */
 	duk_dup(ctx, -5);                                 /* module */
 	(void) duk_get_prop_string(ctx, -6, "filename");  /* __filename */
-	duk_push_undefined(ctx);                          /* __dirname */
+
+	/* Let the application normalize the path on the TOS (e.g. make it an absolute file name) */
+	if (normalizeFilename != NULL)
+		normalizeFilename(ctx);
+
+	/* Derive __dirname from filename. Should work most of the time, except for very special cases (like \\server) */
+	const char *source = duk_get_string(ctx, -1);
+	size_t len = strlen(source);
+
+	if (len >= FILENAME_MAX)
+		duk_push_undefined(ctx); /* File name too long -> no __dirname. */
+	else {
+		/* Find the last path separator (if any). */
+		char filename[FILENAME_MAX + 1];
+		memcpy(filename, source, len + 1);
+
+		char *lastSeparatorPos;
+		char *pos1 = strrchr(filename, '/');
+		char *pos2 = strrchr(filename, '\\');
+		if (pos1 == NULL)
+			lastSeparatorPos = pos2;
+		else if (pos2 == NULL)
+			lastSeparatorPos = pos1;
+		else
+			lastSeparatorPos = pos1 > pos2 ? pos1 : pos2;
+
+		if (lastSeparatorPos != NULL) {
+			*lastSeparatorPos = '\0';
+			duk_push_string(ctx, filename);
+		} else
+			duk_push_undefined(ctx);
+	}
+
 	duk_call(ctx, 5);
 
 	/* [ ... module source result(ignore) ] */
@@ -280,7 +312,9 @@ duk_ret_t duk_module_node_peval_main(duk_context *ctx, const char *path) {
 #endif
 }
 
-void duk_module_node_init(duk_context *ctx) {
+void duk_module_node_init(duk_context *ctx, NormalizeFunction normalize) {
+  normalizeFilename = normalize;
+
 	/*
 	 *  Stack: [ ... options ] => [ ... ]
 	 */
