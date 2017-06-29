@@ -2951,6 +2951,9 @@ Planned
 
 * Add DUK_CONSOLE_FLUSH flag to extras/duktape-console (GH-1587, GH-1588)
 
+* Add print(), console.log() etc bindings to Makefile.dukdebug (GH-1535,
+  GH-1593)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)
