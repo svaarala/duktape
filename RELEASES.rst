@@ -2871,6 +2871,9 @@ Planned
 
 * Increase maximum call argument count from 255 to ~64k (GH-1292, GH-1586)
 
+* Add duk_seal() and duk_freeze() API calls, equivalent to Object.seal()
+  and Object.freeze() (GH-1594)
+
 * Add duk_is_constructable() API call (GH-1523)
 
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
