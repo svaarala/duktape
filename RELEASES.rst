@@ -2936,6 +2936,9 @@ Planned
 
 * Fix MSVC cast warning in error augmentation code (GH-1511)
 
+* Fix duk_debug.js --source-dirs scanning for file dropdown; the dropdown was
+  empty (GH-1580)
+
 * Improve support for old MSVC versions without __pragma(), long long, and
   LL/ULL constants (GH-1559, GH-1562)
 
