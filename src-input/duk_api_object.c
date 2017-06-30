@@ -543,6 +543,67 @@ DUK_EXTERNAL duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_index, duk_boo
 	return duk_hobject_enumerator_next(ctx, get_value);
 }
 
+DUK_INTERNAL void duk_seal_freeze_raw(duk_context *ctx, duk_idx_t obj_idx, duk_bool_t is_freeze) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_tval *tv;
+	duk_hobject *h;
+
+	tv = duk_require_tval(ctx, obj_idx);
+	DUK_ASSERT(tv != NULL);
+
+	/* Seal/freeze are quite rare in practice so it'd be nice to get the
+	 * correct behavior simply via automatic promotion (at the cost of some
+	 * memory churn).  However, the promoted objects don't behave the same,
+	 * e.g. promoted lightfuncs are extensible.
+	 */
+
+	switch (DUK_TVAL_GET_TAG(tv)) {
+	case DUK_TAG_BUFFER:
+		/* Plain buffer: already sealed, but not frozen (and can't be frozen
+		 * because index properties can't be made non-writable.
+		 */
+		if (is_freeze) {
+			goto fail_cannot_freeze;
+		}
+		break;
+	case DUK_TAG_LIGHTFUNC:
+		/* Lightfunc: already sealed and frozen, success. */
+		break;
+	case DUK_TAG_OBJECT:
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		if (is_freeze && DUK_HOBJECT_IS_BUFOBJ(h)) {
+			/* Buffer objects cannot be frozen because there's no internal
+			 * support for making virtual array indices non-writable.
+			 */
+			DUK_DD(DUK_DDPRINT("cannot freeze a buffer object"));
+			goto fail_cannot_freeze;
+		}
+		duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
+
+		/* Sealed and frozen objects cannot gain any more properties,
+		 * so this is a good time to compact them.
+		 */
+		duk_hobject_compact_props(thr, h);
+		break;
+	default:
+		/* ES2015 Sections 19.1.2.5, 19.1.2.17 */
+		break;
+	}
+	return;
+
+ fail_cannot_freeze:
+	DUK_ERROR_TYPE_INVALID_ARGS(thr);  /* XXX: proper error message */
+}
+
+DUK_EXTERNAL void duk_seal(duk_context *ctx, duk_idx_t obj_idx) {
+	duk_seal_freeze_raw(ctx, obj_idx, 0 /*is_freeze*/);
+}
+
+DUK_EXTERNAL void duk_freeze(duk_context *ctx, duk_idx_t obj_idx) {
+	duk_seal_freeze_raw(ctx, obj_idx, 1 /*is_freeze*/);
+}
+
 /*
  *  Helpers for writing multiple properties
  */
