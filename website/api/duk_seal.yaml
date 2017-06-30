@@ -1,0 +1,18 @@
+name: duk_seal
+
+proto: |
+  void duk_seal(duk_context *ctx, duk_idx_t obj_idx);
+
+summary: |
+  <p>Equivalent to <code>Object.seal()</code> for object at
+  <code>obj_idx</code>; if sealed, the object is automatically
+  compacted.  If the index is invalid an error is thrown.</p>
+
+example: |
+  duk_seal(ctx, -3);
+
+tags:
+  - object
+  - property
+
+introduced: 2.2.0

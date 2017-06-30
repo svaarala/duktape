@@ -226,58 +226,10 @@ DUK_INTERNAL duk_ret_t duk_bi_object_constructor_define_properties(duk_context *
 
 #if defined(DUK_USE_OBJECT_BUILTIN)
 DUK_INTERNAL duk_ret_t duk_bi_object_constructor_seal_freeze_shared(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-	duk_hobject *h;
-	duk_bool_t is_freeze;
-
 	DUK_ASSERT_TOP(ctx, 1);
 
-	is_freeze = (duk_bool_t) duk_get_current_magic(ctx);
-	if (duk_is_buffer(ctx, 0)) {
-		/* Plain buffer: already sealed, but not frozen (and can't be frozen
-		 * because index properties can't be made non-writable.
-		 */
-		if (is_freeze) {
-			goto fail_cannot_freeze;
-		}
-		return 1;
-	} else if (duk_is_lightfunc(ctx, 0)) {
-		/* Lightfunc: already sealed and frozen, success. */
-		return 1;
-	}
-#if 0
-	/* Seal/freeze are quite rare in practice so it'd be nice to get the
-	 * correct behavior simply via automatic promotion (at the cost of some
-	 * memory churn).  However, the promoted objects don't behave the same,
-	 * e.g. promoted lightfuncs are extensible.
-	 */
-	h = duk_require_hobject_promote_mask(ctx, 0, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
-#endif
-
-	h = duk_get_hobject(ctx, 0);
-	if (h == NULL) {
-		/* ES2015 Sections 19.1.2.5, 19.1.2.17 */
-		return 1;
-	}
-
-	if (is_freeze && DUK_HOBJECT_IS_BUFOBJ(h)) {
-		/* Buffer objects cannot be frozen because there's no internal
-		 * support for making virtual array indices non-writable.
-		 */
-		DUK_DD(DUK_DDPRINT("cannot freeze a buffer object"));
-		goto fail_cannot_freeze;
-	}
-
-	duk_hobject_object_seal_freeze_helper(thr, h, is_freeze);
-
-	/* Sealed and frozen objects cannot gain any more properties,
-	 * so this is a good time to compact them.
-	 */
-	duk_hobject_compact_props(thr, h);
+	duk_seal_freeze_raw(ctx, 0, (duk_bool_t) duk_get_current_magic(ctx) /*is_freeze*/);
 	return 1;
-
- fail_cannot_freeze:
-	DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* XXX: proper error message */
 }
 #endif  /* DUK_USE_OBJECT_BUILTIN */
 
