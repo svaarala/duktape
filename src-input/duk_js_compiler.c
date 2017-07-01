@@ -2955,6 +2955,7 @@ typedef struct {
 	duk_reg_t reg_obj;
 	duk_reg_t temp_start;
 	duk_small_uint_t num_pairs;
+	duk_small_uint_t num_total_pairs;
 } duk__objlit_state;
 
 DUK_LOCAL void duk__objlit_flush_keys(duk_compiler_ctx *comp_ctx, duk__objlit_state *st) {
@@ -2975,6 +2976,7 @@ DUK_LOCAL void duk__objlit_flush_keys(duk_compiler_ctx *comp_ctx, duk__objlit_st
 		                st->reg_obj,
 		                st->temp_start,
 		                st->num_pairs * 2);
+		st->num_total_pairs += st->num_pairs;
 		st->num_pairs = 0;
 	}
 	DUK__SETTEMP(comp_ctx, st->temp_start);
@@ -3006,6 +3008,10 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	duk_small_uint_t max_init_pairs;  /* max # of key-value pairs initialized in one MPUTOBJ set */
 	duk_bool_t first;                 /* first value: comma must not precede the value */
 	duk_bool_t is_set, is_get;        /* temps */
+	duk_int_t pc_newobj;
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_compiler_instr *instr;
+#endif
 
 	DUK_ASSERT(comp_ctx->prev_token.t == DUK_TOK_LCURLY);
 
@@ -3014,8 +3020,10 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	st.reg_obj = DUK__ALLOCTEMP(comp_ctx);    /* target object */
 	st.temp_start = DUK__GETTEMP(comp_ctx);   /* start of MPUTOBJ argument list */
 	st.num_pairs = 0;                         /* number of key/value pairs emitted for current MPUTOBJ set */
+	st.num_total_pairs = 0;                   /* number of key/value pairs emitted overall */
 
-	duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, st.reg_obj);  /* XXX: patch initial size hint afterwards? */
+	pc_newobj = duk__get_current_pc(comp_ctx);
+	duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, st.reg_obj);
 
 	/*
 	 *  Emit initializers in sets of maximum max_init_pairs keys.
@@ -3202,6 +3210,17 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	duk__objlit_flush_keys(comp_ctx, &st);
 	DUK_ASSERT(st.num_pairs == 0);
 	DUK_ASSERT(DUK__GETTEMP(comp_ctx) == st.temp_start);
+
+	/* Update initial size for NEWOBJ.  The init size doesn't need to be
+	 * exact as the purpose is just to avoid object resizes in common
+	 * cases.  The size is capped to field A limit, and will be too high
+	 * if the object literal contains duplicate keys (this is harmless but
+	 * increases memory traffic if the object is compacted later on).
+	 */
+#if !defined(DUK_USE_PREFER_SIZE)
+	instr = duk__get_instr_ptr(comp_ctx, pc_newobj);
+	instr->ins |= DUK_ENC_OP_A(0, st.num_total_pairs > 255 ? 255 : st.num_total_pairs);
+#endif
 
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RCURLY);
 	duk__advance(comp_ctx);

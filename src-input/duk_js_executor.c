@@ -4741,6 +4741,9 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_NEWOBJ: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_push_object(ctx);
+#if !defined(DUK_USE_PREFER_SIZE)
+			duk_hobject_resize_props(thr, duk_known_hobject(ctx, -1), DUK_DEC_A(ins));
+#endif
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
 

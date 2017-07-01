@@ -926,6 +926,7 @@ opcodes:
       - BC_R
   - name: NEWOBJ
     args:
+      - A_I  # property count init size
       - BC_R
   - name: NEWARR
     args:
