@@ -2818,6 +2818,10 @@ DUK_LOCAL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	duk_uarridx_t start_idx;           /* start array index of current MPUTARR set */
 	duk_uarridx_t init_idx;            /* last array index explicitly initialized, +1 */
 	duk_bool_t require_comma;          /* next loop requires a comma */
+#if !defined(DUK_USE_PREFER_SIZE)
+	duk_int_t pc_newarr;
+	duk_compiler_instr *instr;
+#endif
 
 	/* DUK_TOK_LBRACKET already eaten, current token is right after that */
 	DUK_ASSERT(comp_ctx->prev_token.t == DUK_TOK_LBRACKET);
@@ -2825,6 +2829,9 @@ DUK_LOCAL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 	max_init_values = DUK__MAX_ARRAY_INIT_VALUES;  /* XXX: depend on available temps? */
 
 	reg_obj = DUK__ALLOCTEMP(comp_ctx);
+#if !defined(DUK_USE_PREFER_SIZE)
+	pc_newarr = duk__get_current_pc(comp_ctx);
+#endif
 	duk__emit_bc(comp_ctx, DUK_OP_NEWARR, reg_obj);  /* XXX: patch initial size hint afterwards? */
 	temp_start = DUK__GETTEMP(comp_ctx);
 
@@ -2924,6 +2931,14 @@ DUK_LOCAL void duk__nud_array_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		}
 	}
 
+	/* Update initil size for NEWARR, doesn't need to be exact and is
+	 * capped at A field limit.
+	 */
+#if !defined(DUK_USE_PREFER_SIZE)
+	instr = duk__get_instr_ptr(comp_ctx, pc_newarr);
+	instr->ins |= DUK_ENC_OP_A(0, curr_idx > DUK_BC_A_MAX ? DUK_BC_A_MAX : curr_idx);
+#endif
+
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RBRACKET);
 	duk__advance(comp_ctx);
 
@@ -3008,8 +3023,8 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	duk_small_uint_t max_init_pairs;  /* max # of key-value pairs initialized in one MPUTOBJ set */
 	duk_bool_t first;                 /* first value: comma must not precede the value */
 	duk_bool_t is_set, is_get;        /* temps */
-	duk_int_t pc_newobj;
 #if !defined(DUK_USE_PREFER_SIZE)
+	duk_int_t pc_newobj;
 	duk_compiler_instr *instr;
 #endif
 
@@ -3022,7 +3037,9 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	st.num_pairs = 0;                         /* number of key/value pairs emitted for current MPUTOBJ set */
 	st.num_total_pairs = 0;                   /* number of key/value pairs emitted overall */
 
+#if !defined(DUK_USE_PREFER_SIZE)
 	pc_newobj = duk__get_current_pc(comp_ctx);
+#endif
 	duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, st.reg_obj);
 
 	/*
@@ -3219,7 +3236,7 @@ DUK_LOCAL void duk__nud_object_literal(duk_compiler_ctx *comp_ctx, duk_ivalue *r
 	 */
 #if !defined(DUK_USE_PREFER_SIZE)
 	instr = duk__get_instr_ptr(comp_ctx, pc_newobj);
-	instr->ins |= DUK_ENC_OP_A(0, st.num_total_pairs > 255 ? 255 : st.num_total_pairs);
+	instr->ins |= DUK_ENC_OP_A(0, st.num_total_pairs > DUK_BC_A_MAX ? DUK_BC_A_MAX : st.num_total_pairs);
 #endif
 
 	DUK_ASSERT(comp_ctx->curr_token.t == DUK_TOK_RCURLY);
