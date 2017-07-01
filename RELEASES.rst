@@ -2978,7 +2978,8 @@ Planned
 * Miscellaneous performance improvements: move rare/large opcodes into
   NOINLINE helpers (GH-1510); duk_harray fast path for internal array
   unpack for bound functions, .call, and .apply (GH-1525); unsafe internal
-  value stack pops where safe (GH-1583, GH-1584)
+  value stack pops where safe (GH-1583, GH-1584); initial object property
+  table size estimate for NEWOBJ opcode (object literals) (GH-1596)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
