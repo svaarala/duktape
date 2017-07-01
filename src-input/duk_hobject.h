@@ -868,9 +868,14 @@ DUK_INTERNAL_DECL void duk_hobject_realloc_props(duk_hthread *thr,
                                                  duk_uint32_t new_a_size,
                                                  duk_uint32_t new_h_size,
                                                  duk_bool_t abandon_array);
-DUK_INTERNAL_DECL void duk_hobject_resize_props(duk_hthread *thr,
-                                                duk_hobject *obj,
-                                                duk_uint32_t new_e_size);
+DUK_INTERNAL_DECL void duk_hobject_resize_entrypart(duk_hthread *thr,
+                                                    duk_hobject *obj,
+                                                    duk_uint32_t new_e_size);
+#if 0  /*unused*/
+DUK_INTERNAL_DECL void duk_hobject_resize_arraypart(duk_hthread *thr,
+                                                    duk_hobject *obj,
+                                                    duk_uint32_t new_a_size);
+#endif
 
 /* low-level property functions */
 DUK_INTERNAL_DECL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);

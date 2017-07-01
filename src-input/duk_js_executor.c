@@ -4741,8 +4741,19 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_NEWOBJ: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_push_object(ctx);
+#if defined(DUK_USE_ASSERTIONS)
+			{
+				duk_hobject *h;
+				h = duk_require_hobject(ctx, -1);
+				DUK_ASSERT(DUK_HOBJECT_GET_ESIZE(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_HSIZE(h) == 0);
+			}
+#endif
 #if !defined(DUK_USE_PREFER_SIZE)
-			duk_hobject_resize_props(thr, duk_known_hobject(ctx, -1), DUK_DEC_A(ins));
+			/* XXX: could do a direct props realloc, but need hash size */
+			duk_hobject_resize_entrypart(thr, duk_known_hobject(ctx, -1), DUK_DEC_A(ins));
 #endif
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
@@ -4750,6 +4761,28 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_NEWARR: {
 			duk_context *ctx = (duk_context *) thr;
 			duk_push_array(ctx);
+#if defined(DUK_USE_ASSERTIONS)
+			{
+				duk_hobject *h;
+				h = duk_require_hobject(ctx, -1);
+				DUK_ASSERT(DUK_HOBJECT_GET_ESIZE(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_ENEXT(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_ASIZE(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_GET_HSIZE(h) == 0);
+				DUK_ASSERT(DUK_HOBJECT_HAS_ARRAY_PART(h));
+			}
+#endif
+#if !defined(DUK_USE_PREFER_SIZE)
+			duk_hobject_realloc_props(thr,
+			                          duk_known_hobject(ctx, -1),
+			                          0 /*new_e_size*/,
+			                          DUK_DEC_A(ins) /*new_a_size*/,
+			                          0 /*new_h_size*/,
+			                          0 /*abandon_array*/);
+#if 0
+			duk_hobject_resize_arraypart(thr, duk_known_hobject(ctx, -1), DUK_DEC_A(ins));
+#endif
+#endif
 			DUK__REPLACE_TOP_BC_BREAK();
 		}
 

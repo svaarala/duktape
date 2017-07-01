@@ -842,7 +842,6 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_h != NULL);
 
 		/* fill new_h with u32 0xff = UNUSED */
-		DUK_ASSERT(DUK_HOBJECT_GET_PROPS(thr->heap, obj) != NULL);
 		DUK_ASSERT(new_h_size > 0);
 		DUK_MEMSET(new_h, 0xff, sizeof(duk_uint32_t) * new_h_size);
 
@@ -960,9 +959,9 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
  *  Helpers to resize properties allocation on specific needs.
  */
 
-DUK_INTERNAL void duk_hobject_resize_props(duk_hthread *thr,
-                                           duk_hobject *obj,
-                                           duk_uint32_t new_e_size) {
+DUK_INTERNAL void duk_hobject_resize_entrypart(duk_hthread *thr,
+                                               duk_hobject *obj,
+                                               duk_uint32_t new_e_size) {
 	duk_uint32_t old_e_size;
 	duk_uint32_t new_a_size;
 	duk_uint32_t new_h_size;
@@ -983,6 +982,31 @@ DUK_INTERNAL void duk_hobject_resize_props(duk_hthread *thr,
 
 	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
 }
+
+#if 0  /*unused */
+DUK_INTERNAL void duk_hobject_resize_arraypart(duk_hthread *thr,
+                                               duk_hobject *obj,
+                                               duk_uint32_t new_a_size) {
+	duk_uint32_t old_a_size;
+	duk_uint32_t new_e_size;
+	duk_uint32_t new_h_size;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	if (!DUK_HOBJECT_HAS_ARRAY_PART(obj)) {
+		return;
+	}
+	old_a_size = DUK_HOBJECT_GET_ASIZE(obj);
+	if (old_a_size > new_a_size) {
+		new_a_size = old_a_size;
+	}
+	new_e_size = DUK_HOBJECT_GET_ESIZE(obj);
+	new_h_size = DUK_HOBJECT_GET_HSIZE(obj);
+
+	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
+}
+#endif
 
 /* Grow entry part allocation for one additional entry. */
 DUK_LOCAL void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *obj) {

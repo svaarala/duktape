@@ -930,6 +930,7 @@ opcodes:
       - BC_R
   - name: NEWARR
     args:
+      - A_I  # array item count init size
       - BC_R
   - name: MPUTOBJ
     args:
