@@ -537,6 +537,8 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 	DUK_ASSERT(!DUK_HEAPHDR_HAS_READONLY((duk_heaphdr *) obj));
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_STATS_INC(thr->heap, stats_object_realloc_props);
+
 	/*
 	 *  Pre resize assertions.
 	 */
@@ -691,6 +693,8 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 		 * strings are valstack tracked.
 		 */
 		DUK_ASSERT(new_a_size == 0);
+
+		DUK_STATS_INC(thr->heap, stats_object_abandon_array);
 
 		for (i = 0; i < DUK_HOBJECT_GET_ASIZE(obj); i++) {
 			duk_tval *tv1;
@@ -955,6 +959,30 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 /*
  *  Helpers to resize properties allocation on specific needs.
  */
+
+DUK_INTERNAL void duk_hobject_resize_props(duk_hthread *thr,
+                                           duk_hobject *obj,
+                                           duk_uint32_t new_e_size) {
+	duk_uint32_t old_e_size;
+	duk_uint32_t new_a_size;
+	duk_uint32_t new_h_size;
+
+	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT(obj != NULL);
+
+	old_e_size = DUK_HOBJECT_GET_ESIZE(obj);
+	if (old_e_size > new_e_size) {
+		new_e_size = old_e_size;
+	}
+#if defined(DUK_USE_HOBJECT_HASH_PART)
+	new_h_size = duk__get_default_h_size(new_e_size);
+#else
+	new_h_size = 0;
+#endif
+	new_a_size = DUK_HOBJECT_GET_ASIZE(obj);
+
+	duk_hobject_realloc_props(thr, obj, new_e_size, new_a_size, new_h_size, 0);
+}
 
 /* Grow entry part allocation for one additional entry. */
 DUK_LOCAL void duk__grow_props_for_new_entry_item(duk_hthread *thr, duk_hobject *obj) {

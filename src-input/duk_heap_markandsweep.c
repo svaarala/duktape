@@ -1065,6 +1065,8 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	                 (long) heap->stats_ms_emergency_count));
 	DUK_D(DUK_DPRINT("stats string intern: hit=%ld, miss=%ld",
 	                 (long) heap->stats_intern_hit, (long) heap->stats_intern_miss));
+	DUK_D(DUK_DPRINT("stats object: realloc_props=%ld, abandon_array=%ld",
+	                 (long) heap->stats_object_realloc_props, (long) heap->stats_object_abandon_array));
 	DUK_D(DUK_DPRINT("stats getprop: all=%ld, arrayidx=%ld, bufobjidx=%ld, "
 	                 "bufferidx=%ld, bufferlen=%ld, stringidx=%ld, stringlen=%ld, "
 	                 "proxy=%ld, arguments=%ld",

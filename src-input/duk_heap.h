@@ -574,6 +574,8 @@ struct duk_heap {
 	duk_int_t stats_ms_emergency_count;
 	duk_int_t stats_intern_hit;
 	duk_int_t stats_intern_miss;
+	duk_int_t stats_object_realloc_props;
+	duk_int_t stats_object_abandon_array;
 	duk_int_t stats_getprop_all;
 	duk_int_t stats_getprop_arrayidx;
 	duk_int_t stats_getprop_bufobjidx;

@@ -868,6 +868,9 @@ DUK_INTERNAL_DECL void duk_hobject_realloc_props(duk_hthread *thr,
                                                  duk_uint32_t new_a_size,
                                                  duk_uint32_t new_h_size,
                                                  duk_bool_t abandon_array);
+DUK_INTERNAL_DECL void duk_hobject_resize_props(duk_hthread *thr,
+                                                duk_hobject *obj,
+                                                duk_uint32_t new_e_size);
 
 /* low-level property functions */
 DUK_INTERNAL_DECL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx);
@@ -903,22 +906,20 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj
 #endif
 
 /* helpers for defineProperty() and defineProperties() */
-DUK_INTERNAL_DECL
-void duk_hobject_prepare_property_descriptor(duk_context *ctx,
-                                             duk_idx_t idx_in,
-                                             duk_uint_t *out_defprop_flags,
-                                             duk_idx_t *out_idx_value,
-                                             duk_hobject **out_getter,
-                                             duk_hobject **out_setter);
-DUK_INTERNAL_DECL
-duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
-                                              duk_uint_t defprop_flags,
-                                              duk_hobject *obj,
-                                              duk_hstring *key,
-                                              duk_idx_t idx_value,
-                                              duk_hobject *get,
-                                              duk_hobject *set,
-                                              duk_bool_t throw_flag);
+DUK_INTERNAL_DECL void duk_hobject_prepare_property_descriptor(duk_context *ctx,
+                                                               duk_idx_t idx_in,
+                                                               duk_uint_t *out_defprop_flags,
+                                                               duk_idx_t *out_idx_value,
+                                                               duk_hobject **out_getter,
+                                                               duk_hobject **out_setter);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
+                                                                duk_uint_t defprop_flags,
+                                                                duk_hobject *obj,
+                                                                duk_hstring *key,
+                                                                duk_idx_t idx_value,
+                                                                duk_hobject *get,
+                                                                duk_hobject *set,
+                                                                duk_bool_t throw_flag);
 
 /* Object built-in methods */
 DUK_INTERNAL_DECL void duk_hobject_object_get_own_property_descriptor(duk_context *ctx, duk_idx_t obj_idx);
