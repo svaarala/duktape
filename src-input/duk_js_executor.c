@@ -172,12 +172,10 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_add(duk_hthread *thr, duk_tval *tv
 		/* Symbols shouldn't technically be handled here, but should
 		 * go into the default ToNumber() coercion path instead and
 		 * fail there with a TypeError.  However, there's a ToString()
-		 * here which also fails with TypeError so no explicit check
-		 * is needed.
+		 * in duk_concat_2() which also fails with TypeError so no
+		 * explicit check is needed.
 		 */
-		duk_to_string(ctx, -2);
-		duk_to_string(ctx, -1);
-		duk_concat(ctx, 2);  /* [... s1 s2] -> [... s1+s2] */
+		duk_concat_2(ctx);  /* [... s1 s2] -> [... s1+s2] */
 	} else {
 		duk_double_t d1, d2;
 
