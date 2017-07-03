@@ -308,6 +308,8 @@ DUK_INTERNAL_DECL void duk_seal_freeze_raw(duk_context *ctx, duk_idx_t obj_idx, 
 DUK_INTERNAL_DECL void duk_insert_undefined(duk_context *ctx, duk_idx_t idx);
 DUK_INTERNAL_DECL void duk_insert_undefined_n(duk_context *ctx, duk_idx_t idx, duk_idx_t count);
 
+DUK_INTERNAL_DECL void duk_concat_2(duk_context *ctx);
+
 DUK_INTERNAL_DECL duk_int_t duk_pcall_method_flags(duk_context *ctx, duk_idx_t nargs, duk_small_uint_t call_flags);
 
 /* Raw internal valstack access macros: access is unsafe so call site

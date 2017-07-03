@@ -113,6 +113,50 @@ DUK_EXTERNAL void duk_concat(duk_context *ctx, duk_idx_t count) {
 	duk__concat_and_join_helper(ctx, count, 0 /*is_join*/);
 }
 
+#if defined(DUK_USE_PREFER_SIZE)
+DUK_INTERNAL void duk_concat_2(duk_context *ctx) {
+	duk_concat(ctx, 2);
+}
+#else  /* DUK_USE_PREFER_SIZE */
+DUK_INTERNAL void duk_concat_2(duk_context *ctx) {
+	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hstring *h1;
+	duk_hstring *h2;
+	duk_uint8_t *buf;
+	duk_size_t len1;
+	duk_size_t len2;
+	duk_size_t len;
+
+	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT(duk_get_top(ctx) >= 2);  /* Trusted caller. */
+
+	h1 = duk_to_hstring(ctx, -2);
+	h2 = duk_to_hstring(ctx, -1);
+	len1 = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h1);
+	len2 = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h2);
+	len = len1 + len2;
+	if (DUK_UNLIKELY(len < len1 ||  /* wrapped */
+	                 len > (duk_size_t) DUK_HSTRING_MAX_BYTELEN)) {
+		goto error_overflow;
+	}
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, len);
+	DUK_ASSERT(buf != NULL);
+
+	DUK_MEMCPY((void *) buf, (const void *) DUK_HSTRING_GET_DATA(h1), (size_t) len1);
+	DUK_MEMCPY((void *) (buf + len1), (const void *) DUK_HSTRING_GET_DATA(h2), (size_t) len2);
+	(void) duk_buffer_to_string(ctx, -1);  /* Safe if inputs are safe. */
+
+	/* [ ... str1 str2 buf ] */
+
+	duk_replace(ctx, -3);
+	duk_pop_unsafe(ctx);
+	return;
+
+ error_overflow:
+	DUK_ERROR_RANGE(thr, DUK_STR_RESULT_TOO_LONG);
+}
+#endif  /* DUK_USE_PREFER_SIZE */
+
 DUK_EXTERNAL void duk_join(duk_context *ctx, duk_idx_t count) {
 	DUK_ASSERT_CTX_VALID(ctx);
 

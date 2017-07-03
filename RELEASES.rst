@@ -2983,7 +2983,8 @@ Planned
   unpack for bound functions, .call, and .apply (GH-1525); unsafe internal
   value stack pops where safe (GH-1583, GH-1584); initial object property
   table size estimates for NEWOBJ and NEWARR opcodes (object and array
-  literals) (GH-1596, GH-1597)
+  literals) (GH-1596, GH-1597); duk_concat_2() internal helper for str+str
+  arithmetic (GH-1599)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
