@@ -2879,6 +2879,8 @@ Planned
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837)
 
+* Add support for Proxy 'apply' and 'construct' traps (GH-1601)
+
 * Add minimal new.target support, evaluates to undefined for non-constructor
   calls and final non-bound constructor function in constructor calls;
   explicit newTarget not yet supported and handling of new.target in eval()
