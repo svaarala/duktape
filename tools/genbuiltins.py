@@ -423,7 +423,7 @@ def metadata_normalize_shorthand(meta):
         obj['magic'] = val.get('magic', 0)
         obj['internal_prototype'] = 'bi_function_prototype'
         obj['class'] = 'Function'
-        obj['callable'] = True
+        obj['callable'] = val.get('callable', True)
         obj['constructable'] = val.get('constructable', False)
         obj['special_call'] = val.get('special_call', False)
         fun_name = val.get('name', funprop['key'])
@@ -441,8 +441,8 @@ def metadata_normalize_shorthand(meta):
         obj['magic'] = magic
         obj['internal_prototype'] = 'bi_function_prototype'
         obj['class'] = 'Function'
-        obj['callable'] = True
-        obj['constructable'] = False
+        obj['callable'] = val.get('callable', True)
+        obj['constructable'] = val.get('constructable', False)
         assert(obj.get('special_call', False) == False)
         # Shorthand accessors are minimal and have no .length or .name
         # right now.  Use longhand if these matter.
@@ -2750,6 +2750,8 @@ def rom_emit_objects(genc, meta, bi_str_map):
             flags.append('DUK_HOBJECT_FLAG_NATFUNC')
             flags.append('DUK_HOBJECT_FLAG_STRICT')
             flags.append('DUK_HOBJECT_FLAG_NEWENV')
+        if obj.get('callable', False):
+            flags.append('DUK_HOBJECT_FLAG_CALLABLE')
         if obj.get('constructable', False):
             flags.append('DUK_HOBJECT_FLAG_CONSTRUCTABLE')
         if obj.get('class') == 'Array':
