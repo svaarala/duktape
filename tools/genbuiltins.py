@@ -1699,17 +1699,14 @@ def gen_ramobj_initdata_for_object(meta, be, bi, string_to_stridx, natfunc_name_
             assert(length is not None)
             be.bits(0, 1)  # flag: default nargs OK
 
-        # All Function-classed global level objects are callable
-        # (have [[Call]]) but not all are constructable (have
-        # [[Construct]]).  Flag that.
-
-        assert(bi.has_key('callable'))
-        assert(bi['callable'] == True)
-
         assert(prop_name is not None)
         assert(isinstance(prop_name['value'], str))
         _stridx_or_string(prop_name['value'])
 
+        if bi.get('callable', False):
+            be.bits(1, 1)    # flag: callable
+        else:
+            be.bits(0, 1)    # flag: not callable
         if bi.get('constructable', False):
             be.bits(1, 1)    # flag: constructable
         else:
