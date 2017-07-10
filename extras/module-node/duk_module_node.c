@@ -112,7 +112,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 	ret = duk_pcall(ctx, 3);
 	if (ret != DUK_EXEC_SUCCESS) {
 		duk__del_cached_module(ctx, id);
-		duk_throw(ctx);  /* rethrow */
+		(void) duk_throw(ctx);  /* rethrow */
 	}
 
 	if (duk_is_string(ctx, -1)) {
@@ -127,13 +127,13 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 #endif
 		if (ret != DUK_EXEC_SUCCESS) {
 			duk__del_cached_module(ctx, id);
-			duk_throw(ctx);  /* rethrow */
+			(void) duk_throw(ctx);  /* rethrow */
 		}
 	} else if (duk_is_undefined(ctx, -1)) {
 		duk_pop(ctx);
 	} else {
 		duk__del_cached_module(ctx, id);
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid module load callback return value");
+		(void) duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid module load callback return value");
 	}
 
 	/* fall through */
