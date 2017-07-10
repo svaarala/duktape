@@ -2959,6 +2959,9 @@ Planned
 
 * Add DUK_CONSOLE_FLUSH flag to extras/duktape-console (GH-1587, GH-1588)
 
+* Compile warning fixes and Duktape 1.x compatibility fix to module-node
+  (GH-1605)
+
 * Add print(), console.log() etc bindings to Makefile.dukdebug (GH-1535,
   GH-1593)
 
