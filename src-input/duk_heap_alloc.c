@@ -180,6 +180,7 @@ DUK_INTERNAL void duk_heap_free_freelists(duk_heap *heap) {
 #if defined(DUK_USE_CACHE_CATCHER)
 	count_cat = duk__heap_free_catcher_freelist(heap);
 #endif
+	DUK_UNREF(heap);
 	DUK_UNREF(count_act);
 	DUK_UNREF(count_cat);
 

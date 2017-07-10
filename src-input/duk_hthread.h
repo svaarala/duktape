@@ -35,7 +35,8 @@
 #define DUK_ACT_FLAG_CONSTRUCT          (1 << 2)  /* function executes as a constructor (called via "new") */
 #define DUK_ACT_FLAG_PREVENT_YIELD      (1 << 3)  /* activation prevents yield (native call or "new") */
 #define DUK_ACT_FLAG_DIRECT_EVAL        (1 << 4)  /* activation is a direct eval call */
-#define DUK_ACT_FLAG_BREAKPOINT_ACTIVE  (1 << 5)  /* activation has active breakpoint(s) */
+#define DUK_ACT_FLAG_CONSTRUCT_PROXY    (1 << 5)  /* activation is for Proxy 'construct' call, special return value handling */
+#define DUK_ACT_FLAG_BREAKPOINT_ACTIVE  (1 << 6)  /* activation has active breakpoint(s) */
 
 #define DUK_ACT_GET_FUNC(act)        ((act)->func)
 

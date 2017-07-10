@@ -838,7 +838,6 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
                                          duk_bool_t parents,
                                          duk__id_lookup_result *out) {
 	duk_tval *tv;
-	duk_tval tv_name;
 	duk_uint_t sanity;
 
 	DUK_ASSERT(thr != NULL);
@@ -1018,6 +1017,7 @@ duk_bool_t duk__get_identifier_reference(duk_hthread *thr,
 
 #if defined(DUK_USE_ES6_PROXY)
 			if (DUK_UNLIKELY(DUK_HOBJECT_IS_PROXY(target))) {
+				duk_tval tv_name;
 				duk_tval tv_target_tmp;
 
 				DUK_ASSERT(name != NULL);

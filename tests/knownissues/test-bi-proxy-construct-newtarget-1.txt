@@ -1,0 +1,9 @@
+summary: new.target is target object rather than Proxy when calling via Proxy
+---
+- direct call
+function
+true
+false
+function
+true
+false

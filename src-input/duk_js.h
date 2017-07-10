@@ -6,11 +6,13 @@
 #define DUK_JS_H_INCLUDED
 
 /* Flags for call handling.  Lowest flags must match bytecode DUK_BC_CALL_FLAG_xxx 1:1. */
-#define DUK_CALL_FLAG_TAILCALL               (1 << 0)  /* setup for a tail call */
-#define DUK_CALL_FLAG_CONSTRUCT              (1 << 1)  /* constructor call (i.e. called as 'new Foo()') */
-#define DUK_CALL_FLAG_CALLED_AS_EVAL         (1 << 2)  /* call was made using the identifier 'eval' */
-#define DUK_CALL_FLAG_ALLOW_ECMATOECMA       (1 << 3)  /* ecma-to-ecma call with executor reuse is possible */
-#define DUK_CALL_FLAG_DIRECT_EVAL            (1 << 4)  /* call is a direct eval call */
+#define DUK_CALL_FLAG_TAILCALL                 (1 << 0)  /* setup for a tail call */
+#define DUK_CALL_FLAG_CONSTRUCT                (1 << 1)  /* constructor call (i.e. called as 'new Foo()') */
+#define DUK_CALL_FLAG_CALLED_AS_EVAL           (1 << 2)  /* call was made using the identifier 'eval' */
+#define DUK_CALL_FLAG_ALLOW_ECMATOECMA         (1 << 3)  /* ecma-to-ecma call with executor reuse is possible */
+#define DUK_CALL_FLAG_DIRECT_EVAL              (1 << 4)  /* call is a direct eval call */
+#define DUK_CALL_FLAG_CONSTRUCT_PROXY          (1 << 5)  /* handled via 'construct' proxy trap, check return value invariant(s) */
+#define DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED (1 << 6)  /* prototype of 'default instance' updated, temporary flag in call handling */
 
 /* Flags for duk_js_equals_helper(). */
 #define DUK_EQUALS_FLAG_SAMEVALUE            (1 << 0)  /* use SameValue instead of non-strict equality */
@@ -97,7 +99,7 @@ DUK_INTERNAL_DECL void duk_js_push_closure(duk_hthread *thr,
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected(duk_hthread *thr, duk_idx_t idx_func, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
-DUK_INTERNAL_DECL void duk_call_construct_postprocess(duk_context *ctx);
+DUK_INTERNAL_DECL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uint_t proxy_invariant);
 
 /* bytecode execution */
 DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *exec_thr);
