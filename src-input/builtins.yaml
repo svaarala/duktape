@@ -3015,7 +3015,7 @@ objects:
     internal_prototype: bi_function_prototype
     # no external prototype
     native: duk_bi_proxy_constructor
-    callable: true
+    callable: false
     constructable: true
     es6: true
     bidx: true
@@ -3329,7 +3329,7 @@ objects:
     internal_prototype: bi_function_prototype
     varargs: false
     native: duk_bi_arraybuffer_constructor
-    callable: true
+    callable: false
     constructable: true
     typedarray: true
     es6: true
@@ -3416,7 +3416,7 @@ objects:
     internal_prototype: bi_function_prototype
     varargs: false
     native: duk_bi_dataview_constructor
-    callable: true
+    callable: false
     constructable: true
     typedarray: true
     es6: true
@@ -3737,7 +3737,7 @@ objects:
     internal_prototype: bi_function_prototype
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: false
     nargs: 0
     magic: 0
@@ -3852,7 +3852,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -3920,7 +3920,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4009,7 +4009,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4077,7 +4077,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4145,7 +4145,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4213,7 +4213,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4281,7 +4281,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4349,7 +4349,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -4417,7 +4417,7 @@ objects:
     internal_prototype: bi_typedarray_constructor
     varargs: false
     native: duk_bi_typedarray_constructor
-    callable: true
+    callable: false
     constructable: true
     magic:
       type: typedarray_constructor
@@ -5100,7 +5100,7 @@ objects:
     internal_prototype: bi_function_prototype
     nargs: 0
     native: duk_bi_textencoder_constructor
-    callable: true
+    callable: false
     constructable: true
     bidx: true
     encoding_api: true
@@ -5158,7 +5158,7 @@ objects:
     internal_prototype: bi_function_prototype
     nargs: 2
     native: duk_bi_textdecoder_constructor
-    callable: true
+    callable: false
     constructable: true
     bidx: true
     encoding_api: true

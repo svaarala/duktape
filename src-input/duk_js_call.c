@@ -1204,12 +1204,19 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 			func = DUK_TVAL_GET_OBJECT(tv_func);
 
 			if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
-				if (DUK_UNLIKELY(!DUK_HOBJECT_HAS_CONSTRUCTABLE(func))) {
+				if (DUK_UNLIKELY(!DUK_HOBJECT_IS_CONSTRUCTABLE(func))) {
 					goto not_constructable;
 				}
 			} else {
 				if (DUK_UNLIKELY(!DUK_HOBJECT_IS_CALLABLE(func))) {
-					goto not_callable;
+					if (DUK_HOBJECT_IS_CONSTRUCTABLE(func)) {
+						/* Friendly error if calling a construct-only
+						 * function using a normal call.
+						 */
+						goto constructor_not_callable;
+					} else {
+						goto not_callable;
+					}
 				}
 			}
 
@@ -1255,8 +1262,8 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 #endif
 				{
 					DUK_ASSERT(DUK_HOBJECT_IS_NATFUNC(func));
-					DUK_ASSERT(DUK_HOBJECT_HAS_CALLABLE(func));
-					DUK_ASSERT(!DUK_HOBJECT_HAS_CONSTRUCTABLE(func));
+					DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
+					DUK_ASSERT(!DUK_HOBJECT_IS_CONSTRUCTABLE(func));
 					/* Constructable check already done above. */
 
 					if (duk__handle_specialfuncs_for_call(thr, idx_func, func, call_flags, first) != 0) {
@@ -1312,20 +1319,23 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 		DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 		DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
 		                            DUK_HOBJECT_IS_NATFUNC(func)));
-		DUK_ASSERT(func == NULL || (DUK_HOBJECT_HAS_CONSTRUCTABLE(func) ||
+		DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_CONSTRUCTABLE(func) ||
 		                            (*call_flags & DUK_CALL_FLAG_CONSTRUCT) == 0));
 	}
 #endif
 
 	return func;
 
+ constructor_not_callable:
+	DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_CONSTRUCT_ONLY);
+	return NULL;  /* never executed */
+
  not_callable:
-	DUK_ASSERT(tv_func != NULL);
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(ctx, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_readable(ctx, idx_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
@@ -1338,7 +1348,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_tval_readable(ctx, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_readable(ctx, idx_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
