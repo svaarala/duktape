@@ -34,8 +34,19 @@
  *  Helper to sort enumeration keys using a callback for pairwise duk_hstring
  *  comparisons.  The keys are in the enumeration object entry part, starting
  *  from DUK__ENUM_START_INDEX, and the entry part is dense.  Entry part values
- *  are all "true", e.g. "1" -> true, "3" -> true, "foo" -> true "2" -> true,
+ *  are all "true", e.g. "1" -> true, "3" -> true, "foo" -> true, "2" -> true,
  *  so it suffices to just switch keys without switching values.
+ *
+ *  ES2015 [[OwnPropertyKeys]] enumeration order for ordinary objects:
+ *  (1) array indices in ascending order,
+ *  (2) non-array-index keys in insertion order, and
+ *  (3) symbols in insertion order.
+ *  http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys.
+ *
+ *  This rule is applied to "own properties" at each inheritance level;
+ *  non-duplicate parent keys always follow child keys.  For example,
+ *  an inherited array index will enumerate -after- a symbol in the
+ *  child.
  *
  *  Insertion sort is used because (1) it's simple and compact, (2) works
  *  in-place, (3) minimizes operations if data is already nearly sorted,
@@ -43,71 +54,53 @@
  *  http://en.wikipedia.org/wiki/Insertion_sort
  */
 
-#if 0  /* unused, only one sort callback used at present */
-typedef duk_bool_t (*duk__sort_compare_fn)(duk_hstring *a, duk_hstring *b, duk_uarridx_t val_b);
+/* Sort key, must hold array indices, "not array index" marker, and one more
+ * higher value for symbols.
+ */
+#if !defined(DUK_USE_SYMBOL_BUILTIN)
+typedef duk_uint32_t duk__sort_key_t;
+#elif defined(DUK_USE_64BIT_OPS)
+typedef duk_uint64_t duk__sort_key_t;
+#else
+typedef duk_double_t duk__sort_key_t;
 #endif
 
-DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk_uarridx_t val_b) {
-	duk_uarridx_t val_a;
+/* Get sort key for a duk_hstring. */
+DUK_LOCAL duk__sort_key_t duk__hstring_sort_key(duk_hstring *x) {
+	duk__sort_key_t val;
+
+	/* For array indices [0,0xfffffffe] use the array index as is.
+	 * For strings, use 0xffffffff, the marker 'arridx' already in
+	 * duk_hstring.  For symbols, any value above 0xffffffff works,
+	 * as long as it is the same for all symbols; currently just add
+	 * the masked flag field into the arridx temporary.
+	 */
+	DUK_ASSERT(x != NULL);
+	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(x) || DUK_HSTRING_GET_ARRIDX_FAST(x) == DUK_HSTRING_NO_ARRAY_INDEX);
+
+	val = (duk__sort_key_t) DUK_HSTRING_GET_ARRIDX_FAST(x);
+
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+	val = val + (duk__sort_key_t) (DUK_HEAPHDR_GET_FLAGS_RAW((duk_heaphdr *) x) & DUK_HSTRING_FLAG_SYMBOL);
+#endif
+
+	return (duk__sort_key_t) val;
+}
+
+/* Insert element 'b' after element 'a'? */
+DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk__sort_key_t val_b) {
+	duk__sort_key_t val_a;
 
 	DUK_ASSERT(a != NULL);
 	DUK_ASSERT(b != NULL);
 	DUK_UNREF(b);  /* Not actually needed now, val_b suffices. */
 
-	/* ES2015 [[OwnPropertyKeys]] enumeration order for ordinary objects:
-	 * (1) array indices in ascending order, (2) non-array-index keys in
-	 * insertion order, symbols in insertion order:
-	 * http://www.ecma-international.org/ecma-262/6.0/#sec-ordinary-object-internal-methods-and-internal-slots-ownpropertykeys.
-	 *
-	 * This rule is applied to "own properties" at each inheritance level;
-	 * non-duplicate parent keys always follow child keys.  For example,
-	 * an inherited array index will enumerate -after- a symbol in the
-	 * child.
-	 */
+	val_a = duk__hstring_sort_key(a);
 
-	val_a = DUK_HSTRING_GET_ARRIDX_FAST(a);
-
-	if (val_a < val_b) {
-		/* Covers:
-		 *   val_a < val_b where:
-		 *   - Both keys are array indices and a < b: insert here.
-		 *   - 'a' is array index, 'b' is not: insert here.
-		 */
-		return 1;
-	} else if (val_a > val_b) {
-		/* Covers:
-		 *   - Both keys are array indices and a > b: don't insert here.
-		 *   - 'b' is array index, 'a' is not: don't insert here.
-		 */
+	if (val_a > val_b) {
 		return 0;
 	} else {
-		/* Covers:
-		 *   val_a == val_b where:
-		 *   - Both keys are array indices and a == b: insert here
-		 *     (shouldn't actually happen, can't have non-duplicate
-		 *     identical array index keys).
-		 *   - Neither key is an array index: insert here, keeps key
-		 *     order regardless of the keys themselves.
-		 */
-#if defined(DUK_USE_SYMBOL_BUILTIN)
-		if (DUK_HSTRING_HAS_SYMBOL(a)) {
-			/* - 'a' is a symbol, 'b' is a symbol: insert here.
-			 * - 'a' is a symbol, 'b' is not: keep going.
-			 */
-			if (DUK_HSTRING_HAS_SYMBOL(b)) {
-				return 1;
-			} else {
-				return 0;
-			}
-		} else {
-			/* - 'a' is not a symbol, 'b' is a symbol: insert here.
-			 * - neither 'a' nor 'b' is a symbol: insert here.
-			 */
-			return 1;
-		}
-#else
 		return 1;
-#endif
 	}
 }
 
@@ -129,7 +122,7 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 	for (idx = idx_start + 1; idx < idx_end; idx++) {
 		duk_hstring *h_curr;
 		duk_int_fast32_t idx_insert;
-		duk_uarridx_t val_curr;
+		duk__sort_key_t val_curr;
 
 		h_curr = keys[idx];
 		DUK_ASSERT(h_curr != NULL);
@@ -139,16 +132,12 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		 * (and optimized for) case.
 		 */
 
-		val_curr = DUK_HSTRING_GET_ARRIDX_FAST(h_curr);  /* Remains same during scanning. */
+		val_curr = duk__hstring_sort_key(h_curr);  /* Remains same during scanning. */
 		for (idx_insert = idx - 1; idx_insert >= idx_start; idx_insert--) {
 			duk_hstring *h_insert;
 			h_insert = keys[idx_insert];
 			DUK_ASSERT(h_insert != NULL);
 
-			/* XXX: fixed callback rather than a callback argument; only
-			 * one argument used and using a callback argument doesn't
-			 * cause e.g. gcc to inline the callback.
-			 */
 			if (duk__sort_compare_es6(h_insert, h_curr, val_curr)) {
 				break;
 			}
@@ -177,84 +166,6 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		}
 	}
 }
-
-#if 0  /* unused, no symbol support */
-/*
- *  Helper to sort keys into ES2015 [[OwnPropertyKeys]] enumeration order:
- *  array keys in ascending order first, followed by keys in insertion
- *  order, followed by symbols in insertion order (not handled here).
- *  Insertion sort based.
- *
- *  This algorithm nominally sorts array indices, but because the "no array
- *  index" marker is higher than any array index, non-array-index keys are
- *  sorted after array indices.  Non-array-index keys are also considered
- *  equal for sorting which means that their order is kept as is, so the end
- *  result matches ES2015 [[OwnPropertyKeys]].
- *
- *  Insertion sort is used because (1) it's simple and compact, (2) works
- *  in-place, (3) minimizes operations if data is already nearly sorted,
- *  (4) doesn't reorder elements considered equal.
- *  http://en.wikipedia.org/wiki/Insertion_sort
- */
-
-DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk_int_fast32_t idx_start, duk_int_fast32_t idx_end) {
-	duk_hstring **keys;
-	duk_hstring **p_curr, **p_insert, **p_end;
-	duk_hstring *h_curr;
-	duk_uarridx_t val_highest, val_curr, val_insert;
-
-	DUK_ASSERT(h_obj != NULL);
-	DUK_ASSERT(idx_start >= DUK__ENUM_START_INDEX);
-	DUK_ASSERT(idx_end >= idx_start);
-	DUK_UNREF(thr);
-
-	if (idx_end <= idx_start + 1) {
-		return;  /* Zero or one element(s). */
-	}
-
-	keys = DUK_HOBJECT_E_GET_KEY_BASE(thr->heap, h_obj);
-	p_curr = keys + idx_start;
-	val_highest = DUK_HSTRING_GET_ARRIDX_SLOW(*p_curr);
-	for (p_curr++, p_end = keys + idx_end; p_curr < p_end; p_curr++) {
-		DUK_ASSERT(*p_curr != NULL);
-		val_curr = DUK_HSTRING_GET_ARRIDX_SLOW(*p_curr);
-
-		if (val_curr >= val_highest) {
-			val_highest = val_curr;
-			continue;
-		}
-
-		/* Needs to be inserted; scan backwards, since we optimize
-		 * for the case where elements are nearly in order.
-		 */
-
-		p_insert = p_curr;
-		for (;;) {
-			p_insert--;  /* Start from p_curr - 1. */
-			val_insert = DUK_HSTRING_GET_ARRIDX_SLOW(*p_insert);
-			if (val_insert < val_curr) {
-				p_insert++;
-				break;
-			}
-			if (p_insert == keys + idx_start) {
-				break;
-			}
-		}
-
-		/*        .-- p_insert   .-- p_curr
-		 *        v              v
-		 *  | ... | insert | ... | curr
-		 */
-
-		h_curr = *p_curr;
-		DUK_MEMMOVE((void *) (p_insert + 1),
-		            (const void *) p_insert,
-		            (size_t) ((p_curr - p_insert) * sizeof(duk_hstring *)));
-		*p_insert = h_curr;
-		/* keep val_highest */
-	}
-}
-#endif  /* 0 */
 
 /*
  *  Create an internal enumerator object E, which has its keys ordered
