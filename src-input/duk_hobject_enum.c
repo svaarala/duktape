@@ -26,7 +26,6 @@
  */
 #define DUK__ENUM_START_INDEX  2
 
-#if 0
 /* Current implementation suffices for ES2015 for now because there's no symbol
  * sorting, so commented out for now.
  */
@@ -44,7 +43,9 @@
  *  http://en.wikipedia.org/wiki/Insertion_sort
  */
 
+#if 0  /* unused, only one sort callback used at present */
 typedef duk_bool_t (*duk__sort_compare_fn)(duk_hstring *a, duk_hstring *b, duk_uarridx_t val_b);
+#endif
 
 DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk_uarridx_t val_b) {
 	duk_uarridx_t val_a;
@@ -66,7 +67,14 @@ DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk_u
 
 	val_a = DUK_HSTRING_GET_ARRIDX_FAST(a);
 
-	if (val_b < val_a) {
+	if (val_a < val_b) {
+		/* Covers:
+		 *   val_a < val_b where:
+		 *   - Both keys are array indices and a < b: insert here.
+		 *   - 'a' is array index, 'b' is not: insert here.
+		 */
+		return 1;
+	} else if (val_a > val_b) {
 		/* Covers:
 		 *   - Both keys are array indices and a > b: don't insert here.
 		 *   - 'b' is array index, 'a' is not: don't insert here.
@@ -74,9 +82,6 @@ DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk_u
 		return 0;
 	} else {
 		/* Covers:
-		 *   val_a < val_b where:
-		 *   - Both keys are array indices and a < b: insert here.
-		 *   - 'a' is array index, 'b' is not: insert here.
 		 *   val_a == val_b where:
 		 *   - Both keys are array indices and a == b: insert here
 		 *     (shouldn't actually happen, can't have non-duplicate
@@ -84,7 +89,25 @@ DUK_LOCAL duk_bool_t duk__sort_compare_es6(duk_hstring *a, duk_hstring *b, duk_u
 		 *   - Neither key is an array index: insert here, keeps key
 		 *     order regardless of the keys themselves.
 		 */
+#if defined(DUK_USE_SYMBOL_BUILTIN)
+		if (DUK_HSTRING_HAS_SYMBOL(a)) {
+			/* - 'a' is a symbol, 'b' is a symbol: insert here.
+			 * - 'a' is a symbol, 'b' is not: keep going.
+			 */
+			if (DUK_HSTRING_HAS_SYMBOL(b)) {
+				return 1;
+			} else {
+				return 0;
+			}
+		} else {
+			/* - 'a' is not a symbol, 'b' is a symbol: insert here.
+			 * - neither 'a' nor 'b' is a symbol: insert here.
+			 */
+			return 1;
+		}
+#else
 		return 1;
+#endif
 	}
 }
 
@@ -154,8 +177,8 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		}
 	}
 }
-#endif  /* disabled */
 
+#if 0  /* unused, no symbol support */
 /*
  *  Helper to sort keys into ES2015 [[OwnPropertyKeys]] enumeration order:
  *  array keys in ascending order first, followed by keys in insertion
@@ -231,6 +254,7 @@ DUK_LOCAL void duk__sort_enum_keys_es6(duk_hthread *thr, duk_hobject *h_obj, duk
 		/* keep val_highest */
 	}
 }
+#endif  /* 0 */
 
 /*
  *  Create an internal enumerator object E, which has its keys ordered
@@ -512,6 +536,9 @@ DUK_INTERNAL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint
 				if (!(enum_flags & DUK_ENUM_INCLUDE_SYMBOLS)) {
 					continue;
 				}
+#if !defined(DUK_USE_PREFER_SIZE)
+				need_sort = 1;
+#endif
 			} else {
 				DUK_ASSERT(!DUK_HSTRING_HAS_HIDDEN(k));  /* would also have symbol flag */
 				if (enum_flags & DUK_ENUM_EXCLUDE_STRINGS) {
