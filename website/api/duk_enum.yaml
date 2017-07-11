@@ -16,7 +16,7 @@ summary: |
   <tr>
   <td>DUK_ENUM_INCLUDE_NONENUMERABLE</td>
   <td>Enumerate also non-enumerable properties, by default only enumerable
-      properties are enumerated</td>
+      properties are enumerated.</td>
   </tr>
   <tr>
   <td>DUK_ENUM_INCLUDE_HIDDEN</td>
@@ -37,18 +37,19 @@ summary: |
   <tr>
   <td>DUK_ENUM_OWN_PROPERTIES_ONLY</td>
   <td>Enumerate only an object's "own" properties, by default also inherited
-      properties are enumerated</td>
+      properties are enumerated.</td>
   </tr>
   <tr>
   <td>DUK_ENUM_ARRAY_INDICES_ONLY</td>
   <td>Enumerate only array indices, i.e. property names of the form "0", "1",
-      "2", etc</td>
+      "2", etc.</td>
   </tr>
   <tr>
   <td>DUK_ENUM_SORT_ARRAY_INDICES</td>
   <td>Apply the ES2015 [[OwnPropertyKeys]] enumeration order over the whole
       enumeration result rather than per inheritance level, this has the
-      effect of sorting array indices (even when inherited)</td>
+      effect of sorting array indices (even when inherited).  Also symbols
+      are sorted after ordinary string keys (both in insertion order).</td>
   </tr>
   <tr>
   <td>DUK_ENUM_NO_PROXY_BEHAVIOR</td>
