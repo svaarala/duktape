@@ -2886,6 +2886,9 @@ Planned
   explicit newTarget not yet supported and handling of new.target in eval()
   code is not yet fully correct (GH-1544, GH-1572)
 
+* Add proper string vs. symbol sorting to Reflect.ownKeys() and other
+  enumeration call sites (GH-1460)
+
 * Add an internal type for representing Proxy instances (duk_hproxy) to
   simplify Proxy operations and improve performance (GH-1500, GH-1136)
 
