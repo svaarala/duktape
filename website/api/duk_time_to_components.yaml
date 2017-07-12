@@ -28,7 +28,7 @@ example: |
    * human readable printing add 1 to the month.  Time components are
    * IEEE doubles to match Ecmascript Date behavior.
    */
-  duk_time_components(ctx, time, &comp);
+  duk_time_to_components(ctx, time, &comp);
   printf("Datetime: %04d-%02d-%02d %02d:%02d:%02d.%03dZ\n",
          (int) comp.year, (int) comp.month + 1, (int) comp.day,
          (int) comp.hours, (int) comp.minutes, (int) comp.seconds,
