@@ -108,7 +108,7 @@ example: |
       if (args->floor) {
           t = floor(t);
       }
-      duk_push_number(ctx, t;
+      duk_push_number(ctx, t);
 
       /* Indicates that there is only one return value.  Because the caller
        * requested two (nrets == 2), Duktape will automatically add an
