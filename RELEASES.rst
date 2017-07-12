@@ -2992,7 +2992,8 @@ Planned
   value stack pops where safe (GH-1583, GH-1584); initial object property
   table size estimates for NEWOBJ and NEWARR opcodes (object and array
   literals) (GH-1596, GH-1597); duk_concat_2() internal helper for str+str
-  arithmetic (GH-1599)
+  arithmetic (GH-1599); larger spare for bufwriter in non-lowmem build
+  (GH-1611)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
