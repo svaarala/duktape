@@ -60,12 +60,15 @@ DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
 };
 #endif  /* !DUK_USE_PACKED_TVAL */
 
+/* Assert that there's room for one value. */
+#define DUK__ASSERT_SPACE() do { \
+		DUK_ASSERT(!(thr->valstack_top >= thr->valstack_end)); \
+	} while (0)
+
 /* Check that there's room to push one value. */
 #if defined(DUK_USE_VALSTACK_UNSAFE)
 /* Faster but value stack overruns are memory unsafe. */
-#define DUK__CHECK_SPACE() do { \
-		DUK_ASSERT(!(thr->valstack_top >= thr->valstack_end)); \
-	} while (0)
+#define DUK__CHECK_SPACE() DUK__ASSERT_SPACE()
 #else
 #define DUK__CHECK_SPACE() do { \
 		if (DUK_UNLIKELY(thr->valstack_top >= thr->valstack_end)) { \
@@ -2430,7 +2433,7 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 		duk_size_t ret;
 		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
 		ret = (duk_size_t) duk_to_number_m1(ctx);
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 		return ret;
 	}
 #else  /* DUK_USE_PREFER_SIZE */
@@ -2456,7 +2459,7 @@ DUK_EXTERNAL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx) {
 		duk_size_t ret;
 		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
 		ret = (duk_size_t) duk_to_number_m1(ctx);
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 		return ret;
 	}
 #endif  /* DUK_USE_PREFER_SIZE */
@@ -2561,7 +2564,7 @@ DUK_LOCAL duk_bool_t duk__defaultvalue_coerce_attempt(duk_context *ctx, duk_idx_
 			/* [ ... retval ]; popped below */
 		}
 	}
-	duk_pop(ctx);  /* [ ... func/retval ] -> [ ... ] */
+	duk_pop_unsafe(ctx);  /* [ ... func/retval ] -> [ ... ] */
 	return 0;
 }
 
@@ -2721,14 +2724,34 @@ DUK_INTERNAL duk_double_t duk_to_number_m2(duk_context *ctx) {
 }
 
 DUK_INTERNAL duk_double_t duk_to_number_tval(duk_context *ctx, duk_tval *tv) {
+#if defined(DUK_USE_PREFER_SIZE)
 	duk_double_t res;
+	DUK_ASSERT_CTX_VALID(ctx);
+	duk_push_tval(ctx, tv);
+	res = duk_to_number_m1(ctx);
+	duk_pop_unsafe(ctx);
+	return res;
+#else
+	duk_hthread *thr;
+	duk_double_t res;
+	duk_tval *tv_dst;
 
 	DUK_ASSERT_CTX_VALID(ctx);
+	thr = (duk_hthread *) ctx;
+	DUK__ASSERT_SPACE();
 
-	duk_push_tval(ctx, tv);
-	res = duk_to_number(ctx, -1);
-	duk_pop(ctx);
+	tv_dst = thr->valstack_top++;
+	DUK_TVAL_SET_TVAL(tv_dst, tv);
+	DUK_TVAL_INCREF(thr, tv_dst);  /* decref not necessary */
+	res = duk_to_number_m1(ctx);  /* invalidates tv_dst */
+
+	tv_dst = --thr->valstack_top;
+	DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv_dst));
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv_dst));  /* plain number */
+	DUK_TVAL_SET_UNDEFINED(tv_dst);  /* valstack init policy */
+
 	return res;
+#endif
 }
 
 /* XXX: combine all the integer conversions: they share everything
@@ -2905,7 +2928,7 @@ DUK_EXTERNAL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t idx, du
 		(void) duk_safe_call(ctx, duk__safe_to_string_raw, NULL /*udata*/, 1 /*nargs*/, 1 /*nrets*/);
 		if (!duk_is_string(ctx, -1)) {
 			/* Double error */
-			duk_pop(ctx);
+			duk_pop_unsafe(ctx);
 			duk_push_hstring_stridx(ctx, DUK_STRIDX_UC_ERROR);
 		} else {
 			;
@@ -4372,7 +4395,7 @@ DUK_LOCAL void duk__push_stash(duk_context *ctx) {
 	DUK_ASSERT_CTX_VALID(ctx);
 	if (!duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE)) {
 		DUK_DDD(DUK_DDDPRINT("creating heap/global/thread stash on first use"));
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 		duk_push_bare_object(ctx);
 		duk_dup_top(ctx);
 		duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_C);  /* [ ... parent stash stash ] -> [ ... parent stash ] */
@@ -5915,7 +5938,7 @@ DUK_INTERNAL duk_idx_t duk_unpack_array_like(duk_context *ctx, duk_idx_t idx) {
 		idx = duk_normalize_index(ctx, idx);
 		duk_get_prop_stridx(ctx, idx, DUK_STRIDX_LENGTH);
 		len = duk_to_uint32(ctx, -1);  /* ToUint32() coercion required */
-		duk_pop(ctx);
+		duk_pop_unsafe(ctx);
 		DUK_DDD(DUK_DDDPRINT("slow path for %ld elements", (long) len));
 
 		duk_require_stack(ctx, len);
