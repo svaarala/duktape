@@ -203,7 +203,7 @@ DUK_LOCAL void duk__utf8_encode_char(void *udata, duk_codepoint_t codepoint) {
 /* Shared helper for buffer-to-string using a TextDecoder() compatible UTF-8
  * decoder.
  */
-DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *dec_ctx) {
+DUK_LOCAL duk_ret_t duk__decode_helper(duk_hthread *thr, duk__decode_context *dec_ctx) {
 	const duk_uint8_t *input;
 	duk_size_t len = 0;
 	duk_size_t len_tmp;
@@ -223,24 +223,24 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
 	 * required side effect order.
 	 */
 
-	if (duk_is_undefined(ctx, 0)) {
-		duk_push_fixed_buffer_nozero(ctx, 0);
-		duk_replace(ctx, 0);
+	if (duk_is_undefined(thr, 0)) {
+		duk_push_fixed_buffer_nozero(thr, 0);
+		duk_replace(thr, 0);
 	}
-	(void) duk_require_buffer_data(ctx, 0, &len);  /* Need 'len', avoid pointer. */
+	(void) duk_require_buffer_data(thr, 0, &len);  /* Need 'len', avoid pointer. */
 
-	if (duk_check_type_mask(ctx, 1, DUK_TYPE_MASK_UNDEFINED |
+	if (duk_check_type_mask(thr, 1, DUK_TYPE_MASK_UNDEFINED |
 	                                DUK_TYPE_MASK_NULL |
 	                                DUK_TYPE_MASK_NONE)) {
 		/* Use defaults, treat missing value like undefined. */
 	} else {
-		duk_require_type_mask(ctx, 1, DUK_TYPE_MASK_UNDEFINED |
+		duk_require_type_mask(thr, 1, DUK_TYPE_MASK_UNDEFINED |
 	                                      DUK_TYPE_MASK_NULL |
 	                                      DUK_TYPE_MASK_LIGHTFUNC |
 	                                      DUK_TYPE_MASK_BUFFER |
 		                              DUK_TYPE_MASK_OBJECT);
-		if (duk_get_prop_string(ctx, 1, "stream")) {
-			stream = duk_to_boolean(ctx, -1);
+		if (duk_get_prop_string(thr, 1, "stream")) {
+			stream = duk_to_boolean(thr, -1);
 		}
 	}
 
@@ -253,11 +253,11 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
 	 * XXX: As with TextEncoder, need a better buffer allocation strategy here.
 	 */
 	if (len >= (DUK_HBUFFER_MAX_BYTELEN / 3) - 3) {
-		DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
+		DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
 	}
-	output = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, 3 + (3 * len));  /* used parts will be always manually written over */
+	output = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, 3 + (3 * len));  /* used parts will be always manually written over */
 
-	input = (const duk_uint8_t *) duk_get_buffer_data(ctx, 0, &len_tmp);
+	input = (const duk_uint8_t *) duk_get_buffer_data(thr, 0, &len_tmp);
 	DUK_ASSERT(input != NULL || len == 0);
 	if (DUK_UNLIKELY(len != len_tmp)) {
 		/* Very unlikely but possible: source buffer was resized by
@@ -326,11 +326,11 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
 	/* Output buffer is fixed and thus stable even if there had been
 	 * side effects (which there shouldn't be).
 	 */
-	duk_push_lstring(ctx, (const char *) output, (duk_size_t) (out - output));
+	duk_push_lstring(thr, (const char *) output, (duk_size_t) (out - output));
 	return 1;
 
  fail_type:
-	DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_DECODE_FAILED);
+	DUK_ERROR_TYPE(thr, DUK_STR_DECODE_FAILED);
 	DUK_UNREACHABLE();
 }
 
@@ -339,38 +339,38 @@ DUK_LOCAL duk_ret_t duk__decode_helper(duk_context *ctx, duk__decode_context *de
  */
 
 #if defined(DUK_USE_ENCODING_BUILTINS)
-DUK_INTERNAL duk_ret_t duk_bi_textencoder_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_textencoder_constructor(duk_hthread *thr) {
 	/* TextEncoder currently requires no persistent state, so the constructor
 	 * does nothing on purpose.
 	 */
 
-	duk_require_constructor_call(ctx);
+	duk_require_constructor_call(thr);
 	return 0;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encoding_getter(duk_context *ctx) {
-	duk_push_string(ctx, "utf-8");
+DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encoding_getter(duk_hthread *thr) {
+	duk_push_string(thr, "utf-8");
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_hthread *thr) {
 	duk__encode_context enc_ctx;
 	duk_size_t len;
 	duk_size_t final_len;
 	duk_uint8_t *output;
 
-	DUK_ASSERT_TOP(ctx, 1);
-	if (duk_is_undefined(ctx, 0)) {
+	DUK_ASSERT_TOP(thr, 1);
+	if (duk_is_undefined(thr, 0)) {
 		len = 0;
 	} else {
 		duk_hstring *h_input;
 
-		h_input = duk_to_hstring(ctx, 0);
+		h_input = duk_to_hstring(thr, 0);
 		DUK_ASSERT(h_input != NULL);
 
 		len = (duk_size_t) DUK_HSTRING_GET_CHARLEN(h_input);
 		if (len >= DUK_HBUFFER_MAX_BYTELEN / 3) {
-			DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_RESULT_TOO_LONG);
+			DUK_ERROR_TYPE(thr, DUK_STR_RESULT_TOO_LONG);
 		}
 	}
 
@@ -384,10 +384,10 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 	 * figure out the space needed ahead of time?
 	 */
 	DUK_ASSERT(3 * len >= len);
-	output = (duk_uint8_t *) duk_push_dynamic_buffer(ctx, 3 * len);
+	output = (duk_uint8_t *) duk_push_dynamic_buffer(thr, 3 * len);
 
 	if (len > 0) {
-		DUK_ASSERT(duk_is_string(ctx, 0));  /* True if len > 0. */
+		DUK_ASSERT(duk_is_string(thr, 0));  /* True if len > 0. */
 
 		/* XXX: duk_decode_string() is used to process the input
 		 * string.  For standard Ecmascript strings, represented
@@ -403,7 +403,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 		 */
 		enc_ctx.lead = 0x0000L;
 		enc_ctx.out = output;
-		duk_decode_string(ctx, 0, duk__utf8_encode_char, (void *) &enc_ctx);
+		duk_decode_string(thr, 0, duk__utf8_encode_char, (void *) &enc_ctx);
 		if (enc_ctx.lead != 0x0000L) {
 			/* unpaired high surrogate at end of string */
 			enc_ctx.out = duk__utf8_emit_repl(enc_ctx.out);
@@ -413,11 +413,11 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 		/* The output buffer is usually very much oversized, so shrink it to
 		 * actually needed size.  Pointer stability assumed up to this point.
 		 */
-		DUK_ASSERT_TOP(ctx, 2);
-		DUK_ASSERT(output == (duk_uint8_t *) duk_get_buffer_data(ctx, -1, NULL));
+		DUK_ASSERT_TOP(thr, 2);
+		DUK_ASSERT(output == (duk_uint8_t *) duk_get_buffer_data(thr, -1, NULL));
 
 		final_len = (duk_size_t) (enc_ctx.out - output);
-		duk_resize_buffer(ctx, -1, final_len);
+		duk_resize_buffer(thr, -1, final_len);
 		/* 'output' and 'enc_ctx.out' are potentially invalidated by the resize. */
 	} else {
 		final_len = 0;
@@ -430,84 +430,84 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_prototype_encode(duk_context *ctx) {
 	 * returns a plain dynamic buffer.
 	 */
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
-	duk_push_buffer_object(ctx, -1, 0, final_len, DUK_BUFOBJ_UINT8ARRAY);
+	duk_push_buffer_object(thr, -1, 0, final_len, DUK_BUFOBJ_UINT8ARRAY);
 #endif
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_hthread *thr) {
 	duk__decode_context *dec_ctx;
 	duk_bool_t fatal = 0;
 	duk_bool_t ignore_bom = 0;
 
-	DUK_ASSERT_TOP(ctx, 2);
-	duk_require_constructor_call(ctx);
-	if (!duk_is_undefined(ctx, 0)) {
+	DUK_ASSERT_TOP(thr, 2);
+	duk_require_constructor_call(thr);
+	if (!duk_is_undefined(thr, 0)) {
 		/* XXX: For now ignore 'label' (encoding identifier). */
-		duk_to_string(ctx, 0);
+		duk_to_string(thr, 0);
 	}
-	if (!duk_is_null_or_undefined(ctx, 1)) {
-		if (duk_get_prop_string(ctx, 1, "fatal")) {
-			fatal = duk_to_boolean(ctx, -1);
+	if (!duk_is_null_or_undefined(thr, 1)) {
+		if (duk_get_prop_string(thr, 1, "fatal")) {
+			fatal = duk_to_boolean(thr, -1);
 		}
-		if (duk_get_prop_string(ctx, 1, "ignoreBOM")) {
-			ignore_bom = duk_to_boolean(ctx, -1);
+		if (duk_get_prop_string(thr, 1, "ignoreBOM")) {
+			ignore_bom = duk_to_boolean(thr, -1);
 		}
 	}
 
-	duk_push_this(ctx);
+	duk_push_this(thr);
 
 	/* The decode context is not assumed to be zeroed; all fields are
 	 * initialized explicitly.
 	 */
-	dec_ctx = (duk__decode_context *) duk_push_fixed_buffer(ctx, sizeof(duk__decode_context));
+	dec_ctx = (duk__decode_context *) duk_push_fixed_buffer(thr, sizeof(duk__decode_context));
 	dec_ctx->fatal = (duk_uint8_t) fatal;
 	dec_ctx->ignore_bom = (duk_uint8_t) ignore_bom;
 	duk__utf8_decode_init(dec_ctx);  /* Initializes remaining fields. */
 
-	duk_put_prop_string(ctx, -2, "\xff" "Context");
+	duk_put_prop_string(thr, -2, "\xff" "Context");
 	return 0;
 }
 
 /* Get TextDecoder context from 'this'; leaves garbage on stack. */
-DUK_LOCAL duk__decode_context *duk__get_textdecoder_context(duk_context *ctx) {
+DUK_LOCAL duk__decode_context *duk__get_textdecoder_context(duk_hthread *thr) {
 	duk__decode_context *dec_ctx;
-	duk_push_this(ctx);
-	duk_get_prop_string(ctx, -1, "\xff" "Context");
-	dec_ctx = (duk__decode_context *) duk_require_buffer(ctx, -1, NULL);
+	duk_push_this(thr);
+	duk_get_prop_string(thr, -1, "\xff" "Context");
+	dec_ctx = (duk__decode_context *) duk_require_buffer(thr, -1, NULL);
 	DUK_ASSERT(dec_ctx != NULL);
 	return dec_ctx;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_shared_getter(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_shared_getter(duk_hthread *thr) {
 	duk__decode_context *dec_ctx;
 	duk_int_t magic;
 
-	dec_ctx = duk__get_textdecoder_context(ctx);
-	magic = duk_get_current_magic(ctx);
+	dec_ctx = duk__get_textdecoder_context(thr);
+	magic = duk_get_current_magic(thr);
 	switch (magic) {
 	case 0:
 		/* Encoding is now fixed, so _Context lookup is only needed to
 		 * validate the 'this' binding (TypeError if not TextDecoder-like).
 		 */
-		duk_push_string(ctx, "utf-8");
+		duk_push_string(thr, "utf-8");
 		break;
 	case 1:
-		duk_push_boolean(ctx, dec_ctx->fatal);
+		duk_push_boolean(thr, dec_ctx->fatal);
 		break;
 	default:
-		duk_push_boolean(ctx, dec_ctx->ignore_bom);
+		duk_push_boolean(thr, dec_ctx->ignore_bom);
 		break;
 	}
 
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_hthread *thr) {
 	duk__decode_context *dec_ctx;
 
-	dec_ctx = duk__get_textdecoder_context(ctx);
-	return duk__decode_helper(ctx, dec_ctx);
+	dec_ctx = duk__get_textdecoder_context(thr);
+	return duk__decode_helper(thr, dec_ctx);
 }
 #endif  /* DUK_USE_ENCODING_BUILTINS */
 
@@ -520,12 +520,12 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_prototype_decode(duk_context *ctx) {
  * index 0, and decode options (not present for Buffer) at index 1.  Return value
  * is a Duktape/C function return value.
  */
-DUK_INTERNAL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_hthread *thr) {
 	duk__decode_context dec_ctx;
 
 	dec_ctx.fatal = 0;  /* use replacement chars */
 	dec_ctx.ignore_bom = 1;  /* ignore BOMs (matches Node.js Buffer .toString()) */
 	duk__utf8_decode_init(&dec_ctx);
 
-	return duk__decode_helper(ctx, &dec_ctx);
+	return duk__decode_helper(thr, &dec_ctx);
 }

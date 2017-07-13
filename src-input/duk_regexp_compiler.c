@@ -917,7 +917,6 @@ DUK_LOCAL duk_uint32_t duk__parse_regexp_flags(duk_hthread *thr, duk_hstring *h)
  */
 
 DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hstring *h;
 	const duk_uint8_t *p;
 	duk_bufwriter_ctx bw_alloc;
@@ -926,12 +925,12 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	duk_size_t i, n;
 	duk_uint_fast8_t c_prev, c;
 
-	h = duk_known_hstring(ctx, idx_pattern);
+	h = duk_known_hstring(thr, idx_pattern);
 	p = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
 	n = (duk_size_t) DUK_HSTRING_GET_BYTELEN(h);
 
 	if (n == 0) {
-		duk_push_string(ctx, "(?:)");
+		duk_push_string(thr, "(?:)");
 		return;
 	}
 
@@ -958,7 +957,7 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
 	}
 
 	DUK_BW_SETPTR_AND_COMPACT(thr, bw, q);
-	(void) duk_buffer_to_string(ctx, -1);  /* Safe if input is safe. */
+	(void) duk_buffer_to_string(thr, -1);  /* Safe if input is safe. */
 
 	/* [ ... escaped_source ] */
 }
@@ -979,7 +978,6 @@ DUK_LOCAL void duk__create_escaped_source(duk_hthread *thr, int idx_pattern) {
  */
 
 DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_re_compiler_ctx re_ctx;
 	duk_lexer_point lex_point;
 	duk_hstring *h_pattern;
@@ -987,15 +985,14 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	duk__re_disjunction_info ign_disj;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(ctx != NULL);
 
 	/*
 	 *  Args validation
 	 */
 
 	/* TypeError if fails */
-	h_pattern = duk_require_hstring_notsymbol(ctx, -2);
-	h_flags = duk_require_hstring_notsymbol(ctx, -1);
+	h_pattern = duk_require_hstring_notsymbol(thr, -2);
+	h_flags = duk_require_hstring_notsymbol(thr, -1);
 
 	/*
 	 *  Create normalized 'source' property (E5 Section 15.10.3).
@@ -1073,7 +1070,7 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	/* [ ... pattern flags escaped_source buffer ] */
 
 	DUK_BW_COMPACT(thr, &re_ctx.bw);
-	(void) duk_buffer_to_string(ctx, -1);  /* Safe because flags is at most 7 bit. */
+	(void) duk_buffer_to_string(thr, -1);  /* Safe because flags is at most 7 bit. */
 
 	/* [ ... pattern flags escaped_source bytecode ] */
 
@@ -1081,11 +1078,11 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
 	 *  Finalize stack
 	 */
 
-	duk_remove(ctx, -4);     /* -> [ ... flags escaped_source bytecode ] */
-	duk_remove(ctx, -3);     /* -> [ ... escaped_source bytecode ] */
+	duk_remove(thr, -4);     /* -> [ ... flags escaped_source bytecode ] */
+	duk_remove(thr, -3);     /* -> [ ... escaped_source bytecode ] */
 
 	DUK_DD(DUK_DDPRINT("regexp compilation successful, bytecode: %!T, escaped source: %!T",
-	                   (duk_tval *) duk_get_tval(ctx, -1), (duk_tval *) duk_get_tval(ctx, -2)));
+	                   (duk_tval *) duk_get_tval(thr, -1), (duk_tval *) duk_get_tval(thr, -2)));
 }
 
 /*
@@ -1099,21 +1096,20 @@ DUK_INTERNAL void duk_regexp_compile(duk_hthread *thr) {
  */
 
 DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *h;
 
 	/* [ ... escaped_source bytecode ] */
 
-	duk_push_object(ctx);
-	h = duk_known_hobject(ctx, -1);
-	duk_insert(ctx, -3);
+	duk_push_object(thr);
+	h = duk_known_hobject(thr, -1);
+	duk_insert(thr, -3);
 
 	/* [ ... regexp_object escaped_source bytecode ] */
 
 	DUK_HOBJECT_SET_CLASS_NUMBER(h, DUK_HOBJECT_CLASS_REGEXP);
 	DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, h, thr->builtins[DUK_BIDX_REGEXP_PROTOTYPE]);
 
-	duk_xdef_prop_stridx_short(ctx, -3, DUK_STRIDX_INT_BYTECODE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(thr, -3, DUK_STRIDX_INT_BYTECODE, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ ... regexp_object escaped_source ] */
 
@@ -1122,12 +1118,12 @@ DUK_INTERNAL void duk_regexp_create_instance(duk_hthread *thr) {
 	 * property for the getter.
 	 */
 
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_SOURCE, DUK_PROPDESC_FLAGS_NONE);
 
 	/* [ ... regexp_object ] */
 
-	duk_push_int(ctx, 0);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LAST_INDEX, DUK_PROPDESC_FLAGS_W);
+	duk_push_int(thr, 0);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LAST_INDEX, DUK_PROPDESC_FLAGS_W);
 
 	/* [ ... regexp_object ] */
 }

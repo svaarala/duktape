@@ -1,8 +1,9 @@
 /*
  *  Heap thread object representation.
  *
- *  duk_hthread is also the 'context' (duk_context) for exposed APIs
- *  which mostly operate on the topmost frame of the value stack.
+ *  duk_hthread is also the 'context' for public API functions via a
+ *  different typedef.  Most API calls operate on the topmost frame
+ *  of the value stack only.
  */
 
 #if !defined(DUK_HTHREAD_H_INCLUDED)
@@ -151,21 +152,22 @@
 		DUK_ASSERT((thr)->unused1 == 0); \
 		DUK_ASSERT((thr)->unused2 == 0); \
 	} while (0)
+
 /* Assertions for public API calls; a bit stronger. */
-#define DUK_ASSERT_CTX_VALID(ctx) do { \
-		DUK_ASSERT((ctx) != NULL); \
-		DUK_ASSERT_HTHREAD_VALID((duk_hthread *) (ctx)); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack != NULL); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_bottom != NULL); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top != NULL); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end != NULL); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_alloc_end != NULL); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_alloc_end >= ((duk_hthread *) (ctx))->valstack); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_top >= ((duk_hthread *) (ctx))->valstack_bottom); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_end >= ((duk_hthread *) (ctx))->valstack_top); \
-		DUK_ASSERT(((duk_hthread *) (ctx))->valstack_alloc_end >= ((duk_hthread *) (ctx))->valstack_end); \
+#define DUK_ASSERT_CTX_VALID(thr) do { \
+		DUK_ASSERT((thr) != NULL); \
+		DUK_ASSERT_HTHREAD_VALID((thr)); \
+		DUK_ASSERT((thr)->valstack != NULL); \
+		DUK_ASSERT((thr)->valstack_bottom != NULL); \
+		DUK_ASSERT((thr)->valstack_top != NULL); \
+		DUK_ASSERT((thr)->valstack_end != NULL); \
+		DUK_ASSERT((thr)->valstack_alloc_end != NULL); \
+		DUK_ASSERT((thr)->valstack_alloc_end >= (thr)->valstack); \
+		DUK_ASSERT((thr)->valstack_end >= (thr)->valstack); \
+		DUK_ASSERT((thr)->valstack_top >= (thr)->valstack); \
+		DUK_ASSERT((thr)->valstack_top >= (thr)->valstack_bottom); \
+		DUK_ASSERT((thr)->valstack_end >= (thr)->valstack_top); \
+		DUK_ASSERT((thr)->valstack_alloc_end >= (thr)->valstack_end); \
 	} while (0)
 
 /*

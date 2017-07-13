@@ -36,14 +36,14 @@ DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 #endif  /* defined(DUK_USE_DATE_NOW_WINDOWS) || defined(DUK_USE_DATE_TZO_WINDOWS) */
 
 #if defined(DUK_USE_DATE_NOW_WINDOWS)
-DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_hthread *thr) {
 	/* Suggested step-by-step method from documentation of RtlTimeToSecondsSince1970:
 	 * http://msdn.microsoft.com/en-us/library/windows/desktop/ms724928(v=vs.85).aspx
 	 */
 	SYSTEMTIME st1, st2;
 	ULARGE_INTEGER tmp1, tmp2;
 
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 
 	GetSystemTime(&st1);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st1, &tmp1);

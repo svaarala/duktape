@@ -25,8 +25,6 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code,
 #else
 DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code) {
 #endif
-	duk_context *ctx = (duk_context *) thr;
-
 #if defined(DUK_USE_VERBOSE_ERRORS)
 	DUK_DD(DUK_DDPRINT("duk_err_create_and_throw(): code=%ld, msg=%s, filename=%s, line=%ld",
 	                   (long) code, (const char *) msg,
@@ -36,7 +34,6 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 #endif
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(ctx != NULL);
 
 	/* Even though nested call is possible because we throw an error when
 	 * trying to create an error, the potential errors must happen before
@@ -85,20 +82,20 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		 */
 		thr->heap->creating_error = 1;
 
-		duk_require_stack(ctx, 1);
+		duk_require_stack(thr, 1);
 
 		/* XXX: usually unnecessary '%s' formatting here, but cannot
 		 * use 'msg' as a format string directly.
 		 */
 #if defined(DUK_USE_VERBOSE_ERRORS)
-		duk_push_error_object_raw(ctx,
+		duk_push_error_object_raw(thr,
 		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 		                          filename,
 		                          line,
 		                          "%s",
 		                          (const char *) msg);
 #else
-		duk_push_error_object_raw(ctx,
+		duk_push_error_object_raw(thr,
 		                          code | DUK_ERRCODE_FLAG_NOBLAME_FILELINE,
 		                          NULL,
 		                          0,
@@ -113,11 +110,11 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
 		 */
 #if defined(DUK_USE_AUGMENT_ERROR_THROW)
 		DUK_DDD(DUK_DDDPRINT("THROW ERROR (INTERNAL): %!iT (before throw augment)",
-		                     (duk_tval *) duk_get_tval(ctx, -1)));
+		                     (duk_tval *) duk_get_tval(thr, -1)));
 		duk_err_augment_error_throw(thr);
 #endif
 
-		duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, DUK_GET_TVAL_NEGIDX(ctx, -1));
+		duk_err_setup_ljstate1(thr, DUK_LJ_TYPE_THROW, DUK_GET_TVAL_NEGIDX(thr, -1));
 		thr->heap->creating_error = 0;
 
 		/* Error is now created and we assume no errors can occur any
@@ -147,8 +144,6 @@ DUK_INTERNAL void duk_err_create_and_throw(duk_hthread *thr, duk_errcode_t code)
  */
 
 DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t rc) {
-	duk_context *ctx = (duk_context *) thr;
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(rc < 0);
 
@@ -162,6 +157,6 @@ DUK_INTERNAL void duk_error_throw_from_negative_rc(duk_hthread *thr, duk_ret_t r
 	 *  minimal: they're only really useful for low memory targets.
 	 */
 
-	duk_error_raw(ctx, -rc, NULL, 0, "error (rc %ld)", (long) rc);
+	duk_error_raw(thr, -rc, NULL, 0, "error (rc %ld)", (long) rc);
 	DUK_UNREACHABLE();
 }

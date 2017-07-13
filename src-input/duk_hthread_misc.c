@@ -12,7 +12,7 @@ DUK_INTERNAL void duk_hthread_terminate(duk_hthread *thr) {
 	}
 
 	thr->valstack_bottom = thr->valstack;
-	duk_set_top((duk_context *) thr, 0);  /* unwinds valstack, updating refcounts */
+	duk_set_top(thr, 0);  /* unwinds valstack, updating refcounts */
 
 	thr->state = DUK_HTHREAD_STATE_TERMINATED;
 

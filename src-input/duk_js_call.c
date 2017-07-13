@@ -153,7 +153,6 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
                                             duk_hobject *func,
                                             duk_hobject *varenv,
                                             duk_idx_t idx_args) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *arg;          /* 'arguments' */
 	duk_hobject *formals;      /* formals for 'func' (may be NULL if func is a C function) */
 	duk_idx_t i_arg;
@@ -178,15 +177,15 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	need_map = 0;
 
 	i_argbase = idx_args;
-	num_stack_args = duk_get_top(ctx) - i_argbase - 1;
+	num_stack_args = duk_get_top(thr) - i_argbase - 1;
 	DUK_ASSERT(i_argbase >= 0);
 	DUK_ASSERT(num_stack_args >= 0);
 
-	duk_push_hobject(ctx, func);
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_FORMALS);
-	formals = duk_get_hobject(ctx, -1);
+	duk_push_hobject(thr, func);
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FORMALS);
+	formals = duk_get_hobject(thr, -1);
 	if (formals) {
-		n_formals = (duk_idx_t) duk_get_length(ctx, -1);
+		n_formals = (duk_idx_t) duk_get_length(thr, -1);
 	} else {
 		/* This shouldn't happen without tampering of internal
 		 * properties: if a function accesses 'arguments', _Formals
@@ -196,8 +195,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		DUK_D(DUK_DPRINT("_Formals is undefined when creating arguments, use n_formals == 0"));
 		n_formals = 0;
 	}
-	duk_remove_m2(ctx);  /* leave formals on stack for later use */
-	i_formals = duk_require_top_index(ctx);
+	duk_remove_m2(thr);  /* leave formals on stack for later use */
+	i_formals = duk_require_top_index(thr);
 
 	DUK_ASSERT(n_formals >= 0);
 	DUK_ASSERT(formals != NULL || n_formals == 0);
@@ -215,24 +214,24 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	 *    - 'mappedNames' object: temporary value used during construction
 	 */
 
-	arg = duk_push_object_helper(ctx,
+	arg = duk_push_object_helper(thr,
 	                             DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                             DUK_HOBJECT_FLAG_FASTREFS |
 	                             DUK_HOBJECT_FLAG_ARRAY_PART |
 	                             DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_ARGUMENTS),
 	                             DUK_BIDX_OBJECT_PROTOTYPE);
 	DUK_ASSERT(arg != NULL);
-	(void) duk_push_object_helper(ctx,
+	(void) duk_push_object_helper(thr,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
-	(void) duk_push_object_helper(ctx,
+	(void) duk_push_object_helper(thr,
 	                              DUK_HOBJECT_FLAG_EXTENSIBLE |
 	                              DUK_HOBJECT_FLAG_FASTREFS |
 	                              DUK_HOBJECT_CLASS_AS_FLAGS(DUK_HOBJECT_CLASS_OBJECT),
 	                              -1);  /* no prototype */
-	i_arg = duk_get_top(ctx) - 3;
+	i_arg = duk_get_top(thr) - 3;
 	i_map = i_arg + 1;
 	i_mappednames = i_arg + 2;
 
@@ -242,16 +241,16 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	                     "arguments at index %ld -> %!O "
 	                     "map at index %ld -> %!O "
 	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(ctx, i_arg),
-	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(ctx, i_map),
-	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(ctx, i_mappednames)));
+	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(thr, i_arg),
+	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(thr, i_map),
+	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(thr, i_mappednames)));
 
 	/*
 	 *  Init arguments properties, map, etc.
 	 */
 
-	duk_push_int(ctx, num_stack_args);
-	duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
+	duk_push_int(thr, num_stack_args);
+	duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_WC);
 
 	/*
 	 *  Init argument related properties.
@@ -264,8 +263,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		                     (long) idx, (long) i_argbase, (long) (i_argbase + idx)));
 
 		DUK_DDD(DUK_DDDPRINT("define arguments[%ld]=arg", (long) idx));
-		duk_dup(ctx, i_argbase + idx);
-		duk_xdef_prop_index_wec(ctx, i_arg, (duk_uarridx_t) idx);
+		duk_dup(thr, i_argbase + idx);
+		duk_xdef_prop_index_wec(thr, i_arg, (duk_uarridx_t) idx);
 		DUK_DDD(DUK_DDDPRINT("defined arguments[%ld]=arg", (long) idx));
 
 		/* step 11.c is relevant only if non-strict (checked in 11.c.ii) */
@@ -275,12 +274,12 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 			DUK_DDD(DUK_DDDPRINT("strict function, index within formals (%ld < %ld)",
 			                     (long) idx, (long) n_formals));
 
-			duk_get_prop_index(ctx, i_formals, idx);
-			DUK_ASSERT(duk_is_string(ctx, -1));
+			duk_get_prop_index(thr, i_formals, idx);
+			DUK_ASSERT(duk_is_string(thr, -1));
 
-			duk_dup_top(ctx);  /* [ ... name name ] */
+			duk_dup_top(thr);  /* [ ... name name ] */
 
-			if (!duk_has_prop(ctx, i_mappednames)) {
+			if (!duk_has_prop(thr, i_mappednames)) {
 				/* steps 11.c.ii.1 - 11.c.ii.4, but our internal book-keeping
 				 * differs from the reference model
 				 */
@@ -290,23 +289,23 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 				need_map = 1;
 
 				DUK_DDD(DUK_DDDPRINT("set mappednames[%s]=%ld",
-				                     (const char *) duk_get_string(ctx, -1),
+				                     (const char *) duk_get_string(thr, -1),
 				                     (long) idx));
-				duk_dup_top(ctx);                      /* name */
-				(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) idx);  /* index */
-				duk_xdef_prop_wec(ctx, i_mappednames);  /* out of spec, must be configurable */
+				duk_dup_top(thr);                      /* name */
+				(void) duk_push_uint_to_hstring(thr, (duk_uint_t) idx);  /* index */
+				duk_xdef_prop_wec(thr, i_mappednames);  /* out of spec, must be configurable */
 
 				DUK_DDD(DUK_DDDPRINT("set map[%ld]=%s",
 				                     (long) idx,
-				                     duk_get_string(ctx, -1)));
-				duk_dup_top(ctx);         /* name */
-				duk_xdef_prop_index_wec(ctx, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
+				                     duk_get_string(thr, -1)));
+				duk_dup_top(thr);         /* name */
+				duk_xdef_prop_index_wec(thr, i_map, (duk_uarridx_t) idx);  /* out of spec, must be configurable */
 			} else {
 				/* duk_has_prop() popped the second 'name' */
 			}
 
 			/* [ ... name ] */
-			duk_pop(ctx);  /* pop 'name' */
+			duk_pop(thr);  /* pop 'name' */
 		}
 
 		idx--;
@@ -321,8 +320,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		/* should never happen for a strict callee */
 		DUK_ASSERT(!DUK_HOBJECT_HAS_STRICT(func));
 
-		duk_dup(ctx, i_map);
-		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_dup(thr, i_map);
+		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_INT_MAP, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 
 		/* The variable environment for magic variable bindings needs to be
 		 * given by the caller and recorded in the arguments object.
@@ -333,8 +332,8 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 		 * an explicit (internal) callee property is not needed.
 		 */
 
-		duk_push_hobject(ctx, varenv);
-		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
+		duk_push_hobject(thr, varenv);
+		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_INT_VARENV, DUK_PROPDESC_FLAGS_NONE);  /* out of spec, don't care */
 	}
 
 	/* steps 13-14 */
@@ -354,12 +353,12 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 
 		DUK_DDD(DUK_DDDPRINT("strict function, setting caller/callee to throwers"));
 
-		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLER);
-		duk_xdef_prop_stridx_thrower(ctx, i_arg, DUK_STRIDX_CALLEE);
+		duk_xdef_prop_stridx_thrower(thr, i_arg, DUK_STRIDX_CALLER);
+		duk_xdef_prop_stridx_thrower(thr, i_arg, DUK_STRIDX_CALLEE);
 	} else {
 		DUK_DDD(DUK_DDDPRINT("non-strict function, setting callee to actual value"));
-		duk_push_hobject(ctx, func);
-		duk_xdef_prop_stridx(ctx, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
+		duk_push_hobject(thr, func);
+		duk_xdef_prop_stridx(thr, i_arg, DUK_STRIDX_CALLEE, DUK_PROPDESC_FLAGS_WC);
 	}
 
 	/* set exotic behavior only after we're done */
@@ -387,14 +386,14 @@ DUK_LOCAL void duk__create_arguments_object(duk_hthread *thr,
 	                     "arguments at index %ld -> %!O "
 	                     "map at index %ld -> %!O "
 	                     "mappednames at index %ld -> %!O",
-	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(ctx, i_arg),
-	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(ctx, i_map),
-	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(ctx, i_mappednames)));
+	                     (long) i_arg, (duk_heaphdr *) duk_get_hobject(thr, i_arg),
+	                     (long) i_map, (duk_heaphdr *) duk_get_hobject(thr, i_map),
+	                     (long) i_mappednames, (duk_heaphdr *) duk_get_hobject(thr, i_mappednames)));
 
 	/* [ args(n) envobj formals arguments map mappednames ] */
 
-	duk_pop_2(ctx);
-	duk_remove_m2(ctx);
+	duk_pop_2(thr);
+	duk_remove_m2(thr);
 
 	/* [ args(n) envobj arguments ] */
 }
@@ -406,8 +405,6 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
                                                duk_hobject *func,
                                                duk_hobject *env,
                                                duk_idx_t idx_args) {
-	duk_context *ctx = (duk_context *) thr;
-
 	DUK_DDD(DUK_DDDPRINT("creating arguments object for function call"));
 
 	DUK_ASSERT(thr != NULL);
@@ -424,7 +421,7 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
 
 	/* [ ... arg1 ... argN envobj argobj ] */
 
-	duk_xdef_prop_stridx_short(ctx,
+	duk_xdef_prop_stridx_short(thr,
 	                           -2,
 	                           DUK_STRIDX_LC_ARGUMENTS,
 	                           DUK_HOBJECT_HAS_STRICT(func) ? DUK_PROPDESC_FLAGS_E :   /* strict: non-deletable, non-writable */
@@ -465,15 +462,14 @@ DUK_LOCAL void duk__handle_createargs_for_call(duk_hthread *thr,
  */
 
 /* Update default instance prototype for constructor call. */
-DUK_LOCAL void duk__update_default_instance_proto(duk_context *ctx, duk_idx_t idx_func) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_LOCAL void duk__update_default_instance_proto(duk_hthread *thr, duk_idx_t idx_func) {
 	duk_hobject *proto;
 	duk_hobject *fallback;
 
-	DUK_ASSERT(duk_is_constructable(ctx, idx_func));
+	DUK_ASSERT(duk_is_constructable(thr, idx_func));
 
-	duk_get_prop_stridx_short(ctx, idx_func, DUK_STRIDX_PROTOTYPE);
-	proto = duk_get_hobject(ctx, -1);
+	duk_get_prop_stridx_short(thr, idx_func, DUK_STRIDX_PROTOTYPE);
+	proto = duk_get_hobject(thr, -1);
 	if (proto == NULL) {
 		DUK_DDD(DUK_DDDPRINT("constructor has no 'prototype' property, or value not an object "
 		                     "-> leave standard Object prototype as fallback prototype"));
@@ -483,17 +479,15 @@ DUK_LOCAL void duk__update_default_instance_proto(duk_context *ctx, duk_idx_t id
 		/* Original fallback (default instance) is untouched when
 		 * resolving bound functions etc.
 		 */
-		fallback = duk_known_hobject(ctx, idx_func + 1);
+		fallback = duk_known_hobject(thr, idx_func + 1);
 		DUK_ASSERT(fallback != NULL);
 		DUK_HOBJECT_SET_PROTOTYPE_UPDREF(thr, fallback, proto);
 	}
-	duk_pop(ctx);
+	duk_pop(thr);
 }
 
 /* Postprocess: return value special handling, error augmentation. */
-DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uint_t proxy_invariant) {
-	duk_hthread *thr = (duk_hthread *) ctx;
-
+DUK_INTERNAL void duk_call_construct_postprocess(duk_hthread *thr, duk_small_uint_t proxy_invariant) {
 	/* Use either fallback (default instance) or retval depending
 	 * on retval type.  Needs to be called before unwind because
 	 * the default instance is read from the current (immutable)
@@ -503,7 +497,7 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uin
 	 * Object (we accept object-like values like buffers and
 	 * lightfuncs too).  If not, TypeError.
 	 */
-	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	if (duk_check_type_mask(thr, -1, DUK_TYPE_MASK_OBJECT |
 	                                 DUK_TYPE_MASK_BUFFER |
 	                                 DUK_TYPE_MASK_LIGHTFUNC)) {
 		DUK_DDD(DUK_DDDPRINT("replacement value"));
@@ -513,11 +507,10 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uin
 			DUK_ERROR_TYPE_INVALID_TRAP_RESULT(thr);
 		}
 		/* XXX: direct value stack access */
-		duk_pop(ctx);
-		duk_push_this(ctx);
+		duk_pop(thr);
+		duk_push_this(thr);
 	}
 
-	DUK_UNREF(thr);
 #if defined(DUK_USE_AUGMENT_ERROR_CREATE)
 	/* Augment created errors upon creation, not when they are thrown or
 	 * rethrown.  __FILE__ and __LINE__ are not desirable here; the call
@@ -548,7 +541,6 @@ DUK_INTERNAL void duk_call_construct_postprocess(duk_context *ctx, duk_small_uin
 DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
                                                 duk_idx_t idx_func,
                                                 duk_bool_t is_constructor_call) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_func;
 	duk_hobject *func;
 	duk_idx_t len;
@@ -559,9 +551,9 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 	 * but we don't rely on that below.
 	 */
 
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 
-	tv_func = duk_require_tval(ctx, idx_func);
+	tv_func = duk_require_tval(thr, idx_func);
 	DUK_ASSERT(tv_func != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
@@ -588,24 +580,24 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 				DUK_DDD(DUK_DDDPRINT("constructor call: don't update this binding"));
 			} else {
 				/* XXX: duk_replace_tval */
-				duk_push_tval(ctx, &h_bound->this_binding);
-				duk_replace(ctx, idx_func + 1);  /* idx_this = idx_func + 1 */
+				duk_push_tval(thr, &h_bound->this_binding);
+				duk_replace(thr, idx_func + 1);  /* idx_this = idx_func + 1 */
 			}
 
 			/* [ ... func this arg1 ... argN ] */
 
-			duk_require_stack(ctx, len);
+			duk_require_stack(thr, len);
 
-			tv_gap = duk_reserve_gap(ctx, idx_func + 2, len);
+			tv_gap = duk_reserve_gap(thr, idx_func + 2, len);
 			duk_copy_tvals_incref(thr, tv_gap, tv_args, len);
 
 			/* [ ... func this <bound args> arg1 ... argN ] */
 
-			duk_push_tval(ctx, &h_bound->target);
-			duk_replace(ctx, idx_func);  /* replace in stack */
+			duk_push_tval(thr, &h_bound->target);
+			duk_replace(thr, idx_func);  /* replace in stack */
 
 			DUK_DDD(DUK_DDDPRINT("bound function handled, idx_func=%ld, curr func=%!T",
-			                     (long) idx_func, duk_get_tval(ctx, idx_func)));
+			                     (long) idx_func, duk_get_tval(thr, idx_func)));
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
 		/* Lightweight function: never bound, so terminate. */
@@ -615,12 +607,12 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
 		DUK_ERROR_INTERNAL(thr);
 	}
 
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 
-	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %!T", duk_get_tval(ctx, idx_func)));
+	DUK_DDD(DUK_DDDPRINT("final non-bound function is: %!T", duk_get_tval(thr, idx_func)));
 
 #if defined(DUK_USE_ASSERTIONS)
-	tv_func = duk_require_tval(ctx, idx_func);
+	tv_func = duk_require_tval(thr, idx_func);
 	DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_func) || DUK_TVAL_IS_OBJECT(tv_func));
 	if (DUK_TVAL_IS_OBJECT(tv_func)) {
 		func = DUK_TVAL_GET_OBJECT(tv_func);
@@ -637,7 +629,6 @@ DUK_LOCAL void duk__handle_bound_chain_for_call(duk_hthread *thr,
  */
 
 DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hobject *func, duk_small_uint_t *call_flags, duk_bool_t first) {
-	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_c_function natfunc;
 #endif
@@ -657,7 +648,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 	 * .apply() unpacking so we don't need to extend it here when we need a
 	 * few slots.
 	 */
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 
 	/* Handle native 'eval' specially.  A direct eval check is only made
 	 * for the first resolution attempt; e.g. a bound eval call is -not-
@@ -671,7 +662,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		if (first && (*call_flags & DUK_CALL_FLAG_CALLED_AS_EVAL)) {
 			*call_flags = (*call_flags & ~DUK_CALL_FLAG_CALLED_AS_EVAL) | DUK_CALL_FLAG_DIRECT_EVAL;
 		}
-		DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+		DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 		return 1;  /* stop resolving */
 	}
 
@@ -697,7 +688,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		 * ...
 		 */
 		DUK_ASSERT(natfunc == duk_bi_function_prototype_call);
-		duk_remove_unsafe(ctx, idx_func);
+		duk_remove_unsafe(thr, idx_func);
 		tv_args = thr->valstack_bottom + idx_func + 2;
 		if (thr->valstack_top < tv_args) {
 			DUK_ASSERT(tv_args <= thr->valstack_end);
@@ -720,7 +711,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		 * ...
 		 */
 		DUK_ASSERT(natfunc == duk_bi_function_prototype_apply);
-		duk_remove_unsafe(ctx, idx_func);
+		duk_remove_unsafe(thr, idx_func);
 		goto apply_shared;
 	}
 #if defined(DUK_USE_REFLECT_BUILTIN)
@@ -740,7 +731,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		 * ...
 		 */
 		DUK_ASSERT(natfunc == duk_bi_reflect_apply);
-		duk_remove_n_unsafe(ctx, idx_func, 2);
+		duk_remove_n_unsafe(thr, idx_func, 2);
 		goto apply_shared;
 	}
 	case 3: {  /* 3=Reflect.construct() */
@@ -770,38 +761,38 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 
 		DUK_ASSERT(natfunc == duk_bi_reflect_construct);
 		*call_flags |= DUK_CALL_FLAG_CONSTRUCT;
-		duk_remove_n_unsafe(ctx, idx_func, 2);
-		top = duk_get_top(ctx);
-		if (!duk_is_constructable(ctx, idx_func)) {
+		duk_remove_n_unsafe(thr, idx_func, 2);
+		top = duk_get_top(thr);
+		if (!duk_is_constructable(thr, idx_func)) {
 			/* Target constructability must be checked before
 			 * unpacking argArray (which may cause side effects).
 			 * Just return; caller will throw the error.
 			 */
-			duk_set_top_unsafe(ctx, idx_func + 2);  /* satisfy asserts */
+			duk_set_top_unsafe(thr, idx_func + 2);  /* satisfy asserts */
 			break;
 		}
-		duk_push_object(ctx);
-		duk_insert(ctx, idx_func + 1);  /* default instance */
+		duk_push_object(thr);
+		duk_insert(thr, idx_func + 1);  /* default instance */
 
 		/* [ ... func default_instance argArray newTarget? ] */
 
-		top = duk_get_top(ctx);
+		top = duk_get_top(thr);
 		if (top < idx_func + 3) {
 			/* argArray is a mandatory argument for Reflect.construct(). */
 			DUK_ERROR_TYPE_INVALID_ARGS(thr);
 		}
 		if (top > idx_func + 3) {
-			if (!duk_strict_equals(ctx, idx_func, idx_func + 3)) {
+			if (!duk_strict_equals(thr, idx_func, idx_func + 3)) {
 				/* XXX: [[Construct]] newTarget currently unsupported */
 				DUK_ERROR_UNSUPPORTED(thr);
 			}
-			duk_set_top_unsafe(ctx, idx_func + 3);  /* remove any args beyond argArray */
+			duk_set_top_unsafe(thr, idx_func + 3);  /* remove any args beyond argArray */
 		}
-		DUK_ASSERT(duk_get_top(ctx) == idx_func + 3);
-		DUK_ASSERT(duk_is_valid_index(ctx, idx_func + 2));
-		(void) duk_unpack_array_like(ctx, idx_func + 2);  /* XXX: should also remove target to be symmetric with duk_pack()? */
-		duk_remove(ctx, idx_func + 2);
-		DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+		DUK_ASSERT(duk_get_top(thr) == idx_func + 3);
+		DUK_ASSERT(duk_is_valid_index(thr, idx_func + 2));
+		(void) duk_unpack_array_like(thr, idx_func + 2);  /* XXX: should also remove target to be symmetric with duk_pack()? */
+		duk_remove(thr, idx_func + 2);
+		DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 		break;
 	}
 #endif  /* DUK_USE_REFLECT_BUILTIN */
@@ -811,7 +802,7 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 	}
 	}
 
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 	return 0;  /* keep resolving */
 
  apply_shared:
@@ -821,21 +812,21 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 		thr->valstack_top = tv_args;  /* at least target func and 'this' binding present */
 		/* No need to check for argArray. */
 	} else {
-		DUK_ASSERT(duk_get_top(ctx) >= idx_func + 3);  /* idx_func + 2 covered above */
+		DUK_ASSERT(duk_get_top(thr) >= idx_func + 3);  /* idx_func + 2 covered above */
 		if (thr->valstack_top > tv_args + 1) {
-			duk_set_top_unsafe(ctx, idx_func + 3);  /* remove any args beyond argArray */
+			duk_set_top_unsafe(thr, idx_func + 3);  /* remove any args beyond argArray */
 		}
-		DUK_ASSERT(duk_is_valid_index(ctx, idx_func + 2));
-		if (!duk_is_callable(ctx, idx_func)) {
+		DUK_ASSERT(duk_is_valid_index(thr, idx_func + 2));
+		if (!duk_is_callable(thr, idx_func)) {
 			/* Avoid unpack side effects if the target isn't callable.
 			 * Calling code will throw the actual error.
 			 */
 		} else {
-			(void) duk_unpack_array_like(ctx, idx_func + 2);
-			duk_remove(ctx, idx_func + 2);
+			(void) duk_unpack_array_like(thr, idx_func + 2);
+			duk_remove(thr, idx_func + 2);
 		}
 	}
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 	return 0;  /* keep resolving */
 }
 
@@ -845,7 +836,6 @@ DUK_LOCAL duk_bool_t duk__handle_specialfuncs_for_call(duk_hthread *thr, duk_idx
 
 #if defined(DUK_USE_ES6_PROXY)
 DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, duk_hproxy *h_proxy, duk_small_uint_t *call_flags) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_bool_t rc;
 
 	/* Value stack:
@@ -882,8 +872,8 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 	 * (original 'this' binding) is dropped and ignored.
 	 */
 
-	duk_push_hobject(ctx, h_proxy->handler);
-	rc = duk_get_prop_stridx_short(ctx, -1, (*call_flags & DUK_CALL_FLAG_CONSTRUCT) ? DUK_STRIDX_CONSTRUCT : DUK_STRIDX_APPLY);
+	duk_push_hobject(thr, h_proxy->handler);
+	rc = duk_get_prop_stridx_short(thr, -1, (*call_flags & DUK_CALL_FLAG_CONSTRUCT) ? DUK_STRIDX_CONSTRUCT : DUK_STRIDX_APPLY);
 	if (rc == 0) {
 		/* Not found, continue to target.  If this is a construct
 		 * call, update default instance prototype using the Proxy,
@@ -892,12 +882,12 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 		if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 			if (!(*call_flags & DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED)) {
 				*call_flags |= DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED;
-				duk__update_default_instance_proto(ctx, idx_func);
+				duk__update_default_instance_proto(thr, idx_func);
 			}
 		}
-		duk_pop_2(ctx);
-		duk_push_hobject(ctx, h_proxy->target);
-		duk_replace(ctx, idx_func);
+		duk_pop_2(thr);
+		duk_push_hobject(thr, h_proxy->target);
+		duk_replace(thr, idx_func);
 		return;
 	}
 
@@ -917,11 +907,11 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 	 * idx_func + N + 1: trap
 	 */
 
-	duk_insert(ctx, idx_func + 1);
-	duk_insert(ctx, idx_func + 2);
-	duk_push_hobject(ctx, h_proxy->target);
-	duk_insert(ctx, idx_func + 3);
-	duk_pack(ctx, duk_get_top(ctx) - (idx_func + 5));
+	duk_insert(thr, idx_func + 1);
+	duk_insert(thr, idx_func + 2);
+	duk_push_hobject(thr, h_proxy->target);
+	duk_insert(thr, idx_func + 3);
+	duk_pack(thr, duk_get_top(thr) - (idx_func + 5));
 
 	/* Here:
 	 * idx_func + 0: Proxy object
@@ -931,7 +921,7 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 	 * idx_func + 4: this binding for call
 	 * idx_func + 5: arguments array
 	 */
-	DUK_ASSERT(duk_get_top(ctx) == idx_func + 6);
+	DUK_ASSERT(duk_get_top(thr) == idx_func + 6);
 
 	if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 		*call_flags |= DUK_CALL_FLAG_CONSTRUCT_PROXY;  /* Enable 'construct' trap return invariant check. */
@@ -940,14 +930,14 @@ DUK_LOCAL void duk__handle_proxy_for_call(duk_hthread *thr, duk_idx_t idx_func, 
 		/* 'apply' args: target, thisArg, argArray
 		 * 'construct' args: target, argArray, newTarget
 		 */
-		duk_remove(ctx, idx_func + 4);
-		duk_push_hobject(ctx, (duk_hobject *) h_proxy);
+		duk_remove(thr, idx_func + 4);
+		duk_push_hobject(thr, (duk_hobject *) h_proxy);
 	}
 
 	/* Finalize value stack layout by removing Proxy reference. */
-	duk_remove(ctx, idx_func);
+	duk_remove(thr, idx_func);
 	h_proxy = NULL;  /* invalidated */
-	DUK_ASSERT(duk_get_top(ctx) == idx_func + 5);
+	DUK_ASSERT(duk_get_top(thr) == idx_func + 5);
 }
 #endif  /* DUK_USE_ES6_PROXY */
 
@@ -1099,7 +1089,6 @@ DUK_LOCAL void duk__update_func_caller_prop(duk_hthread *thr, duk_hobject *func)
  */
 
 DUK_LOCAL DUK_INLINE void duk__coerce_nonstrict_this_binding(duk_hthread *thr, duk_idx_t idx_this) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_tval *tv_this;
 	duk_hobject *obj_global;
 
@@ -1134,14 +1123,14 @@ DUK_LOCAL DUK_INLINE void duk__coerce_nonstrict_this_binding(duk_hthread *thr, d
 		 */
 		DUK_ASSERT(!DUK_TVAL_IS_UNUSED(tv_this));
 		DUK_DDD(DUK_DDDPRINT("this binding: non-strict, not object/undefined/null -> use ToObject(value)"));
-		duk_to_object(ctx, idx_this);  /* may have side effects */
+		duk_to_object(thr, idx_this);  /* may have side effects */
 		break;
 	}
 }
 
-DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_context *ctx, duk_idx_t idx_func, duk_hobject **out_func, duk_small_uint_t call_flags) {
+DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_hthread *thr, duk_idx_t idx_func, duk_hobject **out_func, duk_small_uint_t call_flags) {
 #if defined(DUK_USE_PREFER_SIZE)
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	DUK_UNREF(idx_func);
 	DUK_UNREF(out_func);
 	DUK_UNREF(call_flags);
@@ -1153,7 +1142,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_co
 		return 0;
 	}
 
-	tv_func = DUK_GET_TVAL_POSIDX(ctx, idx_func);
+	tv_func = DUK_GET_TVAL_POSIDX(thr, idx_func);
 	DUK_ASSERT(tv_func != NULL);
 
 	if (DUK_LIKELY(DUK_TVAL_IS_OBJECT(tv_func))) {
@@ -1168,7 +1157,7 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_co
 				return 1;
 			}
 
-			duk__coerce_nonstrict_this_binding(ctx, idx_func + 1);
+			duk__coerce_nonstrict_this_binding(thr, idx_func + 1);
 			return 1;
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv_func)) {
@@ -1184,20 +1173,19 @@ DUK_LOCAL DUK_ALWAYS_INLINE duk_bool_t duk__resolve_target_fastpath_check(duk_co
 	return 0;  /* let slow path deal with it */
 }
 
-DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ctx,
+DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *thr,
                                                                  duk_idx_t idx_func,
                                                                  duk_small_uint_t *call_flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_tval *tv_func;
 	duk_hobject *func;
 	duk_bool_t first;
 
-	DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+	DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 
 	for (first = 1;; first = 0) {
-		DUK_ASSERT(duk_get_top(ctx) >= idx_func + 2);
+		DUK_ASSERT(duk_get_top(thr) >= idx_func + 2);
 
-		tv_func = DUK_GET_TVAL_POSIDX(ctx, idx_func);
+		tv_func = DUK_GET_TVAL_POSIDX(thr, idx_func);
 		DUK_ASSERT(tv_func != NULL);
 
 		if (DUK_TVAL_IS_OBJECT(tv_func)) {
@@ -1235,8 +1223,8 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 				 */
 				duk__handle_bound_chain_for_call(thr, idx_func, *call_flags & DUK_CALL_FLAG_CONSTRUCT);
 
-				DUK_ASSERT(DUK_TVAL_IS_OBJECT(duk_require_tval(ctx, idx_func)) ||
-				           DUK_TVAL_IS_LIGHTFUNC(duk_require_tval(ctx, idx_func)));
+				DUK_ASSERT(DUK_TVAL_IS_OBJECT(duk_require_tval(thr, idx_func)) ||
+				           DUK_TVAL_IS_LIGHTFUNC(duk_require_tval(thr, idx_func)));
 			} else {
 				DUK_ASSERT(DUK_HOBJECT_HAS_SPECIAL_CALL(func));
 
@@ -1289,12 +1277,12 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 		 * This has potential side effects invalidating
 		 * 'tv_func'.
 		 */
-		duk__coerce_nonstrict_this_binding(ctx, idx_func + 1);
+		duk__coerce_nonstrict_this_binding(thr, idx_func + 1);
 	}
 	if (*call_flags & DUK_CALL_FLAG_CONSTRUCT) {
 		if (!(*call_flags & DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED)) {
 			*call_flags |= DUK_CALL_FLAG_DEFAULT_INSTANCE_UPDATED;
-			duk__update_default_instance_proto(ctx, idx_func);
+			duk__update_default_instance_proto(thr, idx_func);
 		}
 	}
 
@@ -1304,7 +1292,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 	{
 		duk_tval *tv_tmp;
 
-		tv_tmp = duk_get_tval(ctx, idx_func);
+		tv_tmp = duk_get_tval(thr, idx_func);
 		DUK_ASSERT(tv_tmp != NULL);
 
 		DUK_ASSERT((DUK_TVAL_IS_OBJECT(tv_tmp) && DUK_HOBJECT_IS_CALLABLE(DUK_TVAL_GET_OBJECT(tv_tmp))) ||
@@ -1323,9 +1311,9 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
 	DUK_ASSERT(tv_func != NULL);
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(ctx, idx_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(thr, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(ctx, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_push_string_tval_readable(thr, tv_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CALLABLE);
@@ -1336,9 +1324,9 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
  not_constructable:
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(ctx, idx_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(thr, idx_func));
 #else
-	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_tval_readable(ctx, tv_func));
+	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_push_string_tval_readable(thr, tv_func));
 #endif
 #else
 	DUK_ERROR_TYPE(thr, DUK_STR_NOT_CONSTRUCTABLE);
@@ -1358,7 +1346,6 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_context *ct
  */
 
 DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_retbase, duk_idx_t num_stack_rets, duk_idx_t num_actual_rets) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_idx_t idx_rcbase;
 
 	DUK_ASSERT(thr != NULL);
@@ -1366,14 +1353,14 @@ DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_re
 	DUK_ASSERT(num_stack_rets >= 0);
 	DUK_ASSERT(num_actual_rets >= 0);
 
-	idx_rcbase = duk_get_top(ctx) - num_actual_rets;  /* base of known return values */
+	idx_rcbase = duk_get_top(thr) - num_actual_rets;  /* base of known return values */
 	if (DUK_UNLIKELY(idx_rcbase < 0)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_INVALID_CFUNC_RC);
 	}
 
 	DUK_DDD(DUK_DDDPRINT("adjust valstack after func call: "
 	                     "num_stack_rets=%ld, num_actual_rets=%ld, stack_top=%ld, idx_retbase=%ld, idx_rcbase=%ld",
-	                     (long) num_stack_rets, (long) num_actual_rets, (long) duk_get_top(ctx),
+	                     (long) num_stack_rets, (long) num_actual_rets, (long) duk_get_top(thr),
 	                     (long) idx_retbase, (long) idx_rcbase));
 
 	DUK_ASSERT(idx_rcbase >= 0);  /* caller must check */
@@ -1397,7 +1384,7 @@ DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_re
 		 * values) and idx_retbase to lower return values to idx_retbase.
 		 */
 		DUK_ASSERT(count > 0);
-		duk_remove_n(ctx, idx_retbase, count);  /* may be NORZ */
+		duk_remove_n(thr, idx_retbase, count);  /* may be NORZ */
 	} else {
 		duk_idx_t count = idx_retbase - idx_rcbase;
 
@@ -1409,11 +1396,11 @@ DUK_LOCAL void duk__safe_call_adjust_valstack(duk_hthread *thr, duk_idx_t idx_re
 		 */
 		DUK_ASSERT(count >= 0);
 		DUK_ASSERT(thr->valstack_end - thr->valstack_top >= count);  /* reserve cannot shrink */
-		duk_insert_undefined_n(ctx, idx_rcbase, count);
+		duk_insert_undefined_n(thr, idx_rcbase, count);
 	}
 
 	/* Chop extra retvals away / extend with undefined. */
-	duk_set_top_unsafe(ctx, idx_retbase + num_stack_rets);
+	duk_set_top_unsafe(thr, idx_retbase + num_stack_rets);
 }
 
 /*
@@ -1584,7 +1571,7 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	DUK_TVAL_SET_TVAL_UPDREF(thr, tv1, tv2);  /* side effects */
 
 	idx_args = idx_func + 2;
-	duk_remove_n((duk_context *) thr, 0, idx_args);  /* may be NORZ */
+	duk_remove_n(thr, 0, idx_args);  /* may be NORZ */
 
 	idx_func = 0; DUK_UNREF(idx_func);  /* really 'not applicable' anymore, should not be referenced after this */
 	idx_args = 0;
@@ -1710,7 +1697,7 @@ DUK_LOCAL void duk__call_setup_act_not_tailcall(duk_hthread *thr,
 
 		act->flags |= DUK_ACT_FLAG_STRICT;
 
-		tv_func = DUK_GET_TVAL_POSIDX((duk_context *) thr, idx_func);
+		tv_func = DUK_GET_TVAL_POSIDX(thr, idx_func);
 		DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_func));
 		DUK_TVAL_SET_TVAL(&act->tv_func, tv_func);  /* borrowed, no refcount */
 
@@ -1798,7 +1785,7 @@ DUK_LOCAL void duk__call_env_setup(duk_hthread *thr, duk_hobject *func, duk_acti
 				act->var_env = env;
 				DUK_HOBJECT_INCREF(thr, env);
 				DUK_HOBJECT_INCREF(thr, env);  /* XXX: incref by count (2) directly */
-				duk_pop((duk_context *) thr);
+				duk_pop(thr);
 			}
 		} else {
 			/* Use existing env (e.g. for non-strict eval); cannot have
@@ -1878,7 +1865,6 @@ DUK_LOCAL void duk__call_thread_state_update(duk_hthread *thr) {
 DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
                                          duk_idx_t idx_func,
                                          duk_small_uint_t call_flags) {
-	duk_context *ctx;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_activation *entry_act;
 	duk_size_t entry_callstack_top;
@@ -1898,10 +1884,9 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	duk_ret_t rc;
 	duk_small_uint_t use_tailcall;
 
-	ctx = (duk_context *) thr;
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_ASSERT(duk_is_valid_index(ctx, idx_func));
+	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 	DUK_ASSERT(idx_func >= 0);
 
 	DUK_STATS_INC(thr->heap, stats_call_all);
@@ -1965,7 +1950,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	                   (long) idx_func,
 	                   (unsigned long) call_flags,
 	                   (long) ((call_flags & DUK_CALL_FLAG_CONSTRUCT) != 0 ? 1 : 0),
-	                   (long) duk_get_top(ctx),
+	                   (long) duk_get_top(thr),
 	                   (long) idx_func,
 	                   (long) (idx_func + 2),
 	                   (long) thr->heap->call_recursion_depth,
@@ -1988,13 +1973,13 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  'this' binding, which replaces the current value at idx_func + 1.
 	 */
 
-	if (DUK_LIKELY(duk__resolve_target_fastpath_check(ctx, idx_func, &func, call_flags))) {
+	if (DUK_LIKELY(duk__resolve_target_fastpath_check(thr, idx_func, &func, call_flags))) {
 		DUK_DDD(DUK_DDDPRINT("fast path target resolve"));
 	} else {
 		DUK_DDD(DUK_DDDPRINT("slow path target resolve"));
-		func = duk__resolve_target_func_and_this_binding(ctx, idx_func, &call_flags);
+		func = duk__resolve_target_func_and_this_binding(thr, idx_func, &call_flags);
 	}
-	DUK_ASSERT(duk_get_top(ctx) - idx_func >= 2);  /* at least func and this present */
+	DUK_ASSERT(duk_get_top(thr) - idx_func >= 2);  /* at least func and this present */
 
 	DUK_ASSERT(func == NULL || !DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(func == NULL || (DUK_HOBJECT_IS_COMPFUNC(func) ||
@@ -2078,17 +2063,17 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 	 *  Value stack can only grow here.
 	 */
 
-	duk_valstack_grow_check_throw(ctx, vs_min_bytes);
+	duk_valstack_grow_check_throw(thr, vs_min_bytes);
 	act->reserve_byteoff = (duk_size_t) ((duk_uint8_t *) thr->valstack_end - (duk_uint8_t *) thr->valstack);
 
 	if (use_tailcall) {
 		DUK_ASSERT(nregs >= 0);
 		DUK_ASSERT(nregs >= nargs);
-		duk_set_top_and_wipe(ctx, nregs, nargs);
+		duk_set_top_and_wipe(thr, nregs, nargs);
 	} else {
 		if (nregs >= 0) {
 			DUK_ASSERT(nregs >= nargs);
-			duk_set_top_and_wipe(ctx, idx_func + 2 + nregs, idx_func + 2 + nargs);
+			duk_set_top_and_wipe(thr, idx_func + 2 + nregs, idx_func + 2 + nargs);
 		} else {
 			;
 		}
@@ -2179,7 +2164,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 
 		/* XXX: native funcptr could come out of call setup. */
 		if (func) {
-			rc = ((duk_hnatfunc *) func)->func((duk_context *) thr);
+			rc = ((duk_hnatfunc *) func)->func(thr);
 		} else {
 			duk_tval *tv_func;
 			duk_c_function funcptr;
@@ -2187,7 +2172,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 			tv_func = &act->tv_func;
 			DUK_ASSERT(DUK_TVAL_IS_LIGHTFUNC(tv_func));
 			funcptr = DUK_TVAL_GET_LIGHTFUNC_FUNCPTR(tv_func);
-			rc = funcptr((duk_context *) thr);
+			rc = funcptr(thr);
 		}
 
 		/* Automatic error throwing, retval check. */
@@ -2214,11 +2199,11 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 
 #if defined(DUK_USE_ES6_PROXY)
 	if (call_flags & (DUK_CALL_FLAG_CONSTRUCT | DUK_CALL_FLAG_CONSTRUCT_PROXY)) {
-		duk_call_construct_postprocess(ctx, call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY);
+		duk_call_construct_postprocess(thr, call_flags & DUK_CALL_FLAG_CONSTRUCT_PROXY);
 	}
 #else
 	if (call_flags & DUK_CALL_FLAG_CONSTRUCT) {
-		duk_call_construct_postprocess(ctx, 0);
+		duk_call_construct_postprocess(thr, 0);
 	}
 #endif
 
@@ -2257,7 +2242,7 @@ DUK_LOCAL duk_int_t duk__handle_call_raw(duk_hthread *thr,
 		DUK_TVAL_SET_TVAL_UPDREF(thr, tv_ret, tv_funret);  /* side effects */
 	}
 
-	duk_set_top_unsafe(ctx, idx_func + 1);
+	duk_set_top_unsafe(thr, idx_func + 1);
 
 	/* [ ... retval ] */
 
@@ -2321,8 +2306,8 @@ DUK_INTERNAL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr,
                                                          duk_idx_t nargs,
                                                          duk_small_uint_t call_flags) {
 	duk_idx_t idx_func;
-	DUK_ASSERT(duk_get_top((duk_context *) thr) >= nargs + 2);
-	idx_func = duk_get_top((duk_context *) thr) - (nargs + 2);
+	DUK_ASSERT(duk_get_top(thr) >= nargs + 2);
+	idx_func = duk_get_top(thr) - (nargs + 2);
 	DUK_ASSERT(idx_func >= 0);
 	return duk_handle_call_unprotected(thr, idx_func, call_flags);
 }
@@ -2330,7 +2315,7 @@ DUK_INTERNAL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr,
 DUK_INTERNAL duk_int_t duk_handle_call_unprotected(duk_hthread *thr,
                                                    duk_idx_t idx_func,
                                                    duk_small_uint_t call_flags) {
-	DUK_ASSERT(duk_is_valid_index((duk_context *) thr, idx_func));
+	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
 	DUK_ASSERT(idx_func >= 0);
 	return duk__handle_call_raw(thr, idx_func, call_flags);
 }
@@ -2363,12 +2348,10 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
                                            duk_uint_fast8_t entry_thread_state,
                                            duk_idx_t idx_retbase,
                                            duk_idx_t num_stack_rets) {
-	duk_context *ctx;
 	duk_ret_t rc;
 
 	DUK_ASSERT(thr != NULL);
-	ctx = (duk_context *) thr;
-	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT_CTX_VALID(thr);
 
 	/*
 	 *  Thread state check and book-keeping.
@@ -2387,7 +2370,7 @@ DUK_LOCAL void duk__handle_safe_call_inner(duk_hthread *thr,
 	 *  Make the C call.
 	 */
 
-	rc = func(ctx, udata);
+	rc = func(thr, udata);
 
 	DUK_DDD(DUK_DDDPRINT("safe_call, func rc=%ld", (long) rc));
 
@@ -2424,11 +2407,8 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
                                            duk_idx_t num_stack_rets,
                                            duk_size_t entry_valstack_bottom_byteoff,
                                            duk_jmpbuf *old_jmpbuf_ptr) {
-	duk_context *ctx;
-
 	DUK_ASSERT(thr != NULL);
-	ctx = (duk_context *) thr;
-	DUK_ASSERT_CTX_VALID(ctx);
+	DUK_ASSERT_CTX_VALID(thr);
 
 	/*
 	 *  Error during call.  The error value is at heap->lj.value1.
@@ -2479,11 +2459,11 @@ DUK_LOCAL void duk__handle_safe_call_error(duk_hthread *thr,
 	/* [ ... | (crud) ] */
 
 	/* XXX: ensure space in valstack (now relies on internal reserve)? */
-	duk_push_tval(ctx, &thr->heap->lj.value1);
+	duk_push_tval(thr, &thr->heap->lj.value1);
 
 	/* [ ... | (crud) errobj ] */
 
-	DUK_ASSERT(duk_get_top(ctx) >= 1);  /* at least errobj must be on stack */
+	DUK_ASSERT(duk_get_top(thr) >= 1);  /* at least errobj must be on stack */
 
 	duk__safe_call_adjust_valstack(thr, idx_retbase, num_stack_rets, 1);  /* 1 = num actual 'return values' */
 
@@ -2521,12 +2501,8 @@ DUK_LOCAL void duk__handle_safe_call_shared_unwind(duk_hthread *thr,
                                                    duk_int_t entry_call_recursion_depth,
                                                    duk_hthread *entry_curr_thread,
                                                    duk_instr_t **entry_ptr_curr_pc) {
-	duk_context *ctx;
-
 	DUK_ASSERT(thr != NULL);
-	ctx = (duk_context *) thr;
-	DUK_ASSERT_CTX_VALID(ctx);
-	DUK_UNREF(ctx);
+	DUK_ASSERT_CTX_VALID(thr);
 	DUK_UNREF(idx_retbase);
 	DUK_UNREF(num_stack_rets);
 	DUK_UNREF(entry_curr_thread);
@@ -2542,7 +2518,7 @@ DUK_LOCAL void duk__handle_safe_call_shared_unwind(duk_hthread *thr,
 	thr->heap->call_recursion_depth = entry_call_recursion_depth;
 
 	/* stack discipline consistency check */
-	DUK_ASSERT(duk_get_top(ctx) == idx_retbase + num_stack_rets);
+	DUK_ASSERT(duk_get_top(thr) == idx_retbase + num_stack_rets);
 
 	/* A debugger forced interrupt check is not needed here, as
 	 * problematic safe calls are not caused by side effects.
@@ -2558,7 +2534,6 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
                                             void *udata,
                                             duk_idx_t num_stack_args,
                                             duk_idx_t num_stack_rets) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *entry_act;
 	duk_size_t entry_valstack_bottom_byteoff;
 #if defined(DUK_USE_ASSERTIONS)
@@ -2576,8 +2551,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	duk_int_t retval;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_ASSERT(ctx != NULL);
-	DUK_ASSERT(duk_get_top(ctx) >= num_stack_args);  /* Caller ensures. */
+	DUK_ASSERT(duk_get_top(thr) >= num_stack_args);  /* Caller ensures. */
 
 	DUK_STATS_INC(thr->heap, stats_safecall_all);
 
@@ -2599,7 +2573,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	entry_curr_thread = thr->heap->curr_thread;  /* may be NULL if first call */
 	entry_thread_state = thr->state;
 	entry_ptr_curr_pc = thr->ptr_curr_pc;  /* may be NULL */
-	idx_retbase = duk_get_top(ctx) - num_stack_args;  /* not a valid stack index if num_stack_args == 0 */
+	idx_retbase = duk_get_top(thr) - num_stack_args;  /* not a valid stack index if num_stack_args == 0 */
 	DUK_ASSERT(idx_retbase >= 0);
 
 	DUK_ASSERT((duk_idx_t) (thr->valstack_top - thr->valstack_bottom) >= num_stack_args);  /* Caller ensures. */
@@ -2613,7 +2587,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	                   (void *) thr,
 	                   (long) num_stack_args,
 	                   (long) num_stack_rets,
-	                   (long) duk_get_top(ctx),
+	                   (long) duk_get_top(thr),
 	                   (long) idx_retbase,
 	                   (long) thr->heap->call_recursion_depth,
 	                   (long) thr->heap->call_recursion_limit,
@@ -2771,7 +2745,7 @@ DUK_INTERNAL duk_int_t duk_handle_safe_call(duk_hthread *thr,
 	DUK_ASSERT(thr->heap->curr_thread == entry_curr_thread);
 	DUK_ASSERT(thr->state == entry_thread_state);
 	DUK_ASSERT(thr->ptr_curr_pc == entry_ptr_curr_pc);
-	DUK_ASSERT(duk_get_top(ctx) == idx_retbase + num_stack_rets);
+	DUK_ASSERT(duk_get_top(thr) == idx_retbase + num_stack_rets);
 	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
 
 	/* Pending side effects. */

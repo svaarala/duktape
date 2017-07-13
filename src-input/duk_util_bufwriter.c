@@ -27,21 +27,17 @@ DUK_INTERNAL void duk_bw_init(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_h
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
 	DUK_ASSERT(h_buf != NULL);
-	DUK_UNREF(thr);
 
 	bw_ctx->buf = h_buf;
 	duk__bw_update_ptrs(thr, bw_ctx, 0, DUK_HBUFFER_DYNAMIC_GET_SIZE(h_buf));
 }
 
 DUK_INTERNAL void duk_bw_init_pushbuf(duk_hthread *thr, duk_bufwriter_ctx *bw_ctx, duk_size_t buf_size) {
-	duk_context *ctx;
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw_ctx != NULL);
-	ctx = (duk_context *) thr;
 
-	(void) duk_push_dynamic_buffer(ctx, buf_size);
-	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_known_hbuffer(ctx, -1);
+	(void) duk_push_dynamic_buffer(thr, buf_size);
+	bw_ctx->buf = (duk_hbuffer_dynamic *) duk_known_hbuffer(thr, -1);
 	duk__bw_update_ptrs(thr, bw_ctx, 0, buf_size);
 }
 
@@ -121,7 +117,6 @@ DUK_INTERNAL void duk_bw_write_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx 
 	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
 	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
 	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
-	DUK_UNREF(thr);
 
 	DUK_BW_ENSURE(thr, bw, len);
 	duk_bw_write_raw_slice(thr, bw, src_off, len);
@@ -156,7 +151,6 @@ DUK_INTERNAL void duk_bw_insert_ensure_bytes(duk_hthread *thr, duk_bufwriter_ctx
 	DUK_ASSERT(bw != NULL);
 	DUK_ASSERT(dst_off <= DUK_BW_GET_SIZE(thr, bw));
 	DUK_ASSERT(buf != NULL);
-	DUK_UNREF(thr);
 
 	DUK_BW_ENSURE(thr, bw, len);
 	duk_bw_insert_raw_bytes(thr, bw, dst_off, buf, len);
@@ -206,7 +200,6 @@ DUK_INTERNAL void duk_bw_insert_ensure_slice(duk_hthread *thr, duk_bufwriter_ctx
 	DUK_ASSERT(src_off <= DUK_BW_GET_SIZE(thr, bw));
 	DUK_ASSERT(len <= DUK_BW_GET_SIZE(thr, bw));
 	DUK_ASSERT(src_off + len <= DUK_BW_GET_SIZE(thr, bw));
-	DUK_UNREF(thr);
 
 	/* Don't support "straddled" source now. */
 	DUK_ASSERT(dst_off <= src_off || dst_off >= src_off + len);
@@ -237,7 +230,6 @@ DUK_INTERNAL duk_uint8_t *duk_bw_insert_ensure_area(duk_hthread *thr, duk_bufwri
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(bw != NULL);
 	DUK_ASSERT(off <= DUK_BW_GET_SIZE(thr, bw));
-	DUK_UNREF(thr);
 
 	DUK_BW_ENSURE(thr, bw, len);
 	return duk_bw_insert_raw_area(thr, bw, off, len);

@@ -67,7 +67,6 @@ DUK_INTERNAL duk_hobject *duk_error_prototype_from_code(duk_hthread *thr, duk_er
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 #if defined(DUK_USE_DEBUGGER_THROW_NOTIFY) || defined(DUK_USE_DEBUGGER_PAUSE_UNCAUGHT)
 DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_bool_t fatal;
 	duk_tval *tv_obj;
 
@@ -113,7 +112,7 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 	 * when the debugger is paused Eval commands may be executed and
 	 * they can arbitrarily clobber the longjmp state.
 	 */
-	duk_push_tval(ctx, tv_obj);
+	duk_push_tval(thr, tv_obj);
 
 	/* Store and reset longjmp state. */
 	DUK_ASSERT_LJSTATE_SET(thr->heap);
@@ -139,14 +138,14 @@ DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {
 	/* Restore longjmp state. */
 	DUK_ASSERT_LJSTATE_UNSET(thr->heap);
 	thr->heap->lj.type = DUK_LJ_TYPE_THROW;
-	tv_obj = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv_obj = DUK_GET_TVAL_NEGIDX(thr, -1);
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value1));
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&thr->heap->lj.value2));
 	DUK_TVAL_SET_TVAL(&thr->heap->lj.value1, tv_obj);
 	DUK_TVAL_INCREF(thr, tv_obj);
 	DUK_ASSERT_LJSTATE_SET(thr->heap);
 
-	duk_pop(ctx);
+	duk_pop(thr);
 }
 #else  /* DUK_USE_DEBUGGER_THROW_NOTIFY || DUK_USE_DEBUGGER_PAUSE_UNCAUGHT */
 DUK_INTERNAL void duk_err_check_debugger_integration(duk_hthread *thr) {

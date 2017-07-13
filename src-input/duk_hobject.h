@@ -936,13 +936,13 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_has_finalizer_fast_raw(duk_hobject *obj
 #endif
 
 /* helpers for defineProperty() and defineProperties() */
-DUK_INTERNAL_DECL void duk_hobject_prepare_property_descriptor(duk_context *ctx,
+DUK_INTERNAL_DECL void duk_hobject_prepare_property_descriptor(duk_hthread *thr,
                                                                duk_idx_t idx_in,
                                                                duk_uint_t *out_defprop_flags,
                                                                duk_idx_t *out_idx_value,
                                                                duk_hobject **out_getter,
                                                                duk_hobject **out_setter);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_define_property_helper(duk_context *ctx,
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_define_property_helper(duk_hthread *thr,
                                                                 duk_uint_t defprop_flags,
                                                                 duk_hobject *obj,
                                                                 duk_hstring *key,
@@ -952,10 +952,10 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_define_property_helper(duk_context *ctx
                                                                 duk_bool_t throw_flag);
 
 /* Object built-in methods */
-DUK_INTERNAL_DECL void duk_hobject_object_get_own_property_descriptor(duk_context *ctx, duk_idx_t obj_idx);
+DUK_INTERNAL_DECL void duk_hobject_object_get_own_property_descriptor(duk_hthread *thr, duk_idx_t obj_idx);
 DUK_INTERNAL_DECL void duk_hobject_object_seal_freeze_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_freeze);
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_is_sealed_frozen_helper(duk_hthread *thr, duk_hobject *obj, duk_bool_t is_frozen);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_context *ctx, duk_small_uint_t required_desc_flags);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_object_ownprop_helper(duk_hthread *thr, duk_small_uint_t required_desc_flags);
 
 /* internal properties */
 DUK_INTERNAL_DECL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobject *obj, duk_tval *tv);
@@ -971,9 +971,9 @@ DUK_INTERNAL_DECL duk_hobject *duk_hobject_resolve_proxy_target(duk_hobject *obj
 #endif
 
 /* enumeration */
-DUK_INTERNAL_DECL void duk_hobject_enumerator_create(duk_context *ctx, duk_small_uint_t enum_flags);
-DUK_INTERNAL_DECL duk_ret_t duk_hobject_get_enumerated_keys(duk_context *ctx, duk_small_uint_t enum_flags);
-DUK_INTERNAL_DECL duk_bool_t duk_hobject_enumerator_next(duk_context *ctx, duk_bool_t get_value);
+DUK_INTERNAL_DECL void duk_hobject_enumerator_create(duk_hthread *thr, duk_small_uint_t enum_flags);
+DUK_INTERNAL_DECL duk_ret_t duk_hobject_get_enumerated_keys(duk_hthread *thr, duk_small_uint_t enum_flags);
+DUK_INTERNAL_DECL duk_bool_t duk_hobject_enumerator_next(duk_hthread *thr, duk_bool_t get_value);
 
 /* macros */
 DUK_INTERNAL_DECL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_hobject *h, duk_hobject *p);
@@ -981,7 +981,7 @@ DUK_INTERNAL_DECL void duk_hobject_set_prototype_updref(duk_hthread *thr, duk_ho
 /* pc2line */
 #if defined(DUK_USE_PC2LINE)
 DUK_INTERNAL_DECL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr *instrs, duk_uint_fast32_t length);
-DUK_INTERNAL_DECL duk_uint_fast32_t duk_hobject_pc2line_query(duk_context *ctx, duk_idx_t idx_func, duk_uint_fast32_t pc);
+DUK_INTERNAL_DECL duk_uint_fast32_t duk_hobject_pc2line_query(duk_hthread *thr, duk_idx_t idx_func, duk_uint_fast32_t pc);
 #endif
 
 /* misc */
@@ -991,8 +991,8 @@ DUK_INTERNAL_DECL duk_bool_t duk_hobject_prototype_chain_contains(duk_hthread *t
 /* These declarations are needed when related built-in is disabled and
  * genbuiltins.py won't automatically emit the declerations.
  */
-DUK_INTERNAL_DECL duk_ret_t duk_bi_object_prototype_to_string(duk_context *ctx);
-DUK_INTERNAL_DECL duk_ret_t duk_bi_function_prototype(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_object_prototype_to_string(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_ret_t duk_bi_function_prototype(duk_hthread *thr);
 #endif
 
 #endif  /* DUK_HOBJECT_H_INCLUDED */

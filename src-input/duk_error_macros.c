@@ -38,12 +38,12 @@ DUK_INTERNAL DUK_COLD void duk_err_handle_error(duk_hthread *thr, duk_errcode_t 
 #if defined(DUK_USE_PARANOID_ERRORS)
 DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
 	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_get_type_name((duk_context *) thr, idx), (long) idx);
+	                   expect_name, duk_get_type_name(thr, idx), (long) idx);
 }
 #else
 DUK_INTERNAL DUK_COLD void duk_err_require_type_index(duk_hthread *thr, const char *filename, duk_int_t linenumber, duk_idx_t idx, const char *expect_name) {
 	DUK_ERROR_RAW_FMT3(thr, filename, linenumber, DUK_ERR_TYPE_ERROR, "%s required, found %s (stack index %ld)",
-	                   expect_name, duk_push_string_readable((duk_context *) thr, idx), (long) idx);
+	                   expect_name, duk_push_string_readable(thr, idx), (long) idx);
 }
 #endif
 DUK_INTERNAL DUK_COLD void duk_err_error_internal(duk_hthread *thr, const char *filename, duk_int_t linenumber) {

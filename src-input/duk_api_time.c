@@ -4,18 +4,18 @@
 
 #include "duk_internal.h"
 
-DUK_EXTERNAL duk_double_t duk_get_now(duk_context *ctx) {
-	return ((duk_double_t) DUK_USE_DATE_GET_NOW((ctx)));
+DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
+	return ((duk_double_t) DUK_USE_DATE_GET_NOW(thr));
 }
 
-DUK_EXTERNAL void duk_time_to_components(duk_context *ctx, duk_double_t timeval, duk_time_components *comp) {
+DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval, duk_time_components *comp) {
 	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	duk_uint_t flags;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 
 	/* Convert as one-based, but change month to zero-based to match the
 	 * Ecmascript Date built-in behavior 1:1.
@@ -35,14 +35,14 @@ DUK_EXTERNAL void duk_time_to_components(duk_context *ctx, duk_double_t timeval,
 	comp->weekday = dparts[DUK_DATE_IDX_WEEKDAY];
 }
 
-DUK_EXTERNAL duk_double_t duk_components_to_time(duk_context *ctx, duk_time_components *comp) {
+DUK_EXTERNAL duk_double_t duk_components_to_time(duk_hthread *thr, duk_time_components *comp) {
 	duk_double_t d;
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	duk_uint_t flags;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 
 	/* Match Date constructor behavior (with UTC time).  Month is given
 	 * as zero-based.  Day-of-month is given as one-based so normalize

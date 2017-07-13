@@ -385,7 +385,6 @@ DUK_LOCAL duk_small_int_t duk__dec_string_escape(duk_json_dec_ctx *js_ctx, duk_u
 
 DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
 	duk_bufwriter_ctx bw_alloc;
 	duk_bufwriter_ctx *bw;
 	duk_uint8_t *q;
@@ -478,7 +477,7 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
 #endif  /* DUK_USE_JSON_DECSTRING_FASTPATH */
 
 	DUK_BW_SETPTR_AND_COMPACT(js_ctx->thr, bw, q);
-	(void) duk_buffer_to_string(ctx, -1);  /* Safe if input string is safe. */
+	(void) duk_buffer_to_string(thr, -1);  /* Safe if input string is safe. */
 
 	/* [ ... str ] */
 
@@ -495,7 +494,6 @@ DUK_LOCAL void duk__dec_string(duk_json_dec_ctx *js_ctx) {
  */
 DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
 	const duk_uint8_t *p;
 	duk_small_int_t x;
 
@@ -528,7 +526,7 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 		p++;
 	}
 
-	duk_push_lstring(ctx, (const char *) js_ctx->p, (duk_size_t) (p - js_ctx->p));
+	duk_push_lstring(thr, (const char *) js_ctx->p, (duk_size_t) (p - js_ctx->p));
 	js_ctx->p = p;
 
 	/* [ ... str ] */
@@ -538,7 +536,6 @@ DUK_LOCAL void duk__dec_plain_string(duk_json_dec_ctx *js_ctx) {
 #if defined(DUK_USE_JX)
 DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
 	const duk_uint8_t *p;
 	duk_small_int_t x;
 	void *voidptr;
@@ -576,7 +573,7 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 
 	voidptr = NULL;
 	(void) DUK_SSCANF((const char *) js_ctx->p, DUK_STR_FMT_PTR, &voidptr);
-	duk_push_pointer(ctx, voidptr);
+	duk_push_pointer(thr, voidptr);
 	js_ctx->p = p + 1;  /* skip ')' */
 
 	/* [ ... ptr ] */
@@ -592,7 +589,6 @@ DUK_LOCAL void duk__dec_pointer(duk_json_dec_ctx *js_ctx) {
 #if defined(DUK_USE_JX)
 DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 	duk_hthread *thr = js_ctx->thr;
-	duk_context *ctx = (duk_context *) thr;
 	const duk_uint8_t *p;
 	duk_uint8_t *buf;
 	duk_size_t src_len;
@@ -631,10 +627,10 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 
 	/* XXX: this is not very nice; unnecessary copy is made. */
 	src_len = (duk_size_t) (p - js_ctx->p);
-	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, src_len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, src_len);
 	DUK_ASSERT(buf != NULL);
 	DUK_MEMCPY((void *) buf, (const void *) js_ctx->p, src_len);
-	duk_hex_decode(ctx, -1);
+	duk_hex_decode(thr, -1);
 
 	js_ctx->p = p + 1;  /* skip '|' */
 
@@ -650,7 +646,7 @@ DUK_LOCAL void duk__dec_buffer(duk_json_dec_ctx *js_ctx) {
 
 /* Parse a number, other than NaN or +/- Infinity */
 DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	const duk_uint8_t *p_start;
 	const duk_uint8_t *p;
 	duk_uint8_t x;
@@ -695,35 +691,35 @@ DUK_LOCAL void duk__dec_number(duk_json_dec_ctx *js_ctx) {
 	js_ctx->p = p;
 
 	DUK_ASSERT(js_ctx->p > p_start);
-	duk_push_lstring(ctx, (const char *) p_start, (duk_size_t) (p - p_start));
+	duk_push_lstring(thr, (const char *) p_start, (duk_size_t) (p - p_start));
 
 	s2n_flags = DUK_S2N_FLAG_ALLOW_EXP |
 	            DUK_S2N_FLAG_ALLOW_MINUS |  /* but don't allow leading plus */
 	            DUK_S2N_FLAG_ALLOW_FRAC;
 
 	DUK_DDD(DUK_DDDPRINT("parse_number: string before parsing: %!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
-	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
-	if (duk_is_nan(ctx, -1)) {
+	                     (duk_tval *) duk_get_tval(thr, -1)));
+	duk_numconv_parse(thr, 10 /*radix*/, s2n_flags);
+	if (duk_is_nan(thr, -1)) {
 		duk__dec_syntax_error(js_ctx);
 	}
-	DUK_ASSERT(duk_is_number(ctx, -1));
+	DUK_ASSERT(duk_is_number(thr, -1));
 	DUK_DDD(DUK_DDDPRINT("parse_number: final number: %!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	/* [ ... num ] */
 }
 
 DUK_LOCAL void duk__dec_objarr_entry(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_require_stack(ctx, DUK_JSON_DEC_REQSTACK);
+	duk_hthread *thr = js_ctx->thr;
+	duk_require_stack(thr, DUK_JSON_DEC_REQSTACK);
 
 	/* c recursion check */
 
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR_RANGE((duk_hthread *) ctx, DUK_STR_JSONDEC_RECLIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_JSONDEC_RECLIMIT);
 	}
 	js_ctx->recursion_depth++;
 }
@@ -737,7 +733,7 @@ DUK_LOCAL void duk__dec_objarr_exit(duk_json_dec_ctx *js_ctx) {
 }
 
 DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_int_t key_count;  /* XXX: a "first" flag would suffice */
 	duk_uint8_t x;
 
@@ -745,7 +741,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 
 	duk__dec_objarr_entry(js_ctx);
 
-	duk_push_object(ctx);
+	duk_push_object(thr);
 
 	/* Initial '{' has been checked and eaten by caller. */
 
@@ -754,7 +750,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 		x = duk__dec_get_nonwhite(js_ctx);
 
 		DUK_DDD(DUK_DDDPRINT("parse_object: obj=%!T, x=%ld, key_count=%ld",
-		                     (duk_tval *) duk_get_tval(ctx, -1),
+		                     (duk_tval *) duk_get_tval(thr, -1),
 		                     (long) x, (long) key_count));
 
 		/* handle comma and closing brace */
@@ -799,7 +795,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... obj key val ] */
 
-		duk_xdef_prop_wec(ctx, -3);
+		duk_xdef_prop_wec(thr, -3);
 
 		/* [ ... obj ] */
 
@@ -809,7 +805,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 	/* [ ... obj ] */
 
 	DUK_DDD(DUK_DDDPRINT("parse_object: final object is %!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	duk__dec_objarr_exit(js_ctx);
 	return;
@@ -820,7 +816,7 @@ DUK_LOCAL void duk__dec_object(duk_json_dec_ctx *js_ctx) {
 }
 
 DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_uarridx_t arr_idx;
 	duk_uint8_t x;
 
@@ -828,7 +824,7 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 
 	duk__dec_objarr_entry(js_ctx);
 
-	duk_push_array(ctx);
+	duk_push_array(thr);
 
 	/* Initial '[' has been checked and eaten by caller. */
 
@@ -837,7 +833,7 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 		x = duk__dec_get_nonwhite(js_ctx);
 
 		DUK_DDD(DUK_DDDPRINT("parse_array: arr=%!T, x=%ld, arr_idx=%ld",
-		                     (duk_tval *) duk_get_tval(ctx, -1),
+		                     (duk_tval *) duk_get_tval(thr, -1),
 		                     (long) x, (long) arr_idx));
 
 		/* handle comma and closing bracket */
@@ -864,7 +860,7 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 
 		/* [ ... arr val ] */
 
-		duk_xdef_prop_index_wec(ctx, -2, arr_idx);
+		duk_xdef_prop_index_wec(thr, -2, arr_idx);
 		arr_idx++;
 	}
 
@@ -872,12 +868,12 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 	 * set the values.
 	 */
 
-	duk_set_length(ctx, -1, arr_idx);
+	duk_set_length(thr, -1, arr_idx);
 
 	/* [ ... arr ] */
 
 	DUK_DDD(DUK_DDDPRINT("parse_array: final array is %!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	duk__dec_objarr_exit(js_ctx);
 	return;
@@ -888,7 +884,7 @@ DUK_LOCAL void duk__dec_array(duk_json_dec_ctx *js_ctx) {
 }
 
 DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_uint8_t x;
 
 	x = duk__dec_get_nonwhite(js_ctx);
@@ -903,7 +899,7 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 #if defined(DUK_USE_JX)
 		if (js_ctx->flag_ext_custom && x == DUK_ASC_MINUS && duk__dec_peek(js_ctx) == DUK_ASC_UC_I) {
 			duk__dec_req_stridx(js_ctx, DUK_STRIDX_MINUS_INFINITY);  /* "-Infinity", '-' has been eaten */
-			duk_push_number(ctx, -DUK_DOUBLE_INFINITY);
+			duk_push_number(thr, -DUK_DOUBLE_INFINITY);
 		} else {
 #else
 		{  /* unconditional block */
@@ -914,23 +910,23 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
 		}
 	} else if (x == DUK_ASC_LC_T) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_TRUE);
-		duk_push_true(ctx);
+		duk_push_true(thr);
 	} else if (x == DUK_ASC_LC_F) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_FALSE);
-		duk_push_false(ctx);
+		duk_push_false(thr);
 	} else if (x == DUK_ASC_LC_N) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_NULL);
-		duk_push_null(ctx);
+		duk_push_null(thr);
 #if defined(DUK_USE_JX)
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_LC_U) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_LC_UNDEFINED);
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_UC_N) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_NAN);
-		duk_push_nan(ctx);
+		duk_push_nan(thr);
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_UC_I) {
 		duk__dec_req_stridx(js_ctx, DUK_STRIDX_INFINITY);
-		duk_push_number(ctx, DUK_DOUBLE_INFINITY);
+		duk_push_number(thr, DUK_DOUBLE_INFINITY);
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_LPAREN) {
 		duk__dec_pointer(js_ctx);
 	} else if (js_ctx->flag_ext_custom && x == DUK_ASC_PIPE) {
@@ -960,65 +956,65 @@ DUK_LOCAL void duk__dec_value(duk_json_dec_ctx *js_ctx) {
  * there is a reasonable limit on C recursion depth and hence object depth.
  */
 DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h;
 	duk_uarridx_t i, arr_len;
 
 	DUK_DDD(DUK_DDDPRINT("walk: top=%ld, holder=%!T, name=%!T",
-	                     (long) duk_get_top(ctx),
-	                     (duk_tval *) duk_get_tval(ctx, -2),
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (long) duk_get_top(thr),
+	                     (duk_tval *) duk_get_tval(thr, -2),
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
-	duk_dup_top(ctx);
-	duk_get_prop(ctx, -3);  /* -> [ ... holder name val ] */
+	duk_dup_top(thr);
+	duk_get_prop(thr, -3);  /* -> [ ... holder name val ] */
 
-	h = duk_get_hobject(ctx, -1);
+	h = duk_get_hobject(thr, -1);
 	if (h != NULL) {
 		if (DUK_HOBJECT_GET_CLASS_NUMBER(h) == DUK_HOBJECT_CLASS_ARRAY) {
-			arr_len = (duk_uarridx_t) duk_get_length(ctx, -1);
+			arr_len = (duk_uarridx_t) duk_get_length(thr, -1);
 			for (i = 0; i < arr_len; i++) {
 				/* [ ... holder name val ] */
 
 				DUK_DDD(DUK_DDDPRINT("walk: array, top=%ld, i=%ld, arr_len=%ld, holder=%!T, name=%!T, val=%!T",
-				                     (long) duk_get_top(ctx), (long) i, (long) arr_len,
-				                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),
-				                     (duk_tval *) duk_get_tval(ctx, -1)));
+				                     (long) duk_get_top(thr), (long) i, (long) arr_len,
+				                     (duk_tval *) duk_get_tval(thr, -3), (duk_tval *) duk_get_tval(thr, -2),
+				                     (duk_tval *) duk_get_tval(thr, -1)));
 
-				duk_dup_top(ctx);
-				(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) i);  /* -> [ ... holder name val val ToString(i) ] */
+				duk_dup_top(thr);
+				(void) duk_push_uint_to_hstring(thr, (duk_uint_t) i);  /* -> [ ... holder name val val ToString(i) ] */
 				duk__dec_reviver_walk(js_ctx);  /* -> [ ... holder name val new_elem ] */
 
-				if (duk_is_undefined(ctx, -1)) {
-					duk_pop(ctx);
-					duk_del_prop_index(ctx, -1, i);
+				if (duk_is_undefined(thr, -1)) {
+					duk_pop(thr);
+					duk_del_prop_index(thr, -1, i);
 				} else {
 					/* XXX: duk_xdef_prop_index_wec() would be more appropriate
 					 * here but it currently makes some assumptions that might
 					 * not hold (e.g. that previous property is not an accessor).
 					 */
-					duk_put_prop_index(ctx, -2, i);
+					duk_put_prop_index(thr, -2, i);
 				}
 			}
 		} else {
 			/* [ ... holder name val ] */
-			duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);
-			while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
+			duk_enum(thr, -1, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);
+			while (duk_next(thr, -1 /*enum_index*/, 0 /*get_value*/)) {
 				DUK_DDD(DUK_DDDPRINT("walk: object, top=%ld, holder=%!T, name=%!T, val=%!T, enum=%!iT, obj_key=%!T",
-				                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, -5),
-				                     (duk_tval *) duk_get_tval(ctx, -4), (duk_tval *) duk_get_tval(ctx, -3),
-				                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
+				                     (long) duk_get_top(thr), (duk_tval *) duk_get_tval(thr, -5),
+				                     (duk_tval *) duk_get_tval(thr, -4), (duk_tval *) duk_get_tval(thr, -3),
+				                     (duk_tval *) duk_get_tval(thr, -2), (duk_tval *) duk_get_tval(thr, -1)));
 
 				/* [ ... holder name val enum obj_key ] */
-				duk_dup_m3(ctx);
-				duk_dup_m2(ctx);
+				duk_dup_m3(thr);
+				duk_dup_m2(thr);
 
 				/* [ ... holder name val enum obj_key val obj_key ] */
 				duk__dec_reviver_walk(js_ctx);
 
 				/* [ ... holder name val enum obj_key new_elem ] */
-				if (duk_is_undefined(ctx, -1)) {
-					duk_pop(ctx);
-					duk_del_prop(ctx, -3);
+				if (duk_is_undefined(thr, -1)) {
+					duk_pop(thr);
+					duk_del_prop(thr, -3);
 				} else {
 					/* XXX: duk_xdef_prop_index_wec() would be more appropriate
 					 * here but it currently makes some assumptions that might
@@ -1029,21 +1025,21 @@ DUK_LOCAL void duk__dec_reviver_walk(duk_json_dec_ctx *js_ctx) {
 					 * does not happen normally, but a clever reviver can trigger
 					 * that, see complex reviver case in: test-bug-json-parse-__proto__.js.
 					 */
-					duk_put_prop(ctx, -4);
+					duk_put_prop(thr, -4);
 				}
 			}
-			duk_pop(ctx);  /* pop enum */
+			duk_pop(thr);  /* pop enum */
 		}
 	}
 
 	/* [ ... holder name val ] */
 
-	duk_dup(ctx, js_ctx->idx_reviver);
-	duk_insert(ctx, -4);  /* -> [ ... reviver holder name val ] */
-	duk_call_method(ctx, 2);  /* -> [ ... res ] */
+	duk_dup(thr, js_ctx->idx_reviver);
+	duk_insert(thr, -4);  /* -> [ ... reviver holder name val ] */
+	duk_call_method(thr, 2);  /* -> [ ... res ] */
 
 	DUK_DDD(DUK_DDDPRINT("walk: top=%ld, result=%!T",
-	                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (long) duk_get_top(thr), (duk_tval *) duk_get_tval(thr, -1)));
 }
 
 /*
@@ -1341,7 +1337,6 @@ DUK_LOCAL void duk__enc_quote_string(duk_json_enc_ctx *js_ctx, duk_hstring *h_st
  */
 DUK_LOCAL void duk__enc_double(duk_json_enc_ctx *js_ctx) {
 	duk_hthread *thr;
-	duk_context *ctx;
 	duk_tval *tv;
 	duk_double_t d;
 	duk_small_int_t c;
@@ -1353,10 +1348,9 @@ DUK_LOCAL void duk__enc_double(duk_json_enc_ctx *js_ctx) {
 	DUK_ASSERT(js_ctx != NULL);
 	thr = js_ctx->thr;
 	DUK_ASSERT(thr != NULL);
-	ctx = (duk_context *) thr;
 
 	/* Caller must ensure 'tv' is indeed a double and not a fastint! */
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	DUK_ASSERT(DUK_TVAL_IS_DOUBLE(tv));
 	d = DUK_TVAL_GET_DOUBLE(tv);
 
@@ -1373,15 +1367,15 @@ DUK_LOCAL void duk__enc_double(duk_json_enc_ctx *js_ctx) {
 		 */
 		if (DUK_UNLIKELY(c == DUK_FP_ZERO && s != 0 &&
 		                 (js_ctx->flag_ext_custom_or_compatible))) {
-			duk_push_hstring_stridx(ctx, DUK_STRIDX_MINUS_ZERO);  /* '-0' */
+			duk_push_hstring_stridx(thr, DUK_STRIDX_MINUS_ZERO);  /* '-0' */
 		} else
 #endif  /* DUK_USE_JX || DUK_USE_JC */
 		{
 			n2s_flags = 0;
 			/* [ ... number ] -> [ ... string ] */
-			duk_numconv_stringify(ctx, 10 /*radix*/, 0 /*digits*/, n2s_flags);
+			duk_numconv_stringify(thr, 10 /*radix*/, 0 /*digits*/, n2s_flags);
 		}
-		h_str = duk_known_hstring(ctx, -1);
+		h_str = duk_known_hstring(thr, -1);
 		DUK__EMIT_HSTR(js_ctx, h_str);
 		return;
 	}
@@ -1737,19 +1731,19 @@ DUK_LOCAL void duk__enc_newline_indent(duk_json_enc_ctx *js_ctx, duk_int_t depth
 
 /* Shared entry handling for object/array serialization. */
 DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
 	duk_uint_fast32_t i, n;
 
-	*entry_top = duk_get_top(ctx);
+	*entry_top = duk_get_top(thr);
 
-	duk_require_stack(ctx, DUK_JSON_ENC_REQSTACK);
+	duk_require_stack(thr, DUK_JSON_ENC_REQSTACK);
 
 	/* Loop check using a hybrid approach: a fixed-size visited[] array
 	 * with overflow in a loop check object.
 	 */
 
-	h_target = duk_known_hobject(ctx, -1);  /* object or array */
+	h_target = duk_known_hobject(thr, -1);  /* object or array */
 
 	n = js_ctx->recursion_depth;
 	if (DUK_UNLIKELY(n > DUK_JSON_ENC_LOOPARRAY)) {
@@ -1758,19 +1752,19 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	for (i = 0; i < n; i++) {
 		if (DUK_UNLIKELY(js_ctx->visiting[i] == h_target)) {
 			DUK_DD(DUK_DDPRINT("slow path loop detect"));
-			DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_CYCLIC_INPUT);
+			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
 		}
 	}
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		js_ctx->visiting[js_ctx->recursion_depth] = h_target;
 	} else {
-		duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
-		duk_dup_top(ctx);  /* -> [ ... voidp voidp ] */
-		if (duk_has_prop(ctx, js_ctx->idx_loop)) {
-			DUK_ERROR_TYPE((duk_hthread *) ctx, DUK_STR_CYCLIC_INPUT);
+		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_dup_top(thr);  /* -> [ ... voidp voidp ] */
+		if (duk_has_prop(thr, js_ctx->idx_loop)) {
+			DUK_ERROR_TYPE(thr, DUK_STR_CYCLIC_INPUT);
 		}
-		duk_push_true(ctx);  /* -> [ ... voidp true ] */
-		duk_put_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+		duk_push_true(thr);  /* -> [ ... voidp true ] */
+		duk_put_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 
 	/* C recursion check. */
@@ -1778,17 +1772,17 @@ DUK_LOCAL void duk__enc_objarr_entry(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_
 	DUK_ASSERT(js_ctx->recursion_depth >= 0);
 	DUK_ASSERT(js_ctx->recursion_depth <= js_ctx->recursion_limit);
 	if (js_ctx->recursion_depth >= js_ctx->recursion_limit) {
-		DUK_ERROR_RANGE((duk_hthread *) ctx, DUK_STR_JSONENC_RECLIMIT);
+		DUK_ERROR_RANGE(thr, DUK_STR_JSONENC_RECLIMIT);
 	}
 	js_ctx->recursion_depth++;
 
 	DUK_DDD(DUK_DDDPRINT("shared entry finished: top=%ld, loop=%!T",
-	                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop)));
+	                     (long) duk_get_top(thr), (duk_tval *) duk_get_tval(thr, js_ctx->idx_loop)));
 }
 
 /* Shared exit handling for object/array serialization. */
 DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_top) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_hobject *h_target;
 
 	/* C recursion check. */
@@ -1799,20 +1793,20 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
 
 	/* Loop check. */
 
-	h_target = duk_known_hobject(ctx, *entry_top - 1);  /* original target at entry_top - 1 */
+	h_target = duk_known_hobject(thr, *entry_top - 1);  /* original target at entry_top - 1 */
 
 	if (js_ctx->recursion_depth < DUK_JSON_ENC_LOOPARRAY) {
 		/* Previous entry was inside visited[], nothing to do. */
 	} else {
-		duk_push_sprintf(ctx, DUK_STR_FMT_PTR, (void *) h_target);
-		duk_del_prop(ctx, js_ctx->idx_loop);  /* -> [ ... ] */
+		duk_push_sprintf(thr, DUK_STR_FMT_PTR, (void *) h_target);
+		duk_del_prop(thr, js_ctx->idx_loop);  /* -> [ ... ] */
 	}
 
 	/* Restore stack top after unbalanced code paths. */
-	duk_set_top(ctx, *entry_top);
+	duk_set_top(thr, *entry_top);
 
 	DUK_DDD(DUK_DDDPRINT("shared entry finished: top=%ld, loop=%!T",
-	                     (long) duk_get_top(ctx), (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop)));
+	                     (long) duk_get_top(thr), (duk_tval *) duk_get_tval(thr, js_ctx->idx_loop)));
 }
 
 /* The JO(value) operation: encode object.
@@ -1820,7 +1814,7 @@ DUK_LOCAL void duk__enc_objarr_exit(duk_json_enc_ctx *js_ctx, duk_idx_t *entry_t
  * Stack policy: [ object ] -> [ object ].
  */
 DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_hstring *h_key;
 	duk_idx_t entry_top;
 	duk_idx_t idx_obj;
@@ -1829,7 +1823,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	duk_uarridx_t arr_len, i;
 	duk_size_t prev_size;
 
-	DUK_DDD(DUK_DDDPRINT("duk__enc_object: obj=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("duk__enc_object: obj=%!T", (duk_tval *) duk_get_tval(thr, -1)));
 
 	duk__enc_objarr_entry(js_ctx, &entry_top);
 
@@ -1839,14 +1833,14 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 		idx_keys = js_ctx->idx_proplist;
 	} else {
 		/* XXX: would be nice to enumerate an object at specified index */
-		duk_dup(ctx, idx_obj);
-		(void) duk_hobject_get_enumerated_keys(ctx, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);  /* [ ... target ] -> [ ... target keys ] */
-		idx_keys = duk_require_normalize_index(ctx, -1);
+		duk_dup(thr, idx_obj);
+		(void) duk_hobject_get_enumerated_keys(thr, DUK_ENUM_OWN_PROPERTIES_ONLY /*flags*/);  /* [ ... target ] -> [ ... target keys ] */
+		idx_keys = duk_require_normalize_index(thr, -1);
 		/* leave stack unbalanced on purpose */
 	}
 
 	DUK_DDD(DUK_DDDPRINT("idx_keys=%ld, h_keys=%!T",
-	                     (long) idx_keys, (duk_tval *) duk_get_tval(ctx, idx_keys)));
+	                     (long) idx_keys, (duk_tval *) duk_get_tval(thr, idx_keys)));
 
 	/* Steps 8-10 have been merged to avoid a "partial" variable. */
 
@@ -1858,16 +1852,16 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 	 * that it can be reallocated).
 	 */
 
-	arr_len = (duk_uarridx_t) duk_get_length(ctx, idx_keys);
+	arr_len = (duk_uarridx_t) duk_get_length(thr, idx_keys);
 	emitted = 0;
 	for (i = 0; i < arr_len; i++) {
-		duk_get_prop_index(ctx, idx_keys, i);  /* -> [ ... key ] */
+		duk_get_prop_index(thr, idx_keys, i);  /* -> [ ... key ] */
 
 		DUK_DDD(DUK_DDDPRINT("object property loop: holder=%!T, key=%!T",
-		                     (duk_tval *) duk_get_tval(ctx, idx_obj),
-		                     (duk_tval *) duk_get_tval(ctx, -1)));
+		                     (duk_tval *) duk_get_tval(thr, idx_obj),
+		                     (duk_tval *) duk_get_tval(thr, -1)));
 
-		h_key = duk_known_hstring(ctx, -1);
+		h_key = duk_known_hstring(thr, -1);
 		DUK_ASSERT(h_key != NULL);
 		DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(h_key));  /* proplist filtering; enum options */
 
@@ -1908,7 +1902,7 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
 
 	duk__enc_objarr_exit(js_ctx, &entry_top);
 
-	DUK_ASSERT_TOP(ctx, entry_top);
+	DUK_ASSERT_TOP(thr, entry_top);
 }
 
 /* The JA(value) operation: encode array.
@@ -1916,14 +1910,14 @@ DUK_LOCAL void duk__enc_object(duk_json_enc_ctx *js_ctx) {
  * Stack policy: [ array ] -> [ array ].
  */
 DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
+	duk_hthread *thr = js_ctx->thr;
 	duk_idx_t entry_top;
 	duk_idx_t idx_arr;
 	duk_bool_t emitted;
 	duk_uarridx_t i, arr_len;
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_array: array=%!T",
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	duk__enc_objarr_entry(js_ctx, &entry_top);
 
@@ -1933,11 +1927,11 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 
 	DUK__EMIT_1(js_ctx, DUK_ASC_LBRACKET);
 
-	arr_len = (duk_uarridx_t) duk_get_length(ctx, idx_arr);
+	arr_len = (duk_uarridx_t) duk_get_length(thr, idx_arr);
 	emitted = 0;
 	for (i = 0; i < arr_len; i++) {
 		DUK_DDD(DUK_DDDPRINT("array entry loop: array=%!T, index=%ld, arr_len=%ld",
-		                     (duk_tval *) duk_get_tval(ctx, idx_arr),
+		                     (duk_tval *) duk_get_tval(thr, idx_arr),
 		                     (long) i, (long) arr_len));
 
 		if (DUK_UNLIKELY(js_ctx->h_gap != NULL)) {
@@ -1945,7 +1939,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 			duk__enc_newline_indent(js_ctx, js_ctx->recursion_depth);
 		}
 
-		(void) duk_push_uint_to_hstring(ctx, (duk_uint_t) i);  /* -> [ ... key ] */
+		(void) duk_push_uint_to_hstring(thr, (duk_uint_t) i);  /* -> [ ... key ] */
 
 		/* [ ... key ] */
 
@@ -1974,7 +1968,7 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
 
 	duk__enc_objarr_exit(js_ctx, &entry_top);
 
-	DUK_ASSERT_TOP(ctx, entry_top);
+	DUK_ASSERT_TOP(thr, entry_top);
 }
 
 /* The Str(key, holder) operation.
@@ -1982,71 +1976,68 @@ DUK_LOCAL void duk__enc_array(duk_json_enc_ctx *js_ctx) {
  * Stack policy: [ ... key ] -> [ ... ]
  */
 DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_holder) {
-	duk_context *ctx = (duk_context *) js_ctx->thr;
-	duk_hthread *thr = (duk_hthread *) ctx;
+	duk_hthread *thr = js_ctx->thr;
 	duk_tval *tv;
 	duk_tval *tv_holder;
 	duk_tval *tv_key;
 	duk_small_int_t c;
 
 	DUK_DDD(DUK_DDDPRINT("duk__enc_value: idx_holder=%ld, holder=%!T, key=%!T",
-	                     (long) idx_holder, (duk_tval *) duk_get_tval(ctx, idx_holder),
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (long) idx_holder, (duk_tval *) duk_get_tval(thr, idx_holder),
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
-	DUK_UNREF(thr);
-
-	tv_holder = DUK_GET_TVAL_POSIDX(ctx, idx_holder);
+	tv_holder = DUK_GET_TVAL_POSIDX(thr, idx_holder);
 	DUK_ASSERT(DUK_TVAL_IS_OBJECT(tv_holder));
-	tv_key = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv_key = DUK_GET_TVAL_NEGIDX(thr, -1);
 	DUK_ASSERT(DUK_TVAL_IS_STRING(tv_key));
 	DUK_ASSERT(!DUK_HSTRING_HAS_SYMBOL(DUK_TVAL_GET_STRING(tv_key)));  /* Caller responsible. */
 	(void) duk_hobject_getprop(thr, tv_holder, tv_key);
 
 	/* -> [ ... key val ] */
 
-	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(thr, -1)));
 
 	/* Standard JSON checks for .toJSON() only for actual objects; for
 	 * example, setting Number.prototype.toJSON and then serializing a
 	 * number won't invoke the .toJSON() method.  However, lightfuncs and
 	 * plain buffers mimic objects so we check for their .toJSON() method.
 	 */
-	if (duk_check_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT |
+	if (duk_check_type_mask(thr, -1, DUK_TYPE_MASK_OBJECT |
 	                                 DUK_TYPE_MASK_LIGHTFUNC |
 	                                 DUK_TYPE_MASK_BUFFER)) {
-		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_TO_JSON);
-		if (duk_is_callable(ctx, -1)) {  /* toJSON() can also be a lightfunc */
+		duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_TO_JSON);
+		if (duk_is_callable(thr, -1)) {  /* toJSON() can also be a lightfunc */
 			DUK_DDD(DUK_DDDPRINT("value is object, has callable toJSON() -> call it"));
-			/* XXX: duk_dup_unvalidated(ctx, -2) etc. */
-			duk_dup_m2(ctx);          /* -> [ ... key val toJSON val ] */
-			duk_dup_m4(ctx);          /* -> [ ... key val toJSON val key ] */
-			duk_call_method(ctx, 1);  /* -> [ ... key val val' ] */
-			duk_remove_m2(ctx);       /* -> [ ... key val' ] */
+			/* XXX: duk_dup_unvalidated(thr, -2) etc. */
+			duk_dup_m2(thr);          /* -> [ ... key val toJSON val ] */
+			duk_dup_m4(thr);          /* -> [ ... key val toJSON val key ] */
+			duk_call_method(thr, 1);  /* -> [ ... key val val' ] */
+			duk_remove_m2(thr);       /* -> [ ... key val' ] */
 		} else {
-			duk_pop(ctx);             /* -> [ ... key val ] */
+			duk_pop(thr);             /* -> [ ... key val ] */
 		}
 	}
 
 	/* [ ... key val ] */
 
-	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(thr, -1)));
 
 	if (js_ctx->h_replacer) {
 		/* XXX: Here a "slice copy" would be useful. */
 		DUK_DDD(DUK_DDDPRINT("replacer is set, call replacer"));
-		duk_push_hobject(ctx, js_ctx->h_replacer);  /* -> [ ... key val replacer ] */
-		duk_dup(ctx, idx_holder);                   /* -> [ ... key val replacer holder ] */
-		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key ] */
-		duk_dup_m4(ctx);                            /* -> [ ... key val replacer holder key val ] */
-		duk_call_method(ctx, 2);                    /* -> [ ... key val val' ] */
-		duk_remove_m2(ctx);                         /* -> [ ... key val' ] */
+		duk_push_hobject(thr, js_ctx->h_replacer);  /* -> [ ... key val replacer ] */
+		duk_dup(thr, idx_holder);                   /* -> [ ... key val replacer holder ] */
+		duk_dup_m4(thr);                            /* -> [ ... key val replacer holder key ] */
+		duk_dup_m4(thr);                            /* -> [ ... key val replacer holder key val ] */
+		duk_call_method(thr, 2);                    /* -> [ ... key val val' ] */
+		duk_remove_m2(thr);                         /* -> [ ... key val' ] */
 	}
 
 	/* [ ... key val ] */
 
-	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(thr, -1)));
 
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h;
 
@@ -2071,19 +2062,19 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		switch (c) {
 		case DUK_HOBJECT_CLASS_NUMBER: {
 			DUK_DDD(DUK_DDDPRINT("value is a Number object -> coerce with ToNumber()"));
-			duk_to_number_m1(ctx);
+			duk_to_number_m1(thr);
 			/* The coercion potentially invokes user .valueOf() and .toString()
 			 * but can't result in a function value because ToPrimitive() would
 			 * reject such a result: test-dev-json-stringify-coercion-1.js.
 			 */
-			DUK_ASSERT(!duk_is_callable(ctx, -1));
+			DUK_ASSERT(!duk_is_callable(thr, -1));
 			break;
 		}
 		case DUK_HOBJECT_CLASS_STRING: {
 			DUK_DDD(DUK_DDDPRINT("value is a String object -> coerce with ToString()"));
-			duk_to_string(ctx, -1);
+			duk_to_string(thr, -1);
 			/* Same coercion behavior as for Number. */
-			DUK_ASSERT(!duk_is_callable(ctx, -1));
+			DUK_ASSERT(!duk_is_callable(thr, -1));
 			break;
 		}
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
@@ -2091,8 +2082,8 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 #endif
 		case DUK_HOBJECT_CLASS_BOOLEAN: {
 			DUK_DDD(DUK_DDDPRINT("value is a Boolean/Buffer/Pointer object -> get internal value"));
-			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VALUE);
-			duk_remove_m2(ctx);
+			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VALUE);
+			duk_remove_m2(thr);
 			break;
 		}
 		default: {
@@ -2128,14 +2119,14 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 
 	/* [ ... key val ] */
 
-	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("value=%!T", (duk_tval *) duk_get_tval(thr, -1)));
 
-	if (duk_check_type_mask(ctx, -1, js_ctx->mask_for_undefined)) {
+	if (duk_check_type_mask(thr, -1, js_ctx->mask_for_undefined)) {
 		/* will result in undefined */
 		DUK_DDD(DUK_DDDPRINT("-> will result in undefined (type mask check)"));
 		goto pop2_undef;
 	}
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 
 	switch (DUK_TVAL_GET_TAG(tv)) {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
@@ -2203,7 +2194,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 		/* Could implement a fastpath, but the fast path would need
 		 * to handle realloc side effects correctly.
 		 */
-		duk_to_object(ctx, -1);
+		duk_to_object(thr, -1);
 		duk__enc_object(js_ctx);
 		break;
 	}
@@ -2241,11 +2232,11 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
  pop2_emitted:
 #endif
-	duk_pop_2(ctx); /* [ ... key val ] -> [ ... ] */
+	duk_pop_2(thr); /* [ ... key val ] -> [ ... ] */
 	return 1;  /* emitted */
 
  pop2_undef:
-	duk_pop_2(ctx);  /* [ ... key val ] -> [ ... ] */
+	duk_pop_2(thr);  /* [ ... key val ] -> [ ... ] */
 	return 0;  /* not emitted */
 }
 
@@ -2577,9 +2568,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 				 * to support gappy arrays for all practical code.
 				 */
 
-				h_tmp = duk_push_uint_to_hstring((duk_context *) js_ctx->thr, (duk_uint_t) i);
+				h_tmp = duk_push_uint_to_hstring(js_ctx->thr, (duk_uint_t) i);
 				has_inherited = duk_hobject_hasprop_raw(js_ctx->thr, obj, h_tmp);
-				duk_pop((duk_context *) js_ctx->thr);
+				duk_pop(js_ctx->thr);
 				if (has_inherited) {
 					DUK_D(DUK_DPRINT("gap in array, conflicting inherited property, abort fast path"));
 					goto abort_fastpath;
@@ -2737,9 +2728,9 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 		DUK_ASSERT(DUK_TVAL_IS_NUMBER(tv));
 
 		/* XXX: Stack discipline is annoying, could be changed in numconv. */
-		duk_push_tval((duk_context *) js_ctx->thr, tv);
+		duk_push_tval(js_ctx->thr, tv);
 		duk__enc_double(js_ctx);
-		duk_pop((duk_context *) js_ctx->thr);
+		duk_pop(js_ctx->thr);
 
 #if 0
 		/* Could also rely on native sprintf(), but it will handle
@@ -2768,20 +2759,20 @@ DUK_LOCAL duk_bool_t duk__json_stringify_fast_value(duk_json_enc_ctx *js_ctx, du
 	return 0;  /* unreachable */
 }
 
-DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_context *ctx, void *udata) {
+DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_hthread *thr, void *udata) {
 	duk_json_enc_ctx *js_ctx;
 	duk_tval *tv;
 
-	DUK_ASSERT(ctx != NULL);
+	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(udata != NULL);
 
 	js_ctx = (duk_json_enc_ctx *) udata;
 	DUK_ASSERT(js_ctx != NULL);
 
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	if (duk__json_stringify_fast_value(js_ctx, tv) == 0) {
 		DUK_DD(DUK_DDPRINT("top level value not supported, fail fast path"));
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);  /* Error message is ignored, so doesn't matter. */
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);  /* Error message is ignored, so doesn't matter. */
 	}
 
 	return 0;
@@ -2793,16 +2784,15 @@ DUK_LOCAL duk_ret_t duk__json_stringify_fast(duk_context *ctx, void *udata) {
  */
 
 DUK_INTERNAL
-void duk_bi_json_parse_helper(duk_context *ctx,
+void duk_bi_json_parse_helper(duk_hthread *thr,
                               duk_idx_t idx_value,
                               duk_idx_t idx_reviver,
                               duk_small_uint_t flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_json_dec_ctx js_ctx_alloc;
 	duk_json_dec_ctx *js_ctx = &js_ctx_alloc;
 	duk_hstring *h_text;
 #if defined(DUK_USE_ASSERTIONS)
-	duk_idx_t entry_top = duk_get_top(ctx);
+	duk_idx_t entry_top = duk_get_top(thr);
 #endif
 
 	/* negative top-relative indices not allowed now */
@@ -2810,10 +2800,10 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	DUK_ASSERT(idx_reviver == DUK_INVALID_INDEX || idx_reviver >= 0);
 
 	DUK_DDD(DUK_DDDPRINT("JSON parse start: text=%!T, reviver=%!T, flags=0x%08lx, stack_top=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, idx_value),
-	                     (duk_tval *) duk_get_tval(ctx, idx_reviver),
+	                     (duk_tval *) duk_get_tval(thr, idx_value),
+	                     (duk_tval *) duk_get_tval(thr, idx_reviver),
 	                     (unsigned long) flags,
-	                     (long) duk_get_top(ctx)));
+	                     (long) duk_get_top(thr)));
 
 	DUK_MEMZERO(&js_ctx_alloc, sizeof(js_ctx_alloc));
 	js_ctx->thr = thr;
@@ -2838,7 +2828,7 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 	js_ctx->flag_ext_custom_or_compatible = flags & (DUK_JSON_FLAG_EXT_CUSTOM | DUK_JSON_FLAG_EXT_COMPATIBLE);
 #endif
 
-	h_text = duk_to_hstring(ctx, idx_value);  /* coerce in-place; rejects Symbols */
+	h_text = duk_to_hstring(thr, idx_value);  /* coerce in-place; rejects Symbols */
 	DUK_ASSERT(h_text != NULL);
 
 	/* JSON parsing code is allowed to read [p_start,p_end]: p_end is
@@ -2861,47 +2851,46 @@ void duk_bi_json_parse_helper(duk_context *ctx,
 		duk__dec_syntax_error(js_ctx);
 	}
 
-	if (duk_is_callable(ctx, idx_reviver)) {
+	if (duk_is_callable(thr, idx_reviver)) {
 		DUK_DDD(DUK_DDDPRINT("applying reviver: %!T",
-		                     (duk_tval *) duk_get_tval(ctx, idx_reviver)));
+		                     (duk_tval *) duk_get_tval(thr, idx_reviver)));
 
 		js_ctx->idx_reviver = idx_reviver;
 
-		duk_push_object(ctx);
-		duk_dup_m2(ctx);  /* -> [ ... val root val ] */
-		duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
+		duk_push_object(thr);
+		duk_dup_m2(thr);  /* -> [ ... val root val ] */
+		duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_EMPTY_STRING);  /* default attrs ok */
+		duk_push_hstring_stridx(thr, DUK_STRIDX_EMPTY_STRING);  /* -> [ ... val root "" ] */
 
 		DUK_DDD(DUK_DDDPRINT("start reviver walk, root=%!T, name=%!T",
-		                     (duk_tval *) duk_get_tval(ctx, -2),
-		                     (duk_tval *) duk_get_tval(ctx, -1)));
+		                     (duk_tval *) duk_get_tval(thr, -2),
+		                     (duk_tval *) duk_get_tval(thr, -1)));
 
 		duk__dec_reviver_walk(js_ctx);  /* [ ... val root "" ] -> [ ... val val' ] */
-		duk_remove_m2(ctx);             /* -> [ ... val' ] */
+		duk_remove_m2(thr);             /* -> [ ... val' ] */
 	} else {
 		DUK_DDD(DUK_DDDPRINT("reviver does not exist or is not callable: %!T",
-		                     (duk_tval *) duk_get_tval(ctx, idx_reviver)));
+		                     (duk_tval *) duk_get_tval(thr, idx_reviver)));
 	}
 
 	/* Final result is at stack top. */
 
 	DUK_DDD(DUK_DDDPRINT("JSON parse end: text=%!T, reviver=%!T, flags=0x%08lx, result=%!T, stack_top=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, idx_value),
-	                     (duk_tval *) duk_get_tval(ctx, idx_reviver),
+	                     (duk_tval *) duk_get_tval(thr, idx_value),
+	                     (duk_tval *) duk_get_tval(thr, idx_reviver),
 	                     (unsigned long) flags,
-	                     (duk_tval *) duk_get_tval(ctx, -1),
-	                     (long) duk_get_top(ctx)));
+	                     (duk_tval *) duk_get_tval(thr, -1),
+	                     (long) duk_get_top(thr)));
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top + 1);
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 }
 
 DUK_INTERNAL
-void duk_bi_json_stringify_helper(duk_context *ctx,
+void duk_bi_json_stringify_helper(duk_hthread *thr,
                                   duk_idx_t idx_value,
                                   duk_idx_t idx_replacer,
                                   duk_idx_t idx_space,
                                   duk_small_uint_t flags) {
-	duk_hthread *thr = (duk_hthread *) ctx;
 	duk_json_enc_ctx js_ctx_alloc;
 	duk_json_enc_ctx *js_ctx = &js_ctx_alloc;
 	duk_hobject *h;
@@ -2914,13 +2903,13 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	DUK_ASSERT(idx_space == DUK_INVALID_INDEX || idx_space >= 0);
 
 	DUK_DDD(DUK_DDDPRINT("JSON stringify start: value=%!T, replacer=%!T, space=%!T, flags=0x%08lx, stack_top=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, idx_value),
-	                     (duk_tval *) duk_get_tval(ctx, idx_replacer),
-	                     (duk_tval *) duk_get_tval(ctx, idx_space),
+	                     (duk_tval *) duk_get_tval(thr, idx_value),
+	                     (duk_tval *) duk_get_tval(thr, idx_replacer),
+	                     (duk_tval *) duk_get_tval(thr, idx_space),
 	                     (unsigned long) flags,
-	                     (long) duk_get_top(ctx)));
+	                     (long) duk_get_top(thr)));
 
-	entry_top = duk_get_top(ctx);
+	entry_top = duk_get_top(thr);
 
 	/*
 	 *  Context init
@@ -3002,7 +2991,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	DUK_BW_INIT_PUSHBUF(thr, &js_ctx->bw, DUK__JSON_STRINGIFY_BUFSIZE);
 
-	js_ctx->idx_loop = duk_push_bare_object(ctx);
+	js_ctx->idx_loop = duk_push_bare_object(thr);
 	DUK_ASSERT(js_ctx->idx_loop >= 0);
 
 	/* [ ... buf loop ] */
@@ -3011,7 +3000,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 *  Process replacer/proplist (2nd argument to JSON.stringify)
 	 */
 
-	h = duk_get_hobject(ctx, idx_replacer);
+	h = duk_get_hobject(thr, idx_replacer);
 	if (h != NULL) {
 		if (DUK_HOBJECT_IS_CALLABLE(h)) {
 			js_ctx->h_replacer = h;
@@ -3025,30 +3014,30 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 			duk_uarridx_t plist_idx = 0;
 			duk_small_uint_t enum_flags;
 
-			js_ctx->idx_proplist = duk_push_array(ctx);  /* XXX: array internal? */
+			js_ctx->idx_proplist = duk_push_array(thr);  /* XXX: array internal? */
 
 			enum_flags = DUK_ENUM_ARRAY_INDICES_ONLY |
 			             DUK_ENUM_SORT_ARRAY_INDICES;  /* expensive flag */
-			duk_enum(ctx, idx_replacer, enum_flags);
-			while (duk_next(ctx, -1 /*enum_index*/, 1 /*get_value*/)) {
+			duk_enum(thr, idx_replacer, enum_flags);
+			while (duk_next(thr, -1 /*enum_index*/, 1 /*get_value*/)) {
 				/* [ ... proplist enum_obj key val ] */
-				if (duk__enc_allow_into_proplist(duk_get_tval(ctx, -1))) {
+				if (duk__enc_allow_into_proplist(duk_get_tval(thr, -1))) {
 					/* XXX: duplicates should be eliminated here */
 					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> accept",
-					                     (duk_tval *) duk_get_tval(ctx, -2),
-					                     (duk_tval *) duk_get_tval(ctx, -1)));
-					duk_to_string(ctx, -1);  /* extra coercion of strings is OK */
-					duk_put_prop_index(ctx, -4, plist_idx);  /* -> [ ... proplist enum_obj key ] */
+					                     (duk_tval *) duk_get_tval(thr, -2),
+					                     (duk_tval *) duk_get_tval(thr, -1)));
+					duk_to_string(thr, -1);  /* extra coercion of strings is OK */
+					duk_put_prop_index(thr, -4, plist_idx);  /* -> [ ... proplist enum_obj key ] */
 					plist_idx++;
-					duk_pop(ctx);
+					duk_pop(thr);
 				} else {
 					DUK_DDD(DUK_DDDPRINT("proplist enum: key=%!T, val=%!T --> reject",
-					                     (duk_tval *) duk_get_tval(ctx, -2),
-					                     (duk_tval *) duk_get_tval(ctx, -1)));
-					duk_pop_2(ctx);
+					                     (duk_tval *) duk_get_tval(thr, -2),
+					                     (duk_tval *) duk_get_tval(thr, -1)));
+					duk_pop_2(thr);
 				}
                         }
-                        duk_pop(ctx);  /* pop enum */
+                        duk_pop(thr);  /* pop enum */
 
 			/* [ ... proplist ] */
 		}
@@ -3060,17 +3049,17 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 *  Process space (3rd argument to JSON.stringify)
 	 */
 
-	h = duk_get_hobject(ctx, idx_space);
+	h = duk_get_hobject(thr, idx_space);
 	if (h != NULL) {
 		int c = DUK_HOBJECT_GET_CLASS_NUMBER(h);
 		if (c == DUK_HOBJECT_CLASS_NUMBER) {
-			duk_to_number(ctx, idx_space);
+			duk_to_number(thr, idx_space);
 		} else if (c == DUK_HOBJECT_CLASS_STRING) {
-			duk_to_string(ctx, idx_space);
+			duk_to_string(thr, idx_space);
 		}
 	}
 
-	if (duk_is_number(ctx, idx_space)) {
+	if (duk_is_number(thr, idx_space)) {
 		duk_small_int_t nspace;
 		/* spaces[] must be static to allow initializer with old compilers like BCC */
 		static const char spaces[10] = {
@@ -3080,16 +3069,16 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		};  /* XXX: helper */
 
 		/* ToInteger() coercion; NaN -> 0, infinities are clamped to 0 and 10 */
-		nspace = (duk_small_int_t) duk_to_int_clamped(ctx, idx_space, 0 /*minval*/, 10 /*maxval*/);
+		nspace = (duk_small_int_t) duk_to_int_clamped(thr, idx_space, 0 /*minval*/, 10 /*maxval*/);
 		DUK_ASSERT(nspace >= 0 && nspace <= 10);
 
-		duk_push_lstring(ctx, spaces, (duk_size_t) nspace);
-		js_ctx->h_gap = duk_known_hstring(ctx, -1);
+		duk_push_lstring(thr, spaces, (duk_size_t) nspace);
+		js_ctx->h_gap = duk_known_hstring(thr, -1);
 		DUK_ASSERT(js_ctx->h_gap != NULL);
-	} else if (duk_is_string_notsymbol(ctx, idx_space)) {
-		duk_dup(ctx, idx_space);
-		duk_substring(ctx, -1, 0, 10);  /* clamp to 10 chars */
-		js_ctx->h_gap = duk_known_hstring(ctx, -1);
+	} else if (duk_is_string_notsymbol(thr, idx_space)) {
+		duk_dup(thr, idx_space);
+		duk_substring(thr, -1, 0, 10);  /* clamp to 10 chars */
+		js_ctx->h_gap = duk_known_hstring(thr, -1);
 	} else {
 		/* nop */
 	}
@@ -3134,7 +3123,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		 * limited loop detection).
 		 */
 
-		duk_dup(ctx, idx_value);
+		duk_dup(thr, idx_value);
 
 		/* Must prevent finalizers which may have arbitrary side effects. */
 		prev_ms_base_flags = thr->heap->ms_base_flags;
@@ -3143,7 +3132,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 		thr->heap->pf_prevent_count++;                 /* Prevent finalizers. */
 		DUK_ASSERT(thr->heap->pf_prevent_count != 0);  /* Wrap. */
 
-		pcall_rc = duk_safe_call(ctx, duk__json_stringify_fast, (void *) js_ctx /*udata*/, 1 /*nargs*/, 0 /*nret*/);
+		pcall_rc = duk_safe_call(thr, duk__json_stringify_fast, (void *) js_ctx /*udata*/, 1 /*nargs*/, 0 /*nret*/);
 
 		DUK_ASSERT(thr->heap->pf_prevent_count > 0);
 		thr->heap->pf_prevent_count--;
@@ -3170,22 +3159,22 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	 *  Create wrapper object and serialize
 	 */
 
-	idx_holder = duk_push_object(ctx);
-	duk_dup(ctx, idx_value);
-	duk_put_prop_stridx_short(ctx, -2, DUK_STRIDX_EMPTY_STRING);
+	idx_holder = duk_push_object(thr);
+	duk_dup(thr, idx_value);
+	duk_put_prop_stridx_short(thr, -2, DUK_STRIDX_EMPTY_STRING);
 
 	DUK_DDD(DUK_DDDPRINT("before: flags=0x%08lx, loop=%!T, replacer=%!O, "
 	                     "proplist=%!T, gap=%!O, holder=%!T",
 	                     (unsigned long) js_ctx->flags,
-	                     (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop),
+	                     (duk_tval *) duk_get_tval(thr, js_ctx->idx_loop),
 	                     (duk_heaphdr *) js_ctx->h_replacer,
-	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL),
+	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(thr, js_ctx->idx_proplist) : NULL),
 	                     (duk_heaphdr *) js_ctx->h_gap,
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -1)));
 
 	/* serialize the wrapper with empty string key */
 
-	duk_push_hstring_empty(ctx);
+	duk_push_hstring_empty(thr);
 
 	/* [ ... buf loop (proplist) (gap) holder "" ] */
 
@@ -3194,7 +3183,7 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 
 	if (DUK_UNLIKELY(duk__enc_value(js_ctx, idx_holder) == 0)) {  /* [ ... holder key ] -> [ ... holder ] */
 		/* Result is undefined. */
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 	} else {
 		/* Convert buffer to result string. */
 		DUK_BW_PUSH_AS_STRING(thr, &js_ctx->bw);
@@ -3203,11 +3192,11 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 	DUK_DDD(DUK_DDDPRINT("after: flags=0x%08lx, loop=%!T, replacer=%!O, "
 	                     "proplist=%!T, gap=%!O, holder=%!T",
 	                     (unsigned long) js_ctx->flags,
-	                     (duk_tval *) duk_get_tval(ctx, js_ctx->idx_loop),
+	                     (duk_tval *) duk_get_tval(thr, js_ctx->idx_loop),
 	                     (duk_heaphdr *) js_ctx->h_replacer,
-	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(ctx, js_ctx->idx_proplist) : NULL),
+	                     (duk_tval *) (js_ctx->idx_proplist >= 0 ? duk_get_tval(thr, js_ctx->idx_proplist) : NULL),
 	                     (duk_heaphdr *) js_ctx->h_gap,
-	                     (duk_tval *) duk_get_tval(ctx, idx_holder)));
+	                     (duk_tval *) duk_get_tval(thr, idx_holder)));
 
 	/* The stack has a variable shape here, so force it to the
 	 * desired one explicitly.
@@ -3216,19 +3205,19 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
 #if defined(DUK_USE_JSON_STRINGIFY_FASTPATH)
  replace_finished:
 #endif
-	duk_replace(ctx, entry_top);
-	duk_set_top(ctx, entry_top + 1);
+	duk_replace(thr, entry_top);
+	duk_set_top(thr, entry_top + 1);
 
 	DUK_DDD(DUK_DDDPRINT("JSON stringify end: value=%!T, replacer=%!T, space=%!T, "
 	                     "flags=0x%08lx, result=%!T, stack_top=%ld",
-	                     (duk_tval *) duk_get_tval(ctx, idx_value),
-	                     (duk_tval *) duk_get_tval(ctx, idx_replacer),
-	                     (duk_tval *) duk_get_tval(ctx, idx_space),
+	                     (duk_tval *) duk_get_tval(thr, idx_value),
+	                     (duk_tval *) duk_get_tval(thr, idx_replacer),
+	                     (duk_tval *) duk_get_tval(thr, idx_space),
 	                     (unsigned long) flags,
-	                     (duk_tval *) duk_get_tval(ctx, -1),
-	                     (long) duk_get_top(ctx)));
+	                     (duk_tval *) duk_get_tval(thr, -1),
+	                     (long) duk_get_top(thr)));
 
-	DUK_ASSERT(duk_get_top(ctx) == entry_top + 1);
+	DUK_ASSERT(duk_get_top(thr) == entry_top + 1);
 }
 
 #if defined(DUK_USE_JSON_BUILTIN)
@@ -3237,16 +3226,16 @@ void duk_bi_json_stringify_helper(duk_context *ctx,
  *  Entry points
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_json_object_parse(duk_context *ctx) {
-	duk_bi_json_parse_helper(ctx,
+DUK_INTERNAL duk_ret_t duk_bi_json_object_parse(duk_hthread *thr) {
+	duk_bi_json_parse_helper(thr,
 	                         0 /*idx_value*/,
 	                         1 /*idx_replacer*/,
 	                         0 /*flags*/);
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_json_object_stringify(duk_context *ctx) {
-	duk_bi_json_stringify_helper(ctx,
+DUK_INTERNAL duk_ret_t duk_bi_json_object_stringify(duk_hthread *thr) {
+	duk_bi_json_stringify_helper(thr,
 	                             0 /*idx_value*/,
 	                             1 /*idx_replacer*/,
 	                             2 /*idx_space*/,

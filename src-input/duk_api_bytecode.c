@@ -25,21 +25,21 @@
  *  Dump/load helpers, xxx_raw() helpers do no buffer checks
  */
 
-DUK_LOCAL duk_uint8_t *duk__load_string_raw(duk_context *ctx, duk_uint8_t *p) {
+DUK_LOCAL duk_uint8_t *duk__load_string_raw(duk_hthread *thr, duk_uint8_t *p) {
 	duk_uint32_t len;
 
 	len = DUK_RAW_READ_U32_BE(p);
-	duk_push_lstring(ctx, (const char *) p, len);
+	duk_push_lstring(thr, (const char *) p, len);
 	p += len;
 	return p;
 }
 
-DUK_LOCAL duk_uint8_t *duk__load_buffer_raw(duk_context *ctx, duk_uint8_t *p) {
+DUK_LOCAL duk_uint8_t *duk__load_buffer_raw(duk_hthread *thr, duk_uint8_t *p) {
 	duk_uint32_t len;
 	duk_uint8_t *buf;
 
 	len = DUK_RAW_READ_U32_BE(p);
-	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, (duk_size_t) len);
+	buf = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, (duk_size_t) len);
 	DUK_ASSERT(buf != NULL);
 	DUK_MEMCPY((void *) buf, (const void *) p, (size_t) len);
 	p += len;
@@ -225,8 +225,7 @@ DUK_LOCAL duk_uint8_t *duk__dump_formals(duk_hthread *thr, duk_uint8_t *p, duk_b
 	return p;
 }
 
-static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bufwriter_ctx *bw_ctx, duk_uint8_t *p) {
-	duk_hthread *thr;
+static duk_uint8_t *duk__dump_func(duk_hthread *thr, duk_hcompfunc *func, duk_bufwriter_ctx *bw_ctx, duk_uint8_t *p) {
 	duk_tval *tv, *tv_end;
 	duk_instr_t *ins, *ins_end;
 	duk_hobject **fn, **fn_end;
@@ -235,10 +234,6 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 	duk_uint32_t tmp32;
 	duk_uint16_t tmp16;
 	duk_double_t d;
-
-	thr = (duk_hthread *) ctx;
-	DUK_UNREF(ctx);
-	DUK_UNREF(thr);
 
 	DUK_DD(DUK_DDPRINT("dumping function %p to %p: "
 	                   "consts=[%p,%p[ (%ld bytes, %ld items), "
@@ -340,7 +335,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 		 * to serialize deep functions.
 		 */
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(*fn));
-		p = duk__dump_func(ctx, (duk_hcompfunc *) *fn, bw_ctx, p);
+		p = duk__dump_func(thr, (duk_hcompfunc *) *fn, bw_ctx, p);
 		fn++;
 	}
 
@@ -385,8 +380,7 @@ static duk_uint8_t *duk__dump_func(duk_context *ctx, duk_hcompfunc *func, duk_bu
 		DUK_ASSERT((duk_size_t) (p_end - p) >= (duk_size_t) (n)); \
 	} while (0)
 
-static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t *p_end) {
-	duk_hthread *thr;
+static duk_uint8_t *duk__load_func(duk_hthread *thr, duk_uint8_t *p, duk_uint8_t *p_end) {
 	duk_hcompfunc *h_fun;
 	duk_hbuffer *h_data;
 	duk_size_t data_size;
@@ -408,8 +402,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	 * looks the same as created by duk_js_closure().
 	 */
 
-	DUK_ASSERT(ctx != NULL);
-	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(thr != NULL);
 
 	DUK_DD(DUK_DDPRINT("loading function, p=%p, p_end=%p", (void *) p, (void *) p_end));
 
@@ -430,13 +423,13 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	 * inner functions being loaded.  Require enough space to handle
 	 * large functions correctly.
 	 */
-	duk_require_stack(ctx, 2 + count_const + count_funcs);
-	idx_base = duk_get_top(ctx);
+	duk_require_stack(thr, 2 + count_const + count_funcs);
+	idx_base = duk_get_top(thr);
 
 	/* Push function object, init flags etc.  This must match
 	 * duk_js_push_closure() quite carefully.
 	 */
-	h_fun = duk_push_hcompfunc(ctx);
+	h_fun = duk_push_hcompfunc(thr);
 	DUK_ASSERT(h_fun != NULL);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) h_fun));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, h_fun) == NULL);
@@ -474,7 +467,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(&h_fun->obj));
 
 	/* Create function 'data' buffer but don't attach it yet. */
-	fun_data = (duk_uint8_t *) duk_push_fixed_buffer_nozero(ctx, data_size);
+	fun_data = (duk_uint8_t *) duk_push_fixed_buffer_nozero(thr, data_size);
 	DUK_ASSERT(fun_data != NULL);
 
 	/* Load bytecode instructions. */
@@ -500,7 +493,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		const_type = DUK_RAW_READ_U8(p);
 		switch (const_type) {
 		case DUK__SER_STRING: {
-			p = duk__load_string_raw(ctx, p);
+			p = duk__load_string_raw(thr, p);
 			break;
 		}
 		case DUK__SER_NUMBER: {
@@ -512,7 +505,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 			DUK__ASSERT_LEFT(8);
 			val = DUK_RAW_READ_DOUBLE_BE(p);
 			DUK_TVAL_SET_NUMBER_CHKFAST_SLOW(&tv_tmp, val);
-			duk_push_tval(ctx, &tv_tmp);
+			duk_push_tval(thr, &tv_tmp);
 			break;
 		}
 		default: {
@@ -523,7 +516,7 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 	/* Load inner functions to value stack, but don't yet copy to buffer. */
 	for (n = count_funcs; n > 0; n--) {
-		p = duk__load_func(ctx, p, p_end);
+		p = duk__load_func(thr, p, p_end);
 		if (p == NULL) {
 			goto format_error;
 		}
@@ -538,12 +531,12 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	 * them afterwards.
 	 */
 
-	h_data = (duk_hbuffer *) duk_known_hbuffer(ctx, idx_base + 1);
+	h_data = (duk_hbuffer *) duk_known_hbuffer(thr, idx_base + 1);
 	DUK_ASSERT(!DUK_HBUFFER_HAS_DYNAMIC(h_data));
 	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_fun, h_data);
 	DUK_HBUFFER_INCREF(thr, h_data);
 
-	tv1 = duk_get_tval(ctx, idx_base + 2);  /* may be NULL if no constants or inner funcs */
+	tv1 = duk_get_tval(thr, idx_base + 2);  /* may be NULL if no constants or inner funcs */
 	DUK_ASSERT((count_const == 0 && count_funcs == 0) || tv1 != NULL);
 
 	q = fun_data;
@@ -576,16 +569,16 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	/* The function object is now reachable and refcounts are fine,
 	 * so we can pop off all the temporaries.
 	 */
-	DUK_DDD(DUK_DDDPRINT("function is reachable, reset top; func: %!iT", duk_get_tval(ctx, idx_base)));
-	duk_set_top(ctx, idx_base + 1);
+	DUK_DDD(DUK_DDDPRINT("function is reachable, reset top; func: %!iT", duk_get_tval(thr, idx_base)));
+	duk_set_top(thr, idx_base + 1);
 
 	/* Setup function properties. */
 	tmp32 = DUK_RAW_READ_U32_BE(p);
-	duk_push_u32(ctx, tmp32);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
+	duk_push_u32(thr, tmp32);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);
 
 #if defined(DUK_USE_FUNC_NAME_PROPERTY)
-	p = duk__load_string_raw(ctx, p);  /* -> [ func funcname ] */
+	p = duk__load_string_raw(thr, p);  /* -> [ func funcname ] */
 	func_env = thr->builtins[DUK_BIDX_GLOBAL_ENV];
 	DUK_ASSERT(func_env != NULL);
 	need_pop = 0;
@@ -610,11 +603,11 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 		func_env = (duk_hobject *) new_env;
 
-		duk_push_hobject(ctx, (duk_hobject *) new_env);
+		duk_push_hobject(thr, (duk_hobject *) new_env);
 
-		duk_dup_m2(ctx);                                  /* -> [ func funcname env funcname ] */
-		duk_dup(ctx, idx_base);                           /* -> [ func funcname env funcname func ] */
-		duk_xdef_prop(ctx, -3, DUK_PROPDESC_FLAGS_NONE);  /* -> [ func funcname env ] */
+		duk_dup_m2(thr);                                  /* -> [ func funcname env funcname ] */
+		duk_dup(thr, idx_base);                           /* -> [ func funcname env funcname func ] */
+		duk_xdef_prop(thr, -3, DUK_PROPDESC_FLAGS_NONE);  /* -> [ func funcname env ] */
 
 		need_pop = 1;  /* Need to pop env, but -after- updating h_fun and increfs. */
 	}
@@ -624,87 +617,85 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 	DUK_HOBJECT_INCREF(thr, func_env);
 	DUK_HOBJECT_INCREF(thr, func_env);
 	if (need_pop) {
-		duk_pop(ctx);
+		duk_pop(thr);
 	}
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
 #endif  /* DUK_USE_FUNC_NAME_PROPERTY */
 
 #if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
-	p = duk__load_string_raw(ctx, p);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
+	p = duk__load_string_raw(thr, p);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
 #endif  /* DUK_USE_FUNC_FILENAME_PROPERTY */
 
 	if (DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) h_fun)) {
 		/* Restore empty external .prototype only for constructable
 		 * functions.
 		 */
-		duk_push_object(ctx);
-		duk_dup_m2(ctx);
-		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
-		duk_compact_m1(ctx);
-		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
+		duk_push_object(thr);
+		duk_dup_m2(thr);
+		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);  /* func.prototype.constructor = func */
+		duk_compact_m1(thr);
+		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_W);
 	}
 
 #if defined(DUK_USE_PC2LINE)
-	p = duk__load_buffer_raw(ctx, p);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
+	p = duk__load_buffer_raw(thr, p);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_WC);
 #endif  /* DUK_USE_PC2LINE */
 
-	duk_push_object(ctx);  /* _Varmap */
+	duk_push_object(thr);  /* _Varmap */
 	for (;;) {
 		/* XXX: awkward */
-		p = duk__load_string_raw(ctx, p);
-		if (duk_get_length(ctx, -1) == 0) {
-			duk_pop(ctx);
+		p = duk__load_string_raw(thr, p);
+		if (duk_get_length(thr, -1) == 0) {
+			duk_pop(thr);
 			break;
 		}
 		tmp32 = DUK_RAW_READ_U32_BE(p);
-		duk_push_u32(ctx, tmp32);
-		duk_put_prop(ctx, -3);
+		duk_push_u32(thr, tmp32);
+		duk_put_prop(thr, -3);
 	}
-	duk_compact_m1(ctx);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
+	duk_compact_m1(thr);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VARMAP, DUK_PROPDESC_FLAGS_NONE);
 
 	/* _Formals may have been missing in the original function, which is
 	 * handled using a marker length.
 	 */
 	arr_limit = DUK_RAW_READ_U32_BE(p);
 	if (arr_limit != DUK__NO_FORMALS) {
-		duk_push_array(ctx);  /* _Formals */
+		duk_push_array(thr);  /* _Formals */
 		for (arr_idx = 0; arr_idx < arr_limit; arr_idx++) {
-			p = duk__load_string_raw(ctx, p);
-			duk_put_prop_index(ctx, -2, arr_idx);
+			p = duk__load_string_raw(thr, p);
+			duk_put_prop_index(thr, -2, arr_idx);
 		}
-		duk_compact_m1(ctx);
-		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
+		duk_compact_m1(thr);
+		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_FORMALS, DUK_PROPDESC_FLAGS_NONE);
 	} else {
 		DUK_DD(DUK_DDPRINT("no _Formals in dumped function"));
 	}
 
 	/* Return with final function pushed on stack top. */
-	DUK_DD(DUK_DDPRINT("final loaded function: %!iT", duk_get_tval(ctx, -1)));
-	DUK_ASSERT_TOP(ctx, idx_base + 1);
+	DUK_DD(DUK_DDPRINT("final loaded function: %!iT", duk_get_tval(thr, -1)));
+	DUK_ASSERT_TOP(thr, idx_base + 1);
 	return p;
 
  format_error:
 	return NULL;
 }
 
-DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
-	duk_hthread *thr;
+DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
 	duk_hcompfunc *func;
 	duk_bufwriter_ctx bw_ctx_alloc;
 	duk_bufwriter_ctx *bw_ctx = &bw_ctx_alloc;
 	duk_uint8_t *p;
 
-	DUK_ASSERT(ctx != NULL);
-	thr = (duk_hthread *) ctx;
+	DUK_ASSERT(thr != NULL);
 
 	/* Bound functions don't have all properties so we'd either need to
 	 * lookup the non-bound target function or reject bound functions.
 	 * For now, bound functions are rejected with TypeError.
 	 */
-	func = duk_require_hcompfunc(ctx, -1);
+	func = duk_require_hcompfunc(thr, -1);
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(&func->obj));
 
@@ -715,25 +706,22 @@ DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
 	p = DUK_BW_GET_PTR(thr, bw_ctx);
 	*p++ = DUK__SER_MARKER;
 	*p++ = DUK__SER_VERSION;
-	p = duk__dump_func(ctx, func, bw_ctx, p);
+	p = duk__dump_func(thr, func, bw_ctx, p);
 	DUK_BW_SET_PTR(thr, bw_ctx, p);
 	DUK_BW_COMPACT(thr, bw_ctx);
 
-	DUK_DD(DUK_DDPRINT("serialized result: %!T", duk_get_tval(ctx, -1)));
+	DUK_DD(DUK_DDPRINT("serialized result: %!T", duk_get_tval(thr, -1)));
 
-	duk_remove_m2(ctx);  /* [ ... func buf ] -> [ ... buf ] */
+	duk_remove_m2(thr);  /* [ ... func buf ] -> [ ... buf ] */
 }
 
-DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
-	duk_hthread *thr;
+DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 	duk_uint8_t *p_buf, *p, *p_end;
 	duk_size_t sz;
 
-	DUK_ASSERT(ctx != NULL);
-	thr = (duk_hthread *) ctx;
-	DUK_UNREF(ctx);
+	DUK_ASSERT(thr != NULL);
 
-	p_buf = (duk_uint8_t *) duk_require_buffer(ctx, -1, &sz);
+	p_buf = (duk_uint8_t *) duk_require_buffer(thr, -1, &sz);
 	DUK_ASSERT(p_buf != NULL);
 
 	/* The caller is responsible for being sure that bytecode being loaded
@@ -752,12 +740,12 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 	}
 	p += 2;
 
-	p = duk__load_func(ctx, p, p_end);
+	p = duk__load_func(thr, p, p_end);
 	if (p == NULL) {
 		goto format_error;
 	}
 
-	duk_remove_m2(ctx);  /* [ ... buf func ] -> [ ... func ] */
+	duk_remove_m2(thr);  /* [ ... buf func ] -> [ ... func ] */
 	return;
 
  format_error:
@@ -766,12 +754,12 @@ DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
 
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
 
-DUK_EXTERNAL void duk_dump_function(duk_context *ctx) {
-	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
+	DUK_ERROR_UNSUPPORTED(thr);
 }
 
-DUK_EXTERNAL void duk_load_function(duk_context *ctx) {
-	DUK_ERROR_UNSUPPORTED((duk_hthread *) ctx);
+DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
+	DUK_ERROR_UNSUPPORTED(thr);
 }
 
 #endif  /* DUK_USE_BYTECODE_DUMP_SUPPORT */

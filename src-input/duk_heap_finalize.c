@@ -11,19 +11,19 @@
  */
 
 #if defined(DUK_USE_FINALIZER_TORTURE)
-DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_context *ctx) {
+DUK_LOCAL duk_ret_t duk__fake_global_finalizer(duk_hthread *thr) {
 	DUK_DD(DUK_DDPRINT("fake global torture finalizer executed"));
 
 	/* Require a lot of stack to force a value stack grow/shrink. */
-	duk_require_stack(ctx, 100000);
+	duk_require_stack(thr, 100000);
 
 	/* Force a reallocation with pointer change for value stack
 	 * to maximize side effects.
 	 */
-	duk_hthread_valstack_torture_realloc((duk_hthread *) ctx);
+	duk_hthread_valstack_torture_realloc(thr);
 
 	/* Inner function call, error throw. */
-	duk_eval_string_noresult(ctx,
+	duk_eval_string_noresult(thr,
 		"(function dummy() {\n"
 		"    dummy.prototype = null;  /* break reference loop */\n"
 		"    try {\n"
@@ -59,9 +59,9 @@ DUK_LOCAL void duk__run_global_torture_finalizer(duk_hthread *thr) {
 	}
 
 	/* Run fake finalizer.  Avoid creating unnecessary garbage. */
-	duk_push_c_function((duk_context *) thr, duk__fake_global_finalizer, 0 /*nargs*/);
-	(void) duk_pcall((duk_context *) thr, 0 /*nargs*/);
-	duk_pop((duk_context *) thr);
+	duk_push_c_function(thr, duk__fake_global_finalizer, 0 /*nargs*/);
+	(void) duk_pcall(thr, 0 /*nargs*/);
+	duk_pop(thr);
 }
 #endif  /* DUK_USE_FINALIZER_TORTURE */
 
@@ -337,11 +337,8 @@ DUK_INTERNAL void duk_heap_process_finalize_list(duk_heap *heap) {
  *      left on the finalizer stack).
  */
 
-DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
-	duk_hthread *thr;
-
-	DUK_ASSERT(ctx != NULL);
-	thr = (duk_hthread *) ctx;
+DUK_LOCAL duk_ret_t duk__finalize_helper(duk_hthread *thr, void *udata) {
+	DUK_ASSERT(thr != NULL);
 	DUK_UNREF(udata);
 
 	DUK_DDD(DUK_DDDPRINT("protected finalization helper running"));
@@ -358,11 +355,11 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 	 * caller must ensure that this function is not called if the target is
 	 * a Proxy.
 	 */
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
-	duk_dup_m2(ctx);
-	duk_push_boolean(ctx, DUK_HEAP_HAS_FINALIZER_NORESCUE(thr->heap));
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_FINALIZER);  /* -> [... obj finalizer] */
+	duk_dup_m2(thr);
+	duk_push_boolean(thr, DUK_HEAP_HAS_FINALIZER_NORESCUE(thr->heap));
 	DUK_DDD(DUK_DDDPRINT("calling finalizer"));
-	duk_call(ctx, 2);  /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */
+	duk_call(thr, 2);  /* [ ... obj finalizer obj heapDestruct ]  -> [ ... obj retval ] */
 	DUK_DDD(DUK_DDDPRINT("finalizer returned successfully"));
 	return 0;
 
@@ -373,7 +370,7 @@ DUK_LOCAL duk_ret_t duk__finalize_helper(duk_context *ctx, void *udata) {
 }
 
 DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
-	duk_context *ctx;
+	duk_hthread *thr;
 	duk_ret_t rc;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
@@ -383,12 +380,12 @@ DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
 
 	DUK_ASSERT(heap != NULL);
 	DUK_ASSERT(heap->heap_thread != NULL);
-	ctx = (duk_context *) heap->heap_thread;
+	thr = heap->heap_thread;
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(heap->heap_thread, 1);
 
 #if defined(DUK_USE_ASSERTIONS)
-	entry_top = duk_get_top(ctx);
+	entry_top = duk_get_top(thr);
 #endif
 	/*
 	 *  Get and call the finalizer.  All of this must be wrapped
@@ -425,20 +422,20 @@ DUK_INTERNAL void duk_heap_run_finalizer(duk_heap *heap, duk_hobject *obj) {
 	}
 #endif  /* DUK_USE_ES6_PROXY */
 
-	duk_push_hobject(ctx, obj);  /* this also increases refcount by one */
-	rc = duk_safe_call(ctx, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
-	DUK_ASSERT_TOP(ctx, entry_top + 2);  /* duk_safe_call discipline */
+	duk_push_hobject(thr, obj);  /* this also increases refcount by one */
+	rc = duk_safe_call(thr, duk__finalize_helper, NULL /*udata*/, 0 /*nargs*/, 1 /*nrets*/);  /* -> [... obj retval/error] */
+	DUK_ASSERT_TOP(thr, entry_top + 2);  /* duk_safe_call discipline */
 
 	if (rc != DUK_EXEC_SUCCESS) {
 		/* Note: we ask for one return value from duk_safe_call to get this
 		 * error debugging here.
 		 */
 		DUK_D(DUK_DPRINT("wrapped finalizer call failed for object %p (ignored); error: %!T",
-		                 (void *) obj, (duk_tval *) duk_get_tval(ctx, -1)));
+		                 (void *) obj, (duk_tval *) duk_get_tval(thr, -1)));
 	}
-	duk_pop_2(ctx);  /* -> [...] */
+	duk_pop_2(thr);  /* -> [...] */
 
-	DUK_ASSERT_TOP(ctx, entry_top);
+	DUK_ASSERT_TOP(thr, entry_top);
 }
 
 #else  /* DUK_USE_FINALIZER_SUPPORT */
