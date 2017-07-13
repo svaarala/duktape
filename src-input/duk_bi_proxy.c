@@ -89,7 +89,7 @@ DUK_INTERNAL void duk_proxy_ownkeys_postprocess(duk_context *ctx, duk_hobject *h
 DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_context *ctx) {
 	DUK_ASSERT_TOP(ctx, 2);  /* [ target handler ] */
 
-	duk_require_constructor_call(ctx);
+	DUK_ASSERT(duk_is_constructor_call(ctx));
 	duk_push_proxy(ctx);  /* [ target handler ] -> [ proxy ] */
 	return 1;  /* replacement */
 }

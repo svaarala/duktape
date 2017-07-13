@@ -279,8 +279,14 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 
 			/* Almost all global level Function objects are constructable
 			 * but not all: Function.prototype is a non-constructable,
-			 * callable Function.
+			 * callable Function.  Some built-ins are only constructable,
+			 * not callable as normal functions, e.g. Uint8Array constructor.
 			 */
+			if (duk_bd_decode_flag(bd)) {
+				DUK_ASSERT(DUK_HOBJECT_HAS_CALLABLE(h));
+			} else {
+				DUK_HOBJECT_CLEAR_CALLABLE(h);
+			}
 			if (duk_bd_decode_flag(bd)) {
 				DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE(h));
 			} else {

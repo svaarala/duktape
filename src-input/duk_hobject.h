@@ -36,6 +36,11 @@
  * inspection code.
  */
 
+/* FIXME: ES spec: all construct-only functions have [[Call]] and [[Construct]]
+ * so the modeling is not 1:1.  Maybe rename so that _CALLABLE means either one?
+ * _CONSTRUCTABLE..
+ */
+
 /* XXX: some flags are object subtype specific (e.g. common to all function
  * subtypes, duk_harray, etc) and could be reused for different subtypes.
  */
@@ -187,6 +192,7 @@
                                                         DUK_HOBJECT_FLAG_NATFUNC)
 
 #define DUK_HOBJECT_IS_CALLABLE(h)             DUK_HOBJECT_HAS_CALLABLE((h))
+#define DUK_HOBJECT_IS_CONSTRUCTABLE(h)        DUK_HOBJECT_HAS_CONSTRUCTABLE((h))
 
 /* Object has any exotic behavior(s). */
 #define DUK_HOBJECT_EXOTIC_BEHAVIOR_FLAGS      (DUK_HOBJECT_FLAG_EXOTIC_ARRAY | \

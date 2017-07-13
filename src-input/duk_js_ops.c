@@ -1044,20 +1044,17 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	/*
 	 *  For bound objects, [[HasInstance]] just calls the target function
 	 *  [[HasInstance]].  If that is again a bound object, repeat until
-	 *  we find a non-bound Function object.
+	 *  we find a non-bound Function object.  The bound function chain is
+	 *  now "collapsed" so there can be only one bound function in the chain.
 	 *
-	 *  The bound function chain is now "collapsed" so there can be only
-	 *  one bound function in the chain.
+	 *  Of native Ecmascript objects, only Function instances have a
+	 *  [[HasInstance]] internal property.  Custom objects might also have
+	 *  it, but not in current implementation.
+	 *
+	 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
 	 */
 
-	if (!DUK_HOBJECT_IS_CALLABLE(func)) {
-		/*
-		 *  Note: of native Ecmascript objects, only Function instances
-		 *  have a [[HasInstance]] internal property.  Custom objects might
-		 *  also have it, but not in current implementation.
-		 *
-		 *  XXX: add a separate flag, DUK_HOBJECT_FLAG_ALLOW_INSTANCEOF?
-		 */
+	if (!(DUK_HOBJECT_IS_CALLABLE(func) || DUK_HOBJECT_IS_CONSTRUCTABLE(func))) {
 		DUK_ERROR_TYPE(thr, "invalid instanceof rval");
 	}
 
@@ -1070,7 +1067,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 		 * functions whose target is not proper.
 		 */
 		DUK_ASSERT(func != NULL);
-		DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
+		DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func) || DUK_HOBJECT_IS_CONSTRUCTABLE(func));
 	}
 
 	/*
@@ -1082,6 +1079,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	DUK_ASSERT(func != NULL);
 	DUK_ASSERT(!DUK_HOBJECT_HAS_BOUNDFUNC(func));
 	DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func));
+	DUK_ASSERT(DUK_HOBJECT_IS_CALLABLE(func) || DUK_HOBJECT_IS_CONSTRUCTABLE(func));
 
 	/* [ ... lval rval(func) ] */
 
@@ -1267,7 +1265,7 @@ DUK_INTERNAL duk_small_uint_t duk_js_typeof_stridx(duk_tval *tv_x) {
 	case DUK_TAG_OBJECT: {
 		duk_hobject *obj = DUK_TVAL_GET_OBJECT(tv_x);
 		DUK_ASSERT(obj != NULL);
-		if (DUK_HOBJECT_IS_CALLABLE(obj)) {
+		if (DUK_HOBJECT_IS_CALLABLE(obj) || DUK_HOBJECT_IS_CONSTRUCTABLE(obj)) {
 			stridx = DUK_STRIDX_LC_FUNCTION;
 		} else {
 			stridx = DUK_STRIDX_LC_OBJECT;

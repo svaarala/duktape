@@ -344,7 +344,8 @@ DUK_INTERNAL duk_ret_t duk_bi_textencoder_constructor(duk_context *ctx) {
 	 * does nothing on purpose.
 	 */
 
-	duk_require_constructor_call(ctx);
+	DUK_UNREF(ctx);
+	DUK_ASSERT(duk_is_constructor_call(ctx));
 	return 0;
 }
 
@@ -441,7 +442,7 @@ DUK_INTERNAL duk_ret_t duk_bi_textdecoder_constructor(duk_context *ctx) {
 	duk_bool_t ignore_bom = 0;
 
 	DUK_ASSERT_TOP(ctx, 2);
-	duk_require_constructor_call(ctx);
+	DUK_ASSERT(duk_is_constructor_call(ctx));
 	if (!duk_is_undefined(ctx, 0)) {
 		/* XXX: For now ignore 'label' (encoding identifier). */
 		duk_to_string(ctx, 0);

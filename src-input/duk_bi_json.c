@@ -2104,6 +2104,7 @@ DUK_LOCAL duk_bool_t duk__enc_value(duk_json_enc_ctx *js_ctx, duk_idx_t idx_hold
 			 * value is NOT looked up like for e.g. String objects).
 			 */
 			DUK_ASSERT(h != NULL);
+			/* FIXME: grep all CALLABLE checks and see if they should be CALLABLE || CONSTRUCTABLE */
 			if (DUK_HOBJECT_IS_CALLABLE(h)) {
 #if defined(DUK_USE_JX) || defined(DUK_USE_JC)
 				if (js_ctx->flags & (DUK_JSON_FLAG_EXT_CUSTOM |
