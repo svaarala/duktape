@@ -125,5 +125,8 @@ typedef double duk_double_t;
 #endif
 #endif
 
-/* Type for public API calls. */
+/* Type used in public API declarations and user code.  Typedef maps to
+ * 'struct duk_hthread' like the 'duk_hthread' typedef which is used
+ * exclusively in internals.
+ */
 typedef struct duk_hthread duk_context;
