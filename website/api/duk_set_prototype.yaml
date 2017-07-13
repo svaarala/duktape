@@ -8,9 +8,9 @@ stack: |
 
 summary: |
   <p>Set the internal prototype of the value at <code>idx</code> to the value
-  at stack top (which must be an object or <code>undefined</code>).  If the
-  target value is not an object or the prototype value is not an object or
-  <code>undefined</code>, an error is thrown.</p>
+  at stack top If the target value is not an object or the prototype value is
+  not an object, <code>undefined</code>, or <code>null</code>, an error is
+  thrown.</p>
 
   <div class="note">
   Unlike Ecmascript prototype manipulation primitives, this API call allows
