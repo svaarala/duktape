@@ -9,4 +9,5 @@ extern const void *ajsheap_extstr_check_3(const void *ptr, duk_size_t len);
 extern void ajsheap_extstr_free_1(const void *ptr);
 extern void ajsheap_extstr_free_2(const void *ptr);
 extern void ajsheap_extstr_free_3(const void *ptr);
+extern void *ajsheap_extbc_check(void *ptr, duk_size_t len);
 extern duk_bool_t ajsheap_exec_timeout_check(void *udata);

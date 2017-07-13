@@ -101,7 +101,7 @@
 
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x) \
-	((void *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (x))->h_extra16))
+	((duk_uint8_t *) DUK_USE_HEAPPTR_DEC16((heap)->heap_udata, ((duk_heaphdr *) (x))->h_extra16))
 #define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
 		((duk_heaphdr *) (x))->h_extra16 = DUK_USE_HEAPPTR_ENC16((heap)->heap_udata, (void *) (v)); \
 	} while (0)
@@ -111,10 +111,10 @@
 #else
 #define DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(heap,x)       ((x)->curr_alloc)
 #define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR(heap,x,v)     do { \
-		(x)->curr_alloc = (void *) (v); \
+		(x)->curr_alloc = (duk_uint8_t *) (v); \
 	} while (0)
 #define DUK_HBUFFER_DYNAMIC_SET_DATA_PTR_NULL(heap,x)  do { \
-		(x)->curr_alloc = (void *) NULL; \
+		(x)->curr_alloc = (duk_uint8_t *) NULL; \
 	} while (0)
 #endif
 
@@ -123,21 +123,21 @@
  */
 #if defined(DUK_USE_HEAPPTR16)
 #define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
-	((void *) (x)->curr_alloc)
+	((duk_uint8_t *) (x)->curr_alloc)
 #define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
-		(x)->curr_alloc = (void *) (v); \
+		(x)->curr_alloc = (duk_uint8_t *) (v); \
 	} while (0)
 #define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
-		(x)->curr_alloc = (void *) NULL; \
+		(x)->curr_alloc = (duk_uint8_t *) NULL; \
 	} while (0)
 #else
 #define DUK_HBUFFER_EXTERNAL_GET_DATA_PTR(heap,x) \
 	((void *) (x)->curr_alloc)
 #define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR(heap,x,v)     do { \
-		(x)->curr_alloc = (void *) (v); \
+		(x)->curr_alloc = (duk_uint8_t *) (v); \
 	} while (0)
 #define DUK_HBUFFER_EXTERNAL_SET_DATA_PTR_NULL(heap,x)  do { \
-		(x)->curr_alloc = (void *) NULL; \
+		(x)->curr_alloc = (duk_uint8_t *) NULL; \
 	} while (0)
 #endif
 
@@ -282,7 +282,7 @@ struct duk_hbuffer_dynamic {
 #if defined(DUK_USE_HEAPPTR16)
 	/* Stored in duk_heaphdr h_extra16. */
 #else
-	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
+	duk_uint8_t *curr_alloc;  /* may be NULL if alloc_size == 0 */
 #endif
 
 	/*
@@ -311,7 +311,7 @@ struct duk_hbuffer_external {
 	/* Cannot be compressed as a heap pointer because may point to
 	 * an arbitrary address.
 	 */
-	void *curr_alloc;  /* may be NULL if alloc_size == 0 */
+	duk_uint8_t *curr_alloc;  /* may be NULL if alloc_size == 0 */
 };
 
 /*

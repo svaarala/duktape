@@ -1342,7 +1342,9 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 
 		duk_activation *act;
 		duk_catcher *cat;
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 		duk_hthread *resumer;
+#endif
 
 		for (;;) {
 			act = thr->callstack_curr;
@@ -1396,6 +1398,7 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 			duk_hthread_activation_unwind_norz(thr);
 		}
 
+#if defined(DUK_USE_COROUTINE_SUPPORT)
 		DUK_DD(DUK_DDPRINT("-> throw not caught by current thread, yield error to resumer and recheck longjmp"));
 
 		/* Not caught by current thread, thread terminates (yield error to resumer);
@@ -1429,6 +1432,13 @@ DUK_LOCAL duk_small_uint_t duk__handle_longjmp(duk_hthread *thr, duk_activation 
 		DUK_HEAP_SWITCH_THREAD(thr->heap, resumer);
 		thr = resumer;
 		goto check_longjmp;
+#else  /* DUK_USE_COROUTINE_SUPPORT */
+		/* Without coroutine support always an uncaught error and should
+		 * be handled above.
+		 */
+		DUK_D(DUK_DPRINT("uncaught error without coroutine support; should not happen, cause internal error"));
+		goto convert_to_internal_error;
+#endif  /* DUK_USE_COROUTINE_SUPPORT */
 	}
 
 	case DUK_LJ_TYPE_BREAK:  /* pseudotypes, not used in actual longjmps */
@@ -3425,7 +3435,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_small_uint_t stridx;
 
 			stridx = duk_js_typeof_stridx(DUK__REGP_BC(ins));
-			DUK_ASSERT(stridx >= 0 && stridx < DUK_HEAP_NUM_STRINGS);
+			DUK_ASSERT_STRIDX_VALID(stridx);
 			duk_push_hstring_stridx((duk_context *) thr, stridx);
 			DUK__REPLACE_TOP_A_BREAK();
 		}

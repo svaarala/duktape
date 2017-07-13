@@ -660,6 +660,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_context *ctx = (duk_context *) thr;
 	duk_hcompfunc *h_res;
 	duk_hbuffer_fixed *h_data;
+	duk_uint8_t *ext_bc_ptr = NULL;
 	duk_size_t consts_count;
 	duk_size_t funcs_count;
 	duk_size_t code_count;
@@ -669,7 +670,6 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_tval *p_const;
 	duk_hobject **p_func;
 	duk_instr_t *p_instr;
-	duk_compiler_instr *q_instr;
 	duk_tval *tv;
 	duk_bool_t keep_varmap;
 	duk_bool_t keep_formals;
@@ -744,6 +744,61 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	}
 
 	/*
+	 *  When external bytecode support is enabled, offer the bytecode
+	 *  first to the application before allocating a buffer with all
+	 *  the parts in place.  This keeps the memory usage peak as low
+	 *  as possible.
+	 */
+
+#if defined(DUK_USE_EXTBC_CHECK)
+#if defined(DUK_USE_PC2LINE)
+	/* With PC2LINE, need a temporary buffer. */
+	{
+		duk_instr_t *tmp_dst;
+		duk_compiler_instr *tmp_src;
+		duk_uint8_t *bc_ptr;
+		duk_size_t bc_size;
+		duk_size_t bc_count;
+
+		tmp_dst = (duk_instr_t *) duk_push_fixed_buffer(ctx, DUK_BW_GET_SIZE(thr, &func->bw_code));
+		DUK_ASSERT(tmp_dst != NULL);
+		tmp_src = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
+		bc_size = DUK_BW_GET_SIZE(thr, &func->bw_code);
+		bc_count = bc_size / sizeof(duk_compiler_instr);
+		for (i = 0; i < bc_count; i++) {
+			tmp_dst[i] = tmp_src[i].ins;
+		}
+
+		bc_ptr = (duk_uint8_t *) tmp_dst;
+		ext_bc_ptr = DUK_USE_EXTBC_CHECK(thr->heap->heap_udata, bc_ptr, bc_size);
+		if (ext_bc_ptr != NULL) {
+			DUK_DD(DUK_DDPRINT("bytecode %p (len %lu) moved to external buffer -> %p",
+			                   (void *) bc_ptr, (unsigned long) bc_size, (void *) ext_bc_ptr));
+		}
+
+		duk_pop(ctx);
+	}
+#else  /* DUK_USE_PC2LINE */
+	/* Without PC2LINE, the temporary register list matches 1:1 with the
+	 * final one, so no temporary buffer is needed.
+	 */
+	DUK_ASSERT(sizeof(duk_compiler_instr) == sizeof(duk_instr_t));
+	{
+		duk_uint8_t *bc_ptr;
+		duk_size_t bc_size;
+
+		bc_ptr = (duk_uint8_t *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
+		bc_size = DUK_BW_GET_SIZE(thr, &func->bw_code);
+		ext_bc_ptr = DUK_USE_EXTBC_CHECK(thr->heap->heap_udata, bc_ptr, bc_size);
+		if (ext_bc_ptr != NULL) {
+			DUK_DD(DUK_DDPRINT("bytecode %p (len %lu) moved to external buffer -> %p",
+			                   (void *) bc_ptr, (unsigned long) bc_size, (void *) ext_bc_ptr));
+		}
+	}
+#endif  /* DUK_USE_PC2LINE */
+#endif  /* DUK_USE_EXTBC_CHECK */
+
+	/*
 	 *  Build function fixed size 'data' buffer, which contains bytecode,
 	 *  constants, and inner function references.
 	 *
@@ -757,9 +812,14 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	code_count = DUK_BW_GET_SIZE(thr, &func->bw_code) / sizeof(duk_compiler_instr);
 	code_size = code_count * sizeof(duk_instr_t);
 
-	data_size = consts_count * sizeof(duk_tval) +
-	            funcs_count * sizeof(duk_hobject *) +
-	            code_size;
+	if (ext_bc_ptr != NULL) {
+		data_size = consts_count * sizeof(duk_tval) +
+		            funcs_count * sizeof(duk_hobject *);
+	} else {
+		data_size = consts_count * sizeof(duk_tval) +
+		            funcs_count * sizeof(duk_hobject *) +
+		            code_size;
+	}
 
 	DUK_DDD(DUK_DDDPRINT("consts_count=%ld, funcs_count=%ld, code_size=%ld -> "
 	                     "data_size=%ld*%ld + %ld*%ld + %ld = %ld",
@@ -771,23 +831,22 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	duk_push_fixed_buffer_nozero(ctx, data_size);
 	h_data = (duk_hbuffer_fixed *) duk_known_hbuffer(ctx, -1);
 
-	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
-	DUK_HEAPHDR_INCREF(thr, h_data);
+	/* Incrementing refcounts here before setting 'h_data' to the
+	 * duk_hcompfunc instance is safe as long as no side effects
+	 * are possible.
+	 */
 
 	p_const = (duk_tval *) (void *) DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data);
 	for (i = 0; i < consts_count; i++) {
 		DUK_ASSERT(i <= DUK_UARRIDX_MAX);  /* const limits */
 		tv = duk_hobject_find_existing_array_entry_tval_ptr(thr->heap, func->h_consts, (duk_uarridx_t) i);
 		DUK_ASSERT(tv != NULL);
-		DUK_TVAL_SET_TVAL(p_const, tv);
-		p_const++;
+		DUK_TVAL_SET_TVAL(p_const + i, tv);
 		DUK_TVAL_INCREF(thr, tv);  /* may be a string constant */
-
 		DUK_DDD(DUK_DDDPRINT("constant: %!T", (duk_tval *) tv));
 	}
 
-	p_func = (duk_hobject **) p_const;
-	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, h_res, p_func);
+	p_func = (duk_hobject **) (p_const + consts_count);
 	for (i = 0; i < funcs_count; i++) {
 		duk_hobject *h;
 		DUK_ASSERT(i * 3 <= DUK_UARRIDX_MAX);  /* func limits */
@@ -797,24 +856,54 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		h = DUK_TVAL_GET_OBJECT(tv);
 		DUK_ASSERT(h != NULL);
 		DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC(h));
-		*p_func++ = h;
+		p_func[i] = h;
 		DUK_HOBJECT_INCREF(thr, h);
 
 		DUK_DDD(DUK_DDDPRINT("inner function: %p -> %!iO",
 		                     (void *) h, (duk_heaphdr *) h));
 	}
 
-	p_instr = (duk_instr_t *) p_func;
+	if (ext_bc_ptr != NULL) {
+		p_instr = (duk_instr_t *) ext_bc_ptr;
+	} else {
+		duk_compiler_instr *q_instr;
+
+		p_instr = (duk_instr_t *) (p_func + funcs_count);
+		q_instr = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
+#if defined(DUK_USE_PC2LINE)
+		for (i = 0; i < code_count; i++) {
+			p_instr[i] = q_instr[i].ins;
+		}
+#else
+		DUK_ASSERT(sizeof(duk_compiler_instr) == sizeof(duk_instr_t));
+		DUK_MEMCPY((void *) p_instr, (const void *) q_instr, code_count * sizeof(duk_instr_t));
+#endif
+	}
+
+	/* XXX: range checks for compression, _size field assignment */
+	DUK_HCOMPFUNC_SET_DATA(thr->heap, h_res, (duk_hbuffer *) h_data);
+	DUK_HEAPHDR_INCREF(thr, h_data);
+	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, h_res, p_func);
 	DUK_HCOMPFUNC_SET_BYTECODE(thr->heap, h_res, p_instr);
 
-	/* copy bytecode instructions one at a time */
-	q_instr = (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code);
-	for (i = 0; i < code_count; i++) {
-		p_instr[i] = q_instr[i].ins;
-	}
-	/* Note: 'q_instr' is still used below */
+#if defined(DUK_USE_OBJSIZES16)
+	h_res->bytecode_size = (duk_uint16_t) (code_count * sizeof(duk_instr_t));
+	h_res->consts_size = (duk_uint16_t) (consts_count * sizeof(duk_tval));
+	h_res->funcs_size = (duk_uint16_t) (funcs_count * sizeof(duk_hobject *));
+#else
+	h_res->bytecode_size = (duk_size_t) (code_count * sizeof(duk_instr_t));
+	h_res->consts_size = (duk_size_t) (consts_count * sizeof(duk_tval));
+	h_res->funcs_size = (duk_size_t) (funcs_count * sizeof(duk_hobject *));
+#endif
 
-	DUK_ASSERT((duk_uint8_t *) (p_instr + code_count) == DUK_HBUFFER_FIXED_GET_DATA_PTR(thr->heap, h_data) + data_size);
+	DUK_DD(DUK_DDPRINT("consts: %p %p %ld\n",
+		(void *) DUK_HCOMPFUNC_GET_CONSTS_BASE(thr->heap, h_res),
+		(void *) DUK_HCOMPFUNC_GET_CONSTS_END(thr->heap, h_res),
+		(long) DUK_HCOMPFUNC_GET_CONSTS_SIZE(thr->heap, h_res)));
+	DUK_DD(DUK_DDPRINT("bytecode: %p %p %ld\n",
+		(void *) DUK_HCOMPFUNC_GET_CODE_BASE(thr->heap, h_res),
+		(void *) DUK_HCOMPFUNC_GET_CODE_END(thr->heap, h_res),
+		(long) DUK_HCOMPFUNC_GET_CODE_SIZE(thr->heap, h_res)));
 
 	duk_pop(ctx);  /* 'data' (and everything in it) is reachable through h_res now */
 
@@ -854,7 +943,6 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 	 * register mappings after a cleanup.  When debugging is enabled, we
 	 * always need the varmap to be able to lookup variables at any point.
 	 */
-
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 	DUK_DD(DUK_DDPRINT("keeping _Varmap because debugger support is enabled"));
 	keep_varmap = 1;
@@ -988,7 +1076,7 @@ DUK_LOCAL void duk__convert_to_func_template(duk_compiler_ctx *comp_ctx) {
 		 */
 
 		DUK_ASSERT(code_count <= DUK_COMPILER_MAX_BYTECODE_LENGTH);
-		duk_hobject_pc2line_pack(thr, q_instr, (duk_uint_fast32_t) code_count);  /* -> pushes fixed buffer */
+		duk_hobject_pc2line_pack(thr, (duk_compiler_instr *) (void *) DUK_BW_GET_BASEPTR(thr, &func->bw_code), (duk_uint_fast32_t) code_count);  /* -> pushes fixed buffer */
 		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_INT_PC2LINE, DUK_PROPDESC_FLAGS_NONE);
 
 		/* XXX: if assertions enabled, walk through all valid PCs

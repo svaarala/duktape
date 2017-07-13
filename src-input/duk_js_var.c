@@ -148,11 +148,15 @@ void duk_js_push_closure(duk_hthread *thr,
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) fun_clos));
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_clos) == NULL);
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_clos) == NULL);
+#if 0 /* XXX: these don't work with the offset approach because with a NULL base the offsetted pointers are != NULL */
 	DUK_ASSERT(DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_clos) == NULL);
-
+#endif
 	DUK_HCOMPFUNC_SET_DATA(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_DATA(thr->heap, fun_temp));
 	DUK_HCOMPFUNC_SET_FUNCS(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_FUNCS(thr->heap, fun_temp));
 	DUK_HCOMPFUNC_SET_BYTECODE(thr->heap, fun_clos, DUK_HCOMPFUNC_GET_BYTECODE(thr->heap, fun_temp));
+	fun_clos->bytecode_size = fun_temp->bytecode_size;
+	fun_clos->consts_size = fun_temp->consts_size;
+	fun_clos->funcs_size = fun_temp->funcs_size;
 
 	/* Note: all references inside 'data' need to get their refcounts
 	 * upped too.  This is the case because refcounts are decreased

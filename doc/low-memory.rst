@@ -46,6 +46,9 @@ realistic memory targets are roughly:
   - Requires use of ROM strings and objects to reduce Duktape startup
     RAM usage (which drops to around 2-3kB with ROM strings/objects).
 
+  - Mapping Ecmascript function bytecode to ROM (read-only code section)
+    may be useful.
+
 * 128kB system flash memory (code) and 32kB system RAM
 
   - Requires the above, and removing built-in bindings like the global
@@ -342,6 +345,17 @@ system RAM):
 
   - As of Duktape 1.5 an alternative to external strings is to move strings
     (including the string heap header) to ROM, see below.
+
+* Enable mapping compiled Ecmascript function bytecode, i.e. the opcodes
+  but not constants which involve pointers, into a user supplied data area.
+  The data area can be e.g. memory mapped flash, or even read-only memory
+  if known bytecode sequences are pre-compiled and cached.
+
+  - ``#define DUK_USE_EXTBC_CHECK(udata,ptr,len)``, return non-NULL if
+    bytecode at ``[ptr,ptr+len[`` has been moved to a user supplied data
+    area.
+
+  - See config option description for details.
 
 * Enable struct packing in compiler options if your platform doesn't have
   strict alignment requirements, e.g. on gcc/x86 you can:
