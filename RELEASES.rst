@@ -2993,7 +2993,7 @@ Planned
   table size estimates for NEWOBJ and NEWARR opcodes (object and array
   literals) (GH-1596, GH-1597); duk_concat_2() internal helper for str+str
   arithmetic (GH-1599); larger spare for bufwriter in non-lowmem build
-  (GH-1611)
+  (GH-1611); faster internal duk_to_number_tval() (GH-1612)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
