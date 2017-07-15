@@ -626,10 +626,10 @@ DUK_LOCAL void duk__bi_exp_small(duk__bigint *x, duk_small_int_t b, duk_small_in
  */
 
 /* Maximum number of digits generated. */
-#define DUK__MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + spare */
+#define DUK__MAX_OUTPUT_DIGITS          1040  /* (Number.MAX_VALUE).toString(2).length == 1024, + slack */
 
 /* Maximum number of characters in formatted value. */
-#define DUK__MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + spare */
+#define DUK__MAX_FORMATTED_LENGTH       1040  /* (-Number.MAX_VALUE).toString(2).length == 1025, + slack */
 
 /* Number and (minimum) size of bigints in the nc_ctx structure. */
 #define DUK__NUMCONV_CTX_NUM_BIGINTS    7

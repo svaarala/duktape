@@ -25,7 +25,7 @@ struct duk_hnatfunc {
 	 * versa.
 	 *
 	 * Note: cannot place nargs/magic into the heaphdr flags, because
-	 * duk_hobject takes almost all flags already (and needs the spare).
+	 * duk_hobject takes almost all flags already.
 	 */
 };
 

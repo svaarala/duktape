@@ -1577,7 +1577,7 @@ DUK_LOCAL void duk__enc_buffer_json_fastpath(duk_json_enc_ctx *js_ctx, duk_hbuff
 	DUK__EMIT_1(js_ctx, DUK_ASC_LCURLY);
 
 	/* Maximum encoded length with 32-bit index: 1 + 10 + 2 + 3 + 1 + 1 = 18,
-	 * with 64-bit index: 1 + 20 + 2 + 3 + 1 + 1 = 28.  32 has some spare.
+	 * with 64-bit index: 1 + 20 + 2 + 3 + 1 + 1 = 28.  32 has some slack.
 	 *
 	 * Note that because the output buffer is reallocated from time to time,
 	 * side effects (such as finalizers) affecting the buffer 'h' must be

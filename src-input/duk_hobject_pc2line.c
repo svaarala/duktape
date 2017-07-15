@@ -26,10 +26,6 @@ DUK_INTERNAL void duk_hobject_pc2line_pack(duk_hthread *thr, duk_compiler_instr 
 
 	DUK_ASSERT(length <= DUK_COMPILER_MAX_BYTECODE_LENGTH);
 
-	/* XXX: add proper spare handling to dynamic buffer, to minimize
-	 * reallocs; currently there is no spare at all.
-	 */
-
 	num_header_entries = (length + DUK_PC2LINE_SKIP - 1) / DUK_PC2LINE_SKIP;
 	curr_offset = (duk_uint_fast32_t) (sizeof(duk_uint32_t) + num_header_entries * sizeof(duk_uint32_t) * 2);
 

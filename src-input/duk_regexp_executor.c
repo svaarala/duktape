@@ -544,7 +544,7 @@ DUK_LOCAL const duk_uint8_t *duk__match_regexp(duk_re_matcher_ctx *re_ctx, const
 			 *  The temporary save buffer is pushed on to the valstack to handle
 			 *  errors correctly.  Each lookahead causes a C recursion and pushes
 			 *  more stuff on the value stack.  If the C recursion limit is less
-			 *  than the value stack spare, there is no need to check the stack.
+			 *  than the value stack slack, there is no need to check the stack.
 			 *  We do so regardless, just in case.
 			 */
 

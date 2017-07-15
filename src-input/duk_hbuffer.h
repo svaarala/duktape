@@ -55,9 +55,6 @@
  *  Field access
  */
 
-/* Get/set the current user visible size, without accounting for a dynamic
- * buffer's "spare" (= usable size).
- */
 #if defined(DUK_USE_BUFLEN16)
 /* size stored in duk_heaphdr unused flag bits */
 #define DUK_HBUFFER_GET_SIZE(x)     ((x)->hdr.h_flags >> 16)
@@ -177,7 +174,7 @@ struct duk_hbuffer {
 	 * it is useful for writing robust native code.
 	 */
 
-	/* Current size (not counting a dynamic buffer's "spare"). */
+	/* Current size. */
 #if defined(DUK_USE_BUFLEN16)
 	/* Stored in duk_heaphdr unused flags. */
 #else

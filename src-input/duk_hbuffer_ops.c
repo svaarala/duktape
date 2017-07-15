@@ -1,12 +1,6 @@
 /*
  *  duk_hbuffer operations such as resizing and inserting/appending data to
  *  a dynamic buffer.
- *
- *  Append operations append to the end of the buffer and they are relatively
- *  efficient: the buffer is grown with a "spare" part relative to the buffer
- *  size to minimize reallocations.  Insert operations need to move existing
- *  data forward in the buffer with memmove() and are not very efficient.
- *  They are used e.g. by the regexp compiler to "backpatch" regexp bytecode.
  */
 
 #include "duk_internal.h"

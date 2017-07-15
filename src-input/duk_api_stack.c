@@ -626,7 +626,7 @@ DUK_EXTERNAL duk_idx_t duk_require_top_index(duk_hthread *thr) {
  */
 
 /* Low level valstack resize primitive, used for both grow and shrink.  All
- * adjustments for spares etc have already been done.  Doesn't throw but does
+ * adjustments for slack etc have already been done.  Doesn't throw but does
  * have allocation side effects.
  */
 DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__resize_valstack(duk_hthread *thr, duk_size_t new_size) {
@@ -784,12 +784,12 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE duk_bool_t duk__valstack_grow(duk_hthread *thr, 
 	min_size = min_bytes / sizeof(duk_tval);  /* from bytes to slots */
 
 #if defined(DUK_USE_VALSTACK_GROW_SHIFT)
-	/* New size is minimum size plus a proportional spare, e.g. shift of
-	 * 2 means a 25% spare.
+	/* New size is minimum size plus a proportional slack, e.g. shift of
+	 * 2 means a 25% slack.
 	 */
 	new_size = min_size + (min_size >> DUK_USE_VALSTACK_GROW_SHIFT);
 #else
-	/* New size is tight with no spare.  This is sometimes preferred in
+	/* New size is tight with no slack.  This is sometimes preferred in
 	 * low memory environments.
 	 */
 	new_size = min_size;
@@ -873,7 +873,7 @@ DUK_INTERNAL void duk_valstack_shrink_check_nothrow(duk_hthread *thr, duk_bool_t
 	if (snug) {
 		shrink_bytes = reserve_bytes;
 	} else {
-		duk_size_t proportion, spare;
+		duk_size_t proportion, slack;
 
 		/* Require that value stack shrinks by at least X% of its
 		 * current size.  For example, shift of 2 means at least
@@ -886,18 +886,18 @@ DUK_INTERNAL void duk_valstack_shrink_check_nothrow(duk_hthread *thr, duk_bool_t
 			return;
 		}
 
-		/* Keep a spare after shrinking.  The spare is again a
+		/* Keep a slack after shrinking.  The slack is again a
 		 * proportion of the current size (the proportion should
 		 * of course be smaller than the check proportion above).
 		 */
-#if defined(DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT)
-		DUK_ASSERT(DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT > DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT);
-		spare = alloc_bytes >> DUK_USE_VALSTACK_SHRINK_SPARE_SHIFT;
+#if defined(DUK_USE_VALSTACK_SHRINK_SLACK_SHIFT)
+		DUK_ASSERT(DUK_USE_VALSTACK_SHRINK_SLACK_SHIFT > DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT);
+		slack = alloc_bytes >> DUK_USE_VALSTACK_SHRINK_SLACK_SHIFT;
 #else
-		spare = 0;
+		slack = 0;
 #endif
 		shrink_bytes = reserve_bytes +
-		               spare / sizeof(duk_tval) * sizeof(duk_tval);  /* multiple of duk_tval */
+		               slack / sizeof(duk_tval) * sizeof(duk_tval);  /* multiple of duk_tval */
 	}
 #else  /* DUK_USE_VALSTACK_SHRINK_CHECK_SHIFT */
 	/* Always snug, useful in some low memory environments. */
@@ -4568,7 +4568,7 @@ DUK_EXTERNAL duk_idx_t duk_push_thread_raw(duk_hthread *thr, duk_uint_t flags) {
 	/* default prototype */
 	DUK_HOBJECT_SET_PROTOTYPE_INIT_INCREF(thr, (duk_hobject *) obj, obj->builtins[DUK_BIDX_THREAD_PROTOTYPE]);
 
-	/* Initial stack size satisfies the stack spare constraints so there
+	/* Initial stack size satisfies the stack slack constraints so there
 	 * is no need to require stack here.
 	 */
 	DUK_ASSERT(DUK_VALSTACK_INITIAL_SIZE >=
