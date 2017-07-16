@@ -77,7 +77,7 @@ function objectPropertyLimitTest() {
     //
     // To test the object property limit, define OBJSIZES16 but don't define
     // BUFLEN16.  Even in this case the property limit is triggered before
-    // 65536 because the "spare" allocated during a property table resize is
+    // 65536 because the "slack" allocated during a property table resize is
     // counted towards the limit.  (Right now the highest property count
     // reached is 64231 but that limit depends on tuning.)
 

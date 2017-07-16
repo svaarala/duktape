@@ -8,7 +8,7 @@ try finished
 ===*/
 
 /* This was broken at one point: executor left temp values on valstack
- * which eventually ran out of spare.
+ * which eventually ran out of slack.
  */
 
 try {
