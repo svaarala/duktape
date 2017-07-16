@@ -58,3 +58,7 @@
 #if defined(DUK_USE_REGEXP_CANON_WORKAROUND)
 #include "duk_unicode_re_canon_lookup.c"
 #endif
+
+#if defined(DUK_USE_REGEXP_CANON_BITMAP)
+#include "duk_unicode_re_canon_bitmap.c"
+#endif

@@ -827,6 +827,7 @@ duk_codepoint_t duk__slow_case_conversion(duk_hthread *thr,
 	duk_codepoint_t start_o;
 
 	DUK_ASSERT(bd_ctx != NULL);
+	DUK_UNREF(thr);
 
 	DUK_DDD(DUK_DDDPRINT("slow case conversion for codepoint: %ld", (long) cp));
 
