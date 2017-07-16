@@ -1,14 +1,12 @@
-/*
- *  Case insensitive regexp compilation has bad performance behavior at
- *  least up to Duktape 1.3.0.  Basic test for that behavior.
- */
 function test() {
     var i;
-    for (i = 0; i < 1e2; i++) {
+    var t1 = Date.now();
+    for (i = 0; i < 1e6; i++) {
         // Use a RegExp constructor call rather than a literal to ensure the
         // RegExp is compiled on every loop.
-        var re = new RegExp('[\\u0000-\\uffff]', 'i');
+        var re = new RegExp('[\\u0000-\\uffff]', '');
     }
+    print(((Date.now() - t1) / 1e6) + ' ms/test');
 }
 try {
     test();
