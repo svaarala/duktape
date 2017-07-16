@@ -5,15 +5,14 @@
 #include "duk_internal.h"
 
 /* Needed even when Function built-in is disabled. */
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype(duk_hthread *thr) {
 	/* ignore arguments, return undefined (E5 Section 15.3.4) */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	return 0;
 }
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)
-DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_hthread *thr) {
 	duk_hstring *h_sourcecode;
 	duk_idx_t nargs;
 	duk_idx_t i;
@@ -24,57 +23,57 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 
 	/* normal and constructor calls have identical semantics */
 
-	nargs = duk_get_top(ctx);
+	nargs = duk_get_top(thr);
 	for (i = 0; i < nargs; i++) {
-		duk_to_string(ctx, i);  /* Rejects Symbols during coercion. */
+		duk_to_string(thr, i);  /* Rejects Symbols during coercion. */
 	}
 
 	if (nargs == 0) {
-		duk_push_hstring_empty(ctx);
-		duk_push_hstring_empty(ctx);
+		duk_push_hstring_empty(thr);
+		duk_push_hstring_empty(thr);
 	} else if (nargs == 1) {
 		/* XXX: cover this with the generic >1 case? */
-		duk_push_hstring_empty(ctx);
+		duk_push_hstring_empty(thr);
 	} else {
-		duk_insert(ctx, 0);   /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
-		duk_push_string(ctx, ",");
-		duk_insert(ctx, 1);
-		duk_join(ctx, nargs - 1);
+		duk_insert(thr, 0);   /* [ arg1 ... argN-1 body] -> [body arg1 ... argN-1] */
+		duk_push_string(thr, ",");
+		duk_insert(thr, 1);
+		duk_join(thr, nargs - 1);
 	}
 
 	/* [ body formals ], formals is comma separated list that needs to be parsed */
 
-	DUK_ASSERT_TOP(ctx, 2);
+	DUK_ASSERT_TOP(thr, 2);
 
 	/* XXX: this placeholder is not always correct, but use for now.
 	 * It will fail in corner cases; see test-dev-func-cons-args.js.
 	 */
-	duk_push_string(ctx, "function(");
-	duk_dup_1(ctx);
-	duk_push_string(ctx, "){");
-	duk_dup_0(ctx);
-	duk_push_string(ctx, "}");
-	duk_concat(ctx, 5);
+	duk_push_string(thr, "function(");
+	duk_dup_1(thr);
+	duk_push_string(thr, "){");
+	duk_dup_0(thr);
+	duk_push_string(thr, "}");
+	duk_concat(thr, 5);
 
 	/* [ body formals source ] */
 
-	DUK_ASSERT_TOP(ctx, 3);
+	DUK_ASSERT_TOP(thr, 3);
 
 	/* strictness is not inherited, intentional */
 	comp_flags = DUK_COMPILE_FUNCEXPR;
 
-	duk_push_hstring_stridx(ctx, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
-	h_sourcecode = duk_require_hstring(ctx, -2);  /* no symbol check needed; -2 is concat'd code */
+	duk_push_hstring_stridx(thr, DUK_STRIDX_COMPILE);  /* XXX: copy from caller? */  /* XXX: ignored now */
+	h_sourcecode = duk_require_hstring(thr, -2);  /* no symbol check needed; -2 is concat'd code */
 	duk_js_compile(thr,
 	               (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_sourcecode),
 	               (duk_size_t) DUK_HSTRING_GET_BYTELEN(h_sourcecode),
 	               comp_flags);
 
 	/* Force .name to 'anonymous' (ES2015). */
-	duk_push_string(ctx, "anonymous");
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+	duk_push_string(thr, "anonymous");
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
 
-	func = (duk_hcompfunc *) duk_known_hobject(ctx, -1);
+	func = (duk_hcompfunc *) duk_known_hobject(thr, -1);
 	DUK_ASSERT(DUK_HOBJECT_IS_COMPFUNC((duk_hobject *) func));
 	DUK_ASSERT(DUK_HOBJECT_HAS_CONSTRUCTABLE((duk_hobject *) func));
 
@@ -96,7 +95,7 @@ DUK_INTERNAL duk_ret_t duk_bi_function_constructor(duk_context *ctx) {
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
 
 #if defined(DUK_USE_FUNCTION_BUILTIN)
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_hthread *thr) {
 	duk_tval *tv;
 
 	/*
@@ -119,8 +118,8 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	 *  [lightfunc code].
 	 */
 
-	duk_push_this(ctx);
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	duk_push_this(thr);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	DUK_ASSERT(tv != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -134,25 +133,25 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 		 * if the name contained a suitable prefix followed by '//' it
 		 * might cause the result to parse without error.
 		 */
-		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_NAME);
-		if (duk_is_undefined(ctx, -1)) {
+		duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_NAME);
+		if (duk_is_undefined(thr, -1)) {
 			func_name = "";
 		} else {
-			func_name = duk_to_string(ctx, -1);
+			func_name = duk_to_string(thr, -1);
 			DUK_ASSERT(func_name != NULL);
 		}
 
 		if (DUK_HOBJECT_IS_COMPFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() { [ecmascript code] }", (const char *) func_name);
+			duk_push_sprintf(thr, "function %s() { [ecmascript code] }", (const char *) func_name);
 		} else if (DUK_HOBJECT_IS_NATFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() { [native code] }", (const char *) func_name);
+			duk_push_sprintf(thr, "function %s() { [native code] }", (const char *) func_name);
 		} else if (DUK_HOBJECT_IS_BOUNDFUNC(obj)) {
-			duk_push_sprintf(ctx, "function %s() { [bound code] }", (const char *) func_name);
+			duk_push_sprintf(thr, "function %s() { [bound code] }", (const char *) func_name);
 		} else {
 			goto type_error;
 		}
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
-		duk_push_lightfunc_tostring(ctx, tv);
+		duk_push_lightfunc_tostring(thr, tv);
 	} else {
 		goto type_error;
 	}
@@ -160,36 +159,36 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_to_string(duk_context *ctx) {
 	return 1;
 
  type_error:
-	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 #endif
 
 /* Always present because the native function pointer is needed in call
  * handling.
  */
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_call(duk_hthread *thr) {
 	/* .call() is dealt with in call handling by simulating its
 	 * effects so this function is actually never called.
 	 */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	return DUK_RET_TYPE_ERROR;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_apply(duk_hthread *thr) {
 	/* Like .call(), never actually called. */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	return DUK_RET_TYPE_ERROR;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_reflect_apply(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_reflect_apply(duk_hthread *thr) {
 	/* Like .call(), never actually called. */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	return DUK_RET_TYPE_ERROR;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_hthread *thr) {
 	/* Like .call(), never actually called. */
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	return DUK_RET_TYPE_ERROR;
 }
 
@@ -199,8 +198,7 @@ DUK_INTERNAL duk_ret_t duk_bi_reflect_construct(duk_context *ctx) {
  * and 'this' binding of the functions are merged and the resulting
  * function points directly to the non-bound target.
  */
-DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_hthread *thr) {
 	duk_hboundfunc *h_bound;
 	duk_idx_t nargs;  /* bound args, not counting 'this' binding */
 	duk_idx_t bound_nargs;
@@ -210,17 +208,15 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	duk_tval *tv_res;
 	duk_tval *tv_tmp;
 
-	/* XXX: C API call, e.g. duk_push_bound_function(ctx, target_idx, nargs); */
-
-	DUK_UNREF(thr);
+	/* XXX: C API call, e.g. duk_push_bound_function(thr, target_idx, nargs); */
 
 	/* Vararg function, careful arg handling, e.g. thisArg may not
 	 * be present.
 	 */
-	nargs = duk_get_top(ctx) - 1;  /* actual args, not counting 'this' binding */
+	nargs = duk_get_top(thr) - 1;  /* actual args, not counting 'this' binding */
 	if (nargs < 0) {
 		nargs++;
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 	}
 	DUK_ASSERT(nargs >= 0);
 
@@ -231,14 +227,14 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 		DUK_DCERROR_RANGE_INVALID_COUNT(thr);
 	}
 
-	duk_push_this(ctx);
-	duk_require_callable(ctx, -1);
+	duk_push_this(thr);
+	duk_require_callable(thr, -1);
 
 	/* [ thisArg arg1 ... argN func ]  (thisArg+args == nargs+1 total) */
-	DUK_ASSERT_TOP(ctx, nargs + 2);
+	DUK_ASSERT_TOP(thr, nargs + 2);
 
 	/* Create bound function object. */
-	h_bound = duk_push_hboundfunc(ctx);
+	h_bound = duk_push_hboundfunc(thr);
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&h_bound->target));
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(&h_bound->this_binding));
 	DUK_ASSERT(h_bound->args == NULL);
@@ -254,9 +250,9 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	 */
 	tv_prevbound = NULL;
 	n_prevbound = 0;
-	tv_tmp = DUK_GET_TVAL_POSIDX(ctx, 0);
+	tv_tmp = DUK_GET_TVAL_POSIDX(thr, 0);
 	DUK_TVAL_SET_TVAL(&h_bound->this_binding, tv_tmp);
-	tv_tmp = DUK_GET_TVAL_NEGIDX(ctx, -2);
+	tv_tmp = DUK_GET_TVAL_NEGIDX(thr, -2);
 	DUK_TVAL_SET_TVAL(&h_bound->target, tv_tmp);
 
 	if (DUK_TVAL_IS_OBJECT(tv_tmp)) {
@@ -327,15 +323,15 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	h_bound->nargs = bound_nargs;
 
 	duk_copy_tvals_incref(thr, tv_res, tv_prevbound, n_prevbound);
-	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(ctx, 1), nargs);
+	duk_copy_tvals_incref(thr, tv_res + n_prevbound, DUK_GET_TVAL_POSIDX(thr, 1), nargs);
 
 	/* [ thisArg arg1 ... argN func boundFunc ] */
 
 	/* Bound function 'length' property is interesting.
 	 * For lightfuncs, simply read the virtual property.
 	 */
-	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH);
-	bound_len = duk_get_int(ctx, -1);  /* ES2015: no coercion */
+	duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH);
+	bound_len = duk_get_int(thr, -1);  /* ES2015: no coercion */
 	if (bound_len < nargs) {
 		bound_len = 0;
 	} else {
@@ -344,50 +340,50 @@ DUK_INTERNAL duk_ret_t duk_bi_function_prototype_bind(duk_context *ctx) {
 	if (sizeof(duk_int_t) > 4 && bound_len > (duk_int_t) DUK_UINT32_MAX) {
 		bound_len = (duk_int_t) DUK_UINT32_MAX;
 	}
-	duk_pop(ctx);
+	duk_pop(thr);
 	DUK_ASSERT(bound_len >= 0);
 	tv_tmp = thr->valstack_top++;
 	DUK_ASSERT(DUK_TVAL_IS_UNDEFINED(tv_tmp));
 	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(tv_tmp));
 	DUK_TVAL_SET_U32(tv_tmp, (duk_uint32_t) bound_len);  /* in-place update, fastint */
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);  /* attrs in E6 Section 9.2.4 */
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_C);  /* attrs in E6 Section 9.2.4 */
 
 	/* XXX: could these be virtual? */
 	/* Caller and arguments must use the same thrower, [[ThrowTypeError]]. */
-	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_CALLER);
-	duk_xdef_prop_stridx_thrower(ctx, -1, DUK_STRIDX_LC_ARGUMENTS);
+	duk_xdef_prop_stridx_thrower(thr, -1, DUK_STRIDX_CALLER);
+	duk_xdef_prop_stridx_thrower(thr, -1, DUK_STRIDX_LC_ARGUMENTS);
 
 	/* Function name and fileName (non-standard). */
-	duk_push_string(ctx, "bound ");  /* ES2015 19.2.3.2. */
-	duk_get_prop_stridx(ctx, -3, DUK_STRIDX_NAME);
-	if (!duk_is_string_notsymbol(ctx, -1)) {
+	duk_push_string(thr, "bound ");  /* ES2015 19.2.3.2. */
+	duk_get_prop_stridx(thr, -3, DUK_STRIDX_NAME);
+	if (!duk_is_string_notsymbol(thr, -1)) {
 		/* ES2015 has requirement to check that .name of target is a string
 		 * (also must check for Symbol); if not, targetName should be the
 		 * empty string.  ES2015 19.2.3.2.
 		 */
-		duk_pop(ctx);
-		duk_push_hstring_empty(ctx);
+		duk_pop(thr);
+		duk_push_hstring_empty(thr);
 	}
-	duk_concat(ctx, 2);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
+	duk_concat(thr, 2);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_NAME, DUK_PROPDESC_FLAGS_C);
 #if defined(DUK_USE_FUNC_FILENAME_PROPERTY)
-	duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
+	duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_FILE_NAME);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_FILE_NAME, DUK_PROPDESC_FLAGS_C);
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(ctx, -1)));
+	DUK_DDD(DUK_DDDPRINT("created bound function: %!iT", (duk_tval *) duk_get_tval(thr, -1)));
 
 	return 1;
 }
 #endif  /* DUK_USE_FUNCTION_BUILTIN */
 
 /* %NativeFunctionPrototype% .length getter. */
-DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_hthread *thr) {
 	duk_tval *tv;
 	duk_hnatfunc *h;
 	duk_int16_t func_nargs;
 
-	tv = duk_get_borrowed_this_tval(ctx);
+	tv = duk_get_borrowed_this_tval(thr);
 	DUK_ASSERT(tv != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -397,29 +393,29 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_length(duk_context *ctx) {
 			goto fail_type;
 		}
 		func_nargs = h->nargs;
-		duk_push_int(ctx, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
+		duk_push_int(thr, func_nargs == DUK_HNATFUNC_NARGS_VARARGS ? 0 : func_nargs);
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
 		duk_int_t lf_flags;
 		duk_int_t lf_len;
 
 		lf_flags = DUK_TVAL_GET_LIGHTFUNC_FLAGS(tv);
 		lf_len = DUK_LFUNC_FLAGS_GET_LENGTH(lf_flags);
-		duk_push_int(ctx, lf_len);
+		duk_push_int(thr, lf_len);
 	} else {
 		goto fail_type;
 	}
 	return 1;
 
  fail_type:
-	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }
 
 /* %NativeFunctionPrototype% .name getter. */
-DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_hthread *thr) {
 	duk_tval *tv;
 	duk_hnatfunc *h;
 
-	tv = duk_get_borrowed_this_tval(ctx);
+	tv = duk_get_borrowed_this_tval(thr);
 	DUK_ASSERT(tv != NULL);
 
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -429,16 +425,16 @@ DUK_INTERNAL duk_ret_t duk_bi_native_function_name(duk_context *ctx) {
 			goto fail_type;
 		}
 #if 0
-		duk_push_hnatfunc_name(ctx, h);
+		duk_push_hnatfunc_name(thr, h);
 #endif
-		duk_push_hstring_empty(ctx);
+		duk_push_hstring_empty(thr);
 	} else if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
-		duk_push_lightfunc_name(ctx, tv);
+		duk_push_lightfunc_name(thr, tv);
 	} else {
 		goto fail_type;
 	}
 	return 1;
 
  fail_type:
-	DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+	DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 }

@@ -18,8 +18,8 @@
 typedef double (*duk__one_arg_func)(double);
 typedef double (*duk__two_arg_func)(double, double);
 
-DUK_LOCAL duk_ret_t duk__math_minmax(duk_context *ctx, duk_double_t initial, duk__two_arg_func min_max) {
-	duk_idx_t n = duk_get_top(ctx);
+DUK_LOCAL duk_ret_t duk__math_minmax(duk_hthread *thr, duk_double_t initial, duk__two_arg_func min_max) {
+	duk_idx_t n = duk_get_top(thr);
 	duk_idx_t i;
 	duk_double_t res = initial;
 	duk_double_t t;
@@ -36,7 +36,7 @@ DUK_LOCAL duk_ret_t duk__math_minmax(duk_context *ctx, duk_double_t initial, duk
 	 */
 
 	for (i = 0; i < n; i++) {
-		t = duk_to_number(ctx, i);
+		t = duk_to_number(thr, i);
 		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN || DUK_FPCLASSIFY(res) == DUK_FP_NAN) {
 			/* Note: not normalized, but duk_push_number() will normalize */
 			res = (duk_double_t) DUK_DOUBLE_NAN;
@@ -45,7 +45,7 @@ DUK_LOCAL duk_ret_t duk__math_minmax(duk_context *ctx, duk_double_t initial, duk
 		}
 	}
 
-	duk_push_number(ctx, res);
+	duk_push_number(thr, res);
 	return 1;
 }
 
@@ -313,49 +313,49 @@ DUK_LOCAL const duk__two_arg_func duk__two_arg_funcs[] = {
 #endif
 };
 
-DUK_INTERNAL duk_ret_t duk_bi_math_object_onearg_shared(duk_context *ctx) {
-	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
+DUK_INTERNAL duk_ret_t duk_bi_math_object_onearg_shared(duk_hthread *thr) {
+	duk_small_int_t fun_idx = duk_get_current_magic(thr);
 	duk__one_arg_func fun;
 	duk_double_t arg1;
 
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__one_arg_funcs) / sizeof(duk__one_arg_func)));
-	arg1 = duk_to_number(ctx, 0);
+	arg1 = duk_to_number(thr, 0);
 	fun = duk__one_arg_funcs[fun_idx];
-	duk_push_number(ctx, (duk_double_t) fun((double) arg1));
+	duk_push_number(thr, (duk_double_t) fun((double) arg1));
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_context *ctx) {
-	duk_small_int_t fun_idx = duk_get_current_magic(ctx);
+DUK_INTERNAL duk_ret_t duk_bi_math_object_twoarg_shared(duk_hthread *thr) {
+	duk_small_int_t fun_idx = duk_get_current_magic(thr);
 	duk__two_arg_func fun;
 	duk_double_t arg1;
 	duk_double_t arg2;
 
 	DUK_ASSERT(fun_idx >= 0);
 	DUK_ASSERT(fun_idx < (duk_small_int_t) (sizeof(duk__two_arg_funcs) / sizeof(duk__two_arg_func)));
-	arg1 = duk_to_number(ctx, 0);  /* explicit ordered evaluation to match coercion semantics */
-	arg2 = duk_to_number(ctx, 1);
+	arg1 = duk_to_number(thr, 0);  /* explicit ordered evaluation to match coercion semantics */
+	arg2 = duk_to_number(thr, 1);
 	fun = duk__two_arg_funcs[fun_idx];
-	duk_push_number(ctx, (duk_double_t) fun((double) arg1, (double) arg2));
+	duk_push_number(thr, (duk_double_t) fun((double) arg1, (double) arg2));
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_context *ctx) {
-	return duk__math_minmax(ctx, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
+DUK_INTERNAL duk_ret_t duk_bi_math_object_max(duk_hthread *thr) {
+	return duk__math_minmax(thr, -DUK_DOUBLE_INFINITY, duk__fmax_fixed);
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_context *ctx) {
-	return duk__math_minmax(ctx, DUK_DOUBLE_INFINITY, duk__fmin_fixed);
+DUK_INTERNAL duk_ret_t duk_bi_math_object_min(duk_hthread *thr) {
+	return duk__math_minmax(thr, DUK_DOUBLE_INFINITY, duk__fmin_fixed);
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_context *ctx) {
-	duk_push_number(ctx, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx));
+DUK_INTERNAL duk_ret_t duk_bi_math_object_random(duk_hthread *thr) {
+	duk_push_number(thr, (duk_double_t) DUK_UTIL_GET_RANDOM_DOUBLE(thr));
 	return 1;
 }
 
 #if defined(DUK_USE_ES6)
-DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_hthread *thr) {
 	/*
 	 *  E6 Section 20.2.2.18: Math.hypot
 	 *
@@ -375,13 +375,13 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	duk_double_t comp, prelim;
 	duk_double_t t;
 
-	nargs = duk_get_top(ctx);
+	nargs = duk_get_top(thr);
 
 	/* Find the highest value.  Also ToNumber() coerces. */
 	max = 0.0;
 	found_nan = 0;
 	for (i = 0; i < nargs; i++) {
-		t = DUK_FABS(duk_to_number(ctx, i));
+		t = DUK_FABS(duk_to_number(thr, i));
 		if (DUK_FPCLASSIFY(t) == DUK_FP_NAN) {
 			found_nan = 1;
 		} else {
@@ -391,13 +391,13 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 
 	/* Early return cases. */
 	if (max == DUK_DOUBLE_INFINITY) {
-		duk_push_number(ctx, DUK_DOUBLE_INFINITY);
+		duk_push_number(thr, DUK_DOUBLE_INFINITY);
 		return 1;
 	} else if (found_nan) {
-		duk_push_number(ctx, DUK_DOUBLE_NAN);
+		duk_push_number(thr, DUK_DOUBLE_NAN);
 		return 1;
 	} else if (max == 0.0) {
-		duk_push_number(ctx, 0.0);
+		duk_push_number(thr, 0.0);
 		/* Otherwise we'd divide by zero. */
 		return 1;
 	}
@@ -410,45 +410,45 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_hypot(duk_context *ctx) {
 	sum = 0.0;
 	comp = 0.0;
 	for (i = 0; i < nargs; i++) {
-		t = DUK_FABS(duk_get_number(ctx, i)) / max;
+		t = DUK_FABS(duk_get_number(thr, i)) / max;
 		summand = (t * t) - comp;
 		prelim = sum + summand;
 		comp = (prelim - sum) - summand;
 		sum = prelim;
 	}
 
-	duk_push_number(ctx, (duk_double_t) DUK_SQRT(sum) * max);
+	duk_push_number(thr, (duk_double_t) DUK_SQRT(sum) * max);
 	return 1;
 }
 #endif  /* DUK_USE_ES6 */
 
 #if defined(DUK_USE_ES6)
-DUK_INTERNAL duk_ret_t duk_bi_math_object_sign(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_math_object_sign(duk_hthread *thr) {
 	duk_double_t d;
 
-	d = duk_to_number(ctx, 0);
+	d = duk_to_number(thr, 0);
 	if (duk_double_is_nan(d)) {
-		DUK_ASSERT(duk_is_nan(ctx, -1));
+		DUK_ASSERT(duk_is_nan(thr, -1));
 		return 1;  /* NaN input -> return NaN */
 	}
 	if (d == 0.0) {
 		/* Zero sign kept, i.e. -0 -> -0, +0 -> +0. */
 		return 1;
 	}
-	duk_push_int(ctx, (d > 0.0 ? 1 : -1));
+	duk_push_int(thr, (d > 0.0 ? 1 : -1));
 	return 1;
 }
 #endif  /* DUK_USE_ES6 */
 
 #if defined(DUK_USE_ES6)
-DUK_INTERNAL duk_ret_t duk_bi_math_object_clz32(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_math_object_clz32(duk_hthread *thr) {
 	duk_uint32_t x;
 	duk_small_uint_t i;
 
 #if defined(DUK_USE_PREFER_SIZE)
 	duk_uint32_t mask;
 
-	x = duk_to_uint32(ctx, 0);
+	x = duk_to_uint32(thr, 0);
 	for (i = 0, mask = 0x80000000UL; mask != 0; mask >>= 1) {
 		if (x & mask) {
 			break;
@@ -456,11 +456,11 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_clz32(duk_context *ctx) {
 		i++;
 	}
 	DUK_ASSERT(i <= 32);
-	duk_push_uint(ctx, i);
+	duk_push_uint(thr, i);
 	return 1;
 #else  /* DUK_USE_PREFER_SIZE */
 	i = 0;
-	x = duk_to_uint32(ctx, 0);
+	x = duk_to_uint32(thr, 0);
 	if (x & 0xffff0000UL) {
 		x >>= 16;
 	} else {
@@ -492,25 +492,25 @@ DUK_INTERNAL duk_ret_t duk_bi_math_object_clz32(duk_context *ctx) {
 		i += 1;
 	}
 	DUK_ASSERT(i <= 32);
-	duk_push_uint(ctx, i);
+	duk_push_uint(thr, i);
 	return 1;
 #endif  /* DUK_USE_PREFER_SIZE */
 }
 #endif  /* DUK_USE_ES6 */
 
 #if defined(DUK_USE_ES6)
-DUK_INTERNAL duk_ret_t duk_bi_math_object_imul(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_math_object_imul(duk_hthread *thr) {
 	duk_uint32_t x, y, z;
 
-	x = duk_to_uint32(ctx, 0);
-	y = duk_to_uint32(ctx, 1);
+	x = duk_to_uint32(thr, 0);
+	y = duk_to_uint32(thr, 1);
 	z = x * y;
 
 	/* While arguments are ToUint32() coerced and the multiplication
 	 * is unsigned as such, the final result is curiously interpreted
 	 * as a signed 32-bit value.
 	 */
-	duk_push_i32(ctx, (duk_int32_t) z);
+	duk_push_i32(thr, (duk_int32_t) z);
 	return 1;
 }
 #endif  /* DUK_USE_ES6 */

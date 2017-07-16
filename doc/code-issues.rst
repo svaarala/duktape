@@ -155,9 +155,9 @@ result to minimize error proneness::
 
 Labels are intended by one space relative to the parent tab depth::
 
-  DUK_LOCAL void duk__helper(duk_context *ctx) {
-          if (!ctx) {
-                  DUK_D(DUK_DPRINT("ctx is NULL"));
+  DUK_LOCAL void duk__helper(duk_hthread *thr) {
+          if (!thr) {
+                  DUK_D(DUK_DPRINT("thr is NULL"));
                   goto fail;
           }
 
@@ -308,11 +308,11 @@ Function declarations and definitions
 
 For functions with a small number of arguments::
 
-  DUK_INTERNAL_DECL void foo(duk_context *ctx, duk_idx_t idx);
+  DUK_INTERNAL_DECL void foo(duk_hthread *thr, duk_idx_t idx);
 
 In definition opening brace on same line::
 
-  DUK_INTERNAL void foo(duk_context *ctx, duk_idx_t idx) {
+  DUK_INTERNAL void foo(duk_hthread *thr, duk_idx_t idx) {
           /* ... */
   }
 
@@ -321,7 +321,7 @@ visibility macro (and other macros) on a separate line, arguments
 aligned with spaces::
 
   DUK_INTERNAL_DECL
-  void foo(duk_context *ctx,
+  void foo(duk_hthread *thr,
            duk_idx_t idx,
            duk_uint_t foo,
            duk_uint_t bar,
@@ -331,7 +331,7 @@ aligned with spaces::
 Again opening brace on the same line::
 
   DUK_INTERNAL
-  void foo(duk_context *ctx,
+  void foo(duk_hthread *thr,
            duk_idx_t idx,
            duk_uint_t foo,
            duk_uint_t bar,
@@ -345,15 +345,15 @@ Function calls with many difficult-to-identify arguments
 
 Example helper::
 
-  duk_bool_t frob(duk_context *ctx, int allow_foo, int allow_bar, int allow_quux);
+  duk_bool_t frob(duk_hthread *thr, int allow_foo, int allow_bar, int allow_quux);
 
 Such helpers lead to call sites which are difficult to read::
 
-  duk_bool_t rc = frob(ctx, 1, 0, 1);
+  duk_bool_t rc = frob(thr, 1, 0, 1);
 
 In such cases, inline comments can be used to clarify the argument names::
 
-  duk_bool_t rc = frob(ctx, 1 /*allow_foo*/, 0 /*allow_bar*/, 1 /*allow_quux*/);
+  duk_bool_t rc = frob(thr, 1 /*allow_foo*/, 0 /*allow_bar*/, 1 /*allow_quux*/);
 
 Include guards
 --------------
@@ -732,9 +732,9 @@ instructions in the compiled code.
 
 Current conventions:
 
-* The ``ctx`` or ``heap`` argument, if present, is always first.
+* The ``thr`` or ``heap`` argument, if present, is always first.
 
-* For callbacks, a userdata argument follows ``ctx`` or ``heap``; if neither
+* For callbacks, a userdata argument follows ``thr`` or ``heap``; if neither
   is present, the userdata argument is first.  Same applies to user-defined
   macros which accept a userdata argument (e.g. pointer compression macros).
 
@@ -742,6 +742,17 @@ Current conventions:
   callbacks is immediately after the callback(s) related to the userdata.
 
 * Flags fields are typically last.
+
+duk_context vs. duk_hthread
+===========================
+
+Both ``duk_context`` and ``duk_hthread`` typedefs resolve to
+``struct duk_hthread`` so they're interchangeable.  Guidelines:
+
+* Use ``duk_context *ctx`` only in public API declarations.
+
+* Use ``duk_hthread *thr`` everywhere else, in all internals,
+  including the definitions of public API functions.
 
 Symbol visibility
 =================
@@ -887,7 +898,7 @@ Sharing of constant internal strings has multiple considerations:
     const char *shared_string = "shared string;
 
     /* foo.c */
-    duk_push_sprintf(ctx, "%s", shared_string);
+    duk_push_sprintf(thr, "%s", shared_string);
 
     /* bar.c */
     sprintf(buf, "%s: %d", shared_string, 123);
@@ -970,7 +981,7 @@ macro expansions to be included in the function call arguments.
 
 Without variadic macros it's defined as::
 
-    DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
+    DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_hthread *thr, duk_errcode_t err_code, const char *fmt, ...);
     /* Note: parentheses are required so that the comma expression works in assignments. */
     #define duk_push_error_object  \
             (duk_api_global_filename = __FILE__, \
@@ -979,13 +990,13 @@ Without variadic macros it's defined as::
 
 When you call it as::
 
-    int err_idx = duk_push_error_object(ctx, 123, "foo %s", "bar");
+    int err_idx = duk_push_error_object(thr, 123, "foo %s", "bar");
 
 It gets expanded to::
 
     int err_idx = (duk_api_global_filename = __FILE__, \
                    duk_api_global_line = (duk_int_t) (__LINE__), \
-                   duk_push_error_object_stash) (ctx, 123, "foo %s", "bar");
+                   duk_push_error_object_stash) (thr, 123, "foo %s", "bar");
 
 The comma expression is evaluated in order performing the stash assignments.
 The final expression is a function pointer (``duk_push_error_object_stash``),
@@ -996,7 +1007,7 @@ not work::
 
     int err_idx = duk_api_global_filename = __FILE__, \
                   duk_api_global_line = (duk_int_t) (__LINE__), \
-                  duk_push_error_object_stash (ctx, 123, "foo %s", "bar");
+                  duk_push_error_object_stash (thr, 123, "foo %s", "bar");
 
 The problem is that ``__FILE__`` gets assigned to err_idx.
 

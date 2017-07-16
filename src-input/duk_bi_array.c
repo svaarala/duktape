@@ -56,27 +56,27 @@
  * Note that length is left on stack (it could be popped, but that's not
  * usually necessary because call handling will clean it up automatically).
  */
-DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_context *ctx) {
+DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32(duk_hthread *thr) {
 	duk_uint32_t len;
 
 	/* XXX: push more directly? */
-	(void) duk_push_this_coercible_to_object(ctx);
-	DUK_ASSERT_HOBJECT_VALID(duk_get_hobject(ctx, -1));
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_LENGTH);
-	len = duk_to_uint32(ctx, -1);
+	(void) duk_push_this_coercible_to_object(thr);
+	DUK_ASSERT_HOBJECT_VALID(duk_get_hobject(thr, -1));
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_LENGTH);
+	len = duk_to_uint32(thr, -1);
 
 	/* -> [ ... ToObject(this) ToUint32(length) ] */
 	return len;
 }
 
-DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
+DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_hthread *thr) {
 	/* Range limited to [0, 0x7fffffff] range, i.e. range that can be
 	 * represented with duk_int32_t.  Use this when the method doesn't
 	 * handle the full 32-bit unsigned range correctly.
 	 */
-	duk_uint32_t ret = duk__push_this_obj_len_u32(ctx);
+	duk_uint32_t ret = duk__push_this_obj_len_u32(thr);
 	if (DUK_UNLIKELY(ret >= 0x80000000UL)) {
-		DUK_ERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
+		DUK_ERROR_RANGE_INVALID_LENGTH(thr);
 	}
 	return ret;
 }
@@ -88,13 +88,11 @@ DUK_LOCAL duk_uint32_t duk__push_this_obj_len_u32_limited(duk_context *ctx) {
  * significant fraction to improve performance.  Return a non-NULL duk_harray
  * pointer when all fast path criteria are met, NULL otherwise.
  */
-DUK_LOCAL duk_harray *duk__arraypart_fastpath_this(duk_context *ctx) {
-	duk_hthread *thr;
+DUK_LOCAL duk_harray *duk__arraypart_fastpath_this(duk_hthread *thr) {
 	duk_tval *tv;
 	duk_hobject *h;
 	duk_uint_t flags_mask, flags_bits, flags_value;
 
-	thr = (duk_hthread *) ctx;
 	DUK_ASSERT(thr->valstack_bottom > thr->valstack);  /* because call in progress */
 	tv = DUK_GET_THIS_TVAL_PTR(thr);
 
@@ -143,34 +141,34 @@ DUK_LOCAL duk_harray *duk__arraypart_fastpath_this(duk_context *ctx) {
  *  Constructor
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_hthread *thr) {
 	duk_idx_t nargs;
 	duk_harray *a;
 	duk_double_t d;
 	duk_uint32_t len;
 	duk_uint32_t len_prealloc;
 
-	nargs = duk_get_top(ctx);
+	nargs = duk_get_top(thr);
 
-	if (nargs == 1 && duk_is_number(ctx, 0)) {
+	if (nargs == 1 && duk_is_number(thr, 0)) {
 		/* XXX: expensive check (also shared elsewhere - so add a shared internal API call?) */
-		d = duk_get_number(ctx, 0);
-		len = duk_to_uint32(ctx, 0);
+		d = duk_get_number(thr, 0);
+		len = duk_to_uint32(thr, 0);
 		if (((duk_double_t) len) != d) {
-			DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
+			DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 		}
 
 		/* For small lengths create a dense preallocated array.
 		 * For large arrays preallocate an initial part.
 		 */
 		len_prealloc = len < 64 ? len : 64;
-		a = duk_push_harray_with_size(ctx, len_prealloc);
+		a = duk_push_harray_with_size(thr, len_prealloc);
 		DUK_ASSERT(a != NULL);
 		a->length = len;
 		return 1;
 	}
 
-	duk_pack(ctx, nargs);
+	duk_pack(thr, nargs);
 	return 1;
 }
 
@@ -178,11 +176,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor(duk_context *ctx) {
  *  isArray()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_hthread *thr) {
 	duk_hobject *h;
 
-	h = duk_get_hobject_with_class(ctx, 0, DUK_HOBJECT_CLASS_ARRAY);
-	duk_push_boolean(ctx, (h != NULL));
+	h = duk_get_hobject_with_class(thr, 0, DUK_HOBJECT_CLASS_ARRAY);
+	duk_push_boolean(thr, (h != NULL));
 	return 1;
 }
 
@@ -190,12 +188,12 @@ DUK_INTERNAL duk_ret_t duk_bi_array_constructor_is_array(duk_context *ctx) {
  *  toString()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
-	(void) duk_push_this_coercible_to_object(ctx);
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_JOIN);
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_hthread *thr) {
+	(void) duk_push_this_coercible_to_object(thr);
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_JOIN);
 
 	/* [ ... this func ] */
-	if (!duk_is_callable(ctx, -1)) {
+	if (!duk_is_callable(thr, -1)) {
 		/* Fall back to the initial (original) Object.toString().  We don't
 		 * currently have pointers to the built-in functions, only the top
 		 * level global objects (like "Array") so this is now done in a bit
@@ -207,20 +205,20 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
 		 * but should have no visible side effects.
 		 */
 		DUK_DDD(DUK_DDDPRINT("this.join is not callable, fall back to (original) Object.toString"));
-		duk_set_top(ctx, 0);
-		return duk_bi_object_prototype_to_string(ctx);  /* has access to 'this' binding */
+		duk_set_top(thr, 0);
+		return duk_bi_object_prototype_to_string(thr);  /* has access to 'this' binding */
 	}
 
 	/* [ ... this func ] */
 
-	duk_insert(ctx, -2);
+	duk_insert(thr, -2);
 
 	/* [ ... func this ] */
 
 	DUK_DDD(DUK_DDDPRINT("calling: func=%!iT, this=%!iT",
-	                     (duk_tval *) duk_get_tval(ctx, -2),
-	                     (duk_tval *) duk_get_tval(ctx, -1)));
-	duk_call_method(ctx, 0);
+	                     (duk_tval *) duk_get_tval(thr, -2),
+	                     (duk_tval *) duk_get_tval(thr, -1)));
+	duk_call_method(thr, 0);
 
 	return 1;
 }
@@ -229,7 +227,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_to_string(duk_context *ctx) {
  *  concat()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_hthread *thr) {
 	duk_idx_t i, n;
 	duk_uarridx_t idx, idx_last;
 	duk_uarridx_t j, len;
@@ -240,10 +238,10 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 	 * (as the element is dup()'d anyway).
 	 */
 
-	(void) duk_push_this_coercible_to_object(ctx);
-	duk_insert(ctx, 0);
-	n = duk_get_top(ctx);
-	duk_push_array(ctx);  /* -> [ ToObject(this) item1 ... itemN arr ] */
+	(void) duk_push_this_coercible_to_object(thr);
+	duk_insert(thr, 0);
+	n = duk_get_top(thr);
+	duk_push_array(thr);  /* -> [ ToObject(this) item1 ... itemN arr ] */
 
 	/* NOTE: The Array special behaviors are NOT invoked by duk_xdef_prop_index()
 	 * (which differs from the official algorithm).  If no error is thrown, this
@@ -255,14 +253,14 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 	idx = 0;
 	idx_last = 0;
 	for (i = 0; i < n; i++) {
-		DUK_ASSERT_TOP(ctx, n + 1);
+		DUK_ASSERT_TOP(thr, n + 1);
 
 		/* [ ToObject(this) item1 ... itemN arr ] */
 
-		duk_dup(ctx, i);
-		h = duk_get_hobject_with_class(ctx, -1, DUK_HOBJECT_CLASS_ARRAY);
+		duk_dup(thr, i);
+		h = duk_get_hobject_with_class(thr, -1, DUK_HOBJECT_CLASS_ARRAY);
 		if (!h) {
-			duk_xdef_prop_index_wec(ctx, -2, idx++);
+			duk_xdef_prop_index_wec(thr, -2, idx++);
 			idx_last = idx;
 			continue;
 		}
@@ -272,15 +270,15 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 		/* XXX: an array can have length higher than 32 bits; this is not handled
 		 * correctly now.
 		 */
-		len = (duk_uarridx_t) duk_get_length(ctx, -1);
+		len = (duk_uarridx_t) duk_get_length(thr, -1);
 		for (j = 0; j < len; j++) {
-			if (duk_get_prop_index(ctx, -1, j)) {
+			if (duk_get_prop_index(thr, -1, j)) {
 				/* [ ToObject(this) item1 ... itemN arr item(i) item(i)[j] ] */
-				duk_xdef_prop_index_wec(ctx, -3, idx++);
+				duk_xdef_prop_index_wec(thr, -3, idx++);
 				idx_last = idx;
 			} else {
 				idx++;
-				duk_pop_undefined(ctx);
+				duk_pop_undefined(thr);
 #if defined(DUK_USE_NONSTD_ARRAY_CONCAT_TRAILER)
 				/* According to E5.1 Section 15.4.4.4 nonexistent trailing
 				 * elements do not affect 'length' of the result.  Test262
@@ -294,17 +292,17 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
 #endif
 			}
 		}
-		duk_pop_unsafe(ctx);
+		duk_pop_unsafe(thr);
 	}
 
 	/* The E5.1 Section 15.4.4.4 algorithm doesn't set the length explicitly
 	 * in the end, but because we're operating with an internal value which
 	 * is known to be an array, this should be equivalent.
 	 */
-	duk_push_uarridx(ctx, idx_last);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_push_uarridx(thr, idx_last);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
-	DUK_ASSERT_TOP(ctx, n + 1);
+	DUK_ASSERT_TOP(thr, n + 1);
 	return 1;
 }
 
@@ -321,39 +319,39 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_concat(duk_context *ctx) {
  *  There is no fancy handling; the prefix gets re-joined multiple times.
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_hthread *thr) {
 	duk_uint32_t len, count;
 	duk_uint32_t idx;
-	duk_small_int_t to_locale_string = duk_get_current_magic(ctx);
+	duk_small_int_t to_locale_string = duk_get_current_magic(thr);
 	duk_idx_t valstack_required;
 
 	/* For join(), nargs is 1.  For toLocaleString(), nargs is 0 and
 	 * setting the top essentially pushes an undefined to the stack,
 	 * thus defaulting to a comma separator.
 	 */
-	duk_set_top(ctx, 1);
-	if (duk_is_undefined(ctx, 0)) {
-		duk_pop_undefined(ctx);
-		duk_push_hstring_stridx(ctx, DUK_STRIDX_COMMA);
+	duk_set_top(thr, 1);
+	if (duk_is_undefined(thr, 0)) {
+		duk_pop_undefined(thr);
+		duk_push_hstring_stridx(thr, DUK_STRIDX_COMMA);
 	} else {
-		duk_to_string(ctx, 0);
+		duk_to_string(thr, 0);
 	}
 
-	len = duk__push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(thr);
 
 	/* [ sep ToObject(this) len ] */
 
 	DUK_DDD(DUK_DDDPRINT("sep=%!T, this=%!T, len=%lu",
-	                     (duk_tval *) duk_get_tval(ctx, 0),
-	                     (duk_tval *) duk_get_tval(ctx, 1),
+	                     (duk_tval *) duk_get_tval(thr, 0),
+	                     (duk_tval *) duk_get_tval(thr, 1),
 	                     (unsigned long) len));
 
 	/* The extra (+4) is tight. */
 	valstack_required = (len >= DUK__ARRAY_MID_JOIN_LIMIT ?
 	                     DUK__ARRAY_MID_JOIN_LIMIT : len) + 4;
-	duk_require_stack(ctx, valstack_required);
+	duk_require_stack(thr, valstack_required);
 
-	duk_dup_0(ctx);
+	duk_dup_0(thr);
 
 	/* [ sep ToObject(this) len sep ] */
 
@@ -366,9 +364,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 			/* [ sep ToObject(this) len sep str0 ... str(count-1) ] */
 			DUK_DDD(DUK_DDDPRINT("mid/final join, count=%ld, idx=%ld, len=%ld",
 			                     (long) count, (long) idx, (long) len));
-			duk_join(ctx, (duk_idx_t) count);  /* -> [ sep ToObject(this) len str ] */
-			duk_dup_0(ctx);                    /* -> [ sep ToObject(this) len str sep ] */
-			duk_insert(ctx, -2);               /* -> [ sep ToObject(this) len sep str ] */
+			duk_join(thr, (duk_idx_t) count);  /* -> [ sep ToObject(this) len str ] */
+			duk_dup_0(thr);                    /* -> [ sep ToObject(this) len str sep ] */
+			duk_insert(thr, -2);               /* -> [ sep ToObject(this) len sep str ] */
 			count = 1;
 		}
 		if (idx >= len) {
@@ -376,18 +374,18 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
 			break;
 		}
 
-		duk_get_prop_index(ctx, 1, (duk_uarridx_t) idx);
-		if (duk_is_null_or_undefined(ctx, -1)) {
-			duk_pop_nodecref_unsafe(ctx);
-			duk_push_hstring_empty(ctx);
+		duk_get_prop_index(thr, 1, (duk_uarridx_t) idx);
+		if (duk_is_null_or_undefined(thr, -1)) {
+			duk_pop_nodecref_unsafe(thr);
+			duk_push_hstring_empty(thr);
 		} else {
 			if (to_locale_string) {
-				duk_to_object(ctx, -1);
-				duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_TO_LOCALE_STRING);
-				duk_insert(ctx, -2);  /* -> [ ... toLocaleString ToObject(val) ] */
-				duk_call_method(ctx, 0);
+				duk_to_object(thr, -1);
+				duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_TO_LOCALE_STRING);
+				duk_insert(thr, -2);  /* -> [ ... toLocaleString ToObject(val) ] */
+				duk_call_method(thr, 0);
 			}
-			duk_to_string(ctx, -1);
+			duk_to_string(thr, -1);
 		}
 
 		count++;
@@ -404,13 +402,10 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_join_shared(duk_context *ctx) {
  */
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
-DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_context *ctx, duk_harray *h_arr) {
-	duk_hthread *thr;
+DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_hthread *thr, duk_harray *h_arr) {
 	duk_tval *tv_arraypart;
 	duk_tval *tv_val;
 	duk_uint32_t len;
-
-	thr = (duk_hthread *) ctx;
 
 	tv_arraypart = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
 	len = h_arr->length;
@@ -447,49 +442,46 @@ DUK_LOCAL duk_ret_t duk__array_pop_fastpath(duk_context *ctx, duk_harray *h_arr)
 }
 #endif  /* DUK_USE_ARRAY_FASTPATH */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_pop(duk_hthread *thr) {
 	duk_uint32_t len;
 	duk_uint32_t idx;
 #if defined(DUK_USE_ARRAY_FASTPATH)
 	duk_harray *h_arr;
 #endif
 
-	DUK_ASSERT_TOP(ctx, 0);
+	DUK_ASSERT_TOP(thr, 0);
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
-	h_arr = duk__arraypart_fastpath_this(ctx);
+	h_arr = duk__arraypart_fastpath_this(thr);
 	if (h_arr) {
-		return duk__array_pop_fastpath(ctx, h_arr);
+		return duk__array_pop_fastpath(thr, h_arr);
 	}
 #endif
 
 	/* XXX: Merge fastpath check into a related call (push this, coerce length, etc)? */
 
-	len = duk__push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(thr);
 	if (len == 0) {
-		duk_push_int(ctx, 0);
-		duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LENGTH);
+		duk_push_int(thr, 0);
+		duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LENGTH);
 		return 0;
 	}
 	idx = len - 1;
 
-	duk_get_prop_index(ctx, 0, (duk_uarridx_t) idx);
-	duk_del_prop_index(ctx, 0, (duk_uarridx_t) idx);
-	duk_push_u32(ctx, idx);
-	duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LENGTH);
+	duk_get_prop_index(thr, 0, (duk_uarridx_t) idx);
+	duk_del_prop_index(thr, 0, (duk_uarridx_t) idx);
+	duk_push_u32(thr, idx);
+	duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LENGTH);
 	return 1;
 }
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
-DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr) {
-	duk_hthread *thr;
+DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_hthread *thr, duk_harray *h_arr) {
 	duk_tval *tv_arraypart;
 	duk_tval *tv_src;
 	duk_tval *tv_dst;
 	duk_uint32_t len;
 	duk_idx_t i, n;
-
-	thr = (duk_hthread *) ctx;
 
 	len = h_arr->length;
 	tv_arraypart = DUK_HOBJECT_A_GET_BASE(thr->heap, (duk_hobject *) h_arr);
@@ -524,12 +516,12 @@ DUK_LOCAL duk_ret_t duk__array_push_fastpath(duk_context *ctx, duk_harray *h_arr
 	h_arr->length = len;
 
 	DUK_ASSERT((duk_uint_t) len == len);
-	duk_push_uint(ctx, (duk_uint_t) len);
+	duk_push_uint(thr, (duk_uint_t) len);
 	return 1;
 }
 #endif  /* DUK_USE_ARRAY_FASTPATH */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_hthread *thr) {
 	/* Note: 'this' is not necessarily an Array object.  The push()
 	 * algorithm is supposed to work for other kinds of objects too,
 	 * so the algorithm has e.g. an explicit update for the 'length'
@@ -543,10 +535,10 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 #endif
 
 #if defined(DUK_USE_ARRAY_FASTPATH)
-	h_arr = duk__arraypart_fastpath_this(ctx);
+	h_arr = duk__arraypart_fastpath_this(thr);
 	if (h_arr) {
 		duk_ret_t rc;
-		rc = duk__array_push_fastpath(ctx, h_arr);
+		rc = duk__array_push_fastpath(thr, h_arr);
 		if (rc != 0) {
 			return rc;
 		}
@@ -554,8 +546,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 	}
 #endif
 
-	n = duk_get_top(ctx);
-	len = duk__push_this_obj_len_u32(ctx);
+	n = duk_get_top(thr);
+	len = duk__push_this_obj_len_u32(thr);
 
 	/* [ arg1 ... argN obj length ] */
 
@@ -571,18 +563,18 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
 
 	if (len + (duk_uint32_t) n < len) {
 		DUK_D(DUK_DPRINT("Array.prototype.push() would go beyond 32-bit length, throw"));
-		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
+		DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 	}
 
 	for (i = 0; i < n; i++) {
-		duk_dup(ctx, i);
-		duk_put_prop_index(ctx, -3, len + i);
+		duk_dup(thr, i);
+		duk_put_prop_index(thr, -3, len + i);
 	}
 	len += n;
 
-	duk_push_u32(ctx, len);
-	duk_dup_top(ctx);
-	duk_put_prop_stridx_short(ctx, -4, DUK_STRIDX_LENGTH);
+	duk_push_u32(thr, len);
+	duk_dup_top(thr);
+	duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_LENGTH);
 
 	/* [ arg1 ... argN obj length new_length ] */
 	return 1;
@@ -598,7 +590,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_push(duk_context *ctx) {
  *  may use a negative offset.
  */
 
-DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t idx1, duk_int_t idx2) {
+DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_hthread *thr, duk_int_t idx1, duk_int_t idx2) {
 	duk_bool_t have1, have2;
 	duk_bool_t undef1, undef2;
 	duk_small_int_t ret;
@@ -627,12 +619,12 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		return 0;
 	}
 
-	have1 = duk_get_prop_index(ctx, idx_obj, (duk_uarridx_t) idx1);
-	have2 = duk_get_prop_index(ctx, idx_obj, (duk_uarridx_t) idx2);
+	have1 = duk_get_prop_index(thr, idx_obj, (duk_uarridx_t) idx1);
+	have2 = duk_get_prop_index(thr, idx_obj, (duk_uarridx_t) idx2);
 
 	DUK_DDD(DUK_DDDPRINT("duk__array_sort_compare: idx1=%ld, idx2=%ld, have1=%ld, have2=%ld, val1=%!T, val2=%!T",
 	                     (long) idx1, (long) idx2, (long) have1, (long) have2,
-	                     (duk_tval *) duk_get_tval(ctx, -2), (duk_tval *) duk_get_tval(ctx, -1)));
+	                     (duk_tval *) duk_get_tval(thr, -2), (duk_tval *) duk_get_tval(thr, -1)));
 
 	if (have1) {
 		if (have2) {
@@ -651,8 +643,8 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		}
 	}
 
-	undef1 = duk_is_undefined(ctx, -2);
-	undef2 = duk_is_undefined(ctx, -1);
+	undef1 = duk_is_undefined(thr, -2);
+	undef2 = duk_is_undefined(thr, -1);
 	if (undef1) {
 		if (undef2) {
 			ret = 0;
@@ -670,20 +662,20 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 		}
 	}
 
-	if (!duk_is_undefined(ctx, idx_fn)) {
+	if (!duk_is_undefined(thr, idx_fn)) {
 		duk_double_t d;
 
 		/* No need to check callable; duk_call() will do that. */
-		duk_dup(ctx, idx_fn);    /* -> [ ... x y fn ] */
-		duk_insert(ctx, -3);     /* -> [ ... fn x y ] */
-		duk_call(ctx, 2);        /* -> [ ... res ] */
+		duk_dup(thr, idx_fn);    /* -> [ ... x y fn ] */
+		duk_insert(thr, -3);     /* -> [ ... fn x y ] */
+		duk_call(thr, 2);        /* -> [ ... res ] */
 
 		/* ES5 is a bit vague about what to do if the return value is
 		 * not a number.  ES2015 provides a concrete description:
 		 * http://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare.
 		 */
 
-		d = duk_to_number_m1(ctx);
+		d = duk_to_number_m1(thr);
 		if (d < 0.0) {
 			ret = -1;
 		} else if (d > 0.0) {
@@ -695,7 +687,7 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 			ret = 0;
 		}
 
-		duk_pop_nodecref_unsafe(ctx);
+		duk_pop_nodecref_unsafe(thr);
 		DUK_DDD(DUK_DDDPRINT("-> result %ld (from comparefn, after coercion)", (long) ret));
 		return ret;
 	}
@@ -703,8 +695,8 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 	/* string compare is the default (a bit oddly) */
 
 	/* XXX: any special handling for plain array; causes repeated coercion now? */
-	h1 = duk_to_hstring(ctx, -2);
-	h2 = duk_to_hstring_m1(ctx);
+	h1 = duk_to_hstring(thr, -2);
+	h2 = duk_to_hstring_m1(thr);
 	DUK_ASSERT(h1 != NULL);
 	DUK_ASSERT(h2 != NULL);
 
@@ -712,12 +704,12 @@ DUK_LOCAL duk_small_int_t duk__array_sort_compare(duk_context *ctx, duk_int_t id
 	goto pop_ret;
 
  pop_ret:
-	duk_pop_2_unsafe(ctx);
+	duk_pop_2_unsafe(thr);
 	DUK_DDD(DUK_DDDPRINT("-> result %ld", (long) ret));
 	return ret;
 }
 
-DUK_LOCAL void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) {
+DUK_LOCAL void duk__array_sort_swap(duk_hthread *thr, duk_int_t l, duk_int_t r) {
 	duk_bool_t have_l, have_r;
 	duk_idx_t idx_obj = 1;  /* fixed offset in valstack */
 
@@ -726,32 +718,32 @@ DUK_LOCAL void duk__array_sort_swap(duk_context *ctx, duk_int_t l, duk_int_t r) 
 	}
 
 	/* swap elements; deal with non-existent elements correctly */
-	have_l = duk_get_prop_index(ctx, idx_obj, (duk_uarridx_t) l);
-	have_r = duk_get_prop_index(ctx, idx_obj, (duk_uarridx_t) r);
+	have_l = duk_get_prop_index(thr, idx_obj, (duk_uarridx_t) l);
+	have_r = duk_get_prop_index(thr, idx_obj, (duk_uarridx_t) r);
 
 	if (have_r) {
 		/* right exists, [[Put]] regardless whether or not left exists */
-		duk_put_prop_index(ctx, idx_obj, (duk_uarridx_t) l);
+		duk_put_prop_index(thr, idx_obj, (duk_uarridx_t) l);
 	} else {
-		duk_del_prop_index(ctx, idx_obj, (duk_uarridx_t) l);
-		duk_pop_undefined(ctx);
+		duk_del_prop_index(thr, idx_obj, (duk_uarridx_t) l);
+		duk_pop_undefined(thr);
 	}
 
 	if (have_l) {
-		duk_put_prop_index(ctx, idx_obj, (duk_uarridx_t) r);
+		duk_put_prop_index(thr, idx_obj, (duk_uarridx_t) r);
 	} else {
-		duk_del_prop_index(ctx, idx_obj, (duk_uarridx_t) r);
-		duk_pop_undefined(ctx);
+		duk_del_prop_index(thr, idx_obj, (duk_uarridx_t) r);
+		duk_pop_undefined(thr);
 	}
 }
 
 #if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
 /* Debug print which visualizes the qsort partitioning process. */
-DUK_LOCAL void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int_t hi, duk_int_t pivot) {
+DUK_LOCAL void duk__debuglog_qsort_state(duk_hthread *thr, duk_int_t lo, duk_int_t hi, duk_int_t pivot) {
 	char buf[4096];
 	char *ptr = buf;
 	duk_int_t i, n;
-	n = (duk_int_t) duk_get_length(ctx, 1);
+	n = (duk_int_t) duk_get_length(thr, 1);
 	if (n > 4000) {
 		n = 4000;
 	}
@@ -777,15 +769,15 @@ DUK_LOCAL void duk__debuglog_qsort_state(duk_context *ctx, duk_int_t lo, duk_int
 }
 #endif
 
-DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
+DUK_LOCAL void duk__array_qsort(duk_hthread *thr, duk_int_t lo, duk_int_t hi) {
 	duk_int_t p, l, r;
 
 	/* The lo/hi indices may be crossed and hi < 0 is possible at entry. */
 
 	DUK_DDD(DUK_DDDPRINT("duk__array_qsort: lo=%ld, hi=%ld, obj=%!T",
-	                     (long) lo, (long) hi, (duk_tval *) duk_get_tval(ctx, 1)));
+	                     (long) lo, (long) hi, (duk_tval *) duk_get_tval(thr, 1)));
 
-	DUK_ASSERT_TOP(ctx, 3);
+	DUK_ASSERT_TOP(thr, 3);
 
 	/* In some cases it may be that lo > hi, or hi < 0; these
 	 * degenerate cases happen e.g. for empty arrays, and in
@@ -801,14 +793,14 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	DUK_ASSERT(hi - lo + 1 >= 2);
 
 	/* randomized pivot selection */
-	p = lo + (duk_int_t) (DUK_UTIL_GET_RANDOM_DOUBLE((duk_hthread *) ctx) * (duk_double_t) (hi - lo + 1));
+	p = lo + (duk_int_t) (DUK_UTIL_GET_RANDOM_DOUBLE(thr) * (duk_double_t) (hi - lo + 1));
 	DUK_ASSERT(p >= lo && p <= hi);
 	DUK_DDD(DUK_DDDPRINT("lo=%ld, hi=%ld, chose pivot p=%ld", (long) lo, (long) hi, (long) p));
 
 	/* move pivot out of the way */
-	duk__array_sort_swap(ctx, p, lo);
+	duk__array_sort_swap(thr, p, lo);
 	p = lo;
-	DUK_DDD(DUK_DDDPRINT("pivot moved out of the way: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
+	DUK_DDD(DUK_DDDPRINT("pivot moved out of the way: %!T", (duk_tval *) duk_get_tval(thr, 1)));
 
 	l = lo + 1;
 	r = hi;
@@ -820,7 +812,7 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 			if (l >= hi) {
 				break;
 			}
-			if (duk__array_sort_compare(ctx, l, p) >= 0) {  /* !(l < p) */
+			if (duk__array_sort_compare(thr, l, p) >= 0) {  /* !(l < p) */
 				break;
 			}
 			l++;
@@ -831,7 +823,7 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 			if (r <= lo) {
 				break;
 			}
-			if (duk__array_sort_compare(ctx, p, r) >= 0) {  /* !(p < r) */
+			if (duk__array_sort_compare(thr, p, r) >= 0) {  /* !(p < r) */
 				break;
 			}
 			r--;
@@ -843,9 +835,9 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 
 		DUK_DDD(DUK_DDDPRINT("swap %ld and %ld", (long) l, (long) r));
 
-		duk__array_sort_swap(ctx, l, r);
+		duk__array_sort_swap(thr, l, r);
 
-		DUK_DDD(DUK_DDDPRINT("after swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
+		DUK_DDD(DUK_DDDPRINT("after swap: %!T", (duk_tval *) duk_get_tval(thr, 1)));
 		l++;
 		r--;
 	}
@@ -861,25 +853,25 @@ DUK_LOCAL void duk__array_qsort(duk_context *ctx, duk_int_t lo, duk_int_t hi) {
 	 */
 
 	/* move pivot to its final place */
-	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", (duk_tval *) duk_get_tval(ctx, 1)));
-	duk__array_sort_swap(ctx, lo, r);
+	DUK_DDD(DUK_DDDPRINT("before final pivot swap: %!T", (duk_tval *) duk_get_tval(thr, 1)));
+	duk__array_sort_swap(thr, lo, r);
 
 #if defined(DUK_USE_DEBUG_LEVEL) && (DUK_USE_DEBUG_LEVEL >= 2)
-	duk__debuglog_qsort_state(ctx, lo, hi, r);
+	duk__debuglog_qsort_state(thr, lo, hi, r);
 #endif
 
-	DUK_DDD(DUK_DDDPRINT("recurse: pivot=%ld, obj=%!T", (long) r, (duk_tval *) duk_get_tval(ctx, 1)));
-	duk__array_qsort(ctx, lo, r - 1);
-	duk__array_qsort(ctx, r + 1, hi);
+	DUK_DDD(DUK_DDDPRINT("recurse: pivot=%ld, obj=%!T", (long) r, (duk_tval *) duk_get_tval(thr, 1)));
+	duk__array_qsort(thr, lo, r - 1);
+	duk__array_qsort(thr, r + 1, hi);
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_hthread *thr) {
 	duk_uint32_t len;
 
 	/* XXX: len >= 0x80000000 won't work below because a signed type
 	 * is needed by qsort.
 	 */
-	len = duk__push_this_obj_len_u32_limited(ctx);
+	len = duk__push_this_obj_len_u32_limited(thr);
 
 	/* stack[0] = compareFn
 	 * stack[1] = ToObject(this)
@@ -888,11 +880,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
 
 	if (len > 0) {
 		/* avoid degenerate cases, so that (len - 1) won't underflow */
-		duk__array_qsort(ctx, (duk_int_t) 0, (duk_int_t) (len - 1));
+		duk__array_qsort(thr, (duk_int_t) 0, (duk_int_t) (len - 1));
 	}
 
-	DUK_ASSERT_TOP(ctx, 3);
-	duk_pop_nodecref_unsafe(ctx);
+	DUK_ASSERT_TOP(thr, 3);
+	duk_pop_nodecref_unsafe(thr);
 	return 1;  /* return ToObject(this) */
 }
 
@@ -909,7 +901,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_sort(duk_context *ctx) {
  *   unshift is (close to?) <--> splice(0, 0, [items])?
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_hthread *thr) {
 	duk_idx_t nargs;
 	duk_uint32_t len;
 	duk_bool_t have_delcount;
@@ -920,9 +912,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 
 	DUK_UNREF(have_delcount);
 
-	nargs = duk_get_top(ctx);
+	nargs = duk_get_top(thr);
 	if (nargs < 2) {
-		duk_set_top(ctx, 2);
+		duk_set_top(thr, 2);
 		nargs = 2;
 		have_delcount = 0;
 	} else {
@@ -932,9 +924,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	/* XXX: len >= 0x80000000 won't work below because we need to be
 	 * able to represent -len.
 	 */
-	len = duk__push_this_obj_len_u32_limited(ctx);
+	len = duk__push_this_obj_len_u32_limited(thr);
 
-	act_start = duk_to_int_clamped(ctx, 0, -((duk_int_t) len), (duk_int_t) len);
+	act_start = duk_to_int_clamped(thr, 0, -((duk_int_t) len), (duk_int_t) len);
 	if (act_start < 0) {
 		act_start = len + act_start;
 	}
@@ -943,7 +935,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 #if defined(DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT)
 	if (have_delcount) {
 #endif
-		del_count = duk_to_int_clamped(ctx, 1, 0, len - act_start);
+		del_count = duk_to_int_clamped(thr, 1, 0, len - act_start);
 #if defined(DUK_USE_NONSTD_ARRAY_SPLICE_DELCOUNT)
 	} else {
 		/* E5.1 standard behavior when deleteCount is not given would be
@@ -964,10 +956,10 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	/* For now, restrict result array into 32-bit length range. */
 	if (((duk_double_t) len) - ((duk_double_t) del_count) + ((duk_double_t) item_count) > (duk_double_t) DUK_UINT32_MAX) {
 		DUK_D(DUK_DPRINT("Array.prototype.splice() would go beyond 32-bit length, throw"));
-		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
+		DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 	}
 
-	duk_push_array(ctx);
+	duk_push_array(thr);
 
 	/* stack[0] = start
 	 * stack[1] = deleteCount
@@ -977,19 +969,19 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 	 * stack[nargs+2] = result array               -1
 	 */
 
-	DUK_ASSERT_TOP(ctx, nargs + 3);
+	DUK_ASSERT_TOP(thr, nargs + 3);
 
 	/* Step 9: copy elements-to-be-deleted into the result array */
 
 	for (i = 0; i < del_count; i++) {
-		if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (act_start + i))) {
-			duk_xdef_prop_index_wec(ctx, -2, i);  /* throw flag irrelevant (false in std alg) */
+		if (duk_get_prop_index(thr, -3, (duk_uarridx_t) (act_start + i))) {
+			duk_xdef_prop_index_wec(thr, -2, i);  /* throw flag irrelevant (false in std alg) */
 		} else {
-			duk_pop_undefined(ctx);
+			duk_pop_undefined(thr);
 		}
 	}
-	duk_push_u32(ctx, (duk_uint32_t) del_count);
-	duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_push_u32(thr, (duk_uint32_t) del_count);
+	duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
 	/* Steps 12 and 13: reorganize elements to make room for itemCount elements */
 
@@ -1000,27 +992,27 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 		 *    [ A B C F G H ]        (actual result at this point, C will be replaced)
 		 */
 
-		DUK_ASSERT_TOP(ctx, nargs + 3);
+		DUK_ASSERT_TOP(thr, nargs + 3);
 
 		n = len - del_count;
 		for (i = act_start; i < n; i++) {
-			if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (i + del_count))) {
-				duk_put_prop_index(ctx, -4, (duk_uarridx_t) (i + item_count));
+			if (duk_get_prop_index(thr, -3, (duk_uarridx_t) (i + del_count))) {
+				duk_put_prop_index(thr, -4, (duk_uarridx_t) (i + item_count));
 			} else {
-				duk_pop_undefined(ctx);
-				duk_del_prop_index(ctx, -3, (duk_uarridx_t) (i + item_count));
+				duk_pop_undefined(thr);
+				duk_del_prop_index(thr, -3, (duk_uarridx_t) (i + item_count));
 			}
 		}
 
-		DUK_ASSERT_TOP(ctx, nargs + 3);
+		DUK_ASSERT_TOP(thr, nargs + 3);
 
 		/* loop iterator init and limit changed from standard algorithm */
 		n = len - del_count + item_count;
 		for (i = len - 1; i >= n; i--) {
-			duk_del_prop_index(ctx, -3, (duk_uarridx_t) i);
+			duk_del_prop_index(thr, -3, (duk_uarridx_t) i);
 		}
 
-		DUK_ASSERT_TOP(ctx, nargs + 3);
+		DUK_ASSERT_TOP(thr, nargs + 3);
 	} else if (item_count > del_count) {
 		/*    [ A B C D E F G H ]    rel_index = 2, del_count 3, item count 4
 		 * -> [ A B F G H ]          (conceptual intermediate step)
@@ -1028,19 +1020,19 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 		 *    [ A B C D E F F G H ]  (actual result at this point)
 		 */
 
-		DUK_ASSERT_TOP(ctx, nargs + 3);
+		DUK_ASSERT_TOP(thr, nargs + 3);
 
 		/* loop iterator init and limit changed from standard algorithm */
 		for (i = len - del_count - 1; i >= act_start; i--) {
-			if (duk_get_prop_index(ctx, -3, (duk_uarridx_t) (i + del_count))) {
-				duk_put_prop_index(ctx, -4, (duk_uarridx_t) (i + item_count));
+			if (duk_get_prop_index(thr, -3, (duk_uarridx_t) (i + del_count))) {
+				duk_put_prop_index(thr, -4, (duk_uarridx_t) (i + item_count));
 			} else {
-				duk_pop_undefined(ctx);
-				duk_del_prop_index(ctx, -3, (duk_uarridx_t) (i + item_count));
+				duk_pop_undefined(thr);
+				duk_del_prop_index(thr, -3, (duk_uarridx_t) (i + item_count));
 			}
 		}
 
-		DUK_ASSERT_TOP(ctx, nargs + 3);
+		DUK_ASSERT_TOP(thr, nargs + 3);
 	} else {
 		/*    [ A B C D E F G H ]    rel_index = 2, del_count 3, item count 3
 		 * -> [ A B F G H ]          (conceptual intermediate step)
@@ -1048,24 +1040,24 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
 		 *    [ A B C D E F G H ]    (actual result at this point)
 		 */
 	}
-	DUK_ASSERT_TOP(ctx, nargs + 3);
+	DUK_ASSERT_TOP(thr, nargs + 3);
 
 	/* Step 15: insert itemCount elements into the hole made above */
 
 	for (i = 0; i < item_count; i++) {
-		duk_dup(ctx, i + 2);  /* args start at index 2 */
-		duk_put_prop_index(ctx, -4, (duk_uarridx_t) (act_start + i));
+		duk_dup(thr, i + 2);  /* args start at index 2 */
+		duk_put_prop_index(thr, -4, (duk_uarridx_t) (act_start + i));
 	}
 
 	/* Step 16: update length; note that the final length may be above 32 bit range
 	 * (but we checked above that this isn't the case here)
 	 */
 
-	duk_push_u32(ctx, len - del_count + item_count);
-	duk_put_prop_stridx_short(ctx, -4, DUK_STRIDX_LENGTH);
+	duk_push_u32(thr, len - del_count + item_count);
+	duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_LENGTH);
 
 	/* result array is already at the top of stack */
-	DUK_ASSERT_TOP(ctx, nargs + 3);
+	DUK_ASSERT_TOP(thr, nargs + 3);
 	return 1;
 }
 
@@ -1073,13 +1065,13 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_splice(duk_context *ctx) {
  *  reverse()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_hthread *thr) {
 	duk_uint32_t len;
 	duk_uint32_t middle;
 	duk_uint32_t lower, upper;
 	duk_bool_t have_lower, have_upper;
 
-	len = duk__push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(thr);
 	middle = len / 2;
 
 	/* If len <= 1, middle will be 0 and for-loop bails out
@@ -1088,35 +1080,35 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
 
 	for (lower = 0; lower < middle; lower++) {
 		DUK_ASSERT(len >= 2);
-		DUK_ASSERT_TOP(ctx, 2);
+		DUK_ASSERT_TOP(thr, 2);
 
 		DUK_ASSERT(len >= lower + 1);
 		upper = len - lower - 1;
 
-		have_lower = duk_get_prop_index(ctx, -2, (duk_uarridx_t) lower);
-		have_upper = duk_get_prop_index(ctx, -3, (duk_uarridx_t) upper);
+		have_lower = duk_get_prop_index(thr, -2, (duk_uarridx_t) lower);
+		have_upper = duk_get_prop_index(thr, -3, (duk_uarridx_t) upper);
 
 		/* [ ToObject(this) ToUint32(length) lowerValue upperValue ] */
 
 		if (have_upper) {
-			duk_put_prop_index(ctx, -4, (duk_uarridx_t) lower);
+			duk_put_prop_index(thr, -4, (duk_uarridx_t) lower);
 		} else {
-			duk_del_prop_index(ctx, -4, (duk_uarridx_t) lower);
-			duk_pop_undefined(ctx);
+			duk_del_prop_index(thr, -4, (duk_uarridx_t) lower);
+			duk_pop_undefined(thr);
 		}
 
 		if (have_lower) {
-			duk_put_prop_index(ctx, -3, (duk_uarridx_t) upper);
+			duk_put_prop_index(thr, -3, (duk_uarridx_t) upper);
 		} else {
-			duk_del_prop_index(ctx, -3, (duk_uarridx_t) upper);
-			duk_pop_undefined(ctx);
+			duk_del_prop_index(thr, -3, (duk_uarridx_t) upper);
+			duk_pop_undefined(thr);
 		}
 
-		DUK_ASSERT_TOP(ctx, 2);
+		DUK_ASSERT_TOP(thr, 2);
 	}
 
-	DUK_ASSERT_TOP(ctx, 2);
-	duk_pop_unsafe(ctx);  /* -> [ ToObject(this) ] */
+	DUK_ASSERT_TOP(thr, 2);
+	duk_pop_unsafe(thr);  /* -> [ ToObject(this) ] */
 	return 1;
 }
 
@@ -1124,7 +1116,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reverse(duk_context *ctx) {
  *  slice()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_hthread *thr) {
 	duk_uint32_t len;
 	duk_int_t start, end;
 	duk_int_t i;
@@ -1134,8 +1126,8 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 	/* XXX: len >= 0x80000000 won't work below because we need to be
 	 * able to represent -len.
 	 */
-	len = duk__push_this_obj_len_u32_limited(ctx);
-	duk_push_array(ctx);
+	len = duk__push_this_obj_len_u32_limited(thr);
+	duk_push_array(thr);
 
 	/* stack[0] = start
 	 * stack[1] = end
@@ -1144,17 +1136,17 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 	 * stack[4] = result array
 	 */
 
-	start = duk_to_int_clamped(ctx, 0, -((duk_int_t) len), (duk_int_t) len);
+	start = duk_to_int_clamped(thr, 0, -((duk_int_t) len), (duk_int_t) len);
 	if (start < 0) {
 		start = len + start;
 	}
 	/* XXX: could duk_is_undefined() provide defaulting undefined to 'len'
 	 * (the upper limit)?
 	 */
-	if (duk_is_undefined(ctx, 1)) {
+	if (duk_is_undefined(thr, 1)) {
 		end = len;
 	} else {
-		end = duk_to_int_clamped(ctx, 1, -((duk_int_t) len), (duk_int_t) len);
+		end = duk_to_int_clamped(thr, 1, -((duk_int_t) len), (duk_int_t) len);
 		if (end < 0) {
 			end = len + end;
 		}
@@ -1164,21 +1156,21 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
 
 	idx = 0;
 	for (i = start; i < end; i++) {
-		DUK_ASSERT_TOP(ctx, 5);
-		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
-			duk_xdef_prop_index_wec(ctx, 4, idx);
+		DUK_ASSERT_TOP(thr, 5);
+		if (duk_get_prop_index(thr, 2, (duk_uarridx_t) i)) {
+			duk_xdef_prop_index_wec(thr, 4, idx);
 			res_length = idx + 1;
 		} else {
-			duk_pop_undefined(ctx);
+			duk_pop_undefined(thr);
 		}
 		idx++;
-		DUK_ASSERT_TOP(ctx, 5);
+		DUK_ASSERT_TOP(thr, 5);
 	}
 
-	duk_push_u32(ctx, res_length);
-	duk_xdef_prop_stridx_short(ctx, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+	duk_push_u32(thr, res_length);
+	duk_xdef_prop_stridx_short(thr, 4, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 
-	DUK_ASSERT_TOP(ctx, 5);
+	DUK_ASSERT_TOP(thr, 5);
 	return 1;
 }
 
@@ -1186,18 +1178,18 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_slice(duk_context *ctx) {
  *  shift()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_hthread *thr) {
 	duk_uint32_t len;
 	duk_uint32_t i;
 
-	len = duk__push_this_obj_len_u32(ctx);
+	len = duk__push_this_obj_len_u32(thr);
 	if (len == 0) {
-		duk_push_int(ctx, 0);
-		duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LENGTH);
+		duk_push_int(thr, 0);
+		duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LENGTH);
 		return 0;
 	}
 
-	duk_get_prop_index(ctx, 0, 0);
+	duk_get_prop_index(thr, 0, 0);
 
 	/* stack[0] = object (this)
 	 * stack[1] = ToUint32(length)
@@ -1205,22 +1197,22 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
 	 */
 
 	for (i = 1; i < len; i++) {
-		DUK_ASSERT_TOP(ctx, 3);
-		if (duk_get_prop_index(ctx, 0, (duk_uarridx_t) i)) {
+		DUK_ASSERT_TOP(thr, 3);
+		if (duk_get_prop_index(thr, 0, (duk_uarridx_t) i)) {
 			/* fromPresent = true */
-			duk_put_prop_index(ctx, 0, (duk_uarridx_t) (i - 1));
+			duk_put_prop_index(thr, 0, (duk_uarridx_t) (i - 1));
 		} else {
 			/* fromPresent = false */
-			duk_del_prop_index(ctx, 0, (duk_uarridx_t) (i - 1));
-			duk_pop_undefined(ctx);
+			duk_del_prop_index(thr, 0, (duk_uarridx_t) (i - 1));
+			duk_pop_undefined(thr);
 		}
 	}
-	duk_del_prop_index(ctx, 0, (duk_uarridx_t) (len - 1));
+	duk_del_prop_index(thr, 0, (duk_uarridx_t) (len - 1));
 
-	duk_push_u32(ctx, (duk_uint32_t) (len - 1));
-	duk_put_prop_stridx_short(ctx, 0, DUK_STRIDX_LENGTH);
+	duk_push_u32(thr, (duk_uint32_t) (len - 1));
+	duk_put_prop_stridx_short(thr, 0, DUK_STRIDX_LENGTH);
 
-	DUK_ASSERT_TOP(ctx, 3);
+	DUK_ASSERT_TOP(thr, 3);
 	return 1;
 }
 
@@ -1228,20 +1220,20 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_shift(duk_context *ctx) {
  *  unshift()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_hthread *thr) {
 	duk_idx_t nargs;
 	duk_uint32_t len;
 	duk_uint32_t i;
 
-	nargs = duk_get_top(ctx);
-	len = duk__push_this_obj_len_u32(ctx);
+	nargs = duk_get_top(thr);
+	len = duk__push_this_obj_len_u32(thr);
 
 	/* stack[0...nargs-1] = unshift args (vararg)
 	 * stack[nargs] = ToObject(this)
 	 * stack[nargs+1] = ToUint32(length)
 	 */
 
-	DUK_ASSERT_TOP(ctx, nargs + 2);
+	DUK_ASSERT_TOP(thr, nargs + 2);
 
 	/* Note: unshift() may operate on indices above unsigned 32-bit range
 	 * and the final length may be >= 2**32.  However, we restrict the
@@ -1250,39 +1242,39 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
 
 	if (len + (duk_uint32_t) nargs < len) {
 		DUK_D(DUK_DPRINT("Array.prototype.unshift() would go beyond 32-bit length, throw"));
-		DUK_DCERROR_RANGE_INVALID_LENGTH((duk_hthread *) ctx);
+		DUK_DCERROR_RANGE_INVALID_LENGTH(thr);
 	}
 
 	i = len;
 	while (i > 0) {
-		DUK_ASSERT_TOP(ctx, nargs + 2);
+		DUK_ASSERT_TOP(thr, nargs + 2);
 		i--;
 		/* k+argCount-1; note that may be above 32-bit range */
 
-		if (duk_get_prop_index(ctx, -2, (duk_uarridx_t) i)) {
+		if (duk_get_prop_index(thr, -2, (duk_uarridx_t) i)) {
 			/* fromPresent = true */
 			/* [ ... ToObject(this) ToUint32(length) val ] */
-			duk_put_prop_index(ctx, -3, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
+			duk_put_prop_index(thr, -3, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		} else {
 			/* fromPresent = false */
 			/* [ ... ToObject(this) ToUint32(length) val ] */
-			duk_pop_undefined(ctx);
-			duk_del_prop_index(ctx, -2, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
+			duk_pop_undefined(thr);
+			duk_del_prop_index(thr, -2, (duk_uarridx_t) (i + nargs));  /* -> [ ... ToObject(this) ToUint32(length) ] */
 		}
-		DUK_ASSERT_TOP(ctx, nargs + 2);
+		DUK_ASSERT_TOP(thr, nargs + 2);
 	}
 
 	for (i = 0; i < (duk_uint32_t) nargs; i++) {
-		DUK_ASSERT_TOP(ctx, nargs + 2);
-		duk_dup(ctx, i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
-		duk_put_prop_index(ctx, -3, (duk_uarridx_t) i);
-		DUK_ASSERT_TOP(ctx, nargs + 2);
+		DUK_ASSERT_TOP(thr, nargs + 2);
+		duk_dup(thr, i);  /* -> [ ... ToObject(this) ToUint32(length) arg[i] ] */
+		duk_put_prop_index(thr, -3, (duk_uarridx_t) i);
+		DUK_ASSERT_TOP(thr, nargs + 2);
 	}
 
-	DUK_ASSERT_TOP(ctx, nargs + 2);
-	duk_push_u32(ctx, len + nargs);
-	duk_dup_top(ctx);  /* -> [ ... ToObject(this) ToUint32(length) final_len final_len ] */
-	duk_put_prop_stridx_short(ctx, -4, DUK_STRIDX_LENGTH);
+	DUK_ASSERT_TOP(thr, nargs + 2);
+	duk_push_u32(thr, len + nargs);
+	duk_dup_top(thr);  /* -> [ ... ToObject(this) ToUint32(length) final_len final_len ] */
+	duk_put_prop_stridx_short(thr, -4, DUK_STRIDX_LENGTH);
 	return 1;
 }
 
@@ -1290,22 +1282,22 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_unshift(duk_context *ctx) {
  *  indexOf(), lastIndexOf()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_hthread *thr) {
 	duk_idx_t nargs;
 	duk_int_t i, len;
 	duk_int_t from_idx;
-	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
+	duk_small_int_t idx_step = duk_get_current_magic(thr);  /* idx_step is +1 for indexOf, -1 for lastIndexOf */
 
 	/* lastIndexOf() needs to be a vararg function because we must distinguish
 	 * between an undefined fromIndex and a "not given" fromIndex; indexOf() is
 	 * made vararg for symmetry although it doesn't strictly need to be.
 	 */
 
-	nargs = duk_get_top(ctx);
-	duk_set_top(ctx, 2);
+	nargs = duk_get_top(thr);
+	duk_set_top(thr, 2);
 
 	/* XXX: must be able to represent -len */
-	len = (duk_int_t) duk__push_this_obj_len_u32_limited(ctx);
+	len = (duk_int_t) duk__push_this_obj_len_u32_limited(thr);
 	if (len == 0) {
 		goto not_found;
 	}
@@ -1332,7 +1324,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 		 * lastIndexOf: clamp fromIndex to [-len - 1, len - 1]
 		 * (if clamped to -len-1 -> fromIndex becomes -1, terminates for-loop directly)
 		 */
-		from_idx = duk_to_int_clamped(ctx,
+		from_idx = duk_to_int_clamped(thr,
 		                              1,
 		                              (idx_step > 0 ? -len : -len - 1),
 		                              (idx_step > 0 ? len : len - 1));
@@ -1358,21 +1350,21 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
 	 */
 
 	for (i = from_idx; i >= 0 && i < len; i += idx_step) {
-		DUK_ASSERT_TOP(ctx, 4);
+		DUK_ASSERT_TOP(thr, 4);
 
-		if (duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
-			DUK_ASSERT_TOP(ctx, 5);
-			if (duk_strict_equals(ctx, 0, 4)) {
-				duk_push_int(ctx, i);
+		if (duk_get_prop_index(thr, 2, (duk_uarridx_t) i)) {
+			DUK_ASSERT_TOP(thr, 5);
+			if (duk_strict_equals(thr, 0, 4)) {
+				duk_push_int(thr, i);
 				return 1;
 			}
 		}
 
-		duk_pop_unsafe(ctx);
+		duk_pop_unsafe(thr);
 	}
 
  not_found:
-	duk_push_int(ctx, -1);
+	duk_push_int(thr, -1);
 	return 1;
 }
 
@@ -1391,25 +1383,25 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_indexof_shared(duk_context *ctx) {
  * 5 callers the net result is about 100 bytes / caller.
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_hthread *thr) {
 	duk_uint32_t len;
 	duk_uint32_t i;
 	duk_uarridx_t k;
 	duk_bool_t bval;
-	duk_small_int_t iter_type = duk_get_current_magic(ctx);
+	duk_small_int_t iter_type = duk_get_current_magic(thr);
 	duk_uint32_t res_length = 0;
 
 	/* each call this helper serves has nargs==2 */
-	DUK_ASSERT_TOP(ctx, 2);
+	DUK_ASSERT_TOP(thr, 2);
 
-	len = duk__push_this_obj_len_u32(ctx);
-	duk_require_callable(ctx, 0);
+	len = duk__push_this_obj_len_u32(thr);
+	duk_require_callable(thr, 0);
 	/* if thisArg not supplied, behave as if undefined was supplied */
 
 	if (iter_type == DUK__ITER_MAP || iter_type == DUK__ITER_FILTER) {
-		duk_push_array(ctx);
+		duk_push_array(thr);
 	} else {
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 	}
 
 	/* stack[0] = callback
@@ -1421,9 +1413,9 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 
 	k = 0;  /* result index for filter() */
 	for (i = 0; i < len; i++) {
-		DUK_ASSERT_TOP(ctx, 5);
+		DUK_ASSERT_TOP(thr, 5);
 
-		if (!duk_get_prop_index(ctx, 2, (duk_uarridx_t) i)) {
+		if (!duk_get_prop_index(thr, 2, (duk_uarridx_t) i)) {
 #if defined(DUK_USE_NONSTD_ARRAY_MAP_TRAILER)
 			/* Real world behavior for map(): trailing non-existent
 			 * elements don't invoke the user callback, but are still
@@ -1438,7 +1430,7 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			 * counted towards result 'length'.
 			 */
 #endif
-			duk_pop_undefined(ctx);
+			duk_pop_undefined(thr);
 			continue;
 		}
 
@@ -1447,23 +1439,23 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 		 * effects.
 		 */
 
-		duk_dup_0(ctx);
-		duk_dup_1(ctx);
-		duk_dup_m3(ctx);
-		duk_push_u32(ctx, i);
-		duk_dup_2(ctx);  /* [ ... val callback thisArg val i obj ] */
-		duk_call_method(ctx, 3); /* -> [ ... val retval ] */
+		duk_dup_0(thr);
+		duk_dup_1(thr);
+		duk_dup_m3(thr);
+		duk_push_u32(thr, i);
+		duk_dup_2(thr);  /* [ ... val callback thisArg val i obj ] */
+		duk_call_method(thr, 3); /* -> [ ... val retval ] */
 
 		switch (iter_type) {
 		case DUK__ITER_EVERY:
-			bval = duk_to_boolean(ctx, -1);
+			bval = duk_to_boolean(thr, -1);
 			if (!bval) {
 				/* stack top contains 'false' */
 				return 1;
 			}
 			break;
 		case DUK__ITER_SOME:
-			bval = duk_to_boolean(ctx, -1);
+			bval = duk_to_boolean(thr, -1);
 			if (bval) {
 				/* stack top contains 'true' */
 				return 1;
@@ -1473,15 +1465,15 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			/* nop */
 			break;
 		case DUK__ITER_MAP:
-			duk_dup_top(ctx);
-			duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) i);  /* retval to result[i] */
+			duk_dup_top(thr);
+			duk_xdef_prop_index_wec(thr, 4, (duk_uarridx_t) i);  /* retval to result[i] */
 			res_length = i + 1;
 			break;
 		case DUK__ITER_FILTER:
-			bval = duk_to_boolean(ctx, -1);
+			bval = duk_to_boolean(thr, -1);
 			if (bval) {
-				duk_dup_m2(ctx);  /* orig value */
-				duk_xdef_prop_index_wec(ctx, 4, (duk_uarridx_t) k);
+				duk_dup_m2(thr);  /* orig value */
+				duk_xdef_prop_index_wec(thr, 4, (duk_uarridx_t) k);
 				k++;
 				res_length = k;
 			}
@@ -1490,27 +1482,27 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
 			DUK_UNREACHABLE();
 			break;
 		}
-		duk_pop_2_unsafe(ctx);
+		duk_pop_2_unsafe(thr);
 
-		DUK_ASSERT_TOP(ctx, 5);
+		DUK_ASSERT_TOP(thr, 5);
 	}
 
 	switch (iter_type) {
 	case DUK__ITER_EVERY:
-		duk_push_true(ctx);
+		duk_push_true(thr);
 		break;
 	case DUK__ITER_SOME:
-		duk_push_false(ctx);
+		duk_push_false(thr);
 		break;
 	case DUK__ITER_FOREACH:
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 		break;
 	case DUK__ITER_MAP:
 	case DUK__ITER_FILTER:
-		DUK_ASSERT_TOP(ctx, 5);
-		DUK_ASSERT(duk_is_array(ctx, -1));  /* topmost element is the result array already */
-		duk_push_u32(ctx, res_length);
-		duk_xdef_prop_stridx_short(ctx, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
+		DUK_ASSERT_TOP(thr, 5);
+		DUK_ASSERT(duk_is_array(thr, -1));  /* topmost element is the result array already */
+		duk_push_u32(thr, res_length);
+		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_LENGTH, DUK_PROPDESC_FLAGS_W);
 		break;
 	default:
 		DUK_UNREACHABLE();
@@ -1524,21 +1516,21 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_iter_shared(duk_context *ctx) {
  *  reduce(), reduceRight()
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_hthread *thr) {
 	duk_idx_t nargs;
 	duk_bool_t have_acc;
 	duk_uint32_t i, len;
-	duk_small_int_t idx_step = duk_get_current_magic(ctx);  /* idx_step is +1 for reduce, -1 for reduceRight */
+	duk_small_int_t idx_step = duk_get_current_magic(thr);  /* idx_step is +1 for reduce, -1 for reduceRight */
 
 	/* We're a varargs function because we need to detect whether
 	 * initialValue was given or not.
 	 */
-	nargs = duk_get_top(ctx);
+	nargs = duk_get_top(thr);
 	DUK_DDD(DUK_DDDPRINT("nargs=%ld", (long) nargs));
 
-	duk_set_top(ctx, 2);
-	len = duk__push_this_obj_len_u32(ctx);
-	duk_require_callable(ctx, 0);
+	duk_set_top(thr, 2);
+	len = duk__push_this_obj_len_u32(thr);
+	duk_require_callable(thr, 0);
 
 	/* stack[0] = callback fn
 	 * stack[1] = initialValue
@@ -1549,11 +1541,11 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 
 	have_acc = 0;
 	if (nargs >= 2) {
-		duk_dup_1(ctx);
+		duk_dup_1(thr);
 		have_acc = 1;
 	}
 	DUK_DDD(DUK_DDDPRINT("have_acc=%ld, acc=%!T",
-	                     (long) have_acc, (duk_tval *) duk_get_tval(ctx, 3)));
+	                     (long) have_acc, (duk_tval *) duk_get_tval(thr, 3)));
 
 	/* For len == 0, i is initialized to len - 1 which underflows.
 	 * The condition (i < len) will then exit the for-loop on the
@@ -1566,44 +1558,44 @@ DUK_INTERNAL duk_ret_t duk_bi_array_prototype_reduce_shared(duk_context *ctx) {
 	     i += idx_step) {
 		DUK_DDD(DUK_DDDPRINT("i=%ld, len=%ld, have_acc=%ld, top=%ld, acc=%!T",
 		                     (long) i, (long) len, (long) have_acc,
-		                     (long) duk_get_top(ctx),
-		                     (duk_tval *) duk_get_tval(ctx, 4)));
+		                     (long) duk_get_top(thr),
+		                     (duk_tval *) duk_get_tval(thr, 4)));
 
-		DUK_ASSERT((have_acc && duk_get_top(ctx) == 5) ||
-		           (!have_acc && duk_get_top(ctx) == 4));
+		DUK_ASSERT((have_acc && duk_get_top(thr) == 5) ||
+		           (!have_acc && duk_get_top(thr) == 4));
 
-		if (!duk_has_prop_index(ctx, 2, (duk_uarridx_t) i)) {
+		if (!duk_has_prop_index(thr, 2, (duk_uarridx_t) i)) {
 			continue;
 		}
 
 		if (!have_acc) {
-			DUK_ASSERT_TOP(ctx, 4);
-			duk_get_prop_index(ctx, 2, (duk_uarridx_t) i);
+			DUK_ASSERT_TOP(thr, 4);
+			duk_get_prop_index(thr, 2, (duk_uarridx_t) i);
 			have_acc = 1;
-			DUK_ASSERT_TOP(ctx, 5);
+			DUK_ASSERT_TOP(thr, 5);
 		} else {
-			DUK_ASSERT_TOP(ctx, 5);
-			duk_dup_0(ctx);
-			duk_dup(ctx, 4);
-			duk_get_prop_index(ctx, 2, (duk_uarridx_t) i);
-			duk_push_u32(ctx, i);
-			duk_dup_2(ctx);
+			DUK_ASSERT_TOP(thr, 5);
+			duk_dup_0(thr);
+			duk_dup(thr, 4);
+			duk_get_prop_index(thr, 2, (duk_uarridx_t) i);
+			duk_push_u32(thr, i);
+			duk_dup_2(thr);
 			DUK_DDD(DUK_DDDPRINT("calling reduce function: func=%!T, prev=%!T, curr=%!T, idx=%!T, obj=%!T",
-			                     (duk_tval *) duk_get_tval(ctx, -5), (duk_tval *) duk_get_tval(ctx, -4),
-			                     (duk_tval *) duk_get_tval(ctx, -3), (duk_tval *) duk_get_tval(ctx, -2),
-			                     (duk_tval *) duk_get_tval(ctx, -1)));
-			duk_call(ctx, 4);
-			DUK_DDD(DUK_DDDPRINT("-> result: %!T", (duk_tval *) duk_get_tval(ctx, -1)));
-			duk_replace(ctx, 4);
-			DUK_ASSERT_TOP(ctx, 5);
+			                     (duk_tval *) duk_get_tval(thr, -5), (duk_tval *) duk_get_tval(thr, -4),
+			                     (duk_tval *) duk_get_tval(thr, -3), (duk_tval *) duk_get_tval(thr, -2),
+			                     (duk_tval *) duk_get_tval(thr, -1)));
+			duk_call(thr, 4);
+			DUK_DDD(DUK_DDDPRINT("-> result: %!T", (duk_tval *) duk_get_tval(thr, -1)));
+			duk_replace(thr, 4);
+			DUK_ASSERT_TOP(thr, 5);
 		}
 	}
 
 	if (!have_acc) {
-		DUK_DCERROR_TYPE_INVALID_ARGS((duk_hthread *) ctx);
+		DUK_DCERROR_TYPE_INVALID_ARGS(thr);
 	}
 
-	DUK_ASSERT_TOP(ctx, 5);
+	DUK_ASSERT_TOP(thr, 5);
 	return 1;
 }
 

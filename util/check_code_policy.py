@@ -129,6 +129,9 @@ rejected_plain_identifiers_list = [
     'to_index',
     'arr_index',
     'uindex',
+
+    # avoid in internals, use duk_hthread exclusively (except in duktape.h.in)
+    'duk_context',
 ]
 rejected_plain_identifiers = {}
 for id in rejected_plain_identifiers_list:
@@ -296,6 +299,8 @@ def checkIdentifiers(lines, idx, filename):
 
     for m in re.finditer(re_identifier, line):
         if rejected_plain_identifiers.has_key(m.group(0)):
+            if m.group(0) in [ 'duk_context' ] and bn == 'duktape.h.in':
+                continue  # duk_context allowed in public API header
             if not excludePlain:
                 raise Exception('invalid identifier %r (perhaps plain)' % m.group(0))
 

@@ -2968,6 +2968,9 @@ Planned
 * Add print(), console.log() etc bindings to Makefile.dukdebug (GH-1535,
   GH-1593)
 
+* Internal change: use duk_hthread instead of duk_context in all internal
+  code, removing unnecessary and awkward ctx <-> thr casts (GH-1614)
+
 * Internal change: set REACHABLE for all READONLY objects (relevant when
   using ROM built-ins) so that mark-and-sweep doesn't need an explicit
   READONLY check (GH-1502)

@@ -155,7 +155,7 @@ struct duk_bufwriter_ctx {
 		duk_bw_compact((thr), (bw_ctx)); \
 	} while (0)
 #define DUK_BW_PUSH_AS_STRING(thr,bw_ctx) do { \
-		duk_push_lstring((duk_context *) (thr), \
+		duk_push_lstring((thr), \
 		                 (const char *) (bw_ctx)->p_base, \
 		                 (duk_size_t) ((bw_ctx)->p - (bw_ctx)->p_base)); \
 	} while (0)

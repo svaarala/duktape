@@ -1105,10 +1105,10 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 
 #if !defined(DUK_USE_GET_RANDOM_DOUBLE)
 #if defined(DUK_USE_PREFER_SIZE) || !defined(DUK_USE_64BIT_OPS)
-	res->rnd_state = (duk_uint32_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
+	res->rnd_state = (duk_uint32_t) DUK_USE_DATE_GET_NOW(res->heap_thread);
 	duk_util_tinyrandom_prepare_seed(res->heap_thread);
 #else
-	res->rnd_state[0] = (duk_uint64_t) DUK_USE_DATE_GET_NOW((duk_context *) res->heap_thread);
+	res->rnd_state[0] = (duk_uint64_t) DUK_USE_DATE_GET_NOW(res->heap_thread);
 	DUK_ASSERT(res->rnd_state[1] == 0);  /* Not filled here, filled in by seed preparation. */
 #if 0  /* Manual test values matching misc/xoroshiro128plus_test.c. */
 	res->rnd_state[0] = DUK_U64_CONSTANT(0xdeadbeef12345678);

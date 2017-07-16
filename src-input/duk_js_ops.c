@@ -151,11 +151,10 @@ DUK_INTERNAL duk_bool_t duk_js_toboolean(duk_tval *tv) {
 
 /* E5 Section 9.3.1 */
 DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t s2n_flags;
 	duk_double_t d;
 
-	DUK_ASSERT(duk_is_string(ctx, -1));
+	DUK_ASSERT(duk_is_string(thr, -1));
 
 	/* Quite lenient, e.g. allow empty as zero, but don't allow trailing
 	 * garbage.
@@ -174,11 +173,11 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 	            DUK_S2N_FLAG_ALLOW_AUTO_OCT_INT |
 	            DUK_S2N_FLAG_ALLOW_AUTO_BIN_INT;
 
-	duk_numconv_parse(ctx, 10 /*radix*/, s2n_flags);
+	duk_numconv_parse(thr, 10 /*radix*/, s2n_flags);
 
 #if defined(DUK_USE_PREFER_SIZE)
-	d = duk_get_number(ctx, -1);
-	duk_pop_unsafe(ctx);
+	d = duk_get_number(thr, -1);
+	duk_pop_unsafe(thr);
 #else
 	thr->valstack_top--;
 	DUK_ASSERT(DUK_TVAL_IS_NUMBER(thr->valstack_top));
@@ -192,8 +191,6 @@ DUK_LOCAL duk_double_t duk__tonumber_string_raw(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
-	duk_context *ctx = (duk_hthread *) thr;
-
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(tv != NULL);
 
@@ -221,22 +218,22 @@ DUK_INTERNAL duk_double_t duk_js_tonumber(duk_hthread *thr, duk_tval *tv) {
 		if (DUK_UNLIKELY(DUK_HSTRING_HAS_SYMBOL(h))) {
 			DUK_ERROR_TYPE(thr, DUK_STR_CANNOT_NUMBER_COERCE_SYMBOL);
 		}
-		duk_push_hstring(ctx, h);
+		duk_push_hstring(thr, h);
 		return duk__tonumber_string_raw(thr);
 	}
 	case DUK_TAG_BUFFER:  /* plain buffer treated like object */
 	case DUK_TAG_OBJECT: {
 		duk_double_t d;
-		duk_push_tval(ctx, tv);
-		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);  /* 'tv' becomes invalid */
+		duk_push_tval(thr, tv);
+		duk_to_primitive(thr, -1, DUK_HINT_NUMBER);  /* 'tv' becomes invalid */
 
 		/* recursive call for a primitive value (guaranteed not to cause second
 		 * recursion).
 		 */
-		DUK_ASSERT(duk_get_tval(ctx, -1) != NULL);
-		d = duk_js_tonumber(thr, duk_get_tval(ctx, -1));
+		DUK_ASSERT(duk_get_tval(thr, -1) != NULL);
+		d = duk_js_tonumber(thr, duk_get_tval(thr, -1));
 
-		duk_pop_unsafe(ctx);
+		duk_pop_unsafe(thr);
 		return d;
 	}
 	case DUK_TAG_POINTER: {
@@ -522,7 +519,6 @@ DUK_LOCAL duk_bool_t duk__js_samevalue_number(duk_double_t x, duk_double_t y) {
 }
 
 DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_uint_t type_mask_x;
 	duk_uint_t type_mask_y;
 
@@ -645,7 +641,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		if (!DUK_TVAL_STRING_IS_SYMBOL(tv_y)) {
 			duk_double_t d1, d2;
 			d1 = DUK_TVAL_GET_NUMBER(tv_x);
-			d2 = duk_to_number_tval(ctx, tv_y);
+			d2 = duk_to_number_tval(thr, tv_y);
 			return duk__js_equals_number(d1, d2);
 		}
 	}
@@ -653,7 +649,7 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 		if (!DUK_TVAL_STRING_IS_SYMBOL(tv_x)) {
 			duk_double_t d1, d2;
 			d1 = DUK_TVAL_GET_NUMBER(tv_y);
-			d2 = duk_to_number_tval(ctx, tv_x);
+			d2 = duk_to_number_tval(thr, tv_x);
 			return duk__js_equals_number(d1, d2);
 		}
 	}
@@ -667,14 +663,14 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	 */
 	if (type_mask_x & DUK_TYPE_MASK_BOOLEAN) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_x) == 0 || DUK_TVAL_GET_BOOLEAN(tv_x) == 1);
-		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_x));
-		duk_push_tval(ctx, tv_y);
+		duk_push_int(thr, DUK_TVAL_GET_BOOLEAN(tv_x));
+		duk_push_tval(thr, tv_y);
 		goto recursive_call;
 	}
 	if (type_mask_y & DUK_TYPE_MASK_BOOLEAN) {
 		DUK_ASSERT(DUK_TVAL_GET_BOOLEAN(tv_y) == 0 || DUK_TVAL_GET_BOOLEAN(tv_y) == 1);
-		duk_push_tval(ctx, tv_x);
-		duk_push_int(ctx, DUK_TVAL_GET_BOOLEAN(tv_y));
+		duk_push_tval(thr, tv_x);
+		duk_push_int(thr, DUK_TVAL_GET_BOOLEAN(tv_y));
 		goto recursive_call;
 	}
 
@@ -682,17 +678,17 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	if ((type_mask_x & (DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_NUMBER)) &&
 	    (type_mask_y & DUK_TYPE_MASK_OBJECT)) {
 		/* No symbol check needed because symbols and strings are accepted. */
-		duk_push_tval(ctx, tv_x);
-		duk_push_tval(ctx, tv_y);
-		duk_to_primitive(ctx, -1, DUK_HINT_NONE);  /* apparently no hint? */
+		duk_push_tval(thr, tv_x);
+		duk_push_tval(thr, tv_y);
+		duk_to_primitive(thr, -1, DUK_HINT_NONE);  /* apparently no hint? */
 		goto recursive_call;
 	}
 	if ((type_mask_x & DUK_TYPE_MASK_OBJECT) &&
 	    (type_mask_y & (DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_NUMBER))) {
 		/* No symbol check needed because symbols and strings are accepted. */
-		duk_push_tval(ctx, tv_x);
-		duk_push_tval(ctx, tv_y);
-		duk_to_primitive(ctx, -2, DUK_HINT_NONE);  /* apparently no hint? */
+		duk_push_tval(thr, tv_x);
+		duk_push_tval(thr, tv_y);
+		duk_to_primitive(thr, -2, DUK_HINT_NONE);  /* apparently no hint? */
 		goto recursive_call;
 	}
 
@@ -704,10 +700,10 @@ DUK_INTERNAL duk_bool_t duk_js_equals_helper(duk_hthread *thr, duk_tval *tv_x, d
 	{
 		duk_bool_t rc;
 		rc = duk_js_equals_helper(thr,
-		                          DUK_GET_TVAL_NEGIDX(ctx, -2),
-		                          DUK_GET_TVAL_NEGIDX(ctx, -1),
+		                          DUK_GET_TVAL_NEGIDX(thr, -2),
+		                          DUK_GET_TVAL_NEGIDX(thr, -1),
 		                          0 /*flags:nonstrict*/);
-		duk_pop_2_unsafe(ctx);
+		duk_pop_2_unsafe(thr);
 		return rc;
 	}
 }
@@ -900,7 +896,6 @@ DUK_LOCAL duk_bool_t duk__compare_number(duk_bool_t retval, duk_double_t d1, duk
 #endif  /* DUK_USE_PARANOID_MATH */
 
 DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y, duk_small_int_t flags) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_double_t d1, d2;
 	duk_small_int_t rc;
 	duk_bool_t retval;
@@ -929,20 +924,20 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 
 	/* Slow path */
 
-	duk_push_tval(ctx, tv_x);
-	duk_push_tval(ctx, tv_y);
+	duk_push_tval(thr, tv_x);
+	duk_push_tval(thr, tv_y);
 
 	if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
-		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
-		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
+		duk_to_primitive(thr, -2, DUK_HINT_NUMBER);
+		duk_to_primitive(thr, -1, DUK_HINT_NUMBER);
 	} else {
-		duk_to_primitive(ctx, -1, DUK_HINT_NUMBER);
-		duk_to_primitive(ctx, -2, DUK_HINT_NUMBER);
+		duk_to_primitive(thr, -1, DUK_HINT_NUMBER);
+		duk_to_primitive(thr, -2, DUK_HINT_NUMBER);
 	}
 
 	/* Note: reuse variables */
-	tv_x = DUK_GET_TVAL_NEGIDX(ctx, -2);
-	tv_y = DUK_GET_TVAL_NEGIDX(ctx, -1);
+	tv_x = DUK_GET_TVAL_NEGIDX(thr, -2);
+	tv_y = DUK_GET_TVAL_NEGIDX(thr, -1);
 
 	if (DUK_TVAL_IS_STRING(tv_x) && DUK_TVAL_IS_STRING(tv_y)) {
 		duk_hstring *h1 = DUK_TVAL_GET_STRING(tv_x);
@@ -952,7 +947,7 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 
 		if (DUK_LIKELY(!DUK_HSTRING_HAS_SYMBOL(h1) && !DUK_HSTRING_HAS_SYMBOL(h2))) {
 			rc = duk_js_string_compare(h1, h2);
-			duk_pop_2_unsafe(ctx);
+			duk_pop_2_unsafe(thr);
 			if (rc < 0) {
 				return retval ^ 1;
 			} else {
@@ -968,27 +963,27 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
 	/* Ordering should not matter (E5 Section 11.8.5, step 3.a). */
 #if 0
 	if (flags & DUK_COMPARE_FLAG_EVAL_LEFT_FIRST) {
-		d1 = duk_to_number_m2(ctx);
-		d2 = duk_to_number_m1(ctx);
+		d1 = duk_to_number_m2(thr);
+		d2 = duk_to_number_m1(thr);
 	} else {
-		d2 = duk_to_number_m1(ctx);
-		d1 = duk_to_number_m2(ctx);
+		d2 = duk_to_number_m1(thr);
+		d1 = duk_to_number_m2(thr);
 	}
 #endif
-	d1 = duk_to_number_m2(ctx);
-	d2 = duk_to_number_m1(ctx);
+	d1 = duk_to_number_m2(thr);
+	d2 = duk_to_number_m1(thr);
 
-	/* We want to duk_pop_2_unsafe(ctx); because the values are numbers
+	/* We want to duk_pop_2_unsafe(thr); because the values are numbers
 	 * no decref check is needed.
 	 */
 #if defined(DUK_USE_PREFER_SIZE)
-	duk_pop_2_nodecref_unsafe(ctx);
+	duk_pop_2_nodecref_unsafe(thr);
 #else
-	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -2)));
-	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(ctx, -1)));
-	DUK_ASSERT(duk_get_top(ctx) >= 2);
-	((duk_hthread *) ctx)->valstack_top -= 2;
-	tv_x = ((duk_hthread *) ctx)->valstack_top;
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(thr, -2)));
+	DUK_ASSERT(!DUK_TVAL_NEEDS_REFCOUNT_UPDATE(duk_get_tval(thr, -1)));
+	DUK_ASSERT(duk_get_top(thr) >= 2);
+	thr->valstack_top -= 2;
+	tv_x = thr->valstack_top;
 	tv_y = tv_x + 1;
 	DUK_TVAL_SET_UNDEFINED(tv_x);  /* Value stack policy */
 	DUK_TVAL_SET_UNDEFINED(tv_y);
@@ -1018,7 +1013,6 @@ DUK_INTERNAL duk_bool_t duk_js_compare_helper(duk_hthread *thr, duk_tval *tv_x, 
  */
 
 DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hobject *func;
 	duk_hobject *val;
 	duk_hobject *proto;
@@ -1036,9 +1030,9 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	 *  Using duk_require_hobject() is thus correct (except for error msg).
 	 */
 
-	duk_push_tval(ctx, tv_x);
-	duk_push_tval(ctx, tv_y);
-	func = duk_require_hobject(ctx, -1);
+	duk_push_tval(thr, tv_x);
+	duk_push_tval(thr, tv_y);
+	func = duk_require_hobject(thr, -1);
 	DUK_ASSERT(func != NULL);
 
 	/*
@@ -1062,9 +1056,9 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	}
 
 	if (DUK_HOBJECT_HAS_BOUNDFUNC(func)) {
-		duk_push_tval(ctx, &((duk_hboundfunc *) func)->target);
-		duk_replace(ctx, -2);
-		func = duk_require_hobject(ctx, -1);  /* lightfunc throws */
+		duk_push_tval(thr, &((duk_hboundfunc *) func)->target);
+		duk_replace(thr, -2);
+		func = duk_require_hobject(thr, -1);  /* lightfunc throws */
 
 		/* Rely on Function.prototype.bind() never creating bound
 		 * functions whose target is not proper.
@@ -1089,7 +1083,7 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	 * from the virtual prototype object.
 	 */
 	skip_first = 0;
-	tv = DUK_GET_TVAL_NEGIDX(ctx, -2);
+	tv = DUK_GET_TVAL_NEGIDX(thr, -2);
 	switch (DUK_TVAL_GET_TAG(tv)) {
 	case DUK_TAG_LIGHTFUNC:
 		val = thr->builtins[DUK_BIDX_FUNCTION_PROTOTYPE];
@@ -1113,9 +1107,9 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	}
 	DUK_ASSERT(val != NULL);  /* Loop doesn't actually rely on this. */
 
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
-	proto = duk_require_hobject(ctx, -1);
-	duk_pop_unsafe(ctx);  /* -> [ ... lval rval ] */
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_PROTOTYPE);  /* -> [ ... lval rval rval.prototype ] */
+	proto = duk_require_hobject(thr, -1);
+	duk_pop_unsafe(thr);  /* -> [ ... lval rval ] */
 
 	sanity = DUK_HOBJECT_PROTOTYPE_CHAIN_SANITY;
 	do {
@@ -1162,11 +1156,11 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
 	DUK_UNREACHABLE();
 
  pop_and_false:
-	duk_pop_2_unsafe(ctx);
+	duk_pop_2_unsafe(thr);
 	return 0;
 
  pop_and_true:
-	duk_pop_2_unsafe(ctx);
+	duk_pop_2_unsafe(thr);
 	return 1;
 }
 
@@ -1181,7 +1175,6 @@ DUK_INTERNAL duk_bool_t duk_js_instanceof(duk_hthread *thr, duk_tval *tv_x, duk_
  */
 
 DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv_y) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_bool_t retval;
 
 	/*
@@ -1201,17 +1194,17 @@ DUK_INTERNAL duk_bool_t duk_js_in(duk_hthread *thr, duk_tval *tv_x, duk_tval *tv
 	/* TypeError if rval is not an object or object like (e.g. lightfunc
 	 * or plain buffer).
 	 */
-	duk_push_tval(ctx, tv_x);
-	duk_push_tval(ctx, tv_y);
-	duk_require_type_mask(ctx, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
+	duk_push_tval(thr, tv_x);
+	duk_push_tval(thr, tv_y);
+	duk_require_type_mask(thr, -1, DUK_TYPE_MASK_OBJECT | DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
 
-	(void) duk_to_property_key_hstring(ctx, -2);
+	(void) duk_to_property_key_hstring(thr, -2);
 
 	retval = duk_hobject_hasprop(thr,
-	                             DUK_GET_TVAL_NEGIDX(ctx, -1),
-	                             DUK_GET_TVAL_NEGIDX(ctx, -2));
+	                             DUK_GET_TVAL_NEGIDX(thr, -1),
+	                             DUK_GET_TVAL_NEGIDX(thr, -2));
 
-	duk_pop_2_unsafe(ctx);
+	duk_pop_2_unsafe(thr);
 	return retval;
 }
 

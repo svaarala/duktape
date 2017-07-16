@@ -89,14 +89,12 @@ DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 	duk_debug_detached_function detached_cb;
 	void *detached_udata;
 	duk_hthread *thr;
-	duk_context *ctx;
 
 	thr = heap->heap_thread;
 	if (thr == NULL) {
 		DUK_ASSERT(heap->dbg_detached_cb == NULL);
 		return;
 	}
-	ctx = (duk_context *) thr;
 
 	/* Safe to call multiple times. */
 
@@ -111,7 +109,7 @@ DUK_LOCAL void duk__debug_do_detach2(duk_heap *heap) {
 		 * inside the callback.
 		 */
 		DUK_D(DUK_DPRINT("detached during message loop, delayed call to detached_cb"));
-		detached_cb(ctx, detached_udata);
+		detached_cb(thr, detached_udata);
 	}
 
 	heap->dbg_detaching = 0;
@@ -350,25 +348,23 @@ DUK_INTERNAL duk_int32_t duk_debug_read_int(duk_hthread *thr) {
 }
 
 DUK_LOCAL duk_hstring *duk__debug_read_hstring_raw(duk_hthread *thr, duk_uint32_t len) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t buf[31];
 	duk_uint8_t *p;
 
 	if (len <= sizeof(buf)) {
 		duk_debug_read_bytes(thr, buf, (duk_size_t) len);
-		duk_push_lstring(ctx, (const char *) buf, (duk_size_t) len);
+		duk_push_lstring(thr, (const char *) buf, (duk_size_t) len);
 	} else {
-		p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);  /* zero for paranoia */
+		p = (duk_uint8_t *) duk_push_fixed_buffer(thr, (duk_size_t) len);  /* zero for paranoia */
 		DUK_ASSERT(p != NULL);
 		duk_debug_read_bytes(thr, p, (duk_size_t) len);
-		(void) duk_buffer_to_string(ctx, -1);  /* Safety relies on debug client, which is OK. */
+		(void) duk_buffer_to_string(thr, -1);  /* Safety relies on debug client, which is OK. */
 	}
 
-	return duk_require_hstring(ctx, -1);
+	return duk_require_hstring(thr, -1);
 }
 
 DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t x;
 	duk_uint32_t len;
 
@@ -391,19 +387,18 @@ DUK_INTERNAL duk_hstring *duk_debug_read_hstring(duk_hthread *thr) {
  fail:
 	DUK_D(DUK_DPRINT("debug connection error: failed to decode int"));
 	DUK__SET_CONN_BROKEN(thr, 1);
-	duk_push_hstring_empty(ctx);  /* always push some string */
-	return duk_require_hstring(ctx, -1);
+	duk_push_hstring_empty(thr);  /* always push some string */
+	return duk_require_hstring(thr, -1);
 }
 
 DUK_LOCAL duk_hbuffer *duk__debug_read_hbuffer_raw(duk_hthread *thr, duk_uint32_t len) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t *p;
 
-	p = (duk_uint8_t *) duk_push_fixed_buffer(ctx, (duk_size_t) len);  /* zero for paranoia */
+	p = (duk_uint8_t *) duk_push_fixed_buffer(thr, (duk_size_t) len);  /* zero for paranoia */
 	DUK_ASSERT(p != NULL);
 	duk_debug_read_bytes(thr, p, (duk_size_t) len);
 
-	return duk_require_hbuffer(ctx, -1);
+	return duk_require_hbuffer(thr, -1);
 }
 
 DUK_LOCAL void *duk__debug_read_pointer_raw(duk_hthread *thr) {
@@ -487,7 +482,6 @@ DUK_INTERNAL duk_heaphdr *duk_debug_read_any_ptr(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_uint8_t x;
 	duk_uint_t t;
 	duk_uint32_t len;
@@ -499,11 +493,11 @@ DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 	if (x >= 0xc0) {
 		t = (duk_uint_t) (x - 0xc0);
 		t = (t << 8) + duk_debug_read_byte(thr);
-		duk_push_uint(ctx, (duk_uint_t) t);
+		duk_push_uint(thr, (duk_uint_t) t);
 		goto return_ptr;
 	}
 	if (x >= 0x80) {
-		duk_push_uint(ctx, (duk_uint_t) (x - 0x80));
+		duk_push_uint(thr, (duk_uint_t) (x - 0x80));
 		goto return_ptr;
 	}
 	if (x >= 0x60) {
@@ -515,7 +509,7 @@ DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 	switch (x) {
 	case DUK_DBG_IB_INT4: {
 		duk_int32_t i = duk__debug_read_int32_raw(thr);
-		duk_push_i32(ctx, i);
+		duk_push_i32(thr, i);
 		break;
 	}
 	case DUK_DBG_IB_STR4: {
@@ -539,25 +533,25 @@ DUK_INTERNAL duk_tval *duk_debug_read_tval(duk_hthread *thr) {
 		break;
 	}
 	case DUK_DBG_IB_UNDEFINED: {
-		duk_push_undefined(ctx);
+		duk_push_undefined(thr);
 		break;
 	}
 	case DUK_DBG_IB_NULL: {
-		duk_push_null(ctx);
+		duk_push_null(thr);
 		break;
 	}
 	case DUK_DBG_IB_TRUE: {
-		duk_push_true(ctx);
+		duk_push_true(thr);
 		break;
 	}
 	case DUK_DBG_IB_FALSE: {
-		duk_push_false(ctx);
+		duk_push_false(thr);
 		break;
 	}
 	case DUK_DBG_IB_NUMBER: {
 		duk_double_t d;
 		d = duk__debug_read_double_raw(thr);
-		duk_push_number(ctx, d);
+		duk_push_number(thr, d);
 		break;
 	}
 	case DUK_DBG_IB_OBJECT: {
@@ -766,8 +760,7 @@ DUK_INTERNAL void duk_debug_write_hstring(duk_hthread *thr, duk_hstring *h) {
 }
 
 DUK_LOCAL void duk__debug_write_hstring_safe_top(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
-	duk_debug_write_hstring(thr, duk_safe_to_hstring(ctx, -1));
+	duk_debug_write_hstring(thr, duk_safe_to_hstring(thr, -1));
 }
 
 DUK_INTERNAL void duk_debug_write_buffer(duk_hthread *thr, const char *data, duk_size_t length) {
@@ -974,7 +967,6 @@ DUK_INTERNAL void duk_debug_write_eom(duk_hthread *thr) {
  */
 
 DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 	duk_uint_fast32_t line;
 	duk_uint_fast32_t pc;
@@ -996,14 +988,13 @@ DUK_INTERNAL duk_uint_fast32_t duk_debug_curr_line(duk_hthread *thr) {
 	/* XXX: this should be optimized to be a raw query and avoid valstack
 	 * operations if possible.
 	 */
-	duk_push_tval(ctx, &act->tv_func);
-	line = duk_hobject_pc2line_query(ctx, -1, pc);
-	duk_pop(ctx);
+	duk_push_tval(thr, &act->tv_func);
+	line = duk_hobject_pc2line_query(thr, -1, pc);
+	duk_pop(thr);
 	return line;
 }
 
 DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 
 	duk_debug_write_notify(thr, DUK_DBG_CMD_STATUS);
@@ -1016,12 +1007,12 @@ DUK_INTERNAL void duk_debug_send_status(duk_hthread *thr) {
 		duk_debug_write_int(thr, 0);
 		duk_debug_write_int(thr, 0);
 	} else {
-		duk_push_tval(ctx, &act->tv_func);
-		duk_get_prop_string(ctx, -1, "fileName");
+		duk_push_tval(thr, &act->tv_func);
+		duk_get_prop_string(thr, -1, "fileName");
 		duk__debug_write_hstring_safe_top(thr);
-		duk_get_prop_string(ctx, -2, "name");
+		duk_get_prop_string(thr, -2, "name");
 		duk__debug_write_hstring_safe_top(thr);
-		duk_pop_3(ctx);
+		duk_pop_3(thr);
 		/* Report next pc/line to be executed. */
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_debug_curr_line(thr));
 		duk_debug_write_uint(thr, (duk_uint32_t) duk_hthread_get_act_curr_pc(thr, act));
@@ -1036,7 +1027,6 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	 *  NFY <int: 5> <int: fatal> <str: msg> <str: filename> <int: linenumber> EOM
 	 */
 
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 	duk_uint32_t pc;
 
@@ -1046,17 +1036,17 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 	duk_debug_write_int(thr, fatal);
 
 	/* Report thrown value to client coerced to string */
-	duk_dup_top(ctx);
+	duk_dup_top(thr);
 	duk__debug_write_hstring_safe_top(thr);
-	duk_pop(ctx);
+	duk_pop(thr);
 
-	if (duk_is_error(ctx, -1)) {
+	if (duk_is_error(thr, -1)) {
 		/* Error instance, use augmented error data directly */
-		duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_FILE_NAME);
+		duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_FILE_NAME);
 		duk__debug_write_hstring_safe_top(thr);
-		duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_LINE_NUMBER);
-		duk_debug_write_uint(thr, duk_get_uint(ctx, -1));
-		duk_pop_2(ctx);
+		duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_LINE_NUMBER);
+		duk_debug_write_uint(thr, duk_get_uint(thr, -1));
+		duk_pop_2(thr);
 	} else {
 		/* For anything other than an Error instance, we calculate the
 		 * error location directly from the current activation if one
@@ -1064,12 +1054,12 @@ DUK_INTERNAL void duk_debug_send_throw(duk_hthread *thr, duk_bool_t fatal) {
 		 */
 		act = thr->callstack_curr;
 		if (act != NULL) {
-			duk_push_tval(ctx, &act->tv_func);
-			duk_get_prop_string(ctx, -1, "fileName");
+			duk_push_tval(thr, &act->tv_func);
+			duk_get_prop_string(thr, -1, "fileName");
 			duk__debug_write_hstring_safe_top(thr);
 			pc = duk_hthread_get_act_prev_pc(thr, act);
-			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(ctx, -2, pc));
-			duk_pop_2(ctx);
+			duk_debug_write_uint(thr, (duk_uint32_t) duk_hobject_pc2line_query(thr, -2, pc));
+			duk_pop_2(thr);
 		} else {
 			/* Can happen if duk_throw() is called on an empty
 			 * callstack.
@@ -1329,7 +1319,6 @@ DUK_LOCAL void duk__debug_handle_del_break(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 	duk_hstring *str;
 	duk_bool_t rc;
@@ -1349,8 +1338,8 @@ DUK_LOCAL void duk__debug_handle_get_var(duk_hthread *thr, duk_heap *heap) {
 	duk_debug_write_reply(thr);
 	if (rc) {
 		duk_debug_write_int(thr, 1);
-		DUK_ASSERT(duk_get_tval(ctx, -2) != NULL);
-		duk_debug_write_tval(thr, duk_get_tval(ctx, -2));
+		DUK_ASSERT(duk_get_tval(thr, -2) != NULL);
+		duk_debug_write_tval(thr, duk_get_tval(thr, -2));
 	} else {
 		duk_debug_write_int(thr, 0);
 		duk_debug_write_unused(thr);
@@ -1388,7 +1377,6 @@ DUK_LOCAL void duk__debug_handle_put_var(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_hthread *curr_thr = thr;
 	duk_activation *curr_act;
 	duk_uint_fast32_t pc;
@@ -1413,19 +1401,19 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 			/* XXX: optimize to use direct reads, i.e. avoid
 			 * value stack operations.
 			 */
-			duk_push_tval(ctx, &curr_act->tv_func);
-			duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_FILE_NAME);
+			duk_push_tval(thr, &curr_act->tv_func);
+			duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_FILE_NAME);
 			duk__debug_write_hstring_safe_top(thr);
-			duk_get_prop_stridx_short(ctx, -2, DUK_STRIDX_NAME);
+			duk_get_prop_stridx_short(thr, -2, DUK_STRIDX_NAME);
 			duk__debug_write_hstring_safe_top(thr);
 			pc = duk_hthread_get_act_curr_pc(thr, curr_act);
 			if (curr_act != curr_thr->callstack_curr && pc > 0) {
 				pc--;
 			}
-			line = duk_hobject_pc2line_query(ctx, -3, pc);
+			line = duk_hobject_pc2line_query(thr, -3, pc);
 			duk_debug_write_uint(thr, (duk_uint32_t) line);
 			duk_debug_write_uint(thr, (duk_uint32_t) pc);
-			duk_pop_3(ctx);
+			duk_pop_3(thr);
 		}
 		curr_thr = curr_thr->resumer;
 	}
@@ -1436,7 +1424,6 @@ DUK_LOCAL void duk__debug_handle_get_call_stack(duk_hthread *thr, duk_heap *heap
 }
 
 DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_activation *act;
 	duk_hstring *varname;
 
@@ -1455,18 +1442,18 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 	 *   - If side effects are possible, add error catching
 	 */
 
-	duk_push_tval(ctx, &act->tv_func);
-	duk_get_prop_stridx_short(ctx, -1, DUK_STRIDX_INT_VARMAP);
-	if (duk_is_object(ctx, -1)) {
-		duk_enum(ctx, -1, 0 /*enum_flags*/);
-		while (duk_next(ctx, -1 /*enum_index*/, 0 /*get_value*/)) {
-			varname = duk_known_hstring(ctx, -1);
+	duk_push_tval(thr, &act->tv_func);
+	duk_get_prop_stridx_short(thr, -1, DUK_STRIDX_INT_VARMAP);
+	if (duk_is_object(thr, -1)) {
+		duk_enum(thr, -1, 0 /*enum_flags*/);
+		while (duk_next(thr, -1 /*enum_index*/, 0 /*get_value*/)) {
+			varname = duk_known_hstring(thr, -1);
 
 			duk_js_getvar_activation(thr, act, varname, 0 /*throw_flag*/);
 			/* [ ... func varmap enum key value this ] */
-			duk_debug_write_hstring(thr, duk_get_hstring(ctx, -3));
-			duk_debug_write_tval(thr, duk_get_tval(ctx, -2));
-			duk_pop_3(ctx);  /* -> [ ... func varmap enum ] */
+			duk_debug_write_hstring(thr, duk_get_hstring(thr, -3));
+			duk_debug_write_tval(thr, duk_get_tval(thr, -2));
+			duk_pop_3(thr);  /* -> [ ... func varmap enum ] */
 		}
 	} else {
 		DUK_D(DUK_DPRINT("varmap is not an object in GetLocals, ignore"));
@@ -1476,7 +1463,6 @@ DUK_LOCAL void duk__debug_handle_get_locals(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_small_uint_t call_flags;
 	duk_int_t call_ret;
 	duk_small_int_t eval_err;
@@ -1497,9 +1483,9 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 	 */
 
 	/* nargs == 2 so we can pass a callstack index to eval(). */
-	idx_func = duk_get_top(ctx);
-	duk_push_c_function(ctx, duk_bi_global_object_eval, 2 /*nargs*/);
-	duk_push_undefined(ctx);  /* 'this' binding shouldn't matter here */
+	idx_func = duk_get_top(thr);
+	duk_push_c_function(thr, duk_bi_global_object_eval, 2 /*nargs*/);
+	duk_push_undefined(thr);  /* 'this' binding shouldn't matter here */
 
 	/* Read callstack index, if non-null. */
 	if (duk_debug_peek_byte(thr) == DUK_DBG_IB_NULL) {
@@ -1519,7 +1505,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 
 	(void) duk_debug_read_hstring(thr);
 	if (direct_eval) {
-		duk_push_int(ctx, level - 1);  /* compensate for eval() call */
+		duk_push_int(thr, level - 1);  /* compensate for eval() call */
 	}
 
 	/* [ ... eval "eval" eval_input level? ] */
@@ -1543,7 +1529,7 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		}
 	}
 
-	call_ret = duk_pcall_method_flags(ctx, duk_get_top(ctx) - (idx_func + 2), call_flags);
+	call_ret = duk_pcall_method_flags(thr, duk_get_top(thr) - (idx_func + 2), call_flags);
 
 	if (call_ret == DUK_EXEC_SUCCESS) {
 		eval_err = 0;
@@ -1554,15 +1540,15 @@ DUK_LOCAL void duk__debug_handle_eval(duk_hthread *thr, duk_heap *heap) {
 		 * to traverse the error object.
 		 */
 		eval_err = 1;
-		duk_safe_to_string(ctx, -1);
+		duk_safe_to_string(thr, -1);
 	}
 
 	/* [ ... result ] */
 
 	duk_debug_write_reply(thr);
 	duk_debug_write_int(thr, (duk_int32_t) eval_err);
-	DUK_ASSERT(duk_get_tval(ctx, -1) != NULL);
-	duk_debug_write_tval(thr, duk_get_tval(ctx, -1));
+	DUK_ASSERT(duk_get_tval(thr, -1) != NULL);
+	duk_debug_write_tval(thr, duk_get_tval(thr, -1));
 	duk_debug_write_eom(thr);
 }
 
@@ -1578,12 +1564,11 @@ DUK_LOCAL void duk__debug_handle_detach(duk_hthread *thr, duk_heap *heap) {
 }
 
 DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_idx_t old_top;
 
 	DUK_D(DUK_DPRINT("debug command AppRequest"));
 
-	old_top = duk_get_top(ctx);  /* save stack top */
+	old_top = duk_get_top(thr);  /* save stack top */
 
 	if (heap->dbg_request_cb != NULL) {
 		duk_idx_t nrets;
@@ -1595,7 +1580,7 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 		 */
 		while (duk_debug_peek_byte(thr) != DUK_DBG_IB_EOM) {
 			duk_tval *tv;
-			if (!duk_check_stack(ctx, 1)) {
+			if (!duk_check_stack(thr, 1)) {
 				DUK_D(DUK_DPRINT("failed to allocate space for request dvalue(s)"));
 				goto fail;
 			}
@@ -1606,41 +1591,41 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 			}
 			nvalues++;
 		}
-		DUK_ASSERT(duk_get_top(ctx) == old_top + nvalues);
+		DUK_ASSERT(duk_get_top(thr) == old_top + nvalues);
 
 		/* Request callback should push values for reply to client onto valstack */
 		DUK_D(DUK_DPRINT("calling into AppRequest request_cb with nvalues=%ld, old_top=%ld, top=%ld",
-		                 (long) nvalues, (long) old_top, (long) duk_get_top(ctx)));
-		nrets = heap->dbg_request_cb(ctx, heap->dbg_udata, nvalues);
+		                 (long) nvalues, (long) old_top, (long) duk_get_top(thr)));
+		nrets = heap->dbg_request_cb(thr, heap->dbg_udata, nvalues);
 		DUK_D(DUK_DPRINT("returned from AppRequest request_cb; nvalues=%ld -> nrets=%ld, old_top=%ld, top=%ld",
-		                 (long) nvalues, (long) nrets, (long) old_top, (long) duk_get_top(ctx)));
+		                 (long) nvalues, (long) nrets, (long) old_top, (long) duk_get_top(thr)));
 		if (nrets >= 0) {
-			DUK_ASSERT(duk_get_top(ctx) >= old_top + nrets);
-			if (duk_get_top(ctx) < old_top + nrets) {
+			DUK_ASSERT(duk_get_top(thr) >= old_top + nrets);
+			if (duk_get_top(thr) < old_top + nrets) {
 				DUK_D(DUK_DPRINT("AppRequest callback doesn't match value stack configuration, "
 				                 "top=%ld < old_top=%ld + nrets=%ld; "
 				                 "this might mean it's unsafe to continue!",
-				                 (long) duk_get_top(ctx), (long) old_top, (long) nrets));
+				                 (long) duk_get_top(thr), (long) old_top, (long) nrets));
 				goto fail;
 			}
 
 			/* Reply with tvals pushed by request callback */
 			duk_debug_write_byte(thr, DUK_DBG_IB_REPLY);
-			top = duk_get_top(ctx);
+			top = duk_get_top(thr);
 			for (idx = top - nrets; idx < top; idx++) {
-				duk_debug_write_tval(thr, DUK_GET_TVAL_POSIDX(ctx, idx));
+				duk_debug_write_tval(thr, DUK_GET_TVAL_POSIDX(thr, idx));
 			}
 			duk_debug_write_eom(thr);
 		} else {
-			DUK_ASSERT(duk_get_top(ctx) >= old_top + 1);
-			if (duk_get_top(ctx) < old_top + 1) {
+			DUK_ASSERT(duk_get_top(thr) >= old_top + 1);
+			if (duk_get_top(thr) < old_top + 1) {
 				DUK_D(DUK_DPRINT("request callback return value doesn't match value stack configuration"));
 				goto fail;
 			}
-			duk_debug_write_error_eom(thr, DUK_DBG_ERR_APPLICATION, duk_get_string(ctx, -1));
+			duk_debug_write_error_eom(thr, DUK_DBG_ERR_APPLICATION, duk_get_string(thr, -1));
 		}
 
-		duk_set_top(ctx, old_top);  /* restore stack top */
+		duk_set_top(thr, old_top);  /* restore stack top */
 	} else {
 		DUK_D(DUK_DPRINT("no request callback, treat AppRequest as unsupported"));
 		duk_debug_write_error_eom(thr, DUK_DBG_ERR_UNSUPPORTED, "AppRequest unsupported by target");
@@ -1649,7 +1634,7 @@ DUK_LOCAL void duk__debug_handle_apprequest(duk_hthread *thr, duk_heap *heap) {
 	return;
 
  fail:
-	duk_set_top(ctx, old_top);  /* restore stack top */
+	duk_set_top(thr, old_top);  /* restore stack top */
 	DUK__SET_CONN_BROKEN(thr, 1);
 }
 
@@ -2377,7 +2362,6 @@ DUK_LOCAL void duk__debug_handle_get_obj_prop_desc_range(duk_hthread *thr, duk_h
  * stack handling which is convenient.
  */
 DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
-	duk_context *ctx = (duk_context *) thr;
 	duk_heap *heap;
 	duk_uint8_t x;
 	duk_int32_t cmd;
@@ -2386,9 +2370,8 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
-	DUK_UNREF(ctx);
 
-	entry_top = duk_get_top(ctx);
+	entry_top = duk_get_top(thr);
 
 	x = duk_debug_read_byte(thr);
 	switch (x) {
@@ -2510,14 +2493,14 @@ DUK_LOCAL void duk__debug_process_message(duk_hthread *thr) {
 	}
 	}  /* switch initial byte */
 
-	DUK_ASSERT(duk_get_top(ctx) >= entry_top);
-	duk_set_top(ctx, entry_top);
+	DUK_ASSERT(duk_get_top(thr) >= entry_top);
+	duk_set_top(thr, entry_top);
 	duk__debug_skip_to_eom(thr);
 	return;
 
  fail:
-	DUK_ASSERT(duk_get_top(ctx) >= entry_top);
-	duk_set_top(ctx, entry_top);
+	DUK_ASSERT(duk_get_top(thr) >= entry_top);
+	duk_set_top(thr, entry_top);
 	DUK__SET_CONN_BROKEN(thr, 1);
 	return;
 }
@@ -2530,23 +2513,21 @@ DUK_LOCAL void duk__check_resend_status(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t no_block) {
-	duk_context *ctx = (duk_context *) thr;
 #if defined(DUK_USE_ASSERTIONS)
 	duk_idx_t entry_top;
 #endif
 	duk_bool_t retval = 0;
 
 	DUK_ASSERT(thr != NULL);
-	DUK_UNREF(ctx);
 	DUK_ASSERT(thr->heap != NULL);
 #if defined(DUK_USE_ASSERTIONS)
-	entry_top = duk_get_top(ctx);
+	entry_top = duk_get_top(thr);
 #endif
 
 	DUK_D(DUK_DPRINT("process debug messages: read_cb=%s, no_block=%ld, detaching=%ld, processing=%ld",
 	                 thr->heap->dbg_read_cb ? "not NULL" : "NULL", (long) no_block,
 	                 (long) thr->heap->dbg_detaching, (long) thr->heap->dbg_processing));
-	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(ctx)));
+	DUK_DD(DUK_DDPRINT("top at entry: %ld", (long) duk_get_top(thr)));
 
 	/* thr->heap->dbg_detaching may be != 0 if a debugger write outside
 	 * the message loop caused a transport error and detach1() to run.
@@ -2565,7 +2546,7 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 		/* Process messages until we're no longer paused or we peek
 		 * and see there's nothing to read right now.
 		 */
-		DUK_DD(DUK_DDPRINT("top at loop top: %ld", (long) duk_get_top(ctx)));
+		DUK_DD(DUK_DDPRINT("top at loop top: %ld", (long) duk_get_top(thr)));
 		DUK_ASSERT(thr->heap->dbg_processing == 1);
 
 		while (thr->heap->dbg_read_cb == NULL && thr->heap->dbg_detaching) {
@@ -2636,11 +2617,11 @@ DUK_INTERNAL duk_bool_t duk_debug_process_messages(duk_hthread *thr, duk_bool_t 
 	duk_debug_read_flush(thr);  /* this cannot initiate a detach */
 	DUK_ASSERT(thr->heap->dbg_detaching == 0);
 
-	DUK_DD(DUK_DDPRINT("top at exit: %ld", (long) duk_get_top(ctx)));
+	DUK_DD(DUK_DDPRINT("top at exit: %ld", (long) duk_get_top(thr)));
 
 #if defined(DUK_USE_ASSERTIONS)
 	/* Easy to get wrong, so assert for it. */
-	DUK_ASSERT(entry_top == duk_get_top(ctx));
+	DUK_ASSERT(entry_top == duk_get_top(thr));
 #endif
 
 	return retval;

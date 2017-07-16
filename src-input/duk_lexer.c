@@ -561,13 +561,11 @@ DUK_LOCAL void duk__appendbuffer_ascii(duk_lexer_ctx *lex_ctx, duk_codepoint_t x
  */
 
 DUK_LOCAL duk_hstring *duk__internbuffer(duk_lexer_ctx *lex_ctx, duk_idx_t valstack_idx) {
-	duk_context *ctx = (duk_context *) lex_ctx->thr;
-
 	DUK_ASSERT(valstack_idx == lex_ctx->slot1_idx || valstack_idx == lex_ctx->slot2_idx);
 
 	DUK_BW_PUSH_AS_STRING(lex_ctx->thr, &lex_ctx->bw);
-	duk_replace(ctx, valstack_idx);
-	return duk_known_hstring(ctx, valstack_idx);
+	duk_replace(lex_ctx->thr, valstack_idx);
+	return duk_known_hstring(lex_ctx->thr, valstack_idx);
 }
 
 /*
@@ -1052,8 +1050,8 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 	 * freed normally.
 	 */
 #if 0
-	duk_to_undefined((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
-	duk_to_undefined((duk_context *) lex_ctx->thr, lex_ctx->slot2_idx);
+	duk_to_undefined(lex_ctx->thr, lex_ctx->slot1_idx);
+	duk_to_undefined(lex_ctx->thr, lex_ctx->slot2_idx);
 #endif
 
 	/* 'advtok' indicates how much to advance and which token id to assign
@@ -1451,7 +1449,7 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 		DUK__INITBUFFER(lex_ctx);
 		duk__lexer_parse_string_literal(lex_ctx, out_token, x /*quote*/, strict_mode);
 		duk__internbuffer(lex_ctx, lex_ctx->slot1_idx);
-		out_token->str1 = duk_known_hstring((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
+		out_token->str1 = duk_known_hstring(lex_ctx->thr, lex_ctx->slot1_idx);
 
 		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 
@@ -1729,13 +1727,13 @@ void duk_lexer_parse_js_input_element(duk_lexer_ctx *lex_ctx,
 			            DUK_S2N_FLAG_ALLOW_LEADING_ZERO;
 		}
 
-		duk_dup((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);
-		duk_numconv_parse((duk_context *) lex_ctx->thr, s2n_radix, s2n_flags);
-		val = duk_to_number_m1((duk_context *) lex_ctx->thr);
+		duk_dup(lex_ctx->thr, lex_ctx->slot1_idx);
+		duk_numconv_parse(lex_ctx->thr, s2n_radix, s2n_flags);
+		val = duk_to_number_m1(lex_ctx->thr);
 		if (DUK_ISNAN(val)) {
 			goto fail_number_literal;
 		}
-		duk_replace((duk_context *) lex_ctx->thr, lex_ctx->slot1_idx);  /* could also just pop? */
+		duk_replace(lex_ctx->thr, lex_ctx->slot1_idx);  /* could also just pop? */
 
 		DUK__INITBUFFER(lex_ctx);  /* free some memory */
 

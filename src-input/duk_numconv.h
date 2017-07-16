@@ -94,7 +94,7 @@
  *  Prototypes
  */
 
-DUK_INTERNAL_DECL void duk_numconv_stringify(duk_context *ctx, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags);
-DUK_INTERNAL_DECL void duk_numconv_parse(duk_context *ctx, duk_small_int_t radix, duk_small_uint_t flags);
+DUK_INTERNAL_DECL void duk_numconv_stringify(duk_hthread *thr, duk_small_int_t radix, duk_small_int_t digits, duk_small_uint_t flags);
+DUK_INTERNAL_DECL void duk_numconv_parse(duk_hthread *thr, duk_small_int_t radix, duk_small_uint_t flags);
 
 #endif  /* DUK_NUMCONV_H_INCLUDED */

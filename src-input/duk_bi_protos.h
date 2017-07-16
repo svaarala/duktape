@@ -23,13 +23,13 @@ DUK_INTERNAL_DECL duk_bool_t duk_bi_date_year_in_valid_range(duk_double_t year);
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_timeval_in_leeway_range(duk_double_t x);
 /* Built-in providers */
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx);
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_gettimeofday(duk_hthread *thr);
 #endif
 #if defined(DUK_USE_DATE_NOW_TIME)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_time(duk_context *ctx);
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_time(duk_hthread *thr);
 #endif
 #if defined(DUK_USE_DATE_NOW_WINDOWS)
-DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_context *ctx);
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_now_windows(duk_hthread *thr);
 #endif
 #if defined(DUK_USE_DATE_TZO_GMTIME_R) || defined(DUK_USE_DATE_TZO_GMTIME_S) || defined(DUK_USE_DATE_TZO_GMTIME)
 DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d);
@@ -41,31 +41,31 @@ DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t 
 DUK_INTERNAL_DECL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_t d);
 #endif
 #if defined(DUK_USE_DATE_PRS_STRPTIME)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, const char *str);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, const char *str);
 #endif
 #if defined(DUK_USE_DATE_PRS_GETDATE)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const char *str);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const char *str);
 #endif
 #if defined(DUK_USE_DATE_FMT_STRFTIME)
-DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
+DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
 #endif
 
 DUK_INTERNAL_DECL
-void duk_bi_json_parse_helper(duk_context *ctx,
+void duk_bi_json_parse_helper(duk_hthread *thr,
                               duk_idx_t idx_value,
                               duk_idx_t idx_reviver,
                               duk_small_uint_t flags);
 DUK_INTERNAL_DECL
-void duk_bi_json_stringify_helper(duk_context *ctx,
+void duk_bi_json_stringify_helper(duk_hthread *thr,
                                   duk_idx_t idx_value,
                                   duk_idx_t idx_replacer,
                                   duk_idx_t idx_space,
                                   duk_small_uint_t flags);
 
-DUK_INTERNAL_DECL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_context *ctx);
+DUK_INTERNAL_DECL duk_ret_t duk_textdecoder_decode_utf8_nodejs(duk_hthread *thr);
 
 #if defined(DUK_USE_ES6_PROXY)
-DUK_INTERNAL_DECL void duk_proxy_ownkeys_postprocess(duk_context *ctx, duk_hobject *h_proxy_target, duk_uint_t flags);
+DUK_INTERNAL_DECL void duk_proxy_ownkeys_postprocess(duk_hthread *thr, duk_hobject *h_proxy_target, duk_uint_t flags);
 #endif
 
 #endif  /* DUK_BUILTIN_PROTOS_H_INCLUDED */

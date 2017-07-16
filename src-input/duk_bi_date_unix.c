@@ -16,8 +16,7 @@
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 /* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
-DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_hthread *thr) {
 	struct timeval tv;
 	duk_double_t d;
 
@@ -35,10 +34,10 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_context *ctx) {
 
 #if defined(DUK_USE_DATE_NOW_TIME)
 /* Not a very good provider: only full seconds are available. */
-DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(duk_context *ctx) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(duk_hthread *thr) {
 	time_t t;
 
-	DUK_UNREF(ctx);
+	DUK_UNREF(thr);
 	t = time(NULL);
 	return ((duk_double_t) t) * 1000.0;
 }
@@ -195,7 +194,7 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_gmtime(duk_double_t d) {
 #endif  /* DUK_USE_DATE_TZO_GMTIME */
 
 #if defined(DUK_USE_DATE_PRS_STRPTIME)
-DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, const char *str) {
+DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, const char *str) {
 	struct tm tm;
 	time_t t;
 	char buf[DUK__STRPTIME_BUF_SIZE];
@@ -220,7 +219,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, cons
 		t = mktime(&tm);
 		DUK_DDD(DUK_DDDPRINT("mktime() -> %ld", (long) t));
 		if (t >= 0) {
-			duk_push_number(ctx, ((duk_double_t) t) * 1000.0);
+			duk_push_number(thr, ((duk_double_t) t) * 1000.0);
 			return 1;
 		}
 	}
@@ -230,7 +229,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_context *ctx, cons
 #endif  /* DUK_USE_DATE_PRS_STRPTIME */
 
 #if defined(DUK_USE_DATE_PRS_GETDATE)
-DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const char *str) {
+DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, const char *str) {
 	struct tm tm;
 	duk_small_int_t rc;
 	time_t t;
@@ -247,7 +246,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const
 		t = mktime(&tm);
 		DUK_DDD(DUK_DDDPRINT("mktime() -> %ld", (long) t));
 		if (t >= 0) {
-			duk_push_number(ctx, (duk_double_t) t);
+			duk_push_number(thr, (duk_double_t) t);
 			return 1;
 		}
 	}
@@ -257,7 +256,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_getdate(duk_context *ctx, const
 #endif  /* DUK_USE_DATE_PRS_GETDATE */
 
 #if defined(DUK_USE_DATE_FMT_STRFTIME)
-DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
+DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags) {
 	char buf[DUK__STRFTIME_BUF_SIZE];
 	struct tm tm;
 	const char *fmt;
@@ -303,7 +302,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_context *ctx, duk_
 	(void) strftime(buf, sizeof(buf) - 1, fmt, &tm);
 	DUK_ASSERT(buf[sizeof(buf) - 1] == 0);
 
-	duk_push_string(ctx, buf);
+	duk_push_string(thr, buf);
 	return 1;
 }
 #endif  /* DUK_USE_DATE_FMT_STRFTIME */

@@ -13,37 +13,36 @@
 
 #if defined(DUK_USE_DUKTAPE_BUILTIN)
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_context *ctx) {
-	duk_inspect_value(ctx, -1);
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_info(duk_hthread *thr) {
+	duk_inspect_value(thr, -1);
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_context *ctx) {
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_act(duk_hthread *thr) {
 	duk_int_t level;
 
-	level = duk_to_int(ctx, 0);
-	duk_inspect_callstack_entry(ctx, level);
+	level = duk_to_int(thr, 0);
+	duk_inspect_callstack_entry(thr, level);
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_gc(duk_hthread *thr) {
 	duk_small_uint_t flags;
 
-	flags = (duk_small_uint_t) duk_get_uint(ctx, 0);
+	flags = (duk_small_uint_t) duk_get_uint(thr, 0);
 	duk_heap_mark_and_sweep(thr->heap, flags);
 
 	/* XXX: Not sure what the best return value would be in the API.
 	 * Return true for now.
 	 */
-	duk_push_true(ctx);
+	duk_push_true(thr);
 	return 1;
 }
 
 #if defined(DUK_USE_FINALIZER_SUPPORT)
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
-	(void) duk_require_hobject(ctx, 0);
-	if (duk_get_top(ctx) >= 2) {
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_hthread *thr) {
+	(void) duk_require_hobject(thr, 0);
+	if (duk_get_top(thr) >= 2) {
 		/* Set: currently a finalizer is disabled by setting it to
 		 * undefined; this does not remove the property at the moment.
 		 * The value could be type checked to be either a function
@@ -51,43 +50,40 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_fin(duk_context *ctx) {
 		 * be deleted.  Must use duk_set_finalizer() to keep
 		 * DUK_HOBJECT_FLAG_HAVE_FINALIZER in sync.
 		 */
-		duk_set_top(ctx, 2);
-		duk_set_finalizer(ctx, 0);
+		duk_set_top(thr, 2);
+		duk_set_finalizer(thr, 0);
 		return 0;
 	} else {
 		/* Get. */
-		DUK_ASSERT(duk_get_top(ctx) == 1);
-		duk_get_finalizer(ctx, 0);
+		DUK_ASSERT(duk_get_top(thr) == 1);
+		duk_get_finalizer(thr, 0);
 		return 1;
 	}
 }
 #endif  /* DUK_USE_FINALIZER_SUPPORT */
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_hthread *thr) {
 	duk_hstring *h_str;
-
-	DUK_UNREF(thr);
 
 	/* Vararg function: must be careful to check/require arguments.
 	 * The JSON helpers accept invalid indices and treat them like
 	 * non-existent optional parameters.
 	 */
 
-	h_str = duk_require_hstring(ctx, 0);  /* Could reject symbols, but no point: won't match comparisons. */
-	duk_require_valid_index(ctx, 1);
+	h_str = duk_require_hstring(thr, 0);  /* Could reject symbols, but no point: won't match comparisons. */
+	duk_require_valid_index(thr, 1);
 
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
-		duk_set_top(ctx, 2);
-		duk_hex_encode(ctx, 1);
-		DUK_ASSERT_TOP(ctx, 2);
+		duk_set_top(thr, 2);
+		duk_hex_encode(thr, 1);
+		DUK_ASSERT_TOP(thr, 2);
 	} else if (h_str == DUK_HTHREAD_STRING_BASE64(thr)) {
-		duk_set_top(ctx, 2);
-		duk_base64_encode(ctx, 1);
-		DUK_ASSERT_TOP(ctx, 2);
+		duk_set_top(thr, 2);
+		duk_base64_encode(thr, 1);
+		DUK_ASSERT_TOP(thr, 2);
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JX)
 	} else if (h_str == DUK_HTHREAD_STRING_JX(thr)) {
-		duk_bi_json_stringify_helper(ctx,
+		duk_bi_json_stringify_helper(thr,
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
 		                             3 /*idx_space*/,
@@ -97,7 +93,7 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 #endif
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JC)
 	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
-		duk_bi_json_stringify_helper(ctx,
+		duk_bi_json_stringify_helper(thr,
 		                             1 /*idx_value*/,
 		                             2 /*idx_replacer*/,
 		                             3 /*idx_space*/,
@@ -110,38 +106,35 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_enc(duk_context *ctx) {
 	return 1;
 }
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx) {
-	duk_hthread *thr = (duk_hthread *) ctx;
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_hthread *thr) {
 	duk_hstring *h_str;
-
-	DUK_UNREF(thr);
 
 	/* Vararg function: must be careful to check/require arguments.
 	 * The JSON helpers accept invalid indices and treat them like
 	 * non-existent optional parameters.
 	 */
 
-	h_str = duk_require_hstring(ctx, 0);  /* Could reject symbols, but no point: won't match comparisons */
-	duk_require_valid_index(ctx, 1);
+	h_str = duk_require_hstring(thr, 0);  /* Could reject symbols, but no point: won't match comparisons */
+	duk_require_valid_index(thr, 1);
 
 	if (h_str == DUK_HTHREAD_STRING_HEX(thr)) {
-		duk_set_top(ctx, 2);
-		duk_hex_decode(ctx, 1);
-		DUK_ASSERT_TOP(ctx, 2);
+		duk_set_top(thr, 2);
+		duk_hex_decode(thr, 1);
+		DUK_ASSERT_TOP(thr, 2);
 	} else if (h_str == DUK_HTHREAD_STRING_BASE64(thr)) {
-		duk_set_top(ctx, 2);
-		duk_base64_decode(ctx, 1);
-		DUK_ASSERT_TOP(ctx, 2);
+		duk_set_top(thr, 2);
+		duk_base64_decode(thr, 1);
+		DUK_ASSERT_TOP(thr, 2);
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JX)
 	} else if (h_str == DUK_HTHREAD_STRING_JX(thr)) {
-		duk_bi_json_parse_helper(ctx,
+		duk_bi_json_parse_helper(thr,
 		                         1 /*idx_value*/,
 		                         2 /*idx_replacer*/,
 		                         DUK_JSON_FLAG_EXT_CUSTOM /*flags*/);
 #endif
 #if defined(DUK_USE_JSON_SUPPORT) && defined(DUK_USE_JC)
 	} else if (h_str == DUK_HTHREAD_STRING_JC(thr)) {
-		duk_bi_json_parse_helper(ctx,
+		duk_bi_json_parse_helper(thr,
 		                         1 /*idx_value*/,
 		                         2 /*idx_replacer*/,
 		                         DUK_JSON_FLAG_EXT_COMPATIBLE /*flags*/);
@@ -156,9 +149,9 @@ DUK_INTERNAL duk_ret_t duk_bi_duktape_object_dec(duk_context *ctx) {
  *  Compact an object
  */
 
-DUK_INTERNAL duk_ret_t duk_bi_duktape_object_compact(duk_context *ctx) {
-	DUK_ASSERT_TOP(ctx, 1);
-	duk_compact(ctx, 0);
+DUK_INTERNAL duk_ret_t duk_bi_duktape_object_compact(duk_hthread *thr) {
+	DUK_ASSERT_TOP(thr, 1);
+	duk_compact(thr, 0);
 	return 1;  /* return the argument object */
 }
 
