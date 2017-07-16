@@ -2986,6 +2986,8 @@ Planned
 * Internal change: simple freelists for duk_activation and duk_catcher
   (GH-1491)
 
+* Internal change: terminology, use 'slack' rather than 'spare' (GH-1615)
+
 * Miscellaneous footprint improvements: rework call handling to improve
   code sharing (GH-1552); optional lazy charlen (GH-1337)
 

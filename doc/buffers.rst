@@ -88,9 +88,8 @@ object.  Plain buffers can be fixed, dynamic, or external:
 * Fixed buffers cannot be resized but have a stable data pointer.
 
 * Dynamic buffers can be resized at the cost of an unstable data pointer.
-  They also have an internal spare area to minimize realloc operations
-  (this spare is currently not exposed to user code).  You can also "steal"
-  the current buffer allocation through the duk_steal_buffer() API call.
+  You can also "steal" the current buffer allocation through the
+  duk_steal_buffer() API call.
 
 * External buffers point to user-allocated external data area whose pointer
   and length can be changed but Duktape won't resize or automatically free

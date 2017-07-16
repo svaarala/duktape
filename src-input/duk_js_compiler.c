@@ -287,7 +287,7 @@ DUK_LOCAL_DECL duk_int_t duk__parse_func_like_fnum(duk_compiler_ctx *comp_ctx, d
 #define DUK__TOKEN_LBP_BP_MASK         0x1f
 #define DUK__TOKEN_LBP_FLAG_NO_REGEXP  (1 << 5)   /* regexp literal must not follow this token */
 #define DUK__TOKEN_LBP_FLAG_TERMINATES (1 << 6)   /* terminates expression; e.g. post-increment/-decrement */
-#define DUK__TOKEN_LBP_FLAG_UNUSED     (1 << 7)   /* spare */
+#define DUK__TOKEN_LBP_FLAG_UNUSED     (1 << 7)   /* unused */
 
 #define DUK__TOKEN_LBP_GET_BP(x)       ((duk_small_uint_t) (((x) & DUK__TOKEN_LBP_BP_MASK) * 2))
 
@@ -2626,7 +2626,7 @@ DUK_LOCAL void duk__add_label(duk_compiler_ctx *comp_ctx, duk_hstring *h_label, 
 
 	new_size = (n + 1) * sizeof(duk_labelinfo);
 	duk_hbuffer_resize(thr, comp_ctx->curr_func.h_labelinfos, new_size);
-	/* XXX: spare handling, slow now */
+	/* XXX: slack handling, slow now */
 
 	/* relookup after possible realloc */
 	p = (duk_uint8_t *) DUK_HBUFFER_DYNAMIC_GET_DATA_PTR(thr->heap, comp_ctx->curr_func.h_labelinfos);

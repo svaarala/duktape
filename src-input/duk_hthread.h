@@ -301,12 +301,12 @@ struct duk_hthread {
 	 * initialized as 'undefined'.  [valstack,valstack_end[ is the
 	 * guaranteed/reserved space and the valstack cannot be resized to
 	 * a smaller size.  [valstack_end,valstack_alloc_end[ is currently
-	 * allocated spare that can be used to grow the current guaranteed
+	 * allocated slack that can be used to grow the current guaranteed
 	 * space but may be shrunk away without notice.
 	 *
 	 *
 	 * <----------------------- guaranteed --->
-	 *                                        <---- spare --->
+	 *                                        <---- slack --->
 	 *               <--- frame --->
 	 * .-------------+=============+----------+--------------.
 	 * |xxxxxxxxxxxxx|yyyyyyyyyyyyy|uuuuuuuuuu|uuuuuuuuuuuuuu|

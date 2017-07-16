@@ -199,7 +199,7 @@ DUK_INTERNAL duk_bool_t duk_bi_date_parse_string_strptime(duk_hthread *thr, cons
 	time_t t;
 	char buf[DUK__STRPTIME_BUF_SIZE];
 
-	/* copy to buffer with spare to avoid Valgrind gripes from strptime */
+	/* Copy to buffer with slack to avoid Valgrind gripes from strptime. */
 	DUK_ASSERT(str != NULL);
 	DUK_MEMZERO(buf, sizeof(buf));  /* valgrind whine without this */
 	DUK_SNPRINTF(buf, sizeof(buf), "%s", (const char *) str);

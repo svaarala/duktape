@@ -105,10 +105,10 @@ struct duk_bitencoder_ctx {
 /*
  *  Buffer writer (dynamic buffer only)
  *
- *  Helper for writing to a dynamic buffer with a concept of a "spare" area
+ *  Helper for writing to a dynamic buffer with a concept of a "slack" area
  *  to reduce resizes.  You can ensure there is enough space beforehand and
  *  then write for a while without further checks, relying on a stable data
- *  pointer.  Spare handling is automatic so call sites only indicate how
+ *  pointer.  Slack handling is automatic so call sites only indicate how
  *  much data they need right now.
  *
  *  There are several ways to write using bufwriter.  The best approach
@@ -135,11 +135,11 @@ struct duk_bufwriter_ctx {
 };
 
 #if defined(DUK_USE_PREFER_SIZE)
-#define DUK_BW_SPARE_ADD           64
-#define DUK_BW_SPARE_SHIFT         4    /* 2^4 -> 1/16 = 6.25% spare */
+#define DUK_BW_SLACK_ADD           64
+#define DUK_BW_SLACK_SHIFT         4    /* 2^4 -> 1/16 = 6.25% slack */
 #else
-#define DUK_BW_SPARE_ADD           64
-#define DUK_BW_SPARE_SHIFT         2    /* 2^2 -> 1/4 = 25% spare */
+#define DUK_BW_SLACK_ADD           64
+#define DUK_BW_SLACK_SHIFT         2    /* 2^2 -> 1/4 = 25% slack */
 #endif
 
 /* Initialization and finalization (compaction), converting to other types. */
@@ -238,7 +238,7 @@ struct duk_bufwriter_ctx {
 		duk_bw_compact((thr), (bw_ctx)); \
 	} while (0)
 
-/* Fast write calls which assume you control the spare beforehand.
+/* Fast write calls which assume you control the slack beforehand.
  * Multibyte write variants exist and use a temporary write pointer
  * because byte writes alias with anything: with a stored pointer
  * explicit pointer load/stores get generated (e.g. gcc -Os).
