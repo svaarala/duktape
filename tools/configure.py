@@ -785,6 +785,20 @@ def main():
         with open(os.path.join(tempdir, 'caseconv_re_canon_lookup.txt'), 'wb') as f:
             f.write(res)
 
+        logger.debug('- extract_caseconv canon bitmap')
+        res = exec_get_stdout([
+            sys.executable,
+            os.path.join(script_path, 'extract_caseconv.py'),
+            '--command=re_canon_bitmap',
+            '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
+            '--special-casing', special_casing,
+            '--out-source', os.path.join(tempdir, 'duk_unicode_re_canon_bitmap.c.tmp'),
+            '--out-header', os.path.join(tempdir, 'duk_unicode_re_canon_bitmap.h.tmp'),
+            '--table-name-re-canon-bitmap', 'duk_unicode_re_canon_bitmap'
+        ])
+        with open(os.path.join(tempdir, 'caseconv_re_canon_bitmap.txt'), 'wb') as f:
+            f.write(res)
+
     # XXX: Now with configure.py part of the distributable, could generate
     # only those Unicode tables needed by desired configuration (e.g. BMP-only
     # tables if BMP-only was enabled).
@@ -825,7 +839,8 @@ def main():
         '#include "duk_unicode_idp_m_ids_noa.h"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noa.h.tmp'), strip_last_nl=True),
         '#include "duk_unicode_idp_m_ids_noabmp.h"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noabmp.h.tmp'), strip_last_nl=True),
         '#include "duk_unicode_caseconv.h"': read_file(os.path.join(tempdir, 'duk_unicode_caseconv.h.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_re_canon_lookup.h"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'), strip_last_nl=True)
+        '#include "duk_unicode_re_canon_lookup.h"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.h.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_re_canon_bitmap.h"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_bitmap.h.tmp'), strip_last_nl=True)
     })
 
     copy_and_replace(os.path.join(tempdir, 'src', 'duk_unicode_tables.c'), os.path.join(tempdir, 'src', 'duk_unicode_tables.c'), {
@@ -836,7 +851,8 @@ def main():
         '#include "duk_unicode_idp_m_ids_noa.c"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noa.c.tmp'), strip_last_nl=True),
         '#include "duk_unicode_idp_m_ids_noabmp.c"': read_file(os.path.join(tempdir, 'duk_unicode_idp_m_ids_noabmp.c.tmp'), strip_last_nl=True),
         '#include "duk_unicode_caseconv.c"': read_file(os.path.join(tempdir, 'duk_unicode_caseconv.c.tmp'), strip_last_nl=True),
-        '#include "duk_unicode_re_canon_lookup.c"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'), strip_last_nl=True)
+        '#include "duk_unicode_re_canon_lookup.c"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_lookup.c.tmp'), strip_last_nl=True),
+        '#include "duk_unicode_re_canon_bitmap.c"': read_file(os.path.join(tempdir, 'duk_unicode_re_canon_bitmap.c.tmp'), strip_last_nl=True)
     })
 
     # Create a combined source file, duktape.c, into a separate combined source
