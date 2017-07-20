@@ -136,7 +136,6 @@ static duk_ret_t require_1_inner(duk_context *ctx) {
 }
 static duk_ret_t require_1(duk_context *ctx, void *udata) {
 	int i;
-	duk_ret_t rc;
 
 	(void) udata;
 

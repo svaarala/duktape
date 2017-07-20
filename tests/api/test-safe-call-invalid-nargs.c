@@ -20,6 +20,8 @@ static duk_ret_t dummy(duk_context *ctx, void *udata) {
 static duk_ret_t test_nargs_too_large(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 
+	(void) udata;
+
 	duk_push_null(ctx);
 	duk_push_null(ctx);
 	duk_push_null(ctx);
@@ -34,6 +36,8 @@ static duk_ret_t test_nargs_too_large(duk_context *ctx, void *udata) {
 
 static duk_ret_t test_nargs_minus1(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_push_null(ctx);
 	duk_push_null(ctx);
