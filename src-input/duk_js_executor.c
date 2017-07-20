@@ -533,8 +533,7 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_arith_unary_op(duk_hthread *thr, duk_idx
 	if (DUK_TVAL_IS_NUMBER(tv)) {
 		d1 = DUK_TVAL_GET_NUMBER(tv);
 	} else {
-		d1 = duk_to_number(ctx, idx_src);  /* side effects, perform in-place */
-		DUK_ASSERT(DUK_TVAL_IS_NUMBER(DUK_GET_TVAL_POSIDX(ctx, idx_src)));
+		d1 = duk_to_number_tval(ctx, tv);  /* side effects */
 	}
 
 	if (opcode == DUK_OP_UNP) {
@@ -586,7 +585,9 @@ DUK_LOCAL DUK__INLINE_PERF void duk__vm_bitwise_not(duk_hthread *thr, duk_uint_f
 	else
 #endif  /* DUK_USE_FASTINT */
 	{
-		i1 = duk_to_int32(ctx, idx_src);  /* side effects */
+		duk_push_tval(ctx, tv);
+		i1 = duk_to_int32(ctx, -1);  /* side effects */
+		duk_pop_unsafe(ctx);
 	}
 
 	/* Result is always fastint compatible. */
