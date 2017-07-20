@@ -121,6 +121,17 @@ DUK_INTERNAL DUK_COLD void duk_default_fatal_handler(void *udata, const char *ms
 	/* Default behavior is to abort() on error.  There's no printout
 	 * which makes this awkward, so it's always recommended to use an
 	 * explicit fatal error handler.
+	 *
+	 * ====================================================================
+	 * NOTE: If you are seeing this, you are most likely dealing with an
+	 * uncaught error.  You should provide a fatal error handler in Duktape
+	 * heap creation, and should consider using a protected call as your
+	 * first call into an empty Duktape context to properly handle errors.
+	 * See:
+	 *   - http://duktape.org/guide.html#error-handling
+	 *   - http://wiki.duktape.org/HowtoFatalErrors.html
+	 *   - http://duktape.org/api.html#taglist-protected
+	 * ====================================================================
 	 */
 	DUK_D(DUK_DPRINT("built-in default fatal error handler called: %s", msg ? msg : "NULL"));
 	DUK_ABORT();
