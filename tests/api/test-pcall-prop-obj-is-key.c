@@ -28,6 +28,8 @@ final top: 1
 static duk_ret_t test_obj_is_key(duk_context *ctx, void *udata) {
 	duk_int_t rc;
 
+	(void) udata;
+
 	duk_eval_string(ctx,
 		"({\n"
 		"    toString: function () { print('toString() called'); return 'myProp' },\n"
@@ -57,6 +59,8 @@ static duk_ret_t test_obj_is_key(duk_context *ctx, void *udata) {
 
 static duk_ret_t test_obj_is_arg(duk_context *ctx, void *udata) {
 	duk_int_t rc;
+
+	(void) udata;
 
 	duk_push_string(ctx, "myProp");
 
