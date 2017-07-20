@@ -94,6 +94,9 @@ DUK_EXTERNAL void duk_call_prop(duk_context *ctx, duk_idx_t obj_index, duk_idx_t
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	obj_index = duk_require_normalize_index(ctx, obj_index);  /* make absolute */
+	if (DUK_UNLIKELY(nargs < 0)) {
+		DUK_ERROR_API((duk_hthread *) ctx, DUK_STR_INVALID_CALL_ARGS);
+	}
 
 	duk__call_prop_prep_stack(ctx, obj_index, nargs);
 
@@ -192,6 +195,9 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_index, duk
 	DUK_ASSERT_CTX_VALID(ctx);
 
 	duk_push_idx(ctx, obj_index);
+	if (DUK_UNLIKELY(nargs < 0)) {
+		DUK_ERROR_API((duk_hthread *) ctx, DUK_STR_INVALID_CALL_ARGS);
+	}
 	duk_push_idx(ctx, nargs);
 
 	/* Inputs: explicit arguments (nargs), +1 for key, +2 for obj_index/nargs passing.
@@ -208,7 +214,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_context *ctx, duk_safe_call_function fu
 	DUK_ASSERT_CTX_VALID(ctx);
 	DUK_ASSERT(thr != NULL);
 
-	if (duk_get_top(ctx) < nargs || nrets < 0) {
+	if (duk_get_top(ctx) < nargs || nargs < 0 || nrets < 0) {
 		/* See comments in duk_pcall(). */
 		DUK_ERROR_API(thr, DUK_STR_INVALID_CALL_ARGS);
 		return DUK_EXEC_ERROR;  /* unreachable */
@@ -443,6 +449,9 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs) {
 	 * wrapper.
 	 */
 
+	if (DUK_UNLIKELY(nargs < 0)) {
+		DUK_ERROR_API((duk_hthread *) ctx, DUK_STR_INVALID_CALL_ARGS);
+	}
 	duk_push_uint(ctx, nargs);
 	rc = duk_safe_call(ctx, duk__pnew_helper, nargs + 2 /*nargs*/, 1 /*nrets*/);
 	return rc;
