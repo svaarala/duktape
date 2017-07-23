@@ -9,11 +9,21 @@ Main changes in this release (see RELEASES.rst for full details):
 
 * TBD.
 
+* Case insensitive RegExp character class canonicalization performance has
+  improved by ~50x using a small lookup table (256 bytes, total footprint
+  impact is ~300-400 bytes).
+
 Upgrading from Duktape 2.1
 ==========================
 
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
+
+* Case insensitive RegExps are still much slower than case sensitive ones.
+  The small canonicalization lookup (256 bytes) is enabled by default.  The
+  small lookup is still slower than DUK_USE_REGEXP_CANON_WORKAROUND but the
+  difference is now much smaller.  You may be able to turn off the workaround
+  option whose main downside is a relatively large footprint impact (128kB).
 
 * duk_safe_call() no longer automatically extends the value stack to ensure
   there's space for 'nrets' return values.  This was not guaranteed by the
