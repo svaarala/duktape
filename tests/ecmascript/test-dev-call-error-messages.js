@@ -12,8 +12,8 @@
 TypeError: undefined not callable
 TypeError: 123 not callable
 TypeError: 321 not callable
-TypeError: undefined not callable
-TypeError: 234 not callable
+TypeError: undefined not callable (property 'foo' of [object Object])
+TypeError: 234 not callable (property 'bar' of [object Object])
 "TypeError: undefined not callable"
 "TypeError: null not callable"
 "TypeError: true not callable"

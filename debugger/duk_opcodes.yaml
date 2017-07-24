@@ -860,6 +860,65 @@ opcodes:
     args:
       - A_R
       - B_C
+  - name: NEWOBJ
+    args:
+      - A_I  # property count init size
+      - BC_R
+  - name: NEWARR
+    args:
+      - A_I  # array item count init size
+      - BC_R
+  - name: MPUTOBJ
+    args:
+      - A_R
+      - B_R
+      - C_I
+  - name: MPUTOBJI
+    args:
+      - A_R
+      - B_RI
+      - C_I
+  - name: INITSET
+    args:
+      - A_R
+      - BC_R
+  - name: INITGET
+    args:
+      - A_R
+      - BC_R
+  - name: MPUTARR
+    args:
+      - A_R
+      - B_R
+      - C_I
+  - name: MPUTARRI
+    args:
+      - A_R
+      - B_RI
+      - C_I
+  - name: SETALEN
+    args:
+      - B_R
+      - C_R
+  - name: INITENUM
+    args:
+      - B_R
+      - C_R
+  - name: NEXTENUM
+    args:
+      - B_R
+      - C_R
+  - name: NEWTARGET
+    args:
+      - BC_R
+  - name: DEBUGGER
+  - name: NOP
+    args:
+      - ABC_I
+  - name: INVALID
+    args:
+      - ABC_I
+  - name: UNUSED191
   - name: CALL0
     args:
       - A_I
@@ -924,81 +983,70 @@ opcodes:
     args:
       - A_I
       - BC_R
-  - name: NEWOBJ
+  - name: CALLPROP0
     args:
-      - A_I  # property count init size
+      - A_I
       - BC_R
-  - name: NEWARR
+  - name: CALLPROP1
     args:
-      - A_I  # array item count init size
+      - A_I
       - BC_R
-  - name: MPUTOBJ
+  - name: CALLPROP2
     args:
-      - A_R
-      - B_R
-      - C_I
-  - name: MPUTOBJI
-    args:
-      - A_R
-      - B_RI
-      - C_I
-  - name: INITSET
-    args:
-      - A_R
+      - A_I
       - BC_R
-  - name: INITGET
+  - name: CALLPROP3
     args:
-      - A_R
+      - A_I
       - BC_R
-  - name: MPUTARR
+  - name: CALLPROP4
     args:
-      - A_R
-      - B_R
-      - C_I
-  - name: MPUTARRI
-    args:
-      - A_R
-      - B_RI
-      - C_I
-  - name: SETALEN
-    args:
-      - B_R
-      - C_R
-  - name: INITENUM
-    args:
-      - B_R
-      - C_R
-  - name: NEXTENUM
-    args:
-      - B_R
-      - C_R
-  - name: NEWTARGET
-    args:
+      - A_I
       - BC_R
-  - name: DEBUGGER
-  - name: NOP
+  - name: CALLPROP5
     args:
-      - ABC_I
-  - name: INVALID
+      - A_I
+      - BC_R
+  - name: CALLPROP6
     args:
-      - ABC_I
-  - name: UNUSED207
-  - name: UNUSED208
-  - name: UNUSED209
-  - name: UNUSED210
-  - name: UNUSED211
-  - name: UNUSED212
-  - name: UNUSED213
-  - name: UNUSED214
-  - name: UNUSED215
-  - name: UNUSED216
-  - name: UNUSED217
-  - name: UNUSED218
-  - name: UNUSED219
-  - name: UNUSED220
-  - name: UNUSED221
-  - name: UNUSED222
-  - name: UNUSED223
+      - A_I
+      - BC_R
+  - name: CALLPROP7
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP8
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP9
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP10
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP11
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP12
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP13
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP14
+    args:
+      - A_I
+      - BC_R
+  - name: CALLPROP15
+    args:
+      - A_I
+      - BC_R
   - name: UNUSED224
   - name: UNUSED225
   - name: UNUSED226

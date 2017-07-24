@@ -2630,6 +2630,36 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 	return rc;
 }
 
+DUK_LOCAL void duk__executor_callprop_lookup(duk_hthread *thr, duk_idx_t idx) {
+	duk_tval *tv_idx;
+	duk_tval *tv;
+
+	tv_idx = DUK_GET_TVAL_POSIDX(thr, idx);
+	(void) duk_hobject_getprop(thr, tv_idx + 1, tv_idx);
+#if defined(DUK_USE_VERBOSE_ERRORS)
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
+	if (DUK_UNLIKELY(!duk_is_callable_tval(thr, tv))) {
+		const char *str1, *str2, *str3;
+#if defined(DUK_USE_PARANOID_ERRORS)
+		str1 = duk_get_type_name(thr, -1);
+		str2 = duk_get_type_name(thr, idx);
+		str3 = duk_get_type_name(thr, idx + 1);
+		DUK_ERROR_FMT3(thr, DUK_ERR_TYPE_ERROR, "%s not callable (property %s of %s)", str1, str2, str3);
+#else
+		str1 = duk_push_string_readable(thr, -1);
+		str2 = duk_push_string_readable(thr, idx);
+		str3 = duk_push_string_readable(thr, idx + 1);
+		DUK_ERROR_FMT3(thr, DUK_ERR_TYPE_ERROR, "%s not callable (property %s of %s)", str1, str2, str3);
+#endif
+	}
+#else  /* DUK_USE_VERBOSE_ERRORS */
+	/* Without verbose errors, no up-front callability check, rely on
+	 * call handling throwing an error instead.
+	 */
+#endif  /* DUK_USE_VERBOSE_ERRORS */
+	duk_replace(thr, idx);
+}
+
 /*
  *  Ecmascript bytecode executor.
  *
@@ -4640,7 +4670,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_hcompfunc *fun;
 #endif
 
-			DUK_ASSERT((DUK_OP_CALL0 & 0x0fU) == 0);
+			DUK_ASSERT((DUK_OP_CALL0 & 0x1fU) == 0);
+			DUK_ASSERT(DUK_OP_CALL0 + 16 == DUK_OP_CALLPROP0);
 			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) == 0);
 
 			nargs = (duk_idx_t) DUK_DEC_A(ins);
@@ -4688,7 +4719,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_hcompfunc *fun;
 #endif
 
-			DUK_ASSERT((DUK_OP_CALL0 & 0x0fU) == 0);
+			DUK_ASSERT((DUK_OP_CALL0 & 0x1fU) == 0);
+			DUK_ASSERT(DUK_OP_CALL0 + 16 == DUK_OP_CALLPROP0);
 			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) != 0);
 
 			nargs = (duk_idx_t) DUK_DEC_A(ins);
@@ -4708,6 +4740,98 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			duk_set_top_unsafe(thr, (duk_idx_t) fun->nregs);
 			break;
 		}
+
+#if !defined(DUK_USE_PREFER_SIZE)
+		case DUK_OP_CALLPROP0:
+		case DUK_OP_CALLPROP1:
+		case DUK_OP_CALLPROP2:
+		case DUK_OP_CALLPROP3:
+		case DUK_OP_CALLPROP4:
+		case DUK_OP_CALLPROP5:
+		case DUK_OP_CALLPROP6:
+		case DUK_OP_CALLPROP7: {
+			duk_idx_t nargs;
+			duk_idx_t idx;
+			duk_small_uint_t call_flags;
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			duk_hcompfunc *fun;
+#endif
+
+			DUK_ASSERT((DUK_OP_CALL0 & 0x1fU) == 0);
+			DUK_ASSERT(DUK_OP_CALL0 + 16 == DUK_OP_CALLPROP0);
+			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) == 0);
+
+			nargs = (duk_idx_t) DUK_DEC_A(ins);
+			call_flags = (ins & 0x07U) | DUK_CALL_FLAG_ALLOW_ECMATOECMA;
+			idx = (duk_idx_t) DUK_DEC_BC(ins);  /* idx+0: key, idx+1: base */
+
+			duk__executor_callprop_lookup(thr, idx);
+
+			if (duk__executor_handle_call(thr, idx, nargs, call_flags)) {
+				/* curr_pc synced by duk_handle_call_unprotected() */
+				DUK_ASSERT(thr->ptr_curr_pc == NULL);
+				goto restart_execution;
+			}
+			DUK_ASSERT(thr->ptr_curr_pc != NULL);
+
+			/* duk_js_call.c is required to restore the stack reserve
+			 * so we only need to reset the top.
+			 */
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			fun = DUK__FUN();
+#endif
+			duk_set_top_unsafe(thr, (duk_idx_t) fun->nregs);
+
+			/* No need to reinit setjmp() catchpoint, as call handling
+			 * will store and restore our state.
+			 *
+			 * When debugger is enabled, we need to recheck the activation
+			 * status after returning.  This is now handled by call handling
+			 * and heap->dbg_force_restart.
+			 */
+			break;
+		}
+
+		case DUK_OP_CALLPROP8:
+		case DUK_OP_CALLPROP9:
+		case DUK_OP_CALLPROP10:
+		case DUK_OP_CALLPROP11:
+		case DUK_OP_CALLPROP12:
+		case DUK_OP_CALLPROP13:
+		case DUK_OP_CALLPROP14:
+		case DUK_OP_CALLPROP15: {
+			/* Indirect variant. */
+			duk_idx_t nargs;
+			duk_idx_t idx;
+			duk_small_uint_t call_flags;
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			duk_hcompfunc *fun;
+#endif
+
+			DUK_ASSERT((DUK_OP_CALL0 & 0x1fU) == 0);
+			DUK_ASSERT(DUK_OP_CALL0 + 16 == DUK_OP_CALLPROP0);
+			DUK_ASSERT((ins & DUK_BC_CALL_FLAG_INDIRECT) != 0);
+
+			nargs = (duk_idx_t) DUK_DEC_A(ins);
+			DUK__LOOKUP_INDIRECT(nargs);
+			call_flags = (ins & 0x07U) | DUK_CALL_FLAG_ALLOW_ECMATOECMA;
+			idx = (duk_idx_t) DUK_DEC_BC(ins);
+
+			duk__executor_callprop_lookup(thr, idx);
+
+			if (duk__executor_handle_call(thr, idx, nargs, call_flags)) {
+				DUK_ASSERT(thr->ptr_curr_pc == NULL);
+				goto restart_execution;
+			}
+			DUK_ASSERT(thr->ptr_curr_pc != NULL);
+
+#if !defined(DUK_USE_EXEC_FUN_LOCAL)
+			fun = DUK__FUN();
+#endif
+			duk_set_top_unsafe(thr, (duk_idx_t) fun->nregs);
+			break;
+		}
+#endif  /* DUK_USE_PREFER_SIZE */
 
 		case DUK_OP_NEWOBJ: {
 			duk_push_object(thr);
@@ -5011,23 +5135,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #if !defined(DUK_USE_ES6)
 		case DUK_OP_NEWTARGET:
 #endif
-		case DUK_OP_UNUSED207:
-		case DUK_OP_UNUSED208:
-		case DUK_OP_UNUSED209:
-		case DUK_OP_UNUSED210:
-		case DUK_OP_UNUSED211:
-		case DUK_OP_UNUSED212:
-		case DUK_OP_UNUSED213:
-		case DUK_OP_UNUSED214:
-		case DUK_OP_UNUSED215:
-		case DUK_OP_UNUSED216:
-		case DUK_OP_UNUSED217:
-		case DUK_OP_UNUSED218:
-		case DUK_OP_UNUSED219:
-		case DUK_OP_UNUSED220:
-		case DUK_OP_UNUSED221:
-		case DUK_OP_UNUSED222:
-		case DUK_OP_UNUSED223:
+		case DUK_OP_UNUSED191:
 		case DUK_OP_UNUSED224:
 		case DUK_OP_UNUSED225:
 		case DUK_OP_UNUSED226:
@@ -5067,7 +5175,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		 * a small detail and obviously compiler dependent.
 		 */
 		/* default: clause omitted on purpose */
-#else
+#else  /* DUK_USE_EXEC_PREFER_SIZE */
 		default:
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
 		{

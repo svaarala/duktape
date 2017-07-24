@@ -1521,7 +1521,8 @@ DUK_LOCAL void duk__emit_a_bc(duk_compiler_ctx *comp_ctx, duk_small_uint_t op_fl
 		duk__emit(comp_ctx, ins);
 	} else if (op_flags & DUK__EMIT_FLAG_NO_SHUFFLE_A) {
 		goto error_outofregs;
-	} else if ((op_flags & 0xf0U) == DUK_OP_CALL0) {
+	} else if ((op_flags & 0xe0U) == DUK_OP_CALL0) {  /* CALL<N> or CALLPROP<N> */
+		DUK_ASSERT((DUK_OP_CALL0 & 0xe0U) == 0);
 		comp_ctx->curr_func.needs_shuffle = 1;
 		tmp = comp_ctx->curr_func.shuffle1;
 		duk__emit_load_int32_noshuffle(comp_ctx, tmp, a);
@@ -3454,6 +3455,10 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		}
 #endif  /* DUK_USE_ES6 */
 
+		/* XXX: new obj.noSuch() doesn't use CALLPROP now which
+		 * makes the error message worse than for obj.noSuch().
+		 */
+
 		duk__expr_toforcedreg(comp_ctx, res, DUK__BP_CALL /*rbp_flags*/, reg_target /*forced_reg*/);
 		duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, reg_target + 1);  /* default instance */
 		DUK__SETTEMP(comp_ctx, reg_target + 2);
@@ -3470,9 +3475,6 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			nargs = 0;
 		}
 
-		/* Opcode slot C is used in a non-standard way, so shuffling
-		 * is not allowed.
-		 */
 		duk__emit_a_bc(comp_ctx,
 		              DUK_OP_CALL0 | DUK_BC_CALL_FLAG_CONSTRUCT,
 		              nargs /*num_args*/,
@@ -3969,11 +3971,19 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			 * E5 Section 10.4.3.  There used to be a separate CSPROP opcode
 			 * but a typical call setup took 3 opcodes (e.g. LDREG, LDCONST,
 			 * CSPROP) and the same can be achieved with ordinary loads.
+			 * CALLPROP<N> is used when footprint doesn't matter to provide
+			 * verbose error messages including key for non-callable targets.
 			 */
 			DUK_DDD(DUK_DDDPRINT("function call with property base"));
 
+#if defined(DUK_USE_PREFER_SIZE)
 			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 1);  /* base */
 			duk__ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);  /* base[key] */
+#else
+			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 1);  /* base */
+			duk__ispec_toforcedreg(comp_ctx, &left->x2, reg_cs + 0);  /* key */
+			call_op += DUK_OP_CALLPROP0 - DUK_OP_CALL0;
+#endif
 		} else {
 			DUK_DDD(DUK_DDDPRINT("function call with register base"));
 
@@ -5885,14 +5895,13 @@ DUK_LOCAL void duk__parse_return_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 		    pc_after_expr > pc_before_expr) {         /* at least one opcode emitted */
 			duk_compiler_instr *instr;
 			duk_instr_t ins;
-			duk_small_uint_t op;
 
 			instr = duk__get_instr_ptr(comp_ctx, pc_after_expr - 1);
 			DUK_ASSERT(instr != NULL);
 
+			DUK_ASSERT((DUK_OP_CALL0 & ~0xe0U) == 0);
 			ins = instr->ins;
-			op = (duk_small_uint_t) DUK_DEC_OP(ins);
-			if ((op & ~0x0fU) == DUK_OP_CALL0 &&
+			if ((ins & DUK_ENC_OP(0xe0U)) == DUK_ENC_OP(DUK_OP_CALL0) &&  /* CALL<N> or CALLPROP<N> */
 			    DUK__ISTEMP(comp_ctx, rc_val) /* see above */) {
 				DUK_DDD(DUK_DDDPRINT("return statement detected a tail call opportunity: "
 				                     "catch depth is 0, duk__exprtop() emitted >= 1 instructions, "
