@@ -102,8 +102,11 @@ DUK_USE_BUFFEROBJECT_SUPPORT: false
 # bugs in calling C code.
 DUK_USE_VALSTACK_UNSAFE: true
 
-# Short term workaround with large footprint, disable.
-DUK_USE_REGEXP_CANON_WORKAROUND: false
+# Disable optimizations for case insensitive regexps.  If code involves
+# case insensitive regexps with large character classes, consider enabling
+# at least DUK_USE_REGEXP_CANON_BITMAP.
+DUK_USE_REGEXP_CANON_WORKAROUND: false  # very large footprint (~128kB)
+DUK_USE_REGEXP_CANON_BITMAP: false      # small footprint (~300-400 bytes)
 
 # Consider using ROM strings/objects to reduce footprint, see doc/low_memory.rst.
 # ROM strings/objects reduce startup RAM usage at the expense of code footprint

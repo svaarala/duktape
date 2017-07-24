@@ -228,71 +228,213 @@ DUK_LOCAL duk_uint32_t duk__append_jump_offset(duk_re_compiler_ctx *re_ctx, duk_
 /*
  *  duk_re_range_callback for generating character class ranges.
  *
- *  When ignoreCase is false, the range is simply emitted as is.
- *  We don't, for instance, eliminate duplicates or overlapping
- *  ranges in a character class.
+ *  When ignoreCase is false, the range is simply emitted as is.  We don't,
+ *  for instance, eliminate duplicates or overlapping ranges in a character
+ *  class.
  *
- *  When ignoreCase is true, the range needs to be normalized through
- *  canonicalization.  Unfortunately a canonicalized version of a
- *  continuous range is not necessarily continuous (e.g. [x-{] is
- *  continuous but [X-{] is not).  The current algorithm creates the
- *  canonicalized range(s) space efficiently at the cost of compile
- *  time execution time (see doc/regexp.rst for discussion).
+ *  When ignoreCase is true but the 'direct' flag is set, the caller knows
+ *  that the range canonicalizes to itself for case insensitive matching,
+ *  so the range is emitted as is.  This is mainly useful for built-in ranges
+ *  like \W.
  *
- *  Note that the ctx->nranges is a context-wide temporary value
- *  (this is OK because there cannot be multiple character classes
- *  being parsed simultaneously).
+ *  Otherwise, when ignoreCase is true, the range needs to be normalized
+ *  through canonicalization.  Unfortunately a canonicalized version of a
+ *  continuous range is not necessarily continuous (e.g. [x-{] is continuous
+ *  but [X-{] is not).  As a result, a single input range may expand to a lot
+ *  of output ranges.  The current algorithm creates the canonicalized ranges
+ *  footprint efficiently at the cost of compile time execution time; see
+ *  doc/regexp.rst for discussion, and some more details below.
+ *
+ *  Note that the ctx->nranges is a context-wide temporary value.  This is OK
+ *  because there cannot be multiple character classes being parsed
+ *  simultaneously.
+ *
+ *  More detail on canonicalization:
+ *
+ *  Conceptually, a range is canonicalized by scanning the entire range,
+ *  normalizing each codepoint by converting it to uppercase, and generating
+ *  a set of result ranges.
+ *
+ *  Ideally a minimal set of output ranges would be emitted by merging all
+ *  possible ranges even if they're emitted out of sequence.  Because the
+ *  input string is also case normalized during matching, some codepoints
+ *  never occur at runtime; these "don't care" codepoints can be included or
+ *  excluded from ranges when merging/optimizing ranges.
+ *
+ *  The current algorithm does not do optimal range merging.  Rather, output
+ *  codepoints are generated in sequence, and when the output codepoints are
+ *  continuous (CP, CP+1, CP+2, ...), they are merged locally into as large a
+ *  range as possible.  A small canonicalization bitmap is used to reduce
+ *  actual codepoint canonicalizations which are quite slow at present.  The
+ *  bitmap provides a "codepoint block is continuous with respect to
+ *  canonicalization" for N-codepoint blocks.  This allows blocks to be
+ *  skipped quickly.
+ *
+ *  There are a number of shortcomings and future work here:
+ *
+ *    - Individual codepoint normalizations are slow because they involve
+ *      walking bit-packed rules without a lookup index.
+ *
+ *    - The conceptual algorithm needs to canonicalize every codepoint in the
+ *      input range to figure out the output range(s).  Even with the small
+ *      canonicalization bitmap the algorithm runs quite slowly for worst case
+ *      inputs.  There are many data structure alternatives to improve this.
+ *
+ *    - While the current algorithm generates maximal output ranges when the
+ *      output codepoints are emitted linearly, output ranges are not sorted or
+ *      merged otherwise.  In the worst case a lot of ranges are emitted when
+ *      most of the ranges could be merged.  In this process one could take
+ *      advantage of "don't care" codepoints, which are never matched against at
+ *      runtime due to canonicalization of input codepoints before comparison,
+ *      to merge otherwise discontinuous output ranges.
+ *
+ *    - The runtime data structure is just a linear list of ranges to match
+ *      against.  This can be quite slow if there are a lot of output ranges.
+ *      There are various ways to make matching against the ranges faster,
+ *      e.g. sorting the ranges and using a binary search; skip lists; tree
+ *      based representations; full or approximate codepoint bitmaps, etc.
+ *
+ *    - Only BMP is supported, codepoints above BMP are assumed to canonicalize
+ *      to themselves.  For now this is one place where we don't want to
+ *      support chars outside the BMP, because the exhaustive search would be
+ *      massively larger.  It would be possible to support non-BMP with a
+ *      different algorithm, or perhaps doing case normalization only at match
+ *      time.
  */
 
-DUK_LOCAL void duk__generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct) {
-	duk_re_compiler_ctx *re_ctx = (duk_re_compiler_ctx *) userdata;
+DUK_LOCAL void duk__regexp_emit_range(duk_re_compiler_ctx *re_ctx, duk_codepoint_t r1, duk_codepoint_t r2) {
+	DUK_ASSERT(r2 >= r1);
+	duk__append_u32(re_ctx, (duk_uint32_t) r1);
+	duk__append_u32(re_ctx, (duk_uint32_t) r2);
+	re_ctx->nranges++;
+}
 
-	DUK_DD(DUK_DDPRINT("duk__generate_ranges(): re_ctx=%p, range=[%ld,%ld] direct=%ld",
-	                   (void *) re_ctx, (long) r1, (long) r2, (long) direct));
+#if defined(DUK_USE_REGEXP_CANON_BITMAP)
+/* Find next canonicalization discontinuity (conservative estimate) starting
+ * from 'start', not exceeding 'end'.  If continuity is fine up to 'end'
+ * inclusive, returns end.  Minimum possible return value is start.
+ */
+DUK_LOCAL duk_codepoint_t duk__re_canon_next_discontinuity(duk_codepoint_t start, duk_codepoint_t end) {
+	duk_uint_t start_blk;
+	duk_uint_t end_blk;
+	duk_uint_t blk;
+	duk_uint_t offset;
+	duk_uint8_t mask;
 
-	if (!direct && (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE)) {
-		/*
-		 *  Canonicalize a range, generating result ranges as necessary.
-		 *  Needs to exhaustively scan the entire range (at most 65536
-		 *  code points).  If 'direct' is set, caller (lexer) has ensured
-		 *  that the range is already canonicalization compatible (this
-		 *  is used to avoid unnecessary canonicalization of built-in
-		 *  ranges like \W, which are not affected by canonicalization).
-		 *
-		 *  NOTE: here is one place where we don't want to support chars
-		 *  outside the BMP, because the exhaustive search would be
-		 *  massively larger.
-		 */
+	/* Inclusive block range. */
+	DUK_ASSERT(start >= 0);
+	DUK_ASSERT(end >= 0);
+	DUK_ASSERT(end >= start);
+	start_blk = (duk_uint_t) (start >> DUK_CANON_BITMAP_BLKSHIFT);
+	end_blk = (duk_uint_t) (end >> DUK_CANON_BITMAP_BLKSHIFT);
 
-		duk_codepoint_t i;
-		duk_codepoint_t t;
-		duk_codepoint_t r_start, r_end;
-
-		r_start = duk_unicode_re_canonicalize_char(re_ctx->thr, r1);
-		r_end = r_start;
-		for (i = r1 + 1; i <= r2; i++) {
-			t = duk_unicode_re_canonicalize_char(re_ctx->thr, i);
-			if (t == r_end + 1) {
-				r_end = t;
+	for (blk = start_blk; blk <= end_blk; blk++) {
+		offset = blk >> 3;
+		mask = 1U << (blk & 0x07);
+		if (offset >= sizeof(duk_unicode_re_canon_bitmap)) {
+			/* Reached non-BMP range which is assumed continuous. */
+			return end;
+		}
+		DUK_ASSERT(offset < sizeof(duk_unicode_re_canon_bitmap));
+		if ((duk_unicode_re_canon_bitmap[offset] & mask) == 0) {
+			/* Block is discontinuous, continuity is guaranteed
+			 * only up to end of previous block (+1 for exclusive
+			 * return value => start of current block).  Start
+			 * block requires special handling.
+			 */
+			if (blk > start_blk) {
+				return blk << DUK_CANON_BITMAP_BLKSHIFT;
 			} else {
-				DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%ld,%ld]", (long) r_start, (long) r_end));
-				duk__append_u32(re_ctx, (duk_uint32_t) r_start);
-				duk__append_u32(re_ctx, (duk_uint32_t) r_end);
-				re_ctx->nranges++;
-				r_start = t;
-				r_end = t;
+				return start;
 			}
 		}
-		DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%ld,%ld]", (long) r_start, (long) r_end));
-		duk__append_u32(re_ctx, (duk_uint32_t) r_start);
-		duk__append_u32(re_ctx, (duk_uint32_t) r_end);
-		re_ctx->nranges++;
-	} else {
-		DUK_DD(DUK_DDPRINT("direct, emit range: [%ld,%ld]", (long) r1, (long) r2));
-		duk__append_u32(re_ctx, (duk_uint32_t) r1);
-		duk__append_u32(re_ctx, (duk_uint32_t) r2);
-		re_ctx->nranges++;
 	}
+	DUK_ASSERT(blk == end_blk + 1);  /* Reached end block which is continuous. */
+	return end;
+}
+#else  /* DUK_USE_REGEXP_CANON_BITMAP */
+DUK_LOCAL duk_bool_t duk__re_canon_next_discontinuity(duk_codepoint_t start, duk_codepoint_t end) {
+	DUK_ASSERT(start >= 0);
+	DUK_ASSERT(end >= 0);
+	DUK_ASSERT(end >= start);
+	if (start >= 0x10000) {
+		/* Even without the bitmap, treat non-BMP as continuous. */
+		return end;
+	}
+	return start;
+}
+#endif  /* DUK_USE_REGEXP_CANON_BITMAP */
+
+DUK_LOCAL void duk__regexp_generate_ranges(void *userdata, duk_codepoint_t r1, duk_codepoint_t r2, duk_bool_t direct) {
+	duk_re_compiler_ctx *re_ctx = (duk_re_compiler_ctx *) userdata;
+	duk_codepoint_t r_start;
+	duk_codepoint_t r_end;
+	duk_codepoint_t i;
+	duk_codepoint_t t;
+	duk_codepoint_t r_disc;
+
+	DUK_DD(DUK_DDPRINT("duk__regexp_generate_ranges(): re_ctx=%p, range=[%ld,%ld] direct=%ld",
+	                   (void *) re_ctx, (long) r1, (long) r2, (long) direct));
+
+	DUK_ASSERT(r2 >= r1);  /* SyntaxError for out of order range. */
+
+	if (direct || (re_ctx->re_flags & DUK_RE_FLAG_IGNORE_CASE) == 0) {
+		DUK_DD(DUK_DDPRINT("direct or not case sensitive, emit range: [%ld,%ld]", (long) r1, (long) r2));
+		duk__regexp_emit_range(re_ctx, r1, r2);
+		return;
+	}
+
+	DUK_DD(DUK_DDPRINT("case sensitive, process range: [%ld,%ld]", (long) r1, (long) r2));
+
+	r_start = duk_unicode_re_canonicalize_char(re_ctx->thr, r1);
+	r_end = r_start;
+
+	for (i = r1 + 1; i <= r2;) {
+		/* Input codepoint space processed up to i-1, and
+		 * current range in r_{start,end} is up-to-date
+		 * (inclusive) and may either break or continue.
+		 */
+		r_disc = duk__re_canon_next_discontinuity(i, r2);
+		DUK_ASSERT(r_disc >= i);
+		DUK_ASSERT(r_disc <= r2);
+
+		r_end += r_disc - i;  /* May be zero. */
+		t = duk_unicode_re_canonicalize_char(re_ctx->thr, r_disc);
+		if (t == r_end + 1) {
+			/* Not actually a discontinuity, continue range
+			 * to r_disc and recheck.
+			 */
+			r_end = t;
+		} else {
+			duk__regexp_emit_range(re_ctx, r_start, r_end);
+			r_start = t;
+			r_end = t;
+		}
+		i = r_disc + 1;  /* Guarantees progress. */
+	}
+	duk__regexp_emit_range(re_ctx, r_start, r_end);
+
+#if 0  /* Exhaustive search, very slow. */
+	r_start = duk_unicode_re_canonicalize_char(re_ctx->thr, r1);
+	r_end = r_start;
+	for (i = r1 + 1; i <= r2; i++) {
+		t = duk_unicode_re_canonicalize_char(re_ctx->thr, i);
+		if (t == r_end + 1) {
+			r_end = t;
+		} else {
+			DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%ld,%ld]", (long) r_start, (long) r_end));
+			duk__append_u32(re_ctx, (duk_uint32_t) r_start);
+			duk__append_u32(re_ctx, (duk_uint32_t) r_end);
+			re_ctx->nranges++;
+			r_start = t;
+			r_end = t;
+		}
+	}
+	DUK_DD(DUK_DDPRINT("canonicalized, emit range: [%ld,%ld]", (long) r_start, (long) r_end));
+	duk__append_u32(re_ctx, (duk_uint32_t) r_start);
+	duk__append_u32(re_ctx, (duk_uint32_t) r_end);
+	re_ctx->nranges++;
+#endif
 }
 
 /*
@@ -779,7 +921,7 @@ DUK_LOCAL void duk__parse_disjunction(duk_re_compiler_ctx *re_ctx, duk_bool_t ex
 
 			/* parse ranges until character class ends */
 			re_ctx->nranges = 0;    /* note: ctx-wide temporary */
-			duk_lexer_parse_re_ranges(&re_ctx->lex, duk__generate_ranges, (void *) re_ctx);
+			duk_lexer_parse_re_ranges(&re_ctx->lex, duk__regexp_generate_ranges, (void *) re_ctx);
 
 			/* insert range count */
 			duk__insert_u32(re_ctx, offset, re_ctx->nranges);

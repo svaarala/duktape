@@ -2901,6 +2901,10 @@ Planned
 
 * Add a wrap check to duk_{check,require}_stack{_top}() (GH-1537)
 
+* Improve case insensitive RegExp character class compilation performance
+  using a small (256 byte, footprint impact is about 300-400 bytes)
+  canonicalization lookup bitmap (GH-1616)
+
 * Fix incorrect lookahead in RegExp class range dash ('-') parsing which
   caused RegExp classes ending in a dash (e.g. [abc-]) to be handled
   incorrectly (GH-1569, GH-1570)
