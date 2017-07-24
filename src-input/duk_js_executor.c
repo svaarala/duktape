@@ -5011,6 +5011,8 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #if !defined(DUK_USE_ES6)
 		case DUK_OP_NEWTARGET:
 #endif
+		case DUK_OP_UNUSED207:
+		case DUK_OP_UNUSED208:
 		case DUK_OP_UNUSED209:
 		case DUK_OP_UNUSED210:
 		case DUK_OP_UNUSED211:

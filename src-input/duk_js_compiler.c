@@ -3978,10 +3978,16 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			DUK_DDD(DUK_DDDPRINT("function call with register base"));
 
 			duk__ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);
+#if 0
 			duk__emit_a_bc(comp_ctx,
 			               DUK_OP_CSREG | DUK__EMIT_FLAG_A_IS_SOURCE,
 			               (duk_regconst_t) (reg_cs + 0),
 			               (duk_regconst_t) (reg_cs + 0));  /* in-place setup */
+#endif
+			/* Because of in-place setup, REGCS is equivalent to
+			 * just this LDUNDEF.
+			 */
+			duk__emit_bc(comp_ctx, DUK_OP_LDUNDEF, reg_cs + 1);
 		}
 
 		DUK__SETTEMP(comp_ctx, reg_cs + 2);
