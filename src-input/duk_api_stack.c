@@ -3824,6 +3824,8 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_hthread *thr, duk_idx_t idx) {
 DUK_INTERNAL duk_bool_t duk_is_callable_tval(duk_hthread *thr, duk_tval *tv) {
 	DUK_ASSERT_CTX_VALID(thr);
 
+	DUK_UNREF(thr);
+
 	if (DUK_TVAL_IS_OBJECT(tv)) {
 		duk_hobject *h;
 		h = DUK_TVAL_GET_OBJECT(tv);

@@ -2630,6 +2630,53 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 	return rc;
 }
 
+#if defined(DUK_USE_VERBOSE_ERRORS)
+DUK_LOCAL DUK_NOINLINE void duk__executor_propcall_error(duk_hthread *thr, duk_tval *tv_targ, duk_tval *tv_base, duk_tval *tv_key) {
+	const char *str1, *str2, *str3;
+	duk_idx_t entry_top;
+
+	entry_top = duk_get_top(thr);
+
+	/* Must stabilize pointers first. */
+	duk_push_tval(thr, tv_base);
+	duk_push_tval(thr, tv_key);
+	duk_push_tval(thr, tv_targ);
+
+	DUK_GC_TORTURE(thr->heap);
+
+	/* We only push an error, replacing the call target (at idx_func)
+	 * with the error to ensure side effects come out correctly:
+	 * - Property read
+	 * - Call argument evaluation
+	 * - Callability check and error thrown.
+	 *
+	 * A hidden symbol on the error object pushed here is used by
+	 * call handling to figure out the error is to be thrown as is.
+	 */
+
+#if defined(DUK_USE_PARANOID_ERRORS)
+	str1 = duk_get_type_name(thr, -1);
+	str2 = duk_get_type_name(thr, -3);
+	str3 = duk_get_type_name(thr, -5);
+	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
+#else
+	str1 = duk_push_string_readable(thr, -1);
+	str2 = duk_push_string_readable(thr, -3);
+	str3 = duk_push_string_readable(thr, -5);
+	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
+#endif
+
+	duk_push_true(thr);
+	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_VALUE);  /* Marker property, reuse _Value. */
+
+	/* [ <nregs> propValue <variable> error ] */
+	duk_replace(thr, entry_top - 1);
+	duk_set_top(thr, entry_top);
+
+	DUK_ASSERT(!duk_is_callable(thr, -1));  /* Critical so that call handling will throw the error. */
+}
+#endif  /* DUK_USE_VERBOSE_ERRORS */
+
 /*
  *  Ecmascript bytecode executor.
  *
@@ -4094,6 +4141,21 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		(void) duk_hobject_getprop(thr, (barg), (carg)); \
 		DUK__REPLACE_TOP_A_BREAK(); \
 	}
+#define DUK__GETPROPC_BODY(barg,carg) { \
+		/* Same as GETPROP but callability check for property-based calls. */ \
+		duk_tval *tv__targ; \
+		(void) duk_hobject_getprop(thr, (barg), (carg)); \
+		DUK_GC_TORTURE(thr->heap); \
+		tv__targ = DUK_GET_TVAL_NEGIDX(thr, -1); \
+		if (DUK_UNLIKELY(!duk_is_callable_tval(thr, tv__targ))) { \
+			/* Here we intentionally re-evaluate the macro \
+			 * arguments to deal with potentially changed \
+			 * valstack base pointer! \
+			 */ \
+			duk__executor_propcall_error(thr, tv__targ, (barg), (carg)); \
+		} \
+		DUK__REPLACE_TOP_A_BREAK(); \
+	}
 #define DUK__PUTPROP_BODY(aarg,barg,carg) { \
 		/* A -> object reg \
 		 * B -> key reg/const \
@@ -4121,6 +4183,13 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		case DUK_OP_GETPROP_RC:
 		case DUK_OP_GETPROP_CC:
 			DUK__GETPROP_BODY(DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins));
+#if defined(DUK_USE_VERBOSE_ERRORS)
+		case DUK_OP_GETPROPC_RR:
+		case DUK_OP_GETPROPC_CR:
+		case DUK_OP_GETPROPC_RC:
+		case DUK_OP_GETPROPC_CC:
+			DUK__GETPROPC_BODY(DUK__REGCONSTP_B(ins), DUK__REGCONSTP_C(ins));
+#endif
 		case DUK_OP_PUTPROP_RR:
 		case DUK_OP_PUTPROP_CR:
 		case DUK_OP_PUTPROP_RC:
@@ -4138,6 +4207,16 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			DUK__GETPROP_BODY(DUK__REGP_B(ins), DUK__CONSTP_C(ins));
 		case DUK_OP_GETPROP_CC:
 			DUK__GETPROP_BODY(DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
+#if defined(DUK_USE_VERBOSE_ERRORS)
+		case DUK_OP_GETPROPC_RR:
+			DUK__GETPROPC_BODY(DUK__REGP_B(ins), DUK__REGP_C(ins));
+		case DUK_OP_GETPROPC_CR:
+			DUK__GETPROPC_BODY(DUK__CONSTP_B(ins), DUK__REGP_C(ins));
+		case DUK_OP_GETPROPC_RC:
+			DUK__GETPROPC_BODY(DUK__REGP_B(ins), DUK__CONSTP_C(ins));
+		case DUK_OP_GETPROPC_CC:
+			DUK__GETPROPC_BODY(DUK__CONSTP_B(ins), DUK__CONSTP_C(ins));
+#endif
 		case DUK_OP_PUTPROP_RR:
 			DUK__PUTPROP_BODY(DUK__REGP_A(ins), DUK__REGP_B(ins), DUK__REGP_C(ins));
 		case DUK_OP_PUTPROP_CR:
@@ -5011,11 +5090,13 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 #if !defined(DUK_USE_ES6)
 		case DUK_OP_NEWTARGET:
 #endif
+#if !defined(DUK_USE_VERBOSE_ERRORS)
+		case DUK_OP_GETPROPC_RR:
+		case DUK_OP_GETPROPC_CR:
+		case DUK_OP_GETPROPC_RC:
+		case DUK_OP_GETPROPC_CC:
+#endif
 		case DUK_OP_UNUSED207:
-		case DUK_OP_UNUSED208:
-		case DUK_OP_UNUSED209:
-		case DUK_OP_UNUSED210:
-		case DUK_OP_UNUSED211:
 		case DUK_OP_UNUSED212:
 		case DUK_OP_UNUSED213:
 		case DUK_OP_UNUSED214:
@@ -5067,7 +5148,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 		 * a small detail and obviously compiler dependent.
 		 */
 		/* default: clause omitted on purpose */
-#else
+#else  /* DUK_USE_EXEC_PREFER_SIZE */
 		default:
 #endif  /* DUK_USE_EXEC_PREFER_SIZE */
 		{

@@ -401,10 +401,11 @@ typedef duk_uint32_t duk_instr_t;
 #define DUK_OP_NOP                  205
 #define DUK_OP_INVALID              206
 #define DUK_OP_UNUSED207            207
-#define DUK_OP_UNUSED208            208
-#define DUK_OP_UNUSED209            209
-#define DUK_OP_UNUSED210            210
-#define DUK_OP_UNUSED211            211
+#define DUK_OP_GETPROPC             208
+#define DUK_OP_GETPROPC_RR          208
+#define DUK_OP_GETPROPC_CR          209
+#define DUK_OP_GETPROPC_RC          210
+#define DUK_OP_GETPROPC_CC          211
 #define DUK_OP_UNUSED212            212
 #define DUK_OP_UNUSED213            213
 #define DUK_OP_UNUSED214            214

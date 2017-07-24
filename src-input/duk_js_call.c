@@ -1309,6 +1309,22 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 
  not_callable:
 	DUK_ASSERT(tv_func != NULL);
+
+#if defined(DUK_USE_VERBOSE_ERRORS)
+	/* GETPROPC delayed error handling: when target is not callable,
+	 * GETPROPC replaces idx_func+0 with an Error (non-callable) with
+	 * a hidden Symbol to signify it's to be thrown as is here.  The
+	 * hidden Symbol is only checked as an own property, not inherited
+	 * (which would be dangerous).
+	 */
+	if (DUK_TVAL_IS_OBJECT(tv_func)) {
+		if (duk_hobject_find_existing_entry_tval_ptr(thr->heap, DUK_TVAL_GET_OBJECT(tv_func), DUK_HTHREAD_STRING_INT_VALUE(thr)) != NULL) {
+			duk_push_tval(thr, tv_func);
+			(void) duk_throw(thr);
+		}
+	}
+#endif
+
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not callable", duk_get_type_name(thr, idx_func));
@@ -1322,6 +1338,7 @@ DUK_LOCAL duk_hobject *duk__resolve_target_func_and_this_binding(duk_hthread *th
 	return NULL;  /* never executed */
 
  not_constructable:
+	/* For now GETPROPC delayed error not needed for constructor calls. */
 #if defined(DUK_USE_VERBOSE_ERRORS)
 #if defined(DUK_USE_PARANOID_ERRORS)
 	DUK_ERROR_FMT1(thr, DUK_ERR_TYPE_ERROR, "%s not constructable", duk_get_type_name(thr, idx_func));
