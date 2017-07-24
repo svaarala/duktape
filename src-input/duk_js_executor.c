@@ -2632,11 +2632,13 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 
 DUK_LOCAL void duk__executor_callprop_lookup(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv_idx;
+	duk_tval *tv;
 
 	tv_idx = DUK_GET_TVAL_POSIDX(thr, idx);
 	(void) duk_hobject_getprop(thr, tv_idx + 1, tv_idx);
 #if defined(DUK_USE_VERBOSE_ERRORS)
-	if (DUK_UNLIKELY(!duk_is_callable(thr, -1))) {
+	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
+	if (DUK_UNLIKELY(!duk_is_callable_tval(thr, tv))) {
 		const char *str1, *str2, *str3;
 #if defined(DUK_USE_PARANOID_ERRORS)
 		str1 = duk_get_type_name(thr, -1);

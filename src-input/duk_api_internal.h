@@ -96,6 +96,8 @@ DUK_INTERNAL_DECL duk_tval *duk_get_borrowed_this_tval(duk_hthread *thr);
 
 DUK_INTERNAL_DECL duk_bool_t duk_is_string_notsymbol(duk_hthread *thr, duk_idx_t idx);
 
+DUK_INTERNAL_DECL duk_bool_t duk_is_callable_tval(duk_hthread *thr, duk_tval *tv);
+
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL duk_hstring *duk_get_hstring_notsymbol(duk_hthread *thr, duk_idx_t idx);
 DUK_INTERNAL_DECL const char *duk_get_string_notsymbol(duk_hthread *thr, duk_idx_t idx);

@@ -3821,6 +3821,20 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_hthread *thr, duk_idx_t idx) {
 	return 0;
 }
 
+DUK_INTERNAL duk_bool_t duk_is_callable_tval(duk_hthread *thr, duk_tval *tv) {
+	DUK_ASSERT(tv != NULL);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h;
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		return DUK_HOBJECT_HAS_CALLABLE(h) ? 1 : 0;
+	}
+	if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
+		return 1;
+	}
+	return 0;
+}
+
 DUK_EXTERNAL duk_bool_t duk_is_constructable(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
 
