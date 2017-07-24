@@ -3809,12 +3809,16 @@ DUK_EXTERNAL duk_bool_t duk_is_function(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h;
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		return DUK_HOBJECT_HAS_CALLABLE(h) ? 1 : 0;
+	}
 	if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
 		return 1;
 	}
-	return duk__obj_flag_any_default_false(thr,
-	                                       idx,
-	                                       DUK_HOBJECT_FLAG_CALLABLE);
+	return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_constructable(duk_hthread *thr, duk_idx_t idx) {
@@ -3823,12 +3827,16 @@ DUK_EXTERNAL duk_bool_t duk_is_constructable(duk_hthread *thr, duk_idx_t idx) {
 	DUK_ASSERT_CTX_VALID(thr);
 
 	tv = duk_get_tval_or_unused(thr, idx);
+	if (DUK_TVAL_IS_OBJECT(tv)) {
+		duk_hobject *h;
+		h = DUK_TVAL_GET_OBJECT(tv);
+		DUK_ASSERT(h != NULL);
+		return DUK_HOBJECT_HAS_CONSTRUCTABLE(h) ? 1 : 0;
+	}
 	if (DUK_TVAL_IS_LIGHTFUNC(tv)) {
 		return 1;
 	}
-	return duk__obj_flag_any_default_false(thr,
-	                                       idx,
-	                                       DUK_HOBJECT_FLAG_CONSTRUCTABLE);
+	return 0;
 }
 
 DUK_EXTERNAL duk_bool_t duk_is_c_function(duk_hthread *thr, duk_idx_t idx) {
