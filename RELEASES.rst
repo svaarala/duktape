@@ -2871,6 +2871,9 @@ Planned
 
 * Increase maximum call argument count from 255 to ~64k (GH-1292, GH-1586)
 
+* Improve error message for property-based call TypeError (e.g. foo.noSuch()),
+  error message now includes the key for easier debugging (GH-1627, GH-438)
+
 * Add duk_seal() and duk_freeze() API calls, equivalent to Object.seal()
   and Object.freeze() (GH-1594)
 
