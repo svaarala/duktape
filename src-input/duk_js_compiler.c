@@ -1839,6 +1839,9 @@ DUK_LOCAL void duk__peephole_optimize_bytecode(duk_compiler_ctx *comp_ctx) {
  * is not needed, the forced_reg argument suffices and generates better
  * code (it is checked as it is used).
  */
+/* XXX: DUK__IVAL_FLAG_REQUIRE_SHORT is passed but not currently implemented
+ * by ispec/ivalue operations.
+ */
 #define DUK__IVAL_FLAG_ALLOW_CONST          (1 << 0)  /* allow a constant to be returned */
 #define DUK__IVAL_FLAG_REQUIRE_TEMP         (1 << 1)  /* require a (mutable) temporary as a result (or a const if allowed) */
 #define DUK__IVAL_FLAG_REQUIRE_SHORT        (1 << 2)  /* require a short (8-bit) reg/const which fits into bytecode B/C slot */
@@ -3458,6 +3461,10 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 		duk__emit_bc(comp_ctx, DUK_OP_NEWOBJ, reg_target + 1);  /* default instance */
 		DUK__SETTEMP(comp_ctx, reg_target + 2);
 
+		/* XXX: 'new obj.noSuch()' doesn't use GETPROPC now which
+		 * makes the error message worse than for obj.noSuch().
+		 */
+
 		if (comp_ctx->curr_token.t == DUK_TOK_LPAREN) {
 			/* 'new' MemberExpression Arguments */
 			DUK_DDD(DUK_DDDPRINT("new expression has argument list"));
@@ -3470,9 +3477,6 @@ DUK_LOCAL void duk__expr_nud(duk_compiler_ctx *comp_ctx, duk_ivalue *res) {
 			nargs = 0;
 		}
 
-		/* Opcode slot C is used in a non-standard way, so shuffling
-		 * is not allowed.
-		 */
 		duk__emit_a_bc(comp_ctx,
 		              DUK_OP_CALL0 | DUK_BC_CALL_FLAG_CONSTRUCT,
 		              nargs /*num_args*/,
@@ -3970,10 +3974,31 @@ DUK_LOCAL void duk__expr_led(duk_compiler_ctx *comp_ctx, duk_ivalue *left, duk_i
 			 * but a typical call setup took 3 opcodes (e.g. LDREG, LDCONST,
 			 * CSPROP) and the same can be achieved with ordinary loads.
 			 */
+#if defined(DUK_USE_VERBOSE_ERRORS)
+			duk_regconst_t reg_key;
+#endif
+
 			DUK_DDD(DUK_DDDPRINT("function call with property base"));
 
+			/* XXX: For Math.sin() this generates: LDCONST + LDREG +
+			 * GETPROPC + call.  The LDREG is unnecessary because LDCONST
+			 * could be loaded directly into reg_cs + 1.  This doesn't
+			 * happen now because a variable cannot be in left->x1 of a
+			 * DUK_IVAL_PROP.  We could notice that left->x1 is a temp
+			 * and reuse, but it would still be in the wrong position
+			 * (reg_cs + 0 rather than reg_cs + 1).
+			 */
 			duk__ispec_toforcedreg(comp_ctx, &left->x1, reg_cs + 1);  /* base */
+#if defined(DUK_USE_VERBOSE_ERRORS)
+			reg_key = duk__ispec_toregconst_raw(comp_ctx, &left->x2, -1, DUK__IVAL_FLAG_ALLOW_CONST /*flags*/);
+			duk__emit_a_b_c(comp_ctx,
+			                DUK_OP_GETPROPC | DUK__EMIT_FLAG_BC_REGCONST,
+			                reg_cs + 0,
+			                reg_cs + 1,
+			                reg_key);
+#else
 			duk__ivalue_toforcedreg(comp_ctx, left, reg_cs + 0);  /* base[key] */
+#endif
 		} else {
 			DUK_DDD(DUK_DDDPRINT("function call with register base"));
 
