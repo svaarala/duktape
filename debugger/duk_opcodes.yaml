@@ -983,10 +983,26 @@ opcodes:
     args:
       - ABC_I
   - name: UNUSED207
-  - name: UNUSED208
-  - name: UNUSED209
-  - name: UNUSED210
-  - name: UNUSED211
+  - name: GETPROPC_RR
+    args:
+      - A_R
+      - B_R
+      - C_R
+  - name: GETPROPC_CR
+    args:
+      - A_R
+      - B_C
+      - C_R
+  - name: GETPROPC_RC
+    args:
+      - A_R
+      - B_R
+      - C_C
+  - name: GETPROPC_CC
+    args:
+      - A_R
+      - B_C
+      - C_C
   - name: UNUSED212
   - name: UNUSED213
   - name: UNUSED214
