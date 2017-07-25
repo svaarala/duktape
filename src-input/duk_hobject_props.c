@@ -1677,42 +1677,18 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	out_desc->a_idx = -1;
 
 	/*
-	 *  Array part
-	 */
-
-	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) && arr_idx != DUK__NO_ARRAY_INDEX) {
-		if (arr_idx < DUK_HOBJECT_GET_ASIZE(obj)) {
-			tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, arr_idx);
-			if (!DUK_TVAL_IS_UNUSED(tv)) {
-				DUK_DDD(DUK_DDDPRINT("-> found in array part"));
-				if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
-					duk_push_tval(thr, tv);
-				}
-				/* implicit attributes */
-				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
-				                  DUK_PROPDESC_FLAG_CONFIGURABLE |
-				                  DUK_PROPDESC_FLAG_ENUMERABLE;
-				out_desc->a_idx = arr_idx;
-				goto prop_found;
-			}
-		}
-		/* assume array part is comprehensive (contains all array indexed elements
-		 * or none of them); hence no need to check the entries part here.
-		 */
-		DUK_DDD(DUK_DDDPRINT("-> not found as a concrete property (has array part, "
-		                     "should be there if present)"));
-		goto prop_not_found_concrete;
-	}
-
-	/*
-	 *  Entries part
+	 *  Try entries part first because it's the common case.
+	 *
+	 *  Array part lookups are usually handled by the array fast path, and
+	 *  are not usually inherited.  Array and entry parts never contain the
+	 *  same keys so the entry part vs. array part order doesn't matter.
 	 */
 
 	duk_hobject_find_existing_entry(thr->heap, obj, key, &out_desc->e_idx, &out_desc->h_idx);
 	if (out_desc->e_idx >= 0) {
 		duk_int_t e_idx = out_desc->e_idx;
 		out_desc->flags = DUK_HOBJECT_E_GET_FLAGS(thr->heap, obj, e_idx);
-		if (out_desc->flags & DUK_PROPDESC_FLAG_ACCESSOR) {
+		if (DUK_UNLIKELY(out_desc->flags & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			DUK_DDD(DUK_DDDPRINT("-> found accessor property in entry part"));
 			out_desc->get = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, e_idx);
 			out_desc->set = DUK_HOBJECT_E_GET_VALUE_SETTER(thr->heap, obj, e_idx);
@@ -1733,10 +1709,32 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	}
 
 	/*
-	 *  Not found as a concrete property, check for virtual properties.
+	 *  Try array part.
 	 */
 
- prop_not_found_concrete:
+	if (DUK_HOBJECT_HAS_ARRAY_PART(obj) && arr_idx != DUK__NO_ARRAY_INDEX) {
+		if (arr_idx < DUK_HOBJECT_GET_ASIZE(obj)) {
+			tv = DUK_HOBJECT_A_GET_VALUE_PTR(thr->heap, obj, arr_idx);
+			if (!DUK_TVAL_IS_UNUSED(tv)) {
+				DUK_DDD(DUK_DDDPRINT("-> found in array part"));
+				if (flags & DUK_GETDESC_FLAG_PUSH_VALUE) {
+					duk_push_tval(thr, tv);
+				}
+				/* implicit attributes */
+				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
+				                  DUK_PROPDESC_FLAG_CONFIGURABLE |
+				                  DUK_PROPDESC_FLAG_ENUMERABLE;
+				out_desc->a_idx = arr_idx;
+				goto prop_found;
+			}
+		}
+	}
+
+	DUK_DDD(DUK_DDDPRINT("-> not found as a concrete property"));
+
+	/*
+	 *  Not found as a concrete property, check for virtual properties.
+	 */
 
 	if (!DUK_HOBJECT_HAS_VIRTUAL_PROPERTIES(obj)) {
 		/* Quick skip. */
@@ -1882,7 +1880,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	 */
 
 	/*
-	 *  Not found as concrete or virtual
+	 *  Not found as concrete or virtual.
 	 */
 
  prop_not_found:
@@ -1890,7 +1888,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	return 0;
 
 	/*
-	 *  Found
+	 *  Found.
 	 *
 	 *  Arguments object has exotic post-processing, see E5 Section 10.6,
 	 *  description of [[GetOwnProperty]] variant for arguments.
@@ -1900,15 +1898,15 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	DUK_DDD(DUK_DDDPRINT("-> property found, checking for arguments exotic post-behavior"));
 
 	/* Notes:
-	 *  - only numbered indices are relevant, so arr_idx fast reject is good
+	 *  - Only numbered indices are relevant, so arr_idx fast reject is good
 	 *    (this is valid unless there are more than 4**32-1 arguments).
-	 *  - since variable lookup has no side effects, this can be skipped if
+	 *  - Since variable lookup has no side effects, this can be skipped if
 	 *    DUK_GETDESC_FLAG_PUSH_VALUE is not set.
 	 */
 
-	if (DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
-	    arr_idx != DUK__NO_ARRAY_INDEX &&
-	    (flags & DUK_GETDESC_FLAG_PUSH_VALUE)) {
+	if (DUK_UNLIKELY(DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj) &&
+	                 arr_idx != DUK__NO_ARRAY_INDEX &&
+	                 (flags & DUK_GETDESC_FLAG_PUSH_VALUE))) {
 		duk_propdesc temp_desc;
 
 		/* Magically bound variable cannot be an accessor.  However,
@@ -3057,7 +3055,7 @@ duk_bool_t duk__handle_put_array_length_smaller(duk_hthread *thr,
 		return 1;
 	} else {
 		/*
-		 *  Entries part is a bit more complex
+		 *  Entries part is a bit more complex.
 		 */
 
 		/* Stage 1: find highest preventing non-configurable entry (if any).
