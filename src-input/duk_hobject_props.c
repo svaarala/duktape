@@ -1173,7 +1173,7 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
  *  but there is no hash part, h_idx is set to -1.
  */
 
-DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
+DUK_INTERNAL duk_bool_t duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(e_idx != NULL);
@@ -1198,7 +1198,7 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 			if (h_keys_base[i] == key) {
 				*e_idx = i;
 				*h_idx = -1;
-				return;
+				return 1;
 			}
 		}
 	}
@@ -1240,7 +1240,7 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 					                     (long) i, (long) t, (void *) key));
 					*e_idx = t;
 					*h_idx = i;
-					return;
+					return 1;
 				}
 				DUK_DDD(DUK_DDDPRINT("lookup miss i=%ld, t=%ld",
 				                     (long) i, (long) t));
@@ -1252,9 +1252,8 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 	}
 #endif  /* DUK_USE_HOBJECT_HASH_PART */
 
-	/* not found */
-	*e_idx = -1;
-	*h_idx = -1;
+	/* Not found, leave e_idx and h_idx unset. */
+	return 0;
 }
 
 /* For internal use: get non-accessor entry value */
@@ -1266,12 +1265,13 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr(duk_heap *heap, 
 	DUK_ASSERT(key != NULL);
 	DUK_UNREF(heap);
 
-	duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx);
-	if (e_idx >= 0 && !DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
-		return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx);
-	} else {
-		return NULL;
+	if (duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx)) {
+		DUK_ASSERT(e_idx >= 0);
+		if (!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
+			return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx);
+		}
 	}
+	return NULL;
 }
 
 /* For internal use: get non-accessor entry value and attributes */
@@ -1284,14 +1284,15 @@ DUK_INTERNAL duk_tval *duk_hobject_find_existing_entry_tval_ptr_and_attrs(duk_he
 	DUK_ASSERT(out_attrs != NULL);
 	DUK_UNREF(heap);
 
-	duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx);
-	if (e_idx >= 0 && !DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
-		*out_attrs = DUK_HOBJECT_E_GET_FLAGS(heap, obj, e_idx);
-		return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx);
-	} else {
-		*out_attrs = 0;
-		return NULL;
+	if (duk_hobject_find_existing_entry(heap, obj, key, &e_idx, &h_idx)) {
+		DUK_ASSERT(e_idx >= 0);
+		if (!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx)) {
+			*out_attrs = DUK_HOBJECT_E_GET_FLAGS(heap, obj, e_idx);
+			return DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx);
+		}
 	}
+	/* If not found, out_attrs is left unset. */
+	return NULL;
 }
 
 /* For internal use: get array part value */
@@ -1406,9 +1407,9 @@ DUK_INTERNAL duk_bool_t duk_hobject_get_internal_value(duk_heap *heap, duk_hobje
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(tv_out != NULL);
 
-	/* always in entry part, no need to look up parents etc */
-	duk_hobject_find_existing_entry(heap, obj, DUK_HEAP_STRING_INT_VALUE(heap), &e_idx, &h_idx);
-	if (e_idx >= 0) {
+	/* Always in entry part, no need to look up parents etc. */
+	if (duk_hobject_find_existing_entry(heap, obj, DUK_HEAP_STRING_INT_VALUE(heap), &e_idx, &h_idx)) {
+		DUK_ASSERT(e_idx >= 0);
 		DUK_ASSERT(!DUK_HOBJECT_E_SLOT_IS_ACCESSOR(heap, obj, e_idx));
 		DUK_TVAL_SET_TVAL(tv_out, DUK_HOBJECT_E_GET_VALUE_TVAL_PTR(heap, obj, e_idx));
 		return 1;
@@ -1668,13 +1669,20 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	DUK_ASSERT(out_desc != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	/* XXX: optimize this filling behavior later */
+	/* Each code path returning 1 (= found) must fill in all the output
+	 * descriptor fields.  We don't do it beforehand because it'd be
+	 * unnecessary work if the property isn't found and would happen
+	 * multiple times for an inheritance chain.
+	 */
+	DUK_ASSERT_SET_GARBAGE(out_desc, sizeof(*out_desc));
+#if 0
 	out_desc->flags = 0;
 	out_desc->get = NULL;
 	out_desc->set = NULL;
 	out_desc->e_idx = -1;
 	out_desc->h_idx = -1;
 	out_desc->a_idx = -1;
+#endif
 
 	/*
 	 *  Try entries part first because it's the common case.
@@ -1684,10 +1692,13 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	 *  same keys so the entry part vs. array part order doesn't matter.
 	 */
 
-	duk_hobject_find_existing_entry(thr->heap, obj, key, &out_desc->e_idx, &out_desc->h_idx);
-	if (out_desc->e_idx >= 0) {
+	if (duk_hobject_find_existing_entry(thr->heap, obj, key, &out_desc->e_idx, &out_desc->h_idx)) {
 		duk_int_t e_idx = out_desc->e_idx;
+		DUK_ASSERT(out_desc->e_idx >= 0);
+		out_desc->a_idx = -1;
 		out_desc->flags = DUK_HOBJECT_E_GET_FLAGS(thr->heap, obj, e_idx);
+		out_desc->get = NULL;
+		out_desc->set = NULL;
 		if (DUK_UNLIKELY(out_desc->flags & DUK_PROPDESC_FLAG_ACCESSOR)) {
 			DUK_DDD(DUK_DDDPRINT("-> found accessor property in entry part"));
 			out_desc->get = DUK_HOBJECT_E_GET_VALUE_GETTER(thr->heap, obj, e_idx);
@@ -1724,6 +1735,10 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				out_desc->flags = DUK_PROPDESC_FLAG_WRITABLE |
 				                  DUK_PROPDESC_FLAG_CONFIGURABLE |
 				                  DUK_PROPDESC_FLAG_ENUMERABLE;
+				out_desc->get = NULL;
+				out_desc->set = NULL;
+				out_desc->e_idx = -1;
+				out_desc->h_idx = -1;
 				out_desc->a_idx = arr_idx;
 				goto prop_found;
 			}
@@ -1760,6 +1775,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			if (DUK_HARRAY_LENGTH_WRITABLE(a)) {
 				out_desc->flags |= DUK_PROPDESC_FLAG_WRITABLE;
 			}
+			out_desc->get = NULL;
+			out_desc->set = NULL;
+			out_desc->e_idx = -1;
+			out_desc->h_idx = -1;
+			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
@@ -1785,6 +1805,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				}
 				out_desc->flags = DUK_PROPDESC_FLAG_ENUMERABLE |  /* E5 Section 15.5.5.2 */
 				                  DUK_PROPDESC_FLAG_VIRTUAL;
+				out_desc->get = NULL;
+				out_desc->set = NULL;
+				out_desc->e_idx = -1;
+				out_desc->h_idx = -1;
+				out_desc->a_idx = -1;
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
@@ -1803,6 +1828,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				duk_push_uint(thr, (duk_uint_t) DUK_HSTRING_GET_CHARLEN(h_val));
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;  /* E5 Section 15.5.5.1 */
+			out_desc->get = NULL;
+			out_desc->set = NULL;
+			out_desc->e_idx = -1;
+			out_desc->h_idx = -1;
+			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
@@ -1847,6 +1877,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 					 */
 					out_desc->flags |= DUK_PROPDESC_FLAG_ENUMERABLE;
 				}
+				out_desc->get = NULL;
+				out_desc->set = NULL;
+				out_desc->e_idx = -1;
+				out_desc->h_idx = -1;
+				out_desc->a_idx = -1;
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
@@ -1864,6 +1899,11 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				duk_push_uint(thr, h_bufobj->length >> h_bufobj->shift);
 			}
 			out_desc->flags = DUK_PROPDESC_FLAG_VIRTUAL;
+			out_desc->get = NULL;
+			out_desc->set = NULL;
+			out_desc->e_idx = -1;
+			out_desc->h_idx = -1;
+			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
 			return 1;  /* cannot be arguments exotic */
@@ -4798,7 +4838,6 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_hthread *th
 	duk_hobject *obj;
 	duk_hstring *key;
 	duk_propdesc pd;
-	duk_bool_t rc;
 
 	DUK_ASSERT(thr != NULL);
 	DUK_ASSERT(thr->heap != NULL);
@@ -4809,8 +4848,7 @@ DUK_INTERNAL void duk_hobject_object_get_own_property_descriptor(duk_hthread *th
 
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
-	rc = duk_hobject_get_own_propdesc(thr, obj, key, &pd, DUK_GETDESC_FLAG_PUSH_VALUE);
-	if (!rc) {
+	if (!duk_hobject_get_own_propdesc(thr, obj, key, &pd, DUK_GETDESC_FLAG_PUSH_VALUE)) {
 		duk_push_undefined(thr);
 		duk_remove_m2(thr);
 		return;

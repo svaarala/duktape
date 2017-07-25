@@ -1579,8 +1579,8 @@ duk_bool_t duk__declvar_helper(duk_hthread *thr,
 		/* must be found: was found earlier, and cannot be inherited */
 		for (;;) {
 			DUK_ASSERT(holder != NULL);
-			duk_hobject_find_existing_entry(thr->heap, holder, name, &e_idx, &h_idx);
-			if (e_idx >= 0) {
+			if (duk_hobject_find_existing_entry(thr->heap, holder, name, &e_idx, &h_idx)) {
+				DUK_ASSERT(e_idx >= 0);
 				break;
 			}
 			/* SCANBUILD: NULL pointer dereference, doesn't actually trigger,
