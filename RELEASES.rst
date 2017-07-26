@@ -3008,7 +3008,8 @@ Planned
   arithmetic (GH-1599); larger spare for bufwriter in non-lowmem build
   (GH-1611); faster internal duk_to_number_tval() (GH-1612); minor
   optimizations to duk_is_callable() and duk_is_constructable() (GH-1631);
-  check entry part before array part in property lookup (GH-1634)
+  check entry part before array part in property lookup (GH-1634); optimize
+  duk_propdesc filling in property lookups (GH-1635)
 
 3.0.0 (XXXX-XX-XX)
 ------------------
