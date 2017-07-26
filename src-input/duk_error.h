@@ -417,6 +417,19 @@
 	DUK_ASSERT(thr->valstack_top < thr->valstack_end)
 
 /*
+ *  Helper to initialize a memory area (e.g. struct) with garbage when
+ *  assertions enabled.
+ */
+
+#if defined(DUK_USE_ASSERTIONS)
+#define DUK_ASSERT_SET_GARBAGE(ptr,size) do { \
+		DUK_MEMSET((void *) (ptr), 0x5a, size); \
+	} while (0)
+#else
+#define DUK_ASSERT_SET_GARBAGE(ptr,size) do {} while (0)
+#endif
+
+/*
  *  Helper for valstack space
  *
  *  Caller of DUK_ASSERT_VALSTACK_SPACE() estimates the number of free stack entries
