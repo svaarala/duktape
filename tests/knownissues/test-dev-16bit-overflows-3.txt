@@ -1,0 +1,13 @@
+summary: requires lowmem 16-bit field options
+---
+32768
+32767
+65535
+65536
+32768
+32767
+38
+38
+65535
+65536
+Reached: 65535
