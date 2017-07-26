@@ -1174,6 +1174,8 @@ DUK_INTERNAL void duk_hobject_compact_props(duk_hthread *thr, duk_hobject *obj) 
  */
 
 DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *obj, duk_hstring *key, duk_int_t *e_idx, duk_int_t *h_idx) {
+	duk_uint32_t slot;
+
 	DUK_ASSERT(obj != NULL);
 	DUK_ASSERT(key != NULL);
 	DUK_ASSERT(e_idx != NULL);
@@ -1192,10 +1194,26 @@ DUK_INTERNAL void duk_hobject_find_existing_entry(duk_heap *heap, duk_hobject *o
 		duk_hstring **h_keys_base;
 		DUK_DDD(DUK_DDDPRINT("duk_hobject_find_existing_entry() using linear scan for lookup"));
 
+		slot = duk_heap_slotcache_lookup(heap, obj, key);
+		if (slot < DUK_HOBJECT_GET_ENEXT(obj)) {
+			if (DUK_HOBJECT_E_GET_KEY(heap, obj, slot) == key) {
+				DUK_D(DUK_DPRINT("slot cache hit: %p %p %!O -> %ld (slotcache lookup key %lu)",
+				                 (void *) obj, (void *) key, key, (long) slot,
+				                 (unsigned long) duk_heap_slotcache_getkey(obj, key)));
+				*e_idx = slot;
+				*h_idx = -1;
+				return;
+			}
+		}
+
 		h_keys_base = DUK_HOBJECT_E_GET_KEY_BASE(heap, obj);
 		n = DUK_HOBJECT_GET_ENEXT(obj);
 		for (i = 0; i < n; i++) {
 			if (h_keys_base[i] == key) {
+				DUK_D(DUK_DPRINT("slot cache insert: %p %p %!O -> %ld (slotcache lookup key %lu)",
+				                 (void *) obj, (void *) key, key, (long) i,
+				                 (unsigned long) duk_heap_slotcache_getkey(obj, key)));
+				duk_heap_slotcache_insert(heap, obj, key, i);
 				*e_idx = i;
 				*h_idx = -1;
 				return;

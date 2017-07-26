@@ -373,6 +373,7 @@ def main():
         'duk_heap_refcount.c',
         'duk_heap_stringcache.c',
         'duk_heap_stringtable.c',
+        'duk_heap_slotcache.c',
         'duk_henv.h',
         'duk_hnatfunc.h',
         'duk_hobject_alloc.c',

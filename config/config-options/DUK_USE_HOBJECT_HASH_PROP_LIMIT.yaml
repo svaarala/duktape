@@ -1,6 +1,6 @@
 define: DUK_USE_HOBJECT_HASH_PROP_LIMIT
 introduced: 2.1.0
-default: 8
+default: 64
 tags:
   - performance
   - lowmemory
@@ -18,3 +18,11 @@ description: >
 
   A lower value improves performance (a value as low a 4-8 can be useful)
   while a higher value conserves memory.
+
+  The heap-wide object property slot cache accelerates repeated property
+  accesses to small and medium size objects with no upfront cost, so the
+  default limit has been raised to a relatively high value; the hash part
+  still makes sense for large objects where slot cache misses lead to very
+  large linear scans.  The hash part also makes sense for long term objects
+  which are accessed often, e.g. prototype objects, but these's currently not
+  enough state to ensure they get and keep a hash part.
