@@ -658,8 +658,9 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 
 	/* If _Formals wasn't present in the original function, the list
 	 * here will be empty.  Same happens if _Formals was present but
-	 * had zero length.  We can omit _Formals from the result if its
-	 * length is zero and matches nargs.
+	 * had zero length.  We'll omit the _Formals list if it is empty,
+	 * regardless of whether it was present in the original or not,
+	 * this is a workaround for https://github.com/svaarala/duktape/issues/1513.
 	 */
 	duk_push_array(ctx);  /* _Formals */
 	for (arr_idx = 0; ; arr_idx++) {
@@ -671,7 +672,16 @@ static duk_uint8_t *duk__load_func(duk_context *ctx, duk_uint8_t *p, duk_uint8_t
 		}
 		duk_put_prop_index(ctx, -2, arr_idx);
 	}
-	if (arr_idx == 0 && h_fun->nargs == 0) {
+	if (arr_idx == 0) {
+		/* Omitting _Formals when the list is empty is technically
+		 * incorrect because the result will differ from the input
+		 * function.  This could matter for function templates if:
+		 * _Formals exists, _Formals.length == 0, and nargs > 0.
+		 * This doesn't happen in practice.  But if it did, it would
+		 * affect the .length property of function instances created
+		 * from the closure (0 with _Formals present, nargs with
+		 * _Formals absent).
+		 */
 		duk_pop(ctx);
 	} else {
 		duk_compact_m1(ctx);
