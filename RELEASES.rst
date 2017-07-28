@@ -2822,6 +2822,42 @@ Miscellaneous:
   chaining; this affects string allocation sizes which may matter for manually
   tuned memory pools (GH-1277)
 
+2.1.1 (2017-07-29)
+------------------
+
+* Fix missing duk_require_stack() in bound function call handling which caused
+  calls to bound functions with a lot of bound arguments to fail with a value
+  stack limit error (GH-1504)
+
+* Fix duk_hbufobj assert in shared slice() handling (GH-1506)
+
+* Fix MSVC cast warning in error augmentation code (GH-1511)
+
+* Fix incorrect .length behavior for function templates loaded by
+  duk_load_function() (GH-1513, GH-1516)
+
+* Fix Reflect.construct() handling for four or more arguments (GH-1517,
+  GH-1518)
+
+* Fix duk_check_stack_top() and duk_require_stack_top() internal value stack
+  reserve calculation which failed to take into account call stack entries
+  below the current call, leading potentially to a smaller reserve than
+  requested (GH-1536)
+
+* Fix potential segfault in debugger GetHeapObjInfo command, caused by
+  key/mask list being out of sync (GH-1540)
+
+* Fix duk_pcall_prop(), duk_safe_call(), and duk_pnew() argument validation,
+  in some cases a negative nargs/nrets argument (which is always invalid)
+  could be accepted (GH-1553)
+
+* Fix incorrect lookahead in RegExp class range dash ('-') parsing which
+  caused RegExp classes ending in a dash (e.g. [abc-]) to be handled
+  incorrectly (GH-1569, GH-1570)
+
+* Fix incorrect handling of register bound unary operation target for
+  unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
+
 Planned
 =======
 
@@ -2908,6 +2944,9 @@ Planned
 * Improve case insensitive RegExp character class compilation performance
   using a small (256 byte, footprint impact is about 300-400 bytes)
   canonicalization lookup bitmap (GH-1616)
+
+* Fix incorrect handling of register bound unary operation target for
+  unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
 * Fix incorrect lookahead in RegExp class range dash ('-') parsing which
   caused RegExp classes ending in a dash (e.g. [abc-]) to be handled
