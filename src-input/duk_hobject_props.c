@@ -1669,6 +1669,8 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 	DUK_ASSERT(out_desc != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_STATS_INC(thr->heap, stats_getownpropdesc_count);
+
 	/* Each code path returning 1 (= found) must fill in all the output
 	 * descriptor fields.  We don't do it beforehand because it'd be
 	 * unnecessary work if the property isn't found and would happen
@@ -1782,7 +1784,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments exotic */
+			goto prop_found_noexotic;  /* cannot be arguments exotic */
 		}
 	} else if (DUK_HOBJECT_HAS_EXOTIC_STRINGOBJ(obj)) {
 		DUK_DDD(DUK_DDDPRINT("string object exotic property get for key: %!O, arr_idx: %ld",
@@ -1812,7 +1814,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				out_desc->a_idx = -1;
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
+				goto prop_found_noexotic;  /* cannot be arguments exotic */
 			} else {
 				/* index is above internal string length -> property is fully normal */
 				DUK_DDD(DUK_DDDPRINT("array index outside string -> normal property"));
@@ -1835,7 +1837,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments exotic */
+			goto prop_found_noexotic;  /* cannot be arguments exotic */
 		}
 	}
 #if defined(DUK_USE_BUFFEROBJECT_SUPPORT)
@@ -1884,7 +1886,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 				out_desc->a_idx = -1;
 
 				DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-				return 1;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
+				goto prop_found_noexotic;  /* cannot be e.g. arguments exotic, since exotic 'traits' are mutually exclusive */
 			} else {
 				/* index is above internal buffer length -> property is fully normal */
 				DUK_DDD(DUK_DDDPRINT("array index outside buffer -> normal property"));
@@ -1906,7 +1908,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 			out_desc->a_idx = -1;
 
 			DUK_ASSERT(!DUK_HOBJECT_HAS_EXOTIC_ARGUMENTS(obj));
-			return 1;  /* cannot be arguments exotic */
+			goto prop_found_noexotic;  /* cannot be arguments exotic */
 		}
 	}
 #endif  /* DUK_USE_BUFFEROBJECT_SUPPORT */
@@ -1925,6 +1927,7 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 
  prop_not_found:
 	DUK_DDD(DUK_DDDPRINT("-> not found (virtual, entry part, or array part)"));
+	DUK_STATS_INC(thr->heap, stats_getownpropdesc_miss);
 	return 0;
 
 	/*
@@ -1971,6 +1974,8 @@ DUK_LOCAL duk_bool_t duk__get_own_propdesc_raw(duk_hthread *thr, duk_hobject *ob
 		}
 	}
 
+ prop_found_noexotic:
+	DUK_STATS_INC(thr->heap, stats_getownpropdesc_hit);
 	return 1;
 }
 
@@ -2015,6 +2020,8 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 	DUK_ASSERT(out_desc != NULL);
 	DUK_ASSERT_VALSTACK_SPACE(thr, DUK__VALSTACK_SPACE);
 
+	DUK_STATS_INC(thr->heap, stats_getpropdesc_count);
+
 	arr_idx = DUK_HSTRING_GET_ARRIDX_FAST(key);
 
 	DUK_DDD(DUK_DDDPRINT("duk__get_propdesc: thr=%p, obj=%p, key=%p, out_desc=%p, flags=%lx, "
@@ -2029,6 +2036,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 	do {
 		if (duk__get_own_propdesc_raw(thr, curr, key, arr_idx, out_desc, flags)) {
 			/* stack contains value (if requested), 'out_desc' is set */
+			DUK_STATS_INC(thr->heap, stats_getpropdesc_hit);
 			return 1;
 		}
 
@@ -2048,6 +2056,7 @@ DUK_LOCAL duk_bool_t duk__get_propdesc(duk_hthread *thr, duk_hobject *obj, duk_h
 	 * value to determine whether out_desc can be looked up
 	 */
 
+	DUK_STATS_INC(thr->heap, stats_getpropdesc_miss);
 	return 0;
 }
 

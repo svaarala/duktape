@@ -576,6 +576,12 @@ struct duk_heap {
 	duk_int_t stats_intern_miss;
 	duk_int_t stats_object_realloc_props;
 	duk_int_t stats_object_abandon_array;
+	duk_int_t stats_getownpropdesc_count;
+	duk_int_t stats_getownpropdesc_hit;
+	duk_int_t stats_getownpropdesc_miss;
+	duk_int_t stats_getpropdesc_count;
+	duk_int_t stats_getpropdesc_hit;
+	duk_int_t stats_getpropdesc_miss;
 	duk_int_t stats_getprop_all;
 	duk_int_t stats_getprop_arrayidx;
 	duk_int_t stats_getprop_bufobjidx;
