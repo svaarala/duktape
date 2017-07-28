@@ -2,9 +2,10 @@ language: c
 sudo: required
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install python-yaml
+  #- sudo apt-get install python-yaml
   - sudo apt-get install tidy
   - sudo apt-get install valgrind
+  - pip install PyYAML
 #compiler:
 #  - clang
 #  - gcc
