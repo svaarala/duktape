@@ -3035,6 +3035,8 @@ Planned
 
 * Internal change: terminology, use 'slack' rather than 'spare' (GH-1615)
 
+* Internal change: DUK_ASSERT_API_ENTRY() assertion for later use (GH-1642)
+
 * Miscellaneous footprint improvements: rework call handling to improve
   code sharing (GH-1552); optional lazy charlen (GH-1337)
 
