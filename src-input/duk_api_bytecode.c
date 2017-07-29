@@ -689,7 +689,7 @@ DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
 	duk_bufwriter_ctx *bw_ctx = &bw_ctx_alloc;
 	duk_uint8_t *p;
 
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Bound functions don't have all properties so we'd either need to
 	 * lookup the non-bound target function or reject bound functions.
@@ -719,7 +719,7 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 	duk_uint8_t *p_buf, *p, *p_end;
 	duk_size_t sz;
 
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	p_buf = (duk_uint8_t *) duk_require_buffer(thr, -1, &sz);
 	DUK_ASSERT(p_buf != NULL);
@@ -755,10 +755,12 @@ DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
 #else  /* DUK_USE_BYTECODE_DUMP_SUPPORT */
 
 DUK_EXTERNAL void duk_dump_function(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 
 DUK_EXTERNAL void duk_load_function(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 

@@ -111,7 +111,7 @@ DUK_EXTERNAL void duk_call(duk_hthread *thr, duk_idx_t nargs) {
 	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx_func = duk__call_get_idx_func(thr, nargs, 1);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
@@ -126,7 +126,7 @@ DUK_EXTERNAL void duk_call_method(duk_hthread *thr, duk_idx_t nargs) {
 	duk_small_uint_t call_flags;
 	duk_idx_t idx_func;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx_func = duk__call_get_idx_func(thr, nargs, 2);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
@@ -143,7 +143,7 @@ DUK_EXTERNAL void duk_call_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_idx_t n
 	 *  done "in-place", so this is not a trivial change.
 	 */
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);  /* make absolute */
 	if (DUK_UNLIKELY(nargs < 0)) {
@@ -179,7 +179,7 @@ DUK_LOCAL duk_ret_t duk__pcall_raw(duk_hthread *thr, void *udata) {
 DUK_EXTERNAL duk_int_t duk_pcall(duk_hthread *thr, duk_idx_t nargs) {
 	duk__pcall_args args;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	args.nargs = nargs;
 	if (DUK_UNLIKELY(nargs < 0)) {
@@ -214,7 +214,7 @@ DUK_LOCAL duk_ret_t duk__pcall_method_raw(duk_hthread *thr, void *udata) {
 DUK_INTERNAL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags) {
 	duk__pcall_method_args args;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	args.nargs = nargs;
 	if (DUK_UNLIKELY(nargs < 0)) {
@@ -227,6 +227,8 @@ DUK_INTERNAL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t nargs,
 }
 
 DUK_EXTERNAL duk_int_t duk_pcall_method(duk_hthread *thr, duk_idx_t nargs) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	return duk_pcall_method_flags(thr, nargs, 0);
 }
 
@@ -252,7 +254,7 @@ DUK_LOCAL duk_ret_t duk__pcall_prop_raw(duk_hthread *thr, void *udata) {
 DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_idx_t nargs) {
 	duk__pcall_prop_args args;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	args.obj_idx = obj_idx;
 	args.nargs = nargs;
@@ -268,8 +270,7 @@ DUK_EXTERNAL duk_int_t duk_pcall_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_i
 DUK_EXTERNAL duk_int_t duk_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t nargs, duk_idx_t nrets) {
 	duk_int_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* nargs condition; fail if: top - bottom < nargs
 	 *                      <=>  top < bottom + nargs
@@ -298,7 +299,7 @@ DUK_EXTERNAL duk_int_t duk_safe_call(duk_hthread *thr, duk_safe_call_function fu
 DUK_EXTERNAL void duk_new(duk_hthread *thr, duk_idx_t nargs) {
 	duk_idx_t idx_func;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx_func = duk__call_get_idx_func(thr, nargs, 1);
 	DUK_ASSERT(duk_is_valid_index(thr, idx_func));
@@ -322,7 +323,7 @@ DUK_LOCAL duk_ret_t duk__pnew_helper(duk_hthread *thr, void *udata) {
 DUK_EXTERNAL duk_int_t duk_pnew(duk_hthread *thr, duk_idx_t nargs) {
 	duk_int_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* For now, just use duk_safe_call() to wrap duk_new().  We can't
 	 * simply use a protected duk_handle_call() because pushing the
@@ -341,8 +342,7 @@ DUK_EXTERNAL duk_int_t duk_pnew(duk_hthread *thr, duk_idx_t nargs) {
 DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_hthread *thr) {
 	duk_activation *act;
 
-	DUK_ASSERT_CTX_VALID(thr);
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	act = thr->callstack_curr;
 	if (act != NULL) {
@@ -355,6 +355,8 @@ DUK_EXTERNAL duk_bool_t duk_is_constructor_call(duk_hthread *thr) {
  * non-constructor call automatically?
  */
 DUK_INTERNAL void duk_require_constructor_call(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	if (!duk_is_constructor_call(thr)) {
 		DUK_ERROR_TYPE(thr, DUK_STR_CONSTRUCT_ONLY);
 	}
@@ -372,7 +374,7 @@ DUK_EXTERNAL duk_bool_t duk_is_strict_call(duk_hthread *thr) {
 	 * the internal call sites.
 	 */
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	act = thr->callstack_curr;
 	if (act != NULL) {
@@ -391,7 +393,7 @@ DUK_EXTERNAL duk_int_t duk_get_current_magic(duk_hthread *thr) {
 	duk_activation *act;
 	duk_hobject *func;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	act = thr->callstack_curr;
 	if (act) {
@@ -416,7 +418,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_hthread *thr, duk_idx_t idx) {
 	duk_tval *tv;
 	duk_hobject *h;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	tv = duk_require_tval(thr, idx);
 	if (DUK_TVAL_IS_OBJECT(tv)) {
@@ -440,7 +442,7 @@ DUK_EXTERNAL duk_int_t duk_get_magic(duk_hthread *thr, duk_idx_t idx) {
 DUK_EXTERNAL void duk_set_magic(duk_hthread *thr, duk_idx_t idx, duk_int_t magic) {
 	duk_hnatfunc *nf;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	nf = duk_require_hnatfunc(thr, idx);
 	DUK_ASSERT(nf != NULL);
@@ -456,6 +458,8 @@ DUK_EXTERNAL void duk_set_magic(duk_hthread *thr, duk_idx_t idx, duk_int_t magic
  */
 DUK_INTERNAL void duk_resolve_nonbound_function(duk_hthread *thr) {
 	duk_tval *tv;
+
+	DUK_ASSERT_HTHREAD_VALID(thr);
 
 	tv = DUK_GET_TVAL_NEGIDX(thr, -1);
 	if (DUK_TVAL_IS_OBJECT(tv)) {

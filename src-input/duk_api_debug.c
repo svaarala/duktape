@@ -9,7 +9,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 	duk_idx_t idx;
 	duk_idx_t top;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* We don't duk_require_stack() here now, but rely on the caller having
 	 * enough space.
@@ -40,6 +40,7 @@ DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
 }
 #else  /* DUK_USE_JSON_SUPPORT */
 DUK_EXTERNAL void duk_push_context_dump(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 #endif  /* DUK_USE_JSON_SUPPORT */
@@ -65,7 +66,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 
 	DUK_D(DUK_DPRINT("application called duk_debugger_attach()"));
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(read_cb != NULL);
 	DUK_ASSERT(write_cb != NULL);
 	/* Other callbacks are optional. */
@@ -111,7 +112,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 DUK_EXTERNAL void duk_debugger_detach(duk_hthread *thr) {
 	DUK_D(DUK_DPRINT("application called duk_debugger_detach()"));
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 
 	/* Can be called multiple times with no harm. */
@@ -121,7 +122,7 @@ DUK_EXTERNAL void duk_debugger_detach(duk_hthread *thr) {
 DUK_EXTERNAL void duk_debugger_cooperate(duk_hthread *thr) {
 	duk_bool_t processed_messages;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 
 	if (!duk_debug_is_attached(thr->heap)) {
@@ -144,7 +145,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues)
 	duk_idx_t idx;
 	duk_bool_t ret = 0;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 
 	DUK_D(DUK_DPRINT("application called duk_debugger_notify() with nvalues=%ld", (long) nvalues));
@@ -176,7 +177,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues)
 }
 
 DUK_EXTERNAL void duk_debugger_pause(duk_hthread *thr) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 
 	DUK_D(DUK_DPRINT("application called duk_debugger_pause()"));
@@ -209,7 +210,7 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
                                       duk_debug_request_function request_cb,
                                       duk_debug_detached_function detached_cb,
                                       void *udata) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(read_cb);
 	DUK_UNREF(write_cb);
 	DUK_UNREF(peek_cb);
@@ -222,20 +223,20 @@ DUK_EXTERNAL void duk_debugger_attach(duk_hthread *thr,
 }
 
 DUK_EXTERNAL void duk_debugger_detach(duk_hthread *thr) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ERROR_TYPE(thr, "no debugger support");
 }
 
 DUK_EXTERNAL void duk_debugger_cooperate(duk_hthread *thr) {
 	/* nop */
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(thr);
 }
 
 DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues) {
 	duk_idx_t top;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	top = duk_get_top(thr);
 	if (top < nvalues) {
@@ -250,7 +251,7 @@ DUK_EXTERNAL duk_bool_t duk_debugger_notify(duk_hthread *thr, duk_idx_t nvalues)
 
 DUK_EXTERNAL void duk_debugger_pause(duk_hthread *thr) {
 	/* Treat like debugger statement: nop */
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(thr);
 }
 

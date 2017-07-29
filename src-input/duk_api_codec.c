@@ -382,7 +382,7 @@ DUK_EXTERNAL const char *duk_base64_encode(duk_hthread *thr, duk_idx_t idx) {
 	duk_uint8_t *dst;
 	const char *ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* XXX: optimize for string inputs: no need to coerce to a buffer
 	 * which makes a copy of the input.
@@ -422,7 +422,7 @@ DUK_EXTERNAL void duk_base64_decode(duk_hthread *thr, duk_idx_t idx) {
 	duk_uint8_t *dst_final;
 	duk_bool_t retval;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* XXX: optimize for buffer inputs: no need to coerce to a string
 	 * which causes an unnecessary interning.
@@ -468,7 +468,7 @@ DUK_EXTERNAL const char *duk_hex_encode(duk_hthread *thr, duk_idx_t idx) {
 	duk_uint16_t *p16;
 #endif
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx = duk_require_normalize_index(thr, idx);
 	inp = duk__prep_codec_arg(thr, idx, &len);
@@ -525,7 +525,7 @@ DUK_EXTERNAL void duk_hex_decode(duk_hthread *thr, duk_idx_t idx) {
 	duk_size_t len_safe;
 #endif
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx = duk_require_normalize_index(thr, idx);
 	inp = duk__prep_codec_arg(thr, idx, &len);
@@ -603,7 +603,7 @@ DUK_EXTERNAL const char *duk_json_encode(duk_hthread *thr, duk_idx_t idx) {
 #endif
 	const char *ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 #if defined(DUK_USE_ASSERTIONS)
 	top_at_entry = duk_get_top(thr);
 #endif
@@ -628,7 +628,7 @@ DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
 	duk_idx_t top_at_entry;
 #endif
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 #if defined(DUK_USE_ASSERTIONS)
 	top_at_entry = duk_get_top(thr);
 #endif
@@ -644,11 +644,13 @@ DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
 }
 #else  /* DUK_USE_JSON_SUPPORT */
 DUK_EXTERNAL const char *duk_json_encode(duk_hthread *thr, duk_idx_t idx) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 
 DUK_EXTERNAL void duk_json_decode(duk_hthread *thr, duk_idx_t idx) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
