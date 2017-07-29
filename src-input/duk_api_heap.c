@@ -70,6 +70,7 @@ DUK_EXTERNAL void duk_destroy_heap(duk_hthread *thr) {
 	if (!thr) {
 		return;
 	}
+	DUK_ASSERT_API_ENTRY(thr);
 	heap = thr->heap;
 	DUK_ASSERT(heap != NULL);
 
@@ -81,7 +82,7 @@ DUK_EXTERNAL void duk_suspend(duk_hthread *thr, duk_thread_state *state) {
 	duk_heap *heap;
 	duk_ljstate *lj;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(state != NULL);  /* unvalidated */
 
@@ -122,7 +123,7 @@ DUK_EXTERNAL void duk_resume(duk_hthread *thr, const duk_thread_state *state) {
 	const duk_internal_thread_state *snapshot = (const duk_internal_thread_state *) (const void *) state;
 	duk_heap *heap;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->heap != NULL);
 	DUK_ASSERT(state != NULL);  /* unvalidated */
 
@@ -148,6 +149,8 @@ DUK_EXTERNAL void duk_set_global_object(duk_hthread *thr) {
 	duk_hobject *h_prev_glob;
 	duk_hobjenv *h_env;
 	duk_hobject *h_prev_env;
+
+	DUK_ASSERT_API_ENTRY(thr);
 
 	DUK_D(DUK_DPRINT("replace global object with: %!T", duk_get_tval(thr, -1)));
 

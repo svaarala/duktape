@@ -7,7 +7,7 @@
 DUK_EXTERNAL void *duk_resize_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t new_size) {
 	duk_hbuffer_dynamic *h;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(thr, idx);
 	DUK_ASSERT(h != NULL);
@@ -27,7 +27,7 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t 
 	void *ptr;
 	duk_size_t sz;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	h = (duk_hbuffer_dynamic *) duk_require_hbuffer(thr, idx);
 	DUK_ASSERT(h != NULL);
@@ -55,7 +55,7 @@ DUK_EXTERNAL void *duk_steal_buffer(duk_hthread *thr, duk_idx_t idx, duk_size_t 
 DUK_EXTERNAL void duk_config_buffer(duk_hthread *thr, duk_idx_t idx, void *ptr, duk_size_t len) {
 	duk_hbuffer_external *h;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	h = (duk_hbuffer_external *) duk_require_hbuffer(thr, idx);
 	DUK_ASSERT(h != NULL);

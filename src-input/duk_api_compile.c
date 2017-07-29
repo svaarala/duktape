@@ -15,7 +15,7 @@ struct duk__compile_raw_args {
 DUK_EXTERNAL duk_int_t duk_eval_raw(duk_hthread *thr, const char *src_buffer, duk_size_t src_length, duk_uint_t flags) {
 	duk_int_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Note: strictness is *not* inherited from the current Duktape/C.
 	 * This would be confusing because the current strictness state
@@ -131,7 +131,7 @@ DUK_EXTERNAL duk_int_t duk_compile_raw(duk_hthread *thr, const char *src_buffer,
 	duk__compile_raw_args comp_args_alloc;
 	duk__compile_raw_args *comp_args = &comp_args_alloc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	if ((flags & DUK_COMPILE_STRLEN) && (src_buffer != NULL)) {
 		/* String length is computed here to avoid multiple evaluation

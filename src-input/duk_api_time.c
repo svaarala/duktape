@@ -5,6 +5,8 @@
 #include "duk_internal.h"
 
 DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	return ((duk_double_t) DUK_USE_DATE_GET_NOW(thr));
 }
 
@@ -13,7 +15,7 @@ DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval,
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	duk_uint_t flags;
 
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
 	DUK_UNREF(thr);
 
@@ -40,7 +42,7 @@ DUK_EXTERNAL duk_double_t duk_components_to_time(duk_hthread *thr, duk_time_comp
 	duk_double_t dparts[DUK_DATE_IDX_NUM_PARTS];
 	duk_uint_t flags;
 
-	DUK_ASSERT(thr != NULL);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(comp != NULL);  /* XXX: or check? */
 	DUK_UNREF(thr);
 

@@ -63,6 +63,8 @@ DUK_EXTERNAL void duk_inspect_value(duk_hthread *thr, duk_idx_t idx) {
 	 */
 	duk_int_t vals[14];
 
+	DUK_ASSERT_API_ENTRY(thr);
+
 	/* Assume two's complement and set everything to -1. */
 	DUK_MEMSET((void *) &vals, (int) 0xff, sizeof(vals));
 	DUK_ASSERT(vals[DUK__IDX_TYPE] == -1);  /* spot check one */
@@ -186,7 +188,7 @@ DUK_EXTERNAL void duk_inspect_callstack_entry(duk_hthread *thr, duk_int_t level)
 	duk_uint_fast32_t pc;
 	duk_uint_fast32_t line;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* -1   = top callstack entry
 	 * -2   = caller of level -1

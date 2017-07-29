@@ -17,7 +17,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	duk_tval *tv_key;
 	duk_bool_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
 	 * resize is not necessary for a property get right now.
@@ -36,7 +36,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_get_prop_string(duk_hthread *thr, duk_idx_t obj_idx, const char *key) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -45,7 +45,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 }
 
 DUK_EXTERNAL duk_bool_t duk_get_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -54,7 +54,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 }
 
 DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_uarridx(thr, arr_idx);
@@ -62,7 +62,7 @@ DUK_EXTERNAL duk_bool_t duk_get_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 }
 
 DUK_INTERNAL duk_bool_t duk_get_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -78,7 +78,7 @@ DUK_INTERNAL duk_bool_t duk_get_prop_stridx_short_raw(duk_hthread *thr, duk_uint
 DUK_INTERNAL duk_bool_t duk_get_prop_stridx_boolean(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_bool_t *out_has_prop) {
 	duk_bool_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	rc = duk_get_prop_stridx(thr, obj_idx, stridx);
@@ -122,12 +122,12 @@ DUK_LOCAL duk_bool_t duk__put_prop_shared(duk_hthread *thr, duk_idx_t obj_idx, d
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop(duk_hthread *thr, duk_idx_t obj_idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	return duk__put_prop_shared(thr, obj_idx, -2);
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop_string(duk_hthread *thr, duk_idx_t obj_idx, const char *key) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	/* Careful here and with other duk_put_prop_xxx() helpers: the
@@ -140,7 +140,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_normalize_index(thr, obj_idx);
@@ -149,7 +149,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 }
 
 DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_uarridx(thr, arr_idx);
@@ -157,7 +157,7 @@ DUK_EXTERNAL duk_bool_t duk_put_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 }
 
 DUK_INTERNAL duk_bool_t duk_put_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -176,7 +176,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	duk_small_int_t throw_flag;
 	duk_bool_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
 	 * resize is not necessary for a property delete right now.
@@ -194,7 +194,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_del_prop_string(duk_hthread *thr, duk_idx_t obj_idx, const char *key) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -203,7 +203,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 }
 
 DUK_EXTERNAL duk_bool_t duk_del_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -212,7 +212,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 }
 
 DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_uarridx(thr, arr_idx);
@@ -220,7 +220,7 @@ DUK_EXTERNAL duk_bool_t duk_del_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 }
 
 DUK_INTERNAL duk_bool_t duk_del_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -240,7 +240,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 	duk_tval *tv_key;
 	duk_bool_t rc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* Note: copying tv_obj and tv_key to locals to shield against a valstack
 	 * resize is not necessary for a property existence check right now.
@@ -257,7 +257,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop(duk_hthread *thr, duk_idx_t obj_idx) {
 }
 
 DUK_EXTERNAL duk_bool_t duk_has_prop_string(duk_hthread *thr, duk_idx_t obj_idx, const char *key) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -266,7 +266,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_string(duk_hthread *thr, duk_idx_t obj_idx,
 }
 
 DUK_EXTERNAL duk_bool_t duk_has_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx, const char *key, duk_size_t key_len) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(key != NULL);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -275,7 +275,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_lstring(duk_hthread *thr, duk_idx_t obj_idx
 }
 
 DUK_EXTERNAL duk_bool_t duk_has_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_uarridx(thr, arr_idx);
@@ -283,7 +283,7 @@ DUK_EXTERNAL duk_bool_t duk_has_prop_index(duk_hthread *thr, duk_idx_t obj_idx, 
 }
 
 DUK_INTERNAL duk_bool_t duk_has_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
@@ -307,7 +307,7 @@ DUK_INTERNAL void duk_xdef_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_small_u
 	duk_hobject *obj;
 	duk_hstring *key;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_require_hobject(thr, obj_idx);
 	DUK_ASSERT(obj != NULL);
@@ -323,7 +323,7 @@ DUK_INTERNAL void duk_xdef_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_small_u
 DUK_INTERNAL void duk_xdef_prop_index(duk_hthread *thr, duk_idx_t obj_idx, duk_uarridx_t arr_idx, duk_small_uint_t desc_flags) {
 	duk_hobject *obj;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_require_hobject(thr, obj_idx);
 	DUK_ASSERT(obj != NULL);
@@ -336,7 +336,7 @@ DUK_INTERNAL void duk_xdef_prop_stridx(duk_hthread *thr, duk_idx_t obj_idx, duk_
 	duk_hobject *obj;
 	duk_hstring *key;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 
 	obj = duk_require_hobject(thr, obj_idx);
@@ -359,7 +359,7 @@ DUK_INTERNAL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t obj_i
 	duk_hobject *obj;
 	duk_hstring *key;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT_STRIDX_VALID(stridx);
 	DUK_ASSERT_BIDX_VALID(builtin_idx);
 
@@ -379,6 +379,8 @@ DUK_INTERNAL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t obj_i
  */
 
 DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	duk_push_hstring_stridx(thr, stridx);
 	duk_push_hobject_bidx(thr, DUK_BIDX_TYPE_ERROR_THROWER);
@@ -388,6 +390,7 @@ DUK_INTERNAL void duk_xdef_prop_stridx_thrower(duk_hthread *thr, duk_idx_t obj_i
 
 /* Object.getOwnPropertyDescriptor() equivalent C binding. */
 DUK_EXTERNAL void duk_get_prop_desc(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t flags) {
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(flags);  /* no flags defined yet */
 
 	duk_hobject_object_get_own_property_descriptor(thr, obj_idx);  /* [ ... key ] -> [ ... desc ] */
@@ -404,7 +407,7 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 	duk_uint_t is_data_desc;
 	duk_uint_t is_acc_desc;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_require_hobject(thr, obj_idx);
 
@@ -490,7 +493,7 @@ DUK_EXTERNAL void duk_def_prop(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t f
 DUK_EXTERNAL void duk_compact(duk_hthread *thr, duk_idx_t obj_idx) {
 	duk_hobject *obj;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_get_hobject(thr, obj_idx);
 	if (obj) {
@@ -500,13 +503,15 @@ DUK_EXTERNAL void duk_compact(duk_hthread *thr, duk_idx_t obj_idx) {
 }
 
 DUK_INTERNAL void duk_compact_m1(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	duk_compact(thr, -1);
 }
 
 /* XXX: the duk_hobject_enum.c stack APIs should be reworked */
 
 DUK_EXTERNAL void duk_enum(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t enum_flags) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	duk_dup(thr, obj_idx);
 	duk_require_hobject_promote_mask(thr, -1, DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_BUFFER);
@@ -514,7 +519,7 @@ DUK_EXTERNAL void duk_enum(duk_hthread *thr, duk_idx_t obj_idx, duk_uint_t enum_
 }
 
 DUK_EXTERNAL duk_bool_t duk_next(duk_hthread *thr, duk_idx_t enum_index, duk_bool_t get_value) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	duk_require_hobject(thr, enum_index);
 	duk_dup(thr, enum_index);
@@ -524,6 +529,8 @@ DUK_EXTERNAL duk_bool_t duk_next(duk_hthread *thr, duk_idx_t enum_index, duk_boo
 DUK_INTERNAL void duk_seal_freeze_raw(duk_hthread *thr, duk_idx_t obj_idx, duk_bool_t is_freeze) {
 	duk_tval *tv;
 	duk_hobject *h;
+
+	DUK_ASSERT_API_ENTRY(thr);
 
 	tv = duk_require_tval(thr, obj_idx);
 	DUK_ASSERT(tv != NULL);
@@ -574,10 +581,14 @@ DUK_INTERNAL void duk_seal_freeze_raw(duk_hthread *thr, duk_idx_t obj_idx, duk_b
 }
 
 DUK_EXTERNAL void duk_seal(duk_hthread *thr, duk_idx_t obj_idx) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	duk_seal_freeze_raw(thr, obj_idx, 0 /*is_freeze*/);
 }
 
 DUK_EXTERNAL void duk_freeze(duk_hthread *thr, duk_idx_t obj_idx) {
+	DUK_ASSERT_API_ENTRY(thr);
+
 	duk_seal_freeze_raw(thr, obj_idx, 1 /*is_freeze*/);
 }
 
@@ -588,7 +599,7 @@ DUK_EXTERNAL void duk_freeze(duk_hthread *thr, duk_idx_t obj_idx) {
 DUK_EXTERNAL void duk_put_function_list(duk_hthread *thr, duk_idx_t obj_idx, const duk_function_list_entry *funcs) {
 	const duk_function_list_entry *ent = funcs;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	if (ent != NULL) {
@@ -604,7 +615,7 @@ DUK_EXTERNAL void duk_put_number_list(duk_hthread *thr, duk_idx_t obj_idx, const
 	const duk_number_list_entry *ent = numbers;
 	duk_tval *tv;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj_idx = duk_require_normalize_index(thr, obj_idx);
 	if (ent != NULL) {
@@ -625,7 +636,7 @@ DUK_EXTERNAL void duk_put_number_list(duk_hthread *thr, duk_idx_t obj_idx, const
 DUK_EXTERNAL duk_bool_t duk_get_global_string(duk_hthread *thr, const char *key) {
 	duk_bool_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
 
 	/* XXX: direct implementation */
@@ -639,7 +650,7 @@ DUK_EXTERNAL duk_bool_t duk_get_global_string(duk_hthread *thr, const char *key)
 DUK_EXTERNAL duk_bool_t duk_get_global_lstring(duk_hthread *thr, const char *key, duk_size_t key_len) {
 	duk_bool_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
 
 	/* XXX: direct implementation */
@@ -653,7 +664,7 @@ DUK_EXTERNAL duk_bool_t duk_get_global_lstring(duk_hthread *thr, const char *key
 DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_hthread *thr, const char *key) {
 	duk_bool_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
 
 	/* XXX: direct implementation */
@@ -668,7 +679,7 @@ DUK_EXTERNAL duk_bool_t duk_put_global_string(duk_hthread *thr, const char *key)
 DUK_EXTERNAL duk_bool_t duk_put_global_lstring(duk_hthread *thr, const char *key, duk_size_t key_len) {
 	duk_bool_t ret;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(thr->builtins[DUK_BIDX_GLOBAL] != NULL);
 
 	/* XXX: direct implementation */
@@ -688,7 +699,7 @@ DUK_EXTERNAL void duk_get_prototype(duk_hthread *thr, duk_idx_t idx) {
 	duk_hobject *obj;
 	duk_hobject *proto;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_require_hobject(thr, idx);
 	DUK_ASSERT(obj != NULL);
@@ -706,7 +717,7 @@ DUK_EXTERNAL void duk_set_prototype(duk_hthread *thr, duk_idx_t idx) {
 	duk_hobject *obj;
 	duk_hobject *proto;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	obj = duk_require_hobject(thr, idx);
 	DUK_ASSERT(obj != NULL);
@@ -738,7 +749,7 @@ DUK_EXTERNAL void duk_set_prototype(duk_hthread *thr, duk_idx_t idx) {
  * now (just set it to undefined).
  */
 DUK_EXTERNAL void duk_get_finalizer(duk_hthread *thr, duk_idx_t idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	duk_get_prop_stridx(thr, idx, DUK_STRIDX_INT_FINALIZER);
 }
@@ -747,7 +758,7 @@ DUK_EXTERNAL void duk_set_finalizer(duk_hthread *thr, duk_idx_t idx) {
 	duk_hobject *h;
 	duk_bool_t callable;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	h = duk_require_hobject(thr, idx);  /* Get before 'put' so that 'idx' is correct. */
 	callable = duk_is_callable(thr, -1);
@@ -772,13 +783,13 @@ DUK_EXTERNAL void duk_set_finalizer(duk_hthread *thr, duk_idx_t idx) {
 }
 #else  /* DUK_USE_FINALIZER_SUPPORT */
 DUK_EXTERNAL void duk_get_finalizer(duk_hthread *thr, duk_idx_t idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 
 DUK_EXTERNAL void duk_set_finalizer(duk_hthread *thr, duk_idx_t idx) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_UNREF(idx);
 	DUK_ERROR_UNSUPPORTED(thr);
 }

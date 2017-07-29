@@ -107,13 +107,14 @@ DUK_LOCAL void duk__concat_and_join_helper(duk_hthread *thr, duk_idx_t count_in,
 }
 
 DUK_EXTERNAL void duk_concat(duk_hthread *thr, duk_idx_t count) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	duk__concat_and_join_helper(thr, count, 0 /*is_join*/);
 }
 
 #if defined(DUK_USE_PREFER_SIZE)
 DUK_INTERNAL void duk_concat_2(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
 	duk_concat(thr, 2);
 }
 #else  /* DUK_USE_PREFER_SIZE */
@@ -125,7 +126,7 @@ DUK_INTERNAL void duk_concat_2(duk_hthread *thr) {
 	duk_size_t len2;
 	duk_size_t len;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 	DUK_ASSERT(duk_get_top(thr) >= 2);  /* Trusted caller. */
 
 	h1 = duk_to_hstring(thr, -2);
@@ -156,7 +157,7 @@ DUK_INTERNAL void duk_concat_2(duk_hthread *thr) {
 #endif  /* DUK_USE_PREFER_SIZE */
 
 DUK_EXTERNAL void duk_join(duk_hthread *thr, duk_idx_t count) {
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	duk__concat_and_join_helper(thr, count, 1 /*is_join*/);
 }
@@ -170,7 +171,7 @@ DUK_EXTERNAL void duk_decode_string(duk_hthread *thr, duk_idx_t idx, duk_decode_
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	h_input = duk_require_hstring(thr, idx);  /* Accept symbols. */
 	DUK_ASSERT(h_input != NULL);
@@ -195,7 +196,7 @@ DUK_EXTERNAL void duk_map_string(duk_hthread *thr, duk_idx_t idx, duk_map_char_f
 	const duk_uint8_t *p, *p_start, *p_end;
 	duk_codepoint_t cp;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx = duk_normalize_index(thr, idx);
 
@@ -235,7 +236,7 @@ DUK_EXTERNAL void duk_substring(duk_hthread *thr, duk_idx_t idx, duk_size_t star
 	duk_size_t end_byte_offset;
 	duk_size_t charlen;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx = duk_require_normalize_index(thr, idx);  /* Accept symbols. */
 	h = duk_require_hstring(thr, idx);
@@ -282,7 +283,7 @@ DUK_EXTERNAL void duk_trim(duk_hthread *thr, duk_idx_t idx) {
 	const duk_uint8_t *q_start, *q_end;  /* start (incl) and end (excl) of trimmed part */
 	duk_codepoint_t cp;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	idx = duk_require_normalize_index(thr, idx);  /* Accept symbols. */
 	h = duk_require_hstring(thr, idx);
@@ -355,7 +356,7 @@ DUK_EXTERNAL duk_codepoint_t duk_char_code_at(duk_hthread *thr, duk_idx_t idx, d
 	duk_hstring *h;
 	duk_ucodepoint_t cp;
 
-	DUK_ASSERT_CTX_VALID(thr);
+	DUK_ASSERT_API_ENTRY(thr);
 
 	/* XXX: Share code with String.prototype.charCodeAt?  Main difference
 	 * is handling of clamped offsets.

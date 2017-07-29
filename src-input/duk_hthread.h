@@ -170,6 +170,13 @@
 		DUK_ASSERT((thr)->valstack_alloc_end >= (thr)->valstack_end); \
 	} while (0)
 
+/* Assertions for API call entry specifically.  Checks 'ctx' but also may
+ * check internal state (e.g. not in a debugger transport callback).
+ */
+#define DUK_ASSERT_API_ENTRY(thr) do { \
+		DUK_ASSERT_CTX_VALID((thr)); \
+	} while (0)
+
 /*
  *  Assertion helpers.
  */
