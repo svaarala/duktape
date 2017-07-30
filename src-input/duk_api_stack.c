@@ -31,6 +31,10 @@ DUK_EXTERNAL duk_int_t duk_api_global_line = 0;
  *  Misc helpers
  */
 
+DUK_LOCAL const char * const duk__symbol_type_strings[4] = {
+	"hidden", "global", "local", "wellknown"
+};
+
 #if !defined(DUK_USE_PACKED_TVAL)
 DUK_LOCAL const duk_uint_t duk__type_from_tag[] = {
 	DUK_TYPE_NUMBER,
@@ -76,6 +80,36 @@ DUK_LOCAL const duk_uint_t duk__type_mask_from_tag[] = {
 		} \
 	} while (0)
 #endif
+
+DUK_LOCAL duk_small_uint_t duk__get_symbol_type(duk_hstring *h) {
+	const duk_uint8_t *data;
+	duk_size_t len;
+
+	DUK_ASSERT(h != NULL);
+	DUK_ASSERT(DUK_HSTRING_HAS_SYMBOL(h));
+	DUK_ASSERT(DUK_HSTRING_GET_BYTELEN(h) >= 1);  /* always true, symbol prefix */
+
+	data = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h);
+	len = DUK_HSTRING_GET_BYTELEN(h);
+	DUK_ASSERT(len >= 1);
+
+	if (data[0] == 0xffU) {
+		return DUK_SYMBOL_TYPE_HIDDEN;
+	} else if (data[0] == 0x80U) {
+		return DUK_SYMBOL_TYPE_GLOBAL;
+	} else if (data[len - 1] != 0xffU) {
+		return DUK_SYMBOL_TYPE_LOCAL;
+	} else {
+		return DUK_SYMBOL_TYPE_WELLKNOWN;
+	}
+}
+
+DUK_LOCAL const char *duk__get_symbol_type_string(duk_hstring *h) {
+	duk_small_uint_t idx;
+	idx = duk__get_symbol_type(h);
+	DUK_ASSERT(idx < sizeof(duk__symbol_type_strings));
+	return duk__symbol_type_strings[idx];
+}
 
 DUK_LOCAL_DECL duk_heaphdr *duk__get_tagged_heaphdr_raw(duk_hthread *thr, duk_idx_t idx, duk_uint_t tag);
 
@@ -3655,7 +3689,7 @@ DUK_EXTERNAL duk_int_t duk_get_type(duk_hthread *thr, duk_idx_t idx) {
 }
 
 #if defined(DUK_USE_VERBOSE_ERRORS) && defined(DUK_USE_PARANOID_ERRORS)
-DUK_LOCAL const char *duk__type_names[] = {
+DUK_LOCAL const char * const duk__type_names[] = {
 	"none",
 	"undefined",
 	"null",
@@ -6331,8 +6365,20 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 	} else {
 		switch (DUK_TVAL_GET_TAG(tv)) {
 		case DUK_TAG_STRING: {
-			/* XXX: symbol support (maybe in summary rework branch) */
-			duk__push_hstring_readable_unicode(thr, DUK_TVAL_GET_STRING(tv));
+			duk_hstring *h = DUK_TVAL_GET_STRING(tv);
+			if (DUK_HSTRING_HAS_SYMBOL(h)) {
+				/* XXX: string summary produces question marks
+				 * so this is not very ideal.
+				 */
+				duk_push_string(thr, "[Symbol ");
+				duk_push_string(thr, duk__get_symbol_type_string(h));
+				duk_push_string(thr, " ");
+				duk__push_hstring_readable_unicode(thr, h);
+				duk_push_string(thr, "]");
+				duk_concat(thr, 5);
+				break;
+			}
+			duk__push_hstring_readable_unicode(thr, h);
 			break;
 		}
 		case DUK_TAG_OBJECT: {

@@ -2945,6 +2945,9 @@ Planned
   using a small (256 byte, footprint impact is about 300-400 bytes)
   canonicalization lookup bitmap (GH-1616)
 
+* Add better symbol summary for e.g. error messages, "[Symbol global '?foo']"
+  instead of just "'?foo'" (GH-1643)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
