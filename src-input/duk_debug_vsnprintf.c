@@ -73,7 +73,7 @@
 #define DUK__LOOP_STACK_DEPTH  256
 
 /* must match bytecode defines now; build autogenerate? */
-DUK_LOCAL const char *duk__bc_optab[256] = {
+DUK_LOCAL const char * const duk__bc_optab[256] = {
 	"LDREG", "STREG", "JUMP", "LDCONST", "LDINT", "LDINTX", "LDTHIS", "LDUNDEF",
 	"LDNULL", "LDTRUE", "LDFALSE", "GETVAR", "BNOT", "LNOT", "UNM", "UNP",
 	"EQ_RR", "EQ_CR", "EQ_RC", "EQ_CC", "NEQ_RR", "NEQ_CR", "NEQ_RC", "NEQ_CC",
