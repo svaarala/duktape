@@ -24,10 +24,13 @@ rc=1, result='RangeError: getter error'
 rc=1, result='RangeError: invalid stack index -6'
 ==> rc=0, result='undefined'
 *** test_8 (duk_safe_call)
-rc=1, result='TypeError: undefined not callable'
+rc=1, result='TypeError: undefined not callable (property [object Object] of [object Object])'
 ==> rc=0, result='undefined'
 *** test_9 (duk_safe_call)
 ==> rc=1, result='TypeError: invalid args'
+*** test_10 (duk_safe_call)
+rc=1, result='TypeError: undefined not callable (property 'bar' of [object Object])'
+==> rc=0, result='undefined'
 final top: 0
 ===*/
 
@@ -205,6 +208,25 @@ static duk_ret_t test_9(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+static duk_ret_t test_10(duk_context *ctx, void *udata) {
+	duk_ret_t rc;
+
+	(void) udata;
+
+	/* Test error message, which now includes summary of key and target. */
+
+	duk_eval_string(ctx, "({ foo: function () { print('foo called'); } })");
+	duk_push_string(ctx, "bar");
+	duk_push_uint(ctx, 123);
+	duk_push_uint(ctx, 234);
+	rc = duk_pcall_prop(ctx, 1 /*obj_idx*/, 2 /*nargs*/);
+	printf("rc=%d, result='%s'\n", (int) rc, duk_safe_to_string(ctx, -1));
+	duk_pop(ctx);  /* res */
+	duk_pop(ctx);  /* obj */
+
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	/* dummy just to offset the object index from 0 */
 	duk_push_string(ctx, "foo");
@@ -218,6 +240,7 @@ void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_7);
 	TEST_SAFE_CALL(test_8);
 	TEST_SAFE_CALL(test_9);
+	TEST_SAFE_CALL(test_10);
 
 	duk_pop(ctx);  /* dummy */
 
