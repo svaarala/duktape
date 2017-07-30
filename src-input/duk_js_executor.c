@@ -2630,53 +2630,6 @@ DUK_LOCAL duk_bool_t duk__executor_handle_call(duk_hthread *thr, duk_idx_t idx, 
 	return rc;
 }
 
-#if defined(DUK_USE_VERBOSE_ERRORS)
-DUK_LOCAL DUK_NOINLINE void duk__executor_propcall_error(duk_hthread *thr, duk_tval *tv_targ, duk_tval *tv_base, duk_tval *tv_key) {
-	const char *str1, *str2, *str3;
-	duk_idx_t entry_top;
-
-	entry_top = duk_get_top(thr);
-
-	/* Must stabilize pointers first. */
-	duk_push_tval(thr, tv_base);
-	duk_push_tval(thr, tv_key);
-	duk_push_tval(thr, tv_targ);
-
-	DUK_GC_TORTURE(thr->heap);
-
-	/* We only push an error, replacing the call target (at idx_func)
-	 * with the error to ensure side effects come out correctly:
-	 * - Property read
-	 * - Call argument evaluation
-	 * - Callability check and error thrown.
-	 *
-	 * A hidden symbol on the error object pushed here is used by
-	 * call handling to figure out the error is to be thrown as is.
-	 */
-
-#if defined(DUK_USE_PARANOID_ERRORS)
-	str1 = duk_get_type_name(thr, -1);
-	str2 = duk_get_type_name(thr, -3);
-	str3 = duk_get_type_name(thr, -5);
-	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
-#else
-	str1 = duk_push_string_readable(thr, -1);
-	str2 = duk_push_string_readable(thr, -3);
-	str3 = duk_push_string_readable(thr, -5);
-	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
-#endif
-
-	duk_push_true(thr);
-	duk_put_prop_stridx(thr, -2, DUK_STRIDX_INT_VALUE);  /* Marker property, reuse _Value. */
-
-	/* [ <nregs> propValue <variable> error ] */
-	duk_replace(thr, entry_top - 1);
-	duk_set_top(thr, entry_top);
-
-	DUK_ASSERT(!duk_is_callable(thr, -1));  /* Critical so that call handling will throw the error. */
-}
-#endif  /* DUK_USE_VERBOSE_ERRORS */
-
 /*
  *  Ecmascript bytecode executor.
  *
@@ -4152,7 +4105,7 @@ DUK_LOCAL DUK_NOINLINE DUK_HOT void duk__js_execute_bytecode_inner(duk_hthread *
 			 * arguments to deal with potentially changed \
 			 * valstack base pointer! \
 			 */ \
-			duk__executor_propcall_error(thr, tv__targ, (barg), (carg)); \
+			duk_call_setup_propcall_error(thr, tv__targ, (barg), (carg)); \
 		} \
 		DUK__REPLACE_TOP_A_BREAK(); \
 	}

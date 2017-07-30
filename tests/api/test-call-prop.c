@@ -14,6 +14,8 @@ number 1 [object Number]
 result=undefined
 final top: 1
 ==> rc=0, result='undefined'
+*** test_4 (duk_safe_call)
+==> rc=1, result='TypeError: undefined not callable (property 'bar' of [object Object])'
 ===*/
 
 static duk_ret_t test_1(duk_context *ctx, void *udata) {
@@ -106,8 +108,27 @@ static duk_ret_t test_3(duk_context *ctx, void *udata) {
 	return 0;
 }
 
+static duk_ret_t test_4(duk_context *ctx, void *udata) {
+	(void) udata;
+
+	/* Test error message, which now includes summary of key and target. */
+
+	duk_push_string(ctx, "dummy");
+	duk_eval_string(ctx, "({ foo: function () { print('foo called'); } })");
+	duk_push_string(ctx, "bar");
+	duk_push_uint(ctx, 123);
+	duk_push_uint(ctx, 234);
+	duk_call_prop(ctx, 1 /*obj_idx*/, 2 /*nargs*/);
+	printf("result=%s\n", duk_to_string(ctx, -1));
+	duk_pop(ctx);
+
+	printf("final top: %ld\n", (long) duk_get_top(ctx));
+	return 0;
+}
+
 void test(duk_context *ctx) {
 	TEST_SAFE_CALL(test_1);
 	TEST_SAFE_CALL(test_2);
 	TEST_SAFE_CALL(test_3);
+	TEST_SAFE_CALL(test_4);
 }
