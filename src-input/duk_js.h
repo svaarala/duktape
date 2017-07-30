@@ -100,6 +100,9 @@ DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected(duk_hthread *thr, duk_id
 DUK_INTERNAL_DECL duk_int_t duk_handle_call_unprotected_nargs(duk_hthread *thr, duk_idx_t nargs, duk_small_uint_t call_flags);
 DUK_INTERNAL_DECL duk_int_t duk_handle_safe_call(duk_hthread *thr, duk_safe_call_function func, void *udata, duk_idx_t num_stack_args, duk_idx_t num_stack_res);
 DUK_INTERNAL_DECL void duk_call_construct_postprocess(duk_hthread *thr, duk_small_uint_t proxy_invariant);
+#if defined(DUK_USE_VERBOSE_ERRORS)
+DUK_INTERNAL_DECL void duk_call_setup_propcall_error(duk_hthread *thr, duk_tval *tv_targ, duk_tval *tv_base, duk_tval *tv_key);
+#endif
 
 /* bytecode execution */
 DUK_INTERNAL_DECL void duk_js_execute_bytecode(duk_hthread *exec_thr);
