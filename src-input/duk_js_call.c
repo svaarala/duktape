@@ -2806,8 +2806,8 @@ DUK_INTERNAL DUK_NOINLINE DUK_COLD void duk_call_setup_propcall_error(duk_hthrea
 
 #if defined(DUK_USE_PARANOID_ERRORS)
 	str1 = duk_get_type_name(thr, -1);
-	str2 = duk_get_type_name(thr, -3);
-	str3 = duk_get_type_name(thr, -5);
+	str2 = duk_get_type_name(thr, -2);
+	str3 = duk_get_type_name(thr, -3);
 	duk_push_error_object(thr, DUK_ERR_TYPE_ERROR | DUK_ERRCODE_FLAG_NOBLAME_FILELINE, "%s not callable (property %s of %s)", str1, str2, str3);
 #else
 	str1 = duk_push_string_readable(thr, -1);
