@@ -974,13 +974,23 @@ DUK_LOCAL void duk__format_parts_iso8601(duk_int_t *parts, duk_int_t tzoffset, d
 		/* tzoffset seconds are dropped; 16 bits suffice for
 		 * time offset in minutes
 		 */
+		const char *fmt;
+		duk_small_int_t tmp, arg_hours, arg_minutes;
+
 		if (tzoffset >= 0) {
-			duk_small_int_t tmp = tzoffset / 60;
-			DUK_SNPRINTF(tzstr, sizeof(tzstr), "+%02d:%02d", (int) (tmp / 60), (int) (tmp % 60));
+			tmp = tzoffset;
+			fmt = "+%02d:%02d";
 		} else {
-			duk_small_int_t tmp = -tzoffset / 60;
-			DUK_SNPRINTF(tzstr, sizeof(tzstr), "-%02d:%02d", (int) (tmp / 60), (int) (tmp % 60));
+			tmp = -tzoffset;
+			fmt = "-%02d:%02d";
 		}
+		tmp = tmp / 60;
+		arg_hours = tmp / 60;
+		arg_minutes = tmp % 60;
+		DUK_ASSERT(arg_hours <= 24);  /* Even less is actually guaranteed for a valid tzoffset. */
+		arg_hours = arg_hours & 0x3fU;  /* For [0,24] this is a no-op, but fixes GCC 7 warning, see https://github.com/svaarala/duktape/issues/1602. */
+
+		DUK_SNPRINTF(tzstr, sizeof(tzstr), fmt, (int) arg_hours, (int) arg_minutes);
 		tzstr[sizeof(tzstr) - 1] = (char) 0;
 	} else {
 		tzstr[0] = DUK_ASC_UC_Z;
