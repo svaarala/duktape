@@ -60,7 +60,7 @@ const char *duk_push_string_file_raw(duk_context *ctx, const char *path, duk_uin
 	if (flags & DUK_STRING_PUSH_SAFE) {
 		duk_push_undefined(ctx);
 	} else {
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "read file error");
+		(void) duk_type_error(ctx, "read file error");
 	}
 	return NULL;
 }

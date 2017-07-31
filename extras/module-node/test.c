@@ -41,7 +41,7 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
 	} else if (strcmp(module_id, "shebang.js") == 0) {
 		duk_push_string(ctx, "#!ignored\nexports.foo = 123; exports.bar = 234;");
 	} else {
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot find module: %s", module_id);
+		(void) duk_type_error(ctx, "cannot find module: %s", module_id);
 	}
 
 	return 1;
@@ -56,7 +56,7 @@ static duk_ret_t handle_assert(duk_context *ctx) {
 	if (duk_to_boolean(ctx, 0)) {
 		return 0;
 	}
-	duk_error(ctx, DUK_ERR_ERROR, "assertion failed: %s", duk_safe_to_string(ctx, 1));
+	(void) duk_generic_error(ctx, "assertion failed: %s", duk_safe_to_string(ctx, 1));
 	return 0;
 }
 

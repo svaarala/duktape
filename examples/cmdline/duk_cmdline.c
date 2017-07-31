@@ -277,12 +277,12 @@ static duk_ret_t wrapped_compile_execute(duk_context *ctx, void *udata) {
 
 		f = fopen(fnbuf, "wb");
 		if (!f) {
-			duk_error(ctx, DUK_ERR_ERROR, "failed to open bytecode output file");
+			(void) duk_generic_error(ctx, "failed to open bytecode output file");
 		}
 		wrote = fwrite(bc_ptr, 1, (size_t) bc_len, f);  /* XXX: handle partial writes */
 		(void) fclose(f);
 		if (wrote != bc_len) {
-			duk_error(ctx, DUK_ERR_ERROR, "failed to write all bytecode");
+			(void) duk_generic_error(ctx, "failed to write all bytecode");
 		}
 
 		return 0;  /* duk_safe_call() cleans up */
@@ -889,22 +889,22 @@ static duk_ret_t fileio_read_file(duk_context *ctx) {
 	fn = duk_require_string(ctx, 0);
 	f = fopen(fn, "rb");
 	if (!f) {
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot open file %s for reading, errno %ld: %s",
-		          fn, (long) errno, strerror(errno));
+		(void) duk_type_error(ctx, "cannot open file %s for reading, errno %ld: %s",
+		                      fn, (long) errno, strerror(errno));
 	}
 
 	rc = fseek(f, 0, SEEK_END);
 	if (rc < 0) {
 		(void) fclose(f);
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "fseek() failed for %s, errno %ld: %s",
-		          fn, (long) errno, strerror(errno));
+		(void) duk_type_error(ctx, "fseek() failed for %s, errno %ld: %s",
+		                      fn, (long) errno, strerror(errno));
 	}
 	len = (size_t) ftell(f);
 	rc = fseek(f, 0, SEEK_SET);
 	if (rc < 0) {
 		(void) fclose(f);
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "fseek() failed for %s, errno %ld: %s",
-		          fn, (long) errno, strerror(errno));
+		(void) duk_type_error(ctx, "fseek() failed for %s, errno %ld: %s",
+		                      fn, (long) errno, strerror(errno));
 	}
 
 	buf = (char *) duk_push_fixed_buffer(ctx, (duk_size_t) len);
@@ -913,14 +913,14 @@ static duk_ret_t fileio_read_file(duk_context *ctx) {
 		got = fread((void *) (buf + off), 1, len - off, f);
 		if (ferror(f)) {
 			(void) fclose(f);
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "error while reading %s", fn);
+			(void) duk_type_error(ctx, "error while reading %s", fn);
 		}
 		if (got == 0) {
 			if (feof(f)) {
 				break;
 			} else {
 				(void) fclose(f);
-				duk_error(ctx, DUK_ERR_TYPE_ERROR, "error while reading %s", fn);
+				(void) duk_type_error(ctx, "error while reading %s", fn);
 			}
 		}
 		off += got;
@@ -943,7 +943,7 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
 	fn = duk_require_string(ctx, 0);
 	f = fopen(fn, "wb");
 	if (!f) {
-		duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot open file %s for writing, errno %ld: %s",
+		(void) duk_type_error(ctx, "cannot open file %s for writing, errno %ld: %s",
 		          fn, (long) errno, strerror(errno));
 	}
 
@@ -954,11 +954,11 @@ static duk_ret_t fileio_write_file(duk_context *ctx) {
 		got = fwrite((const void *) (buf + off), 1, len - off, f);
 		if (ferror(f)) {
 			(void) fclose(f);
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "error while writing %s", fn);
+			(void) duk_type_error(ctx, "error while writing %s", fn);
 		}
 		if (got == 0) {
 			(void) fclose(f);
-			duk_error(ctx, DUK_ERR_TYPE_ERROR, "error while writing %s", fn);
+			(void) duk_type_error(ctx, "error while writing %s", fn);
 		}
 		off += got;
 	}

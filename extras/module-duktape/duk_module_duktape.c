@@ -180,7 +180,7 @@ static void duk__resolve_module_id(duk_context *ctx, const char *req_id, const c
 	return;
 
  resolve_error:
-	duk_error(ctx, DUK_ERR_TYPE_ERROR, "cannot resolve module id: %s", (const char *) req_id);
+	(void) duk_type_error(ctx, "cannot resolve module id: %s", (const char *) req_id);
 }
 
 /* Stack indices for better readability. */
@@ -432,7 +432,7 @@ static duk_ret_t duk__require(duk_context *ctx) {
  delete_rethrow:
 	duk_dup(ctx, DUK__IDX_RESOLVED_ID);
 	duk_del_prop(ctx, DUK__IDX_MODLOADED);  /* delete Duktape.modLoaded[resolved_id] */
-	duk_throw(ctx);  /* rethrow original error */
+	(void) duk_throw(ctx);  /* rethrow original error */
 	return 0;  /* not reachable */
 }
 

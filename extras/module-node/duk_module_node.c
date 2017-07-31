@@ -133,7 +133,7 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
 		duk_pop(ctx);
 	} else {
 		duk__del_cached_module(ctx, id);
-		(void) duk_error(ctx, DUK_ERR_TYPE_ERROR, "invalid module load callback return value");
+		(void) duk_type_error(ctx, "invalid module load callback return value");
 	}
 
 	/* fall through */
