@@ -12,7 +12,7 @@ static duk_ret_t handle_assert(duk_context *ctx) {
 	if (duk_to_boolean(ctx, 0)) {
 		return 0;
 	}
-	duk_error(ctx, DUK_ERR_ERROR, "assertion failed: %s", duk_safe_to_string(ctx, 1));
+	(void) duk_generic_error(ctx, "assertion failed: %s", duk_safe_to_string(ctx, 1));
 	return 0;
 }
 
