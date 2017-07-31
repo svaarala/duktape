@@ -2994,6 +2994,11 @@ Planned
 * Fix duk_debug.js --source-dirs scanning for file dropdown; the dropdown was
   empty (GH-1580)
 
+* Fix some compile warnings for duk_error() and duk_throw() in duk_cmdline.c,
+  module-duktape, module-node, and duk-v1-compat extras (GH-1646)
+
+* Fix harmless GCC 7 -Wextra warning in Date built-in (GH-1646)
+
 * Improve support for old MSVC versions without __pragma(), long long, and
   LL/ULL constants (GH-1559, GH-1562)
 
