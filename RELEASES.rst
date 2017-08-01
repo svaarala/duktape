@@ -2693,7 +2693,7 @@ Miscellaneous:
 * Fix out-of-memory handling for object property table resize, previously
   an out-of-memory during property table resize could leave internal state
   in a state which prevented mark-and-sweep from fully working afterwards
-  (GH-1426, GH-1427)
+  (GH-1426, GH-1427, GH-1650)
 
 * Fix a garbage collection bug where a finalizer triggered by mark-and-sweep
   could cause a recursive entry into mark-and-sweep (leading to memory unsafe

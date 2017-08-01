@@ -637,6 +637,7 @@ DUK_INTERNAL void duk_hobject_realloc_props(duk_hthread *thr,
 		 */
 #if 0  /* XXX: inject test */
 		if (1) {
+			new_p = NULL;
 			goto alloc_failed;
 		}
 #endif
