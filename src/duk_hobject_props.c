@@ -609,6 +609,8 @@ void duk__realloc_props(duk_hthread *thr,
 
 	new_alloc_size = DUK_HOBJECT_P_COMPUTE_SIZE(new_e_size_adjusted, new_a_size, new_h_size);
 	DUK_DDD(DUK_DDDPRINT("new hobject allocation size is %ld", (long) new_alloc_size));
+	new_e_next = 0;
+	new_e_k = NULL;
 	if (new_alloc_size == 0) {
 		/* for zero size, don't push anything on valstack */
 		DUK_ASSERT(new_e_size_adjusted == 0);
@@ -622,12 +624,18 @@ void duk__realloc_props(duk_hthread *thr,
 		 * the object we're resizing etc.
 		 */
 
-		/* Note: buffer is dynamic so that we can 'steal' the actual
-		 * allocation later.
-		 */
-
-		new_p = (duk_uint8_t *) duk_push_dynamic_buffer(ctx, new_alloc_size);  /* errors out if out of memory */
-		DUK_ASSERT(new_p != NULL);  /* since new_alloc_size > 0 */
+#if 0  /* XXX: inject test */
+		if (1) {
+			goto alloc_failed;
+		}
+#endif
+		new_p = (duk_uint8_t *) DUK_ALLOC(thr->heap, new_alloc_size);
+		if (new_p == NULL) {
+			/* NULL always indicates alloc failure because
+			 * new_alloc_size > 0.
+			 */
+			goto alloc_failed;
+		}
 	}
 
 	/* Set up pointers to the new property area: this is hidden behind a macro
@@ -636,7 +644,6 @@ void duk__realloc_props(duk_hthread *thr,
 	DUK_HOBJECT_P_SET_REALLOC_PTRS(new_p, new_e_k, new_e_pv, new_e_f, new_a, new_h,
 	                               new_e_size_adjusted, new_a_size, new_h_size);
 	DUK_UNREF(new_h);  /* happens when hash part dropped */
-	new_e_next = 0;
 
 	/* if new_p == NULL, all of these pointers are NULL */
 	DUK_ASSERT((new_p != NULL) ||
@@ -878,22 +885,6 @@ void duk__realloc_props(duk_hthread *thr,
 	DUK_HOBJECT_SET_ASIZE(obj, new_a_size);
 	DUK_HOBJECT_SET_HSIZE(obj, new_h_size);
 
-	if (new_p) {
-		/*
-		 *  Detach actual buffer from dynamic buffer in valstack, and
-		 *  pop it from the stack.
-		 *
-		 *  XXX: the buffer object is certainly not reachable at this point,
-		 *  so it would be nice to free it forcibly even with only
-		 *  mark-and-sweep enabled.  Not a big issue though.
-		 */
-		(void) duk_steal_buffer(ctx, -1, NULL);
-		duk_pop(ctx);
-	} else {
-		DUK_ASSERT(new_alloc_size == 0);
-		/* no need to pop, nothing was pushed */
-	}
-
 	/* clear array part flag only after switching */
 	if (abandon_array) {
 		DUK_HOBJECT_CLEAR_ARRAY_PART(obj);
@@ -920,7 +911,9 @@ void duk__realloc_props(duk_hthread *thr,
 	 */
 
  abandon_error:
-	DUK_D(DUK_DPRINT("hobject resize failed during abandon array, decref keys"));
+ alloc_failed:
+	DUK_D(DUK_DPRINT("object property table resize failed"));
+
 	i = new_e_next;
 	while (i > 0) {
 		i--;
@@ -928,6 +921,8 @@ void duk__realloc_props(duk_hthread *thr,
 		DUK_ASSERT(new_e_k[i] != NULL);
 		DUK_HSTRING_DECREF(thr, new_e_k[i]);  /* side effects */
 	}
+
+	DUK_FREE(thr->heap, new_p);  /* OK for NULL. */
 
 #ifdef DUK_USE_MARK_AND_SWEEP
 	thr->heap->mark_and_sweep_base_flags = prev_mark_and_sweep_base_flags;
