@@ -1759,6 +1759,39 @@ Released
 * Fix module-duktape and module-node handling of a module source which has
   a // comment on the last line without a trailing newline (GH-1394, GH-1395)
 
+1.8.0 (2017-08-02)
+------------------
+
+* Mix in current time to PRNG init in Duktape 1.x too; prior to this change
+  only the allocated duk_heap pointer was used for PRNG init, leading to the
+  same sequence being used on some platforms (GH-1446)
+
+* Fix out-of-memory handling for object property table resize, previously
+  an out-of-memory during property table resize could leave internal state
+  in a state which prevented mark-and-sweep from fully working afterwards
+  (GH-1426, GH-1427)
+
+* Fix RegExp group parsing to reject invalid groups like /(?Xabc)/, previously
+  they were accepted silently (GH-1463)
+
+* Fix potentially stale duk_tval pointer in Proxy deleteProperty handling
+  (GH-1482)
+
+* Fix missing duk_require_stack() in bound function call handling which caused
+  calls to bound functions with a lot of bound arguments to fail with a value
+  stack limit error (GH-1504)
+
+* Fix duk_hbufobj assert in shared slice() handling (GH-1506)
+
+* Fix duk_check_stack_top() and duk_require_stack_top() internal value stack
+  reserve calculation which failed to take into account call stack entries
+  below the current call, leading potentially to a smaller reserve than
+  requested (GH-1536)
+
+* Fix duk_pcall_prop(), duk_safe_call(), and duk_pnew() argument validation,
+  in some cases a negative nargs/nrets argument (which is always invalid)
+  could be accepted (GH-1553)
+
 2.0.0 (2017-01-02)
 ------------------
 
@@ -2860,13 +2893,6 @@ Miscellaneous:
 
 Planned
 =======
-
-1.8.0 (XXXX-XX-XX)
-------------------
-
-* Mix in current time to PRNG init in Duktape 1.x too; prior to this change
-  only the allocated duk_heap pointer was used for PRNG init, leading to the
-  same sequence being used on some platforms (GH-1446)
 
 2.0.3 (XXXX-XX-XX)
 ------------------
