@@ -2974,6 +2974,10 @@ Planned
 * Add better symbol summary for e.g. error messages, "[Symbol global '?foo']"
   instead of just "'?foo'" (GH-1643)
 
+* Make fatal error message formatting buffer longer for uncaught errors
+  (64 -> 128 bytes) and make it configurable via DUK_USE_FATAL_MAXLEN
+  (GH-1652)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
