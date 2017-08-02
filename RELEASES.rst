@@ -2978,6 +2978,9 @@ Planned
   (64 -> 128 bytes) and make it configurable via DUK_USE_FATAL_MAXLEN
   (GH-1652)
 
+* Make error message summary strings longer (32 -> 96 character) to better
+  capture error messages for e.g. uncaught errors (GH-1653)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
