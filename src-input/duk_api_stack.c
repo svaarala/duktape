@@ -6299,16 +6299,19 @@ DUK_INTERNAL void duk_push_string_funcptr(duk_hthread *thr, duk_uint8_t *ptr, du
  *  and is not intended to be fast (but small and safe).
  */
 
-#define DUK__READABLE_STRING_MAXCHARS 32
+/* String limits for summary strings. */
+#define DUK__READABLE_SUMMARY_MAXCHARS 96  /* maximum supported by helper */
+#define DUK__READABLE_STRING_MAXCHARS  32  /* for strings/symbols */
+#define DUK__READABLE_ERRMSG_MAXCHARS  96  /* for error messages */
 
 /* String sanitizer which escapes ASCII control characters and a few other
  * ASCII characters, passes Unicode as is, and replaces invalid UTF-8 with
  * question marks.  No errors are thrown for any input string, except in out
  * of memory situations.
  */
-DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring *h_input) {
+DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring *h_input, duk_small_uint_t maxchars) {
 	const duk_uint8_t *p, *p_start, *p_end;
-	duk_uint8_t buf[DUK_UNICODE_MAX_XUTF8_LENGTH * DUK__READABLE_STRING_MAXCHARS +
+	duk_uint8_t buf[DUK_UNICODE_MAX_XUTF8_LENGTH * DUK__READABLE_SUMMARY_MAXCHARS +
 	                2 /*quotes*/ + 3 /*periods*/];
 	duk_uint8_t *q;
 	duk_ucodepoint_t cp;
@@ -6316,6 +6319,7 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring 
 
 	DUK_ASSERT_CTX_VALID(thr);
 	DUK_ASSERT(h_input != NULL);
+	DUK_ASSERT(maxchars <= DUK__READABLE_SUMMARY_MAXCHARS);
 
 	p_start = (const duk_uint8_t *) DUK_HSTRING_GET_DATA(h_input);
 	p_end = p_start + DUK_HSTRING_GET_BYTELEN(h_input);
@@ -6328,7 +6332,7 @@ DUK_LOCAL void duk__push_hstring_readable_unicode(duk_hthread *thr, duk_hstring 
 		if (p >= p_end) {
 			break;
 		}
-		if (nchars == DUK__READABLE_STRING_MAXCHARS) {
+		if (nchars == maxchars) {
 			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
 			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
 			*q++ = (duk_uint8_t) DUK_ASC_PERIOD;
@@ -6373,12 +6377,12 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 				duk_push_string(thr, "[Symbol ");
 				duk_push_string(thr, duk__get_symbol_type_string(h));
 				duk_push_string(thr, " ");
-				duk__push_hstring_readable_unicode(thr, h);
+				duk__push_hstring_readable_unicode(thr, h, DUK__READABLE_STRING_MAXCHARS);
 				duk_push_string(thr, "]");
 				duk_concat(thr, 5);
 				break;
 			}
-			duk__push_hstring_readable_unicode(thr, h);
+			duk__push_hstring_readable_unicode(thr, h, DUK__READABLE_STRING_MAXCHARS);
 			break;
 		}
 		case DUK_TAG_OBJECT: {
@@ -6396,13 +6400,12 @@ DUK_LOCAL const char *duk__push_string_tval_readable(duk_hthread *thr, duk_tval 
 				 */
 				duk_tval *tv_msg;
 				tv_msg = duk_hobject_find_existing_entry_tval_ptr(thr->heap, h, DUK_HTHREAD_STRING_MESSAGE(thr));
-				if (tv_msg) {
-					/* It's important this summarization is
-					 * not error aware to avoid unlimited
-					 * recursion when the .message property
-					 * is e.g. another error.
+				if (tv_msg != NULL && DUK_TVAL_IS_STRING(tv_msg)) {
+					/* It's critical to avoid recursion so
+					 * only summarize a string .message.
 					 */
-					return duk_push_string_tval_readable(thr, tv_msg);
+					duk__push_hstring_readable_unicode(thr, DUK_TVAL_GET_STRING(tv_msg), DUK__READABLE_ERRMSG_MAXCHARS);
+					break;
 				}
 			}
 			duk_push_class_string_tval(thr, tv);
