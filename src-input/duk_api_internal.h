@@ -337,4 +337,7 @@ DUK_INTERNAL_DECL duk_int_t duk_pcall_method_flags(duk_hthread *thr, duk_idx_t n
 	(DUK_ASSERT_EXPR((thr)->valstack_bottom > (thr)->valstack), \
 	 (thr)->valstack_bottom - 1)
 
+DUK_INTERNAL_DECL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr);
+DUK_INTERNAL_DECL duk_double_t duk_time_get_monotonic_time(duk_hthread *thr);
+
 #endif  /* DUK_API_INTERNAL_H_INCLUDED */

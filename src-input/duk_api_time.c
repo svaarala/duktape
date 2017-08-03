@@ -4,11 +4,31 @@
 
 #include "duk_internal.h"
 
+DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr) {
+	return (duk_double_t) DUK_USE_DATE_GET_NOW(thr);
+}
+
+DUK_INTERNAL duk_double_t duk_time_get_monotonic_time(duk_hthread *thr) {
+#if defined(DUK_USE_GET_MONOTONIC_TIME)
+	return (duk_double_t) DUK_USE_GET_MONOTONIC_TIME(thr);
+#else
+	return (duk_double_t) DUK_USE_DATE_GET_NOW(thr);
+#endif
+}
+
 DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 
-	return ((duk_double_t) DUK_USE_DATE_GET_NOW(thr));
+	return duk_time_get_ecmascript_time(thr);
 }
+
+#if 0  /* XXX: worth exposing? */
+DUK_EXTERNAL duk_double_t duk_get_monotonic_time(duk_hthread *thr) {
+	DUK_ASSERT_API_ENTRY(thr);
+
+	return duk_time_get_monotonic_time(thr);
+}
+#endif
 
 DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval, duk_time_components *comp) {
 	duk_int_t parts[DUK_DATE_IDX_NUM_PARTS];
