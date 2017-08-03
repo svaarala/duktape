@@ -1800,12 +1800,14 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		duk_double_t now, diff_last;
 
 		thr->heap->dbg_last_counter = thr->heap->dbg_exec_counter;
-		now = duk_time_get_ecmascript_time(thr);
+		now = duk_time_get_monotonic_time(thr);
 
 		diff_last = now - thr->heap->dbg_last_time;
 		if (diff_last < 0.0 || diff_last >= (duk_double_t) DUK_HEAP_DBG_RATELIMIT_MILLISECS) {
-			/* Negative value checked so that a "time jump" works
-			 * reasonably.
+			/* Monotonic time should not experience time jumps,
+			 * but the provider may be missing and we're actually
+			 * using Ecmascript time.  So, tolerate negative values
+			 * so that a time jump works reasonably.
 			 *
 			 * Same interval is now used for status sending and
 			 * peeking.
