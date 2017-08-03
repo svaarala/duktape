@@ -1800,7 +1800,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		duk_double_t now, diff_last;
 
 		thr->heap->dbg_last_counter = thr->heap->dbg_exec_counter;
-		now = DUK_USE_DATE_GET_NOW(thr);
+		now = duk_time_get_ecmascript_time(thr);
 
 		diff_last = now - thr->heap->dbg_last_time;
 		if (diff_last < 0.0 || diff_last >= (duk_double_t) DUK_HEAP_DBG_RATELIMIT_MILLISECS) {
