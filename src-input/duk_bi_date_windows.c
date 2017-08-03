@@ -51,8 +51,10 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_hthread *thr) {
 	duk__set_systime_jan1970(&st2);
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
-	/* Difference is in 100ns units, convert to milliseconds w/o fractions */
-	return (duk_double_t) (((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / DUK_I64_CONSTANT(10000));
+	/* Difference is in 100ns units, convert to milliseconds, keeping
+	 * fractions since Duktape 2.2.0.
+	 */
+	return (duk_double_t) ((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_WINDOWS */
 

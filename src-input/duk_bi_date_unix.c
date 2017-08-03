@@ -24,9 +24,9 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_hthread *thr) {
 		DUK_ERROR_INTERNAL(thr);
 	}
 
+	/* As of Duktape 2.2.0 allow fractions. */
 	d = ((duk_double_t) tv.tv_sec) * 1000.0 +
-	    ((duk_double_t) (tv.tv_usec / 1000));
-	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions */
+	    ((duk_double_t) tv.tv_usec) / 1000.0;
 
 	return d;
 }
