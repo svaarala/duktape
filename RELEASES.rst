@@ -2983,6 +2983,16 @@ Planned
 * Make error message summary strings longer (32 -> 96 character) to better
   capture error messages for e.g. uncaught errors (GH-1653)
 
+* Add DUK_USE_GET_MONOTONIC_TIME() to allow an application to provide a
+  monotonic time source (similar to clock_gettime() CLOCK_MONOTONIC) which
+  Duktape will then use for performance.now() and internal rate limiting
+  mechanisms; if absent (default), monotonic time defaults to
+  DUK_USE_DATE_GET_NOW() (GH-1659)
+
+* Use monotonic time (if available) for debugger transport peeking, so that
+  the peek callback is called with the same realtime rate even if the
+  Ecmascript time source jumps or doesn't advance in realtime (GH-1659)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
