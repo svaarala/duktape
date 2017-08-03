@@ -14,7 +14,7 @@ objects, methods, and values.</p>
 </thead>
 <tbody>
 <tr>
-<td class="propname">global</td>
+<td class="propname"><a href="#builtin-global">global</a></td>
 <td>References the global object itself.
     See <a href="https://github.com/tc39/proposal-global">proposal-global</a>.</td>
 </tr>
@@ -32,8 +32,27 @@ objects, methods, and values.</p>
 <td>TextDecoder() from <a href="https://encoding.spec.whatwg.org/">WHATWG Encoding API</a>.
     Converts a buffer into a string using UTF-8 encoding.</td>
 </tr>
+<tr>
+<td class="propname"><a href="#builtin-performance">performance</a></td>
+<td>performance.now() from <a href="https://www.w3.org/TR/hr-time/#dom-performance-now">High Resolution Time Level 2</a>.
+    Bindings like performance.timing from
+    <a href="https://www.w3.org/TR/navigation-timing/#sec-window.performance-attribute">Navigation Timing</a>
+    are not supported.</td>
+</tr>
 </tbody>
 </table>
+
+<h2 id="builtin-global">global</h2>
+
+<p>References the global object itself, see
+<a href="https://github.com/tc39/proposal-global">proposal-global</a>.
+Disabled by default, enable using <code>DUK_USE_GLOBAL_BINDING</code>.</p>
+
+<div class="note">
+This binding might be removed as there is some concern whether the
+binding has too many backward compatibility issues for browsers, see
+<a href="https://github.com/tc39/proposal-global/issues/20">global breaks flickr.com</a>.
+</div>
 
 <h2 id="builtin-duktape">The Duktape object</h2>
 
@@ -430,3 +449,31 @@ print(str.length);                       // length is 2, represented as a surrog
 print(str.charCodeAt(0));                // 55357, high surrogate
 print(str.charCodeAt(1));                // 56489, low surrogate
 </pre>
+
+<h2 id="builtin-performance">performance</h2>
+
+<p>performance.now() provides a monotonic time in milliseconds (including
+fractions if available) from an unspecified origin.  The return value is
+from DUK_USE_GET_MONOTONIC_TIME() with a fallback to DUK_USE_DATE_GET_NOW().
+If an actual monotonic time provider is available, the return value is
+guaranteed to advance in real time without "time jumps" caused by date/time
+adjustments.  This is useful for performance measurement, scheduling events
+relative to current time instead of wall clock time, rate limiting, etc.
+Example:</p>
+
+<pre class="ecmascript-code">
+function testFunction() {
+    for (var i = 0; i &lt; 1e6; i++) {}
+}
+
+var t1 = performance.now();
+testFunction();
+var t2 = performance.now();
+print('test took:', (t2 - t1), 'milliseconds');
+</pre>
+
+<p>performance.timeOrigin is currently (Duktape 2.2.0) absent on purpose,
+until its semantics for Duktape are decided.</p>
+
+<p><a href="https://www.w3.org/TR/navigation-timing/#sec-window.performance-attribute">Navigation Timing</a>
+bindings like performance.timing are not currently supported.</p>
