@@ -423,6 +423,7 @@ def main():
         'duk_bi_math.c',
         'duk_bi_number.c',
         'duk_bi_object.c',
+        'duk_bi_performance.c',
         'duk_bi_pointer.c',
         'duk_bi_protos.h',
         'duk_bi_reflect.c',
