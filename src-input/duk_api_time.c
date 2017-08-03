@@ -9,7 +9,11 @@ DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr) {
 }
 
 DUK_INTERNAL duk_double_t duk_time_get_monotonic_time(duk_hthread *thr) {
+#if defined(DUK_USE_GET_MONOTONIC_TIME)
+	return (duk_double_t) DUK_USE_GET_MONOTONIC_TIME(thr);
+#else
 	return (duk_double_t) DUK_USE_DATE_GET_NOW(thr);
+#endif
 }
 
 DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
