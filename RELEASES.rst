@@ -2719,6 +2719,8 @@ Miscellaneous:
   allowed typos like "-DFOO bar" to be accepted silently (here as "-DFOO" and
   an ignored pain "bar" argument) (GH-1425)
 
+* Add more self tests: fmod()+floor()+div splitting (GH-1657)
+
 * Fix unintuitive refcount triggered finalizer behavior where a finalizer loop
   would happen if the finalizer created a (garbage) object referencing the
   object being finalized (GH-1396, GH-1427)
