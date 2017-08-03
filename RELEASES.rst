@@ -2993,6 +2993,19 @@ Planned
   the peek callback is called with the same realtime rate even if the
   Ecmascript time source jumps or doesn't advance in realtime (GH-1659)
 
+* Allow sub-millisecond resolution for DUK_USE_DATE_GET_NOW() Date provider;
+  the extra resolution is visible through duk_get_now() but not through Date
+  instances because Ecmascript requires Date instances to have integer
+  millisecond timestamps (GH-773, GH-1660)
+
+* Add sub-millisecond resolution to the default POSIX and Windows Date
+  providers (DUK_USE_DATE_GET_NOW) (GH-1660)
+
+* Add an initial version of the High Resolution Time API, providing
+  performance.now() (which backs to DUK_USE_GET_MONOTONIC_TIME() if
+  available); performance.timeOrigin is intentionally absent for now,
+  until semantics are decided for Duktape (GH-1660)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
