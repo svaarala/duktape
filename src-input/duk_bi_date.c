@@ -1439,7 +1439,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor(duk_hthread *thr) {
 	 */
 
 	if (nargs == 0 || !is_cons) {
-		d = duk__timeclip(duk_time_get_ecmascript_time(thr));
+		d = duk__timeclip(duk_time_get_ecmascript_time_nofrac(thr));
 		duk_push_number(thr, d);
 		duk_xdef_prop_stridx_short(thr, -2, DUK_STRIDX_INT_VALUE, DUK_PROPDESC_FLAGS_W);
 		if (!is_cons) {
@@ -1496,7 +1496,7 @@ DUK_INTERNAL duk_ret_t duk_bi_date_constructor_utc(duk_hthread *thr) {
 DUK_INTERNAL duk_ret_t duk_bi_date_constructor_now(duk_hthread *thr) {
 	duk_double_t d;
 
-	d = duk_time_get_ecmascript_time(thr);
+	d = duk_time_get_ecmascript_time_nofrac(thr);
 	DUK_ASSERT(duk__timeclip(d) == d);  /* TimeClip() should never be necessary */
 	duk_push_number(thr, d);
 	return 1;
