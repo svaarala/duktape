@@ -131,6 +131,7 @@ build_script:
 test_script:
   - cmd: echo --- VS2015
   - cmd: duk-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
+  - cmd: duk-vs2015-%PLATFORM%.exe -e "print(Date.now(), performance.now(), performance.now());"
   - cmd: duk-dll-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
   - cmd: duk-cxx-vs2015-%PLATFORM%.exe -e "print(Duktape.env); print('Hello world!');"
 
