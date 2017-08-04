@@ -16,6 +16,8 @@
 #define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_time((ctx))
 #elif defined(DUK_USE_DATE_NOW_WINDOWS)
 #define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows((ctx))
+#elif defined(DUK_USE_DATE_NOW_WINDOWS_SUBMS)
+#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows_subms((ctx))
 #else
 #error no provider for DUK_USE_DATE_GET_NOW()
 #endif
