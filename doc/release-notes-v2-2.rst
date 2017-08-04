@@ -65,6 +65,13 @@ from Duktape v2.1.x.  Note the following:
   properties; the bound argument values are not visible in the debugger
   protocol for now.
 
+* DUK_USE_DATE_GET_NOW() is now allowed to return fractions.  The fractions
+  won't be available through the Date built-in (this is forbidden by the
+  Ecmascript specification) but are available through the duk_get_now() C
+  API call.  The default POSIX and Windows Date providers now return fractions,
+  so duk_get_now() call sites may now get fractional millisecond timestamps
+  even in default configuration.
+
 Other minor differences:
 
 * When an Error instance is being constructed and Duktape.errCreate() is

@@ -5,7 +5,17 @@
 #include "duk_internal.h"
 
 DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time(duk_hthread *thr) {
+	/* Ecmascript time, with millisecond fractions.  Exposed via
+	 * duk_get_now() for example.
+	 */
 	return (duk_double_t) DUK_USE_DATE_GET_NOW(thr);
+}
+
+DUK_INTERNAL duk_double_t duk_time_get_ecmascript_time_nofrac(duk_hthread *thr) {
+	/* Ecmascript time without millisecond fractions.  Exposed via
+	 * the Date built-in which doesn't allow fractions.
+	 */
+	return (duk_double_t) DUK_FLOOR(DUK_USE_DATE_GET_NOW(thr));
 }
 
 DUK_INTERNAL duk_double_t duk_time_get_monotonic_time(duk_hthread *thr) {
@@ -19,6 +29,7 @@ DUK_INTERNAL duk_double_t duk_time_get_monotonic_time(duk_hthread *thr) {
 DUK_EXTERNAL duk_double_t duk_get_now(duk_hthread *thr) {
 	DUK_ASSERT_API_ENTRY(thr);
 
+	/* This API intentionally allows millisecond fractions. */
 	return duk_time_get_ecmascript_time(thr);
 }
 

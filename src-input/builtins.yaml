@@ -399,20 +399,6 @@ objects:
         es6: true
         present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
-      # Encoding API
-      - key: "TextEncoder"
-        value:
-          type: object
-          id: bi_textencoder_constructor
-        encoding_api: true
-        present_if: DUK_USE_ENCODING_BUILTINS
-      - key: "TextDecoder"
-        value:
-          type: object
-          id: bi_textdecoder_constructor
-        encoding_api: true
-        present_if: DUK_USE_ENCODING_BUILTINS
-
       # Functions
       - key: "eval"
         value:
@@ -495,6 +481,32 @@ objects:
         present_if:
           - DUK_USE_SECTION_B
           - DUK_USE_GLOBAL_BUILTIN
+
+      # Encoding API: https://encoding.spec.whatwg.org/
+      - key: "TextEncoder"
+        value:
+          type: object
+          id: bi_textencoder_constructor
+        encoding_api: true
+        present_if: DUK_USE_ENCODING_BUILTINS
+      - key: "TextDecoder"
+        value:
+          type: object
+          id: bi_textdecoder_constructor
+        encoding_api: true
+        present_if: DUK_USE_ENCODING_BUILTINS
+
+      # High resolution time API: https://www.w3.org/TR/hr-time/
+      # Firefox and Chrome: accessor with 'ec' attributes, setter
+      # allows overwrite.
+      # Use data property with 'wec' for now.
+      - key: "performance"
+        value:
+          type: object
+          id: bi_performance
+        attributes: "wec"
+        performance_api: true
+        present_if: DUK_USE_PERFORMANCE_BUILTIN
 
   - id: bi_global_env
     class: ObjEnv
@@ -5226,3 +5238,35 @@ objects:
           nargs: 2
         attributes: "wec"
         encoding_api: true
+
+  - id: bi_performance
+    internal_prototype: bi_object_prototype
+    class: Object
+    bidx: true
+    performance_api: true
+    present_if: DUK_USE_PERFORMANCE_BUILTIN
+
+    properties:
+      # Firefox and Chrome: data property with 'wec' attributes,
+      # inherited from PerformancePrototype.  Use own data property
+      # for now.
+      # XXX: we'd like to use 'wec' but current built-in init data doesn't
+      # support it; use 'wc' for consistency so ROM built-ins have the same
+      # behavior.
+      - key: "now"
+        value:
+          type: function
+          native: duk_bi_performance_now
+          length: 0
+          nargs: 0
+        attributes: "wc"
+        performance_api: true
+      # Missing until semantics decided.
+      #- key: "timeOrigin"
+      #  value:
+      #    type: accessor
+      #    getter: duk_bi_performance_timeorigin_getter
+      #    getter_nargs: 0
+      #    getter_magic: 0
+      #  attributes: "ec"  # check
+      #  performance_api: true

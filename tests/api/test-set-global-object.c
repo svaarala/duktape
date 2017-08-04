@@ -90,12 +90,15 @@ final top ctx2: 0
 ==> rc=0, result='undefined'
 *** test_set_after_thread_create (duk_safe_call)
 global object keys for ctx1 before change
+key: performance
 global object keys for ctx2 before change
+key: performance
 replace global object for ctx1
 global object keys for ctx1 after change
 key: newScope
 key: print
 global object keys for ctx2 after change
+key: performance
 Duktape lookup through 'this' and directly
 undefined
 result: undefined
@@ -117,6 +120,7 @@ final top ctx2: 0
 ==> rc=0, result='undefined'
 *** test_set_before_thread_create (duk_safe_call)
 global object keys for ctx1 before change
+key: performance
 replace global object for ctx1
 global object keys for ctx1 after change
 key: newScope1
@@ -140,6 +144,8 @@ global object keys for ctx2
 key: newScope2
 key: print
 global object keys for ctx3
+key: performance
+key: print
 final top ctx1: 2
 final top ctx2: 0
 final top ctx3: 0
@@ -548,6 +554,8 @@ static duk_ret_t test_set_before_thread_create(duk_context *ctx_root, void *udat
 	/*
 	 *  However, if you create a thread with duk_push_thread_new_globalenv()
 	 *  it gets fresh globals regardless of the previous context.
+	 *  (We'll need to copy 'print' because it's no longer part of the
+	 *  built-ins set.)
 	 */
 
 	printf("create ctx3 from ctx1, with fresh globals\n");
@@ -555,6 +563,9 @@ static duk_ret_t test_set_before_thread_create(duk_context *ctx_root, void *udat
 	/* NOTE: again, push on ctx1, not ctx_root. */
 	duk_push_thread_new_globalenv(ctx1);
 	ctx3 = duk_require_context(ctx1, -1);
+	duk_get_global_string(ctx1, "print");
+	duk_xmove_top(ctx3, ctx1, 1);
+	duk_put_global_string(ctx3, "print");
 
 	printf("global object keys for ctx1\n");
 	dump_global_object_keys(ctx1);

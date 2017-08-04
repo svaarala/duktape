@@ -5,7 +5,10 @@ tags:
   - date
   - portability
 description: >
-  Mandatory macro for getting the current time, see datetime.rst.
+  Mandatory macro for getting the current time, see datetime.rst.  The macro
+  is allowed (and recommended) to return millisecond fractions.  The fractions
+  are truncated by the Date built-in, but are available via duk_get_now() C
+  API call.
 
   If the time provided experiences time jumps or doesn't advance in realtime
   (which is useful in some time virtualization scenarios), consider defining

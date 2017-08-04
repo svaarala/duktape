@@ -88,3 +88,9 @@ torture:
   description: >
     Development time options to stress test corner case handling by e.g.
     causing a garbage collection on every allocation.
+
+encoding-api:
+  title: WHATWG Encoding API
+
+performance-api:
+  title: Performance API (High Resolution Time)

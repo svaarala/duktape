@@ -670,6 +670,9 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 		 lightfunc_skip:
 #endif
 
+			/* XXX: So far all ES builtins are 'wc' but e.g.
+			 * performance.now() should be 'wec'.
+			 */
 			duk_xdef_prop(thr, i, DUK_PROPDESC_FLAGS_WC);
 
 			/* [ (builtin objects) ] */
