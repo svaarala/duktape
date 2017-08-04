@@ -53,6 +53,9 @@ DUK_INTERNAL_DECL duk_bool_t duk_bi_date_parse_string_getdate(duk_hthread *thr, 
 DUK_INTERNAL_DECL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_int_t *parts, duk_int_t tzoffset, duk_small_uint_t flags);
 #endif
 
+#if defined(DUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME)
+DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_monotonic_time_clock_gettime(void);
+#endif
 #if defined(DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC)
 DUK_INTERNAL_DECL duk_double_t duk_bi_date_get_monotonic_time_windows_qpc(void);
 #endif
