@@ -130,3 +130,28 @@ DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows_no_dst(duk_double_
 	return (duk_int_t) (((LONGLONG) tmp2.QuadPart - (LONGLONG) tmp1.QuadPart) / DUK_I64_CONSTANT(10000000));  /* seconds */
 }
 #endif  /* DUK_USE_DATE_TZO_WINDOWS_NO_DST */
+
+#if defined(DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC)
+DUK_INTERNAL duk_double_t duk_bi_date_get_monotonic_time_windows_qpc(void) {
+	LARGE_INTEGER count, freq;
+
+	/* There are legacy issues with QueryPerformanceCounter():
+	 * - Potential jumps: https://support.microsoft.com/en-us/help/274323/performance-counter-value-may-unexpectedly-leap-forward
+	 * - Differences between cores (XP): https://msdn.microsoft.com/en-us/library/windows/desktop/dn553408(v=vs.85).aspx#qpc_support_in_windows_versions
+	 *
+	 * We avoid these by enabling QPC by default only for Vista or later.
+	 */
+
+	if (QueryPerformanceCounter(&count) && QueryPerformanceFrequency(&freq)) {
+		/* XXX: QueryPerformanceFrequency() can be cached */
+		return (duk_double_t) count.QuadPart / (duk_double_t) freq.QuadPart * 1000.0;
+	} else {
+		/* MSDN: "On systems that run Windows XP or later, the function
+		 * will always succeed and will thus never return zero."
+		 * Provide minimal error path just in case user enables this
+		 * feature in pre-XP Windows.
+		 */
+		return 0.0;
+	}
+}
+#endif  /* DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC */
