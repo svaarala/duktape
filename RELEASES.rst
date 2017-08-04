@@ -2989,6 +2989,9 @@ Planned
   mechanisms; if absent (default), monotonic time defaults to
   DUK_USE_DATE_GET_NOW() (GH-1659)
 
+* Add monotonic time provider for Windows based on QueryPerformanceCounter(),
+  enabled by default if _WIN32_WINNT indicates Vista or above (GH-1662)
+
 * Use monotonic time (if available) for debugger transport peeking, so that
   the peek callback is called with the same realtime rate even if the
   Ecmascript time source jumps or doesn't advance in realtime (GH-1659)
