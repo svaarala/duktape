@@ -1137,7 +1137,7 @@ def load_metadata(opts, rom=False, build_info=None, active_opts=None):
     for i,o in enumerate(meta['objects']):
         if i < len(meta['objects_bidx']):
             assert(meta['objects_bidx'][i] == meta['objects'][i])
-        if o.has_key('bidx'):
+        if o.get('bidx', False):
             assert(o['bidx'] == i)
 
     # Create a set of helper lists and maps now that the metadata is

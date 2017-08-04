@@ -355,6 +355,7 @@ DUK_INTERNAL void duk_xdef_prop_stridx_short_raw(duk_hthread *thr, duk_uint_t pa
 	                          (duk_small_uint_t) (packed_args & 0xffL));
 }
 
+#if 0  /*unused*/
 DUK_INTERNAL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_small_int_t builtin_idx, duk_small_uint_t desc_flags) {
 	duk_hobject *obj;
 	duk_hstring *key;
@@ -372,6 +373,7 @@ DUK_INTERNAL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t obj_i
 	duk_hobject_define_property_internal(thr, obj, key, desc_flags);
 	/* value popped by call */
 }
+#endif
 
 /* This is a rare property helper; it sets the global thrower (E5 Section 13.2.3)
  * setter/getter into an object property.  This is needed by the 'arguments'
