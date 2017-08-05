@@ -22,6 +22,12 @@ DUK_LOCAL void duk__convert_systime_to_ularge(const SYSTEMTIME *st, ULARGE_INTEG
 		res->HighPart = ft.dwHighDateTime;
 	}
 }
+
+DUK_LOCAL void duk__convert_filetime_to_ularge(const FILETIME *ft, ULARGE_INTEGER *res) {
+	res->LowPart = ft->dwLowDateTime;
+	res->HighPart = ft->dwHighDateTime;
+}
+
 DUK_LOCAL void duk__set_systime_jan1970(SYSTEMTIME *st) {
 	DUK_MEMZERO((void *) st, sizeof(*st));
 	st->wYear = 1970;
@@ -52,12 +58,36 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows(duk_hthread *thr) {
 	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
 
 	/* Difference is in 100ns units, convert to milliseconds, keeping
-	 * fractions since Duktape 2.2.0.
+	 * fractions since Duktape 2.2.0.  This is only theoretical because
+	 * SYSTEMTIME is limited to milliseconds.
 	 */
 	return (duk_double_t) ((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_WINDOWS */
 
+#if defined(DUK_USE_DATE_NOW_WINDOWS_SUBMS)
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_windows_subms(duk_hthread *thr) {
+	/* Variant of the basic algorithm using GetSystemTimePreciseAsFileTime()
+	 * for more accuracy.
+	 */
+	FILETIME ft1;
+	SYSTEMTIME st2;
+	ULARGE_INTEGER tmp1, tmp2;
+
+	DUK_UNREF(thr);
+
+	GetSystemTimePreciseAsFileTime(&ft1);
+	duk__convert_filetime_to_ularge((const FILETIME *) &ft1, &tmp1);
+
+	duk__set_systime_jan1970(&st2);
+	duk__convert_systime_to_ularge((const SYSTEMTIME *) &st2, &tmp2);
+
+	/* Difference is in 100ns units, convert to milliseconds, keeping
+	 * fractions since Duktape 2.2.0.
+	 */
+	return (duk_double_t) ((LONGLONG) tmp1.QuadPart - (LONGLONG) tmp2.QuadPart) / 10000.0;
+}
+#endif  /* DUK_USE_DATE_NOW_WINDOWS */
 
 #if defined(DUK_USE_DATE_TZO_WINDOWS)
 DUK_INTERNAL duk_int_t duk_bi_date_get_local_tzoffset_windows(duk_double_t d) {

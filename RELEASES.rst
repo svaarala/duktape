@@ -3002,7 +3002,8 @@ Planned
   millisecond timestamps (GH-773, GH-1660)
 
 * Add sub-millisecond resolution to the default POSIX and Windows Date
-  providers (DUK_USE_DATE_GET_NOW) (GH-1660)
+  providers (DUK_USE_DATE_GET_NOW); Windows sub-millisecond resolution
+  is available if _WIN32_WINNT indicates Windows 8 or above (GH-1660, GH-1664)
 
 * Add an initial version of the High Resolution Time API, providing
   performance.now() (which backs to DUK_USE_GET_MONOTONIC_TIME() if

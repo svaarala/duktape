@@ -6,5 +6,4 @@ tags:
   - portability
 description: >
   Use Win32 API calls to get local time offset at a certain time.
-  Does not take into account daylight savings time.  When enabled,
-  appropriate date/time headers must be included.
+  Does not take into account daylight savings time.
