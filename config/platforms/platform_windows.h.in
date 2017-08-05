@@ -21,6 +21,16 @@
 #include <windows.h>
 #endif
 
+/* QueryPerformanceCounter() may go backwards in Windows XP, so enable for
+ * Vista and later: https://msdn.microsoft.com/en-us/library/windows/desktop/dn553408(v=vs.85).aspx#qpc_support_in_windows_versions
+ * Check against _WIN32_WINNT which defines the lowest targeted Windows
+ * version (we obviously don't know the runtime version at compile time).
+ */
+#if !defined(DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC) && \
+    defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0600)
+#define DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC
+#endif
+
 #define DUK_USE_OS_STRING "windows"
 
 /* On Windows, assume we're little endian.  Even Itanium which has a
