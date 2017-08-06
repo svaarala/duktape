@@ -3010,6 +3010,10 @@ Planned
   available); performance.timeOrigin is intentionally absent for now,
   until semantics are decided for Duktape (GH-1660)
 
+* Change Unix time provider to tolerate (unlikely) gettimeofday() errors
+  without throwing, as internals are not always expecting to deal with an
+  error when reading current time (GH-1666)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
@@ -3108,7 +3112,8 @@ Planned
 * Internal change: DUK_ASSERT_API_ENTRY() assertion for later use (GH-1642)
 
 * Miscellaneous footprint improvements: rework call handling to improve
-  code sharing (GH-1552); optional lazy charlen (GH-1337)
+  code sharing (GH-1552); optional lazy charlen (GH-1337); remove 'thr'
+  argument from Date 'now' providers (GH-1666)
 
 * Miscellaneous performance improvements: move rare/large opcodes into
   NOINLINE helpers (GH-1510); duk_harray fast path for internal array

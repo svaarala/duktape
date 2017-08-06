@@ -16,12 +16,13 @@
 
 #if defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
 /* Get current Ecmascript time (= UNIX/Posix time, but in milliseconds). */
-DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_hthread *thr) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(void) {
 	struct timeval tv;
 	duk_double_t d;
 
 	if (gettimeofday(&tv, NULL) != 0) {
-		DUK_ERROR_INTERNAL(thr);
+		DUK_D(DUK_DPRINT("gettimeofday() failed"));
+		return 0.0;
 	}
 
 	/* As of Duktape 2.2.0 allow fractions. */
@@ -34,11 +35,14 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_gettimeofday(duk_hthread *thr) {
 
 #if defined(DUK_USE_DATE_NOW_TIME)
 /* Not a very good provider: only full seconds are available. */
-DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(duk_hthread *thr) {
+DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(void) {
 	time_t t;
 
-	DUK_UNREF(thr);
 	t = time(NULL);
+	if (t == (time_t) -1) {
+		DUK_D(DUK_DPRINT("time() failed"));
+		return 0;
+	}
 	return ((duk_double_t) t) * 1000.0;
 }
 #endif  /* DUK_USE_DATE_NOW_TIME */

@@ -11,13 +11,13 @@
 #if defined(DUK_USE_DATE_GET_NOW)
 /* External provider already defined. */
 #elif defined(DUK_USE_DATE_NOW_GETTIMEOFDAY)
-#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_gettimeofday((ctx))
+#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_gettimeofday()
 #elif defined(DUK_USE_DATE_NOW_TIME)
-#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_time((ctx))
+#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_time()
 #elif defined(DUK_USE_DATE_NOW_WINDOWS)
-#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows((ctx))
+#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows()
 #elif defined(DUK_USE_DATE_NOW_WINDOWS_SUBMS)
-#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows_subms((ctx))
+#define DUK_USE_DATE_GET_NOW(ctx)            duk_bi_date_get_now_windows_subms()
 #else
 #error no provider for DUK_USE_DATE_GET_NOW()
 #endif
