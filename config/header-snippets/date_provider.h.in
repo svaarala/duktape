@@ -55,6 +55,8 @@
 
 #if defined(DUK_USE_GET_MONOTONIC_TIME)
 /* External provider already defined. */
+#elif defined(DUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME)
+#define DUK_USE_GET_MONOTONIC_TIME(ctx)  duk_bi_date_get_monotonic_time_clock_gettime()
 #elif defined(DUK_USE_GET_MONOTONIC_TIME_WINDOWS_QPC)
 #define DUK_USE_GET_MONOTONIC_TIME(ctx)  duk_bi_date_get_monotonic_time_windows_qpc()
 #else

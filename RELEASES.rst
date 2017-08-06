@@ -2992,6 +2992,10 @@ Planned
 * Add monotonic time provider for Windows based on QueryPerformanceCounter(),
   enabled by default if _WIN32_WINNT indicates Vista or above (GH-1662)
 
+* Add monotonic time provider for Unix platforms using clock_gettime() and
+  CLOCK_MONOTONIC time source; the time provider is disabled by default, enable
+  using -DDUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME (GH-1667)
+
 * Use monotonic time (if available) for debugger transport peeking, so that
   the peek callback is called with the same realtime rate even if the
   Ecmascript time source jumps or doesn't advance in realtime (GH-1659)

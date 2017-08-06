@@ -41,7 +41,7 @@ DUK_INTERNAL duk_double_t duk_bi_date_get_now_time(void) {
 	t = time(NULL);
 	if (t == (time_t) -1) {
 		DUK_D(DUK_DPRINT("time() failed"));
-		return 0;
+		return 0.0;
 	}
 	return ((duk_double_t) t) * 1000.0;
 }
@@ -310,3 +310,16 @@ DUK_INTERNAL duk_bool_t duk_bi_date_format_parts_strftime(duk_hthread *thr, duk_
 	return 1;
 }
 #endif  /* DUK_USE_DATE_FMT_STRFTIME */
+
+#if defined(DUK_USE_GET_MONOTONIC_TIME_CLOCK_GETTIME)
+DUK_INTERNAL duk_double_t duk_bi_date_get_monotonic_time_clock_gettime(void) {
+	struct timespec ts;
+
+	if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+		return (duk_double_t) ts.tv_sec * 1000.0 + (duk_double_t) ts.tv_nsec / 1000000.0;
+	} else {
+		DUK_D(DUK_DPRINT("clock_gettime(CLOCK_MONOTONIC) failed"));
+		return 0.0;
+	}
+}
+#endif
