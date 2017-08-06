@@ -824,6 +824,7 @@ def metadata_remove_orphan_objects(meta):
         for o in meta['objects']:
             if not reachable.has_key(o['id']):
                 continue
+            _markId(o.get('internal_prototype', None))
             for p in o['properties']:
                 # Shorthand has been normalized so no need
                 # to support it here.
@@ -1192,6 +1193,7 @@ def load_metadata(opts, rom=False, build_info=None, active_opts=None):
     for i,o in enumerate(meta['objects_bidx']):
         assert(o.get('bidx_used', False) == True)
         meta['_objid_to_bidx'][o['id']] = i
+        assert(meta['_objid_to_bidx'][o['id']] == meta['_objid_to_idx'][o['id']])
         meta['_bidx_to_objid'][i] = o['id']
         meta['_bidx_to_object'][i] = o
     if meta.has_key('objects_ram_toplevel'):
