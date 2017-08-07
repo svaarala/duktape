@@ -2454,7 +2454,7 @@ objects:
   - id: bi_math
     class: Math
     internal_prototype: bi_object_prototype
-    bidx: true
+    bidx: false
     present_if: DUK_USE_MATH_BUILTIN
 
     # apparently no external "prototype" property
@@ -2719,7 +2719,7 @@ objects:
   - id: bi_json
     class: JSON
     internal_prototype: bi_object_prototype
-    bidx: true
+    bidx: false
     present_if:
       - DUK_USE_JSON_BUILTIN
       - DUK_USE_JSON_SUPPORT
@@ -2859,7 +2859,7 @@ objects:
     callable: true
     constructable: true
     duktape: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_COROUTINE_SUPPORT
 
     properties:
@@ -2943,7 +2943,7 @@ objects:
     callable: true
     constructable: true
     duktape: true
-    bidx: true
+    bidx: false
 
     properties:
       - key: "length"
@@ -3030,7 +3030,7 @@ objects:
     callable: true
     constructable: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_ES6_PROXY
 
     properties:
@@ -3052,7 +3052,7 @@ objects:
   - id: bi_reflect
     class: Object
     internal_prototype: bi_object_prototype
-    bidx: true
+    bidx: false
     present_if: DUK_USE_REFLECT_BUILTIN
 
     properties:
@@ -3159,7 +3159,7 @@ objects:
     es6: true
     nargs: 1
     magic: 0
-    bidx: true
+    bidx: false
     present_if: DUK_USE_SYMBOL_BUILTIN
 
     properties:
@@ -3345,7 +3345,7 @@ objects:
     constructable: true
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -3432,7 +3432,7 @@ objects:
     constructable: true
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -3755,7 +3755,7 @@ objects:
     magic: 0
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -3791,7 +3791,7 @@ objects:
     # no external_prototype (specific views provide it)
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     # Present even when DUK_USE_BUFFEROBJECT_SUPPORT is disabled
     # to support plain buffers.
 
@@ -3872,7 +3872,7 @@ objects:
       shift: 0
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -3940,7 +3940,7 @@ objects:
       shift: 0
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4029,7 +4029,7 @@ objects:
       shift: 0
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4097,7 +4097,7 @@ objects:
       shift: 1
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4165,7 +4165,7 @@ objects:
       shift: 1
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4233,7 +4233,7 @@ objects:
       shift: 2
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4301,7 +4301,7 @@ objects:
       shift: 2
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4369,7 +4369,7 @@ objects:
       shift: 2
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4437,7 +4437,7 @@ objects:
       shift: 3
     typedarray: true
     es6: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -4504,7 +4504,7 @@ objects:
     callable: true
     constructable: true
     nodejs_buffer: true
-    bidx: true
+    bidx: false
     present_if: DUK_USE_BUFFEROBJECT_SUPPORT
 
     properties:
@@ -5114,7 +5114,7 @@ objects:
     native: duk_bi_textencoder_constructor
     callable: true
     constructable: true
-    bidx: true
+    bidx: false
     encoding_api: true
     present_if: DUK_USE_ENCODING_BUILTINS
 
@@ -5137,7 +5137,7 @@ objects:
   - id: bi_textencoder_prototype
     internal_prototype: bi_object_prototype
     class: Object
-    bidx: true
+    bidx: false
     encoding_api: true
     present_if: DUK_USE_ENCODING_BUILTINS
 
@@ -5172,7 +5172,7 @@ objects:
     native: duk_bi_textdecoder_constructor
     callable: true
     constructable: true
-    bidx: true
+    bidx: false
     encoding_api: true
     present_if: DUK_USE_ENCODING_BUILTINS
 
@@ -5195,7 +5195,7 @@ objects:
   - id: bi_textdecoder_prototype
     internal_prototype: bi_object_prototype
     class: Object
-    bidx: true
+    bidx: false
     encoding_api: true
     present_if: DUK_USE_ENCODING_BUILTINS
 
@@ -5242,7 +5242,7 @@ objects:
   - id: bi_performance
     internal_prototype: bi_object_prototype
     class: Object
-    bidx: true
+    bidx: false
     performance_api: true
     present_if: DUK_USE_PERFORMANCE_BUILTIN
 

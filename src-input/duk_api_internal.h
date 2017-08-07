@@ -275,7 +275,9 @@ DUK_INTERNAL_DECL void duk_xdef_prop_stridx_short_raw(duk_hthread *thr, duk_uint
 #define duk_xdef_prop_stridx_short_wec(thr,obj_idx,stridx) \
 	duk_xdef_prop_stridx_short((thr), (obj_idx), (stridx), DUK_PROPDESC_FLAGS_WEC)
 
+#if 0  /*unused*/
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_builtin(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx, duk_small_int_t builtin_idx, duk_small_uint_t desc_flags);  /* [] -> [] */
+#endif
 
 DUK_INTERNAL_DECL void duk_xdef_prop_stridx_thrower(duk_hthread *thr, duk_idx_t obj_idx, duk_small_uint_t stridx);  /* [] -> [] */
 

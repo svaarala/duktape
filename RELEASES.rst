@@ -3117,7 +3117,8 @@ Planned
 
 * Miscellaneous footprint improvements: rework call handling to improve
   code sharing (GH-1552); optional lazy charlen (GH-1337); remove 'thr'
-  argument from Date 'now' providers (GH-1666)
+  argument from Date 'now' providers (GH-1666); prune some objects from
+  thr->bidx[] array (GH-1668)
 
 * Miscellaneous performance improvements: move rare/large opcodes into
   NOINLINE helpers (GH-1510); duk_harray fast path for internal array

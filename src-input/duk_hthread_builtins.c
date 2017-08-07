@@ -412,7 +412,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 			t--;
 			DUK_DDD(DUK_DDDPRINT("set external prototype: built-in %ld", (long) t));
-			duk_xdef_prop_stridx_builtin(thr, i, DUK_STRIDX_PROTOTYPE, t, DUK_PROPDESC_FLAGS_NONE);
+			duk_dup(thr, t);
+			duk_xdef_prop_stridx(thr, i, DUK_STRIDX_PROTOTYPE, DUK_PROPDESC_FLAGS_NONE);
 		}
 
 		t = (duk_small_uint_t) duk_bd_decode_varuint(bd);
@@ -424,7 +425,8 @@ DUK_INTERNAL void duk_hthread_create_builtin_objects(duk_hthread *thr) {
 			 */
 			t--;
 			DUK_DDD(DUK_DDDPRINT("set external constructor: built-in %ld", (long) t));
-			duk_xdef_prop_stridx_builtin(thr, i, DUK_STRIDX_CONSTRUCTOR, t, DUK_PROPDESC_FLAGS_WC);
+			duk_dup(thr, t);
+			duk_xdef_prop_stridx(thr, i, DUK_STRIDX_CONSTRUCTOR, DUK_PROPDESC_FLAGS_WC);
 		}
 
 		/* normal valued properties */
