@@ -62,6 +62,8 @@ DUK_EXTERNAL void duk_time_to_components(duk_hthread *thr, duk_double_t timeval,
 
 	duk_bi_date_timeval_to_parts(timeval, parts, dparts, flags);
 
+	/* XXX: sub-millisecond accuracy for the API */
+
 	DUK_ASSERT(dparts[DUK_DATE_IDX_MONTH] >= 1.0 && dparts[DUK_DATE_IDX_MONTH] <= 12.0);
 	comp->year = dparts[DUK_DATE_IDX_YEAR];
 	comp->month = dparts[DUK_DATE_IDX_MONTH] - 1.0;
