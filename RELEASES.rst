@@ -3003,7 +3003,7 @@ Planned
 * Allow sub-millisecond resolution for DUK_USE_DATE_GET_NOW() Date provider;
   the extra resolution is visible through duk_get_now() but not through Date
   instances because Ecmascript requires Date instances to have integer
-  millisecond timestamps (GH-773, GH-1660)
+  millisecond timestamps (GH-773, GH-1660, GH-1669)
 
 * Add sub-millisecond resolution to the default POSIX and Windows Date
   providers (DUK_USE_DATE_GET_NOW); Windows sub-millisecond resolution
