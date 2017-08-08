@@ -600,9 +600,9 @@ DUK_LOCAL duk_double_t duk__make_day(duk_double_t year, duk_double_t month, duk_
 	return (duk_double_t) day_num + day;
 }
 
-/* Split time value into parts.  The time value is assumed to be an internal
- * one, i.e. finite, no fractions.  Possible local time adjustment has already
- * been applied when reading the time value.
+/* Split time value into parts.  The time value may contain fractions (it may
+ * come from duk_time_to_components() API call) which are truncated.  Possible
+ * local time adjustment has already been applied when reading the time value.
  */
 DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts, duk_double_t *dparts, duk_small_uint_t flags) {
 	duk_double_t d1, d2;
@@ -621,7 +621,8 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 	duk_small_int_t arridx;
 
 	DUK_ASSERT(DUK_ISFINITE(d));    /* caller checks */
-	DUK_ASSERT(DUK_FLOOR(d) == d);  /* no fractions in internal time */
+	d = DUK_FLOOR(d);  /* remove fractions if present */
+	DUK_ASSERT(DUK_FLOOR(d) == d);
 
 	/* The timevalue must be in valid Ecmascript range, but since a local
 	 * time offset can be applied, we need to allow a +/- 24h leeway to
@@ -631,7 +632,7 @@ DUK_INTERNAL void duk_bi_date_timeval_to_parts(duk_double_t d, duk_int_t *parts,
 	DUK_UNREF(duk_bi_date_timeval_in_leeway_range);
 	DUK_ASSERT(duk_bi_date_timeval_in_leeway_range(d));
 
-	/* these computations are guaranteed to be exact for the valid
+	/* These computations are guaranteed to be exact for the valid
 	 * E5 time value range, assuming milliseconds without fractions.
 	 */
 	d1 = (duk_double_t) DUK_FMOD(d, (double) DUK_DATE_MSEC_DAY);
