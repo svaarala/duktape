@@ -2,9 +2,8 @@
 
 <p>This section summarizes some commonly needed header definitions in
 <code>duktape.h</code>.  It is not exhaustive and the excerpts have been
-reorganized for readability.  Don't rely on the specific define values
-shown below for e.g. flags fields.  When in doubt, consult the header
-directly.</p>
+reorganized for readability.  Don't rely on specific define values, only
+the define names.  When in doubt, consult the header directly.</p>
 
 <h2>Duktape version</h2>
 
@@ -43,8 +42,13 @@ identify prototypes built from a development branch.</td>
 
 <h2>Debug protocol version</h2>
 
-<p>The version number of the debug protocol (a single integer) is available as
-the define <code>DUK_DEBUG_PROTOCOL_VERSION</code>.</p>
+<p>Debug protocol version number:</p>
+<table>
+<tr>
+<td><code>DUK_DEBUG_PROTOCOL_VERSION</code></td>
+<td>Version number of the debug protocol (a single integer)</td>
+</tr>
+</table>
 
 <h2>Structs and typedefs</h2>
 <pre class="c-code">
@@ -88,98 +92,269 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 </pre>
 
 <h2>Error codes</h2>
-<pre class="c-code">
-#define DUK_ERR_NONE                 0    /* no error (e.g. from duk_get_error_code()) */
-#define DUK_ERR_ERROR                1    /* Error */
-#define DUK_ERR_EVAL_ERROR           2    /* EvalError */
-#define DUK_ERR_RANGE_ERROR          3    /* RangeError */
-#define DUK_ERR_REFERENCE_ERROR      4    /* ReferenceError */
-#define DUK_ERR_SYNTAX_ERROR         5    /* SyntaxError */
-#define DUK_ERR_TYPE_ERROR           6    /* TypeError */
-#define DUK_ERR_URI_ERROR            7    /* URIError */
-</pre>
+
+<p>Error codes used by e.g. duk_error():</p>
+
+<table>
+<tr>
+<td><code>DUK_ERR_NONE</code></td>
+<td>No error, e.g. from duk_get_error_code()</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_ERROR</code></td>
+<td>Error</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_EVAL_ERROR</code></td>
+<td>EvalError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_RANGE_ERROR</code></td>
+<td>RangeError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_REFERENCE_ERROR</code></td>
+<td>ReferenceError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_SYNTAX_ERROR</code></td>
+<td>SyntaxError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_TYPE_ERROR</code></td>
+<td>TypeError</td>
+</tr>
+<tr>
+<td><code>DUK_ERR_URI_ERROR</code></td>
+<td>URIError</td>
+</tr>
+</table>
 
 <h2>Return codes from Duktape/C functions</h2>
-<pre class="c-code">
-/* Return codes for C functions */
-#define DUK_RET_ERROR                (-DUK_ERR_ERROR)
-#define DUK_RET_EVAL_ERROR           (-DUK_ERR_EVAL_ERROR)
-#define DUK_RET_RANGE_ERROR          (-DUK_ERR_RANGE_ERROR)
-#define DUK_RET_REFERENCE_ERROR      (-DUK_ERR_REFERENCE_ERROR)
-#define DUK_RET_SYNTAX_ERROR         (-DUK_ERR_SYNTAX_ERROR)
-#define DUK_RET_TYPE_ERROR           (-DUK_ERR_TYPE_ERROR)
-#define DUK_RET_URI_ERROR            (-DUK_ERR_URI_ERROR)
 
-/* Return codes for protected calls (duk_safe_call(), duk_pcall()). */
-#define DUK_EXEC_SUCCESS             0
-#define DUK_EXEC_ERROR               1
-</pre>
+<p>Shorthand return values for Duktape/C functions, e.g.
+<code>return DUK_RET_TYPE_ERROR</code> is similar to calling
+<code>duk_type_error()</code> but shorter:</p>
+
+<table>
+<tr>
+<td><code>DUK_RET_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_EVAL_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_EVAL_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_RANGE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_RANGE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_REFERENCE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_REFERENCE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_SYNTAX_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_SYNTAX_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_TYPE_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_TYPE_ERROR</td>
+</tr>
+<tr>
+<td><code>DUK_RET_URI_ERROR</code></td>
+<td>Similar to throwing with DUK_ERR_URI_ERROR</td>
+</tr>
+</table>
+
+<h2>Return codes for protected calls</h2>
+
+<p>Return codes for protected calls (e.g. duk_safe_call(), duk_pcall()):</p>
+
+<table>
+<tr>
+<td><code>DUK_EXEC_SUCCESS</code></td>
+<td>Call finished without error</td>
+</tr>
+<tr>
+<td><code>DUK_EXEC_ERROR</code></td>
+<td>Call failed, error was caught</td>
+</tr>
+</table>
 
 <h2>Compilation flags for duk_compile()</h2>
-<pre class="c-code">
-/* Compilation flags for duk_compile() and duk_eval() */
-#define DUK_COMPILE_EVAL                  (1 &lt;&lt; 0)    /* compile eval code (instead of program) */
-#define DUK_COMPILE_FUNCTION              (1 &lt;&lt; 1)    /* compile function code (instead of program) */
-#define DUK_COMPILE_STRICT                (1 &lt;&lt; 2)    /* use strict (outer) context for program, eval, or function */
-</pre>
+
+<p>Compilation flags for e.g. duk_compile() and duk_eval():</p>
+
+<table>
+<tr>
+<td><code>DUK_COMPILE_EVAL</code></td>
+<td>Compile eval code (instead of program)</td>
+</tr>
+<tr>
+<td><code>DUK_COMPILE_FUNCTION</code></td>
+<td>Compile function code (instead of program)</td>
+</tr>
+<tr>
+<td><code>DUK_COMPILE_STRICT</code></td>
+<td>Use strict (outer) context for program, eval, or function</td>
+</tr>
+</table>
 
 <h2>Flags for duk_def_prop()</h2>
-<pre class="c-code">
-/* Flags for duk_def_prop() and its variants */
-#define DUK_DEFPROP_WRITABLE              (1 &lt;&lt; 0)    /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
-#define DUK_DEFPROP_ENUMERABLE            (1 &lt;&lt; 1)    /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set) */
-#define DUK_DEFPROP_CONFIGURABLE          (1 &lt;&lt; 2)    /* set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set) */
-#define DUK_DEFPROP_HAVE_WRITABLE         (1 &lt;&lt; 3)    /* set/clear writable */
-#define DUK_DEFPROP_HAVE_ENUMERABLE       (1 &lt;&lt; 4)    /* set/clear enumerable */
-#define DUK_DEFPROP_HAVE_CONFIGURABLE     (1 &lt;&lt; 5)    /* set/clear configurable */
-#define DUK_DEFPROP_HAVE_VALUE            (1 &lt;&lt; 6)    /* set value (given on value stack) */
-#define DUK_DEFPROP_HAVE_GETTER           (1 &lt;&lt; 7)    /* set getter (given on value stack) */
-#define DUK_DEFPROP_HAVE_SETTER           (1 &lt;&lt; 8)    /* set setter (given on value stack) */
-#define DUK_DEFPROP_FORCE                 (1 &lt;&lt; 9)    /* force change if possible, may still fail for e.g. virtual properties */
-#define DUK_DEFPROP_SET_WRITABLE          (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)
-#define DUK_DEFPROP_CLEAR_WRITABLE        DUK_DEFPROP_HAVE_WRITABLE
-#define DUK_DEFPROP_SET_ENUMERABLE        (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)
-#define DUK_DEFPROP_CLEAR_ENUMERABLE      DUK_DEFPROP_HAVE_ENUMERABLE
-#define DUK_DEFPROP_SET_CONFIGURABLE      (DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)
-#define DUK_DEFPROP_CLEAR_CONFIGURABLE    DUK_DEFPROP_HAVE_CONFIGURABLE
-</pre>
+
+<p>Flags for duk_def_prop() and its variants:</p>
+
+<table>
+<tr>
+<td><code>DUK_DEFPROP_WRITABLE</code></td>
+<td>Set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_ENUMERABLE</code></td>
+<td>Set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CONFIGURABLE</code></td>
+<td>Set configurable (effective if DUK_DEFPROP_HAVE_CONFIGURABLE set)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_WRITABLE</code></td>
+<td>Set/clear writable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_ENUMERABLE</code></td>
+<td>Set/clear enumerable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_CONFIGURABLE</code></td>
+<td>Set/clear configurable</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_VALUE</code></td>
+<td>Set value (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_GETTER</code></td>
+<td>Set getter (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_HAVE_SETTER</code></td>
+<td>Set setter (given on value stack)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_FORCE</code></td>
+<td>Force change if possible, may still fail for e.g. virtual properties</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_WRITABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_WRITABLE</code></td>
+<td>DUK_DEFPROP_HAVE_WRITABLE</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_ENUMERABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_ENUMERABLE</code></td>
+<td>DUK_DEFPROP_HAVE_ENUMERABLE</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_SET_CONFIGURABLE</code></td>
+<td>(DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)</td>
+</tr>
+<tr>
+<td><code>DUK_DEFPROP_CLEAR_CONFIGURABLE</code></td>
+<td>DUK_DEFPROP_HAVE_CONFIGURABLE</td>
+</tr>
+</table>
 
 <h2>Enumeration flags for duk_enum()</h2>
-<pre class="c-code">
-/* Enumeration flags for duk_enum() */
-#define DUK_ENUM_INCLUDE_NONENUMERABLE    (1 &lt;&lt; 0)    /* enumerate non-numerable properties in addition to enumerable */
-#define DUK_ENUM_INCLUDE_INTERNAL         (1 &lt;&lt; 1)    /* enumerate internal properties */
-#define DUK_ENUM_OWN_PROPERTIES_ONLY      (1 &lt;&lt; 2)    /* don't walk prototype chain, only check own properties */
-#define DUK_ENUM_ARRAY_INDICES_ONLY       (1 &lt;&lt; 3)    /* only enumerate array indices */
-#define DUK_ENUM_SORT_ARRAY_INDICES       (1 &lt;&lt; 4)    /* sort array indices (applied to full enumeration result, including inherited array indices) */
-#define DUK_ENUM_NO_PROXY_BEHAVIOR        (1 &lt;&lt; 5)    /* enumerate a proxy object itself without invoking proxy behavior */
-</pre>
+
+<p>Enumeration flags for duk_enum():</p>
+
+<table>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_NONENUMERABLE</code></td>
+<td>Enumerate non-numerable properties in addition to enumerable</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_INCLUDE_INTERNAL</code></td>
+<td>Enumerate internal properties</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_OWN_PROPERTIES_ONLY</code></td>
+<td>Don't walk prototype chain, only check own properties</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_ARRAY_INDICES_ONLY</code></td>
+<td>Only enumerate array indices</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_SORT_ARRAY_INDICES</code></td>
+<td>Sort array indices (applied to full enumeration result, including inherited array indices)</td>
+</tr>
+<tr>
+<td><code>DUK_ENUM_NO_PROXY_BEHAVIOR</code></td>
+<td>Enumerate a proxy object itself without invoking proxy behavior</td>
+</tr>
+</table>
 
 <h2>Garbage collection flags for duk_gc()</h2>
-<pre class="c-code">
-/* Flags for duk_gc() */
-#define DUK_GC_COMPACT                    (1 &lt;&lt; 0)    /* compact heap objects */
-</pre>
+
+<p>Flags for duk_gc():</p>
+
+<table>
+<tr>
+<td><code>DUK_GC_COMPACT</code></td>
+<td>Compact heap objects</td>
+</tr>
+</table>
 
 <h2>Coercion hints</h2>
-<pre class="c-code">
-/* Coercion hints */
-#define DUK_HINT_NONE         0    /* prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8) */
-#define DUK_HINT_STRING       1    /* prefer string */
-#define DUK_HINT_NUMBER       2    /* prefer number */
-</pre>
+
+<p>Coercion hints:</p>
+
+<table>
+<tr>
+<td><code>DUK_HINT_NONE</code></td>
+<td>Prefer number, unless coercion input is a Date, in which case prefer string (E5 Section 8.12.8)</td>
+</tr>
+<tr>
+<td><code>DUK_HINT_STRING</code></td>
+<td>Prefer string</td>
+</tr>
+<tr>
+<td><code>DUK_HINT_NUMBER</code></td>
+<td>Prefer number</td>
+</tr>
+</table>
 
 <h2>Flags for duk_push_thread_raw()</h2>
-<pre class="c-code">
-/* Flags for duk_push_thread_raw() */
-#define DUK_THREAD_NEW_GLOBAL_ENV         (1 &lt;&lt; 0)    /* create a new global environment */
-</pre>
+
+<table>
+<tr>
+<td><code>DUK_THREAD_NEW_GLOBAL_ENV</code></td>
+<td>Create a new global environment</td>
+</tr>
+</table>
 
 <h2>Misc defines</h2>
-<pre class="c-code">
-#define DUK_INVALID_INDEX     DUK_IDX_MIN
 
-#define DUK_VARARGS           ((duk_int_t) (-1))
-
-#define DUK_API_ENTRY_STACK   64
-</pre>
+<table>
+<tr>
+<td><code>DUK_INVALID_INDEX</code></td>
+<td>Stack index is invalid, missing, or n/a</td>
+</tr>
+<tr>
+<td><code>DUK_VARARGS</code></td>
+<td>Function takes variable arguments</td>
+</tr>
+<tr>
+<td><code>DUK_API_ENTRY_STACK</code></td>
+<td>Number of value stack entries guaranteed to be reserved at function entry</td>
+</tr>
+</table>
