@@ -429,6 +429,7 @@ def main():
         'duk_bi_reflect.c',
         'duk_bi_regexp.c',
         'duk_bi_string.c',
+        'duk_bi_promise.c',
         'duk_bi_proxy.c',
         'duk_bi_symbol.c',
         'duk_bi_thread.c',
