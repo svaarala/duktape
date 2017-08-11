@@ -342,6 +342,33 @@ typedef struct duk_number_list_entry duk_number_list_entry;
 </tr>
 </table>
 
+<h2>Symbol literal macros</h2>
+
+<p>The following macros are defined for creating internal Symbol representations
+as C literals.  All arguments must be string literals and cannot be computed
+values:</p>
+
+<table>
+<tr>
+<td><code>DUK_HIDDEN_SYMBOL(x)</code></td>
+<td>A C literal for a Duktape specific hidden Symbol</td>
+</tr>
+<tr>
+<td><code>DUK_GLOBAL_SYMBOL(x)</code></td>
+<td>A C literal for a global symbol, equivalent to <code>Symbol.for(x)</code></td>
+</tr>
+<tr>
+<td><code>DUK_LOCAL_SYMBOL(x,uniq)</code></td>
+<td>A C literal for a local symbol, equivalent to <code>Symbol(x)</code>,
+    unique part provided in 'uniq' must not conflict with Duktape internal
+    format, recommendation is to prefix the unique part with a "!"</td>
+</tr>
+<tr>
+<td><code>DUK_WELLKNOWN_SYMBOL(x)</code></td>
+<td>A C literal for a well-known symbol like <code>Symbol.iterator</code></td>
+</tr>
+</table>
+
 <h2>Misc defines</h2>
 
 <table>

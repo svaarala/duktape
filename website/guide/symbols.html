@@ -35,8 +35,17 @@ would be represented as the CESU-8 bytes <code>c3 bf 78 79 7a</code> in memory.
 <pre class="c-code">
 /* Create a hidden Symbol which can then be used to read/write properties.
  * The Symbol can be passed on to Ecmascript code like any other string or
- * Symbol.  Terminating a string literal after a hex escape is safest to
- * avoid some ambiguous cases like "\xffab".
+ * Symbol.
+ */
+duk_push_string(ctx, DUK_HIDDEN_SYMBOL("mySymbol"));
+</pre>
+
+<p>Before Duktape 2.2 <code>DUK_HIDDEN_SYMBOL()</code> and other symbol
+literal macros were not available and the internal representation would be
+used directly:</p>
+<pre class="c-code">
+/* Terminating a string literal after a hex escape is safest to avoid some
+ * ambiguous cases like "\xffab".
  */
 duk_push_string(ctx, "\xff" "mySymbol");
 </pre>
