@@ -113,6 +113,9 @@ Useful comparisons (``p`` is pointer to string data) for internal use only:
 
 * ``(p[0] & 0xc0) == 0x80``: ES2015 Symbol, visible to Ecmascript code
 
+There are public API macros (DUK_HIDDEN_SYMBOL() etc) to create symbol literals
+from C code.
+
 Global symbols
 ==============
 
