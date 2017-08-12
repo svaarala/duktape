@@ -49,12 +49,14 @@
     defined(DUK_F_BCC) || \
     (defined(__WORDSIZE) && (__WORDSIZE == 32)) || \
     ((defined(DUK_F_OLD_SOLARIS) || defined(DUK_F_AIX) || \
-      defined(DUK_F_HPUX)) && defined(_ILP32))
+      defined(DUK_F_HPUX)) && defined(_ILP32)) || \
+    defined(DUK_F_ARM32)
 #define DUK_F_32BIT_PTRS
 #elif defined(DUK_F_X64) || \
       (defined(__WORDSIZE) && (__WORDSIZE == 64)) || \
    ((defined(DUK_F_OLD_SOLARIS) || defined(DUK_F_AIX) || \
-     defined(DUK_F_HPUX)) && defined(_LP64))
+     defined(DUK_F_HPUX)) && defined(_LP64)) || \
+    defined(DUK_F_ARM64)
 #define DUK_F_64BIT_PTRS
 #else
 /* not sure, not needed with C99 anyway */
