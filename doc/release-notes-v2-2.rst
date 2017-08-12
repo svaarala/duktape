@@ -19,6 +19,10 @@ Upgrading from Duktape 2.1
 No action (other than recompiling) should be needed for most users to upgrade
 from Duktape v2.1.x.  Note the following:
 
+* There are public API macros to create different Symbol types as C literals.
+  For example, DUK_HIDDEN_SYMBOL("myPointer") can now be used instead of
+  manually creating the internal representation ("\xFF" "myPointer").
+
 * Case insensitive RegExps are still much slower than case sensitive ones.
   The small canonicalization lookup (256 bytes) is enabled by default.  The
   small lookup is still slower than DUK_USE_REGEXP_CANON_WORKAROUND but the
