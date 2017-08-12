@@ -3086,7 +3086,7 @@ Planned
   guaranteed by the API and is mostly unnecessary (GH-1552)
 
 * Add some statistics dumps to mark-and-sweep with debug logging enabled
-  (GH-1579, GH-1640)
+  (GH-1579, GH-1640, GH-1677)
 
 * Add DUK_CONSOLE_FLUSH flag to extras/duktape-console (GH-1587, GH-1588)
 
