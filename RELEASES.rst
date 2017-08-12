@@ -2947,6 +2947,9 @@ Planned
 * Add duk_push_proxy() API call which allows a Proxy to be created from C
   code (GH-1500, GH-837)
 
+* Add DUK_HIDDEN_SYMBOL(), DUK_GLOBAL_SYMBOL(), DUK_LOCAL_SYMBOL(), and
+  DUK_WELLKNOWN_SYMBOL() macros for creating symbol literals (GH-1673)
+
 * Add support for Proxy 'apply' and 'construct' traps (GH-1601)
 
 * Add minimal new.target support, evaluates to undefined for non-constructor
