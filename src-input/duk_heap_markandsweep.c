@@ -1063,8 +1063,10 @@ DUK_LOCAL void duk__dump_stats(duk_heap *heap) {
 	DUK_D(DUK_DPRINT("stats mark-and-sweep: try_count=%ld, skip_count=%ld, emergency_count=%ld",
 	                 (long) heap->stats_ms_try_count, (long) heap->stats_ms_skip_count,
 	                 (long) heap->stats_ms_emergency_count));
-	DUK_D(DUK_DPRINT("stats string intern: hit=%ld, miss=%ld",
-	                 (long) heap->stats_intern_hit, (long) heap->stats_intern_miss));
+	DUK_D(DUK_DPRINT("stats stringtable: intern_hit=%ld, intern_miss=%ld, resize_check=%ld, resize_grow=%ld, resize_shrink=%ld",
+	                 (long) heap->stats_strtab_intern_hit, (long) heap->stats_strtab_intern_miss,
+	                 (long) heap->stats_strtab_resize_check, (long) heap->stats_strtab_resize_grow,
+	                 (long) heap->stats_strtab_resize_shrink));
 	DUK_D(DUK_DPRINT("stats object: realloc_props=%ld, abandon_array=%ld",
 	                 (long) heap->stats_object_realloc_props, (long) heap->stats_object_abandon_array));
 	DUK_D(DUK_DPRINT("stats getownpropdesc: count=%ld, hit=%ld, miss=%ld",
