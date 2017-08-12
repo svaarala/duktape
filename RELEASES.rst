@@ -3069,6 +3069,8 @@ Planned
 
 * Fix harmless GCC 7 -Wextra warning in Date built-in (GH-1646)
 
+* Fix pointer size detection for MSVC2015 ARM32/ARM64 (GH-1577, GH-1675)
+
 * Improve support for old MSVC versions without __pragma(), long long, and
   LL/ULL constants (GH-1559, GH-1562)
 
