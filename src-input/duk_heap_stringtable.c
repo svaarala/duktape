@@ -286,6 +286,8 @@ DUK_LOCAL void duk__strtable_grow_inplace(duk_heap *heap) {
 	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0);  /* 2^N */
 	DUK_ASSERT(DUK__GET_STRTABLE(heap) != NULL);
 
+	DUK_STATS_INC(heap, stats_strtab_resize_grow);
+
 	new_st_size = heap->st_size << 1U;
 	DUK_ASSERT(new_st_size > heap->st_size);  /* No overflow. */
 
@@ -402,6 +404,8 @@ DUK_LOCAL void duk__strtable_shrink_inplace(duk_heap *heap) {
 	DUK_ASSERT((heap->st_size & (heap->st_size - 1)) == 0);  /* 2^N */
 	DUK_ASSERT(DUK__GET_STRTABLE(heap) != NULL);
 
+	DUK_STATS_INC(heap, stats_strtab_resize_shrink);
+
 	new_st_size = heap->st_size >> 1U;
 
 	/* Combine two buckets into a single one.  When we shrink, one hash
@@ -471,6 +475,8 @@ DUK_LOCAL DUK_COLD DUK_NOINLINE void duk__strtable_resize_check(duk_heap *heap) 
 #else
 	DUK_ASSERT(heap->strtable != NULL);
 #endif
+
+	DUK_STATS_INC(heap, stats_strtab_resize_check);
 
 	/* Prevent recursive resizing. */
 	if (DUK_UNLIKELY(heap->st_resizing)) {
@@ -725,7 +731,7 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 		    DUK_HSTRING_GET_BYTELEN(h) == blen &&
 		    DUK_MEMCMP((const void *) str, (const void *) DUK_HSTRING_GET_DATA(h), (size_t) blen) == 0) {
 			/* Found existing entry. */
-			DUK_STATS_INC(heap, stats_intern_hit);
+			DUK_STATS_INC(heap, stats_strtab_intern_hit);
 			return h;
 		}
 		h = h->hdr.h_next;
@@ -739,14 +745,14 @@ DUK_INTERNAL duk_hstring *duk_heap_strtable_intern(duk_heap *heap, const duk_uin
 #if defined(DUK_USE_ROM_STRINGS)
 	h = duk__strtab_romstring_lookup(heap, str, blen, strhash);
 	if (h != NULL) {
-		DUK_STATS_INC(heap, stats_intern_hit);
+		DUK_STATS_INC(heap, stats_strtab_intern_hit);
 		return h;
 	}
 #endif
 
 	/* Not found in string table; insert. */
 
-	DUK_STATS_INC(heap, stats_intern_miss);
+	DUK_STATS_INC(heap, stats_strtab_intern_miss);
 	h = duk__strtable_do_intern(heap, str, blen, strhash);
 	return h;  /* may be NULL */
 }

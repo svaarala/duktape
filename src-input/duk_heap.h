@@ -572,8 +572,11 @@ struct duk_heap {
 	duk_int_t stats_ms_try_count;
 	duk_int_t stats_ms_skip_count;
 	duk_int_t stats_ms_emergency_count;
-	duk_int_t stats_intern_hit;
-	duk_int_t stats_intern_miss;
+	duk_int_t stats_strtab_intern_hit;
+	duk_int_t stats_strtab_intern_miss;
+	duk_int_t stats_strtab_resize_check;
+	duk_int_t stats_strtab_resize_grow;
+	duk_int_t stats_strtab_resize_shrink;
 	duk_int_t stats_object_realloc_props;
 	duk_int_t stats_object_abandon_array;
 	duk_int_t stats_getownpropdesc_count;
