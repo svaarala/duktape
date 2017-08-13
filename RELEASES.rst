@@ -3118,6 +3118,9 @@ Planned
 
 * Internal change: DUK_ASSERT_API_ENTRY() assertion for later use (GH-1642)
 
+* Internal change: add a non-functional Promise placeholder, disabled by
+  default (GH-1672)
+
 * Miscellaneous footprint improvements: rework call handling to improve
   code sharing (GH-1552); optional lazy charlen (GH-1337); remove 'thr'
   argument from Date 'now' providers (GH-1666); prune some objects from
