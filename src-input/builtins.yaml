@@ -311,6 +311,12 @@ objects:
           id: bi_symbol_constructor
         es6: true
         present_if: DUK_USE_SYMBOL_BUILTIN
+      - key: "Promise"
+        value:
+          type: object
+          id: bi_promise_constructor
+        es6: true
+        present_if: DUK_USE_PROMISE_BUILTIN
 
       # Node.js Buffer
       - key: "Buffer"
@@ -3288,7 +3294,6 @@ objects:
           type: object
           id: bi_symbol_constructor
         attributes: "wc"
-        typedarray: true
         es6: true
         present_if: DUK_USE_SYMBOL_BUILTIN
 
@@ -3331,6 +3336,105 @@ objects:
         attributes: "c"
         es6: true
         present_if: DUK_USE_SYMBOL_BUILTIN
+
+  - id: bi_promise_constructor
+    class: Function
+    internal_prototype: bi_function_prototype
+    native: duk_bi_promise_constructor
+    callable: true
+    constructable: true
+    es6: true
+    nargs: 1
+    magic: 0
+    bidx: false
+    present_if: DUK_USE_PROMISE_BUILTIN
+
+    properties:
+      - key: "length"
+        value: 1
+        attributes: "c"
+        es6: true
+      - key: "name"
+        value: "Promise"
+        attributes: "c"
+        es6: true
+      - key: 'prototype'
+        value:
+          type: object
+          id: bi_promise_prototype
+        attributes: ""
+        es6: true
+      - key: 'all'
+        value:
+          type: function
+          native: duk_bi_promise_all
+          length: 1
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      - key: 'race'
+        value:
+          type: function
+          native: duk_bi_promise_race
+          length: 1
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      - key: 'reject'
+        value:
+          type: function
+          native: duk_bi_promise_reject
+          length: 1
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      - key: 'resolve'
+        value:
+          type: function
+          native: duk_bi_promise_resolve
+          length: 1
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      # @@species
+      # 'defer' is obsolete and not implemented:
+      # https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Promise.jsm/Deferred.
+      # 'accept' is obsolete and not implemented:
+      #https://bugs.chromium.org/p/v8/issues/detail?id=3238
+
+  - id: bi_promise_prototype
+    class: Object
+    internal_prototype: bi_object_prototype
+    es6: true
+    bidx: true
+    present_if: DUK_USE_PROMISE_BUILTIN
+
+    properties:
+      - key: 'constructor'
+        value:
+          type: object
+          id: bi_promise_constructor
+        attributes: "wc"
+        es6: true
+      - key: 'catch'
+        value:
+          type: function
+          native: duk_bi_promise_catch
+          length: 1
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      - key: 'then'
+        value:
+          type: function
+          native: duk_bi_promise_then
+          length: 2
+          varargs: false
+        attributes: 'wc'
+        es6: true
+      # @@toStringTag
+      # 'chain' is an obsolete variant of .then and not implemented:
+      # https://stackoverflow.com/questions/34713965/the-feature-of-method-promise-prototype-chain-in-chrome
 
   #
   #  TypedArray
