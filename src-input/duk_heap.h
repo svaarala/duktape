@@ -527,6 +527,9 @@ struct duk_heap {
 	/* Used to support single-byte stream lookahead. */
 	duk_bool_t dbg_have_next_byte;
 	duk_uint8_t dbg_next_byte;
+#endif  /* DUK_USE_DEBUGGER_SUPPORT */
+#if defined(DUK_USE_ASSERTIONS)
+	duk_bool_t dbg_calling_transport;       /* transport call in progress, calling into Duktape forbidden */
 #endif
 
 	/* String intern table (weak refs). */

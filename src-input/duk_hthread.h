@@ -175,6 +175,8 @@
  */
 #define DUK_ASSERT_API_ENTRY(thr) do { \
 		DUK_ASSERT_CTX_VALID((thr)); \
+		DUK_ASSERT((thr)->heap != NULL); \
+		DUK_ASSERT((thr)->heap->dbg_calling_transport == 0); \
 	} while (0)
 
 /*
