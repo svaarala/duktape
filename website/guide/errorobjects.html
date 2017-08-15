@@ -213,7 +213,11 @@ delete Duktape.errThrow;
 <li>There is no cause chain support.  Cause chains would be useful but there
     are no cause chains in Ecmascript, nor does there seem to be a de facto
     standard for them.</li>
-<li>These is currently no way to access traceback elements programmatically.</li>
+<li>These is currently no way to access traceback elements programmatically in
+    a version compatible manner.  However, you can access the <code>_Tracedata</code>
+    hidden Symbol (<code>DUK_HIDDEN_SYMBOL("Tracedata")</code> from C code),
+    but the raw tracedata format may change even in minor versions.  You can
+    also overwrite the <code>.stack</code> property directly.</li>
 <li>If an error is created with a non-constructor function call to a custom
     error class (<code>MyError('msg')</code> instead of <code>new MyError('msg')</code>)
     it won't get augmented with custom fields such as traceback data.  When
