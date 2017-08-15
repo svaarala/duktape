@@ -5224,7 +5224,7 @@ DUK_INTERNAL void *duk_push_fixed_buffer_zero(duk_hthread *thr, duk_size_t len) 
 }
 
 #if defined(DUK_USE_ES6_PROXY)
-DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr) {
+DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) {
 	duk_hobject *h_target;
 	duk_hobject *h_handler;
 	duk_hproxy *h_proxy;
@@ -5232,6 +5232,7 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr) {
 	duk_uint_t flags;
 
 	DUK_ASSERT_API_ENTRY(thr);
+	DUK_UNREF(proxy_flags);
 
 	/* DUK__CHECK_SPACE() unnecessary because the Proxy is written to
 	 * value stack in-place.
@@ -5316,8 +5317,9 @@ DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr) {
 	DUK_ERROR_TYPE_INVALID_ARGS(thr);
 }
 #else  /* DUK_USE_ES6_PROXY */
-DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr) {
+DUK_EXTERNAL duk_idx_t duk_push_proxy(duk_hthread *thr, duk_uint_t proxy_flags) {
 	DUK_ASSERT_API_ENTRY(thr);
+	DUK_UNREF(proxy_flags);
 	DUK_ERROR_UNSUPPORTED(thr);
 }
 #endif  /* DUK_USE_ES6_PROXY */

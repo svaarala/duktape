@@ -239,6 +239,7 @@ static duk_ret_t test_func(duk_context *ctx, void *udata) {
 	(void) duk_push_number(ctx, 0.0);
 	(void) duk_push_object(ctx);
 	(void) duk_push_pointer(ctx, NULL);
+	(void) duk_push_proxy(ctx, 0);
 	(void) duk_push_sprintf(ctx, "dummy");
 	(void) duk_push_string(ctx, "dummy");
 	(void) duk_push_this(ctx);

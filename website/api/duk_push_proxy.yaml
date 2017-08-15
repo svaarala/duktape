@@ -1,14 +1,16 @@
 name: duk_push_proxy
 
 proto: |
-  duk_idx_t duk_push_proxy(duk_context *ctx);
+  duk_idx_t duk_push_proxy(duk_context *ctx, duk_uint_t proxy_flags);
 
 stack: |
   [ ... target! handler! ] -> [ ... proxy! ]
 
 summary: |
   <p>Push a new Proxy object for target and handler table given on the value
-  stack, equivalent to <code>new Proxy(target, handler)</code>.</p>
+  stack, equivalent to <code>new Proxy(target, handler)</code>.  The
+  <code>proxy_flags</code> argument is currently (Duktape 2.2) unused, calling
+  code must pass in a zero.</p>
 
 example: |
   duk_idx_t proxy_idx;
@@ -17,7 +19,7 @@ example: |
   duk_push_object(ctx);  /* handler */
   duk_push_c_function(ctx, my_get, 3);  /* 'get' trap */
   duk_put_prop_string(ctx, -2, "get");
-  proxy_idx = duk_push_proxy(ctx);  /* [ target handler ] -> [ proxy ] */
+  proxy_idx = duk_push_proxy(ctx, 0);  /* [ target handler ] -> [ proxy ] */
 
 tags:
   - stack
