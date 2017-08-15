@@ -31,7 +31,7 @@ static duk_ret_t test_passthrough(duk_context *ctx, void *udata) {
 	duk_push_c_function(ctx, my_function, 1 /*nargs*/);  /* target */
 	duk_push_object(ctx);  /* handler */
 
-	duk_push_proxy(ctx);
+	duk_push_proxy(ctx, 0);
 
 	duk_push_uint(ctx, 123);
 	duk_call(ctx, 1);
@@ -53,7 +53,7 @@ static duk_ret_t test_trap(duk_context *ctx, void *udata) {
 	duk_push_c_function(ctx, my_apply_trap, 3 /*nargs*/);
 	duk_put_prop_string(ctx, -2, "apply");
 
-	duk_push_proxy(ctx);
+	duk_push_proxy(ctx, 0);
 
 	duk_push_uint(ctx, 123);
 	duk_call(ctx, 1);

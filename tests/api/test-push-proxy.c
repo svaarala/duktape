@@ -26,7 +26,7 @@ static duk_ret_t test_basic(duk_context *ctx, void *udata) {
 	duk_eval_string(ctx, "({ foo: 123 })");
 	duk_eval_string(ctx, "({ get: function myget() { return 321; } })");
 	printf("top before: %ld\n", (long) duk_get_top(ctx));
-	ret = duk_push_proxy(ctx);
+	ret = duk_push_proxy(ctx, 0);
 	printf("top after: %ld\n", (long) duk_get_top(ctx));
 	printf("duk_push_proxy() returned %ld\n", (long) ret);
 
