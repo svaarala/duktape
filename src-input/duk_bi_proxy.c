@@ -89,7 +89,7 @@ DUK_INTERNAL duk_ret_t duk_bi_proxy_constructor(duk_hthread *thr) {
 	DUK_ASSERT_TOP(thr, 2);  /* [ target handler ] */
 
 	duk_require_constructor_call(thr);
-	duk_push_proxy(thr);  /* [ target handler ] -> [ proxy ] */
+	duk_push_proxy(thr, 0 /*flags*/);  /* [ target handler ] -> [ proxy ] */
 	return 1;  /* replacement */
 }
 #endif  /* DUK_USE_ES6_PROXY */
