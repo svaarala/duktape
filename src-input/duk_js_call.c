@@ -1439,6 +1439,7 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	duk_tval *tv1, *tv2;
 	duk_idx_t idx_args;
 	duk_small_uint_t flags1, flags2;
+	duk_activation *prev_step_act;
 
 	DUK_UNREF(entry_valstack_end_byteoff);
 
@@ -1511,10 +1512,19 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 
 	/* Unwind the topmost callstack entry before reusing it.  This
 	 * also unwinds the catchers related to the topmost entry.
+	 * Disable StepOut processing because we reuse the activation,
+	 * see https://github.com/svaarala/duktape/issues/1684.
 	 */
 	DUK_ASSERT(thr->callstack_top > 0);
 	DUK_ASSERT(thr->callstack_curr != NULL);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	prev_step_act = thr->heap->dbg_step_act;
+	thr->heap->dbg_step_act = NULL;
+#endif
 	duk_hthread_activation_unwind_reuse_norz(thr);
+#if defined(DUK_USE_DEBUGGER_SUPPORT)
+	thr->heap->dbg_step_act = prev_step_act;
+#endif
 	DUK_ASSERT(act == thr->callstack_curr);
 
 	/* XXX: We could restore the caller's value stack reserve

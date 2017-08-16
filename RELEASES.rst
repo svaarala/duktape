@@ -3060,6 +3060,10 @@ Planned
   below the current call, leading potentially to a smaller reserve than
   requested (GH-1536)
 
+* Fix incorrect pausing by debugger StepOut command when current function has
+  a tail return; previously execution would pause on exit to tailcall target
+  (GH-1684, GH-1685)
+
 * Fix duk_hbufobj assert in shared slice() handling (GH-1506)
 
 * Fix internal debug print opcode name list which was out of sync with previous
