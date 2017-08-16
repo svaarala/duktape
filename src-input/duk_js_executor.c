@@ -1716,20 +1716,28 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 	 */
 
 	/*
+	 *  Single opcode step check
+	 */
+
+	if (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE) {
+		DUK_D(DUK_DPRINT("PAUSE TRIGGERED by one opcode step"));
+		duk_debug_set_paused(thr->heap);
+	}
+
+	/*
 	 *  Breakpoint and step state checks
 	 */
 
 	if (act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE ||
-	    (thr->heap->dbg_step_act == thr->callstack_curr)) {
+	    (thr->heap->dbg_pause_act == thr->callstack_curr)) {
 		line = duk_debug_curr_line(thr);
 
 		if (act->prev_line != line) {
 			/* Stepped?  Step out is handled by callstack unwind. */
-			if ((thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO ||
-			     thr->heap->dbg_step_type == DUK_STEP_TYPE_OVER) &&
-			    (thr->heap->dbg_step_act == thr->callstack_curr) &&
-			    (line != thr->heap->dbg_step_startline)) {
-				DUK_D(DUK_DPRINT("STEP STATE TRIGGERED PAUSE at line %ld",
+			if ((thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_LINE_CHANGE) &&
+			    (thr->heap->dbg_pause_act == thr->callstack_curr) &&
+			    (line != thr->heap->dbg_pause_startline)) {
+				DUK_D(DUK_DPRINT("PAUSE TRIGGERED by line change, at line %ld",
 				                 (long) line));
 				duk_debug_set_paused(thr->heap);
 			}
@@ -1755,7 +1763,7 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 
 				DUK_ASSERT(bp->filename != NULL);
 				if (act->prev_line != bp->line && line == bp->line) {
-					DUK_D(DUK_DPRINT("BREAKPOINT TRIGGERED at %!O:%ld",
+					DUK_D(DUK_DPRINT("PAUSE TRIGGERED by breakpoint at %!O:%ld",
 					                 (duk_heaphdr *) bp->filename, (long) bp->line));
 					duk_debug_set_paused(thr->heap);
 				}
@@ -1850,9 +1858,9 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		DUK_ASSERT(act == thr->callstack_curr);
 		DUK_ASSERT(act != NULL);
 		if (act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE ||
-		    ((thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO ||
-		      thr->heap->dbg_step_type == DUK_STEP_TYPE_OVER) &&
-		     thr->heap->dbg_step_act == thr->callstack_curr) ||
+		    (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_ONE_OPCODE) ||
+		    ((thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_LINE_CHANGE) &&
+		     thr->heap->dbg_pause_act == thr->callstack_curr) ||
 		     DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap)) {
 			*out_immediate = 1;
 		}
@@ -1863,6 +1871,13 @@ DUK_LOCAL void duk__interrupt_handle_debugger(duk_hthread *thr, duk_bool_t *out_
 		if (processed_messages) {
 			DUK_D(DUK_DPRINT("processed debug messages, restart execution to recheck possibly changed breakpoints"));
 			*out_interrupt_retval = DUK__INT_RESTART;
+		} else {
+			if (thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_ONE_OPCODE) {
+				/* Set 'pause after one opcode' active only when we're
+				 * actually just about to execute code.
+				 */
+				thr->heap->dbg_pause_flags |= DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE;
+			}
 		}
 	} else {
 		DUK_D(DUK_DPRINT("debugger became detached, resume normal execution"));
@@ -2092,19 +2107,19 @@ DUK_LOCAL void duk__executor_recheck_debugger(duk_hthread *thr, duk_activation *
 	DUK_DD(DUK_DDPRINT("ACTIVE BREAKPOINTS: %ld", (long) (bp_active - thr->heap->dbg_breakpoints_active)));
 
 	/* Force pause if we were doing "step into" in another activation. */
-	if (thr->heap->dbg_step_type == DUK_STEP_TYPE_INTO &&
-	    thr->heap->dbg_step_act != thr->callstack_curr) {
-		DUK_D(DUK_DPRINT("STEP INTO ACTIVE, FORCE PAUSED"));
+	if ((thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_FUNC_ENTRY) &&
+	    thr->heap->dbg_pause_act != thr->callstack_curr) {
+		DUK_D(DUK_DPRINT("PAUSE TRIGGERED by function entry"));
 		duk_debug_set_paused(thr->heap);
 	}
 
 	/* Force interrupt right away if we're paused or in "checked mode".
 	 * Step out is handled by callstack unwind.
 	 */
-	if (act->flags & (DUK_ACT_FLAG_BREAKPOINT_ACTIVE) ||
+	if ((act->flags & DUK_ACT_FLAG_BREAKPOINT_ACTIVE) ||
 	    DUK_HEAP_HAS_DEBUGGER_PAUSED(thr->heap) ||
-	    (thr->heap->dbg_step_type != DUK_STEP_TYPE_OUT &&
-	     thr->heap->dbg_step_act == thr->callstack_curr)) {
+	    ((thr->heap->dbg_pause_flags & DUK_PAUSE_FLAG_LINE_CHANGE) &&
+	     thr->heap->dbg_pause_act == thr->callstack_curr)) {
 		/* We'll need to interrupt early so recompute the init
 		 * counter to reflect the number of bytecode instructions
 		 * executed so that step counts for e.g. debugger rate

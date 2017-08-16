@@ -1440,7 +1440,7 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	duk_idx_t idx_args;
 	duk_small_uint_t flags1, flags2;
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	duk_activation *prev_step_act;
+	duk_activation *prev_pause_act;
 #endif
 
 	DUK_UNREF(entry_valstack_end_byteoff);
@@ -1520,12 +1520,12 @@ DUK_LOCAL duk_small_uint_t duk__call_setup_act_attempt_tailcall(duk_hthread *thr
 	DUK_ASSERT(thr->callstack_top > 0);
 	DUK_ASSERT(thr->callstack_curr != NULL);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	prev_step_act = thr->heap->dbg_step_act;
-	thr->heap->dbg_step_act = NULL;
+	prev_pause_act = thr->heap->dbg_pause_act;
+	thr->heap->dbg_pause_act = NULL;
 #endif
 	duk_hthread_activation_unwind_reuse_norz(thr);
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
-	thr->heap->dbg_step_act = prev_step_act;
+	thr->heap->dbg_pause_act = prev_pause_act;
 #endif
 	DUK_ASSERT(act == thr->callstack_curr);
 

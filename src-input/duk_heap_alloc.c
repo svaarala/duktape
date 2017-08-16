@@ -943,7 +943,7 @@ duk_heap *duk_heap_alloc(duk_alloc_function alloc_func,
 	res->dbg_write_flush_cb = NULL;
 	res->dbg_request_cb = NULL;
 	res->dbg_udata = NULL;
-	res->dbg_step_act = NULL;
+	res->dbg_pause_act = NULL;
 #endif
 #endif  /* DUK_USE_EXPLICIT_NULL_INIT */
 

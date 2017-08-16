@@ -271,11 +271,14 @@ typedef void *(*duk_mem_getptr)(duk_heap *heap, void *ud);
 /* Milliseconds between status notify and transport peeks. */
 #define DUK_HEAP_DBG_RATELIMIT_MILLISECS  200
 
-/* Step types */
-#define DUK_STEP_TYPE_NONE  0
-#define DUK_STEP_TYPE_INTO  1
-#define DUK_STEP_TYPE_OVER  2
-#define DUK_STEP_TYPE_OUT   3
+/* Debugger pause flags. */
+#define DUK_PAUSE_FLAG_ONE_OPCODE        (1U << 0)   /* pause when a single opcode has been executed */
+#define DUK_PAUSE_FLAG_ONE_OPCODE_ACTIVE (1U << 1)   /* one opcode pause actually active; artifact of current implementation */
+#define DUK_PAUSE_FLAG_LINE_CHANGE       (1U << 2)   /* pause when current line number changes */
+#define DUK_PAUSE_FLAG_FUNC_ENTRY        (1U << 3)   /* pause when entering a function */
+#define DUK_PAUSE_FLAG_FUNC_EXIT         (1U << 4)   /* pause when exiting current function */
+#define DUK_PAUSE_FLAG_CAUGHT_ERROR      (1U << 5)   /* pause when about to throw an error that is caught */
+#define DUK_PAUSE_FLAG_UNCAUGHT_ERROR    (1U << 6)   /* pause when about to throw an error that won't be caught */
 
 struct duk_breakpoint {
 	duk_hstring *filename;
@@ -511,9 +514,9 @@ struct duk_heap {
 	duk_bool_t dbg_state_dirty;             /* resend state next time executor is about to run */
 	duk_bool_t dbg_force_restart;           /* force executor restart to recheck breakpoints; used to handle function returns (see GH-303) */
 	duk_bool_t dbg_detaching;               /* debugger detaching; used to avoid calling detach handler recursively */
-	duk_small_uint_t dbg_step_type;         /* step type: none, step into, step over, step out */
-	duk_activation *dbg_step_act;           /* activation related to step into/over/out */
-	duk_uint32_t dbg_step_startline;        /* starting line number */
+	duk_small_uint_t dbg_pause_flags;       /* flags for automatic pause behavior */
+	duk_activation *dbg_pause_act;          /* activation related to pause behavior (pause on line change, function entry/exit) */
+	duk_uint32_t dbg_pause_startline;       /* starting line number for line change related pause behavior */
 	duk_breakpoint dbg_breakpoints[DUK_HEAP_MAX_BREAKPOINTS];  /* breakpoints: [0,breakpoint_count[ gc reachable */
 	duk_small_uint_t dbg_breakpoint_count;
 	duk_breakpoint *dbg_breakpoints_active[DUK_HEAP_MAX_BREAKPOINTS + 1];  /* currently active breakpoints: NULL term, borrowed pointers */
