@@ -7,6 +7,24 @@
 #if defined(DUK_USE_DEBUGGER_SUPPORT)
 
 /*
+ *  Assert helpers
+ */
+
+#if defined(DUK_USE_ASSERTIONS)
+#define DUK__DBG_TPORT_ENTER() do { \
+		DUK_ASSERT(heap->dbg_calling_transport == 0); \
+		heap->dbg_calling_transport = 1; \
+	} while (0)
+#define DUK__DBG_TPORT_EXIT() do { \
+		DUK_ASSERT(heap->dbg_calling_transport == 1); \
+		heap->dbg_calling_transport = 0; \
+	} while (0)
+#else
+#define DUK__DBG_TPORT_ENTER() do {} while (0)
+#define DUK__DBG_TPORT_EXIT() do {} while (0)
+#endif
+
+/*
  *  Helper structs
  */
 
@@ -147,6 +165,7 @@ DUK_LOCAL void duk__debug_null_most_callbacks(duk_hthread *thr) {
 
 DUK_INTERNAL duk_bool_t duk_debug_read_peek(duk_hthread *thr) {
 	duk_heap *heap;
+	duk_bool_t ret;
 
 	DUK_ASSERT(thr != NULL);
 	heap = thr->heap;
@@ -161,7 +180,10 @@ DUK_INTERNAL duk_bool_t duk_debug_read_peek(duk_hthread *thr) {
 		return 0;
 	}
 
-	return (duk_bool_t) (heap->dbg_peek_cb(heap->dbg_udata) > 0);
+	DUK__DBG_TPORT_ENTER();
+	ret = (duk_bool_t) (heap->dbg_peek_cb(heap->dbg_udata) > 0);
+	DUK__DBG_TPORT_EXIT();
+	return ret;
 }
 
 DUK_INTERNAL void duk_debug_read_flush(duk_hthread *thr) {
@@ -180,7 +202,9 @@ DUK_INTERNAL void duk_debug_read_flush(duk_hthread *thr) {
 		return;
 	}
 
+	DUK__DBG_TPORT_ENTER();
 	heap->dbg_read_flush_cb(heap->dbg_udata);
+	DUK__DBG_TPORT_EXIT();
 }
 
 DUK_INTERNAL void duk_debug_write_flush(duk_hthread *thr) {
@@ -199,7 +223,9 @@ DUK_INTERNAL void duk_debug_write_flush(duk_hthread *thr) {
 		return;
 	}
 
+	DUK__DBG_TPORT_ENTER();
 	heap->dbg_write_flush_cb(heap->dbg_udata);
+	DUK__DBG_TPORT_EXIT();
 }
 
 /*
@@ -277,7 +303,10 @@ DUK_INTERNAL void duk_debug_read_bytes(duk_hthread *thr, duk_uint8_t *data, duk_
 #if defined(DUK_USE_DEBUGGER_TRANSPORT_TORTURE)
 		left = 1;
 #endif
+		DUK__DBG_TPORT_ENTER();
 		got = heap->dbg_read_cb(heap->dbg_udata, (char *) p, left);
+		DUK__DBG_TPORT_EXIT();
+
 		if (got == 0 || got > left) {
 			DUK_D(DUK_DPRINT("connection error during read, return zero data"));
 			duk__debug_null_most_callbacks(thr);  /* avoid calling write callback in detach1() */
@@ -634,7 +663,10 @@ DUK_INTERNAL void duk_debug_write_bytes(duk_hthread *thr, const duk_uint8_t *dat
 #if defined(DUK_USE_DEBUGGER_TRANSPORT_TORTURE)
 		left = 1;
 #endif
+		DUK__DBG_TPORT_ENTER();
 		got = heap->dbg_write_cb(heap->dbg_udata, (const char *) p, left);
+		DUK__DBG_TPORT_EXIT();
+
 		if (got == 0 || got > left) {
 			duk__debug_null_most_callbacks(thr);  /* avoid calling write callback in detach1() */
 			DUK_D(DUK_DPRINT("connection error during write"));

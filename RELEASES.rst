@@ -3021,6 +3021,9 @@ Planned
   without throwing, as internals are not always expecting to deal with an
   error when reading current time (GH-1666)
 
+* Add assertion coverage for catching calls into Duktape API from debug
+  transport calls (read, peek, etc) (GH-1681)
+
 * Fix incorrect handling of register bound unary operation target for
   unary minus, unary plus, and bitwise NOT (GH-1623, GH-1624)
 
